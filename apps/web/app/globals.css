@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   Tierra Viva — base styles
+   ===================================================== */
+@layer base {
+  :root {
+    --color-bg: 251 248 243;        /* bone-50 */
+    --color-surface: 242 237 227;   /* bone-100 */
+    --color-ink: 15 20 16;          /* ink-950 */
+    --color-muted: 58 90 64;        /* moss-700 */
+    --color-accent: 217 164 65;     /* sun-500 */
+    --color-border: 232 225 210;    /* bone-200 */
+  }
+
+  [data-theme='dark'] {
+    --color-bg: 15 20 16;
+    --color-surface: 28 36 30;
+    --color-ink: 242 237 227;
+    --color-muted: 163 177 138;
+    --color-accent: 232 192 120;
+    --color-border: 42 53 44;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  body {
+    @apply bg-bone-50 text-ink-950 font-sans antialiased;
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-ink));
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+    font-feature-settings: 'ss01', 'liga', 'kern';
+  }
+
+  ::selection {
+    background-color: rgb(var(--color-accent) / 0.35);
+  }
+}
+
+@layer components {
+  .container-editorial {
+    @apply mx-auto w-full max-w-editorial px-6 md:px-10;
+  }
+  .container-wide {
+    @apply mx-auto w-full max-w-wide px-6 md:px-10;
+  }
+  .container-prose {
+    @apply mx-auto w-full max-w-prose px-6;
+  }
+
+  .display-1 { @apply font-display text-5xl md:text-7xl leading-[1.02] tracking-[-0.025em]; }
+  .display-2 { @apply font-display text-4xl md:text-6xl leading-[1.05] tracking-[-0.02em]; }
+  .display-3 { @apply font-display text-3xl md:text-5xl leading-[1.08] tracking-[-0.015em]; }
+  .eyebrow   { @apply text-xs uppercase tracking-[0.18em] font-medium text-moss-700; }
+  .lead      { @apply text-lg md:text-xl text-ink-800/80 max-w-prose; }
+}
+
+@layer utilities {
+  .grain::after {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "name": "AyT · Sync iCal externo (Airbnb/Booking) → bloqueos",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 30 }] }
+      },
+      "id": "cron",
+      "name": "Cada 30 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.AIRBNB_ICAL_URL}}",
+        "options": { "response": { "response": { "responseFormat": "text" } } }
+      },
+      "id": "fetchIcal",
+      "name": "Fetch Airbnb iCal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 220]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.BOOKING_ICAL_URL}}",
+        "options": { "response": { "response": { "responseFormat": "text" } } }
+      },
+      "id": "fetchBooking",
+      "name": "Fetch Booking iCal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 380]
+    },
+    {
+      "parameters": {
+        "functionCode": "const ics = $json.data || '';\nconst events = [];\nconst re = /BEGIN:VEVENT[\\s\\S]*?END:VEVENT/g;\nlet m;\nwhile ((m = re.exec(ics)) !== null) {\n  const block = m[0];\n  const dts = /DTSTART(?:;[^:]*)?:(\\d{8}(?:T\\d{6}Z?)?)/.exec(block)?.[1];\n  const dte = /DTEND(?:;[^:]*)?:(\\d{8}(?:T\\d{6}Z?)?)/.exec(block)?.[1];\n  const uid = /UID:([^\\r\\n]+)/.exec(block)?.[1];\n  if (dts && dte && uid) events.push({ uid, dts, dte });\n}\nreturn events.map(e => ({ json: e }));"
+      },
+      "id": "parse",
+      "name": "Parse VEVENT",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SITE_URL}}/api/n8n/availability/block",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.N8N_INTERNAL_TOKEN}}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"resourceId\": \"{{$env.LODGING_RESOURCE_ID}}\", \"externalUid\": \"{{$json.uid}}\", \"startsAt\": \"{{$json.dts}}\", \"endsAt\": \"{{$json.dte}}\" }"
+      },
+      "id": "block",
+      "name": "Bloquear en DB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [860, 300]
+    }
+  ],
+  "connections": {
+    "Cada 30 min": {
+      "main": [[
+        { "node": "Fetch Airbnb iCal", "type": "main", "index": 0 },
+        { "node": "Fetch Booking iCal", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch Airbnb iCal": { "main": [[{ "node": "Parse VEVENT", "type": "main", "index": 0 }]] },
+    "Fetch Booking iCal": { "main": [[{ "node": "Parse VEVENT", "type": "main", "index": 0 }]] },
+    "Parse VEVENT": { "main": [[{ "node": "Bloquear en DB", "type": "main", "index": 0 }]] }
+  }
+}

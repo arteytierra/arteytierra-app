@@ -1,0 +1,14 @@
+{
+  "name": "@arteytierra/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    "./tailwind": "./src/tailwind.ts",
+    "./tokens": "./src/tokens.ts"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

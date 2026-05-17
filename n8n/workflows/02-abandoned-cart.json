@@ -1,0 +1,60 @@
+{
+  "name": "AyT · Recuperación de carrito abandonado",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 1 }] }
+      },
+      "id": "cron",
+      "name": "Cada hora",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SITE_URL}}/api/n8n/abandoned-carts?hours=2&maxHours=4",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.N8N_INTERNAL_TOKEN}}" }
+          ]
+        }
+      },
+      "id": "fetch",
+      "name": "Fetch carritos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "carts",
+        "options": {}
+      },
+      "id": "split",
+      "name": "Split",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hola@arteytierra.org",
+        "toEmail": "={{$json.profiles.email}}",
+        "subject": "Te quedó algo en el carrito 🌿",
+        "html": "<p>Hola {{$json.profiles.full_name}},</p><p>Dejaste productos en tu carrito. <a href=\"{{$env.SITE_URL}}/carrito\">Recuperar carrito</a>.</p><p>Si necesitás ayuda, respondé este mail.</p>"
+      },
+      "id": "email",
+      "name": "Email recuperación",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [820, 300]
+    }
+  ],
+  "connections": {
+    "Cada hora": { "main": [[{ "node": "Fetch carritos", "type": "main", "index": 0 }]] },
+    "Fetch carritos": { "main": [[{ "node": "Split", "type": "main", "index": 0 }]] },
+    "Split": { "main": [[{ "node": "Email recuperación", "type": "main", "index": 0 }]] }
+  }
+}

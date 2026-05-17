@@ -1,0 +1,98 @@
+{
+  "name": "AyT · Post-compra (email + WhatsApp + tag CRM)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-paid",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook order-paid",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SITE_URL}}/api/n8n/orders?status=paid&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.N8N_INTERNAL_TOKEN}}" }
+          ]
+        }
+      },
+      "id": "fetchOrder",
+      "name": "Fetch Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hola@arteytierra.org",
+        "toEmail": "={{$json.orders[0].billing.email}}",
+        "subject": "Gracias por tu compra · Arte y Tierra",
+        "html": "<p>Hola {{$json.orders[0].billing.name}},</p><p>Tu pago fue confirmado. Si compraste un curso o ebook ya está disponible en <a href=\"{{$env.SITE_URL}}/mi-cuenta\">tu cuenta</a>.</p><p>— Equipo Arte y Tierra</p>"
+      },
+      "id": "sendEmail",
+      "name": "Email Confirmación",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [680, 220]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v20.0/{{$env.WHATSAPP_PHONE_ID}}/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.WHATSAPP_TOKEN}}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"{{$json.orders[0].billing.phone}}\", \"type\": \"template\", \"template\": { \"name\": \"order_confirmation\", \"language\": { \"code\": \"es_AR\" } } }"
+      },
+      "id": "sendWhatsapp",
+      "name": "WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 380]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SITE_URL}}/api/n8n/contacts",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.N8N_INTERNAL_TOKEN}}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"email\": \"{{$json.orders[0].billing.email}}\", \"tags\": [\"cliente\"], \"source\": \"order-paid\" }"
+      },
+      "id": "tagCrm",
+      "name": "Tag CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 540]
+    }
+  ],
+  "connections": {
+    "Webhook order-paid": { "main": [[{ "node": "Fetch Order", "type": "main", "index": 0 }]] },
+    "Fetch Order": {
+      "main": [[
+        { "node": "Email Confirmación", "type": "main", "index": 0 },
+        { "node": "WhatsApp", "type": "main", "index": 0 },
+        { "node": "Tag CRM", "type": "main", "index": 0 }
+      ]]
+    }
+  }
+}

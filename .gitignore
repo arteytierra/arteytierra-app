@@ -1,0 +1,41 @@
+node_modules
+.pnpm-store
+.next
+.turbo
+dist
+out
+build
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+.vercel
+.wrangler
+.supabase
+supabase/.branches
+supabase/.temp
+coverage
+
+# Local secrets / scratch (no commitear nunca)
+keys.txt
+keys-supabase.txt
+*.secret.txt
+DEPLOY_LOG.md
+SECRETS_INVENTORY.md
+ROLLBACK.md
+POSTDEPLOY_CHECKLIST.md
+*.zip
+
+# Legacy / backups locales que NO van al repo Next.js
+/WPvieja/
+/web/
+/output_flyer/
+/arteytierra-prototipo.html
+/curso_agua_tierra_vida_INTERNO.md
+/curso_agua_tierra_vida_WEB.md
+
+# Local IDE/agent settings
+.claude/settings.local.json
+**/.claude/settings.local.json
+tienda/

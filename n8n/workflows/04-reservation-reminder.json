@@ -1,0 +1,74 @@
+{
+  "name": "AyT · Recordatorio de reserva (48h antes, WhatsApp + email)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 6 }] }
+      },
+      "id": "cron",
+      "name": "Cada 6 horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SITE_URL}}/api/n8n/reservations?upcomingDays=3&status=confirmed",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.N8N_INTERNAL_TOKEN}}" }
+          ]
+        }
+      },
+      "id": "fetch",
+      "name": "Fetch reservas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 300]
+    },
+    {
+      "parameters": { "fieldToSplitOut": "reservations", "options": {} },
+      "id": "split",
+      "name": "Split",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "dateTime": [{
+            "value1": "={{$json.starts_at}}",
+            "operation": "before",
+            "value2": "={{ $now.plus({ hours: 48 }).toISO() }}"
+          }]
+        }
+      },
+      "id": "filter",
+      "name": "Solo <48h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [820, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hola@arteytierra.org",
+        "toEmail": "={{$json.profiles.email}}",
+        "subject": "Tu llegada en 2 días · Arte y Tierra",
+        "html": "<p>Hola {{$json.profiles.full_name}},</p><p>Te esperamos el {{$json.starts_at}}.</p><p>Detalles de llegada y mapa: <a href=\"{{$env.SITE_URL}}/mis-reservas\">tus reservas</a>.</p>"
+      },
+      "id": "email",
+      "name": "Email recordatorio",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1020, 220]
+    }
+  ],
+  "connections": {
+    "Cada 6 horas": { "main": [[{ "node": "Fetch reservas", "type": "main", "index": 0 }]] },
+    "Fetch reservas": { "main": [[{ "node": "Split", "type": "main", "index": 0 }]] },
+    "Split": { "main": [[{ "node": "Solo <48h", "type": "main", "index": 0 }]] },
+    "Solo <48h": { "main": [[{ "node": "Email recordatorio", "type": "main", "index": 0 }]] }
+  }
+}

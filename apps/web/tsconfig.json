@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [{ "name": "next" }],
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@arteytierra/config": ["../../packages/config/src/index.ts"],
+      "@arteytierra/config/*": ["../../packages/config/src/*"],
+      "@arteytierra/types": ["../../packages/types/src/index.ts"],
+      "@arteytierra/types/*": ["../../packages/types/src/*"],
+      "@arteytierra/ui": ["../../packages/ui/src/index.ts"],
+      "@arteytierra/ui/*": ["../../packages/ui/src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

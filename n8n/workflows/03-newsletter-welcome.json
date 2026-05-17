@@ -1,0 +1,64 @@
+{
+  "name": "AyT · Newsletter bienvenida",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "newsletter-subscribed",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode"
+      },
+      "id": "wh",
+      "name": "Webhook newsletter-subscribed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hola@arteytierra.org",
+        "toEmail": "={{$json.payload.email}}",
+        "subject": "Bienvenida a Arte y Tierra 🌱",
+        "html": "<p>Gracias por sumarte.</p><p>Una vez por mes te mandamos: novedades de cursos, abrir/cerrar de inscripciones, y reflexiones desde el monte.</p><p>Si querés explorar ahora: <a href=\"{{$env.SITE_URL}}/cursos\">cursos abiertos</a>.</p>"
+      },
+      "id": "email",
+      "name": "Email bienvenida",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [440, 220]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "wait",
+      "name": "Esperar 3 días",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [440, 380]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hola@arteytierra.org",
+        "toEmail": "={{$json.payload.email}}",
+        "subject": "Por qué hacemos esto · Arte y Tierra",
+        "html": "<p>Hace años que diseñamos territorios regenerativos. Acá te contamos cómo empezó.</p><p><a href=\"{{$env.SITE_URL}}/nosotros\">Nuestra historia →</a></p>"
+      },
+      "id": "email2",
+      "name": "Email historia",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [680, 380]
+    }
+  ],
+  "connections": {
+    "Webhook newsletter-subscribed": {
+      "main": [[
+        { "node": "Email bienvenida", "type": "main", "index": 0 },
+        { "node": "Esperar 3 días", "type": "main", "index": 0 }
+      ]]
+    },
+    "Esperar 3 días": { "main": [[{ "node": "Email historia", "type": "main", "index": 0 }]] }
+  }
+}
