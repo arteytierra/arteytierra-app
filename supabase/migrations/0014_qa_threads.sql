@@ -35,8 +35,8 @@ create index if not exists idx_threads_status
 alter table edu.threads
   add column if not exists tsv tsvector
   generated always as (
-    setweight(to_tsvector('spanish', unaccent(coalesce(title, ''))), 'A') ||
-    setweight(to_tsvector('spanish', unaccent(coalesce(body, ''))), 'B')
+    setweight(to_tsvector('spanish', public.immutable_unaccent(coalesce(title, ''))), 'A') ||
+    setweight(to_tsvector('spanish', public.immutable_unaccent(coalesce(body, ''))), 'B')
   ) stored;
 
 create index if not exists idx_threads_tsv on edu.threads using gin(tsv);

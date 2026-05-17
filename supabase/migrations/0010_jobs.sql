@@ -54,11 +54,11 @@ alter table app.job_locks enable row level security;
 
 create policy "job_runs staff read" on app.job_runs
   for select using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 create policy "job_locks staff read" on app.job_locks
   for select using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 grant select on app.job_runs, app.job_locks to authenticated;

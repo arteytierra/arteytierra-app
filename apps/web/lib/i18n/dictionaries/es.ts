@@ -89,4 +89,14 @@ export const es = {
   },
 } as const;
 
-export type Dict = typeof es;
+// Util: convierte tipos literales `as const` a sus tipos base (string -> string)
+// para que en.ts y pt.ts puedan implementar Dict con traducciones distintas.
+type Stringify<T> = T extends string
+  ? string
+  : T extends readonly (infer U)[]
+    ? Stringify<U>[]
+    : T extends object
+      ? { [K in keyof T]: Stringify<T[K]> }
+      : T;
+
+export type Dict = Stringify<typeof es>;

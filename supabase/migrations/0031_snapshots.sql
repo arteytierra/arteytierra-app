@@ -23,7 +23,8 @@ create index if not exists db_snapshots_status_idx
 
 alter table app.db_snapshots enable row level security;
 
-create policy if not exists "db_snapshots staff" on app.db_snapshots
+drop policy if exists "db_snapshots staff" on app.db_snapshots;
+create policy "db_snapshots staff" on app.db_snapshots
   for all using (app.is_staff()) with check (app.is_staff());
 
 -- Vista resumida — N últimos snapshots con duración derivada.

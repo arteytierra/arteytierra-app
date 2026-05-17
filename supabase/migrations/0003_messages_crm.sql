@@ -3,7 +3,7 @@
 
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
-  contact_id uuid references public.contacts(id) on delete set null,
+  contact_id uuid references app.contacts(id) on delete set null,
   channel text not null check (channel in ('whatsapp','instagram','email','sms','web')),
   direction text not null check (direction in ('inbound','outbound')),
   provider_message_id text,
@@ -27,7 +27,7 @@ returns trigger language plpgsql as $$
 begin
   if new.contact_id is null then
     select id into new.contact_id
-    from public.contacts
+    from app.contacts
     where (new.channel = 'whatsapp' and phone = new.from_address)
        or (new.channel = 'email' and email = new.from_address)
     limit 1;

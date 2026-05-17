@@ -1,6 +1,8 @@
-import type { Variants, Transition } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 
-export const easeOrganic: Transition['ease'] = [0.22, 1, 0.36, 1];
+// Cubic-bezier "organic" — coincide con el firma `ease` que espera framer-motion.
+// Se anota como tuple readonly de 4 numbers para satisfacer el tipo `Easing` interno.
+export const easeOrganic = [0.22, 1, 0.36, 1] as const;
 
 export const fadeUp: Variants = {
   hidden:  { opacity: 0, y: 16 },

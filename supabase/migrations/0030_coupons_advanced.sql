@@ -56,9 +56,11 @@ create index if not exists coupon_redemptions_order_idx
 alter table shop.cart_coupons enable row level security;
 alter table shop.coupon_redemptions enable row level security;
 
-create policy if not exists "cart_coupons staff" on shop.cart_coupons
+drop policy if exists "cart_coupons staff" on shop.cart_coupons;
+create policy "cart_coupons staff" on shop.cart_coupons
   for all using (app.is_staff()) with check (app.is_staff());
-create policy if not exists "coupon_redemptions staff" on shop.coupon_redemptions
+drop policy if exists "coupon_redemptions staff" on shop.coupon_redemptions;
+create policy "coupon_redemptions staff" on shop.coupon_redemptions
   for all using (app.is_staff()) with check (app.is_staff());
 
 -- Incremento atómico de `used` en shop.coupons.

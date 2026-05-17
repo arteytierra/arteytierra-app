@@ -44,7 +44,7 @@ create policy "live_sessions public read" on edu.live_sessions
   for select using (true);
 create policy "live_sessions staff write" on edu.live_sessions
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin','instructor'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin','instructor'))
   );
 
 create policy "live_attendance owner read" on edu.live_attendance
@@ -53,7 +53,7 @@ create policy "live_attendance owner write" on edu.live_attendance
   for insert with check (auth.uid() = user_id);
 create policy "live_attendance staff all" on edu.live_attendance
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin','instructor'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin','instructor'))
   );
 
 grant select on edu.live_sessions, edu.live_attendance to anon, authenticated;

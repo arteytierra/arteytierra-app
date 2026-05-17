@@ -8,13 +8,15 @@
 do $$
 declare
   t record;
-  tables text[][] := array[
-    array['app','notifications'],
-    array['edu','thread_replies'],
-    array['edu','threads']
-  ];
 begin
-  for t in select arr[1] as schema_name, arr[2] as table_name from unnest(tables) as arr loop
+  for t in
+    select schema_name, table_name
+    from (values
+      ('app','notifications'),
+      ('edu','thread_replies'),
+      ('edu','threads')
+    ) as v(schema_name, table_name)
+  loop
     -- Asegurar REPLICA IDENTITY FULL para que payload incluya old/new completos
     execute format('alter table %I.%I replica identity full', t.schema_name, t.table_name);
     -- Agregar a publication supabase_realtime si no está

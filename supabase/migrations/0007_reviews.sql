@@ -59,7 +59,7 @@ create policy "reviews owner update" on shop.reviews
 -- Staff (vía service_role / RPC) puede todo.
 create policy "reviews staff all" on shop.reviews
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff', 'admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff', 'admin'))
   );
 
 -- Trigger: setear verified_purchase si el user tiene order_items pagados de ese product.

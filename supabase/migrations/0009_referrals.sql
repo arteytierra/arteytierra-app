@@ -72,7 +72,7 @@ create policy "referral_codes owner update" on app.referral_codes
   for update using (auth.uid() = owner_user_id) with check (auth.uid() = owner_user_id);
 create policy "referral_codes staff all"    on app.referral_codes
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 -- Lectura pública por code (para resolver código en checkout sin filtrar más datos).
 create policy "referral_codes public read code" on app.referral_codes
@@ -84,7 +84,7 @@ create policy "attributions owner read" on app.referral_attributions
   );
 create policy "attributions staff all" on app.referral_attributions
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 grant select on app.referral_codes, app.referral_attributions, app.referral_summary

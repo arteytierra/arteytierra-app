@@ -104,21 +104,27 @@ alter table help.categories enable row level security;
 alter table help.article_feedback enable row level security;
 
 -- Lectura pública de artículos publicados.
-create policy if not exists "help_articles read public" on help.articles
+drop policy if exists "help_articles read public" on help.articles;
+create policy "help_articles read public" on help.articles
   for select using (is_published = true);
-create policy if not exists "help_categories read public" on help.categories
+drop policy if exists "help_categories read public" on help.categories;
+create policy "help_categories read public" on help.categories
   for select using (true);
 
 -- Escritura sólo staff.
-create policy if not exists "help_articles staff write" on help.articles
+drop policy if exists "help_articles staff write" on help.articles;
+create policy "help_articles staff write" on help.articles
   for all using (app.is_staff()) with check (app.is_staff());
-create policy if not exists "help_categories staff write" on help.categories
+drop policy if exists "help_categories staff write" on help.categories;
+create policy "help_categories staff write" on help.categories
   for all using (app.is_staff()) with check (app.is_staff());
 
 -- Feedback: cualquiera puede insertar; lectura sólo staff.
-create policy if not exists "help_feedback insert public" on help.article_feedback
+drop policy if exists "help_feedback insert public" on help.article_feedback;
+create policy "help_feedback insert public" on help.article_feedback
   for insert with check (true);
-create policy if not exists "help_feedback staff read" on help.article_feedback
+drop policy if exists "help_feedback staff read" on help.article_feedback;
+create policy "help_feedback staff read" on help.article_feedback
   for select using (app.is_staff());
 
 -- Seed mínimo — 3 categorías base.

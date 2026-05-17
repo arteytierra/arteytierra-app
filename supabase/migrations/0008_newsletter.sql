@@ -30,7 +30,7 @@ alter table app.newsletter_subscribers enable row level security;
 create policy "newsletter staff all" on app.newsletter_subscribers
   for all using (
     exists (select 1 from app.profiles p
-            where p.user_id = auth.uid() and p.role in ('staff','admin'))
+            where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 grant select, insert, update, delete on app.newsletter_subscribers to authenticated;

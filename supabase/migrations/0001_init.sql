@@ -18,6 +18,17 @@ create schema if not exists edu;
 create schema if not exists book;
 create schema if not exists fin;
 
+-- ---------- Wrappers IMMUTABLE para unaccent ----------
+-- Necesarios para usar en columnas GENERATED ALWAYS AS (...) STORED.
+-- La función unaccent() pública de la extensión NO es IMMUTABLE por defecto.
+create or replace function public.immutable_unaccent(regdictionary, text)
+returns text language sql immutable parallel safe as
+$$ select unaccent($1, $2) $$;
+
+create or replace function public.immutable_unaccent(text)
+returns text language sql immutable parallel safe as
+$$ select unaccent('unaccent', $1) $$;
+
 -- =============================================================
 --  Helpers
 -- =============================================================
@@ -27,22 +38,6 @@ begin
   new.updated_at = now();
   return new;
 end $$;
-
-create or replace function app.is_staff() returns boolean
-language sql stable as $$
-  select exists (
-    select 1 from app.profiles
-    where id = auth.uid() and role in ('admin','staff')
-  );
-$$;
-
-create or replace function app.is_admin() returns boolean
-language sql stable as $$
-  select exists (
-    select 1 from app.profiles
-    where id = auth.uid() and role = 'admin'
-  );
-$$;
 
 -- =============================================================
 --  APP: profiles, addresses, contacts, events
@@ -64,6 +59,23 @@ create table app.profiles (
 create trigger trg_profiles_updated
   before update on app.profiles
   for each row execute function app.set_updated_at();
+
+-- Helpers que dependen de app.profiles (creados después de la tabla)
+create or replace function app.is_staff() returns boolean
+language sql stable as $$
+  select exists (
+    select 1 from app.profiles
+    where id = auth.uid() and role in ('admin','staff')
+  );
+$$;
+
+create or replace function app.is_admin() returns boolean
+language sql stable as $$
+  select exists (
+    select 1 from app.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
 
 create table app.addresses (
   id          uuid primary key default gen_random_uuid(),
@@ -164,9 +176,9 @@ create table cms.posts (
   created_at       timestamptz default now(),
   updated_at       timestamptz default now(),
   tsv              tsvector generated always as (
-                     setweight(to_tsvector('spanish', unaccent(coalesce(title,''))), 'A') ||
-                     setweight(to_tsvector('spanish', unaccent(coalesce(excerpt,''))), 'B') ||
-                     setweight(to_tsvector('spanish', unaccent(coalesce(body_mdx,''))), 'C')
+                     setweight(to_tsvector('spanish', public.immutable_unaccent(coalesce(title,''))), 'A') ||
+                     setweight(to_tsvector('spanish', public.immutable_unaccent(coalesce(excerpt,''))), 'B') ||
+                     setweight(to_tsvector('spanish', public.immutable_unaccent(coalesce(body_mdx,''))), 'C')
                    ) stored,
   unique (slug, locale)
 );

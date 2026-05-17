@@ -86,11 +86,11 @@ create policy "gift_cards issuer read" on shop.gift_cards
 -- Staff: todo.
 create policy "gift_cards staff all" on shop.gift_cards
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 create policy "gift_card_redemptions staff all" on shop.gift_card_redemptions
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 grant select on shop.gift_cards, shop.gift_card_redemptions to authenticated;

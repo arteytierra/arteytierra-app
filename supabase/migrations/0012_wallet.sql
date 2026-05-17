@@ -102,7 +102,7 @@ create policy "wallet_accounts owner read" on app.wallet_accounts
   for select using (auth.uid() = user_id);
 create policy "wallet_accounts staff all"  on app.wallet_accounts
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 create policy "wallet_entries owner read"  on app.wallet_entries
@@ -112,7 +112,7 @@ create policy "wallet_entries owner read"  on app.wallet_entries
   );
 create policy "wallet_entries staff all"   on app.wallet_entries
   for all using (
-    exists (select 1 from app.profiles p where p.user_id = auth.uid() and p.role in ('staff','admin'))
+    exists (select 1 from app.profiles p where p.id = auth.uid() and p.role in ('staff','admin'))
   );
 
 grant select on app.wallet_accounts, app.wallet_entries to authenticated;
