@@ -48,7 +48,7 @@ export async function getOrCreateCart(): Promise<{ id: string; userId: string | 
   // Usuario logueado: usar/crear cart por user_id
   if (user) {
     const { data: existing } = await supabase
-      .from('carts')
+      .schema('shop').from('carts')
       .select('id')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
@@ -58,7 +58,7 @@ export async function getOrCreateCart(): Promise<{ id: string; userId: string | 
 
     const admin = createSupabaseAdminClient();
     const { data: created } = await admin
-      .from('carts')
+      .schema('shop').from('carts')
       .insert({ user_id: user.id })
       .select('id')
       .single();
@@ -72,7 +72,7 @@ export async function getOrCreateCart(): Promise<{ id: string; userId: string | 
 
   if (token) {
     const { data: existing } = await admin
-      .from('carts')
+      .schema('shop').from('carts')
       .select('id')
       .eq('anon_token', token)
       .maybeSingle();
@@ -81,7 +81,7 @@ export async function getOrCreateCart(): Promise<{ id: string; userId: string | 
 
   const newToken = crypto.randomUUID();
   const { data: created } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .insert({ anon_token: newToken })
     .select('id')
     .single();
@@ -107,7 +107,7 @@ export async function getCartSummary(): Promise<CartSummary> {
   let cartId: string | null = null;
 
   if (user) {
-    const { data } = await admin.from('carts').select('id, coupon_code, currency')
+    const { data } = await admin.schema('shop').from('carts').select('id, coupon_code, currency')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -116,7 +116,7 @@ export async function getCartSummary(): Promise<CartSummary> {
   } else {
     const token = cookieStore.get(CART_COOKIE)?.value;
     if (token) {
-      const { data } = await admin.from('carts').select('id, coupon_code, currency')
+      const { data } = await admin.schema('shop').from('carts').select('id, coupon_code, currency')
         .eq('anon_token', token)
         .maybeSingle();
       if (data) cartId = data.id;
@@ -132,7 +132,7 @@ export async function getCartSummary(): Promise<CartSummary> {
   }
 
   const { data: cart } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .select('id, currency, coupon_code, cart_items(id, product_id, qty, unit_price_cents, products(id, slug, name, type, gallery, currency, stock))')
     .eq('id', cartId)
     .single();
@@ -157,10 +157,8 @@ export async function getCartSummary(): Promise<CartSummary> {
     qty: it.qty,
     unit_price_cents: it.unit_price_cents,
   }));
-  const supabase = await createSupabaseServerClient();
-  const { data: { user: u } } = await supabase.auth.getUser();
   const resolution = await resolveCoupons(
-    { userId: u?.id ?? null, cartId: cart!.id, lines, currency: cart?.currency ?? 'ARS' },
+    { userId: user?.id ?? null, cartId: cart!.id, lines, currency: cart?.currency ?? 'ARS' },
     codes,
   );
 
@@ -187,7 +185,7 @@ export async function mergeAnonCartIntoUser(userId: string) {
 
   const admin = createSupabaseAdminClient();
   const { data: anon } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .select('id, cart_items(product_id, qty, unit_price_cents, metadata)')
     .eq('anon_token', token)
     .maybeSingle();
@@ -196,7 +194,7 @@ export async function mergeAnonCartIntoUser(userId: string) {
 
   // Garantizar cart del usuario
   const { data: userCart } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .upsert({ user_id: userId }, { onConflict: 'user_id', ignoreDuplicates: false })
     .select('id')
     .single();
@@ -205,22 +203,15 @@ export async function mergeAnonCartIntoUser(userId: string) {
   for (const it of anon.cart_items as never as Array<{
     product_id: string; qty: number; unit_price_cents: number; metadata: unknown
   }>) {
-    await admin.rpc('cart_upsert_item', {
-      p_cart_id: userCart!.id,
-      p_product_id: it.product_id,
-      p_qty: it.qty,
-      p_unit_price_cents: it.unit_price_cents,
-    }).then(() => {}).catch(async () => {
-      // Fallback si no existe el RPC: insert simple
-      await admin.from('cart_items').insert({
-        cart_id: userCart!.id,
-        product_id: it.product_id,
-        qty: it.qty,
-        unit_price_cents: it.unit_price_cents,
-      });
+    // Insert simple (RPC `cart_upsert_item` no existe en este punto del schema).
+    await admin.schema('shop').from('cart_items').insert({
+      cart_id: userCart!.id,
+      product_id: it.product_id,
+      qty: it.qty,
+      unit_price_cents: it.unit_price_cents,
     });
   }
 
-  await admin.from('carts').delete().eq('id', anon.id);
+  await admin.schema('shop').from('carts').delete().eq('id', anon.id);
   cookieStore.delete(CART_COOKIE);
 }

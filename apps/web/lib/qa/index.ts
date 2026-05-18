@@ -60,7 +60,7 @@ export async function checkCourseAccess(courseId: string) {
   if (isStaff || isInstructor) return { allowed: true, user, isStaff, isInstructor } as const;
   const admin = createSupabaseAdminClient();
   const { data: enroll } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id')
     .eq('user_id', user.id)
     .eq('course_id', courseId)
@@ -75,7 +75,7 @@ async function attachAuthors<T extends { user_id: string | null }>(rows: T[]): P
   if (ids.length === 0) return rows.map((r) => ({ ...r, author: null }));
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('profiles')
+    .schema('app').from('profiles')
     .select('id, full_name, avatar_url, role')
     .in('id', ids);
   const map = new Map<string, AuthorProfile>();
@@ -95,7 +95,7 @@ export async function listThreads(opts: {
   const user = await getCurrentUser();
 
   let q = admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select('*', { count: 'exact' })
     .eq('course_id', courseId)
     .eq('hidden', false)
@@ -121,11 +121,12 @@ export async function listThreads(opts: {
 
 export async function getThread(id: string): Promise<{ thread: ThreadWithAuthor; replies: ReplyWithAuthor[] } | null> {
   const admin = createSupabaseAdminClient();
-  const { data: t } = await admin.from('threads').select('*').eq('id', id).maybeSingle();
+  const { data: t } = await admin.schema('edu').from('threads').select('*').eq('id', id).maybeSingle();
   if (!t || (t as ThreadRow).hidden) return null;
   const [thread] = await attachAuthors([t as ThreadRow]);
+  if (!thread) return null;
   const { data: replies } = await admin
-    .from('thread_replies')
+    .schema('edu').from('thread_replies')
     .select('*')
     .eq('thread_id', id)
     .eq('hidden', false)
@@ -138,7 +139,7 @@ export async function getThread(id: string): Promise<{ thread: ThreadWithAuthor;
 export async function listReportsAdmin(status: 'open' | 'dismissed' | 'actioned' = 'open') {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('thread_reports')
+    .schema('edu').from('thread_reports')
     .select('id, target, thread_id, reply_id, reporter_id, reason, status, created_at')
     .eq('status', status)
     .order('created_at', { ascending: false })
@@ -149,7 +150,7 @@ export async function listReportsAdmin(status: 'open' | 'dismissed' | 'actioned'
 export async function getUserReputation(userId: string) {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('user_reputation')
+    .schema('app').from('user_reputation')
     .select('points, accepted')
     .eq('user_id', userId)
     .maybeSingle();

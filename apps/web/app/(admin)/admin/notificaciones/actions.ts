@@ -23,11 +23,11 @@ export async function broadcastNotificationAction(formData: FormData) {
   // Resolver lista de user_ids según segment
   let userIds: string[] = [];
   if (segment === 'all') {
-    const { data } = await admin.from('profiles').select('id').limit(10000);
+    const { data } = await admin.schema('app').from('profiles').select('id').limit(10000);
     userIds = ((data ?? []) as Array<{ id: string }>).map((r) => r.id);
   } else if (segment === 'students') {
     const { data } = await admin
-      .from('enrollments')
+      .schema('edu').from('enrollments')
       .select('user_id')
       .limit(10000);
     userIds = Array.from(new Set(((data ?? []) as Array<{ user_id: string }>).map((r) => r.user_id)));

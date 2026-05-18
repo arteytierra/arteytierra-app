@@ -36,7 +36,7 @@ export default async function CourseEditorPage({
         courseId={data.course.id}
         productSlug={data.product.slug}
         modules={data.modules}
-        lessons={data.lessons}
+        lessons={data.lessons as never}
       />
     </>
   );

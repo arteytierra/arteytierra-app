@@ -75,7 +75,7 @@ export async function dispatchWebhook(event: WebhookEvent, payload: Record<strin
       status: 'pending' as const,
       next_attempt_at: now,
     }));
-    await admin.schema('app').from('webhook_deliveries').insert(rows);
+    await admin.schema('app').from('webhook_deliveries').insert(rows as never);
   } catch (err) {
     console.error('[webhooks-out] dispatch failed', err);
   }

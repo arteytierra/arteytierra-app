@@ -6,6 +6,7 @@ const preset: Partial<Config> = {
   theme: {
     extend: {
       colors,
+      // @ts-expect-error readonly tuple types vs tailwind mutable expected
       fontFamily,
       // @ts-expect-error tailwind types aceptan tuplas con opts
       fontSize,

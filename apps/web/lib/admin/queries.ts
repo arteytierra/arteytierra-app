@@ -25,31 +25,31 @@ export async function getDashboardMetrics() {
     upcomingReservations,
     topProducts,
   ] = await Promise.all([
-    supabase.from('orders').select('total_cents, currency')
+    supabase.schema('shop').from('orders').select('total_cents, currency')
       .eq('status', 'paid')
       .gte('paid_at', monthStart.toISOString()),
 
-    supabase.from('orders').select('total_cents, currency')
+    supabase.schema('shop').from('orders').select('total_cents, currency')
       .eq('status', 'paid')
       .gte('paid_at', prevMonthStart.toISOString())
       .lt('paid_at', monthStart.toISOString()),
 
-    supabase.from('orders').select('id', { count: 'exact', head: true })
+    supabase.schema('shop').from('orders').select('id', { count: 'exact', head: true })
       .eq('status', 'paid')
       .gte('paid_at', isoDaysAgo(1)),
 
-    supabase.from('orders').select('id', { count: 'exact', head: true })
+    supabase.schema('shop').from('orders').select('id', { count: 'exact', head: true })
       .eq('status', 'paid')
       .gte('paid_at', monthStart.toISOString()),
 
-    supabase.from('enrollments').select('id', { count: 'exact', head: true })
+    supabase.schema('edu').from('enrollments').select('id', { count: 'exact', head: true })
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
 
-    supabase.from('reservations').select('id', { count: 'exact', head: true })
+    supabase.schema('book').from('reservations').select('id', { count: 'exact', head: true })
       .in('status', ['confirmed', 'pending'])
       .gte('starts_at', new Date().toISOString()),
 
-    supabase.from('order_items').select('product_id, name_snapshot, qty, total_cents')
+    supabase.schema('shop').from('order_items').select('product_id, name_snapshot, qty, total_cents')
       .order('total_cents', { ascending: false })
       .limit(5),
   ]);
@@ -77,7 +77,7 @@ export async function getDashboardMetrics() {
 
 export async function getRecentOrders(limit = 10) {
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.from('orders')
+  const { data } = await supabase.schema('shop').from('orders')
     .select('id, total_cents, currency, status, created_at, billing')
     .order('created_at', { ascending: false })
     .limit(limit);

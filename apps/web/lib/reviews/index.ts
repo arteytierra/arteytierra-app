@@ -41,7 +41,7 @@ export interface ReviewAggregate {
 export async function getReviewAggregate(productId: string): Promise<ReviewAggregate | null> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('review_aggregates')
+    .schema('shop').from('review_aggregates')
     .select('review_count, rating_avg, r5, r4, r3, r2, r1')
     .eq('product_id', productId)
     .maybeSingle();
@@ -62,7 +62,7 @@ export async function getReviewAggregate(productId: string): Promise<ReviewAggre
 export async function listReviewsForProduct(productId: string, limit = 20): Promise<ReviewItem[]> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('reviews')
+    .schema('shop').from('reviews')
     .select('id, rating, title, body, verified_purchase, created_at, user_id')
     .eq('product_id', productId)
     .eq('status', 'approved')
@@ -74,7 +74,7 @@ export async function listReviewsForProduct(productId: string, limit = 20): Prom
   let nameById: Record<string, string | null> = {};
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
-      .from('profiles')
+      .schema('app').from('profiles')
       .select('id, full_name')
       .in('id', userIds);
     nameById = Object.fromEntries(
@@ -98,7 +98,7 @@ export async function getMyReviewForProduct(productId: string): Promise<ReviewIt
   if (!user) return null;
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('reviews')
+    .schema('shop').from('reviews')
     .select('id, rating, title, body, verified_purchase, created_at, status')
     .eq('product_id', productId)
     .eq('user_id', user.id)
@@ -122,7 +122,7 @@ export async function submitReview(input: ReviewInput) {
 
   // Upsert por (product_id, user_id)
   const { error } = await admin
-    .from('reviews')
+    .schema('shop').from('reviews')
     .upsert(
       {
         product_id: parsed.product_id,
@@ -137,7 +137,7 @@ export async function submitReview(input: ReviewInput) {
   if (error) throw new Error(error.message);
 
   // Buscar slug del producto para revalidar path
-  const { data: prod } = await admin.from('products').select('slug, type').eq('id', parsed.product_id).single();
+  const { data: prod } = await admin.schema('shop').from('products').select('slug, type').eq('id', parsed.product_id).single();
   if (prod) {
     revalidatePath(routeForType(prod.type as string, prod.slug as string));
   }
@@ -169,7 +169,7 @@ export async function listReviewsAdmin(filter: 'pending' | 'approved' | 'rejecte
   await requireStaff();
   const admin = createSupabaseAdminClient();
   let query = admin
-    .from('reviews')
+    .schema('shop').from('reviews')
     .select('id, product_id, rating, title, body, verified_purchase, created_at, status, products(name)')
     .order('created_at', { ascending: false })
     .limit(100);
@@ -192,7 +192,7 @@ export async function listReviewsAdmin(filter: 'pending' | 'approved' | 'rejecte
 export async function moderateReview(id: string, status: 'approved' | 'rejected') {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from('reviews').update({ status }).eq('id', id);
+  const { error } = await admin.schema('shop').from('reviews').update({ status }).eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/admin/reviews');
   log.info('review.moderated', { id, status });
@@ -202,7 +202,7 @@ export async function moderateReview(id: string, status: 'approved' | 'rejected'
 export async function deleteReview(id: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('reviews').delete().eq('id', id);
+  await admin.schema('shop').from('reviews').delete().eq('id', id);
   revalidatePath('/admin/reviews');
   return { ok: true };
 }

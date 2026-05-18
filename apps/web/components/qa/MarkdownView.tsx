@@ -33,13 +33,13 @@ function renderMarkdown(src: string): string {
   const html: string[] = [];
   let i = 0;
   while (i < lines.length) {
-    const line = lines[i];
+    const line = lines[i] ?? '';
     // code block
     if (/^```/.test(line)) {
       const buf: string[] = [];
       i++;
-      while (i < lines.length && !/^```/.test(lines[i])) {
-        buf.push(lines[i]);
+      while (i < lines.length && !/^```/.test(lines[i] ?? '')) {
+        buf.push(lines[i] ?? '');
         i++;
       }
       i++;
@@ -51,8 +51,8 @@ function renderMarkdown(src: string): string {
     // blockquote
     if (/^>\s?/.test(line)) {
       const buf: string[] = [];
-      while (i < lines.length && /^>\s?/.test(lines[i])) {
-        buf.push(lines[i].replace(/^>\s?/, ''));
+      while (i < lines.length && /^>\s?/.test(lines[i] ?? '')) {
+        buf.push((lines[i] ?? '').replace(/^>\s?/, ''));
         i++;
       }
       html.push(`<blockquote class="border-l-4 border-moss-700/40 pl-4 italic text-ink-800/80">${inline(buf.join('\n'))}</blockquote>`);
@@ -61,8 +61,8 @@ function renderMarkdown(src: string): string {
     // unordered list
     if (/^- /.test(line)) {
       const buf: string[] = [];
-      while (i < lines.length && /^- /.test(lines[i])) {
-        buf.push(lines[i].replace(/^- /, ''));
+      while (i < lines.length && /^- /.test(lines[i] ?? '')) {
+        buf.push((lines[i] ?? '').replace(/^- /, ''));
         i++;
       }
       html.push('<ul class="list-disc pl-6 space-y-1">' + buf.map((b) => `<li>${inline(b)}</li>`).join('') + '</ul>');
@@ -71,8 +71,8 @@ function renderMarkdown(src: string): string {
     // ordered list
     if (/^\d+\.\s/.test(line)) {
       const buf: string[] = [];
-      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-        buf.push(lines[i].replace(/^\d+\.\s/, ''));
+      while (i < lines.length && /^\d+\.\s/.test(lines[i] ?? '')) {
+        buf.push((lines[i] ?? '').replace(/^\d+\.\s/, ''));
         i++;
       }
       html.push('<ol class="list-decimal pl-6 space-y-1">' + buf.map((b) => `<li>${inline(b)}</li>`).join('') + '</ol>');
@@ -85,8 +85,8 @@ function renderMarkdown(src: string): string {
     }
     // paragraph (acumular hasta blank)
     const buf: string[] = [];
-    while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^```/.test(lines[i]) && !/^>\s?/.test(lines[i]) && !/^- /.test(lines[i]) && !/^\d+\.\s/.test(lines[i])) {
-      buf.push(lines[i]);
+    while (i < lines.length && !/^\s*$/.test(lines[i] ?? '') && !/^```/.test(lines[i] ?? '') && !/^>\s?/.test(lines[i] ?? '') && !/^- /.test(lines[i] ?? '') && !/^\d+\.\s/.test(lines[i] ?? '')) {
+      buf.push(lines[i] ?? '');
       i++;
     }
     html.push(`<p>${inline(buf.join(' '))}</p>`);

@@ -57,14 +57,14 @@ export async function ensureCertificateSignature(rec: CertificateRecord): Promis
   if (rec.signature_hash) return rec.signature_hash;
   const sig = buildCertificateSignature(rec.code, rec.enrollment_id, rec.issued_at);
   const admin = createSupabaseAdminClient();
-  await admin.from('certificates').update({ signature_hash: sig }).eq('id', rec.id);
+  await admin.schema('edu').from('certificates').update({ signature_hash: sig }).eq('id', rec.id);
   return sig;
 }
 
 export async function getCertificateByCode(code: string): Promise<CertificateView | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('certificates')
+    .schema('edu').from('certificates')
     .select(`
       id, enrollment_id, code, pdf_url, locale, issued_at,
       revoked_at, revoked_reason, signature_hash,
@@ -106,7 +106,7 @@ export async function getCertificateByCode(code: string): Promise<CertificateVie
 export async function revokeCertificate(code: string, byUserId: string, reason: string) {
   const admin = createSupabaseAdminClient();
   await admin
-    .from('certificates')
+    .schema('edu').from('certificates')
     .update({
       revoked_at: new Date().toISOString(),
       revoked_by: byUserId,

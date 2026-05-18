@@ -74,7 +74,7 @@ export async function getArticleBySlug(slug: string) {
     .maybeSingle();
   if (data) {
     // Incrementar view count best-effort.
-    void admin.rpc('increment_article_view', { p_slug: slug }).then(() => {}).catch(() => {});
+    void admin.rpc('increment_article_view', { p_slug: slug }).then(() => {}, () => {});
   }
   return data as (HelpArticle & { categories: { slug: string; title: string } | null }) | null;
 }

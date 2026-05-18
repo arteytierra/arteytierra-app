@@ -33,12 +33,12 @@ export async function GET(
   // Bump counter (no aguardo respuesta — fire and forget no es seguro acá, pero es liviano)
   try {
     const admin = createSupabaseAdminClient();
-    await admin.rpc('bump_certificate_download', { p_code: cert.code });
+    await admin.schema('edu').rpc('bump_certificate_download', { p_code: cert.code });
   } catch {
     /* no-op */
   }
 
-  return new Response(pdfBytes, {
+  return new Response(pdfBytes as BodyInit, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',

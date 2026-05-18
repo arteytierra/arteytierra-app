@@ -21,8 +21,8 @@ function csvEscape(s: string | number | null | undefined): string {
 export async function GET() {
   const admin = createSupabaseAdminClient();
   const { data: products } = await admin
-    .from('products')
-    .select('id, slug, name, subtitle, description, base_price_cents, currency, type, stock, attributes')
+    .schema('shop').from('products')
+    .select('id, slug, name, subtitle, description_mdx, base_price_cents, currency, type, stock, attributes')
     .eq('is_active', true)
     .in('type', ['ebook', 'physical', 'course', 'biocosmetic']);
 
@@ -52,7 +52,7 @@ export async function GET() {
     return [
       p.id,
       p.name,
-      p.subtitle ?? p.description?.slice(0, 200) ?? p.name,
+      p.subtitle ?? p.description_mdx?.slice(0, 200) ?? p.name,
       availability,
       'new',
       price,

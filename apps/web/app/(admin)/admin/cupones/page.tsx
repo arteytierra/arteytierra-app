@@ -10,7 +10,7 @@ export default async function CuponesPage() {
   return (
     <>
       <PageHeader title="Cupones" description="Descuentos puntuales y campañas." />
-      <CouponsTable initial={coupons} />
+      <CouponsTable initial={coupons as never} />
     </>
   );
 }

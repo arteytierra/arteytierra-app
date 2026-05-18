@@ -16,7 +16,7 @@ export default async function ThreadPage({
 
   const admin = createSupabaseAdminClient();
   const { data: thread } = await admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select(`
       id, title, body, created_at, course_id,
       profiles(full_name, avatar_url),

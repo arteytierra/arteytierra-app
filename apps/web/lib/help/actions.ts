@@ -64,8 +64,10 @@ export async function submitHelpFeedbackAction(opts: {
   });
 
   // Incrementar counters.
-  await admin.rpc(opts.helpful ? 'help_inc_helpful_yes' : 'help_inc_helpful_no', {
-    p_article: opts.articleId,
-  }).catch(() => {});
+  try {
+    await admin.rpc(opts.helpful ? 'help_inc_helpful_yes' : 'help_inc_helpful_no', {
+      p_article: opts.articleId,
+    });
+  } catch { /* best-effort */ }
   return { ok: true };
 }

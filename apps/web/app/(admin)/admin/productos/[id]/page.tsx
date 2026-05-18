@@ -35,7 +35,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         description={`Tipo: ${product.type} · /${product.slug}`}
         actions={
           publicPath ? (
-            <Link href={`/${publicPath}/${product.slug}`} target="_blank" rel="noopener">
+            <Link href={`/${publicPath}/${product.slug}` as never} target="_blank" rel="noopener">
               <Button variant="outline" size="sm">
                 <ExternalLink size={14} /> Ver público
               </Button>
@@ -52,18 +52,18 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
             name: product.name,
             subtitle: product.subtitle ?? '',
             description_mdx: product.description_mdx ?? '',
-            type: product.type,
+            type: product.type as 'course' | 'ebook' | 'physical' | 'service' | 'lodging' | 'immersion' | 'consult' | 'biocosmetic',
             base_price_cents: product.base_price_cents,
             compare_at_cents: product.compare_at_cents,
-            currency: product.currency,
+            currency: product.currency as 'ARS' | 'USD',
             stock: product.stock,
-            is_active: product.is_active,
+            is_active: product.is_active ?? true,
             category: product.category ?? '',
             attributes: (product.attributes as Record<string, unknown>) ?? {},
           }}
         />
         <aside className="space-y-4">
-          <ProductDangerZone productId={product.id} isActive={product.is_active} />
+          <ProductDangerZone productId={product.id} isActive={product.is_active ?? true} />
         </aside>
       </div>
     </>

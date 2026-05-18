@@ -24,7 +24,7 @@ export async function upsertLiveSessionAction(input: {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const room = input.id
-    ? (await admin.from('live_sessions').select('room').eq('id', input.id).single()).data?.room
+    ? (await admin.schema('edu').from('live_sessions').select('room').eq('id', input.id).single()).data?.room
     : `ay-${crypto.randomBytes(8).toString('hex')}`;
   if (!room) throw new Error('No se pudo obtener el room');
 
@@ -41,11 +41,11 @@ export async function upsertLiveSessionAction(input: {
   };
 
   if (input.id) {
-    const { error } = await admin.from('live_sessions').update(row).eq('id', input.id);
+    const { error } = await admin.schema('edu').from('live_sessions').update(row).eq('id', input.id);
     if (error) throw new Error(error.message);
     return { id: input.id };
   }
-  const { data, error } = await admin.from('live_sessions').insert(row).select('id').single();
+  const { data, error } = await admin.schema('edu').from('live_sessions').insert(row).select('id').single();
   if (error) throw new Error(error.message);
   return { id: data.id as string };
 }
@@ -53,5 +53,5 @@ export async function upsertLiveSessionAction(input: {
 export async function cancelLiveSessionAction(id: string) {
   await requireUser();
   const admin = createSupabaseAdminClient();
-  await admin.from('live_sessions').update({ status: 'cancelled' }).eq('id', id);
+  await admin.schema('edu').from('live_sessions').update({ status: 'cancelled' }).eq('id', id);
 }

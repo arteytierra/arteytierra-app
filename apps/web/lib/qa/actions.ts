@@ -33,7 +33,7 @@ export async function createThreadAction(input: {
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('threads')
+    .schema('edu').from('threads')
     .insert({
       course_id: input.courseId,
       user_id: user.id,
@@ -47,7 +47,7 @@ export async function createThreadAction(input: {
 
   // Notificar instructor del curso
   const { data: course } = await admin
-    .from('courses')
+    .schema('edu').from('courses')
     .select('product_id, instructor_user_id')
     .eq('id', input.courseId)
     .maybeSingle();
@@ -72,7 +72,7 @@ export async function replyToThreadAction(input: {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const { data: t } = await admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select('id, course_id, user_id, title, status')
     .eq('id', input.threadId)
     .maybeSingle();
@@ -87,7 +87,7 @@ export async function replyToThreadAction(input: {
   if (body.length < 5) throw new Error('Respuesta vacía');
 
   const { data, error } = await admin
-    .from('thread_replies')
+    .schema('edu').from('thread_replies')
     .insert({ thread_id: input.threadId, user_id: user.id, body })
     .select('id')
     .single();
@@ -124,7 +124,7 @@ export async function acceptReplyAction(input: { replyId: string; threadId: stri
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const { data: t } = await admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select('user_id, course_id')
     .eq('id', input.threadId)
     .maybeSingle();
@@ -135,7 +135,7 @@ export async function acceptReplyAction(input: { replyId: string; threadId: stri
   if (row.user_id !== user.id && !isStaff) throw new Error('Sólo el autor puede aceptar');
 
   const { data: reply, error } = await admin
-    .from('thread_replies')
+    .schema('edu').from('thread_replies')
     .update({ is_accepted: true })
     .eq('id', input.replyId)
     .select('user_id')
@@ -168,7 +168,7 @@ export async function reportAction(input: {
 
   const admin = createSupabaseAdminClient();
   const { error } = await admin
-    .from('thread_reports')
+    .schema('edu').from('thread_reports')
     .insert({
       target: input.target,
       thread_id: input.threadId ?? null,
@@ -188,7 +188,7 @@ export async function moderateReportAction(input: {
   const user = await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: r } = await admin
-    .from('thread_reports')
+    .schema('edu').from('thread_reports')
     .select('id, target, thread_id, reply_id')
     .eq('id', input.reportId)
     .maybeSingle();
@@ -197,20 +197,20 @@ export async function moderateReportAction(input: {
 
   if (input.decision === 'hide') {
     if (rep.target === 'thread' && rep.thread_id) {
-      await admin.from('threads').update({ hidden: true }).eq('id', rep.thread_id);
+      await admin.schema('edu').from('threads').update({ hidden: true }).eq('id', rep.thread_id);
     } else if (rep.target === 'reply' && rep.reply_id) {
-      await admin.from('thread_replies').update({ hidden: true }).eq('id', rep.reply_id);
+      await admin.schema('edu').from('thread_replies').update({ hidden: true }).eq('id', rep.reply_id);
     }
   } else if (input.decision === 'delete') {
     if (rep.target === 'thread' && rep.thread_id) {
-      await admin.from('threads').delete().eq('id', rep.thread_id);
+      await admin.schema('edu').from('threads').delete().eq('id', rep.thread_id);
     } else if (rep.target === 'reply' && rep.reply_id) {
-      await admin.from('thread_replies').delete().eq('id', rep.reply_id);
+      await admin.schema('edu').from('thread_replies').delete().eq('id', rep.reply_id);
     }
   }
 
   await admin
-    .from('thread_reports')
+    .schema('edu').from('thread_reports')
     .update({
       status: input.decision === 'dismiss' ? 'dismissed' : 'actioned',
       resolved_by: user.id,
@@ -224,13 +224,13 @@ export async function moderateReportAction(input: {
 export async function closeThreadAction(input: { threadId: string; courseSlug: string }) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('threads').update({ status: 'closed' }).eq('id', input.threadId);
+  await admin.schema('edu').from('threads').update({ status: 'closed' }).eq('id', input.threadId);
   revalidatePath(`/cursos/${input.courseSlug}/q-a/${input.threadId}`);
 }
 
 export async function pinThreadAction(input: { threadId: string; pinned: boolean; courseSlug: string }) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('threads').update({ is_pinned: input.pinned }).eq('id', input.threadId);
+  await admin.schema('edu').from('threads').update({ is_pinned: input.pinned }).eq('id', input.threadId);
   revalidatePath(`/cursos/${input.courseSlug}/q-a`);
 }

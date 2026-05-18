@@ -49,7 +49,7 @@ export interface PartnerCommissionRow {
 export async function listActivePrograms(): Promise<PartnerProgram[]> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partner_programs')
+    .schema('app').from('partner_programs')
     .select('id, slug, name, description, commission_pct, tier, payout_terms_md, is_active')
     .eq('is_active', true)
     .order('commission_pct', { ascending: false });
@@ -59,7 +59,7 @@ export async function listActivePrograms(): Promise<PartnerProgram[]> {
 export async function getProgramBySlug(slug: string): Promise<PartnerProgram | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partner_programs')
+    .schema('app').from('partner_programs')
     .select('id, slug, name, description, commission_pct, tier, payout_terms_md, is_active')
     .eq('slug', slug)
     .maybeSingle();
@@ -69,7 +69,7 @@ export async function getProgramBySlug(slug: string): Promise<PartnerProgram | n
 export async function getMyPartner(userId: string): Promise<PartnerRow | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partners')
+    .schema('app').from('partners')
     .select('id, program_id, user_id, organization, website, contact_email, ref_code, status, application_md, approved_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -81,7 +81,7 @@ export async function getMyPartner(userId: string): Promise<PartnerRow | null> {
 export async function getPartnerByRefCode(code: string): Promise<(PartnerRow & { commission_pct: number }) | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partners')
+    .schema('app').from('partners')
     .select(`
       id, program_id, user_id, organization, website, contact_email, ref_code, status, application_md, approved_at,
       partner_programs!inner(commission_pct)
@@ -97,7 +97,7 @@ export async function getPartnerByRefCode(code: string): Promise<(PartnerRow & {
 export async function getPartnerSummary(partnerId: string) {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partner_summary')
+    .schema('app').from('partner_summary')
     .select('confirmed_cents, paid_cents, total_orders, program, program_pct')
     .eq('partner_id', partnerId)
     .maybeSingle();
@@ -107,7 +107,7 @@ export async function getPartnerSummary(partnerId: string) {
 export async function listPartnerCommissions(partnerId: string, limit = 50): Promise<PartnerCommissionRow[]> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partner_commissions')
+    .schema('app').from('partner_commissions')
     .select('id, partner_id, order_id, amount_cents, currency, commission_pct, status, confirmed_at, paid_at, payout_ref')
     .eq('partner_id', partnerId)
     .order('created_at', { ascending: false })
@@ -145,7 +145,7 @@ export async function attributePartnerForOrder(opts: {
   const commission = Math.round((opts.amountCents * partner.commission_pct) / 100);
 
   const { data, error } = await admin
-    .from('partner_commissions')
+    .schema('app').from('partner_commissions')
     .insert({
       partner_id: partner.id,
       order_id: opts.orderId,
@@ -168,7 +168,7 @@ export async function attributePartnerForOrder(opts: {
 export async function listPendingPartners() {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partners')
+    .schema('app').from('partners')
     .select(`
       id, program_id, user_id, organization, website, contact_email, ref_code, status, application_md, created_at,
       partner_programs!inner(name, commission_pct),
@@ -182,7 +182,7 @@ export async function listPendingPartners() {
 export async function listPendingCommissions() {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('partner_commissions')
+    .schema('app').from('partner_commissions')
     .select('id, partner_id, order_id, amount_cents, currency, commission_pct, status, created_at')
     .in('status', ['pending', 'confirmed'])
     .order('created_at', { ascending: true })

@@ -122,7 +122,7 @@ export default async function PartnerDashboardPage({ searchParams }: { searchPar
                       </tr>
                     )}
                     {commissions.map((c) => {
-                      const meta = COMMISSION_STATUS[c.status] ?? COMMISSION_STATUS.pending;
+                      const meta = (COMMISSION_STATUS[c.status] ?? COMMISSION_STATUS.pending)!;
                       return (
                         <tr key={c.id}>
                           <td className="px-4 py-2 text-xs">

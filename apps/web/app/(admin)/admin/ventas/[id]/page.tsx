@@ -61,7 +61,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select(
       `
       id, status, provider, provider_order_id, total_cents, subtotal_cents, discount_cents,

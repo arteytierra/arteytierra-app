@@ -25,7 +25,7 @@ export function BlockEditor({ postId, initialBlocks }: Props) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   function addBlock(type: BlockType) {
-    setBlocks((b) => [...b, emptyBlock(type)]);
+    setBlocks((b) => [...b, emptyBlock(type) as AnyBlock]);
     setAdding(false);
   }
   function updateBlock(id: string, data: unknown) {

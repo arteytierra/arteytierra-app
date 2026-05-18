@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .select(`
       id, user_id, currency, updated_at,
       cart_items(id, qty, unit_price_cents, products(name, slug)),

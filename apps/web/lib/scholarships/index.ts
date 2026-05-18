@@ -46,7 +46,7 @@ const SCHOLARSHIPS_BUCKET = 'scholarships';
 export async function listOpenPrograms(): Promise<ScholarshipProgram[]> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('scholarship_programs')
+    .schema('app').from('scholarship_programs')
     .select('id, slug, name, summary, body_md, status, discount_type, discount_value, currency, applies_to, max_grants, granted_count, max_per_user, requires_evidence, application_deadline, valid_until')
     .neq('status', 'closed')
     .order('created_at', { ascending: false });
@@ -56,7 +56,7 @@ export async function listOpenPrograms(): Promise<ScholarshipProgram[]> {
 export async function getProgramBySlug(slug: string): Promise<ScholarshipProgram | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('scholarship_programs')
+    .schema('app').from('scholarship_programs')
     .select('id, slug, name, summary, body_md, status, discount_type, discount_value, currency, applies_to, max_grants, granted_count, max_per_user, requires_evidence, application_deadline, valid_until')
     .eq('slug', slug)
     .maybeSingle();
@@ -66,7 +66,7 @@ export async function getProgramBySlug(slug: string): Promise<ScholarshipProgram
 export async function listUserApplications(userId: string) {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('scholarship_applications')
+    .schema('app').from('scholarship_applications')
     .select(`
       id, program_id, motivation, status, reviewer_notes, decision_at, granted_coupon, created_at,
       scholarship_programs!inner(name, slug)
@@ -79,7 +79,7 @@ export async function listUserApplications(userId: string) {
 export async function listPendingApplicationsAdmin() {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('scholarship_applications')
+    .schema('app').from('scholarship_applications')
     .select(`
       id, program_id, user_id, motivation, evidence_path, household_info, status, reviewer_notes, created_at,
       scholarship_programs!inner(name, slug, discount_type, discount_value, currency, applies_to),
@@ -121,7 +121,7 @@ export function generateCouponCode(prefix = 'BECA'): string {
 export async function materializeScholarshipCoupon(applicationId: string, options: { issuedByUserId: string }) {
   const admin = createSupabaseAdminClient();
   const { data: app } = await admin
-    .from('scholarship_applications')
+    .schema('app').from('scholarship_applications')
     .select(`
       id, user_id, status, granted_coupon, program_id,
       scholarship_programs!inner(name, discount_type, discount_value, currency, applies_to, valid_until)
@@ -144,7 +144,7 @@ export async function materializeScholarshipCoupon(applicationId: string, option
   if (a.granted_coupon) return { code: a.granted_coupon, idempotent: true };
 
   const code = generateCouponCode();
-  const { error } = await admin.from('coupons').insert({
+  const { error } = await admin.schema('shop').from('coupons').insert({
     code,
     type: a.scholarship_programs.discount_type,
     value: a.scholarship_programs.discount_value,
@@ -160,7 +160,7 @@ export async function materializeScholarshipCoupon(applicationId: string, option
   if (error) throw new Error(error.message);
 
   await admin
-    .from('scholarship_applications')
+    .schema('app').from('scholarship_applications')
     .update({
       granted_coupon: code,
       status: 'approved',

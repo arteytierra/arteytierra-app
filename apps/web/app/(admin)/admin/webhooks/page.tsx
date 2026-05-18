@@ -61,7 +61,7 @@ export default async function AdminWebhooksPage() {
                       <span className="text-xs rounded bg-red-100 text-red-800 px-2 py-0.5">inactivo</span>
                     )}
                     {Number(e.consecutive_failures ?? 0) > 0 && (
-                      <span className="ml-1 text-[10px] text-amber-700">·{e.consecutive_failures} fallos</span>
+                      <span className="ml-1 text-[10px] text-amber-700">·{String(e.consecutive_failures)} fallos</span>
                     )}
                   </td>
                   <td className="px-3 py-2">

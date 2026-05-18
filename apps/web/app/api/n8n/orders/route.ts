@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, status, currency, total_cents, created_at, paid_at, user_id, contact_id, billing')
     .order('created_at', { ascending: false })
     .limit(limit);

@@ -23,7 +23,7 @@ export default async function AdminCertificatesPage({
 
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('certificates')
+    .schema('edu').from('certificates')
     .select(`
       id, code, issued_at, revoked_at, revoked_reason, locale, download_count,
       enrollments!inner(

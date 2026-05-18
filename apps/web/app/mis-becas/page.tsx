@@ -55,7 +55,7 @@ export default async function MisBecasPage({
                 reviewer_notes: string | null;
                 scholarship_programs: { name: string; slug: string };
               };
-              const meta = STATUS_LABEL[a.status] ?? STATUS_LABEL.pending;
+              const meta = (STATUS_LABEL[a.status] ?? STATUS_LABEL.pending)!;
               return (
                 <article key={a.id} className="rounded-2xl border border-ink-950/10 bg-bone-50 p-6">
                   <div className="flex items-center justify-between flex-wrap gap-2">

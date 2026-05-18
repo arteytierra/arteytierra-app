@@ -10,7 +10,7 @@ export default async function MisDescargasPage() {
 
   // Buscar order_items tipo ebook de órdenes pagadas del usuario
   const { data: items } = await admin
-    .from('order_items')
+    .schema('shop').from('order_items')
     .select(`
       id, name_snapshot, order_id,
       orders!inner(user_id, status, paid_at),

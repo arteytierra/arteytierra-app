@@ -53,7 +53,7 @@ export async function listCoupons() {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('coupons')
+    .schema('shop').from('coupons')
     .select(
       'code, name, description, type, kind, value, currency, min_subtotal_cents, max_uses, used, valid_from, valid_to, is_active, stackable, priority, conditions, config, created_at',
     )
@@ -68,14 +68,14 @@ export async function upsertCoupon(originalCode: string | null, input: CouponInp
   const admin = createSupabaseAdminClient();
 
   if (originalCode && originalCode !== parsed.code) {
-    const { error: insErr } = await admin.from('coupons').insert({ ...row, used: 0 });
+    const { error: insErr } = await admin.schema('shop').from('coupons').insert({ ...row, used: 0 } as never);
     if (insErr) throw new Error(insErr.message);
-    await admin.from('coupons').delete().eq('code', originalCode);
+    await admin.schema('shop').from('coupons').delete().eq('code', originalCode);
   } else if (originalCode) {
-    const { error } = await admin.from('coupons').update(row).eq('code', originalCode);
+    const { error } = await admin.schema('shop').from('coupons').update(row as never).eq('code', originalCode);
     if (error) throw new Error(error.message);
   } else {
-    const { error } = await admin.from('coupons').insert({ ...row, used: 0 });
+    const { error } = await admin.schema('shop').from('coupons').insert({ ...row, used: 0 } as never);
     if (error) throw new Error(error.message);
   }
 
@@ -86,13 +86,13 @@ export async function upsertCoupon(originalCode: string | null, input: CouponInp
 export async function deleteCoupon(code: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('coupons').delete().eq('code', code);
+  await admin.schema('shop').from('coupons').delete().eq('code', code);
   revalidatePath('/admin/cupones');
 }
 
 export async function toggleCouponActive(code: string, isActive: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('coupons').update({ is_active: isActive }).eq('code', code);
+  await admin.schema('shop').from('coupons').update({ is_active: isActive }).eq('code', code);
   revalidatePath('/admin/cupones');
 }

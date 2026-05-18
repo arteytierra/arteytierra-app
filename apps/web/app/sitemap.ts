@@ -54,12 +54,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const [{ data: products }, { data: posts }] = await Promise.all([
       admin
-        .from('products')
+        .schema('shop').from('products')
         .select('slug, type, updated_at')
         .eq('is_active', true)
-        .in('type', Object.keys(TYPE_TO_PATH)),
+        .in('type', Object.keys(TYPE_TO_PATH) as never),
       admin
-        .from('posts')
+        .schema('cms').from('posts')
         .select('slug, updated_at, published_at')
         .not('published_at', 'is', null)
         .order('published_at', { ascending: false })

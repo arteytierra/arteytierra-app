@@ -14,7 +14,7 @@ export default async function ComunidadPage({ params }: { params: Promise<{ slug
 
   const admin = createSupabaseAdminClient();
   const { data: threads } = await admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select(`
       id, title, body, created_at,
       user_id, profiles(full_name, avatar_url),
@@ -48,7 +48,7 @@ export default async function ComunidadPage({ params }: { params: Promise<{ slug
             id={t.id}
             title={t.title}
             body={t.body}
-            createdAt={t.created_at}
+            createdAt={t.created_at ?? new Date().toISOString()}
             authorName={(t as never as { profiles: { full_name: string | null } }).profiles?.full_name ?? 'Anónimo'}
             replyCount={(t as never as { thread_replies: Array<{ count: number }> }).thread_replies?.[0]?.count ?? 0}
           />

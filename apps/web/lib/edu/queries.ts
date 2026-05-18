@@ -29,7 +29,7 @@ export async function listMyEnrollments(userId: string): Promise<EnrollmentSumma
   const admin = createSupabaseAdminClient();
 
   const { data: enrollments } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select(`
       id, course_id, progress, enrolled_at, expires_at, completed_at,
       courses!inner(
@@ -65,7 +65,7 @@ export async function listMyEnrollments(userId: string): Promise<EnrollmentSumma
       );
 
     const { data: progress } = await admin
-      .from('lesson_progress')
+      .schema('edu').from('lesson_progress')
       .select('lesson_id, completed')
       .eq('user_id', userId)
       .in('lesson_id', allLessons.map((l) => l.id));
@@ -131,7 +131,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
   const admin = createSupabaseAdminClient();
 
   const { data: product } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select(`
       id,
       courses!inner(
@@ -165,7 +165,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
 
   // Validar inscripción
   const { data: enrollment } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id, progress, completed_at, expires_at')
     .eq('user_id', userId)
     .eq('course_id', course.id)
@@ -177,7 +177,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
   // Progreso por lección
   const lessonIds = course.modules.flatMap((m) => m.lessons.map((l) => l.id));
   const { data: lp } = await admin
-    .from('lesson_progress')
+    .schema('edu').from('lesson_progress')
     .select('lesson_id, completed')
     .eq('user_id', userId)
     .in('lesson_id', lessonIds);
@@ -194,7 +194,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
 
   // Cargar nombre y slug del producto vía RSC normal
   const { data: productMeta } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select('slug, name, subtitle, gallery')
     .eq('id', (product as never as { id: string }).id)
     .single();
@@ -202,7 +202,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
   return {
     enrollment: {
       id: enrollment.id,
-      progress: enrollment.progress,
+      progress: enrollment.progress ?? 0,
       completed_at: enrollment.completed_at,
     },
     course: {
@@ -220,7 +220,7 @@ export async function getCourseForLearner(slug: string, userId: string): Promise
 export async function getLessonForLearner(lessonId: string, userId: string) {
   const admin = createSupabaseAdminClient();
   const { data: lesson } = await admin
-    .from('lessons')
+    .schema('edu').from('lessons')
     .select(`
       id, position, title, kind, video_provider, video_id, resource_url, body_mdx, duration_sec, is_free_preview,
       modules!inner(id, title, position, course_id,
@@ -233,7 +233,7 @@ export async function getLessonForLearner(lessonId: string, userId: string) {
 
   const courseId = (lesson as never as { modules: { courses: { id: string } } }).modules.courses.id;
   const { data: enrollment } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id, expires_at')
     .eq('user_id', userId)
     .eq('course_id', courseId)
@@ -243,7 +243,7 @@ export async function getLessonForLearner(lessonId: string, userId: string) {
   if (enrollment.expires_at && new Date(enrollment.expires_at) < new Date()) return null;
 
   const { data: progress } = await admin
-    .from('lesson_progress')
+    .schema('edu').from('lesson_progress')
     .select('completed, watched_sec')
     .eq('user_id', userId)
     .eq('lesson_id', lessonId)
@@ -255,7 +255,7 @@ export async function getLessonForLearner(lessonId: string, userId: string) {
 export async function listEnrolledCourseSlugs(userId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('courses(products(slug))')
     .eq('user_id', userId);
   return (data ?? [])

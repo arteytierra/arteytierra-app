@@ -44,7 +44,7 @@ export default async function PrivacyPage() {
           >
             Descargar ahora (JSON)
           </a>
-          <form action={requestDataExportAction}>
+          <form action={async () => { await requestDataExportAction(); }}>
             <button className="rounded-md border border-ink/15 px-4 py-2 text-sm">
               Crear solicitud (queda registrada)
             </button>
@@ -59,7 +59,7 @@ export default async function PrivacyPage() {
           tus datos personales — los pedidos pagados se conservan por obligaciones
           fiscales pero sin información identificable.
         </p>
-        <form action={requestAccountDeletionAction} className="flex flex-wrap items-center gap-3">
+        <form action={async (fd) => { await requestAccountDeletionAction(fd); }} className="flex flex-wrap items-center gap-3">
           <input
             name="confirm"
             type="email"

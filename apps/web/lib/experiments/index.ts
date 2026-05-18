@@ -156,6 +156,6 @@ export async function trackConversion(args: {
     variant: (exposure as { variant?: string } | null)?.variant ?? null,
     metric: args.metric,
     value_cents: args.valueCents ?? null,
-    metadata: args.metadata ?? {},
+    metadata: (args.metadata ?? {}) as never,
   });
 }

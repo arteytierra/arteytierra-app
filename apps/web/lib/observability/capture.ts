@@ -29,7 +29,7 @@ export async function captureError(args: CaptureArgs): Promise<void> {
       stack: stack?.slice(0, 6000) ?? null,
       user_id: args.userId ?? null,
       request_id: args.requestId ?? null,
-      payload: args.payload ?? {},
+      payload: (args.payload ?? {}) as never,
     });
   } catch {
     /* silenciar — si el logger falla no rompemos el flujo */

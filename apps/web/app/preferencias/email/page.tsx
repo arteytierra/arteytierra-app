@@ -62,7 +62,7 @@ export default async function EmailPreferencesPage({
       </p>
 
       {prefs && (
-        <form action={updateEmailPreferencesAction} className="mt-8 space-y-4">
+        <form action={async (fd) => { await updateEmailPreferencesAction(fd); }} className="mt-8 space-y-4">
           {token && <input type="hidden" name="token" value={token} />}
           {ALL_KEYS.map((k) => (
             <label key={k} className="flex items-start gap-3 rounded-lg border border-ink/10 p-4">
@@ -90,7 +90,7 @@ export default async function EmailPreferencesPage({
       )}
 
       {!userId && token && (
-        <form action={unsubscribeAction} className="mt-10 rounded-lg border border-ink/10 p-4">
+        <form action={async (fd) => { await unsubscribeAction(fd); }} className="mt-10 rounded-lg border border-ink/10 p-4">
           <p className="text-sm text-mute mb-3">
             Para gestionar preferencias granulares, necesitás una cuenta. Mientras tanto, podés cancelar
             la categoría que te trajo acá:

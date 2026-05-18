@@ -13,7 +13,7 @@ const TONE: Record<string, 'moss' | 'sun' | 'clay' | 'neutral'> = {
 export default async function ReservasAdminPage() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('reservations')
+    .schema('book').from('reservations')
     .select('id, starts_at, ends_at, guests, status, notes')
     .order('starts_at', { ascending: true })
     .limit(200);

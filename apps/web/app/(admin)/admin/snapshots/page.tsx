@@ -18,7 +18,7 @@ export default async function AdminSnapshotsPage() {
             Exportaciones NDJSON por tabla a Storage. Útiles para backup, compliance o migrar a otro stack.
           </p>
         </div>
-        <form action={runSnapshotAction}>
+        <form action={async () => { await runSnapshotAction(); }}>
           <button
             type="submit"
             className="rounded-md bg-leaf text-bone px-4 py-2 text-sm hover:opacity-90"
@@ -50,7 +50,7 @@ export default async function AdminSnapshotsPage() {
               return (
                 <tr key={s.id} className="border-t border-ink/5">
                   <td className="px-3 py-2 whitespace-nowrap text-mute">
-                    {new Date(s.started_at).toLocaleString('es-AR')}
+                    {s.started_at ? new Date(s.started_at).toLocaleString('es-AR') : ''}
                   </td>
                   <td className="px-3 py-2 text-xs">{s.kind}</td>
                   <td className="px-3 py-2">

@@ -152,7 +152,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookies) {
+        setAll(cookies: Array<{ name: string; value: string; options?: import('@supabase/ssr').CookieOptions }>) {
           cookies.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request: { headers: requestHeaders } });
           cookies.forEach(({ name, value, options }) =>
@@ -179,7 +179,7 @@ export async function middleware(request: NextRequest) {
 
   if (isStaffOnly && user) {
     const { data: profile } = await supabase
-      .from('profiles')
+      .schema('app').from('profiles')
       .select('role')
       .eq('id', user.id)
       .single<{ role: string }>();

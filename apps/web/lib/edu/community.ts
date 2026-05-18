@@ -18,14 +18,14 @@ export async function createThread(_: { ok?: boolean; error?: string }, formData
 
   const admin = createSupabaseAdminClient();
   const { data: enrollment } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id')
     .eq('user_id', user.id)
     .eq('course_id', parsed.data.courseId)
     .maybeSingle();
   if (!enrollment) return { error: 'No estás inscripto.' };
 
-  await admin.from('threads').insert({
+  await admin.schema('edu').from('threads').insert({
     course_id: parsed.data.courseId,
     user_id: user.id,
     title: parsed.data.title,
@@ -47,7 +47,7 @@ export async function createReply(_: { ok?: boolean; error?: string }, formData:
   if (!parsed.success) return { error: 'Mensaje vacío.' };
 
   const admin = createSupabaseAdminClient();
-  await admin.from('thread_replies').insert({
+  await admin.schema('edu').from('thread_replies').insert({
     thread_id: parsed.data.threadId,
     user_id: user.id,
     body: parsed.data.body,

@@ -29,7 +29,7 @@ export default async function CursosAdminPage() {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select(
       'id, slug, name, base_price_cents, currency, is_active, courses(id, level, duration_hours, is_live, starts_at, capacity)',
     )

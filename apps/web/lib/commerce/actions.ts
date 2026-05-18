@@ -24,7 +24,7 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
 
   const admin = createSupabaseAdminClient();
   const { data: product } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select('id, base_price_cents, currency, is_active, stock, type, attributes')
     .eq('slug', parsed.data.productSlug)
     .eq('is_active', true)
@@ -66,7 +66,7 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
 
   // Para reservables, cada reserva es un ítem distinto → no merge
   const { data: existing } = await admin
-    .from('cart_items')
+    .schema('shop').from('cart_items')
     .select('id, qty')
     .eq('cart_id', cartId)
     .eq('product_id', product.id)
@@ -75,18 +75,18 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
 
   if (existing && !RESERVABLE.has(product.type)) {
     if (isDigitalUnique) return { error: 'Este producto ya está en tu carrito.' };
-    await admin.from('cart_items').update({ qty: existing.qty + qty }).eq('id', existing.id);
+    await admin.schema('shop').from('cart_items').update({ qty: existing.qty + qty }).eq('id', existing.id);
   } else {
-    await admin.from('cart_items').insert({
+    await admin.schema('shop').from('cart_items').insert({
       cart_id: cartId,
       product_id: product.id,
       qty,
       unit_price_cents: unitPriceCents,
-      metadata: metadata ?? {},
+      metadata: (metadata ?? {}) as never,
     });
   }
 
-  await admin.from('carts').update({ currency: product.currency }).eq('id', cartId);
+  await admin.schema('shop').from('carts').update({ currency: product.currency }).eq('id', cartId);
 
   revalidatePath('/carrito');
   return { ok: true };
@@ -95,13 +95,13 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
 export async function updateCartItem(itemId: string, qty: number) {
   if (qty < 1) return removeFromCart(itemId);
   const admin = createSupabaseAdminClient();
-  await admin.from('cart_items').update({ qty }).eq('id', itemId);
+  await admin.schema('shop').from('cart_items').update({ qty }).eq('id', itemId);
   revalidatePath('/carrito');
 }
 
 export async function removeFromCart(itemId: string) {
   const admin = createSupabaseAdminClient();
-  await admin.from('cart_items').delete().eq('id', itemId);
+  await admin.schema('shop').from('cart_items').delete().eq('id', itemId);
   revalidatePath('/carrito');
 }
 
@@ -109,8 +109,8 @@ export async function clearCart() {
   const cart = await getCartSummary();
   if (!cart.id) return;
   const admin = createSupabaseAdminClient();
-  await admin.from('cart_items').delete().eq('cart_id', cart.id);
-  await admin.from('carts').update({ coupon_code: null }).eq('id', cart.id);
+  await admin.schema('shop').from('cart_items').delete().eq('cart_id', cart.id);
+  await admin.schema('shop').from('carts').update({ coupon_code: null }).eq('id', cart.id);
   revalidatePath('/carrito');
 }
 
@@ -120,7 +120,7 @@ export async function applyCoupon(code: string): Promise<CartActionState> {
 
   const admin = createSupabaseAdminClient();
   const { data: coupon } = await admin
-    .from('coupons')
+    .schema('shop').from('coupons')
     .select('code, max_uses, used, valid_from, valid_to, is_active')
     .eq('code', code.toUpperCase())
     .eq('is_active', true)
@@ -130,9 +130,9 @@ export async function applyCoupon(code: string): Promise<CartActionState> {
   const now = new Date();
   if (coupon.valid_from && new Date(coupon.valid_from) > now) return { error: 'Cupón aún no activo.' };
   if (coupon.valid_to && new Date(coupon.valid_to) < now) return { error: 'Cupón expirado.' };
-  if (coupon.max_uses && coupon.used >= coupon.max_uses) return { error: 'Cupón agotado.' };
+  if (coupon.max_uses && (coupon.used ?? 0) >= coupon.max_uses) return { error: 'Cupón agotado.' };
 
-  await admin.from('carts').update({ coupon_code: coupon.code }).eq('id', cart.id);
+  await admin.schema('shop').from('carts').update({ coupon_code: coupon.code }).eq('id', cart.id);
   revalidatePath('/carrito');
   return { ok: true };
 }
@@ -141,6 +141,6 @@ export async function removeCoupon() {
   const cart = await getCartSummary();
   if (!cart.id) return;
   const admin = createSupabaseAdminClient();
-  await admin.from('carts').update({ coupon_code: null }).eq('id', cart.id);
+  await admin.schema('shop').from('carts').update({ coupon_code: null }).eq('id', cart.id);
   revalidatePath('/carrito');
 }

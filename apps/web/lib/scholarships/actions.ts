@@ -29,7 +29,7 @@ export async function applyToScholarshipAction(input: {
 
   const admin = createSupabaseAdminClient();
   const { data: program } = await admin
-    .from('scholarship_programs')
+    .schema('app').from('scholarship_programs')
     .select('id, name, status, requires_evidence, max_grants, granted_count, application_deadline, max_per_user')
     .eq('slug', input.programSlug)
     .maybeSingle();
@@ -53,7 +53,7 @@ export async function applyToScholarshipAction(input: {
   // Conteo por usuario (max_per_user)
   if (p.max_per_user > 0) {
     const { count } = await admin
-      .from('scholarship_applications')
+      .schema('app').from('scholarship_applications')
       .select('id', { count: 'exact', head: true })
       .eq('program_id', p.id)
       .eq('user_id', user.id);
@@ -63,7 +63,7 @@ export async function applyToScholarshipAction(input: {
   }
 
   const { data, error } = await admin
-    .from('scholarship_applications')
+    .schema('app').from('scholarship_applications')
     .insert({
       program_id: p.id,
       user_id: user.id,
@@ -101,7 +101,7 @@ export async function reviewScholarshipAction(input: {
     const { code } = await materializeScholarshipCoupon(input.applicationId, { issuedByUserId: user.id });
     // Trae datos del beneficiario para el email
     const { data: appData } = await admin
-      .from('scholarship_applications')
+      .schema('app').from('scholarship_applications')
       .select(`
         user_id, program_id,
         scholarship_programs!inner(name)
@@ -110,7 +110,7 @@ export async function reviewScholarshipAction(input: {
       .maybeSingle();
     const a = appData as never as { user_id: string; scholarship_programs: { name: string } } | null;
     if (input.notes) {
-      await admin.from('scholarship_applications').update({ reviewer_notes: input.notes }).eq('id', input.applicationId);
+      await admin.schema('app').from('scholarship_applications').update({ reviewer_notes: input.notes }).eq('id', input.applicationId);
     }
     emitN8nEvent('scholarship-approved', {
       application_id: input.applicationId,
@@ -135,7 +135,7 @@ export async function reviewScholarshipAction(input: {
     // Email transaccional al beneficiario
     if (a?.user_id) {
       const { data: profile } = await admin
-        .from('profiles')
+        .schema('app').from('profiles')
         .select('full_name')
         .eq('id', a.user_id)
         .maybeSingle();
@@ -161,7 +161,7 @@ export async function reviewScholarshipAction(input: {
     }
   } else if (input.decision === 'reject') {
     await admin
-      .from('scholarship_applications')
+      .schema('app').from('scholarship_applications')
       .update({
         status: 'rejected',
         reviewer_id: user.id,
@@ -176,7 +176,7 @@ export async function reviewScholarshipAction(input: {
     });
   } else {
     await admin
-      .from('scholarship_applications')
+      .schema('app').from('scholarship_applications')
       .update({
         status: 'in_review',
         reviewer_id: user.id,

@@ -21,10 +21,10 @@ export interface AvailabilitySlot {
 export async function getResourceByProductSlug(slug: string) {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select(`
       id, slug, name, subtitle, description_mdx, gallery, base_price_cents,
-      compare_at_cents, currency, attributes, type, category,
+      compare_at_cents, currency, attributes, type, category, stock,
       resources(id, kind, capacity, calendar_settings)
     `)
     .eq('slug', slug)
@@ -44,7 +44,7 @@ export async function getAvailability(
 ): Promise<AvailabilitySlot[]> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('availability')
+    .schema('book').from('availability')
     .select('id, starts_at, ends_at, price_cents, status')
     .eq('resource_id', resourceId)
     .gte('starts_at', from.toISOString())
@@ -63,7 +63,7 @@ export async function getBlockedDates(
 
   // 1) availability con status blocked/booked
   const { data: av } = await admin
-    .from('availability')
+    .schema('book').from('availability')
     .select('starts_at, ends_at, status')
     .eq('resource_id', resourceId)
     .in('status', ['blocked', 'booked'])
@@ -72,7 +72,7 @@ export async function getBlockedDates(
 
   // 2) reservas confirmadas o pendientes (hold de 15 min)
   const { data: res } = await admin
-    .from('reservations')
+    .schema('book').from('reservations')
     .select('starts_at, ends_at, status, created_at')
     .eq('resource_id', resourceId)
     .in('status', ['confirmed', 'pending', 'checked_in'])
@@ -104,7 +104,7 @@ export async function getBlockedDates(
 export async function listMyReservations(userId: string) {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('reservations')
+    .schema('book').from('reservations')
     .select(`
       id, starts_at, ends_at, guests, status, notes, created_at,
       resources!inner(kind,

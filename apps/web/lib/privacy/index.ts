@@ -11,23 +11,6 @@ export async function buildUserDataExport(userId: string): Promise<Record<string
   // Auth metadata
   const { data: authData } = await admin.auth.admin.getUserById(userId);
 
-  // Tablas relevantes — todas filtradas por user_id
-  const tables: Array<[string, string?]> = [
-    ['profiles'],
-    ['orders'],
-    ['enrollments'],
-    ['lesson_progress'],
-    ['certificates'],
-    ['reviews'],
-    ['reservations'],
-    ['cart_items'],
-    ['referrals'],
-    ['wallet_entries'],
-    ['gift_cards'],
-    ['threads'],
-    ['thread_replies'],
-  ];
-
   const out: Record<string, unknown> = {
     exported_at: new Date().toISOString(),
     auth: {
@@ -38,13 +21,32 @@ export async function buildUserDataExport(userId: string): Promise<Record<string
     },
   };
 
-  for (const [tbl] of tables) {
+  // Tablas relevantes — todas filtradas por user_id (o id para profiles)
+  type Schema = 'app' | 'shop' | 'edu' | 'book';
+  const queries: Array<{ key: string; schema: Schema; table: string; col: 'id' | 'user_id' }> = [
+    { key: 'profiles', schema: 'app', table: 'profiles', col: 'id' },
+    { key: 'orders', schema: 'shop', table: 'orders', col: 'user_id' },
+    { key: 'enrollments', schema: 'edu', table: 'enrollments', col: 'user_id' },
+    { key: 'lesson_progress', schema: 'edu', table: 'lesson_progress', col: 'user_id' },
+    { key: 'certificates', schema: 'edu', table: 'certificates', col: 'user_id' },
+    { key: 'reviews', schema: 'shop', table: 'reviews', col: 'user_id' },
+    { key: 'reservations', schema: 'book', table: 'reservations', col: 'user_id' },
+    { key: 'cart_items', schema: 'shop', table: 'cart_items', col: 'user_id' },
+    { key: 'wallet_entries', schema: 'app', table: 'wallet_entries', col: 'user_id' },
+    { key: 'gift_cards', schema: 'shop', table: 'gift_cards', col: 'user_id' },
+    { key: 'threads', schema: 'edu', table: 'threads', col: 'user_id' },
+    { key: 'thread_replies', schema: 'edu', table: 'thread_replies', col: 'user_id' },
+  ];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adminAny: any = admin;
+  for (const q of queries) {
     try {
-      const col = tbl === 'profiles' ? 'id' : 'user_id';
-      const { data } = await admin.from(tbl).select('*').eq(col, userId).limit(5000);
-      out[tbl] = data ?? [];
+      const { data } = await adminAny.schema(q.schema).from(q.table)
+        .select('*').eq(q.col, userId).limit(5000);
+      out[q.key] = data ?? [];
     } catch {
-      out[tbl] = [];
+      out[q.key] = [];
     }
   }
 
@@ -52,7 +54,7 @@ export async function buildUserDataExport(userId: string): Promise<Record<string
   const appTables = ['notifications', 'email_messages', 'consents', 'attribution_touches'];
   for (const t of appTables) {
     try {
-      const { data } = await admin.schema('app').from(t).select('*').eq('user_id', userId).limit(5000);
+      const { data } = await adminAny.schema('app').from(t).select('*').eq('user_id', userId).limit(5000);
       out[`app.${t}`] = data ?? [];
     } catch {
       out[`app.${t}`] = [];
@@ -73,13 +75,12 @@ export async function anonymizeUser(userId: string): Promise<void> {
     email: pseudo,
     user_metadata: { full_name: 'Usuario eliminado', anonymized: true },
   });
-  await admin.from('profiles').update({
+  await admin.schema('app').from('profiles').update({
     full_name: 'Usuario eliminado',
     phone: null,
-    bio: null,
     avatar_url: null,
   }).eq('id', userId);
   // Thread bodies — preservamos el thread pero anonymizamos
-  await admin.from('thread_replies').update({ body: '[contenido eliminado por el autor]' }).eq('user_id', userId);
-  await admin.from('threads').update({ body: '[contenido eliminado por el autor]' }).eq('user_id', userId);
+  await admin.schema('edu').from('thread_replies').update({ body: '[contenido eliminado por el autor]' }).eq('user_id', userId);
+  await admin.schema('edu').from('threads').update({ body: '[contenido eliminado por el autor]' }).eq('user_id', userId);
 }

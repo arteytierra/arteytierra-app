@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .select('title, excerpt, cover_url')
     .eq('slug', slug)
     .not('published_at', 'is', null)
@@ -39,7 +39,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const admin = createSupabaseAdminClient();
   const { data: post } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .select('title, excerpt, cover_url, blocks, published_at')
     .eq('slug', slug)
     .not('published_at', 'is', null)

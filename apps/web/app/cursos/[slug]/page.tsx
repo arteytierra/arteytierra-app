@@ -193,7 +193,6 @@ export default async function CursoDetailPage({ params }: { params: Promise<{ sl
 
       <Section tone="bone" spacing="lg">
         <Container>
-          {/* @ts-expect-error Async Server Component */}
           <CourseRecommendations productId={product.id} />
         </Container>
       </Section>

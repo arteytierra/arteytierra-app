@@ -35,7 +35,7 @@ export async function markOrderPaid(opts: {
 
   // Idempotencia: si ya existe el payment con este provider_payment_id, salir
   const { data: existingPayment } = await admin
-    .from('payments')
+    .schema('shop').from('payments')
     .select('id')
     .eq('provider', opts.provider)
     .eq('provider_payment_id', opts.providerPaymentId)
@@ -44,19 +44,19 @@ export async function markOrderPaid(opts: {
   if (existingPayment) return { idempotent: true };
 
   // Insertar payment
-  await admin.from('payments').insert({
+  await admin.schema('shop').from('payments').insert({
     order_id: opts.orderId,
     provider: opts.provider,
     provider_payment_id: opts.providerPaymentId,
     amount_cents: opts.amountCents,
     currency: opts.currency,
     status: 'succeeded',
-    raw: opts.raw,
+    raw: opts.raw as never,
   });
 
   // Marcar orden como paid (dispara triggers de DB)
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .update({ status: 'paid', paid_at: new Date().toISOString() })
     .eq('id', opts.orderId)
     .neq('status', 'paid')
@@ -67,17 +67,15 @@ export async function markOrderPaid(opts: {
 
   // Vaciar carrito asociado (si el user_id tiene carrito)
   if ((order as never as { user_id: string | null }).user_id) {
-    await admin.rpc('clear_user_cart', { p_user: order.user_id }).then(() => {}).catch(async () => {
-      const { data: cart } = await admin
-        .from('carts')
-        .select('id')
-        .eq('user_id', order.user_id!)
-        .maybeSingle();
-      if (cart) {
-        await admin.from('cart_items').delete().eq('cart_id', cart.id);
-        await admin.from('carts').update({ coupon_code: null }).eq('id', cart.id);
-      }
-    });
+    const { data: cart } = await admin
+      .schema('shop').from('carts')
+      .select('id')
+      .eq('user_id', order.user_id!)
+      .maybeSingle();
+    if (cart) {
+      await admin.schema('shop').from('cart_items').delete().eq('cart_id', cart.id);
+      await admin.schema('shop').from('carts').update({ coupon_code: null }).eq('id', cart.id);
+    }
   }
 
   // Crear reservas para órdenes con productos reservables (lodging/consult/immersion)
@@ -236,7 +234,7 @@ export async function markOrderPaid(opts: {
 async function recordCouponRedemptions(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, user_id, billing, coupon_code')
     .eq('id', orderId)
     .maybeSingle();
@@ -269,9 +267,9 @@ async function recordCouponRedemptions(orderId: string) {
       order_id: orderId,
       discount_cents: c.discount_cents,
     });
-    // Incrementar contador `used`.
-    await admin.rpc('increment_coupon_used', { p_code: c.code }).then(() => {}).catch(async () => {
-      // Fallback si no existe el RPC: read-modify-write best-effort.
+    // Incrementar contador `used` (best-effort).
+    const { error: rpcErr } = await admin.rpc('increment_coupon_used', { p_code: c.code });
+    if (rpcErr) {
       const { data: row } = await admin
         .schema('shop')
         .from('coupons')
@@ -281,7 +279,7 @@ async function recordCouponRedemptions(orderId: string) {
       await admin.schema('shop').from('coupons')
         .update({ used: ((row?.used as number | undefined) ?? 0) + 1 })
         .eq('code', c.code);
-    });
+    }
   }
 }
 
@@ -292,14 +290,14 @@ async function recordCouponRedemptions(orderId: string) {
 async function fulfillReservations(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, user_id, billing')
     .eq('id', orderId)
     .single();
   if (!order) return;
 
   const { data: items } = await admin
-    .from('order_items')
+    .schema('shop').from('order_items')
     .select('id, product_id, product_type, metadata, name_snapshot')
     .eq('order_id', orderId)
     .in('product_type', ['lodging', 'consult', 'immersion']);
@@ -316,7 +314,7 @@ async function fulfillReservations(orderId: string) {
 
     // Buscar resource asociado al producto
     const { data: resource } = await admin
-      .from('resources')
+      .schema('book').from('resources')
       .select('id')
       .eq('product_id', it.product_id)
       .maybeSingle();
@@ -324,7 +322,7 @@ async function fulfillReservations(orderId: string) {
 
     // Idempotencia: ¿ya hay una reserva de esta order?
     const { data: existing } = await admin
-      .from('reservations')
+      .schema('book').from('reservations')
       .select('id')
       .eq('order_id', orderId)
       .eq('resource_id', resource.id)
@@ -333,7 +331,7 @@ async function fulfillReservations(orderId: string) {
 
     const icalUid = `${orderId}-${it.id}@arteytierra.org`;
 
-    await admin.from('reservations').insert({
+    await admin.schema('book').from('reservations').insert({
       resource_id: resource.id,
       order_id: orderId,
       user_id: order.user_id,
@@ -346,7 +344,7 @@ async function fulfillReservations(orderId: string) {
 
     // Marcar slot como booked si existe uno
     await admin
-      .from('availability')
+      .schema('book').from('availability')
       .update({ status: 'booked' })
       .eq('resource_id', resource.id)
       .gte('starts_at', startsAt)
@@ -362,14 +360,14 @@ async function fulfillReservations(orderId: string) {
 async function issueGiftCardsForOrder(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, user_id, currency, billing')
     .eq('id', orderId)
     .single();
   if (!order) return;
 
   const { data: items } = await admin
-    .from('order_items')
+    .schema('shop').from('order_items')
     .select('id, metadata, unit_price_cents, qty, name_snapshot')
     .eq('order_id', orderId)
     .eq('product_type', 'gift_card');
@@ -408,7 +406,7 @@ async function issueGiftCardsForOrder(orderId: string) {
 async function redeemCartGiftCardForOrder(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, user_id, total_cents, billing')
     .eq('id', orderId)
     .single();
@@ -432,7 +430,7 @@ async function redeemCartGiftCardForOrder(orderId: string) {
 async function consumeWalletForOrder(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, user_id, currency, billing')
     .eq('id', orderId)
     .single();
@@ -445,7 +443,7 @@ async function consumeWalletForOrder(orderId: string) {
 
   // Idempotencia
   const { data: existing } = await admin
-    .from('wallet_entries')
+    .schema('app').from('wallet_entries')
     .select('id')
     .eq('source', 'order_payment')
     .eq('ref_id', orderId)
@@ -472,7 +470,7 @@ async function consumeWalletForOrder(orderId: string) {
 export async function getEbookDownloadUrls(orderId: string) {
   const admin = createSupabaseAdminClient();
   const { data: items } = await admin
-    .from('order_items')
+    .schema('shop').from('order_items')
     .select('product_id, name_snapshot, products(attributes)')
     .eq('order_id', orderId)
     .eq('product_type', 'ebook');

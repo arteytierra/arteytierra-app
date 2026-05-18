@@ -20,7 +20,7 @@ export function WebhookForm({ admin = false }: { admin?: boolean }) {
     setPending(true);
     try {
       const res = await createWebhookEndpointAction(formData);
-      if (res.ok) setSecret(res.secret);
+      if (res.ok) setSecret(res.secret ?? null);
     } finally {
       setPending(false);
     }

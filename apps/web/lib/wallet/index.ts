@@ -36,7 +36,7 @@ export async function getMyWalletAccounts(): Promise<WalletAccount[]> {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('wallet_accounts')
+    .schema('app').from('wallet_accounts')
     .select('id, currency, balance_cents, is_frozen')
     .eq('user_id', user.id);
   return ((data ?? []) as Array<Record<string, unknown>>).map((a) => ({
@@ -52,7 +52,7 @@ export async function getMyWalletEntries(currency: 'ARS' | 'USD' = 'ARS', limit 
   const admin = createSupabaseAdminClient();
 
   const { data: account } = await admin
-    .from('wallet_accounts')
+    .schema('app').from('wallet_accounts')
     .select('id')
     .eq('user_id', user.id)
     .eq('currency', currency)
@@ -60,7 +60,7 @@ export async function getMyWalletEntries(currency: 'ARS' | 'USD' = 'ARS', limit 
   if (!account) return [];
 
   const { data } = await admin
-    .from('wallet_entries')
+    .schema('app').from('wallet_entries')
     .select('id, amount_cents, source, ref_id, description, balance_after, created_at')
     .eq('account_id', account.id)
     .order('created_at', { ascending: false })
@@ -92,21 +92,21 @@ export async function walletTransact(params: {
   createdBy?: string | null;
 }): Promise<{ entryId: string; balanceAfter: number }> {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.rpc('wallet_transact', {
+  const { data, error } = await admin.schema('app').rpc('wallet_transact', {
     p_user: params.userId,
     p_currency: params.currency,
     p_amount_cents: params.amountCents,
     p_source: params.source,
-    p_ref: params.refId ?? null,
-    p_description: params.description ?? null,
-    p_created_by: params.createdBy ?? null,
+    p_ref: params.refId ?? undefined,
+    p_description: params.description ?? undefined,
+    p_created_by: params.createdBy ?? undefined,
   });
   if (error) throw new Error(error.message);
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) throw new Error('wallet_transact_no_result');
   return {
-    entryId: (row as { entry_id: string }).entry_id,
-    balanceAfter: Number((row as { balance_after: number }).balance_after),
+    entryId: (row as unknown as { entry_id: string }).entry_id,
+    balanceAfter: Number((row as unknown as { balance_after: number }).balance_after),
   };
 }
 
@@ -116,7 +116,7 @@ export async function listWalletsAdmin(opts: { q?: string } = {}) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('wallet_accounts')
+    .schema('app').from('wallet_accounts')
     .select('id, user_id, currency, balance_cents, is_frozen, updated_at')
     .order('updated_at', { ascending: false })
     .limit(200);
@@ -151,7 +151,7 @@ export async function adminAdjustWallet(params: {
 export async function setWalletFrozen(accountId: string, frozen: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('wallet_accounts').update({ is_frozen: frozen }).eq('id', accountId);
+  await admin.schema('app').from('wallet_accounts').update({ is_frozen: frozen }).eq('id', accountId);
   revalidatePath('/admin/wallets');
 }
 
@@ -163,7 +163,7 @@ export async function getApplicableWalletForCart(currency: 'ARS' | 'USD', totalC
   if (!user) return 0;
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('wallet_accounts')
+    .schema('app').from('wallet_accounts')
     .select('balance_cents, is_frozen')
     .eq('user_id', user.id)
     .eq('currency', currency)
@@ -176,7 +176,7 @@ export async function getApplicableWalletForCart(currency: 'ARS' | 'USD', totalC
 export async function toggleCartUseWallet(use: boolean) {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
-  await admin.from('carts').update({ use_wallet: use }).eq('user_id', user.id);
+  await admin.schema('shop').from('carts').update({ use_wallet: use }).eq('user_id', user.id);
   revalidatePath('/carrito');
   revalidatePath('/checkout');
 }

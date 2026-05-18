@@ -13,7 +13,7 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, status, total_cents, currency, billing, order_items(name_snapshot, product_type, qty)')
     .eq('id', id)
     .single();

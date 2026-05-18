@@ -10,7 +10,7 @@ import { emitN8nEvent } from '@/lib/integrations/n8n';
 export const cleanupExpiredNewsletter: JobHandler = async (admin) => {
   const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
   const { count, error } = await admin
-    .from('newsletter_subscribers')
+    .schema('app').from('newsletter_subscribers')
     .delete({ count: 'exact' })
     .is('confirmed_at', null)
     .lt('created_at', cutoff);
@@ -22,7 +22,7 @@ export const cleanupExpiredNewsletter: JobHandler = async (admin) => {
 export const cleanupPendingOrders: JobHandler = async (admin) => {
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const { count, error } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .update({ status: 'cancelled' }, { count: 'exact' })
     .eq('status', 'pending')
     .lt('created_at', cutoff);
@@ -38,7 +38,7 @@ export const cartAbandonmentSweep: JobHandler = async (admin) => {
   const maxAge = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
   const { data: carts } = await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .select('id, user_id, updated_at, abandoned_email_sent_at')
     .gte('updated_at', minAge)
     .lte('updated_at', maxAge)
@@ -49,7 +49,7 @@ export const cartAbandonmentSweep: JobHandler = async (admin) => {
   let dispatched = 0;
   for (const cart of (carts ?? []) as Array<{ id: string; user_id: string | null }>) {
     const { count } = await admin
-      .from('cart_items')
+      .schema('shop').from('cart_items')
       .select('id', { count: 'exact', head: true })
       .eq('cart_id', cart.id);
     if ((count ?? 0) === 0) continue;
@@ -59,7 +59,7 @@ export const cartAbandonmentSweep: JobHandler = async (admin) => {
       user_id: cart.user_id,
     });
     await admin
-      .from('carts')
+      .schema('shop').from('carts')
       .update({ abandoned_email_sent_at: new Date().toISOString() })
       .eq('id', cart.id);
     dispatched++;
@@ -74,7 +74,7 @@ export const reservationReminders: JobHandler = async (admin) => {
   const to = new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString();
 
   const { data } = await admin
-    .from('reservations')
+    .schema('book').from('reservations')
     .select('id, user_id, resource_id, starts_at, reminder_sent_at, status')
     .eq('status', 'confirmed')
     .is('reminder_sent_at', null)
@@ -91,7 +91,7 @@ export const reservationReminders: JobHandler = async (admin) => {
       reminder: true,
     });
     await admin
-      .from('reservations')
+      .schema('book').from('reservations')
       .update({ reminder_sent_at: new Date().toISOString() })
       .eq('id', r.id);
     sent++;
@@ -105,7 +105,7 @@ export const monthlyReferralPayouts: JobHandler = async (admin) => {
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: ready } = await admin
-    .from('referral_attributions')
+    .schema('app').from('referral_attributions')
     .select('id, order_id, code, commission_cents')
     .eq('status', 'confirmed')
     .lt('created_at', cutoff)
@@ -116,14 +116,14 @@ export const monthlyReferralPayouts: JobHandler = async (admin) => {
     // Verificar que la orden siga en `paid` (no refunded)
     if (a.order_id) {
       const { data: order } = await admin
-        .from('orders')
+        .schema('shop').from('orders')
         .select('status')
         .eq('id', a.order_id)
         .single();
       if (order?.status !== 'paid') continue;
     }
     await admin
-      .from('referral_attributions')
+      .schema('app').from('referral_attributions')
       .update({ status: 'paid', paid_at: new Date().toISOString() })
       .eq('id', a.id);
     approved++;
@@ -135,8 +135,8 @@ export const monthlyReferralPayouts: JobHandler = async (admin) => {
 //    columnas calculadas custom). Por ahora, log de salud.
 export const reindexSearch: JobHandler = async (admin) => {
   const [{ count: products }, { count: posts }] = await Promise.all([
-    admin.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
-    admin.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+    admin.schema('shop').from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    admin.schema('cms').from('posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
   ]);
   return { products: products ?? 0, posts: posts ?? 0 };
 };
@@ -155,7 +155,7 @@ export const liveSessionReminders: JobHandler = async (admin) => {
     const from = new Date(now + b.min * 60_000).toISOString();
     const to = new Date(now + b.max * 60_000).toISOString();
     const { data } = await admin
-      .from('live_sessions')
+      .schema('edu').from('live_sessions')
       .select('id, course_id, title, scheduled_at, reminders_sent')
       .eq('status', 'scheduled')
       .gte('scheduled_at', from)
@@ -171,7 +171,7 @@ export const liveSessionReminders: JobHandler = async (admin) => {
         bucket: b.key,
       });
       await admin
-        .from('live_sessions')
+        .schema('edu').from('live_sessions')
         .update({ reminders_sent: { ...(s.reminders_sent ?? {}), [b.key]: true } })
         .eq('id', s.id);
       sent++;
@@ -227,7 +227,7 @@ async function refreshRecommendations() {
   const { createSupabaseAdminClient } = await import('@/lib/db/admin');
   const admin = createSupabaseAdminClient();
   // REFRESH MATERIALIZED VIEW CONCURRENTLY si hay unique index — el migration lo crea
-  const { error } = await admin.rpc('refresh_product_copurchases_safe').catch(() => ({ error: null as never }));
+  const { error } = await admin.rpc('refresh_product_copurchases_safe').then((r) => r, () => ({ error: null as never }));
   if (error) console.warn('[recs] refresh failed', error);
   return { ok: true };
 }

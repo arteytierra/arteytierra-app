@@ -57,7 +57,7 @@ export async function createNotification(args: CreateArgs): Promise<string | nul
       title: args.title,
       body: args.body ?? null,
       url: args.url ?? null,
-      data: args.data ?? {},
+      data: (args.data ?? {}) as never,
     })
     .select('id')
     .single();

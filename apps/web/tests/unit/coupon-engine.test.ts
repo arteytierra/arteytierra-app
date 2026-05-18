@@ -11,7 +11,7 @@ let currentCoupons: unknown[] = [];
 
 vi.mock('@/lib/db/admin', () => ({
   createSupabaseAdminClient: () => ({
-    // .from('orders') / .from('coupon_redemptions') → para checkUserConstraints
+    // .schema('shop').from('orders') / .schema('shop').from('coupon_redemptions') → para checkUserConstraints
     from: () => ({
       select: () => ({
         eq: () => ({
@@ -84,7 +84,7 @@ describe('coupon engine', () => {
       couponRow({ code: 'B', value: 20 }),
     ];
     const r = await resolveCoupons(ctx, ['A', 'B']);
-    expect(r.applied[0].code).toBe('B');
+    expect(r.applied[0]?.code).toBe('B');
     expect(r.rejected.find((x) => x.code === 'A')).toBeTruthy();
   });
 

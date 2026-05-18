@@ -36,7 +36,7 @@ export async function recordAudit(args: AuditArgs): Promise<void> {
       action: args.action,
       target_kind: args.targetKind ?? null,
       target_id: args.targetId ?? null,
-      payload: args.payload ?? {},
+      payload: (args.payload ?? {}) as never,
       severity: args.severity ?? 'info',
       ip,
       user_agent: ua,

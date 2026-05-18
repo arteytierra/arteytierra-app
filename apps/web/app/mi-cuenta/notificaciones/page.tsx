@@ -35,7 +35,7 @@ export default async function NotificationsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-3xl text-ink">Notificaciones</h1>
         {unread > 0 && (
-          <form action={markAllNotificationsReadAction}>
+          <form action={async () => { await markAllNotificationsReadAction(); }}>
             <button className="text-sm text-mute hover:text-ink">Marcar todas como leídas</button>
           </form>
         )}

@@ -48,7 +48,7 @@ export function isSessionJoinable(s: Pick<LiveSession, 'scheduled_at' | 'duratio
 export async function getLiveSession(id: string): Promise<LiveSession | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('live_sessions')
+    .schema('edu').from('live_sessions')
     .select('id, course_id, lesson_id, title, description, scheduled_at, duration_min, room, host_user_id, status, recording_enabled, recording_url')
     .eq('id', id)
     .maybeSingle();
@@ -59,14 +59,14 @@ export async function listUpcomingLiveForUser(userId: string, limit = 20): Promi
   const admin = createSupabaseAdminClient();
   // Cursos en los que el user está enrolled
   const { data: enrollments } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('course_id')
     .eq('user_id', userId);
   const courseIds = ((enrollments ?? []) as Array<{ course_id: string }>).map((e) => e.course_id);
   if (courseIds.length === 0) return [];
 
   const { data } = await admin
-    .from('live_sessions')
+    .schema('edu').from('live_sessions')
     .select('id, course_id, lesson_id, title, description, scheduled_at, duration_min, room, host_user_id, status, recording_enabled, recording_url')
     .in('course_id', courseIds)
     .gte('scheduled_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
@@ -97,7 +97,7 @@ export async function getJoinPayload(sessionId: string): Promise<
   if (!isStaff && !isHost && session.course_id) {
     const admin = createSupabaseAdminClient();
     const { data: enroll } = await admin
-      .from('enrollments')
+      .schema('edu').from('enrollments')
       .select('id')
       .eq('user_id', user.id)
       .eq('course_id', session.course_id)
@@ -108,7 +108,7 @@ export async function getJoinPayload(sessionId: string): Promise<
   // Registrar asistencia (idempotente por unique)
   const admin = createSupabaseAdminClient();
   await admin
-    .from('live_attendance')
+    .schema('edu').from('live_attendance')
     .upsert({ session_id: session.id, user_id: user.id }, { onConflict: 'session_id,user_id' });
 
   const displayName = user.fullName ?? user.email.split('@')[0] ?? 'Participante';
@@ -227,7 +227,7 @@ export async function listAllLiveSessions(filter: 'upcoming' | 'past' | 'all' = 
   await requireUser();
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('live_sessions')
+    .schema('edu').from('live_sessions')
     .select('id, course_id, lesson_id, title, description, scheduled_at, duration_min, room, host_user_id, status, recording_enabled, recording_url')
     .order('scheduled_at', { ascending: filter === 'upcoming' });
   if (filter === 'upcoming') q = q.gte('scheduled_at', new Date(Date.now() - 60 * 60 * 1000).toISOString());
@@ -250,7 +250,7 @@ export async function upsertLiveSession(input: {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const room = input.id
-    ? (await admin.from('live_sessions').select('room').eq('id', input.id).single()).data?.room
+    ? (await admin.schema('edu').from('live_sessions').select('room').eq('id', input.id).single()).data?.room
     : `ay-${crypto.randomBytes(8).toString('hex')}`;
   if (!room) throw new Error('No se pudo obtener el room');
 
@@ -267,11 +267,11 @@ export async function upsertLiveSession(input: {
   };
 
   if (input.id) {
-    const { error } = await admin.from('live_sessions').update(row).eq('id', input.id);
+    const { error } = await admin.schema('edu').from('live_sessions').update(row).eq('id', input.id);
     if (error) throw new Error(error.message);
     return { id: input.id };
   }
-  const { data, error } = await admin.from('live_sessions').insert(row).select('id').single();
+  const { data, error } = await admin.schema('edu').from('live_sessions').insert(row).select('id').single();
   if (error) throw new Error(error.message);
   return { id: data.id as string };
 }
@@ -279,5 +279,5 @@ export async function upsertLiveSession(input: {
 export async function cancelLiveSession(id: string) {
   await requireUser();
   const admin = createSupabaseAdminClient();
-  await admin.from('live_sessions').update({ status: 'cancelled' }).eq('id', id);
+  await admin.schema('edu').from('live_sessions').update({ status: 'cancelled' }).eq('id', id);
 }

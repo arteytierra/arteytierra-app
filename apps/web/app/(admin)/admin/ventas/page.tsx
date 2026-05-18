@@ -16,7 +16,7 @@ export default async function VentasPage() {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: orders } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, total_cents, currency, status, provider, created_at, paid_at, billing')
     .order('created_at', { ascending: false })
     .limit(200);
@@ -62,7 +62,7 @@ export default async function VentasPage() {
                       <Badge tone={STATUS_TONE[o.status] ?? 'neutral'}>{o.status}</Badge>
                     </td>
                     <td className="px-5 py-3 text-ink-800/70">{o.provider ?? '—'}</td>
-                    <td className="px-5 py-3">{new Date(o.created_at).toLocaleString('es-AR')}</td>
+                    <td className="px-5 py-3">{o.created_at ? new Date(o.created_at).toLocaleString('es-AR') : ''}</td>
                     <td className="px-5 py-3">
                       {o.paid_at ? new Date(o.paid_at).toLocaleString('es-AR') : '—'}
                     </td>

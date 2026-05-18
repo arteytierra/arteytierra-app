@@ -25,7 +25,7 @@ export async function runJob(name: JobName, handler: JobHandler, by = 'cron'): P
   const admin = createSupabaseAdminClient();
 
   // Acquire lock
-  const { data: acquired, error: lockErr } = await admin.rpc('try_acquire_job_lock', {
+  const { data: acquired, error: lockErr } = await admin.schema('app').rpc('try_acquire_job_lock', {
     p_job: name,
     p_by: by,
   });
@@ -40,7 +40,7 @@ export async function runJob(name: JobName, handler: JobHandler, by = 'cron'): P
 
   const started = Date.now();
   const { data: run } = await admin
-    .from('job_runs')
+    .schema('app').from('job_runs')
     .insert({ job: name, status: 'running' })
     .select('id')
     .single();
@@ -49,11 +49,11 @@ export async function runJob(name: JobName, handler: JobHandler, by = 'cron'): P
     const result = await handler(admin);
     const duration = Date.now() - started;
     if (run?.id) {
-      await admin.from('job_runs').update({
+      await admin.schema('app').from('job_runs').update({
         status: 'ok',
         finished_at: new Date().toISOString(),
         duration_ms: duration,
-        result,
+        result: result as never,
       }).eq('id', run.id);
     }
     log.info('job.ok', { job: name, durationMs: duration, ...result });
@@ -62,7 +62,7 @@ export async function runJob(name: JobName, handler: JobHandler, by = 'cron'): P
     const msg = err instanceof Error ? err.message : String(err);
     const duration = Date.now() - started;
     if (run?.id) {
-      await admin.from('job_runs').update({
+      await admin.schema('app').from('job_runs').update({
         status: 'error',
         finished_at: new Date().toISOString(),
         duration_ms: duration,
@@ -77,6 +77,6 @@ export async function runJob(name: JobName, handler: JobHandler, by = 'cron'): P
     } catch { /* no-op */ }
     return { ok: false, error: msg };
   } finally {
-    await admin.rpc('release_job_lock', { p_job: name });
+    await admin.schema('app').rpc('release_job_lock', { p_job: name });
   }
 }

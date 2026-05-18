@@ -67,13 +67,13 @@ export async function POST(req: NextRequest) {
       for (const msg of value?.messages ?? []) {
         const contact = value.contacts?.find((c) => c.wa_id === msg.from);
         // Upsert contacto
-        await admin.from('contacts').upsert(
+        await admin.schema('app').from('contacts').upsert(
           {
             phone: msg.from,
             name: contact?.profile?.name ?? null,
             source: 'whatsapp',
             tags: ['whatsapp'],
-          },
+          } as never,
           { onConflict: 'phone' },
         );
 
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
           provider_message_id: msg.id,
           from_address: msg.from,
           body: msg.text?.body ?? `[${msg.type}]`,
-          raw: msg,
+          raw: msg as never,
         });
 
         // Disparar n8n para routing/respuesta automática

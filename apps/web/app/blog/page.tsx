@@ -13,7 +13,7 @@ export const revalidate = 300;
 export default async function BlogIndex() {
   const admin = createSupabaseAdminClient();
   const { data: posts } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .select('id, slug, title, excerpt, cover_url, published_at')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false })

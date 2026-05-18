@@ -17,7 +17,7 @@ export default async function CrmPage({
 }) {
   const { q } = await searchParams;
   const supabase = await createSupabaseServerClient();
-  let query = supabase.from('contacts')
+  let query = supabase.schema('app').from('contacts')
     .select('id, email, full_name, phone, lifecycle_stage, tags, source, created_at')
     .order('created_at', { ascending: false })
     .limit(200);
@@ -56,7 +56,7 @@ export default async function CrmPage({
                   <td className="px-5 py-3">{c.full_name ?? <span className="text-ink-800/40">—</span>}</td>
                   <td className="px-5 py-3 text-ink-800/80">{c.email}</td>
                   <td className="px-5 py-3">
-                    <Badge tone={STAGE_TONE[c.lifecycle_stage] ?? 'neutral'}>{c.lifecycle_stage}</Badge>
+                    <Badge tone={STAGE_TONE[c.lifecycle_stage ?? ''] ?? 'neutral'}>{c.lifecycle_stage}</Badge>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex flex-wrap gap-1">

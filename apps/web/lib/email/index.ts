@@ -83,7 +83,7 @@ export async function sendTransactional<T extends TemplateName>(
       template: args.template,
       locale,
       subject: rendered.subject,
-      payload: args.vars as Record<string, unknown>,
+      payload: args.vars as never,
       status: 'queued',
     })
     .select('id')
@@ -225,7 +225,7 @@ export async function recordProviderEvent(args: {
     updates.error = args.reason ?? 'complaint';
   }
 
-  let query = admin.schema('app').from('email_messages').update(updates);
+  let query = admin.schema('app').from('email_messages').update(updates as never);
   if (args.providerMessageId) {
     query = query.eq('provider_message_id', args.providerMessageId);
   } else if (args.recipient) {

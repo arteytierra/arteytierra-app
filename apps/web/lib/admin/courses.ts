@@ -36,21 +36,21 @@ export async function getCourseEditorData(productId: string) {
   const admin = createSupabaseAdminClient();
 
   const { data: product } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select('id, name, slug, type')
     .eq('id', productId)
     .single();
   if (!product || product.type !== 'course') return null;
 
   let { data: course } = await admin
-    .from('courses')
+    .schema('edu').from('courses')
     .select('id, product_id, level, duration_hours, is_live, is_recorded, capacity')
     .eq('product_id', productId)
     .maybeSingle();
 
   if (!course) {
     const ins = await admin
-      .from('courses')
+      .schema('edu').from('courses')
       .insert({ product_id: productId, is_recorded: true })
       .select('id, product_id, level, duration_hours, is_live, is_recorded, capacity')
       .single();
@@ -58,13 +58,13 @@ export async function getCourseEditorData(productId: string) {
   }
 
   const { data: modules } = await admin
-    .from('modules')
+    .schema('edu').from('modules')
     .select('id, title, summary, position')
     .eq('course_id', course.id)
     .order('position', { ascending: true });
 
   const { data: lessons } = await admin
-    .from('lessons')
+    .schema('edu').from('lessons')
     .select(
       'id, module_id, title, kind, duration_sec, is_free_preview, position, content_url, body_mdx',
     )
@@ -80,14 +80,14 @@ export async function saveModule(courseId: string, input: ModuleInput) {
   const admin = createSupabaseAdminClient();
   if (parsed.id) {
     const { error } = await admin
-      .from('modules')
+      .schema('edu').from('modules')
       .update({ title: parsed.title, summary: parsed.summary, position: parsed.position })
       .eq('id', parsed.id);
     if (error) throw new Error(error.message);
     return { id: parsed.id };
   }
   const { data, error } = await admin
-    .from('modules')
+    .schema('edu').from('modules')
     .insert({
       course_id: courseId,
       title: parsed.title,
@@ -103,7 +103,7 @@ export async function saveModule(courseId: string, input: ModuleInput) {
 export async function deleteModule(moduleId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('modules').delete().eq('id', moduleId);
+  await admin.schema('edu').from('modules').delete().eq('id', moduleId);
 }
 
 export async function saveLesson(input: LessonInput & { module_id: string }) {
@@ -112,11 +112,11 @@ export async function saveLesson(input: LessonInput & { module_id: string }) {
   if (!parsed.module_id) throw new Error('module_id requerido');
   const admin = createSupabaseAdminClient();
   if (parsed.id) {
-    const { error } = await admin.from('lessons').update(parsed).eq('id', parsed.id);
+    const { error } = await admin.schema('edu').from('lessons').update(parsed as never).eq('id', parsed.id);
     if (error) throw new Error(error.message);
     return { id: parsed.id };
   }
-  const { data, error } = await admin.from('lessons').insert(parsed).select('id').single();
+  const { data, error } = await admin.schema('edu').from('lessons').insert(parsed as never).select('id').single();
   if (error) throw new Error(error.message);
   return { id: data.id };
 }
@@ -124,14 +124,14 @@ export async function saveLesson(input: LessonInput & { module_id: string }) {
 export async function deleteLesson(lessonId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('lessons').delete().eq('id', lessonId);
+  await admin.schema('edu').from('lessons').delete().eq('id', lessonId);
 }
 
 export async function reorderModules(orderedIds: string[]) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   await Promise.all(
-    orderedIds.map((id, i) => admin.from('modules').update({ position: i }).eq('id', id)),
+    orderedIds.map((id, i) => admin.schema('edu').from('modules').update({ position: i }).eq('id', id)),
   );
 }
 
@@ -140,7 +140,7 @@ export async function reorderLessons(moduleId: string, orderedIds: string[]) {
   const admin = createSupabaseAdminClient();
   await Promise.all(
     orderedIds.map((id, i) =>
-      admin.from('lessons').update({ position: i, module_id: moduleId }).eq('id', id),
+      admin.schema('edu').from('lessons').update({ position: i, module_id: moduleId }).eq('id', id),
     ),
   );
 }

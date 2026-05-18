@@ -24,7 +24,7 @@ export interface TxFilters {
 
 export async function listTransactions(filters: TxFilters = {}, limit = 200) {
   const supabase = await createSupabaseServerClient();
-  let query = supabase.from('transactions')
+  let query = supabase.schema('fin').from('transactions')
     .select('id, date, amount_cents, currency, type, description, attachment_url, account_id, category_id, project')
     .order('date', { ascending: false })
     .limit(limit);
@@ -46,7 +46,7 @@ export async function getMonthlyPnl(months = 6) {
   since.setDate(1);
 
   const { data } = await supabase
-    .from('monthly_pnl')
+    .schema('fin').from('monthly_pnl')
     .select('month, currency, income_cents, expense_cents, net_cents')
     .gte('month', since.toISOString().slice(0, 10))
     .order('month', { ascending: true });
@@ -63,8 +63,8 @@ export async function getMonthlyPnl(months = 6) {
 export async function getFinanceMeta() {
   const supabase = await createSupabaseServerClient();
   const [{ data: accounts }, { data: categories }] = await Promise.all([
-    supabase.from('accounts').select('id, name, currency, kind').eq('is_active', true).order('name'),
-    supabase.from('categories').select('id, name, type, color').order('name'),
+    supabase.schema('fin').from('accounts').select('id, name, currency, kind').eq('is_active', true).order('name'),
+    supabase.schema('fin').from('categories').select('id, name, type, color').order('name'),
   ]);
   return {
     accounts: (accounts ?? []) as Array<{ id: string; name: string; currency: string; kind: string }>,
@@ -78,7 +78,7 @@ export async function getExpensesByCategoryThisMonth() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const { data } = await supabase.from('transactions')
+  const { data } = await supabase.schema('fin').from('transactions')
     .select('amount_cents, category_id, categories(name, color)')
     .eq('type', 'expense')
     .gte('date', monthStart.toISOString().slice(0, 10));

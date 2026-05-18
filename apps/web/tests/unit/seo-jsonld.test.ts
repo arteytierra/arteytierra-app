@@ -55,14 +55,14 @@ describe('seo/jsonld', () => {
       { name: 'A', url: '/' },
       { name: 'B', url: '/b' },
     ]);
-    expect(j.itemListElement[0].position).toBe(1);
-    expect(j.itemListElement[1].position).toBe(2);
+    expect(j.itemListElement[0]?.position).toBe(1);
+    expect(j.itemListElement[1]?.position).toBe(2);
   });
 
   it('faqJsonLd transforma items en Q/A', () => {
     const j = faqJsonLd([{ q: '¿X?', a: 'Y' }]);
-    expect(j.mainEntity[0]['@type']).toBe('Question');
-    expect(j.mainEntity[0].acceptedAnswer.text).toBe('Y');
+    expect(j.mainEntity[0]?.['@type']).toBe('Question');
+    expect(j.mainEntity[0]?.acceptedAnswer.text).toBe('Y');
   });
 
   it('articleJsonLd usa dateModified = updatedAt o publishedAt', () => {

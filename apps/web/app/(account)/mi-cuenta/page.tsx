@@ -10,8 +10,8 @@ export default async function AccountPage() {
   const supabase = await createSupabaseServerClient();
 
   const [{ count: enrollmentsCount }, { count: ordersCount }] = await Promise.all([
-    supabase.from('enrollments').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.schema('edu').from('enrollments').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.schema('shop').from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
   ]);
 
   return (

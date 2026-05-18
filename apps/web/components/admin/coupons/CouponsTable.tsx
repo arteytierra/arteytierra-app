@@ -136,7 +136,7 @@ export function CouponsTable({ initial }: { initial: Row[] }) {
 
       {editing.open && (
         <CouponDialog
-          coupon={editing.coupon}
+          coupon={editing.coupon as never}
           onClose={(updated, original) => close(updated as Row | undefined, original)}
         />
       )}

@@ -32,13 +32,13 @@ export async function listProducts(filters: {
   limit?: number;
 }): Promise<ProductRow[]> {
   const supabase = await createSupabaseServerClient();
-  let q = supabase.from('products')
+  let q = supabase.schema('shop').from('products')
     .select('*')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(filters.limit ?? 100);
 
-  if (filters.type) q = q.eq('type', filters.type);
+  if (filters.type) q = q.eq('type', filters.type as never);
   if (filters.category) q = q.eq('category', filters.category);
   if (filters.search) q = q.ilike('name', `%${filters.search}%`);
 
@@ -51,7 +51,7 @@ export async function listProducts(filters: {
 export async function getProductBySlug(slug: string): Promise<ProductRow | null> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from('products')
+    .schema('shop').from('products')
     .select('*')
     .eq('slug', slug)
     .eq('is_active', true)
@@ -61,10 +61,35 @@ export async function getProductBySlug(slug: string): Promise<ProductRow | null>
   return localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as ProductRow;
 }
 
-export async function getCourseWithCurriculum(slug: string) {
+export interface CourseWithCurriculum extends ProductRow {
+  courses?: Array<{
+    level: string | null;
+    duration_hours: number | null;
+    is_live: boolean;
+    is_recorded: boolean;
+    capacity: number | null;
+    starts_at: string | null;
+    modules?: Array<{
+      id: string;
+      position: number;
+      title: string;
+      summary: string | null;
+      lessons?: Array<{
+        id: string;
+        position: number;
+        title: string;
+        kind: string;
+        duration_sec: number | null;
+        is_free_preview: boolean;
+      }>;
+    }>;
+  }>;
+}
+
+export async function getCourseWithCurriculum(slug: string): Promise<CourseWithCurriculum | null> {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select(`
       *,
       courses(*,
@@ -76,7 +101,7 @@ export async function getCourseWithCurriculum(slug: string) {
     .maybeSingle();
   if (!data) return null;
   const locale = await getLocale();
-  return localizeRow(data as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]);
+  return localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as CourseWithCurriculum;
 }
 
 export function getProductCover(product: { gallery: unknown }): string | undefined {

@@ -6,9 +6,11 @@ import { z } from 'zod';
 import { requireUser, requireStaff } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { log } from '@/lib/observability/logger';
+import { REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS as COOKIE_DAYS } from './constants';
 
-export const REFERRAL_COOKIE = 'ay_ref';
-const COOKIE_DAYS = 30;
+// Re-exportable solo a través de constants.ts (no podemos exportar const en 'use server')
+void REFERRAL_COOKIE;
+void COOKIE_DAYS;
 
 const codeSchema = z.object({
   code: z.string().min(3).max(32).regex(/^[A-Z0-9_-]+$/),
@@ -46,7 +48,7 @@ export async function getMyReferralCodes(): Promise<ReferralSummary[]> {
   const admin = createSupabaseAdminClient();
 
   const { data: codes } = await admin
-    .from('referral_codes')
+    .schema('app').from('referral_codes')
     .select('id, code, commission_pct, discount_pct, max_uses, is_active, notes, created_at')
     .eq('owner_user_id', user.id)
     .order('created_at', { ascending: false });
@@ -55,7 +57,7 @@ export async function getMyReferralCodes(): Promise<ReferralSummary[]> {
   let summary: Record<string, { conversions: number; pending_cents: number; paid_cents: number; gross_cents: number }> = {};
   if (ids.length > 0) {
     const { data: rows } = await admin
-      .from('referral_summary')
+      .schema('app').from('referral_summary')
       .select('code_id, conversions, pending_cents, paid_cents, gross_cents')
       .in('code_id', ids);
     summary = Object.fromEntries(
@@ -92,7 +94,7 @@ export async function createReferralCode(input: ReferralCodeInput) {
   const user = await requireUser();
   const parsed = codeSchema.parse({ ...input, code: input.code.toUpperCase() });
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from('referral_codes').insert({
+  const { error } = await admin.schema('app').from('referral_codes').insert({
     code: parsed.code,
     owner_user_id: user.id,
     commission_pct: parsed.commission_pct,
@@ -109,7 +111,7 @@ export async function createReferralCode(input: ReferralCodeInput) {
 export async function toggleReferralCode(id: string, isActive: boolean) {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
-  await admin.from('referral_codes').update({ is_active: isActive }).eq('id', id).eq('owner_user_id', user.id);
+  await admin.schema('app').from('referral_codes').update({ is_active: isActive }).eq('id', id).eq('owner_user_id', user.id);
   revalidatePath('/cuenta/referidos');
 }
 
@@ -124,7 +126,7 @@ export async function resolveReferralCode(rawCode: string) {
   if (!/^[A-Z0-9_-]{3,32}$/.test(code)) return null;
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('referral_codes')
+    .schema('app').from('referral_codes')
     .select('id, code, owner_user_id, commission_pct, discount_pct, max_uses, is_active')
     .eq('code', code)
     .eq('is_active', true)
@@ -133,7 +135,7 @@ export async function resolveReferralCode(rawCode: string) {
 
   if (data.max_uses) {
     const { count } = await admin
-      .from('referral_attributions')
+      .schema('app').from('referral_attributions')
       .select('id', { count: 'exact', head: true })
       .eq('code_id', (data as { id: string }).id)
       .in('status', ['confirmed', 'paid']);
@@ -192,7 +194,7 @@ export async function attributeOrderPaid(params: {
   const commissionCents = Math.round((params.subtotalCents * Number(resolved.commission_pct)) / 100);
 
   const { data, error } = await admin
-    .from('referral_attributions')
+    .schema('app').from('referral_attributions')
     .insert({
       code_id: resolved.id,
       code: resolved.code,
@@ -226,7 +228,7 @@ export async function listAllReferrals(filter: 'pending' | 'confirmed' | 'paid' 
   await requireStaff();
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('referral_attributions')
+    .schema('app').from('referral_attributions')
     .select('id, code, order_id, referred_user_id, subtotal_cents, commission_cents, currency, status, created_at, paid_at')
     .order('created_at', { ascending: false })
     .limit(200);
@@ -239,7 +241,7 @@ export async function markAttributionPaid(id: string, asWalletCredit = false) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: att } = await admin
-    .from('referral_attributions')
+    .schema('app').from('referral_attributions')
     .select('id, code_id, commission_cents, currency, status')
     .eq('id', id)
     .single();
@@ -247,7 +249,7 @@ export async function markAttributionPaid(id: string, asWalletCredit = false) {
 
   if (asWalletCredit) {
     const { data: code } = await admin
-      .from('referral_codes')
+      .schema('app').from('referral_codes')
       .select('owner_user_id')
       .eq('id', att.code_id)
       .single();
@@ -265,7 +267,7 @@ export async function markAttributionPaid(id: string, asWalletCredit = false) {
   }
 
   await admin
-    .from('referral_attributions')
+    .schema('app').from('referral_attributions')
     .update({ status: 'paid', paid_at: new Date().toISOString() })
     .eq('id', id);
   revalidatePath('/admin/referidos');
@@ -274,6 +276,6 @@ export async function markAttributionPaid(id: string, asWalletCredit = false) {
 export async function reverseAttribution(id: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('referral_attributions').update({ status: 'reversed' }).eq('id', id);
+  await admin.schema('app').from('referral_attributions').update({ status: 'reversed' }).eq('id', id);
   revalidatePath('/admin/referidos');
 }

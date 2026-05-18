@@ -54,7 +54,7 @@ export async function createTransaction(
     if (!upErr) attachmentUrl = path;
   }
 
-  const { error } = await supabase.from('transactions').insert({
+  const { error } = await supabase.schema('fin').from('transactions').insert({
     type: d.type,
     date: d.date,
     amount_cents: Math.round(d.amount * 100),
@@ -77,6 +77,6 @@ export async function createTransaction(
 export async function deleteTransaction(id: string) {
   await requireStaff('/admin/finanzas');
   const supabase = await createSupabaseServerClient();
-  await supabase.from('transactions').delete().eq('id', id);
+  await supabase.schema('fin').from('transactions').delete().eq('id', id);
   revalidatePath('/admin/finanzas');
 }

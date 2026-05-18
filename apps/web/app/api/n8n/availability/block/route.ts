@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const admin = createSupabaseAdminClient();
   // Idempotencia: ¿ya existe bloqueo con este external_uid?
   const { data: existing } = await admin
-    .from('availability')
+    .schema('book').from('availability')
     .select('id')
     .eq('resource_id', parsed.data.resourceId)
     .eq('external_uid', parsed.data.externalUid)
@@ -44,14 +44,14 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     await admin
-      .from('availability')
+      .schema('book').from('availability')
       .update({ starts_at: startsAt, ends_at: endsAt, status: 'blocked' })
       .eq('id', existing.id);
     return NextResponse.json({ id: existing.id, updated: true });
   }
 
   const { data, error } = await admin
-    .from('availability')
+    .schema('book').from('availability')
     .insert({
       resource_id: parsed.data.resourceId,
       starts_at: startsAt,

@@ -119,7 +119,7 @@ async function checkUserConstraints(
   const admin = createSupabaseAdminClient();
   if (c.first_order_only) {
     const { count } = await admin
-      .from('orders')
+      .schema('shop').from('orders')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('status', 'paid');
@@ -127,7 +127,7 @@ async function checkUserConstraints(
   }
   if (c.max_uses_per_user) {
     const { count } = await admin
-      .from('coupon_redemptions')
+      .schema('shop').from('coupon_redemptions')
       .select('id', { count: 'exact', head: true })
       .eq('code', coupon.code)
       .eq('user_id', userId);

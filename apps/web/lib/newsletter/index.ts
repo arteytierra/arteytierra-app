@@ -53,7 +53,7 @@ export async function subscribeToNewsletter(
   const admin = createSupabaseAdminClient();
 
   const { data: existing } = await admin
-    .from('newsletter_subscribers')
+    .schema('app').from('newsletter_subscribers')
     .select('id, segments, confirmed_at, unsubscribed_at, confirm_token')
     .eq('email', parsed.email)
     .maybeSingle();
@@ -62,7 +62,7 @@ export async function subscribeToNewsletter(
   if (existing?.confirmed_at && !existing.unsubscribed_at) {
     const merged = Array.from(new Set([...(existing.segments as string[] ?? []), ...parsed.segments]));
     await admin
-      .from('newsletter_subscribers')
+      .schema('app').from('newsletter_subscribers')
       .update({ segments: merged })
       .eq('id', existing.id);
     return { status: 'already_confirmed' };
@@ -75,7 +75,7 @@ export async function subscribeToNewsletter(
 
   if (existing) {
     await admin
-      .from('newsletter_subscribers')
+      .schema('app').from('newsletter_subscribers')
       .update({
         full_name: parsed.full_name ?? null,
         segments,
@@ -87,7 +87,7 @@ export async function subscribeToNewsletter(
       })
       .eq('id', existing.id);
   } else {
-    const { error } = await admin.from('newsletter_subscribers').insert({
+    const { error } = await admin.schema('app').from('newsletter_subscribers').insert({
       email: parsed.email,
       full_name: parsed.full_name ?? null,
       segments,
@@ -121,7 +121,7 @@ export async function confirmSubscription(token: string): Promise<
   const admin = createSupabaseAdminClient();
 
   const { data: sub } = await admin
-    .from('newsletter_subscribers')
+    .schema('app').from('newsletter_subscribers')
     .select('id, email, confirmed_at, segments, created_at')
     .eq('confirm_token', token)
     .maybeSingle();
@@ -137,7 +137,7 @@ export async function confirmSubscription(token: string): Promise<
     }
 
     await admin
-      .from('newsletter_subscribers')
+      .schema('app').from('newsletter_subscribers')
       .update({ confirmed_at: new Date().toISOString(), confirm_token: null })
       .eq('id', sub.id);
 
@@ -148,7 +148,7 @@ export async function confirmSubscription(token: string): Promise<
 
     // Reflejar en CRM contacts (upsert) y marcar lifecycle subscriber
     await admin
-      .from('contacts')
+      .schema('app').from('contacts')
       .upsert(
         { email: sub.email, source: 'newsletter', lifecycle_stage: 'subscriber', tags: sub.segments ?? [] },
         { onConflict: 'email' },
@@ -164,7 +164,7 @@ export async function unsubscribe(token: string): Promise<boolean> {
   if (!token) return false;
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('newsletter_subscribers')
+    .schema('app').from('newsletter_subscribers')
     .update({ unsubscribed_at: new Date().toISOString() })
     .eq('confirm_token', token)
     .select('email')

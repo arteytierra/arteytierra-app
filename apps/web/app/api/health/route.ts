@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const dbStart = Date.now();
     const admin = createSupabaseAdminClient();
-    const { error } = await admin.from('products').select('id', { count: 'exact', head: true });
+    const { error } = await admin.schema('shop').from('products').select('id', { count: 'exact', head: true });
     checks.database = error
       ? { ok: false, error: error.message }
       : { ok: true, ms: Date.now() - dbStart };

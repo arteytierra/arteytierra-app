@@ -72,7 +72,7 @@ export async function startCheckout(opts: {
   };
 
   // Crear orden + items (transacción lógica)
-  const { data: order, error: orderErr } = await admin.from('orders').insert({
+  const { data: order, error: orderErr } = await admin.schema('shop').from('orders').insert({
     user_id: user?.id ?? null,
     status: 'pending',
     provider: opts.provider,
@@ -81,7 +81,7 @@ export async function startCheckout(opts: {
     total_cents: cart.totalCents,
     currency: cart.currency,
     coupon_code: cart.couponCode,
-    billing: billingWithRef,
+    billing: billingWithRef as never,
   }).select('id').single();
 
   if (orderErr || !order) throw new Error('No pudimos crear la orden');
@@ -95,7 +95,7 @@ export async function startCheckout(opts: {
     unit_price_cents: it.unit_price_cents,
     total_cents: it.unit_price_cents * it.qty,
   }));
-  await admin.from('order_items').insert(orderItems);
+  await admin.schema('shop').from('order_items').insert(orderItems as never);
 
   // Crear sesión en provider
   if (opts.provider === 'stripe') {
@@ -112,7 +112,7 @@ export async function startCheckout(opts: {
       successUrl: `${siteUrl}/orden/${order.id}/success`,
       cancelUrl: `${siteUrl}/checkout?cancelled=1`,
     });
-    await admin.from('orders')
+    await admin.schema('shop').from('orders')
       .update({ provider_order_id: session.id })
       .eq('id', order.id);
     return { orderId: order.id, redirectUrl: session.url ?? '' };
@@ -135,7 +135,7 @@ export async function startCheckout(opts: {
     discountCents: cart.discountCents,
   });
 
-  await admin.from('orders')
+  await admin.schema('shop').from('orders')
     .update({ provider_order_id: pref.id })
     .eq('id', order.id);
 

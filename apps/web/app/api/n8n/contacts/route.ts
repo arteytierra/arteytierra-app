@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') ?? 100), 500);
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('contacts')
+    .schema('app').from('contacts')
     .select('id, email, name, phone, tags, source, created_at')
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('contacts')
+    .schema('app').from('contacts')
     .upsert(
       {
         email: parsed.data.email.toLowerCase(),
@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
         phone: parsed.data.phone,
         tags: parsed.data.tags ?? [],
         source: parsed.data.source ?? 'n8n',
-        metadata: parsed.data.metadata ?? {},
-      },
+        metadata: (parsed.data.metadata ?? {}) as never,
+      } as never,
       { onConflict: 'email' },
     )
     .select('id')

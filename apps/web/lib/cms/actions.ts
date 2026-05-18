@@ -16,8 +16,8 @@ export async function savePostBlocks(postId: string, blocks: AnyBlock[]) {
 
   const admin = createSupabaseAdminClient();
   const { error } = await admin
-    .from('posts')
-    .update({ blocks: parsed.data, updated_at: new Date().toISOString() })
+    .schema('cms').from('posts')
+    .update({ blocks: parsed.data as never, updated_at: new Date().toISOString() })
     .eq('id', postId);
   if (error) throw new Error(error.message);
 
@@ -34,7 +34,7 @@ export async function updatePostMeta(
   if (patch.slug !== undefined) slugSchema.parse(patch.slug);
 
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from('posts').update(patch).eq('id', postId);
+  const { error } = await admin.schema('cms').from('posts').update(patch).eq('id', postId);
   if (error) throw new Error(error.message);
 
   revalidatePath('/admin/blog');
@@ -48,7 +48,7 @@ export async function createPost(): Promise<{ id: string }> {
   const admin = createSupabaseAdminClient();
   const slug = `borrador-${Date.now().toString(36)}`;
   const { data, error } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .insert({ title: 'Nuevo post', slug, blocks: [], excerpt: '' })
     .select('id')
     .single();
@@ -61,7 +61,7 @@ export async function publishPost(postId: string, publish: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .update({ published_at: publish ? new Date().toISOString() : null })
     .eq('id', postId);
   revalidatePath('/admin/blog');
@@ -73,7 +73,7 @@ export async function loadPostForEditor(postId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .select('id, title, slug, excerpt, cover_url, blocks, published_at, updated_at')
     .eq('id', postId)
     .single();

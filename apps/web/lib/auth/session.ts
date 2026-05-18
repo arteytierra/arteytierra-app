@@ -22,7 +22,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   if (!user) return null;
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .schema('app').from('profiles')
     .select('full_name, avatar_url, role')
     .eq('id', user.id)
     .single<{ full_name: string | null; avatar_url: string | null; role: UserRole }>();

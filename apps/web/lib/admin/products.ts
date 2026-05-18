@@ -28,11 +28,11 @@ export async function listProductsAdmin(opts?: { type?: string; q?: string }) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('products')
+    .schema('shop').from('products')
     .select('id, slug, name, type, base_price_cents, currency, stock, is_active, updated_at')
     .order('updated_at', { ascending: false })
     .limit(200);
-  if (opts?.type) q = q.eq('type', opts.type);
+  if (opts?.type) q = q.eq('type', opts.type as never);
   if (opts?.q) q = q.ilike('name', `%${opts.q}%`);
   const { data } = await q;
   return data ?? [];
@@ -41,7 +41,7 @@ export async function listProductsAdmin(opts?: { type?: string; q?: string }) {
 export async function getProductAdmin(id: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  const { data } = await admin.from('products').select('*').eq('id', id).single();
+  const { data } = await admin.schema('shop').from('products').select('*').eq('id', id).single();
   return data;
 }
 
@@ -52,7 +52,7 @@ export async function upsertProduct(id: string | null, input: ProductInput) {
 
   // Slug único
   const { data: clash } = await admin
-    .from('products')
+    .schema('shop').from('products')
     .select('id')
     .eq('slug', parsed.slug)
     .maybeSingle();
@@ -61,11 +61,11 @@ export async function upsertProduct(id: string | null, input: ProductInput) {
   }
 
   if (id) {
-    const { error } = await admin.from('products').update(parsed).eq('id', id);
+    const { error } = await admin.schema('shop').from('products').update(parsed as never).eq('id', id);
     if (error) throw new Error(error.message);
     revalidatePath(`/admin/productos/${id}`);
   } else {
-    const { data, error } = await admin.from('products').insert(parsed).select('id').single();
+    const { data, error } = await admin.schema('shop').from('products').insert(parsed as never).select('id').single();
     if (error) throw new Error(error.message);
     revalidatePath('/admin/productos');
     return { id: data.id };
@@ -78,7 +78,7 @@ export async function upsertProduct(id: string | null, input: ProductInput) {
 export async function toggleProductActive(id: string, isActive: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('products').update({ is_active: isActive }).eq('id', id);
+  await admin.schema('shop').from('products').update({ is_active: isActive }).eq('id', id);
   revalidatePath('/admin/productos');
 }
 
@@ -87,14 +87,14 @@ export async function deleteProduct(id: string) {
   const admin = createSupabaseAdminClient();
   // Soft-delete: marcar inactivo. Hard-delete sólo si nunca se vendió.
   const { count } = await admin
-    .from('order_items')
+    .schema('shop').from('order_items')
     .select('id', { count: 'exact', head: true })
     .eq('product_id', id);
   if ((count ?? 0) > 0) {
-    await admin.from('products').update({ is_active: false }).eq('id', id);
+    await admin.schema('shop').from('products').update({ is_active: false }).eq('id', id);
     return { soft: true };
   }
-  await admin.from('products').delete().eq('id', id);
+  await admin.schema('shop').from('products').delete().eq('id', id);
   revalidatePath('/admin/productos');
   return { soft: false };
 }

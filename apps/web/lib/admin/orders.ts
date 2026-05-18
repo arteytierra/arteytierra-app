@@ -17,7 +17,7 @@ export async function resendOrderEmail(orderId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: order } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, status, user_id, billing')
     .eq('id', orderId)
     .single();
@@ -37,7 +37,7 @@ export async function refundOrder(orderId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: order, error } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .update({ status: 'refunded' })
     .eq('id', orderId)
     .eq('status', 'paid')
@@ -64,7 +64,7 @@ export async function cancelOrder(orderId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { error } = await admin
-    .from('orders')
+    .schema('shop').from('orders')
     .update({ status: 'cancelled' })
     .eq('id', orderId)
     .in('status', ['pending', 'failed']);

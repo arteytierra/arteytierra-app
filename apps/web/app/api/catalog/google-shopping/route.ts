@@ -21,8 +21,8 @@ function xmlEscape(s: string): string {
 export async function GET() {
   const admin = createSupabaseAdminClient();
   const { data: products } = await admin
-    .from('products')
-    .select('id, slug, name, subtitle, description, base_price_cents, currency, type, stock, attributes')
+    .schema('shop').from('products')
+    .select('id, slug, name, subtitle, description_mdx, base_price_cents, currency, type, stock, attributes')
     .eq('is_active', true);
 
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
@@ -45,7 +45,7 @@ export async function GET() {
     <item>
       <g:id>${xmlEscape(p.id)}</g:id>
       <g:title>${xmlEscape(p.name)}</g:title>
-      <g:description>${xmlEscape(p.description ?? p.subtitle ?? p.name)}</g:description>
+      <g:description>${xmlEscape(p.description_mdx ?? p.subtitle ?? p.name)}</g:description>
       <g:link>${site}/${slugPath}/${xmlEscape(p.slug)}</g:link>
       <g:image_link>${xmlEscape(image)}</g:image_link>
       <g:availability>${availability}</g:availability>

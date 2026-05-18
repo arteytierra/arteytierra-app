@@ -49,7 +49,7 @@ export async function issueGiftCardForOrderItem(params: {
   const admin = createSupabaseAdminClient();
 
   const { data: existing } = await admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('id, code')
     .eq('issued_order_id', params.orderId)
     .eq('initial_cents', params.amountCents)
@@ -61,7 +61,7 @@ export async function issueGiftCardForOrderItem(params: {
   for (let i = 0; i < 5; i++) {
     code = generateCode(16);
     const { data: clash } = await admin
-      .from('gift_cards')
+      .schema('shop').from('gift_cards')
       .select('id')
       .eq('code', code)
       .maybeSingle();
@@ -70,7 +70,7 @@ export async function issueGiftCardForOrderItem(params: {
   }
   if (!code) throw new Error('No pudimos generar un código único.');
 
-  const { error } = await admin.from('gift_cards').insert({
+  const { error } = await admin.schema('shop').from('gift_cards').insert({
     code,
     initial_cents: params.amountCents,
     balance_cents: params.amountCents,
@@ -110,7 +110,7 @@ export async function lookupGiftCard(rawCode: string): Promise<
   if (!/^[A-Z0-9]{12,20}$/.test(code)) return { ok: false, reason: 'not_found' };
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('code, balance_cents, currency, expires_at, is_active')
     .eq('code', code)
     .maybeSingle();
@@ -138,7 +138,7 @@ export async function applyGiftCardToCart(code: string): Promise<{ ok: boolean; 
   const lookup = await lookupGiftCard(code);
   if (!lookup.ok) return { ok: false, reason: lookup.reason };
   const admin = createSupabaseAdminClient();
-  await admin.from('carts').update({ gift_card_code: lookup.code }).eq('user_id', user.id);
+  await admin.schema('shop').from('carts').update({ gift_card_code: lookup.code }).eq('user_id', user.id);
   revalidatePath('/carrito');
   revalidatePath('/checkout');
   return { ok: true };
@@ -148,7 +148,7 @@ export async function removeGiftCardFromCart(): Promise<void> {
   const user = await getCurrentUser();
   if (!user) return;
   const admin = createSupabaseAdminClient();
-  await admin.from('carts').update({ gift_card_code: null }).eq('user_id', user.id);
+  await admin.schema('shop').from('carts').update({ gift_card_code: null }).eq('user_id', user.id);
   revalidatePath('/carrito');
   revalidatePath('/checkout');
 }
@@ -166,7 +166,7 @@ export async function consumeGiftCardForOrder(params: {
 }): Promise<boolean> {
   const admin = createSupabaseAdminClient();
   const { data: card } = await admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('id, balance_cents, currency, is_active, expires_at')
     .eq('code', params.code.trim().toUpperCase())
     .maybeSingle();
@@ -174,7 +174,7 @@ export async function consumeGiftCardForOrder(params: {
 
   // Idempotencia
   const { data: existing } = await admin
-    .from('gift_card_redemptions')
+    .schema('shop').from('gift_card_redemptions')
     .select('id')
     .eq('gift_card_id', card.id)
     .eq('order_id', params.orderId)
@@ -184,7 +184,7 @@ export async function consumeGiftCardForOrder(params: {
   const apply = Math.min(params.amountCents, card.balance_cents as number);
   if (apply <= 0) return false;
 
-  const { error } = await admin.from('gift_card_redemptions').insert({
+  const { error } = await admin.schema('shop').from('gift_card_redemptions').insert({
     gift_card_id: card.id,
     order_id: params.orderId,
     cart_id: params.cartId,
@@ -205,7 +205,7 @@ export async function listGiftCardsAdmin(filter: 'active' | 'redeemed' | 'expire
   await requireStaff();
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('id, code, initial_cents, balance_cents, currency, recipient_email, recipient_name, expires_at, is_active, created_at')
     .order('created_at', { ascending: false })
     .limit(200);
@@ -219,7 +219,7 @@ export async function listGiftCardsAdmin(filter: 'active' | 'redeemed' | 'expire
 export async function toggleGiftCardActive(id: string, isActive: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  await admin.from('gift_cards').update({ is_active: isActive }).eq('id', id);
+  await admin.schema('shop').from('gift_cards').update({ is_active: isActive }).eq('id', id);
   revalidatePath('/admin/gift-cards');
 }
 
@@ -227,7 +227,7 @@ export async function resendGiftCardEmail(id: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data: card } = await admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('code, initial_cents, currency, recipient_email, recipient_name, message')
     .eq('id', id)
     .single();
@@ -248,7 +248,7 @@ export async function getMyGiftCards() {
   const user = await requireUser();
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('gift_cards')
+    .schema('shop').from('gift_cards')
     .select('id, code, initial_cents, balance_cents, currency, recipient_email, recipient_name, expires_at, is_active, created_at')
     .eq('issued_by_user_id', user.id)
     .order('created_at', { ascending: false });

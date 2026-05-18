@@ -8,8 +8,8 @@ export const metadata = { title: 'Ajustes · Admin' };
 export default async function AjustesPage() {
   const user = (await getCurrentUser())!;
   const supabase = await createSupabaseServerClient();
-  const { data: accounts } = await supabase.from('accounts').select('*').order('name');
-  const { data: cats } = await supabase.from('categories').select('*').order('type, name');
+  const { data: accounts } = await supabase.schema('fin').from('accounts').select('*').order('name');
+  const { data: cats } = await supabase.schema('fin').from('categories').select('*').order('type, name');
 
   return (
     <>

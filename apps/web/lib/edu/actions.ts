@@ -30,7 +30,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
 
   // Verificar enrollment
   const { data: lesson } = await admin
-    .from('lessons')
+    .schema('edu').from('lessons')
     .select('id, modules!inner(course_id)')
     .eq('id', lessonId)
     .maybeSingle();
@@ -39,7 +39,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
   const courseId = (lesson as never as { modules: { course_id: string } }).modules.course_id;
 
   const { data: enrollment } = await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id, expires_at')
     .eq('user_id', user.id)
     .eq('course_id', courseId)
@@ -49,13 +49,13 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
 
   // Upsert progreso
   const { data: existing } = await admin
-    .from('lesson_progress')
+    .schema('edu').from('lesson_progress')
     .select('watched_sec, completed')
     .eq('user_id', user.id)
     .eq('lesson_id', lessonId)
     .maybeSingle();
 
-  await admin.from('lesson_progress').upsert({
+  await admin.schema('edu').from('lesson_progress').upsert({
     user_id: user.id,
     lesson_id: lessonId,
     completed: completed || existing?.completed || false,
@@ -64,13 +64,13 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
 
   // Recalcular progreso del enrollment
   const { data: lessons } = await admin
-    .from('lessons')
+    .schema('edu').from('lessons')
     .select('id, modules!inner(course_id)')
     .eq('modules.course_id', courseId);
 
   const ids = (lessons ?? []).map((l) => l.id);
   const { count: doneCount } = await admin
-    .from('lesson_progress')
+    .schema('edu').from('lesson_progress')
     .select('lesson_id', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .in('lesson_id', ids)
@@ -80,7 +80,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
   const shouldComplete = progress >= 0.95;
 
   await admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .update({
       progress,
       ...(shouldComplete ? { completed_at: new Date().toISOString() } : {}),
@@ -90,7 +90,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
   // Si recién completa, emitir certificado
   if (shouldComplete) {
     const { data: existingCert } = await admin
-      .from('certificates')
+      .schema('edu').from('certificates')
       .select('id')
       .eq('enrollment_id', enrollment.id)
       .maybeSingle();
@@ -99,7 +99,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
       const issuedAt = new Date().toISOString();
       const signature = buildCertificateSignature(code, enrollment.id, issuedAt);
       const { data: inserted } = await admin
-        .from('certificates')
+        .schema('edu').from('certificates')
         .insert({
           enrollment_id: enrollment.id,
           code,
@@ -125,7 +125,7 @@ export async function trackLessonProgress(input: z.infer<typeof trackSchema>) {
         const site = process.env.NEXT_PUBLIC_SITE_URL ?? '';
         // Obtener título del curso para el email
         const { data: courseRow } = await admin
-          .from('products')
+          .schema('shop').from('products')
           .select('name')
           .eq('id', courseId)
           .maybeSingle();

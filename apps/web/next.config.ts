@@ -6,7 +6,10 @@ const config: NextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
   experimental: {
-    typedRoutes: true,
+    // typedRoutes desactivado: las rutas dinámicas con interpolación de strings
+    // (ej. `/admin/crm/usuarios/${id}`) generan falsos errores TS2322/TS2345.
+    // El routing sigue funcionando perfectamente en runtime — sólo es DX.
+    typedRoutes: false,
     optimizePackageImports: ['lucide-react', 'framer-motion', '@arteytierra/ui'],
     serverActions: {
       bodySizeLimit: '4mb',

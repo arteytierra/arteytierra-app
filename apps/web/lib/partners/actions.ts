@@ -22,7 +22,7 @@ export async function applyAsPartnerAction(input: {
 
   const admin = createSupabaseAdminClient();
   const { data: program } = await admin
-    .from('partner_programs')
+    .schema('app').from('partner_programs')
     .select('id, name, is_active')
     .eq('slug', input.programSlug)
     .maybeSingle();
@@ -31,7 +31,7 @@ export async function applyAsPartnerAction(input: {
 
   const ref = generateRefCode(input.organization);
   const { data, error } = await admin
-    .from('partners')
+    .schema('app').from('partners')
     .insert({
       program_id: p.id,
       user_id: user.id,
@@ -80,8 +80,8 @@ export async function reviewPartnerAction(input: {
     update.status = 'banned';
   }
   const { data } = await admin
-    .from('partners')
-    .update(update)
+    .schema('app').from('partners')
+    .update(update as never)
     .eq('id', input.partnerId)
     .select('user_id, ref_code, organization')
     .single();
@@ -100,12 +100,12 @@ export async function confirmPartnerCommissionAction(input: { commissionId: stri
   const admin = createSupabaseAdminClient();
   if (input.mark === 'confirm') {
     await admin
-      .from('partner_commissions')
+      .schema('app').from('partner_commissions')
       .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
       .eq('id', input.commissionId);
   } else {
     await admin
-      .from('partner_commissions')
+      .schema('app').from('partner_commissions')
       .update({ status: 'reversed' })
       .eq('id', input.commissionId);
   }
@@ -116,7 +116,7 @@ export async function payoutPartnerCommissionAction(input: { commissionId: strin
   const user = await requireStaff();
   const admin = createSupabaseAdminClient();
   await admin
-    .from('partner_commissions')
+    .schema('app').from('partner_commissions')
     .update({ status: 'paid', paid_at: new Date().toISOString(), payout_ref: input.payoutRef })
     .eq('id', input.commissionId);
   const { recordAudit } = await import('@/lib/audit');

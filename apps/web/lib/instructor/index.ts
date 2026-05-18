@@ -22,7 +22,7 @@ export async function requireInstructor(returnTo?: string): Promise<InstructorCo
   const isStaff = user.role === 'admin' || user.role === 'staff' || user.role === 'instructor';
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('course_instructors')
+    .schema('edu').from('course_instructors')
     .select('course_id')
     .eq('user_id', user.id);
   const courseIds = ((data ?? []) as Array<{ course_id: string }>).map((r) => r.course_id);
@@ -35,7 +35,7 @@ export async function requireInstructor(returnTo?: string): Promise<InstructorCo
 export async function listInstructorCourses(ctx: InstructorContext) {
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('courses')
+    .schema('edu').from('courses')
     .select('id, product_id, products!inner(id, slug, name, base_price_cents, currency)')
     .order('created_at', { ascending: false });
   if (!ctx.isStaff) q = q.in('id', ctx.courseIds);
@@ -66,7 +66,7 @@ export async function getInstructorRevenue(ctx: InstructorContext) {
 export async function listInstructorQAQueue(ctx: InstructorContext, limit = 50) {
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('threads')
+    .schema('edu').from('threads')
     .select('id, course_id, title, body, status, reply_count, last_activity_at, user_id')
     .eq('status', 'open')
     .order('last_activity_at', { ascending: false })
@@ -82,7 +82,7 @@ export async function listInstructorQAQueue(ctx: InstructorContext, limit = 50) 
 export async function listInstructorStudents(ctx: InstructorContext) {
   const admin = createSupabaseAdminClient();
   let q = admin
-    .from('enrollments')
+    .schema('edu').from('enrollments')
     .select('id, user_id, course_id, progress, created_at, completed_at, profiles!inner(full_name)')
     .order('created_at', { ascending: false })
     .limit(500);

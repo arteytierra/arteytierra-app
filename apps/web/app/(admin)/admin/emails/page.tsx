@@ -31,7 +31,7 @@ export default async function AdminEmailsPage({
     .order('created_at', { ascending: false })
     .limit(200);
 
-  if (sp.status) q = q.eq('status', sp.status);
+  if (sp.status) q = q.eq('status', sp.status as never);
   if (sp.q) q = q.ilike('recipient', `%${sp.q}%`);
 
   const { data: rows } = await q;

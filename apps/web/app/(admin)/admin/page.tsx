@@ -73,7 +73,7 @@ export default async function AdminHomePage() {
               ) : orders.map((o) => (
                 <tr key={o.id} className="border-t border-ink-950/5">
                   <td className="px-5 py-3 font-mono text-xs">{o.id.slice(0, 8)}…</td>
-                  <td className="px-5 py-3">{new Date(o.created_at).toLocaleDateString('es-AR')}</td>
+                  <td className="px-5 py-3">{o.created_at ? new Date(o.created_at).toLocaleDateString('es-AR') : ''}</td>
                   <td className="px-5 py-3">
                     <Badge tone={STATUS_TONE[o.status] ?? 'neutral'}>{o.status}</Badge>
                   </td>

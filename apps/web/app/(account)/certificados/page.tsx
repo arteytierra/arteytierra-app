@@ -10,7 +10,7 @@ export default async function CertificadosPage() {
   const user = (await getCurrentUser())!;
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('certificates')
+    .schema('edu').from('certificates')
     .select(`
       id, code, issued_at, pdf_url,
       enrollments!inner(user_id,

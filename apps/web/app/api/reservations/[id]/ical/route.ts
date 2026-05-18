@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const admin = createSupabaseAdminClient();
   const { data: r } = await admin
-    .from('reservations')
+    .schema('book').from('reservations')
     .select(`
       id, starts_at, ends_at, status, guests, notes, ical_uid, user_id,
       resources(kind, products(name))

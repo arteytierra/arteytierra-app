@@ -12,7 +12,7 @@ export default async function AdminBroadcastPage() {
         Crea una notificación in-app + push para todos los usuarios o un segmento. Usar con criterio.
       </p>
 
-      <form action={broadcastNotificationAction} className="space-y-4 rounded-lg border border-ink/10 p-5">
+      <form action={async (fd) => { await broadcastNotificationAction(fd); }} className="space-y-4 rounded-lg border border-ink/10 p-5">
         <div>
           <label className="block text-sm text-mute mb-1">Título</label>
           <input

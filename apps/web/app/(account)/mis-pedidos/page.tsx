@@ -13,7 +13,7 @@ export default async function MisPedidosPage() {
   const user = (await getCurrentUser())!;
   const supabase = await createSupabaseServerClient();
   const { data: orders } = await supabase
-    .from('orders')
+    .schema('shop').from('orders')
     .select('id, total_cents, currency, status, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
@@ -37,7 +37,7 @@ export default async function MisPedidosPage() {
           >
             <span className="font-mono text-xs text-ink-800/70">#{o.id.slice(0, 8)}</span>
             <span className="text-sm text-ink-800/65">
-              {new Date(o.created_at).toLocaleDateString('es-AR')}
+              {o.created_at ? new Date(o.created_at).toLocaleDateString('es-AR') : ''}
             </span>
             <Badge tone={TONE[o.status] ?? 'neutral'}>{o.status}</Badge>
             <span className="ml-auto font-medium">

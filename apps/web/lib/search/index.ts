@@ -42,7 +42,7 @@ export async function globalSearch(rawQ: string, limit = MAX): Promise<SearchHit
   const { data, error } = await admin.schema('app').rpc('global_search', {
     p_query: q,
     p_limit: limit,
-    p_user: user?.id ?? null,
+    p_user: user?.id ?? undefined,
   });
 
   if (error) {

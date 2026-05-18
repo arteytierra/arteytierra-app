@@ -13,7 +13,7 @@ export default async function BlogAdminPage() {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   const { data } = await admin
-    .from('posts')
+    .schema('cms').from('posts')
     .select('id, slug, title, published_at, updated_at')
     .order('updated_at', { ascending: false })
     .limit(100);
@@ -48,7 +48,7 @@ export default async function BlogAdminPage() {
               <span className="text-xs text-ink-800/60 hidden sm:inline">
                 {p.published_at
                   ? new Date(p.published_at).toLocaleDateString('es-AR')
-                  : new Date(p.updated_at).toLocaleDateString('es-AR')}
+                  : (p.updated_at ? new Date(p.updated_at).toLocaleDateString('es-AR') : '')}
               </span>
               <Link href={`/admin/blog/${p.id}`}>
                 <Button variant="outline" size="sm">Editar</Button>

@@ -35,7 +35,7 @@ export async function applyCouponToCart(code: string): Promise<CouponActionState
     .eq('cart_id', cartId);
 
   const hasNonStackable = (existing ?? []).some(
-    (e: { coupons: { stackable: boolean; kind: string } | null }) =>
+    (e: { coupons: { stackable: boolean; kind: string | null } | null }) =>
       e.coupons?.stackable === false && e.coupons.kind !== 'free_shipping',
   );
   const isNonStackable = !coupon.stackable && coupon.kind !== 'free_shipping';
@@ -51,7 +51,7 @@ export async function applyCouponToCart(code: string): Promise<CouponActionState
 
   // Setear principal en carts.coupon_code si no hay uno aún (compat).
   await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .update({ coupon_code: cleaned })
     .eq('id', cartId)
     .is('coupon_code', null);
@@ -79,7 +79,7 @@ export async function removeCouponFromCart(code: string): Promise<CouponActionSt
     .eq('code', cleaned);
   // Si era el principal, limpiar shop.carts.coupon_code.
   await admin
-    .from('carts')
+    .schema('shop').from('carts')
     .update({ coupon_code: null })
     .eq('id', cart.id)
     .eq('coupon_code', cleaned);
@@ -92,7 +92,7 @@ export async function clearCartCoupons(): Promise<CouponActionState> {
   if (!cart.id) return { error: 'Carrito vacío.' };
   const admin = createSupabaseAdminClient();
   await admin.schema('shop').from('cart_coupons').delete().eq('cart_id', cart.id);
-  await admin.from('carts').update({ coupon_code: null }).eq('id', cart.id);
+  await admin.schema('shop').from('carts').update({ coupon_code: null }).eq('id', cart.id);
   revalidatePath('/carrito');
   return { ok: true };
 }
