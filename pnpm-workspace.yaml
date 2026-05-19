@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Security: force patched versions of transitive CVEs
 overrides:
   vite: ">=6.4.2"
   postcss: ">=8.5.10"
