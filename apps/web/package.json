@@ -13,8 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium webkit",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:deploy": "wrangler pages deploy .vercel/output/static"
+    "pages:build": "echo 'deploy via Vercel'",
+    "pages:deploy": "echo 'deploy via Vercel'"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
@@ -37,12 +37,11 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.7",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.5",
     "@types/web-push": "^3.6.4",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^3.1.0",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
@@ -51,7 +50,6 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "wrangler": "^3.99.0"
+    "vitest": "^3.1.0"
   }
 }
