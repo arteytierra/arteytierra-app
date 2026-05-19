@@ -9,30 +9,102 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config';
 
-const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string }>> = {
+const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>> = {
   es: [
-    { label: 'Nosotros',       href: '/nosotros' },
-    { label: 'Proyectos',      href: '/proyectos' },
-    { label: 'Cursos',         href: '/cursos' },
-    { label: 'Inmersión Viva', href: '/inmersion-viva' },
-    { label: 'Hospedaje',      href: '/hospedaje' },
-    { label: 'Blog',           href: '/blog' },
+    {
+      label: 'Arte y Tierra', href: '/arte-y-tierra',
+      children: [
+        { label: 'Diseño',     href: '/diseno' },
+        { label: 'Asesorías',  href: '/asesorias' },
+        { label: 'Proyectos',  href: '/proyectos' },
+      ],
+    },
+    {
+      label: 'Tay Pichín', href: '/tay-pichin',
+      children: [
+        { label: 'Eco Escuela', href: '/cursos' },
+        { label: 'Eco Hostel',  href: '/hospedaje' },
+      ],
+    },
+    {
+      label: 'Nuestra Tienda', href: '/tienda',
+      children: [
+        { label: 'Biocosmetica', href: '/biocosmetica' },
+        { label: 'Manuales',     href: '/ebooks' },
+      ],
+    },
+    {
+      label: 'Conocenos', href: '/nosotros',
+      children: [
+        { label: 'Nosotros',  href: '/nosotros' },
+        { label: 'Blog',      href: '/blog' },
+        { label: 'Contacto',  href: '/contacto' },
+      ],
+    },
   ],
   en: [
-    { label: 'About',     href: '/en/nosotros' },
-    { label: 'Projects',  href: '/en/proyectos' },
-    { label: 'Courses',   href: '/en/cursos' },
-    { label: 'Immersion', href: '/en/inmersion-viva' },
-    { label: 'Stay',      href: '/en/hospedaje' },
-    { label: 'Journal',   href: '/en/blog' },
+    {
+      label: 'Arte y Tierra', href: '/en/arte-y-tierra',
+      children: [
+        { label: 'Design',      href: '/en/diseno' },
+        { label: 'Consulting',  href: '/en/asesorias' },
+        { label: 'Projects',    href: '/en/proyectos' },
+      ],
+    },
+    {
+      label: 'Tay Pichín', href: '/en/tay-pichin',
+      children: [
+        { label: 'Eco School', href: '/en/cursos' },
+        { label: 'Eco Hostel', href: '/en/hospedaje' },
+      ],
+    },
+    {
+      label: 'Our Store', href: '/en/tienda',
+      children: [
+        { label: 'Biocosmetics', href: '/en/biocosmetica' },
+        { label: 'Manuals',      href: '/en/ebooks' },
+      ],
+    },
+    {
+      label: 'About', href: '/en/nosotros',
+      children: [
+        { label: 'About us', href: '/en/nosotros' },
+        { label: 'Journal',  href: '/en/blog' },
+        { label: 'Contact',  href: '/en/contacto' },
+      ],
+    },
   ],
   pt: [
-    { label: 'Sobre',     href: '/pt/nosotros' },
-    { label: 'Projetos',  href: '/pt/proyectos' },
-    { label: 'Cursos',    href: '/pt/cursos' },
-    { label: 'Imersão',   href: '/pt/inmersion-viva' },
-    { label: 'Hospedagem',href: '/pt/hospedaje' },
-    { label: 'Diário',    href: '/pt/blog' },
+    {
+      label: 'Arte y Tierra', href: '/pt/arte-y-tierra',
+      children: [
+        { label: 'Design',      href: '/pt/diseno' },
+        { label: 'Consultoria', href: '/pt/asesorias' },
+        { label: 'Projetos',    href: '/pt/proyectos' },
+      ],
+    },
+    {
+      label: 'Tay Pichín', href: '/pt/tay-pichin',
+      children: [
+        { label: 'Eco Escola', href: '/pt/cursos' },
+        { label: 'Eco Hostel', href: '/pt/hospedaje' },
+      ],
+    },
+    {
+      label: 'Nossa Loja', href: '/pt/tienda',
+      children: [
+        { label: 'Biocosméticos', href: '/pt/biocosmetica' },
+        { label: 'Manuais',       href: '/pt/ebooks' },
+      ],
+    },
+    {
+      label: 'Sobre', href: '/pt/nosotros',
+      children: [
+        { label: 'Sobre nós', href: '/pt/nosotros' },
+        { label: 'Diário',    href: '/pt/blog' },
+        { label: 'Contato',   href: '/pt/contacto' },
+      ],
+    },
   ],
 };
 
