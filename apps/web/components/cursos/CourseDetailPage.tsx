@@ -21,10 +21,10 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/40 to-transparent" />
         <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-14">
           <div className="flex items-center gap-3 mb-4">
-            <Link href="/cursos" className="text-xs font-sans text-clay-400 hover:text-clay-200 transition-colors uppercase tracking-widest">
+            <Link href="/cursos" className="text-xs font-sans text-clay-300 hover:text-bone-100 transition-colors uppercase tracking-widest">
               Cursos
             </Link>
-            <span className="text-clay-600 text-xs">›</span>
+            <span className="text-clay-500 text-xs">›</span>
             <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 bg-clay-700/60 px-2.5 py-1">
               {course.badge}
             </span>
@@ -58,7 +58,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {course.datos.map(d => (
             <div key={d.label} className="bg-bone-50 px-4 py-4 border-l-2 border-clay-500">
-              <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-600 mb-1">{d.label}</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-700 mb-1">{d.label}</p>
               <p className="font-sans font-semibold text-sm text-ink-900 leading-snug">{d.val}</p>
             </div>
           ))}
@@ -88,12 +88,12 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {course.paraQuien && (
-                <div className="bg-bone-50 p-8 border-t-4 border-moss-600">
+                <div className="bg-bone-50 p-8 border-t-4 border-moss-500">
                   <h3 className="font-sans font-bold text-sm uppercase tracking-wider text-moss-700 mb-5">Esta formación es para vos si…</h3>
                   <ul className="flex flex-col gap-3">
                     {course.paraQuien.map((item, i) => (
                       <li key={i} className="flex gap-3 items-start">
-                        <span className="text-moss-600 font-bold mt-0.5 flex-shrink-0">→</span>
+                        <span className="text-moss-500 font-bold mt-0.5 flex-shrink-0">→</span>
                         <span className="font-sans text-sm text-ink-700 leading-relaxed">{item}</span>
                       </li>
                     ))}
@@ -101,7 +101,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                 </div>
               )}
               {course.vasASalir && (
-                <div className="bg-clay-700 p-8 border-t-4 border-clay-400">
+                <div className="bg-clay-700 p-8 border-t-4 border-clay-500">
                   <h3 className="font-sans font-bold text-sm uppercase tracking-wider text-clay-200 mb-5">Vas a salir capaz de…</h3>
                   <ul className="flex flex-col gap-3">
                     {course.vasASalir.map((item, i) => (
@@ -122,7 +122,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       <section id="programa" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-12">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-3">Contenidos</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Contenidos</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">
               El <em>programa.</em>
             </h2>
@@ -134,31 +134,31 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               {course.modulos.map((m, i) => (
                 <div
                   key={i}
-                  className={`p-6 border-l-4 ${m.highlighted ? 'bg-clay-700 border-clay-400' : 'bg-clay-700/10 border-clay-600'}`}
+                  className={`p-6 border-l-4 ${m.highlighted ? 'bg-clay-700 border-clay-500' : 'bg-clay-700/10 border-clay-700'}`}
                 >
                   <div className="flex flex-wrap items-baseline gap-3 mb-2">
-                    <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">{m.num}</span>
-                    {m.date && <span className="text-xs font-sans text-bone-400">{m.date}</span>}
+                    <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500">{m.num}</span>
+                    {m.date && <span className="text-xs font-sans text-bone-200">{m.date}</span>}
                   </div>
                   <h3 className={`font-display text-xl mb-3 ${m.highlighted ? 'text-bone-50' : 'text-bone-100'}`}>{m.title}</h3>
                   {m.nota && (
-                    <p className={`font-sans text-xs mb-3 italic ${m.highlighted ? 'text-clay-200' : 'text-bone-400'}`}>{m.nota}</p>
+                    <p className={`font-sans text-xs mb-3 italic ${m.highlighted ? 'text-clay-200' : 'text-bone-200'}`}>{m.nota}</p>
                   )}
                   {m.teoria && m.practica ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Teoría</p>
-                        <p className="font-sans text-sm text-bone-300 leading-relaxed">{m.teoria}</p>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1.5">Teoría</p>
+                        <p className="font-sans text-sm text-bone-200 leading-relaxed">{m.teoria}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Práctica</p>
-                        <p className="font-sans text-sm text-bone-300 leading-relaxed">{m.practica}</p>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1.5">Práctica</p>
+                        <p className="font-sans text-sm text-bone-200 leading-relaxed">{m.practica}</p>
                       </div>
                     </div>
                   ) : (
                     <ul className="flex flex-col gap-1.5">
                       {m.items.map(item => (
-                        <li key={item} className={`flex items-start gap-2 font-sans text-sm ${m.highlighted ? 'text-clay-100' : 'text-bone-300'}`}>
+                        <li key={item} className={`flex items-start gap-2 font-sans text-sm ${m.highlighted ? 'text-clay-100' : 'text-bone-200'}`}>
                           <span className="mt-2 w-1 h-1 rounded-full bg-clay-500 flex-shrink-0" />
                           {item}
                         </li>
@@ -172,12 +172,12 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             /* GRILLA: módulos por tema (intensivos presenciales) */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {course.modulos.map((m, i) => (
-                <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-600">
-                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-2">{m.num}</p>
+                <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-700">
+                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{m.num}</p>
                   <h3 className="font-display text-base text-bone-100 mb-3 leading-snug">{m.title}</h3>
                   <ul className="flex flex-col gap-1.5">
                     {m.items.map(item => (
-                      <li key={item} className="font-sans text-sm text-bone-300 leading-relaxed">· {item}</li>
+                      <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
                     ))}
                   </ul>
                 </div>
@@ -194,7 +194,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             <div className="text-center mb-12">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Lo que te llevás</p>
               <h2 className="font-display text-4xl text-ink-950">Tu <em>trabajo final integrador.</em></h2>
-              <p className="mt-4 font-sans text-ink-600 text-base max-w-lg mx-auto">
+              <p className="mt-4 font-sans text-ink-700 text-base max-w-lg mx-auto">
                 Al finalizar el programa cada participante desarrolla dos piezas concretas que podrá usar como base real para construir.
               </p>
             </div>
@@ -247,7 +247,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                   </div>
                 )}
                 <div className="p-6 flex flex-col justify-center gap-2">
-                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-600">{f.role}</p>
+                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700">{f.role}</p>
                   <h3 className="font-display text-2xl text-ink-950">{f.name}</h3>
                   <p className="font-sans text-sm text-ink-700 leading-relaxed">{f.bio}</p>
                 </div>
@@ -273,11 +273,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                 <h3 className={`font-display text-xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.label}</h3>
                 <div>
                   <div className={`font-display text-3xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.precio}</div>
-                  {op.precioAlt && <p className={`text-xs font-sans mt-1 ${op.highlighted ? 'text-clay-200' : 'text-clay-600'}`}>{op.precioAlt}</p>}
+                  {op.precioAlt && <p className={`text-xs font-sans mt-1 ${op.highlighted ? 'text-clay-200' : 'text-clay-700'}`}>{op.precioAlt}</p>}
                 </div>
                 <ul className="flex flex-col gap-2 mt-1">
                   {op.includes.map(item => (
-                    <li key={item} className={`flex items-start gap-2 text-xs font-sans ${op.highlighted ? 'text-clay-100' : 'text-ink-600'}`}>
+                    <li key={item} className={`flex items-start gap-2 text-xs font-sans ${op.highlighted ? 'text-clay-100' : 'text-ink-700'}`}>
                       <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${op.highlighted ? 'bg-clay-300' : 'bg-clay-500'}`} />
                       {item}
                     </li>
@@ -287,7 +287,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             ))}
           </div>
           {course.opcionesNota && (
-            <p className="mt-6 text-center font-sans text-sm text-ink-500 italic max-w-xl mx-auto">{course.opcionesNota}</p>
+            <p className="mt-6 text-center font-sans text-sm text-ink-700 italic max-w-xl mx-auto">{course.opcionesNota}</p>
           )}
         </div>
       </section>
@@ -296,9 +296,9 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       <section id="inscribirme" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-10 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-3">Inscripción</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Inscripción</p>
             <h2 className="font-display text-4xl text-bone-50">Reservá tu <em>cupo.</em></h2>
-            <p className="mt-4 font-sans text-bone-400 text-base leading-relaxed">
+            <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
               Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs. Cupos limitados.
             </p>
           </div>
@@ -307,14 +307,14 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       </section>
 
       {/* CTA */}
-      <section className={`py-16 px-6 text-center ${isPresencial ? 'bg-clay-50 border-t border-clay-200' : 'bg-bone-100'}`}>
+      <section className={`py-16 px-6 text-center ${isPresencial ? 'bg-clay-100 border-t border-clay-200' : 'bg-bone-100'}`}>
         <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">
           {isPresencial ? '¿Venís desde lejos?' : '¿Tenés dudas?'}
         </p>
         <h2 className="font-display text-3xl text-ink-950 mb-4">
           {isPresencial ? <>Quedáte en <em>Tay Pichín.</em></> : <>Hablemos <em>antes.</em></>}
         </h2>
-        <p className="font-sans text-ink-600 text-sm max-w-md mx-auto mb-6 leading-relaxed">
+        <p className="font-sans text-ink-700 text-sm max-w-md mx-auto mb-6 leading-relaxed">
           {isPresencial
             ? 'El curso se desarrolla en la Ecoescuela. Podés hospedarte ahí mismo y vivir la experiencia completa.'
             : 'Una consulta sin costo para ayudarte a elegir el camino que más se alinea con lo que buscás.'}
@@ -331,14 +331,14 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           {isPresencial ? (
             <Link
               href="/tay-pichin"
-              className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-6 py-3.5 hover:bg-clay-50 transition-colors"
+              className="inline-flex border border-clay-700 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-6 py-3.5 hover:bg-clay-200 transition-colors"
             >
               Ver Tay Pichín →
             </Link>
           ) : (
             <Link
               href="/cursos"
-              className="inline-flex border border-ink-300 text-ink-700 font-sans font-bold text-xs uppercase tracking-widest px-6 py-3.5 hover:bg-bone-50 transition-colors"
+              className="inline-flex border border-ink-700 text-ink-700 font-sans font-bold text-xs uppercase tracking-widest px-6 py-3.5 hover:bg-bone-50 transition-colors"
             >
               Ver todos los cursos
             </Link>
