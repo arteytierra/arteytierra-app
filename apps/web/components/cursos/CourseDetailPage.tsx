@@ -127,43 +127,63 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               El <em>programa.</em>
             </h2>
           </div>
-          <div className="flex flex-col gap-3">
-            {course.modulos.map((m, i) => (
-              <div
-                key={i}
-                className={`p-6 border-l-4 ${m.highlighted ? 'bg-clay-700 border-clay-400' : 'bg-ink-800/40 border-clay-600'}`}
-              >
-                <div className="flex flex-wrap items-baseline gap-3 mb-2">
-                  <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">{m.num}</span>
-                  {m.date && <span className="text-xs font-sans text-ink-500">{m.date}</span>}
-                </div>
-                <h3 className={`font-display text-xl mb-3 ${m.highlighted ? 'text-bone-50' : 'text-bone-100'}`}>{m.title}</h3>
-                {m.nota && (
-                  <p className={`font-sans text-xs mb-3 italic ${m.highlighted ? 'text-clay-200' : 'text-ink-400'}`}>{m.nota}</p>
-                )}
-                {m.teoria && m.practica ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Teoría</p>
-                      <p className="font-sans text-sm text-ink-300 leading-relaxed">{m.teoria}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Práctica</p>
-                      <p className="font-sans text-sm text-ink-300 leading-relaxed">{m.practica}</p>
-                    </div>
+
+          {course.modulos[0]?.date ? (
+            /* TIMELINE: módulos con fecha (cursos online por semanas) */
+            <div className="flex flex-col gap-3">
+              {course.modulos.map((m, i) => (
+                <div
+                  key={i}
+                  className={`p-6 border-l-4 ${m.highlighted ? 'bg-clay-700 border-clay-400' : 'bg-clay-700/10 border-clay-600'}`}
+                >
+                  <div className="flex flex-wrap items-baseline gap-3 mb-2">
+                    <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">{m.num}</span>
+                    {m.date && <span className="text-xs font-sans text-bone-400">{m.date}</span>}
                   </div>
-                ) : (
-                  <ul className="flex flex-wrap gap-2">
+                  <h3 className={`font-display text-xl mb-3 ${m.highlighted ? 'text-bone-50' : 'text-bone-100'}`}>{m.title}</h3>
+                  {m.nota && (
+                    <p className={`font-sans text-xs mb-3 italic ${m.highlighted ? 'text-clay-200' : 'text-bone-400'}`}>{m.nota}</p>
+                  )}
+                  {m.teoria && m.practica ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Teoría</p>
+                        <p className="font-sans text-sm text-bone-300 leading-relaxed">{m.teoria}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-400 mb-1.5">Práctica</p>
+                        <p className="font-sans text-sm text-bone-300 leading-relaxed">{m.practica}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5">
+                      {m.items.map(item => (
+                        <li key={item} className={`flex items-start gap-2 font-sans text-sm ${m.highlighted ? 'text-clay-100' : 'text-bone-300'}`}>
+                          <span className="mt-2 w-1 h-1 rounded-full bg-clay-500 flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* GRILLA: módulos por tema (intensivos presenciales) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {course.modulos.map((m, i) => (
+                <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-600">
+                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-2">{m.num}</p>
+                  <h3 className="font-display text-base text-bone-100 mb-3 leading-snug">{m.title}</h3>
+                  <ul className="flex flex-col gap-1.5">
                     {m.items.map(item => (
-                      <li key={item} className={`text-xs font-sans px-2.5 py-1 border ${m.highlighted ? 'text-bone-100 border-clay-500 bg-clay-600/40' : 'text-ink-300 border-ink-600 bg-ink-700/30'}`}>
-                        {item}
-                      </li>
+                      <li key={item} className="font-sans text-sm text-bone-300 leading-relaxed">· {item}</li>
                     ))}
                   </ul>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
