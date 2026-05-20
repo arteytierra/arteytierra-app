@@ -25,6 +25,7 @@ const config: NextConfig = {
       { protocol: 'https', hostname: 'imagedelivery.net' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: 'img.youtube.com' },
     ],
   },
   async headers() {
