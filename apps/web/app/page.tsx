@@ -39,7 +39,7 @@ const SERVICIOS = [
 
 const PROYECTOS = [
   { slug: 'armonia',          name: 'Proyecto Armonía',    type: 'Bioarquitectura + Hidrología', img: '/img/proyectos/armonia/1.jpg',          meta: 'Capilla del Monte · 2025' },
-  { slug: 'alihuen',          name: 'Casa Alihuen',         type: 'Bioarquitectura',              img: '/img/proyectos/alihuen/1.jpg',          meta: 'Santa Isabel · 2024' },
+  { slug: 'alihuen',          name: 'Casa Alihuen',         type: 'Bioarquitectura',              img: '/img/proyectos/alihuen/4.jpg',          meta: 'Santa Isabel · 2024' },
   { slug: 'sol',              name: 'Casa del Sol',          type: 'Bioarquitectura',              img: '/img/proyectos/sol/1.jpg',              meta: 'Santa Isabel · 2023' },
   { slug: 'chelo',            name: 'La Casa del Chelo',     type: 'Bioarquitectura',              img: '/img/proyectos/chelo/1.jpg',            meta: 'María Juana, Santa Fé · 2019' },
   { slug: 'aurea',            name: 'Casa Aurea',            type: 'Bioarquitectura',              img: '/img/proyectos/aurea/1.jpg',            meta: 'San Marcos Sierras · 2022–2026' },
@@ -80,8 +80,8 @@ export default function HomePage() {
         {/* ── HERO ── */}
         <section className="relative h-screen min-h-[600px] max-h-[900px] overflow-hidden bg-ink-950 flex items-end">
           <Image
-            src="/img/taypichin/carousel/1.jpg"
-            alt="Tay Pichín — sede de Arte y Tierra en las Sierras de Córdoba"
+            src="/img/proyectos/portada/1.jpg"
+            alt="Arte y Tierra — diseño ecosistémico del territorio"
             fill
             priority
             className="object-cover"
