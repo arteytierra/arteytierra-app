@@ -86,13 +86,13 @@ export default function AsesoriasPage() {
                   <div className="mt-1.5 w-2 h-2 rounded-full bg-clay-700 flex-shrink-0" />
                   <div>
                     <h3 className="font-sans font-semibold text-ink-950">{item.title}</h3>
-                    <p className="font-sans text-sm text-ink-600 mt-0.5">{item.desc}</p>
+                    <p className="font-sans text-sm text-ink-700 mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-10 p-5 bg-clay-50 border border-clay-200">
-              <p className="font-sans text-sm text-clay-800 leading-relaxed">
+            <div className="mt-10 p-5 bg-clay-100 border border-clay-200">
+              <p className="font-sans text-sm text-clay-700 leading-relaxed">
                 <strong>Descuento en el diseño:</strong> Si después de la asesoría decidís contratar el diseño o proyecto con nosotros, los USD 60 de la sesión se descuentan del presupuesto total.
               </p>
             </div>
@@ -113,14 +113,14 @@ export default function AsesoriasPage() {
       <section className="bg-ink-950 py-20 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-10 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-3">¿Sobre qué podemos hablar?</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-3">¿Sobre qué podemos hablar?</p>
             <h2 className="font-display text-4xl text-bone-50">
               Cualquier tema<br /><em>de tu territorio.</em>
             </h2>
           </div>
           <div className="flex flex-wrap gap-3 justify-center">
             {TEMAS.map(t => (
-              <span key={t} className="font-sans text-sm font-semibold text-bone-200 bg-ink-800 border border-ink-600 px-4 py-2.5">
+              <span key={t} className="font-sans text-sm font-semibold text-bone-200 bg-ink-800 border border-ink-700 px-4 py-2.5">
                 {t}
               </span>
             ))}
@@ -157,7 +157,7 @@ export default function AsesoriasPage() {
             <h2 className="font-display text-4xl text-ink-950">
               Contanos sobre<br /><em>tu proyecto.</em>
             </h2>
-            <p className="mt-4 font-sans text-ink-600 text-base leading-relaxed">
+            <p className="mt-4 font-sans text-ink-700 text-base leading-relaxed">
               Completá el formulario y te escribimos para coordinar. Normalmente respondemos en 24 horas hábiles.
             </p>
           </div>
@@ -166,21 +166,21 @@ export default function AsesoriasPage() {
       </section>
 
       {/* PAGOS */}
-      <section className="bg-clay-50 border-y border-clay-200 py-16 px-6">
+      <section className="bg-bone-50 border-y border-clay-200 py-16 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-10 text-center">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Paso 2 — Pagos</p>
             <h2 className="font-display text-3xl text-ink-950">
               Elegí cómo <em>pagar.</em>
             </h2>
-            <p className="mt-3 font-sans text-ink-600 text-sm">
+            <p className="mt-3 font-sans text-ink-700 text-sm">
               USD 30 consulta puntual · USD 60 diagnóstico integral
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="p-6 bg-bone-50 border border-bone-200 flex flex-col gap-3">
               <h3 className="font-sans font-bold text-ink-950">PayPal</h3>
-              <p className="font-sans text-sm text-ink-600 leading-relaxed">
+              <p className="font-sans text-sm text-ink-700 leading-relaxed">
                 Pagos internacionales. Aceptamos todas las tarjetas vía PayPal.
               </p>
               <a
@@ -194,7 +194,7 @@ export default function AsesoriasPage() {
             </div>
             <div className="p-6 bg-bone-50 border border-bone-200 flex flex-col gap-3">
               <h3 className="font-sans font-bold text-ink-950">Mercado Pago</h3>
-              <p className="font-sans text-sm text-ink-600 leading-relaxed">
+              <p className="font-sans text-sm text-ink-700 leading-relaxed">
                 Para Argentina y Latinoamérica. Tarjetas, transferencia y efectivo.
               </p>
               <a
@@ -208,10 +208,10 @@ export default function AsesoriasPage() {
             </div>
             <div className="p-6 bg-bone-50 border border-bone-200 flex flex-col gap-3">
               <h3 className="font-sans font-bold text-ink-950">Transferencia bancaria</h3>
-              <p className="font-sans text-sm text-ink-600 leading-relaxed">
-                Colombia: Bancolombia cuenta <strong>54193548566</strong> a nombre de Arte y Tierra.
+              <p className="font-sans text-sm text-ink-700 leading-relaxed">
+                Colombia: Bancolombia Cuenta de Ahorros <strong>541-935485-66</strong>.
               </p>
-              <p className="mt-auto text-sm font-sans text-ink-400">
+              <p className="mt-auto text-sm font-sans text-ink-700">
                 Envianos el comprobante por WhatsApp o email.
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function AsesoriasPage() {
             <h2 className="font-display text-3xl text-ink-950">
               Elegí tu <em>horario.</em>
             </h2>
-            <p className="mt-3 font-sans text-ink-600 text-sm max-w-md mx-auto">
+            <p className="mt-3 font-sans text-ink-700 text-sm max-w-md mx-auto">
               Una vez que confirmemos tu pago, agendás directamente la sesión en el horario que más te convenga.
             </p>
           </div>
@@ -256,7 +256,7 @@ export default function AsesoriasPage() {
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <a
-            href="https://wa.me/5493541234567"
+            href="https://wa.me/5493549431594"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex bg-ink-950 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-800 transition-colors"

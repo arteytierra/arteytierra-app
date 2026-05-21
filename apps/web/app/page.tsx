@@ -125,13 +125,13 @@ export default function HomePage() {
               <strong className="not-italic text-clay-300">consciente, amorosa y regenerativa</strong>{' '}
               de habitar el planeta.
             </p>
-            <p className="mt-8 font-sans text-bone-300 text-lg leading-relaxed">
+            <p className="mt-8 font-sans text-bone-200 text-lg leading-relaxed">
               Tejemos vínculos entre personas, territorios y propósitos. Escuchamos el paisaje,
               el agua, quienes lo habitan y quienes sueñan construir allí una vida nueva.
             </p>
-            <p className="mt-6 font-sans text-bone-400 text-base leading-relaxed">
+            <p className="mt-6 font-sans text-bone-200 text-base leading-relaxed">
               Trabajamos desde el paradigma del{' '}
-              <strong className="text-bone-300">Sumaq Kawsay</strong> — el Buen Vivir.
+              <strong className="text-bone-100">Sumaq Kawsay</strong> — el Buen Vivir.
             </p>
           </div>
         </section>
@@ -224,7 +224,7 @@ export default function HomePage() {
                   <div className="p-5">
                     <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1">{p.type}</p>
                     <h3 className="font-display text-xl text-bone-50 group-hover:text-clay-200 transition-colors">{p.name}</h3>
-                    <p className="mt-1 text-sm font-sans text-ink-700">{p.meta}</p>
+                    <p className="mt-1 text-sm font-sans text-bone-200/60">{p.meta}</p>
                   </div>
                 </Link>
               ))}
@@ -288,12 +288,12 @@ export default function HomePage() {
         {/* ── TESTIMONIOS ── */}
         <section className="bg-clay-900 py-20 md:py-28 px-6">
           <div className="max-w-editorial mx-auto">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 text-center mb-14">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 text-center mb-14">
               Lo que dicen quienes vivieron la experiencia
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {TESTIMONIOS.map((t, i) => (
-                <div key={i} className="flex flex-col gap-4 p-7 bg-clay-800/60">
+                <div key={i} className="flex flex-col gap-4 p-7 bg-clay-700/20">
                   <p className="font-display text-lg text-bone-100 leading-relaxed italic">{t.quote}</p>
                   <div className="mt-auto">
                     <span className="text-sm font-sans font-semibold text-clay-300">— {t.author}</span>

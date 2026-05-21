@@ -171,7 +171,7 @@ export default function DisenoPage() {
           <p className="font-display text-2xl text-bone-200 italic leading-relaxed mb-8">
             &ldquo;No imponemos una forma sobre el territorio — aprendemos su forma y la acompañamos.&rdquo;
           </p>
-          <p className="font-sans text-bone-300 text-base leading-relaxed">
+          <p className="font-sans text-bone-200 text-base leading-relaxed">
             Cada proyecto empieza con una escucha profunda del lugar: el agua, el suelo, el clima, la vegetación, la historia. Diseñamos con geometría sagrada, materiales naturales del lugar y sistemas que funcionan sin necesidad de energía externa.
           </p>
         </div>
@@ -248,7 +248,7 @@ export default function DisenoPage() {
               <div key={p.n} className="flex flex-col gap-4 p-8 border border-ink-700">
                 <span className="font-display text-5xl text-clay-700">{p.n}</span>
                 <h3 className="font-display text-2xl text-bone-50">{p.title}</h3>
-                <p className="font-sans text-base text-ink-400 leading-relaxed">{p.desc}</p>
+                <p className="font-sans text-base text-bone-200 leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
