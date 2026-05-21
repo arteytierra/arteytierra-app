@@ -1,7 +1,10 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
 import { CourseEnrollForm } from './CourseEnrollForm';
+import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
 
 export function CourseDetailPage({ course }: { course: CourseData }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
@@ -273,9 +276,12 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                 <h3 className={`font-display text-xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.label}</h3>
                 <div>
                   <div className={`font-display text-3xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.precio}</div>
-                  {op.precioAlt && <p className={`text-xs font-sans mt-1 ${op.highlighted ? 'text-clay-200' : 'text-clay-700'}`}>{op.precioAlt}</p>}
+                  {/* Mostrar precio alternativo solo en cursos online */}
+                  {op.precioAlt && (course.kind === 'online-live' || course.kind === 'online-async') && (
+                    <p className={`text-xs font-sans mt-1 ${op.highlighted ? 'text-clay-200' : 'text-clay-700'}`}>{op.precioAlt}</p>
+                  )}
                 </div>
-                <ul className="flex flex-col gap-2 mt-1">
+                <ul className="flex flex-col gap-2 mt-1 flex-1">
                   {op.includes.map(item => (
                     <li key={item} className={`flex items-start gap-2 text-xs font-sans ${op.highlighted ? 'text-clay-100' : 'text-ink-700'}`}>
                       <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${op.highlighted ? 'bg-clay-300' : 'bg-clay-500'}`} />
@@ -283,6 +289,22 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                     </li>
                   ))}
                 </ul>
+                {op.precio !== 'Consultanos' && (
+                  <AddCourseToCartButton
+                    item={{
+                      slug: course.slug,
+                      name: course.name,
+                      optionId: op.id,
+                      optionLabel: op.label,
+                      precio: op.precio,
+                    }}
+                    className={`mt-2 w-full py-3 text-xs font-sans font-bold uppercase tracking-widest transition-colors ${
+                      op.highlighted
+                        ? 'bg-bone-50 text-clay-700 hover:bg-bone-100'
+                        : 'bg-clay-700 text-bone-50 hover:bg-clay-900'
+                    }`}
+                  />
+                )}
               </div>
             ))}
           </div>
