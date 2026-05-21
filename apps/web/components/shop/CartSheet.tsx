@@ -19,9 +19,10 @@ export function CartSheet() {
   const [cart, setCart] = useState<CartSummary | null>(null);
   const [pending, start] = useTransition();
   const [payStep, setPayStep] = useState(false);
+  const [showBancolombia, setShowBancolombia] = useState(false);
 
   useEffect(() => {
-    if (!open) { setPayStep(false); return; }
+    if (!open) { setPayStep(false); setShowBancolombia(false); return; }
     fetch('/api/cart').then((r) => r.json()).then(setCart);
   }, [open]);
 
@@ -85,16 +86,31 @@ export function CartSheet() {
                 <span>PayPal</span>
                 <span className="text-xs opacity-80">Internacional · USD →</span>
               </a>
-              <a
-                href={`${WA_LINK}?text=Hola%2C%20quiero%20pagar%20con%20Bancolombia`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={hide}
-                className="flex items-center justify-between px-5 py-4 bg-clay-700 text-bone-50 font-sans font-bold text-sm hover:bg-clay-900 transition-colors"
-              >
-                <span>Bancolombia / Transferencia</span>
-                <span className="text-xs opacity-80">Consultanos →</span>
-              </a>
+              {!showBancolombia ? (
+                <button
+                  onClick={() => setShowBancolombia(true)}
+                  className="flex items-center justify-between w-full px-5 py-4 bg-clay-700 text-bone-50 font-sans font-bold text-sm hover:bg-clay-900 transition-colors"
+                >
+                  <span>Bancolombia / Transferencia</span>
+                  <span className="text-xs opacity-80">Ver datos →</span>
+                </button>
+              ) : (
+                <div className="bg-clay-700/10 border border-clay-700/40 p-4">
+                  <p className="font-sans font-bold text-sm text-ink-950 mb-2">Bancolombia — Cuenta de Ahorros</p>
+                  <p className="font-mono text-lg font-bold text-clay-700 mb-0.5">541-935485-66</p>
+                  <p className="text-xs text-ink-700 mb-3">Cuenta de Ahorros · Colombia</p>
+                  <p className="text-xs text-ink-700 leading-relaxed mb-3">Transferí e incluí tu nombre y los cursos en el concepto. Luego mandanos el comprobante por WhatsApp.</p>
+                  <a
+                    href={`${WA_LINK}?text=Hola%21%20Les%20env%C3%ADo%20el%20comprobante%20de%20transferencia%20Bancolombia.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={hide}
+                    className="font-sans font-bold text-sm text-clay-700 hover:underline"
+                  >
+                    Enviar comprobante por WhatsApp →
+                  </a>
+                </div>
+              )}
             </div>
 
             <p className="mt-6 text-xs text-ink-700/70 text-center leading-relaxed">
