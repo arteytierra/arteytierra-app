@@ -7,24 +7,42 @@ export const metadata: Metadata = {
   description: 'Diseño ecosistémico del territorio: bioarquitectura, hidrología regenerativa, producción agroecológica, paisajismo funcional y estrategia regenerativa. +40 proyectos en 7 países.',
 };
 
+const DISCIPLINAS = [
+  {
+    id: 'bioarquitectura',
+    title: 'Bioarquitectura',
+    body: 'Diseñamos viviendas y espacios habitables con materiales naturales, geometrías sagradas y sistemas pasivos de climatización. Cada construcción nace del lugar: su orientación, su clima, su historia y los sueños de quienes la van a habitar.',
+  },
+  {
+    id: 'hidrologia',
+    title: 'Hidrología',
+    body: 'Gestionamos el ciclo completo del agua en el territorio. Zanjas de infiltración, biopiscinas, swales y fitotratamientos transforman un predio seco en un ecosistema fértil. Donde el agua camina bien, todo florece.',
+  },
+  {
+    id: 'agroecologia',
+    title: 'Sistemas Agroecológicos',
+    body: 'Diseñamos sistemas productivos que alimentan y regeneran al mismo tiempo. Bosques comestibles, huertas, apicultura, piscicultura, silvicultura y fungicultivo integrados como un agroecosistema vivo.',
+  },
+];
+
 const SERVICIOS = [
   {
     num: '01',
     title: 'Manejo del agua',
-    body: 'El agua es el primer diseño. Trazamos caminos para que el agua camine despacio: zanjas de infiltración, curvas de nivel, represas, biofiltros y cosecha de lluvia. La tierra que recibe agua bien gestionada se transforma.',
-    tecnicas: ['Zanjas de infiltración', 'Curvas de nivel', 'Represas y aguadas', 'Biofiltros y humedales', 'Cosecha de aguas pluviales', 'Manejo de cañadones'],
+    body: 'El agua es el primer diseño. Trazamos caminos para que el agua camine despacio: zanjas de infiltración, represas, biofiltros, swales y cosecha de lluvia. La tierra que recibe agua bien gestionada se transforma.',
+    tecnicas: ['Zanjas de infiltración', 'Represas y aguadas', 'Biofiltros y humedales', 'Cosecha de aguas pluviales', 'Manejo de cañadones', 'Biopiscinas', 'Fitotratamientos', 'Swales'],
   },
   {
     num: '02',
     title: 'Vivienda y hábitat',
-    body: 'Espacios que responden al territorio, al clima y a quienes los habitan. Diseñamos con geometría sagrada, materiales naturales y sistemas pasivos. Cada hogar es una obra única, irrepetible.',
-    tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Paja apisonada', 'Techos vivos', 'Geometría bioclimática'],
+    body: 'Espacios que responden al territorio, al clima y a quienes los habitan. Diseñamos con geometrías áureas, materiales naturales y sistemas pasivos. Cada hogar es una obra única, irrepetible.',
+    tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Paja encofrada', 'Techos vivos', 'Arquitectura bioclimática', 'Geometrías áureas', 'Radiestesia'],
   },
   {
     num: '03',
     title: 'Producción agroecológica',
-    body: 'La comida surge del diseño del suelo. Integramos sistemas de producción que alimentan a quienes habitan y regeneran la tierra al mismo tiempo: bosques comestibles, huertas de zona 1, jardines medicinales.',
-    tecnicas: ['Bosques comestibles', 'Huertas de zona 1', 'Jardines medicinales', 'Compostaje y lombricultura', 'Integración animal', 'Diseño de zonas'],
+    body: 'La comida surge del diseño del suelo. Integramos sistemas de producción que alimentan a quienes habitan y regeneran la tierra al mismo tiempo: bosques comestibles, huerta, jardines medicinales y producción diversificada.',
+    tecnicas: ['Bosques comestibles', 'Huerta', 'Jardines medicinales', 'Compostaje y lombricultura', 'Integración animal', 'Diseño de zonas', 'Apicultura', 'Piscicultura', 'Silvicultura', 'Fungicultivo'],
   },
   {
     num: '04',
@@ -87,12 +105,6 @@ const PROCESO = [
     title: 'Implementación',
     desc: 'Acompañamos la construcción: desde la selección de materiales locales hasta los detalles de terminación. El territorio toma forma.',
   },
-];
-
-const TECNICAS = [
-  'Adobe', 'Tapial', 'Quincha', 'Cob', 'Piedra pirca', 'Paja apisonada',
-  'Techos vivos', 'Geometría sagrada', 'Zanjas de infiltración', 'Biofiltros',
-  'Represas', 'Bosques comestibles', 'Tadelakt', 'Estucos naturales',
 ];
 
 export default function DisenoPage() {
@@ -177,6 +189,27 @@ export default function DisenoPage() {
         </div>
       </section>
 
+      {/* DISCIPLINAS */}
+      <section className="bg-bone-50 py-20 md:py-28 px-6">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-14">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Qué diseñamos</p>
+            <h2 className="font-display text-4xl md:text-5xl text-ink-950">
+              Tres disciplinas,<br />
+              <em>un enfoque.</em>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {DISCIPLINAS.map(d => (
+              <div key={d.id} className="border-t-2 border-clay-700 pt-6">
+                <h3 className="font-display text-2xl text-ink-950 mb-4">{d.title}</h3>
+                <p className="font-sans text-base text-ink-700 leading-relaxed">{d.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* SERVICIOS */}
       <section className="bg-bone-100 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
@@ -189,20 +222,16 @@ export default function DisenoPage() {
           </div>
           <div className="flex flex-col divide-y divide-bone-200">
             {SERVICIOS.map(s => (
-              <div key={s.num} className="py-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                <div>
-                  <div className="flex items-baseline gap-3 mb-4">
-                    <span className="text-xs font-sans font-bold text-clay-500 uppercase tracking-widest">{s.num}</span>
-                    <h3 className="font-display text-2xl md:text-3xl text-ink-950">{s.title}</h3>
-                  </div>
-                  <p className="font-sans text-base text-ink-700 leading-relaxed">{s.body}</p>
+              <div key={s.num} className="py-10 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-start">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-xs font-sans font-bold text-clay-500 uppercase tracking-widest">{s.num}</span>
+                  <h3 className="font-display text-2xl text-ink-950">{s.title}</h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {s.tecnicas.map(t => (
-                    <span key={t} className="text-xs font-sans font-semibold uppercase tracking-wider text-clay-700 bg-clay-100 border border-clay-200 px-3 py-1.5">
-                      {t}
-                    </span>
-                  ))}
+                <div>
+                  <p className="font-sans text-base text-ink-700 leading-relaxed mb-4">{s.body}</p>
+                  <p className="font-sans text-sm text-clay-700 leading-loose">
+                    {s.tecnicas.join(' · ')}
+                  </p>
                 </div>
               </div>
             ))}
@@ -221,7 +250,7 @@ export default function DisenoPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {MODOS.map(m => (
-              <div key={m.id} className={`p-8 flex flex-col gap-4 ${m.starred ? 'bg-clay-700' : 'bg-bone-100 border border-bone-200'}`}>
+              <div key={m.id} className={`p-8 flex flex-col gap-3 ${m.starred ? 'bg-clay-700' : 'bg-bone-100 border border-bone-200'}`}>
                 {m.starred && (
                   <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Más elegido</span>
                 )}
@@ -250,22 +279,6 @@ export default function DisenoPage() {
                 <h3 className="font-display text-2xl text-bone-50">{p.title}</h3>
                 <p className="font-sans text-base text-bone-200 leading-relaxed">{p.desc}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TÉCNICAS */}
-      <section className="bg-bone-50 py-16 px-6 border-y border-bone-200">
-        <div className="max-w-editorial mx-auto">
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-6 text-center">
-            Técnicas que dominamos
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {TECNICAS.map(t => (
-              <span key={t} className="text-sm font-sans font-semibold uppercase tracking-wider text-clay-800 bg-bone-100 border border-clay-200 px-4 py-2">
-                {t}
-              </span>
             ))}
           </div>
         </div>
