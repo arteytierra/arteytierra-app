@@ -29,7 +29,7 @@ const SERVICIOS = [
   {
     num: '01',
     title: 'Manejo del agua',
-    body: 'El agua es el primer diseño. Trazamos caminos para que el agua camine despacio: zanjas de infiltración, represas, biofiltros, swales y cosecha de lluvia. La tierra que recibe agua bien gestionada se transforma.',
+    body: 'El agua define el territorio — tanto por su ausencia como por su exceso. Diseñamos para retener donde el suelo está seco, distribuir donde hay vertientes y caudales permanentes, encauzar donde la lluvia golpea fuerte, y tratar donde el agua sobra. Cada intervención parte de leer el comportamiento hídrico específico del lugar.',
     tecnicas: ['Zanjas de infiltración', 'Represas y aguadas', 'Biofiltros y humedales', 'Cosecha de aguas pluviales', 'Manejo de cañadones', 'Biopiscinas', 'Fitotratamientos', 'Swales'],
   },
   {

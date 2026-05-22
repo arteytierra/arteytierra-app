@@ -51,7 +51,7 @@ export default function AsesoriasPage() {
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">
         <Image
-          src="/img/cursos/asesorias/1.jpg"
+          src="/img/taypichin/carousel/13.jpg"
           alt="Asesoría online Arte y Tierra"
           fill
           priority
@@ -233,7 +233,7 @@ export default function AsesoriasPage() {
           </div>
           <div className="bg-bone-50 border border-bone-200 overflow-hidden" style={{ minHeight: 600 }}>
             <iframe
-              src="https://cal.com/arteytierra/aseroria-online"
+              src="https://cal.com/arteytierra/asesoria-online"
               width="100%"
               height="600"
               frameBorder="0"

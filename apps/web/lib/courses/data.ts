@@ -194,7 +194,12 @@ export const COURSES: Record<string, CourseData> = {
       { num: 'Módulo II · 1 ago', title: 'Sustrato, inoculación e incubación', items: ['Tipos de sustrato y preparación', 'Pasteurización y esterilización simple', 'Inoculación sin laboratorio', 'Condiciones de incubación', 'Práctica: preparación y siembra de bolsas'], nota: 'Pensado para quienes quieren producir en casa sin montar un laboratorio.' },
       { num: 'Módulo III · 22 ago', title: 'Fructificación, cosecha y escalado', items: ['Desencadenantes de la fructificación', 'Condiciones de temperatura y humedad', 'Cosecha en el momento justo', 'Conservación y uso culinario', 'Práctica: mantenimiento del cultivo y primeras cosechas'], nota: 'Para quienes quieren escalar la producción o emprender con hongos.' },
     ],
-    facilitadores: [{ name: 'FUNGO', role: 'Cultivo y micología aplicada', bio: 'Equipo especializado en cultivo de hongos comestibles y medicinales. Co-organiza con Arte y Tierra y la Ecoescuela Tay Pichín.' }],
+    facilitadores: [{
+      name: 'Emmanuel Ciancio Manzoni',
+      role: 'Cultivador · Productor de micelio',
+      bio: 'Hace más de 9 años, su interés por el reino fungi cambió el rumbo de su vida. Lo que empezó como una curiosidad se convirtió en vocación: cultivar, aprender y compartir todo lo que los hongos tienen para ofrecer. Productor de micelio, extractos y kits de cultivo, acompaña a quienes sienten que hay algo fascinante detrás de estos organismos y quieren dar sus primeros pasos. Su objetivo es acercar el mundo de los hongos adaptógenos y comestibles a la vida cotidiana, de forma práctica, accesible y con la misma pasión con la que empezó.',
+      img: '/img/cursos/cultivo-girgolas/emmanuel.jpg',
+    }],
     opciones: [
       { id: 'modulo', label: 'Módulo suelto', precio: 'Consultanos', includes: ['Un encuentro presencial', 'Materiales incluidos', 'Práctica con insumos reales'] },
       { id: 'ciclo', label: 'Ciclo completo · 3 módulos', precio: 'Consultanos', includes: ['Los 3 encuentros', 'Materiales incluidos', 'Precio especial ciclo completo'], highlighted: true },

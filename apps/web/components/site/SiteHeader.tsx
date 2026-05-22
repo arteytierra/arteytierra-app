@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@arteytierra/ui';
 import { useCartUI } from '@/components/shop/CartProvider';
@@ -14,9 +15,10 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/arte-y-tierra',
       children: [
-        { label: 'Diseño',     href: '/diseno' },
-        { label: 'Asesorías',  href: '/asesorias' },
-        { label: 'Proyectos',  href: '/proyectos' },
+        { label: 'Diseño',              href: '/diseno' },
+        { label: 'Asesorías',           href: '/asesorias' },
+        { label: 'Proyectos',           href: '/proyectos' },
+        { label: 'Análisis de Terreno', href: 'https://terreno.arteytierra.org' },
       ],
     },
     {
@@ -46,9 +48,10 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/en/arte-y-tierra',
       children: [
-        { label: 'Design',      href: '/en/diseno' },
-        { label: 'Consulting',  href: '/en/asesorias' },
-        { label: 'Projects',    href: '/en/proyectos' },
+        { label: 'Design',        href: '/en/diseno' },
+        { label: 'Consulting',    href: '/en/asesorias' },
+        { label: 'Projects',      href: '/en/proyectos' },
+        { label: 'Land Analysis', href: 'https://terreno.arteytierra.org' },
       ],
     },
     {
@@ -78,9 +81,10 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/pt/arte-y-tierra',
       children: [
-        { label: 'Design',      href: '/pt/diseno' },
-        { label: 'Consultoria', href: '/pt/asesorias' },
-        { label: 'Projetos',    href: '/pt/proyectos' },
+        { label: 'Design',             href: '/pt/diseno' },
+        { label: 'Consultoria',        href: '/pt/asesorias' },
+        { label: 'Projetos',           href: '/pt/proyectos' },
+        { label: 'Análise de Terreno', href: 'https://terreno.arteytierra.org' },
       ],
     },
     {
@@ -157,7 +161,15 @@ export function SiteHeader({
 
   return (
     <Header
-      brand="Arte y Tierra"
+      brand={
+        <span className="flex items-center gap-2.5">
+          <Image src="/img/logos/ayt-arbol-negro.png" alt="Arte y Tierra" width={34} height={34} className="h-8 w-8 object-contain flex-shrink-0" />
+          <span className="flex flex-col leading-none gap-0.5">
+            <span className="font-display text-[15px] tracking-tight text-ink-950 leading-none">Arte y Tierra</span>
+            <span className="font-sans text-[9px] font-bold uppercase tracking-[0.18em] text-clay-700 leading-none">Diseño Ecosistémico</span>
+          </span>
+        </span>
+      }
       items={items}
       cta={cta}
       cartCount={count}

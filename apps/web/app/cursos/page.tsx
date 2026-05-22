@@ -9,6 +9,16 @@ export const metadata: Metadata = {
 
 /* ─── Course data ────────────────────────────────── */
 
+const TODOS = [
+  { slug: 'bioarquitectura',    name: 'Bioarquitectura',           tag: '18–19 jul 2026',        img: '/img/cursos/bioarquitectura/1.jpg',    badge: 'Presencial',     tentativo: false },
+  { slug: 'cultivo-girgolas',   name: 'Cultivo de Gírgolas',       tag: '11/7 · 1/8 · 22/8',    img: '/img/cursos/cultivo-girgolas/1.jpg',   badge: 'Taller modular', tentativo: false },
+  { slug: 'alquimia-natural',   name: 'Alquimia Natural',          tag: 'Mayo–Dic 2026',         img: '/img/taypichin/carousel/3.jpg',        badge: 'Ciclo mensual',  tentativo: false },
+  { slug: 'inmersion-viva',     name: 'Inmersión Viva',            tag: '15 o 30 días',          img: '/img/taypichin/carousel/5.jpg',        badge: 'Inmersión',      tentativo: false },
+  { slug: 'vuelta-a-la-tierra', name: 'La Vuelta a la Tierra',     tag: 'Oct 2026 · Online',     img: '/img/cursos/vueltatierra/7.jpg',       badge: 'Online en vivo', tentativo: false },
+  { slug: 'mi-tierra-mi-casa',  name: 'Mi Tierra, Mi Casa',        tag: 'Disponible ahora',      img: '/img/cursos/mitierramicasa/1.jpg',     badge: 'Online',         tentativo: false },
+  { slug: 'tadelakt',           name: 'Tadelakt Online',           tag: 'Fecha por confirmar',   img: '/img/cursos/tadelakt/0.jpg',           badge: 'Online en vivo', tentativo: true  },
+];
+
 const PRESENCIALES = [
   {
     slug: 'bioarquitectura',
@@ -40,7 +50,7 @@ const PRESENCIALES = [
       { label: 'Fechas', val: '11 jul · 1 ago · 22 ago 2026' },
       { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' },
       { label: 'Modalidad', val: 'Presencial · módulos independientes' },
-      { label: 'Facilita', val: 'FUNGO × Arte y Tierra' },
+      { label: 'Facilita', val: 'Emmanuel Ciancio Manzoni' },
     ],
     contenidos: ['Biología del hongo y ciclo de vida', 'Producción de micelio e inoculación', 'Sustrato e incubación', 'Autoproducción doméstica', 'Cosecha y conservación'],
     precio: 'Módulo suelto o ciclo completo',
@@ -108,57 +118,39 @@ const ONLINE = [
     href: '/cursos/mi-tierra-mi-casa',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20a%20Mi%20Tierra%2C%20Mi%20Casa',
   },
+];
+
+const TENTATIVOS = [
   {
     slug: 'tadelakt',
     badge: 'Online en vivo · 3 sesiones',
     name: 'Tadelakt Online',
-    tag: 'Próxima edición por confirmar',
     desc: 'El arte marroquí del enlucido en cal: el acabado impermeable, brillante y vivo que transforma baños, cocinas y cualquier superficie en una pieza única.',
     img: '/img/cursos/tadelakt/0.jpg',
-    datos: [
-      { label: 'Formato', val: '3 sesiones Zoom en vivo · grabadas' },
-      { label: 'Duración', val: '3–4 hs por sesión' },
-      { label: 'Modalidad', val: '100% online · desde donde estés' },
-      { label: 'Facilita', val: 'Jonatan Palma' },
-    ],
-    contenidos: ['Historia y química de la cal', 'Lectura y preparación del soporte', 'Mortero base y aplicación', 'Manejo de tiempos de fragüe', 'Pulido y bruñido con piedra', 'Pigmentación y sellado'],
-    precio: '$90.000 ARS',
-    precioNote: 'Incluye grabaciones y material de apoyo.',
     href: '/cursos/tadelakt',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20del%20curso%20de%20Tadelakt%20Online',
   },
 ];
 
-/* ─── Component ──────────────────────────────────── */
+/* ─── Components ─────────────────────────────────── */
 
 function CourseCard({ c, reverse }: { c: typeof PRESENCIALES[0]; reverse?: boolean }) {
   return (
     <article className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} bg-bone-100 overflow-hidden`}>
-      {/* Image */}
       <div className="relative md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[460px] overflow-hidden bg-ink-950 flex-shrink-0">
-        <Image
-          src={c.img}
-          alt={c.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+        <Image src={c.img} alt={c.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
         <div className="absolute top-4 left-4">
           <span className="bg-clay-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">
             {c.badge}
           </span>
         </div>
       </div>
-
-      {/* Info */}
       <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-5">
         <div>
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{c.tag}</p>
           <h3 className="font-display text-2xl md:text-3xl text-ink-950">{c.name}</h3>
         </div>
         <p className="font-sans text-base text-ink-700 leading-relaxed">{c.desc}</p>
-
-        {/* Datos */}
         <div className="grid grid-cols-2 gap-2">
           {c.datos.map(d => (
             <div key={d.label} className="bg-bone-50 px-3 py-2.5 border-l-2 border-clay-400">
@@ -167,8 +159,6 @@ function CourseCard({ c, reverse }: { c: typeof PRESENCIALES[0]; reverse?: boole
             </div>
           ))}
         </div>
-
-        {/* Contenidos */}
         <div className="flex flex-wrap gap-1.5">
           {c.contenidos.map(t => (
             <span key={t} className="text-xs font-sans text-clay-700 bg-clay-50 border border-clay-200 px-2.5 py-1">
@@ -176,26 +166,17 @@ function CourseCard({ c, reverse }: { c: typeof PRESENCIALES[0]; reverse?: boole
             </span>
           ))}
         </div>
-
-        {/* Precio + CTA */}
         <div className="flex flex-col gap-3 pt-2 border-t border-bone-200">
           <div>
             <span className="font-display text-2xl text-ink-950">{c.precio}</span>
             <p className="text-xs font-sans text-ink-500 mt-0.5">{c.precioNote}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <a
-              href={c.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors"
-            >
+            <a href={c.whatsapp} target="_blank" rel="noopener noreferrer"
+              className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors">
               Inscribirme →
             </a>
-            <Link
-              href={c.href}
-              className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-50 transition-colors"
-            >
+            <Link href={c.href} className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-50 transition-colors">
               Ver más
             </Link>
           </div>
@@ -210,14 +191,7 @@ export default function CursosPage() {
     <main>
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">
-        <Image
-          src="/img/cursos/cursos/1.jpg"
-          alt="Ecoescuela Arte y Tierra — Tay Pichín"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
+        <Image src="/img/cursos/cursos/1.jpg" alt="Ecoescuela Arte y Tierra — Tay Pichín" fill priority className="object-cover" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/40 to-transparent" />
         <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-14">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-3">Ecoescuela · Tay Pichín</p>
@@ -227,6 +201,36 @@ export default function CursosPage() {
           <p className="mt-4 text-bone-200 font-sans text-lg max-w-lg">
             Cursos presenciales, online y formaciones intensivas sobre bioconstrucción, diseño del territorio y soberanía personal.
           </p>
+        </div>
+      </section>
+
+      {/* GRILLA RÁPIDA — todos los cursos */}
+      <section className="bg-ink-900 py-8 px-6 border-b border-ink-700">
+        <div className="max-w-editorial mx-auto">
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-5 text-center">Todas las formaciones</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+            {TODOS.map(c => (
+              <Link key={c.slug} href={`/cursos/${c.slug}`} className="group relative overflow-hidden bg-ink-800 flex flex-col">
+                <div className="relative aspect-[3/4] overflow-hidden">
+                  <Image src={c.img} alt={c.name} fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, 14vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 to-transparent" />
+                  {c.tentativo && (
+                    <div className="absolute top-1.5 left-1.5">
+                      <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-1.5 py-0.5">
+                        Próx.
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-2 flex flex-col gap-0.5 flex-1">
+                  <p className="font-sans text-[11px] font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>
+                  <p className="font-sans text-[10px] text-bone-300 leading-tight">{c.tag}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -268,13 +272,7 @@ export default function CursosPage() {
       <section className="bg-ink-950">
         <div className="max-w-wide mx-auto grid grid-cols-1 lg:grid-cols-2">
           <div className="relative min-h-[420px] lg:min-h-[600px] overflow-hidden">
-            <Image
-              src="/img/taypichin/carousel/5.jpg"
-              alt="Inmersión Viva — Tay Pichín"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
+            <Image src="/img/taypichin/carousel/5.jpg" alt="Inmersión Viva — Tay Pichín" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             <div className="absolute top-4 left-4">
               <span className="bg-moss-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">
                 Inmersión · 15 o 30 días
@@ -304,18 +302,13 @@ export default function CursosPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
-              <a
-                href="https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors"
-              >
+              <a href="https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva"
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors">
                 Consultar →
               </a>
-              <Link
-                href="/cursos/inmersion-viva"
-                className="inline-flex border border-bone-500/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors"
-              >
+              <Link href="/cursos/inmersion-viva"
+                className="inline-flex border border-bone-500/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors">
                 Ver la experiencia
               </Link>
             </div>
@@ -338,6 +331,51 @@ export default function CursosPage() {
           {ONLINE.map((c, i) => (
             <CourseCard key={c.slug} c={c} reverse={i % 2 === 0} />
           ))}
+        </div>
+      </section>
+
+      {/* PRÓXIMAMENTE */}
+      <section className="bg-bone-50 py-20 px-6 border-t border-bone-200">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-10">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Próximamente</p>
+            <h2 className="font-display text-4xl text-ink-950">
+              En preparación —<br /><em>anotate antes.</em>
+            </h2>
+            <p className="mt-4 font-sans text-ink-600 text-base max-w-xl">
+              Estas formaciones no tienen fecha confirmada aún. Dejanos tu nombre y te avisamos apenas abramos inscripción.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {TENTATIVOS.map(t => (
+              <div key={t.slug} className="bg-bone-100 overflow-hidden border border-bone-200">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image src={t.img} alt={t.name} fill className="object-cover grayscale opacity-80"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/60 to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className="text-xs font-sans font-bold uppercase tracking-widest bg-bone-50 text-clay-700 px-2.5 py-1">
+                      {t.badge}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="font-display text-xl text-ink-950 mb-2">{t.name}</h3>
+                  <p className="font-sans text-sm text-ink-700 leading-relaxed mb-5">{t.desc}</p>
+                  <div className="flex gap-3">
+                    <a href={t.whatsapp} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-clay-900 transition-colors">
+                      Anotarme →
+                    </a>
+                    <Link href={t.href}
+                      className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-clay-50 transition-colors">
+                      Ver más
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -370,18 +408,13 @@ export default function CursosPage() {
           Una asesoría de 30 minutos sin costo para ayudarte a elegir el camino que más se alinea con lo que buscás.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <a
-            href="https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20sobre%20los%20cursos"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
-          >
+          <a href="https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20sobre%20los%20cursos"
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
             WhatsApp →
           </a>
-          <Link
-            href="/asesorias"
-            className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-950 hover:text-bone-50 transition-colors"
-          >
+          <Link href="/asesorias"
+            className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-950 hover:text-bone-50 transition-colors">
             Agendar asesoría
           </Link>
         </div>
