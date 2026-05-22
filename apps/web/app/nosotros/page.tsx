@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Arte y Tierra',
-  description: 'Somos un colectivo de bioarquitectos, hidrólogos y diseñadores ecosistémicos. +40 obras en 6 países y 15 años de trabajo con la tierra.',
+  description: 'Arte y Tierra es un colectivo de bioarquitectos, hidrólogos y diseñadores ecosistémicos. +40 obras en 7 países y 15 años de trabajo con la tierra.',
   alternates: { canonical: '/nosotros' },
 };
 
@@ -17,28 +17,34 @@ const VALORES = [
 
 const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] = [
   {
-    name: 'Jonatan Gabriel Palma',
+    name: 'Jonatan Palma',
     role: 'Director · Diseñador · Facilitador',
     bio: 'Bioconstructor y bioarquitecto desde 2010, especializado en construcción en tierra, bioclimática y radiestesia. Formado junto a Jorge Belanko, Gernot Minke, Marco Arestra y Daniel Smite. Fundador de Arte y Tierra y de la Ecoescuela Tay Pichín.',
-    img: '/img/cursos/vueltatierra/9.jpg',
+    img: '/img/cursos/vueltatierra/10.jpg',
   },
   {
     name: 'Fabricio Manzoni',
     role: 'Permacultura · Diseño Hidrológico',
     bio: 'Cofundador de Minga Verde, facilitador certificado por la Eco-escuela El Manzano (Universidad Gaia, Chile). Se dedica al diseño y consultoría en salud y regeneración de sistemas ecológicos en distintos países.',
-    img: '/img/cursos/vueltatierra/8.jpg',
+    img: '/img/cursos/vueltatierra/11.jpeg',
   },
   {
     name: 'Julián Denaday',
     role: 'Conducción de obra · Facilitador',
-    bio: 'Constructor de oficio, oriundo de Los Toldos (Buenos Aires). Integra técnica y experiencia práctica en procesos constructivos, compartiendo el hacer desde una mirada consciente.',
-    img: null,
+    bio: 'Constructor de oficio, oriundo de Los Toldos (Buenos Aires). Integra técnica y experiencia práctica en procesos constructivos, compartiendo el hacer desde una mirada consciente y en vínculo con la vida cotidiana.',
+    img: 'https://drive.google.com/thumbnail?id=1ixPqThmDFMhODU8ozTbLeiRylLMGa_rz&sz=w800',
   },
   {
     name: 'Ignacio Gómez Serjal',
-    role: 'Voluntariado · Tay Pichín',
-    bio: 'Permacultor y agricultor nacido en San Nicolás. Especializado en huerta y sistemas productivos a escala humana, acompañando procesos de aprendizaje desde la práctica en Tay Pichín.',
-    img: null,
+    role: 'Director de voluntariado · Tay Pichín',
+    bio: 'Permacultor y agricultor nacido en San Nicolás. Su camino se forjó en contacto directo con la tierra, especializándose en el trabajo de huerta y sistemas productivos a escala humana, acompañando procesos de aprendizaje desde la práctica.',
+    img: 'https://drive.google.com/thumbnail?id=1BgRX6c2SWhRL25wVk78URypKKVA74sj3&sz=w800',
+  },
+  {
+    name: 'Karen Ybarra',
+    role: 'Equipo de Ecohostel · Tay Pichín',
+    bio: 'Nacida en Tres de Febrero (Buenos Aires), su interés por la permacultura la llevó a investigar sistemas constructivos convencionales y tradicionales. Aporta una mirada sensible en la gestión del espacio y la experiencia de quienes habitan el lugar.',
+    img: 'https://drive.google.com/thumbnail?id=17CGD5Mf4J8zKKAWYWtxNoFldhhTgTufD&sz=w800',
   },
 ];
 
@@ -49,6 +55,7 @@ const PAISES = [
   { bandera: '🇧🇴', nombre: 'Bolivia' },
   { bandera: '🇮🇹', nombre: 'Italia' },
   { bandera: '🇫🇷', nombre: 'Francia' },
+  { bandera: '🇪🇨', nombre: 'Ecuador' },
 ];
 
 export default function NosotrosPage() {
@@ -61,13 +68,13 @@ export default function NosotrosPage() {
           alt="Arte y Tierra — equipo en obra"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-top"
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/40 to-transparent" />
         <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-16">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-            Nosotros · +40 obras · 6 países · 15 años
+            Nosotros · +40 obras · 7 países · 15 años
           </p>
           <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
             Equipo que diseña<br /><em>territorios vivos.</em>
@@ -134,12 +141,17 @@ export default function NosotrosPage() {
               Quienes <em>habitan</em> Arte y Tierra.
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {EQUIPO.map(p => (
-              <div key={p.name} className="flex flex-col sm:flex-row bg-bone-50 overflow-hidden">
-                <div className="relative w-full sm:w-44 aspect-square sm:aspect-auto sm:min-h-[220px] flex-shrink-0 overflow-hidden bg-clay-700/20">
+              <div key={p.name} className="flex flex-col bg-bone-50 overflow-hidden">
+                <div className="relative w-full aspect-[4/3] overflow-hidden bg-clay-700/20 flex-shrink-0">
                   {p.img ? (
-                    <Image src={p.img} alt={p.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 176px" />
+                    p.img.startsWith('https://drive.google.com') ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Image src={p.img} alt={p.name} fill className="object-cover object-top" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    )
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="font-display text-6xl text-clay-700/30">{p.name[0]}</span>
@@ -162,7 +174,7 @@ export default function NosotrosPage() {
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Itinerantes en el mundo</p>
           <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-10 leading-tight">
-            Hemos trabajado en<br />seis <em>países.</em>
+            Hemos trabajado en<br />siete <em>países.</em>
           </h2>
           <div className="flex flex-wrap gap-3 mb-10">
             {PAISES.map(p => (
@@ -184,7 +196,7 @@ export default function NosotrosPage() {
           {[
             { num: '+40', label: 'Obras realizadas' },
             { num: '15', label: 'Años de trayectoria' },
-            { num: '6', label: 'Países' },
+            { num: '7', label: 'Países' },
             { num: '+500', label: 'Personas formadas' },
           ].map(s => (
             <div key={s.label}>

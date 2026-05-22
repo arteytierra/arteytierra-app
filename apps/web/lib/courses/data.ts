@@ -55,14 +55,14 @@ const JONATAN: Facilitador = {
   name: 'Jonatan Gabriel Palma',
   role: 'Bioarquitectura · Bioconstrucción',
   bio: 'Bioconstructor desde 2010, especializado en técnicas de construcción en tierra ancestrales y modernas, bioclimática, bioarquitectura y radiestesia. Su formación incluye el aporte de docentes referentes como Jorge Belanko, Gernot Minke, Marco Arestra y Daniel Smite, entre otrxs maestrxs. Hijo de un carpintero, desde niño aprendió a trabajar con la madera — un oficio que sigue siendo la base de su mirada constructiva. Fundador de Arte y Tierra y de la ecoescuela Tay Pichín en San Marcos Sierras.',
-  img: '/img/cursos/vueltatierra/9.jpg',
+  img: '/img/cursos/vueltatierra/10.jpg',
 };
 
 const FABRICIO: Facilitador = {
   name: 'Fabricio Manzoni',
   role: 'Permacultura · Diseño Hidrológico',
   bio: 'Cofundador de Minga Verde, facilitador en Permacultura certificado por la Eco-escuela El Manzano, sede de Universidad Gaia en Chile. Se dedica al diseño, asesoría y consultoría en salud y regeneración de sistemas ecológicos en distintos países. Apasionado del manejo hidrológico, la fertilidad del suelo y los sistemas agroforestales.',
-  img: '/img/cursos/vueltatierra/8.jpg',
+  img: '/img/cursos/vueltatierra/11.jpeg',
 };
 
 /* ─────────────────────────────────────────────────── */

@@ -16,14 +16,14 @@ const INCLUYE = [
 ];
 
 const TEMAS = [
-  'Agua y manejo hídrico',
-  'Diseño de vivienda natural',
+  'Bioarquitectura',
+  'Diseño hidrológico',
+  'Permacultura',
+  'Sistemas agroecológicos',
+  'Tratamiento de aguas',
   'Diagnóstico de terreno',
-  'Materiales y técnicas constructivas',
+  'Materiales naturales',
   'Producción agroecológica',
-  'Bosque comestible',
-  'Sistemas de tratamiento de aguas',
-  'Cursos y formaciones',
   'Proyectos integrales',
 ];
 
@@ -51,7 +51,7 @@ export default function AsesoriasPage() {
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">
         <Image
-          src="/img/taypichin/carousel/13.jpg"
+          src="/img/cursos/asesorias/dron.jpg"
           alt="Asesoría online Arte y Tierra"
           fill
           priority
