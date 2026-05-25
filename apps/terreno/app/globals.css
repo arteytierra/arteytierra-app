@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg:      251 248 243;
+    --color-surface: 242 237 227;
+    --color-ink:     15 20 16;
+    --color-muted:   58 90 64;
+    --color-accent:  217 164 65;
+    --color-border:  232 225 210;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-bone-50 text-ink-950 font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.18em] font-medium text-moss-700;
+  }
+
+  /* Leaflet override: z-index por debajo de los modales */
+  .leaflet-pane        { z-index: 1 !important; }
+  .leaflet-top,
+  .leaflet-bottom      { z-index: 10 !important; }
+  .leaflet-control     { z-index: 10 !important; }
+}

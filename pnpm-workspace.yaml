@@ -6,3 +6,16 @@ packages:
 overrides:
   vite: ">=6.4.2"
   postcss: ">=8.5.10"
+
+# react-leaflet 4.x declara peer de React 18 pero funciona con 19
+peerDependencyRules:
+  ignoreMissing:
+    - "@types/react"
+    - "@types/react-dom"
+  allowedVersionsOnlyForPackages:
+    react-leaflet:
+      react: "18 || 19"
+      react-dom: "18 || 19"
+    "@react-leaflet/core":
+      react: "18 || 19"
+      react-dom: "18 || 19"

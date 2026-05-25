@@ -178,13 +178,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isStaffOnly && user) {
-    const { data: profile } = await supabase
-      .schema('app').from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single<{ role: string }>();
-
-    const role = profile?.role;
+    const { data: profile } = await supabase.rpc('get_my_profile');
+    const role = (profile as { role?: string } | null)?.role;
     if (role !== 'admin' && role !== 'staff') {
       return NextResponse.redirect(new URL('/', request.url));
     }

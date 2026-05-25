@@ -21,18 +21,15 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
-    .schema('app').from('profiles')
-    .select('full_name, avatar_url, role')
-    .eq('id', user.id)
-    .single<{ full_name: string | null; avatar_url: string | null; role: UserRole }>();
+  const { data: profile } = await supabase.rpc('get_my_profile');
+  const p = profile as { full_name?: string | null; avatar_url?: string | null; role?: UserRole } | null;
 
   return {
     id: user.id,
     email: user.email ?? '',
-    fullName: profile?.full_name ?? null,
-    avatarUrl: profile?.avatar_url ?? null,
-    role: profile?.role ?? 'customer',
+    fullName: p?.full_name ?? null,
+    avatarUrl: p?.avatar_url ?? null,
+    role: p?.role ?? 'customer',
   };
 });
 
