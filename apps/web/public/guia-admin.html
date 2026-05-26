@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guía Admin — Arte y Tierra</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #1c241e; color: #f5f0eb; }
+
+  .slide {
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid #2f3d31;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 700px) { .slide { padding: 40px 24px; } }
+
+  .eyebrow {
+    font-family: 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b08463;
+    margin-bottom: 16px;
+  }
+
+  h1 { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.15; color: #f5f0eb; margin-bottom: 20px; }
+  h2 { font-size: clamp(1.6rem, 4vw, 2.8rem); line-height: 1.2; color: #f5f0eb; margin-bottom: 16px; }
+  h3 { font-size: 1.1rem; font-family: 'Arial', sans-serif; font-weight: 700; color: #e6d3be; margin-bottom: 8px; }
+
+  p, li { font-family: 'Arial', sans-serif; font-size: 1rem; line-height: 1.7; color: #d4c9be; }
+  em { color: #b08463; font-style: normal; }
+
+  .subtitle { font-size: 1.15rem; color: #a89990; margin-top: 8px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 32px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #232e25;
+    border: 1px solid #2f3d31;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card.accent { border-color: #7a4e2d; background: #2a1f18; }
+  .card.moss { border-color: #3a5a40; background: #1c2b1e; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Arial', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .tag-clay { background: #7a4e2d22; color: #b08463; border: 1px solid #7a4e2d; }
+  .tag-moss { background: #3a5a4022; color: #6b9e73; border: 1px solid #3a5a40; }
+  .tag-bone { background: #e6d3be22; color: #e6d3be; border: 1px solid #e6d3be55; }
+
+  ul { list-style: none; margin-top: 12px; }
+  ul li { padding: 6px 0; border-bottom: 1px solid #2f3d3155; display: flex; gap: 10px; align-items: flex-start; }
+  ul li:last-child { border-bottom: none; }
+  ul li::before { content: '→'; color: #b08463; flex-shrink: 0; }
+
+  .code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    background: #0f1410;
+    border: 1px solid #2f3d31;
+    border-radius: 6px;
+    padding: 16px 20px;
+    color: #a3b18a;
+    margin-top: 12px;
+    word-break: break-all;
+  }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid #2f3d3155;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'Georgia', serif;
+    font-size: 2rem;
+    color: #7a4e2d55;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+
+  .divider { height: 1px; background: #2f3d31; margin: 40px 0; }
+
+  .hero-slide { background: #0f1410; }
+  .light-slide { background: #f5f0eb; color: #1c241e; border-bottom: 1px solid #d4c9be; }
+  .light-slide h2, .light-slide h3, .light-slide p, .light-slide li { color: #1c241e; }
+  .light-slide .eyebrow { color: #7a4e2d; }
+  .light-slide .card { background: #fffdf9; border-color: #d4c9be; }
+  .light-slide ul li::before { color: #7a4e2d; }
+  .light-slide .code { background: #e6d3be44; color: #3a5a40; border-color: #d4c9be; }
+
+  .clay-slide { background: #7a4e2d; }
+  .clay-slide h2, .clay-slide p, .clay-slide li { color: #f5f0eb; }
+  .clay-slide .eyebrow { color: #e6d3be; }
+  .clay-slide .card { background: #6b4428; border-color: #9a6345; }
+  .clay-slide ul li::before { color: #e6d3be; }
+
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .nav button {
+    background: #7a4e2d;
+    color: #f5f0eb;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav button:hover { background: #9a6345; }
+
+  .num { font-family: 'Georgia', serif; font-size: 3rem; color: #b08463; }
+  .highlight { background: #b0846322; border-left: 3px solid #b08463; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-top: 16px; }
+  .highlight p { color: #e6d3be; }
+  .warn { background: #7a4e2d22; border-left: 3px solid #c0392b; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-top: 16px; }
+  .warn p { color: #e6d3be; }
+
+  #progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: #b08463;
+    transition: width 0.3s;
+    z-index: 200;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- SLIDE 1: PORTADA -->
+<section class="slide hero-slide" id="s1">
+  <div class="eyebrow">Arte y Tierra · Panel de administración</div>
+  <h1>Guía completa<br><em>del Admin</em></h1>
+  <p class="subtitle">Cómo gestionar productos, ventas, reservas y más<br>desde el panel de administración de arteytierra.org</p>
+  <div style="margin-top:48px; display:flex; gap:16px; flex-wrap:wrap;">
+    <div style="background:#232e25; border:1px solid #2f3d31; border-radius:8px; padding:12px 20px;">
+      <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.15em; color:#6b9e73;">URL del admin</p>
+      <p style="font-family:monospace; color:#a3b18a; margin-top:4px;">nuevo.arteytierra.org/admin</p>
+    </div>
+    <div style="background:#232e25; border:1px solid #2f3d31; border-radius:8px; padding:12px 20px;">
+      <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.15em; color:#6b9e73;">Login</p>
+      <p style="font-family:monospace; color:#a3b18a; margin-top:4px;">info.arteytierra@gmail.com</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: RESUMEN DEL PANEL -->
+<section class="slide" id="s2">
+  <div class="eyebrow">02 · Visión general</div>
+  <h2>¿Qué tiene<br>el <em>panel admin?</em></h2>
+  <div class="grid-3" style="margin-top:32px;">
+    <div class="card">
+      <div class="tag tag-clay">Ventas</div>
+      <h3>Órdenes y pagos</h3>
+      <p>Ver todos los pedidos, estados, montos. Filtrar por fecha, estado o cliente.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Catálogo</div>
+      <h3>Productos</h3>
+      <p>Crear y editar productos: biocosmética, cursos, ebooks, hospedaje, asesorías.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-clay">Reservas</div>
+      <h3>Hospedaje</h3>
+      <p>Ver disponibilidad, confirmar o cancelar reservas de cabañas y espacios.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">CRM</div>
+      <h3>Contactos</h3>
+      <p>Base de datos de clientes, leads y suscriptores. Historial de compras.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Cursos</div>
+      <h3>Aulas virtuales</h3>
+      <p>Gestionar clases grabadas, módulos y acceso de alumnos inscritos.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">Finanzas</div>
+      <h3>Reportes</h3>
+      <p>Ingresos del mes, productos más vendidos, tendencias de ventas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: CREAR PRODUCTO -->
+<section class="slide light-slide" id="s3">
+  <div class="eyebrow">03 · Productos</div>
+  <h2>Cómo crear<br>un <em>producto</em></h2>
+  <div style="margin-top:32px;">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Ir a Productos</h3>
+        <p>Menú izquierdo → <strong>Productos</strong> → botón <strong>"Nuevo producto"</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Completar información básica</h3>
+        <p>Nombre, slug (URL), subtítulo, descripción y <strong>tipo de producto</strong>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Precio e inventario</h3>
+        <p>Precio en centavos, moneda (ARS o USD), stock disponible.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3>Atributos específicos</h3>
+        <p>Foto de portada, ingredientes, capacidad, duración — según el tipo.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <h3>Activar y guardar</h3>
+        <p>Marcar <strong>"Producto activo"</strong> para que aparezca en el sitio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: TIPOS DE PRODUCTO -->
+<section class="slide" id="s4">
+  <div class="eyebrow">04 · Tipos de producto</div>
+  <h2>8 tipos de<br><em>producto</em></h2>
+  <div class="grid-2" style="margin-top:28px;">
+    <div class="card">
+      <div class="tag tag-clay">Biocosmética</div>
+      <p>Ungüentos, repelentes, tinturas madre. Atributos: volumen, ingredientes.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-clay">Físico</div>
+      <p>Productos con envío (semillas, materiales, etc.). Atributos: peso, dimensiones.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Curso</div>
+      <p>Formaciones con aula virtual. Atributos: duración, nivel, próxima cohorte.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Ebook</div>
+      <p>PDF descargable. Se sube al Storage de Supabase y se linkea en atributos.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">Hospedaje</div>
+      <p>Cabañas, domos, camping. Atributos: capacidad, noches mínimas, ubicación.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">Asesoría</div>
+      <p>Sesiones 1:1 online. Atributos: duración en minutos.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">Inmersión</div>
+      <p>Retiros y vivencias presenciales. Atributos: fecha inicio, fin, ubicación.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Servicio</div>
+      <p>Servicios personalizados (diseño, consultoría). Sin atributos específicos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: PRECIOS -->
+<section class="slide light-slide" id="s5">
+  <div class="eyebrow">05 · Precios</div>
+  <h2>Los precios van<br>en <em>centavos</em></h2>
+  <p style="margin-top:16px; font-size:1.1rem;">El sistema usa centavos para evitar errores de punto flotante. Multiplicá el precio por 100.</p>
+  <div class="grid-2" style="margin-top:32px;">
+    <div class="card" style="background:#f0ebe5; border-color:#d4c9be;">
+      <div class="tag tag-clay">Pesos argentinos (ARS)</div>
+      <ul>
+        <li>$5.000 → escribir <strong>500000</strong></li>
+        <li>$10.000 → escribir <strong>1000000</strong></li>
+        <li>$25.000 → escribir <strong>2500000</strong></li>
+        <li>$50.000 → escribir <strong>5000000</strong></li>
+      </ul>
+    </div>
+    <div class="card" style="background:#f0ebe5; border-color:#d4c9be;">
+      <div class="tag tag-moss">Dólares (USD)</div>
+      <ul>
+        <li>USD 30 → escribir <strong>3000</strong></li>
+        <li>USD 60 → escribir <strong>6000</strong></li>
+        <li>USD 100 → escribir <strong>10000</strong></li>
+        <li>USD 250 → escribir <strong>25000</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:24px; background:#7a4e2d22; border-color:#7a4e2d;">
+    <p><strong>Precio comparativo:</strong> Es el precio original tachado (para mostrar descuento). Siempre mayor al precio base. Mismo formato en centavos.</p>
+  </div>
+</section>
+
+<!-- SLIDE 6: IMÁGENES -->
+<section class="slide" id="s6">
+  <div class="eyebrow">06 · Imágenes</div>
+  <h2>Fotos de<br><em>productos</em></h2>
+  <p style="margin-top:16px;">Las imágenes se cargan como <strong>URL</strong> — no se suben directamente desde el formulario. Hay tres opciones:</p>
+  <div class="grid-3" style="margin-top:28px;">
+    <div class="card moss">
+      <div class="tag tag-moss">Opción 1</div>
+      <h3>Fotos ya en el sitio</h3>
+      <p>Las fotos que están en <code style="color:#a3b18a">/img/biocosmetica/</code>, <code style="color:#a3b18a">/img/cursos/</code>, etc. se pueden usar directo con la URL relativa.</p>
+      <div class="code">/img/biocosmetica/unguento-1.png</div>
+    </div>
+    <div class="card">
+      <div class="tag tag-clay">Opción 2</div>
+      <h3>Supabase Storage</h3>
+      <p>Subir la foto al bucket <em>public</em> en Supabase y copiar la URL pública que genera.</p>
+      <div class="code">https://ojlvfl…supabase.co/storage/v1/object/public/media/foto.jpg</div>
+    </div>
+    <div class="card">
+      <div class="tag tag-bone">Opción 3</div>
+      <h3>Cualquier URL pública</h3>
+      <p>Google Drive (thumbnail), Cloudinary, o cualquier imagen accesible desde internet.</p>
+      <div class="code">https://drive.google.com/thumbnail?id=XXX&sz=w800</div>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:24px;">
+    <p>El campo se llama <strong>"URL imagen portada"</strong> y está en la sección "Atributos específicos" al editar el producto.</p>
+  </div>
+</section>
+
+<!-- SLIDE 7: BIOCOSMÉTICA -->
+<section class="slide light-slide" id="s7">
+  <div class="eyebrow">07 · Ejemplo práctico</div>
+  <h2>Cargar un producto<br>de <em>biocosmética</em></h2>
+  <div style="margin-top:28px; display:flex; flex-direction:column; gap:12px;">
+    <div class="card" style="background:#f0ebe5; border-color:#d4c9be;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Nombre</p>
+          <p>Ungüento Santa</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Slug</p>
+          <p style="font-family:monospace;">unguento-santa</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Subtítulo</p>
+          <p>Ruda · Menta · Salvia</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Tipo</p>
+          <p>Biocosmética</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Precio (ARS)</p>
+          <p>Ej: $4.000 → <strong>400000</strong></p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Moneda</p>
+          <p>ARS</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Volumen</p>
+          <p>50 ml</p>
+        </div>
+        <div>
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">Ingredientes</p>
+          <p>Cera de abeja, aceite de oliva, ruda, menta, salvia</p>
+        </div>
+        <div style="grid-column: span 2;">
+          <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#7a4e2d; font-weight:700;">URL imagen portada</p>
+          <p style="font-family:monospace; font-size:0.85rem;">/img/biocosmetica/unguento-1.png</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: HOSPEDAJE -->
+<section class="slide" id="s8">
+  <div class="eyebrow">08 · Hospedaje</div>
+  <h2>Reservas de<br><em>hospedaje</em></h2>
+  <p style="margin-top:12px;">El hospedaje tiene dos pasos: primero crear el producto, después crear el recurso de reserva.</p>
+  <div class="grid-2" style="margin-top:28px;">
+    <div class="card">
+      <div class="tag tag-clay">Paso 1 — Producto</div>
+      <h3>En /admin/productos</h3>
+      <ul>
+        <li>Tipo: <strong>Hospedaje</strong></li>
+        <li>Precio: por noche, en centavos</li>
+        <li>Atributos: capacidad de huéspedes</li>
+        <li>Atributos: mínimo de noches</li>
+        <li>Atributos: descripción de la ubicación</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">Paso 2 — Recurso</div>
+      <h3>En /admin/reservas</h3>
+      <ul>
+        <li>Crear el recurso vinculado al producto</li>
+        <li>Define la disponibilidad del espacio</li>
+        <li>Los huéspedes ven un calendario para elegir fechas</li>
+        <li>Las reservas llegan con pago confirmado</li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:24px;">
+    <p>Las reservas pagas se notifican automáticamente por email. Se pueden ver en <strong>/admin/reservas</strong> con todos los datos del huésped.</p>
+  </div>
+</section>
+
+<!-- SLIDE 9: CURSOS -->
+<section class="slide light-slide" id="s9">
+  <div class="eyebrow">09 · Cursos</div>
+  <h2>Gestión de<br><em>cursos y aulas</em></h2>
+  <div class="grid-2" style="margin-top:28px;">
+    <div class="card" style="background:#f0ebe5; border-color:#d4c9be;">
+      <div class="tag tag-clay">Producto — /admin/productos</div>
+      <ul>
+        <li>Tipo: <strong>Curso</strong></li>
+        <li>Precio + moneda (ARS o USD)</li>
+        <li>Duración total en horas</li>
+        <li>Nivel: introductorio / intermedio / avanzado</li>
+        <li>Próxima cohorte: fecha de inicio</li>
+      </ul>
+    </div>
+    <div class="card" style="background:#f0ebe5; border-color:#d4c9be;">
+      <div class="tag tag-moss">Aula — /admin/aulas</div>
+      <ul>
+        <li>Crear módulos (unidades del curso)</li>
+        <li>Dentro de cada módulo: lecciones</li>
+        <li>Tipos de lección: video, texto, PDF</li>
+        <li>Marcar lecciones como "vista previa gratuita"</li>
+        <li>Los alumnos acceden desde /mis-cursos</li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:24px; background:#3a5a4022; border-color:#3a5a40;">
+    <p>Cuando alguien compra un curso, el sistema le da acceso automático al aula virtual. Recibe un email con el link de acceso.</p>
+  </div>
+</section>
+
+<!-- SLIDE 10: PROCESO DE PAGO -->
+<section class="slide clay-slide" id="s10">
+  <div class="eyebrow">10 · Pagos</div>
+  <h2>¿Cómo funciona<br>el <em>checkout?</em></h2>
+  <div style="margin-top:32px; display:flex; flex-direction:column; gap:0;">
+    <div class="step">
+      <div class="step-num" style="color:#e6d3be88;">1</div>
+      <div>
+        <h3 style="color:#f5f0eb;">Cliente agrega al carrito</h3>
+        <p style="color:#e6d3be;">Desde la página del producto, click en "Agregar al carrito".</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="color:#e6d3be88;">2</div>
+      <div>
+        <h3 style="color:#f5f0eb;">Elige el medio de pago</h3>
+        <p style="color:#e6d3be;"><strong>Stripe</strong> para tarjetas internacionales (USD). <strong>Mercado Pago</strong> para Argentina y LATAM (ARS/USD).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="color:#e6d3be88;">3</div>
+      <div>
+        <h3 style="color:#f5f0eb;">Pago confirmado</h3>
+        <p style="color:#e6d3be;">El sistema recibe la confirmación automáticamente (webhook). La orden pasa a estado "pagado".</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="color:#e6d3be88;">4</div>
+      <div>
+        <h3 style="color:#f5f0eb;">Email automático</h3>
+        <p style="color:#e6d3be;">El cliente recibe confirmación por email con acceso al producto (curso, descarga, reserva, etc.).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: CUPONES Y DESCUENTOS -->
+<section class="slide" id="s11">
+  <div class="eyebrow">11 · Cupones</div>
+  <h2>Códigos de<br><em>descuento</em></h2>
+  <p style="margin-top:12px;">Desde <strong>/admin/cupones</strong> podés crear códigos de descuento para campañas, becas o clientes especiales.</p>
+  <div class="grid-2" style="margin-top:28px;">
+    <div class="card">
+      <h3>Tipos de descuento</h3>
+      <ul>
+        <li>Porcentaje (ej: 20% off)</li>
+        <li>Monto fijo (ej: $5.000 de descuento)</li>
+        <li>Envío gratis</li>
+        <li>2x1 / BOGO (segunda unidad gratis)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Configuración</h3>
+      <ul>
+        <li>Código personalizado (ej: VERANO2026)</li>
+        <li>Límite de usos totales</li>
+        <li>Un uso por cliente</li>
+        <li>Fecha de vencimiento</li>
+        <li>Monto mínimo de compra</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: VER VENTAS -->
+<section class="slide light-slide" id="s12">
+  <div class="eyebrow">12 · Ventas</div>
+  <h2>Gestión de<br><em>órdenes</em></h2>
+  <p style="margin-top:12px;">Desde <strong>/admin/ventas</strong> ves todas las transacciones con su estado en tiempo real.</p>
+  <div class="grid-3" style="margin-top:28px;">
+    <div class="card" style="background:#f0f8f1; border-color:#a3b18a; border-left:4px solid #3a5a40;">
+      <div class="num" style="color:#3a5a40; font-size:1.5rem;">pagado</div>
+      <p>Pago confirmado. El cliente ya tiene acceso al producto.</p>
+    </div>
+    <div class="card" style="background:#fdf8f0; border-color:#d9a441; border-left:4px solid #d9a441;">
+      <div class="num" style="color:#d9a441; font-size:1.5rem;">pendiente</div>
+      <p>Pago iniciado pero no confirmado todavía (MP puede tardar minutos).</p>
+    </div>
+    <div class="card" style="background:#fdf0f0; border-color:#c0392b; border-left:4px solid #c0392b;">
+      <div class="num" style="color:#c0392b; font-size:1.5rem;">fallido</div>
+      <p>El pago fue rechazado. El cliente puede intentar de nuevo.</p>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:24px; background:#7a4e2d22; border-color:#7a4e2d;">
+    <p>Desde cada orden podés ver los datos del comprador, los productos comprados y el historial de pagos. Las órdenes se pueden filtrar por fecha y estado.</p>
+  </div>
+</section>
+
+<!-- SLIDE 13: CRM E INBOX -->
+<section class="slide" id="s13">
+  <div class="eyebrow">13 · Clientes</div>
+  <h2>CRM e <em>Inbox</em></h2>
+  <div class="grid-2" style="margin-top:32px;">
+    <div class="card">
+      <div class="tag tag-clay">/admin/crm</div>
+      <h3>Base de contactos</h3>
+      <ul>
+        <li>Todos los clientes y leads</li>
+        <li>Historial de compras por persona</li>
+        <li>Estado del ciclo de vida (lead, cliente, alumno, etc.)</li>
+        <li>Etiquetas personalizadas</li>
+        <li>Notas internas del equipo</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="tag tag-moss">/admin/inbox</div>
+      <h3>Mensajes recibidos</h3>
+      <ul>
+        <li>Formularios de contacto del sitio</li>
+        <li>Consultas de asesorías</li>
+        <li>Cada mensaje con datos del remitente</li>
+        <li>Posibilidad de responder por email</li>
+        <li>Marcar como resuelto</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14: RESUMEN FINAL -->
+<section class="slide hero-slide" id="s14">
+  <div class="eyebrow">14 · Resumen</div>
+  <h2>Todo listo para<br><em>operar</em></h2>
+  <div class="grid-2" style="margin-top:32px;">
+    <div>
+      <h3 style="color:#6b9e73; margin-bottom:12px;">Lo que ya funciona ✓</h3>
+      <ul>
+        <li>Panel admin en nuevo.arteytierra.org/admin</li>
+        <li>Pagos vía Stripe (tarjetas internacionales)</li>
+        <li>Pagos vía Mercado Pago (LATAM)</li>
+        <li>Emails automáticos de confirmación</li>
+        <li>Aulas virtuales para cursos</li>
+        <li>Sistema de reservas para hospedaje</li>
+        <li>Cupones y descuentos</li>
+        <li>CRM de clientes</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:#b08463; margin-bottom:12px;">Próximos pasos</h3>
+      <ul>
+        <li>Cargar productos reales (biocosmética, cursos, hospedaje)</li>
+        <li>Subir fotos de productos a Supabase Storage</li>
+        <li>Activar cuenta live de Stripe (para cobros reales)</li>
+        <li>Configurar dominio arteytierra.org definitivo</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:48px; background:#232e25; border:1px solid #3a5a40; border-radius:12px; padding:24px;">
+    <p style="font-size:11px; text-transform:uppercase; letter-spacing:0.15em; color:#6b9e73; margin-bottom:8px;">Acceso al panel</p>
+    <p style="font-family:monospace; font-size:1.1rem; color:#a3b18a;">https://nuevo.arteytierra.org/admin</p>
+  </div>
+</section>
+
+<script>
+  function updateProgress() {
+    const scrolled = window.scrollY;
+    const total = document.body.scrollHeight - window.innerHeight;
+    const pct = total > 0 ? (scrolled / total) * 100 : 0;
+    document.getElementById('progress').style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress);
+</script>
+
+</body>
+</html>
