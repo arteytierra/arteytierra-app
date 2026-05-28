@@ -336,7 +336,9 @@ export const COURSES: Record<string, CourseData> = {
     modulos: [
       { num: '🏗', title: 'Bioconstrucción', items: ['Técnicas con tierra cruda', 'Uso y lectura de materiales locales', 'Criterios constructivos en obra real', 'Revoques y terminaciones naturales'] },
       { num: '🌱', title: 'Agroecología', items: ['Manejo de huerta y sistemas vivos', 'Suelo, compost y bioinsumos', 'Integración vegetal–animal', 'Bosque comestible y zona 1'] },
+      { num: '🌿', title: 'Biocosmética', items: ['Cosecha y secado de plantas medicinales', 'Macerados en aceite y alcohol', 'Tinturas madre artesanales', 'Ungüentos, cremas y elaboraciones naturales', 'Soberanía del cuerpo y el hogar'] },
       { num: '💧', title: 'Diseño Hidrológico', items: ['Lectura del paisaje', 'Agua, clima y topografía', 'Introducción al diseño hidrológico', 'Observación de cuencas'] },
+      { num: '🎓', title: 'Participación en cursos', items: ['Acceso libre a los talleres que se dicten en la ecoescuela durante tu estadía', 'Participación como parte del equipo logístico de los cursos', 'Aprendizaje desde adentro de la organización pedagógica', 'Experiencia real de co-facilitación y sostenimiento'] },
       { num: '🤝', title: 'Organización comunitaria', items: ['Círculos de la palabra', 'Asambleas y toma de decisiones', 'Gestión del habitar colectivo', 'Vida cotidiana en ecoescuela'] },
     ],
     facilitadores: [JONATAN],

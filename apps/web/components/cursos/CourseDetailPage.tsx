@@ -267,7 +267,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Inversión</p>
             <h2 className="font-display text-4xl text-ink-950">Cómo <em>sumarte.</em></h2>
           </div>
-          <div className={`grid grid-cols-1 gap-6 ${course.opciones.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'max-w-sm mx-auto'}`}>
+          <div className={`grid grid-cols-1 gap-6 ${
+            course.opciones.length === 1 ? 'max-w-sm mx-auto' :
+            course.opciones.length === 2 ? 'sm:grid-cols-2 max-w-2xl mx-auto' :
+            'sm:grid-cols-2 lg:grid-cols-3'
+          }`}>
             {course.opciones.map(op => (
               <div key={op.id} className={`p-8 flex flex-col gap-4 ${op.highlighted ? 'bg-clay-700' : 'bg-bone-100 border border-bone-200'}`}>
                 {op.highlighted && (
