@@ -26,7 +26,7 @@ const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] 
     name: 'Fabricio Manzoni',
     role: 'Permacultura · Diseño Hidrológico',
     bio: 'Cofundador de Minga Verde, facilitador certificado por la Eco-escuela El Manzano (Universidad Gaia, Chile). Se dedica al diseño y consultoría en salud y regeneración de sistemas ecológicos en distintos países.',
-    img: '/img/cursos/vueltatierra/11.jpeg',
+    img: '/img/cursos/vueltatierra/8.jpg',
   },
   {
     name: 'Julián Denaday',

@@ -62,7 +62,7 @@ const FABRICIO: Facilitador = {
   name: 'Fabricio Manzoni',
   role: 'Permacultura · Diseño Hidrológico',
   bio: 'Cofundador de Minga Verde, facilitador en Permacultura certificado por la Eco-escuela El Manzano, sede de Universidad Gaia en Chile. Se dedica al diseño, asesoría y consultoría en salud y regeneración de sistemas ecológicos en distintos países. Apasionado del manejo hidrológico, la fertilidad del suelo y los sistemas agroforestales.',
-  img: '/img/cursos/vueltatierra/11.jpeg',
+  img: '/img/cursos/vueltatierra/8.jpg',
 };
 
 /* ─────────────────────────────────────────────────── */
