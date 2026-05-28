@@ -163,11 +163,11 @@ export default function AlquimiaNaturalPage() {
             </div>
           </div>
           <div className="flex flex-col gap-3">
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <Image src="/img/cursos/alquimia-natural/flyer.jpg" alt="Formación Alquimia Natural y Limpieza Consciente" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+            <div className="relative aspect-square overflow-hidden bg-bone-100">
+              <Image src="/img/cursos/alquimia-natural/flyer.jpg" alt="Formación Alquimia Natural y Limpieza Consciente" fill className="object-contain" sizes="(max-width: 1024px) 100vw, 50vw" />
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <Image src="/img/cursos/alquimia-natural/modalidad.png" alt="Modalidad de participación" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+            <div className="relative aspect-[3/2] overflow-hidden bg-bone-100">
+              <Image src="/img/cursos/alquimia-natural/modalidad.png" alt="Modalidad de participación" fill className="object-contain" sizes="(max-width: 1024px) 100vw, 50vw" />
             </div>
           </div>
         </div>
@@ -177,11 +177,11 @@ export default function AlquimiaNaturalPage() {
       <section className="bg-ink-950 py-20 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-14 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Programa 2026</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Programa 2026</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">
               8 encuentros,<br /><em>2 mundos.</em>
             </h2>
-            <p className="mt-4 font-sans text-bone-400 text-base max-w-xl mx-auto">
+            <p className="mt-4 font-sans text-bone-100 text-base max-w-xl mx-auto">
               Cuatro encuentros para el hogar, cuatro para el cuerpo. Cada uno, una práctica completa que te podés llevar.
             </p>
           </div>
@@ -189,25 +189,25 @@ export default function AlquimiaNaturalPage() {
             {MODULOS.map(mod => (
               <div key={mod.num}>
                 <div className="mb-8 pb-4 border-b border-ink-700">
-                  <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">{mod.num}</span>
+                  <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">{mod.num}</span>
                   <h3 className="font-display text-3xl text-bone-50 mt-1">{mod.titulo}</h3>
-                  <p className="font-sans text-sm text-bone-400 mt-2">{mod.desc}</p>
+                  <p className="font-sans text-sm text-bone-100 mt-2">{mod.desc}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {mod.encuentros.map(enc => (
-                    <div key={enc.n} className="bg-ink-800/60 border border-ink-700 p-7">
+                    <div key={enc.n} className="bg-ink-800 border border-ink-700 p-7">
                       <div className="flex items-start gap-4 mb-4">
-                        <span className="font-display text-3xl text-clay-500 leading-none flex-shrink-0">{enc.n}</span>
+                        <span className="font-display text-3xl text-clay-300 leading-none flex-shrink-0">{enc.n}</span>
                         <div>
                           <h4 className="font-display text-xl text-bone-50">{enc.nombre}</h4>
-                          <p className="font-sans text-sm text-bone-400 mt-1 leading-snug">{enc.desc}</p>
+                          <p className="font-sans text-sm text-bone-100 mt-1 leading-snug">{enc.desc}</p>
                         </div>
                       </div>
                       <ul className="flex flex-col gap-1.5">
                         {enc.temas.map(t => (
                           <li key={t} className="flex gap-2 items-start">
-                            <span className="text-clay-500 mt-0.5 flex-shrink-0">·</span>
-                            <span className="font-sans text-xs text-bone-300 leading-snug">{t}</span>
+                            <span className="text-clay-300 mt-0.5 flex-shrink-0">·</span>
+                            <span className="font-sans text-xs text-bone-100 leading-snug">{t}</span>
                           </li>
                         ))}
                       </ul>
@@ -293,14 +293,40 @@ export default function AlquimiaNaturalPage() {
           </div>
           <div className="flex flex-col justify-center gap-6">
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-3">Precio</p>
-              <p className="font-display text-5xl text-bone-50 mb-2">Consultar</p>
-              <p className="font-sans text-sm text-bone-300">Valores según modalidad. Cupos limitados.</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-4">Precio</p>
+              <div className="flex flex-col gap-3 mb-2">
+                <div className="bg-clay-800/60 border border-clay-500 px-5 py-4">
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Ciclo completo · 8 encuentros</p>
+                  <p className="font-display text-3xl text-bone-50">$200.000</p>
+                </div>
+                <div className="bg-clay-800/60 border border-clay-600 px-5 py-4">
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Módulo · 4 encuentros</p>
+                  <p className="font-display text-3xl text-bone-50">$110.000</p>
+                </div>
+                <div className="bg-clay-800/60 border border-clay-600 px-5 py-4">
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Encuentro suelto</p>
+                  <p className="font-display text-3xl text-bone-50">$30.000 <span className="text-sm font-sans font-normal text-clay-200">(sujeto a modificación)</span></p>
+                </div>
+              </div>
             </div>
-            <a href="https://wa.me/5493413751171?text=Hola%2C%20quiero%20info%20del%20ciclo%20de%20Alquimia%20Natural%20y%20Limpieza%20Consciente"
+
+            {/* PAGO */}
+            <div className="bg-clay-800/60 border border-clay-500 px-5 py-5">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-3">Datos bancarios</p>
+              <div className="flex flex-col gap-1.5 font-sans text-sm text-bone-50">
+                <p><span className="text-clay-200">Titular:</span> Bianca Sartori</p>
+                <p><span className="text-clay-200">CUIT/CUIL:</span> 27-36659182-1</p>
+                <p><span className="text-clay-200">Alias:</span> magnolia.blanca</p>
+                <p><span className="text-clay-200">CBU:</span> 1430001713023617110016</p>
+                <p><span className="text-clay-200">Nro. cuenta:</span> 1302361711001</p>
+              </div>
+              <p className="font-sans text-xs text-clay-200 mt-3">Adjuntá el comprobante por WhatsApp al inscribirte.</p>
+            </div>
+
+            <a href="https://wa.me/5493413751171?text=Hola%2C%20quiero%20inscribirme%20al%20ciclo%20de%20Alquimia%20Natural%20y%20Limpieza%20Consciente"
               target="_blank" rel="noopener noreferrer"
               className="inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-bone-200 transition-colors w-fit">
-              Consultar por WhatsApp →
+              Inscribirme por WhatsApp →
             </a>
             <a href="/docs/alquimia-natural-programa.pdf" target="_blank" rel="noopener noreferrer"
               className="font-sans text-sm text-clay-200 underline underline-offset-4 hover:text-bone-50 transition-colors w-fit">

@@ -264,7 +264,7 @@ export default function CursosPage() {
                 </div>
                 <div className="p-2 flex flex-col gap-0.5 flex-1">
                   <p className="font-sans text-[11px] font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>
-                  <p className="font-sans text-[10px] text-bone-300 leading-tight">{c.tag}</p>
+                  <p className="font-sans text-[10px] text-bone-200 leading-tight">{c.tag}</p>
                 </div>
               </Link>
             ))}
@@ -279,10 +279,10 @@ export default function CursosPage() {
           <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-8">
             El conocimiento<br />vuelve a las <em>manos.</em>
           </h2>
-          <p className="font-sans text-bone-300 text-base leading-relaxed mb-4">
+          <p className="font-sans text-bone-100 text-base leading-relaxed mb-4">
             Cada formación parte de una premisa: el aprendizaje verdadero ocurre en la práctica. Trabajamos sobre obras reales, en territorio vivo, con materiales del lugar y técnicas que tienen siglos de sabiduría detrás.
           </p>
-          <p className="font-sans text-bone-400 text-base leading-relaxed">
+          <p className="font-sans text-bone-200 text-base leading-relaxed">
             Formaciones presenciales en Tay Pichín (San Marcos Sierras, Córdoba) y cursos online en vivo para quienes aprenden desde cualquier parte del mundo.
           </p>
         </div>
@@ -318,11 +318,11 @@ export default function CursosPage() {
             </div>
           </div>
           <div className="flex flex-col justify-center gap-6 p-10 md:p-16">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-400">Experiencia completa</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Experiencia completa</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">
               Inmersión <em>Viva.</em>
             </h2>
-            <p className="font-sans text-bone-300 text-base leading-relaxed">
+            <p className="font-sans text-bone-50 text-base leading-relaxed">
               Períodos formativos de 15 o 30 días en Tay Pichín. Bioconstrucción, agroecología y organización colectiva aprendidas en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -332,10 +332,10 @@ export default function CursosPage() {
                 { icon: '💧', t: 'Diseño hidrológico',  d: 'Lectura del paisaje y el agua' },
                 { icon: '🤝', t: 'Comunidad',           d: 'Círculos de la palabra y organización' },
               ].map(item => (
-                <div key={item.t} className="p-4 bg-ink-800/60 border border-ink-600">
+                <div key={item.t} className="p-4 bg-ink-800 border border-ink-600">
                   <div className="text-lg mb-1">{item.icon}</div>
-                  <p className="font-sans font-semibold text-sm text-bone-100">{item.t}</p>
-                  <p className="font-sans text-xs text-ink-400 mt-0.5 leading-snug">{item.d}</p>
+                  <p className="font-sans font-semibold text-sm text-bone-50">{item.t}</p>
+                  <p className="font-sans text-xs text-bone-200 mt-0.5 leading-snug">{item.d}</p>
                 </div>
               ))}
             </div>
