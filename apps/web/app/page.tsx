@@ -39,7 +39,7 @@ const SERVICIOS = [
 
 const PROYECTOS = [
   { slug: 'armonia',          name: 'Proyecto Armonía',    type: 'Bioarquitectura + Hidrología', img: '/img/proyectos/armonia/1.jpg',          meta: 'Capilla del Monte · 2025' },
-  { slug: 'alihuen',          name: 'Casa Alihuen',         type: 'Bioarquitectura',              img: '/img/proyectos/alihuen/4.jpg',          meta: 'Santa Isabel · 2024' },
+  { slug: 'alihuen',          name: 'Casa Alihuen',         type: 'Bioarquitectura',              img: '/img/proyectos/alihuen/12.jpg',         meta: 'Santa Isabel · 2024' },
   { slug: 'sol',              name: 'Casa del Sol',          type: 'Bioarquitectura',              img: '/img/proyectos/sol/1.jpg',              meta: 'Santa Isabel · 2023' },
   { slug: 'chelo',            name: 'La Casa del Chelo',     type: 'Bioarquitectura',              img: '/img/proyectos/chelo/1.jpg',            meta: 'María Juana, Santa Fé · 2019' },
   { slug: 'aurea',            name: 'Casa Aurea',            type: 'Bioarquitectura',              img: '/img/proyectos/aurea/1.jpg',            meta: 'San Marcos Sierras · 2022–2026' },

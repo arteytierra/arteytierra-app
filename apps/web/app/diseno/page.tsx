@@ -225,7 +225,7 @@ export default function DisenoPage() {
               { num: '01', title: 'Manejo del Agua', img: '/img/taypichin/carousel/4.jpg',
                 desc: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
                 tecnicas: ['Zanjas de infiltración', 'Biopiscinas', 'Fitotratamientos', 'Swales', 'Represas'] },
-              { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/1.jpg',
+              { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/12.jpg',
                 desc: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
                 tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Techos vivos', 'Bioclimática'] },
               { num: '03', title: 'Producción Agroecológica', img: '/img/proyectos/sol/1.jpg',

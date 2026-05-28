@@ -28,7 +28,12 @@ const PROJECTS: Project[] = [
     meta: 'Santa Isabel, Córdoba, Argentina · 2024',
     tags: ['Diseño + Obra', '9 meses', 'Silvia y Alejandro'],
     desc: 'Hogar en una reserva de bosque nativo del valle de Punilla. Geometría hexagonal con espiral de Fibonacci, paneles solares, biofiltros para aguas grises y negras, techos vivos con autoriego e infiltración de aguas pluviales. Muros de adobe, revoques de barro y cal, interiores con estucos tipo tadelakt.',
-    photos: photos('alihuen', 11),
+    photos: [
+      ...photos('alihuen', 11),
+      '/img/proyectos/alihuen/12.jpg',
+      '/img/proyectos/alihuen/13.png',
+      '/img/proyectos/alihuen/14.png',
+    ],
   },
   {
     slug: 'sol',
