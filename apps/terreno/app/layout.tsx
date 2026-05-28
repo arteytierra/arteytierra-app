@@ -15,6 +15,8 @@ const inter = Inter({
   display: 'swap',
 });
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: {
     default: 'Análisis de Terreno · Arte y Tierra',
