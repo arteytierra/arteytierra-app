@@ -8,7 +8,6 @@ const FOTOS = [
   { src: '/img/cursos/cultivo-girgolas/2.jpg',    alt: 'Cultivo de hongos' },
   { src: '/img/cursos/cultivo-girgolas/3.jpg',    alt: 'Producción artesanal de micelio' },
   { src: '/img/cursos/cultivo-girgolas/FLYER.png', alt: 'Flyer — Taller de cultivo de gírgolas' },
-  { src: '/img/taypichin/carousel/5.jpg',         alt: 'Ecoescuela Tay Pichín' },
 ];
 
 export function CarouselGirgolas() {

@@ -287,7 +287,7 @@ export default function DisenoPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
               { src: '/img/proyectos/alihuen/3.jpg',    alt: 'Proyecto Alihuen',     label: 'Alihuen' },
-              { src: '/img/proyectos/armonia/3.jpg',    alt: 'Proyecto Armonía',     label: 'Armonía' },
+              { src: '/img/proyectos/armonia/10.jpg',   alt: 'Proyecto Armonía — tapia de colores', label: 'Armonía' },
               { src: '/img/proyectos/sol/3.jpg',         alt: 'Proyecto Sol',         label: 'Sol' },
               { src: '/img/proyectos/chelo/3.jpg',       alt: 'Proyecto Chelo',       label: 'Chelo' },
             ].map(p => (
