@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Ecoescuela y Ecohostel | Arte y Tierra',
@@ -34,7 +36,9 @@ const PRINCIPIOS = [
 
 export default function TayPichinPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[80vh] min-h-[540px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -331,5 +335,7 @@ export default function TayPichinPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

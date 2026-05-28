@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ContactForm } from '@/components/contacto/ContactForm';
 import { FaqAccordion } from '@/components/contacto/FaqAccordion';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Contacto — Arte y Tierra',
@@ -12,7 +14,9 @@ export const metadata: Metadata = {
 
 export default function ContactoPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[55vh] min-h-[380px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -94,5 +98,7 @@ export default function ContactoPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

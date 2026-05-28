@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Arte y Tierra',
@@ -60,7 +62,9 @@ const PAISES = [
 
 export default function NosotrosPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -225,5 +229,7 @@ export default function NosotrosPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Ecoescuela — Arte y Tierra',
@@ -245,7 +247,9 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
 
 export default function CursosPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">
         <Image src="/img/cursos/cursos/1.jpg" alt="Ecoescuela Arte y Tierra — Tay Pichín" fill priority className="object-cover" sizes="100vw" />
@@ -458,5 +462,7 @@ export default function CursosPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

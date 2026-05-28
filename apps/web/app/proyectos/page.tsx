@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ProjectCard, type Project } from '@/components/proyectos/ProjectCard';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Proyectos — Arte y Tierra',
@@ -75,7 +77,9 @@ const PROJECTS: Project[] = [
 
 export default function ProyectosPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* Hero */}
       <section className="relative h-[55vh] min-h-[400px] bg-ink-950 flex items-end overflow-hidden">
         <div
@@ -122,5 +126,7 @@ export default function ProyectosPage() {
         </Link>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

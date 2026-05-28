@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCourse } from '@/lib/courses/data';
 import { CourseDetailPage } from '@/components/cursos/CourseDetailPage';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 const course = getCourse('bioarquitectura')!;
 
@@ -13,5 +15,11 @@ export const metadata: Metadata = {
 
 export default function Page() {
   if (!course) notFound();
-  return <CourseDetailPage course={course} />;
+  return (
+    <>
+      <SiteHeader />
+      <CourseDetailPage course={course} />
+      <SiteFooter />
+    </>
+  );
 }

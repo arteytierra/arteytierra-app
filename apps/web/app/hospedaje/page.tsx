@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Ecohostel Tay Pichín — Hospedaje en San Marcos Sierras',
@@ -104,7 +106,9 @@ function Stars({ n, max = 5 }: { n: number; max?: number }) {
 
 export default function HospedajePage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -430,5 +434,7 @@ export default function HospedajePage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

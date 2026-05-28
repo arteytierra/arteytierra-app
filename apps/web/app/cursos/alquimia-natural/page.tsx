@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Alquimia Natural y Limpieza Consciente — Arte y Tierra',
@@ -78,7 +80,9 @@ const FECHAS = [
 
 export default function AlquimiaNaturalPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
 
       {/* HERO */}
       <section className="relative h-[65vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
@@ -380,5 +384,7 @@ export default function AlquimiaNaturalPage() {
       </section>
 
     </main>
+      <SiteFooter />
+    </>
   );
 }

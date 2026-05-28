@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Biocosmética Agroecológica — Arte y Tierra · Tay Pichín',
@@ -69,7 +71,9 @@ const TINTURAS = [
 
 export default function BiocosmeticaPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO — foto grupal de todos los productos al aire libre */}
       <section className="relative h-[75vh] min-h-[520px] flex items-end overflow-hidden bg-ink-950">
         <Image
@@ -306,5 +310,7 @@ export default function BiocosmeticaPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

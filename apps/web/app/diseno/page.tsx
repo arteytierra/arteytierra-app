@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Diseño — Arte y Tierra',
@@ -109,7 +111,9 @@ const PROCESO = [
 
 export default function DisenoPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[65vh] min-h-[440px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -393,5 +397,7 @@ export default function DisenoPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

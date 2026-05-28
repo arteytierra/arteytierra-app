@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AsesoriaForm } from '@/components/asesorias/AsesoriaForm';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Asesoría Online — Arte y Tierra',
@@ -47,7 +49,9 @@ const PASOS = [
 
 export default function AsesoriasPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">
         <Image
@@ -281,5 +285,7 @@ export default function AsesoriasPage() {
         </div>
       </section>
     </main>
+      <SiteFooter />
+    </>
   );
 }

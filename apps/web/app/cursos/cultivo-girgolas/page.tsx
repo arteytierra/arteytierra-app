@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CarouselGirgolas } from '@/components/cursos/CarouselGirgolas';
+import { SiteHeader } from '@/components/site/SiteHeader';
+import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Cultivo de Gírgolas — Arte y Tierra',
@@ -59,7 +61,9 @@ const MODULOS = [
 
 export default function CultivoGirgolesPage() {
   return (
-    <main>
+    <>
+      <SiteHeader />
+      <main>
 
       {/* HERO */}
       <section className="relative h-[65vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
@@ -282,5 +286,7 @@ export default function CultivoGirgolesPage() {
       </section>
 
     </main>
+      <SiteFooter />
+    </>
   );
 }
