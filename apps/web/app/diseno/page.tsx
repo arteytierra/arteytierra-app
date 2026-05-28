@@ -210,8 +210,8 @@ export default function DisenoPage() {
         </div>
       </section>
 
-      {/* SERVICIOS */}
-      <section className="bg-bone-100 py-20 md:py-28 px-6">
+      {/* SERVICIOS — visual cards */}
+      <section className="bg-bone-50 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-14">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Áreas de trabajo</p>
@@ -220,24 +220,92 @@ export default function DisenoPage() {
               <em>un territorio.</em>
             </h2>
           </div>
-          <div className="flex flex-col divide-y divide-bone-200">
-            {SERVICIOS.map(s => (
-              <div key={s.num} className="py-10 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-start">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-xs font-sans font-bold text-clay-500 uppercase tracking-widest">{s.num}</span>
-                  <h3 className="font-display text-2xl text-ink-950">{s.title}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { num: '01', title: 'Manejo del Agua', img: '/img/taypichin/carousel/4.jpg',
+                desc: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
+                tecnicas: ['Zanjas de infiltración', 'Biopiscinas', 'Fitotratamientos', 'Swales', 'Represas'] },
+              { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/1.jpg',
+                desc: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
+                tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Techos vivos', 'Bioclimática'] },
+              { num: '03', title: 'Producción Agroecológica', img: '/img/proyectos/sol/1.jpg',
+                desc: 'Bosques comestibles, huertas, jardines medicinales y producción diversificada que alimenta y regenera al mismo tiempo.',
+                tecnicas: ['Bosques comestibles', 'Huerta', 'Compostaje', 'Apicultura', 'Fungicultivo'] },
+              { num: '04', title: 'Paisajismo Funcional', img: '/img/proyectos/armonia/1.jpg',
+                desc: 'El paisaje no es decoración — es función. Plantas nativas, sombra, alimento, abrigo y biodiversidad en diseño integrado.',
+                tecnicas: ['Plantas nativas', 'Cortinas vivas', 'Setos multifunción', 'Corredores', 'Borde'] },
+              { num: '05', title: 'Estrategia Regenerativa', img: '/img/proyectos/chelo/1.jpg',
+                desc: 'Un plan maestro completo: agua, energía, alimento, residuos y comunidad. El predio como ecosistema con inteligencia propia.',
+                tecnicas: ['Diagnóstico territorial', 'Plan maestro', 'Energía renovable', 'Ciclos de materia'] },
+            ].map(s => (
+              <div key={s.num} className="group flex flex-col bg-bone-100 border border-bone-200 overflow-hidden">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image src={s.img} alt={s.title} fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    <span className="font-sans text-xs font-bold text-clay-300 uppercase tracking-widest">{s.num}</span>
+                    <h3 className="font-display text-xl text-bone-50 mt-0.5">{s.title}</h3>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-sans text-base text-ink-700 leading-relaxed mb-4">{s.body}</p>
-                  <p className="font-sans text-sm text-clay-700 leading-loose">
+                <div className="p-6 flex flex-col gap-3 flex-1">
+                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{s.desc}</p>
+                  <p className="font-sans text-xs text-clay-600 mt-auto leading-loose">
                     {s.tecnicas.join(' · ')}
                   </p>
                 </div>
               </div>
             ))}
+            {/* Card CTA */}
+            <div className="flex flex-col bg-clay-700 p-8 justify-between">
+              <div>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-300 mb-3">¿Por dónde empezar?</p>
+                <h3 className="font-display text-2xl text-bone-50 mb-4">Una asesoría define el camino.</h3>
+                <p className="font-sans text-sm text-bone-300 leading-relaxed">1 hora con nuestro equipo para revisar tu terreno, tu agua y tus posibilidades. Si después contratás, se descuenta.</p>
+              </div>
+              <Link href="/asesorias" className="mt-8 inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-bone-200 transition-colors w-fit">
+                Agendar asesoría →
+              </Link>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* PORTAFOLIO mini-strip */}
+      <section className="bg-ink-950 py-16 px-6">
+        <div className="max-w-editorial mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-2">Proyectos realizados</p>
+              <h2 className="font-display text-3xl text-bone-50">Obras reales,<br /><em>territorios vivos.</em></h2>
+            </div>
+            <Link href="/proyectos" className="font-sans text-sm font-bold text-clay-400 uppercase tracking-widest hover:text-bone-50 transition-colors whitespace-nowrap">
+              Ver todos →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {[
+              { src: '/img/proyectos/alihuen/3.jpg',    alt: 'Proyecto Alihuen',     label: 'Alihuen' },
+              { src: '/img/proyectos/armonia/3.jpg',    alt: 'Proyecto Armonía',     label: 'Armonía' },
+              { src: '/img/proyectos/sol/3.jpg',         alt: 'Proyecto Sol',         label: 'Sol' },
+              { src: '/img/proyectos/chelo/3.jpg',       alt: 'Proyecto Chelo',       label: 'Chelo' },
+            ].map(p => (
+              <Link key={p.src} href="/proyectos" className="group relative aspect-square overflow-hidden">
+                <Image src={p.src} alt={p.alt} fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105 grayscale group-hover:grayscale-0"
+                  sizes="(max-width: 768px) 50vw, 25vw" />
+                <div className="absolute inset-0 bg-ink-950/30 group-hover:bg-ink-950/10 transition-colors" />
+                <span className="absolute bottom-3 left-3 font-sans text-xs font-bold uppercase tracking-widest text-bone-50">
+                  {p.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* MODOS DE CONTRATACIÓN */}
 
       {/* MODOS DE CONTRATACIÓN */}
       <section className="bg-bone-50 py-20 md:py-28 px-6">
