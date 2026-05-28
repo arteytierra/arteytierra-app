@@ -52,7 +52,7 @@ jobs:
         run: npm install -g wrangler
 
       - name: Deploy to Cloudflare Pages
-        run: wrangler pages deploy apps/terreno/.vercel/output/static --project-name=arteytierra-terreno --branch=main
+        run: wrangler pages deploy apps/terreno/.vercel/output/static --project-name=arteytierra-terreno --branch=main --compatibility-flag=nodejs_compat --compatibility-date=2024-09-23
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
