@@ -10,15 +10,15 @@ export const metadata: Metadata = {
 /* ─── Quick grid data (en orden) ────────────────────── */
 
 const TODOS = [
-  { slug: 'mi-tierra-mi-casa',            name: 'Mi Tierra, Mi Casa',            tag: 'Disponible ahora',      img: '/img/cursos/mitierramicasa/1.jpg',          badge: 'Online',         tentativo: false },
-  { slug: 'tadelakt',                      name: 'Tadelakt Online',               tag: 'Fecha por confirmar',   img: '/img/cursos/tadelakt/0.jpg',                badge: 'Online en vivo', tentativo: true  },
-  { slug: 'cultivo-girgolas',              name: 'Cultivo de Gírgolas',           tag: '11/7 · 1/8 · 22/8',    img: '/img/cursos/cultivo-girgolas/1.jpg',        badge: 'Taller modular', tentativo: false },
-  { slug: 'alquimia-natural',              name: 'Alquimia Natural',              tag: 'Mayo–Dic 2026',         img: '/img/biocosmetica/productos-todos.jpg',     badge: 'Ciclo mensual',  tentativo: false },
-  { slug: 'bioarquitectura',               name: 'Bioarquitectura',               tag: '18–19 jul 2026',        img: '/img/cursos/bioarquitectura/1.jpg',         badge: 'Presencial',     tentativo: false },
-  { slug: 'inmersion-viva',                name: 'Inmersión Viva',                tag: '15 o 30 días',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Inmersión',      tentativo: false },
-  { slug: 'diseno-ecosistemico-del-agua',  name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',          img: '/img/cursos/vueltatierra/7.jpg',            badge: 'Sin fecha',      tentativo: true  },
-  { slug: 'biopiscinas',                   name: 'Biopiscinas',                   tag: 'Próximamente',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Sin fecha',      tentativo: true  },
-  { slug: 'revoques-naturales',            name: 'Revoques Naturales',            tag: 'Próximamente',          img: '/img/cursos/bioarquitectura/1.jpg',         badge: 'Sin fecha',      tentativo: true  },
+  { slug: 'mi-tierra-mi-casa',            name: 'Mi Tierra, Mi Casa',            tag: 'Disponible ahora',      img: '/img/cursos/mitierramicasa/1.jpg',          badge: 'Online',         tentativo: false, online: true  },
+  { slug: 'tadelakt',                      name: 'Tadelakt Online',               tag: 'Disponible ahora',      img: '/img/cursos/tadelakt/0.jpg',                badge: 'Online',         tentativo: false, online: true  },
+  { slug: 'cultivo-girgolas',              name: 'Cultivo de Gírgolas',           tag: '11/7 · 1/8 · 22/8',    img: '/img/cursos/cultivo-girgolas/1.jpg',        badge: 'Taller modular', tentativo: false, online: false },
+  { slug: 'alquimia-natural',              name: 'Alquimia Natural',              tag: 'Mayo–Dic 2026',         img: '/img/biocosmetica/productos-todos.jpg',     badge: 'Ciclo mensual',  tentativo: false, online: false },
+  { slug: 'bioarquitectura',               name: 'Bioarquitectura',               tag: '18–19 jul 2026',        img: '/img/cursos/bioarquitectura/1.jpg',         badge: 'Presencial',     tentativo: false, online: false },
+  { slug: 'inmersion-viva',                name: 'Inmersión Viva',                tag: '15 o 30 días',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Inmersión',      tentativo: false, online: false },
+  { slug: 'diseno-ecosistemico-del-agua',  name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',          img: '/img/cursos/vueltatierra/7.jpg',            badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'biopiscinas',                   name: 'Biopiscinas',                   tag: 'Próximamente',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'revoques-naturales',            name: 'Revoques Naturales',            tag: 'Próximamente',          img: '/img/cursos/bioarquitectura/1.jpg',         badge: 'Sin fecha',      tentativo: true,  online: false },
 ];
 
 /* ─── Cursos principales (con fecha / activos) ───────── */
@@ -63,16 +63,15 @@ const CURSOS: Curso[] = [
   },
   {
     slug: 'tadelakt',
-    badge: 'Online en vivo · 3 sesiones',
+    badge: 'Online · Acceso ilimitado',
     name: 'Tadelakt Online',
-    tag: 'Fecha por confirmar · Anotate ya',
-    desc: 'El arte marroquí del enlucido en cal: el acabado impermeable, brillante y vivo que transforma baños, cocinas y cualquier superficie en una pieza única. En 3 encuentros online, te llevás la técnica lista para aplicar.',
+    tag: 'Disponible · Empezás cuando querés',
+    desc: 'El arte marroquí del enlucido en cal: el acabado impermeable, brillante y vivo que transforma baños, cocinas y cualquier superficie en una pieza única. Videoclases grabadas para aprender la técnica a tu ritmo y aplicarla cuando estés listo.',
     img: '/img/cursos/tadelakt/0.jpg',
     precio: 'Consultar',
-    precioNote: 'Anotate y te avisamos cuando abramos inscripción.',
+    precioNote: 'Pago único · acceso permanente.',
     href: '/cursos/tadelakt',
-    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20anotarme%20al%20curso%20de%20Tadelakt%20Online',
-    tentativo: true,
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20curso%20de%20Tadelakt%20Online',
   },
   {
     slug: 'cultivo-girgolas',
@@ -254,13 +253,18 @@ export default function CursosPage() {
                     className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-70' : ''}`}
                     sizes="(max-width: 640px) 33vw, (max-width: 768px) 20vw, 11vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                  {c.tentativo && (
-                    <div className="absolute top-1.5 left-1.5">
+                  <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
+                    {c.online && (
+                      <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-1.5 py-0.5">
+                        Online
+                      </span>
+                    )}
+                    {c.tentativo && (
                       <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-1.5 py-0.5">
                         Próx.
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
                 <div className="p-2 flex flex-col gap-0.5 flex-1">
                   <p className="font-sans text-[11px] font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>

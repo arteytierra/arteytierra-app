@@ -251,14 +251,14 @@ export default function AlquimiaNaturalPage() {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { src: '/img/biocosmetica/drive/p01.jpg', alt: 'Productos de cosmética natural' },
-              { src: '/img/biocosmetica/drive/p02.jpg', alt: 'Ungüentos y cremas' },
-              { src: '/img/biocosmetica/drive/p03.jpg', alt: 'Tinturas y elaboraciones' },
-              { src: '/img/biocosmetica/drive/p04.jpg', alt: 'Elaboraciones naturales' },
+              { src: '/img/biocosmetica/productos-1.jpg', alt: 'Productos de cosmética natural' },
+              { src: '/img/biocosmetica/productos-2.jpg', alt: 'Cosmética artesanal' },
+              { src: '/img/biocosmetica/repelente-foto.jpg', alt: 'Repelente natural' },
+              { src: '/img/biocosmetica/tintura-cannabis.jpg', alt: 'Tintura de cannabis' },
               { src: '/img/biocosmetica/unguento-relajante-menta.jpg', alt: 'Ungüento relajante de menta' },
               { src: '/img/biocosmetica/tintura-calendula.jpg', alt: 'Tintura de caléndula' },
-              { src: '/img/biocosmetica/drive/p08-tinturas.jpg', alt: 'Tinturas madre' },
-              { src: '/img/biocosmetica/drive/p07-todos.jpg', alt: 'Todos los productos' },
+              { src: '/img/biocosmetica/tinturas-todas.jpg', alt: 'Tinturas madre' },
+              { src: '/img/biocosmetica/productos-todos.jpg', alt: 'Todos los productos' },
             ].map(img => (
               <div key={img.src} className="relative aspect-square overflow-hidden">
                 <Image src={img.src} alt={img.alt} fill
