@@ -222,19 +222,19 @@ export default function DisenoPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { num: '01', title: 'Manejo del Agua', img: '/img/taypichin/carousel/4.jpg',
+              { num: '01', title: 'Manejo del Agua', img: '/img/servicios/1.jpg',
                 desc: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
                 tecnicas: ['Zanjas de infiltración', 'Biopiscinas', 'Fitotratamientos', 'Swales', 'Represas'] },
               { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/12.jpg',
                 desc: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
                 tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Techos vivos', 'Bioclimática'] },
-              { num: '03', title: 'Producción Agroecológica', img: '/img/proyectos/sol/1.jpg',
+              { num: '03', title: 'Producción Agroecológica', img: '/img/servicios/3.jpg',
                 desc: 'Bosques comestibles, huertas, jardines medicinales y producción diversificada que alimenta y regenera al mismo tiempo.',
                 tecnicas: ['Bosques comestibles', 'Huerta', 'Compostaje', 'Apicultura', 'Fungicultivo'] },
-              { num: '04', title: 'Paisajismo Funcional', img: '/img/proyectos/armonia/1.jpg',
+              { num: '04', title: 'Paisajismo Funcional', img: '/img/servicios/4.jpg',
                 desc: 'El paisaje no es decoración — es función. Plantas nativas, sombra, alimento, abrigo y biodiversidad en diseño integrado.',
                 tecnicas: ['Plantas nativas', 'Cortinas vivas', 'Setos multifunción', 'Corredores', 'Borde'] },
-              { num: '05', title: 'Estrategia Regenerativa', img: '/img/proyectos/chelo/1.jpg',
+              { num: '05', title: 'Estrategia Regenerativa', img: '/img/servicios/5.jpg',
                 desc: 'Un plan maestro completo: agua, energía, alimento, residuos y comunidad. El predio como ecosistema con inteligencia propia.',
                 tecnicas: ['Diagnóstico territorial', 'Plan maestro', 'Energía renovable', 'Ciclos de materia'] },
             ].map(s => (

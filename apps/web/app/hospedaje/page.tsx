@@ -149,15 +149,28 @@ export default function HospedajePage() {
 
       {/* GALERÍA */}
       <section className="bg-ink-950 py-3 px-3">
-        <div className="max-w-wide mx-auto grid grid-cols-3 grid-rows-3 gap-2 h-[520px] md:h-[640px]">
-          {GALERIA.map((img) => (
-            <div key={img.src} className={`relative overflow-hidden ${img.span}`}>
+        <div className="max-w-wide mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {[
+            { src: '/img/taypichin/carousel/6.jpg',  alt: 'Salón comedor — Ecohostel Tay Pichín' },
+            { src: '/img/taypichin/carousel/8.jpg',  alt: 'Habitación con cama doble y litera' },
+            { src: '/img/taypichin/carousel/9.jpg',  alt: 'Cocina compartida — ventana circular' },
+            { src: '/img/taypichin/carousel/10.jpg', alt: 'Habitación con literas y piso de piedra' },
+            { src: '/img/taypichin/carousel/7.jpg',  alt: 'Living con mural y sillones' },
+            { src: '/img/taypichin/carousel/11.jpg', alt: 'Desayuno en la galería exterior' },
+            { src: '/img/taypichin/carousel/4.jpg',  alt: 'Estanque de biofiltración y jardín' },
+            { src: '/img/taypichin/carousel/12.jpg', alt: 'Exterior de Tay Pichín' },
+            { src: '/img/taypichin/carousel/13.jpg', alt: 'Espacio exterior serrano' },
+            { src: '/img/taypichin/carousel/3.jpg',  alt: 'Vista del predio serrano' },
+            { src: '/img/taypichin/carousel/5.jpg',  alt: 'Obra y naturaleza — Tay Pichín' },
+            { src: '/img/taypichin/carousel/2.jpg',  alt: 'Galería exterior con sillones' },
+          ].map((img) => (
+            <div key={img.src} className="relative aspect-square overflow-hidden">
               <Image
                 src={img.src}
                 alt={img.alt}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-700"
-                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
             </div>
           ))}
@@ -177,12 +190,12 @@ export default function HospedajePage() {
             <p className="font-sans text-bone-200 text-lg leading-relaxed mb-6">
               Tay Pichín vive y late. Un espacio donde no solo te hospedás: te reencontrás. Con vos, con la Tierra, con otras formas posibles de vivir.
             </p>
-            <p className="font-sans text-bone-300 text-base leading-relaxed mb-8">
+            <p className="font-sans text-bone-100 text-base leading-relaxed mb-8">
               Dormís en construcciones de barro, comés lo que brota del monte y la huerta, nadás en una biopiscina que regenera. Tay Pichín es la sede física de Arte y Tierra — ecoescuela, ecohostel y espacio de encuentro para quienes quieren aprender haciendo.
             </p>
             <div className="flex flex-wrap gap-3">
               {['Puntaje 9.7/10 en Booking', '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
-                <span key={b} className="text-xs font-sans font-bold text-clay-400 bg-clay-950/50 border border-clay-700 px-4 py-2 uppercase tracking-wider">
+                <span key={b} className="text-xs font-sans font-bold text-clay-200 bg-clay-800/50 border border-clay-600 px-4 py-2 uppercase tracking-wider">
                   {b}
                 </span>
               ))}
@@ -195,10 +208,10 @@ export default function HospedajePage() {
               { icon: '♻️', title: 'Cero residuos', desc: 'Separamos, compostamos y hacemos ecoladrillos. Nada se desperdicia. Regeneramos los ciclos del agua y la tierra.' },
               { icon: '🏗️', title: 'Bioconstrucción', desc: 'Adobe, quincha, piedra serrana y madera. Cada estructura fue diseñada con bioclimática y geometría sagrada.' },
             ].map(item => (
-              <div key={item.title} className="p-5 bg-ink-800/60 border border-ink-700">
+              <div key={item.title} className="p-5 bg-ink-800 border border-ink-700">
                 <div className="text-2xl mb-3">{item.icon}</div>
-                <h4 className="font-sans font-bold text-sm text-bone-100 mb-2">{item.title}</h4>
-                <p className="font-sans text-xs text-bone-400 leading-relaxed">{item.desc}</p>
+                <h4 className="font-sans font-bold text-sm text-bone-50 mb-2">{item.title}</h4>
+                <p className="font-sans text-xs text-bone-200 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>

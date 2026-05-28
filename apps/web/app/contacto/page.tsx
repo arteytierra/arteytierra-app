@@ -16,7 +16,7 @@ export default function ContactoPage() {
       {/* HERO */}
       <section className="relative h-[55vh] min-h-[380px] bg-ink-950 flex items-end overflow-hidden">
         <Image
-          src="/img/taypichin/carousel/4.jpg"
+          src="/img/contactanos/DSC_2792.jpg"
           alt="Contacto Arte y Tierra"
           fill
           priority
