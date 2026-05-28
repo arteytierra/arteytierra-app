@@ -16,7 +16,8 @@ const TODOS = [
   { slug: 'alquimia-natural',              name: 'Alquimia Natural',              tag: 'Mayo–Dic 2026',         img: '/img/biocosmetica/productos-todos.jpg',     badge: 'Ciclo mensual',  tentativo: false, online: false },
   { slug: 'bioarquitectura',               name: 'Bioarquitectura',               tag: '18–19 jul 2026',        img: '/img/proyectos/alihuen/5.jpg',              badge: 'Presencial',     tentativo: false, online: false },
   { slug: 'inmersion-viva',                name: 'Inmersión Viva',                tag: '15 o 30 días',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Inmersión',      tentativo: false, online: false },
-  { slug: 'diseno-ecosistemico-del-agua',  name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',          img: '/img/cursos/vueltatierra/7.jpg',            badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'vuelta-a-la-tierra',            name: 'La Vuelta a la Tierra',         tag: 'Oct 2026 · Online',     img: '/img/cursos/vueltatierra/7.jpg',            badge: 'Online en vivo', tentativo: false, online: true  },
+  { slug: 'diseno-ecosistemico-del-agua',  name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',          img: '/img/cursos/vueltatierra/3.jpg',            badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'biopiscinas',                   name: 'Biopiscinas',                   tag: 'Próximamente',          img: '/img/taypichin/carousel/5.jpg',             badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'revoques-naturales',            name: 'Revoques Naturales',            tag: 'Próximamente',          img: '/img/cursos/bioarquitectura/1.jpg',         badge: 'Sin fecha',      tentativo: true,  online: false },
 ];
@@ -129,6 +130,25 @@ const CURSOS: Curso[] = [
     precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
     href: '/cursos/bioarquitectura',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Curso%20de%20Bioarquitectura%20(18%20y%2019%20julio)',
+  },
+  {
+    slug: 'vuelta-a-la-tierra',
+    badge: 'Online en vivo · 7 semanas',
+    name: 'La Vuelta a la Tierra',
+    tag: 'Inicia lunes 12 de octubre · Online en vivo',
+    desc: 'En 7 semanas te llevás los planos de tu vivienda y el masterplan de tu predio listos para empezar a construir. Con criterio técnico, sin gastar de más, y entendiendo el por qué.',
+    img: '/img/cursos/vueltatierra/7.jpg',
+    datos: [
+      { label: 'Inicio',    val: 'Lunes 12 de octubre 2026' },
+      { label: 'Formato',   val: 'Clases en vivo · quedan grabadas' },
+      { label: 'Dedicación',val: '4 a 6 hs semanales' },
+      { label: 'Facilitan', val: 'Jonatan Palma + Fabricio Manzoni' },
+    ],
+    contenidos: ['Análisis climático y topográfico', 'Permacultura e hidrología', 'Diseño de masterplan', 'Bioarquitectura', 'Materiales y sistemas constructivos', 'Tecnologías apropiadas', 'Anteproyecto de vivienda'],
+    precio: 'Desde $350.000',
+    precioNote: 'En 4 pagos: $50k + 3 × $100k. Cupos limitados.',
+    href: '/cursos/vuelta-a-la-tierra',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20La%20Vuelta%20a%20la%20Tierra%20(oct%202026)',
   },
 ];
 

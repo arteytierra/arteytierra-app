@@ -162,8 +162,9 @@ export const COURSES: Record<string, CourseData> = {
     ],
     facilitadores: [JONATAN, FABRICIO],
     opciones: [
-      { id: 'base', label: 'Vuelta a la Tierra — Base', precio: '$350.000 ARS', includes: ['Todas las clases en vivo grabadas', 'Material de práctica', 'Predio modelo para ejercicios', 'Certificado digital'], precioAlt: 'En 4 pagos: $50k + 3 × $100k' },
-      { id: 'con-predio', label: 'Con tu propio predio', precio: '$400.000 ARS', includes: ['Todo lo del plan base', 'Ejercicios aplicados a tu terreno real', 'Revisión personalizada de tu análisis'], highlighted: true, precioAlt: 'Consultanos cuotas' },
+      { id: 'base', label: 'Vuelta a la Tierra — Base', precio: '$350.000', includes: ['Todas las clases en vivo grabadas', 'Material de práctica', 'Predio modelo para ejercicios', 'Certificado digital'], precioAlt: 'En 4 pagos: $50k + 3 × $100k' },
+      { id: 'con-predio', label: 'Con tu propio predio', precio: '$550.000', includes: ['Todo lo del plan base', 'Ejercicios aplicados a tu terreno real', 'Revisión personalizada de tu análisis'], highlighted: true, precioAlt: 'Consultanos cuotas' },
+      { id: 'acompanamiento', label: 'Acompañamiento completo', precio: '$950.000', includes: ['Todo lo del plan con predio', 'Sesión individual de devolución', 'Revisión del anteproyecto de vivienda y predio', 'Orientación técnica personalizada', 'Recomendaciones de continuidad'], precioAlt: 'A convenir según predio' },
     ],
     formCurso: 'La Vuelta a la Tierra · Octubre 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20La%20Vuelta%20a%20la%20Tierra%20(oct%202026)',
@@ -198,7 +199,7 @@ export const COURSES: Record<string, CourseData> = {
       name: 'Emmanuel Ciancio Manzoni',
       role: 'Cultivador · Productor de micelio',
       bio: 'Hace más de 9 años, su interés por el reino fungi cambió el rumbo de su vida. Lo que empezó como una curiosidad se convirtió en vocación: cultivar, aprender y compartir todo lo que los hongos tienen para ofrecer. Productor de micelio, extractos y kits de cultivo, acompaña a quienes sienten que hay algo fascinante detrás de estos organismos y quieren dar sus primeros pasos. Su objetivo es acercar el mundo de los hongos adaptógenos y comestibles a la vida cotidiana, de forma práctica, accesible y con la misma pasión con la que empezó.',
-      img: '/img/cursos/cultivo-girgolas/emmanuel.jpg',
+      img: '/img/cursos/cultivo-girgolas/Emmanuel.jpeg',
     }],
     opciones: [
       { id: 'modulo', label: 'Módulo suelto', precio: 'Consultanos', includes: ['Un encuentro presencial', 'Materiales incluidos', 'Práctica con insumos reales'] },
