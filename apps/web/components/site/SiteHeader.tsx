@@ -15,10 +15,9 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/arte-y-tierra',
       children: [
-        { label: 'Diseño',              href: '/diseno' },
-        { label: 'Asesorías',           href: '/asesorias' },
-        { label: 'Proyectos',           href: '/proyectos' },
-        { label: 'Análisis de Terreno', href: 'https://terreno.arteytierra.org' },
+        { label: 'Diseño',      href: '/diseno' },
+        { label: 'Asesorías',  href: '/asesorias' },
+        { label: 'Proyectos',  href: '/proyectos' },
       ],
     },
     {
@@ -48,10 +47,9 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/en/arte-y-tierra',
       children: [
-        { label: 'Design',        href: '/en/diseno' },
-        { label: 'Consulting',    href: '/en/asesorias' },
-        { label: 'Projects',      href: '/en/proyectos' },
-        { label: 'Land Analysis', href: 'https://terreno.arteytierra.org' },
+        { label: 'Design',     href: '/en/diseno' },
+        { label: 'Consulting', href: '/en/asesorias' },
+        { label: 'Projects',   href: '/en/proyectos' },
       ],
     },
     {
@@ -81,10 +79,9 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     {
       label: 'Arte y Tierra', href: '/pt/arte-y-tierra',
       children: [
-        { label: 'Design',             href: '/pt/diseno' },
-        { label: 'Consultoria',        href: '/pt/asesorias' },
-        { label: 'Projetos',           href: '/pt/proyectos' },
-        { label: 'Análise de Terreno', href: 'https://terreno.arteytierra.org' },
+        { label: 'Design',      href: '/pt/diseno' },
+        { label: 'Consultoria', href: '/pt/asesorias' },
+        { label: 'Projetos',    href: '/pt/proyectos' },
       ],
     },
     {

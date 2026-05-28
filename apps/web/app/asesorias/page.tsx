@@ -219,26 +219,35 @@ export default function AsesoriasPage() {
         </div>
       </section>
 
-      {/* CAL.COM CALENDARIO */}
+      {/* PASO 3 — AGENDAR */}
       <section className="bg-bone-100 py-20 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-10 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Paso 3 — Calendario</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Paso 3 — Agendar</p>
             <h2 className="font-display text-3xl text-ink-950">
               Elegí tu <em>horario.</em>
             </h2>
-            <p className="mt-3 font-sans text-ink-700 text-sm max-w-md mx-auto">
-              Una vez que confirmemos tu pago, agendás directamente la sesión en el horario que más te convenga.
+            <p className="mt-3 font-sans text-ink-700 text-base max-w-md mx-auto">
+              Una vez confirmado el pago, coordinamos día y horario por WhatsApp. Respondemos siempre en menos de 24 horas.
             </p>
           </div>
-          <div className="bg-bone-50 border border-bone-200 overflow-hidden" style={{ minHeight: 600 }}>
-            <iframe
-              src="https://cal.com/arteytierra/asesoria-online"
-              width="100%"
-              height="600"
-              frameBorder="0"
-              title="Agendá tu asesoría — Arte y Tierra"
-            />
+          <div className="max-w-lg mx-auto flex flex-col gap-4">
+            <a
+              href="https://wa.me/5493549431594?text=Hola%2C%20hice%20el%20pago%20de%20la%20asesor%C3%ADa%20y%20quiero%20agendar%20mi%20sesi%C3%B3n."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between bg-clay-700 text-bone-50 px-8 py-5 hover:bg-clay-900 transition-colors"
+            >
+              <span className="font-sans font-bold text-sm uppercase tracking-widest">Agendar por WhatsApp →</span>
+              <span className="font-sans text-xs text-clay-200">Respondemos en &lt; 24 hs</span>
+            </a>
+            <a
+              href="mailto:hola@arteytierra.org?subject=Asesoría%20online%20—%20quiero%20agendar"
+              className="flex items-center justify-between border border-ink-950 text-ink-950 px-8 py-5 hover:bg-ink-950 hover:text-bone-50 transition-colors"
+            >
+              <span className="font-sans font-bold text-sm uppercase tracking-widest">Agendar por email</span>
+              <span className="font-sans text-xs text-ink-500">hola@arteytierra.org</span>
+            </a>
           </div>
         </div>
       </section>

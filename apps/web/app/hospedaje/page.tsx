@@ -164,6 +164,47 @@ export default function HospedajePage() {
         </div>
       </section>
 
+      {/* TAY PICHÍN — LA RAÍZ */}
+      <section className="bg-ink-950 py-24 px-6">
+        <div className="max-w-editorial mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">
+              San Marcos Sierras · Córdoba · Argentina
+            </p>
+            <h2 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight mb-8">
+              Tay Pichín.<br /><em>La raíz de todo.</em>
+            </h2>
+            <p className="font-sans text-bone-200 text-lg leading-relaxed mb-6">
+              Tay Pichín vive y late. Un espacio donde no solo te hospedás: te reencontrás. Con vos, con la Tierra, con otras formas posibles de vivir.
+            </p>
+            <p className="font-sans text-bone-300 text-base leading-relaxed mb-8">
+              Dormís en construcciones de barro, comés lo que brota del monte y la huerta, nadás en una biopiscina que regenera. Tay Pichín es la sede física de Arte y Tierra — ecoescuela, ecohostel y espacio de encuentro para quienes quieren aprender haciendo.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {['Puntaje 9.7/10 en Booking', '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
+                <span key={b} className="text-xs font-sans font-bold text-clay-400 bg-clay-950/50 border border-clay-700 px-4 py-2 uppercase tracking-wider">
+                  {b}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: '🌧️', title: 'Agua regenerada', desc: 'Captamos lluvias, infiltramos con zanjas, tratamos aguas grises con fitofiltros y usamos baños secos que transforman residuos en tierra fértil.' },
+              { icon: '🌱', title: 'Alimento propio', desc: 'Cultivamos en agroecosistemas que cooperan con el monte nativo. Producimos hongos comestibles y criamos gallinas ponedoras.' },
+              { icon: '♻️', title: 'Cero residuos', desc: 'Separamos, compostamos y hacemos ecoladrillos. Nada se desperdicia. Regeneramos los ciclos del agua y la tierra.' },
+              { icon: '🏗️', title: 'Bioconstrucción', desc: 'Adobe, quincha, piedra serrana y madera. Cada estructura fue diseñada con bioclimática y geometría sagrada.' },
+            ].map(item => (
+              <div key={item.title} className="p-5 bg-ink-800/60 border border-ink-700">
+                <div className="text-2xl mb-3">{item.icon}</div>
+                <h4 className="font-sans font-bold text-sm text-bone-100 mb-2">{item.title}</h4>
+                <p className="font-sans text-xs text-bone-400 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* DESCRIPCIÓN */}
       <section className="bg-bone-50 py-20 px-6">
         <div className="max-w-3xl mx-auto">
@@ -180,13 +221,9 @@ export default function HospedajePage() {
             <p className="font-sans text-base text-ink-700 leading-relaxed">
               Cuando te hospedás acá no solo dormís bien — te conectás con un lugar vivo: la huerta produce el desayuno, el estanque filtra las aguas, los murales en barro cuentan historias, y el silencio de las sierras se escucha de noche.
             </p>
-          </div>
-          <div className="mt-10 flex flex-wrap gap-3">
-            {['Puntaje 9.7/10 en Booking', '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
-              <span key={b} className="text-xs font-sans font-bold text-clay-700 bg-clay-100 border border-clay-200 px-4 py-2 uppercase tracking-wider">
-                {b}
-              </span>
-            ))}
+            <p className="font-sans text-base text-ink-700 leading-relaxed">
+              Tay Pichín — eco escuela y eco hostel — es un espacio donde se cultiva la conciencia del habitar diario, se aprende haciendo y se comparte desde el corazón.
+            </p>
           </div>
         </div>
       </section>
