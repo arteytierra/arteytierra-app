@@ -47,7 +47,7 @@ async function fetchElevaciones(
   const timer = setTimeout(() => controller.abort(), 20_000);
   try {
     const res = await fetch(
-      `https://api.opentopodata.org/v1/srtm30m?locations=${locs}`,
+      `/api/elevacion?locations=${locs}`,
       { signal: controller.signal },
     );
     if (!res.ok) throw new Error(`OpenTopoData respondió ${res.status}`);

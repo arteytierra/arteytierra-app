@@ -44,7 +44,7 @@ export function DibujoToolbar({
 
   return (
     <div
-      className="flex flex-col gap-1 p-1.5 bg-ink-950/90 backdrop-blur-sm rounded-xl shadow-xl border border-white/10"
+      className="flex flex-col gap-1 p-1.5 bg-white/97 backdrop-blur-sm rounded-xl shadow-paper border border-bone-200"
       style={{ pointerEvents: 'auto' }}
     >
       {/* ── Herramientas ── */}
@@ -56,7 +56,7 @@ export function DibujoToolbar({
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
             modoDibujo === modo
               ? 'bg-sun-500 text-ink-950'
-              : 'text-bone-300 hover:bg-white/10'
+              : 'text-ink-700/60 hover:bg-bone-100'
           }`}
         >
           {icon}
@@ -64,7 +64,7 @@ export function DibujoToolbar({
       ))}
 
       {/* ── Separador ── */}
-      <div className="h-px bg-white/10 mx-0.5" />
+      <div className="h-px bg-bone-200 mx-0.5" />
 
       {/* ── Color activo ── */}
       <div
@@ -80,7 +80,7 @@ export function DibujoToolbar({
             title={c}
             onClick={() => onColor(c)}
             className={`w-3.5 h-3.5 rounded-sm border transition-transform hover:scale-110 ${
-              colorActivo === c ? 'border-white scale-110' : 'border-white/30'
+              colorActivo === c ? 'border-ink-900 scale-110' : 'border-bone-300'
             }`}
             style={{ background: c }}
           />
@@ -90,7 +90,7 @@ export function DibujoToolbar({
       {/* ── Controles de dibujo ── */}
       {dibujando && (
         <>
-          <div className="h-px bg-white/10 mx-0.5" />
+          <div className="h-px bg-bone-200 mx-0.5" />
 
           <div className="text-[9px] text-bone-400 text-center leading-tight px-0.5">
             {enCurso!.tipo === 'circulo'
@@ -124,7 +124,7 @@ export function DibujoToolbar({
       {/* ── Eliminar elemento seleccionado ── */}
       {modoDibujo === 'seleccion' && seleccionado && !dibujando && (
         <>
-          <div className="h-px bg-white/10 mx-0.5" />
+          <div className="h-px bg-bone-200 mx-0.5" />
           <button
             title="Eliminar seleccionado"
             onClick={onEliminar}

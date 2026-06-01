@@ -111,7 +111,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   // ─── Capas y visibilidad ──────────────────────────────────────────────────
   const [capas, setCapas] = useState<CapasVisibles>({
     terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
-    shaderElev: false, shaderPend: false, escorrentias: false, sugerencias: false,
+    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
@@ -295,6 +295,15 @@ export function MapaTerrenoApp({ userName }: Props) {
     setDibujoSelId(null);
   }, []);
 
+  const handleMoverDibujo = useCallback((id: string, dLat: number, dLng: number) => {
+    setDibujos(prev => prev.map(d => {
+      if (d.id !== id) return d;
+      if (d.tipo === 'texto' || d.tipo === 'circulo')
+        return { ...d, lat: d.lat + dLat, lng: d.lng + dLng };
+      return { ...d, vertices: d.vertices.map(v => ({ lat: v.lat + dLat, lng: v.lng + dLng })) };
+    }));
+  }, []);
+
   // ─── Shader ───────────────────────────────────────────────────────────────
   const handleFetchShader = useCallback(async () => {
     if (mojones.length < 3) return;
@@ -421,6 +430,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     const items: Array<{ color?: string; dash?: boolean; icon?: string; label: string }> = [];
     if (capas.terreno && mojones.length >= 3)
       items.push({ color: '#D9A441', label: 'Predio' });
+    if (capas.terrariumElev)
+      items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación SRTM' });
     if (capas.shaderElev && datosShader)
       items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación' });
     if (capas.shaderPend && datosShader)
@@ -777,8 +788,11 @@ export function MapaTerrenoApp({ userName }: Props) {
           dibujoEnCurso={dibujoEnCurso}
           dibujoSelId={dibujoSelId}
           onClickDibujo={handleClickDibujo}
+          onMoverDibujo={handleMoverDibujo}
           modoDibujo={modoDibujo}
           colorDibujo={colorDibujo}
+          elevMin={datosShader?.elev_min ?? 0}
+          elevMax={datosShader?.elev_max ?? 500}
         />
       </main>
     </div>
@@ -913,10 +927,17 @@ function PanelCapas({
         {/* ── Topografía ── */}
         <CapaGrupo
           label="Topografía"
-          visible={capas.shaderElev || capas.shaderPend}
-          onToggleVisible={() => onCapas({ ...capas, shaderElev: false, shaderPend: false })}
+          visible={capas.shaderElev || capas.shaderPend || capas.terrariumElev}
+          onToggleVisible={() => onCapas({ ...capas, shaderElev: false, shaderPend: false, terrariumElev: false })}
           expanded={exp.topo} onExpand={() => tog('topo')}
         >
+          {/* Terrarium: siempre disponible, no requiere cálculo */}
+          <CapaItem
+            visible={capas.terrariumElev}
+            onToggle={() => onCapas({ ...capas, terrariumElev: !capas.terrariumElev })}
+            label="Hipsométrico SRTM"
+            swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)' }} />}
+          />
           {datosShader ? (
             <>
               <CapaItem

@@ -32,15 +32,16 @@ import { distanciaMetros } from '@/lib/dibujos';
 type Capa = 'satelite' | 'topo';
 
 export interface CapasVisibles {
-  terreno:      boolean;
-  zonas:        boolean;
-  sectores:     boolean;
-  pines:        boolean;
-  caminos:      boolean;
-  shaderElev:   boolean;
-  shaderPend:   boolean;
-  escorrentias: boolean;
-  sugerencias:  boolean;
+  terreno:       boolean;
+  zonas:         boolean;
+  sectores:      boolean;
+  pines:         boolean;
+  caminos:       boolean;
+  shaderElev:    boolean;
+  shaderPend:    boolean;
+  terrariumElev: boolean;
+  escorrentias:  boolean;
+  sugerencias:   boolean;
 }
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
@@ -174,6 +175,108 @@ function crearIconoTexto(texto: string, color: string, tamano: number, sel: bool
   });
 }
 
+// ─── Terrarium elevation tile layer ──────────────────────────────────────────
+
+function TerrariumLayer({ elevMin, elevMax }: { elevMin: number; elevMax: number }) {
+  const map = useMap();
+  useEffect(() => {
+    const range = Math.max(1, elevMax - elevMin);
+    const STOPS: [number, number, number, number][] = [
+      [0.00,  21, 101, 192],
+      [0.12,  66, 165, 245],
+      [0.28, 102, 187, 106],
+      [0.48, 255, 238,  88],
+      [0.65, 255, 167,  38],
+      [0.82, 141, 110,  99],
+      [1.00, 236, 239, 241],
+    ];
+    function ramp(t: number): [number, number, number] {
+      const tc = Math.max(0, Math.min(1, t));
+      for (let i = 0; i < STOPS.length - 1; i++) {
+        const [ta, ra, ga, ba] = STOPS[i]!;
+        const [tb, rb, gb, bb] = STOPS[i + 1]!;
+        if (tc >= ta && tc <= tb) {
+          const f = (tc - ta) / (tb - ta);
+          return [Math.round(ra + (rb - ra) * f), Math.round(ga + (gb - ga) * f), Math.round(ba + (bb - ba) * f)];
+        }
+      }
+      const last = STOPS[STOPS.length - 1]!;
+      return [last[1], last[2], last[3]];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const GridClass = (L.GridLayer as any).extend({
+      createTile(coords: L.Coords, done: L.DoneCallback) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { (done as unknown as (e: null, t: HTMLElement) => void)(null, canvas); return canvas; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+          try {
+            const id = ctx.getImageData(0, 0, 256, 256);
+            const px = id.data;
+            for (let i = 0; i < px.length; i += 4) {
+              const elev = px[i]! * 256 + px[i + 1]! + px[i + 2]! / 256 - 32768;
+              if (elev < -100) { px[i + 3] = 0; continue; }
+              const [cr, cg, cb] = ramp((elev - elevMin) / range);
+              px[i] = cr; px[i + 1] = cg; px[i + 2] = cb; px[i + 3] = 190;
+            }
+            ctx.putImageData(id, 0, 0);
+          } catch { ctx.clearRect(0, 0, 256, 256); }
+          (done as unknown as (e: null, t: HTMLElement) => void)(null, canvas);
+        };
+        img.onerror = () => { (done as unknown as (e: null, t: HTMLElement) => void)(null, canvas); };
+        img.src = `/api/terrarium?z=${coords.z}&x=${coords.x}&y=${coords.y}`;
+        return canvas;
+      },
+    });
+
+    const layer = new GridClass({ opacity: 1, zIndex: 200 }) as L.GridLayer;
+    layer.addTo(map);
+    return () => { map.removeLayer(layer); };
+  }, [map, elevMin, elevMax]);
+  return null;
+}
+
+// ─── Middle-mouse pan ─────────────────────────────────────────────────────────
+
+function MiddleMousePan() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    let active = false;
+    let lx = 0, ly = 0;
+    const down = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      e.preventDefault();
+      active = true; lx = e.clientX; ly = e.clientY;
+      container.style.cursor = 'grabbing';
+    };
+    const move = (e: MouseEvent) => {
+      if (!active) return;
+      map.panBy([lx - e.clientX, ly - e.clientY], { animate: false });
+      lx = e.clientX; ly = e.clientY;
+    };
+    const up = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      active = false;
+      container.style.cursor = '';
+    };
+    container.addEventListener('mousedown', down);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    return () => {
+      container.removeEventListener('mousedown', down);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+  }, [map]);
+  return null;
+}
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -199,14 +302,18 @@ interface Props {
   dibujoEnCurso?:     DibujoEnCurso | null;
   dibujoSelId?:       string | null;
   onClickDibujo?:     (id: string) => void;
+  onMoverDibujo?:     (id: string, dLat: number, dLng: number) => void;
   modoDibujo?:        TipoDibujo | 'seleccion' | null;
   colorDibujo?:       string;
+  // ── Terrarium ──
+  elevMin?:           number;
+  elevMax?:           number;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, escorrentias: false, sugerencias: false };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false };
 
 export default function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -223,8 +330,11 @@ export default function MapLeaflet({
   dibujoEnCurso = null,
   dibujoSelId = null,
   onClickDibujo,
+  onMoverDibujo,
   modoDibujo = null,
   colorDibujo = '#EF4444',
+  elevMin = 0,
+  elevMax = 500,
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
@@ -267,6 +377,8 @@ export default function MapLeaflet({
 
         <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
+        <MiddleMousePan />
+        {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} />}
 
         {/* ── Shader topográfico ── */}
         {datosShader && capas.shaderElev && datosShader.celdas.map((c, i) => (
@@ -477,11 +589,45 @@ export default function MapLeaflet({
             <Marker key={d.id}
               position={[d.lat, d.lng]}
               icon={crearIconoTexto(d.texto, d.color, d.tamano, sel)}
-              eventHandlers={{ click: onClick }}
+              draggable={modoDibujo === 'seleccion'}
+              eventHandlers={{
+                click: onClick,
+                moveend(e) {
+                  if (modoDibujo !== 'seleccion') return;
+                  const p = (e.target as L.Marker).getLatLng();
+                  onMoverDibujo?.(d.id, p.lat - d.lat, p.lng - d.lng);
+                },
+              }}
             />
           );
           return null;
         })}
+
+        {/* ── Mango de arrastre para shape seleccionada ── */}
+        {modoDibujo === 'seleccion' && dibujoSelId && (() => {
+          const el = dibujos.find(d => d.id === dibujoSelId);
+          if (!el || el.tipo === 'texto') return null;
+          let lat: number, lng: number;
+          if (el.tipo === 'circulo') { lat = el.lat; lng = el.lng; }
+          else {
+            lat = el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length;
+            lng = el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length;
+          }
+          const icon = L.divIcon({
+            html: `<div style="width:22px;height:22px;border-radius:50%;background:#D9A441;border:2.5px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;cursor:move;font-size:12px;color:#0F1410;user-select:none;">✥</div>`,
+            className: '', iconSize: [22, 22], iconAnchor: [11, 11],
+          });
+          return (
+            <Marker key={`handle-${dibujoSelId}`} position={[lat, lng]} icon={icon} draggable
+              eventHandlers={{
+                moveend(e) {
+                  const p = (e.target as L.Marker).getLatLng();
+                  onMoverDibujo?.(dibujoSelId, p.lat - lat, p.lng - lng);
+                },
+              }}
+            />
+          );
+        })()}
 
         {/* ── Dibujo en construcción (preview) ── */}
         {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {
