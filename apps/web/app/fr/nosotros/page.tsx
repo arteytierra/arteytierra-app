@@ -208,6 +208,46 @@ export default function NosotrosFrPage() {
           </div>
         </section>
 
+        {/* VIDEO MAMM */}
+        <section className="bg-bone-100 py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">Conférences</p>
+              <h2 className="font-display text-3xl text-ink-950 mb-2">MAMM Medellín — <em>le territoire comme maître.</em></h2>
+              <p className="font-sans text-sm text-ink-700/70 italic">Musée d'Art Moderne de Medellín · Colombie · (en espagnol)</p>
+            </div>
+            <div className="relative aspect-video bg-ink-950 overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full border-0"
+                src="https://www.youtube.com/embed/o2iHQNweKr8"
+                title="Jonatan Palma au MAMM Medellín"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* VIDEO ENTRETIEN */}
+        <section className="bg-bone-50 py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-4">Qui sommes-nous</p>
+              <h2 className="font-display text-3xl text-ink-950">Une conversation sur <em>habiter la terre.</em></h2>
+              <p className="mt-2 font-sans text-sm text-ink-700/70 italic">(en espagnol)</p>
+            </div>
+            <div className="relative aspect-video bg-ink-950 overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full border-0"
+                src="https://www.youtube.com/embed/EYS4kz0ZPYE?start=809"
+                title="Entretien avec Jonatan Palma — Arte y Tierra"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="bg-ink-950 py-20 px-6 text-center">
           <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-5">

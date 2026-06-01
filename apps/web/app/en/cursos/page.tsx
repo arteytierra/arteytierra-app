@@ -146,6 +146,26 @@ export default function CursosEnPage() {
           </div>
         </section>
 
+        {/* VIDEO TESTIMONIALS */}
+        <section className="bg-ink-950 py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">What participants say</p>
+              <h2 className="font-display text-3xl text-bone-50">Voices from the <em>community.</em></h2>
+              <p className="mt-2 font-sans text-sm text-bone-300/70 italic">(in Spanish)</p>
+            </div>
+            <div className="relative aspect-video bg-ink-800 overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full border-0"
+                src="https://www.youtube.com/embed/dSqscHL4pF8"
+                title="Participant testimonials — Arte y Tierra"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+
         {/* LIVING IMMERSION */}
         <section className="bg-clay-700 py-20 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">

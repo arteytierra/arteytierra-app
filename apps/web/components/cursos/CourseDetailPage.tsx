@@ -81,6 +81,27 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         </div>
       </section>
 
+      {/* VIDEO PROMO */}
+      {course.promoVideoId && (
+        <section className="bg-bone-100 py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-4">El curso en 2 minutos</p>
+              <h2 className="font-display text-3xl text-ink-950">Una presentación de la <em>formación.</em></h2>
+            </div>
+            <div className="relative aspect-video bg-ink-950 overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full border-0"
+                src={`https://www.youtube.com/embed/${course.promoVideoId}`}
+                title={`${course.name} — video presentación`}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* PARA QUIÉN + VAS A SALIR */}
       {(course.paraQuien || course.vasASalir) && (
         <section className="bg-bone-100 py-20 px-6">

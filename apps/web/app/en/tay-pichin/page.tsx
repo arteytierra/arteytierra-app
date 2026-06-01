@@ -178,6 +178,26 @@ export default function TayPichinEnPage() {
           </div>
         </section>
 
+        {/* VIDEO BARROFEST */}
+        <section className="bg-ink-950 py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Events · Barrofest</p>
+              <h2 className="font-display text-3xl text-bone-50">A natural building <em>festival.</em></h2>
+              <p className="mt-2 font-sans text-sm text-bone-300/70">Mini-documentary of the first Barrofest at Tay Pichín. (in Spanish)</p>
+            </div>
+            <div className="relative aspect-video bg-ink-800 overflow-hidden">
+              <iframe
+                className="absolute inset-0 w-full h-full border-0"
+                src="https://www.youtube.com/embed/Kk8TfOtih2s"
+                title="Barrofest — natural building festival at Tay Pichín"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+
         {/* LOCATION */}
         <section className="bg-ink-950 py-20 px-6 text-center">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">How to get here</p>

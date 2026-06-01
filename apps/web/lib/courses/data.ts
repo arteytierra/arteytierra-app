@@ -45,6 +45,7 @@ export interface CourseData {
   facilitadores: Facilitador[];
   opciones: CourseOption[];
   opcionesNota?: string;
+  promoVideoId?: string;
   formCurso: string;
   whatsapp: string;
   mercadopago?: string;
@@ -236,6 +237,7 @@ export const COURSES: Record<string, CourseData> = {
       { num: '04', title: 'Bioarquitectura', items: ['Arquitectura bioclimática', 'Geometría sagrada', 'Radiestesia', 'Techo vivo o techo verde'] },
     ],
     facilitadores: [JONATAN],
+    promoVideoId: 'Fak9xHjoivQ',
     opciones: [
       { id: 'completo', label: 'Curso completo', precio: 'USD 80', includes: ['18 clases en video (alta calidad)', 'Asesoría por videollamada', 'Acceso ilimitado sin vencimiento', 'Desde cualquier parte del mundo'], highlighted: true },
     ],

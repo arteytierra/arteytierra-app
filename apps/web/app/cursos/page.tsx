@@ -438,6 +438,25 @@ export default function CursosPage() {
         </div>
       </section>
 
+      {/* VIDEO TESTIMONIOS */}
+      <section className="bg-ink-950 py-16 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Lo que dicen quienes pasaron por acá</p>
+            <h2 className="font-display text-3xl text-bone-50">Voces de la <em>comunidad.</em></h2>
+          </div>
+          <div className="relative aspect-video bg-ink-800 overflow-hidden">
+            <iframe
+              className="absolute inset-0 w-full h-full border-0"
+              src="https://www.youtube.com/embed/dSqscHL4pF8"
+              title="Testimonios de participantes — Arte y Tierra"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-bone-50 py-20 px-6 text-center">
         <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">

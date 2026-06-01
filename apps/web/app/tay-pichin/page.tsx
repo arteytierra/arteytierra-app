@@ -254,6 +254,26 @@ export default function TayPichinPage() {
         </div>
       </section>
 
+      {/* VIDEO BARROFEST */}
+      <section className="bg-ink-950 py-16 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Eventos · Barrofest</p>
+            <h2 className="font-display text-3xl text-bone-50">Un festival de <em>bioconstrucción.</em></h2>
+            <p className="mt-2 font-sans text-sm text-bone-300/70">Mini-documental del primer Barrofest en Tay Pichín.</p>
+          </div>
+          <div className="relative aspect-video bg-ink-800 overflow-hidden">
+            <iframe
+              className="absolute inset-0 w-full h-full border-0"
+              src="https://www.youtube.com/embed/Kk8TfOtih2s"
+              title="Barrofest — festival de bioconstrucción en Tay Pichín"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
+
       {/* UBICACIÓN */}
       <section className="bg-ink-950 py-20 px-6">
         <div className="max-w-editorial mx-auto">
