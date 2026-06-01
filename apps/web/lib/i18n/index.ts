@@ -8,9 +8,10 @@ import {
 } from './config';
 import { es, type Dict } from './dictionaries/es';
 import { en } from './dictionaries/en';
+import { fr } from './dictionaries/fr';
 import { pt } from './dictionaries/pt';
 
-const DICTS: Record<Locale, Dict> = { es, en, pt };
+const DICTS: Record<Locale, Dict> = { es, en, fr, pt };
 
 export type { Dict, Locale };
 

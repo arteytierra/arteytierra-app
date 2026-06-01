@@ -12,38 +12,40 @@
  */
 
 export const DEFAULT_LOCALE = 'es' as const;
-export const ALL_LOCALES = ['es', 'en', 'pt'] as const;
+export const ALL_LOCALES = ['es', 'en', 'fr', 'pt'] as const;
 export type Locale = (typeof ALL_LOCALES)[number];
 
 export const enabledLocales = (): Locale[] => {
   const extras = (process.env.ENABLE_LOCALES ?? '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
-    .filter((s): s is 'en' | 'pt' => s === 'en' || s === 'pt');
+    .filter((s): s is 'en' | 'fr' | 'pt' => s === 'en' || s === 'fr' || s === 'pt');
   return [DEFAULT_LOCALE, ...extras];
 };
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   es: 'Español',
   en: 'English',
+  fr: 'Français',
   pt: 'Português',
 };
 
 export const LOCALE_NATIVE_TAGS: Record<Locale, string> = {
   es: 'es-AR',
   en: 'en-US',
+  fr: 'fr-FR',
   pt: 'pt-BR',
 };
 
 export function detectLocaleFromPath(pathname: string): Locale {
   const seg = pathname.split('/')[1];
-  if (seg === 'en' || seg === 'pt') return seg;
+  if (seg === 'en' || seg === 'fr' || seg === 'pt') return seg;
   return DEFAULT_LOCALE;
 }
 
 export function stripLocaleFromPath(pathname: string): string {
   const seg = pathname.split('/')[1];
-  if (seg === 'en' || seg === 'pt') return pathname.slice(3) || '/';
+  if (seg === 'en' || seg === 'fr' || seg === 'pt') return pathname.slice(seg.length + 1) || '/';
   return pathname;
 }
 

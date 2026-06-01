@@ -20,6 +20,8 @@ export function pickI18n(
   if (direct && direct.trim()) return direct;
   // Cascada: si pidió pt y no hay, probamos en, luego fallback.
   if (locale !== 'en') {
+    const fr = locale !== 'fr' ? i18n.fr : undefined;
+    if (fr && typeof fr === 'string' && fr.trim()) return fr;
     const en = i18n.en;
     if (en && en.trim()) return en;
   }

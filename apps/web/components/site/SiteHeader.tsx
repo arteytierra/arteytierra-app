@@ -75,6 +75,38 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
       ],
     },
   ],
+  fr: [
+    {
+      label: 'Arte y Tierra', href: '/fr/arte-y-tierra',
+      children: [
+        { label: 'Services',     href: '/fr/diseno' },
+        { label: 'Consultation', href: '/fr/asesorias' },
+        { label: 'Projets',      href: '/fr/proyectos' },
+      ],
+    },
+    {
+      label: 'Tay Pichín', href: '/fr/tay-pichin',
+      children: [
+        { label: 'Éco-École',  href: '/fr/cursos' },
+        { label: 'Éco-Hostel', href: '/fr/hospedaje' },
+      ],
+    },
+    {
+      label: 'Notre Boutique', href: '/fr/tienda',
+      children: [
+        { label: 'Biocosmétique', href: '/fr/biocosmetica' },
+        { label: 'Manuels',       href: '/fr/ebooks' },
+      ],
+    },
+    {
+      label: 'À propos', href: '/fr/nosotros',
+      children: [
+        { label: 'À propos',  href: '/fr/nosotros' },
+        { label: 'Journal',   href: '/fr/blog' },
+        { label: 'Contact',   href: '/fr/contacto' },
+      ],
+    },
+  ],
   pt: [
     {
       label: 'Arte y Tierra', href: '/pt/arte-y-tierra',
@@ -112,6 +144,7 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
 const CTA_BY_LOCALE: Record<Locale, { label: string; href: string }> = {
   es: { label: 'Inscribirme', href: '/cursos' },
   en: { label: 'Enroll',      href: '/en/cursos' },
+  fr: { label: "S'inscrire",  href: '/fr/cursos' },
   pt: { label: 'Inscrever',   href: '/pt/cursos' },
 };
 
