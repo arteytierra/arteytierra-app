@@ -32,6 +32,9 @@ import { fetchShader, type DatosShader } from '@/lib/shaders';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
 import { SugerenciasPanel } from './SugerenciasPanel';
+import { DibujoToolbar } from './DibujoToolbar';
+import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
+import { COLORES_DIBUJO, distanciaMetros } from '@/lib/dibujos';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
 import type { Proyecto } from '@/lib/proyectos';
@@ -113,12 +116,19 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
 
+  // ─── Dibujo libre ─────────────────────────────────────────────────────────
+  const [dibujos,        setDibujos]        = useState<ElementoDibujo[]>([]);
+  const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | null>(null);
+  const [dibujoEnCurso,  setDibujoEnCurso]  = useState<DibujoEnCurso | null>(null);
+  const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
+  const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
+
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [capturaActiva,  setCapturaActiva]  = useState(false);
   const [capturaTitulo,  setCapturaTitulo]  = useState('');
 
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick;
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))    : [], [capas.zonas, zonas, ocultosIds]);
@@ -147,8 +157,9 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (pines.length)    m['pines']    = pines;
     if (caminos.length)  m['caminos']  = caminos;
     if (datosShader)     m['shader']   = datosShader;
+    if (dibujos.length)  m['dibujos']  = dibujos;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, zonas, sectores, pines, caminos]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, zonas, sectores, pines, caminos, dibujos]);
 
   // ─── Mojones ──────────────────────────────────────────────────────────────
   const agregarMojon = useCallback((lat: number, lng: number) => {
@@ -172,8 +183,34 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (modoSector)  { setModoSector(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoCamino)  { setModoCamino(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoPinClick){ setPines(prev => [...prev, crearPin(lat, lng)]); setModoPinClick(false); return; }
-    if (modoClick)   agregarMojon(lat, lng);
-  }, [modoZona, modoSector, modoCamino, modoPinClick, modoClick, agregarMojon]);
+
+    if (modoDibujo && modoDibujo !== 'seleccion') {
+      if (modoDibujo === 'texto') {
+        const texto = window.prompt('Escribí el texto:');
+        if (!texto?.trim()) return;
+        setDibujos(prev => [...prev, {
+          id: crypto.randomUUID(), tipo: 'texto', color: colorDibujo,
+          lat, lng, texto: texto.trim(), tamano: 14,
+        }]);
+        return;
+      }
+      setDibujoEnCurso(prev => {
+        if (!prev) return { tipo: modoDibujo, vertices: [{ lat, lng }] };
+        const next = [...prev.vertices, { lat, lng }];
+        // Auto-finalizar círculo al tener 2 puntos
+        if (modoDibujo === 'circulo' && next.length === 2) {
+          const id    = crypto.randomUUID();
+          const radio = distanciaMetros(next[0]!.lat, next[0]!.lng, next[1]!.lat, next[1]!.lng);
+          setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: 0.18 }]);
+          return { tipo: modoDibujo, vertices: [] };
+        }
+        return { ...prev, vertices: next };
+      });
+      return;
+    }
+
+    if (modoClick) agregarMojon(lat, lng);
+  }, [modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -213,6 +250,50 @@ export function MapaTerrenoApp({ userName }: Props) {
     setModoCamino(null);
   }, [modoCamino]);
   const handleCancelarCamino  = useCallback(() => setModoCamino(null), []);
+
+  // ─── Dibujo libre ─────────────────────────────────────────────────────────
+  const handleCambiarModo = useCallback((modo: TipoDibujo | 'seleccion' | null) => {
+    setModoDibujo(modo);
+    setDibujoEnCurso(modo && modo !== 'seleccion' ? { tipo: modo, vertices: [] } : null);
+    setDibujoSelId(null);
+    if (modo) { setModoClick(false); }
+  }, []);
+
+  const handleClickDibujo = useCallback((id: string) => {
+    setDibujoSelId(prev => prev === id ? null : id);
+  }, []);
+
+  const handleEliminarDibujo = useCallback(() => {
+    if (!dibujoSelId) return;
+    setDibujos(prev => prev.filter(d => d.id !== dibujoSelId));
+    setDibujoSelId(null);
+  }, [dibujoSelId]);
+
+  const handleFinalizarDibujo = useCallback(() => {
+    if (!dibujoEnCurso) return;
+    const id    = crypto.randomUUID();
+    const color = colorDibujo;
+    const verts = dibujoEnCurso.vertices;
+
+    if (dibujoEnCurso.tipo === 'linea' && verts.length >= 2)
+      setDibujos(prev => [...prev, { id, tipo: 'linea',    color, vertices: verts, grosor: 3 }]);
+    else if (dibujoEnCurso.tipo === 'curva' && verts.length >= 2)
+      setDibujos(prev => [...prev, { id, tipo: 'curva',    color, vertices: verts, grosor: 3 }]);
+    else if (dibujoEnCurso.tipo === 'poligono' && verts.length >= 3)
+      setDibujos(prev => [...prev, { id, tipo: 'poligono', color, vertices: verts, opacidad: 0.22 }]);
+    else if (dibujoEnCurso.tipo === 'circulo' && verts.length === 2) {
+      const radio = distanciaMetros(verts[0]!.lat, verts[0]!.lng, verts[1]!.lat, verts[1]!.lng);
+      setDibujos(prev => [...prev, { id, tipo: 'circulo', color, lat: verts[0]!.lat, lng: verts[0]!.lng, radio, opacidad: 0.18 }]);
+    }
+
+    setDibujoEnCurso({ tipo: dibujoEnCurso.tipo, vertices: [] });
+  }, [dibujoEnCurso, colorDibujo]);
+
+  const handleCancelarDibujo = useCallback(() => {
+    setModoDibujo(null);
+    setDibujoEnCurso(null);
+    setDibujoSelId(null);
+  }, []);
 
   // ─── Shader ───────────────────────────────────────────────────────────────
   const handleFetchShader = useCallback(async () => {
@@ -268,6 +349,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     const shaderGuardado = (meta['shader'] as DatosShader) ?? null;
     setDatosShader(shaderGuardado);
     if (shaderGuardado) setCapas(prev => ({ ...prev, shaderElev: true, escorrentias: true, sugerencias: true }));
+    setDibujos((meta['dibujos'] as ElementoDibujo[]) ?? []);
     setTab('mojones');
   }, []);
 
@@ -555,9 +637,26 @@ export function MapaTerrenoApp({ userName }: Props) {
              modoSector  ? `Dibujando sector — clic en mapa (${modoSector.vertices.length} vértices)` :
              modoCamino  ? `Trazando camino — clic en mapa (${modoCamino.vertices.length} puntos)`  :
              modoPinClick? 'Hacé clic en el mapa para colocar el pin' :
-                           'Hacé clic en el mapa para agregar un mojón'}
+             modoDibujo && modoDibujo !== 'seleccion'
+               ? `Dibujando ${modoDibujo} — ${dibujoEnCurso?.vertices.length ?? 0} puntos`
+               :            'Hacé clic en el mapa para agregar un mojón'}
           </div>
         )}
+
+        {/* ── Barra de herramientas de dibujo (flotante izquierda) ── */}
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-[1000] no-print" style={{ pointerEvents: 'none' }}>
+          <DibujoToolbar
+            modoDibujo={modoDibujo}
+            colorActivo={colorDibujo}
+            enCurso={dibujoEnCurso}
+            seleccionado={dibujoSelId}
+            onModo={handleCambiarModo}
+            onColor={setColorDibujo}
+            onFinalizar={handleFinalizarDibujo}
+            onCancelar={handleCancelarDibujo}
+            onEliminar={handleEliminarDibujo}
+          />
+        </div>
 
         {/* ── Panel derecho: Capas / Sugerencias ── */}
         <div className="absolute top-14 right-3 z-[1000] no-print">
@@ -674,6 +773,12 @@ export function MapaTerrenoApp({ userName }: Props) {
           datosEscorrentia={datosEscorrentia}
           datosSugerencias={datosSugerencias}
           capas={capas}
+          dibujos={dibujos}
+          dibujoEnCurso={dibujoEnCurso}
+          dibujoSelId={dibujoSelId}
+          onClickDibujo={handleClickDibujo}
+          modoDibujo={modoDibujo}
+          colorDibujo={colorDibujo}
         />
       </main>
     </div>

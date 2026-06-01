@@ -166,6 +166,9 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
     devDependencies:
+      '@cloudflare/next-on-pages':
+        specifier: ^1.13.16
+        version: 1.13.16(next@15.5.18(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vercel@54.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(rollup@4.60.4))(wrangler@4.94.0)
       '@playwright/test':
         specifier: ^1.49.1
         version: 1.60.0
@@ -205,6 +208,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      vercel:
+        specifier: ^54.4.1
+        version: 54.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(rollup@4.60.4)
       vitest:
         specifier: ^3.1.0
         version: 3.2.4(@edge-runtime/vm@3.2.0)(@types/node@22.19.19)(jiti@1.21.7)(lightningcss@1.32.0)(tsx@4.21.0)

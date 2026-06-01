@@ -8,6 +8,7 @@ import {
   Polygon,
   Polyline,
   Rectangle,
+  Circle as LeafCircle,
   useMapEvents,
   useMap,
 } from 'react-leaflet';
@@ -25,6 +26,8 @@ import type { DatosShader } from '@/lib/shaders';
 import { colorElevacion, colorPendiente } from '@/lib/shaders';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
 import type { ResultadoSugerencias } from '@/lib/sugerencias';
+import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
+import { distanciaMetros } from '@/lib/dibujos';
 
 type Capa = 'satelite' | 'topo';
 
@@ -124,9 +127,51 @@ function AutoFit({ mojones }: { mojones: Mojon[] }) {
   return null;
 }
 
-function ClickHandler({ onClickMapa }: { onClickMapa: (lat: number, lng: number) => void }) {
+function ClickHandler({ onClickMapa, modoDibujo }: {
+  onClickMapa:  (lat: number, lng: number) => void;
+  modoDibujo?:  string | null;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (modoDibujo && modoDibujo !== 'seleccion') map.doubleClickZoom.disable();
+    else map.doubleClickZoom.enable();
+  }, [map, modoDibujo]);
   useMapEvents({ click(e) { onClickMapa(e.latlng.lat, e.latlng.lng); } });
   return null;
+}
+
+// Chaikin curve smoothing (3 iterations)
+function chaikin(pts: LatLngTuple[]): LatLngTuple[] {
+  if (pts.length < 2) return pts;
+  let cur = pts;
+  for (let n = 0; n < 3; n++) {
+    const next: LatLngTuple[] = [];
+    for (let i = 0; i < cur.length - 1; i++) {
+      const [a0, a1] = cur[i]!;
+      const [b0, b1] = cur[i + 1]!;
+      next.push([0.75 * a0 + 0.25 * b0, 0.75 * a1 + 0.25 * b1]);
+      next.push([0.25 * a0 + 0.75 * b0, 0.25 * a1 + 0.75 * b1]);
+    }
+    next.push(cur[cur.length - 1]!);
+    cur = next;
+  }
+  return cur;
+}
+
+function crearIconoTexto(texto: string, color: string, tamano: number, sel: boolean): L.DivIcon {
+  return L.divIcon({
+    html: `<div style="
+      color:${color};font-size:${tamano}px;font-weight:600;
+      font-family:sans-serif;white-space:nowrap;
+      text-shadow:0 1px 3px rgba(0,0,0,0.8),0 0 6px rgba(0,0,0,0.5);
+      outline:${sel ? '2px dashed #F59E0B' : 'none'};
+      cursor:pointer;padding:2px 4px;border-radius:3px;
+      background:${sel ? 'rgba(245,158,11,0.15)' : 'transparent'};
+    ">${texto}</div>`,
+    className: '',
+    iconSize: undefined,
+    iconAnchor: [0, tamano / 2],
+  });
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -149,6 +194,13 @@ interface Props {
   datosEscorrentia?:  DatosEscorrentia | null;
   datosSugerencias?:  ResultadoSugerencias | null;
   capas?:             CapasVisibles;
+  // ── Dibujo libre ──
+  dibujos?:           ElementoDibujo[];
+  dibujoEnCurso?:     DibujoEnCurso | null;
+  dibujoSelId?:       string | null;
+  onClickDibujo?:     (id: string) => void;
+  modoDibujo?:        TipoDibujo | 'seleccion' | null;
+  colorDibujo?:       string;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
@@ -167,12 +219,24 @@ export default function MapLeaflet({
   datosEscorrentia = null,
   datosSugerencias = null,
   capas = CAPAS_DEFAULT,
+  dibujos = [],
+  dibujoEnCurso = null,
+  dibujoSelId = null,
+  onClickDibujo,
+  modoDibujo = null,
+  colorDibujo = '#EF4444',
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
 
+  const cursorClass = modoDibujo && modoDibujo !== 'seleccion'
+    ? 'cursor-crosshair'
+    : modoDibujo === 'seleccion'
+    ? 'cursor-pointer'
+    : '';
+
   return (
-    <div className="relative h-full w-full" id="mapa-captura">
+    <div className={`relative h-full w-full ${cursorClass}`} id="mapa-captura">
       <MapContainer
         center={CENTRO_INICIAL}
         zoom={ZOOM_INICIAL}
@@ -201,7 +265,7 @@ export default function MapLeaflet({
           />
         )}
 
-        <ClickHandler onClickMapa={onClickMapa} />
+        <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
 
         {/* ── Shader topográfico ── */}
@@ -369,6 +433,81 @@ export default function MapLeaflet({
             eventHandlers={{ click: () => !dibujando && onSeleccionar(seleccionado === m.id ? null : m.id) }}
           />
         ))}
+
+        {/* ── Dibujos guardados ── */}
+        {dibujos.map(d => {
+          const sel  = dibujoSelId === d.id;
+          const selW = sel ? 4 : undefined;
+          const selD = sel ? '8 4' : undefined;
+          const onClick = () => modoDibujo === 'seleccion' && onClickDibujo?.(d.id);
+
+          if (d.tipo === 'linea') return (
+            <Polyline key={d.id}
+              positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+              pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
+              eventHandlers={{ click: onClick }}
+            />
+          );
+          if (d.tipo === 'curva') {
+            const smooth = chaikin(d.vertices.map(v => [v.lat, v.lng] as LatLngTuple));
+            return (
+              <Polyline key={d.id}
+                positions={smooth}
+                pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
+                eventHandlers={{ click: onClick }}
+              />
+            );
+          }
+          if (d.tipo === 'poligono') return (
+            <Polygon key={d.id}
+              positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+              pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
+              eventHandlers={{ click: onClick }}
+            />
+          );
+          if (d.tipo === 'circulo') return (
+            <LeafCircle key={d.id}
+              center={[d.lat, d.lng]}
+              radius={d.radio}
+              pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
+              eventHandlers={{ click: onClick }}
+            />
+          );
+          if (d.tipo === 'texto') return (
+            <Marker key={d.id}
+              position={[d.lat, d.lng]}
+              icon={crearIconoTexto(d.texto, d.color, d.tamano, sel)}
+              eventHandlers={{ click: onClick }}
+            />
+          );
+          return null;
+        })}
+
+        {/* ── Dibujo en construcción (preview) ── */}
+        {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {
+          const pts = dibujoEnCurso.vertices.map(v => [v.lat, v.lng] as LatLngTuple);
+          if (dibujoEnCurso.tipo === 'poligono') return (
+            <Polygon positions={pts}
+              pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
+          );
+          if (dibujoEnCurso.tipo === 'curva') return (
+            <Polyline positions={chaikin(pts)}
+              pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
+          );
+          if (dibujoEnCurso.tipo === 'circulo' && dibujoEnCurso.vertices.length === 2) {
+            const c = dibujoEnCurso.vertices[0]!;
+            const e = dibujoEnCurso.vertices[1]!;
+            const r = distanciaMetros(c.lat, c.lng, e.lat, e.lng);
+            return (
+              <LeafCircle center={[c.lat, c.lng]} radius={r}
+                pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
+            );
+          }
+          return (
+            <Polyline positions={pts}
+              pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
+          );
+        })()}
       </MapContainer>
 
       {/* Toggle de capa de fondo */}
