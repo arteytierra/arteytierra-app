@@ -44,6 +44,7 @@ export interface CapasVisibles {
   escorrentias:  boolean;
   sugerencias:   boolean;
   aguadas:       boolean;
+  dibujos:       boolean;
 }
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
@@ -333,7 +334,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true };
 
 export default function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -383,11 +384,13 @@ export default function MapLeaflet({
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               attribution='Tiles &copy; Esri'
               maxZoom={20}
+              crossOrigin="anonymous"
             />
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
               maxZoom={20}
               opacity={0.75}
+              crossOrigin="anonymous"
             />
           </>
         ) : (
@@ -395,13 +398,14 @@ export default function MapLeaflet({
             url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
             attribution='Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
             maxZoom={17}
+            crossOrigin="anonymous"
           />
         )}
 
         <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
         <MiddleMousePan />
-        {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} />}
+        {capas.terrariumElev && <TerrariumLayer elevMin={0} elevMax={4000} />}
 
         {/* ── Shader topográfico ── */}
         {datosShader && capas.shaderElev && datosShader.celdas.map((c, i) => (
@@ -577,7 +581,7 @@ export default function MapLeaflet({
         ))}
 
         {/* ── Dibujos guardados ── */}
-        {dibujos.map(d => {
+        {(capas.dibujos !== false) && dibujos.map(d => {
           const sel  = dibujoSelId === d.id;
           const selW = sel ? 4 : undefined;
           const selD = sel ? '8 4' : undefined;

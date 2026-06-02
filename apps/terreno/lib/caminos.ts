@@ -93,7 +93,7 @@ export async function fetchPerfilElevacion(
   const timer = setTimeout(() => controller.abort(), 30_000);
 
   try {
-    const res = await fetch('https://api.opentopodata.org/v1/srtm30m', {
+    const res = await fetch('/api/elevacion', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
