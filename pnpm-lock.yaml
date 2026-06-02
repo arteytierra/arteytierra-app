@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@opennextjs/aws>esbuild': ^0.25.0
+
 importers:
 
   .:
