@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Save, FolderOpen, Trash2, Download, Upload, Plus, Share2, Copy, Check } from 'lucide-react';
+import { Save, FolderOpen, Trash2, Download, Upload, Plus, Share2, Copy, Check, HardDrive } from 'lucide-react';
 import {
   listarProyectos,
   guardarProyecto,
@@ -44,8 +44,9 @@ export function ProyectosPanel({
     try {
       const data = await listarProyectos();
       setProyectos(data);
-    } catch {
-      setError('No se pudo cargar la lista de proyectos.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`No se pudo cargar proyectos: ${msg}`);
     } finally {
       setCargando(false);
     }
@@ -80,8 +81,9 @@ export function ProyectosPanel({
         onProyectoActualChange(p);
       }
       await recargar();
-    } catch {
-      setError('Error al guardar. Intentá de nuevo.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Error al guardar: ${msg}`);
     } finally {
       setGuardando(false);
     }
@@ -101,8 +103,9 @@ export function ProyectosPanel({
       const url = urlInforme(token);
       setUrlCompartida(url);
       onProyectoActualChange({ ...proyectoActual, informe_publico: true, informe_token: token });
-    } catch {
-      setError('No se pudo generar el link. Intentá de nuevo.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`No se pudo generar el link: ${msg}`);
     } finally {
       setCompartiendo(false);
     }
@@ -137,8 +140,9 @@ export function ProyectosPanel({
         setUrlCompartida(null);
       }
       await recargar();
-    } catch {
-      setError('No se pudo eliminar el proyecto.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`No se pudo eliminar el proyecto: ${msg}`);
     }
   }
 
@@ -179,6 +183,42 @@ export function ProyectosPanel({
   function handleExportar() {
     if (mojones.length === 0) return;
     exportarCSV(mojones, nombre || 'terreno');
+  }
+
+  function handleExportarJSON() {
+    if (mojones.length === 0) return;
+    const data = { nombre: nombre || 'terreno', descripcion, mojones, metadatos: metadatos ?? null };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(nombre || 'terreno').replace(/[^a-zA-Z0-9_-]/g, '_')}.terreno.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImportarJSON(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as { nombre?: string; descripcion?: string; mojones?: Mojon[]; metadatos?: Record<string, unknown> | null };
+      if (!Array.isArray(data.mojones)) { setError('Archivo JSON inválido: falta "mojones".'); return; }
+      const p: Proyecto = {
+        id: '', nombre: data.nombre ?? file.name.replace('.terreno.json', ''),
+        descripcion: data.descripcion ?? null,
+        mojones: data.mojones, metadatos: data.metadatos ?? null,
+        informe_token: '', informe_publico: false,
+        created_at: '', updated_at: '',
+      };
+      onCargarProyecto(p);
+      setNombre(p.nombre);
+      setDescripcion(p.descripcion ?? '');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al leer el archivo JSON.');
+    } finally {
+      e.target.value = '';
+    }
   }
 
   const inputClass =
@@ -227,6 +267,14 @@ export function ProyectosPanel({
           >
             <Save className="w-3.5 h-3.5" />
             {guardando ? 'Guardando…' : proyectoActual ? 'Actualizar' : 'Guardar'}
+          </button>
+          <button
+            onClick={handleExportarJSON}
+            disabled={mojones.length === 0}
+            title="Guardar proyecto completo como archivo JSON local"
+            className="p-2 border border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg transition-colors disabled:opacity-40"
+          >
+            <HardDrive className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleExportar}
@@ -278,7 +326,7 @@ export function ProyectosPanel({
       </div>
 
       {/* Importar */}
-      <div>
+      <div className="space-y-1.5">
         <label className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg text-xs font-medium transition-colors cursor-pointer">
           <Upload className="w-3.5 h-3.5" />
           {importando ? 'Importando…' : 'Importar KML / KMZ / CSV'}
@@ -288,6 +336,16 @@ export function ProyectosPanel({
             className="hidden"
             onChange={handleImportar}
             disabled={importando}
+          />
+        </label>
+        <label className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg text-xs font-medium transition-colors cursor-pointer">
+          <HardDrive className="w-3.5 h-3.5" />
+          Cargar proyecto JSON local
+          <input
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImportarJSON}
           />
         </label>
       </div>
