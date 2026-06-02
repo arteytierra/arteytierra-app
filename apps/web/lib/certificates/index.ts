@@ -169,6 +169,19 @@ const STRINGS: Record<Locale, {
     org: 'Arte y Tierra · Escola',
     tagline: 'Educação regenerativa',
   },
+  fr: {
+    title: 'Certificat d\'achèvement',
+    awarded: 'Ce certificat est décerné à',
+    forCompleting: 'pour avoir complété avec succès le cours',
+    duration: 'Durée',
+    issuedOn: 'Émis le',
+    code: 'Code de vérification',
+    verify: 'Vérifier l\'authenticité sur',
+    signature: 'Signature numérique',
+    director: 'Direction académique',
+    org: 'Arte y Tierra · École',
+    tagline: 'Éducation régénérative',
+  },
 };
 
 export function certStrings(locale: Locale) {
