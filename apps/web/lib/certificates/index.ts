@@ -9,7 +9,7 @@ import { createSupabaseAdminClient } from '@/lib/db/admin';
  * no cambiaron.
  */
 
-export type Locale = 'es' | 'en' | 'pt';
+export type Locale = 'es' | 'en' | 'pt' | 'fr';
 
 const DEFAULT_LOCALE: Locale = 'es';
 
