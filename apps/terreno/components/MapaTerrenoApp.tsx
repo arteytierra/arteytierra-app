@@ -254,6 +254,10 @@ export function MapaTerrenoApp({ userName }: Props) {
   }, [modoSector]);
   const handleCancelarSector  = useCallback(() => setModoSector(null), []);
 
+  const handleAplicarSectorAuto = useCallback((sector: Sector) => {
+    setSectores(prev => [...prev, sector]);
+  }, []);
+
   // ─── Pines ────────────────────────────────────────────────────────────────
   const handleEditarPin = useCallback((id: string) => {
     setPinEditId(prev => prev === id ? null : id);
@@ -715,6 +719,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 mojones={mojones} datosClima={datosClima} datosTopografia={datosTopografia}
                 sectores={sectores} onSectores={setSectores} modoSector={modoSector}
                 onIniciarDibujo={handleIniciarSector} onFinalizarSector={handleFinalizarSector} onCancelarSector={handleCancelarSector}
+                onAplicarSector={handleAplicarSectorAuto}
               />
             </div>
           )}

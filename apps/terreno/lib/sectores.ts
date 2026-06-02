@@ -119,6 +119,122 @@ export function calcularSectoresAuto(
   return sectores;
 }
 
+// ─── Generación de vértices (geometría aproximada) ────────────────────────────
+
+const DEG_S = Math.PI / 180;
+const RAD_S = 180 / Math.PI;
+
+/** Convierte dirección cardinal → azimut en grados (0=N, 90=E…) */
+const WIND_AZ: Record<string, number> = {
+  N: 0, NNE: 22.5, NE: 45, ENE: 67.5,
+  E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
+  S: 180, SSO: 202.5, SO: 225, OSO: 247.5,
+  O: 270, ONO: 292.5, NO: 315, NNO: 337.5,
+};
+function dirAzimut(dir: string): number { return WIND_AZ[dir.toUpperCase()] ?? 0; }
+
+/** Genera una cuña (pie-slice) desde centro hacia un arco azimutal. */
+function arcoPolar(
+  centro: { lat: number; lng: number },
+  azDesde: number,   // inicio del arco (horario desde N)
+  azHasta: number,   // fin del arco (avanzando en sentido horario)
+  radio_m: number,
+  nPts = 30,
+): Array<{ lat: number; lng: number }> {
+  const cosLat = Math.cos(centro.lat * DEG_S);
+  const hasta  = azHasta <= azDesde ? azHasta + 360 : azHasta;
+  const pts: Array<{ lat: number; lng: number }> = [{ ...centro }];
+  for (let i = 0; i <= nPts; i++) {
+    const az = ((azDesde + (hasta - azDesde) * i / nPts) % 360 + 360) % 360;
+    const r  = az * DEG_S;
+    pts.push({
+      lat: centro.lat + radio_m * Math.cos(r) / 111320,
+      lng: centro.lng + radio_m * Math.sin(r) / (111320 * cosLat),
+    });
+  }
+  return pts;
+}
+
+/** Cuña centrada en un azimut con amplitud dada. */
+function cuña(
+  centro: { lat: number; lng: number },
+  azCentro: number,
+  amplitud: number,
+  radio_m: number,
+): Array<{ lat: number; lng: number }> {
+  return arcoPolar(centro, azCentro - amplitud / 2, azCentro + amplitud / 2, radio_m);
+}
+
+/** Azimuts de amanecer y atardecer para un día del año. */
+function azimutsSolsticio(lat: number, doy: number): { amanecer: number; atardecer: number } {
+  const phi  = lat * DEG_S;
+  const decl = 23.45 * DEG_S * Math.sin(2 * Math.PI * (284 + doy) / 365);
+  const cosWs = -Math.tan(phi) * Math.tan(decl);
+  if (Math.abs(cosWs) >= 1) return { amanecer: 90, atardecer: 270 };
+
+  const Hs = Math.acos(cosWs);
+
+  function az(H: number) {
+    const sinAlt = Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(H);
+    const alt    = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
+    const r = Math.atan2(
+      -Math.cos(decl) * Math.sin(H),
+      Math.sin(decl) * Math.cos(phi) - Math.cos(decl) * Math.cos(H) * Math.sin(phi),
+    );
+    void alt; // horizon approximation — ignores refraction
+    return ((r * RAD_S) + 360) % 360;
+  }
+
+  return { amanecer: az(-Hs), atardecer: az(+Hs) };
+}
+
+/**
+ * Genera vértices aproximados para un sector automático.
+ * Devuelve un polígono (cuña/arco) centrado en (lat, lng) con radio radio_m.
+ */
+export function generarVerticesSector(
+  tipo: TipoSector,
+  lat: number,
+  lng: number,
+  radio_m: number,
+  clima: DatosClima | null,
+  topo: DatosTopografia | null,
+): Array<{ lat: number; lng: number }> {
+  const centro = { lat, lng };
+
+  switch (tipo) {
+    case 'sol_verano': {
+      const { amanecer, atardecer } = azimutsSolsticio(lat, 355); // 21 dic
+      // El arco va desde el lado del atardecer hacia el amanecer pasando por el norte
+      return arcoPolar(centro, atardecer, amanecer, radio_m);
+    }
+    case 'sol_invierno': {
+      const { amanecer, atardecer } = azimutsSolsticio(lat, 172); // 21 jun
+      return arcoPolar(centro, atardecer, amanecer, radio_m);
+    }
+    case 'viento_ppal': {
+      const az = clima ? dirAzimut(clima.viento_dir_ppal) : 0;
+      return cuña(centro, az, 70, radio_m);
+    }
+    case 'viento_frio': {
+      // Hemisferio sur: viento frío del SO (Pampero); norte: NO
+      const az = lat < 0 ? 225 : 315;
+      return cuña(centro, az, 55, radio_m);
+    }
+    case 'fuego': {
+      const az = topo ? dirAzimut(topo.orientacion) : (lat < 0 ? 0 : 180);
+      return cuña(centro, az, 90, radio_m);
+    }
+    case 'inundacion': {
+      // El agua fluye en la dirección de la pendiente (orientacion)
+      const az = topo ? dirAzimut(topo.orientacion) : 180;
+      return cuña(centro, az, 80, radio_m);
+    }
+    default:
+      return cuña(centro, 0, 90, radio_m);
+  }
+}
+
 function orientacionRiesgoFuego(orient: string, lat: number): string {
   // En hemisferio sur, laderas N son más secas → mayor riesgo
   const altoRiesgo = lat < 0

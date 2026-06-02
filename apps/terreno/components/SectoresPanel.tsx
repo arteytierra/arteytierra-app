@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Plus, Trash2, PenLine, Check, X, ChevronDown, Info, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, PenLine, Check, X, ChevronDown, Info, RotateCcw, MapPin } from 'lucide-react';
 import {
   TIPOS_SECTOR,
   calcularSectoresAuto,
+  generarVerticesSector,
   type Sector,
   type TipoSector,
 } from '@/lib/sectores';
@@ -12,6 +13,7 @@ import type { DatosClima } from '@/lib/clima';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import { centroide } from '@/lib/clima';
+import { calcularRadioArco } from '@/lib/arco_solar';
 
 interface ModoSector {
   tipo:     TipoSector;
@@ -28,17 +30,19 @@ interface Props {
   onIniciarDibujo:   (tipo: TipoSector) => void;
   onFinalizarSector: (color?: string) => void;
   onCancelarSector:  () => void;
+  onAplicarSector?:  (sector: Sector) => void;
 }
 
 export function SectoresPanel({
   mojones, datosClima, datosTopografia,
   sectores, onSectores, modoSector,
-  onIniciarDibujo, onFinalizarSector, onCancelarSector,
+  onIniciarDibujo, onFinalizarSector, onCancelarSector, onAplicarSector,
 }: Props) {
   const [menuAbierto,  setMenuAbierto]  = useState(false);
   const [editandoId,   setEditandoId]   = useState<string | null>(null);
   const [mostrarAuto,  setMostrarAuto]  = useState(true);
   const [colorModo,    setColorModo]    = useState<string>(TIPOS_SECTOR.personalizado.color);
+  const [aplicadosIds, setAplicadosIds] = useState<Set<string>>(new Set());
 
   // Sincronizar color default cuando cambia el tipo en modo dibujo
   useEffect(() => {
@@ -46,6 +50,16 @@ export function SectoresPanel({
   }, [modoSector?.tipo]);
 
   const centro = mojones.length > 0 ? centroide(mojones) : null;
+
+  const handleAplicar = useCallback((s: Sector) => {
+    if (!centro || !onAplicarSector) return;
+    const radio  = calcularRadioArco(mojones, centro.lat);
+    const verts  = generarVerticesSector(s.tipo, centro.lat, centro.lng, radio, datosClima, datosTopografia);
+    if (verts.length < 3) return;
+    const nuevo: Sector = { ...s, id: crypto.randomUUID(), vertices: verts, auto: false };
+    onAplicarSector(nuevo);
+    setAplicadosIds(prev => new Set([...prev, s.id]));
+  }, [centro, mojones, datosClima, datosTopografia, onAplicarSector]);
 
   const sectoresAuto = useMemo(() => {
     if (!centro) return [];
@@ -169,14 +183,30 @@ export function SectoresPanel({
           {mostrarAuto && (
             <div className="border-t border-bone-200 divide-y divide-bone-200">
               {sectoresAuto.map(s => {
-                const info = TIPOS_SECTOR[s.tipo];
+                const info      = TIPOS_SECTOR[s.tipo];
+                const aplicado  = aplicadosIds.has(s.id);
+                const soportaGeom = ['sol_verano','sol_invierno','viento_ppal','viento_frio','fuego','inundacion'].includes(s.tipo);
                 return (
-                  <div key={s.id} className="px-3 py-2 space-y-0.5">
+                  <div key={s.id} className="px-3 py-2.5 space-y-1">
                     <p className="text-xs font-medium text-ink-900 flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: info.color }} />
                       {info.icono} {s.nombre}
                     </p>
                     <p className="text-[10px] text-ink-700/60 leading-relaxed ml-4">{s.notas}</p>
+                    {soportaGeom && onAplicarSector && (
+                      <button
+                        onClick={() => handleAplicar(s)}
+                        disabled={!centro}
+                        className={`ml-4 flex items-center gap-1 text-[10px] font-semibold py-0.5 px-2 rounded transition-colors ${
+                          aplicado
+                            ? 'bg-moss-100 text-moss-700'
+                            : 'bg-bone-100 hover:bg-moss-100 text-ink-700 hover:text-moss-700'
+                        } disabled:opacity-40`}
+                      >
+                        <MapPin className="w-2.5 h-2.5" />
+                        {aplicado ? 'Aplicado al plano ✓' : '+ Aplicar al plano'}
+                      </button>
+                    )}
                   </div>
                 );
               })}
