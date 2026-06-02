@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Sun, MapPin } from 'lucide-react';
+import { Sun, MapPin, Map } from 'lucide-react';
 import { calcularSolar, type DatosSolar } from '@/lib/solar';
 import { centroide } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
@@ -9,11 +9,13 @@ import type { Mojon } from '@/lib/types';
 import type { DatosClima } from '@/lib/clima';
 
 interface Props {
-  mojones:    Mojon[];
-  datosClima: DatosClima | null;
+  mojones:           Mojon[];
+  datosClima:        DatosClima | null;
+  arcSolarVisible?:  boolean;
+  onMostrarEnMapa?:  () => void;
 }
 
-export function SolarPanel({ mojones, datosClima }: Props) {
+export function SolarPanel({ mojones, datosClima, arcSolarVisible, onMostrarEnMapa }: Props) {
   const centro = mojones.length > 0 ? centroide(mojones) : null;
 
   const solar: DatosSolar | null = useMemo(() => {
@@ -130,6 +132,43 @@ export function SolarPanel({ mojones, datosClima }: Props) {
             <span className="shrink-0 text-sun-600">→</span>{u}
           </p>
         ))}
+      </div>
+
+      {/* ── Arco solar en mapa ──────────────────────────────────────────────── */}
+      <div className="bg-sun-300/10 rounded-xl border border-sun-300/40 p-3 space-y-2">
+        <p className="text-xs font-medium text-clay-700 flex items-center gap-1.5">
+          <Map className="w-3.5 h-3.5" />
+          Arco solar en el mapa
+        </p>
+        <p className="text-[10px] text-ink-700/70 leading-relaxed">
+          Trayectoria del sol para solsticios y equinoccios, proyectada sobre el terreno.
+          Mostrá cuándo y dónde entra luz a cada punto del predio en distintas épocas del año.
+        </p>
+        {/* Leyenda de colores */}
+        <div className="flex flex-col gap-1">
+          {[
+            { color: '#FF5722', label: 'Solsticio de verano (21 dic)' },
+            { color: '#43A047', label: 'Equinoccios (21 mar / 23 sep)' },
+            { color: '#1E88E5', label: 'Solsticio de invierno (21 jun)' },
+          ].map(({ color, label }) => (
+            <div key={color} className="flex items-center gap-2">
+              <span className="w-6 h-0 border-t-2 shrink-0" style={{ borderColor: color }} />
+              <span className="text-[10px] text-ink-700/80">{label}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={onMostrarEnMapa}
+          disabled={!onMostrarEnMapa}
+          className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+            arcSolarVisible
+              ? 'bg-sun-500 text-ink-950 hover:bg-sun-400'
+              : 'bg-ink-950 hover:bg-ink-700 text-bone-50'
+          } disabled:opacity-40`}
+        >
+          <Map className="w-3.5 h-3.5" />
+          {arcSolarVisible ? 'Visible en el mapa ✓' : 'Ver en el mapa'}
+        </button>
       </div>
 
       <p className="text-[9px] text-ink-700/40 italic">

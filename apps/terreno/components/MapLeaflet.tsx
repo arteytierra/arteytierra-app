@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -29,6 +29,8 @@ import type { ResultadoSugerencias } from '@/lib/sugerencias';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { distanciaMetros } from '@/lib/dibujos';
 import type { ElementoAguada } from '@/lib/aguadas';
+import type { DatosArcoSolar } from '@/lib/arco_solar';
+import { horaStr } from '@/lib/arco_solar';
 
 type Capa = 'satelite' | 'topo';
 
@@ -45,6 +47,7 @@ export interface CapasVisibles {
   sugerencias:   boolean;
   aguadas:       boolean;
   dibujos:       boolean;
+  arcSolar:      boolean;
 }
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
@@ -326,6 +329,8 @@ interface Props {
   elevMax?:           number;
   // ── Aguadas layer ──
   aguadasLayer?:      ElementoAguada[];
+  // ── Arco solar ──
+  datosArcoSolar?:    DatosArcoSolar | null;
   // ── Vertex / pin editing ──
   onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
@@ -334,7 +339,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false };
 
 export default function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -357,6 +362,7 @@ export default function MapLeaflet({
   elevMin = 0,
   elevMax = 500,
   aguadasLayer = [],
+  datosArcoSolar = null,
   onMoverVertice,
   onMoverPin,
 }: Props) {
@@ -712,6 +718,9 @@ export default function MapLeaflet({
           return null;
         })}
 
+        {/* ── Arco solar ── */}
+        {capas.arcSolar && datosArcoSolar && <ArcoSolarLayer datos={datosArcoSolar} />}
+
         {/* ── Dibujo en construcción (preview) ── */}
         {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {
           const pts = dibujoEnCurso.vertices.map(v => [v.lat, v.lng] as LatLngTuple);
@@ -755,5 +764,111 @@ export default function MapLeaflet({
         </button>
       </div>
     </div>
+  );
+}
+
+// ─── Arco Solar Layer ─────────────────────────────────────────────────────────
+
+function iconoSunEvent(color: string, hora: number): L.DivIcon {
+  const timeLabel = horaStr(hora);
+  return L.divIcon({
+    html: `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;">
+      <div style="width:9px;height:9px;border-radius:50%;background:${color};border:1.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
+      <span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;white-space:nowrap;background:rgba(255,255,255,0.88);padding:0 2px;border-radius:2px;line-height:1.4;box-shadow:0 1px 3px rgba(0,0,0,0.15);">${timeLabel}</span>
+    </div>`,
+    className: '',
+    iconSize: [32, 22],
+    iconAnchor: [16, 9],
+  });
+}
+
+function iconoNoon(color: string, elevacion: number, labelCorto: string): L.DivIcon {
+  return L.divIcon({
+    html: `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;">
+      <div style="font-size:16px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5));">☀</div>
+      <span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;white-space:nowrap;background:rgba(255,255,255,0.9);padding:0 3px;border-radius:2px;line-height:1.4;box-shadow:0 1px 3px rgba(0,0,0,0.18);">${labelCorto} · ${elevacion.toFixed(0)}°</span>
+    </div>`,
+    className: '',
+    iconSize: [72, 28],
+    iconAnchor: [36, 16],
+  });
+}
+
+function iconoCardinal(dir: string): L.DivIcon {
+  return L.divIcon({
+    html: `<span style="font-size:10px;font-weight:800;color:#555;font-family:sans-serif;pointer-events:none;">${dir}</span>`,
+    className: '',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+}
+
+function ArcoSolarLayer({ datos }: { datos: DatosArcoSolar }) {
+  const { centro, radio_m, arcos, brujula } = datos;
+
+  return (
+    <>
+      {/* ── Círculo del horizonte ── */}
+      <LeafCircle
+        center={[centro.lat, centro.lng]}
+        radius={radio_m}
+        pathOptions={{ color: '#666', weight: 1, opacity: 0.28, fill: false, dashArray: '5 7', interactive: false }}
+      />
+
+      {/* ── Líneas cardinales ── */}
+      <Polyline
+        positions={[[brujula.N.lat, brujula.N.lng], [brujula.S.lat, brujula.S.lng]]}
+        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
+      />
+      <Polyline
+        positions={[[brujula.E.lat, brujula.E.lng], [brujula.O.lat, brujula.O.lng]]}
+        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
+      />
+
+      {/* ── Labels cardinales ── */}
+      {(Object.entries(brujula) as [string, { lat: number; lng: number }][]).map(([dir, pos]) => (
+        <Marker
+          key={`arc-dir-${dir}`}
+          position={[pos.lat, pos.lng]}
+          icon={iconoCardinal(dir === 'O' ? 'O' : dir)}
+          interactive={false}
+        />
+      ))}
+
+      {/* ── Arcos por fecha ── */}
+      {arcos.map(arco => (
+        <React.Fragment key={arco.fecha}>
+          {/* Sombra para contraste sobre satélite */}
+          <Polyline
+            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#000', weight: 5, opacity: 0.18, interactive: false, lineCap: 'round', lineJoin: 'round' }}
+          />
+          {/* Arco principal */}
+          <Polyline
+            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: arco.color, weight: 2.5, opacity: 0.92, interactive: false, lineCap: 'round', lineJoin: 'round' }}
+          />
+
+          {/* Amanecer */}
+          <Marker
+            position={[arco.amanecer.lat, arco.amanecer.lng]}
+            icon={iconoSunEvent(arco.color, arco.amanecer.hora)}
+            interactive={false}
+          />
+          {/* Atardecer */}
+          <Marker
+            position={[arco.atardecer.lat, arco.atardecer.lng]}
+            icon={iconoSunEvent(arco.color, arco.atardecer.hora)}
+            interactive={false}
+          />
+          {/* Mediodía solar */}
+          <Marker
+            position={[arco.mediodia.lat, arco.mediodia.lng]}
+            icon={iconoNoon(arco.color, arco.mediodia.elevacion, arco.labelCorto)}
+            interactive={false}
+          />
+        </React.Fragment>
+      ))}
+    </>
   );
 }

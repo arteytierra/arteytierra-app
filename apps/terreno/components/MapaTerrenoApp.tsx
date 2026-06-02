@@ -28,6 +28,7 @@ import { guardarInformeBorrador } from '@/lib/informe';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
+import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { fetchShader, type DatosShader } from '@/lib/shaders';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
@@ -115,7 +116,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   // ─── Capas y visibilidad ──────────────────────────────────────────────────
   const [capas, setCapas] = useState<CapasVisibles>({
     terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
-    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true,
+    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
@@ -153,6 +154,15 @@ export function MapaTerrenoApp({ userName }: Props) {
     () => datosShader && datosEscorrentia ? calcularSugerencias(datosShader, datosEscorrentia) : null,
     [datosShader, datosEscorrentia],
   );
+
+  const datosArcoSolar = useMemo<DatosArcoSolar | null>(() => {
+    if (mojones.length === 0) return null;
+    const { lat, lng } = mojones.reduce((acc, m) => ({ lat: acc.lat + m.lat, lng: acc.lng + m.lng }), { lat: 0, lng: 0 });
+    const latC = lat / mojones.length;
+    const lngC = lng / mojones.length;
+    const radio = calcularRadioArco(mojones, latC);
+    return calcularArcoSolar(latC, lngC, radio);
+  }, [mojones]);
 
   const metadatos = useMemo<Record<string, unknown>>(() => {
     const m: Record<string, unknown> = {};
@@ -679,7 +689,16 @@ export function MapaTerrenoApp({ userName }: Props) {
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
-          {tab === 'solar' && <div className="px-4 py-4"><SolarPanel mojones={mojones} datosClima={datosClima} /></div>}
+          {tab === 'solar' && (
+            <div className="px-4 py-4">
+              <SolarPanel
+                mojones={mojones}
+                datosClima={datosClima}
+                arcSolarVisible={capas.arcSolar}
+                onMostrarEnMapa={() => setCapas(prev => ({ ...prev, arcSolar: !prev.arcSolar }))}
+              />
+            </div>
+          )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} /></div>}
 
           {tab === 'zonas' && (
@@ -784,6 +803,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           {panelDerecho === 'capas' && (
             <PanelCapas
               capas={capas} onCapas={setCapas}
+              datosArcoSolar={datosArcoSolar}
               zonas={zonas} sectores={sectores} pines={pines} caminos={caminos}
               dibujos={dibujos}
               aguadasLayer={aguadasLayer}
@@ -912,6 +932,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           elevMin={datosShader?.elev_min ?? 0}
           elevMax={datosShader?.elev_max ?? 500}
           aguadasLayer={aguadasFiltradas}
+          datosArcoSolar={datosArcoSolar}
           onMoverPin={handleMoverPin}
         />
       </main>
@@ -1018,6 +1039,7 @@ function PinItem({ pin, editando, onEdit, onUpdate, onDelete }: {
 interface PanelCapasProps {
   capas:               CapasVisibles;
   onCapas:             (c: CapasVisibles) => void;
+  datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
   sectores:            Sector[];
   pines:               Pin[];
@@ -1052,7 +1074,7 @@ interface PanelCapasProps {
 }
 
 function PanelCapas({
-  capas, onCapas, zonas, sectores, pines, caminos, dibujos, aguadasLayer,
+  capas, onCapas, datosArcoSolar, zonas, sectores, pines, caminos, dibujos, aguadasLayer,
   ocultosIds, onToggle,
   onRenombrarPin, onEliminarPin,
   onRenombrarZona, onEliminarZona,
@@ -1064,7 +1086,7 @@ function PanelCapas({
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, aguadas: true, dibujos: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   return (
@@ -1342,6 +1364,28 @@ function PanelCapas({
                 onEliminar={() => onEliminarAguada(a.id)}
               />
             ))}
+          </CapaGrupo>
+        )}
+
+        {/* ── Arco Solar ── */}
+        {datosArcoSolar && (
+          <CapaGrupo
+            label="Arco Solar"
+            visible={capas.arcSolar}
+            onToggleVisible={() => onCapas({ ...capas, arcSolar: !capas.arcSolar })}
+            expanded={exp.arcSolar} onExpand={() => tog('arcSolar')}
+          >
+            {datosArcoSolar.arcos.map(arco => (
+              <div key={arco.fecha} className="flex items-center gap-2 pl-6 pr-3 py-1">
+                <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: arco.color }} />
+                <span className="text-[10px] text-ink-700/70 leading-tight">{arco.label}</span>
+              </div>
+            ))}
+            <div className="px-3 pb-2 pt-1">
+              <p className="text-[9px] text-ink-700/40 leading-tight">
+                Radio: {datosArcoSolar.radio_m} m · Centro: {datosArcoSolar.centro.lat.toFixed(4)}°
+              </p>
+            </div>
           </CapaGrupo>
         )}
       </div>
