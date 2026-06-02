@@ -7,6 +7,17 @@ import * as turf from '@turf/turf';
 import type { DatosTopografia, PuntoElevacion } from './topografia';
 import type { Mojon } from './types';
 
+export interface ElementoAguada {
+  id: string;
+  tipo: 'represa' | 'swale' | 'keyline';
+  nombre: string;
+  notas: string;
+  lat?: number;
+  lng?: number;
+  elevation?: number;
+  vertices?: Array<{ lat: number; lng: number }>;
+}
+
 export interface PuntoAguada {
   lat:          number;
   lng:          number;

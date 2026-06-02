@@ -28,6 +28,7 @@ import type { DatosEscorrentia } from '@/lib/escorrentias';
 import type { ResultadoSugerencias } from '@/lib/sugerencias';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { distanciaMetros } from '@/lib/dibujos';
+import type { ElementoAguada } from '@/lib/aguadas';
 
 type Capa = 'satelite' | 'topo';
 
@@ -42,6 +43,7 @@ export interface CapasVisibles {
   terrariumElev: boolean;
   escorrentias:  boolean;
   sugerencias:   boolean;
+  aguadas:       boolean;
 }
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
@@ -157,6 +159,19 @@ function chaikin(pts: LatLngTuple[]): LatLngTuple[] {
     cur = next;
   }
   return cur;
+}
+
+function crearIconoAguada(tipo: 'represa' | 'swale' | 'keyline', nombre: string): L.DivIcon {
+  const emoji = tipo === 'represa' ? '🏊' : tipo === 'swale' ? '⛏️' : '〰️';
+  return L.divIcon({
+    html: `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:#1E88E5;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">${emoji}</div>
+      <div style="background:rgba(30,136,229,0.88);color:#fff;font-size:9px;font-weight:600;font-family:sans-serif;padding:1px 5px;border-radius:3px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis;">${nombre}</div>
+    </div>`,
+    className: '',
+    iconSize: [28, 50],
+    iconAnchor: [14, 28],
+  });
 }
 
 function crearIconoTexto(texto: string, color: string, tamano: number, sel: boolean): L.DivIcon {
@@ -308,12 +323,17 @@ interface Props {
   // ── Terrarium ──
   elevMin?:           number;
   elevMax?:           number;
+  // ── Aguadas layer ──
+  aguadasLayer?:      ElementoAguada[];
+  // ── Vertex / pin editing ──
+  onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
+  onMoverPin?:        (id: string, lat: number, lng: number) => void;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true };
 
 export default function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -335,6 +355,9 @@ export default function MapLeaflet({
   colorDibujo = '#EF4444',
   elevMin = 0,
   elevMax = 500,
+  aguadasLayer = [],
+  onMoverVertice,
+  onMoverPin,
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
@@ -518,7 +541,14 @@ export default function MapLeaflet({
             key={p.id}
             position={[p.lat, p.lng]}
             icon={crearIconoPin(p)}
-            eventHandlers={{ click: () => !dibujando && onEditarPin?.(p.id) }}
+            draggable
+            eventHandlers={{
+              click: () => !dibujando && onEditarPin?.(p.id),
+              moveend(e) {
+                const pos = (e.target as L.Marker).getLatLng();
+                onMoverPin?.(p.id, pos.lat, pos.lng);
+              },
+            }}
           />
         ))}
 
@@ -628,6 +658,55 @@ export default function MapLeaflet({
             />
           );
         })()}
+
+        {/* ── Vertex handles para shape seleccionada ── */}
+        {modoDibujo === 'seleccion' && dibujoSelId && (() => {
+          const el = dibujos.find(d => d.id === dibujoSelId);
+          if (!el || el.tipo === 'texto' || el.tipo === 'circulo') return null;
+          return el.vertices.map((v, idx) => {
+            const vIcon = L.divIcon({
+              html: `<div style="width:12px;height:12px;border-radius:50%;background:white;border:2px solid ${el.color};box-shadow:0 1px 4px rgba(0,0,0,0.45);cursor:move;"></div>`,
+              className: '', iconSize: [12, 12], iconAnchor: [6, 6],
+            });
+            return (
+              <Marker key={`vx-${dibujoSelId}-${idx}`}
+                position={[v.lat, v.lng]}
+                icon={vIcon}
+                draggable
+                zIndexOffset={500}
+                eventHandlers={{
+                  moveend(e) {
+                    const p = (e.target as L.Marker).getLatLng();
+                    onMoverVertice?.(dibujoSelId, idx, p.lat, p.lng);
+                  },
+                }}
+              />
+            );
+          });
+        })()}
+
+        {/* ── Aguadas layer ── */}
+        {capas.aguadas && aguadasLayer.map(a => {
+          if (a.tipo === 'represa' && a.lat !== undefined && a.lng !== undefined) {
+            return (
+              <Marker key={a.id}
+                position={[a.lat, a.lng]}
+                icon={crearIconoAguada(a.tipo, a.nombre)}
+              />
+            );
+          }
+          if ((a.tipo === 'swale' || a.tipo === 'keyline') && a.vertices && a.vertices.length >= 2) {
+            const color = a.tipo === 'swale' ? '#26A69A' : '#66BB6A';
+            const dash  = a.tipo === 'swale' ? '8 5' : '16 6';
+            return (
+              <Polyline key={a.id}
+                positions={a.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                pathOptions={{ color, weight: 3, dashArray: dash, opacity: 0.9, interactive: false }}
+              />
+            );
+          }
+          return null;
+        })}
 
         {/* ── Dibujo en construcción (preview) ── */}
         {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {

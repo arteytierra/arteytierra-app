@@ -13,11 +13,16 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.text();
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body,
+  const body = await req.json() as { locations: unknown };
+  let locs: string;
+  if (Array.isArray(body.locations)) {
+    locs = (body.locations as Array<{ latitude: number; longitude: number }>)
+      .map(l => `${l.latitude},${l.longitude}`)
+      .join('|');
+  } else {
+    locs = String(body.locations);
+  }
+  const res = await fetch(`${BASE}?locations=${encodeURIComponent(locs)}`, {
     signal: AbortSignal.timeout(30_000),
   });
   return new Response(await res.text(), { status: res.status, headers: HDRS });

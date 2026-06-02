@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Trash2, LogOut, Map, ChevronRight, MapPin, Cloud,
   FolderOpen, Mountain, Droplets, FileText, CalendarDays,
@@ -35,6 +35,7 @@ import { SugerenciasPanel } from './SugerenciasPanel';
 import { DibujoToolbar } from './DibujoToolbar';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { COLORES_DIBUJO, distanciaMetros } from '@/lib/dibujos';
+import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
 import type { Proyecto } from '@/lib/proyectos';
@@ -108,10 +109,13 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [caminos,     setCaminos]     = useState<Camino[]>([]);
   const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
 
+  // ─── Aguadas layer ────────────────────────────────────────────────────────
+  const [aguadasLayer, setAguadasLayer] = useState<ElementoAguada[]>([]);
+
   // ─── Capas y visibilidad ──────────────────────────────────────────────────
   const [capas, setCapas] = useState<CapasVisibles>({
     terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
-    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false,
+    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
@@ -123,6 +127,8 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
+  const dibujoSel = useMemo(() => dibujos.find(d => d.id === dibujoSelId) ?? null, [dibujos, dibujoSelId]);
+
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [capturaActiva,  setCapturaActiva]  = useState(false);
   const [capturaTitulo,  setCapturaTitulo]  = useState('');
@@ -131,10 +137,11 @@ export function MapaTerrenoApp({ userName }: Props) {
   const dibujando = modoZona || modoSector || modoCamino || modoPinClick || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
-  const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))    : [], [capas.zonas, zonas, ocultosIds]);
-  const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id)) : [], [capas.sectores, sectores, ocultosIds]);
-  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id))    : [], [capas.pines, pines, ocultosIds]);
-  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id))  : [], [capas.caminos, caminos, ocultosIds]);
+  const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
+  const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id))       : [], [capas.sectores, sectores, ocultosIds]);
+  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id))          : [], [capas.pines, pines, ocultosIds]);
+  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id))        : [], [capas.caminos, caminos, ocultosIds]);
+  const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id))   : [], [capas.aguadas, aguadasLayer, ocultosIds]);
 
   // ─── Escorrentías y sugerencias (cómputo derivado de shader) ─────────────
   const datosEscorrentia = useMemo<DatosEscorrentia | null>(
@@ -157,9 +164,10 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (pines.length)    m['pines']    = pines;
     if (caminos.length)  m['caminos']  = caminos;
     if (datosShader)     m['shader']   = datosShader;
-    if (dibujos.length)  m['dibujos']  = dibujos;
+    if (dibujos.length)       m['dibujos']       = dibujos;
+    if (aguadasLayer.length)  m['aguadas_layer'] = aguadasLayer;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, zonas, sectores, pines, caminos, dibujos]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, zonas, sectores, pines, caminos, dibujos, aguadasLayer]);
 
   // ─── Mojones ──────────────────────────────────────────────────────────────
   const agregarMojon = useCallback((lat: number, lng: number) => {
@@ -304,6 +312,38 @@ export function MapaTerrenoApp({ userName }: Props) {
     }));
   }, []);
 
+  const handleMoverVertice = useCallback((id: string, idx: number, lat: number, lng: number) => {
+    setDibujos(prev => prev.map(d => {
+      if (d.id !== id || d.tipo === 'texto' || d.tipo === 'circulo') return d;
+      const vertices = [...d.vertices];
+      vertices[idx] = { lat, lng };
+      return { ...d, vertices };
+    }));
+  }, []);
+
+  const handleRenombrarDibujo = useCallback((nombre: string, notas: string) => {
+    if (!dibujoSelId) return;
+    setDibujos(prev => prev.map(d => d.id === dibujoSelId ? { ...d, nombre, notas } : d));
+  }, [dibujoSelId]);
+
+  const handleMoverPin = useCallback((id: string, lat: number, lng: number) => {
+    setPines(prev => prev.map(p => p.id === id ? { ...p, lat, lng } : p));
+  }, []);
+
+  // ─── Aguadas ──────────────────────────────────────────────────────────────
+  const handleAgregarAguada = useCallback((el: ElementoAguada) => {
+    setAguadasLayer(prev => [...prev, el]);
+  }, []);
+
+  const handleRenombrarAguada = useCallback((id: string, nombre: string) => {
+    setAguadasLayer(prev => prev.map(a => a.id === id ? { ...a, nombre } : a));
+  }, []);
+
+  const handleEliminarAguada = useCallback((id: string) => {
+    setAguadasLayer(prev => prev.filter(a => a.id !== id));
+    setOcultosIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+  }, []);
+
   // ─── Shader ───────────────────────────────────────────────────────────────
   const handleFetchShader = useCallback(async () => {
     if (mojones.length < 3) return;
@@ -359,6 +399,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     setDatosShader(shaderGuardado);
     if (shaderGuardado) setCapas(prev => ({ ...prev, shaderElev: true, escorrentias: true, sugerencias: true }));
     setDibujos((meta['dibujos'] as ElementoDibujo[]) ?? []);
+    setAguadasLayer((meta['aguadas_layer'] as ElementoAguada[]) ?? []);
     setTab('mojones');
   }, []);
 
@@ -606,7 +647,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4">
-              <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} />
+              <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -661,11 +702,14 @@ export function MapaTerrenoApp({ userName }: Props) {
             colorActivo={colorDibujo}
             enCurso={dibujoEnCurso}
             seleccionado={dibujoSelId}
+            nombreSeleccionado={dibujoSel?.nombre}
+            notasSeleccionado={dibujoSel?.notas}
             onModo={handleCambiarModo}
             onColor={setColorDibujo}
             onFinalizar={handleFinalizarDibujo}
             onCancelar={handleCancelarDibujo}
             onEliminar={handleEliminarDibujo}
+            onRenombrar={handleRenombrarDibujo}
           />
         </div>
 
@@ -687,7 +731,9 @@ export function MapaTerrenoApp({ userName }: Props) {
             <PanelCapas
               capas={capas} onCapas={setCapas}
               zonas={zonas} sectores={sectores} pines={pines} caminos={caminos}
+              aguadasLayer={aguadasLayer}
               ocultosIds={ocultosIds} onToggle={toggleOculto}
+              onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
               datosShader={datosShader} shaderLoading={shaderLoading} shaderError={shaderError}
               onFetchShader={handleFetchShader} mojones={mojones}
               datosSugerencias={datosSugerencias}
@@ -789,10 +835,13 @@ export function MapaTerrenoApp({ userName }: Props) {
           dibujoSelId={dibujoSelId}
           onClickDibujo={handleClickDibujo}
           onMoverDibujo={handleMoverDibujo}
+          onMoverVertice={handleMoverVertice}
           modoDibujo={modoDibujo}
           colorDibujo={colorDibujo}
           elevMin={datosShader?.elev_min ?? 0}
           elevMax={datosShader?.elev_max ?? 500}
+          aguadasLayer={aguadasFiltradas}
+          onMoverPin={handleMoverPin}
         />
       </main>
     </div>
@@ -870,6 +919,23 @@ function PinItem({ pin, editando, onEdit, onUpdate, onDelete }: {
             <label className="block text-[10px] text-ink-700/60 mb-1">Notas</label>
             <textarea className={inputCls + ' resize-none'} rows={2} value={pin.notas} onChange={e => onUpdate({ notas: e.target.value })} />
           </div>
+          <div>
+            <label className="block text-[10px] text-ink-700/60 mb-1">Coordenadas</label>
+            <div className="flex gap-1">
+              <input type="number" step="0.00001"
+                value={pin.lat}
+                onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) onUpdate({ lat: v }); }}
+                className={inputCls + ' w-1/2'}
+                title="Latitud"
+              />
+              <input type="number" step="0.00001"
+                value={pin.lng}
+                onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) onUpdate({ lng: v }); }}
+                className={inputCls + ' w-1/2'}
+                title="Longitud"
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -879,33 +945,36 @@ function PinItem({ pin, editando, onEdit, onUpdate, onDelete }: {
 // ─── Panel de capas estilo Photoshop ─────────────────────────────────────────
 
 interface PanelCapasProps {
-  capas:             CapasVisibles;
-  onCapas:           (c: CapasVisibles) => void;
-  zonas:             Zona[];
-  sectores:          Sector[];
-  pines:             Pin[];
-  caminos:           Camino[];
-  ocultosIds:        Set<string>;
-  onToggle:          (id: string) => void;
-  datosShader:       DatosShader | null;
-  shaderLoading:     boolean;
-  shaderError:       string | null;
-  onFetchShader:     () => void;
-  mojones:           Mojon[];
-  datosSugerencias:  ResultadoSugerencias | null;
-  onVerSugerencias:  () => void;
-  onCapturar:        () => void;
-  onCerrar:          () => void;
+  capas:               CapasVisibles;
+  onCapas:             (c: CapasVisibles) => void;
+  zonas:               Zona[];
+  sectores:            Sector[];
+  pines:               Pin[];
+  caminos:             Camino[];
+  aguadasLayer:        ElementoAguada[];
+  ocultosIds:          Set<string>;
+  onToggle:            (id: string) => void;
+  onRenombrarAguada:   (id: string, nombre: string) => void;
+  onEliminarAguada:    (id: string) => void;
+  datosShader:         DatosShader | null;
+  shaderLoading:       boolean;
+  shaderError:         string | null;
+  onFetchShader:       () => void;
+  mojones:             Mojon[];
+  datosSugerencias:    ResultadoSugerencias | null;
+  onVerSugerencias:    () => void;
+  onCapturar:          () => void;
+  onCerrar:            () => void;
 }
 
 function PanelCapas({
-  capas, onCapas, zonas, sectores, pines, caminos,
-  ocultosIds, onToggle,
+  capas, onCapas, zonas, sectores, pines, caminos, aguadasLayer,
+  ocultosIds, onToggle, onRenombrarAguada, onEliminarAguada,
   datosShader, shaderLoading, shaderError, onFetchShader, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onCerrar,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, aguadas: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   return (
@@ -1114,6 +1183,33 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+
+        {/* ── Aguadas ── */}
+        {aguadasLayer.length > 0 && (
+          <CapaGrupo
+            label="Aguadas" count={aguadasLayer.length}
+            visible={capas.aguadas}
+            onToggleVisible={() => onCapas({ ...capas, aguadas: !capas.aguadas })}
+            expanded={exp.aguadas} onExpand={() => tog('aguadas')}
+          >
+            {aguadasLayer.map(a => (
+              <CapaItem key={a.id}
+                visible={!ocultosIds.has(a.id) && capas.aguadas}
+                onToggle={() => onToggle(a.id)}
+                label={a.nombre}
+                swatch={
+                  a.tipo === 'represa'
+                    ? <span className="text-sm leading-none">🏊</span>
+                    : a.tipo === 'swale'
+                    ? <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: '#26A69A' }} />
+                    : <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: '#66BB6A' }} />
+                }
+                onRenombrar={nombre => onRenombrarAguada(a.id, nombre)}
+                onEliminar={() => onEliminarAguada(a.id)}
+              />
+            ))}
+          </CapaGrupo>
+        )}
       </div>
 
       {/* Footer */}
@@ -1160,16 +1256,45 @@ function CapaGrupo({ label, count, visible, onToggleVisible, expanded, onExpand,
   );
 }
 
-function CapaItem({ visible, onToggle, label, swatch }: {
+function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar }: {
   visible: boolean; onToggle: () => void; label: string; swatch?: React.ReactNode;
+  onRenombrar?: (nombre: string) => void;
+  onEliminar?: () => void;
 }) {
+  const [editando, setEditando] = useState(false);
+  const [nombre, setNombre] = useState(label);
+  useEffect(() => setNombre(label), [label]);
+
   return (
     <div className="flex items-center gap-1.5 pl-6 pr-3 py-1 hover:bg-bone-50">
       <button onClick={onToggle} className={`shrink-0 transition-colors ${visible ? 'text-moss-600' : 'text-ink-700/15'}`}>
         {visible ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
       </button>
       {swatch && <span className="shrink-0 flex items-center">{swatch}</span>}
-      <span className={`text-[10px] truncate leading-tight ${visible ? 'text-ink-800' : 'text-ink-700/30'}`}>{label}</span>
+      {editando ? (
+        <input
+          autoFocus
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          onBlur={() => { setEditando(false); if (nombre !== label) onRenombrar?.(nombre); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { setEditando(false); onRenombrar?.(nombre); }
+            if (e.key === 'Escape') { setEditando(false); setNombre(label); }
+          }}
+          className="flex-1 text-[10px] bg-white border border-moss-300 rounded px-1 py-0.5 focus:outline-none min-w-0"
+        />
+      ) : (
+        <span
+          className={`flex-1 text-[10px] truncate leading-tight min-w-0 ${visible ? 'text-ink-800' : 'text-ink-700/30'}`}
+          onDoubleClick={() => onRenombrar && setEditando(true)}
+          title={onRenombrar ? 'Doble clic para renombrar' : undefined}
+        >{label}</span>
+      )}
+      {onEliminar && !editando && (
+        <button onClick={onEliminar} className="shrink-0 text-ink-700/15 hover:text-clay-500 transition-colors">
+          <Trash2 className="w-2.5 h-2.5" />
+        </button>
+      )}
     </div>
   );
 }

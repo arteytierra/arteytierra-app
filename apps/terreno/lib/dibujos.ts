@@ -2,7 +2,7 @@
 
 export type TipoDibujo = 'linea' | 'poligono' | 'curva' | 'circulo' | 'texto';
 
-interface DBase { id: string; tipo: TipoDibujo; color: string }
+interface DBase { id: string; tipo: TipoDibujo; color: string; nombre?: string; notas?: string }
 
 export interface DibujoLinea extends DBase {
   tipo: 'linea';

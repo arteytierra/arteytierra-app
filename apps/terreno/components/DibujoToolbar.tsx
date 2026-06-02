@@ -7,15 +7,18 @@ import { COLORES_DIBUJO } from '@/lib/dibujos';
 type Modo = TipoDibujo | 'seleccion' | null;
 
 interface Props {
-  modoDibujo:    Modo;
-  colorActivo:   string;
-  enCurso:       DibujoEnCurso | null;
-  seleccionado:  string | null;
-  onModo:        (modo: Modo) => void;
-  onColor:       (color: string) => void;
-  onFinalizar:   () => void;
-  onCancelar:    () => void;
-  onEliminar:    () => void;
+  modoDibujo:          Modo;
+  colorActivo:         string;
+  enCurso:             DibujoEnCurso | null;
+  seleccionado:        string | null;
+  nombreSeleccionado?: string;
+  notasSeleccionado?:  string;
+  onModo:              (modo: Modo) => void;
+  onColor:             (color: string) => void;
+  onFinalizar:         () => void;
+  onCancelar:          () => void;
+  onEliminar:          () => void;
+  onRenombrar?:        (nombre: string, notas: string) => void;
 }
 
 const HERRAMIENTAS: Array<{ modo: Modo; icon: React.ReactNode; title: string }> = [
@@ -29,7 +32,8 @@ const HERRAMIENTAS: Array<{ modo: Modo; icon: React.ReactNode; title: string }> 
 
 export function DibujoToolbar({
   modoDibujo, colorActivo, enCurso, seleccionado,
-  onModo, onColor, onFinalizar, onCancelar, onEliminar,
+  nombreSeleccionado, notasSeleccionado,
+  onModo, onColor, onFinalizar, onCancelar, onEliminar, onRenombrar,
 }: Props) {
   const dibujando = enCurso !== null;
   const minVerts  = enCurso
@@ -118,6 +122,29 @@ export function DibujoToolbar({
           >
             <X className="w-4 h-4" />
           </button>
+        </>
+      )}
+
+      {/* ── Nombre y notas del elemento seleccionado ── */}
+      {modoDibujo === 'seleccion' && seleccionado && !dibujando && onRenombrar && (
+        <>
+          <div className="h-px bg-bone-200 mx-0.5" />
+          <div className="w-36 space-y-1 px-0.5">
+            <input
+              type="text"
+              value={nombreSeleccionado ?? ''}
+              onChange={e => onRenombrar(e.target.value, notasSeleccionado ?? '')}
+              placeholder="Sin nombre…"
+              className="w-full px-2 py-1 rounded-md border border-bone-200 bg-white text-ink-900 text-[10px] placeholder-ink-700/30 focus:outline-none focus:border-moss-500 transition-colors"
+            />
+            <textarea
+              value={notasSeleccionado ?? ''}
+              onChange={e => onRenombrar(nombreSeleccionado ?? '', e.target.value)}
+              placeholder="Notas…"
+              rows={2}
+              className="w-full px-2 py-1 rounded-md border border-bone-200 bg-white text-ink-900 text-[10px] placeholder-ink-700/30 focus:outline-none focus:border-moss-500 resize-none transition-colors"
+            />
+          </div>
         </>
       )}
 

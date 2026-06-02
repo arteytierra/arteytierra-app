@@ -2,19 +2,20 @@
 
 import { useMemo } from 'react';
 import { Waves, Mountain, MapPin } from 'lucide-react';
-import { calcularAguadas, type DatosAguadas } from '@/lib/aguadas';
+import { calcularAguadas, type DatosAguadas, type ElementoAguada } from '@/lib/aguadas';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { DatosClima } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
-  mojones:         Mojon[];
-  datosTopografia: DatosTopografia | null;
-  datosClima:      DatosClima | null;
-  onIrATopo:       () => void;
+  mojones:           Mojon[];
+  datosTopografia:   DatosTopografia | null;
+  datosClima:        DatosClima | null;
+  onIrATopo:         () => void;
+  onAgregarAguada?:  (el: ElementoAguada) => void;
 }
 
-export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo }: Props) {
+export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo, onAgregarAguada }: Props) {
   const datos: DatosAguadas | null = useMemo(() => {
     if (!datosTopografia) return null;
     return calcularAguadas(mojones, datosTopografia, datosClima?.precip_anual_mm);
@@ -128,6 +129,20 @@ export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo }
                   <span className="font-semibold">{p.volumen_est_m3.toLocaleString('es-AR')} m³</span>
                 </p>
               )}
+              {onAgregarAguada && (
+                <button
+                  onClick={() => onAgregarAguada({
+                    id: crypto.randomUUID(),
+                    tipo: p.tipo === 'represa' ? 'represa' : 'swale',
+                    nombre: p.tipo === 'represa' ? `Represa ${i + 1}` : `Swale ${i + 1}`,
+                    notas: p.descripcion,
+                    lat: p.lat, lng: p.lng, elevation: p.elevation,
+                  })}
+                  className="text-[10px] text-moss-700 hover:text-moss-900 flex items-center gap-1 py-0.5 transition-colors"
+                >
+                  <MapPin className="w-3 h-3" />+ Agregar al plano
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -136,12 +151,30 @@ export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo }
       {/* ── Keyline ──────────────────────────────────────────────────────────── */}
       {datos.keyline && datos.keyline.length >= 2 && (
         <div className="bg-moss-50 rounded-xl border border-moss-200 p-3 space-y-1">
-          <p className="text-xs font-medium text-moss-900">〰️ Keyline</p>
-          <p className="text-[10px] text-moss-700 leading-relaxed">
-            Línea de contorno aproximada al 25% de la elevación del predio —
-            referencia para trazar zanjas de infiltración paralelas al keyline.
-            {datos.keyline.length} puntos identificados.
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-xs font-medium text-moss-900">〰️ Keyline</p>
+              <p className="text-[10px] text-moss-700 leading-relaxed">
+                Línea de contorno aproximada al 25% de la elevación del predio —
+                referencia para trazar zanjas de infiltración paralelas al keyline.
+                {datos.keyline.length} puntos identificados.
+              </p>
+            </div>
+            {onAgregarAguada && (
+              <button
+                onClick={() => onAgregarAguada({
+                  id: crypto.randomUUID(),
+                  tipo: 'keyline',
+                  nombre: 'Keyline',
+                  notas: 'Contorno de infiltración al 25% de elevación',
+                  vertices: datos.keyline!,
+                })}
+                className="shrink-0 text-[10px] text-moss-700 hover:text-moss-900 flex items-center gap-1 py-0.5 transition-colors"
+              >
+                <MapPin className="w-3 h-3" />+ Plano
+              </button>
+            )}
+          </div>
         </div>
       )}
 
