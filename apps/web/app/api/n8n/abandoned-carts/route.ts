@@ -3,6 +3,7 @@ import { verifyN8nInbound } from '@/lib/integrations/n8n';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/n8n/abandoned-carts?hours=2&maxHours=72

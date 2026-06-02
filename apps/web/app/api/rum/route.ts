@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { log } from '@/lib/observability/logger';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const ALLOWED = new Set(['LCP', 'INP', 'CLS', 'FCP', 'TTFB', 'FID']);
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
-export const revalidate = 1800;
+export const dynamic = 'force-dynamic';
 
 /**
  * Google Merchant Center feed · RSS 2.0 con namespace `g:`.

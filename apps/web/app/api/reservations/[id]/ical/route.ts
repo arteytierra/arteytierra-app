@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 function fmtIcsDate(iso: string): string {
   return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');

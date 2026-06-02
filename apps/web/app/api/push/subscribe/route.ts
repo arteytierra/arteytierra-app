@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const schema = z.object({
   endpoint: z.string().url(),

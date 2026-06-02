@@ -4,6 +4,7 @@ import { buildCertificatePdf } from '@/lib/certificates/pdf';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
 

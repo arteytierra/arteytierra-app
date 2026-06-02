@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
-export const revalidate = 1800; // 30 min
+export const dynamic = 'force-dynamic';
 
 /**
  * Catalog feed para Facebook/Instagram Shop · formato CSV (RFC 4180).

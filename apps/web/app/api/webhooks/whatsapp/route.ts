@@ -4,6 +4,7 @@ import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { emitN8nEvent } from '@/lib/integrations/n8n';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * Webhook entrante de WhatsApp Cloud API.

@@ -3,6 +3,7 @@ import { verifyN8nInbound } from '@/lib/integrations/n8n';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/n8n/reservations?upcomingDays=14&status=confirmed
