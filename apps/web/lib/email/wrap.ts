@@ -23,6 +23,12 @@ const FOOTER_STRINGS: Record<Locale, { tag: string; unsubscribe: string; address
     preferences: 'Preferences',
     address: 'Arte y Tierra · Argentina',
   },
+  fr: {
+    tag: 'Arte y Tierra · éducation régénérative',
+    unsubscribe: 'Se désabonner de ces emails',
+    preferences: 'Préférences',
+    address: 'Arte y Tierra · Argentine',
+  },
   pt: {
     tag: 'Arte y Tierra · educação regenerativa',
     unsubscribe: 'Cancelar inscrição',
