@@ -13,8 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium webkit",
-    "pages:build": "opennextjs-cloudflare build",
-    "pages:deploy": "node -e \"const{rmSync}=require('fs');try{rmSync('.open-next/assets/docs',{recursive:true,force:true})}catch{}\" && wrangler deploy"
+    "pages:build": "opennextjs-cloudflare build && node -e \"const{rmSync}=require('fs');try{rmSync('.open-next/assets/docs',{recursive:true,force:true})}catch{}\"",
+    "pages:deploy": "wrangler deploy"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
