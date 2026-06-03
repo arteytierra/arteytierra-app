@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium webkit",
     "pages:build": "opennextjs-cloudflare build",
-    "pages:deploy": "wrangler deploy"
+    "pages:deploy": "node -e \"const{rmSync}=require('fs');try{rmSync('.open-next/assets/docs',{recursive:true,force:true})}catch{}\" && wrangler deploy"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
