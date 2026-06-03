@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.19.11",
+    "wrangler": "^4.94.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.5",
