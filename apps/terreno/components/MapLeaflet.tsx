@@ -297,6 +297,18 @@ function MiddleMousePan() {
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
+// Expone una función para que el padre pueda leer los bounds actuales del mapa
+function BoundsExposer({ onReady }: { onReady: (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    onReady(() => {
+      const b = map.getBounds();
+      return { latMin: b.getSouth(), latMax: b.getNorth(), lngMin: b.getWest(), lngMax: b.getEast() };
+    });
+  }, [map, onReady]);
+  return null;
+}
+
 interface Props {
   mojones:       Mojon[];
   seleccionado:  string | null;
@@ -333,6 +345,8 @@ interface Props {
   // ── Vertex / pin editing ──
   onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
+  // ── Bounds para topografía del área visible ──
+  onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
@@ -364,6 +378,7 @@ export default function MapLeaflet({
   datosArcoSolar = null,
   onMoverVertice,
   onMoverPin,
+  onGetBounds,
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
@@ -379,21 +394,25 @@ export default function MapLeaflet({
       <MapContainer
         center={CENTRO_INICIAL}
         zoom={ZOOM_INICIAL}
+        maxZoom={22}
         style={{ height: '100%', width: '100%' }}
         zoomControl
       >
         {/* ── Tiles ── */}
         {capa === 'satelite' ? (
           <>
+            {/* maxNativeZoom 19: si la tile no existe en zoom > 19, Leaflet escala la de zoom 19 */}
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               attribution='Tiles &copy; Esri'
-              maxZoom={20}
+              maxNativeZoom={19}
+              maxZoom={22}
               crossOrigin="anonymous"
             />
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={20}
+              maxNativeZoom={19}
+              maxZoom={22}
               opacity={0.75}
               crossOrigin="anonymous"
             />
@@ -402,7 +421,8 @@ export default function MapLeaflet({
           <TileLayer
             url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
             attribution='Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
-            maxZoom={17}
+            maxNativeZoom={17}
+            maxZoom={22}
             crossOrigin="anonymous"
           />
         )}
@@ -410,6 +430,7 @@ export default function MapLeaflet({
         <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
         <MiddleMousePan />
+        {onGetBounds && <BoundsExposer onReady={onGetBounds} />}
         {capas.terrariumElev && <TerrariumLayer elevMin={0} elevMax={4000} />}
 
         {/* ── Shader topográfico (canvas con interpolación bilineal) ── */}
