@@ -477,16 +477,21 @@ export function MapaTerrenoApp({ userName }: Props) {
     setGuardandoPng(true);
     try {
       const { toPng } = await import('html-to-image');
+      // Pequeño delay para asegurar que el DOM esté completamente pintado
+      await new Promise(r => setTimeout(r, 100));
       const dataUrl = await toPng(el, {
         cacheBust: true,
         pixelRatio: 2,
+        skipFonts: false,
         filter: (node) => {
           if (!(node instanceof Element)) return true;
-          // Excluir elementos marcados no-print
           if (node.classList.contains('no-print')) return false;
-          // Excluir controles de Leaflet (+/-  y atribución)
           if (node.classList.contains('leaflet-control-container')) return false;
           return true;
+        },
+        // Asegurar que los overlays con posición absoluta se rendericen correctamente
+        style: {
+          overflow: 'visible',
         },
       });
       const a = document.createElement('a');
@@ -561,6 +566,12 @@ export function MapaTerrenoApp({ userName }: Props) {
       items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación' });
     if (capas.shaderPend && datosShader)
       items.push({ color: 'linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336)', label: 'Pendiente' });
+    // Arco solar
+    if (capas.arcSolar) {
+      items.push({ color: '#FF5722', dash: true, label: 'Solsticio de verano (21 dic)' });
+      items.push({ color: '#43A047', dash: true, label: 'Equinoccios (21 mar / 23 sep)' });
+      items.push({ color: '#1E88E5', dash: true, label: 'Solsticio de invierno (21 jun)' });
+    }
     const catVistas = new Set<string>();
     zonasFiltradas.forEach(z => {
       const key = z.categoria;
@@ -903,13 +914,13 @@ export function MapaTerrenoApp({ userName }: Props) {
             ───────────────────────────────────────────────────────────────────── */}
         {capturaActiva && (
           <>
-            {/* ── Título (top-left) ─────────────────────────────────────────── */}
-            <div id="captura-titulo" className="absolute top-4 left-4 z-[1001] pointer-events-auto bg-white/95 rounded-xl shadow-lg px-4 py-3 max-w-xs">
-              {/* Texto estático — siempre visible en PNG */}
+            {/* ── Título (top-left) — fondo sólido, sin backdrop-blur ─────────── */}
+            <div id="captura-titulo" className="absolute top-4 left-4 z-[1001] pointer-events-auto bg-white border border-bone-200 rounded-xl shadow-lg px-4 py-3 max-w-xs">
+              {/* Texto estático — siempre visible en PNG (fondo opaco necesario) */}
               <p className="font-display text-lg font-bold text-ink-950 leading-tight">
                 {capturaTitulo || 'Mapa del terreno'}
               </p>
-              <p className="text-[10px] text-ink-700/50 mt-0.5 font-mono">
+              <p className="text-[10px] text-ink-700/60 mt-0.5 font-mono">
                 {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
               {/* Campo de edición — filtrado en PNG */}
@@ -924,13 +935,13 @@ export function MapaTerrenoApp({ userName }: Props) {
               </div>
             </div>
 
-            {/* ── Leyenda (bottom-right) ────────────────────────────────────── */}
+            {/* ── Leyenda (bottom-right) — fondo sólido, sin backdrop-blur ────── */}
             {(leyendaEditada ?? []).length > 0 && (
-              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[1001] bg-white/95 rounded-xl shadow-lg px-3 py-3 min-w-[150px] max-w-[210px]">
+              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[1001] bg-white border border-bone-200 rounded-xl shadow-lg px-3 py-3 min-w-[150px] max-w-[210px]">
                 <p className="text-[9px] font-bold text-ink-800 uppercase tracking-wider mb-1.5">Leyenda</p>
 
                 {/* ─ Ítems estáticos (visibles en PNG) ─ */}
-                <div className="space-y-1 mb-1">
+                <div className="space-y-1">
                   {(leyendaEditada ?? []).map(item => (
                     <div key={item.id} className="flex items-center gap-1.5">
                       {item.icon ? (
@@ -944,41 +955,41 @@ export function MapaTerrenoApp({ userName }: Props) {
                     </div>
                   ))}
                 </div>
-                <p className="text-[8px] text-ink-700/30 font-mono italic">Arte y Tierra</p>
+                <p className="text-[8px] text-ink-700/30 mt-1.5 font-mono italic">Arte y Tierra</p>
 
-                {/* ─ Panel edición (no-print) ─ */}
-                <div className="no-print mt-2.5 pt-2.5 border-t border-bone-200 space-y-1">
-                  <p className="text-[9px] text-ink-700/40 uppercase tracking-wide font-semibold mb-1">Editar etiquetas</p>
+                {/* ─ Panel edición (no-print) — scrollable ─ */}
+                <div className="no-print mt-2.5 pt-2.5 border-t border-bone-200 space-y-1 max-h-48 overflow-y-auto">
+                  <p className="text-[9px] text-moss-700 font-semibold mb-1 sticky top-0 bg-white pb-0.5">✏ Editar leyenda</p>
                   {(leyendaEditada ?? []).map(item => (
                     <div key={`ed-${item.id}`} className="flex items-center gap-1">
                       {item.icon ? (
                         <span className="text-xs w-4 shrink-0 text-center">{item.icon}</span>
                       ) : item.dash ? (
-                        <span className="w-4 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
+                        <span className="w-3 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
                       ) : (
-                        <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: item.color ?? '#999' }} />
+                        <span className="w-3 h-2.5 rounded-sm shrink-0" style={{ background: item.color ?? '#999' }} />
                       )}
                       <input
                         type="text"
-                        key={item.id}
                         defaultValue={item.label}
                         onBlur={e => {
                           const v = e.target.value.trim();
                           if (v) setLeyendaEditada(prev => prev?.map(x => x.id === item.id ? { ...x, label: v } : x) ?? null);
+                          else e.target.value = item.label;
                         }}
-                        className="flex-1 min-w-0 text-[10px] text-ink-800 bg-bone-50 border border-bone-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-moss-500"
+                        className="flex-1 min-w-0 text-[9px] text-ink-800 bg-bone-50 border border-bone-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-moss-500"
                       />
                       <button
                         onClick={() => setLeyendaEditada(prev => prev?.filter(x => x.id !== item.id) ?? null)}
-                        className="shrink-0 text-ink-700/30 hover:text-clay-500 transition-colors ml-0.5"
-                        title="Quitar"
+                        className="shrink-0 text-ink-700/25 hover:text-clay-500 transition-colors"
+                        title="Quitar de leyenda"
                       >
                         <X className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
                   <button
-                    className="w-full flex items-center justify-center gap-1 mt-1 py-1 rounded text-[9px] text-ink-700/40 hover:text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200"
+                    className="w-full flex items-center justify-center gap-1 mt-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200"
                     onClick={() => {
                       const label = window.prompt('Texto para el ítem:');
                       if (!label?.trim()) return;
