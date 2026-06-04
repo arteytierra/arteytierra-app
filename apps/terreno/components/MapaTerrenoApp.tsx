@@ -645,7 +645,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 )}
               </div>
               <div className="border-t border-bone-200 pt-4">
-                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModoClick(p => !p)} onAgregar={agregarMojon} />
+                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModoClick(p => !p)} onAgregar={agregarMojon} onCargarMojones={setMojones} />
               </div>
               {metricas && (
                 <div className="border-t border-bone-200 pt-4">
