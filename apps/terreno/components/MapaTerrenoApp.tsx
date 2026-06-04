@@ -134,6 +134,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [capturaActiva,  setCapturaActiva]  = useState(false);
   const [capturaTitulo,  setCapturaTitulo]  = useState('');
 
+  interface LeyItem { id: string; label: string; color?: string; dash?: boolean; icon?: string }
+  const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
+
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
   const dibujando = modoZona || modoSector || modoCamino || modoPinClick || (modoDibujo && modoDibujo !== 'seleccion');
 
@@ -463,7 +466,8 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [guardandoPng, setGuardandoPng] = useState(false);
 
   const handleGuardarPng = useCallback(async () => {
-    const el = document.getElementById('mapa-captura');
+    // Capturamos el contenedor principal para incluir título y leyenda
+    const el = document.getElementById('print-capture-root');
     if (!el || guardandoPng) return;
     setGuardandoPng(true);
     try {
@@ -471,7 +475,14 @@ export function MapaTerrenoApp({ userName }: Props) {
       const dataUrl = await toPng(el, {
         cacheBust: true,
         pixelRatio: 2,
-        filter: node => !(node instanceof Element && node.classList.contains('no-print')),
+        filter: (node) => {
+          if (!(node instanceof Element)) return true;
+          // Excluir elementos marcados no-print
+          if (node.classList.contains('no-print')) return false;
+          // Excluir controles de Leaflet (+/-  y atribución)
+          if (node.classList.contains('leaflet-control-container')) return false;
+          return true;
+        },
       });
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -823,7 +834,13 @@ export function MapaTerrenoApp({ userName }: Props) {
               onFetchShader={handleFetchShader} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
-              onCapturar={() => { setPanelDerecho(null); setCapturaActiva(true); if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno'); }}
+              onCapturar={() => {
+                setPanelDerecho(null);
+                setCapturaActiva(true);
+                if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
+                // Inicializar leyenda editable con los ítems actuales
+                setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
+              }}
               onGuardarPng={handleGuardarPng}
               guardandoPng={guardandoPng}
               onCerrar={() => setPanelDerecho(null)}
@@ -844,43 +861,86 @@ export function MapaTerrenoApp({ userName }: Props) {
         {/* ── Overlay de captura ── */}
         {capturaActiva && (
           <>
-            {/* Título editable (top-left) */}
+            {/* ── Título (top-left) ─────────────────────────────────────────── */}
             <div id="captura-titulo" className="absolute top-4 left-4 z-[999] pointer-events-auto bg-white/92 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 max-w-xs">
+              {/* Etiqueta edición — filtrada en PNG */}
               <p className="text-[9px] text-ink-700/40 uppercase tracking-wider mb-1 font-semibold no-print">Título del mapa</p>
-              <input
-                value={capturaTitulo}
-                onChange={e => setCapturaTitulo(e.target.value)}
-                placeholder="Nombre del terreno…"
-                className="text-base font-display text-ink-900 bg-transparent border-b border-ink-700/20 focus:outline-none focus:border-moss-700 w-full no-print"
-              />
-              <p className="font-display text-base text-ink-900 hidden print:block">{capturaTitulo}</p>
-              <p className="text-[9px] text-ink-700/40 mt-0.5 font-mono no-print">{new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="text-[9px] text-ink-700/40 mt-0.5 font-mono">{new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              {/* Contenedor apilado: texto (siempre visible) + input (encima, filtrado en PNG) */}
+              <div className="relative">
+                <p className="font-display text-base text-ink-900 leading-snug whitespace-pre-wrap break-words min-h-[1.4em]">
+                  {capturaTitulo || 'Mapa del terreno'}
+                </p>
+                <input
+                  value={capturaTitulo}
+                  onChange={e => setCapturaTitulo(e.target.value)}
+                  placeholder="Nombre del terreno…"
+                  className="absolute inset-0 font-display text-base text-ink-900 bg-transparent border-b border-ink-700/20 focus:outline-none focus:border-moss-700 w-full no-print"
+                />
+              </div>
+              {/* Fecha — siempre visible en PNG */}
+              <p className="text-[9px] text-ink-700/40 mt-0.5 font-mono">
+                {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
             </div>
 
-            {/* Leyenda (bottom-right) */}
-            {leyendaItems.length > 0 && (
-              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[999] bg-white/92 backdrop-blur-sm rounded-xl shadow-lg px-3 py-3 min-w-[160px] max-w-[200px]">
+            {/* ── Leyenda editable (bottom-right) ──────────────────────────── */}
+            {(leyendaEditada ?? leyendaItems).length > 0 && (
+              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[999] bg-white/92 backdrop-blur-sm rounded-xl shadow-lg px-3 py-3 min-w-[160px] max-w-[220px]">
                 <p className="text-[9px] font-bold text-ink-800 uppercase tracking-wider mb-2">Leyenda</p>
                 <div className="space-y-1">
-                  {leyendaItems.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                  {(leyendaEditada ?? leyendaItems.map((it, i) => ({ ...it, id: String(i) }))).map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5 group">
+                      {/* Swatch — siempre visible */}
                       {item.icon ? (
-                        <span className="text-sm leading-none w-4 text-center">{item.icon}</span>
+                        <span className="text-sm leading-none w-4 shrink-0 text-center">{item.icon}</span>
                       ) : item.dash ? (
                         <span className="w-4 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
                       ) : (
                         <span className="w-4 h-3 rounded-sm shrink-0" style={{ background: item.color }} />
                       )}
-                      <span className="text-[10px] text-ink-800 leading-tight">{item.label}</span>
+                      {/* Label con contentEditable — editable en pantalla, visible en PNG */}
+                      <span
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={e => {
+                          const txt = e.currentTarget.textContent?.trim() ?? '';
+                          if (txt && leyendaEditada)
+                            setLeyendaEditada(prev => prev?.map(x => x.id === item.id ? { ...x, label: txt } : x) ?? null);
+                        }}
+                        className="text-[10px] text-ink-800 leading-tight flex-1 outline-none focus:bg-bone-50 focus:rounded px-0.5 cursor-text"
+                      >
+                        {item.label}
+                      </span>
+                      {/* Botón eliminar — filtrado en PNG */}
+                      <button
+                        onClick={() => setLeyendaEditada(prev => prev?.filter(x => x.id !== item.id) ?? null)}
+                        className="no-print shrink-0 opacity-0 group-hover:opacity-100 text-ink-700/30 hover:text-clay-500 transition-opacity w-3.5 h-3.5 flex items-center justify-center"
+                        title="Quitar de leyenda"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                     </div>
                   ))}
                 </div>
+                {/* Agregar ítem custom — filtrado en PNG */}
+                <button
+                  className="no-print mt-2 w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-ink-700/40 hover:text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200"
+                  onClick={() => {
+                    const label = window.prompt('Texto para el ítem de leyenda:');
+                    if (!label?.trim()) return;
+                    setLeyendaEditada(prev => [
+                      ...(prev ?? leyendaItems.map((it, i) => ({ ...it, id: String(i) }))),
+                      { id: crypto.randomUUID(), label: label.trim() },
+                    ]);
+                  }}
+                >
+                  + Agregar ítem
+                </button>
                 <p className="text-[8px] text-ink-700/30 mt-2 font-mono italic">Arte y Tierra</p>
               </div>
             )}
 
-            {/* Controles de captura (top-right, ocultos al imprimir) */}
+            {/* ── Controles de captura (filtrados en PNG) ──────────────────── */}
             <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2 no-print">
               <button
                 onClick={handleGuardarPng}
@@ -899,7 +959,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 Imprimir / PDF
               </button>
               <button
-                onClick={() => setCapturaActiva(false)}
+                onClick={() => { setCapturaActiva(false); setLeyendaEditada(null); }}
                 className="p-2 bg-white border border-bone-200 hover:bg-bone-50 text-ink-700 rounded-lg shadow-md transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
