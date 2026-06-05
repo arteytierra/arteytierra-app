@@ -36,7 +36,7 @@ export function SiteFooter() {
       tagline="Bioarquitectura, agua, agroecología y biocosmética. Una escuela viva en el territorio."
       social={{
         instagram: 'https://instagram.com/arteytierra',
-        whatsapp:  'https://wa.me/5491100000000',
+        whatsapp:  'https://wa.me/5493549431594',
         email:     'hola@arteytierra.org',
       }}
       LinkComponent={Link}

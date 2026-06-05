@@ -248,22 +248,22 @@ export const COURSES: Record<string, CourseData> = {
 
   'tadelakt': {
     slug: 'tadelakt',
-    kind: 'online-live',
-    badge: 'Online en vivo · 3 sesiones Zoom',
+    kind: 'online-async',
+    badge: 'Online · Acceso ilimitado',
     name: 'Tadelakt Online',
     subtitle: 'Aprendé el arte marroquí del enlucido en cal — el acabado impermeable, brillante y vivo que transforma baños, cocinas y cualquier superficie en una pieza única.',
     heroImg: '/img/cursos/tadelakt/0.jpg',
     galeria: ['/img/cursos/tadelakt/1.jpg', '/img/cursos/tadelakt/2.jpg', '/img/cursos/tadelakt/3.jpg', '/img/cursos/tadelakt/4.jpg', '/img/cursos/tadelakt/5.jpg', '/img/cursos/tadelakt/6.jpg'],
-    tag: 'Online en vivo · Próxima edición a confirmar',
+    tag: 'Disponible ahora · Empezás cuando querés',
     intro: [
       'El Tadelakt es una técnica ancestral marroquí de enlucido que utiliza cal como material base y se trabaja por capas hasta lograr un acabado impermeable, brillante y bello — apto para zonas húmedas como baños, duchas y cocinas.',
       'A diferencia de las cerámicas y revestimientos sintéticos, el Tadelakt respira, regula la humedad y envejece con dignidad. Cada terminación es única — un objeto vivo más que un revestimiento.',
     ],
     datos: [
-      { label: 'Formato', val: '3 sesiones Zoom en vivo · quedan grabadas' },
-      { label: 'Duración', val: '3 a 4 hs por sesión' },
-      { label: 'Modalidad', val: '100% online · desde donde estés' },
-      { label: 'Facilita', val: 'Jonatan Palma' },
+      { label: 'Formato',   val: 'Video clases grabadas · acceso ilimitado' },
+      { label: 'Contenido', val: '3 módulos · acceso permanente' },
+      { label: 'Modalidad', val: '100% online · a tu ritmo · desde donde estés' },
+      { label: 'Facilita',  val: 'Jonatan Palma' },
     ],
     modulos: [
       { num: '01', title: 'Introducción al Tadelakt', items: ['Origen y tradición marroquí', 'Tipos de cal y su comportamiento', 'Lectura del soporte', 'Preparación e imprimación'] },
@@ -272,7 +272,7 @@ export const COURSES: Record<string, CourseData> = {
     ],
     facilitadores: [JONATAN],
     opciones: [
-      { id: 'completo', label: 'Curso completo — 3 sesiones', precio: '$90.000 ARS', includes: ['3 sesiones Zoom en vivo', 'Grabaciones de todas las sesiones', 'Material de apoyo descargable', 'Acceso permanente a las grabaciones'], highlighted: true },
+      { id: 'completo', label: 'Curso completo — 3 módulos', precio: '$90.000 ARS', includes: ['Video clases grabadas (3 módulos)', 'Material de apoyo descargable', 'Acceso permanente'], highlighted: true },
     ],
     formCurso: 'Tadelakt Online',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20del%20curso%20de%20Tadelakt%20Online',

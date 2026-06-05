@@ -77,16 +77,17 @@ const GRID_N = 10;  // 10×10 = 100 puntos, exactamente el límite de la API
 
 export async function fetchShader(
   mojones: Array<{ lat: number; lng: number }>,
+  bounds?: { latMin: number; latMax: number; lngMin: number; lngMax: number },
 ): Promise<DatosShader | { error: string }> {
   if (mojones.length < 3) return { error: 'Se necesitan al menos 3 mojones.' };
 
-  // Bounding box del polígono
+  // Bounding box: usar bounds externos si los hay, sino bbox de mojones
   const lats = mojones.map(m => m.lat);
   const lngs = mojones.map(m => m.lng);
-  const latMin = Math.min(...lats);
-  const latMax = Math.max(...lats);
-  const lngMin = Math.min(...lngs);
-  const lngMax = Math.max(...lngs);
+  const latMin = bounds?.latMin ?? Math.min(...lats);
+  const latMax = bounds?.latMax ?? Math.max(...lats);
+  const lngMin = bounds?.lngMin ?? Math.min(...lngs);
+  const lngMax = bounds?.lngMax ?? Math.max(...lngs);
 
   // Polígono para clip (GeoJSON)
   const coords = mojones.map(m => [m.lng, m.lat] as [number, number]);

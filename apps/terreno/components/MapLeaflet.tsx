@@ -7,7 +7,6 @@ import {
   Marker,
   Polygon,
   Polyline,
-  Rectangle,
   Circle as LeafCircle,
   useMapEvents,
   useMap,
@@ -298,6 +297,18 @@ function MiddleMousePan() {
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
+// Expone una función para que el padre pueda leer los bounds actuales del mapa
+function BoundsExposer({ onReady }: { onReady: (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    onReady(() => {
+      const b = map.getBounds();
+      return { latMin: b.getSouth(), latMax: b.getNorth(), lngMin: b.getWest(), lngMax: b.getEast() };
+    });
+  }, [map, onReady]);
+  return null;
+}
+
 interface Props {
   mojones:       Mojon[];
   seleccionado:  string | null;
@@ -334,6 +345,8 @@ interface Props {
   // ── Vertex / pin editing ──
   onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
+  // ── Bounds para topografía del área visible ──
+  onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
@@ -365,6 +378,7 @@ export default function MapLeaflet({
   datosArcoSolar = null,
   onMoverVertice,
   onMoverPin,
+  onGetBounds,
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
@@ -380,21 +394,25 @@ export default function MapLeaflet({
       <MapContainer
         center={CENTRO_INICIAL}
         zoom={ZOOM_INICIAL}
+        maxZoom={22}
         style={{ height: '100%', width: '100%' }}
         zoomControl
       >
         {/* ── Tiles ── */}
         {capa === 'satelite' ? (
           <>
+            {/* maxNativeZoom 19: si la tile no existe en zoom > 19, Leaflet escala la de zoom 19 */}
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               attribution='Tiles &copy; Esri'
-              maxZoom={20}
+              maxNativeZoom={19}
+              maxZoom={22}
               crossOrigin="anonymous"
             />
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={20}
+              maxNativeZoom={19}
+              maxZoom={22}
               opacity={0.75}
               crossOrigin="anonymous"
             />
@@ -403,7 +421,8 @@ export default function MapLeaflet({
           <TileLayer
             url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
             attribution='Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
-            maxZoom={17}
+            maxNativeZoom={17}
+            maxZoom={22}
             crossOrigin="anonymous"
           />
         )}
@@ -411,23 +430,24 @@ export default function MapLeaflet({
         <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
         <MiddleMousePan />
+        {onGetBounds && <BoundsExposer onReady={onGetBounds} />}
         {capas.terrariumElev && <TerrariumLayer elevMin={0} elevMax={4000} />}
 
-        {/* ── Shader topográfico ── */}
-        {datosShader && capas.shaderElev && datosShader.celdas.map((c, i) => (
-          <Rectangle
-            key={`se-${i}`}
-            bounds={[[c.latMin, c.lngMin], [c.latMax, c.lngMax]] as [[number,number],[number,number]]}
-            pathOptions={{ fillColor: colorElevacion(c.elevation, datosShader.elev_min, datosShader.elev_max), fillOpacity: 0.65, stroke: false, interactive: false }}
+        {/* ── Shader topográfico (canvas con interpolación bilineal) ── */}
+        {datosShader && capas.shaderElev && (
+          <ShaderCanvasLayer
+            celdas={datosShader.celdas} tipo="elev"
+            elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
+            pendMax={datosShader.pend_max}
           />
-        ))}
-        {datosShader && capas.shaderPend && datosShader.celdas.map((c, i) => (
-          <Rectangle
-            key={`sp-${i}`}
-            bounds={[[c.latMin, c.lngMin], [c.latMax, c.lngMax]] as [[number,number],[number,number]]}
-            pathOptions={{ fillColor: colorPendiente(c.pendiente_pct, datosShader.pend_max), fillOpacity: 0.65, stroke: false, interactive: false }}
+        )}
+        {datosShader && capas.shaderPend && (
+          <ShaderCanvasLayer
+            celdas={datosShader.celdas} tipo="pend"
+            elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
+            pendMax={datosShader.pend_max}
           />
-        ))}
+        )}
 
         {/* ── Escorrentías ── */}
         {capas.escorrentias && datosEscorrentia && datosEscorrentia.cadenas.map((cadena, i) => {
@@ -748,8 +768,8 @@ export default function MapLeaflet({
         })()}
       </MapContainer>
 
-      {/* Toggle de capa de fondo */}
-      <div className="absolute top-3 right-12 z-[1000] flex rounded-lg overflow-hidden shadow-md border border-white/30">
+      {/* Toggle de capa de fondo — oculto en PNG */}
+      <div className="absolute top-3 right-12 z-[1000] flex rounded-lg overflow-hidden shadow-md border border-white/30 no-print">
         <button
           onClick={() => setCapa('satelite')}
           className={`px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${capa === 'satelite' ? 'bg-moss-700 text-bone-50' : 'bg-white/90 text-ink-700 hover:bg-bone-100'}`}
@@ -792,6 +812,87 @@ function iconoNoon(color: string, elevacion: number, labelCorto: string): L.DivI
     iconSize: [72, 28],
     iconAnchor: [36, 16],
   });
+}
+
+// ─── Shader suavizado (canvas + ImageOverlay) ────────────────────────────────
+
+function ShaderCanvasLayer({
+  celdas, tipo, elevMin, elevMax, pendMax,
+}: {
+  celdas: DatosShader['celdas'];
+  tipo: 'elev' | 'pend';
+  elevMin: number; elevMax: number; pendMax: number;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (!celdas.length) return;
+
+    let latMin = Infinity, latMax = -Infinity;
+    let lngMin = Infinity, lngMax = -Infinity;
+    let minRow = 99, maxRow = 0, minCol = 99, maxCol = 0;
+    const cellMap = new Map<string, DatosShader['celdas'][0]>();
+
+    for (const c of celdas) {
+      cellMap.set(`${c.row},${c.col}`, c);
+      if (c.latMin < latMin) latMin = c.latMin;
+      if (c.latMax > latMax) latMax = c.latMax;
+      if (c.lngMin < lngMin) lngMin = c.lngMin;
+      if (c.lngMax > lngMax) lngMax = c.lngMax;
+      if (c.row < minRow) minRow = c.row;
+      if (c.row > maxRow) maxRow = c.row;
+      if (c.col < minCol) minCol = c.col;
+      if (c.col > maxCol) maxCol = c.col;
+    }
+
+    const H = maxRow - minRow + 1;
+    const W = maxCol - minCol + 1;
+
+    // Canvas pequeño: 1 px por celda
+    const small = document.createElement('canvas');
+    small.width = W; small.height = H;
+    const sCtx = small.getContext('2d')!;
+    const id   = sCtx.createImageData(W, H);
+    const d    = id.data;
+
+    function parseRgb(s: string): [number, number, number] {
+      const m = s.match(/\d+/g) ?? [];
+      return [+(m[0] ?? 0), +(m[1] ?? 0), +(m[2] ?? 0)];
+    }
+
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        const cell = cellMap.get(`${row},${col}`);
+        const x  = col - minCol;
+        const y  = maxRow - row;          // flip Y: lat↑ = canvas↓
+        const px = (y * W + x) * 4;
+        if (cell) {
+          const colorStr = tipo === 'elev'
+            ? colorElevacion(cell.elevation, elevMin, elevMax)
+            : colorPendiente(cell.pendiente_pct, pendMax);
+          const [r, g, b] = parseRgb(colorStr);
+          d[px] = r; d[px + 1] = g; d[px + 2] = b; d[px + 3] = 200;
+        }
+        // Celdas fuera del polígono: alpha = 0 (transparente)
+      }
+    }
+    sCtx.putImageData(id, 0, 0);
+
+    // Escalar 8× con interpolación bilineal
+    const S    = 8;
+    const big  = document.createElement('canvas');
+    big.width  = W * S; big.height = H * S;
+    const bCtx = big.getContext('2d')!;
+    bCtx.imageSmoothingEnabled  = true;
+    bCtx.imageSmoothingQuality  = 'high';
+    bCtx.drawImage(small, 0, 0, W * S, H * S);
+
+    const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
+      opacity: 0.65, interactive: false, zIndex: 200,
+    });
+    ov.addTo(map);
+    return () => { map.removeLayer(ov); };
+  }, [map, celdas, tipo, elevMin, elevMax, pendMax]);
+  return null;
 }
 
 function iconoCardinal(dir: string): L.DivIcon {

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   Trash2, LogOut, Map, ChevronRight, MapPin, Cloud,
   FolderOpen, Mountain, Droplets, FileText, CalendarDays,
@@ -133,6 +133,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [capturaActiva,  setCapturaActiva]  = useState(false);
   const [capturaTitulo,  setCapturaTitulo]  = useState('');
+
+  interface LeyItem { id: string; label: string; color?: string; dash?: boolean; icon?: string }
+  const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
   const dibujando = modoZona || modoSector || modoCamino || modoPinClick || (modoDibujo && modoDibujo !== 'seleccion');
@@ -388,11 +391,16 @@ export function MapaTerrenoApp({ userName }: Props) {
   }, []);
 
   // ─── Shader ───────────────────────────────────────────────────────────────
+  // Referencia para leer los bounds actuales del mapa desde fuera de Leaflet
+  const getBoundsRef = useRef<null | (() => { latMin: number; latMax: number; lngMin: number; lngMax: number })>(null);
+  const [shaderUsarArea, setShaderUsarArea] = useState(false);
+
   const handleFetchShader = useCallback(async () => {
     if (mojones.length < 3) return;
     setShaderLoading(true);
     setShaderError(null);
-    const result = await fetchShader(mojones);
+    const bounds = shaderUsarArea && getBoundsRef.current ? getBoundsRef.current() : undefined;
+    const result = await fetchShader(mojones, bounds);
     setShaderLoading(false);
     if ('error' in result) {
       setShaderError(result.error);
@@ -400,7 +408,7 @@ export function MapaTerrenoApp({ userName }: Props) {
       setDatosShader(result);
       setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, escorrentias: true, sugerencias: true }));
     }
-  }, [mojones]);
+  }, [mojones, shaderUsarArea]);
 
   // ─── Agregar desde sugerencias ────────────────────────────────────────────
   const handleAgregarPinSugerencia = useCallback((lat: number, lng: number, nombre: string, icono: string, color: string) => {
@@ -463,15 +471,28 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [guardandoPng, setGuardandoPng] = useState(false);
 
   const handleGuardarPng = useCallback(async () => {
-    const el = document.getElementById('mapa-captura');
+    // Capturamos el contenedor principal para incluir título y leyenda
+    const el = document.getElementById('print-capture-root');
     if (!el || guardandoPng) return;
     setGuardandoPng(true);
     try {
       const { toPng } = await import('html-to-image');
+      // Pequeño delay para asegurar que el DOM esté completamente pintado
+      await new Promise(r => setTimeout(r, 100));
       const dataUrl = await toPng(el, {
         cacheBust: true,
         pixelRatio: 2,
-        filter: node => !(node instanceof Element && node.classList.contains('no-print')),
+        skipFonts: false,
+        filter: (node) => {
+          if (!(node instanceof Element)) return true;
+          if (node.classList.contains('no-print')) return false;
+          if (node.classList.contains('leaflet-control-container')) return false;
+          return true;
+        },
+        // Asegurar que los overlays con posición absoluta se rendericen correctamente
+        style: {
+          overflow: 'visible',
+        },
       });
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -545,6 +566,12 @@ export function MapaTerrenoApp({ userName }: Props) {
       items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación' });
     if (capas.shaderPend && datosShader)
       items.push({ color: 'linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336)', label: 'Pendiente' });
+    // Arco solar
+    if (capas.arcSolar) {
+      items.push({ color: '#FF5722', dash: true, label: 'Solsticio de verano (21 dic)' });
+      items.push({ color: '#43A047', dash: true, label: 'Equinoccios (21 mar / 23 sep)' });
+      items.push({ color: '#1E88E5', dash: true, label: 'Solsticio de invierno (21 jun)' });
+    }
     const catVistas = new Set<string>();
     zonasFiltradas.forEach(z => {
       const key = z.categoria;
@@ -645,7 +672,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 )}
               </div>
               <div className="border-t border-bone-200 pt-4">
-                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModoClick(p => !p)} onAgregar={agregarMojon} />
+                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModoClick(p => !p)} onAgregar={agregarMojon} onCargarMojones={setMojones} />
               </div>
               {metricas && (
                 <div className="border-t border-bone-200 pt-4">
@@ -820,10 +847,16 @@ export function MapaTerrenoApp({ userName }: Props) {
               onRenombrarDibujo={handleRenombrarDibujoCapas} onEliminarDibujo={handleEliminarDibujoCapas}
               onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
               datosShader={datosShader} shaderLoading={shaderLoading} shaderError={shaderError}
-              onFetchShader={handleFetchShader} mojones={mojones}
+              onFetchShader={handleFetchShader} shaderUsarArea={shaderUsarArea} onToggleShaderArea={() => setShaderUsarArea(p => !p)} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
-              onCapturar={() => { setPanelDerecho(null); setCapturaActiva(true); if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno'); }}
+              onCapturar={() => {
+                setPanelDerecho(null);
+                setCapturaActiva(true);
+                if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
+                // Inicializar leyenda editable con los ítems actuales
+                setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
+              }}
               onGuardarPng={handleGuardarPng}
               guardandoPng={guardandoPng}
               onCerrar={() => setPanelDerecho(null)}
@@ -840,73 +873,6 @@ export function MapaTerrenoApp({ userName }: Props) {
             />
           )}
         </div>
-
-        {/* ── Overlay de captura ── */}
-        {capturaActiva && (
-          <>
-            {/* Título editable (top-left) */}
-            <div id="captura-titulo" className="absolute top-4 left-4 z-[999] pointer-events-auto bg-white/92 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 max-w-xs">
-              <p className="text-[9px] text-ink-700/40 uppercase tracking-wider mb-1 font-semibold no-print">Título del mapa</p>
-              <input
-                value={capturaTitulo}
-                onChange={e => setCapturaTitulo(e.target.value)}
-                placeholder="Nombre del terreno…"
-                className="text-base font-display text-ink-900 bg-transparent border-b border-ink-700/20 focus:outline-none focus:border-moss-700 w-full no-print"
-              />
-              <p className="font-display text-base text-ink-900 hidden print:block">{capturaTitulo}</p>
-              <p className="text-[9px] text-ink-700/40 mt-0.5 font-mono no-print">{new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="text-[9px] text-ink-700/40 mt-0.5 font-mono">{new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-
-            {/* Leyenda (bottom-right) */}
-            {leyendaItems.length > 0 && (
-              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[999] bg-white/92 backdrop-blur-sm rounded-xl shadow-lg px-3 py-3 min-w-[160px] max-w-[200px]">
-                <p className="text-[9px] font-bold text-ink-800 uppercase tracking-wider mb-2">Leyenda</p>
-                <div className="space-y-1">
-                  {leyendaItems.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      {item.icon ? (
-                        <span className="text-sm leading-none w-4 text-center">{item.icon}</span>
-                      ) : item.dash ? (
-                        <span className="w-4 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
-                      ) : (
-                        <span className="w-4 h-3 rounded-sm shrink-0" style={{ background: item.color }} />
-                      )}
-                      <span className="text-[10px] text-ink-800 leading-tight">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[8px] text-ink-700/30 mt-2 font-mono italic">Arte y Tierra</p>
-              </div>
-            )}
-
-            {/* Controles de captura (top-right, ocultos al imprimir) */}
-            <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2 no-print">
-              <button
-                onClick={handleGuardarPng}
-                disabled={guardandoPng}
-                className="flex items-center gap-1.5 px-3 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-50 text-bone-50 rounded-lg text-xs font-semibold shadow-md transition-colors"
-              >
-                {guardandoPng
-                  ? <><span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />Guardando…</>
-                  : <><Camera className="w-3.5 h-3.5" />Guardar PNG</>}
-              </button>
-              <button
-                onClick={handleCapturaMap}
-                className="flex items-center gap-1.5 px-3 py-2 bg-ink-950 hover:bg-ink-700 text-bone-50 rounded-lg text-xs font-semibold shadow-md transition-colors"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                Imprimir / PDF
-              </button>
-              <button
-                onClick={() => setCapturaActiva(false)}
-                className="p-2 bg-white border border-bone-200 hover:bg-bone-50 text-ink-700 rounded-lg shadow-md transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </>
-        )}
 
         <MapLeaflet
           mojones={mojones}
@@ -939,7 +905,130 @@ export function MapaTerrenoApp({ userName }: Props) {
           aguadasLayer={aguadasFiltradas}
           datosArcoSolar={datosArcoSolar}
           onMoverPin={handleMoverPin}
+          onGetBounds={fn => { getBoundsRef.current = fn; }}
         />
+
+        {/* ─────────────────────────────────────────────────────────────────────
+            OVERLAYS DE CAPTURA — van DESPUÉS de MapLeaflet en el DOM para que
+            html-to-image los renderice encima del mapa (orden DOM > z-index).
+            ───────────────────────────────────────────────────────────────────── */}
+        {capturaActiva && (
+          <>
+            {/* ── Título (top-left) — fondo sólido, sin backdrop-blur ─────────── */}
+            <div id="captura-titulo" className="absolute top-4 left-4 z-[1001] pointer-events-auto bg-white border border-bone-200 rounded-xl shadow-lg px-4 py-3 max-w-xs">
+              {/* Texto estático — siempre visible en PNG (fondo opaco necesario) */}
+              <p className="font-display text-lg font-bold text-ink-950 leading-tight">
+                {capturaTitulo || 'Mapa del terreno'}
+              </p>
+              <p className="text-[10px] text-ink-700/60 mt-0.5 font-mono">
+                {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+              {/* Campo de edición — filtrado en PNG */}
+              <div className="no-print mt-2 space-y-1">
+                <p className="text-[9px] text-ink-700/40 uppercase tracking-wide font-semibold">Editar título</p>
+                <input
+                  value={capturaTitulo}
+                  onChange={e => setCapturaTitulo(e.target.value)}
+                  placeholder="Nombre del terreno…"
+                  className="w-full text-xs bg-bone-50 border border-bone-200 rounded px-2 py-1 text-ink-950 focus:outline-none focus:ring-1 focus:ring-moss-500"
+                />
+              </div>
+            </div>
+
+            {/* ── Leyenda (bottom-right) — fondo sólido, sin backdrop-blur ────── */}
+            {(leyendaEditada ?? []).length > 0 && (
+              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[1001] bg-white border border-bone-200 rounded-xl shadow-lg px-3 py-3 min-w-[150px] max-w-[210px]">
+                <p className="text-[9px] font-bold text-ink-800 uppercase tracking-wider mb-1.5">Leyenda</p>
+
+                {/* ─ Ítems estáticos (visibles en PNG) ─ */}
+                <div className="space-y-1">
+                  {(leyendaEditada ?? []).map(item => (
+                    <div key={item.id} className="flex items-center gap-1.5">
+                      {item.icon ? (
+                        <span className="text-sm leading-none w-4 shrink-0 text-center">{item.icon}</span>
+                      ) : item.dash ? (
+                        <span className="w-4 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
+                      ) : (
+                        <span className="w-4 h-3 rounded-sm shrink-0" style={{ background: item.color ?? '#999' }} />
+                      )}
+                      <span className="text-[10px] text-ink-800 leading-tight flex-1 truncate">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[8px] text-ink-700/30 mt-1.5 font-mono italic">Arte y Tierra</p>
+
+                {/* ─ Panel edición (no-print) — scrollable ─ */}
+                <div className="no-print mt-2.5 pt-2.5 border-t border-bone-200 space-y-1 max-h-48 overflow-y-auto">
+                  <p className="text-[9px] text-moss-700 font-semibold mb-1 sticky top-0 bg-white pb-0.5">✏ Editar leyenda</p>
+                  {(leyendaEditada ?? []).map(item => (
+                    <div key={`ed-${item.id}`} className="flex items-center gap-1">
+                      {item.icon ? (
+                        <span className="text-xs w-4 shrink-0 text-center">{item.icon}</span>
+                      ) : item.dash ? (
+                        <span className="w-3 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
+                      ) : (
+                        <span className="w-3 h-2.5 rounded-sm shrink-0" style={{ background: item.color ?? '#999' }} />
+                      )}
+                      <input
+                        type="text"
+                        defaultValue={item.label}
+                        onBlur={e => {
+                          const v = e.target.value.trim();
+                          if (v) setLeyendaEditada(prev => prev?.map(x => x.id === item.id ? { ...x, label: v } : x) ?? null);
+                          else e.target.value = item.label;
+                        }}
+                        className="flex-1 min-w-0 text-[9px] text-ink-800 bg-bone-50 border border-bone-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-moss-500"
+                      />
+                      <button
+                        onClick={() => setLeyendaEditada(prev => prev?.filter(x => x.id !== item.id) ?? null)}
+                        className="shrink-0 text-ink-700/25 hover:text-clay-500 transition-colors"
+                        title="Quitar de leyenda"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    className="w-full flex items-center justify-center gap-1 mt-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200"
+                    onClick={() => {
+                      const label = window.prompt('Texto para el ítem:');
+                      if (!label?.trim()) return;
+                      setLeyendaEditada(prev => [...(prev ?? []), { id: crypto.randomUUID(), label: label.trim() }]);
+                    }}
+                  >
+                    + Agregar ítem
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Controles de captura (no-print) ──────────────────────────── */}
+            <div className="absolute top-4 right-4 z-[1002] flex items-center gap-2 no-print">
+              <button
+                onClick={handleGuardarPng}
+                disabled={guardandoPng}
+                className="flex items-center gap-1.5 px-3 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-50 text-bone-50 rounded-lg text-xs font-semibold shadow-md transition-colors"
+              >
+                {guardandoPng
+                  ? <><span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />Guardando…</>
+                  : <><Camera className="w-3.5 h-3.5" />Guardar PNG</>}
+              </button>
+              <button
+                onClick={handleCapturaMap}
+                className="flex items-center gap-1.5 px-3 py-2 bg-ink-950 hover:bg-ink-700 text-bone-50 rounded-lg text-xs font-semibold shadow-md transition-colors"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Imprimir / PDF
+              </button>
+              <button
+                onClick={() => { setCapturaActiva(false); setLeyendaEditada(null); }}
+                className="p-2 bg-white border border-bone-200 hover:bg-bone-50 text-ink-700 rounded-lg shadow-md transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
@@ -1069,6 +1158,8 @@ interface PanelCapasProps {
   shaderLoading:       boolean;
   shaderError:         string | null;
   onFetchShader:       () => void;
+  shaderUsarArea:      boolean;
+  onToggleShaderArea:  () => void;
   mojones:             Mojon[];
   datosSugerencias:    ResultadoSugerencias | null;
   onVerSugerencias:    () => void;
@@ -1087,7 +1178,7 @@ function PanelCapas({
   onRenombrarCamino, onEliminarCamino,
   onRenombrarDibujo, onEliminarDibujo,
   onRenombrarAguada, onEliminarAguada,
-  datosShader, shaderLoading, shaderError, onFetchShader, mojones,
+  datosShader, shaderLoading, shaderError, onFetchShader, shaderUsarArea, onToggleShaderArea, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
 }: PanelCapasProps) {
@@ -1142,10 +1233,15 @@ function PanelCapas({
                 label="Pendiente"
                 swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#4CAF50 0%,#FFEB3B 50%,#F44336 100%)' }} />}
               />
+              {/* Toggle área visible */}
+              <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1">
+                <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
+                <span className="text-[9px] text-ink-700/70">Usar área visible</span>
+              </label>
               <button
                 onClick={() => { onFetchShader(); }}
                 disabled={shaderLoading || mojones.length < 3}
-                className="mx-3 mb-2 mt-1 w-[calc(100%-24px)] flex items-center justify-center gap-1 py-1 bg-bone-100 hover:bg-bone-200 disabled:opacity-40 text-ink-700 rounded text-[9px] font-medium transition-colors"
+                className="mx-3 mb-2 mt-0.5 w-[calc(100%-24px)] flex items-center justify-center gap-1 py-1 bg-bone-100 hover:bg-bone-200 disabled:opacity-40 text-ink-700 rounded text-[9px] font-medium transition-colors"
               >
                 {shaderLoading
                   ? <><span className="w-2.5 h-2.5 border border-ink-700 border-t-transparent rounded-full animate-spin" />Calculando…</>
@@ -1155,6 +1251,11 @@ function PanelCapas({
           ) : (
             <div className="px-3 pt-1 pb-2.5 space-y-1.5">
               {shaderError && <p className="text-[9px] text-clay-600 leading-tight">{shaderError}</p>}
+              {/* Toggle área visible */}
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
+                <span className="text-[9px] text-ink-700/70">Usar área visible del mapa</span>
+              </label>
               <button
                 onClick={onFetchShader}
                 disabled={shaderLoading || mojones.length < 3}
