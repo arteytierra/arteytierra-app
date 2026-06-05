@@ -219,6 +219,31 @@ export function articleJsonLd(a: ArticleInput) {
   };
 }
 
+interface CoursesItemListInput {
+  courses: Array<{ slug: string; name: string; description?: string; img?: string }>;
+}
+
+export function coursesItemListJsonLd({ courses }: CoursesItemListInput) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Cursos y Formaciones — Arte y Tierra',
+    url: `${SITE}/cursos`,
+    itemListElement: courses.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Course',
+        name: c.name,
+        description: c.description,
+        url: `${SITE}/cursos/${c.slug}`,
+        image: c.img ? (c.img.startsWith('http') ? c.img : `${SITE}${c.img}`) : undefined,
+        provider: { '@id': `${SITE}#org` },
+      },
+    })),
+  };
+}
+
 export function faqJsonLd(items: Array<{ q: string; a: string }>) {
   return {
     '@context': 'https://schema.org',

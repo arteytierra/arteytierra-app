@@ -104,6 +104,62 @@ export async function getCourseWithCurriculum(slug: string): Promise<CourseWithC
   return localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as CourseWithCurriculum;
 }
 
+export interface LandingMeta {
+  badge: string;
+  tag: string;
+  section: 'activo' | 'inmersion' | 'proximo';
+  sort_order: number;
+  precio_display?: string;
+  precio_note?: string;
+  datos?: Array<{ label: string; val: string }>;
+  contenidos?: string[];
+  whatsapp_msg: string;
+  whatsapp_numero?: string;
+}
+
+export interface LandingProduct extends ProductRow {
+  landing_meta: LandingMeta;
+  courses?: Array<{ is_live: boolean; is_recorded: boolean }> | null;
+}
+
+export interface CoursesForLanding {
+  activos: LandingProduct[];
+  inmersion: LandingProduct | null;
+  proximos: LandingProduct[];
+}
+
+export async function getCoursesForLanding(): Promise<CoursesForLanding> {
+  const admin = createSupabaseAdminClient();
+  const locale = await getLocale();
+
+  const { data } = await admin
+    .schema('shop')
+    .from('products')
+    .select(
+      'id, slug, name, subtitle, gallery, base_price_cents, compare_at_cents, currency, is_active, landing_meta, courses(is_live, is_recorded)'
+    )
+    .in('type', ['course', 'immersion'] as never[])
+    .neq('landing_meta' as never, '{}');
+
+  const rows = ((data ?? []) as unknown as LandingProduct[])
+    .map(
+      (p) =>
+        localizeRow(
+          p as never as Record<string, unknown>,
+          locale,
+          [...PRODUCT_I18N_FIELDS]
+        ) as unknown as LandingProduct
+    )
+    .filter((p) => p.landing_meta?.section)
+    .sort((a, b) => (a.landing_meta.sort_order ?? 99) - (b.landing_meta.sort_order ?? 99));
+
+  return {
+    activos:  rows.filter((p) => p.landing_meta.section === 'activo'),
+    inmersion: rows.find((p) => p.landing_meta.section === 'inmersion') ?? null,
+    proximos:  rows.filter((p) => p.landing_meta.section === 'proximo'),
+  };
+}
+
 export function getProductCover(product: { gallery: unknown }): string | undefined {
   const arr = (Array.isArray(product.gallery) ? product.gallery : []) as Array<{ url?: string } | string>;
   for (const item of arr) {
