@@ -3,17 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
-import { waLink, WHATSAPP_PRINCIPAL } from '@/lib/contact';
+import { waLink, WHATSAPP_PRINCIPAL, WHATSAPP_ALQUIMIA } from '@/lib/contact';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { coursesItemListJsonLd } from '@/lib/seo/jsonld';
 import { buildSocial } from '@/lib/seo/og';
 import { YouTubeFacade } from '@/components/media/YouTubeFacade';
-import {
-  getCoursesForLanding,
-  getProductCover,
-  type LandingProduct,
-  type LandingMeta,
-} from '@/lib/commerce/products';
+import { getCoursesForLanding, getProductCover } from '@/lib/commerce/products';
 
 export const revalidate = 60;
 
@@ -34,7 +29,7 @@ export const metadata: Metadata = {
   }),
 };
 
-/* ─── Tipos derivados ────────────────────────────────── */
+/* ─── Tipos ──────────────────────────────────────────── */
 
 type Dato = { label: string; val: string };
 
@@ -64,83 +59,114 @@ type TodoItem = {
   online: boolean;
 };
 
-/* ─── Mappers ────────────────────────────────────────── */
+type ProximoItem = {
+  slug: string;
+  name: string;
+  badge: string;
+  desc: string;
+  img: string;
+  whatsapp: string;
+};
 
-const FALLBACK_IMG = '/img/cursos/cursos/1.jpg';
+/* ─── Datos estáticos de fallback ────────────────────── */
 
-function cover(p: LandingProduct): string {
-  return getProductCover(p as never) ?? FALLBACK_IMG;
-}
-
-function waUrl(lm: LandingMeta): string {
-  return waLink(lm.whatsapp_numero ?? WHATSAPP_PRINCIPAL, lm.whatsapp_msg);
-}
-
-function toTodoItem(p: LandingProduct): TodoItem {
-  const lm = p.landing_meta;
-  return {
-    slug: p.slug,
-    name: p.name,
-    tag: lm.tag,
-    img: cover(p),
-    badge: lm.badge,
-    tentativo: !p.is_active,
-    online: lm.badge.toLowerCase().includes('online'),
-  };
-}
-
-function toCurso(p: LandingProduct): Curso {
-  const lm = p.landing_meta;
-  return {
-    slug: p.slug,
-    badge: lm.badge,
-    name: p.name,
-    tag: lm.tag,
-    desc: p.subtitle ?? '',
-    img: cover(p),
-    datos: lm.datos,
-    contenidos: lm.contenidos,
-    precio: lm.precio_display ?? '',
-    precioNote: lm.precio_note ?? '',
-    href: `/cursos/${p.slug}`,
-    whatsapp: waUrl(lm),
-    tentativo: !p.is_active,
-  };
-}
-
-/* ─── Testimonios en texto (completar con contenido real) ── */
-
-const TESTIMONIOS: Array<{ name: string; course: string; quote: string }> = [
-  // { name: 'María L.', course: 'Mi Tierra, Mi Casa', quote: '...' },
+const FALLBACK_TODOS: TodoItem[] = [
+  { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
+  { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
+  { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: '11/7 · 1/8 · 22/8',       img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Taller modular', tentativo: false, online: false },
+  { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Encuentros mensuales · 2026', img: '/img/biocosmetica/productos-todos.jpg', badge: 'Ciclo mensual',  tentativo: false, online: false },
+  { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '18–19 jul 2026',           img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
+  { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: '15 o 30 días',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
+  { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Oct 2026 · Online',        img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
+  { slug: 'diseno-ecosistemico-del-agua', name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',             img: '/img/cursos/vueltatierra/3.jpg',        badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'biopiscinas',                  name: 'Biopiscinas',                   tag: 'Próximamente',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'revoques-naturales',           name: 'Revoques Naturales',            tag: 'Próximamente',             img: '/img/cursos/bioarquitectura/1.jpg',     badge: 'Sin fecha',      tentativo: true,  online: false },
 ];
+
+const FALLBACK_CURSOS: Curso[] = [
+  {
+    slug: 'mi-tierra-mi-casa', badge: 'Online · Acceso ilimitado', name: 'Mi Tierra, Mi Casa',
+    tag: 'Disponible · Empezás cuando querés',
+    desc: 'Formación en bioconstrucción a tu ritmo. 4 módulos y 18 clases que recorren todas las etapas de una obra natural — de los cimientos al criterio.',
+    img: '/img/cursos/mitierramicasa/1.jpg',
+    datos: [{ label: 'Formato', val: 'Video clases grabadas · acceso ilimitado' }, { label: 'Contenido', val: '4 módulos · 18 clases' }, { label: 'Duración', val: 'A tu ritmo · sin vencimiento' }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    contenidos: ['Introducción y materiales', 'Cimientos y estructuras', 'Muros: quincha, cob, paja', 'Revoques gruesos y finos', 'Pinturas y relieves', 'Biocosmética del hábitat'],
+    precio: 'USD 80', precioNote: 'Pago único · acceso permanente.',
+    href: '/cursos/mi-tierra-mi-casa', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme a Mi Tierra, Mi Casa'),
+  },
+  {
+    slug: 'tadelakt', badge: 'Online · Acceso ilimitado', name: 'Tadelakt Online',
+    tag: 'Disponible · Empezás cuando querés',
+    desc: 'El arte marroquí del enlucido en cal: el acabado impermeable, brillante y vivo que transforma baños, cocinas y cualquier superficie en una pieza única.',
+    img: '/img/cursos/tadelakt/0.jpg',
+    precio: '$90.000', precioNote: 'Pago único · 3 módulos · acceso permanente.',
+    href: '/cursos/tadelakt', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al curso de Tadelakt Online'),
+  },
+  {
+    slug: 'cultivo-girgolas', badge: 'Taller modular · Presencial', name: 'Cultivo de Gírgolas',
+    tag: '11 jul · 1 ago · 22 ago 2026 · Tay Pichín',
+    desc: 'Tres encuentros independientes para aprender todo el proceso: biología del hongo, producción casera y escala productiva. FUNGO × Tay Pichín.',
+    img: '/img/cursos/cultivo-girgolas/1.jpg',
+    datos: [{ label: 'Fechas', val: '11 jul · 1 ago · 22 ago 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: 'Presencial · módulos independientes' }, { label: 'Facilita', val: 'Emmanuel Ciancio Manzoni' }],
+    contenidos: ['Biología del hongo y ciclo de vida', 'Producción de micelio e inoculación', 'Sustrato e incubación', 'Autoproducción doméstica', 'Cosecha y conservación'],
+    precio: 'Módulo suelto o ciclo completo', precioNote: 'Podés tomar uno, dos o los tres encuentros.',
+    href: '/cursos/cultivo-girgolas', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Taller de Cultivo de Gírgolas'),
+  },
+  {
+    slug: 'alquimia-natural', badge: 'Ciclo mensual · Presencial', name: 'Alquimia Natural y Limpieza Consciente',
+    tag: '3er sábado de cada mes · Encuentros mensuales · 2026 · Tay Pichín',
+    desc: 'Ocho encuentros presenciales para transformar ingredientes simples y nobles en soluciones de higiene que respetan tu salud, el agua y la tierra.',
+    img: '/img/biocosmetica/productos-todos.jpg',
+    datos: [{ label: 'Frecuencia', val: 'Tercer sábado de cada mes' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '8 encuentros o módulos sueltos' }, { label: 'Cupos', val: 'Limitados' }],
+    contenidos: ['Jabonería de rescate (aceite reciclado)', 'Cítricos y desengrasantes naturales', 'Botiquín de limpieza', 'Alquimia sólida efervescente', 'Alquimia capilar', 'Desodorantes sin tóxicos', 'Dentífrico natural', 'Jabón de cuidado corporal'],
+    precio: '$30.000 – $200.000', precioNote: 'Encuentro suelto · módulo (4 enc.) · ciclo completo (8 enc.)',
+    href: '/cursos/alquimia-natural', whatsapp: waLink(WHATSAPP_ALQUIMIA, 'Hola, quiero info del ciclo de Alquimia Natural'),
+  },
+  {
+    slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
+    tag: '18 y 19 de julio 2026 · Tay Pichín',
+    desc: 'Dos días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 40% teoría, 60% práctica.',
+    img: '/img/proyectos/alihuen/5.jpg',
+    datos: [{ label: 'Fechas', val: '18 y 19 de julio · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    contenidos: ['Construcción con tierra', 'Diseño bioclimático', 'Quincha, cob y pirca', 'Revoques de tierra y cal', 'Techos vivos', 'Pigmentos naturales', 'Construcción colectiva'],
+    precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
+    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (18 y 19 julio)'),
+  },
+  {
+    slug: 'vuelta-a-la-tierra', badge: 'Online en vivo · 7 semanas', name: 'La Vuelta a la Tierra',
+    tag: 'Inicia lunes 12 de octubre · Online en vivo',
+    desc: 'En 7 semanas te llevás los planos de tu vivienda y el masterplan de tu predio listos para empezar a construir. Con criterio técnico, sin gastar de más, y entendiendo el por qué.',
+    img: '/img/cursos/vueltatierra/7.jpg',
+    datos: [{ label: 'Inicio', val: 'Lunes 12 de octubre 2026' }, { label: 'Formato', val: 'Clases en vivo · quedan grabadas' }, { label: 'Dedicación', val: '4 a 6 hs semanales' }, { label: 'Facilitan', val: 'Jonatan Palma + Fabricio Manzoni' }],
+    contenidos: ['Análisis climático y topográfico', 'Permacultura e hidrología', 'Diseño de masterplan', 'Bioarquitectura', 'Materiales y sistemas constructivos', 'Tecnologías apropiadas', 'Anteproyecto de vivienda'],
+    precio: 'Desde $350.000', precioNote: 'En 4 pagos: $50k + 3 × $100k. Cupos limitados.',
+    href: '/cursos/vuelta-a-la-tierra', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de La Vuelta a la Tierra (oct 2026)'),
+  },
+];
+
+const FALLBACK_PROXIMOS: ProximoItem[] = [
+  { slug: 'diseno-ecosistemico-del-agua', badge: 'Taller presencial', name: 'Diseño Ecosistémico del Agua', desc: 'Hidrología regenerativa aplicada al territorio. Zanjas de infiltración, captación de lluvia, humedales y cuencas vivas. Lectura del paisaje e intervención con criterio ecosistémico.', img: '/img/cursos/vueltatierra/3.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Diseño Ecosistémico del Agua') },
+  { slug: 'biopiscinas',                  badge: 'Taller presencial', name: 'Biopiscinas',                   desc: 'Diseño y construcción de piscinas naturales que se autorregulan sin químicos. Sistemas biológicos de filtración, plantas acuáticas y equilibrio ecológico para nadar en agua viva.', img: '/img/taypichin/carousel/5.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Biopiscinas') },
+  { slug: 'revoques-naturales',           badge: 'Taller presencial', name: 'Revoques Naturales',            desc: 'Del barro a la cal: técnicas de revoques con materiales nobles, texturas vivas y acabados que respiran. Revoques gruesos, finos, yeso, enjarre y pinturas naturales.', img: '/img/cursos/bioarquitectura/1.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Revoques Naturales') },
+];
+
+/* ─── Testimonios (completar con contenido real) ─────── */
+
+const TESTIMONIOS: Array<{ name: string; course: string; quote: string }> = [];
 
 /* ─── Components ─────────────────────────────────────── */
 
 function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
-  const className = 'group relative overflow-hidden bg-ink-800 flex flex-col';
   const inner = (
     <>
       <div className="relative aspect-[3/4] overflow-hidden">
-        <Image
-          src={c.img}
-          alt={c.name}
-          fill
-          priority={idx < 5}
+        <Image src={c.img} alt={c.name} fill priority={idx < 5}
           className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-70' : ''}`}
-          sizes="(max-width: 640px) 33vw, (max-width: 768px) 20vw, 11vw"
-        />
+          sizes="(max-width: 640px) 33vw, (max-width: 768px) 20vw, 11vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 to-transparent" />
         <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
-          {c.online && (
-            <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-1.5 py-0.5">
-              Online
-            </span>
-          )}
-          {c.tentativo && (
-            <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-1.5 py-0.5">
-              Próx.
-            </span>
-          )}
+          {c.online && <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-1.5 py-0.5">Online</span>}
+          {c.tentativo && <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-1.5 py-0.5">Próx.</span>}
         </div>
       </div>
       <div className="p-2 flex flex-col gap-0.5 flex-1">
@@ -149,23 +175,18 @@ function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
       </div>
     </>
   );
-
-  if (c.tentativo) {
-    return <a href="#proximamente" className={className}>{inner}</a>;
-  }
-  return <Link href={`/cursos/${c.slug}`} className={className}>{inner}</Link>;
+  const cls = 'group relative overflow-hidden bg-ink-800 flex flex-col';
+  if (c.tentativo) return <a href="#proximamente" className={cls}>{inner}</a>;
+  return <Link href={`/cursos/${c.slug}`} className={cls}>{inner}</Link>;
 }
 
 function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
-  const isProximo = !!c.tentativo;
   return (
-    <article className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} ${isProximo ? 'opacity-80' : ''} bg-bone-100 overflow-hidden`}>
+    <article className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} bg-bone-100 overflow-hidden`}>
       <div className="relative md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[420px] overflow-hidden bg-ink-950 flex-shrink-0">
-        <Image src={c.img} alt={c.name} fill className={`object-cover${isProximo ? ' grayscale' : ''}`} sizes="(max-width: 768px) 100vw, 50vw" />
+        <Image src={c.img} alt={c.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
         <div className="absolute top-4 left-4">
-          <span className={`${isProximo ? 'bg-ink-700' : 'bg-clay-700'} text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5`}>
-            {c.badge}
-          </span>
+          <span className="bg-clay-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">{c.badge}</span>
         </div>
       </div>
       <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-5">
@@ -187,9 +208,7 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
         {c.contenidos && (
           <div className="flex flex-wrap gap-1.5">
             {c.contenidos.map(t => (
-              <span key={t} className="text-xs font-sans text-clay-700 bg-clay-50 border border-clay-200 px-2.5 py-1">
-                {t}
-              </span>
+              <span key={t} className="text-xs font-sans text-clay-700 bg-clay-50 border border-clay-200 px-2.5 py-1">{t}</span>
             ))}
           </div>
         )}
@@ -199,33 +218,13 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
             <p className="text-xs font-sans text-ink-500 mt-0.5">{c.precioNote}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {isProximo ? (
-              <a
-                href={c.whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors"
-              >
-                Anotarme →
-              </a>
-            ) : (
-              <>
-                <Link
-                  href={c.href}
-                  className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors"
-                >
-                  Inscribirme →
-                </Link>
-                <a
-                  href={c.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-50 transition-colors"
-                >
-                  Consultar
-                </a>
-              </>
-            )}
+            <Link href={c.href} className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors">
+              Inscribirme →
+            </Link>
+            <a href={c.whatsapp} target="_blank" rel="noopener noreferrer"
+              className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-50 transition-colors">
+              Consultar
+            </a>
           </div>
         </div>
       </div>
@@ -236,19 +235,46 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
 /* ─── Page ───────────────────────────────────────────── */
 
 export default async function CursosPage() {
-  const { activos, inmersion, proximos } = await getCoursesForLanding();
+  // Intentar cargar desde DB; si falla o devuelve vacío, usar fallback estático
+  let todos = FALLBACK_TODOS;
+  let cursos = FALLBACK_CURSOS;
+  let proximos = FALLBACK_PROXIMOS;
+  let inmersionWa = waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de la Inmersión Viva');
 
-  const allTodos: TodoItem[] = [
-    ...activos,
-    ...(inmersion ? [inmersion] : []),
-    ...proximos,
-  ].map(toTodoItem);
-
-  const cursos: Curso[] = activos.map(toCurso);
-
-  const inmersionWa = inmersion
-    ? waUrl(inmersion.landing_meta)
-    : waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de la Inmersión Viva');
+  try {
+    const { activos, inmersion, proximos: dbProximos } = await getCoursesForLanding();
+    if (activos.length > 0) {
+      todos = [...activos, ...(inmersion ? [inmersion] : []), ...dbProximos].map(p => ({
+        slug: p.slug,
+        name: p.name,
+        tag: p.landing_meta.tag,
+        img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
+        badge: p.landing_meta.badge,
+        tentativo: !p.is_active,
+        online: p.landing_meta.badge.toLowerCase().includes('online'),
+      }));
+      cursos = activos.map(p => {
+        const lm = p.landing_meta;
+        return {
+          slug: p.slug, badge: lm.badge, name: p.name, tag: lm.tag,
+          desc: p.subtitle ?? '', img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
+          datos: lm.datos, contenidos: lm.contenidos,
+          precio: lm.precio_display ?? '', precioNote: lm.precio_note ?? '',
+          href: `/cursos/${p.slug}`,
+          whatsapp: waLink(lm.whatsapp_numero ?? WHATSAPP_PRINCIPAL, lm.whatsapp_msg),
+        };
+      });
+      proximos = dbProximos.map(p => ({
+        slug: p.slug, name: p.name, badge: p.landing_meta.badge,
+        desc: p.subtitle ?? '',
+        img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
+        whatsapp: waLink(p.landing_meta.whatsapp_numero ?? WHATSAPP_PRINCIPAL, p.landing_meta.whatsapp_msg),
+      }));
+      if (inmersion) inmersionWa = waLink(inmersion.landing_meta.whatsapp_numero ?? WHATSAPP_PRINCIPAL, inmersion.landing_meta.whatsapp_msg);
+    }
+  } catch (e) {
+    console.error('[CursosPage] DB fallback activado:', e);
+  }
 
   return (
     <>
@@ -274,7 +300,7 @@ export default async function CursosPage() {
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
           <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
-            {allTodos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
+            {todos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
           </div>
         </div>
       </section>
@@ -283,9 +309,7 @@ export default async function CursosPage() {
       <section className="bg-ink-950 py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-5">El enfoque</p>
-          <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-8">
-            El conocimiento<br />vuelve a las <em>manos.</em>
-          </h2>
+          <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-8">El conocimiento<br />vuelve a las <em>manos.</em></h2>
           <p className="font-sans text-bone-100 text-base leading-relaxed mb-4">
             Cada formación parte de una premisa: el aprendizaje verdadero ocurre en la práctica. Trabajamos sobre obras reales, en territorio vivo, con materiales del lugar y técnicas que tienen siglos de sabiduría detrás.
           </p>
@@ -299,17 +323,13 @@ export default async function CursosPage() {
       <section className="bg-bone-50 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto mb-14">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Formaciones · 2026</p>
-          <h2 className="font-display text-4xl md:text-5xl text-ink-950">
-            Todos los<br /><em>cursos.</em>
-          </h2>
+          <h2 className="font-display text-4xl md:text-5xl text-ink-950">Todos los<br /><em>cursos.</em></h2>
           <p className="mt-4 font-sans text-ink-600 text-base max-w-xl">
             Presenciales en Tay Pichín, online en vivo y a tu ritmo. Elegí la formación que más resuena con tu camino.
           </p>
         </div>
         <div className="max-w-editorial mx-auto flex flex-col divide-y divide-bone-200">
-          {cursos.map((c, i) => (
-            <CourseCard key={c.slug} c={c} reverse={i % 2 === 1} />
-          ))}
+          {cursos.map((c, i) => <CourseCard key={c.slug} c={c} reverse={i % 2 === 1} />)}
         </div>
       </section>
 
@@ -319,25 +339,21 @@ export default async function CursosPage() {
           <div className="relative min-h-[420px] lg:min-h-[600px] overflow-hidden">
             <Image src="/img/taypichin/carousel/5.jpg" alt="Inmersión Viva — Tay Pichín" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             <div className="absolute top-4 left-4">
-              <span className="bg-moss-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">
-                Inmersión · 15 o 30 días
-              </span>
+              <span className="bg-moss-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">Inmersión · 15 o 30 días</span>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-6 p-10 md:p-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Experiencia completa</p>
-            <h2 className="font-display text-4xl md:text-5xl text-bone-50">
-              Inmersión <em>Viva.</em>
-            </h2>
+            <h2 className="font-display text-4xl md:text-5xl text-bone-50">Inmersión <em>Viva.</em></h2>
             <p className="font-sans text-bone-50 text-base leading-relaxed">
               Períodos formativos de 15 o 30 días en Tay Pichín. Bioconstrucción, agroecología y organización colectiva aprendidas en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: '🏗', t: 'Bioconstrucción',    d: 'Obra real con tierra y materiales naturales' },
-                { icon: '🌱', t: 'Agroecología',        d: 'Huerta, suelo y sistemas vivos' },
-                { icon: '💧', t: 'Diseño hidrológico',  d: 'Lectura del paisaje y el agua' },
-                { icon: '🤝', t: 'Comunidad',           d: 'Círculos de la palabra y organización' },
+                { icon: '🏗', t: 'Bioconstrucción',   d: 'Obra real con tierra y materiales naturales' },
+                { icon: '🌱', t: 'Agroecología',       d: 'Huerta, suelo y sistemas vivos' },
+                { icon: '💧', t: 'Diseño hidrológico', d: 'Lectura del paisaje y el agua' },
+                { icon: '🤝', t: 'Comunidad',          d: 'Círculos de la palabra y organización' },
               ].map(item => (
                 <div key={item.t} className="p-4 bg-ink-800 border border-ink-600">
                   <div className="text-lg mb-1"><span aria-hidden="true">{item.icon}</span></div>
@@ -347,18 +363,11 @@ export default async function CursosPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href="/cursos/inmersion-viva"
-                className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors"
-              >
+              <Link href="/cursos/inmersion-viva" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors">
                 Inscribirme →
               </Link>
-              <a
-                href={inmersionWa}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex border border-bone-500/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors"
-              >
+              <a href={inmersionWa} target="_blank" rel="noopener noreferrer"
+                className="inline-flex border border-bone-500/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors">
                 Consultar
               </a>
             </div>
@@ -371,44 +380,32 @@ export default async function CursosPage() {
         <div className="max-w-editorial mx-auto">
           <div className="mb-10">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Próximamente</p>
-            <h2 className="font-display text-4xl text-ink-950">
-              En preparación —<br /><em>anotate antes.</em>
-            </h2>
+            <h2 className="font-display text-4xl text-ink-950">En preparación —<br /><em>anotate antes.</em></h2>
             <p className="mt-4 font-sans text-ink-600 text-base max-w-xl">
               Estas formaciones no tienen fecha confirmada aún. Dejanos tu nombre y te avisamos apenas abramos inscripción.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {proximos.map(t => {
-              const lm = t.landing_meta;
-              const img = cover(t);
-              return (
-                <div key={t.slug} className="bg-bone-100 overflow-hidden border border-bone-200">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image src={img} alt={t.name} fill className="object-cover grayscale opacity-80"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/60 to-transparent" />
-                    <div className="absolute top-3 left-3">
-                      <span className="text-xs font-sans font-bold uppercase tracking-widest bg-bone-50 text-clay-700 px-2.5 py-1">
-                        {lm.badge}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-display text-xl text-ink-950 mb-2">{t.name}</h3>
-                    <p className="font-sans text-sm text-ink-700 leading-relaxed mb-5">{t.subtitle ?? ''}</p>
-                    <a
-                      href={waUrl(lm)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-clay-900 transition-colors"
-                    >
-                      Anotarme →
-                    </a>
+            {proximos.map(t => (
+              <div key={t.slug} className="bg-bone-100 overflow-hidden border border-bone-200">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image src={t.img} alt={t.name} fill className="object-cover grayscale opacity-80"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/60 to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className="text-xs font-sans font-bold uppercase tracking-widest bg-bone-50 text-clay-700 px-2.5 py-1">{t.badge}</span>
                   </div>
                 </div>
-              );
-            })}
+                <div className="p-6">
+                  <h3 className="font-display text-xl text-ink-950 mb-2">{t.name}</h3>
+                  <p className="font-sans text-sm text-ink-700 leading-relaxed mb-5">{t.desc}</p>
+                  <a href={t.whatsapp} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-clay-900 transition-colors">
+                    Anotarme →
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -416,12 +413,7 @@ export default async function CursosPage() {
       {/* STATS */}
       <section className="bg-clay-700 py-14 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { n: '+150', label: 'talleres dictados' },
-            { n: '+10k',  label: 'personas formadas' },
-            { n: '7',     label: 'países' },
-            { n: '15+',   label: 'años de experiencia' },
-          ].map(s => (
+          {[{ n: '+150', label: 'talleres dictados' }, { n: '+10k', label: 'personas formadas' }, { n: '7', label: 'países' }, { n: '15+', label: 'años de experiencia' }].map(s => (
             <div key={s.n}>
               <div className="font-display text-5xl md:text-6xl text-bone-50">{s.n}</div>
               <div className="mt-2 font-sans text-sm uppercase tracking-widest text-clay-200">{s.label}</div>
@@ -438,10 +430,7 @@ export default async function CursosPage() {
             <h2 className="font-display text-3xl text-bone-50">Voces de la <em>comunidad.</em></h2>
           </div>
           <div className="relative aspect-video bg-ink-800 overflow-hidden">
-            <YouTubeFacade
-              videoId="dSqscHL4pF8"
-              title="Testimonios de participantes — Arte y Tierra"
-            />
+            <YouTubeFacade videoId="dSqscHL4pF8" title="Testimonios de participantes — Arte y Tierra" />
           </div>
           {TESTIMONIOS.length > 0 && (
             <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -463,47 +452,25 @@ export default async function CursosPage() {
 
       {/* CTA */}
       <section className="bg-bone-50 py-20 px-6 text-center">
-        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">
-          ¿No sabés qué curso es para vos?
-        </p>
-        <h2 className="font-display text-4xl md:text-5xl text-ink-950 mb-5">
-          Hablemos antes<br />de <em>decidir.</em>
-        </h2>
+        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">¿No sabés qué curso es para vos?</p>
+        <h2 className="font-display text-4xl md:text-5xl text-ink-950 mb-5">Hablemos antes<br />de <em>decidir.</em></h2>
         <p className="font-sans text-ink-700 text-lg max-w-lg mx-auto mb-8 leading-relaxed">
           Una asesoría de 30 minutos sin costo para ayudarte a elegir el camino que más se alinea con lo que buscás.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <a
-            href={waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info sobre los cursos')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
-          >
+          <a href={waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info sobre los cursos')} target="_blank" rel="noopener noreferrer"
+            className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
             WhatsApp →
           </a>
-          <Link
-            href="/asesorias"
-            className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-950 hover:text-bone-50 transition-colors"
-          >
+          <Link href="/asesorias" className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-950 hover:text-bone-50 transition-colors">
             Agendar asesoría
           </Link>
         </div>
       </section>
-    </main>
+      </main>
       <SiteFooter />
 
-      <JsonLd
-        data={[
-          coursesItemListJsonLd({
-            courses: activos.map(p => ({
-              slug: p.slug,
-              name: p.name,
-              description: p.subtitle ?? undefined,
-              img: cover(p),
-            })),
-          }),
-        ]}
-      />
+      <JsonLd data={[coursesItemListJsonLd({ courses: cursos.map(c => ({ slug: c.slug, name: c.name, description: c.desc, img: c.img })) })]} />
     </>
   );
 }
