@@ -132,14 +132,15 @@ export async function getCoursesForLanding(): Promise<CoursesForLanding> {
   const admin = createSupabaseAdminClient();
   const locale = await getLocale();
 
-  const { data } = await admin
+  const { data, error } = await admin
     .schema('shop')
     .from('products')
     .select(
       'id, slug, name, subtitle, gallery, base_price_cents, compare_at_cents, currency, is_active, landing_meta, courses(is_live, is_recorded)'
     )
-    .in('type', ['course', 'immersion'] as never[])
-    .neq('landing_meta' as never, '{}');
+    .in('type', ['course', 'immersion'] as never[]);
+
+  if (error) console.error('[getCoursesForLanding]', error);
 
   const rows = ((data ?? []) as unknown as LandingProduct[])
     .map(
