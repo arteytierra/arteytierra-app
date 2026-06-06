@@ -51,19 +51,15 @@ interface SoilGridsResponse {
 }
 
 export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo> {
-  const props = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen'];
-  const url =
-    'https://rest.isric.org/soilgrids/v2.0/properties/query' +
-    `?lon=${lng.toFixed(4)}&lat=${lat.toFixed(4)}` +
-    props.map(p => `&property=${p}`).join('') +
-    '&depth=0-5cm&value=mean';
+  const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25_000);
+  const timer = setTimeout(() => controller.abort(), 35_000);
   try {
     const res = await fetch(url, { signal: controller.signal });
+    const json = await res.json() as SoilGridsResponse & { error?: string };
+    if (json.error) throw new Error(json.error);
     if (!res.ok) throw new Error(`SoilGrids respondió ${res.status}`);
-    const json: SoilGridsResponse = await res.json();
 
     const layers = json.properties.layers;
 

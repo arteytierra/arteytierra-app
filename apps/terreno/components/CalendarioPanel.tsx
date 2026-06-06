@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Cloud } from 'lucide-react';
 import {
   calcularCalendario,
+  calcularGDD,
+  calcularBalanceCultivo,
   FAMILIAS,
+  CULTIVOS_KC,
   type AptitudMes,
 } from '@/lib/calendario';
 import type { DatosClima } from '@/lib/clima';
@@ -16,10 +19,22 @@ interface Props {
 }
 
 export function CalendarioPanel({ datosClima, onIrAClima }: Props) {
+  const [gdBase,    setGdBase]    = useState(10);
+  const [cultivoId, setCultivoId] = useState('huerta');
+
   const cal = useMemo(
     () => datosClima ? calcularCalendario(datosClima) : null,
     [datosClima],
   );
+  const gdd = useMemo(
+    () => datosClima ? calcularGDD(datosClima.meses, gdBase) : null,
+    [datosClima, gdBase],
+  );
+  const balanceCultivo = useMemo(() => {
+    if (!datosClima) return null;
+    const cultivo = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
+    return calcularBalanceCultivo(datosClima.meses, cultivo.kc);
+  }, [datosClima, cultivoId]);
 
   if (!datosClima || !cal) {
     return (
@@ -199,6 +214,110 @@ export function CalendarioPanel({ datosClima, onIrAClima }: Props) {
           ))}
         </div>
       </div>
+
+      {/* ── Grados-día de crecimiento (GDD) ─────────────────────────────────── */}
+      {gdd && (() => {
+        const maxGdd = Math.max(...gdd.map(m => m.gdd), 1);
+        const gddAnual = gdd[gdd.length - 1]?.acumulado ?? 0;
+        return (
+          <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
+            <div className="px-3 py-2 border-b border-bone-200 flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-xs font-medium text-ink-700">Grados-día de crecimiento</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] text-ink-700/50">Base:</span>
+                {[5, 7, 10, 15].map(b => (
+                  <button
+                    key={b}
+                    onClick={() => setGdBase(b)}
+                    className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${
+                      gdBase === b ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'
+                    }`}
+                  >{b}°C</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-3 py-2">
+              <p className="text-[10px] text-ink-700/60 mb-2">
+                GDD anual: <span className="font-bold text-moss-700 font-mono">{gddAnual.toLocaleString('es-AR')}</span> °C·día
+              </p>
+              <div className="flex items-end gap-0.5 h-16">
+                {gdd.map(m => (
+                  <div key={m.index} className="flex-1 flex flex-col items-center gap-0.5">
+                    <div
+                      className="w-full rounded-t-sm bg-moss-400/80"
+                      style={{ height: `${Math.round((m.gdd / maxGdd) * 52)}px` }}
+                      title={`${m.nombre}: ${m.gdd} GDD`}
+                    />
+                    <span className="text-[7px] text-ink-700/40 font-medium">{m.nombre[0]}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3 mt-1.5 text-[9px] text-ink-700/50 flex-wrap">
+                {gdd.map(m => m.gdd > 0 && (
+                  <span key={m.index} className="font-mono">{m.nombre}: {m.gdd}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Balance hídrico por cultivo ──────────────────────────────────────── */}
+      {balanceCultivo && (() => {
+        const cultivo = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
+        const mesesDeficit = balanceCultivo.filter(m => m.balance < 0).length;
+        return (
+          <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
+            <div className="px-3 py-2 border-b border-bone-200 flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-xs font-medium text-ink-700">Balance hídrico por cultivo</p>
+              <select
+                value={cultivoId}
+                onChange={e => setCultivoId(e.target.value)}
+                className="text-[10px] border border-bone-200 rounded px-1.5 py-0.5 bg-white text-ink-700 focus:outline-none focus:ring-1 focus:ring-moss-500"
+              >
+                {CULTIVOS_KC.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre} (Kc {c.kc})</option>
+                ))}
+              </select>
+            </div>
+            <div className="px-3 py-2 space-y-2">
+              <p className="text-[10px] text-ink-700/60">
+                ETc = ETP × Kc {cultivo.kc} —{' '}
+                <span className={mesesDeficit >= 6 ? 'text-clay-600 font-semibold' : mesesDeficit >= 3 ? 'text-sun-600 font-semibold' : 'text-moss-700 font-semibold'}>
+                  {mesesDeficit === 0 ? 'Sin déficit hídrico' : `${mesesDeficit} mes${mesesDeficit > 1 ? 'es' : ''} con déficit`}
+                </span>
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[9px] min-w-[320px]">
+                  <thead>
+                    <tr className="bg-bone-50 border-b border-bone-200">
+                      <th className="text-left px-2 py-1 text-ink-700/50 font-medium">Mes</th>
+                      <th className="text-right px-2 py-1 text-water-500 font-medium">Lluvia</th>
+                      <th className="text-right px-2 py-1 text-moss-600 font-medium">ETc</th>
+                      <th className="text-right px-2 py-1 text-ink-700/50 font-medium">Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {balanceCultivo.map((m, i) => (
+                      <tr key={i} className={`border-t border-bone-200/50 ${i % 2 === 0 ? '' : 'bg-bone-50/40'}`}>
+                        <td className="px-2 py-1 font-medium text-ink-700">{m.nombre}</td>
+                        <td className="px-2 py-1 text-right font-mono text-water-500">{m.precip_mm} mm</td>
+                        <td className="px-2 py-1 text-right font-mono text-moss-600">{m.etc_mm} mm</td>
+                        <td className={`px-2 py-1 text-right font-mono font-semibold ${m.balance >= 0 ? 'text-moss-700' : 'text-clay-600'}`}>
+                          {m.balance > 0 ? '+' : ''}{m.balance}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[8px] text-ink-700/40 italic">
+                Kc promedio FAO-56 simplificado. No reemplaza diseño agronómico específico.
+              </p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Temperaturas mensuales ───────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">

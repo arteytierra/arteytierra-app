@@ -11,23 +11,34 @@ import {
   type Proyecto,
 } from '@/lib/proyectos';
 import { importarKML, importarKMZ, importarCSV, exportarCSV } from '@/lib/importar';
+import { exportarGeoJSON, exportarKML, exportarGPX, importarGeoJSON, importarGPX } from '@/lib/exportar';
 import { urlInforme } from '@/lib/informe';
 import type { Mojon } from '@/lib/types';
+import type { Zona } from '@/lib/zonificacion';
+import type { Pin } from '@/lib/pines';
+import type { Camino } from '@/lib/caminos';
+import type { Sector } from '@/lib/sectores';
 
 interface Props {
-  mojones: Mojon[];
+  mojones:  Mojon[];
+  zonas?:   Zona[];
+  sectores?: Sector[];
+  pines?:   Pin[];
+  caminos?: Camino[];
   proyectoActual: Proyecto | null;
   onCargarProyecto: (p: Proyecto) => void;
   onProyectoActualChange: (p: Proyecto | null) => void;
   metadatos?: Record<string, unknown>;
+  onConfirm?: (message: string, onConfirm: () => void) => void;
 }
 
 export function ProyectosPanel({
-  mojones,
+  mojones, zonas = [], sectores = [], pines = [], caminos = [],
   proyectoActual,
   onCargarProyecto,
   onProyectoActualChange,
   metadatos,
+  onConfirm,
 }: Props) {
   const [proyectos, setProyectos]     = useState<Proyecto[]>([]);
   const [cargando, setCargando]       = useState(true);
@@ -131,18 +142,25 @@ export function ProyectosPanel({
 
   async function handleEliminar(id: string, e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm('¿Eliminar este proyecto?')) return;
-    try {
-      await eliminarProyecto(id);
-      if (proyectoActual?.id === id) {
-        onProyectoActualChange(null);
-        setNombre('');
-        setUrlCompartida(null);
+    const doEliminar = async () => {
+      try {
+        await eliminarProyecto(id);
+        if (proyectoActual?.id === id) {
+          onProyectoActualChange(null);
+          setNombre('');
+          setUrlCompartida(null);
+        }
+        await recargar();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(`No se pudo eliminar el proyecto: ${msg}`);
       }
-      await recargar();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(`No se pudo eliminar el proyecto: ${msg}`);
+    };
+    if (onConfirm) {
+      onConfirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.', doEliminar);
+    } else {
+      if (!confirm('¿Eliminar este proyecto?')) return;
+      await doEliminar();
     }
   }
 
@@ -152,18 +170,23 @@ export function ProyectosPanel({
     setImportando(true);
     setError(null);
     try {
-      let mojonesImport: Mojon[] = [];
+      let coords: Array<{ lat: number; lng: number }> = [];
       if (file.name.endsWith('.kmz')) {
-        mojonesImport = await importarKMZ(file);
+        const mojs = await importarKMZ(file); coords = mojs;
       } else if (file.name.endsWith('.kml')) {
-        mojonesImport = await importarKML(file);
+        const mojs = await importarKML(file); coords = mojs;
       } else if (file.name.endsWith('.csv')) {
-        mojonesImport = await importarCSV(file);
+        const mojs = await importarCSV(file); coords = mojs;
+      } else if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) {
+        coords = importarGeoJSON(await file.text());
+      } else if (file.name.endsWith('.gpx')) {
+        coords = importarGPX(await file.text());
       } else {
-        setError('Formato no soportado. Usá .kml, .kmz o .csv');
+        setError('Formato no soportado. Usá .kml, .kmz, .csv, .geojson o .gpx');
         return;
       }
-      const nom = file.name.replace(/\.(kml|kmz|csv)$/i, '');
+      const mojonesImport: Mojon[] = coords.map((c, i) => ({ id: crypto.randomUUID(), numero: i + 1, lat: c.lat, lng: c.lng }));
+      const nom = file.name.replace(/\.(kml|kmz|csv|geojson|gpx|json)$/i, '');
       const p: Proyecto = {
         id: '', nombre: nom, descripcion: null,
         mojones: mojonesImport, metadatos: null,
@@ -183,6 +206,21 @@ export function ProyectosPanel({
   function handleExportar() {
     if (mojones.length === 0) return;
     exportarCSV(mojones, nombre || 'terreno');
+  }
+
+  function handleExportarGeoJSON() {
+    if (mojones.length === 0) return;
+    exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: nombre || 'terreno' });
+  }
+
+  function handleExportarKML() {
+    if (mojones.length === 0) return;
+    exportarKML(mojones, nombre || 'terreno');
+  }
+
+  function handleExportarGPX() {
+    if (mojones.length === 0) return;
+    exportarGPX(mojones, nombre || 'terreno');
   }
 
   function handleExportarJSON() {
@@ -283,6 +321,30 @@ export function ProyectosPanel({
             className="p-2 border border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg transition-colors disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleExportarGeoJSON}
+            disabled={mojones.length === 0}
+            title="Exportar como GeoJSON (predio + capas)"
+            className="p-2 border border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg transition-colors disabled:opacity-40 text-[9px] font-bold"
+          >
+            GJ
+          </button>
+          <button
+            onClick={handleExportarKML}
+            disabled={mojones.length === 0}
+            title="Exportar mojones como KML (Google Earth)"
+            className="p-2 border border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg transition-colors disabled:opacity-40 text-[9px] font-bold"
+          >
+            KML
+          </button>
+          <button
+            onClick={handleExportarGPX}
+            disabled={mojones.length === 0}
+            title="Exportar mojones como GPX (GPS)"
+            className="p-2 border border-bone-200 hover:border-moss-300 text-moss-700 rounded-lg transition-colors disabled:opacity-40 text-[9px] font-bold"
+          >
+            GPX
           </button>
         </div>
 

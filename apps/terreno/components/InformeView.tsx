@@ -58,6 +58,19 @@ export function InformeView({ datos, compartido = false }: Props) {
       {/* ── Cuerpo del informe ───────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
 
+        {/* Snapshot del mapa — primera página si existe */}
+        {datos.mapaDataUrl && (
+          <div className="page-break-before">
+            <p className="text-xs font-semibold text-moss-700 uppercase tracking-widest mb-3">Plano del predio</p>
+            <img
+              src={datos.mapaDataUrl}
+              alt="Plano del terreno"
+              className="w-full rounded-xl border border-bone-200 shadow"
+              style={{ pageBreakAfter: 'always' }}
+            />
+          </div>
+        )}
+
         {/* Encabezado */}
         <header className="border-b-2 border-moss-700 pb-6">
           <div className="flex items-start justify-between gap-4">

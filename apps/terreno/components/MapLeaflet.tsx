@@ -30,33 +30,47 @@ import { distanciaMetros } from '@/lib/dibujos';
 import type { ElementoAguada } from '@/lib/aguadas';
 import type { DatosArcoSolar } from '@/lib/arco_solar';
 import { horaStr } from '@/lib/arco_solar';
+import type { MetricasPoligono } from '@/lib/geometria';
+import type { CurvaNivel } from '@/lib/curvasNivel';
 
 type Capa = 'satelite' | 'topo';
 
 export interface CapasVisibles {
-  terreno:       boolean;
-  zonas:         boolean;
-  sectores:      boolean;
-  pines:         boolean;
-  caminos:       boolean;
-  shaderElev:    boolean;
-  shaderPend:    boolean;
-  terrariumElev: boolean;
-  escorrentias:  boolean;
-  sugerencias:   boolean;
-  aguadas:       boolean;
-  dibujos:       boolean;
-  arcSolar:      boolean;
+  terreno:        boolean;
+  zonas:          boolean;
+  sectores:       boolean;
+  pines:          boolean;
+  caminos:        boolean;
+  shaderElev:     boolean;
+  shaderPend:     boolean;
+  terrariumElev:  boolean;
+  escorrentias:   boolean;
+  sugerencias:    boolean;
+  aguadas:        boolean;
+  dibujos:        boolean;
+  arcSolar:       boolean;
+  linderoLabels:  boolean;
+  curvasNivel:    boolean;
 }
+
+// ─── Caché de iconos (evita recrear DivIcon en cada render) ──────────────────
+
+const _cMojon  = new Map<string, L.DivIcon>();
+const _cPin    = new Map<string, L.DivIcon>();
+const _cAguada = new Map<string, L.DivIcon>();
+const _cTexto  = new Map<string, L.DivIcon>();
+const _cSuger  = new Map<string, L.DivIcon>();
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
 
 function crearIconoMojon(numero: number, seleccionado: boolean): L.DivIcon {
+  const key = `${numero}-${seleccionado}`;
+  if (_cMojon.has(key)) return _cMojon.get(key)!;
   const bg = seleccionado ? '#D9A441' : '#3A5A40';
   const fg = seleccionado ? '#0F1410' : '#FBF8F3';
   const size = seleccionado ? 34 : 30;
   const half = size / 2;
-  return L.divIcon({
+  const icon = L.divIcon({
     html: `<div style="
       width:${size}px;height:${size}px;border-radius:50%;
       background:${bg};color:${fg};
@@ -68,10 +82,14 @@ function crearIconoMojon(numero: number, seleccionado: boolean): L.DivIcon {
     iconSize: [size, size],
     iconAnchor: [half, half],
   });
+  _cMojon.set(key, icon);
+  return icon;
 }
 
 function crearIconoPin(pin: Pin): L.DivIcon {
-  return L.divIcon({
+  const key = `${pin.color}-${pin.icono}-${pin.nombre}`;
+  if (_cPin.has(key)) return _cPin.get(key)!;
+  const icon = L.divIcon({
     html: `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
       <div style="
         width:30px;height:30px;border-radius:50%;
@@ -91,14 +109,18 @@ function crearIconoPin(pin: Pin): L.DivIcon {
     iconSize: [30, 50],
     iconAnchor: [15, 30],
   });
+  _cPin.set(key, icon);
+  return icon;
 }
 
 function crearIconoSugerencia(tipo: 'vivienda' | 'reservorio', rank: number, score: number): L.DivIcon {
+  const key = `${tipo}-${rank}-${score}`;
+  if (_cSuger.has(key)) return _cSuger.get(key)!;
   const emoji = tipo === 'vivienda' ? '🏠' : '💧';
   const bg    = score >= 68 ? '#2E7D32' : score >= 45 ? '#E65100' : '#B71C1C';
   const size  = rank === 0 ? 40 : rank === 1 ? 34 : 28;
   const fs    = rank === 0 ? 20 : rank === 1 ? 16 : 13;
-  return L.divIcon({
+  const icon = L.divIcon({
     html: `<div style="
       width:${size}px;height:${size}px;border-radius:50%;
       background:${bg};display:flex;align-items:center;justify-content:center;
@@ -109,6 +131,8 @@ function crearIconoSugerencia(tipo: 'vivienda' | 'reservorio', rank: number, sco
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
+  _cSuger.set(key, icon);
+  return icon;
 }
 
 // ─── Auto-fit bounds ──────────────────────────────────────────────────────────
@@ -165,8 +189,10 @@ function chaikin(pts: LatLngTuple[]): LatLngTuple[] {
 }
 
 function crearIconoAguada(tipo: 'represa' | 'swale' | 'keyline', nombre: string): L.DivIcon {
+  const key = `${tipo}-${nombre}`;
+  if (_cAguada.has(key)) return _cAguada.get(key)!;
   const emoji = tipo === 'represa' ? '🏊' : tipo === 'swale' ? '⛏️' : '〰️';
-  return L.divIcon({
+  const icon = L.divIcon({
     html: `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
       <div style="width:28px;height:28px;border-radius:50%;background:#1E88E5;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">${emoji}</div>
       <div style="background:rgba(30,136,229,0.88);color:#fff;font-size:9px;font-weight:600;font-family:sans-serif;padding:1px 5px;border-radius:3px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis;">${nombre}</div>
@@ -175,10 +201,14 @@ function crearIconoAguada(tipo: 'represa' | 'swale' | 'keyline', nombre: string)
     iconSize: [28, 50],
     iconAnchor: [14, 28],
   });
+  _cAguada.set(key, icon);
+  return icon;
 }
 
 function crearIconoTexto(texto: string, color: string, tamano: number, sel: boolean): L.DivIcon {
-  return L.divIcon({
+  const key = `${texto}-${color}-${tamano}-${sel}`;
+  if (_cTexto.has(key)) return _cTexto.get(key)!;
+  const icon = L.divIcon({
     html: `<div style="
       color:${color};font-size:${tamano}px;font-weight:600;
       font-family:sans-serif;white-space:nowrap;
@@ -191,13 +221,115 @@ function crearIconoTexto(texto: string, color: string, tamano: number, sel: bool
     iconSize: undefined,
     iconAnchor: [0, tamano / 2],
   });
+  _cTexto.set(key, icon);
+  return icon;
+}
+
+function crearIconoLindero(longitud: number, rumbo: string): L.DivIcon {
+  const key = `${longitud.toFixed(0)}-${rumbo}`;
+  const cached = _cTexto.get(`lind-${key}`);
+  if (cached) return cached;
+  const icon = L.divIcon({
+    html: `<div style="
+      background:rgba(255,255,255,0.88);color:#1B3A2D;
+      font-size:8px;font-weight:600;font-family:sans-serif;
+      padding:1px 4px;border-radius:3px;white-space:nowrap;
+      box-shadow:0 1px 3px rgba(0,0,0,0.2);border:1px solid rgba(0,0,0,0.08);
+      text-align:center;line-height:1.4;
+    ">${longitud.toFixed(0)} m<br/><span style="color:#5D4037;font-size:7px;">${rumbo}</span></div>`,
+    className: '',
+    iconSize: undefined,
+    iconAnchor: [0, 0],
+  });
+  _cTexto.set(`lind-${key}`, icon);
+  return icon;
+}
+
+// Etiquetas de longitud y rumbo sobre el centroide de cada segmento de lindero
+function LinderoLabels({ mojones, metricas }: { mojones: Mojon[]; metricas: MetricasPoligono }) {
+  return (
+    <>
+      {metricas.linderos.map((lindero, i) => {
+        const mFrom = mojones[i];
+        const mTo   = mojones[(i + 1) % mojones.length];
+        if (!mFrom || !mTo) return null;
+        const lat = (mFrom.lat + mTo.lat) / 2;
+        const lng = (mFrom.lng + mTo.lng) / 2;
+        return (
+          <Marker
+            key={`lind-${i}`}
+            position={[lat, lng]}
+            icon={crearIconoLindero(lindero.longitud, lindero.rumbo)}
+            interactive={false}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+// Capa de curvas de nivel (isolíneas del shader)
+function CurvasNivelLayer({ curvas }: { curvas: CurvaNivel[] }) {
+  const map = useMap();
+  const colores = ['#4527A0', '#5E35B1', '#7B1FA2', '#AD1457', '#C62828'];
+
+  // Etiqueta de cota en el segmento más largo de cada curva
+  const labels = curvas.map(curva => {
+    if (curva.segmentos.length === 0) return null;
+    const longest = curva.segmentos.reduce((best, s) => {
+      const la = Math.hypot(s.b.lat - s.a.lat, s.b.lng - s.a.lng);
+      const lb = Math.hypot(best.b.lat - best.a.lat, best.b.lng - best.a.lng);
+      return la > lb ? s : best;
+    }, curva.segmentos[0]!);
+    return { cota: curva.cota, lat: (longest.a.lat + longest.b.lat) / 2, lng: (longest.a.lng + longest.b.lng) / 2 };
+  }).filter(Boolean) as { cota: number; lat: number; lng: number }[];
+
+  useEffect(() => {
+    const layers: L.Layer[] = [];
+    curvas.forEach((curva, ci) => {
+      const color = colores[ci % colores.length]!;
+      curva.segmentos.forEach(seg => {
+        const pl = L.polyline([[seg.a.lat, seg.a.lng], [seg.b.lat, seg.b.lng]], {
+          color, weight: 1.5, opacity: 0.65, interactive: false,
+        });
+        pl.addTo(map);
+        layers.push(pl);
+      });
+    });
+    labels.forEach(lb => {
+      const icon = L.divIcon({
+        html: `<span style="font-size:8px;font-weight:700;color:#4527A0;font-family:sans-serif;background:rgba(255,255,255,0.8);padding:0 2px;border-radius:2px;">${lb.cota} m</span>`,
+        className: '',
+        iconSize: undefined,
+        iconAnchor: [0, 0],
+      });
+      const mk = L.marker([lb.lat, lb.lng], { icon, interactive: false });
+      mk.addTo(map);
+      layers.push(mk);
+    });
+    return () => { layers.forEach(l => map.removeLayer(l)); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, curvas]);
+
+  return null;
 }
 
 // ─── Terrarium elevation tile layer ──────────────────────────────────────────
 
-function TerrariumLayer({ elevMin, elevMax }: { elevMin: number; elevMax: number }) {
+function TerrariumLayer({ elevMin, elevMax, onRangoDetectado }: {
+  elevMin: number;
+  elevMax: number;
+  onRangoDetectado?: (min: number, max: number) => void;
+}) {
   const map = useMap();
+  const samplesRef    = useRef<number[]>([]);
+  const reportedRef   = useRef(false);
+  const callbackRef   = useRef(onRangoDetectado);
+  callbackRef.current = onRangoDetectado;
+
   useEffect(() => {
+    samplesRef.current  = [];
+    reportedRef.current = false;
     const range = Math.max(1, elevMax - elevMin);
     const STOPS: [number, number, number, number][] = [
       [0.00,  21, 101, 192],
@@ -239,10 +371,20 @@ function TerrariumLayer({ elevMin, elevMax }: { elevMin: number; elevMax: number
             for (let i = 0; i < px.length; i += 4) {
               const elev = px[i]! * 256 + px[i + 1]! + px[i + 2]! / 256 - 32768;
               if (elev < -100) { px[i + 3] = 0; continue; }
+              // muestrear 1 de cada 16 píxeles para auto-detectar rango
+              if (i % 64 === 0) samplesRef.current.push(elev);
               const [cr, cg, cb] = ramp((elev - elevMin) / range);
               px[i] = cr; px[i + 1] = cg; px[i + 2] = cb; px[i + 3] = 190;
             }
             ctx.putImageData(id, 0, 0);
+            // Tras ≥500 muestras (≈8 tiles), reportar p2/p98 al padre
+            if (!reportedRef.current && samplesRef.current.length >= 500 && callbackRef.current) {
+              reportedRef.current = true;
+              const sorted = [...samplesRef.current].sort((a, b) => a - b);
+              const p2  = sorted[Math.floor(sorted.length * 0.02)] ?? sorted[0]!;
+              const p98 = sorted[Math.floor(sorted.length * 0.98)] ?? sorted[sorted.length - 1]!;
+              callbackRef.current(Math.max(0, p2), Math.max(p2 + 1, p98));
+            }
           } catch { ctx.clearRect(0, 0, 256, 256); }
           (done as unknown as (e: null, t: HTMLElement) => void)(null, canvas);
         };
@@ -295,6 +437,29 @@ function MiddleMousePan() {
   return null;
 }
 
+// Expone flyTo al padre para centrar el mapa en un mojón recién agregado por coords
+function FlyToExposer({ onReady }: { onReady: (fn: (lat: number, lng: number) => void) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    onReady((lat, lng) => map.flyTo([lat, lng], Math.max(map.getZoom(), 16), { duration: 0.6 }));
+  }, [map, onReady]);
+  return null;
+}
+
+// Notifica zoom + lat del centro al padre (para escala gráfica)
+function MapChangeWatcher({ onMapChange }: { onMapChange: (zoom: number, lat: number) => void }) {
+  const map = useMap();
+  const cb  = useRef(onMapChange);
+  cb.current = onMapChange;
+  useEffect(() => {
+    const fire = () => cb.current(map.getZoom(), map.getCenter().lat);
+    fire();
+    map.on('zoomend moveend', fire);
+    return () => { map.off('zoomend moveend', fire); };
+  }, [map]);
+  return null;
+}
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 // Expone una función para que el padre pueda leer los bounds actuales del mapa
@@ -338,6 +503,7 @@ interface Props {
   // ── Terrarium ──
   elevMin?:           number;
   elevMax?:           number;
+  onRangoTerrarium?:  (min: number, max: number) => void;
   // ── Aguadas layer ──
   aguadasLayer?:      ElementoAguada[];
   // ── Arco solar ──
@@ -347,14 +513,21 @@ interface Props {
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
   // ── Bounds para topografía del área visible ──
   onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
+  // ── Zoom/centro para escala gráfica ──
+  onMapChange?:       (zoom: number, lat: number) => void;
+  // ── Fly-to programático ──
+  onGetFlyTo?:        (fn: (lat: number, lng: number) => void) => void;
+  // ── Plano profesional ──
+  metricas?:          MetricasPoligono | null;
+  curvasNivel?:       CurvaNivel[];
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false };
 
-export default function MapLeaflet({
+function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
   zonas = [], zonaEnDibujado = null,
   sectores = [], sectorEnDibujado = null,
@@ -374,11 +547,16 @@ export default function MapLeaflet({
   colorDibujo = '#EF4444',
   elevMin = 0,
   elevMax = 500,
+  onRangoTerrarium,
   aguadasLayer = [],
   datosArcoSolar = null,
   onMoverVertice,
   onMoverPin,
   onGetBounds,
+  onMapChange,
+  onGetFlyTo,
+  metricas = null,
+  curvasNivel = [],
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
@@ -430,8 +608,12 @@ export default function MapLeaflet({
         <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
         <AutoFit mojones={mojones} />
         <MiddleMousePan />
-        {onGetBounds && <BoundsExposer onReady={onGetBounds} />}
-        {capas.terrariumElev && <TerrariumLayer elevMin={0} elevMax={4000} />}
+        {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
+        {onMapChange  && <MapChangeWatcher onMapChange={onMapChange} />}
+        {onGetFlyTo   && <FlyToExposer    onReady={onGetFlyTo} />}
+        {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} onRangoDetectado={onRangoTerrarium} />}
+        {capas.linderoLabels && metricas && mojones.length >= 3 && <LinderoLabels mojones={mojones} metricas={metricas} />}
+        {capas.curvasNivel   && curvasNivel.length > 0 && <CurvasNivelLayer curvas={curvasNivel} />}
 
         {/* ── Shader topográfico (canvas con interpolación bilineal) ── */}
         {datosShader && capas.shaderElev && (
@@ -786,6 +968,8 @@ export default function MapLeaflet({
     </div>
   );
 }
+
+export default React.memo(MapLeaflet);
 
 // ─── Arco Solar Layer ─────────────────────────────────────────────────────────
 
