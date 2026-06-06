@@ -159,23 +159,23 @@ const TESTIMONIOS: Array<{ name: string; course: string; quote: string }> = [];
 function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
   const inner = (
     <>
-      <div className="relative aspect-[3/4] overflow-hidden">
-        <Image src={c.img} alt={c.name} fill priority={idx < 5}
-          className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-70' : ''}`}
-          sizes="(max-width: 640px) 33vw, (max-width: 768px) 20vw, 11vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 to-transparent" />
-        <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
-          {c.online && <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-1.5 py-0.5">Online</span>}
-          {c.tentativo && <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-1.5 py-0.5">Próx.</span>}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <Image src={c.img} alt={c.name} fill priority={idx < 8}
+          className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-60' : ''}`}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 to-transparent" />
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+          {c.online && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-2 py-0.5">Online</span>}
+          {c.tentativo && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-2 py-0.5">Próx.</span>}
         </div>
-      </div>
-      <div className="p-2 flex flex-col gap-0.5 flex-1">
-        <p className="font-sans text-[11px] font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>
-        <p className="font-sans text-[10px] text-bone-200 leading-tight">{c.tag}</p>
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <p className="font-sans text-sm font-bold text-bone-50 leading-tight">{c.name}</p>
+          <p className="font-sans text-xs text-bone-300 leading-tight mt-0.5">{c.tag}</p>
+        </div>
       </div>
     </>
   );
-  const cls = 'group relative overflow-hidden bg-ink-800 flex flex-col';
+  const cls = 'group relative overflow-hidden bg-ink-800';
   if (c.tentativo) return <a href="#proximamente" className={cls}>{inner}</a>;
   return <Link href={`/cursos/${c.slug}`} className={cls}>{inner}</Link>;
 }
@@ -299,7 +299,7 @@ export default async function CursosPage() {
       <section className="bg-ink-900 py-8 px-6 border-b border-ink-700">
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 justify-items-center">
             {todos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
           </div>
         </div>
