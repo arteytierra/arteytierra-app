@@ -175,7 +175,7 @@ function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
       </div>
     </>
   );
-  const cls = 'group relative overflow-hidden bg-ink-800';
+  const cls = 'group relative overflow-hidden bg-ink-800 w-full block';
   if (c.tentativo) return <a href="#proximamente" className={cls}>{inner}</a>;
   return <Link href={`/cursos/${c.slug}`} className={cls}>{inner}</Link>;
 }
@@ -299,7 +299,7 @@ export default async function CursosPage() {
       <section className="bg-ink-900 py-8 px-6 border-b border-ink-700">
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 justify-items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {todos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
           </div>
         </div>
