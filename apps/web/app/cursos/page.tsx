@@ -159,23 +159,22 @@ const TESTIMONIOS: Array<{ name: string; course: string; quote: string }> = [];
 function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
   const inner = (
     <>
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-video overflow-hidden">
         <Image src={c.img} alt={c.name} fill priority={idx < 8}
           className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-60' : ''}`}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 to-transparent" />
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+        <div className="absolute top-2.5 left-2.5 flex gap-1">
           {c.online && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-2 py-0.5">Online</span>}
           {c.tentativo && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-2 py-0.5">Próx.</span>}
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <p className="font-sans text-sm font-bold text-bone-50 leading-tight">{c.name}</p>
-          <p className="font-sans text-xs text-bone-300 leading-tight mt-0.5">{c.tag}</p>
-        </div>
+      </div>
+      <div className="px-3 py-2.5 bg-ink-800 border-t border-ink-700">
+        <p className="font-sans text-sm font-bold text-bone-50 leading-tight line-clamp-1">{c.name}</p>
+        <p className="font-sans text-xs text-bone-300 leading-tight mt-1 line-clamp-1">{c.tag}</p>
       </div>
     </>
   );
-  const cls = 'group relative overflow-hidden bg-ink-800 w-full block';
+  const cls = 'group overflow-hidden bg-ink-800 w-full block';
   if (c.tentativo) return <a href="#proximamente" className={cls}>{inner}</a>;
   return <Link href={`/cursos/${c.slug}`} className={cls}>{inner}</Link>;
 }
