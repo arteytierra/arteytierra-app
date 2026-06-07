@@ -298,7 +298,7 @@ export default async function CursosPage() {
       <section className="bg-ink-900 py-8 px-6 border-b border-ink-700">
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {todos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
           </div>
         </div>
