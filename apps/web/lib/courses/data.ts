@@ -287,13 +287,13 @@ export const COURSES: Record<string, CourseData> = {
     subtitle: 'Una formación presencial para transformar ingredientes simples y nobles en soluciones de higiene que respetan tu salud y el planeta.',
     heroImg: '/img/taypichin/carousel/3.jpg',
     galeria: ['/img/taypichin/carousel/4.jpg', '/img/taypichin/carousel/6.jpg'],
-    tag: '3er sábado de cada mes · Mayo–Diciembre 2026 · Tay Pichín',
+    tag: 'Inicia sáb. 13 jun · 3er sábado de cada mes · Tay Pichín',
     intro: [
       '¿Querés vivir más coherente con la naturaleza pero no sabés por dónde empezar? ¿Quizá ya cambiaste tu alimentación o algunos aspectos pero tu baño y tu cocina siguen llenos de envases con químicos no naturales?',
       'En este ciclo vas a aprender a transformar ingredientes simples y nobles en soluciones de higiene: desde jabón con aceite usado hasta desodorantes corporales que sí funcionan y respetan tu salud.',
     ],
     datos: [
-      { label: 'Frecuencia', val: 'Tercer sábado de cada mes · Mayo a Diciembre 2026' },
+      { label: 'Frecuencia', val: 'Tercer sábado de cada mes · Inicia 13 jun 2026' },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras' },
       { label: 'Modalidad', val: '8 encuentros presenciales o módulos sueltos' },
       { label: 'Cupos', val: 'Limitados por encuentro' },

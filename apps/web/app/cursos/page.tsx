@@ -74,7 +74,7 @@ const FALLBACK_TODOS: TodoItem[] = [
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
   { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: '11/7 · 1/8 · 22/8',       img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Taller modular', tentativo: false, online: false },
-  { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Encuentros mensuales · 2026', img: '/img/biocosmetica/productos-todos.jpg', badge: 'Ciclo mensual',  tentativo: false, online: false },
+  { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Inicia sáb. 13 jun · Tay Pichín', img: '/img/biocosmetica/productos-todos.jpg', badge: 'Ciclo mensual',  tentativo: false, online: false },
   { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '18–19 jul 2026',           img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
   { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: '15 o 30 días',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
   { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Oct 2026 · Online',        img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
@@ -114,7 +114,7 @@ const FALLBACK_CURSOS: Curso[] = [
   },
   {
     slug: 'alquimia-natural', badge: 'Ciclo mensual · Presencial', name: 'Alquimia Natural y Limpieza Consciente',
-    tag: '3er sábado de cada mes · Encuentros mensuales · 2026 · Tay Pichín',
+    tag: 'Inicia sáb. 13 jun · 3er sábado de cada mes · Tay Pichín',
     desc: 'Ocho encuentros presenciales para transformar ingredientes simples y nobles en soluciones de higiene que respetan tu salud, el agua y la tierra.',
     img: '/img/biocosmetica/productos-todos.jpg',
     datos: [{ label: 'Frecuencia', val: 'Tercer sábado de cada mes' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '8 encuentros o módulos sueltos' }, { label: 'Cupos', val: 'Limitados' }],
