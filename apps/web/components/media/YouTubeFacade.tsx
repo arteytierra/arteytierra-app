@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Play } from 'lucide-react';
 
 export function YouTubeFacade({ videoId, title }: { videoId: string; title: string }) {
@@ -19,18 +18,20 @@ export function YouTubeFacade({ videoId, title }: { videoId: string; title: stri
     );
   }
 
+  // hqdefault.jpg (480×360) siempre existe; maxresdefault a veces no
+  const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
   return (
     <button
       onClick={() => setPlaying(true)}
       className="absolute inset-0 w-full h-full group flex items-center justify-center bg-ink-950"
       aria-label={`Reproducir: ${title}`}
     >
-      <Image
-        src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={thumb}
         alt={title}
-        fill
-        className="object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-        sizes="(max-width: 768px) 100vw, 768px"
+        className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
       />
       <div className="relative z-10 flex items-center justify-center w-16 h-16 rounded-full bg-clay-700 group-hover:bg-clay-900 transition-colors duration-200 shadow-xl">
         <Play size={28} className="text-bone-50 ml-1" fill="currentColor" />
