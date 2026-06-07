@@ -11,15 +11,16 @@ import type { Mojon }            from './types';
 import type { MetricasPoligono } from './geometria';
 
 export interface InformeData {
-  nombre:    string;
-  fecha:     string;           // ISO date string
-  mojones:   Mojon[];
-  metricas?: MetricasPoligono;
-  clima?:    DatosClima;
-  topo?:     DatosTopografia;
+  nombre:     string;
+  fecha:      string;           // ISO date string
+  mojones:    Mojon[];
+  metricas?:  MetricasPoligono;
+  clima?:     DatosClima;
+  topo?:      DatosTopografia;
   captacion?: CaptacionSnapshot;
-  suelo?:    DatosSuelo;
-  zonas?:    Zona[];
+  suelo?:     DatosSuelo;
+  zonas?:     Zona[];
+  mapaDataUrl?: string;         // PNG del mapa capturado (base64)
 }
 
 const LS_KEY = 'terreno_informe_borrador';
@@ -36,6 +37,9 @@ export function leerInformeBorrador(): InformeData | null {
 }
 
 export function urlInforme(token: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
+  const base =
+    (typeof window !== 'undefined' ? window.location.origin : null) ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    'https://terreno.arteytierra.org';
   return `${base}/informe/${token}`;
 }

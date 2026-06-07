@@ -1,10 +1,73 @@
 /**
- * Calendario agroclimático: ventanas de siembra y períodos críticos.
+ * Calendario agroclimático: ventanas de siembra, GDD y balance por cultivo.
  * Calculado 100% desde datos de NASA POWER (DatosClima).
  * Sin APIs adicionales — completamente offline una vez cargado el clima.
  */
 import type { DatosClima, MesDato } from './clima';
 import { MESES } from './clima';
+
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+
+// ─── Grados-día de crecimiento (GDD) ─────────────────────────────────────────
+
+export interface GDDMes {
+  index:      number;
+  nombre:     string;
+  gdd:        number;   // GDD del mes
+  acumulado:  number;   // GDD acumulado hasta este mes (suma anual progresiva)
+}
+
+export function calcularGDD(meses: MesDato[], base = 10): GDDMes[] {
+  let acum = 0;
+  return meses.map((m, i) => {
+    const dias = DAYS_IN_MONTH[i] ?? 30;
+    const gdd  = Math.max(0, m.tmean_c - base) * dias;
+    acum += gdd;
+    return { index: i, nombre: MESES[i] ?? '', gdd: Math.round(gdd), acumulado: Math.round(acum) };
+  });
+}
+
+// ─── Balance hídrico por cultivo (Kc FAO-56 simplificado) ────────────────────
+
+export interface CultivoKc {
+  id:     string;
+  nombre: string;
+  kc:     number;   // Kc promedio anual (simplificado)
+}
+
+export const CULTIVOS_KC: CultivoKc[] = [
+  { id: 'huerta',    nombre: 'Huerta mixta',   kc: 0.90 },
+  { id: 'tomate',    nombre: 'Tomate',          kc: 1.15 },
+  { id: 'maiz',      nombre: 'Maíz',            kc: 1.20 },
+  { id: 'alfalfa',   nombre: 'Alfalfa',         kc: 0.95 },
+  { id: 'papa',      nombre: 'Papa',            kc: 1.15 },
+  { id: 'zapallo',   nombre: 'Zapallo/Cucurb.', kc: 1.00 },
+  { id: 'soja',      nombre: 'Soja',            kc: 1.15 },
+  { id: 'pasturas',  nombre: 'Pasturas',        kc: 0.85 },
+  { id: 'olivo',     nombre: 'Olivo',           kc: 0.65 },
+  { id: 'girasol',   nombre: 'Girasol',         kc: 1.05 },
+];
+
+export interface BalanceCultivoMes {
+  index:     number;
+  nombre:    string;
+  etc_mm:    number;   // Evapotranspiración del cultivo = ETP × Kc
+  precip_mm: number;
+  balance:   number;   // precip - ETc (positivo = superávit, negativo = déficit)
+}
+
+export function calcularBalanceCultivo(meses: MesDato[], kc: number): BalanceCultivoMes[] {
+  return meses.map((m, i) => {
+    const etc_mm = Math.round(m.etp_mm * kc * 10) / 10;
+    return {
+      index:     i,
+      nombre:    MESES[i] ?? '',
+      etc_mm,
+      precip_mm: m.precip_mm,
+      balance:   Math.round((m.precip_mm - etc_mm) * 10) / 10,
+    };
+  });
+}
 
 // ─── Familias vegetales ────────────────────────────────────────────────────────
 

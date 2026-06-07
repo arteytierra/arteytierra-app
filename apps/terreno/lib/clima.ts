@@ -51,19 +51,12 @@ const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31] as const;
 const MONTH_KEYS    = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'] as const;
 
 export async function obtenerClima(lat: number, lng: number): Promise<DatosClima> {
-  const params: PowerParameters[] = ['PRECTOTCORR','T2M','T2M_MAX','T2M_MIN','WS10M','WD10M'];
-  const url =
-    'https://power.larc.nasa.gov/api/temporal/climatology/point' +
-    `?parameters=${params.join(',')}` +
-    `&community=AG` +
-    `&longitude=${lng.toFixed(4)}` +
-    `&latitude=${lat.toFixed(4)}` +
-    `&format=JSON`;
+  const url = `/api/clima?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(35_000) });
+  const json = await res.json() as PowerResponse & { error?: string };
+  if (json.error) throw new Error(json.error);
   if (!res.ok) throw new Error(`NASA POWER respondió con error ${res.status}.`);
-
-  const json: PowerResponse = await res.json();
   const param = json.properties.parameter;
 
   const precip = param['PRECTOTCORR'] ?? {};
