@@ -43,7 +43,7 @@
     "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.5",
     "@types/web-push": "^3.6.4",
-    "@vitest/coverage-v8": "^3.1.0",
+    "@vitest/coverage-v8": "^4.1.8",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
@@ -52,6 +52,6 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vitest": "^3.1.0"
+    "vitest": "^4.1.8"
   }
 }
