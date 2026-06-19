@@ -183,6 +183,55 @@ export default function CultivoGirgolesPage() {
         </div>
       </section>
 
+      {/* PARA QUIÉN */}
+      <section className="bg-bone-100 py-20 px-6">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-12 text-center">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">¿Es para vos?</p>
+            <h2 className="font-display text-4xl text-ink-950">Tres caminos, <em>un mismo taller.</em></h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+            {[
+              { perfil: 'Laboratorio', texto: 'Quienes se enganchan con la parte técnica del cultivo y quieren producir su propio inóculo.' },
+              { perfil: 'Producción en casa', texto: 'Quienes quieren producir hongos para autoconsumo sin montar un laboratorio.' },
+              { perfil: 'Emprendimiento', texto: 'Quienes piensan hacer del cultivo de hongos un proyecto productivo.' },
+            ].map(p => (
+              <div key={p.perfil} className="bg-bone-50 border-l-4 border-clay-500 p-6">
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">{p.perfil}</p>
+                <p className="font-sans text-sm text-ink-700 leading-relaxed">{p.texto}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* QUÉ INCLUYE */}
+      <section className="bg-ink-800 py-20 px-6">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-12 text-center">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-3">Lo que te llevás</p>
+            <h2 className="font-display text-4xl text-bone-50">¿Qué <em>incluye</em>?</h2>
+          </div>
+          <ul className="max-w-2xl mx-auto flex flex-col divide-y divide-clay-700/40">
+            {[
+              { titulo: 'Materiales de trabajo', detalle: 'Para la práctica de cada encuentro.' },
+              { titulo: 'Insumos clave incluidos', detalle: 'Bolsa para inocular, sustrato preparado y grano miceleado.' },
+              { titulo: 'Te llevás lo que producís', detalle: 'Frascos inoculados, bloque productivo — lo que hagas en el taller es tuyo.' },
+              { titulo: 'Respaldo de FUNGO', detalle: 'Si tu bloque del Módulo II se contamina, lo reponen sin costo.' },
+            ].map(item => (
+              <li key={item.titulo} className="flex items-start gap-4 py-5">
+                <span className="text-clay-400 font-bold text-lg mt-0.5 flex-shrink-0">·</span>
+                <div>
+                  <span className="font-sans font-bold text-bone-50 text-sm">{item.titulo} </span>
+                  <span className="font-sans text-bone-200 text-sm leading-relaxed">{item.detalle}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="text-center mt-8 text-xs font-sans text-clay-400 italic">No incluye hospedaje — podés alojarte en la Ecoescuela Tay Pichín.</p>
+        </div>
+      </section>
+
       {/* CARRUSEL */}
       <CarouselGirgolas />
 
@@ -226,9 +275,12 @@ export default function CultivoGirgolesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <div className="bg-bone-100 border border-bone-200 p-8 flex flex-col gap-4">
               <h3 className="font-display text-xl text-ink-950">Módulo suelto</h3>
-              <div className="font-display text-3xl text-ink-950">Consultanos</div>
+              <div>
+                <div className="font-display text-4xl text-ink-950">$60.000</div>
+                <div className="text-xs font-sans text-ink-600 mt-1">ARS · USD 46 · €42</div>
+              </div>
               <ul className="flex flex-col gap-2 mt-1 flex-1">
-                {['Un encuentro presencial', 'Materiales incluidos', 'Práctica con insumos reales'].map(item => (
+                {['Un encuentro presencial', 'Materiales e insumos incluidos', 'Práctica con insumos reales', 'Te llevás lo que producís'].map(item => (
                   <li key={item} className="flex items-start gap-2 text-xs font-sans text-ink-700">
                     <span className="mt-1 w-1.5 h-1.5 rounded-full bg-clay-500 flex-shrink-0" />
                     {item}
@@ -241,12 +293,15 @@ export default function CultivoGirgolesPage() {
                 Consultar →
               </a>
             </div>
-            <div className="bg-clay-700 p-8 flex flex-col gap-4">
-              <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Recomendado</span>
-              <h3 className="font-display text-xl text-bone-50">Ciclo completo · 3 módulos</h3>
-              <div className="font-display text-3xl text-bone-50">Consultanos</div>
+            <div className="bg-clay-700 p-8 flex flex-col gap-4 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-ink-950 text-clay-300 text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1">Ciclo completo</span>
+              <h3 className="font-display text-xl text-bone-50">Los 3 módulos</h3>
+              <div>
+                <div className="font-display text-4xl text-bone-50">$150.000</div>
+                <div className="text-xs font-sans text-clay-300 mt-1">ARS · ahorrás $30.000</div>
+              </div>
               <ul className="flex flex-col gap-2 mt-1 flex-1">
-                {['Los 3 encuentros presenciales', 'Materiales incluidos', 'Precio especial ciclo completo'].map(item => (
+                {['Los 3 encuentros presenciales', 'Materiales e insumos incluidos', 'Respaldo FUNGO ante contaminaciones', 'Todo el proceso de inicio a cosecha'].map(item => (
                   <li key={item} className="flex items-start gap-2 text-xs font-sans text-clay-100">
                     <span className="mt-1 w-1.5 h-1.5 rounded-full bg-clay-300 flex-shrink-0" />
                     {item}
@@ -260,6 +315,7 @@ export default function CultivoGirgolesPage() {
               </a>
             </div>
           </div>
+          <p className="text-center mt-6 text-xs font-sans text-ink-500 italic">Reserva: 50% adelantado al confirmar cupo. No incluye hospedaje.</p>
         </div>
       </section>
 
