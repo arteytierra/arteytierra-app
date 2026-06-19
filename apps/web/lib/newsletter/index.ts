@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { z } from 'zod';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { emitN8nEvent } from '@/lib/integrations/n8n';
+import { sendEmail } from '@/lib/integrations/resend';
 import { log } from '@/lib/observability/logger';
 
 /**
@@ -99,8 +100,16 @@ export async function subscribeToNewsletter(
     if (error) throw new Error(error.message);
   }
 
-  // Disparar email transaccional vía n8n (Postmark/Resend/etc)
   const confirmUrl = `${SITE}/newsletter/confirmar?token=${encodeURIComponent(token)}`;
+
+  // Enviar email de confirmación directo vía Resend
+  void sendEmail({
+    to: parsed.email,
+    subject: 'Confirmá tu suscripción — Arte y Tierra',
+    html: doubleOptInHtml({ name: parsed.full_name ?? undefined, confirmUrl }),
+  });
+
+  // También notificar a n8n si está configurado (para automatizaciones futuras)
   void emitN8nEvent('newsletter-double-optin', {
     email: parsed.email,
     full_name: parsed.full_name,
@@ -158,6 +167,56 @@ export async function confirmSubscription(token: string): Promise<
   }
 
   return { ok: true, email: sub.email as string };
+}
+
+function doubleOptInHtml({ name, confirmUrl }: { name?: string; confirmUrl: string }): string {
+  const greeting = name ? `Hola ${name.split(' ')[0]},` : 'Hola,';
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#FDFAF5;border-radius:8px;overflow:hidden;">
+        <tr>
+          <td style="background:#2D2416;padding:28px 40px;text-align:center;">
+            <p style="margin:0;color:#E8DCC8;font-size:12px;letter-spacing:3px;text-transform:uppercase;">Arte y Tierra</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px 40px 32px;">
+            <p style="margin:0 0 8px;font-size:16px;color:#4A3F35;">${greeting}</p>
+            <h1 style="margin:0 0 20px;font-size:22px;color:#2D2416;font-weight:normal;line-height:1.3;">
+              Confirmá tu suscripción a la comunidad regenerativa
+            </h1>
+            <p style="margin:0 0 28px;font-size:15px;color:#4A3F35;line-height:1.7;">
+              Hacé clic en el botón para empezar a recibir aprendizajes, cartas y novedades sobre cursos, inmersiones y diseño hidrológico.
+            </p>
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#7A5230;border-radius:6px;">
+                  <a href="${confirmUrl}"
+                     style="display:block;padding:14px 32px;color:#FDFAF5;text-decoration:none;font-size:15px;font-family:Georgia,serif;">
+                    Confirmar suscripción →
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:24px 0 0;font-size:13px;color:#9E9289;line-height:1.6;">
+              Si no pediste esto, ignorá este mensaje. El link vence en 14 días.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 40px 28px;border-top:1px solid #E8DCC8;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9E9289;">Arte y Tierra · Córdoba, Argentina</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 export async function unsubscribe(token: string): Promise<boolean> {
