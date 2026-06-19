@@ -69,7 +69,7 @@ export async function subscribeToNewsletter(
     return { status: 'already_confirmed' };
   }
 
-  const token = existing?.confirm_token ?? generateToken();
+  const token = generateToken();
   const segments = Array.from(
     new Set([...(existing?.segments as string[] ?? []), ...parsed.segments, 'newsletter']),
   );
@@ -131,7 +131,7 @@ export async function confirmSubscription(token: string): Promise<
 
   const { data: sub } = await admin
     .schema('app').from('newsletter_subscribers')
-    .select('id, email, confirmed_at, segments, created_at')
+    .select('id, email, confirmed_at, segments, created_at, updated_at')
     .eq('confirm_token', token)
     .maybeSingle();
 
@@ -139,9 +139,9 @@ export async function confirmSubscription(token: string): Promise<
 
   // Si ya estaba confirmado, devolvemos ok igual (idempotencia)
   if (!sub.confirmed_at) {
-    // Expiración: 14 días
-    const created = new Date(sub.created_at as string).getTime();
-    if (Date.now() - created > 14 * 24 * 60 * 60 * 1000) {
+    // Expiración: 14 días desde la última emisión del token (updated_at o created_at)
+    const issued = new Date((sub.updated_at ?? sub.created_at) as string).getTime();
+    if (Date.now() - issued > 14 * 24 * 60 * 60 * 1000) {
       return { ok: false, reason: 'expired' };
     }
 
