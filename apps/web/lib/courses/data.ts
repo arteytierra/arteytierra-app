@@ -88,6 +88,8 @@ export const COURSES: Record<string, CourseData> = {
       '/img/cursos/bioarquitectura/9.jpg',
       '/img/cursos/bioarquitectura/10.jpg',
       '/img/cursos/bioarquitectura/11.jpg',
+      '/img/cursos/bioarquitectura/12.jpeg',
+      '/img/cursos/bioarquitectura/13.jpeg',
     ],
     tag: 'Intensivo · 18 y 19 de julio 2026 · Tay Pichín',
     intro: [
