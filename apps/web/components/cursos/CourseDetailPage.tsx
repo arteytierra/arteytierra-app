@@ -246,7 +246,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       {course.galeria.length > 0 && (
         <section className={`py-4 px-4 ${course.trabajoFinal ? 'bg-bone-50' : 'bg-ink-950 pt-0'}`}>
           <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-2">
-            {course.galeria.slice(0, 4).map((src, i) => (
+            {course.galeria.map((src, i) => (
               <div key={i} className="relative aspect-[4/3] overflow-hidden">
                 <Image src={src} alt={`${course.name} — foto ${i + 2}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
               </div>
