@@ -18,9 +18,8 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
     setStatus('sending');
     const form = e.currentTarget;
     try {
-      const res = await fetch('https://formspree.io/f/mvzlarvb', {
+      const res = await fetch('/api/cursos/inscribir', {
         method: 'POST',
-        headers: { Accept: 'application/json' },
         body: new FormData(form),
       });
       setStatus(res.ok ? 'ok' : 'error');

@@ -37,7 +37,7 @@ export function SiteFooter() {
       social={{
         instagram: 'https://instagram.com/arteytierra',
         whatsapp:  'https://wa.me/5493549431594',
-        email:     'hola@arteytierra.org',
+        email:     'info.arteytierra@gmail.com',
       }}
       LinkComponent={Link}
     />

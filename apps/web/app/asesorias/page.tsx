@@ -246,11 +246,11 @@ export default function AsesoriasPage() {
               <span className="font-sans text-xs text-clay-200">Respondemos en &lt; 24 hs</span>
             </a>
             <a
-              href="mailto:hola@arteytierra.org?subject=Asesoría%20online%20—%20quiero%20agendar"
+              href="mailto:info.arteytierra@gmail.com?subject=Asesoría%20online%20—%20quiero%20agendar"
               className="flex items-center justify-between border border-ink-950 text-ink-950 px-8 py-5 hover:bg-ink-950 hover:text-bone-50 transition-colors"
             >
               <span className="font-sans font-bold text-sm uppercase tracking-widest">Agendar por email</span>
-              <span className="font-sans text-xs text-ink-500">hola@arteytierra.org</span>
+              <span className="font-sans text-xs text-ink-500">info.arteytierra@gmail.com</span>
             </a>
           </div>
         </div>

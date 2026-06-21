@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CarouselGirgolas } from '@/components/cursos/CarouselGirgolas';
+import { CourseEnrollForm } from '@/components/cursos/CourseEnrollForm';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -316,6 +317,24 @@ export default function CultivoGirgolesPage() {
             </div>
           </div>
           <p className="text-center mt-6 text-xs font-sans text-ink-500 italic">Reserva: 50% adelantado al confirmar cupo. No incluye hospedaje.</p>
+        </div>
+      </section>
+
+      {/* INSCRIPCIÓN */}
+      <section id="inscribirme" className="bg-ink-950 py-20 md:py-28 px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Inscripción</p>
+            <h2 className="font-display text-4xl text-bone-50">Reservá tu <em>cupo.</em></h2>
+            <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
+              Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs. Cupos limitados.
+            </p>
+          </div>
+          <CourseEnrollForm
+            curso="Taller Cultivo de Gírgolas · FUNGO × Tay Pichín"
+            whatsapp="https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Taller%20de%20Cultivo%20de%20G%C3%ADrgolas"
+            mercadopago="https://link.mercadopago.com.ar/arteytierra"
+          />
         </div>
       </section>
 

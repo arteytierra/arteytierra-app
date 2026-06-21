@@ -146,7 +146,7 @@ export default function ContactoEnPage() {
 
               <div>
                 <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">Email</p>
-                <p className="font-sans text-sm text-ink-700">hola@arteytierra.org</p>
+                <p className="font-sans text-sm text-ink-700">info.arteytierra@gmail.com</p>
               </div>
 
               <div>

@@ -24,7 +24,7 @@ export const ORG_JSONLD = {
     {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      email: 'hola@arteytierra.org',
+      email: 'info.arteytierra@gmail.com',
       areaServed: 'AR',
       availableLanguage: ['Spanish'],
     },

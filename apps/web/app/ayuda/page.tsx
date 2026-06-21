@@ -95,7 +95,7 @@ export default async function HelpIndexPage({
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <a
-              href="mailto:hola@arteytierra.org"
+              href="mailto:info.arteytierra@gmail.com"
               className="inline-flex items-center gap-2 rounded-full bg-ink-950 text-bone-50 px-5 py-2 text-sm hover:bg-moss-700 transition-colors"
             >
               <Mail size={16} /> Email
