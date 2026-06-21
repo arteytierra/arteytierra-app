@@ -54,6 +54,7 @@ export async function POST(req: Request) {
 
   const ok = await sendEmail({
     to: 'info.arteytierra@gmail.com',
+    from: 'Arte y Tierra · Web <notificaciones@arteytierra.org>',
     subject: `Inscripción · ${curso} · ${nombre}`,
     html,
   });
