@@ -133,7 +133,7 @@ export async function getCartSummary(): Promise<CartSummary> {
 
   const { data: cart } = await admin
     .schema('shop').from('carts')
-    .select('id, currency, coupon_code, cart_items(id, product_id, qty, unit_price_cents, products(id, slug, name, type, gallery, currency, stock))')
+    .select('id, currency, coupon_code, cart_items(id, product_id, qty, unit_price_cents, product:products(id, slug, name, type, gallery, currency, stock))')
     .eq('id', cartId)
     .single();
 

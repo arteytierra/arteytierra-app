@@ -1,18 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="Manual de Bioconstrucción — Arte y Tierra">
-  <rect width="600" height="600" fill="#1a1714"/>
-  <rect x="0" y="0" width="600" height="600" fill="url(#g)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750" role="img" aria-label="Manual de Bioconstrucción — Arte y Tierra">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#2a2420" stop-opacity="0.2"/>
-      <stop offset="1" stop-color="#0f0d0b" stop-opacity="0.9"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#2a221c"/>
+      <stop offset="0.55" stop-color="#1a1410"/>
+      <stop offset="1" stop-color="#0e0a07"/>
     </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.32" r="0.5">
+      <stop offset="0" stop-color="#c98a5e" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#c98a5e" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="40" y="40" width="520" height="520" fill="none" stroke="#b06a3f" stroke-width="1.5" opacity="0.5"/>
-  <text x="64" y="100" fill="#c98a5e" font-family="Georgia, 'Times New Roman', serif" font-size="15" letter-spacing="4" text-transform="uppercase">ARTE Y TIERRA · TAY PICHÍN</text>
-  <text x="60" y="270" fill="#f5efe6" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="700">Manual de</text>
-  <text x="60" y="350" fill="#f5efe6" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-style="italic">Bioconstrucción</text>
-  <line x1="64" y1="400" x2="200" y2="400" stroke="#c98a5e" stroke-width="2"/>
-  <text x="64" y="450" fill="#cfc6b8" font-family="Georgia, serif" font-size="22">Construcción humana, historia</text>
-  <text x="64" y="482" fill="#cfc6b8" font-family="Georgia, serif" font-size="22">y cimientos · 79 páginas</text>
-  <text x="64" y="540" fill="#8a9a6b" font-family="Georgia, serif" font-size="16" letter-spacing="2">EBOOK · PDF DESCARGABLE</text>
+  <rect width="600" height="750" fill="url(#bg)"/>
+  <rect width="600" height="750" fill="url(#glow)"/>
+  <rect x="28" y="28" width="544" height="694" fill="none" stroke="#c98a5e" stroke-width="1" opacity="0.45"/>
+  <rect x="34" y="34" width="532" height="682" fill="none" stroke="#c98a5e" stroke-width="0.5" opacity="0.25"/>
+
+  <text x="300" y="92" text-anchor="middle" fill="#c98a5e" font-family="Georgia, serif" font-size="14" letter-spacing="6">ARTE Y TIERRA · TAY PICHÍN</text>
+
+  <!-- emblema: sol + brote -->
+  <g transform="translate(300 210)" stroke="#d99a6a" fill="none">
+    <circle r="58" stroke-width="1.2" opacity="0.85"/>
+    <circle r="46" stroke-width="0.6" opacity="0.5"/>
+    <g stroke-width="1.1" opacity="0.8">
+      <line x1="0" y1="-72" x2="0" y2="-62"/><line x1="0" y1="62" x2="0" y2="72"/>
+      <line x1="-72" y1="0" x2="-62" y2="0"/><line x1="62" y1="0" x2="72" y2="0"/>
+      <line x1="-51" y1="-51" x2="-44" y2="-44"/><line x1="44" y1="44" x2="51" y2="51"/>
+      <line x1="51" y1="-51" x2="44" y2="-44"/><line x1="-44" y1="44" x2="-51" y2="51"/>
+    </g>
+    <path d="M0 26 C0 6 0 -2 0 -14" stroke-width="1.4"/>
+    <path d="M0 2 C -18 -2 -24 -18 -22 -30 C -8 -28 2 -16 0 2 Z" fill="#d99a6a" fill-opacity="0.18" stroke-width="1.1"/>
+    <path d="M0 6 C 18 2 24 -14 22 -26 C 8 -24 -2 -12 0 6 Z" fill="#d99a6a" fill-opacity="0.12" stroke-width="1.1"/>
+  </g>
+
+  <text x="300" y="392" text-anchor="middle" fill="#f5efe6" font-family="Georgia, serif" font-size="40" letter-spacing="1">Manual de</text>
+  <text x="300" y="452" text-anchor="middle" fill="#f5efe6" font-family="Georgia, serif" font-size="56" font-style="italic">Bioconstrucción</text>
+
+  <line x1="250" y1="492" x2="350" y2="492" stroke="#c98a5e" stroke-width="1.5"/>
+
+  <text x="300" y="536" text-anchor="middle" fill="#cfc4b6" font-family="Georgia, serif" font-size="19">Construcción humana, historia y cimientos</text>
+  <text x="300" y="566" text-anchor="middle" fill="#9a8f7f" font-family="Georgia, serif" font-size="16" font-style="italic">79 páginas · 23 capítulos</text>
+
+  <text x="300" y="688" text-anchor="middle" fill="#8a9a6b" font-family="Georgia, serif" font-size="13" letter-spacing="3">EBOOK · DESCARGABLE EN PDF</text>
 </svg>

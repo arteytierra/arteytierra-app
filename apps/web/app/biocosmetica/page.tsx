@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatMoney } from '@arteytierra/ui';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { ProductGrid } from '@/components/shop/ProductGrid';
-import { CurrencySwitcher } from '@/components/shop/CurrencySwitcher';
 import { listProducts } from '@/lib/commerce/products';
-import { getBuyerCurrency } from '@/lib/commerce/geo';
 
 export const metadata: Metadata = {
   title: 'Biocosmética Agroecológica — Arte y Tierra · Tay Pichín',
@@ -16,68 +15,12 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-const UNGUENTOS = [
-  {
-    nombre: 'Crema Santa',
-    img: '/img/biocosmetica/unguento-1.png',
-    plantas: 'Ruda · Menta · Salvia',
-    uso: 'Para masajes en zonas con contracturas, dolores musculares y cansancio corporal. Aplicar con masaje suave hasta su absorción.',
-    isPhoto: false,
-  },
-  {
-    nombre: 'Calmante',
-    img: '/img/biocosmetica/unguento-2.png',
-    plantas: 'Caléndula · Malva · Lavanda',
-    uso: 'Acompaña piel sensible, irritaciones leves y momentos de enrojecimiento. Aplicar una pequeña cantidad sobre la zona a tratar.',
-    isPhoto: false,
-  },
-  {
-    nombre: 'Protector',
-    img: '/img/biocosmetica/unguento-3.png',
-    plantas: 'Caléndula · Malva · Jarilla',
-    uso: 'Protege, repara y nutre la piel expuesta al sol, viento o resequedad. Aplicar diariamente con masaje suave.',
-    isPhoto: false,
-  },
-  {
-    nombre: 'Relajante',
-    img: '/img/biocosmetica/unguento-relajante-menta.jpg',
-    plantas: 'Plantas del monte serrano',
-    uso: 'Para relajar la musculatura profunda y aliviar el estrés acumulado. Aroma terroso y silvestre.',
-    isPhoto: true,
-  },
-];
-
-const TINTURAS = [
-  {
-    nombre: 'Cannabis',
-    planta: 'Cannabis sativa',
-    props: 'Relajante, analgésica. Apoya el equilibrio del sistema nervioso y alivia tensiones musculares y el estrés crónico.',
-  },
-  {
-    nombre: 'Ruda',
-    planta: 'Ruta graveolens',
-    props: 'Espasmolítica, reguladora del ciclo menstrual. Protección energética y apoyo en procesos digestivos.',
-  },
-  {
-    nombre: 'Oreganón',
-    planta: 'Origanum vulgare',
-    props: 'Digestiva, antiséptica. Apoya funciones inmunes y favorece digestiones livianas.',
-  },
-  {
-    nombre: 'Caléndula',
-    planta: 'Calendula officinalis',
-    props: 'Antiinflamatoria, cicatrizante. Regenera mucosas y apoya la piel sensible desde adentro.',
-  },
-  {
-    nombre: 'Menta',
-    planta: 'Mentha x piperita',
-    props: 'Digestiva, carminativa, antiespasmódica. Alivia espasmos abdominales y equilibra el sistema digestivo-nervioso.',
-  },
-];
-
 export default async function BiocosmeticaPage() {
   const productos = await listProducts({ type: 'biocosmetic' });
-  const currency = await getBuyerCurrency();
+  const unguentos = productos.filter((p) => p.slug.startsWith('unguento-'));
+  const tinturas = productos.filter((p) => p.slug.startsWith('tintura-madre-'));
+  const repelente = productos.find((p) => p.slug === 'repelente-natural');
+
   return (
     <>
       <SiteHeader />
@@ -100,9 +43,15 @@ export default async function BiocosmeticaPage() {
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-bone-50 leading-tight mb-6">
             La tierra tiene<br />una <em>farmacia.</em>
           </h1>
-          <p className="font-sans text-base text-bone-200 max-w-xl leading-relaxed">
+          <p className="font-sans text-base text-bone-200 max-w-xl leading-relaxed mb-8">
             Ungüentos, repelentes y tinturas madre elaborados artesanalmente en nuestra ecoescuela. Cada producto nace de un agroecosistema vivo — no de un laboratorio.
           </p>
+          <a
+            href="#tinturas"
+            className="inline-flex bg-bone-50 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-bone-100 transition-colors"
+          >
+            Ver la tienda →
+          </a>
         </div>
       </section>
 
@@ -129,27 +78,8 @@ export default async function BiocosmeticaPage() {
         </div>
       </section>
 
-      {/* TIENDA — productos comprables desde la base */}
-      <section id="comprar" className="bg-bone-50 py-20 px-6">
-        <div className="max-w-editorial mx-auto">
-          <div className="mb-12">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-4">
-              Tienda · Comprá online
-            </p>
-            <h2 className="font-display text-4xl text-ink-950 leading-tight">
-              Llevátelos<br /><em>a tu casa.</em>
-            </h2>
-            <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg leading-relaxed">
-              Elegí tus productos y completá la compra online. Coordinamos el envío o el retiro en Tay Pichín por WhatsApp.
-            </p>
-            <div className="mt-6"><CurrencySwitcher current={currency} /></div>
-          </div>
-          <ProductGrid products={productos} />
-        </div>
-      </section>
-
-      {/* UNGÜENTOS */}
-      <section className="bg-bone-100 py-20 px-6">
+      {/* UNGÜENTOS — comprables */}
+      <section id="unguentos" className="bg-bone-100 py-20 px-6 scroll-mt-24">
         <div className="max-w-editorial mx-auto">
           <div className="mb-12">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">
@@ -159,118 +89,73 @@ export default async function BiocosmeticaPage() {
               Plantas que tocan<br /><em>la piel.</em>
             </h2>
             <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg leading-relaxed">
-              Elaborados a base de cera de abejas, aceites vegetales y macerados herbales. Sin parabenos, sin sintéticos, sin petroquímicos.
+              Elaborados a base de cera de abejas, aceites vegetales y macerados herbales. Sin parabenos, sin sintéticos, sin petroquímicos. Elegí, comprá y coordinamos el envío o retiro por WhatsApp.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {UNGUENTOS.map((u) => (
-              <div key={u.nombre} className="bg-bone-50 overflow-hidden">
-                <div className={`relative ${u.isPhoto ? 'aspect-[4/3]' : 'aspect-square bg-[#f5f0eb] flex items-center justify-center p-8'}`}>
-                  {u.isPhoto ? (
-                    <Image
-                      src={u.img}
-                      alt={`Ungüento ${u.nombre} · Tay Pichín`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                  ) : (
-                    <Image
-                      src={u.img}
-                      alt={`Ungüento ${u.nombre} · Tay Pichín`}
-                      width={200}
-                      height={200}
-                      className="object-contain drop-shadow-md"
-                    />
-                  )}
-                </div>
-                <div className="p-5">
-                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-1">
-                    Ungüento agroecológico
-                  </p>
-                  <h3 className="font-display text-2xl text-ink-950 mb-2">{u.nombre}</h3>
-                  <p className="text-xs font-sans text-moss-700 font-bold mb-3">{u.plantas}</p>
-                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{u.uso}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProductGrid products={unguentos} />
         </div>
       </section>
 
-      {/* REPELENTE */}
-      <section className="bg-clay-900 py-20 px-6">
-        <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src="/img/biocosmetica/repelente-foto.jpg"
-              alt="Repelente Natural de Insectos · Tay Pichín — elaborado con plantas del monte serrano"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
-          <div>
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-              Agroecosistema en acción
-            </p>
-            <h2 className="font-display text-4xl md:text-5xl text-bone-50 leading-tight mb-6">
-              Repelente Natural<br /><em>de Insectos.</em>
-            </h2>
-            <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
-              Elaborado con glicerina vegetal, aceites esenciales de orégano, ruda, ajo, caléndula y clavo de olor — plantas cultivadas en nuestro agroecosistema. Acción repelente comprobada sin neurotóxicos, sin DEET.
-            </p>
-            <p className="font-sans text-sm text-bone-200 leading-relaxed mb-6">
-              Spray 100ml. Agitar antes de usar. Aplicar sobre ropa y piel, reaplicar cada 2 a 3 horas. No aplicar directamente en mucosas, piel irritada ni en menores de 2 años.
-            </p>
-            <div className="flex items-center gap-3 bg-clay-700/30 border border-clay-700/50 px-4 py-3">
-              <span className="font-sans font-bold text-sm text-clay-300">✦</span>
-              <span className="font-sans text-sm text-bone-200 leading-relaxed">
-                Elaborado con plantas y saberes del monte serrano
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TINTURAS MADRE */}
-      <section className="bg-ink-950 py-20 px-6">
-        <div className="max-w-editorial mx-auto">
-          <div className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-end">
+      {/* REPELENTE — comprable (producto destacado) */}
+      {repelente && (
+        <section id="repelente" className="bg-clay-900 py-20 px-6 scroll-mt-24">
+          <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <Link href="/biocosmetica/repelente-natural" className="relative aspect-[4/3] overflow-hidden group">
+              <Image
+                src="/img/biocosmetica/repelente-foto.jpg"
+                alt="Repelente Natural de Insectos · Tay Pichín — elaborado con plantas del monte serrano"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </Link>
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">
-                Medicina vegetal
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
+                Agroecosistema en acción
               </p>
               <h2 className="font-display text-4xl md:text-5xl text-bone-50 leading-tight mb-6">
-                Tinturas Madre<br /><em>agroecológicas.</em>
+                Repelente Natural<br /><em>de Insectos.</em>
               </h2>
-              <p className="font-sans text-sm text-bone-200 max-w-xl leading-relaxed">
-                Relación planta-solvente 1:1. Alcohol de cereal 70%. Elaboradas artesanalmente desde un agroecosistema biodiverso, manejado con prácticas ancestrales que regeneran los ciclos vitales de la tierra y el agua. Contenido neto 15 cm³.
+              <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
+                Elaborado con glicerina vegetal y aceites esenciales de orégano, ruda, ajo, caléndula y clavo de olor — plantas cultivadas en nuestro agroecosistema. Acción repelente comprobada sin neurotóxicos, sin DEET. Spray 100 ml.
               </p>
-            </div>
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <Image
-                src="/img/biocosmetica/tinturas-todas.jpg"
-                alt="Tinturas Madre Cannabis, Ruda, Oreganón y Caléndula · Tay Pichín"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {TINTURAS.map((t) => (
-              <div key={t.nombre} className="bg-clay-700/10 border border-clay-700/30 p-5">
-                <p className="font-sans font-bold text-sm text-clay-300 mb-0.5">Tintura Madre</p>
-                <h3 className="font-display text-xl text-bone-50 mb-1">{t.nombre}</h3>
-                <p className="text-xs font-sans italic text-clay-500 mb-2">{t.planta}</p>
-                <p className="font-sans text-xs text-bone-200 leading-relaxed">{t.props}</p>
+              <div className="flex items-center gap-4 mb-6">
+                <span className="font-display text-3xl text-bone-50">
+                  {formatMoney(repelente.base_price_cents, repelente.currency as never)}
+                </span>
+                {repelente.stock !== null && repelente.stock <= 0 && (
+                  <span className="text-xs font-sans uppercase tracking-widest text-clay-300">Agotado</span>
+                )}
               </div>
-            ))}
+              <Link
+                href="/biocosmetica/repelente-natural"
+                className="inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-bone-100 transition-colors"
+              >
+                Ver y comprar →
+              </Link>
+            </div>
           </div>
-          <div className="bg-clay-700/10 border border-clay-700/30 p-5">
-            <p className="font-sans text-sm text-bone-200 leading-relaxed">
-              <strong className="text-bone-100">Más variedades disponibles:</strong> Consultanos por WhatsApp para ver el catálogo completo — según la temporada tenemos bardana, romero, cola de caballo, hipérico y más.
+        </section>
+      )}
+
+      {/* TINTURAS MADRE — comprables */}
+      <section id="tinturas" className="bg-bone-50 py-20 px-6 scroll-mt-24">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-12 max-w-2xl">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-4">
+              Medicina vegetal
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl text-ink-950 leading-tight mb-6">
+              Tinturas Madre<br /><em>agroecológicas.</em>
+            </h2>
+            <p className="font-sans text-sm text-ink-700 leading-relaxed">
+              Relación planta-solvente 1:1. Alcohol de cereal 70%. Elaboradas artesanalmente desde un agroecosistema biodiverso, manejado con prácticas ancestrales que regeneran los ciclos vitales de la tierra y el agua. Contenido neto 15 cm³.
+            </p>
+          </div>
+          <ProductGrid products={tinturas} />
+          <div className="mt-10 bg-bone-100 border border-ink-950/10 p-5 rounded-xl">
+            <p className="font-sans text-sm text-ink-700 leading-relaxed">
+              <strong className="text-ink-950">¿Buscás otra variedad?</strong> Según la temporada también tenemos bardana, romero, cola de caballo, hipérico y más. Escribinos por WhatsApp y consultanos disponibilidad.
             </p>
           </div>
         </div>
@@ -295,12 +180,12 @@ export default async function BiocosmeticaPage() {
       <section className="bg-clay-700 py-20 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">¿Cómo conseguirlos?</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Envíos y retiro</p>
             <h2 className="font-display text-4xl text-bone-50 mb-5 leading-tight">
-              Pedí tu pack<br /><em>directamente.</em>
+              Comprá online,<br /><em>te lo hacemos llegar.</em>
             </h2>
             <p className="font-sans text-sm text-bone-200 leading-relaxed mb-6">
-              Para una compra individual usá la <a href="#comprar" className="underline hover:text-bone-50">tienda online</a> de arriba: elegís, pagás y coordinamos el envío o retiro en Tay Pichín. ¿Querés cantidades mayores, un combo o tenés dudas? Escribinos por WhatsApp.
+              Elegí tus productos arriba, pagás online y coordinamos el envío o el retiro en Tay Pichín por WhatsApp. ¿Querés cantidades mayores, un combo o tenés dudas? Escribinos.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
