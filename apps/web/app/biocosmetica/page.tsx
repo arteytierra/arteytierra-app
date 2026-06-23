@@ -3,12 +3,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { ProductGrid } from '@/components/shop/ProductGrid';
+import { listProducts } from '@/lib/commerce/products';
 
 export const metadata: Metadata = {
   title: 'Biocosmética Agroecológica — Arte y Tierra · Tay Pichín',
   description: 'Ungüentos, repelentes y tinturas madre elaborados artesanalmente en Tay Pichín. Producidos desde un agroecosistema biodiverso. Soberanía sanitaria real.',
   alternates: { canonical: '/biocosmetica' },
 };
+
+export const revalidate = 300;
 
 const UNGUENTOS = [
   {
@@ -69,7 +73,8 @@ const TINTURAS = [
   },
 ];
 
-export default function BiocosmeticaPage() {
+export default async function BiocosmeticaPage() {
+  const productos = await listProducts({ type: 'biocosmetic' });
   return (
     <>
       <SiteHeader />
@@ -118,6 +123,24 @@ export default function BiocosmeticaPage() {
               Elegir estos productos es elegir soberanía sanitaria. Es reconectarse con los ciclos vitales de la tierra y el agua.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* TIENDA — productos comprables desde la base */}
+      <section id="comprar" className="bg-bone-50 py-20 px-6">
+        <div className="max-w-editorial mx-auto">
+          <div className="mb-12">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-4">
+              Tienda · Comprá online
+            </p>
+            <h2 className="font-display text-4xl text-ink-950 leading-tight">
+              Llevátelos<br /><em>a tu casa.</em>
+            </h2>
+            <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg leading-relaxed">
+              Elegí tus productos y completá la compra online. Coordinamos el envío o el retiro en Tay Pichín por WhatsApp.
+            </p>
+          </div>
+          <ProductGrid products={productos} />
         </div>
       </section>
 
@@ -273,7 +296,7 @@ export default function BiocosmeticaPage() {
               Pedí tu pack<br /><em>directamente.</em>
             </h2>
             <p className="font-sans text-sm text-bone-200 leading-relaxed mb-6">
-              Por ahora vendemos de forma directa — sin intermediarios. Escribinos por WhatsApp con lo que necesitás, te decimos disponibilidad y coordinamos el envío o retiro en Tay Pichín.
+              Para una compra individual usá la <a href="#comprar" className="underline hover:text-bone-50">tienda online</a> de arriba: elegís, pagás y coordinamos el envío o retiro en Tay Pichín. ¿Querés cantidades mayores, un combo o tenés dudas? Escribinos por WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a

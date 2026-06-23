@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { getOrCreateCart, getCartSummary } from './cart';
+import { getBuyerCurrency } from './geo';
+import { priceForCurrency } from './pricing';
 
 export type CartActionState = { ok?: boolean; error?: string };
 
@@ -41,6 +43,10 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
     return { error: 'Sin stock suficiente.' };
   }
 
+  // Moneda del comprador (geo): ARS para Argentina, USD para el exterior.
+  const target = await getBuyerCurrency();
+  let itemCurrency: string = product.currency;
+
   // Reservas requieren fechas
   let metadata: Record<string, unknown> | undefined;
   let unitPriceCents = product.base_price_cents;
@@ -60,9 +66,33 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
     } else {
       metadata = { startsAt: start.toISOString(), endsAt: end.toISOString(), guests: parsed.data.guests ?? 1 };
     }
+  } else {
+    // No reservable: resolver precio en la moneda del comprador (intl si existe).
+    const resolved = await priceForCurrency({
+      productId: product.id,
+      baseCurrency: product.currency,
+      basePriceCents: product.base_price_cents,
+      target,
+    });
+    unitPriceCents = resolved.amountCents;
+    itemCurrency = resolved.currency;
   }
 
   const { id: cartId } = await getOrCreateCart();
+
+  // Guarda mono-moneda: un carrito no puede mezclar ARS y USD.
+  {
+    const { data: cartRow } = await admin
+      .schema('shop').from('carts')
+      .select('currency, cart_items(id)')
+      .eq('id', cartId)
+      .single();
+    const hasItems = ((cartRow as { cart_items?: unknown[] } | null)?.cart_items?.length ?? 0) > 0;
+    const cartCur = (cartRow as { currency?: string } | null)?.currency;
+    if (hasItems && cartCur && cartCur !== itemCurrency) {
+      return { error: `Tu carrito está en ${cartCur}. Vaciá el carrito para comprar en ${itemCurrency}.` };
+    }
+  }
 
   // Para reservables, cada reserva es un ítem distinto → no merge
   const { data: existing } = await admin
@@ -86,7 +116,7 @@ export async function addToCart(_: CartActionState, formData: FormData): Promise
     });
   }
 
-  await admin.schema('shop').from('carts').update({ currency: product.currency }).eq('id', cartId);
+  await admin.schema('shop').from('carts').update({ currency: itemCurrency }).eq('id', cartId);
 
   revalidatePath('/carrito');
   return { ok: true };

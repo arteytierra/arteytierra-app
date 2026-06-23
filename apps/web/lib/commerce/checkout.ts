@@ -28,6 +28,11 @@ export async function startCheckout(opts: {
   const cart = await getCartSummary();
   if (!cart.id || cart.items.length === 0) throw new Error('Carrito vacío');
 
+  // Mercado Pago (cuenta Argentina) no procesa USD. El exterior paga con Stripe.
+  if (cart.currency === 'USD' && opts.provider === 'mercadopago') {
+    throw new Error('Mercado Pago no procesa pagos en USD. Elegí Stripe para pagar en dólares.');
+  }
+
   const user = await getCurrentUser();
   const admin = createSupabaseAdminClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';

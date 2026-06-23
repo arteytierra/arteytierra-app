@@ -1,8 +1,9 @@
 import 'server-only';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
-import { createSupabaseServerClient } from '@/lib/db/server';
 import { getLocale } from '@/lib/i18n';
 import { localizeRow, localizeRows } from '@/lib/i18n/localize';
+import { getBuyerCurrency } from './geo';
+import { overlayDisplayPrices } from './pricing';
 
 const PRODUCT_I18N_FIELDS = ['name', 'subtitle', 'description_mdx'] as const;
 
@@ -31,7 +32,10 @@ export async function listProducts(filters: {
   search?: string;
   limit?: number;
 }): Promise<ProductRow[]> {
-  const supabase = await createSupabaseServerClient();
+  // Catálogo público: leemos con service-role (filtrado a is_active) para evitar
+  // que la RLS `products public` evalúe app.is_staff() como anónimo (que no tiene
+  // grant sobre app.profiles y rompería el listado). Mismo patrón que getCourseWithCurriculum.
+  const supabase = createSupabaseAdminClient();
   let q = supabase.schema('shop').from('products')
     .select('*')
     .eq('is_active', true)
@@ -45,11 +49,13 @@ export async function listProducts(filters: {
   const { data } = await q;
   const rows = (data ?? []) as ProductRow[];
   const locale = await getLocale();
-  return localizeRows(rows as never as Array<Record<string, unknown>>, locale, [...PRODUCT_I18N_FIELDS]) as never as ProductRow[];
+  const localized = localizeRows(rows as never as Array<Record<string, unknown>>, locale, [...PRODUCT_I18N_FIELDS]) as never as ProductRow[];
+  const target = await getBuyerCurrency();
+  return overlayDisplayPrices(localized, target);
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductRow | null> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
   const { data } = await supabase
     .schema('shop').from('products')
     .select('*')
@@ -58,7 +64,10 @@ export async function getProductBySlug(slug: string): Promise<ProductRow | null>
     .maybeSingle();
   if (!data) return null;
   const locale = await getLocale();
-  return localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as ProductRow;
+  const localized = localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as ProductRow;
+  const target = await getBuyerCurrency();
+  const [overlaid] = await overlayDisplayPrices([localized], target);
+  return overlaid ?? localized;
 }
 
 export interface CourseWithCurriculum extends ProductRow {

@@ -40,4 +40,7 @@ POSTDEPLOY_CHECKLIST.md
 **/.claude/settings.local.json
 tienda/
 
+# Tooling de carga de tienda (leen .env.local, no van al repo)
+apps/web/_seed/
+
 .vercel

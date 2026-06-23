@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="Manual de Bioconstrucción — Arte y Tierra">
+  <rect width="600" height="600" fill="#1a1714"/>
+  <rect x="0" y="0" width="600" height="600" fill="url(#g)"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2420" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#0f0d0b" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <rect x="40" y="40" width="520" height="520" fill="none" stroke="#b06a3f" stroke-width="1.5" opacity="0.5"/>
+  <text x="64" y="100" fill="#c98a5e" font-family="Georgia, 'Times New Roman', serif" font-size="15" letter-spacing="4" text-transform="uppercase">ARTE Y TIERRA · TAY PICHÍN</text>
+  <text x="60" y="270" fill="#f5efe6" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="700">Manual de</text>
+  <text x="60" y="350" fill="#f5efe6" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-style="italic">Bioconstrucción</text>
+  <line x1="64" y1="400" x2="200" y2="400" stroke="#c98a5e" stroke-width="2"/>
+  <text x="64" y="450" fill="#cfc6b8" font-family="Georgia, serif" font-size="22">Construcción humana, historia</text>
+  <text x="64" y="482" fill="#cfc6b8" font-family="Georgia, serif" font-size="22">y cimientos · 79 páginas</text>
+  <text x="64" y="540" fill="#8a9a6b" font-family="Georgia, serif" font-size="16" letter-spacing="2">EBOOK · PDF DESCARGABLE</text>
+</svg>

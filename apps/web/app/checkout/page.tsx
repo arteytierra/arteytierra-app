@@ -33,6 +33,7 @@ export default async function CheckoutPage() {
               defaultName={user?.fullName ?? undefined}
               currency={cart.currency}
               recommendedProvider={recommendedProvider}
+              totalCents={cart.totalCents}
             />
 
             <aside className="rounded-2xl border border-ink-950/10 bg-bone-50 p-6 lg:sticky lg:top-24">

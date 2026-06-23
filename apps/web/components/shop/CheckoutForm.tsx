@@ -8,9 +8,10 @@ interface Props {
   defaultName?: string;
   currency: string;
   recommendedProvider: 'stripe' | 'mercadopago';
+  totalCents: number;
 }
 
-export function CheckoutForm({ defaultEmail, defaultName, currency, recommendedProvider }: Props) {
+export function CheckoutForm({ defaultEmail, defaultName, currency, recommendedProvider, totalCents }: Props) {
   const [provider, setProvider] = useState<'stripe' | 'mercadopago'>(recommendedProvider);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -69,14 +70,16 @@ export function CheckoutForm({ defaultEmail, defaultName, currency, recommendedP
       <section>
         <h2 className="font-display text-2xl mb-6">Método de pago</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <ProviderOption
-            id="mp"
-            checked={provider === 'mercadopago'}
-            onChange={() => setProvider('mercadopago')}
-            title="Mercado Pago"
-            subtitle="Tarjeta, transferencia, Rapipago. Ideal para Argentina."
-            recommended={recommendedProvider === 'mercadopago'}
-          />
+          {currency !== 'USD' && (
+            <ProviderOption
+              id="mp"
+              checked={provider === 'mercadopago'}
+              onChange={() => setProvider('mercadopago')}
+              title="Mercado Pago"
+              subtitle="Tarjeta, transferencia, Rapipago. Ideal para Argentina."
+              recommended={recommendedProvider === 'mercadopago'}
+            />
+          )}
           <ProviderOption
             id="stripe"
             checked={provider === 'stripe'}
@@ -89,6 +92,29 @@ export function CheckoutForm({ defaultEmail, defaultName, currency, recommendedP
         <p className="mt-3 text-xs text-ink-800/55">
           La moneda del carrito es {currency}. Tu pago se procesa en esa moneda.
         </p>
+
+        {currency === 'USD' && (
+          <div className="mt-5 rounded-xl border border-ink-950/15 bg-bone-100 p-4">
+            <div className="flex items-center gap-2">
+              <p className="font-medium">¿Preferís PayPal?</p>
+              <span className="text-[10px] uppercase tracking-wider rounded-full bg-ink-950/10 text-ink-800 px-2 py-0.5">
+                Manual
+              </span>
+            </div>
+            <p className="text-xs text-ink-800/65 mt-1">
+              Pagá USD {(totalCents / 100).toFixed(0)} a nuestra cuenta de PayPal. Al confirmar el pago te
+              enviamos el manual por email (incluí tu email arriba). No es automático.
+            </p>
+            <a
+              href={`https://paypal.me/arteytierra/${(totalCents / 100).toFixed(0)}USD`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center rounded-xl border border-ink-950/20 bg-bone-50 px-4 py-2 text-sm font-medium hover:bg-bone-100"
+            >
+              Pagar con PayPal →
+            </a>
+          </div>
+        )}
       </section>
 
       <Button type="submit" variant="moss" size="xl" disabled={loading} className="w-full sm:w-auto">

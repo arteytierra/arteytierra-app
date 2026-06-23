@@ -61,6 +61,7 @@ function pluralizePath(type: string): string {
     course: 'cursos',
     ebook: 'ebooks',
     physical: 'biocosmetica',
+    biocosmetic: 'biocosmetica',
     service: 'asesorias',
     lodging: 'hospedaje',
     immersion: 'inmersion-viva',
