@@ -21,8 +21,8 @@ export async function getBuyerCurrency(): Promise<BuyerCurrency> {
 
     const h = await headers();
     const country = (
-      h.get('x-vercel-ip-country') ||
       h.get('cf-ipcountry') ||
+      h.get('x-vercel-ip-country') ||
       h.get('x-geo-country') ||
       ''
     ).toUpperCase();

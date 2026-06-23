@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { ProductGrid } from '@/components/shop/ProductGrid';
+import { CurrencySwitcher } from '@/components/shop/CurrencySwitcher';
 import { listProducts } from '@/lib/commerce/products';
+import { getBuyerCurrency } from '@/lib/commerce/geo';
 
 export const metadata: Metadata = {
   title: 'Biocosmética Agroecológica — Arte y Tierra · Tay Pichín',
@@ -75,6 +77,7 @@ const TINTURAS = [
 
 export default async function BiocosmeticaPage() {
   const productos = await listProducts({ type: 'biocosmetic' });
+  const currency = await getBuyerCurrency();
   return (
     <>
       <SiteHeader />
@@ -139,6 +142,7 @@ export default async function BiocosmeticaPage() {
             <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg leading-relaxed">
               Elegí tus productos y completá la compra online. Coordinamos el envío o el retiro en Tay Pichín por WhatsApp.
             </p>
+            <div className="mt-6"><CurrencySwitcher current={currency} /></div>
           </div>
           <ProductGrid products={productos} />
         </div>
