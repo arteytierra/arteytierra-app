@@ -9,6 +9,7 @@ import { SearchTrigger } from '@/components/search/SearchTrigger';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config';
+import { getSupabaseBrowserClient } from '@/lib/db/browser';
 
 const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>> = {
   es: [
@@ -141,11 +142,18 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
   ],
 };
 
-const CTA_BY_LOCALE: Record<Locale, { label: string; href: string }> = {
-  es: { label: 'Ingresar', href: '/auth/login' },
-  en: { label: 'Sign in',  href: '/auth/login' },
+const CTA_GUEST: Record<Locale, { label: string; href: string }> = {
+  es: { label: 'Ingresar',  href: '/auth/login' },
+  en: { label: 'Sign in',   href: '/auth/login' },
   fr: { label: 'Connexion', href: '/auth/login' },
-  pt: { label: 'Entrar',   href: '/auth/login' },
+  pt: { label: 'Entrar',    href: '/auth/login' },
+};
+
+const CTA_AUTH: Record<Locale, { label: string; href: string }> = {
+  es: { label: 'Mi cuenta', href: '/mi-cuenta' },
+  en: { label: 'My account', href: '/mi-cuenta' },
+  fr: { label: 'Mon compte', href: '/mi-cuenta' },
+  pt: { label: 'Minha conta', href: '/mi-cuenta' },
 };
 
 export function SiteHeader({
@@ -161,12 +169,24 @@ export function SiteHeader({
   const [count, setCount] = useState(0);
   const [resolvedLocale, setResolvedLocale] = useState<Locale>(locale ?? DEFAULT_LOCALE);
   const [enabled, setEnabled] = useState<Locale[]>(enabledLocales ?? [DEFAULT_LOCALE]);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!userId);
 
   useEffect(() => {
     fetch('/api/cart')
       .then((r) => r.json())
       .then((c) => setCount(c.itemCount ?? 0))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session?.user);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -187,7 +207,8 @@ export function SiteHeader({
   }, [locale, enabledLocales]);
 
   const items = ITEMS_BY_LOCALE[resolvedLocale] ?? ITEMS_BY_LOCALE.es;
-  const cta = CTA_BY_LOCALE[resolvedLocale] ?? CTA_BY_LOCALE.es;
+  const ctaMap = isLoggedIn ? CTA_AUTH : CTA_GUEST;
+  const cta = ctaMap[resolvedLocale] ?? ctaMap.es;
 
   return (
     <Header

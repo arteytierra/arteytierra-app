@@ -59,17 +59,17 @@ export function ConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[80] p-4">
-      <div className="mx-auto max-w-2xl rounded-xl bg-bone shadow-2xl ring-1 ring-ink/10 p-5">
-        <p className="text-sm text-ink">
+      <div className="mx-auto max-w-2xl rounded-xl bg-bone-50 shadow-2xl ring-1 ring-ink-950/10 p-5">
+        <p className="text-sm text-ink-950">
           Usamos cookies necesarias para el funcionamiento del sitio. Con tu permiso
           también medimos uso (analytics) y personalizamos contenido. Podés cambiar esto
           cuando quieras en <a href="/mi-cuenta/privacidad" className="underline">Privacidad</a>.
         </p>
 
         {expanded && (
-          <div className="mt-4 space-y-2 text-sm">
+          <div className="mt-4 space-y-2 text-sm text-ink-800">
             <label className="flex items-center gap-2 opacity-60">
-              <input type="checkbox" checked disabled /> Necesarias (siempre activas)
+              <input type="checkbox" checked disabled readOnly /> Necesarias (siempre activas)
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -101,22 +101,22 @@ export function ConsentBanner() {
         <div className="mt-4 flex flex-wrap gap-2 justify-end">
           <button
             onClick={() => accept({ analytics: false, marketing: false, personalization: false })}
-            className="rounded-md border border-ink/15 px-4 py-2 text-sm"
+            className="rounded-md border border-ink-950/15 px-4 py-2 text-sm text-ink-950 hover:bg-bone-100 transition-colors"
           >
             Solo necesarias
           </button>
           {!expanded ? (
-            <button onClick={() => setExpanded(true)} className="rounded-md border border-ink/15 px-4 py-2 text-sm">
+            <button onClick={() => setExpanded(true)} className="rounded-md border border-ink-950/15 px-4 py-2 text-sm text-ink-950 hover:bg-bone-100 transition-colors">
               Personalizar
             </button>
           ) : (
-            <button onClick={() => accept(prefs)} className="rounded-md bg-ink px-4 py-2 text-sm text-bone">
+            <button onClick={() => accept(prefs)} className="rounded-md bg-ink-950 px-4 py-2 text-sm text-bone-50 hover:bg-ink-800 transition-colors">
               Guardar selección
             </button>
           )}
           <button
             onClick={() => accept({ analytics: true, marketing: true, personalization: true })}
-            className="rounded-md bg-leaf px-4 py-2 text-sm text-bone"
+            className="rounded-md bg-moss-700 px-4 py-2 text-sm text-bone-50 hover:bg-moss-900 transition-colors"
           >
             Aceptar todo
           </button>
