@@ -54,8 +54,8 @@ export function NewsletterForm({
         }
         setOkMsg(
           json.status === 'already_confirmed'
-            ? 'Ya estás suscripto. Actualizamos tus preferencias 🌿'
-            : 'Te enviamos un email para confirmar tu suscripción. ¡Revisá tu bandeja!',
+            ? 'Ya estás suscripto. Actualizamos tus preferencias.'
+            : 'Te enviamos un email de confirmación. Si no aparece en tu bandeja de entrada, revisá la carpeta de spam.',
         );
         setEmail('');
         setName('');

@@ -144,14 +144,14 @@ export function NewsletterPopup() {
 
         <div className="px-6 pt-7 pb-5 border-b border-ink-950/5">
           <div className="flex items-center gap-2 text-moss-700 text-xs uppercase tracking-[0.12em] mb-2">
-            <Sprout size={14} /> Newsletter Arte y Tierra
+            <Sprout size={14} /> Newsletter — solo novedades por email
           </div>
           <h2 id="newsletter-title" className="font-display text-2xl text-ink-950">
-            Sumate a la comunidad regenerativa
+            Novedades de Arte y Tierra
           </h2>
           <p className="text-sm text-ink-800/70 mt-1.5">
-            Cursos, técnicas de diseño hidrológico, recetas de biocosmética y novedades
-            de nuestras inmersiones — directo a tu inbox.
+            Cursos, diseño hidrológico, biocosmética e inmersiones — directo a tu correo.
+            <strong className="block mt-1 text-ink-800/90">Esto no crea una cuenta.</strong>
           </p>
         </div>
 

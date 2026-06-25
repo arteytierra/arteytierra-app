@@ -19,9 +19,9 @@ export default async function LoginPage({
   return (
     <div>
       <Eyebrow>Tu cuenta</Eyebrow>
-      <h1 className="display-3 mt-4">Ingresar</h1>
+      <h1 className="display-3 mt-4">Ingresar o crear cuenta</h1>
       <p className="lead mt-4 text-base">
-        Accedé a tus cursos, descargas y reservas.
+        Accedé a tus cursos, descargas y reservas. Si es la primera vez, se crea tu cuenta automáticamente.
       </p>
 
       {message && (
@@ -32,14 +32,14 @@ export default async function LoginPage({
         <OAuthButtons next={next} />
       </div>
 
-      <Divider label="o con tu correo" className="my-8" />
+      <Divider label="o con email y contraseña" className="my-8" />
 
       <LoginForm next={next} />
 
       <p className="mt-8 text-sm text-ink-800/70">
         ¿No tenés cuenta?{' '}
         <Link href={`/auth/registro?next=${encodeURIComponent(next)}`} className="text-moss-700 underline-offset-4 hover:underline">
-          Registrate
+          Registrate con email
         </Link>
       </p>
       <p className="mt-2 text-sm text-ink-800/70">

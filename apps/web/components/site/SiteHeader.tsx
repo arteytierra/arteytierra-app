@@ -142,10 +142,10 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
 };
 
 const CTA_BY_LOCALE: Record<Locale, { label: string; href: string }> = {
-  es: { label: 'Inscribirme', href: '/cursos' },
-  en: { label: 'Enroll',      href: '/en/cursos' },
-  fr: { label: "S'inscrire",  href: '/fr/cursos' },
-  pt: { label: 'Inscrever',   href: '/pt/cursos' },
+  es: { label: 'Ingresar', href: '/auth/login' },
+  en: { label: 'Sign in',  href: '/auth/login' },
+  fr: { label: 'Connexion', href: '/auth/login' },
+  pt: { label: 'Entrar',   href: '/auth/login' },
 };
 
 export function SiteHeader({
