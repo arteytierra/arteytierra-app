@@ -92,7 +92,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src={`https://www.youtube.com/embed/${course.promoVideoId}`}
+                src={`https://www.youtube-nocookie.com/embed/${course.promoVideoId}`}
                 title={`${course.name} — video presentación`}
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
