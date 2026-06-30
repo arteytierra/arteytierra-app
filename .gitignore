@@ -38,7 +38,7 @@ POSTDEPLOY_CHECKLIST.md
 # Local IDE/agent settings
 .claude/settings.local.json
 **/.claude/settings.local.json
-tienda/
+/tienda/
 
 # Tooling de carga de tienda (leen .env.local, no van al repo)
 apps/web/_seed/
