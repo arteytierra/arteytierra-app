@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Asesoría Online — Arte y Tierra',
+  title: 'Asesoría Online',
   description: 'Sesión 1:1 con el equipo de Arte y Tierra. 1 hora para revisar tu terreno, tu agua, tus ideas y posibilidades. USD 30–60. Primer paso antes del diseño.',
 };
 

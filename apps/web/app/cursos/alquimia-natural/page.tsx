@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Alquimia Natural y Limpieza Consciente — Arte y Tierra',
+  title: 'Alquimia Natural y Limpieza Consciente',
   description: 'Ciclo de 8 encuentros presenciales en Tay Pichín. Jabonería, cosmética natural y limpieza ecológica del hogar. Recuperá la soberanía sobre lo que entra a tu cuerpo y tu casa.',
   alternates: { canonical: '/cursos/alquimia-natural' },
 };

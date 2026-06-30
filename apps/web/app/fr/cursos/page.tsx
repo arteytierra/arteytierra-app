@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Formations et Ateliers 2026 — Arte y Tierra',
+  title: 'Formations et Ateliers 2026',
   description: 'Calendrier 2026 des formations et ateliers à Tay Pichín : bioarchitecture, hydrologie, enduits, champignons. Formations en ligne Mi Tierra Mi Casa et Tadelakt.',
   alternates: { canonical: '/fr/cursos' },
 };

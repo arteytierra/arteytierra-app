@@ -8,7 +8,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 const course = getCourse('inmersion-viva')!;
 
 export const metadata: Metadata = {
-  title: `${course.name} — Arte y Tierra`,
+  title: `${course.name}`,
   description: course.subtitle,
   alternates: { canonical: '/cursos/inmersion-viva' },
 };

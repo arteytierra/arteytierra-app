@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Arte y Tierra — Design Écosystémique du Territoire',
+  title: { absolute: 'Arte y Tierra — Design Écosystémique du Territoire' },
   description: 'Bioarchitecture, hydrologie régénérative et apprentissage expérientiel. Collectif itinérant basé à Tay Pichín, Sierras de Córdoba, Argentine.',
   alternates: { canonical: '/fr' },
 };

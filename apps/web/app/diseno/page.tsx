@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Diseño — Arte y Tierra',
+  title: 'Diseño',
   description: 'Diseño ecosistémico del territorio: bioarquitectura, hidrología regenerativa, producción agroecológica, paisajismo funcional y estrategia regenerativa. +40 proyectos en 7 países.',
 };
 

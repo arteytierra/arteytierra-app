@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Workshops & Courses — Bioarchitecture & Permaculture | Arte y Tierra',
+  title: 'Workshops & Courses — Bioarchitecture & Permaculture',
   description: 'Workshops in bioarchitecture, natural alchemy, mushroom cultivation and regenerative hydrology. In-person at Tay Pichín and online. San Marcos Sierras, Córdoba.',
   alternates: { canonical: '/en/cursos' },
 };

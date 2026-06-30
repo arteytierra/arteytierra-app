@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Tay Pichín — Permaculture EcoSchool & EcoHostel | Arte y Tierra',
+  title: 'Tay Pichín — Permaculture EcoSchool & EcoHostel',
   description: 'Tay Pichín is the living territory of Arte y Tierra: permaculture ecoschool, earthen architecture ecohostel and experiential workshops. San Marcos Sierras, Córdoba, Argentina.',
   alternates: { canonical: '/en/tay-pichin' },
 };

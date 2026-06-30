@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { VideoLightbox } from '@/components/home/VideoLightbox';
 
 export const metadata: Metadata = {
-  title: 'Arte y Tierra — Diseño Ecosistémico del Territorio',
+  title: { absolute: 'Arte y Tierra — Diseño Ecosistémico del Territorio' },
   description: 'Bioarquitectura, hidrología regenerativa y aprendizaje vivencial. Colectivo itinerante con sede en Tay Pichín, Sierras de Córdoba, Argentina.',
 };
 

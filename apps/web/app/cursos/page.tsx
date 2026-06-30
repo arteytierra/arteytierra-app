@@ -12,7 +12,7 @@ import { getCoursesForLanding, getProductCover } from '@/lib/commerce/products';
 
 export const revalidate = 60;
 
-const META_TITLE = 'Ecoescuela — Arte y Tierra';
+const META_TITLE = 'Ecoescuela';
 const META_DESC =
   'Cursos y formaciones de bioarquitectura, diseño hidrológico, permacultura y biocosmética. Presenciales en Tay Pichín y online desde cualquier parte del mundo.';
 

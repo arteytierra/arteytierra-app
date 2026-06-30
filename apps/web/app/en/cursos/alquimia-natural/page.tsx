@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Natural Alchemy & Conscious Cleaning — Workshop at Tay Pichín | Arte y Tierra',
+  title: 'Natural Alchemy & Conscious Cleaning — Workshop at Tay Pichín',
   description: 'Monthly in-person workshop cycle at EcoSchool Tay Pichín to transform everyday toxicity into sustainable solutions: natural soaps, deodorants and hygiene products.',
   alternates: { canonical: '/en/cursos/alquimia-natural' },
 };

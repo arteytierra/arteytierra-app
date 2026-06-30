@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'À propos — Arte y Tierra',
+  title: 'À propos',
   description: 'Arte y Tierra est un collectif de bioarchitectes, hydrologues et designers écosystémiques. +40 œuvres dans 7 pays et 15 ans de travail avec la terre.',
   alternates: { canonical: '/fr/nosotros' },
 };

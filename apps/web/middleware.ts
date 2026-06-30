@@ -19,12 +19,13 @@ const PROTECTED_PREFIXES = [
 
 const STAFF_PREFIXES = ['/admin'];
 
-const LOCALES = ['en', 'pt'] as const;
+const LOCALES = ['en', 'fr', 'pt'] as const;
+type Extra = 'en' | 'fr' | 'pt';
 const ENABLED_LOCALES = new Set(
   (process.env.ENABLE_LOCALES ?? '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
-    .filter((s): s is 'en' | 'pt' => s === 'en' || s === 'pt'),
+    .filter((s): s is Extra => s === 'en' || s === 'fr' || s === 'pt'),
 );
 
 export async function middleware(request: NextRequest) {
@@ -127,7 +128,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const al = request.headers.get('accept-language') ?? '';
     const top = al.split(',')[0]?.split(';')[0]?.trim().slice(0, 2).toLowerCase();
-    if ((top === 'en' || top === 'pt') && ENABLED_LOCALES.has(top)) {
+    if ((top === 'en' || top === 'fr' || top === 'pt') && ENABLED_LOCALES.has(top)) {
       const url = request.nextUrl.clone();
       url.pathname = `/${top}`;
       return NextResponse.redirect(url, 307);
@@ -136,7 +137,7 @@ export async function middleware(request: NextRequest) {
 
   let rewriteToPath: string | null = null;
   if (firstSeg && (LOCALES as readonly string[]).includes(firstSeg)) {
-    if (!ENABLED_LOCALES.has(firstSeg as 'en' | 'pt')) {
+    if (!ENABLED_LOCALES.has(firstSeg as Extra)) {
       const url = request.nextUrl.clone();
       url.pathname = request.nextUrl.pathname.slice(3) || '/';
       return NextResponse.redirect(url);

@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Bioarchitecture, Construction et Territoire — Stage Intensif à Tay Pichín | Arte y Tierra',
+  title: 'Bioarchitecture, Construction et Territoire — Stage Intensif à Tay Pichín',
   description: 'Stage intensif de 2 jours à Tay Pichín : bioconstruction sur chantier réel avec techniques traditionnelles adaptées aux territoires semi-arides. 18 et 19 juillet 2026.',
   alternates: { canonical: '/fr/cursos/bioarquitectura' },
 };

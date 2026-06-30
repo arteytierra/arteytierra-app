@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Services — Design Écosystémique Intégral | Arte y Tierra',
+  title: 'Services — Design Écosystémique Intégral',
   description: 'Design Écosystémique Intégral : eau, production et habitat en un seul système. Bioarchitecture, hydrologie régénérative et design territorial en Argentine, Colombie et Amérique latine.',
   alternates: { canonical: '/fr/diseno' },
 };

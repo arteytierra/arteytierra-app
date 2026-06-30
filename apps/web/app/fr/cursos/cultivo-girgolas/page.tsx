@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Culture de Pleurotes — Atelier Modulaire FUNGO × Tay Pichín | Arte y Tierra',
+  title: 'Culture de Pleurotes — Atelier Modulaire FUNGO × Tay Pichín',
   description: 'Atelier modulaire de culture de pleurotes à Tay Pichín. 3 rencontres indépendantes : biologie et mycélium, substrat et incubation, fructification et récolte.',
   alternates: { canonical: '/fr/cursos/cultivo-girgolas' },
 };

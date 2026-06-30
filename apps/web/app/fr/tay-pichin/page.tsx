@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Tay Pichín — Écoécole et Écolodge | Arte y Tierra',
+  title: 'Tay Pichín — Écoécole et Écolodge',
   description: 'Tay Pichín : écoécole et écolodge à San Marcos Sierras, Córdoba. Siège physique d\'Arte y Tierra. Ateliers, hébergement et bénévolat.',
   alternates: { canonical: '/fr/tay-pichin' },
 };

@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'EcoHostel Tay Pichín — Accommodation in Earth Architecture | Arte y Tierra',
+  title: 'EcoHostel Tay Pichín — Accommodation in Earth Architecture',
   description: 'Stay at EcoHostel Tay Pichín: rooms and camping built with natural materials. San Marcos Sierras, Córdoba, Argentina. Score 7.5 on Booking.com.',
   alternates: { canonical: '/en/hospedaje' },
 };

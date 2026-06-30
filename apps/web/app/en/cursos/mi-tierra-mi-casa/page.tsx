@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Mi Tierra Mi Casa — Online Natural Building Course | Arte y Tierra',
+  title: 'Mi Tierra Mi Casa — Online Natural Building Course',
   description: 'Online natural building course — 4 modules, 18 lessons, video call support. Learn biobuilding at your own pace, from anywhere in the world.',
   alternates: { canonical: '/en/cursos/mi-tierra-mi-casa' },
 };

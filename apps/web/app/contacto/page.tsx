@@ -7,7 +7,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Contacto — Arte y Tierra',
+  title: 'Contacto',
   description: 'Escribinos sobre tu terreno, tu idea o tu proyecto. Trabajamos en Argentina, Colombia y toda Latinoamérica.',
   alternates: { canonical: '/contacto' },
 };

@@ -7,7 +7,7 @@ import { listActivePrograms } from '@/lib/partners';
 
 export const revalidate = 600;
 export const metadata = {
-  title: 'Partners — Arte y Tierra',
+  title: 'Partners',
   description: 'Programas para organizaciones, escuelas y aliados que quieran traer educación regenerativa a sus comunidades.',
 };
 

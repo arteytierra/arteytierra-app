@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata = {
-  title: 'Te diste de baja · Arte y Tierra',
+  title: 'Te diste de baja',
   robots: { index: false },
 };
 

@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'About Us — Arte y Tierra',
+  title: 'About Us',
   description: 'Arte y Tierra is an itinerant collective of bioarchitects, designers and educators working from Tay Pichín, Sierras de Córdoba. We design from the territory.',
   alternates: { canonical: '/en/nosotros' },
 };

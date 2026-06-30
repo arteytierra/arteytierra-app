@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Living Immersion — Tay Pichín | Arte y Tierra',
+  title: 'Living Immersion — Tay Pichín',
   description: 'Living Immersion at Tay Pichín: training periods in permaculture practices, biobuilding and agroecology on the territory. San Marcos Sierras, Córdoba.',
   alternates: { canonical: '/en/cursos/inmersion-viva' },
 };

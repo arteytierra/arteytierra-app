@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
@@ -12,15 +13,18 @@ interface Props {
 
 export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
   const [status, setStatus] = useState<Status>('idle');
+  const [datos, setDatos] = useState<{ email: string; name: string }>({ email: '', name: '' });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus('sending');
     const form = e.currentTarget;
+    const fd = new FormData(form);
+    setDatos({ email: String(fd.get('email') ?? ''), name: String(fd.get('nombre') ?? '') });
     try {
       const res = await fetch('/api/cursos/inscribir', {
         method: 'POST',
-        body: new FormData(form),
+        body: fd,
       });
       setStatus(res.ok ? 'ok' : 'error');
       if (res.ok) form.reset();
@@ -31,11 +35,14 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
 
   if (status === 'ok') {
     return (
-      <div className="p-10 bg-ink-800 border border-ink-600 text-center">
-        <h3 className="font-display text-2xl text-bone-50 mb-3">¡Recibimos tu inscripción!</h3>
-        <p className="font-sans text-bone-300 text-base leading-relaxed">
-          Te escribimos en las próximas 24–48 horas hábiles con los pasos para confirmar el cupo.
-        </p>
+      <div>
+        <div className="p-10 bg-ink-800 border border-ink-600 text-center">
+          <h3 className="font-display text-2xl text-bone-50 mb-3">¡Recibimos tu inscripción!</h3>
+          <p className="font-sans text-bone-300 text-base leading-relaxed">
+            Te escribimos en las próximas 24–48 horas hábiles con los pasos para confirmar el cupo.
+          </p>
+        </div>
+        <PostSignupNewsletter email={datos.email} name={datos.name} source="inscripcion-curso" />
       </div>
     );
   }

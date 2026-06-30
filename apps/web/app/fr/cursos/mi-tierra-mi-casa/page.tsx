@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Mi Tierra Mi Casa — Formation en Ligne de Construction Naturelle | Arte y Tierra',
+  title: 'Mi Tierra Mi Casa — Formation en Ligne de Construction Naturelle',
   description: 'Formation virtuelle en construction naturelle — 4 modules, 18 cours, accompagnement par visioconférence. Apprenez la bioconstruction à votre rythme, depuis n\'importe où dans le monde.',
   alternates: { canonical: '/fr/cursos/mi-tierra-mi-casa' },
 };

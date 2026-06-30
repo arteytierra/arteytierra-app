@@ -46,8 +46,9 @@ export const metadata: Metadata = {
     locale: 'es_AR',
     siteName: 'Arte y Tierra',
     url: SITE_URL,
+    images: [{ url: '/img/home/lo-que-hacemos/1.jpg', width: 1600, height: 894, alt: 'Arte y Tierra — diseño ecosistémico del territorio' }],
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: { card: 'summary_large_image', images: ['/img/home/lo-que-hacemos/1.jpg'] },
   alternates: {
     canonical: '/',
     languages:

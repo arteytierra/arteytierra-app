@@ -4,7 +4,7 @@ import { globalSearch } from '@/lib/search';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Buscar · Arte y Tierra',
+  title: 'Buscar',
   description: 'Encontrá cursos, ebooks, hospedaje, asesorías y artículos del blog.',
   robots: { index: false },
 };

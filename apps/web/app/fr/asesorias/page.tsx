@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Consultation en ligne — Design Régénératif | Arte y Tierra',
+  title: 'Consultation en ligne — Design Régénératif',
   description: 'Consultation personnalisée en bioconstruction, hydrologie régénérative, bioarchitecture et permaculture. Visioconférence 1h + rapport écrit. À partir de USD 30.',
   alternates: { canonical: '/fr/asesorias' },
 };

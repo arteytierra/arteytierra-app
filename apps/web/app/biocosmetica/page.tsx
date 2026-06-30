@@ -8,7 +8,7 @@ import { ProductGrid } from '@/components/shop/ProductGrid';
 import { listProducts } from '@/lib/commerce/products';
 
 export const metadata: Metadata = {
-  title: 'Biocosmética Agroecológica — Arte y Tierra · Tay Pichín',
+  title: 'Biocosmética Agroecológica · Tay Pichín',
   description: 'Ungüentos, repelentes y tinturas madre elaborados artesanalmente en Tay Pichín. Producidos desde un agroecosistema biodiverso. Soberanía sanitaria real.',
   alternates: { canonical: '/biocosmetica' },
 };
@@ -185,7 +185,7 @@ export default async function BiocosmeticaPage() {
               Comprá online,<br /><em>te lo hacemos llegar.</em>
             </h2>
             <p className="font-sans text-sm text-bone-200 leading-relaxed mb-6">
-              Elegí tus productos arriba, pagás online y coordinamos el envío o el retiro en Tay Pichín por WhatsApp. ¿Querés cantidades mayores, un combo o tenés dudas? Escribinos.
+              Elegí tus productos arriba y pagás online. <strong className="text-bone-50">Hacemos envíos a todo el país</strong> — el costo del envío lo coordinamos por WhatsApp según tu ubicación — o podés <strong className="text-bone-50">retirar sin cargo en Tay Pichín</strong>, San Marcos Sierras. ¿Querés cantidades mayores, un combo o tenés dudas? Escribinos.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a

@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Oyster Mushroom Cultivation — 3-Module Workshop | Arte y Tierra',
+  title: 'Oyster Mushroom Cultivation — 3-Module Workshop',
   description: '3-module oyster mushroom cultivation workshop at EcoSchool Tay Pichín. Learn to grow edible mushrooms on agricultural by-products. July–August 2026.',
   alternates: { canonical: '/en/cursos/cultivo-girgolas' },
 };

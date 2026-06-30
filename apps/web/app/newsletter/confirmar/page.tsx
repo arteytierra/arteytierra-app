@@ -7,7 +7,7 @@ import { confirmSubscription } from '@/lib/newsletter';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Confirmar suscripción · Arte y Tierra',
+  title: 'Confirmar suscripción',
   robots: { index: false },
 };
 

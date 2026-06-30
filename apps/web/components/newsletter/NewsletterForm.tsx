@@ -11,15 +11,19 @@ export function NewsletterForm({
   source = 'inline',
   defaultSegments = ['newsletter'],
   compact = false,
+  defaultEmail = '',
+  defaultName = '',
   onSuccess,
 }: {
   source?: string;
   defaultSegments?: string[];
   compact?: boolean;
+  defaultEmail?: string;
+  defaultName?: string;
   onSuccess?: () => void;
 }) {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState(defaultEmail);
+  const [name, setName] = useState(defaultName);
   const [hp, setHp] = useState(''); // honeypot
   const [segments, setSegments] = useState<string[]>(defaultSegments);
   const [pending, startTransition] = useTransition();

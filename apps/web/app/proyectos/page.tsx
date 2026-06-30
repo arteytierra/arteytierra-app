@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Proyectos — Arte y Tierra',
+  title: 'Proyectos',
   description: '+40 proyectos de bioarquitectura, diseño hidrológico y paisaje en Argentina, Colombia, Perú, Bolivia, Italia y Francia.',
 };
 

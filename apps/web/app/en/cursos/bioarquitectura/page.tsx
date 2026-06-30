@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Bioarchitecture, Building & Territory — Intensive Workshop at Tay Pichín | Arte y Tierra',
+  title: 'Bioarchitecture, Building & Territory — Intensive Workshop at Tay Pichín',
   description: '2-day intensive workshop at Tay Pichín: biobuilding on a real construction site with traditional techniques adapted to semi-arid territories. July 18–19, 2026.',
   alternates: { canonical: '/en/cursos/bioarquitectura' },
 };

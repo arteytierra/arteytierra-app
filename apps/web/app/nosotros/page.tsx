@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Nosotros — Arte y Tierra',
+  title: 'Nosotros',
   description: 'Arte y Tierra es un colectivo de bioarquitectos, hidrólogos y diseñadores ecosistémicos. +40 obras en 7 países y 15 años de trabajo con la tierra.',
   alternates: { canonical: '/nosotros' },
 };

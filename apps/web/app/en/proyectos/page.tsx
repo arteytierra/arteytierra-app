@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Projects — Arte y Tierra',
+  title: 'Projects',
   description: 'Portfolio of bioarchitecture, regenerative hydrology and natural building projects by Arte y Tierra. From Argentina to Europe.',
   alternates: { canonical: '/en/proyectos' },
 };

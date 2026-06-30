@@ -361,6 +361,27 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             </p>
           </div>
           <CourseEnrollForm curso={course.formCurso} whatsapp={course.whatsapp} mercadopago={course.mercadopago} />
+
+          {/* Políticas — info de confianza antes de pagar */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-ink-800/60 border border-ink-700 p-5">
+              <p className="font-sans font-bold text-bone-50 text-sm mb-1.5">↺ Cancelación y reembolso</p>
+              <p className="font-sans text-bone-300 text-xs leading-relaxed">
+                Si avisás hasta <strong className="text-bone-100">7 días antes</strong> del inicio, te devolvemos el total.
+                Pasado ese plazo, podés transferir tu cupo a otra persona o usarlo en la próxima edición.
+              </p>
+            </div>
+            <div className="bg-ink-800/60 border border-ink-700 p-5">
+              <p className="font-sans font-bold text-bone-50 text-sm mb-1.5">
+                {isPresencial ? '✶ Cupos limitados' : '▶ Grabaciones'}
+              </p>
+              <p className="font-sans text-bone-300 text-xs leading-relaxed">
+                {isPresencial
+                  ? 'Trabajamos con grupos chicos para cuidar la experiencia. Te confirmamos disponibilidad al recibir tu inscripción.'
+                  : 'Es online en vivo. Algunas sesiones quedan grabadas y disponibles para los inscriptos — te confirmamos cuáles al arrancar.'}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

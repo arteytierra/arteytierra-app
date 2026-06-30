@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Online Consultations — Bioarchitecture & Permaculture | Arte y Tierra',
+  title: 'Online Consultations — Bioarchitecture & Permaculture',
   description: 'Online consultations with Arte y Tierra: bioarchitecture, regenerative hydrology, permaculture and natural building. Book your session by video call — worldwide.',
   alternates: { canonical: '/en/asesorias' },
 };

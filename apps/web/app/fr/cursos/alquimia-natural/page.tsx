@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Alchimie Naturelle et Nettoyage Conscient — Atelier à Tay Pichín | Arte y Tierra',
+  title: 'Alchimie Naturelle et Nettoyage Conscient — Atelier à Tay Pichín',
   description: 'Cycle d\'ateliers présentiels à l\'EcoÉcole Tay Pichín pour transformer la toxicité du quotidien en solutions durables : savons, déodorants et produits d\'hygiène naturels.',
   alternates: { canonical: '/fr/cursos/alquimia-natural' },
 };

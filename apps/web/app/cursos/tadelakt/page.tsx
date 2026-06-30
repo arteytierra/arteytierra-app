@@ -8,7 +8,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 const course = getCourse('tadelakt')!;
 
 export const metadata: Metadata = {
-  title: `${course.name} — Arte y Tierra`,
+  title: `${course.name}`,
   description: course.subtitle,
   alternates: { canonical: '/cursos/tadelakt' },
 };

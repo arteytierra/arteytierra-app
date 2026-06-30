@@ -7,7 +7,7 @@ import { listOpenPrograms } from '@/lib/scholarships';
 
 export const revalidate = 300;
 export const metadata = {
-  title: 'Becas — Arte y Tierra',
+  title: 'Becas',
   description: 'Programas de becas y descuentos por situación económica, comunidad o estudio de campo.',
 };
 

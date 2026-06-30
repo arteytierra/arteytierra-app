@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
-  title: 'Bioarchitecture & Territory Design — Arte y Tierra',
+  title: 'Bioarchitecture & Territory Design',
   description: 'Bioarchitecture, regenerative hydrology and natural building. We design living habitats with earth, wood, stone and straw — in Argentina and worldwide.',
   alternates: { canonical: '/en/diseno' },
 };
