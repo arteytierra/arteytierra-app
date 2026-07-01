@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { VideoLightbox } from '@/components/home/VideoLightbox';
+import { TESTIMONIOS } from '@/lib/testimonios';
 
 export const metadata: Metadata = {
   title: { absolute: 'Arte y Tierra — Diseño Ecosistémico del Territorio' },
@@ -51,24 +52,6 @@ const STATS = [
   { n: '+40',  label: 'proyectos realizados' },
   { n: '+150', label: 'talleres dictados' },
   { n: '7',    label: 'países' },
-];
-
-const TESTIMONIOS = [
-  {
-    quote: '"Llegué a Tay Pichín pensando que iba a aprender a construir. Me fui sabiendo escuchar el agua, la tierra, y a quienes la habitan."',
-    author: 'Sofía',
-    role: 'participante taller bioconstrucción',
-  },
-  {
-    quote: '"La Formación Integral en Bioconstrucción me cambió la manera de mirar el habitar. No es solo técnica — es una forma de estar en el mundo."',
-    author: 'Diego',
-    role: 'participante Formación Integral',
-  },
-  {
-    quote: '"Trabajar con Jonatan y el equipo fue encontrar gente que diseña desde el lugar — no desde un catálogo. Cada decisión nació del territorio."',
-    author: 'Franco Colavita',
-    role: 'comitente',
-  },
 ];
 
 export default function HomePage() {

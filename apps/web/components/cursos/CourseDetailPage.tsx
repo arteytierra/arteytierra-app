@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
 import { CourseEnrollForm } from './CourseEnrollForm';
+import { TESTIMONIOS } from '@/lib/testimonios';
 import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
 
 export function CourseDetailPage({ course }: { course: CourseData }) {
@@ -351,6 +352,27 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       </section>
 
       {/* INSCRIPCIÓN */}
+      {/* TESTIMONIOS */}
+      <section className="bg-bone-100 py-20 px-6 border-t border-bone-200">
+        <div className="max-w-editorial mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-3">Lo que dicen</p>
+            <h2 className="font-display text-4xl text-ink-950">Quienes pasaron por nuestras <em>formaciones.</em></h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIOS.map((t, i) => (
+              <figure key={i} className="bg-bone-50 border-t-4 border-clay-500 p-7 flex flex-col">
+                <blockquote className="font-display text-lg text-ink-900 leading-relaxed italic flex-1">{t.quote}</blockquote>
+                <figcaption className="mt-5">
+                  <p className="font-sans font-bold text-sm text-ink-950">{t.author}</p>
+                  <p className="font-sans text-xs text-ink-700/60">{t.role}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="inscribirme" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-10 text-center">
