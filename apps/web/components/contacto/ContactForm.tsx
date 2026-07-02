@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
 
 const INTERESES = [
   { name: 'interes_bioarq', label: 'Proyecto de bioarquitectura' },
@@ -16,6 +17,7 @@ type Status = 'idle' | 'sending' | 'ok' | 'error';
 
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
+  const [datos, setDatos] = useState({ nombre: '', email: '' });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,7 +30,15 @@ export function ContactForm() {
         body: data,
         headers: { Accept: 'application/json' },
       });
-      if (res.ok) { setStatus('ok'); form.reset(); }
+      if (res.ok) {
+        // Capturamos nombre/email antes del reset para prellenar el newsletter.
+        setDatos({
+          nombre: String(data.get('nombre') ?? ''),
+          email: String(data.get('email') ?? ''),
+        });
+        setStatus('ok');
+        form.reset();
+      }
       else setStatus('error');
     } catch {
       setStatus('error');
@@ -50,6 +60,14 @@ export function ContactForm() {
         >
           WhatsApp →
         </a>
+        <div className="mt-6 text-left">
+          <PostSignupNewsletter
+            email={datos.email}
+            name={datos.nombre}
+            source="contacto"
+            segments={['newsletter']}
+          />
+        </div>
       </div>
     );
   }

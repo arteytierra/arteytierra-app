@@ -9,7 +9,6 @@ import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { OnlineIndicator } from '@/components/pwa/OnlineIndicator';
 import { WebVitals } from '@/components/observability/WebVitals';
-import { NewsletterPopup } from '@/components/newsletter/NewsletterPopup';
 import { CommandK } from '@/components/search/CommandK';
 import { AttributionBeacon } from '@/components/analytics/AttributionBeacon';
 import { ConsentBanner } from '@/components/privacy/ConsentBanner';
@@ -90,7 +89,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InstallPrompt />
         <OnlineIndicator />
         <WebVitals />
-        <NewsletterPopup />
         <CommandK />
         <AttributionBeacon />
         <ConsentBanner />

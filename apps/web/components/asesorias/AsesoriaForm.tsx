@@ -1,23 +1,31 @@
 'use client';
 
 import { useState } from 'react';
+import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
 export function AsesoriaForm() {
   const [status, setStatus] = useState<Status>('idle');
+  const [datos, setDatos] = useState({ nombre: '', email: '' });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus('sending');
     const form = e.currentTarget;
+    const data = new FormData(form);
     try {
       const res = await fetch('https://formspree.io/f/mvzlarvb', {
         method: 'POST',
         headers: { Accept: 'application/json' },
-        body: new FormData(form),
+        body: data,
       });
       if (res.ok) {
+        // Capturamos nombre/email antes del reset para prellenar el newsletter.
+        setDatos({
+          nombre: String(data.get('nombre') ?? ''),
+          email: String(data.get('email') ?? ''),
+        });
         setStatus('ok');
         form.reset();
       } else {
@@ -30,11 +38,19 @@ export function AsesoriaForm() {
 
   if (status === 'ok') {
     return (
-      <div className="p-10 bg-moss-50 border border-moss-200 text-center">
-        <h3 className="font-display text-2xl text-ink-950 mb-3">¡Recibimos tu consulta!</h3>
-        <p className="font-sans text-ink-700 text-base leading-relaxed">
-          Te escribimos en las próximas 24 horas hábiles para confirmar la sesión.
-        </p>
+      <div className="p-10 bg-moss-50 border border-moss-200">
+        <div className="text-center">
+          <h3 className="font-display text-2xl text-ink-950 mb-3">¡Recibimos tu consulta!</h3>
+          <p className="font-sans text-ink-700 text-base leading-relaxed">
+            Te escribimos en las próximas 24 horas hábiles para confirmar la sesión.
+          </p>
+        </div>
+        <PostSignupNewsletter
+          email={datos.email}
+          name={datos.nombre}
+          source="asesorias"
+          segments={['newsletter']}
+        />
       </div>
     );
   }
