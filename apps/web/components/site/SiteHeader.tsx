@@ -195,7 +195,10 @@ export function SiteHeader({
     const ck = document.cookie.split('; ').find((c) => c.startsWith('NEXT_LOCALE='));
     const fromCookie = ck?.split('=')[1] as Locale | undefined;
     const pathLocale = window.location.pathname.split('/')[1];
-    const fromPath = pathLocale === 'en' || pathLocale === 'pt' ? (pathLocale as Locale) : undefined;
+    const fromPath =
+      pathLocale === 'en' || pathLocale === 'fr' || pathLocale === 'pt'
+        ? (pathLocale as Locale)
+        : undefined;
     setResolvedLocale(fromPath ?? fromCookie ?? DEFAULT_LOCALE);
     // En cliente no podemos leer env — pedimos vía endpoint liviano
     fetch('/api/i18n/enabled')

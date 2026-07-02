@@ -135,14 +135,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  let rewriteToPath: string | null = null;
   if (firstSeg && (LOCALES as readonly string[]).includes(firstSeg)) {
+    // Locale deshabilitado → redirigir a la versión ES (sin prefijo).
+    // Locale habilitado → dejamos que Next resuelva app/<locale>/... directamente
+    //   (NO reescribimos a la raíz: eso servía siempre el contenido en español).
     if (!ENABLED_LOCALES.has(firstSeg as Extra)) {
       const url = request.nextUrl.clone();
       url.pathname = request.nextUrl.pathname.slice(3) || '/';
       return NextResponse.redirect(url);
     }
-    rewriteToPath = request.nextUrl.pathname.slice(3) || '/';
   }
 
   const supabase = createServerClient(
@@ -190,15 +191,6 @@ export async function middleware(request: NextRequest) {
   if (user && (pathname === '/auth/login' || pathname === '/auth/registro')) {
     const next = request.nextUrl.searchParams.get('next') ?? '/mi-cuenta';
     return NextResponse.redirect(new URL(next, request.url));
-  }
-
-  // Aplicar rewrite final si la ruta tenía prefijo de locale (e.g. /en/...).
-  if (rewriteToPath) {
-    const url = request.nextUrl.clone();
-    url.pathname = rewriteToPath;
-    const r = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
-    response.cookies.getAll().forEach((c) => r.cookies.set(c.name, c.value, c));
-    return r;
   }
 
   return response;
