@@ -14,6 +14,7 @@ const items = [
   { label: 'Certificados',href: '/certificados' },
   { label: 'Referidos',   href: '/mis-referidos' },
   { label: 'Mi saldo',    href: '/mi-saldo' },
+  { label: 'Contraseña',  href: '/mi-cuenta/seguridad' },
 ];
 
 export function AccountNav({ role }: { role: UserRole }) {
@@ -21,7 +22,12 @@ export function AccountNav({ role }: { role: UserRole }) {
   return (
     <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto">
       {items.map((it) => {
-        const active = pathname === it.href || pathname.startsWith(it.href + '/');
+        // '/mi-cuenta' (Resumen) es prefijo de otras rutas → match exacto para
+        // no resaltarlo cuando estamos en /mi-cuenta/seguridad, etc.
+        const active =
+          it.href === '/mi-cuenta'
+            ? pathname === it.href
+            : pathname === it.href || pathname.startsWith(it.href + '/');
         return (
           <Link
             key={it.href}

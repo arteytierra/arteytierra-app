@@ -147,6 +147,31 @@ export async function updatePasswordAction(
   redirect('/mi-cuenta');
 }
 
+// Cambio de contraseña desde "Mi cuenta" (usuario ya logueado).
+// A diferencia de updatePasswordAction (flujo de reset → redirige), acá
+// devolvemos éxito inline para confirmar en la misma pantalla.
+export async function changePasswordAction(
+  _: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = passwordSchema.safeParse(formData.get('password'));
+  if (!parsed.success) return { fieldErrors: { password: parsed.error.issues[0]!.message } };
+
+  const confirm = formData.get('confirm');
+  if (parsed.data !== confirm) {
+    return { fieldErrors: { confirm: 'Las contraseñas no coinciden.' } };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Tu sesión expiró. Volvé a iniciar sesión.' };
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+  if (error) return { error: 'No pudimos actualizar la contraseña. Intentá de nuevo.' };
+
+  return { ok: true };
+}
+
 // ----- Logout -----
 export async function logoutAction() {
   const supabase = await createSupabaseServerClient();
