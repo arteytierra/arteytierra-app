@@ -167,7 +167,21 @@ export async function changePasswordAction(
   if (!user) return { error: 'Tu sesión expiró. Volvé a iniciar sesión.' };
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data });
-  if (error) return { error: 'No pudimos actualizar la contraseña. Intentá de nuevo.' };
+  if (error) {
+    const msg = (error.message ?? '').toLowerCase();
+    const code = (error as { code?: string }).code ?? '';
+    // Traducimos los motivos más comunes; el resto lo mostramos crudo para poder diagnosticar.
+    if (code === 'same_password' || msg.includes('different from the old')) {
+      return { fieldErrors: { password: 'La nueva contraseña debe ser distinta de la actual.' } };
+    }
+    if (code === 'weak_password' || msg.includes('weak') || msg.includes('pwned') || msg.includes('easy to guess')) {
+      return { fieldErrors: { password: 'Esa contraseña es demasiado común o insegura. Probá con una más larga y difícil de adivinar.' } };
+    }
+    if (msg.includes('reauthentication') || code === 'reauthentication_needed') {
+      return { error: 'Por seguridad, tu sesión necesita revalidarse. Cerrá sesión, volvé a entrar y probá de nuevo.' };
+    }
+    return { error: `No pudimos actualizar la contraseña: ${error.message}` };
+  }
 
   return { ok: true };
 }
