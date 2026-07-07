@@ -11,8 +11,14 @@ export type TipoSector =
   | 'sol_invierno'
   | 'viento_ppal'
   | 'viento_frio'
+  | 'viento_calido'
   | 'fuego'
   | 'inundacion'
+  | 'helada'
+  | 'contaminacion'
+  | 'fauna'
+  | 'polinizadores'
+  | 'privacidad'
   | 'vista_positiva'
   | 'vista_negativa'
   | 'ruido'
@@ -30,8 +36,14 @@ export const TIPOS_SECTOR: Record<TipoSector, {
   sol_invierno:   { label: 'Sol de invierno',     descripcion: 'Trayectoria baja del sol, invierno',     color: '#FFB300', colorTw: 'bg-amber-400',   icono: '🌤️' },
   viento_ppal:    { label: 'Viento predominante', descripcion: 'Dirección del viento principal',         color: '#81D4FA', colorTw: 'bg-sky-200',    icono: '💨' },
   viento_frio:    { label: 'Viento frío',         descripcion: 'Viento frío de invierno',                color: '#B3E5FC', colorTw: 'bg-sky-100',    icono: '🌬️' },
+  viento_calido:  { label: 'Brisa cálida',        descripcion: 'Viento cálido / brisa de verano',        color: '#FFCC80', colorTw: 'bg-orange-200', icono: '🍃' },
   fuego:          { label: 'Riesgo de incendio',  descripcion: 'Zona de mayor riesgo de incendio',       color: '#FF7043', colorTw: 'bg-orange-500', icono: '🔥' },
   inundacion:     { label: 'Riesgo de inundación',descripcion: 'Área susceptible a anegamiento',         color: '#29B6F6', colorTw: 'bg-blue-400',   icono: '💧' },
+  helada:         { label: 'Bolsón de helada',    descripcion: 'Acumulación de aire frío / heladas',     color: '#B39DDB', colorTw: 'bg-indigo-200', icono: '❄️' },
+  contaminacion:  { label: 'Deriva / contaminación', descripcion: 'Agroquímicos, humo, polvo de vecinos', color: '#A1887F', colorTw: 'bg-stone-400', icono: '☣️' },
+  fauna:          { label: 'Corredor de fauna',   descripcion: 'Paso de fauna nativa, biodiversidad',    color: '#8D6E63', colorTw: 'bg-amber-800',  icono: '🦌' },
+  polinizadores:  { label: 'Polinizadores',       descripcion: 'Flujo de abejas y polinizadores',        color: '#FFD54F', colorTw: 'bg-yellow-300', icono: '🐝' },
+  privacidad:     { label: 'Privacidad / miradas',descripcion: 'Miradas externas a tapar con vegetación',color: '#90A4AE', colorTw: 'bg-slate-400',  icono: '👁️' },
   vista_positiva: { label: 'Vista positiva',      descripcion: 'Paisaje, cerros, vegetación linda',      color: '#A5D6A7', colorTw: 'bg-green-200',  icono: '🏔️' },
   vista_negativa: { label: 'Vista negativa',      descripcion: 'Ruta, industria, construcción fea',      color: '#BDBDBD', colorTw: 'bg-gray-300',   icono: '🏭' },
   ruido:          { label: 'Fuente de ruido',     descripcion: 'Ruta, vecinos, actividad industrial',    color: '#CE93D8', colorTw: 'bg-purple-200', icono: '📢' },

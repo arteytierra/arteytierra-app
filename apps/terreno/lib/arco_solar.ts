@@ -169,5 +169,5 @@ export function calcularRadioArco(
   const dLat   = (Math.max(...lats) - Math.min(...lats)) * 111320;
   const dLng   = (Math.max(...lngs) - Math.min(...lngs)) * 111320 * Math.cos(lat_centro * DEG);
   const diag   = Math.sqrt(dLat ** 2 + dLng ** 2);
-  return Math.max(150, Math.min(2000, Math.round(diag * 1.3)));
+  return Math.max(150, Math.min(5000, Math.round(diag * 0.35)));
 }

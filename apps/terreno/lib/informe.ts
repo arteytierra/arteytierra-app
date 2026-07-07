@@ -6,6 +6,11 @@ import type { DatosClima }       from './clima';
 import type { DatosTopografia }  from './topografia';
 import type { CaptacionSnapshot } from './captacion';
 import type { DatosSuelo }       from './suelos';
+import type { Extremos }         from './climaExtremos';
+import type { RedAguaResumen }   from './hidraulica';
+import type { RepresaResumen }   from './represa';
+import type { RiegoResumen }     from './riego';
+import type { CoberturaResumen } from './cobertura';
 import type { Zona }             from './zonificacion';
 import type { Mojon }            from './types';
 import type { MetricasPoligono } from './geometria';
@@ -16,9 +21,14 @@ export interface InformeData {
   mojones:    Mojon[];
   metricas?:  MetricasPoligono;
   clima?:     DatosClima;
+  extremos?:  Extremos;
   topo?:      DatosTopografia;
   captacion?: CaptacionSnapshot;
   suelo?:     DatosSuelo;
+  redAgua?:   RedAguaResumen;
+  represa?:   RepresaResumen;
+  riego?:     RiegoResumen;
+  cobertura?: CoberturaResumen;
   zonas?:     Zona[];
   mapaDataUrl?: string;         // PNG del mapa capturado (base64)
 }

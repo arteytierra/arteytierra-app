@@ -6,12 +6,15 @@ import {
   Trash2, LogOut, Map, ChevronRight, MapPin, Cloud,
   FolderOpen, Mountain, Droplets, FileText, CalendarDays,
   Layers, Sun, LayoutGrid, Compass, Waves, Route,
-  Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat,
+  Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
+  FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
+  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
 import { ProyectosPanel } from './ProyectosPanel';
 import { ClimaPanel } from './ClimaPanel';
+import { ContextoPanel } from './ContextoPanel';
 import { TopografiaPanel } from './TopografiaPanel';
 import { CaptacionPanel } from './CaptacionPanel';
 import { CalendarioPanel } from './CalendarioPanel';
@@ -23,6 +26,10 @@ import { ZonificacionPanel } from './ZonificacionPanel';
 import { SectoresPanel } from './SectoresPanel';
 import { AguadasPanel } from './AguadasPanel';
 import { CaminosPanel } from './CaminosPanel';
+import { RedAguaPanel } from './RedAguaPanel';
+import { PastoreoPanel } from './PastoreoPanel';
+import { RiegoPanel } from './RiegoPanel';
+import { CoberturaPanel } from './CoberturaPanel';
 import { calcularMetricas } from '@/lib/geometria';
 import * as turf from '@turf/turf';
 import { decimalAGMS } from '@/lib/coordenadas';
@@ -31,24 +38,47 @@ import { guardarInformeBorrador } from '@/lib/informe';
 import { guardarAutosave, leerAutosave, limpiarAutosave, tieneContenido, type AutosaveDoc } from '@/lib/autosave';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
-import { crearCamino, type Camino } from '@/lib/caminos';
+import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
+import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { fetchShader, type DatosShader } from '@/lib/shaders';
-import { calcularCurvasNivel, intervaloAutomatico, type CurvaNivel } from '@/lib/curvasNivel';
+import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
+import { calcularCurvas, intervaloAutomatico, type CurvaNivel } from '@/lib/curvasNivel';
+import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
+import { celdaEnPunto, delimitarCuenca, type Cuenca } from '@/lib/cuenca';
+import { CuencaPanel } from './CuencaPanel';
+import type { RedAguaResumen } from '@/lib/hidraulica';
+import type { RepresaResumen } from '@/lib/represa';
+import type { RiegoResumen } from '@/lib/riego';
+import type { PotrerosLayout } from '@/lib/potreros';
+import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
 import { SugerenciasPanel } from './SugerenciasPanel';
 import { DibujoToolbar } from './DibujoToolbar';
+import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
+import { KeylinePanel, type KeylineCheck } from './KeylinePanel';
+import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
+import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
+import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
+import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
-import { COLORES_DIBUJO, distanciaMetros } from '@/lib/dibujos';
+import { COLORES_DIBUJO, distanciaMetros, medidasDibujo, interseccionSegmentos } from '@/lib/dibujos';
+import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
+import { exportarDXF, parsearDXF } from '@/lib/dxf';
+import type { SnapSegmento, OverlayImagen } from './MapLeaflet';
+import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, type CapaUsuario } from '@/lib/capasUsuario';
+import { calcularMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan } from '@/lib/masterplan';
 import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
+import { actualizarProyecto, guardarProyecto } from '@/lib/proyectos';
 import type { Proyecto } from '@/lib/proyectos';
+import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
 import type { DatosClima } from '@/lib/clima';
+import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
 import type { DatosSuelo } from '@/lib/suelos';
@@ -71,16 +101,38 @@ const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
 });
 
 type Tab =
-  | 'mojones' | 'clima'  | 'topo'    | 'suelo'
+  | 'mojones' | 'clima'  | 'contexto' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'prod'   | 'aptitud'
-  | 'zonas'   | 'sectores' | 'aguadas' | 'caminos'
+  | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
   | 'proyectos';
+
+interface DocDisenoSnapshot {
+  mojones:      Mojon[];
+  zonas:        Zona[];
+  sectores:     Sector[];
+  pines:        Pin[];
+  caminos:      Camino[];
+  aguadasLayer: ElementoAguada[];
+  dibujos:      ElementoDibujo[];
+  capasUsuario: CapaUsuario[];
+}
+interface Escenario { id: string; nombre: string; creado: string; doc: DocDisenoSnapshot }
 
 interface ModoZona    { categoria: CategoriaZona; vertices: Array<{ lat: number; lng: number }> }
 interface ModoSector  { tipo: TipoSector;          vertices: Array<{ lat: number; lng: number }> }
 interface ModoCamino  { vertices: Array<{ lat: number; lng: number }> }
 
 interface Props { userName: string | null }
+
+function errMsgApp(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object') {
+    const o = err as Record<string, unknown>;
+    const parts = [o['message'], o['details'], o['hint'], o['code']].filter(Boolean).map(String);
+    if (parts.length) return parts.join(' · ');
+  }
+  return String(err);
+}
 
 export function MapaTerrenoApp({ userName }: Props) {
   const router = useRouter();
@@ -101,18 +153,19 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [datosSuelo,      setDatosSuelo]      = useState<DatosSuelo | null>(null);
   const [sueloLoading,    setSueloLoading]    = useState(false);
   const [sueloError,      setSueloError]      = useState<string | null>(null);
+  const [datosExtremos,   setDatosExtremos]   = useState<Extremos | null>(null);
 
   // ─── Shader topográfico ───────────────────────────────────────────────────
   const [datosShader,   setDatosShader]   = useState<DatosShader | null>(null);
   const [shaderLoading, setShaderLoading] = useState(false);
   const [shaderError,   setShaderError]   = useState<string | null>(null);
 
-  // ─── Curvas de nivel ──────────────────────────────────────────────────────
+  // ─── Curvas de nivel (grilla densa Terrarium + fallback shader) ──────────
   const [intervaloContorno, setIntervaloContorno] = useState<number | null>(null); // null = auto
-  const curvasNivel = useMemo<CurvaNivel[]>(
-    () => datosShader ? calcularCurvasNivel(datosShader, intervaloContorno ?? undefined) : [],
-    [datosShader, intervaloContorno],
-  );
+  const [grillaCurvas,      setGrillaCurvas]      = useState<GrillaElevacion | null>(null);
+  const [curvasLoading,     setCurvasLoading]     = useState(false);
+  const grillaKeyRef = useRef<string>('');
+  const [colorCurvas, setColorCurvas] = useState({ normal: '#7B1FA2', maestra: '#4527A0' });
 
   const [mostrarAptitud, setMostrarAptitud] = useState(false);
 
@@ -130,10 +183,12 @@ export function MapaTerrenoApp({ userName }: Props) {
     caminos:      Camino[];
     aguadasLayer: ElementoAguada[];
     dibujos:      ElementoDibujo[];
+    capasUsuario: CapaUsuario[];
   }
-  const DOC_INICIAL: DocDiseno = { mojones: [], zonas: [], sectores: [], pines: [], caminos: [], aguadasLayer: [], dibujos: [] };
+  const DOC_INICIAL: DocDiseno = { mojones: [], zonas: [], sectores: [], pines: [], caminos: [], aguadasLayer: [], dibujos: [], capasUsuario: CAPAS_USUARIO_INICIAL };
   const { present: doc, commit, replace: replaceDoc, undo, redo, canUndo, canRedo } = useHistory<DocDiseno>(DOC_INICIAL);
   const { mojones, zonas, sectores, pines, caminos, aguadasLayer, dibujos } = doc;
+  const capasUsuario = doc.capasUsuario ?? CAPAS_USUARIO_INICIAL;
 
   // Shims drop-in: misma firma que los useState anteriores, ruteado por historial
   const setMojones      = useCallback((v: Mojon[]           | ((p: Mojon[])           => Mojon[]))           => commit(d => ({ ...d, mojones:      typeof v === 'function' ? v(d.mojones)      : v })), [commit]);
@@ -143,15 +198,27 @@ export function MapaTerrenoApp({ userName }: Props) {
   const setCaminos      = useCallback((v: Camino[]          | ((p: Camino[])          => Camino[]))          => commit(d => ({ ...d, caminos:      typeof v === 'function' ? v(d.caminos)      : v })), [commit]);
   const setAguadasLayer = useCallback((v: ElementoAguada[]  | ((p: ElementoAguada[])  => ElementoAguada[]))  => commit(d => ({ ...d, aguadasLayer: typeof v === 'function' ? v(d.aguadasLayer) : v })), [commit]);
   const setDibujos      = useCallback((v: ElementoDibujo[]  | ((p: ElementoDibujo[])  => ElementoDibujo[]))  => commit(d => ({ ...d, dibujos:      typeof v === 'function' ? v(d.dibujos)      : v })), [commit]);
+  const setCapasUsuario = useCallback((v: CapaUsuario[]     | ((p: CapaUsuario[])     => CapaUsuario[]))     => commit(d => ({ ...d, capasUsuario: typeof v === 'function' ? v(d.capasUsuario ?? CAPAS_USUARIO_INICIAL) : v })), [commit]);
 
   const [modoZona,    setModoZona]    = useState<ModoZona | null>(null);
   const [modoSector,  setModoSector]  = useState<ModoSector | null>(null);
   const [modoPinClick,setModoPinClick]= useState(false);
   const [pinEditId,   setPinEditId]   = useState<string | null>(null);
   const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
+  const [modoCuenca,  setModoCuenca]  = useState(false);
+  const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
+  const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
+  const [represaResumen, setRepresaResumen] = useState<RepresaResumen | null>(null);
+  const [riegoResumen,   setRiegoResumen]   = useState<RiegoResumen | null>(null);
+  const [potrerosLayer,  setPotrerosLayer]  = useState<PotrerosLayout | null>(null);
+  const [datosCobertura, setDatosCobertura] = useState<DatosCobertura | null>(null);
+  const [coberturaResumen, setCoberturaResumen] = useState<CoberturaResumen | null>(null);
 
   // ─── Terrarium rango auto-detectado ──────────────────────────────────────
   const [terrariumRango, setTerrariumRango] = useState<{min: number; max: number} | null>(null);
+
+  // ─── Opacidad de los shaders ──────────────────────────────────────────────
+  const [opacidadShader, setOpacidadShader] = useState({ elev: 0.65, pend: 0.65 });
 
   // ─── Autosave ─────────────────────────────────────────────────────────────
   const [autosaveBanner, setAutosaveBanner] = useState<AutosaveDoc | null>(null);
@@ -161,16 +228,84 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [capas, setCapas] = useState<CapasVisibles>({
     terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
     shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false,
-    linderoLabels: false, curvasNivel: false,
+    linderoLabels: false, curvasNivel: false, cotas: true, medidas: true,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
 
+  // ─── Capas de usuario: visibilidad (no undoable) y capa activa ────────────
+  const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
+  const [capaActivaId, setCapaActivaId] = useState<string>(CAPA_DEFAULT_ID);
+
+  // ─── Master Plan ──────────────────────────────────────────────────────────
+  const [programaMP,  setProgramaMP]  = useState<ItemPrograma[]>([]);
+  const [masterPlan,  setMasterPlan]  = useState<ElementoMasterPlan[] | null>(null);
+
+  // ─── Curvas de nivel: fetch de grilla densa al activar la capa ────────────
+  const mojonesKey = useMemo(
+    () => mojones.map(m => `${m.lat.toFixed(5)},${m.lng.toFixed(5)}`).join('|'),
+    [mojones],
+  );
+
+  useEffect(() => {
+    if (!capas.curvasNivel || mojones.length < 3) return;
+    if (grillaCurvas && grillaKeyRef.current === mojonesKey) return;
+    let cancelado = false;
+    setCurvasLoading(true);
+    obtenerGrillaDensa(mojones)
+      .then(g => {
+        if (cancelado) return;
+        if (g) { setGrillaCurvas(g); grillaKeyRef.current = mojonesKey; }
+      })
+      .finally(() => { if (!cancelado) setCurvasLoading(false); });
+    return () => { cancelado = true; };
+  }, [capas.curvasNivel, mojonesKey, mojones, grillaCurvas]);
+
+  const curvasNivel = useMemo<CurvaNivel[]>(() => {
+    const grilla = (grillaCurvas && grillaKeyRef.current === mojonesKey)
+      ? grillaCurvas
+      : (datosShader ? grillaDesdeShader(datosShader) : null);
+    if (!grilla) return [];
+    const intervalo = intervaloContorno ?? intervaloAutomatico(grilla.elev_max - grilla.elev_min);
+    return calcularCurvas(grilla, intervalo);
+  }, [grillaCurvas, mojonesKey, datosShader, intervaloContorno]);
+
+  const intervaloCurvasEfectivo = useMemo(() => {
+    if (intervaloContorno !== null) return intervaloContorno;
+    const grilla = grillaCurvas ?? (datosShader ? grillaDesdeShader(datosShader) : null);
+    return grilla ? intervaloAutomatico(grilla.elev_max - grilla.elev_min) : null;
+  }, [intervaloContorno, grillaCurvas, datosShader]);
+
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
-  const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | null>(null);
+  const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null>(null);
   const [dibujoEnCurso,  setDibujoEnCurso]  = useState<DibujoEnCurso | null>(null);
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
+  const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
+  const [espejoPendiente, setEspejoPendiente] = useState(false); // próximo polígono = espejo de agua
+  const [overlay, setOverlay] = useState<OverlayImagen | null>(null);
+  const cursorCadRef = useRef<{ lat: number; lng: number } | null>(null);
+  const cursorPosRef = useRef<{ lat: number; lng: number } | null>(null); // cursor sobre el mapa (barra de estado)
+  const [exportOpen, setExportOpen] = useState(false);
+  const [paletaOpen, setPaletaOpen] = useState(false);
+  const [ayudaOpen,  setAyudaOpen]  = useState(false);
+  const [tema, setTema] = useState<'claro' | 'sepia' | 'oscuro'>('claro');
+  const [bloqueActivo,   setBloqueActivo]   = useState<BloqueDef | null>(null);
+  const [keylineCheck,   setKeylineCheck]   = useState<Record<string, KeylineCheck>>({});
+  const [escenarios,     setEscenarios]     = useState<Escenario[]>([]);
+  const [escenarioActivoId, setEscenarioActivoId] = useState<string | null>(null);
+  const [guardandoNube, setGuardandoNube] = useState(false);
+  const [guardadoTick, setGuardadoTick] = useState(false);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
+
+  // ─── Perfil de elevación interactivo (dock inferior estilo Google Earth Pro) ──
+  const [perfilDock,  setPerfilDock]  = useState<{ vertices: Array<{ lat: number; lng: number }>; perfil: PerfilElevacion; nombre: string; color: string } | null>(null);
+  const [perfilPunto, setPerfilPunto] = useState<{ lat: number; lng: number } | null>(null);
+  const [perfilCargando, setPerfilCargando] = useState(false);
+  const [perfilError, setPerfilError] = useState<string | null>(null);
+
+  // ─── CAD: snap (F3) y ortho (F8) ──────────────────────────────────────────
+  const [snapActivo,  setSnapActivo]  = useState(true);
+  const [orthoActivo, setOrthoActivo] = useState(false);
 
   const dibujoSel = useMemo(() => dibujos.find(d => d.id === dibujoSelId) ?? null, [dibujos, dibujoSelId]);
 
@@ -185,7 +320,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || (modoDibujo && modoDibujo !== 'seleccion');
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
@@ -193,7 +328,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id))          : [], [capas.pines, pines, ocultosIds]);
   const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id))        : [], [capas.caminos, caminos, ocultosIds]);
   const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id))   : [], [capas.aguadas, aguadasLayer, ocultosIds]);
-  const dibujosFiltrados  = useMemo(() => capas.dibujos  ? dibujos.filter(d => !ocultosIds.has(d.id))        : [], [capas.dibujos, dibujos, ocultosIds]);
+  const dibujosFiltrados  = useMemo(() => capas.dibujos
+    ? dibujos.filter(d => !ocultosIds.has(d.id) && !capasOcultas.has(capaDeElemento(d.capaId, capasUsuario)))
+    : [], [capas.dibujos, dibujos, ocultosIds, capasOcultas, capasUsuario]);
 
   // ─── Escorrentías y sugerencias (cómputo derivado de shader) ─────────────
   const datosEscorrentia = useMemo<DatosEscorrentia | null>(
@@ -211,14 +348,16 @@ export function MapaTerrenoApp({ userName }: Props) {
     [datosShader, datosEscorrentia],
   );
 
+  const [arcoSolarOffset, setArcoSolarOffset] = useState<{ lat: number; lng: number } | null>(null);
+
   const datosArcoSolar = useMemo<DatosArcoSolar | null>(() => {
     if (mojones.length === 0) return null;
     const { lat, lng } = mojones.reduce((acc, m) => ({ lat: acc.lat + m.lat, lng: acc.lng + m.lng }), { lat: 0, lng: 0 });
-    const latC = lat / mojones.length;
-    const lngC = lng / mojones.length;
+    const latC = arcoSolarOffset?.lat ?? (lat / mojones.length);
+    const lngC = arcoSolarOffset?.lng ?? (lng / mojones.length);
     const radio = calcularRadioArco(mojones, latC);
     return calcularArcoSolar(latC, lngC, radio);
-  }, [mojones]);
+  }, [mojones, arcoSolarOffset]);
 
   const metadatos = useMemo<Record<string, unknown>>(() => {
     const m: Record<string, unknown> = {};
@@ -226,6 +365,13 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (datosTopografia) m['topo']     = datosTopografia;
     if (captacionSnap)   m['captacion']= captacionSnap;
     if (datosSuelo)      m['suelo']    = datosSuelo;
+    if (datosExtremos)   m['extremos'] = datosExtremos;
+    if (cuenca)          m['cuenca']   = cuenca;
+    if (redAguaResumen)  m['red_agua'] = redAguaResumen;
+    if (represaResumen)  m['represa']  = represaResumen;
+    if (riegoResumen)    m['riego']    = riegoResumen;
+    if (potrerosLayer)   m['potreros'] = potrerosLayer;
+    if (datosCobertura)  m['cobertura'] = datosCobertura;
     if (zonas.length)    m['zonas']    = zonas;
     if (sectores.length) m['sectores'] = sectores;
     if (pines.length)    m['pines']    = pines;
@@ -233,8 +379,21 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (datosShader)     m['shader']   = datosShader;
     if (dibujos.length)       m['dibujos']       = dibujos;
     if (aguadasLayer.length)  m['aguadas_layer'] = aguadasLayer;
+    if (capasUsuario.length > 1 || capasUsuario[0]?.nombre !== 'Dibujos') m['capas_usuario'] = capasUsuario;
+    if (programaMP.length)    m['programa_mp']   = programaMP;
+    if (masterPlan?.length)   m['master_plan']   = masterPlan;
+    // Preferencias de vista y elementos solo-sesión → ahora se persisten con el proyecto
+    m['capas'] = capas;
+    if (overlay)              m['overlay']       = overlay;
+    if (ocultosIds.size)      m['ocultos_ids']   = [...ocultosIds];
+    if (capasOcultas.size)    m['capas_ocultas'] = [...capasOcultas];
+    if (rotuloVisible || Object.values(rotulo).some(Boolean)) { m['rotulo'] = rotulo; m['rotulo_visible'] = rotuloVisible; }
+    if (capturaTitulo)        m['captura_titulo'] = capturaTitulo;
+    if (intervaloContorno !== null) m['intervalo_contorno'] = intervaloContorno;
+    if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
+    if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, zonas, sectores, pines, caminos, dibujos, aguadasLayer]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -250,6 +409,18 @@ export function MapaTerrenoApp({ userName }: Props) {
     return terrariumRango?.max ?? 500;
   }, [datosShader, datosTopografia, terrariumRango]);
 
+  // ─── Tema de vista (persistido por dispositivo) ───────────────────────────
+  useEffect(() => {
+    const t = (typeof localStorage !== 'undefined' && localStorage.getItem('terreno_tema')) as typeof tema | null;
+    if (t === 'sepia' || t === 'oscuro' || t === 'claro') setTema(t);
+  }, []);
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (tema === 'claro') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', tema);
+    try { localStorage.setItem('terreno_tema', tema); } catch { /* ignore */ }
+  }, [tema]);
+
   // ─── Autosave: montar ─────────────────────────────────────────────────────
   useEffect(() => {
     const saved = leerAutosave();
@@ -260,7 +431,12 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   // ─── Autosave: escribir en cada cambio ────────────────────────────────────
   useEffect(() => {
-    if (mojones.length === 0 && Object.keys(metadatos).length === 0) return;
+    // Solo autoguardar si hay contenido real (no basta con preferencias de vista
+    // como `capas`, que ahora viajan siempre en metadatos).
+    const hayContenido = mojones.length > 0 || dibujos.length > 0 || zonas.length > 0 ||
+      sectores.length > 0 || pines.length > 0 || caminos.length > 0 || aguadasLayer.length > 0 ||
+      !!datosClima || !!datosTopografia || !!datosShader || !!datosSuelo;
+    if (!hayContenido) return;
     dirtyRef.current = true;
     guardarAutosave({
       mojones,
@@ -285,17 +461,6 @@ export function MapaTerrenoApp({ userName }: Props) {
     return () => window.removeEventListener('beforeunload', handle);
   }, []);
 
-  // ─── Undo/redo por teclado ────────────────────────────────────────────────
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (!e.ctrlKey && !e.metaKey) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-      if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); redo(); }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [undo, redo]);
 
   // ─── Mojones ──────────────────────────────────────────────────────────────
   const agregarMojon = useCallback((lat: number, lng: number, centrarMapa = false) => {
@@ -359,12 +524,34 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
+    if (modoCuenca) {
+      setModoCuenca(false);
+      if (datosShader && datosEscorrentia) {
+        const celda = celdaEnPunto(datosShader, lat, lng);
+        if (celda) {
+          const c = delimitarCuenca(datosShader, datosEscorrentia.flowDir, datosEscorrentia.acumulacion, celda.row, celda.col);
+          if (c) setCuenca(c);
+        }
+      }
+      return;
+    }
     if (modoZona)    { setModoZona(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoSector)  { setModoSector(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoCamino)  { setModoCamino(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
-    if (modoPinClick){ setPines(prev => [...prev, crearPin(lat, lng)]); setModoPinClick(false); return; }
+    if (modoPinClick){
+      setPines(prev => [...prev, bloqueActivo
+        ? { id: crypto.randomUUID(), lat, lng, nombre: bloqueActivo.nombre, color: bloqueActivo.color, icono: bloqueActivo.icono, notas: '' }
+        : crearPin(lat, lng)]);
+      setModoPinClick(false); setBloqueActivo(null); return;
+    }
+    if (modoDibujo === 'medir') { setMedicionVertices(prev => [...prev, { lat, lng }]); return; }
 
     if (modoDibujo && modoDibujo !== 'seleccion') {
+      // Punto: colocación inmediata, sin dibujoEnCurso
+      if (modoDibujo === 'punto') {
+        setDibujos(d => [...d, { id: crypto.randomUUID(), tipo: 'punto', color: colorDibujo, lat, lng, capaId: capaActivaId }]);
+        return;
+      }
       if (modoDibujo === 'texto') {
         const pendLat = lat, pendLng = lng;
         setModal({
@@ -372,21 +559,53 @@ export function MapaTerrenoApp({ userName }: Props) {
           onConfirm: texto => {
             setDibujos(prev => [...prev, {
               id: crypto.randomUUID(), tipo: 'texto', color: colorDibujo,
-              lat: pendLat, lng: pendLng, texto, tamano: 14,
+              lat: pendLat, lng: pendLng, texto, tamano: 14, capaId: capaActivaId,
             }]);
           },
         });
         return;
       }
       setDibujoEnCurso(prev => {
-        if (!prev) return { tipo: modoDibujo, vertices: [{ lat, lng }] };
+        if (!prev) {
+          const tipoBase: TipoDibujo =
+            modoDibujo === 'rectangulo' ? 'poligono' :
+            modoDibujo === 'mano_libre' ? 'linea' :
+            modoDibujo === 'radio_accion' ? 'circulo' :
+            modoDibujo as TipoDibujo;
+          return { tipo: tipoBase, vertices: [{ lat, lng }] };
+        }
         const next = [...prev.vertices, { lat, lng }];
-        // Auto-finalizar círculo al tener 2 puntos
-        if (modoDibujo === 'circulo' && next.length === 2) {
+        // Auto-finalizar círculo o radio de acción al tener 2 puntos
+        if ((modoDibujo === 'circulo' || modoDibujo === 'radio_accion') && next.length === 2) {
           const id    = crypto.randomUUID();
           const radio = distanciaMetros(next[0]!.lat, next[0]!.lng, next[1]!.lat, next[1]!.lng);
-          setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: 0.18 }]);
-          return { tipo: modoDibujo, vertices: [] };
+          setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: modoDibujo === 'radio_accion' ? 0.08 : 0.18, capaId: capaActivaId }]);
+          return { tipo: prev.tipo, vertices: [] };
+        }
+        // Auto-finalizar cota al tener 2 puntos
+        if (modoDibujo === 'cota' && next.length === 2) {
+          const id = crypto.randomUUID();
+          setDibujos(d => [...d, { id, tipo: 'cota', color: colorDibujo, vertices: next, capaId: capaActivaId }]);
+          return { tipo: prev.tipo, vertices: [] };
+        }
+        // Auto-finalizar rectángulo al tener 2 puntos
+        if (modoDibujo === 'rectangulo' && next.length === 2) {
+          const [p1, p2] = next;
+          const id = crypto.randomUUID();
+          const vertices = [
+            { lat: p1!.lat, lng: p1!.lng },
+            { lat: p1!.lat, lng: p2!.lng },
+            { lat: p2!.lat, lng: p2!.lng },
+            { lat: p2!.lat, lng: p1!.lng },
+          ];
+          setDibujos(d => [...d, { id, tipo: 'poligono', color: colorDibujo, vertices, opacidad: 0.22, capaId: capaActivaId }]);
+          return { tipo: prev.tipo, vertices: [] };
+        }
+        // Auto-finalizar flecha al tener 2 puntos
+        if (modoDibujo === 'flecha' && next.length === 2) {
+          const id = crypto.randomUUID();
+          setDibujos(d => [...d, { id, tipo: 'flecha', color: colorDibujo, vertices: next, grosor: 3, capaId: capaActivaId }]);
+          return { tipo: prev.tipo, vertices: [] };
         }
         return { ...prev, vertices: next };
       });
@@ -394,7 +613,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, agregarMojon]);
+  }, [modoCuenca, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -439,13 +658,57 @@ export function MapaTerrenoApp({ userName }: Props) {
   }, [modoCamino]);
   const handleCancelarCamino  = useCallback(() => setModoCamino(null), []);
 
+  // Asegura la cota del DEM en la traza de un camino (para Red de agua). Lo pide si falta.
+  const handleCargarPerfilCamino = useCallback(async (id: string): Promise<PerfilElevacion | null> => {
+    const c = caminos.find(x => x.id === id);
+    if (!c) return null;
+    if (c.perfil) return c.perfil;
+    const r = await fetchPerfilElevacion(c.vertices);
+    if ('error' in r) return null;
+    setCaminos(prev => prev.map(x => x.id === id ? { ...x, perfil: r.perfil } : x));
+    return r.perfil;
+  }, [caminos, setCaminos]);
+
+  // Abre el perfil de un camino en el dock inferior interactivo (lo pide si no está cacheado).
+  const handleAbrirPerfilDock = useCallback(async (camino: Camino) => {
+    if (perfilDock && perfilDock.nombre === camino.nombre && perfilDock.vertices === camino.vertices) {
+      setPerfilDock(null); setPerfilPunto(null); return;   // toggle
+    }
+    setPerfilError(null);
+    if (camino.perfil) {
+      setPerfilDock({ vertices: camino.vertices, perfil: camino.perfil, nombre: camino.nombre, color: camino.color });
+      return;
+    }
+    setPerfilCargando(true);
+    const r = await fetchPerfilElevacion(camino.vertices);
+    setPerfilCargando(false);
+    if ('error' in r) { setPerfilError(r.error); return; }
+    setCaminos(prev => prev.map(c => c.id === camino.id ? { ...c, perfil: r.perfil } : c));
+    setPerfilDock({ vertices: camino.vertices, perfil: r.perfil, nombre: camino.nombre, color: camino.color });
+  }, [perfilDock]);
+
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
-  const handleCambiarModo = useCallback((modo: TipoDibujo | 'seleccion' | null) => {
+  const handleCambiarModo = useCallback((modo: TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null) => {
     setModoDibujo(modo);
-    setDibujoEnCurso(modo && modo !== 'seleccion' ? { tipo: modo, vertices: [] } : null);
+    const tipoParaEnCurso: TipoDibujo | null =
+      !modo || modo === 'seleccion' || modo === 'medir' ? null :
+      modo === 'rectangulo' ? 'poligono' :
+      modo === 'mano_libre'  ? 'linea' :
+      modo === 'radio_accion' ? 'circulo' :
+      modo as TipoDibujo;
+    setDibujoEnCurso(tipoParaEnCurso ? { tipo: tipoParaEnCurso, vertices: [] } : null);
+    setMedicionVertices([]);
     setDibujoSelId(null);
+    setEspejoPendiente(false);
     if (modo) { setModoClick(false); }
   }, []);
+
+  // Dibujar el espejo de agua de una aguada (polígono azul que el cut&fill puede usar)
+  const handleDibujarEspejo = useCallback(() => {
+    setColorDibujo('#1E88E5');
+    handleCambiarModo('poligono');
+    setEspejoPendiente(true);
+  }, [handleCambiarModo]);
 
   const handleClickDibujo = useCallback((id: string) => {
     setDibujoSelId(prev => prev === id ? null : id);
@@ -457,36 +720,72 @@ export function MapaTerrenoApp({ userName }: Props) {
     setDibujoSelId(null);
   }, [dibujoSelId]);
 
+  const handleCambiarColorDibujo = useCallback((color: string) => {
+    if (!dibujoSelId) return;
+    setDibujos(prev => prev.map(d => d.id === dibujoSelId ? { ...d, color } : d));
+  }, [dibujoSelId]);
+
+  const handleMoverAdelante = useCallback(() => {
+    if (!dibujoSelId) return;
+    setDibujos(prev => {
+      const idx = prev.findIndex(d => d.id === dibujoSelId);
+      if (idx < 0 || idx === prev.length - 1) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[idx + 1]] = [arr[idx + 1]!, arr[idx]!];
+      return arr;
+    });
+  }, [dibujoSelId]);
+
+  const handleMoverAtras = useCallback(() => {
+    if (!dibujoSelId) return;
+    setDibujos(prev => {
+      const idx = prev.findIndex(d => d.id === dibujoSelId);
+      if (idx <= 0) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[idx - 1]] = [arr[idx - 1]!, arr[idx]!];
+      return arr;
+    });
+  }, [dibujoSelId]);
+
   const handleFinalizarDibujo = useCallback(() => {
     if (!dibujoEnCurso) return;
-    const id    = crypto.randomUUID();
-    const color = colorDibujo;
-    const verts = dibujoEnCurso.vertices;
+    const id     = crypto.randomUUID();
+    const color  = colorDibujo;
+    const verts  = dibujoEnCurso.vertices;
+    const capaId = capaActivaId;
 
     if (dibujoEnCurso.tipo === 'linea' && verts.length >= 2)
-      setDibujos(prev => [...prev, { id, tipo: 'linea',    color, vertices: verts, grosor: 3 }]);
+      setDibujos(prev => [...prev, { id, tipo: 'linea',    color, vertices: verts, grosor: 3, capaId }]);
     else if (dibujoEnCurso.tipo === 'curva' && verts.length >= 2)
-      setDibujos(prev => [...prev, { id, tipo: 'curva',    color, vertices: verts, grosor: 3 }]);
+      setDibujos(prev => [...prev, { id, tipo: 'curva',    color, vertices: verts, grosor: 3, capaId }]);
     else if (dibujoEnCurso.tipo === 'poligono' && verts.length >= 3)
-      setDibujos(prev => [...prev, { id, tipo: 'poligono', color, vertices: verts, opacidad: 0.22 }]);
+      setDibujos(prev => [...prev, espejoPendiente
+        ? { id, tipo: 'poligono', color: '#1E88E5', vertices: verts, opacidad: 0.42, capaId, nombre: `Espejo de agua ${prev.filter(d => d.nombre?.startsWith('Espejo de agua')).length + 1}` }
+        : { id, tipo: 'poligono', color, vertices: verts, opacidad: 0.22, capaId }]);
     else if (dibujoEnCurso.tipo === 'circulo' && verts.length === 2) {
       const radio = distanciaMetros(verts[0]!.lat, verts[0]!.lng, verts[1]!.lat, verts[1]!.lng);
-      setDibujos(prev => [...prev, { id, tipo: 'circulo', color, lat: verts[0]!.lat, lng: verts[0]!.lng, radio, opacidad: 0.18 }]);
+      setDibujos(prev => [...prev, { id, tipo: 'circulo', color, lat: verts[0]!.lat, lng: verts[0]!.lng, radio, opacidad: 0.18, capaId }]);
     }
+    else if (dibujoEnCurso.tipo === 'cota' && verts.length === 2)
+      setDibujos(prev => [...prev, { id, tipo: 'cota', color, vertices: verts, capaId }]);
+    else if (dibujoEnCurso.tipo === 'flecha' && verts.length >= 2)
+      setDibujos(prev => [...prev, { id, tipo: 'flecha', color, vertices: verts, grosor: 3, capaId }]);
 
     setDibujoEnCurso({ tipo: dibujoEnCurso.tipo, vertices: [] });
-  }, [dibujoEnCurso, colorDibujo]);
+  }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente]);
 
   const handleCancelarDibujo = useCallback(() => {
     setModoDibujo(null);
     setDibujoEnCurso(null);
+    setMedicionVertices([]);
     setDibujoSelId(null);
+    setEspejoPendiente(false);
   }, []);
 
   const handleMoverDibujo = useCallback((id: string, dLat: number, dLng: number) => {
     setDibujos(prev => prev.map(d => {
       if (d.id !== id) return d;
-      if (d.tipo === 'texto' || d.tipo === 'circulo')
+      if (d.tipo === 'texto' || d.tipo === 'circulo' || d.tipo === 'punto')
         return { ...d, lat: d.lat + dLat, lng: d.lng + dLng };
       return { ...d, vertices: d.vertices.map(v => ({ lat: v.lat + dLat, lng: v.lng + dLng })) };
     }));
@@ -494,10 +793,28 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   const handleMoverVertice = useCallback((id: string, idx: number, lat: number, lng: number) => {
     setDibujos(prev => prev.map(d => {
-      if (d.id !== id || d.tipo === 'texto' || d.tipo === 'circulo') return d;
+      if (d.id !== id || d.tipo === 'texto' || d.tipo === 'circulo' || d.tipo === 'punto') return d;
       const vertices = [...d.vertices];
       vertices[idx] = { lat, lng };
       return { ...d, vertices };
+    }));
+  }, []);
+
+  const handleInsertarVertice = useCallback((id: string, idxAfter: number, lat: number, lng: number) => {
+    setDibujos(prev => prev.map(d => {
+      if (d.id !== id || d.tipo === 'texto' || d.tipo === 'circulo' || d.tipo === 'punto') return d;
+      const vertices = [...d.vertices];
+      vertices.splice(idxAfter + 1, 0, { lat, lng });
+      return { ...d, vertices };
+    }));
+  }, []);
+
+  const handleEliminarVertice = useCallback((id: string, idx: number) => {
+    setDibujos(prev => prev.map(d => {
+      if (d.id !== id || d.tipo === 'texto' || d.tipo === 'circulo' || d.tipo === 'punto') return d;
+      const min = d.tipo === 'poligono' ? 3 : 2;
+      if (d.vertices.length <= min) return d;
+      return { ...d, vertices: d.vertices.filter((_, i) => i !== idx) };
     }));
   }, []);
 
@@ -506,9 +823,392 @@ export function MapaTerrenoApp({ userName }: Props) {
     setDibujos(prev => prev.map(d => d.id === dibujoSelId ? { ...d, nombre, notas } : d));
   }, [dibujoSelId]);
 
+  // ─── Transformaciones CAD sobre el elemento seleccionado ──────────────────
+  const handleTransformar = useCallback((op: TransformarOp) => {
+    if (!dibujoSel) return;
+    const centro = mojones.length >= 3
+      ? { lat: mojones.reduce((s, m) => s + m.lat, 0) / mojones.length, lng: mojones.reduce((s, m) => s + m.lng, 0) / mojones.length }
+      : centroideDibujo(dibujoSel);
+    const { reemplazo, nuevos } = aplicarTransformacion(dibujoSel, op, centro);
+    setDibujos(prev => {
+      let arr = reemplazo ? prev.map(d => d.id === reemplazo.id ? reemplazo : d) : prev;
+      if (nuevos && nuevos.length) arr = [...arr, ...nuevos];
+      return arr;
+    });
+  }, [dibujoSel, mojones]);
+
+  // ─── Medición efímera ─────────────────────────────────────────────────────
+  const handleLimpiarMedicion = useCallback(() => setMedicionVertices([]), []);
+
+  // ─── Interop DXF ──────────────────────────────────────────────────────────
+  const origenGeo = useCallback((): { lat: number; lng: number } => (
+    mojones.length >= 1
+      ? { lat: mojones.reduce((s, m) => s + m.lat, 0) / mojones.length, lng: mojones.reduce((s, m) => s + m.lng, 0) / mojones.length }
+      : { lat: -30.8, lng: -64.7 }
+  ), [mojones]);
+
+  const handleExportarDXF = useCallback(() => {
+    const dxf = exportarDXF(dibujos, mojones, origenGeo());
+    const blob = new Blob([dxf], { type: 'application/dxf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(proyectoActual?.nombre ?? 'terreno').replace(/[^\w-]/g, '_')}.dxf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }, [dibujos, mojones, origenGeo, proyectoActual]);
+
+  const handleImportarDXF = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const nuevos = parsearDXF(String(reader.result ?? ''), origenGeo(), colorDibujo, capaActivaId);
+        if (nuevos.length) setDibujos(prev => [...prev, ...nuevos]);
+        setModal({ type: 'alert', message: nuevos.length ? `Se importaron ${nuevos.length} elemento(s) del DXF.` : 'No se encontraron entidades compatibles en el DXF.' });
+      } catch {
+        setModal({ type: 'alert', message: 'No se pudo leer el archivo DXF.' });
+      }
+    };
+    reader.readAsText(file);
+  }, [origenGeo, colorDibujo, capaActivaId]);
+
+  // ─── Guardado rápido en la nube (barra superior) ──────────────────────────
+  const handleGuardarNube = useCallback(async () => {
+    if (mojones.length === 0) { setModal({ type: 'alert', message: 'Trazá al menos un mojón antes de guardar.' }); return; }
+    if (!proyectoActual) { setTab('proyectos'); setPanelAbierto(true); return; } // proyecto nuevo: necesita nombre
+    setGuardandoNube(true);
+    try {
+      await actualizarProyecto(proyectoActual.id, proyectoActual.nombre, proyectoActual.descripcion ?? '', mojones, metadatos);
+      setGuardadoTick(true);
+      setTimeout(() => setGuardadoTick(false), 2200);
+    } catch (e) {
+      setModal({ type: 'alert', message: `No se pudo guardar en la nube: ${errMsgApp(e)}` });
+    } finally {
+      setGuardandoNube(false);
+    }
+  }, [mojones, proyectoActual, metadatos]);
+
+  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setExportOpen(false); }, [mojones, zonas, sectores, pines, caminos, proyectoActual]);
+  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setExportOpen(false); }, [mojones, proyectoActual]);
+  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setExportOpen(false); }, [mojones, proyectoActual]);
+
+  // ─── Overlay de imagen (plano de referencia) ──────────────────────────────
+  const handleCargarOverlay = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result ?? '');
+      let sw: { lat: number; lng: number }, ne: { lat: number; lng: number };
+      if (mojones.length >= 2) {
+        const lats = mojones.map(m => m.lat), lngs = mojones.map(m => m.lng);
+        sw = { lat: Math.min(...lats), lng: Math.min(...lngs) };
+        ne = { lat: Math.max(...lats), lng: Math.max(...lngs) };
+      } else {
+        const c = origenGeo();
+        sw = { lat: c.lat - 0.002, lng: c.lng - 0.002 };
+        ne = { lat: c.lat + 0.002, lng: c.lng + 0.002 };
+      }
+      setOverlay({ url, sw, ne, opacidad: 0.6 });
+    };
+    reader.readAsDataURL(file);
+  }, [mojones, origenGeo]);
+
+  const handleOverlayEsquina = useCallback((esq: 'sw' | 'ne' | 'centro', lat: number, lng: number) => {
+    setOverlay(prev => {
+      if (!prev) return prev;
+      if (esq === 'sw') return { ...prev, sw: { lat, lng } };
+      if (esq === 'ne') return { ...prev, ne: { lat, lng } };
+      const cen = { lat: (prev.sw.lat + prev.ne.lat) / 2, lng: (prev.sw.lng + prev.ne.lng) / 2 };
+      const dLat = lat - cen.lat, dLng = lng - cen.lng;
+      return { ...prev, sw: { lat: prev.sw.lat + dLat, lng: prev.sw.lng + dLng }, ne: { lat: prev.ne.lat + dLat, lng: prev.ne.lng + dLng } };
+    });
+  }, []);
+
+  // ─── Entrada por teclado: largo (y opcionalmente azimut) desde el último vértice ──
+  // azDeg null → usa la dirección hacia el cursor (estilo CAD dinámico).
+  const handleEntradaCoord = useCallback((distM: number, azDeg: number | null) => {
+    const base =
+      modoDibujo === 'medir' ? medicionVertices[medicionVertices.length - 1] :
+      dibujoEnCurso && dibujoEnCurso.vertices.length ? dibujoEnCurso.vertices[dibujoEnCurso.vertices.length - 1] :
+      modoZona && modoZona.vertices.length ? modoZona.vertices[modoZona.vertices.length - 1] :
+      modoSector && modoSector.vertices.length ? modoSector.vertices[modoSector.vertices.length - 1] :
+      modoCamino && modoCamino.vertices.length ? modoCamino.vertices[modoCamino.vertices.length - 1] :
+      null;
+    if (!base) return false;
+    let azDegFinal = azDeg;
+    if (azDegFinal === null) {
+      const cur = cursorCadRef.current;
+      if (!cur) return false; // sin dirección: mové el mouse o ingresá el ángulo
+      const φ1 = base.lat * Math.PI / 180, φ2 = cur.lat * Math.PI / 180;
+      const dλ = (cur.lng - base.lng) * Math.PI / 180;
+      const y = Math.sin(dλ) * Math.cos(φ2);
+      const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(dλ);
+      azDegFinal = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+    const az = (azDegFinal * Math.PI) / 180;
+    const lat = base.lat + (distM * Math.cos(az)) / 111_320;
+    const lng = base.lng + (distM * Math.sin(az)) / (111_320 * Math.cos(base.lat * Math.PI / 180));
+    handleMapClick(lat, lng);
+    return true;
+  }, [modoDibujo, medicionVertices, dibujoEnCurso, modoZona, modoSector, modoCamino, handleMapClick]);
+
   const handleMoverPin = useCallback((id: string, lat: number, lng: number) => {
     setPines(prev => prev.map(p => p.id === id ? { ...p, lat, lng } : p));
   }, []);
+
+  // ─── Atajos de teclado (estilo CAD) ───────────────────────────────────────
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const enInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
+      // Ctrl/⌘+K = paleta de comandos (disponible en todos lados)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPaletaOpen(o => !o); return; }
+
+      // F3 = snap · F8 = ortho (siempre disponibles fuera de inputs)
+      if (e.key === 'F3' && !enInput) { e.preventDefault(); setSnapActivo(p => !p); return; }
+      if (e.key === 'F8' && !enInput) { e.preventDefault(); setOrthoActivo(p => !p); return; }
+
+      if (enInput || modal) return;
+
+      // ? = hoja de atajos
+      if (e.key === '?') { e.preventDefault(); setAyudaOpen(o => !o); return; }
+
+      // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+        if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); redo(); }
+        return;
+      }
+
+      // Enter: finalizar el dibujo en curso (o reiniciar la medición)
+      if (e.key === 'Enter') {
+        if (modoDibujo === 'medir') { e.preventDefault(); setMedicionVertices([]); return; }
+        if (dibujoEnCurso && dibujoEnCurso.vertices.length > 0) { e.preventDefault(); handleFinalizarDibujo(); }
+        else if (modoZona)   { e.preventDefault(); handleFinalizarZona(); }
+        else if (modoSector) { e.preventDefault(); handleFinalizarSector(); }
+        else if (modoCamino) { e.preventDefault(); handleFinalizarCamino(); }
+        return;
+      }
+
+      // Escape: cancelar todo modo de dibujo activo y deseleccionar
+      if (e.key === 'Escape') {
+        if (modoDibujo) handleCancelarDibujo();
+        if (modoZona)     setModoZona(null);
+        if (modoSector)   setModoSector(null);
+        if (modoCamino)   setModoCamino(null);
+        if (modoPinClick) setModoPinClick(false);
+        if (modoClick)    setModoClick(false);
+        setDibujoSelId(null);
+        return;
+      }
+
+      // Backspace: quitar el último vértice del dibujo en curso
+      if (e.key === 'Backspace') {
+        if (modoDibujo === 'medir' && medicionVertices.length > 0) {
+          e.preventDefault();
+          setMedicionVertices(prev => prev.slice(0, -1));
+        } else if (dibujoEnCurso && dibujoEnCurso.vertices.length > 0) {
+          e.preventDefault();
+          setDibujoEnCurso(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
+        } else if (modoZona && modoZona.vertices.length > 0) {
+          e.preventDefault();
+          setModoZona(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
+        } else if (modoSector && modoSector.vertices.length > 0) {
+          e.preventDefault();
+          setModoSector(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
+        } else if (modoCamino && modoCamino.vertices.length > 0) {
+          e.preventDefault();
+          setModoCamino(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
+        }
+        return;
+      }
+
+      // Supr: eliminar el elemento seleccionado
+      if (e.key === 'Delete' && dibujoSelId && modoDibujo === 'seleccion') {
+        handleEliminarDibujo();
+        return;
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [
+    undo, redo, modal, dibujoEnCurso, modoDibujo, medicionVertices, modoZona, modoSector, modoCamino,
+    modoPinClick, modoClick, dibujoSelId,
+    handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
+    handleCancelarDibujo, handleEliminarDibujo,
+  ]);
+
+  // ─── Snap: segmentos (para perpendicular, punto más cercano e intersección) ──
+  const snapSegmentos = useMemo<SnapSegmento[]>(() => {
+    const segs: SnapSegmento[] = [];
+    const push = (verts: Array<{ lat: number; lng: number }>, cerrado: boolean) => {
+      for (let i = 0; i < verts.length - 1; i++) segs.push({ a: { lat: verts[i]!.lat, lng: verts[i]!.lng }, b: { lat: verts[i + 1]!.lat, lng: verts[i + 1]!.lng } });
+      if (cerrado && verts.length > 2) { const a = verts[verts.length - 1]!, b = verts[0]!; segs.push({ a: { lat: a.lat, lng: a.lng }, b: { lat: b.lat, lng: b.lng } }); }
+    };
+    if (mojones.length >= 2) push(mojones, mojones.length >= 3);
+    zonas.forEach(z => push(z.vertices, true));
+    sectores.forEach(s => push(s.vertices, true));
+    caminos.forEach(c => push(c.vertices, false));
+    dibujos.forEach(d => {
+      if (d.tipo === 'linea' || d.tipo === 'curva' || d.tipo === 'cota') push(d.vertices, false);
+      else if (d.tipo === 'poligono') push(d.vertices, true);
+    });
+    return segs.length > 1500 ? segs.slice(0, 1500) : segs;
+  }, [mojones, zonas, sectores, caminos, dibujos]);
+
+  // ─── Snap: puntos candidatos (vértices, medios, centros, intersecciones) ────────
+  const snapPuntos = useMemo(() => {
+    const pts: Array<{ lat: number; lng: number }> = [];
+
+    const agregarConMedios = (verts: Array<{ lat: number; lng: number }>, cerrado: boolean) => {
+      for (let i = 0; i < verts.length; i++) {
+        const a = verts[i]!;
+        pts.push({ lat: a.lat, lng: a.lng });
+        const j = cerrado ? (i + 1) % verts.length : i + 1;
+        const b = verts[j];
+        if (b && (cerrado || i < verts.length - 1)) {
+          pts.push({ lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 });
+        }
+      }
+    };
+
+    agregarConMedios(mojones, mojones.length >= 3);
+    zonas.forEach(z => agregarConMedios(z.vertices, true));
+    sectores.forEach(s => agregarConMedios(s.vertices, true));
+    caminos.forEach(c => agregarConMedios(c.vertices, false));
+    pines.forEach(p => pts.push({ lat: p.lat, lng: p.lng }));
+    aguadasLayer.forEach(a => {
+      if (a.lat !== undefined && a.lng !== undefined) pts.push({ lat: a.lat, lng: a.lng });
+      if (a.vertices) agregarConMedios(a.vertices, false);
+    });
+    dibujos.forEach(d => {
+      if (d.tipo === 'circulo' || d.tipo === 'texto' || d.tipo === 'punto') pts.push({ lat: d.lat, lng: d.lng });
+      else agregarConMedios(d.vertices, d.tipo === 'poligono');
+    });
+    // Vértices del dibujo en curso (permite cerrar polígonos con precisión)
+    if (dibujoEnCurso) dibujoEnCurso.vertices.forEach(v => pts.push(v));
+    if (modoZona)      modoZona.vertices.forEach(v => pts.push(v));
+    if (modoSector)    modoSector.vertices.forEach(v => pts.push(v));
+    if (modoCamino)    modoCamino.vertices.forEach(v => pts.push(v));
+
+    // Intersecciones entre segmentos (acotado para no degradar rendimiento)
+    if (snapSegmentos.length <= 160) {
+      for (let i = 0; i < snapSegmentos.length; i++) {
+        for (let j = i + 1; j < snapSegmentos.length; j++) {
+          const x = interseccionSegmentos(snapSegmentos[i]!.a, snapSegmentos[i]!.b, snapSegmentos[j]!.a, snapSegmentos[j]!.b);
+          if (x) pts.push(x);
+        }
+      }
+    }
+
+    return pts.length > 4000 ? pts.slice(0, 4000) : pts;
+  }, [mojones, zonas, sectores, caminos, pines, aguadasLayer, dibujos, dibujoEnCurso, modoZona, modoSector, modoCamino, snapSegmentos]);
+
+  // ─── Geometría activa para preview CAD ────────────────────────────────────
+  const tipoActivo = useMemo<import('./MapLeaflet').TipoActivo>(() => {
+    if (modoDibujo === 'medir') return 'medir';
+    if (modoDibujo && modoDibujo !== 'seleccion' && modoDibujo !== 'texto' && modoDibujo !== 'punto') {
+      // Map virtual modes to their underlying TipoDibujo for the CAD preview
+      if (modoDibujo === 'rectangulo')   return 'poligono';
+      if (modoDibujo === 'mano_libre')   return 'linea';
+      if (modoDibujo === 'radio_accion') return 'circulo';
+      return modoDibujo;
+    }
+    if (modoZona)   return 'zona';
+    if (modoSector) return 'sector';
+    if (modoCamino) return 'camino';
+    return null;
+  }, [modoDibujo, modoZona, modoSector, modoCamino]);
+
+  const verticesActivos = useMemo(() => {
+    if (modoDibujo === 'medir') return medicionVertices;
+    if (modoDibujo && modoDibujo !== 'seleccion' && dibujoEnCurso) return dibujoEnCurso.vertices;
+    if (modoZona)   return modoZona.vertices;
+    if (modoSector) return modoSector.vertices;
+    if (modoCamino) return modoCamino.vertices;
+    return null;
+  }, [modoDibujo, dibujoEnCurso, medicionVertices, modoZona, modoSector, modoCamino]);
+
+  const colorPreview = modoZona ? '#FFD54F' : modoSector ? '#81D4FA' : modoCamino ? '#8B4513' : colorDibujo;
+
+  // ─── Etiqueta de modo para la barra de estado ─────────────────────────────
+  const modoEstadoLabel = useMemo(() => {
+    if (modoZona)        return 'Dibujando zona';
+    if (modoSector)      return 'Dibujando sector';
+    if (modoCamino)      return 'Trazando camino';
+    if (modoPinClick)    return 'Colocando pin';
+    if (modoDibujo === 'medir')     return 'Midiendo';
+    if (modoDibujo === 'seleccion') return dibujoSelId ? 'Elemento seleccionado' : 'Seleccionar';
+    if (modoDibujo)      return `Dibujando ${modoDibujo}`;
+    if (modoClick)       return 'Agregando mojón';
+    return 'Listo';
+  }, [modoZona, modoSector, modoCamino, modoPinClick, modoDibujo, dibujoSelId, modoClick]);
+
+  // ─── Keyline: checklist + aplicar guías al plano ──────────────────────────
+  const handleCheckKeyline = useCallback((id: string, parcial: Partial<KeylineCheck>) => {
+    setKeylineCheck(prev => ({ ...prev, [id]: { hecho: false, nota: '', ...prev[id], ...parcial } }));
+  }, []);
+
+  const handleAplicarKeyline = useCallback((res: ResultadoKeyline) => {
+    setCaminos(prev => [
+      ...prev,
+      ...res.guias.filter(g => g.puntos.length >= 2).map(g => {
+        const c = crearCamino(g.puntos);
+        return { ...c, nombre: g.principal ? `Keyline ${g.cota} m (principal)` : `Keyline ${g.cota} m`, color: g.principal ? '#5E35B1' : '#9575CD' };
+      }),
+    ]);
+    setPines(prev => [...prev, { id: crypto.randomUUID(), lat: res.keypoint.lat, lng: res.keypoint.lng, nombre: `Keypoint ${res.keypoint.elevation.toFixed(0)} m`, color: '#5E35B1', icono: '📍', notas: res.nota }]);
+    setTab('caminos');
+  }, []);
+
+  const handleAplicarPatron = useCallback((res: import('@/lib/keyline').ResultadoPatron) => {
+    const nuevos: Camino[] = [];
+    if (res.master.length >= 2) { const c = crearCamino(res.master); nuevos.push({ ...c, nombre: 'Línea clave (maestra)', color: '#3949AB' }); }
+    res.lineas.forEach((ln, i) => { if (ln.length >= 2) { const c = crearCamino(ln); nuevos.push({ ...c, nombre: `Cultivo ${i + 1}`, color: '#26A69A' }); } });
+    res.lineasFuera.forEach((ln, i) => { if (ln.length >= 2) { const c = crearCamino(ln); nuevos.push({ ...c, nombre: `Cultivo compl. ${i + 1}`, color: '#EF6C00' }); } });
+    if (nuevos.length) setCaminos(prev => [...prev, ...nuevos]);
+    res.zonasFuera.forEach((poly, i) => {
+      if (poly.length >= 3) setDibujos(prev => [...prev, { id: crypto.randomUUID(), tipo: 'poligono', color: '#EF6C00', vertices: poly, opacidad: 0.1, capaId: capaActivaId, nombre: `Zona a revisar ${i + 1}` }]);
+    });
+    setTab('caminos');
+  }, [capaActivaId]);
+
+  // ─── Escenarios (snapshots del diseño) ────────────────────────────────────
+  const snapshotActual = useCallback((): DocDisenoSnapshot => ({
+    mojones, zonas, sectores, pines, caminos, aguadasLayer, dibujos, capasUsuario,
+  }), [mojones, zonas, sectores, pines, caminos, aguadasLayer, dibujos, capasUsuario]);
+
+  const handleGuardarEscenario = useCallback((nombre: string) => {
+    const id = crypto.randomUUID();
+    setEscenarios(prev => [...prev, { id, nombre, creado: new Date().toISOString(), doc: snapshotActual() }]);
+    setEscenarioActivoId(id);
+  }, [snapshotActual]);
+
+  const handleCargarEscenario = useCallback((id: string) => {
+    setEscenarios(prevEsc => {
+      const esc = prevEsc.find(e => e.id === id);
+      if (esc) { replaceDoc({ ...esc.doc }); setEscenarioActivoId(id); setSeleccionado(null); setDibujoSelId(null); }
+      return prevEsc;
+    });
+  }, [replaceDoc]);
+
+  const handleActualizarEscenario = useCallback((id: string) => {
+    setEscenarios(prev => prev.map(e => e.id === id ? { ...e, creado: new Date().toISOString(), doc: snapshotActual() } : e));
+    setEscenarioActivoId(id);
+  }, [snapshotActual]);
+
+  const handleRenombrarEscenario = useCallback((id: string, nombre: string) => setEscenarios(prev => prev.map(e => e.id === id ? { ...e, nombre } : e)), []);
+  const handleEliminarEscenario  = useCallback((id: string) => { setEscenarios(prev => prev.filter(e => e.id !== id)); setEscenarioActivoId(a => a === id ? null : a); }, []);
+
+  const escenariosMeta = useMemo<EscenarioMeta[]>(() => escenarios.map(({ id, nombre, creado }) => ({ id, nombre, creado })), [escenarios]);
+
+  // Polígonos cerrados candidatos para cut&fill de represas
+  const poligonosCutFill = useMemo<PoligonoCutFill[]>(() => {
+    const out: PoligonoCutFill[] = [];
+    dibujos.forEach((d, i) => { if (d.tipo === 'poligono' && d.vertices.length >= 3) out.push({ id: d.id, nombre: d.nombre || `Polígono ${i + 1}`, vertices: d.vertices }); });
+    zonas.forEach(z => { if (z.vertices.length >= 3) out.push({ id: z.id, nombre: `Zona: ${z.nombre}`, vertices: z.vertices }); });
+    sectores.forEach(s => { if (s.vertices.length >= 3) out.push({ id: s.id, nombre: `Sector: ${s.nombre}`, vertices: s.vertices }); });
+    return out;
+  }, [dibujos, zonas, sectores]);
 
   // ─── Rename / delete desde panel de capas ────────────────────────────────
   const handleRenombrarPin     = useCallback((id: string, nombre: string) => setPines(prev => prev.map(p => p.id === id ? { ...p, nombre } : p)), []);
@@ -538,6 +1238,70 @@ export function MapaTerrenoApp({ userName }: Props) {
     setOcultosIds(prev => { const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
+  // ─── Capas de usuario: gestión ────────────────────────────────────────────
+  const handleCrearCapa = useCallback((nombre: string) => {
+    const nueva = crearCapaUsuario(nombre, capasUsuario);
+    setCapasUsuario(prev => [...prev, nueva]);
+    setCapaActivaId(nueva.id);
+  }, [capasUsuario, setCapasUsuario]);
+
+  const handleCargarPlantillaKeyline = useCallback(() => {
+    setCapasUsuario(prev => {
+      const nuevas = crearCapasKeyline(prev);
+      if (nuevas.length) setCapaActivaId(nuevas[0]!.id);
+      return [...prev, ...nuevas];
+    });
+  }, [setCapasUsuario]);
+
+  const handleRenombrarCapa = useCallback((id: string, nombre: string) => {
+    setCapasUsuario(prev => prev.map(c => c.id === id ? { ...c, nombre } : c));
+  }, [setCapasUsuario]);
+
+  const handleEliminarCapa = useCallback((id: string) => {
+    if (id === CAPA_DEFAULT_ID) return; // la capa default no se elimina
+    // Los dibujos de la capa pasan a la capa default
+    commit(d => ({
+      ...d,
+      capasUsuario: (d.capasUsuario ?? CAPAS_USUARIO_INICIAL).filter(c => c.id !== id),
+      dibujos: d.dibujos.map(el => capaDeElemento(el.capaId, d.capasUsuario ?? CAPAS_USUARIO_INICIAL) === id ? { ...el, capaId: CAPA_DEFAULT_ID } : el),
+    }));
+    setCapasOcultas(prev => { const n = new Set(prev); n.delete(id); return n; });
+    setCapaActivaId(prev => prev === id ? CAPA_DEFAULT_ID : prev);
+  }, [commit]);
+
+  const handleToggleCapaOculta = useCallback((id: string) => {
+    setCapasOcultas(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }, []);
+
+  const handleMoverDibujoACapa = useCallback((dibujoId: string, capaId: string) => {
+    setDibujos(prev => prev.map(d => d.id === dibujoId ? { ...d, capaId } : d));
+  }, []);
+
+  // Color de capa: tiñe la capa y recolorea todos sus dibujos
+  const handleColorCapa = useCallback((id: string, color: string) => {
+    commit(d => ({
+      ...d,
+      capasUsuario: (d.capasUsuario ?? CAPAS_USUARIO_INICIAL).map(c => c.id === id ? { ...c, color } : c),
+      dibujos: d.dibujos.map(el => capaDeElemento(el.capaId, d.capasUsuario ?? CAPAS_USUARIO_INICIAL) === id ? { ...el, color } : el),
+    }));
+  }, [commit]);
+
+  // Reordenar capa (subir/bajar en la lista)
+  const handleReordenarCapa = useCallback((id: string, dir: -1 | 1) => {
+    setCapasUsuario(prev => {
+      const orden = [...prev].sort((a, b) => a.orden - b.orden);
+      const i = orden.findIndex(c => c.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= orden.length) return prev;
+      const a = orden[i]!, b = orden[j]!;
+      return prev.map(c => c.id === a.id ? { ...c, orden: b.orden } : c.id === b.id ? { ...c, orden: a.orden } : c);
+    });
+  }, [setCapasUsuario]);
+
   // ─── Aguadas ──────────────────────────────────────────────────────────────
   const handleAgregarAguada = useCallback((el: ElementoAguada) => {
     setAguadasLayer(prev => [...prev, el]);
@@ -559,6 +1323,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   const handleGetBounds      = useCallback((fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => { getBoundsRef.current = fn; }, []);
   const handleGetFlyTo       = useCallback((fn: (lat: number, lng: number) => void) => { flyToRef.current = fn; }, []);
   const handleRangoTerrarium = useCallback((min: number, max: number) => { setTerrariumRango({ min, max }); }, []);
+  const handleResetTerrariumRango = useCallback(() => setTerrariumRango(null), []);
 
   // ─── Escala gráfica ───────────────────────────────────────────────────────
   const [mapZoom,      setMapZoom]      = useState(7);
@@ -577,11 +1342,30 @@ export function MapaTerrenoApp({ userName }: Props) {
     return { metros: nice, pixeles, label: nice >= 1000 ? `${nice / 1000} km` : `${nice} m` };
   }, [mapZoom, mapCenterLat]);
   const [shaderUsarArea, setShaderUsarArea] = useState(false);
+  const [shaderDetallado, setShaderDetallado] = useState(true); // grilla densa (tiles Terrarium) vs muestreo 10×10
 
   const handleFetchShader = useCallback(async () => {
     if (mojones.length < 3) return;
     setShaderLoading(true);
     setShaderError(null);
+    const activarCapas = () =>
+      setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, escorrentias: true, sugerencias: true }));
+
+    // Modo detallado: grilla densa desde tiles Terrarium (cientos de celdas, sin API externa).
+    if (shaderDetallado) {
+      try {
+        const grilla = await obtenerGrillaDensa(mojones, 100);
+        const ds = grilla ? shaderDesdeGrilla(grilla) : null;
+        if (ds) {
+          setDatosShader(ds);
+          setShaderLoading(false);
+          activarCapas();
+          return;
+        }
+      } catch { /* cae al muestreo 10×10 */ }
+    }
+
+    // Fallback / modo rápido: muestreo 10×10 vía OpenTopoData.
     const bounds = shaderUsarArea && getBoundsRef.current ? getBoundsRef.current() : undefined;
     const result = await fetchShader(mojones, bounds);
     setShaderLoading(false);
@@ -589,9 +1373,9 @@ export function MapaTerrenoApp({ userName }: Props) {
       setShaderError(result.error);
     } else {
       setDatosShader(result);
-      setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, escorrentias: true, sugerencias: true }));
+      activarCapas();
     }
-  }, [mojones, shaderUsarArea]);
+  }, [mojones, shaderUsarArea, shaderDetallado]);
 
   // ─── Agregar desde sugerencias ────────────────────────────────────────────
   const handleAgregarPinSugerencia = useCallback((lat: number, lng: number, nombre: string, icono: string, color: string) => {
@@ -605,6 +1389,28 @@ export function MapaTerrenoApp({ userName }: Props) {
     const c = crearCamino(vertices);
     setCaminos(prev => [...prev, { ...c, nombre, color }]);
     setTab('caminos');
+  }, []);
+
+  // ─── Master Plan: generar y convertir ─────────────────────────────────────
+  const handleGenerarMasterPlan = useCallback(() => {
+    if (!datosShader || !datosEscorrentia) {
+      setModal({ type: 'alert', message: 'Primero calculá la topografía (panel Capas → Calcular topografía) para poder ubicar los elementos.' });
+      return;
+    }
+    if (programaMP.length === 0) return;
+    const resultado = calcularMasterPlan(programaMP, datosShader, datosEscorrentia);
+    setMasterPlan(resultado);
+    setCapas(prev => ({ ...prev, sugerencias: true }));
+  }, [datosShader, datosEscorrentia, programaMP]);
+
+  const handleConvertirZonaMP = useCallback((el: ElementoMasterPlan) => {
+    const zona = crearZona(TIPOS_ITEM[el.tipo].categoriaZona, el.vertices);
+    setZonas(prev => [...prev, { ...zona, nombre: el.nombre }]);
+    setMasterPlan(prev => prev ? prev.filter(e => e.id !== el.id) : prev);
+  }, []);
+
+  const handleDescartarElementoMP = useCallback((id: string) => {
+    setMasterPlan(prev => prev ? prev.filter(e => e.id !== id) : prev);
   }, []);
 
   const handleAgregarCortinas = useCallback((cortinas: CortinaSugerida[]) => {
@@ -640,16 +1446,44 @@ export function MapaTerrenoApp({ userName }: Props) {
       caminos:      (meta['caminos']      as Camino[])        ?? [],
       aguadasLayer: (meta['aguadas_layer'] as ElementoAguada[]) ?? [],
       dibujos:      (meta['dibujos']      as ElementoDibujo[]) ?? [],
+      capasUsuario: (meta['capas_usuario'] as CapaUsuario[])   ?? CAPAS_USUARIO_INICIAL,
     });
+    // Visibilidad de elementos y capas (Sets serializados como arrays)
+    setOcultosIds(new Set((meta['ocultos_ids'] as string[]) ?? []));
+    setCapasOcultas(new Set((meta['capas_ocultas'] as string[]) ?? []));
+    setCapaActivaId(CAPA_DEFAULT_ID);
+    setProgramaMP((meta['programa_mp'] as ItemPrograma[]) ?? []);
+    setMasterPlan((meta['master_plan'] as ElementoMasterPlan[]) ?? null);
     setProyectoActual(p.id ? p : null);
     setSeleccionado(null);
     setDatosClima((meta['clima']     as DatosClima)        ?? null);
     setDatosTopografia((meta['topo'] as DatosTopografia)   ?? null);
     setCaptacionSnap((meta['captacion'] as CaptacionSnapshot) ?? null);
     setDatosSuelo((meta['suelo']     as DatosSuelo)        ?? null);
+    setDatosExtremos((meta['extremos'] as Extremos)        ?? null);
+    setCuenca((meta['cuenca']        as Cuenca)            ?? null);
+    setRedAguaResumen((meta['red_agua'] as RedAguaResumen)  ?? null);
+    setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
+    setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
+    setPotrerosLayer((meta['potreros']  as PotrerosLayout)  ?? null);
+    setDatosCobertura((meta['cobertura'] as DatosCobertura) ?? null);
+    // Overlay de plano, rótulo, título de captura e intervalo de curvas
+    setOverlay((meta['overlay'] as OverlayImagen) ?? null);
+    if (meta['rotulo']) setRotulo(meta['rotulo'] as Rotulo);
+    setRotuloVisible(Boolean(meta['rotulo_visible']));
+    if (typeof meta['captura_titulo'] === 'string') setCapturaTitulo(meta['captura_titulo'] as string);
+    setIntervaloContorno(typeof meta['intervalo_contorno'] === 'number' ? meta['intervalo_contorno'] as number : null);
+    setKeylineCheck((meta['keyline_check'] as Record<string, KeylineCheck>) ?? {});
+    setEscenarios((meta['escenarios'] as Escenario[]) ?? []);
+    setEscenarioActivoId(null);
+    // Preferencias de capas guardadas; el shader, si existe, fuerza sus capas visibles
+    const capasGuardadas = meta['capas'] as CapasVisibles | undefined;
     const shaderGuardado = (meta['shader'] as DatosShader) ?? null;
     setDatosShader(shaderGuardado);
-    if (shaderGuardado) setCapas(prev => ({ ...prev, shaderElev: true, escorrentias: true, sugerencias: true }));
+    setCapas(prev => {
+      const base = capasGuardadas ? { ...prev, ...capasGuardadas } : prev;
+      return shaderGuardado ? { ...base, shaderElev: true, escorrentias: true, sugerencias: true } : base;
+    });
     setTab('mojones');
     setTerrariumRango(null);
     limpiarAutosave();
@@ -697,10 +1531,14 @@ export function MapaTerrenoApp({ userName }: Props) {
       const el = document.getElementById('print-capture-root');
       if (el) {
         const { toPng } = await import('html-to-image');
-        mapaDataUrl = await toPng(el, {
+        // La captura de tiles satelitales puede colgarse sin lanzar error;
+        // la limitamos con un timeout para no bloquear la generación del informe.
+        const captura = toPng(el, {
           pixelRatio: 1.5, cacheBust: true,
           filter: n => !(n instanceof Element && (n.classList.contains('no-print') || n.classList.contains('leaflet-control-container'))),
         });
+        const timeout = new Promise<undefined>(res => setTimeout(() => res(undefined), 8000));
+        mapaDataUrl = await Promise.race([captura, timeout]);
       }
     } catch { /* ignorar si falla la captura */ }
 
@@ -709,12 +1547,16 @@ export function MapaTerrenoApp({ userName }: Props) {
       fecha:  new Date().toISOString(),
       mojones, metricas: metricas ?? undefined,
       clima:  datosClima ?? undefined, topo: datosTopografia ?? undefined,
+      extremos: datosExtremos ?? undefined,
       captacion: captacionSnap ?? undefined, suelo: datosSuelo ?? undefined,
+      redAgua: redAguaResumen ?? undefined, represa: represaResumen ?? undefined,
+      riego: riegoResumen ?? undefined,
+      cobertura: coberturaResumen ?? undefined,
       zonas: zonas.length ? zonas : undefined,
       mapaDataUrl,
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, zonas]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, zonas]);
 
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [guardandoPng, setGuardandoPng] = useState(false);
@@ -787,8 +1629,10 @@ export function MapaTerrenoApp({ userName }: Props) {
   const TABS_ANALISIS = [
     { id: 'mojones'  as Tab, label: 'Mojones', icon: <MapPin       className="w-3.5 h-3.5" /> },
     { id: 'clima'    as Tab, label: 'Clima',   icon: <Cloud        className="w-3.5 h-3.5" /> },
+    { id: 'contexto' as Tab, label: 'Contexto',icon: <Leaf         className="w-3.5 h-3.5" /> },
     { id: 'topo'     as Tab, label: 'Topo',    icon: <Mountain     className="w-3.5 h-3.5" /> },
     { id: 'suelo'    as Tab, label: 'Suelo',   icon: <Layers       className="w-3.5 h-3.5" /> },
+    { id: 'cobertura' as Tab, label: 'Cobertura', icon: <Trees      className="w-3.5 h-3.5" /> },
     { id: 'cal'      as Tab, label: 'Cal.',    icon: <CalendarDays className="w-3.5 h-3.5" /> },
     { id: 'solar'    as Tab, label: 'Solar',   icon: <Sun          className="w-3.5 h-3.5" /> },
     { id: 'prod'     as Tab, label: 'Prod.',   icon: <Wheat        className="w-3.5 h-3.5" /> },
@@ -800,13 +1644,13 @@ export function MapaTerrenoApp({ userName }: Props) {
     { id: 'sectores'  as Tab, label: 'Sectores', icon: <Compass    className="w-3.5 h-3.5" /> },
     { id: 'aguadas'   as Tab, label: 'Aguadas',  icon: <Waves      className="w-3.5 h-3.5" /> },
     { id: 'caminos'   as Tab, label: 'Caminos',  icon: <Route      className="w-3.5 h-3.5" /> },
+    { id: 'red'       as Tab, label: 'Red agua', icon: <Spline     className="w-3.5 h-3.5" /> },
+    { id: 'cuenca'    as Tab, label: 'Cuenca',   icon: <Waves      className="w-3.5 h-3.5" /> },
+    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <Beef       className="w-3.5 h-3.5" /> },
+    { id: 'riego'     as Tab, label: 'Riego',    icon: <Sprout     className="w-3.5 h-3.5" /> },
+    { id: 'keyline'   as Tab, label: 'Keyline',  icon: <Waypoints  className="w-3.5 h-3.5" /> },
     { id: 'proyectos' as Tab, label: 'Proyect.', icon: <FolderOpen className="w-3.5 h-3.5" /> },
   ];
-
-  const tabBtnClass = (t: Tab) =>
-    `flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 text-[9px] font-medium rounded-md transition-colors ${
-      tab === t ? 'bg-white text-moss-900 shadow-paper' : 'text-ink-700/60 hover:text-ink-700'
-    }`;
 
   // ─── Leyenda para captura ─────────────────────────────────────────────────
   const leyendaItems = useMemo(() => {
@@ -846,60 +1690,177 @@ export function MapaTerrenoApp({ userName }: Props) {
     return items;
   }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, pinesFiltrados, terrariumElevMin, terrariumElevMax]);
 
+  // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
+  const iniciarCaptura = useCallback(() => {
+    setPanelDerecho(null);
+    setCapturaActiva(true);
+    if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
+    setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
+  }, [capturaTitulo, proyectoActual, leyendaItems]);
+
+  // ─── Comandos para la paleta (Ctrl+K) ─────────────────────────────────────────
+  const comandos = useMemo<Comando[]>(() => {
+    const tabs = [...TABS_ANALISIS, ...TABS_DISENO];
+    const irA: Comando[] = tabs.map(t => ({
+      id: `tab-${t.id}`, grupo: 'Ir a', label: t.label, keywords: 'pestaña panel',
+      accion: () => { setTab(t.id); setPanelAbierto(true); },
+    }));
+    const herramientas: Comando[] = ([
+      ['seleccion', 'Seleccionar'], ['linea', 'Línea'], ['poligono', 'Polígono'], ['circulo', 'Círculo'],
+      ['curva', 'Curva'], ['cota', 'Cota'], ['medir', 'Medir distancia / área'], ['texto', 'Texto'],
+    ] as Array<[TipoDibujo | 'seleccion' | 'medir', string]>).map(([m, l]) => ({
+      id: `tool-${m}`, grupo: 'Herramienta', label: l, keywords: 'dibujar dibujo',
+      accion: () => handleCambiarModo(m),
+    }));
+    const acciones: Comando[] = [
+      { id: 'save',    grupo: 'Acción',   label: 'Guardar en la nube',          keywords: 'supabase proyecto', accion: handleGuardarNube },
+      { id: 'undo',    grupo: 'Acción',   label: 'Deshacer',                    keywords: 'ctrl z',            accion: undo },
+      { id: 'redo',    grupo: 'Acción',   label: 'Rehacer',                     keywords: 'ctrl y',            accion: redo },
+      { id: 'informe', grupo: 'Exportar', label: 'Informe PDF',                 keywords: 'reporte imprimir',  accion: handleVerInforme },
+      { id: 'png',     grupo: 'Exportar', label: 'Imagen PNG del plano',        keywords: 'captura foto',      accion: iniciarCaptura },
+      { id: 'dxf',     grupo: 'Exportar', label: 'DXF (AutoCAD)',               keywords: 'cad autocad',       accion: handleExportarDXF },
+      { id: 'geojson', grupo: 'Exportar', label: 'GeoJSON',                     keywords: 'gis',               accion: handleExportGeoJSON },
+      { id: 'kml',     grupo: 'Exportar', label: 'KML (Google Earth)',          keywords: 'google earth',      accion: handleExportKML },
+      { id: 'gpx',     grupo: 'Exportar', label: 'GPX',                         keywords: 'gps',               accion: handleExportGPX },
+      { id: 'topo',    grupo: 'Análisis', label: 'Calcular topografía',         keywords: 'elevación shader',  accion: handleFetchShader },
+      { id: 'keyline', grupo: 'Capas',    label: 'Plantilla: Escala de permanencia (Keyline)', keywords: 'yeomans capas', accion: handleCargarPlantillaKeyline },
+      { id: 'snap',    grupo: 'CAD',      label: 'Activar / desactivar SNAP',   keywords: 'f3 imán',           accion: () => setSnapActivo(p => !p) },
+      { id: 'ortho',   grupo: 'CAD',      label: 'Activar / desactivar ORTO',   keywords: 'f8 ortogonal',      accion: () => setOrthoActivo(p => !p) },
+      { id: 'capas',   grupo: 'Vista',    label: 'Mostrar panel de Capas',      keywords: 'layers',            accion: () => setPanelDerecho('capas') },
+      { id: 'panel',   grupo: 'Vista',    label: 'Mostrar / ocultar panel lateral', keywords: 'sidebar',       accion: () => setPanelAbierto(p => !p) },
+      { id: 'ayuda',   grupo: 'Vista',    label: 'Ver atajos de teclado',       keywords: 'help shortcuts',    accion: () => setAyudaOpen(true) },
+    ];
+    return [...irA, ...herramientas, ...acciones];
+  }, [
+    TABS_ANALISIS, TABS_DISENO, handleCambiarModo, handleGuardarNube, undo, redo,
+    handleVerInforme, iniciarCaptura, handleExportarDXF, handleExportGeoJSON, handleExportKML, handleExportGPX,
+    handleFetchShader, handleCargarPlantillaKeyline,
+  ]);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-bone-50">
+    <div className="flex flex-col h-screen overflow-hidden bg-bone-50">
+
+      {/* ─── Barra superior ──────────────────────────────────────────────────── */}
+      <header className="relative flex items-center h-12 px-3 border-b border-bone-200 bg-white shrink-0 z-[1200]">
+        <div className="flex items-center gap-2.5 min-w-0 shrink-0">
+          <button onClick={() => setPanelAbierto(p => !p)} title="Mostrar/ocultar panel" className="p-1 text-ink-700/50 hover:text-moss-700 transition-colors">
+            <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
+          </button>
+          <img src="/logo-ayt.png" alt="Arte y Tierra" className="w-7 h-7 object-contain shrink-0" />
+          <div className="min-w-0 leading-tight hidden lg:block">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · Terreno</p>
+            <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem]">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
+          </div>
+        </div>
+
+        {/* ── Herramientas de dibujo centradas en el header ── */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center h-full">
+          <DibujoToolbar
+            inHeader
+            modoDibujo={modoDibujo}
+            colorActivo={colorDibujo}
+            enCurso={dibujoEnCurso}
+            seleccionado={dibujoSelId}
+            colorSeleccionado={dibujoSel?.color}
+            nombreSeleccionado={dibujoSel?.nombre}
+            notasSeleccionado={dibujoSel?.notas}
+            medidasSeleccionado={dibujoSel ? medidasDibujo(dibujoSel) : undefined}
+            capasUsuario={capasUsuario}
+            capaSeleccionado={dibujoSel ? capaDeElemento(dibujoSel.capaId, capasUsuario) : undefined}
+            onMoverACapa={capaId => { if (dibujoSelId) handleMoverDibujoACapa(dibujoSelId, capaId); }}
+            onCambiarColor={handleCambiarColorDibujo}
+            onMoverAdelante={handleMoverAdelante}
+            onMoverAtras={handleMoverAtras}
+            onModo={handleCambiarModo}
+            onColor={setColorDibujo}
+            onTransformar={handleTransformar}
+            onFinalizar={handleFinalizarDibujo}
+            onCancelar={handleCancelarDibujo}
+            onEliminar={handleEliminarDibujo}
+            onRenombrar={handleRenombrarDibujo}
+          />
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5 shrink-0">
+          <span className={`hidden md:flex items-center gap-1 text-[11px] px-2 py-1 rounded-full ${guardadoTick ? 'bg-moss-100 text-moss-900' : proyectoActual ? 'bg-moss-100 text-moss-900' : 'bg-sun-500/15 text-clay-700'}`}>
+            {proyectoActual ? <Cloud className="w-3 h-3" /> : <CloudOff className="w-3 h-3" />}
+            {guardadoTick ? 'Guardado' : proyectoActual ? 'En la nube' : 'Sin guardar'}
+          </span>
+          <button onClick={handleGuardarNube} disabled={guardandoNube} title="Guardar en la nube" className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-moss-700 hover:bg-moss-900 text-bone-50 transition-colors disabled:opacity-50">
+            {guardadoTick ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />} Guardar
+          </button>
+          <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Undo2 className="w-4 h-4" /></button>
+          <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
+          <div className="relative">
+            <button onClick={() => setExportOpen(o => !o)} className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-bone-200 hover:bg-bone-50 text-ink-700 transition-colors">
+              <Download className="w-3.5 h-3.5" /> Exportar <ChevronDown className="w-3 h-3" />
+            </button>
+            {exportOpen && (
+              <>
+                <div className="fixed inset-0 z-[1250]" onClick={() => setExportOpen(false)} />
+                <div className="absolute right-0 mt-1 w-48 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
+                  <ExportItem icon={<FileText className="w-3.5 h-3.5" />} label="Informe PDF" onClick={() => { setExportOpen(false); handleVerInforme(); }} />
+                  <ExportItem icon={<Camera className="w-3.5 h-3.5" />} label="Imagen PNG del plano" onClick={() => { setExportOpen(false); iniciarCaptura(); }} />
+                  <ExportItem icon={<FileDown className="w-3.5 h-3.5" />} label="DXF (AutoCAD)" onClick={() => { setExportOpen(false); handleExportarDXF(); }} />
+                  <div className="h-px bg-bone-100 my-1" />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GeoJSON" onClick={handleExportGeoJSON} />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="KML (Google Earth)" onClick={handleExportKML} />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GPX" onClick={handleExportGPX} />
+                </div>
+              </>
+            )}
+          </div>
+          <button
+            onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
+            title={`Tema: ${tema} — clic para cambiar (claro → sepia → oscuro)`}
+            className="p-1.5 text-ink-700/40 hover:text-moss-700 transition-colors"
+          >
+            {tema === 'oscuro' ? <Moon className="w-4 h-4" /> : tema === 'sepia' ? <Palette className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          <span className="w-px h-5 bg-bone-200 mx-0.5" />
+          <button onClick={handleLogout} title={`Cerrar sesión${userName ? ` (${userName})` : ''}`} className="p-1.5 text-ink-700/40 hover:text-clay-600 transition-colors"><LogOut className="w-4 h-4" /></button>
+        </div>
+      </header>
+
+      {/* ─── Cuerpo: panel + mapa ────────────────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden relative">
       {/* ─── Panel lateral izquierdo ─────────────────────────────────────────── */}
-      <aside className={`flex flex-col border-r border-bone-200 bg-bone-50 shrink-0 transition-all duration-200 ${panelAbierto ? 'w-80' : 'w-0 overflow-hidden'}`}>
+      <aside className="flex shrink-0 bg-bone-50">
 
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-bone-200 flex items-start justify-between shrink-0">
-          <div className="min-w-0">
-            <p className="eyebrow">Arte y Tierra</p>
-            <h1 className="font-display text-xl text-ink-950 mt-0.5">Análisis de Terreno</h1>
-            {(proyectoActual?.nombre || userName) && (
-              <p className="text-xs text-moss-700 mt-1 truncate max-w-[13rem]">
-                {proyectoActual ? proyectoActual.nombre : userName}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-1 shrink-0">
-            <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors">
-              <Undo2 className="w-4 h-4" />
+        {/* ── Riel de íconos ── */}
+        <nav className="w-[52px] shrink-0 flex flex-col items-center py-2 gap-0.5 border-r border-bone-200 overflow-y-auto">
+          {TABS_ANALISIS.map(t => (
+            <button key={t.id} title={t.label}
+              onClick={() => { if (tab === t.id && panelAbierto) setPanelAbierto(false); else { setTab(t.id); setPanelAbierto(true); } }}
+              className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${tab === t.id ? 'bg-moss-700 text-bone-50' : 'text-ink-700/55 hover:bg-bone-100'}`}>
+              {t.icon}
+              {tab === t.id && <span className="absolute left-[-8px] top-1.5 bottom-1.5 w-1 rounded-full bg-moss-700" />}
             </button>
-            <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors">
-              <Redo2 className="w-4 h-4" />
+          ))}
+          <span className="w-7 h-px bg-bone-200 my-1.5" />
+          {TABS_DISENO.map(t => (
+            <button key={t.id} title={t.label}
+              onClick={() => { if (tab === t.id && panelAbierto) setPanelAbierto(false); else { setTab(t.id); setPanelAbierto(true); } }}
+              className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${tab === t.id ? 'bg-moss-700 text-bone-50' : 'text-ink-700/55 hover:bg-bone-100'}`}>
+              {t.icon}
+              {tab === t.id && <span className="absolute left-[-8px] top-1.5 bottom-1.5 w-1 rounded-full bg-moss-700" />}
             </button>
-            {mojones.length > 0 && (
-              <button onClick={handleVerInforme} title="Ver informe PDF" className="text-ink-700/40 hover:text-moss-700 transition-colors">
-                <FileText className="w-4 h-4" />
-              </button>
-            )}
-            <button onClick={handleLogout} title="Cerrar sesión" className="text-ink-700/40 hover:text-ink-700 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          ))}
+        </nav>
 
-        {/* Tabs — 2 filas */}
-        <div className="px-3 py-2 border-b border-bone-200 shrink-0 space-y-1">
-          <div className="flex gap-0.5 bg-bone-100 p-1 rounded-lg">
-            {TABS_ANALISIS.map(t => (
-              <button key={t.id} className={tabBtnClass(t.id)} onClick={() => setTab(t.id)}>
-                {t.icon}<span>{t.label}</span>
-              </button>
-            ))}
+        {/* ── Panel contextual ── */}
+        <div className={`flex flex-col border-r border-bone-200 transition-all duration-200 ${panelAbierto ? 'w-72' : 'w-0 overflow-hidden'}`}>
+          <div className="px-4 h-10 flex items-center justify-between border-b border-bone-200 shrink-0">
+            <span className="text-xs font-semibold text-ink-700 uppercase tracking-wide truncate">
+              {[...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? ''}
+            </span>
+            <button onClick={() => setPanelAbierto(false)} title="Ocultar panel" className="text-ink-700/40 hover:text-ink-700 transition-colors">
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
           </div>
-          <div className="flex gap-0.5 bg-bone-100 p-1 rounded-lg">
-            {TABS_DISENO.map(t => (
-              <button key={t.id} className={tabBtnClass(t.id)} onClick={() => setTab(t.id)}>
-                {t.icon}<span>{t.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Scroll area */}
-        <div className="flex-1 overflow-y-auto">
+          {/* Scroll area */}
+          <div className="flex-1 overflow-y-auto">
           {tab === 'mojones' && (
             <div className="px-4 py-4 space-y-4">
               <div>
@@ -988,12 +1949,45 @@ export function MapaTerrenoApp({ userName }: Props) {
                   </div>
                 )}
               </div>
+
+              {/* Biblioteca de bloques */}
+              <div className="border-t border-bone-200 pt-4 space-y-2">
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1.5">
+                  <Boxes className="w-3.5 h-3.5" /> Biblioteca de bloques
+                </p>
+                {bloqueActivo ? (
+                  <div className="flex items-center gap-2 bg-sun-300/20 border border-sun-300 rounded-lg px-2.5 py-1.5">
+                    <span className="text-base leading-none">{bloqueActivo.icono}</span>
+                    <span className="text-[11px] text-ink-900 flex-1 leading-tight">Hacé clic en el mapa: <b>{bloqueActivo.nombre}</b></span>
+                    <button onClick={() => { setBloqueActivo(null); setModoPinClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-ink-700/50 leading-tight">Elegí un símbolo y hacé clic en el mapa para colocarlo.</p>
+                )}
+                {GRUPOS_BLOQUE.map(grupo => (
+                  <div key={grupo}>
+                    <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {BLOQUES.filter(b => b.grupo === grupo).map(b => (
+                        <button key={b.id} title={b.nombre}
+                          onClick={() => { setBloqueActivo(b); setModoPinClick(true); setModoClick(false); }}
+                          className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${bloqueActivo?.id === b.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
+                          <span className="text-base leading-none">{b.icono}</span>
+                          <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{b.nombre}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {tab === 'clima' && <div className="px-4 py-4"><ClimaPanel mojones={mojones} datos={datosClima} onDatos={setDatosClima} /></div>}
+          {tab === 'clima' && <div className="px-4 py-4"><ClimaPanel mojones={mojones} datos={datosClima} onDatos={setDatosClima} extremos={datosExtremos} onExtremos={setDatosExtremos} /></div>}
+          {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
+          {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'solar' && (
             <div className="px-4 py-4">
@@ -1028,8 +2022,16 @@ export function MapaTerrenoApp({ userName }: Props) {
             </div>
           )}
           {tab === 'aguadas' && (
-            <div className="px-4 py-4">
+            <div className="px-4 py-4 space-y-4">
               <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
+              <div className="border-t border-bone-200 pt-4">
+                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} onResumenRepresa={setRepresaResumen} />
+              </div>
+            </div>
+          )}
+          {tab === 'keyline' && (
+            <div className="px-4 py-4">
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} check={keylineCheck} onCheck={handleCheckKeyline} onAplicarGuias={handleAplicarKeyline} onAplicarPatron={handleAplicarPatron} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -1037,11 +2039,47 @@ export function MapaTerrenoApp({ userName }: Props) {
               <CaminosPanel
                 caminos={caminos} onCaminos={setCaminos} modoCamino={modoCamino}
                 onIniciarDibujo={handleIniciarCamino} onFinalizarCamino={handleFinalizarCamino} onCancelarCamino={handleCancelarCamino}
+                onAbrirPerfil={handleAbrirPerfilDock} perfilDockId={perfilDock?.nombre ?? null}
+                perfilCargando={perfilCargando} perfilError={perfilError}
+              />
+            </div>
+          )}
+          {tab === 'red' && (
+            <div className="px-4 py-4">
+              <RedAguaPanel
+                caminos={caminos}
+                onCargarPerfil={handleCargarPerfilCamino}
+                onIrACaminos={() => setTab('caminos')}
+                onResumen={setRedAguaResumen}
+              />
+            </div>
+          )}
+          {tab === 'pastoreo' && (
+            <div className="px-4 py-4">
+              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} />
+            </div>
+          )}
+          {tab === 'riego' && (
+            <div className="px-4 py-4">
+              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} />
+            </div>
+          )}
+          {tab === 'cuenca' && (
+            <div className="px-4 py-4">
+              <CuencaPanel
+                tieneShader={!!datosShader}
+                cuenca={cuenca}
+                grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
+                precipT10={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null}
+                modoActivo={modoCuenca}
+                onMarcar={() => setModoCuenca(m => !m)}
+                onLimpiar={() => { setCuenca(null); setModoCuenca(false); }}
+                onIrATopo={() => setTab('topo')}
               />
             </div>
           )}
           {tab === 'proyectos' && (
-            <div className="px-4 py-4">
+            <div className="px-4 py-4 space-y-4">
               <ProyectosPanel
                 mojones={mojones} zonas={zonas} sectores={sectores} pines={pines} caminos={caminos}
                 proyectoActual={proyectoActual}
@@ -1049,8 +2087,20 @@ export function MapaTerrenoApp({ userName }: Props) {
                 metadatos={metadatos}
                 onConfirm={(msg, fn) => setModal({ type: 'confirm', message: msg, onConfirm: fn })}
               />
+              <div className="border-t border-bone-200 pt-4">
+                <EscenariosPanel
+                  escenarios={escenariosMeta}
+                  activoId={escenarioActivoId}
+                  onGuardarNuevo={handleGuardarEscenario}
+                  onCargar={handleCargarEscenario}
+                  onActualizar={handleActualizarEscenario}
+                  onRenombrar={handleRenombrarEscenario}
+                  onEliminar={handleEliminarEscenario}
+                />
+              </div>
             </div>
           )}
+          </div>
         </div>
       </aside>
 
@@ -1058,17 +2108,27 @@ export function MapaTerrenoApp({ userName }: Props) {
       <button
         onClick={() => setPanelAbierto(p => !p)}
         className="absolute top-1/2 -translate-y-1/2 z-[1100] bg-white border border-bone-200 rounded-r-lg px-1 py-3 text-moss-700 hover:bg-bone-50 shadow-paper transition-all duration-200 no-print"
-        style={{ left: panelAbierto ? '320px' : '0' }}
+        style={{ left: panelAbierto ? '340px' : '52px' }}
         title={panelAbierto ? 'Ocultar panel' : 'Mostrar panel'}
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
       </button>
 
+      {/* Toggle panel derecho (capas) */}
+      <button
+        onClick={() => setPanelDerecho(p => (p === null ? 'capas' : null))}
+        className="absolute top-1/2 -translate-y-1/2 z-[1001] bg-white border border-bone-200 rounded-l-lg px-1 py-3 text-moss-700 hover:bg-bone-50 shadow-paper transition-all duration-200 no-print"
+        style={{ right: panelDerecho === 'capas' ? `${12 + 224}px` : panelDerecho === 'sugerencias' ? `${12 + 256}px` : '12px' }}
+        title={panelDerecho !== null ? 'Cerrar panel' : 'Mostrar capas'}
+      >
+        <ChevronRight className={`w-4 h-4 transition-transform ${panelDerecho === null ? 'rotate-180' : ''}`} />
+      </button>
+
       {/* ─── Mapa ─────────────────────────────────────────────────────────────── */}
-      <main id="print-capture-root" className="flex-1 relative overflow-hidden">
+      <main id="print-capture-root" className={`flex-1 relative overflow-hidden ${capturaActiva ? 'bg-bone-50 pt-[58px] pr-[212px] pb-[50px] pl-3' : ''}`}>
         {/* Banner de autosave */}
         {autosaveBanner && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1001] no-print flex items-center gap-2 px-4 py-2 rounded-full shadow-raised text-xs font-medium bg-white border border-bone-200 text-ink-800 whitespace-nowrap">
+          <div className="absolute top-3 left-3 z-[1001] no-print flex items-center gap-2 px-4 py-2 rounded-full shadow-raised text-xs font-medium bg-white border border-bone-200 text-ink-800 whitespace-nowrap">
             <span className="text-moss-700">
               Trabajo sin guardar del {new Date(autosaveBanner.savedAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -1089,37 +2149,23 @@ export function MapaTerrenoApp({ userName }: Props) {
 
         {/* Banner de modo dibujo */}
         {(modoClick || dibujando) && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] text-sm px-5 py-2.5 rounded-full shadow-raised font-medium pointer-events-none bg-sun-500 text-ink-950 no-print">
-            {modoZona    ? `Dibujando zona — clic en mapa (${modoZona.vertices.length} vértices)`   :
-             modoSector  ? `Dibujando sector — clic en mapa (${modoSector.vertices.length} vértices)` :
-             modoCamino  ? `Trazando camino — clic en mapa (${modoCamino.vertices.length} puntos)`  :
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] text-sm px-5 py-2.5 rounded-full shadow-raised font-medium pointer-events-none bg-sun-500 text-ink-950 no-print">
+            {modoZona    ? `Dibujando zona — ${modoZona.vertices.length} vértices · Enter finaliza · Esc cancela`   :
+             modoSector  ? `Dibujando sector — ${modoSector.vertices.length} vértices · Enter finaliza · Esc cancela` :
+             modoCamino  ? `Trazando camino — ${modoCamino.vertices.length} puntos · Enter finaliza · Esc cancela`  :
              modoPinClick? 'Hacé clic en el mapa para colocar el pin' :
-             modoDibujo && modoDibujo !== 'seleccion'
-               ? `Dibujando ${modoDibujo} — ${dibujoEnCurso?.vertices.length ?? 0} puntos`
+             modoDibujo === 'medir'
+               ? `Midiendo — ${medicionVertices.length} puntos · distancia · área · ∠ · Backspace borra · Enter/Esc limpia`
+               : modoDibujo === 'cota'
+               ? (dibujoEnCurso?.vertices.length ? 'Clic en el punto final de la cota' : 'Clic en el punto inicial de la cota')
+               : modoDibujo && modoDibujo !== 'seleccion'
+               ? `Dibujando ${modoDibujo} — ${dibujoEnCurso?.vertices.length ?? 0} puntos · Enter finaliza · Esc cancela`
                :            'Hacé clic en el mapa para agregar un mojón'}
           </div>
         )}
 
-        {/* ── Barra de herramientas de dibujo (flotante izquierda) ── */}
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-[1000] no-print" style={{ pointerEvents: 'none' }}>
-          <DibujoToolbar
-            modoDibujo={modoDibujo}
-            colorActivo={colorDibujo}
-            enCurso={dibujoEnCurso}
-            seleccionado={dibujoSelId}
-            nombreSeleccionado={dibujoSel?.nombre}
-            notasSeleccionado={dibujoSel?.notas}
-            onModo={handleCambiarModo}
-            onColor={setColorDibujo}
-            onFinalizar={handleFinalizarDibujo}
-            onCancelar={handleCancelarDibujo}
-            onEliminar={handleEliminarDibujo}
-            onRenombrar={handleRenombrarDibujo}
-          />
-        </div>
-
         {/* ── Panel derecho: Capas / Sugerencias ── */}
-        <div className="absolute top-14 right-3 z-[1000] no-print">
+        <div className="absolute top-3 right-3 z-[1000] no-print">
           {/* Botón toggle */}
           {panelDerecho === null && (
             <button
@@ -1146,8 +2192,22 @@ export function MapaTerrenoApp({ userName }: Props) {
               onRenombrarCamino={handleRenombrarCamino} onEliminarCamino={handleEliminarCamino}
               onRenombrarDibujo={handleRenombrarDibujoCapas} onEliminarDibujo={handleEliminarDibujoCapas}
               onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
+              capasUsuario={capasUsuario} capasOcultas={capasOcultas} capaActivaId={capaActivaId}
+              onSetCapaActiva={setCapaActivaId}
+              onToggleCapaOculta={handleToggleCapaOculta}
+              onRenombrarCapa={handleRenombrarCapa}
+              onEliminarCapa={handleEliminarCapa}
+              onColorCapa={handleColorCapa}
+              onReordenarCapa={handleReordenarCapa}
+              onMoverDibujoACapa={handleMoverDibujoACapa}
+              onCrearCapa={() => setModal({
+                type: 'prompt', message: 'Nombre de la nueva capa:', placeholder: 'Ej: Propuesta casa…',
+                onConfirm: nombre => handleCrearCapa(nombre),
+              })}
+              onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
               datosShader={datosShader} shaderLoading={shaderLoading} shaderError={shaderError}
-              onFetchShader={handleFetchShader} shaderUsarArea={shaderUsarArea} onToggleShaderArea={() => setShaderUsarArea(p => !p)} mojones={mojones}
+              onFetchShader={handleFetchShader} shaderUsarArea={shaderUsarArea} onToggleShaderArea={() => setShaderUsarArea(p => !p)}
+              shaderDetallado={shaderDetallado} onToggleShaderDetallado={() => setShaderDetallado(p => !p)} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
               onCapturar={() => {
@@ -1164,6 +2224,13 @@ export function MapaTerrenoApp({ userName }: Props) {
               terrariumElevMax={terrariumElevMax}
               intervaloContorno={intervaloContorno}
               setIntervaloContorno={setIntervaloContorno}
+              intervaloCurvas={intervaloCurvasEfectivo}
+              curvasLoading={curvasLoading}
+              colorCurvas={colorCurvas}
+              onColorCurvas={setColorCurvas}
+              opacidadShader={opacidadShader}
+              onOpacidadShader={setOpacidadShader}
+              onResetTerrariumRango={handleResetTerrariumRango}
             />
           )}
 
@@ -1174,8 +2241,46 @@ export function MapaTerrenoApp({ userName }: Props) {
               onAgregarPin={handleAgregarPinSugerencia}
               onAgregarCamino={handleAgregarCaminoSugerencia}
               onVolver={() => setPanelDerecho('capas')}
+              programa={programaMP}
+              onPrograma={setProgramaMP}
+              masterPlan={masterPlan}
+              onGenerarMasterPlan={handleGenerarMasterPlan}
+              onConvertirZona={handleConvertirZonaMP}
+              onDescartarElemento={handleDescartarElementoMP}
+              areaPredioHa={metricas?.area_ha ?? null}
             />
           )}
+        </div>
+
+        {/* ── Perfil de elevación interactivo (dock inferior) ── */}
+        {perfilDock && (
+          <PerfilPanel
+            perfil={perfilDock.perfil}
+            vertices={perfilDock.vertices}
+            nombre={perfilDock.nombre}
+            color={perfilDock.color}
+            onHover={setPerfilPunto}
+            onClose={() => { setPerfilDock(null); setPerfilPunto(null); }}
+          />
+        )}
+
+        {/* ── Brújula ── */}
+        <div className="absolute bottom-36 left-3 z-[1000] no-print pointer-events-none select-none">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="23" fill="white" fillOpacity="0.92" stroke="#d1cec8" strokeWidth="0.75"/>
+            {/* Norte — rojo */}
+            <polygon points="24,5 21,24 27,24" fill="#c0392b"/>
+            {/* Sur — gris */}
+            <polygon points="24,43 21,24 27,24" fill="#888"/>
+            {/* Este */}
+            <polygon points="43,24 24,21 24,27" fill="#aaa"/>
+            {/* Oeste */}
+            <polygon points="5,24 24,21 24,27" fill="#aaa"/>
+            {/* Centro */}
+            <circle cx="24" cy="24" r="2.5" fill="white" stroke="#999" strokeWidth="0.75"/>
+            {/* N */}
+            <text x="24" y="15.5" textAnchor="middle" fontSize="7" fontWeight="700" fill="#c0392b" fontFamily="sans-serif">N</text>
+          </svg>
         </div>
 
         <MapLeaflet
@@ -1191,10 +2296,14 @@ export function MapaTerrenoApp({ userName }: Props) {
           onEditarPin={handleEditarPin}
           caminos={caminosFiltrados}
           caminoEnDibujado={modoCamino?.vertices ?? null}
+          perfilPunto={perfilPunto}
           dibujando={!!dibujando}
           datosShader={datosShader}
           datosEscorrentia={datosEscorrentia}
           datosSugerencias={datosSugerencias}
+          cuencaPoligono={cuenca?.poligono ?? null}
+          cuencaOutlet={cuenca?.outlet ?? null}
+          potrerosLayer={potrerosLayer}
           capas={capas}
           dibujos={dibujosFiltrados}
           dibujoEnCurso={dibujoEnCurso}
@@ -1202,19 +2311,39 @@ export function MapaTerrenoApp({ userName }: Props) {
           onClickDibujo={handleClickDibujo}
           onMoverDibujo={handleMoverDibujo}
           onMoverVertice={handleMoverVertice}
+          onInsertarVertice={handleInsertarVertice}
+          onEliminarVertice={handleEliminarVertice}
           modoDibujo={modoDibujo}
           colorDibujo={colorDibujo}
           elevMin={terrariumElevMin}
           elevMax={terrariumElevMax}
           onRangoTerrarium={handleRangoTerrarium}
+          opacidadShaderElev={opacidadShader.elev}
+          opacidadShaderPend={opacidadShader.pend}
           aguadasLayer={aguadasFiltradas}
           datosArcoSolar={datosArcoSolar}
+          onMoverArcoSolar={(lat, lng) => setArcoSolarOffset({ lat, lng })}
           onMoverPin={handleMoverPin}
           onGetBounds={handleGetBounds}
           onGetFlyTo={handleGetFlyTo}
           onMapChange={handleMapChange}
           metricas={metricas}
           curvasNivel={curvasNivel}
+          colorCurvasNivel={colorCurvas}
+          snapActivo={snapActivo}
+          orthoActivo={orthoActivo}
+          snapPuntos={snapPuntos}
+          snapSegmentos={snapSegmentos}
+          tipoActivo={tipoActivo}
+          verticesActivos={verticesActivos}
+          colorPreview={colorPreview}
+          medicion={modoDibujo === 'medir' ? medicionVertices : null}
+          onCursorCad={(lat, lng) => { cursorCadRef.current = { lat, lng }; }}
+          onCursorMove={(lat, lng) => { cursorPosRef.current = { lat, lng }; }}
+          capturaMode={capturaActiva}
+          overlay={overlay}
+          onOverlayEsquina={handleOverlayEsquina}
+          masterPlan={masterPlan}
         />
 
         {/* ─────────────────────────────────────────────────────────────────────
@@ -1223,29 +2352,26 @@ export function MapaTerrenoApp({ userName }: Props) {
             ───────────────────────────────────────────────────────────────────── */}
         {capturaActiva && (
           <>
-            {/* ── Título (top-left) — fondo sólido, sin backdrop-blur ─────────── */}
-            <div id="captura-titulo" className="absolute top-4 left-4 z-[1001] pointer-events-auto bg-white border border-bone-200 rounded-xl shadow-lg px-4 py-3 max-w-xs">
-              {/* Texto estático — siempre visible en PNG (fondo opaco necesario) */}
-              <p className="font-display text-lg font-bold text-ink-950 leading-tight">
+            {/* ── Título (banda superior) — compacto, no tapa el mapa ─────────── */}
+            <div id="captura-titulo" className="absolute top-1.5 left-3 z-[1001] pointer-events-auto flex items-baseline gap-2 max-w-[calc(100%-224px)]">
+              <img src="/logo-ayt.png" alt="" className="w-6 h-6 object-contain self-center shrink-0" />
+              <p className="font-display text-base font-bold text-ink-950 leading-tight truncate">
                 {capturaTitulo || 'Mapa del terreno'}
               </p>
-              <p className="text-[10px] text-ink-700/60 mt-0.5 font-mono">
-                {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              <p className="text-[10px] text-ink-700/55 font-mono shrink-0">
+                {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'short', day: 'numeric' })}
               </p>
               {/* Campo de edición — filtrado en PNG */}
-              <div className="no-print mt-2 space-y-1">
-                <p className="text-[9px] text-ink-700/40 uppercase tracking-wide font-semibold">Editar título</p>
-                <input
-                  value={capturaTitulo}
-                  onChange={e => setCapturaTitulo(e.target.value)}
-                  placeholder="Nombre del terreno…"
-                  className="w-full text-xs bg-bone-50 border border-bone-200 rounded px-2 py-1 text-ink-950 focus:outline-none focus:ring-1 focus:ring-moss-500"
-                />
-              </div>
+              <input
+                value={capturaTitulo}
+                onChange={e => setCapturaTitulo(e.target.value)}
+                placeholder="Título…"
+                className="no-print w-40 text-xs bg-white border border-bone-200 rounded px-2 py-1 text-ink-950 focus:outline-none focus:ring-1 focus:ring-moss-500"
+              />
             </div>
 
-            {/* ── Norte + Escala (bottom-left) — visibles en PNG y print ──────── */}
-            <div id="captura-norte-escala" className="absolute bottom-4 left-4 z-[1001] flex flex-col items-start gap-1.5">
+            {/* ── Norte + Escala (banda inferior) — fila ──────────────────────── */}
+            <div id="captura-norte-escala" className="absolute bottom-1.5 left-3 z-[1001] flex flex-row items-center gap-2">
               {/* Flecha de norte */}
               <div className="flex items-center gap-1 bg-white border border-bone-200 rounded-lg px-2 py-1.5 shadow">
                 <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
@@ -1263,9 +2389,9 @@ export function MapaTerrenoApp({ userName }: Props) {
               </div>
             </div>
 
-            {/* ── Leyenda (bottom-right) — fondo sólido, sin backdrop-blur ────── */}
+            {/* ── Leyenda (banda derecha, arriba) ────────────────────────────── */}
             {(leyendaEditada ?? []).length > 0 && (
-              <div id="captura-leyenda" className="absolute bottom-4 right-4 z-[1001] bg-white border border-bone-200 rounded-xl shadow-lg px-3 py-3 min-w-[150px] max-w-[210px]">
+              <div id="captura-leyenda" className="absolute top-[60px] right-3 z-[1001] bg-white border border-bone-200 rounded-xl shadow-lg px-3 py-2.5 w-[196px]">
                 <p className="text-[9px] font-bold text-ink-800 uppercase tracking-wider mb-1.5">Leyenda</p>
 
                 {/* ─ Ítems estáticos (visibles en PNG) ─ */}
@@ -1331,16 +2457,30 @@ export function MapaTerrenoApp({ userName }: Props) {
 
             {/* ── Rótulo de plano (bottom-right, sobre la leyenda) ─────────── */}
             {rotuloVisible && (
-              <div id="captura-rotulo" className="absolute bottom-4 right-4 z-[1002] bg-white border border-bone-300 rounded-xl shadow-lg overflow-hidden" style={{ minWidth: 200 }}>
+              <div id="captura-rotulo" className="absolute bottom-[56px] right-3 z-[1002] bg-white border border-bone-300 rounded-xl shadow-lg overflow-hidden w-[196px]">
+                {/* Banda de marca (cajetín profesional) */}
+                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-ink-950 text-bone-50">
+                  <img src="/logo-ayt.png" alt="" className="w-5 h-5 object-contain shrink-0 invert brightness-200" />
+                  <div className="leading-none flex-1 min-w-0">
+                    <p className="text-[6px] uppercase tracking-[0.2em] text-bone-50/60">Arte y Tierra</p>
+                    <p className="text-[9px] font-bold truncate">{rotulo.nombre || 'Plano del terreno'}</p>
+                  </div>
+                  {/* Norte */}
+                  <svg width="14" height="18" viewBox="0 0 18 22" fill="none" className="shrink-0">
+                    <polygon points="9,1 14,14 9,11 4,14" fill="#FBF8F3" />
+                    <polygon points="9,21 4,8 9,11 14,8" fill="#FBF8F3" opacity="0.4" />
+                    <text x="9" y="10.5" textAnchor="middle" fontSize="5" fontWeight="700" fontFamily="sans-serif" fill="#1B3A2D">N</text>
+                  </svg>
+                </div>
                 {/* Contenido visible en PNG */}
                 <table className="text-[8px] text-ink-800 w-full border-collapse">
                   <tbody>
                     {([
-                      ['Predio',       rotulo.nombre],
                       ['Propietario',  rotulo.propietario],
                       ['Ubicación',    rotulo.ubicacion],
+                      ['Superficie',   metricas?.area_ha ? `${metricas.area_ha.toFixed(2)} ha` : ''],
                       ['Fecha',        rotulo.fecha],
-                      ['Escala',       rotulo.escala],
+                      ['Escala',       rotulo.escala || `barra ${escalaGrafica.label}`],
                       ['Autor',        rotulo.autor],
                     ] as [string, string][]).filter(([,v]) => v).map(([k, v]) => (
                       <tr key={k} className="border-t border-bone-200/60">
@@ -1408,10 +2548,47 @@ export function MapaTerrenoApp({ userName }: Props) {
           </>
         )}
       </main>
+      </div>
+
+      {/* ─── Barra de estado inferior (estilo CAD) ───────────────────────────── */}
+      <BarraEstado
+        cursorRef={cursorPosRef}
+        escala={escalaGrafica}
+        snapActivo={snapActivo}
+        orthoActivo={orthoActivo}
+        onToggleSnap={() => setSnapActivo(p => !p)}
+        onToggleOrtho={() => setOrthoActivo(p => !p)}
+        modoLabel={modoEstadoLabel}
+        entradaActiva={!!tipoActivo}
+        onEntradaCoord={handleEntradaCoord}
+        areaHa={metricas?.area_ha ?? null}
+        nMojones={mojones.length}
+        onExportarDXF={handleExportarDXF}
+        onImportarDXF={handleImportarDXF}
+        overlay={overlay}
+        onCargarImagen={handleCargarOverlay}
+        onOpacidadOverlay={op => setOverlay(prev => prev ? { ...prev, opacidad: op } : prev)}
+        onQuitarOverlay={() => setOverlay(null)}
+        onAbrirPaleta={() => setPaletaOpen(true)}
+        onAbrirAyuda={() => setAyudaOpen(true)}
+      />
+
+      {/* ─── Paleta de comandos (Ctrl+K) y atajos (?) ───────────────────────── */}
+      {paletaOpen && <ComandoPalette comandos={comandos} onClose={() => setPaletaOpen(false)} />}
+      {ayudaOpen  && <AtajosAyuda onClose={() => setAyudaOpen(false)} />}
 
       {/* ─── Modal global ──────────────────────────────────────────────────── */}
       <Modal modal={modal} onClose={() => setModal(null)} />
     </div>
+  );
+}
+
+// ─── Ítem del menú Exportar ───────────────────────────────────────────────────
+function ExportItem({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ink-700 hover:bg-bone-50 transition-colors text-left">
+      <span className="text-ink-700/50 shrink-0">{icon}</span>{label}
+    </button>
   );
 }
 
@@ -1516,6 +2693,8 @@ interface PanelCapasProps {
   onCapas:             (c: CapasVisibles) => void;
   intervaloContorno:   number | null;
   setIntervaloContorno:(v: number | null) => void;
+  intervaloCurvas:     number | null;
+  curvasLoading:       boolean;
   datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
   sectores:            Sector[];
@@ -1537,12 +2716,26 @@ interface PanelCapasProps {
   onEliminarDibujo:    (id: string) => void;
   onRenombrarAguada:   (id: string, nombre: string) => void;
   onEliminarAguada:    (id: string) => void;
+  capasUsuario:        CapaUsuario[];
+  capasOcultas:        Set<string>;
+  capaActivaId:        string;
+  onSetCapaActiva:     (id: string) => void;
+  onToggleCapaOculta:  (id: string) => void;
+  onRenombrarCapa:     (id: string, nombre: string) => void;
+  onEliminarCapa:      (id: string) => void;
+  onColorCapa:         (id: string, color: string) => void;
+  onReordenarCapa:     (id: string, dir: -1 | 1) => void;
+  onMoverDibujoACapa:  (dibujoId: string, capaId: string) => void;
+  onCrearCapa:         () => void;
+  onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
   shaderLoading:       boolean;
   shaderError:         string | null;
   onFetchShader:       () => void;
   shaderUsarArea:      boolean;
   onToggleShaderArea:  () => void;
+  shaderDetallado:     boolean;
+  onToggleShaderDetallado: () => void;
   mojones:             Mojon[];
   datosSugerencias:    ResultadoSugerencias | null;
   onVerSugerencias:    () => void;
@@ -1552,6 +2745,11 @@ interface PanelCapasProps {
   onCerrar:            () => void;
   terrariumElevMin:    number;
   terrariumElevMax:    number;
+  colorCurvas:         { normal: string; maestra: string };
+  onColorCurvas:       (c: { normal: string; maestra: string }) => void;
+  opacidadShader:      { elev: number; pend: number };
+  onOpacidadShader:    (v: { elev: number; pend: number }) => void;
+  onResetTerrariumRango: () => void;
 }
 
 function PanelCapas({
@@ -1563,17 +2761,49 @@ function PanelCapas({
   onRenombrarCamino, onEliminarCamino,
   onRenombrarDibujo, onEliminarDibujo,
   onRenombrarAguada, onEliminarAguada,
-  datosShader, shaderLoading, shaderError, onFetchShader, shaderUsarArea, onToggleShaderArea, mojones,
+  capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
+  onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
+  datosShader, shaderLoading, shaderError, onFetchShader, shaderUsarArea, onToggleShaderArea,
+  shaderDetallado, onToggleShaderDetallado, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno,
+  intervaloCurvas, curvasLoading,
+  colorCurvas, onColorCurvas,
+  opacidadShader, onOpacidadShader,
+  onResetTerrariumRango,
 }: PanelCapasProps) {
   const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
+  const [ordenGrupos, setOrdenGrupos] = useState([
+    'topo', 'plano', 'hidrico', 'sugerencias', 'terreno',
+    'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
+  ]);
+  const [dragKey, setDragKey] = useState<string | null>(null);
+  const makeDrag = (key: string) => ({
+    draggable: true as const,
+    style: { order: ordenGrupos.indexOf(key), opacity: dragKey === key ? 0.4 : 1 },
+    onDragStart: (e: React.DragEvent) => { e.dataTransfer.effectAllowed = 'move'; setDragKey(key); },
+    onDragOver:  (e: React.DragEvent) => e.preventDefault(),
+    onDrop: () => {
+      if (!dragKey || dragKey === key) { setDragKey(null); return; }
+      setOrdenGrupos(prev => {
+        const arr = [...prev];
+        const from = arr.indexOf(dragKey), to = arr.indexOf(key);
+        if (from < 0 || to < 0) return prev;
+        arr.splice(from, 1);
+        arr.splice(to, 0, dragKey);
+        return arr;
+      });
+      setDragKey(null);
+    },
+    onDragEnd: () => setDragKey(null),
+  });
+
   return (
-    <div className="w-56 bg-white/97 backdrop-blur-sm rounded-xl shadow-xl border border-bone-200 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+    <div className="w-56 bg-white/97 backdrop-blur-sm rounded-xl shadow-xl border border-bone-200 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <div className="flex items-center gap-1.5">
@@ -1586,9 +2816,10 @@ function PanelCapas({
       </div>
 
       {/* Grupos */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto flex flex-col">
 
         {/* ── Topografía ── */}
+        <div {...makeDrag('topo')}>
         <CapaGrupo
           label="Topografía"
           visible={capas.shaderElev || capas.shaderPend || capas.terrariumElev}
@@ -1602,6 +2833,19 @@ function PanelCapas({
             label={`Hipsométrico SRTM${capas.terrariumElev ? ` (${terrariumElevMin}–${terrariumElevMax} m)` : ''}`}
             swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)' }} />}
           />
+          {capas.terrariumElev && (
+            <div className="mx-3 mb-2 space-y-1">
+              <button
+                onClick={onResetTerrariumRango}
+                className="text-[9px] text-moss-700 hover:underline"
+              >
+                ↺ Recalcular rango desde vista actual
+              </button>
+              {terrariumElevMin === 0 && terrariumElevMax === 500 && (
+                <p className="text-[9px] text-ink-700/50 leading-tight">Sin topografía calculada, el rango es 0–500 m. Acercate al terreno y recalculá, o calculá la topografía primero.</p>
+              )}
+            </div>
+          )}
           {datosShader ? (
             <>
               <CapaItem
@@ -1612,6 +2856,16 @@ function PanelCapas({
                 label="Elevación"
                 swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0 0%,#66BB6A 40%,#FFEE58 70%,#8D6E63 100%)' }} />}
               />
+              {capas.shaderElev && (
+                <div className="mx-3 mb-1 flex items-center gap-2">
+                  <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
+                  <input type="range" min="0.1" max="1" step="0.05"
+                    value={opacidadShader.elev}
+                    onChange={e => onOpacidadShader({ ...opacidadShader, elev: parseFloat(e.target.value) })}
+                    className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
+                  <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.elev * 100)}%</span>
+                </div>
+              )}
               <CapaItem
                 visible={capas.shaderPend}
                 onToggle={() => capas.shaderPend
@@ -1620,11 +2874,28 @@ function PanelCapas({
                 label="Pendiente"
                 swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#4CAF50 0%,#FFEB3B 50%,#F44336 100%)' }} />}
               />
-              {/* Toggle área visible */}
-              <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1">
-                <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
-                <span className="text-[9px] text-ink-700/70">Usar área visible</span>
+              {capas.shaderPend && (
+                <div className="mx-3 mb-1 flex items-center gap-2">
+                  <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
+                  <input type="range" min="0.1" max="1" step="0.05"
+                    value={opacidadShader.pend}
+                    onChange={e => onOpacidadShader({ ...opacidadShader, pend: parseFloat(e.target.value) })}
+                    className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
+                  <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.pend * 100)}%</span>
+                </div>
+              )}
+              {/* Toggle resolución */}
+              <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1" title="Grilla densa desde tiles Terrarium: cientos de celdas, mucho más precisa para keyline, escorrentías y aptitud.">
+                <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
+                <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
               </label>
+              {/* Toggle área visible (solo modo rápido) */}
+              {!shaderDetallado && (
+                <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1">
+                  <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
+                  <span className="text-[9px] text-ink-700/70">Usar área visible</span>
+                </label>
+              )}
               <button
                 onClick={() => { onFetchShader(); }}
                 disabled={shaderLoading || mojones.length < 3}
@@ -1638,11 +2909,18 @@ function PanelCapas({
           ) : (
             <div className="px-3 pt-1 pb-2.5 space-y-1.5">
               {shaderError && <p className="text-[9px] text-clay-600 leading-tight">{shaderError}</p>}
-              {/* Toggle área visible */}
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
-                <span className="text-[9px] text-ink-700/70">Usar área visible del mapa</span>
+              {/* Toggle resolución */}
+              <label className="flex items-center gap-1.5 cursor-pointer" title="Grilla densa desde tiles Terrarium: cientos de celdas, mucho más precisa para keyline, escorrentías y aptitud.">
+                <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
+                <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
               </label>
+              {/* Toggle área visible (solo modo rápido) */}
+              {!shaderDetallado && (
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
+                  <span className="text-[9px] text-ink-700/70">Usar área visible del mapa</span>
+                </label>
+              )}
               <button
                 onClick={onFetchShader}
                 disabled={shaderLoading || mojones.length < 3}
@@ -1658,12 +2936,14 @@ function PanelCapas({
             </div>
           )}
         </CapaGrupo>
+        </div>{/* /topo */}
 
         {/* ── Plano Profesional ── */}
+        <div {...makeDrag('plano')}>
         <CapaGrupo
           label="Plano Profesional"
-          visible={capas.linderoLabels || capas.curvasNivel}
-          onToggleVisible={() => onCapas({ ...capas, linderoLabels: false, curvasNivel: false })}
+          visible={capas.linderoLabels || capas.curvasNivel || capas.cotas || capas.medidas}
+          onToggleVisible={() => onCapas({ ...capas, linderoLabels: false, curvasNivel: false, cotas: false, medidas: false })}
           expanded={exp.topo} onExpand={() => tog('topo')}
         >
           <CapaItem
@@ -1672,33 +2952,59 @@ function PanelCapas({
             label="Etiquetas de lindero"
             swatch={<span className="w-5 h-2 rounded-sm shrink-0 border border-moss-500 bg-white flex items-center justify-center text-[7px] font-bold text-moss-700">m</span>}
           />
-          {datosShader ? (
+          <CapaItem
+            visible={capas.cotas}
+            onToggle={() => onCapas({ ...capas, cotas: !capas.cotas })}
+            label="Cotas (dimensiones)"
+            swatch={<span className="w-5 h-2 shrink-0 flex items-center justify-center text-[8px] font-bold text-ink-700">⊢⊣</span>}
+          />
+          <CapaItem
+            visible={capas.medidas}
+            onToggle={() => onCapas({ ...capas, medidas: !capas.medidas })}
+            label="Medidas de figuras"
+            swatch={<span className="w-5 h-2 rounded-sm shrink-0 border border-bone-300 bg-white flex items-center justify-center text-[6px] font-bold text-ink-700">ha</span>}
+          />
+          {mojones.length >= 3 ? (
             <>
               <CapaItem
                 visible={capas.curvasNivel}
                 onToggle={() => onCapas({ ...capas, curvasNivel: !capas.curvasNivel })}
-                label={`Curvas de nivel${datosShader ? ` (cada ${intervaloContorno ?? intervaloAutomatico(datosShader.elev_max - datosShader.elev_min)} m)` : ''}`}
-                swatch={<span className="w-5 h-2 shrink-0 border-t-2 border-dashed" style={{ borderColor: '#5E35B1' }} />}
+                label={`Curvas de nivel${curvasLoading ? ' (calculando…)' : intervaloCurvas !== null && capas.curvasNivel ? ` (cada ${intervaloCurvas} m)` : ''}`}
+                swatch={<span className="w-5 h-2 shrink-0 border-t-2 border-dashed" style={{ borderColor: colorCurvas.normal }} />}
               />
               {capas.curvasNivel && (
-                <div className="mx-3 mb-2 flex items-center gap-1.5">
-                  <span className="text-[9px] text-ink-700/60">Cada:</span>
-                  {[5, 10, 20, 50].map(v => (
-                    <button key={v}
-                      onClick={() => setIntervaloContorno(v)}
-                      className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${(intervaloContorno ?? intervaloAutomatico(datosShader.elev_max - datosShader.elev_min)) === v ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}
-                    >{v}m</button>
-                  ))}
-                  <button onClick={() => setIntervaloContorno(null)} className={`text-[9px] px-1.5 py-0.5 rounded font-semibold transition-colors ${intervaloContorno === null ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}>Auto</button>
+                <div className="mx-3 mb-2 space-y-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[9px] text-ink-700/60">Cada:</span>
+                    {[2, 5, 10, 20, 50].map(v => (
+                      <button key={v}
+                        onClick={() => setIntervaloContorno(v)}
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${intervaloContorno === v ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}
+                      >{v}m</button>
+                    ))}
+                    <button onClick={() => setIntervaloContorno(null)} className={`text-[9px] px-1.5 py-0.5 rounded font-semibold transition-colors ${intervaloContorno === null ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}>Auto</button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-ink-700/60 w-14">Normal:</span>
+                    <input type="color" value={colorCurvas.normal}
+                      onChange={e => onColorCurvas({ ...colorCurvas, normal: e.target.value })}
+                      className="w-6 h-5 rounded cursor-pointer border border-bone-200 p-0" title="Color curvas normales" />
+                    <span className="text-[9px] text-ink-700/60 w-14">Maestra:</span>
+                    <input type="color" value={colorCurvas.maestra}
+                      onChange={e => onColorCurvas({ ...colorCurvas, maestra: e.target.value })}
+                      className="w-6 h-5 rounded cursor-pointer border border-bone-200 p-0" title="Color curvas maestras (cada 5)" />
+                  </div>
                 </div>
               )}
             </>
           ) : (
-            <p className="px-3 pb-2 text-[9px] text-ink-700/40">Calculá la topografía para ver curvas de nivel.</p>
+            <p className="px-3 pb-2 text-[9px] text-ink-700/40">Agregá al menos 3 mojones para ver curvas de nivel.</p>
           )}
         </CapaGrupo>
+        </div>{/* /plano */}
 
         {/* ── Análisis Hídrico ── */}
+        <div {...makeDrag('hidrico')}>
         {datosShader && (
           <CapaGrupo
             label="Análisis Hídrico"
@@ -1714,8 +3020,10 @@ function PanelCapas({
             />
           </CapaGrupo>
         )}
+        </div>{/* /hidrico */}
 
         {/* ── Sugerencias ── */}
+        <div {...makeDrag('sugerencias')}>
         {datosShader && (
           <CapaGrupo
             label="Sugerencias"
@@ -1738,8 +3046,10 @@ function PanelCapas({
             )}
           </CapaGrupo>
         )}
+        </div>{/* /sugerencias */}
 
         {/* ── Terreno ── */}
+        <div {...makeDrag('terreno')}>
         <CapaGrupo
           label="Terreno"
           visible={capas.terreno}
@@ -1751,8 +3061,10 @@ function PanelCapas({
             <span className="text-[10px] text-ink-700/60">Polígono del predio</span>
           </div>
         </CapaGrupo>
+        </div>{/* /terreno */}
 
         {/* ── Zonas ── */}
+        <div {...makeDrag('zonas')}>
         {zonas.length > 0 && (
           <CapaGrupo
             label={`Zonas`} count={zonas.length}
@@ -1772,8 +3084,10 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+        </div>{/* /zonas */}
 
         {/* ── Sectores ── */}
+        <div {...makeDrag('sectores')}>
         {sectores.length > 0 && (
           <CapaGrupo
             label="Sectores" count={sectores.length}
@@ -1793,8 +3107,10 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+        </div>{/* /sectores */}
 
         {/* ── Caminos ── */}
+        <div {...makeDrag('caminos')}>
         {caminos.length > 0 && (
           <CapaGrupo
             label="Caminos" count={caminos.length}
@@ -1814,8 +3130,10 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+        </div>{/* /caminos */}
 
         {/* ── Pines ── */}
+        <div {...makeDrag('pines')}>
         {pines.length > 0 && (
           <CapaGrupo
             label="Pines" count={pines.length}
@@ -1835,44 +3153,96 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+        </div>{/* /pines */}
 
-        {/* ── Dibujos ── */}
-        {dibujos.length > 0 && (
-          <CapaGrupo
-            label="Dibujos" count={dibujos.length}
-            visible={capas.dibujos}
-            onToggleVisible={() => onCapas({ ...capas, dibujos: !capas.dibujos })}
-            expanded={exp.dibujos} onExpand={() => tog('dibujos')}
+        {/* ── Capas de dibujo (usuario) ── */}
+        <div {...makeDrag('dibujos')}>
+        {[...capasUsuario].sort((a, b) => a.orden - b.orden).map((capa, idx, arr) => {
+          const items = dibujos.filter(d => capaDeElemento(d.capaId, capasUsuario) === capa.id);
+          return (
+            <CapaUsuarioGrupo
+              key={capa.id}
+              capa={capa}
+              count={items.length}
+              visible={!capasOcultas.has(capa.id) && capas.dibujos}
+              activa={capaActivaId === capa.id}
+              esDefault={capa.id === CAPA_DEFAULT_ID}
+              puedeSubir={idx > 0}
+              puedeBajar={idx < arr.length - 1}
+              onSubir={() => onReordenarCapa(capa.id, -1)}
+              onBajar={() => onReordenarCapa(capa.id, 1)}
+              onColor={color => onColorCapa(capa.id, color)}
+              onToggleVisible={() => onToggleCapaOculta(capa.id)}
+              onActivar={() => onSetCapaActiva(capa.id)}
+              onRenombrar={nombre => onRenombrarCapa(capa.id, nombre)}
+              onEliminar={() => onEliminarCapa(capa.id)}
+            >
+              {items.map((d, i) => {
+                const label = d.nombre || (
+                  d.tipo === 'linea'    ? `Línea ${i + 1}` :
+                  d.tipo === 'poligono'? `Polígono ${i + 1}` :
+                  d.tipo === 'circulo' ? `Círculo ${i + 1}` :
+                  d.tipo === 'curva'   ? `Curva ${i + 1}` :
+                  d.tipo === 'cota'    ? `Cota ${i + 1}` :
+                  d.tipo === 'texto'   ? `"${d.texto.slice(0, 12)}"` :
+                  `Dibujo ${i + 1}`
+                );
+                const swatch = d.tipo === 'linea' || d.tipo === 'curva' || d.tipo === 'cota'
+                  ? <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: d.color }} />
+                  : d.tipo === 'texto'
+                  ? <span className="text-[11px] font-bold leading-none px-0.5" style={{ color: d.color }}>T</span>
+                  : <span className="w-3 h-3 rounded-sm shrink-0 border" style={{ background: d.color + '44', borderColor: d.color }} />;
+                return (
+                  <CapaItem key={d.id}
+                    visible={!ocultosIds.has(d.id) && !capasOcultas.has(capa.id) && capas.dibujos}
+                    onToggle={() => onToggle(d.id)}
+                    label={label}
+                    swatch={swatch}
+                    onRenombrar={nombre => onRenombrarDibujo(d.id, nombre)}
+                    onEliminar={() => onEliminarDibujo(d.id)}
+                    extraSiempre={capasUsuario.length > 1 ? (
+                      <select
+                        value={capa.id}
+                        onChange={e => onMoverDibujoACapa(d.id, e.target.value)}
+                        title="Mover a otra capa"
+                        className="shrink-0 text-[8px] bg-bone-50 border border-bone-200 rounded px-0.5 py-0 max-w-[56px] text-ink-700/70 focus:outline-none cursor-pointer"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {[...capasUsuario].sort((a, b) => a.orden - b.orden).map(c => (
+                          <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))}
+                      </select>
+                    ) : undefined}
+                  />
+                );
+              })}
+              {items.length === 0 && (
+                <p className="pl-7 pr-3 py-1 text-[9px] text-ink-700/30 italic">Capa vacía</p>
+              )}
+            </CapaUsuarioGrupo>
+          );
+        })}
+
+        {/* ── Nueva capa + plantilla ── */}
+        <div className="px-2 py-1.5 border-b border-bone-100 space-y-1">
+          <button
+            onClick={onCrearCapa}
+            className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200 font-semibold"
           >
-            {dibujos.map((d, i) => {
-              const label = d.nombre || (
-                d.tipo === 'linea'    ? `Línea ${i + 1}` :
-                d.tipo === 'poligono'? `Polígono ${i + 1}` :
-                d.tipo === 'circulo' ? `Círculo ${i + 1}` :
-                d.tipo === 'curva'   ? `Curva ${i + 1}` :
-                d.tipo === 'texto'   ? `"${d.texto.slice(0, 12)}"` :
-                `Dibujo ${i + 1}`
-              );
-              const swatch = d.tipo === 'linea' || d.tipo === 'curva'
-                ? <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: d.color }} />
-                : d.tipo === 'texto'
-                ? <span className="text-[11px] font-bold leading-none px-0.5" style={{ color: d.color }}>T</span>
-                : <span className="w-3 h-3 rounded-sm shrink-0 border" style={{ background: d.color + '44', borderColor: d.color }} />;
-              return (
-                <CapaItem key={d.id}
-                  visible={!ocultosIds.has(d.id) && capas.dibujos}
-                  onToggle={() => onToggle(d.id)}
-                  label={label}
-                  swatch={swatch}
-                  onRenombrar={nombre => onRenombrarDibujo(d.id, nombre)}
-                  onEliminar={() => onEliminarDibujo(d.id)}
-                />
-              );
-            })}
-          </CapaGrupo>
-        )}
+            + Nueva capa de dibujo
+          </button>
+          <button
+            onClick={onCargarPlantillaKeyline}
+            title="Crea 8 capas en orden de permanencia: Clima, Geografía, Agua, Accesos, Sistemas, Estructuras, Subdivisiones, Suelo"
+            className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-water-700 hover:bg-water-500/5 transition-colors border border-dashed border-water-500/30 font-semibold"
+          >
+            + Plantilla: Escala de permanencia (Keyline)
+          </button>
+        </div>
+        </div>{/* /dibujos */}
 
         {/* ── Aguadas ── */}
+        <div {...makeDrag('aguadas')}>
         {aguadasLayer.length > 0 && (
           <CapaGrupo
             label="Aguadas" count={aguadasLayer.length}
@@ -1898,8 +3268,10 @@ function PanelCapas({
             ))}
           </CapaGrupo>
         )}
+        </div>{/* /aguadas */}
 
         {/* ── Arco Solar ── */}
+        <div {...makeDrag('arcSolar')}>
         {datosArcoSolar && (
           <CapaGrupo
             label="Arco Solar"
@@ -1920,6 +3292,7 @@ function PanelCapas({
             </div>
           </CapaGrupo>
         )}
+        </div>{/* /arcSolar */}
       </div>
 
       {/* Footer */}
@@ -1969,23 +3342,26 @@ function CapaGrupo({ label, count, visible, onToggleVisible, expanded, onExpand,
             <span className="text-[8px] bg-bone-200 text-ink-700/50 px-1 py-0.5 rounded-full shrink-0">{count}</span>
           )}
         </button>
+        <span title="Arrastrar para reordenar" className="shrink-0 cursor-grab"><GripVertical className="w-3 h-3 text-ink-700/20" /></span>
       </div>
       {expanded && <div>{children}</div>}
     </div>
   );
 }
 
-function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar }: {
+function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar, extra, extraSiempre }: {
   visible: boolean; onToggle: () => void; label: string; swatch?: React.ReactNode;
   onRenombrar?: (nombre: string) => void;
   onEliminar?: () => void;
+  extra?: React.ReactNode;
+  extraSiempre?: React.ReactNode;
 }) {
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState(label);
   useEffect(() => setNombre(label), [label]);
 
   return (
-    <div className="flex items-center gap-1.5 pl-6 pr-3 py-1 hover:bg-bone-50">
+    <div className="flex items-center gap-1.5 pl-6 pr-3 py-1 hover:bg-bone-50 group">
       <button onClick={onToggle} className={`shrink-0 transition-colors ${visible ? 'text-moss-600' : 'text-ink-700/15'}`}>
         {visible ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
       </button>
@@ -2009,11 +3385,325 @@ function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar }:
           title={onRenombrar ? 'Doble clic para renombrar' : undefined}
         >{label}</span>
       )}
+      {extraSiempre && !editando && <span className="shrink-0">{extraSiempre}</span>}
+      {extra && !editando && <span className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">{extra}</span>}
       {onEliminar && !editando && (
         <button onClick={onEliminar} className="shrink-0 text-ink-700/15 hover:text-clay-500 transition-colors">
           <Trash2 className="w-2.5 h-2.5" />
         </button>
       )}
+    </div>
+  );
+}
+
+// ─── Grupo de capa de usuario (dibujos) ──────────────────────────────────────
+
+function CapaUsuarioGrupo({ capa, count, visible, activa, esDefault, puedeSubir, puedeBajar, onSubir, onBajar, onColor, onToggleVisible, onActivar, onRenombrar, onEliminar, children }: {
+  capa: CapaUsuario; count: number; visible: boolean; activa: boolean; esDefault: boolean;
+  puedeSubir: boolean; puedeBajar: boolean;
+  onSubir: () => void; onBajar: () => void; onColor: (color: string) => void;
+  onToggleVisible: () => void; onActivar: () => void;
+  onRenombrar: (nombre: string) => void; onEliminar: () => void;
+  children: React.ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const [editando, setEditando] = useState(false);
+  const [nombre, setNombre]     = useState(capa.nombre);
+  useEffect(() => setNombre(capa.nombre), [capa.nombre]);
+
+  return (
+    <div className="border-b border-bone-100">
+      <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-bone-50 select-none">
+        <button
+          onClick={e => { e.stopPropagation(); onToggleVisible(); }}
+          className={`shrink-0 transition-colors ${visible ? 'text-moss-700' : 'text-ink-700/20'}`}
+          title={visible ? 'Ocultar capa' : 'Mostrar capa'}
+        >
+          {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+        </button>
+        <button
+          onClick={e => { e.stopPropagation(); onActivar(); }}
+          title={activa ? 'Capa activa (los nuevos dibujos van acá)' : 'Hacer capa activa'}
+          className="shrink-0 w-3 h-3 flex items-center justify-center"
+        >
+          <span className={`w-2 h-2 rounded-full transition-colors ${activa ? 'bg-sun-500 ring-1 ring-sun-600' : 'border border-bone-300 bg-white hover:border-sun-500'}`} />
+        </button>
+        {editando ? (
+          <input
+            autoFocus
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            onBlur={() => { setEditando(false); if (nombre !== capa.nombre) onRenombrar(nombre); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { setEditando(false); onRenombrar(nombre); }
+              if (e.key === 'Escape') { setEditando(false); setNombre(capa.nombre); }
+            }}
+            className="flex-1 text-[10px] bg-white border border-moss-300 rounded px-1 py-0.5 focus:outline-none min-w-0 font-semibold uppercase tracking-wider"
+          />
+        ) : (
+          <button onClick={() => setExpanded(p => !p)} className="flex-1 flex items-center gap-1 min-w-0">
+            <ChevronRight className={`w-2.5 h-2.5 text-ink-700/30 shrink-0 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+            <span
+              className="text-[10px] font-semibold text-ink-800 uppercase tracking-wider truncate"
+              onDoubleClick={e => { e.stopPropagation(); setEditando(true); }}
+              title="Doble clic para renombrar"
+            >{capa.nombre}</span>
+            {count > 0 && (
+              <span className="text-[8px] bg-bone-200 text-ink-700/50 px-1 py-0.5 rounded-full shrink-0">{count}</span>
+            )}
+          </button>
+        )}
+        {!editando && (
+          <>
+            {/* Color de la capa */}
+            <label className="shrink-0 w-3.5 h-3.5 rounded-sm border border-bone-300 cursor-pointer relative overflow-hidden" title="Color de la capa (recolorea sus dibujos)" style={{ background: capa.color ?? 'repeating-linear-gradient(45deg,#ddd,#ddd 2px,#fff 2px,#fff 4px)' }}>
+              <input type="color" value={capa.color ?? '#3A5A40'} onChange={e => onColor(e.target.value)} onClick={e => e.stopPropagation()} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </label>
+            {/* Reordenar */}
+            <button onClick={e => { e.stopPropagation(); onSubir(); }} disabled={!puedeSubir} title="Subir capa" className="shrink-0 text-ink-700/25 hover:text-ink-700 disabled:opacity-20 leading-none text-[9px]">▲</button>
+            <button onClick={e => { e.stopPropagation(); onBajar(); }} disabled={!puedeBajar} title="Bajar capa" className="shrink-0 text-ink-700/25 hover:text-ink-700 disabled:opacity-20 leading-none text-[9px]">▼</button>
+          </>
+        )}
+        {!esDefault && !editando && (
+          <button onClick={onEliminar} title="Eliminar capa (los dibujos pasan a la capa principal)"
+            className="shrink-0 text-ink-700/15 hover:text-clay-500 transition-colors">
+            <Trash2 className="w-2.5 h-2.5" />
+          </button>
+        )}
+      </div>
+      {expanded && <div>{children}</div>}
+    </div>
+  );
+}
+
+// ─── Entrada por coordenadas relativas (distancia<azimut) ──────────────────────
+function EntradaCoordenada({ onEnviar }: { onEnviar: (distM: number, azDeg: number | null) => boolean }) {
+  const [valor, setValor] = useState('');
+  const [error, setError] = useState(false);
+
+  const enviar = () => {
+    const txt = valor.trim();
+    // Con ángulo: "20<90", "20 90", "20@90"  ·  Solo largo: "20" (usa dirección del cursor)
+    const conAng = txt.match(/^(-?\d+(?:[.,]\d+)?)\s*[<@ ]\s*(-?\d+(?:[.,]\d+)?)$/);
+    const soloLargo = txt.match(/^(\d+(?:[.,]\d+)?)$/);
+    let dist: number, az: number | null;
+    if (conAng) { dist = parseFloat(conAng[1]!.replace(',', '.')); az = parseFloat(conAng[2]!.replace(',', '.')); }
+    else if (soloLargo) { dist = parseFloat(soloLargo[1]!.replace(',', '.')); az = null; }
+    else { setError(true); return; }
+    if (!Number.isFinite(dist) || dist <= 0) { setError(true); return; }
+    const ok = onEnviar(dist, az);
+    if (ok) { setValor(''); setError(false); } else { setError(true); }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5" style={{ pointerEvents: 'auto' }}>
+      <span className="text-[10px] text-bone-50/50 font-mono" title="Escribí el largo en metros (usa la dirección del cursor) o largo<ángulo">m / m&lt;°</span>
+      <input
+        value={valor}
+        onChange={e => { setValor(e.target.value); setError(false); }}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); enviar(); } e.stopPropagation(); }}
+        placeholder="20 · 20<90"
+        className={`w-24 text-[11px] font-mono bg-white/95 rounded px-2 py-0.5 text-ink-900 focus:outline-none ${error ? 'ring-1 ring-clay-500' : ''}`}
+      />
+      <button onClick={enviar} className="text-[10px] font-semibold text-bone-50 bg-moss-700 hover:bg-moss-600 rounded px-2 py-0.5 transition-colors">
+        +punto
+      </button>
+    </div>
+  );
+}
+
+// ─── Coordenadas del cursor (lee un ref por rAF → aísla los re-renders) ─────────
+function CursorCoords({ cursorRef }: { cursorRef: React.RefObject<{ lat: number; lng: number } | null> }) {
+  const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const c = cursorRef.current;
+      setPos(prev => {
+        if (!c) return prev;
+        if (prev && Math.abs(prev.lat - c.lat) < 1e-7 && Math.abs(prev.lng - c.lng) < 1e-7) return prev;
+        return { lat: c.lat, lng: c.lng };
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [cursorRef]);
+  return (
+    <span className="tabular-nums whitespace-nowrap" title="Coordenadas del cursor">
+      {pos ? `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}` : '—, —'}
+    </span>
+  );
+}
+
+// ─── Barra de estado inferior (estilo CAD) ──────────────────────────────────────
+function BarraEstado({
+  cursorRef, escala, snapActivo, orthoActivo, onToggleSnap, onToggleOrtho,
+  modoLabel, entradaActiva, onEntradaCoord, areaHa, nMojones,
+  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onOpacidadOverlay, onQuitarOverlay,
+  onAbrirPaleta, onAbrirAyuda,
+}: {
+  cursorRef:        React.RefObject<{ lat: number; lng: number } | null>;
+  escala:           { metros: number; pixeles: number; label: string };
+  snapActivo:       boolean;
+  orthoActivo:      boolean;
+  onToggleSnap:     () => void;
+  onToggleOrtho:    () => void;
+  modoLabel:        string;
+  entradaActiva:    boolean;
+  onEntradaCoord:   (distM: number, azDeg: number | null) => boolean;
+  areaHa:           number | null;
+  nMojones:         number;
+  onExportarDXF:    () => void;
+  onImportarDXF:    (file: File) => void;
+  overlay:          OverlayImagen | null;
+  onCargarImagen:   (file: File) => void;
+  onOpacidadOverlay:(op: number) => void;
+  onQuitarOverlay:  () => void;
+  onAbrirPaleta:    () => void;
+  onAbrirAyuda:     () => void;
+}) {
+  const [cadOpen, setCadOpen] = useState(false);
+  const tog = 'flex items-center gap-1 px-2 h-5 rounded text-[10px] font-bold tracking-wide transition-colors';
+
+  return (
+    <footer className="relative flex items-center gap-2.5 h-7 px-3 bg-ink-950 text-bone-50/75 text-[11px] font-mono shrink-0 border-t border-ink-800 z-[1200] no-print">
+      {/* Modo activo */}
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${modoLabel === 'Listo' ? 'bg-bone-50/30' : 'bg-moss-400 animate-pulse'}`} />
+        <span className="truncate text-bone-50/90">{modoLabel}</span>
+      </span>
+
+      <span className="w-px h-3.5 bg-ink-700" />
+
+      {/* SNAP / ORTO */}
+      <button onClick={onToggleSnap} title="Snap a puntos (F3)"
+        className={`${tog} ${snapActivo ? 'bg-moss-700 text-bone-50' : 'text-bone-50/40 hover:bg-ink-800'}`}>
+        SNAP
+      </button>
+      <button onClick={onToggleOrtho} title="Modo ortogonal 90° (F8)"
+        className={`${tog} ${orthoActivo ? 'bg-moss-700 text-bone-50' : 'text-bone-50/40 hover:bg-ink-800'}`}>
+        ORTO
+      </button>
+
+      {/* Entrada dinámica de medidas (solo dibujando/midiendo) */}
+      {entradaActiva && (
+        <>
+          <span className="w-px h-3.5 bg-ink-700" />
+          <EntradaCoordenada onEnviar={onEntradaCoord} />
+        </>
+      )}
+
+      <div className="flex-1" />
+
+      {/* Resumen del predio */}
+      {nMojones > 0 && (
+        <span className="hidden sm:inline text-bone-50/55 whitespace-nowrap">
+          {nMojones} mojón{nMojones !== 1 ? 'es' : ''}{areaHa ? ` · ${areaHa.toFixed(2)} ha` : ''}
+        </span>
+      )}
+      <span className="w-px h-3.5 bg-ink-700 hidden sm:inline-block" />
+
+      {/* Coordenadas del cursor */}
+      <CursorCoords cursorRef={cursorRef} />
+
+      <span className="w-px h-3.5 bg-ink-700" />
+
+      {/* Escala */}
+      <span className="flex items-center gap-1.5 whitespace-nowrap" title="Escala gráfica aproximada">
+        <span className="inline-block border-l-2 border-r-2 border-b-2 border-bone-50/60 h-1.5" style={{ width: Math.min(escala.pixeles, 60) }} />
+        {escala.label}
+      </span>
+
+      <span className="w-px h-3.5 bg-ink-700" />
+
+      {/* Paleta de comandos + ayuda */}
+      <button onClick={onAbrirPaleta} title="Paleta de comandos (Ctrl+K)"
+        className={`${tog} text-bone-50/55 hover:bg-ink-800`}>
+        ⌘K
+      </button>
+      <button onClick={onAbrirAyuda} title="Atajos de teclado (?)"
+        className={`${tog} text-bone-50/55 hover:bg-ink-800`}>
+        ?
+      </button>
+
+      <span className="w-px h-3.5 bg-ink-700" />
+
+      {/* Archivo CAD / plano (popover) */}
+      <div className="relative">
+        <button onClick={() => setCadOpen(o => !o)} title="Archivo CAD / plano de referencia"
+          className={`${tog} ${cadOpen || overlay ? 'bg-ink-700 text-bone-50' : 'text-bone-50/55 hover:bg-ink-800'}`}>
+          <FileDown className="w-3 h-3" /> CAD
+        </button>
+        {cadOpen && (
+          <>
+            <div className="fixed inset-0 z-[1250]" onClick={() => setCadOpen(false)} />
+            <div className="absolute bottom-7 right-0 z-[1300]">
+              <PanelArchivoCAD
+                onExportarDXF={() => { onExportarDXF(); setCadOpen(false); }}
+                onImportarDXF={onImportarDXF}
+                overlay={overlay}
+                onCargarImagen={onCargarImagen}
+                onOpacidad={onOpacidadOverlay}
+                onQuitarImagen={onQuitarOverlay}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </footer>
+  );
+}
+
+// ─── Panel de archivo CAD / plano de referencia ────────────────────────────────
+function PanelArchivoCAD({
+  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onOpacidad, onQuitarImagen,
+}: {
+  onExportarDXF:  () => void;
+  onImportarDXF:  (file: File) => void;
+  overlay:        OverlayImagen | null;
+  onCargarImagen: (file: File) => void;
+  onOpacidad:     (op: number) => void;
+  onQuitarImagen: () => void;
+}) {
+  const dxfRef = useRef<HTMLInputElement>(null);
+  const imgRef = useRef<HTMLInputElement>(null);
+  const btn = 'flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors';
+
+  return (
+    <div className="flex flex-col gap-1 p-1.5 bg-white/97 backdrop-blur-sm rounded-xl shadow-paper border border-bone-200 w-44">
+      <p className="text-[8px] uppercase tracking-wide text-ink-700/50 px-0.5">Archivo CAD / plano</p>
+      <div className="flex gap-1">
+        <button onClick={onExportarDXF} title="Exportar dibujos a DXF (AutoCAD)" className={`${btn} bg-moss-700 hover:bg-moss-600 text-white`}>
+          <FileDown className="w-3 h-3" /> DXF
+        </button>
+        <button onClick={() => dxfRef.current?.click()} title="Importar un archivo DXF" className={`${btn} bg-bone-100 hover:bg-bone-200 text-ink-700`}>
+          <FileUp className="w-3 h-3" /> DXF
+        </button>
+      </div>
+      <input ref={dxfRef} type="file" accept=".dxf" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) onImportarDXF(f); e.target.value = ''; }} />
+
+      {!overlay ? (
+        <button onClick={() => imgRef.current?.click()} title="Pegar una imagen de plano para calcar encima"
+          className={`${btn} bg-bone-100 hover:bg-bone-200 text-ink-700`}>
+          <ImagePlus className="w-3 h-3" /> Pegar plano
+        </button>
+      ) : (
+        <div className="space-y-1 px-0.5 pt-0.5 border-t border-bone-200">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-ink-700/60">Opacidad plano</span>
+            <button onClick={onQuitarImagen} title="Quitar plano" className="text-ink-700/40 hover:text-clay-500">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <input type="range" min={0} max={1} step={0.05} value={overlay.opacidad}
+            onChange={e => onOpacidad(parseFloat(e.target.value))} className="w-full accent-moss-700" />
+          <p className="text-[8px] text-ink-700/40 leading-tight">Arrastrá ↙ ↗ para escalar y ✥ para mover.</p>
+        </div>
+      )}
+      <input ref={imgRef} type="file" accept="image/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) onCargarImagen(f); e.target.value = ''; }} />
     </div>
   );
 }

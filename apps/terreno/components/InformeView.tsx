@@ -3,8 +3,9 @@
 import { FileDown, ArrowLeft } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
 import { calcularMetricas, formatearDistancia } from '@/lib/geometria';
-import { MESES } from '@/lib/clima';
+import { MESES, centroide } from '@/lib/clima';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
+import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
 
 interface Props {
   datos: InformeData;
@@ -13,6 +14,26 @@ interface Props {
 
 export function InformeView({ datos, compartido = false }: Props) {
   const metricas = datos.metricas ?? calcularMetricas(datos.mojones);
+
+  // Numeración dinámica de secciones según las presentes
+  const presente = {
+    clima:     !!datos.clima,
+    extremos:  !!datos.extremos,
+    contexto:  !!(datos.clima?.koppen && datos.mojones.length >= 3),
+    topo:      !!datos.topo,
+    captacion: !!datos.captacion,
+    suelo:     !!datos.suelo,
+    cobertura: !!datos.cobertura,
+    redAgua:   !!datos.redAgua,
+    represa:   !!datos.represa,
+    riego:     !!datos.riego,
+    zonas:     !!(datos.zonas && datos.zonas.length),
+  };
+  const sec: Record<string, number> = {};
+  let _c = 1; // 1 = Datos del terreno
+  (['clima', 'extremos', 'contexto', 'topo', 'captacion', 'suelo', 'cobertura', 'redAgua', 'represa', 'riego', 'zonas'] as const).forEach(k => {
+    if (presente[k]) sec[k] = ++_c;
+  });
 
   const fechaLarga = (() => {
     try {
@@ -133,33 +154,149 @@ export function InformeView({ datos, compartido = false }: Props) {
 
         {/* ── 2. Clima ── */}
         {datos.clima && (
-          <Section numero="2" titulo="Clima">
+          <Section numero={sec.clima!} titulo="Clima">
+            {datos.clima.koppen && (
+              <div className="mb-4 rounded-lg border border-moss-200 bg-moss-50 p-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs text-ink-700/60 uppercase tracking-wide">Clasificación climática</p>
+                  <p className="font-mono font-bold text-lg text-moss-900">{datos.clima.koppen.codigo}
+                    <span className="text-sm font-normal text-ink-700 ml-2">{datos.clima.koppen.descripcion}</span></p>
+                </div>
+                {datos.clima.aridez && (
+                  <div className="text-right">
+                    <p className="text-xs text-ink-700/60 uppercase tracking-wide">Aridez (P/ETP)</p>
+                    <p className="font-mono font-bold text-sm text-ink-950">{datos.clima.aridez.clase} · {datos.clima.aridez.valor}</p>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="Precipitación" value={`${datos.clima.precip_anual_mm} mm`} sub="anual" />
               <StatBlock label="Temperatura" value={`${datos.clima.tmean_anual_c}°C`} sub="media anual" />
               <StatBlock label="ETP Hargreaves" value={`${datos.clima.etp_anual_mm} mm`} sub="anual" />
-              <StatBlock label="Viento ppal." value={datos.clima.viento_dir_ppal} sub="dirección" />
+              {datos.clima.rh_anual_pct !== undefined
+                ? <StatBlock label="Humedad rel." value={`${datos.clima.rh_anual_pct}%`} sub="media anual" />
+                : <StatBlock label="Viento ppal." value={datos.clima.viento_dir_ppal} sub="dirección" />}
+              {datos.clima.rad_anual_kwh !== undefined && <StatBlock label="Radiación" value={`${datos.clima.rad_anual_kwh}`} sub="kWh/m²/día" />}
+              {datos.clima.gdd_anual !== undefined && <StatBlock label="GDD (base 10)" value={`${datos.clima.gdd_anual}`} sub="grados-día anuales" />}
+              {datos.clima.viento_medio_ms !== undefined && <StatBlock label="Viento" value={`${datos.clima.viento_dir_ppal}`} sub={`${datos.clima.viento_medio_ms} m/s medio`} />}
+              {datos.clima.amplitud_anual_c !== undefined && <StatBlock label="Amplitud térmica" value={`${datos.clima.amplitud_anual_c}°C`} sub="media diaria" />}
             </div>
             <Table
-              head={['Mes', 'Precip. (mm)', 'ETP (mm)', 'Balance (mm)', 'T media (°C)']}
+              head={['Mes', 'Precip.', 'ETP', 'Balance', 'T med.', 'HR', 'Viento']}
               rows={datos.clima.meses.map(m => [
                 m.mes,
                 String(m.precip_mm),
                 String(m.etp_mm),
                 `${m.balance_mm > 0 ? '+' : ''}${m.balance_mm}`,
-                `${m.tmean_c}°C`,
+                `${m.tmean_c}°`,
+                m.rh_pct !== undefined ? `${m.rh_pct}%` : '—',
+                m.viento_dir ? `${m.viento_dir} ${m.viento_ms}` : `${m.viento_ms}`,
               ])}
-              colAlign={['left', 'right', 'right', 'right', 'right']}
+              colAlign={['left', 'right', 'right', 'right', 'right', 'right', 'right']}
             />
+            {datos.clima.heladas && (
+              <p className="text-xs text-ink-700/70 mt-2">
+                <span className="font-semibold">Heladas:</span> {datos.clima.heladas.periodo_libre}
+                {datos.clima.heladas.meses_riesgo.length > 0 && ` Meses con riesgo: ${datos.clima.heladas.meses_riesgo.join(', ')}.`}
+              </p>
+            )}
             <p className="text-xs text-ink-700/50 mt-2 italic">
-              Fuente: {datos.clima.fuente}. ETP por Hargreaves — orientativo.
+              Fuente: {datos.clima.fuente}. ETP por Hargreaves y Köppen-Geiger (Peel et al. 2007) — orientativos.
             </p>
           </Section>
         )}
 
+        {/* ── Extremos y riesgo climático ── */}
+        {datos.extremos && (() => {
+          const ex = datos.extremos;
+          const mmT = (n: number) => ex.tormenta.recurrencias.find(r => r.periodo_retorno === n)?.mm;
+          return (
+            <Section numero={sec.extremos!} titulo="Extremos y riesgo climático">
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                <StatBlock label="Tormenta T10" value={mmT(10) != null ? `${mmT(10)} mm` : '—'} sub="24 h · retorno 10 años" />
+                <StatBlock label="Tormenta T100" value={mmT(100) != null ? `${mmT(100)} mm` : '—'} sub="24 h · retorno 100 años" />
+                <StatBlock label="Racha seca máx." value={`${ex.sequia.racha_max_dias} d`} sub="sin lluvia (histórica)" />
+                <StatBlock label="Días ≥ 35 °C" value={`${ex.calor.dias_ge_35}`} sub="media anual" />
+              </div>
+
+              <Table
+                head={['Período de retorno', 'Lluvia máx. 24 h (mm)']}
+                rows={ex.tormenta.recurrencias.map(r => [`T${r.periodo_retorno} (1 en ${r.periodo_retorno} años)`, String(r.mm)])}
+                colAlign={['left', 'right']}
+              />
+
+              {ex.heladas.hay_heladas ? (
+                <p className="text-sm text-ink-700/80 mt-3">
+                  <span className="font-semibold">Heladas:</span> ~{ex.heladas.dias_helada_anio} días/año (tmín ≤ {ex.heladas.umbral_c} °C).
+                  {ex.heladas.ultima_helada && ` Última típica: ${ex.heladas.ultima_helada.p50}.`}
+                  {ex.heladas.primera_helada && ` Primera típica: ${ex.heladas.primera_helada.p50}.`}
+                  {ex.heladas.periodo_libre_dias && ` Período libre de heladas: ~${ex.heladas.periodo_libre_dias.p50} días.`}
+                </p>
+              ) : (
+                <p className="text-sm text-ink-700/80 mt-3"><span className="font-semibold">Heladas:</span> sin heladas significativas en el registro.</p>
+              )}
+
+              <p className="text-sm text-ink-700/80 mt-1">
+                <span className="font-semibold">Precipitación interanual:</span> media {ex.precip_anual.media_mm} mm
+                (mín {ex.precip_anual.min_mm} · máx {ex.precip_anual.max_mm} · variabilidad CV {ex.precip_anual.cv_pct} %).
+              </p>
+
+              <p className="text-xs text-ink-700/50 mt-2 italic">
+                Fuente: {ex.fuente} ({ex.periodo}, {ex.anios} años). Tormenta de diseño por {ex.tormenta.metodo}.
+                ERA5 (~10 km) puede subestimar heladas en valles — orientativo.
+              </p>
+            </Section>
+          );
+        })()}
+
+        {/* ── Contexto ecológico y cultural ── */}
+        {presente.contexto && datos.clima?.koppen && (() => {
+          const centro = centroide(datos.mojones);
+          const bioma = fichaBioma(determinarBioma(datos.clima.koppen, centro.lat, centro.lng, datos.topo?.elev_media));
+          const analogos = analogosDeKoppen(datos.clima.koppen);
+          return (
+            <Section numero={sec.contexto!} titulo="Contexto ecológico y cultural">
+              <div className="mb-3">
+                <p className="font-semibold text-base text-ink-950">{bioma.emoji} {bioma.nombre}</p>
+                <p className="text-sm text-ink-700/80 mt-0.5">{bioma.resumen}</p>
+              </div>
+              <Table
+                head={['Aspecto', 'Descripción']}
+                rows={[
+                  ['Vegetación', bioma.vegetacion],
+                  ['Fauna', bioma.fauna],
+                  ['Suelos', bioma.suelos],
+                  ['Especies clave', bioma.especies.join(', ')],
+                ]}
+                colAlign={['left', 'left']}
+              />
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
+              <div className="space-y-2">
+                {bioma.saberes.map((s, i) => (
+                  <div key={i} className="text-sm">
+                    <span className="font-semibold text-moss-700">{s.cultura}: </span>
+                    <span className="text-ink-700/80">{s.practicas}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Análogos en el mundo · {analogos.titulo}</p>
+              <p className="text-sm text-ink-700/80"><span className="font-semibold">Regiones similares:</span> {analogos.regiones.join(', ')}.</p>
+              <ul className="mt-1 space-y-0.5">
+                {analogos.tecnicas.map((t, i) => (
+                  <li key={i} className="text-sm text-ink-700/80 flex gap-1.5"><span className="text-moss-700 shrink-0">→</span>{t}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-ink-700/50 mt-3 italic">
+                Contenido de divulgación derivado del clima y la ubicación. Orientativo — verificá los saberes locales con las comunidades de la zona.
+              </p>
+            </Section>
+          );
+        })()}
+
         {/* ── 3. Topografía ── */}
         {datos.topo && (
-          <Section numero={datos.clima ? '3' : '2'} titulo="Topografía">
+          <Section numero={sec.topo!} titulo="Topografía">
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="Elev. mínima" value={`${datos.topo.elev_min.toFixed(0)} m`} sub="s.n.m." />
               <StatBlock label="Elev. máxima" value={`${datos.topo.elev_max.toFixed(0)} m`} sub="s.n.m." />
@@ -185,7 +322,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         {/* ── 4. Captación pluvial ── */}
         {datos.captacion && (
           <Section
-            numero={[datos.clima, datos.topo].filter(Boolean).length + 2}
+            numero={sec.captacion!}
             titulo="Captación de agua de lluvia"
           >
             {/* Consumo total */}
@@ -275,7 +412,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         {/* ── 5. Suelo ── */}
         {datos.suelo && (
           <Section
-            numero={[datos.clima, datos.topo, datos.captacion].filter(Boolean).length + 2}
+            numero={sec.suelo!}
             titulo="Análisis de suelo"
           >
             <div className="grid grid-cols-4 gap-3 mb-4">
@@ -297,6 +434,32 @@ export function InformeView({ datos, compartido = false }: Props) {
               ]}
               colAlign={['left', 'right', 'left']}
             />
+
+            {/* Agua útil y grupo hidrológico (perfil completo) */}
+            {datos.suelo.agua_util && datos.suelo.grupo_hidro && (
+              <>
+                <div className="grid grid-cols-4 gap-3 mt-4 mb-3">
+                  <StatBlock label="Agua útil 0–100 cm" value={`${datos.suelo.agua_util.total_mm_100} mm`} sub={datos.suelo.agua_util.clase} />
+                  <StatBlock label="Agua útil 0–200 cm" value={`${datos.suelo.agua_util.total_mm_200} mm`} sub="perfil total" />
+                  <StatBlock label="Grupo hidrológico" value={datos.suelo.grupo_hidro.grupo} sub={`Infiltr. ${datos.suelo.grupo_hidro.infiltracion.toLowerCase()}`} />
+                  <StatBlock label="CN referencia" value={String(datos.suelo.grupo_hidro.cn_pastura)} sub="pastura buena" />
+                </div>
+                {datos.suelo.perfil && datos.suelo.perfil.length > 0 && (
+                  <Table
+                    head={['Profundidad', 'Textura', 'Arc/Are %', 'Agua útil', 'Ksat mm/h']}
+                    rows={datos.suelo.perfil.map(c => [
+                      c.label,
+                      c.clase_textura,
+                      `${c.arcilla}/${c.arena}`,
+                      `${c.awc_mm} mm`,
+                      String(c.ksat),
+                    ])}
+                    colAlign={['left', 'left', 'right', 'right', 'right']}
+                  />
+                )}
+              </>
+            )}
+
             {datos.suelo.interp.recomendaciones.length > 0 && (
               <div className="mt-3 space-y-1">
                 <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Recomendaciones</p>
@@ -308,7 +471,105 @@ export function InformeView({ datos, compartido = false }: Props) {
               </div>
             )}
             <p className="text-xs text-ink-700/50 mt-2 italic">
-              Fuente: SoilGrids (ISRIC) — resolución ~250 m. Orientativo, no reemplaza análisis de laboratorio.
+              Fuente: SoilGrids (ISRIC) — resolución ~250 m. Agua útil, Ksat y grupo hidrológico
+              estimados por pedotransferencia Saxton-Rawls (2006). Orientativo, no reemplaza análisis de laboratorio.
+            </p>
+          </Section>
+        )}
+
+        {/* ── Red de agua por tubería ── */}
+        {/* ── Cobertura del suelo ── */}
+        {datos.cobertura && (
+          <Section numero={sec.cobertura!} titulo="Cobertura del suelo (satelital)">
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <StatBlock label="Dominante" value={datos.cobertura.dominante} sub={`ESA WorldCover ${datos.cobertura.anio}`} />
+              <StatBlock label="Vegetación" value={`${datos.cobertura.veg_pct}%`} sub="cobertura vegetal" />
+              <StatBlock label="Arbolado" value={`${datos.cobertura.arbolado_pct}%`} sub="bosque/arbolado" />
+              <StatBlock label="Suelo desnudo" value={`${datos.cobertura.suelo_pct}%`} sub="ralo/expuesto" />
+            </div>
+            <Table
+              head={['Clase de cobertura', '% del predio']}
+              rows={datos.cobertura.top.map(t => [t.nombre, `${t.pct} %`])}
+              colAlign={['left', 'right']}
+            />
+            <p className="text-xs text-ink-700/50 mt-2 italic">
+              ESA WorldCover 10 m ({datos.cobertura.anio}) vía Microsoft Planetary Computer — clasificación satelital, orientativo.
+            </p>
+          </Section>
+        )}
+
+        {datos.redAgua && (
+          <Section numero={sec.redAgua!} titulo="Red de agua por tubería">
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <StatBlock label="Presión en extremo" value={`${datos.redAgua.presion_final_mca} m.c.a.`} sub="dinámica residual" />
+              <StatBlock label="Presión mínima" value={`${datos.redAgua.presion_min_mca} m.c.a.`} sub="punto más exigido" />
+              <StatBlock label="Velocidad" value={`${datos.redAgua.velocidad_ms} m/s`} sub="en la tubería" />
+              <StatBlock label="Clase de caño" value={`PN ${datos.redAgua.pn_recomendado}`} sub="recomendada" />
+            </div>
+            <Table
+              head={['Parámetro', 'Valor']}
+              rows={[
+                ['Traza (camino)', datos.redAgua.camino],
+                ['Material', datos.redAgua.material],
+                ['Diámetro nominal', `DN ${datos.redAgua.diametro}`],
+                ['Caudal de diseño', datos.redAgua.caudal],
+                ['Longitud', `${datos.redAgua.longitud_m} m`],
+                ...(datos.redAgua.bomba_kw != null ? [['Bombeo requerido', `${datos.redAgua.bomba_kw} kW`]] : []),
+              ]}
+              colAlign={['left', 'right']}
+            />
+            <p className="text-xs text-ink-700/50 mt-2 italic">
+              Pérdida de carga por Hazen-Williams · cotas SRTM ~30 m. Diseño preliminar.
+            </p>
+          </Section>
+        )}
+
+        {/* ── Simulación de represa ── */}
+        {datos.represa && (
+          <Section numero={sec.represa!} titulo="Represa / reservorio — balance anual">
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <StatBlock label="Confiabilidad" value={`${datos.represa.confiabilidad_pct}%`} sub={datos.represa.aguanta ? 'aguanta el año' : 'con déficit'} />
+              <StatBlock label="Capacidad" value={`${(datos.represa.capacidad_m3 / 1000).toFixed(1)} dam³`} sub={`${datos.represa.capacidad_m3.toLocaleString('es-AR')} m³`} />
+              <StatBlock label="Cuenca de aporte" value={`${datos.represa.cuenca_ha} ha`} sub="escurrimiento" />
+              <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="por mes" />
+            </div>
+            <Table
+              head={['Parámetro', 'Valor']}
+              rows={[
+                ['Aporte anual estimado', `${datos.represa.aporte_anual_m3.toLocaleString('es-AR')} m³`],
+                ['Volumen mínimo (mes crítico)', `${datos.represa.volumen_min_m3.toLocaleString('es-AR')} m³`],
+                ['Demanda anual', `${(datos.represa.demanda_m3_mes * 12).toLocaleString('es-AR')} m³`],
+              ]}
+              colAlign={['left', 'right']}
+            />
+            <p className="text-xs text-ink-700/50 mt-2 italic">
+              Balance mensual SCS + evaporación (ETP) + infiltración − demanda, convergido a ciclo estable. Clima NASA POWER — orientativo.
+            </p>
+          </Section>
+        )}
+
+        {/* ── Riego por sector ── */}
+        {datos.riego && (
+          <Section numero={sec.riego!} titulo="Riego por sector">
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <StatBlock label="Necesidad pico" value={`${datos.riego.neto_pico_mm_dia} mm/d`} sub={`neto · ${datos.riego.mes_pico}`} />
+              <StatBlock label="Caudal continuo" value={`${datos.riego.caudal_continuo_ls} L/s`} sub="nodo de consumo (red)" />
+              <StatBlock label="Volumen anual" value={`${datos.riego.volumen_anual_m3.toLocaleString('es-AR')} m³`} sub="bruto de riego" />
+              <StatBlock label="Turno de riego" value={`c/${datos.riego.intervalo_dias} d`} sub={`lámina ${datos.riego.lamina_neta_mm} mm`} />
+            </div>
+            <Table
+              head={['Parámetro', 'Valor']}
+              rows={[
+                ['Cultivo', datos.riego.cultivo],
+                ['Sistema de riego', datos.riego.sistema],
+                ['Superficie del sector', `${datos.riego.area_ha} ha`],
+                ['Mes de mayor demanda', datos.riego.mes_pico],
+                ['Lámina neta por turno', `${datos.riego.lamina_neta_mm} mm`],
+              ]}
+              colAlign={['left', 'right']}
+            />
+            <p className="text-xs text-ink-700/50 mt-2 italic">
+              FAO-56 · ETc = ETo·Kc, precipitación efectiva y lámina según agua útil del suelo. El caudal continuo dimensiona el consumo en la red de agua — orientativo.
             </p>
           </Section>
         )}
@@ -316,7 +577,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         {/* ── 6. Zonificación ── */}
         {datos.zonas && datos.zonas.length > 0 && (
           <Section
-            numero={[datos.clima, datos.topo, datos.captacion, datos.suelo].filter(Boolean).length + 2}
+            numero={sec.zonas!}
             titulo="Zonificación predial"
           >
             <Table

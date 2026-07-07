@@ -26,6 +26,25 @@
   }
 }
 
+/* ── Temas de vista (descanso visual) ──────────────────────────────────────
+   Se aplican como filtro sobre <html>. No tocan la paleta real: los swatches
+   con color inline y el export PNG (que se captura desde el nodo del mapa, sin
+   el filtro ancestro) quedan en colores normales. */
+html[data-theme='sepia'] {
+  filter: sepia(0.45) saturate(0.78) brightness(0.98) contrast(1.08);
+}
+/* Oscuro: invert + hue-rotate; se cancela en imágenes/tiles/canvas para que el
+   mapa y las fotos se vean normales, dejando solo la interfaz en oscuro. */
+html[data-theme='oscuro'] {
+  filter: invert(1) hue-rotate(180deg);
+}
+html[data-theme='oscuro'] img,
+html[data-theme='oscuro'] video,
+html[data-theme='oscuro'] canvas,
+html[data-theme='oscuro'] .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 @layer components {
   .eyebrow {
     @apply text-xs uppercase tracking-[0.18em] font-medium text-moss-700;

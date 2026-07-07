@@ -213,3 +213,70 @@ export async function fetchShader(
     clearTimeout(timer);
   }
 }
+
+// ─── Puente: DatosShader desde grilla densa (tiles Terrarium) ─────────────────
+
+/**
+ * Construye un DatosShader (celdas + pendiente) a partir de una grilla densa de
+ * elevación (obtenerGrillaDensa, decodificada de tiles Terrarium). Permite que
+ * escorrentías, aptitud, sugerencias, cut&fill y master plan corran sobre
+ * cientos/miles de celdas en vez del muestreo 10×10 de OpenTopoData.
+ * Cada nodo de la grilla es el centro de una celda; los nodos NaN (fuera del
+ * polígono) se omiten. La pendiente se calcula con vecinos (más local = más real).
+ */
+export function shaderDesdeGrilla(grilla: {
+  rows: number; cols: number;
+  latMin: number; latMax: number; lngMin: number; lngMax: number;
+  elev: Float64Array; elev_min: number; elev_max: number;
+}): DatosShader | null {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
+  if (rows < 2 || cols < 2) return null;
+
+  const dLatDeg = (latMax - latMin) / (rows - 1);
+  const dLngDeg = (lngMax - lngMin) / (cols - 1);
+  const latC0   = (latMin + latMax) / 2;
+  const distLat = dLatDeg * 111_320;
+  const distLng = dLngDeg * 111_320 * Math.cos(latC0 * Math.PI / 180);
+
+  const at = (r: number, c: number): number | undefined => {
+    if (r < 0 || r >= rows || c < 0 || c >= cols) return undefined;
+    const v = elev[r * cols + c]!;
+    return Number.isNaN(v) ? undefined : v;
+  };
+
+  const celdas: CeldaShader[] = [];
+  let pend_max = 1;
+
+  for (let r = 0; r < rows; r++) {
+    const latCc = latMin + r * dLatDeg;
+    for (let c = 0; c < cols; c++) {
+      const e = at(r, c);
+      if (e === undefined) continue;
+      const lngCc = lngMin + c * dLngDeg;
+
+      const eN = at(r + 1, c), eS = at(r - 1, c);
+      const eE = at(r, c + 1), eW = at(r, c - 1);
+      let dzdx = 0, dzdy = 0;
+      if (eE !== undefined && eW !== undefined) dzdx = (eE - eW) / (2 * distLng);
+      else if (eE !== undefined)                dzdx = (eE - e) / distLng;
+      else if (eW !== undefined)                dzdx = (e - eW) / distLng;
+      if (eN !== undefined && eS !== undefined) dzdy = (eN - eS) / (2 * distLat);
+      else if (eN !== undefined)                dzdy = (eN - e) / distLat;
+      else if (eS !== undefined)                dzdy = (e - eS) / distLat;
+
+      const pendiente_pct = Math.round(Math.sqrt(dzdx * dzdx + dzdy * dzdy) * 100 * 10) / 10;
+      if (pendiente_pct > pend_max) pend_max = pendiente_pct;
+
+      celdas.push({
+        row: r, col: c,
+        latMin: latCc - dLatDeg / 2, latMax: latCc + dLatDeg / 2,
+        lngMin: lngCc - dLngDeg / 2, lngMax: lngCc + dLngDeg / 2,
+        elevation: e,
+        pendiente_pct,
+      });
+    }
+  }
+
+  if (celdas.length < 4) return null;
+  return { celdas, elev_min, elev_max, pend_max };
+}

@@ -1,0 +1,473 @@
+/**
+ * Contexto ecológico y cultural del predio.
+ *
+ * Determina el bioma/ecoregión a partir de la clasificación Köppen (calculada en
+ * lib/clima), la latitud/longitud y la altitud (si hay topografía). Para cada bioma
+ * ofrece una ficha curada con: ecosistema de base, saberes ancestrales de pueblos
+ * originarios y criollos/mestizos, especies clave y fuentes para profundizar.
+ *
+ * Los "análogos" en climas parecidos del mundo se derivan de la clase Köppen.
+ *
+ * Contenido curado de referencia (sin costo ni IA). Cobertura: Latinoamérica.
+ * Es material orientativo y de divulgación; verificá con fuentes locales antes de
+ * decisiones de manejo.
+ */
+
+import type { Koppen } from './clima';
+
+export type BiomaId =
+  | 'selva_tropical'
+  | 'sabana_cerrado'
+  | 'chaco_seco'
+  | 'monte'
+  | 'espinal'
+  | 'pampa'
+  | 'yungas'
+  | 'puna_altoandino'
+  | 'estepa_patagonica'
+  | 'bosque_andino_patagonico'
+  | 'mediterraneo'
+  | 'desierto_costero';
+
+export interface SaberCultural {
+  cultura: string;   // pueblo o tradición
+  practicas: string; // descripción de prácticas y sistemas productivos
+}
+
+export interface Fuente { label: string; url: string }
+
+export interface BiomaFicha {
+  id: BiomaId;
+  nombre: string;
+  emoji: string;
+  color: string;
+  resumen: string;
+  vegetacion: string;
+  fauna: string;
+  suelos: string;
+  saberes: SaberCultural[];
+  especies: string[];      // especies nativas clave (útiles/indicadoras)
+  fuentes: Fuente[];
+}
+
+// ─── Fichas por bioma ─────────────────────────────────────────────────────────
+
+const W = (q: string) => `https://es.wikipedia.org/wiki/${encodeURIComponent(q)}`;
+
+export const BIOMAS: Record<BiomaId, BiomaFicha> = {
+  selva_tropical: {
+    id: 'selva_tropical',
+    nombre: 'Selva tropical y subtropical',
+    emoji: '🌴',
+    color: '#1B5E20',
+    resumen: 'Bosque húmedo de altísima biodiversidad y biomasa, con lluvias abundantes y poca estación seca (Amazonía, selva paranaense/misionera).',
+    vegetacion: 'Bosque siempreverde multiestrato, lianas, epífitas, palmeras; suelos cubiertos de hojarasca con reciclaje rápido de nutrientes.',
+    fauna: 'Enorme diversidad de aves, primates, felinos (yaguareté), anfibios e insectos polinizadores.',
+    suelos: 'Mayormente lateríticos/oxisoles, ácidos y pobres: la fertilidad está en la biomasa viva, no en el suelo. Cuidar la cobertura es clave.',
+    saberes: [
+      { cultura: 'Pueblos amazónicos (varios)', practicas: 'Chacras policultivo de mandioca, maíz, batata y frutales; manejo de "islas de bosque" y enriquecimiento del monte; las "terra preta" (tierras negras antrópicas) muestran fertilización con carbón y residuos.' },
+      { cultura: 'Guaraní (selva paranaense)', practicas: 'Agricultura de claros rotativos (kokue), policultivo maíz-poroto-zapallo, aprovechamiento de yerba mate, palmito y plantas medicinales del monte.' },
+      { cultura: 'Criollo/colono', practicas: 'Yerbales y cultivos bajo monte, sistemas agroforestales con sombra; el riesgo es la tala y la erosión al descubrir el suelo.' },
+    ],
+    especies: ['Yerba mate', 'Palmito (pindó)', 'Cedro', 'Lapacho', 'Mandioca'],
+    fuentes: [
+      { label: 'Selva paranaense (Wikipedia)', url: W('Selva_paranaense') },
+      { label: 'Terra preta amazónica', url: W('Terra_preta') },
+      { label: 'FAO — Sistemas agroforestales', url: 'https://www.fao.org/forestry/agroforestry/es/' },
+    ],
+  },
+  sabana_cerrado: {
+    id: 'sabana_cerrado',
+    nombre: 'Sabana / Cerrado',
+    emoji: '🌾',
+    color: '#9E9D24',
+    resumen: 'Pastizales con árboles dispersos y marcada estación seca; el fuego es un proceso ecológico natural (cerrado brasileño, llanos).',
+    vegetacion: 'Gramíneas altas, árboles de corteza gruesa resistente al fuego, palmares en bajos húmedos.',
+    fauna: 'Aves de pastizal, ciervos, oso hormiguero, gran diversidad de polinizadores.',
+    suelos: 'Profundos pero ácidos y pobres en fósforo; responden bien al manejo de materia orgánica.',
+    saberes: [
+      { cultura: 'Pueblos de los llanos', practicas: 'Quemas controladas estacionales para renovar pasto y manejar fauna; cultivo en bajos húmedos y vegas.' },
+      { cultura: 'Ganadería criolla extensiva', practicas: 'Pastoreo a campo con razas rústicas, aprovechamiento de palmares (frutos, hojas), rotación según lluvias.' },
+    ],
+    especies: ['Palma carandá', 'Algarrobo', 'Pastos nativos (Paspalum, Andropogon)'],
+    fuentes: [
+      { label: 'Cerrado (Wikipedia)', url: W('Cerrado') },
+      { label: 'Sabana (Wikipedia)', url: W('Sabana') },
+    ],
+  },
+  chaco_seco: {
+    id: 'chaco_seco',
+    nombre: 'Chaco seco',
+    emoji: '🌵',
+    color: '#A1887F',
+    resumen: 'Gran llanura de bosque xerófilo cálido, con lluvias estivales y largo período seco; uno de los bosques secos más extensos del continente.',
+    vegetacion: 'Quebrachos, algarrobos, mistol, bosque espinoso con cactáceas y bromeliáceas; pastizales en aperturas.',
+    fauna: 'Tatú, pecarí, tortugas, gran riqueza de aves; fauna adaptada a la sequía.',
+    suelos: 'Franco-arenosos a arcillosos, fértiles pero frágiles; muy sensibles a la erosión y salinización al desmontar.',
+    saberes: [
+      { cultura: 'Wichí, Qom (Toba), Pilagá', practicas: 'Recolección estacional de algarroba, mistol y chañar (harinas, arrope, bebidas); apicultura de meliponas (abejas sin aguijón); pesca y horticultura en costas de ríos.' },
+      { cultura: 'Criollo chaqueño', practicas: 'Cría de cabras y vacunos a monte; "puestos" con aguadas y represas; aprovechamiento de la sombra y forraje del algarrobo; carbón y postes de quebracho (históricamente sobreexplotado).' },
+    ],
+    especies: ['Algarrobo blanco y negro', 'Quebracho colorado', 'Mistol', 'Chañar', 'Tusca'],
+    fuentes: [
+      { label: 'Gran Chaco (Wikipedia)', url: W('Gran_Chaco') },
+      { label: 'INTA — Región Chaqueña', url: 'https://www.argentina.gob.ar/inta' },
+    ],
+  },
+  monte: {
+    id: 'monte',
+    nombre: 'Monte de llanuras y mesetas',
+    emoji: '🏜️',
+    color: '#BCAAA4',
+    resumen: 'Arbustal árido y semiárido dominado por jarillas, típico del centro-oeste argentino; muy adaptado a la escasez de agua.',
+    vegetacion: 'Estepa arbustiva de jarilla, retamo, algarrobos en bajos y cauces; vegetación rala con suelo desnudo entre matas.',
+    fauna: 'Guanaco, mara, zorros, reptiles; fauna de hábitos crepusculares por el calor.',
+    suelos: 'Aridisoles pedregosos o arenosos, pobres en materia orgánica; salinidad frecuente en bajos.',
+    saberes: [
+      { cultura: 'Huarpe', practicas: 'Manejo del agua de deshielo con acequias y "lagunas" (humedales de Guanacache); cultivo en oasis, recolección de algarroba, cestería con junco.' },
+      { cultura: 'Criollo cuyano/puntano', practicas: 'Acequias de riego heredadas, cría caprina a campo, jarilla como leña y medicina; sombra y forraje del algarrobo; cosecha de agua en represas.' },
+    ],
+    especies: ['Jarilla', 'Algarrobo dulce', 'Retamo', 'Chañar', 'Tuna/penca'],
+    fuentes: [
+      { label: 'Monte (ecorregión) — Wikipedia', url: W('Monte_(ecorregión)') },
+      { label: 'Lagunas de Guanacache', url: W('Lagunas_de_Guanacache') },
+    ],
+  },
+  espinal: {
+    id: 'espinal',
+    nombre: 'Espinal / bosque seco templado',
+    emoji: '🌳',
+    color: '#8D6E63',
+    resumen: 'Bosques y sabanas de algarrobo y ñandubay que rodean la Pampa; transición entre el pastizal húmedo y las regiones más secas.',
+    vegetacion: 'Bosque abierto de algarrobos, ñandubay, espinillo; pastizales entre los árboles.',
+    fauna: 'Aves de bosque y pastizal, zorros, vizcachas; corredores de fauna entre regiones.',
+    suelos: 'Fértiles, francos; gran parte transformado a agricultura y ganadería.',
+    saberes: [
+      { cultura: 'Pueblos del litoral y centro', practicas: 'Recolección de algarroba y frutos del monte, caza y pesca; uso de la madera dura para herramientas.' },
+      { cultura: 'Criollo', practicas: 'Sistemas silvopastoriles con algarrobo y ñandubay (sombra + forraje + madera), apicultura, postes y leña; manejo del monte como reserva forrajera para la seca.' },
+    ],
+    especies: ['Ñandubay', 'Algarrobo', 'Espinillo (aromito)', 'Tala'],
+    fuentes: [
+      { label: 'Espinal (Wikipedia)', url: W('Espinal_(ecorregión)') },
+      { label: 'Sistemas silvopastoriles (INTA)', url: 'https://www.argentina.gob.ar/inta' },
+    ],
+  },
+  pampa: {
+    id: 'pampa',
+    nombre: 'Pampa / pastizal templado',
+    emoji: '🌾',
+    color: '#7CB342',
+    resumen: 'Vasta llanura de pastizales templados con lluvias suficientes; una de las regiones agrícolo-ganaderas más productivas del mundo.',
+    vegetacion: 'Pastizales de flechillas y otras gramíneas, sin árboles naturales salvo en bordes y barrancas.',
+    fauna: 'Venado de las pampas, ñandú, aves de pastizal, gran diversidad de pastos.',
+    suelos: 'Molisoles profundos, oscuros y muy fértiles; el mayor capital del bioma — cuidar estructura y materia orgánica.',
+    saberes: [
+      { cultura: 'Pueblos pampeanos (Het, luego mapuche-tehuelche)', practicas: 'Cultura cazadora-recolectora de guanaco y ñandú; uso del fuego para manejar el pastizal y atraer fauna; redes de intercambio.' },
+      { cultura: 'Gaucho / criollo', practicas: 'Ganadería extensiva sobre pastizal natural, pastoreo trashumante histórico; el desafío actual es la rotación y la conservación del pastizal frente a la agricultura continua.' },
+    ],
+    especies: ['Flechilla', 'Paja colorada', 'Cortadera', 'Tala (en bordes)'],
+    fuentes: [
+      { label: 'Pampa (Wikipedia)', url: W('Pampa') },
+      { label: 'Pastizales — Fundación Vida Silvestre', url: 'https://www.vidasilvestre.org.ar/' },
+    ],
+  },
+  yungas: {
+    id: 'yungas',
+    nombre: 'Yungas / selva de montaña',
+    emoji: '⛰️',
+    color: '#2E7D32',
+    resumen: 'Selva nubosa en laderas de montaña con fuerte gradiente de altura; "fábrica de agua" que capta humedad de las nubes.',
+    vegetacion: 'Bosque montano en franjas según altitud: selva pedemontana, bosque montano nuboso y pastizales de neblina arriba.',
+    fauna: 'Yaguareté, taruca, tucanes, gran endemismo; corredores altitudinales esenciales.',
+    suelos: 'Suelos de ladera ricos en materia orgánica pero erosionables; la pendiente exige cobertura permanente.',
+    saberes: [
+      { cultura: 'Pueblos andinos del NOA (incl. influencia incaica)', practicas: 'Andenes/terrazas de cultivo en ladera para frenar erosión y ganar suelo; cultivo escalonado por pisos altitudinales (maíz abajo, papa y quinoa arriba); caminos y acopio.' },
+      { cultura: 'Criollo del pedemonte', practicas: 'Agricultura de subsistencia en terrazas, ganadería trashumante (verano arriba, invierno abajo), aprovechamiento de la madera y plantas medicinales del monte.' },
+    ],
+    especies: ['Cedro coya', 'Nogal criollo', 'Tipa', 'Pacará', 'Maíz andino'],
+    fuentes: [
+      { label: 'Yungas (Wikipedia)', url: W('Yungas') },
+      { label: 'Andenes / terrazas de cultivo', url: W('Andén_(agricultura)') },
+    ],
+  },
+  puna_altoandino: {
+    id: 'puna_altoandino',
+    nombre: 'Puna y altoandino',
+    emoji: '🏔️',
+    color: '#90A4AE',
+    resumen: 'Altiplano frío de gran altitud (>3000 m), seco, con fuerte radiación, heladas casi todo el año y amplísima amplitud térmica diaria.',
+    vegetacion: 'Estepa de pajonales (ichu), tolas, cojines y queñoa; vegetación rala adaptada al frío y la sequía.',
+    fauna: 'Vicuña, llama, guanaco, vizcacha, flamencos altoandinos en salares.',
+    suelos: 'Pobres, pedregosos y de escaso desarrollo; el agua (deshielo, vertientes) es el factor limitante.',
+    saberes: [
+      { cultura: 'Pueblos andinos (kolla, atacama, aymara; herencia incaica)', practicas: 'Camellones/waru-waru y qochas (lagunas) para amortiguar heladas y cosechar agua; andenes; cultivo de papas amargas y su deshidratación en chuño aprovechando heladas; pastoreo de camélidos; chacras dispersas en varios pisos para repartir riesgo.' },
+      { cultura: 'Criollo puneño', practicas: 'Pastoreo de llamas y ovejas, intercambio de productos entre pisos (trueque), manejo de vegas y bofedales (humedales de altura) como forraje permanente.' },
+    ],
+    especies: ['Ichu (paja brava)', 'Tola', 'Queñoa', 'Papa andina', 'Quinoa'],
+    fuentes: [
+      { label: 'Puna (Wikipedia)', url: W('Puna_(región)') },
+      { label: 'Waru waru / camellones', url: W('Waru_waru') },
+      { label: 'FAO — Sistemas SIPAM andinos', url: 'https://www.fao.org/giahs/es/' },
+    ],
+  },
+  estepa_patagonica: {
+    id: 'estepa_patagonica',
+    nombre: 'Estepa patagónica',
+    emoji: '💨',
+    color: '#A1A89B',
+    resumen: 'Meseta fría, seca y muy ventosa; pastizales y arbustales bajos adaptados al viento persistente del oeste.',
+    vegetacion: 'Coirones (pastos en mata), arbustos bajos (neneo, calafate); cobertura rala con suelo expuesto.',
+    fauna: 'Guanaco, choique (ñandú petiso), zorros, maras; fauna adaptada al frío y al viento.',
+    suelos: 'Aridisoles delgados y pedregosos, muy vulnerables a la erosión eólica si se sobrepastorea.',
+    saberes: [
+      { cultura: 'Tehuelche y mapuche', practicas: 'Cultura cazadora-recolectora del guanaco (alimento, abrigo, toldos); trashumancia siguiendo pasturas y agua; uso de reparos naturales contra el viento.' },
+      { cultura: 'Criollo patagónico', practicas: 'Ganadería ovina extensiva con manejo de carga para no degradar el coironal; uso de mallines (humedales) como reserva forrajera; cortinas y reparos contra el viento dominante del oeste.' },
+    ],
+    especies: ['Coirón', 'Neneo', 'Calafate', 'Mata negra'],
+    fuentes: [
+      { label: 'Estepa patagónica (Wikipedia)', url: W('Estepa_patagónica') },
+      { label: 'Mallines patagónicos (INTA)', url: 'https://www.argentina.gob.ar/inta' },
+    ],
+  },
+  bosque_andino_patagonico: {
+    id: 'bosque_andino_patagonico',
+    nombre: 'Bosque andino-patagónico',
+    emoji: '🌲',
+    color: '#388E3C',
+    resumen: 'Bosques templado-húmedos de la cordillera sur, con lluvias y nieve abundantes; uno de los bosques templados mejor conservados.',
+    vegetacion: 'Lengas, ñires, coihues, cipreses y la selva valdiviana en el oeste más húmedo.',
+    fauna: 'Huemul, pudú, huillín, carpintero gigante; especies de bosque frío.',
+    suelos: 'Suelos volcánicos (andisoles) jóvenes, ricos pero ácidos; alta retención de agua.',
+    saberes: [
+      { cultura: 'Mapuche', practicas: 'Recolección del piñón de la araucaria (pehuén) como alimento base; huertas (lof) de papa y cereales rústicos; manejo del bosque y plantas medicinales (lawen); aprovechamiento de la madera sin talar todo el monte.' },
+      { cultura: 'Criollo cordillerano', practicas: 'Ganadería en claros y mallines, huertas familiares protegidas del frío, fruticultura de clima frío; manejo del fuego con cuidado por el riesgo de incendios.' },
+    ],
+    especies: ['Araucaria (pehuén)', 'Lenga', 'Ñire', 'Coihue', 'Ciprés de la cordillera'],
+    fuentes: [
+      { label: 'Bosque andino-patagónico (Wikipedia)', url: W('Bosque_andino_patagónico') },
+      { label: 'Araucaria / pehuén', url: W('Araucaria_araucana') },
+    ],
+  },
+  mediterraneo: {
+    id: 'mediterraneo',
+    nombre: 'Matorral mediterráneo',
+    emoji: '🫒',
+    color: '#C0CA33',
+    resumen: 'Clima de veranos secos y calurosos e inviernos suaves y lluviosos (Chile central); matorral esclerófilo adaptado a la sequía estival.',
+    vegetacion: 'Matorral y bosque esclerófilo (espino, quillay, litre), suculentas; hojas duras que resisten la seca.',
+    fauna: 'Aves, reptiles y mamíferos pequeños adaptados a la estacionalidad marcada.',
+    suelos: 'Variables, a menudo delgados en ladera; la lluvia invernal concentra la disponibilidad de agua.',
+    saberes: [
+      { cultura: 'Pueblos de Chile central', practicas: 'Cultivo aprovechando la lluvia invernal, recolección de frutos del matorral, manejo de quebradas con más humedad.' },
+      { cultura: 'Tradición agrícola mediterránea', practicas: 'Secano: cultivos de invierno-primavera (trigo, legumbres), olivos y vides de bajo riego, terrazas en ladera, captación de la lluvia estacional.' },
+    ],
+    especies: ['Quillay', 'Espino', 'Litre', 'Olivo', 'Vid'],
+    fuentes: [
+      { label: 'Clima mediterráneo (Wikipedia)', url: W('Clima_mediterráneo') },
+      { label: 'Bosque esclerófilo', url: W('Bosque_esclerófilo') },
+    ],
+  },
+  desierto_costero: {
+    id: 'desierto_costero',
+    nombre: 'Desierto costero',
+    emoji: '🌫️',
+    color: '#D7CCC8',
+    resumen: 'Desiertos extremadamente áridos junto al Pacífico (Atacama, Sechura) donde casi no llueve, pero la niebla (camanchaca) aporta humedad.',
+    vegetacion: 'Vegetación casi ausente salvo en "lomas" de neblina que florecen con la humedad costera.',
+    fauna: 'Escasa; aves marinas y fauna especializada de oasis y lomas.',
+    suelos: 'Salinos y minerales, prácticamente sin materia orgánica; el agua proviene de niebla y napas, no de lluvia.',
+    saberes: [
+      { cultura: 'Pueblos costeros andinos', practicas: 'Aprovechamiento de oasis y ríos de deshielo, cultivo en valles, captación de humedad de las lomas; pesca y recolección marina.' },
+      { cultura: 'Tecnología tradicional/contemporánea', practicas: 'Atrapanieblas (mallas que cosechan agua de la camanchaca), riego por goteo desde napas y vertientes, agricultura de oasis muy eficiente en agua.' },
+    ],
+    especies: ['Tamarugo', 'Cactáceas', 'Flora de lomas'],
+    fuentes: [
+      { label: 'Desierto de Atacama (Wikipedia)', url: W('Desierto_de_Atacama') },
+      { label: 'Atrapanieblas', url: W('Atrapaniebla') },
+    ],
+  },
+};
+
+// ─── Clasificador de bioma ────────────────────────────────────────────────────
+
+/**
+ * Determina el bioma a partir de la clasificación Köppen, la posición y la
+ * altitud (si se conoce). Heurística orientada a Latinoamérica.
+ */
+export function determinarBioma(
+  koppen: Koppen,
+  lat: number,
+  lng: number,
+  elevacion?: number,
+): BiomaId {
+  const c = koppen.codigo;
+  const grupo = c.charAt(0);
+  const altoAndino = (elevacion ?? 0) >= 2800 || c === 'ET' || c === 'EF';
+
+  // Altiplano / puna: altitud o clima polar de montaña
+  if (altoAndino) return 'puna_altoandino';
+
+  switch (grupo) {
+    case 'A': // Tropical
+      return (c === 'Af' || c === 'Am') ? 'selva_tropical' : 'sabana_cerrado';
+
+    case 'B': { // Árido
+      const frio = c.endsWith('k');
+      // Desierto costero del Pacífico (Atacama/Sechura)
+      if (c.startsWith('BW') && lng < -68 && lat < -13 && lat > -31) return 'desierto_costero';
+      // Patagonia fría y ventosa
+      if (frio && lat < -38) return 'estepa_patagonica';
+      // Chaco seco (cálido, latitudes bajas del norte argentino/Paraguay/Bolivia)
+      if (!frio && lat > -27) return 'chaco_seco';
+      // Resto: Monte
+      return 'monte';
+    }
+
+    case 'C': { // Templado
+      if (c.startsWith('Cs')) return 'mediterraneo';
+      if ((c === 'Cfb' || c === 'Cfc') && lat < -38) return 'bosque_andino_patagonico';
+      if (c.startsWith('Cw')) return 'yungas';            // invierno seco subtropical de altura → NOA
+      if (c === 'Cfa') return lat > -28 ? 'espinal' : 'pampa';
+      return 'pampa';
+    }
+
+    case 'D': // Continental (raro en LatAm, sur frío de montaña)
+      return 'bosque_andino_patagonico';
+
+    default:
+      return 'monte';
+  }
+}
+
+export function fichaBioma(id: BiomaId): BiomaFicha {
+  return BIOMAS[id];
+}
+
+// ─── Análogos por clima (Köppen) ──────────────────────────────────────────────
+
+export interface Analogo {
+  titulo: string;       // clase de clima
+  regiones: string[];   // regiones del mundo con clima parecido
+  tecnicas: string[];   // técnicas/sistemas productivos análogos
+}
+
+const ANALOGOS: Array<{ test: (c: string) => boolean; data: Analogo }> = [
+  {
+    test: c => c.startsWith('Af') || c.startsWith('Am'),
+    data: {
+      titulo: 'Tropical húmedo',
+      regiones: ['Sudeste asiático', 'Cuenca del Congo', 'Amazonía', 'Centroamérica caribeña'],
+      tecnicas: [
+        'Sistemas agroforestales y "home gardens" multiestrato',
+        'Policultivos bajo dosel para proteger el suelo',
+        'Manejo de materia orgánica y biochar (estilo terra preta)',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('Aw') || c.startsWith('As'),
+    data: {
+      titulo: 'Sabana tropical (lluvia estival)',
+      regiones: ['Sabana africana (Sahel sur)', 'Cerrado brasileño', 'Norte de Australia'],
+      tecnicas: [
+        'Quemas controladas y manejo del fuego como herramienta',
+        'Silvopastoreo con árboles dispersos para sombra y forraje',
+        'Cosecha de agua de lluvia para la estación seca',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('BW'),
+    data: {
+      titulo: 'Desértico / árido extremo',
+      regiones: ['Norte de África y Medio Oriente', 'Atacama', 'Suroeste de EE.UU.'],
+      tecnicas: [
+        'Qanats/galerías filtrantes y captación de napas',
+        'Atrapanieblas donde hay niebla costera',
+        'Riego por goteo de alta eficiencia y agricultura de oasis',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('BS'),
+    data: {
+      titulo: 'Semiárido / estepa',
+      regiones: ['Sahel', 'Mediterráneo seco', 'Mallee australiano', 'Grandes Llanuras (EE.UU.)'],
+      tecnicas: [
+        'Keyline (Yeomans) para distribuir agua de lluvia en el paisaje',
+        'Zaï / media luna y bordos para cosechar escorrentía',
+        'Dryland farming: barbecho, mulching y cortinas rompeviento',
+        'Pastoreo planificado/holístico para regenerar el pastizal',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('Cs'),
+    data: {
+      titulo: 'Mediterráneo (verano seco)',
+      regiones: ['Cuenca mediterránea', 'California', 'Cabo (Sudáfrica)', 'SO de Australia', 'Chile central'],
+      tecnicas: [
+        'Dehesa/montado: silvopastoreo con encinas/algarrobos',
+        'Terrazas y secano de olivo, vid y legumbres',
+        'Captación de la lluvia invernal en cisternas y suelos',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('Cw'),
+    data: {
+      titulo: 'Subtropical de invierno seco / de altura',
+      regiones: ['Altiplano mexicano', 'Tierras altas de África oriental', 'Himalaya monzónico'],
+      tecnicas: [
+        'Terrazas y andenes en ladera',
+        'Cultivo escalonado por pisos altitudinales',
+        'Almacenamiento de agua para la estación seca',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('Cfa'),
+    data: {
+      titulo: 'Subtropical húmedo',
+      regiones: ['Sudeste de EE.UU.', 'Este de China', 'Este de Australia', 'Pampa húmeda'],
+      tecnicas: [
+        'Pastoreo rotativo intensivo sobre pastizal',
+        'Cultivos de cobertura y siembra directa para cuidar el suelo',
+        'Agroforestería en franjas (alley cropping)',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('Cfb') || c.startsWith('Cfc'),
+    data: {
+      titulo: 'Oceánico / templado húmedo',
+      regiones: ['Noroeste de Europa', 'Nueva Zelanda', 'Sur de Chile'],
+      tecnicas: [
+        'Silvopastoreo y cercos vivos (hedgerows)',
+        'Manejo de praderas permanentes y pastoreo rotativo',
+        'Drenaje y manejo de humedales (mallines) como forraje',
+      ],
+    },
+  },
+  {
+    test: c => c.startsWith('E') || c.startsWith('D'),
+    data: {
+      titulo: 'Frío de altura / continental',
+      regiones: ['Altiplano andino', 'Meseta tibetana', 'Tierras altas de Etiopía'],
+      tecnicas: [
+        'Camellones (waru-waru) y qochas para amortiguar heladas',
+        'Cultivos resistentes al frío (papas amargas, quinoa) y deshidratado (chuño)',
+        'Manejo de bofedales/vegas y pastoreo de camélidos',
+      ],
+    },
+  },
+];
+
+export function analogosDeKoppen(koppen: Koppen): Analogo {
+  const found = ANALOGOS.find(a => a.test(koppen.codigo));
+  return found?.data ?? {
+    titulo: koppen.descripcion,
+    regiones: ['Regiones con clima ' + koppen.grupo.toLowerCase()],
+    tecnicas: ['Adaptá las prácticas a la disponibilidad de agua y la estacionalidad local.'],
+  };
+}

@@ -2,6 +2,7 @@
  * Datos climáticos históricos vía NASA POWER API (climatología 1981–2023).
  * Sin clave de API — uso libre, fuente NASA.
  * ETP calculada con la fórmula de Hargreaves (sólo necesita T_max, T_min, latitud).
+ * Clasificación Köppen-Geiger según Peel et al. (2007).
  * Resultados son valores promedio históricos — orientativos, no de precisión agronómica.
  */
 
@@ -17,6 +18,32 @@ export interface MesDato {
   etp_mm:    number;   // ETP mensual Hargreaves (mm)
   balance_mm: number;  // balance hídrico = precip - ETP (mm)
   viento_ms: number;   // viento medio (m/s)
+  // ── Nuevos (ola 2) ──
+  viento_max_ms?: number;  // racha/viento máximo (m/s)
+  viento_dir?:    string;  // dirección predominante del mes (rumbo N, NE, …)
+  viento_dir_deg?: number; // dirección en grados
+  rh_pct?:    number;  // humedad relativa media (%)
+  rocio_c?:   number;  // punto de rocío (°C)
+  t_range_c?: number;  // amplitud térmica diaria media (°C)
+  rad_kwh?:   number;  // radiación solar incidente (kWh/m²/día)
+  helada_riesgo?: boolean; // riesgo de helada (tmin medio ≤ 3 °C)
+}
+
+export interface Koppen {
+  codigo: string;       // ej. 'BSk'
+  grupo: string;        // ej. 'Árido'
+  descripcion: string;  // ej. 'Estepa fría (semiárido frío)'
+}
+
+export interface IndiceAridez {
+  valor: number;        // P / ETP anual
+  clase: string;        // 'Árido', 'Semiárido', …
+}
+
+export interface Heladas {
+  meses_riesgo: string[];   // meses con tmin medio ≤ 3 °C
+  meses_seguras: string[];  // meses con tmin medio ≤ 0 °C
+  periodo_libre: string;    // descripción del período libre de heladas
 }
 
 export interface DatosClima {
@@ -29,17 +56,21 @@ export interface DatosClima {
   meses: MesDato[];
   fuente: string;
   weather_spark_url: string;
+  // ── Nuevos (ola 2) ──
+  rh_anual_pct?:    number;  // humedad relativa media anual (%)
+  rad_anual_kwh?:   number;  // radiación media anual (kWh/m²/día)
+  amplitud_anual_c?: number; // amplitud térmica media anual (°C)
+  viento_medio_ms?: number;  // viento medio anual (m/s)
+  viento_max_ms?:   number;  // viento máximo registrado (m/s)
+  koppen?:          Koppen;
+  aridez?:          IndiceAridez;
+  gdd_anual?:       number;  // grados-día de crecimiento base 10 °C
+  heladas?:         Heladas;
+  mes_mas_seco?:    string;
+  mes_mas_humedo?:  string;
 }
 
 // ─── NASA POWER API ───────────────────────────────────────────────────────────
-
-type PowerParameters =
-  'PRECTOTCORR' |     // precipitación mm/día
-  'T2M' |             // temperatura media 2m °C
-  'T2M_MAX' |         // temperatura máx 2m °C
-  'T2M_MIN' |         // temperatura mín 2m °C
-  'WS10M' |           // viento medio 10m m/s
-  'WD10M';            // dirección viento 10m grados
 
 interface PowerResponse {
   properties: {
@@ -59,12 +90,17 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   if (!res.ok) throw new Error(`NASA POWER respondió con error ${res.status}.`);
   const param = json.properties.parameter;
 
-  const precip = param['PRECTOTCORR'] ?? {};
-  const tmean  = param['T2M'] ?? {};
-  const tmax   = param['T2M_MAX'] ?? {};
-  const tmin   = param['T2M_MIN'] ?? {};
-  const viento = param['WS10M'] ?? {};
-  const wdir   = param['WD10M'] ?? {};
+  const precip  = param['PRECTOTCORR'] ?? {};
+  const tmean   = param['T2M'] ?? {};
+  const tmax    = param['T2M_MAX'] ?? {};
+  const tmin    = param['T2M_MIN'] ?? {};
+  const viento  = param['WS10M'] ?? {};
+  const vientoMx= param['WS10M_MAX'] ?? {};
+  const wdir    = param['WD10M'] ?? {};
+  const rh      = param['RH2M'] ?? {};
+  const rocio   = param['T2MDEW'] ?? {};
+  const trange  = param['T2M_RANGE'] ?? {};
+  const rad     = param['ALLSKY_SFC_SW_DWN'] ?? {};
 
   const meses: MesDato[] = MONTH_KEYS.map((key, i) => {
     const days    = DAYS_IN_MONTH[i] ?? 30;
@@ -74,6 +110,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     const tmean_c   = tmean[key] ?? (tmax_c + tmin_c) / 2;
     const viento_ms = viento[key] ?? 0;
     const etp_mm    = calcularETPHargreaves(lat, i as MesIndex, tmax_c, tmin_c, tmean_c);
+    const dirDeg    = wdir[key];
     return {
       mes: MESES[i] ?? key,
       precip_mm: Math.round(precip_mm * 10) / 10,
@@ -83,6 +120,14 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       viento_ms: Math.round(viento_ms * 10) / 10,
       etp_mm:    Math.round(etp_mm    * 10) / 10,
       balance_mm: Math.round((precip_mm - etp_mm) * 10) / 10,
+      viento_max_ms:  vientoMx[key] !== undefined ? Math.round(vientoMx[key]! * 10) / 10 : undefined,
+      viento_dir:     dirDeg !== undefined ? gradosADireccion(dirDeg) : undefined,
+      viento_dir_deg: dirDeg !== undefined ? Math.round(dirDeg) : undefined,
+      rh_pct:    rh[key]     !== undefined ? Math.round(rh[key]!) : undefined,
+      rocio_c:   rocio[key]  !== undefined ? Math.round(rocio[key]!  * 10) / 10 : undefined,
+      t_range_c: trange[key] !== undefined ? Math.round(trange[key]! * 10) / 10 : undefined,
+      rad_kwh:   rad[key]    !== undefined ? Math.round(rad[key]!    * 100) / 100 : undefined,
+      helada_riesgo: tmin_c <= 3,
     };
   });
 
@@ -96,13 +141,44 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     (meses.reduce((s, m) => s + m.tmean_c, 0) / 12) * 10,
   ) / 10;
 
+  // ── Agregados nuevos ──
+  const prom = (vals: Array<number | undefined>) => {
+    const xs = vals.filter((v): v is number => v !== undefined);
+    return xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : undefined;
+  };
+  const rh_anual_pct    = redondear(prom(meses.map(m => m.rh_pct)), 0);
+  const rad_anual_kwh   = redondear(prom(meses.map(m => m.rad_kwh)), 2);
+  const amplitud_anual_c= redondear(prom(meses.map(m => m.t_range_c)), 1);
+  const viento_medio_ms = redondear(prom(meses.map(m => m.viento_ms)), 1);
+  const viento_max_ms   = redondear(Math.max(...meses.map(m => m.viento_max_ms ?? m.viento_ms)), 1);
+
+  const koppen = clasificarKoppen(lat, meses);
+  const aridez = clasificarAridez(precip_anual_mm, etp_anual_mm);
+  const gdd_anual = Math.round(
+    meses.reduce((s, m, i) => s + Math.max(m.tmean_c - 10, 0) * (DAYS_IN_MONTH[i] ?? 30), 0),
+  );
+  const heladas = estimarHeladas(meses, lat);
+
+  const mesSeco   = meses.reduce((min, m) => (m.precip_mm < min.precip_mm ? m : min), meses[0]!);
+  const mesHumedo = meses.reduce((max, m) => (m.precip_mm > max.precip_mm ? m : max), meses[0]!);
+
   return {
     lat, lng,
     precip_anual_mm, etp_anual_mm, tmean_anual_c, viento_dir_ppal,
     meses,
     fuente: 'NASA POWER Climatology (promedio 1981–2023)',
     weather_spark_url: `https://weatherspark.com/y/${encodeURIComponent(`${lat.toFixed(2)},${lng.toFixed(2)}`)}`,
+    rh_anual_pct, rad_anual_kwh, amplitud_anual_c, viento_medio_ms, viento_max_ms,
+    koppen, aridez, gdd_anual, heladas,
+    mes_mas_seco:   mesSeco.mes,
+    mes_mas_humedo: mesHumedo.mes,
   };
+}
+
+function redondear(v: number | undefined, dec: number): number | undefined {
+  if (v === undefined || !Number.isFinite(v)) return undefined;
+  const f = 10 ** dec;
+  return Math.round(v * f) / f;
 }
 
 // ─── ETP Hargreaves ───────────────────────────────────────────────────────────
@@ -119,11 +195,12 @@ function calcularETPHargreaves(
   tmin: number,
   tmean: number,
 ): number {
-  const days = DAYS_IN_MONTH[mes] ?? 30;
-  const Ra = radiacionExtraterrestre(lat_deg, mes);
-  const tdiff = Math.max(tmax - tmin, 0);
+  const days   = DAYS_IN_MONTH[mes] ?? 30;
+  const Ra     = radiacionExtraterrestre(lat_deg, mes); // MJ/m²/día
+  const Ra_mm  = Ra / 2.45; // → mm/día equivalente de agua (Hargreaves usa esta unidad)
+  const tdiff  = Math.max(tmax - tmin, 0);
   // ETP diaria en mm → multiplicar por días del mes
-  const etp_diaria = 0.0023 * Ra * Math.pow(tdiff, 0.5) * (tmean + 17.8);
+  const etp_diaria = 0.0023 * Ra_mm * Math.pow(tdiff, 0.5) * (tmean + 17.8);
   return Math.max(etp_diaria * days, 0);
 }
 
@@ -150,6 +227,138 @@ function radiacionExtraterrestre(lat_deg: number, mes: MesIndex): number {
     (ws * Math.sin(phi) * Math.sin(delta) + Math.cos(phi) * Math.cos(delta) * Math.sin(ws));
 
   return Math.max(Ra, 0);
+}
+
+// ─── Köppen-Geiger (Peel et al. 2007) ─────────────────────────────────────────
+
+const KOPPEN_DESC: Record<string, { grupo: string; desc: string }> = {
+  Af:  { grupo: 'Tropical',    desc: 'Selva tropical lluviosa' },
+  Am:  { grupo: 'Tropical',    desc: 'Monzónico tropical' },
+  Aw:  { grupo: 'Tropical',    desc: 'Sabana tropical (invierno seco)' },
+  As:  { grupo: 'Tropical',    desc: 'Sabana tropical (verano seco)' },
+  BWh: { grupo: 'Árido',       desc: 'Desierto cálido' },
+  BWk: { grupo: 'Árido',       desc: 'Desierto frío' },
+  BSh: { grupo: 'Árido',       desc: 'Estepa cálida (semiárido cálido)' },
+  BSk: { grupo: 'Árido',       desc: 'Estepa fría (semiárido frío)' },
+  Csa: { grupo: 'Templado',    desc: 'Mediterráneo de verano cálido' },
+  Csb: { grupo: 'Templado',    desc: 'Mediterráneo de verano templado' },
+  Csc: { grupo: 'Templado',    desc: 'Mediterráneo de verano fresco' },
+  Cwa: { grupo: 'Templado',    desc: 'Subtropical húmedo de invierno seco' },
+  Cwb: { grupo: 'Templado',    desc: 'Subtropical de altura, invierno seco' },
+  Cwc: { grupo: 'Templado',    desc: 'Templado frío de invierno seco' },
+  Cfa: { grupo: 'Templado',    desc: 'Subtropical húmedo sin estación seca' },
+  Cfb: { grupo: 'Templado',    desc: 'Oceánico templado' },
+  Cfc: { grupo: 'Templado',    desc: 'Oceánico subpolar' },
+  Dsa: { grupo: 'Continental', desc: 'Continental, verano seco y cálido' },
+  Dsb: { grupo: 'Continental', desc: 'Continental, verano seco templado' },
+  Dwa: { grupo: 'Continental', desc: 'Continental, invierno seco y cálido' },
+  Dwb: { grupo: 'Continental', desc: 'Continental, invierno seco templado' },
+  Dfa: { grupo: 'Continental', desc: 'Continental húmedo, verano cálido' },
+  Dfb: { grupo: 'Continental', desc: 'Continental húmedo, verano templado' },
+  Dfc: { grupo: 'Continental', desc: 'Subártico (taiga)' },
+  ET:  { grupo: 'Polar',       desc: 'Tundra / altoandino' },
+  EF:  { grupo: 'Polar',       desc: 'Hielo permanente' },
+};
+
+/** Clasifica el clima según Köppen-Geiger a partir de las medias mensuales. */
+export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
+  const T = meses.map(m => m.tmean_c);
+  const P = meses.map(m => m.precip_mm);
+  const Pann = P.reduce((s, v) => s + v, 0);
+  const Tann = T.reduce((s, v) => s + v, 0) / 12;
+  const Thot = Math.max(...T);
+  const Tcold = Math.min(...T);
+  const Pdry = Math.min(...P);
+  const mesesCalidos = T.filter(t => t >= 10).length;
+
+  // Hemisferio: en el sur el verano es ONDEFM (índices 9,10,11,0,1,2)
+  const sur = lat < 0;
+  const idxVerano = sur ? [9,10,11,0,1,2] : [3,4,5,6,7,8];
+  const idxInvierno = sur ? [3,4,5,6,7,8] : [9,10,11,0,1,2];
+  const Pverano   = idxVerano.reduce((s, i) => s + (P[i] ?? 0), 0);
+  const Pinvierno = idxInvierno.reduce((s, i) => s + (P[i] ?? 0), 0);
+  const PsumDry = Math.min(...idxVerano.map(i => P[i] ?? 0));
+  const PsumWet = Math.max(...idxVerano.map(i => P[i] ?? 0));
+  const PwinDry = Math.min(...idxInvierno.map(i => P[i] ?? 0));
+  const PwinWet = Math.max(...idxInvierno.map(i => P[i] ?? 0));
+
+  // Umbral de aridez Pth
+  let Pth: number;
+  if (Pinvierno >= 0.7 * Pann)      Pth = 2 * Tann;
+  else if (Pverano >= 0.7 * Pann)   Pth = 2 * Tann + 28;
+  else                              Pth = 2 * Tann + 14;
+
+  let codigo: string;
+
+  // B — Árido
+  if (Pann < 10 * Pth) {
+    const segundo = Pann < 5 * Pth ? 'W' : 'S';
+    const tercero = Tann >= 18 ? 'h' : 'k';
+    codigo = `B${segundo}${tercero}`;
+  }
+  // A — Tropical
+  else if (Tcold >= 18) {
+    if (Pdry >= 60) codigo = 'Af';
+    else if (Pdry >= 100 - Pann / 25) codigo = 'Am';
+    else codigo = Pverano >= Pinvierno ? 'Aw' : 'As';
+  }
+  // C — Templado
+  else if (Thot > 10 && Tcold > 0 && Tcold < 18) {
+    let p = 'f';
+    if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
+    else if (PwinDry < PsumWet / 10) p = 'w';
+    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : 'c';
+    codigo = `C${p}${t}`;
+  }
+  // D — Continental
+  else if (Thot > 10 && Tcold <= 0) {
+    let p = 'f';
+    if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
+    else if (PwinDry < PsumWet / 10) p = 'w';
+    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : Tcold < -38 ? 'd' : 'c';
+    codigo = `D${p}${t}`;
+  }
+  // E — Polar / altoandino
+  else {
+    codigo = Thot > 0 ? 'ET' : 'EF';
+  }
+
+  const info = KOPPEN_DESC[codigo] ?? { grupo: '—', desc: codigo };
+  return { codigo, grupo: info.grupo, descripcion: info.desc };
+}
+
+// ─── Índice de aridez (UNEP) ──────────────────────────────────────────────────
+
+export function clasificarAridez(precipAnual: number, etpAnual: number): IndiceAridez {
+  const valor = etpAnual > 0 ? precipAnual / etpAnual : 0;
+  let clase: string;
+  if (valor < 0.03)      clase = 'Hiperárido';
+  else if (valor < 0.2)  clase = 'Árido';
+  else if (valor < 0.5)  clase = 'Semiárido';
+  else if (valor < 0.65) clase = 'Seco subhúmedo';
+  else if (valor < 1)    clase = 'Subhúmedo';
+  else                   clase = 'Húmedo';
+  return { valor: Math.round(valor * 100) / 100, clase };
+}
+
+// ─── Heladas ──────────────────────────────────────────────────────────────────
+
+function estimarHeladas(meses: MesDato[], lat: number): Heladas {
+  const meses_riesgo  = meses.filter(m => m.tmin_c <= 3).map(m => m.mes);
+  const meses_seguras = meses.filter(m => m.tmin_c <= 0).map(m => m.mes);
+
+  let periodo_libre: string;
+  if (meses_riesgo.length === 0)      periodo_libre = 'Sin riesgo significativo de heladas (todo el año).';
+  else if (meses_riesgo.length >= 11) periodo_libre = 'Riesgo de heladas prácticamente todo el año (clima frío de altura).';
+  else {
+    // Primer y último mes sin riesgo definen el período libre
+    const libres = meses.filter(m => m.tmin_c > 3).map(m => m.mes);
+    periodo_libre = libres.length
+      ? `Período libre de heladas aproximado: ${libres[0]}–${libres[libres.length - 1]}.`
+      : 'Período libre de heladas muy acotado.';
+  }
+  void lat;
+  return { meses_riesgo, meses_seguras, periodo_libre };
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -8,6 +8,9 @@ import {
   Polygon,
   Polyline,
   Circle as LeafCircle,
+  CircleMarker,
+  ImageOverlay,
+  ZoomControl,
   useMapEvents,
   useMap,
 } from 'react-leaflet';
@@ -19,6 +22,7 @@ import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import type { Zona } from '@/lib/zonificacion';
 import { TIPOS_SECTOR } from '@/lib/sectores';
 import type { Sector } from '@/lib/sectores';
+import type { PotrerosLayout } from '@/lib/potreros';
 import type { Pin } from '@/lib/pines';
 import type { Camino } from '@/lib/caminos';
 import type { DatosShader } from '@/lib/shaders';
@@ -26,12 +30,17 @@ import { colorElevacion, colorPendiente } from '@/lib/shaders';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
 import type { ResultadoSugerencias } from '@/lib/sugerencias';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
-import { distanciaMetros } from '@/lib/dibujos';
+import {
+  distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
+  formatearLongitud, formatearArea,
+  pieDePerpendicular, puntoMasCercanoEnSegmento, anguloEnVertice,
+} from '@/lib/dibujos';
 import type { ElementoAguada } from '@/lib/aguadas';
 import type { DatosArcoSolar } from '@/lib/arco_solar';
 import { horaStr } from '@/lib/arco_solar';
 import type { MetricasPoligono } from '@/lib/geometria';
 import type { CurvaNivel } from '@/lib/curvasNivel';
+import { TIPOS_ITEM, type ElementoMasterPlan } from '@/lib/masterplan';
 
 type Capa = 'satelite' | 'topo';
 
@@ -51,6 +60,21 @@ export interface CapasVisibles {
   arcSolar:       boolean;
   linderoLabels:  boolean;
   curvasNivel:    boolean;
+  cotas:          boolean;
+  medidas:        boolean;
+}
+
+/** Punto candidato de snap (vértices, puntos medios, centros) */
+export interface PuntoSnap { lat: number; lng: number }
+
+/** Tipo de geometría que se está dibujando (para preview y medidas en vivo) */
+export type TipoActivo = TipoDibujo | 'zona' | 'sector' | 'camino' | 'medir' | null;
+export interface SnapSegmento { a: PuntoSnap; b: PuntoSnap }
+export interface OverlayImagen {
+  url: string;
+  sw: { lat: number; lng: number };
+  ne: { lat: number; lng: number };
+  opacidad: number;
 }
 
 // ─── Caché de iconos (evita recrear DivIcon en cada render) ──────────────────
@@ -157,35 +181,231 @@ function AutoFit({ mojones }: { mojones: Mojon[] }) {
   return null;
 }
 
-function ClickHandler({ onClickMapa, modoDibujo }: {
-  onClickMapa:  (lat: number, lng: number) => void;
-  modoDibujo?:  string | null;
+// ─── CAD interactivo: clicks con snap/ortho + línea elástica + medidas en vivo ─
+
+const SNAP_TOLERANCIA_PX = 12;
+
+function CadInteractivo({
+  onClickMapa, modoDibujo, tipoActivo, verticesActivos,
+  snapActivo, orthoActivo, snapPuntos, snapSegmentos, colorPreview, onCursor,
+}: {
+  onClickMapa:     (lat: number, lng: number) => void;
+  modoDibujo?:     string | null;
+  tipoActivo:      TipoActivo;
+  verticesActivos: Array<{ lat: number; lng: number }> | null;
+  snapActivo:      boolean;
+  orthoActivo:     boolean;
+  snapPuntos:      PuntoSnap[];
+  snapSegmentos:   SnapSegmento[];
+  colorPreview:    string;
+  onCursor?:       (lat: number, lng: number) => void;
 }) {
   const map = useMap();
+  const [cursor, setCursor] = useState<{ lat: number; lng: number; snap: boolean } | null>(null);
+
+  const dibujando = tipoActivo !== null;
+
   useEffect(() => {
-    if (modoDibujo && modoDibujo !== 'seleccion') map.doubleClickZoom.disable();
+    if (dibujando || (modoDibujo && modoDibujo !== 'seleccion')) map.doubleClickZoom.disable();
     else map.doubleClickZoom.enable();
-  }, [map, modoDibujo]);
-  useMapEvents({ click(e) { onClickMapa(e.latlng.lat, e.latlng.lng); } });
-  return null;
+  }, [map, modoDibujo, dibujando]);
+
+  useEffect(() => { if (!dibujando) setCursor(null); }, [dibujando]);
+
+  const base = verticesActivos && verticesActivos.length > 0
+    ? verticesActivos[verticesActivos.length - 1]!
+    : null;
+
+  function ajustar(latlng: L.LatLng): { lat: number; lng: number; snap: boolean } {
+    // 1) Snap a puntos existentes (prioridad sobre ortho, como en AutoCAD)
+    if (snapActivo) {
+      const cp = map.latLngToContainerPoint(latlng);
+      const sel: { p: PuntoSnap | null; d: number } = { p: null, d: SNAP_TOLERANCIA_PX };
+      const evaluar = (p: PuntoSnap, prioridad: number) => {
+        if (Math.abs(p.lat - latlng.lat) > 0.05 || Math.abs(p.lng - latlng.lng) > 0.05) return;
+        const pp = map.latLngToContainerPoint([p.lat, p.lng]);
+        const d  = cp.distanceTo(pp) - prioridad; // bonus a vértices/intersecciones
+        if (d < sel.d) { sel.d = d; sel.p = p; }
+      };
+      // vértices, puntos medios, intersecciones (prioridad alta)
+      for (const p of snapPuntos) evaluar(p, 2);
+      // candidatos geométricos sobre segmentos (perpendicular y punto más cercano)
+      if (snapSegmentos.length > 0) {
+        for (const s of snapSegmentos) {
+          if (base) { const pie = pieDePerpendicular(base, s.a, s.b); if (pie) evaluar(pie, 0); }
+          const cer = puntoMasCercanoEnSegmento({ lat: latlng.lat, lng: latlng.lng }, s.a, s.b);
+          evaluar(cer, -1); // menor prioridad que vértices
+        }
+      }
+      if (sel.p) return { lat: sel.p.lat, lng: sel.p.lng, snap: true };
+    }
+    // 2) Ortho: restringir a 0°/90° respecto del último vértice (en metros locales)
+    if (orthoActivo && base) {
+      const dLatM = (latlng.lat - base.lat) * 111_320;
+      const dLngM = (latlng.lng - base.lng) * 111_320 * Math.cos(base.lat * Math.PI / 180);
+      if (Math.abs(dLatM) >= Math.abs(dLngM)) return { lat: latlng.lat, lng: base.lng, snap: false };
+      return { lat: base.lat, lng: latlng.lng, snap: false };
+    }
+    return { lat: latlng.lat, lng: latlng.lng, snap: false };
+  }
+
+  useMapEvents({
+    mousemove(e) { if (dibujando) { const c = ajustar(e.latlng); setCursor(c); onCursor?.(c.lat, c.lng); } },
+    mouseout()   { setCursor(null); },
+    click(e) {
+      if (dibujando) {
+        const p = ajustar(e.latlng);
+        onClickMapa(p.lat, p.lng);
+      } else {
+        onClickMapa(e.latlng.lat, e.latlng.lng);
+      }
+    },
+  });
+
+  if (!dibujando || !cursor) return null;
+
+  // ── Medidas en vivo ──
+  const lineasInfo: string[] = [];
+  let radioPreview = 0;
+  if (base) {
+    const d  = distanciaMetros(base.lat, base.lng, cursor.lat, cursor.lng);
+    const az = azimutGrados(base.lat, base.lng, cursor.lat, cursor.lng);
+    if (tipoActivo === 'circulo') {
+      radioPreview = d;
+      lineasInfo.push(`r = ${formatearLongitud(d)}`);
+      lineasInfo.push(`área ${formatearArea(Math.PI * d * d)}`);
+    } else {
+      lineasInfo.push(`${formatearLongitud(d)} · ${az.toFixed(0)}°`);
+      const va = verticesActivos;
+      const conArea = tipoActivo === 'poligono' || tipoActivo === 'zona' || tipoActivo === 'sector' || tipoActivo === 'medir';
+      if (conArea && va && va.length >= 2) {
+        lineasInfo.push(`área ${formatearArea(areaPoligonoM2([...va, cursor]))}`);
+      }
+      if ((tipoActivo === 'linea' || tipoActivo === 'curva' || tipoActivo === 'camino' || tipoActivo === 'medir') && va && va.length >= 1) {
+        lineasInfo.push(`total ${formatearLongitud(longitudLineaM([...va, cursor]))}`);
+      }
+      // Ángulo en el vértice actual (acotación angular en vivo)
+      if (va && va.length >= 2) {
+        lineasInfo.push(`∠ ${anguloEnVertice(va[va.length - 2]!, base, cursor).toFixed(0)}°`);
+      }
+    }
+  }
+
+  const esPoligonal = tipoActivo === 'poligono' || tipoActivo === 'zona' || tipoActivo === 'sector' || tipoActivo === 'medir';
+  const primero = verticesActivos && verticesActivos.length >= 2 ? verticesActivos[0]! : null;
+
+  const infoIcon = L.divIcon({
+    html: `<div style="
+      background:rgba(15,20,16,0.85);color:#FBF8F3;font-family:monospace;
+      font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;
+      white-space:nowrap;pointer-events:none;line-height:1.5;
+    ">${lineasInfo.join('<br/>')}</div>`,
+    className: '',
+    iconSize: undefined,
+    iconAnchor: [-14, -14],
+  });
+
+  const snapIcon = L.divIcon({
+    html: `<div style="width:11px;height:11px;border:2.5px solid #22C55E;background:rgba(34,197,94,0.25);pointer-events:none;"></div>`,
+    className: '',
+    iconSize: [11, 11],
+    iconAnchor: [5.5, 5.5],
+  });
+
+  return (
+    <>
+      {/* Línea elástica desde el último vértice */}
+      {base && tipoActivo !== 'circulo' && (
+        <Polyline
+          positions={[[base.lat, base.lng], [cursor.lat, cursor.lng]]}
+          pathOptions={{ color: colorPreview, weight: 2, dashArray: '5 5', opacity: 0.9, interactive: false }}
+        />
+      )}
+      {/* Cierre del polígono: cursor → primer vértice */}
+      {esPoligonal && primero && (
+        <Polyline
+          positions={[[cursor.lat, cursor.lng], [primero.lat, primero.lng]]}
+          pathOptions={{ color: colorPreview, weight: 1.2, dashArray: '3 6', opacity: 0.55, interactive: false }}
+        />
+      )}
+      {/* Preview de círculo */}
+      {tipoActivo === 'circulo' && base && radioPreview > 0 && (
+        <LeafCircle
+          center={[base.lat, base.lng]}
+          radius={radioPreview}
+          pathOptions={{ color: colorPreview, fillColor: colorPreview, fillOpacity: 0.1, weight: 2, dashArray: '5 5', interactive: false }}
+        />
+      )}
+      {/* Indicador de snap */}
+      {cursor.snap && <Marker position={[cursor.lat, cursor.lng]} icon={snapIcon} interactive={false} zIndexOffset={1000} />}
+      {/* Medidas junto al cursor */}
+      {lineasInfo.length > 0 && <Marker position={[cursor.lat, cursor.lng]} icon={infoIcon} interactive={false} zIndexOffset={1000} />}
+    </>
+  );
 }
 
-// Chaikin curve smoothing (3 iterations)
-function chaikin(pts: LatLngTuple[]): LatLngTuple[] {
-  if (pts.length < 2) return pts;
+// Chaikin curve smoothing (3 iterations); cerrada = true suaviza el cierre del loop
+function chaikin(pts: LatLngTuple[], iteraciones = 3, cerrada = false): LatLngTuple[] {
+  if (pts.length < 3) return pts;
   let cur = pts;
-  for (let n = 0; n < 3; n++) {
+  for (let n = 0; n < iteraciones; n++) {
     const next: LatLngTuple[] = [];
-    for (let i = 0; i < cur.length - 1; i++) {
+    const m = cerrada ? cur.length : cur.length - 1;
+    for (let i = 0; i < m; i++) {
       const [a0, a1] = cur[i]!;
-      const [b0, b1] = cur[i + 1]!;
+      const [b0, b1] = cur[(i + 1) % cur.length]!;
       next.push([0.75 * a0 + 0.25 * b0, 0.75 * a1 + 0.25 * b1]);
       next.push([0.25 * a0 + 0.75 * b0, 0.25 * a1 + 0.75 * b1]);
     }
-    next.push(cur[cur.length - 1]!);
+    if (!cerrada) next.push(cur[cur.length - 1]!);
     cur = next;
   }
   return cur;
+}
+
+// ─── Medición efímera (regla / área) ──────────────────────────────────────────
+function MedicionLayer({ puntos }: { puntos: Array<{ lat: number; lng: number }> }) {
+  if (puntos.length === 0) return null;
+  const COLOR = '#0EA5E9';
+  const tuplas = puntos.map(p => [p.lat, p.lng] as LatLngTuple);
+  const total = longitudLineaM(puntos);
+  const area  = puntos.length >= 3 ? areaPoligonoM2(puntos) : 0;
+  const resumen = `Σ ${formatearLongitud(total)}${area > 0 ? ` · ${formatearArea(area)}` : ''}`;
+  const last = puntos[puntos.length - 1]!;
+
+  const segLabels = puntos.slice(0, -1).map((a, i) => {
+    const b = puntos[i + 1]!;
+    const d = distanciaMetros(a.lat, a.lng, b.lat, b.lng);
+    return (
+      <Marker key={`s${i}`} position={[(a.lat + b.lat) / 2, (a.lng + b.lng) / 2]} interactive={false}
+        icon={L.divIcon({ className: '', iconAnchor: [0, 0],
+          html: `<div style="background:rgba(14,165,233,0.92);color:#fff;font:600 9px monospace;padding:1px 4px;border-radius:3px;white-space:nowrap;">${formatearLongitud(d)}</div>` })} />
+    );
+  });
+  const angLabels = puntos.slice(1, -1).map((p, i) => {
+    const ang = anguloEnVertice(puntos[i]!, p, puntos[i + 2]!);
+    return (
+      <Marker key={`a${i}`} position={[p.lat, p.lng]} interactive={false}
+        icon={L.divIcon({ className: '', iconAnchor: [-5, -5],
+          html: `<div style="background:rgba(15,20,16,0.8);color:#FFD166;font:600 8px monospace;padding:0 3px;border-radius:3px;">∠${ang.toFixed(0)}°</div>` })} />
+    );
+  });
+
+  return (
+    <>
+      {area > 0 && <Polygon positions={tuplas} pathOptions={{ color: COLOR, fillColor: COLOR, fillOpacity: 0.08, weight: 0, interactive: false }} />}
+      <Polyline positions={tuplas} pathOptions={{ color: COLOR, weight: 2, dashArray: '6 4', interactive: false }} />
+      {puntos.map((p, i) => (
+        <CircleMarker key={`v${i}`} center={[p.lat, p.lng]} radius={3}
+          pathOptions={{ color: '#fff', fillColor: COLOR, fillOpacity: 1, weight: 1.5, interactive: false }} />
+      ))}
+      {segLabels}
+      {angLabels}
+      <Marker position={[last.lat, last.lng]} interactive={false} zIndexOffset={1100}
+        icon={L.divIcon({ className: '', iconAnchor: [-10, 20],
+          html: `<div style="background:#0EA5E9;color:#fff;font:700 10px monospace;padding:2px 6px;border-radius:5px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.3);">${resumen}</div>` })} />
+    </>
+  );
 }
 
 function crearIconoAguada(tipo: 'represa' | 'swale' | 'keyline', nombre: string): L.DivIcon {
@@ -245,6 +465,27 @@ function crearIconoLindero(longitud: number, rumbo: string): L.DivIcon {
   return icon;
 }
 
+// Etiqueta de medida (área / longitud / radio) sobre una figura
+function crearIconoMedida(texto: string, color: string): L.DivIcon {
+  const key = `med-${texto}-${color}`;
+  const cached = _cTexto.get(key);
+  if (cached) return cached;
+  const icon = L.divIcon({
+    html: `<div style="
+      background:rgba(255,255,255,0.88);color:#1B3A2D;
+      font-size:9px;font-weight:700;font-family:monospace;
+      padding:1px 5px;border-radius:3px;white-space:nowrap;
+      box-shadow:0 1px 3px rgba(0,0,0,0.25);border-left:3px solid ${color};
+      pointer-events:none;
+    ">${texto}</div>`,
+    className: '',
+    iconSize: undefined,
+    iconAnchor: [20, 7],
+  });
+  _cTexto.set(key, icon);
+  return icon;
+}
+
 // Etiquetas de longitud y rumbo sobre el centroide de cada segmento de lindero
 function LinderoLabels({ mojones, metricas }: { mojones: Mojon[]; metricas: MetricasPoligono }) {
   return (
@@ -268,48 +509,55 @@ function LinderoLabels({ mojones, metricas }: { mojones: Mojon[]; metricas: Metr
   );
 }
 
-// Capa de curvas de nivel (isolíneas del shader)
-function CurvasNivelLayer({ curvas }: { curvas: CurvaNivel[] }) {
+// Capa de curvas de nivel (polilíneas continuas suavizadas)
+function CurvasNivelLayer({ curvas, colorNormal = '#7B1FA2', colorMaestra = '#4527A0' }: {
+  curvas: CurvaNivel[];
+  colorNormal?: string;
+  colorMaestra?: string;
+}) {
   const map = useMap();
-  const colores = ['#4527A0', '#5E35B1', '#7B1FA2', '#AD1457', '#C62828'];
-
-  // Etiqueta de cota en el segmento más largo de cada curva
-  const labels = curvas.map(curva => {
-    if (curva.segmentos.length === 0) return null;
-    const longest = curva.segmentos.reduce((best, s) => {
-      const la = Math.hypot(s.b.lat - s.a.lat, s.b.lng - s.a.lng);
-      const lb = Math.hypot(best.b.lat - best.a.lat, best.b.lng - best.a.lng);
-      return la > lb ? s : best;
-    }, curva.segmentos[0]!);
-    return { cota: curva.cota, lat: (longest.a.lat + longest.b.lat) / 2, lng: (longest.a.lng + longest.b.lng) / 2 };
-  }).filter(Boolean) as { cota: number; lat: number; lng: number }[];
 
   useEffect(() => {
     const layers: L.Layer[] = [];
-    curvas.forEach((curva, ci) => {
-      const color = colores[ci % colores.length]!;
-      curva.segmentos.forEach(seg => {
-        const pl = L.polyline([[seg.a.lat, seg.a.lng], [seg.b.lat, seg.b.lng]], {
-          color, weight: 1.5, opacity: 0.65, interactive: false,
+
+    // Intervalo entre cotas para detectar curvas maestras (cada 5 intervalos)
+    const intervalo = curvas.length >= 2 ? curvas[1]!.cota - curvas[0]!.cota : 0;
+    const pasoMaestra = intervalo * 5;
+
+    curvas.forEach(curva => {
+      const esMaestra = pasoMaestra > 0 && curva.cota % pasoMaestra === 0;
+      const color  = esMaestra ? colorMaestra : colorNormal;
+      const weight = esMaestra ? 2 : 1.1;
+      const opacity = esMaestra ? 0.85 : 0.55;
+
+      curva.lineas.forEach(linea => {
+        const pts = linea.puntos.map(p => [p.lat, p.lng] as LatLngTuple);
+        const suave = chaikin(pts, 2, linea.cerrada);
+        const pl = L.polyline(linea.cerrada ? [...suave, suave[0]!] : suave, {
+          color, weight, opacity, interactive: false, lineCap: 'round', lineJoin: 'round',
         });
         pl.addTo(map);
         layers.push(pl);
       });
+
+      // Etiqueta de cota en el punto medio de la línea más larga
+      const masLarga = curva.lineas.reduce((best, l) => l.puntos.length > best.puntos.length ? l : best, curva.lineas[0]!);
+      if (masLarga && masLarga.puntos.length >= 2 && (esMaestra || curvas.length <= 12)) {
+        const medio = masLarga.puntos[Math.floor(masLarga.puntos.length / 2)]!;
+        const icon = L.divIcon({
+          html: `<span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;background:rgba(255,255,255,0.82);padding:0 2px;border-radius:2px;white-space:nowrap;">${curva.cota} m</span>`,
+          className: '',
+          iconSize: undefined,
+          iconAnchor: [10, 5],
+        });
+        const mk = L.marker([medio.lat, medio.lng], { icon, interactive: false });
+        mk.addTo(map);
+        layers.push(mk);
+      }
     });
-    labels.forEach(lb => {
-      const icon = L.divIcon({
-        html: `<span style="font-size:8px;font-weight:700;color:#4527A0;font-family:sans-serif;background:rgba(255,255,255,0.8);padding:0 2px;border-radius:2px;">${lb.cota} m</span>`,
-        className: '',
-        iconSize: undefined,
-        iconAnchor: [0, 0],
-      });
-      const mk = L.marker([lb.lat, lb.lng], { icon, interactive: false });
-      mk.addTo(map);
-      layers.push(mk);
-    });
+
     return () => { layers.forEach(l => map.removeLayer(l)); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, curvas]);
+  }, [map, curvas, colorNormal, colorMaestra]);
 
   return null;
 }
@@ -446,6 +694,25 @@ function FlyToExposer({ onReady }: { onReady: (fn: (lat: number, lng: number) =>
   return null;
 }
 
+// Reporta la posición del cursor sobre el mapa (siempre, no solo dibujando).
+// Va a un ref del padre que la barra de estado consulta con rAF → cero re-renders.
+function MapMouseTracker({ onMove }: { onMove: (lat: number, lng: number) => void }) {
+  const cb = useRef(onMove);
+  cb.current = onMove;
+  useMapEvents({ mousemove(e) { cb.current(e.latlng.lat, e.latlng.lng); } });
+  return null;
+}
+
+// Redibuja el mapa cuando cambia el modo captura (el contenedor cambia de tamaño)
+function InvalidarSize({ trigger }: { trigger: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 260);
+    return () => clearTimeout(t);
+  }, [map, trigger]);
+  return null;
+}
+
 // Notifica zoom + lat del centro al padre (para escala gráfica)
 function MapChangeWatcher({ onMapChange }: { onMapChange: (zoom: number, lat: number) => void }) {
   const map = useMap();
@@ -491,6 +758,9 @@ interface Props {
   datosShader?:       DatosShader | null;
   datosEscorrentia?:  DatosEscorrentia | null;
   datosSugerencias?:  ResultadoSugerencias | null;
+  cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
+  cuencaOutlet?:      { lat: number; lng: number } | null;
+  potrerosLayer?:     PotrerosLayout | null;
   capas?:             CapasVisibles;
   // ── Dibujo libre ──
   dibujos?:           ElementoDibujo[];
@@ -498,18 +768,24 @@ interface Props {
   dibujoSelId?:       string | null;
   onClickDibujo?:     (id: string) => void;
   onMoverDibujo?:     (id: string, dLat: number, dLng: number) => void;
-  modoDibujo?:        TipoDibujo | 'seleccion' | null;
+  modoDibujo?:        TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null;
   colorDibujo?:       string;
   // ── Terrarium ──
   elevMin?:           number;
   elevMax?:           number;
   onRangoTerrarium?:  (min: number, max: number) => void;
+  // ── Shader opacity ──
+  opacidadShaderElev?: number;
+  opacidadShaderPend?: number;
   // ── Aguadas layer ──
   aguadasLayer?:      ElementoAguada[];
   // ── Arco solar ──
   datosArcoSolar?:    DatosArcoSolar | null;
+  onMoverArcoSolar?:  (lat: number, lng: number) => void;
   // ── Vertex / pin editing ──
   onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
+  onInsertarVertice?: (id: string, idxAfter: number, lat: number, lng: number) => void;
+  onEliminarVertice?: (id: string, idx: number) => void;
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
   // ── Bounds para topografía del área visible ──
   onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
@@ -520,23 +796,47 @@ interface Props {
   // ── Plano profesional ──
   metricas?:          MetricasPoligono | null;
   curvasNivel?:       CurvaNivel[];
+  colorCurvasNivel?:  { normal: string; maestra: string };
+  // ── CAD: snap / ortho / preview ──
+  snapActivo?:        boolean;
+  orthoActivo?:       boolean;
+  snapPuntos?:        PuntoSnap[];
+  snapSegmentos?:     SnapSegmento[];
+  tipoActivo?:        TipoActivo;
+  verticesActivos?:   Array<{ lat: number; lng: number }> | null;
+  colorPreview?:      string;
+  // ── Medición efímera ──
+  medicion?:          Array<{ lat: number; lng: number }> | null;
+  onCursorCad?:       (lat: number, lng: number) => void;
+  onCursorMove?:      (lat: number, lng: number) => void;
+  capturaMode?:       boolean;
+  // ── Overlay de imagen (plano de referencia) ──
+  overlay?:           OverlayImagen | null;
+  onOverlayEsquina?:  (esquina: 'sw' | 'ne' | 'centro', lat: number, lng: number) => void;
+  // ── Master Plan ──
+  masterPlan?:        ElementoMasterPlan[] | null;
+  // ── Perfil de elevación: punto sincronizado con el cursor del panel de perfil ──
+  perfilPunto?:       { lat: number; lng: number } | null;
 }
 
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
   zonas = [], zonaEnDibujado = null,
   sectores = [], sectorEnDibujado = null,
   pines = [], onEditarPin,
-  caminos = [], caminoEnDibujado = null,
+  caminos = [], caminoEnDibujado = null, perfilPunto = null,
   dibujando = false,
   datosShader = null,
   datosEscorrentia = null,
   datosSugerencias = null,
+  cuencaPoligono = null,
+  cuencaOutlet = null,
+  potrerosLayer = null,
   capas = CAPAS_DEFAULT,
   dibujos = [],
   dibujoEnCurso = null,
@@ -548,20 +848,40 @@ function MapLeaflet({
   elevMin = 0,
   elevMax = 500,
   onRangoTerrarium,
+  opacidadShaderElev = 0.65,
+  opacidadShaderPend = 0.65,
   aguadasLayer = [],
   datosArcoSolar = null,
+  onMoverArcoSolar,
   onMoverVertice,
+  onInsertarVertice,
+  onEliminarVertice,
   onMoverPin,
   onGetBounds,
   onMapChange,
   onGetFlyTo,
   metricas = null,
   curvasNivel = [],
+  colorCurvasNivel,
+  snapActivo = false,
+  orthoActivo = false,
+  snapPuntos = [],
+  snapSegmentos = [],
+  tipoActivo = null,
+  verticesActivos = null,
+  colorPreview = '#EF4444',
+  medicion = null,
+  onCursorCad,
+  onCursorMove,
+  capturaMode = false,
+  overlay = null,
+  onOverlayEsquina,
+  masterPlan = null,
 }: Props) {
   const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
 
-  const cursorClass = modoDibujo && modoDibujo !== 'seleccion'
+  const cursorClass = (modoDibujo && modoDibujo !== 'seleccion') || tipoActivo
     ? 'cursor-crosshair'
     : modoDibujo === 'seleccion'
     ? 'cursor-pointer'
@@ -574,8 +894,9 @@ function MapLeaflet({
         zoom={ZOOM_INICIAL}
         maxZoom={22}
         style={{ height: '100%', width: '100%' }}
-        zoomControl
+        zoomControl={false}
       >
+        <ZoomControl position="bottomleft" />
         {/* ── Tiles ── */}
         {capa === 'satelite' ? (
           <>
@@ -605,29 +926,72 @@ function MapLeaflet({
           />
         )}
 
-        <ClickHandler onClickMapa={onClickMapa} modoDibujo={modoDibujo} />
+        {/* ── Overlay de imagen (plano de referencia para calcar) ── */}
+        {overlay && (
+          <>
+            <ImageOverlay
+              url={overlay.url}
+              bounds={[[overlay.sw.lat, overlay.sw.lng], [overlay.ne.lat, overlay.ne.lng]]}
+              opacity={overlay.opacidad}
+              zIndex={250}
+            />
+            {onOverlayEsquina && (() => {
+              const handle = (txt: string, color: string) => L.divIcon({
+                html: `<div style="width:16px;height:16px;border-radius:3px;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:9px;color:white;cursor:move;">${txt}</div>`,
+                className: '', iconSize: [16, 16], iconAnchor: [8, 8],
+              });
+              const cen = { lat: (overlay.sw.lat + overlay.ne.lat) / 2, lng: (overlay.sw.lng + overlay.ne.lng) / 2 };
+              return (
+                <>
+                  <Marker position={[overlay.sw.lat, overlay.sw.lng]} draggable icon={handle('↙', '#0EA5E9')} zIndexOffset={600}
+                    eventHandlers={{ moveend(e) { const p = (e.target as L.Marker).getLatLng(); onOverlayEsquina('sw', p.lat, p.lng); } }} />
+                  <Marker position={[overlay.ne.lat, overlay.ne.lng]} draggable icon={handle('↗', '#0EA5E9')} zIndexOffset={600}
+                    eventHandlers={{ moveend(e) { const p = (e.target as L.Marker).getLatLng(); onOverlayEsquina('ne', p.lat, p.lng); } }} />
+                  <Marker position={[cen.lat, cen.lng]} draggable icon={handle('✥', '#D9A441')} zIndexOffset={600}
+                    eventHandlers={{ moveend(e) { const p = (e.target as L.Marker).getLatLng(); onOverlayEsquina('centro', p.lat, p.lng); } }} />
+                </>
+              );
+            })()}
+          </>
+        )}
+
+        <CadInteractivo
+          onClickMapa={onClickMapa}
+          modoDibujo={modoDibujo}
+          tipoActivo={tipoActivo}
+          verticesActivos={verticesActivos}
+          snapActivo={snapActivo}
+          orthoActivo={orthoActivo}
+          snapPuntos={snapPuntos}
+          snapSegmentos={snapSegmentos}
+          colorPreview={colorPreview}
+          onCursor={onCursorCad}
+        />
+        {medicion && medicion.length > 0 && <MedicionLayer puntos={medicion} />}
         <AutoFit mojones={mojones} />
         <MiddleMousePan />
+        {onCursorMove && <MapMouseTracker onMove={onCursorMove} />}
+        <InvalidarSize trigger={capturaMode} />
         {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
         {onMapChange  && <MapChangeWatcher onMapChange={onMapChange} />}
         {onGetFlyTo   && <FlyToExposer    onReady={onGetFlyTo} />}
         {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} onRangoDetectado={onRangoTerrarium} />}
         {capas.linderoLabels && metricas && mojones.length >= 3 && <LinderoLabels mojones={mojones} metricas={metricas} />}
-        {capas.curvasNivel   && curvasNivel.length > 0 && <CurvasNivelLayer curvas={curvasNivel} />}
+        {capas.curvasNivel   && curvasNivel.length > 0 && <CurvasNivelLayer curvas={curvasNivel} colorNormal={colorCurvasNivel?.normal} colorMaestra={colorCurvasNivel?.maestra} />}
 
         {/* ── Shader topográfico (canvas con interpolación bilineal) ── */}
         {datosShader && capas.shaderElev && (
           <ShaderCanvasLayer
             celdas={datosShader.celdas} tipo="elev"
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
-            pendMax={datosShader.pend_max}
+            pendMax={datosShader.pend_max} opacidad={opacidadShaderElev}
           />
         )}
         {datosShader && capas.shaderPend && (
           <ShaderCanvasLayer
             celdas={datosShader.celdas} tipo="pend"
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
-            pendMax={datosShader.pend_max}
+            pendMax={datosShader.pend_max} opacidad={opacidadShaderPend}
           />
         )}
 
@@ -644,6 +1008,50 @@ function MapLeaflet({
             />
           );
         })}
+
+        {/* ── Cuenca de aporte ── */}
+        {cuencaPoligono && cuencaPoligono.length >= 3 && (
+          <Polygon
+            positions={cuencaPoligono.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#1565C0', weight: 2, fillColor: '#1565C0', fillOpacity: 0.15, interactive: false, dashArray: '4 3' }}
+          />
+        )}
+        {cuencaOutlet && (
+          <CircleMarker
+            center={[cuencaOutlet.lat, cuencaOutlet.lng]}
+            radius={6}
+            pathOptions={{ color: '#fff', weight: 2, fillColor: '#0D47A1', fillOpacity: 1 }}
+          />
+        )}
+
+        {/* ── Potreros (subdivisión de pastoreo) + bebederos ── */}
+        {potrerosLayer && (
+          <>
+            {potrerosLayer.potreros.map(p => (
+              <Polygon
+                key={`pot-${p.id}`}
+                positions={p.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                pathOptions={{ color: '#2E7D32', weight: 1.5, fillColor: '#66BB6A', fillOpacity: 0.10, interactive: false }}
+              />
+            ))}
+            {potrerosLayer.bebederos.map((b, i) => (
+              <LeafCircle
+                key={`beb-r-${i}`}
+                center={[b.lat, b.lng]}
+                radius={potrerosLayer.radio_m}
+                pathOptions={{ color: '#1565C0', weight: 1, fillColor: '#42A5F5', fillOpacity: 0.10, dashArray: '4 4', interactive: false }}
+              />
+            ))}
+            {potrerosLayer.bebederos.map((b, i) => (
+              <CircleMarker
+                key={`beb-c-${i}`}
+                center={[b.lat, b.lng]}
+                radius={5}
+                pathOptions={{ color: '#fff', weight: 2, fillColor: '#1565C0', fillOpacity: 1 }}
+              />
+            ))}
+          </>
+        )}
 
         {/* ── Camino sugerido ── */}
         {capas.sugerencias && datosSugerencias && datosSugerencias.camino.length >= 2 && (
@@ -685,6 +1093,16 @@ function MapLeaflet({
             positions={caminoEnDibujado.map(v => [v.lat, v.lng] as LatLngTuple)}
             pathOptions={{ color: '#8B4513', weight: 3, dashArray: '8 4', opacity: 0.8, interactive: false }}
           />
+        )}
+
+        {/* Punto sincronizado con el cursor del perfil de elevación */}
+        {perfilPunto && (
+          <>
+            <CircleMarker center={[perfilPunto.lat, perfilPunto.lng]} radius={9}
+              pathOptions={{ color: '#1a1a1a', weight: 2, opacity: 0.35, fillColor: '#1a1a1a', fillOpacity: 0.08, interactive: false }} />
+            <CircleMarker center={[perfilPunto.lat, perfilPunto.lng]} radius={5}
+              pathOptions={{ color: '#1a1a1a', weight: 2.5, opacity: 1, fillColor: '#ffffff', fillOpacity: 1, interactive: false }} />
+          </>
         )}
 
         {/* ── Zonas ── */}
@@ -778,6 +1196,29 @@ function MapLeaflet({
           </>
         )}
 
+        {/* ── Master Plan: elementos del programa con ubicación y área sugerida ── */}
+        {capas.sugerencias && masterPlan && masterPlan.map(el => {
+          const def = TIPOS_ITEM[el.tipo];
+          const cLat = el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length;
+          const cLng = el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length;
+          const icon = L.divIcon({
+            html: `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;">
+              <div style="font-size:16px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5));">${def.emoji}</div>
+              <span style="background:rgba(255,255,255,0.9);color:#1B3A2D;font-size:8px;font-weight:700;font-family:sans-serif;padding:0 3px;border-radius:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${el.nombre} · ${formatearArea(el.area_m2)}</span>
+            </div>`,
+            className: '', iconSize: undefined, iconAnchor: [8, 10],
+          });
+          return (
+            <React.Fragment key={el.id}>
+              <Polygon
+                positions={el.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                pathOptions={{ color: def.color, fillColor: def.color, fillOpacity: 0.18, weight: 2, dashArray: '8 5', interactive: false }}
+              />
+              <Marker position={[cLat, cLng]} icon={icon} interactive={false} />
+            </React.Fragment>
+          );
+        })}
+
         {/* ── Marcadores de mojones (siempre encima de todo) ── */}
         {capas.terreno && mojones.map(m => (
           <Marker
@@ -795,38 +1236,96 @@ function MapLeaflet({
           const selD = sel ? '8 4' : undefined;
           const onClick = () => modoDibujo === 'seleccion' && onClickDibujo?.(d.id);
 
-          if (d.tipo === 'linea') return (
-            <Polyline key={d.id}
-              positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
-              pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
-              eventHandlers={{ click: onClick }}
-            />
-          );
-          if (d.tipo === 'curva') {
-            const smooth = chaikin(d.vertices.map(v => [v.lat, v.lng] as LatLngTuple));
+          if (d.tipo === 'linea') {
+            const medio = d.vertices[Math.floor(d.vertices.length / 2)];
             return (
-              <Polyline key={d.id}
-                positions={smooth}
-                pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
-                eventHandlers={{ click: onClick }}
-              />
+              <React.Fragment key={d.id}>
+                <Polyline
+                  positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                  pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+                {capas.medidas && medio && (
+                  <Marker position={[medio.lat, medio.lng]} interactive={false}
+                    icon={crearIconoMedida(formatearLongitud(longitudLineaM(d.vertices)), d.color)} />
+                )}
+              </React.Fragment>
             );
           }
-          if (d.tipo === 'poligono') return (
-            <Polygon key={d.id}
-              positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
-              pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
-              eventHandlers={{ click: onClick }}
-            />
-          );
+          if (d.tipo === 'curva') {
+            const smooth = chaikin(d.vertices.map(v => [v.lat, v.lng] as LatLngTuple));
+            const medio = d.vertices[Math.floor(d.vertices.length / 2)];
+            return (
+              <React.Fragment key={d.id}>
+                <Polyline
+                  positions={smooth}
+                  pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+                {capas.medidas && medio && (
+                  <Marker position={[medio.lat, medio.lng]} interactive={false}
+                    icon={crearIconoMedida(formatearLongitud(longitudLineaM(d.vertices)), d.color)} />
+                )}
+              </React.Fragment>
+            );
+          }
+          if (d.tipo === 'poligono') {
+            const cLat = d.vertices.reduce((s, v) => s + v.lat, 0) / d.vertices.length;
+            const cLng = d.vertices.reduce((s, v) => s + v.lng, 0) / d.vertices.length;
+            return (
+              <React.Fragment key={d.id}>
+                <Polygon
+                  positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                  pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+                {capas.medidas && d.vertices.length >= 3 && (
+                  <Marker position={[cLat, cLng]} interactive={false}
+                    icon={crearIconoMedida(formatearArea(areaPoligonoM2(d.vertices)), d.color)} />
+                )}
+              </React.Fragment>
+            );
+          }
           if (d.tipo === 'circulo') return (
-            <LeafCircle key={d.id}
-              center={[d.lat, d.lng]}
-              radius={d.radio}
-              pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
-              eventHandlers={{ click: onClick }}
-            />
+            <React.Fragment key={d.id}>
+              <LeafCircle
+                center={[d.lat, d.lng]}
+                radius={d.radio}
+                pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
+                eventHandlers={{ click: onClick }}
+              />
+              {capas.medidas && (
+                <Marker position={[d.lat, d.lng]} interactive={false}
+                  icon={crearIconoMedida(`r ${formatearLongitud(d.radio)} · ${formatearArea(Math.PI * d.radio * d.radio)}`, d.color)} />
+              )}
+            </React.Fragment>
           );
+          if (d.tipo === 'cota') {
+            if (!capas.cotas) return null;
+            const a = d.vertices[0], b = d.vertices[1];
+            if (!a || !b) return null;
+            const dist  = distanciaMetros(a.lat, a.lng, b.lat, b.lng);
+            // Ticks perpendiculares en los extremos (4% del largo del segmento)
+            const dLat = b.lat - a.lat, dLng = b.lng - a.lng;
+            const len  = Math.hypot(dLat, dLng) || 1e-9;
+            const pLat = (-dLng / len) * len * 0.04;
+            const pLng = ( dLat / len) * len * 0.04;
+            return (
+              <React.Fragment key={d.id}>
+                <Polyline
+                  positions={[[a.lat, a.lng], [b.lat, b.lng]]}
+                  pathOptions={{ color: d.color, weight: selW ?? 1.5, dashArray: selD, opacity: 0.95, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+                <Polyline positions={[[a.lat - pLat, a.lng - pLng], [a.lat + pLat, a.lng + pLng]]}
+                  pathOptions={{ color: d.color, weight: 1.5, opacity: 0.95, interactive: false }} />
+                <Polyline positions={[[b.lat - pLat, b.lng - pLng], [b.lat + pLat, b.lng + pLng]]}
+                  pathOptions={{ color: d.color, weight: 1.5, opacity: 0.95, interactive: false }} />
+                <Marker position={[(a.lat + b.lat) / 2, (a.lng + b.lng) / 2]} interactive={false}
+                  icon={crearIconoMedida(formatearLongitud(dist), d.color)} />
+              </React.Fragment>
+            );
+          }
           if (d.tipo === 'texto') return (
             <Marker key={d.id}
               position={[d.lat, d.lng]}
@@ -842,6 +1341,39 @@ function MapLeaflet({
               }}
             />
           );
+          if (d.tipo === 'flecha') {
+            const [p1, p2] = d.vertices;
+            if (!p1 || !p2) return null;
+            const az = azimutGrados(p1.lat, p1.lng, p2.lat, p2.lng);
+            const arrowIcon = L.divIcon({
+              html: `<svg width="20" height="20" viewBox="-10 -10 20 20" style="transform:rotate(${az}deg);display:block;overflow:visible"><polygon points="0,-9 -5,5 0,2 5,5" fill="${d.color}" opacity="0.95"/></svg>`,
+              className: '',
+              iconSize: [20, 20],
+              iconAnchor: [10, 10],
+            });
+            return (
+              <React.Fragment key={d.id}>
+                <Polyline
+                  positions={d.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+                  pathOptions={{ color: d.color, weight: selW ?? d.grosor, dashArray: selD, opacity: 1, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+                <Marker position={[p2.lat, p2.lng]} icon={arrowIcon} interactive={false} zIndexOffset={100} />
+              </React.Fragment>
+            );
+          }
+          if (d.tipo === 'punto') {
+            return (
+              <React.Fragment key={d.id}>
+                <CircleMarker
+                  center={[d.lat, d.lng]}
+                  radius={sel ? 10 : 7}
+                  pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: 0.85, weight: sel ? 3 : 2, dashArray: selD, interactive: true }}
+                  eventHandlers={{ click: onClick }}
+                />
+              </React.Fragment>
+            );
+          }
           return null;
         })}
 
@@ -850,7 +1382,7 @@ function MapLeaflet({
           const el = dibujos.find(d => d.id === dibujoSelId);
           if (!el || el.tipo === 'texto') return null;
           let lat: number, lng: number;
-          if (el.tipo === 'circulo') { lat = el.lat; lng = el.lng; }
+          if (el.tipo === 'circulo' || el.tipo === 'punto') { lat = el.lat; lng = el.lng; }
           else {
             lat = el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length;
             lng = el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length;
@@ -871,13 +1403,13 @@ function MapLeaflet({
           );
         })()}
 
-        {/* ── Vertex handles para shape seleccionada ── */}
+        {/* ── Vertex handles para shape seleccionada (arrastrar · doble clic borra) ── */}
         {modoDibujo === 'seleccion' && dibujoSelId && (() => {
           const el = dibujos.find(d => d.id === dibujoSelId);
-          if (!el || el.tipo === 'texto' || el.tipo === 'circulo') return null;
+          if (!el || el.tipo === 'texto' || el.tipo === 'circulo' || el.tipo === 'punto') return null;
           return el.vertices.map((v, idx) => {
             const vIcon = L.divIcon({
-              html: `<div style="width:12px;height:12px;border-radius:50%;background:white;border:2px solid ${el.color};box-shadow:0 1px 4px rgba(0,0,0,0.45);cursor:move;"></div>`,
+              html: `<div title="Arrastrar para mover · doble clic para borrar" style="width:12px;height:12px;border-radius:50%;background:white;border:2px solid ${el.color};box-shadow:0 1px 4px rgba(0,0,0,0.45);cursor:move;"></div>`,
               className: '', iconSize: [12, 12], iconAnchor: [6, 6],
             });
             return (
@@ -891,10 +1423,34 @@ function MapLeaflet({
                     const p = (e.target as L.Marker).getLatLng();
                     onMoverVertice?.(dibujoSelId, idx, p.lat, p.lng);
                   },
+                  dblclick() { onEliminarVertice?.(dibujoSelId, idx); },
                 }}
               />
             );
           });
+        })()}
+
+        {/* ── Handles "+" en puntos medios para insertar vértices ── */}
+        {modoDibujo === 'seleccion' && dibujoSelId && onInsertarVertice && (() => {
+          const el = dibujos.find(d => d.id === dibujoSelId);
+          if (!el || el.tipo === 'texto' || el.tipo === 'circulo' || el.tipo === 'punto') return null;
+          const vs = el.vertices;
+          const cerrado = el.tipo === 'poligono';
+          const pares: Array<{ idx: number; lat: number; lng: number }> = [];
+          const lim = cerrado ? vs.length : vs.length - 1;
+          for (let i = 0; i < lim; i++) {
+            const a = vs[i]!, b = vs[(i + 1) % vs.length]!;
+            pares.push({ idx: i, lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 });
+          }
+          const addIcon = L.divIcon({
+            html: `<div title="Insertar vértice" style="width:11px;height:11px;border-radius:50%;background:#22C55E;border:1.5px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1;color:white;font-weight:700;cursor:cell;">+</div>`,
+            className: '', iconSize: [11, 11], iconAnchor: [5.5, 5.5],
+          });
+          return pares.map(p => (
+            <Marker key={`add-${dibujoSelId}-${p.idx}`} position={[p.lat, p.lng]} icon={addIcon} zIndexOffset={450}
+              eventHandlers={{ click() { onInsertarVertice(dibujoSelId, p.idx, p.lat, p.lng); } }}
+            />
+          ));
         })()}
 
         {/* ── Aguadas layer ── */}
@@ -922,6 +1478,24 @@ function MapLeaflet({
 
         {/* ── Arco solar ── */}
         {capas.arcSolar && datosArcoSolar && <ArcoSolarLayer datos={datosArcoSolar} />}
+        {/* Mango para mover el arco solar */}
+        {capas.arcSolar && datosArcoSolar && onMoverArcoSolar && (() => {
+          const c = datosArcoSolar.centro;
+          const icon = L.divIcon({
+            html: `<div title="Arrastrar para mover el arco solar" style="width:20px;height:20px;border-radius:50%;background:#FFD54F;border:2.5px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;cursor:move;font-size:11px;color:#0F1410;">☀</div>`,
+            className: '', iconSize: [20, 20], iconAnchor: [10, 10],
+          });
+          return (
+            <Marker key="arco-solar-handle" position={[c.lat, c.lng]} icon={icon} draggable
+              eventHandlers={{
+                moveend(e) {
+                  const p = (e.target as L.Marker).getLatLng();
+                  onMoverArcoSolar(p.lat, p.lng);
+                },
+              }}
+            />
+          );
+        })()}
 
         {/* ── Dibujo en construcción (preview) ── */}
         {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {
@@ -951,7 +1525,7 @@ function MapLeaflet({
       </MapContainer>
 
       {/* Toggle de capa de fondo — oculto en PNG */}
-      <div className="absolute top-3 right-12 z-[1000] flex rounded-lg overflow-hidden shadow-md border border-white/30 no-print">
+      <div className="absolute bottom-20 left-3 z-[1000] flex rounded-lg overflow-hidden shadow-md border border-white/30 no-print">
         <button
           onClick={() => setCapa('satelite')}
           className={`px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${capa === 'satelite' ? 'bg-moss-700 text-bone-50' : 'bg-white/90 text-ink-700 hover:bg-bone-100'}`}
@@ -1001,11 +1575,12 @@ function iconoNoon(color: string, elevacion: number, labelCorto: string): L.DivI
 // ─── Shader suavizado (canvas + ImageOverlay) ────────────────────────────────
 
 function ShaderCanvasLayer({
-  celdas, tipo, elevMin, elevMax, pendMax,
+  celdas, tipo, elevMin, elevMax, pendMax, opacidad = 0.65,
 }: {
   celdas: DatosShader['celdas'];
   tipo: 'elev' | 'pend';
   elevMin: number; elevMax: number; pendMax: number;
+  opacidad?: number;
 }) {
   const map = useMap();
   useEffect(() => {
@@ -1071,11 +1646,11 @@ function ShaderCanvasLayer({
     bCtx.drawImage(small, 0, 0, W * S, H * S);
 
     const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
-      opacity: 0.65, interactive: false, zIndex: 200,
+      opacity: opacidad, interactive: false, zIndex: 200,
     });
     ov.addTo(map);
     return () => { map.removeLayer(ov); };
-  }, [map, celdas, tipo, elevMin, elevMax, pendMax]);
+  }, [map, celdas, tipo, elevMin, elevMax, pendMax, opacidad]);
   return null;
 }
 

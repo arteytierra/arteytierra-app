@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 export async function GET(req: Request) {
   const p = new URL(req.url).searchParams;
   const z = p.get('z'), x = p.get('x'), y = p.get('y');

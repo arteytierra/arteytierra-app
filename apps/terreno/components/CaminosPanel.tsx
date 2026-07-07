@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Plus, Trash2, PenLine, Check, X, RotateCcw, TrendingUp, Ruler } from 'lucide-react';
+import { Plus, Trash2, PenLine, Check, X, RotateCcw, TrendingUp, Ruler, Maximize2, Loader2 } from 'lucide-react';
 import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
 
 interface ModoCamino {
@@ -15,11 +15,16 @@ interface Props {
   onIniciarDibujo:   () => void;
   onFinalizarCamino: (color?: string) => void;
   onCancelarCamino:  () => void;
+  onAbrirPerfil?:    (camino: Camino) => void;
+  perfilDockId?:     string | null;   // nombre del camino cuyo perfil está en el dock inferior
+  perfilCargando?:   boolean;
+  perfilError?:      string | null;
 }
 
 export function CaminosPanel({
   caminos, onCaminos, modoCamino,
   onIniciarDibujo, onFinalizarCamino, onCancelarCamino,
+  onAbrirPerfil, perfilDockId = null, perfilCargando = false, perfilError = null,
 }: Props) {
   const [editandoId,    setEditandoId]    = useState<string | null>(null);
   const [colorModo,     setColorModo]     = useState('#8B4513');
@@ -112,6 +117,10 @@ export function CaminosPanel({
         </button>
       )}
 
+      {perfilError && (
+        <p className="text-[10px] text-clay-600 bg-clay-50 rounded-lg px-2 py-1.5 leading-tight">Perfil interactivo: {perfilError}</p>
+      )}
+
       {/* ── Lista de caminos ─────────────────────────────────────────────────── */}
       {caminos.length > 0 ? (
         <div className="space-y-2">
@@ -132,10 +141,19 @@ export function CaminosPanel({
                 <button
                   onClick={() => handleVerPerfil(c)}
                   className={`shrink-0 transition-colors ${perfilId === c.id ? 'text-water-600' : 'text-ink-700/30 hover:text-water-600'}`}
-                  title="Ver perfil de elevación"
+                  title="Ver perfil de elevación (en el panel)"
                 >
                   <TrendingUp className="w-3.5 h-3.5" />
                 </button>
+                {onAbrirPerfil && (
+                  <button
+                    onClick={() => onAbrirPerfil(c)}
+                    className={`shrink-0 transition-colors ${perfilDockId === c.nombre ? 'text-water-600' : 'text-ink-700/30 hover:text-water-600'}`}
+                    title="Perfil interactivo abajo (cursor sincronizado con el mapa)"
+                  >
+                    {perfilCargando && perfilDockId !== c.nombre ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  </button>
+                )}
                 <button onClick={() => setEditandoId(id => id === c.id ? null : c.id)} className="shrink-0 text-ink-700/30 hover:text-moss-700 transition-colors">
                   <PenLine className="w-3.5 h-3.5" />
                 </button>

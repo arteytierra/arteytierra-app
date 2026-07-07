@@ -66,6 +66,11 @@ export function SectoresPanel({
     return calcularSectoresAuto(centro.lat, datosClima, datosTopografia);
   }, [centro, datosClima, datosTopografia]);
 
+  const GEOM_SECTOR = ['sol_verano', 'sol_invierno', 'viento_ppal', 'viento_frio', 'fuego', 'inundacion'];
+  const handleAplicarTodos = useCallback(() => {
+    sectoresAuto.filter(s => GEOM_SECTOR.includes(s.tipo)).forEach(handleAplicar);
+  }, [sectoresAuto, handleAplicar]);
+
   const eliminarSector = useCallback((id: string) => {
     onSectores(sectores.filter(s => s.id !== id));
   }, [sectores, onSectores]);
@@ -182,6 +187,14 @@ export function SectoresPanel({
           </button>
           {mostrarAuto && (
             <div className="border-t border-bone-200 divide-y divide-bone-200">
+              {onAplicarSector && centro && (
+                <button
+                  onClick={handleAplicarTodos}
+                  className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] font-semibold text-moss-700 hover:bg-moss-100 transition-colors"
+                >
+                  <MapPin className="w-2.5 h-2.5" /> Aplicar todos al plano
+                </button>
+              )}
               {sectoresAuto.map(s => {
                 const info      = TIPOS_SECTOR[s.tipo];
                 const aplicado  = aplicadosIds.has(s.id);

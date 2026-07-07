@@ -19,6 +19,18 @@ import type { Pin } from '@/lib/pines';
 import type { Camino } from '@/lib/caminos';
 import type { Sector } from '@/lib/sectores';
 
+/** Extrae un mensaje legible de cualquier error (incluye PostgrestError de Supabase). */
+function errMsg(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object') {
+    const o = err as Record<string, unknown>;
+    const parts = [o['message'], o['details'], o['hint'], o['code']].filter(Boolean).map(String);
+    if (parts.length) return parts.join(' · ');
+    try { return JSON.stringify(o); } catch { return String(err); }
+  }
+  return String(err);
+}
+
 interface Props {
   mojones:  Mojon[];
   zonas?:   Zona[];
@@ -93,8 +105,7 @@ export function ProyectosPanel({
       }
       await recargar();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(`Error al guardar: ${msg}`);
+      setError(`Error al guardar: ${errMsg(err)}`);
     } finally {
       setGuardando(false);
     }

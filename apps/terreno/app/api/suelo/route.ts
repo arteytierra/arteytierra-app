@@ -1,10 +1,10 @@
-export const runtime = 'edge';
+import { cacheGet, cacheSet } from '@/lib/db/cache';
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — SoilGrids 250 m, casi estático
 
 async function openCache(): Promise<Cache | null> {
-  try { return await caches.open('terreno-suelo-v1'); } catch { return null; }
+  try { return await caches.open('terreno-suelo-v2'); } catch { return null; }
 }
 
 export async function GET(req: Request) {
@@ -18,18 +18,23 @@ export async function GET(req: Request) {
   const lngR = parseFloat(lng).toFixed(3);
 
   const cacheKey = `https://terreno-cache/suelo?lat=${latR}&lng=${lngR}`;
+  const dbKey    = `suelo:${latR},${lngR}`;
   const cache    = await openCache();
 
   if (cache) {
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { status: 200, headers: HDRS });
   }
+  const dbHit = await cacheGet<{ raw: string }>(dbKey);
+  if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
-  const props = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen'];
-  const url   = 'https://rest.isric.org/soilgrids/v2.0/properties/query'
+  const props  = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen'];
+  const depths = ['0-5cm', '5-15cm', '15-30cm', '30-60cm', '60-100cm', '100-200cm'];
+  const url    = 'https://rest.isric.org/soilgrids/v2.0/properties/query'
     + `?lon=${lngR}&lat=${latR}`
     + props.map(prop => `&property=${prop}`).join('')
-    + '&depth=0-5cm&value=mean';
+    + depths.map(d => `&depth=${d}`).join('')
+    + '&value=mean';
 
   let res: Response;
   try {
@@ -51,6 +56,7 @@ export async function GET(req: Request) {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` },
     }));
   }
+  await cacheSet(dbKey, { raw: text }, CACHE_TTL);
 
   return new Response(text, { status: 200, headers: HDRS });
 }

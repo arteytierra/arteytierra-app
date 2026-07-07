@@ -15,6 +15,20 @@ export type CategoriaZona =
   | 'infraestructura'
   | 'agua'
   | 'compost_vivero'
+  // Zonas de permacultura (Mollison 0–5)
+  | 'zona_0'
+  | 'zona_1'
+  | 'zona_2'
+  | 'zona_3'
+  | 'zona_4'
+  | 'zona_5'
+  // Temáticas de diseño regenerativo
+  | 'bosque_alimento'
+  | 'silvopastoril'
+  | 'acuicultura'
+  | 'apiario'
+  | 'barrera'
+  | 'recreacion'
   | 'personalizado';
 
 export const CATEGORIAS_ZONA: Record<CategoriaZona, {
@@ -32,6 +46,20 @@ export const CATEGORIAS_ZONA: Record<CategoriaZona, {
   infraestructura:  { label: 'Infraestructura / caminos', descripcion: 'Caminos, alambrados, instalaciones',         color: '#90A4AE', colorTw: 'bg-slate-400'   },
   agua:             { label: 'Cuerpo de agua',            descripcion: 'Represas, jagüeles, zanjas, arroyos',        color: '#1E88E5', colorTw: 'bg-blue-500'    },
   compost_vivero:   { label: 'Compost / vivero',          descripcion: 'Área de compostaje, propagación, semillero', color: '#6D4C41', colorTw: 'bg-brown-600'   },
+  // ── Zonas de permacultura (Mollison) — por intensidad de manejo/visita ──
+  zona_0:           { label: 'Zona 0 · Centro',           descripcion: 'Casa / núcleo. Máxima frecuencia de uso',    color: '#C62828', colorTw: 'bg-red-700'     },
+  zona_1:           { label: 'Zona 1 · Intensiva',        descripcion: 'Huerta diaria, aromáticas, lo más visitado', color: '#EF6C00', colorTw: 'bg-orange-700'  },
+  zona_2:           { label: 'Zona 2 · Semi-intensiva',   descripcion: 'Frutales, animales menores, riego',          color: '#F9A825', colorTw: 'bg-amber-600'   },
+  zona_3:           { label: 'Zona 3 · Granja',           descripcion: 'Cultivos, pasturas, producción comercial',   color: '#9E9D24', colorTw: 'bg-lime-700'    },
+  zona_4:           { label: 'Zona 4 · Semi-silvestre',   descripcion: 'Forraje, leña, manejo extensivo',            color: '#558B2F', colorTw: 'bg-green-700'   },
+  zona_5:           { label: 'Zona 5 · Silvestre',        descripcion: 'Reserva, observación, sin intervención',     color: '#1B5E20', colorTw: 'bg-green-900'   },
+  // ── Temáticas de diseño regenerativo ──
+  bosque_alimento:  { label: 'Bosque de alimento',        descripcion: 'Food forest: estratos comestibles',         color: '#388E3C', colorTw: 'bg-green-600'   },
+  silvopastoril:    { label: 'Silvopastoril',             descripcion: 'Árboles + pastura + animales integrados',    color: '#7CB342', colorTw: 'bg-lime-500'    },
+  acuicultura:      { label: 'Acuicultura',               descripcion: 'Estanque productivo, peces, plantas acuát.', color: '#0097A7', colorTw: 'bg-cyan-600'    },
+  apiario:          { label: 'Apiario',                   descripcion: 'Colmenas, flora melífera',                   color: '#FBC02D', colorTw: 'bg-yellow-500'  },
+  barrera:          { label: 'Cortina / barrera',         descripcion: 'Cortina rompevientos, barrera viva',         color: '#33691E', colorTw: 'bg-green-800'   },
+  recreacion:       { label: 'Recreación',                descripcion: 'Descanso, juegos, fogón, camping',           color: '#AB47BC', colorTw: 'bg-purple-500'  },
   personalizado:    { label: 'Uso personalizado',         descripcion: 'Definí el uso específico',                   color: '#9C27B0', colorTw: 'bg-purple-600'  },
 };
 

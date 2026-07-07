@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 
 const BASE      = 'https://api.opentopodata.org/v1/srtm30m';
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -24,12 +24,15 @@ export async function GET(req: Request) {
 
   const normed   = normalizeLocs(locations);
   const cacheKey = `https://terreno-cache/elevacion?locs=${encodeURIComponent(normed)}`;
+  const dbKey    = await claveHash('elev', normed);
   const cache    = await openCache();
 
   if (cache) {
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { status: 200, headers: HDRS });
   }
+  const dbHit = await cacheGet<{ raw: string }>(dbKey);
+  if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
   const res  = await fetch(`${BASE}?locations=${encodeURIComponent(locations)}`, { signal: AbortSignal.timeout(25_000) });
   const text = await res.text();
@@ -39,6 +42,7 @@ export async function GET(req: Request) {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` },
     }));
   }
+  if (res.ok) await cacheSet(dbKey, { raw: text }, CACHE_TTL);
 
   return new Response(text, { status: res.status, headers: HDRS });
 }
@@ -57,12 +61,15 @@ export async function POST(req: Request) {
 
   const normed   = normalizeLocs(locs);
   const cacheKey = `https://terreno-cache/elevacion?locs=${encodeURIComponent(normed)}`;
+  const dbKey    = await claveHash('elev', normed);
   const cache    = await openCache();
 
   if (cache) {
     const hit = await cache.match(cacheKey);
     if (hit) return new Response(hit.body, { status: 200, headers: HDRS });
   }
+  const dbHit = await cacheGet<{ raw: string }>(dbKey);
+  if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
   const res  = await fetch(`${BASE}?locations=${encodeURIComponent(locs)}`, { signal: AbortSignal.timeout(30_000) });
   const text = await res.text();
@@ -72,6 +79,7 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` },
     }));
   }
+  if (res.ok) await cacheSet(dbKey, { raw: text }, CACHE_TTL);
 
   return new Response(text, { status: res.status, headers: HDRS });
 }

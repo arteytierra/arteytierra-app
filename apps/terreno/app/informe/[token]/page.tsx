@@ -3,8 +3,15 @@ import { notFound } from 'next/navigation';
 import { InformeView } from '@/components/InformeView';
 import type { InformeData } from '@/lib/informe';
 import type { DatosClima } from '@/lib/clima';
+import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
+import type { DatosSuelo } from '@/lib/suelos';
+import type { RedAguaResumen } from '@/lib/hidraulica';
+import type { RepresaResumen } from '@/lib/represa';
+import type { RiegoResumen } from '@/lib/riego';
+import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
+import type { Zona } from '@/lib/zonificacion';
 import type { Mojon } from '@/lib/types';
 import { calcularMetricas } from '@/lib/geometria';
 
@@ -39,8 +46,18 @@ export default async function InformeTokenPage({ params }: PageProps) {
     mojones,
     metricas: calcularMetricas(mojones) ?? undefined,
     clima:    meta['clima'] as DatosClima | undefined,
+    extremos: meta['extremos'] as Extremos | undefined,
     topo:     meta['topo'] as DatosTopografia | undefined,
     captacion: meta['captacion'] as CaptacionSnapshot | undefined,
+    suelo:    meta['suelo'] as DatosSuelo | undefined,
+    redAgua:  meta['red_agua'] as RedAguaResumen | undefined,
+    represa:  meta['represa'] as RepresaResumen | undefined,
+    riego:    meta['riego'] as RiegoResumen | undefined,
+    cobertura: (() => {
+      const c = meta['cobertura'] as DatosCobertura | undefined;
+      return c && Array.isArray(c.items) ? resumirCobertura(c) : undefined;
+    })(),
+    zonas:    meta['zonas'] as Zona[] | undefined,
   };
 
   return <InformeView datos={informeData} compartido />;
