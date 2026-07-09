@@ -8,7 +8,7 @@ import {
   Layers, Sun, LayoutGrid, Compass, Waves, Route,
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
-  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees,
+  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, History,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -30,6 +30,7 @@ import { RedAguaPanel } from './RedAguaPanel';
 import { PastoreoPanel } from './PastoreoPanel';
 import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
+import { EntornoPanel } from './EntornoPanel';
 import { calcularMetricas } from '@/lib/geometria';
 import * as turf from '@turf/turf';
 import { decimalAGMS } from '@/lib/coordenadas';
@@ -54,6 +55,7 @@ import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen } from '@/lib/riego';
 import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
+import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
 import { SugerenciasPanel } from './SugerenciasPanel';
 import { DibujoToolbar } from './DibujoToolbar';
@@ -100,8 +102,11 @@ const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
   ),
 });
 
+const Vista3D = dynamic(() => import('./Vista3D').then(m => m.Vista3D), { ssr: false });
+const VistaHistorica = dynamic(() => import('./VistaHistorica').then(m => m.VistaHistorica), { ssr: false });
+
 type Tab =
-  | 'mojones' | 'clima'  | 'contexto' | 'topo'    | 'suelo'   | 'cobertura'
+  | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'prod'   | 'aptitud'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
   | 'proyectos';
@@ -213,6 +218,8 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [potrerosLayer,  setPotrerosLayer]  = useState<PotrerosLayout | null>(null);
   const [datosCobertura, setDatosCobertura] = useState<DatosCobertura | null>(null);
   const [coberturaResumen, setCoberturaResumen] = useState<CoberturaResumen | null>(null);
+  const [datosEntorno,   setDatosEntorno]   = useState<DatosEntorno | null>(null);
+  const [entornoResumen, setEntornoResumen] = useState<EntornoResumen | null>(null);
 
   // ─── Terrarium rango auto-detectado ──────────────────────────────────────
   const [terrariumRango, setTerrariumRango] = useState<{min: number; max: number} | null>(null);
@@ -232,6 +239,8 @@ export function MapaTerrenoApp({ userName }: Props) {
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
+  const [show3D,           setShow3D]            = useState(false);
+  const [showHistorico,    setShowHistorico]     = useState(false);
 
   // ─── Capas de usuario: visibilidad (no undoable) y capa activa ────────────
   const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
@@ -372,6 +381,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (riegoResumen)    m['riego']    = riegoResumen;
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
     if (datosCobertura)  m['cobertura'] = datosCobertura;
+    if (datosEntorno)    m['entorno']  = datosEntorno;
     if (zonas.length)    m['zonas']    = zonas;
     if (sectores.length) m['sectores'] = sectores;
     if (pines.length)    m['pines']    = pines;
@@ -393,7 +403,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, datosEntorno, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1467,6 +1477,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
     setPotrerosLayer((meta['potreros']  as PotrerosLayout)  ?? null);
     setDatosCobertura((meta['cobertura'] as DatosCobertura) ?? null);
+    setDatosEntorno((meta['entorno']    as DatosEntorno)    ?? null);
     // Overlay de plano, rótulo, título de captura e intervalo de curvas
     setOverlay((meta['overlay'] as OverlayImagen) ?? null);
     if (meta['rotulo']) setRotulo(meta['rotulo'] as Rotulo);
@@ -1552,11 +1563,12 @@ export function MapaTerrenoApp({ userName }: Props) {
       redAgua: redAguaResumen ?? undefined, represa: represaResumen ?? undefined,
       riego: riegoResumen ?? undefined,
       cobertura: coberturaResumen ?? undefined,
+      entorno: entornoResumen ?? undefined,
       zonas: zonas.length ? zonas : undefined,
       mapaDataUrl,
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, zonas]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas]);
 
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [guardandoPng, setGuardandoPng] = useState(false);
@@ -1630,6 +1642,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     { id: 'mojones'  as Tab, label: 'Mojones', icon: <MapPin       className="w-3.5 h-3.5" /> },
     { id: 'clima'    as Tab, label: 'Clima',   icon: <Cloud        className="w-3.5 h-3.5" /> },
     { id: 'contexto' as Tab, label: 'Contexto',icon: <Leaf         className="w-3.5 h-3.5" /> },
+    { id: 'entorno'  as Tab, label: 'Entorno', icon: <Bird         className="w-3.5 h-3.5" /> },
     { id: 'topo'     as Tab, label: 'Topo',    icon: <Mountain     className="w-3.5 h-3.5" /> },
     { id: 'suelo'    as Tab, label: 'Suelo',   icon: <Layers       className="w-3.5 h-3.5" /> },
     { id: 'cobertura' as Tab, label: 'Cobertura', icon: <Trees      className="w-3.5 h-3.5" /> },
@@ -1988,6 +2001,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
+          {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
           {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'solar' && (
             <div className="px-4 py-4">
@@ -2166,15 +2180,37 @@ export function MapaTerrenoApp({ userName }: Props) {
 
         {/* ── Panel derecho: Capas / Sugerencias ── */}
         <div className="absolute top-3 right-3 z-[1000] no-print">
-          {/* Botón toggle */}
+          {/* Botones toggle */}
           {panelDerecho === null && (
-            <button
-              onClick={() => setPanelDerecho('capas')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Capas
-            </button>
+            <div className="flex items-center gap-1.5">
+              {mojones.length >= 3 && (
+                <button
+                  onClick={() => setShowHistorico(true)}
+                  title="Imagen satelital histórica"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  Histórico
+                </button>
+              )}
+              {mojones.length >= 3 && (
+                <button
+                  onClick={() => setShow3D(true)}
+                  title="Vista 3D del relieve"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
+                >
+                  <Mountain className="w-3.5 h-3.5" />
+                  3D
+                </button>
+              )}
+              <button
+                onClick={() => setPanelDerecho('capas')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Capas
+              </button>
+            </div>
           )}
 
           {/* Panel de Capas */}
@@ -2576,6 +2612,12 @@ export function MapaTerrenoApp({ userName }: Props) {
       {/* ─── Paleta de comandos (Ctrl+K) y atajos (?) ───────────────────────── */}
       {paletaOpen && <ComandoPalette comandos={comandos} onClose={() => setPaletaOpen(false)} />}
       {ayudaOpen  && <AtajosAyuda onClose={() => setAyudaOpen(false)} />}
+
+      {/* ─── Vista 3D (MapLibre) ────────────────────────────────────────────── */}
+      {show3D && mojones.length >= 3 && <Vista3D mojones={mojones} onClose={() => setShow3D(false)} />}
+
+      {/* ─── Imagen histórica (Wayback) ─────────────────────────────────────── */}
+      {showHistorico && mojones.length >= 3 && <VistaHistorica mojones={mojones} onClose={() => setShowHistorico(false)} />}
 
       {/* ─── Modal global ──────────────────────────────────────────────────── */}
       <Modal modal={modal} onClose={() => setModal(null)} />

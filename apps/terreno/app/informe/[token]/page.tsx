@@ -11,6 +11,7 @@ import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen } from '@/lib/riego';
 import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
+import { resumirEntorno, type DatosEntorno } from '@/lib/entorno';
 import type { Zona } from '@/lib/zonificacion';
 import type { Mojon } from '@/lib/types';
 import { calcularMetricas } from '@/lib/geometria';
@@ -56,6 +57,10 @@ export default async function InformeTokenPage({ params }: PageProps) {
     cobertura: (() => {
       const c = meta['cobertura'] as DatosCobertura | undefined;
       return c && Array.isArray(c.items) ? resumirCobertura(c) : undefined;
+    })(),
+    entorno: (() => {
+      const e = meta['entorno'] as DatosEntorno | undefined;
+      return e && (e.biodiversidad || e.ubicacion) ? resumirEntorno(e) : undefined;
     })(),
     zonas:    meta['zonas'] as Zona[] | undefined,
   };

@@ -24,6 +24,7 @@ export function InformeView({ datos, compartido = false }: Props) {
     captacion: !!datos.captacion,
     suelo:     !!datos.suelo,
     cobertura: !!datos.cobertura,
+    entorno:   !!datos.entorno,
     redAgua:   !!datos.redAgua,
     represa:   !!datos.represa,
     riego:     !!datos.riego,
@@ -31,7 +32,7 @@ export function InformeView({ datos, compartido = false }: Props) {
   };
   const sec: Record<string, number> = {};
   let _c = 1; // 1 = Datos del terreno
-  (['clima', 'extremos', 'contexto', 'topo', 'captacion', 'suelo', 'cobertura', 'redAgua', 'represa', 'riego', 'zonas'] as const).forEach(k => {
+  (['clima', 'extremos', 'contexto', 'entorno', 'topo', 'captacion', 'suelo', 'cobertura', 'redAgua', 'represa', 'riego', 'zonas'] as const).forEach(k => {
     if (presente[k]) sec[k] = ++_c;
   });
 
@@ -293,6 +294,34 @@ export function InformeView({ datos, compartido = false }: Props) {
             </Section>
           );
         })()}
+
+        {/* ── Contexto vivo (biodiversidad y entorno) ── */}
+        {datos.entorno && (
+          <Section numero={sec.entorno!} titulo="Contexto vivo (biodiversidad y entorno)">
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <StatBlock label="Registros GBIF" value={datos.entorno.total_bio.toLocaleString('es-AR')} sub={`en ${datos.entorno.radio_km} km`} />
+              <StatBlock label="Fauna" value={datos.entorno.fauna.toLocaleString('es-AR')} sub="registros" />
+              <StatBlock label="Flora" value={datos.entorno.flora.toLocaleString('es-AR')} sub="registros" />
+              <StatBlock label="Amenazadas" value={String(datos.entorno.amenazadas)} sub="registros IUCN" />
+            </div>
+            {datos.entorno.ubicacion && (
+              <p className="text-sm text-ink-700/80 mb-3">Ubicación: {datos.entorno.ubicacion}.</p>
+            )}
+            {datos.entorno.especies_top.length > 0 && (
+              <Table
+                head={['Especie más observada', 'Registros']}
+                rows={datos.entorno.especies_top.map(e => [e.nombre, e.obs.toLocaleString('es-AR')])}
+                colAlign={['left', 'right']}
+              />
+            )}
+            {datos.entorno.areas_protegidas.length > 0 && (
+              <p className="text-xs text-ink-700/70 mt-2">Áreas protegidas cercanas: {datos.entorno.areas_protegidas.slice(0, 4).join(', ')}.</p>
+            )}
+            <p className="text-xs text-ink-700/50 mt-2 italic">
+              GBIF (biodiversidad) + OpenStreetMap — datos abiertos de ciencia ciudadana, orientativos.
+            </p>
+          </Section>
+        )}
 
         {/* ── 3. Topografía ── */}
         {datos.topo && (

@@ -11,6 +11,7 @@ import type { RedAguaResumen }   from './hidraulica';
 import type { RepresaResumen }   from './represa';
 import type { RiegoResumen }     from './riego';
 import type { CoberturaResumen } from './cobertura';
+import type { EntornoResumen }   from './entorno';
 import type { Zona }             from './zonificacion';
 import type { Mojon }            from './types';
 import type { MetricasPoligono } from './geometria';
@@ -29,6 +30,7 @@ export interface InformeData {
   represa?:   RepresaResumen;
   riego?:     RiegoResumen;
   cobertura?: CoberturaResumen;
+  entorno?:   EntornoResumen;
   zonas?:     Zona[];
   mapaDataUrl?: string;         // PNG del mapa capturado (base64)
 }
