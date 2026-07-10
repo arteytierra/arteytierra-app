@@ -230,11 +230,16 @@ export function SiteHeader({
       onCartClick={show}
       extras={
         <span className="inline-flex items-center gap-2">
-          <LanguageSwitcher current={resolvedLocale} enabled={enabled} />
+          {/* En móvil el selector de idioma va dentro del menú (mobileExtras);
+              acá sólo se muestra desde lg para no desbordar la barra. */}
+          <span className="hidden lg:inline-flex">
+            <LanguageSwitcher current={resolvedLocale} enabled={enabled} />
+          </span>
           <NotificationBell userId={userId ?? null} />
           <SearchTrigger />
         </span>
       }
+      mobileExtras={<LanguageSwitcher current={resolvedLocale} enabled={enabled} />}
       LinkComponent={Link}
     />
   );

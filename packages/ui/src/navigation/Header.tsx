@@ -17,6 +17,8 @@ interface HeaderProps {
   cartCount?: number;
   onCartClick?: () => void;
   extras?: React.ReactNode;
+  /** Controles que se muestran sólo dentro del menú móvil (drawer), no en la barra superior. */
+  mobileExtras?: React.ReactNode;
   className?: string;
   LinkComponent?: React.ElementType;
 }
@@ -83,6 +85,7 @@ export function Header({
   cartCount,
   onCartClick,
   extras,
+  mobileExtras,
   className,
   LinkComponent = 'a',
 }: HeaderProps) {
@@ -146,6 +149,11 @@ export function Header({
       {open && (
         <div className="lg:hidden border-t border-ink-950/5 bg-bone-50 animate-fade-up">
           <nav className="mx-auto max-w-wide px-6 py-6 flex flex-col gap-1">
+            {mobileExtras && (
+              <div className="flex items-center justify-center pb-4 mb-2 border-b border-ink-950/5">
+                {mobileExtras}
+              </div>
+            )}
             {items.map((it) =>
               it.children?.length ? (
                 <div key={it.href}>
