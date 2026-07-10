@@ -34,6 +34,11 @@ export function Vista3D({ onClose, ...datos }: Props) {
    * datos encontraba las fuentes inexistentes y no volvía a intentarlo.
    */
   const [estiloListo, setEstiloListo] = useState(false);
+  /** El MDE ya llegó y el relieve está aplicado. */
+  const [relieveListo, setRelieveListo] = useState(false);
+  /** La exageración vigente, para leerla desde el callback de `sourcedata`. */
+  const exagRef = useRef(1.6);
+  exagRef.current = exag;
 
   // `datos` es un objeto nuevo en cada render (viene de un rest spread), así que
   // memorizamos contra sus campos y no contra su identidad.
@@ -47,6 +52,7 @@ export function Vista3D({ onClose, ...datos }: Props) {
     if (!contRef.current || mojones.length < 3) return;
     let cancelado = false;
     setEstiloListo(false);   // el mapa se recrea: las capas todavía no existen
+    setRelieveListo(false);
 
     const lats = mojones.map(m => m.lat), lngs = mojones.map(m => m.lng);
     const bounds: [[number, number], [number, number]] = [
@@ -74,7 +80,9 @@ export function Vista3D({ onClose, ...datos }: Props) {
           },
         },
         layers: [{ id: 'sat', type: 'raster', source: 'sat' }],
-        terrain: { source: 'dem', exaggeration: 1.6 },
+        // Sin `terrain` acá a propósito: con el relieve en el estilo, MapLibre no
+        // dibuja *nada* —ni la imagen satelital— hasta tener las teselas del MDE,
+        // que tardan segundos. Lo activamos abajo, cuando la fuente `dem` cargó.
         sky: { 'sky-color': '#7db4e6', 'horizon-color': '#e8dcc0', 'fog-color': '#d8d0c0', 'sky-horizon-blend': 0.6 } as unknown as maplibregl.SkySpecification,
       },
       bounds,
@@ -146,16 +154,62 @@ export function Vista3D({ onClose, ...datos }: Props) {
       // emojis de los pines no existen como glyph SDF. MapLibre eleva los Marker
       // sobre el relieve por su cuenta.
 
-      // Reencuadrar al predio ya con el canvas a tamaño completo. `fitBounds` no
-      // tiene en cuenta la inclinación, así que encuadramos en planta y recién
-      // después inclinamos; si no, el predio queda arrinconado arriba.
-      map.fitBounds(bounds, { padding: 90, pitch: 0, bearing: 0, duration: 0 });
-      map.easeTo({ pitch: 62, bearing: -15, duration: 0 });
+      encuadrar();
       setEstiloListo(true);
       setCargando(false);
     };
     if (map.isStyleLoaded()) alEstiloListo();
     else map.once('style.load', alEstiloListo);
+
+    // `fitBounds` no tiene en cuenta la inclinación, así que encuadramos en planta
+    // y recién después inclinamos; si no, el predio queda arrinconado arriba.
+    function encuadrar() {
+      map.fitBounds(bounds, { padding: 90, pitch: 0, bearing: 0, duration: 0 });
+      map.easeTo({ pitch: 62, bearing: -15, duration: 0 });
+    }
+
+    /**
+     * `fitBounds` tampoco tiene en cuenta la elevación: con el relieve puesto el
+     * suelo sube cientos de metros hacia la cámara y el predio se sale de cuadro.
+     * `project()` sí proyecta sobre el terreno, así que alejamos hasta que los
+     * mojones entren, comprobándolo en pantalla.
+     */
+    function encajarPredio() {
+      const margen = 60;
+      for (let i = 0; i < 8; i++) {
+        const pts = mojones.map(m => map.project([m.lng, m.lat]));
+        const { innerWidth: W, innerHeight: H } = window;
+        const entra = pts.every(p => p.x > margen && p.x < W - margen && p.y > margen && p.y < H - margen);
+        if (entra) return;
+        map.setZoom(map.getZoom() - 0.3);
+      }
+    }
+
+    /**
+     * El relieve se activa recién después del primer render, con la imagen
+     * satelital ya en pantalla. Si `terrain` va en el estilo inicial, MapLibre no
+     * dibuja nada hasta tener las teselas del MDE (segundos, en blanco).
+     *
+     * Tiene que ser acá y no antes: una fuente `raster-dem` sin nadie que la use
+     * no pide una sola tesela, así que esperar a que "cargue" sin activar el
+     * relieve espera para siempre.
+     */
+    map.once('idle', () => {
+      if (cancelado || !map.getSource('dem')) return;
+      try { map.setTerrain({ source: 'dem', exaggeration: exagRef.current }); }
+      catch { /* el mapa se destruyó mientras tanto */ }
+    });
+
+    /** Cuando llega la primera tesela del MDE, el relieve ya se ve: reencuadramos. */
+    const alCargarFuente = (e: maplibregl.MapSourceDataEvent) => {
+      if (cancelado || e.sourceId !== 'dem' || !e.tile || !map.isSourceLoaded('dem')) return;
+      map.off('sourcedata', alCargarFuente);
+      setRelieveListo(true);
+      // El relieve levanta el suelo hacia la cámara y `fitBounds` no lo tiene en
+      // cuenta: reencuadramos recién cuando el terreno terminó de asentarse.
+      map.once('idle', () => { if (!cancelado) { encuadrar(); encajarPredio(); } });
+    };
+    map.on('sourcedata', alCargarFuente);
 
     // Los errores de tiles no son fatales, pero silenciar todo escondería también
     // los errores de estilo (expresiones, capas), que sí importan.
@@ -167,13 +221,12 @@ export function Vista3D({ onClose, ...datos }: Props) {
     return () => { cancelado = true; clearTimeout(t); clearTimeout(t1); clearTimeout(t2); ro.disconnect(); map.remove(); mapRef.current = null; };
   }, [mojones]);
 
-  // Exageración vertical en vivo
+  // Exageración vertical en vivo (sólo una vez que el relieve está activo)
   useEffect(() => {
     const map = mapRef.current;
-    if (map && map.getSource('dem')) {
-      try { map.setTerrain({ source: 'dem', exaggeration: exag }); } catch { /* aún no listo */ }
-    }
-  }, [exag]);
+    if (!map || !relieveListo) return;
+    try { map.setTerrain({ source: 'dem', exaggeration: exag }); } catch { /* aún no listo */ }
+  }, [exag, relieveListo]);
 
   // Vuelca los vectores del plano 2D. Corre también cuando el usuario prende o
   // apaga capas en el 2D con la Vista 3D abierta.
@@ -227,7 +280,9 @@ export function Vista3D({ onClose, ...datos }: Props) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[10000] bg-ink-900">
+    // `vista-3d` cancela el invert del tema oscuro: sin eso el fondo se vuelve
+    // casi blanco y la espera parece una pantalla en blanco rota.
+    <div className="vista-3d fixed inset-0 z-[10000] bg-ink-900">
       {/* Estilo inline: MapLibre agrega `.maplibregl-map{position:relative}` al
           contenedor y pisaría un `absolute inset-0` de clase → el div colapsaría
           a altura 0. Con estilo inline forzamos que ocupe toda la pantalla. */}
@@ -236,8 +291,15 @@ export function Vista3D({ onClose, ...datos }: Props) {
       {cargando && (
         <div className="absolute inset-0 flex items-center justify-center bg-ink-900/70 pointer-events-none">
           <div className="flex items-center gap-2 text-bone-50 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin" /> Cargando relieve 3D…
+            <Loader2 className="w-5 h-5 animate-spin" /> Cargando la imagen satelital…
           </div>
+        </div>
+      )}
+      {/* La imagen ya se ve; el relieve llega después (el MDE tarda unos segundos). */}
+      {!cargando && !relieveListo && (
+        <div className="absolute bottom-9 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-ink-900/80 backdrop-blur rounded-full px-3 py-1.5 border border-bone-50/15 pointer-events-none">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-bone-50/70" />
+          <span className="text-bone-50/80 text-[11px]">Levantando el relieve…</span>
         </div>
       )}
       {error && (

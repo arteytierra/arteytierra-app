@@ -13,7 +13,10 @@ export async function GET(req: Request) {
     status: 200,
     headers: {
       'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=86400, immutable',
+      // `max-age` sólo cachea en el navegador: sin `s-maxage` el CDN de Vercel no
+      // guarda nada y cada tesela vuelve a pedirle a S3 desde la función (~3,7 s).
+      // El relieve es inmutable, así que se puede cachear por un año.
+      'Cache-Control': 'public, max-age=86400, s-maxage=31536000, stale-while-revalidate=86400, immutable',
       'Access-Control-Allow-Origin': '*',
     },
   });
