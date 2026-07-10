@@ -16,10 +16,12 @@ import { construirVectores3D, type DatosVectores } from '@/lib/vectores3d';
 
 interface Props extends DatosVectores {
   mojones: Mojon[];
+  /** Zoom máximo con imagen satelital real en esta zona. */
+  zoomSatelital?: number;
   onClose: () => void;
 }
 
-export function Vista3D({ onClose, ...datos }: Props) {
+export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
   const { mojones } = datos;
   const contRef = useRef<HTMLDivElement>(null);
   const mapRef  = useRef<maplibregl.Map | null>(null);
@@ -69,6 +71,9 @@ export function Vista3D({ onClose, ...datos }: Props) {
             type: 'raster',
             tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
             tileSize: 256,
+            // Pasado este nivel Esri devuelve la tesela "Map data not yet available";
+            // con `maxzoom` MapLibre reescala la última real.
+            maxzoom: zoomSatelital,
             attribution: 'Esri World Imagery',
           },
           dem: {
@@ -219,7 +224,8 @@ export function Vista3D({ onClose, ...datos }: Props) {
     const t = setTimeout(() => { if (!cancelado) setCargando(false); }, 12_000);
 
     return () => { cancelado = true; clearTimeout(t); clearTimeout(t1); clearTimeout(t2); ro.disconnect(); map.remove(); mapRef.current = null; };
-  }, [mojones]);
+    // `zoomSatelital` viaja en el estilo: si cambia hay que rehacer el mapa.
+  }, [mojones, zoomSatelital]);
 
   // Exageración vertical en vivo (sólo una vez que el relieve está activo)
   useEffect(() => {

@@ -351,6 +351,24 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   // Mapa de sombras (D4): calcula sobre la grilla densa según fecha/hora.
   const latCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lat, 0) / mojones.length : null, [mojones]);
+  const lngCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lng, 0) / mojones.length : null, [mojones]);
+
+  /**
+   * Hasta qué zoom hay imagen satelital real acá. Esri no da 404 cuando no tiene:
+   * devuelve una tesela que dice "Map data not yet available". Se consulta una vez
+   * por terreno; redondeamos las coordenadas para que el CDN reutilice la respuesta.
+   */
+  const [zoomSatelital, setZoomSatelital] = useState(18);
+  useEffect(() => {
+    if (latCentro == null || lngCentro == null) return;
+    const lat = latCentro.toFixed(2), lng = lngCentro.toFixed(2);
+    let vivo = true;
+    fetch(`/api/zoom-satelital?lat=${lat}&lng=${lng}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (vivo && j?.zoom) setZoomSatelital(j.zoom); })
+      .catch(() => { /* nos quedamos con 18 */ });
+    return () => { vivo = false; };
+  }, [latCentro, lngCentro]);
   const sombras = useMemo(
     () => (sombrasActivo && datosShader && latCentro != null)
       ? calcularSombras(datosShader, latCentro, sombrasDoy, sombrasHora, sombrasObjetos)
@@ -2520,6 +2538,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           perfilPunto={perfilPunto}
           dibujando={!!dibujando}
           datosShader={datosShader}
+          zoomSatelital={zoomSatelital}
           sombras={sombras}
           sombrasObjetos={sombrasObjetos}
           insolacion={insolacion}
@@ -2816,6 +2835,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           curvas={curvasNivel}
           colorCurvas={colorCurvas}
           capas={capas}
+          zoomSatelital={zoomSatelital}
           onClose={() => setShow3D(false)}
         />
       )}

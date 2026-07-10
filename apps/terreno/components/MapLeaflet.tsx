@@ -927,6 +927,8 @@ interface Props {
   caminoEnDibujado?: Array<{ lat: number; lng: number }> | null;
   dibujando?:         boolean;
   datosShader?:       DatosShader | null;
+  /** Zoom máximo con imagen satelital real en esta zona (lo mide /api/zoom-satelital). */
+  zoomSatelital?:     number;
   sombras?:           ResultadoSombras | null;
   /** Objetos con altura, para dibujarlos sobre el mapa. */
   sombrasObjetos?:    ObjetoSombra[];
@@ -1008,6 +1010,8 @@ function MapLeaflet({
   caminos = [], caminoEnDibujado = null, perfilPunto = null,
   dibujando = false,
   datosShader = null,
+  // 18 es lo que hay en zona rural; se ajusta apenas responde /api/zoom-satelital.
+  zoomSatelital = 18,
   sombras = null,
   sombrasObjetos = [],
   insolacion = null,
@@ -1087,11 +1091,15 @@ function MapLeaflet({
         {/* ── Tiles ── */}
         {capa === 'satelite' ? (
           <>
-            {/* maxNativeZoom 19: si la tile no existe en zoom > 19, Leaflet escala la de zoom 19 */}
+            {/* Más allá de `maxNativeZoom` Esri no devuelve 404 sino una tesela que
+                dice "Map data not yet available". La cobertura varía por zona (18 en
+                el campo, 20 en una ciudad), así que la mide /api/zoom-satelital y
+                Leaflet escala la última tesela real en vez de pedir el cartel. */}
             <TileLayer
+              key={`sat-${zoomSatelital}`}
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               attribution='Tiles &copy; Esri'
-              maxNativeZoom={19}
+              maxNativeZoom={zoomSatelital}
               maxZoom={22}
               crossOrigin="anonymous"
             />
