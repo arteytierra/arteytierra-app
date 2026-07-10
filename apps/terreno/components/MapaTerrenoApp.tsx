@@ -8,7 +8,7 @@ import {
   Layers, Sun, LayoutGrid, Compass, Waves, Route,
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
-  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, History,
+  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, History, SunDim,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -31,6 +31,9 @@ import { PastoreoPanel } from './PastoreoPanel';
 import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
 import { EntornoPanel } from './EntornoPanel';
+import { SombrasPanel } from './SombrasPanel';
+import { calcularSombras } from '@/lib/sombras';
+import { calcularViewshed, type ResultadoViewshed } from '@/lib/viewshed';
 import { calcularMetricas } from '@/lib/geometria';
 import * as turf from '@turf/turf';
 import { decimalAGMS } from '@/lib/coordenadas';
@@ -107,7 +110,7 @@ const VistaHistorica = dynamic(() => import('./VistaHistorica').then(m => m.Vist
 
 type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
-  | 'agua'    | 'cal'    | 'solar'   | 'prod'   | 'aptitud'
+  | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
   | 'proyectos';
 
@@ -212,6 +215,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
   const [modoCuenca,  setModoCuenca]  = useState(false);
   const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
+  const [modoViewshed, setModoViewshed] = useState(false);
+  const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
+  const [alturaObs,   setAlturaObs]   = useState(1.7);
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
   const [represaResumen, setRepresaResumen] = useState<RepresaResumen | null>(null);
   const [riegoResumen,   setRiegoResumen]   = useState<RiegoResumen | null>(null);
@@ -235,12 +241,15 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [capas, setCapas] = useState<CapasVisibles>({
     terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
     shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false,
-    linderoLabels: false, curvasNivel: false, cotas: true, medidas: true,
+    linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
+  const [sombrasActivo,    setSombrasActivo]     = useState(false);
+  const [sombrasDoy,       setSombrasDoy]        = useState(355);
+  const [sombrasHora,      setSombrasHora]       = useState(9);
 
   // ─── Capas de usuario: visibilidad (no undoable) y capa activa ────────────
   const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
@@ -329,7 +338,14 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || (modoDibujo && modoDibujo !== 'seleccion');
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || (modoDibujo && modoDibujo !== 'seleccion');
+
+  // Mapa de sombras (D4): calcula sobre la grilla densa según fecha/hora.
+  const latCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lat, 0) / mojones.length : null, [mojones]);
+  const sombras = useMemo(
+    () => (sombrasActivo && datosShader && latCentro != null) ? calcularSombras(datosShader, latCentro, sombrasDoy, sombrasHora) : null,
+    [sombrasActivo, datosShader, latCentro, sombrasDoy, sombrasHora],
+  );
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
@@ -545,6 +561,14 @@ export function MapaTerrenoApp({ userName }: Props) {
       }
       return;
     }
+    if (modoViewshed) {
+      setModoViewshed(false);
+      if (datosShader) {
+        const celda = celdaEnPunto(datosShader, lat, lng);
+        if (celda) setViewshed(calcularViewshed(datosShader, celda.row, celda.col, alturaObs));
+      }
+      return;
+    }
     if (modoZona)    { setModoZona(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoSector)  { setModoSector(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
     if (modoCamino)  { setModoCamino(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
@@ -623,7 +647,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoCuenca, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modoCuenca, modoViewshed, alturaObs, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -858,7 +882,15 @@ export function MapaTerrenoApp({ userName }: Props) {
   ), [mojones]);
 
   const handleExportarDXF = useCallback(() => {
-    const dxf = exportarDXF(dibujos, mojones, origenGeo());
+    const linderos = (metricas && mojones.length >= 3)
+      ? metricas.linderos.map((l, i) => ({ a: mojones[i]!, b: mojones[(i + 1) % mojones.length]!, longitud: l.longitud }))
+      : [];
+    const dxf = exportarDXF(dibujos, mojones, origenGeo(), {
+      zonas: zonas.map(z => ({ vertices: z.vertices, nombre: z.nombre })),
+      sectores: sectores.map(s => ({ vertices: s.vertices, nombre: s.nombre })),
+      caminos: caminos.map(c => ({ vertices: c.vertices, nombre: c.nombre })),
+      linderos,
+    });
     const blob = new Blob([dxf], { type: 'application/dxf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -866,7 +898,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     a.download = `${(proyectoActual?.nombre ?? 'terreno').replace(/[^\w-]/g, '_')}.dxf`;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-  }, [dibujos, mojones, origenGeo, proyectoActual]);
+  }, [dibujos, mojones, origenGeo, proyectoActual, metricas, zonas, sectores, caminos]);
 
   const handleImportarDXF = useCallback((file: File) => {
     const reader = new FileReader();
@@ -921,6 +953,18 @@ export function MapaTerrenoApp({ userName }: Props) {
     };
     reader.readAsDataURL(file);
   }, [mojones, origenGeo]);
+
+  // Importar GeoTIFF (dron / IGN) — georreferencia automática (D6)
+  const handleCargarGeoTIFF = useCallback(async (file: File) => {
+    try {
+      const { cargarGeoTIFF } = await import('@/lib/geotiffImport');
+      const g = await cargarGeoTIFF(file);
+      setOverlay({ url: g.url, sw: g.sw, ne: g.ne, opacidad: 0.85 });
+      setModal({ type: 'alert', message: `GeoTIFF cargado y georreferenciado (${g.ancho}×${g.alto} px, ${g.bandas} banda${g.bandas !== 1 ? 's' : ''}${g.epsg ? `, EPSG ${g.epsg}` : ''}). Ajustá la opacidad desde el panel CAD.` });
+    } catch (e) {
+      setModal({ type: 'alert', message: e instanceof Error ? e.message : 'No se pudo leer el GeoTIFF.' });
+    }
+  }, []);
 
   const handleOverlayEsquina = useCallback((esq: 'sw' | 'ne' | 'centro', lat: number, lng: number) => {
     setOverlay(prev => {
@@ -1648,6 +1692,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     { id: 'cobertura' as Tab, label: 'Cobertura', icon: <Trees      className="w-3.5 h-3.5" /> },
     { id: 'cal'      as Tab, label: 'Cal.',    icon: <CalendarDays className="w-3.5 h-3.5" /> },
     { id: 'solar'    as Tab, label: 'Solar',   icon: <Sun          className="w-3.5 h-3.5" /> },
+    { id: 'sombras'  as Tab, label: 'Sombras', icon: <SunDim       className="w-3.5 h-3.5" /> },
+    { id: 'visibilidad' as Tab, label: 'Visibilidad', icon: <Eye  className="w-3.5 h-3.5" /> },
     { id: 'prod'     as Tab, label: 'Prod.',   icon: <Wheat        className="w-3.5 h-3.5" /> },
     { id: 'aptitud'  as Tab, label: 'Aptitud', icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
   ];
@@ -2013,6 +2059,63 @@ export function MapaTerrenoApp({ userName }: Props) {
               />
             </div>
           )}
+          {tab === 'sombras' && (
+            <div className="px-4 py-4">
+              <SombrasPanel
+                tieneShader={!!datosShader}
+                activo={sombrasActivo} doy={sombrasDoy} hora={sombrasHora}
+                sombras={sombras}
+                onActivo={setSombrasActivo} onDoy={setSombrasDoy} onHora={setSombrasHora}
+                onIrATopo={() => setTab('topo')}
+              />
+            </div>
+          )}
+          {tab === 'visibilidad' && (
+            <div className="px-4 py-4 space-y-4">
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Visibilidad (viewshed)</p>
+              {!datosShader ? (
+                <p className="text-[11px] text-ink-700/60 bg-bone-50 border border-bone-200 rounded-xl p-3 flex gap-2">
+                  <span className="text-sun-500">⚠</span>
+                  <span>Calculá primero la <button onClick={() => setTab('topo')} className="underline text-moss-700">topografía</button> (grilla densa) para analizar la visibilidad del terreno.</span>
+                </p>
+              ) : (
+                <>
+                  <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-ink-700/60">Altura del observador (m)</span>
+                      <span className="font-mono text-xs text-moss-700">{alturaObs} m</span>
+                    </div>
+                    <input type="range" min={1} max={30} step={0.5} value={alturaObs}
+                      onChange={e => setAlturaObs(Number(e.target.value))} className="w-full accent-moss-700" />
+                    <p className="text-[9px] text-ink-700/45">Persona ≈ 1,7 m · vivienda ≈ 3–6 m · torre/molino ≈ 10–20 m.</p>
+                  </div>
+                  <button onClick={() => setModoViewshed(v => !v)}
+                    className={`w-full flex items-center justify-center gap-2 text-xs font-medium rounded-xl px-3 py-2.5 transition-colors border ${modoViewshed ? 'bg-clay-100 text-clay-700 border-clay-300' : 'bg-moss-700 text-bone-50 border-moss-700 hover:bg-moss-800'}`}>
+                    <Eye className="w-4 h-4" />
+                    {modoViewshed ? 'Hacé clic en el mapa…' : viewshed ? 'Elegir otro punto' : 'Elegir punto de observación'}
+                  </button>
+                  {viewshed && (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-xl border border-moss-200 bg-moss-50 p-2.5">
+                          <p className="text-[10px] text-moss-700/70 mb-0.5">Área visible</p>
+                          <p className="font-mono text-sm font-bold text-moss-700">{viewshed.visibles_pct}%</p>
+                        </div>
+                        <div className="rounded-xl border border-bone-200 bg-white p-2.5">
+                          <p className="text-[10px] text-ink-700/60 mb-0.5">Cota del punto</p>
+                          <p className="font-mono text-sm font-bold text-ink-900">{Math.round(viewshed.origen.elev)} m</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setViewshed(null)} className="w-full text-[11px] text-clay-700 bg-clay-100 border border-clay-200 rounded-lg px-3 py-1.5 hover:bg-clay-200 transition-colors">Limpiar</button>
+                    </>
+                  )}
+                  <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
+                    Verde = superficie visible desde el punto (línea de visión sobre el MDE SRTM 30 m). No considera vegetación ni construcciones. Útil para miradores, torres de agua, cámaras y privacidad.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} /></div>}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} onAgregarCortinas={handleAgregarCortinas} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
@@ -2335,6 +2438,8 @@ export function MapaTerrenoApp({ userName }: Props) {
           perfilPunto={perfilPunto}
           dibujando={!!dibujando}
           datosShader={datosShader}
+          sombras={sombras}
+          viewshed={viewshed}
           datosEscorrentia={datosEscorrentia}
           datosSugerencias={datosSugerencias}
           cuencaPoligono={cuenca?.poligono ?? null}
@@ -2603,6 +2708,7 @@ export function MapaTerrenoApp({ userName }: Props) {
         onImportarDXF={handleImportarDXF}
         overlay={overlay}
         onCargarImagen={handleCargarOverlay}
+        onCargarGeoTIFF={handleCargarGeoTIFF}
         onOpacidadOverlay={op => setOverlay(prev => prev ? { ...prev, opacidad: op } : prev)}
         onQuitarOverlay={() => setOverlay(null)}
         onAbrirPaleta={() => setPaletaOpen(true)}
@@ -2999,6 +3105,12 @@ function PanelCapas({
             onToggle={() => onCapas({ ...capas, cotas: !capas.cotas })}
             label="Cotas (dimensiones)"
             swatch={<span className="w-5 h-2 shrink-0 flex items-center justify-center text-[8px] font-bold text-ink-700">⊢⊣</span>}
+          />
+          <CapaItem
+            visible={capas.cotasAuto}
+            onToggle={() => onCapas({ ...capas, cotasAuto: !capas.cotasAuto })}
+            label="Cotas automáticas (linderos)"
+            swatch={<span className="w-5 h-2 shrink-0 flex items-center justify-center text-[8px] font-bold" style={{ color: '#0277BD' }}>↦⊣</span>}
           />
           <CapaItem
             visible={capas.medidas}
@@ -3582,7 +3694,7 @@ function CursorCoords({ cursorRef }: { cursorRef: React.RefObject<{ lat: number;
 function BarraEstado({
   cursorRef, escala, snapActivo, orthoActivo, onToggleSnap, onToggleOrtho,
   modoLabel, entradaActiva, onEntradaCoord, areaHa, nMojones,
-  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onOpacidadOverlay, onQuitarOverlay,
+  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onCargarGeoTIFF, onOpacidadOverlay, onQuitarOverlay,
   onAbrirPaleta, onAbrirAyuda,
 }: {
   cursorRef:        React.RefObject<{ lat: number; lng: number } | null>;
@@ -3600,6 +3712,7 @@ function BarraEstado({
   onImportarDXF:    (file: File) => void;
   overlay:          OverlayImagen | null;
   onCargarImagen:   (file: File) => void;
+  onCargarGeoTIFF:  (file: File) => void;
   onOpacidadOverlay:(op: number) => void;
   onQuitarOverlay:  () => void;
   onAbrirPaleta:    () => void;
@@ -3686,6 +3799,7 @@ function BarraEstado({
                 onImportarDXF={onImportarDXF}
                 overlay={overlay}
                 onCargarImagen={onCargarImagen}
+                onCargarGeoTIFF={onCargarGeoTIFF}
                 onOpacidad={onOpacidadOverlay}
                 onQuitarImagen={onQuitarOverlay}
               />
@@ -3699,17 +3813,19 @@ function BarraEstado({
 
 // ─── Panel de archivo CAD / plano de referencia ────────────────────────────────
 function PanelArchivoCAD({
-  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onOpacidad, onQuitarImagen,
+  onExportarDXF, onImportarDXF, overlay, onCargarImagen, onCargarGeoTIFF, onOpacidad, onQuitarImagen,
 }: {
   onExportarDXF:  () => void;
   onImportarDXF:  (file: File) => void;
   overlay:        OverlayImagen | null;
   onCargarImagen: (file: File) => void;
+  onCargarGeoTIFF: (file: File) => void;
   onOpacidad:     (op: number) => void;
   onQuitarImagen: () => void;
 }) {
   const dxfRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
+  const tifRef = useRef<HTMLInputElement>(null);
   const btn = 'flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors';
 
   return (
@@ -3746,6 +3862,13 @@ function PanelArchivoCAD({
       )}
       <input ref={imgRef} type="file" accept="image/*" className="hidden"
         onChange={e => { const f = e.target.files?.[0]; if (f) onCargarImagen(f); e.target.value = ''; }} />
+
+      <button onClick={() => tifRef.current?.click()} title="Importar un GeoTIFF de dron o IGN (se georreferencia solo)"
+        className={`${btn} bg-bone-100 hover:bg-bone-200 text-ink-700`}>
+        <ImagePlus className="w-3 h-3" /> GeoTIFF
+      </button>
+      <input ref={tifRef} type="file" accept=".tif,.tiff,image/tiff" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) onCargarGeoTIFF(f); e.target.value = ''; }} />
     </div>
   );
 }

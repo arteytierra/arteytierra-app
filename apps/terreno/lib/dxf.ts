@@ -24,7 +24,16 @@ function toLL(x: number, y: number, o: LL): LL {
 
 // ─── Export ─────────────────────────────────────────────────────────────────
 
-export function exportarDXF(dibujos: ElementoDibujo[], mojones: Mojon[], origen: LL): string {
+/** Capas geográficas extra para exportar (zonas, sectores, caminos, cotas). */
+export interface DXFExtras {
+  zonas?:    Array<{ vertices: LL[]; nombre?: string }>;
+  sectores?: Array<{ vertices: LL[]; nombre?: string }>;
+  caminos?:  Array<{ vertices: LL[]; nombre?: string }>;
+  /** Cotas de lindero: se exportan como TEXT (longitud) en la capa COTAS. */
+  linderos?: Array<{ a: LL; b: LL; longitud: number }>;
+}
+
+export function exportarDXF(dibujos: ElementoDibujo[], mojones: Mojon[], origen: LL, extras?: DXFExtras): string {
   const out: string[] = [];
   const p = (code: number, val: string | number) => { out.push(String(code)); out.push(String(val)); };
 
@@ -44,9 +53,23 @@ export function exportarDXF(dibujos: ElementoDibujo[], mojones: Mojon[], origen:
     p(0, 'LWPOLYLINE'); p(8, capa); p(90, verts.length); p(70, cerrada ? 1 : 0);
     for (const v of verts) { const q = toXY(v, origen); p(10, q.x.toFixed(4)); p(20, q.y.toFixed(4)); }
   };
+  const texto = (v: LL, txt: string, alto: number, capa: string) => {
+    const q = toXY(v, origen);
+    p(0, 'TEXT'); p(8, capa); p(10, q.x.toFixed(4)); p(20, q.y.toFixed(4)); p(40, alto.toFixed(2)); p(1, txt);
+  };
 
   // Predio
   if (mojones.length >= 2) lwpolyline(mojones, mojones.length >= 3, 'PREDIO');
+
+  // Capas geográficas (cada tipo en su capa DXF)
+  for (const z of extras?.zonas    ?? []) lwpolyline(z.vertices, true,  'ZONAS');
+  for (const s of extras?.sectores ?? []) lwpolyline(s.vertices, true,  'SECTORES');
+  for (const c of extras?.caminos  ?? []) lwpolyline(c.vertices, false, 'CAMINOS');
+  // Cotas de lindero → texto con la longitud en el punto medio
+  for (const l of extras?.linderos ?? []) {
+    const mid = { lat: (l.a.lat + l.b.lat) / 2, lng: (l.a.lng + l.b.lng) / 2 };
+    texto(mid, `${l.longitud.toFixed(1)} m`, 4, 'COTAS');
+  }
 
   // Dibujos
   for (const d of dibujos) {

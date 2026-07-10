@@ -27,6 +27,8 @@ import type { Pin } from '@/lib/pines';
 import type { Camino } from '@/lib/caminos';
 import type { DatosShader } from '@/lib/shaders';
 import { colorElevacion, colorPendiente } from '@/lib/shaders';
+import type { ResultadoSombras } from '@/lib/sombras';
+import type { ResultadoViewshed } from '@/lib/viewshed';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
 import type { ResultadoSugerencias } from '@/lib/sugerencias';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
@@ -61,6 +63,7 @@ export interface CapasVisibles {
   linderoLabels:  boolean;
   curvasNivel:    boolean;
   cotas:          boolean;
+  cotasAuto:      boolean;
   medidas:        boolean;
 }
 
@@ -509,6 +512,85 @@ function LinderoLabels({ mojones, metricas }: { mojones: Mojon[]; metricas: Metr
   );
 }
 
+// Cotas automáticas: línea de cota acotada (tipo CAD) por cada lindero, offset
+// hacia afuera, con líneas de extensión, flechas y etiqueta de longitud rotada.
+function CotasAutoLayer({ mojones, metricas }: { mojones: Mojon[]; metricas: MetricasPoligono }) {
+  const COLOR = '#0277BD';
+  const n = mojones.length;
+  const latC = mojones.reduce((s, m) => s + m.lat, 0) / n;
+  const cx = mojones.reduce((s, m) => s + m.lng, 0) / n;
+  const cy = latC;
+  const mLat = 111320;
+  const mLng = 111320 * Math.cos(latC * Math.PI / 180);
+
+  // Offset y tamaño de flecha según el tamaño del predio.
+  const off = Math.max(8, Math.min(35, metricas.perimetro_m / 45));
+  const arrow = Math.max(3, off * 0.28);
+
+  // Helpers en espacio métrico → devuelven {lat,lng}
+  const P = (baseLng: number, baseLat: number, ex: number, ey: number) => ({
+    lat: baseLat + ey / mLat,
+    lng: baseLng + ex / mLng,
+  });
+  const rot = (ux: number, uy: number, deg: number): [number, number] => {
+    const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+    return [ux * c - uy * s, ux * s + uy * c];
+  };
+
+  const elems: React.ReactNode[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const A = mojones[i]!, B = mojones[(i + 1) % n]!;
+    const ex = (B.lng - A.lng) * mLng, ey = (B.lat - A.lat) * mLat;   // vector métrico
+    const len = Math.hypot(ex, ey);
+    if (len < 1) continue;
+    const ux = ex / len, uy = ey / len;
+    // Normal candidata y elección hacia afuera (contraria al centroide)
+    let nx = -uy, ny = ux;
+    const midLng = (A.lng + B.lng) / 2, midLat = (A.lat + B.lat) / 2;
+    const toC = [(cx - midLng) * mLng, (cy - midLat) * mLat];
+    if (nx * toC[0]! + ny * toC[1]! > 0) { nx = -nx; ny = -ny; }
+
+    // Puntos de la línea de cota (offset) y extensiones
+    const Ao = P(A.lng, A.lat, nx * off, ny * off);
+    const Bo = P(B.lng, B.lat, nx * off, ny * off);
+    const Ae = P(A.lng, A.lat, nx * off * 1.15, ny * off * 1.15);
+    const Be = P(B.lng, B.lat, nx * off * 1.15, ny * off * 1.15);
+
+    // Flechas (V) en cada extremo apuntando hacia adentro de la línea
+    const [a1x, a1y] = rot(ux, uy, 155), [a2x, a2y] = rot(ux, uy, -155);
+    const [b1x, b1y] = rot(-ux, -uy, 155), [b2x, b2y] = rot(-ux, -uy, -155);
+    const Aa1 = P(Ao.lng, Ao.lat, a1x * arrow, a1y * arrow);
+    const Aa2 = P(Ao.lng, Ao.lat, a2x * arrow, a2y * arrow);
+    const Ba1 = P(Bo.lng, Bo.lat, b1x * arrow, b1y * arrow);
+    const Ba2 = P(Bo.lng, Bo.lat, b2x * arrow, b2y * arrow);
+
+    const line = { color: COLOR, weight: 1.5, opacity: 0.95, interactive: false } as const;
+    const ext  = { color: COLOR, weight: 1, opacity: 0.6, dashArray: '3 3', interactive: false } as const;
+    elems.push(
+      <Polyline key={`c${i}`}  positions={[[Ao.lat, Ao.lng], [Bo.lat, Bo.lng]]} pathOptions={line} />,
+      <Polyline key={`ea${i}`} positions={[[A.lat, A.lng], [Ae.lat, Ae.lng]]} pathOptions={ext} />,
+      <Polyline key={`eb${i}`} positions={[[B.lat, B.lng], [Be.lat, Be.lng]]} pathOptions={ext} />,
+      <Polyline key={`aa${i}`} positions={[[Aa1.lat, Aa1.lng], [Ao.lat, Ao.lng], [Aa2.lat, Aa2.lng]]} pathOptions={line} />,
+      <Polyline key={`ab${i}`} positions={[[Ba1.lat, Ba1.lng], [Bo.lat, Bo.lng], [Ba2.lat, Ba2.lng]]} pathOptions={line} />,
+    );
+
+    // Etiqueta de longitud, rotada para alinearse con el lindero
+    let ang = Math.atan2(-(B.lat - A.lat) * mLat, (B.lng - A.lng) * mLng) * 180 / Math.PI;
+    if (ang > 90) ang -= 180; else if (ang < -90) ang += 180;
+    const lbl = L.divIcon({
+      className: '',
+      html: `<span style="display:inline-block;transform:rotate(${ang}deg);font-size:10px;font-weight:700;color:${COLOR};font-family:sans-serif;background:rgba(255,255,255,0.9);padding:0 3px;border-radius:2px;white-space:nowrap;">${metricas.linderos[i]!.longitud.toFixed(1)} m</span>`,
+      iconSize: [0, 0], iconAnchor: [0, 0],
+    });
+    elems.push(
+      <Marker key={`lb${i}`} position={[(Ao.lat + Bo.lat) / 2, (Ao.lng + Bo.lng) / 2]} icon={lbl} interactive={false} />,
+    );
+  }
+
+  return <>{elems}</>;
+}
+
 // Capa de curvas de nivel (polilíneas continuas suavizadas)
 function CurvasNivelLayer({ curvas, colorNormal = '#7B1FA2', colorMaestra = '#4527A0' }: {
   curvas: CurvaNivel[];
@@ -756,6 +838,8 @@ interface Props {
   caminoEnDibujado?: Array<{ lat: number; lng: number }> | null;
   dibujando?:         boolean;
   datosShader?:       DatosShader | null;
+  sombras?:           ResultadoSombras | null;
+  viewshed?:          ResultadoViewshed | null;
   datosEscorrentia?:  DatosEscorrentia | null;
   datosSugerencias?:  ResultadoSugerencias | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
@@ -822,7 +906,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, medidas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -832,6 +916,8 @@ function MapLeaflet({
   caminos = [], caminoEnDibujado = null, perfilPunto = null,
   dibujando = false,
   datosShader = null,
+  sombras = null,
+  viewshed = null,
   datosEscorrentia = null,
   datosSugerencias = null,
   cuencaPoligono = null,
@@ -977,6 +1063,7 @@ function MapLeaflet({
         {onGetFlyTo   && <FlyToExposer    onReady={onGetFlyTo} />}
         {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} onRangoDetectado={onRangoTerrarium} />}
         {capas.linderoLabels && metricas && mojones.length >= 3 && <LinderoLabels mojones={mojones} metricas={metricas} />}
+        {capas.cotasAuto && metricas && mojones.length >= 3 && <CotasAutoLayer mojones={mojones} metricas={metricas} />}
         {capas.curvasNivel   && curvasNivel.length > 0 && <CurvasNivelLayer curvas={curvasNivel} colorNormal={colorCurvasNivel?.normal} colorMaestra={colorCurvasNivel?.maestra} />}
 
         {/* ── Shader topográfico (canvas con interpolación bilineal) ── */}
@@ -993,6 +1080,16 @@ function MapLeaflet({
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
             pendMax={datosShader.pend_max} opacidad={opacidadShaderPend}
           />
+        )}
+        {sombras && sombras.celdas.length > 0 && (
+          <SombrasCanvasLayer celdas={sombras.celdas} />
+        )}
+        {viewshed && viewshed.celdas.length > 0 && (
+          <ViewshedCanvasLayer celdas={viewshed.celdas} />
+        )}
+        {viewshed && (
+          <CircleMarker center={[viewshed.origen.lat, viewshed.origen.lng]} radius={6}
+            pathOptions={{ color: '#fff', weight: 2, fillColor: '#1B5E20', fillOpacity: 1 }} />
         )}
 
         {/* ── Escorrentías ── */}
@@ -1651,6 +1748,107 @@ function ShaderCanvasLayer({
     ov.addTo(map);
     return () => { map.removeLayer(ov); };
   }, [map, celdas, tipo, elevMin, elevMax, pendMax, opacidad]);
+  return null;
+}
+
+// ─── Mapa de sombras (canvas negro con alpha por celda) ──────────────────────
+function SombrasCanvasLayer({ celdas }: { celdas: ResultadoSombras['celdas'] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!celdas.length) return;
+    let latMin = Infinity, latMax = -Infinity, lngMin = Infinity, lngMax = -Infinity;
+    let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+    const cellMap = new Map<string, ResultadoSombras['celdas'][0]>();
+    for (const c of celdas) {
+      cellMap.set(`${c.row},${c.col}`, c);
+      if (c.latMin < latMin) latMin = c.latMin;
+      if (c.latMax > latMax) latMax = c.latMax;
+      if (c.lngMin < lngMin) lngMin = c.lngMin;
+      if (c.lngMax > lngMax) lngMax = c.lngMax;
+      if (c.row < minRow) minRow = c.row;
+      if (c.row > maxRow) maxRow = c.row;
+      if (c.col < minCol) minCol = c.col;
+      if (c.col > maxCol) maxCol = c.col;
+    }
+    const H = maxRow - minRow + 1, W = maxCol - minCol + 1;
+    const small = document.createElement('canvas');
+    small.width = W; small.height = H;
+    const sCtx = small.getContext('2d')!;
+    const img = sCtx.createImageData(W, H);
+    const d = img.data;
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        const cell = cellMap.get(`${row},${col}`);
+        const x = col - minCol, y = maxRow - row;
+        const px = (y * W + x) * 4;
+        if (cell) {
+          d[px] = 10; d[px + 1] = 15; d[px + 2] = 30;                 // azul-negro nocturno
+          d[px + 3] = Math.round(Math.max(0, Math.min(0.85, cell.sombra)) * 255);
+        }
+      }
+    }
+    sCtx.putImageData(img, 0, 0);
+    const S = 8;
+    const big = document.createElement('canvas');
+    big.width = W * S; big.height = H * S;
+    const bCtx = big.getContext('2d')!;
+    bCtx.imageSmoothingEnabled = true; bCtx.imageSmoothingQuality = 'high';
+    bCtx.drawImage(small, 0, 0, W * S, H * S);
+    const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
+      opacity: 1, interactive: false, zIndex: 210,
+    });
+    ov.addTo(map);
+    return () => { map.removeLayer(ov); };
+  }, [map, celdas]);
+  return null;
+}
+
+// ─── Viewshed (verde translúcido donde es visible) ────────────────────────────
+function ViewshedCanvasLayer({ celdas }: { celdas: ResultadoViewshed['celdas'] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!celdas.length) return;
+    let latMin = Infinity, latMax = -Infinity, lngMin = Infinity, lngMax = -Infinity;
+    let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+    const cellMap = new Map<string, ResultadoViewshed['celdas'][0]>();
+    for (const c of celdas) {
+      cellMap.set(`${c.row},${c.col}`, c);
+      if (c.latMin < latMin) latMin = c.latMin;
+      if (c.latMax > latMax) latMax = c.latMax;
+      if (c.lngMin < lngMin) lngMin = c.lngMin;
+      if (c.lngMax > lngMax) lngMax = c.lngMax;
+      if (c.row < minRow) minRow = c.row;
+      if (c.row > maxRow) maxRow = c.row;
+      if (c.col < minCol) minCol = c.col;
+      if (c.col > maxCol) maxCol = c.col;
+    }
+    const H = maxRow - minRow + 1, W = maxCol - minCol + 1;
+    const small = document.createElement('canvas');
+    small.width = W; small.height = H;
+    const sCtx = small.getContext('2d')!;
+    const im = sCtx.createImageData(W, H);
+    const dd = im.data;
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        const cell = cellMap.get(`${row},${col}`);
+        const x = col - minCol, y = maxRow - row;
+        const px = (y * W + x) * 4;
+        if (cell && cell.visible) { dd[px] = 46; dd[px + 1] = 160; dd[px + 2] = 67; dd[px + 3] = 150; }
+      }
+    }
+    sCtx.putImageData(im, 0, 0);
+    const S = 8;
+    const big = document.createElement('canvas');
+    big.width = W * S; big.height = H * S;
+    const bCtx = big.getContext('2d')!;
+    bCtx.imageSmoothingEnabled = true; bCtx.imageSmoothingQuality = 'high';
+    bCtx.drawImage(small, 0, 0, W * S, H * S);
+    const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
+      opacity: 1, interactive: false, zIndex: 215,
+    });
+    ov.addTo(map);
+    return () => { map.removeLayer(ov); };
+  }, [map, celdas]);
   return null;
 }
 
