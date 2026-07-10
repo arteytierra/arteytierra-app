@@ -32,7 +32,9 @@ import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
 import { EntornoPanel } from './EntornoPanel';
 import { SombrasPanel } from './SombrasPanel';
-import { calcularSombras } from '@/lib/sombras';
+import { calcularSombras, salidaPuesta } from '@/lib/sombras';
+import { calcularInsolacion, type ResultadoInsolacion } from '@/lib/insolacion';
+import { PRESETS_OBJETO, type ObjetoSombra } from '@/lib/objetosSombra';
 import { calcularViewshed, type ResultadoViewshed } from '@/lib/viewshed';
 import { calcularMetricas } from '@/lib/geometria';
 import * as turf from '@turf/turf';
@@ -250,6 +252,13 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [sombrasActivo,    setSombrasActivo]     = useState(false);
   const [sombrasDoy,       setSombrasDoy]        = useState(355);
   const [sombrasHora,      setSombrasHora]       = useState(9);
+  const [sombrasObjetos,   setSombrasObjetos]    = useState<ObjetoSombra[]>([]);
+  const [modoArbol,        setModoArbol]         = useState(false);
+  const [animando,         setAnimando]          = useState(false);
+  const [insolacion,       setInsolacion]        = useState<ResultadoInsolacion | null>(null);
+  const [calculandoIns,    setCalculandoIns]     = useState(false);
+  /** Árbol elegido en el panel, a la espera del clic que lo ubica en el mapa. */
+  const objetoPendienteRef = useRef<{ id: string; nombre: string; altura_m: number; radio_m: number } | null>(null);
 
   // ─── Capas de usuario: visibilidad (no undoable) y capa activa ────────────
   const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
@@ -338,14 +347,84 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
   const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || (modoDibujo && modoDibujo !== 'seleccion');
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
 
   // Mapa de sombras (D4): calcula sobre la grilla densa según fecha/hora.
   const latCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lat, 0) / mojones.length : null, [mojones]);
   const sombras = useMemo(
-    () => (sombrasActivo && datosShader && latCentro != null) ? calcularSombras(datosShader, latCentro, sombrasDoy, sombrasHora) : null,
-    [sombrasActivo, datosShader, latCentro, sombrasDoy, sombrasHora],
+    () => (sombrasActivo && datosShader && latCentro != null)
+      ? calcularSombras(datosShader, latCentro, sombrasDoy, sombrasHora, sombrasObjetos)
+      : null,
+    [sombrasActivo, datosShader, latCentro, sombrasDoy, sombrasHora, sombrasObjetos],
   );
+
+  // Animación del día: avanza la hora solar entre la salida y la puesta del sol.
+  useEffect(() => {
+    if (!animando || latCentro == null) return;
+    const { salida, puesta } = salidaPuesta(latCentro, sombrasDoy);
+    const id = setInterval(() => {
+      setSombrasHora(h => {
+        const sig = h + 0.25;
+        return sig > puesta ? salida : sig;
+      });
+    }, 220);
+    return () => clearInterval(id);
+  }, [animando, latCentro, sombrasDoy]);
+
+  // Al arrancar la animación, si la hora quedó fuera del día, la traemos al orto.
+  const handleAnimar = useCallback(() => {
+    if (latCentro == null) return;
+    const { salida, puesta } = salidaPuesta(latCentro, sombrasDoy);
+    setAnimando(a => {
+      if (!a && (sombrasHora < salida || sombrasHora > puesta)) setSombrasHora(salida);
+      return !a;
+    });
+  }, [latCentro, sombrasDoy, sombrasHora]);
+
+  /**
+   * Horas de sol acumuladas. Es pesado (una pasada de sombras por cada paso del
+   * día), así que va bajo demanda y cede un frame antes para que el botón pueda
+   * pintar su estado de "calculando".
+   */
+  const handleInsolacion = useCallback(async () => {
+    if (!datosShader || latCentro == null) return;
+    setCalculandoIns(true);
+    await new Promise(r => setTimeout(r, 30));
+    try {
+      setInsolacion(calcularInsolacion(datosShader, latCentro, sombrasDoy, sombrasObjetos, 20));
+    } finally {
+      setCalculandoIns(false);
+    }
+  }, [datosShader, latCentro, sombrasDoy, sombrasObjetos]);
+
+  // El mapa de insolación es de un día concreto: si cambian el día o los objetos, caduca.
+  useEffect(() => { setInsolacion(null); }, [sombrasDoy, sombrasObjetos]);
+
+  /** Polígonos ya dibujados que se pueden levantar como volumen con altura. */
+  const poligonosLevantables = useMemo(() => [
+    ...zonas.map(z => ({ id: z.id, nombre: z.nombre, vertices: z.vertices })),
+    ...dibujos.flatMap(d => d.tipo === 'poligono'
+      ? [{ id: d.id, nombre: d.nombre || 'Polígono', vertices: d.vertices }]
+      : []),
+  ], [zonas, dibujos]);
+
+  const handleAlturaObjeto = useCallback((id: string, altura: number) => {
+    if (!Number.isFinite(altura) || altura <= 0) return;
+    setSombrasObjetos(o => o.map(x => x.id === id ? { ...x, altura_m: altura } : x));
+  }, []);
+  const handleEliminarObjeto = useCallback((id: string) => {
+    setSombrasObjetos(o => o.filter(x => x.id !== id));
+  }, []);
+
+  const handleAgregarObjeto = useCallback((preset: typeof PRESETS_OBJETO[number], vertices?: Array<{ lat: number; lng: number }>) => {
+    const id = crypto.randomUUID();
+    if (preset.tipo === 'arbol') {
+      setModoArbol(true);
+      objetoPendienteRef.current = { id, nombre: preset.etiqueta, altura_m: preset.altura_m, radio_m: preset.radio_m ?? 3 };
+    } else if (vertices && vertices.length >= 3) {
+      setSombrasObjetos(o => [...o, { id, tipo: 'volumen', nombre: preset.etiqueta, altura_m: preset.altura_m, vertices }]);
+    }
+  }, []);
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
@@ -398,6 +477,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
     if (datosCobertura)  m['cobertura'] = datosCobertura;
     if (datosEntorno)    m['entorno']  = datosEntorno;
+    if (sombrasObjetos.length) m['sombras_objetos'] = sombrasObjetos;
     if (zonas.length)    m['zonas']    = zonas;
     if (sectores.length) m['sectores'] = sectores;
     if (pines.length)    m['pines']    = pines;
@@ -419,7 +499,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, datosEntorno, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -550,6 +630,13 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
+    if (modoArbol) {
+      const p = objetoPendienteRef.current;
+      setModoArbol(false);
+      objetoPendienteRef.current = null;
+      if (p) setSombrasObjetos(o => [...o, { ...p, tipo: 'arbol', lat, lng }]);
+      return;
+    }
     if (modoCuenca) {
       setModoCuenca(false);
       if (datosShader && datosEscorrentia) {
@@ -647,7 +734,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoCuenca, modoViewshed, alturaObs, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modoArbol, modoCuenca, modoViewshed, alturaObs, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -1520,6 +1607,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
     setPotrerosLayer((meta['potreros']  as PotrerosLayout)  ?? null);
+    setSombrasObjetos((meta['sombras_objetos'] as ObjetoSombra[]) ?? []);
     setDatosCobertura((meta['cobertura'] as DatosCobertura) ?? null);
     setDatosEntorno((meta['entorno']    as DatosEntorno)    ?? null);
     // Overlay de plano, rótulo, título de captura e intervalo de curvas
@@ -1682,6 +1770,13 @@ export function MapaTerrenoApp({ userName }: Props) {
   }
 
   // ─── Tabs ─────────────────────────────────────────────────────────────────
+  /** Clic en un ícono del riel: abre su panel, o lo cierra si ya estaba abierto. */
+  const handleElegirTab = useCallback((id: Tab) => {
+    if (tab === id && panelAbierto) { setPanelAbierto(false); return; }
+    setTab(id);
+    setPanelAbierto(true);
+  }, [tab, panelAbierto]);
+
   const TABS_ANALISIS = [
     { id: 'mojones'  as Tab, label: 'Mojones', icon: <MapPin       className="w-3.5 h-3.5" /> },
     { id: 'clima'    as Tab, label: 'Clima',   icon: <Cloud        className="w-3.5 h-3.5" /> },
@@ -1887,33 +1982,24 @@ export function MapaTerrenoApp({ userName }: Props) {
       <aside className="flex shrink-0 bg-bone-50">
 
         {/* ── Riel de íconos ── */}
-        <nav className="w-[52px] shrink-0 flex flex-col items-center py-2 gap-0.5 border-r border-bone-200 overflow-y-auto">
-          {TABS_ANALISIS.map(t => (
-            <button key={t.id} title={t.label}
-              onClick={() => { if (tab === t.id && panelAbierto) setPanelAbierto(false); else { setTab(t.id); setPanelAbierto(true); } }}
-              className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${tab === t.id ? 'bg-moss-700 text-bone-50' : 'text-ink-700/55 hover:bg-bone-100'}`}>
-              {t.icon}
-              {tab === t.id && <span className="absolute left-[-8px] top-1.5 bottom-1.5 w-1 rounded-full bg-moss-700" />}
-            </button>
-          ))}
-          <span className="w-7 h-px bg-bone-200 my-1.5" />
-          {TABS_DISENO.map(t => (
-            <button key={t.id} title={t.label}
-              onClick={() => { if (tab === t.id && panelAbierto) setPanelAbierto(false); else { setTab(t.id); setPanelAbierto(true); } }}
-              className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${tab === t.id ? 'bg-moss-700 text-bone-50' : 'text-ink-700/55 hover:bg-bone-100'}`}>
-              {t.icon}
-              {tab === t.id && <span className="absolute left-[-8px] top-1.5 bottom-1.5 w-1 rounded-full bg-moss-700" />}
-            </button>
-          ))}
+        <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-1 border-r border-bone-200 overflow-y-auto overflow-x-clip">
+          <RielGrupo titulo="Análisis" tabs={TABS_ANALISIS} tab={tab} onElegir={handleElegirTab} />
+          <span className="w-6 h-px bg-bone-300 my-2" />
+          <RielGrupo titulo="Diseño" tabs={TABS_DISENO} tab={tab} onElegir={handleElegirTab} />
         </nav>
 
         {/* ── Panel contextual ── */}
-        <div className={`flex flex-col border-r border-bone-200 transition-all duration-200 ${panelAbierto ? 'w-72' : 'w-0 overflow-hidden'}`}>
-          <div className="px-4 h-10 flex items-center justify-between border-b border-bone-200 shrink-0">
-            <span className="text-xs font-semibold text-ink-700 uppercase tracking-wide truncate">
-              {[...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? ''}
-            </span>
-            <button onClick={() => setPanelAbierto(false)} title="Ocultar panel" className="text-ink-700/40 hover:text-ink-700 transition-colors">
+        <div className={`flex flex-col border-r border-bone-200 bg-white transition-all duration-200 ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
+          <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
+            <div className="min-w-0">
+              <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
+                {TABS_ANALISIS.some(t => t.id === tab) ? 'Análisis' : 'Diseño'}
+              </p>
+              <p className="text-[13px] font-semibold text-ink-900 truncate leading-tight mt-0.5">
+                {[...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? ''}
+              </p>
+            </div>
+            <button onClick={() => setPanelAbierto(false)} title="Ocultar panel" className="shrink-0 p-1 -mr-1 rounded-md text-ink-700/40 hover:text-ink-900 hover:bg-bone-100 transition-colors">
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
           </div>
@@ -2065,7 +2151,17 @@ export function MapaTerrenoApp({ userName }: Props) {
                 tieneShader={!!datosShader}
                 activo={sombrasActivo} doy={sombrasDoy} hora={sombrasHora}
                 sombras={sombras}
+                animando={animando}
+                insolacion={insolacion} calculandoIns={calculandoIns}
+                objetos={sombrasObjetos} modoArbol={modoArbol}
+                poligonos={poligonosLevantables}
                 onActivo={setSombrasActivo} onDoy={setSombrasDoy} onHora={setSombrasHora}
+                onAnimar={handleAnimar}
+                onInsolacion={handleInsolacion}
+                onLimpiarInsolacion={() => setInsolacion(null)}
+                onAgregarObjeto={handleAgregarObjeto}
+                onAlturaObjeto={handleAlturaObjeto}
+                onEliminarObjeto={handleEliminarObjeto}
                 onIrATopo={() => setTab('topo')}
               />
             </div>
@@ -2271,6 +2367,9 @@ export function MapaTerrenoApp({ userName }: Props) {
              modoSector  ? `Dibujando sector — ${modoSector.vertices.length} vértices · Enter finaliza · Esc cancela` :
              modoCamino  ? `Trazando camino — ${modoCamino.vertices.length} puntos · Enter finaliza · Esc cancela`  :
              modoPinClick? 'Hacé clic en el mapa para colocar el pin' :
+             modoArbol   ? 'Hacé clic en el mapa para plantar el árbol' :
+             modoViewshed? 'Hacé clic en el mapa para elegir el punto de observación' :
+             modoCuenca  ? 'Hacé clic en el mapa para elegir el punto de cierre de la cuenca' :
              modoDibujo === 'medir'
                ? `Midiendo — ${medicionVertices.length} puntos · distancia · área · ∠ · Backspace borra · Enter/Esc limpia`
                : modoDibujo === 'cota'
@@ -2403,24 +2502,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           />
         )}
 
-        {/* ── Brújula ── */}
-        <div className="absolute bottom-36 left-3 z-[1000] no-print pointer-events-none select-none">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="23" fill="white" fillOpacity="0.92" stroke="#d1cec8" strokeWidth="0.75"/>
-            {/* Norte — rojo */}
-            <polygon points="24,5 21,24 27,24" fill="#c0392b"/>
-            {/* Sur — gris */}
-            <polygon points="24,43 21,24 27,24" fill="#888"/>
-            {/* Este */}
-            <polygon points="43,24 24,21 24,27" fill="#aaa"/>
-            {/* Oeste */}
-            <polygon points="5,24 24,21 24,27" fill="#aaa"/>
-            {/* Centro */}
-            <circle cx="24" cy="24" r="2.5" fill="white" stroke="#999" strokeWidth="0.75"/>
-            {/* N */}
-            <text x="24" y="15.5" textAnchor="middle" fontSize="7" fontWeight="700" fill="#c0392b" fontFamily="sans-serif">N</text>
-          </svg>
-        </div>
+        {/* La brújula vive dentro de MapLeaflet: tiene que girar con el rumbo. */}
 
         <MapLeaflet
           mojones={mojones}
@@ -2439,6 +2521,8 @@ export function MapaTerrenoApp({ userName }: Props) {
           dibujando={!!dibujando}
           datosShader={datosShader}
           sombras={sombras}
+          sombrasObjetos={sombrasObjetos}
+          insolacion={insolacion}
           viewshed={viewshed}
           datosEscorrentia={datosEscorrentia}
           datosSugerencias={datosSugerencias}
@@ -2720,7 +2804,21 @@ export function MapaTerrenoApp({ userName }: Props) {
       {ayudaOpen  && <AtajosAyuda onClose={() => setAyudaOpen(false)} />}
 
       {/* ─── Vista 3D (MapLibre) ────────────────────────────────────────────── */}
-      {show3D && mojones.length >= 3 && <Vista3D mojones={mojones} onClose={() => setShow3D(false)} />}
+      {show3D && mojones.length >= 3 && (
+        <Vista3D
+          mojones={mojones}
+          zonas={zonasFiltradas}
+          sectores={sectoresFiltrados}
+          caminos={caminosFiltrados}
+          pines={pinesFiltrados}
+          aguadas={aguadasFiltradas}
+          dibujos={dibujosFiltrados}
+          curvas={curvasNivel}
+          colorCurvas={colorCurvas}
+          capas={capas}
+          onClose={() => setShow3D(false)}
+        />
+      )}
 
       {/* ─── Imagen histórica (Wayback) ─────────────────────────────────────── */}
       {showHistorico && mojones.length >= 3 && <VistaHistorica mojones={mojones} onClose={() => setShowHistorico(false)} />}
@@ -3469,6 +3567,45 @@ function PanelCapas({
         </button>
       </div>
     </div>
+  );
+}
+
+// ─── Riel de navegación ───────────────────────────────────────────────────────
+
+/**
+ * Un grupo de íconos del riel lateral.
+ *
+ * El indicador de pestaña activa va *dentro* del botón: el `<nav>` scrollea en
+ * vertical, y en CSS basta con que un eje no sea `visible` para que el otro pase
+ * a `auto`, así que cualquier cosa que asome por la izquierda queda recortada.
+ */
+function RielGrupo({ titulo, tabs, tab, onElegir }: {
+  titulo: string;
+  tabs: Array<{ id: Tab; label: string; icon: React.ReactNode }>;
+  tab: Tab;
+  onElegir: (id: Tab) => void;
+}) {
+  return (
+    <>
+      <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-ink-700/30 mb-0.5 select-none">
+        {titulo}
+      </p>
+      {tabs.map(t => {
+        const activo = tab === t.id;
+        return (
+          <button key={t.id} title={t.label} aria-label={t.label} aria-current={activo || undefined}
+            onClick={() => onElegir(t.id)}
+            className={`relative w-10 h-9 rounded-lg flex items-center justify-center transition-colors ${
+              activo
+                ? 'bg-moss-700 text-bone-50 shadow-sm'
+                : 'text-ink-700/70 hover:bg-bone-200/70 hover:text-ink-900'
+            }`}>
+            {activo && <span className="absolute left-0.5 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+            {t.icon}
+          </button>
+        );
+      })}
+    </>
   );
 }
 

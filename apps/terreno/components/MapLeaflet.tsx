@@ -17,6 +17,8 @@ import {
 import type { LatLngExpression, LatLngTuple } from 'leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+// Parchea L.Map para soportar rotación. Debe importarse después de Leaflet.
+import 'leaflet-rotate';
 import type { Mojon } from '@/lib/types';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import type { Zona } from '@/lib/zonificacion';
@@ -28,6 +30,9 @@ import type { Camino } from '@/lib/caminos';
 import type { DatosShader } from '@/lib/shaders';
 import { colorElevacion, colorPendiente } from '@/lib/shaders';
 import type { ResultadoSombras } from '@/lib/sombras';
+import type { ResultadoInsolacion } from '@/lib/insolacion';
+import { colorInsolacion } from '@/lib/insolacion';
+import type { ObjetoSombra } from '@/lib/objetosSombra';
 import type { ResultadoViewshed } from '@/lib/viewshed';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
 import type { ResultadoSugerencias } from '@/lib/sugerencias';
@@ -733,38 +738,122 @@ function TerrariumLayer({ elevMin, elevMax, onRangoDetectado }: {
 
 // ─── Middle-mouse pan ─────────────────────────────────────────────────────────
 
-function MiddleMousePan() {
+/**
+ * Botón central del mouse:
+ *   · arrastrar          → gira el plano (mueve el norte)
+ *   · Shift + arrastrar  → panea (vía de escape mientras se dibuja, donde el
+ *                          arrastre con botón izquierdo está tomado por el CAD)
+ *
+ * El rumbo se imanta a 0° cuando pasa cerca, para poder volver al norte sin
+ * pelearse con el mouse.
+ */
+const GRADOS_POR_PIXEL = 0.4;
+const IMAN_NORTE_GRADOS = 3;
+
+function RotarConBotonCentral() {
   const map = useMap();
   useEffect(() => {
     const container = map.getContainer();
-    let active = false;
+    let modo: 'rotar' | 'panear' | null = null;
     let lx = 0, ly = 0;
+    let bearingCrudo = map.getBearing();
+
     const down = (e: MouseEvent) => {
       if (e.button !== 1) return;
       e.preventDefault();
-      active = true; lx = e.clientX; ly = e.clientY;
-      container.style.cursor = 'grabbing';
+      // Leaflet arrastra el mapa también con el botón central: su Draggable
+      // aborta sólo si `which !== 1 && button !== 1`, y en el central button === 1.
+      // Sin esto, el arrastre rotaría y panearía al mismo tiempo.
+      map.dragging.disable();
+      modo = e.shiftKey ? 'panear' : 'rotar';
+      lx = e.clientX; ly = e.clientY;
+      bearingCrudo = map.getBearing();
+      container.style.cursor = modo === 'rotar' ? 'ew-resize' : 'grabbing';
     };
     const move = (e: MouseEvent) => {
-      if (!active) return;
-      map.panBy([lx - e.clientX, ly - e.clientY], { animate: false });
+      if (!modo) return;
+      if (modo === 'panear') {
+        map.panBy([lx - e.clientX, ly - e.clientY], { animate: false });
+      } else {
+        // Acumulamos el rumbo sin imantar para que el imán no "pegue" el giro.
+        bearingCrudo += (e.clientX - lx) * GRADOS_POR_PIXEL;
+        const norm = ((bearingCrudo % 360) + 360) % 360;
+        const cerca = Math.min(norm, 360 - norm) < IMAN_NORTE_GRADOS;
+        map.setBearing(cerca ? 0 : bearingCrudo);
+      }
       lx = e.clientX; ly = e.clientY;
     };
     const up = (e: MouseEvent) => {
-      if (e.button !== 1) return;
-      active = false;
+      if (e.button !== 1 || !modo) return;
+      modo = null;
+      map.dragging.enable();
       container.style.cursor = '';
     };
+    // Sin esto, Chrome abre el scroll automático con el botón central.
+    const noAuto = (e: MouseEvent) => { if (e.button === 1) e.preventDefault(); };
+
     container.addEventListener('mousedown', down);
+    container.addEventListener('auxclick', noAuto);
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
     return () => {
+      if (modo) { try { map.dragging.enable(); } catch { /* mapa ya destruido */ } }
       container.removeEventListener('mousedown', down);
+      container.removeEventListener('auxclick', noAuto);
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
     };
   }, [map]);
   return null;
+}
+
+/**
+ * Brújula: gira con el rumbo del plano. Con el norte arriba es decorativa;
+ * apenas el plano se gira, se vuelve un botón para volver al norte.
+ */
+function Brujula() {
+  const map = useMap();
+  const [bearing, setBearing] = useState(0);
+  useEffect(() => {
+    const fire = () => setBearing(map.getBearing());
+    fire();
+    map.on('rotate', fire);
+    return () => { map.off('rotate', fire); };
+  }, [map]);
+
+  const grados = Math.round(((bearing % 360) + 360) % 360);
+  const girado = Math.min(grados, 360 - grados) >= 1;
+
+  return (
+    <div className={`absolute bottom-36 left-3 z-[1000] no-print select-none ${girado ? '' : 'pointer-events-none'}`}>
+      <button
+        onClick={() => girado && map.setBearing(0)}
+        title={girado ? `Rumbo ${grados}° — clic para volver el norte arriba` : 'Norte'}
+        className={`block rounded-full transition-transform ${girado ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
+      >
+        {/* El norte del terreno queda a -bearing respecto de la pantalla. */}
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"
+          style={{ transform: `rotate(${-grados}deg)` }}>
+          <circle cx="24" cy="24" r="23" fill="white" fillOpacity="0.92" stroke={girado ? '#c0392b' : '#d1cec8'} strokeWidth="0.75"/>
+          {/* Norte — rojo */}
+          <polygon points="24,5 21,24 27,24" fill="#c0392b"/>
+          {/* Sur — gris */}
+          <polygon points="24,43 21,24 27,24" fill="#888"/>
+          {/* Este */}
+          <polygon points="43,24 24,21 24,27" fill="#aaa"/>
+          {/* Oeste */}
+          <polygon points="5,24 24,21 24,27" fill="#aaa"/>
+          {/* Centro */}
+          <circle cx="24" cy="24" r="2.5" fill="white" stroke="#999" strokeWidth="0.75"/>
+          {/* N */}
+          <text x="24" y="15.5" textAnchor="middle" fontSize="7" fontWeight="700" fill="#c0392b" fontFamily="sans-serif">N</text>
+        </svg>
+      </button>
+      {girado && (
+        <span className="block text-center mt-0.5 text-[9px] font-mono text-ink-900/80 bg-bone-50/90 rounded px-1 py-px">{grados}°</span>
+      )}
+    </div>
+  );
 }
 
 // Expone flyTo al padre para centrar el mapa en un mojón recién agregado por coords
@@ -839,6 +928,9 @@ interface Props {
   dibujando?:         boolean;
   datosShader?:       DatosShader | null;
   sombras?:           ResultadoSombras | null;
+  /** Objetos con altura, para dibujarlos sobre el mapa. */
+  sombrasObjetos?:    ObjetoSombra[];
+  insolacion?:        ResultadoInsolacion | null;
   viewshed?:          ResultadoViewshed | null;
   datosEscorrentia?:  DatosEscorrentia | null;
   datosSugerencias?:  ResultadoSugerencias | null;
@@ -917,6 +1009,8 @@ function MapLeaflet({
   dibujando = false,
   datosShader = null,
   sombras = null,
+  sombrasObjetos = [],
+  insolacion = null,
   viewshed = null,
   datosEscorrentia = null,
   datosSugerencias = null,
@@ -981,8 +1075,15 @@ function MapLeaflet({
         maxZoom={22}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
+        // Rotación (leaflet-rotate). El giro lo maneja RotarConBotonCentral;
+        // apagamos shiftKeyRotate porque Shift + central es nuestro paneo.
+        rotate
+        rotateControl={false}
+        shiftKeyRotate={false}
+        touchRotate
       >
         <ZoomControl position="bottomleft" />
+        <Brujula />
         {/* ── Tiles ── */}
         {capa === 'satelite' ? (
           <>
@@ -1055,7 +1156,7 @@ function MapLeaflet({
         />
         {medicion && medicion.length > 0 && <MedicionLayer puntos={medicion} />}
         <AutoFit mojones={mojones} />
-        <MiddleMousePan />
+        <RotarConBotonCentral />
         {onCursorMove && <MapMouseTracker onMove={onCursorMove} />}
         <InvalidarSize trigger={capturaMode} />
         {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
@@ -1081,9 +1182,24 @@ function MapLeaflet({
             pendMax={datosShader.pend_max} opacidad={opacidadShaderPend}
           />
         )}
+        {insolacion && insolacion.celdas.length > 0 && (
+          <InsolacionCanvasLayer celdas={insolacion.celdas} max={insolacion.max} />
+        )}
         {sombras && sombras.celdas.length > 0 && (
           <SombrasCanvasLayer celdas={sombras.celdas} />
         )}
+        {/* Sombras de árboles y construcciones: polígonos, no raster (ver lib/objetosSombra) */}
+        {sombras?.sombras_objetos.map(s => (
+          <Polygon key={`so-${s.id}`} positions={s.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+            pathOptions={{ color: '#0A0F1E', weight: 0, fillColor: '#0A0F1E', fillOpacity: 0.42, interactive: false }} />
+        ))}
+        {/* Los objetos en sí: copa del árbol / planta del volumen */}
+        {sombrasObjetos?.map(o => (o.tipo === 'arbol'
+          ? <LeafCircle key={`ob-${o.id}`} center={[o.lat, o.lng]} radius={o.radio_m}
+              pathOptions={{ color: '#2E7D32', weight: 1.5, fillColor: '#43A047', fillOpacity: 0.55, interactive: false }} />
+          : <Polygon key={`ob-${o.id}`} positions={o.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+              pathOptions={{ color: '#8D6E63', weight: 1.5, fillColor: '#A1887F', fillOpacity: 0.35, interactive: false }} />
+        ))}
         {viewshed && viewshed.celdas.length > 0 && (
           <ViewshedCanvasLayer celdas={viewshed.celdas} />
         )}
@@ -1800,6 +1916,58 @@ function SombrasCanvasLayer({ celdas }: { celdas: ResultadoSombras['celdas'] }) 
     ov.addTo(map);
     return () => { map.removeLayer(ov); };
   }, [map, celdas]);
+  return null;
+}
+
+// ─── Horas de sol acumuladas (mapa de calor) ─────────────────────────────────
+function InsolacionCanvasLayer({ celdas, max }: { celdas: ResultadoInsolacion['celdas']; max: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!celdas.length) return;
+    let latMin = Infinity, latMax = -Infinity, lngMin = Infinity, lngMax = -Infinity;
+    let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+    const cellMap = new Map<string, ResultadoInsolacion['celdas'][0]>();
+    for (const c of celdas) {
+      cellMap.set(`${c.row},${c.col}`, c);
+      if (c.latMin < latMin) latMin = c.latMin;
+      if (c.latMax > latMax) latMax = c.latMax;
+      if (c.lngMin < lngMin) lngMin = c.lngMin;
+      if (c.lngMax > lngMax) lngMax = c.lngMax;
+      if (c.row < minRow) minRow = c.row;
+      if (c.row > maxRow) maxRow = c.row;
+      if (c.col < minCol) minCol = c.col;
+      if (c.col > maxCol) maxCol = c.col;
+    }
+    const H = maxRow - minRow + 1, W = maxCol - minCol + 1;
+    const small = document.createElement('canvas');
+    small.width = W; small.height = H;
+    const sCtx = small.getContext('2d')!;
+    const img = sCtx.createImageData(W, H);
+    const d = img.data;
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        const cell = cellMap.get(`${row},${col}`);
+        const x = col - minCol, y = maxRow - row;
+        const px = (y * W + x) * 4;
+        if (cell) {
+          const [r, g, b] = colorInsolacion(cell.horas, max);
+          d[px] = r; d[px + 1] = g; d[px + 2] = b; d[px + 3] = 190;
+        }
+      }
+    }
+    sCtx.putImageData(img, 0, 0);
+    const S = 8;
+    const big = document.createElement('canvas');
+    big.width = W * S; big.height = H * S;
+    const bCtx = big.getContext('2d')!;
+    bCtx.imageSmoothingEnabled = true; bCtx.imageSmoothingQuality = 'high';
+    bCtx.drawImage(small, 0, 0, W * S, H * S);
+    const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
+      opacity: 1, interactive: false, zIndex: 205,
+    });
+    ov.addTo(map);
+    return () => { map.removeLayer(ov); };
+  }, [map, celdas, max]);
   return null;
 }
 

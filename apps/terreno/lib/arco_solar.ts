@@ -108,8 +108,11 @@ function proyectar(centro: LL, azimut_deg: number, elevacion_deg: number, radio_
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function horaStr(horaDecimal: number): string {
-  const h = Math.floor(horaDecimal);
-  const m = Math.round((horaDecimal - h) * 60) % 60;
+  // Redondeamos sobre el total de minutos. Redondeando sólo los minutos, 18.9995 h
+  // daba 60 → `60 % 60 = 0` sin arrastrar la hora, y se mostraba "18:00".
+  const total = Math.round(horaDecimal * 60);
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 

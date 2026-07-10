@@ -7,27 +7,46 @@
  * Se monta en un modal a pantalla completa y se carga de forma perezosa
  * (dynamic import desde MapaTerrenoApp) para no pesar en el bundle principal.
  */
-import { useEffect, useRef, useState } from 'react';
-import { X, Loader2, Mountain } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { X, Loader2, Mountain, Layers } from 'lucide-react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Mojon } from '@/lib/types';
+import { construirVectores3D, type DatosVectores } from '@/lib/vectores3d';
 
-interface Props {
+interface Props extends DatosVectores {
   mojones: Mojon[];
   onClose: () => void;
 }
 
-export function Vista3D({ mojones, onClose }: Props) {
+export function Vista3D({ onClose, ...datos }: Props) {
+  const { mojones } = datos;
   const contRef = useRef<HTMLDivElement>(null);
   const mapRef  = useRef<maplibregl.Map | null>(null);
+  const marcadoresRef = useRef<maplibregl.Marker[]>([]);
   const [exag, setExag]         = useState(1.6);
   const [cargando, setCargando] = useState(true);
   const [error, setError]       = useState<string | null>(null);
+  const [verVectores, setVerVectores] = useState(true);
+  /**
+   * Las fuentes y capas ya existen. No alcanza con `!cargando`: el watchdog de
+   * 12 s apaga el spinner aunque `load` no haya corrido, y entonces el efecto de
+   * datos encontraba las fuentes inexistentes y no volvía a intentarlo.
+   */
+  const [estiloListo, setEstiloListo] = useState(false);
+
+  // `datos` es un objeto nuevo en cada render (viene de un rest spread), así que
+  // memorizamos contra sus campos y no contra su identidad.
+  const { zonas, sectores, caminos, pines, aguadas, curvas, dibujos, capas, colorCurvas } = datos;
+  const vectores = useMemo(
+    () => construirVectores3D({ mojones, zonas, sectores, caminos, pines, aguadas, curvas, dibujos, capas, colorCurvas }),
+    [mojones, zonas, sectores, caminos, pines, aguadas, curvas, dibujos, capas, colorCurvas],
+  );
 
   useEffect(() => {
     if (!contRef.current || mojones.length < 3) return;
     let cancelado = false;
+    setEstiloListo(false);   // el mapa se recrea: las capas todavía no existen
 
     const lats = mojones.map(m => m.lat), lngs = mojones.map(m => m.lng);
     const bounds: [[number, number], [number, number]] = [
@@ -67,6 +86,10 @@ export function Vista3D({ mojones, onClose }: Props) {
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
+    // Con ?debug3d en la URL, el mapa queda accesible desde la consola.
+    if (new URLSearchParams(window.location.search).has('debug3d')) {
+      (window as unknown as { __map3d?: maplibregl.Map }).__map3d = map;
+    }
 
     // El modal puede terminar de dimensionarse después de crear el mapa:
     // forzamos resize para que el canvas ocupe toda la pantalla.
@@ -76,21 +99,69 @@ export function Vista3D({ mojones, onClose }: Props) {
     const t1 = setTimeout(forzarResize, 150);
     const t2 = setTimeout(forzarResize, 600);
 
-    map.on('load', () => {
+    /**
+     * Usamos `style.load` y no `load`: con `terrain` activo, `load` espera a que
+     * las teselas del MDE estén todas cargadas, y algunas de /api/terrarium nunca
+     * lo están, así que nunca disparaba. `style.load` sólo espera al estilo, que
+     * es todo lo que hace falta para agregar fuentes y capas.
+     */
+    const alEstiloListo = () => {
       if (cancelado) return;
       forzarResize();
-      const ring = mojones.map(m => [m.lng, m.lat] as [number, number]);
-      ring.push(ring[0]!);
-      map.addSource('predio', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } } });
-      map.addLayer({ id: 'predio-fill', type: 'fill', source: 'predio', paint: { 'fill-color': '#D9A441', 'fill-opacity': 0.22 } });
-      map.addLayer({ id: 'predio-line', type: 'line', source: 'predio', paint: { 'line-color': '#D9A441', 'line-width': 3 } });
-      // Reencuadrar al predio ya con el canvas a tamaño completo.
-      map.fitBounds(bounds, { padding: 80, pitch: 62, bearing: -15, duration: 0 });
-      setCargando(false);
-    });
-    map.on('error', () => { /* errores de tiles no son fatales */ });
 
-    // Si en 12 s no cargó (sin señal, etc.), sacamos el spinner igual.
+      // Fuentes vacías: las llena (y actualiza) el efecto de vectores de abajo.
+      const vacio: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };
+      map.addSource('v-poly',  { type: 'geojson', data: vacio });
+      map.addSource('v-line',  { type: 'geojson', data: vacio });
+
+      // El estilo sale de las propiedades de cada feature: una capa por geometría
+      // alcanza para zonas, sectores, caminos, aguadas, curvas, pines y dibujos.
+      map.addLayer({
+        id: 'v-poly-fill', type: 'fill', source: 'v-poly',
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['get', 'opacidad'] },
+      });
+      // `line-dasharray` no admite expresiones data-driven, así que cada estilo
+      // de trazo va en su propia capa con un filtro que las hace excluyentes.
+      const pintaLinea: maplibregl.LineLayerSpecification['paint'] = {
+        'line-color': ['get', 'color'], 'line-width': ['get', 'grosor'], 'line-opacity': ['get', 'opacidad'],
+      };
+      map.addLayer({
+        id: 'v-line-continua', type: 'line', source: 'v-line',
+        filter: ['!', ['has', 'dash']],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { ...pintaLinea },
+      });
+      map.addLayer({
+        id: 'v-line-punteada', type: 'line', source: 'v-line',
+        filter: ['==', ['get', 'dash'], 'punteada'],
+        paint: { ...pintaLinea, 'line-dasharray': [2, 2] },
+      });
+      map.addLayer({
+        id: 'v-line-rayada', type: 'line', source: 'v-line',
+        filter: ['==', ['get', 'dash'], 'rayada'],
+        paint: { ...pintaLinea, 'line-dasharray': [6, 2] },
+      });
+      // Los puntos (mojones, pines, represas, textos) van como Marker de HTML y no
+      // como capa `symbol`: esta última exigiría un servidor de glyphs, y los
+      // emojis de los pines no existen como glyph SDF. MapLibre eleva los Marker
+      // sobre el relieve por su cuenta.
+
+      // Reencuadrar al predio ya con el canvas a tamaño completo. `fitBounds` no
+      // tiene en cuenta la inclinación, así que encuadramos en planta y recién
+      // después inclinamos; si no, el predio queda arrinconado arriba.
+      map.fitBounds(bounds, { padding: 90, pitch: 0, bearing: 0, duration: 0 });
+      map.easeTo({ pitch: 62, bearing: -15, duration: 0 });
+      setEstiloListo(true);
+      setCargando(false);
+    };
+    if (map.isStyleLoaded()) alEstiloListo();
+    else map.once('style.load', alEstiloListo);
+
+    // Los errores de tiles no son fatales, pero silenciar todo escondería también
+    // los errores de estilo (expresiones, capas), que sí importan.
+    map.on('error', e => { console.warn('[Vista3D] MapLibre:', e.error?.message ?? e); });
+
+    // Red de seguridad: si el estilo tampoco carga, sacamos el spinner igual.
     const t = setTimeout(() => { if (!cancelado) setCargando(false); }, 12_000);
 
     return () => { cancelado = true; clearTimeout(t); clearTimeout(t1); clearTimeout(t2); ro.disconnect(); map.remove(); mapRef.current = null; };
@@ -103,6 +174,50 @@ export function Vista3D({ mojones, onClose }: Props) {
       try { map.setTerrain({ source: 'dem', exaggeration: exag }); } catch { /* aún no listo */ }
     }
   }, [exag]);
+
+  // Vuelca los vectores del plano 2D. Corre también cuando el usuario prende o
+  // apaga capas en el 2D con la Vista 3D abierta.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !estiloListo) return;
+    const s = (id: string) => map.getSource(id) as maplibregl.GeoJSONSource | undefined;
+    s('v-poly')?.setData(vectores.poligonos);
+    s('v-line')?.setData(vectores.lineas);
+
+    const marcadores = vectores.puntos.features.map(f => {
+      const { color, simbolo, nombre } = f.properties;
+      const el = document.createElement('div');
+      el.textContent = simbolo;
+      el.title = nombre;
+      // Los textos largos (dibujos de tipo `texto`) van como etiqueta, no como chapita.
+      const etiqueta = simbolo.length > 2;
+      el.style.cssText = etiqueta
+        ? `padding:2px 6px;border-radius:6px;font-size:12px;line-height:1.3;white-space:nowrap;
+           background:rgba(0,0,0,.6);color:${color};border:1px solid rgba(255,255,255,.25);
+           box-shadow:0 1px 4px rgba(0,0,0,.45);cursor:default;`
+        : `display:flex;align-items:center;justify-content:center;
+           width:26px;height:26px;border-radius:9999px;font-size:14px;line-height:1;
+           background:${color};color:#fff;border:2px solid rgba(255,255,255,.85);
+           box-shadow:0 1px 4px rgba(0,0,0,.45);cursor:default;`;
+      const [lng, lat] = f.geometry.coordinates as [number, number];
+      return new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+    });
+    marcadoresRef.current = marcadores;
+    return () => { marcadores.forEach(m => m.remove()); marcadoresRef.current = []; };
+  }, [vectores, estiloListo]);
+
+  // Mostrar / ocultar todos los vectores
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !estiloListo) return;
+    const vis = verVectores ? 'visible' : 'none';
+    for (const id of ['v-poly-fill', 'v-line-continua', 'v-line-punteada', 'v-line-rayada']) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+    }
+    for (const m of marcadoresRef.current) {
+      m.getElement().style.display = verVectores ? '' : 'none';
+    }
+  }, [verVectores, estiloListo, vectores]);
 
   // Cerrar con Escape
   useEffect(() => {
@@ -142,6 +257,24 @@ export function Vista3D({ mojones, onClose }: Props) {
             className="w-24 accent-sun-400" />
           <span className="font-mono w-7">{exag.toFixed(1)}×</span>
         </label>
+        {vectores.total > 0 && (
+          <>
+            <span className="text-bone-50/40 text-xs">·</span>
+            <button
+              onClick={() => setVerVectores(v => !v)}
+              title="Mostrar u ocultar lo dibujado en el plano"
+              className={`flex items-center gap-1.5 text-[11px] rounded-full px-2 py-1 border transition-colors ${
+                verVectores
+                  ? 'bg-bone-50/15 border-bone-50/25 text-bone-50'
+                  : 'bg-transparent border-bone-50/15 text-bone-50/45'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Plano
+              <span className="font-mono opacity-60">{vectores.total}</span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Cerrar */}
@@ -151,7 +284,7 @@ export function Vista3D({ mojones, onClose }: Props) {
       </button>
 
       <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-bone-50/45 text-[10px] text-center">
-        Arrastrá para girar · Ctrl/⌘ + arrastrar para inclinar · rueda para zoom · relieve SRTM 30 m, orientativo
+        Arrastrá para girar · Ctrl/⌘ + arrastrar para inclinar · rueda para zoom · se muestra lo visible en el panel de Capas · relieve SRTM 30 m, orientativo
       </p>
     </div>
   );
