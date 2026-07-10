@@ -1,0 +1,73 @@
+name: Cron
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'    # cleanup-expired-newsletter — diaria 03:00 UTC
+    - cron: '0 */6 * * *'  # cleanup-pending-orders — cada 6h
+    - cron: '5 * * * *'    # cart-abandonment-sweep — cada 1h
+    - cron: '15 * * * *'   # reservation-reminders — cada 1h
+    - cron: '0 9 1 * *'    # monthly-referral-payouts — mensual día 1, 09:00 UTC
+    - cron: '0 4 * * 0'    # reindex-search — semanal (domingo)
+    - cron: '*/15 * * * *' # live-session-reminders — cada 15 min
+
+concurrency:
+  group: cron-${{ github.event.schedule || github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup-expired-newsletter:
+    if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/cleanup-expired-newsletter
+
+  cleanup-pending-orders:
+    if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/cleanup-pending-orders
+
+  cart-abandonment-sweep:
+    if: github.event.schedule == '5 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/cart-abandonment-sweep
+
+  reservation-reminders:
+    if: github.event.schedule == '15 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/reservation-reminders
+
+  monthly-referral-payouts:
+    if: github.event.schedule == '0 9 1 * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/monthly-referral-payouts
+
+  reindex-search:
+    if: github.event.schedule == '0 4 * * 0' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/reindex-search
+
+  live-session-reminders:
+    if: github.event.schedule == '*/15 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/live-session-reminders
