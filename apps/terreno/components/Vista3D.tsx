@@ -8,7 +8,7 @@
  * (dynamic import desde MapaTerrenoApp) para no pesar en el bundle principal.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Loader2, Mountain, Layers } from 'lucide-react';
+import { X, Loader2, Mountain, Layers, Compass, RotateCw, Pause } from 'lucide-react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Mojon } from '@/lib/types';
@@ -30,6 +30,10 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
   const [cargando, setCargando] = useState(true);
   const [error, setError]       = useState<string | null>(null);
   const [verVectores, setVerVectores] = useState(true);
+  /** Rumbo de la cámara (grados). Se sincroniza si el usuario rota con el mouse. */
+  const [bearing, setBearing]   = useState(-15);
+  /** Giro automático tipo plato giratorio. */
+  const [orbita, setOrbita]     = useState(false);
   /**
    * Las fuentes y capas ya existen. No alcanza con `!cargando`: el watchdog de
    * 12 s apaga el spinner aunque `load` no haya corrido, y entonces el efecto de
@@ -99,6 +103,9 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
+    // Mantiene el slider "Girar" en sincronía cuando la rotación viene del mouse
+    // (botón derecho + arrastrar) o de la órbita automática.
+    map.on('rotate', () => { if (!cancelado) setBearing(map.getBearing()); });
     // Con ?debug3d en la URL, el mapa queda accesible desde la consola.
     if (new URLSearchParams(window.location.search).has('debug3d')) {
       (window as unknown as { __map3d?: maplibregl.Map }).__map3d = map;
@@ -234,6 +241,31 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
     try { map.setTerrain({ source: 'dem', exaggeration: exag }); } catch { /* aún no listo */ }
   }, [exag, relieveListo]);
 
+  // Giro automático (plato giratorio). El listener `rotate` de arriba mantiene el
+  // slider en sincronía, así que acá sólo empujamos el rumbo cuadro a cuadro.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !orbita) return;
+    let raf = 0;
+    let previo = performance.now();
+    const paso = (ahora: number) => {
+      const dt = ahora - previo; previo = ahora;
+      map.setBearing(map.getBearing() + dt * 0.012); // ~7°/s → vuelta en ~50 s
+      raf = requestAnimationFrame(paso);
+    };
+    raf = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(raf);
+  }, [orbita]);
+
+  const girar = (grados: number) => {
+    setBearing(grados);
+    try { mapRef.current?.setBearing(grados); } catch { /* aún no listo */ }
+  };
+  const alNorte = () => {
+    setOrbita(false);
+    try { mapRef.current?.easeTo({ bearing: 0, duration: 400 }); } catch { /* aún no listo */ }
+  };
+
   // Vuelca los vectores del plano 2D. Corre también cuando el usuario prende o
   // apaga capas en el 2D con la Vista 3D abierta.
   useEffect(() => {
@@ -322,9 +354,34 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
           Relieve
           <input type="range" min={1} max={4} step={0.1} value={exag}
             onChange={e => setExag(parseFloat(e.target.value))}
-            className="w-24 accent-sun-400" />
+            className="w-20 accent-sun-400" />
           <span className="font-mono w-7">{exag.toFixed(1)}×</span>
         </label>
+        <span className="text-bone-50/40 text-xs">·</span>
+        {/* Girar la escena (rumbo de la cámara). */}
+        <label className="text-bone-50/80 text-[11px] flex items-center gap-2">
+          Girar
+          <input type="range" min={-180} max={180} step={1} value={bearing}
+            onChange={e => girar(parseFloat(e.target.value))}
+            className="w-20 accent-sun-400" />
+          <span className="font-mono w-9">{Math.round(bearing)}°</span>
+        </label>
+        <button
+          onClick={alNorte}
+          title="Volver al norte"
+          className="flex items-center justify-center w-6 h-6 rounded-full bg-bone-50/10 hover:bg-bone-50/20 border border-bone-50/20 text-bone-50/80 transition-colors">
+          <Compass className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => setOrbita(o => !o)}
+          title={orbita ? 'Detener el giro' : 'Giro automático'}
+          className={`flex items-center justify-center w-6 h-6 rounded-full border transition-colors ${
+            orbita
+              ? 'bg-sun-400/90 border-sun-400 text-ink-900'
+              : 'bg-bone-50/10 hover:bg-bone-50/20 border-bone-50/20 text-bone-50/80'
+          }`}>
+          {orbita ? <Pause className="w-3.5 h-3.5" /> : <RotateCw className="w-3.5 h-3.5" />}
+        </button>
         {vectores.total > 0 && (
           <>
             <span className="text-bone-50/40 text-xs">·</span>
@@ -352,7 +409,7 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
       </button>
 
       <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-bone-50/45 text-[10px] text-center">
-        Arrastrá para girar · Ctrl/⌘ + arrastrar para inclinar · rueda para zoom · se muestra lo visible en el panel de Capas · relieve SRTM 30 m, orientativo
+        Girá con el control de arriba (o botón derecho + arrastrar) · Ctrl/⌘ + arrastrar para inclinar · arrastrá para desplazar · rueda para zoom · relieve SRTM 30 m, orientativo
       </p>
     </div>
   );
