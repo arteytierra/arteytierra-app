@@ -1686,21 +1686,15 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   // ─── Informe ──────────────────────────────────────────────────────────────
   const handleVerInforme = useCallback(async () => {
-    // Intentar capturar PNG del mapa para incluir en el informe
+    // Imagen del mapa para el informe: compuesta desde las teselas satelitales
+    // (no con html-to-image, que se cuelga con las teselas de Esri y dejaba el
+    // informe sin plano). Igual la limitamos con un timeout por las dudas.
     let mapaDataUrl: string | undefined;
     try {
-      const el = document.getElementById('print-capture-root');
-      if (el) {
-        const { toPng } = await import('html-to-image');
-        // La captura de tiles satelitales puede colgarse sin lanzar error;
-        // la limitamos con un timeout para no bloquear la generación del informe.
-        const captura = toPng(el, {
-          pixelRatio: 1.5, cacheBust: true,
-          filter: n => !(n instanceof Element && (n.classList.contains('no-print') || n.classList.contains('leaflet-control-container'))),
-        });
-        const timeout = new Promise<undefined>(res => setTimeout(() => res(undefined), 8000));
-        mapaDataUrl = await Promise.race([captura, timeout]);
-      }
+      const { componerMapaEstatico } = await import('@/lib/capturaMapa');
+      const captura = componerMapaEstatico(mojones, { zoomSatelital });
+      const timeout = new Promise<undefined>(res => setTimeout(() => res(undefined), 10000));
+      mapaDataUrl = await Promise.race([captura, timeout]);
     } catch { /* ignorar si falla la captura */ }
 
     guardarInformeBorrador({
@@ -1718,7 +1712,7 @@ export function MapaTerrenoApp({ userName }: Props) {
       mapaDataUrl,
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital]);
 
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [guardandoPng, setGuardandoPng] = useState(false);

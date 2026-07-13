@@ -2,7 +2,7 @@
 
 import { FileDown, ArrowLeft } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
-import { calcularMetricas, formatearDistancia } from '@/lib/geometria';
+import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
 import { MESES, centroide } from '@/lib/clima';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
@@ -80,21 +80,12 @@ export function InformeView({ datos, compartido = false }: Props) {
       {/* ── Cuerpo del informe ───────────────────────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
 
-        {/* Snapshot del mapa — primera página si existe */}
-        {datos.mapaDataUrl && (
-          <div className="page-break-before">
-            <p className="text-xs font-semibold text-moss-700 uppercase tracking-widest mb-3">Plano del predio</p>
-            <img
-              src={datos.mapaDataUrl}
-              alt="Plano del terreno"
-              className="w-full rounded-xl border border-bone-200 shadow"
-              style={{ pageBreakAfter: 'always' }}
-            />
-          </div>
-        )}
+        {/* Portada + resumen ejecutivo */}
+        <Portada datos={datos} metricas={metricas} fechaLarga={fechaLarga} />
+        <ResumenEjecutivo datos={datos} metricas={metricas} />
 
         {/* Encabezado */}
-        <header className="border-b-2 border-moss-700 pb-6">
+        <header className="border-b-2 border-moss-700 pb-6 page-break-before">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold text-moss-700 uppercase tracking-widest mb-1">
@@ -664,6 +655,120 @@ export function InformeView({ datos, compartido = false }: Props) {
 }
 
 // ─── Componentes internos ────────────────────────────────────────────────────
+
+/** Página de portada: marca, nombre del predio, ubicación, plano y datos clave. */
+function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas: MetricasPoligono | null; fechaLarga: string }) {
+  const c = datos.mojones.length >= 3 ? centroide(datos.mojones) : null;
+  const ubic = datos.entorno?.ubicacion ?? (c ? `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}` : null);
+  return (
+    <div style={{ pageBreakAfter: 'always' }} className="min-h-[86vh] flex flex-col">
+      <div className="flex items-start justify-between">
+        <p className="eyebrow">Arte y Tierra</p>
+        <p className="text-xs text-ink-700/50">{fechaLarga}</p>
+      </div>
+
+      <div className="mt-10">
+        <p className="text-sm uppercase tracking-[0.22em] text-ink-700/50">Análisis de Terreno</p>
+        <h1 className="font-display text-4xl text-ink-950 leading-tight mt-2">{datos.nombre}</h1>
+        {ubic && <p className="text-base text-ink-700 mt-2">{ubic}</p>}
+      </div>
+
+      {datos.mapaDataUrl && (
+        <img
+          src={datos.mapaDataUrl}
+          alt="Plano del predio"
+          className="mt-8 w-full rounded-xl border border-bone-200 shadow object-cover"
+          style={{ maxHeight: '46vh' }}
+        />
+      )}
+
+      <div className="mt-8 grid grid-cols-3 gap-4">
+        {metricas && <StatBlock label="Superficie" value={`${metricas.area_ha.toFixed(2)} ha`} sub={`${Math.round(metricas.area_m2).toLocaleString('es-AR')} m²`} />}
+        {metricas && <StatBlock label="Perímetro" value={formatearDistancia(metricas.perimetro_m)} sub={`${datos.mojones.length} mojones`} />}
+        {datos.clima?.koppen && <StatBlock label="Clima" value={datos.clima.koppen.codigo} sub={datos.clima.koppen.descripcion} />}
+      </div>
+
+      <div className="flex-1" />
+
+      <div className="mt-10 pt-6 border-t border-bone-200 flex items-end justify-between gap-6">
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/40">Elaborado por</p>
+          <p className="text-sm font-semibold text-ink-950 mt-0.5">Arte y Tierra</p>
+          <p className="text-xs text-ink-700/60">arteytierra.org</p>
+        </div>
+        <p className="text-[10px] text-ink-700/40 text-right max-w-[45%]">
+          Análisis orientativo a partir de imágenes satelitales y modelos públicos. Verificar en campo antes de ejecutar obras.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Segunda página: indicadores clave del predio + aspectos a considerar. */
+function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: MetricasPoligono | null }) {
+  const ind: Array<{ label: string; value: string; sub: string }> = [];
+  if (metricas) ind.push({ label: 'Superficie', value: `${metricas.area_ha.toFixed(2)} ha`, sub: 'del predio' });
+  if (datos.clima) {
+    ind.push({ label: 'Precipitación', value: `${Math.round(datos.clima.precip_anual_mm)} mm`, sub: 'media anual' });
+    if (datos.clima.aridez) ind.push({ label: 'Aridez', value: datos.clima.aridez.clase, sub: `índice ${datos.clima.aridez.valor.toFixed(2)}` });
+  }
+  if (datos.topo) ind.push({ label: 'Pendiente media', value: `${datos.topo.pendiente_pct.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d' });
+  if (datos.suelo) {
+    ind.push({ label: 'Agua útil', value: `${Math.round(datos.suelo.agua_util.total_mm_100)} mm`, sub: datos.suelo.agua_util.clase });
+    ind.push({ label: 'Suelo', value: datos.suelo.interp.textura.clase, sub: `grupo hidro. ${datos.suelo.grupo_hidro.grupo}` });
+  }
+  if (datos.cobertura) ind.push({ label: 'Cobertura', value: datos.cobertura.dominante, sub: `veg. ${Math.round(datos.cobertura.veg_pct)} %` });
+
+  // Aspectos a considerar, derivados de umbrales sobre los datos presentes.
+  const notas: string[] = [];
+  const ar = datos.clima?.aridez?.clase?.toLowerCase() ?? '';
+  if (datos.clima?.aridez && (ar.includes('árid') || ar.includes('arid') || ar.includes('semi')))
+    notas.push(`Clima ${datos.clima.aridez.clase.toLowerCase()}: priorizar captación, almacenamiento y retención de agua (represas, keyline, cobertura).`);
+  const mh = datos.clima?.heladas?.meses_riesgo;
+  if (mh && mh.length) notas.push(`Riesgo de heladas (${mh.join(', ')}): elegir especies y fechas de siembra acordes.`);
+  if (datos.topo) {
+    const p = datos.topo.pendiente_pct;
+    if (p > 15) notas.push(`Pendiente media pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
+    else if (p > 8) notas.push(`Pendiente media moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
+  }
+  if (datos.suelo) {
+    if (datos.suelo.agua_util.total_mm_100 < 100) notas.push(`Baja capacidad de agua útil (${Math.round(datos.suelo.agua_util.total_mm_100)} mm): suelos de poca retención; aportar materia orgánica.`);
+    const g = datos.suelo.grupo_hidro.grupo;
+    if (g === 'C' || g === 'D') notas.push(`Grupo hidrológico ${g}: baja infiltración y mayor escurrimiento; dimensionar drenajes y reservorios en consecuencia.`);
+  }
+  if (datos.extremos && datos.extremos.sequia.racha_max_dias > 30)
+    notas.push(`Racha seca histórica de ${datos.extremos.sequia.racha_max_dias} días: prever reserva de agua para el período crítico.`);
+  if (datos.cobertura && datos.cobertura.suelo_pct > 30)
+    notas.push(`Suelo descubierto en ${Math.round(datos.cobertura.suelo_pct)} % del predio: oportunidad de aumentar la cobertura vegetal.`);
+
+  if (!ind.length) return null;
+
+  return (
+    <div className="page-break-before space-y-5">
+      <div>
+        <p className="eyebrow">Síntesis</p>
+        <h2 className="font-display text-2xl text-ink-950 mt-1">Resumen ejecutivo</h2>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        {ind.map((it, i) => <StatBlock key={i} label={it.label} value={it.value} sub={it.sub} />)}
+      </div>
+
+      {notas.length > 0 && (
+        <div className="rounded-lg border border-moss-200 bg-moss-50 p-4">
+          <p className="text-xs font-semibold text-moss-900 uppercase tracking-wide mb-2">Aspectos a considerar</p>
+          <ul className="space-y-1.5">
+            {notas.map((n, i) => (
+              <li key={i} className="text-sm text-ink-800 flex gap-2">
+                <span className="text-moss-700 mt-0.5">•</span><span>{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Section({ numero, titulo, children }: { numero: number | string; titulo: string; children: React.ReactNode }) {
   return (
