@@ -9,6 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, History, SunDim,
+  IdCard, DollarSign, Wind,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -64,6 +65,12 @@ import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
 import { SugerenciasPanel } from './SugerenciasPanel';
 import { DibujoToolbar } from './DibujoToolbar';
+import { PerfilProfesionalModal } from './PerfilProfesionalModal';
+import { leerPerfil } from '@/lib/profesional';
+import { EconomiaPanel } from './EconomiaPanel';
+import { CarbonoPanel } from './CarbonoPanel';
+import type { EconomiaResumen } from '@/lib/economia';
+import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel, type KeylineCheck } from './KeylinePanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
@@ -114,7 +121,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
-  | 'proyectos';
+  | 'carbono' | 'economia' | 'proyectos';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -313,6 +320,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   const cursorCadRef = useRef<{ lat: number; lng: number } | null>(null);
   const cursorPosRef = useRef<{ lat: number; lng: number } | null>(null); // cursor sobre el mapa (barra de estado)
   const [exportOpen, setExportOpen] = useState(false);
+  const [perfilOpen, setPerfilOpen] = useState(false);
+  const [economiaResumen, setEconomiaResumen] = useState<EconomiaResumen | null>(null);
+  const [carbonoResumen,  setCarbonoResumen]  = useState<CarbonoResumen | null>(null);
   const [paletaOpen, setPaletaOpen] = useState(false);
   const [ayudaOpen,  setAyudaOpen]  = useState(false);
   const [tema, setTema] = useState<'claro' | 'sepia' | 'oscuro'>('claro');
@@ -492,6 +502,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
     if (represaResumen)  m['represa']  = represaResumen;
     if (riegoResumen)    m['riego']    = riegoResumen;
+    if (economiaResumen) m['economia'] = economiaResumen;
+    if (carbonoResumen)  m['carbono']  = carbonoResumen;
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
     if (datosCobertura)  m['cobertura'] = datosCobertura;
     if (datosEntorno)    m['entorno']  = datosEntorno;
@@ -517,7 +529,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, potrerosLayer, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, economiaResumen, carbonoResumen, potrerosLayer, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1624,6 +1636,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     setRedAguaResumen((meta['red_agua'] as RedAguaResumen)  ?? null);
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
+    setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
+    setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);
     setPotrerosLayer((meta['potreros']  as PotrerosLayout)  ?? null);
     setSombrasObjetos((meta['sombras_objetos'] as ObjetoSombra[]) ?? []);
     setDatosCobertura((meta['cobertura'] as DatosCobertura) ?? null);
@@ -1709,10 +1723,13 @@ export function MapaTerrenoApp({ userName }: Props) {
       cobertura: coberturaResumen ?? undefined,
       entorno: entornoResumen ?? undefined,
       zonas: zonas.length ? zonas : undefined,
+      economia: economiaResumen ?? undefined,
+      carbono: carbonoResumen ?? undefined,
       mapaDataUrl,
+      profesional: leerPerfil() ?? undefined,
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen]);
 
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [guardandoPng, setGuardandoPng] = useState(false);
@@ -1803,6 +1820,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     { id: 'visibilidad' as Tab, label: 'Visibilidad', icon: <Eye  className="w-3.5 h-3.5" /> },
     { id: 'prod'     as Tab, label: 'Prod.',   icon: <Wheat        className="w-3.5 h-3.5" /> },
     { id: 'aptitud'  as Tab, label: 'Aptitud', icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
+    { id: 'carbono'  as Tab, label: 'Carbono', icon: <Wind         className="w-3.5 h-3.5" /> },
   ];
   const TABS_DISENO = [
     { id: 'agua'      as Tab, label: 'Agua',     icon: <Droplets   className="w-3.5 h-3.5" /> },
@@ -1815,6 +1833,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <Beef       className="w-3.5 h-3.5" /> },
     { id: 'riego'     as Tab, label: 'Riego',    icon: <Sprout     className="w-3.5 h-3.5" /> },
     { id: 'keyline'   as Tab, label: 'Keyline',  icon: <Waypoints  className="w-3.5 h-3.5" /> },
+    { id: 'economia'  as Tab, label: 'Economía', icon: <DollarSign className="w-3.5 h-3.5" /> },
     { id: 'proyectos' as Tab, label: 'Proyect.', icon: <FolderOpen className="w-3.5 h-3.5" /> },
   ];
 
@@ -1919,8 +1938,10 @@ export function MapaTerrenoApp({ userName }: Props) {
           </div>
         </div>
 
-        {/* ── Herramientas de dibujo centradas en el header ── */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center h-full">
+        {/* ── Herramientas de dibujo, en columna central elástica ──
+            (antes iban en `absolute left-1/2`, fuera del flujo, y su extremo
+            derecho pisaba el chip "Sin guardar" y el botón Guardar). */}
+        <div className="flex-1 flex items-center justify-center min-w-0 h-full px-2">
           <DibujoToolbar
             inHeader
             modoDibujo={modoDibujo}
@@ -1947,7 +1968,7 @@ export function MapaTerrenoApp({ userName }: Props) {
           />
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <span className={`hidden md:flex items-center gap-1 text-[11px] px-2 py-1 rounded-full ${guardadoTick ? 'bg-moss-100 text-moss-900' : proyectoActual ? 'bg-moss-100 text-moss-900' : 'bg-sun-500/15 text-clay-700'}`}>
             {proyectoActual ? <Cloud className="w-3 h-3" /> : <CloudOff className="w-3 h-3" />}
             {guardadoTick ? 'Guardado' : proyectoActual ? 'En la nube' : 'Sin guardar'}
@@ -1966,6 +1987,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 <div className="fixed inset-0 z-[1250]" onClick={() => setExportOpen(false)} />
                 <div className="absolute right-0 mt-1 w-48 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
                   <ExportItem icon={<FileText className="w-3.5 h-3.5" />} label="Informe PDF" onClick={() => { setExportOpen(false); handleVerInforme(); }} />
+                  <ExportItem icon={<IdCard className="w-3.5 h-3.5" />} label="Datos del profesional…" onClick={() => { setExportOpen(false); setPerfilOpen(true); }} />
                   <ExportItem icon={<Camera className="w-3.5 h-3.5" />} label="Imagen PNG del plano" onClick={() => { setExportOpen(false); iniciarCaptura(); }} />
                   <ExportItem icon={<FileDown className="w-3.5 h-3.5" />} label="DXF (AutoCAD)" onClick={() => { setExportOpen(false); handleExportarDXF(); }} />
                   <div className="h-px bg-bone-100 my-1" />
@@ -2287,6 +2309,24 @@ export function MapaTerrenoApp({ userName }: Props) {
           {tab === 'riego' && (
             <div className="px-4 py-4">
               <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} />
+            </div>
+          )}
+          {tab === 'carbono' && (
+            <div className="px-4 py-4">
+              <CarbonoPanel
+                areaHa={metricas?.area_ha ?? 0}
+                datosSuelo={datosSuelo} datosCobertura={datosCobertura}
+                onResumen={setCarbonoResumen}
+              />
+            </div>
+          )}
+          {tab === 'economia' && (
+            <div className="px-4 py-4">
+              <EconomiaPanel
+                metricas={metricas} redAgua={redAguaResumen} represa={represaResumen} riego={riegoResumen}
+                resumenInicial={economiaResumen}
+                onResumen={setEconomiaResumen}
+              />
             </div>
           )}
           {tab === 'cuenca' && (
@@ -2814,6 +2854,7 @@ export function MapaTerrenoApp({ userName }: Props) {
 
       {/* ─── Paleta de comandos (Ctrl+K) y atajos (?) ───────────────────────── */}
       {paletaOpen && <ComandoPalette comandos={comandos} onClose={() => setPaletaOpen(false)} />}
+      {perfilOpen && <PerfilProfesionalModal onClose={() => setPerfilOpen(false)} />}
       {ayudaOpen  && <AtajosAyuda onClose={() => setAyudaOpen(false)} />}
 
       {/* ─── Vista 3D (MapLibre) ────────────────────────────────────────────── */}

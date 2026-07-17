@@ -15,6 +15,9 @@ import type { EntornoResumen }   from './entorno';
 import type { Zona }             from './zonificacion';
 import type { Mojon }            from './types';
 import type { MetricasPoligono } from './geometria';
+import type { PerfilProfesional } from './profesional';
+import type { EconomiaResumen }  from './economia';
+import type { CarbonoResumen }   from './carbono';
 
 export interface InformeData {
   nombre:     string;
@@ -31,8 +34,11 @@ export interface InformeData {
   riego?:     RiegoResumen;
   cobertura?: CoberturaResumen;
   entorno?:   EntornoResumen;
+  economia?:  EconomiaResumen;
+  carbono?:   CarbonoResumen;
   zonas?:     Zona[];
   mapaDataUrl?: string;         // PNG del mapa capturado (base64)
+  profesional?: PerfilProfesional; // white-label: marca del consultor que firma
 }
 
 const LS_KEY = 'terreno_informe_borrador';

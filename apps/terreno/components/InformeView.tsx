@@ -6,6 +6,7 @@ import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/l
 import { MESES, centroide } from '@/lib/clima';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
+import { formatearMoneda } from '@/lib/economia';
 
 interface Props {
   datos: InformeData;
@@ -25,16 +26,28 @@ export function InformeView({ datos, compartido = false }: Props) {
     suelo:     !!datos.suelo,
     cobertura: !!datos.cobertura,
     entorno:   !!datos.entorno,
+    carbono:   !!datos.carbono,
     redAgua:   !!datos.redAgua,
     represa:   !!datos.represa,
     riego:     !!datos.riego,
+    economia:  !!datos.economia,
     zonas:     !!(datos.zonas && datos.zonas.length),
   };
   const sec: Record<string, number> = {};
   let _c = 1; // 1 = Datos del terreno
-  (['clima', 'extremos', 'contexto', 'entorno', 'topo', 'captacion', 'suelo', 'cobertura', 'redAgua', 'represa', 'riego', 'zonas'] as const).forEach(k => {
+  (['clima', 'extremos', 'contexto', 'entorno', 'topo', 'captacion', 'suelo', 'cobertura', 'redAgua', 'represa', 'riego', 'zonas', 'carbono', 'economia'] as const).forEach(k => {
     if (presente[k]) sec[k] = ++_c;
   });
+
+  // Índice de secciones (título + número), para la tabla de contenidos.
+  const TITULOS: Record<string, string> = {
+    clima: 'Clima', extremos: 'Extremos y riesgo climático', contexto: 'Contexto ecológico y cultural',
+    entorno: 'Contexto vivo (biodiversidad)', topo: 'Topografía', captacion: 'Captación de agua de lluvia',
+    suelo: 'Suelo', cobertura: 'Cobertura del suelo', carbono: 'Carbono', redAgua: 'Red de agua por tubería',
+    represa: 'Represa / reservorio', riego: 'Riego por sector', economia: 'Presupuesto y retorno',
+    zonas: 'Zonificación predial',
+  };
+  const indice = Object.entries(sec).sort((a, b) => a[1] - b[1]).map(([k, n]) => ({ n, titulo: TITULOS[k] ?? k }));
 
   const fechaLarga = (() => {
     try {
@@ -83,6 +96,25 @@ export function InformeView({ datos, compartido = false }: Props) {
         {/* Portada + resumen ejecutivo */}
         <Portada datos={datos} metricas={metricas} fechaLarga={fechaLarga} />
         <ResumenEjecutivo datos={datos} metricas={metricas} />
+
+        {/* Índice */}
+        {indice.length > 0 && (
+          <div className="space-y-2">
+            <p className="eyebrow">Contenido</p>
+            <ul className="text-sm text-ink-800">
+              <li className="flex items-baseline gap-2 py-0.5">
+                <span className="font-mono text-ink-700/50 w-5">1</span>
+                <span>Datos del terreno</span>
+              </li>
+              {indice.map(({ n, titulo }) => (
+                <li key={n} className="flex items-baseline gap-2 py-0.5">
+                  <span className="font-mono text-ink-700/50 w-5">{n}</span>
+                  <span>{titulo}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Encabezado */}
         <header className="border-b-2 border-moss-700 pb-6 page-break-before">
@@ -635,6 +667,69 @@ export function InformeView({ datos, compartido = false }: Props) {
           </Section>
         )}
 
+        {/* ── Carbono ── */}
+        {datos.carbono && (
+          <Section numero={sec.carbono!} titulo="Carbono">
+            <div className="grid grid-cols-3 gap-4 mb-3">
+              {datos.carbono.stock_suelo_tCO2e != null && (
+                <StatBlock label="Stock en suelo" value={`${Math.round(datos.carbono.stock_suelo_tCO2e).toLocaleString('es-AR')} t`} sub="CO₂e (0–30 cm)" />
+              )}
+              <StatBlock label="Captura potencial" value={`${datos.carbono.captura_anual_tCO2e.toFixed(1)} t/año`} sub="CO₂e" />
+              <StatBlock label="En 10 años" value={`${Math.round(datos.carbono.captura_10anios_tCO2e).toLocaleString('es-AR')} t`} sub="CO₂e" />
+            </div>
+            {datos.carbono.practicas.length > 0 && (
+              <p className="text-sm text-ink-700/80">
+                <span className="font-semibold">Prácticas consideradas:</span> {datos.carbono.practicas.join(', ')}.
+              </p>
+            )}
+            <p className="text-xs text-ink-700/50 mt-2">Estimación orientativa con coeficientes medios de literatura; para créditos de carbono se requiere muestreo y metodología certificada.</p>
+          </Section>
+        )}
+
+        {/* ── Presupuesto y retorno ── */}
+        {datos.economia && (
+          <Section numero={sec.economia!} titulo="Presupuesto y retorno">
+            <Table
+              head={['Concepto', 'Cantidad', 'Precio', 'Subtotal']}
+              rows={datos.economia.rubros.map(r => [
+                r.concepto || '—',
+                `${r.cantidad.toLocaleString('es-AR')} ${r.unidad}`,
+                formatearMoneda(r.precioUnit, datos.economia!.moneda),
+                formatearMoneda(r.subtotal, datos.economia!.moneda),
+              ])}
+              colAlign={['left', 'right', 'right', 'right']}
+            />
+            <div className="grid grid-cols-3 gap-4 mt-4">
+              <StatBlock label="Inversión total" value={formatearMoneda(datos.economia.total, datos.economia.moneda)} sub="obras" />
+              {datos.economia.margenAnual > 0 && (
+                <StatBlock label="Margen anual" value={formatearMoneda(datos.economia.margenAnual, datos.economia.moneda)} sub="ingreso − costo" />
+              )}
+              {datos.economia.payback_anios != null && (
+                <StatBlock label="Recuperación" value={`${datos.economia.payback_anios.toFixed(1)} años`} sub="repago de la inversión" />
+              )}
+            </div>
+            <p className="text-xs text-ink-700/50 mt-2">Precios orientativos; validar con proveedores de la zona.</p>
+          </Section>
+        )}
+
+        {/* ── Anexo: fuentes y metodología ── */}
+        <Section numero="A" titulo="Anexo — fuentes y metodología">
+          <ul className="text-xs text-ink-700/70 space-y-1 leading-relaxed list-disc pl-4">
+            <li><span className="font-medium">Imagen satelital:</span> Esri World Imagery.</li>
+            <li><span className="font-medium">Topografía:</span> modelo de elevación SRTM/Terrarium (~30 m).</li>
+            {datos.clima && <li><span className="font-medium">Clima:</span> {datos.clima.fuente ?? 'NASA POWER / Open-Meteo'}.</li>}
+            {datos.extremos && <li><span className="font-medium">Extremos:</span> {datos.extremos.fuente} ({datos.extremos.periodo}).</li>}
+            {datos.suelo && <li><span className="font-medium">Suelo:</span> SoilGrids (ISRIC); agua útil por pedotransferencia Saxton-Rawls (2006).</li>}
+            {datos.cobertura && <li><span className="font-medium">Cobertura:</span> ESA WorldCover 10 m ({datos.cobertura.anio}).</li>}
+            {datos.entorno && <li><span className="font-medium">Biodiversidad:</span> GBIF; entorno OpenStreetMap.</li>}
+            {datos.carbono && <li><span className="font-medium">Carbono:</span> coeficientes medios de literatura (orientativo).</li>}
+          </ul>
+          <p className="text-xs text-ink-700/50 mt-3 leading-relaxed">
+            Los valores son orientativos y no reemplazan un relevamiento topográfico, edafológico o climático profesional.
+            Verificar en campo antes de ejecutar obras.
+          </p>
+        </Section>
+
         {/* Pie de página */}
         <footer className="border-t-2 border-bone-200 pt-6 text-xs text-ink-700/50 leading-relaxed">
           <div className="flex items-start justify-between gap-4">
@@ -691,13 +786,30 @@ function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas
       <div className="flex-1" />
 
       <div className="mt-10 pt-6 border-t border-bone-200 flex items-end justify-between gap-6">
-        <div>
-          <p className="text-[10px] uppercase tracking-wide text-ink-700/40">Elaborado por</p>
-          <p className="text-sm font-semibold text-ink-950 mt-0.5">Arte y Tierra</p>
-          <p className="text-xs text-ink-700/60">arteytierra.org</p>
+        <div className="flex items-center gap-3">
+          {datos.profesional?.logoDataUrl && (
+            <img src={datos.profesional.logoDataUrl} alt="" className="h-12 w-12 object-contain shrink-0" />
+          )}
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-ink-700/40">Elaborado por</p>
+            {datos.profesional ? (
+              <>
+                <p className="text-sm font-semibold text-ink-950 mt-0.5">{datos.profesional.nombre}</p>
+                {datos.profesional.matricula && <p className="text-xs text-ink-700/70">{datos.profesional.matricula}</p>}
+                {(datos.profesional.contacto || datos.profesional.web) && (
+                  <p className="text-xs text-ink-700/60">{[datos.profesional.contacto, datos.profesional.web].filter(Boolean).join(' · ')}</p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-ink-950 mt-0.5">Arte y Tierra</p>
+                <p className="text-xs text-ink-700/60">arteytierra.org</p>
+              </>
+            )}
+          </div>
         </div>
         <p className="text-[10px] text-ink-700/40 text-right max-w-[45%]">
-          Análisis orientativo a partir de imágenes satelitales y modelos públicos. Verificar en campo antes de ejecutar obras.
+          {datos.profesional ? 'Con tecnología de Arte y Tierra · Terreno. ' : ''}Análisis orientativo a partir de imágenes satelitales y modelos públicos. Verificar en campo antes de ejecutar obras.
         </p>
       </div>
     </div>
@@ -706,16 +818,24 @@ function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas
 
 /** Segunda página: indicadores clave del predio + aspectos a considerar. */
 function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: MetricasPoligono | null }) {
-  const ind: Array<{ label: string; value: string; sub: string }> = [];
+  const ind: Array<{ label: string; value: string; sub: string; tono?: Tono }> = [];
   if (metricas) ind.push({ label: 'Superficie', value: `${metricas.area_ha.toFixed(2)} ha`, sub: 'del predio' });
   if (datos.clima) {
     ind.push({ label: 'Precipitación', value: `${Math.round(datos.clima.precip_anual_mm)} mm`, sub: 'media anual' });
-    if (datos.clima.aridez) ind.push({ label: 'Aridez', value: datos.clima.aridez.clase, sub: `índice ${datos.clima.aridez.valor.toFixed(2)}` });
+    if (datos.clima.aridez) {
+      const seco = /árid|arid|semi/.test(datos.clima.aridez.clase.toLowerCase());
+      ind.push({ label: 'Aridez', value: datos.clima.aridez.clase, sub: `índice ${datos.clima.aridez.valor.toFixed(2)}`, tono: seco ? 'warn' : 'ok' });
+    }
   }
-  if (datos.topo) ind.push({ label: 'Pendiente media', value: `${datos.topo.pendiente_pct.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d' });
+  if (datos.topo) {
+    const p = datos.topo.pendiente_pct;
+    ind.push({ label: 'Pendiente media', value: `${p.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d', tono: p > 15 ? 'alert' : p > 8 ? 'warn' : 'ok' });
+  }
   if (datos.suelo) {
-    ind.push({ label: 'Agua útil', value: `${Math.round(datos.suelo.agua_util.total_mm_100)} mm`, sub: datos.suelo.agua_util.clase });
-    ind.push({ label: 'Suelo', value: datos.suelo.interp.textura.clase, sub: `grupo hidro. ${datos.suelo.grupo_hidro.grupo}` });
+    const aw = datos.suelo.agua_util.total_mm_100;
+    ind.push({ label: 'Agua útil', value: `${Math.round(aw)} mm`, sub: datos.suelo.agua_util.clase, tono: aw < 100 ? 'warn' : 'ok' });
+    const g = datos.suelo.grupo_hidro.grupo;
+    ind.push({ label: 'Suelo', value: datos.suelo.interp.textura.clase, sub: `grupo hidro. ${g}`, tono: g === 'D' ? 'alert' : g === 'C' ? 'warn' : 'ok' });
   }
   if (datos.cobertura) ind.push({ label: 'Cobertura', value: datos.cobertura.dominante, sub: `veg. ${Math.round(datos.cobertura.veg_pct)} %` });
 
@@ -751,7 +871,7 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {ind.map((it, i) => <StatBlock key={i} label={it.label} value={it.value} sub={it.sub} />)}
+        {ind.map((it, i) => <StatBlock key={i} label={it.label} value={it.value} sub={it.sub} tono={it.tono} />)}
       </div>
 
       {notas.length > 0 && (
@@ -782,9 +902,16 @@ function Section({ numero, titulo, children }: { numero: number | string; titulo
   );
 }
 
-function StatBlock({ label, value, sub }: { label: string; value: string; sub: string }) {
+type Tono = 'ok' | 'warn' | 'alert';
+const TONO_STAT: Record<Tono, string> = {
+  ok:    'bg-moss-50 border-moss-200',
+  warn:  'bg-sun-500/10 border-sun-500/30',
+  alert: 'bg-clay-700/10 border-clay-700/30',
+};
+
+function StatBlock({ label, value, sub, tono }: { label: string; value: string; sub: string; tono?: Tono }) {
   return (
-    <div className="bg-bone-50 rounded-lg p-3 border border-bone-200">
+    <div className={`rounded-lg p-3 border ${tono ? TONO_STAT[tono] : 'bg-bone-50 border-bone-200'}`}>
       <p className="text-xs text-ink-700/60 mb-0.5">{label}</p>
       <p className="font-mono font-bold text-sm text-ink-950">{value}</p>
       <p className="text-xs text-ink-700/40 mt-0.5">{sub}</p>

@@ -12,6 +12,8 @@ import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen } from '@/lib/riego';
 import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
 import { resumirEntorno, type DatosEntorno } from '@/lib/entorno';
+import type { EconomiaResumen } from '@/lib/economia';
+import type { CarbonoResumen } from '@/lib/carbono';
 import type { Zona } from '@/lib/zonificacion';
 import type { Mojon } from '@/lib/types';
 import { calcularMetricas } from '@/lib/geometria';
@@ -62,6 +64,8 @@ export default async function InformeTokenPage({ params }: PageProps) {
       const e = meta['entorno'] as DatosEntorno | undefined;
       return e && (e.biodiversidad || e.ubicacion) ? resumirEntorno(e) : undefined;
     })(),
+    economia: meta['economia'] as EconomiaResumen | undefined,
+    carbono:  meta['carbono'] as CarbonoResumen | undefined,
     zonas:    meta['zonas'] as Zona[] | undefined,
   };
 
