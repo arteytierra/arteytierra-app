@@ -91,7 +91,7 @@ import type { Mojon } from '@/lib/types';
 import { actualizarProyecto, guardarProyecto } from '@/lib/proyectos';
 import type { Proyecto } from '@/lib/proyectos';
 import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
-import { aplicarCalibracionPrecip, type DatosClima, type CalibracionPrecip } from '@/lib/clima';
+import { aplicarCalibracionPrecip, obtenerPrecipCHIRPS, centroide, type DatosClima, type CalibracionPrecip } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
@@ -172,6 +172,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     () => (datosClimaRaw ? aplicarCalibracionPrecip(datosClimaRaw, calibracionPrecip) : null),
     [datosClimaRaw, calibracionPrecip],
   );
+  const [buscandoCHIRPS, setBuscandoCHIRPS] = useState(false);
   const [datosTopografia, setDatosTopografia] = useState<DatosTopografia | null>(null);
   const [topoLoading,     setTopoLoading]     = useState(false);
   const [topoError,       setTopoError]       = useState<string | null>(null);
@@ -1506,6 +1507,40 @@ export function MapaTerrenoApp({ userName }: Props) {
   const handleGetBounds      = useCallback((fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => { getBoundsRef.current = fn; }, []);
   const handleGetFlyTo       = useCallback((fn: (lat: number, lng: number) => void) => { flyToRef.current = fn; }, []);
 
+  // ─── Precipitación de alta resolución (CHIRPS ~5 km) ──────────────────────
+  // POWER trae la lluvia de una grilla de ~50 km y la subestima donde hay
+  // relieve. Apenas tenemos clima, buscamos CHIRPS y entra como calibración
+  // automática — sin pisar nunca una que haya cargado el usuario a mano.
+  // La celda redondeada evita reintentar con cada mojón que se mueve.
+  const celdaClima = useMemo(() => {
+    if (mojones.length === 0) return null;
+    const c = centroide(mojones);
+    return { lat: Math.round(c.lat / 0.05) * 0.05, lng: Math.round(c.lng / 0.05) * 0.05 };
+  }, [mojones]);
+
+  const hayClimaCrudo = !!datosClimaRaw;
+  const hayCalibracionManual = calibracionPrecip?.origen === 'manual';
+  // Se intenta una sola vez por celda: si el usuario quita la calibración de
+  // CHIRPS, no queremos que vuelva sola en el próximo render.
+  const [chirpsIntentado, setChirpsIntentado] = useState(false);
+  useEffect(() => { setChirpsIntentado(false); }, [celdaClima]);
+
+  useEffect(() => {
+    if (!hayClimaCrudo || !celdaClima || chirpsIntentado || hayCalibracionManual) return;
+
+    const ctrl = new AbortController();
+    setBuscandoCHIRPS(true);
+    obtenerPrecipCHIRPS(celdaClima.lat, celdaClima.lng, { señal: ctrl.signal })
+      .then(cal => {
+        if (ctrl.signal.aborted) return;
+        if (cal) setCalibracionPrecip(cal);
+        setChirpsIntentado(true);
+      })
+      .finally(() => { if (!ctrl.signal.aborted) setBuscandoCHIRPS(false); });
+
+    return () => ctrl.abort();
+  }, [hayClimaCrudo, celdaClima, chirpsIntentado, hayCalibracionManual]);
+
   // ─── Estado de guardado, para el menú de la barra superior ────────────────
   const estadoGuardado = useMemo(() => {
     if (guardandoNube) return { label: 'Guardando…', titulo: 'Guardando en la nube',      icono: <Save    className="w-3.5 h-3.5 animate-pulse" />, clase: 'bg-moss-700 text-bone-50' };
@@ -2222,6 +2257,7 @@ export function MapaTerrenoApp({ userName }: Props) {
             calibracion={calibracionPrecip} onCalibracion={setCalibracionPrecip}
             precipCruda={datosClimaRaw?.precip_anual_mm ?? null}
             pendientePct={datosTopografia?.pendiente_pct ?? null}
+            buscandoCHIRPS={buscandoCHIRPS}
           /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}

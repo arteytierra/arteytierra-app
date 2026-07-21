@@ -86,6 +86,64 @@ export interface CalibracionPrecip {
   anual_mm?:   number;    // total anual conocido → re-escala la curva mensual
   mensual_mm?: number[];  // 12 valores, si se tienen
   fuente?:     string;    // "Estación X (INTA)" — queda registrado en el informe
+  /** `chirps` la puso la app sola; `manual` la cargó el usuario y manda. */
+  origen?:     'manual' | 'chirps';
+}
+
+// ─── CHIRPS (~5 km) ───────────────────────────────────────────────────────────
+
+interface RespuestaCHIRPS {
+  estado:   'listo' | 'procesando' | 'no_disponible' | 'error';
+  meses?:   number[];
+  anual?:   number;
+  años?:    number;
+  fuente?:  string;
+  job?:     string;
+  progreso?: number;
+}
+
+/**
+ * Precipitación mensual de CHIRPS, como calibración lista para aplicar.
+ *
+ * La lluvia de NASA POWER viene de una grilla de ~50 km y subestima mucho en
+ * terreno quebrado (medido: 0.60x en Aguas Buenas, PR). CHIRPS trae ~5 km y da
+ * en el clavo (1.01x ahí, 0.96x en Córdoba, 1.00x en Mendoza).
+ *
+ * La primera consulta de una zona encola un trabajo en ClimateSERV y puede
+ * tardar minutos; después queda cacheada y es instantánea. Devuelve `null` si
+ * no hay dato (fuera de 50°S–50°N, o si tarda demasiado): el llamador se queda
+ * con POWER, que es peor pero existe.
+ */
+export async function obtenerPrecipCHIRPS(
+  lat: number,
+  lng: number,
+  opts: { señal?: AbortSignal; onProgreso?: (pct: number) => void } = {},
+): Promise<CalibracionPrecip | null> {
+  const base = `/api/precipitacion?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
+  const espera = (ms: number) => new Promise(r => setTimeout(r, ms));
+  let job: string | undefined;
+
+  // ~2 min de paciencia: alcanza para un trabajo nuevo sin dejar la promesa colgada.
+  for (let intento = 0; intento < 25; intento++) {
+    if (opts.señal?.aborted) return null;
+    let r: RespuestaCHIRPS;
+    try {
+      const res = await fetch(job ? `${base}&job=${job}` : base, { signal: opts.señal });
+      r = await res.json() as RespuestaCHIRPS;
+    } catch {
+      return null;
+    }
+
+    if (r.estado === 'listo' && r.meses?.length === 12) {
+      return { modo: 'mensual', mensual_mm: r.meses, fuente: r.fuente ?? 'CHIRPS ~5 km', origen: 'chirps' };
+    }
+    if (r.estado !== 'procesando') return null;
+
+    job = r.job ?? job;
+    opts.onProgreso?.(r.progreso ?? 0);
+    await espera(5000);
+  }
+  return null;
 }
 
 // ─── NASA POWER API ───────────────────────────────────────────────────────────

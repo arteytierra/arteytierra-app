@@ -19,9 +19,11 @@ interface Props {
   precipCruda:   number | null;
   /** Pendiente media del predio: si es alta, avisamos del sesgo de la grilla. */
   pendientePct:  number | null;
+  /** La app está buscando la lluvia de CHIRPS (~5 km) para este punto. */
+  buscandoCHIRPS: boolean;
 }
 
-export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct }: Props) {
+export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct, buscandoCHIRPS }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -161,6 +163,7 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             precipCruda={precipCruda}
             precipActual={datos.precip_anual_mm}
             pendientePct={pendientePct}
+            buscandoCHIRPS={buscandoCHIRPS}
           />
 
           {/* Fuente + Weather Spark */}
@@ -498,13 +501,14 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
  * que el profesional conoce.
  */
 function CalibracionPrecipBloque({
-  calibracion, onCalibracion, precipCruda, precipActual, pendientePct,
+  calibracion, onCalibracion, precipCruda, precipActual, pendientePct, buscandoCHIRPS,
 }: {
   calibracion:   CalibracionPrecip | null;
   onCalibracion: (c: CalibracionPrecip | null) => void;
   precipCruda:   number | null;
   precipActual:  number;
   pendientePct:  number | null;
+  buscandoCHIRPS: boolean;
 }) {
   const [anual, setAnual]   = useState(calibracion?.anual_mm ? String(calibracion.anual_mm) : '');
   const [fuente, setFuente] = useState(calibracion?.fuente ?? '');
@@ -518,14 +522,16 @@ function CalibracionPrecipBloque({
 
   const aplicarAnual = () => {
     const v = parseFloat(anual.replace(',', '.'));
-    if (Number.isFinite(v) && v > 0) onCalibracion({ modo: 'anual', anual_mm: v, fuente: fuente.trim() || undefined });
+    if (Number.isFinite(v) && v > 0) onCalibracion({ modo: 'anual', anual_mm: v, fuente: fuente.trim() || undefined, origen: 'manual' });
   };
   const aplicarMensual = () => {
     const vals = mensual.map(s => parseFloat(s.replace(',', '.')));
     if (vals.every(v => Number.isFinite(v) && v >= 0)) {
-      onCalibracion({ modo: 'mensual', mensual_mm: vals, fuente: fuente.trim() || undefined });
+      onCalibracion({ modo: 'mensual', mensual_mm: vals, fuente: fuente.trim() || undefined, origen: 'manual' });
     }
   };
+
+  const esAuto = calibracion?.origen === 'chirps';
 
   const inputCls = 'w-full px-2 py-1 rounded border border-bone-200 bg-white text-ink-900 text-xs placeholder-ink-700/30 focus:outline-none focus:border-moss-500';
 
@@ -536,28 +542,47 @@ function CalibracionPrecipBloque({
         <p className="text-xs font-semibold text-ink-900">Calibrar precipitación</p>
       </div>
 
+      {buscandoCHIRPS && !calibracion && (
+        <p className="text-[11px] text-ink-700/60 flex items-center gap-1.5">
+          <CloudRain className="w-3.5 h-3.5 shrink-0 animate-pulse text-water-500" />
+          Buscando la lluvia de CHIRPS (~5 km) para este punto…
+        </p>
+      )}
+
       {calibracion ? (
         <div className="rounded border border-moss-200 bg-moss-50 px-2 py-1.5 space-y-1">
           <p className="text-[11px] text-moss-900">
-            Calibrada a <span className="font-semibold">{precipActual} mm/año</span>
-            {precipCruda ? <> · la grilla daba {precipCruda} mm</> : null}
+            {esAuto ? 'Afinada a ' : 'Calibrada a '}
+            <span className="font-semibold">{precipActual} mm/año</span>
+            {precipCruda ? <> · la grilla de ~50 km daba {precipCruda} mm</> : null}
             {factor ? <> (×{factor.toFixed(2)})</> : null}
           </p>
           {calibracion.fuente && <p className="text-[10px] text-ink-700/60">Fuente: {calibracion.fuente}</p>}
+          {esAuto && (
+            <p className="text-[10px] text-ink-700/60 leading-relaxed">
+              Dato satelital de ~5 km, mucho más fino que el de POWER. Si tenés el de una
+              estación cercana, cargalo abajo y tiene prioridad.
+            </p>
+          )}
           <button
             onClick={() => { onCalibracion(null); setAnual(''); }}
             className="text-[10px] text-clay-700 hover:underline"
           >
-            Quitar calibración
+            {esAuto ? 'Volver al dato crudo (~50 km)' : 'Quitar calibración'}
           </button>
         </div>
-      ) : (
+      ) : null}
+
+      {(!calibracion || esAuto) && (
         <>
           <p className="text-[11px] text-ink-700/60 leading-relaxed">
-            El dato satelital es de grilla gruesa (~50 km) y suele <strong>subestimar la lluvia</strong> en
-            terreno quebrado. Si conocés el valor de una estación cercana, cargalo y se re-escala la curva mensual.
+            {esAuto
+              ? <>Un dato medido en el campo siempre gana. Si tenés el de una estación cercana o tu propio
+                  pluviómetro, cargalo acá y reemplaza al satelital.</>
+              : <>El dato satelital es de grilla gruesa (~50 km) y suele <strong>subestimar la lluvia</strong> en
+                  terreno quebrado. Si conocés el valor de una estación cercana, cargalo y se re-escala la curva mensual.</>}
           </p>
-          {quebrado && (
+          {quebrado && !esAuto && (
             <p className="text-[11px] text-clay-700 flex gap-1.5">
               <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               Pendiente media {pendientePct!.toFixed(0)} %: terreno quebrado, conviene calibrar.
