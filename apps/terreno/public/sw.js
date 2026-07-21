@@ -3,12 +3,21 @@
  *  - Tiles de mapa (Esri/ArcGIS) y elevación (/api/terrarium): cache-first con
  *    tope de entradas → permite seguir viendo zonas ya visitadas sin señal.
  *  - Navegación (documentos HTML): network-first con fallback a caché.
- *  - Resto (estáticos same-origin): stale-while-revalidate.
- * No cachea las llamadas a Supabase ni otras APIs de datos.
+ *  - Estáticos de Next (/_next/static/): cache-first (llevan hash, son inmutables).
+ *  - Resto de estáticos same-origin: stale-while-revalidate.
+ *  - APIs de datos y payloads RSC: NUNCA se cachean (se servían rancios).
+ *
+ * IMPORTANTE — versionado: el caché de la app lleva el id del build, que llega
+ * por query string al registrar (`/sw.js?v=<build>`). Antes el nombre era fijo
+ * (`terreno-app-v1`), nunca se purgaba y el navegador seguía sirviendo el bundle
+ * viejo después de cada deploy (no se veían las features nuevas).
  */
-const VERSION    = 'terreno-sw-v1';
+const BUILD = new URLSearchParams(self.location.search).get('v') || 'dev';
+
+// Las teselas no cambian entre deploys: su caché sobrevive a propósito.
 const TILE_CACHE = 'terreno-tiles-v1';
-const APP_CACHE  = 'terreno-app-v1';
+// El bundle sí cambia: caché nuevo por build, y el viejo se borra en `activate`.
+const APP_CACHE  = `terreno-app-${BUILD}`;
 const TILE_MAX   = 800;
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -79,16 +88,34 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Estáticos same-origin → stale-while-revalidate
-  if (url.origin === self.location.origin) {
+  if (url.origin !== self.location.origin) return;
+
+  // APIs de datos y payloads RSC del App Router: siempre de red.
+  // Cachearlos hacía que la app siguiera mostrando contenido viejo tras un deploy.
+  const esRSC = url.searchParams.has('_rsc') || req.headers.get('RSC') === '1';
+  if (url.pathname.startsWith('/api/') || esRSC) return;
+
+  // Estáticos de Next: llevan hash en el nombre → cache-first sin revalidar.
+  if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith((async () => {
       const cache = await caches.open(APP_CACHE);
       const hit = await cache.match(req);
-      const fetchPromise = fetch(req).then(res => {
-        if (res && res.ok) cache.put(req, res.clone());
-        return res;
-      }).catch(() => hit || Response.error());
-      return hit || fetchPromise;
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res && res.ok) cache.put(req, res.clone());
+      return res;
     })());
+    return;
   }
+
+  // Resto de estáticos same-origin → stale-while-revalidate
+  event.respondWith((async () => {
+    const cache = await caches.open(APP_CACHE);
+    const hit = await cache.match(req);
+    const fetchPromise = fetch(req).then(res => {
+      if (res && res.ok) cache.put(req, res.clone());
+      return res;
+    }).catch(() => hit || Response.error());
+    return hit || fetchPromise;
+  })());
 });
