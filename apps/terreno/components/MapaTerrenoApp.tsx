@@ -91,7 +91,7 @@ import type { Mojon } from '@/lib/types';
 import { actualizarProyecto, guardarProyecto } from '@/lib/proyectos';
 import type { Proyecto } from '@/lib/proyectos';
 import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
-import type { DatosClima } from '@/lib/clima';
+import { aplicarCalibracionPrecip, type DatosClima, type CalibracionPrecip } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
@@ -162,7 +162,15 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [proyectoActual,setProyectoActual]= useState<Proyecto | null>(null);
 
   // ─── Análisis ─────────────────────────────────────────────────────────────
-  const [datosClima,      setDatosClima]      = useState<DatosClima | null>(null);
+  // El clima crudo de la API y la calibración manual de lluvia se guardan por
+  // separado; `datosClima` (lo que consume toda la app) es el derivado. Así la
+  // calibración es reversible y nunca se acumula sobre sí misma.
+  const [datosClimaRaw,   setDatosClimaRaw]   = useState<DatosClima | null>(null);
+  const [calibracionPrecip, setCalibracionPrecip] = useState<CalibracionPrecip | null>(null);
+  const datosClima = useMemo(
+    () => (datosClimaRaw ? aplicarCalibracionPrecip(datosClimaRaw, calibracionPrecip) : null),
+    [datosClimaRaw, calibracionPrecip],
+  );
   const [datosTopografia, setDatosTopografia] = useState<DatosTopografia | null>(null);
   const [topoLoading,     setTopoLoading]     = useState(false);
   const [topoError,       setTopoError]       = useState<string | null>(null);
@@ -493,7 +501,9 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   const metadatos = useMemo<Record<string, unknown>>(() => {
     const m: Record<string, unknown> = {};
-    if (datosClima)      m['clima']    = datosClima;
+    // Se guarda el clima CRUDO; la calibración viaja aparte y se reaplica al cargar.
+    if (datosClimaRaw)   m['clima']    = datosClimaRaw;
+    if (calibracionPrecip) m['calibracion_precip'] = calibracionPrecip;
     if (datosTopografia) m['topo']     = datosTopografia;
     if (captacionSnap)   m['captacion']= captacionSnap;
     if (datosSuelo)      m['suelo']    = datosSuelo;
@@ -1627,7 +1637,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     setMasterPlan((meta['master_plan'] as ElementoMasterPlan[]) ?? null);
     setProyectoActual(p.id ? p : null);
     setSeleccionado(null);
-    setDatosClima((meta['clima']     as DatosClima)        ?? null);
+    setDatosClimaRaw((meta['clima']  as DatosClima)        ?? null);
+    setCalibracionPrecip((meta['calibracion_precip'] as CalibracionPrecip) ?? null);
     setDatosTopografia((meta['topo'] as DatosTopografia)   ?? null);
     setCaptacionSnap((meta['captacion'] as CaptacionSnapshot) ?? null);
     setDatosSuelo((meta['suelo']     as DatosSuelo)        ?? null);
@@ -2162,7 +2173,13 @@ export function MapaTerrenoApp({ userName }: Props) {
             </div>
           )}
 
-          {tab === 'clima' && <div className="px-4 py-4"><ClimaPanel mojones={mojones} datos={datosClima} onDatos={setDatosClima} extremos={datosExtremos} onExtremos={setDatosExtremos} /></div>}
+          {tab === 'clima' && <div className="px-4 py-4"><ClimaPanel
+            mojones={mojones} datos={datosClima} onDatos={setDatosClimaRaw}
+            extremos={datosExtremos} onExtremos={setDatosExtremos}
+            calibracion={calibracionPrecip} onCalibracion={setCalibracionPrecip}
+            precipCruda={datosClimaRaw?.precip_anual_mm ?? null}
+            pendientePct={datosTopografia?.pendiente_pct ?? null}
+          /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}

@@ -68,6 +68,24 @@ export interface DatosClima {
   heladas?:         Heladas;
   mes_mas_seco?:    string;
   mes_mas_humedo?:  string;
+  /** Presente si la precipitación fue calibrada con un dato local. */
+  calibracion?:     CalibracionPrecip;
+}
+
+/**
+ * Calibración manual de la precipitación con un dato local conocido.
+ *
+ * Por qué: la lluvia de los reanálisis de grilla gruesa (NASA POWER ~50 km,
+ * ERA5 ~9-30 km) borra el efecto orográfico. Medido en Aguas Buenas (PR): la
+ * grilla da 1121 mm/año donde llueven ~1879 mm (0.60×). El sesgo es errático
+ * según el sitio (0.58× a 1.42× en 5 climas probados), así que no hay factor
+ * global posible: lo resuelve el dato de la estación que conoce el profesional.
+ */
+export interface CalibracionPrecip {
+  modo:        'anual' | 'mensual';
+  anual_mm?:   number;    // total anual conocido → re-escala la curva mensual
+  mensual_mm?: number[];  // 12 valores, si se tienen
+  fuente?:     string;    // "Estación X (INTA)" — queda registrado en el informe
 }
 
 // ─── NASA POWER API ───────────────────────────────────────────────────────────
@@ -172,6 +190,54 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     koppen, aridez, gdd_anual, heladas,
     mes_mas_seco:   mesSeco.mes,
     mes_mas_humedo: mesHumedo.mes,
+  };
+}
+
+/**
+ * Devuelve una copia de los datos con la precipitación calibrada y **todo lo
+ * derivado recomputado**: balance mensual, total anual, aridez, Köppen y meses
+ * extremos (todos dependen de la lluvia).
+ *
+ * Aplicar SIEMPRE sobre los datos crudos: si se encadena sobre un resultado ya
+ * calibrado, el factor se multiplica de nuevo.
+ */
+export function aplicarCalibracionPrecip(
+  d: DatosClima,
+  cal: CalibracionPrecip | null | undefined,
+): DatosClima {
+  if (!cal) return d;
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+
+  let meses: MesDato[];
+  if (cal.modo === 'mensual' && cal.mensual_mm?.length === 12) {
+    meses = d.meses.map((m, i) => {
+      const p = Math.max(cal.mensual_mm![i] ?? 0, 0);
+      return { ...m, precip_mm: r1(p), balance_mm: r1(p - m.etp_mm) };
+    });
+  } else if (cal.modo === 'anual' && cal.anual_mm && cal.anual_mm > 0 && d.precip_anual_mm > 0) {
+    const factor = cal.anual_mm / d.precip_anual_mm;
+    meses = d.meses.map(m => {
+      const p = m.precip_mm * factor;
+      return { ...m, precip_mm: r1(p), balance_mm: r1(p - m.etp_mm) };
+    });
+  } else {
+    return d;
+  }
+
+  const precip_anual_mm = Math.round(meses.reduce((s, m) => s + m.precip_mm, 0));
+  const mesSeco   = meses.reduce((min, m) => (m.precip_mm < min.precip_mm ? m : min), meses[0]!);
+  const mesHumedo = meses.reduce((max, m) => (m.precip_mm > max.precip_mm ? m : max), meses[0]!);
+
+  return {
+    ...d,
+    meses,
+    precip_anual_mm,
+    koppen: clasificarKoppen(d.lat, meses),
+    aridez: clasificarAridez(precip_anual_mm, d.etp_anual_mm),
+    mes_mas_seco:   mesSeco.mes,
+    mes_mas_humedo: mesHumedo.mes,
+    calibracion: cal,
+    fuente: `${d.fuente} · precipitación calibrada${cal.fuente ? ` con ${cal.fuente}` : ''}`,
   };
 }
 

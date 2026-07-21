@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock } from 'lucide-react';
-import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato } from '@/lib/clima';
+import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
 import type { Mojon } from '@/lib/types';
 
@@ -12,9 +12,16 @@ interface Props {
   onDatos:     (d: DatosClima) => void;
   extremos:    Extremos | null;
   onExtremos:  (e: Extremos | null) => void;
+  /** Calibración manual de la lluvia (ver CalibracionPrecipBloque). */
+  calibracion:   CalibracionPrecip | null;
+  onCalibracion: (c: CalibracionPrecip | null) => void;
+  /** Precipitación anual SIN calibrar, para mostrar la comparación. */
+  precipCruda:   number | null;
+  /** Pendiente media del predio: si es alta, avisamos del sesgo de la grilla. */
+  pendientePct:  number | null;
 }
 
-export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos }: Props) {
+export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -146,6 +153,14 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos }: Pr
           <ExtremosBloque
             extremos={extremos} cargando={cargandoExt} error={errorExt}
             onCargar={handleCargarExtremos}
+          />
+
+          <CalibracionPrecipBloque
+            calibracion={calibracion}
+            onCalibracion={onCalibracion}
+            precipCruda={precipCruda}
+            precipActual={datos.precip_anual_mm}
+            pendientePct={pendientePct}
           />
 
           {/* Fuente + Weather Spark */}
@@ -468,6 +483,128 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Calibración manual de la precipitación.
+ *
+ * Por qué existe: la lluvia de los reanálisis de grilla gruesa (NASA POWER
+ * ~50 km) borra el efecto orográfico. Medido en Aguas Buenas (PR): la grilla da
+ * 1121 mm/año donde llueven ~1879 mm, y por eso el balance hídrico daba negativo
+ * incluso en climas muy húmedos. El sesgo varía según el sitio (0.58×–1.42× en
+ * las pruebas), así que no hay factor global: lo corrige el dato de la estación
+ * que el profesional conoce.
+ */
+function CalibracionPrecipBloque({
+  calibracion, onCalibracion, precipCruda, precipActual, pendientePct,
+}: {
+  calibracion:   CalibracionPrecip | null;
+  onCalibracion: (c: CalibracionPrecip | null) => void;
+  precipCruda:   number | null;
+  precipActual:  number;
+  pendientePct:  number | null;
+}) {
+  const [anual, setAnual]   = useState(calibracion?.anual_mm ? String(calibracion.anual_mm) : '');
+  const [fuente, setFuente] = useState(calibracion?.fuente ?? '');
+  const [abierto, setAbierto] = useState(false);
+  const [mensual, setMensual] = useState<string[]>(
+    calibracion?.mensual_mm?.map(String) ?? Array(12).fill(''),
+  );
+
+  const factor = calibracion && precipCruda ? precipActual / precipCruda : null;
+  const quebrado = (pendientePct ?? 0) > 8;
+
+  const aplicarAnual = () => {
+    const v = parseFloat(anual.replace(',', '.'));
+    if (Number.isFinite(v) && v > 0) onCalibracion({ modo: 'anual', anual_mm: v, fuente: fuente.trim() || undefined });
+  };
+  const aplicarMensual = () => {
+    const vals = mensual.map(s => parseFloat(s.replace(',', '.')));
+    if (vals.every(v => Number.isFinite(v) && v >= 0)) {
+      onCalibracion({ modo: 'mensual', mensual_mm: vals, fuente: fuente.trim() || undefined });
+    }
+  };
+
+  const inputCls = 'w-full px-2 py-1 rounded border border-bone-200 bg-white text-ink-900 text-xs placeholder-ink-700/30 focus:outline-none focus:border-moss-500';
+
+  return (
+    <div className="rounded-lg border border-bone-200 bg-bone-50/60 p-3 space-y-2">
+      <div className="flex items-center gap-1.5">
+        <CloudRain className="w-3.5 h-3.5 text-water-500" />
+        <p className="text-xs font-semibold text-ink-900">Calibrar precipitación</p>
+      </div>
+
+      {calibracion ? (
+        <div className="rounded border border-moss-200 bg-moss-50 px-2 py-1.5 space-y-1">
+          <p className="text-[11px] text-moss-900">
+            Calibrada a <span className="font-semibold">{precipActual} mm/año</span>
+            {precipCruda ? <> · la grilla daba {precipCruda} mm</> : null}
+            {factor ? <> (×{factor.toFixed(2)})</> : null}
+          </p>
+          {calibracion.fuente && <p className="text-[10px] text-ink-700/60">Fuente: {calibracion.fuente}</p>}
+          <button
+            onClick={() => { onCalibracion(null); setAnual(''); }}
+            className="text-[10px] text-clay-700 hover:underline"
+          >
+            Quitar calibración
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className="text-[11px] text-ink-700/60 leading-relaxed">
+            El dato satelital es de grilla gruesa (~50 km) y suele <strong>subestimar la lluvia</strong> en
+            terreno quebrado. Si conocés el valor de una estación cercana, cargalo y se re-escala la curva mensual.
+          </p>
+          {quebrado && (
+            <p className="text-[11px] text-clay-700 flex gap-1.5">
+              <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              Pendiente media {pendientePct!.toFixed(0)} %: terreno quebrado, conviene calibrar.
+            </p>
+          )}
+          <div className="flex items-end gap-1.5">
+            <label className="flex-1">
+              <span className="block text-[10px] text-ink-700/50 uppercase tracking-wide mb-0.5">Lluvia anual conocida (mm)</span>
+              <input className={inputCls} value={anual} onChange={e => setAnual(e.target.value)} placeholder={precipCruda ? String(precipCruda) : '850'} inputMode="decimal" />
+            </label>
+            <button onClick={aplicarAnual} className="px-2.5 py-1 rounded bg-moss-700 hover:bg-moss-900 text-bone-50 text-xs font-medium transition-colors">
+              Aplicar
+            </button>
+          </div>
+          <label className="block">
+            <span className="block text-[10px] text-ink-700/50 uppercase tracking-wide mb-0.5">Fuente del dato (opcional)</span>
+            <input className={inputCls} value={fuente} onChange={e => setFuente(e.target.value)} placeholder="Estación INTA, vecino, pluviómetro propio…" />
+          </label>
+
+          <button onClick={() => setAbierto(a => !a)} className="text-[10px] text-water-500 hover:underline">
+            {abierto ? '− Ocultar' : '+ Cargar los 12 meses'} (más preciso)
+          </button>
+          {abierto && (
+            <div className="space-y-1.5">
+              <div className="grid grid-cols-6 gap-1">
+                {['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'].map((m, i) => (
+                  <label key={m} className="block">
+                    <span className="block text-[9px] text-ink-700/40 text-center">{m}</span>
+                    <input
+                      className="w-full px-1 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[10px] font-mono text-center focus:outline-none focus:border-moss-500"
+                      value={mensual[i]}
+                      onChange={e => setMensual(v => v.map((x, j) => (j === i ? e.target.value : x)))}
+                      inputMode="decimal"
+                    />
+                  </label>
+                ))}
+              </div>
+              <button onClick={aplicarMensual} className="w-full px-2.5 py-1 rounded bg-moss-700 hover:bg-moss-900 text-bone-50 text-xs font-medium transition-colors">
+                Aplicar los 12 meses
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      <p className="text-[10px] text-ink-700/40 leading-relaxed">
+        Sólo cambia la lluvia. La ETP no se toca, y el balance, la aridez y el Köppen se recalculan.
+      </p>
     </div>
   );
 }
