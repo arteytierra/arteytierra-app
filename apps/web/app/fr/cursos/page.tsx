@@ -14,10 +14,10 @@ const CALENDARIO = [
   { color: 'bg-moss-700',  text: 'text-bone-50',  tag: 'EN LIGNE · Page complète',         title: 'Mi Tierra Mi Casa →',                             href: '/fr/cursos/mi-tierra-mi-casa' },
   { color: 'bg-clay-700',  text: 'text-ink-950',  tag: 'PRÉSENTIEL · 3e samedi du mois',   title: 'Alchimie Naturelle et Nettoyage Conscient →',     href: '/fr/cursos/alquimia-natural' },
   { color: 'bg-moss-700',  text: 'text-bone-50',  tag: 'EN LIGNE',                          title: 'Tadelakt en Ligne',                               href: '/fr/cursos' },
-  { color: 'bg-clay-700',  text: 'text-ink-950',  tag: 'JUIL · 18-19',                     title: 'Bioarchitecture, Construction et Territoire →',   href: '/fr/cursos/bioarquitectura' },
+  { color: 'bg-clay-700',  text: 'text-ink-950',  tag: 'DÉC · 5-6',                        title: 'Bioarchitecture, Construction et Territoire →',   href: '/fr/cursos/bioarquitectura' },
   { color: 'bg-sky-700',   text: 'text-bone-50',  tag: 'OCT · 10-12',                      title: 'Design Écosystémique de l\'Eau',                  href: '/fr/cursos' },
   { color: 'bg-clay-700',  text: 'text-ink-950',  tag: 'DÉC · 5-8',                        title: 'Design Hydrologique + Bioconstruction',           href: '/fr/cursos' },
-  { color: 'bg-moss-700',  text: 'text-bone-50',  tag: 'JUIL · 11 / AOÛT · 1 / AOÛT · 22', title: 'Culture de Pleurotes — modulaire →',              href: '/fr/cursos/cultivo-girgolas' },
+  { color: 'bg-moss-700',  text: 'text-bone-50',  tag: 'Dates à confirmer',                title: 'Culture de Pleurotes — modulaire →',              href: '/fr/cursos/cultivo-girgolas' },
   { color: 'bg-clay-900',  text: 'text-bone-50',  tag: 'Prochainement',                     title: 'Éco-citernes et Biopiscines',                     href: '/fr/cursos' },
   { color: 'bg-clay-900',  text: 'text-bone-50',  tag: 'Prochainement',                     title: 'Atelier d\'Enduits',                              href: '/fr/cursos' },
 ];
@@ -25,10 +25,10 @@ const CALENDARIO = [
 const DESTACADOS = [
   {
     href: '/fr/cursos/bioarquitectura',
-    tag: 'Atelier intensif · Juillet 2026',
+    tag: 'Atelier intensif · Décembre 2026',
     badge: 'PLACES DISPONIBLES',
     title: 'Bioarchitecture, Construction et Territoire',
-    meta: '18 et 19 juillet 2026 · 2 jours · Jonatan Palma',
+    meta: '5 et 6 décembre 2026 · 2 jours · Jonatan Palma',
     desc: 'Immersion condensée en bioconstruction. Nous travaillons avec des techniques traditionnelles et contemporaines adaptées au territoire local — en combinant théorie, pratique constructive et processus communautaires.',
     prix: '$130.000 ARS — à partir de USD 100',
     img: '/img/cursos/vueltatierra/1.jpg',
@@ -36,9 +36,9 @@ const DESTACADOS = [
   {
     href: '/fr/cursos/cultivo-girgolas',
     tag: 'Atelier modulaire · FUNGO × Tay Pichín',
-    badge: 'INSCRIPTIONS OUVERTES',
+    badge: 'PROCHAINEMENT',
     title: 'Culture de Pleurotes',
-    meta: '11 juil · 1 août · 22 août 2026 · 3 rencontres indépendantes',
+    meta: 'Dates à confirmer · 3 rencontres indépendantes',
     desc: 'Trois rencontres pour parcourir tout le processus de culture des pleurotes : depuis la biologie du champignon jusqu\'à la récolte. Format modulaire — suivez un module seul ou le cycle complet.',
     prix: '$60.000 ARS / module — cycle complet $150.000 ARS',
     img: '/img/cursos/girgolas/1.jpg',

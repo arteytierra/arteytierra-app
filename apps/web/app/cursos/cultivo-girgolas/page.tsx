@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const MODULOS = [
   {
     num: 'I',
-    fecha: '11 jul · 2026',
+    fecha: 'A confirmar',
     dia: 'Sábado',
     title: 'Biología del hongo y producción de micelio',
     nota: 'Para curiosos, principiantes y quienes quieren meterse en el lado más de laboratorio del cultivo.',
@@ -30,7 +30,7 @@ const MODULOS = [
   },
   {
     num: 'II',
-    fecha: '1 ago · 2026',
+    fecha: 'A confirmar',
     dia: 'Sábado',
     title: 'Sustrato, inoculación e incubación',
     nota: 'Pensado para quienes quieren producir en casa sin montar un laboratorio.',
@@ -45,7 +45,7 @@ const MODULOS = [
   },
   {
     num: 'III',
-    fecha: '22 ago · 2026',
+    fecha: 'A confirmar',
     dia: 'Sábado',
     title: 'Fructificación, cosecha y escalado',
     nota: 'Para quienes quieren escalar la producción o emprender con hongos.',
@@ -92,7 +92,7 @@ export default function CultivoGirgolesPage() {
             Tres encuentros para recorrer todo el proceso: desde entender cómo vive y crece un hongo hasta llegar a la cosecha. Sumate al ciclo completo o elegí el módulo que más te resuene.
           </p>
           <p className="mt-3 text-clay-300 font-sans text-sm font-semibold">
-            11 jul · 1 ago · 22 ago 2026 · Ecoescuela Tay Pichín · San Marcos Sierras
+            Tres sábados · Fechas a confirmar · Ecoescuela Tay Pichín · San Marcos Sierras
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <a href="#inscribirme"
@@ -119,7 +119,7 @@ export default function CultivoGirgolesPage() {
       <section className="bg-clay-700 py-6 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           {[
-            { label: 'Fechas',    val: '11 jul · 1 ago · 22 ago 2026' },
+            { label: 'Fechas',    val: 'A confirmar · tres sábados' },
             { label: 'Lugar',     val: 'Tay Pichín · San Marcos Sierras' },
             { label: 'Modalidad', val: 'Presencial · módulos independientes' },
             { label: 'Facilita',  val: 'FUNGO · Co-organiza Arte y Tierra' },

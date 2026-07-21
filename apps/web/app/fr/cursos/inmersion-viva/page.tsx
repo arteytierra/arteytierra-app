@@ -125,7 +125,7 @@ export default function InmersionVivaFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Camping</strong> — repas de base et hébergement en zone de camping.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$35.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">$40.000 ARS / sem.</p>
               </div>
               <div className="bg-clay-900 p-10">
                 <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Processus Profond</p>
@@ -133,12 +133,12 @@ export default function InmersionVivaFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Chambre partagée</strong> — repas de base et chambre partagée.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$50.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">$80.000 ARS / sem.</p>
               </div>
             </div>
             <div className="bg-clay-700/10 border border-clay-700/30 p-6 max-w-2xl mb-8">
               <p className="font-sans text-sm font-bold text-clay-700 mb-2">📅 L'arrivée se fait uniquement les lundis.</p>
-              <p className="font-sans text-sm text-ink-700">Minimum 1 semaine. Possibilité d'étendre au mois ou plus selon disponibilité.</p>
+              <p className="font-sans text-sm text-ink-700">Minimum 2 semaines. Possibilité d'étendre au mois ou plus selon disponibilité.</p>
             </div>
             <a
               href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20voudrais%20des%20informations%20sur%20l%27Immersion%20Vivante"

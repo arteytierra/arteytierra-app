@@ -11,28 +11,25 @@ export const metadata: Metadata = {
 };
 
 const CALENDARIO = [
-  { fecha: 'Jul 11', titulo: 'Mushroom Cultivation — Module 1', tipo: 'Workshop', color: 'bg-moss-700' },
-  { fecha: 'Jul 18–19', titulo: 'Bioarchitecture & Territory — Intensive', tipo: 'Intensive', color: 'bg-clay-700' },
-  { fecha: 'Jul 19', titulo: 'Natural Alchemy — Session 3', tipo: 'Workshop', color: 'bg-clay-900' },
-  { fecha: 'Aug 1', titulo: 'Mushroom Cultivation — Module 2', tipo: 'Workshop', color: 'bg-moss-700' },
   { fecha: 'Aug 16', titulo: 'Natural Alchemy — Session 4', tipo: 'Workshop', color: 'bg-clay-900' },
-  { fecha: 'Aug 22', titulo: 'Mushroom Cultivation — Module 3', tipo: 'Workshop', color: 'bg-moss-700' },
   { fecha: 'Sep 20', titulo: 'Natural Alchemy — Session 5', tipo: 'Workshop', color: 'bg-clay-900' },
   { fecha: 'Oct 18', titulo: 'Natural Alchemy — Session 6', tipo: 'Workshop', color: 'bg-clay-900' },
+  { fecha: 'Dec 5–6', titulo: 'Bioarchitecture & Territory — Intensive', tipo: 'Intensive', color: 'bg-clay-700' },
+  { fecha: 'TBC', titulo: 'Mushroom Cultivation — 3 modules', tipo: 'Workshop', color: 'bg-moss-700' },
   { fecha: 'Year-round', titulo: 'Living Immersion (weekly stays)', tipo: 'Immersion', color: 'bg-ink-800' },
 ];
 
 const DESTACADOS = [
   {
     title: 'Bioarchitecture & Territory',
-    subtitle: 'Jul 18–19, 2026 · Tay Pichín',
+    subtitle: 'Dec 5–6, 2026 · Tay Pichín',
     desc: '2-day intensive on natural construction techniques: raw earth, cob, quincha, earth and lime plasters.',
     href: '/en/cursos/bioarquitectura',
     img: '/img/cursos/vueltatierra/1.jpg',
   },
   {
     title: 'Mushroom Cultivation',
-    subtitle: '3-module cycle · Jul–Aug 2026',
+    subtitle: '3-module cycle · Dates TBC',
     desc: 'Grow edible mushrooms on agricultural and forest by-products. Practical, replicable methodology.',
     href: '/en/cursos/cultivo-girgolas',
     img: '/img/cursos/girgolas/1.jpg',
@@ -178,7 +175,7 @@ export default function CursosEnPage() {
                 Living <em>Immersion.</em>
               </h2>
               <p className="font-sans text-base text-bone-200 leading-relaxed mb-6">
-                Stay 1 week to several months at Tay Pichín and be part of the daily life: building, growing food, managing water and living in community.
+                Stay a minimum of 2 weeks — up to several months — at Tay Pichín and be part of the daily life: building, growing food, managing water and living in community.
               </p>
               <Link href="/en/cursos/inmersion-viva" className="inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:bg-bone-100 transition-colors">
                 Learn more →

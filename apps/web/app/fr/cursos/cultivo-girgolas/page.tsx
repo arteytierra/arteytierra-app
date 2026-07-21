@@ -12,19 +12,19 @@ export const metadata: Metadata = {
 
 const MODULOS = [
   {
-    n: 'Module I · 11 juillet',
+    n: 'Module I',
     title: 'Biologie du champignon et production de mycélium',
     detail: 'Pratique : inoculation de bocaux',
     desc: 'Introduction à la biologie des champignons. Nous apprenons à préparer des cultures de mycélium en laboratoire simple, avec les ressources accessibles dans n\'importe quel espace domestique.',
   },
   {
-    n: 'Module II · 1 août',
+    n: 'Module II',
     title: 'Substrat, inoculation et incubation',
     detail: 'Pratique : montage d\'un bloc productif',
     desc: 'Préparation des substrats nutritifs, inoculation et conditions d\'incubation. Nous montons des blocs productifs complets prêts à entrer en fructification.',
   },
   {
-    n: 'Module III · 22 août',
+    n: 'Module III',
     title: 'Fructification, récolte et gestion de l\'environnement productif',
     detail: 'Gestion de la production continue',
     desc: 'Tout sur les conditions de fructification, la récolte et le maintien d\'un système de production durable — pour la maison ou à petite échelle commerciale.',
@@ -85,7 +85,7 @@ export default function CultivoGirgolasFrPage() {
         <section className="bg-bone-100 py-12 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Quand ?', value: '11/7 · 1/8 · 22/8', sub: 'Trois samedis · 2026' },
+              { label: 'Quand ?', value: 'À confirmer', sub: 'Trois samedis' },
               { label: 'Où ?', value: 'EcoÉcole Tay Pichín', sub: 'San Marcos Sierras, Córdoba' },
               { label: 'Format', value: 'Présentiel', sub: '3 rencontres modulaires' },
               { label: 'Animé par', value: 'Emmanuel Ciancio · FUNGO', sub: 'Co-organisé par Tay Pichín' },

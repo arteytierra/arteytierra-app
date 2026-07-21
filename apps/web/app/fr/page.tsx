@@ -220,7 +220,7 @@ export default function FrHomePage() {
                 {[
                   { label: 'Écoschool', desc: "Formations intensives en bioarchitecture et design de l'eau.", href: '/fr/cursos' },
                   { label: 'Écohostel', desc: 'Hébergement en architecture de terre.', href: '/fr/hospedaje' },
-                  { label: 'Immersion Vivante', desc: '15 ou 30 jours en pratique permaculturelle.', href: '/fr/cursos' },
+                  { label: 'Immersion Vivante', desc: 'Dès 2 semaines en pratique permaculturelle.', href: '/fr/cursos' },
                 ].map(item => (
                   <li key={item.label} className="flex gap-3">
                     <div className="mt-1.5 w-2 h-2 rounded-full bg-clay-700 flex-shrink-0" />

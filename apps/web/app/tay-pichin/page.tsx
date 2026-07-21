@@ -225,7 +225,7 @@ export default function TayPichinPage() {
               <p className="font-sans text-sm text-bone-200 leading-relaxed mb-5">
                 <strong className="text-bone-50">Camping</strong> — alimentación básica y alojamiento en zona de camping.
               </p>
-              <p className="font-display text-3xl text-clay-500">$35.000 ARS<span className="text-xl"> / sem</span></p>
+              <p className="font-display text-3xl text-clay-500">$40.000 ARS<span className="text-xl"> / sem</span></p>
             </div>
 
             {/* Proceso Profundo */}
@@ -235,12 +235,12 @@ export default function TayPichinPage() {
               <p className="font-sans text-sm text-bone-200 leading-relaxed mb-5">
                 <strong className="text-bone-50">Habitación compartida</strong> — alimentación básica y habitación compartida.
               </p>
-              <p className="font-display text-3xl text-clay-300">$50.000 ARS<span className="text-xl"> / sem</span></p>
+              <p className="font-display text-3xl text-clay-300">$80.000 ARS<span className="text-xl"> / sem</span></p>
             </div>
           </div>
 
           <p className="text-center font-sans text-sm text-clay-700 font-bold tracking-wide mb-8">
-            📅 El ingreso es solo los lunes.
+            📅 El ingreso es solo los lunes · Mínimo 2 semanas.
           </p>
 
           <div className="text-center">

@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Bioarchitecture, Building & Territory — Intensive Workshop at Tay Pichín',
-  description: '2-day intensive workshop at Tay Pichín: biobuilding on a real construction site with traditional techniques adapted to semi-arid territories. July 18–19, 2026.',
+  description: '2-day intensive workshop at Tay Pichín: biobuilding on a real construction site with traditional techniques adapted to semi-arid territories. December 5–6, 2026.',
   alternates: { canonical: '/en/cursos/bioarquitectura' },
 };
 
@@ -21,11 +21,11 @@ const CONTENIDOS = [
 
 const PROGRAMA = [
   {
-    dia: 'Saturday July 18',
+    dia: 'Saturday December 5',
     actividades: 'Welcome · earth laboratory · wall techniques · rough plaster',
   },
   {
-    dia: 'Sunday July 19',
+    dia: 'Sunday December 6',
     actividades: 'Bioclimatic · lime plaster · fine finishes · closing circle',
   },
 ];
@@ -51,7 +51,7 @@ export default function BioarquitecturaEnPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/40 to-transparent" />
           <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-              Intensive workshop · July 18–19, 2026 · Tay Pichín
+              Intensive workshop · December 5–6, 2026 · Tay Pichín
             </p>
             <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
               Bioarchitecture,<br />building & <em>territory.</em>
@@ -60,7 +60,7 @@ export default function BioarquitecturaEnPage() {
               How to design and build <em>living habitats</em> in connection with the territory. Two days on a real building site, ancestral techniques and ecological design applied to semi-arid lands.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20to%20enroll%20in%20the%20July%20Bioarchitecture%20workshop" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
+              <a href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20to%20enroll%20in%20the%20December%20Bioarchitecture%20workshop" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
                 Enroll →
               </a>
               <Link href="/en/cursos" className="inline-flex border border-bone-50/50 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors">
@@ -93,7 +93,7 @@ export default function BioarquitecturaEnPage() {
         <section className="bg-bone-100 py-12 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'When?', value: 'July 18–19', sub: 'Saturday and Sunday · 2026' },
+              { label: 'When?', value: 'December 5–6', sub: 'Saturday and Sunday · 2026' },
               { label: 'Where?', value: 'EcoSchool Tay Pichín', sub: 'San Marcos Sierras, Córdoba' },
               { label: 'Format', value: 'Participatory intensive', sub: '40% theory · 60% hands-on building' },
               { label: 'Led by', value: 'Jonatan Palma', sub: 'Limited places' },
@@ -157,7 +157,7 @@ export default function BioarquitecturaEnPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <a
-                href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20to%20enroll%20in%20the%20July%20Bioarchitecture%20workshop"
+                href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20to%20enroll%20in%20the%20December%20Bioarchitecture%20workshop"
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
               >

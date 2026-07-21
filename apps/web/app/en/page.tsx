@@ -211,7 +211,7 @@ export default function EnHomePage() {
                 {[
                   { label: 'EcoSchool', desc: "Intensive bioarchitecture and water design workshops.", href: '/en/cursos' },
                   { label: 'EcoHostel', desc: 'Accommodation in earth architecture.', href: '/en/hospedaje' },
-                  { label: 'Living Immersion', desc: '15 or 30 days in permaculture practice.', href: '/en/cursos' },
+                  { label: 'Living Immersion', desc: 'From 2 weeks in permaculture practice.', href: '/en/cursos' },
                 ].map(item => (
                   <li key={item.label} className="flex gap-3">
                     <div className="mt-1.5 w-2 h-2 rounded-full bg-clay-700 flex-shrink-0" />

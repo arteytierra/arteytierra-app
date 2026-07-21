@@ -151,7 +151,7 @@ export default function TayPichinFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Camping</strong> — repas de base et hébergement en zone de camping.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$35.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">$40.000 ARS / sem.</p>
               </div>
               <div className="bg-clay-900 p-10 text-center">
                 <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Processus Profond</p>
@@ -159,11 +159,11 @@ export default function TayPichinFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Chambre partagée</strong> — repas de base et chambre partagée.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$50.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">$80.000 ARS / sem.</p>
               </div>
             </div>
             <p className="font-sans text-sm text-clay-700 font-bold tracking-wide mb-8">
-              📅 L'arrivée se fait uniquement les lundis.
+              📅 L'arrivée se fait uniquement les lundis · Minimum 2 semaines.
             </p>
             <Link href="/fr/cursos" className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-ink-950 hover:text-bone-50 transition-colors">
               Découvrir Immersion Vivante →

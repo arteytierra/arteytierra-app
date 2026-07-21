@@ -125,7 +125,7 @@ export default function InmersionVivaEnPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Camping</strong> — basic meals and camping area accommodation.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$35,000 ARS / week</p>
+                <p className="font-display text-3xl text-clay-700">$40,000 ARS / week</p>
               </div>
               <div className="bg-clay-900 p-10">
                 <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Deep Process</p>
@@ -133,12 +133,12 @@ export default function InmersionVivaEnPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Shared room</strong> — basic meals and shared room.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$50,000 ARS / week</p>
+                <p className="font-display text-3xl text-clay-700">$80,000 ARS / week</p>
               </div>
             </div>
             <div className="bg-clay-700/10 border border-clay-700/30 p-6 max-w-2xl mb-8">
               <p className="font-sans text-sm font-bold text-clay-700 mb-2">📅 Arrivals on Mondays only.</p>
-              <p className="font-sans text-sm text-ink-700">Minimum 1 week. Possible to extend to a month or more depending on availability.</p>
+              <p className="font-sans text-sm text-ink-700">Minimum 2 weeks. Possible to extend to a month or more depending on availability.</p>
             </div>
             <a
               href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20information%20about%20the%20Living%20Immersion"

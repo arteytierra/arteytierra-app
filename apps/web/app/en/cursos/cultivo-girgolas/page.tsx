@@ -5,14 +5,14 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Oyster Mushroom Cultivation — 3-Module Workshop',
-  description: '3-module oyster mushroom cultivation workshop at EcoSchool Tay Pichín. Learn to grow edible mushrooms on agricultural by-products. July–August 2026.',
+  description: '3-module oyster mushroom cultivation workshop at EcoSchool Tay Pichín. Learn to grow edible mushrooms on agricultural by-products. New dates to be confirmed.',
   alternates: { canonical: '/en/cursos/cultivo-girgolas' },
 };
 
 const MODULOS = [
   {
     n: 'Module 1',
-    fecha: 'Friday July 11',
+    fecha: 'To be confirmed',
     titulo: 'Introduction & substrate preparation',
     contenido: [
       'Biology and life cycle of oyster mushrooms',
@@ -23,7 +23,7 @@ const MODULOS = [
   },
   {
     n: 'Module 2',
-    fecha: 'Friday August 1',
+    fecha: 'To be confirmed',
     titulo: 'Production management',
     contenido: [
       'Incubation and fruiting conditions',
@@ -34,7 +34,7 @@ const MODULOS = [
   },
   {
     n: 'Module 3',
-    fecha: 'Friday August 22',
+    fecha: 'To be confirmed',
     titulo: 'Integration & local economy',
     contenido: [
       'Spent substrate as compost',
@@ -54,7 +54,7 @@ export default function CultivoGirgolaEnPage() {
         <section className="bg-moss-900 py-24 px-6" style={{ background: 'linear-gradient(135deg, #2D4A1E, #1A2E0E)' }}>
           <div className="max-w-editorial mx-auto">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-300 mb-4">
-              3-Module Workshop · Jul–Aug 2026 · EcoSchool Tay Pichín
+              3-Module Workshop · Dates to be confirmed · EcoSchool Tay Pichín
             </p>
             <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
               Oyster Mushroom <em>Cultivation.</em>
@@ -95,7 +95,7 @@ export default function CultivoGirgolaEnPage() {
             {[
               { label: 'Format', value: '3 modules', sub: '1 session per module' },
               { label: 'Where?', value: 'EcoSchool Tay Pichín', sub: 'San Marcos Sierras, Córdoba' },
-              { label: 'When?', value: 'Jul 11 · Aug 1 · Aug 22', sub: 'Friday afternoons, 2026' },
+              { label: 'When?', value: 'To be confirmed', sub: 'Three Friday afternoons' },
               { label: 'Places', value: 'Limited', sub: 'Registration required' },
             ].map(d => (
               <div key={d.label} className="bg-bone-50 p-5 border-l-4 border-moss-700">

@@ -73,11 +73,11 @@ type ProximoItem = {
 const FALLBACK_TODOS: TodoItem[] = [
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
-  { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: '11/7 · 1/8 · 22/8',       img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Taller modular', tentativo: false, online: false },
+  { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Inicia sáb. 13 jun · Tay Pichín', img: '/img/biocosmetica/productos-todos.jpg', badge: 'Ciclo mensual',  tentativo: false, online: false },
-  { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '18–19 jul 2026',           img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
-  { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: '15 o 30 días',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
-  { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Oct 2026 · Online',        img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
+  { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '5–6 dic 2026',             img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
+  { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: 'Mínimo 2 semanas',         img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
+  { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Marzo 2027 · Online',      img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
   { slug: 'diseno-ecosistemico-del-agua', name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',             img: '/img/cursos/vueltatierra/3.jpg',        badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'biopiscinas',                  name: 'Biopiscinas',                   tag: 'Próximamente',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'revoques-naturales',           name: 'Revoques Naturales',            tag: 'Próximamente',             img: '/img/cursos/bioarquitectura/1.jpg',     badge: 'Sin fecha',      tentativo: true,  online: false },
@@ -103,16 +103,6 @@ const FALLBACK_CURSOS: Curso[] = [
     href: '/cursos/tadelakt', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al curso de Tadelakt Online'),
   },
   {
-    slug: 'cultivo-girgolas', badge: 'Taller modular · Presencial', name: 'Cultivo de Gírgolas',
-    tag: '11 jul · 1 ago · 22 ago 2026 · Tay Pichín',
-    desc: 'Tres encuentros independientes para aprender todo el proceso: biología del hongo, producción casera y escala productiva. FUNGO × Tay Pichín.',
-    img: '/img/cursos/cultivo-girgolas/1.jpg',
-    datos: [{ label: 'Fechas', val: '11 jul · 1 ago · 22 ago 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: 'Presencial · módulos independientes' }, { label: 'Facilita', val: 'Emmanuel Ciancio Manzoni' }],
-    contenidos: ['Biología del hongo y ciclo de vida', 'Producción de micelio e inoculación', 'Sustrato e incubación', 'Autoproducción doméstica', 'Cosecha y conservación'],
-    precio: 'Módulo suelto o ciclo completo', precioNote: 'Podés tomar uno, dos o los tres encuentros.',
-    href: '/cursos/cultivo-girgolas', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Taller de Cultivo de Gírgolas'),
-  },
-  {
     slug: 'alquimia-natural', badge: 'Ciclo mensual · Presencial', name: 'Alquimia Natural y Limpieza Consciente',
     tag: 'Inicia sáb. 13 jun · 3er sábado de cada mes · Tay Pichín',
     desc: 'Ocho encuentros presenciales para transformar ingredientes simples y nobles en soluciones de higiene que respetan tu salud, el agua y la tierra.',
@@ -124,27 +114,28 @@ const FALLBACK_CURSOS: Curso[] = [
   },
   {
     slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
-    tag: '18 y 19 de julio 2026 · Tay Pichín',
+    tag: '5 y 6 de diciembre 2026 · Tay Pichín',
     desc: 'Dos días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 40% teoría, 60% práctica.',
     img: '/img/proyectos/alihuen/5.jpg',
-    datos: [{ label: 'Fechas', val: '18 y 19 de julio · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    datos: [{ label: 'Fechas', val: '5 y 6 de diciembre · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
     contenidos: ['Construcción con tierra', 'Diseño bioclimático', 'Quincha, cob y pirca', 'Revoques de tierra y cal', 'Techos vivos', 'Pigmentos naturales', 'Construcción colectiva'],
     precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
-    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (18 y 19 julio)'),
+    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (5 y 6 diciembre)'),
   },
   {
     slug: 'vuelta-a-la-tierra', badge: 'Online en vivo · 7 semanas', name: 'La Vuelta a la Tierra',
-    tag: 'Inicia lunes 12 de octubre · Online en vivo',
+    tag: 'A partir de marzo 2027 · Online en vivo',
     desc: 'En 7 semanas te llevás los planos de tu vivienda y el masterplan de tu predio listos para empezar a construir. Con criterio técnico, sin gastar de más, y entendiendo el por qué.',
     img: '/img/cursos/vueltatierra/7.jpg',
-    datos: [{ label: 'Inicio', val: 'Lunes 12 de octubre 2026' }, { label: 'Formato', val: 'Clases en vivo · quedan grabadas' }, { label: 'Dedicación', val: '4 a 6 hs semanales' }, { label: 'Facilitan', val: 'Jonatan Palma + Fabricio Manzoni' }],
+    datos: [{ label: 'Inicio', val: 'A partir de marzo 2027' }, { label: 'Formato', val: 'Clases en vivo · quedan grabadas' }, { label: 'Dedicación', val: '4 a 6 hs semanales' }, { label: 'Facilitan', val: 'Jonatan Palma + Fabricio Manzoni' }],
     contenidos: ['Análisis climático y topográfico', 'Permacultura e hidrología', 'Diseño de masterplan', 'Bioarquitectura', 'Materiales y sistemas constructivos', 'Tecnologías apropiadas', 'Anteproyecto de vivienda'],
     precio: 'Desde $350.000', precioNote: 'En 4 pagos: $50k + 3 × $100k. Cupos limitados.',
-    href: '/cursos/vuelta-a-la-tierra', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de La Vuelta a la Tierra (oct 2026)'),
+    href: '/cursos/vuelta-a-la-tierra', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de La Vuelta a la Tierra (marzo 2027)'),
   },
 ];
 
 const FALLBACK_PROXIMOS: ProximoItem[] = [
+  { slug: 'cultivo-girgolas',             badge: 'Taller modular · Presencial', name: 'Cultivo de Gírgolas', desc: 'Tres encuentros independientes para aprender todo el proceso: biología del hongo, producción casera y escala productiva. FUNGO × Tay Pichín. Nuevas fechas a confirmar.', img: '/img/cursos/cultivo-girgolas/1.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info del Taller de Cultivo de Gírgolas y sus próximas fechas') },
   { slug: 'diseno-ecosistemico-del-agua', badge: 'Taller presencial', name: 'Diseño Ecosistémico del Agua', desc: 'Hidrología regenerativa aplicada al territorio. Zanjas de infiltración, captación de lluvia, humedales y cuencas vivas. Lectura del paisaje e intervención con criterio ecosistémico.', img: '/img/cursos/vueltatierra/3.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Diseño Ecosistémico del Agua') },
   { slug: 'biopiscinas',                  badge: 'Taller presencial', name: 'Biopiscinas',                   desc: 'Diseño y construcción de piscinas naturales que se autorregulan sin químicos. Sistemas biológicos de filtración, plantas acuáticas y equilibrio ecológico para nadar en agua viva.', img: '/img/taypichin/carousel/5.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Biopiscinas') },
   { slug: 'revoques-naturales',           badge: 'Taller presencial', name: 'Revoques Naturales',            desc: 'Del barro a la cal: técnicas de revoques con materiales nobles, texturas vivas y acabados que respiran. Revoques gruesos, finos, yeso, enjarre y pinturas naturales.', img: '/img/cursos/bioarquitectura/1.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Revoques Naturales') },
@@ -170,7 +161,7 @@ function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
       </div>
       <div className="px-3 py-2.5 bg-ink-800 border-t border-ink-700">
         <p className="font-sans text-sm font-bold text-bone-50 leading-tight line-clamp-1">{c.name}</p>
-        <p className="font-sans text-xs text-bone-300 leading-tight mt-1 line-clamp-1">{c.tag}</p>
+        <p className="font-sans text-xs text-bone-100 leading-tight mt-1 line-clamp-1">{c.tag}</p>
       </div>
     </>
   );
@@ -338,14 +329,14 @@ export default async function CursosPage() {
           <div className="relative min-h-[420px] lg:min-h-[600px] overflow-hidden">
             <Image src="/img/taypichin/carousel/5.jpg" alt="Inmersión Viva — Tay Pichín" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             <div className="absolute top-4 left-4">
-              <span className="bg-moss-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">Inmersión · 15 o 30 días</span>
+              <span className="bg-moss-700 text-bone-50 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1.5">Inmersión · Desde 2 semanas</span>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-6 p-10 md:p-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Experiencia completa</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">Inmersión <em>Viva.</em></h2>
             <p className="font-sans text-bone-50 text-base leading-relaxed">
-              Períodos formativos de 15 o 30 días en Tay Pichín. Bioconstrucción, agroecología y organización colectiva aprendidas en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.
+              Períodos formativos desde 2 semanas en Tay Pichín. Bioconstrucción, agroecología y organización colectiva aprendidas en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {[

@@ -158,12 +158,12 @@ export default function TayPichinEnPage() {
                 Live and learn <em>from within.</em>
               </h2>
               <p className="font-sans text-base text-ink-700 leading-relaxed mb-4">
-                Stay 1 week, 15 or 30 days at Tay Pichín and participate in the daily life of the territory: building, growing, cooking and learning together.
+                Stay a minimum of 2 weeks at Tay Pichín and participate in the daily life of the territory: building, growing, cooking and learning together.
               </p>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {[
-                  { label: 'Camping', price: '$35,000 ARS/week' },
-                  { label: 'Shared room', price: '$50,000 ARS/week' },
+                  { label: 'Camping', price: '$40,000 ARS/week' },
+                  { label: 'Shared room', price: '$80,000 ARS/week' },
                 ].map(p => (
                   <div key={p.label} className="bg-bone-50 p-5">
                     <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700 mb-2">{p.label}</p>

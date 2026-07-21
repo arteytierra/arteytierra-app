@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Bioarchitecture, Construction et Territoire — Stage Intensif à Tay Pichín',
-  description: 'Stage intensif de 2 jours à Tay Pichín : bioconstruction sur chantier réel avec techniques traditionnelles adaptées aux territoires semi-arides. 18 et 19 juillet 2026.',
+  description: 'Stage intensif de 2 jours à Tay Pichín : bioconstruction sur chantier réel avec techniques traditionnelles adaptées aux territoires semi-arides. 5 et 6 décembre 2026.',
   alternates: { canonical: '/fr/cursos/bioarquitectura' },
 };
 
@@ -21,11 +21,11 @@ const CONTENIDOS = [
 
 const PROGRAMA = [
   {
-    dia: 'Samedi 18 juillet',
+    dia: 'Samedi 5 décembre',
     actividades: 'Accueil · laboratoire de terre · techniques de murs · enduit gros',
   },
   {
-    dia: 'Dimanche 19 juillet',
+    dia: 'Dimanche 6 décembre',
     actividades: 'Bioclimatique · enduit à la chaux · finitions fines · cercle de clôture',
   },
 ];
@@ -51,7 +51,7 @@ export default function BioarquitecturaFrPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/40 to-transparent" />
           <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-              Stage intensif · 18 et 19 juillet 2026 · Tay Pichín
+              Stage intensif · 5 et 6 décembre 2026 · Tay Pichín
             </p>
             <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
               Bioarchitecture,<br />construction et <em>territoire.</em>
@@ -60,7 +60,7 @@ export default function BioarquitecturaFrPage() {
               Comment concevoir et construire des <em>habitats vivants</em> en lien avec le territoire. Deux jours de chantier réel, techniques ancestrales et design écologique appliqué aux terres semi-arides.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20souhaite%20m%27inscrire%20%C3%A0%20le%20stage%20de%20Bioarchitecture%20de%20Juillet" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
+              <a href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20souhaite%20m%27inscrire%20%C3%A0%20le%20stage%20de%20Bioarchitecture%20de%20D%C3%A9cembre" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
                 M'inscrire →
               </a>
               <Link href="/fr/cursos" className="inline-flex border border-bone-50/50 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors">
@@ -93,7 +93,7 @@ export default function BioarquitecturaFrPage() {
         <section className="bg-bone-100 py-12 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Quand ?', value: '18 et 19 juillet', sub: 'Samedi et dimanche · 2026' },
+              { label: 'Quand ?', value: '5 et 6 décembre', sub: 'Samedi et dimanche · 2026' },
               { label: 'Où ?', value: 'EcoÉcole Tay Pichín', sub: 'San Marcos Sierras, Córdoba' },
               { label: 'Format', value: 'Intensif participatif', sub: '40 % théorie · 60 % pratique sur chantier' },
               { label: 'Animé par', value: 'Jonatan Palma', sub: 'Places limitées' },
@@ -157,7 +157,7 @@ export default function BioarquitecturaFrPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <a
-                href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20souhaite%20m%27inscrire%20%C3%A0%20le%20stage%20de%20Bioarchitecture%20de%20Juillet"
+                href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20souhaite%20m%27inscrire%20%C3%A0%20le%20stage%20de%20Bioarchitecture%20de%20D%C3%A9cembre"
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
               >

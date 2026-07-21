@@ -22,6 +22,6 @@ export const TESTIMONIOS: Testimonio[] = [
   {
     quote: '"Trabajar con Jonatan y el equipo fue encontrar gente que diseña desde el lugar — no desde un catálogo. Cada decisión nació del territorio."',
     author: 'Franco Colavita',
-    role: 'comitente',
+    role: 'participante taller bioconstrucción',
   },
 ];
