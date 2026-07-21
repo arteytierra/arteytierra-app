@@ -10,7 +10,6 @@ import {
   Circle as LeafCircle,
   CircleMarker,
   ImageOverlay,
-  ZoomControl,
   useMapEvents,
   useMap,
 } from 'react-leaflet';
@@ -808,52 +807,42 @@ function RotarConBotonCentral() {
 }
 
 /**
- * Brújula: gira con el rumbo del plano. Con el norte arriba es decorativa;
- * apenas el plano se gira, se vuelve un botón para volver al norte.
+ * Acciones del mapa que el panel de navegación (que vive fuera del
+ * MapContainer, en MapaTerrenoApp) necesita disparar.
  */
-function Brujula() {
+export interface NavegacionMapa {
+  zoomIn:  () => void;
+  zoomOut: () => void;
+  alNorte: () => void;
+}
+
+/**
+ * Puente hacia el panel de navegación: le pasa las acciones y le informa el
+ * rumbo, para que la brújula gire aunque el botón esté fuera del mapa.
+ */
+function NavegacionExposer({ onReady, onBearing }: {
+  onReady?:   (api: NavegacionMapa) => void;
+  onBearing?: (grados: number) => void;
+}) {
   const map = useMap();
-  const [bearing, setBearing] = useState(0);
+
   useEffect(() => {
-    const fire = () => setBearing(map.getBearing());
+    onReady?.({
+      zoomIn:  () => map.zoomIn(),
+      zoomOut: () => map.zoomOut(),
+      alNorte: () => map.setBearing(0),
+    });
+  }, [map, onReady]);
+
+  useEffect(() => {
+    if (!onBearing) return;
+    const fire = () => onBearing(map.getBearing());
     fire();
     map.on('rotate', fire);
     return () => { map.off('rotate', fire); };
-  }, [map]);
+  }, [map, onBearing]);
 
-  const grados = Math.round(((bearing % 360) + 360) % 360);
-  const girado = Math.min(grados, 360 - grados) >= 1;
-
-  return (
-    <div className={`absolute bottom-36 left-3 z-[1000] no-print select-none ${girado ? '' : 'pointer-events-none'}`}>
-      <button
-        onClick={() => girado && map.setBearing(0)}
-        title={girado ? `Rumbo ${grados}° — clic para volver el norte arriba` : 'Norte'}
-        className={`block rounded-full transition-transform ${girado ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
-      >
-        {/* El norte del terreno queda a -bearing respecto de la pantalla. */}
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"
-          style={{ transform: `rotate(${-grados}deg)` }}>
-          <circle cx="24" cy="24" r="23" fill="white" fillOpacity="0.92" stroke={girado ? '#c0392b' : '#d1cec8'} strokeWidth="0.75"/>
-          {/* Norte — rojo */}
-          <polygon points="24,5 21,24 27,24" fill="#c0392b"/>
-          {/* Sur — gris */}
-          <polygon points="24,43 21,24 27,24" fill="#888"/>
-          {/* Este */}
-          <polygon points="43,24 24,21 24,27" fill="#aaa"/>
-          {/* Oeste */}
-          <polygon points="5,24 24,21 24,27" fill="#aaa"/>
-          {/* Centro */}
-          <circle cx="24" cy="24" r="2.5" fill="white" stroke="#999" strokeWidth="0.75"/>
-          {/* N */}
-          <text x="24" y="15.5" textAnchor="middle" fontSize="7" fontWeight="700" fill="#c0392b" fontFamily="sans-serif">N</text>
-        </svg>
-      </button>
-      {girado && (
-        <span className="block text-center mt-0.5 text-[9px] font-mono text-ink-900/80 bg-bone-50/90 rounded px-1 py-px">{grados}°</span>
-      )}
-    </div>
-  );
+  return null;
 }
 
 // Expone flyTo al padre para centrar el mapa en un mojón recién agregado por coords
@@ -971,6 +960,11 @@ interface Props {
   onMapChange?:       (zoom: number, lat: number) => void;
   // ── Fly-to programático ──
   onGetFlyTo?:        (fn: (lat: number, lng: number) => void) => void;
+  // ── Navegación unificada (el panel vive en MapaTerrenoApp) ──
+  onGetNavegacion?:   (api: NavegacionMapa) => void;
+  onBearing?:         (grados: number) => void;
+  /** Capa de fondo. La controla el panel de navegación. */
+  capaFondo?:         Capa;
   // ── Plano profesional ──
   metricas?:          MetricasPoligono | null;
   curvasNivel?:       CurvaNivel[];
@@ -1022,6 +1016,9 @@ function MapLeaflet({
   cuencaOutlet = null,
   potrerosLayer = null,
   capas = CAPAS_DEFAULT,
+  onGetNavegacion,
+  onBearing,
+  capaFondo = 'satelite',
   dibujos = [],
   dibujoEnCurso = null,
   dibujoSelId = null,
@@ -1062,7 +1059,6 @@ function MapLeaflet({
   onOverlayEsquina,
   masterPlan = null,
 }: Props) {
-  const [capa, setCapa] = useState<Capa>('satelite');
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
 
   const cursorClass = (modoDibujo && modoDibujo !== 'seleccion') || tipoActivo
@@ -1086,10 +1082,11 @@ function MapLeaflet({
         shiftKeyRotate={false}
         touchRotate
       >
-        <ZoomControl position="bottomleft" />
-        <Brujula />
+        {/* Zoom, brújula y capa de fondo viven en ControlesMapa (arriba a la
+            derecha, junto a Histórico/3D/Capas). Acá sólo va el puente. */}
+        <NavegacionExposer onReady={onGetNavegacion} onBearing={onBearing} />
         {/* ── Tiles ── */}
-        {capa === 'satelite' ? (
+        {capaFondo === 'satelite' ? (
           <>
             {/* Más allá de `maxNativeZoom` Esri no devuelve 404 sino una tesela que
                 dice "Map data not yet available". La cobertura varía por zona (18 en
@@ -1287,7 +1284,7 @@ function MapLeaflet({
           <Polygon
             positions={positions}
             pathOptions={{
-              fillColor: '#3A5A40', fillOpacity: capa === 'topo' ? 0.10 : 0.18,
+              fillColor: '#3A5A40', fillOpacity: capaFondo === 'topo' ? 0.10 : 0.18,
               color: '#D9A441', weight: 2.5, interactive: !dibujando,
             }}
           />
@@ -1744,22 +1741,6 @@ function MapLeaflet({
           );
         })()}
       </MapContainer>
-
-      {/* Toggle de capa de fondo — oculto en PNG */}
-      <div className="absolute bottom-20 left-3 z-[1000] flex rounded-lg overflow-hidden shadow-md border border-white/30 no-print">
-        <button
-          onClick={() => setCapa('satelite')}
-          className={`px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${capa === 'satelite' ? 'bg-moss-700 text-bone-50' : 'bg-white/90 text-ink-700 hover:bg-bone-100'}`}
-        >
-          Satélite
-        </button>
-        <button
-          onClick={() => setCapa('topo')}
-          className={`px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${capa === 'topo' ? 'bg-moss-700 text-bone-50' : 'bg-white/90 text-ink-700 hover:bg-bone-100'}`}
-        >
-          Topográfico
-        </button>
-      </div>
     </div>
   );
 }

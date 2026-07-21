@@ -1,0 +1,26 @@
+# Claude session data / memory
+.claude/
+
+# Build artifacts
+apps/web/.open-next/
+apps/web/.next/
+apps/terreno/.next/
+
+# App not being deployed (apps/terreno uses only packages/)
+apps/web/
+
+# Unrelated content
+catalogo-plantas-acuaticas/
+web/
+
+# Scratch files
+PROMPT-*.md
+_q.sql
+_scripts/
+_tmp/
+_gen.err
+
+# Datos personales y material que no hace falta para el build
+# (el deploy por CLI sube el árbol de trabajo, no sólo lo commiteado)
+*.xlsx
+_flyers/

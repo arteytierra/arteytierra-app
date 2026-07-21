@@ -8,7 +8,7 @@ import {
   Layers, Sun, LayoutGrid, Compass, Waves, Route,
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
-  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, History, SunDim,
+  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
@@ -99,7 +99,8 @@ import type { DatosSuelo } from '@/lib/suelos';
 import type { Zona, CategoriaZona } from '@/lib/zonificacion';
 import type { Sector, TipoSector } from '@/lib/sectores';
 import { TIPOS_SECTOR } from '@/lib/sectores';
-import type { CapasVisibles } from './MapLeaflet';
+import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
+import { ControlesMapa, type CapaFondo } from './ControlesMapa';
 import { useHistory } from '@/lib/useHistory';
 
 const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
@@ -340,6 +341,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [escenarioActivoId, setEscenarioActivoId] = useState<string | null>(null);
   const [guardandoNube, setGuardandoNube] = useState(false);
   const [guardadoTick, setGuardadoTick] = useState(false);
+  const [guardarOpen,  setGuardarOpen]  = useState(false);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
   // ─── Perfil de elevación interactivo (dock inferior estilo Google Earth Pro) ──
@@ -1503,6 +1505,22 @@ export function MapaTerrenoApp({ userName }: Props) {
   const flyToRef     = useRef<null | ((lat: number, lng: number) => void)>(null);
   const handleGetBounds      = useCallback((fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => { getBoundsRef.current = fn; }, []);
   const handleGetFlyTo       = useCallback((fn: (lat: number, lng: number) => void) => { flyToRef.current = fn; }, []);
+
+  // ─── Estado de guardado, para el menú de la barra superior ────────────────
+  const estadoGuardado = useMemo(() => {
+    if (guardandoNube) return { label: 'Guardando…', titulo: 'Guardando en la nube',      icono: <Save    className="w-3.5 h-3.5 animate-pulse" />, clase: 'bg-moss-700 text-bone-50' };
+    if (guardadoTick)  return { label: 'Guardado',   titulo: 'Guardado en la nube',       icono: <Check   className="w-3.5 h-3.5" />,               clase: 'bg-moss-700 text-bone-50' };
+    if (proyectoActual) return { label: 'En la nube', titulo: `Proyecto: ${proyectoActual.nombre}`, icono: <Cloud className="w-3.5 h-3.5" />,       clase: 'bg-moss-100 text-moss-900 hover:bg-moss-200' };
+    return { label: 'Sin guardar', titulo: 'El trabajo todavía no está en la nube', icono: <CloudOff className="w-3.5 h-3.5" />, clase: 'bg-sun-500/20 text-clay-700 hover:bg-sun-500/30' };
+  }, [guardandoNube, guardadoTick, proyectoActual]);
+
+  // ─── Navegación unificada (panel arriba a la derecha) ─────────────────────
+  // `navegacion` es estado y no ref: el panel se dibuja antes que el mapa y
+  // tiene que re-renderizarse para dejar de estar deshabilitado.
+  const [navegacion, setNavegacion] = useState<NavegacionMapa | null>(null);
+  const [bearing,    setBearing]    = useState(0);
+  const [capaFondo,  setCapaFondo]  = useState<CapaFondo>('satelite');
+  const handleGetNavegacion = useCallback((api: NavegacionMapa) => { setNavegacion(api); }, []);
   const handleRangoTerrarium = useCallback((min: number, max: number) => { setTerrariumRango({ min, max }); }, []);
   const handleResetTerrariumRango = useCallback(() => setTerrariumRango(null), []);
 
@@ -1980,13 +1998,38 @@ export function MapaTerrenoApp({ userName }: Props) {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className={`hidden md:flex items-center gap-1 text-[11px] px-2 py-1 rounded-full ${guardadoTick ? 'bg-moss-100 text-moss-900' : proyectoActual ? 'bg-moss-100 text-moss-900' : 'bg-sun-500/15 text-clay-700'}`}>
-            {proyectoActual ? <Cloud className="w-3 h-3" /> : <CloudOff className="w-3 h-3" />}
-            {guardadoTick ? 'Guardado' : proyectoActual ? 'En la nube' : 'Sin guardar'}
-          </span>
-          <button onClick={handleGuardarNube} disabled={guardandoNube} title="Guardar en la nube" className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-moss-700 hover:bg-moss-900 text-bone-50 transition-colors disabled:opacity-50">
-            {guardadoTick ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />} Guardar
-          </button>
+          {/* Estado de guardado y acciones en un solo control: el chip y el
+              botón por separado comían el ancho que necesita el toolbar. */}
+          <div className="relative">
+            <button
+              onClick={() => setGuardarOpen(o => !o)}
+              disabled={guardandoNube}
+              title={estadoGuardado.titulo}
+              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 ${estadoGuardado.clase}`}
+            >
+              {estadoGuardado.icono}
+              <span className="hidden lg:inline">{estadoGuardado.label}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {guardarOpen && (
+              <>
+                <div className="fixed inset-0 z-[1250]" onClick={() => setGuardarOpen(false)} />
+                <div className="absolute right-0 mt-1 w-52 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
+                  <p className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ink-700/50">{estadoGuardado.titulo}</p>
+                  <ExportItem
+                    icon={<Save className="w-3.5 h-3.5" />}
+                    label="Guardar en la nube"
+                    onClick={() => { setGuardarOpen(false); void handleGuardarNube(); }}
+                  />
+                  <ExportItem
+                    icon={<FolderOpen className="w-3.5 h-3.5" />}
+                    label={proyectoActual ? 'Guardar como…' : 'Mis proyectos'}
+                    onClick={() => { setGuardarOpen(false); setTab('proyectos'); setPanelAbierto(true); }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
           <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Undo2 className="w-4 h-4" /></button>
           <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
           <div className="relative">
@@ -2449,40 +2492,21 @@ export function MapaTerrenoApp({ userName }: Props) {
           </div>
         )}
 
-        {/* ── Panel derecho: Capas / Sugerencias ── */}
-        <div className="absolute top-3 right-3 z-[1000] no-print">
-          {/* Botones toggle */}
-          {panelDerecho === null && (
-            <div className="flex items-center gap-1.5">
-              {mojones.length >= 3 && (
-                <button
-                  onClick={() => setShowHistorico(true)}
-                  title="Imagen satelital histórica"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-                >
-                  <History className="w-3.5 h-3.5" />
-                  Histórico
-                </button>
-              )}
-              {mojones.length >= 3 && (
-                <button
-                  onClick={() => setShow3D(true)}
-                  title="Vista 3D del relieve"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-                >
-                  <Mountain className="w-3.5 h-3.5" />
-                  3D
-                </button>
-              )}
-              <button
-                onClick={() => setPanelDerecho('capas')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-              >
-                <Layers className="w-3.5 h-3.5" />
-                Capas
-              </button>
-            </div>
-          )}
+        {/* ── Navegación + panel derecho (Capas / Sugerencias) ──
+            Todo en una columna arriba a la derecha: los controles quedan fijos
+            y el panel se despliega debajo. */}
+        <div className="absolute top-3 right-3 z-[1000] no-print flex flex-col items-end gap-1.5">
+          <ControlesMapa
+            navegacion={navegacion}
+            bearing={bearing}
+            capaFondo={capaFondo}
+            onCapaFondo={setCapaFondo}
+            habilitarVistas={mojones.length >= 3}
+            onHistorico={() => setShowHistorico(true)}
+            on3D={() => setShow3D(true)}
+            capasAbierto={panelDerecho === 'capas'}
+            onCapas={() => setPanelDerecho(p => (p === 'capas' ? null : 'capas'))}
+          />
 
           {/* Panel de Capas */}
           {panelDerecho === 'capas' && (
@@ -2622,6 +2646,9 @@ export function MapaTerrenoApp({ userName }: Props) {
           onGetBounds={handleGetBounds}
           onGetFlyTo={handleGetFlyTo}
           onMapChange={handleMapChange}
+          onGetNavegacion={handleGetNavegacion}
+          onBearing={setBearing}
+          capaFondo={capaFondo}
           metricas={metricas}
           curvasNivel={curvasNivel}
           colorCurvasNivel={colorCurvas}
