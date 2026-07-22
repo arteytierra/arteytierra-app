@@ -49,7 +49,8 @@ import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } 
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, INTERVALO_CONFIABLE_M, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, type CurvaNivel } from '@/lib/curvasNivel';
+import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
@@ -307,21 +308,47 @@ export function MapaTerrenoApp({ userName }: Props) {
 
   const metricas = useMemo(() => calcularMetricas(mojones), [mojones]);
 
+  // MDE propio (dron/estación total). Si está cargado, manda sobre el satelital:
+  // es la única forma de tener curvas por debajo del par de metros.
+  const [demPropio, setDemPropio] = useState<DEMImportado | null>(null);
+  const pisoIntervalo = useMemo(
+    () => intervaloConfiablePara(demPropio?.pasoM ?? null),
+    [demPropio],
+  );
+
+  const grillaActiva = useMemo(() => {
+    if (demPropio) return demPropio.grilla;
+    if (grillaCurvas && grillaKeyRef.current === mojonesKey) return grillaCurvas;
+    return datosShader ? grillaDesdeShader(datosShader) : null;
+  }, [demPropio, grillaCurvas, mojonesKey, datosShader]);
+
   const curvasNivel = useMemo<CurvaNivel[]>(() => {
-    const grilla = (grillaCurvas && grillaKeyRef.current === mojonesKey)
-      ? grillaCurvas
-      : (datosShader ? grillaDesdeShader(datosShader) : null);
-    if (!grilla) return [];
+    if (!grillaActiva) return [];
     const intervalo = intervaloContorno
-      ?? intervaloAutomatico(grilla.elev_max - grilla.elev_min, metricas?.area_ha);
-    return calcularCurvas(grilla, intervalo);
-  }, [grillaCurvas, mojonesKey, datosShader, intervaloContorno, metricas]);
+      ?? intervaloAutomatico(grillaActiva.elev_max - grillaActiva.elev_min, metricas?.area_ha, pisoIntervalo);
+    return calcularCurvas(grillaActiva, intervalo);
+  }, [grillaActiva, intervaloContorno, metricas, pisoIntervalo]);
 
   const intervaloCurvasEfectivo = useMemo(() => {
     if (intervaloContorno !== null) return intervaloContorno;
-    const grilla = grillaCurvas ?? (datosShader ? grillaDesdeShader(datosShader) : null);
-    return grilla ? intervaloAutomatico(grilla.elev_max - grilla.elev_min, metricas?.area_ha) : null;
-  }, [intervaloContorno, grillaCurvas, datosShader, metricas]);
+    return grillaActiva
+      ? intervaloAutomatico(grillaActiva.elev_max - grillaActiva.elev_min, metricas?.area_ha, pisoIntervalo)
+      : null;
+  }, [intervaloContorno, grillaActiva, metricas, pisoIntervalo]);
+
+  const handleCargarDEM = useCallback(async (file: File) => {
+    try {
+      const { cargarDEM } = await import('@/lib/demImport');
+      const dem = await cargarDEM(file);
+      setDemPropio(dem);
+      setIntervaloContorno(null); // que el automático aproveche la resolución nueva
+      setCapas(prev => ({ ...prev, curvasNivel: true }));
+      setModal({ type: 'alert', message:
+        `Modelo de elevación cargado: ${dem.ancho}×${dem.alto} px, paso ≈ ${dem.pasoM < 1 ? `${(dem.pasoM * 100).toFixed(0)} cm` : `${dem.pasoM.toFixed(1)} m`}, cotas ${dem.grilla.elev_min.toFixed(1)}–${dem.grilla.elev_max.toFixed(1)} m${dem.epsg ? ` (EPSG ${dem.epsg})` : ''}. Las curvas de nivel ahora salen de este archivo.` });
+    } catch (e) {
+      setModal({ type: 'alert', message: e instanceof Error ? e.message : 'No se pudo leer el modelo de elevación.' });
+    }
+  }, []);
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
   const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null>(null);
@@ -2594,6 +2621,8 @@ export function MapaTerrenoApp({ userName }: Props) {
               intervaloContorno={intervaloContorno}
               setIntervaloContorno={setIntervaloContorno}
               intervaloCurvas={intervaloCurvasEfectivo}
+              demPropio={demPropio}
+              pisoIntervalo={pisoIntervalo}
               curvasLoading={curvasLoading}
               colorCurvas={colorCurvas}
               onColorCurvas={setColorCurvas}
@@ -2928,6 +2957,9 @@ export function MapaTerrenoApp({ userName }: Props) {
         overlay={overlay}
         onCargarImagen={handleCargarOverlay}
         onCargarGeoTIFF={handleCargarGeoTIFF}
+        onCargarDEM={handleCargarDEM}
+        onQuitarDEM={() => setDemPropio(null)}
+        demCargado={!!demPropio}
         onOpacidadOverlay={op => setOverlay(prev => prev ? { ...prev, opacidad: op } : prev)}
         onQuitarOverlay={() => setOverlay(null)}
         onAbrirPaleta={() => setPaletaOpen(true)}
@@ -3077,6 +3109,8 @@ interface PanelCapasProps {
   intervaloContorno:   number | null;
   setIntervaloContorno:(v: number | null) => void;
   intervaloCurvas:     number | null;
+  demPropio:           DEMImportado | null;
+  pisoIntervalo:       number;
   curvasLoading:       boolean;
   datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
@@ -3151,7 +3185,7 @@ function PanelCapas({
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
-  intervaloContorno, setIntervaloContorno,
+  intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -3386,13 +3420,22 @@ function PanelCapas({
                       className="w-16 px-1.5 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[9px] font-mono focus:outline-none focus:border-moss-500"
                     />
                   </div>
-                  {intervaloCurvas !== null && intervaloCurvas < INTERVALO_CONFIABLE_M && (
+                  {demPropio ? (
+                    <p className="text-[9px] text-moss-900 leading-relaxed">
+                      Fuente: <strong>{demPropio.nombre}</strong> (paso ≈{' '}
+                      {demPropio.pasoM < 1 ? `${(demPropio.pasoM * 100).toFixed(0)} cm` : `${demPropio.pasoM.toFixed(1)} m`}).
+                      Confiable hasta {pisoIntervalo < 1 ? `${(pisoIntervalo * 100).toFixed(0)} cm` : `${pisoIntervalo} m`}.
+                    </p>
+                  ) : null}
+                  {intervaloCurvas !== null && intervaloCurvas < pisoIntervalo && (
                     <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
                       <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
                       <span>
-                        Por debajo de {INTERVALO_CONFIABLE_M} m estas curvas ya no describen el
-                        terreno: el modelo es SRTM (~30 m de paso) y a esta escala dibuja el ruido
-                        del sensor. Sirve para intuir la forma, <strong>no para replantear</strong>.
+                        Por debajo de {pisoIntervalo < 1 ? `${(pisoIntervalo * 100).toFixed(0)} cm` : `${pisoIntervalo} m`}{' '}
+                        estas curvas ya no describen el terreno
+                        {demPropio ? '' : ': el modelo es SRTM (~30 m de paso) y a esta escala dibuja el ruido del sensor'}.
+                        Sirve para intuir la forma, <strong>no para replantear</strong>.
+                        {demPropio ? null : <> Cargá un relevamiento propio desde <strong>Exportar → Modelo de elevación</strong>.</>}
                       </span>
                     </p>
                   )}
@@ -3992,6 +4035,7 @@ function BarraEstado({
   cursorRef, escala, snapActivo, orthoActivo, onToggleSnap, onToggleOrtho,
   modoLabel, entradaActiva, onEntradaCoord, areaHa, nMojones,
   onExportarDXF, onImportarDXF, overlay, onCargarImagen, onCargarGeoTIFF, onOpacidadOverlay, onQuitarOverlay,
+  onCargarDEM, onQuitarDEM, demCargado,
   onAbrirPaleta, onAbrirAyuda,
 }: {
   cursorRef:        React.RefObject<{ lat: number; lng: number } | null>;
@@ -4012,6 +4056,9 @@ function BarraEstado({
   onCargarGeoTIFF:  (file: File) => void;
   onOpacidadOverlay:(op: number) => void;
   onQuitarOverlay:  () => void;
+  onCargarDEM:      (file: File) => void;
+  onQuitarDEM:      () => void;
+  demCargado:       boolean;
   onAbrirPaleta:    () => void;
   onAbrirAyuda:     () => void;
 }) {
@@ -4099,6 +4146,9 @@ function BarraEstado({
                 onCargarGeoTIFF={onCargarGeoTIFF}
                 onOpacidad={onOpacidadOverlay}
                 onQuitarImagen={onQuitarOverlay}
+                onCargarDEM={onCargarDEM}
+                onQuitarDEM={onQuitarDEM}
+                demCargado={demCargado}
               />
             </div>
           </>
@@ -4111,6 +4161,7 @@ function BarraEstado({
 // ─── Panel de archivo CAD / plano de referencia ────────────────────────────────
 function PanelArchivoCAD({
   onExportarDXF, onImportarDXF, overlay, onCargarImagen, onCargarGeoTIFF, onOpacidad, onQuitarImagen,
+  onCargarDEM, onQuitarDEM, demCargado,
 }: {
   onExportarDXF:  () => void;
   onImportarDXF:  (file: File) => void;
@@ -4119,10 +4170,14 @@ function PanelArchivoCAD({
   onCargarGeoTIFF: (file: File) => void;
   onOpacidad:     (op: number) => void;
   onQuitarImagen: () => void;
+  onCargarDEM:    (file: File) => void;
+  onQuitarDEM:    () => void;
+  demCargado:     boolean;
 }) {
   const dxfRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const tifRef = useRef<HTMLInputElement>(null);
+  const demRef = useRef<HTMLInputElement>(null);
   const btn = 'flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium transition-colors';
 
   return (
@@ -4166,6 +4221,19 @@ function PanelArchivoCAD({
       </button>
       <input ref={tifRef} type="file" accept=".tif,.tiff,image/tiff" className="hidden"
         onChange={e => { const f = e.target.files?.[0]; if (f) onCargarGeoTIFF(f); e.target.value = ''; }} />
+
+      <button onClick={() => demRef.current?.click()}
+        title="Importar un modelo de elevación propio (dron RTK, estación total, MDE oficial). Reemplaza al satelital para las curvas de nivel."
+        className={`${btn} ${demCargado ? 'bg-moss-100 text-moss-900 hover:bg-moss-200' : 'bg-bone-100 hover:bg-bone-200 text-ink-700'}`}>
+        <Mountain className="w-3 h-3" /> {demCargado ? 'MDE propio ✓' : 'MDE propio'}
+      </button>
+      {demCargado && (
+        <button onClick={onQuitarDEM} className="text-[9px] text-clay-700 hover:underline px-0.5 text-left">
+          Volver al modelo satelital
+        </button>
+      )}
+      <input ref={demRef} type="file" accept=".tif,.tiff,image/tiff" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) onCargarDEM(f); e.target.value = ''; }} />
     </div>
   );
 }

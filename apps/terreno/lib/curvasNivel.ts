@@ -21,6 +21,27 @@ export interface CurvaNivel { cota: number; lineas: LineaNivel[] }
 export const INTERVALO_CONFIABLE_M = 2;
 
 /**
+ * Intervalo mínimo con sentido para un MDE propio de paso `pasoM` metros.
+ *
+ * Criterio geométrico, no de exactitud: con celdas de `pasoM` no se pueden
+ * separar curvas que caigan dentro de media celda — de ahí para abajo lo que
+ * se dibuja es la interpolación, no el terreno. Quien importa su propio
+ * relevamiento sabe con qué lo voló, así que no le imponemos más que eso.
+ *
+ *   dron RTK  ~5 cm/px  → 10 cm  (habilita los 25 cm que el satelital no puede)
+ *   LiDAR     ~1 m/px   → 50 cm
+ *   MDE IGN   ~5 m/px   → 2.5 m
+ *
+ * Sin MDE propio vale `INTERVALO_CONFIABLE_M`, que es empírico: SRTM tiene
+ * 30 m de paso pero exactitud vertical mucho mejor que eso, así que la regla
+ * de la media celda no aplica.
+ */
+export function intervaloConfiablePara(pasoM: number | null): number {
+  if (pasoM == null) return INTERVALO_CONFIABLE_M;
+  return Math.max(0.1, Math.round((pasoM / 2) * 100) / 100);
+}
+
+/**
  * Intervalo automático: apunta a una cantidad de curvas legible y lo redondea
  * a un valor "lindo".
  *
@@ -29,10 +50,12 @@ export const INTERVALO_CONFIABLE_M = 2;
  * `INTERVALO_CONFIABLE_M` por su cuenta — para eso está la elección manual,
  * que avisa lo que está haciendo.
  */
-export function intervaloAutomatico(desnivel: number, areaHa?: number): number {
-  // El piso sale del límite del modelo de elevación: si algún día usamos un MDE
-  // más fino, baja `INTERVALO_CONFIABLE_M` y el automático afina solo.
-  const lindos = [0.25, 0.5, 1, 2, 5, 10, 20, 25, 50].filter(v => v >= INTERVALO_CONFIABLE_M);
+export function intervaloAutomatico(desnivel: number, areaHa?: number, pisoM?: number): number {
+  // El piso sale del límite del modelo de elevación en uso: con el satelital son
+  // 2 m, con un relevamiento propio de dron baja a centímetros.
+  const piso = pisoM ?? INTERVALO_CONFIABLE_M;
+  const lindos = [0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50].filter(v => v >= piso);
+  if (lindos.length === 0) return piso;
   const curvasDeseadas = areaHa != null && areaHa < 10 ? 12 : 8;
   const objetivo = desnivel / curvasDeseadas;
   return lindos.reduce((best, v) =>

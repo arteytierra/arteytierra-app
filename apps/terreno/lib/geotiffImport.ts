@@ -19,7 +19,7 @@ export interface GeoTIFFOverlay {
 }
 
 /** Definición proj4 para un código EPSG (o null si no está soportado). */
-function proj4Def(epsg: number | null): string | null {
+export function proj4Def(epsg: number | null): string | null {
   if (epsg == null) return 'EPSG:4326';   // sin GeoKeys → asumimos lat/lng
   if (epsg === 4326) return 'EPSG:4326';
   if (epsg === 3857 || epsg === 900913) return 'EPSG:3857';
