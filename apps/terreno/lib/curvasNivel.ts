@@ -62,6 +62,19 @@ export function intervaloAutomatico(desnivel: number, areaHa?: number, pisoM?: n
     Math.abs(v - objetivo) < Math.abs(best - objetivo) ? v : best, lindos[0]!);
 }
 
+/**
+ * Tope de curvas a dibujar. Cada nivel recorre la grilla entera, así que un
+ * intervalo muy chico para el desnivel del predio congela el navegador.
+ * `calcularCurvas` devuelve vacío al pasarse; la UI avisa por qué.
+ */
+export const MAX_NIVELES = 60;
+
+/** Cuántas curvas saldrían — para avisar antes de que no se dibuje ninguna. */
+export function nivelesEstimados(desnivel: number, intervalo: number): number {
+  if (!(intervalo > 0)) return 0;
+  return Math.floor(desnivel / intervalo);
+}
+
 // ─── Marching squares con encadenado ─────────────────────────────────────────
 
 export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): CurvaNivel[] {
@@ -75,8 +88,8 @@ export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): Curv
   const start = Math.ceil(elev_min / intervalo) * intervalo;
   const niveles: number[] = [];
   for (let z = start; z <= elev_max; z += intervalo) niveles.push(z);
-  // Guardia: nunca más de 60 niveles (intervalo demasiado chico para el desnivel)
-  if (niveles.length > 60) return [];
+  // Guardia de rendimiento: cada nivel recorre toda la grilla.
+  if (niveles.length > MAX_NIVELES) return [];
 
   const curvas: CurvaNivel[] = [];
 

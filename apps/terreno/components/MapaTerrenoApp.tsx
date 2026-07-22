@@ -49,7 +49,7 @@ import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } 
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
@@ -335,6 +335,13 @@ export function MapaTerrenoApp({ userName }: Props) {
       ? intervaloAutomatico(grillaActiva.elev_max - grillaActiva.elev_min, metricas?.area_ha, pisoIntervalo)
       : null;
   }, [intervaloContorno, grillaActiva, metricas, pisoIntervalo]);
+
+  /** Cuántas curvas pidió el intervalo elegido: si se pasa del tope no se dibuja ninguna. */
+  const curvasDemasiadas = useMemo(() => {
+    if (!grillaActiva || intervaloCurvasEfectivo == null) return null;
+    const n = nivelesEstimados(grillaActiva.elev_max - grillaActiva.elev_min, intervaloCurvasEfectivo);
+    return n > MAX_NIVELES ? n : null;
+  }, [grillaActiva, intervaloCurvasEfectivo]);
 
   const handleCargarDEM = useCallback(async (file: File) => {
     try {
@@ -2623,6 +2630,7 @@ export function MapaTerrenoApp({ userName }: Props) {
               intervaloCurvas={intervaloCurvasEfectivo}
               demPropio={demPropio}
               pisoIntervalo={pisoIntervalo}
+              curvasDemasiadas={curvasDemasiadas}
               curvasLoading={curvasLoading}
               colorCurvas={colorCurvas}
               onColorCurvas={setColorCurvas}
@@ -3111,6 +3119,7 @@ interface PanelCapasProps {
   intervaloCurvas:     number | null;
   demPropio:           DEMImportado | null;
   pisoIntervalo:       number;
+  curvasDemasiadas:    number | null;
   curvasLoading:       boolean;
   datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
@@ -3185,7 +3194,7 @@ function PanelCapas({
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
-  intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo,
+  intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -3420,6 +3429,16 @@ function PanelCapas({
                       className="w-16 px-1.5 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[9px] font-mono focus:outline-none focus:border-moss-500"
                     />
                   </div>
+                  {curvasDemasiadas && (
+                    <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
+                      <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
+                      <span>
+                        Ese intervalo pide <strong>{curvasDemasiadas} curvas</strong> y el máximo es {MAX_NIVELES},
+                        así que no se dibuja ninguna. Es mucho desnivel para un intervalo tan chico:
+                        subilo, o recortá el predio.
+                      </span>
+                    </p>
+                  )}
                   {demPropio ? (
                     <p className="text-[9px] text-moss-900 leading-relaxed">
                       Fuente: <strong>{demPropio.nombre}</strong> (paso ≈{' '}
