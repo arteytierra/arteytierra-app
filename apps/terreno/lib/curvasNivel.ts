@@ -10,10 +10,31 @@ export interface Punto      { lat: number; lng: number }
 export interface LineaNivel { puntos: Punto[]; cerrada: boolean }
 export interface CurvaNivel { cota: number; lineas: LineaNivel[] }
 
-/** Intervalo automático: desnivel/8 redondeado a un valor "lindo" */
-export function intervaloAutomatico(desnivel: number): number {
-  const lindos = [1, 2, 5, 10, 20, 25, 50];
-  const objetivo = desnivel / 8;
+/**
+ * Por debajo de esto las curvas dibujan el ruido del sensor, no el terreno.
+ *
+ * El modelo de elevación es Terrarium, derivado de SRTM: ~30 m de paso
+ * horizontal y varios metros de error absoluto (mejor en error *relativo*
+ * entre puntos cercanos, que es lo que importa acá, pero no sub-métrico).
+ * Que el formato codifique milímetros no significa que el dato los tenga.
+ */
+export const INTERVALO_CONFIABLE_M = 2;
+
+/**
+ * Intervalo automático: apunta a una cantidad de curvas legible y lo redondea
+ * a un valor "lindo".
+ *
+ * Los predios chicos aguantan más curvas: en media hectárea con 3 m de
+ * desnivel, cada 5 m no dibuja ninguna. Nunca baja de
+ * `INTERVALO_CONFIABLE_M` por su cuenta — para eso está la elección manual,
+ * que avisa lo que está haciendo.
+ */
+export function intervaloAutomatico(desnivel: number, areaHa?: number): number {
+  // El piso sale del límite del modelo de elevación: si algún día usamos un MDE
+  // más fino, baja `INTERVALO_CONFIABLE_M` y el automático afina solo.
+  const lindos = [0.25, 0.5, 1, 2, 5, 10, 20, 25, 50].filter(v => v >= INTERVALO_CONFIABLE_M);
+  const curvasDeseadas = areaHa != null && areaHa < 10 ? 12 : 8;
+  const objetivo = desnivel / curvasDeseadas;
   return lindos.reduce((best, v) =>
     Math.abs(v - objetivo) < Math.abs(best - objetivo) ? v : best, lindos[0]!);
 }

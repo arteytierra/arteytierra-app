@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind,
+  IdCard, DollarSign, Wind, TriangleAlert,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -49,7 +49,7 @@ import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } 
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvas, intervaloAutomatico, INTERVALO_CONFIABLE_M, type CurvaNivel } from '@/lib/curvasNivel';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
@@ -305,20 +305,23 @@ export function MapaTerrenoApp({ userName }: Props) {
     return () => { cancelado = true; };
   }, [capas.curvasNivel, mojonesKey, mojones, grillaCurvas]);
 
+  const metricas = useMemo(() => calcularMetricas(mojones), [mojones]);
+
   const curvasNivel = useMemo<CurvaNivel[]>(() => {
     const grilla = (grillaCurvas && grillaKeyRef.current === mojonesKey)
       ? grillaCurvas
       : (datosShader ? grillaDesdeShader(datosShader) : null);
     if (!grilla) return [];
-    const intervalo = intervaloContorno ?? intervaloAutomatico(grilla.elev_max - grilla.elev_min);
+    const intervalo = intervaloContorno
+      ?? intervaloAutomatico(grilla.elev_max - grilla.elev_min, metricas?.area_ha);
     return calcularCurvas(grilla, intervalo);
-  }, [grillaCurvas, mojonesKey, datosShader, intervaloContorno]);
+  }, [grillaCurvas, mojonesKey, datosShader, intervaloContorno, metricas]);
 
   const intervaloCurvasEfectivo = useMemo(() => {
     if (intervaloContorno !== null) return intervaloContorno;
     const grilla = grillaCurvas ?? (datosShader ? grillaDesdeShader(datosShader) : null);
-    return grilla ? intervaloAutomatico(grilla.elev_max - grilla.elev_min) : null;
-  }, [intervaloContorno, grillaCurvas, datosShader]);
+    return grilla ? intervaloAutomatico(grilla.elev_max - grilla.elev_min, metricas?.area_ha) : null;
+  }, [intervaloContorno, grillaCurvas, datosShader, metricas]);
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
   const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null>(null);
@@ -367,7 +370,6 @@ export function MapaTerrenoApp({ userName }: Props) {
   interface LeyItem { id: string; label: string; color?: string; dash?: boolean; icon?: string }
   const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
-  const metricas  = useMemo(() => calcularMetricas(mojones), [mojones]);
   const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
 
   // Mapa de sombras (D4): calcula sobre la grilla densa según fecha/hora.
@@ -3363,14 +3365,37 @@ function PanelCapas({
                 <div className="mx-3 mb-2 space-y-1.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[9px] text-ink-700/60">Cada:</span>
-                    {[2, 5, 10, 20, 50].map(v => (
+                    {[0.25, 0.5, 1, 2, 5, 10, 20, 50].map(v => (
                       <button key={v}
                         onClick={() => setIntervaloContorno(v)}
                         className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${intervaloContorno === v ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}
-                      >{v}m</button>
+                      >{v < 1 ? `${v * 100}cm` : `${v}m`}</button>
                     ))}
                     <button onClick={() => setIntervaloContorno(null)} className={`text-[9px] px-1.5 py-0.5 rounded font-semibold transition-colors ${intervaloContorno === null ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}>Auto</button>
                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] text-ink-700/60 shrink-0">Otro:</span>
+                    <input
+                      type="number" min="0.05" step="0.05"
+                      value={intervaloContorno ?? ''}
+                      onChange={e => {
+                        const v = parseFloat(e.target.value);
+                        setIntervaloContorno(Number.isFinite(v) && v > 0 ? v : null);
+                      }}
+                      placeholder="m"
+                      className="w-16 px-1.5 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[9px] font-mono focus:outline-none focus:border-moss-500"
+                    />
+                  </div>
+                  {intervaloCurvas !== null && intervaloCurvas < INTERVALO_CONFIABLE_M && (
+                    <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
+                      <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
+                      <span>
+                        Por debajo de {INTERVALO_CONFIABLE_M} m estas curvas ya no describen el
+                        terreno: el modelo es SRTM (~30 m de paso) y a esta escala dibuja el ruido
+                        del sensor. Sirve para intuir la forma, <strong>no para replantear</strong>.
+                      </span>
+                    </p>
+                  )}
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] text-ink-700/60 w-14">Normal:</span>
                     <input type="color" value={colorCurvas.normal}
