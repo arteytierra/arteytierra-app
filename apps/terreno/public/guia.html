@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de Terreno · Arte y Tierra</title>
+<style>
+  :root {
+    --moss-900:#26392B; --moss-700:#3A5A40; --moss-500:#588157; --moss-300:#A3B18A; --moss-100:#D9E2C9;
+    --clay-900:#3F2614; --clay-700:#7A4E2D; --clay-500:#B08463; --clay-300:#D4B59A; --clay-100:#F3E7D6;
+    --bone-50:#FBF8F3; --bone-100:#F2EDE3; --bone-200:#E8E1D2;
+    --ink-950:#0F1410; --ink-900:#141A16; --ink-700:#2A352C;
+    --sun:#D9A441; --water:#2F6F7A; --danger:#B23A2F;
+
+    --bg:var(--bone-50); --bg-soft:var(--bone-100); --card:#fff; --line:var(--bone-200);
+    --tx:var(--ink-900); --tx-soft:#5c6a5e; --tx-faint:#8a958c;
+    --accent:var(--moss-700); --accent-soft:var(--moss-100);
+    --root-clima:var(--water); --root-topo:var(--clay-700); --root-suelo:var(--clay-500); --root-cob:var(--moss-500);
+    --shadow:0 1px 2px rgba(15,20,16,.04), 0 8px 24px -12px rgba(15,20,16,.14);
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#10140f; --bg-soft:#161c15; --card:#181f17; --line:#2a352a;
+      --tx:#e8ecdf; --tx-soft:#a6b0a2; --tx-faint:#79857a;
+      --accent:var(--moss-300); --accent-soft:#25321f;
+      --root-clima:#7AAEB6; --root-topo:#c79a6f; --root-suelo:#c9a888; --root-cob:var(--moss-300);
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:var(--bone-50); --bg-soft:var(--bone-100); --card:#fff; --line:var(--bone-200);
+    --tx:var(--ink-900); --tx-soft:#5c6a5e; --tx-faint:#8a958c;
+    --accent:var(--moss-700); --accent-soft:var(--moss-100);
+    --root-clima:var(--water); --root-topo:var(--clay-700); --root-suelo:var(--clay-500); --root-cob:var(--moss-500);
+    --shadow:0 1px 2px rgba(15,20,16,.04), 0 8px 24px -12px rgba(15,20,16,.14);
+  }
+  :root[data-theme="dark"]{
+    --bg:#10140f; --bg-soft:#161c15; --card:#181f17; --line:#2a352a;
+    --tx:#e8ecdf; --tx-soft:#a6b0a2; --tx-faint:#79857a;
+    --accent:var(--moss-300); --accent-soft:#25321f;
+    --root-clima:#7AAEB6; --root-topo:#c79a6f; --root-suelo:#c9a888; --root-cob:var(--moss-300);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);line-height:1.6;
+    font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---- header ---- */
+  header{border-bottom:1px solid var(--line);background:
+    radial-gradient(120% 140% at 85% -20%, var(--accent-soft) 0%, transparent 55%);}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.04;
+    margin:.35em 0 .3em;text-wrap:balance;letter-spacing:-.01em}
+  .lede{font-size:clamp(1.05rem,2.2vw,1.28rem);color:var(--tx-soft);max-width:60ch;margin:0}
+  header .wrap{padding-top:64px;padding-bottom:56px}
+  .thesis{margin-top:28px;padding:18px 20px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);max-width:62ch;display:flex;gap:14px;align-items:flex-start}
+  .thesis b{color:var(--accent)}
+  .thesis .mk{flex:none;width:34px;height:34px;border-radius:9px;background:var(--accent-soft);
+    display:grid;place-items:center;font-size:19px}
+
+  /* ---- section scaffolding ---- */
+  section{padding:56px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+  .sec-num{font-family:var(--serif);font-size:1.05rem;color:var(--accent);font-weight:600;
+    font-variant-numeric:tabular-nums}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.4vw,2.2rem);margin:0;
+    letter-spacing:-.01em;text-wrap:balance}
+  .sec-sub{color:var(--tx-soft);max-width:64ch;margin:4px 0 34px;font-size:1.02rem}
+
+  /* ---- workflow ---- */
+  .flow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;counter-reset:step}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 15px;
+    box-shadow:var(--shadow);position:relative}
+  .step::before{counter-increment:step;content:counter(step,decimal-leading-zero);
+    font-family:var(--serif);font-size:.85rem;color:var(--accent);font-weight:600;
+    font-variant-numeric:tabular-nums}
+  .step h4{margin:.35em 0 .25em;font-size:.98rem;font-weight:650}
+  .step p{margin:0;font-size:.83rem;color:var(--tx-soft);line-height:1.5}
+  .step.root{border-color:var(--accent);background:linear-gradient(180deg,var(--accent-soft),var(--card) 60%)}
+  .step.root h4::after{content:"raíz";float:right;font-family:var(--sans);font-size:.62rem;
+    letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:var(--bone-50);
+    padding:2px 7px;border-radius:20px;font-weight:600}
+
+  /* ---- dependency map ---- */
+  .howto{display:grid;gap:10px;margin:0 0 24px;max-width:70ch}
+  .howto-step{display:flex;gap:12px;align-items:flex-start;font-size:.92rem;color:var(--tx-soft);line-height:1.5}
+  .howto-step b{color:var(--tx)}
+  .howto-step .hn{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bone-50);
+    display:grid;place-items:center;font-size:.78rem;font-weight:700;margin-top:1px}
+  :root[data-theme="dark"] .howto-step .hn{color:var(--ink-950)}
+  @media (prefers-color-scheme:dark){.howto-step .hn{color:var(--ink-950)}}
+  .maplabel{display:flex;justify-content:space-between;gap:12px;font-size:.72rem;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--tx-faint);font-weight:600;padding:2px 10px 8px}
+  .mapwrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card);
+    box-shadow:var(--shadow);padding:8px}
+  .mapwrap svg{display:block;min-width:760px;width:100%;height:auto}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;font-size:.85rem;color:var(--tx-soft)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+  /* ---- panel grids ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+  .panel::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:var(--rail,var(--moss-300))}
+  .panel .nm{font-family:var(--serif);font-size:1.18rem;font-weight:600;margin-top:6px;letter-spacing:-.01em}
+  .panel .what{font-size:.9rem;color:var(--tx-soft);margin:6px 0 12px;line-height:1.52}
+  .io{display:flex;flex-direction:column;gap:7px;margin-top:auto;font-size:.8rem}
+  .io .row{display:flex;gap:8px;align-items:baseline}
+  .io .k{flex:none;width:64px;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--tx-faint);font-weight:600;padding-top:1px}
+  .io .v{color:var(--tx);line-height:1.4}
+  .chip{display:inline-block;font-size:.74rem;padding:1px 8px;border-radius:20px;border:1px solid var(--line);
+    background:var(--bg-soft);color:var(--tx-soft);margin:0 3px 3px 0;white-space:nowrap}
+  .chip.src{border-color:transparent;color:var(--bone-50);font-weight:500}
+  .chip.clima{background:var(--root-clima)} .chip.topo{background:var(--root-topo)}
+  .chip.suelo{background:var(--root-suelo)} .chip.cob{background:var(--root-cob)}
+  .chip.base{background:var(--ink-700)}
+  :root[data-theme="dark"] .chip.clima,:root[data-theme="dark"] .chip.topo,
+  :root[data-theme="dark"] .chip.suelo,:root[data-theme="dark"] .chip.cob{color:var(--ink-950)}
+  @media (prefers-color-scheme:dark){
+    .chip.clima,.chip.topo,.chip.suelo,.chip.cob{color:var(--ink-950)}
+  }
+  .selfmade{color:var(--tx-faint);font-style:italic}
+
+  /* ---- deep-dive cards ---- */
+  .deep{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+  .deep-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .deep-tag{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;
+    margin-bottom:6px}
+  .deep-card h3{font-family:var(--serif);font-size:1.5rem;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+  .deep-card > p{font-size:.92rem;color:var(--tx-soft);line-height:1.56;margin:0 0 14px}
+  .deep-card > p b{color:var(--tx)}
+  .deep-detail{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:.85rem}
+  .deep-detail .dl{flex:none;width:56px;font-size:.64rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--tx-faint);font-weight:600;padding-top:2px}
+  .deep-detail .dv{color:var(--tx);line-height:1.45}
+  .deep-tip{margin:14px 0 0;font-size:.85rem;color:var(--tx-soft);background:var(--bg-soft);
+    border-radius:10px;padding:11px 13px;line-height:1.5}
+  .deep-tip b{color:var(--accent)}
+
+  /* ---- tools ---- */
+  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+  .tool h4{margin:0 0 5px;font-size:.98rem;display:flex;align-items:center;gap:9px}
+  .tool h4 .g{font-family:var(--serif);color:var(--accent);font-size:1.15rem;line-height:1}
+  .tool p{margin:0;font-size:.85rem;color:var(--tx-soft);line-height:1.5}
+  kbd{font-family:var(--sans);font-size:.74rem;background:var(--bg-soft);border:1px solid var(--line);
+    border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--tx)}
+
+  .note{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    border-radius:12px;padding:14px 16px;font-size:.9rem;color:var(--tx);margin-top:26px;display:flex;gap:12px}
+  .note .mk{flex:none}
+  .cap{margin-top:14px;font-size:.78rem;color:var(--tx-faint);font-style:italic}
+
+  footer{padding:44px 0 60px;color:var(--tx-faint);font-size:.85rem}
+  footer b{color:var(--tx-soft);font-weight:600}
+  a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  .placeholder{border:1.5px dashed var(--line);border-radius:12px;padding:26px;text-align:center;
+    color:var(--tx-faint);font-size:.85rem;background:var(--bg-soft);margin-top:16px}
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Arte y Tierra · Terreno</p>
+    <h1>Guía de la aplicación de análisis de terreno</h1>
+    <p class="lede">Cómo leer un predio, qué significa cada análisis, y —lo más importante— cómo cada resultado alimenta al siguiente.</p>
+    <div class="thesis">
+      <div class="mk">🌱</div>
+      <div>La app no es una lista de botones sueltos. Es una <b>cadena</b>: los mojones dibujan el predio, el <b>clima</b> y la <b>topografía</b> son las dos raíces, y de ellas se desprende casi todo lo demás. Si entendés esas dos raíces, entendés la app entera.</div>
+    </div>
+  </div>
+</header>
+
+<section id="orden">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>El orden de trabajo</h2></div>
+    <p class="sec-sub">No hace falta hacer todo, pero sí en este orden: cada paso deja habilitado el siguiente. Si salteás las dos raíces (clima y topografía), la mitad de los paneles quedan mudos.</p>
+    <div class="flow">
+      <div class="step"><h4>Dibujar el predio</h4><p>Mojones por coordenadas, clic en el mapa, o importando KML/CSV.</p></div>
+      <div class="step root"><h4>Clima</h4><p>Una raíz. Habilita agua, riego, pastoreo, producción, calendario.</p></div>
+      <div class="step root"><h4>Topografía</h4><p>La otra raíz. Habilita curvas, keyline, cuenca, sombras, aptitud.</p></div>
+      <div class="step"><h4>Biodiversidad y entorno</h4><p>Qué especies hay registradas alrededor (GBIF) y qué te rodea. La línea de base viva del predio.</p></div>
+      <div class="step"><h4>Suelo y cobertura</h4><p>Suman precisión a riego, carbono y aptitud.</p></div>
+      <div class="step"><h4>Diseñar</h4><p>Zonas, sectores, agua, caminos, pastoreo — sobre esa base.</p></div>
+      <div class="step"><h4>Informe</h4><p>Todo lo calculado se junta en el PDF final.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="mapa">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Cómo se alimentan entre sí</h2></div>
+    <p class="sec-sub">Muchos análisis no se calculan solos: <b>usan el resultado de otro</b>. Por ejemplo, el riego no puede saber cuánta agua falta si antes no cargaste el clima. Este diagrama muestra esas conexiones — quién le pasa el dato a quién.</p>
+    <div class="howto">
+      <div class="howto-step"><span class="hn">1</span><div><b>Se lee de izquierda a derecha.</b> A la izquierda, lo que cargás primero; a la derecha, lo que se calcula gracias a eso.</div></div>
+      <div class="howto-step"><span class="hn">2</span><div><b>Una flecha = "le pasa su dato a".</b> Si sale una flecha de <span style="color:var(--root-clima);font-weight:600">Clima</span> hacia <span style="color:var(--tx)">Riego</span>, es que el riego necesita el clima para calcularse.</div></div>
+      <div class="howto-step"><span class="hn">3</span><div><b>Mirá cuántas flechas salen de <span style="color:var(--root-clima);font-weight:600">Clima</span> y <span style="color:var(--root-topo);font-weight:600">Topografía</span>.</b> Son las dos raíces: casi todo lo demás depende de ellas. Por eso van primero.</div></div>
+    </div>
+    <div class="maplabel"><span>← cargás primero</span><span>se calcula gracias a eso →</span></div>
+    <div class="mapwrap">
+      <svg viewBox="0 0 900 460" role="img" aria-label="Diagrama de dependencias entre los análisis">
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="context-stroke"/>
+          </marker>
+          <style>
+            .edge{stroke:currentColor;stroke-width:1.8;fill:none;opacity:.55}
+            .nlabel{font-family:var(--sans);font-size:12.5px;font-weight:600;fill:#fff}
+            .nlabel.dark{fill:var(--ink-950)}
+            .csub{font-family:var(--sans);font-size:10px;fill:var(--tx-soft)}
+            .root-rect{rx:11}
+          </style>
+        </defs>
+
+        <!-- edges: base -> roots -->
+        <g color="var(--tx-faint)">
+          <path class="edge" marker-end="url(#ar)" d="M120,60 C210,60 200,120 250,124"/>
+          <path class="edge" marker-end="url(#ar)" d="M120,72 C210,120 200,214 250,214"/>
+          <path class="edge" marker-end="url(#ar)" d="M120,84 C200,180 190,300 250,304"/>
+          <path class="edge" marker-end="url(#ar)" d="M120,96 C190,240 180,384 250,388"/>
+        </g>
+        <!-- clima -> consumers -->
+        <g color="var(--root-clima)">
+          <path class="edge" marker-end="url(#ar)" d="M470,120 C560,90 590,72 650,70"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,126 C560,120 590,116 650,116"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,132 C560,150 590,160 650,162"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,138 C560,190 590,206 650,208"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,144 C560,236 590,252 650,254"/>
+        </g>
+        <!-- topo -> consumers -->
+        <g color="var(--root-topo)">
+          <path class="edge" marker-end="url(#ar)" d="M470,214 C560,150 590,120 650,116"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,214 C560,206 590,206 650,208"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,218 C560,250 590,254 650,254"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,222 C560,296 590,300 650,300"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,226 C560,338 590,344 650,346"/>
+        </g>
+        <!-- suelo & cobertura -> consumers -->
+        <g color="var(--root-suelo)">
+          <path class="edge" marker-end="url(#ar)" d="M470,304 C560,290 590,258 650,254"/>
+          <path class="edge" marker-end="url(#ar)" d="M470,306 C560,346 590,390 650,392"/>
+        </g>
+        <g color="var(--root-cob)">
+          <path class="edge" marker-end="url(#ar)" d="M470,388 C560,392 590,394 650,392"/>
+        </g>
+
+        <!-- base node -->
+        <g>
+          <rect x="30" y="52" width="90" height="52" rx="11" fill="var(--ink-700)"/>
+          <text class="nlabel" x="75" y="76" text-anchor="middle">Mojones</text>
+          <text class="nlabel" x="75" y="92" text-anchor="middle" style="font-size:10px;font-weight:400;opacity:.8">el predio</text>
+        </g>
+
+        <!-- roots -->
+        <g>
+          <rect x="250" y="100" width="220" height="48" rx="11" fill="var(--root-clima)"/>
+          <text class="nlabel" x="266" y="122">Clima</text>
+          <text class="nlabel" x="266" y="138" style="font-size:10px;font-weight:400;opacity:.85">lluvia · ETP · balance · Köppen</text>
+        </g>
+        <g>
+          <rect x="250" y="190" width="220" height="48" rx="11" fill="var(--root-topo)"/>
+          <text class="nlabel" x="266" y="212">Topografía</text>
+          <text class="nlabel" x="266" y="228" style="font-size:10px;font-weight:400;opacity:.85">pendiente · curvas · escorrentía</text>
+        </g>
+        <g>
+          <rect x="250" y="280" width="220" height="48" rx="11" fill="var(--root-suelo)"/>
+          <text class="nlabel dark" x="266" y="302">Suelo</text>
+          <text class="nlabel dark" x="266" y="318" style="font-size:10px;font-weight:400;opacity:.85">pH · textura · carbono orgánico</text>
+        </g>
+        <g>
+          <rect x="250" y="364" width="220" height="48" rx="11" fill="var(--root-cob)"/>
+          <text class="nlabel dark" x="266" y="386">Cobertura</text>
+          <text class="nlabel dark" x="266" y="402" style="font-size:10px;font-weight:400;opacity:.85">bosque · pastizal · cultivo</text>
+        </g>
+
+        <!-- consumers -->
+        <g font-size="12" font-weight="500" fill="var(--tx)" style="font-family:var(--sans)">
+          <g><rect x="650" y="56" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="74">Captación de agua · Calendario</text></g>
+          <g><rect x="650" y="102" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="120">Sombras · Visibilidad · Keyline</text></g>
+          <g><rect x="650" y="148" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="166">Riego · Aptitud</text></g>
+          <g><rect x="650" y="194" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="212">Pastoreo · Producción</text></g>
+          <g><rect x="650" y="240" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="258">Carbono · Aptitud</text></g>
+          <g><rect x="650" y="286" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="304">Cuenca · Aguadas</text></g>
+          <g><rect x="650" y="332" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="350">Sectores</text></g>
+          <g><rect x="650" y="378" width="220" height="28" rx="8" fill="var(--bg-soft)" stroke="var(--line)"/><text x="662" y="396">Carbono del suelo</text></g>
+        </g>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--ink-700)"></i> Base — el predio</span>
+      <span><i style="background:var(--root-clima)"></i> Clima (raíz)</span>
+      <span><i style="background:var(--root-topo)"></i> Topografía (raíz)</span>
+      <span><i style="background:var(--root-suelo)"></i> Suelo</span>
+      <span><i style="background:var(--root-cob)"></i> Cobertura</span>
+    </div>
+    <div class="note"><span class="mk">💡</span><div>La lección práctica: si abrís un panel de diseño (riego, pastoreo, cuenca…) y aparece vacío o te manda a "calculá primero", casi siempre falta una de las dos raíces. Calculá <b>clima</b> y <b>topografía</b> y el resto se enciende solo.</div></div>
+  </div>
+</section>
+
+<section id="analisis">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Los análisis, uno por uno</h2></div>
+    <p class="sec-sub">Cada tarjeta dice qué es, qué necesita cargado antes, y qué produce que después usan otros paneles.</p>
+    <div class="grid">
+
+      <div class="panel" style="--rail:var(--ink-700)">
+        <div class="nm">Mojones</div>
+        <p class="what">Los vértices del terreno. Es la base de todo: sin el polígono cerrado no hay superficie, ni centroide, ni nada que analizar. Los cargás por coordenadas (decimal, GMS o UTM), haciendo clic en el mapa, o importando un KML/KMZ/CSV.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v selfmade">nada — es el punto de partida</span></div>
+          <div class="row"><span class="k">Produce</span><span class="v"><span class="chip src base">el predio</span> superficie, perímetro, centroide</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-clima)">
+        <div class="nm">Clima <span style="font-size:.7rem;color:var(--root-clima);font-weight:600">· raíz</span></div>
+        <p class="what">El clima del lugar a partir de datos satelitales (NASA POWER) con la lluvia afinada a ~5&nbsp;km (CHIRPS). Calcula temperatura, lluvia mensual, evapotranspiración (ETP — cuánta agua "pide" la atmósfera), el balance hídrico (lluvia menos ETP), la clasificación de Köppen y el índice de aridez.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span></span></div>
+          <div class="row"><span class="k">Alimenta</span><span class="v">Captación · Calendario · Riego · Pastoreo · Producción · Solar · Sectores · Aguadas</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Topografía <span style="font-size:.7rem;color:var(--root-topo);font-weight:600">· raíz</span></div>
+        <p class="what">El relieve del terreno, muestreado de un modelo de elevación. De acá salen la pendiente media, el desnivel, las curvas de nivel y las líneas de escurrimiento del agua. Podés cargar tu propio relevamiento de dron para curvas de mucho más detalle.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span></span></div>
+          <div class="row"><span class="k">Alimenta</span><span class="v">Curvas · Keyline · Cuenca · Sombras · Visibilidad · Aptitud · Aguadas · Sectores</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-suelo)">
+        <div class="nm">Suelo</div>
+        <p class="what">Propiedades del suelo desde SoilGrids (~250&nbsp;m): pH, textura (arena/limo/arcilla), carbono orgánico, densidad, nitrógeno, en varias profundidades. Son valores orientativos —no reemplazan un análisis de laboratorio— pero sirven para dimensionar riego, carbono y aptitud.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span></span></div>
+          <div class="row"><span class="k">Alimenta</span><span class="v">Riego · Carbono · Cuenca · Aptitud</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-cob)">
+        <div class="nm">Cobertura</div>
+        <p class="what">Qué cubre el suelo hoy, según el mapa satelital ESA WorldCover (10&nbsp;m): bosque, pastizal, cultivo, agua, construido. Sirve de línea de base —de dónde partís— y para estimar el carbono según el uso actual.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span></span></div>
+          <div class="row"><span class="k">Alimenta</span><span class="v">Carbono</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-300)">
+        <div class="nm">Contexto</div>
+        <p class="what">Un resumen vivo que cruza el clima con la topografía para darte una lectura rápida del predio en palabras: qué tipo de clima, qué tan quebrado, qué condicionantes. Es lectura, no un cálculo nuevo.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">síntesis del sitio</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-300)">
+        <div class="nm">Entorno y biodiversidad</div>
+        <p class="what">La línea de base viva del predio. Trae las especies registradas en la zona (base GBIF — total, reinos, especies amenazadas según UICN, top de especies observadas) y qué hay alrededor: localidades, rutas y cursos de agua (OpenStreetMap). Ubica el terreno en su territorio y su ecología.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">biodiversidad registrada · referencias del entorno</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-clima)">
+        <div class="nm">Calendario</div>
+        <p class="what">Las ventanas del año según el clima: meses fríos y cálidos, época seca y húmeda, cuándo hay riesgo de helada. Orienta las decisiones de siembra y manejo a lo largo del año.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">ventanas estacionales</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-clima)">
+        <div class="nm">Solar</div>
+        <p class="what">El arco del sol sobre el terreno y las horas de sol a lo largo del año. Base para ubicar viviendas, huertas e invernaderos con buena orientación.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span><span class="chip src clima">clima</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">arco solar · horas de sol</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Sombras</div>
+        <p class="what">Cómo caen las sombras del relieve —y de objetos con altura que agregues— a distintas horas y estaciones. Muestra qué sectores quedan sombreados y cuáles reciben sol pleno.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">mapa de sombras</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Visibilidad</div>
+        <p class="what">El "viewshed": desde un punto que elegís, qué partes del terreno se ven y cuáles quedan ocultas por el relieve. Útil para ubicar una casa con vista, o para privacidad.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">cuenca visual</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-clima)">
+        <div class="nm">Producción</div>
+        <p class="what">El potencial productivo del predio según el clima. Tiene tres módulos —cultivo, ganadería y cortinas— y por su tamaño lo explicamos aparte, en la sección siguiente.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src base">superficie</span></span></div>
+          <div class="row"><span class="k">Ver</span><span class="v"><a href="#produccion">Producción en detalle ↓</a></span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Aptitud</div>
+        <p class="what">Cruza la pendiente con las líneas de escurrimiento para decir dónde conviene cada uso: dónde construir, dónde cultivar, dónde forestar, qué dejar como reserva. Puede volcar esas zonas directo al diseño.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span> escorrentía</span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">zonas de aptitud → Zonas</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-suelo)">
+        <div class="nm">Carbono</div>
+        <p class="what">El carbono almacenado hoy en el suelo (a partir del carbono orgánico y la densidad) y cuánto más se podría capturar con prácticas regenerativas —pastoreo, cobertura, agroforestería, compost—. Lo traduce a CO₂ equivalente y a equivalencias tangibles.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src suelo">suelo</span><span class="chip src cob">cobertura</span><span class="chip src base">superficie</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">stock y captura de C</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="produccion">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Producción, en detalle</h2></div>
+    <p class="sec-sub">El módulo de Producción es el más cargado de opciones. Tiene tres solapas que responden preguntas distintas — todas a partir del clima del sitio.</p>
+
+    <div class="deep">
+      <div class="deep-card">
+        <div class="deep-tag">Solapa 1</div>
+        <h3>Balance de cultivo</h3>
+        <p>Elegís un cultivo y una superficie, y la app compara mes a mes <b>la lluvia contra lo que el cultivo necesita</b> (la ETc — evapotranspiración del cultivo, que es la ETP ajustada por el coeficiente Kc de cada especie). Donde la lluvia no alcanza, aparece el <b>déficit</b>: cuántos milímetros —y cuántos m³— habría que reponer con riego.</p>
+        <div class="deep-detail">
+          <span class="dl">Elegís</span>
+          <span class="dv">cultivo (huerta, maíz, alfalfa, olivo, pasturas, hortalizas de hoja, solanáceas, cucurbitáceas, frutales… ~19 opciones) + superficie</span>
+        </div>
+        <div class="deep-detail">
+          <span class="dl">Te dice</span>
+          <span class="dv">gráfico lluvia vs. ETc por mes · meses con déficit · volumen de agua a reponer</span>
+        </div>
+        <p class="deep-tip">💡 Para qué sirve: saber si un cultivo <b>cierra con la lluvia sola</b> o cuánto riego te va a demandar antes de plantarlo.</p>
+      </div>
+
+      <div class="deep-card">
+        <div class="deep-tag">Solapa 2</div>
+        <h3>Ganadería</h3>
+        <p>Estima la <b>receptividad</b> del campo: cuántos animales puede sostener según la lluvia anual (que determina cuánto forraje crece) y la superficie. Elegís el tipo de animal y calcula la carga con base en su consumo.</p>
+        <div class="deep-detail">
+          <span class="dl">Elegís</span>
+          <span class="dv">tipo de animal: bovinos adultos o jóvenes, equinos, ovinos, caprinos, porcinos</span>
+        </div>
+        <div class="deep-detail">
+          <span class="dl">Te dice</span>
+          <span class="dv">forraje disponible (kg de materia seca por ha) · carga animal que soporta el campo</span>
+        </div>
+        <p class="deep-tip">💡 Se complementa con la herramienta de <b>Pastoreo</b> (sección 05): acá ves <i>cuántos</i> animales entran; allá, <i>cómo</i> los rotás por potreros.</p>
+      </div>
+
+      <div class="deep-card">
+        <div class="deep-tag">Solapa 3</div>
+        <h3>Cortinas</h3>
+        <p>Sugiere dónde plantar <b>cortinas rompevientos</b>, orientadas contra el viento dominante del sitio (que sale del clima). Las dibuja sobre el predio y las podés volcar directo al diseño.</p>
+        <div class="deep-detail">
+          <span class="dl">Usa</span>
+          <span class="dv">dirección del viento principal (del clima) + la forma del predio (mojones)</span>
+        </div>
+        <div class="deep-detail">
+          <span class="dl">Te dice</span>
+          <span class="dv">líneas de cortina sugeridas · especies para la región (Espinal / Chaco serrano)</span>
+        </div>
+        <p class="deep-tip">💡 Botón para <b>agregar las cortinas al diseño</b> como elementos dibujados, listos para ajustar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="diseno">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Las herramientas de diseño</h2></div>
+    <p class="sec-sub">Acá dejás de medir y empezás a proyectar sobre el terreno. Casi todas se apoyan en las dos raíces: usan el clima y el relieve que ya calculaste.</p>
+    <div class="grid">
+
+      <div class="panel" style="--rail:var(--water)">
+        <div class="nm">Captación de agua</div>
+        <p class="what">Cuánta agua de lluvia podés cosechar de techos y superficies duras, mes a mes, según el clima del sitio. La base para dimensionar tanques y reservorios.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">agua cosechable</span></div></div>
+      </div>
+
+      <div class="panel deep-link" style="--rail:var(--water)">
+        <div class="nm">Riego</div>
+        <p class="what">Dimensiona el sistema de riego completo: cuánta agua falta, con qué caudal, cada cuántos días. Por su detalle va ampliado abajo.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src suelo">suelo</span></span></div>
+          <div class="row"><span class="k">Ver</span><span class="v"><a href="#detalle-diseno">Riego en detalle ↓</a></span></div></div>
+      </div>
+
+      <div class="panel deep-link" style="--rail:var(--root-topo)">
+        <div class="nm">Cuenca</div>
+        <p class="what">Cuánta agua drena hacia un punto y qué caudal genera una tormenta. Por su detalle va ampliado abajo.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span><span class="chip src suelo">suelo</span></span></div>
+          <div class="row"><span class="k">Ver</span><span class="v"><a href="#detalle-diseno">Cuenca en detalle ↓</a></span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Keyline</div>
+        <p class="what">El patrón de líneas clave (Yeomans) trazado sobre el relieve: guías para arar y mover el agua de los valles hacia las lomas, distribuyéndola parejo. Necesita buena topografía para ser útil.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">guías keyline</span></div></div>
+      </div>
+
+      <div class="panel deep-link" style="--rail:var(--root-clima)">
+        <div class="nm">Pastoreo</div>
+        <p class="what">Divide el campo en potreros y arma el calendario de rotación. Por su detalle va ampliado abajo.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src base">superficie</span></span></div>
+          <div class="row"><span class="k">Ver</span><span class="v"><a href="#detalle-diseno">Pastoreo en detalle ↓</a></span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-clima)">
+        <div class="nm">Sectores</div>
+        <p class="what">Los sectores de energía que entran al predio —sol, vientos dominantes, riesgo de fuego, ruido— dibujados según el clima y el relieve. Orientan dónde poner cada cosa.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">sectores de energía</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Aguadas</div>
+        <p class="what">Ubica puntos de agua para el ganado aprovechando el relieve (dónde junta agua) y las distancias de acceso. Se conecta con el pastoreo y la red de agua.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span><span class="chip src clima">clima</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">puntos de agua</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-500)">
+        <div class="nm">Zonas</div>
+        <p class="what">La zonificación de permacultura (zonas 0 a 5, de la casa hacia el monte) según la frecuencia de uso. Puede recibir directamente las zonas de aptitud calculadas en el análisis.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v">Aptitud <span class="selfmade">(o a mano)</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">zonas de manejo</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-500)">
+        <div class="nm">Caminos</div>
+        <p class="what">El trazado de caminos internos del predio. Además de organizar la circulación, sirven de esqueleto para la red de distribución de agua.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v selfmade">se dibuja a mano</span></div>
+          <div class="row"><span class="k">Alimenta</span><span class="v">Red de agua</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--water)">
+        <div class="nm">Red de agua</div>
+        <p class="what">La red de distribución de agua siguiendo el trazado de los caminos: cómo llevar el agua desde el reservorio hasta cada punto de consumo.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v">Caminos</span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">red de distribución</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--sun)">
+        <div class="nm">Economía</div>
+        <p class="what">El presupuesto y el retorno del proyecto: junta las cantidades de lo que diseñaste (red de agua, reservorio, riego…) y le pone números —costos, márgenes, período de recupero (payback)—.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v">el diseño <span class="selfmade">(trae cantidades solo)</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">presupuesto · ROI</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--ink-700)">
+        <div class="nm">Proyectos</div>
+        <p class="what">Guardar y recuperar el trabajo en la nube. Cada proyecto guarda todo: mojones, análisis calculados, dibujos y calibraciones. Desde acá también compartís el informe.</p>
+        <div class="io"><div class="row"><span class="k">Función</span><span class="v">guardar · abrir · compartir</span></div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="detalle-diseno">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Riego, Pastoreo y Cuenca en detalle</h2></div>
+    <p class="sec-sub">Estas tres son las herramientas de diseño con más para calcular. Vale la pena entender qué te pide cada una y qué te devuelve, porque de acá salen decisiones de plata: cuánta cañería, cuántos animales, qué tamaño de reservorio.</p>
+
+    <div class="deep">
+      <div class="deep-card">
+        <div class="deep-tag" style="color:var(--water)">Riego</div>
+        <h3>Dimensionar el sistema</h3>
+        <p>No te dice sólo "cuánta agua falta": te dimensiona <b>el sistema completo</b>. Cruza cuánta agua pide el cultivo (del clima) con cuánta retiene el suelo, y con el sistema que elijas calcula caudales y turnos reales de instalación.</p>
+        <div class="deep-detail"><span class="dl">Elegís</span><span class="dv">cultivo · superficie del sector · sistema: goteo (90%), microaspersión (80%), aspersión (75%) o surco/manto (55%) — el % es la eficiencia</span></div>
+        <div class="deep-detail"><span class="dl">Te dice</span><span class="dv">lámina neta y bruta (mm) · turno (cada cuántos días regar) · caudal necesario · horas de riego por día en el mes pico · volumen anual</span></div>
+        <p class="deep-tip">💡 Cargá <b>Suelo</b> antes: sin él asume 120 mm/m de agua útil; con él afina el turno de riego a tu textura real.</p>
+      </div>
+
+      <div class="deep-card">
+        <div class="deep-tag" style="color:var(--moss-500)">Pastoreo</div>
+        <h3>Rotación por potreros</h3>
+        <p>Convierte la receptividad del campo en un <b>plan de manejo concreto</b>: en cuántos potreros dividirlo, cuántos días ocupar cada uno, y cuánto alambre y cuántos bebederos hace falta. Es el pastoreo rotativo tipo Voisin, puesto en números.</p>
+        <div class="deep-detail"><span class="dl">Ajustás</span><span class="dv">cantidad y peso de los animales · % de consumo sobre su peso · % de aprovechamiento del forraje · cantidad de potreros</span></div>
+        <div class="deep-detail"><span class="dl">Te dice</span><span class="dv">balance forrajero · carga instantánea · días de ocupación y área por potrero · calendario de rotación · metros de alambrado y postes · bebederos</span></div>
+        <p class="deep-tip">💡 La receptividad base (cuántos animales entran) sale del módulo <b>Producción → Ganadería</b>; acá decidís <i>cómo</i> los movés.</p>
+      </div>
+
+      <div class="deep-card">
+        <div class="deep-tag" style="color:var(--root-topo)">Cuenca</div>
+        <h3>Agua que llega a un punto</h3>
+        <p>Elegís un punto de cierre y delimita la <b>cuenca aguas arriba</b>: toda la superficie que drena hacia ahí. Después estima, para una tormenta de diseño, cuánta agua escurre y con qué caudal pico — con el método Curva Número (CN), que combina el suelo y la cobertura.</p>
+        <div class="deep-detail"><span class="dl">Usa</span><span class="dv">topografía (por dónde corre el agua) · suelo y cobertura (cuánto infiltra vs. escurre) · la tormenta de diseño que definas (mm)</span></div>
+        <div class="deep-detail"><span class="dl">Te dice</span><span class="dv">área de la cuenca · desnivel y recorrido del flujo · tiempo de concentración · volumen escurrido · caudal pico · ancho de vertedero sugerido</span></div>
+        <p class="deep-tip">💡 Es la base para <b>dimensionar un reservorio</b>: cuánta agua le llega y qué vertedero necesita para no desbordar en una crecida.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="navegacion">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Navegación y dibujo</h2></div>
+    <p class="sec-sub">Lo que rodea al mapa: cómo moverte, y las herramientas para dibujar sobre el terreno. Varias cosas no son obvias a simple vista.</p>
+    <div class="tools">
+      <div class="tool"><h4><span class="g">◱</span> Panel de navegación</h4><p>Arriba a la derecha, todo junto: acercar/alejar (<kbd>+</kbd> <kbd>−</kbd>), la brújula, Satélite/Topo, Histórico, 3D y Capas. El panel de Capas se despliega debajo.</p></div>
+      <div class="tool"><h4><span class="g">🧭</span> Brújula</h4><p>Con el norte arriba es decorativa. Apenas girás el plano, se enciende y muestra los grados; un clic vuelve el norte arriba.</p></div>
+      <div class="tool"><h4><span class="g">↻</span> Girar el plano</h4><p>Arrastrá con el <b>botón central</b> del mouse para rotar el mapa. Con <kbd>Shift</kbd> + botón central, paneás. En la Vista 3D hay un control de giro y órbita.</p></div>
+      <div class="tool"><h4><span class="g">⛰</span> Vista 3D</h4><p>Ve el relieve en tres dimensiones con los vectores del diseño drapeados encima. Slider de giro, reset al norte y órbita automática.</p></div>
+      <div class="tool"><h4><span class="g">🕐</span> Histórico</h4><p>Imágenes satelitales de distintos años (Wayback), para ver cómo cambió el predio en el tiempo.</p></div>
+      <div class="tool"><h4><span class="g">▦</span> Capas</h4><p>Prendés y apagás todo lo calculado: topografía, curvas de nivel, escorrentías, sugerencias, tus dibujos. Acá se elige el intervalo de las curvas.</p></div>
+      <div class="tool"><h4><span class="g">✎</span> Barra de dibujo</h4><p>Arriba al centro: líneas, polígonos, flechas, círculos, texto, medición. Con color y capas propias para organizar lo que dibujás.</p></div>
+      <div class="tool"><h4><span class="g">⊹</span> SNAP y ORTO</h4><p>Abajo a la izquierda. SNAP engancha a puntos y vértices existentes; ORTO fuerza ángulos rectos. Como en un CAD.</p></div>
+      <div class="tool"><h4><span class="g">⌸</span> Estado de guardado</h4><p>Arriba a la derecha muestra si el trabajo está en la nube; al desplegarlo, Guardar y Guardar como / Mis proyectos.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="informe">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">08</span><h2>El informe: donde todo se junta</h2></div>
+    <p class="sec-sub">El producto final. Cada análisis que calculaste aporta su sección; lo que no calculaste, simplemente no aparece. Por eso conviene recorrer las dos raíces antes de generarlo.</p>
+    <div class="tools">
+      <div class="tool"><h4>Portada</h4><p>Nombre del predio, ubicación, superficie, perímetro, Köppen y el plano. Con tu logo y datos como profesional (white-label).</p></div>
+      <div class="tool"><h4>Resumen ejecutivo</h4><p>Los indicadores clave con semáforos y los "aspectos a considerar" según los umbrales de cada análisis.</p></div>
+      <div class="tool"><h4>Clima, suelo, agua…</h4><p>Una sección por cada análisis calculado, en orden. La fuente de cada dato queda registrada.</p></div>
+      <div class="tool"><h4>Economía y carbono</h4><p>El presupuesto con retorno, y la captura de carbono con su equivalencia.</p></div>
+      <div class="tool"><h4>Anexo</h4><p>Fuentes, métodos y notas. Acá aparece, por ejemplo, si calibraste la lluvia con una estación propia.</p></div>
+      <div class="tool"><h4>Exportar</h4><p>Además del informe: imagen PNG del plano, DXF (AutoCAD), GeoJSON, KML y GPX.</p></div>
+    </div>
+    <div class="note"><span class="mk">🧭</span><div><b>Regla de oro:</b> el informe refleja exactamente lo que calculaste. Si querés un informe completo, hacé el recorrido de la sección 01 antes de generarlo.</div></div>
+  </div>
+</section>
+
+<section id="capturas">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Capturas de pantalla</h2></div>
+    <p class="sec-sub">Esta guía usa diagramas para explicar la lógica. El próximo paso es intercalar capturas reales de cada panel en acción — quedan estos espacios reservados.</p>
+    <div class="placeholder">📷 Capturas reales de la app — pendientes de agregar (panel de Clima, Topografía con curvas, Vista 3D, el informe generado)</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>Guía de Terreno</b> · Arte y Tierra · Tay Pichín — documento de referencia interno.</p>
+    <p>Refleja la aplicación al día de hoy. A medida que la app crece, esta guía se actualiza sobre el mismo enlace.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -2014,6 +2014,7 @@ export function MapaTerrenoApp({ userName }: Props) {
       { id: 'capas',   grupo: 'Vista',    label: 'Mostrar panel de Capas',      keywords: 'layers',            accion: () => setPanelDerecho('capas') },
       { id: 'panel',   grupo: 'Vista',    label: 'Mostrar / ocultar panel lateral', keywords: 'sidebar',       accion: () => setPanelAbierto(p => !p) },
       { id: 'ayuda',   grupo: 'Vista',    label: 'Ver atajos de teclado',       keywords: 'help shortcuts',    accion: () => setAyudaOpen(true) },
+      { id: 'guia',    grupo: 'Vista',    label: 'Abrir la guía de uso',        keywords: 'ayuda manual tutorial cómo funciona', accion: () => window.open('/guia.html', '_blank', 'noopener') },
     ];
     return [...irA, ...herramientas, ...acciones];
   }, [

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, X, CornerDownLeft } from 'lucide-react';
+import { Search, X, CornerDownLeft, BookOpen } from 'lucide-react';
 
 export interface Comando {
   id:        string;
@@ -150,6 +150,13 @@ export function AtajosAyuda({ onClose }: { onClose: () => void }) {
             </div>
           ))}
         </div>
+        <a
+          href="/guia.html" target="_blank" rel="noopener"
+          className="flex items-center gap-2.5 px-5 h-12 border-t border-bone-200 text-sm font-medium text-moss-700 hover:bg-bone-50 transition-colors"
+        >
+          <BookOpen className="w-4 h-4 shrink-0" />
+          Guía de uso — qué hace cada análisis y cómo se conectan
+        </a>
       </div>
     </div>
   );
