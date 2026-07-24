@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert,
+  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -380,6 +380,7 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [guardandoNube, setGuardandoNube] = useState(false);
   const [guardadoTick, setGuardadoTick] = useState(false);
   const [guardarOpen,  setGuardarOpen]  = useState(false);
+  const [ayudaMenuOpen, setAyudaMenuOpen] = useState(false);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
   // ─── Perfil de elevación interactivo (dock inferior estilo Google Earth Pro) ──
@@ -2070,6 +2071,14 @@ export function MapaTerrenoApp({ userName }: Props) {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Tema (claro → sepia → oscuro), agrupado con el estado de la app. */}
+          <button
+            onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
+            title={`Tema: ${tema} — clic para cambiar (claro → sepia → oscuro)`}
+            className="p-1.5 text-ink-700/40 hover:text-moss-700 transition-colors"
+          >
+            {tema === 'oscuro' ? <Moon className="w-4 h-4" /> : tema === 'sepia' ? <Palette className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
           {/* Estado de guardado y acciones en un solo control: el chip y el
               botón por separado comían el ancho que necesita el toolbar. */}
           <div className="relative">
@@ -2124,13 +2133,33 @@ export function MapaTerrenoApp({ userName }: Props) {
               </>
             )}
           </div>
-          <button
-            onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
-            title={`Tema: ${tema} — clic para cambiar (claro → sepia → oscuro)`}
-            className="p-1.5 text-ink-700/40 hover:text-moss-700 transition-colors"
-          >
-            {tema === 'oscuro' ? <Moon className="w-4 h-4" /> : tema === 'sepia' ? <Palette className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
+          {/* Ayuda: guía de uso + atajos de teclado, en un solo menú visible. */}
+          <div className="relative">
+            <button
+              onClick={() => setAyudaMenuOpen(o => !o)}
+              title="Ayuda"
+              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${ayudaMenuOpen ? 'bg-moss-700 text-bone-50 border-moss-700' : 'border-bone-200 hover:bg-bone-50 text-ink-700'}`}
+            >
+              <HelpCircle className="w-3.5 h-3.5" /><span className="hidden lg:inline">Ayuda</span> <ChevronDown className="w-3 h-3" />
+            </button>
+            {ayudaMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-[1250]" onClick={() => setAyudaMenuOpen(false)} />
+                <div className="absolute right-0 mt-1 w-52 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
+                  <ExportItem
+                    icon={<BookOpen className="w-3.5 h-3.5" />}
+                    label="Guía de uso"
+                    onClick={() => { setAyudaMenuOpen(false); window.open('/guia.html', '_blank', 'noopener'); }}
+                  />
+                  <ExportItem
+                    icon={<Keyboard className="w-3.5 h-3.5" />}
+                    label="Atajos de teclado"
+                    onClick={() => { setAyudaMenuOpen(false); setAyudaOpen(true); }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
           <span className="w-px h-5 bg-bone-200 mx-0.5" />
           <button onClick={handleLogout} title={`Cerrar sesión${userName ? ` (${userName})` : ''}`} className="p-1.5 text-ink-700/40 hover:text-clay-600 transition-colors"><LogOut className="w-4 h-4" /></button>
         </div>
