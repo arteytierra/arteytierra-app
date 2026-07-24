@@ -164,6 +164,20 @@
   a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
   .placeholder{border:1.5px dashed var(--line);border-radius:12px;padding:26px;text-align:center;
     color:var(--tx-faint);font-size:.85rem;background:var(--bg-soft);margin-top:16px}
+  code{font-family:var(--sans);font-size:.86em;background:var(--bg-soft);border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px}
+  .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:8px}
+  .shot{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:var(--shadow)}
+  .shot-frame{position:relative;aspect-ratio:16/9;background:
+    repeating-linear-gradient(45deg,var(--bg-soft),var(--bg-soft) 10px,transparent 10px,transparent 20px);
+    display:grid;place-items:center}
+  .shot-frame img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+  /* La etiqueta con el nombre del archivo queda detrás; si la imagen existe, la tapa. */
+  .shot-ph{position:absolute;font-family:var(--sans);font-size:.8rem;color:var(--tx-faint);
+    background:var(--card);border:1px solid var(--line);border-radius:20px;padding:4px 12px;pointer-events:none}
+  .shot figcaption{padding:13px 15px;font-size:.85rem;color:var(--tx-soft);line-height:1.5}
+  .shot figcaption b{color:var(--tx)}
 </style>
 </head>
 <body>
@@ -663,8 +677,26 @@
 <section id="capturas">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">09</span><h2>Capturas de pantalla</h2></div>
-    <p class="sec-sub">Esta guía usa diagramas para explicar la lógica. El próximo paso es intercalar capturas reales de cada panel en acción — quedan estos espacios reservados.</p>
-    <div class="placeholder">📷 Capturas reales de la app — pendientes de agregar (panel de Clima, Topografía con curvas, Vista 3D, el informe generado)</div>
+    <p class="sec-sub">Los diagramas explican la lógica; estas capturas muestran la app real en acción. Cada marco espera su imagen — se completan dejando los archivos en <code>apps/terreno/public/img/guia/</code>.</p>
+    <div class="shots">
+      <figure class="shot">
+        <div class="shot-frame"><img src="/img/guia/clima.png" alt="Panel de Clima" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">clima.png</span></div>
+        <figcaption><b>Panel de Clima.</b> Lluvia, temperatura, ETP y el balance hídrico mes a mes, con el Köppen del sitio. La primera raíz.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-frame"><img src="/img/guia/topografia.png" alt="Topografía con curvas de nivel" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">topografia.png</span></div>
+        <figcaption><b>Topografía con curvas.</b> El relieve del predio y las curvas de nivel sobre el satélite. La segunda raíz.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-frame"><img src="/img/guia/vista3d.png" alt="Vista 3D del relieve" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">vista3d.png</span></div>
+        <figcaption><b>Vista 3D.</b> El terreno en tres dimensiones con el diseño drapeado encima; se gira y orbita.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-frame"><img src="/img/guia/informe.png" alt="Informe generado" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">informe.png</span></div>
+        <figcaption><b>El informe.</b> El PDF final: portada, resumen ejecutivo con semáforos y una sección por cada análisis calculado.</figcaption>
+      </figure>
+    </div>
+    <p class="cap">Esta guía también vive dentro de la aplicación, en <b>Ayuda → Guía de uso</b> y en la paleta de comandos (⌘K → "Abrir la guía de uso").</p>
   </div>
 </section>
 
