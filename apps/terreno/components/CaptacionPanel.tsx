@@ -21,11 +21,16 @@ interface Props {
   datosClima:  DatosClima | null;
   onIrAClima:  () => void;
   onSnapshot?: (snap: CaptacionSnapshot | null) => void;
+  /** Datos cargados antes: al cambiar de pestaña el panel se desmonta, así
+   *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
+  snapshotInicial?: CaptacionSnapshot | null;
 }
 
-export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot }: Props) {
-  const [superficies, setSuperficies] = useState<Superficie[]>([nuevaSuperficieDefault()]);
-  const [consumos,    setConsumos]    = useState<ConsumoCategoria[]>([nuevaConsumoDefault()]);
+export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot, snapshotInicial }: Props) {
+  const [superficies, setSuperficies] = useState<Superficie[]>(
+    snapshotInicial?.superficies?.length ? snapshotInicial.superficies : [nuevaSuperficieDefault()]);
+  const [consumos,    setConsumos]    = useState<ConsumoCategoria[]>(
+    snapshotInicial?.consumoCategorias?.length ? snapshotInicial.consumoCategorias : [nuevaConsumoDefault()]);
 
   // ── Superficies ─────────────────────────────────────────────────────────────
   const agregarSuperficie = useCallback(() => {

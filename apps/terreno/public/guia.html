@@ -172,7 +172,11 @@
   .shot-frame{position:relative;aspect-ratio:16/9;background:
     repeating-linear-gradient(45deg,var(--bg-soft),var(--bg-soft) 10px,transparent 10px,transparent 20px);
     display:grid;place-items:center}
-  .shot-frame img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+  .shot a{display:block;line-height:0}
+  .shot-frame img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform .3s ease}
+  .shot a:hover img{transform:scale(1.03)}
+  .shot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* La etiqueta con el nombre del archivo queda detrás; si la imagen existe, la tapa. */
   .shot-ph{position:absolute;font-family:var(--sans);font-size:.8rem;color:var(--tx-faint);
     background:var(--card);border:1px solid var(--line);border-radius:20px;padding:4px 12px;pointer-events:none}
@@ -677,23 +681,39 @@
 <section id="capturas">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">09</span><h2>Capturas de pantalla</h2></div>
-    <p class="sec-sub">Los diagramas explican la lógica; estas capturas muestran la app real en acción. Cada marco espera su imagen — se completan dejando los archivos en <code>apps/terreno/public/img/guia/</code>.</p>
+    <p class="sec-sub">Los diagramas explican la lógica; estas capturas muestran la app real trabajando sobre un predio de 1,17&nbsp;ha en Aguas Buenas, Puerto Rico. Hacé clic en cualquiera para verla en grande.</p>
     <div class="shots">
       <figure class="shot">
-        <div class="shot-frame"><img src="/img/guia/clima.png" alt="Panel de Clima" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">clima.png</span></div>
-        <figcaption><b>Panel de Clima.</b> Lluvia, temperatura, ETP y el balance hídrico mes a mes, con el Köppen del sitio. La primera raíz.</figcaption>
+        <a href="/img/guia/clima.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/clima.webp" alt="Panel de Clima" loading="lazy"></div></a>
+        <figcaption><b>Clima.</b> Selva tropical húmeda (Köppen Af): 1815&nbsp;mm de lluvia —ya afinada con CHIRPS—, ETP, humedad y viento. La primera raíz.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="shot-frame"><img src="/img/guia/topografia.png" alt="Topografía con curvas de nivel" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">topografia.png</span></div>
-        <figcaption><b>Topografía con curvas.</b> El relieve del predio y las curvas de nivel sobre el satélite. La segunda raíz.</figcaption>
+        <a href="/img/guia/topografia.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/topografia.webp" alt="Topografía con curvas de nivel" loading="lazy"></div></a>
+        <figcaption><b>Topografía.</b> El relieve coloreado por altura con las curvas de nivel y sus cotas. En Capas se elige el intervalo (acá, 1&nbsp;m) con el aviso de precisión. La segunda raíz.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="shot-frame"><img src="/img/guia/vista3d.png" alt="Vista 3D del relieve" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">vista3d.png</span></div>
-        <figcaption><b>Vista 3D.</b> El terreno en tres dimensiones con el diseño drapeado encima; se gira y orbita.</figcaption>
+        <a href="/img/guia/vista3d.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/vista3d.webp" alt="Vista 3D del relieve" loading="lazy"></div></a>
+        <figcaption><b>Vista 3D.</b> El terreno en tres dimensiones con las líneas de escurrimiento drapeadas encima. Se inclina, gira y orbita.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="shot-frame"><img src="/img/guia/informe.png" alt="Informe generado" loading="lazy" onerror="this.style.display='none'"><span class="shot-ph">informe.png</span></div>
-        <figcaption><b>El informe.</b> El PDF final: portada, resumen ejecutivo con semáforos y una sección por cada análisis calculado.</figcaption>
+        <a href="/img/guia/sectores.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/sectores.webp" alt="Sectores de energía" loading="lazy"></div></a>
+        <figcaption><b>Sectores.</b> Detectados automáticamente: viento del E, viento frío de invierno y riesgo de fuego en la ladera NNE, dibujados como cuñas sobre el predio.</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="/img/guia/aguadas.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/aguadas.webp" alt="Aguadas y represa" loading="lazy"></div></a>
+        <figcaption><b>Aguadas.</b> Recomendaciones de captación según el relieve —zanjas de infiltración, represa de ladera— con el escurrimiento estimado del predio.</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="/img/guia/caminos.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/caminos.webp" alt="Caminos con perfil de elevación" loading="lazy"></div></a>
+        <figcaption><b>Caminos.</b> El trazado con su perfil de elevación abajo: longitud, subida/bajada y pendiente (acá 29,3&nbsp;%). Esqueleto de la red de agua.</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="/img/guia/reddeagua.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/reddeagua.webp" alt="Red de agua — dimensionado de tubería" loading="lazy"></div></a>
+        <figcaption><b>Red de agua.</b> Dimensiona la cañería sobre el camino: caudal, material, diámetro, presiones y la clase de caño recomendada (PN&nbsp;4).</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="/img/guia/informe.webp" target="_blank" rel="noopener"><div class="shot-frame"><img src="/img/guia/informe.webp" alt="Informe generado" loading="lazy"></div></a>
+        <figcaption><b>El informe.</b> Portada white-label, resumen ejecutivo con indicadores y "aspectos a considerar", e índice de todo lo calculado.</figcaption>
       </figure>
     </div>
     <p class="cap">Esta guía también vive dentro de la aplicación, en <b>Ayuda → Guía de uso</b> y en la paleta de comandos (⌘K → "Abrir la guía de uso").</p>

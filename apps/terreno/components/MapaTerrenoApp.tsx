@@ -2408,7 +2408,7 @@ export function MapaTerrenoApp({ userName }: Props) {
               )}
             </div>
           )}
-          {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} /></div>}
+          {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} onAgregarCortinas={handleAgregarCortinas} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
 
