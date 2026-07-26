@@ -39,6 +39,7 @@ export interface InformeData {
   zonas?:     Zona[];
   mapaDataUrl?: string;         // PNG del mapa capturado (base64)
   profesional?: PerfilProfesional; // white-label: marca del consultor que firma
+  conMarca?: boolean;           // plan Semilla → marca de agua no removible
 }
 
 const LS_KEY = 'terreno_informe_borrador';

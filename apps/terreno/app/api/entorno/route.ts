@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { requierePlan } from '@/lib/auth/apiGuard';
 
 /**
  * Contexto vivo del predio (D1) — datos abiertos sin clave:
@@ -14,6 +15,9 @@ const UA        = 'ArteyTierra-Terreno/1.0 (https://terreno.arteytierra.org)';
 interface Body { lat?: number; lng?: number; radio_km?: number; }
 
 export async function POST(req: Request) {
+  const bloqueo = await requierePlan('analisis.entorno');
+  if (bloqueo) return bloqueo;
+
   let b: Body;
   try { b = await req.json() as Body; } catch { return err('JSON inválido', 400); }
   const lat = b.lat, lng = b.lng;

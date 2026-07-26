@@ -2,6 +2,7 @@
 
 import { getSupabaseBrowserClient } from './db/browser';
 import type { Mojon } from './types';
+import { LIMITE_PROYECTOS, type Plan } from './entitlements';
 
 export interface Proyecto {
   id: string;
@@ -48,10 +49,24 @@ export async function guardarProyecto(
   descripcion: string,
   mojones: Mojon[],
   metadatos?: Record<string, unknown>,
+  plan: Plan = 'estudio',
 ): Promise<Proyecto> {
   const supabase = getSupabaseBrowserClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No hay sesión activa.');
+
+  // Tope de proyectos por plan (feedback inmediato; el trigger en DB es el que
+  // enforcea de verdad). Semilla = 1 proyecto.
+  const limite = LIMITE_PROYECTOS[plan];
+  if (Number.isFinite(limite)) {
+    const { count } = await tabla()
+      .select('id', { count: 'exact', head: true });
+    if ((count ?? 0) >= limite) {
+      throw new Error(
+        `El plan Semilla incluye ${limite} proyecto. Eliminá el actual o pasá a Diseñador para crear más.`,
+      );
+    }
+  }
 
   const { data, error } = await tabla()
     .insert({ user_id: user.id, nombre, descripcion: descripcion || null, mojones, metadatos: metadatos ?? null })

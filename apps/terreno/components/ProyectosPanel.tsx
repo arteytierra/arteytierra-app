@@ -18,6 +18,7 @@ import type { Zona } from '@/lib/zonificacion';
 import type { Pin } from '@/lib/pines';
 import type { Camino } from '@/lib/caminos';
 import type { Sector } from '@/lib/sectores';
+import type { Plan } from '@/lib/entitlements';
 
 /** Extrae un mensaje legible de cualquier error (incluye PostgrestError de Supabase). */
 function errMsg(err: unknown): string {
@@ -42,6 +43,7 @@ interface Props {
   onProyectoActualChange: (p: Proyecto | null) => void;
   metadatos?: Record<string, unknown>;
   onConfirm?: (message: string, onConfirm: () => void) => void;
+  plan?: Plan;
 }
 
 export function ProyectosPanel({
@@ -51,6 +53,7 @@ export function ProyectosPanel({
   onProyectoActualChange,
   metadatos,
   onConfirm,
+  plan = 'estudio',
 }: Props) {
   const [proyectos, setProyectos]     = useState<Proyecto[]>([]);
   const [cargando, setCargando]       = useState(true);
@@ -100,7 +103,7 @@ export function ProyectosPanel({
         await actualizarProyecto(proyectoActual.id, nombre.trim(), descripcion, mojones, metadatos);
         onProyectoActualChange({ ...proyectoActual, nombre: nombre.trim(), descripcion, mojones, metadatos: metadatos ?? null });
       } else {
-        const p = await guardarProyecto(nombre.trim(), descripcion, mojones, metadatos);
+        const p = await guardarProyecto(nombre.trim(), descripcion, mojones, metadatos, plan);
         onProyectoActualChange(p);
       }
       await recargar();

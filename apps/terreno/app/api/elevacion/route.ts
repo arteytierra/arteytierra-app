@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
+import { requierePlan } from '@/lib/auth/apiGuard';
 
 const BASE      = 'https://api.opentopodata.org/v1/srtm30m';
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -19,6 +20,9 @@ function normalizeLocs(raw: string): string {
 }
 
 export async function GET(req: Request) {
+  const bloqueo = await requierePlan('analisis.topo');
+  if (bloqueo) return bloqueo;
+
   const locations = new URL(req.url).searchParams.get('locations') ?? '';
   if (!locations) return new Response('Missing locations', { status: 400 });
 
@@ -48,6 +52,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const bloqueo = await requierePlan('analisis.topo');
+  if (bloqueo) return bloqueo;
+
   const body = await req.json() as { locations: unknown };
 
   let locs: string;

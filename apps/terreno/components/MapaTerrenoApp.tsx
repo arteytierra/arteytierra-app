@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard,
+  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -104,6 +104,8 @@ import { TIPOS_SECTOR } from '@/lib/sectores';
 import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
 import { ControlesMapa, type CapaFondo } from './ControlesMapa';
 import { useHistory } from '@/lib/useHistory';
+import { FeatureLock } from './FeatureLock';
+import { can, featureDeTab, tabBloqueada, BENEFICIO_FEATURE, type Plan } from '@/lib/entitlements';
 
 const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
   ssr: false,
@@ -142,7 +144,7 @@ interface ModoZona    { categoria: CategoriaZona; vertices: Array<{ lat: number;
 interface ModoSector  { tipo: TipoSector;          vertices: Array<{ lat: number; lng: number }> }
 interface ModoCamino  { vertices: Array<{ lat: number; lng: number }> }
 
-interface Props { userName: string | null }
+interface Props { userName: string | null; plan: Plan }
 
 function errMsgApp(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -154,7 +156,7 @@ function errMsgApp(err: unknown): string {
   return String(err);
 }
 
-export function MapaTerrenoApp({ userName }: Props) {
+export function MapaTerrenoApp({ userName, plan }: Props) {
   const router = useRouter();
 
   // ─── Mojones ──────────────────────────────────────────────────────────────
@@ -1835,9 +1837,10 @@ export function MapaTerrenoApp({ userName }: Props) {
       carbono: carbonoResumen ?? undefined,
       mapaDataUrl,
       profesional: leerPerfil() ?? undefined,
+      conMarca: plan === 'semilla',
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
 
   // ─── Captura ──────────────────────────────────────────────────────────────
   const [guardandoPng, setGuardandoPng] = useState(false);
@@ -2179,9 +2182,9 @@ export function MapaTerrenoApp({ userName }: Props) {
 
         {/* ── Riel de íconos ── */}
         <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-1 border-r border-bone-200 overflow-y-auto overflow-x-clip">
-          <RielGrupo titulo="Análisis" tabs={TABS_ANALISIS} tab={tab} onElegir={handleElegirTab} />
+          <RielGrupo titulo="Análisis" tabs={TABS_ANALISIS} tab={tab} onElegir={handleElegirTab} bloqueada={(id) => tabBloqueada(plan, id)} />
           <span className="w-6 h-px bg-bone-300 my-2" />
-          <RielGrupo titulo="Diseño" tabs={TABS_DISENO} tab={tab} onElegir={handleElegirTab} />
+          <RielGrupo titulo="Diseño" tabs={TABS_DISENO} tab={tab} onElegir={handleElegirTab} bloqueada={(id) => tabBloqueada(plan, id)} />
         </nav>
 
         {/* ── Panel contextual ── */}
@@ -2202,6 +2205,15 @@ export function MapaTerrenoApp({ userName }: Props) {
 
           {/* Scroll area */}
           <div className="flex-1 overflow-y-auto">
+          {(() => {
+            // Si el tab está bloqueado para el plan, mostramos el candado en vez
+            // del panel — así no se monta (ni dispara sus APIs) una feature paga.
+            const fLock = featureDeTab(tab);
+            if (fLock && !can(plan, fLock)) {
+              const label = [...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? '';
+              return <FeatureLock feature={fLock} plan={plan} titulo={label} beneficio={BENEFICIO_FEATURE[fLock]} />;
+            }
+            return (<>
           {tab === 'mojones' && (
             <div className="px-4 py-4 space-y-4">
               <div>
@@ -2520,6 +2532,7 @@ export function MapaTerrenoApp({ userName }: Props) {
                 onCargarProyecto={handleCargarProyecto} onProyectoActualChange={handleProyectoActualChange}
                 metadatos={metadatos}
                 onConfirm={(msg, fn) => setModal({ type: 'confirm', message: msg, onConfirm: fn })}
+                plan={plan}
               />
               <div className="border-t border-bone-200 pt-4">
                 <EscenariosPanel
@@ -2534,6 +2547,8 @@ export function MapaTerrenoApp({ userName }: Props) {
               </div>
             </div>
           )}
+          </>);
+          })()}
           </div>
         </div>
       </aside>
@@ -2611,8 +2626,8 @@ export function MapaTerrenoApp({ userName }: Props) {
             capaFondo={capaFondo}
             onCapaFondo={setCapaFondo}
             habilitarVistas={mojones.length >= 3}
-            onHistorico={() => setShowHistorico(true)}
-            on3D={() => setShow3D(true)}
+            onHistorico={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); }}
+            on3D={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); }}
             capasAbierto={panelDerecho === 'capas'}
             onCapas={() => setPanelDerecho(p => (p === 'capas' ? null : 'capas'))}
           />
@@ -3838,11 +3853,12 @@ function PanelCapas({
  * vertical, y en CSS basta con que un eje no sea `visible` para que el otro pase
  * a `auto`, así que cualquier cosa que asome por la izquierda queda recortada.
  */
-function RielGrupo({ titulo, tabs, tab, onElegir }: {
+function RielGrupo({ titulo, tabs, tab, onElegir, bloqueada }: {
   titulo: string;
   tabs: Array<{ id: Tab; label: string; icon: React.ReactNode }>;
   tab: Tab;
   onElegir: (id: Tab) => void;
+  bloqueada: (id: Tab) => boolean;
 }) {
   return (
     <>
@@ -3851,16 +3867,22 @@ function RielGrupo({ titulo, tabs, tab, onElegir }: {
       </p>
       {tabs.map(t => {
         const activo = tab === t.id;
+        const lock   = bloqueada(t.id);
         return (
-          <button key={t.id} title={t.label} aria-label={t.label} aria-current={activo || undefined}
+          <button key={t.id} title={lock ? `${t.label} · plan pago` : t.label} aria-label={t.label} aria-current={activo || undefined}
             onClick={() => onElegir(t.id)}
             className={`relative w-10 h-9 rounded-lg flex items-center justify-center transition-colors ${
               activo
                 ? 'bg-moss-700 text-bone-50 shadow-sm'
-                : 'text-ink-700/70 hover:bg-bone-200/70 hover:text-ink-900'
+                : `text-ink-700/70 hover:bg-bone-200/70 hover:text-ink-900 ${lock ? 'opacity-60' : ''}`
             }`}>
             {activo && <span className="absolute left-0.5 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
             {t.icon}
+            {lock && (
+              <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-bone-50 border border-bone-200 flex items-center justify-center">
+                <Lock className="w-2 h-2 text-ink-700/70" />
+              </span>
+            )}
           </button>
         );
       })}

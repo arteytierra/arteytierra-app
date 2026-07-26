@@ -12,6 +12,7 @@ import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen } from '@/lib/riego';
 import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
 import { resumirEntorno, type DatosEntorno } from '@/lib/entorno';
+import { getPlanServiceRole } from '@/lib/auth/plan';
 import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import type { Zona } from '@/lib/zonificacion';
@@ -34,7 +35,7 @@ export default async function InformeTokenPage({ params }: PageProps) {
   const { data } = await (supabase as any)
     .schema('terreno')
     .from('proyectos')
-    .select('nombre, updated_at, mojones, metadatos, informe_publico')
+    .select('nombre, updated_at, mojones, metadatos, informe_publico, user_id')
     .eq('informe_token', token)
     .single();
 
@@ -42,6 +43,9 @@ export default async function InformeTokenPage({ params }: PageProps) {
 
   const meta = (data.metadatos ?? {}) as Record<string, unknown>;
   const mojones = (data.mojones ?? []) as Mojon[];
+
+  // Marca de agua según el plan del dueño del proyecto (Semilla → con marca).
+  const planDueno = data.user_id ? await getPlanServiceRole(String(data.user_id)) : 'semilla';
 
   const informeData: InformeData = {
     nombre:   String(data.nombre ?? 'Terreno sin nombre'),
@@ -67,6 +71,7 @@ export default async function InformeTokenPage({ params }: PageProps) {
     economia: meta['economia'] as EconomiaResumen | undefined,
     carbono:  meta['carbono'] as CarbonoResumen | undefined,
     zonas:    meta['zonas'] as Zona[] | undefined,
+    conMarca: planDueno === 'semilla',
   };
 
   return <InformeView datos={informeData} compartido />;

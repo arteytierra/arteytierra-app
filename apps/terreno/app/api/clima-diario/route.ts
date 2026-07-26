@@ -1,5 +1,6 @@
 import { calcularExtremos, type SerieDiaria } from '@/lib/climaExtremos';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { requierePlan } from '@/lib/auth/apiGuard';
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — reanálisis histórico, casi estático
@@ -13,6 +14,9 @@ async function openCache(): Promise<Cache | null> {
 }
 
 export async function GET(req: Request) {
+  const bloqueo = await requierePlan('analisis.clima');
+  if (bloqueo) return bloqueo;
+
   const p   = new URL(req.url).searchParams;
   const lat = p.get('lat');
   const lng = p.get('lng');

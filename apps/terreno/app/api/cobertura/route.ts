@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { requierePlan } from '@/lib/auth/apiGuard';
 
 /**
  * Cobertura del suelo (C3) — ESA WorldCover 10 m vía Microsoft Planetary Computer.
@@ -13,6 +14,9 @@ const MPC       = 'https://planetarycomputer.microsoft.com/api/';
 interface Body { mojones?: Array<{ lat: number; lng: number }>; }
 
 export async function POST(req: Request) {
+  const bloqueo = await requierePlan('analisis.cobertura');
+  if (bloqueo) return bloqueo;
+
   let body: Body;
   try { body = await req.json() as Body; } catch { return err('JSON inválido', 400); }
   const moj = body.mojones ?? [];

@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { requierePlan } from '@/lib/auth/apiGuard';
 
 /**
  * Precipitación mensual de CHIRPS (~5 km), vía la API de ClimateSERV (SERVIR).
@@ -99,6 +100,9 @@ function climatologia(datos: RegistroCS[]): PrecipCHIRPS | null {
 }
 
 export async function GET(req: Request) {
+  const bloqueo = await requierePlan('analisis.clima');
+  if (bloqueo) return bloqueo;
+
   const p    = new URL(req.url).searchParams;
   const lat  = parseFloat(p.get('lat') ?? '');
   const lng  = parseFloat(p.get('lng') ?? '');

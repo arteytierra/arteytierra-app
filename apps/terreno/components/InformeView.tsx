@@ -91,6 +91,7 @@ export function InformeView({ datos, compartido = false }: Props) {
       </div>
 
       {/* ── Cuerpo del informe ───────────────────────────────────────────────── */}
+      {datos.conMarca && <MarcaAgua />}
       <div className="max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
 
         {/* Portada + resumen ejecutivo */}
@@ -946,6 +947,30 @@ function Table({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// ─── Marca de agua (plan Semilla) ──────────────────────────────────────────────
+// Diagonal repetida, tenue y no removible desde la UI. Fija: se repite en cada
+// página al imprimir a PDF. print-color-adjust para que salga en el PDF.
+function MarcaAgua() {
+  const filas = Array.from({ length: 9 });
+  const texto = 'TERRENO · terreno.arteytierra.org';
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-[5] overflow-hidden select-none"
+      style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
+    >
+      <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[28deg]">
+        {filas.map((_, i) => (
+          <p key={i} className="whitespace-nowrap text-center text-[30px] font-bold tracking-[0.25em]"
+            style={{ color: 'rgba(58,90,64,0.06)' }}>
+            {`${texto}\u00A0\u00A0\u00A0\u00A0${texto}\u00A0\u00A0\u00A0\u00A0${texto}`}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
