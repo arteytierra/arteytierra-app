@@ -5,9 +5,9 @@
  * el número de potreros según el descanso estacional, el calendario de rotación
  * y la infraestructura (alambrado, postes, bebederos).
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Beef, TriangleAlert, Fence, Droplet, Grid3x3, Eraser } from 'lucide-react';
-import { calcularPastoreo, forrajePorLluvia, DESCANSO_DEFAULT, type ResultadoPastoreo } from '@/lib/pastoreo';
+import { calcularPastoreo, forrajePorLluvia, DESCANSO_DEFAULT, type ResultadoPastoreo, type PastoreoInputs } from '@/lib/pastoreo';
 import { subdividirPotreros, type PotrerosLayout } from '@/lib/potreros';
 import type { DatosClima } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
@@ -19,21 +19,31 @@ interface Props {
   tieneDibujo?: boolean;
   onDibujar?: (layout: PotrerosLayout | null) => void;
   onIrAClima: () => void;
+  /** Campos cargados antes: al cambiar de pestaña el panel se desmonta, así
+   *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
+  inicial?:   PastoreoInputs | null;
+  onInputs?:  (i: PastoreoInputs) => void;
 }
 
-export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = false, onDibujar, onIrAClima }: Props) {
+export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = false, onDibujar, onIrAClima, inicial, onInputs }: Props) {
   const forrajeSugerido = datosClima ? forrajePorLluvia(datosClima.precip_anual_mm) : 3000;
 
-  const [area,    setArea]    = useState(areaHa > 0 ? Math.round(areaHa * 10) / 10 : 50);
-  const [animales, setAnimales] = useState(30);
-  const [peso,    setPeso]    = useState(400);
-  const [consumo, setConsumo] = useState(2.8);
-  const [forraje, setForraje] = useState(forrajeSugerido);
-  const [efic,    setEfic]    = useState(50);
-  const [ocup,    setOcup]    = useState(3);
+  const [area,    setArea]    = useState(inicial?.area ?? (areaHa > 0 ? Math.round(areaHa * 10) / 10 : 50));
+  const [animales, setAnimales] = useState(inicial?.animales ?? 30);
+  const [peso,    setPeso]    = useState(inicial?.peso ?? 400);
+  const [consumo, setConsumo] = useState(inicial?.consumo ?? 2.8);
+  const [forraje, setForraje] = useState(inicial?.forraje ?? forrajeSugerido);
+  const [efic,    setEfic]    = useState(inicial?.efic ?? 50);
+  const [ocup,    setOcup]    = useState(inicial?.ocup ?? 3);
 
-  useEffect(() => { if (areaHa > 0) setArea(Math.round(areaHa * 10) / 10); }, [areaHa]);
-  useEffect(() => { setForraje(forrajeSugerido); }, [forrajeSugerido]);
+  // Los autocompletados (área desde el predio, forraje desde la lluvia) sólo
+  // corren en un panel nuevo; con datos guardados mandan ellos y no se pisan.
+  const autoLlenar = useRef(inicial == null);
+  useEffect(() => { if (autoLlenar.current && areaHa > 0) setArea(Math.round(areaHa * 10) / 10); }, [areaHa]);
+  useEffect(() => { if (autoLlenar.current) setForraje(forrajeSugerido); }, [forrajeSugerido]);
+
+  useEffect(() => { onInputs?.({ area, animales, peso, consumo, forraje, efic, ocup }); },
+    [area, animales, peso, consumo, forraje, efic, ocup, onInputs]);
 
   const res: ResultadoPastoreo | null = useMemo(() => calcularPastoreo({
     area_ha: area, n_animales: animales, peso_prom_kg: peso, consumo_pct_peso: consumo,

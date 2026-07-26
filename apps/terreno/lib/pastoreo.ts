@@ -30,6 +30,17 @@ export interface ParamsPastoreo {
   descanso:           DescansoEstacional;
 }
 
+/** Campos del panel que se guardan para no perderlos al cambiar de pestaña. */
+export interface PastoreoInputs {
+  area:     number;
+  animales: number;
+  peso:     number;
+  consumo:  number;
+  forraje:  number;
+  efic:     number;
+  ocup:     number;
+}
+
 export interface EstacionRotacion {
   nombre:    string;
   descanso:  number;   // días de reposo

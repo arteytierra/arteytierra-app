@@ -5,11 +5,11 @@
  * ETc = ETo·Kc → necesidad neta/bruta → caudal (nodo de consumo de la red B1),
  * diseño de goteo y calendario de riego según el agua útil del suelo.
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Droplets, TriangleAlert, Gauge, CalendarClock } from 'lucide-react';
 import {
   calcularRiego, seriesClima, aguaUtilPorMetro, CULTIVOS, SISTEMAS,
-  type ResultadoRiego, type RiegoResumen,
+  type ResultadoRiego, type RiegoResumen, type RiegoInputs,
 } from '@/lib/riego';
 import type { DatosClima } from '@/lib/clima';
 import type { DatosSuelo } from '@/lib/suelos';
@@ -20,15 +20,24 @@ interface Props {
   datosSuelo: DatosSuelo | null;
   onIrAClima: () => void;
   onResumen?: (r: RiegoResumen | null) => void;
+  /** Campos cargados antes: al cambiar de pestaña el panel se desmonta, así
+   *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
+  inicial?:   RiegoInputs | null;
+  onInputs?:  (i: RiegoInputs) => void;
 }
 
-export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResumen }: Props) {
-  const [area,      setArea]      = useState(areaHa > 0 ? Math.round(areaHa * 100) / 100 : 0.5);
-  const [cultivoId, setCultivoId] = useState(CULTIVOS[0]!.id);
-  const [sistemaId, setSistemaId] = useState(SISTEMAS[0]!.id);
-  const [horas,     setHoras]     = useState(8);
+export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResumen, inicial, onInputs }: Props) {
+  const [area,      setArea]      = useState(inicial?.area ?? (areaHa > 0 ? Math.round(areaHa * 100) / 100 : 0.5));
+  const [cultivoId, setCultivoId] = useState(inicial?.cultivoId ?? CULTIVOS[0]!.id);
+  const [sistemaId, setSistemaId] = useState(inicial?.sistemaId ?? SISTEMAS[0]!.id);
+  const [horas,     setHoras]     = useState(inicial?.horas ?? 8);
 
-  useEffect(() => { if (areaHa > 0) setArea(Math.round(areaHa * 100) / 100); }, [areaHa]);
+  // El autocompletado del área desde el predio sólo corre en un panel nuevo;
+  // si hay datos guardados, mandan ellos y no se pisan al volver a la pestaña.
+  const autoArea = useRef(inicial == null);
+  useEffect(() => { if (autoArea.current && areaHa > 0) setArea(Math.round(areaHa * 100) / 100); }, [areaHa]);
+
+  useEffect(() => { onInputs?.({ area, cultivoId, sistemaId, horas }); }, [area, cultivoId, sistemaId, horas, onInputs]);
 
   const cultivo = CULTIVOS.find(c => c.id === cultivoId)!;
   const sistema = SISTEMAS.find(s => s.id === sistemaId)!;
@@ -52,7 +61,9 @@ export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResum
   } : null, [res, cultivo.nombre, sistema.nombre, area]);
 
   useEffect(() => { onResumen?.(resumen); }, [resumen, onResumen]);
-  useEffect(() => () => { onResumen?.(null); }, [onResumen]);
+  // (Antes había un cleanup que ponía el resumen en null al desmontar: borraba
+  //  el riego del informe apenas cambiabas de pestaña. El resumen se recalcula
+  //  solo desde los inputs restaurados, así que no hace falta.)
 
   const maxVol = res ? Math.max(...res.meses.map(m => m.volumen_m3), 1) : 1;
 

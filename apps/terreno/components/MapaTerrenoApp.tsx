@@ -59,7 +59,8 @@ import { celdaEnPunto, delimitarCuenca, type Cuenca } from '@/lib/cuenca';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
-import type { RiegoResumen } from '@/lib/riego';
+import type { RiegoResumen, RiegoInputs } from '@/lib/riego';
+import type { PastoreoInputs } from '@/lib/pastoreo';
 import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
@@ -241,7 +242,9 @@ export function MapaTerrenoApp({ userName }: Props) {
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
   const [represaResumen, setRepresaResumen] = useState<RepresaResumen | null>(null);
   const [riegoResumen,   setRiegoResumen]   = useState<RiegoResumen | null>(null);
+  const [riegoInputs,    setRiegoInputs]    = useState<RiegoInputs | null>(null);
   const [potrerosLayer,  setPotrerosLayer]  = useState<PotrerosLayout | null>(null);
+  const [pastoreoInputs, setPastoreoInputs] = useState<PastoreoInputs | null>(null);
   const [datosCobertura, setDatosCobertura] = useState<DatosCobertura | null>(null);
   const [coberturaResumen, setCoberturaResumen] = useState<CoberturaResumen | null>(null);
   const [datosEntorno,   setDatosEntorno]   = useState<DatosEntorno | null>(null);
@@ -552,9 +555,11 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
     if (represaResumen)  m['represa']  = represaResumen;
     if (riegoResumen)    m['riego']    = riegoResumen;
+    if (riegoInputs)     m['riego_inputs']    = riegoInputs;
     if (economiaResumen) m['economia'] = economiaResumen;
     if (carbonoResumen)  m['carbono']  = carbonoResumen;
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
+    if (pastoreoInputs)  m['pastoreo_inputs'] = pastoreoInputs;
     if (datosCobertura)  m['cobertura'] = datosCobertura;
     if (datosEntorno)    m['entorno']  = datosEntorno;
     if (sombrasObjetos.length) m['sombras_objetos'] = sombrasObjetos;
@@ -579,7 +584,7 @@ export function MapaTerrenoApp({ userName }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, economiaResumen, carbonoResumen, potrerosLayer, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1737,6 +1742,8 @@ export function MapaTerrenoApp({ userName }: Props) {
     setRedAguaResumen((meta['red_agua'] as RedAguaResumen)  ?? null);
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
+    setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
+    setPastoreoInputs((meta['pastoreo_inputs'] as PastoreoInputs) ?? null);
     setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
     setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);
     setPotrerosLayer((meta['potreros']  as PotrerosLayout)  ?? null);
@@ -2465,12 +2472,12 @@ export function MapaTerrenoApp({ userName }: Props) {
           )}
           {tab === 'pastoreo' && (
             <div className="px-4 py-4">
-              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} />
+              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
             </div>
           )}
           {tab === 'riego' && (
             <div className="px-4 py-4">
-              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} />
+              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} inicial={riegoInputs} onInputs={setRiegoInputs} />
             </div>
           )}
           {tab === 'carbono' && (

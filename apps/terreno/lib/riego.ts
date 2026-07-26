@@ -231,6 +231,15 @@ export interface RiegoResumen {
   lamina_neta_mm:      number;
 }
 
+/** Campos que carga el usuario en el panel — se guardan para no perderlos al
+ *  cambiar de pestaña (el panel se desmonta y volvería a los valores por defecto). */
+export interface RiegoInputs {
+  area:      number;
+  cultivoId: string;
+  sistemaId: string;
+  horas:     number;
+}
+
 /** Extrae ETo y precipitación mensual de los datos de clima para el motor de riego. */
 export function seriesClima(clima: DatosClima): { eto: number[]; precip: number[] } {
   return {
