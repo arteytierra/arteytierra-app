@@ -2,6 +2,10 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { fetchMpPayment } from '@/lib/commerce/mp';
 import { markOrderPaid } from '@/lib/commerce/fulfillment';
+import { fetchMpPreapproval, parseRefMp, proximaVigencia } from '@/lib/terreno/suscripciones';
+import {
+  activarSuscripcionTerreno, renovarSuscripcionTerreno, cancelarSuscripcionTerreno,
+} from '@/lib/terreno/fulfillment-suscripcion';
 
 export const runtime = 'nodejs';
 
@@ -38,6 +42,54 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const type = body.type ?? request.nextUrl.searchParams.get('type');
   const dataId = body.data?.id ?? request.nextUrl.searchParams.get('data.id');
+
+  // ── Suscripciones de Terreno (preapproval) ─────────────────────────────────
+  if ((type === 'subscription_preapproval' || type === 'preapproval') && dataId) {
+    if (!verifyMpSignature(request, String(dataId))) {
+      return NextResponse.json({ error: 'firma inválida' }, { status: 401 });
+    }
+    try {
+      const pre = await fetchMpPreapproval(String(dataId));
+      const ref = parseRefMp(pre.external_reference);
+      if (ref) {
+        if (pre.status === 'authorized') {
+          await activarSuscripcionTerreno({
+            userId: ref.userId, plan: ref.plan, periodo: ref.periodo,
+            provider: 'mercadopago', providerRef: String(dataId),
+            vigenteHasta: proximaVigencia(ref.periodo),
+          });
+        } else if (pre.status === 'cancelled' || pre.status === 'paused') {
+          await cancelarSuscripcionTerreno({ providerRef: String(dataId) });
+        }
+      }
+    } catch (err) {
+      console.error('MP preapproval webhook error', err);
+      return NextResponse.json({ error: 'handler error' }, { status: 500 });
+    }
+    return NextResponse.json({ received: true });
+  }
+
+  // Cobro recurrente exitoso → extender la vigencia. [VALIDAR EN SANDBOX el payload real de MP]
+  if (type === 'subscription_authorized_payment' && dataId) {
+    try {
+      const pago = await fetchMpPayment(String(dataId));
+      const preId =
+        (pago as unknown as { metadata?: { preapproval_id?: string } }).metadata?.preapproval_id ??
+        (pago as unknown as { preapproval_id?: string }).preapproval_id;
+      if (preId) {
+        const pre = await fetchMpPreapproval(String(preId));
+        const ref = parseRefMp(pre.external_reference);
+        if (ref) {
+          await renovarSuscripcionTerreno({
+            providerRef: String(preId), vigenteHasta: proximaVigencia(ref.periodo),
+          });
+        }
+      }
+    } catch (err) {
+      console.error('MP authorized_payment webhook error', err);
+    }
+    return NextResponse.json({ received: true });
+  }
 
   if (type !== 'payment' || !dataId) {
     return NextResponse.json({ received: true, ignored: true });

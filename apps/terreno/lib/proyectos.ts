@@ -56,14 +56,15 @@ export async function guardarProyecto(
   if (!user) throw new Error('No hay sesión activa.');
 
   // Tope de proyectos por plan (feedback inmediato; el trigger en DB es el que
-  // enforcea de verdad). Semilla = 1 proyecto.
+  // enforcea de verdad). Semilla = 1, Personal = 2, resto ilimitado.
   const limite = LIMITE_PROYECTOS[plan];
   if (Number.isFinite(limite)) {
     const { count } = await tabla()
       .select('id', { count: 'exact', head: true });
     if ((count ?? 0) >= limite) {
+      const plural = limite === 1 ? 'proyecto' : 'proyectos';
       throw new Error(
-        `El plan Semilla incluye ${limite} proyecto. Eliminá el actual o pasá a Diseñador para crear más.`,
+        `Tu plan incluye ${limite} ${plural} activo${limite === 1 ? '' : 's'}. Eliminá alguno o pasá a un plan superior para crear más.`,
       );
     }
   }

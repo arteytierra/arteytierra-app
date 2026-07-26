@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/commerce/stripe';
 import { markOrderPaid } from '@/lib/commerce/fulfillment';
+import { activarSuscripcionTerreno, cancelarSuscripcionTerreno } from '@/lib/terreno/fulfillment-suscripcion';
+import type { PlanPago, Periodo } from '@/lib/terreno/suscripciones';
 
 export const runtime = 'nodejs';
 
@@ -65,6 +67,36 @@ export async function POST(request: NextRequest) {
 
       case 'charge.refunded': {
         // TODO: marcar orden como refunded + revocar enrollment
+        break;
+      }
+
+      // ── Suscripciones de Terreno ──────────────────────────────────────────
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.kind !== 'terreno_suscripcion') break;
+        const userId  = sub.metadata.user_id;
+        const plan    = sub.metadata.terreno_plan as PlanPago | undefined;
+        const periodo = sub.metadata.terreno_periodo as Periodo | undefined;
+        // current_period_end: unix (s) → ISO. Cast: el campo puede no estar en el tipo.
+        const cpe = (sub as unknown as { current_period_end?: number }).current_period_end;
+        const vigente = cpe ? new Date(cpe * 1000).toISOString() : null;
+        if (!userId || !plan || !periodo) break;
+        if (sub.status === 'active' || sub.status === 'trialing') {
+          await activarSuscripcionTerreno({
+            userId, plan, periodo, provider: 'stripe', providerRef: sub.id, vigenteHasta: vigente,
+          });
+        } else if (sub.status === 'canceled' || sub.status === 'unpaid' || sub.status === 'incomplete_expired') {
+          await cancelarSuscripcionTerreno({ providerRef: sub.id });
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.kind === 'terreno_suscripcion') {
+          await cancelarSuscripcionTerreno({ providerRef: sub.id });
+        }
         break;
       }
     }

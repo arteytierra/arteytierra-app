@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
+
+/** Destino post-registro: `?next=` si es una ruta interna segura, si no el mapa. */
+function destinoNext(): string {
+  if (typeof window === 'undefined') return '/mapa';
+  const n = new URLSearchParams(window.location.search).get('next');
+  return n && n.startsWith('/') ? n : '/mapa';
+}
 
 export function RegistroForm() {
   const router = useRouter();
@@ -13,6 +20,12 @@ export function RegistroForm() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [loginHref, setLoginHref] = useState('/login');
+
+  useEffect(() => {
+    const n = new URLSearchParams(window.location.search).get('next');
+    if (n) setLoginHref(`/login?next=${encodeURIComponent(n)}`);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +43,7 @@ export function RegistroForm() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/mapa`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoNext())}`,
         data: { full_name: nombre.trim() || null },
       },
     });
@@ -58,8 +71,8 @@ export function RegistroForm() {
       return;
     }
 
-    // Confirmación desactivada: ya está logueado, al mapa.
-    router.push('/mapa');
+    // Confirmación desactivada: ya está logueado; al destino (mapa o checkout).
+    router.push(destinoNext());
     router.refresh();
   }
 
@@ -69,7 +82,7 @@ export function RegistroForm() {
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/mapa` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoNext())}` },
     });
   }
 
@@ -82,7 +95,7 @@ export function RegistroForm() {
           </svg>
         </div>
         <p className="text-sm text-ink-700/80 leading-relaxed">{aviso}</p>
-        <a href="/login" className="inline-block text-sm text-moss-700 hover:underline">Ir a ingresar</a>
+        <a href={loginHref} className="inline-block text-sm text-moss-700 hover:underline">Ir a ingresar</a>
       </div>
     );
   }
@@ -169,7 +182,7 @@ export function RegistroForm() {
 
       <p className="text-xs text-center text-ink-700/60">
         ¿Ya tenés cuenta?{' '}
-        <a href="/login" className="text-moss-700 hover:underline">Ingresá</a>
+        <a href={loginHref} className="text-moss-700 hover:underline">Ingresá</a>
       </p>
     </div>
   );

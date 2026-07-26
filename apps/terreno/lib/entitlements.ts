@@ -11,15 +11,18 @@
  * Agregar un plan futuro = editar estas tablas, nada más.
  */
 
-export type Plan = 'semilla' | 'disenador' | 'estudio';
+export type Plan = 'semilla' | 'personal' | 'disenador' | 'estudio';
 
-/** Orden de los planes: un plan habilita todo lo de los planes inferiores. */
-const ORDEN: Record<Plan, number> = { semilla: 0, disenador: 1, estudio: 2 };
+/** Orden de los planes: un plan habilita todo lo de los planes inferiores.
+ *  Personal y Diseñador comparten features (misma capa desbloqueada); se
+ *  diferencian sólo en LIMITE_PROYECTOS. */
+const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, disenador: 2, estudio: 3 };
 
-export const PLANES: Plan[] = ['semilla', 'disenador', 'estudio'];
+export const PLANES: Plan[] = ['semilla', 'personal', 'disenador', 'estudio'];
 
 export const NOMBRE_PLAN: Record<Plan, string> = {
   semilla:   'Semilla',
+  personal:  'Personal',
   disenador: 'Diseñador',
   estudio:   'Estudio',
 };
@@ -61,39 +64,42 @@ export type Feature =
   | 'export.dxf'
   | 'colaboracion';
 
+// El plan MÍNIMO de cada feature es 'personal' (el pago más barato que ya
+// desbloquea todo el análisis y diseño). Diseñador hereda lo mismo; sólo suma
+// proyectos ilimitados. Las de 'estudio' quedan reservadas al tier superior.
 const FEATURES: Record<Feature, Plan> = {
-  'catastro.rumbos':     'disenador',
+  'catastro.rumbos':     'personal',
   // Análisis — todo usa API externa (o datos que derivan de ella) ⇒ pago.
-  'analisis.topo':       'disenador',
-  'analisis.clima':      'disenador',
-  'analisis.contexto':   'disenador',
-  'analisis.entorno':    'disenador',
-  'analisis.suelo':      'disenador',
-  'analisis.cobertura':  'disenador',
-  'analisis.hidrico':    'disenador',
-  'analisis.solar':      'disenador',
-  'analisis.sombras':    'disenador',
-  'analisis.visibilidad':'disenador',
-  'analisis.produccion': 'disenador',
-  'analisis.aptitud':    'disenador',
-  'analisis.carbono':    'disenador',
+  'analisis.topo':       'personal',
+  'analisis.clima':      'personal',
+  'analisis.contexto':   'personal',
+  'analisis.entorno':    'personal',
+  'analisis.suelo':      'personal',
+  'analisis.cobertura':  'personal',
+  'analisis.hidrico':    'personal',
+  'analisis.solar':      'personal',
+  'analisis.sombras':    'personal',
+  'analisis.visibilidad':'personal',
+  'analisis.produccion': 'personal',
+  'analisis.aptitud':    'personal',
+  'analisis.carbono':    'personal',
   // Diseño — toda la capa es paga.
-  'diseno.agua':         'disenador',
-  'diseno.zonas':        'disenador',
-  'diseno.sectores':     'disenador',
-  'diseno.aguadas':      'disenador',
-  'diseno.caminos':      'disenador',
-  'diseno.red':          'disenador',
-  'diseno.cuenca':       'disenador',
-  'diseno.pastoreo':     'disenador',
-  'diseno.riego':        'disenador',
-  'diseno.keyline':      'disenador',
-  'diseno.economia':     'disenador',
-  'sugerencias':         'disenador',
+  'diseno.agua':         'personal',
+  'diseno.zonas':        'personal',
+  'diseno.sectores':     'personal',
+  'diseno.aguadas':      'personal',
+  'diseno.caminos':      'personal',
+  'diseno.red':          'personal',
+  'diseno.cuenca':       'personal',
+  'diseno.pastoreo':     'personal',
+  'diseno.riego':        'personal',
+  'diseno.keyline':      'personal',
+  'diseno.economia':     'personal',
+  'sugerencias':         'personal',
   // Entrega.
-  'informe.sin_marca':   'disenador',
+  'informe.sin_marca':   'personal',
   'informe.white_label': 'estudio',
-  'export.gis':          'disenador',
+  'export.gis':          'personal',
   'export.dxf':          'estudio',
   'colaboracion':        'estudio',
 };
@@ -111,6 +117,7 @@ export function planMinimo(feature: Feature): Plan {
 /** Límite de proyectos activos por plan (Infinity = sin tope). */
 export const LIMITE_PROYECTOS: Record<Plan, number> = {
   semilla:   1,
+  personal:  2,
   disenador: Infinity,
   estudio:   Infinity,
 };

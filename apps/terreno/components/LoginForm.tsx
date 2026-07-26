@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
+
+/** Destino post-login: `?next=` si es ruta interna segura, si no el mapa. */
+function destinoNext(): string {
+  if (typeof window === 'undefined') return '/mapa';
+  const n = new URLSearchParams(window.location.search).get('next');
+  return n && n.startsWith('/') ? n : '/mapa';
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -11,6 +18,12 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [registroHref, setRegistroHref] = useState('/registro');
+
+  useEffect(() => {
+    const n = new URLSearchParams(window.location.search).get('next');
+    if (n) setRegistroHref(`/registro?next=${encodeURIComponent(n)}`);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +39,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push('/mapa');
+    router.push(destinoNext());
     router.refresh();
   }
 
@@ -36,7 +49,7 @@ export function LoginForm() {
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoNext())}` },
     });
   }
 
@@ -109,7 +122,7 @@ export function LoginForm() {
 
       <p className="text-xs text-center text-ink-700/60">
         ¿No tenés cuenta?{' '}
-        <a href="/registro" className="text-moss-700 hover:underline">Creá una gratis</a>
+        <a href={registroHref} className="text-moss-700 hover:underline">Creá una gratis</a>
       </p>
     </div>
   );

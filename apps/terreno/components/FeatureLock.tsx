@@ -14,7 +14,6 @@ import { Lock, ArrowRight } from 'lucide-react';
 import { NOMBRE_PLAN, planMinimo, type Feature, type Plan } from '@/lib/entitlements';
 import { registrarCandado } from '@/lib/telemetria';
 
-const PLANES_URL = 'https://arteytierra.org/terreno#planes';
 
 interface Props {
   feature:    Feature;
@@ -56,9 +55,7 @@ export function FeatureLock({ feature, plan, titulo, beneficio, previewSrc }: Pr
       </div>
 
       <a
-        href={PLANES_URL}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={`/suscribir?plan=${min}&periodo=anual`}
         onClick={() => registrarCandado(feature, plan, 'cta_click')}
         className="w-full flex items-center justify-center gap-1.5 text-[13px] font-medium bg-water-500 text-bone-50 rounded-lg px-3 py-2.5 hover:brightness-95 transition-all"
       >

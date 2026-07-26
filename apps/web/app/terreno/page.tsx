@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -9,7 +10,7 @@ import { FAQ } from '@arteytierra/ui/marketing';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { PlanesTerreno } from '@/components/terreno/PlanesTerreno';
-import { REGISTRO_URL } from '@/lib/terreno/planes';
+import { REGISTRO_URL, FUNDADORES_CUPO } from '@/lib/terreno/planes';
 
 export const metadata: Metadata = {
   title: 'Terreno — Plataforma de diseño territorial regenerativo',
@@ -80,14 +81,16 @@ const FAQS = [
   { q: '¿Sirve fuera de Argentina?', a: 'Sí. Los datos de elevación, clima, suelo y biodiversidad son globales, así que Terreno funciona en cualquier parte del mundo.' },
   { q: '¿Qué pasa con mis datos y mis proyectos?', a: 'Son tuyos y privados. Se guardan en tu cuenta y sólo vos los ves, salvo que decidas compartir el informe por link.' },
   { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, sin permanencia. Si dejás de pagar, tu cuenta vuelve al plan Semilla y conservás tu proyecto.' },
-  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Diseñador desbloquea todo el análisis y las herramientas de diseño. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
-  { q: '¿Cómo se paga desde otros países?', a: 'En Argentina, por Mercado Pago en pesos. En el resto del mundo, con tarjeta internacional. Los precios están en USD y se convierten al cambio del día.' },
+  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Personal desbloquea todo el análisis y el diseño para hasta 2 proyectos. Diseñador es lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
+  { q: '¿Cómo se paga desde otros países?', a: 'Desde Argentina, por Mercado Pago en pesos. Desde el resto del mundo, por PayPal en USD. La página muestra la moneda según desde dónde entrás.' },
   { q: '¿Necesito saber de CAD o GIS?', a: 'No. Lo que en un software técnico lleva días de trabajo, en Terreno sucede al marcar el polígono de tu terreno.' },
 ];
 
 // ─── Página ──────────────────────────────────────────────────────────────────
 
-export default function TerrenoLanding() {
+export default async function TerrenoLanding() {
+  const pais = (await headers()).get('x-vercel-ip-country') ?? undefined;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -253,11 +256,11 @@ export default function TerrenoLanding() {
             {/* Banner Fundadores — TODO: mecánica exacta */}
             <div className="max-w-2xl mx-auto mb-12 text-center bg-water-500/10 border border-water-500/25 px-6 py-4">
               <p className="font-sans text-sm text-ink-800">
-                <strong className="text-water-500">Miembros Fundadores:</strong> los primeros 100 conservan 50% de descuento de por vida.
+                <strong className="text-water-500">Miembros Fundadores:</strong> los primeros {FUNDADORES_CUPO} conservan 50% de descuento de por vida.
               </p>
             </div>
 
-            <PlanesTerreno />
+            <PlanesTerreno paisInicial={pais} />
           </div>
         </section>
 
