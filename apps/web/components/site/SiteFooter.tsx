@@ -5,6 +5,7 @@ const columns = [
   {
     title: 'Aprender',
     items: [
+      { label: 'Terreno',        href: '/terreno' },
       { label: 'Cursos',         href: '/cursos' },
       { label: 'Inmersión Viva', href: '/inmersion-viva' },
       { label: 'Ebooks',         href: '/ebooks' },
