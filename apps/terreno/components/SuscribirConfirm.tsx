@@ -79,7 +79,10 @@ export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: P
           </p>
         </div>
 
-        <a href="/mapa" className="mt-4 flex items-center justify-center gap-1.5 text-xs text-ink-700/60 hover:text-moss-700 transition-colors">
+        <a href="/canjear" className="mt-4 block text-center text-xs text-moss-700 hover:underline">
+          ¿Tenés un código de invitación?
+        </a>
+        <a href="/mapa" className="mt-2 flex items-center justify-center gap-1.5 text-xs text-ink-700/60 hover:text-moss-700 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" /> Volver al mapa
         </a>
       </div>
