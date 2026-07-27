@@ -31,7 +31,13 @@ async function token(): Promise<string> {
     },
     body: 'grant_type=client_credentials',
   });
-  if (!res.ok) throw new Error('PayPal: no pudimos autenticar.');
+  if (!res.ok) {
+    // Log del motivo real de PayPal (error/error_description) + endpoint usado,
+    // sin exponer credenciales. Ayuda a distinguir env equivocado vs creds malas.
+    const detalle = await res.text().catch(() => '');
+    console.error('[paypal token] fallo auth', { endpoint: base(), status: res.status, body: detalle.slice(0, 300) });
+    throw new Error('PayPal: no pudimos autenticar.');
+  }
   return (await res.json() as { access_token: string }).access_token;
 }
 
