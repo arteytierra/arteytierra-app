@@ -73,11 +73,14 @@ export function NotificationBell({ userId: userIdProp }: { userId?: string | nul
   }
 
   // Poll cada 60s como fallback; realtime hace el push instantáneo.
+  // Solo si hay sesión: un visitante anónimo no tiene notificaciones, así que
+  // no consultamos /api/notifications (ahorra invocaciones/CPU en Vercel).
   useEffect(() => {
+    if (!userId) return;
     load();
     const t = setInterval(load, 60000);
     return () => clearInterval(t);
-  }, []);
+  }, [userId]);
 
   // Realtime: nuevas notificaciones llegan vía Supabase Realtime
   useNotificationsLive(userId, (n) => {
@@ -109,8 +112,8 @@ export function NotificationBell({ userId: userIdProp }: { userId?: string | nul
   });
 
   useEffect(() => {
-    if (open) load();
-  }, [open]);
+    if (open && userId) load();
+  }, [open, userId]);
 
   // Cerrar al click afuera
   useEffect(() => {

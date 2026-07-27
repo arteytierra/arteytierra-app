@@ -198,6 +198,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
+    // Excluimos `api` además de los estáticos: las rutas /api manejan su propia
+    // sesión (getUser propio), no necesitan la lógica de locale/atribución del
+    // middleware, y así no gastan una llamada a Supabase por cada beacon/poll.
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
   ],
 };
