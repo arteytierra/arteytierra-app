@@ -2,7 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseServerClient } from '@/lib/db/server';
-import type { Plan } from '@/lib/entitlements';
+import { PLANES, type Plan } from '@/lib/entitlements';
 
 function planEfectivo(data: Record<string, unknown> | null): Plan {
   if (!data) return 'semilla';
@@ -10,7 +10,8 @@ function planEfectivo(data: Record<string, unknown> | null): Plan {
   const hasta = data['vigente_hasta'];
   if (hasta && new Date(hasta as string).getTime() < Date.now()) return 'semilla';
   const plan = data['plan'];
-  return plan === 'disenador' || plan === 'estudio' ? plan : 'semilla';
+  return typeof plan === 'string' && (PLANES as readonly string[]).includes(plan)
+    ? (plan as Plan) : 'semilla';
 }
 
 // Limpia BOM/comillas del env (ver lib/db/cache.ts).
@@ -80,7 +81,8 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   if (hasta && new Date(hasta as string).getTime() < Date.now()) return 'semilla';
 
   const plan = data['plan'];
-  return plan === 'disenador' || plan === 'estudio' ? plan : 'semilla';
+  return typeof plan === 'string' && (PLANES as readonly string[]).includes(plan)
+    ? (plan as Plan) : 'semilla';
 });
 
 /** Plan del usuario actual (o 'semilla' si no hay sesión). */
