@@ -1,0 +1,454 @@
+/**
+ * Delineación de cuenca de aporte sobre un DEM propio de hidrología (A1).
+ *
+ * A diferencia del D8 de `escorrentias.ts` (que corre sobre la grilla densa
+ * recortada al predio), acá se trae una grilla Terrarium SIN recorte y más
+ * grande que el terreno, para que la cuenca pueda subir por las laderas hasta
+ * la divisoria real. Pasos:
+ *
+ *   1. Relleno de depresiones (priority-flood + ε): elimina los pozos falsos del
+ *      SRTM que fragmentan el flujo y garantiza que todo drene al borde.
+ *   2. D8 sobre el terreno rellenado → dirección de flujo.
+ *   3. Acumulación de flujo (orden topológico).
+ *   4. Delineación aguas-arriba desde la salida (BFS inverso), con snap al cauce.
+ *   5. Expansión adaptativa: si la divisoria toca el borde del DEM, se agranda
+ *      el bbox y se recalcula, hasta que la cuenca queda entera (o se topa el
+ *      límite de iteraciones/tamaño).
+ *
+ * Devuelve el mismo tipo `Cuenca` que usa el panel, así que el análisis
+ * hidrológico (CN/SCS) y el render en el mapa no cambian.
+ */
+import { obtenerGrillaHidro, type GrillaElevacion, type BBox } from './grillaElevacion';
+import type { Cuenca } from './cuenca';
+
+// Vecindad de 8 (orden fijo, compartido por D8 y distancias).
+const N8: ReadonlyArray<readonly [number, number]> = [
+  [-1, -1], [-1, 0], [-1, 1],
+  [ 0, -1],          [ 0, 1],
+  [ 1, -1], [ 1, 0], [ 1, 1],
+];
+
+// ─── Min-heap numérico (prioridad = elevación, valor = índice de celda) ───────
+class MinHeap {
+  private ks: number[] = [];
+  private vs: number[] = [];
+  get size() { return this.ks.length; }
+  push(k: number, v: number) {
+    this.ks.push(k); this.vs.push(v);
+    let i = this.ks.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this.ks[p]! <= this.ks[i]!) break;
+      this.swap(i, p); i = p;
+    }
+  }
+  pop(): number {
+    const topV = this.vs[0]!;
+    const lastK = this.ks.pop()!, lastV = this.vs.pop()!;
+    if (this.ks.length > 0) {
+      this.ks[0] = lastK; this.vs[0] = lastV;
+      let i = 0;
+      const n = this.ks.length;
+      for (;;) {
+        const l = 2 * i + 1, r = 2 * i + 2;
+        let m = i;
+        if (l < n && this.ks[l]! < this.ks[m]!) m = l;
+        if (r < n && this.ks[r]! < this.ks[m]!) m = r;
+        if (m === i) break;
+        this.swap(i, m); i = m;
+      }
+    }
+    return topV;
+  }
+  private swap(a: number, b: number) {
+    const tk = this.ks[a]!; this.ks[a] = this.ks[b]!; this.ks[b] = tk;
+    const tv = this.vs[a]!; this.vs[a] = this.vs[b]!; this.vs[b] = tv;
+  }
+}
+
+// ─── Dimensiones de celda en metros ───────────────────────────────────────────
+function dimsCelda(g: GrillaElevacion) {
+  const latMid = (g.latMin + g.latMax) / 2;
+  const dy = ((g.latMax - g.latMin) / (g.rows - 1)) * 111_320;
+  const dx = ((g.lngMax - g.lngMin) / (g.cols - 1)) * 111_320 * Math.cos(latMid * Math.PI / 180);
+  const ddiag = Math.hypot(dx, dy);
+  // distancias por dirección, en el mismo orden que N8
+  const dist = [ddiag, dy, ddiag, dx, dx, ddiag, dy, ddiag];
+  return { dx, dy, ddiag, dist, areaCelda: dx * dy };
+}
+
+// ─── 1. Relleno de depresiones (Priority-Flood + ε, Barnes 2014) ──────────────
+function rellenarDepresiones(g: GrillaElevacion): Float64Array {
+  const { rows, cols, elev } = g;
+  const n = rows * cols;
+  const filled = new Float64Array(n);
+  const closed = new Uint8Array(n);
+  const heap = new MinHeap();
+  const pit: number[] = [];
+  let pitHead = 0;
+  const EPS = 1e-3;   // gradiente mínimo para drenar los llanos rellenados
+
+  const esValida = (i: number) => !Number.isNaN(elev[i]!);
+
+  // Semilla: celdas de borde del grid o adyacentes a nodata.
+  for (let i = 0; i < n; i++) {
+    if (!esValida(i)) { closed[i] = 1; filled[i] = NaN; continue; }
+    const r = (i / cols) | 0, c = i % cols;
+    let borde = r === 0 || c === 0 || r === rows - 1 || c === cols - 1;
+    if (!borde) {
+      for (const [dr, dc] of N8) {
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+        if (!esValida(nr * cols + nc)) { borde = true; break; }
+      }
+    }
+    if (borde) { filled[i] = elev[i]!; closed[i] = 1; heap.push(elev[i]!, i); }
+  }
+
+  while (heap.size > 0 || pitHead < pit.length) {
+    let c: number;
+    if (pitHead < pit.length) c = pit[pitHead++]!;
+    else                      c = heap.pop();
+    const cElev = filled[c]!;
+    const cr = (c / cols) | 0, cc = c % cols;
+    for (const [dr, dc] of N8) {
+      const nr = cr + dr, nc = cc + dc;
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const ni = nr * cols + nc;
+      if (closed[ni]) continue;
+      closed[ni] = 1;
+      const e = elev[ni]!;
+      if (Number.isNaN(e)) { filled[ni] = NaN; continue; }
+      if (e <= cElev) { filled[ni] = cElev + EPS; pit.push(ni); }
+      else            { filled[ni] = e;           heap.push(e, ni); }
+    }
+  }
+  return filled;
+}
+
+// ─── 2. D8 sobre el terreno rellenado ─────────────────────────────────────────
+function direccionFlujo(g: GrillaElevacion, filled: Float64Array): Int32Array {
+  const { rows, cols } = g;
+  const { dist } = dimsCelda(g);
+  const n = rows * cols;
+  const fd = new Int32Array(n).fill(-1);
+  for (let i = 0; i < n; i++) {
+    const e = filled[i]!;
+    if (Number.isNaN(e)) continue;
+    const r = (i / cols) | 0, c = i % cols;
+    let maxS = 0, best = -1;
+    for (let k = 0; k < 8; k++) {
+      const nr = r + N8[k]![0], nc = c + N8[k]![1];
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const ni = nr * cols + nc;
+      const ne = filled[ni]!;
+      if (Number.isNaN(ne)) continue;
+      const s = (e - ne) / dist[k]!;
+      if (s > maxS) { maxS = s; best = ni; }
+    }
+    fd[i] = best;
+  }
+  return fd;
+}
+
+// ─── 3. Acumulación de flujo (orden topológico de Kahn) ───────────────────────
+function acumular(g: GrillaElevacion, filled: Float64Array, fd: Int32Array): Float64Array {
+  const n = g.rows * g.cols;
+  const indeg = new Int32Array(n);
+  for (let i = 0; i < n; i++) { const t = fd[i]!; if (t >= 0) indeg[t]!++; }
+  const acum = new Float64Array(n);
+  const cola: number[] = [];
+  let head = 0;
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(filled[i]!)) continue;
+    acum[i] = 1;
+    if (indeg[i] === 0) cola.push(i);
+  }
+  while (head < cola.length) {
+    const cur = cola[head++]!;
+    const t = fd[cur]!;
+    if (t >= 0) {
+      acum[t]! += acum[cur]!;
+      if (--indeg[t]! === 0) cola.push(t);
+    }
+  }
+  return acum;
+}
+
+// ─── 4. Delineación aguas-arriba desde la salida ──────────────────────────────
+function delimitar(fd: Int32Array, n: number, outlet: number): Set<number> {
+  const inflow: number[][] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = fd[i]!;
+    if (t >= 0) (inflow[t] ?? (inflow[t] = [])).push(i);
+  }
+  const set = new Set<number>([outlet]);
+  const stack = [outlet];
+  while (stack.length) {
+    const cur = stack.pop()!;
+    const ups = inflow[cur];
+    if (!ups) continue;
+    for (const u of ups) if (!set.has(u)) { set.add(u); stack.push(u); }
+  }
+  return set;
+}
+
+/** ¿La cuenca toca el borde del DEM? (⇒ podría estar recortada). */
+function tocaBorde(set: Set<number>, rows: number, cols: number): boolean {
+  for (const i of set) {
+    const r = (i / cols) | 0, c = i % cols;
+    if (r === 0 || c === 0 || r === rows - 1 || c === cols - 1) return true;
+  }
+  return false;
+}
+
+/** Reubica la salida a la celda de mayor acumulación en un radio (snap-to-stream). */
+function snapSalida(acum: Float64Array, rows: number, cols: number, idx: number, radio = 3): number {
+  const r0 = (idx / cols) | 0, c0 = idx % cols;
+  let best = idx, bestA = acum[idx]!;
+  for (let dr = -radio; dr <= radio; dr++) {
+    for (let dc = -radio; dc <= radio; dc++) {
+      const nr = r0 + dr, nc = c0 + dc;
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const ni = nr * cols + nc;
+      const a = acum[ni]!;
+      if (a > bestA) { bestA = a; best = ni; }
+    }
+  }
+  return best;
+}
+
+// ─── Contorno del conjunto de celdas → polígono ───────────────────────────────
+function contorno(set: Set<number>, g: GrillaElevacion): Array<{ lat: number; lng: number }> {
+  const { rows, cols, latMin, latMax, lngMin, lngMax } = g;
+  const dLat = (latMax - latMin) / (rows - 1);
+  const dLng = (lngMax - lngMin) / (cols - 1);
+  const hLat = dLat / 2, hLng = dLng / 2;
+  const rnd = (n: number) => Math.round(n * 1e7) / 1e7;
+  const pk = (lat: number, lng: number) => `${rnd(lat)},${rnd(lng)}`;
+  const edges = new Map<string, [[number, number], [number, number]]>();
+  const toggle = (a: [number, number], b: [number, number]) => {
+    const ka = pk(a[0], a[1]), kb = pk(b[0], b[1]);
+    const key = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+    if (edges.has(key)) edges.delete(key); else edges.set(key, [a, b]);
+  };
+
+  for (const i of set) {
+    const r = (i / cols) | 0, c = i % cols;
+    const latC = latMin + r * dLat, lngC = lngMin + c * dLng;
+    const TL: [number, number] = [latC + hLat, lngC - hLng];
+    const TR: [number, number] = [latC + hLat, lngC + hLng];
+    const BL: [number, number] = [latC - hLat, lngC - hLng];
+    const BR: [number, number] = [latC - hLat, lngC + hLng];
+    toggle(TL, TR); toggle(BL, BR); toggle(TL, BL); toggle(TR, BR);
+  }
+  if (edges.size === 0) return [];
+
+  const adj = new Map<string, Array<[number, number]>>();
+  edges.forEach(([a, b]) => {
+    const ka = pk(a[0], a[1]), kb = pk(b[0], b[1]);
+    (adj.get(ka) ?? adj.set(ka, []).get(ka)!).push(b);
+    (adj.get(kb) ?? adj.set(kb, []).get(kb)!).push(a);
+  });
+
+  const start = edges.values().next().value![0];
+  const startK = pk(start[0], start[1]);
+  const ring: Array<{ lat: number; lng: number }> = [];
+  const visit = new Set<string>();
+  let cur = start, curK = startK, prevK = '';
+  for (let guard = 0; guard < edges.size * 2 + 4; guard++) {
+    ring.push({ lat: cur[0], lng: cur[1] });
+    visit.add(curK);
+    const vecinos = adj.get(curK) ?? [];
+    let next: [number, number] | null = null;
+    for (const v of vecinos) {
+      const vk = pk(v[0], v[1]);
+      if (vk === prevK) continue;
+      if (vk === startK && ring.length > 2) { next = v; break; }
+      if (!visit.has(vk)) { next = v; break; }
+    }
+    if (!next) break;
+    const nextK = pk(next[0], next[1]);
+    if (nextK === startK) break;
+    prevK = curK; cur = next; curK = nextK;
+  }
+  return ring;
+}
+
+// ─── Recorrido de flujo más largo hasta la salida ─────────────────────────────
+function longitudFlujoMax(set: Set<number>, fd: Int32Array, cols: number, dx: number, dy: number, ddiag: number): number {
+  const memo = new Map<number, number>();
+  const paso = (a: number, b: number): number => {
+    const ar = (a / cols) | 0, ac = a % cols;
+    const br = (b / cols) | 0, bc = b % cols;
+    const dr = Math.abs(ar - br), dc = Math.abs(ac - bc);
+    if (dr && dc) return ddiag;
+    return dr ? dy : dx;
+  };
+  const distHasta = (start: number): number => {
+    const cadena: number[] = [];
+    let cur = start, acc = 0;
+    while (set.has(cur)) {
+      if (memo.has(cur)) { acc += memo.get(cur)!; break; }
+      cadena.push(cur);
+      const to = fd[cur]!;
+      if (to < 0 || !set.has(to)) break;
+      acc += paso(cur, to);
+      cur = to;
+    }
+    let restante = acc;
+    for (let i = 0; i < cadena.length; i++) {
+      memo.set(cadena[i]!, restante);
+      if (i + 1 < cadena.length) restante -= paso(cadena[i]!, cadena[i + 1]!);
+    }
+    return acc;
+  };
+  let maxL = 0;
+  for (const k of set) { const d = distHasta(k); if (d > maxL) maxL = d; }
+  return maxL;
+}
+
+// ─── Construir el objeto Cuenca ───────────────────────────────────────────────
+function construirCuenca(set: Set<number>, g: GrillaElevacion, fd: Int32Array, outlet: number): Cuenca {
+  const { cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  const dLat = (latMax - latMin) / (g.rows - 1);
+  const dLng = (lngMax - lngMin) / (cols - 1);
+  const { dx, dy, ddiag, areaCelda } = dimsCelda(g);
+
+  const or = (outlet / cols) | 0, oc = outlet % cols;
+  const elevSalida = elev[outlet]!;
+  let elevMax = elevSalida;
+  for (const i of set) { const e = elev[i]!; if (!Number.isNaN(e) && e > elevMax) elevMax = e; }
+
+  const area_m2 = set.size * areaCelda;
+  const largo = longitudFlujoMax(set, fd, cols, dx, dy, ddiag);
+  const L = Math.max(largo, Math.sqrt(area_m2));
+  const desnivel = Math.max(0.1, elevMax - elevSalida);
+
+  return {
+    celdas:        Array.from(set, i => `${(i / cols) | 0},${i % cols}`),
+    poligono:      contorno(set, g),
+    area_m2,
+    area_ha:       Math.round(area_m2 / 1e4 * 100) / 100,
+    area_km2:      area_m2 / 1e6,
+    long_flujo_m:  Math.round(L),
+    pendiente_m_m: L > 0 ? desnivel / L : 0.01,
+    elev_salida:   Math.round(elevSalida),
+    elev_max:      Math.round(elevMax),
+    outlet:        { lat: latMin + or * dLat, lng: lngMin + oc * dLng },
+  };
+}
+
+// ─── Geometría de bbox ────────────────────────────────────────────────────────
+export function bboxDeMojones(mojones: Array<{ lat: number; lng: number }>): BBox {
+  const lats = mojones.map(m => m.lat), lngs = mojones.map(m => m.lng);
+  return { latMin: Math.min(...lats), latMax: Math.max(...lats), lngMin: Math.min(...lngs), lngMax: Math.max(...lngs) };
+}
+
+function conMargen(b: BBox, factor: number, outlet?: { lat: number; lng: number }): BBox {
+  let { latMin, latMax, lngMin, lngMax } = b;
+  if (outlet) {
+    latMin = Math.min(latMin, outlet.lat); latMax = Math.max(latMax, outlet.lat);
+    lngMin = Math.min(lngMin, outlet.lng); lngMax = Math.max(lngMax, outlet.lng);
+  }
+  const mLat = Math.max((latMax - latMin) * factor, 0.002);
+  const mLng = Math.max((lngMax - lngMin) * factor, 0.002);
+  return { latMin: latMin - mLat, latMax: latMax + mLat, lngMin: lngMin - mLng, lngMax: lngMax + mLng };
+}
+
+function ladoMayorKm(b: BBox): number {
+  const latMid = (b.latMin + b.latMax) / 2;
+  const altoKm  = (b.latMax - b.latMin) * 111.32;
+  const anchoKm = (b.lngMax - b.lngMin) * 111.32 * Math.cos(latMid * Math.PI / 180);
+  return Math.max(altoKm, anchoKm);
+}
+
+function resolucionPara(b: BBox): number {
+  const majorM = ladoMayorKm(b) * 1000;
+  return Math.max(80, Math.min(320, Math.round(majorM / 30)));  // ~30 m/celda, acotado
+}
+
+// ─── Delineación de una cuenca sobre una grilla ya traída ─────────────────────
+function delinearEnGrilla(g: GrillaElevacion, outletLat: number, outletLng: number) {
+  const { rows, cols } = g;
+  const n = rows * cols;
+
+  // Celda más cercana a la salida (que tenga dato).
+  const dLat = (g.latMax - g.latMin) / (rows - 1);
+  const dLng = (g.lngMax - g.lngMin) / (cols - 1);
+  let r0 = Math.round((outletLat - g.latMin) / dLat);
+  let c0 = Math.round((outletLng - g.lngMin) / dLng);
+  r0 = Math.max(0, Math.min(rows - 1, r0));
+  c0 = Math.max(0, Math.min(cols - 1, c0));
+
+  const filled = rellenarDepresiones(g);
+  const fd = direccionFlujo(g, filled);
+  const acum = acumular(g, filled, fd);
+
+  // Snap al cauce (mayor acumulación cerca del clic).
+  let idx = r0 * cols + c0;
+  if (Number.isNaN(filled[idx]!)) return null;
+  idx = snapSalida(acum, rows, cols, idx, 3);
+
+  const set = delimitar(fd, n, idx);
+  return { set, fd, filled, outlet: idx, toca: tocaBorde(set, rows, cols) };
+}
+
+// ─── 5. Orquestador adaptativo ────────────────────────────────────────────────
+export interface ResultadoCuencaAdaptativa {
+  cuenca:      Cuenca;
+  completa:    boolean;   // false ⇒ la divisoria seguía tocando el borde del DEM
+  iteraciones: number;
+}
+
+/**
+ * Delinea la cuenca sobre una grilla YA cargada (sin expansión ni fetch de
+ * tiles). Útil para recomputar al editar la cuenca a mano (A2) y para tests.
+ */
+export function delinearCuencaEnGrilla(
+  g: GrillaElevacion,
+  outletLat: number,
+  outletLng: number,
+): ResultadoCuencaAdaptativa | null {
+  const res = delinearEnGrilla(g, outletLat, outletLng);
+  if (!res) return null;
+  return { cuenca: construirCuenca(res.set, g, res.fd, res.outlet), completa: !res.toca, iteraciones: 1 };
+}
+
+/**
+ * Delinea la cuenca aguas-arriba de un punto, agrandando el DEM hasta que la
+ * divisoria queda contenida (o se topa el límite). El terreno (bbox de mojones)
+ * fija el punto de partida; el outlet es el clic del usuario.
+ */
+export async function cuencaAdaptativa(
+  outlet:  { lat: number; lng: number },
+  predio:  BBox,
+  opts?: { maxIter?: number; maxLadoKm?: number },
+): Promise<ResultadoCuencaAdaptativa | null> {
+  const maxIter   = opts?.maxIter   ?? 4;
+  const maxLadoKm = opts?.maxLadoKm ?? 25;
+
+  let bbox = conMargen(predio, 0.6, outlet);
+  let ultimo: { set: Set<number>; fd: Int32Array; filled: Float64Array; outlet: number; toca: boolean } | null = null;
+  let grillaUlt: GrillaElevacion | null = null;
+  let iter = 0;
+
+  for (; iter < maxIter; iter++) {
+    const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+    if (!g) {
+      if (grillaUlt && ultimo) break;   // usar el mejor resultado previo
+      return null;
+    }
+    const res = delinearEnGrilla(g, outlet.lat, outlet.lng);
+    if (!res) return null;
+    ultimo = res; grillaUlt = g;
+
+    if (!res.toca) break;                       // divisoria adentro ⇒ cuenca completa
+    if (ladoMayorKm(bbox) >= maxLadoKm) break;  // no seguir agrandando
+    bbox = conMargen(bbox, 0.7);                // crecer y reintentar
+  }
+
+  if (!ultimo || !grillaUlt) return null;
+  const cuenca = construirCuenca(ultimo.set, grillaUlt, ultimo.fd, ultimo.outlet);
+  return { cuenca, completa: !ultimo.toca, iteraciones: iter + 1 };
+}

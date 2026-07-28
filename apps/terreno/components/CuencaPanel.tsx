@@ -19,12 +19,14 @@ interface Props {
   grupoHidro:  GrupoHidro | null;   // de A4 (SuelosPanel), si está
   precipT10:   number | null;       // tormenta de diseño T10 de A3 (extremos), si está
   modoActivo:  boolean;
+  cargando?:   boolean;             // delineación adaptativa en curso
+  aviso?:      string | null;       // cuenca incompleta / sin resultado
   onMarcar:    () => void;
   onLimpiar:   () => void;
   onIrATopo:   () => void;
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, onMarcar, onLimpiar, onIrATopo }: Props) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, onMarcar, onLimpiar, onIrATopo }: Props) {
   const [coberturaId, setCoberturaId] = useState('pastura_regular');
   const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
   const [precip, setPrecip]   = useState(precipT10 ? String(precipT10) : '75');
@@ -63,16 +65,24 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
             <button
               onClick={onMarcar}
-              className={`w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+              disabled={cargando}
+              className={`w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60 ${
                 modoActivo ? 'bg-clay-600 text-bone-50' : 'bg-moss-700 hover:bg-moss-900 text-bone-50'
               }`}
             >
-              <MousePointerClick className="w-3.5 h-3.5" />
-              {modoActivo ? 'Hacé clic en el punto de salida…' : cuenca ? 'Marcar otra salida' : 'Marcar punto de salida'}
+              {cargando
+                ? <><span className="w-3.5 h-3.5 border-2 border-bone-50 border-t-transparent rounded-full animate-spin" />Calculando cuenca…</>
+                : <><MousePointerClick className="w-3.5 h-3.5" />{modoActivo ? 'Hacé clic en el punto de salida…' : cuenca ? 'Marcar otra salida' : 'Marcar punto de salida'}</>}
             </button>
             <p className="text-[10px] text-ink-700/55 leading-relaxed">
-              Marcá dónde cierra la cuenca (donde iría la represa o el cruce de camino). El clic se ajusta al cauce más cercano.
+              Marcá dónde cierra la cuenca (donde iría la represa o el cruce de camino). El clic se ajusta al cauce más cercano y sube hasta la divisoria, aunque pase los límites del terreno.
             </p>
+            {aviso && (
+              <p className="text-[10px] text-clay-800 bg-clay-600/10 border border-clay-600/25 rounded-lg px-2.5 py-1.5 flex gap-1.5 leading-relaxed">
+                <TriangleAlert className="w-3.5 h-3.5 shrink-0 text-clay-700 mt-px" />
+                {aviso}
+              </p>
+            )}
             {cuenca && (
               <button onClick={onLimpiar} className="text-[10px] text-clay-700 hover:text-clay-900 flex items-center gap-1">
                 <Trash2 className="w-3 h-3" /> Borrar cuenca

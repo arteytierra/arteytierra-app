@@ -184,6 +184,108 @@ export async function obtenerGrillaDensa(
   return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max };
 }
 
+// ─── Grilla de hidrología (sin recorte al predio) ────────────────────────────
+
+export interface BBox { latMin: number; latMax: number; lngMin: number; lngMax: number; }
+
+/**
+ * Grilla densa de elevación sobre un bbox explícito, SIN enmascarar al polígono
+ * del predio. Se usa para delinear cuencas: el flujo puede salir del terreno y
+ * subir por las laderas hasta la divisoria real. Misma fuente Terrarium (tiles
+ * cacheados 1 año en el CDN) que `obtenerGrillaDensa`, sin llamadas por punto.
+ *
+ * @param resolucion nodos en el eje mayor (más nodos = celda más fina)
+ */
+export async function obtenerGrillaHidro(
+  bbox: BBox,
+  resolucion = 240,
+): Promise<GrillaElevacion | null> {
+  if (typeof document === 'undefined') return null;
+  const { latMin, latMax, lngMin, lngMax } = bbox;
+  if (!(latMax > latMin) || !(lngMax > lngMin)) return null;
+
+  const latC = (latMin + latMax) / 2;
+  const anchoM = (lngMax - lngMin) * 111_320 * Math.cos(latC * Math.PI / 180);
+  const altoM  = (latMax - latMin) * 111_320;
+
+  // Grilla proporcional al bbox, eje mayor = resolucion
+  let cols: number, rows: number;
+  if (anchoM >= altoM) {
+    cols = resolucion;
+    rows = Math.max(20, Math.round(resolucion * (altoM / anchoM)));
+  } else {
+    rows = resolucion;
+    cols = Math.max(20, Math.round(resolucion * (anchoM / altoM)));
+  }
+
+  // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
+  const pasoM = Math.max(anchoM / cols, altoM / rows);
+  let z = Math.round(Math.log2((156543.03 * Math.cos(latC * Math.PI / 180)) / Math.max(pasoM / 2, 1)));
+  z = Math.max(9, Math.min(14, z));
+
+  // Rango de tiles; si son demasiados (>36), bajar zoom hasta entrar en presupuesto.
+  let txMin = 0, txMax = 0, tyMin = 0, tyMax = 0;
+  for (;;) {
+    txMin = Math.floor(lngAPxGlobal(lngMin, z) / 256);
+    txMax = Math.floor(lngAPxGlobal(lngMax, z) / 256);
+    tyMin = Math.floor(latAPxGlobal(latMax, z) / 256);  // latMax → py menor
+    tyMax = Math.floor(latAPxGlobal(latMin, z) / 256);
+    const n = (txMax - txMin + 1) * (tyMax - tyMin + 1);
+    if (n <= 36 || z <= 9) break;
+    z--;
+  }
+
+  // Cargar tiles en paralelo
+  const tiles = new Map<string, TileData>();
+  const jobs: Promise<void>[] = [];
+  for (let tx = txMin; tx <= txMax; tx++) {
+    for (let ty = tyMin; ty <= tyMax; ty++) {
+      jobs.push(cargarTile(z, tx, ty).then(t => { if (t) tiles.set(`${tx},${ty}`, t); }));
+    }
+  }
+  await Promise.all(jobs);
+  if (tiles.size === 0) return null;
+
+  function muestrear(lat: number, lng: number): number {
+    const gx = lngAPxGlobal(lng, z) - 0.5;
+    const gy = latAPxGlobal(lat, z) - 0.5;
+    const x0 = Math.floor(gx), y0 = Math.floor(gy);
+    const fx = gx - x0, fy = gy - y0;
+    const pixel = (xg: number, yg: number): number => {
+      const tx = Math.floor(xg / 256), ty = Math.floor(yg / 256);
+      const tile = tiles.get(`${tx},${ty}`);
+      if (!tile) return NaN;
+      return decodificarElev(tile.px, xg - tx * 256, yg - ty * 256);
+    };
+    const e00 = pixel(x0, y0),     e10 = pixel(x0 + 1, y0);
+    const e01 = pixel(x0, y0 + 1), e11 = pixel(x0 + 1, y0 + 1);
+    if (isNaN(e00) || isNaN(e10) || isNaN(e01) || isNaN(e11)) {
+      const c = [e00, e10, e01, e11].filter(e => !isNaN(e));
+      return c.length > 0 ? c[0]! : NaN;
+    }
+    const a = e00 + (e10 - e00) * fx;
+    const b = e01 + (e11 - e01) * fx;
+    return a + (b - a) * fy;
+  }
+
+  const elev = new Float64Array(rows * cols).fill(NaN);
+  let elev_min = Infinity, elev_max = -Infinity;
+  for (let r = 0; r < rows; r++) {
+    const lat = latMin + (r / (rows - 1)) * (latMax - latMin);
+    for (let c = 0; c < cols; c++) {
+      const lng = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
+      const e = muestrear(lat, lng);
+      if (isNaN(e)) continue;
+      elev[r * cols + c] = e;
+      if (e < elev_min) elev_min = e;
+      if (e > elev_max) elev_max = e;
+    }
+  }
+  if (!isFinite(elev_min) || elev_max - elev_min < 0.5) return null;
+
+  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max };
+}
+
 /** Grilla 10×10 a partir del shader existente (fallback offline). */
 export function grillaDesdeShader(shader: {
   celdas: Array<{ row: number; col: number; latMin: number; latMax: number; lngMin: number; lngMax: number; elevation: number }>;

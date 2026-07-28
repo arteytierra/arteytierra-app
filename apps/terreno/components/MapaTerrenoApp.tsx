@@ -55,7 +55,8 @@ import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/l
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
-import { celdaEnPunto, delimitarCuenca, type Cuenca } from '@/lib/cuenca';
+import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
+import { cuencaAdaptativa, bboxDeMojones } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -238,6 +239,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
   const [modoCuenca,  setModoCuenca]  = useState(false);
   const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
+  const [cuencaLoading, setCuencaLoading] = useState(false);
+  const [cuencaAviso, setCuencaAviso] = useState<string | null>(null);
   const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
@@ -715,6 +718,31 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     dragIndexRef.current = null;
   }, []);
 
+  // ─── Cuenca de aporte (delineación adaptativa sobre DEM propio) ────────────
+  const procesarCuenca = useCallback(async (lat: number, lng: number) => {
+    if (mojones.length < 3) {
+      setCuencaAviso('Cargá primero el terreno (al menos 3 mojones) para calcular la cuenca.');
+      return;
+    }
+    setCuencaLoading(true);
+    setCuencaAviso(null);
+    try {
+      const res = await cuencaAdaptativa({ lat, lng }, bboxDeMojones(mojones));
+      if (res) {
+        setCuenca(res.cuenca);
+        if (!res.completa) {
+          setCuencaAviso('La cuenca puede estar incompleta: la divisoria llega al límite del área analizada. Volvé a marcar un poco más abajo, sobre el cauce.');
+        }
+      } else {
+        setCuencaAviso('No se pudo delinear la cuenca en ese punto. Marcá sobre un cauce o cañada (donde concentraría el agua).');
+      }
+    } catch {
+      setCuencaAviso('Hubo un error al calcular la cuenca. Reintentá.');
+    } finally {
+      setCuencaLoading(false);
+    }
+  }, [mojones]);
+
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
     if (modoArbol) {
@@ -726,13 +754,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
     if (modoCuenca) {
       setModoCuenca(false);
-      if (datosShader && datosEscorrentia) {
-        const celda = celdaEnPunto(datosShader, lat, lng);
-        if (celda) {
-          const c = delimitarCuenca(datosShader, datosEscorrentia.flowDir, datosEscorrentia.acumulacion, celda.row, celda.col);
-          if (c) setCuenca(c);
-        }
-      }
+      void procesarCuenca(lat, lng);
       return;
     }
     if (modoViewshed) {
@@ -821,7 +843,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoArbol, modoCuenca, modoViewshed, alturaObs, datosShader, datosEscorrentia, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -2518,8 +2540,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
                 precipT10={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null}
                 modoActivo={modoCuenca}
+                cargando={cuencaLoading}
+                aviso={cuencaAviso}
                 onMarcar={() => setModoCuenca(m => !m)}
-                onLimpiar={() => { setCuenca(null); setModoCuenca(false); }}
+                onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); }}
                 onIrATopo={() => setTab('topo')}
               />
             </div>
