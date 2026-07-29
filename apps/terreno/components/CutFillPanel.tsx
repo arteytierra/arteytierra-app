@@ -123,12 +123,10 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     taludInterno: muroP.taludInterno, taludExterno: muroP.taludExterno, longitud_m: longitud,
   }) : null, [res, muroP, longitud]);
 
-  // Eficiencia del sitio = agua embalsada ÷ tierra movida.
-  //  · aguada/tajamar (dugout): se excava el vaso → tierra ≈ agua → ~1:1.
-  //  · represa de ladera: sólo se mueve el muro (terraplén) → puede rendir mucho
-  //    más en un cuello de botella (poco muro, mucha agua).
-  const tierraMovida = muro && res ? (tipoMuro === 'ladera' ? muro.volumenTierra_m3 : res.volumen_m3) : 0;
-  const eficiencia = tierraMovida > 0 && res ? res.volumen_m3 / tierraMovida : 0;
+  // Eficiencia del sitio = agua embalsada ÷ tierra del muro (terraplén). Cuanto
+  // más agua se embalsa con menos muro —un buen cuello de botella entre laderas—
+  // más eficiente el emplazamiento.
+  const eficiencia = muro && res && muro.volumenTierra_m3 > 0 ? res.volumen_m3 / muro.volumenTierra_m3 : 0;
 
   // Reset al cambiar de polígono
   useEffect(() => { setRango(null); setNivel(null); setRes(null); setError(null); setLongMuro(null); }, [selId]);
@@ -294,17 +292,19 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 El ancho de base = corona + alto × (talud int. + talud ext.). Taludes más tendidos (número mayor, ej. 3 = 3&nbsp;m horizontales por metro de alto) hacen el muro más seguro pero más ancho. Para un tajamar chico alcanza «Aguada»; para retener varios metros de agua usá «Represa de ladera».
               </p>
 
-              {/* Eficiencia del sitio: agua embalsada / tierra movida */}
-              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                <Stat
-                  label={tipoMuro === 'ladera' ? 'Tierra del muro' : 'Excavación (pozo)'}
-                  valor={`${Math.round(tierraMovida).toLocaleString('es-AR')} m³`}
-                />
-                <Stat label="Eficiencia agua/tierra" valor={`${eficiencia.toFixed(1)} : 1`} />
+              {/* Eficiencia del sitio: agua embalsada / muro (terraplén) */}
+              <div className="rounded-lg border border-moss-200 bg-moss-50 px-2.5 py-1.5 flex items-center justify-between">
+                <span className="text-[10px] text-ink-700/70">
+                  Eficiencia del sitio (agua ÷ muro)
+                </span>
+                <span className="font-mono text-sm font-bold text-moss-700">{eficiencia.toFixed(1)} : 1</span>
               </div>
+              <p className="text-[9px] text-ink-700/50 leading-relaxed">
+                {res.volumen_m3.toLocaleString('es-AR')} m³ de agua ÷ {muro.volumenTierra_m3.toLocaleString('es-AR')} m³ de muro.
+              </p>
               <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
                 <Info className="w-3 h-3 shrink-0 mt-0.5 text-moss-700/50" />
-                Eficiencia = m³ de agua embalsada ÷ m³ de tierra movida. Un pozo rinde ~1:1 (excavás todo lo que guardás); una represa en un cuello de botella entre laderas rinde mucho más (poco muro cierra el valle y embalsa mucho). Cuanto mayor el número, mejor el sitio elegido.
+                m³ de agua embalsada ÷ m³ del muro (terraplén). Cuanto más agua se embalsa con menos muro —un buen cuello de botella entre laderas— mayor la eficiencia y mejor el sitio elegido.
               </p>
             </div>
           )}
