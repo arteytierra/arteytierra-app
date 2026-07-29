@@ -241,6 +241,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
   const [cuencaLoading, setCuencaLoading] = useState(false);
   const [cuencaAviso, setCuencaAviso] = useState<string | null>(null);
+  const [cuencaExpandida, setCuencaExpandida] = useState(false);
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
   const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
@@ -720,7 +721,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, []);
 
   // ─── Cuenca de aporte (delineación adaptativa sobre DEM propio) ────────────
-  const procesarCuenca = useCallback(async (lat: number, lng: number) => {
+  // Por defecto la acota al terreno; con expand=true sube hasta la divisoria real.
+  const procesarCuenca = useCallback(async (lat: number, lng: number, expand = false) => {
     if (mojones.length < 3) {
       setCuencaAviso('Cargá primero el terreno (al menos 3 mojones) para calcular la cuenca.');
       return;
@@ -728,11 +730,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCuencaLoading(true);
     setCuencaAviso(null);
     try {
-      const res = await cuencaAdaptativa({ lat, lng }, bboxDeMojones(mojones));
+      const res = await cuencaAdaptativa({ lat, lng }, bboxDeMojones(mojones), {
+        expand,
+        clip: expand ? undefined : mojones,
+      });
       if (res) {
         setCuenca(res.cuenca);
-        if (!res.completa) {
-          setCuencaAviso('La cuenca puede estar incompleta: la divisoria llega al límite del área analizada. Volvé a marcar un poco más abajo, sobre el cauce.');
+        setCuencaExpandida(expand);
+        if (expand && !res.completa) {
+          setCuencaAviso('La cuenca puede estar incompleta: la divisoria llega al límite del área analizada.');
         }
       } else {
         setCuencaAviso('No se pudo delinear la cuenca en ese punto. Marcá sobre un cauce o cañada (donde concentraría el agua).');
@@ -744,13 +750,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
   }, [mojones]);
 
+  // Extender la cuenca actual hasta la divisoria real (desde su punto de salida).
+  const handleExtenderCuenca = useCallback(() => {
+    if (cuenca) void procesarCuenca(cuenca.outlet.lat, cuenca.outlet.lng, true);
+  }, [cuenca, procesarCuenca]);
+
   // Cuenca manual: usar un polígono dibujado como cuenca de aporte.
   const handleUsarPoligonoCuenca = useCallback(async (vertices: Array<{ lat: number; lng: number }>) => {
     if (vertices.length < 3) return;
     setCuencaLoading(true); setCuencaAviso(null);
     try {
       const c = await cuencaManualDesdePoligono(vertices);
-      if (c) setCuenca(c);
+      if (c) { setCuenca(c); setCuencaExpandida(false); }
       else setCuencaAviso('No se pudo calcular la cuenca del polígono. Fijate que tenga relieve cargado.');
     } catch {
       setCuencaAviso('Hubo un error al calcular la cuenca manual. Reintentá.');
@@ -1672,7 +1683,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const pixeles = Math.round(nice / mpp);
     return { metros: nice, pixeles, label: nice >= 1000 ? `${nice / 1000} km` : `${nice} m` };
   }, [mapZoom, mapCenterLat]);
-  const [shaderUsarArea, setShaderUsarArea] = useState(false);
   const [shaderDetallado, setShaderDetallado] = useState(true); // grilla densa (tiles Terrarium) vs muestreo 10×10
 
   const handleFetchShader = useCallback(async () => {
@@ -1697,8 +1707,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
 
     // Fallback / modo rápido: muestreo 10×10 vía OpenTopoData.
-    const bounds = shaderUsarArea && getBoundsRef.current ? getBoundsRef.current() : undefined;
-    const result = await fetchShader(mojones, bounds);
+    const result = await fetchShader(mojones);
     setShaderLoading(false);
     if ('error' in result) {
       setShaderError(result.error);
@@ -1706,7 +1715,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       setDatosShader(result);
       activarCapas();
     }
-  }, [mojones, shaderUsarArea, shaderDetallado]);
+  }, [mojones, shaderDetallado]);
 
   // ─── Agregar desde sugerencias ────────────────────────────────────────────
   const handleAgregarPinSugerencia = useCallback((lat: number, lng: number, nombre: string, icono: string, color: string) => {
@@ -2506,7 +2515,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             <div className="px-4 py-4 space-y-4">
               <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
               <div className="border-t border-bone-200 pt-4">
-                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={setCuenca} onMuroLinea={setMuroLinea} />
+                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
               </div>
             </div>
           )}
@@ -2574,11 +2583,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 cargando={cuencaLoading}
                 aviso={cuencaAviso}
                 poligonos={poligonosCutFill}
+                expandida={cuencaExpandida}
                 onMarcar={() => setModoCuenca(m => !m)}
-                onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); }}
+                onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); setCuencaExpandida(false); }}
                 onIrATopo={() => setTab('topo')}
                 onUsarPoligono={handleUsarPoligonoCuenca}
                 onEditarCuenca={handleEditarCuenca}
+                onExtender={handleExtenderCuenca}
               />
             </div>
           )}
@@ -2719,7 +2730,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               })}
               onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
               datosShader={datosShader} shaderLoading={shaderLoading} shaderError={shaderError}
-              onFetchShader={handleFetchShader} shaderUsarArea={shaderUsarArea} onToggleShaderArea={() => setShaderUsarArea(p => !p)}
+              onFetchShader={handleFetchShader}
               shaderDetallado={shaderDetallado} onToggleShaderDetallado={() => setShaderDetallado(p => !p)} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
@@ -3269,8 +3280,6 @@ interface PanelCapasProps {
   shaderLoading:       boolean;
   shaderError:         string | null;
   onFetchShader:       () => void;
-  shaderUsarArea:      boolean;
-  onToggleShaderArea:  () => void;
   shaderDetallado:     boolean;
   onToggleShaderDetallado: () => void;
   mojones:             Mojon[];
@@ -3300,7 +3309,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, shaderLoading, shaderError, onFetchShader, shaderUsarArea, onToggleShaderArea,
+  datosShader, shaderLoading, shaderError, onFetchShader,
   shaderDetallado, onToggleShaderDetallado, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
@@ -3426,13 +3435,6 @@ function PanelCapas({
                 <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
                 <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
               </label>
-              {/* Toggle área visible (solo modo rápido) */}
-              {!shaderDetallado && (
-                <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1">
-                  <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
-                  <span className="text-[9px] text-ink-700/70">Usar área visible</span>
-                </label>
-              )}
               <button
                 onClick={() => { onFetchShader(); }}
                 disabled={shaderLoading || mojones.length < 3}
@@ -3451,13 +3453,6 @@ function PanelCapas({
                 <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
                 <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
               </label>
-              {/* Toggle área visible (solo modo rápido) */}
-              {!shaderDetallado && (
-                <label className="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" checked={shaderUsarArea} onChange={onToggleShaderArea} className="w-3 h-3 rounded accent-moss-700" />
-                  <span className="text-[9px] text-ink-700/70">Usar área visible del mapa</span>
-                </label>
-              )}
               <button
                 onClick={onFetchShader}
                 disabled={shaderLoading || mojones.length < 3}

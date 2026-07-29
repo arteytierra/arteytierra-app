@@ -203,16 +203,31 @@ function tocaBorde(set: Set<number>, rows: number, cols: number): boolean {
 }
 
 /** Reubica la salida a la celda de mayor acumulación en un radio (snap-to-stream). */
-function snapSalida(acum: Float64Array, rows: number, cols: number, idx: number, radio = 3): number {
+function snapSalida(acum: Float64Array, rows: number, cols: number, idx: number, radio = 2): number {
   const r0 = (idx / cols) | 0, c0 = idx % cols;
-  let best = idx, bestA = acum[idx]!;
+  // Mayor acumulación en la ventana (para saber dónde está el cauce).
+  let maxA = acum[idx]!;
+  for (let dr = -radio; dr <= radio; dr++) {
+    for (let dc = -radio; dc <= radio; dc++) {
+      const nr = r0 + dr, nc = c0 + dc;
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const a = acum[nr * cols + nc]!;
+      if (a > maxA) maxA = a;
+    }
+  }
+  // Enganchar al cauce MÁS CERCANO (acum ≥ 50% del máximo), no al de mayor
+  // acumulación: así el punto de cierre no se desliza río abajo y no mete como
+  // aporte zonas que en realidad están aguas-abajo de la salida.
+  const umbral = maxA * 0.5;
+  let best = idx, bestD = Infinity;
   for (let dr = -radio; dr <= radio; dr++) {
     for (let dc = -radio; dc <= radio; dc++) {
       const nr = r0 + dr, nc = c0 + dc;
       if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
       const ni = nr * cols + nc;
-      const a = acum[ni]!;
-      if (a > bestA) { bestA = a; best = ni; }
+      if (acum[ni]! < umbral) continue;
+      const d = dr * dr + dc * dc;
+      if (d < bestD) { bestD = d; best = ni; }
     }
   }
   return best;
@@ -562,11 +577,52 @@ export function simplificarAnillo(ring: Array<{ lat: number; lng: number }>, tol
   return out.length >= 3 ? out : ring.map(p => ({ lat: p.lat, lng: p.lng }));
 }
 
+// Filtra las celdas de la cuenca a las que caen dentro de un polígono (el predio).
+function filtrarSetPorPoligono(set: Set<number>, g: GrillaElevacion, poly: Array<{ lat: number; lng: number }>): Set<number> {
+  const { cols, rows, latMin, latMax, lngMin, lngMax } = g;
+  const dLat = (latMax - latMin) / (rows - 1), dLng = (lngMax - lngMin) / (cols - 1);
+  const out = new Set<number>();
+  for (const i of set) {
+    const r = (i / cols) | 0, c = i % cols;
+    if (pipLatLng(latMin + r * dLat, lngMin + c * dLng, poly)) out.add(i);
+  }
+  return out;
+}
+
+/**
+ * Delinea la cuenca aguas-arriba de un punto.
+ *
+ * Por defecto (`expand: false`) acota la cuenca al terreno: una sola pasada sobre
+ * el bbox del predio y, si se pasa `clip`, se recorta al polígono del terreno.
+ * Es lo útil para dimensionar captación en la escala de la finca (una cuenca de
+ * montaña completa puede ser de miles de ha, inmanejable).
+ *
+ * Con `expand: true` agranda el DEM hasta contener la divisoria real (o hasta el
+ * límite de iteraciones/tamaño) — el "recalcular hasta la divisoria" a pedido.
+ */
 export async function cuencaAdaptativa(
   outlet:  { lat: number; lng: number },
   predio:  BBox,
-  opts?: { maxIter?: number; maxLadoKm?: number },
+  opts?: { maxIter?: number; maxLadoKm?: number; expand?: boolean; clip?: Array<{ lat: number; lng: number }> },
 ): Promise<ResultadoCuencaAdaptativa | null> {
+  const expand = opts?.expand ?? false;
+
+  // ── Acotado al terreno (default) ──
+  if (!expand) {
+    const bbox = conMargen(predio, 0.2, outlet);
+    const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+    if (!g) return null;
+    const res = delinearEnGrilla(g, outlet.lat, outlet.lng);
+    if (!res) return null;
+    let set = res.set;
+    if (opts?.clip && opts.clip.length >= 3) {
+      const rec = filtrarSetPorPoligono(set, g, opts.clip);
+      if (rec.size >= 1) set = rec;
+    }
+    return { cuenca: construirCuenca(set, g, res.fd, res.outlet), completa: true, iteraciones: 1 };
+  }
+
+  // ── Expandido hasta la divisoria real ──
   const maxIter   = opts?.maxIter   ?? 4;
   const maxLadoKm = opts?.maxLadoKm ?? 25;
 

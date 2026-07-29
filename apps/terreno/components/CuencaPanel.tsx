@@ -8,7 +8,7 @@
  * vertedero.
  */
 import { useMemo, useState, useEffect } from 'react';
-import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil } from 'lucide-react';
+import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2 } from 'lucide-react';
 import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro,
 } from '@/lib/cuenca';
@@ -24,14 +24,16 @@ interface Props {
   cargando?:   boolean;             // delineación adaptativa en curso
   aviso?:      string | null;       // cuenca incompleta / sin resultado
   poligonos?:  PoligonoOpcion[];    // polígonos dibujados, para usar como cuenca manual
+  expandida?:  boolean;             // la cuenca actual ya está extendida a la divisoria real
   onMarcar:    () => void;
   onLimpiar:   () => void;
   onIrATopo:   () => void;
   onUsarPoligono?: (vertices: Array<{ lat: number; lng: number }>) => void;
   onEditarCuenca?: () => void;      // materializa la cuenca calculada en un polígono editable
+  onExtender?: () => void;          // recalcula hasta la divisoria real
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca }: Props) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender }: Props) {
   const [coberturaId, setCoberturaId] = useState('pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
@@ -147,6 +149,23 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                 <Stat label="Desnivel" value={`${cuenca.elev_max - cuenca.elev_salida} m`} sub={`${cuenca.elev_salida}–${cuenca.elev_max} m`} />
                 <Stat label="Pendiente media" value={`${(cuenca.pendiente_m_m * 100).toFixed(1)} %`} />
               </div>
+
+              {/* Acotada al terreno / extender a la divisoria real */}
+              {onExtender && !expandida && (
+                <button
+                  onClick={onExtender}
+                  disabled={cargando}
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-medium bg-[#1565C0]/10 hover:bg-[#1565C0]/20 text-[#1565C0] border border-[#1565C0]/30 disabled:opacity-50 transition-colors"
+                >
+                  <Maximize2 className="w-3 h-3" /> Extender hasta la divisoria real
+                </button>
+              )}
+              {expandida && (
+                <p className="text-[9px] text-ink-700/50 text-center">Cuenca completa hasta la divisoria. Puede exceder el terreno.</p>
+              )}
+              {onExtender && !expandida && (
+                <p className="text-[9px] text-ink-700/45 leading-relaxed text-center">Acotada al terreno. Extendé si querés el aporte de toda la cuenca aguas-arriba.</p>
+              )}
 
               {/* Parámetros hidrológicos */}
               <div className="bg-white rounded-xl border border-bone-200 p-3 grid grid-cols-2 gap-2.5">
