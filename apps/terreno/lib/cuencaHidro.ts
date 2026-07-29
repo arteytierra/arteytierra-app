@@ -18,7 +18,7 @@
  * Devuelve el mismo tipo `Cuenca` que usa el panel, así que el análisis
  * hidrológico (CN/SCS) y el render en el mapa no cambian.
  */
-import { obtenerGrillaHidro, type GrillaElevacion, type BBox } from './grillaElevacion';
+import { obtenerGrillaHidro, elevEnGrilla, type GrillaElevacion, type BBox } from './grillaElevacion';
 import type { Cuenca } from './cuenca';
 
 // Vecindad de 8 (orden fijo, compartido por D8 y distancias).
@@ -420,6 +420,28 @@ export function delinearCuencaEnGrilla(
  * divisoria queda contenida (o se topa el límite). El terreno (bbox de mojones)
  * fija el punto de partida; el outlet es el clic del usuario.
  */
+/**
+ * Punto de menor cota a lo largo de una arista (el lado-muro de la represa),
+ * muestreando la grilla cargada. Es la salida natural de la cuenca: donde el
+ * cauce cruza el muro. Devuelve null si la arista no cae sobre datos.
+ */
+export function puntoMasBajoEnArista(
+  g: GrillaElevacion,
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+  n = 25,
+): { lat: number; lng: number; elev: number } | null {
+  let best: { lat: number; lng: number; elev: number } | null = null;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const lat = a.lat + (b.lat - a.lat) * t;
+    const lng = a.lng + (b.lng - a.lng) * t;
+    const e = elevEnGrilla(g, lat, lng);
+    if (!Number.isNaN(e) && (best === null || e < best.elev)) best = { lat, lng, elev: e };
+  }
+  return best;
+}
+
 export async function cuencaAdaptativa(
   outlet:  { lat: number; lng: number },
   predio:  BBox,

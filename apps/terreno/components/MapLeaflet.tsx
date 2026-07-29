@@ -927,6 +927,7 @@ interface Props {
   datosSugerencias?:  ResultadoSugerencias | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
+  muroLinea?:         Array<{ lat: number; lng: number }> | null;
   potrerosLayer?:     PotrerosLayout | null;
   capas?:             CapasVisibles;
   // ── Dibujo libre ──
@@ -1014,6 +1015,7 @@ function MapLeaflet({
   datosSugerencias = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
+  muroLinea = null,
   potrerosLayer = null,
   capas = CAPAS_DEFAULT,
   onGetNavegacion,
@@ -1239,6 +1241,12 @@ function MapLeaflet({
             center={[cuencaOutlet.lat, cuencaOutlet.lng]}
             radius={6}
             pathOptions={{ color: '#fff', weight: 2, fillColor: '#0D47A1', fillOpacity: 1 }}
+          />
+        )}
+        {muroLinea && muroLinea.length === 2 && (
+          <Polyline
+            positions={muroLinea.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#6D4C41', weight: 5, opacity: 0.9, interactive: false }}
           />
         )}
 

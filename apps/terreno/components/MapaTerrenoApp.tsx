@@ -241,6 +241,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
   const [cuencaLoading, setCuencaLoading] = useState(false);
   const [cuencaAviso, setCuencaAviso] = useState<string | null>(null);
+  const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
   const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
@@ -1959,7 +1960,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     { id: 'agua'      as Tab, label: 'Agua',     icon: <Droplets   className="w-3.5 h-3.5" /> },
     { id: 'zonas'     as Tab, label: 'Zonas',    icon: <LayoutGrid className="w-3.5 h-3.5" /> },
     { id: 'sectores'  as Tab, label: 'Sectores', icon: <Compass    className="w-3.5 h-3.5" /> },
-    { id: 'aguadas'   as Tab, label: 'Aguadas',  icon: <Waves      className="w-3.5 h-3.5" /> },
+    { id: 'aguadas'   as Tab, label: 'Represas', icon: <Waves      className="w-3.5 h-3.5" /> },
     { id: 'caminos'   as Tab, label: 'Caminos',  icon: <Route      className="w-3.5 h-3.5" /> },
     { id: 'red'       as Tab, label: 'Red agua', icon: <Spline     className="w-3.5 h-3.5" /> },
     { id: 'cuenca'    as Tab, label: 'Cuenca',   icon: <Waves      className="w-3.5 h-3.5" /> },
@@ -2475,7 +2476,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             <div className="px-4 py-4 space-y-4">
               <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
               <div className="border-t border-bone-200 pt-4">
-                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} onResumenRepresa={setRepresaResumen} />
+                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={setCuenca} onMuroLinea={setMuroLinea} />
               </div>
             </div>
           )}
@@ -2773,6 +2774,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           datosSugerencias={datosSugerencias}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
+          muroLinea={muroLinea}
           potrerosLayer={potrerosLayer}
           capas={capas}
           dibujos={dibujosFiltrados}

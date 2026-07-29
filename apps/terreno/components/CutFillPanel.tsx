@@ -5,11 +5,29 @@ import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets } from 'lucide-r
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, demandaMensual, MESES_NOMBRE, type RepresaResumen } from '@/lib/represa';
+import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
+import type { Cuenca, GrupoHidro } from '@/lib/cuenca';
 import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
 import type { DatosClima } from '@/lib/clima';
 
+// Coeficiente de escorrentía anual sugerido según grupo hidrológico del suelo
+// (A infiltra mucho → poco escurre; D casi impermeable → escurre mucho).
+const COEF_POR_GRUPO: Record<GrupoHidro, string> = { A: '0.10', B: '0.15', C: '0.22', D: '0.30' };
+
 export interface PoligonoCutFill { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
+
+// Presets de geometría del muro según el tipo de obra. La base = corona + alto×
+// (talud int + talud ext), así que los taludes mandan el ancho:
+//  · aguada/tajamar excavado → taludes suaves, corona angosta (base chica).
+//  · represa de ladera        → taludes de seguridad (más tendidos) para un
+//    terraplén que retiene varios metros; base más ancha pero estable.
+type ParamsMuroUI = { anchoCorona: number; taludInterno: number; taludExterno: number; revancha: number };
+const PRESETS_MURO: Record<'aguada' | 'ladera', ParamsMuroUI> = {
+  aguada: { anchoCorona: 1, taludInterno: 2, taludExterno: 1.5, revancha: 0.3 },
+  ladera: { anchoCorona: 3, taludInterno: 3, taludExterno: 2,   revancha: 0.5 },
+};
+type TipoMuro = keyof typeof PRESETS_MURO;
 
 interface Props {
   mojones:     Mojon[];
@@ -18,10 +36,13 @@ interface Props {
   onDibujarEspejo: () => void;
   datosClima?:   DatosClima | null;
   cuencaHa?:     number | null;   // área de la cuenca de aporte (B2), si existe
+  grupoHidro?:   GrupoHidro | null;   // grupo hidrológico del suelo (A4), si existe
   onResumenRepresa?: (r: RepresaResumen | null) => void;
+  onCuencaCalculada?: (c: Cuenca | null) => void;   // empuja la cuenca del muro al mapa/pestaña Cuenca
+  onMuroLinea?: (linea: [{ lat: number; lng: number }, { lat: number; lng: number }] | null) => void;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, datosClima = null, cuencaHa = null, onResumenRepresa }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, datosClima = null, cuencaHa = null, grupoHidro = null, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
   const [selId,    setSelId]    = useState<string>('');
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
@@ -29,11 +50,64 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   const [rango,    setRango]    = useState<{ min: number; max: number; celdas: number } | null>(null);
   const [nivel,    setNivel]    = useState<number | null>(null);
   const [res,      setRes]      = useState<ResultadoEmbalse | null>(null);
-  // Parámetros de diseño del muro (trapecio)
-  const [muroP,    setMuroP]    = useState({ anchoCorona: 3, taludInterno: 3, taludExterno: 2, revancha: 0.5 });
+  // Parámetros de diseño del muro (trapecio). Por defecto una aguada/tajamar;
+  // el selector cambia a represa de ladera (taludes de seguridad).
+  const [tipoMuro, setTipoMuro] = useState<TipoMuro>('aguada');
+  const [muroP,    setMuroP]    = useState<ParamsMuroUI>({ ...PRESETS_MURO.aguada });
   const [longMuro, setLongMuro] = useState<number | null>(null);
+  const aplicarPresetMuro = useCallback((t: TipoMuro) => { setTipoMuro(t); setMuroP({ ...PRESETS_MURO[t] }); }, []);
+  // Cuenca de aporte desde el muro (C): lado elegido + resultado.
+  const [muroIdx,      setMuroIdx]      = useState<number | null>(null);
+  const [cuencaMuro,   setCuencaMuro]   = useState<Cuenca | null>(null);
+  const [cuencaMuroLoad, setCuencaMuroLoad] = useState(false);
+  const [cuencaMuroAviso, setCuencaMuroAviso] = useState<string | null>(null);
 
   const sel = poligonos.find(p => p.id === selId) ?? null;
+
+  // Sugerir el lado más bajo del polígono como muro (donde iría la presa).
+  useEffect(() => {
+    if (!sel || sel.vertices.length < 3 || !grilla) { setMuroIdx(null); return; }
+    const vs = sel.vertices;
+    let best = -1, bestE = Infinity;
+    for (let i = 0; i < vs.length; i++) {
+      const p = puntoMasBajoEnArista(grilla, vs[i]!, vs[(i + 1) % vs.length]!);
+      if (p && p.elev < bestE) { bestE = p.elev; best = i; }
+    }
+    setMuroIdx(best >= 0 ? best : null);
+    setCuencaMuro(null); setCuencaMuroAviso(null);
+  }, [sel, grilla]);
+
+  // Dibujar el lado-muro elegido en el mapa.
+  useEffect(() => {
+    if (sel && muroIdx !== null && sel.vertices.length >= 3) {
+      const vs = sel.vertices;
+      onMuroLinea?.([vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!]);
+    } else {
+      onMuroLinea?.(null);
+    }
+  }, [sel, muroIdx, onMuroLinea]);
+
+  const calcularCuencaMuro = useCallback(async () => {
+    if (!sel || muroIdx === null || !grilla || mojones.length < 3) return;
+    const vs = sel.vertices;
+    const outlet = puntoMasBajoEnArista(grilla, vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!);
+    if (!outlet) { setCuencaMuroAviso('El lado elegido no cae sobre datos de elevación.'); return; }
+    setCuencaMuroLoad(true); setCuencaMuroAviso(null);
+    try {
+      const r = await cuencaAdaptativa({ lat: outlet.lat, lng: outlet.lng }, bboxDeMojones(mojones));
+      if (r) {
+        setCuencaMuro(r.cuenca);
+        onCuencaCalculada?.(r.cuenca);
+        if (!r.completa) setCuencaMuroAviso('La cuenca puede estar incompleta: la divisoria llega al límite del área analizada.');
+      } else {
+        setCuencaMuroAviso('No se pudo delinear la cuenca desde ese muro. Probá con otro lado.');
+      }
+    } catch {
+      setCuencaMuroAviso('Error al calcular la cuenca. Reintentá.');
+    } finally {
+      setCuencaMuroLoad(false);
+    }
+  }, [sel, muroIdx, grilla, mojones, onCuencaCalculada]);
 
   const longitud = longMuro ?? res?.ancho_max_m ?? 0;
   const muro = useMemo(() => res ? dimensionarMuro({
@@ -153,6 +227,21 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
             <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
               <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide">Muro / terraplén</p>
 
+              {/* Tipo de obra: fija los taludes/corona por defecto */}
+              <div className="flex gap-1 bg-bone-100 rounded-lg p-0.5">
+                {(['aguada', 'ladera'] as TipoMuro[]).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => aplicarPresetMuro(t)}
+                    className={`flex-1 text-[9px] font-medium py-1 rounded-md transition-colors ${
+                      tipoMuro === t ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-700/55 hover:text-ink-700'
+                    }`}
+                  >
+                    {t === 'aguada' ? 'Aguada / tajamar' : 'Represa de ladera'}
+                  </button>
+                ))}
+              </div>
+
               {/* Sección trapezoidal */}
               <svg viewBox="0 0 120 60" className="w-full h-16">
                 {/* agua */}
@@ -184,11 +273,56 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 <ParamRow label="Talud externo (H:1V)" value={muroP.taludExterno} onChange={v => setMuroP(p => ({ ...p, taludExterno: v }))} step={0.5} />
                 <ParamRow label="Revancha (m)" value={muroP.revancha} onChange={v => setMuroP(p => ({ ...p, revancha: v }))} step={0.1} />
               </div>
+
+              <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
+                <Info className="w-3 h-3 shrink-0 mt-0.5 text-ink-700/40" />
+                El ancho de base = corona + alto × (talud int. + talud ext.). Taludes más tendidos (número mayor, ej. 3 = 3&nbsp;m horizontales por metro de alto) hacen el muro más seguro pero más ancho. Para un tajamar chico alcanza «Aguada»; para retener varios metros de agua usá «Represa de ladera».
+              </p>
             </div>
           )}
 
+          {/* ── Cuenca de aporte desde el muro (C) ── */}
+          <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
+            <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide">Cuenca de aporte</p>
+            {muroIdx === null ? (
+              <p className="text-[10px] text-ink-700/55 leading-relaxed">Calculá el embalse para detectar el muro y su cuenca de aporte.</p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-ink-700/70">
+                    Muro: <b>lado {muroIdx + 1}</b>/{sel?.vertices.length} <span className="text-ink-700/45">(el más bajo)</span>
+                  </span>
+                  <button
+                    onClick={() => { setMuroIdx(i => (sel && i !== null) ? (i + 1) % sel.vertices.length : i); setCuencaMuro(null); }}
+                    className="text-[10px] text-moss-700 hover:text-moss-900 underline"
+                  >
+                    cambiar lado
+                  </button>
+                </div>
+                <button
+                  onClick={calcularCuencaMuro}
+                  disabled={cuencaMuroLoad}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#1565C0]/12 hover:bg-[#1565C0]/20 text-[#1565C0] border border-[#1565C0]/35 rounded-xl text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {cuencaMuroLoad ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Waves className="w-3.5 h-3.5" />}
+                  {cuencaMuroLoad ? 'Delineando cuenca…' : 'Calcular cuenca desde el muro'}
+                </button>
+                {cuencaMuro && (
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                    <Stat label="Área de cuenca" valor={`${cuencaMuro.area_ha} ha`} />
+                    <Stat label="Recorrido flujo" valor={`${cuencaMuro.long_flujo_m} m`} />
+                  </div>
+                )}
+                {cuencaMuroAviso && <p className="text-[10px] text-clay-700 leading-relaxed">{cuencaMuroAviso}</p>}
+                <p className="text-[9px] text-ink-700/45 leading-relaxed">
+                  La salida es el punto más bajo del muro; la cuenca sube hasta la divisoria real y se dibuja en el mapa. El área alimenta el balance de abajo.
+                </p>
+              </>
+            )}
+          </div>
+
           {/* ── Simulación anual (B3) ── */}
-          <RepresaSimSection res={res} datosClima={datosClima} cuencaHa={cuencaHa} onResumen={onResumenRepresa} />
+          <RepresaSimSection res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa} grupoHidro={grupoHidro} onResumen={onResumenRepresa} />
         </div>
       )}
     </div>
@@ -197,19 +331,20 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
 // ─── Simulación mensual del embalse (B3) ──────────────────────────────────────
 
-function RepresaSimSection({ res, datosClima, cuencaHa, onResumen }: {
-  res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null;
+function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onResumen }: {
+  res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
   onResumen?: (r: RepresaResumen | null) => void;
 }) {
-  const [coef,    setCoef]    = useState('0.15');
+  const [coef,    setCoef]    = useState(grupoHidro ? COEF_POR_GRUPO[grupoHidro] : '0.15');
   const [ha,      setHa]      = useState(cuencaHa ? String(cuencaHa) : '10');
   const [cabezas, setCabezas] = useState('40');
   const [litros,  setLitros]  = useState('45');
   const [riego,   setRiego]   = useState('0');
   const [seep,    setSeep]    = useState('3');
 
-  // Autocompleta el área de cuenca cuando llega desde B2.
+  // Autocompleta el área de cuenca (desde el muro o B2) y el coef según el suelo.
   useEffect(() => { if (cuencaHa) setHa(String(cuencaHa)); }, [cuencaHa]);
+  useEffect(() => { if (grupoHidro) setCoef(COEF_POR_GRUPO[grupoHidro]); }, [grupoHidro]);
 
   const demanda = demandaMensual(parseFloat(cabezas) || 0, parseFloat(litros) || 0, parseFloat(riego) || 0);
 
@@ -308,6 +443,8 @@ function RepresaSimSection({ res, datosClima, cuencaHa, onResumen }: {
               <div className="grid grid-cols-2 gap-1.5 text-[10px]">
                 <Stat label="Aporte anual" valor={`${sim.aporte_anual_m3.toLocaleString('es-AR')} m³`} />
                 <Stat label="Demanda anual" valor={`${sim.demanda_anual_m3.toLocaleString('es-AR')} m³`} />
+                <Stat label="Evaporación anual" valor={`${sim.meses.reduce((s, m) => s + m.evap_m3, 0).toLocaleString('es-AR')} m³`} />
+                <Stat label="Infiltración anual" valor={`${sim.meses.reduce((s, m) => s + m.infiltr_m3, 0).toLocaleString('es-AR')} m³`} />
                 <Stat label="Derrame anual" valor={`${sim.derrame_anual_m3.toLocaleString('es-AR')} m³`} />
                 <Stat label="Demanda mensual" valor={`${demanda.toLocaleString('es-AR')} m³`} />
               </div>

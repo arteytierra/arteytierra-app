@@ -286,6 +286,16 @@ export async function obtenerGrillaHidro(
   return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max };
 }
 
+/** Elevación en un punto (nodo más cercano) de una grilla ya cargada. NaN si cae fuera. */
+export function elevEnGrilla(g: GrillaElevacion, lat: number, lng: number): number {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  if (lat < latMin || lat > latMax || lng < lngMin || lng > lngMax) return NaN;
+  const r = Math.round((lat - latMin) / (latMax - latMin) * (rows - 1));
+  const c = Math.round((lng - lngMin) / (lngMax - lngMin) * (cols - 1));
+  if (r < 0 || r >= rows || c < 0 || c >= cols) return NaN;
+  return elev[r * cols + c] ?? NaN;
+}
+
 /** Grilla 10×10 a partir del shader existente (fallback offline). */
 export function grillaDesdeShader(shader: {
   celdas: Array<{ row: number; col: number; latMin: number; latMax: number; lngMin: number; lngMax: number; elevation: number }>;
