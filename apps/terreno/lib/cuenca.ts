@@ -245,6 +245,24 @@ export const COBERTURAS: Cobertura[] = [
   { id: 'urbano',          nombre: 'Superficie dura / camino',    cn: { A: 98, B: 98, C: 98, D: 98 } },
 ];
 
+// ─── Coeficiente de escorrentía ANUAL (para rendimiento del embalse) ──────────
+// Distinto del SCS-CN (que es por tormenta): acá una fracción media anual de la
+// lluvia que llega a la represa. Base por grupo hidrológico modulada por la
+// cobertura, unificando el criterio suelo+cobertura del análisis de cuenca.
+const COEF_BASE_GRUPO: Record<GrupoHidro, number> = { A: 0.08, B: 0.13, C: 0.20, D: 0.28 };
+const COEF_FACTOR_COBERTURA: Record<string, number> = {
+  monte_bueno: 0.6, monte_regular: 0.75, matorral: 0.8,
+  pastura_buena: 0.85, pastura_regular: 1.0, pastura_pobre: 1.2,
+  cultivo_bueno: 1.15, cultivo_pobre: 1.3, barbecho: 1.5, urbano: 2.2,
+};
+
+/** Coef. de escorrentía anual orientativo (0–1) según grupo hidrológico y cobertura. */
+export function coefEscorrentiaAnual(grupo: GrupoHidro, coberturaId: string): number {
+  const base = COEF_BASE_GRUPO[grupo] ?? 0.15;
+  const f = COEF_FACTOR_COBERTURA[coberturaId] ?? 1;
+  return Math.round(Math.min(0.6, Math.max(0.03, base * f)) * 100) / 100;
+}
+
 // ─── Escurrimiento y caudal pico ──────────────────────────────────────────────
 
 export interface ResultadoCuenca {

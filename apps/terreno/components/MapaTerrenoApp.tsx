@@ -56,7 +56,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { cuencaAdaptativa, bboxDeMojones } from '@/lib/cuencaHidro';
+import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -743,6 +743,36 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       setCuencaLoading(false);
     }
   }, [mojones]);
+
+  // Cuenca manual: usar un polígono dibujado como cuenca de aporte.
+  const handleUsarPoligonoCuenca = useCallback(async (vertices: Array<{ lat: number; lng: number }>) => {
+    if (vertices.length < 3) return;
+    setCuencaLoading(true); setCuencaAviso(null);
+    try {
+      const c = await cuencaManualDesdePoligono(vertices);
+      if (c) setCuenca(c);
+      else setCuencaAviso('No se pudo calcular la cuenca del polígono. Fijate que tenga relieve cargado.');
+    } catch {
+      setCuencaAviso('Hubo un error al calcular la cuenca manual. Reintentá.');
+    } finally {
+      setCuencaLoading(false);
+    }
+  }, []);
+
+  // Editar la cuenca calculada: la vuelca a un polígono editable (simplificado)
+  // y lo selecciona, para mover/agregar/borrar vértices y luego reusarlo.
+  const handleEditarCuenca = useCallback(() => {
+    if (!cuenca || cuenca.poligono.length < 3) return;
+    const id = crypto.randomUUID();
+    setDibujos(d => [...d, {
+      id, tipo: 'poligono', color: '#1565C0',
+      vertices: simplificarAnillo(cuenca.poligono, 30),
+      opacidad: 0.12, capaId: capaActivaId, nombre: 'Cuenca (editable)',
+    }]);
+    setDibujoSelId(id);
+    setModoDibujo('seleccion');
+    setTab('cuenca');
+  }, [cuenca, capaActivaId]);
 
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
@@ -2543,9 +2573,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 modoActivo={modoCuenca}
                 cargando={cuencaLoading}
                 aviso={cuencaAviso}
+                poligonos={poligonosCutFill}
                 onMarcar={() => setModoCuenca(m => !m)}
                 onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); }}
                 onIrATopo={() => setTab('topo')}
+                onUsarPoligono={handleUsarPoligonoCuenca}
+                onEditarCuenca={handleEditarCuenca}
               />
             </div>
           )}

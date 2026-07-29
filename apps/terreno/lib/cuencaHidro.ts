@@ -442,6 +442,126 @@ export function puntoMasBajoEnArista(
   return best;
 }
 
+// ─── Cuenca manual / editable (A2) ────────────────────────────────────────────
+
+function pipLatLng(lat: number, lng: number, poly: Array<{ lat: number; lng: number }>): boolean {
+  let dentro = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i]!.lng, yi = poly[i]!.lat, xj = poly[j]!.lng, yj = poly[j]!.lat;
+    if (((yi > lat) !== (yj > lat)) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+function areaPoligonoM2(poly: Array<{ lat: number; lng: number }>, latMid: number): number {
+  const kx = 111320 * Math.cos(latMid * Math.PI / 180), ky = 111320;
+  let s = 0;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    s += poly[j]!.lng * kx * (poly[i]!.lat * ky) - poly[i]!.lng * kx * (poly[j]!.lat * ky);
+  }
+  return Math.abs(s) / 2;
+}
+
+/**
+ * Construye una `Cuenca` a partir de un polígono dibujado a mano, usando la
+ * grilla para las cotas. El área sale del polígono (shoelace); la salida es el
+ * punto interno de menor cota; la longitud, el eje mayor. Sin flujo D8 —es una
+ * cuenca "declarada" por quien sabe leer la topografía.
+ */
+export function cuencaDesdePoligono(g: GrillaElevacion, poligono: Array<{ lat: number; lng: number }>): Cuenca | null {
+  if (poligono.length < 3) return null;
+  const latMid = poligono.reduce((s, p) => s + p.lat, 0) / poligono.length;
+  const area_m2 = areaPoligonoM2(poligono, latMid);
+  if (area_m2 <= 0) return null;
+
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  let elevMin = Infinity, elevMax = -Infinity, outLat = poligono[0]!.lat, outLng = poligono[0]!.lng;
+  for (let r = 0; r < rows; r++) {
+    const lat = latMin + (r / (rows - 1)) * (latMax - latMin);
+    for (let c = 0; c < cols; c++) {
+      const e = elev[r * cols + c]!;
+      if (Number.isNaN(e)) continue;
+      const lng = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
+      if (!pipLatLng(lat, lng, poligono)) continue;
+      if (e < elevMin) { elevMin = e; outLat = lat; outLng = lng; }
+      if (e > elevMax) elevMax = e;
+    }
+  }
+  if (!Number.isFinite(elevMin)) {
+    // Polígono más chico que un paso de grilla: usar las cotas de los vértices.
+    for (const p of poligono) {
+      const e = elevEnGrilla(g, p.lat, p.lng);
+      if (Number.isNaN(e)) continue;
+      if (e < elevMin) { elevMin = e; outLat = p.lat; outLng = p.lng; }
+      if (e > elevMax) elevMax = e;
+    }
+  }
+  if (!Number.isFinite(elevMin)) { elevMin = 0; elevMax = 0.1; }
+
+  const kx = 111320 * Math.cos(latMid * Math.PI / 180), ky = 111320;
+  let L = 0;
+  for (let i = 0; i < poligono.length; i++) {
+    for (let j = i + 1; j < poligono.length; j++) {
+      const dx = (poligono[j]!.lng - poligono[i]!.lng) * kx, dy = (poligono[j]!.lat - poligono[i]!.lat) * ky;
+      const d = Math.hypot(dx, dy);
+      if (d > L) L = d;
+    }
+  }
+  L = Math.max(L, Math.sqrt(area_m2));
+  const desnivel = Math.max(0.1, elevMax - elevMin);
+
+  return {
+    celdas:        [],
+    poligono:      poligono.map(p => ({ lat: p.lat, lng: p.lng })),
+    area_m2,
+    area_ha:       Math.round(area_m2 / 1e4 * 100) / 100,
+    area_km2:      area_m2 / 1e6,
+    long_flujo_m:  Math.round(L),
+    pendiente_m_m: L > 0 ? desnivel / L : 0.01,
+    elev_salida:   Math.round(elevMin),
+    elev_max:      Math.round(elevMax),
+    outlet:        { lat: outLat, lng: outLng },
+  };
+}
+
+/** Trae la grilla de cotas del bbox del polígono y construye la cuenca manual. */
+export async function cuencaManualDesdePoligono(poligono: Array<{ lat: number; lng: number }>): Promise<Cuenca | null> {
+  if (poligono.length < 3) return null;
+  const bbox = conMargen(bboxDeMojones(poligono), 0.05);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return null;
+  return cuencaDesdePoligono(g, poligono);
+}
+
+/** Simplifica un anillo (Douglas-Peucker en metros) para poder editarlo a mano. */
+export function simplificarAnillo(ring: Array<{ lat: number; lng: number }>, tolMetros = 25): Array<{ lat: number; lng: number }> {
+  if (ring.length <= 4) return ring.map(p => ({ lat: p.lat, lng: p.lng }));
+  const latMid = ring.reduce((s, p) => s + p.lat, 0) / ring.length;
+  const kx = 111320 * Math.cos(latMid * Math.PI / 180), ky = 111320;
+  const P = ring.map(p => ({ x: p.lng * kx, y: p.lat * ky }));
+  const n = P.length;
+  const keep = new Array<boolean>(n).fill(false);
+  keep[0] = keep[n - 1] = true;
+  const distSeg = (i: number, a: number, b: number): number => {
+    const ax = P[a]!.x, ay = P[a]!.y, bx = P[b]!.x, by = P[b]!.y, px = P[i]!.x, py = P[i]!.y;
+    const dx = bx - ax, dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) return Math.hypot(px - ax, py - ay);
+    let t = ((px - ax) * dx + (py - ay) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+  };
+  const stack: Array<[number, number]> = [[0, n - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop()!;
+    let idx = -1, maxD = tolMetros;
+    for (let i = a + 1; i < b; i++) { const d = distSeg(i, a, b); if (d > maxD) { maxD = d; idx = i; } }
+    if (idx >= 0) { keep[idx] = true; stack.push([a, idx], [idx, b]); }
+  }
+  const out = ring.filter((_, i) => keep[i]).map(p => ({ lat: p.lat, lng: p.lng }));
+  return out.length >= 3 ? out : ring.map(p => ({ lat: p.lat, lng: p.lng }));
+}
+
 export async function cuencaAdaptativa(
   outlet:  { lat: number; lng: number },
   predio:  BBox,

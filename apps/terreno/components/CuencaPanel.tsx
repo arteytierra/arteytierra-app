@@ -8,10 +8,12 @@
  * vertedero.
  */
 import { useMemo, useState, useEffect } from 'react';
-import { Waves, MousePointerClick, Trash2, TriangleAlert } from 'lucide-react';
+import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil } from 'lucide-react';
 import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro,
 } from '@/lib/cuenca';
+
+interface PoligonoOpcion { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
 interface Props {
   tieneShader: boolean;
@@ -21,13 +23,17 @@ interface Props {
   modoActivo:  boolean;
   cargando?:   boolean;             // delineación adaptativa en curso
   aviso?:      string | null;       // cuenca incompleta / sin resultado
+  poligonos?:  PoligonoOpcion[];    // polígonos dibujados, para usar como cuenca manual
   onMarcar:    () => void;
   onLimpiar:   () => void;
   onIrATopo:   () => void;
+  onUsarPoligono?: (vertices: Array<{ lat: number; lng: number }>) => void;
+  onEditarCuenca?: () => void;      // materializa la cuenca calculada en un polígono editable
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, onMarcar, onLimpiar, onIrATopo }: Props) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca }: Props) {
   const [coberturaId, setCoberturaId] = useState('pastura_regular');
+  const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
   const [precip, setPrecip]   = useState(precipT10 ? String(precipT10) : '75');
   const [head, setHead]       = useState('0.3');
@@ -89,6 +95,48 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
               </button>
             )}
           </div>
+
+          {/* Cuenca a mano / editar la calculada (A2) */}
+          {(onUsarPoligono || onEditarCuenca) && (
+            <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
+              <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1">
+                <PenLine className="w-3 h-3" /> A mano
+              </p>
+              {onUsarPoligono && (
+                poligonos.length === 0 ? (
+                  <p className="text-[10px] text-ink-700/55 leading-relaxed">
+                    Dibujá un polígono con la herramienta de dibujo (o editá la calculada) y elegilo acá para usarlo como cuenca.
+                  </p>
+                ) : (
+                  <>
+                    <select
+                      value={selManual}
+                      onChange={e => setSelManual(e.target.value)}
+                      className="w-full text-xs bg-white border border-bone-200 rounded-lg px-2 py-1.5 text-ink-900 focus:outline-none focus:border-moss-500"
+                    >
+                      <option value="">Elegí un polígono dibujado…</option>
+                      {poligonos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                    </select>
+                    <button
+                      onClick={() => { const p = poligonos.find(x => x.id === selManual); if (p) onUsarPoligono(p.vertices); }}
+                      disabled={!selManual || cargando}
+                      className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-moss-700 hover:bg-moss-900 disabled:opacity-40 text-bone-50 transition-colors"
+                    >
+                      <Waves className="w-3.5 h-3.5" /> Usar como cuenca de aporte
+                    </button>
+                  </>
+                )
+              )}
+              {cuenca && onEditarCuenca && (
+                <button
+                  onClick={onEditarCuenca}
+                  className="w-full flex items-center justify-center gap-1.5 text-[10px] text-moss-700 hover:text-moss-900 py-1"
+                >
+                  <Pencil className="w-3 h-3" /> Editar la cuenca calculada (pasa a polígono editable)
+                </button>
+              )}
+            </div>
+          )}
 
           {cuenca && (
             <>

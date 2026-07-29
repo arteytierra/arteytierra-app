@@ -6,14 +6,12 @@ import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/l
 import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, demandaMensual, MESES_NOMBRE, type RepresaResumen } from '@/lib/represa';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
+import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
 import type { Cuenca, GrupoHidro } from '@/lib/cuenca';
 import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
 import type { DatosClima } from '@/lib/clima';
 
-// Coeficiente de escorrentía anual sugerido según grupo hidrológico del suelo
-// (A infiltra mucho → poco escurre; D casi impermeable → escurre mucho).
-const COEF_POR_GRUPO: Record<GrupoHidro, string> = { A: '0.10', B: '0.15', C: '0.22', D: '0.30' };
 
 export interface PoligonoCutFill { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -335,16 +333,17 @@ function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onRes
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
   onResumen?: (r: RepresaResumen | null) => void;
 }) {
-  const [coef,    setCoef]    = useState(grupoHidro ? COEF_POR_GRUPO[grupoHidro] : '0.15');
+  const [cobertura, setCobertura] = useState('pastura_regular');
+  const [coef,    setCoef]    = useState(String(coefEscorrentiaAnual(grupoHidro ?? 'B', 'pastura_regular')));
   const [ha,      setHa]      = useState(cuencaHa ? String(cuencaHa) : '10');
   const [cabezas, setCabezas] = useState('40');
   const [litros,  setLitros]  = useState('45');
   const [riego,   setRiego]   = useState('0');
   const [seep,    setSeep]    = useState('3');
 
-  // Autocompleta el área de cuenca (desde el muro o B2) y el coef según el suelo.
+  // Autocompleta el área de cuenca (desde el muro o B2) y el coef según suelo+cobertura.
   useEffect(() => { if (cuencaHa) setHa(String(cuencaHa)); }, [cuencaHa]);
-  useEffect(() => { if (grupoHidro) setCoef(COEF_POR_GRUPO[grupoHidro]); }, [grupoHidro]);
+  useEffect(() => { setCoef(String(coefEscorrentiaAnual(grupoHidro ?? 'B', cobertura))); }, [grupoHidro, cobertura]);
 
   const demanda = demandaMensual(parseFloat(cabezas) || 0, parseFloat(litros) || 0, parseFloat(riego) || 0);
 
@@ -387,6 +386,17 @@ function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onRes
         </p>
       ) : (
         <>
+          <div className="flex items-center justify-between gap-2 bg-bone-50 rounded-lg px-2 py-1.5">
+            <span className="text-[10px] text-ink-700/60 shrink-0">Cobertura de la cuenca</span>
+            <select
+              value={cobertura}
+              onChange={e => setCobertura(e.target.value)}
+              className="text-[10px] bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500"
+            >
+              {COBERTURAS.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-1.5 bg-bone-50 rounded-lg p-2">
             <ParamRow label="Cuenca aporte (ha)" value={parseFloat(ha) || 0} onChange={v => setHa(String(v))} step={1} />
             <ParamRow label="Coef. escorrentía" value={parseFloat(coef) || 0} onChange={v => setCoef(String(v))} step={0.05} />
