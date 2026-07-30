@@ -26,6 +26,7 @@ import { SolarPanel } from './SolarPanel';
 import { ZonificacionPanel } from './ZonificacionPanel';
 import { SectoresPanel } from './SectoresPanel';
 import { AguadasPanel } from './AguadasPanel';
+import { SitiosRepresaPanel } from './SitiosRepresaPanel';
 import { CaminosPanel } from './CaminosPanel';
 import { RedAguaPanel } from './RedAguaPanel';
 import { PastoreoPanel } from './PastoreoPanel';
@@ -1725,6 +1726,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setPinEditId(null);
   }, []);
 
+  // Ubicar un sitio de represa sugerido: vuela al punto y deja un pin (sin salir del tab).
+  const handleUbicarSitio = useCallback((lat: number, lng: number, nombre: string) => {
+    flyToRef.current?.(lat, lng);
+    setPines(prev => [...prev, { id: crypto.randomUUID(), lat, lng, nombre, icono: '💧', color: '#1565C0', notas: 'Sitio sugerido de represa' }]);
+  }, []);
+
   const handleAgregarCaminoSugerencia = useCallback((vertices: Array<{lat: number; lng: number}>, nombre: string, color: string) => {
     const c = crearCamino(vertices);
     setCaminos(prev => [...prev, { ...c, nombre, color }]);
@@ -2513,7 +2520,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4 space-y-4">
-              <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
+              <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
+              <div className="border-t border-bone-200 pt-4">
+                <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
+              </div>
               <div className="border-t border-bone-200 pt-4">
                 <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
               </div>

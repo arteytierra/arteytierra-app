@@ -650,3 +650,156 @@ export async function cuencaAdaptativa(
   const cuenca = construirCuenca(ultimo.set, grillaUlt, ultimo.fd, ultimo.outlet);
   return { cuenca, completa: !ultimo.toca, iteraciones: iter + 1 };
 }
+
+// ─── 6. Sugerencia de sitios de represa por eficiencia (agua ÷ muro) ───────────
+
+export interface SitioRepresa {
+  lat: number; lng: number;
+  elev: number;             // cota del cauce (base del muro)
+  altura_m: number;         // nivel de agua sobre el cauce
+  volumen_agua_m3: number;  // embalse aguas-arriba del muro
+  area_ha: number;          // espejo inundado
+  ancho_muro_m: number;     // ancho del cierre (cuello de botella)
+  volumen_muro_m3: number;  // terraplén
+  eficiencia: number;       // agua ÷ muro
+}
+
+/**
+ * Busca los mejores emplazamientos de represa sobre una grilla: recorre las
+ * celdas de cauce (alta acumulación) y en cada una simula un muro a varias
+ * alturas, estimando el agua embalsada aguas-arriba (pool bajo el nivel) y el
+ * volumen de muro para cerrar el ancho del valle a esa cota. Rankea por
+ * eficiencia agua/muro → prioriza los cuellos de botella (poco muro, mucha agua).
+ */
+export function buscarSitiosRepresa(
+  g: GrillaElevacion,
+  opts?: { alturas?: number[]; minAgua?: number; max?: number; sepMetros?: number; clip?: Array<{ lat: number; lng: number }> },
+): SitioRepresa[] {
+  const { rows, cols, latMin, latMax, lngMin, lngMax } = g;
+  const n = rows * cols;
+  const filled = rellenarDepresiones(g);
+  const fd = direccionFlujo(g, filled);
+  const acum = acumular(g, filled, fd);
+  const { dx, dy, areaCelda } = dimsCelda(g);
+  const cellAvg = (dx + dy) / 2;
+  const dLat = (latMax - latMin) / (rows - 1), dLng = (lngMax - lngMin) / (cols - 1);
+
+  const alturas  = opts?.alturas  ?? [3, 5, 8];
+  const minAgua  = opts?.minAgua  ?? 1000;
+  const maxSitios = opts?.max     ?? 6;
+  const sepM     = opts?.sepMetros ?? 150;
+  const clip     = opts?.clip;
+
+  // Geometría de muro por defecto (represa de ladera).
+  const CORONA = 3, T1 = 3, T2 = 2, REV = 0.5;
+  const volMuroDe = (H: number, ancho: number) => {
+    const alto = H + REV;
+    const base = CORONA + alto * (T1 + T2);
+    return ((CORONA + base) / 2) * alto * ancho;
+  };
+
+  const cellLat = (i: number) => latMin + ((i / cols) | 0) * dLat;
+  const cellLng = (i: number) => lngMin + (i % cols) * dLng;
+
+  // Umbral de cauce e inflow (adyacencia inversa).
+  let maxA = 0;
+  for (let i = 0; i < n; i++) if (acum[i]! > maxA) maxA = acum[i]!;
+  const umbral = Math.max(10, maxA * 0.03);
+  const inflow: number[][] = new Array(n);
+  for (let i = 0; i < n; i++) { const t = fd[i]!; if (t >= 0) (inflow[t] ?? (inflow[t] = [])).push(i); }
+
+  // Candidatos = celdas de cauce (dentro del clip), acotados a los de mayor acumulación.
+  let candidatos: number[] = [];
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(filled[i]!) || acum[i]! < umbral || fd[i]! < 0) continue;
+    if (clip && !pipLatLng(cellLat(i), cellLng(i), clip)) continue;
+    candidatos.push(i);
+  }
+  if (candidatos.length > 400) candidatos = candidatos.sort((a, b) => acum[b]! - acum[a]!).slice(0, 400);
+
+  // Sello de visitados reutilizable (evita alocar un Set por candidato).
+  const stamp = new Int32Array(n);
+  let gen = 0;
+
+  const sitios: SitioRepresa[] = [];
+  for (const d of candidatos) {
+    const t = fd[d]!;
+    const dr = ((t / cols) | 0) - ((d / cols) | 0), dc = (t % cols) - (d % cols);
+    const pr = -dc, pc = dr;   // perpendicular al flujo (eje del muro)
+    const baseElev = filled[d]!;
+
+    let best: SitioRepresa | null = null;
+    for (const H of alturas) {
+      const L = baseElev + H;
+      // Pool aguas-arriba: BFS por adyacencia inversa, celdas con cota < L.
+      gen++;
+      let vol = (L - baseElev) * areaCelda, celdas = 1;
+      stamp[d] = gen;
+      const stack = [d];
+      while (stack.length) {
+        const cur = stack.pop()!;
+        const ups = inflow[cur];
+        if (!ups) continue;
+        for (const u of ups) {
+          if (stamp[u] === gen) continue;
+          const e = filled[u]!;
+          if (Number.isNaN(e) || e >= L) continue;
+          stamp[u] = gen;
+          vol += (L - e) * areaCelda; celdas++;
+          if (celdas < 40000) stack.push(u);
+        }
+      }
+      if (vol < minAgua) continue;
+
+      // Ancho del cierre: caminar perpendicular desde d mientras la cota < L.
+      let ancho = 1;
+      for (const sign of [1, -1]) {
+        let rr = (d / cols) | 0, cc = d % cols;
+        for (let s = 0; s < 80; s++) {
+          rr += pr * sign; cc += pc * sign;
+          if (rr < 0 || cc < 0 || rr >= rows || cc >= cols) break;
+          const e = filled[rr * cols + cc]!;
+          if (Number.isNaN(e) || e >= L) break;
+          ancho++;
+        }
+      }
+      const anchoM = ancho * cellAvg;
+      const volMuro = volMuroDe(H, anchoM);
+      const efic = volMuro > 0 ? vol / volMuro : 0;
+      if (!best || efic > best.eficiencia) {
+        best = {
+          lat: cellLat(d), lng: cellLng(d), elev: Math.round(baseElev),
+          altura_m: H,
+          volumen_agua_m3: Math.round(vol),
+          area_ha: Math.round(celdas * areaCelda / 1e4 * 100) / 100,
+          ancho_muro_m: Math.round(anchoM),
+          volumen_muro_m3: Math.round(volMuro),
+          eficiencia: Math.round(efic * 10) / 10,
+        };
+      }
+    }
+    if (best) sitios.push(best);
+  }
+
+  // Rankear por eficiencia y quedarse con los mejores bien separados entre sí.
+  sitios.sort((a, b) => b.eficiencia - a.eficiencia);
+  const kx = 111320 * Math.cos((latMin + latMax) / 2 * Math.PI / 180), ky = 111320;
+  const elegidos: SitioRepresa[] = [];
+  for (const s of sitios) {
+    if (elegidos.length >= maxSitios) break;
+    const lejos = elegidos.every(e => Math.hypot((s.lng - e.lng) * kx, (s.lat - e.lat) * ky) > sepM);
+    if (lejos) elegidos.push(s);
+  }
+  return elegidos;
+}
+
+/** Trae la grilla del predio y sugiere los mejores sitios de represa. */
+export async function sugerirSitiosRepresa(
+  predio: BBox,
+  clip?: Array<{ lat: number; lng: number }>,
+): Promise<SitioRepresa[]> {
+  const bbox = conMargen(predio, 0.1);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return [];
+  return buscarSitiosRepresa(g, { clip });
+}
