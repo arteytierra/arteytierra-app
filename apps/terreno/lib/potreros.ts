@@ -9,7 +9,8 @@
  * esquema de planificación, no un amojonamiento.
  */
 import * as turf from '@turf/turf';
-import type { Mojon } from './types';
+
+type Vertice = { lat: number; lng: number };
 
 export interface Potrero {
   id:       number;
@@ -84,7 +85,7 @@ function anillo(feat: Poly): Array<{ lat: number; lng: number }> | null {
  * repartidos, cada uno con `radioBebedero` metros de cobertura.
  */
 export function subdividirPotreros(
-  mojones: Mojon[],
+  mojones: Vertice[],
   nObjetivo: number,
   nBebederos = 1,
   radioBebedero = 300,

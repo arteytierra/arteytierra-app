@@ -8,7 +8,7 @@ import {
   Layers, Sun, LayoutGrid, Compass, Waves, Route,
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
-  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Beef, Sprout, Trees, Bird, SunDim,
+  Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
@@ -27,6 +27,7 @@ import { ZonificacionPanel } from './ZonificacionPanel';
 import { SectoresPanel } from './SectoresPanel';
 import { AguadasPanel } from './AguadasPanel';
 import { SitiosRepresaPanel } from './SitiosRepresaPanel';
+import { AnalisisRelievePanel } from './AnalisisRelievePanel';
 import { CaminosPanel } from './CaminosPanel';
 import { RedAguaPanel } from './RedAguaPanel';
 import { PastoreoPanel } from './PastoreoPanel';
@@ -57,7 +58,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve } from '@/lib/cuencaHidro';
+import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -1761,6 +1762,35 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setTab('caminos');
   }, []);
 
+  // Análisis topográfico integral: vuelca al plano represas + viviendas + caminos por cresta + cruces.
+  const handleAplicarAnalisisIntegral = useCallback((res: AnalisisTopoIntegral) => {
+    const nuevosPines = [
+      { id: crypto.randomUUID(), lat: res.entrada.lat, lng: res.entrada.lng, nombre: 'Acceso', icono: '🚪', color: '#6D4C41', notas: 'Punto de entrada sugerido (cota más baja del contorno)' },
+      ...res.represas.map((s, i) => ({ id: crypto.randomUUID(), lat: s.lat, lng: s.lng, nombre: `Represa ${i + 1} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0', notas: `Sitio sugerido — agua ${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³, muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³` })),
+      ...res.viviendas.map((v, i) => ({ id: crypto.randomUUID(), lat: v.lat, lng: v.lng, nombre: `Vivienda ${i + 1} (${v.score}%)`, icono: '🏠', color: '#2E7D32', notas: v.motivos.join(', ') })),
+      ...res.caminos.flatMap(c => c.camino.cruces.map(cr => ({ id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng, nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo', icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41', notas: `Cruce de vertiente (${cr.tipo}) — ${c.nombre}` }))),
+    ];
+    setPines(prev => [...prev, ...nuevosPines]);
+    const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m }; });
+    setCaminos(prev => [...prev, ...nuevosCaminos]);
+    flyToRef.current?.(res.entrada.lat, res.entrada.lng);
+  }, []);
+
+  // Caminos de acceso/servicio a los bebederos de los potreros, por lomas.
+  const handleCaminosAccesoPotreros = useCallback(async (layout: PotrerosLayout): Promise<{ ok: boolean; msg: string }> => {
+    if (mojones.length < 3) return { ok: false, msg: 'Cargá el terreno primero.' };
+    const destinos = layout.bebederos.map(b => ({ lat: b.lat, lng: b.lng }));
+    if (destinos.length === 0) return { ok: false, msg: 'No hay bebederos que conectar.' };
+    const r = await sugerirCaminosAcceso(mojones, destinos);
+    if (!r || r.caminos.length === 0) return { ok: false, msg: 'No se pudieron trazar los caminos (relieve insuficiente).' };
+    const nuevosCaminos = r.caminos.map((c, i) => { const cam = crearCamino(c.vertices); return { ...cam, nombre: `Acceso bebedero ${i + 1}`, color: '#8B4513', longitud_m: c.longitud_m }; });
+    setCaminos(prev => [...prev, ...nuevosCaminos]);
+    const cruces = r.caminos.flatMap((c, i) => c.cruces.map(cr => ({ id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng, nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo', icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41', notas: `Cruce de vertiente (${cr.tipo}) — acceso bebedero ${i + 1}` })));
+    if (cruces.length) setPines(prev => [...prev, ...cruces]);
+    const totalKm = r.caminos.reduce((s, c) => s + c.longitud_m, 0);
+    return { ok: true, msg: `${r.caminos.length} camino(s) por lomas · ${(totalKm / 1000).toFixed(2)} km en total${cruces.length ? ` · ${cruces.length} cruce(s) marcados` : ''}. Se guardaron en Caminos.` };
+  }, [mojones]);
+
   // ─── Master Plan: generar y convertir ─────────────────────────────────────
   const handleGenerarMasterPlan = useCallback(() => {
     if (!datosShader || !datosEscorrentia) {
@@ -2033,7 +2063,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     { id: 'caminos'   as Tab, label: 'Caminos',  icon: <Route      className="w-3.5 h-3.5" /> },
     { id: 'red'       as Tab, label: 'Red agua', icon: <Spline     className="w-3.5 h-3.5" /> },
     { id: 'cuenca'    as Tab, label: 'Cuenca',   icon: <Waves      className="w-3.5 h-3.5" /> },
-    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <Beef       className="w-3.5 h-3.5" /> },
+    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <span className="text-[13px] leading-none">🐄</span> },
     { id: 'riego'     as Tab, label: 'Riego',    icon: <Sprout     className="w-3.5 h-3.5" /> },
     { id: 'keyline'   as Tab, label: 'Keyline',  icon: <Waypoints  className="w-3.5 h-3.5" /> },
     { id: 'economia'  as Tab, label: 'Economía', icon: <DollarSign className="w-3.5 h-3.5" /> },
@@ -2543,7 +2573,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4 space-y-4">
-              <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
+              <AnalisisRelievePanel mojones={mojones} onAplicar={handleAplicarAnalisisIntegral} />
+              <div className="border-t border-bone-200 pt-4">
+                <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
+              </div>
               <div className="border-t border-bone-200 pt-4">
                 <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
               </div>
@@ -2580,7 +2613,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'pastoreo' && (
             <div className="px-4 py-4">
-              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
+              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} parcelas={poligonosCutFill} onCaminosAcceso={handleCaminosAccesoPotreros} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
             </div>
           )}
           {tab === 'riego' && (

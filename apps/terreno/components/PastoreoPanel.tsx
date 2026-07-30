@@ -6,11 +6,13 @@
  * y la infraestructura (alambrado, postes, bebederos).
  */
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { Beef, TriangleAlert, Fence, Droplet, Grid3x3, Eraser } from 'lucide-react';
+import { TriangleAlert, Fence, Droplet, Grid3x3, Eraser, Route, Loader2 } from 'lucide-react';
 import { calcularPastoreo, forrajePorLluvia, DESCANSO_DEFAULT, type ResultadoPastoreo, type PastoreoInputs } from '@/lib/pastoreo';
 import { subdividirPotreros, type PotrerosLayout } from '@/lib/potreros';
 import type { DatosClima } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
+
+interface AreaSubdividible { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
 interface Props {
   areaHa:     number;
@@ -19,13 +21,17 @@ interface Props {
   tieneDibujo?: boolean;
   onDibujar?: (layout: PotrerosLayout | null) => void;
   onIrAClima: () => void;
+  /** Polígonos ya dibujados (parcelas/zonas/sectores) para subdividir en vez de todo el predio. */
+  parcelas?:  AreaSubdividible[];
+  /** Traza caminos de acceso/servicio a los bebederos por lomas. Devuelve un aviso. */
+  onCaminosAcceso?: (layout: PotrerosLayout) => Promise<{ ok: boolean; msg: string }>;
   /** Campos cargados antes: al cambiar de pestaña el panel se desmonta, así
    *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
   inicial?:   PastoreoInputs | null;
   onInputs?:  (i: PastoreoInputs) => void;
 }
 
-export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = false, onDibujar, onIrAClima, inicial, onInputs }: Props) {
+export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = false, onDibujar, onIrAClima, parcelas = [], onCaminosAcceso, inicial, onInputs }: Props) {
   const forrajeSugerido = datosClima ? forrajePorLluvia(datosClima.precip_anual_mm) : 3000;
 
   const [area,    setArea]    = useState(inicial?.area ?? (areaHa > 0 ? Math.round(areaHa * 10) / 10 : 50));
@@ -35,6 +41,12 @@ export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = 
   const [forraje, setForraje] = useState(inicial?.forraje ?? forrajeSugerido);
   const [efic,    setEfic]    = useState(inicial?.efic ?? 50);
   const [ocup,    setOcup]    = useState(inicial?.ocup ?? 3);
+
+  // Fase 4: área a subdividir (todo el predio o una parcela dibujada) + caminos de acceso.
+  const [areaSel,      setAreaSel]      = useState<string>('predio');
+  const [ultimoLayout, setUltimoLayout] = useState<PotrerosLayout | null>(null);
+  const [trazando,     setTrazando]     = useState(false);
+  const [caminosMsg,   setCaminosMsg]   = useState<{ ok: boolean; msg: string } | null>(null);
 
   // Los autocompletados (área desde el predio, forraje desde la lluvia) sólo
   // corren en un panel nuevo; con datos guardados mandan ellos y no se pisan.
@@ -113,26 +125,70 @@ export function PastoreoPanel({ areaHa, datosClima, mojones = [], tieneDibujo = 
 
           {/* Dibujar sobre el mapa */}
           {onDibujar && mojones.length >= 3 && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => onDibujar(subdividirPotreros(mojones, res.n_potreros, res.bebederos, 300))}
-                className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-medium bg-moss-700 text-bone-50 rounded-lg px-3 py-2 hover:bg-moss-800 transition-colors">
-                <Grid3x3 className="w-3.5 h-3.5" />
-                {tieneDibujo ? 'Redibujar potreros' : 'Dibujar potreros en el mapa'}
-              </button>
-              {tieneDibujo && (
+            <div className="space-y-2">
+              {/* Selector de área a subdividir */}
+              {parcelas.length > 0 && (
+                <label className="block">
+                  <span className="text-[10px] text-ink-700/60 block mb-0.5">Área a subdividir</span>
+                  <select
+                    value={areaSel}
+                    onChange={e => setAreaSel(e.target.value)}
+                    className="w-full text-[11px] rounded-lg border border-bone-200 px-2 py-1.5 bg-white cursor-pointer">
+                    <option value="predio">Todo el predio</option>
+                    {parcelas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                  </select>
+                </label>
+              )}
+
+              <div className="flex gap-2">
                 <button
-                  onClick={() => onDibujar(null)}
-                  className="flex items-center justify-center gap-1 text-[11px] text-clay-700 bg-clay-100 border border-clay-200 rounded-lg px-3 py-2 hover:bg-clay-200 transition-colors">
-                  <Eraser className="w-3.5 h-3.5" />
+                  onClick={() => {
+                    const sel = areaSel === 'predio' ? null : parcelas.find(p => p.id === areaSel);
+                    const verts = sel ? sel.vertices : mojones;
+                    const layout = subdividirPotreros(verts, res.n_potreros, res.bebederos, 300);
+                    setUltimoLayout(layout);
+                    setCaminosMsg(null);
+                    onDibujar(layout);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-medium bg-moss-700 text-bone-50 rounded-lg px-3 py-2 hover:bg-moss-800 transition-colors">
+                  <Grid3x3 className="w-3.5 h-3.5" />
+                  {tieneDibujo ? 'Redibujar potreros' : 'Dibujar potreros en el mapa'}
+                </button>
+                {tieneDibujo && (
+                  <button
+                    onClick={() => { onDibujar(null); setUltimoLayout(null); setCaminosMsg(null); }}
+                    className="flex items-center justify-center gap-1 text-[11px] text-clay-700 bg-clay-100 border border-clay-200 rounded-lg px-3 py-2 hover:bg-clay-200 transition-colors">
+                    <Eraser className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <p className="text-[9px] text-ink-700/50 leading-relaxed">
+                Divide {areaSel === 'predio' ? 'el predio' : 'la parcela elegida'} en {res.n_potreros} parcelas de área ~igual y ubica los bebederos con su radio de cobertura (300 m). Esquema orientativo.
+              </p>
+
+              {/* Caminos de acceso / servicio por lomas */}
+              {onCaminosAcceso && tieneDibujo && ultimoLayout && (
+                <button
+                  onClick={async () => {
+                    if (trazando) return;
+                    setTrazando(true); setCaminosMsg(null);
+                    try { setCaminosMsg(await onCaminosAcceso(ultimoLayout)); }
+                    catch { setCaminosMsg({ ok: false, msg: 'Error al trazar los caminos.' }); }
+                    finally { setTrazando(false); }
+                  }}
+                  disabled={trazando}
+                  className="w-full flex items-center justify-center gap-1.5 text-[11px] font-medium bg-orange-700 text-white rounded-lg px-3 py-2 hover:bg-orange-900 disabled:opacity-50 transition-colors">
+                  {trazando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Route className="w-3.5 h-3.5" />}
+                  {trazando ? 'Trazando caminos…' : 'Trazar caminos de acceso (por lomas)'}
                 </button>
               )}
+              {caminosMsg && (
+                <p className={`text-[10px] leading-tight rounded-lg px-2 py-1.5 ${caminosMsg.ok ? 'bg-moss-50 text-moss-800 border border-moss-200' : 'bg-clay-50 text-clay-700 border border-clay-200'}`}>
+                  {caminosMsg.msg}
+                </p>
+              )}
             </div>
-          )}
-          {onDibujar && mojones.length >= 3 && (
-            <p className="text-[9px] text-ink-700/50 leading-relaxed -mt-2">
-              Divide el predio en {res.n_potreros} parcelas de área ~igual y ubica los bebederos con su radio de cobertura (300 m). Esquema orientativo de planificación.
-            </p>
           )}
 
           {/* Advertencias */}
@@ -182,10 +238,13 @@ function Stat({ label, value, sub, color, icon }: {
     color === 'rojo' ? 'bg-clay-100 border-clay-200 text-clay-700' :
     color === 'moss' ? 'bg-moss-700 border-moss-700 text-bone-50' :
     'bg-white border-bone-200 text-ink-900';
-  const Ico = icon === 'fence' ? Fence : icon === 'water' ? Droplet : Beef;
+  const Ico = icon === 'fence' ? Fence : icon === 'water' ? Droplet : null;
   return (
     <div className={`rounded-xl border p-2.5 ${cls}`}>
-      <p className="text-[10px] opacity-70 mb-0.5 flex items-center gap-1"><Ico className="w-2.5 h-2.5" />{label}</p>
+      <p className="text-[10px] opacity-70 mb-0.5 flex items-center gap-1">
+        {Ico ? <Ico className="w-2.5 h-2.5" /> : <span className="text-[10px] leading-none">🐄</span>}
+        {label}
+      </p>
       <p className="font-mono text-sm font-bold leading-tight">{value}</p>
       {sub && <p className="text-[9px] opacity-70 mt-0.5">{sub}</p>}
     </div>

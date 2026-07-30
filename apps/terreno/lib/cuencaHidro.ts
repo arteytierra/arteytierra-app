@@ -1015,6 +1015,9 @@ export function trazarCaminoRelieve(
   });
 
   // Métricas + detección de cruces de cauce.
+  const ky0 = 111_320, kx0 = 111_320 * Math.cos((g.latMin + g.latMax) / 2 * Math.PI / 180);
+  const cellAvg = (dLat * ky0 + dLng * kx0) / 2;
+  const dedupM = Math.max(120, 2.5 * cellAvg);   // fusiona cruces del mismo cauce
   let longitud = 0, pendSum = 0, pendMaxReal = 0, enCresta = 0;
   const cruces: CruceDrenaje[] = [];
   const ridgeUmbral = ridgeMax * 0.15;
@@ -1034,8 +1037,7 @@ export function trazarCaminoRelieve(
       if (acum[i]! >= umbralCauce && acum[p]! < umbralCauce) {
         const caudalRel = Math.min(1, acum[i]! / a.acumMax);
         const cl = cellLatLng(i);
-        const ky = 111_320, kx = 111_320 * Math.cos((g.latMin + g.latMax) / 2 * Math.PI / 180);
-        const cerca = cruces.some(x => Math.hypot((x.lng - cl.lng) * kx, (x.lat - cl.lat) * ky) < 60);
+        const cerca = cruces.some(x => Math.hypot((x.lng - cl.lng) * kx0, (x.lat - cl.lat) * ky0) < dedupM);
         if (!cerca) cruces.push({ lat: cl.lat, lng: cl.lng, tipo: caudalRel > 0.25 ? 'puente' : 'alcantarilla', caudalRel: Math.round(caudalRel * 100) / 100 });
       }
     }
@@ -1066,4 +1068,165 @@ export async function sugerirCaminoRelieve(
   const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
   if (!g) return null;
   return trazarCaminoRelieve(analizarRelieve(g), origen, destino, opts);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Análisis topográfico integral: represas + zonas de vivienda + caminos juntos
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface ZonaVivienda {
+  lat: number; lng: number;
+  score: number;          // 0-100
+  pendiente_pct: number;
+  motivos: string[];
+}
+
+export interface CaminoSugerido {
+  nombre: string;
+  destino: string;        // a qué conecta ("Vivienda", "Represa 1"…)
+  camino: CaminoRelieve;
+}
+
+export interface AnalisisTopoIntegral {
+  represas:  SitioRepresa[];
+  viviendas: ZonaVivienda[];
+  caminos:   CaminoSugerido[];
+  entrada:   { lat: number; lng: number };
+}
+
+/** Puntúa las celdas del predio como zona de vivienda (ladera al ecuador, pendiente
+ *  suave, sobre cota de drenaje, posición media-alta). Devuelve las mejores, separadas. */
+function scorearViviendas(
+  a: AnalisisRelieve,
+  predio: Array<{ lat: number; lng: number }>,
+  maxN = 3,
+  sepM = 120,
+): ZonaVivienda[] {
+  const { g, acum, ridge, pend, acumMax, ridgeMax } = a;
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = g;
+  const dLat = (latMax - latMin) / (rows - 1), dLng = (lngMax - lngMin) / (cols - 1);
+  // Hemisferio: al ecuador = hacia el norte si estamos al sur (lat<0). row+1 = más al norte.
+  const haciaEcuadorEsNorte = (latMin + latMax) / 2 < 0;
+  const rango = Math.max(1, elev_max - elev_min);
+
+  const cand: ZonaVivienda[] = [];
+  for (let r = 1; r < rows - 1; r++) {
+    for (let c = 1; c < cols - 1; c++) {
+      const i = r * cols + c;
+      const e = elev[i]!;
+      if (Number.isNaN(e)) continue;
+      const lat = latMin + r * dLat, lng = lngMin + c * dLng;
+      if (!pipLatLng(lat, lng, predio)) continue;
+
+      const pendPct = pend[i]! * 100;
+      const acumRel = acum[i]! / Math.max(1, acumMax);
+      const elevRel = (e - elev_min) / rango;
+      let s = 0; const motivos: string[] = [];
+
+      if      (pendPct < 5)  { s += 34; motivos.push('casi plano'); }
+      else if (pendPct < 10) { s += 25; motivos.push('pendiente suave'); }
+      else if (pendPct < 18) { s += 10; motivos.push('pendiente moderada'); }
+      else                    { s -= 15; motivos.push('pendiente alta'); }
+
+      // Orientación al ecuador (más sol): el lado opuesto al ecuador debe estar más alto.
+      const eEcuador = elev[(haciaEcuadorEsNorte ? r + 1 : r - 1) * cols + c]!;
+      const ePolo    = elev[(haciaEcuadorEsNorte ? r - 1 : r + 1) * cols + c]!;
+      if (!Number.isNaN(eEcuador) && !Number.isNaN(ePolo)) {
+        const dif = ePolo - eEcuador;   // >0 ⇒ desciende hacia el ecuador ⇒ buena orientación
+        if      (dif >  2) { s += 22; motivos.push(haciaEcuadorEsNorte ? 'orientación norte' : 'orientación sur'); }
+        else if (dif >  0) { s += 12; motivos.push('buena orientación solar'); }
+        else if (dif < -2) { s -= 10; motivos.push('orientación fría'); }
+        else               { s +=  8; }
+      } else { s += 8; }
+
+      if      (acumRel < 0.06) { s += 20; motivos.push('fuera de drenajes'); }
+      else if (acumRel < 0.20) { s += 8; }
+      else                      { s -= 22; motivos.push('en zona de escorrentía'); }
+
+      if      (elevRel >= 0.35 && elevRel <= 0.80) { s += 18; motivos.push('posición media-alta'); }
+      else if (elevRel > 0.80)                      { s += 4; motivos.push('cima expuesta'); }
+      else                                           { s -= 6; motivos.push('fondo de valle (húmedo)'); }
+
+      // Sobre un espolón/loma (algo de ridge) ayuda al drenaje y a las visuales.
+      if (ridge[i]! / Math.max(1, ridgeMax) > 0.08) { s += 6; motivos.push('sobre loma bien drenada'); }
+
+      cand.push({ lat, lng, score: Math.max(0, Math.min(100, s)), pendiente_pct: Math.round(pendPct * 10) / 10, motivos });
+    }
+  }
+  cand.sort((x, y) => y.score - x.score);
+  const kx = 111320 * Math.cos((latMin + latMax) / 2 * Math.PI / 180), ky = 111320;
+  const elegidas: ZonaVivienda[] = [];
+  for (const z of cand) {
+    if (elegidas.length >= maxN) break;
+    if (elegidas.every(e => Math.hypot((z.lng - e.lng) * kx, (z.lat - e.lat) * ky) > sepM)) elegidas.push(z);
+  }
+  return elegidas;
+}
+
+/** Punto de acceso al predio: la celda más baja del contorno (por donde suele entrar el camino). */
+function entradaPredio(g: GrillaElevacion, predio: Array<{ lat: number; lng: number }>): { lat: number; lng: number } {
+  let best = predio[0]!, bestE = Infinity;
+  const n = predio.length;
+  for (let i = 0; i < n; i++) {
+    const a = predio[i]!, b = predio[(i + 1) % n]!;
+    for (let t = 0; t <= 4; t++) {
+      const lat = a.lat + (b.lat - a.lat) * (t / 4), lng = a.lng + (b.lng - a.lng) * (t / 4);
+      const e = elevEnGrilla(g, lat, lng);
+      if (!Number.isNaN(e) && e < bestE) { bestE = e; best = { lat, lng }; }
+    }
+  }
+  return best;
+}
+
+/**
+ * Análisis integral del relieve del predio: en UNA pasada calcula los mejores
+ * sitios de represa (por eficiencia), las zonas aptas para vivienda y los caminos
+ * de acceso por cresta que las conectan con la entrada. Todo sobre la misma grilla.
+ */
+export async function analizarTopografiaIntegral(
+  mojones: Array<{ lat: number; lng: number }>,
+): Promise<AnalisisTopoIntegral | null> {
+  if (mojones.length < 3) return null;
+  const bbox = conMargen(bboxDeMojones(mojones), 0.12);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return null;
+
+  const a = analizarRelieve(g);
+  const represas  = buscarSitiosRepresa(g, { clip: mojones, max: 4 });
+  const viviendas = scorearViviendas(a, mojones, 3);
+  const entrada   = entradaPredio(g, mojones);
+
+  const caminos: CaminoSugerido[] = [];
+  const objetivos: Array<{ nombre: string; pt: { lat: number; lng: number } }> = [];
+  if (viviendas[0]) objetivos.push({ nombre: 'Vivienda', pt: { lat: viviendas[0].lat, lng: viviendas[0].lng } });
+  if (represas[0])  objetivos.push({ nombre: 'Represa 1', pt: { lat: represas[0].lat, lng: represas[0].lng } });
+  for (const o of objetivos) {
+    const cam = trazarCaminoRelieve(a, entrada, o.pt);
+    if (cam) caminos.push({ nombre: `Acceso a ${o.nombre.toLowerCase()}`, destino: o.nombre, camino: cam });
+  }
+
+  return { represas, viviendas, caminos, entrada };
+}
+
+/**
+ * Traza caminos de acceso/servicio desde la entrada del predio hasta cada punto
+ * (típicamente bebederos de potreros), por lomas/parteaguas y con poca pendiente.
+ * Carga la grilla una sola vez para rutear a todos los destinos.
+ */
+export async function sugerirCaminosAcceso(
+  mojones: Array<{ lat: number; lng: number }>,
+  destinos: Array<{ lat: number; lng: number }>,
+): Promise<{ entrada: { lat: number; lng: number }; caminos: CaminoRelieve[] } | null> {
+  if (mojones.length < 3 || destinos.length === 0) return null;
+  const bbox = conMargen(bboxDeMojones(mojones), 0.12);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return null;
+  const a = analizarRelieve(g);
+  const entrada = entradaPredio(g, mojones);
+  const caminos: CaminoRelieve[] = [];
+  for (const d of destinos) {
+    const cam = trazarCaminoRelieve(a, entrada, d);
+    if (cam) caminos.push(cam);
+  }
+  return { entrada, caminos };
 }
