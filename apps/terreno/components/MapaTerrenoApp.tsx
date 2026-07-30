@@ -57,7 +57,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo } from '@/lib/cuencaHidro';
+import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -931,6 +931,33 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [modoCamino]);
   const handleCancelarCamino  = useCallback(() => setModoCamino(null), []);
 
+  // Optimiza un camino: lo reruta entre sus extremos siguiendo crestas/parteaguas,
+  // con poca pendiente y evitando vertientes (las cruza en un punto: puente/alcantarilla).
+  const handleOptimizarCamino = useCallback(async (camino: Camino): Promise<{ ok: boolean; msg: string }> => {
+    const vs = camino.vertices;
+    if (vs.length < 2) return { ok: false, msg: 'El camino necesita al menos 2 puntos (inicio y destino).' };
+    const res = await sugerirCaminoRelieve(vs[0]!, vs[vs.length - 1]!);
+    if (!res || res.vertices.length < 2) return { ok: false, msg: 'No se pudo trazar por crestas (relieve insuficiente o sin datos).' };
+    setCaminos(prev => prev.map(c => c.id === camino.id
+      ? { ...c, vertices: res.vertices, longitud_m: res.longitud_m, perfil: undefined }
+      : c));
+    if (res.cruces.length) {
+      setPines(prev => [...prev, ...res.cruces.map(cr => ({
+        id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng,
+        nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo',
+        icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41',
+        notas: `Cruce de vertiente (${cr.tipo}) sobre el camino "${camino.nombre}"`,
+      }))]);
+    }
+    const cruceTxt = res.cruces.length
+      ? ` · ${res.cruces.length} cruce(s) de vertiente: ${res.cruces.map(c => c.tipo).join(', ')} (marcados con pin)`
+      : ' · sin cruces de vertiente';
+    return {
+      ok: true,
+      msg: `Trazado por crestas: ${res.longitud_m >= 1000 ? (res.longitud_m / 1000).toFixed(2) + ' km' : res.longitud_m + ' m'} · pend. media ${res.pendiente_media_pct}% (máx ${res.pendiente_max_pct}%) · ${Math.round(res.frac_cresta * 100)}% por cresta${cruceTxt}`,
+    };
+  }, []);
+
   // Asegura la cota del DEM en la traza de un camino (para Red de agua). Lo pide si falta.
   const handleCargarPerfilCamino = useCallback(async (id: string): Promise<PerfilElevacion | null> => {
     const c = caminos.find(x => x.id === id);
@@ -1456,14 +1483,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const handleAplicarPatron = useCallback((res: import('@/lib/keyline').ResultadoPatron) => {
     const nuevos: Camino[] = [];
     if (res.master.length >= 2) { const c = crearCamino(res.master); nuevos.push({ ...c, nombre: 'Línea clave (maestra)', color: '#3949AB' }); }
-    res.lineas.forEach((ln, i) => { if (ln.length >= 2) { const c = crearCamino(ln); nuevos.push({ ...c, nombre: `Cultivo ${i + 1}`, color: '#26A69A' }); } });
-    res.lineasFuera.forEach((ln, i) => { if (ln.length >= 2) { const c = crearCamino(ln); nuevos.push({ ...c, nombre: `Cultivo compl. ${i + 1}`, color: '#EF6C00' }); } });
+    res.lineas.forEach((ln, i) => { if (ln.length >= 2) { const c = crearCamino(ln); nuevos.push({ ...c, nombre: `Línea ${i + 1}`, color: '#26A69A' }); } });
     if (nuevos.length) setCaminos(prev => [...prev, ...nuevos]);
-    res.zonasFuera.forEach((poly, i) => {
-      if (poly.length >= 3) setDibujos(prev => [...prev, { id: crypto.randomUUID(), tipo: 'poligono', color: '#EF6C00', vertices: poly, opacidad: 0.1, capaId: capaActivaId, nombre: `Zona a revisar ${i + 1}` }]);
-    });
     setTab('caminos');
-  }, [capaActivaId]);
+  }, []);
 
   // ─── Escenarios (snapshots del diseño) ────────────────────────────────────
   const snapshotActual = useCallback((): DocDisenoSnapshot => ({
@@ -2541,6 +2564,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onIniciarDibujo={handleIniciarCamino} onFinalizarCamino={handleFinalizarCamino} onCancelarCamino={handleCancelarCamino}
                 onAbrirPerfil={handleAbrirPerfilDock} perfilDockId={perfilDock?.nombre ?? null}
                 perfilCargando={perfilCargando} perfilError={perfilError}
+                onOptimizarCresta={handleOptimizarCamino}
               />
             </div>
           )}

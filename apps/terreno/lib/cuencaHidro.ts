@@ -803,3 +803,267 @@ export async function sugerirSitiosRepresa(
   if (!g) return [];
   return buscarSitiosRepresa(g, { clip });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Caminos por crestas / parteaguas (ruteo de mínimo costo sobre el relieve)
+// ═══════════════════════════════════════════════════════════════════════════
+//  Criterio (Yeomans / vialidad rural): el camino va por las divisorias de agua
+//  (crestas) porque drenan solas, no se embarran y no erosionan. Baja a la ladera
+//  solo lo necesario y con poca pendiente. NUNCA corre por una vertiente/cauce:
+//  cuando tiene que cruzar un drenaje lo hace en un punto (puente si el cauce es
+//  grande, alcantarilla/tubo si es chico).
+
+/** Capas derivadas del relieve para rutear caminos. */
+export interface AnalisisRelieve {
+  g:        GrillaElevacion;
+  filled:   Float64Array;
+  acum:     Float64Array;   // acumulación de flujo (cauces = alta)
+  ridge:    Float64Array;   // acumulación sobre el DEM invertido (crestas = alta)
+  pend:     Float64Array;   // pendiente local (fracción, rise/run) por celda
+  acumMax:  number;
+  ridgeMax: number;
+  umbralCauce: number;      // acum ≥ umbral ⇒ es cauce (vertiente)
+}
+
+/** Invierte la grilla (cima↔valle) para que las crestas se comporten como cauces. */
+function grillaInvertida(g: GrillaElevacion): GrillaElevacion {
+  const n = g.rows * g.cols;
+  const elev = new Float64Array(n);
+  const base = g.elev_max;
+  for (let i = 0; i < n; i++) {
+    const e = g.elev[i]!;
+    elev[i] = Number.isNaN(e) ? NaN : base - e;
+  }
+  return { ...g, elev, elev_min: 0, elev_max: base - g.elev_min };
+}
+
+/** Pendiente local (fracción) por celda: máxima diferencia con vecinos / distancia. */
+function pendienteLocal(g: GrillaElevacion): Float64Array {
+  const { rows, cols, elev } = g;
+  const { dist } = dimsCelda(g);
+  const n = rows * cols;
+  const pend = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const e = elev[i]!;
+    if (Number.isNaN(e)) { pend[i] = NaN; continue; }
+    const r = (i / cols) | 0, c = i % cols;
+    let maxS = 0;
+    for (let k = 0; k < 8; k++) {
+      const nr = r + N8[k]![0], nc = c + N8[k]![1];
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const ne = elev[nr * cols + nc]!;
+      if (Number.isNaN(ne)) continue;
+      const s = Math.abs(e - ne) / dist[k]!;
+      if (s > maxS) maxS = s;
+    }
+    pend[i] = maxS;
+  }
+  return pend;
+}
+
+/** Deriva del relieve las capas de cauces (acum) y crestas (ridge) + pendiente. */
+export function analizarRelieve(g: GrillaElevacion): AnalisisRelieve {
+  const n = g.rows * g.cols;
+  const filled = rellenarDepresiones(g);
+  const fd = direccionFlujo(g, filled);
+  const acum = acumular(g, filled, fd);
+
+  const gi = grillaInvertida(g);
+  const filledI = rellenarDepresiones(gi);
+  const fdI = direccionFlujo(gi, filledI);
+  const ridge = acumular(gi, filledI, fdI);
+
+  const pend = pendienteLocal(g);
+
+  let acumMax = 0, ridgeMax = 0;
+  for (let i = 0; i < n; i++) {
+    if (acum[i]! > acumMax) acumMax = acum[i]!;
+    if (ridge[i]! > ridgeMax) ridgeMax = ridge[i]!;
+  }
+  const umbralCauce = Math.max(8, acumMax * 0.03);
+  return { g, filled, acum, ridge, pend, acumMax, ridgeMax, umbralCauce };
+}
+
+export interface CruceDrenaje {
+  lat: number; lng: number;
+  tipo: 'puente' | 'alcantarilla';
+  caudalRel: number;   // 0-1, tamaño del cauce cruzado
+}
+
+export interface CaminoRelieve {
+  vertices: Array<{ lat: number; lng: number }>;
+  longitud_m: number;
+  pendiente_media_pct: number;
+  pendiente_max_pct: number;
+  cruces: CruceDrenaje[];
+  frac_cresta: number;   // fracción del recorrido que va por cresta (0-1)
+}
+
+const idxDeLatLng = (g: GrillaElevacion, lat: number, lng: number): number => {
+  const r = Math.round((lat - g.latMin) / (g.latMax - g.latMin) * (g.rows - 1));
+  const c = Math.round((lng - g.lngMin) / (g.lngMax - g.lngMin) * (g.cols - 1));
+  if (r < 0 || c < 0 || r >= g.rows || c >= g.cols) return -1;
+  const i = r * g.cols + c;
+  return Number.isNaN(g.elev[i]!) ? celdaValidaCerca(g, r, c) : i;
+};
+
+/** Si el nodo objetivo cae en nodata, busca la celda válida más cercana en espiral. */
+function celdaValidaCerca(g: GrillaElevacion, r0: number, c0: number): number {
+  const { rows, cols, elev } = g;
+  for (let rad = 1; rad < 12; rad++) {
+    for (let dr = -rad; dr <= rad; dr++) {
+      for (let dc = -rad; dc <= rad; dc++) {
+        if (Math.max(Math.abs(dr), Math.abs(dc)) !== rad) continue;
+        const nr = r0 + dr, nc = c0 + dc;
+        if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+        const i = nr * cols + nc;
+        if (!Number.isNaN(elev[i]!)) return i;
+      }
+    }
+  }
+  return -1;
+}
+
+/**
+ * Traza el camino de mínimo costo entre dos puntos siguiendo crestas, evitando
+ * pendientes fuertes y las vertientes (solo las cruza en un punto). Dijkstra 8-vec
+ * sobre una superficie de costo:
+ *   costo(paso) = distancia · (1 + Kpend·exceso² ) · factorCresta  +  penalCauce
+ * — factorCresta < 1 abarata las celdas de divisoria; penalCauce castiga entrar en
+ * un cauce (proporcional a su caudal), pero lo permite → se marca como cruce.
+ */
+export function trazarCaminoRelieve(
+  a:  AnalisisRelieve,
+  origen:  { lat: number; lng: number },
+  destino: { lat: number; lng: number },
+  opts?: { pendMaxPct?: number },
+): CaminoRelieve | null {
+  const { g, acum, ridge, pend, ridgeMax, umbralCauce } = a;
+  const { rows, cols } = g;
+  const n = rows * cols;
+  const { dist } = dimsCelda(g);
+  const pendMax = (opts?.pendMaxPct ?? 12) / 100;   // umbral de confort de pendiente
+
+  const src = idxDeLatLng(g, origen.lat, origen.lng);
+  const dst = idxDeLatLng(g, destino.lat, destino.lng);
+  if (src < 0 || dst < 0 || src === dst) return null;
+
+  const D = new Float64Array(n).fill(Infinity);
+  const prev = new Int32Array(n).fill(-1);
+  const done = new Uint8Array(n);
+  const heap = new MinHeap();
+  D[src] = 0;
+  heap.push(0, src);
+
+  const Kpend = 8;      // peso del exceso de pendiente
+  const Kcresta = 0.55; // hasta -55% de costo en cresta pura
+  const Kcauce = 6;     // penalización por atravesar cauce (× distancia)
+
+  while (heap.size > 0) {
+    const cur = heap.pop();
+    if (done[cur]) continue;
+    done[cur] = 1;
+    if (cur === dst) break;
+    const cr = (cur / cols) | 0, cc = cur % cols;
+    const dCur = D[cur]!;
+    for (let k = 0; k < 8; k++) {
+      const nr = cr + N8[k]![0], nc = cc + N8[k]![1];
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      const ni = nr * cols + nc;
+      if (done[ni] || Number.isNaN(g.elev[ni]!)) continue;
+
+      const dm = dist[k]!;
+      // Pendiente del paso (rise/run) — es lo que sufre la máquina/vehículo.
+      const rise = Math.abs(g.elev[ni]! - g.elev[cur]!);
+      const grade = rise / dm;
+      const exceso = Math.max(0, grade - pendMax) / pendMax;
+      const fPend = 1 + Kpend * exceso * exceso;
+
+      // Bonus por ir por cresta (alta acumulación en el DEM invertido).
+      const ridgeRel = ridgeMax > 0 ? ridge[ni]! / ridgeMax : 0;
+      const fCresta = 1 - Kcresta * Math.min(1, Math.sqrt(ridgeRel) * 3);
+
+      // Penalización por meterse en un cauce (proporcional al caudal).
+      let penalCauce = 0;
+      if (acum[ni]! >= umbralCauce) {
+        const caudalRel = Math.min(1, acum[ni]! / a.acumMax);
+        penalCauce = Kcauce * dm * (0.3 + caudalRel);
+      }
+
+      const paso = dm * fPend * fCresta + penalCauce;
+      const nd = dCur + paso;
+      if (nd < D[ni]!) {
+        D[ni] = nd;
+        prev[ni] = cur;
+        heap.push(nd, ni);
+      }
+    }
+  }
+
+  if (prev[dst]! < 0 && src !== dst) return null;
+
+  // Reconstruir la ruta de celdas.
+  const ruta: number[] = [];
+  for (let i = dst; i >= 0; i = prev[i]!) { ruta.push(i); if (i === src) break; }
+  ruta.reverse();
+  if (ruta.length < 2) return null;
+
+  const dLat = (g.latMax - g.latMin) / (rows - 1), dLng = (g.lngMax - g.lngMin) / (cols - 1);
+  const cellLatLng = (i: number) => ({
+    lat: g.latMin + ((i / cols) | 0) * dLat,
+    lng: g.lngMin + (i % cols) * dLng,
+  });
+
+  // Métricas + detección de cruces de cauce.
+  let longitud = 0, pendSum = 0, pendMaxReal = 0, enCresta = 0;
+  const cruces: CruceDrenaje[] = [];
+  const ridgeUmbral = ridgeMax * 0.15;
+  for (let s = 0; s < ruta.length; s++) {
+    const i = ruta[s]!;
+    if (ridge[i]! >= ridgeUmbral) enCresta++;
+    if (s > 0) {
+      const p = ruta[s - 1]!;
+      const dr = ((i / cols) | 0) - ((p / cols) | 0);
+      const dc = (i % cols) - (p % cols);
+      const dm = Math.hypot(dc * (dLng * 111_320 * Math.cos((g.latMin + g.latMax) / 2 * Math.PI / 180)), dr * dLat * 111_320);
+      longitud += dm;
+      const grade = Math.abs(g.elev[i]! - g.elev[p]!) / (dm || 1);
+      pendSum += grade;
+      if (grade > pendMaxReal) pendMaxReal = grade;
+      // ¿Este paso entra a un cauce que antes no lo era? → cruce (dedup por cercanía).
+      if (acum[i]! >= umbralCauce && acum[p]! < umbralCauce) {
+        const caudalRel = Math.min(1, acum[i]! / a.acumMax);
+        const cl = cellLatLng(i);
+        const ky = 111_320, kx = 111_320 * Math.cos((g.latMin + g.latMax) / 2 * Math.PI / 180);
+        const cerca = cruces.some(x => Math.hypot((x.lng - cl.lng) * kx, (x.lat - cl.lat) * ky) < 60);
+        if (!cerca) cruces.push({ lat: cl.lat, lng: cl.lng, tipo: caudalRel > 0.25 ? 'puente' : 'alcantarilla', caudalRel: Math.round(caudalRel * 100) / 100 });
+      }
+    }
+  }
+  const nSeg = ruta.length - 1;
+
+  // Simplificar la polilínea (menos vértices, mismo trazado).
+  const verticesRaw = ruta.map(cellLatLng);
+  const vertices = simplificarAnillo(verticesRaw, Math.max(15, longitud / 60));
+
+  return {
+    vertices,
+    longitud_m: Math.round(longitud),
+    pendiente_media_pct: Math.round((pendSum / Math.max(1, nSeg)) * 1000) / 10,
+    pendiente_max_pct: Math.round(pendMaxReal * 1000) / 10,
+    cruces,
+    frac_cresta: Math.round((enCresta / ruta.length) * 100) / 100,
+  };
+}
+
+/** Trae la grilla y traza un camino por crestas entre dos puntos. */
+export async function sugerirCaminoRelieve(
+  origen:  { lat: number; lng: number },
+  destino: { lat: number; lng: number },
+  opts?: { pendMaxPct?: number },
+): Promise<CaminoRelieve | null> {
+  const bbox = conMargen(bboxDeMojones([origen, destino]), 0.35);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return null;
+  return trazarCaminoRelieve(analizarRelieve(g), origen, destino, opts);
+}

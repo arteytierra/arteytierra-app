@@ -41,6 +41,7 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
   // Patrón de cultivo por parcela
   const [parcelaId,   setParcelaId]   = useState('');
   const [espaciado,   setEspaciado]   = useState(12);
+  const [suavizado,   setSuavizado]   = useState(50);
   const [cargandoPat, setCargandoPat] = useState(false);
   const [errorPat,    setErrorPat]    = useState<string | null>(null);
   const [patron,      setPatron]      = useState<ResultadoPatron | null>(null);
@@ -78,7 +79,7 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
     try {
       const g = await obtenerGrilla();
       if (!g) { setErrorPat('No se pudo obtener la elevación del terreno.'); return; }
-      const p = generarPatronCultivo(g, parcela.vertices, espaciado);
+      const p = generarPatronCultivo(g, parcela.vertices, espaciado, suavizado);
       if (!p) { setErrorPat('No se pudo calcular el patrón (parcela muy chica o sin datos de elevación).'); return; }
       setPatron(p);
     } catch {
@@ -86,49 +87,12 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
     } finally {
       setCargandoPat(false);
     }
-  }, [parcelas, parcelaId, espaciado, obtenerGrilla]);
+  }, [parcelas, parcelaId, espaciado, suavizado, obtenerGrilla]);
 
   return (
     <div className="space-y-4">
-      {/* ── Checklist Escala de Permanencia ── */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Escala de permanencia</p>
-          <span className="text-[10px] font-mono text-moss-700 bg-moss-100 px-2 py-0.5 rounded-full">{hechos}/{FACTORES.length}</span>
-        </div>
-        <p className="text-[10px] text-ink-700/55 mb-2 leading-relaxed">
-          Los 8 factores de Yeomans, de lo más permanente a lo más cambiable. Marcá lo que ya analizaste o diseñaste.
-        </p>
-        <div className="space-y-1.5">
-          {FACTORES.map(f => {
-            const st = check[f.id] ?? { hecho: false, nota: '' };
-            return (
-              <div key={f.id} className={`rounded-xl border p-2.5 transition-colors ${st.hecho ? 'bg-moss-100/60 border-moss-300' : 'bg-white border-bone-200'}`}>
-                <button onClick={() => onCheck(f.id, { hecho: !st.hecho })} className="w-full flex items-start gap-2 text-left">
-                  <span className={`mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center border transition-colors ${st.hecho ? 'bg-moss-700 border-moss-700 text-bone-50' : 'border-bone-300 bg-white'}`}>
-                    {st.hecho && <Check className="w-3 h-3" />}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold ${st.hecho ? 'text-moss-900' : 'text-ink-900'}`}>{f.nombre}</p>
-                    <p className="text-[10px] text-ink-700/55 leading-tight">{f.desc}</p>
-                  </div>
-                </button>
-                {st.hecho && (
-                  <input
-                    value={st.nota}
-                    onChange={e => onCheck(f.id, { nota: e.target.value })}
-                    placeholder="Nota / decisión…"
-                    className="mt-1.5 w-full text-[10px] bg-white border border-bone-200 rounded px-2 py-1 text-ink-900 placeholder-ink-700/30 focus:outline-none focus:border-moss-500"
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* ── Keyline real desde topografía ── */}
-      <div className="border-t border-bone-200 pt-4">
+      <div>
         <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2">Keyline desde topografía</p>
         <button
           onClick={analizar}
@@ -166,7 +130,7 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
       <div className="border-t border-bone-200 pt-4">
         <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-1">Patrón de cultivo por parcela</p>
         <p className="text-[10px] text-ink-700/55 mb-2 leading-relaxed">
-          Línea clave maestra + líneas paralelas a espaciado fijo (patrón manejable, cuasi a nivel) para una parcela. Marca zonas y trazados complementarios donde la pendiente cambia de orientación.
+          Un solo patrón de líneas paralelas a espaciado fijo, orientado al mejor promedio de todas las curvas de la parcela — para sembrar/plantar sin seguir cada curva, minimizando arreglos y movimiento de suelo. Sirve para máquinas en poca pendiente o espalderas de vid en mucha.
         </p>
         {parcelas.length === 0 ? (
           <p className="text-[11px] text-ink-700/50 bg-bone-100 rounded-lg px-3 py-2">Dibujá un polígono o zona (la parcela) para calcular su patrón.</p>
@@ -189,6 +153,13 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
                 {cargandoPat ? '…' : 'Calcular'}
               </button>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-ink-700/60 shrink-0 w-16">Suavizado</span>
+              <input type="range" min={0} max={100} step={10} value={suavizado}
+                onChange={e => setSuavizado(parseInt(e.target.value))}
+                className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
+              <span className="text-[10px] font-mono text-ink-700/60 w-16 text-right">{suavizado <= 20 ? 'sigue curva' : suavizado >= 80 ? 'recto/suave' : `${suavizado}%`}</span>
+            </div>
             {errorPat && <p className="text-[10px] text-clay-600 leading-tight">{errorPat}</p>}
 
             {patron && (
@@ -196,17 +167,59 @@ export function KeylinePanel({ mojones, datosShader, parcelas, check, onCheck, o
                 <div className="grid grid-cols-3 gap-1.5 text-[10px]">
                   <div className="bg-bone-50 rounded px-2 py-1"><span className="text-ink-700/50">Líneas</span><br /><span className="font-mono font-bold text-ink-900">{patron.lineas.length}</span></div>
                   <div className="bg-bone-50 rounded px-2 py-1"><span className="text-ink-700/50">Orient.</span><br /><span className="font-mono font-bold text-ink-900">{patron.orientacion_deg}°</span></div>
-                  <div className="bg-bone-50 rounded px-2 py-1"><span className="text-ink-700/50">Cobertura</span><br /><span className="font-mono font-bold text-ink-900">{patron.cobertura_pct}%</span></div>
+                  <div className="bg-bone-50 rounded px-2 py-1"><span className="text-ink-700/50">Pend. residual</span><br /><span className="font-mono font-bold text-ink-900">{patron.pendiente_residual_pct}%</span></div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="text-ink-700/50">Encaje:</span>
+                  <span className={`px-2 py-0.5 rounded-full font-semibold ${patron.calidad === 'excelente' ? 'bg-moss-100 text-moss-800' : patron.calidad === 'buena' ? 'bg-sun-200 text-clay-800' : 'bg-clay-100 text-clay-800'}`}>{patron.calidad}</span>
+                  <span className="text-ink-700/45">desvío {patron.desvio_medio_deg}° · pend. {patron.pendiente_media_pct}%</span>
                 </div>
                 <p className="text-[10px] text-ink-700/60 leading-relaxed flex gap-1"><Info className="w-3 h-3 shrink-0 mt-0.5 text-water-500" />{patron.nota}</p>
                 <button onClick={() => { onAplicarPatron(patron); setPatronAplic(true); }} disabled={patronAplic}
                   className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${patronAplic ? 'bg-moss-100 text-moss-700' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}>
-                  {patronAplic ? 'Patrón aplicado al plano ✓' : `Aplicar patrón al plano${patron.lineasFuera.length ? ' (+ complementario)' : ''}`}
+                  {patronAplic ? 'Patrón aplicado al plano ✓' : 'Aplicar patrón al plano'}
                 </button>
               </div>
             )}
           </div>
         )}
+      </div>
+
+      {/* ── Escala de Permanencia (Yeomans) — al fondo, de lo más permanente a lo cambiable ── */}
+      <div className="border-t border-bone-200 pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Escala de permanencia</p>
+          <span className="text-[10px] font-mono text-moss-700 bg-moss-100 px-2 py-0.5 rounded-full">{hechos}/{FACTORES.length}</span>
+        </div>
+        <p className="text-[10px] text-ink-700/55 mb-2 leading-relaxed">
+          Los 8 factores de Yeomans, de lo más permanente a lo más cambiable. Marcá lo que ya analizaste o diseñaste.
+        </p>
+        <div className="space-y-1.5">
+          {FACTORES.map(f => {
+            const st = check[f.id] ?? { hecho: false, nota: '' };
+            return (
+              <div key={f.id} className={`rounded-xl border p-2.5 transition-colors ${st.hecho ? 'bg-moss-100/60 border-moss-300' : 'bg-white border-bone-200'}`}>
+                <button onClick={() => onCheck(f.id, { hecho: !st.hecho })} className="w-full flex items-start gap-2 text-left">
+                  <span className={`mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center border transition-colors ${st.hecho ? 'bg-moss-700 border-moss-700 text-bone-50' : 'border-bone-300 bg-white'}`}>
+                    {st.hecho && <Check className="w-3 h-3" />}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-semibold ${st.hecho ? 'text-moss-900' : 'text-ink-900'}`}>{f.nombre}</p>
+                    <p className="text-[10px] text-ink-700/55 leading-tight">{f.desc}</p>
+                  </div>
+                </button>
+                {st.hecho && (
+                  <input
+                    value={st.nota}
+                    onChange={e => onCheck(f.id, { nota: e.target.value })}
+                    placeholder="Nota / decisión…"
+                    className="mt-1.5 w-full text-[10px] bg-white border border-bone-200 rounded px-2 py-1 text-ink-900 placeholder-ink-700/30 focus:outline-none focus:border-moss-500"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

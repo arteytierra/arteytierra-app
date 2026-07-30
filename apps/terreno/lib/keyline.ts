@@ -8,7 +8,7 @@
  *
  * Aproximación didáctica desde SRTM ~30 m, no un relevamiento de precisión.
  */
-import type { GrillaElevacion } from './grillaElevacion';
+import { elevEnGrilla, type GrillaElevacion } from './grillaElevacion';
 
 export interface PuntoKL { lat: number; lng: number; elevation: number }
 export interface GuiaKeyline { cota: number; principal: boolean; puntos: Array<{ lat: number; lng: number }> }
@@ -25,12 +25,12 @@ export interface ResultadoKeyline {
 export interface ResultadoPatron {
   master:       Array<{ lat: number; lng: number }>;
   lineas:       Array<Array<{ lat: number; lng: number }>>;
-  zonasFuera:   Array<Array<{ lat: number; lng: number }>>;
-  lineasFuera:  Array<Array<{ lat: number; lng: number }>>;
-  orientacion_deg:     number;
-  espaciado_m:         number;
-  pendiente_media_pct: number;
-  cobertura_pct:       number;
+  orientacion_deg:        number;
+  espaciado_m:            number;
+  pendiente_media_pct:    number;
+  desvio_medio_deg:       number;   // desviación media de las líneas vs las curvas reales
+  pendiente_residual_pct: number;   // grade que corre a lo largo de las líneas (proxy de arreglos/mov. de suelo)
+  calidad:                'excelente' | 'buena' | 'regular';
   nota:         string;
 }
 
@@ -166,17 +166,25 @@ export function analizarKeyline(g: GrillaElevacion): ResultadoKeyline | null {
     dist.push(dist[i - 1]! + distM(lat(a.r), lng(a.c), lat(b.r), lng(b.c)));
     elv.push(e(b.r, b.c));
   }
-  const w = Math.max(1, Math.round(n / 10));
+  const w = Math.max(2, Math.round(n / 8));
+  // Suaviza el perfil (media móvil) para no enganchar el keypoint en ruido SRTM.
+  const elvS = elv.map((_, i) => {
+    let s = 0, k = 0;
+    for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++) { s += elv[j]!; k++; }
+    return s / k;
+  });
   const pend = (i: number, dir: 1 | -1) => {
     const j = Math.min(n - 1, Math.max(0, i + dir * w));
     const dd = Math.abs(dist[j]! - dist[i]!);
-    return dd > 0 ? (elv[i]! - elv[j]!) * dir / dd : 0;
+    return dd > 0 ? (elvS[i]! - elvS[j]!) * dir / dd : 0;
   };
-  let kIdx = Math.round(n * 0.55), mejor = -Infinity;
+  let kIdx = -1, mejor = -Infinity;
   for (let i = w; i < n - w; i++) {
-    const delta = pend(i, -1) - pend(i, 1); // grande = se aplana hacia abajo
+    const delta = pend(i, -1) - pend(i, 1); // grande = empina arriba y aplana abajo
     if (delta > mejor) { mejor = delta; kIdx = i; }
   }
+  // Sin rodilla clara (perfil casi recto o convexo) ⇒ no hay keypoint confiable.
+  if (kIdx < 0 || mejor < 0.02) return null;
   const kp = path[kIdx]!;
   const keypoint: PuntoKL = { lat: lat(kp.r), lng: lng(kp.c), elevation: e(kp.r, kp.c) };
   const pArr = Math.max(0, pend(kIdx, -1)) * 100;
@@ -230,15 +238,35 @@ function cortesRectaPoligono(p0: XY, dir: XY, poly: XY[]): number[] {
   return ss.sort((a, b) => a - b);
 }
 
+/** Suavizado de esquinas (Chaikin): redondea el patrón para el paso de máquinas. */
+function chaikin(pts: XY[], iters: number): XY[] {
+  let p = pts;
+  for (let it = 0; it < iters && p.length >= 3; it++) {
+    const q: XY[] = [p[0]!];
+    for (let i = 0; i + 1 < p.length; i++) {
+      const a = p[i]!, b = p[i + 1]!;
+      q.push({ x: 0.75 * a.x + 0.25 * b.x, y: 0.75 * a.y + 0.25 * b.y });
+      q.push({ x: 0.25 * a.x + 0.75 * b.x, y: 0.25 * a.y + 0.75 * b.y });
+    }
+    q.push(p[p.length - 1]!);
+    p = q;
+  }
+  return p;
+}
+
 /**
- * Genera el patrón de cultivo de una parcela: línea clave maestra + paralelas a
- * espaciado fijo, alineadas a la curva de nivel media; más zonas/trazados
- * complementarios donde la orientación de la pendiente difiere mucho.
+ * Patrón de cultivo de una parcela: toma la curva de nivel maestra que pasa por
+ * el centroide (que puede ser recta, en V, W, curva…), la suaviza para el paso
+ * de máquinas y genera paralelas a espaciado fijo offseteadas ⟂ a las curvas
+ * (siguiendo el gradiente local). Un solo patrón coherente que sigue el relieve
+ * minimizando el grade residual a lo largo de las líneas. `suavizado` 0–100:
+ * 0 = pega a la curva real (más quebrado), 100 = bien redondeado/recto.
  */
 export function generarPatronCultivo(
   g: GrillaElevacion,
   parcela: Array<{ lat: number; lng: number }>,
   espaciadoM = 12,
+  suavizado = 50,
 ): ResultadoPatron | null {
   if (parcela.length < 3) return null;
   const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
@@ -266,96 +294,135 @@ export function generarPatronCultivo(
   const dyM = (latMax - latMin) / (rows - 1) * R;
   const dxM = (lngMax - lngMin) / (cols - 1) * R * Math.cos(latMid);
 
-  // Gradientes de las celdas dentro de la parcela
-  const grad: Array<{ p: XY; gx: number; gy: number }> = [];
-  let sgx = 0, sgy = 0, sMag = 0, nG = 0;
+  // Pendiente media dentro de la parcela (para métricas).
+  let sMag = 0, nG = 0;
   for (let r = 1; r < rows - 1; r++) {
     const la = latMin + (r / (rows - 1)) * (latMax - latMin);
     for (let c = 1; c < cols - 1; c++) {
       const lo = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
       if (!dentro(la, lo)) continue;
-      const eC = e(r, c), eE = e(r, c + 1), eW = e(r, c - 1), eN = e(r + 1, c), eS = e(r - 1, c);
-      if ([eC, eE, eW, eN, eS].some(isNaN)) continue;
-      const gx = (eE - eW) / (2 * dxM);     // ∂z/∂x (este+)
-      const gy = (eN - eS) / (2 * dyM);     // ∂z/∂y (norte+)
-      grad.push({ p: toXY({ lat: la, lng: lo }), gx, gy });
-      sgx += gx; sgy += gy; sMag += Math.hypot(gx, gy); nG++;
+      const eE = e(r, c + 1), eW = e(r, c - 1), eN = e(r + 1, c), eS = e(r - 1, c);
+      if ([eE, eW, eN, eS].some(isNaN)) continue;
+      sMag += Math.hypot((eE - eW) / (2 * dxM), (eN - eS) / (2 * dyM)); nG++;
     }
   }
   if (nG < 4) return null;
-
-  const mgx = sgx / nG, mgy = sgy / nG;
   const pendMedia = (sMag / nG) * 100;
-  let mag = Math.hypot(mgx, mgy);
-  // Dirección de contorno = perpendicular al gradiente medio
-  let cdx: number, cdy: number;
-  if (mag < 1e-4) { cdx = 1; cdy = 0; mag = 1e-4; } else { cdx = -mgy / mag; cdy = mgx / mag; }
-  const gux = mgx / mag, guy = mgy / mag;     // gradiente unitario (cuesta arriba)
-  const orientacion = ((Math.atan2(cdy, cdx) * 180 / Math.PI) % 180 + 180) % 180;
 
-  // Rango de offset a lo largo del gradiente, recorriendo la parcela
-  const ts = polyXY.map(q => q.x * gux + q.y * guy);
-  const tmin = Math.min(...ts), tmax = Math.max(...ts);
+  const stepLat = (latMax - latMin) / (rows - 1);
+  const stepLng = (lngMax - lngMin) / (cols - 1);
+  // Gradiente unitario (cuesta arriba) en un punto, en metros este/norte.
+  const gradRawEn = (la: number, lo: number): { gx: number; gy: number } | null => {
+    const eE = elevEnGrilla(g, la, lo + stepLng), eW = elevEnGrilla(g, la, lo - stepLng);
+    const eN = elevEnGrilla(g, la + stepLat, lo), eS = elevEnGrilla(g, la - stepLat, lo);
+    if ([eE, eW, eN, eS].some(Number.isNaN)) return null;
+    return { gx: (eE - eW) / (2 * dxM), gy: (eN - eS) / (2 * dyM) };
+  };
+  const gradEn = (la: number, lo: number): XY | null => {
+    const r = gradRawEn(la, lo);
+    if (!r) return null;
+    const m = Math.hypot(r.gx, r.gy);
+    return m < 1e-5 ? null : { x: r.gx / m, y: r.gy / m };
+  };
+  const gradMedio = gradEn(lat0, lng0) ?? { x: 1, y: 0 };
 
-  const generar = (cx: number, cy: number, ux: number, uy: number, t0: number, t1: number, filtro?: (m: XY) => boolean) => {
-    const out: Array<Array<{ lat: number; lng: number }>> = [];
-    for (let t = Math.ceil(t0 / espaciadoM) * espaciadoM; t <= t1; t += espaciadoM) {
-      const p0: XY = { x: ux * t, y: uy * t };
-      const dir: XY = { x: cx, y: cy };
-      const cortes = cortesRectaPoligono(p0, dir, polyXY);
-      for (let k = 0; k + 1 < cortes.length; k += 2) {
-        const sA = cortes[k]!, sB = cortes[k + 1]!;
-        const a: XY = { x: p0.x + dir.x * sA, y: p0.y + dir.y * sA };
-        const b: XY = { x: p0.x + dir.x * sB, y: p0.y + dir.y * sB };
-        if (filtro && !filtro({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })) continue;
-        if (Math.hypot(b.x - a.x, b.y - a.y) < espaciadoM * 0.3) continue;
-        out.push([toLL(a), toLL(b)]);
-      }
+  // Curva de nivel maestra que pasa por el centroide (puede ser recta, V, W, curva…).
+  const z0 = elevEnGrilla(g, lat0, lng0);
+  if (Number.isNaN(z0)) return null;
+  let masterLL: Array<{ lat: number; lng: number }> | null = null;
+  { let best = 1;
+    for (const ln of contornoNivel(g, z0)) {
+      if (ln.length < 2) continue;
+      const inside = ln.reduce((s, p) => s + (dentro(p.lat, p.lng) ? 1 : 0), 0);
+      if (inside > best) { best = inside; masterLL = ln; }
     }
+  }
+  // Fallback recto ⟂ al gradiente si no hay curva utilizable.
+  if (!masterLL) {
+    const cdx = -gradMedio.y, cdy = gradMedio.x;
+    const cortes = cortesRectaPoligono({ x: 0, y: 0 }, { x: cdx, y: cdy }, polyXY);
+    if (cortes.length < 2) return null;
+    masterLL = [toLL({ x: cdx * cortes[0]!, y: cdy * cortes[0]! }), toLL({ x: cdx * cortes[cortes.length - 1]!, y: cdy * cortes[cortes.length - 1]! })];
+  }
+  // Downsample + suavizado (Chaikin) para el paso de máquinas.
+  if (masterLL.length > 50) { const st = Math.ceil(masterLL.length / 50); masterLL = masterLL.filter((_, i) => i % st === 0 || i === masterLL!.length - 1); }
+  const iters = 1 + Math.round((suavizado / 100) * 2);   // 1..3
+  const masterXY = chaikin(masterLL.map(toXY), iters);
+
+  // Densifica una polilínea y conserva los tramos dentro de la parcela.
+  const clip = (ptsLL: Array<{ lat: number; lng: number }>): Array<Array<{ lat: number; lng: number }>> => {
+    const step = Math.max(4, Math.min(espaciadoM, 10));
+    const dense: Array<{ lat: number; lng: number }> = [];
+    for (let i = 0; i + 1 < ptsLL.length; i++) {
+      const a = ptsLL[i]!, b = ptsLL[i + 1]!;
+      const ns = Math.max(1, Math.ceil(distM(a.lat, a.lng, b.lat, b.lng) / step));
+      for (let j = 0; j < ns; j++) { const t = j / ns; dense.push({ lat: a.lat + (b.lat - a.lat) * t, lng: a.lng + (b.lng - a.lng) * t }); }
+    }
+    if (ptsLL.length) dense.push(ptsLL[ptsLL.length - 1]!);
+    const out: Array<Array<{ lat: number; lng: number }>> = [];
+    let cur: Array<{ lat: number; lng: number }> = [];
+    for (const p of dense) {
+      if (dentro(p.lat, p.lng)) cur.push(p);
+      else { if (cur.length >= 2) out.push(cur); cur = []; }
+    }
+    if (cur.length >= 2) out.push(cur);
     return out;
   };
 
-  const lineas = generar(cdx, cdy, gux, guy, tmin, tmax);
-
-  // Línea clave maestra = la paralela que pasa por el centroide (offset 0)
-  const masterCortes = cortesRectaPoligono({ x: 0, y: 0 }, { x: cdx, y: cdy }, polyXY);
-  const master = masterCortes.length >= 2
-    ? [toLL({ x: cdx * masterCortes[0]!, y: cdy * masterCortes[0]! }), toLL({ x: cdx * masterCortes[masterCortes.length - 1]!, y: cdy * masterCortes[masterCortes.length - 1]! })]
-    : (lineas[Math.floor(lineas.length / 2)] ?? []);
-
-  // Zonas con orientación de pendiente muy distinta → trazado complementario
-  const desviadas = grad.filter(gc => {
-    const m = Math.hypot(gc.gx, gc.gy);
-    if (m < 1e-4) return false;
-    const dot = Math.abs((-gc.gy / m) * cdx + (gc.gx / m) * cdy); // |contorno_local · contorno_master|
-    return dot < Math.cos(35 * Math.PI / 180); // > 35° de diferencia
-  });
-
-  const zonasFuera: Array<Array<{ lat: number; lng: number }>> = [];
-  const lineasFuera: Array<Array<{ lat: number; lng: number }>> = [];
-  const cobertura = Math.round((1 - desviadas.length / nG) * 100);
-
-  if (desviadas.length >= 6 && desviadas.length / nG > 0.12) {
-    const xs = desviadas.map(d => d.p.x), ys = desviadas.map(d => d.p.y);
-    const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
-    const rect: XY[] = [{ x: minx, y: miny }, { x: maxx, y: miny }, { x: maxx, y: maxy }, { x: minx, y: maxy }];
-    zonasFuera.push(rect.map(toLL));
-    // Orientación local de la zona desviada
-    let dgx = 0, dgy = 0;
-    desviadas.forEach(d => { dgx += d.gx; dgy += d.gy; });
-    const dm = Math.hypot(dgx, dgy) || 1e-4;
-    const ccx = -dgy / dm, ccy = dgx / dm, dux = dgx / dm, duy = dgy / dm;
-    const tts = rect.map(q => q.x * dux + q.y * duy);
-    const enRect = (m: XY) => m.x >= minx && m.x <= maxx && m.y >= miny && m.y <= maxy;
-    lineasFuera.push(...generar(ccx, ccy, dux, duy, Math.min(...tts), Math.max(...tts), enRect));
+  // Offsets ⟂ a las curvas: cada vértice de la maestra corrido k·espaciado por
+  // su gradiente local (cuesta arriba/abajo), cubriendo toda la parcela.
+  let maxDim = 0;
+  for (let i = 0; i < polyXY.length; i++) for (let j = i + 1; j < polyXY.length; j++) {
+    const d = Math.hypot(polyXY[j]!.x - polyXY[i]!.x, polyXY[j]!.y - polyXY[i]!.y);
+    if (d > maxDim) maxDim = d;
   }
+  const K = Math.min(300, Math.ceil(maxDim / espaciadoM) + 1);
+
+  const lineas: Array<Array<{ lat: number; lng: number }>> = [];
+  let master: Array<{ lat: number; lng: number }> = [];
+  for (let k = -K; k <= K; k++) {
+    const offLL = masterXY.map(v => {
+      const ll = toLL(v);
+      const dir = gradEn(ll.lat, ll.lng) ?? gradMedio;
+      return toLL({ x: v.x + k * espaciadoM * dir.x, y: v.y + k * espaciadoM * dir.y });
+    });
+    const segs = clip(offLL);
+    if (k === 0) for (const s of segs) if (s.length > master.length) master = s;
+    for (const s of segs) lineas.push(s);
+  }
+  if (lineas.length === 0) return null;
+
+  // Pendiente residual = grade a lo largo de las líneas (componente del gradiente
+  // en la dirección de cada tramo). 0 = corren exactamente a nivel.
+  let resSum = 0, resN = 0;
+  for (const seg of lineas) {
+    for (let i = 0; i + 1 < seg.length; i++) {
+      const a = toXY(seg[i]!), b = toXY(seg[i + 1]!);
+      const ex = b.x - a.x, ey = b.y - a.y;
+      const len = Math.hypot(ex, ey);
+      if (len < 0.5) continue;
+      const gr = gradRawEn((seg[i]!.lat + seg[i + 1]!.lat) / 2, (seg[i]!.lng + seg[i + 1]!.lng) / 2);
+      if (!gr) continue;
+      resSum += Math.abs((gr.gx * ex + gr.gy * ey) / len); resN++;
+    }
+  }
+  const residualPct = resN > 0 ? (resSum / resN) * 100 : 0;
+  const slopeFrac = pendMedia / 100;
+  const desvioDeg = slopeFrac > 1e-4 ? Math.asin(Math.min(1, (residualPct / 100) / slopeFrac)) * 180 / Math.PI : 0;
+  const calidad: ResultadoPatron['calidad'] = residualPct < 0.5 ? 'excelente' : residualPct < 1.5 ? 'buena' : 'regular';
+
+  // Orientación general de la maestra.
+  const a0 = masterXY[0]!, a1 = masterXY[masterXY.length - 1]!;
+  const orientacion = ((Math.atan2(a1.y - a0.y, a1.x - a0.x) * 180 / Math.PI) % 180 + 180) % 180;
 
   return {
-    master, lineas, zonasFuera, lineasFuera,
+    master, lineas,
     orientacion_deg: Math.round(orientacion),
     espaciado_m: espaciadoM,
     pendiente_media_pct: Math.round(pendMedia * 10) / 10,
-    cobertura_pct: Math.max(0, Math.min(100, cobertura)),
-    nota: `Patrón a ${espaciadoM} m, orientado ${Math.round(orientacion)}° (paralelo a la curva media, pendiente ~${pendMedia.toFixed(1)}%). ${zonasFuera.length ? 'Se marcó una zona con pendiente de otra orientación + trazado complementario.' : 'Cobertura uniforme en toda la parcela.'} SRTM orientativo.`,
+    desvio_medio_deg: Math.round(desvioDeg * 10) / 10,
+    pendiente_residual_pct: Math.round(residualPct * 100) / 100,
+    calidad,
+    nota: `Patrón de ${lineas.length} líneas que siguen la curva maestra (suavizado ${suavizado}%) a ${espaciadoM} m. Encaje ${calidad}: corren con ~${residualPct.toFixed(2)}% de pendiente residual. Menos residual = menos arreglos y menos movimiento de suelo. SRTM orientativo.`,
   };
 }
