@@ -12,7 +12,7 @@ import { Droplet, Loader2, TriangleAlert, Gauge, Ruler, ArrowLeftRight, Zap } fr
 import type { Camino, PerfilElevacion } from '@/lib/caminos';
 import {
   analizarLinea, diametroMinimo, calcularBomba, MATERIALES, DIAMETROS, CAUDAL_UNIDADES,
-  type ResultadoLinea, type RedAguaResumen,
+  type ResultadoLinea, type RedAguaResumen, type RedAguaInputs,
 } from '@/lib/hidraulica';
 
 interface Props {
@@ -20,21 +20,27 @@ interface Props {
   onCargarPerfil: (id: string) => Promise<PerfilElevacion | null>;
   onIrACaminos:   () => void;
   onResumen?:     (r: RedAguaResumen | null) => void;
+  /** Campos guardados: al volver a la pestaña vuelve lo que había, no se resetea. */
+  inicial?:       RedAguaInputs | null;
+  onInputs?:      (i: RedAguaInputs) => void;
 }
 
-export function RedAguaPanel({ caminos, onCargarPerfil, onIrACaminos, onResumen }: Props) {
-  const [caminoId, setCaminoId]   = useState<string>('');
+export function RedAguaPanel({ caminos, onCargarPerfil, onIrACaminos, onResumen, inicial, onInputs }: Props) {
+  const [caminoId, setCaminoId]   = useState<string>(inicial?.caminoId ?? '');
   const [cargando, setCargando]   = useState(false);
-  const [invertir, setInvertir]   = useState(false);
+  const [invertir, setInvertir]   = useState(inicial?.invertir ?? false);
 
   // Parámetros hidráulicos
-  const [caudal, setCaudal]       = useState('1');
-  const [unidad, setUnidad]       = useState<string>('lmin');
-  const [materialId, setMaterialId] = useState('pvc');
-  const [dn, setDn]               = useState(50);
-  const [cargaOrigen, setCargaOrigen] = useState('10');
-  const [perdidasLocal, setPerdidasLocal] = useState('10');
-  const [presionMin, setPresionMin] = useState('10');
+  const [caudal, setCaudal]       = useState(inicial?.caudal ?? '1');
+  const [unidad, setUnidad]       = useState<string>(inicial?.unidad ?? 'lmin');
+  const [materialId, setMaterialId] = useState(inicial?.materialId ?? 'pvc');
+  const [dn, setDn]               = useState(inicial?.dn ?? 50);
+  const [cargaOrigen, setCargaOrigen] = useState(inicial?.cargaOrigen ?? '10');
+  const [perdidasLocal, setPerdidasLocal] = useState(inicial?.perdidasLocal ?? '10');
+  const [presionMin, setPresionMin] = useState(inicial?.presionMin ?? '10');
+
+  useEffect(() => { onInputs?.({ caminoId, invertir, caudal, unidad, materialId, dn, cargaOrigen, perdidasLocal, presionMin }); },
+    [caminoId, invertir, caudal, unidad, materialId, dn, cargaOrigen, perdidasLocal, presionMin, onInputs]);
 
   const camino = caminos.find(c => c.id === caminoId) ?? null;
   const material = MATERIALES.find(m => m.id === materialId)!;

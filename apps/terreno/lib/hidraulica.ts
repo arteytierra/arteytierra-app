@@ -27,6 +27,19 @@ export interface RedAguaResumen {
   bomba_kw:          number | null;   // potencia eléctrica si se necesita bombeo
 }
 
+/** Campos editables del panel Red de agua, para persistir con el proyecto. */
+export interface RedAguaInputs {
+  caminoId:      string;
+  invertir:      boolean;
+  caudal:        string;
+  unidad:        string;
+  materialId:    string;
+  dn:            number;
+  cargaOrigen:   string;
+  perdidasLocal: string;
+  presionMin:    string;
+}
+
 // ─── Materiales (coeficiente C de Hazen-Williams) ─────────────────────────────
 
 export interface MaterialTuberia { id: string; nombre: string; C: number; }

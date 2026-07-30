@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Minus, Layers, History, Mountain, Satellite, Map as MapIcon } from 'lucide-react';
+import { Plus, Minus, Layers, History, Mountain, Satellite, Map as MapIcon, ListChecks } from 'lucide-react';
 import type { NavegacionMapa } from './MapLeaflet';
 
 export type CapaFondo = 'satelite' | 'topo';
@@ -17,6 +17,8 @@ interface Props {
   on3D:          () => void;
   capasAbierto:  boolean;
   onCapas:       () => void;
+  escalaAbierta: boolean;
+  onEscala:      () => void;
 }
 
 const BOTON = 'flex items-center justify-center text-ink-700 hover:bg-bone-100 transition-colors disabled:opacity-35 disabled:hover:bg-transparent disabled:cursor-not-allowed';
@@ -31,15 +33,26 @@ const BOTON = 'flex items-center justify-center text-ink-700 hover:bg-bone-100 t
  */
 export function ControlesMapa({
   navegacion, bearing, capaFondo, onCapaFondo,
-  habilitarVistas, onHistorico, on3D, capasAbierto, onCapas,
+  habilitarVistas, onHistorico, on3D, capasAbierto, onCapas, escalaAbierta, onEscala,
 }: Props) {
   const grados = Math.round(((bearing % 360) + 360) % 360);
   const girado = Math.min(grados, 360 - grados) >= 1;
 
   return (
     <div className="flex flex-col items-end gap-1.5 no-print">
-      {/* ── Zoom + brújula ── */}
-      <div className="flex items-stretch rounded-lg overflow-hidden bg-white/95 shadow-md border border-white/30">
+      {/* ── 3D + Zoom + brújula ── */}
+      <div className="flex items-center gap-1.5">
+        {habilitarVistas && (
+          <button
+            onClick={on3D}
+            title="Vista 3D del relieve"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
+          >
+            <Mountain className="w-3.5 h-3.5" />
+            3D
+          </button>
+        )}
+        <div className="flex items-stretch rounded-lg overflow-hidden bg-white/95 shadow-md border border-white/30">
         <button
           onClick={() => navegacion?.zoomOut()}
           disabled={!navegacion}
@@ -71,50 +84,51 @@ export function ControlesMapa({
           </svg>
           {girado && <span className="text-[8px] font-mono leading-none text-ink-900/70">{grados}°</span>}
         </button>
+        </div>
       </div>
 
-      {/* ── Capa de fondo ── */}
-      <div className="flex rounded-lg overflow-hidden shadow-md border border-white/30">
-        <button
-          onClick={() => onCapaFondo('satelite')}
-          title="Imagen satelital"
-          className={`flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold transition-colors ${capaFondo === 'satelite' ? 'bg-moss-700 text-bone-50' : 'bg-white/95 text-ink-700 hover:bg-bone-100'}`}
-        >
-          <Satellite className="w-3.5 h-3.5" />
-          Satélite
-        </button>
-        <button
-          onClick={() => onCapaFondo('topo')}
-          title="Mapa topográfico"
-          className={`flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold transition-colors ${capaFondo === 'topo' ? 'bg-moss-700 text-bone-50' : 'bg-white/95 text-ink-700 hover:bg-bone-100'}`}
-        >
-          <MapIcon className="w-3.5 h-3.5" />
-          Topo
-        </button>
-      </div>
-
-      {/* ── Vistas y capas ── */}
+      {/* ── Histórico + Capa de fondo ── */}
       <div className="flex items-center gap-1.5">
         {habilitarVistas && (
-          <>
-            <button
-              onClick={onHistorico}
-              title="Imagen satelital histórica"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-            >
-              <History className="w-3.5 h-3.5" />
-              Histórico
-            </button>
-            <button
-              onClick={on3D}
-              title="Vista 3D del relieve"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
-            >
-              <Mountain className="w-3.5 h-3.5" />
-              3D
-            </button>
-          </>
+          <button
+            onClick={onHistorico}
+            title="Imagen satelital histórica"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50"
+          >
+            <History className="w-3.5 h-3.5" />
+            Histórico
+          </button>
         )}
+        <div className="flex rounded-lg overflow-hidden shadow-md border border-white/30">
+          <button
+            onClick={() => onCapaFondo('satelite')}
+            title="Imagen satelital"
+            className={`flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold transition-colors ${capaFondo === 'satelite' ? 'bg-moss-700 text-bone-50' : 'bg-white/95 text-ink-700 hover:bg-bone-100'}`}
+          >
+            <Satellite className="w-3.5 h-3.5" />
+            Satélite
+          </button>
+          <button
+            onClick={() => onCapaFondo('topo')}
+            title="Mapa topográfico"
+            className={`flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold transition-colors ${capaFondo === 'topo' ? 'bg-moss-700 text-bone-50' : 'bg-white/95 text-ink-700 hover:bg-bone-100'}`}
+          >
+            <MapIcon className="w-3.5 h-3.5" />
+            Topo
+          </button>
+        </div>
+      </div>
+
+      {/* ── Escala de permanencia + Capas ── */}
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={onEscala}
+          title="Escala de permanencia (bitácora de diseño)"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border ${escalaAbierta ? 'bg-moss-700 text-bone-50 border-moss-700' : 'bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50'}`}
+        >
+          <ListChecks className="w-3.5 h-3.5" />
+          Escala
+        </button>
         <button
           onClick={onCapas}
           title={capasAbierto ? 'Cerrar capas' : 'Mostrar capas'}

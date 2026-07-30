@@ -14,23 +14,38 @@ import {
 import type { DatosClima } from '@/lib/clima';
 import type { DatosSuelo } from '@/lib/suelos';
 
+interface ParcelaRiego { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
+
 interface Props {
   areaHa:     number;
   datosClima: DatosClima | null;
   datosSuelo: DatosSuelo | null;
   onIrAClima: () => void;
   onResumen?: (r: RiegoResumen | null) => void;
+  /** Polígonos dibujados para tomar el área de la zona de riego (en vez de tipear ha). */
+  parcelas?:  ParcelaRiego[];
   /** Campos cargados antes: al cambiar de pestaña el panel se desmonta, así
    *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
   inicial?:   RiegoInputs | null;
   onInputs?:  (i: RiegoInputs) => void;
 }
 
-export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResumen, inicial, onInputs }: Props) {
+/** Área en ha de un polígono lat/lng (shoelace equirectangular). */
+function areaHaDe(v: Array<{ lat: number; lng: number }>): number {
+  if (v.length < 3) return 0;
+  const R = 6371000, latMid = v.reduce((s, p) => s + p.lat, 0) / v.length * Math.PI / 180;
+  const xy = v.map(p => ({ x: p.lng * Math.PI / 180 * R * Math.cos(latMid), y: p.lat * Math.PI / 180 * R }));
+  let a = 0;
+  for (let i = 0, j = xy.length - 1; i < xy.length; j = i++) a += xy[j]!.x * xy[i]!.y - xy[i]!.x * xy[j]!.y;
+  return Math.abs(a / 2) / 10000;
+}
+
+export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResumen, parcelas = [], inicial, onInputs }: Props) {
   const [area,      setArea]      = useState(inicial?.area ?? (areaHa > 0 ? Math.round(areaHa * 100) / 100 : 0.5));
   const [cultivoId, setCultivoId] = useState(inicial?.cultivoId ?? CULTIVOS[0]!.id);
   const [sistemaId, setSistemaId] = useState(inicial?.sistemaId ?? SISTEMAS[0]!.id);
   const [horas,     setHoras]     = useState(inicial?.horas ?? 8);
+  const [zonaSel,   setZonaSel]   = useState('manual');   // 'manual' o id de parcela dibujada
 
   // El autocompletado del área desde el predio sólo corre en un panel nuevo;
   // si hay datos guardados, mandan ellos y no se pisan al volver a la pestaña.
@@ -82,8 +97,26 @@ export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResum
 
       {/* Parámetros */}
       <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2.5">
+        {parcelas.length > 0 && (
+          <Campo label="Zona de riego">
+            <select
+              value={zonaSel}
+              onChange={e => {
+                const val = e.target.value;
+                setZonaSel(val);
+                if (val !== 'manual') {
+                  const p = parcelas.find(x => x.id === val);
+                  if (p) { autoArea.current = false; setArea(Math.round(areaHaDe(p.vertices) * 100) / 100); }
+                }
+              }}
+              className="w-full text-xs rounded-lg border border-bone-200 px-2 py-1.5 bg-white">
+              <option value="manual">Manual (ingresar ha)</option>
+              {parcelas.map(p => <option key={p.id} value={p.id}>{p.nombre} · {areaHaDe(p.vertices).toFixed(2)} ha</option>)}
+            </select>
+          </Campo>
+        )}
         <div className="grid grid-cols-2 gap-2.5">
-          <Campo label="Sector (ha)"><Num v={area} set={setArea} step={0.1} /></Campo>
+          <Campo label={zonaSel === 'manual' ? 'Sector (ha)' : 'Sector (ha) · de la zona'}><Num v={area} set={setArea} step={0.1} /></Campo>
           <Campo label="Horas de riego/día"><Num v={horas} set={setHoras} step={1} /></Campo>
         </div>
         <Campo label="Cultivo">

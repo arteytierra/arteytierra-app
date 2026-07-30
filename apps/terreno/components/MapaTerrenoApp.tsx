@@ -60,7 +60,7 @@ import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias'
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
-import type { RedAguaResumen } from '@/lib/hidraulica';
+import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen, RiegoInputs } from '@/lib/riego';
 import type { PastoreoInputs } from '@/lib/pastoreo';
@@ -77,7 +77,8 @@ import { CarbonoPanel } from './CarbonoPanel';
 import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
-import { KeylinePanel, type KeylineCheck } from './KeylinePanel';
+import { KeylinePanel } from './KeylinePanel';
+import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
 import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
@@ -252,6 +253,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [represaResumen, setRepresaResumen] = useState<RepresaResumen | null>(null);
   const [riegoResumen,   setRiegoResumen]   = useState<RiegoResumen | null>(null);
   const [riegoInputs,    setRiegoInputs]    = useState<RiegoInputs | null>(null);
+  const [redAguaInputs,  setRedAguaInputs]  = useState<RedAguaInputs | null>(null);
   const [potrerosLayer,  setPotrerosLayer]  = useState<PotrerosLayout | null>(null);
   const [pastoreoInputs, setPastoreoInputs] = useState<PastoreoInputs | null>(null);
   const [datosCobertura, setDatosCobertura] = useState<DatosCobertura | null>(null);
@@ -276,7 +278,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true,
   });
   const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
-  const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | null>(null);
+  const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
   const [sombrasActivo,    setSombrasActivo]     = useState(false);
@@ -565,6 +567,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (represaResumen)  m['represa']  = represaResumen;
     if (riegoResumen)    m['riego']    = riegoResumen;
     if (riegoInputs)     m['riego_inputs']    = riegoInputs;
+    if (redAguaInputs)   m['red_agua_inputs'] = redAguaInputs;
     if (economiaResumen) m['economia'] = economiaResumen;
     if (carbonoResumen)  m['carbono']  = carbonoResumen;
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
@@ -593,7 +596,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1867,6 +1870,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
     setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
+    setRedAguaInputs((meta['red_agua_inputs'] as RedAguaInputs) ?? null);
     setPastoreoInputs((meta['pastoreo_inputs'] as PastoreoInputs) ?? null);
     setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
     setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);
@@ -2587,7 +2591,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'keyline' && (
             <div className="px-4 py-4">
-              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} check={keylineCheck} onCheck={handleCheckKeyline} onAplicarGuias={handleAplicarKeyline} onAplicarPatron={handleAplicarPatron} />
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} onAplicarGuias={handleAplicarKeyline} onAplicarPatron={handleAplicarPatron} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -2608,6 +2612,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onCargarPerfil={handleCargarPerfilCamino}
                 onIrACaminos={() => setTab('caminos')}
                 onResumen={setRedAguaResumen}
+                inicial={redAguaInputs}
+                onInputs={setRedAguaInputs}
               />
             </div>
           )}
@@ -2618,7 +2624,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'riego' && (
             <div className="px-4 py-4">
-              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} inicial={riegoInputs} onInputs={setRiegoInputs} />
+              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
             </div>
           )}
           {tab === 'carbono' && (
@@ -2703,7 +2709,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       <button
         onClick={() => setPanelDerecho(p => (p === null ? 'capas' : null))}
         className="absolute top-1/2 -translate-y-1/2 z-[1001] bg-white border border-bone-200 rounded-l-lg px-1 py-3 text-moss-700 hover:bg-bone-50 shadow-paper transition-all duration-200 no-print"
-        style={{ right: panelDerecho === 'capas' ? `${12 + 224}px` : panelDerecho === 'sugerencias' ? `${12 + 256}px` : '12px' }}
+        style={{ right: panelDerecho === 'capas' ? `${12 + 224}px` : panelDerecho === 'sugerencias' || panelDerecho === 'bitacora' ? `${12 + 256}px` : '12px' }}
         title={panelDerecho !== null ? 'Cerrar panel' : 'Mostrar capas'}
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${panelDerecho === null ? 'rotate-180' : ''}`} />
@@ -2766,6 +2772,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             on3D={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); }}
             capasAbierto={panelDerecho === 'capas'}
             onCapas={() => setPanelDerecho(p => (p === 'capas' ? null : 'capas'))}
+            escalaAbierta={panelDerecho === 'bitacora'}
+            onEscala={() => setPanelDerecho(p => (p === 'bitacora' ? null : 'bitacora'))}
           />
 
           {/* Panel de Capas */}
@@ -2842,6 +2850,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onConvertirZona={handleConvertirZonaMP}
               onDescartarElemento={handleDescartarElementoMP}
               areaPredioHa={metricas?.area_ha ?? null}
+            />
+          )}
+
+          {/* Panel de Escala de permanencia (bitácora) */}
+          {panelDerecho === 'bitacora' && (
+            <EscalaPermanenciaPanel
+              check={keylineCheck}
+              onCheck={handleCheckKeyline}
+              onVolver={() => setPanelDerecho('capas')}
             />
           )}
         </div>

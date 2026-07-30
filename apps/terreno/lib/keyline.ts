@@ -378,17 +378,63 @@ export function generarPatronCultivo(
   }
   const K = Math.min(300, Math.ceil(maxDim / espaciadoM) + 1);
 
+  // Curvas PARALELAS a la maestra: se corre cada vértice por la NORMAL de la propia
+  // maestra (no por el gradiente local, que al invertirse en el eje del valle hacía
+  // que la línea se doblara sobre sí misma y se cruzara con las vecinas). El signo
+  // de la normal se fija con el gradiente medio (hacia cuesta arriba).
+  const normales: XY[] = masterXY.map((_, i) => {
+    const a = masterXY[Math.max(0, i - 1)]!, b = masterXY[Math.min(masterXY.length - 1, i + 1)]!;
+    let tx = b.x - a.x, ty = b.y - a.y;
+    const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    let nx = -ty, ny = tx;
+    if (nx * gradMedio.x + ny * gradMedio.y < 0) { nx = -nx; ny = -ny; }
+    return { x: nx, y: ny };
+  });
+  const offsetXY = (k: number): XY[] =>
+    masterXY.map((v, i) => ({ x: v.x + k * espaciadoM * normales[i]!.x, y: v.y + k * espaciadoM * normales[i]!.y }));
+
+  // Intersección propia de dos segmentos (devuelve el punto, o null).
+  const cruce = (a: XY, b: XY, c: XY, d: XY): XY | null => {
+    const r = { x: b.x - a.x, y: b.y - a.y }, s = { x: d.x - c.x, y: d.y - c.y };
+    const den = r.x * s.y - r.y * s.x;
+    if (Math.abs(den) < 1e-9) return null;
+    const t = ((c.x - a.x) * s.y - (c.y - a.y) * s.x) / den;
+    const u = ((c.x - a.x) * r.y - (c.y - a.y) * r.x) / den;
+    if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return null;
+    return { x: a.x + t * r.x, y: a.y + t * r.y };
+  };
+  // Elimina auto-intersecciones (lazos) de una polilínea: donde un tramo cruza a otro
+  // no adyacente, recorta el lazo y empalma en el punto de cruce. Esto borra el
+  // pliegue que aparece en la cara cóncava (la zona del arreglo).
+  const quitarLazos = (pts: XY[]): XY[] => {
+    let arr = pts;
+    for (let pass = 0; pass < 8; pass++) {
+      let hecho = false;
+      for (let i = 0; i + 1 < arr.length && !hecho; i++) {
+        for (let j = i + 2; j + 1 < arr.length; j++) {
+          if (i === 0 && j + 1 === arr.length) continue;
+          const X = cruce(arr[i]!, arr[i + 1]!, arr[j]!, arr[j + 1]!);
+          if (X) { arr = [...arr.slice(0, i + 1), X, ...arr.slice(j + 1)]; hecho = true; break; }
+        }
+      }
+      if (!hecho) break;
+    }
+    return arr;
+  };
+
   const lineas: Array<Array<{ lat: number; lng: number }>> = [];
   let master: Array<{ lat: number; lng: number }> = [];
+  let vaciasSeguidas: Record<number, number> = { 1: 0, [-1]: 0 };
   for (let k = -K; k <= K; k++) {
-    const offLL = masterXY.map(v => {
-      const ll = toLL(v);
-      const dir = gradEn(ll.lat, ll.lng) ?? gradMedio;
-      return toLL({ x: v.x + k * espaciadoM * dir.x, y: v.y + k * espaciadoM * dir.y });
-    });
-    const segs = clip(offLL);
-    if (k === 0) for (const s of segs) if (s.length > master.length) master = s;
-    for (const s of segs) lineas.push(s);
+    if (k !== 0) {
+      const sign = k > 0 ? 1 : -1;
+      if (vaciasSeguidas[sign]! > 3) continue;   // ya no entra nada más de ese lado
+    }
+    const segs = clip(quitarLazos(offsetXY(k)).map(toLL));
+    if (k === 0) { for (const s of segs) { lineas.push(s); if (s.length > master.length) master = s; } continue; }
+    const sign = k > 0 ? 1 : -1;
+    if (segs.length === 0) vaciasSeguidas[sign] = vaciasSeguidas[sign]! + 1;
+    else { vaciasSeguidas[sign] = 0; for (const s of segs) lineas.push(s); }
   }
   if (lineas.length === 0) return null;
 
