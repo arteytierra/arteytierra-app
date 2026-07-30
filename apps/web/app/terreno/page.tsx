@@ -21,7 +21,14 @@ export const metadata: Metadata = {
     title: 'Terreno — Del terreno al masterplan | Arte y Tierra',
     description:
       'Marcá tu predio y Terreno hace el resto: topografía, agua, suelo, clima, represas y diseño regenerativo en un solo lugar.',
-    images: ['/img/terreno/topografia.webp'], // TODO: imagen Open Graph propia 1200×630
+    images: [{ url: '/img/terreno/og.png', width: 1200, height: 630, alt: 'Terreno — Del terreno al masterplan' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Terreno — Del terreno al masterplan',
+    description:
+      'Topografía, agua, suelo, clima, represas y diseño Keyline — al marcar tu predio, sin CAD ni GIS.',
+    images: ['/img/terreno/og.png'],
   },
 };
 
