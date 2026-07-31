@@ -13,12 +13,19 @@ interface Props {
   onCargando: (v: boolean) => void;
   error:    string | null;
   onError:  (e: string | null) => void;
+  /** Motor único de relieve: computa la grilla densa (shader alt./pend. + hipsométrico)
+   *  y enciende en el plano el shader de altimetría con las curvas en auto. */
+  onFetchShader: () => void;
+  shaderCargando: boolean;
 }
 
-export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando, error, onError }: Props) {
+export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando, error, onError, onFetchShader, shaderCargando }: Props) {
   const handleCargar = useCallback(async () => {
     onCargando(true);
     onError(null);
+    // Dispara la grilla densa (shader + curvas) en paralelo: es la misma fuente
+    // Terrarium cacheada, y deja el relieve activo en el plano de una.
+    onFetchShader();
     try {
       const data = await obtenerTopografia(mojones);
       onDatos(data);
@@ -27,7 +34,9 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
     } finally {
       onCargando(false);
     }
-  }, [mojones, onDatos, onCargando, onError]);
+  }, [mojones, onDatos, onCargando, onError, onFetchShader]);
+
+  const ocupado = cargando || shaderCargando;
 
   if (mojones.length === 0) {
     return (
@@ -48,17 +57,17 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
           <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">
             Topografía
           </p>
-          <p className="text-xs text-ink-700/50 mt-0.5">SRTM 30m · NASA</p>
+          <p className="text-xs text-ink-700/50 mt-0.5">SRTM 30m · NASA · enciende relieve + curvas</p>
         </div>
         <button
           onClick={handleCargar}
-          disabled={cargando}
+          disabled={ocupado}
           className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
         >
-          {cargando
+          {ocupado
             ? <Loader2 className="w-3 h-3 animate-spin" />
             : <Mountain className="w-3 h-3" />}
-          {cargando ? 'Cargando…' : datos ? 'Actualizar' : 'Cargar'}
+          {ocupado ? 'Analizando…' : datos ? 'Actualizar' : 'Analizar relieve'}
         </button>
       </div>
 

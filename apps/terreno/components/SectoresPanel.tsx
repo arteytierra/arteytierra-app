@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Plus, Trash2, PenLine, Check, X, ChevronDown, Info, RotateCcw, MapPin } from 'lucide-react';
+import { Plus, Trash2, PenLine, Check, X, ChevronDown, Info, RotateCcw, MapPin, Home, Loader2 } from 'lucide-react';
 import {
   TIPOS_SECTOR,
   calcularSectoresAuto,
@@ -14,6 +14,7 @@ import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import { centroide } from '@/lib/clima';
 import { calcularRadioArco } from '@/lib/arco_solar';
+import { sugerirViviendas, type ZonaVivienda } from '@/lib/cuencaHidro';
 
 interface ModoSector {
   tipo:     TipoSector;
@@ -31,18 +32,39 @@ interface Props {
   onFinalizarSector: (color?: string) => void;
   onCancelarSector:  () => void;
   onAplicarSector?:  (sector: Sector) => void;
+  /** Coloca las zonas de vivienda sugeridas como pines en el plano. */
+  onAplicarViviendas?: (viviendas: ZonaVivienda[]) => void;
 }
 
 export function SectoresPanel({
   mojones, datosClima, datosTopografia,
   sectores, onSectores, modoSector,
-  onIniciarDibujo, onFinalizarSector, onCancelarSector, onAplicarSector,
+  onIniciarDibujo, onFinalizarSector, onCancelarSector, onAplicarSector, onAplicarViviendas,
 }: Props) {
   const [menuAbierto,  setMenuAbierto]  = useState(false);
   const [editandoId,   setEditandoId]   = useState<string | null>(null);
   const [mostrarAuto,  setMostrarAuto]  = useState(true);
   const [colorModo,    setColorModo]    = useState<string>(TIPOS_SECTOR.personalizado.color);
   const [aplicadosIds, setAplicadosIds] = useState<Set<string>>(new Set());
+  // Zona de vivienda (motor de relieve)
+  const [vivCargando, setVivCargando] = useState(false);
+  const [vivError,    setVivError]    = useState<string | null>(null);
+  const [viviendas,   setViviendas]   = useState<ZonaVivienda[] | null>(null);
+  const [vivAplicado, setVivAplicado] = useState(false);
+
+  const sugerirVivienda = useCallback(async () => {
+    if (mojones.length < 3) { setVivError('Cargá el terreno (al menos 3 mojones) primero.'); return; }
+    setVivCargando(true); setVivError(null); setViviendas(null); setVivAplicado(false);
+    try {
+      const r = await sugerirViviendas(mojones, 3);
+      if (!r || r.length === 0) { setVivError('El relieve es muy plano o uniforme: sin sitios claros.'); return; }
+      setViviendas(r);
+    } catch {
+      setVivError('Hubo un error al analizar el relieve. Reintentá.');
+    } finally {
+      setVivCargando(false);
+    }
+  }, [mojones]);
 
   // Sincronizar color default cuando cambia el tipo en modo dibujo
   useEffect(() => {
@@ -86,6 +108,49 @@ export function SectoresPanel({
       <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">
         Análisis de sectores
       </p>
+
+      {/* ── Zona de vivienda (motor de relieve) ──────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
+        <p className="text-xs font-semibold text-moss-800 flex items-center gap-1.5">
+          <Home className="w-3.5 h-3.5" /> Emplazamiento de vivienda
+        </p>
+        <p className="text-[10px] text-ink-700/55 leading-relaxed">
+          La casa es la zona 0 del diseño. Sugerimos los mejores sitios por pendiente suave, orientación al sol, fuera de drenajes y posición media-alta.
+        </p>
+        <button
+          onClick={sugerirVivienda}
+          disabled={vivCargando || mojones.length < 3}
+          className="w-full flex items-center justify-center gap-1.5 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-40 text-bone-50 rounded-xl text-xs font-medium transition-colors"
+        >
+          {vivCargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Home className="w-3.5 h-3.5" />}
+          {vivCargando ? 'Analizando relieve…' : 'Sugerir zona de vivienda'}
+        </button>
+        {mojones.length < 3 && <p className="text-[10px] text-ink-700/40 text-center">Necesitás al menos 3 mojones.</p>}
+        {vivError && <p className="text-[10px] text-clay-600 leading-tight">{vivError}</p>}
+
+        {viviendas && viviendas.length > 0 && (
+          <div className="space-y-1.5">
+            {viviendas.map((v, i) => (
+              <div key={i} className="bg-bone-50 rounded-lg px-2.5 py-1.5">
+                <p className="text-[11px] font-semibold text-ink-900 flex items-center justify-between">
+                  <span>🏠 Vivienda {i + 1}</span>
+                  <span className="font-mono text-moss-700">{v.score}%</span>
+                </p>
+                <p className="text-[9px] text-ink-700/55 leading-tight">pend. {v.pendiente_pct}% · {v.motivos.slice(0, 3).join(', ')}</p>
+              </div>
+            ))}
+            {onAplicarViviendas && (
+              <button
+                onClick={() => { onAplicarViviendas(viviendas); setVivAplicado(true); }}
+                disabled={vivAplicado}
+                className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${vivAplicado ? 'bg-moss-100 text-moss-700' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}
+              >
+                {vivAplicado ? 'Colocadas en el plano ✓' : `Colocar ${viviendas.length} en el plano`}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ── Modo dibujo activo ───────────────────────────────────────────────── */}
       {modoSector ? (

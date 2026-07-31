@@ -25,7 +25,6 @@ import { SuelosPanel } from './SuelosPanel';
 import { SolarPanel } from './SolarPanel';
 import { ZonificacionPanel } from './ZonificacionPanel';
 import { SectoresPanel } from './SectoresPanel';
-import { AguadasPanel } from './AguadasPanel';
 import { SitiosRepresaPanel } from './SitiosRepresaPanel';
 import { AnalisisRelievePanel } from './AnalisisRelievePanel';
 import { CaminosPanel } from './CaminosPanel';
@@ -58,7 +57,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
+import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -1623,10 +1622,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [setCapasUsuario]);
 
   // ─── Aguadas ──────────────────────────────────────────────────────────────
-  const handleAgregarAguada = useCallback((el: ElementoAguada) => {
-    setAguadasLayer(prev => [...prev, el]);
-  }, []);
-
   const handleRenombrarAguada = useCallback((id: string, nombre: string) => {
     setAguadasLayer(prev => prev.map(a => a.id === id ? { ...a, nombre } : a));
   }, []);
@@ -1717,8 +1712,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (mojones.length < 3) return;
     setShaderLoading(true);
     setShaderError(null);
+    // Motor único de relieve: encendemos el shader de altimetría + las curvas
+    // de nivel (en auto). Escorrentías/sugerencias quedan como toggles aparte.
     const activarCapas = () =>
-      setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, escorrentias: true, sugerencias: true }));
+      setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, curvasNivel: true }));
 
     // Modo detallado: grilla densa desde tiles Terrarium (cientos de celdas, sin API externa).
     if (shaderDetallado) {
@@ -1777,6 +1774,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m }; });
     setCaminos(prev => [...prev, ...nuevosCaminos]);
     flyToRef.current?.(res.entrada.lat, res.entrada.lng);
+  }, []);
+
+  // Zonas de vivienda sugeridas (desde Sectores): vuelca pines 🏠 al plano.
+  const handleAplicarViviendas = useCallback((viviendas: ZonaVivienda[]) => {
+    if (viviendas.length === 0) return;
+    const nuevosPines = viviendas.map((v, i) => ({ id: crypto.randomUUID(), lat: v.lat, lng: v.lng, nombre: `Vivienda ${i + 1} (${v.score}%)`, icono: '🏠', color: '#2E7D32', notas: v.motivos.join(', ') }));
+    setPines(prev => [...prev, ...nuevosPines]);
+    flyToRef.current?.(viviendas[0]!.lat, viviendas[0]!.lng);
   }, []);
 
   // Caminos de acceso/servicio a los bebederos de los potreros, por lomas.
@@ -2471,7 +2476,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             buscandoCHIRPS={buscandoCHIRPS}
           /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
-          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} /></div>}
+          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
@@ -2572,6 +2577,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 sectores={sectores} onSectores={setSectores} modoSector={modoSector}
                 onIniciarDibujo={handleIniciarSector} onFinalizarSector={handleFinalizarSector} onCancelarSector={handleCancelarSector}
                 onAplicarSector={handleAplicarSectorAuto}
+                onAplicarViviendas={handleAplicarViviendas}
               />
             </div>
           )}
@@ -2580,9 +2586,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <AnalisisRelievePanel mojones={mojones} onAplicar={handleAplicarAnalisisIntegral} />
               <div className="border-t border-bone-200 pt-4">
                 <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
-              </div>
-              <div className="border-t border-bone-200 pt-4">
-                <AguadasPanel mojones={mojones} datosTopografia={datosTopografia} datosClima={datosClima} onIrATopo={() => setTab('topo')} onAgregarAguada={handleAgregarAguada} />
               </div>
               <div className="border-t border-bone-200 pt-4">
                 <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
@@ -2804,9 +2807,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onConfirm: nombre => handleCrearCapa(nombre),
               })}
               onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
-              datosShader={datosShader} shaderLoading={shaderLoading} shaderError={shaderError}
-              onFetchShader={handleFetchShader}
-              shaderDetallado={shaderDetallado} onToggleShaderDetallado={() => setShaderDetallado(p => !p)} mojones={mojones}
+              datosShader={datosShader} onIrATopo={() => setTab('topo')} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
               onCapturar={() => {
@@ -3361,11 +3362,7 @@ interface PanelCapasProps {
   onCrearCapa:         () => void;
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
-  shaderLoading:       boolean;
-  shaderError:         string | null;
-  onFetchShader:       () => void;
-  shaderDetallado:     boolean;
-  onToggleShaderDetallado: () => void;
+  onIrATopo:           () => void;
   mojones:             Mojon[];
   datosSugerencias:    ResultadoSugerencias | null;
   onVerSugerencias:    () => void;
@@ -3393,8 +3390,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, shaderLoading, shaderError, onFetchShader,
-  shaderDetallado, onToggleShaderDetallado, mojones,
+  datosShader, onIrATopo, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3514,41 +3510,25 @@ function PanelCapas({
                   <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.pend * 100)}%</span>
                 </div>
               )}
-              {/* Toggle resolución */}
-              <label className="mx-3 flex items-center gap-1.5 cursor-pointer mb-1" title="Grilla densa desde tiles Terrarium: cientos de celdas, mucho más precisa para keyline, escorrentías y aptitud.">
-                <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
-                <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
-              </label>
+              {/* El relieve se computa desde Topo (motor único); acá solo se muestra/oculta. */}
               <button
-                onClick={() => { onFetchShader(); }}
-                disabled={shaderLoading || mojones.length < 3}
-                className="mx-3 mb-2 mt-0.5 w-[calc(100%-24px)] flex items-center justify-center gap-1 py-1 bg-bone-100 hover:bg-bone-200 disabled:opacity-40 text-ink-700 rounded text-[9px] font-medium transition-colors"
+                onClick={onIrATopo}
+                className="mx-3 mb-2 mt-0.5 w-[calc(100%-24px)] flex items-center justify-center gap-1 py-1 bg-bone-100 hover:bg-bone-200 text-ink-700 rounded text-[9px] font-medium transition-colors"
               >
-                {shaderLoading
-                  ? <><span className="w-2.5 h-2.5 border border-ink-700 border-t-transparent rounded-full animate-spin" />Calculando…</>
-                  : <><Mountain className="w-2.5 h-2.5" />Recalcular</>}
+                <Mountain className="w-2.5 h-2.5" />Recalcular en Topo →
               </button>
             </>
           ) : (
             <div className="px-3 pt-1 pb-2.5 space-y-1.5">
-              {shaderError && <p className="text-[9px] text-clay-600 leading-tight">{shaderError}</p>}
-              {/* Toggle resolución */}
-              <label className="flex items-center gap-1.5 cursor-pointer" title="Grilla densa desde tiles Terrarium: cientos de celdas, mucho más precisa para keyline, escorrentías y aptitud.">
-                <input type="checkbox" checked={shaderDetallado} onChange={onToggleShaderDetallado} className="w-3 h-3 rounded accent-moss-700" />
-                <span className="text-[9px] text-ink-700/70">Detallado (grilla densa)</span>
-              </label>
+              <p className="text-[9px] text-ink-700/50 leading-tight">
+                El relieve (shader de altura, pendiente y curvas) se calcula desde la herramienta <span className="font-semibold text-moss-700">Topo</span>.
+              </p>
               <button
-                onClick={onFetchShader}
-                disabled={shaderLoading || mojones.length < 3}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-moss-700 hover:bg-moss-900 disabled:opacity-40 text-bone-50 rounded-lg text-[10px] font-medium transition-colors"
+                onClick={onIrATopo}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-[10px] font-medium transition-colors"
               >
-                {shaderLoading
-                  ? <><span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />Calculando…</>
-                  : <><Mountain className="w-2.5 h-2.5" />Calcular topografía</>}
+                <Mountain className="w-2.5 h-2.5" />Ir a Topo
               </button>
-              {mojones.length < 3 && (
-                <p className="text-[9px] text-ink-700/40 text-center">Necesitás al menos 3 mojones.</p>
-              )}
             </div>
           )}
         </CapaGrupo>

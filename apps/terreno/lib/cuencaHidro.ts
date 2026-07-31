@@ -1230,3 +1230,20 @@ export async function sugerirCaminosAcceso(
   }
   return { entrada, caminos };
 }
+
+/**
+ * Solo las zonas aptas para vivienda del predio (mismo motor que el análisis
+ * integral, pero aislado para activarlo desde Sectores). Comparte la grilla
+ * cacheada por Terrarium, así que no recalcula el relieve si ya se computó.
+ */
+export async function sugerirViviendas(
+  mojones: Array<{ lat: number; lng: number }>,
+  maxN = 3,
+): Promise<ZonaVivienda[] | null> {
+  if (mojones.length < 3) return null;
+  const bbox = conMargen(bboxDeMojones(mojones), 0.12);
+  const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
+  if (!g) return null;
+  const a = analizarRelieve(g);
+  return scorearViviendas(a, mojones, maxN);
+}
