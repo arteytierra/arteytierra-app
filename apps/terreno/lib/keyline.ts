@@ -369,72 +369,76 @@ export function generarPatronCultivo(
     return out;
   };
 
-  // Offsets ⟂ a las curvas: cada vértice de la maestra corrido k·espaciado por
-  // su gradiente local (cuesta arriba/abajo), cubriendo toda la parcela.
-  let maxDim = 0;
-  for (let i = 0; i < polyXY.length; i++) for (let j = i + 1; j < polyXY.length; j++) {
-    const d = Math.hypot(polyXY[j]!.x - polyXY[i]!.x, polyXY[j]!.y - polyXY[i]!.y);
-    if (d > maxDim) maxDim = d;
-  }
-  const K = Math.min(300, Math.ceil(maxDim / espaciadoM) + 1);
+  // ── Patrón por CAMPO DE DISTANCIA con signo a la maestra ──────────────────
+  // Offsetear la maestra por su normal se autointersecta en las curvas (la línea
+  // se dobla sobre sí misma) y hace que las paralelas se crucen y se abran. En su
+  // lugar armamos un campo escalar = distancia con signo de cada punto a la
+  // maestra, sobre un raster de la parcela, y sacamos sus curvas de nivel a
+  // k·espaciado. Las curvas de nivel de un campo escalar NUNCA se cruzan entre sí
+  // y quedan equiespaciadas por construcción → paralelas limpias, sin arreglos.
 
-  // Curvas PARALELAS a la maestra: se corre cada vértice por la NORMAL de la propia
-  // maestra (no por el gradiente local, que al invertirse en el eje del valle hacía
-  // que la línea se doblara sobre sí misma y se cruzara con las vecinas). El signo
-  // de la normal se fija con el gradiente medio (hacia cuesta arriba).
-  const normales: XY[] = masterXY.map((_, i) => {
-    const a = masterXY[Math.max(0, i - 1)]!, b = masterXY[Math.min(masterXY.length - 1, i + 1)]!;
-    let tx = b.x - a.x, ty = b.y - a.y;
-    const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
-    let nx = -ty, ny = tx;
-    if (nx * gradMedio.x + ny * gradMedio.y < 0) { nx = -nx; ny = -ny; }
-    return { x: nx, y: ny };
-  });
-  const offsetXY = (k: number): XY[] =>
-    masterXY.map((v, i) => ({ x: v.x + k * espaciadoM * normales[i]!.x, y: v.y + k * espaciadoM * normales[i]!.y }));
-
-  // Intersección propia de dos segmentos (devuelve el punto, o null).
-  const cruce = (a: XY, b: XY, c: XY, d: XY): XY | null => {
-    const r = { x: b.x - a.x, y: b.y - a.y }, s = { x: d.x - c.x, y: d.y - c.y };
-    const den = r.x * s.y - r.y * s.x;
-    if (Math.abs(den) < 1e-9) return null;
-    const t = ((c.x - a.x) * s.y - (c.y - a.y) * s.x) / den;
-    const u = ((c.x - a.x) * r.y - (c.y - a.y) * r.x) / den;
-    if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return null;
-    return { x: a.x + t * r.x, y: a.y + t * r.y };
-  };
-  // Elimina auto-intersecciones (lazos) de una polilínea: donde un tramo cruza a otro
-  // no adyacente, recorta el lazo y empalma en el punto de cruce. Esto borra el
-  // pliegue que aparece en la cara cóncava (la zona del arreglo).
-  const quitarLazos = (pts: XY[]): XY[] => {
-    let arr = pts;
-    for (let pass = 0; pass < 8; pass++) {
-      let hecho = false;
-      for (let i = 0; i + 1 < arr.length && !hecho; i++) {
-        for (let j = i + 2; j + 1 < arr.length; j++) {
-          if (i === 0 && j + 1 === arr.length) continue;
-          const X = cruce(arr[i]!, arr[i + 1]!, arr[j]!, arr[j + 1]!);
-          if (X) { arr = [...arr.slice(0, i + 1), X, ...arr.slice(j + 1)]; hecho = true; break; }
-        }
-      }
-      if (!hecho) break;
+  // Distancia con signo de un punto XY a la polilínea maestra (signo por el lado
+  // hacia el que cae respecto del gradiente medio = cuesta arriba/abajo).
+  const distFirmada = (px: number, py: number): number => {
+    let dmin = Infinity, fx = 0, fy = 0;
+    for (let i = 0; i + 1 < masterXY.length; i++) {
+      const a = masterXY[i]!, b = masterXY[i + 1]!;
+      const abx = b.x - a.x, aby = b.y - a.y;
+      const L2 = abx * abx + aby * aby || 1e-9;
+      let t = ((px - a.x) * abx + (py - a.y) * aby) / L2;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const qx = a.x + t * abx, qy = a.y + t * aby;
+      const d = Math.hypot(px - qx, py - qy);
+      if (d < dmin) { dmin = d; fx = qx; fy = qy; }
     }
-    return arr;
+    const lado = (px - fx) * gradMedio.x + (py - fy) * gradMedio.y;
+    return lado < 0 ? -dmin : dmin;
+  };
+
+  // Bbox de la parcela (+ margen) en XY.
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const p of polyXY) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; }
+  const marg = espaciadoM;
+  minX -= marg; maxX += marg; minY -= marg; maxY += marg;
+  const anchoM = maxX - minX, altoM = maxY - minY;
+  const ladoM = Math.max(anchoM, altoM, 1);
+  const celObjetivo = Math.max(1, espaciadoM / 3);       // ≥3 celdas entre líneas
+  const NN = Math.min(420, Math.max(48, Math.ceil(ladoM / celObjetivo) + 1));
+  const colsN = Math.max(2, Math.round((anchoM / ladoM) * (NN - 1)) + 1);
+  const rowsN = Math.max(2, Math.round((altoM / ladoM) * (NN - 1)) + 1);
+  const field = new Float64Array(rowsN * colsN);
+  let fMin = Infinity, fMax = -Infinity;
+  for (let r = 0; r < rowsN; r++) {
+    const y = minY + (r / (rowsN - 1)) * altoM;
+    for (let c = 0; c < colsN; c++) {
+      const x = minX + (c / (colsN - 1)) * anchoM;
+      const d = distFirmada(x, y);
+      field[r * colsN + c] = d;
+      if (d < fMin) fMin = d; if (d > fMax) fMax = d;
+    }
+  }
+  // Grilla ficticia (el campo como "elevación") para reusar el marching squares.
+  const fakeG: GrillaElevacion = {
+    rows: rowsN, cols: colsN,
+    latMin: lat0 + minY / R, latMax: lat0 + maxY / R,
+    lngMin: lng0 + minX / mLng, lngMax: lng0 + maxX / mLng,
+    elev: field, elev_min: fMin, elev_max: fMax,
   };
 
   const lineas: Array<Array<{ lat: number; lng: number }>> = [];
   let master: Array<{ lat: number; lng: number }> = [];
-  let vaciasSeguidas: Record<number, number> = { 1: 0, [-1]: 0 };
-  for (let k = -K; k <= K; k++) {
-    if (k !== 0) {
-      const sign = k > 0 ? 1 : -1;
-      if (vaciasSeguidas[sign]! > 3) continue;   // ya no entra nada más de ese lado
+  const iterSuav = suavizado >= 66 ? 2 : suavizado >= 33 ? 1 : 0;
+  const kMin = Math.ceil(fMin / espaciadoM), kMax = Math.floor(fMax / espaciadoM);
+  for (let k = kMin; k <= kMax; k++) {
+    for (const lnLL of contornoNivel(fakeG, k * espaciadoM)) {
+      if (lnLL.length < 2) continue;
+      let ptsLL = lnLL;
+      if (iterSuav > 0) ptsLL = chaikin(lnLL.map(toXY), iterSuav).map(toLL);
+      for (const seg of clip(ptsLL)) {
+        lineas.push(seg);
+        if (k === 0 && seg.length > master.length) master = seg;
+      }
     }
-    const segs = clip(quitarLazos(offsetXY(k)).map(toLL));
-    if (k === 0) { for (const s of segs) { lineas.push(s); if (s.length > master.length) master = s; } continue; }
-    const sign = k > 0 ? 1 : -1;
-    if (segs.length === 0) vaciasSeguidas[sign] = vaciasSeguidas[sign]! + 1;
-    else { vaciasSeguidas[sign] = 0; for (const s of segs) lineas.push(s); }
   }
   if (lineas.length === 0) return null;
 

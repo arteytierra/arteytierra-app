@@ -2072,7 +2072,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     { id: 'caminos'   as Tab, label: 'Caminos',  icon: <Route      className="w-3.5 h-3.5" /> },
     { id: 'red'       as Tab, label: 'Red agua', icon: <Spline     className="w-3.5 h-3.5" /> },
     { id: 'cuenca'    as Tab, label: 'Cuenca',   icon: <Waves      className="w-3.5 h-3.5" /> },
-    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <span className="text-[13px] leading-none">🐄</span> },
+    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
     { id: 'riego'     as Tab, label: 'Riego',    icon: <Sprout     className="w-3.5 h-3.5" /> },
     { id: 'keyline'   as Tab, label: 'Keyline',  icon: <Waypoints  className="w-3.5 h-3.5" /> },
     { id: 'economia'  as Tab, label: 'Economía', icon: <DollarSign className="w-3.5 h-3.5" /> },
@@ -2945,6 +2945,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           onCursorCad={(lat, lng) => { cursorCadRef.current = { lat, lng }; }}
           onCursorMove={(lat, lng) => { cursorPosRef.current = { lat, lng }; }}
           capturaMode={capturaActiva}
+          layoutSignal={`${panelAbierto}|${panelDerecho}`}
           overlay={overlay}
           onOverlayEsquina={handleOverlayEsquina}
           masterPlan={masterPlan}

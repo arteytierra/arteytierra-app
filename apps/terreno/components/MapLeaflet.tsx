@@ -863,8 +863,10 @@ function MapMouseTracker({ onMove }: { onMove: (lat: number, lng: number) => voi
   return null;
 }
 
-// Redibuja el mapa cuando cambia el modo captura (el contenedor cambia de tamaño)
-function InvalidarSize({ trigger }: { trigger: boolean }) {
+// Redibuja el mapa cuando cambia el tamaño del contenedor (modo captura o colapso
+// de los paneles laterales). Sin esto, Leaflet no re-teja el área nueva y queda
+// una franja negra del lado que se ensanchó.
+function InvalidarSize({ trigger }: { trigger: unknown }) {
   const map = useMap();
   useEffect(() => {
     const t = setTimeout(() => map.invalidateSize(), 260);
@@ -983,6 +985,8 @@ interface Props {
   onCursorCad?:       (lat: number, lng: number) => void;
   onCursorMove?:      (lat: number, lng: number) => void;
   capturaMode?:       boolean;
+  /** Cualquier valor que cambie al reajustarse el layout (colapso de paneles) → invalidateSize. */
+  layoutSignal?:      string | number;
   // ── Overlay de imagen (plano de referencia) ──
   overlay?:           OverlayImagen | null;
   onOverlayEsquina?:  (esquina: 'sw' | 'ne' | 'centro', lat: number, lng: number) => void;
@@ -1057,6 +1061,7 @@ function MapLeaflet({
   onCursorCad,
   onCursorMove,
   capturaMode = false,
+  layoutSignal,
   overlay = null,
   onOverlayEsquina,
   masterPlan = null,
@@ -1165,7 +1170,7 @@ function MapLeaflet({
         <AutoFit mojones={mojones} />
         <RotarConBotonCentral />
         {onCursorMove && <MapMouseTracker onMove={onCursorMove} />}
-        <InvalidarSize trigger={capturaMode} />
+        <InvalidarSize trigger={`${capturaMode}|${layoutSignal ?? ''}`} />
         {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
         {onMapChange  && <MapChangeWatcher onMapChange={onMapChange} />}
         {onGetFlyTo   && <FlyToExposer    onReady={onGetFlyTo} />}
