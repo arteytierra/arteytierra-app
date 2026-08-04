@@ -47,6 +47,7 @@ import { useAutosave } from '@/hooks/useAutosave';
 import { useCapas } from '@/hooks/useCapas';
 import { useSombras } from '@/hooks/useSombras';
 import { usePerfilElevacion } from '@/hooks/usePerfilElevacion';
+import { useCuenca } from '@/hooks/useCuenca';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -60,7 +61,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { cuencaAdaptativa, bboxDeMojones, cuencaManualDesdePoligono, simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
+import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -319,11 +320,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [modoPinClick,setModoPinClick]= useState(false);
   const [pinEditId,   setPinEditId]   = useState<string | null>(null);
   const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
-  const [modoCuenca,  setModoCuenca]  = useState(false);
-  const [cuenca,      setCuenca]      = useState<Cuenca | null>(null);
-  const [cuencaLoading, setCuencaLoading] = useState(false);
-  const [cuencaAviso, setCuencaAviso] = useState<string | null>(null);
-  const [cuencaExpandida, setCuencaExpandida] = useState(false);
+  // ─── Cuenca de aporte (hook useCuenca) ────────────────────────────────────
+  const {
+    modoCuenca, setModoCuenca,
+    cuenca, setCuenca,
+    cuencaLoading,
+    cuencaAviso, setCuencaAviso,
+    cuencaExpandida, setCuencaExpandida,
+    procesarCuenca,
+    handleExtenderCuenca,
+    handleUsarPoligonoCuenca,
+  } = useCuenca({ mojones });
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
   const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
@@ -717,56 +724,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       return arr.map((m, idx) => ({ ...m, numero: idx + 1 }));
     });
     dragIndexRef.current = null;
-  }, []);
-
-  // ─── Cuenca de aporte (delineación adaptativa sobre DEM propio) ────────────
-  // Por defecto la acota al terreno; con expand=true sube hasta la divisoria real.
-  const procesarCuenca = useCallback(async (lat: number, lng: number, expand = false) => {
-    if (mojones.length < 3) {
-      setCuencaAviso('Cargá primero el terreno (al menos 3 mojones) para calcular la cuenca.');
-      return;
-    }
-    setCuencaLoading(true);
-    setCuencaAviso(null);
-    try {
-      const res = await cuencaAdaptativa({ lat, lng }, bboxDeMojones(mojones), {
-        expand,
-        clip: expand ? undefined : mojones,
-      });
-      if (res) {
-        setCuenca(res.cuenca);
-        setCuencaExpandida(expand);
-        if (expand && !res.completa) {
-          setCuencaAviso('La cuenca puede estar incompleta: la divisoria llega al límite del área analizada.');
-        }
-      } else {
-        setCuencaAviso('No se pudo delinear la cuenca en ese punto. Marcá sobre un cauce o cañada (donde concentraría el agua).');
-      }
-    } catch {
-      setCuencaAviso('Hubo un error al calcular la cuenca. Reintentá.');
-    } finally {
-      setCuencaLoading(false);
-    }
-  }, [mojones]);
-
-  // Extender la cuenca actual hasta la divisoria real (desde su punto de salida).
-  const handleExtenderCuenca = useCallback(() => {
-    if (cuenca) void procesarCuenca(cuenca.outlet.lat, cuenca.outlet.lng, true);
-  }, [cuenca, procesarCuenca]);
-
-  // Cuenca manual: usar un polígono dibujado como cuenca de aporte.
-  const handleUsarPoligonoCuenca = useCallback(async (vertices: Array<{ lat: number; lng: number }>) => {
-    if (vertices.length < 3) return;
-    setCuencaLoading(true); setCuencaAviso(null);
-    try {
-      const c = await cuencaManualDesdePoligono(vertices);
-      if (c) { setCuenca(c); setCuencaExpandida(false); }
-      else setCuencaAviso('No se pudo calcular la cuenca del polígono. Fijate que tenga relieve cargado.');
-    } catch {
-      setCuencaAviso('Hubo un error al calcular la cuenca manual. Reintentá.');
-    } finally {
-      setCuencaLoading(false);
-    }
   }, []);
 
   // Editar la cuenca calculada: la vuelca a un polígono editable (simplificado)
