@@ -36,9 +36,7 @@ import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
 import { EntornoPanel } from './EntornoPanel';
 import { SombrasPanel } from './SombrasPanel';
-import { calcularSombras, salidaPuesta } from '@/lib/sombras';
-import { calcularInsolacion, type ResultadoInsolacion } from '@/lib/insolacion';
-import { PRESETS_OBJETO, type ObjetoSombra } from '@/lib/objetosSombra';
+import type { ObjetoSombra } from '@/lib/objetosSombra';
 import { calcularViewshed, type ResultadoViewshed } from '@/lib/viewshed';
 import { calcularMetricas } from '@/lib/geometria';
 import * as turf from '@turf/turf';
@@ -47,6 +45,7 @@ import { getSupabaseBrowserClient } from '@/lib/db/browser';
 import { guardarInformeBorrador } from '@/lib/informe';
 import { useAutosave } from '@/hooks/useAutosave';
 import { useCapas } from '@/hooks/useCapas';
+import { useSombras } from '@/hooks/useSombras';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
@@ -354,16 +353,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
-  const [sombrasActivo,    setSombrasActivo]     = useState(false);
-  const [sombrasDoy,       setSombrasDoy]        = useState(355);
-  const [sombrasHora,      setSombrasHora]       = useState(9);
-  const [sombrasObjetos,   setSombrasObjetos]    = useState<ObjetoSombra[]>([]);
-  const [modoArbol,        setModoArbol]         = useState(false);
-  const [animando,         setAnimando]          = useState(false);
-  const [insolacion,       setInsolacion]        = useState<ResultadoInsolacion | null>(null);
-  const [calculandoIns,    setCalculandoIns]     = useState(false);
-  /** Árbol elegido en el panel, a la espera del clic que lo ubica en el mapa. */
-  const objetoPendienteRef = useRef<{ id: string; nombre: string; altura_m: number; radio_m: number } | null>(null);
+  // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
+  // Se cablea más abajo, una vez definidos latCentro/zonas/dibujos.
 
   // ─── Capas de usuario: capa activa (capasOcultas vive en useCapas) ────────
   const [capaActivaId, setCapaActivaId] = useState<string>(CAPA_DEFAULT_ID);
@@ -491,9 +482,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   interface LeyItem { id: string; label: string; color?: string; dash?: boolean; icon?: string }
   const [leyendaEditada, setLeyendaEditada] = useState<LeyItem[] | null>(null);
 
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
-
-  // Mapa de sombras (D4): calcula sobre la grilla densa según fecha/hora.
+  // Centro del terreno (lo usan el zoom satelital, el hook de sombras y el mapa).
   const latCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lat, 0) / mojones.length : null, [mojones]);
   const lngCentro = useMemo(() => mojones.length ? mojones.reduce((s, m) => s + m.lng, 0) / mojones.length : null, [mojones]);
 
@@ -513,80 +502,27 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       .catch(() => { /* nos quedamos con 18 */ });
     return () => { vivo = false; };
   }, [latCentro, lngCentro]);
-  const sombras = useMemo(
-    () => (sombrasActivo && datosShader && latCentro != null)
-      ? calcularSombras(datosShader, latCentro, sombrasDoy, sombrasHora, sombrasObjetos)
-      : null,
-    [sombrasActivo, datosShader, latCentro, sombrasDoy, sombrasHora, sombrasObjetos],
-  );
+  // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
+  const {
+    sombrasActivo, setSombrasActivo,
+    sombrasDoy, setSombrasDoy,
+    sombrasHora, setSombrasHora,
+    sombrasObjetos, setSombrasObjetos,
+    modoArbol, setModoArbol,
+    animando,
+    insolacion, setInsolacion,
+    calculandoIns,
+    objetoPendienteRef,
+    sombras,
+    handleAnimar,
+    handleInsolacion,
+    poligonosLevantables,
+    handleAlturaObjeto,
+    handleEliminarObjeto,
+    handleAgregarObjeto,
+  } = useSombras({ datosShader, latCentro, zonas, dibujos });
 
-  // Animación del día: avanza la hora solar entre la salida y la puesta del sol.
-  useEffect(() => {
-    if (!animando || latCentro == null) return;
-    const { salida, puesta } = salidaPuesta(latCentro, sombrasDoy);
-    const id = setInterval(() => {
-      setSombrasHora(h => {
-        const sig = h + 0.25;
-        return sig > puesta ? salida : sig;
-      });
-    }, 220);
-    return () => clearInterval(id);
-  }, [animando, latCentro, sombrasDoy]);
-
-  // Al arrancar la animación, si la hora quedó fuera del día, la traemos al orto.
-  const handleAnimar = useCallback(() => {
-    if (latCentro == null) return;
-    const { salida, puesta } = salidaPuesta(latCentro, sombrasDoy);
-    setAnimando(a => {
-      if (!a && (sombrasHora < salida || sombrasHora > puesta)) setSombrasHora(salida);
-      return !a;
-    });
-  }, [latCentro, sombrasDoy, sombrasHora]);
-
-  /**
-   * Horas de sol acumuladas. Es pesado (una pasada de sombras por cada paso del
-   * día), así que va bajo demanda y cede un frame antes para que el botón pueda
-   * pintar su estado de "calculando".
-   */
-  const handleInsolacion = useCallback(async () => {
-    if (!datosShader || latCentro == null) return;
-    setCalculandoIns(true);
-    await new Promise(r => setTimeout(r, 30));
-    try {
-      setInsolacion(calcularInsolacion(datosShader, latCentro, sombrasDoy, sombrasObjetos, 20));
-    } finally {
-      setCalculandoIns(false);
-    }
-  }, [datosShader, latCentro, sombrasDoy, sombrasObjetos]);
-
-  // El mapa de insolación es de un día concreto: si cambian el día o los objetos, caduca.
-  useEffect(() => { setInsolacion(null); }, [sombrasDoy, sombrasObjetos]);
-
-  /** Polígonos ya dibujados que se pueden levantar como volumen con altura. */
-  const poligonosLevantables = useMemo(() => [
-    ...zonas.map(z => ({ id: z.id, nombre: z.nombre, vertices: z.vertices })),
-    ...dibujos.flatMap(d => d.tipo === 'poligono'
-      ? [{ id: d.id, nombre: d.nombre || 'Polígono', vertices: d.vertices }]
-      : []),
-  ], [zonas, dibujos]);
-
-  const handleAlturaObjeto = useCallback((id: string, altura: number) => {
-    if (!Number.isFinite(altura) || altura <= 0) return;
-    setSombrasObjetos(o => o.map(x => x.id === id ? { ...x, altura_m: altura } : x));
-  }, []);
-  const handleEliminarObjeto = useCallback((id: string) => {
-    setSombrasObjetos(o => o.filter(x => x.id !== id));
-  }, []);
-
-  const handleAgregarObjeto = useCallback((preset: typeof PRESETS_OBJETO[number], vertices?: Array<{ lat: number; lng: number }>) => {
-    const id = crypto.randomUUID();
-    if (preset.tipo === 'arbol') {
-      setModoArbol(true);
-      objetoPendienteRef.current = { id, nombre: preset.etiqueta, altura_m: preset.altura_m, radio_m: preset.radio_m ?? 3 };
-    } else if (vertices && vertices.length >= 3) {
-      setSombrasObjetos(o => [...o, { id, tipo: 'volumen', nombre: preset.etiqueta, altura_m: preset.altura_m, vertices }]);
-    }
-  }, []);
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
