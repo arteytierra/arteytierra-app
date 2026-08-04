@@ -10,7 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
-  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles,
+  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -86,6 +86,7 @@ import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPa
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
 import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
+import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos';
 import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
@@ -134,7 +135,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
-  | 'infra'   | 'carbono' | 'economia' | 'proyectos';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -191,6 +192,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
   { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
   { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
+  { id: 'elementos',   label: 'Elementos',   icon: <TreeDeciduous className="w-3.5 h-3.5" /> },
   { id: 'pastoreo',    label: 'Pastoreo',    icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
   { id: 'keyline',     label: 'Keyline',     icon: <Waypoints    className="w-3.5 h-3.5" /> },
   { id: 'prod',        label: 'Producción',  icon: <Wheat        className="w-3.5 h-3.5" /> },
@@ -207,7 +209,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego'] },
-  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'caminos', 'visibilidad', 'sombras', 'infra'] },
+  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
   { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
@@ -460,6 +462,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [ayudaOpen,  setAyudaOpen]  = useState(false);
   const [tema, setTema] = useState<'claro' | 'sepia' | 'oscuro'>('claro');
   const [bloqueActivo,   setBloqueActivo]   = useState<BloqueDef | null>(null);
+  const [elementoActivo, setElementoActivo] = useState<ElementoPreset | null>(null);
+  const [modoElementoClick, setModoElementoClick] = useState(false);
   const [keylineCheck,   setKeylineCheck]   = useState<Record<string, KeylineCheck>>({});
   const [escenarios,     setEscenarios]     = useState<Escenario[]>([]);
   const [escenarioActivoId, setEscenarioActivoId] = useState<string | null>(null);
@@ -539,7 +543,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     handleAgregarObjeto,
   } = useSombras({ datosShader, latCentro, zonas, dibujos });
 
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoElementoClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
@@ -777,6 +781,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         : crearPin(lat, lng)]);
       setModoPinClick(false); setBloqueActivo(null); return;
     }
+    if (modoElementoClick && elementoActivo) {
+      const e = elementoActivo;
+      setDibujos(d => [...d, {
+        id: crypto.randomUUID(), tipo: 'circulo', color: e.color,
+        lat, lng, radio: e.radio_m, opacidad: e.opacidad,
+        simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
+      }]);
+      return; // se mantiene el sello activo para colocar varios
+    }
     if (modoDibujo === 'medir') { setMedicionVertices(prev => [...prev, { lat, lng }]); return; }
 
     if (modoDibujo && modoDibujo !== 'seleccion') {
@@ -846,7 +859,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -1248,6 +1261,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         if (modoSector)   setModoSector(null);
         if (modoCamino)   setModoCamino(null);
         if (modoPinClick) setModoPinClick(false);
+        if (modoElementoClick) { setModoElementoClick(false); setElementoActivo(null); }
         if (modoClick)    setModoClick(false);
         setDibujoSelId(null);
         return;
@@ -1284,7 +1298,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [
     undo, redo, modal, dibujoEnCurso, modoDibujo, medicionVertices, modoZona, modoSector, modoCamino,
-    modoPinClick, modoClick, dibujoSelId,
+    modoPinClick, modoElementoClick, modoClick, dibujoSelId,
     handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
     handleCancelarDibujo, handleEliminarDibujo,
   ]);
@@ -2332,6 +2346,38 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                         className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${bloqueActivo?.id === b.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
                         <span className="text-base leading-none">{b.icono}</span>
                         <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{b.nombre}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === 'elementos' && (
+            <div className="px-4 py-4 space-y-2">
+              <p className="text-[11px] text-ink-700/60 leading-relaxed">
+                Elegí un elemento y hacé clic en el mapa para colocarlo <b>a escala real</b> (el disco es el tamaño de la copa / silueta). El sello queda activo: podés colocar varios seguidos. Se ven también en la vista 3D.
+              </p>
+              {elementoActivo ? (
+                <div className="flex items-center gap-2 bg-moss-100 border border-moss-300 rounded-lg px-2.5 py-1.5">
+                  <span className="text-base leading-none">{elementoActivo.emoji}</span>
+                  <span className="text-[11px] text-ink-900 flex-1 leading-tight">Colocá en el mapa: <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· r {elementoActivo.radio_m} m</span></span>
+                  <button onClick={() => { setElementoActivo(null); setModoElementoClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                </div>
+              ) : (
+                <p className="text-[10px] text-ink-700/50 leading-tight">Ningún elemento seleccionado.</p>
+              )}
+              {GRUPOS_ELEMENTO.map(grupo => (
+                <div key={grupo}>
+                  <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
+                  <div className="grid grid-cols-4 gap-1">
+                    {ELEMENTOS.filter(e => e.grupo === grupo).map(e => (
+                      <button key={e.id} title={`${e.nombre} · r ${e.radio_m} m`}
+                        onClick={() => { setElementoActivo(e); setModoElementoClick(true); setModoPinClick(false); setBloqueActivo(null); setModoClick(false); }}
+                        className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${elementoActivo?.id === e.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
+                        <span className="text-base leading-none">{e.emoji}</span>
+                        <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{e.nombre}</span>
                       </button>
                     ))}
                   </div>

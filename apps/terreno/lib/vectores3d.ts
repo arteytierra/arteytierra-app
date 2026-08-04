@@ -198,6 +198,7 @@ export function construirVectores3D(d: DatosVectores): Vectores3D {
           break;
         case 'circulo':
           poly(circulo(el.lat, el.lng, el.radio), { ...base, opacidad: el.opacidad });
+          if (el.simbolo) point({ lat: el.lat, lng: el.lng }, { ...base, simbolo: el.simbolo });
           break;
         case 'texto':
           point(el, { ...base, simbolo: el.texto });

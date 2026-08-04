@@ -144,6 +144,20 @@ function crearIconoPin(pin: Pin): L.DivIcon {
   return icon;
 }
 
+const _cElem = new Map<string, L.DivIcon>();
+/** Emoji simple centrado (sin chapita) para los elementos a escala. */
+function crearIconoElemento(simbolo: string): L.DivIcon {
+  if (_cElem.has(simbolo)) return _cElem.get(simbolo)!;
+  const icon = L.divIcon({
+    html: `<div style="font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">${simbolo}</div>`,
+    className: '',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+  _cElem.set(simbolo, icon);
+  return icon;
+}
+
 function crearIconoSugerencia(tipo: 'vivienda' | 'reservorio', rank: number, score: number): L.DivIcon {
   const key = `${tipo}-${rank}-${score}`;
   if (_cSuger.has(key)) return _cSuger.get(key)!;
@@ -1547,7 +1561,10 @@ function MapLeaflet({
                 pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
                 eventHandlers={{ click: onClick }}
               />
-              {capas.medidas && (
+              {d.simbolo ? (
+                <Marker position={[d.lat, d.lng]} interactive={false}
+                  icon={crearIconoElemento(d.simbolo)} />
+              ) : capas.medidas && (
                 <Marker position={[d.lat, d.lng]} interactive={false}
                   icon={crearIconoMedida(`r ${formatearLongitud(d.radio)} · ${formatearArea(Math.PI * d.radio * d.radio)}`, d.color)} />
               )}
