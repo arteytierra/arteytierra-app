@@ -326,7 +326,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                     </li>
                   ))}
                 </ul>
-                {op.precio !== 'Consultanos' && course.kind !== 'inmersion' && (
+                {op.precio !== 'Consultanos' && course.kind !== 'inmersion' && !course.sinCarrito && (
                   <AddCourseToCartButton
                     item={{
                       slug: course.slug,

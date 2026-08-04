@@ -49,6 +49,8 @@ export interface CourseData {
   formCurso: string;
   whatsapp: string;
   mercadopago?: string;
+  /** Oculta el botón "Agregar al carrito": inscripción solo por formulario + WhatsApp (cursos con seña / cupo muy chico). */
+  sinCarrito?: boolean;
 }
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
@@ -69,6 +71,120 @@ const FABRICIO: Facilitador = {
 /* ─────────────────────────────────────────────────── */
 
 export const COURSES: Record<string, CourseData> = {
+
+  'formacion-construccion-natural': {
+    slug: 'formacion-construccion-natural',
+    kind: 'presencial',
+    badge: 'Formación intensiva · 3 meses',
+    name: 'Formación Integral en Construcción Natural',
+    subtitle: 'Tres meses de obra real, de los cimientos al techo. Construimos juntos una cabaña completa en San Marcos Sierras y vos te llevás el oficio en las manos.',
+    heroImg: '/img/cursos/bioarquitectura/1.jpg',
+    galeria: [
+      '/img/cursos/bioarquitectura/3.jpg',
+      '/img/cursos/bioarquitectura/7.jpg',
+      '/img/cursos/bioarquitectura/9.jpg',
+      '/img/cursos/vueltatierra/2.jpg',
+      '/img/cursos/bioarquitectura/11.jpg',
+      '/img/cursos/bioarquitectura/12.jpeg',
+      '/img/cursos/vueltatierra/10.jpg',
+      '/img/cursos/mitierramicasa/2.jpg',
+    ],
+    tag: '7 de septiembre al 7 de diciembre 2026 · San Marcos Sierras · Solo 3 cupos',
+    intro: [
+      'Volvemos a abrir nuestra formación más profunda: tres meses viviendo una obra real de principio a fin. En San Marcos Sierras vamos a construir una cabaña de 25 m² completa —de los cimientos al techo— como primera intervención dentro de un predio que ya cuenta con su masterplan. Vos aprendés construyéndola.',
+      'No es un taller de una técnica suelta: es el ciclo entero de una vivienda natural. Estructuras en madera, muros de adobe y quincha alivianada, techos vivos y de chapa, revoques de barro y de cal, biofiltros para aguas grises y negras, cosecha de agua de lluvia e instalación de servicios hasta el fin de obra.',
+      'La práctica diaria en obra se complementa con teoría en campo, el curso grabado «Mi Tierra, Mi Casa», asesorías de diseño colectivas cada tres semanas para tu propio proyecto, círculos de proceso mensuales y el acompañamiento de un focalizador personal durante toda la vivencia.',
+    ],
+    datos: [
+      { label: '¿Cuándo?', val: '7 de septiembre al 7 de diciembre 2026 · 3 meses' },
+      { label: '¿Dónde?', val: 'Obra en San Marcos Sierras, Córdoba · Hospedaje en Ecohostel Tay Pichín' },
+      { label: 'Modalidad', val: 'Obra real diaria + teoría en campo + acompañamiento' },
+      { label: 'Cupos', val: 'Solo 3 · grupo reducido' },
+    ],
+    paraQuien: [
+      'Estás por construir tu propia casa y querés vivir el proceso completo antes de emprenderlo por tu cuenta.',
+      'Querés dedicarte a la bioconstrucción y necesitás horas reales de obra, no solo un taller de fin de semana.',
+      'Ya hiciste talleres sueltos y sentís que te falta ver una obra entera, de los cimientos al techo.',
+      'Buscás una vivencia transformadora: aprender un oficio noble, en comunidad y en contacto con la tierra.',
+    ],
+    vasASalir: [
+      'Leer un terreno y replantear una obra con criterio propio.',
+      'Ejecutar cimientos, estructuras de madera, muros de adobe y quincha alivianada.',
+      'Montar techos vivos y de chapa, y aplicar revoques gruesos y finos de barro y de cal.',
+      'Resolver el agua de la vivienda: biofiltros de aguas grises y negras, y cosecha de lluvia.',
+      'Acompañar y organizar una obra de construcción natural de principio a fin.',
+    ],
+    modulos: [
+      {
+        num: 'Fase 01 · Semanas 1–2', title: 'Fundación', date: 'Septiembre',
+        teoria: 'Lectura del terreno, replanteo y elección del sistema constructivo. Tipos de fundación y su comportamiento.',
+        practica: 'Preparación del terreno, replanteo, cimientos de piedra, encadenados y contrapisos.',
+        items: ['Replanteo de obra', 'Cimientos', 'Contrapisos'],
+      },
+      {
+        num: 'Fase 02 · Semanas 3–4', title: 'Estructura en madera', date: 'Septiembre — Octubre',
+        teoria: 'Nociones de estructura: cargas, uniones y arriostramiento. La madera como base de la mirada constructiva.',
+        practica: 'Montaje de la estructura portante en madera y del esqueleto del techo.',
+        items: ['Estructura portante', 'Uniones', 'Esqueleto de techo'],
+      },
+      {
+        num: 'Fase 03 · Semanas 5–7', title: 'Muros', date: 'Octubre',
+        teoria: 'Comportamiento de tierra, paja y madera. Diseño bioclimático y ubicación de aberturas.',
+        practica: 'Muros de adobe y quincha alivianada. Colocación de aberturas.',
+        items: ['Adobe', 'Quincha alivianada', 'Colocación de aberturas'],
+      },
+      {
+        num: 'Fase 04 · Semanas 8–9', title: 'Techos', date: 'Octubre — Noviembre',
+        teoria: 'Cargas, pendientes e impermeabilización. Tipos de techo vivo y sus sustratos.',
+        practica: 'Techo de chapa y montaje de techo vivo con sustrato y drenaje.',
+        items: ['Techo de chapa', 'Techo vivo', 'Impermeabilización'],
+      },
+      {
+        num: 'Fase 05 · Semanas 10–11', title: 'Revoques', date: 'Noviembre',
+        teoria: 'Ciclo de la cal, mezclas y proporciones según cada zona de la casa.',
+        practica: 'Revoques gruesos y finos de barro y de cal.',
+        items: ['Grueso de barro y de cal', 'Fino de barro y de cal'],
+      },
+      {
+        num: 'Fase 06 · Semanas 12–13', title: 'Agua, servicios y fin de obra', date: 'Noviembre — Diciembre', highlighted: true,
+        teoria: 'El ciclo del agua en la vivienda: biofiltros, cosecha de lluvia y saneamiento ecológico.',
+        practica: 'Biofiltros de aguas grises y negras, recolección de lluvia, veredas, instalación de servicios y fin de obra.',
+        items: ['Biofiltro de aguas grises y negras', 'Cosecha de lluvia', 'Veredas y servicios', 'Fin de obra'],
+      },
+    ],
+    facilitadores: [
+      JONATAN,
+      {
+        name: 'Equipo de obra Arte y Tierra',
+        role: 'Cuadrilla y acompañamiento',
+        bio: 'La formación se sostiene sobre una cuadrilla estable que trabaja la obra a diario: Julián Denaday, Ignacio Gómez, Karen Ibarra y Valentín Nonino, junto a Jonatan. Un equipo con oficio que acompaña cada fase del proceso, sumado a los voluntarios del programa de Inmersión Viva que dan vida cotidiana a la obra.',
+      },
+    ],
+    opciones: [
+      {
+        id: 'completo',
+        label: 'Formación completa · 3 meses',
+        precio: '$2.000.000 ARS',
+        precioAlt: 'USD 1.400',
+        includes: [
+          'Hospedaje en habitación compartida en Ecohostel Tay Pichín',
+          'Alimentación completa durante los 3 meses',
+          'Certificado de participación',
+          'Manual de Diseño Simbiótico (PDF)',
+          'Acceso al curso grabado «Mi Tierra, Mi Casa»',
+          'Asesorías de diseño colectivas cada 3 semanas',
+          'Círculos de proceso mensuales',
+          'Acompañamiento con focalizador personal',
+        ],
+        highlighted: true,
+      },
+    ],
+    opcionesNota: 'Precio único, todo incluido. Reservás tu lugar con una seña del 50%. Solo 3 cupos: trabajamos con un grupo muy chico para cuidar la profundidad del proceso.',
+    sinCarrito: true,
+    formCurso: 'Formación Integral en Construcción Natural · 7 sep – 7 dic 2026',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%207%20de%20septiembre)',
+    mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
+  },
 
   'bioarquitectura': {
     slug: 'bioarquitectura',
