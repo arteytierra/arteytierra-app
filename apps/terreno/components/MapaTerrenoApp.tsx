@@ -1748,6 +1748,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [bearing,    setBearing]    = useState(0);
   const [capaFondo,  setCapaFondo]  = useState<CapaFondo>('satelite');
   const handleGetNavegacion = useCallback((api: NavegacionMapa) => { setNavegacion(api); }, []);
+  // Props estables para MapLeaflet (React.memo): sin useCallback, estas arrow
+  // functions se recreaban en cada render y anulaban el memo del mapa.
+  const handleMoverArcoSolar = useCallback((lat: number, lng: number) => { setArcoSolarOffset({ lat, lng }); }, []);
+  const handleCursorCad = useCallback((lat: number, lng: number) => { cursorCadRef.current = { lat, lng }; }, []);
+  const handleCursorMove = useCallback((lat: number, lng: number) => { cursorPosRef.current = { lat, lng }; }, []);
   const handleRangoTerrarium = useCallback((min: number, max: number) => { setTerrariumRango({ min, max }); }, []);
   const handleResetTerrariumRango = useCallback(() => setTerrariumRango(null), []);
 
@@ -2992,7 +2997,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           opacidadShaderPend={opacidadShader.pend}
           aguadasLayer={aguadasFiltradas}
           datosArcoSolar={datosArcoSolar}
-          onMoverArcoSolar={(lat, lng) => setArcoSolarOffset({ lat, lng })}
+          onMoverArcoSolar={handleMoverArcoSolar}
           onMoverPin={handleMoverPin}
           onGetBounds={handleGetBounds}
           onGetFlyTo={handleGetFlyTo}
@@ -3011,8 +3016,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           verticesActivos={verticesActivos}
           colorPreview={colorPreview}
           medicion={modoDibujo === 'medir' ? medicionVertices : null}
-          onCursorCad={(lat, lng) => { cursorCadRef.current = { lat, lng }; }}
-          onCursorMove={(lat, lng) => { cursorPosRef.current = { lat, lng }; }}
+          onCursorCad={handleCursorCad}
+          onCursorMove={handleCursorMove}
           capturaMode={capturaActiva}
           layoutSignal={`${panelAbierto}|${panelDerecho}`}
           overlay={overlay}
