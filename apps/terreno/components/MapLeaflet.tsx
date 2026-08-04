@@ -972,6 +972,7 @@ interface Props {
   onMoverVertice?:    (id: string, idx: number, lat: number, lng: number) => void;
   onInsertarVertice?: (id: string, idxAfter: number, lat: number, lng: number) => void;
   onEliminarVertice?: (id: string, idx: number) => void;
+  onRedimensionarCirculo?: (id: string, radio: number) => void;
   onMoverPin?:        (id: string, lat: number, lng: number) => void;
   // ── Bounds para topografía del área visible ──
   onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
@@ -1061,6 +1062,7 @@ function MapLeaflet({
   onMoverVertice,
   onInsertarVertice,
   onEliminarVertice,
+  onRedimensionarCirculo,
   onMoverPin,
   onGetBounds,
   onMapChange,
@@ -1546,7 +1548,10 @@ function MapLeaflet({
                   pathOptions={{ color: d.color, fillColor: d.color, fillOpacity: d.opacidad, weight: selW ?? 2, dashArray: selD, interactive: true }}
                   eventHandlers={{ click: onClick }}
                 />
-                {capas.medidas && d.vertices.length >= 3 && (
+                {d.simbolo ? (
+                  <Marker position={[cLat, cLng]} interactive={false}
+                    icon={crearIconoElemento(d.simbolo)} />
+                ) : capas.medidas && d.vertices.length >= 3 && (
                   <Marker position={[cLat, cLng]} interactive={false}
                     icon={crearIconoMedida(formatearArea(areaPoligonoM2(d.vertices)), d.color)} />
                 )}
@@ -1667,6 +1672,28 @@ function MapLeaflet({
                 moveend(e) {
                   const p = (e.target as L.Marker).getLatLng();
                   onMoverDibujo?.(dibujoSelId, p.lat - lat, p.lng - lng);
+                },
+              }}
+            />
+          );
+        })()}
+
+        {/* ── Mango de redimensión para círculos (arrastrar el borde este) ── */}
+        {modoDibujo === 'seleccion' && dibujoSelId && onRedimensionarCirculo && (() => {
+          const el = dibujos.find(d => d.id === dibujoSelId);
+          if (!el || el.tipo !== 'circulo') return null;
+          const dLng = el.radio / (111_320 * Math.cos(el.lat * Math.PI / 180));
+          const icon = L.divIcon({
+            html: `<div title="Arrastrar para cambiar el tamaño" style="width:14px;height:14px;border-radius:50%;background:white;border:2.5px solid ${el.color};box-shadow:0 1px 4px rgba(0,0,0,0.45);cursor:ew-resize;"></div>`,
+            className: '', iconSize: [14, 14], iconAnchor: [7, 7],
+          });
+          return (
+            <Marker key={`radio-${dibujoSelId}`} position={[el.lat, el.lng + dLng]} icon={icon} draggable zIndexOffset={600}
+              eventHandlers={{
+                moveend(e) {
+                  const p = (e.target as L.Marker).getLatLng();
+                  const r = distanciaMetros(el.lat, el.lng, p.lat, p.lng);
+                  onRedimensionarCirculo(dibujoSelId, Math.max(0.2, r));
                 },
               }}
             />

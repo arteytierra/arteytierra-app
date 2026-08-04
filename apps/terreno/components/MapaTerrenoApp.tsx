@@ -783,11 +783,27 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
     if (modoElementoClick && elementoActivo) {
       const e = elementoActivo;
-      setDibujos(d => [...d, {
-        id: crypto.randomUUID(), tipo: 'circulo', color: e.color,
-        lat, lng, radio: e.radio_m, opacidad: e.opacidad,
-        simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
-      }]);
+      const id = crypto.randomUUID();
+      if (e.forma === 'rect') {
+        const dLat = (e.largo_m ?? 2) / 2 / 111_320;
+        const dLng = (e.ancho_m ?? 2) / 2 / (111_320 * Math.cos(lat * Math.PI / 180));
+        setDibujos(d => [...d, {
+          id, tipo: 'poligono', color: e.color, opacidad: e.opacidad,
+          simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
+          vertices: [
+            { lat: lat + dLat, lng: lng - dLng },
+            { lat: lat + dLat, lng: lng + dLng },
+            { lat: lat - dLat, lng: lng + dLng },
+            { lat: lat - dLat, lng: lng - dLng },
+          ],
+        }]);
+      } else {
+        setDibujos(d => [...d, {
+          id, tipo: 'circulo', color: e.color,
+          lat, lng, radio: e.radio_m ?? 1, opacidad: e.opacidad,
+          simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
+        }]);
+      }
       return; // se mantiene el sello activo para colocar varios
     }
     if (modoDibujo === 'medir') { setMedicionVertices(prev => [...prev, { lat, lng }]); return; }
@@ -1061,6 +1077,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       if (d.vertices.length <= min) return d;
       return { ...d, vertices: d.vertices.filter((_, i) => i !== idx) };
     }));
+  }, []);
+
+  const handleRedimensionarCirculo = useCallback((id: string, radio: number) => {
+    setDibujos(prev => prev.map(d => d.id === id && d.tipo === 'circulo' ? { ...d, radio } : d));
   }, []);
 
   const handleRenombrarDibujo = useCallback((nombre: string, notas: string) => {
@@ -2843,6 +2863,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           onMoverVertice={handleMoverVertice}
           onInsertarVertice={handleInsertarVertice}
           onEliminarVertice={handleEliminarVertice}
+          onRedimensionarCirculo={handleRedimensionarCirculo}
           modoDibujo={modoDibujo}
           colorDibujo={colorDibujo}
           elevMin={terrariumElevMin}

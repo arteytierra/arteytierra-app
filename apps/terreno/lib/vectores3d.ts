@@ -192,10 +192,16 @@ export function construirVectores3D(d: DatosVectores): Vectores3D {
         case 'cota':
           line(el.vertices, { ...base, grosor: 2, dash: 'rayada' });
           break;
-        case 'poligono':
+        case 'poligono': {
           poly(el.vertices, { ...base, opacidad: el.opacidad });
           line([...el.vertices, el.vertices[0]!], { ...base, grosor: 2 });
+          if (el.simbolo) {
+            const cLat = el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length;
+            const cLng = el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length;
+            point({ lat: cLat, lng: cLng }, { ...base, simbolo: el.simbolo });
+          }
           break;
+        }
         case 'circulo':
           poly(circulo(el.lat, el.lng, el.radio), { ...base, opacidad: el.opacidad });
           if (el.simbolo) point({ lat: el.lat, lng: el.lng }, { ...base, simbolo: el.simbolo });
