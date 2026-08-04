@@ -845,11 +845,13 @@ function NavegacionExposer({ onReady, onBearing }: {
   return null;
 }
 
-// Expone flyTo al padre para centrar el mapa en un mojón recién agregado por coords
-function FlyToExposer({ onReady }: { onReady: (fn: (lat: number, lng: number) => void) => void }) {
+// Expone flyTo al padre para centrar el mapa en un mojón recién agregado por
+// coords, o en un resultado de búsqueda (con zoom propio: una localidad se ve
+// mejor alejada que un mojón).
+function FlyToExposer({ onReady }: { onReady: (fn: (lat: number, lng: number, zoom?: number) => void) => void }) {
   const map = useMap();
   useEffect(() => {
-    onReady((lat, lng) => map.flyTo([lat, lng], Math.max(map.getZoom(), 16), { duration: 0.6 }));
+    onReady((lat, lng, zoom) => map.flyTo([lat, lng], zoom ?? Math.max(map.getZoom(), 16), { duration: 0.6 }));
   }, [map, onReady]);
   return null;
 }
@@ -961,8 +963,10 @@ interface Props {
   onGetBounds?:       (fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => void;
   // ── Zoom/centro para escala gráfica ──
   onMapChange?:       (zoom: number, lat: number) => void;
-  // ── Fly-to programático ──
-  onGetFlyTo?:        (fn: (lat: number, lng: number) => void) => void;
+  // ── Fly-to programático (zoom opcional para búsqueda de localidad) ──
+  onGetFlyTo?:        (fn: (lat: number, lng: number, zoom?: number) => void) => void;
+  /** Marcador temporal del resultado de búsqueda (no es parte del proyecto). */
+  marcadorBusqueda?:  { lat: number; lng: number; label: string } | null;
   // ── Navegación unificada (el panel vive en MapaTerrenoApp) ──
   onGetNavegacion?:   (api: NavegacionMapa) => void;
   onBearing?:         (grados: number) => void;
@@ -1065,6 +1069,7 @@ function MapLeaflet({
   overlay = null,
   onOverlayEsquina,
   masterPlan = null,
+  marcadorBusqueda = null,
 }: Props) {
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
 
@@ -1412,6 +1417,23 @@ function MapLeaflet({
             }}
           />
         ))}
+
+        {/* ── Marcador temporal de búsqueda de localidad ── */}
+        {marcadorBusqueda && (
+          <Marker
+            position={[marcadorBusqueda.lat, marcadorBusqueda.lng]}
+            interactive={false}
+            zIndexOffset={1200}
+            icon={L.divIcon({
+              className: '',
+              iconAnchor: [11, 28],
+              html: `<div style="position:relative;display:flex;flex-direction:column;align-items:center">
+                <div style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#D9A441;color:#3a2e12;font:600 10px/1.2 system-ui;padding:2px 7px;border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.3);margin-bottom:3px">${marcadorBusqueda.label.replace(/</g, '&lt;')}</div>
+                <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg"><path d="M11 0C5 0 0 4.7 0 10.6 0 18 11 28 11 28s11-10 11-17.4C22 4.7 17 0 11 0z" fill="#D9A441" stroke="#fff" stroke-width="1.5"/><circle cx="11" cy="10.5" r="3.6" fill="#fff"/></svg>
+              </div>`,
+            })}
+          />
+        )}
 
         {/* ── Sugerencias: vivienda y reservorio ── */}
         {capas.sugerencias && datosSugerencias && (

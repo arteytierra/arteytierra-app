@@ -10,11 +10,12 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
-  CloudRain, TreePine, Shapes, Briefcase, Target, Container,
+  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
 import { ProyectosPanel } from './ProyectosPanel';
+import { BuscadorLugar, type ResultadoBusqueda } from './BuscadorLugar';
 import { ClimaPanel } from './ClimaPanel';
 import { ContextoPanel } from './ContextoPanel';
 import { TopografiaPanel } from './TopografiaPanel';
@@ -207,6 +208,29 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
 const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
 );
+
+/** Predio de ejemplo (~4 ha cerca de San Marcos Sierra, Córdoba) para que el
+ *  usuario nuevo vea las herramientas funcionando sin tener que dibujar antes. */
+const EJEMPLO_MOJONES: Array<{ lat: number; lng: number }> = [
+  { lat: -30.78210, lng: -64.63520 },
+  { lat: -30.78150, lng: -64.63180 },
+  { lat: -30.78380, lng: -64.63110 },
+  { lat: -30.78480, lng: -64.63410 },
+  { lat: -30.78340, lng: -64.63560 },
+];
+
+/** Zoom razonable para encuadrar un resultado de búsqueda según su bbox
+ *  [sur, norte, oeste, este]: una provincia se ve alejada; una calle, de cerca. */
+function zoomParaBbox(bbox?: [number, number, number, number]): number {
+  if (!bbox) return 13;
+  const [s, n, w, e] = bbox;
+  const span = Math.max(Math.abs(n - s), Math.abs(e - w));
+  if (span > 2)    return 8;
+  if (span > 0.5)  return 10;
+  if (span > 0.15) return 12;
+  if (span > 0.03) return 14;
+  return 16;
+}
 
 export function MapaTerrenoApp({ userName, plan }: Props) {
   const router = useRouter();
@@ -724,6 +748,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const eliminarMojon = useCallback((id: string) => {
     setMojones(prev => prev.filter(m => m.id !== id).map((m, i) => ({ ...m, numero: i + 1 })));
     setSeleccionado(s => s === id ? null : s);
+  }, []);
+
+  /** Onboarding: carga el predio de ejemplo y vuela hasta él. */
+  const handleCargarEjemplo = useCallback(() => {
+    const ms = EJEMPLO_MOJONES.map((p, i) => ({ id: crypto.randomUUID(), numero: i + 1, lat: p.lat, lng: p.lng }));
+    setMojones(ms);
+    const cLat = EJEMPLO_MOJONES.reduce((s, p) => s + p.lat, 0) / EJEMPLO_MOJONES.length;
+    const cLng = EJEMPLO_MOJONES.reduce((s, p) => s + p.lng, 0) / EJEMPLO_MOJONES.length;
+    flyToRef.current?.(cLat, cLng, 16);
   }, []);
 
   const limpiarTodo = useCallback(() => {
@@ -1685,9 +1718,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Shader ───────────────────────────────────────────────────────────────
   // Referencia para leer los bounds actuales del mapa desde fuera de Leaflet
   const getBoundsRef = useRef<null | (() => { latMin: number; latMax: number; lngMin: number; lngMax: number })>(null);
-  const flyToRef     = useRef<null | ((lat: number, lng: number) => void)>(null);
+  const flyToRef     = useRef<null | ((lat: number, lng: number, zoom?: number) => void)>(null);
   const handleGetBounds      = useCallback((fn: () => { latMin: number; latMax: number; lngMin: number; lngMax: number }) => { getBoundsRef.current = fn; }, []);
-  const handleGetFlyTo       = useCallback((fn: (lat: number, lng: number) => void) => { flyToRef.current = fn; }, []);
+  const handleGetFlyTo       = useCallback((fn: (lat: number, lng: number, zoom?: number) => void) => { flyToRef.current = fn; }, []);
+
+  // ─── Búsqueda de localidad (geocoder) ─────────────────────────────────────
+  const [marcadorBusqueda, setMarcadorBusqueda] = useState<{ lat: number; lng: number; label: string } | null>(null);
+  const handleElegirLugar = useCallback((r: ResultadoBusqueda) => {
+    flyToRef.current?.(r.lat, r.lng, zoomParaBbox(r.bbox));
+    setMarcadorBusqueda({ lat: r.lat, lng: r.lng, label: r.nombre.split(',')[0] ?? r.nombre });
+  }, []);
 
   // ─── Precipitación de alta resolución (CHIRPS ~5 km) ──────────────────────
   // POWER trae la lluvia de una grilla de ~50 km y la subestima donde hay
@@ -2402,9 +2442,33 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   </div>
                 )}
                 {mojones.length === 0 ? (
-                  <p className="text-xs text-ink-700/50 text-center py-4 leading-relaxed">
-                    Agregá mojones con el formulario<br />o haciendo clic en el mapa.
-                  </p>
+                  <div className="space-y-3 py-1">
+                    <p className="text-[13px] text-ink-800 leading-snug font-display">
+                      Empecemos por tu tierra 🌱
+                    </p>
+                    <ol className="space-y-2">
+                      {([
+                        ['1', 'Dibujá o importá tu predio', 'Marcá los mojones en el mapa, cargá coordenadas o importá un archivo.'],
+                        ['2', 'Corré el análisis', 'Topografía, agua, sol y suelo desde el riel de la izquierda.'],
+                        ['3', 'Generá el informe', 'Un PDF de marca con todo el diagnóstico, listo para compartir.'],
+                      ] as Array<[string, string, string]>).map(([n, t, d]) => (
+                        <li key={n} className="flex gap-2.5">
+                          <span className="shrink-0 w-5 h-5 rounded-full bg-moss-100 text-moss-700 text-[10px] font-bold flex items-center justify-center mt-0.5">{n}</span>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-semibold text-ink-800 leading-tight">{t}</p>
+                            <p className="text-[10px] text-ink-700/55 leading-snug">{d}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                    <button onClick={handleCargarEjemplo}
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-sun-500 text-ink-900 hover:brightness-95 transition-all shadow-paper">
+                      <Sparkles className="w-3.5 h-3.5" /> Cargar terreno de ejemplo
+                    </button>
+                    <p className="text-[10px] text-ink-700/45 text-center leading-relaxed">
+                      …o agregá tus mojones abajo o haciendo clic en el mapa.
+                    </p>
+                  </div>
                 ) : (
                   <div className="space-y-1.5">
                     {mojones.map((m, i) => (
@@ -2801,6 +2865,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             Todo en una columna arriba a la derecha: los controles quedan fijos
             y el panel se despliega debajo. */}
         <div className="absolute top-3 right-3 z-[1000] no-print flex flex-col items-end gap-1.5">
+          <BuscadorLugar onElegir={handleElegirLugar} />
           <ControlesMapa
             navegacion={navegacion}
             bearing={bearing}
@@ -2985,6 +3050,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           overlay={overlay}
           onOverlayEsquina={handleOverlayEsquina}
           masterPlan={masterPlan}
+          marcadorBusqueda={marcadorBusqueda}
         />
 
         {/* ─────────────────────────────────────────────────────────────────────
