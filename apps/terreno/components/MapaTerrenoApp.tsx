@@ -10,6 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
+  CloudRain, TreePine, Shapes, Briefcase, Target, Container,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -159,6 +160,54 @@ function errMsgApp(err: unknown): string {
   return String(err);
 }
 
+// ─── Riel de navegación: definición de tabs y clústeres ─────────────────────
+/** Definición visual de cada tab. El `id` es la clave estable que usan
+ *  entitlements, snapshots y la paleta (Ctrl+K): NO cambia aunque se reagrupe
+ *  el riel o se renombre el label visible. */
+const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
+  { id: 'mojones',     label: 'Mojones',     icon: <MapPin       className="w-3.5 h-3.5" /> },
+  { id: 'topo',        label: 'Topo',        icon: <Mountain     className="w-3.5 h-3.5" /> },
+  { id: 'suelo',       label: 'Suelo',       icon: <Layers       className="w-3.5 h-3.5" /> },
+  { id: 'cobertura',   label: 'Cobertura',   icon: <Trees        className="w-3.5 h-3.5" /> },
+  { id: 'aptitud',     label: 'Aptitud',     icon: <Target       className="w-3.5 h-3.5" /> },
+  { id: 'clima',       label: 'Clima',       icon: <Cloud        className="w-3.5 h-3.5" /> },
+  { id: 'cal',         label: 'Calendario',  icon: <CalendarDays className="w-3.5 h-3.5" /> },
+  { id: 'cuenca',      label: 'Cuenca',      icon: <Waves        className="w-3.5 h-3.5" /> },
+  { id: 'aguadas',     label: 'Represas',    icon: <Container    className="w-3.5 h-3.5" /> },
+  { id: 'red',         label: 'Red de agua', icon: <Spline       className="w-3.5 h-3.5" /> },
+  { id: 'riego',       label: 'Riego',       icon: <Sprout       className="w-3.5 h-3.5" /> },
+  { id: 'agua',        label: 'Captación',   icon: <Droplets     className="w-3.5 h-3.5" /> },
+  { id: 'solar',       label: 'Solar',       icon: <Sun          className="w-3.5 h-3.5" /> },
+  { id: 'sombras',     label: 'Sombras',     icon: <SunDim       className="w-3.5 h-3.5" /> },
+  { id: 'visibilidad', label: 'Visibilidad', icon: <Eye          className="w-3.5 h-3.5" /> },
+  { id: 'contexto',    label: 'Contexto',    icon: <Leaf         className="w-3.5 h-3.5" /> },
+  { id: 'entorno',     label: 'Entorno',     icon: <Bird         className="w-3.5 h-3.5" /> },
+  { id: 'carbono',     label: 'Carbono',     icon: <Wind         className="w-3.5 h-3.5" /> },
+  { id: 'zonas',       label: 'Zonas',       icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
+  { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
+  { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
+  { id: 'pastoreo',    label: 'Pastoreo',    icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
+  { id: 'keyline',     label: 'Keyline',     icon: <Waypoints    className="w-3.5 h-3.5" /> },
+  { id: 'prod',        label: 'Producción',  icon: <Wheat        className="w-3.5 h-3.5" /> },
+  { id: 'economia',    label: 'Economía',    icon: <DollarSign   className="w-3.5 h-3.5" /> },
+  { id: 'proyectos',   label: 'Proyectos',   icon: <FolderOpen   className="w-3.5 h-3.5" /> },
+];
+const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const));
+
+/** Clústeres colapsables del riel (acordeón). Reagrupan las 26 pestañas en 6
+ *  familias; `mojones` es la entrada base y `proyectos` vive en el header. */
+const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[] }> = [
+  { id: 'terreno', label: 'Terreno',      corto: 'Terreno', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud'] },
+  { id: 'agua',    label: 'Clima & Agua', corto: 'Agua',    icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'cal', 'cuenca', 'aguadas', 'red', 'riego', 'agua'] },
+  { id: 'sol',     label: 'Sol & luz',    corto: 'Sol',     icon: <Sun       className="w-4 h-4" />, tabs: ['solar', 'sombras', 'visibilidad'] },
+  { id: 'vida',    label: 'Vida',         corto: 'Vida',    icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno', 'carbono'] },
+  { id: 'diseno',  label: 'Diseño',       corto: 'Diseño',  icon: <Shapes    className="w-4 h-4" />, tabs: ['zonas', 'sectores', 'caminos', 'pastoreo', 'keyline'] },
+  { id: 'negocio', label: 'Negocio',      corto: 'Negocio', icon: <Briefcase className="w-4 h-4" />, tabs: ['prod', 'economia'] },
+];
+const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
+  GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
+);
+
 export function MapaTerrenoApp({ userName, plan }: Props) {
   const router = useRouter();
 
@@ -167,6 +216,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [seleccionado,  setSeleccionado]  = useState<string | null>(null);
   const [panelAbierto,  setPanelAbierto]  = useState(true);
   const [tab,           setTab]           = useState<Tab>('mojones');
+  // Acordeón del riel: un solo grupo abierto a la vez (por defecto, Terreno).
+  const [grupoRiel,     setGrupoRiel]     = useState<string>('terreno');
   const [proyectoActual,setProyectoActual]= useState<Proyecto | null>(null);
 
   // ─── Análisis ─────────────────────────────────────────────────────────────
@@ -2048,36 +2099,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setPanelAbierto(true);
   }, [tab, panelAbierto]);
 
-  const TABS_ANALISIS = [
-    { id: 'mojones'  as Tab, label: 'Mojones', icon: <MapPin       className="w-3.5 h-3.5" /> },
-    { id: 'clima'    as Tab, label: 'Clima',   icon: <Cloud        className="w-3.5 h-3.5" /> },
-    { id: 'contexto' as Tab, label: 'Contexto',icon: <Leaf         className="w-3.5 h-3.5" /> },
-    { id: 'entorno'  as Tab, label: 'Entorno', icon: <Bird         className="w-3.5 h-3.5" /> },
-    { id: 'topo'     as Tab, label: 'Topo',    icon: <Mountain     className="w-3.5 h-3.5" /> },
-    { id: 'suelo'    as Tab, label: 'Suelo',   icon: <Layers       className="w-3.5 h-3.5" /> },
-    { id: 'cobertura' as Tab, label: 'Cobertura', icon: <Trees      className="w-3.5 h-3.5" /> },
-    { id: 'cal'      as Tab, label: 'Cal.',    icon: <CalendarDays className="w-3.5 h-3.5" /> },
-    { id: 'solar'    as Tab, label: 'Solar',   icon: <Sun          className="w-3.5 h-3.5" /> },
-    { id: 'sombras'  as Tab, label: 'Sombras', icon: <SunDim       className="w-3.5 h-3.5" /> },
-    { id: 'visibilidad' as Tab, label: 'Visibilidad', icon: <Eye  className="w-3.5 h-3.5" /> },
-    { id: 'prod'     as Tab, label: 'Prod.',   icon: <Wheat        className="w-3.5 h-3.5" /> },
-    { id: 'aptitud'  as Tab, label: 'Aptitud', icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
-    { id: 'carbono'  as Tab, label: 'Carbono', icon: <Wind         className="w-3.5 h-3.5" /> },
-  ];
-  const TABS_DISENO = [
-    { id: 'agua'      as Tab, label: 'Agua',     icon: <Droplets   className="w-3.5 h-3.5" /> },
-    { id: 'zonas'     as Tab, label: 'Zonas',    icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-    { id: 'sectores'  as Tab, label: 'Sectores', icon: <Compass    className="w-3.5 h-3.5" /> },
-    { id: 'aguadas'   as Tab, label: 'Represas', icon: <Waves      className="w-3.5 h-3.5" /> },
-    { id: 'caminos'   as Tab, label: 'Caminos',  icon: <Route      className="w-3.5 h-3.5" /> },
-    { id: 'red'       as Tab, label: 'Red agua', icon: <Spline     className="w-3.5 h-3.5" /> },
-    { id: 'cuenca'    as Tab, label: 'Cuenca',   icon: <Waves      className="w-3.5 h-3.5" /> },
-    { id: 'pastoreo'  as Tab, label: 'Pastoreo', icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
-    { id: 'riego'     as Tab, label: 'Riego',    icon: <Sprout     className="w-3.5 h-3.5" /> },
-    { id: 'keyline'   as Tab, label: 'Keyline',  icon: <Waypoints  className="w-3.5 h-3.5" /> },
-    { id: 'economia'  as Tab, label: 'Economía', icon: <DollarSign className="w-3.5 h-3.5" /> },
-    { id: 'proyectos' as Tab, label: 'Proyect.', icon: <FolderOpen className="w-3.5 h-3.5" /> },
-  ];
+  // Cuando el tab activo cambia (clic en el riel, Ctrl+K, flujo interno),
+  // abrimos su clúster para que quede visible en el acordeón.
+  useEffect(() => {
+    const g = GRUPO_DE_TAB[tab];
+    if (g) setGrupoRiel(g);
+  }, [tab]);
 
   // ─── Leyenda para captura ─────────────────────────────────────────────────
   const leyendaItems = useMemo(() => {
@@ -2127,8 +2154,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Comandos para la paleta (Ctrl+K) ─────────────────────────────────────────
   const comandos = useMemo<Comando[]>(() => {
-    const tabs = [...TABS_ANALISIS, ...TABS_DISENO];
-    const irA: Comando[] = tabs.map(t => ({
+    const irA: Comando[] = TAB_DEFS.map(t => ({
       id: `tab-${t.id}`, grupo: 'Ir a', label: t.label, keywords: 'pestaña panel',
       accion: () => { setTab(t.id); setPanelAbierto(true); },
     }));
@@ -2160,7 +2186,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     ];
     return [...irA, ...herramientas, ...acciones];
   }, [
-    TABS_ANALISIS, TABS_DISENO, handleCambiarModo, handleGuardarNube, undo, redo,
+    handleCambiarModo, handleGuardarNube, undo, redo,
     handleVerInforme, iniciarCaptura, handleExportarDXF, handleExportGeoJSON, handleExportKML, handleExportGPX,
     handleFetchShader, handleCargarPlantillaKeyline,
   ]);
@@ -2311,11 +2337,21 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       {/* ─── Panel lateral izquierdo ─────────────────────────────────────────── */}
       <aside className="flex shrink-0 bg-bone-50">
 
-        {/* ── Riel de íconos ── */}
-        <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-1 border-r border-bone-200 overflow-y-auto overflow-x-clip">
-          <RielGrupo titulo="Análisis" tabs={TABS_ANALISIS} tab={tab} onElegir={handleElegirTab} bloqueada={(id) => tabBloqueada(plan, id)} />
-          <span className="w-6 h-px bg-bone-300 my-2" />
-          <RielGrupo titulo="Diseño" tabs={TABS_DISENO} tab={tab} onElegir={handleElegirTab} bloqueada={(id) => tabBloqueada(plan, id)} />
+        {/* ── Riel de íconos (acordeón de clústeres) ── */}
+        <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-0.5 border-r border-bone-200 overflow-y-auto overflow-x-clip">
+          <RielTab def={TAB_DEF.get('mojones')!} activo={tab === 'mojones'} lock={tabBloqueada(plan, 'mojones')} onElegir={handleElegirTab} />
+          <span className="w-6 h-px bg-bone-300 my-1.5" />
+          {GRUPOS_RIEL.map(g => (
+            <RielAcordeon
+              key={g.id}
+              grupo={g}
+              abierto={grupoRiel === g.id}
+              tabActivo={tab}
+              onToggle={() => setGrupoRiel(prev => (prev === g.id ? '' : g.id))}
+              onElegir={handleElegirTab}
+              bloqueada={(id) => tabBloqueada(plan, id)}
+            />
+          ))}
         </nav>
 
         {/* ── Panel contextual ── */}
@@ -2323,10 +2359,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
-                {TABS_ANALISIS.some(t => t.id === tab) ? 'Análisis' : 'Diseño'}
+                {GRUPOS_RIEL.find(g => g.tabs.includes(tab))?.label ?? (tab === 'proyectos' ? 'Proyectos' : 'Predio')}
               </p>
-              <p className="text-[13px] font-semibold text-ink-900 truncate leading-tight mt-0.5">
-                {[...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? ''}
+              <p className="text-[13px] font-semibold text-ink-900 truncate leading-tight mt-0.5 font-display">
+                {TAB_DEF.get(tab)?.label ?? ''}
               </p>
             </div>
             <button onClick={() => setPanelAbierto(false)} title="Ocultar panel" className="shrink-0 p-1 -mr-1 rounded-md text-ink-700/40 hover:text-ink-900 hover:bg-bone-100 transition-colors">
@@ -2341,7 +2377,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             // del panel — así no se monta (ni dispara sus APIs) una feature paga.
             const fLock = featureDeTab(tab);
             if (fLock && !can(plan, fLock)) {
-              const label = [...TABS_ANALISIS, ...TABS_DISENO].find(t => t.id === tab)?.label ?? '';
+              const label = TAB_DEF.get(tab)?.label ?? '';
               return <FeatureLock feature={fLock} plan={plan} titulo={label} beneficio={BENEFICIO_FEATURE[fLock]} />;
             }
             return (<>
@@ -3972,40 +4008,67 @@ function PanelCapas({
  * vertical, y en CSS basta con que un eje no sea `visible` para que el otro pase
  * a `auto`, así que cualquier cosa que asome por la izquierda queda recortada.
  */
-function RielGrupo({ titulo, tabs, tab, onElegir, bloqueada }: {
-  titulo: string;
-  tabs: Array<{ id: Tab; label: string; icon: React.ReactNode }>;
-  tab: Tab;
+/** Un botón de tab en el riel (ícono cuadrado con candado si está bloqueado). */
+function RielTab({ def, activo, lock, onElegir }: {
+  def: { id: Tab; label: string; icon: React.ReactNode };
+  activo: boolean;
+  lock: boolean;
+  onElegir: (id: Tab) => void;
+}) {
+  return (
+    <button title={lock ? `${def.label} · plan pago` : def.label} aria-label={def.label} aria-current={activo || undefined}
+      onClick={() => onElegir(def.id)}
+      className={`relative w-10 h-9 rounded-lg flex items-center justify-center transition-colors ${
+        activo
+          ? 'bg-moss-700 text-bone-50 shadow-sm'
+          : `text-ink-700/70 hover:bg-bone-200/70 hover:text-ink-900 ${lock ? 'opacity-60' : ''}`
+      }`}>
+      {activo && <span className="absolute left-0.5 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+      {def.icon}
+      {lock && (
+        <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-bone-50 border border-bone-200 flex items-center justify-center">
+          <Lock className="w-2 h-2 text-ink-700/70" />
+        </span>
+      )}
+    </button>
+  );
+}
+
+/** Un clúster colapsable del riel: encabezado con ícono + label corto, y —si
+ *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto. */
+function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada }: {
+  grupo: { id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[] };
+  abierto: boolean;
+  tabActivo: Tab;
+  onToggle: () => void;
   onElegir: (id: Tab) => void;
   bloqueada: (id: Tab) => boolean;
 }) {
+  const contieneActivo = grupo.tabs.includes(tabActivo);
   return (
-    <>
-      <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-ink-700/30 mb-0.5 select-none">
-        {titulo}
-      </p>
-      {tabs.map(t => {
-        const activo = tab === t.id;
-        const lock   = bloqueada(t.id);
-        return (
-          <button key={t.id} title={lock ? `${t.label} · plan pago` : t.label} aria-label={t.label} aria-current={activo || undefined}
-            onClick={() => onElegir(t.id)}
-            className={`relative w-10 h-9 rounded-lg flex items-center justify-center transition-colors ${
-              activo
-                ? 'bg-moss-700 text-bone-50 shadow-sm'
-                : `text-ink-700/70 hover:bg-bone-200/70 hover:text-ink-900 ${lock ? 'opacity-60' : ''}`
-            }`}>
-            {activo && <span className="absolute left-0.5 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
-            {t.icon}
-            {lock && (
-              <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-bone-50 border border-bone-200 flex items-center justify-center">
-                <Lock className="w-2 h-2 text-ink-700/70" />
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </>
+    <div className="w-full flex flex-col items-center">
+      <button onClick={onToggle} title={grupo.label} aria-expanded={abierto}
+        className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+          contieneActivo && !abierto
+            ? 'text-moss-700 bg-moss-50'
+            : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
+        }`}>
+        {contieneActivo && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+        {grupo.icon}
+        <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">{grupo.corto}</span>
+      </button>
+      {abierto && (
+        <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1">
+          {grupo.tabs.map(id => {
+            const def = TAB_DEF.get(id);
+            if (!def) return null;
+            return (
+              <RielTab key={id} def={def} activo={tabActivo === id} lock={bloqueada(id)} onElegir={onElegir} />
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
