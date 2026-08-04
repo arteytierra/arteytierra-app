@@ -45,7 +45,7 @@ import * as turf from '@turf/turf';
 import { decimalAGMS } from '@/lib/coordenadas';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
 import { guardarInformeBorrador } from '@/lib/informe';
-import { guardarAutosave, leerAutosave, limpiarAutosave, tieneContenido, type AutosaveDoc } from '@/lib/autosave';
+import { useAutosave } from '@/hooks/useAutosave';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
@@ -345,19 +345,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Opacidad de los shaders ──────────────────────────────────────────────
   const [opacidadShader, setOpacidadShader] = useState({ elev: 0.65, pend: 0.65 });
 
-  // ─── Autosave ─────────────────────────────────────────────────────────────
-  const [autosaveBanner, setAutosaveBanner] = useState<AutosaveDoc | null>(null);
-  // El banner se colapsa a un chip a los 9 s para no tapar el mapa; clic en el
-  // chip lo vuelve a expandir. No se descarta: Restaurar/Descartar siguen ahí.
-  const [autosaveMin, setAutosaveMin] = useState(false);
-  const dirtyRef = useRef(false);
-
-  useEffect(() => {
-    if (!autosaveBanner) { setAutosaveMin(false); return; }
-    setAutosaveMin(false);
-    const t = setTimeout(() => setAutosaveMin(true), 9000);
-    return () => clearTimeout(t);
-  }, [autosaveBanner]);
 
   // ─── Capas y visibilidad ──────────────────────────────────────────────────
   const [capas, setCapas] = useState<CapasVisibles>({
@@ -712,45 +699,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     try { localStorage.setItem('terreno_tema', tema); } catch { /* ignore */ }
   }, [tema]);
 
-  // ─── Autosave: montar ─────────────────────────────────────────────────────
-  useEffect(() => {
-    const saved = leerAutosave();
-    if (saved && tieneContenido(saved)) {
-      setAutosaveBanner(saved);
-    }
-  }, []);
-
-  // ─── Autosave: escribir en cada cambio ────────────────────────────────────
-  useEffect(() => {
-    // Solo autoguardar si hay contenido real (no basta con preferencias de vista
-    // como `capas`, que ahora viajan siempre en metadatos).
-    const hayContenido = mojones.length > 0 || dibujos.length > 0 || zonas.length > 0 ||
-      sectores.length > 0 || pines.length > 0 || caminos.length > 0 || aguadasLayer.length > 0 ||
-      !!datosClima || !!datosTopografia || !!datosShader || !!datosSuelo;
-    if (!hayContenido) return;
-    dirtyRef.current = true;
-    guardarAutosave({
-      mojones,
-      metadatos,
-      nombre:           proyectoActual?.nombre    ?? '',
-      proyectoActualId: proyectoActual?.id        ?? null,
-      capturaTitulo,
-      savedAt:          new Date().toISOString(),
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mojones, metadatos, proyectoActual?.id, capturaTitulo]);
-
-  // ─── beforeunload si hay cambios sin guardar ──────────────────────────────
-  useEffect(() => {
-    const handle = (e: BeforeUnloadEvent) => {
-      if (dirtyRef.current) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handle);
-    return () => window.removeEventListener('beforeunload', handle);
-  }, []);
+  // ─── Autosave (hook useAutosave) ──────────────────────────────────────────
+  // Solo autoguardar si hay contenido real (no basta con preferencias de vista
+  // como `capas`, que ahora viajan siempre en metadatos).
+  const hayContenidoAutosave =
+    mojones.length > 0 || dibujos.length > 0 || zonas.length > 0 ||
+    sectores.length > 0 || pines.length > 0 || caminos.length > 0 || aguadasLayer.length > 0 ||
+    !!datosClima || !!datosTopografia || !!datosShader || !!datosSuelo;
+  const {
+    banner: autosaveBanner, min: autosaveMin, setMin: setAutosaveMin,
+    limpiar: limpiarBorrador, dirtyRef,
+  } = useAutosave({ mojones, metadatos, proyectoActual, capturaTitulo, hayContenido: hayContenidoAutosave });
 
 
   // ─── Mojones ──────────────────────────────────────────────────────────────
@@ -2007,10 +1966,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     });
     setTab('mojones');
     setTerrariumRango(null);
-    limpiarAutosave();
-    setAutosaveBanner(null);
+    limpiarBorrador();
     dirtyRef.current = false;
-  }, [replaceDoc]);
+  }, [replaceDoc, limpiarBorrador, dirtyRef]);
 
   // ─── Autosave: restaurar borrador ─────────────────────────────────────────
   const handleRestaurarAutosave = useCallback(() => {
@@ -2032,17 +1990,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [autosaveBanner, handleCargarProyecto]);
 
   const handleDescartarAutosave = useCallback(() => {
-    limpiarAutosave();
-    setAutosaveBanner(null);
-  }, []);
+    limpiarBorrador();
+  }, [limpiarBorrador]);
 
   // Cuando ProyectosPanel confirma que guardó/actualizó/eliminó → estado limpio
   const handleProyectoActualChange = useCallback((p: Proyecto | null) => {
     setProyectoActual(p);
-    limpiarAutosave();
-    setAutosaveBanner(null);
+    limpiarBorrador();
     dirtyRef.current = false;
-  }, []);
+  }, [limpiarBorrador, dirtyRef]);
 
   // ─── Informe ──────────────────────────────────────────────────────────────
   const handleVerInforme = useCallback(async () => {
