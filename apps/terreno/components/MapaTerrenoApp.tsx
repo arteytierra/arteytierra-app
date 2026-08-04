@@ -46,9 +46,10 @@ import { guardarInformeBorrador } from '@/lib/informe';
 import { useAutosave } from '@/hooks/useAutosave';
 import { useCapas } from '@/hooks/useCapas';
 import { useSombras } from '@/hooks/useSombras';
+import { usePerfilElevacion } from '@/hooks/usePerfilElevacion';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
-import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
+import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
@@ -460,11 +461,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [ayudaMenuOpen, setAyudaMenuOpen] = useState(false);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
-  // ─── Perfil de elevación interactivo (dock inferior estilo Google Earth Pro) ──
-  const [perfilDock,  setPerfilDock]  = useState<{ vertices: Array<{ lat: number; lng: number }>; perfil: PerfilElevacion; nombre: string; color: string } | null>(null);
-  const [perfilPunto, setPerfilPunto] = useState<{ lat: number; lng: number } | null>(null);
-  const [perfilCargando, setPerfilCargando] = useState(false);
-  const [perfilError, setPerfilError] = useState<string | null>(null);
+  // ─── Perfil de elevación interactivo — dock inferior (hook usePerfilElevacion) ──
+  const {
+    perfilDock, setPerfilDock,
+    perfilPunto, setPerfilPunto,
+    perfilCargando,
+    perfilError,
+    handleCargarPerfilCamino,
+    handleAbrirPerfilDock,
+  } = usePerfilElevacion({ caminos, setCaminos });
 
   // ─── CAD: snap (F3) y ortho (F8) ──────────────────────────────────────────
   const [snapActivo,  setSnapActivo]  = useState(true);
@@ -951,34 +956,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     };
   }, []);
 
-  // Asegura la cota del DEM en la traza de un camino (para Red de agua). Lo pide si falta.
-  const handleCargarPerfilCamino = useCallback(async (id: string): Promise<PerfilElevacion | null> => {
-    const c = caminos.find(x => x.id === id);
-    if (!c) return null;
-    if (c.perfil) return c.perfil;
-    const r = await fetchPerfilElevacion(c.vertices);
-    if ('error' in r) return null;
-    setCaminos(prev => prev.map(x => x.id === id ? { ...x, perfil: r.perfil } : x));
-    return r.perfil;
-  }, [caminos, setCaminos]);
-
-  // Abre el perfil de un camino en el dock inferior interactivo (lo pide si no está cacheado).
-  const handleAbrirPerfilDock = useCallback(async (camino: Camino) => {
-    if (perfilDock && perfilDock.nombre === camino.nombre && perfilDock.vertices === camino.vertices) {
-      setPerfilDock(null); setPerfilPunto(null); return;   // toggle
-    }
-    setPerfilError(null);
-    if (camino.perfil) {
-      setPerfilDock({ vertices: camino.vertices, perfil: camino.perfil, nombre: camino.nombre, color: camino.color });
-      return;
-    }
-    setPerfilCargando(true);
-    const r = await fetchPerfilElevacion(camino.vertices);
-    setPerfilCargando(false);
-    if ('error' in r) { setPerfilError(r.error); return; }
-    setCaminos(prev => prev.map(c => c.id === camino.id ? { ...c, perfil: r.perfil } : c));
-    setPerfilDock({ vertices: camino.vertices, perfil: r.perfil, nombre: camino.nombre, color: camino.color });
-  }, [perfilDock]);
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
   const handleCambiarModo = useCallback((modo: TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null) => {
