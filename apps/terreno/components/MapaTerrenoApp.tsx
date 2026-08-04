@@ -464,6 +464,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [bloqueActivo,   setBloqueActivo]   = useState<BloqueDef | null>(null);
   const [elementoActivo, setElementoActivo] = useState<ElementoPreset | null>(null);
   const [modoElementoClick, setModoElementoClick] = useState(false);
+  const [elementoPoli,   setElementoPoli]   = useState<ElementoPreset | null>(null);
   const [keylineCheck,   setKeylineCheck]   = useState<Record<string, KeylineCheck>>({});
   const [escenarios,     setEscenarios]     = useState<Escenario[]>([]);
   const [escenarioActivoId, setEscenarioActivoId] = useState<string | null>(null);
@@ -961,6 +962,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setMedicionVertices([]);
     setDibujoSelId(null);
     setEspejoPendiente(false);
+    setElementoPoli(null);
     if (modo) { setModoClick(false); }
   }, []);
 
@@ -1020,7 +1022,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     else if (dibujoEnCurso.tipo === 'curva' && verts.length >= 2)
       setDibujos(prev => [...prev, { id, tipo: 'curva',    color, vertices: verts, grosor: 3, capaId }]);
     else if (dibujoEnCurso.tipo === 'poligono' && verts.length >= 3)
-      setDibujos(prev => [...prev, espejoPendiente
+      setDibujos(prev => [...prev, elementoPoli
+        ? { id, tipo: 'poligono', color: elementoPoli.color, vertices: verts, opacidad: elementoPoli.opacidad, capaId, simbolo: elementoPoli.emoji, nombre: elementoPoli.nombre }
+        : espejoPendiente
         ? { id, tipo: 'poligono', color: '#1E88E5', vertices: verts, opacidad: 0.42, capaId, nombre: `Espejo de agua ${prev.filter(d => d.nombre?.startsWith('Espejo de agua')).length + 1}` }
         : { id, tipo: 'poligono', color, vertices: verts, opacidad: 0.22, capaId }]);
     else if (dibujoEnCurso.tipo === 'circulo' && verts.length === 2) {
@@ -1033,7 +1037,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       setDibujos(prev => [...prev, { id, tipo: 'flecha', color, vertices: verts, grosor: 3, capaId }]);
 
     setDibujoEnCurso({ tipo: dibujoEnCurso.tipo, vertices: [] });
-  }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente]);
+  }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente, elementoPoli]);
 
   const handleCancelarDibujo = useCallback(() => {
     setModoDibujo(null);
@@ -1041,6 +1045,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setMedicionVertices([]);
     setDibujoSelId(null);
     setEspejoPendiente(false);
+    setElementoPoli(null);
+    setElementoActivo(null);
   }, []);
 
   const handleMoverDibujo = useCallback((id: string, dLat: number, dLng: number) => {
@@ -2377,13 +2383,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           {tab === 'elementos' && (
             <div className="px-4 py-4 space-y-2">
               <p className="text-[11px] text-ink-700/60 leading-relaxed">
-                Elegí un elemento y hacé clic en el mapa para colocarlo <b>a escala real</b> (el disco es el tamaño de la copa / silueta). El sello queda activo: podés colocar varios seguidos. Se ven también en la vista 3D.
+                Elegí un elemento y colocalo <b>a escala real</b> sobre el mapa. Los redondos y los vehículos se estampan con un clic (el sello queda activo para poner varios); los <b>canteros y masas</b> se dibujan a mano (clic en cada vértice, Enter para cerrar). Se ven también en la vista 3D.
               </p>
               {elementoActivo ? (
                 <div className="flex items-center gap-2 bg-moss-100 border border-moss-300 rounded-lg px-2.5 py-1.5">
                   <span className="text-base leading-none">{elementoActivo.emoji}</span>
-                  <span className="text-[11px] text-ink-900 flex-1 leading-tight">Colocá en el mapa: <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· r {elementoActivo.radio_m} m</span></span>
-                  <button onClick={() => { setElementoActivo(null); setModoElementoClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                  <span className="text-[11px] text-ink-900 flex-1 leading-tight">
+                    {elementoActivo.forma === 'poligono'
+                      ? <>Dibujá el contorno de <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· Enter para cerrar</span></>
+                      : <>Colocá en el mapa: <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· {elementoActivo.forma === 'rect' ? `${elementoActivo.largo_m}×${elementoActivo.ancho_m} m` : `r ${elementoActivo.radio_m} m`}</span></>}
+                  </span>
+                  <button onClick={() => { setElementoActivo(null); setModoElementoClick(false); setElementoPoli(null); if (modoDibujo) handleCancelarDibujo(); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
                 </div>
               ) : (
                 <p className="text-[10px] text-ink-700/50 leading-tight">Ningún elemento seleccionado.</p>
@@ -2393,8 +2403,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
                   <div className="grid grid-cols-4 gap-1">
                     {ELEMENTOS.filter(e => e.grupo === grupo).map(e => (
-                      <button key={e.id} title={`${e.nombre} · r ${e.radio_m} m`}
-                        onClick={() => { setElementoActivo(e); setModoElementoClick(true); setModoPinClick(false); setBloqueActivo(null); setModoClick(false); }}
+                      <button key={e.id} title={e.nombre}
+                        onClick={() => {
+                          setElementoActivo(e); setModoPinClick(false); setBloqueActivo(null); setModoClick(false);
+                          if (e.forma === 'poligono') { setModoElementoClick(false); handleCambiarModo('poligono'); setElementoPoli(e); }
+                          else { setModoElementoClick(true); setElementoPoli(null); }
+                        }}
                         className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${elementoActivo?.id === e.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
                         <span className="text-base leading-none">{e.emoji}</span>
                         <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{e.nombre}</span>
