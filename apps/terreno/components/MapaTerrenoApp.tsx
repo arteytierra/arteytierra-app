@@ -46,6 +46,7 @@ import { decimalAGMS } from '@/lib/coordenadas';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
 import { guardarInformeBorrador } from '@/lib/informe';
 import { useAutosave } from '@/hooks/useAutosave';
+import { useCapas } from '@/hooks/useCapas';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
@@ -346,13 +347,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [opacidadShader, setOpacidadShader] = useState({ elev: 0.65, pend: 0.65 });
 
 
-  // ─── Capas y visibilidad ──────────────────────────────────────────────────
-  const [capas, setCapas] = useState<CapasVisibles>({
-    terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
-    shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false,
-    linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true,
-  });
-  const [ocultosIds,       setOcultosIds]       = useState<Set<string>>(new Set());
+  // ─── Capas y visibilidad (hook useCapas) ──────────────────────────────────
+  const {
+    capas, setCapas, ocultosIds, setOcultosIds, capasOcultas, setCapasOcultas, toggleOculto,
+  } = useCapas();
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
@@ -367,8 +365,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   /** Árbol elegido en el panel, a la espera del clic que lo ubica en el mapa. */
   const objetoPendienteRef = useRef<{ id: string; nombre: string; altura_m: number; radio_m: number } | null>(null);
 
-  // ─── Capas de usuario: visibilidad (no undoable) y capa activa ────────────
-  const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
+  // ─── Capas de usuario: capa activa (capasOcultas vive en useCapas) ────────
   const [capaActivaId, setCapaActivaId] = useState<string>(CAPA_DEFAULT_ID);
 
   // ─── Master Plan ──────────────────────────────────────────────────────────
@@ -1896,14 +1893,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const handleAplicarZonasAptitud = useCallback((zonasNuevas: import('@/lib/zonificacion').Zona[]) => {
     setZonas(prev => [...prev, ...zonasNuevas]);
     setTab('zonas');
-  }, []);
-
-  const toggleOculto = useCallback((id: string) => {
-    setOcultosIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
   }, []);
 
   // ─── Proyectos ────────────────────────────────────────────────────────────
