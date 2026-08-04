@@ -131,7 +131,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
-  | 'carbono' | 'economia' | 'proyectos';
+  | 'infra'   | 'carbono' | 'economia' | 'proyectos';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -187,6 +187,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'zonas',       label: 'Zonas',       icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
   { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
   { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
+  { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
   { id: 'pastoreo',    label: 'Pastoreo',    icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
   { id: 'keyline',     label: 'Keyline',     icon: <Waypoints    className="w-3.5 h-3.5" /> },
   { id: 'prod',        label: 'Producción',  icon: <Wheat        className="w-3.5 h-3.5" /> },
@@ -198,12 +199,15 @@ const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const));
 /** Clústeres colapsables del riel (acordeón). Reagrupan las 26 pestañas en 6
  *  familias; `mojones` es la entrada base y `proyectos` vive en el header. */
 const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[] }> = [
-  { id: 'terreno', label: 'Terreno',      corto: 'Terreno', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud'] },
-  { id: 'agua',    label: 'Clima & Agua', corto: 'Agua',    icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'cal', 'cuenca', 'aguadas', 'red', 'riego', 'agua'] },
-  { id: 'sol',     label: 'Sol & luz',    corto: 'Sol',     icon: <Sun       className="w-4 h-4" />, tabs: ['solar', 'sombras', 'visibilidad'] },
-  { id: 'vida',    label: 'Vida',         corto: 'Vida',    icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno', 'carbono'] },
-  { id: 'diseno',  label: 'Diseño',       corto: 'Diseño',  icon: <Shapes    className="w-4 h-4" />, tabs: ['zonas', 'sectores', 'caminos', 'pastoreo', 'keyline'] },
-  { id: 'negocio', label: 'Negocio',      corto: 'Negocio', icon: <Briefcase className="w-4 h-4" />, tabs: ['prod', 'economia'] },
+  { id: 'ubicacion', label: 'Ubicación',            corto: 'Lugar', icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
+  { id: 'clima',     label: 'Clima',                corto: 'Clima', icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'solar'] },
+  { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
+  { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud'] },
+  { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego'] },
+  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'caminos', 'visibilidad', 'sombras', 'infra'] },
+  { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
+  { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
+  { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
 ];
 const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
@@ -2389,8 +2393,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
         {/* ── Riel de íconos (acordeón de clústeres) ── */}
         <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-0.5 border-r border-bone-200 overflow-y-auto overflow-x-clip">
-          <RielTab def={TAB_DEF.get('mojones')!} activo={tab === 'mojones'} lock={tabBloqueada(plan, 'mojones')} onElegir={handleElegirTab} />
-          <span className="w-6 h-px bg-bone-300 my-1.5" />
           {GRUPOS_RIEL.map(g => (
             <RielAcordeon
               key={g.id}
@@ -2544,36 +2546,38 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 )}
               </div>
 
-              {/* Biblioteca de bloques */}
-              <div className="border-t border-bone-200 pt-4 space-y-2">
-                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1.5">
-                  <Boxes className="w-3.5 h-3.5" /> Biblioteca de bloques
-                </p>
-                {bloqueActivo ? (
-                  <div className="flex items-center gap-2 bg-sun-300/20 border border-sun-300 rounded-lg px-2.5 py-1.5">
-                    <span className="text-base leading-none">{bloqueActivo.icono}</span>
-                    <span className="text-[11px] text-ink-900 flex-1 leading-tight">Hacé clic en el mapa: <b>{bloqueActivo.nombre}</b></span>
-                    <button onClick={() => { setBloqueActivo(null); setModoPinClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+            </div>
+          )}
+
+          {tab === 'infra' && (
+            <div className="px-4 py-4 space-y-2">
+              <p className="text-[11px] text-ink-700/60 leading-relaxed">
+                Elegí un símbolo y hacé clic en el mapa para colocar infraestructuras y elementos. Aparecen como pines editables (en Mojones · Puntos de referencia).
+              </p>
+              {bloqueActivo ? (
+                <div className="flex items-center gap-2 bg-sun-300/20 border border-sun-300 rounded-lg px-2.5 py-1.5">
+                  <span className="text-base leading-none">{bloqueActivo.icono}</span>
+                  <span className="text-[11px] text-ink-900 flex-1 leading-tight">Hacé clic en el mapa: <b>{bloqueActivo.nombre}</b></span>
+                  <button onClick={() => { setBloqueActivo(null); setModoPinClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                </div>
+              ) : (
+                <p className="text-[10px] text-ink-700/50 leading-tight">Ningún símbolo seleccionado.</p>
+              )}
+              {GRUPOS_BLOQUE.map(grupo => (
+                <div key={grupo}>
+                  <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
+                  <div className="grid grid-cols-4 gap-1">
+                    {BLOQUES.filter(b => b.grupo === grupo).map(b => (
+                      <button key={b.id} title={b.nombre}
+                        onClick={() => { setBloqueActivo(b); setModoPinClick(true); setModoClick(false); }}
+                        className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${bloqueActivo?.id === b.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
+                        <span className="text-base leading-none">{b.icono}</span>
+                        <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{b.nombre}</span>
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <p className="text-[10px] text-ink-700/50 leading-tight">Elegí un símbolo y hacé clic en el mapa para colocarlo.</p>
-                )}
-                {GRUPOS_BLOQUE.map(grupo => (
-                  <div key={grupo}>
-                    <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
-                    <div className="grid grid-cols-4 gap-1">
-                      {BLOQUES.filter(b => b.grupo === grupo).map(b => (
-                        <button key={b.id} title={b.nombre}
-                          onClick={() => { setBloqueActivo(b); setModoPinClick(true); setModoClick(false); }}
-                          className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${bloqueActivo?.id === b.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
-                          <span className="text-base leading-none">{b.icono}</span>
-                          <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{b.nombre}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -4130,6 +4134,34 @@ function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada
   bloqueada: (id: Tab) => boolean;
 }) {
   const contieneActivo = grupo.tabs.includes(tabActivo);
+
+  // Grupo de una sola pestaña: el encabezado abre el panel directo (sin
+  // sub-desplegar), comportándose como un tab con la identidad del grupo.
+  if (grupo.tabs.length === 1) {
+    const unico = grupo.tabs[0]!;
+    const activo = tabActivo === unico;
+    const lock = bloqueada(unico);
+    return (
+      <div className="w-full flex flex-col items-center">
+        <button onClick={() => onElegir(unico)} title={lock ? `${grupo.label} · plan pago` : grupo.label} aria-current={activo || undefined}
+          className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+            activo
+              ? 'bg-moss-700 text-bone-50 shadow-sm'
+              : `text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60 ${lock ? 'opacity-60' : ''}`
+          }`}>
+          {activo && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+          {grupo.icon}
+          <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">{grupo.corto}</span>
+          {lock && (
+            <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-bone-50 border border-bone-200 flex items-center justify-center">
+              <Lock className="w-2 h-2 text-ink-700/70" />
+            </span>
+          )}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col items-center">
       <button onClick={onToggle} title={grupo.label} aria-expanded={abierto}
