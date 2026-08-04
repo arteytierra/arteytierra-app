@@ -467,6 +467,30 @@ export function clasificarAridez(precipAnual: number, etpAnual: number): IndiceA
 
 // ─── Heladas ──────────────────────────────────────────────────────────────────
 
+/** Corrida contigua más larga de meses sin riesgo de helada (tmin > 3 °C),
+ *  con el año tratado como cíclico (el verano austral cruza dic→ene). */
+function corridaLibreMasLarga(meses: MesDato[]): { ini: string; fin: string; meses: number } | null {
+  const n = meses.length;
+  const ok = meses.map(m => m.tmin_c > 3);
+  if (!ok.some(Boolean)) return null;
+  if (ok.every(Boolean)) return { ini: meses[0]!.mes, fin: meses[n - 1]!.mes, meses: n };
+
+  let mejorIni = -1, mejorLen = 0, ini = -1, len = 0;
+  // Recorremos 2n para permitir corridas que envuelven el fin de año.
+  for (let k = 0; k < 2 * n; k++) {
+    const idx = k % n;
+    if (ok[idx]) {
+      if (len === 0) ini = idx;
+      len++;
+      if (len > mejorLen && len <= n) { mejorLen = len; mejorIni = ini; }
+    } else {
+      len = 0;
+    }
+  }
+  const fin = (mejorIni + mejorLen - 1) % n;
+  return { ini: meses[mejorIni]!.mes, fin: meses[fin]!.mes, meses: mejorLen };
+}
+
 function estimarHeladas(meses: MesDato[], lat: number): Heladas {
   const meses_riesgo  = meses.filter(m => m.tmin_c <= 3).map(m => m.mes);
   const meses_seguras = meses.filter(m => m.tmin_c <= 0).map(m => m.mes);
@@ -475,10 +499,14 @@ function estimarHeladas(meses: MesDato[], lat: number): Heladas {
   if (meses_riesgo.length === 0)      periodo_libre = 'Sin riesgo significativo de heladas (todo el año).';
   else if (meses_riesgo.length >= 11) periodo_libre = 'Riesgo de heladas prácticamente todo el año (clima frío de altura).';
   else {
-    // Primer y último mes sin riesgo definen el período libre
-    const libres = meses.filter(m => m.tmin_c > 3).map(m => m.mes);
-    periodo_libre = libres.length
-      ? `Período libre de heladas aproximado: ${libres[0]}–${libres[libres.length - 1]}.`
+    // El período libre se define como la corrida CONTIGUA más larga de meses
+    // sin riesgo (tmin > 3 °C), tratando el año como cíclico: en el hemisferio
+    // sur el verano cruza el fin de año (p. ej. Nov–Mar). Tomar el primer y el
+    // último mes libre en orden de calendario daba "Ene–Dic" —todo el año—
+    // aunque el medio tuviera riesgo, contradiciendo `meses_riesgo`.
+    const r = corridaLibreMasLarga(meses);
+    periodo_libre = r
+      ? `Período libre de heladas aproximado: ${r.ini}–${r.fin} (~${r.meses} meses).`
       : 'Período libre de heladas muy acotado.';
   }
   void lat;

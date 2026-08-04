@@ -343,7 +343,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Autosave ─────────────────────────────────────────────────────────────
   const [autosaveBanner, setAutosaveBanner] = useState<AutosaveDoc | null>(null);
+  // El banner se colapsa a un chip a los 9 s para no tapar el mapa; clic en el
+  // chip lo vuelve a expandir. No se descarta: Restaurar/Descartar siguen ahí.
+  const [autosaveMin, setAutosaveMin] = useState(false);
   const dirtyRef = useRef(false);
+
+  useEffect(() => {
+    if (!autosaveBanner) { setAutosaveMin(false); return; }
+    setAutosaveMin(false);
+    const t = setTimeout(() => setAutosaveMin(true), 9000);
+    return () => clearTimeout(t);
+  }, [autosaveBanner]);
 
   // ─── Capas y visibilidad ──────────────────────────────────────────────────
   const [capas, setCapas] = useState<CapasVisibles>({
@@ -2243,7 +2253,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <img src="/logo-ayt.png" alt="Arte y Tierra" className="w-7 h-7 object-contain shrink-0" />
           <div className="min-w-0 leading-tight hidden lg:block">
             <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · Terreno</p>
-            <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem]">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
+            <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
           </div>
         </div>
 
@@ -2820,8 +2830,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
       {/* ─── Mapa ─────────────────────────────────────────────────────────────── */}
       <main id="print-capture-root" className={`flex-1 relative overflow-hidden ${capturaActiva ? 'bg-bone-50 pt-[58px] pr-[212px] pb-[50px] pl-3' : ''}`}>
-        {/* Banner de autosave */}
-        {autosaveBanner && (
+        {/* Banner de autosave (se colapsa a un chip a los 9 s) */}
+        {autosaveBanner && (autosaveMin ? (
+          <button
+            onClick={() => setAutosaveMin(false)}
+            title="Tenés trabajo sin guardar de una sesión anterior"
+            className="absolute top-3 left-3 z-[1001] no-print flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full shadow-raised text-[11px] font-medium bg-white border border-bone-200 text-ink-700 hover:bg-bone-50 transition-colors"
+          >
+            <span className="w-2 h-2 rounded-full bg-moss-500" />
+            Borrador sin guardar
+          </button>
+        ) : (
           <div className="absolute top-3 left-3 z-[1001] no-print flex items-center gap-2 px-4 py-2 rounded-full shadow-raised text-xs font-medium bg-white border border-bone-200 text-ink-800 whitespace-nowrap">
             <span className="text-moss-700">
               Trabajo sin guardar del {new Date(autosaveBanner.savedAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -2839,7 +2858,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               Descartar
             </button>
           </div>
-        )}
+        ))}
 
         {/* Banner de modo dibujo */}
         {(modoClick || dibujando) && (
