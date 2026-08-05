@@ -12,8 +12,11 @@ export interface BloqueDef {
   grupo:  string;
 }
 
+// Nota: la vegetación (árbol / bosque / cortina) se movió a la pestaña
+// «Elementos», donde se dibuja A ESCALA (copa en metros) — ver lib/elementos.ts.
+// Acá quedan solo los símbolos puntuales sin escala (pines).
 export const GRUPOS_BLOQUE = [
-  'Construcción', 'Agua', 'Producción', 'Animales', 'Energía', 'Vegetación', 'Acceso',
+  'Construcción', 'Agua', 'Producción', 'Animales', 'Energía', 'Acceso',
 ] as const;
 
 export const BLOQUES: BloqueDef[] = [
@@ -41,10 +44,7 @@ export const BLOQUES: BloqueDef[] = [
   { id: 'solar',       nombre: 'Panel solar',     icono: '☀️', color: '#FDD835', grupo: 'Energía' },
   { id: 'eolico',      nombre: 'Eólico',          icono: '🌬️', color: '#90CAF9', grupo: 'Energía' },
   { id: 'biodigestor', nombre: 'Biodigestor',     icono: '🔋', color: '#43A047', grupo: 'Energía' },
-  // ── Vegetación ──
-  { id: 'arbol',       nombre: 'Árbol',           icono: '🌳', color: '#2E7D32', grupo: 'Vegetación' },
-  { id: 'bosque',      nombre: 'Bosque / monte',  icono: '🌲', color: '#1B5E20', grupo: 'Vegetación' },
-  { id: 'cortina',     nombre: 'Cortina forestal',icono: '🌴', color: '#388E3C', grupo: 'Vegetación' },
+  // ── Vegetación → movida a la pestaña «Elementos» (a escala). Ver lib/elementos.ts ──
   // ── Acceso ──
   { id: 'porton',      nombre: 'Portón / acceso', icono: '🚪', color: '#6D4C41', grupo: 'Acceso' },
   { id: 'estacion',    nombre: 'Estacionamiento', icono: '🅿️', color: '#78909C', grupo: 'Acceso' },
