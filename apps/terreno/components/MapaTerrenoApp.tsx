@@ -171,7 +171,7 @@ function errMsgApp(err: unknown): string {
  *  el riel o se renombre el label visible. */
 const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'mojones',     label: 'Mojones',     icon: <MapPin       className="w-3.5 h-3.5" /> },
-  { id: 'topo',        label: 'Topo',        icon: <Mountain     className="w-3.5 h-3.5" /> },
+  { id: 'topo',        label: 'Topografía',  icon: <Mountain     className="w-3.5 h-3.5" /> },
   { id: 'suelo',       label: 'Suelo',       icon: <Layers       className="w-3.5 h-3.5" /> },
   { id: 'cobertura',   label: 'Cobertura',   icon: <Trees        className="w-3.5 h-3.5" /> },
   { id: 'aptitud',     label: 'Aptitud',     icon: <Target       className="w-3.5 h-3.5" /> },
@@ -277,6 +277,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Shader topográfico ───────────────────────────────────────────────────
   const [datosShader,   setDatosShader]   = useState<DatosShader | null>(null);
   const [shaderLoading, setShaderLoading] = useState(false);
+  // ¿Se corrió el «Análisis del predio»? Recién ahí aparecen las capas de
+  // escorrentías + sugerencias. Calcular la topografía sola NO las genera: eso
+  // solo prende los shaders y las curvas (info topográfica).
+  const [analisisHecho, setAnalisisHecho] = useState(false);
   const [shaderError,   setShaderError]   = useState<string | null>(null);
 
   // ─── Curvas de nivel (grilla densa Terrarium + fallback shader) ──────────
@@ -626,8 +630,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (intervaloContorno !== null) m['intervalo_contorno'] = intervaloContorno;
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
+    if (analisisHecho)        m['analisis_hecho'] = true;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1695,6 +1700,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // Al correr el Análisis del predio: encender las capas de escorrentías +
   // sugerencias (antes se creaban pero quedaban apagadas) y abrir su panel.
   const handleAnalisisPredioListo = useCallback(() => {
+    setAnalisisHecho(true);
     setCapas(prev => ({ ...prev, escorrentias: true, sugerencias: true }));
     setPanelDerecho('sugerencias');
   }, []);
@@ -1811,9 +1817,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const capasGuardadas = meta['capas'] as CapasVisibles | undefined;
     const shaderGuardado = (meta['shader'] as DatosShader) ?? null;
     setDatosShader(shaderGuardado);
+    setAnalisisHecho(Boolean(meta['analisis_hecho']));
     setCapas(prev => {
       const base = capasGuardadas ? { ...prev, ...capasGuardadas } : prev;
-      return shaderGuardado ? { ...base, shaderElev: true, escorrentias: true, sugerencias: true } : base;
+      // El shader solo prende la info topográfica; escorrentías/sugerencias vienen
+      // de lo guardado (se prendieron al correr el Análisis del predio).
+      return shaderGuardado ? { ...base, shaderElev: true } : base;
     });
     setTab('mojones');
     setTerrariumRango(null);
@@ -2786,7 +2795,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onConfirm: nombre => handleCrearCapa(nombre),
               })}
               onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
-              datosShader={datosShader} onIrATopo={() => setTab('topo')} mojones={mojones}
+              datosShader={datosShader} analisisHecho={analisisHecho} onIrATopo={() => setTab('topo')} mojones={mojones}
               datosSugerencias={datosSugerencias}
               onVerSugerencias={() => setPanelDerecho('sugerencias')}
               onCapturar={() => {
@@ -3344,6 +3353,7 @@ interface PanelCapasProps {
   onCrearCapa:         () => void;
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
+  analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
   datosSugerencias:    ResultadoSugerencias | null;
@@ -3372,7 +3382,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, onIrATopo, mojones,
+  datosShader, analisisHecho, onIrATopo, mojones,
   datosSugerencias, onVerSugerencias,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3631,7 +3641,7 @@ function PanelCapas({
 
         {/* ── Análisis Hídrico ── */}
         <div {...makeDrag('hidrico')}>
-        {datosShader && (
+        {datosShader && analisisHecho && (
           <CapaGrupo
             label="Análisis Hídrico"
             visible={capas.escorrentias}
@@ -3650,7 +3660,7 @@ function PanelCapas({
 
         {/* ── Sugerencias ── */}
         <div {...makeDrag('sugerencias')}>
-        {datosShader && (
+        {datosShader && analisisHecho && (
           <CapaGrupo
             label="Sugerencias"
             visible={capas.sugerencias}
