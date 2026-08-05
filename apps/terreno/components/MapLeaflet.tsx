@@ -145,17 +145,29 @@ function crearIconoPin(pin: Pin): L.DivIcon {
 }
 
 const _cElem = new Map<string, L.DivIcon>();
-/** Emoji simple centrado (sin chapita) para los elementos a escala. */
-function crearIconoElemento(simbolo: string): L.DivIcon {
-  if (_cElem.has(simbolo)) return _cElem.get(simbolo)!;
+/** Emoji centrado (sin chapita) para los elementos, dimensionado en px. */
+function crearIconoElemento(simbolo: string, sizePx = 16): L.DivIcon {
+  const s = Math.round(sizePx);
+  const key = `${simbolo}@${s}`;
+  if (_cElem.has(key)) return _cElem.get(key)!;
   const icon = L.divIcon({
-    html: `<div style="font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">${simbolo}</div>`,
+    html: `<div style="font-size:${s}px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">${simbolo}</div>`,
     className: '',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
+    iconSize: [s, s],
+    iconAnchor: [s / 2, s / 2],
   });
-  _cElem.set(simbolo, icon);
+  _cElem.set(key, icon);
   return icon;
+}
+
+/**
+ * Tamaño en px del emoji de un elemento para que acompañe su huella real al zoom
+ * (así se ve a escala: un árbol grande manda más que una herbácea). `diamM` es el
+ * diámetro/lado real en metros; se clampa para que nunca desaparezca ni sea absurdo.
+ */
+function emojiPxElemento(diamM: number, lat: number, zoom: number): number {
+  const mpp = 156543.03392804097 * Math.cos((lat * Math.PI) / 180) / Math.pow(2, zoom);
+  return Math.max(11, Math.min(80, (diamM / mpp) * 0.9));
 }
 
 function crearIconoSugerencia(tipo: 'vivienda' | 'reservorio', rank: number, score: number): L.DivIcon {
@@ -1088,6 +1100,9 @@ function MapLeaflet({
   marcadorBusqueda = null,
 }: Props) {
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
+  // Zoom local (solo para dimensionar los emojis de elementos a escala). El paneo
+  // no rerenderiza: MapChangeWatcher reporta el mismo zoom y React descarta el set.
+  const [zoomElem, setZoomElem] = useState(ZOOM_INICIAL);
 
   const cursorClass = (modoDibujo && modoDibujo !== 'seleccion') || tipoActivo
     ? 'cursor-crosshair'
@@ -1194,6 +1209,7 @@ function MapLeaflet({
         <InvalidarSize trigger={`${capturaMode}|${layoutSignal ?? ''}`} />
         {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
         {onMapChange  && <MapChangeWatcher onMapChange={onMapChange} />}
+        <MapChangeWatcher onMapChange={(z) => setZoomElem(z)} />
         {onGetFlyTo   && <FlyToExposer    onReady={onGetFlyTo} />}
         {capas.terrariumElev && <TerrariumLayer elevMin={elevMin} elevMax={elevMax} onRangoDetectado={onRangoTerrarium} />}
         {capas.linderoLabels && metricas && mojones.length >= 3 && <LinderoLabels mojones={mojones} metricas={metricas} />}
@@ -1541,6 +1557,15 @@ function MapLeaflet({
           if (d.tipo === 'poligono') {
             const cLat = d.vertices.reduce((s, v) => s + v.lat, 0) / d.vertices.length;
             const cLng = d.vertices.reduce((s, v) => s + v.lng, 0) / d.vertices.length;
+            // Lado menor del bbox en metros → tamaño del emoji (un vehículo chico da
+            // emoji chico; un cantero grande topa el clamp y queda como rótulo centrado).
+            let ladoM = 4;
+            if (d.simbolo && d.vertices.length >= 2) {
+              const lats = d.vertices.map(v => v.lat), lngs = d.vertices.map(v => v.lng);
+              const altoM  = (Math.max(...lats) - Math.min(...lats)) * 111_320;
+              const anchoM = (Math.max(...lngs) - Math.min(...lngs)) * 111_320 * Math.cos((cLat * Math.PI) / 180);
+              ladoM = Math.max(1, Math.min(altoM, anchoM));
+            }
             return (
               <React.Fragment key={d.id}>
                 <Polygon
@@ -1550,7 +1575,7 @@ function MapLeaflet({
                 />
                 {d.simbolo ? (
                   <Marker position={[cLat, cLng]} interactive={false}
-                    icon={crearIconoElemento(d.simbolo)} />
+                    icon={crearIconoElemento(d.simbolo, emojiPxElemento(ladoM, cLat, zoomElem))} />
                 ) : capas.medidas && d.vertices.length >= 3 && (
                   <Marker position={[cLat, cLng]} interactive={false}
                     icon={crearIconoMedida(formatearArea(areaPoligonoM2(d.vertices)), d.color)} />
@@ -1568,7 +1593,7 @@ function MapLeaflet({
               />
               {d.simbolo ? (
                 <Marker position={[d.lat, d.lng]} interactive={false}
-                  icon={crearIconoElemento(d.simbolo)} />
+                  icon={crearIconoElemento(d.simbolo, emojiPxElemento(d.radio * 2, d.lat, zoomElem))} />
               ) : capas.medidas && (
                 <Marker position={[d.lat, d.lng]} interactive={false}
                   icon={crearIconoMedida(`r ${formatearLongitud(d.radio)} · ${formatearArea(Math.PI * d.radio * d.radio)}`, d.color)} />
