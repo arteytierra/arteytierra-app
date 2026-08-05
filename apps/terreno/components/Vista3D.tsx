@@ -111,6 +111,34 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
       (window as unknown as { __map3d?: maplibregl.Map }).__map3d = map;
     }
 
+    // ── Rotar + inclinar con el botón central (rueda) del mouse ──
+    // Arrastrar horizontal → rumbo (bearing); vertical → inclinación (pitch).
+    // Complementa al botón derecho / Ctrl+arrastrar de MapLibre.
+    const canvas3d = map.getCanvas();
+    let girandoMedio = false, ultimoX = 0, ultimoY = 0;
+    const onMedioDown = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      e.preventDefault();                 // corta el autoscroll del navegador
+      girandoMedio = true; ultimoX = e.clientX; ultimoY = e.clientY;
+      canvas3d.style.cursor = 'grabbing';
+    };
+    const onMedioMove = (e: MouseEvent) => {
+      if (!girandoMedio) return;
+      const dx = e.clientX - ultimoX, dy = e.clientY - ultimoY;
+      ultimoX = e.clientX; ultimoY = e.clientY;
+      map.setBearing(map.getBearing() - dx * 0.4);
+      map.setPitch(Math.max(0, Math.min(map.getMaxPitch(), map.getPitch() + dy * 0.35)));
+    };
+    const onMedioUp = () => {
+      if (!girandoMedio) return;
+      girandoMedio = false; canvas3d.style.cursor = '';
+    };
+    const onAuxClick = (e: MouseEvent) => { if (e.button === 1) e.preventDefault(); };
+    canvas3d.addEventListener('mousedown', onMedioDown);
+    canvas3d.addEventListener('auxclick', onAuxClick);
+    window.addEventListener('mousemove', onMedioMove);
+    window.addEventListener('mouseup', onMedioUp);
+
     // El modal puede terminar de dimensionarse después de crear el mapa:
     // forzamos resize para que el canvas ocupe toda la pantalla.
     const forzarResize = () => { try { map.resize(); } catch { /* aún no listo */ } };
@@ -230,7 +258,14 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
     // Red de seguridad: si el estilo tampoco carga, sacamos el spinner igual.
     const t = setTimeout(() => { if (!cancelado) setCargando(false); }, 12_000);
 
-    return () => { cancelado = true; clearTimeout(t); clearTimeout(t1); clearTimeout(t2); ro.disconnect(); map.remove(); mapRef.current = null; };
+    return () => {
+      cancelado = true; clearTimeout(t); clearTimeout(t1); clearTimeout(t2); ro.disconnect();
+      canvas3d.removeEventListener('mousedown', onMedioDown);
+      canvas3d.removeEventListener('auxclick', onAuxClick);
+      window.removeEventListener('mousemove', onMedioMove);
+      window.removeEventListener('mouseup', onMedioUp);
+      map.remove(); mapRef.current = null;
+    };
     // `zoomSatelital` viaja en el estilo: si cambia hay que rehacer el mapa.
   }, [mojones, zoomSatelital]);
 
@@ -409,7 +444,7 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
       </button>
 
       <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-bone-50/45 text-[10px] text-center">
-        Girá con el control de arriba (o botón derecho + arrastrar) · Ctrl/⌘ + arrastrar para inclinar · arrastrá para desplazar · rueda para zoom · relieve SRTM 30 m, orientativo
+        Girá e incliná con la ruedita del mouse apretada + arrastrar (o botón derecho) · arrastrá para desplazar · rueda para zoom · relieve SRTM 30 m, orientativo
       </p>
     </div>
   );
