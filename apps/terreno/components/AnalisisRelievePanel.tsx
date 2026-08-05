@@ -7,16 +7,23 @@
  * "Colocar en el plano" vuelca todo (pines + caminos + pins de cruce).
  */
 import { useState, useCallback } from 'react';
-import { Loader2, Mountain, Home, Droplets, Route, MapPin } from 'lucide-react';
+import { Loader2, Mountain, Home, Droplets, Route, MapPin, Sparkles } from 'lucide-react';
 import { analizarTopografiaIntegral, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
   mojones: Mojon[];
   onAplicar: (res: AnalisisTopoIntegral) => void;
+  /** ¿Ya se calculó la topografía? (escorrentías/sugerencias dependen de ella). */
+  topoLista?: boolean;
+  /** Ir a la pestaña Topo (cuando falta la topografía). */
+  onIrATopo?: () => void;
+  /** Se dispara cuando el análisis termina bien: el padre enciende las capas de
+   *  escorrentías + sugerencias y abre el panel de sugerencias. */
+  onAnalizado?: () => void;
 }
 
-export function AnalisisRelievePanel({ mojones, onAplicar }: Props) {
+export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onIrATopo, onAnalizado }: Props) {
   const [cargando, setCargando] = useState(false);
   const [res, setRes]           = useState<AnalisisTopoIntegral | null>(null);
   const [error, setError]       = useState<string | null>(null);
@@ -29,6 +36,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar }: Props) {
       const r = await analizarTopografiaIntegral(mojones);
       if (!r) { setError('No se pudo analizar el relieve (sin datos de elevación).'); return; }
       setRes(r);
+      onAnalizado?.();
       if (r.represas.length === 0 && r.viviendas.length === 0) {
         setError('El relieve es muy plano o uniforme: sin sugerencias claras.');
       }
@@ -37,23 +45,42 @@ export function AnalisisRelievePanel({ mojones, onAplicar }: Props) {
     } finally {
       setCargando(false);
     }
-  }, [mojones]);
+  }, [mojones, onAnalizado]);
 
   const totalCruces = res?.caminos.reduce((s, c) => s + c.camino.cruces.length, 0) ?? 0;
 
   return (
     <div className="space-y-2">
-      <button
-        onClick={analizar}
-        disabled={cargando}
-        className="w-full flex items-center justify-center gap-1.5 py-2 bg-ink-950 hover:bg-ink-700 disabled:opacity-50 text-bone-50 rounded-xl text-xs font-medium transition-colors"
-      >
-        {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mountain className="w-3.5 h-3.5" />}
-        {cargando ? 'Analizando el relieve…' : 'Analizar relieve completo'}
-      </button>
-      <p className="text-[10px] text-ink-700/55 leading-relaxed">
-        En una pasada: mejores <span className="text-water-700 font-medium">represas</span>, zonas de <span className="text-moss-700 font-medium">vivienda</span> y <span className="text-orange-700 font-medium">caminos</span> de acceso por cresta que las conectan.
+      <div className="flex items-center gap-1.5 text-ink-900">
+        <Sparkles className="w-4 h-4 text-moss-700" />
+        <h3 className="font-serif text-sm">Análisis del predio</h3>
+      </div>
+      <p className="text-[11px] text-ink-700/70 leading-relaxed">
+        Terreno analiza tu predio y sugiere <span className="text-moss-700 font-medium">usos del suelo</span>, <span className="text-orange-700 font-medium">trazado de caminos</span> y ubicación de <span className="text-moss-700 font-medium">viviendas</span> y <span className="text-water-700 font-medium">represas</span>, junto a un <span className="text-water-700 font-medium">análisis hídrico de escorrentías</span>. Son sugerencias orientativas: evaluá cuáles incorporás, modificás o eliminás para armar tu propio plan de infraestructura y caminos.
       </p>
+
+      {!topoLista ? (
+        <div className="bg-sun-300/15 border border-sun-300 rounded-xl px-3 py-2.5 space-y-1.5">
+          <p className="text-[11px] text-ink-900 leading-relaxed">
+            Primero calculá la <b>topografía</b> del predio: de ahí salen las escorrentías y las sugerencias.
+          </p>
+          {onIrATopo && (
+            <button onClick={onIrATopo}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-ink-950 hover:bg-ink-700 text-bone-50 rounded-lg text-[11px] font-medium transition-colors">
+              <Mountain className="w-3.5 h-3.5" /> Ir a Topografía
+            </button>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={analizar}
+          disabled={cargando}
+          className="w-full flex items-center justify-center gap-1.5 py-2 bg-ink-950 hover:bg-ink-700 disabled:opacity-50 text-bone-50 rounded-xl text-xs font-medium transition-colors"
+        >
+          {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mountain className="w-3.5 h-3.5" />}
+          {cargando ? 'Analizando el relieve…' : 'Analizar relieve completo'}
+        </button>
+      )}
 
       {error && <p className="text-[10px] text-clay-700 leading-relaxed">{error}</p>}
 

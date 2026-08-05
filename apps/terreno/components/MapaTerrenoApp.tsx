@@ -133,7 +133,7 @@ const VistaHistorica = dynamic(() => import('./VistaHistorica').then(m => m.Vist
 
 type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
-  | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud'
+  | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
   | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos';
 
@@ -175,6 +175,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'suelo',       label: 'Suelo',       icon: <Layers       className="w-3.5 h-3.5" /> },
   { id: 'cobertura',   label: 'Cobertura',   icon: <Trees        className="w-3.5 h-3.5" /> },
   { id: 'aptitud',     label: 'Aptitud',     icon: <Target       className="w-3.5 h-3.5" /> },
+  { id: 'analisis',    label: 'Análisis',    icon: <Sparkles     className="w-3.5 h-3.5" /> },
   { id: 'clima',       label: 'Clima',       icon: <Cloud        className="w-3.5 h-3.5" /> },
   { id: 'cal',         label: 'Calendario',  icon: <CalendarDays className="w-3.5 h-3.5" /> },
   { id: 'cuenca',      label: 'Cuenca',      icon: <Waves        className="w-3.5 h-3.5" /> },
@@ -207,7 +208,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'ubicacion', label: 'Ubicación',            corto: 'Lugar', icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
   { id: 'clima',     label: 'Clima',                corto: 'Clima', icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'solar'] },
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
-  { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud'] },
+  { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego'] },
   { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
@@ -1691,6 +1692,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     flyToRef.current?.(res.entrada.lat, res.entrada.lng);
   }, []);
 
+  // Al correr el Análisis del predio: encender las capas de escorrentías +
+  // sugerencias (antes se creaban pero quedaban apagadas) y abrir su panel.
+  const handleAnalisisPredioListo = useCallback(() => {
+    setCapas(prev => ({ ...prev, escorrentias: true, sugerencias: true }));
+    setPanelDerecho('sugerencias');
+  }, []);
+
   // Zonas de vivienda sugeridas (desde Sectores): vuelca pines 🏠 al plano.
   const handleAplicarViviendas = useCallback((viviendas: ZonaVivienda[]) => {
     if (viviendas.length === 0) return;
@@ -2514,6 +2522,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} onAgregarCortinas={handleAgregarCortinas} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
+          {tab === 'analisis' && (
+            <div className="px-4 py-4">
+              <AnalisisRelievePanel
+                mojones={mojones}
+                onAplicar={handleAplicarAnalisisIntegral}
+                topoLista={!!datosShader && !!datosEscorrentia}
+                onIrATopo={() => setTab('topo')}
+                onAnalizado={handleAnalisisPredioListo}
+              />
+            </div>
+          )}
 
           {tab === 'zonas' && (
             <div className="px-4 py-4">
@@ -2536,10 +2555,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4 space-y-4">
-              <AnalisisRelievePanel mojones={mojones} onAplicar={handleAplicarAnalisisIntegral} />
-              <div className="border-t border-bone-200 pt-4">
-                <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
-              </div>
+              <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
               <div className="border-t border-bone-200 pt-4">
                 <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
               </div>

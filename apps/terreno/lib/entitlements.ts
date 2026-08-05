@@ -138,6 +138,7 @@ export const TAB_FEATURE: Record<string, Feature> = {
   visibilidad: 'analisis.visibilidad',
   prod:        'analisis.produccion',
   aptitud:     'analisis.aptitud',
+  analisis:    'analisis.aptitud',
   carbono:     'analisis.carbono',
   cal:         'analisis.clima',
   agua:        'diseno.agua',
