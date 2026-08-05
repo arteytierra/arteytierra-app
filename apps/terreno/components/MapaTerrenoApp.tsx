@@ -926,7 +926,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const handleOptimizarCamino = useCallback(async (camino: Camino): Promise<{ ok: boolean; msg: string }> => {
     const vs = camino.vertices;
     if (vs.length < 2) return { ok: false, msg: 'El camino necesita al menos 2 puntos (inicio y destino).' };
-    const res = await sugerirCaminoRelieve(vs[0]!, vs[vs.length - 1]!);
+    const res = await sugerirCaminoRelieve(vs[0]!, vs[vs.length - 1]!, undefined, mojones.length >= 3 ? mojones : undefined);
     if (!res || res.vertices.length < 2) return { ok: false, msg: 'No se pudo trazar por crestas (relieve insuficiente o sin datos).' };
     setCaminos(prev => prev.map(c => c.id === camino.id
       ? { ...c, vertices: res.vertices, longitud_m: res.longitud_m, perfil: undefined }
@@ -946,7 +946,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       ok: true,
       msg: `Trazado por crestas: ${res.longitud_m >= 1000 ? (res.longitud_m / 1000).toFixed(2) + ' km' : res.longitud_m + ' m'} · pend. media ${res.pendiente_media_pct}% (máx ${res.pendiente_max_pct}%) · ${Math.round(res.frac_cresta * 100)}% por cresta${cruceTxt}`,
     };
-  }, []);
+  }, [mojones]);
 
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────

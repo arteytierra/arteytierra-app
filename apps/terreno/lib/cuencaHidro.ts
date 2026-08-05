@@ -937,6 +937,7 @@ export function trazarCaminoRelieve(
   origen:  { lat: number; lng: number },
   destino: { lat: number; lng: number },
   opts?: { pendMaxPct?: number },
+  limite?: Array<{ lat: number; lng: number }>,
 ): CaminoRelieve | null {
   const { g, acum, ridge, pend, ridgeMax, umbralCauce } = a;
   const { rows, cols } = g;
@@ -947,6 +948,20 @@ export function trazarCaminoRelieve(
   const src = idxDeLatLng(g, origen.lat, origen.lng);
   const dst = idxDeLatLng(g, destino.lat, destino.lng);
   if (src < 0 || dst < 0 || src === dst) return null;
+
+  // Restricción al polígono del predio: prohíbe rutear por celdas cuyo centro
+  // cae FUERA de los mojones (así el camino no se escapa por la divisoria).
+  let permitido: Uint8Array | null = null;
+  if (limite && limite.length >= 3) {
+    permitido = new Uint8Array(n);
+    const dLatM = (g.latMax - g.latMin) / (rows - 1), dLngM = (g.lngMax - g.lngMin) / (cols - 1);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (pipLatLng(g.latMin + r * dLatM, g.lngMin + c * dLngM, limite)) permitido[r * cols + c] = 1;
+      }
+    }
+    permitido[src] = 1; permitido[dst] = 1;   // los extremos siempre valen (pueden caer en el borde)
+  }
 
   const D = new Float64Array(n).fill(Infinity);
   const prev = new Int32Array(n).fill(-1);
@@ -971,6 +986,7 @@ export function trazarCaminoRelieve(
       if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
       const ni = nr * cols + nc;
       if (done[ni] || Number.isNaN(g.elev[ni]!)) continue;
+      if (permitido && !permitido[ni]) continue;   // fuera del predio: no rutear
 
       const dm = dist[k]!;
       // Pendiente del paso (rise/run) — es lo que sufre la máquina/vehículo.
@@ -1063,11 +1079,15 @@ export async function sugerirCaminoRelieve(
   origen:  { lat: number; lng: number },
   destino: { lat: number; lng: number },
   opts?: { pendMaxPct?: number },
+  limite?: Array<{ lat: number; lng: number }>,
 ): Promise<CaminoRelieve | null> {
-  const bbox = conMargen(bboxDeMojones([origen, destino]), 0.35);
+  // Si hay un predio, la grilla cubre TODO el predio (no solo los extremos), para
+  // que el mask tenga celdas dentro de todo el contorno; si no, el bbox de los extremos.
+  const base = limite && limite.length >= 3 ? bboxDeMojones(limite) : bboxDeMojones([origen, destino]);
+  const bbox = conMargen(base, limite && limite.length >= 3 ? 0.1 : 0.35);
   const g = await obtenerGrillaHidro(bbox, resolucionPara(bbox));
   if (!g) return null;
-  return trazarCaminoRelieve(analizarRelieve(g), origen, destino, opts);
+  return trazarCaminoRelieve(analizarRelieve(g), origen, destino, opts, limite);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1201,7 +1221,7 @@ export async function analizarTopografiaIntegral(
   if (viviendas[0]) objetivos.push({ nombre: 'Vivienda', pt: { lat: viviendas[0].lat, lng: viviendas[0].lng } });
   if (represas[0])  objetivos.push({ nombre: 'Represa 1', pt: { lat: represas[0].lat, lng: represas[0].lng } });
   for (const o of objetivos) {
-    const cam = trazarCaminoRelieve(a, entrada, o.pt);
+    const cam = trazarCaminoRelieve(a, entrada, o.pt, undefined, mojones);
     if (cam) caminos.push({ nombre: `Acceso a ${o.nombre.toLowerCase()}`, destino: o.nombre, camino: cam });
   }
 
@@ -1225,7 +1245,7 @@ export async function sugerirCaminosAcceso(
   const entrada = entradaPredio(g, mojones);
   const caminos: CaminoRelieve[] = [];
   for (const d of destinos) {
-    const cam = trazarCaminoRelieve(a, entrada, d);
+    const cam = trazarCaminoRelieve(a, entrada, d, undefined, mojones);
     if (cam) caminos.push(cam);
   }
   return { entrada, caminos };
