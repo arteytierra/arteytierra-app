@@ -14,10 +14,21 @@ import type { CategoriaZona } from './zonificacion';
 // ─── Programa ─────────────────────────────────────────────────────────────────
 
 export type TipoItemPrograma =
-  | 'casa' | 'galpon' | 'cabana' | 'corral' | 'pastoreo'
-  | 'huerta' | 'cultivo' | 'frutales' | 'reservorio' | 'personalizado';
+  | 'casa' | 'cabana' | 'galpon' | 'garage' | 'quincho' | 'sum'
+  | 'gallinero' | 'colmenas' | 'invernadero' | 'compostera'
+  | 'corral' | 'pastoreo' | 'huerta' | 'cultivo' | 'frutales'
+  | 'reservorio' | 'personalizado';
 
 export type EspecieGanado = 'bovino' | 'ovino' | 'caprino' | 'equino';
+
+/**
+ * Perfil de aptitud: qué busca cada elemento EN EL TERRENO (pendiente, agua,
+ * orientación, acceso). Varios tipos comparten perfil, así sumar elementos
+ * nuevos no exige tocar el scoring.
+ */
+export type PerfilAptitud =
+  | 'vivienda' | 'servicio' | 'social' | 'granja' | 'huerta'
+  | 'corral' | 'apiario' | 'agua' | 'pastoreo' | 'cultivo' | 'frutal' | 'generico';
 
 export interface ItemPrograma {
   id:            string;
@@ -30,24 +41,50 @@ export interface ItemPrograma {
   nombre?:       string;          // para personalizado
 }
 
-export const TIPOS_ITEM: Record<TipoItemPrograma, {
+export interface DefItemPrograma {
   label:           string;
   emoji:           string;
   color:           string;
   categoriaZona:   CategoriaZona;
-  areaUnitariaM2?: number;   // construcciones: huella + entorno operativo
-  esArea:          boolean;  // true = se asigna superficie contigua
-}> = {
-  casa:          { label: 'Casa / vivienda',     emoji: '🏠', color: '#8B7355', categoriaZona: 'vivienda',        areaUnitariaM2: 800,  esArea: false },
-  galpon:        { label: 'Galpón',              emoji: '🏚️', color: '#90A4AE', categoriaZona: 'infraestructura', areaUnitariaM2: 600,  esArea: false },
-  cabana:        { label: 'Cabaña de alquiler',  emoji: '🛖', color: '#E67E22', categoriaZona: 'vivienda',        areaUnitariaM2: 500,  esArea: false },
-  corral:        { label: 'Corrales / manga',    emoji: '🐄', color: '#A1887F', categoriaZona: 'pasturas',        areaUnitariaM2: 1500, esArea: false },
-  huerta:        { label: 'Huerta intensiva',    emoji: '🥬', color: '#5A8F3C', categoriaZona: 'huerta',          areaUnitariaM2: 1000, esArea: false },
-  reservorio:    { label: 'Acopio de agua',      emoji: '💧', color: '#1E88E5', categoriaZona: 'agua',                                  esArea: false },
-  personalizado: { label: 'Otro elemento',       emoji: '📦', color: '#9C27B0', categoriaZona: 'personalizado',   areaUnitariaM2: 500,  esArea: false },
-  pastoreo:      { label: 'Pastoreo / ganadería',emoji: '🌾', color: '#9DC183', categoriaZona: 'pasturas',                              esArea: true },
-  cultivo:       { label: 'Cultivo extensivo',   emoji: '🌽', color: '#F0C040', categoriaZona: 'cultivo',                               esArea: true },
-  frutales:      { label: 'Monte frutal',        emoji: '🍎', color: '#E67E22', categoriaZona: 'frutales',                              esArea: true },
+  areaUnitariaM2?: number;              // construcciones: huella + entorno operativo
+  esArea:          boolean;             // true = se asigna superficie contigua
+  perfil:          PerfilAptitud;       // qué busca en el terreno
+  banda:           number;              // distancia relativa preferida a la zona 0 (0..1)
+  afines:          TipoItemPrograma[];  // quiere estar cerca de estos (grafo de vecindad)
+}
+
+export const TIPOS_ITEM: Record<TipoItemPrograma, DefItemPrograma> = {
+  casa:          { label: 'Casa / vivienda',      emoji: '🏠', color: '#8B7355', categoriaZona: 'vivienda',        areaUnitariaM2: 800,  esArea: false, perfil: 'vivienda', banda: 0.00, afines: [] },
+  cabana:        { label: 'Cabaña de alquiler',   emoji: '🛖', color: '#E67E22', categoriaZona: 'vivienda',        areaUnitariaM2: 500,  esArea: false, perfil: 'vivienda', banda: 0.24, afines: ['casa'] },
+  galpon:        { label: 'Galpón',               emoji: '🏚️', color: '#90A4AE', categoriaZona: 'infraestructura', areaUnitariaM2: 600,  esArea: false, perfil: 'servicio', banda: 0.20, afines: ['casa', 'corral'] },
+  garage:        { label: 'Garage / cochera',     emoji: '🚗', color: '#78909C', categoriaZona: 'infraestructura', areaUnitariaM2: 300,  esArea: false, perfil: 'servicio', banda: 0.08, afines: ['casa'] },
+  quincho:       { label: 'Quincho / fogón',      emoji: '🍖', color: '#BF6B3A', categoriaZona: 'recreacion',      areaUnitariaM2: 250,  esArea: false, perfil: 'social',   banda: 0.12, afines: ['casa'] },
+  sum:           { label: 'SUM / salón',          emoji: '🏛️', color: '#8D6E63', categoriaZona: 'recreacion',      areaUnitariaM2: 350,  esArea: false, perfil: 'social',   banda: 0.14, afines: ['casa'] },
+  gallinero:     { label: 'Gallinero',            emoji: '🐔', color: '#C9A227', categoriaZona: 'infraestructura', areaUnitariaM2: 200,  esArea: false, perfil: 'granja',   banda: 0.16, afines: ['huerta', 'galpon'] },
+  colmenas:      { label: 'Colmenas / apiario',   emoji: '🐝', color: '#F5A623', categoriaZona: 'apiario',         areaUnitariaM2: 150,  esArea: false, perfil: 'apiario',  banda: 0.45, afines: ['frutales', 'huerta'] },
+  invernadero:   { label: 'Invernadero / vivero', emoji: '🪴', color: '#66BB6A', categoriaZona: 'huerta',          areaUnitariaM2: 300,  esArea: false, perfil: 'huerta',   banda: 0.14, afines: ['huerta', 'casa'] },
+  compostera:    { label: 'Compostera',           emoji: '♻️', color: '#6D4C41', categoriaZona: 'compost_vivero',  areaUnitariaM2: 120,  esArea: false, perfil: 'granja',   banda: 0.18, afines: ['huerta', 'galpon'] },
+  corral:        { label: 'Corrales / manga',     emoji: '🐄', color: '#A1887F', categoriaZona: 'pasturas',        areaUnitariaM2: 1500, esArea: false, perfil: 'corral',   banda: 0.38, afines: ['galpon', 'pastoreo'] },
+  reservorio:    { label: 'Acopio de agua',       emoji: '💧', color: '#1E88E5', categoriaZona: 'agua',                                  esArea: false, perfil: 'agua',     banda: 0.30, afines: [] },
+  personalizado: { label: 'Otro elemento',        emoji: '📦', color: '#9C27B0', categoriaZona: 'personalizado',   areaUnitariaM2: 500,  esArea: false, perfil: 'generico', banda: 0.35, afines: [] },
+  huerta:        { label: 'Huerta intensiva',     emoji: '🥬', color: '#5A8F3C', categoriaZona: 'huerta',          areaUnitariaM2: 1000, esArea: false, perfil: 'huerta',   banda: 0.10, afines: ['casa', 'reservorio'] },
+  pastoreo:      { label: 'Pastoreo / ganadería', emoji: '🌾', color: '#9DC183', categoriaZona: 'pasturas',                              esArea: true,  perfil: 'pastoreo', banda: 0.78, afines: ['corral'] },
+  cultivo:       { label: 'Cultivo extensivo',    emoji: '🌽', color: '#F0C040', categoriaZona: 'cultivo',                               esArea: true,  perfil: 'cultivo',  banda: 0.72, afines: [] },
+  frutales:      { label: 'Monte frutal',         emoji: '🍎', color: '#E67E22', categoriaZona: 'frutales',                              esArea: true,  perfil: 'frutal',   banda: 0.50, afines: ['huerta'] },
+};
+
+/** Orden de colocación: anclas primero, luego lo que depende de ellas. */
+const PRIORIDAD: Record<TipoItemPrograma, number> = {
+  casa: 0, reservorio: 1, huerta: 2, galpon: 3, garage: 3, invernadero: 3,
+  gallinero: 4, compostera: 4, quincho: 5, sum: 5, corral: 6, cabana: 6,
+  colmenas: 7, personalizado: 8,
+  frutales: 20, pastoreo: 21, cultivo: 22,
+};
+
+/** Peso del anclaje a la zona 0 (banda de permacultura) según perfil. */
+const BANDA_PESO: Record<PerfilAptitud, number> = {
+  vivienda: 46, servicio: 48, social: 46, granja: 48, huerta: 50,
+  corral: 44, apiario: 40, frutal: 34, agua: 22, pastoreo: 28, cultivo: 28, generico: 40,
 };
 
 /** Equivalente vaca (EV) por cabeza según especie */
@@ -128,6 +165,8 @@ export interface ElementoMasterPlan {
 
 interface ContextoCelda {
   c:        CeldaShader;
+  lat:      number;
+  lng:      number;
   acumRel:  number;
   elevRel:  number;
   distEntradaRel: number;   // 0 = junto a la entrada, 1 = lo más lejos
@@ -135,121 +174,166 @@ interface ContextoCelda {
   orientacionNorte: number; // >0 ladera norte (HemSur)
 }
 
+/** Elemento ya ubicado, para el término de afinidad (grafo de vecindad). */
+interface Colocado { tipo: TipoItemPrograma; lat: number; lng: number }
+
 /**
- * Zonas de permacultura: distancia relativa PREFERIDA a la zona 0 (casa/edificio
- * principal) para cada uso. 0 = pegado a la casa, 1 = lo más lejos del predio.
- * Lo de uso diario cerca; lo extensivo, lejos. Guía la coherencia del conjunto.
+ * Aptitud del TERRENO para un perfil (pendiente, agua, orientación, acceso).
+ * Devuelve puntos crudos (~0..35) + motivos. La coherencia del conjunto (dónde
+ * respecto de la casa, junto a qué) la aportan la banda y la afinidad aparte.
  */
-const BANDA_ZONA0: Record<TipoItemPrograma, number> = {
-  casa:          0.0,
-  cabana:        0.15,
-  huerta:        0.12,
-  galpon:        0.2,
-  reservorio:    0.3,
-  corral:        0.38,
-  personalizado: 0.35,
-  frutales:      0.5,
-  cultivo:       0.72,
-  pastoreo:      0.78,
-};
-
-function scorePerfil(tipo: TipoItemPrograma, ctx: ContextoCelda, hayZona0 = false): { score: number; motivos: string[] } {
-  const { c, acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte } = ctx;
+function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; motivos: string[] } {
+  const { c, acumRel, elevRel, orientacionNorte, distEntradaRel } = ctx;
+  const pend = c.pendiente_pct;
   let s = 0;
-  const motivos: string[] = [];
+  const m: string[] = [];
 
-  // Anclaje a zona 0 (permacultura): premia las celdas a la distancia esperada de
-  // la casa según el uso. Es el término que da coherencia al conjunto.
-  if (hayZona0) {
-    const target = BANDA_ZONA0[tipo];
-    const match  = 1 - Math.min(1, Math.abs(distZona0Rel - target) / 0.5);
-    s += 34 * match;
-    if (match > 0.72)      motivos.push('a la distancia adecuada de la casa');
-    else if (match < 0.35) motivos.push('lejos de su zona ideal respecto de la casa');
-  }
-
-  const pendienteSuave = () => {
-    if      (c.pendiente_pct < 5)  { s += 30; motivos.push('terreno casi plano'); }
-    else if (c.pendiente_pct < 10) { s += 20; motivos.push('pendiente suave'); }
-    else if (c.pendiente_pct < 18) { s += 8; }
-    else                            { s -= 15; motivos.push('pendiente alta'); }
+  const plano = (hi: number) => {
+    if      (pend < 3)  { s += hi;        m.push('terreno casi plano'); }
+    else if (pend < 7)  { s += hi * 0.7;  m.push('pendiente suave'); }
+    else if (pend < 12) { s += hi * 0.4; }
+    else if (pend < 18) { s += hi * 0.1; }
+    else                { s -= hi * 0.4;  m.push('pendiente alta'); }
   };
-  const noInundable = (peso = 20) => {
-    if      (acumRel < 0.07) { s += peso; motivos.push('fuera de drenajes'); }
-    else if (acumRel < 0.25) { s += peso * 0.4; }
-    else                      { s -= peso; motivos.push('zona de escorrentía'); }
+  const seco = (hi: number) => {
+    if      (acumRel < 0.07) { s += hi;       m.push('fuera de drenajes'); }
+    else if (acumRel < 0.22) { s += hi * 0.4; }
+    else                     { s -= hi * 0.8; m.push('zona de escorrentía'); }
+  };
+  const norte = (hi: number) => {
+    if      (orientacionNorte >  2) { s += hi;       m.push('orientación norte'); }
+    else if (orientacionNorte >  0) { s += hi * 0.5; }
+    else if (orientacionNorte < -2) { s -= hi * 0.4; m.push('orientación sur'); }
+  };
+  const cercaAcceso = (hi: number) => {
+    if      (distEntradaRel < 0.25) { s += hi;       m.push('cerca del acceso'); }
+    else if (distEntradaRel < 0.50) { s += hi * 0.5; }
   };
 
-  switch (tipo) {
-    case 'casa':
-    case 'cabana':
-      pendienteSuave();
-      noInundable(20);
-      if (orientacionNorte >  2) { s += 22; motivos.push('ladera con orientación norte'); }
-      else if (orientacionNorte > 0) { s += 12; }
-      else if (orientacionNorte < -2) { s -= 8; motivos.push('orientación sur'); }
-      if (elevRel >= 0.35 && elevRel <= 0.8) { s += 18; motivos.push('posición elevada protegida'); }
-      else if (elevRel < 0.2) { s -= 5; motivos.push('posición baja (humedad)'); }
-      if (tipo === 'cabana' && distEntradaRel > 0.5) { s += 8; motivos.push('privacidad respecto del acceso'); }
+  switch (perfil) {
+    case 'vivienda':
+      plano(14); seco(8); norte(8);
+      if (elevRel >= 0.35 && elevRel <= 0.82) { s += 6; m.push('posición elevada protegida'); }
+      else if (elevRel < 0.18) { s -= 3; m.push('posición baja (humedad)'); }
       break;
-
-    case 'galpon':
-    case 'personalizado':
-      pendienteSuave();
-      noInundable(15);
-      if (distEntradaRel < 0.25) { s += 25; motivos.push('cerca del acceso'); }
-      else if (distEntradaRel < 0.5) { s += 12; }
+    case 'servicio':
+      plano(13); seco(6); cercaAcceso(10);
       break;
-
-    case 'corral':
-      pendienteSuave();
-      noInundable(18);
-      if (distEntradaRel < 0.4) { s += 15; motivos.push('acceso para hacienda y camiones'); }
-      if (elevRel >= 0.3 && elevRel <= 0.7) { s += 8; }
+    case 'social':
+      plano(11); seco(6); norte(6);
+      if (elevRel >= 0.40 && elevRel <= 0.85) { s += 6; m.push('con vistas'); }
       break;
-
+    case 'granja':
+      plano(11); seco(10); norte(6);
+      break;
     case 'huerta':
-      pendienteSuave();
-      noInundable(12);
-      if (orientacionNorte > 0) { s += 15; motivos.push('buena exposición solar'); }
-      if (acumRel > 0.04 && acumRel < 0.2) { s += 10; motivos.push('agua cercana sin riesgo'); }
+      plano(12); norte(10); seco(6);
+      if (acumRel > 0.04 && acumRel < 0.20) { s += 6; m.push('agua cercana sin riesgo'); }
       break;
-
-    case 'reservorio':
-      if      (acumRel > 0.45) { s += 45; motivos.push('alta captación de flujos'); }
-      else if (acumRel > 0.25) { s += 28; motivos.push('captación media'); }
-      else if (acumRel > 0.10) { s += 12; }
-      else                      { s -= 10; motivos.push('poca acumulación'); }
-      if (c.pendiente_pct < 8) { s += 25; motivos.push('plano para excavar'); }
-      else if (c.pendiente_pct < 15) { s += 12; }
-      else { s -= 15; }
-      if (elevRel < 0.35) { s += 18; motivos.push('punto bajo natural'); }
-      else if (elevRel < 0.55) { s += 8; }
+    case 'corral':
+      plano(12); seco(10); cercaAcceso(8);
       break;
-
+    case 'apiario':
+      norte(10); seco(6);
+      if (pend < 15) s += 5;
+      if (elevRel > 0.20 && elevRel < 0.70) { s += 5; m.push('reparo del viento'); }
+      break;
+    case 'agua':
+      if      (acumRel > 0.45) { s += 22; m.push('alta captación de flujos'); }
+      else if (acumRel > 0.25) { s += 14; m.push('captación media'); }
+      else if (acumRel > 0.10) { s += 6; }
+      else                     { s -= 8;  m.push('poca acumulación'); }
+      if      (pend < 8)  { s += 10; m.push('plano para excavar'); }
+      else if (pend < 15) { s += 5; }
+      else                { s -= 8; }
+      if (elevRel < 0.35) { s += 8; m.push('punto bajo natural'); }
+      break;
     case 'pastoreo':
-      if (c.pendiente_pct < 12) s += 25; else if (c.pendiente_pct < 20) s += 15; else s += 5;
-      noInundable(8);
-      motivos.push('apto pastizal');
+      if (pend < 12) s += 20; else if (pend < 20) s += 12; else s += 4;
+      seco(6); m.push('apto pastizal');
       break;
-
     case 'cultivo':
-      if      (c.pendiente_pct < 3)  { s += 35; motivos.push('plano, apto maquinaria'); }
-      else if (c.pendiente_pct < 6)  { s += 22; motivos.push('pendiente leve'); }
-      else if (c.pendiente_pct < 10) { s += 5; }
-      else                            { s -= 20; motivos.push('pendiente excesiva para cultivo'); }
-      noInundable(12);
+      if      (pend < 3)  { s += 25; m.push('plano, apto maquinaria'); }
+      else if (pend < 6)  { s += 16; m.push('pendiente leve'); }
+      else if (pend < 10) { s += 5; }
+      else                { s -= 16; m.push('pendiente excesiva para cultivo'); }
+      seco(8);
       break;
-
-    case 'frutales':
-      if (c.pendiente_pct < 12) s += 20; else s += 5;
-      if (orientacionNorte > 0) { s += 18; motivos.push('ladera norte (heladas escurren)'); }
-      noInundable(10);
-      if (elevRel >= 0.3 && elevRel <= 0.75) { s += 10; motivos.push('a media ladera, sin heladas de fondo'); }
+    case 'frutal':
+      if (pend < 12) s += 14; else s += 4;
+      norte(10); seco(6);
+      if (elevRel >= 0.30 && elevRel <= 0.75) { s += 6; m.push('a media ladera, sin heladas de fondo'); }
+      break;
+    case 'generico':
+      plano(12); seco(8); cercaAcceso(6);
       break;
   }
+  return { s, motivos: m };
+}
 
-  return { score: Math.max(0, Math.min(100, Math.round(s + 30))), motivos };
+/** Bonus por estar cerca de un elemento afín ya colocado (0..25). */
+function afinidadScore(
+  afines: TipoItemPrograma[], lat: number, lng: number,
+  colocados: Colocado[], rangoM: number, kx: number, ky: number,
+): { s: number; motivos: string[] } {
+  if (afines.length === 0 || colocados.length === 0) return { s: 0, motivos: [] };
+  let mejorD = Infinity;
+  let mejorTipo: TipoItemPrograma | null = null;
+  for (const p of colocados) {
+    if (!afines.includes(p.tipo)) continue;
+    const d = Math.hypot((lng - p.lng) * kx, (lat - p.lat) * ky);
+    if (d < mejorD) { mejorD = d; mejorTipo = p.tipo; }
+  }
+  if (!mejorTipo || !isFinite(mejorD)) return { s: 0, motivos: [] };
+  const prox = 1 - Math.min(1, mejorD / rangoM);
+  const motivos = prox > 0.55 ? [`junto a ${TIPOS_ITEM[mejorTipo].label.toLowerCase()}`] : [];
+  return { s: 25 * prox, motivos };
+}
+
+/**
+ * Puntaje combinado de una celda para un elemento: TERRENO + BANDA (permacultura,
+ * distancia a la casa) + AFINIDAD (vecindad) − penalización por amontonar puntuales.
+ * La banda domina la ubicación gruesa; el terreno decide la posición fina.
+ */
+function puntuarCelda(
+  def: DefItemPrograma, ctx: ContextoCelda, hayZona0: boolean,
+  colocados: Colocado[], rangoM: number, sepMinM: number, kx: number, ky: number,
+): { score: number; motivos: string[] } {
+  const t = terrenoScore(def.perfil, ctx);
+  let raw = t.s;
+  const motivos = [...t.motivos];
+
+  if (hayZona0) {
+    const ventana = def.esArea ? 0.42 : 0.26;
+    const match = 1 - Math.min(1, Math.abs(ctx.distZona0Rel - def.banda) / ventana);
+    raw += BANDA_PESO[def.perfil] * match;
+    if      (match > 0.70) motivos.push('a la distancia adecuada de la casa');
+    else if (match < 0.30) motivos.push('lejos de su zona ideal respecto de la casa');
+  }
+
+  const af = afinidadScore(def.afines, ctx.lat, ctx.lng, colocados, rangoM, kx, ky);
+  raw += af.s;
+  motivos.push(...af.motivos);
+
+  // Colmenas: lejos de puertas y circulación de la casa.
+  if (def.perfil === 'apiario') {
+    for (const p of colocados) {
+      if (p.tipo !== 'casa' && p.tipo !== 'cabana' && p.tipo !== 'quincho' && p.tipo !== 'sum') continue;
+      const d = Math.hypot((ctx.lng - p.lng) * kx, (ctx.lat - p.lat) * ky);
+      if (d < 60) { raw -= 18; motivos.push('demasiado cerca de la casa'); break; }
+    }
+  }
+
+  // Puntuales: no amontonar construcciones que no son afines entre sí.
+  if (!def.esArea) {
+    for (const p of colocados) {
+      if (def.afines.includes(p.tipo)) continue;
+      const d = Math.hypot((ctx.lng - p.lng) * kx, (ctx.lat - p.lat) * ky);
+      if (d < sepMinM) { raw -= 14; break; }
+    }
+  }
+
+  return { score: Math.max(0, Math.min(100, Math.round(raw))), motivos };
 }
 
 /**
@@ -327,18 +411,29 @@ export function calcularMasterPlan(
   const byPos = new Map<string, CeldaShader>();
   celdas.forEach(c => byPos.set(`${c.row},${c.col}`, c));
 
-  // Área de celda en m²
+  // Área de celda + proyección local (metros) para distancias reales
   const c0 = celdas[0]!;
-  const cellLatM = (c0.latMax - c0.latMin) * 111_320;
-  const cellLngM = (c0.lngMax - c0.lngMin) * 111_320 * Math.cos(((c0.latMin + c0.latMax) / 2) * Math.PI / 180);
+  let latMinP = Infinity, latMaxP = -Infinity, lngMinP = Infinity, lngMaxP = -Infinity;
+  for (const c of celdas) {
+    if (c.latMin < latMinP) latMinP = c.latMin; if (c.latMax > latMaxP) latMaxP = c.latMax;
+    if (c.lngMin < lngMinP) lngMinP = c.lngMin; if (c.lngMax > lngMaxP) lngMaxP = c.lngMax;
+  }
+  const latRef = (latMinP + latMaxP) / 2;
+  const kx = 111_320 * Math.cos(latRef * Math.PI / 180);
+  const ky = 111_320;
+  const cellLatM = (c0.latMax - c0.latMin) * ky;
+  const cellLngM = (c0.lngMax - c0.lngMin) * kx;
   const cellAreaM2 = Math.max(cellLatM * cellLngM, 1);
+  const cellSizeM  = Math.sqrt(cellAreaM2);
+  const predioDiagM = Math.hypot((lngMaxP - lngMinP) * kx, (latMaxP - latMinP) * ky);
+  const rangoM  = Math.min(550, Math.max(150, predioDiagM * 0.28));  // escala de "cercanía" (afinidad)
+  const sepMinM = Math.max(cellSizeM * 1.4, 40);                     // separación mínima entre construcciones
 
   // Entrada del predio: celda de borde más baja (igual criterio que sugerencias)
   const borde = celdas.filter(c =>
     !byPos.has(`${c.row - 1},${c.col}`) || !byPos.has(`${c.row + 1},${c.col}`) ||
     !byPos.has(`${c.row},${c.col - 1}`) || !byPos.has(`${c.row},${c.col + 1}`));
   const entrada = [...borde].sort((a, b) => a.elevation - b.elevation)[0] ?? c0;
-
   const maxDist = Math.max(...celdas.map(c =>
     Math.hypot(c.row - entrada.row, c.col - entrada.col)), 1);
 
@@ -364,93 +459,150 @@ export function calcularMasterPlan(
     const orientacionNorte = sur && norte ? sur.elevation - norte.elevation : 0;
     const distEntradaRel = Math.hypot(c.row - entrada.row, c.col - entrada.col) / maxDist;
     const distZona0Rel   = Math.hypot(c.row - anclaZ.row, c.col - anclaZ.col) / maxDistZ;
-    return { c, acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte };
+    return {
+      c, lat: (c.latMin + c.latMax) / 2, lng: (c.lngMin + c.lngMax) / 2,
+      acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte,
+    };
   }
 
   const contextos = new Map<string, ContextoCelda>();
   celdas.forEach(c => contextos.set(`${c.row},${c.col}`, contexto(c)));
 
   const usadas = new Set<string>();
-  const resultado: ElementoMasterPlan[] = [];
+  // Elementos ya ubicados (para afinidad). La zona 0 cuenta como casa desde el arranque.
+  const colocados: Colocado[] = [];
+  if (zona0) colocados.push({ tipo: 'casa', lat: zona0.lat, lng: zona0.lng });
 
-  // Orden de asignación: puntuales primero (lo crítico), áreas grandes después
-  const puntuales = programa.filter(i => !TIPOS_ITEM[i.tipo].esArea);
-  const areales   = programa.filter(i =>  TIPOS_ITEM[i.tipo].esArea)
-    .sort((a, b) => dimensionarItem(b).area_m2 - dimensionarItem(a).area_m2);
-
-  // ── Elementos puntuales: mejor celda libre, polígono cuadrado del área requerida ──
-  for (const item of puntuales) {
+  // ── Elementos puntuales, en orden de dependencia (anclas primero) ──
+  interface PuntColoc {
+    el: ElementoMasterPlan; cellKey: string; def: DefItemPrograma;
+    item: ItemPrograma; areaUnidad: number; coloc: Colocado; fijo: boolean;
+  }
+  const unidades: Array<{ item: ItemPrograma; def: DefItemPrograma; idx: number; total: number }> = [];
+  for (const item of programa.filter(i => !TIPOS_ITEM[i.tipo].esArea)) {
     const def = TIPOS_ITEM[item.tipo];
+    const n = Math.max(1, item.cantidad);
+    for (let k = 0; k < n; k++) unidades.push({ item, def, idx: k, total: n });
+  }
+  unidades.sort((a, b) => PRIORIDAD[a.item.tipo] - PRIORIDAD[b.item.tipo]);
+
+  const cuadrado = (latC: number, lngC: number, areaUnidad: number) => {
+    const lado = Math.sqrt(areaUnidad);
+    const dLat = (lado / 2) / ky;
+    const dLng = (lado / 2) / kx;
+    return [
+      { lat: latC - dLat, lng: lngC - dLng }, { lat: latC - dLat, lng: lngC + dLng },
+      { lat: latC + dLat, lng: lngC + dLng }, { lat: latC + dLat, lng: lngC - dLng },
+    ];
+  };
+
+  const puntColoc: PuntColoc[] = [];
+  for (const { item, def, idx, total } of unidades) {
     const dim = dimensionarItem(item);
-    const n = def.esArea ? 1 : Math.max(1, item.cantidad);
-    const areaUnidad = dim.area_m2 / n;
+    const areaUnidad = dim.area_m2 / Math.max(1, total);
 
-    for (let k = 0; k < n; k++) {
-      // La primera casa se planta EN la zona 0 marcada por el usuario.
-      const forzarZona0 = hayZona0 && (item.tipo === 'casa') && k === 0
-        && !usadas.has(`${anclaZ.row},${anclaZ.col}`);
-      const candidatas = forzarZona0
-        ? [{ c: anclaZ, ...scorePerfil(item.tipo, contextos.get(`${anclaZ.row},${anclaZ.col}`)!, hayZona0) }]
-        : celdas
-            .filter(c => !usadas.has(`${c.row},${c.col}`))
-            .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!, hayZona0) }))
-            .sort((a, b) => b.score - a.score);
-      const mejor = candidatas[0];
-      if (!mejor) break;
+    const forzarZona0 = hayZona0 && item.tipo === 'casa' && idx === 0
+      && !usadas.has(`${anclaZ.row},${anclaZ.col}`);
 
-      const key = `${mejor.c.row},${mejor.c.col}`;
-      usadas.add(key);
-      // Bloquear vecinas inmediatas para no apilar construcciones
-      usadas.add(`${mejor.c.row + 1},${mejor.c.col}`);
-      usadas.add(`${mejor.c.row - 1},${mejor.c.col}`);
+    let mejor: { c: CeldaShader; score: number; motivos: string[] } | null = null;
+    if (forzarZona0) {
+      const p = puntuarCelda(def, contextos.get(`${anclaZ.row},${anclaZ.col}`)!, hayZona0, colocados, rangoM, sepMinM, kx, ky);
+      mejor = { c: anclaZ, score: p.score, motivos: p.motivos };
+    } else {
+      for (const c of celdas) {
+        const key = `${c.row},${c.col}`;
+        if (usadas.has(key)) continue;
+        const p = puntuarCelda(def, contextos.get(key)!, hayZona0, colocados, rangoM, sepMinM, kx, ky);
+        if (!mejor || p.score > mejor.score) mejor = { c, score: p.score, motivos: p.motivos };
+      }
+    }
+    if (!mejor) continue;
 
-      const latC = (mejor.c.latMin + mejor.c.latMax) / 2;
-      const lngC = (mejor.c.lngMin + mejor.c.lngMax) / 2;
-      const lado = Math.sqrt(areaUnidad);
-      const dLat = (lado / 2) / 111_320;
-      const dLng = (lado / 2) / (111_320 * Math.cos(latC * Math.PI / 180));
+    const key = `${mejor.c.row},${mejor.c.col}`;
+    usadas.add(key);
+    const latC = (mejor.c.latMin + mejor.c.latMax) / 2;
+    const lngC = (mejor.c.lngMin + mejor.c.lngMax) / 2;
+    const coloc: Colocado = { tipo: item.tipo, lat: latC, lng: lngC };
+    colocados.push(coloc);
 
-      resultado.push({
+    puntColoc.push({
+      el: {
         id:      crypto.randomUUID(),
         itemId:  item.id,
         tipo:    item.tipo,
-        nombre:  `${item.tipo === 'personalizado' && item.nombre ? item.nombre : def.label}${n > 1 ? ` ${k + 1}` : ''}`,
-        vertices: [
-          { lat: latC - dLat, lng: lngC - dLng },
-          { lat: latC - dLat, lng: lngC + dLng },
-          { lat: latC + dLat, lng: lngC + dLng },
-          { lat: latC + dLat, lng: lngC - dLng },
-        ],
+        nombre:  `${item.tipo === 'personalizado' && item.nombre ? item.nombre : def.label}${total > 1 ? ` ${idx + 1}` : ''}`,
+        vertices: cuadrado(latC, lngC, areaUnidad),
         area_m2: Math.round(areaUnidad),
         score:   mejor.score,
         motivos: [...mejor.motivos, dim.detalle],
-      });
-    }
+      },
+      cellKey: key, def, item, areaUnidad, coloc, fijo: forzarZona0,
+    });
   }
 
-  // ── Elementos de área: crecimiento de región greedy desde la mejor semilla ──
+  // ── Optimización global: coordinate-descent. Cada puntual reconsidera su celda
+  //    viendo la posición FINAL de los demás (afinidad mutua completa). Se mueve
+  //    solo si mejora estrictamente. Pocas pasadas → converge y queda acotado. ──
+  for (let iter = 0; iter < 4; iter++) {
+    let cambios = 0;
+    for (const pc of puntColoc) {
+      if (pc.fijo) continue;
+      const otros = colocados.filter(x => x !== pc.coloc);
+      const ctxActual = contextos.get(pc.cellKey)!;
+      const actual = puntuarCelda(pc.def, ctxActual, hayZona0, otros, rangoM, sepMinM, kx, ky);
+      let mejor: { c: CeldaShader; score: number; motivos: string[] } = { c: ctxActual.c, score: actual.score, motivos: actual.motivos };
+      for (const c of celdas) {
+        const key = `${c.row},${c.col}`;
+        if (key !== pc.cellKey && usadas.has(key)) continue;   // libre o su propia celda
+        const p = puntuarCelda(pc.def, contextos.get(key)!, hayZona0, otros, rangoM, sepMinM, kx, ky);
+        if (p.score > mejor.score) mejor = { c, score: p.score, motivos: p.motivos };
+      }
+      const nuevaKey = `${mejor.c.row},${mejor.c.col}`;
+      if (nuevaKey !== pc.cellKey) {
+        usadas.delete(pc.cellKey);
+        usadas.add(nuevaKey);
+        const latC = (mejor.c.latMin + mejor.c.latMax) / 2;
+        const lngC = (mejor.c.lngMin + mejor.c.lngMax) / 2;
+        pc.cellKey = nuevaKey;
+        pc.coloc.lat = latC; pc.coloc.lng = lngC;
+        pc.el.vertices = cuadrado(latC, lngC, pc.areaUnidad);
+        pc.el.score = mejor.score;
+        pc.el.motivos = [...mejor.motivos, dimensionarItem(pc.item).detalle];
+        cambios++;
+      }
+    }
+    if (cambios === 0) break;
+  }
+
+  const resultado: ElementoMasterPlan[] = puntColoc.map(p => p.el);
+
+  // ── Elementos de área: crecen desde la mejor semilla hacia sus afines ──
   const DIRS = [
     { dr: -1, dc: 0 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: 0, dc: 1 },
     { dr: -1, dc: -1 }, { dr: -1, dc: 1 }, { dr: 1, dc: -1 }, { dr: 1, dc: 1 },
   ];
+  const areales = programa.filter(i => TIPOS_ITEM[i.tipo].esArea)
+    .sort((a, b) => (PRIORIDAD[a.tipo] - PRIORIDAD[b.tipo])
+                 || (dimensionarItem(b).area_m2 - dimensionarItem(a).area_m2));
 
   for (const item of areales) {
     const def = TIPOS_ITEM[item.tipo];
     const dim = dimensionarItem(item);
     const celdasNecesarias = Math.max(1, Math.ceil(dim.area_m2 / cellAreaM2));
 
-    const candidatas = celdas
-      .filter(c => !usadas.has(`${c.row},${c.col}`))
-      .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!, hayZona0) }))
-      .sort((a, b) => b.score - a.score);
-    const semilla = candidatas[0];
+    let semilla: { c: CeldaShader; score: number; motivos: string[] } | null = null;
+    for (const c of celdas) {
+      const key = `${c.row},${c.col}`;
+      if (usadas.has(key)) continue;
+      const p = puntuarCelda(def, contextos.get(key)!, hayZona0, colocados, rangoM, sepMinM, kx, ky);
+      if (!semilla || p.score > semilla.score) semilla = { c, score: p.score, motivos: p.motivos };
+    }
     if (!semilla) continue;
 
     const region: CeldaShader[] = [semilla.c];
     const enRegion = new Set<string>([`${semilla.c.row},${semilla.c.col}`]);
 
     while (region.length < celdasNecesarias) {
-      // Mejor vecino libre de cualquier celda de la región
       let mejorVecino: { c: CeldaShader; score: number } | null = null;
       for (const rc of region) {
         for (const { dr, dc } of DIRS) {
@@ -458,7 +610,7 @@ export function calcularMasterPlan(
           if (enRegion.has(nKey) || usadas.has(nKey)) continue;
           const nc = byPos.get(nKey);
           if (!nc) continue;
-          const sc = scorePerfil(item.tipo, contextos.get(nKey)!, hayZona0).score;
+          const sc = puntuarCelda(def, contextos.get(nKey)!, hayZona0, colocados, rangoM, sepMinM, kx, ky).score;
           if (!mejorVecino || sc > mejorVecino.score) mejorVecino = { c: nc, score: sc };
         }
       }
@@ -469,8 +621,6 @@ export function calcularMasterPlan(
 
     enRegion.forEach(k => usadas.add(k));
 
-    // Contorno rectilíneo real de las celdas (no hull convexo: así no invade las
-    // celdas de otra zona y las zonas del master plan no se solapan).
     let vertices = contornoCeldas(region);
     if (vertices.length < 3) {
       const c = region[0]!;
@@ -486,6 +636,11 @@ export function calcularMasterPlan(
     if (cobertura < 0.95) {
       motivos.push(`⚠ solo entró el ${Math.round(cobertura * 100)}% de la superficie requerida`);
     }
+
+    // Centroide de la región (para que áreas posteriores vean esta como afín)
+    const cx = region.reduce((s, c) => s + (c.lngMin + c.lngMax) / 2, 0) / region.length;
+    const cy = region.reduce((s, c) => s + (c.latMin + c.latMax) / 2, 0) / region.length;
+    colocados.push({ tipo: item.tipo, lat: cy, lng: cx });
 
     resultado.push({
       id:      crypto.randomUUID(),
