@@ -8,7 +8,7 @@
  * separado del análisis de topografía.
  */
 import { useState } from 'react';
-import { Sparkles, Trash2, Plus, Target, Mountain, ClipboardList } from 'lucide-react';
+import { Sparkles, Trash2, Plus, Target, Mountain, ClipboardList, Compass, Droplets, LayoutGrid, Wind } from 'lucide-react';
 import {
   TIPOS_ITEM, EQUIV_EV, dimensionarItem,
   type ItemPrograma, type TipoItemPrograma, type ElementoMasterPlan, type EspecieGanado,
@@ -29,13 +29,14 @@ interface Props {
   onQuitarZona0:       () => void;
   topoLista:           boolean;
   onIrATopo:           () => void;
+  onIrAHerramienta:    (tab: string) => void;
 }
 
 export function MasterPlanPanel({
   programa, onPrograma, masterPlan, onGenerarMasterPlan,
   onConvertirZona, onDescartarElemento, areaPredioHa,
   zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0,
-  topoLista, onIrATopo,
+  topoLista, onIrATopo, onIrAHerramienta,
 }: Props) {
   return (
     <div className="space-y-2">
@@ -72,7 +73,36 @@ export function MasterPlanPanel({
           onQuitarZona0={onQuitarZona0}
         />
       )}
+
+      {/* ── Herramientas relacionadas (viven en sus propias pestañas) ── */}
+      <div className="pt-2 mt-1 border-t border-bone-200 space-y-1.5">
+        <p className="text-[9px] font-bold text-ink-800/70 uppercase tracking-wider">Herramientas relacionadas</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <AccesoHerramienta icon={<Compass className="w-3.5 h-3.5" />}    label="Sectores"   detalle="sol · viento · fuego" onClick={() => onIrAHerramienta('sectores')} />
+          <AccesoHerramienta icon={<Droplets className="w-3.5 h-3.5" />}   label="Balance hídrico" detalle="captación · riego" onClick={() => onIrAHerramienta('agua')} />
+          <AccesoHerramienta icon={<LayoutGrid className="w-3.5 h-3.5" />} label="Potreros"   detalle="pastoreo rotativo" onClick={() => onIrAHerramienta('pastoreo')} />
+          <AccesoHerramienta icon={<Wind className="w-3.5 h-3.5" />}       label="Cortinas"   detalle="rompevientos" onClick={() => onIrAHerramienta('prod')} />
+        </div>
+        <p className="text-[8px] text-ink-700/40 italic leading-tight">
+          El master plan ubica los elementos; estas herramientas complementan el diseño con sus propios análisis.
+        </p>
+      </div>
     </div>
+  );
+}
+
+function AccesoHerramienta({ icon, label, detalle, onClick }: {
+  icon: React.ReactNode; label: string; detalle: string; onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick}
+      className="flex items-center gap-1.5 px-2 py-1.5 bg-bone-50 hover:bg-bone-100 border border-bone-200 rounded-lg text-left transition-colors">
+      <span className="text-clay-700 shrink-0">{icon}</span>
+      <span className="min-w-0">
+        <span className="block text-[10px] font-semibold text-ink-900 truncate">{label}</span>
+        <span className="block text-[8px] text-ink-700/50 truncate">{detalle}</span>
+      </span>
+    </button>
   );
 }
 

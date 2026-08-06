@@ -2576,6 +2576,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onQuitarZona0={() => setZona0(null)}
                 topoLista={!!datosShader && !!datosEscorrentia}
                 onIrATopo={() => setTab('topo')}
+                onIrAHerramienta={(t) => setTab(t as Tab)}
               />
             </div>
           )}
