@@ -10,7 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
-  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous,
+  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -73,6 +73,7 @@ import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
 import { SugerenciasPanel } from './SugerenciasPanel';
+import { MasterPlanPanel } from './MasterPlanPanel';
 import { DibujoToolbar } from './DibujoToolbar';
 import { PerfilProfesionalModal } from './PerfilProfesionalModal';
 import { leerPerfil } from '@/lib/profesional';
@@ -135,7 +136,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
-  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -190,6 +191,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'entorno',     label: 'Entorno',     icon: <Bird         className="w-3.5 h-3.5" /> },
   { id: 'carbono',     label: 'Carbono',     icon: <Wind         className="w-3.5 h-3.5" /> },
   { id: 'zonas',       label: 'Zonas',       icon: <LayoutGrid   className="w-3.5 h-3.5" /> },
+  { id: 'masterplan',  label: 'Master plan', icon: <ClipboardList className="w-3.5 h-3.5" /> },
   { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
   { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
   { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
@@ -210,7 +212,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego'] },
-  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
+  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
   { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
@@ -1760,6 +1762,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setMasterPlan(prev => prev ? prev.filter(e => e.id !== id) : prev);
   }, []);
 
+  // Recalcular el master plan completo cada vez que cambia el programa o se mueve
+  // la zona 0 — pero solo si ya se generó una vez (si no, se espera al botón).
+  useEffect(() => {
+    if (!masterPlan || masterPlan.length === 0) return;
+    if (!zona0 || !datosShader || !datosEscorrentia || programaMP.length === 0) return;
+    const t = setTimeout(() => {
+      setMasterPlan(calcularMasterPlan(programaMP, datosShader, datosEscorrentia, mojones, zona0));
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [programaMP, zona0]);
+
   const handleAgregarCortinas = useCallback((cortinas: CortinaSugerida[]) => {
     cortinas.forEach(c => {
       const camino = crearCamino([c.a, c.b]);
@@ -2562,6 +2576,25 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               />
             </div>
           )}
+          {tab === 'masterplan' && (
+            <div className="px-4 py-4">
+              <MasterPlanPanel
+                programa={programaMP}
+                onPrograma={setProgramaMP}
+                masterPlan={masterPlan}
+                onGenerarMasterPlan={handleGenerarMasterPlan}
+                onConvertirZona={handleConvertirZonaMP}
+                onDescartarElemento={handleDescartarElementoMP}
+                areaPredioHa={metricas?.area_ha ?? null}
+                zona0={zona0}
+                modoMarcarZona0={modoZona0}
+                onMarcarZona0={() => setModoZona0(v => !v)}
+                onQuitarZona0={() => setZona0(null)}
+                topoLista={!!datosShader && !!datosEscorrentia}
+                onIrATopo={() => setTab('topo')}
+              />
+            </div>
+          )}
           {tab === 'sectores' && (
             <div className="px-4 py-4">
               <SectoresPanel
@@ -2843,17 +2876,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onAgregarPin={handleAgregarPinSugerencia}
               onAgregarCamino={handleAgregarCaminoSugerencia}
               onVolver={() => setPanelDerecho('capas')}
-              programa={programaMP}
-              onPrograma={setProgramaMP}
-              masterPlan={masterPlan}
-              onGenerarMasterPlan={handleGenerarMasterPlan}
-              onConvertirZona={handleConvertirZonaMP}
-              onDescartarElemento={handleDescartarElementoMP}
-              areaPredioHa={metricas?.area_ha ?? null}
-              zona0={zona0}
-              modoMarcarZona0={modoZona0}
-              onMarcarZona0={() => setModoZona0(v => !v)}
-              onQuitarZona0={() => setZona0(null)}
             />
           )}
 

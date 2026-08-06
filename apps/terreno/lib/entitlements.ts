@@ -143,6 +143,7 @@ export const TAB_FEATURE: Record<string, Feature> = {
   cal:         'analisis.clima',
   agua:        'diseno.agua',
   zonas:       'diseno.zonas',
+  masterplan:  'diseno.zonas',
   sectores:    'diseno.sectores',
   aguadas:     'diseno.aguadas',
   caminos:     'diseno.caminos',
