@@ -1,22 +1,54 @@
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
+import { obtenerElevacionPuntos } from '@/lib/elevacion';
+import { atribucionDe } from '@/lib/elevacion/atribucion';
+import type { LatLng } from '@/lib/elevacion';
 
-const BASE      = 'https://api.opentopodata.org/v1/srtm30m';
+// geotiff (lectura de COG por range request) requiere Node runtime.
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
-const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — SRTM es estático
+const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — el relieve es estático
 
-async function openCache(): Promise<Cache | null> {
-  try { return await caches.open('terreno-elevacion-v1'); } catch { return null; }
-}
-
-// Redondea cada coordenada a 4 decimales (~11 m) y ordena para clave canónica
-function normalizeLocs(raw: string): string {
+function parseLocs(raw: string): LatLng[] {
   return raw
     .split('|')
-    .map(pair => pair.trim().split(',').map(n => parseFloat(n).toFixed(4)).join(','))
+    .map(s => s.trim())
     .filter(Boolean)
-    .sort()
-    .join('|');
+    .map(pair => {
+      const [a, b] = pair.split(',').map(n => parseFloat(n));
+      return { lat: a!, lng: b! };
+    })
+    .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+}
+
+// Clave canónica: coords a 4 decimales (~11 m), ordenadas.
+function claveCanonica(coords: LatLng[]): string {
+  return coords.map(c => `${c.lat.toFixed(4)},${c.lng.toFixed(4)}`).sort().join('|');
+}
+
+async function responder(coords: LatLng[]): Promise<Response> {
+  if (coords.length === 0) return new Response('Missing locations', { status: 400, headers: HDRS });
+
+  const dbKey = await claveHash('elev2', claveCanonica(coords));
+  const hit = await cacheGet<{ raw: string }>(dbKey);
+  if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
+
+  const { elevaciones, fuente } = await obtenerElevacionPuntos(coords);
+
+  const payload = JSON.stringify({
+    status: 'OK',
+    results: coords.map((c, i) => ({
+      elevation: elevaciones[i] ?? null,
+      location: { lat: c.lat, lng: c.lng },
+    })),
+    fuente,
+    atribucion: atribucionDe(fuente),
+  });
+
+  await cacheSet(dbKey, { raw: payload }, CACHE_TTL);
+  return new Response(payload, { status: 200, headers: HDRS });
 }
 
 export async function GET(req: Request) {
@@ -24,31 +56,7 @@ export async function GET(req: Request) {
   if (bloqueo) return bloqueo;
 
   const locations = new URL(req.url).searchParams.get('locations') ?? '';
-  if (!locations) return new Response('Missing locations', { status: 400 });
-
-  const normed   = normalizeLocs(locations);
-  const cacheKey = `https://terreno-cache/elevacion?locs=${encodeURIComponent(normed)}`;
-  const dbKey    = await claveHash('elev', normed);
-  const cache    = await openCache();
-
-  if (cache) {
-    const hit = await cache.match(cacheKey);
-    if (hit) return new Response(hit.body, { status: 200, headers: HDRS });
-  }
-  const dbHit = await cacheGet<{ raw: string }>(dbKey);
-  if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
-
-  const res  = await fetch(`${BASE}?locations=${encodeURIComponent(locations)}`, { signal: AbortSignal.timeout(25_000) });
-  const text = await res.text();
-
-  if (res.ok && cache) {
-    await cache.put(cacheKey, new Response(text, {
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` },
-    }));
-  }
-  if (res.ok) await cacheSet(dbKey, { raw: text }, CACHE_TTL);
-
-  return new Response(text, { status: res.status, headers: HDRS });
+  return responder(parseLocs(locations));
 }
 
 export async function POST(req: Request) {
@@ -57,36 +65,15 @@ export async function POST(req: Request) {
 
   const body = await req.json() as { locations: unknown };
 
-  let locs: string;
+  let coords: LatLng[];
   if (Array.isArray(body.locations)) {
-    const arr = body.locations as Array<{ latitude: number; longitude: number }>;
-    if (arr.length > 100) return new Response('Max 100 locations por request', { status: 400 });
-    locs = arr.map(l => `${l.latitude},${l.longitude}`).join('|');
+    if (body.locations.length > 500) return new Response('Max 500 locations por request', { status: 400, headers: HDRS });
+    coords = (body.locations as Array<{ latitude: number; longitude: number }>)
+      .map(l => ({ lat: l.latitude, lng: l.longitude }))
+      .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
   } else {
-    locs = String(body.locations);
+    coords = parseLocs(String(body.locations));
   }
 
-  const normed   = normalizeLocs(locs);
-  const cacheKey = `https://terreno-cache/elevacion?locs=${encodeURIComponent(normed)}`;
-  const dbKey    = await claveHash('elev', normed);
-  const cache    = await openCache();
-
-  if (cache) {
-    const hit = await cache.match(cacheKey);
-    if (hit) return new Response(hit.body, { status: 200, headers: HDRS });
-  }
-  const dbHit = await cacheGet<{ raw: string }>(dbKey);
-  if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
-
-  const res  = await fetch(`${BASE}?locations=${encodeURIComponent(locs)}`, { signal: AbortSignal.timeout(30_000) });
-  const text = await res.text();
-
-  if (res.ok && cache) {
-    await cache.put(cacheKey, new Response(text, {
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` },
-    }));
-  }
-  if (res.ok) await cacheSet(dbKey, { raw: text }, CACHE_TTL);
-
-  return new Response(text, { status: res.status, headers: HDRS });
+  return responder(coords);
 }
