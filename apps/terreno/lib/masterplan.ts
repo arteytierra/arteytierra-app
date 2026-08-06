@@ -229,10 +229,24 @@ export function calcularMasterPlan(
   programa:     ItemPrograma[],
   shader:       DatosShader,
   escorrentias: DatosEscorrentia,
+  mojones?:     Array<{ lat: number; lng: number }>,
 ): ElementoMasterPlan[] {
-  const { celdas, elev_min, elev_max } = shader;
+  const { elev_min, elev_max } = shader;
   const { acumulacion, acum_max } = escorrentias;
-  if (celdas.length === 0 || programa.length === 0) return [];
+  if (shader.celdas.length === 0 || programa.length === 0) return [];
+
+  // Recortar al polígono del predio: el master plan SOLO ubica dentro de los
+  // mojones. En modo topográfico detallado la grilla abarca todo el bounding box
+  // (no solo el predio), por eso sin este filtro las zonas caían afuera.
+  let celdas = shader.celdas;
+  if (mojones && mojones.length >= 3) {
+    const anillo = mojones.map(m => [m.lng, m.lat] as [number, number]);
+    anillo.push(anillo[0]!);
+    const poly = turf.polygon([anillo]);
+    const dentro = celdas.filter(c =>
+      turf.booleanPointInPolygon(turf.point([(c.lngMin + c.lngMax) / 2, (c.latMin + c.latMax) / 2]), poly));
+    if (dentro.length >= 4) celdas = dentro;
+  }
 
   const byPos = new Map<string, CeldaShader>();
   celdas.forEach(c => byPos.set(`${c.row},${c.col}`, c));

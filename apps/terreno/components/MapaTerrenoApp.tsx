@@ -1735,10 +1735,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       return;
     }
     if (programaMP.length === 0) return;
-    const resultado = calcularMasterPlan(programaMP, datosShader, datosEscorrentia);
+    const resultado = calcularMasterPlan(programaMP, datosShader, datosEscorrentia, mojones);
     setMasterPlan(resultado);
     setCapas(prev => ({ ...prev, sugerencias: true }));
-  }, [datosShader, datosEscorrentia, programaMP]);
+  }, [datosShader, datosEscorrentia, programaMP, mojones]);
 
   const handleConvertirZonaMP = useCallback((el: ElementoMasterPlan) => {
     const zona = crearZona(TIPOS_ITEM[el.tipo].categoriaZona, el.vertices);
