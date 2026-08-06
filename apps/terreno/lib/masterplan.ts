@@ -252,6 +252,52 @@ function scorePerfil(tipo: TipoItemPrograma, ctx: ContextoCelda, hayZona0 = fals
   return { score: Math.max(0, Math.min(100, Math.round(s + 30))), motivos };
 }
 
+/**
+ * Contorno rectilíneo real del conjunto de celdas (sigue el borde de las celdas,
+ * sin abombarse como el hull convexo). Como las celdas de cada zona son disjuntas
+ * (Set `usadas` compartido), así las zonas del master plan NO se pisan entre sí.
+ */
+function contornoCeldas(region: CeldaShader[]): Array<{ lat: number; lng: number }> {
+  const inReg = new Set(region.map(c => `${c.row},${c.col}`));
+  const segs: Array<[[number, number], [number, number]]> = [];  // [[lat,lng],[lat,lng]]
+  for (const c of region) {
+    const { row, col, latMin, latMax, lngMin, lngMax } = c;
+    if (!inReg.has(`${row + 1},${col}`)) segs.push([[latMax, lngMin], [latMax, lngMax]]);
+    if (!inReg.has(`${row - 1},${col}`)) segs.push([[latMin, lngMin], [latMin, lngMax]]);
+    if (!inReg.has(`${row},${col + 1}`)) segs.push([[latMin, lngMax], [latMax, lngMax]]);
+    if (!inReg.has(`${row},${col - 1}`)) segs.push([[latMin, lngMin], [latMax, lngMin]]);
+  }
+  if (segs.length < 3) return [];
+  const key = (p: [number, number]) => `${p[0].toFixed(7)},${p[1].toFixed(7)}`;
+  const adj = new Map<string, [number, number][]>();
+  const push = (k: string, v: [number, number]) => { const l = adj.get(k); if (l) l.push(v); else adj.set(k, [v]); };
+  for (const [a, b] of segs) { push(key(a), b); push(key(b), a); }
+
+  const start = segs[0]![0];
+  const anillo: Array<{ lat: number; lng: number }> = [];
+  let cur = start, curK = key(start), prevK = '';
+  for (let i = 0; i < segs.length * 2 + 8; i++) {
+    anillo.push({ lat: cur[0], lng: cur[1] });
+    const nbrs = adj.get(curK);
+    if (!nbrs || nbrs.length === 0) break;
+    const next = nbrs.find(nb => key(nb) !== prevK) ?? nbrs[0]!;
+    prevK = curK; curK = key(next); cur = next;
+    if (curK === key(start)) break;
+  }
+  if (anillo.length < 3) return [];
+
+  // Colapsar vértices colineales (los bordes son axis-aligned → runs largos).
+  const simple: Array<{ lat: number; lng: number }> = [];
+  const nA = anillo.length;
+  for (let i = 0; i < nA; i++) {
+    const a = anillo[(i - 1 + nA) % nA]!, b = anillo[i]!, c = anillo[(i + 1) % nA]!;
+    const colineal = (Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(b.lat - c.lat) < 1e-9)
+                  || (Math.abs(a.lng - b.lng) < 1e-9 && Math.abs(b.lng - c.lng) < 1e-9);
+    if (!colineal) simple.push(b);
+  }
+  return simple.length >= 3 ? simple : anillo;
+}
+
 // ─── Cálculo principal ────────────────────────────────────────────────────────
 
 export function calcularMasterPlan(
@@ -423,20 +469,9 @@ export function calcularMasterPlan(
 
     enRegion.forEach(k => usadas.add(k));
 
-    // Contorno: hull convexo de las esquinas de las celdas
-    const esquinas = region.flatMap(c => [
-      [c.lngMin, c.latMin], [c.lngMin, c.latMax],
-      [c.lngMax, c.latMin], [c.lngMax, c.latMax],
-    ] as [number, number][]);
-
-    let vertices: Array<{ lat: number; lng: number }> = [];
-    try {
-      const hull = turf.convex(turf.featureCollection(esquinas.map(p => turf.point(p))));
-      if (hull) {
-        const ring = hull.geometry.coordinates[0] ?? [];
-        vertices = ring.slice(0, -1).map(([lng, lat]) => ({ lat: lat!, lng: lng! }));
-      }
-    } catch { /* hull degenerado */ }
+    // Contorno rectilíneo real de las celdas (no hull convexo: así no invade las
+    // celdas de otra zona y las zonas del master plan no se solapan).
+    let vertices = contornoCeldas(region);
     if (vertices.length < 3) {
       const c = region[0]!;
       vertices = [

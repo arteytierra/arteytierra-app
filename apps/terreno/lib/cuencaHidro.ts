@@ -1195,7 +1195,14 @@ function entradaPredio(g: GrillaElevacion, predio: Array<{ lat: number; lng: num
       if (!Number.isNaN(e) && e < bestE) { bestE = e; best = { lat, lng }; }
     }
   }
-  return best;
+  // La entrada cae SOBRE el borde: su celda snapeada puede quedar afuera y el
+  // camino arrancaría fuera del predio. La empujamos ~3 celdas hacia el centroide.
+  const cx = predio.reduce((s, p) => s + p.lng, 0) / n;
+  const cy = predio.reduce((s, p) => s + p.lat, 0) / n;
+  const cellDeg = Math.max((g.latMax - g.latMin) / (g.rows - 1), (g.lngMax - g.lngMin) / (g.cols - 1));
+  const vx = cx - best.lng, vy = cy - best.lat, mag = Math.hypot(vx, vy) || 1;
+  const d = Math.min(cellDeg * 3, mag * 0.5);
+  return { lat: best.lat + (vy / mag) * d, lng: best.lng + (vx / mag) * d };
 }
 
 /**
