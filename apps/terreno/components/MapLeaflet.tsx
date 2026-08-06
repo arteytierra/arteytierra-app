@@ -34,7 +34,6 @@ import { colorInsolacion } from '@/lib/insolacion';
 import type { ObjetoSombra } from '@/lib/objetosSombra';
 import type { ResultadoViewshed } from '@/lib/viewshed';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
-import type { ResultadoSugerencias } from '@/lib/sugerencias';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import {
   distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
@@ -90,7 +89,6 @@ const _cMojon  = new Map<string, L.DivIcon>();
 const _cPin    = new Map<string, L.DivIcon>();
 const _cAguada = new Map<string, L.DivIcon>();
 const _cTexto  = new Map<string, L.DivIcon>();
-const _cSuger  = new Map<string, L.DivIcon>();
 
 // ─── Iconos ───────────────────────────────────────────────────────────────────
 
@@ -170,27 +168,6 @@ function emojiPxElemento(diamM: number, lat: number, zoom: number): number {
   return Math.max(11, Math.min(80, (diamM / mpp) * 0.9));
 }
 
-function crearIconoSugerencia(tipo: 'vivienda' | 'reservorio', rank: number, score: number): L.DivIcon {
-  const key = `${tipo}-${rank}-${score}`;
-  if (_cSuger.has(key)) return _cSuger.get(key)!;
-  const emoji = tipo === 'vivienda' ? '🏠' : '💧';
-  const bg    = score >= 68 ? '#2E7D32' : score >= 45 ? '#E65100' : '#B71C1C';
-  const size  = rank === 0 ? 40 : rank === 1 ? 34 : 28;
-  const fs    = rank === 0 ? 20 : rank === 1 ? 16 : 13;
-  const icon = L.divIcon({
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      background:${bg};display:flex;align-items:center;justify-content:center;
-      font-size:${fs}px;border:3px solid white;
-      box-shadow:0 2px 10px rgba(0,0,0,0.45);
-    ">${emoji}</div>`,
-    className: '',
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-  _cSuger.set(key, icon);
-  return icon;
-}
 
 // ─── Auto-fit bounds ──────────────────────────────────────────────────────────
 
@@ -954,7 +931,6 @@ interface Props {
   insolacion?:        ResultadoInsolacion | null;
   viewshed?:          ResultadoViewshed | null;
   datosEscorrentia?:  DatosEscorrentia | null;
-  datosSugerencias?:  ResultadoSugerencias | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
@@ -1048,7 +1024,6 @@ function MapLeaflet({
   insolacion = null,
   viewshed = null,
   datosEscorrentia = null,
-  datosSugerencias = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
   muroLinea = null,
@@ -1323,14 +1298,6 @@ function MapLeaflet({
           </>
         )}
 
-        {/* ── Camino sugerido ── */}
-        {capas.sugerencias && datosSugerencias && datosSugerencias.camino.length >= 2 && (
-          <Polyline
-            positions={datosSugerencias.camino.map(p => [p.lat, p.lng] as LatLngTuple)}
-            pathOptions={{ color: '#E65100', weight: 3, dashArray: '12 6', opacity: 0.85, interactive: false }}
-          />
-        )}
-
         {/* ── Terreno (polígono de mojones) ── */}
         {capas.terreno && mojones.length >= 3 && (
           <Polygon
@@ -1483,20 +1450,6 @@ function MapLeaflet({
                 <div style="position:absolute;top:-8px;left:22px;background:#2E7D32;color:#fff;font:700 8px/1 system-ui;padding:2px 4px;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.4)">0</div>`,
             })}
           />
-        )}
-
-        {/* ── Sugerencias: vivienda y reservorio ── */}
-        {capas.sugerencias && datosSugerencias && (
-          <>
-            {datosSugerencias.viviendas.map((v, i) => (
-              <Marker key={`viv-${i}`} position={[v.lat, v.lng]}
-                icon={crearIconoSugerencia('vivienda', i, v.score)} />
-            ))}
-            {datosSugerencias.reservorios.map((r, i) => (
-              <Marker key={`res-${i}`} position={[r.lat, r.lng]}
-                icon={crearIconoSugerencia('reservorio', i, r.score)} />
-            ))}
-          </>
         )}
 
         {/* ── Master Plan: elementos del programa con ubicación y área sugerida ── */}

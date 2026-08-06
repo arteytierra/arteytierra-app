@@ -71,8 +71,6 @@ import type { PastoreoInputs } from '@/lib/pastoreo';
 import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
-import { calcularSugerencias, type ResultadoSugerencias } from '@/lib/sugerencias';
-import { SugerenciasPanel } from './SugerenciasPanel';
 import { MasterPlanPanel } from './MasterPlanPanel';
 import { DibujoToolbar } from './DibujoToolbar';
 import { PerfilProfesionalModal } from './PerfilProfesionalModal';
@@ -575,10 +573,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
   const aptitud = useMemo<ResultadoAptitud | null>(
     () => datosShader ? calcularAptitud(datosShader, datosEscorrentia) : null,
-    [datosShader, datosEscorrentia],
-  );
-  const datosSugerencias = useMemo<ResultadoSugerencias | null>(
-    () => datosShader && datosEscorrentia ? calcularSugerencias(datosShader, datosEscorrentia) : null,
     [datosShader, datosEscorrentia],
   );
 
@@ -1675,24 +1669,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
   }, [mojones, shaderDetallado]);
 
-  // ─── Agregar desde sugerencias ────────────────────────────────────────────
-  const handleAgregarPinSugerencia = useCallback((lat: number, lng: number, nombre: string, icono: string, color: string) => {
-    const pin = { id: crypto.randomUUID(), lat, lng, nombre, icono, color, notas: '' };
-    setPines(prev => [...prev, pin]);
-    setTab('mojones');
-    setPinEditId(null);
-  }, []);
-
   // Ubicar un sitio de represa sugerido: vuela al punto y deja un pin (sin salir del tab).
   const handleUbicarSitio = useCallback((lat: number, lng: number, nombre: string) => {
     flyToRef.current?.(lat, lng);
     setPines(prev => [...prev, { id: crypto.randomUUID(), lat, lng, nombre, icono: '💧', color: '#1565C0', notas: 'Sitio sugerido de represa' }]);
-  }, []);
-
-  const handleAgregarCaminoSugerencia = useCallback((vertices: Array<{lat: number; lng: number}>, nombre: string, color: string) => {
-    const c = crearCamino(vertices);
-    setCaminos(prev => [...prev, { ...c, nombre, color }]);
-    setTab('caminos');
   }, []);
 
   // Análisis topográfico integral: vuelca al plano represas + viviendas + caminos por cresta + cruces.
@@ -1709,12 +1689,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     flyToRef.current?.(res.entrada.lat, res.entrada.lng);
   }, []);
 
-  // Al correr el Análisis del predio: encender las capas de escorrentías +
-  // sugerencias (antes se creaban pero quedaban apagadas) y abrir su panel.
+  // Al correr el Análisis del predio: encender la capa de escorrentías (antes se
+  // creaba pero quedaba apagada). Las sugerencias de programa las hace el master plan.
   const handleAnalisisPredioListo = useCallback(() => {
     setAnalisisHecho(true);
-    setCapas(prev => ({ ...prev, escorrentias: true, sugerencias: true }));
-    setPanelDerecho('sugerencias');
+    setCapas(prev => ({ ...prev, escorrentias: true }));
   }, []);
 
   // Zonas de vivienda sugeridas (desde Sectores): vuelca pines 🏠 al plano.
@@ -2840,8 +2819,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               })}
               onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
               datosShader={datosShader} analisisHecho={analisisHecho} onIrATopo={() => setTab('topo')} mojones={mojones}
-              datosSugerencias={datosSugerencias}
-              onVerSugerencias={() => setPanelDerecho('sugerencias')}
+              masterPlanHay={!!masterPlan && masterPlan.length > 0}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -2866,16 +2844,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               opacidadShader={opacidadShader}
               onOpacidadShader={setOpacidadShader}
               onResetTerrariumRango={handleResetTerrariumRango}
-            />
-          )}
-
-          {/* Panel de Sugerencias */}
-          {panelDerecho === 'sugerencias' && datosSugerencias && (
-            <SugerenciasPanel
-              datos={datosSugerencias}
-              onAgregarPin={handleAgregarPinSugerencia}
-              onAgregarCamino={handleAgregarCaminoSugerencia}
-              onVolver={() => setPanelDerecho('capas')}
             />
           )}
 
@@ -2925,7 +2893,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           insolacion={insolacion}
           viewshed={viewshed}
           datosEscorrentia={datosEscorrentia}
-          datosSugerencias={datosSugerencias}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
           muroLinea={muroLinea}
@@ -3394,8 +3361,7 @@ interface PanelCapasProps {
   analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
-  datosSugerencias:    ResultadoSugerencias | null;
-  onVerSugerencias:    () => void;
+  masterPlanHay:       boolean;
   onCapturar:          () => void;
   onGuardarPng:        () => void;
   guardandoPng:        boolean;
@@ -3421,7 +3387,7 @@ function PanelCapas({
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, analisisHecho, onIrATopo, mojones,
-  datosSugerencias, onVerSugerencias,
+  masterPlanHay,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
@@ -3696,31 +3662,23 @@ function PanelCapas({
         )}
         </div>{/* /hidrico */}
 
-        {/* ── Sugerencias ── */}
+        {/* ── Master plan ── */}
         <div {...makeDrag('sugerencias')}>
-        {datosShader && analisisHecho && (
+        {masterPlanHay && (
           <CapaGrupo
-            label="Sugerencias"
+            label="Master plan"
             visible={capas.sugerencias}
             onToggleVisible={() => onCapas({ ...capas, sugerencias: !capas.sugerencias })}
             expanded={exp.sugerencias} onExpand={() => tog('sugerencias')}
           >
             <CapaItem visible={capas.sugerencias}
               onToggle={() => onCapas({ ...capas, sugerencias: !capas.sugerencias })}
-              label="Vivienda, Reservorio, Acceso"
-              swatch={<span className="text-sm leading-none">🏠💧</span>}
+              label="Ubicaciones sugeridas"
+              swatch={<span className="text-sm leading-none">🏠🌾</span>}
             />
-            {datosSugerencias && (
-              <button
-                onClick={onVerSugerencias}
-                className="mx-3 mb-2 mt-1 w-[calc(100%-24px)] flex items-center justify-center gap-1 py-1.5 bg-ink-900 hover:bg-ink-700 text-bone-50 rounded-lg text-[10px] font-semibold transition-colors"
-              >
-                Ver análisis completo →
-              </button>
-            )}
           </CapaGrupo>
         )}
-        </div>{/* /sugerencias */}
+        </div>{/* /master plan */}
 
         {/* ── Terreno ── */}
         <div {...makeDrag('terreno')}>
