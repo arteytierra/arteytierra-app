@@ -994,6 +994,7 @@ interface Props {
   onGetFlyTo?:        (fn: (lat: number, lng: number, zoom?: number) => void) => void;
   /** Marcador temporal del resultado de búsqueda (no es parte del proyecto). */
   marcadorBusqueda?:  { lat: number; lng: number; label: string } | null;
+  zona0?:             { lat: number; lng: number } | null;
   // ── Navegación unificada (el panel vive en MapaTerrenoApp) ──
   onGetNavegacion?:   (api: NavegacionMapa) => void;
   onBearing?:         (grados: number) => void;
@@ -1098,6 +1099,7 @@ function MapLeaflet({
   onOverlayEsquina,
   masterPlan = null,
   marcadorBusqueda = null,
+  zona0 = null,
 }: Props) {
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
   // Zoom local (solo para dimensionar los emojis de elementos a escala). El paneo
@@ -1463,6 +1465,22 @@ function MapLeaflet({
                 <div style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#D9A441;color:#3a2e12;font:600 10px/1.2 system-ui;padding:2px 7px;border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.3);margin-bottom:3px">${marcadorBusqueda.label.replace(/</g, '&lt;')}</div>
                 <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg"><path d="M11 0C5 0 0 4.7 0 10.6 0 18 11 28 11 28s11-10 11-17.4C22 4.7 17 0 11 0z" fill="#D9A441" stroke="#fff" stroke-width="1.5"/><circle cx="11" cy="10.5" r="3.6" fill="#fff"/></svg>
               </div>`,
+            })}
+          />
+        )}
+
+        {/* ── Zona 0: casa / edificio principal (referencia del master plan) ── */}
+        {zona0 && (
+          <Marker
+            position={[zona0.lat, zona0.lng]}
+            interactive={false}
+            zIndexOffset={1100}
+            icon={L.divIcon({
+              className: '',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+              html: `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9999px;background:rgba(46,125,50,.9);border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.5);color:#fff;font:700 13px/1 system-ui">🏠</div>
+                <div style="position:absolute;top:-8px;left:22px;background:#2E7D32;color:#fff;font:700 8px/1 system-ui;padding:2px 4px;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.4)">0</div>`,
             })}
           />
         )}

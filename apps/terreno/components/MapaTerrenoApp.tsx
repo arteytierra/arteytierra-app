@@ -378,6 +378,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Master Plan ──────────────────────────────────────────────────────────
   const [programaMP,  setProgramaMP]  = useState<ItemPrograma[]>([]);
   const [masterPlan,  setMasterPlan]  = useState<ElementoMasterPlan[] | null>(null);
+  // Zona 0 (casa / edificio principal): punto de referencia del master plan.
+  const [zona0,       setZona0]       = useState<{ lat: number; lng: number } | null>(null);
+  const [modoZona0,   setModoZona0]   = useState(false);
 
   // ─── Curvas de nivel: fetch de grilla densa al activar la capa ────────────
   const mojonesKey = useMemo(
@@ -549,7 +552,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     handleAgregarObjeto,
   } = useSombras({ datosShader, latCentro, zonas, dibujos });
 
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoElementoClick || modoCuenca || modoViewshed || modoArbol || (modoDibujo && modoDibujo !== 'seleccion');
+  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoElementoClick || modoCuenca || modoViewshed || modoArbol || modoZona0 || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
@@ -631,8 +634,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (Object.keys(keylineCheck).length) m['keyline_check'] = keylineCheck;
     if (escenarios.length)    m['escenarios'] = escenarios;
     if (analisisHecho)        m['analisis_hecho'] = true;
+    if (zona0)                m['zona0'] = zona0;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -759,6 +763,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
+    if (modoZona0) {
+      setZona0({ lat, lng });
+      setModoZona0(false);
+      return;
+    }
     if (modoArbol) {
       const p = objetoPendienteRef.current;
       setModoArbol(false);
@@ -882,7 +891,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
 
     if (modoClick) agregarMojon(lat, lng);
-  }, [modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modoZona0, modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -1294,6 +1303,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         if (modoCamino)   setModoCamino(null);
         if (modoPinClick) setModoPinClick(false);
         if (modoElementoClick) { setModoElementoClick(false); setElementoActivo(null); }
+        if (modoZona0)    setModoZona0(false);
         if (modoClick)    setModoClick(false);
         setDibujoSelId(null);
         return;
@@ -1330,7 +1340,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [
     undo, redo, modal, dibujoEnCurso, modoDibujo, medicionVertices, modoZona, modoSector, modoCamino,
-    modoPinClick, modoElementoClick, modoClick, dibujoSelId,
+    modoPinClick, modoElementoClick, modoZona0, modoClick, dibujoSelId,
     handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
     handleCancelarDibujo, handleEliminarDibujo,
   ]);
@@ -1735,10 +1745,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       return;
     }
     if (programaMP.length === 0) return;
-    const resultado = calcularMasterPlan(programaMP, datosShader, datosEscorrentia, mojones);
+    const resultado = calcularMasterPlan(programaMP, datosShader, datosEscorrentia, mojones, zona0);
     setMasterPlan(resultado);
     setCapas(prev => ({ ...prev, sugerencias: true }));
-  }, [datosShader, datosEscorrentia, programaMP, mojones]);
+  }, [datosShader, datosEscorrentia, programaMP, mojones, zona0]);
 
   const handleConvertirZonaMP = useCallback((el: ElementoMasterPlan) => {
     const zona = crearZona(TIPOS_ITEM[el.tipo].categoriaZona, el.vertices);
@@ -1783,6 +1793,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCapaActivaId(CAPA_DEFAULT_ID);
     setProgramaMP((meta['programa_mp'] as ItemPrograma[]) ?? []);
     setMasterPlan((meta['master_plan'] as ElementoMasterPlan[]) ?? null);
+    setZona0((meta['zona0'] as { lat: number; lng: number }) ?? null);
     setProyectoActual(p.id ? p : null);
     setSeleccionado(null);
     setDatosClimaRaw((meta['clima']  as DatosClima)        ?? null);
@@ -2839,6 +2850,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onConvertirZona={handleConvertirZonaMP}
               onDescartarElemento={handleDescartarElementoMP}
               areaPredioHa={metricas?.area_ha ?? null}
+              zona0={zona0}
+              modoMarcarZona0={modoZona0}
+              onMarcarZona0={() => setModoZona0(v => !v)}
+              onQuitarZona0={() => setZona0(null)}
             />
           )}
 
@@ -2939,6 +2954,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           onOverlayEsquina={handleOverlayEsquina}
           masterPlan={masterPlan}
           marcadorBusqueda={marcadorBusqueda}
+          zona0={zona0}
         />
 
         {/* ─────────────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ChevronLeft, Home, Droplets, Route, CheckCircle2, AlertCircle, ClipboardList, Sparkles, Trash2, Plus } from 'lucide-react';
+import { X, ChevronLeft, Home, Droplets, Route, CheckCircle2, AlertCircle, ClipboardList, Sparkles, Trash2, Plus, Target } from 'lucide-react';
 import type { ResultadoSugerencias, CandidatoUbicacion } from '@/lib/sugerencias';
 import {
   TIPOS_ITEM, EQUIV_EV, dimensionarItem,
@@ -22,12 +22,17 @@ interface Props {
   onConvertirZona:     (el: ElementoMasterPlan) => void;
   onDescartarElemento: (id: string) => void;
   areaPredioHa:        number | null;
+  zona0:               { lat: number; lng: number } | null;
+  modoMarcarZona0:     boolean;
+  onMarcarZona0:       () => void;
+  onQuitarZona0:       () => void;
 }
 
 export function SugerenciasPanel({
   datos, onAgregarPin, onAgregarCamino, onVolver,
   programa, onPrograma, masterPlan, onGenerarMasterPlan,
   onConvertirZona, onDescartarElemento, areaPredioHa,
+  zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0,
 }: Props) {
   const [agregados, setAgregados] = useState<Set<string>>(new Set());
 
@@ -65,6 +70,10 @@ export function SugerenciasPanel({
             onConvertirZona={onConvertirZona}
             onDescartar={onDescartarElemento}
             areaPredioHa={areaPredioHa}
+            zona0={zona0}
+            modoMarcarZona0={modoMarcarZona0}
+            onMarcarZona0={onMarcarZona0}
+            onQuitarZona0={onQuitarZona0}
           />
         </SeccionSugerencia>
 
@@ -291,7 +300,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 const inputMini = 'w-full text-[10px] bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500';
 
-function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConvertirZona, onDescartar, areaPredioHa }: {
+function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConvertirZona, onDescartar, areaPredioHa, zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0 }: {
   programa:        ItemPrograma[];
   onPrograma:      (items: ItemPrograma[]) => void;
   masterPlan:      ElementoMasterPlan[] | null;
@@ -299,6 +308,10 @@ function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConve
   onConvertirZona: (el: ElementoMasterPlan) => void;
   onDescartar:     (id: string) => void;
   areaPredioHa:    number | null;
+  zona0:           { lat: number; lng: number } | null;
+  modoMarcarZona0: boolean;
+  onMarcarZona0:   () => void;
+  onQuitarZona0:   () => void;
 }) {
   const [tipoNuevo, setTipoNuevo] = useState<TipoItemPrograma>('casa');
 
@@ -324,6 +337,27 @@ function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConve
 
   return (
     <div className="px-3 pb-3 pt-1 space-y-2">
+
+      {/* ── Zona 0: casa / edificio principal (referencia del plan) ── */}
+      <div className={`rounded-lg border p-2 space-y-1.5 ${zona0 ? 'border-moss-300 bg-moss-50/60' : 'border-sun-300 bg-sun-50/50'}`}>
+        <div className="flex items-center gap-1.5">
+          <Target className="w-3.5 h-3.5 text-moss-700 shrink-0" />
+          <span className="flex-1 text-[10px] font-semibold text-ink-900">Zona 0 — casa / edificio principal</span>
+          {zona0 && (
+            <button onClick={onQuitarZona0} className="shrink-0 text-ink-700/25 hover:text-clay-500 transition-colors" title="Quitar zona 0">
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+        {zona0
+          ? <p className="text-[9px] font-mono text-ink-700/50">{zona0.lat.toFixed(5)}, {zona0.lng.toFixed(5)}</p>
+          : <p className="text-[9px] text-ink-700/60 leading-tight">Marcá el punto central de tu casa: el motor ubica todo lo demás en relación a esta referencia (zonas de permacultura).</p>}
+        <button onClick={onMarcarZona0}
+          className={`w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${modoMarcarZona0 ? 'bg-sun-400 text-ink-950' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}>
+          <Target className="w-3 h-3" />
+          {modoMarcarZona0 ? 'Hacé clic en el mapa…' : zona0 ? 'Reubicar zona 0' : 'Marcar zona 0 en el mapa'}
+        </button>
+      </div>
 
       {/* ── Ítems del programa ── */}
       {programa.map(item => {

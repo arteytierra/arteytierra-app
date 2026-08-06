@@ -131,13 +131,42 @@ interface ContextoCelda {
   acumRel:  number;
   elevRel:  number;
   distEntradaRel: number;   // 0 = junto a la entrada, 1 = lo más lejos
+  distZona0Rel:   number;   // 0 = sobre zona 0, 1 = lo más lejos (si hay zona 0)
   orientacionNorte: number; // >0 ladera norte (HemSur)
 }
 
-function scorePerfil(tipo: TipoItemPrograma, ctx: ContextoCelda): { score: number; motivos: string[] } {
-  const { c, acumRel, elevRel, distEntradaRel, orientacionNorte } = ctx;
+/**
+ * Zonas de permacultura: distancia relativa PREFERIDA a la zona 0 (casa/edificio
+ * principal) para cada uso. 0 = pegado a la casa, 1 = lo más lejos del predio.
+ * Lo de uso diario cerca; lo extensivo, lejos. Guía la coherencia del conjunto.
+ */
+const BANDA_ZONA0: Record<TipoItemPrograma, number> = {
+  casa:          0.0,
+  cabana:        0.15,
+  huerta:        0.12,
+  galpon:        0.2,
+  reservorio:    0.3,
+  corral:        0.38,
+  personalizado: 0.35,
+  frutales:      0.5,
+  cultivo:       0.72,
+  pastoreo:      0.78,
+};
+
+function scorePerfil(tipo: TipoItemPrograma, ctx: ContextoCelda, hayZona0 = false): { score: number; motivos: string[] } {
+  const { c, acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte } = ctx;
   let s = 0;
   const motivos: string[] = [];
+
+  // Anclaje a zona 0 (permacultura): premia las celdas a la distancia esperada de
+  // la casa según el uso. Es el término que da coherencia al conjunto.
+  if (hayZona0) {
+    const target = BANDA_ZONA0[tipo];
+    const match  = 1 - Math.min(1, Math.abs(distZona0Rel - target) / 0.5);
+    s += 34 * match;
+    if (match > 0.72)      motivos.push('a la distancia adecuada de la casa');
+    else if (match < 0.35) motivos.push('lejos de su zona ideal respecto de la casa');
+  }
 
   const pendienteSuave = () => {
     if      (c.pendiente_pct < 5)  { s += 30; motivos.push('terreno casi plano'); }
@@ -230,6 +259,7 @@ export function calcularMasterPlan(
   shader:       DatosShader,
   escorrentias: DatosEscorrentia,
   mojones?:     Array<{ lat: number; lng: number }>,
+  zona0?:       { lat: number; lng: number } | null,
 ): ElementoMasterPlan[] {
   const { elev_min, elev_max } = shader;
   const { acumulacion, acum_max } = escorrentias;
@@ -266,6 +296,19 @@ export function calcularMasterPlan(
   const maxDist = Math.max(...celdas.map(c =>
     Math.hypot(c.row - entrada.row, c.col - entrada.col)), 1);
 
+  // Zona 0: celda más cercana al punto marcado por el usuario (casa/edificio
+  // principal). Todo se ubica en relación a ella (zonas de permacultura).
+  const hayZona0 = !!zona0;
+  const anclaZ = zona0
+    ? celdas.reduce((best, c) => {
+        const d  = Math.hypot((c.latMin + c.latMax) / 2 - zona0.lat, (c.lngMin + c.lngMax) / 2 - zona0.lng);
+        const bd = Math.hypot((best.latMin + best.latMax) / 2 - zona0.lat, (best.lngMin + best.lngMax) / 2 - zona0.lng);
+        return d < bd ? c : best;
+      }, celdas[0]!)
+    : entrada;
+  const maxDistZ = Math.max(...celdas.map(c =>
+    Math.hypot(c.row - anclaZ.row, c.col - anclaZ.col)), 1);
+
   function contexto(c: CeldaShader): ContextoCelda {
     const key = `${c.row},${c.col}`;
     const acumRel = (acumulacion.get(key) ?? 1) / Math.max(acum_max, 1);
@@ -274,7 +317,8 @@ export function calcularMasterPlan(
     const norte = byPos.get(`${c.row + 1},${c.col}`);
     const orientacionNorte = sur && norte ? sur.elevation - norte.elevation : 0;
     const distEntradaRel = Math.hypot(c.row - entrada.row, c.col - entrada.col) / maxDist;
-    return { c, acumRel, elevRel, distEntradaRel, orientacionNorte };
+    const distZona0Rel   = Math.hypot(c.row - anclaZ.row, c.col - anclaZ.col) / maxDistZ;
+    return { c, acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte };
   }
 
   const contextos = new Map<string, ContextoCelda>();
@@ -296,10 +340,15 @@ export function calcularMasterPlan(
     const areaUnidad = dim.area_m2 / n;
 
     for (let k = 0; k < n; k++) {
-      const candidatas = celdas
-        .filter(c => !usadas.has(`${c.row},${c.col}`))
-        .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!) }))
-        .sort((a, b) => b.score - a.score);
+      // La primera casa se planta EN la zona 0 marcada por el usuario.
+      const forzarZona0 = hayZona0 && (item.tipo === 'casa') && k === 0
+        && !usadas.has(`${anclaZ.row},${anclaZ.col}`);
+      const candidatas = forzarZona0
+        ? [{ c: anclaZ, ...scorePerfil(item.tipo, contextos.get(`${anclaZ.row},${anclaZ.col}`)!, hayZona0) }]
+        : celdas
+            .filter(c => !usadas.has(`${c.row},${c.col}`))
+            .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!, hayZona0) }))
+            .sort((a, b) => b.score - a.score);
       const mejor = candidatas[0];
       if (!mejor) break;
 
@@ -346,7 +395,7 @@ export function calcularMasterPlan(
 
     const candidatas = celdas
       .filter(c => !usadas.has(`${c.row},${c.col}`))
-      .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!) }))
+      .map(c => ({ c, ...scorePerfil(item.tipo, contextos.get(`${c.row},${c.col}`)!, hayZona0) }))
       .sort((a, b) => b.score - a.score);
     const semilla = candidatas[0];
     if (!semilla) continue;
@@ -363,7 +412,7 @@ export function calcularMasterPlan(
           if (enRegion.has(nKey) || usadas.has(nKey)) continue;
           const nc = byPos.get(nKey);
           if (!nc) continue;
-          const sc = scorePerfil(item.tipo, contextos.get(nKey)!).score;
+          const sc = scorePerfil(item.tipo, contextos.get(nKey)!, hayZona0).score;
           if (!mejorVecino || sc > mejorVecino.score) mejorVecino = { c: nc, score: sc };
         }
       }
