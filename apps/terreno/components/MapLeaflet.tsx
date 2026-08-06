@@ -1000,6 +1000,7 @@ interface Props {
   onOverlayEsquina?:  (esquina: 'sw' | 'ne' | 'centro', lat: number, lng: number) => void;
   // ── Master Plan ──
   masterPlan?:        ElementoMasterPlan[] | null;
+  masterPlanCaminos?: Array<{ vertices: Array<{ lat: number; lng: number }> }>;
   // ── Perfil de elevación: punto sincronizado con el cursor del panel de perfil ──
   perfilPunto?:       { lat: number; lng: number } | null;
 }
@@ -1073,6 +1074,7 @@ function MapLeaflet({
   overlay = null,
   onOverlayEsquina,
   masterPlan = null,
+  masterPlanCaminos = [],
   marcadorBusqueda = null,
   zona0 = null,
 }: Props) {
@@ -1451,6 +1453,14 @@ function MapLeaflet({
             })}
           />
         )}
+
+        {/* ── Master Plan: caminos conectores (red que interconecta todo) ── */}
+        {capas.sugerencias && masterPlanCaminos.map((c, i) => c.vertices.length >= 2 && (
+          <Polyline key={`mpc-${i}`}
+            positions={c.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
+            pathOptions={{ color: '#6D4C41', weight: 2.5, dashArray: '6 5', opacity: 0.8, interactive: false }}
+          />
+        ))}
 
         {/* ── Master Plan: elementos del programa con ubicación y área sugerida ── */}
         {capas.sugerencias && masterPlan && masterPlan.map(el => {

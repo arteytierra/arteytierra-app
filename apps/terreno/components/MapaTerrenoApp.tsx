@@ -94,7 +94,7 @@ import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/li
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
 import type { OverlayImagen } from './MapLeaflet';
 import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, type CapaUsuario } from '@/lib/capasUsuario';
-import { calcularMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan } from '@/lib/masterplan';
+import { calcularMasterPlan, conectarMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan, type CaminoMasterPlan } from '@/lib/masterplan';
 import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
@@ -381,6 +381,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // Zona 0 (casa / edificio principal): punto de referencia del master plan.
   const [zona0,       setZona0]       = useState<{ lat: number; lng: number } | null>(null);
   const [modoZona0,   setModoZona0]   = useState(false);
+  // Caminos conectores del master plan (MST zona 0 ↔ elementos), derivados.
+  const mpCaminos = useMemo<CaminoMasterPlan[]>(
+    () => (masterPlan && masterPlan.length ? conectarMasterPlan(masterPlan, zona0) : []),
+    [masterPlan, zona0],
+  );
 
   // ─── Curvas de nivel: fetch de grilla densa al activar la capa ────────────
   const mojonesKey = useMemo(
@@ -2942,6 +2947,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           overlay={overlay}
           onOverlayEsquina={handleOverlayEsquina}
           masterPlan={masterPlan}
+          masterPlanCaminos={mpCaminos}
           marcadorBusqueda={marcadorBusqueda}
           zona0={zona0}
         />

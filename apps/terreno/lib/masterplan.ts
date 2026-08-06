@@ -501,3 +501,49 @@ export function calcularMasterPlan(
 
   return resultado;
 }
+
+// ─── Caminos conectores (árbol de conexión mínima) ─────────────────────────────
+
+export interface CaminoMasterPlan { vertices: Array<{ lat: number; lng: number }>; longitud_m: number }
+
+/**
+ * Red de caminos que interconecta la zona 0 (casa) con cada elemento del master
+ * plan. Árbol de conexión mínima (Prim) por distancia: todo queda conectado con
+ * el menor recorrido total, sin ir de cada cosa hasta la casa por separado.
+ */
+export function conectarMasterPlan(
+  elementos: ElementoMasterPlan[],
+  zona0?:    { lat: number; lng: number } | null,
+): CaminoMasterPlan[] {
+  const centro = (el: ElementoMasterPlan) => ({
+    lat: el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length,
+    lng: el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length,
+  });
+  const nodos: Array<{ lat: number; lng: number }> = [];
+  if (zona0) nodos.push(zona0);
+  for (const el of elementos) nodos.push(centro(el));
+  if (nodos.length < 2) return [];
+
+  const kx = 111_320 * Math.cos(nodos[0]!.lat * Math.PI / 180), ky = 111_320;
+  const distM = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) =>
+    Math.hypot((a.lng - b.lng) * kx, (a.lat - b.lat) * ky);
+
+  const enArbol = new Set<number>([0]);
+  const fuera = nodos.map((_, i) => i).filter(i => i !== 0);
+  const caminos: CaminoMasterPlan[] = [];
+
+  while (fuera.length > 0) {
+    let mejor: { a: number; b: number; d: number } | null = null;
+    for (const a of enArbol) {
+      for (const b of fuera) {
+        const d = distM(nodos[a]!, nodos[b]!);
+        if (!mejor || d < mejor.d) mejor = { a, b, d };
+      }
+    }
+    if (!mejor) break;
+    caminos.push({ vertices: [nodos[mejor.a]!, nodos[mejor.b]!], longitud_m: Math.round(mejor.d) });
+    enArbol.add(mejor.b);
+    fuera.splice(fuera.indexOf(mejor.b), 1);
+  }
+  return caminos;
+}
