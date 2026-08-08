@@ -57,7 +57,7 @@ import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib
 import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
-import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
@@ -2953,6 +2953,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           zona0={zona0}
         />
 
+        {/* Crédito de la fuente de relieve (atribución dinámica DEM) */}
+        {!capturaActiva && datosShader?.fuente && (
+          <div className="no-print absolute bottom-1.5 left-3 z-[900] pointer-events-none">
+            <span className="text-[9px] text-ink-700/70 bg-white/85 backdrop-blur-sm rounded px-1.5 py-0.5 border border-bone-200/70 shadow-sm">
+              {ETIQUETA_RELIEVE[datosShader.fuente]}
+            </span>
+          </div>
+        )}
+
         {/* ─────────────────────────────────────────────────────────────────────
             OVERLAYS DE CAPTURA — van DESPUÉS de MapLeaflet en el DOM para que
             html-to-image los renderice encima del mapa (orden DOM > z-index).
@@ -2994,6 +3003,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 </div>
                 <span className="text-[9px] font-mono font-semibold text-ink-800">{escalaGrafica.label}</span>
               </div>
+              {/* Crédito de relieve (atribución en el PNG) */}
+              {datosShader?.fuente && (
+                <div className="bg-white border border-bone-200 rounded-lg px-2 py-1.5 shadow">
+                  <span className="text-[8px] text-ink-700/70 font-mono">{ETIQUETA_RELIEVE[datosShader.fuente]}</span>
+                </div>
+              )}
             </div>
 
             {/* ── Leyenda (banda derecha, arriba) ────────────────────────────── */}

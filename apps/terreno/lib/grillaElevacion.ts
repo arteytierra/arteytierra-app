@@ -6,6 +6,24 @@
  */
 import * as turf from '@turf/turf';
 
+export type FuenteRelieve = 'glo30' | 'srtm30' | 'terrarium' | 'usuario';
+
+/** Etiqueta corta de la fuente de relieve (chip del mapa). */
+export const ETIQUETA_RELIEVE: Record<FuenteRelieve, string> = {
+  glo30:     'Copernicus GLO-30',
+  srtm30:    'SRTM 30 m',
+  terrarium: 'Terrarium (SRTM/GMTED)',
+  usuario:   'DEM propio',
+};
+
+/** Línea de crédito completa (atribución exigida por Copernicus). */
+export const CREDITO_RELIEVE: Record<FuenteRelieve, string> = {
+  glo30:     'Relieve: Copernicus GLO-30 · © DLR e.V. 2010-2014 y © Airbus DS GmbH 2014-2018 (COPERNICUS · UE · ESA)',
+  srtm30:    'Relieve: SRTM 30 m · NASA / USGS',
+  terrarium: 'Relieve: Terrarium · Mapzen / AWS (SRTM + GMTED)',
+  usuario:   'Relieve: DEM propio del usuario',
+};
+
 export interface GrillaElevacion {
   rows:     number;
   cols:     number;
@@ -17,6 +35,27 @@ export interface GrillaElevacion {
   elev:     Float64Array;
   elev_min: number;
   elev_max: number;
+  /** fuente del relieve efectivamente usada (para atribución) */
+  fuente?:  FuenteRelieve;
+}
+
+/**
+ * Grilla densa GLO-30 server-side (`/api/dem`, COGs de Copernicus). Devuelve la
+ * grilla ya muestreada; null si el servicio falla → el llamador cae a Terrarium.
+ */
+async function grillaDemRemota(
+  latMin: number, latMax: number, lngMin: number, lngMax: number, cols: number, rows: number,
+): Promise<{ elev: Float64Array; fuente: FuenteRelieve } | null> {
+  try {
+    const u = `/api/dem?w=${lngMin}&s=${latMin}&e=${lngMax}&n=${latMax}&cols=${cols}&rows=${rows}`;
+    const res = await fetch(u, { signal: AbortSignal.timeout(45_000) });
+    if (!res.ok) return null;
+    const j = await res.json() as { ok: boolean; fuente: FuenteRelieve; cols: number; rows: number; elev: Array<number | null> };
+    if (!j.ok || j.cols !== cols || j.rows !== rows || !Array.isArray(j.elev) || j.elev.length !== rows * cols) return null;
+    const elev = new Float64Array(rows * cols);
+    for (let i = 0; i < elev.length; i++) { const v = j.elev[i]; elev[i] = (v == null) ? NaN : v; }
+    return { elev, fuente: j.fuente };
+  } catch { return null; }
 }
 
 // ─── Proyección Web Mercator ──────────────────────────────────────────────────
@@ -100,6 +139,31 @@ export async function obtenerGrillaDensa(
     cols = Math.max(20, Math.round(resolucion * (anchoM / altoM)));
   }
 
+  // Fuente preferida: GLO-30 server-side. Si falla, tiles Terrarium (abajo).
+  const dem = await grillaDemRemota(latMin, latMax, lngMin, lngMax, cols, rows);
+  if (dem) {
+    const coordsMask = mojones.map(m => [m.lng, m.lat] as [number, number]);
+    coordsMask.push(coordsMask[0]!);
+    let mascara: ReturnType<typeof turf.polygon> | null = null;
+    try { mascara = turf.transformScale(turf.polygon([coordsMask]), 1.15) as ReturnType<typeof turf.polygon>; } catch { mascara = null; }
+    const elev = dem.elev;
+    let elev_min = Infinity, elev_max = -Infinity;
+    for (let r = 0; r < rows; r++) {
+      const lat = latMin + (r / (rows - 1)) * (latMax - latMin);
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c;
+        if (Number.isNaN(elev[idx]!)) continue;
+        const lng = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
+        if (mascara && !turf.booleanPointInPolygon(turf.point([lng, lat]), mascara)) { elev[idx] = NaN; continue; }
+        const e = elev[idx]!;
+        if (e < elev_min) elev_min = e;
+        if (e > elev_max) elev_max = e;
+      }
+    }
+    if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
+      return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max, fuente: dem.fuente };
+  }
+
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
   const pasoM = Math.max(anchoM / cols, altoM / rows);
   let z = Math.round(Math.log2((156543.03 * Math.cos(latC * Math.PI / 180)) / Math.max(pasoM / 2, 1)));
@@ -181,7 +245,7 @@ export async function obtenerGrillaDensa(
 
   if (!isFinite(elev_min) || elev_max - elev_min < 0.5) return null;
 
-  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max };
+  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max, fuente: 'terrarium' };
 }
 
 // ─── Grilla de hidrología (sin recorte al predio) ────────────────────────────
@@ -216,6 +280,20 @@ export async function obtenerGrillaHidro(
   } else {
     rows = resolucion;
     cols = Math.max(20, Math.round(resolucion * (anchoM / altoM)));
+  }
+
+  // Fuente preferida: GLO-30 server-side (sin máscara). Si falla, Terrarium (abajo).
+  const dem = await grillaDemRemota(latMin, latMax, lngMin, lngMax, cols, rows);
+  if (dem) {
+    let elev_min = Infinity, elev_max = -Infinity;
+    for (let i = 0; i < dem.elev.length; i++) {
+      const e = dem.elev[i]!;
+      if (Number.isNaN(e)) continue;
+      if (e < elev_min) elev_min = e;
+      if (e > elev_max) elev_max = e;
+    }
+    if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
+      return { rows, cols, latMin, latMax, lngMin, lngMax, elev: dem.elev, elev_min, elev_max, fuente: dem.fuente };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
@@ -283,7 +361,7 @@ export async function obtenerGrillaHidro(
   }
   if (!isFinite(elev_min) || elev_max - elev_min < 0.5) return null;
 
-  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max };
+  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max, fuente: 'terrarium' };
 }
 
 /** Elevación en un punto (nodo más cercano) de una grilla ya cargada. NaN si cae fuera. */

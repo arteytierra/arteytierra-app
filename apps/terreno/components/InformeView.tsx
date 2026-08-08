@@ -717,7 +717,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         <Section numero="A" titulo="Anexo — fuentes y metodología">
           <ul className="text-xs text-ink-700/70 space-y-1 leading-relaxed list-disc pl-4">
             <li><span className="font-medium">Imagen satelital:</span> Esri World Imagery.</li>
-            <li><span className="font-medium">Topografía:</span> modelo de elevación SRTM/Terrarium (~30 m).</li>
+            <li><span className="font-medium">Topografía:</span> modelo de elevación Copernicus GLO-30 (~30 m) — © DLR/Airbus (COPERNICUS · UE · ESA); respaldo SRTM/Terrarium.</li>
             {datos.clima && <li><span className="font-medium">Clima:</span> {datos.clima.fuente ?? 'NASA POWER / Open-Meteo'}.</li>}
             {datos.extremos && <li><span className="font-medium">Extremos:</span> {datos.extremos.fuente} ({datos.extremos.periodo}).</li>}
             {datos.suelo && <li><span className="font-medium">Suelo:</span> SoilGrids (ISRIC); agua útil por pedotransferencia Saxton-Rawls (2006).</li>}

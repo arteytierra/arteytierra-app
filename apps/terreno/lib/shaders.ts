@@ -4,6 +4,7 @@
  * Grid 10×10 = 100 puntos (máximo de OpenTopoData por request).
  */
 import * as turf from '@turf/turf';
+import type { FuenteRelieve } from './grillaElevacion';
 
 export interface CeldaShader {
   row: number;
@@ -21,6 +22,7 @@ export interface DatosShader {
   elev_min:  number;
   elev_max:  number;
   pend_max:  number;
+  fuente?:   FuenteRelieve;   // fuente del relieve (para atribución)
 }
 
 // ─── Rampas de color ─────────────────────────────────────────────────────────
@@ -147,6 +149,7 @@ export async function fetchShader(
     const json = await res.json() as {
       status: string;
       results: Array<{ elevation: number | null }>;
+      fuente?: FuenteRelieve;
     };
     if (json.status !== 'OK') return { error: `API status: ${json.status}` };
 
@@ -205,7 +208,7 @@ export async function fetchShader(
 
     const pend_max = Math.max(...celdaShaders.map(c => c.pendiente_pct), 1);
 
-    return { celdas: celdaShaders, elev_min, elev_max, pend_max };
+    return { celdas: celdaShaders, elev_min, elev_max, pend_max, fuente: json.fuente };
   } catch (e) {
     if ((e as Error).name === 'AbortError') return { error: 'Tiempo de espera agotado.' };
     return { error: String(e) };
@@ -228,6 +231,7 @@ export function shaderDesdeGrilla(grilla: {
   rows: number; cols: number;
   latMin: number; latMax: number; lngMin: number; lngMax: number;
   elev: Float64Array; elev_min: number; elev_max: number;
+  fuente?: FuenteRelieve;
 }): DatosShader | null {
   const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
   if (rows < 2 || cols < 2) return null;
@@ -278,5 +282,5 @@ export function shaderDesdeGrilla(grilla: {
   }
 
   if (celdas.length < 4) return null;
-  return { celdas, elev_min, elev_max, pend_max };
+  return { celdas, elev_min, elev_max, pend_max, fuente: grilla.fuente };
 }

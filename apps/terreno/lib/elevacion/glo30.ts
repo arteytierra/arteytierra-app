@@ -18,12 +18,12 @@ function tileName(lat: number, lon: number): string {
   const lonS = (tLon < 0 ? 'W' : 'E') + String(Math.abs(tLon)).padStart(3, '0');
   return `Copernicus_DSM_COG_10_${latS}_00_${lonS}_00_DEM`;
 }
-function tileUrl(lat: number, lon: number): string {
+export function tileUrl(lat: number, lon: number): string {
   const n = tileName(lat, lon);
   return `${BUCKET}/${n}/${n}.tif`;
 }
 
-function valida(v: number, noData: number | null): number | null {
+export function validaCota(v: number, noData: number | null): number | null {
   if (!Number.isFinite(v)) return null;
   if (noData != null && v === noData) return null;
   if (v < -1000 || v > 9000) return null;   // guarda contra NoData sin declarar / océano
@@ -59,7 +59,7 @@ async function leerTile(url: string, pts: Pt[], out: Array<number | null>): Prom
     const band = (rasters as unknown as ArrayLike<number>[])[0]!;
     for (const p of pts) {
       const x = Math.round(toPx(p.lng)) - x0, y = Math.round(toPy(p.lat)) - y0;
-      out[p.idx] = (x < 0 || y < 0 || x >= ww || y >= hh) ? null : valida(band[y * ww + x]!, noData);
+      out[p.idx] = (x < 0 || y < 0 || x >= ww || y >= hh) ? null : validaCota(band[y * ww + x]!, noData);
     }
   } else {
     // Puntos muy dispersos: una ventana de 1px por punto
@@ -68,7 +68,7 @@ async function leerTile(url: string, pts: Pt[], out: Array<number | null>): Prom
       if (px < 0 || py < 0 || px >= W || py >= H) { out[p.idx] = null; continue; }
       const rasters = await image.readRasters({ window: [px, py, px + 1, py + 1] });
       const band = (rasters as unknown as ArrayLike<number>[])[0]!;
-      out[p.idx] = valida(band[0]!, noData);
+      out[p.idx] = validaCota(band[0]!, noData);
     }
   }
 }
