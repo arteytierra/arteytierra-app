@@ -8,8 +8,10 @@
  * puntuales. Fila 0 = sur (latMin), igual que `GrillaElevacion` del cliente.
  */
 import { fromUrl } from 'geotiff';
-import type { BBox } from './tipos';
+import type { BBox, FuenteDEM } from './tipos';
 import { tileUrl, validaCota, puntosGlo30 } from './glo30';
+import { fuenteNacionalGrilla } from './router';
+import { grillaUsgs3dep } from './proveedores/usgs3dep';
 
 const MAX_LADO = 2000;   // lado máx. de la ventana nativa por tile; si excede → muestreo por nodo
 
@@ -17,7 +19,7 @@ export interface GrillaDEM {
   rows: number; cols: number;
   bbox: BBox;              // [oeste, sur, este, norte]
   elev: Float32Array;      // row-major, fila 0 = sur; NaN = sin dato
-  fuente: 'glo30';
+  fuente: FuenteDEM;
 }
 
 interface Ventana {
@@ -109,4 +111,17 @@ export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promi
   let ok = 0;
   for (let i = 0; i < vals.length; i++) { const v = vals[i]; if (v != null) { elev[i] = v; ok++; } }
   return ok >= rows * cols * 0.2 ? { rows, cols, bbox, elev, fuente: 'glo30' } : null;
+}
+
+/**
+ * Grilla DEM ruteada: si el predio cae en un país con servicio nacional (router),
+ * se usa esa fuente de mayor resolución; si falla o no hay, cae a GLO-30 global.
+ */
+export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): Promise<GrillaDEM | null> {
+  const nacional = fuenteNacionalGrilla(bbox);
+  if (nacional === 'usgs3dep') {
+    const elev = await grillaUsgs3dep(bbox, cols, rows);
+    if (elev) return { rows, cols, bbox, elev, fuente: 'usgs3dep' };
+  }
+  return grillaGlo30(bbox, cols, rows);
 }

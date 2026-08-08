@@ -1,6 +1,6 @@
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
-import { grillaGlo30 } from '@/lib/elevacion/grilla';
+import { obtenerGrillaDEM } from '@/lib/elevacion/grilla';
 import { atribucionDe } from '@/lib/elevacion/atribucion';
 import type { BBox } from '@/lib/elevacion';
 
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
 
-  const grilla = await grillaGlo30(bbox, cols, rows);
+  const grilla = await obtenerGrillaDEM(bbox, cols, rows);
   if (!grilla)
     return new Response(JSON.stringify({ ok: false, error: 'sin datos GLO-30' }), { status: 502, headers: HDRS });
 
