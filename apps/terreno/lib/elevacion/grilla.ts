@@ -12,6 +12,7 @@ import type { BBox, FuenteDEM } from './tipos';
 import { tileUrl, validaCota, puntosGlo30 } from './glo30';
 import { fuenteNacionalGrilla } from './router';
 import { grillaUsgs3dep } from './proveedores/usgs3dep';
+import { grillaIgnFr } from './proveedores/ignfr';
 
 const MAX_LADO = 2000;   // lado máx. de la ventana nativa por tile; si excede → muestreo por nodo
 
@@ -122,6 +123,9 @@ export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): 
   if (nacional === 'usgs3dep') {
     const elev = await grillaUsgs3dep(bbox, cols, rows);
     if (elev) return { rows, cols, bbox, elev, fuente: 'usgs3dep' };
+  } else if (nacional === 'ignfr') {
+    const elev = await grillaIgnFr(bbox, cols, rows);
+    if (elev) return { rows, cols, bbox, elev, fuente: 'ignfr' };
   }
   return grillaGlo30(bbox, cols, rows);
 }

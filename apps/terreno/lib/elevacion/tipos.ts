@@ -10,7 +10,7 @@ export type BBox = [number, number, number, number]; // [oeste, sur, este, norte
 
 export interface LatLng { lat: number; lng: number }
 
-export type FuenteDEM = 'usuario' | 'glo30' | 'srtm30' | 'usgs3dep';
+export type FuenteDEM = 'usuario' | 'glo30' | 'srtm30' | 'usgs3dep' | 'ignfr';
 
 export interface ResultadoPuntos {
   /** Cota (m) por punto, en el MISMO orden que la entrada; null = sin dato. */

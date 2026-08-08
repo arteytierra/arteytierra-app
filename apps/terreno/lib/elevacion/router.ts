@@ -10,7 +10,7 @@
  */
 import type { BBox } from './tipos';
 
-export type FuenteNacional = 'usgs3dep';
+export type FuenteNacional = 'usgs3dep' | 'ignfr';
 
 interface Cobertura { fuente: FuenteNacional; bbox: BBox } // bbox = [oeste, sur, este, norte]
 
@@ -18,6 +18,7 @@ const COBERTURAS: Cobertura[] = [
   { fuente: 'usgs3dep', bbox: [-125.0, 24.4, -66.9, 49.5] },   // EE.UU. contiguo
   { fuente: 'usgs3dep', bbox: [-160.3, 18.9, -154.7, 22.3] },  // Hawái
   { fuente: 'usgs3dep', bbox: [-168.2, 54.4, -129.9, 71.5] },  // Alaska
+  { fuente: 'ignfr',    bbox: [-5.2, 41.3, 9.6, 51.1] },       // Francia metropolitana (+ Córcega)
 ];
 
 /** Fuente nacional para el centro del bbox, o null (→ GLO-30). */
