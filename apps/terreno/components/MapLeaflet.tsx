@@ -60,6 +60,7 @@ export interface CapasVisibles {
   terrariumElev:  boolean;
   escorrentias:   boolean;
   sugerencias:    boolean;
+  analisisPredio: boolean;
   aguadas:        boolean;
   dibujos:        boolean;
   arcSolar:       boolean;
@@ -1008,7 +1009,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,

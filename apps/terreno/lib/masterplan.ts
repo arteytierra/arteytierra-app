@@ -10,6 +10,7 @@ import * as turf from '@turf/turf';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 import type { CategoriaZona } from './zonificacion';
+import { trazarCaminoRelieve, type AnalisisRelieve } from './cuencaHidro';
 
 // ─── Programa ─────────────────────────────────────────────────────────────────
 
@@ -324,13 +325,18 @@ function puntuarCelda(
     }
   }
 
-  // Puntuales: no amontonar construcciones que no son afines entre sí.
+  // Puntuales: no amontonar construcciones que no son afines entre sí. Penalización
+  // proporcional a la cercanía (más fuerte cuanto más pegadas) y acumulativa entre
+  // vecinos, acotada — separa de verdad en vez de castigar todo por igual (antes era
+  // un −14 plano al primer vecino cercano, indiferente a la distancia real).
   if (!def.esArea) {
+    let pen = 0;
     for (const p of colocados) {
       if (def.afines.includes(p.tipo)) continue;
       const d = Math.hypot((ctx.lng - p.lng) * kx, (ctx.lat - p.lat) * ky);
-      if (d < sepMinM) { raw -= 14; break; }
+      if (d < sepMinM) pen += 16 * (1 - d / sepMinM);
     }
+    raw -= Math.min(pen, 30);
   }
 
   return { score: Math.max(0, Math.min(100, Math.round(raw))), motivos };
@@ -665,10 +671,16 @@ export interface CaminoMasterPlan { vertices: Array<{ lat: number; lng: number }
  * Red de caminos que interconecta la zona 0 (casa) con cada elemento del master
  * plan. Árbol de conexión mínima (Prim) por distancia: todo queda conectado con
  * el menor recorrido total, sin ir de cada cosa hasta la casa por separado.
+ *
+ * Si se pasa un `analisis` de relieve, cada tramo del árbol se rutea por el
+ * terreno (crestas, evita pendiente fuerte, cruza vertientes en un punto) en vez
+ * de trazarse como segmento recto; sin análisis, cae al tramo recto de siempre.
  */
 export function conectarMasterPlan(
   elementos: ElementoMasterPlan[],
   zona0?:    { lat: number; lng: number } | null,
+  analisis?: AnalisisRelieve | null,
+  limite?:   Array<{ lat: number; lng: number }>,
 ): CaminoMasterPlan[] {
   const centro = (el: ElementoMasterPlan) => ({
     lat: el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length,
@@ -696,7 +708,13 @@ export function conectarMasterPlan(
       }
     }
     if (!mejor) break;
-    caminos.push({ vertices: [nodos[mejor.a]!, nodos[mejor.b]!], longitud_m: Math.round(mejor.d) });
+    const a = nodos[mejor.a]!, b = nodos[mejor.b]!;
+    let tramo: CaminoMasterPlan = { vertices: [a, b], longitud_m: Math.round(mejor.d) };
+    if (analisis) {
+      const rel = trazarCaminoRelieve(analisis, a, b, { pendMaxPct: 14 }, limite);
+      if (rel && rel.vertices.length >= 2) tramo = { vertices: rel.vertices, longitud_m: Math.round(rel.longitud_m) };
+    }
+    caminos.push(tramo);
     enArbol.add(mejor.b);
     fuera.splice(fuera.indexOf(mejor.b), 1);
   }

@@ -44,6 +44,38 @@ export interface GrillaElevacion {
 }
 
 /**
+ * Remuestrea una grilla a un tamaño manejable (vecino más cercano). Un DEM propio
+ * importado puede traer 512×512 = 262 k celdas: demasiado para el shader,
+ * escorrentías y el render de celdas en Leaflet. Se baja a ≤ `maxLado` por lado
+ * conservando el encuadre y la fuente; si ya es chica, se devuelve tal cual.
+ */
+export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaElevacion {
+  if (g.rows <= maxLado && g.cols <= maxLado) return g;
+  const esc  = maxLado / Math.max(g.rows, g.cols);
+  const rows = Math.max(2, Math.round(g.rows * esc));
+  const cols = Math.max(2, Math.round(g.cols * esc));
+  const elev = new Float64Array(rows * cols);
+  let min = Infinity, max = -Infinity;
+  for (let r = 0; r < rows; r++) {
+    const sr = Math.min(g.rows - 1, Math.round((r / (rows - 1)) * (g.rows - 1)));
+    for (let c = 0; c < cols; c++) {
+      const sc = Math.min(g.cols - 1, Math.round((c / (cols - 1)) * (g.cols - 1)));
+      const v  = g.elev[sr * g.cols + sc]!;
+      elev[r * cols + c] = v;
+      if (!Number.isNaN(v)) { if (v < min) min = v; if (v > max) max = v; }
+    }
+  }
+  return {
+    rows, cols,
+    latMin: g.latMin, latMax: g.latMax, lngMin: g.lngMin, lngMax: g.lngMax,
+    elev,
+    elev_min: Number.isFinite(min) ? min : g.elev_min,
+    elev_max: Number.isFinite(max) ? max : g.elev_max,
+    fuente: g.fuente,
+  };
+}
+
+/**
  * Grilla densa GLO-30 server-side (`/api/dem`, COGs de Copernicus). Devuelve la
  * grilla ya muestreada; null si el servicio falla → el llamador cae a Terrarium.
  */

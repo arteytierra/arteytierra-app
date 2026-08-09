@@ -4,7 +4,7 @@
  * Grid 10×10 = 100 puntos (máximo de OpenTopoData por request).
  */
 import * as turf from '@turf/turf';
-import type { FuenteRelieve } from './grillaElevacion';
+import { remuestrearGrilla, type FuenteRelieve, type GrillaElevacion } from './grillaElevacion';
 
 export interface CeldaShader {
   row: number;
@@ -283,4 +283,42 @@ export function shaderDesdeGrilla(grilla: {
 
   if (celdas.length < 4) return null;
   return { celdas, elev_min, elev_max, pend_max, fuente: grilla.fuente };
+}
+
+// ─── Puente: DatosShader desde un DEM propio importado ────────────────────────
+
+/**
+ * Construye un DatosShader a partir de un modelo de elevación PROPIO importado
+ * (`lib/demImport.ts`), para que el relevamiento del usuario alimente no solo las
+ * curvas de nivel sino también el sombreado de pendientes y todo lo derivado
+ * (escorrentías, aptitud, master plan, cut&fill, keyline, viewshed, sombras).
+ * Se remuestrea a un tamaño manejable y, si hay mojones, se recorta al predio.
+ * Marca la fuente como 'usuario' (para la atribución del chip/informe).
+ */
+export function shaderDesdeDEM(
+  grilla:   GrillaElevacion,
+  mojones?: Array<{ lat: number; lng: number }>,
+): DatosShader | null {
+  const g  = remuestrearGrilla({ ...grilla, fuente: 'usuario' }, 120);
+  const ds = shaderDesdeGrilla(g);
+  if (!ds) return null;
+  if (!mojones || mojones.length < 3) return { ...ds, fuente: 'usuario' };
+
+  const anillo = mojones.map(m => [m.lng, m.lat] as [number, number]);
+  anillo.push(anillo[0]!);
+  let poly: ReturnType<typeof turf.polygon>;
+  try { poly = turf.polygon([anillo]); } catch { return { ...ds, fuente: 'usuario' }; }
+
+  const dentro = ds.celdas.filter(c =>
+    turf.booleanPointInPolygon(turf.point([(c.lngMin + c.lngMax) / 2, (c.latMin + c.latMax) / 2]), poly));
+  if (dentro.length < 4) return { ...ds, fuente: 'usuario' };
+
+  const elevs = dentro.map(c => c.elevation);
+  return {
+    celdas:   dentro,
+    elev_min: Math.min(...elevs),
+    elev_max: Math.max(...elevs),
+    pend_max: Math.max(...dentro.map(c => c.pendiente_pct), 1),
+    fuente:   'usuario',
+  };
 }

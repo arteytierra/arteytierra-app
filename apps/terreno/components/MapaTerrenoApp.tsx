@@ -54,7 +54,7 @@ import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { fetchShader, shaderDesdeGrilla, type DatosShader } from '@/lib/shaders';
+import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
@@ -62,7 +62,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
-import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
+import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -382,9 +382,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [zona0,       setZona0]       = useState<{ lat: number; lng: number } | null>(null);
   const [modoZona0,   setModoZona0]   = useState(false);
   // Caminos conectores del master plan (MST zona 0 ↔ elementos), derivados.
+  // Análisis de relieve (bounded, ≤120² desde el shader) para rutear los tramos
+  // por el terreno en vez de líneas rectas. Se memoiza solo sobre el shader (no
+  // sobre el master plan) para no rehacer el pit-fill en cada re-cálculo del plan.
+  const hayMasterPlan = !!(masterPlan && masterPlan.length);
+  const analisisConectores = useMemo(() => {
+    if (!hayMasterPlan || !datosShader) return null;
+    const g = grillaDesdeShader(datosShader);
+    return g ? analizarRelieve(g) : null;
+  }, [datosShader, hayMasterPlan]);
   const mpCaminos = useMemo<CaminoMasterPlan[]>(
-    () => (masterPlan && masterPlan.length ? conectarMasterPlan(masterPlan, zona0) : []),
-    [masterPlan, zona0],
+    () => (masterPlan && masterPlan.length ? conectarMasterPlan(masterPlan, zona0, analisisConectores, mojones) : []),
+    [masterPlan, zona0, analisisConectores, mojones],
   );
 
   // ─── Curvas de nivel: fetch de grilla densa al activar la capa ────────────
@@ -450,13 +459,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       const dem = await cargarDEM(file);
       setDemPropio(dem);
       setIntervaloContorno(null); // que el automático aproveche la resolución nueva
-      setCapas(prev => ({ ...prev, curvasNivel: true }));
+      // El DEM propio alimenta también el sombreado de pendientes y todo lo que
+      // deriva de él (escorrentías, aptitud, master plan, cut&fill, keyline,
+      // viewshed, sombras), no solo las curvas de nivel.
+      const ds = shaderDesdeDEM(dem.grilla, mojones);
+      if (ds) setDatosShader(ds);
+      setCapas(prev => ({ ...prev, curvasNivel: true, shaderElev: ds ? true : prev.shaderElev }));
       setModal({ type: 'alert', message:
-        `Modelo de elevación cargado: ${dem.ancho}×${dem.alto} px, paso ≈ ${dem.pasoM < 1 ? `${(dem.pasoM * 100).toFixed(0)} cm` : `${dem.pasoM.toFixed(1)} m`}, cotas ${dem.grilla.elev_min.toFixed(1)}–${dem.grilla.elev_max.toFixed(1)} m${dem.epsg ? ` (EPSG ${dem.epsg})` : ''}. Las curvas de nivel ahora salen de este archivo.` });
+        `Modelo de elevación cargado: ${dem.ancho}×${dem.alto} px, paso ≈ ${dem.pasoM < 1 ? `${(dem.pasoM * 100).toFixed(0)} cm` : `${dem.pasoM.toFixed(1)} m`}, cotas ${dem.grilla.elev_min.toFixed(1)}–${dem.grilla.elev_max.toFixed(1)} m${dem.epsg ? ` (EPSG ${dem.epsg})` : ''}. Ahora las curvas de nivel${ds ? ', el sombreado de pendientes y los análisis' : ''} salen de este archivo.` });
     } catch (e) {
       setModal({ type: 'alert', message: e instanceof Error ? e.message : 'No se pudo leer el modelo de elevación.' });
     }
-  }, []);
+  }, [mojones]);
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
   const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null>(null);
@@ -562,8 +576,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
   const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id))       : [], [capas.sectores, sectores, ocultosIds]);
-  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id))          : [], [capas.pines, pines, ocultosIds]);
-  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id))        : [], [capas.caminos, caminos, ocultosIds]);
+  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis')) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds]);
+  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis')) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds]);
   const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id))   : [], [capas.aguadas, aguadasLayer, ocultosIds]);
   const dibujosFiltrados  = useMemo(() => capas.dibujos
     ? dibujos.filter(d => !ocultosIds.has(d.id) && !capasOcultas.has(capaDeElemento(d.capaId, capasUsuario)))
@@ -1649,6 +1663,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const activarCapas = () =>
       setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, curvasNivel: true }));
 
+    // Si el usuario cargó su propio DEM, el relieve sale de ese archivo (no del
+    // satélite): más resolución y coherente con las curvas.
+    if (demPropio) {
+      const ds = shaderDesdeDEM(demPropio.grilla, mojones);
+      if (ds) { setDatosShader(ds); setShaderLoading(false); activarCapas(); return; }
+    }
+
     // Modo detallado: grilla densa desde tiles Terrarium (cientos de celdas, sin API externa).
     if (shaderDetallado) {
       try {
@@ -1672,7 +1693,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       setDatosShader(result);
       activarCapas();
     }
-  }, [mojones, shaderDetallado]);
+  }, [mojones, shaderDetallado, demPropio]);
 
   // Ubicar un sitio de represa sugerido: vuela al punto y deja un pin (sin salir del tab).
   const handleUbicarSitio = useCallback((lat: number, lng: number, nombre: string) => {
@@ -1688,8 +1709,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       ...res.viviendas.map((v, i) => ({ id: crypto.randomUUID(), lat: v.lat, lng: v.lng, nombre: `Vivienda ${i + 1} (${v.score}%)`, icono: '🏠', color: '#2E7D32', notas: v.motivos.join(', ') })),
       ...res.caminos.flatMap(c => c.camino.cruces.map(cr => ({ id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng, nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo', icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41', notas: `Cruce de vertiente (${cr.tipo}) — ${c.nombre}` }))),
     ];
-    setPines(prev => [...prev, ...nuevosPines]);
-    const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m }; });
+    setPines(prev => [...prev, ...nuevosPines.map(p => ({ ...p, origen: 'analisis' as const }))]);
+    const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m, origen: 'analisis' as const }; });
     setCaminos(prev => [...prev, ...nuevosCaminos]);
     flyToRef.current?.(res.entrada.lat, res.entrada.lng);
   }, []);
@@ -3418,11 +3439,14 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
+  // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
+  const hayAnalisisPredio = pines.some(p => p.origen === 'analisis') || caminos.some(c => c.origen === 'analisis');
+
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'sugerencias', 'terreno',
+    'topo', 'plano', 'hidrico', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3701,6 +3725,24 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /master plan */}
+
+        {/* ── Análisis del predio (sugerencias automáticas) ── */}
+        <div {...makeDrag('analisis')}>
+        {hayAnalisisPredio && (
+          <CapaGrupo
+            label="Análisis del predio"
+            visible={capas.analisisPredio}
+            onToggleVisible={() => onCapas({ ...capas, analisisPredio: !capas.analisisPredio })}
+            expanded={exp.analisis} onExpand={() => tog('analisis')}
+          >
+            <CapaItem visible={capas.analisisPredio}
+              onToggle={() => onCapas({ ...capas, analisisPredio: !capas.analisisPredio })}
+              label="Sugerencias (viviendas · represas · accesos)"
+              swatch={<span className="text-sm leading-none">🏠💧🚪</span>}
+            />
+          </CapaGrupo>
+        )}
+        </div>{/* /análisis del predio */}
 
         {/* ── Terreno ── */}
         <div {...makeDrag('terreno')}>

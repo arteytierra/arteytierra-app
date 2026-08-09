@@ -6,6 +6,8 @@ export interface Pin {
   color:  string;
   icono:  string;
   notas:  string;
+  /** Origen automático (para poder ocultar en bloque las sugerencias generadas). */
+  origen?: 'analisis';
 }
 
 export const ICONOS_PIN = ['📍', '🏠', '💧', '🌳', '⛏️', '🔥', '🌾', '🐄', '🐓', '⚡', '🚪', '📸'] as const;

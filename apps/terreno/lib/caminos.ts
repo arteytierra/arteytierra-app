@@ -12,6 +12,8 @@ export interface Camino {
   notas:      string;
   longitud_m?: number;
   perfil?:    PerfilElevacion;
+  /** Origen automático (para poder ocultar en bloque las sugerencias generadas). */
+  origen?:    'analisis';
 }
 
 export interface PuntoPerfilElevacion {
