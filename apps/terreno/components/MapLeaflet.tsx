@@ -36,6 +36,7 @@ import type { ResultadoViewshed } from '@/lib/viewshed';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
 import { colorErosion, type DatosErosion } from '@/lib/erosion';
 import type { ResultadoSwales } from '@/lib/swales';
+import type { ResultadoCortafuegos } from '@/lib/cortafuegos';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import {
   distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
@@ -63,6 +64,7 @@ export interface CapasVisibles {
   escorrentias:   boolean;
   erosion:        boolean;
   swales:         boolean;
+  cortafuegos:    boolean;
   sugerencias:    boolean;
   analisisPredio: boolean;
   aguadas:        boolean;
@@ -938,6 +940,7 @@ interface Props {
   datosEscorrentia?:  DatosEscorrentia | null;
   datosErosion?:      DatosErosion | null;
   swales?:            ResultadoSwales | null;
+  cortafuegos?:       ResultadoCortafuegos | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
@@ -1015,7 +1018,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, swales: true, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, swales: true, cortafuegos: true, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -1034,6 +1037,7 @@ function MapLeaflet({
   datosEscorrentia = null,
   datosErosion = null,
   swales = null,
+  cortafuegos = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
   muroLinea = null,
@@ -1227,6 +1231,13 @@ function MapLeaflet({
           <Polyline key={`sw-${i}`}
             positions={sw.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
             pathOptions={{ color: '#00838F', weight: 3, opacity: 0.9, lineCap: 'round', lineJoin: 'round', interactive: false }}
+          />
+        ))}
+        {/* ── Cortafuegos (fajas sobre crestas) ── */}
+        {capas.cortafuegos && cortafuegos?.lineas.map((cf, i) => (
+          <Polyline key={`cf-${i}`}
+            positions={cf.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#E65100', weight: 6, opacity: 0.55, lineCap: 'round', lineJoin: 'round', interactive: false }}
           />
         ))}
         {insolacion && insolacion.celdas.length > 0 && (

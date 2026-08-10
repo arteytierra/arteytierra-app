@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler,
+  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame,
   CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
@@ -63,6 +63,7 @@ import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { calcularSwales, type ResultadoSwales, type OpcionesSwales } from '@/lib/swales';
+import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
@@ -84,6 +85,7 @@ import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel } from './KeylinePanel';
 import { SwalesPanel } from './SwalesPanel';
+import { CortafuegosPanel } from './CortafuegosPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
@@ -137,7 +139,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'swales' | 'keyline'
-  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortafuegos' | 'silvopastura';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -196,6 +198,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'masterplan',  label: 'Master plan', icon: <ClipboardList className="w-3.5 h-3.5" /> },
   { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
   { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
+  { id: 'cortafuegos', label: 'Cortafuegos', icon: <Flame        className="w-3.5 h-3.5" /> },
   { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
   { id: 'elementos',   label: 'Elementos',   icon: <TreeDeciduous className="w-3.5 h-3.5" /> },
   { id: 'pastoreo',    label: 'Pastoreo',    icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
@@ -214,7 +217,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego', 'swales'] },
-  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
+  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'cortafuegos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
   { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
@@ -629,6 +632,26 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCaminos(prev => [...prev, ...nuevos]);
     setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} swales en el plano (pestaña Caminos). Podés editarlos o exportarlos.` });
   }, [swales]);
+
+  // ─── Cortafuegos (fajas sobre líneas de cresta) ──────────────────────────
+  const [cortafuegos, setCortafuegos] = useState<ResultadoCortafuegos | null>(null);
+  const handleGenerarCortafuegos = useCallback((anchoM: number): ResultadoCortafuegos | null => {
+    if (!datosShader) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return null; }
+    const r = calcularCortafuegos(datosShader, mojones, anchoM);
+    if (!r) setModal({ type: 'alert', message: 'No se detectaron líneas de cresta claras en el predio.' });
+    setCortafuegos(r);
+    setCapas(prev => ({ ...prev, cortafuegos: true }));
+    return r;
+  }, [datosShader, mojones]);
+  const handleColocarCortafuegos = useCallback(() => {
+    if (!cortafuegos) return;
+    const nuevos = cortafuegos.lineas.map((cf, i) => {
+      const cam = crearCamino(cf.puntos);
+      return { ...cam, nombre: `Cortafuego ${i + 1} (${cf.longitud_m} m)`, color: '#E65100', longitud_m: cf.longitud_m };
+    });
+    setCaminos(prev => [...prev, ...nuevos]);
+    setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} cortafuegos en el plano (pestaña Caminos).` });
+  }, [cortafuegos]);
 
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
   const aptitud = useMemo<ResultadoAptitud | null>(
@@ -2715,6 +2738,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               />
             </div>
           )}
+          {tab === 'cortafuegos' && (
+            <div className="px-4 py-4">
+              <CortafuegosPanel
+                topoLista={!!datosShader}
+                cortafuegos={cortafuegos}
+                onGenerar={handleGenerarCortafuegos}
+                onColocar={handleColocarCortafuegos}
+                onIrATopo={() => setTab('topo')}
+              />
+            </div>
+          )}
           {tab === 'carbono' && (
             <div className="px-4 py-4">
               <CarbonoPanel
@@ -2910,6 +2944,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onToggleSubCapa={toggleSubCapa}
               datosErosion={datosErosion}
               haySwales={!!swales}
+              hayCortafuegos={!!cortafuegos}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -2985,6 +3020,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           datosEscorrentia={datosEscorrentia}
           datosErosion={datosErosion}
           swales={swales}
+          cortafuegos={cortafuegos}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
           muroLinea={muroLinea}
@@ -3468,6 +3504,7 @@ interface PanelCapasProps {
   datosShader:         DatosShader | null;
   datosErosion:        DatosErosion | null;
   haySwales:           boolean;
+  hayCortafuegos:      boolean;
   analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
@@ -3500,7 +3537,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, haySwales, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, haySwales, hayCortafuegos, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3510,7 +3547,7 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortafuegos: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
@@ -3531,7 +3568,7 @@ function PanelCapas({
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'sugerencias', 'analisis', 'terreno',
+    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortafuegos', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3836,6 +3873,24 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /swales */}
+
+        {/* ── Cortafuegos ── */}
+        <div {...makeDrag('cortafuegos')}>
+        {hayCortafuegos && (
+          <CapaGrupo
+            label="Cortafuegos"
+            visible={capas.cortafuegos}
+            onToggleVisible={() => onCapas({ ...capas, cortafuegos: !capas.cortafuegos })}
+            expanded={exp.cortafuegos} onExpand={() => tog('cortafuegos')}
+          >
+            <CapaItem visible={capas.cortafuegos}
+              onToggle={() => onCapas({ ...capas, cortafuegos: !capas.cortafuegos })}
+              label="Fajas sobre crestas"
+              swatch={<span className="w-5 h-0 border-t-[5px] shrink-0" style={{ borderColor: '#E65100', opacity: 0.6 }} />}
+            />
+          </CapaGrupo>
+        )}
+        </div>{/* /cortafuegos */}
 
         {/* ── Master plan ── */}
         <div {...makeDrag('sugerencias')}>
