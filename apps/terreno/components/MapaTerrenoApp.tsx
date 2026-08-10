@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock,
+  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler,
   CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
@@ -62,6 +62,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
+import { calcularSwales, type ResultadoSwales, type OpcionesSwales } from '@/lib/swales';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
@@ -82,6 +83,7 @@ import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel } from './KeylinePanel';
+import { SwalesPanel } from './SwalesPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
@@ -134,7 +136,7 @@ const VistaHistorica = dynamic(() => import('./VistaHistorica').then(m => m.Vist
 type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
-  | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'keyline'
+  | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'swales' | 'keyline'
   | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan';
 
 interface DocDisenoSnapshot {
@@ -182,6 +184,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'aguadas',     label: 'Represas',    icon: <Container    className="w-3.5 h-3.5" /> },
   { id: 'red',         label: 'Red de agua', icon: <Spline       className="w-3.5 h-3.5" /> },
   { id: 'riego',       label: 'Riego',       icon: <Sprout       className="w-3.5 h-3.5" /> },
+  { id: 'swales',      label: 'Swales',      icon: <Ruler        className="w-3.5 h-3.5" /> },
   { id: 'agua',        label: 'Captación',   icon: <Droplets     className="w-3.5 h-3.5" /> },
   { id: 'solar',       label: 'Solar',       icon: <Sun          className="w-3.5 h-3.5" /> },
   { id: 'sombras',     label: 'Sombras',     icon: <SunDim       className="w-3.5 h-3.5" /> },
@@ -210,7 +213,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'clima',     label: 'Clima',                corto: 'Clima', icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'solar'] },
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
-  { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego'] },
+  { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego', 'swales'] },
   { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
@@ -606,6 +609,26 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     () => datosShader && datosEscorrentia ? calcularErosion(datosShader, datosEscorrentia) : null,
     [datosShader, datosEscorrentia],
   );
+
+  // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
+  const [swales, setSwales] = useState<ResultadoSwales | null>(null);
+  const handleGenerarSwales = useCallback((opts: OpcionesSwales): ResultadoSwales | null => {
+    if (!grillaActiva) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return null; }
+    const r = calcularSwales(grillaActiva, mojones, opts);
+    if (!r) setModal({ type: 'alert', message: 'No se pudieron trazar swales con ese intervalo (poco desnivel o intervalo muy grande).' });
+    setSwales(r);
+    setCapas(prev => ({ ...prev, swales: true }));
+    return r;
+  }, [grillaActiva, mojones]);
+  const handleColocarSwales = useCallback(() => {
+    if (!swales) return;
+    const nuevos = swales.swales.map((sw, i) => {
+      const cam = crearCamino(sw.puntos);
+      return { ...cam, nombre: `Swale ${i + 1} (${sw.cota.toFixed(0)} m · ${sw.volumen_m3} m³)`, color: '#00838F', longitud_m: sw.longitud_m };
+    });
+    setCaminos(prev => [...prev, ...nuevos]);
+    setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} swales en el plano (pestaña Caminos). Podés editarlos o exportarlos.` });
+  }, [swales]);
 
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
   const aptitud = useMemo<ResultadoAptitud | null>(
@@ -2681,6 +2704,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
             </div>
           )}
+          {tab === 'swales' && (
+            <div className="px-4 py-4">
+              <SwalesPanel
+                grillaLista={!!grillaActiva}
+                swales={swales}
+                onGenerar={handleGenerarSwales}
+                onColocar={handleColocarSwales}
+                onIrATopo={() => setTab('topo')}
+              />
+            </div>
+          )}
           {tab === 'carbono' && (
             <div className="px-4 py-4">
               <CarbonoPanel
@@ -2875,6 +2909,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               subCapasOcultas={subCapasOcultas}
               onToggleSubCapa={toggleSubCapa}
               datosErosion={datosErosion}
+              haySwales={!!swales}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -2949,6 +2984,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           viewshed={viewshed}
           datosEscorrentia={datosEscorrentia}
           datosErosion={datosErosion}
+          swales={swales}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
           muroLinea={muroLinea}
@@ -3431,6 +3467,7 @@ interface PanelCapasProps {
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
   datosErosion:        DatosErosion | null;
+  haySwales:           boolean;
   analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
@@ -3463,7 +3500,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, haySwales, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3473,7 +3510,7 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
@@ -3494,7 +3531,7 @@ function PanelCapas({
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'erosion', 'sugerencias', 'analisis', 'terreno',
+    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3781,6 +3818,24 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /erosión */}
+
+        {/* ── Swales ── */}
+        <div {...makeDrag('swales')}>
+        {haySwales && (
+          <CapaGrupo
+            label="Swales"
+            visible={capas.swales}
+            onToggleVisible={() => onCapas({ ...capas, swales: !capas.swales })}
+            expanded={exp.swales} onExpand={() => tog('swales')}
+          >
+            <CapaItem visible={capas.swales}
+              onToggle={() => onCapas({ ...capas, swales: !capas.swales })}
+              label="Zanjas de infiltración"
+              swatch={<span className="w-5 h-0 border-t-[3px] shrink-0" style={{ borderColor: '#00838F' }} />}
+            />
+          </CapaGrupo>
+        )}
+        </div>{/* /swales */}
 
         {/* ── Master plan ── */}
         <div {...makeDrag('sugerencias')}>

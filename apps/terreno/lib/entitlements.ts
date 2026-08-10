@@ -151,6 +151,7 @@ export const TAB_FEATURE: Record<string, Feature> = {
   cuenca:      'diseno.cuenca',
   pastoreo:    'diseno.pastoreo',
   riego:       'diseno.riego',
+  swales:      'diseno.agua',
   keyline:     'diseno.keyline',
   economia:    'diseno.economia',
 };
