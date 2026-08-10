@@ -7,6 +7,7 @@ export const ATRIBUCION: Record<FuenteDEM, string> = {
   srtm30:   'SRTM 30 m · NASA / USGS (OpenTopoData)',
   usgs3dep: 'USGS 3DEP · U.S. Geological Survey (The National Map, dominio público)',
   ignfr:    'RGE ALTI · © IGN France (Géoplateforme, Licence Ouverte / Etalab 2.0)',
+  ignes:    'MDT PNOA-LiDAR · © Instituto Geográfico Nacional de España (CC-BY 4.0, scne.es)',
 };
 
 /** Etiqueta corta para la esquina del mapa. */
@@ -16,6 +17,7 @@ export const ATRIBUCION_CORTA: Record<FuenteDEM, string> = {
   srtm30:   'SRTM 30 m',
   usgs3dep: 'USGS 3DEP',
   ignfr:    'IGN RGE ALTI',
+  ignes:    'IGN España MDT',
 };
 
 export function atribucionDe(f: FuenteDEM): string { return ATRIBUCION[f]; }

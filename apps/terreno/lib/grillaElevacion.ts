@@ -6,7 +6,7 @@
  */
 import * as turf from '@turf/turf';
 
-export type FuenteRelieve = 'glo30' | 'srtm30' | 'terrarium' | 'usuario' | 'usgs3dep' | 'ignfr';
+export type FuenteRelieve = 'glo30' | 'srtm30' | 'terrarium' | 'usuario' | 'usgs3dep' | 'ignfr' | 'ignes';
 
 /** Etiqueta corta de la fuente de relieve (chip del mapa). */
 export const ETIQUETA_RELIEVE: Record<FuenteRelieve, string> = {
@@ -16,6 +16,7 @@ export const ETIQUETA_RELIEVE: Record<FuenteRelieve, string> = {
   usuario:   'DEM propio',
   usgs3dep:  'USGS 3DEP',
   ignfr:     'IGN RGE ALTI',
+  ignes:     'IGN España MDT',
 };
 
 /** Línea de crédito completa (atribución exigida por Copernicus). */
@@ -26,6 +27,7 @@ export const CREDITO_RELIEVE: Record<FuenteRelieve, string> = {
   usuario:   'Relieve: DEM propio del usuario',
   usgs3dep:  'Relieve: USGS 3DEP · U.S. Geological Survey (dominio público)',
   ignfr:     'Relieve: IGN RGE ALTI · © IGN France (Licence Ouverte / Etalab 2.0)',
+  ignes:     'Relieve: MDT PNOA-LiDAR · © IGN España (CC-BY 4.0, scne.es)',
 };
 
 export interface GrillaElevacion {

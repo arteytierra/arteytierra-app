@@ -10,7 +10,7 @@
  */
 import type { BBox } from './tipos';
 
-export type FuenteNacional = 'usgs3dep' | 'ignfr';
+export type FuenteNacional = 'usgs3dep' | 'ignfr' | 'ignes';
 
 interface Cobertura { fuente: FuenteNacional; bbox: BBox } // bbox = [oeste, sur, este, norte]
 
@@ -19,13 +19,18 @@ const COBERTURAS: Cobertura[] = [
   { fuente: 'usgs3dep', bbox: [-160.3, 18.9, -154.7, 22.3] },  // Hawái
   { fuente: 'usgs3dep', bbox: [-168.2, 54.4, -129.9, 71.5] },  // Alaska
   { fuente: 'ignfr',    bbox: [-5.2, 41.3, 9.6, 51.1] },       // Francia metropolitana (+ Córcega)
+  { fuente: 'ignes',    bbox: [-9.6, 35.8, 4.4, 43.9] },       // España peninsular + Baleares (Canarias → GLO-30)
 ];
 
-/** Fuente nacional para el centro del bbox, o null (→ GLO-30). */
-export function fuenteNacionalGrilla(bbox: BBox): FuenteNacional | null {
+/**
+ * TODAS las fuentes nacionales cuyo bbox contiene el centro del predio, en orden.
+ * Se devuelven todas (no solo la primera) porque hay coberturas que se solapan
+ * —p. ej. España y Francia en los Pirineos— y el llamador prueba en orden: si la
+ * primera no tiene dato (bbox grueso), pasa a la siguiente antes de caer a GLO-30.
+ */
+export function fuentesNacionalesGrilla(bbox: BBox): FuenteNacional[] {
   const lng = (bbox[0] + bbox[2]) / 2, lat = (bbox[1] + bbox[3]) / 2;
-  for (const c of COBERTURAS) {
-    if (lng >= c.bbox[0] && lng <= c.bbox[2] && lat >= c.bbox[1] && lat <= c.bbox[3]) return c.fuente;
-  }
-  return null;
+  return COBERTURAS
+    .filter(c => lng >= c.bbox[0] && lng <= c.bbox[2] && lat >= c.bbox[1] && lat <= c.bbox[3])
+    .map(c => c.fuente);
 }

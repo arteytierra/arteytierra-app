@@ -10,9 +10,10 @@
 import { fromUrl } from 'geotiff';
 import type { BBox, FuenteDEM } from './tipos';
 import { tileUrl, validaCota, puntosGlo30 } from './glo30';
-import { fuenteNacionalGrilla } from './router';
+import { fuentesNacionalesGrilla, type FuenteNacional } from './router';
 import { grillaUsgs3dep } from './proveedores/usgs3dep';
 import { grillaIgnFr } from './proveedores/ignfr';
+import { grillaIgnEs } from './proveedores/ignes';
 
 const MAX_LADO = 2000;   // lado máx. de la ventana nativa por tile; si excede → muestreo por nodo
 
@@ -119,13 +120,16 @@ export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promi
  * se usa esa fuente de mayor resolución; si falla o no hay, cae a GLO-30 global.
  */
 export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): Promise<GrillaDEM | null> {
-  const nacional = fuenteNacionalGrilla(bbox);
-  if (nacional === 'usgs3dep') {
-    const elev = await grillaUsgs3dep(bbox, cols, rows);
-    if (elev) return { rows, cols, bbox, elev, fuente: 'usgs3dep' };
-  } else if (nacional === 'ignfr') {
-    const elev = await grillaIgnFr(bbox, cols, rows);
-    if (elev) return { rows, cols, bbox, elev, fuente: 'ignfr' };
+  const ADAPTER: Record<FuenteNacional, (b: BBox, c: number, r: number) => Promise<Float32Array | null>> = {
+    usgs3dep: grillaUsgs3dep,
+    ignfr:    grillaIgnFr,
+    ignes:    grillaIgnEs,
+  };
+  // Prueba cada fuente nacional que cubre el predio (maneja solapes de frontera);
+  // la primera con dato gana. Si ninguna responde, GLO-30 global.
+  for (const fuente of fuentesNacionalesGrilla(bbox)) {
+    const elev = await ADAPTER[fuente](bbox, cols, rows);
+    if (elev) return { rows, cols, bbox, elev, fuente };
   }
   return grillaGlo30(bbox, cols, rows);
 }
