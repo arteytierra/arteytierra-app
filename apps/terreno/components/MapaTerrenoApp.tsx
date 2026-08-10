@@ -61,6 +61,7 @@ import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaEle
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import type { CortinaSugerida } from '@/lib/produccion';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
+import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
@@ -598,6 +599,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const datosEscorrentia = useMemo<DatosEscorrentia | null>(
     () => datosShader ? calcularEscorrentias(datosShader) : null,
     [datosShader],
+  );
+
+  // ─── Riesgo de erosión (pendiente × flujo acumulado) ─────────────────────
+  const datosErosion = useMemo<DatosErosion | null>(
+    () => datosShader && datosEscorrentia ? calcularErosion(datosShader, datosEscorrentia) : null,
+    [datosShader, datosEscorrentia],
   );
 
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
@@ -2867,6 +2874,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               hayConectoresMP={mpCaminos.length > 0}
               subCapasOcultas={subCapasOcultas}
               onToggleSubCapa={toggleSubCapa}
+              datosErosion={datosErosion}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -2940,6 +2948,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           insolacion={insolacion}
           viewshed={viewshed}
           datosEscorrentia={datosEscorrentia}
+          datosErosion={datosErosion}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
           muroLinea={muroLinea}
@@ -3421,6 +3430,7 @@ interface PanelCapasProps {
   onCrearCapa:         () => void;
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
+  datosErosion:        DatosErosion | null;
   analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
@@ -3453,7 +3463,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3463,7 +3473,7 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
@@ -3484,7 +3494,7 @@ function PanelCapas({
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'sugerencias', 'analisis', 'terreno',
+    'topo', 'plano', 'hidrico', 'erosion', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3745,6 +3755,32 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /hidrico */}
+
+        {/* ── Riesgo de erosión ── */}
+        <div {...makeDrag('erosion')}>
+        {datosErosion && (
+          <CapaGrupo
+            label="Riesgo de erosión"
+            visible={capas.erosion}
+            onToggleVisible={() => onCapas({ ...capas, erosion: !capas.erosion })}
+            expanded={exp.erosion} onExpand={() => tog('erosion')}
+          >
+            <div className="pl-7 pr-3 pb-2 pt-1 space-y-1">
+              {CLASES_EROSION.map(cl => {
+                const r = datosErosion.resumen.find(x => x.clase === cl.clase);
+                return (
+                  <div key={cl.clase} className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: cl.color }} />
+                    <span className="text-[10px] text-ink-700/70 flex-1">{cl.label}</span>
+                    <span className="text-[10px] text-ink-700/50 tabular-nums">{r?.pct ?? 0}% · {r?.ha ?? 0} ha</span>
+                  </div>
+                );
+              })}
+              <p className="text-[9px] text-ink-700/40 pt-1 leading-snug">Pendiente × flujo acumulado (relativo al predio). Orientativo — señala dónde proteger el suelo con swales y cobertura.</p>
+            </div>
+          </CapaGrupo>
+        )}
+        </div>{/* /erosión */}
 
         {/* ── Master plan ── */}
         <div {...makeDrag('sugerencias')}>

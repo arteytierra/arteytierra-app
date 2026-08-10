@@ -34,6 +34,7 @@ import { colorInsolacion } from '@/lib/insolacion';
 import type { ObjetoSombra } from '@/lib/objetosSombra';
 import type { ResultadoViewshed } from '@/lib/viewshed';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
+import { colorErosion, type DatosErosion } from '@/lib/erosion';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import {
   distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
@@ -59,6 +60,7 @@ export interface CapasVisibles {
   shaderPend:     boolean;
   terrariumElev:  boolean;
   escorrentias:   boolean;
+  erosion:        boolean;
   sugerencias:    boolean;
   analisisPredio: boolean;
   aguadas:        boolean;
@@ -932,6 +934,7 @@ interface Props {
   insolacion?:        ResultadoInsolacion | null;
   viewshed?:          ResultadoViewshed | null;
   datosEscorrentia?:  DatosEscorrentia | null;
+  datosErosion?:      DatosErosion | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
@@ -1009,7 +1012,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -1026,6 +1029,7 @@ function MapLeaflet({
   insolacion = null,
   viewshed = null,
   datosEscorrentia = null,
+  datosErosion = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
   muroLinea = null,
@@ -1210,6 +1214,9 @@ function MapLeaflet({
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
             pendMax={datosShader.pend_max} opacidad={opacidadShaderPend}
           />
+        )}
+        {capas.erosion && datosErosion && datosErosion.celdas.length > 0 && (
+          <ErosionCanvasLayer celdas={datosErosion.celdas} />
         )}
         {insolacion && insolacion.celdas.length > 0 && (
           <InsolacionCanvasLayer celdas={insolacion.celdas} max={insolacion.max} />
@@ -1939,6 +1946,65 @@ function ShaderCanvasLayer({
     ov.addTo(map);
     return () => { map.removeLayer(ov); };
   }, [map, celdas, tipo, elevMin, elevMax, pendMax, opacidad]);
+  return null;
+}
+
+// ─── Mapa de riesgo de erosión (canvas con color por clase) ──────────────────
+function ErosionCanvasLayer({ celdas }: { celdas: DatosErosion['celdas'] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!celdas.length) return;
+    let latMin = Infinity, latMax = -Infinity, lngMin = Infinity, lngMax = -Infinity;
+    let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+    const cellMap = new Map<string, DatosErosion['celdas'][0]>();
+    for (const c of celdas) {
+      cellMap.set(`${c.row},${c.col}`, c);
+      if (c.latMin < latMin) latMin = c.latMin;
+      if (c.latMax > latMax) latMax = c.latMax;
+      if (c.lngMin < lngMin) lngMin = c.lngMin;
+      if (c.lngMax > lngMax) lngMax = c.lngMax;
+      if (c.row < minRow) minRow = c.row;
+      if (c.row > maxRow) maxRow = c.row;
+      if (c.col < minCol) minCol = c.col;
+      if (c.col > maxCol) maxCol = c.col;
+    }
+    const H = maxRow - minRow + 1, W = maxCol - minCol + 1;
+    const small = document.createElement('canvas');
+    small.width = W; small.height = H;
+    const sCtx = small.getContext('2d')!;
+    const idd = sCtx.createImageData(W, H);
+    const d = idd.data;
+    const parseRgb = (s: string): [number, number, number] => {
+      // acepta '#rrggbb'
+      const h = s.replace('#', '');
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    };
+    for (let row = minRow; row <= maxRow; row++) {
+      for (let col = minCol; col <= maxCol; col++) {
+        const cell = cellMap.get(`${row},${col}`);
+        const x = col - minCol, y = maxRow - row;
+        const px = (y * W + x) * 4;
+        if (cell) {
+          const [r, g, b] = parseRgb(colorErosion(cell.clase));
+          d[px] = r; d[px + 1] = g; d[px + 2] = b;
+          d[px + 3] = cell.clase === 0 ? 70 : 190;  // el "bajo" apenas se insinúa
+        }
+      }
+    }
+    sCtx.putImageData(idd, 0, 0);
+    const S = 8;
+    const big = document.createElement('canvas');
+    big.width = W * S; big.height = H * S;
+    const bCtx = big.getContext('2d')!;
+    bCtx.imageSmoothingEnabled = true;
+    bCtx.imageSmoothingQuality = 'high';
+    bCtx.drawImage(small, 0, 0, W * S, H * S);
+    const ov = L.imageOverlay(big.toDataURL(), [[latMin, lngMin], [latMax, lngMax]], {
+      opacity: 0.6, interactive: false, zIndex: 210,
+    });
+    ov.addTo(map);
+    return () => { map.removeLayer(ov); };
+  }, [map, celdas]);
   return null;
 }
 

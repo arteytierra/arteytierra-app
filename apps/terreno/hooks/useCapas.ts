@@ -5,7 +5,7 @@ import type { CapasVisibles } from '@/components/MapLeaflet';
 
 const CAPAS_INICIAL: CapasVisibles = {
   terreno: true, zonas: true, sectores: true, pines: true, caminos: true,
-  shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false,
+  shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false,
   linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true,
 };
 
