@@ -20,6 +20,9 @@ export function useCapas() {
   const [capas, setCapas] = useState<CapasVisibles>(CAPAS_INICIAL);
   const [ocultosIds, setOcultosIds] = useState<Set<string>>(new Set());
   const [capasOcultas, setCapasOcultas] = useState<Set<string>>(new Set());
+  // Sub-capas automáticas ocultas (categorías del Análisis del predio y del Master
+  // plan: 'an:Viviendas', 'mp:pastoreo', 'mp:__caminos'…). No-undoable, se persiste.
+  const [subCapasOcultas, setSubCapasOcultas] = useState<Set<string>>(new Set());
 
   const toggleOculto = useCallback((id: string) => {
     setOcultosIds(prev => {
@@ -29,5 +32,16 @@ export function useCapas() {
     });
   }, []);
 
-  return { capas, setCapas, ocultosIds, setOcultosIds, capasOcultas, setCapasOcultas, toggleOculto };
+  const toggleSubCapa = useCallback((key: string) => {
+    setSubCapasOcultas(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
+  return {
+    capas, setCapas, ocultosIds, setOcultosIds, capasOcultas, setCapasOcultas, toggleOculto,
+    subCapasOcultas, setSubCapasOcultas, toggleSubCapa,
+  };
 }

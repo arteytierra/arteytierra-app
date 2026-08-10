@@ -14,6 +14,8 @@ export interface Camino {
   perfil?:    PerfilElevacion;
   /** Origen automático (para poder ocultar en bloque las sugerencias generadas). */
   origen?:    'analisis';
+  /** Sub-capa a la que pertenece (categoría dentro de la carpeta de origen). */
+  capa?:      string;
 }
 
 export interface PuntoPerfilElevacion {

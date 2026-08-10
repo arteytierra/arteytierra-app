@@ -365,6 +365,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Capas y visibilidad (hook useCapas) ──────────────────────────────────
   const {
     capas, setCapas, ocultosIds, setOcultosIds, capasOcultas, setCapasOcultas, toggleOculto,
+    subCapasOcultas, setSubCapasOcultas, toggleSubCapa,
   } = useCapas();
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
   const [show3D,           setShow3D]            = useState(false);
@@ -394,6 +395,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const mpCaminos = useMemo<CaminoMasterPlan[]>(
     () => (masterPlan && masterPlan.length ? conectarMasterPlan(masterPlan, zona0, analisisConectores, mojones) : []),
     [masterPlan, zona0, analisisConectores, mojones],
+  );
+  // Vistas filtradas por sub-capa (cada tipo de elemento del master plan y sus
+  // conectores se prenden/apagan por separado desde el panel de Capas).
+  const masterPlanVisible = useMemo(
+    () => (masterPlan ? masterPlan.filter(el => !subCapasOcultas.has('mp:' + el.tipo)) : null),
+    [masterPlan, subCapasOcultas],
+  );
+  const mpCaminosVisible = useMemo(
+    () => (subCapasOcultas.has('mp:__caminos') ? [] : mpCaminos),
+    [mpCaminos, subCapasOcultas],
   );
 
   // ─── Curvas de nivel: fetch de grilla densa al activar la capa ────────────
@@ -576,8 +587,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
   const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id))       : [], [capas.sectores, sectores, ocultosIds]);
-  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis')) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds]);
-  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis')) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds]);
+  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis') && !(p.capa && subCapasOcultas.has('an:' + p.capa))) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds, subCapasOcultas]);
+  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis') && !(c.capa && subCapasOcultas.has('an:' + c.capa))) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds, subCapasOcultas]);
   const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id))   : [], [capas.aguadas, aguadasLayer, ocultosIds]);
   const dibujosFiltrados  = useMemo(() => capas.dibujos
     ? dibujos.filter(d => !ocultosIds.has(d.id) && !capasOcultas.has(capaDeElemento(d.capaId, capasUsuario)))
@@ -643,6 +654,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (overlay)              m['overlay']       = overlay;
     if (ocultosIds.size)      m['ocultos_ids']   = [...ocultosIds];
     if (capasOcultas.size)    m['capas_ocultas'] = [...capasOcultas];
+    if (subCapasOcultas.size) m['subcapas_ocultas'] = [...subCapasOcultas];
     if (rotuloVisible || Object.values(rotulo).some(Boolean)) { m['rotulo'] = rotulo; m['rotulo_visible'] = rotuloVisible; }
     if (capturaTitulo)        m['captura_titulo'] = capturaTitulo;
     if (intervaloContorno !== null) m['intervalo_contorno'] = intervaloContorno;
@@ -651,7 +663,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (analisisHecho)        m['analisis_hecho'] = true;
     if (zona0)                m['zona0'] = zona0;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1703,14 +1715,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // Análisis topográfico integral: vuelca al plano represas + viviendas + caminos por cresta + cruces.
   const handleAplicarAnalisisIntegral = useCallback((res: AnalisisTopoIntegral) => {
+    // Cada grupo lleva su sub-capa (`capa`) para poder prender/apagar por separado
+    // dentro de la carpeta "Análisis del predio".
+    const CAPA_ACCESOS = 'Caminos y accesos', CAPA_REPRESAS = 'Represas', CAPA_VIVIENDAS = 'Viviendas';
     const nuevosPines = [
-      { id: crypto.randomUUID(), lat: res.entrada.lat, lng: res.entrada.lng, nombre: 'Acceso', icono: '🚪', color: '#6D4C41', notas: 'Punto de entrada sugerido (cota más baja del contorno)' },
-      ...res.represas.map((s, i) => ({ id: crypto.randomUUID(), lat: s.lat, lng: s.lng, nombre: `Represa ${i + 1} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0', notas: `Sitio sugerido — agua ${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³, muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³` })),
-      ...res.viviendas.map((v, i) => ({ id: crypto.randomUUID(), lat: v.lat, lng: v.lng, nombre: `Vivienda ${i + 1} (${v.score}%)`, icono: '🏠', color: '#2E7D32', notas: v.motivos.join(', ') })),
-      ...res.caminos.flatMap(c => c.camino.cruces.map(cr => ({ id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng, nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo', icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41', notas: `Cruce de vertiente (${cr.tipo}) — ${c.nombre}` }))),
+      { id: crypto.randomUUID(), lat: res.entrada.lat, lng: res.entrada.lng, nombre: 'Acceso', icono: '🚪', color: '#6D4C41', notas: 'Punto de entrada sugerido (cota más baja del contorno)', capa: CAPA_ACCESOS },
+      ...res.represas.map((s, i) => ({ id: crypto.randomUUID(), lat: s.lat, lng: s.lng, nombre: `Represa ${i + 1} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0', notas: `Sitio sugerido — agua ${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³, muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³`, capa: CAPA_REPRESAS })),
+      ...res.viviendas.map((v, i) => ({ id: crypto.randomUUID(), lat: v.lat, lng: v.lng, nombre: `Vivienda ${i + 1} (${v.score}%)`, icono: '🏠', color: '#2E7D32', notas: v.motivos.join(', '), capa: CAPA_VIVIENDAS })),
+      ...res.caminos.flatMap(c => c.camino.cruces.map(cr => ({ id: crypto.randomUUID(), lat: cr.lat, lng: cr.lng, nombre: cr.tipo === 'puente' ? 'Puente' : 'Alcantarilla / tubo', icono: cr.tipo === 'puente' ? '🌉' : '🚧', color: '#6D4C41', notas: `Cruce de vertiente (${cr.tipo}) — ${c.nombre}`, capa: CAPA_ACCESOS }))),
     ];
     setPines(prev => [...prev, ...nuevosPines.map(p => ({ ...p, origen: 'analisis' as const }))]);
-    const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m, origen: 'analisis' as const }; });
+    const nuevosCaminos = res.caminos.map(c => { const cam = crearCamino(c.camino.vertices); return { ...cam, nombre: c.nombre, color: '#E65100', longitud_m: c.camino.longitud_m, origen: 'analisis' as const, capa: CAPA_ACCESOS }; });
     setCaminos(prev => [...prev, ...nuevosCaminos]);
     flyToRef.current?.(res.entrada.lat, res.entrada.lng);
   }, []);
@@ -1809,6 +1824,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     // Visibilidad de elementos y capas (Sets serializados como arrays)
     setOcultosIds(new Set((meta['ocultos_ids'] as string[]) ?? []));
     setCapasOcultas(new Set((meta['capas_ocultas'] as string[]) ?? []));
+    setSubCapasOcultas(new Set((meta['subcapas_ocultas'] as string[]) ?? []));
     setCapaActivaId(CAPA_DEFAULT_ID);
     setProgramaMP((meta['programa_mp'] as ItemPrograma[]) ?? []);
     setMasterPlan((meta['master_plan'] as ElementoMasterPlan[]) ?? null);
@@ -2847,6 +2863,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
               datosShader={datosShader} analisisHecho={analisisHecho} onIrATopo={() => setTab('topo')} mojones={mojones}
               masterPlanHay={!!masterPlan && masterPlan.length > 0}
+              masterPlan={masterPlan}
+              hayConectoresMP={mpCaminos.length > 0}
+              subCapasOcultas={subCapasOcultas}
+              onToggleSubCapa={toggleSubCapa}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -2968,8 +2988,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           layoutSignal={`${panelAbierto}|${panelDerecho}`}
           overlay={overlay}
           onOverlayEsquina={handleOverlayEsquina}
-          masterPlan={masterPlan}
-          masterPlanCaminos={mpCaminos}
+          masterPlan={masterPlanVisible}
+          masterPlanCaminos={mpCaminosVisible}
           marcadorBusqueda={marcadorBusqueda}
           zona0={zona0}
         />
@@ -3405,6 +3425,10 @@ interface PanelCapasProps {
   onIrATopo:           () => void;
   mojones:             Mojon[];
   masterPlanHay:       boolean;
+  masterPlan:          ElementoMasterPlan[] | null;
+  hayConectoresMP:     boolean;
+  subCapasOcultas:     Set<string>;
+  onToggleSubCapa:     (key: string) => void;
   onCapturar:          () => void;
   onGuardarPng:        () => void;
   guardandoPng:        boolean;
@@ -3430,7 +3454,7 @@ function PanelCapas({
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, analisisHecho, onIrATopo, mojones,
-  masterPlanHay,
+  masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
@@ -3444,6 +3468,20 @@ function PanelCapas({
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
   const hayAnalisisPredio = pines.some(p => p.origen === 'analisis') || caminos.some(c => c.origen === 'analisis');
+
+  // Pines/caminos manuales (los del Análisis viven en su propia carpeta por categoría).
+  const pinesManuales   = pines.filter(p => p.origen !== 'analisis');
+  const caminosManuales = caminos.filter(c => c.origen !== 'analisis');
+
+  // Sub-capas del Análisis del predio: categorías presentes entre las sugerencias.
+  const ORDEN_ANALISIS = ['Viviendas', 'Represas', 'Caminos y accesos'];
+  const EMOJI_ANALISIS: Record<string, string> = { Viviendas: '🏠', Represas: '💧', 'Caminos y accesos': '🚪' };
+  const categoriasAnalisis = ORDEN_ANALISIS.filter(cat =>
+    pines.some(p => p.origen === 'analisis' && p.capa === cat) ||
+    caminos.some(c => c.origen === 'analisis' && c.capa === cat));
+
+  // Sub-capas del Master plan: tipos de elemento presentes (orden de aparición).
+  const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
     'topo', 'plano', 'hidrico', 'sugerencias', 'analisis', 'terreno',
@@ -3717,11 +3755,26 @@ function PanelCapas({
             onToggleVisible={() => onCapas({ ...capas, sugerencias: !capas.sugerencias })}
             expanded={exp.sugerencias} onExpand={() => tog('sugerencias')}
           >
-            <CapaItem visible={capas.sugerencias}
-              onToggle={() => onCapas({ ...capas, sugerencias: !capas.sugerencias })}
-              label="Ubicaciones sugeridas"
-              swatch={<span className="text-sm leading-none">🏠🌾</span>}
-            />
+            {tiposMasterPlan.map(tipo => {
+              const def = TIPOS_ITEM[tipo];
+              const key = `mp:${tipo}`;
+              return (
+                <CapaItem key={key}
+                  visible={capas.sugerencias && !subCapasOcultas.has(key)}
+                  onToggle={() => onToggleSubCapa(key)}
+                  label={def.label}
+                  swatch={<span className="text-sm leading-none">{def.emoji}</span>}
+                />
+              );
+            })}
+            {hayConectoresMP && (
+              <CapaItem key="mp:__caminos"
+                visible={capas.sugerencias && !subCapasOcultas.has('mp:__caminos')}
+                onToggle={() => onToggleSubCapa('mp:__caminos')}
+                label="Caminos conectores"
+                swatch={<span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: '#6D4C41' }} />}
+              />
+            )}
           </CapaGrupo>
         )}
         </div>{/* /master plan */}
@@ -3735,11 +3788,17 @@ function PanelCapas({
             onToggleVisible={() => onCapas({ ...capas, analisisPredio: !capas.analisisPredio })}
             expanded={exp.analisis} onExpand={() => tog('analisis')}
           >
-            <CapaItem visible={capas.analisisPredio}
-              onToggle={() => onCapas({ ...capas, analisisPredio: !capas.analisisPredio })}
-              label="Sugerencias (viviendas · represas · accesos)"
-              swatch={<span className="text-sm leading-none">🏠💧🚪</span>}
-            />
+            {categoriasAnalisis.map(cat => {
+              const key = `an:${cat}`;
+              return (
+                <CapaItem key={key}
+                  visible={capas.analisisPredio && !subCapasOcultas.has(key)}
+                  onToggle={() => onToggleSubCapa(key)}
+                  label={cat}
+                  swatch={<span className="text-sm leading-none">{EMOJI_ANALISIS[cat] ?? '📍'}</span>}
+                />
+              );
+            })}
           </CapaGrupo>
         )}
         </div>{/* /análisis del predio */}
@@ -3807,14 +3866,14 @@ function PanelCapas({
 
         {/* ── Caminos ── */}
         <div {...makeDrag('caminos')}>
-        {caminos.length > 0 && (
+        {caminosManuales.length > 0 && (
           <CapaGrupo
-            label="Caminos" count={caminos.length}
+            label="Caminos" count={caminosManuales.length}
             visible={capas.caminos}
             onToggleVisible={() => onCapas({ ...capas, caminos: !capas.caminos })}
             expanded={exp.caminos} onExpand={() => tog('caminos')}
           >
-            {caminos.map(c => (
+            {caminosManuales.map(c => (
               <CapaItem key={c.id}
                 visible={!ocultosIds.has(c.id) && capas.caminos}
                 onToggle={() => onToggle(c.id)}
@@ -3830,14 +3889,14 @@ function PanelCapas({
 
         {/* ── Pines ── */}
         <div {...makeDrag('pines')}>
-        {pines.length > 0 && (
+        {pinesManuales.length > 0 && (
           <CapaGrupo
-            label="Pines" count={pines.length}
+            label="Pines" count={pinesManuales.length}
             visible={capas.pines}
             onToggleVisible={() => onCapas({ ...capas, pines: !capas.pines })}
             expanded={exp.pines} onExpand={() => tog('pines')}
           >
-            {pines.map(p => (
+            {pinesManuales.map(p => (
               <CapaItem key={p.id}
                 visible={!ocultosIds.has(p.id) && capas.pines}
                 onToggle={() => onToggle(p.id)}
