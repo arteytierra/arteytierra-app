@@ -37,6 +37,7 @@ import type { DatosEscorrentia } from '@/lib/escorrentias';
 import { colorErosion, type DatosErosion } from '@/lib/erosion';
 import type { ResultadoSwales } from '@/lib/swales';
 import type { ResultadoCortafuegos } from '@/lib/cortafuegos';
+import type { ResultadoSilvo } from '@/lib/silvopastura';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import {
   distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
@@ -65,6 +66,7 @@ export interface CapasVisibles {
   erosion:        boolean;
   swales:         boolean;
   cortafuegos:    boolean;
+  silvopastura:   boolean;
   sugerencias:    boolean;
   analisisPredio: boolean;
   aguadas:        boolean;
@@ -941,6 +943,7 @@ interface Props {
   datosErosion?:      DatosErosion | null;
   swales?:            ResultadoSwales | null;
   cortafuegos?:       ResultadoCortafuegos | null;
+  silvopastura?:      ResultadoSilvo | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
@@ -1018,7 +1021,7 @@ interface Props {
 const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
 const ZOOM_INICIAL = 7;
 
-const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, swales: true, cortafuegos: true, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
+const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, swales: true, cortafuegos: true, silvopastura: true, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
 function MapLeaflet({
   mojones, seleccionado, onClickMapa, onSeleccionar,
@@ -1038,6 +1041,7 @@ function MapLeaflet({
   datosErosion = null,
   swales = null,
   cortafuegos = null,
+  silvopastura = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
   muroLinea = null,
@@ -1239,6 +1243,19 @@ function MapLeaflet({
             positions={cf.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
             pathOptions={{ color: '#E65100', weight: 6, opacity: 0.55, lineCap: 'round', lineJoin: 'round', interactive: false }}
           />
+        ))}
+        {/* ── Silvopastura (hileras a nivel + árboles) ── */}
+        {capas.silvopastura && silvopastura?.hileras.map((h, i) => (
+          <React.Fragment key={`sv-${i}`}>
+            <Polyline
+              positions={h.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+              pathOptions={{ color: '#2E7D32', weight: 1.5, opacity: 0.7, dashArray: '2 4', interactive: false }}
+            />
+            {h.arboles.map((a, j) => (
+              <CircleMarker key={`sv-${i}-${j}`} center={[a.lat, a.lng]} radius={3}
+                pathOptions={{ color: '#1B5E20', weight: 1, fillColor: '#43A047', fillOpacity: 0.9, interactive: false }} />
+            ))}
+          </React.Fragment>
         ))}
         {insolacion && insolacion.celdas.length > 0 && (
           <InsolacionCanvasLayer celdas={insolacion.celdas} max={insolacion.max} />

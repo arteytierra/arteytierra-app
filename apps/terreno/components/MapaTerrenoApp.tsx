@@ -64,6 +64,7 @@ import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias'
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { calcularSwales, type ResultadoSwales, type OpcionesSwales } from '@/lib/swales';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
+import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
@@ -86,6 +87,7 @@ import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel } from './KeylinePanel';
 import { SwalesPanel } from './SwalesPanel';
 import { CortafuegosPanel } from './CortafuegosPanel';
+import { SilvopasturaPanel } from './SilvopasturaPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
@@ -202,6 +204,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
   { id: 'elementos',   label: 'Elementos',   icon: <TreeDeciduous className="w-3.5 h-3.5" /> },
   { id: 'pastoreo',    label: 'Pastoreo',    icon: <span className="text-[13px] leading-none grayscale opacity-70">🐄</span> },
+  { id: 'silvopastura', label: 'Silvopastura', icon: <Trees      className="w-3.5 h-3.5" /> },
   { id: 'keyline',     label: 'Keyline',     icon: <Waypoints    className="w-3.5 h-3.5" /> },
   { id: 'prod',        label: 'Producción',  icon: <Wheat        className="w-3.5 h-3.5" /> },
   { id: 'economia',    label: 'Economía',    icon: <DollarSign   className="w-3.5 h-3.5" /> },
@@ -218,7 +221,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego', 'swales'] },
   { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'cortafuegos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
-  { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'carbono'] },
+  { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'silvopastura', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
   { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
 ];
@@ -652,6 +655,26 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCaminos(prev => [...prev, ...nuevos]);
     setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} cortafuegos en el plano (pestaña Caminos).` });
   }, [cortafuegos]);
+
+  // ─── Silvopastura (hileras de árboles a nivel) ───────────────────────────
+  const [silvopastura, setSilvopastura] = useState<ResultadoSilvo | null>(null);
+  const handleGenerarSilvopastura = useCallback((opts: OpcionesSilvo): ResultadoSilvo | null => {
+    if (!grillaActiva) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return null; }
+    const r = calcularSilvopastura(grillaActiva, mojones, opts);
+    if (!r) setModal({ type: 'alert', message: 'No se pudieron trazar hileras con esos valores (poco desnivel o separación muy grande).' });
+    setSilvopastura(r);
+    setCapas(prev => ({ ...prev, silvopastura: true }));
+    return r;
+  }, [grillaActiva, mojones]);
+  const handleColocarSilvopastura = useCallback(() => {
+    if (!silvopastura) return;
+    const nuevos = silvopastura.hileras.map((h, i) => {
+      const cam = crearCamino(h.puntos);
+      return { ...cam, nombre: `Hilera silvopastoril ${i + 1} (${h.arboles.length} árb.)`, color: '#2E7D32', longitud_m: h.longitud_m };
+    });
+    setCaminos(prev => [...prev, ...nuevos]);
+    setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} hileras en el plano (pestaña Caminos). Los árboles quedan como referencia en la capa Silvopastura.` });
+  }, [silvopastura]);
 
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
   const aptitud = useMemo<ResultadoAptitud | null>(
@@ -2749,6 +2772,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               />
             </div>
           )}
+          {tab === 'silvopastura' && (
+            <div className="px-4 py-4">
+              <SilvopasturaPanel
+                grillaLista={!!grillaActiva}
+                silvopastura={silvopastura}
+                onGenerar={handleGenerarSilvopastura}
+                onColocar={handleColocarSilvopastura}
+                onIrATopo={() => setTab('topo')}
+              />
+            </div>
+          )}
           {tab === 'carbono' && (
             <div className="px-4 py-4">
               <CarbonoPanel
@@ -2945,6 +2979,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               datosErosion={datosErosion}
               haySwales={!!swales}
               hayCortafuegos={!!cortafuegos}
+              haySilvopastura={!!silvopastura}
               onCapturar={() => {
                 setPanelDerecho(null);
                 setCapturaActiva(true);
@@ -3021,6 +3056,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           datosErosion={datosErosion}
           swales={swales}
           cortafuegos={cortafuegos}
+          silvopastura={silvopastura}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
           muroLinea={muroLinea}
@@ -3505,6 +3541,7 @@ interface PanelCapasProps {
   datosErosion:        DatosErosion | null;
   haySwales:           boolean;
   hayCortafuegos:      boolean;
+  haySilvopastura:     boolean;
   analisisHecho:       boolean;
   onIrATopo:           () => void;
   mojones:             Mojon[];
@@ -3537,7 +3574,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, haySwales, hayCortafuegos, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, haySwales, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3547,7 +3584,7 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortafuegos: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortafuegos: true, silvopastura: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
@@ -3568,7 +3605,7 @@ function PanelCapas({
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortafuegos', 'sugerencias', 'analisis', 'terreno',
+    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortafuegos', 'silvopastura', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3891,6 +3928,24 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /cortafuegos */}
+
+        {/* ── Silvopastura ── */}
+        <div {...makeDrag('silvopastura')}>
+        {haySilvopastura && (
+          <CapaGrupo
+            label="Silvopastura"
+            visible={capas.silvopastura}
+            onToggleVisible={() => onCapas({ ...capas, silvopastura: !capas.silvopastura })}
+            expanded={exp.silvopastura} onExpand={() => tog('silvopastura')}
+          >
+            <CapaItem visible={capas.silvopastura}
+              onToggle={() => onCapas({ ...capas, silvopastura: !capas.silvopastura })}
+              label="Hileras de árboles"
+              swatch={<span className="text-sm leading-none">🌳</span>}
+            />
+          </CapaGrupo>
+        )}
+        </div>{/* /silvopastura */}
 
         {/* ── Master plan ── */}
         <div {...makeDrag('sugerencias')}>
