@@ -7,7 +7,7 @@
  * "Colocar en el plano" vuelca todo (pines + caminos + pins de cruce).
  */
 import { useState, useCallback } from 'react';
-import { Loader2, Mountain, Home, Droplets, Route, MapPin, Sparkles } from 'lucide-react';
+import { Loader2, Mountain, Droplets, MapPin, Sparkles } from 'lucide-react';
 import { analizarTopografiaIntegral, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import type { Mojon } from '@/lib/types';
 
@@ -37,8 +37,8 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
       if (!r) { setError('No se pudo analizar el relieve (sin datos de elevación).'); return; }
       setRes(r);
       onAnalizado?.();
-      if (r.represas.length === 0 && r.viviendas.length === 0) {
-        setError('El relieve es muy plano o uniforme: sin sugerencias claras.');
+      if (r.represas.length === 0) {
+        setError('El relieve es muy plano o uniforme: sin sitios de represa claros. Igual se calcularon las escorrentías.');
       }
     } catch {
       setError('Hubo un error al analizar el relieve. Reintentá.');
@@ -47,8 +47,6 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
     }
   }, [mojones, onAnalizado]);
 
-  const totalCruces = res?.caminos.reduce((s, c) => s + c.camino.cruces.length, 0) ?? 0;
-
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 text-ink-900">
@@ -56,7 +54,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
         <h3 className="font-serif text-sm">Análisis del predio</h3>
       </div>
       <p className="text-[11px] text-ink-700/70 leading-relaxed">
-        Terreno analiza tu predio y sugiere <span className="text-moss-700 font-medium">usos del suelo</span>, <span className="text-orange-700 font-medium">trazado de caminos</span> y ubicación de <span className="text-moss-700 font-medium">viviendas</span> y <span className="text-water-700 font-medium">represas</span>, junto a un <span className="text-water-700 font-medium">análisis hídrico de escorrentías</span>. Son sugerencias orientativas: evaluá cuáles incorporás, modificás o eliminás para armar tu propio plan de infraestructura y caminos.
+        Terreno analiza el relieve de tu predio y sugiere los mejores sitios de <span className="text-water-700 font-medium">represas</span> por eficiencia agua/tierra, junto a un <span className="text-water-700 font-medium">análisis hídrico de escorrentías</span>. Son sugerencias orientativas: evaluá cuáles incorporás. <span className="text-ink-700/90">Las viviendas y los caminos los propone el <b>Master Plan</b>.</span>
       </p>
 
       {!topoLista ? (
@@ -84,39 +82,14 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
 
       {error && <p className="text-[10px] text-clay-700 leading-relaxed">{error}</p>}
 
-      {res && (res.represas.length > 0 || res.viviendas.length > 0) && (
+      {res && res.represas.length > 0 && (
         <div className="space-y-2">
           {/* Represas */}
-          {res.represas.length > 0 && (
-            <Grupo icono={<Droplets className="w-3.5 h-3.5 text-water-600" />} titulo={`Represas (${res.represas.length})`}>
-              {res.represas.map((s, i) => (
-                <Fila key={i} izq={`#${i + 1} · ef. ${s.eficiencia}:1`} der={`${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³ · muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³`} />
-              ))}
-            </Grupo>
-          )}
-          {/* Viviendas */}
-          {res.viviendas.length > 0 && (
-            <Grupo icono={<Home className="w-3.5 h-3.5 text-moss-700" />} titulo={`Zonas de vivienda (${res.viviendas.length})`}>
-              {res.viviendas.map((v, i) => (
-                <Fila key={i} izq={`${i === 0 ? 'Mejor' : (i + 1) + '.ª'} · ${v.score}%`} der={`pend. ${v.pendiente_pct}% · ${v.motivos.slice(0, 2).join(', ')}`} />
-              ))}
-            </Grupo>
-          )}
-          {/* Caminos */}
-          {res.caminos.length > 0 && (
-            <Grupo icono={<Route className="w-3.5 h-3.5 text-orange-700" />} titulo={`Caminos por cresta (${res.caminos.length})`}>
-              {res.caminos.map((c, i) => (
-                <Fila key={i}
-                  izq={c.destino}
-                  der={`${c.camino.longitud_m >= 1000 ? (c.camino.longitud_m / 1000).toFixed(2) + ' km' : c.camino.longitud_m + ' m'} · pend. ${c.camino.pendiente_media_pct}%${c.camino.cruces.length ? ` · ${c.camino.cruces.length} cruce(s)` : ''}`} />
-              ))}
-              {totalCruces > 0 && (
-                <p className="text-[9px] text-ink-700/50 px-0.5 pt-0.5">
-                  Los caminos van por parteaguas y cruzan las vertientes con puente/alcantarilla (marcados con pin).
-                </p>
-              )}
-            </Grupo>
-          )}
+          <Grupo icono={<Droplets className="w-3.5 h-3.5 text-water-600" />} titulo={`Represas (${res.represas.length})`}>
+            {res.represas.map((s, i) => (
+              <Fila key={i} izq={`#${i + 1} · ef. ${s.eficiencia}:1`} der={`${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³ · muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³`} />
+            ))}
+          </Grupo>
 
           <button
             onClick={() => { onAplicar(res); setColocado(true); }}
@@ -124,7 +97,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
             className="w-full flex items-center justify-center gap-1.5 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-50 text-bone-50 rounded-xl text-xs font-semibold transition-colors"
           >
             <MapPin className="w-3.5 h-3.5" />
-            {colocado ? 'Colocado en el plano ✓' : 'Colocar todo en el plano'}
+            {colocado ? 'Represas colocadas ✓' : 'Colocar represas en el plano'}
           </button>
           <p className="text-[9px] text-ink-700/45 leading-relaxed">
             Sobre SRTM ~30 m — orientativo. Verificá en campo antes de construir.

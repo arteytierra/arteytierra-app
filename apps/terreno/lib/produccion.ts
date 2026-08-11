@@ -127,6 +127,11 @@ export function calcularReceptividad(
 }
 
 // ─── 7.5 Cortinas rompevientos ────────────────────────────────────────────────
+// ⚠ FUERA DE PRODUCCIÓN (11/08/2026): `calcularCortinas` ubica las líneas con
+// offsets fijos sobre el centroide, así que siempre caían en el centro del predio
+// sin relación con el terreno. Se desconectó de la UI (ProduccionPanel/MasterPlan).
+// Pendiente de rework antes de reactivar: idealmente como hileras dibujadas por el
+// usuario o auto-trazadas en el borde de barlovento (candidato para Silvopastura).
 
 const AZIMUT_DIR: Record<string, number> = {
   N: 0, NE: 45, E: 90, SE: 135, S: 180, SO: 225, O: 270, NO: 315,

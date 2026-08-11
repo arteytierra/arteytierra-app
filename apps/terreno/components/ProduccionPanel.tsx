@@ -5,8 +5,6 @@ import { Cloud, Wheat } from 'lucide-react';
 import {
   CULTIVOS_KC, calcularBalanceProductivo,
   TIPOS_ANIMAL, calcularReceptividad,
-  calcularCortinas,
-  type CortinaSugerida,
 } from '@/lib/produccion';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
@@ -17,11 +15,10 @@ interface Props {
   mojones:     Mojon[];
   areaHa:      number;
   onIrAClima:  () => void;
-  onAgregarCortinas?: (cortinas: CortinaSugerida[]) => void;
 }
 
-export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, onAgregarCortinas }: Props) {
-  const [tab,       setTab]       = useState<'balance' | 'ganaderia' | 'cortinas'>('balance');
+export function ProduccionPanel({ datosClima, areaHa, onIrAClima }: Props) {
+  const [tab,       setTab]       = useState<'balance' | 'ganaderia'>('balance');
   const [cultivoId, setCultivoId] = useState('huerta');
   const [areaCult,  setAreaCult]  = useState(areaHa > 0 ? Math.round(areaHa * 10) / 10 : 1);
   const [animalId,  setAnimalId]  = useState('bovino');
@@ -37,11 +34,6 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, onAgr
   const ganaderia = useMemo(
     () => datosClima ? calcularReceptividad(areaHa || areaCult, datosClima.precip_anual_mm, animal) : null,
     [datosClima, areaHa, areaCult, animal],
-  );
-
-  const cortinas = useMemo(
-    () => datosClima ? calcularCortinas(datosClima.viento_dir_ppal, mojones) : [],
-    [datosClima, mojones],
   );
 
   if (!datosClima) {
@@ -64,7 +56,7 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, onAgr
 
       {/* Sub-tabs */}
       <div className="flex gap-0.5 bg-bone-100 p-1 rounded-lg text-[10px]">
-        {([['balance', 'Balance hídrico'], ['ganaderia', 'Ganadería'], ['cortinas', 'Cortinas']] as const).map(([id, label]) => (
+        {([['balance', 'Balance hídrico'], ['ganaderia', 'Ganadería']] as const).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -188,53 +180,9 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, onAgr
         </div>
       )}
 
-      {/* ── 7.5 Cortinas rompevientos ── */}
-      {tab === 'cortinas' && (
-        <div className="space-y-3">
-          <div className="bg-bone-50 rounded-xl border border-bone-200 p-3 space-y-1">
-            <p className="text-[10px] font-semibold text-ink-700">Viento predominante: {datosClima.viento_dir_ppal}</p>
-            <p className="text-[9px] text-ink-700/70">Las cortinas se ubican perpendiculares al viento (az. {(((AZIMUT_MAP[datosClima.viento_dir_ppal] ?? 180) + 90) % 360).toFixed(0)}°). Protegen hasta 10× la altura de los árboles (~100 m).</p>
-          </div>
-
-          {cortinas.length > 0 && (
-            <>
-              <div className="space-y-2">
-                {cortinas.map((c, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-bone-200 p-3">
-                    <p className="text-[10px] font-semibold text-ink-700 mb-1">Cortina {i + 1} — {c.longitud_m} m aprox.</p>
-                    <p className="text-[9px] text-ink-700/60">Zona de protección: {c.zona_prot_m} m a cada lado.</p>
-                  </div>
-                ))}
-              </div>
-
-              {onAgregarCortinas && (
-                <button
-                  onClick={() => onAgregarCortinas(cortinas)}
-                  className="w-full py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-xl text-xs font-semibold transition-colors"
-                >
-                  Agregar cortinas al mapa
-                </button>
-              )}
-
-              <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-1.5">
-                <p className="text-[10px] font-semibold text-ink-700">Especies sugeridas — Espinal/Chaco serrano</p>
-                {cortinas[0]?.especies.map((e, i) => (
-                  <p key={i} className="text-[9px] text-ink-700/70">• {e}</p>
-                ))}
-              </div>
-            </>
-          )}
-
-          {cortinas.length === 0 && (
-            <p className="text-[9px] text-ink-700/50 text-center py-4">Agregá al menos 3 mojones para calcular cortinas.</p>
-          )}
-        </div>
-      )}
     </div>
   );
 }
-
-const AZIMUT_MAP: Record<string, number> = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SO: 225, O: 270, NO: 315 };
 
 // ─── Chip de estadística ──────────────────────────────────────────────────────
 function Chip({ label, value, sub, color }: { label: string; value: string; sub: string; color: 'verde' | 'amarillo' | 'rojo' | 'neutro' }) {

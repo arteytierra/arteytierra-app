@@ -396,6 +396,7 @@ export function calcularMasterPlan(
   escorrentias: DatosEscorrentia,
   mojones?:     Array<{ lat: number; lng: number }>,
   zona0?:       { lat: number; lng: number } | null,
+  acceso?:      { lat: number; lng: number } | null,
 ): ElementoMasterPlan[] {
   const { elev_min, elev_max } = shader;
   const { acumulacion, acum_max } = escorrentias;
@@ -435,11 +436,19 @@ export function calcularMasterPlan(
   const rangoM  = Math.min(550, Math.max(150, predioDiagM * 0.28));  // escala de "cercanía" (afinidad)
   const sepMinM = Math.max(cellSizeM * 1.4, 40);                     // separación mínima entre construcciones
 
-  // Entrada del predio: celda de borde más baja (igual criterio que sugerencias)
+  // Entrada del predio: si el usuario marcó el punto de acceso, se usa la celda
+  // más cercana a ese punto; si no, la celda de borde más baja (por donde suele
+  // entrar el camino). La entrada alimenta el término "cerca del acceso".
   const borde = celdas.filter(c =>
     !byPos.has(`${c.row - 1},${c.col}`) || !byPos.has(`${c.row + 1},${c.col}`) ||
     !byPos.has(`${c.row},${c.col - 1}`) || !byPos.has(`${c.row},${c.col + 1}`));
-  const entrada = [...borde].sort((a, b) => a.elevation - b.elevation)[0] ?? c0;
+  const entrada = acceso
+    ? celdas.reduce((best, c) => {
+        const d  = Math.hypot((c.latMin + c.latMax) / 2 - acceso.lat, (c.lngMin + c.lngMax) / 2 - acceso.lng);
+        const bd = Math.hypot((best.latMin + best.latMax) / 2 - acceso.lat, (best.lngMin + best.lngMax) / 2 - acceso.lng);
+        return d < bd ? c : best;
+      }, celdas[0]!)
+    : ([...borde].sort((a, b) => a.elevation - b.elevation)[0] ?? c0);
   const maxDist = Math.max(...celdas.map(c =>
     Math.hypot(c.row - entrada.row, c.col - entrada.col)), 1);
 
@@ -675,18 +684,26 @@ export interface CaminoMasterPlan { vertices: Array<{ lat: number; lng: number }
  * Si se pasa un `analisis` de relieve, cada tramo del árbol se rutea por el
  * terreno (crestas, evita pendiente fuerte, cruza vertientes en un punto) en vez
  * de trazarse como segmento recto; sin análisis, cae al tramo recto de siempre.
+ *
+ * Si se pasa el `acceso` (tranquera/portón), la red se enraíza ahí: el árbol
+ * arranca desde el acceso y de ahí llega a la casa y a cada elemento, en vez de
+ * partir de la casa. Así los caminos entran realmente desde el borde del predio.
  */
 export function conectarMasterPlan(
   elementos: ElementoMasterPlan[],
   zona0?:    { lat: number; lng: number } | null,
   analisis?: AnalisisRelieve | null,
   limite?:   Array<{ lat: number; lng: number }>,
+  acceso?:   { lat: number; lng: number } | null,
 ): CaminoMasterPlan[] {
   const centro = (el: ElementoMasterPlan) => ({
     lat: el.vertices.reduce((s, v) => s + v.lat, 0) / el.vertices.length,
     lng: el.vertices.reduce((s, v) => s + v.lng, 0) / el.vertices.length,
   });
+  // El nodo 0 es la raíz del árbol (Prim arranca de ahí): acceso si se marcó,
+  // si no la casa.
   const nodos: Array<{ lat: number; lng: number }> = [];
+  if (acceso) nodos.push(acceso);
   if (zona0) nodos.push(zona0);
   for (const el of elementos) nodos.push(centro(el));
   if (nodos.length < 2) return [];

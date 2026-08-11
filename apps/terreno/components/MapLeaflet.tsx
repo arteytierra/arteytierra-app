@@ -984,6 +984,7 @@ interface Props {
   /** Marcador temporal del resultado de búsqueda (no es parte del proyecto). */
   marcadorBusqueda?:  { lat: number; lng: number; label: string } | null;
   zona0?:             { lat: number; lng: number } | null;
+  acceso?:            { lat: number; lng: number } | null;
   // ── Navegación unificada (el panel vive en MapaTerrenoApp) ──
   onGetNavegacion?:   (api: NavegacionMapa) => void;
   onBearing?:         (grados: number) => void;
@@ -1094,6 +1095,7 @@ function MapLeaflet({
   masterPlanCaminos = [],
   marcadorBusqueda = null,
   zona0 = null,
+  acceso = null,
 }: Props) {
   const positions: LatLngExpression[] = mojones.map(m => [m.lat, m.lng]);
   // Zoom local (solo para dimensionar los emojis de elementos a escala). El paneo
@@ -1497,6 +1499,21 @@ function MapLeaflet({
               iconAnchor: [15, 15],
               html: `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9999px;background:rgba(46,125,50,.9);border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.5);color:#fff;font:700 13px/1 system-ui">🏠</div>
                 <div style="position:absolute;top:-8px;left:22px;background:#2E7D32;color:#fff;font:700 8px/1 system-ui;padding:2px 4px;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.4)">0</div>`,
+            })}
+          />
+        )}
+
+        {/* ── Punto de acceso al terreno (arranque de los caminos del plan) ── */}
+        {acceso && (
+          <Marker
+            position={[acceso.lat, acceso.lng]}
+            interactive={false}
+            zIndexOffset={1090}
+            icon={L.divIcon({
+              className: '',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+              html: `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9999px;background:rgba(109,76,65,.9);border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.5);color:#fff;font:700 13px/1 system-ui">🚪</div>`,
             })}
           />
         )}

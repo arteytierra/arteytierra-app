@@ -8,7 +8,7 @@
  * separado del análisis de topografía.
  */
 import { useState } from 'react';
-import { Sparkles, Trash2, Plus, Target, Mountain, ClipboardList, Compass, Droplets, LayoutGrid, Wind } from 'lucide-react';
+import { Sparkles, Trash2, Plus, Target, DoorOpen, Mountain, ClipboardList, Compass, Droplets, LayoutGrid } from 'lucide-react';
 import {
   TIPOS_ITEM, EQUIV_EV, dimensionarItem,
   type ItemPrograma, type TipoItemPrograma, type ElementoMasterPlan, type EspecieGanado,
@@ -27,6 +27,10 @@ interface Props {
   modoMarcarZona0:     boolean;
   onMarcarZona0:       () => void;
   onQuitarZona0:       () => void;
+  acceso:              { lat: number; lng: number } | null;
+  modoMarcarAcceso:    boolean;
+  onMarcarAcceso:      () => void;
+  onQuitarAcceso:      () => void;
   topoLista:           boolean;
   onIrATopo:           () => void;
   onIrAHerramienta:    (tab: string) => void;
@@ -36,6 +40,7 @@ export function MasterPlanPanel({
   programa, onPrograma, masterPlan, onGenerarMasterPlan,
   onConvertirZona, onDescartarElemento, areaPredioHa,
   zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0,
+  acceso, modoMarcarAcceso, onMarcarAcceso, onQuitarAcceso,
   topoLista, onIrATopo, onIrAHerramienta,
 }: Props) {
   return (
@@ -45,7 +50,7 @@ export function MasterPlanPanel({
         <h3 className="font-serif text-sm">Sugerencias Master Plan</h3>
       </div>
       <p className="text-[11px] text-ink-700/70 leading-relaxed">
-        Marcá tu <b>zona 0</b> (casa / edificio principal), declará el programa del predio con su superficie y el motor ubica todo <b>dentro del predio</b>, en relación a la casa (zonas de permacultura), con los caminos que conectan. Son sugerencias: creá zona, modificá o descartá.
+        Marcá tu <b>zona 0</b> (casa / edificio principal) y el <b>punto de acceso</b> al terreno, declará el programa del predio con su superficie y el motor ubica las <b>viviendas y demás elementos</b> dentro del predio —en relación a la casa (zonas de permacultura)— y traza los <b>caminos</b> desde el acceso. Son sugerencias: creá zona, modificá o descartá.
       </p>
 
       {!topoLista ? (
@@ -71,6 +76,10 @@ export function MasterPlanPanel({
           modoMarcarZona0={modoMarcarZona0}
           onMarcarZona0={onMarcarZona0}
           onQuitarZona0={onQuitarZona0}
+          acceso={acceso}
+          modoMarcarAcceso={modoMarcarAcceso}
+          onMarcarAcceso={onMarcarAcceso}
+          onQuitarAcceso={onQuitarAcceso}
         />
       )}
 
@@ -81,7 +90,6 @@ export function MasterPlanPanel({
           <AccesoHerramienta icon={<Compass className="w-3.5 h-3.5" />}    label="Sectores"   detalle="sol · viento · fuego" onClick={() => onIrAHerramienta('sectores')} />
           <AccesoHerramienta icon={<Droplets className="w-3.5 h-3.5" />}   label="Balance hídrico" detalle="captación · riego" onClick={() => onIrAHerramienta('agua')} />
           <AccesoHerramienta icon={<LayoutGrid className="w-3.5 h-3.5" />} label="Potreros"   detalle="pastoreo rotativo" onClick={() => onIrAHerramienta('pastoreo')} />
-          <AccesoHerramienta icon={<Wind className="w-3.5 h-3.5" />}       label="Cortinas"   detalle="rompevientos" onClick={() => onIrAHerramienta('prod')} />
         </div>
         <p className="text-[8px] text-ink-700/40 italic leading-tight">
           El master plan ubica los elementos; estas herramientas complementan el diseño con sus propios análisis.
@@ -110,7 +118,7 @@ function AccesoHerramienta({ icon, label, detalle, onClick }: {
 
 const inputMini = 'w-full text-[10px] bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500';
 
-function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConvertirZona, onDescartar, areaPredioHa, zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0 }: {
+function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConvertirZona, onDescartar, areaPredioHa, zona0, modoMarcarZona0, onMarcarZona0, onQuitarZona0, acceso, modoMarcarAcceso, onMarcarAcceso, onQuitarAcceso }: {
   programa:        ItemPrograma[];
   onPrograma:      (items: ItemPrograma[]) => void;
   masterPlan:      ElementoMasterPlan[] | null;
@@ -122,6 +130,10 @@ function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConve
   modoMarcarZona0: boolean;
   onMarcarZona0:   () => void;
   onQuitarZona0:   () => void;
+  acceso:          { lat: number; lng: number } | null;
+  modoMarcarAcceso: boolean;
+  onMarcarAcceso:  () => void;
+  onQuitarAcceso:  () => void;
 }) {
   const [tipoNuevo, setTipoNuevo] = useState<TipoItemPrograma>('casa');
 
@@ -166,6 +178,27 @@ function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConve
           className={`w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${modoMarcarZona0 ? 'bg-sun-400 text-ink-950' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}>
           <Target className="w-3 h-3" />
           {modoMarcarZona0 ? 'Hacé clic en el mapa…' : zona0 ? 'Reubicar zona 0' : 'Marcar zona 0 en el mapa'}
+        </button>
+      </div>
+
+      {/* ── Punto de acceso al terreno (arranque de los caminos) ── */}
+      <div className={`rounded-lg border p-2 space-y-1.5 ${acceso ? 'border-moss-300 bg-moss-50/60' : 'border-sun-300 bg-sun-50/50'}`}>
+        <div className="flex items-center gap-1.5">
+          <DoorOpen className="w-3.5 h-3.5 text-clay-700 shrink-0" />
+          <span className="flex-1 text-[10px] font-semibold text-ink-900">Punto de acceso al terreno</span>
+          {acceso && (
+            <button onClick={onQuitarAcceso} className="shrink-0 text-ink-700/25 hover:text-clay-500 transition-colors" title="Quitar acceso">
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+        {acceso
+          ? <p className="text-[9px] font-mono text-ink-700/50">{acceso.lat.toFixed(5)}, {acceso.lng.toFixed(5)}</p>
+          : <p className="text-[9px] text-ink-700/60 leading-tight">Marcá por dónde se entra al predio (tranquera / portón): los caminos del plan arrancan desde ahí.</p>}
+        <button onClick={onMarcarAcceso}
+          className={`w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-semibold transition-colors ${modoMarcarAcceso ? 'bg-sun-400 text-ink-950' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}>
+          <DoorOpen className="w-3 h-3" />
+          {modoMarcarAcceso ? 'Hacé clic en el mapa…' : acceso ? 'Reubicar acceso' : 'Marcar acceso en el mapa'}
         </button>
       </div>
 
@@ -269,10 +302,10 @@ function MasterPlanWizard({ programa, onPrograma, masterPlan, onGenerar, onConve
         </div>
       )}
 
-      {/* ── Generar (requiere zona 0) ── */}
+      {/* ── Generar (requiere zona 0 + acceso) ── */}
       {programa.length > 0 && (
-        !zona0
-          ? <p className="text-[10px] text-clay-700 leading-tight bg-clay-50 border border-clay-200 rounded-lg px-2 py-1.5">Marcá la <b>zona 0</b> arriba para poder generar el master plan.</p>
+        !zona0 || !acceso
+          ? <p className="text-[10px] text-clay-700 leading-tight bg-clay-50 border border-clay-200 rounded-lg px-2 py-1.5">Marcá {!zona0 && !acceso ? <>la <b>zona 0</b> y el <b>punto de acceso</b></> : !zona0 ? <>la <b>zona 0</b></> : <>el <b>punto de acceso</b></>} arriba para poder generar el master plan.</p>
           : <button onClick={onGenerar}
               className="w-full flex items-center justify-center gap-1.5 py-2 bg-ink-950 hover:bg-ink-700 text-bone-50 rounded-lg text-[10px] font-bold transition-colors">
               <Sparkles className="w-3.5 h-3.5" />
