@@ -10,7 +10,7 @@
  */
 import type { BBox } from './tipos';
 
-export type FuenteNacional = 'usgs3dep' | 'ignfr' | 'ignes' | 'hrdemca';
+export type FuenteNacional = 'usgs3dep' | 'ignfr' | 'ignes' | 'hrdemca' | 'ahnnl';
 
 interface Cobertura { fuente: FuenteNacional; bbox: BBox } // bbox = [oeste, sur, este, norte]
 
@@ -19,6 +19,7 @@ const COBERTURAS: Cobertura[] = [
   { fuente: 'usgs3dep', bbox: [-160.3, 18.9, -154.7, 22.3] },  // Hawái
   { fuente: 'usgs3dep', bbox: [-168.2, 54.4, -129.9, 71.5] },  // Alaska
   { fuente: 'hrdemca',  bbox: [-141.1, 41.6, -52.5, 83.2] },   // Canadá (HRDEM parcial; sur poblado → si no hay dato, GLO-30)
+  { fuente: 'ahnnl',    bbox: [3.2, 50.7, 7.3, 53.7] },        // Países Bajos (AHN 0,5 m; antes de Francia por el solape de Limburgo)
   { fuente: 'ignfr',    bbox: [-5.2, 41.3, 9.6, 51.1] },       // Francia metropolitana (+ Córcega)
   { fuente: 'ignes',    bbox: [-9.6, 35.8, 4.4, 43.9] },       // España peninsular + Baleares (Canarias → GLO-30)
 ];

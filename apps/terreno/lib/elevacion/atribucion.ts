@@ -9,6 +9,7 @@ export const ATRIBUCION: Record<FuenteDEM, string> = {
   ignfr:    'RGE ALTI · © IGN France (Géoplateforme, Licence Ouverte / Etalab 2.0)',
   ignes:    'MDT PNOA-LiDAR · © Instituto Geográfico Nacional de España (CC-BY 4.0, scne.es)',
   hrdemca:  'HRDEM · CanElevation / Ressources naturelles Canada (Open Government Licence – Canada)',
+  ahnnl:    'AHN (Actueel Hoogtebestand Nederland) · PDOK / Rijkswaterstaat (dominio público)',
 };
 
 /** Etiqueta corta para la esquina del mapa. */
@@ -20,6 +21,7 @@ export const ATRIBUCION_CORTA: Record<FuenteDEM, string> = {
   ignfr:    'IGN RGE ALTI',
   ignes:    'IGN España MDT',
   hrdemca:  'HRDEM Canadá',
+  ahnnl:    'AHN Países Bajos',
 };
 
 export function atribucionDe(f: FuenteDEM): string { return ATRIBUCION[f]; }

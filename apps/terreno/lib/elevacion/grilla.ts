@@ -15,6 +15,7 @@ import { grillaUsgs3dep } from './proveedores/usgs3dep';
 import { grillaIgnFr } from './proveedores/ignfr';
 import { grillaIgnEs } from './proveedores/ignes';
 import { grillaHrdemCa } from './proveedores/hrdemca';
+import { grillaAhnNl } from './proveedores/ahnnl';
 
 const MAX_LADO = 2000;   // lado máx. de la ventana nativa por tile; si excede → muestreo por nodo
 
@@ -126,6 +127,7 @@ export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): 
     ignfr:    grillaIgnFr,
     ignes:    grillaIgnEs,
     hrdemca:  grillaHrdemCa,
+    ahnnl:    grillaAhnNl,
   };
   // Prueba cada fuente nacional que cubre el predio (maneja solapes de frontera);
   // la primera con dato gana. Si ninguna responde, GLO-30 global.
