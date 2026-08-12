@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame,
+  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
   CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
@@ -63,6 +63,7 @@ import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias'
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { calcularSwales, type ResultadoSwales, type OpcionesSwales } from '@/lib/swales';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
+import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
@@ -86,6 +87,7 @@ import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel } from './KeylinePanel';
 import { SwalesPanel } from './SwalesPanel';
 import { CortafuegosPanel } from './CortafuegosPanel';
+import { CortinasPanel } from './CortinasPanel';
 import { SilvopasturaPanel } from './SilvopasturaPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
@@ -140,7 +142,7 @@ type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'swales' | 'keyline'
-  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortafuegos' | 'silvopastura';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortinas' | 'cortafuegos' | 'silvopastura';
 
 interface DocDisenoSnapshot {
   mojones:      Mojon[];
@@ -156,7 +158,7 @@ interface Escenario { id: string; nombre: string; creado: string; doc: DocDiseno
 
 interface ModoZona    { categoria: CategoriaZona; vertices: Array<{ lat: number; lng: number }> }
 interface ModoSector  { tipo: TipoSector;          vertices: Array<{ lat: number; lng: number }> }
-interface ModoCamino  { vertices: Array<{ lat: number; lng: number }> }
+interface ModoCamino  { vertices: Array<{ lat: number; lng: number }>; proposito?: 'camino' | 'cortina' }
 
 interface Props { userName: string | null; plan: Plan }
 
@@ -199,6 +201,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'masterplan',  label: 'Master plan', icon: <ClipboardList className="w-3.5 h-3.5" /> },
   { id: 'sectores',    label: 'Sectores',    icon: <Compass      className="w-3.5 h-3.5" /> },
   { id: 'caminos',     label: 'Caminos',     icon: <Route        className="w-3.5 h-3.5" /> },
+  { id: 'cortinas',    label: 'Cortinas',    icon: <Fence        className="w-3.5 h-3.5" /> },
   { id: 'cortafuegos', label: 'Cortafuegos', icon: <Flame        className="w-3.5 h-3.5" /> },
   { id: 'infra',       label: 'Infraestructuras', icon: <Boxes   className="w-3.5 h-3.5" /> },
   { id: 'elementos',   label: 'Elementos',   icon: <TreeDeciduous className="w-3.5 h-3.5" /> },
@@ -219,7 +222,7 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
   { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
   { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego', 'swales'] },
-  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'cortafuegos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
+  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'cortinas', 'cortafuegos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
   { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'silvopastura', 'carbono'] },
   { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
   { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
@@ -658,6 +661,33 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} cortafuegos en el plano (pestaña Caminos).` });
   }, [cortafuegos]);
 
+  // ─── Cortinas rompevientos (franja multiestrato: dibujar o sugerir) ──────
+  const [cortina, setCortina] = useState<CortinaResultado | null>(null);
+  const cortinaParamsRef = useRef<{ ancho_m: number; alto_m: number }>({ ancho_m: 8, alto_m: 10 });
+  const handleSugerirCortina = useCallback((ancho_m: number, alto_m: number) => {
+    if (mojones.length < 3) { setModal({ type: 'alert', message: 'Cargá el terreno (al menos 3 mojones) primero.' }); return; }
+    const casa = zona0 ?? null;
+    const r = sugerirCortina(casa, mojones, { ancho_m, alto_m });
+    if (!r) { setModal({ type: 'alert', message: 'No se pudo ubicar la cortina en el predio.' }); return; }
+    setCortina(r);
+    setCapas(prev => ({ ...prev, cortinas: true }));
+  }, [mojones, zona0]);
+  const handleDibujarCortina = useCallback((ancho_m: number, alto_m: number) => {
+    cortinaParamsRef.current = { ancho_m, alto_m };
+    setModoCamino({ vertices: [], proposito: 'cortina' });
+    setModoClick(false);
+  }, []);
+  const handleColocarCortina = useCallback(() => {
+    if (!cortina) return;
+    // Se persiste la franja de plantación como dibujo (polígono editable).
+    setDibujos(d => [...d, {
+      id: crypto.randomUUID(), tipo: 'poligono' as const, color: '#2E7D32', opacidad: 0.5,
+      simbolo: '🌲', nombre: `Cortina rompevientos (${cortina.ancho_m}×${cortina.alto_m} m · ${cortina.proteccion_m} m protegidos)`,
+      capaId: capaActivaId, vertices: cortina.banda,
+    }]);
+    setModal({ type: 'alert', message: `Cortina colocada en el plano (${cortina.longitud_m} m de largo, protege ${cortina.proteccion_m} m a sotavento). Queda como dibujo editable.` });
+  }, [cortina, capaActivaId]);
+
   // ─── Silvopastura (hileras de árboles a nivel) ───────────────────────────
   const [silvopastura, setSilvopastura] = useState<ResultadoSilvo | null>(null);
   const handleGenerarSilvopastura = useCallback((opts: OpcionesSilvo): ResultadoSilvo | null => {
@@ -1041,10 +1071,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const handleIniciarCamino   = useCallback(() => { setModoCamino({ vertices: [] }); setModoClick(false); }, []);
   const handleFinalizarCamino = useCallback((color?: string) => {
     if (!modoCamino || modoCamino.vertices.length < 2) return;
+    // Reutiliza el modo de trazado para dibujar el eje de una cortina.
+    if (modoCamino.proposito === 'cortina') {
+      const r = construirCortina(modoCamino.vertices, cortinaParamsRef.current, mojones, 'dibujada');
+      setModoCamino(null);
+      if (!r) { setModal({ type: 'alert', message: 'No se pudo construir la cortina (trazá el eje dentro del predio).' }); return; }
+      setCortina(r);
+      setCapas(prev => ({ ...prev, cortinas: true }));
+      return;
+    }
     const c = crearCamino(modoCamino.vertices);
     setCaminos(prev => [...prev, { ...c, color: color ?? c.color }]);
     setModoCamino(null);
-  }, [modoCamino]);
+  }, [modoCamino, mojones]);
   const handleCancelarCamino  = useCallback(() => setModoCamino(null), []);
 
   // Optimiza un camino: lo reruta entre sus extremos siguiendo crestas/parteaguas,
@@ -1482,13 +1521,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return null;
   }, [modoDibujo, dibujoEnCurso, medicionVertices, modoZona, modoSector, modoCamino]);
 
-  const colorPreview = modoZona ? '#FFD54F' : modoSector ? '#81D4FA' : modoCamino ? '#8B4513' : colorDibujo;
+  const colorPreview = modoZona ? '#FFD54F' : modoSector ? '#81D4FA' : modoCamino ? (modoCamino.proposito === 'cortina' ? '#2E7D32' : '#8B4513') : colorDibujo;
 
   // ─── Etiqueta de modo para la barra de estado ─────────────────────────────
   const modoEstadoLabel = useMemo(() => {
     if (modoZona)        return 'Dibujando zona';
     if (modoSector)      return 'Dibujando sector';
-    if (modoCamino)      return 'Trazando camino';
+    if (modoCamino)      return modoCamino.proposito === 'cortina' ? 'Trazando cortina' : 'Trazando camino';
     if (modoPinClick)    return 'Colocando pin';
     if (modoDibujo === 'medir')     return 'Midiendo';
     if (modoDibujo === 'seleccion') return dibujoSelId ? 'Elemento seleccionado' : 'Seleccionar';
@@ -2771,6 +2810,20 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               />
             </div>
           )}
+          {tab === 'cortinas' && (
+            <div className="px-4 py-4">
+              <CortinasPanel
+                terrenoListo={mojones.length >= 3}
+                tieneCasa={!!zona0}
+                dibujando={modoCamino?.proposito === 'cortina'}
+                cortina={cortina}
+                onSugerir={handleSugerirCortina}
+                onDibujar={handleDibujarCortina}
+                onCancelarDibujo={() => setModoCamino(null)}
+                onColocar={handleColocarCortina}
+              />
+            </div>
+          )}
           {tab === 'cortafuegos' && (
             <div className="px-4 py-4">
               <CortafuegosPanel
@@ -2918,7 +2971,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] text-sm px-5 py-2.5 rounded-full shadow-raised font-medium pointer-events-none bg-sun-500 text-ink-950 no-print">
             {modoZona    ? `Dibujando zona — ${modoZona.vertices.length} vértices · Enter finaliza · Esc cancela`   :
              modoSector  ? `Dibujando sector — ${modoSector.vertices.length} vértices · Enter finaliza · Esc cancela` :
-             modoCamino  ? `Trazando camino — ${modoCamino.vertices.length} puntos · Enter finaliza · Esc cancela`  :
+             modoCamino  ? `${modoCamino.proposito === 'cortina' ? 'Trazando cortina' : 'Trazando camino'} — ${modoCamino.vertices.length} puntos · Enter finaliza · Esc cancela`  :
              modoPinClick? 'Hacé clic en el mapa para colocar el pin' :
              modoArbol   ? 'Hacé clic en el mapa para plantar el árbol' :
              modoViewshed? 'Hacé clic en el mapa para elegir el punto de observación' :
@@ -2988,6 +3041,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               onToggleSubCapa={toggleSubCapa}
               datosErosion={datosErosion}
               haySwales={!!swales}
+              hayCortinas={!!cortina}
               hayCortafuegos={!!cortafuegos}
               haySilvopastura={!!silvopastura}
               onCapturar={() => {
@@ -3066,6 +3120,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           datosErosion={datosErosion}
           swales={swales}
           cortafuegos={cortafuegos}
+          cortina={cortina}
           silvopastura={silvopastura}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
@@ -3551,6 +3606,7 @@ interface PanelCapasProps {
   datosShader:         DatosShader | null;
   datosErosion:        DatosErosion | null;
   haySwales:           boolean;
+  hayCortinas:         boolean;
   hayCortafuegos:      boolean;
   haySilvopastura:     boolean;
   analisisHecho:       boolean;
@@ -3585,7 +3641,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, haySwales, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCapturar, onGuardarPng, guardandoPng, onCerrar,
   terrariumElevMin, terrariumElevMax,
@@ -3595,7 +3651,7 @@ function PanelCapas({
   opacidadShader, onOpacidadShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
-  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortafuegos: true, silvopastura: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
+  const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortinas: true, cortafuegos: true, silvopastura: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
   const tog = (k: keyof typeof exp) => setExp(p => ({ ...p, [k]: !p[k] }));
 
   // ¿Hay sugerencias volcadas por el Análisis del predio? (para ofrecer ocultarlas en bloque)
@@ -3616,7 +3672,7 @@ function PanelCapas({
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
   const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortafuegos', 'silvopastura', 'sugerencias', 'analisis', 'terreno',
+    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortinas', 'cortafuegos', 'silvopastura', 'sugerencias', 'analisis', 'terreno',
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -3921,6 +3977,24 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /swales */}
+
+        {/* ── Cortinas rompevientos ── */}
+        <div {...makeDrag('cortinas')}>
+        {hayCortinas && (
+          <CapaGrupo
+            label="Cortinas rompevientos"
+            visible={capas.cortinas}
+            onToggleVisible={() => onCapas({ ...capas, cortinas: !capas.cortinas })}
+            expanded={exp.cortinas} onExpand={() => tog('cortinas')}
+          >
+            <CapaItem visible={capas.cortinas}
+              onToggle={() => onCapas({ ...capas, cortinas: !capas.cortinas })}
+              label="Franja + zona protegida"
+              swatch={<span className="w-4 h-3 rounded-sm shrink-0" style={{ background: '#2E7D32', opacity: 0.7 }} />}
+            />
+          </CapaGrupo>
+        )}
+        </div>{/* /cortinas */}
 
         {/* ── Cortafuegos ── */}
         <div {...makeDrag('cortafuegos')}>
