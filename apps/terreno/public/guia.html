@@ -209,7 +209,7 @@
       <div class="step root"><h4>Topografía</h4><p>La otra raíz. Habilita curvas, keyline, cuenca, sombras, aptitud.</p></div>
       <div class="step"><h4>Biodiversidad y entorno</h4><p>Qué especies hay registradas alrededor (GBIF) y qué te rodea. La línea de base viva del predio.</p></div>
       <div class="step"><h4>Suelo y cobertura</h4><p>Suman precisión a riego, carbono y aptitud.</p></div>
-      <div class="step"><h4>Diseñar</h4><p>Zonas, sectores, agua, caminos, pastoreo — sobre esa base.</p></div>
+      <div class="step"><h4>Diseñar</h4><p>Análisis del predio, Master Plan, zonas, sectores, agua, caminos, cortinas — sobre esa base.</p></div>
       <div class="step"><h4>Informe</h4><p>Todo lo calculado se junta en el PDF final.</p></div>
     </div>
   </div>
@@ -432,7 +432,7 @@
 
       <div class="panel" style="--rail:var(--root-clima)">
         <div class="nm">Producción</div>
-        <p class="what">El potencial productivo del predio según el clima. Tiene tres módulos —cultivo, ganadería y cortinas— y por su tamaño lo explicamos aparte, en la sección siguiente.</p>
+        <p class="what">El potencial productivo del predio según el clima. Tiene dos módulos —cultivo y ganadería— y por su tamaño lo explicamos aparte, en la sección siguiente.</p>
         <div class="io">
           <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src clima">clima</span><span class="chip src base">superficie</span></span></div>
           <div class="row"><span class="k">Ver</span><span class="v"><a href="#produccion">Producción en detalle ↓</a></span></div>
@@ -457,6 +457,24 @@
         </div>
       </div>
 
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Análisis del predio</div>
+        <p class="what">Corre el relieve completo y sugiere los mejores <b>sitios de represa</b> (ordenados por eficiencia agua/tierra) y enciende el <b>análisis hídrico de escorrentías</b>. Las viviendas y los caminos ya no salen de acá: los propone el <b>Master Plan</b> (sección 05).</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">sitios de represa · escorrentías</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="--rail:var(--root-topo)">
+        <div class="nm">Riesgo de erosión</div>
+        <p class="what">Una capa automática que estima dónde el agua tiene más fuerza erosiva, cruzando la <b>pendiente</b> con el <b>flujo acumulado</b> (índice tipo Stream Power), en cuatro clases de bajo a severo. Se deriva sola del relieve; se prende y apaga en Capas. Orientativo: no reemplaza un estudio de suelos.</p>
+        <div class="io">
+          <div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">mapa de riesgo (capa)</span></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -464,7 +482,7 @@
 <section id="produccion">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">04</span><h2>Producción, en detalle</h2></div>
-    <p class="sec-sub">El módulo de Producción es el más cargado de opciones. Tiene tres solapas que responden preguntas distintas — todas a partir del clima del sitio.</p>
+    <p class="sec-sub">El módulo de Producción responde dos preguntas distintas — ambas a partir del clima del sitio.</p>
 
     <div class="deep">
       <div class="deep-card">
@@ -496,22 +514,8 @@
         </div>
         <p class="deep-tip">💡 Se complementa con la herramienta de <b>Pastoreo</b> (sección 05): acá ves <i>cuántos</i> animales entran; allá, <i>cómo</i> los rotás por potreros.</p>
       </div>
-
-      <div class="deep-card">
-        <div class="deep-tag">Solapa 3</div>
-        <h3>Cortinas</h3>
-        <p>Sugiere dónde plantar <b>cortinas rompevientos</b>, orientadas contra el viento dominante del sitio (que sale del clima). Las dibuja sobre el predio y las podés volcar directo al diseño.</p>
-        <div class="deep-detail">
-          <span class="dl">Usa</span>
-          <span class="dv">dirección del viento principal (del clima) + la forma del predio (mojones)</span>
-        </div>
-        <div class="deep-detail">
-          <span class="dl">Te dice</span>
-          <span class="dv">líneas de cortina sugeridas · especies para la región (Espinal / Chaco serrano)</span>
-        </div>
-        <p class="deep-tip">💡 Botón para <b>agregar las cortinas al diseño</b> como elementos dibujados, listos para ajustar.</p>
-      </div>
     </div>
+    <div class="note"><span class="mk">🌲</span><div>Las <b>cortinas rompevientos</b> dejaron de vivir acá: ahora son una herramienta propia en <b>Diseño</b> (sección 05), como franja multiestrato que se dibuja o se sugiere.</div></div>
   </div>
 </section>
 
@@ -520,6 +524,13 @@
     <div class="sec-head"><span class="sec-num">05</span><h2>Las herramientas de diseño</h2></div>
     <p class="sec-sub">Acá dejás de medir y empezás a proyectar sobre el terreno. Casi todas se apoyan en las dos raíces: usan el clima y el relieve que ya calculaste.</p>
     <div class="grid">
+
+      <div class="panel" style="--rail:var(--moss-500)">
+        <div class="nm">Master Plan</div>
+        <p class="what">El corazón del diseño. Marcás la <b>zona 0</b> (casa) y el <b>punto de acceso</b> al terreno, declarás el programa del predio (casas, galpón, huerta, corral, pastoreo, reservorio…) y el motor ubica cada elemento dentro del predio —según las zonas de permacultura, la aptitud del terreno y las afinidades entre usos— y traza los <b>caminos</b> que lo conectan todo desde el acceso.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span> zona 0 + acceso</span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">ubicaciones + caminos sugeridos</span></div></div>
+      </div>
 
       <div class="panel" style="--rail:var(--water)">
         <div class="nm">Captación de agua</div>
@@ -564,10 +575,10 @@
       </div>
 
       <div class="panel" style="--rail:var(--root-topo)">
-        <div class="nm">Aguadas</div>
-        <p class="what">Ubica puntos de agua para el ganado aprovechando el relieve (dónde junta agua) y las distancias de acceso. Se conecta con el pastoreo y la red de agua.</p>
+        <div class="nm">Represas y aguadas</div>
+        <p class="what">Ubica agua sobre el relieve: busca los mejores <b>sitios de represa por eficiencia</b> (cuánta agua junta por m³ de movimiento de tierra), dimensiona la <b>represa de ladera</b> con su balance de excavación (cut&amp;fill), muro y volumen, y marca aguadas y bebederos con su radio de cobertura. Se conecta con la cuenca, el pastoreo y la red de agua.</p>
         <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span><span class="chip src clima">clima</span></span></div>
-          <div class="row"><span class="k">Produce</span><span class="v">puntos de agua</span></div></div>
+          <div class="row"><span class="k">Produce</span><span class="v">represas · aguadas</span></div></div>
       </div>
 
       <div class="panel" style="--rail:var(--moss-500)">
@@ -589,6 +600,34 @@
         <p class="what">La red de distribución de agua siguiendo el trazado de los caminos: cómo llevar el agua desde el reservorio hasta cada punto de consumo.</p>
         <div class="io"><div class="row"><span class="k">Necesita</span><span class="v">Caminos</span></div>
           <div class="row"><span class="k">Produce</span><span class="v">red de distribución</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--water)">
+        <div class="nm">Swales (zanjas de infiltración)</div>
+        <p class="what">Traza zanjas a nivel sobre las curvas para <b>frenar e infiltrar</b> el agua de lluvia en la ladera. Calcula el largo, la franja de captación y el volumen que retiene según la pendiente.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">líneas de swale + captación</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-300)">
+        <div class="nm">Cortinas rompevientos</div>
+        <p class="what">Una <b>franja multiestrato</b> de árboles y arbustos (varias alturas) que frena el viento de forma porosa. La <b>dibujás o la sugiere</b> el sistema aguas arriba de la casa para protegerla del <b>viento frío</b>; elegís ancho y altura y te dice los metros de protección a sotavento (≈15× la altura) y las especies por estrato.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src base">mojones</span> <span class="selfmade">(zona 0 para apuntar)</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">franja + zona protegida</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--sun)">
+        <div class="nm">Cortafuegos</div>
+        <p class="what">Detecta las <b>líneas de cresta</b> (divisorias) del predio y propone fajas cortafuego sobre ellas: cortan la ladera arriba, son de fácil acceso y el fuego pierde impulso al llegar al filo. Elegís el ancho de la faja despejada.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">fajas sobre crestas</span></div></div>
+      </div>
+
+      <div class="panel" style="--rail:var(--moss-500)">
+        <div class="nm">Silvopastura</div>
+        <p class="what">Hileras de árboles <b>a nivel sobre las curvas</b>, con pasto entre ellas: sombra para el ganado, forraje y retención de agua y suelo sin perder superficie de pastoreo. Elegís la separación entre hileras y entre árboles.</p>
+        <div class="io"><div class="row"><span class="k">Necesita</span><span class="v"><span class="chip src topo">topografía</span></span></div>
+          <div class="row"><span class="k">Produce</span><span class="v">hileras + árboles</span></div></div>
       </div>
 
       <div class="panel" style="--rail:var(--sun)">
@@ -678,9 +717,69 @@
   </div>
 </section>
 
+<section id="planes">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Los planes</h2></div>
+    <p class="sec-sub">Terreno tiene un plan <b>gratuito</b> para conocer tu predio, y planes pagos que desbloquean todo el análisis y el diseño. Precios de lanzamiento. Desde Argentina se cobra en pesos por Mercado Pago (a ~$1.500 por dólar); desde el resto del mundo, en dólares por PayPal. Suscripción e info al día en <a href="https://arteytierra.org/terreno" target="_blank" rel="noopener">arteytierra.org/terreno</a>.</p>
+    <div class="grid">
+
+      <div class="panel" style="--rail:var(--moss-500)">
+        <div class="nm">Semilla — <b>Gratis</b></div>
+        <p class="what">Conocé tu terreno. Para siempre.</p>
+        <ul style="margin:.5rem 0 0;padding-left:1.1rem;font-size:.82rem;line-height:1.55;color:var(--tx-soft)">
+          <li>Todas las herramientas de dibujo y medición (superficie, perímetro)</li>
+          <li><b>Clima</b> y <b>Calendario</b> del sitio</li>
+          <li><b>Topografía</b>: relieve, pendientes y curvas de nivel</li>
+          <li><b>Cuenca</b> de aporte y <b>Sectores</b> (sol · viento · fuego)</li>
+          <li>Mapa satelital y navegación completa · 1 proyecto</li>
+          <li>Informe compartible (con marca de agua)</li>
+        </ul>
+      </div>
+
+      <div class="panel" style="--rail:var(--sun)">
+        <div class="nm">Personal — <b>US$ 7/mes</b></div>
+        <p class="what">Todo el análisis y el diseño, para tu proyecto. <span style="color:var(--tx-faint)">US$ 70/año · ≈ AR$ 10.500/mes</span></p>
+        <p style="margin:.4rem 0 0;font-size:.8rem;font-weight:600;color:var(--tx)">Todo lo de Semilla, y además:</p>
+        <ul style="margin:.3rem 0 0;padding-left:1.1rem;font-size:.82rem;line-height:1.55;color:var(--tx-soft)">
+          <li>Análisis completo: agua, suelo, cobertura y biodiversidad</li>
+          <li>Vista 3D, sombras, visibilidad y aptitud</li>
+          <li>Diseño Keyline, agua, riego, pastoreo, cortinas, silvopastura…</li>
+          <li><b>Master Plan</b> y sugerencias automáticas de diseño</li>
+          <li>Rumbos y replanteo de mojones</li>
+          <li>Informe sin marca de agua · hasta 2 proyectos</li>
+        </ul>
+      </div>
+
+      <div class="panel" style="--rail:var(--water)">
+        <div class="nm">Diseñador — <b>US$ 12/mes</b></div>
+        <p class="what">Lo mismo, sin límite de proyectos. <span style="color:var(--tx-faint)">US$ 120/año</span></p>
+        <p style="margin:.4rem 0 0;font-size:.8rem;font-weight:600;color:var(--tx)">Todo lo de Personal, y además:</p>
+        <ul style="margin:.3rem 0 0;padding-left:1.1rem;font-size:.82rem;line-height:1.55;color:var(--tx-soft)">
+          <li>Proyectos ilimitados</li>
+          <li>Ideal si trabajás varios terrenos a la vez</li>
+        </ul>
+      </div>
+
+      <div class="panel" style="--rail:var(--ink-700)">
+        <div class="nm">Estudio — <b>US$ 35/mes</b></div>
+        <p class="what">Para consultores y equipos que entregan. <span style="color:var(--tx-faint)">US$ 350/año</span></p>
+        <p style="margin:.4rem 0 0;font-size:.8rem;font-weight:600;color:var(--tx)">Todo lo de Diseñador, y además:</p>
+        <ul style="margin:.3rem 0 0;padding-left:1.1rem;font-size:.82rem;line-height:1.55;color:var(--tx-soft)">
+          <li>Informe con tu marca (logo y matrícula propia)</li>
+          <li>Exportación DXF / CAD</li>
+          <li>Multiusuario y colaboración</li>
+          <li>Soporte prioritario</li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="note"><span class="mk">🌱</span><div>El plan <b>gratis</b> ya te deja leer las dos raíces del predio —<b>clima</b> y <b>topografía</b>— más cuenca y sectores. Con eso solo ya entendés tu terreno; los planes pagos suman el diseño completo, las sugerencias y el informe sin marca.</div></div>
+  </div>
+</section>
+
 <section id="relieve">
   <div class="wrap">
-    <div class="sec-head"><span class="sec-num">09</span><h2>Precisión del relieve (DEM)</h2></div>
+    <div class="sec-head"><span class="sec-num">10</span><h2>Precisión del relieve (DEM)</h2></div>
     <p class="sec-sub">Todo lo topográfico —curvas, escorrentías, cuencas, aptitud, keyline, master plan— sale de un modelo de elevación (DEM). Por defecto usamos <b>Copernicus GLO-30</b> (~30&nbsp;m) en todo el mundo, y donde hay un servicio nacional de mayor resolución con licencia clara, lo usamos automáticamente. La fuente activa se muestra en un cartelito en la esquina del mapa y en el informe.</p>
     <div class="tools">
       <div class="tool"><h4><span class="g">🌍</span> Global — Copernicus GLO-30</h4><p>Por defecto en cualquier lugar del planeta. Reemplaza al SRTM anterior; misma resolución nominal (~30&nbsp;m) pero datos más nuevos y limpios. Atribución: © DLR / Airbus, bajo COPERNICUS (UE·ESA).</p></div>
@@ -707,7 +806,7 @@
 
 <section id="capturas">
   <div class="wrap">
-    <div class="sec-head"><span class="sec-num">10</span><h2>Capturas de pantalla</h2></div>
+    <div class="sec-head"><span class="sec-num">11</span><h2>Capturas de pantalla</h2></div>
     <p class="sec-sub">Los diagramas explican la lógica; estas capturas muestran la app real trabajando sobre un predio de 1,17&nbsp;ha en Aguas Buenas, Puerto Rico. Hacé clic en cualquiera para verla en grande.</p>
     <div class="shots">
       <figure class="shot">
