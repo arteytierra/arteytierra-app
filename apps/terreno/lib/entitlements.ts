@@ -6,8 +6,9 @@
  * server-side en `lib/auth/plan.ts` y se pasa al cliente como prop.
  *
  * Matriz de referencia: PROMPT-terreno-planes-0-matriz.md (raíz del repo).
- * Regla de costo (2026-07-26): todo lo que llama a una API externa está
- * bloqueado en Semilla; el free = sólo lo que se computa en el navegador.
+ * Regla de costo (2026-07-26): por defecto, todo lo que llama a una API externa
+ * está bloqueado en Semilla. Excepción (2026-08-15): clima, topografía, cuenca y
+ * sectores se abren en Semilla como MUESTRA gratis del producto, aunque usen API.
  * Agregar un plan futuro = editar estas tablas, nada más.
  */
 
@@ -64,14 +65,18 @@ export type Feature =
   | 'export.dxf'
   | 'colaboracion';
 
-// El plan MÍNIMO de cada feature es 'personal' (el pago más barato que ya
-// desbloquea todo el análisis y diseño). Diseñador hereda lo mismo; sólo suma
-// proyectos ilimitados. Las de 'estudio' quedan reservadas al tier superior.
+// El plan pago MÍNIMO es 'personal' (desbloquea todo el análisis y diseño).
+// Diseñador hereda lo mismo; sólo suma proyectos ilimitados. Las de 'estudio'
+// quedan reservadas al tier superior.
+//
+// MUESTRA GRATIS (semilla, 2026-08-15): aunque usen API externa, se abren como
+// vitrina del producto — clima, topografía, cuenca (usa el DEM) y sectores.
+// El resto del análisis/diseño sigue pago.
 const FEATURES: Record<Feature, Plan> = {
   'catastro.rumbos':     'personal',
-  // Análisis — todo usa API externa (o datos que derivan de ella) ⇒ pago.
-  'analisis.topo':       'personal',
-  'analisis.clima':      'personal',
+  // Análisis.
+  'analisis.topo':       'semilla',   // muestra gratis (DEM)
+  'analisis.clima':      'semilla',   // muestra gratis (Open-Meteo)
   'analisis.contexto':   'personal',
   'analisis.entorno':    'personal',
   'analisis.suelo':      'personal',
@@ -83,14 +88,14 @@ const FEATURES: Record<Feature, Plan> = {
   'analisis.produccion': 'personal',
   'analisis.aptitud':    'personal',
   'analisis.carbono':    'personal',
-  // Diseño — toda la capa es paga.
+  // Diseño.
   'diseno.agua':         'personal',
   'diseno.zonas':        'personal',
-  'diseno.sectores':     'personal',
+  'diseno.sectores':     'semilla',   // muestra gratis
   'diseno.aguadas':      'personal',
   'diseno.caminos':      'personal',
   'diseno.red':          'personal',
-  'diseno.cuenca':       'personal',
+  'diseno.cuenca':       'semilla',   // muestra gratis (usa el DEM)
   'diseno.pastoreo':     'personal',
   'diseno.riego':        'personal',
   'diseno.keyline':      'personal',
