@@ -2379,7 +2379,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       <aside className="flex shrink-0 bg-bone-50">
 
         {/* ── Riel de íconos (acordeón de clústeres) ── */}
-        <nav className="w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-0.5 border-r border-bone-200 overflow-y-auto overflow-x-clip">
+        <nav className={`w-[56px] shrink-0 flex flex-col items-center py-2.5 gap-0.5 border-r border-bone-200 overflow-y-auto overflow-x-clip transition-opacity duration-300 ay-ease ${dibujando ? 'opacity-45' : 'opacity-100'}`} title={dibujando ? 'Dibujando… terminá el trazo para volver' : undefined}>
           {GRUPOS_RIEL.map(g => (
             <RielAcordeon
               key={g.id}
@@ -2394,7 +2394,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         </nav>
 
         {/* ── Panel contextual ── */}
-        <div className={`flex flex-col border-r border-bone-200 bg-white transition-all duration-200 ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
+        <div className={`flex flex-col border-r border-bone-200 bg-white transition-all duration-300 ay-ease ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
@@ -2409,8 +2409,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </button>
           </div>
 
-          {/* Scroll area */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Scroll area — key={tab} re-dispara la entrada suave al cambiar de herramienta */}
+          <div key={tab} className="flex-1 overflow-y-auto ay-panel-in">
           {(() => {
             // Si el tab está bloqueado para el plan, mostramos el candado en vez
             // del panel — así no se monta (ni dispara sus APIs) una feature paga.

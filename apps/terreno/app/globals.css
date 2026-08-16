@@ -65,3 +65,28 @@ html[data-theme='oscuro'] .vista-3d canvas {
   .leaflet-bottom      { z-index: 10 !important; }
   .leaflet-control     { z-index: 10 !important; }
 }
+
+/* ── Movimiento (Fase 2 · foco y respiración) ──────────────────────────────
+   Entradas suaves para que la app "respire" al cambiar de herramienta, y un
+   easing consistente para paneles. Todo se anula bajo prefers-reduced-motion. */
+@keyframes ay-fade-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Curva de salida amable (mismo perfil para paneles y entradas). */
+.ay-ease { transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Entrada del contenido del panel al cambiar de herramienta (se re-dispara con
+   key={tab}). Un solo contenedor: barato y sin tocar cada panel. */
+.ay-panel-in { animation: ay-fade-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ay-panel-in { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
