@@ -75,9 +75,9 @@ export const COURSES: Record<string, CourseData> = {
   'formacion-construccion-natural': {
     slug: 'formacion-construccion-natural',
     kind: 'presencial',
-    badge: 'Formación intensiva · 3 meses',
+    badge: 'Formación intensiva · 10 semanas',
     name: 'Formación Integral en Construcción Natural',
-    subtitle: 'Tres meses de obra real, de los cimientos al techo. Construimos juntos una cabaña completa en San Marcos Sierras y vos te llevás el oficio en las manos.',
+    subtitle: 'Diez semanas de obra real, de los cimientos al techo. Construimos juntos una cabaña completa en San Marcos Sierras y vos te llevás el oficio en las manos.',
     heroImg: '/img/cursos/bioarquitectura/1.jpg',
     galeria: [
       '/img/cursos/bioarquitectura/3.jpg',
@@ -89,17 +89,17 @@ export const COURSES: Record<string, CourseData> = {
       '/img/cursos/vueltatierra/10.jpg',
       '/img/cursos/mitierramicasa/2.jpg',
     ],
-    tag: '7 de septiembre al 7 de diciembre 2026 · San Marcos Sierras · Solo 3 cupos',
+    tag: '21 de septiembre al 30 de noviembre 2026 · San Marcos Sierras · 3 cupos + 2 con experiencia (50% dto)',
     intro: [
-      'Volvemos a abrir nuestra formación más profunda: tres meses viviendo una obra real de principio a fin. En San Marcos Sierras vamos a construir una cabaña de 25 m² completa —de los cimientos al techo— como primera intervención dentro de un predio que ya cuenta con su masterplan. Vos aprendés construyéndola.',
+      'Volvemos a abrir nuestra formación más profunda: diez semanas viviendo una obra real de principio a fin. En San Marcos Sierras vamos a construir una cabaña de 25 m² completa —de los cimientos al techo— como primera intervención dentro de un predio que ya cuenta con su masterplan. Vos aprendés construyéndola.',
       'No es un taller de una técnica suelta: es el ciclo entero de una vivienda natural. Estructuras en madera, muros de adobe y quincha alivianada, techos vivos y de chapa, revoques de barro y de cal, biofiltros para aguas grises y negras, cosecha de agua de lluvia e instalación de servicios hasta el fin de obra.',
       'La práctica diaria en obra se complementa con teoría en campo, el curso grabado «Mi Tierra, Mi Casa», asesorías de diseño colectivas cada tres semanas para tu propio proyecto, círculos de proceso mensuales y el acompañamiento de un focalizador personal durante toda la vivencia.',
     ],
     datos: [
-      { label: '¿Cuándo?', val: '7 de septiembre al 7 de diciembre 2026 · 3 meses' },
+      { label: '¿Cuándo?', val: '21 de septiembre al 30 de noviembre 2026 · 10 semanas' },
       { label: '¿Dónde?', val: 'Obra en San Marcos Sierras, Córdoba · Hospedaje en Ecohostel Tay Pichín' },
       { label: 'Modalidad', val: 'Obra real diaria + teoría en campo + acompañamiento' },
-      { label: 'Cupos', val: 'Solo 3 · grupo reducido' },
+      { label: 'Cupos', val: '3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa' },
     ],
     paraQuien: [
       'Estás por construir tu propia casa y querés vivir el proceso completo antes de emprenderlo por tu cuenta.',
@@ -116,37 +116,37 @@ export const COURSES: Record<string, CourseData> = {
     ],
     modulos: [
       {
-        num: 'Fase 01 · Semanas 1–2', title: 'Fundación', date: 'Septiembre',
+        num: 'Fase 01 · Semana 1', title: 'Fundación', date: 'Septiembre',
         teoria: 'Lectura del terreno, replanteo y elección del sistema constructivo. Tipos de fundación y su comportamiento.',
         practica: 'Preparación del terreno, replanteo, cimientos de piedra, encadenados y contrapisos.',
         items: ['Replanteo de obra', 'Cimientos', 'Contrapisos'],
       },
       {
-        num: 'Fase 02 · Semanas 3–4', title: 'Estructura en madera', date: 'Septiembre — Octubre',
+        num: 'Fase 02 · Semanas 2–3', title: 'Estructura en madera', date: 'Septiembre — Octubre',
         teoria: 'Nociones de estructura: cargas, uniones y arriostramiento. La madera como base de la mirada constructiva.',
         practica: 'Montaje de la estructura portante en madera y del esqueleto del techo.',
         items: ['Estructura portante', 'Uniones', 'Esqueleto de techo'],
       },
       {
-        num: 'Fase 03 · Semanas 5–7', title: 'Muros', date: 'Octubre',
+        num: 'Fase 03 · Semanas 4–5', title: 'Muros', date: 'Octubre',
         teoria: 'Comportamiento de tierra, paja y madera. Diseño bioclimático y ubicación de aberturas.',
         practica: 'Muros de adobe y quincha alivianada. Colocación de aberturas.',
         items: ['Adobe', 'Quincha alivianada', 'Colocación de aberturas'],
       },
       {
-        num: 'Fase 04 · Semanas 8–9', title: 'Techos', date: 'Octubre — Noviembre',
+        num: 'Fase 04 · Semanas 6–7', title: 'Techos', date: 'Octubre — Noviembre',
         teoria: 'Cargas, pendientes e impermeabilización. Tipos de techo vivo y sus sustratos.',
         practica: 'Techo de chapa y montaje de techo vivo con sustrato y drenaje.',
         items: ['Techo de chapa', 'Techo vivo', 'Impermeabilización'],
       },
       {
-        num: 'Fase 05 · Semanas 10–11', title: 'Revoques', date: 'Noviembre',
+        num: 'Fase 05 · Semana 8', title: 'Revoques', date: 'Noviembre',
         teoria: 'Ciclo de la cal, mezclas y proporciones según cada zona de la casa.',
         practica: 'Revoques gruesos y finos de barro y de cal.',
         items: ['Grueso de barro y de cal', 'Fino de barro y de cal'],
       },
       {
-        num: 'Fase 06 · Semanas 12–13', title: 'Agua, servicios y fin de obra', date: 'Noviembre — Diciembre', highlighted: true,
+        num: 'Fase 06 · Semanas 9–10', title: 'Agua, servicios y fin de obra', date: 'Noviembre', highlighted: true,
         teoria: 'El ciclo del agua en la vivienda: biofiltros, cosecha de lluvia y saneamiento ecológico.',
         practica: 'Biofiltros de aguas grises y negras, recolección de lluvia, veredas, instalación de servicios y fin de obra.',
         items: ['Biofiltro de aguas grises y negras', 'Cosecha de lluvia', 'Veredas y servicios', 'Fin de obra'],
@@ -163,12 +163,12 @@ export const COURSES: Record<string, CourseData> = {
     opciones: [
       {
         id: 'completo',
-        label: 'Formación completa · 3 meses',
+        label: 'Formación completa · 10 semanas',
         precio: '$2.000.000 ARS',
         precioAlt: 'USD 1.400',
         includes: [
           'Hospedaje en habitación compartida en Ecohostel Tay Pichín',
-          'Alimentación completa durante los 3 meses',
+          'Alimentación completa durante las 10 semanas',
           'Certificado de participación',
           'Manual de Diseño Simbiótico (PDF)',
           'Acceso al curso grabado «Mi Tierra, Mi Casa»',
@@ -178,11 +178,21 @@ export const COURSES: Record<string, CourseData> = {
         ],
         highlighted: true,
       },
+      {
+        id: 'con-experiencia',
+        label: 'Cupo con experiencia previa · 50% dto',
+        precio: '$1.000.000 ARS',
+        precioAlt: 'USD 700',
+        includes: [
+          'Solo 2 cupos — para quienes ya hicieron talleres de bioconstrucción con nosotrxs o tienen experiencia previa comprobable',
+          'Mismos beneficios que la formación completa: hospedaje, alimentación, certificado, manual, asesorías y acompañamiento',
+        ],
+      },
     ],
-    opcionesNota: 'Precio único, todo incluido. Reservás tu lugar con una seña del 50%. Solo 3 cupos: trabajamos con un grupo muy chico para cuidar la profundidad del proceso.',
+    opcionesNota: 'Reservás tu lugar con una seña del 50%. 3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa en bioconstrucción — grupo chico para cuidar la profundidad del proceso.',
     sinCarrito: true,
-    formCurso: 'Formación Integral en Construcción Natural · 7 sep – 7 dic 2026',
-    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%207%20de%20septiembre)',
+    formCurso: 'Formación Integral en Construcción Natural · 21 sep – 30 nov 2026',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%2021%20de%20septiembre)',
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
   },
 

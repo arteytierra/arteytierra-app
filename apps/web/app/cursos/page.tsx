@@ -71,7 +71,7 @@ type ProximoItem = {
 /* ─── Datos estáticos de fallback ────────────────────── */
 
 const FALLBACK_TODOS: TodoItem[] = [
-  { slug: 'formacion-construccion-natural', name: 'Formación Integral en Construcción Natural', tag: '7 sep – 7 dic · Solo 3 cupos', img: '/img/cursos/bioarquitectura/1.jpg', badge: 'Presencial · 3 meses', tentativo: false, online: false },
+  { slug: 'formacion-construccion-natural', name: 'Formación Integral en Construcción Natural', tag: '21 sep – 30 nov · 3 cupos + 2 con experiencia', img: '/img/cursos/bioarquitectura/1.jpg', badge: 'Presencial · 10 semanas', tentativo: false, online: false },
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
   { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
@@ -86,14 +86,14 @@ const FALLBACK_TODOS: TodoItem[] = [
 
 const FALLBACK_CURSOS: Curso[] = [
   {
-    slug: 'formacion-construccion-natural', badge: 'Formación intensiva · 3 meses', name: 'Formación Integral en Construcción Natural',
-    tag: '7 de septiembre al 7 de diciembre 2026 · San Marcos Sierras · Solo 3 cupos',
-    desc: 'Tres meses viviendo una obra real de principio a fin: construimos una cabaña completa de los cimientos al techo. Estructura de madera, adobe y quincha, techos vivos, revoques de barro y cal, biofiltros y cosecha de lluvia.',
+    slug: 'formacion-construccion-natural', badge: 'Formación intensiva · 10 semanas', name: 'Formación Integral en Construcción Natural',
+    tag: '21 de septiembre al 30 de noviembre 2026 · San Marcos Sierras · 3 cupos + 2 con experiencia (50% dto)',
+    desc: 'Diez semanas viviendo una obra real de principio a fin: construimos una cabaña completa de los cimientos al techo. Estructura de madera, adobe y quincha, techos vivos, revoques de barro y cal, biofiltros y cosecha de lluvia.',
     img: '/img/cursos/bioarquitectura/1.jpg',
-    datos: [{ label: 'Cuándo', val: '7 sep – 7 dic 2026 · 3 meses' }, { label: 'Lugar', val: 'San Marcos Sierras · Hospedaje en Tay Pichín' }, { label: 'Modalidad', val: 'Obra real diaria + teoría + acompañamiento' }, { label: 'Cupos', val: 'Solo 3 · grupo reducido' }],
+    datos: [{ label: 'Cuándo', val: '21 sep – 30 nov 2026 · 10 semanas' }, { label: 'Lugar', val: 'San Marcos Sierras · Hospedaje en Tay Pichín' }, { label: 'Modalidad', val: 'Obra real diaria + teoría + acompañamiento' }, { label: 'Cupos', val: '3 regulares + 2 con 50% dto (experiencia previa)' }],
     contenidos: ['Cimientos y contrapisos', 'Estructura en madera', 'Adobe y quincha alivianada', 'Techos vivos y de chapa', 'Revoques de barro y cal', 'Biofiltros y cosecha de lluvia', 'Instalación de servicios y fin de obra'],
-    precio: '$2.000.000 ARS · USD 1.400', precioNote: 'Precio único, todo incluido (hospedaje + alimentación). Se reserva con seña del 50%.',
-    href: '/cursos/formacion-construccion-natural', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero postularme a la Formación Integral en Construcción Natural (arranca el 7 de septiembre)'),
+    precio: '$2.000.000 ARS · USD 1.400', precioNote: 'Precio único, todo incluido (hospedaje + alimentación). Se reserva con seña del 50%. 2 cupos con 50% de descuento para personas con experiencia previa.',
+    href: '/cursos/formacion-construccion-natural', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero postularme a la Formación Integral en Construcción Natural (arranca el 21 de septiembre)'),
   },
   {
     slug: 'mi-tierra-mi-casa', badge: 'Online · Acceso ilimitado', name: 'Mi Tierra, Mi Casa',
