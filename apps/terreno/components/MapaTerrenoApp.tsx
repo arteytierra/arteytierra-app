@@ -9,8 +9,9 @@ import {
   Eye, EyeOff, Camera, X, PenLine, Undo2, Redo2, Wheat, Leaf,
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
-  IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
+  IdCard, DollarSign, Wind, TriangleAlert, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
   CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
+  Archive, Settings, Upload, Image as ImageIcon,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -118,7 +119,8 @@ import type { Zona, CategoriaZona } from '@/lib/zonificacion';
 import type { Sector, TipoSector } from '@/lib/sectores';
 import { TIPOS_SECTOR } from '@/lib/sectores';
 import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
-import { ControlesMapa, type CapaFondo } from './ControlesMapa';
+import { ControlesNavegacion, ControlesPaneles, type CapaFondo } from './ControlesMapa';
+import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
 import { useHistory } from '@/lib/useHistory';
 import { FeatureLock } from './FeatureLock';
 import { can, featureDeTab, tabBloqueada, BENEFICIO_FEATURE, type Plan } from '@/lib/entitlements';
@@ -512,7 +514,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [overlay, setOverlay] = useState<OverlayImagen | null>(null);
   const cursorCadRef = useRef<{ lat: number; lng: number } | null>(null);
   const cursorPosRef = useRef<{ lat: number; lng: number } | null>(null); // cursor sobre el mapa (barra de estado)
-  const [exportOpen, setExportOpen] = useState(false);
   const [perfilOpen, setPerfilOpen] = useState(false);
   const [economiaResumen, setEconomiaResumen] = useState<EconomiaResumen | null>(null);
   const [carbonoResumen,  setCarbonoResumen]  = useState<CarbonoResumen | null>(null);
@@ -528,8 +529,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [escenarioActivoId, setEscenarioActivoId] = useState<string | null>(null);
   const [guardandoNube, setGuardandoNube] = useState(false);
   const [guardadoTick, setGuardadoTick] = useState(false);
-  const [guardarOpen,  setGuardarOpen]  = useState(false);
-  const [ayudaMenuOpen, setAyudaMenuOpen] = useState(false);
+  // Flyouts del pie del riel: Archivo (guardar/importar/exportar) y Ajustes.
+  const [archivoOpen, setArchivoOpen] = useState(false);
+  const [configOpen,  setConfigOpen]  = useState(false);
+  // Inputs ocultos para importar desde el flyout Archivo (los mismos handlers que el panel CAD).
+  const impDxfRef = useRef<HTMLInputElement>(null);
+  const impImgRef = useRef<HTMLInputElement>(null);
+  const impTifRef = useRef<HTMLInputElement>(null);
+  const impDemRef = useRef<HTMLInputElement>(null);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
   // ─── Perfil de elevación interactivo — dock inferior (hook usePerfilElevacion) ──
@@ -1337,9 +1344,21 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
   }, [mojones, proyectoActual, metadatos]);
 
-  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setExportOpen(false); }, [mojones, zonas, sectores, pines, caminos, proyectoActual]);
-  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setExportOpen(false); }, [mojones, proyectoActual]);
-  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setExportOpen(false); }, [mojones, proyectoActual]);
+  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setArchivoOpen(false); }, [mojones, zonas, sectores, pines, caminos, proyectoActual]);
+  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); }, [mojones, proyectoActual]);
+  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); }, [mojones, proyectoActual]);
+
+  // Exportar el modelo de elevación activo (DEM propio si está cargado; si no, el satelital).
+  const handleExportGeoTIFF = useCallback(() => {
+    setArchivoOpen(false);
+    if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
+    descargarGeoTIFF(grillaActiva, proyectoActual?.nombre || 'terreno');
+  }, [grillaActiva, proyectoActual]);
+  const handleExportMDE = useCallback(() => {
+    setArchivoOpen(false);
+    if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
+    descargarMDE(grillaActiva, proyectoActual?.nombre || 'terreno');
+  }, [grillaActiva, proyectoActual]);
 
   // ─── Overlay de imagen (plano de referencia) ──────────────────────────────
   const handleCargarOverlay = useCallback((file: File) => {
@@ -2214,6 +2233,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       { id: 'informe', grupo: 'Exportar', label: 'Informe PDF',                 keywords: 'reporte imprimir',  accion: handleVerInforme },
       { id: 'png',     grupo: 'Exportar', label: 'Imagen PNG del plano',        keywords: 'captura foto',      accion: iniciarCaptura },
       { id: 'dxf',     grupo: 'Exportar', label: 'DXF (AutoCAD)',               keywords: 'cad autocad',       accion: handleExportarDXF },
+      { id: 'geotiff', grupo: 'Exportar', label: 'GeoTIFF de elevación',        keywords: 'mde dem relieve raster qgis', accion: handleExportGeoTIFF },
+      { id: 'mde',     grupo: 'Exportar', label: 'MDE (puntos XYZ)',            keywords: 'dem relieve cotas nube', accion: handleExportMDE },
       { id: 'geojson', grupo: 'Exportar', label: 'GeoJSON',                     keywords: 'gis',               accion: handleExportGeoJSON },
       { id: 'kml',     grupo: 'Exportar', label: 'KML (Google Earth)',          keywords: 'google earth',      accion: handleExportKML },
       { id: 'gpx',     grupo: 'Exportar', label: 'GPX',                         keywords: 'gps',               accion: handleExportGPX },
@@ -2229,7 +2250,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return [...irA, ...herramientas, ...acciones];
   }, [
     handleCambiarModo, handleGuardarNube, undo, redo,
-    handleVerInforme, iniciarCaptura, handleExportarDXF, handleExportGeoJSON, handleExportKML, handleExportGPX,
+    handleVerInforme, iniciarCaptura, handleExportarDXF, handleExportGeoTIFF, handleExportMDE, handleExportGeoJSON, handleExportKML, handleExportGPX,
     handleFetchShader, handleCargarPlantillaKeyline,
   ]);
 
@@ -2280,99 +2301,32 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Tema (claro → sepia → oscuro), agrupado con el estado de la app. */}
+          {/* Estado de guardado en la nube (clic = guardar). El resto de "Archivo"
+              —guardar como, importar, exportar— vive en el pie del riel. */}
           <button
-            onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
-            title={`Tema: ${tema} — clic para cambiar (claro → sepia → oscuro)`}
-            className="p-1.5 text-ink-700/40 hover:text-moss-700 transition-colors"
+            onClick={() => void handleGuardarNube()}
+            disabled={guardandoNube}
+            title={estadoGuardado.titulo}
+            className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 ${estadoGuardado.clase}`}
           >
-            {tema === 'oscuro' ? <Moon className="w-4 h-4" /> : tema === 'sepia' ? <Palette className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            {estadoGuardado.icono}
+            <span className="hidden lg:inline">{estadoGuardado.label}</span>
           </button>
-          {/* Estado de guardado y acciones en un solo control: el chip y el
-              botón por separado comían el ancho que necesita el toolbar. */}
-          <div className="relative">
-            <button
-              onClick={() => setGuardarOpen(o => !o)}
-              disabled={guardandoNube}
-              title={estadoGuardado.titulo}
-              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 ${estadoGuardado.clase}`}
-            >
-              {estadoGuardado.icono}
-              <span className="hidden lg:inline">{estadoGuardado.label}</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
-            {guardarOpen && (
-              <>
-                <div className="fixed inset-0 z-[1250]" onClick={() => setGuardarOpen(false)} />
-                <div className="absolute right-0 mt-1 w-52 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
-                  <p className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ink-700/50">{estadoGuardado.titulo}</p>
-                  <ExportItem
-                    icon={<Save className="w-3.5 h-3.5" />}
-                    label="Guardar en la nube"
-                    onClick={() => { setGuardarOpen(false); void handleGuardarNube(); }}
-                  />
-                  <ExportItem
-                    icon={<FolderOpen className="w-3.5 h-3.5" />}
-                    label={proyectoActual ? 'Guardar como…' : 'Mis proyectos'}
-                    onClick={() => { setGuardarOpen(false); setTab('proyectos'); setPanelAbierto(true); }}
-                  />
-                </div>
-              </>
-            )}
+          {/* Deshacer / rehacer agrupados. */}
+          <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
+            <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="w-8 h-8 flex items-center justify-center text-ink-700/50 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-20 disabled:cursor-not-allowed transition-colors border-r border-bone-200"><Undo2 className="w-4 h-4" /></button>
+            <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="w-8 h-8 flex items-center justify-center text-ink-700/50 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
           </div>
-          <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Undo2 className="w-4 h-4" /></button>
-          <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
-          {/* Entrega · Economía del proyecto (fuera de la Escala, vive en la barra). */}
-          <button onClick={() => { setTab('economia'); setPanelAbierto(true); }} title="Economía del proyecto" className={`p-1.5 transition-colors ${tab === 'economia' ? 'text-moss-700' : 'text-ink-700/40 hover:text-moss-700'}`}><DollarSign className="w-4 h-4" /></button>
-          <div className="relative">
-            <button onClick={() => setExportOpen(o => !o)} className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-bone-200 hover:bg-bone-50 text-ink-700 transition-colors">
-              <Download className="w-3.5 h-3.5" /> Exportar <ChevronDown className="w-3 h-3" />
-            </button>
-            {exportOpen && (
-              <>
-                <div className="fixed inset-0 z-[1250]" onClick={() => setExportOpen(false)} />
-                <div className="absolute right-0 mt-1 w-48 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
-                  <ExportItem icon={<FileText className="w-3.5 h-3.5" />} label="Informe PDF" onClick={() => { setExportOpen(false); handleVerInforme(); }} />
-                  <ExportItem icon={<IdCard className="w-3.5 h-3.5" />} label="Datos del profesional…" onClick={() => { setExportOpen(false); setPerfilOpen(true); }} />
-                  <ExportItem icon={<Camera className="w-3.5 h-3.5" />} label="Imagen PNG del plano" onClick={() => { setExportOpen(false); iniciarCaptura(); }} />
-                  <ExportItem icon={<FileDown className="w-3.5 h-3.5" />} label="DXF (AutoCAD)" onClick={() => { setExportOpen(false); handleExportarDXF(); }} />
-                  <div className="h-px bg-bone-100 my-1" />
-                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GeoJSON" onClick={handleExportGeoJSON} />
-                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="KML (Google Earth)" onClick={handleExportKML} />
-                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GPX" onClick={handleExportGPX} />
-                </div>
-              </>
-            )}
-          </div>
-          {/* Ayuda: guía de uso + atajos de teclado, en un solo menú visible. */}
-          <div className="relative">
-            <button
-              onClick={() => setAyudaMenuOpen(o => !o)}
-              title="Ayuda"
-              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${ayudaMenuOpen ? 'bg-moss-700 text-bone-50 border-moss-700' : 'border-bone-200 hover:bg-bone-50 text-ink-700'}`}
-            >
-              <HelpCircle className="w-3.5 h-3.5" /><span className="hidden lg:inline">Ayuda</span> <ChevronDown className="w-3 h-3" />
-            </button>
-            {ayudaMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-[1250]" onClick={() => setAyudaMenuOpen(false)} />
-                <div className="absolute right-0 mt-1 w-52 bg-white border border-bone-200 rounded-lg shadow-raised z-[1300] py-1">
-                  <ExportItem
-                    icon={<BookOpen className="w-3.5 h-3.5" />}
-                    label="Guía de uso"
-                    onClick={() => { setAyudaMenuOpen(false); window.open('/guia.html', '_blank', 'noopener'); }}
-                  />
-                  <ExportItem
-                    icon={<Keyboard className="w-3.5 h-3.5" />}
-                    label="Atajos de teclado"
-                    onClick={() => { setAyudaMenuOpen(false); setAyudaOpen(true); }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          <span className="w-px h-5 bg-bone-200 mx-0.5" />
-          <button onClick={handleLogout} title={`Cerrar sesión${userName ? ` (${userName})` : ''}`} className="p-1.5 text-ink-700/40 hover:text-clay-600 transition-colors"><LogOut className="w-4 h-4" /></button>
+          {/* Navegación del mapa: 3D · zoom · brújula · satélite/topo · histórico. */}
+          <ControlesNavegacion
+            navegacion={navegacion}
+            bearing={bearing}
+            capaFondo={capaFondo}
+            onCapaFondo={setCapaFondo}
+            habilitarVistas={mojones.length >= 3}
+            onHistorico={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); }}
+            on3D={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); }}
+          />
         </div>
       </header>
 
@@ -2394,6 +2348,121 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               bloqueada={(id) => tabBloqueada(plan, id)}
             />
           ))}
+
+          {/* ── Pie del riel: Entrega + Archivo + Ajustes ──
+              Los flyouts se posicionan `fixed` porque el riel recorta el eje X
+              (overflow-x-clip) y cualquier popover a la derecha quedaría cortado. */}
+          <div className="mt-auto w-full flex flex-col items-center gap-0.5 pt-2">
+            <span className="w-7 h-px bg-bone-200 my-1" aria-hidden />
+
+            {/* Entrega · Economía del proyecto (cierre de la Escala). */}
+            <button
+              onClick={() => { setTab('economia'); setPanelAbierto(true); }}
+              title="Entrega — economía del proyecto"
+              aria-current={tab === 'economia' || undefined}
+              className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+                tab === 'economia' ? 'bg-moss-700 text-bone-50 shadow-sm' : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
+              }`}
+            >
+              {tab === 'economia' && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+              <DollarSign className="w-4 h-4" />
+              <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">Entrega</span>
+            </button>
+
+            {/* Archivo: guardar · importar · exportar. */}
+            <button
+              onClick={() => { setArchivoOpen(o => !o); setConfigOpen(false); }}
+              title="Archivo — guardar, importar y exportar"
+              aria-expanded={archivoOpen}
+              className={`w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+                archivoOpen ? 'text-moss-700 bg-moss-50' : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
+              }`}
+            >
+              <Archive className="w-4 h-4" />
+              <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">Archivo</span>
+            </button>
+
+            {/* Ajustes: guía, atajos, tema, perfil, salir. */}
+            <button
+              onClick={() => { setConfigOpen(o => !o); setArchivoOpen(false); }}
+              title="Ajustes"
+              aria-expanded={configOpen}
+              className={`w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+                configOpen ? 'text-moss-700 bg-moss-50' : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">Ajustes</span>
+            </button>
+
+            {/* Inputs ocultos para importar (mismos handlers que el panel CAD). */}
+            <input ref={impDxfRef} type="file" accept=".dxf" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleImportarDXF(f); e.target.value = ''; }} />
+            <input ref={impImgRef} type="file" accept="image/png,image/jpeg" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleCargarOverlay(f); e.target.value = ''; }} />
+            <input ref={impTifRef} type="file" accept=".tif,.tiff" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleCargarGeoTIFF(f); e.target.value = ''; }} />
+            <input ref={impDemRef} type="file" accept=".tif,.tiff" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleCargarDEM(f); e.target.value = ''; }} />
+
+            {/* Flyout Archivo */}
+            {archivoOpen && (
+              <>
+                <div className="fixed inset-0 z-[1250]" onClick={() => setArchivoOpen(false)} />
+                <div className="fixed bottom-2 left-[60px] w-60 max-h-[85vh] overflow-y-auto bg-white border border-bone-200 rounded-xl shadow-raised z-[1300] py-1.5">
+                  <p className="px-3 pt-0.5 pb-1 text-[10px] uppercase tracking-wider text-ink-700/50">Proyecto</p>
+                  <ExportItem icon={<Save className="w-3.5 h-3.5" />} label="Guardar en la nube" onClick={() => { setArchivoOpen(false); void handleGuardarNube(); }} />
+                  <ExportItem icon={<FolderOpen className="w-3.5 h-3.5" />} label={proyectoActual ? 'Guardar como…' : 'Mis proyectos'} onClick={() => { setArchivoOpen(false); setTab('proyectos'); setPanelAbierto(true); }} />
+
+                  <div className="h-px bg-bone-100 my-1" />
+                  <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-ink-700/50 flex items-center gap-1.5"><Upload className="w-3 h-3" /> Importar</p>
+                  <ExportItem icon={<FileUp className="w-3.5 h-3.5" />} label="DXF (AutoCAD)" onClick={() => { setArchivoOpen(false); impDxfRef.current?.click(); }} />
+                  <ExportItem icon={<ImagePlus className="w-3.5 h-3.5" />} label="Imagen (PNG/JPG)" onClick={() => { setArchivoOpen(false); impImgRef.current?.click(); }} />
+                  <ExportItem icon={<ImageIcon className="w-3.5 h-3.5" />} label="GeoTIFF (dron / IGN)" onClick={() => { setArchivoOpen(false); impTifRef.current?.click(); }} />
+                  <ExportItem icon={<Mountain className="w-3.5 h-3.5" />} label="MDE propio (relieve)" onClick={() => { setArchivoOpen(false); impDemRef.current?.click(); }} />
+
+                  <div className="h-px bg-bone-100 my-1" />
+                  <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-ink-700/50 flex items-center gap-1.5"><Download className="w-3 h-3" /> Exportar</p>
+                  <ExportItem icon={<FileText className="w-3.5 h-3.5" />} label="Informe PDF" onClick={() => { setArchivoOpen(false); handleVerInforme(); }} />
+                  <ExportItem icon={<Camera className="w-3.5 h-3.5" />} label="Imagen PNG del plano" onClick={() => { setArchivoOpen(false); iniciarCaptura(); }} />
+                  <ExportItem icon={<FileDown className="w-3.5 h-3.5" />} label="DXF (AutoCAD)" onClick={() => { setArchivoOpen(false); handleExportarDXF(); }} />
+                  <ExportItem icon={<ImageIcon className="w-3.5 h-3.5" />} label="GeoTIFF de elevación" onClick={handleExportGeoTIFF} />
+                  <ExportItem icon={<Mountain className="w-3.5 h-3.5" />} label="MDE (puntos XYZ)" onClick={handleExportMDE} />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GeoJSON" onClick={handleExportGeoJSON} />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="KML (Google Earth)" onClick={handleExportKML} />
+                  <ExportItem icon={<Download className="w-3.5 h-3.5" />} label="GPX" onClick={handleExportGPX} />
+                </div>
+              </>
+            )}
+
+            {/* Flyout Ajustes */}
+            {configOpen && (
+              <>
+                <div className="fixed inset-0 z-[1250]" onClick={() => setConfigOpen(false)} />
+                <div className="fixed bottom-2 left-[60px] w-56 max-h-[85vh] overflow-y-auto bg-white border border-bone-200 rounded-xl shadow-raised z-[1300] py-1.5">
+                  <ExportItem icon={<BookOpen className="w-3.5 h-3.5" />} label="Guía de uso" onClick={() => { setConfigOpen(false); window.open('/guia.html', '_blank', 'noopener'); }} />
+                  <ExportItem icon={<Keyboard className="w-3.5 h-3.5" />} label="Atajos de teclado" onClick={() => { setConfigOpen(false); setAyudaOpen(true); }} />
+                  <div className="h-px bg-bone-100 my-1" />
+                  <button
+                    onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ink-700 hover:bg-bone-50 transition-colors text-left"
+                  >
+                    <span className="text-ink-700/50 shrink-0">{tema === 'oscuro' ? <Moon className="w-3.5 h-3.5" /> : tema === 'sepia' ? <Palette className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}</span>
+                    Tema: <span className="font-medium capitalize">{tema}</span>
+                  </button>
+                  <ExportItem icon={<IdCard className="w-3.5 h-3.5" />} label="Datos del profesional…" onClick={() => { setConfigOpen(false); setPerfilOpen(true); }} />
+                  <div className="h-px bg-bone-100 my-1" />
+                  <button
+                    onClick={() => { setConfigOpen(false); handleLogout(); }}
+                    title={userName ? `Sesión: ${userName}` : undefined}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-clay-600 hover:bg-clay-50 transition-colors text-left"
+                  >
+                    <LogOut className="w-3.5 h-3.5 shrink-0" /> Cerrar sesión
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </nav>
 
         {/* ── Panel contextual ── */}
@@ -2425,6 +2494,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             return (<>
           {tab === 'mojones' && (
             <div className="px-4 py-4 space-y-4">
+              {/* Buscar la localidad para ubicar el predio (antes flotaba sobre el mapa). */}
+              <div>
+                <p className="eyebrow mb-1.5">Ubicar el predio</p>
+                <BuscadorLugar onElegir={handleElegirLugar} />
+              </div>
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -2977,19 +3051,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           </div>
         )}
 
-        {/* ── Navegación + panel derecho (Capas / Sugerencias) ──
-            Todo en una columna arriba a la derecha: los controles quedan fijos
-            y el panel se despliega debajo. */}
+        {/* ── Paneles del mapa (Escala / Capas) + panel derecho ──
+            La navegación (3D, zoom, brújula, satélite/topo, histórico) vive ahora
+            en la barra superior; acá quedan sólo los interruptores de panel, así
+            el dock respira y no tapa la zona de captura. */}
         <div className="absolute top-3 right-3 z-[1000] no-print flex flex-col items-end gap-1.5">
-          <BuscadorLugar onElegir={handleElegirLugar} />
-          <ControlesMapa
-            navegacion={navegacion}
-            bearing={bearing}
-            capaFondo={capaFondo}
-            onCapaFondo={setCapaFondo}
-            habilitarVistas={mojones.length >= 3}
-            onHistorico={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); }}
-            on3D={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); }}
+          <ControlesPaneles
             capasAbierto={panelDerecho === 'capas'}
             onCapas={() => setPanelDerecho(p => (p === 'capas' ? null : 'capas'))}
             escalaAbierta={panelDerecho === 'bitacora'}
