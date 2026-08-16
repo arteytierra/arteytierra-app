@@ -2450,9 +2450,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     </p>
                     <ol className="space-y-2">
                       {([
-                        ['1', 'Dibujá o importá tu predio', 'Marcá los mojones en el mapa, cargá coordenadas o importá un archivo.'],
-                        ['2', 'Corré el análisis', 'Topografía, agua, sol y suelo desde el riel de la izquierda.'],
-                        ['3', 'Generá el informe', 'Un PDF de marca con todo el diagnóstico, listo para compartir.'],
+                        ['1', 'Marcá tu terreno', 'Dibujá los mojones en el mapa, cargá coordenadas o importá un archivo.'],
+                        ['2', 'Escuchá lo que dice', 'Subí la Escala de Permanencia desde el riel: 1 Clima, 2 Relieve, 3 Agua. El terreno te cuenta lo esencial antes de dibujar nada.'],
+                        ['3', 'Diseñá encima', 'Zonas y sistemas productivos (4 y 5). Al final, la Entrega: tu informe listo para compartir.'],
                       ] as Array<[string, string, string]>).map(([n, t, d]) => (
                         <li key={n} className="flex gap-2.5">
                           <span className="shrink-0 w-5 h-5 rounded-full bg-moss-100 text-moss-700 text-[10px] font-bold flex items-center justify-center mt-0.5">{n}</span>
