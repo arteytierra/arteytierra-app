@@ -10,7 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
-  CloudRain, TreePine, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
+  CloudRain, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -214,18 +214,22 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
 ];
 const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const));
 
-/** Clústeres colapsables del riel (acordeón). Reagrupan las 26 pestañas en 6
- *  familias; `mojones` es la entrada base y `proyectos` vive en el header. */
-const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[] }> = [
-  { id: 'ubicacion', label: 'Ubicación',            corto: 'Lugar', icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
-  { id: 'clima',     label: 'Clima',                corto: 'Clima', icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'solar'] },
-  { id: 'contexto',  label: 'Contexto',             corto: 'Ctxt.', icon: <TreePine  className="w-4 h-4" />, tabs: ['contexto', 'entorno'] },
-  { id: 'terreno',   label: 'Terreno',              corto: 'Terr.', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'suelo', 'cobertura', 'aptitud', 'analisis'] },
-  { id: 'agua',      label: 'Agua',                 corto: 'Agua',  icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'agua', 'red', 'riego', 'swales'] },
-  { id: 'diseno',    label: 'Diseño',               corto: 'Dis.',  icon: <Shapes    className="w-4 h-4" />, tabs: ['sectores', 'zonas', 'masterplan', 'caminos', 'cortinas', 'cortafuegos', 'visibilidad', 'sombras', 'infra', 'elementos'] },
-  { id: 'prod',      label: 'Sistemas productivos', corto: 'Prod.', icon: <Wheat     className="w-4 h-4" />, tabs: ['cal', 'prod', 'pastoreo', 'silvopastura', 'carbono'] },
-  { id: 'keyline',   label: 'Keyline',              corto: 'Keyl.', icon: <Waypoints className="w-4 h-4" />, tabs: ['keyline'] },
-  { id: 'presup',    label: 'Presupuesto',          corto: 'Pres.', icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
+/** Clústeres del riel, ordenados según la **Escala de Permanencia** de P.A.
+ *  Yeomans: de lo más permanente y difícil de cambiar (clima, relieve) a lo más
+ *  cambiante (producción). El número que abre cada label ES el peldaño de la
+ *  escala. `mojones` es la entrada; `proyectos` vive en el header y `economia`
+ *  (Entrega) cierra abajo hasta que la barra superior la aloje.
+ *  `esenciales` = las herramientas que se muestran al abrir el grupo; el resto
+ *  queda detrás de "Más…" (revelación progresiva). Los `id` de las tabs NO
+ *  cambian: entitlements, snapshots y la paleta (Ctrl+K) siguen intactos. */
+const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] }> = [
+  { id: 'ubicacion', label: 'Tu terreno',                            corto: 'Lugar',     icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
+  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'contexto', 'entorno', 'cal', 'solar', 'sombras'],           esenciales: ['clima', 'contexto'] },
+  { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud', 'visibilidad'], esenciales: ['topo', 'analisis'] },
+  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
+  { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra'],             esenciales: ['masterplan', 'zonas'] },
+  { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
+  { id: 'presup',    label: 'Presupuesto',                           corto: 'Pres.',     icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
 ];
 const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
@@ -4397,7 +4401,7 @@ function RielTab({ def, activo, lock, onElegir }: {
 /** Un clúster colapsable del riel: encabezado con ícono + label corto, y —si
  *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto. */
 function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada }: {
-  grupo: { id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[] };
+  grupo: { id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] };
   abierto: boolean;
   tabActivo: Tab;
   onToggle: () => void;
@@ -4405,6 +4409,16 @@ function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada
   bloqueada: (id: Tab) => boolean;
 }) {
   const contieneActivo = grupo.tabs.includes(tabActivo);
+
+  // Revelación progresiva: al abrir mostramos sólo las `esenciales`; el resto
+  // queda detrás de "Más…". Si el tab activo cae en el resto, lo revelamos para
+  // que quede visible. Al cerrar el grupo, el "Más" vuelve a plegarse.
+  const esenciales = grupo.esenciales ?? grupo.tabs;
+  const resto = grupo.tabs.filter(t => !esenciales.includes(t));
+  const [masAbierto, setMasAbierto] = useState(false);
+  useEffect(() => { if (!abierto) setMasAbierto(false); }, [abierto]);
+  const activoEnResto = resto.includes(tabActivo);
+  const mostrarResto = masAbierto || activoEnResto;
 
   // Grupo de una sola pestaña: el encabezado abre el panel directo (sin
   // sub-desplegar), comportándose como un tab con la identidad del grupo.
@@ -4447,13 +4461,25 @@ function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada
       </button>
       {abierto && (
         <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1">
-          {grupo.tabs.map(id => {
+          {(mostrarResto ? [...esenciales, ...resto] : esenciales).map(id => {
             const def = TAB_DEF.get(id);
             if (!def) return null;
             return (
               <RielTab key={id} def={def} activo={tabActivo === id} lock={bloqueada(id)} onElegir={onElegir} />
             );
           })}
+          {resto.length > 0 && !activoEnResto && (
+            <button
+              onClick={() => setMasAbierto(v => !v)}
+              title={mostrarResto ? 'Mostrar menos' : `Más herramientas (${resto.length})`}
+              aria-expanded={mostrarResto}
+              className="w-10 rounded-lg flex flex-col items-center gap-0.5 py-0.5 text-ink-700/50 hover:text-ink-900 hover:bg-bone-200/60 transition-colors">
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mostrarResto ? 'rotate-180' : ''}`} />
+              <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">
+                {mostrarResto ? 'Menos' : 'Más'}
+              </span>
+            </button>
+          )}
         </div>
       )}
     </div>
