@@ -51,6 +51,8 @@ export const PLANES: Plan[] = [
       'Todas las herramientas de dibujo sobre el mapa',
       'Medición: superficie y perímetro',
       'Mapa satelital y navegación completa',
+      'Muestra gratis del análisis: clima, topografía, cuenca y sectores',
+      'Calendario del lugar (heladas, lluvias y ventanas de siembra)',
       '1 proyecto activo',
       'Informe compartible (con marca de agua de Terreno)',
     ],
@@ -65,7 +67,7 @@ export const PLANES: Plan[] = [
     lanzamiento: true,
     hereda: 'Todo lo de Semilla, y además:',
     incluye: [
-      'Análisis completo: topografía, agua, suelo, clima y biodiversidad',
+      'El análisis completo: agua, suelo, biodiversidad, solar, aptitud y más',
       'Curvas de nivel, relieve y vista 3D',
       'Diseño Keyline, agroforestal, riego y pastoreo',
       'Sugerencias automáticas de diseño',
