@@ -81,6 +81,17 @@ html[data-theme='oscuro'] .vista-3d canvas {
    key={tab}). Un solo contenedor: barato y sin tocar cada panel. */
 .ay-panel-in { animation: ay-fade-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* Cascada: al abrir un peldaño del riel, sus íconos entran escalonados. Sólo
+   los hijos recién montados animan (los que ya estaban no re-animan). */
+.ay-stagger > * { animation: ay-fade-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ay-stagger > *:nth-child(1) { animation-delay: 0s; }
+.ay-stagger > *:nth-child(2) { animation-delay: 0.04s; }
+.ay-stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.ay-stagger > *:nth-child(4) { animation-delay: 0.12s; }
+.ay-stagger > *:nth-child(5) { animation-delay: 0.16s; }
+.ay-stagger > *:nth-child(6) { animation-delay: 0.2s; }
+.ay-stagger > *:nth-child(n + 7) { animation-delay: 0.24s; }
+
 @media (prefers-reduced-motion: reduce) {
   .ay-panel-in { animation: none; }
   *, *::before, *::after {

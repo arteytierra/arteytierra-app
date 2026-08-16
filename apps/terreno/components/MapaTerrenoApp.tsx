@@ -2921,25 +2921,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         </div>
       </aside>
 
-      {/* Toggle panel izquierdo */}
-      <button
-        onClick={() => setPanelAbierto(p => !p)}
-        className="absolute top-1/2 -translate-y-1/2 z-[1100] bg-white border border-bone-200 rounded-r-lg px-1 py-3 text-moss-700 hover:bg-bone-50 shadow-paper transition-all duration-200 no-print"
-        style={{ left: panelAbierto ? '340px' : '52px' }}
-        title={panelAbierto ? 'Ocultar panel' : 'Mostrar panel'}
-      >
-        <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
-      </button>
-
-      {/* Toggle panel derecho (capas) */}
-      <button
-        onClick={() => setPanelDerecho(p => (p === null ? 'capas' : null))}
-        className="absolute top-1/2 -translate-y-1/2 z-[1001] bg-white border border-bone-200 rounded-l-lg px-1 py-3 text-moss-700 hover:bg-bone-50 shadow-paper transition-all duration-200 no-print"
-        style={{ right: panelDerecho === 'capas' ? `${12 + 224}px` : panelDerecho === 'sugerencias' || panelDerecho === 'bitacora' ? `${12 + 256}px` : '12px' }}
-        title={panelDerecho !== null ? 'Cerrar panel' : 'Mostrar capas'}
-      >
-        <ChevronRight className={`w-4 h-4 transition-transform ${panelDerecho === null ? 'rotate-180' : ''}`} />
-      </button>
+      {/* Sin chevrons flotantes sobre el mapa: el panel izquierdo se togglea
+          desde el chevron del header y su botón de cerrar; el panel de Capas,
+          desde el botón "Capas" del dock (arriba-derecha). Menos ruido al centro. */}
 
       {/* ─── Mapa ─────────────────────────────────────────────────────────────── */}
       <main id="print-capture-root" className={`flex-1 relative overflow-hidden ${capturaActiva ? 'bg-bone-50 pt-[58px] pr-[212px] pb-[50px] pl-3' : ''}`}>
@@ -4463,7 +4447,7 @@ function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada
         <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">{grupo.corto}</span>
       </button>
       {abierto && (
-        <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1">
+        <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1 ay-stagger">
           {(mostrarResto ? [...esenciales, ...resto] : esenciales).map(id => {
             const def = TAB_DEF.get(id);
             if (!def) return null;
