@@ -10,7 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, HelpCircle, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
-  CloudRain, Shapes, Briefcase, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
+  CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
 } from 'lucide-react';
 import { MojonForm } from './MojonForm';
 import { PoligonoPanel } from './PoligonoPanel';
@@ -229,8 +229,9 @@ const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React
   { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
   { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra'],             esenciales: ['masterplan', 'zonas'] },
   { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
-  { id: 'presup',    label: 'Presupuesto',                           corto: 'Pres.',     icon: <Briefcase className="w-4 h-4" />, tabs: ['economia'] },
 ];
+// `economia` (Entrega) y `proyectos` no están en el riel: se alcanzan desde la
+// barra superior. El riel es, exactamente, la Escala de Permanencia.
 const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
 );
@@ -2321,6 +2322,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           </div>
           <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Undo2 className="w-4 h-4" /></button>
           <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="p-1.5 text-ink-700/40 hover:text-moss-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
+          {/* Entrega · Economía del proyecto (fuera de la Escala, vive en la barra). */}
+          <button onClick={() => { setTab('economia'); setPanelAbierto(true); }} title="Economía del proyecto" className={`p-1.5 transition-colors ${tab === 'economia' ? 'text-moss-700' : 'text-ink-700/40 hover:text-moss-700'}`}><DollarSign className="w-4 h-4" /></button>
           <div className="relative">
             <button onClick={() => setExportOpen(o => !o)} className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-bone-200 hover:bg-bone-50 text-ink-700 transition-colors">
               <Download className="w-3.5 h-3.5" /> Exportar <ChevronDown className="w-3 h-3" />
@@ -2398,7 +2401,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
-                {GRUPOS_RIEL.find(g => g.tabs.includes(tab))?.label ?? (tab === 'proyectos' ? 'Proyectos' : 'Predio')}
+                {GRUPOS_RIEL.find(g => g.tabs.includes(tab))?.label ?? (tab === 'proyectos' ? 'Proyectos' : tab === 'economia' ? 'Entrega' : 'Predio')}
               </p>
               <p className="text-[13px] font-semibold text-ink-900 truncate leading-tight mt-0.5 font-display">
                 {TAB_DEF.get(tab)?.label ?? ''}
