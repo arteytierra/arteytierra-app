@@ -3780,7 +3780,7 @@ function PanelCapas({
   });
 
   return (
-    <div className="ay-legible w-56 bg-white rounded-xl shadow-xl border border-bone-300 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
+    <div className="ay-legible w-56 bg-bone-50 rounded-xl shadow-xl border border-bone-300 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <div className="flex items-center gap-1.5">
@@ -4351,7 +4351,7 @@ function PanelCapas({
         <div className="px-2 py-1.5 border-b border-bone-100 space-y-1">
           <button
             onClick={onCrearCapa}
-            className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-50 transition-colors border border-dashed border-bone-200 font-semibold"
+            className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-100 transition-colors border border-dashed border-bone-200 font-semibold"
           >
             + Nueva capa de dibujo
           </button>
@@ -4574,10 +4574,10 @@ function CapaGrupo({ label, count, visible, onToggleVisible, expanded, onExpand,
 }) {
   return (
     <div className="border-b border-bone-100">
-      <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-bone-50 select-none">
+      <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-bone-100 select-none">
         <button
           onClick={e => { e.stopPropagation(); onToggleVisible(); }}
-          className={`shrink-0 transition-colors ${visible ? 'text-moss-700' : 'text-ink-700/20'}`}
+          className={`shrink-0 transition-colors ${visible ? 'text-moss-700' : 'text-ink-700/45'}`}
           title={visible ? 'Ocultar grupo' : 'Mostrar grupo'}
         >
           {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -4589,7 +4589,7 @@ function CapaGrupo({ label, count, visible, onToggleVisible, expanded, onExpand,
             <span className="text-[8px] bg-bone-200 text-ink-700/50 px-1 py-0.5 rounded-full shrink-0">{count}</span>
           )}
         </button>
-        <span title="Arrastrar para reordenar" className="shrink-0 cursor-grab"><GripVertical className="w-3 h-3 text-ink-700/20" /></span>
+        <span title="Arrastrar para reordenar" className="shrink-0 cursor-grab"><GripVertical className="w-3 h-3 text-ink-700/35" /></span>
       </div>
       {expanded && <div>{children}</div>}
     </div>
@@ -4608,8 +4608,8 @@ function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar, e
   useEffect(() => setNombre(label), [label]);
 
   return (
-    <div className="flex items-center gap-1.5 pl-6 pr-3 py-1 hover:bg-bone-50 group">
-      <button onClick={onToggle} className={`shrink-0 transition-colors ${visible ? 'text-moss-600' : 'text-ink-700/15'}`}>
+    <div className="flex items-center gap-1.5 pl-6 pr-3 py-1 hover:bg-bone-100 group">
+      <button onClick={onToggle} className={`shrink-0 transition-colors ${visible ? 'text-moss-600' : 'text-ink-700/45'}`}>
         {visible ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
       </button>
       {swatch && <span className="shrink-0 flex items-center">{swatch}</span>}
@@ -4627,7 +4627,7 @@ function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar, e
         />
       ) : (
         <span
-          className={`flex-1 text-[10px] truncate leading-tight min-w-0 ${visible ? 'text-ink-800' : 'text-ink-700/30'}`}
+          className={`flex-1 text-[10px] truncate leading-tight min-w-0 ${visible ? 'text-ink-800' : 'text-ink-700/60'}`}
           onDoubleClick={() => onRenombrar && setEditando(true)}
           title={onRenombrar ? 'Doble clic para renombrar' : undefined}
         >{label}</span>
@@ -4635,7 +4635,7 @@ function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar, e
       {extraSiempre && !editando && <span className="shrink-0">{extraSiempre}</span>}
       {extra && !editando && <span className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">{extra}</span>}
       {onEliminar && !editando && (
-        <button onClick={onEliminar} className="shrink-0 text-ink-700/15 hover:text-clay-500 transition-colors">
+        <button onClick={onEliminar} className="shrink-0 text-ink-700/35 hover:text-clay-500 transition-colors">
           <Trash2 className="w-2.5 h-2.5" />
         </button>
       )}
@@ -4660,7 +4660,7 @@ function CapaUsuarioGrupo({ capa, count, visible, activa, esDefault, puedeSubir,
 
   return (
     <div className="border-b border-bone-100">
-      <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-bone-50 select-none">
+      <div className="flex items-center gap-1 px-2 py-1.5 hover:bg-bone-100 select-none">
         <button
           onClick={e => { e.stopPropagation(); onToggleVisible(); }}
           className={`shrink-0 transition-colors ${visible ? 'text-moss-700' : 'text-ink-700/20'}`}
