@@ -92,6 +92,29 @@ html[data-theme='oscuro'] .vista-3d canvas {
 .ay-stagger > *:nth-child(6) { animation-delay: 0.2s; }
 .ay-stagger > *:nth-child(n + 7) { animation-delay: 0.24s; }
 
+/* Cascada de secciones del panel: se aplica al contenedor de scroll y escalona
+   la entrada de cada sección (nieto). Como las animaciones CSS sólo disparan al
+   montar, al cambiar de herramienta (key={tab}) entra todo en cascada, y cuando
+   aparece un resultado nuevo (render condicional tras calcular) sólo esa sección
+   entra — es el "revelar resultados al terminar un análisis" sin tocar paneles. */
+.ay-reveal > * > * { animation: ay-fade-rise 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ay-reveal > * > *:nth-child(1) { animation-delay: 0s; }
+.ay-reveal > * > *:nth-child(2) { animation-delay: 0.05s; }
+.ay-reveal > * > *:nth-child(3) { animation-delay: 0.1s; }
+.ay-reveal > * > *:nth-child(4) { animation-delay: 0.15s; }
+.ay-reveal > * > *:nth-child(5) { animation-delay: 0.2s; }
+.ay-reveal > * > *:nth-child(n + 6) { animation-delay: 0.24s; }
+
+/* Momento "listo": pastilla de confirmación efímera (aparece, respira y se va).
+   El centrado horizontal lo hace la propia animación (translate -50%). */
+@keyframes ay-flash {
+  0%   { opacity: 0; transform: translate(-50%, 8px) scale(0.96); }
+  10%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  82%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -6px) scale(1); }
+}
+.ay-flash { animation: ay-flash 1.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .ay-panel-in { animation: none; }
   *, *::before, *::after {

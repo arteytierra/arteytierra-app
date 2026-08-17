@@ -537,6 +537,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const impImgRef = useRef<HTMLInputElement>(null);
   const impTifRef = useRef<HTMLInputElement>(null);
   const impDemRef = useRef<HTMLInputElement>(null);
+  // Momento "listo": pastilla efímera de confirmación (descargas, guardado…).
+  const [flashMsg, setFlashMsg] = useState<string | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flashListo = useCallback((msg: string) => {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    setFlashMsg(msg);
+    flashTimer.current = setTimeout(() => setFlashMsg(null), 1700);
+  }, []);
   const [colorDibujo,    setColorDibujo]    = useState<string>(COLORES_DIBUJO[0]);
 
   // ─── Perfil de elevación interactivo — dock inferior (hook usePerfilElevacion) ──
@@ -1312,7 +1320,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     a.download = `${(proyectoActual?.nombre ?? 'terreno').replace(/[^\w-]/g, '_')}.dxf`;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-  }, [dibujos, mojones, origenGeo, proyectoActual, metricas, zonas, sectores, caminos]);
+    flashListo('DXF descargado');
+  }, [dibujos, mojones, origenGeo, proyectoActual, metricas, zonas, sectores, caminos, flashListo]);
 
   const handleImportarDXF = useCallback((file: File) => {
     const reader = new FileReader();
@@ -1337,28 +1346,31 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       await actualizarProyecto(proyectoActual.id, proyectoActual.nombre, proyectoActual.descripcion ?? '', mojones, metadatos);
       setGuardadoTick(true);
       setTimeout(() => setGuardadoTick(false), 2200);
+      flashListo('Guardado en la nube');
     } catch (e) {
       setModal({ type: 'alert', message: `No se pudo guardar en la nube: ${errMsgApp(e)}` });
     } finally {
       setGuardandoNube(false);
     }
-  }, [mojones, proyectoActual, metadatos]);
+  }, [mojones, proyectoActual, metadatos, flashListo]);
 
-  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setArchivoOpen(false); }, [mojones, zonas, sectores, pines, caminos, proyectoActual]);
-  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); }, [mojones, proyectoActual]);
-  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); }, [mojones, proyectoActual]);
+  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setArchivoOpen(false); flashListo('GeoJSON descargado'); }, [mojones, zonas, sectores, pines, caminos, proyectoActual, flashListo]);
+  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('KML descargado'); }, [mojones, proyectoActual, flashListo]);
+  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('GPX descargado'); }, [mojones, proyectoActual, flashListo]);
 
   // Exportar el modelo de elevación activo (DEM propio si está cargado; si no, el satelital).
   const handleExportGeoTIFF = useCallback(() => {
     setArchivoOpen(false);
     if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
     descargarGeoTIFF(grillaActiva, proyectoActual?.nombre || 'terreno');
-  }, [grillaActiva, proyectoActual]);
+    flashListo('GeoTIFF de elevación descargado');
+  }, [grillaActiva, proyectoActual, flashListo]);
   const handleExportMDE = useCallback(() => {
     setArchivoOpen(false);
     if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
     descargarMDE(grillaActiva, proyectoActual?.nombre || 'terreno');
-  }, [grillaActiva, proyectoActual]);
+    flashListo('MDE descargado');
+  }, [grillaActiva, proyectoActual, flashListo]);
 
   // ─── Overlay de imagen (plano de referencia) ──────────────────────────────
   const handleCargarOverlay = useCallback((file: File) => {
@@ -2482,8 +2494,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </button>
           </div>
 
-          {/* Scroll area — key={tab} re-dispara la entrada suave al cambiar de herramienta */}
-          <div key={tab} className="flex-1 overflow-y-auto ay-panel-in">
+          {/* Scroll area — key={tab} re-dispara la cascada al cambiar de herramienta;
+              cada sección del panel entra escalonada (ver .ay-reveal en globals.css). */}
+          <div key={tab} className="flex-1 overflow-y-auto ay-reveal">
           {(() => {
             // Si el tab está bloqueado para el plan, mostramos el candado en vez
             // del panel — así no se monta (ni dispara sus APIs) una feature paga.
@@ -3049,6 +3062,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                : modoDibujo && modoDibujo !== 'seleccion'
                ? `Dibujando ${modoDibujo} — ${dibujoEnCurso?.vertices.length ?? 0} puntos · Enter finaliza · Esc cancela`
                :            'Hacé clic en el mapa para agregar un mojón'}
+          </div>
+        )}
+
+        {/* Momento "listo" — confirmación efímera de una acción completada
+            (descarga, guardado). Se auto-centra y desaparece vía `ay-flash`. */}
+        {flashMsg && (
+          <div key={flashMsg} className="ay-flash absolute top-3 left-1/2 z-[1100] flex items-center gap-1.5 px-4 py-2 rounded-full shadow-raised text-sm font-medium pointer-events-none bg-moss-700 text-bone-50 no-print">
+            <Check className="w-4 h-4" /> {flashMsg}
           </div>
         )}
 
