@@ -75,9 +75,9 @@ export const COURSES: Record<string, CourseData> = {
   'formacion-construccion-natural': {
     slug: 'formacion-construccion-natural',
     kind: 'presencial',
-    badge: 'Formación intensiva · 10 semanas',
+    badge: 'Formación intensiva · 2 meses',
     name: 'Formación Integral en Construcción Natural',
-    subtitle: 'Diez semanas de obra real, de los cimientos al techo. Construimos juntos una cabaña completa en San Marcos Sierras y vos te llevás el oficio en las manos.',
+    subtitle: 'Dos meses de obra real, de los cimientos al techo. Construimos juntos una cabaña completa en San Marcos Sierras y vos te llevás el oficio en las manos.',
     heroImg: '/img/cursos/bioarquitectura/1.jpg',
     galeria: [
       '/img/cursos/bioarquitectura/3.jpg',
@@ -91,12 +91,12 @@ export const COURSES: Record<string, CourseData> = {
     ],
     tag: '21 de septiembre al 30 de noviembre 2026 · San Marcos Sierras · 3 cupos + 2 con experiencia (50% dto)',
     intro: [
-      'Volvemos a abrir nuestra formación más profunda: diez semanas viviendo una obra real de principio a fin. En San Marcos Sierras vamos a construir una cabaña de 25 m² completa —de los cimientos al techo— como primera intervención dentro de un predio que ya cuenta con su masterplan. Vos aprendés construyéndola.',
+      'Volvemos a abrir nuestra formación más profunda: dos meses viviendo una obra real de principio a fin. En San Marcos Sierras vamos a construir una cabaña de 25 m² completa —de los cimientos al techo— como primera intervención dentro de un predio que ya cuenta con su masterplan. Vos aprendés construyéndola.',
       'No es un taller de una técnica suelta: es el ciclo entero de una vivienda natural. Estructuras en madera, muros de adobe y quincha alivianada, techos vivos y de chapa, revoques de barro y de cal, biofiltros para aguas grises y negras, cosecha de agua de lluvia e instalación de servicios hasta el fin de obra.',
       'La práctica diaria en obra se complementa con teoría en campo, el curso grabado «Mi Tierra, Mi Casa», asesorías de diseño colectivas cada tres semanas para tu propio proyecto, círculos de proceso mensuales y el acompañamiento de un focalizador personal durante toda la vivencia.',
     ],
     datos: [
-      { label: '¿Cuándo?', val: '21 de septiembre al 30 de noviembre 2026 · 10 semanas' },
+      { label: '¿Cuándo?', val: '21 de septiembre al 30 de noviembre 2026 · 2 meses (10 semanas)' },
       { label: '¿Dónde?', val: 'Obra en San Marcos Sierras, Córdoba · Hospedaje en Ecohostel Tay Pichín' },
       { label: 'Modalidad', val: 'Obra real diaria + teoría en campo + acompañamiento' },
       { label: 'Cupos', val: '3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa' },
@@ -163,12 +163,12 @@ export const COURSES: Record<string, CourseData> = {
     opciones: [
       {
         id: 'completo',
-        label: 'Formación completa · 10 semanas',
+        label: 'Formación completa · 2 meses',
         precio: '$2.000.000 ARS',
         precioAlt: 'USD 1.400',
         includes: [
           'Hospedaje en habitación compartida en Ecohostel Tay Pichín',
-          'Alimentación completa durante las 10 semanas',
+          'Alimentación completa durante los dos meses',
           'Certificado de participación',
           'Manual de Diseño Simbiótico (PDF)',
           'Acceso al curso grabado «Mi Tierra, Mi Casa»',
