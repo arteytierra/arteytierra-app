@@ -2349,25 +2349,26 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             />
           ))}
 
-          {/* ── Pie del riel: Entrega + Archivo + Ajustes ──
+          {/* Presupuesto — economía del proyecto, justo debajo de Producción
+              (el cierre de la lectura: cuánto cuesta lo diseñado). */}
+          <button
+            onClick={() => { setTab('economia'); setPanelAbierto(true); }}
+            title="Presupuesto — economía del proyecto"
+            aria-current={tab === 'economia' || undefined}
+            className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
+              tab === 'economia' ? 'bg-moss-700 text-bone-50 shadow-sm' : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
+            }`}
+          >
+            {tab === 'economia' && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
+            <DollarSign className="w-4 h-4" />
+            <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">Presup.</span>
+          </button>
+
+          {/* ── Pie del riel: Archivo + Ajustes ──
               Los flyouts se posicionan `fixed` porque el riel recorta el eje X
               (overflow-x-clip) y cualquier popover a la derecha quedaría cortado. */}
           <div className="mt-auto w-full flex flex-col items-center gap-0.5 pt-2">
             <span className="w-7 h-px bg-bone-200 my-1" aria-hidden />
-
-            {/* Entrega · Economía del proyecto (cierre de la Escala). */}
-            <button
-              onClick={() => { setTab('economia'); setPanelAbierto(true); }}
-              title="Entrega — economía del proyecto"
-              aria-current={tab === 'economia' || undefined}
-              className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
-                tab === 'economia' ? 'bg-moss-700 text-bone-50 shadow-sm' : 'text-ink-700/60 hover:text-ink-900 hover:bg-bone-200/60'
-              }`}
-            >
-              {tab === 'economia' && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sun-400" />}
-              <DollarSign className="w-4 h-4" />
-              <span className="text-[7px] font-semibold uppercase tracking-tight leading-none">Entrega</span>
-            </button>
 
             {/* Archivo: guardar · importar · exportar. */}
             <button
@@ -2470,7 +2471,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
-                {GRUPOS_RIEL.find(g => g.tabs.includes(tab))?.label ?? (tab === 'proyectos' ? 'Proyectos' : tab === 'economia' ? 'Entrega' : 'Predio')}
+                {GRUPOS_RIEL.find(g => g.tabs.includes(tab))?.label ?? (tab === 'proyectos' ? 'Proyectos' : tab === 'economia' ? 'Presupuesto' : 'Predio')}
               </p>
               <p className="text-[13px] font-semibold text-ink-900 truncate leading-tight mt-0.5 font-display">
                 {TAB_DEF.get(tab)?.label ?? ''}
@@ -2526,7 +2527,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                       {([
                         ['1', 'Marcá tu terreno', 'Dibujá los mojones en el mapa, cargá coordenadas o importá un archivo.'],
                         ['2', 'Escuchá lo que dice', 'Subí la Escala de Permanencia desde el riel: 1 Clima, 2 Relieve, 3 Agua. El terreno te cuenta lo esencial antes de dibujar nada.'],
-                        ['3', 'Diseñá encima', 'Zonas y sistemas productivos (4 y 5). Al final, la Entrega: tu informe listo para compartir.'],
+                        ['3', 'Diseñá encima', 'Zonas y sistemas productivos (4 y 5). Al final, el Presupuesto y tu informe, listos para compartir.'],
                       ] as Array<[string, string, string]>).map(([n, t, d]) => (
                         <li key={n} className="flex gap-2.5">
                           <span className="shrink-0 w-5 h-5 rounded-full bg-moss-100 text-moss-700 text-[10px] font-bold flex items-center justify-center mt-0.5">{n}</span>

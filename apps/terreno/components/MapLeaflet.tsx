@@ -1022,8 +1022,11 @@ interface Props {
   perfilPunto?:       { lat: number; lng: number } | null;
 }
 
-const CENTRO_INICIAL: LatLngExpression = [-30.8, -64.7];
-const ZOOM_INICIAL = 7;
+// Vista de arranque: mundo centrado en el Atlántico (Américas ↔ África/Europa).
+// Invita a buscar la localidad desde el panel Lugar en vez de aterrizar en un
+// país concreto.
+const CENTRO_INICIAL: LatLngExpression = [15, -30];
+const ZOOM_INICIAL = 3;
 
 const CAPAS_DEFAULT: CapasVisibles = { terreno: true, zonas: true, sectores: true, pines: true, caminos: true, shaderElev: false, shaderPend: false, terrariumElev: false, escorrentias: false, erosion: false, swales: true, cortinas: true, cortafuegos: true, silvopastura: true, sugerencias: false, analisisPredio: true, aguadas: true, dibujos: true, arcSolar: false, linderoLabels: false, curvasNivel: false, cotas: true, cotasAuto: false, medidas: true };
 
