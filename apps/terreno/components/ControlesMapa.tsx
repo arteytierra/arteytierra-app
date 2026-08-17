@@ -111,7 +111,7 @@ export function ControlesPaneles({ capasAbierto, onCapas, escalaAbierta, onEscal
       <button
         onClick={onEscala}
         title="Escala de permanencia (bitácora de diseño)"
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border ${escalaAbierta ? 'bg-moss-700 text-bone-50 border-moss-700' : 'bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50'}`}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border ${escalaAbierta ? 'bg-moss-700 text-bone-50 border-moss-700' : 'bg-white text-ink-700 border-bone-200 hover:bg-bone-50'}`}
       >
         <ListChecks className="w-3.5 h-3.5" />
         Escala
@@ -119,7 +119,7 @@ export function ControlesPaneles({ capasAbierto, onCapas, escalaAbierta, onEscal
       <button
         onClick={onCapas}
         title={capasAbierto ? 'Cerrar capas' : 'Mostrar capas'}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border ${capasAbierto ? 'bg-moss-700 text-bone-50 border-moss-700' : 'bg-white/95 text-ink-700 border-white/30 hover:bg-bone-50'}`}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md text-[11px] font-semibold transition-colors border ${capasAbierto ? 'bg-moss-700 text-bone-50 border-moss-700' : 'bg-white text-ink-700 border-bone-200 hover:bg-bone-50'}`}
       >
         <Layers className="w-3.5 h-3.5" />
         Capas

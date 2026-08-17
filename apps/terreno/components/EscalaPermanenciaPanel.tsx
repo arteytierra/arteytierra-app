@@ -31,7 +31,7 @@ export function EscalaPermanenciaPanel({ check, onCheck, onVolver }: Props) {
   const hechos = FACTORES.filter(f => check[f.id]?.hecho).length;
 
   return (
-    <div className="w-64 bg-white/97 backdrop-blur-sm rounded-xl shadow-xl border border-bone-200 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+    <div className="ay-legible w-64 bg-white rounded-xl shadow-xl border border-bone-300 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 120px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <button onClick={onVolver} className="flex items-center gap-1 text-bone-300 hover:text-bone-100 transition-colors">

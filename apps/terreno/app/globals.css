@@ -31,7 +31,9 @@
    con color inline y el export PNG (que se captura desde el nodo del mapa, sin
    el filtro ancestro) quedan en colores normales. */
 html[data-theme='sepia'] {
-  filter: sepia(0.45) saturate(0.78) brightness(0.98) contrast(1.08);
+  /* Menos sepia y menos desaturación + más contraste: el modo cálido perdía
+     legibilidad (el filtro lavaba el texto atenuado). */
+  filter: sepia(0.32) saturate(0.9) brightness(0.99) contrast(1.12);
 }
 /* Oscuro: invert + hue-rotate; se cancela en imágenes/tiles/canvas para que el
    mapa y las fotos se vean normales, dejando solo la interfaz en oscuro. */
@@ -114,6 +116,23 @@ html[data-theme='oscuro'] .vista-3d canvas {
   100% { opacity: 0; transform: translate(-50%, -6px) scale(1); }
 }
 .ay-flash { animation: ay-flash 1.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── Legibilidad de paneles ────────────────────────────────────────────────
+   El texto atenuado se hace con opacidad sobre ink-700 (#2A352C); sobre blanco
+   los grises quedaban muy claros (~2:1) y el filtro sepia los lavaba más. Acá
+   subimos el piso de contraste SOLO dentro de los paneles marcados `.ay-legible`
+   (columna izquierda + Capas), sin tocar el mapa, el header ni los chips.
+   `:where()` mantiene la especificidad de una utilidad simple → hover/focus
+   siguen ganando, y por orden en la hoja gana a la utilidad base. */
+:where(.ay-legible) .text-ink-700\/30 { color: rgb(42 53 44 / 0.50); }
+:where(.ay-legible) .text-ink-700\/40 { color: rgb(42 53 44 / 0.60); }
+:where(.ay-legible) .text-ink-700\/45 { color: rgb(42 53 44 / 0.63); }
+:where(.ay-legible) .text-ink-700\/50 { color: rgb(42 53 44 / 0.67); }
+:where(.ay-legible) .text-ink-700\/55 { color: rgb(42 53 44 / 0.70); }
+:where(.ay-legible) .text-ink-700\/60 { color: rgb(42 53 44 / 0.73); }
+:where(.ay-legible) .text-ink-700\/70 { color: rgb(42 53 44 / 0.80); }
+:where(.ay-legible) .text-ink-700\/75 { color: rgb(42 53 44 / 0.83); }
+:where(.ay-legible) .text-ink-700\/80 { color: rgb(42 53 44 / 0.86); }
 
 @media (prefers-reduced-motion: reduce) {
   .ay-panel-in { animation: none; }

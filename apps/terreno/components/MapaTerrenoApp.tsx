@@ -2479,7 +2479,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         </nav>
 
         {/* ── Panel contextual ── */}
-        <div className={`flex flex-col border-r border-bone-200 bg-white transition-all duration-300 ay-ease ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
+        <div className={`ay-legible flex flex-col border-r border-bone-200 bg-white transition-all duration-300 ay-ease ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
@@ -3780,7 +3780,7 @@ function PanelCapas({
   });
 
   return (
-    <div className="w-56 bg-white/97 backdrop-blur-sm rounded-xl shadow-xl border border-bone-200 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
+    <div className="ay-legible w-56 bg-white rounded-xl shadow-xl border border-bone-300 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <div className="flex items-center gap-1.5">

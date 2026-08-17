@@ -56,7 +56,7 @@ export function BuscadorLugar({ onElegir }: { onElegir: (r: ResultadoBusqueda) =
 
   return (
     <div ref={boxRef} className="relative w-full no-print">
-      <div className="flex items-center bg-white/95 rounded-lg shadow-md border border-white/30 focus-within:border-sun-400 transition-colors">
+      <div className="flex items-center bg-bone-50 rounded-lg border border-bone-200 focus-within:border-sun-400 transition-colors">
         <Search className="w-3.5 h-3.5 ml-2 text-ink-700/40 shrink-0" />
         <input
           value={q}
