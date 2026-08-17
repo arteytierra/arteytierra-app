@@ -2508,8 +2508,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             return (<>
           {tab === 'mojones' && (
             <div className="px-4 py-4 space-y-4">
-              {/* Buscar la localidad para ubicar el predio (antes flotaba sobre el mapa). */}
-              <div>
+              {/* Buscar la localidad para ubicar el predio (antes flotaba sobre el mapa).
+                  relative z-20: el desplegable de resultados debe quedar por encima de las
+                  secciones hermanas (onboarding/mojones). Sin esto, la cascada .ay-reveal les
+                  da un transform temporal que crea stacking context y el dropdown queda debajo. */}
+              <div className="relative z-20">
                 <p className="eyebrow mb-1.5">Ubicar el predio</p>
                 <BuscadorLugar onElegir={handleElegirLugar} />
               </div>
