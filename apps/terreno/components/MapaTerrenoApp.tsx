@@ -307,7 +307,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [grillaCurvas,      setGrillaCurvas]      = useState<GrillaElevacion | null>(null);
   const [curvasLoading,     setCurvasLoading]     = useState(false);
   const grillaKeyRef = useRef<string>('');
-  const [colorCurvas, setColorCurvas] = useState({ normal: '#7B1FA2', maestra: '#4527A0' });
+  const [colorCurvas, setColorCurvas] = useState({ normal: '#E91E63', maestra: '#AD1457' });
 
   const [mostrarAptitud, setMostrarAptitud] = useState(false);
 
@@ -2190,6 +2190,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación' });
     if (capas.shaderPend && datosShader)
       items.push({ color: 'linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336)', label: 'Pendiente' });
+    if (capas.curvasNivel && curvasNivel.length > 0)
+      items.push({ color: colorCurvas.normal, dash: true, label: `Curvas de nivel${intervaloCurvasEfectivo ? ` (cada ${intervaloCurvasEfectivo} m)` : ''}` });
     // Arco solar
     if (capas.arcSolar) {
       items.push({ color: '#FF5722', dash: true, label: 'Solsticio de verano (21 dic)' });
@@ -2215,7 +2217,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     caminosFiltrados.forEach(c => items.push({ color: c.color, label: c.nombre }));
     pinesFiltrados.forEach(p => items.push({ icon: p.icono, label: p.nombre }));
     return items;
-  }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, pinesFiltrados, terrariumElevMin, terrariumElevMax]);
+  }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, pinesFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
 
   // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
   const iniciarCaptura = useCallback(() => {
@@ -3347,10 +3349,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     <div key={`ed-${item.id}`} className="flex items-center gap-1">
                       {item.icon ? (
                         <span className="text-xs w-4 shrink-0 text-center">{item.icon}</span>
-                      ) : item.dash ? (
-                        <span className="w-3 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: item.color }} />
+                      ) : item.color?.startsWith('linear-gradient') ? (
+                        <span className="w-3 h-2.5 rounded-sm shrink-0" style={{ background: item.color }} />
                       ) : (
-                        <span className="w-3 h-2.5 rounded-sm shrink-0" style={{ background: item.color ?? '#999' }} />
+                        <input
+                          type="color"
+                          value={item.color ?? '#999999'}
+                          onChange={e => setLeyendaEditada(prev => prev?.map(x => x.id === item.id ? { ...x, color: e.target.value } : x) ?? null)}
+                          className="w-4 h-4 shrink-0 cursor-pointer border border-bone-200 rounded p-0 bg-transparent"
+                          title="Color del ítem"
+                        />
                       )}
                       <input
                         type="text"
@@ -3759,8 +3767,19 @@ function PanelCapas({
     'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
   ]);
   const [dragKey, setDragKey] = useState<string | null>(null);
+  // Mientras se arrastra un control (slider de intensidad / selector de color)
+  // dentro de un grupo, el grupo NO debe ser draggable: el drag nativo del grupo
+  // (para reordenar) secuestraba el arrastre del slider. Se rearma al soltar.
+  const [dragBloqueado, setDragBloqueado] = useState(false);
+  useEffect(() => {
+    if (!dragBloqueado) return;
+    const soltar = () => setDragBloqueado(false);
+    window.addEventListener('mouseup', soltar);
+    return () => window.removeEventListener('mouseup', soltar);
+  }, [dragBloqueado]);
+  const bloquearDrag = { onMouseDown: () => setDragBloqueado(true) };
   const makeDrag = (key: string) => ({
-    draggable: true as const,
+    draggable: !dragBloqueado,
     style: { order: ordenGrupos.indexOf(key), opacity: dragKey === key ? 0.4 : 1 },
     onDragStart: (e: React.DragEvent) => { e.dataTransfer.effectAllowed = 'move'; setDragKey(key); },
     onDragOver:  (e: React.DragEvent) => e.preventDefault(),
@@ -3836,7 +3855,7 @@ function PanelCapas({
               {capas.shaderElev && (
                 <div className="mx-3 mb-1 flex items-center gap-2">
                   <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
-                  <input type="range" min="0.1" max="1" step="0.05"
+                  <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
                     value={opacidadShader.elev}
                     onChange={e => onOpacidadShader({ ...opacidadShader, elev: parseFloat(e.target.value) })}
                     className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
@@ -3854,7 +3873,7 @@ function PanelCapas({
               {capas.shaderPend && (
                 <div className="mx-3 mb-1 flex items-center gap-2">
                   <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
-                  <input type="range" min="0.1" max="1" step="0.05"
+                  <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
                     value={opacidadShader.pend}
                     onChange={e => onOpacidadShader({ ...opacidadShader, pend: parseFloat(e.target.value) })}
                     className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
@@ -3981,11 +4000,11 @@ function PanelCapas({
                   )}
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] text-ink-700/60 w-14">Normal:</span>
-                    <input type="color" value={colorCurvas.normal}
+                    <input type="color" value={colorCurvas.normal} {...bloquearDrag}
                       onChange={e => onColorCurvas({ ...colorCurvas, normal: e.target.value })}
                       className="w-6 h-5 rounded cursor-pointer border border-bone-200 p-0" title="Color curvas normales" />
                     <span className="text-[9px] text-ink-700/60 w-14">Maestra:</span>
-                    <input type="color" value={colorCurvas.maestra}
+                    <input type="color" value={colorCurvas.maestra} {...bloquearDrag}
                       onChange={e => onColorCurvas({ ...colorCurvas, maestra: e.target.value })}
                       className="w-6 h-5 rounded cursor-pointer border border-bone-200 p-0" title="Color curvas maestras (cada 5)" />
                   </div>

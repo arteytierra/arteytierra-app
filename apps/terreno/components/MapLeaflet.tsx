@@ -610,7 +610,7 @@ function CotasAutoLayer({ mojones, metricas }: { mojones: Mojon[]; metricas: Met
 }
 
 // Capa de curvas de nivel (polilíneas continuas suavizadas)
-function CurvasNivelLayer({ curvas, colorNormal = '#7B1FA2', colorMaestra = '#4527A0' }: {
+function CurvasNivelLayer({ curvas, colorNormal = '#E91E63', colorMaestra = '#AD1457' }: {
   curvas: CurvaNivel[];
   colorNormal?: string;
   colorMaestra?: string;
@@ -624,35 +624,52 @@ function CurvasNivelLayer({ curvas, colorNormal = '#7B1FA2', colorMaestra = '#45
     const intervalo = curvas.length >= 2 ? curvas[1]!.cota - curvas[0]!.cota : 0;
     const pasoMaestra = intervalo * 5;
 
-    curvas.forEach(curva => {
+    const etiquetar = (lat: number, lng: number, cota: number, color: string) => {
+      const icon = L.divIcon({
+        html: `<span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;background:rgba(255,255,255,0.9);padding:0 2px;border-radius:2px;white-space:nowrap;box-shadow:0 0 0 0.5px rgba(0,0,0,0.15);">${cota} m</span>`,
+        className: '', iconSize: undefined, iconAnchor: [10, 5],
+      });
+      const mk = L.marker([lat, lng], { icon, interactive: false });
+      mk.addTo(map);
+      layers.push(mk);
+    };
+
+    curvas.forEach((curva, idx) => {
       const esMaestra = pasoMaestra > 0 && curva.cota % pasoMaestra === 0;
       const color  = esMaestra ? colorMaestra : colorNormal;
       const weight = esMaestra ? 2 : 1.1;
-      const opacity = esMaestra ? 0.85 : 0.55;
+      const opacity = esMaestra ? 0.9 : 0.6;
 
       curva.lineas.forEach(linea => {
         const pts = linea.puntos.map(p => [p.lat, p.lng] as LatLngTuple);
         const suave = chaikin(pts, 2, linea.cerrada);
-        const pl = L.polyline(linea.cerrada ? [...suave, suave[0]!] : suave, {
+        const anillo = linea.cerrada ? [...suave, suave[0]!] : suave;
+        // Casing (halo claro) debajo: la curva se lee sobre cualquier fondo y en
+        // los 3 temas (antes el color plano se perdía en claro/sepia sobre el shader).
+        const casing = L.polyline(anillo, {
+          color: '#ffffff', weight: weight + 2, opacity: 0.5,
+          interactive: false, lineCap: 'round', lineJoin: 'round',
+        });
+        casing.addTo(map);
+        layers.push(casing);
+        const pl = L.polyline(anillo, {
           color, weight, opacity, interactive: false, lineCap: 'round', lineJoin: 'round',
         });
         pl.addTo(map);
         layers.push(pl);
       });
 
-      // Etiqueta de cota en el punto medio de la línea más larga
+      // Etiquetas de cota: más referencias que antes. Las maestras se rotulan en
+      // dos puntos espaciados; las normales largas, una de cada dos, en su medio.
       const masLarga = curva.lineas.reduce((best, l) => l.puntos.length > best.puntos.length ? l : best, curva.lineas[0]!);
-      if (masLarga && masLarga.puntos.length >= 2 && (esMaestra || curvas.length <= 12)) {
-        const medio = masLarga.puntos[Math.floor(masLarga.puntos.length / 2)]!;
-        const icon = L.divIcon({
-          html: `<span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;background:rgba(255,255,255,0.82);padding:0 2px;border-radius:2px;white-space:nowrap;">${curva.cota} m</span>`,
-          className: '',
-          iconSize: undefined,
-          iconAnchor: [10, 5],
-        });
-        const mk = L.marker([medio.lat, medio.lng], { icon, interactive: false });
-        mk.addTo(map);
-        layers.push(mk);
+      if (masLarga && masLarga.puntos.length >= 2) {
+        const n = masLarga.puntos.length;
+        if (esMaestra) {
+          [0.33, 0.66].forEach(f => { const p = masLarga.puntos[Math.floor(n * f)]!; etiquetar(p.lat, p.lng, curva.cota, color); });
+        } else if (idx % 2 === 0 && n >= 24) {
+          const p = masLarga.puntos[Math.floor(n / 2)]!;
+          etiquetar(p.lat, p.lng, curva.cota, color);
+        }
       }
     });
 
