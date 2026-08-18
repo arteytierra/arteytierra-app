@@ -312,7 +312,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [mostrarAptitud, setMostrarAptitud] = useState(false);
 
   // ─── Rótulo de plano ──────────────────────────────────────────────────────
-  interface Rotulo { nombre: string; propietario: string; ubicacion: string; fecha: string; escala: string; autor: string }
+  interface Rotulo { nombre: string; propietario: string; ubicacion: string; fecha: string; escala: string; autor: string; marca?: string; logo?: string }
   const [rotulo,        setRotulo]        = useState<Rotulo>({ nombre: '', propietario: '', ubicacion: '', fecha: new Date().toLocaleDateString('es-AR'), escala: '', autor: '' });
   const [rotuloVisible, setRotuloVisible] = useState(false);
 
@@ -2215,9 +2215,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       }
     });
     caminosFiltrados.forEach(c => items.push({ color: c.color, label: c.nombre }));
+    aguadasFiltradas.forEach(a => {
+      if (a.tipo === 'represa') items.push({ icon: '🏊', label: a.nombre });
+      else items.push({ color: a.tipo === 'swale' ? '#26A69A' : '#66BB6A', dash: true, label: a.nombre });
+    });
     pinesFiltrados.forEach(p => items.push({ icon: p.icono, label: p.nombre }));
+    // Dibujos de usuario con nombre propio (los anónimos no ensucian la leyenda)
+    dibujosFiltrados.forEach(d => {
+      if (!d.nombre) return;
+      const esLinea = d.tipo === 'linea' || d.tipo === 'curva' || d.tipo === 'cota';
+      items.push({ color: d.color, dash: esLinea, label: d.nombre });
+    });
     return items;
-  }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, pinesFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
+  }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, aguadasFiltradas, pinesFiltrados, dibujosFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
 
   // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
   const iniciarCaptura = useCallback(() => {
@@ -3395,11 +3405,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             {/* ── Rótulo de plano (bottom-right, sobre la leyenda) ─────────── */}
             {rotuloVisible && (
               <div id="captura-rotulo" className="absolute bottom-[56px] right-3 z-[1002] bg-white border border-bone-300 rounded-xl shadow-lg overflow-hidden w-[196px]">
-                {/* Banda de marca (cajetín profesional) */}
+                {/* Banda de marca (cajetín profesional) — white-label en plan Estudio */}
                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-ink-950 text-bone-50">
-                  <img src="/logo-ayt.png" alt="" className="w-5 h-5 object-contain shrink-0 invert brightness-200" />
+                  {can(plan, 'informe.white_label') && rotulo.logo
+                    ? <img src={rotulo.logo} alt="" className="w-5 h-5 object-contain shrink-0 bg-bone-50 rounded p-0.5" />
+                    : <img src="/logo-ayt.png" alt="" className="w-5 h-5 object-contain shrink-0 invert brightness-200" />}
                   <div className="leading-none flex-1 min-w-0">
-                    <p className="text-[6px] uppercase tracking-[0.2em] text-bone-50/60">Arte y Tierra</p>
+                    <p className="text-[6px] uppercase tracking-[0.2em] text-bone-50/60">{(can(plan, 'informe.white_label') && rotulo.marca) || 'Arte y Tierra'}</p>
                     <p className="text-[9px] font-bold truncate">{rotulo.nombre || 'Plano del terreno'}</p>
                   </div>
                   {/* Norte */}
@@ -3440,12 +3452,52 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   ] as [keyof Rotulo, string][]).map(([field, label]) => (
                     <input
                       key={field}
-                      value={rotulo[field]}
+                      value={rotulo[field] ?? ''}
                       onChange={e => setRotulo(r => ({ ...r, [field]: e.target.value }))}
                       placeholder={label}
                       className="w-full text-[9px] border border-bone-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-moss-500"
                     />
                   ))}
+                  {/* Marca propia (white-label) — plan Estudio */}
+                  {can(plan, 'informe.white_label') ? (
+                    <div className="pt-1 mt-1 border-t border-bone-200 space-y-1">
+                      <p className="text-[8px] uppercase tracking-wider text-water-700 font-semibold">Tu marca</p>
+                      <input
+                        value={rotulo.marca ?? ''}
+                        onChange={e => setRotulo(r => ({ ...r, marca: e.target.value }))}
+                        placeholder="Nombre de tu estudio / marca"
+                        className="w-full text-[9px] border border-bone-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-moss-500"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <label className="flex-1 text-[9px] text-center border border-dashed border-water-500/40 text-water-700 rounded px-1.5 py-1 bg-white hover:bg-water-500/5 cursor-pointer transition-colors">
+                          {rotulo.logo ? 'Cambiar logo' : 'Subir logo'}
+                          <input
+                            type="file" accept="image/png,image/jpeg,image/svg+xml" className="hidden"
+                            onChange={e => {
+                              const file = e.target.files?.[0];
+                              e.target.value = '';
+                              if (!file) return;
+                              if (file.size > 400_000) { setModal({ type: 'alert', message: 'El logo es muy pesado (máx. 400 KB). Reducilo antes de subirlo.' }); return; }
+                              const reader = new FileReader();
+                              reader.onload = () => setRotulo(r => ({ ...r, logo: String(reader.result) }));
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+                        {rotulo.logo && (
+                          <button
+                            onClick={() => setRotulo(r => ({ ...r, logo: undefined }))}
+                            title="Quitar logo propio"
+                            className="shrink-0 p-1 text-ink-700/40 hover:text-clay-600 transition-colors"
+                          ><X className="w-3 h-3" /></button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="pt-1 mt-1 border-t border-bone-200 text-[8px] text-ink-700/50 leading-tight">
+                      🔒 Logo y marca propios en el rótulo: plan <span className="font-semibold text-water-700">Estudio</span>.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
