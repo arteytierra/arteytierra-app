@@ -1,7 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, after, type NextRequest } from 'next/server';
 import crypto from 'node:crypto';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { emitN8nEvent } from '@/lib/integrations/n8n';
+import { generateAndSendReply, sendNonTextFallback } from '@/lib/chatbot/reply';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,6 +57,10 @@ export async function POST(req: NextRequest) {
   const body = JSON.parse(raw) as { entry?: Array<{ changes?: Array<{ value?: unknown }> }> };
 
   const admin = createSupabaseAdminClient();
+
+  // Mensajes nuevos a responder — se procesan DESPUÉS de contestarle 200 a Meta.
+  const toReply: Array<{ phone: string; name?: string | null; text: string; isText: boolean }> = [];
+
   for (const entry of body.entry ?? []) {
     for (const change of entry.changes ?? []) {
       const value = change.value as {
@@ -67,6 +72,8 @@ export async function POST(req: NextRequest) {
       // Mensajes entrantes
       for (const msg of value?.messages ?? []) {
         const contact = value.contacts?.find((c) => c.wa_id === msg.from);
+        const isText = msg.type === 'text' && !!msg.text?.body;
+
         // Upsert contacto
         await admin.schema('app').from('contacts').upsert(
           {
@@ -78,8 +85,10 @@ export async function POST(req: NextRequest) {
           { onConflict: 'phone' },
         );
 
-        // Persistir mensaje en CRM
-        await admin.from('messages').insert({
+        // Persistir mensaje entrante. El índice único (channel, provider_message_id)
+        // hace de deduplicador: si Meta reintenta la entrega, el insert falla con
+        // código 23505 y NO volvemos a responder el mismo mensaje.
+        const { error: insertErr } = await admin.from('messages').insert({
           channel: 'whatsapp',
           direction: 'inbound',
           provider_message_id: msg.id,
@@ -88,12 +97,24 @@ export async function POST(req: NextRequest) {
           raw: msg as never,
         });
 
-        // Disparar n8n para routing/respuesta automática
+        if (insertErr) {
+          if (insertErr.code !== '23505') console.error('[whatsapp] insert inbound', insertErr);
+          continue; // duplicado (reintento de Meta) o error → no responder
+        }
+
+        // Evento CRM (best-effort, no bloquea)
         void emitN8nEvent('contact-created', {
           channel: 'whatsapp',
           phone: msg.from,
           name: contact?.profile?.name,
           message: msg.text?.body,
+        });
+
+        toReply.push({
+          phone: msg.from,
+          name: contact?.profile?.name,
+          text: msg.text?.body ?? '',
+          isText,
         });
       }
 
@@ -105,6 +126,21 @@ export async function POST(req: NextRequest) {
           .eq('provider_message_id', st.id);
       }
     }
+  }
+
+  // El bot responde después de que Meta ya recibió su 200 (no bloquea el webhook,
+  // así cumplimos el requisito de responder rápido y evitamos reintentos).
+  if (toReply.length > 0) {
+    after(async () => {
+      for (const m of toReply) {
+        try {
+          if (m.isText) await generateAndSendReply({ phone: m.phone, name: m.name, text: m.text });
+          else await sendNonTextFallback(m.phone);
+        } catch (err) {
+          console.error('[whatsapp] fallo respondiendo', err);
+        }
+      }
+    });
   }
 
   return NextResponse.json({ received: true });
