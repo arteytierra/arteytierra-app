@@ -63,6 +63,18 @@ export const CATEGORIAS_ZONA: Record<CategoriaZona, {
   personalizado:    { label: 'Uso personalizado',         descripcion: 'Definí el uso específico',                   color: '#9C27B0', colorTw: 'bg-purple-600'  },
 };
 
+/**
+ * Orden en que se ofrecen las categorías al crear/editar una zona.
+ * Las zonas de permacultura (0–5) van primero: es el marco de diseño que
+ * la mayoría de la gente busca al empezar a zonificar un predio.
+ */
+export const ORDEN_CATEGORIAS_ZONA: CategoriaZona[] = [
+  'zona_0', 'zona_1', 'zona_2', 'zona_3', 'zona_4', 'zona_5',
+  'vivienda', 'huerta', 'frutales', 'bosque_alimento', 'pasturas', 'silvopastoril',
+  'cultivo', 'monte_nativo', 'agua', 'acuicultura', 'apiario', 'barrera',
+  'compost_vivero', 'infraestructura', 'recreacion', 'personalizado',
+];
+
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 export interface Zona {

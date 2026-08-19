@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Plus, Trash2, PenLine, Check, X, ChevronDown, RotateCcw } from 'lucide-react';
 import {
   CATEGORIAS_ZONA,
+  ORDEN_CATEGORIAS_ZONA,
   calcularResumenZonificacion,
   type Zona,
   type CategoriaZona,
@@ -28,7 +29,7 @@ export function ZonificacionPanel({
   onIniciarDibujo, onFinalizarZona, onCancelarZona,
 }: Props) {
   const [editandoId,   setEditandoId]   = useState<string | null>(null);
-  const [categoriaNew, setCategoriaNew] = useState<CategoriaZona>('huerta');
+  const [categoriaNew, setCategoriaNew] = useState<CategoriaZona>('zona_0');
   const [menuAbierto,  setMenuAbierto]  = useState(false);
   const [colorModo,    setColorModo]    = useState<string>(CATEGORIAS_ZONA.huerta.color);
 
@@ -124,23 +125,26 @@ export function ZonificacionPanel({
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuAbierto(false)} />
               <div className="absolute left-0 right-0 top-9 z-20 bg-white rounded-xl border border-bone-200 shadow-lg py-1 max-h-72 overflow-y-auto">
-                {(Object.entries(CATEGORIAS_ZONA) as [CategoriaZona, typeof CATEGORIAS_ZONA[CategoriaZona]][]).map(([key, info]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setCategoriaNew(key);
-                      setMenuAbierto(false);
-                      onIniciarDibujo(key);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-bone-50 transition-colors flex items-center gap-2"
-                  >
-                    <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: info.color }} />
-                    <div>
-                      <span className="font-medium text-ink-900">{info.label}</span>
-                      <span className="block text-ink-700/50 text-[10px]">{info.descripcion}</span>
-                    </div>
-                  </button>
-                ))}
+                {ORDEN_CATEGORIAS_ZONA.map(key => {
+                  const info = CATEGORIAS_ZONA[key];
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setCategoriaNew(key);
+                        setMenuAbierto(false);
+                        onIniciarDibujo(key);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-bone-50 transition-colors flex items-center gap-2"
+                    >
+                      <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: info.color }} />
+                      <div>
+                        <span className="font-medium text-ink-900">{info.label}</span>
+                        <span className="block text-ink-700/50 text-[10px]">{info.descripcion}</span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -250,8 +254,8 @@ function ZonaRow({
           <div>
             <label className="block text-[10px] text-ink-700/60 mb-1">Categoría</label>
             <select className={inputCls} value={zona.categoria} onChange={e => onUpdate({ categoria: e.target.value as CategoriaZona })}>
-              {(Object.entries(CATEGORIAS_ZONA) as [CategoriaZona, typeof CATEGORIAS_ZONA[CategoriaZona]][]).map(([key, inf]) => (
-                <option key={key} value={key}>{inf.label}</option>
+              {ORDEN_CATEGORIAS_ZONA.map(key => (
+                <option key={key} value={key}>{CATEGORIAS_ZONA[key].label}</option>
               ))}
             </select>
           </div>

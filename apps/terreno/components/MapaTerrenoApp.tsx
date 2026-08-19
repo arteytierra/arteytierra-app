@@ -3175,12 +3175,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             en la barra superior; acá quedan sólo los interruptores de panel, así
             el dock respira y no tapa la zona de captura. */}
         <div className="absolute top-3 right-3 z-[1000] no-print flex flex-col items-end gap-1.5">
-          <ControlesPaneles
-            capasAbierto={panelDerecho === 'capas'}
-            onCapas={() => setPanelDerecho(p => (p === 'capas' ? null : 'capas'))}
-            escalaAbierta={panelDerecho === 'bitacora'}
-            onEscala={() => setPanelDerecho(p => (p === 'bitacora' ? null : 'bitacora'))}
-          />
+          {/* Con el panel de Capas abierto, el acceso Escala/Capas vive en su
+              cabecera; así el dock no tapa el plano. */}
+          {panelDerecho !== 'capas' && (
+            <ControlesPaneles
+              capasAbierto={false}
+              onCapas={() => setPanelDerecho('capas')}
+              escalaAbierta={panelDerecho === 'bitacora'}
+              onEscala={() => setPanelDerecho(p => (p === 'bitacora' ? null : 'bitacora'))}
+            />
+          )}
 
           {/* El panel de Capas ahora es un sidebar full-height (fuera del <main>). */}
 
@@ -3607,6 +3611,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             hayCortafuegos={!!cortafuegos}
             haySilvopastura={!!silvopastura}
             onCerrar={() => setPanelDerecho(null)}
+            escalaAbierta={false}
+            onEscala={() => setPanelDerecho('bitacora')}
             terrariumElevMin={terrariumElevMin}
             terrariumElevMax={terrariumElevMax}
             intervaloContorno={intervaloContorno}
@@ -3850,6 +3856,8 @@ interface PanelCapasProps {
   subCapasOcultas:     Set<string>;
   onToggleSubCapa:     (key: string) => void;
   onCerrar:            () => void;
+  escalaAbierta:       boolean;
+  onEscala:            () => void;
   terrariumElevMin:    number;
   terrariumElevMax:    number;
   colorCurvas:         { normal: string; maestra: string };
@@ -3872,7 +3880,7 @@ function PanelCapas({
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, datosErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
-  onCerrar,
+  onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
   intervaloCurvas, curvasLoading,
@@ -3968,15 +3976,25 @@ function PanelCapas({
 
   return (
     <div className="ay-legible w-full h-full bg-bone-50 flex flex-col overflow-hidden">
-      {/* Header */}
+      {/* Header — el acceso a Escala/Capas vive acá (ya no flota sobre el mapa) */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <div className="flex items-center gap-1.5">
           <Layers className="w-3 h-3 text-bone-300" />
           <span className="text-[10px] font-bold text-bone-100 uppercase tracking-widest">Capas</span>
         </div>
-        <button onClick={onCerrar} className="text-bone-400 hover:text-bone-100 transition-colors">
-          <X className="w-3 h-3" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onEscala}
+            title="Escala de permanencia (bitácora de diseño)"
+            className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-semibold transition-colors ${escalaAbierta ? 'bg-moss-700 text-bone-50' : 'text-bone-300 hover:text-bone-50 hover:bg-ink-800'}`}
+          >
+            <ClipboardList className="w-3 h-3" />
+            Escala
+          </button>
+          <button onClick={onCerrar} title="Cerrar capas" className="text-bone-400 hover:text-bone-100 transition-colors p-1">
+            <X className="w-3 h-3" />
+          </button>
+        </div>
       </div>
 
       {/* Grupos */}

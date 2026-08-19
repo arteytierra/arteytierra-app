@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Mountain } from 'lucide-react';
-import { calcularAptitud, LABELS_APTITUD, COLORES_APTITUD, type TipoAptitud, type ResultadoAptitud } from '@/lib/aptitud';
+import { calcularAptitud, agruparAptitud, LABELS_APTITUD, COLORES_APTITUD, type TipoAptitud, type ResultadoAptitud } from '@/lib/aptitud';
 import { crearZona } from '@/lib/zonificacion';
 import type { DatosShader } from '@/lib/shaders';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
@@ -54,20 +54,22 @@ export function AptitudPanel({ datosShader, datosEscorrentia, onAplicarZonas, on
       reserva:  '#78909C',
     };
 
-    const zonas: Zona[] = tipos.flatMap(tipo => {
-      const celdas = resultado.celdas.filter(c => c.dominante === tipo);
-      if (celdas.length === 0) return [];
-      const latMin = Math.min(...celdas.map(c => c.latMin));
-      const latMax = Math.max(...celdas.map(c => c.latMax));
-      const lngMin = Math.min(...celdas.map(c => c.lngMin));
-      const lngMax = Math.max(...celdas.map(c => c.lngMax));
-      const zona = crearZona(categoriaMap[tipo], [
-        { lat: latMin, lng: lngMin },
-        { lat: latMax, lng: lngMin },
-        { lat: latMax, lng: lngMax },
-        { lat: latMin, lng: lngMax },
-      ]);
-      return [{ ...zona, nombre: LABELS_APTITUD[tipo].replace(' — ', ': '), color: colorMap[tipo] }];
+    // Un polígono por cada mancha contigua de aptitud dominante (no una caja
+    // envolvente por tipo, que cubría todo el predio y se superponía).
+    const clusters = agruparAptitud(resultado);
+    const contadorPorTipo = new Map<TipoAptitud, number>();
+
+    const zonas: Zona[] = clusters.map(cl => {
+      const base   = crearZona(categoriaMap[cl.tipo], cl.anillo);
+      const nombre = LABELS_APTITUD[cl.tipo].replace(' — ', ': ');
+      const nMismo = clusters.filter(c => c.tipo === cl.tipo).length;
+      let etiqueta = nombre;
+      if (nMismo > 1) {
+        const idx = (contadorPorTipo.get(cl.tipo) ?? 0) + 1;
+        contadorPorTipo.set(cl.tipo, idx);
+        etiqueta = `${nombre} ${idx}`;
+      }
+      return { ...base, nombre: etiqueta, color: colorMap[cl.tipo] };
     });
 
     onAplicarZonas(zonas);

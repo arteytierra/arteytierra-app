@@ -3,6 +3,7 @@
  * Combina pendiente + orientación + acumulación hídrica + elevación relativa.
  * Resultados orientativos — no reemplazan relevamiento agronómico/edafológico.
  */
+import * as turf from '@turf/turf';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 
@@ -145,4 +146,108 @@ export function calcularAptitud(
   })) as Record<TipoAptitud, { celdas: number; pct: number }>;
 
   return { celdas: resultCeldas, resumen };
+}
+
+// ─── Agrupar celdas en polígonos contiguos ───────────────────────────────────
+//
+// Cada celda pertenece a UN solo tipo dominante, así que los polígonos que
+// devolvemos son disjuntos por construcción: teselan el predio sin superponerse.
+// (El método anterior — una única caja envolvente por tipo — cubría todo el
+//  predio y las cajas se pisaban entre sí.)
+
+export interface ClusterAptitud {
+  tipo:    TipoAptitud;
+  anillo:  Array<{ lat: number; lng: number }>;
+  celdas:  number;
+}
+
+export function agruparAptitud(res: ResultadoAptitud, minCeldas = 3): ClusterAptitud[] {
+  const key = (r: number, c: number) => `${r},${c}`;
+  const porTipo = new Map<TipoAptitud, CeldaAptitud[]>();
+  for (const c of res.celdas) {
+    const arr = porTipo.get(c.dominante) ?? [];
+    arr.push(c);
+    porTipo.set(c.dominante, arr);
+  }
+
+  const clusters: ClusterAptitud[] = [];
+
+  for (const [tipo, celdas] of porTipo) {
+    const byPos = new Map<string, CeldaAptitud>(celdas.map(c => [key(c.row, c.col), c]));
+    const visto = new Set<string>();
+
+    for (const inicio of celdas) {
+      const k0 = key(inicio.row, inicio.col);
+      if (visto.has(k0)) continue;
+
+      // Flood-fill 4-conexo: recolectar el grupo contiguo
+      const grupo: CeldaAptitud[] = [];
+      const cola: CeldaAptitud[] = [inicio];
+      visto.add(k0);
+      while (cola.length) {
+        const c = cola.pop()!;
+        grupo.push(c);
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const kk = key(c.row + dr, c.col + dc);
+          const vecino = byPos.get(kk);
+          if (vecino && !visto.has(kk)) { visto.add(kk); cola.push(vecino); }
+        }
+      }
+      if (grupo.length < minCeldas) continue;
+
+      const anillo = unirCeldas(grupo);
+      if (anillo && anillo.length >= 3) {
+        clusters.push({ tipo, anillo, celdas: grupo.length });
+      }
+    }
+  }
+
+  return clusters;
+}
+
+/** Une los rectángulos de un grupo contiguo en un solo anillo exterior. */
+function unirCeldas(grupo: CeldaAptitud[]): Array<{ lat: number; lng: number }> | null {
+  try {
+    const polys = grupo.map(c => turf.polygon([[
+      [c.lngMin, c.latMin], [c.lngMax, c.latMin],
+      [c.lngMax, c.latMax], [c.lngMin, c.latMax],
+      [c.lngMin, c.latMin],
+    ]]));
+    const merged = polys.length === 1
+      ? polys[0]
+      : turf.union(turf.featureCollection(polys));
+    if (!merged) return null;
+
+    const geom = merged.geometry;
+    let ring: number[][] | undefined;
+    if (geom.type === 'Polygon') {
+      ring = geom.coordinates[0];
+    } else {
+      // MultiPolygon (raro con 4-conexión): tomar el anillo exterior mayor
+      ring = geom.coordinates
+        .map(p => p[0]!)
+        .sort((a, b) => turf.area(turf.polygon([b])) - turf.area(turf.polygon([a])))[0];
+    }
+    if (!ring) return null;
+
+    const pts = ring.slice(0, -1).map(([lng, lat]) => ({ lat: lat!, lng: lng! }));
+    return limpiarColineales(pts);
+  } catch {
+    return null;
+  }
+}
+
+/** Descarta vértices colineales para aligerar el anillo rectilíneo. */
+function limpiarColineales(pts: Array<{ lat: number; lng: number }>): Array<{ lat: number; lng: number }> {
+  if (pts.length < 4) return pts;
+  const n = pts.length;
+  const out: Array<{ lat: number; lng: number }> = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[(i - 1 + n) % n]!;
+    const b = pts[i]!;
+    const c = pts[(i + 1) % n]!;
+    const cross = (b.lng - a.lng) * (c.lat - a.lat) - (b.lat - a.lat) * (c.lng - a.lng);
+    if (Math.abs(cross) > 1e-12) out.push(b);
+  }
+  return out.length >= 3 ? out : pts;
 }
