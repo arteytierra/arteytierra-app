@@ -1792,6 +1792,27 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     });
   }, [setCapasUsuario]);
 
+  // Aislar (solo): mostrar sólo una carpeta —o sólo el análisis del mapa—,
+  // ocultando el resto de carpetas. Guarda un snapshot de capasOcultas para
+  // poder restaurar al desactivar. Objetivo '__analisis__' = ocultar todas.
+  const [aislado, setAislado] = useState<string | null>(null);
+  const aisladoSnap = useRef<Set<string> | null>(null);
+  const aislarEn = useCallback((objetivo: string, ocultarTodas: boolean) => {
+    setCapasOcultas(prev => {
+      if (aislado === objetivo) {
+        const snap = aisladoSnap.current ?? new Set<string>();
+        aisladoSnap.current = null;
+        return new Set(snap);
+      }
+      if (aislado === null) aisladoSnap.current = new Set(prev);
+      const ids = capasUsuario.map(c => c.id);
+      return new Set(ocultarTodas ? ids : ids.filter(id => id !== objetivo));
+    });
+    setAislado(prev => (prev === objetivo ? null : objetivo));
+  }, [aislado, capasUsuario, setCapasOcultas]);
+  const handleAislarCarpeta  = useCallback((id: string) => aislarEn(id, false), [aislarEn]);
+  const handleAislarAnalisis = useCallback(() => aislarEn('__analisis__', true), [aislarEn]);
+
   // ─── Aguadas ──────────────────────────────────────────────────────────────
   const handleRenombrarAguada = useCallback((id: string, nombre: string) => {
     setAguadasLayer(prev => prev.map(a => a.id === id ? { ...a, nombre } : a));
@@ -3593,6 +3614,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             onReordenarCapa={handleReordenarCapa}
             onMoverDibujoACapa={handleMoverDibujoACapa}
             onMoverElemento={handleMoverElementoACapa}
+            aislado={aislado}
+            onAislarCarpeta={handleAislarCarpeta}
+            onAislarAnalisis={handleAislarAnalisis}
             onFlyTo={(lat, lng) => flyToRef.current?.(lat, lng, 17)}
             onCrearCapa={() => setModal({
               type: 'prompt', message: 'Nombre de la nueva carpeta:', placeholder: 'Ej: Propuesta casa…',
@@ -3838,6 +3862,9 @@ interface PanelCapasProps {
   onReordenarCapa:     (id: string, dir: -1 | 1) => void;
   onMoverDibujoACapa:  (dibujoId: string, capaId: string) => void;
   onMoverElemento:     (tipo: TipoElementoCapa, id: string, capaId: string) => void;
+  aislado:             string | null;
+  onAislarCarpeta:     (id: string) => void;
+  onAislarAnalisis:    () => void;
   onFlyTo:             (lat: number, lng: number) => void;
   onCrearCapa:         () => void;
   onCargarPlantillaKeyline: () => void;
@@ -3877,7 +3904,7 @@ function PanelCapas({
   onRenombrarDibujo, onEliminarDibujo,
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
-  onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
+  onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, aislado, onAislarCarpeta, onAislarAnalisis, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, datosErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
@@ -3999,6 +4026,23 @@ function PanelCapas({
 
       {/* Grupos */}
       <div className="flex-1 overflow-y-auto flex flex-col">
+
+        {/* ── Encabezado: Análisis del mapa ──
+            Los overlays de análisis (topografía, curvas, hídrico, erosión…) viven
+            acá por defecto. El botón "aislar" muestra sólo el análisis y esconde
+            las carpetas de trabajo. */}
+        <div style={{ order: -1 }} className="px-3 pt-2 pb-1 flex items-center gap-1.5 border-b border-bone-100">
+          <Mountain className="w-2.5 h-2.5 text-ink-700/40" />
+          <p className="text-[8px] font-bold uppercase tracking-widest text-ink-700/45 flex-1">Análisis del mapa</p>
+          <button
+            onClick={onAislarAnalisis}
+            title={aislado === '__analisis__' ? 'Mostrar todo de nuevo' : 'Aislar: ver sólo el análisis (esconde tus carpetas)'}
+            className={`shrink-0 flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-semibold transition-colors ${aislado === '__analisis__' ? 'bg-moss-700 text-bone-50' : 'text-ink-700/40 hover:text-moss-700 hover:bg-bone-100'}`}
+          >
+            <Target className="w-2.5 h-2.5" />
+            {aislado === '__analisis__' ? 'Aislado' : 'Aislar'}
+          </button>
+        </div>
 
         {/* ── Topografía ── */}
         <div {...makeDrag('topo')}>
@@ -4456,6 +4500,8 @@ function PanelCapas({
                 visible={!capasOcultas.has(capa.id)}
                 activa={capaActivaId === capa.id}
                 esDefault={capa.id === CAPA_DEFAULT_ID}
+                aislada={aislado === capa.id}
+                onAislar={() => onAislarCarpeta(capa.id)}
                 puedeSubir={idx > 0}
                 puedeBajar={idx < arr.length - 1}
                 onSubir={() => onReordenarCapa(capa.id, -1)}
@@ -4755,8 +4801,9 @@ function CapaItem({ visible, onToggle, label, swatch, onRenombrar, onEliminar, e
 
 // ─── Grupo de capa de usuario (dibujos) ──────────────────────────────────────
 
-function CapaUsuarioGrupo({ capa, count, visible, activa, esDefault, puedeSubir, puedeBajar, onSubir, onBajar, onColor, onToggleVisible, onActivar, onRenombrar, onEliminar, children }: {
+function CapaUsuarioGrupo({ capa, count, visible, activa, esDefault, aislada, onAislar, puedeSubir, puedeBajar, onSubir, onBajar, onColor, onToggleVisible, onActivar, onRenombrar, onEliminar, children }: {
   capa: CapaUsuario; count: number; visible: boolean; activa: boolean; esDefault: boolean;
+  aislada: boolean; onAislar: () => void;
   puedeSubir: boolean; puedeBajar: boolean;
   onSubir: () => void; onBajar: () => void; onColor: (color: string) => void;
   onToggleVisible: () => void; onActivar: () => void;
@@ -4816,6 +4863,14 @@ function CapaUsuarioGrupo({ capa, count, visible, activa, esDefault, puedeSubir,
             <label className="shrink-0 w-3.5 h-3.5 rounded-sm border border-bone-300 cursor-pointer relative overflow-hidden" title="Color de la capa (recolorea sus dibujos)" style={{ background: capa.color ?? 'repeating-linear-gradient(45deg,#ddd,#ddd 2px,#fff 2px,#fff 4px)' }}>
               <input type="color" value={capa.color ?? '#3A5A40'} onChange={e => onColor(e.target.value)} onClick={e => e.stopPropagation()} className="absolute inset-0 opacity-0 cursor-pointer" />
             </label>
+            {/* Aislar (solo): ver sólo esta carpeta */}
+            <button
+              onClick={e => { e.stopPropagation(); onAislar(); }}
+              title={aislada ? 'Mostrar todas las carpetas' : 'Aislar: ver sólo esta carpeta'}
+              className={`shrink-0 transition-colors ${aislada ? 'text-moss-700' : 'text-ink-700/25 hover:text-moss-700'}`}
+            >
+              <Target className="w-2.5 h-2.5" />
+            </button>
             {/* Reordenar */}
             <button onClick={e => { e.stopPropagation(); onSubir(); }} disabled={!puedeSubir} title="Subir capa" className="shrink-0 text-ink-700/25 hover:text-ink-700 disabled:opacity-20 leading-none text-[9px]">▲</button>
             <button onClick={e => { e.stopPropagation(); onBajar(); }} disabled={!puedeBajar} title="Bajar capa" className="shrink-0 text-ink-700/25 hover:text-ink-700 disabled:opacity-20 leading-none text-[9px]">▼</button>
