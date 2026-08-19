@@ -61,6 +61,7 @@ export interface Sector {
   notas:    string;
   auto:     boolean;   // true = generado automáticamente desde datos
   color?:   string;   // hex personalizado; si no se define usa TIPOS_SECTOR[tipo].color
+  capaId?:  string;   // carpeta de usuario (Escala de permanencia) donde está archivado
 }
 
 // ─── Sectores automáticos desde datos ────────────────────────────────────────

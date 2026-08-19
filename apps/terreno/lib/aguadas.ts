@@ -16,6 +16,7 @@ export interface ElementoAguada {
   lng?: number;
   elevation?: number;
   vertices?: Array<{ lat: number; lng: number }>;
+  capaId?: string;   // carpeta de usuario (Escala de permanencia) donde está archivada
 }
 
 export interface PuntoAguada {

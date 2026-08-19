@@ -74,6 +74,7 @@ export interface Zona {
   area_ha:   number;
   notas:     string;
   color?:    string;   // hex personalizado; si no se define usa CATEGORIAS_ZONA[categoria].color
+  capaId?:   string;   // carpeta de usuario (Escala de permanencia) donde está archivada
 }
 
 // ─── Cálculo de área ──────────────────────────────────────────────────────────

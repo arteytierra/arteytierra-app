@@ -25,7 +25,33 @@ export const PLANTILLA_KEYLINE: string[] = [
 ];
 
 /** Id estable de cada carpeta de la Escala pre-armada (idéntico entre proyectos). */
-const idKeyline = (i: number) => `keyline-${i + 1}`;
+export const idKeyline = (i: number) => `keyline-${i + 1}`;
+
+/** ¿Las 8 carpetas de la Escala ya están todas creadas? (para no ofrecer la plantilla de nuevo) */
+export function tieneEscalaCompleta(capas: CapaUsuario[]): boolean {
+  const ids = new Set(capas.map(c => c.id));
+  return PLANTILLA_KEYLINE.every((_, i) => ids.has(idKeyline(i)));
+}
+
+/** Tipos de elemento que se archivan solos en una carpeta de la Escala. */
+export type TipoElementoCapa = 'dibujo' | 'camino' | 'aguada' | 'zona' | 'sector' | 'pin';
+
+/**
+ * Carpeta de la Escala donde cae por defecto cada herramienta (auto-archivado):
+ * camino→Accesos, agua→Agua, zona→Sistemas, sector→Clima, estructura/pin→Estructuras.
+ * Devuelve undefined para 'dibujo' (usa la capa activa). Si la carpeta no existe
+ * (el usuario la borró), capaDeElemento cae a la carpeta default.
+ */
+export function carpetaEscalaPara(tipo: TipoElementoCapa): string | undefined {
+  switch (tipo) {
+    case 'camino': return idKeyline(3); // 4 · Accesos
+    case 'aguada': return idKeyline(2); // 3 · Agua
+    case 'zona':   return idKeyline(4); // 5 · Sistemas
+    case 'sector': return idKeyline(0); // 1 · Clima
+    case 'pin':    return idKeyline(5); // 6 · Estructuras
+    default:       return undefined;    // dibujo → capa activa
+  }
+}
 
 /**
  * Estado inicial de capas: la carpeta catch-all "Dibujos" (default, donde caen los

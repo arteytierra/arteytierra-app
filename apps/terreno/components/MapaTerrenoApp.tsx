@@ -102,7 +102,7 @@ import { COLORES_DIBUJO, distanciaMetros, medidasDibujo } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
 import type { OverlayImagen } from './MapLeaflet';
-import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, type CapaUsuario } from '@/lib/capasUsuario';
+import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, carpetaEscalaPara, tieneEscalaCompleta, type CapaUsuario, type TipoElementoCapa } from '@/lib/capasUsuario';
 import { calcularMasterPlan, conectarMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan, type CaminoMasterPlan } from '@/lib/masterplan';
 import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
@@ -387,6 +387,36 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     subCapasOcultas, setSubCapasOcultas, toggleSubCapa,
   } = useCapas();
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
+  // Anchos regulables (persistidos) del panel izquierdo y del sidebar de Capas.
+  const [anchoPanel, setAnchoPanel] = useState<number>(() => {
+    if (typeof window === 'undefined') return 304;
+    return Number(localStorage.getItem('terreno.anchoPanel')) || 304;
+  });
+  const [anchoCapas, setAnchoCapas] = useState<number>(() => {
+    if (typeof window === 'undefined') return 300;
+    return Number(localStorage.getItem('terreno.anchoCapas')) || 300;
+  });
+  const [redimensionando, setRedimensionando] = useState(false);
+  useEffect(() => { try { localStorage.setItem('terreno.anchoPanel', String(anchoPanel)); } catch { /* ignore */ } }, [anchoPanel]);
+  useEffect(() => { try { localStorage.setItem('terreno.anchoCapas', String(anchoCapas)); } catch { /* ignore */ } }, [anchoCapas]);
+  const iniciarResize = useCallback((cual: 'panel' | 'capas') => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = cual === 'panel' ? anchoPanel : anchoCapas;
+    const set = cual === 'panel' ? setAnchoPanel : setAnchoCapas;
+    const dir = cual === 'panel' ? 1 : -1; // el panel crece a la derecha; Capas, a la izquierda
+    setRedimensionando(true);
+    document.body.style.cursor = 'col-resize';
+    const onMove = (ev: MouseEvent) => set(Math.min(560, Math.max(220, startW + dir * (ev.clientX - startX))));
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      setRedimensionando(false);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [anchoPanel, anchoCapas]);
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
   // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
@@ -620,11 +650,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoElementoClick || modoCuenca || modoViewshed || modoArbol || modoZona0 || modoAcceso || (modoDibujo && modoDibujo !== 'seleccion');
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
-  const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id))          : [], [capas.zonas, zonas, ocultosIds]);
-  const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id))       : [], [capas.sectores, sectores, ocultosIds]);
-  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis') && !(p.capa && subCapasOcultas.has('an:' + p.capa))) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds, subCapasOcultas]);
-  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis') && !(c.capa && subCapasOcultas.has('an:' + c.capa))) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds, subCapasOcultas]);
-  const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id))   : [], [capas.aguadas, aguadasLayer, ocultosIds]);
+  // Carpeta efectiva de un elemento: su capaId explícito o, si no tiene, la carpeta
+  // de la Escala que le corresponde por tipo (auto-archivado sin tocar la creación).
+  const folderEfectivo = useCallback(
+    (capaId: string | undefined, tipo: TipoElementoCapa) => capaDeElemento(capaId ?? carpetaEscalaPara(tipo), capasUsuario),
+    [capasUsuario]);
+  const carpetaVisible = useCallback(
+    (capaId: string | undefined, tipo: TipoElementoCapa) => !capasOcultas.has(folderEfectivo(capaId, tipo)),
+    [capasOcultas, folderEfectivo]);
+  const zonasFiltradas    = useMemo(() => capas.zonas    ? zonas.filter(z => !ocultosIds.has(z.id) && carpetaVisible(z.capaId, 'zona'))          : [], [capas.zonas, zonas, ocultosIds, carpetaVisible]);
+  const sectoresFiltrados = useMemo(() => capas.sectores ? sectores.filter(s => !ocultosIds.has(s.id) && carpetaVisible(s.capaId, 'sector'))       : [], [capas.sectores, sectores, ocultosIds, carpetaVisible]);
+  const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis') && !(p.capa && subCapasOcultas.has('an:' + p.capa)) && (p.origen === 'analisis' || carpetaVisible(p.capaId, 'pin'))) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds, subCapasOcultas, carpetaVisible]);
+  const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis') && !(c.capa && subCapasOcultas.has('an:' + c.capa)) && (c.origen === 'analisis' || carpetaVisible(c.capaId, 'camino'))) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds, subCapasOcultas, carpetaVisible]);
+  const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id) && carpetaVisible(a.capaId, 'aguada'))   : [], [capas.aguadas, aguadasLayer, ocultosIds, carpetaVisible]);
   const dibujosFiltrados  = useMemo(() => capas.dibujos
     ? dibujos.filter(d => !ocultosIds.has(d.id) && !capasOcultas.has(capaDeElemento(d.capaId, capasUsuario)))
     : [], [capas.dibujos, dibujos, ocultosIds, capasOcultas, capasUsuario]);
@@ -1051,8 +1089,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       return;
     }
 
-    if (modoClick) agregarMojon(lat, lng);
-  }, [modoZona0, modoAcceso, modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+    // Los mojones sólo se agregan con clic desde la herramienta Lugar (tab
+    // 'mojones'); así no se marcan mojones sueltos trabajando en otra herramienta.
+    if (modoClick && tab === 'mojones') agregarMojon(lat, lng);
+  }, [modoZona0, modoAcceso, modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, tab, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+
+  // Si el modo "agregar mojón" quedó prendido y salís de Lugar, se apaga solo.
+  useEffect(() => { if (tab !== 'mojones' && modoClick) setModoClick(false); }, [tab, modoClick]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
   const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
@@ -1464,6 +1507,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       // ? = hoja de atajos
       if (e.key === '?') { e.preventDefault(); setAyudaOpen(o => !o); return; }
 
+      // \ = ocultar/mostrar los paneles (foco al mapa)
+      if (e.key === '\\') {
+        e.preventDefault();
+        const algunoAbierto = panelAbierto || panelDerecho === 'capas';
+        setPanelAbierto(!algunoAbierto);
+        if (algunoAbierto) setPanelDerecho(p => (p === 'capas' ? null : p));
+        return;
+      }
+
       // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
@@ -1529,7 +1581,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     undo, redo, modal, dibujoEnCurso, modoDibujo, medicionVertices, modoZona, modoSector, modoCamino,
     modoPinClick, modoElementoClick, modoZona0, modoAcceso, modoClick, dibujoSelId,
     handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
-    handleCancelarDibujo, handleEliminarDibujo,
+    handleCancelarDibujo, handleEliminarDibujo, panelAbierto, panelDerecho,
   ]);
 
   // ─── Geometría activa para preview CAD ────────────────────────────────────
@@ -1704,6 +1756,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   const handleMoverDibujoACapa = useCallback((dibujoId: string, capaId: string) => {
     setDibujos(prev => prev.map(d => d.id === dibujoId ? { ...d, capaId } : d));
+  }, []);
+
+  // Mover CUALQUIER elemento (dibujo/camino/aguada/zona/sector/pin) a una carpeta
+  // de usuario. Fija capaId explícito (persiste, gana al auto-archivado por tipo).
+  const handleMoverElementoACapa = useCallback((tipo: TipoElementoCapa, id: string, capaId: string) => {
+    switch (tipo) {
+      case 'dibujo': setDibujos(prev => prev.map(d => d.id === id ? { ...d, capaId } : d)); break;
+      case 'camino': setCaminos(prev => prev.map(c => c.id === id ? { ...c, capaId } : c)); break;
+      case 'aguada': setAguadasLayer(prev => prev.map(a => a.id === id ? { ...a, capaId } : a)); break;
+      case 'zona':   setZonas(prev => prev.map(z => z.id === id ? { ...z, capaId } : z)); break;
+      case 'sector': setSectores(prev => prev.map(s => s.id === id ? { ...s, capaId } : s)); break;
+      case 'pin':    setPines(prev => prev.map(p => p.id === id ? { ...p, capaId } : p)); break;
+    }
   }, []);
 
   // Color de capa: tiñe la capa y recolorea todos sus dibujos
@@ -2336,6 +2401,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             {estadoGuardado.icono}
             <span className="hidden lg:inline">{estadoGuardado.label}</span>
           </button>
+          {/* Captura del plano: abrir el editor de plano o guardar PNG directo. */}
+          <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
+            <button onClick={iniciarCaptura} title="Capturar mapa — editor de plano (rótulo + leyenda)" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 transition-colors border-r border-bone-200"><Camera className="w-4 h-4" /><span className="hidden xl:inline text-[11px] font-medium">Capturar</span></button>
+            <button onClick={handleGuardarPng} disabled={guardandoPng} title="Guardar PNG del mapa" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {guardandoPng ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-4 h-4" />}<span className="hidden xl:inline text-[11px] font-medium">PNG</span>
+            </button>
+          </div>
           {/* Deshacer / rehacer agrupados. */}
           <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
             <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="w-8 h-8 flex items-center justify-center text-ink-700/50 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-20 disabled:cursor-not-allowed transition-colors border-r border-bone-200"><Undo2 className="w-4 h-4" /></button>
@@ -2491,7 +2563,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         </nav>
 
         {/* ── Panel contextual ── */}
-        <div className={`ay-legible flex flex-col border-r border-bone-200 bg-white transition-all duration-300 ay-ease ${panelAbierto ? 'w-[19rem]' : 'w-0 overflow-hidden'}`}>
+        <div
+          className={`ay-legible relative flex flex-col border-r border-bone-200 bg-white ay-ease ${panelAbierto ? '' : 'overflow-hidden'} ${redimensionando ? '' : 'transition-all duration-300'}`}
+          style={{ width: panelAbierto ? anchoPanel : 0 }}
+        >
+          {panelAbierto && (
+            <div
+              onMouseDown={iniciarResize('panel')}
+              title="Arrastrá para cambiar el ancho"
+              className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-moss-500/40 z-30"
+            />
+          )}
           <div className="px-4 h-12 flex items-center justify-between border-b border-bone-200 shrink-0">
             <div className="min-w-0">
               <p className="text-[9px] font-medium text-ink-700/40 uppercase tracking-[0.12em] leading-none">
@@ -3100,71 +3182,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             onEscala={() => setPanelDerecho(p => (p === 'bitacora' ? null : 'bitacora'))}
           />
 
-          {/* Panel de Capas */}
-          {panelDerecho === 'capas' && (
-            <PanelCapas
-              capas={capas} onCapas={setCapas}
-              datosArcoSolar={datosArcoSolar}
-              zonas={zonas} sectores={sectores} pines={pines} caminos={caminos}
-              dibujos={dibujos}
-              aguadasLayer={aguadasLayer}
-              ocultosIds={ocultosIds} onToggle={toggleOculto}
-              onRenombrarPin={handleRenombrarPin}     onEliminarPin={handleEliminarPin}
-              onRenombrarZona={handleRenombrarZona}   onEliminarZona={handleEliminarZona}
-              onRenombrarSector={handleRenombrarSector} onEliminarSector={handleEliminarSector}
-              onRenombrarCamino={handleRenombrarCamino} onEliminarCamino={handleEliminarCamino}
-              onRenombrarDibujo={handleRenombrarDibujoCapas} onEliminarDibujo={handleEliminarDibujoCapas}
-              onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
-              capasUsuario={capasUsuario} capasOcultas={capasOcultas} capaActivaId={capaActivaId}
-              onSetCapaActiva={setCapaActivaId}
-              onToggleCapaOculta={handleToggleCapaOculta}
-              onRenombrarCapa={handleRenombrarCapa}
-              onEliminarCapa={handleEliminarCapa}
-              onColorCapa={handleColorCapa}
-              onReordenarCapa={handleReordenarCapa}
-              onMoverDibujoACapa={handleMoverDibujoACapa}
-              onCrearCapa={() => setModal({
-                type: 'prompt', message: 'Nombre de la nueva capa:', placeholder: 'Ej: Propuesta casa…',
-                onConfirm: nombre => handleCrearCapa(nombre),
-              })}
-              onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
-              datosShader={datosShader} analisisHecho={analisisHecho} onIrATopo={() => setTab('topo')} mojones={mojones}
-              masterPlanHay={!!masterPlan && masterPlan.length > 0}
-              masterPlan={masterPlan}
-              hayConectoresMP={mpCaminos.length > 0}
-              subCapasOcultas={subCapasOcultas}
-              onToggleSubCapa={toggleSubCapa}
-              datosErosion={datosErosion}
-              haySwales={!!swales}
-              hayCortinas={!!cortina}
-              hayCortafuegos={!!cortafuegos}
-              haySilvopastura={!!silvopastura}
-              onCapturar={() => {
-                setPanelDerecho(null);
-                setCapturaActiva(true);
-                if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
-                // Inicializar leyenda editable con los ítems actuales
-                setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
-              }}
-              onGuardarPng={handleGuardarPng}
-              guardandoPng={guardandoPng}
-              onCerrar={() => setPanelDerecho(null)}
-              terrariumElevMin={terrariumElevMin}
-              terrariumElevMax={terrariumElevMax}
-              intervaloContorno={intervaloContorno}
-              setIntervaloContorno={setIntervaloContorno}
-              intervaloCurvas={intervaloCurvasEfectivo}
-              demPropio={demPropio}
-              pisoIntervalo={pisoIntervalo}
-              curvasDemasiadas={curvasDemasiadas}
-              curvasLoading={curvasLoading}
-              colorCurvas={colorCurvas}
-              onColorCurvas={setColorCurvas}
-              opacidadShader={opacidadShader}
-              onOpacidadShader={setOpacidadShader}
-              onResetTerrariumRango={handleResetTerrariumRango}
-            />
-          )}
+          {/* El panel de Capas ahora es un sidebar full-height (fuera del <main>). */}
 
           {/* Panel de Escala de permanencia (bitácora) */}
           {panelDerecho === 'bitacora' && (
@@ -3262,7 +3280,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           onCursorCad={handleCursorCad}
           onCursorMove={handleCursorMove}
           capturaMode={capturaActiva}
-          layoutSignal={`${panelAbierto}|${panelDerecho}`}
+          layoutSignal={`${panelAbierto}|${panelDerecho}|${redimensionando ? 'r' : `${anchoPanel}x${anchoCapas}`}`}
           overlay={overlay}
           onOverlayEsquina={handleOverlayEsquina}
           masterPlan={masterPlanVisible}
@@ -3537,6 +3555,75 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           </>
         )}
       </main>
+
+      {/* ─── Sidebar de Capas (full-height, regulable, a la derecha del mapa) ── */}
+      {panelDerecho === 'capas' && (
+        <div
+          className={`relative flex flex-col border-l border-bone-200 bg-bone-50 shrink-0 no-print ${redimensionando ? '' : 'transition-[width] duration-300 ay-ease'}`}
+          style={{ width: anchoCapas }}
+        >
+          <div
+            onMouseDown={iniciarResize('capas')}
+            title="Arrastrá para cambiar el ancho"
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-moss-500/40 z-30"
+          />
+          <PanelCapas
+            capas={capas} onCapas={setCapas}
+            datosArcoSolar={datosArcoSolar}
+            zonas={zonas} sectores={sectores} pines={pines} caminos={caminos}
+            dibujos={dibujos}
+            aguadasLayer={aguadasLayer}
+            ocultosIds={ocultosIds} onToggle={toggleOculto}
+            onRenombrarPin={handleRenombrarPin}     onEliminarPin={handleEliminarPin}
+            onRenombrarZona={handleRenombrarZona}   onEliminarZona={handleEliminarZona}
+            onRenombrarSector={handleRenombrarSector} onEliminarSector={handleEliminarSector}
+            onRenombrarCamino={handleRenombrarCamino} onEliminarCamino={handleEliminarCamino}
+            onRenombrarDibujo={handleRenombrarDibujoCapas} onEliminarDibujo={handleEliminarDibujoCapas}
+            onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
+            capasUsuario={capasUsuario} capasOcultas={capasOcultas} capaActivaId={capaActivaId}
+            onSetCapaActiva={setCapaActivaId}
+            onToggleCapaOculta={handleToggleCapaOculta}
+            onRenombrarCapa={handleRenombrarCapa}
+            onEliminarCapa={handleEliminarCapa}
+            onColorCapa={handleColorCapa}
+            onReordenarCapa={handleReordenarCapa}
+            onMoverDibujoACapa={handleMoverDibujoACapa}
+            onMoverElemento={handleMoverElementoACapa}
+            onFlyTo={(lat, lng) => flyToRef.current?.(lat, lng, 17)}
+            onCrearCapa={() => setModal({
+              type: 'prompt', message: 'Nombre de la nueva carpeta:', placeholder: 'Ej: Propuesta casa…',
+              onConfirm: nombre => handleCrearCapa(nombre),
+            })}
+            onCargarPlantillaKeyline={handleCargarPlantillaKeyline}
+            datosShader={datosShader} analisisHecho={analisisHecho} onIrATopo={() => setTab('topo')} mojones={mojones}
+            masterPlanHay={!!masterPlan && masterPlan.length > 0}
+            masterPlan={masterPlan}
+            hayConectoresMP={mpCaminos.length > 0}
+            subCapasOcultas={subCapasOcultas}
+            onToggleSubCapa={toggleSubCapa}
+            datosErosion={datosErosion}
+            haySwales={!!swales}
+            hayCortinas={!!cortina}
+            hayCortafuegos={!!cortafuegos}
+            haySilvopastura={!!silvopastura}
+            onCerrar={() => setPanelDerecho(null)}
+            terrariumElevMin={terrariumElevMin}
+            terrariumElevMax={terrariumElevMax}
+            intervaloContorno={intervaloContorno}
+            setIntervaloContorno={setIntervaloContorno}
+            intervaloCurvas={intervaloCurvasEfectivo}
+            demPropio={demPropio}
+            pisoIntervalo={pisoIntervalo}
+            curvasDemasiadas={curvasDemasiadas}
+            curvasLoading={curvasLoading}
+            colorCurvas={colorCurvas}
+            onColorCurvas={setColorCurvas}
+            opacidadShader={opacidadShader}
+            onOpacidadShader={setOpacidadShader}
+            onResetTerrariumRango={handleResetTerrariumRango}
+          />
+        </div>
+      )}
       </div>
 
       {/* ─── Barra de estado inferior (estilo CAD) ───────────────────────────── */}
@@ -3744,6 +3831,8 @@ interface PanelCapasProps {
   onColorCapa:         (id: string, color: string) => void;
   onReordenarCapa:     (id: string, dir: -1 | 1) => void;
   onMoverDibujoACapa:  (dibujoId: string, capaId: string) => void;
+  onMoverElemento:     (tipo: TipoElementoCapa, id: string, capaId: string) => void;
+  onFlyTo:             (lat: number, lng: number) => void;
   onCrearCapa:         () => void;
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
@@ -3760,9 +3849,6 @@ interface PanelCapasProps {
   hayConectoresMP:     boolean;
   subCapasOcultas:     Set<string>;
   onToggleSubCapa:     (key: string) => void;
-  onCapturar:          () => void;
-  onGuardarPng:        () => void;
-  guardandoPng:        boolean;
   onCerrar:            () => void;
   terrariumElevMin:    number;
   terrariumElevMax:    number;
@@ -3783,10 +3869,10 @@ function PanelCapas({
   onRenombrarDibujo, onEliminarDibujo,
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
-  onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onCrearCapa, onCargarPlantillaKeyline,
+  onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, datosErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
-  onCapturar, onGuardarPng, guardandoPng, onCerrar,
+  onCerrar,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
   intervaloCurvas, curvasLoading,
@@ -3850,8 +3936,38 @@ function PanelCapas({
     onDragEnd: () => setDragKey(null),
   });
 
+  // ── Arrastre de un ELEMENTO (dibujo/camino/…) entre carpetas de usuario ──
+  const [dragItem, setDragItem] = useState<{ tipo: TipoElementoCapa; id: string } | null>(null);
+  const [dropCapa, setDropCapa] = useState<string | null>(null);
+  // Carpeta efectiva de un elemento (su capaId o la carpeta de la Escala por tipo).
+  const folderEf = (capaId: string | undefined, tipo: TipoElementoCapa) =>
+    capaDeElemento(capaId ?? carpetaEscalaPara(tipo), capasUsuario);
+  // ¿Está prendida la capa maestra del tipo? (el ojo global por tipo sigue mandando)
+  const masterVisible: Record<TipoElementoCapa, boolean> = {
+    dibujo: capas.dibujos, camino: capas.caminos, aguada: capas.aguadas,
+    zona: capas.zonas, sector: capas.sectores, pin: capas.pines,
+  };
+  const capasOrdenadas = [...capasUsuario].sort((a, b) => a.orden - b.orden);
+  const escalaCompleta = tieneEscalaCompleta(capasUsuario);
+  // dnd de item: props para una fila arrastrable
+  const dragFila = (tipo: TipoElementoCapa, id: string) => ({
+    draggable: !dragBloqueado,
+    onDragStart: (e: React.DragEvent) => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; setDragItem({ tipo, id }); },
+    onDragEnd: () => { setDragItem(null); setDropCapa(null); },
+  });
+  // dnd de item: props para la carpeta que recibe el drop
+  const dropEnCarpeta = (capaId: string) => ({
+    onDragOver: (e: React.DragEvent) => { if (dragItem) { e.preventDefault(); e.stopPropagation(); setDropCapa(capaId); } },
+    onDrop: (e: React.DragEvent) => {
+      if (!dragItem) return;
+      e.preventDefault(); e.stopPropagation();
+      onMoverElemento(dragItem.tipo, dragItem.id, capaId);
+      setDragItem(null); setDropCapa(null);
+    },
+  });
+
   return (
-    <div className="ay-legible w-56 bg-bone-50 rounded-xl shadow-xl border border-bone-300 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 170px)' }}>
+    <div className="ay-legible w-full h-full bg-bone-50 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-ink-950 border-b border-ink-800 shrink-0">
         <div className="flex items-center gap-1.5">
@@ -4258,163 +4374,115 @@ function PanelCapas({
         </CapaGrupo>
         </div>{/* /terreno */}
 
-        {/* ── Zonas ── */}
-        <div {...makeDrag('zonas')}>
-        {zonas.length > 0 && (
-          <CapaGrupo
-            label={`Zonas`} count={zonas.length}
-            visible={capas.zonas}
-            onToggleVisible={() => onCapas({ ...capas, zonas: !capas.zonas })}
-            expanded={exp.zonas} onExpand={() => tog('zonas')}
-          >
-            {zonas.map(z => (
-              <CapaItem key={z.id}
-                visible={!ocultosIds.has(z.id) && capas.zonas}
-                onToggle={() => onToggle(z.id)}
-                label={z.nombre}
-                swatch={<span className="w-3 h-3 rounded-sm shrink-0" style={{ background: z.color ?? CATEGORIAS_ZONA[z.categoria].color }} />}
-                onRenombrar={nombre => onRenombrarZona(z.id, nombre)}
-                onEliminar={() => onEliminarZona(z.id)}
-              />
-            ))}
-          </CapaGrupo>
-        )}
-        </div>{/* /zonas */}
-
-        {/* ── Sectores ── */}
-        <div {...makeDrag('sectores')}>
-        {sectores.length > 0 && (
-          <CapaGrupo
-            label="Sectores" count={sectores.length}
-            visible={capas.sectores}
-            onToggleVisible={() => onCapas({ ...capas, sectores: !capas.sectores })}
-            expanded={exp.sectores} onExpand={() => tog('sectores')}
-          >
-            {sectores.map(s => (
-              <CapaItem key={s.id}
-                visible={!ocultosIds.has(s.id) && capas.sectores}
-                onToggle={() => onToggle(s.id)}
-                label={s.nombre}
-                swatch={<span className="w-3 h-3 rounded-sm shrink-0 border border-dashed" style={{ borderColor: s.color ?? TIPOS_SECTOR[s.tipo].color, background: `${s.color ?? TIPOS_SECTOR[s.tipo].color}22` }} />}
-                onRenombrar={nombre => onRenombrarSector(s.id, nombre)}
-                onEliminar={() => onEliminarSector(s.id)}
-              />
-            ))}
-          </CapaGrupo>
-        )}
-        </div>{/* /sectores */}
-
-        {/* ── Caminos ── */}
-        <div {...makeDrag('caminos')}>
-        {caminosManuales.length > 0 && (
-          <CapaGrupo
-            label="Caminos" count={caminosManuales.length}
-            visible={capas.caminos}
-            onToggleVisible={() => onCapas({ ...capas, caminos: !capas.caminos })}
-            expanded={exp.caminos} onExpand={() => tog('caminos')}
-          >
-            {caminosManuales.map(c => (
-              <CapaItem key={c.id}
-                visible={!ocultosIds.has(c.id) && capas.caminos}
-                onToggle={() => onToggle(c.id)}
-                label={c.nombre}
-                swatch={<span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: c.color }} />}
-                onRenombrar={nombre => onRenombrarCamino(c.id, nombre)}
-                onEliminar={() => onEliminarCamino(c.id)}
-              />
-            ))}
-          </CapaGrupo>
-        )}
-        </div>{/* /caminos */}
-
-        {/* ── Pines ── */}
-        <div {...makeDrag('pines')}>
-        {pinesManuales.length > 0 && (
-          <CapaGrupo
-            label="Pines" count={pinesManuales.length}
-            visible={capas.pines}
-            onToggleVisible={() => onCapas({ ...capas, pines: !capas.pines })}
-            expanded={exp.pines} onExpand={() => tog('pines')}
-          >
-            {pinesManuales.map(p => (
-              <CapaItem key={p.id}
-                visible={!ocultosIds.has(p.id) && capas.pines}
-                onToggle={() => onToggle(p.id)}
-                label={p.nombre}
-                swatch={<span className="text-sm leading-none">{p.icono}</span>}
-                onRenombrar={nombre => onRenombrarPin(p.id, nombre)}
-                onEliminar={() => onEliminarPin(p.id)}
-              />
-            ))}
-          </CapaGrupo>
-        )}
-        </div>{/* /pines */}
-
-        {/* ── Capas de dibujo (usuario) ── */}
+        {/* ── Tus capas: carpetas de la Escala con TODO lo archivado ──
+            Cada herramienta deja su salida en la carpeta que le toca (auto-archivado
+            por tipo); podés reubicar cualquier capa arrastrándola a otra carpeta o
+            con el desplegable. Doble clic en una capa = centrar en el mapa. */}
         <div {...makeDrag('dibujos')}>
-        {[...capasUsuario].sort((a, b) => a.orden - b.orden).map((capa, idx, arr) => {
-          const items = dibujos.filter(d => capaDeElemento(d.capaId, capasUsuario) === capa.id);
+        <div className="px-3 pt-2 pb-1 flex items-center gap-1.5">
+          <Layers className="w-2.5 h-2.5 text-ink-700/40" />
+          <p className="text-[8px] font-bold uppercase tracking-widest text-ink-700/45">Tus capas</p>
+        </div>
+        {capasOrdenadas.map((capa, idx, arr) => {
+          type Fila = { id: string; tipo: TipoElementoCapa; label: string; swatch: React.ReactNode; onRen: (n: string) => void; onDel: () => void; pt: { lat: number; lng: number } | null };
+          const filas: Fila[] = [];
+          // Dibujos
+          dibujos.filter(d => folderEf(d.capaId, 'dibujo') === capa.id).forEach((d, i) => {
+            const label = d.nombre || (
+              d.tipo === 'linea'    ? `Línea ${i + 1}` :
+              d.tipo === 'poligono' ? `Polígono ${i + 1}` :
+              d.tipo === 'circulo'  ? `Círculo ${i + 1}` :
+              d.tipo === 'curva'    ? `Curva ${i + 1}` :
+              d.tipo === 'cota'     ? `Cota ${i + 1}` :
+              d.tipo === 'texto'    ? `"${d.texto.slice(0, 12)}"` :
+              `Dibujo ${i + 1}`);
+            const swatch = d.tipo === 'linea' || d.tipo === 'curva' || d.tipo === 'cota'
+              ? <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: d.color }} />
+              : d.tipo === 'texto'
+              ? <span className="text-[11px] font-bold leading-none px-0.5" style={{ color: d.color }}>T</span>
+              : <span className="w-3 h-3 rounded-sm shrink-0 border" style={{ background: d.color + '44', borderColor: d.color }} />;
+            const pt = ('lat' in d && d.lat != null) ? { lat: d.lat, lng: d.lng }
+              : ('vertices' in d && d.vertices[0]) ? d.vertices[0] : null;
+            filas.push({ id: d.id, tipo: 'dibujo', label, swatch, onRen: n => onRenombrarDibujo(d.id, n), onDel: () => onEliminarDibujo(d.id), pt });
+          });
+          // Caminos (manuales)
+          caminosManuales.filter(c => folderEf(c.capaId, 'camino') === capa.id).forEach(c => {
+            filas.push({ id: c.id, tipo: 'camino', label: c.nombre, swatch: <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: c.color }} />, onRen: n => onRenombrarCamino(c.id, n), onDel: () => onEliminarCamino(c.id), pt: c.vertices[0] ?? null });
+          });
+          // Aguadas / represas / swales
+          aguadasLayer.filter(a => folderEf(a.capaId, 'aguada') === capa.id).forEach(a => {
+            const swatch = a.tipo === 'represa'
+              ? <span className="text-sm leading-none">🏊</span>
+              : <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: a.tipo === 'swale' ? '#26A69A' : '#66BB6A' }} />;
+            const pt = (a.lat != null && a.lng != null) ? { lat: a.lat, lng: a.lng } : (a.vertices?.[0] ?? null);
+            filas.push({ id: a.id, tipo: 'aguada', label: a.nombre, swatch, onRen: n => onRenombrarAguada(a.id, n), onDel: () => onEliminarAguada(a.id), pt });
+          });
+          // Zonas
+          zonas.filter(z => folderEf(z.capaId, 'zona') === capa.id).forEach(z => {
+            filas.push({ id: z.id, tipo: 'zona', label: z.nombre, swatch: <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: z.color ?? CATEGORIAS_ZONA[z.categoria].color }} />, onRen: n => onRenombrarZona(z.id, n), onDel: () => onEliminarZona(z.id), pt: z.vertices[0] ?? null });
+          });
+          // Sectores
+          sectores.filter(s => folderEf(s.capaId, 'sector') === capa.id).forEach(s => {
+            filas.push({ id: s.id, tipo: 'sector', label: s.nombre, swatch: <span className="w-3 h-3 rounded-sm shrink-0 border border-dashed" style={{ borderColor: s.color ?? TIPOS_SECTOR[s.tipo].color, background: `${s.color ?? TIPOS_SECTOR[s.tipo].color}22` }} />, onRen: n => onRenombrarSector(s.id, n), onDel: () => onEliminarSector(s.id), pt: s.vertices[0] ?? null });
+          });
+          // Pines (manuales)
+          pinesManuales.filter(p => folderEf(p.capaId, 'pin') === capa.id).forEach(p => {
+            filas.push({ id: p.id, tipo: 'pin', label: p.nombre, swatch: <span className="text-sm leading-none">{p.icono}</span>, onRen: n => onRenombrarPin(p.id, n), onDel: () => onEliminarPin(p.id), pt: { lat: p.lat, lng: p.lng } });
+          });
+
           return (
-            <CapaUsuarioGrupo
-              key={capa.id}
-              capa={capa}
-              count={items.length}
-              visible={!capasOcultas.has(capa.id) && capas.dibujos}
-              activa={capaActivaId === capa.id}
-              esDefault={capa.id === CAPA_DEFAULT_ID}
-              puedeSubir={idx > 0}
-              puedeBajar={idx < arr.length - 1}
-              onSubir={() => onReordenarCapa(capa.id, -1)}
-              onBajar={() => onReordenarCapa(capa.id, 1)}
-              onColor={color => onColorCapa(capa.id, color)}
-              onToggleVisible={() => onToggleCapaOculta(capa.id)}
-              onActivar={() => onSetCapaActiva(capa.id)}
-              onRenombrar={nombre => onRenombrarCapa(capa.id, nombre)}
-              onEliminar={() => onEliminarCapa(capa.id)}
-            >
-              {items.map((d, i) => {
-                const label = d.nombre || (
-                  d.tipo === 'linea'    ? `Línea ${i + 1}` :
-                  d.tipo === 'poligono'? `Polígono ${i + 1}` :
-                  d.tipo === 'circulo' ? `Círculo ${i + 1}` :
-                  d.tipo === 'curva'   ? `Curva ${i + 1}` :
-                  d.tipo === 'cota'    ? `Cota ${i + 1}` :
-                  d.tipo === 'texto'   ? `"${d.texto.slice(0, 12)}"` :
-                  `Dibujo ${i + 1}`
-                );
-                const swatch = d.tipo === 'linea' || d.tipo === 'curva' || d.tipo === 'cota'
-                  ? <span className="w-5 h-0 border-t-2 shrink-0" style={{ borderColor: d.color }} />
-                  : d.tipo === 'texto'
-                  ? <span className="text-[11px] font-bold leading-none px-0.5" style={{ color: d.color }}>T</span>
-                  : <span className="w-3 h-3 rounded-sm shrink-0 border" style={{ background: d.color + '44', borderColor: d.color }} />;
-                return (
-                  <CapaItem key={d.id}
-                    visible={!ocultosIds.has(d.id) && !capasOcultas.has(capa.id) && capas.dibujos}
-                    onToggle={() => onToggle(d.id)}
-                    label={label}
-                    swatch={swatch}
-                    onRenombrar={nombre => onRenombrarDibujo(d.id, nombre)}
-                    onEliminar={() => onEliminarDibujo(d.id)}
-                    extraSiempre={capasUsuario.length > 1 ? (
-                      <select
-                        value={capa.id}
-                        onChange={e => onMoverDibujoACapa(d.id, e.target.value)}
-                        title="Mover a otra capa"
-                        className="shrink-0 text-[8px] bg-bone-50 border border-bone-200 rounded px-0.5 py-0 max-w-[56px] text-ink-700/70 focus:outline-none cursor-pointer"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {[...capasUsuario].sort((a, b) => a.orden - b.orden).map(c => (
-                          <option key={c.id} value={c.id}>{c.nombre}</option>
-                        ))}
-                      </select>
-                    ) : undefined}
-                  />
-                );
-              })}
-              {items.length === 0 && (
-                <p className="pl-7 pr-3 py-1 text-[9px] text-ink-700/30 italic">Capa vacía</p>
-              )}
-            </CapaUsuarioGrupo>
+            <div key={capa.id} {...dropEnCarpeta(capa.id)} className={dropCapa === capa.id ? 'ring-2 ring-inset ring-moss-500/60 bg-moss-500/5' : ''}>
+              <CapaUsuarioGrupo
+                capa={capa}
+                count={filas.length}
+                visible={!capasOcultas.has(capa.id)}
+                activa={capaActivaId === capa.id}
+                esDefault={capa.id === CAPA_DEFAULT_ID}
+                puedeSubir={idx > 0}
+                puedeBajar={idx < arr.length - 1}
+                onSubir={() => onReordenarCapa(capa.id, -1)}
+                onBajar={() => onReordenarCapa(capa.id, 1)}
+                onColor={color => onColorCapa(capa.id, color)}
+                onToggleVisible={() => onToggleCapaOculta(capa.id)}
+                onActivar={() => onSetCapaActiva(capa.id)}
+                onRenombrar={nombre => onRenombrarCapa(capa.id, nombre)}
+                onEliminar={() => onEliminarCapa(capa.id)}
+              >
+                {filas.map(fila => (
+                  <div key={fila.id} {...dragFila(fila.tipo, fila.id)}
+                    onDoubleClick={() => { if (fila.pt) onFlyTo(fila.pt.lat, fila.pt.lng); }}
+                    title="Doble clic: centrar en el mapa · arrastrar: mover de carpeta"
+                    className="cursor-grab active:cursor-grabbing"
+                  >
+                    <CapaItem
+                      visible={!ocultosIds.has(fila.id) && !capasOcultas.has(capa.id) && masterVisible[fila.tipo]}
+                      onToggle={() => onToggle(fila.id)}
+                      label={fila.label}
+                      swatch={fila.swatch}
+                      onRenombrar={fila.onRen}
+                      onEliminar={fila.onDel}
+                      extraSiempre={
+                        <select
+                          value={capa.id}
+                          onChange={e => onMoverElemento(fila.tipo, fila.id, e.target.value)}
+                          title="Mover a otra carpeta"
+                          className="shrink-0 text-[8px] bg-bone-50 border border-bone-200 rounded px-0.5 py-0 max-w-[56px] text-ink-700/70 focus:outline-none cursor-pointer"
+                          onClick={e => e.stopPropagation()}
+                          onMouseDown={e => e.stopPropagation()}
+                        >
+                          {capasOrdenadas.map(c => (
+                            <option key={c.id} value={c.id}>{c.nombre}</option>
+                          ))}
+                        </select>
+                      }
+                    />
+                  </div>
+                ))}
+                {filas.length === 0 && (
+                  <p className="pl-7 pr-3 py-1 text-[9px] text-ink-700/30 italic">Carpeta vacía · soltá una capa acá</p>
+                )}
+              </CapaUsuarioGrupo>
+            </div>
           );
         })}
 
@@ -4424,46 +4492,19 @@ function PanelCapas({
             onClick={onCrearCapa}
             className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-moss-700 hover:bg-bone-100 transition-colors border border-dashed border-bone-200 font-semibold"
           >
-            + Nueva capa de dibujo
+            + Nueva carpeta
           </button>
-          <button
-            onClick={onCargarPlantillaKeyline}
-            title="Crea 8 capas en orden de permanencia: Clima, Geografía, Agua, Accesos, Sistemas, Estructuras, Subdivisiones, Suelo"
-            className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-water-700 hover:bg-water-500/5 transition-colors border border-dashed border-water-500/30 font-semibold"
-          >
-            + Plantilla: Escala de permanencia (Keyline)
-          </button>
+          {!escalaCompleta && (
+            <button
+              onClick={onCargarPlantillaKeyline}
+              title="Crea las 8 carpetas en orden de permanencia: Clima, Geografía, Agua, Accesos, Sistemas, Estructuras, Subdivisiones, Suelo"
+              className="w-full flex items-center justify-center gap-1 py-1 rounded text-[9px] text-water-700 hover:bg-water-500/5 transition-colors border border-dashed border-water-500/30 font-semibold"
+            >
+              + Restaurar carpetas de la Escala
+            </button>
+          )}
         </div>
         </div>{/* /dibujos */}
-
-        {/* ── Aguadas ── */}
-        <div {...makeDrag('aguadas')}>
-        {aguadasLayer.length > 0 && (
-          <CapaGrupo
-            label="Aguadas" count={aguadasLayer.length}
-            visible={capas.aguadas}
-            onToggleVisible={() => onCapas({ ...capas, aguadas: !capas.aguadas })}
-            expanded={exp.aguadas} onExpand={() => tog('aguadas')}
-          >
-            {aguadasLayer.map(a => (
-              <CapaItem key={a.id}
-                visible={!ocultosIds.has(a.id) && capas.aguadas}
-                onToggle={() => onToggle(a.id)}
-                label={a.nombre}
-                swatch={
-                  a.tipo === 'represa'
-                    ? <span className="text-sm leading-none">🏊</span>
-                    : a.tipo === 'swale'
-                    ? <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: '#26A69A' }} />
-                    : <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: '#66BB6A' }} />
-                }
-                onRenombrar={nombre => onRenombrarAguada(a.id, nombre)}
-                onEliminar={() => onEliminarAguada(a.id)}
-              />
-            ))}
-          </CapaGrupo>
-        )}
-        </div>{/* /aguadas */}
 
         {/* ── Arco Solar ── */}
         <div {...makeDrag('arcSolar')}>
@@ -4488,26 +4529,6 @@ function PanelCapas({
           </CapaGrupo>
         )}
         </div>{/* /arcSolar */}
-      </div>
-
-      {/* Footer */}
-      <div className="shrink-0 p-2.5 border-t border-bone-200 bg-bone-50 space-y-1.5">
-        <button
-          onClick={onCapturar}
-          className="w-full flex items-center justify-center gap-1.5 py-2 bg-ink-950 hover:bg-ink-800 text-bone-50 rounded-lg text-[10px] font-semibold transition-colors"
-        >
-          <Camera className="w-3 h-3" />
-          Capturar mapa
-        </button>
-        <button
-          onClick={onGuardarPng}
-          disabled={guardandoPng}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-moss-700 hover:bg-moss-900 disabled:opacity-50 text-bone-50 rounded-lg text-[10px] font-semibold transition-colors"
-        >
-          {guardandoPng
-            ? <><span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />Guardando…</>
-            : <><Camera className="w-3 h-3" />Guardar PNG</>}
-        </button>
       </div>
     </div>
   );

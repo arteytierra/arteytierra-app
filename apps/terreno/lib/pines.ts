@@ -10,6 +10,8 @@ export interface Pin {
   origen?: 'analisis';
   /** Sub-capa a la que pertenece (categoría dentro de la carpeta de origen). */
   capa?:  string;
+  /** Carpeta de usuario (Escala de permanencia) donde está archivado. */
+  capaId?: string;
 }
 
 export const ICONOS_PIN = ['📍', '🏠', '💧', '🌳', '⛏️', '🔥', '🌾', '🐄', '🐓', '⚡', '🚪', '📸'] as const;
