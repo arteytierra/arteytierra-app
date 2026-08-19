@@ -3984,20 +3984,57 @@ function PanelCapas({
   };
   const capasOrdenadas = [...capasUsuario].sort((a, b) => a.orden - b.orden);
   const escalaCompleta = tieneEscalaCompleta(capasUsuario);
+
+  // ── Overlays de análisis vinculables a una carpeta ──
+  // Cada overlay de una sola llave puede "archivarse" en una carpeta: aparece
+  // como acceso (con su ojo) dentro de la carpeta, sin sacar sus controles de
+  // "Análisis del mapa". Se arrastra el grupo a la carpeta o se usa el desplegable.
+  type OverlayLink = { key: string; flag: keyof CapasVisibles; label: string; icon: React.ReactNode; disponible: boolean };
+  const OVERLAYS_LINKABLES: OverlayLink[] = [
+    { key: 'escorrentias', flag: 'escorrentias', label: 'Escorrentías',        icon: <Droplets className="w-3 h-3" style={{ color: '#1E88E5' }} />,     disponible: !!datosShader },
+    { key: 'erosion',      flag: 'erosion',      label: 'Erosión (RUSLE)',     icon: <TriangleAlert className="w-3 h-3" style={{ color: '#E65100' }} />, disponible: !!datosErosion },
+    { key: 'swales',       flag: 'swales',       label: 'Swales',              icon: <Waves className="w-3 h-3" style={{ color: '#26A69A' }} />,        disponible: haySwales },
+    { key: 'cortinas',     flag: 'cortinas',     label: 'Cortinas',            icon: <Fence className="w-3 h-3" style={{ color: '#33691E' }} />,        disponible: hayCortinas },
+    { key: 'cortafuegos',  flag: 'cortafuegos',  label: 'Cortafuegos',         icon: <Flame className="w-3 h-3" style={{ color: '#BF360C' }} />,        disponible: hayCortafuegos },
+    { key: 'silvopastura', flag: 'silvopastura', label: 'Silvopastura',        icon: <Trees className="w-3 h-3" style={{ color: '#558B2F' }} />,        disponible: haySilvopastura },
+    { key: 'sugerencias',  flag: 'sugerencias',  label: 'Master plan',         icon: <Sparkles className="w-3 h-3" style={{ color: '#8E24AA' }} />,     disponible: masterPlanHay },
+    { key: 'arcSolar',     flag: 'arcSolar',     label: 'Arco solar',          icon: <Sun className="w-3 h-3" style={{ color: '#F9A825' }} />,          disponible: !!datosArcoSolar },
+    { key: 'terreno',      flag: 'terreno',      label: 'Polígono del predio', icon: <Shapes className="w-3 h-3" style={{ color: '#D9A441' }} />,       disponible: true },
+  ];
+  const linkablesKeys = new Set(OVERLAYS_LINKABLES.map(o => o.key));
+  const [overlayFolder, setOverlayFolder] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {};
+    try { return JSON.parse(localStorage.getItem('terreno.overlayFolder') || '{}'); } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('terreno.overlayFolder', JSON.stringify(overlayFolder)); } catch { /* ignore */ }
+  }, [overlayFolder]);
+  const toggleOverlayLink  = (o: OverlayLink) => onCapas({ ...capas, [o.flag]: !capas[o.flag] });
+  const desvincularOverlay = (key: string) => setOverlayFolder(prev => { const n = { ...prev }; delete n[key]; return n; });
+
   // dnd de item: props para una fila arrastrable
   const dragFila = (tipo: TipoElementoCapa, id: string) => ({
     draggable: !dragBloqueado,
     onDragStart: (e: React.DragEvent) => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; setDragItem({ tipo, id }); },
     onDragEnd: () => { setDragItem(null); setDropCapa(null); },
   });
-  // dnd de item: props para la carpeta que recibe el drop
+  // dnd: la carpeta recibe tanto elementos (dibujo/camino/…) como overlays de análisis
   const dropEnCarpeta = (capaId: string) => ({
-    onDragOver: (e: React.DragEvent) => { if (dragItem) { e.preventDefault(); e.stopPropagation(); setDropCapa(capaId); } },
+    onDragOver: (e: React.DragEvent) => {
+      if (dragItem || (dragKey && linkablesKeys.has(dragKey))) { e.preventDefault(); e.stopPropagation(); setDropCapa(capaId); }
+    },
     onDrop: (e: React.DragEvent) => {
-      if (!dragItem) return;
-      e.preventDefault(); e.stopPropagation();
-      onMoverElemento(dragItem.tipo, dragItem.id, capaId);
-      setDragItem(null); setDropCapa(null);
+      if (dragItem) {
+        e.preventDefault(); e.stopPropagation();
+        onMoverElemento(dragItem.tipo, dragItem.id, capaId);
+        setDragItem(null); setDropCapa(null);
+        return;
+      }
+      if (dragKey && linkablesKeys.has(dragKey)) {
+        e.preventDefault(); e.stopPropagation();
+        setOverlayFolder(prev => ({ ...prev, [dragKey]: capaId }));
+        setDragKey(null); setDropCapa(null);
+      }
     },
   });
 
@@ -4043,6 +4080,9 @@ function PanelCapas({
             {aislado === '__analisis__' ? 'Aislado' : 'Aislar'}
           </button>
         </div>
+        <p style={{ order: -1 }} className="px-3 pb-1 text-[8px] text-ink-700/35 italic leading-tight">
+          Arrastrá un análisis (escorrentías, erosión, swales…) a una de tus carpetas para archivarlo ahí.
+        </p>
 
         {/* ── Topografía ── */}
         <div {...makeDrag('topo')}>
@@ -4491,12 +4531,14 @@ function PanelCapas({
           pinesManuales.filter(p => folderEf(p.capaId, 'pin') === capa.id).forEach(p => {
             filas.push({ id: p.id, tipo: 'pin', label: p.nombre, swatch: <span className="text-sm leading-none">{p.icono}</span>, onRen: n => onRenombrarPin(p.id, n), onDel: () => onEliminarPin(p.id), pt: { lat: p.lat, lng: p.lng } });
           });
+          // Overlays de análisis vinculados a esta carpeta
+          const overlaysDeCarpeta = OVERLAYS_LINKABLES.filter(o => overlayFolder[o.key] === capa.id);
 
           return (
             <div key={capa.id} {...dropEnCarpeta(capa.id)} className={dropCapa === capa.id ? 'ring-2 ring-inset ring-moss-500/60 bg-moss-500/5' : ''}>
               <CapaUsuarioGrupo
                 capa={capa}
-                count={filas.length}
+                count={filas.length + overlaysDeCarpeta.length}
                 visible={!capasOcultas.has(capa.id)}
                 activa={capaActivaId === capa.id}
                 esDefault={capa.id === CAPA_DEFAULT_ID}
@@ -4542,8 +4584,42 @@ function PanelCapas({
                     />
                   </div>
                 ))}
-                {filas.length === 0 && (
-                  <p className="pl-7 pr-3 py-1 text-[9px] text-ink-700/30 italic">Carpeta vacía · soltá una capa acá</p>
+                {/* Overlays de análisis archivados en esta carpeta (acceso; los
+                    controles finos siguen en "Análisis del mapa") */}
+                {overlaysDeCarpeta.map(o => (
+                  <div key={`ov-${o.key}`} className="flex items-center gap-2 pl-7 pr-2 py-1 hover:bg-bone-100">
+                    <button
+                      onClick={() => o.disponible && toggleOverlayLink(o)}
+                      disabled={!o.disponible}
+                      title={o.disponible ? (capas[o.flag] ? 'Ocultar' : 'Mostrar') : 'Calculá esta capa primero'}
+                      className={`shrink-0 transition-colors disabled:opacity-30 ${capas[o.flag] ? 'text-moss-700' : 'text-ink-700/25'}`}
+                    >
+                      {capas[o.flag] ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    </button>
+                    <span className="shrink-0">{o.icon}</span>
+                    <span className="flex-1 text-[10px] text-ink-800 truncate min-w-0">
+                      {o.label}<span className="text-ink-700/30"> · análisis</span>
+                    </span>
+                    <select
+                      value={capa.id}
+                      onChange={e => e.target.value === '__analisis__' ? desvincularOverlay(o.key) : setOverlayFolder(prev => ({ ...prev, [o.key]: e.target.value }))}
+                      title="Mover a otra carpeta o devolver al análisis"
+                      className="shrink-0 text-[8px] bg-bone-50 border border-bone-200 rounded px-0.5 py-0 max-w-[56px] text-ink-700/70 focus:outline-none cursor-pointer"
+                      onClick={e => e.stopPropagation()}
+                      onMouseDown={e => e.stopPropagation()}
+                    >
+                      <option value="__analisis__">Análisis</option>
+                      {capasOrdenadas.map(c => (
+                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                      ))}
+                    </select>
+                    <button onClick={() => desvincularOverlay(o.key)} title="Sacar de la carpeta (vuelve al análisis)" className="shrink-0 text-ink-700/20 hover:text-clay-500 transition-colors">
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                {filas.length === 0 && overlaysDeCarpeta.length === 0 && (
+                  <p className="pl-7 pr-3 py-1 text-[9px] text-ink-700/30 italic">Carpeta vacía · soltá una capa o un análisis acá</p>
                 )}
               </CapaUsuarioGrupo>
             </div>
