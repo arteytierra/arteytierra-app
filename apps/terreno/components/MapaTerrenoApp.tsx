@@ -50,6 +50,7 @@ import { useSombras } from '@/hooks/useSombras';
 import { usePerfilElevacion } from '@/hooks/usePerfilElevacion';
 import { useCuenca } from '@/hooks/useCuenca';
 import { useCadSnap } from '@/hooks/useCadSnap';
+import { useVistaShell } from '@/hooks/useVistaShell';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -387,36 +388,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     subCapasOcultas, setSubCapasOcultas, toggleSubCapa,
   } = useCapas();
   const [panelDerecho,     setPanelDerecho]      = useState<'capas' | 'sugerencias' | 'bitacora' | null>(null);
-  // Anchos regulables (persistidos) del panel izquierdo y del sidebar de Capas.
-  const [anchoPanel, setAnchoPanel] = useState<number>(() => {
-    if (typeof window === 'undefined') return 304;
-    return Number(localStorage.getItem('terreno.anchoPanel')) || 304;
-  });
-  const [anchoCapas, setAnchoCapas] = useState<number>(() => {
-    if (typeof window === 'undefined') return 300;
-    return Number(localStorage.getItem('terreno.anchoCapas')) || 300;
-  });
-  const [redimensionando, setRedimensionando] = useState(false);
-  useEffect(() => { try { localStorage.setItem('terreno.anchoPanel', String(anchoPanel)); } catch { /* ignore */ } }, [anchoPanel]);
-  useEffect(() => { try { localStorage.setItem('terreno.anchoCapas', String(anchoCapas)); } catch { /* ignore */ } }, [anchoCapas]);
-  const iniciarResize = useCallback((cual: 'panel' | 'capas') => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = cual === 'panel' ? anchoPanel : anchoCapas;
-    const set = cual === 'panel' ? setAnchoPanel : setAnchoCapas;
-    const dir = cual === 'panel' ? 1 : -1; // el panel crece a la derecha; Capas, a la izquierda
-    setRedimensionando(true);
-    document.body.style.cursor = 'col-resize';
-    const onMove = (ev: MouseEvent) => set(Math.min(560, Math.max(220, startW + dir * (ev.clientX - startX))));
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      document.body.style.cursor = '';
-      setRedimensionando(false);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  }, [anchoPanel, anchoCapas]);
+  // Cáscara de vista (tema + anchos regulables), persistida por dispositivo.
+  const { tema, ciclarTema, anchoPanel, anchoCapas, redimensionando, iniciarResize } = useVistaShell();
   const [show3D,           setShow3D]            = useState(false);
   const [showHistorico,    setShowHistorico]     = useState(false);
   // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
@@ -549,7 +522,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [carbonoResumen,  setCarbonoResumen]  = useState<CarbonoResumen | null>(null);
   const [paletaOpen, setPaletaOpen] = useState(false);
   const [ayudaOpen,  setAyudaOpen]  = useState(false);
-  const [tema, setTema] = useState<'claro' | 'sepia' | 'oscuro'>('claro');
   const [bloqueActivo,   setBloqueActivo]   = useState<BloqueDef | null>(null);
   const [elementoActivo, setElementoActivo] = useState<ElementoPreset | null>(null);
   const [modoElementoClick, setModoElementoClick] = useState(false);
@@ -845,18 +817,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (datosTopografia) return Math.ceil(datosTopografia.elev_max + datosTopografia.desnivel * 0.1 + 1);
     return terrariumRango?.max ?? 500;
   }, [datosShader, datosTopografia, terrariumRango]);
-
-  // ─── Tema de vista (persistido por dispositivo) ───────────────────────────
-  useEffect(() => {
-    const t = (typeof localStorage !== 'undefined' && localStorage.getItem('terreno_tema')) as typeof tema | null;
-    if (t === 'sepia' || t === 'oscuro' || t === 'claro') setTema(t);
-  }, []);
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (tema === 'claro') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', tema);
-    try { localStorage.setItem('terreno_tema', tema); } catch { /* ignore */ }
-  }, [tema]);
 
   // ─── Autosave (hook useAutosave) ──────────────────────────────────────────
   // Solo autoguardar si hay contenido real (no basta con preferencias de vista
@@ -2562,7 +2522,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   <ExportItem icon={<Keyboard className="w-3.5 h-3.5" />} label="Atajos de teclado" onClick={() => { setConfigOpen(false); setAyudaOpen(true); }} />
                   <div className="h-px bg-bone-100 my-1" />
                   <button
-                    onClick={() => setTema(t => t === 'claro' ? 'sepia' : t === 'sepia' ? 'oscuro' : 'claro')}
+                    onClick={ciclarTema}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ink-700 hover:bg-bone-50 transition-colors text-left"
                   >
                     <span className="text-ink-700/50 shrink-0">{tema === 'oscuro' ? <Moon className="w-3.5 h-3.5" /> : tema === 'sepia' ? <Palette className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}</span>
