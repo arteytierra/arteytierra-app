@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:diseno": "vitest run tests/unit/diseno",
+    "test:aguas": "vitest run tests/unit/aguas",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=arteytierra-terreno"
   },
