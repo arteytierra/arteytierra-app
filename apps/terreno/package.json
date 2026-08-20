@@ -13,6 +13,9 @@
     "test:coverage": "vitest run --coverage",
     "test:diseno": "vitest run tests/unit/diseno",
     "test:aguas": "vitest run tests/unit/aguas",
+    "test:topografia": "vitest run tests/unit/topografia",
+    "test:clima": "vitest run tests/unit/clima",
+    "test:economia": "vitest run tests/unit/economia",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=arteytierra-terreno"
   },
