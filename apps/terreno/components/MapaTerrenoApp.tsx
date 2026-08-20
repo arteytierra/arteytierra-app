@@ -51,6 +51,7 @@ import { usePerfilElevacion } from '@/hooks/usePerfilElevacion';
 import { useCuenca } from '@/hooks/useCuenca';
 import { useCadSnap } from '@/hooks/useCadSnap';
 import { useVistaShell } from '@/hooks/useVistaShell';
+import { useCapaClima } from '@/hooks/useCapaClima';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -111,7 +112,7 @@ import type { Mojon } from '@/lib/types';
 import { actualizarProyecto, guardarProyecto } from '@/lib/proyectos';
 import type { Proyecto } from '@/lib/proyectos';
 import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
-import { aplicarCalibracionPrecip, obtenerPrecipCHIRPS, centroide, type DatosClima, type CalibracionPrecip } from '@/lib/clima';
+import type { DatosClima, CalibracionPrecip } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
@@ -275,16 +276,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [proyectoActual,setProyectoActual]= useState<Proyecto | null>(null);
 
   // ─── Análisis ─────────────────────────────────────────────────────────────
-  // El clima crudo de la API y la calibración manual de lluvia se guardan por
-  // separado; `datosClima` (lo que consume toda la app) es el derivado. Así la
-  // calibración es reversible y nunca se acumula sobre sí misma.
-  const [datosClimaRaw,   setDatosClimaRaw]   = useState<DatosClima | null>(null);
-  const [calibracionPrecip, setCalibracionPrecip] = useState<CalibracionPrecip | null>(null);
-  const datosClima = useMemo(
-    () => (datosClimaRaw ? aplicarCalibracionPrecip(datosClimaRaw, calibracionPrecip) : null),
-    [datosClimaRaw, calibracionPrecip],
-  );
-  const [buscandoCHIRPS, setBuscandoCHIRPS] = useState(false);
+  // La capa de clima (crudo + calibración de lluvia + extremos + CHIRPS) vive en
+  // useCapaClima; se cablea más abajo, una vez disponible `mojones`.
   const [datosTopografia, setDatosTopografia] = useState<DatosTopografia | null>(null);
   const [topoLoading,     setTopoLoading]     = useState(false);
   const [topoError,       setTopoError]       = useState<string | null>(null);
@@ -292,7 +285,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [datosSuelo,      setDatosSuelo]      = useState<DatosSuelo | null>(null);
   const [sueloLoading,    setSueloLoading]    = useState(false);
   const [sueloError,      setSueloError]      = useState<string | null>(null);
-  const [datosExtremos,   setDatosExtremos]   = useState<Extremos | null>(null);
 
   // ─── Shader topográfico ───────────────────────────────────────────────────
   const [datosShader,   setDatosShader]   = useState<DatosShader | null>(null);
@@ -332,6 +324,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const { present: doc, commit, replace: replaceDoc, undo, redo, canUndo, canRedo } = useHistory<DocDiseno>(DOC_INICIAL);
   const { mojones, zonas, sectores, pines, caminos, aguadasLayer, dibujos } = doc;
   const capasUsuario = doc.capasUsuario ?? CAPAS_USUARIO_INICIAL;
+
+  // ─── Capa de clima (hook useCapaClima) ────────────────────────────────────
+  // Clima crudo (POWER) + calibración de lluvia (manual/CHIRPS) + extremos.
+  const {
+    datosClima, datosClimaRaw, setDatosClimaRaw,
+    calibracionPrecip, setCalibracionPrecip,
+    datosExtremos, setDatosExtremos,
+    buscandoCHIRPS,
+  } = useCapaClima(mojones);
 
   // Shims drop-in: misma firma que los useState anteriores, ruteado por historial
   const setMojones      = useCallback((v: Mojon[]           | ((p: Mojon[])           => Mojon[]))           => commit(d => ({ ...d, mojones:      typeof v === 'function' ? v(d.mojones)      : v })), [commit]);
@@ -1796,40 +1797,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     flyToRef.current?.(r.lat, r.lng, zoomParaBbox(r.bbox));
     setMarcadorBusqueda({ lat: r.lat, lng: r.lng, label: r.nombre.split(',')[0] ?? r.nombre });
   }, []);
-
-  // ─── Precipitación de alta resolución (CHIRPS ~5 km) ──────────────────────
-  // POWER trae la lluvia de una grilla de ~50 km y la subestima donde hay
-  // relieve. Apenas tenemos clima, buscamos CHIRPS y entra como calibración
-  // automática — sin pisar nunca una que haya cargado el usuario a mano.
-  // La celda redondeada evita reintentar con cada mojón que se mueve.
-  const celdaClima = useMemo(() => {
-    if (mojones.length === 0) return null;
-    const c = centroide(mojones);
-    return { lat: Math.round(c.lat / 0.05) * 0.05, lng: Math.round(c.lng / 0.05) * 0.05 };
-  }, [mojones]);
-
-  const hayClimaCrudo = !!datosClimaRaw;
-  const hayCalibracionManual = calibracionPrecip?.origen === 'manual';
-  // Se intenta una sola vez por celda: si el usuario quita la calibración de
-  // CHIRPS, no queremos que vuelva sola en el próximo render.
-  const [chirpsIntentado, setChirpsIntentado] = useState(false);
-  useEffect(() => { setChirpsIntentado(false); }, [celdaClima]);
-
-  useEffect(() => {
-    if (!hayClimaCrudo || !celdaClima || chirpsIntentado || hayCalibracionManual) return;
-
-    const ctrl = new AbortController();
-    setBuscandoCHIRPS(true);
-    obtenerPrecipCHIRPS(celdaClima.lat, celdaClima.lng, { señal: ctrl.signal })
-      .then(cal => {
-        if (ctrl.signal.aborted) return;
-        if (cal) setCalibracionPrecip(cal);
-        setChirpsIntentado(true);
-      })
-      .finally(() => { if (!ctrl.signal.aborted) setBuscandoCHIRPS(false); });
-
-    return () => ctrl.abort();
-  }, [hayClimaCrudo, celdaClima, chirpsIntentado, hayCalibracionManual]);
 
   // ─── Estado de guardado, para el menú de la barra superior ────────────────
   const estadoGuardado = useMemo(() => {
