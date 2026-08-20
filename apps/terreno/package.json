@@ -8,6 +8,10 @@
     "start": "next start --port 3001",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:diseno": "vitest run tests/unit/diseno",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=arteytierra-terreno"
   },
@@ -45,6 +49,8 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vercel": "^54.4.1"
+    "vercel": "^54.4.1",
+    "vitest": "^3.1.0",
+    "@vitest/coverage-v8": "^3.1.0"
   }
 }

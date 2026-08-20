@@ -93,6 +93,11 @@ export interface Zona {
 
 export function calcularAreaZona(vertices: Array<{ lat: number; lng: number }>): { m2: number; ha: number } {
   if (vertices.length < 3) return { m2: 0, ha: 0 };
+  // Guard: coordenadas no finitas (undefined, NaN, strings) harían que turf
+  // propague NaN sin lanzar excepción; devolvemos 0 en vez de un área inválida.
+  if (!vertices.every(v => Number.isFinite(v?.lat) && Number.isFinite(v?.lng))) {
+    return { m2: 0, ha: 0 };
+  }
   try {
     const coords = vertices.map(v => [v.lng, v.lat] as [number, number]);
     coords.push(coords[0]!);
