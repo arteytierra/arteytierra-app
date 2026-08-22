@@ -52,6 +52,7 @@ import { useCuenca } from '@/hooks/useCuenca';
 import { useCadSnap } from '@/hooks/useCadSnap';
 import { useVistaShell } from '@/hooks/useVistaShell';
 import { useCapaClima } from '@/hooks/useCapaClima';
+import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -282,9 +283,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [topoLoading,     setTopoLoading]     = useState(false);
   const [topoError,       setTopoError]       = useState<string | null>(null);
   const [captacionSnap,   setCaptacionSnap]   = useState<CaptacionSnapshot | null>(null);
-  const [datosSuelo,      setDatosSuelo]      = useState<DatosSuelo | null>(null);
-  const [sueloLoading,    setSueloLoading]    = useState(false);
-  const [sueloError,      setSueloError]      = useState<string | null>(null);
+
+  // ─── Capa de suelo (hook useCapaSuelo) ─────────────────────────────────────
+  // Dato de suelo + carga/error; el fetch vive en SuelosPanel.
+  const {
+    datosSuelo, setDatosSuelo,
+    sueloLoading, setSueloLoading,
+    sueloError, setSueloError,
+  } = useCapaSuelo();
 
   // ─── Shader topográfico ───────────────────────────────────────────────────
   const [datosShader,   setDatosShader]   = useState<DatosShader | null>(null);
