@@ -54,6 +54,7 @@ import { useVistaShell } from '@/hooks/useVistaShell';
 import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { useCapaTopografia } from '@/hooks/useCapaTopografia';
+import { useCapturaPng } from '@/hooks/useCapturaPng';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -2121,44 +2122,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     window.open('/informe/borrador', '_blank');
   }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
 
-  // ─── Captura ──────────────────────────────────────────────────────────────
-  const [guardandoPng, setGuardandoPng] = useState(false);
-
-  const handleGuardarPng = useCallback(async () => {
-    // Capturamos el contenedor principal para incluir título y leyenda
-    const el = document.getElementById('print-capture-root');
-    if (!el || guardandoPng) return;
-    setGuardandoPng(true);
-    try {
-      const { toPng } = await import('html-to-image');
-      // Pequeño delay para asegurar que el DOM esté completamente pintado
-      await new Promise(r => setTimeout(r, 100));
-      const dataUrl = await toPng(el, {
-        cacheBust: true,
-        pixelRatio: 2,
-        skipFonts: false,
-        filter: (node) => {
-          if (!(node instanceof Element)) return true;
-          if (node.classList.contains('no-print')) return false;
-          if (node.classList.contains('leaflet-control-container')) return false;
-          return true;
-        },
-        // Asegurar que los overlays con posición absoluta se rendericen correctamente
-        style: {
-          overflow: 'visible',
-        },
-      });
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `${capturaTitulo || 'mapa'}-${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.png`;
-      a.click();
-    } catch (e) {
-      setModal({ type: 'alert', message: 'No se pudo guardar la imagen. Usá el botón "Imprimir" y guardá como PDF.' });
-      console.error(e);
-    } finally {
-      setGuardandoPng(false);
-    }
-  }, [capturaTitulo, guardandoPng]);
+  // ─── Captura (hook useCapturaPng) ──────────────────────────────────────────
+  // Exporta #print-capture-root a PNG vía html-to-image; el nombre sale del
+  // título de captura y los errores se muestran en el modal compartido.
+  const { guardandoPng, handleGuardarPng } = useCapturaPng(
+    capturaTitulo,
+    (mensaje) => setModal({ type: 'alert', message: mensaje }),
+  );
 
   const handleCapturaMap = useCallback(() => {
     const style = document.createElement('style');
