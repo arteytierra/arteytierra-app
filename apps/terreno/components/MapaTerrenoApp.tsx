@@ -55,6 +55,7 @@ import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { useCapaTopografia } from '@/hooks/useCapaTopografia';
 import { useCapturaPng } from '@/hooks/useCapturaPng';
+import { useCapasDnD } from '@/hooks/useCapasDnD';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -3843,45 +3844,9 @@ function PanelCapas({
   // Sub-capas del Master plan: tipos de elemento presentes (orden de aparición).
   const tiposMasterPlan = masterPlan ? [...new Set(masterPlan.map(el => el.tipo))] : [];
 
-  const [ordenGrupos, setOrdenGrupos] = useState([
-    'topo', 'plano', 'hidrico', 'erosion', 'swales', 'cortinas', 'cortafuegos', 'silvopastura', 'sugerencias', 'analisis', 'terreno',
-    'zonas', 'sectores', 'caminos', 'pines', 'dibujos', 'aguadas', 'arcSolar',
-  ]);
-  const [dragKey, setDragKey] = useState<string | null>(null);
-  // Mientras se arrastra un control (slider de intensidad / selector de color)
-  // dentro de un grupo, el grupo NO debe ser draggable: el drag nativo del grupo
-  // (para reordenar) secuestraba el arrastre del slider. Se rearma al soltar.
-  const [dragBloqueado, setDragBloqueado] = useState(false);
-  useEffect(() => {
-    if (!dragBloqueado) return;
-    const soltar = () => setDragBloqueado(false);
-    window.addEventListener('mouseup', soltar);
-    return () => window.removeEventListener('mouseup', soltar);
-  }, [dragBloqueado]);
-  const bloquearDrag = { onMouseDown: () => setDragBloqueado(true) };
-  const makeDrag = (key: string) => ({
-    draggable: !dragBloqueado,
-    style: { order: ordenGrupos.indexOf(key), opacity: dragKey === key ? 0.4 : 1 },
-    onDragStart: (e: React.DragEvent) => { e.dataTransfer.effectAllowed = 'move'; setDragKey(key); },
-    onDragOver:  (e: React.DragEvent) => e.preventDefault(),
-    onDrop: () => {
-      if (!dragKey || dragKey === key) { setDragKey(null); return; }
-      setOrdenGrupos(prev => {
-        const arr = [...prev];
-        const from = arr.indexOf(dragKey), to = arr.indexOf(key);
-        if (from < 0 || to < 0) return prev;
-        arr.splice(from, 1);
-        arr.splice(to, 0, dragKey);
-        return arr;
-      });
-      setDragKey(null);
-    },
-    onDragEnd: () => setDragKey(null),
-  });
+  // El drag & drop del panel (reordenar grupos + arrastrar elementos/overlays a
+  // carpetas) vive en useCapasDnD; se cablea más abajo, una vez disponible `linkablesKeys`.
 
-  // ── Arrastre de un ELEMENTO (dibujo/camino/…) entre carpetas de usuario ──
-  const [dragItem, setDragItem] = useState<{ tipo: TipoElementoCapa; id: string } | null>(null);
-  const [dropCapa, setDropCapa] = useState<string | null>(null);
   // Carpeta efectiva de un elemento (su capaId o la carpeta de la Escala por tipo).
   const folderEf = (capaId: string | undefined, tipo: TipoElementoCapa) =>
     capaDeElemento(capaId ?? carpetaEscalaPara(tipo), capasUsuario);
@@ -3910,41 +3875,12 @@ function PanelCapas({
     { key: 'terreno',      flag: 'terreno',      label: 'Polígono del predio', icon: <Shapes className="w-3 h-3" style={{ color: '#D9A441' }} />,       disponible: true },
   ];
   const linkablesKeys = new Set(OVERLAYS_LINKABLES.map(o => o.key));
-  const [overlayFolder, setOverlayFolder] = useState<Record<string, string>>(() => {
-    if (typeof window === 'undefined') return {};
-    try { return JSON.parse(localStorage.getItem('terreno.overlayFolder') || '{}'); } catch { return {}; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('terreno.overlayFolder', JSON.stringify(overlayFolder)); } catch { /* ignore */ }
-  }, [overlayFolder]);
+  const {
+    bloquearDrag, makeDrag, dragFila, dropEnCarpeta,
+    overlayFolder, setOverlayFolder, dropCapa,
+  } = useCapasDnD(onMoverElemento, linkablesKeys);
   const toggleOverlayLink  = (o: OverlayLink) => onCapas({ ...capas, [o.flag]: !capas[o.flag] });
   const desvincularOverlay = (key: string) => setOverlayFolder(prev => { const n = { ...prev }; delete n[key]; return n; });
-
-  // dnd de item: props para una fila arrastrable
-  const dragFila = (tipo: TipoElementoCapa, id: string) => ({
-    draggable: !dragBloqueado,
-    onDragStart: (e: React.DragEvent) => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; setDragItem({ tipo, id }); },
-    onDragEnd: () => { setDragItem(null); setDropCapa(null); },
-  });
-  // dnd: la carpeta recibe tanto elementos (dibujo/camino/…) como overlays de análisis
-  const dropEnCarpeta = (capaId: string) => ({
-    onDragOver: (e: React.DragEvent) => {
-      if (dragItem || (dragKey && linkablesKeys.has(dragKey))) { e.preventDefault(); e.stopPropagation(); setDropCapa(capaId); }
-    },
-    onDrop: (e: React.DragEvent) => {
-      if (dragItem) {
-        e.preventDefault(); e.stopPropagation();
-        onMoverElemento(dragItem.tipo, dragItem.id, capaId);
-        setDragItem(null); setDropCapa(null);
-        return;
-      }
-      if (dragKey && linkablesKeys.has(dragKey)) {
-        e.preventDefault(); e.stopPropagation();
-        setOverlayFolder(prev => ({ ...prev, [dragKey]: capaId }));
-        setDragKey(null); setDropCapa(null);
-      }
-    },
-  });
 
   return (
     <div className="ay-legible w-full h-full bg-bone-50 flex flex-col overflow-hidden">
