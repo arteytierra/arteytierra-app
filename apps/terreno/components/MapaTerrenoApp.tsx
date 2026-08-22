@@ -53,6 +53,7 @@ import { useCadSnap } from '@/hooks/useCadSnap';
 import { useVistaShell } from '@/hooks/useVistaShell';
 import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
+import { useCapaTopografia } from '@/hooks/useCapaTopografia';
 import { crearZona, actualizarAreaZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
@@ -279,9 +280,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Análisis ─────────────────────────────────────────────────────────────
   // La capa de clima (crudo + calibración de lluvia + extremos + CHIRPS) vive en
   // useCapaClima; se cablea más abajo, una vez disponible `mojones`.
-  const [datosTopografia, setDatosTopografia] = useState<DatosTopografia | null>(null);
-  const [topoLoading,     setTopoLoading]     = useState(false);
-  const [topoError,       setTopoError]       = useState<string | null>(null);
+  // ─── Capa de topografía (hook useCapaTopografia) ───────────────────────────
+  // Dato de topografía + carga/error; el fetch vive en TopografiaPanel.
+  const {
+    datosTopografia, setDatosTopografia,
+    topoLoading, setTopoLoading,
+    topoError, setTopoError,
+  } = useCapaTopografia();
   const [captacionSnap,   setCaptacionSnap]   = useState<CaptacionSnapshot | null>(null);
 
   // ─── Capa de suelo (hook useCapaSuelo) ─────────────────────────────────────
