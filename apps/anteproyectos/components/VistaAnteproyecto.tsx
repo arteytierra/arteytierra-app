@@ -5,6 +5,7 @@ import { TECNICAS_MURO } from '@/lib/conocimiento/parametros';
 import { exportarPlantaDXF, nombreArchivoDXF } from '@/lib/motor/dxf';
 import type { AnteproyectoGenerado } from '@/lib/motor/generador';
 import { renderFachada, renderPlanta, renderTechos } from '@/lib/motor/svg';
+import { Vistas3D } from './Vistas3D';
 
 function descargar(contenido: string, nombre: string, tipo: string) {
   const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
@@ -83,6 +84,8 @@ export function VistaAnteproyecto({ ap, proyecto }: { ap: AnteproyectoGenerado; 
           <div className="overflow-x-auto rounded border border-bone-200 bg-bone-50 p-2" dangerouslySetInnerHTML={{ __html: fachadaOpuestaSvg }} />
         </div>
       </div>
+
+      <Vistas3D ap={ap} proyecto={proyecto} />
 
       {ap.fuentes.length > 0 && (
         <details className="text-sm">

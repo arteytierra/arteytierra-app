@@ -10,6 +10,7 @@
  * Unidades: metros. Eje Y hacia arriba (en el motor y en el SVG apunta hacia
  * abajo, así que se invierte al exportar).
  */
+import { aberturasExteriores } from './aberturas';
 import type { AnteproyectoGenerado } from './generador';
 import { mobiliarioDe } from './mobiliario';
 
@@ -136,8 +137,32 @@ export function exportarPlantaDXF(ap: AnteproyectoGenerado): string {
     }
   }
 
+  // Aberturas exteriores, de la misma lista que dibujan la planta, las
+  // fachadas y las vistas 3D. La capa existía vacía: quien abría el DXF en CAD
+  // veía muros corridos sin una sola ventana.
+  for (const a of aberturasExteriores(ap)) {
+    const i = a.centro_m - a.ancho_m / 2;
+    const f = a.centro_m + a.ancho_m / 2;
+    if (a.lado === 'N' || a.lado === 'S') {
+      d.linea('ABERTURAS', i, flipY(a.plano_m), f, flipY(a.plano_m));
+    } else {
+      d.linea('ABERTURAS', a.plano_m, flipY(i), a.plano_m, flipY(f));
+    }
+    d.texto('ABERTURAS', i, flipY(a.lado === 'N' || a.lado === 'S' ? a.plano_m : a.centro_m) + 0.1, 0.12,
+      a.clase === 'puerta'
+        ? `P ${(a.ancho_m * 100).toFixed(0)}x${(a.alto_m * 100).toFixed(0)}`
+        : `V ${(a.ancho_m * 100).toFixed(0)}x${(a.alto_m * 100).toFixed(0)} h=${(a.antepecho_m * 100).toFixed(0)}`);
+  }
+
   // Proyección del alero (planta de techos) en su propia capa.
   d.rectangulo('EJES', -ap.alero_m, -ap.alero_m, ap.ancho_m + ap.alero_m * 2, ap.profundo_m + ap.alero_m * 2);
+
+  // Cumbrera, sobre el eje largo: es lo que define las pendientes en CAD.
+  if (ap.ejeCumbrera === 'E-O') {
+    d.linea('EJES', -ap.alero_m, flipY(ap.profundo_m / 2), ap.ancho_m + ap.alero_m, flipY(ap.profundo_m / 2));
+  } else {
+    d.linea('EJES', ap.ancho_m / 2, flipY(-ap.alero_m), ap.ancho_m / 2, flipY(ap.profundo_m + ap.alero_m));
+  }
 
   // Cotas generales del edificio.
   const yCota = -ap.alero_m - 1;
@@ -156,7 +181,7 @@ export function exportarPlantaDXF(ap: AnteproyectoGenerado): string {
     0,
     -ap.alero_m - 2.8,
     0.2,
-    `${ap.area_total_m2} m2 - muro ${ap.tecnicaMuro} ${(ap.espesorMuro_m * 100).toFixed(0)} cm - alero ${ap.alero_m.toFixed(2)} m - h muro ${ap.altura_muro_m.toFixed(2)} m`,
+    `${ap.area_total_m2} m2 - muro ${ap.tecnicaMuro} ${(ap.espesorMuro_m * 100).toFixed(0)} cm - alero ${ap.alero_m.toFixed(2)} m - h muro ${ap.altura_muro_m.toFixed(2)} m - h total ${ap.altura_total_m.toFixed(2)} m - techo 2 aguas ${ap.pendiente_techo_pct}% cumbrera ${ap.ejeCumbrera}`,
   );
   d.texto('TEXTOS', 0, -ap.alero_m - 3.4, 0.16, 'Arte y Tierra - esquema de anteproyecto, verificar en proyecto ejecutivo');
 

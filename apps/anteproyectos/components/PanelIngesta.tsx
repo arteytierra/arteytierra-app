@@ -25,14 +25,21 @@ const ETIQUETA_ROL: Record<RolArchivo, string> = {
   otro: 'Otros',
 };
 
+const RUTA_POR_DEFECTO = 'C:/Arte y Tierra/2. Bioconstruccion/proyectos/Jose P.R/Respuestas';
+
 export function PanelIngesta({
   onPrograma,
   onCuaderno,
+  onCarpeta,
+  rutaInicial,
 }: {
   onPrograma: (ambientes: AmbienteDeseado[]) => void;
   onCuaderno: (c: CuadernoLeido) => void;
+  /** Avisa qué carpeta se leyó, para guardarla junto al proyecto. */
+  onCarpeta?: (ruta: string) => void;
+  rutaInicial?: string;
 }) {
-  const [ruta, setRuta] = useState('C:/Arte y Tierra/2. Bioconstruccion/proyectos/Jose P.R/Respuestas');
+  const [ruta, setRuta] = useState(rutaInicial || RUTA_POR_DEFECTO);
   const [datos, setDatos] = useState<RespuestaIngesta | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +55,7 @@ export function PanelIngesta({
         setError(json.error);
       } else {
         setDatos(json);
+        onCarpeta?.(ruta);
         if (json.cuaderno) onCuaderno(json.cuaderno);
       }
     } catch (e) {

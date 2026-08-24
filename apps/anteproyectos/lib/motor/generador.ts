@@ -1,5 +1,6 @@
 import type { DatosClima } from '../clima';
 import {
+  aleroPorLluvia,
   ALTURA_MURO_POR_ENFOQUE,
   CIMIENTOS,
   PHI,
@@ -50,12 +51,21 @@ export interface AnteproyectoGenerado {
   alero_m: number;
   altura_muro_m: number;
   pendiente_techo_pct: number;
+  /** Dirección de la cumbrera: corre siempre sobre el eje largo del edificio. */
+  ejeCumbrera: 'E-O' | 'N-S';
+  /** Altura de la cumbrera por encima del nivel superior del muro. */
+  altura_cumbrera_m: number;
+  /** Altura total del edificio sobre el nivel de piso terminado. */
+  altura_total_m: number;
   fachadaPrincipal: string; // rumbo cardinal, ej. 'S'
   envolvente: 'rectangular' | 'organica';
   tecnicaMuro: TecnicaMuro;
   espesorMuro_m: number;
   etapas?: { nombre: string; ambientesIds: string[] }[];
   estrategiaClimatica?: EstrategiaClimatica;
+  /** Latitud del sitio, si se conoce: define el sol de las vistas 3D. */
+  lat?: number;
+  koppen?: string;
 }
 
 /**
@@ -116,7 +126,7 @@ function fundamentoPara(
   const notaAleroGenerico = () => {
     if (clima?.koppen && estrategia) {
       notas.push(
-        `Alero de ${alero_m} m dimensionado por geometría solar real del sitio (Köppen ${clima.koppen.codigo}) — aunque la forma de este perfil no se optimiza por clima, la protección solar sí usa el clima real.`,
+        `Alero dimensionado con el clima real del sitio (Köppen ${clima.koppen.codigo}) — aunque la forma de este perfil no se optimiza por clima, la protección sí usa el clima real.`,
       );
       fuentes.add('moore-ecs');
     }
@@ -149,7 +159,7 @@ function fundamentoPara(
       if (clima?.koppen && estrategia) {
         notas.push(`Sitio clasificado Köppen ${clima.koppen.codigo} (${clima.koppen.descripcion}). ${estrategia.descripcion}`);
         notas.push(
-          `Alero de ${alero_m} m calculado por geometría solar (altitud solsticio verano ${Math.round(altitudSolsticioVerano(clima.lat))}°, invierno ${Math.round(altitudSolsticioInvierno(clima.lat))}°) para la fachada orientada a ${fachadaEcuador(clima.lat)}.`,
+          `Geometría solar del sitio: altitud del sol al mediodía ${Math.round(altitudSolsticioVerano(clima.lat))}° en el solsticio de verano y ${Math.round(altitudSolsticioInvierno(clima.lat))}° en el de invierno, sobre la fachada orientada a ${fachadaEcuador(clima.lat)}. Por sombra pide un alero de ${alero_m.toFixed(2)} m.`,
         );
         notas.push(`Viento dominante relevado: ${clima.viento_dir_ppal}. Aberturas enfrentadas para ventilación cruzada.`);
         const ratio = RATIO_VIDRIADO_POR_ENFOQUE[estrategia.enfoque];
@@ -253,10 +263,6 @@ export function generarAnteproyecto(
   const { ancho_m, profundo_m, area_total_m2 } = dimensionesDe(rects);
 
   const lat = clima?.lat ?? 0;
-  const alero =
-    clima && estrategiaReal
-      ? calcularAleroPasivo(lat, ALTURA_VENTANA_TIPICA_M, estrategiaReal.enfoque)
-      : { profundidad_m: 0.6, altitudVeranoDeg: 0, altitudInviernoDeg: 0, nota: '' };
 
   const fachadaPrincipal =
     clima && estrategiaReal
@@ -274,9 +280,43 @@ export function generarAnteproyecto(
   const tecnicaMuro = tecnicaRecomendada(estrategiaReal?.enfoque ?? 'mixto', opciones.zonaSismica);
   const espesorMuro_m = TECNICAS_MURO[tecnicaMuro].espesor_tipico_m;
 
+  // El alero se dimensiona por DOS criterios y manda el mayor: el sol y la
+  // lluvia. Dimensionarlo sólo por sol da el resultado más peligroso justo en
+  // el trópico húmedo —donde el sol de mediodía cae casi vertical y la sombra
+  // se resuelve con 40 cm— dejando el muro de tierra a la intemperie.
+  const aleroSolar =
+    clima && estrategiaReal
+      ? calcularAleroPasivo(lat, ALTURA_VENTANA_TIPICA_M, estrategiaReal.enfoque)
+      : { profundidad_m: 0.6, altitudVeranoDeg: 0, altitudInviernoDeg: 0, nota: '' };
+  const aleroLluvia = clima ? aleroPorLluvia(clima.precip_anual_mm, altura_muro_m, tecnicaMuro) : null;
+  const alero_m = Math.max(aleroSolar.profundidad_m, aleroLluvia?.min_m ?? 0);
+  const mandaLluvia = aleroLluvia !== null && aleroLluvia.min_m > aleroSolar.profundidad_m;
+
   const pendiente_techo_pct = estrategiaReal?.enfoque === 'ganancia-solar' ? 30 : estrategiaReal?.enfoque === 'sombra-ventilacion' ? 25 : 20;
 
-  const { notas, fuentes } = fundamentoPara(perfil, clima, estrategiaReal, alero.profundidad_m, tecnicaMuro, parametros);
+  // El techo es a dos aguas con la cumbrera sobre el eje largo: las faldas
+  // caen hacia los dos lados más largos, que son los que más muro tienen para
+  // proteger. La altura de cumbrera sale de la luz que se cubre —la dimensión
+  // PERPENDICULAR a la cumbrera— y se calcula una sola vez acá.
+  //
+  // Antes cada fachada la deducía de su propio ancho, así que la misma casa se
+  // dibujaba con dos alturas totales distintas según el lado que se mirara.
+  const ejeCumbrera: 'E-O' | 'N-S' = ancho_m >= profundo_m ? 'E-O' : 'N-S';
+  const luzCubierta_m = ejeCumbrera === 'E-O' ? profundo_m : ancho_m;
+  const altura_cumbrera_m =
+    Math.round(Math.min(Math.max((luzCubierta_m / 2) * (pendiente_techo_pct / 100), 0.8), 4) * 100) / 100;
+  const altura_total_m = Math.round((altura_muro_m + altura_cumbrera_m) * 100) / 100;
+
+  // El fundamento recibe el alero SOLAR, no el adoptado: cada criterio declara
+  // su propio número y después se dice cuál mandó. Pasarle el adoptado hacía
+  // que la nota solar se atribuyera una medida que el sol no había pedido.
+  const { notas, fuentes } = fundamentoPara(perfil, clima, estrategiaReal, aleroSolar.profundidad_m, tecnicaMuro, parametros);
+  if (aleroLluvia) notas.push(aleroLluvia.nota);
+  if (clima) {
+    notas.push(
+      `Alero adoptado: ${alero_m.toFixed(2)} m — manda el criterio de ${mandaLluvia ? 'lluvia' : 'sombra solar'}, que es el más exigente en este sitio.`,
+    );
+  }
   if (opciones.zonaSismica) notas.push(REFUERZO_SISMICO.descripcion);
 
   const etapas = perfil === 'autoconstruccion' && parametros.modularidadEtapas ? etapasAutoconstruccion(rects) : undefined;
@@ -291,15 +331,20 @@ export function generarAnteproyecto(
     ancho_m,
     profundo_m,
     area_total_m2,
-    alero_m: alero.profundidad_m,
+    alero_m,
     altura_muro_m,
     pendiente_techo_pct,
+    ejeCumbrera,
+    altura_cumbrera_m,
+    altura_total_m,
     fachadaPrincipal,
     envolvente: perfil === 'organico' ? 'organica' : 'rectangular',
     tecnicaMuro,
     espesorMuro_m,
     etapas,
     estrategiaClimatica: estrategia,
+    lat: clima ? clima.lat : undefined,
+    koppen: clima?.koppen?.codigo,
   };
 }
 

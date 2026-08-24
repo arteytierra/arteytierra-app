@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { PanelIngesta } from '@/components/PanelIngesta';
+import { PanelProyectos } from '@/components/PanelProyectos';
 import { VistaAnteproyecto } from '@/components/VistaAnteproyecto';
 import { obtenerClima, type DatosClima } from '@/lib/clima';
 import type { CuadernoLeido } from '@/lib/ingesta/cuaderno';
 import { generarAnteproyecto, type AnteproyectoGenerado } from '@/lib/motor/generador';
 import { NOMBRE_TIPO } from '@/lib/motor/areas';
 import { PERFILES } from '@/lib/perfiles';
+import { idDesdeNombre, VERSION_PROYECTO, type ProyectoGuardado } from '@/lib/proyectos/tipos';
 import {
   PARAMETROS_TRANSVERSALES_DEFAULT,
   TAMANOS,
@@ -50,6 +52,53 @@ export default function Home() {
   const [resultados, setResultados] = useState<AnteproyectoGenerado[] | null>(null);
   const [cuaderno, setCuaderno] = useState<CuadernoLeido | null>(null);
   const [zonaSismica, setZonaSismica] = useState(false);
+  const [carpeta, setCarpeta] = useState<string | undefined>(undefined);
+  // Remonta el panel de ingesta al abrir un proyecto, para que su campo de
+  // ruta muestre la carpeta guardada y no la de la sesión anterior.
+  const [sesion, setSesion] = useState(0);
+
+  /**
+   * Enunciado del proyecto tal como se guarda: sitio, programa y parámetros.
+   * No incluye los anteproyectos generados a propósito — se regeneran al abrir.
+   */
+  function construirProyecto(): ProyectoGuardado | null {
+    const nombre = nombreProyecto.trim();
+    if (!nombre) return null;
+    return {
+      version: VERSION_PROYECTO,
+      id: idDesdeNombre(nombre),
+      nombre,
+      guardadoEn: new Date().toISOString(),
+      carpeta,
+      lat,
+      lng,
+      m2Objetivo,
+      ambientes,
+      parametros,
+      perfilesActivos,
+      zonaSismica,
+      cuaderno,
+    };
+  }
+
+  function cargarProyecto(p: ProyectoGuardado) {
+    setNombreProyecto(p.nombre);
+    setLat(p.lat);
+    setLng(p.lng);
+    setM2Objetivo(p.m2Objetivo);
+    setAmbientes(p.ambientes);
+    setParametros(p.parametros);
+    setPerfilesActivos(p.perfilesActivos);
+    setZonaSismica(p.zonaSismica);
+    setCuaderno(p.cuaderno ?? null);
+    setCarpeta(p.carpeta);
+    // Los resultados en pantalla son del proyecto anterior: se limpian para no
+    // dejar planos de una casa junto al programa de otra.
+    setResultados(null);
+    setClima(null);
+    setError(null);
+    setSesion(s => s + 1);
+  }
 
   function actualizarAmbiente(id: string, patch: Partial<AmbienteDeseado>) {
     setAmbientes(prev => prev.map(a => (a.id === id ? { ...a, ...patch } : a)));
@@ -98,7 +147,12 @@ export default function Home() {
         cierran.
       </p>
 
+      <PanelProyectos construirProyecto={construirProyecto} onCargar={cargarProyecto} nombreActual={nombreProyecto} />
+
       <PanelIngesta
+        key={sesion}
+        rutaInicial={carpeta}
+        onCarpeta={setCarpeta}
         onPrograma={nuevos => setAmbientes(nuevos)}
         onCuaderno={c => {
           setCuaderno(c);

@@ -173,6 +173,46 @@ export const CIMIENTOS = {
   fuente: 'ayt-manual-bioconstruccion',
 };
 
+// ── Alero por protección de lluvia (Manual AyT, caps. 19 y 20) ──────────────
+
+/** Técnicas que el manual marca como especialmente vulnerables al agua. */
+const TECNICAS_SENSIBLES_AL_AGUA: TecnicaMuro[] = ['fardos', 'paja-encofrada', 'cana-trenzada'];
+
+/**
+ * Alero mínimo que pide la lluvia, aparte del que pide el sol.
+ *
+ * Existe porque dimensionar el alero sólo por geometría solar da un resultado
+ * peligroso justo donde más alero hace falta: en el trópico el sol de mediodía
+ * cae casi vertical, así que la sombra se resuelve con 40 cm — y un muro de
+ * tierra con 40 cm de alero y 1.900 mm de lluvia al año se lava.
+ *
+ * El manual lo dice sin vueltas: "buen sombrero y buenas botas". El alero del
+ * proyecto es el MAYOR de los dos criterios, nunca el solar a secas.
+ *
+ * Los valores son de anteproyecto: la verificación de lluvia batiente real
+ * (dirección de tormentas, exposición del terreno) es de proyecto ejecutivo.
+ */
+export function aleroPorLluvia(
+  precip_anual_mm: number,
+  altura_muro_m: number,
+  tecnica: TecnicaMuro,
+): { min_m: number; nota: string } {
+  const base =
+    precip_anual_mm < 500 ? 0.45 : precip_anual_mm < 900 ? 0.6 : precip_anual_mm < 1400 ? 0.8 : precip_anual_mm < 2000 ? 1.0 : 1.2;
+  // Un muro más alto expone más superficie a la lluvia batiente.
+  const porAltura = Math.min(Math.max(altura_muro_m / 2.6, 0.85), 1.25);
+  const suplemento = TECNICAS_SENSIBLES_AL_AGUA.includes(tecnica) ? 0.15 : 0;
+  const min_m = Math.round(Math.min(base * porAltura + suplemento, 1.8) * 100) / 100;
+  return {
+    min_m,
+    nota:
+      `Alero mínimo de ${min_m.toFixed(2)} m por protección de lluvia (${Math.round(precip_anual_mm)} mm/año sobre muro de tierra ` +
+      `de ${altura_muro_m.toFixed(2)} m). Regla del manual: "buen sombrero y buenas botas".`,
+  };
+}
+
+export const FUENTE_ALERO_LLUVIA = ['ayt-manual-bioconstruccion', 'minke'] as const;
+
 // ── Altura libre interior por enfoque climático ─────────────────────────────
 
 /**

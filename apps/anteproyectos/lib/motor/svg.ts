@@ -1,4 +1,6 @@
+import { aberturasExteriores, type Abertura } from './aberturas';
 import type { AnteproyectoGenerado } from './generador';
+import { pathHuella } from './huella';
 import type { RectanguloAmbiente } from './layout';
 import { mobiliarioDe, type Mueble } from './mobiliario';
 
@@ -15,15 +17,6 @@ import { mobiliarioDe, type Mueble } from './mobiliario';
 
 const PX_M = 32; // píxeles por metro
 const MARGEN = 70; // margen para cotas alrededor del dibujo
-
-const TIPOS_CON_VENTANA = new Set([
-  'dormitorio',
-  'estar-cocina-comedor',
-  'estudio',
-  'taller',
-  'galeria',
-  'invernadero',
-]);
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -139,57 +132,28 @@ function svgPuerta(s: SegmentoCompartido): string {
   `;
 }
 
-function svgVentanasDe(r: RectanguloAmbiente): string {
-  if (!TIPOS_CON_VENTANA.has(r.tipo)) return '';
-  const lados: Array<{ activo: boolean; horizontal: boolean; largo: number; base: () => string }> = [
-    {
-      activo: r.exteriorNorte,
-      horizontal: true,
-      largo: r.w_m,
-      base: () => {
-        const w = Math.min(Math.max(r.w_m * 0.4, 0.8), 2.4);
-        const cx = r.x_m + r.w_m / 2;
-        const y = r.y_m * PX_M;
-        return `<line x1="${(cx - w / 2) * PX_M}" y1="${y}" x2="${(cx + w / 2) * PX_M}" y2="${y}" stroke="#7fa3c9" stroke-width="3.5"/>`;
-      },
-    },
-    {
-      activo: r.exteriorSur,
-      horizontal: true,
-      largo: r.w_m,
-      base: () => {
-        const w = Math.min(Math.max(r.w_m * 0.4, 0.8), 2.4);
-        const cx = r.x_m + r.w_m / 2;
-        const y = (r.y_m + r.h_m) * PX_M;
-        return `<line x1="${(cx - w / 2) * PX_M}" y1="${y}" x2="${(cx + w / 2) * PX_M}" y2="${y}" stroke="#7fa3c9" stroke-width="3.5"/>`;
-      },
-    },
-    {
-      activo: r.exteriorOeste,
-      horizontal: false,
-      largo: r.h_m,
-      base: () => {
-        const h = Math.min(Math.max(r.h_m * 0.4, 0.8), 2.4);
-        const cy = r.y_m + r.h_m / 2;
-        const x = r.x_m * PX_M;
-        return `<line x1="${x}" y1="${(cy - h / 2) * PX_M}" x2="${x}" y2="${(cy + h / 2) * PX_M}" stroke="#7fa3c9" stroke-width="3.5"/>`;
-      },
-    },
-    {
-      activo: r.exteriorEste,
-      horizontal: false,
-      largo: r.h_m,
-      base: () => {
-        const h = Math.min(Math.max(r.h_m * 0.4, 0.8), 2.4);
-        const cy = r.y_m + r.h_m / 2;
-        const x = (r.x_m + r.w_m) * PX_M;
-        return `<line x1="${x}" y1="${(cy - h / 2) * PX_M}" x2="${x}" y2="${(cy + h / 2) * PX_M}" stroke="#7fa3c9" stroke-width="3.5"/>`;
-      },
-    },
-  ];
-  // Una sola ventana representativa: el lado exterior más largo.
-  const elegido = lados.filter(l => l.activo).sort((a, b) => b.largo - a.largo)[0];
-  return elegido ? elegido.base() : '';
+/** Abertura exterior en planta: corte del muro sobre su propio plano. */
+function svgAberturaEnPlanta(a: Abertura): string {
+  const esNS = a.lado === 'N' || a.lado === 'S';
+  const p1 = (a.centro_m - a.ancho_m / 2) * PX_M;
+  const p2 = (a.centro_m + a.ancho_m / 2) * PX_M;
+  const plano = a.plano_m * PX_M;
+  const trazo =
+    a.clase === 'ventana'
+      ? { color: '#7fa3c9', ancho: 3.5 }
+      : { color: '#FBF8F3', ancho: 4 };
+
+  const linea = esNS
+    ? `<line x1="${p1}" y1="${plano}" x2="${p2}" y2="${plano}" stroke="${trazo.color}" stroke-width="${trazo.ancho}"/>`
+    : `<line x1="${plano}" y1="${p1}" x2="${plano}" y2="${p2}" stroke="${trazo.color}" stroke-width="${trazo.ancho}"/>`;
+  if (a.clase === 'ventana') return linea;
+
+  // La puerta de acceso se dibuja con su barrido, como las interiores.
+  const largo = p2 - p1;
+  const arco = esNS
+    ? `<path d="M ${p1} ${plano} A ${largo} ${largo} 0 0 1 ${p1 + largo} ${plano + largo}" fill="none" stroke="#8a8a80" stroke-width="0.75" stroke-dasharray="2,2"/>`
+    : `<path d="M ${plano} ${p1} A ${largo} ${largo} 0 0 1 ${plano + largo} ${p1 + largo}" fill="none" stroke="#8a8a80" stroke-width="0.75" stroke-dasharray="2,2"/>`;
+  return linea + arco;
 }
 
 // ─── Mobiliario ─────────────────────────────────────────────────────────────
@@ -273,7 +237,7 @@ export function renderPlanta(ap: AnteproyectoGenerado): string {
     })
     .join('');
 
-  const ventanas = ap.ambientes.map(svgVentanasDe).join('');
+  const ventanas = aberturasExteriores(ap).map(svgAberturaEnPlanta).join('');
   const puertasS = puertas.map(svgPuerta).join('');
 
   const cotaTop = cotaHorizontal(0, anchoPx, -28, `${ap.ancho_m.toFixed(2)} m`);
@@ -302,51 +266,6 @@ export function renderPlanta(ap: AnteproyectoGenerado): string {
 
 // ─── Techos ─────────────────────────────────────────────────────────────────
 
-/**
- * Extensión de cada banda de ambientes: y de inicio, y de fin y ancho.
- * Las filas no siempre tienen el mismo ancho, así que la huella real puede
- * ser escalonada (una casa en L) y no un rectángulo.
- */
-function bandasDe(ap: AnteproyectoGenerado): { y0: number; y1: number; ancho: number }[] {
-  const porFila = new Map<number, { y0: number; y1: number; ancho: number }>();
-  for (const r of ap.ambientes) {
-    const actual = porFila.get(r.fila);
-    if (actual) {
-      actual.y0 = Math.min(actual.y0, r.y_m);
-      actual.y1 = Math.max(actual.y1, r.y_m + r.h_m);
-      actual.ancho = Math.max(actual.ancho, r.x_m + r.w_m);
-    } else {
-      porFila.set(r.fila, { y0: r.y_m, y1: r.y_m + r.h_m, ancho: r.x_m + r.w_m });
-    }
-  }
-  return [...porFila.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v);
-}
-
-/**
- * Polígono escalonado que envuelve la huella, opcionalmente expandido por el
- * alero. Dibujar un rectángulo envolvente en su lugar mostraría techo sobre
- * un vacío que en la planta no existe.
- */
-function contornoHuella(ap: AnteproyectoGenerado, expansion_m: number): string {
-  const bandas = bandasDe(ap);
-  if (!bandas.length) return '';
-  const e = expansion_m;
-  const p: string[] = [];
-  const px = (v: number) => (v * PX_M).toFixed(2);
-
-  // Lado izquierdo (todas las filas arrancan en x = 0) y lado derecho en escalera.
-  p.push(`M ${px(-e)} ${px(bandas[0]!.y0 - e)}`);
-  bandas.forEach((b, i) => {
-    const yTop = i === 0 ? b.y0 - e : b.y0;
-    p.push(`L ${px(b.ancho + e)} ${px(yTop)}`);
-    const yBot = i === bandas.length - 1 ? b.y1 + e : b.y1;
-    p.push(`L ${px(b.ancho + e)} ${px(yBot)}`);
-  });
-  p.push(`L ${px(-e)} ${px(bandas[bandas.length - 1]!.y1 + e)}`);
-  p.push('Z');
-  return p.join(' ');
-}
-
 export function renderTechos(ap: AnteproyectoGenerado): string {
   const alero = ap.alero_m;
   const anchoTotal = ap.ancho_m + alero * 2;
@@ -357,16 +276,18 @@ export function renderTechos(ap: AnteproyectoGenerado): string {
   const proyeccion =
     ap.envolvente === 'organica'
       ? `<path d="${envolventeOrganica(ap.ancho_m, ap.profundo_m, alero)}" fill="#EFE7D6" stroke="#2b2b28" stroke-width="2"/>`
-      : `<path d="${contornoHuella(ap, alero)}" fill="#EFE7D6" stroke="#2b2b28" stroke-width="2"/>`;
-  const huella = `<path d="${contornoHuella(ap, 0)}" fill="none" stroke="#c8bfa8" stroke-width="1" stroke-dasharray="3,3"/>`;
+      : `<path d="${pathHuella(ap.ambientes, alero, PX_M)}" fill="#EFE7D6" stroke="#2b2b28" stroke-width="2"/>`;
+  const huella = `<path d="${pathHuella(ap.ambientes, 0, PX_M)}" fill="none" stroke="#c8bfa8" stroke-width="1" stroke-dasharray="3,3"/>`;
 
-  // Cumbrera esquemática por banda, a lo largo del eje mayor de cada una.
-  const cumbreras = bandasDe(ap)
-    .map(b => {
-      const yMedio = ((b.y0 + b.y1) / 2) * PX_M;
-      return `<line x1="${-alero * PX_M}" y1="${yMedio}" x2="${(b.ancho + alero) * PX_M}" y2="${yMedio}" stroke="#2b2b28" stroke-width="1.5" stroke-dasharray="6,3"/>`;
-    })
-    .join('');
+  // Una sola cumbrera sobre el eje largo del edificio: es el techo que después
+  // se extruye en las vistas 3D y se corta en las fachadas. Una cumbrera por
+  // banda dibujaría un techo que ninguna de las otras salidas construye.
+  const cumbrera =
+    ap.ejeCumbrera === 'E-O'
+      ? `<line x1="${-alero * PX_M}" y1="${(ap.profundo_m / 2) * PX_M}" x2="${(ap.ancho_m + alero) * PX_M}" y2="${(ap.profundo_m / 2) * PX_M}" stroke="#2b2b28" stroke-width="1.5" stroke-dasharray="6,3"/>`
+      : `<line x1="${(ap.ancho_m / 2) * PX_M}" y1="${-alero * PX_M}" x2="${(ap.ancho_m / 2) * PX_M}" y2="${(ap.profundo_m + alero) * PX_M}" stroke="#2b2b28" stroke-width="1.5" stroke-dasharray="6,3"/>`;
+
+  const rotuloPendiente = `<text x="${(ap.ancho_m / 2) * PX_M}" y="${(ap.profundo_m + alero) * PX_M + 16}" font-size="10" text-anchor="middle" fill="#5a5a52">dos aguas · pendiente ${ap.pendiente_techo_pct} % · cumbrera ${ap.ejeCumbrera}</text>`;
 
   const cotaTop = cotaHorizontal(-alero * PX_M, (ap.ancho_m + alero) * PX_M, -28, `${anchoTotal.toFixed(2)} m (proy. máx.)`);
   const cotaLeft = cotaVertical(-alero * PX_M, (ap.profundo_m + alero) * PX_M, -28, `${profundoTotal.toFixed(2)} m (proy. máx.)`);
@@ -379,7 +300,8 @@ export function renderTechos(ap: AnteproyectoGenerado): string {
     <rect x="${vbX}" y="${vbY}" width="${w}" height="${h}" fill="#FBF8F3"/>
     ${proyeccion}
     ${huella}
-    ${cumbreras}
+    ${cumbrera}
+    ${rotuloPendiente}
     ${cotaTop}
     ${cotaLeft}
     ${cotaAlero}
@@ -391,41 +313,53 @@ export function renderTechos(ap: AnteproyectoGenerado): string {
 export function renderFachada(ap: AnteproyectoGenerado, lado: 'N' | 'S' | 'E' | 'O'): string {
   const esNS = lado === 'N' || lado === 'S';
   const anchoFachada_m = esNS ? ap.ancho_m : ap.profundo_m;
-  const alturaCumbrera = Math.min(Math.max((anchoFachada_m / 2) * (ap.pendiente_techo_pct / 100), 0.8), 4);
-  const alturaTotal_m = ap.altura_muro_m + alturaCumbrera;
+
+  // Un techo a dos aguas se ve distinto según desde dónde se lo mire: por los
+  // testeros (las caras perpendiculares a la cumbrera) aparece el tímpano
+  // triangular; por los lados largos, el faldón proyectado como una banda
+  // entre el alero y la cumbrera. Dibujar el triángulo en las cuatro caras
+  // describía un techo que no existe.
+  const esTestero = ap.ejeCumbrera === 'E-O' ? !esNS : esNS;
+  const luzCubierta_m = ap.ejeCumbrera === 'E-O' ? ap.profundo_m : ap.ancho_m;
+  const pendienteReal = luzCubierta_m > 0 ? ap.altura_cumbrera_m / (luzCubierta_m / 2) : 0;
+  // El alero no es horizontal: sigue el faldón y baja respecto del muro.
+  const caidaAlero_m = ap.alero_m * pendienteReal;
 
   const anchoPx = anchoFachada_m * PX_M;
   const alturaMuroPx = ap.altura_muro_m * PX_M;
-  const alturaCumbreraPx = alturaCumbrera * PX_M;
+  const alturaCumbreraPx = ap.altura_cumbrera_m * PX_M;
+  const caidaAleroPx = caidaAlero_m * PX_M;
   const aleroPx = ap.alero_m * PX_M;
   const w = anchoPx + aleroPx * 2 + MARGEN * 2;
   const h = alturaMuroPx + alturaCumbreraPx + MARGEN * 2;
 
   const yPiso = alturaMuroPx + alturaCumbreraPx;
+  const yAlero = alturaCumbreraPx + caidaAleroPx;
 
   const muro = `<rect x="0" y="${alturaCumbreraPx}" width="${anchoPx}" height="${alturaMuroPx}" fill="#F2EDE3" stroke="#2b2b28" stroke-width="2"/>`;
-  const techo = `<path d="M ${-aleroPx} ${alturaCumbreraPx} L ${anchoPx / 2} 0 L ${anchoPx + aleroPx} ${alturaCumbreraPx} Z" fill="#DDD2B8" stroke="#2b2b28" stroke-width="2"/>`;
+  const techo = esTestero
+    ? `<path d="M ${-aleroPx} ${yAlero} L ${anchoPx / 2} 0 L ${anchoPx + aleroPx} ${yAlero} Z" fill="#DDD2B8" stroke="#2b2b28" stroke-width="2"/>`
+    : `<rect x="${-aleroPx}" y="0" width="${anchoPx + aleroPx * 2}" height="${yAlero}" fill="#DDD2B8" stroke="#2b2b28" stroke-width="2"/>`;
   const piso = `<line x1="${-aleroPx - 10}" y1="${yPiso}" x2="${anchoPx + aleroPx + 10}" y2="${yPiso}" stroke="#2b2b28" stroke-width="2"/>`;
 
-  // Ventanas: ambientes con lado exterior == `lado`, proyectados sobre el eje correspondiente.
-  const flagLado = { N: 'exteriorNorte', S: 'exteriorSur', E: 'exteriorEste', O: 'exteriorOeste' } as const;
-  const ventanas = ap.ambientes
-    .filter(r => r[flagLado[lado]] && TIPOS_CON_VENTANA.has(r.tipo))
-    .map(r => {
-      const centro = esNS ? r.x_m + r.w_m / 2 : r.y_m + r.h_m / 2;
-      const largo = esNS ? r.w_m : r.h_m;
-      const anchoVentana = Math.min(Math.max(largo * 0.4, 0.8), 2.4);
-      const x = (centro - anchoVentana / 2) * PX_M;
-      const wpx = anchoVentana * PX_M;
-      const yV = alturaCumbreraPx + alturaMuroPx * 0.28;
-      const hV = alturaMuroPx * 0.5;
-      return `<rect x="${x}" y="${yV}" width="${wpx}" height="${hV}" fill="#DCE9F0" stroke="#2b2b28" stroke-width="1.5"/>`;
+  // Aberturas de esta cara, de la misma lista que usan la planta y el 3D.
+  const ventanas = aberturasExteriores(ap)
+    .filter(a => a.lado === lado)
+    .map(a => {
+      const x = (a.centro_m - a.ancho_m / 2) * PX_M;
+      const wpx = a.ancho_m * PX_M;
+      // El eje vertical del dibujo crece hacia abajo: z metros sobre el piso
+      // terminado caen en yPiso − z.
+      const yTop = yPiso - (a.antepecho_m + a.alto_m) * PX_M;
+      const hpx = a.alto_m * PX_M;
+      const relleno = a.clase === 'ventana' ? '#DCE9F0' : '#C9B79A';
+      return `<rect x="${x}" y="${yTop}" width="${wpx}" height="${hpx}" fill="${relleno}" stroke="#2b2b28" stroke-width="1.5"/>`;
     })
     .join('');
 
   const cotaAncho = cotaHorizontal(0, anchoPx, yPiso + 30, `${anchoFachada_m.toFixed(2)} m`);
   const cotaAlturaMuro = cotaVertical(alturaCumbreraPx, yPiso, -28, `h. muro ${ap.altura_muro_m.toFixed(2)} m`);
-  const cotaAlturaTotal = cotaVertical(0, yPiso, -52, `h. total ${alturaTotal_m.toFixed(2)} m`);
+  const cotaAlturaTotal = cotaVertical(0, yPiso, -52, `h. total ${ap.altura_total_m.toFixed(2)} m`);
   const nivelPiso = `<text x="${anchoPx + aleroPx + 14}" y="${yPiso + 4}" font-size="10" fill="#2b2b28">± 0.00 NPT</text>`;
 
   return `<svg viewBox="${-MARGEN - aleroPx} -${MARGEN - alturaCumbreraPx > 0 ? MARGEN : MARGEN} ${w} ${h + 20}" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">

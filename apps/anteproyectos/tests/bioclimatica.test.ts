@@ -8,7 +8,10 @@ import {
   hemisferioDe,
   rumboACardinal4,
 } from '@/lib/motor/bioclimatica';
-import type { Koppen } from '@/lib/clima';
+import type { DatosClima, Koppen } from '@/lib/clima';
+import { aleroPorLluvia } from '@/lib/conocimiento/parametros';
+import { generarAnteproyecto } from '@/lib/motor/generador';
+import { PARAMETROS_TRANSVERSALES_DEFAULT, type AmbienteDeseado } from '@/lib/tipos';
 
 const koppen = (codigo: string, grupo: string): Koppen => ({ codigo, grupo, descripcion: codigo });
 
@@ -125,5 +128,65 @@ describe('rumboACardinal4', () => {
 
   it('cae en N ante un rumbo desconocido en vez de romper', () => {
     expect(rumboACardinal4('XYZ')).toBe('N');
+  });
+});
+
+describe('aleroPorLluvia', () => {
+  it('crece con la lluvia', () => {
+    const alturas = [200, 700, 1200, 1800, 2600].map(p => aleroPorLluvia(p, 2.6, 'quincha').min_m);
+    for (let i = 1; i < alturas.length; i++) expect(alturas[i]!).toBeGreaterThan(alturas[i - 1]!);
+  });
+
+  it('protege más un muro más alto y una técnica más vulnerable al agua', () => {
+    expect(aleroPorLluvia(1500, 3.0, 'quincha').min_m).toBeGreaterThan(aleroPorLluvia(1500, 2.45, 'quincha').min_m);
+    expect(aleroPorLluvia(1500, 2.6, 'fardos').min_m).toBeGreaterThan(aleroPorLluvia(1500, 2.6, 'quincha').min_m);
+  });
+
+  it('acota el alero a una dimensión construible', () => {
+    expect(aleroPorLluvia(6000, 4, 'fardos').min_m).toBeLessThanOrEqual(1.8);
+  });
+});
+
+describe('alero final del anteproyecto', () => {
+  const programa = [
+    { id: 'estar', tipo: 'estar-cocina-comedor', cantidad: 1, tamano: 'grande' },
+    { id: 'd1', tipo: 'dormitorio', cantidad: 2, tamano: 'mediano' },
+  ] as AmbienteDeseado[];
+
+  const clima = (lat: number, codigo: string, precip: number) =>
+    ({ lat, lng: -60, precip_anual_mm: precip, viento_dir_ppal: 'E', koppen: { codigo, descripcion: '' } }) as unknown as DatosClima;
+
+  it('en trópico húmedo manda la lluvia sobre la geometría solar', () => {
+    // Es el caso que motivó la regla: el sol de mediodía casi vertical pedía
+    // 0,60 m de alero sobre muro de tierra con 1.879 mm de lluvia al año.
+    const ap = generarAnteproyecto(
+      'bioclimatico',
+      { m2CubiertosObjetivo: 70, ambientes: programa },
+      PARAMETROS_TRANSVERSALES_DEFAULT,
+      clima(18.25, 'Aw', 1879),
+    );
+    expect(ap.alero_m).toBeGreaterThanOrEqual(1.0);
+    expect(ap.fundamento.join(' ')).toContain('buen sombrero y buenas botas');
+  });
+
+  it('en clima seco no infla el alero sin motivo', () => {
+    const ap = generarAnteproyecto(
+      'bioclimatico',
+      { m2CubiertosObjetivo: 70, ambientes: programa },
+      PARAMETROS_TRANSVERSALES_DEFAULT,
+      clima(-24.8, 'BWh', 180),
+    );
+    expect(ap.alero_m).toBeLessThan(1.0);
+  });
+
+  it('los cuatro perfiles reciben la misma protección de lluvia', () => {
+    // Aunque sólo el perfil bioclimático deriva la FORMA del clima, el alero
+    // protege el mismo muro en los cuatro.
+    const aleros = (['fiel-cliente', 'organico', 'bioclimatico', 'autoconstruccion'] as const).map(
+      p =>
+        generarAnteproyecto(p, { m2CubiertosObjetivo: 70, ambientes: programa }, PARAMETROS_TRANSVERSALES_DEFAULT, clima(18.25, 'Aw', 1879))
+          .alero_m,
+    );
+    expect(new Set(aleros).size).toBe(1);
   });
 });
