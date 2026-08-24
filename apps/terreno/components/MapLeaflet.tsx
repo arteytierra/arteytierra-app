@@ -51,7 +51,6 @@ import { TIPOS_ITEM, type ElementoMasterPlan } from '@/lib/masterplan';
 import {
   crearIconoMojon, crearIconoPin, crearIconoElemento, emojiPxElemento,
   crearIconoAguada, crearIconoTexto, crearIconoMedida,
-  iconoSunEvent, iconoNoon, iconoCardinal,
 } from './mapa/iconos';
 import {
   ShaderCanvasLayer, ErosionCanvasLayer, SombrasCanvasLayer,
@@ -59,12 +58,13 @@ import {
 } from './mapa/canvasLayers';
 import {
   RotarConBotonCentral, NavegacionExposer, FlyToExposer, MapMouseTracker,
-  InvalidarSize, MapChangeWatcher, BoundsExposer,
+  InvalidarSize, MapChangeWatcher, BoundsExposer, AutoFit,
 } from './mapa/exposers';
 import type { NavegacionMapa } from './mapa/exposers';
 export type { NavegacionMapa } from './mapa/exposers';
 import {
   MedicionLayer, LinderoLabels, CotasAutoLayer, CurvasNivelLayer, TerrariumLayer,
+  ArcoSolarLayer,
 } from './mapa/vectorLayers';
 import { chaikin } from './mapa/smoothing';
 
@@ -110,30 +110,7 @@ export interface OverlayImagen {
   opacidad: number;
 }
 
-// ─── Iconos y sus cachés → components/mapa/iconos.ts (Fase 1) ────────────────
-
-
-// ─── Auto-fit bounds ──────────────────────────────────────────────────────────
-
-function AutoFit({ mojones }: { mojones: Mojon[] }) {
-  const map = useMap();
-  const prevLen = useRef(0);
-  useEffect(() => {
-    if (mojones.length === 0) { prevLen.current = 0; return; }
-    if (mojones.length === prevLen.current) return;
-    prevLen.current = mojones.length;
-    const first = mojones[0];
-    if (mojones.length === 1 && first) {
-      map.setView([first.lat, first.lng], Math.max(map.getZoom(), 17));
-      return;
-    }
-    try {
-      const bounds = L.latLngBounds(mojones.map(m => [m.lat, m.lng] as LatLngTuple));
-      if (bounds.isValid()) map.fitBounds(bounds, { padding: [60, 60], maxZoom: 18 });
-    } catch { /* bounds degenerados */ }
-  }, [mojones, map]);
-  return null;
-}
+// ─── Iconos y cachés → mapa/iconos.ts · AutoFit + exposers → mapa/exposers.tsx (Fase 1) ─
 
 // ─── CAD interactivo: clicks con snap/ortho + línea elástica + medidas en vivo ─
 
@@ -1305,86 +1282,6 @@ function MapLeaflet({
 
 export default React.memo(MapLeaflet);
 
-// ─── Arco Solar Layer ─────────────────────────────────────────────────────────
-
-// ─── Shader suavizado (canvas + ImageOverlay) ────────────────────────────────
-
-// Estas capas viven en components/mapa/canvasLayers.tsx (Fase 1).
-
-// ─── Mapa de riesgo de erosión (canvas con color por clase) ──────────────────
-
-// ─── Mapa de sombras (canvas negro con alpha por celda) ──────────────────────
-
-// ─── Horas de sol acumuladas (mapa de calor) ─────────────────────────────────
-
-// ─── Viewshed (verde translúcido donde es visible) ────────────────────────────
-
-function ArcoSolarLayer({ datos }: { datos: DatosArcoSolar }) {
-  const { centro, radio_m, arcos, brujula } = datos;
-
-  return (
-    <>
-      {/* ── Círculo del horizonte ── */}
-      <LeafCircle
-        center={[centro.lat, centro.lng]}
-        radius={radio_m}
-        pathOptions={{ color: '#666', weight: 1, opacity: 0.28, fill: false, dashArray: '5 7', interactive: false }}
-      />
-
-      {/* ── Líneas cardinales ── */}
-      <Polyline
-        positions={[[brujula.N.lat, brujula.N.lng], [brujula.S.lat, brujula.S.lng]]}
-        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
-      />
-      <Polyline
-        positions={[[brujula.E.lat, brujula.E.lng], [brujula.O.lat, brujula.O.lng]]}
-        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
-      />
-
-      {/* ── Labels cardinales ── */}
-      {(Object.entries(brujula) as [string, { lat: number; lng: number }][]).map(([dir, pos]) => (
-        <Marker
-          key={`arc-dir-${dir}`}
-          position={[pos.lat, pos.lng]}
-          icon={iconoCardinal(dir === 'O' ? 'O' : dir)}
-          interactive={false}
-        />
-      ))}
-
-      {/* ── Arcos por fecha ── */}
-      {arcos.map(arco => (
-        <React.Fragment key={arco.fecha}>
-          {/* Sombra para contraste sobre satélite */}
-          <Polyline
-            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
-            pathOptions={{ color: '#000', weight: 5, opacity: 0.18, interactive: false, lineCap: 'round', lineJoin: 'round' }}
-          />
-          {/* Arco principal */}
-          <Polyline
-            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
-            pathOptions={{ color: arco.color, weight: 2.5, opacity: 0.92, interactive: false, lineCap: 'round', lineJoin: 'round' }}
-          />
-
-          {/* Amanecer */}
-          <Marker
-            position={[arco.amanecer.lat, arco.amanecer.lng]}
-            icon={iconoSunEvent(arco.color, arco.amanecer.hora)}
-            interactive={false}
-          />
-          {/* Atardecer */}
-          <Marker
-            position={[arco.atardecer.lat, arco.atardecer.lng]}
-            icon={iconoSunEvent(arco.color, arco.atardecer.hora)}
-            interactive={false}
-          />
-          {/* Mediodía solar */}
-          <Marker
-            position={[arco.mediodia.lat, arco.mediodia.lng]}
-            icon={iconoNoon(arco.color, arco.mediodia.elevacion, arco.labelCorto)}
-            interactive={false}
-          />
-        </React.Fragment>
-      ))}
-    </>
-  );
-}
+// ─── Capas movidas a components/mapa/ (Fase 1) ───────────────────────────────
+// ArcoSolarLayer → vectorLayers.tsx · Shader/Erosion/Sombras/Insolacion/Viewshed
+// → canvasLayers.tsx

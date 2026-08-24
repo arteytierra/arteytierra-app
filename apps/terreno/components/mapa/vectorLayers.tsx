@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Marker, Polygon, Polyline, CircleMarker, useMap } from 'react-leaflet';
+import { Marker, Polygon, Polyline, CircleMarker, Circle as LeafCircle, useMap } from 'react-leaflet';
 import L, { type LatLngTuple } from 'leaflet';
 import {
   distanciaMetros, areaPoligonoM2, longitudLineaM,
@@ -10,7 +10,8 @@ import {
 import type { Mojon } from '@/lib/types';
 import type { MetricasPoligono } from '@/lib/geometria';
 import type { CurvaNivel } from '@/lib/curvasNivel';
-import { crearIconoLindero } from './iconos';
+import type { DatosArcoSolar } from '@/lib/arco_solar';
+import { crearIconoLindero, iconoCardinal, iconoSunEvent, iconoNoon } from './iconos';
 import { chaikin } from './smoothing';
 
 /**
@@ -320,4 +321,75 @@ export function TerrariumLayer({ elevMin, elevMax, onRangoDetectado }: {
     return () => { map.removeLayer(layer); };
   }, [map, elevMin, elevMax]);
   return null;
+}
+
+// ─── Arco solar (círculo del horizonte + arcos por fecha + cardinales) ────────
+export function ArcoSolarLayer({ datos }: { datos: DatosArcoSolar }) {
+  const { centro, radio_m, arcos, brujula } = datos;
+
+  return (
+    <>
+      {/* ── Círculo del horizonte ── */}
+      <LeafCircle
+        center={[centro.lat, centro.lng]}
+        radius={radio_m}
+        pathOptions={{ color: '#666', weight: 1, opacity: 0.28, fill: false, dashArray: '5 7', interactive: false }}
+      />
+
+      {/* ── Líneas cardinales ── */}
+      <Polyline
+        positions={[[brujula.N.lat, brujula.N.lng], [brujula.S.lat, brujula.S.lng]]}
+        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
+      />
+      <Polyline
+        positions={[[brujula.E.lat, brujula.E.lng], [brujula.O.lat, brujula.O.lng]]}
+        pathOptions={{ color: '#777', weight: 0.8, opacity: 0.22, dashArray: '3 7', interactive: false }}
+      />
+
+      {/* ── Labels cardinales ── */}
+      {(Object.entries(brujula) as [string, { lat: number; lng: number }][]).map(([dir, pos]) => (
+        <Marker
+          key={`arc-dir-${dir}`}
+          position={[pos.lat, pos.lng]}
+          icon={iconoCardinal(dir === 'O' ? 'O' : dir)}
+          interactive={false}
+        />
+      ))}
+
+      {/* ── Arcos por fecha ── */}
+      {arcos.map(arco => (
+        <React.Fragment key={arco.fecha}>
+          {/* Sombra para contraste sobre satélite */}
+          <Polyline
+            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#000', weight: 5, opacity: 0.18, interactive: false, lineCap: 'round', lineJoin: 'round' }}
+          />
+          {/* Arco principal */}
+          <Polyline
+            positions={arco.puntos.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: arco.color, weight: 2.5, opacity: 0.92, interactive: false, lineCap: 'round', lineJoin: 'round' }}
+          />
+
+          {/* Amanecer */}
+          <Marker
+            position={[arco.amanecer.lat, arco.amanecer.lng]}
+            icon={iconoSunEvent(arco.color, arco.amanecer.hora)}
+            interactive={false}
+          />
+          {/* Atardecer */}
+          <Marker
+            position={[arco.atardecer.lat, arco.atardecer.lng]}
+            icon={iconoSunEvent(arco.color, arco.atardecer.hora)}
+            interactive={false}
+          />
+          {/* Mediodía solar */}
+          <Marker
+            position={[arco.mediodia.lat, arco.mediodia.lng]}
+            icon={iconoNoon(arco.color, arco.mediodia.elevacion, arco.labelCorto)}
+            interactive={false}
+          />
+        </React.Fragment>
+      ))}
+    </>
+  );
 }

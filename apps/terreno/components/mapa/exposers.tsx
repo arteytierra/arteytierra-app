@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap, useMapEvents } from 'react-leaflet';
+import L, { type LatLngTuple } from 'leaflet';
+import type { Mojon } from '@/lib/types';
 
 /**
  * Componentes-puente del mapa. Cada uno vive dentro del `MapContainer`, hace
@@ -10,6 +12,27 @@ import { useMap, useMapEvents } from 'react-leaflet';
  *
  * Extraídos de `MapLeaflet` (Fase 1). No cambian comportamiento.
  */
+
+// ─── Auto-fit bounds ──────────────────────────────────────────────────────────
+export function AutoFit({ mojones }: { mojones: Mojon[] }) {
+  const map = useMap();
+  const prevLen = useRef(0);
+  useEffect(() => {
+    if (mojones.length === 0) { prevLen.current = 0; return; }
+    if (mojones.length === prevLen.current) return;
+    prevLen.current = mojones.length;
+    const first = mojones[0];
+    if (mojones.length === 1 && first) {
+      map.setView([first.lat, first.lng], Math.max(map.getZoom(), 17));
+      return;
+    }
+    try {
+      const bounds = L.latLngBounds(mojones.map(m => [m.lat, m.lng] as LatLngTuple));
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [60, 60], maxZoom: 18 });
+    } catch { /* bounds degenerados */ }
+  }, [mojones, map]);
+  return null;
+}
 
 // ─── Middle-mouse pan ─────────────────────────────────────────────────────────
 
