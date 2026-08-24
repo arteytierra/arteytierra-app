@@ -37,13 +37,13 @@ import type { ResultadoCortafuegos } from '@/lib/cortafuegos';
 import type { CortinaResultado } from '@/lib/cortinas';
 import type { ResultadoSilvo } from '@/lib/silvopastura';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
-import { distanciaMetros, formatearArea } from '@/lib/dibujos';
+import { formatearArea } from '@/lib/dibujos';
 import type { ElementoAguada } from '@/lib/aguadas';
 import type { DatosArcoSolar } from '@/lib/arco_solar';
 import type { MetricasPoligono } from '@/lib/geometria';
 import type { CurvaNivel } from '@/lib/curvasNivel';
 import { TIPOS_ITEM, type ElementoMasterPlan } from '@/lib/masterplan';
-import { crearIconoMojon, crearIconoPin, crearIconoAguada } from './mapa/iconos';
+import { crearIconoMojon, crearIconoPin } from './mapa/iconos';
 import {
   ShaderCanvasLayer, ErosionCanvasLayer, SombrasCanvasLayer,
   InsolacionCanvasLayer, ViewshedCanvasLayer,
@@ -58,9 +58,9 @@ import {
   MedicionLayer, LinderoLabels, CotasAutoLayer, CurvasNivelLayer, TerrariumLayer,
   ArcoSolarLayer,
 } from './mapa/vectorLayers';
-import { chaikin } from './mapa/smoothing';
 import { CadInteractivo } from './mapa/cad';
-import { DibujosLayer } from './mapa/dibujosLayer';
+import { DibujosLayer, DibujoPreview } from './mapa/dibujosLayer';
+import { AguadasLayer } from './mapa/aguadasLayer';
 import type { PuntoSnap, SnapSegmento, TipoActivo } from './mapa/cad';
 export type { PuntoSnap, SnapSegmento, TipoActivo } from './mapa/cad';
 
@@ -107,7 +107,8 @@ export interface OverlayImagen {
 
 // ─── Capas vectoriales → components/mapa/vectorLayers.tsx (Fase 1) ───────────
 // MedicionLayer · LinderoLabels · CotasAutoLayer · CurvasNivelLayer · TerrariumLayer
-// El helper chaikin (compartido con el render de abajo) → components/mapa/smoothing.ts
+// Dibujo libre (DibujosLayer + DibujoPreview) → mapa/dibujosLayer.tsx · Aguadas → mapa/aguadasLayer.tsx
+// El helper chaikin → components/mapa/smoothing.ts (lo usan vectorLayers y dibujosLayer)
 
 // ─── Exposers de mapa → components/mapa/exposers.tsx (Fase 1) ────────────────
 // RotarConBotonCentral · NavegacionExposer · FlyToExposer · MapMouseTracker ·
@@ -783,28 +784,8 @@ function MapLeaflet({
           onRedimensionarCirculo={onRedimensionarCirculo}
         />
 
-        {/* ── Aguadas layer ── */}
-        {capas.aguadas && aguadasLayer.map(a => {
-          if (a.tipo === 'represa' && a.lat !== undefined && a.lng !== undefined) {
-            return (
-              <Marker key={a.id}
-                position={[a.lat, a.lng]}
-                icon={crearIconoAguada(a.tipo, a.nombre)}
-              />
-            );
-          }
-          if ((a.tipo === 'swale' || a.tipo === 'keyline') && a.vertices && a.vertices.length >= 2) {
-            const color = a.tipo === 'swale' ? '#26A69A' : '#66BB6A';
-            const dash  = a.tipo === 'swale' ? '8 5' : '16 6';
-            return (
-              <Polyline key={a.id}
-                positions={a.vertices.map(v => [v.lat, v.lng] as LatLngTuple)}
-                pathOptions={{ color, weight: 3, dashArray: dash, opacity: 0.9, interactive: false }}
-              />
-            );
-          }
-          return null;
-        })}
+        {/* ── Aguadas layer → components/mapa/aguadasLayer.tsx (Fase 1) ── */}
+        <AguadasLayer capas={capas} aguadasLayer={aguadasLayer} />
 
         {/* ── Arco solar ── */}
         {capas.arcSolar && datosArcoSolar && <ArcoSolarLayer datos={datosArcoSolar} />}
@@ -827,31 +808,8 @@ function MapLeaflet({
           );
         })()}
 
-        {/* ── Dibujo en construcción (preview) ── */}
-        {dibujoEnCurso && dibujoEnCurso.vertices.length >= 2 && (() => {
-          const pts = dibujoEnCurso.vertices.map(v => [v.lat, v.lng] as LatLngTuple);
-          if (dibujoEnCurso.tipo === 'poligono') return (
-            <Polygon positions={pts}
-              pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
-          );
-          if (dibujoEnCurso.tipo === 'curva') return (
-            <Polyline positions={chaikin(pts)}
-              pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
-          );
-          if (dibujoEnCurso.tipo === 'circulo' && dibujoEnCurso.vertices.length === 2) {
-            const c = dibujoEnCurso.vertices[0]!;
-            const e = dibujoEnCurso.vertices[1]!;
-            const r = distanciaMetros(c.lat, c.lng, e.lat, e.lng);
-            return (
-              <LeafCircle center={[c.lat, c.lng]} radius={r}
-                pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
-            );
-          }
-          return (
-            <Polyline positions={pts}
-              pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
-          );
-        })()}
+        {/* ── Dibujo en construcción (preview) → components/mapa/dibujosLayer.tsx (Fase 1) ── */}
+        <DibujoPreview dibujoEnCurso={dibujoEnCurso} colorDibujo={colorDibujo} />
       </MapContainer>
     </div>
   );

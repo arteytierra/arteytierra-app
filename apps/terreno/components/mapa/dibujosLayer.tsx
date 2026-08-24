@@ -7,7 +7,7 @@ import {
   distanciaMetros, azimutGrados, areaPoligonoM2, longitudLineaM,
   formatearLongitud, formatearArea,
 } from '@/lib/dibujos';
-import type { ElementoDibujo } from '@/lib/dibujos';
+import type { ElementoDibujo, DibujoEnCurso } from '@/lib/dibujos';
 import { crearIconoElemento, emojiPxElemento, crearIconoTexto, crearIconoMedida } from './iconos';
 import { chaikin } from './smoothing';
 import type { CapasVisibles } from '../MapLeaflet';
@@ -298,5 +298,39 @@ export function DibujosLayer({
         ));
       })()}
     </>
+  );
+}
+
+/**
+ * Preview de la shape que se está dibujando en este momento (línea elástica ya la
+ * dibuja CadInteractivo; esto es el trazo acumulado). Se renderiza último en el
+ * MapContainer para quedar por encima del resto. Extraído del render (Fase 1).
+ */
+export function DibujoPreview({ dibujoEnCurso, colorDibujo }: {
+  dibujoEnCurso?: DibujoEnCurso | null;
+  colorDibujo:    string;
+}) {
+  if (!dibujoEnCurso || dibujoEnCurso.vertices.length < 2) return null;
+  const pts = dibujoEnCurso.vertices.map(v => [v.lat, v.lng] as LatLngTuple);
+  if (dibujoEnCurso.tipo === 'poligono') return (
+    <Polygon positions={pts}
+      pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
+  );
+  if (dibujoEnCurso.tipo === 'curva') return (
+    <Polyline positions={chaikin(pts)}
+      pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
+  );
+  if (dibujoEnCurso.tipo === 'circulo' && dibujoEnCurso.vertices.length === 2) {
+    const c = dibujoEnCurso.vertices[0]!;
+    const e = dibujoEnCurso.vertices[1]!;
+    const r = distanciaMetros(c.lat, c.lng, e.lat, e.lng);
+    return (
+      <LeafCircle center={[c.lat, c.lng]} radius={r}
+        pathOptions={{ color: colorDibujo, fillColor: colorDibujo, fillOpacity: 0.12, weight: 2, dashArray: '6 4', interactive: false }} />
+    );
+  }
+  return (
+    <Polyline positions={pts}
+      pathOptions={{ color: colorDibujo, weight: 2.5, dashArray: '6 4', opacity: 0.8, interactive: false }} />
   );
 }
