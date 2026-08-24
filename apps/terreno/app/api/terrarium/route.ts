@@ -1,7 +1,10 @@
 export async function GET(req: Request) {
   const p = new URL(req.url).searchParams;
   const z = p.get('z'), x = p.get('x'), y = p.get('y');
-  if (!z || !x || !y) return new Response('Bad request', { status: 400 });
+  // Sólo enteros no negativos: se interpolan en la URL de S3, así que validarlos
+  // evita cualquier traversal de path (`x=../../otro`) hacia objetos del bucket.
+  const esTesela = (v: string | null): v is string => v !== null && /^\d+$/.test(v);
+  if (!esTesela(z) || !esTesela(x) || !esTesela(y)) return new Response('Bad request', { status: 400 });
 
   const res = await fetch(
     `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
