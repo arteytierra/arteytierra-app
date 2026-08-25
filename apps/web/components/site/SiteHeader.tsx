@@ -13,7 +13,6 @@ import { getSupabaseBrowserClient } from '@/lib/db/browser';
 
 const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>> = {
   es: [
-    { label: 'Terreno', href: '/terreno' },
     {
       label: 'Arte y Tierra', href: '/arte-y-tierra',
       children: [
@@ -46,7 +45,6 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     },
   ],
   en: [
-    { label: 'Terreno', href: '/terreno' },
     {
       label: 'Arte y Tierra', href: '/en/arte-y-tierra',
       children: [
@@ -79,7 +77,6 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     },
   ],
   fr: [
-    { label: 'Terreno', href: '/terreno' },
     {
       label: 'Arte y Tierra', href: '/fr/arte-y-tierra',
       children: [
@@ -112,7 +109,6 @@ const ITEMS_BY_LOCALE: Record<Locale, Array<{ label: string; href: string; child
     },
   ],
   pt: [
-    { label: 'Terreno', href: '/terreno' },
     {
       label: 'Arte y Tierra', href: '/pt/arte-y-tierra',
       children: [

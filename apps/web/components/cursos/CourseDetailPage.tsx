@@ -342,6 +342,20 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                     }`}
                   />
                 )}
+                {course.sinCarrito && op.senaHref && (
+                  <a
+                    href={op.senaHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-2 w-full inline-flex items-center justify-center text-center py-3 text-xs font-sans font-bold uppercase tracking-widest transition-colors ${
+                      op.highlighted
+                        ? 'bg-bone-50 text-clay-700 hover:bg-bone-100'
+                        : 'bg-clay-700 text-bone-50 hover:bg-clay-900'
+                    }`}
+                  >
+                    {op.senaLabel ?? 'Reservar con seña →'}
+                  </a>
+                )}
               </div>
             ))}
           </div>

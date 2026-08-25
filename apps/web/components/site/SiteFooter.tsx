@@ -5,7 +5,6 @@ const columns = [
   {
     title: 'Aprender',
     items: [
-      { label: 'Terreno',        href: '/terreno' },
       { label: 'Cursos',         href: '/cursos' },
       { label: 'Inmersión Viva', href: '/inmersion-viva' },
       { label: 'Ebooks',         href: '/ebooks' },
@@ -26,6 +25,13 @@ const columns = [
       { label: 'Quiénes somos', href: '/nosotros' },
       { label: 'Blog',          href: '/blog' },
       { label: 'Contacto',      href: '/contacto' },
+    ],
+  },
+  {
+    title: 'Legal',
+    items: [
+      { label: 'Privacidad',       href: '/privacidad' },
+      { label: 'Eliminar datos',   href: '/eliminar-datos' },
     ],
   },
 ];

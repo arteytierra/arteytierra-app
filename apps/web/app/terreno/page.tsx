@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: 'Terreno — Del terreno al masterplan',
   description:
     'Topografía, análisis de agua, suelo, clima, represas, contexto ecosistémico y diseño Keyline — todo a partir de marcar tu predio, sin CAD ni GIS y con datos globales. Empezá gratis.',
+  // Landing en modo privado por ahora: no la mostramos en la navegación ni la
+  // indexamos. Sigue accesible por link directo para compartir en privado.
+  robots: { index: false, follow: false },
   openGraph: {
     title: 'Terreno — Del terreno al masterplan | Arte y Tierra',
     description:

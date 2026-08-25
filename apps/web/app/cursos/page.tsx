@@ -92,7 +92,7 @@ const FALLBACK_CURSOS: Curso[] = [
     img: '/img/cursos/bioarquitectura/1.jpg',
     datos: [{ label: 'Cuándo', val: '21 sep – 30 nov 2026 · 2 meses (10 semanas)' }, { label: 'Lugar', val: 'San Marcos Sierras · Hospedaje en Tay Pichín' }, { label: 'Modalidad', val: 'Obra real diaria + teoría + acompañamiento' }, { label: 'Cupos', val: '3 regulares + 2 con 50% dto (experiencia previa)' }],
     contenidos: ['Cimientos y contrapisos', 'Estructura en madera', 'Adobe y quincha alivianada', 'Techos vivos y de chapa', 'Revoques de barro y cal', 'Biofiltros y cosecha de lluvia', 'Instalación de servicios y fin de obra'],
-    precio: '$2.000.000 ARS · USD 1.400', precioNote: 'Precio único, todo incluido (hospedaje + alimentación). Se reserva con seña del 50%. 2 cupos con 50% de descuento para personas con experiencia previa.',
+    precio: '$1.500.000 ARS', precioNote: 'Precio único, todo incluido (hospedaje + alimentación). Se reserva con seña del 10% ($150.000). 2 cupos con 50% de descuento para personas con experiencia previa (hospedaje en carpa propia).',
     href: '/cursos/formacion-construccion-natural', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero postularme a la Formación Integral en Construcción Natural (arranca el 21 de septiembre)'),
   },
   {

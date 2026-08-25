@@ -18,6 +18,9 @@ export interface CourseOption {
   precioAlt?: string;
   includes: string[];
   highlighted?: boolean;
+  /** CTA de reserva con seña (pago parcial) directo a Mercado Pago, para cursos sinCarrito. */
+  senaLabel?: string;
+  senaHref?: string;
 }
 
 export interface Facilitador {
@@ -164,8 +167,7 @@ export const COURSES: Record<string, CourseData> = {
       {
         id: 'completo',
         label: 'Formación completa · 2 meses',
-        precio: '$2.000.000 ARS',
-        precioAlt: 'USD 1.400',
+        precio: '$1.500.000 ARS',
         includes: [
           'Hospedaje en habitación compartida en Ecohostel Tay Pichín',
           'Alimentación completa durante los dos meses',
@@ -177,19 +179,21 @@ export const COURSES: Record<string, CourseData> = {
           'Acompañamiento con focalizador personal',
         ],
         highlighted: true,
+        senaLabel: 'Reservá tu cupo — seña 10% ($150.000) →',
+        senaHref: 'https://link.mercadopago.com.ar/arteytierra',
       },
       {
         id: 'con-experiencia',
         label: 'Cupo con experiencia previa · 50% dto',
-        precio: '$1.000.000 ARS',
-        precioAlt: 'USD 700',
+        precio: '$750.000 ARS',
         includes: [
           'Solo 2 cupos — para quienes ya hicieron talleres de bioconstrucción con nosotrxs o tienen experiencia previa comprobable',
-          'Mismos beneficios que la formación completa: hospedaje, alimentación, certificado, manual, asesorías y acompañamiento',
+          'Hospedaje en carpa en Tay Pichín (la traés vos)',
+          'Alimentación completa, certificado, manual, asesorías y acompañamiento — igual que la formación completa',
         ],
       },
     ],
-    opcionesNota: 'Reservás tu lugar con una seña del 50%. 3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa en bioconstrucción — grupo chico para cuidar la profundidad del proceso.',
+    opcionesNota: 'Reservás tu cupo con una seña del 10% ($150.000) por Mercado Pago. 3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa en bioconstrucción (hospedaje en carpa propia) — grupo chico para cuidar la profundidad del proceso.',
     sinCarrito: true,
     formCurso: 'Formación Integral en Construcción Natural · 21 sep – 30 nov 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%2021%20de%20septiembre)',
