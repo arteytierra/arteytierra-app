@@ -1,7 +1,8 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — SoilGrids 250 m, casi estático
 
 async function openCache(): Promise<Cache | null> {

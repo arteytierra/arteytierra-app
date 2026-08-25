@@ -1,3 +1,4 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 import { obtenerElevacionPuntos } from '@/lib/elevacion';
@@ -8,7 +9,7 @@ import type { LatLng } from '@/lib/elevacion';
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — el relieve es estático
 
 function parseLocs(raw: string): LatLng[] {

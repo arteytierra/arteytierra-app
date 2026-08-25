@@ -1,7 +1,8 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — climatología histórica NASA POWER 1981–2023
 
 async function openCache(): Promise<Cache | null> {

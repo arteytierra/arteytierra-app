@@ -1,4 +1,5 @@
 import 'server-only';
+import { SITE_ORIGIN } from '@/lib/http';
 import { getPlan } from './plan';
 import { createSupabaseServerClient } from '@/lib/db/server';
 import { can, planMinimo, NOMBRE_PLAN, type Feature } from '@/lib/entitlements';
@@ -35,6 +36,6 @@ export async function requierePlan(feature: Feature): Promise<Response | null> {
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN },
   });
 }

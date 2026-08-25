@@ -1,3 +1,4 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
@@ -7,7 +8,7 @@ import { requierePlan } from '@/lib/auth/apiGuard';
  * clases del polígono (titiler statistics, modo categórico). Sin API key.
  */
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — WorldCover es un mapa anual estático
 const MPC       = 'https://planetarycomputer.microsoft.com/api/';
 

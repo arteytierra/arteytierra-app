@@ -1,3 +1,4 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
@@ -8,7 +9,7 @@ import { requierePlan } from '@/lib/auth/apiGuard';
  *  - Overpass (OSM): agua, áreas protegidas y poblado cercano — best-effort, degradación elegante.
  */
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 14; // 14 días
 const UA        = 'ArteyTierra-Terreno/1.0 (https://terreno.arteytierra.org)';
 

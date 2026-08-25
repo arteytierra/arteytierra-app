@@ -1,8 +1,9 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { calcularExtremos, type SerieDiaria } from '@/lib/climaExtremos';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
-const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — reanálisis histórico, casi estático
 
 // Ventana de análisis: 35 años completos (determinista → caché estable).

@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { ipDe, limitar } from '@/lib/rateLimit';
 
 /**
  * Imagen histórica (D2) — ESRI World Imagery Wayback.
@@ -14,7 +15,9 @@ const CONFIG    = 'https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com
 
 interface ReleaseCfg { itemTitle?: string; itemURL?: string }
 
-export async function GET() {
+export async function GET(req: Request) {
+  if (!limitar(`wayback:${ipDe(req)}`, 20, 60_000)) return err('Demasiadas solicitudes. Probá de nuevo en un momento.', 429);
+
   const dbKey = 'wayback:releases:v1';
   const dbHit = await cacheGet<{ raw: string }>(dbKey);
   if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });

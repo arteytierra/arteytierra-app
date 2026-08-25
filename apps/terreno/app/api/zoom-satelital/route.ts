@@ -10,6 +10,7 @@
  * llega a z18) el cartel tapaba el terreno.
  */
 import { createHash } from 'crypto';
+import { ipDe, limitar, demasiadasSolicitudes } from '@/lib/rateLimit';
 
 /** md5 (10 hex) de la tesela "Map data not yet available", 2521 bytes. */
 const PLACEHOLDER = 'f27d9de7f8';
@@ -37,6 +38,10 @@ async function tieneImagen(lat: number, lng: number, z: number): Promise<boolean
 }
 
 export async function GET(req: Request) {
+  // Sonda cara (hasta 8 fetches salientes por llamada). Se llama al elegir un
+  // punto, no en ráfaga, así que 30/min por IP no molesta a un usuario real.
+  if (!limitar(`zoom:${ipDe(req)}`, 30, 60_000)) return demasiadasSolicitudes();
+
   const p = new URL(req.url).searchParams;
   const lat = Number(p.get('lat'));
   const lng = Number(p.get('lng'));

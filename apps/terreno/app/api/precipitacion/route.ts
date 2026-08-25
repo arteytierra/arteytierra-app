@@ -1,3 +1,4 @@
+import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
@@ -17,7 +18,7 @@ import { requierePlan } from '@/lib/auth/apiGuard';
  * la segunda visita a la misma celda es instantánea.
  */
 
-const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 
 const API        = 'https://climateserv.servirglobal.net/api';
 const DATATYPE   = '0';          // UCSB CHIRPS Rainfall
