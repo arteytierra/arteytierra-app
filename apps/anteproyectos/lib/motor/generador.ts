@@ -25,12 +25,21 @@ import {
 } from './bioclimatica';
 import { expandirAmbientes, type InstanciaAmbiente } from './areas';
 import {
+  anchoMinimoDe,
   dimensionesDe,
   empaquetarBalanceado,
   ordenDeclarado,
   ordenarPorAdyacencia,
+  ordenarPorZonificacionTermica,
   type RectanguloAmbiente,
 } from './layout';
+
+/**
+ * Cuánto defiende cada perfil su propio orden de ambientes frente al
+ * optimizador. Alto frente a la proporción (unidades ~1–8), bajo frente a un
+ * ambiente inutilizable (1000): el partido manda, la habitabilidad más.
+ */
+const PESO_ORDEN_DE_PARTIDO = 25;
 
 const ALTURA_VENTANA_TIPICA_M = 1.4;
 /** Altura usada cuando no hay datos de clima para elegir una por enfoque. */
@@ -69,47 +78,60 @@ export interface AnteproyectoGenerado {
 }
 
 /**
- * Cada perfil organiza la planta con una lógica propia, no sólo con una
- * proporción distinta: si los tres perfiles usaran el mismo criterio y sólo
- * cambiara el ancho objetivo, el empaquetado convergía a la misma planta y
- * los "tres caminos" del método Livingston quedaban en uno solo repetido.
+ * Cada perfil resuelve un PARTIDO distinto, no la misma planta con otra
+ * proporción.
  *
- * - fiel-cliente: respeta el orden en que la familia enumeró los ambientes.
- * - organico: fuerza dos filas para que todo ambiente toque el exterior.
- * - bioclimatico: forma derivada del clima (eje largo según Köppen).
- * - autoconstruccion: agrupa por adyacencia, en módulos compactos ampliables.
+ * Es la razón de ser de ofrecer tres opciones: si las tres se organizan igual,
+ * la familia elige entre tres versiones de lo mismo y el método participativo
+ * pierde sentido. La primera versión sólo cambiaba el aspecto del rectángulo
+ * y las tres plantas salían idénticas salvo unos centímetros.
+ *
+ * - fiel-cliente: compacta y en tres bandas, con el orden en que la familia
+ *   enumeró los ambientes respetado tal cual.
+ * - organico: dos bandas por adyacencia —todo ambiente toca el exterior— con
+ *   proporción áurea y envolvente curva.
+ * - bioclimatico: zonificación térmica servidos/servidores. El núcleo de
+ *   servicios se arrima al extremo opuesto al ecuador —de colchón— y los
+ *   dormitorios se quedan con la buena orientación. No es una banda de
+ *   servicios pura: con 8 m² de baño y hall en una casa de 90 m² una banda
+ *   entera de servicios sería un disparate y el empaquetador la descarta.
+ * - autoconstruccion: bandas simples por adyacencia, fáciles de fraccionar.
+ *
+ * Los cuatro pasan `pesoOrden` alto: el orden es la decisión de partido del
+ * perfil y sólo se cede si no hay forma de que la planta sea habitable.
  */
 function organizarPlanta(
   perfil: PerfilId,
   instancias: InstanciaAmbiente[],
   estrategiaReal: EstrategiaClimatica | undefined,
   parametros: ParametrosTransversales,
+  lat: number,
 ): RectanguloAmbiente[] {
   if (perfil === 'fiel-cliente') {
-    // Respeta el orden en que la familia enumeró los ambientes y arma tres
-    // bandas: la casa recogida y convencional que suelen describir.
-    return empaquetarBalanceado(ordenDeclarado(instancias), 3, PERFILES[perfil].aspectoDefault);
+    return empaquetarBalanceado(ordenDeclarado(instancias), 3, PERFILES[perfil].aspectoDefault, { pesoOrden: PESO_ORDEN_DE_PARTIDO });
   }
 
   if (perfil === 'organico') {
-    // Rectángulo áureo en dos bandas: con sólo dos filas cada ambiente da al
-    // norte o al sur —ninguno queda encerrado, que es lo que este perfil
-    // promete— y la proporción Φ es la aplicación literal de la geometría
-    // sagrada que pide el manual (habitación de 3 m → largo armónico 4,85 m).
+    // Con dos bandas cada ambiente da al norte o al sur: ninguno queda
+    // encerrado, que es lo que este perfil promete. Φ es la aplicación literal
+    // de la geometría sagrada del manual (3 m de ancho → 4,85 m de largo).
     const aspecto = parametros.gradoGeometriaSagrada === 'marcado' ? PHI : 1.45;
-    return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 2, aspecto);
+    return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 2, aspecto, { pesoOrden: PESO_ORDEN_DE_PARTIDO });
   }
 
   if (perfil === 'bioclimatico' && estrategiaReal) {
-    // La proporción sale del eje largo que pide el clima; tres bandas dejan
-    // una franja de servicios al centro y las piezas habitables al perímetro.
+    // Los servidos van hacia el ecuador: al sur en el hemisferio norte, al
+    // norte en el sur. En coordenadas de planta la primera banda mira al
+    // norte, así que en el hemisferio sur van primero y en el norte, últimos.
+    const servidosPrimero = hemisferioDe(lat) === 'sur';
     const aspecto =
-      estrategiaReal.ejeLargoPreferido === 'E-O' ? 1.6 : estrategiaReal.ejeLargoPreferido === 'N-S' ? 0.7 : 1.05;
-    return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 3, aspecto);
+      estrategiaReal.ejeLargoPreferido === 'E-O' ? 1.9 : estrategiaReal.ejeLargoPreferido === 'N-S' ? 0.6 : 1.05;
+    return empaquetarBalanceado(ordenarPorZonificacionTermica(instancias, servidosPrimero), 2, aspecto, {
+      pesoOrden: PESO_ORDEN_DE_PARTIDO,
+    });
   }
 
-  // Autoconstrucción y respaldo: bandas simples, fáciles de ejecutar por etapas.
-  return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 2, 1.2);
+  return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 2, 1.2, { pesoOrden: PESO_ORDEN_DE_PARTIDO });
 }
 
 function fundamentoPara(
@@ -214,6 +236,20 @@ const TIPOS_QUE_EXIGEN_LUZ = new Set(['dormitorio', 'estar-cocina-comedor', 'est
 function detectarAdvertencias(rects: RectanguloAmbiente[], profundo_m: number): string[] {
   const avisos: string[] = [];
 
+  // El empaquetado penaliza fuerte los ambientes por debajo de su ancho
+  // utilizable, pero a veces no hay disposición que los evite. Cuando pasa hay
+  // que decirlo: un baño de 1,2 m se dibuja igual y no se puede usar.
+  const angostos = rects.filter(r => Math.min(r.w_m, r.h_m) < anchoMinimoDe(r.tipo) - 0.01);
+  if (angostos.length) {
+    const detalle = angostos
+      .map(r => r.nombre + " (" + Math.min(r.w_m, r.h_m).toFixed(2) + " m, mínimo " + anchoMinimoDe(r.tipo).toFixed(2) + " m)")
+      .join(", ");
+    avisos.push(
+      "Por debajo del ancho utilizable: " + detalle +
+        ". Hay que agrandar ese ambiente, quitar otro del programa o aceptar una planta más profunda.",
+    );
+  }
+
   const sinExterior = rects.filter(
     r => TIPOS_QUE_EXIGEN_LUZ.has(r.tipo) && !r.exteriorNorte && !r.exteriorSur && !r.exteriorEste && !r.exteriorOeste,
   );
@@ -259,7 +295,7 @@ export function generarAnteproyecto(
   const estrategiaReal = clima?.koppen ? estrategiaClimatica(clima.koppen) : undefined;
   const estrategia = perfil === 'bioclimatico' ? estrategiaReal : undefined;
 
-  const rects = organizarPlanta(perfil, instancias, estrategiaReal, parametros);
+  const rects = organizarPlanta(perfil, instancias, estrategiaReal, parametros, clima?.lat ?? 0);
   const { ancho_m, profundo_m, area_total_m2 } = dimensionesDe(rects);
 
   const lat = clima?.lat ?? 0;

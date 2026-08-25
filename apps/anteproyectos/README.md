@@ -60,20 +60,43 @@ produce.
 
 ## Los perfiles
 
-Cada perfil organiza la planta con una lógica propia, no sólo con una
-proporción distinta: si sólo cambiara el ancho, el empaquetado convergía a la
-misma planta y los "tres caminos" del método Livingston quedaban en uno solo.
+Cada perfil resuelve un **partido distinto**, no la misma planta con otra
+proporción. Es la razón de ser de ofrecer tres opciones: si las tres se
+organizan igual, la familia elige entre tres versiones de lo mismo.
 
-| Perfil | Organización | Proporción |
+| Perfil | Partido | Proporción |
 |---|---|---|
-| Fiel al cliente | Orden en que la familia enumeró los ambientes | 3 bandas, 1.15 |
-| Orgánico | Dos bandas (todo ambiente da al exterior) + envolvente curva dibujada | Φ ≈ 1.618 con geometría sagrada marcada |
-| Bioclimático | Eje largo derivado del Köppen del sitio | 1.6 E-O / 0.7 N-S / 1.05 compacto |
+| Fiel al cliente | Compacta, en el orden en que la familia enumeró los ambientes | 1.15 |
+| Orgánico | Dos bandas por adyacencia (todo ambiente al exterior) + envolvente curva | Φ ≈ 1.618 con geometría sagrada marcada |
+| Bioclimático | Zonificación térmica: núcleo de servicios de colchón del lado opuesto al ecuador, dormitorios con la buena orientación | Eje largo según el Köppen del sitio |
 | Autoconstrucción (opcional) | Bandas simples, fraccionadas en etapas habitables | 1.2 |
 
-El alero, la altura libre y la técnica de muro salen del clima real del sitio
-en **los cuatro perfiles** — hasta la propuesta más fiel al cliente necesita
-sombra real en el trópico. Sólo la *forma* es exclusiva del perfil bioclimático.
+El orden que fija cada perfil es una **preferencia fuerte**, no una imposición:
+pesa mucho más que la proporción y mucho menos que un ambiente inutilizable.
+Así el partido gana siempre que la planta se pueda habitar, y cede sólo cuando
+no hay forma.
+
+Dos cosas que costó aprender:
+
+- **Con el peso por defecto los tres perfiles convergían a la misma planta.**
+  El optimizador probaba varios ordenamientos y elegía por proporción, así que
+  la intención del perfil se perdía. Comparar sólo el ancho y el profundo del
+  rectángulo exterior no lo detectaba: daban tres números distintos y la misma
+  organización interna. Hay un test que compara la posición de cada ambiente.
+- **Imponer el orden a rajatabla tampoco servía**: el baño salía de 1,2 m y el
+  hall de 0,7 m. Ver el núcleo apilado, abajo.
+
+## El núcleo de servicios se apila
+
+Todo ambiente ocupa el alto completo de su banda, así que un baño de 5 m² en
+una banda de 4 m de fondo salía de 1,25 m de ancho: una tira. Y como el motor
+prioriza que ningún ambiente quede inutilizable, esa restricción terminaba
+dictando la planta entera y aplastaba las diferencias entre perfiles.
+
+Ahora baño, hall, lavadero, despensa y biofiltro pueden **apilarse en columna**
+dentro de una banda —baño arriba, hall abajo, compartiendo ancho— como hace
+cualquier planta real con el núcleo húmedo. Se apila sólo cuando resuelve una
+violación, nunca para complicar una banda que ya funcionaba.
 
 ## El alero se dimensiona por dos criterios, y manda el mayor
 
@@ -110,6 +133,9 @@ a la familia.
 ## Límites conocidos
 
 - **Una sola planta.** No resuelve dos niveles ni escaleras.
+- **Plantas en bandas.** El motor organiza en bandas horizontales con núcleos
+  de servicio apilados. No resuelve plantas en L o en U, patios internos ni
+  circulaciones en espina.
 - **Ambientes rectangulares.** El perfil orgánico dibuja la envolvente curva en
   planta y la galería curva en 3D, pero los ambientes interiores siguen siendo
   rectángulos: hay que poder acotarlos y construirlos.
@@ -144,6 +170,10 @@ cumbrera corra sobre el eje largo en el plano de techos y en el 3D, que el
 punto más alto del volumen sea exactamente la cumbrera acotada, que las mismas
 ventanas aparezcan en planta, en fachada y en 3D, que siempre haya una puerta
 de acceso, y que el perímetro tenga un vértice por esquina real.
+
+Y lo que tiene que ser cierto para que las tres opciones sean tres opciones:
+que ningún par de perfiles produzca la misma planta —comparando la posición y
+el tamaño de cada ambiente, no el rectángulo exterior—, en ambos hemisferios.
 
 `tests/_exportar-vista.test.ts` no es un test: genera un HTML de vista previa
 con los tres anteproyectos del caso piloto.

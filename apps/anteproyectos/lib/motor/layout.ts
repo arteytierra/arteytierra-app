@@ -51,7 +51,7 @@ const ANCHO_MIN_POR_TIPO: Partial<Record<TipoAmbiente, number>> = {
   biofiltro: 1.2,
 };
 
-function anchoMinimoDe(tipo: TipoAmbiente): number {
+export function anchoMinimoDe(tipo: TipoAmbiente): number {
   return ANCHO_MIN_POR_TIPO[tipo] ?? 1.2;
 }
 
@@ -232,11 +232,34 @@ function seSuperponeEnY(a: RectanguloAmbiente, b: RectanguloAmbiente): boolean {
 const MAX_AMBIENTES_PARTICION = 14;
 const PENALIZACION_ANCHO_MINIMO = 1000;
 
-interface FilaCalculada {
+/**
+ * Ambientes que pueden apilarse en columna dentro de una banda.
+ *
+ * Son los chicos de servicio. Sin apilar, todo ambiente ocupa el alto completo
+ * de su banda, así que un baño de 5 m² en una banda de 4 m de fondo sale de
+ * 1,25 m de ancho: una tira, no un baño. Y como el motor prioriza que ningún
+ * ambiente quede inutilizable, esa restricción terminaba dictando la planta y
+ * los tres perfiles convergían al mismo esquema.
+ *
+ * Apilados —baño arriba, hall abajo, compartiendo una columna— los dos quedan
+ * anchos y la banda queda libre para tener el fondo que el partido pide. Es lo
+ * que hace cualquier planta real con el núcleo húmedo.
+ */
+const TIPOS_APILABLES = new Set<TipoAmbiente>(['bano', 'lavadero', 'despensa', 'hall', 'biofiltro']);
+
+/** Una celda de la banda: un ambiente a todo el alto, o dos apilados. */
+interface Celda {
   ambientes: InstanciaAmbiente[];
+  ancho_m: number;
+}
+
+interface FilaCalculada {
+  celdas: Celda[];
   altura_m: number;
   ancho_m: number;
   violaciones: number;
+  /** Peor proporción largo/ancho de la banda, para desempatar entre válidas. */
+  alargamiento: number;
 }
 
 /**
@@ -254,15 +277,45 @@ const ALTURA_MIN_FILA_M = 2.2;
  * filas cubre exactamente el área del programa, sin escalones ni sobrantes, y
  * el techo y las fachadas describen el mismo edificio que la planta.
  */
-function calcularFilaAnchoFijo(grupo: InstanciaAmbiente[], ancho_m: number): FilaCalculada {
+function celdasDe(grupo: InstanciaAmbiente[], altura_m: number, apilar: boolean): Celda[] {
+  const celdas: Celda[] = [];
+  for (let i = 0; i < grupo.length; i++) {
+    const a = grupo[i]!;
+    const b = grupo[i + 1];
+    if (apilar && b && TIPOS_APILABLES.has(a.tipo) && TIPOS_APILABLES.has(b.tipo)) {
+      celdas.push({ ambientes: [a, b], ancho_m: (a.area_m2 + b.area_m2) / altura_m });
+      i++;
+    } else {
+      celdas.push({ ambientes: [a], ancho_m: a.area_m2 / altura_m });
+    }
+  }
+  return celdas;
+}
+
+function evaluarFila(grupo: InstanciaAmbiente[], ancho_m: number, apilar: boolean): FilaCalculada {
   const areaFila = grupo.reduce((s, a) => s + a.area_m2, 0);
   const altura_m = areaFila / ancho_m;
-  let violaciones = 0;
-  if (altura_m < ALTURA_MIN_FILA_M) violaciones++;
-  for (const amb of grupo) {
-    if (amb.area_m2 / altura_m < anchoMinimoDe(amb.tipo)) violaciones++;
+  const celdas = celdasDe(grupo, altura_m, apilar);
+
+  let violaciones = altura_m < ALTURA_MIN_FILA_M ? 1 : 0;
+  let alargamiento = 0;
+  for (const celda of celdas) {
+    const areaCelda = celda.ambientes.reduce((s, a) => s + a.area_m2, 0);
+    for (const amb of celda.ambientes) {
+      // Los apilados se reparten el alto de la banda en proporción a su área.
+      const alto = altura_m * (amb.area_m2 / areaCelda);
+      if (Math.min(celda.ancho_m, alto) < anchoMinimoDe(amb.tipo)) violaciones++;
+      alargamiento = Math.max(alargamiento, Math.max(celda.ancho_m / alto, alto / celda.ancho_m));
+    }
   }
-  return { ambientes: grupo, altura_m, ancho_m, violaciones };
+  return { celdas, altura_m, ancho_m, violaciones, alargamiento };
+}
+
+function calcularFilaAnchoFijo(grupo: InstanciaAmbiente[], ancho_m: number): FilaCalculada {
+  const plana = evaluarFila(grupo, ancho_m, false);
+  const apilada = evaluarFila(grupo, ancho_m, true);
+  // Apilar sólo cuando resuelve algo: no se complica una banda que ya andaba.
+  return apilada.violaciones < plana.violaciones ? apilada : plana;
 }
 
 /** Genera todos los cortes de `n` elementos en `k` grupos contiguos no vacíos. */
@@ -290,21 +343,26 @@ function construirDesdeFilas(filas: FilaCalculada[]): RectanguloAmbiente[] {
   let cursorY = 0;
   filas.forEach((fila, indice) => {
     let cursorX = 0;
-    for (const amb of fila.ambientes) {
-      const w = amb.area_m2 / fila.altura_m;
-      rects.push({
-        ...amb,
-        x_m: Math.round(cursorX * 100) / 100,
-        y_m: Math.round(cursorY * 100) / 100,
-        w_m: Math.round(w * 100) / 100,
-        h_m: Math.round(fila.altura_m * 100) / 100,
-        fila: indice,
-        exteriorNorte: false,
-        exteriorSur: false,
-        exteriorEste: false,
-        exteriorOeste: false,
-      });
-      cursorX += w;
+    for (const celda of fila.celdas) {
+      const areaCelda = celda.ambientes.reduce((s, a) => s + a.area_m2, 0);
+      let cursorYCelda = cursorY;
+      for (const amb of celda.ambientes) {
+        const alto = fila.altura_m * (amb.area_m2 / areaCelda);
+        rects.push({
+          ...amb,
+          x_m: Math.round(cursorX * 100) / 100,
+          y_m: Math.round(cursorYCelda * 100) / 100,
+          w_m: Math.round(celda.ancho_m * 100) / 100,
+          h_m: Math.round(alto * 100) / 100,
+          fila: indice,
+          exteriorNorte: false,
+          exteriorSur: false,
+          exteriorEste: false,
+          exteriorOeste: false,
+        });
+        cursorYCelda += alto;
+      }
+      cursorX += celda.ancho_m;
     }
     cursorY += fila.altura_m;
   });
@@ -351,13 +409,33 @@ function desvioDeOrden(preferido: InstanciaAmbiente[], candidato: InstanciaAmbie
   return d;
 }
 
+export interface OpcionesEmpaquetado {
+  /**
+   * Cuánto pesa apartarse del orden recibido, por ambiente desplazado.
+   *
+   * El orden es la decisión de partido del perfil, no una sugerencia: con el
+   * peso por defecto el optimizador probaba cuatro ordenamientos alternativos
+   * y elegía por proporción, así que los tres perfiles convergían a la misma
+   * planta y las "tres opciones" eran una sola repetida.
+   *
+   * Pero imponerlo a rajatabla tampoco sirve: el orden zonificado deja el baño
+   * pegado al estar y, compartiendo banda, el baño sale de 1,2 m. Por eso es
+   * una preferencia fuerte y no una imposición — pesa mucho más que la
+   * proporción y mucho menos que un ambiente inutilizable, así que el partido
+   * del perfil gana siempre que se pueda habitar.
+   */
+  pesoOrden?: number;
+}
+
 const PESO_DESVIO_ORDEN = 0.4;
 
 export function empaquetarBalanceado(
   ordenadas: InstanciaAmbiente[],
   filasObjetivo: number,
   aspecto = 1.2,
+  opciones: OpcionesEmpaquetado = {},
 ): RectanguloAmbiente[] {
+  const pesoOrden = opciones.pesoOrden ?? PESO_DESVIO_ORDEN;
   const n = ordenadas.length;
   if (n === 0) return [];
 
@@ -378,7 +456,7 @@ export function empaquetarBalanceado(
     let mejorPuntaje = Infinity;
 
     for (const candidato of ordenesCandidatos(ordenadas)) {
-      const desvio = desvioDeOrden(ordenadas, candidato) * PESO_DESVIO_ORDEN;
+      const desvio = desvioDeOrden(ordenadas, candidato) * pesoOrden;
       for (const cortes of particiones(n, k)) {
         const limites = [0, ...cortes, n];
         const filas: FilaCalculada[] = [];
@@ -387,15 +465,7 @@ export function empaquetarBalanceado(
         }
         const violaciones = filas.reduce((s, f) => s + f.violaciones, 0);
         // Entre las disposiciones válidas, preferir ambientes poco alargados.
-        const alargamiento = filas.reduce((s, f) => {
-          const peor = Math.max(
-            ...f.ambientes.map(a => {
-              const w = a.area_m2 / f.altura_m;
-              return Math.max(w / f.altura_m, f.altura_m / w);
-            }),
-          );
-          return s + peor;
-        }, 0);
+        const alargamiento = filas.reduce((s, f) => s + f.alargamiento, 0);
         const puntaje = violaciones * PENALIZACION_ANCHO_MINIMO + alargamiento + desvio;
         if (puntaje < mejorPuntaje) {
           mejorPuntaje = puntaje;
@@ -433,3 +503,35 @@ export function anchoObjetivoDesdeAspecto(areaProgramaTotal_m2: number, aspectoE
   return Math.sqrt(areaBruta * aspectoEdificio);
 }
 
+
+/** Ambientes servidos: los que se habitan y merecen la mejor orientación. */
+const AMBIENTES_SERVIDOS = new Set<TipoAmbiente>([
+  'dormitorio',
+  'estar-cocina-comedor',
+  'estudio',
+  'taller',
+  'galeria',
+  'invernadero',
+]);
+
+/**
+ * Zonificación térmica: separa ambientes servidos de servidores para que los
+ * servicios formen una banda continua sobre la cara castigada del edificio.
+ *
+ * Es el partido bioclimático clásico —servidos hacia el ecuador, servidores
+ * como colchón hacia el lado frío o hacia el poniente— y es lo que hace que
+ * este perfil se lea distinto de los otros dos: los baños, el lavadero y el
+ * hall quedan juntos en un lado en vez de repartidos por la planta.
+ *
+ * Dentro de cada grupo se conserva el orden por adyacencia, para no romper las
+ * cercanías que pidió la familia.
+ */
+export function ordenarPorZonificacionTermica(
+  instancias: InstanciaAmbiente[],
+  servidosPrimero: boolean,
+): InstanciaAmbiente[] {
+  const porAdyacencia = ordenarPorAdyacencia(instancias);
+  const servidos = porAdyacencia.filter(i => AMBIENTES_SERVIDOS.has(i.tipo));
+  const servidores = porAdyacencia.filter(i => !AMBIENTES_SERVIDOS.has(i.tipo));
+  return servidosPrimero ? [...servidos, ...servidores] : [...servidores, ...servidos];
+}
