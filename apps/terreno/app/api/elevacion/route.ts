@@ -1,8 +1,6 @@
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
-import { obtenerElevacionPuntos } from '@/lib/elevacion';
-import { atribucionDe } from '@/lib/elevacion/atribucion';
-import type { LatLng } from '@/lib/elevacion';
+import { obtenerElevacionPuntos, atribucionDe, type LatLng } from '@arteytierra/dem';
 
 // geotiff (lectura de COG por range request) requiere Node runtime.
 export const runtime = 'nodejs';

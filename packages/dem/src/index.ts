@@ -1,12 +1,19 @@
 /**
- * Punto de entrada de la capa de elevación. Rutea la fuente y garantiza que
+ * Punto de entrada de @arteytierra/dem. Rutea la fuente y garantiza que
  * "todo lo que consume elevación sigue funcionando": si GLO-30 falla, cae a SRTM.
+ *
+ * Extraído de apps/terreno/lib/elevacion/ (Fase A0 del plan de dos pistas de
+ * apps/anteproyectos, ver PLAN-DOS-PISTAS.md). Server-side: los proveedores
+ * leen COGs remotos con `geotiff`, no corren en el cliente.
  */
 import type { LatLng, ResultadoPuntos } from './tipos';
 import { puntosGlo30 } from './glo30';
 import { puntosSrtm } from './srtm';
 
 export type { BBox, LatLng, FuenteDEM, ResultadoPuntos } from './tipos';
+export { ATRIBUCION, ATRIBUCION_CORTA, atribucionDe } from './atribucion';
+export { obtenerGrillaDEM, grillaGlo30, type GrillaDEM } from './grilla';
+export { fuentesNacionalesGrilla, type FuenteNacional } from './router';
 
 export async function obtenerElevacionPuntos(coords: LatLng[]): Promise<ResultadoPuntos> {
   if (coords.length === 0) return { elevaciones: [], fuente: 'glo30' };

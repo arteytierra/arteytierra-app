@@ -87,6 +87,9 @@ importers:
       '@arteytierra/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@arteytierra/dem':
+        specifier: workspace:*
+        version: link:../../packages/dem
       '@arteytierra/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -299,6 +302,16 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/dem:
+    dependencies:
+      geotiff:
+        specifier: ^2
+        version: 2.1.3
+    devDependencies:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
