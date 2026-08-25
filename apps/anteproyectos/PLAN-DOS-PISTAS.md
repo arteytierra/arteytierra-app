@@ -369,6 +369,22 @@ el mapa de terreno, no como cargar lat/lng a mano.
   remoto). Typecheck limpio en `@arteytierra/dem` y en terreno; 116/116
   tests de terreno pasan sin cambios. `apps/anteproyectos` todavía no
   importa el paquete — eso es Fase A1 (armar `ModeloSitio` desde la grilla).
+- 2026-08-25 — **Fase A1, primer tramo: geometría + topografía real.**
+  `apps/anteproyectos/lib/sitio/geometria.ts` — polígono del lote con
+  mojones, área/perímetro/linderos geodésicos (azimut real, no aproximado),
+  portado de `apps/terreno/lib/geometria.ts` sobre un `Mojon` propio.
+  `lib/sitio/topografia.ts` — pendiente, orientación de escurrimiento y
+  estadísticas de elevación, pero **reconstruido sobre `@arteytierra/dem`**
+  (`obtenerGrillaDEM`) en vez de portar el `topografia.ts` de terreno tal
+  cual: ese usa OpenTopoData punto a punto, un patrón anterior a que
+  existiera el DEM multi-fuente compartido — portarlo hubiera sido
+  reintroducir la fuente vieja en la app nueva. 7 tests nuevos, 106/106
+  pasan en anteproyectos, typecheck limpio. **Deliberadamente NO cableado**
+  todavía al `Sitio` de un solo punto que usa hoy `generador.ts`/la UI —
+  eso es un cambio de modelo de datos más grande (de punto a polígono) que
+  toca ~10 archivos y merece su propia revisión, no colarse en este tramo.
+  Pendiente de A1: viewshed (depende de `lib/shaders.ts` de terreno, sin
+  revisar todavía) y el mapa de selección con `CAPAS_DEFAULT`/`ArcoSolarLayer`.
 - 2026-08-25 — ChatGPT refinó su propia precisión sobre `cubierta`: en vez
   de `z_m` por vértice como caso especial, `ObjetoVolumen` pasa a ser una
   unión discriminada `ObjetoPrisma | ObjetoSuperficie` (geometría explícita

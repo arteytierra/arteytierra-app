@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
+    "@arteytierra/dem": "workspace:*",
     "@arteytierra/types": "workspace:*",
+    "@turf/turf": "^7.1.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
     "mammoth": "^1.12.1",

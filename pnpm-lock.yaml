@@ -29,9 +29,15 @@ importers:
       '@arteytierra/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@arteytierra/dem':
+        specifier: workspace:*
+        version: link:../../packages/dem
       '@arteytierra/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@turf/turf':
+        specifier: ^7.1.0
+        version: 7.3.5
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
