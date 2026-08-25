@@ -60,31 +60,55 @@ produce.
 
 ## Los perfiles
 
-Cada perfil resuelve un **partido distinto**, no la misma planta con otra
-proporción. Es la razón de ser de ofrecer tres opciones: si las tres se
-organizan igual, la familia elige entre tres versiones de lo mismo.
+Cada perfil resuelve un **partido distinto** — qué ambientes forman cada
+banda, no sólo el orden o la proporción del rectángulo. Es la razón de ser de
+ofrecer tres opciones: si las tres se organizan igual, la familia elige entre
+tres versiones de lo mismo.
 
 | Perfil | Partido | Proporción |
 |---|---|---|
-| Fiel al cliente | Compacta, en el orden en que la familia enumeró los ambientes | 1.15 |
-| Orgánico | Dos bandas por adyacencia (todo ambiente al exterior) + envolvente curva | Φ ≈ 1.618 con geometría sagrada marcada |
-| Bioclimático | Zonificación térmica: núcleo de servicios de colchón del lado opuesto al ecuador, dormitorios con la buena orientación | Eje largo según el Köppen del sitio |
+| Fiel al cliente | Compacta, bandas elegidas por el optimizador en el orden en que la familia enumeró los ambientes | 1.15 |
+| Orgánico | Núcleo central: el espacio común en el medio, dormitorios repartidos a los dos lados + envolvente curva | Φ ≈ 1.618 con geometría sagrada marcada |
+| Bioclimático | Depende del enfoque climático real del sitio (ver abajo) | Eje largo según el Köppen del sitio, defendido con fuerza |
 | Autoconstrucción (opcional) | Bandas simples, fraccionadas en etapas habitables | 1.2 |
 
-El orden que fija cada perfil es una **preferencia fuerte**, no una imposición:
-pesa mucho más que la proporción y mucho menos que un ambiente inutilizable.
-Así el partido gana siempre que la planta se pueda habitar, y cede sólo cuando
-no hay forma.
+El **bioclimático** no tiene un partido fijo, porque el clima real cambia cuál
+es la respuesta correcta:
 
-Dos cosas que costó aprender:
+- **Sombra y ventilación** (trópico) o **mixto**, con eje largo E-O y programa
+  de hasta 7 ambientes: **crujía simple**. Una sola banda, cada ambiente
+  pasante a dos caras — la casa corredor clásica del trópico, donde ventilar
+  cruzado importa más que compactar.
+- Cualquier otro caso (clima frío, árido, eje norte-sur, o un programa
+  demasiado grande para una sola crujía): **compacta con zonificación
+  térmica** — el núcleo de servicios de colchón contra la cara castigada,
+  dormitorios con la buena orientación.
 
-- **Con el peso por defecto los tres perfiles convergían a la misma planta.**
-  El optimizador probaba varios ordenamientos y elegía por proporción, así que
-  la intención del perfil se perdía. Comparar sólo el ancho y el profundo del
-  rectángulo exterior no lo detectaba: daban tres números distintos y la misma
-  organización interna. Hay un test que compara la posición de cada ambiente.
+El núcleo de servicios (baño, hall, lavadero, despensa, biofiltro) no está
+clavado a una banda fija: se prueba en cada extremo y como banda propia, y se
+elige la posición que da la planta habitable. Sin esto, forzarlo siempre al
+fondo volvía a producir baños de 40–60 cm sin que ningún ancho de edificio lo
+arreglara.
+
+Tres cosas que costó aprender:
+
+- **Con el mismo empaquetador y sólo el orden distinto, los tres perfiles
+  convergían a la misma planta.** Dado un programa, el óptimo del
+  empaquetador es uno solo: probaba varios ordenamientos y elegía por
+  proporción, así que la intención del perfil se perdía aunque el orden de
+  entrada fuera distinto. Comparar sólo el ancho y el profundo del rectángulo
+  exterior no lo detectaba — daban tres números distintos y la misma
+  organización interna. La primera corrección (pesar más el orden) arregló el
+  caso piloto pero **no otros programas**: con un invernadero, una casa
+  grande de siete tipos o un programa sin núcleo de servicios, los tres
+  perfiles volvían a coincidir. Hay un test que barre varios programas y
+  climas, no sólo el piloto.
 - **Imponer el orden a rajatabla tampoco servía**: el baño salía de 1,2 m y el
   hall de 0,7 m. Ver el núcleo apilado, abajo.
+- **La solución final no fue pesar el orden más fuerte, sino dejar de pedirle
+  al mismo empaquetador tres resultados distintos.** Cada perfil compone
+  ahora sus propias bandas — qué ambientes van juntos, no sólo en qué orden —
+  y sólo se optimiza el ancho de edificio que las hace habitables.
 
 ## El núcleo de servicios se apila
 

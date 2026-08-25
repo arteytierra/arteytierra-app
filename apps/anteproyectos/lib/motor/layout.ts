@@ -535,3 +535,138 @@ export function ordenarPorZonificacionTermica(
   const servidores = porAdyacencia.filter(i => !AMBIENTES_SERVIDOS.has(i.tipo));
   return servidosPrimero ? [...servidos, ...servidores] : [...servidores, ...servidos];
 }
+
+// ─── Partidos: bandas dadas por el perfil ───────────────────────────────────
+
+/**
+ * Empaqueta con la composición de bandas **ya decidida** por el partido.
+ *
+ * `empaquetarBalanceado` busca el mejor corte y la mejor proporción, y por eso
+ * los tres perfiles terminaban en la misma organización: dado un programa, el
+ * óptimo es uno solo. Acá el partido fija qué ambientes van en cada banda y lo
+ * único que se busca es el ancho de edificio que hace habitable esa
+ * composición. Así cada perfil conserva su estructura aunque no sea la más
+ * eficiente — que es exactamente lo que distingue a una opción de otra.
+ *
+ * El ancho es el único grado de libertad: con bandas de igual ancho, el fondo
+ * de cada una queda determinado por su área (h = área / ancho), así que la
+ * huella sigue siendo un rectángulo exacto.
+ */
+/**
+ * Cuánto defiende el partido la proporción del edificio, por unidad de
+ * desvío logarítmico del ancho.
+ *
+ * El valor por defecto deja que las proporciones de los ambientes manden. Para
+ * el perfil bioclimático eso está mal: ahí el aspecto no es una preferencia
+ * estética sino la decisión de proyecto —el eje largo hacia el ecuador— y una
+ * planta de 7,8 × 11,6 m contradecía el fundamento que ese mismo anteproyecto
+ * declaraba.
+ */
+const PESO_ASPECTO_DEFAULT = 6;
+
+export function empaquetarEnBandas(
+  bandasHabitables: InstanciaAmbiente[][],
+  servidores: InstanciaAmbiente[],
+  aspectoPreferido: number,
+  pesoAspecto = PESO_ASPECTO_DEFAULT,
+): RectanguloAmbiente[] {
+  const habitables = bandasHabitables.filter(b => b.length > 0);
+  if (!habitables.length && !servidores.length) return [];
+
+  const areaTotal =
+    habitables.reduce((s, g) => s + g.reduce((t, a) => t + a.area_m2, 0), 0) +
+    servidores.reduce((t, a) => t + a.area_m2, 0);
+  const anchoIdeal = Math.sqrt(areaTotal * aspectoPreferido);
+
+  let mejor: FilaCalculada[] | null = null;
+  let mejorPuntaje = Infinity;
+
+  for (const composicion of composicionesDeServicio(habitables, servidores)) {
+    // Barrido de anchos alrededor del ideal. El rango tiene que ser ancho de
+    // verdad: cuando el aspecto pedido pelea contra el partido, el óptimo
+    // habitable queda lejos del ideal, y un rango corto devolvía la planta del
+    // borde con siete ambientes por debajo de su ancho utilizable. El paso es
+    // fino porque el fondo de la banda más chica cruza su mínimo habitable en
+    // pocos centímetros.
+    for (let f = 0.3; f <= 4; f += 0.01) {
+      const ancho = anchoIdeal * f;
+      const filas = composicion.map(g => calcularFilaAnchoFijo(g, ancho));
+      const violaciones = filas.reduce((s, x) => s + x.violaciones, 0);
+      const alargamiento = filas.reduce((s, x) => s + x.alargamiento, 0);
+      // Apartarse del aspecto pedido cuesta, pero mucho menos que un ambiente
+      // inutilizable: el partido cede proporción antes que habitabilidad.
+      const desvioAspecto = Math.abs(Math.log(f)) * pesoAspecto;
+      const puntaje = violaciones * PENALIZACION_ANCHO_MINIMO + alargamiento + desvioAspecto;
+      if (puntaje < mejorPuntaje) {
+        mejorPuntaje = puntaje;
+        mejor = filas;
+      }
+    }
+  }
+
+  return mejor ? construirDesdeFilas(mejor) : [];
+}
+
+/**
+ * Variantes de la misma planta según en qué banda cae el núcleo de servicios.
+ *
+ * Las bandas de ambientes habitables son la identidad del partido y no se
+ * tocan. Los servicios, en cambio, tienen que poder elegir banda: con bandas
+ * de igual ancho el fondo de cada una sale de su área, así que clavar los
+ * servicios en una banda propia daba una tira de 62 cm de fondo —un baño
+ * imposible— sin que hubiera ancho de edificio capaz de arreglarlo. Moviéndolos
+ * de banda cambian las proporciones y aparece una disposición habitable, sin
+ * perder lo que define al partido.
+ *
+ * Se mantienen siempre juntos y contiguos: un núcleo húmedo repartido por la
+ * casa multiplica instalaciones y es justo lo que este motor evita.
+ */
+function composicionesDeServicio(
+  habitables: InstanciaAmbiente[][],
+  servidores: InstanciaAmbiente[],
+): InstanciaAmbiente[][][] {
+  if (!servidores.length) return [habitables];
+  if (!habitables.length) return [[servidores]];
+
+  const variantes: InstanciaAmbiente[][][] = [];
+  // Al final de cada banda: el núcleo queda contra un lateral del edificio.
+  for (let k = 0; k < habitables.length; k++) {
+    variantes.push(habitables.map((b, i) => (i === k ? [...b, ...servidores] : [...b])));
+  }
+  // Y como banda propia al fondo, que es el colchón térmico clásico cuando el
+  // programa tiene servicios suficientes para sostener una tira entera.
+  variantes.push([...habitables.map(b => [...b]), [...servidores]]);
+  variantes.push([[...servidores], ...habitables.map(b => [...b])]);
+  return variantes;
+}
+
+/** Un ambiente servidor: no se habita, sirve. Baños, hall, lavadero, despensa. */
+export function esServidor(inst: InstanciaAmbiente): boolean {
+  return !AMBIENTES_SERVIDOS.has(inst.tipo);
+}
+
+/**
+ * Reparte una lista en `k` bandas de área pareja, respetando el orden.
+ *
+ * Lo usan los partidos que necesitan bandas de ambientes habitables (la casa
+ * de una crujía no, pero el partido de núcleo central sí, para las dos alas de
+ * dormitorios). Cortar por área y no por cantidad evita que una banda quede
+ * con todos los ambientes chicos y salga aplastada.
+ */
+export function repartirPorArea(instancias: InstanciaAmbiente[], k: number): InstanciaAmbiente[][] {
+  if (k <= 1 || instancias.length <= 1) return [instancias];
+  const total = instancias.reduce((s, i) => s + i.area_m2, 0);
+  const bandas: InstanciaAmbiente[][] = Array.from({ length: k }, () => []);
+  let acumulada = 0;
+  let banda = 0;
+  for (let i = 0; i < instancias.length; i++) {
+    const inst = instancias[i]!;
+    bandas[banda]!.push(inst);
+    acumulada += inst.area_m2;
+    const restantes = instancias.length - i - 1;
+    // Cierra la banda cuando ya lleva su cuota, siempre que queden ambientes
+    // suficientes para llenar las que faltan.
+    if (banda < k - 1 && acumulada >= (total * (banda + 1)) / k && restantes > k - banda - 1) banda++;
+  }
+  return bandas.filter(b => b.length > 0);
+}

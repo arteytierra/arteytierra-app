@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatosClima } from '@/lib/clima';
-import { generarAnteproyecto, type AnteproyectoGenerado } from '@/lib/motor/generador';
+import { generarAnteproyecto, partidoDe, type AnteproyectoGenerado } from '@/lib/motor/generador';
+import { estrategiaClimatica } from '@/lib/motor/bioclimatica';
 import { anchoMinimoDe } from '@/lib/motor/layout';
 import { mobiliarioDe } from '@/lib/motor/mobiliario';
 import { PARAMETROS_TRANSVERSALES_DEFAULT, type AmbienteDeseado, type PerfilId } from '@/lib/tipos';
@@ -49,34 +50,49 @@ describe('los perfiles proponen plantas distintas', () => {
     expect(new Set(firmas).size).toBe(PERFILES_VISIBLES.length);
   });
 
-  it('el perfil bioclimático arrima el núcleo de servicios al lado polar', () => {
+  it('el perfil bioclimático arrima el núcleo de servicios al lado polar (partido compacto)', () => {
+    // Esto sólo aplica al partido "compacta" (zonificación térmica en dos
+    // bandas). En trópico y clima mixto el bioclimático resuelve distinto —
+    // ver el test de la crujía simple, más abajo— porque ahí lo que manda no
+    // es el colchón térmico sino la ventilación cruzada.
+    //
     // Lo que el motor garantiza es esto y no más: los servicios se agrupan en
     // el extremo opuesto al ecuador, de colchón, y el estar se queda con la
     // cara buena. No garantiza una banda de servicios pura — con 8 m² de baño
     // y hall en una casa de 90 m² una banda entera de servicios sería un
     // disparate, y el empaquetador la descarta por inhabitable.
-    const casos = [
-      { c: clima(18.25, 'Aw', 'Tropical', 1879), polo: 'N' as const },
-      { c: clima(-34.6, 'Cfa', 'Templado'), polo: 'S' as const },
-      { c: clima(-41.13, 'Dsb', 'Continental', 800), polo: 'S' as const },
-    ];
-    for (const { c, polo } of casos) {
+    // Ambos casos son del hemisferio sur (polo = borde sur del edificio); no
+    // hace falta un caso norte además del que ya cubre la crujía simple.
+    const casos = [clima(-34.6, 'Cfa', 'Templado'), clima(-41.13, 'Dsb', 'Continental', 800)];
+    for (const c of casos) {
+      expect(partidoDe('bioclimatico', estrategiaClimatica(c.koppen!), PROGRAMA.length)).toBe('compacta');
       const ap = generar('bioclimatico', c);
       const servicios = ap.ambientes.filter(r => r.tipo === 'bano' || r.tipo === 'hall');
       const dormitorios = ap.ambientes.filter(r => r.tipo === 'dormitorio');
 
-      // El núcleo llega al borde del edificio del lado del polo.
-      const tocaBordePolar = servicios.some(r =>
-        polo === 'N' ? r.y_m < 0.05 : Math.abs(r.y_m + r.h_m - ap.profundo_m) < 0.05,
-      );
-      expect(tocaBordePolar).toBe(true);
+      // El núcleo llega al borde sur del edificio (colchón térmico, del lado
+      // opuesto al ecuador en el hemisferio sur).
+      const tocaBordeSur = servicios.some(r => Math.abs(r.y_m + r.h_m - ap.profundo_m) < 0.05);
+      expect(tocaBordeSur).toBe(true);
 
-      // Y los dormitorios quedan, en promedio, del lado del ecuador respecto
-      // del núcleo: son los que más ganan con la buena orientación.
+      // Y los dormitorios quedan, en promedio, del lado del ecuador (norte)
+      // respecto del núcleo: son los que más ganan con la buena orientación.
       const centro = (rs: typeof servicios) => rs.reduce((s, r) => s + r.y_m + r.h_m / 2, 0) / rs.length;
-      if (polo === 'N') expect(centro(dormitorios)).toBeGreaterThan(centro(servicios));
-      else expect(centro(dormitorios)).toBeLessThan(centro(servicios));
+      expect(centro(dormitorios)).toBeLessThan(centro(servicios));
     }
+  });
+
+  it('en trópico el bioclimático resuelve una crujía simple pasante, no un colchón de servicios', () => {
+    // Con ventilación cruzada como principio (Aw, sombra-ventilacion), la
+    // respuesta correcta no es zonificar en bandas sino una sola crujía donde
+    // todo ambiente da a dos caras. Es una lectura del clima tan válida como
+    // la del colchón térmico, y por eso el perfil bioclimático no puede tener
+    // un partido fijo: depende del enfoque climático real del sitio.
+    const c = clima(18.25, 'Aw', 'Tropical', 1879);
+    expect(partidoDe('bioclimatico', estrategiaClimatica(c.koppen!), PROGRAMA.length)).toBe('crujia-simple');
+    const ap = generar('bioclimatico', c);
+    expect(new Set(ap.ambientes.map(r => r.fila)).size).toBe(1);
+    for (const r of ap.ambientes) expect(r.exteriorNorte || r.exteriorSur).toBe(true);
   });
 
   it('agrupa baño y hall en un núcleo contiguo, no repartidos por la planta', () => {
@@ -94,6 +110,87 @@ describe('los perfiles proponen plantas distintas', () => {
     expect(generar('organico').envolvente).toBe('organica');
     expect(generar('fiel-cliente').envolvente).toBe('rectangular');
     expect(generar('bioclimatico').envolvente).toBe('rectangular');
+  });
+
+  it('se mantienen distintos en un barrido de programas y climas', () => {
+    // El caso piloto por sí solo no alcanza: la segunda vez que colapsaron,
+    // el caso piloto ya daba tres firmas distintas y el defecto sólo se veía
+    // en otros programas (uno de una sola pieza de servicio, uno grande de
+    // siete tipos, uno con invernadero y galería). Este barrido es justamente
+    // la batería que lo destapó.
+    const A = (id: string, tipo: string, tamano = 'mediano', cantidad = 1): AmbienteDeseado =>
+      ({ id, tipo, cantidad, tamano, adyacenciasDeseadas: [] }) as unknown as AmbienteDeseado;
+    const casos: { nombre: string; m2: number; c: DatosClima; p: AmbienteDeseado[] }[] = [
+      {
+        nombre: 'mínima',
+        m2: 45,
+        c: clima(-31.4, 'Cfa', 'Templado', 900),
+        p: [A('estar', 'estar-cocina-comedor', 'mediano'), A('d1', 'dormitorio', 'mediano'), A('bano1', 'bano', 'chico')],
+      },
+      {
+        nombre: 'sin núcleo de servicio',
+        m2: 60,
+        c: clima(-31.4, 'Cfa', 'Templado', 900),
+        p: [A('estar', 'estar-cocina-comedor', 'grande'), A('d1', 'dormitorio', 'grande'), A('d2', 'dormitorio', 'mediano', 2)],
+      },
+      {
+        nombre: 'grande, siete tipos',
+        m2: 140,
+        c: clima(-38, 'Csb', 'Templado', 700),
+        p: [
+          A('estar', 'estar-cocina-comedor', 'grande'),
+          A('d1', 'dormitorio', 'grande'),
+          A('d2', 'dormitorio', 'mediano', 3),
+          A('bano1', 'bano', 'mediano', 2),
+          A('hall', 'hall', 'mediano'),
+          A('lav', 'lavadero', 'chico'),
+          A('est', 'estudio', 'mediano'),
+        ],
+      },
+      {
+        nombre: 'productiva (invernadero, biofiltro, galería)',
+        m2: 110,
+        c: clima(-25, 'Cwa', 'Templado', 1400),
+        p: [
+          A('estar', 'estar-cocina-comedor', 'grande'),
+          A('d1', 'dormitorio', 'grande'),
+          A('d2', 'dormitorio', 'mediano', 2),
+          A('bano1', 'bano', 'mediano'),
+          A('inv', 'invernadero', 'mediano'),
+          A('bio', 'biofiltro', 'chico'),
+          A('gal', 'galeria', 'mediano'),
+        ],
+      },
+      {
+        nombre: 'con taller, hemisferio norte',
+        m2: 100,
+        c: clima(41.4, 'Csa', 'Templado', 600),
+        p: [
+          A('estar', 'estar-cocina-comedor', 'grande'),
+          A('d1', 'dormitorio', 'mediano', 2),
+          A('bano1', 'bano', 'mediano'),
+          A('tal', 'taller', 'grande'),
+          A('desp', 'despensa', 'chico'),
+        ],
+      },
+      {
+        nombre: 'clima árido',
+        m2: 75,
+        c: clima(-24, 'BSk', 'Arido', 280),
+        p: [
+          A('estar', 'estar-cocina-comedor', 'mediano'),
+          A('d1', 'dormitorio', 'mediano', 2),
+          A('bano1', 'bano', 'chico'),
+          A('hall', 'hall', 'chico'),
+        ],
+      },
+    ];
+    for (const { nombre, m2, c, p } of casos) {
+      const firmas = PERFILES_VISIBLES.map(perfil =>
+        firma(generarAnteproyecto(perfil, { m2CubiertosObjetivo: m2, ambientes: p }, PARAMETROS_TRANSVERSALES_DEFAULT, c, { zonaSismica: false })),
+      );
+      expect(new Set(firmas).size, `caso "${nombre}": ${firmas.join(' /// ')}`).toBe(PERFILES_VISIBLES.length);
+    }
   });
 });
 

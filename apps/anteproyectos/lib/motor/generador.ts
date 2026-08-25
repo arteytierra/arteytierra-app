@@ -28,9 +28,12 @@ import {
   anchoMinimoDe,
   dimensionesDe,
   empaquetarBalanceado,
+  empaquetarEnBandas,
+  esServidor,
   ordenDeclarado,
   ordenarPorAdyacencia,
   ordenarPorZonificacionTermica,
+  repartirPorArea,
   type RectanguloAmbiente,
 } from './layout';
 
@@ -40,6 +43,12 @@ import {
  * ambiente inutilizable (1000): el partido manda, la habitabilidad más.
  */
 const PESO_ORDEN_DE_PARTIDO = 25;
+
+/**
+ * El perfil bioclimático defiende la proporción del edificio con fuerza: el
+ * eje largo hacia el ecuador es su decisión de proyecto, no una preferencia.
+ */
+const PESO_ASPECTO_BIOCLIMATICO = 30;
 
 const ALTURA_VENTANA_TIPICA_M = 1.4;
 /** Altura usada cuando no hay datos de clima para elegir una por enfoque. */
@@ -100,6 +109,88 @@ export interface AnteproyectoGenerado {
  * Los cuatro pasan `pesoOrden` alto: el orden es la decisión de partido del
  * perfil y sólo se cede si no hay forma de que la planta sea habitable.
  */
+/**
+ * Partido de cada perfil: la organización de la planta, no su proporción.
+ *
+ * Los tres perfiles usaban el mismo empaquetador con otro orden y otro
+ * aspecto, y por eso convergían: dado un programa, el óptimo del empaquetador
+ * es uno solo, así que las tres plantas salían con las mismas bandas y los
+ * mismos ambientes en el mismo lugar, estiradas de distinta manera. Comparar
+ * las medidas no lo mostraba —daban tres rectángulos distintos—; comparar la
+ * organización, sí.
+ *
+ * Ahora cada perfil compone sus bandas y sólo cede la proporción:
+ *
+ * - `compacta`: perímetro mínimo, bandas elegidas por el optimizador.
+ * - `crujia-simple`: una sola crujía, todos los ambientes en fila. Cada uno
+ *   con dos caras al exterior: ventilación cruzada y luz bilateral.
+ * - `nucleo-central`: el espacio común como banda central y los dormitorios
+ *   repartidos a ambos lados, girando alrededor de él.
+ */
+export type Partido = 'compacta' | 'crujia-simple' | 'nucleo-central';
+
+/** Enfoques climáticos donde la casa pasante gana a la casa compacta. */
+const ENFOQUES_DE_CRUJIA_SIMPLE = new Set(['sombra-ventilacion', 'mixto']);
+
+/**
+ * Hasta cuántos ambientes admite una crujía simple.
+ *
+ * Sin circulación propia, una casa de una sola crujía se recorre pasando por
+ * un ambiente para llegar al siguiente. Con tres o cuatro ambientes eso es
+ * una casa rural de toda la vida; con diez es una hilera de piezas de 1,7 m
+ * a la que hay que atravesar entera para llegar al baño.
+ */
+const MAX_AMBIENTES_CRUJIA_SIMPLE = 7;
+
+export function partidoDe(
+  perfil: PerfilId,
+  estrategia: EstrategiaClimatica | undefined,
+  cantidadAmbientes: number,
+): Partido {
+  if (perfil === 'organico') return 'nucleo-central';
+  if (perfil === 'bioclimatico') {
+    // En trópico y clima mixto manda ventilar: una sola crujía, eje largo al
+    // ecuador, todo ambiente pasante. En clima frío o árido manda conservar,
+    // y la casa compacta con los servicios de colchón es la respuesta correcta
+    // aunque se parezca más al perfil fiel al cliente.
+    //
+    // El eje norte-sur también la descarta: el motor arma las bandas siempre
+    // en horizontal, así que una crujía simple es por construcción ancha y
+    // poco profunda. Forzarla cuando el clima pide el eje largo norte-sur
+    // daba una casa que contradecía su propio fundamento.
+    const pasante =
+      estrategia !== undefined &&
+      ENFOQUES_DE_CRUJIA_SIMPLE.has(estrategia.enfoque) &&
+      estrategia.ejeLargoPreferido !== 'N-S' &&
+      cantidadAmbientes <= MAX_AMBIENTES_CRUJIA_SIMPLE;
+    return pasante ? 'crujia-simple' : 'compacta';
+  }
+  return 'compacta';
+}
+
+/**
+ * Bandas del partido de núcleo central: dormitorios / espacio común /
+ * dormitorios + servicios.
+ *
+ * Si el programa no da para tres bandas —falta un espacio común claro o no hay
+ * dormitorios suficientes para repartir a los lados— se resuelve con dos, que
+ * sigue siendo una organización distinta de la compacta porque el común queda
+ * en el medio de la casa y no en una punta.
+ */
+function bandasNucleoCentral(instancias: InstanciaAmbiente[]): InstanciaAmbiente[][] {
+  const porAdyacencia = ordenarPorAdyacencia(instancias);
+  const comunes = porAdyacencia.filter(i => i.tipo === 'estar-cocina-comedor' || i.tipo === 'galeria');
+  const resto = porAdyacencia.filter(i => !esServidor(i) && !comunes.includes(i));
+
+  // Sin un espacio común claro, o sin dormitorios suficientes para repartir a
+  // ambos lados, se resuelve con dos bandas: sigue siendo distinto de la
+  // compacta porque el común queda en el medio de la casa y no en una punta.
+  if (!comunes.length || resto.length < 2) return [resto, comunes].filter(b => b.length > 0);
+
+  const [alaA = [], alaB = []] = repartirPorArea(resto, 2);
+  return [alaA, comunes, alaB].filter(b => b.length > 0);
+}
+
 function organizarPlanta(
   perfil: PerfilId,
   instancias: InstanciaAmbiente[],
@@ -107,26 +198,42 @@ function organizarPlanta(
   parametros: ParametrosTransversales,
   lat: number,
 ): RectanguloAmbiente[] {
-  if (perfil === 'fiel-cliente') {
-    return empaquetarBalanceado(ordenDeclarado(instancias), 3, PERFILES[perfil].aspectoDefault, { pesoOrden: PESO_ORDEN_DE_PARTIDO });
+  const partido = partidoDe(perfil, perfil === 'bioclimatico' ? estrategiaReal : undefined, instancias.length);
+
+  const servidores = ordenarPorAdyacencia(instancias).filter(esServidor);
+
+  if (partido === 'nucleo-central') {
+    // Φ es la aplicación literal de la geometría sagrada del manual.
+    const aspecto = parametros.gradoGeometriaSagrada === 'marcado' ? PHI : 1.45;
+    return empaquetarEnBandas(bandasNucleoCentral(instancias), servidores, aspecto);
   }
 
-  if (perfil === 'organico') {
-    // Con dos bandas cada ambiente da al norte o al sur: ninguno queda
-    // encerrado, que es lo que este perfil promete. Φ es la aplicación literal
-    // de la geometría sagrada del manual (3 m de ancho → 4,85 m de largo).
-    const aspecto = parametros.gradoGeometriaSagrada === 'marcado' ? PHI : 1.45;
-    return empaquetarBalanceado(ordenarPorAdyacencia(instancias), 2, aspecto, { pesoOrden: PESO_ORDEN_DE_PARTIDO });
+  if (partido === 'crujia-simple') {
+    // Una sola banda: el ancho del edificio lo termina fijando la
+    // habitabilidad de los ambientes y no el aspecto pedido, así que la casa
+    // sale larga y angosta — que es justamente el partido.
+    const servidosPrimero = hemisferioDe(lat) === 'sur';
+    const habitables = ordenarPorZonificacionTermica(instancias, servidosPrimero).filter(i => !esServidor(i));
+    return empaquetarEnBandas([habitables], servidores, 2.6, PESO_ASPECTO_BIOCLIMATICO);
   }
 
   if (perfil === 'bioclimatico' && estrategiaReal) {
-    // Los servidos van hacia el ecuador: al sur en el hemisferio norte, al
-    // norte en el sur. En coordenadas de planta la primera banda mira al
-    // norte, así que en el hemisferio sur van primero y en el norte, últimos.
+    // Compacta con zonificación térmica: los servidos hacia el ecuador y los
+    // servidores como colchón sobre la cara castigada. Las bandas las fija el
+    // partido y no el optimizador, para que no vuelva a coincidir con el
+    // perfil fiel al cliente.
     const servidosPrimero = hemisferioDe(lat) === 'sur';
+    const servidos = ordenarPorZonificacionTermica(instancias, servidosPrimero).filter(i => !esServidor(i));
     const aspecto =
       estrategiaReal.ejeLargoPreferido === 'E-O' ? 1.9 : estrategiaReal.ejeLargoPreferido === 'N-S' ? 0.6 : 1.05;
-    return empaquetarBalanceado(ordenarPorZonificacionTermica(instancias, servidosPrimero), 2, aspecto, {
+    // Los servidos se reparten en dos bandas y el núcleo de servicios busca
+    // dónde entrar: el resultado es el colchón térmico cuando el programa da
+    // para una tira entera, y un núcleo contra un lateral cuando no da.
+    return empaquetarEnBandas(repartirPorArea(servidos, 2), servidores, aspecto, PESO_ASPECTO_BIOCLIMATICO);
+  }
+
+  if (perfil === 'fiel-cliente') {
+    return empaquetarBalanceado(ordenDeclarado(instancias), 3, PERFILES[perfil].aspectoDefault, {
       pesoOrden: PESO_ORDEN_DE_PARTIDO,
     });
   }
