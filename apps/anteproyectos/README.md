@@ -39,8 +39,12 @@ imagen ilustra y no mide.
 ## Flujo
 
 0. **Proyectos** (`lib/proyectos/`, `app/api/proyectos/`) — guardar y abrir
-   proyectos. Un archivo JSON por proyecto en `C:\Arte y Tierra\_anteproyectos`
-   (o donde indique `ANTEPROYECTOS_DATOS`).
+   proyectos. Se guarda el enunciado (sitio, programa, parámetros, cuaderno
+   leído), no los anteproyectos generados: al abrir se regenera todo con el
+   motor actual. Persistencia en Postgres (Supabase, `schema: 'anteproyectos'`)
+   por usuario autenticado, con límite de proyectos según el plan — ver
+   `lib/auth/`, `lib/db/`, `lib/entitlements.ts` (Fase A3 en
+   `PLAN-DOS-PISTAS.md`).
 1. **Ingesta** (`lib/ingesta/`) — lee la carpeta del proyecto, clasifica los
    archivos (cuaderno, dibujos del cliente, fotos y videos del sitio, PDFs) y
    extrae del `.docx` las 15 secciones del cuaderno y la tabla del programa de

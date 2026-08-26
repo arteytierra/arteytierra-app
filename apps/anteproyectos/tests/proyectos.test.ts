@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { rutaDe } from '@/lib/proyectos/almacen';
 import { esIdValido, idDesdeNombre, normalizarProyecto, resumirProyecto, VERSION_PROYECTO } from '@/lib/proyectos/tipos';
 
 describe('idDesdeNombre', () => {
@@ -21,20 +20,6 @@ describe('idDesdeNombre', () => {
   it('da un id utilizable aunque el nombre no tenga ningún carácter válido', () => {
     const id = idDesdeNombre('※ ※ ※');
     expect(esIdValido(id)).toBe(true);
-  });
-});
-
-describe('rutaDe', () => {
-  it('rechaza ids que intenten salir de la carpeta de datos', () => {
-    for (const id of ['../fuera', 'a/b', 'C:/otro', '..', 'con espacio', 'MAYUS']) {
-      expect(rutaDe(id)).toBeNull();
-    }
-  });
-
-  it('acepta un id normal y lo deja dentro de la carpeta', () => {
-    const ruta = rutaDe('jose-r-y-mdelmar');
-    expect(ruta).toBeTruthy();
-    expect(ruta!.endsWith('jose-r-y-mdelmar.json')).toBe(true);
   });
 });
 

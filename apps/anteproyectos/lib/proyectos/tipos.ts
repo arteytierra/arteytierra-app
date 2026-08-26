@@ -42,9 +42,9 @@ export interface ResumenProyecto {
 }
 
 /**
- * El id es además el nombre del archivo en disco, así que se restringe a un
- * juego de caracteres seguro: sin puntos, barras ni acentos no hay forma de
- * que un nombre de proyecto escriba fuera de la carpeta de datos.
+ * El id es la clave primaria del proyecto en Postgres (junto con el usuario)
+ * y viaja en la URL de `/api/proyectos/[id]`, así que se restringe a un
+ * juego de caracteres seguro: sin puntos, barras ni acentos.
  */
 const RE_ID = /^[a-z0-9][a-z0-9-]{0,79}$/;
 

@@ -450,3 +450,34 @@ el mapa de terreno, no como cargar lat/lng a mano.
   `lib/vision/`), coincide con la tabla de §4. Contrato v3 cerrado —
   Checkpoint 0 aprobado formalmente por las dos pistas. A la espera de la
   orden explícita de Jonatan para arrancar código.
+- 2026-08-25 — **Fase A3 completa: multiusuario.** Portado el patrón de
+  `apps/terreno` (`lib/auth/`, `lib/db/`) tal cual, apuntando al schema
+  `anteproyectos` en el mismo proyecto Supabase: `lib/db/{server,browser,
+  admin}.ts`, `lib/auth/{session,plan}.ts`, `lib/entitlements.ts` (reducido
+  a `Plan` + `LIMITE_PROYECTOS`, sin matriz de features todavía — no hay
+  nada que gatear más allá del límite de proyectos). `middleware.ts` protege
+  toda la app salvo `/login`, `/registro` y `/auth/*`; `app/login/`,
+  `app/registro/` y `app/auth/callback/` calcados de terreno (email+password
+  y Google OAuth). `lib/proyectos/almacen.ts` — antes un JSON por archivo en
+  disco, ahora Postgres real, misma firma de funciones (`listarProyectos`,
+  `leerProyecto`, `guardarProyecto`, `borrarProyecto`) para no tocar los
+  route handlers ni `PanelProyectos.tsx` más allá del copy que ya no
+  describía la realidad ("guardado como .json", la carpeta en disco).
+  Migraciones nuevas: `0045_anteproyectos_proyectos.sql` (schema, tabla
+  `proyectos` con `datos jsonb` = el `ProyectoGuardado` completo, RLS por
+  `user_id = auth.uid()`, tabla `suscripciones`, trigger que hace cumplir
+  `LIMITE_PROYECTOS` server-side además del chequeo client-side) y
+  `0046_anteproyectos_expose_schema.sql` (suma `anteproyectos` a la lista de
+  `pgrst.db_schemas` — esa lista se reemplaza entera, no se agrega, así que
+  repite los schemas que ya exponía `0038`). 115/115 tests de anteproyectos
+  pasan (se cayeron 2 tests de `rutaDe`, función que ya no existe), typecheck
+  limpio en las 8 unidades del workspace.
+  **Pendiente, no lo hice yo:** aplicar las dos migraciones nuevas contra el
+  Supabase real (es el mismo proyecto que ya usan `apps/web` y
+  `apps/terreno` en producción — no corro migraciones contra una base
+  compartida sin que Jonatan lo pida explícitamente) y cargar
+  `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` /
+  `SUPABASE_SERVICE_ROLE_KEY` en el entorno de `apps/anteproyectos` (hoy no
+  hay `.env.local` en este worktree, así que no pude levantar el dev server
+  contra Supabase real para probar el login a ojo). Sin esas dos cosas la
+  app no arranca: el middleware exige sesión en todas las rutas.

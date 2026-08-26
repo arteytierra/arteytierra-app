@@ -1,78 +1,87 @@
 /**
- * Almacén de proyectos en disco. Sólo servidor: importa `node:fs`.
+ * Almacén de proyectos en Postgres (Supabase, schema `anteproyectos`).
+ * Sólo servidor: lee la sesión de las cookies de la request.
  *
- * Un archivo JSON por proyecto en una carpeta local, no una base de datos.
- * La app es una herramienta de escritorio para el estudio: así los proyectos
- * se copian, se versionan con git, se mandan por mail y se abren con cualquier
- * editor sin depender de que un servicio esté levantado.
+ * Hasta la Fase A3 esto era un archivo JSON por proyecto en una carpeta
+ * local — ver PLAN-DOS-PISTAS.md. Ahora cada proyecto es una fila de
+ * `anteproyectos.proyectos`, con RLS filtrando por `user_id = auth.uid()`:
+ * un usuario nunca ve ni puede tocar los proyectos de otro.
  */
-import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { createSupabaseServerClient } from '@/lib/db/server';
+import { getCurrentUser } from '@/lib/auth/session';
 import { esIdValido, normalizarProyecto, type ProyectoGuardado } from './tipos';
 
-/** Carpeta de datos. Configurable para no atarla a la máquina de Jonatan. */
-export const DIR_PROYECTOS = resolve(
-  process.env.ANTEPROYECTOS_DATOS ?? join(process.env.ANTEPROYECTOS_RAIZ ?? 'C:/Arte y Tierra', '_anteproyectos'),
-);
-
-/**
- * Ruta del archivo de un proyecto. Devuelve null si el id no es válido: el id
- * viaja en la URL y sin esta comprobación un `../` escribiría fuera de la
- * carpeta de datos.
- */
-export function rutaDe(id: string): string | null {
-  if (!esIdValido(id)) return null;
-  return join(DIR_PROYECTOS, `${id}.json`);
+interface FilaProyecto {
+  datos: unknown;
 }
 
-async function asegurarDir(): Promise<void> {
-  await mkdir(DIR_PROYECTOS, { recursive: true });
+async function usuarioActual() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Necesitás iniciar sesión para guardar o abrir proyectos.');
+  return user;
 }
 
 export async function listarProyectos(): Promise<ProyectoGuardado[]> {
-  await asegurarDir();
-  const entradas = await readdir(DIR_PROYECTOS);
+  const user = await usuarioActual();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .schema('anteproyectos')
+    .from('proyectos')
+    .select('datos')
+    .eq('user_id', user.id)
+    .order('updated_at', { ascending: false });
+  if (error) throw new Error(error.message);
+
   const proyectos: ProyectoGuardado[] = [];
-  for (const nombre of entradas) {
-    if (!nombre.endsWith('.json')) continue;
-    try {
-      const bruto = JSON.parse(await readFile(join(DIR_PROYECTOS, nombre), 'utf8'));
-      const p = normalizarProyecto(bruto);
-      if (p) proyectos.push(p);
-    } catch {
-      // Un archivo corrupto o a medio escribir no puede tumbar el listado
-      // entero: se omite y los demás proyectos siguen abriéndose.
-    }
+  for (const fila of (data ?? []) as FilaProyecto[]) {
+    const p = normalizarProyecto(fila.datos);
+    if (p) proyectos.push(p);
   }
-  return proyectos.sort((a, b) => b.guardadoEn.localeCompare(a.guardadoEn));
+  return proyectos;
 }
 
 export async function leerProyecto(id: string): Promise<ProyectoGuardado | null> {
-  const ruta = rutaDe(id);
-  if (!ruta) return null;
-  try {
-    return normalizarProyecto(JSON.parse(await readFile(ruta, 'utf8')));
-  } catch {
-    return null;
-  }
+  if (!esIdValido(id)) return null;
+  const user = await usuarioActual();
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .schema('anteproyectos')
+    .from('proyectos')
+    .select('datos')
+    .eq('user_id', user.id)
+    .eq('id', id)
+    .maybeSingle<FilaProyecto>();
+  if (!data) return null;
+  return normalizarProyecto(data.datos);
 }
 
 export async function guardarProyecto(p: ProyectoGuardado): Promise<ProyectoGuardado> {
-  const ruta = rutaDe(p.id);
-  if (!ruta) throw new Error(`Id de proyecto inválido: ${p.id}`);
-  await asegurarDir();
-  const aGuardar = { ...p, guardadoEn: new Date().toISOString() };
-  await writeFile(ruta, JSON.stringify(aGuardar, null, 2), 'utf8');
+  if (!esIdValido(p.id)) throw new Error(`Id de proyecto inválido: ${p.id}`);
+  const user = await usuarioActual();
+  const supabase = await createSupabaseServerClient();
+
+  const aGuardar: ProyectoGuardado = { ...p, guardadoEn: new Date().toISOString() };
+  const { error } = await supabase
+    .schema('anteproyectos')
+    .from('proyectos')
+    .upsert(
+      { id: p.id, user_id: user.id, nombre: p.nombre, datos: aGuardar },
+      { onConflict: 'user_id,id' },
+    );
+  if (error) throw new Error(error.message);
   return aGuardar;
 }
 
 export async function borrarProyecto(id: string): Promise<boolean> {
-  const ruta = rutaDe(id);
-  if (!ruta) return false;
-  try {
-    await unlink(ruta);
-    return true;
-  } catch {
-    return false;
-  }
+  if (!esIdValido(id)) return false;
+  const user = await usuarioActual();
+  const supabase = await createSupabaseServerClient();
+  const { error, count } = await supabase
+    .schema('anteproyectos')
+    .from('proyectos')
+    .delete({ count: 'exact' })
+    .eq('user_id', user.id)
+    .eq('id', id);
+  if (error) return false;
+  return (count ?? 0) > 0;
 }

@@ -7,14 +7,22 @@ type Contexto = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Contexto) {
   const { id } = await params;
-  const proyecto = await leerProyecto(id);
-  if (!proyecto) return Response.json({ error: `No se encontró el proyecto "${id}".` }, { status: 404 });
-  return Response.json({ proyecto });
+  try {
+    const proyecto = await leerProyecto(id);
+    if (!proyecto) return Response.json({ error: `No se encontró el proyecto "${id}".` }, { status: 404 });
+    return Response.json({ proyecto });
+  } catch (e) {
+    return Response.json({ error: e instanceof Error ? e.message : 'No se pudo abrir el proyecto.' }, { status: 401 });
+  }
 }
 
 export async function DELETE(_req: Request, { params }: Contexto) {
   const { id } = await params;
-  const borrado = await borrarProyecto(id);
-  if (!borrado) return Response.json({ error: `No se pudo borrar "${id}".` }, { status: 404 });
-  return Response.json({ ok: true });
+  try {
+    const borrado = await borrarProyecto(id);
+    if (!borrado) return Response.json({ error: `No se pudo borrar "${id}".` }, { status: 404 });
+    return Response.json({ ok: true });
+  } catch (e) {
+    return Response.json({ error: e instanceof Error ? e.message : 'No se pudo borrar el proyecto.' }, { status: 401 });
+  }
 }

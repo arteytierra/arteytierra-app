@@ -16,6 +16,8 @@
     "@arteytierra/dem": "workspace:*",
     "@arteytierra/anteproyectos-contracts": "workspace:*",
     "@arteytierra/types": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.10",
     "@turf/turf": "^7.1.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",

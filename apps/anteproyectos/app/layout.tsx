@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
+import { BarraUsuario } from '@/components/BarraUsuario';
+import { getCurrentUser } from '@/lib/auth/session';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -31,10 +33,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="es-AR" className={`${fraunces.variable} ${inter.variable}`}>
-      <body>{children}</body>
+      <body>
+        {user && <BarraUsuario email={user.email} />}
+        {children}
+      </body>
     </html>
   );
 }

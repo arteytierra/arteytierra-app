@@ -38,6 +38,12 @@ importers:
       '@arteytierra/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.105.4)
+      '@supabase/supabase-js':
+        specifier: ^2.47.10
+        version: 2.105.4
       '@turf/turf':
         specifier: ^7.1.0
         version: 7.3.5

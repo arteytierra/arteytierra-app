@@ -1,8 +1,8 @@
 /**
- * Listado y alta de proyectos guardados.
- * Node, no Edge: escribe archivos en el disco del estudio.
+ * Listado y alta de proyectos guardados (Postgres, schema `anteproyectos`).
+ * Node, no Edge: lee la sesión de las cookies de la request.
  */
-import { DIR_PROYECTOS, guardarProyecto, listarProyectos } from '@/lib/proyectos/almacen';
+import { guardarProyecto, listarProyectos } from '@/lib/proyectos/almacen';
 import { idDesdeNombre, normalizarProyecto, resumirProyecto, VERSION_PROYECTO } from '@/lib/proyectos/tipos';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const proyectos = await listarProyectos();
-    return Response.json({ carpeta: DIR_PROYECTOS, proyectos: proyectos.map(resumirProyecto) });
+    return Response.json({ proyectos: proyectos.map(resumirProyecto) });
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : 'No se pudo listar los proyectos.' },

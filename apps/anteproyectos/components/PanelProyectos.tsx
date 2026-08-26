@@ -25,7 +25,6 @@ export function PanelProyectos({
   nombreActual: string;
 }) {
   const [lista, setLista] = useState<ResumenProyecto[]>([]);
-  const [carpeta, setCarpeta] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -37,7 +36,6 @@ export function PanelProyectos({
       if (json.error) setError(json.error);
       else {
         setLista(json.proyectos ?? []);
-        setCarpeta(json.carpeta ?? '');
         setError(null);
       }
     } catch (e) {
@@ -66,7 +64,7 @@ export function PanelProyectos({
       const json = await res.json();
       if (json.error) setError(json.error);
       else {
-        setAviso(`Guardado como ${json.proyecto.id}.json`);
+        setAviso(`Guardado como "${json.proyecto.nombre}".`);
         setTimeout(() => setAviso(null), 2500);
         await refrescar();
       }
@@ -92,8 +90,7 @@ export function PanelProyectos({
   }
 
   async function borrar(p: ResumenProyecto) {
-    // Borra un archivo del disco: se pregunta siempre, con el nombre a la vista.
-    if (!window.confirm(`¿Borrar el proyecto "${p.nombre}"? Se elimina el archivo ${p.id}.json.`)) return;
+    if (!window.confirm(`¿Borrar el proyecto "${p.nombre}"? No se puede deshacer.`)) return;
     setOcupado(true);
     try {
       const res = await fetch(`/api/proyectos/${encodeURIComponent(p.id)}`, { method: 'DELETE' });
@@ -120,11 +117,6 @@ export function PanelProyectos({
         </button>
       </div>
 
-      {carpeta && (
-        <p className="mb-2 text-xs text-ink-700">
-          Un archivo JSON por proyecto en <code>{carpeta}</code>. Se pueden copiar, versionar y abrir con cualquier editor.
-        </p>
-      )}
       {error && <p className="mb-2 text-sm text-danger-500">{error}</p>}
       {aviso && <p className="mb-2 text-sm text-moss-700">{aviso}</p>}
 
