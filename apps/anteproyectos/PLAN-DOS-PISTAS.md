@@ -515,6 +515,50 @@ el mapa de terreno, no como cargar lat/lng a mano.
   corrió limpio: `anteproyectos.proyectos` y `anteproyectos.suscripciones`
   existen en la base real, y `anteproyectos` quedó sumado a la lista de
   schemas expuestos a PostgREST (verificado con `db query` después de
-  aplicar). Sigue pendiente cargar las env vars de Supabase en el entorno
-  de `apps/anteproyectos` para poder levantar el dev server y probar el
-  login de punta a punta.
+  aplicar).
+- 2026-08-26 — **A3 probado de punta a punta en el navegador real.** Se
+  cargó `.env.local` en `apps/anteproyectos` con las mismas credenciales de
+  Supabase que ya usa `apps/terreno` (mismo proyecto, no son nuevas). Con el
+  permiso explícito de Jonatan se creó una cuenta de prueba descartable
+  (`prueba.anteproyectos@arteytierra.org`), confirmada por SQL directo
+  (`email_confirmed_at`) en vez de depender de un buzón real. Flujo
+  verificado: registro → login → `middleware.ts` deja pasar y muestra la
+  app → guardar proyecto (mensaje de éxito en la UI) → confirmado que quedó
+  en `anteproyectos.proyectos` con `db query` directo, no sólo por el
+  mensaje de la UI → recarga de página muestra el proyecto en la lista con
+  sus metadatos correctos (6 ambientes, 90 m², fecha). Cuenta y proyecto de
+  prueba borrados al terminar, sin residuos en producción. Único hallazgo
+  menor: tras guardar, la lista de proyectos guardados no se refresca sola
+  (queda vacía hasta recargar) — cosmético, no de datos; queda anotado para
+  una pasada de UI, no bloquea nada.
+- 2026-08-26 — **A4, primer tramo: mapa de selección de sitio con el
+  recorrido del sol.** Reemplaza los inputs de lat/lng a mano por un mapa
+  Leaflet real (`components/mapa/MapaSitio.tsx`, montado sólo en cliente vía
+  `next/dynamic` + `ssr:false`, mismo patrón que `apps/terreno`): click para
+  ubicar el sitio, botón "Usar mi ubicación" (geolocalización del navegador),
+  y en cuanto hay un punto elegido se dibuja el arco solar del año encima
+  (`ArcoSolarLayer`, portado de `apps/terreno/components/mapa/
+  vectorLayers.tsx` con sus 3 íconos necesarios de `iconos.ts`, sobre
+  `lib/sitio/arcoSolar.ts` — el cálculo de `arco_solar.ts` de terreno,
+  autocontenido, portado tal cual). Los inputs de lat/lng se mantienen debajo
+  del mapa como fallback/edición manual, sincronizados en los dos sentidos.
+  **Hallazgo al portar:** `reactStrictMode: true` (el default de este
+  proyecto) rompe a Leaflet en dev ("Map container is already initialized")
+  por el doble-mount de Strict Mode — mismo problema que `apps/terreno` ya
+  había resuelto poniendo `reactStrictMode: false` en su `next.config.ts`;
+  se aplicó el mismo ajuste acá. Probado en el navegador real con una cuenta
+  de prueba (permiso explícito de Jonatan): click en el mapa fija lat/lng
+  correctamente, se renderizan 14 marcadores y 12 trazos del arco solar sin
+  errores de consola. `lib/sitio/arcoSolar.ts` sumó 7 tests nuevos (incluido
+  uno que documenta explícitamente la convención heredada de terreno: las
+  etiquetas de fecha son las del hemisferio sur — "solsticio_verano" es
+  diciembre — así que en un sitio del hemisferio norte el resultado se
+  invierte; no es un bug, es la nomenclatura de origen del equipo). 130/130
+  tests de anteproyectos, typecheck limpio. Se agregaron `leaflet`,
+  `react-leaflet` y `@types/leaflet` a `package.json` (mismas versiones que
+  terreno, mismo warning de peer-deps con React 19 que terreno ya tiene en
+  producción sin problema real).
+  **Pendiente de A4:** capas activables tipo `CAPAS_DEFAULT` (elevación,
+  pendiente, curvas de nivel — hoy el mapa sólo tiene el tile base de OSM) y
+  la subida de fotos/dibujos/modelos a Cloudflare R2 (todavía usa
+  `lib/ingesta/carpeta.ts`, que lee una carpeta local, no una subida real).

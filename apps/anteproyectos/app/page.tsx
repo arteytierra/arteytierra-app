@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MapaSitio } from '@/components/mapa/MapaSitio';
 import { PanelIngesta } from '@/components/PanelIngesta';
 import { PanelProyectos } from '@/components/PanelProyectos';
 import { VistaAnteproyecto } from '@/components/VistaAnteproyecto';
@@ -197,7 +198,17 @@ export default function Home() {
               placeholder="ej. José R. y Mdelmar — Aguas Buenas, PR"
             />
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="mt-2">
+            <MapaSitio
+              lat={lat}
+              lng={lng}
+              onCambiar={(nuevaLat, nuevaLng) => {
+                setLat(nuevaLat);
+                setLng(nuevaLng);
+              }}
+            />
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
             <label className="text-sm">
               Latitud
               <input
