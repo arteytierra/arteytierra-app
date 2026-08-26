@@ -497,3 +497,24 @@ el mapa de terreno, no como cargar lat/lng a mano.
   ambos bugs (incluido uno de integración con `evaluadorSolarReal.evaluar`
   que compara el mismo sitio con `norte_deg=0` vs `90`). 123/123 tests de
   anteproyectos, typecheck limpio.
+- 2026-08-26 — **Migraciones de A3 aplicadas a Supabase real.** Al ir a
+  aplicarlas aparecieron dos problemas de numeración, los dos resueltos
+  antes de tocar nada: (1) el `0045` original de esta rama chocaba con
+  `0045_terreno_codigos_familia.sql`, ya aplicado en `main` y no
+  sincronizado a esta rama — se renombraron a `0046`/`0047` y se trajo el
+  archivo real de `main`. (2) `supabase db push` rechazaba todo por un
+  hueco: el historial remoto tenía una versión `0039` sin archivo local en
+  ningún lado del repo. Se consultó `supabase_migrations.schema_migrations`
+  directo en la base (`supabase db query`) y se confirmó que no era nada
+  peligroso: `0039_is_staff_admin_security_definer.sql`, un fix de
+  producción real (RLS de `app.is_staff()`/`app.is_admin()` sin
+  `SECURITY DEFINER` rompía la lectura anónima del catálogo) que se aplicó
+  a la base pero nunca se commiteó al repo. Se reconstruyó el archivo con
+  el contenido exacto leído de la base (no una aproximación) y se agregó al
+  repo, en vez de marcarlo como revertido. Con eso resuelto, `db push`
+  corrió limpio: `anteproyectos.proyectos` y `anteproyectos.suscripciones`
+  existen en la base real, y `anteproyectos` quedó sumado a la lista de
+  schemas expuestos a PostgREST (verificado con `db query` después de
+  aplicar). Sigue pendiente cargar las env vars de Supabase en el entorno
+  de `apps/anteproyectos` para poder levantar el dev server y probar el
+  login de punta a punta.
