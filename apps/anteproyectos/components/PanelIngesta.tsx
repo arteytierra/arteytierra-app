@@ -43,6 +43,7 @@ export function PanelIngesta({
   const [datos, setDatos] = useState<RespuestaIngesta | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modo, setModo] = useState<'subir' | 'carpeta-local'>('subir');
 
   async function leer() {
     setCargando(true);
@@ -65,25 +66,82 @@ export function PanelIngesta({
     }
   }
 
+  async function subir(archivos: FileList) {
+    setCargando(true);
+    setError(null);
+    setDatos(null);
+    try {
+      const form = new FormData();
+      form.set('carpetaId', `proyecto-${Date.now().toString(36)}`);
+      Array.from(archivos).forEach(f => form.append('archivos', f));
+      const res = await fetch('/api/ingesta/subir', { method: 'POST', body: form });
+      const json = (await res.json()) as RespuestaIngesta;
+      if (json.error) {
+        setError(json.error);
+      } else {
+        setDatos(json);
+        onCarpeta?.(json.ruta);
+        if (json.cuaderno) onCuaderno(json.cuaderno);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudieron subir los archivos.');
+    } finally {
+      setCargando(false);
+    }
+  }
+
   const sugerido = datos?.programaSugerido ?? [];
 
   return (
     <section className="mb-8 rounded-lg border border-bone-200 bg-white/60 p-5">
       <h2 className="mb-3 text-xl">1 · Carpeta del proyecto</h2>
       <p className="mb-3 text-sm text-ink-700">
-        Carpeta con el Cuaderno de Diseño Participativo completado, fotos y videos del terreno, dibujos a mano y PDFs
+        Cuaderno de Diseño Participativo completado, fotos y videos del terreno, dibujos a mano y PDFs
         complementarios.
       </p>
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded border border-bone-200 px-2 py-1 text-sm"
-          value={ruta}
-          onChange={e => setRuta(e.target.value)}
-        />
-        <button className="rounded bg-moss-700 px-4 py-1.5 text-sm text-bone-50 disabled:opacity-50" onClick={leer} disabled={cargando}>
-          {cargando ? 'Leyendo…' : 'Leer carpeta'}
+
+      <div className="mb-3 flex gap-3 text-xs">
+        <button
+          type="button"
+          onClick={() => setModo('subir')}
+          className={modo === 'subir' ? 'font-semibold text-moss-700 underline' : 'text-ink-600'}
+        >
+          Subir archivos
+        </button>
+        <button
+          type="button"
+          onClick={() => setModo('carpeta-local')}
+          className={modo === 'carpeta-local' ? 'font-semibold text-moss-700 underline' : 'text-ink-600'}
+        >
+          Carpeta en este servidor (modo estudio)
         </button>
       </div>
+
+      {modo === 'subir' ? (
+        <div className="flex flex-col gap-2">
+          <input
+            type="file"
+            multiple
+            disabled={cargando}
+            onChange={e => {
+              if (e.target.files && e.target.files.length > 0) void subir(e.target.files);
+            }}
+            className="text-sm"
+          />
+          {cargando && <p className="text-xs text-ink-600">Subiendo…</p>}
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <input
+            className="flex-1 rounded border border-bone-200 px-2 py-1 text-sm"
+            value={ruta}
+            onChange={e => setRuta(e.target.value)}
+          />
+          <button className="rounded bg-moss-700 px-4 py-1.5 text-sm text-bone-50 disabled:opacity-50" onClick={leer} disabled={cargando}>
+            {cargando ? 'Leyendo…' : 'Leer carpeta'}
+          </button>
+        </div>
+      )}
 
       {error && <p className="mt-3 text-sm text-danger-500">{error}</p>}
       {datos?.errorCuaderno && (

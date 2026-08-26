@@ -575,3 +575,35 @@ el mapa de terreno, no como cargar lat/lng a mano.
   Cuenta de prueba borrada al terminar.
   **Sigue pendiente de A4:** pendiente/curvas de nivel (mismo patrón, otra
   capa) y la subida de fotos/dibujos/modelos a Cloudflare R2.
+- 2026-08-26 — **A4, tercer tramo: subida real de archivos (Supabase Storage,
+  no R2).** R2 todavía no está habilitado en la cuenta de Cloudflare (falta
+  activarlo a mano en el dashboard); Jonatan decidió no bloquear A4 por eso
+  y usar Supabase Storage, ya disponible. Bucket privado
+  `anteproyectos-ingesta` creado (50MB por archivo, límite del plan).
+  `app/api/ingesta/subir/route.ts` (nuevo) — recibe `multipart/form-data`,
+  exige sesión (`getCurrentUser`, más el `middleware.ts` que ya protegía
+  toda la app y de hecho intercepta antes de llegar a la ruta), clasifica
+  cada archivo con `clasificarArchivo` (la misma lógica que ya usaba el modo
+  de carpeta local) y lo sube a `${userId}/${carpetaId}/${nombre}`; si
+  detecta el cuaderno `.docx`, corre `mammoth` directo sobre el buffer
+  subido (sin tocar disco). `PanelIngesta.tsx` ahora tiene dos modos: "Subir
+  archivos" (el nuevo, para cualquier usuario) y "Carpeta en este servidor
+  (modo estudio)" (el viejo, se mantiene tal cual para el flujo de
+  escritorio de Jonatan — lee disco local, sigue con el mismo límite a
+  `ANTEPROYECTOS_RAIZ`). Probado en el navegador con otra cuenta de prueba:
+  subida real vía `fetch`/`FormData` (200, clasificación correcta,
+  confirmado que los objetos quedaron en `storage.objects`) y también vía
+  el `<input type="file">` real de la UI (dispatcheando un evento `change`
+  con `DataTransfer`, sin simular teclado/mouse de SO). Confirmado que un
+  request sin sesión ni sesión omitida (`credentials: 'omit'`) es
+  interceptado por el middleware antes de llegar a la ruta — doble capa de
+  protección. Cuenta y objetos de prueba borrados con la Storage API (un
+  `DELETE` SQL directo sobre `storage.objects` está bloqueado a propósito
+  por un trigger de Supabase: `protect_delete()`). 134/134 tests, typecheck
+  limpio.
+  **A4 queda completa** con esto: mapa de selección con recorrido solar,
+  capa de elevación, y subida real de archivos. Pendiente futuro, no
+  bloqueante: migrar de Supabase Storage a R2 cuando Jonatan lo habilite
+  (mismo motivo de costo que ya está documentado en §7), y que el modo
+  "Subir archivos" liste lo ya subido al reabrir un proyecto (hoy sólo lee
+  lo que se acaba de subir en la sesión, no hay un `GET` de re-listado).
