@@ -14,23 +14,30 @@ import { can, planMinimo, NOMBRE_PLAN, type Feature } from '@/lib/entitlements';
  *   if (bloqueo) return bloqueo;
  */
 export async function requierePlan(feature: Feature): Promise<Response | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    return json(401, { error: 'Necesitás iniciar sesión.' });
+    if (!user) {
+      return json(401, { error: 'Necesitás iniciar sesión.' });
+    }
+
+    const plan = await getPlan(user.id);
+    if (can(plan, feature)) return null;
+
+    const min = planMinimo(feature);
+    return json(403, {
+      error: `Esta función está incluida en el plan ${NOMBRE_PLAN[min]}.`,
+      feature,
+      plan_minimo: min,
+      upgrade: 'https://arteytierra.org/terreno#planes',
+    });
+  } catch (e) {
+    // Sin esto, cualquier excepción (env corrupto, Supabase caído, undici) sale
+    // como un 500 opaco de Next: el cliente muestra "Unexpected end of JSON
+    // input" o "respondió 500" sin pista. Devolvemos JSON con el detalle.
+    return json(500, { error: `Error de autenticación: ${String((e as Error)?.message ?? e)}` });
   }
-
-  const plan = await getPlan(user.id);
-  if (can(plan, feature)) return null;
-
-  const min = planMinimo(feature);
-  return json(403, {
-    error: `Esta función está incluida en el plan ${NOMBRE_PLAN[min]}.`,
-    feature,
-    plan_minimo: min,
-    upgrade: 'https://arteytierra.org/terreno#planes',
-  });
 }
 
 function json(status: number, body: unknown): Response {
