@@ -2,6 +2,12 @@ import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 
+// NASA POWER puede tardar 10-25 s en un punto sin caché. Sin esto Vercel corta
+// la función a los 10 s (default) y devuelve un body vacío → el cliente explota
+// con "Unexpected end of JSON input". Alineado con el timeout de fetch (30 s).
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — climatología histórica NASA POWER 1981–2023
 

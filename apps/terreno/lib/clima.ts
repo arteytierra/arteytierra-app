@@ -161,7 +161,18 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   const url = `/api/clima?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   const res = await fetch(url, { signal: AbortSignal.timeout(35_000) });
-  const json = await res.json() as PowerResponse & { error?: string };
+  // Si NASA (o el gateway de Vercel por timeout) devuelve un body vacío o no-JSON,
+  // res.json() tira "Unexpected end of JSON input". Lo traducimos a algo accionable.
+  let json: PowerResponse & { error?: string };
+  try {
+    json = await res.json() as PowerResponse & { error?: string };
+  } catch {
+    throw new Error(
+      res.ok
+        ? 'El servidor de clima (NASA POWER) tardó demasiado. Reintentá en unos segundos.'
+        : `El servidor de clima respondió ${res.status}. Reintentá en unos segundos.`,
+    );
+  }
   if (json.error) throw new Error(json.error);
   if (!res.ok) throw new Error(`NASA POWER respondió con error ${res.status}.`);
   const param = json.properties.parameter;
