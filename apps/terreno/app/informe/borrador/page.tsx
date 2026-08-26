@@ -21,7 +21,7 @@ export default function InformeBorradorPage() {
         <div className="space-y-3">
           <p className="text-ink-700 font-medium">No hay datos de informe disponibles.</p>
           <p className="text-sm text-ink-700/60">
-            Abrí este informe desde la herramienta de Análisis de Terreno.
+            Abrí este informe desde acequia.
           </p>
           <a
             href="/mapa"

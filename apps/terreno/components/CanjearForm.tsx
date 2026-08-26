@@ -35,7 +35,7 @@ export function CanjearForm({ codigoInicial }: { codigoInicial: string }) {
     <div className="min-h-screen flex items-center justify-center bg-bone-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="eyebrow mb-2">Terreno · Invitación</p>
+          <p className="eyebrow mb-2">acequia · Invitación</p>
           <h1 className="font-display text-2xl text-ink-950">Activá tu prueba</h1>
           <p className="text-sm text-ink-700/70 mt-2">
             Ingresá tu código y desbloqueá el plan por unos días, sin tarjeta.

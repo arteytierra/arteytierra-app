@@ -13,7 +13,7 @@ export default async function RegistroPage() {
       <div className="w-full max-w-sm">
         {/* Logo / header */}
         <div className="text-center mb-8">
-          <p className="eyebrow mb-2">Terreno · Arte y Tierra</p>
+          <p className="eyebrow mb-2">acequia · Arte y Tierra</p>
           <h1 className="font-display text-2xl text-ink-950">Empezá gratis</h1>
           <p className="text-sm text-ink-700/70 mt-2">
             Creá tu cuenta y marcá tu primer terreno

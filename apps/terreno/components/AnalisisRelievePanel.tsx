@@ -54,7 +54,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
         <h3 className="font-serif text-sm">Análisis del predio</h3>
       </div>
       <p className="text-[11px] text-ink-700/70 leading-relaxed">
-        Terreno analiza el relieve de tu predio y sugiere los mejores sitios de <span className="text-water-700 font-medium">represas</span> por eficiencia agua/tierra, junto a un <span className="text-water-700 font-medium">análisis hídrico de escorrentías</span>. Son sugerencias orientativas: evaluá cuáles incorporás. <span className="text-ink-700/90">Las viviendas y los caminos los propone el <b>Master Plan</b>.</span>
+        Acequia analiza el relieve de tu predio y sugiere los mejores sitios de <span className="text-water-700 font-medium">represas</span> por eficiencia agua/tierra, junto a un <span className="text-water-700 font-medium">análisis hídrico de escorrentías</span>. Son sugerencias orientativas: evaluá cuáles incorporás. <span className="text-ink-700/90">Las viviendas y los caminos los propone el <b>Master Plan</b>.</span>
       </p>
 
       {!topoLista ? (

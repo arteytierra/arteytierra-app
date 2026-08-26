@@ -36,7 +36,7 @@ export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: P
     <div className="min-h-screen flex items-center justify-center bg-bone-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="eyebrow mb-2">Terreno · Suscripción</p>
+          <p className="eyebrow mb-2">acequia · Suscripción</p>
           <h1 className="font-display text-2xl text-ink-950">Plan {NOMBRE[plan]}</h1>
           <p className="text-sm text-ink-700/70 mt-2">
             Facturación {periodo === 'anual' ? 'anual' : 'mensual'}

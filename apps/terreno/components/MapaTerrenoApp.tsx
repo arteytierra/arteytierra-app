@@ -2284,7 +2284,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           </button>
           <img src="/logo-ayt.png" alt="Arte y Tierra" className="w-7 h-7 object-contain shrink-0" />
           <div className="min-w-0 leading-tight hidden lg:block">
-            <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · Terreno</p>
+            <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · acequia</p>
             <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
           </div>
         </div>

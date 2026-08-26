@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Informe de Terreno · Arte y Tierra',
+  title: 'Informe · acequia',
   description: 'Análisis de terreno — datos orientativos generados con la herramienta de Arte y Tierra.',
 };
 

@@ -14,7 +14,7 @@ export default async function LoginPage() {
         {/* Logo / header */}
         <div className="text-center mb-8">
           <p className="eyebrow mb-2">Arte y Tierra</p>
-          <h1 className="font-display text-2xl text-ink-950">Análisis de Terreno</h1>
+          <h1 className="font-display text-2xl text-ink-950">acequia</h1>
           <p className="text-sm text-ink-700/70 mt-2">
             Ingresá para acceder a la herramienta
           </p>

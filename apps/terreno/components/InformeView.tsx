@@ -125,7 +125,7 @@ export function InformeView({ datos, compartido = false }: Props) {
                 Arte y Tierra
               </p>
               <h1 className="font-display text-3xl text-ink-950 leading-tight">
-                Análisis de Terreno
+                acequia
               </h1>
               <p className="text-lg text-ink-700 mt-1">{datos.nombre}</p>
             </div>
@@ -737,7 +737,7 @@ export function InformeView({ datos, compartido = false }: Props) {
             <div>
               <p className="font-semibold text-ink-700 mb-1">Arte y Tierra · arteytierra.org</p>
               <p>
-                Informe generado con la herramienta Análisis de Terreno.
+                Informe generado con la herramienta acequia.
                 Los datos son orientativos y no reemplazan un relevamiento topográfico
                 o climático profesional.
               </p>
@@ -764,7 +764,7 @@ function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas
       </div>
 
       <div className="mt-10">
-        <p className="text-sm uppercase tracking-[0.22em] text-ink-700/50">Análisis de Terreno</p>
+        <p className="text-sm uppercase tracking-[0.22em] text-ink-700/50">acequia</p>
         <h1 className="font-display text-4xl text-ink-950 leading-tight mt-2">{datos.nombre}</h1>
         {ubic && <p className="text-base text-ink-700 mt-2">{ubic}</p>}
       </div>
@@ -810,7 +810,7 @@ function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas
           </div>
         </div>
         <p className="text-[10px] text-ink-700/40 text-right max-w-[45%]">
-          {datos.profesional ? 'Con tecnología de Arte y Tierra · Terreno. ' : ''}Análisis orientativo a partir de imágenes satelitales y modelos públicos. Verificar en campo antes de ejecutar obras.
+          {datos.profesional ? 'Con tecnología de acequia · un desarrollo de Arte y Tierra. ' : ''}Análisis orientativo a partir de imágenes satelitales y modelos públicos. Verificar en campo antes de ejecutar obras.
         </p>
       </div>
     </div>
@@ -956,7 +956,7 @@ function Table({
 // página al imprimir a PDF. print-color-adjust para que salga en el PDF.
 function MarcaAgua() {
   const filas = Array.from({ length: 9 });
-  const texto = 'TERRENO · terreno.arteytierra.org';
+  const texto = 'acequia · terreno.arteytierra.org';
   return (
     <div
       aria-hidden

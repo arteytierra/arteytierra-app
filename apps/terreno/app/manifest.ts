@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Análisis de Terreno · Arte y Tierra',
-    short_name: 'Terreno AyT',
+    name: 'acequia · Diseño ecosistémico del territorio',
+    short_name: 'acequia',
     description: 'Análisis catastral, clima, topografía y diseño de predios. Funciona offline.',
     start_url: '/mapa',
     display: 'standalone',

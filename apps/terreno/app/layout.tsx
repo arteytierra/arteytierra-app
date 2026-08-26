@@ -18,12 +18,12 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Análisis de Terreno · Arte y Tierra',
+    default: 'acequia · Diseño ecosistémico del territorio',
     template: '%s · Arte y Tierra',
   },
   description:
-    'Herramienta de análisis catastral para alumnos y clientes de Arte y Tierra. Trazá mojones, medí tu terreno y calculá superficie, perímetro y rumbos.',
-  applicationName: 'Terreno — Arte y Tierra',
+    'acequia — diseño ecosistémico del territorio. Trazá tu predio, leé por dónde corre el agua y ordená el territorio: clima, relieve, hidrología y master plan. Un desarrollo de Arte y Tierra.',
+  applicationName: 'acequia',
 };
 
 export const viewport: Viewport = {
