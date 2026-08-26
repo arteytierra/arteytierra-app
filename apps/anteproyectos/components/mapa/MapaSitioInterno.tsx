@@ -6,6 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { calcularArcoSolar } from '@/lib/sitio/arcoSolar';
 import { ArcoSolarLayer } from './ArcoSolarLayer';
+import { CapaElevacion } from './CapaElevacion';
 
 const ICONO_SITIO = L.divIcon({
   html: `<div style="
@@ -22,6 +23,7 @@ interface Props {
   lat: number | null;
   lng: number | null;
   onSeleccionar: (lat: number, lng: number) => void;
+  mostrarElevacion: boolean;
 }
 
 function CapturaClick({ onClick }: { onClick: (lat: number, lng: number) => void }) {
@@ -40,7 +42,7 @@ function CapturaClick({ onClick }: { onClick: (lat: number, lng: number) => void
  * el sitio ya muestra de entrada cómo pega el sol, en vez de un lat/lng a
  * ciegas que sólo se entiende después de generar el anteproyecto.
  */
-export function MapaSitioInterno({ lat, lng, onSeleccionar }: Props) {
+export function MapaSitioInterno({ lat, lng, onSeleccionar, mostrarElevacion }: Props) {
   const tieneSitio = lat !== null && lng !== null && !Number.isNaN(lat) && !Number.isNaN(lng);
   const centro = useMemo<[number, number]>(() => (tieneSitio ? [lat!, lng!] : [18.2537, -66.1057]), [tieneSitio, lat, lng]);
   const [radio, setRadio] = useState(200);
@@ -59,6 +61,7 @@ export function MapaSitioInterno({ lat, lng, onSeleccionar }: Props) {
           setRadio(200);
         }}
       />
+      {mostrarElevacion && <CapaElevacion />}
       {tieneSitio && <Marker position={[lat!, lng!]} icon={ICONO_SITIO} />}
       {datosArco && <ArcoSolarLayer datos={datosArco} />}
     </MapContainer>

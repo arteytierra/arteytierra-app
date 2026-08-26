@@ -562,3 +562,16 @@ el mapa de terreno, no como cargar lat/lng a mano.
   pendiente, curvas de nivel — hoy el mapa sólo tiene el tile base de OSM) y
   la subida de fotos/dibujos/modelos a Cloudflare R2 (todavía usa
   `lib/ingesta/carpeta.ts`, que lee una carpeta local, no una subida real).
+- 2026-08-26 — **A4, segundo tramo: capa de elevación en el mapa.** Toggle
+  "Elevación" en `MapaSitio.tsx` que pide `/api/sitio/elevacion` (nueva ruta
+  server-side, usa `obtenerGrillaDEM` de `@arteytierra/dem`, grilla 40×40
+  del bbox visible) y la pinta como `ImageOverlay` de Leaflet con la misma
+  rampa de color que `apps/terreno` (`lib/sitio/colorElevacion.ts`, portado
+  de `RAMP_ELEV`/`interpolarColor` de `shaders.ts`). Se re-pide con debounce
+  de 400ms al mover el mapa (`moveend`). Probado en el navegador con otra
+  cuenta de prueba descartable: el overlay se renderiza (canvas 40×40 en
+  base64, opacidad 0.55) sin errores de consola, el endpoint devuelve 200.
+  4 tests nuevos de la rampa de color, 134/134 en total, typecheck limpio.
+  Cuenta de prueba borrada al terminar.
+  **Sigue pendiente de A4:** pendiente/curvas de nivel (mismo patrón, otra
+  capa) y la subida de fotos/dibujos/modelos a Cloudflare R2.

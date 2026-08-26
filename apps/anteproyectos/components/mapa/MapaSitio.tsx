@@ -21,6 +21,7 @@ interface Props {
  */
 export function MapaSitio({ lat, lng, onCambiar }: Props) {
   const [errorGeo, setErrorGeo] = useState<string | null>(null);
+  const [mostrarElevacion, setMostrarElevacion] = useState(false);
 
   const latN = lat.trim() === '' ? null : Number.parseFloat(lat);
   const lngN = lng.trim() === '' ? null : Number.parseFloat(lng);
@@ -40,15 +41,21 @@ export function MapaSitio({ lat, lng, onCambiar }: Props) {
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-sm text-ink-600">Hacé click en el mapa para ubicar el sitio.</p>
-        <button
-          type="button"
-          onClick={usarMiUbicacion}
-          className="rounded border border-bone-200 bg-white px-2 py-1 text-xs text-moss-700 hover:bg-bone-50"
-        >
-          Usar mi ubicación
-        </button>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1 text-xs text-ink-600">
+            <input type="checkbox" checked={mostrarElevacion} onChange={e => setMostrarElevacion(e.target.checked)} />
+            Elevación
+          </label>
+          <button
+            type="button"
+            onClick={usarMiUbicacion}
+            className="rounded border border-bone-200 bg-white px-2 py-1 text-xs text-moss-700 hover:bg-bone-50"
+          >
+            Usar mi ubicación
+          </button>
+        </div>
       </div>
       {errorGeo && <p className="mb-2 text-xs text-red-700">{errorGeo}</p>}
       <div className="h-72 w-full overflow-hidden rounded border border-bone-200">
@@ -56,6 +63,7 @@ export function MapaSitio({ lat, lng, onCambiar }: Props) {
           lat={latN !== null && !Number.isNaN(latN) ? latN : null}
           lng={lngN !== null && !Number.isNaN(lngN) ? lngN : null}
           onSeleccionar={(nuevaLat, nuevaLng) => onCambiar(nuevaLat.toFixed(6), nuevaLng.toFixed(6))}
+          mostrarElevacion={mostrarElevacion}
         />
       </div>
     </div>
