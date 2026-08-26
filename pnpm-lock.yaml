@@ -26,6 +26,9 @@ importers:
 
   apps/anteproyectos:
     dependencies:
+      '@arteytierra/anteproyectos-contracts':
+        specifier: workspace:*
+        version: link:../../packages/anteproyectos-contracts
       '@arteytierra/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -302,6 +305,12 @@ importers:
       wrangler:
         specifier: ^4.97.0
         version: 4.97.0
+
+  packages/anteproyectos-contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/config:
     devDependencies:

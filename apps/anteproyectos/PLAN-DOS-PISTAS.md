@@ -271,6 +271,12 @@ sin tocar el generador. Eso deja **B1, B2, A0, A1 y A3 corriendo en paralelo
 desde el día uno**, sin ningún bloqueo — el único enganche real de mitad de
 camino queda en B3↔`ModeloSitio` y A2↔`ObjetoVolumen[]`.
 
+**Estado al 25/08/2026:** A2 ya está implementado y probado
+(`evaluadorSolarReal`, ver Registro) — la Pista B puede cambiar del
+evaluador provisional al real en cuanto llegue al Checkpoint 1, sin esperar
+más. Lo único que A2 sigue necesitando de la Pista B es `ObjetoVolumen[]`
+real (hoy sólo hay fixtures de test escritos a mano).
+
 ---
 
 ## 6. Decisiones ya tomadas (25/08/2026)
@@ -383,8 +389,58 @@ el mapa de terreno, no como cargar lat/lng a mano.
   todavía al `Sitio` de un solo punto que usa hoy `generador.ts`/la UI —
   eso es un cambio de modelo de datos más grande (de punto a polígono) que
   toca ~10 archivos y merece su propia revisión, no colarse en este tramo.
-  Pendiente de A1: viewshed (depende de `lib/shaders.ts` de terreno, sin
-  revisar todavía) y el mapa de selección con `CAPAS_DEFAULT`/`ArcoSolarLayer`.
+  Pendiente de A1: viewshed y el mapa de selección con
+  `CAPAS_DEFAULT`/`ArcoSolarLayer` (ver por qué se dejan para después, abajo).
+- 2026-08-25 — **`packages/anteproyectos-contracts/` creado** con el
+  contrato v3 completo (ver §3), siguiendo la convención de `packages/types`.
+  Es fundacional para las dos pistas — sin esto ninguna puede importar los
+  tipos compartidos — así que se prioriza antes de seguir con A1/A2.
+  Typecheck limpio.
+- 2026-08-25 — **Fase A2 completa: motor solar real, implementa
+  `EvaluadorSolar`.** `lib/bioclima/posicionSolar.ts` (Cooper 1969, portado
+  de `arco_solar.ts` con `posicionSolar` ahora pública). `lib/bioclima/
+  sombra.ts` — cumple la precisión (c) del Checkpoint 0: extiende la
+  intersección rayo-sólido de `apps/terreno/lib/objetosSombra.ts` (que sólo
+  resolvía prismas verticales) a la unión `ObjetoPrisma | ObjetoSuperficie`
+  del contrato, con intersección rayo-plano propia para cubiertas
+  inclinadas (normal por producto cruz de dos aristas, proyección a 2D
+  sobre el plano para el test punto-en-polígono). Respeta `opacidadSolar`
+  (vegetación semitransparente) y evita que un objeto se sombree a sí
+  mismo. `lib/bioclima/evaluadorSolar.ts` implementa `EvaluadorSolar` del
+  contrato: por objeto, punto representativo (centro de huella a media
+  altura en un prisma; centroide del plano en una superficie), rayo hacia
+  el sol por hora pedida, factor de sombreado contra el resto de la
+  escena. 11 tests nuevos (posición solar en ecuador/hemisferio sur, muro
+  bloqueando sol rasante y no bloqueando sol cenital, cubierta inclinada
+  bloqueando/no bloqueando, opacidad parcial, auto-exclusión, integración
+  del evaluador completo). 117/117 tests de anteproyectos pasan, typecheck
+  limpio en los tres paquetes tocados.
+- 2026-08-25 — **Adaptador DEM → `ModeloSitio`** (`lib/sitio/adaptador.ts`),
+  la obligación simétrica de la Pista A del Checkpoint 0. Combina
+  `geometria.ts` + `@arteytierra/dem` en un `ModeloSitio` real: polígono y
+  linderos convertidos a metros locales (origen en el centroide, norte_deg
+  = 0), grilla de elevación real re-muestreada al formato del contrato.
+  Nota para la Pista B: el `fuente` de `GrillaElevacion` del contrato sólo
+  distingue 3 valores (`glo30`/`srtm`/`propio`), así que las fuentes
+  nacionales de mayor resolución de `@arteytierra/dem` (USGS 3DEP, IGN
+  Francia/España, etc.) quedan agrupadas bajo `'glo30'` por ahora — si se
+  necesita distinguirlas, es un cambio de contrato a acordar, no algo que
+  el adaptador pueda resolver solo. Sin test automatizado (depende de red
+  real a los COGs, igual que `topografia.ts`).
+- 2026-08-25 — **Viewshed y mapa de selección de sitio quedan para
+  después**, con motivo: `apps/terreno/lib/shaders.ts` (del que depende
+  `viewshed.ts`) está acoplado a `grillaElevacion.ts`, un módulo orientado
+  a cliente (fetch al navegador + colores de render para el mapa), no al
+  cálculo puro — portarlo bien es un trabajo de UI/mapa aparte, no del
+  motor de sitio. No bloquea el contrato con la Pista B: `ModeloSitio` y
+  `EvaluadorSolar`, lo que realmente se intercambia en el Checkpoint 1, ya
+  están completos y probados sin esto.
+- 2026-08-25 — **Checkpoint 1 (lado Pista A): A0 ✅, A1 núcleo ✅ (geometría
+  + topografía + adaptador a `ModeloSitio`; viewshed y mapa UI pendientes,
+  no bloqueantes), A2 ✅ (`EvaluadorSolar` real, con la extensión a
+  cubiertas inclinadas prometida en el Checkpoint 0).** Lista para que la
+  Pista B revise el diff y empiece a consumir `ModeloSitio`/`ObjetoVolumen[]`
+  reales en vez de datos provisionales.
 - 2026-08-25 — ChatGPT refinó su propia precisión sobre `cubierta`: en vez
   de `z_m` por vértice como caso especial, `ObjetoVolumen` pasa a ser una
   unión discriminada `ObjetoPrisma | ObjetoSuperficie` (geometría explícita
