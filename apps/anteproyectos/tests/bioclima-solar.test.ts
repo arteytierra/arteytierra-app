@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { posicionSolar, diaDelAnio, horasSalidaPuesta } from '@/lib/bioclima/posicionSolar';
 import { direccionDesdeAzimutElevacion, factorSombreado, type RayoSolar } from '@/lib/bioclima/sombra';
-import { evaluadorSolarReal } from '@/lib/bioclima/evaluadorSolar';
+import { azimutLocal, evaluadorSolarReal, horasDeSol } from '@/lib/bioclima/evaluadorSolar';
 import type { ObjetoPrisma, ObjetoSuperficie, ObjetoVolumen, ModeloSitio } from '@arteytierra/anteproyectos-contracts';
 
 describe('posicionSolar', () => {
@@ -115,5 +115,92 @@ describe('evaluadorSolarReal.evaluar', () => {
     const mapa = await evaluadorSolarReal.evaluar(volumenes, sitio, new Date(Date.UTC(2026, 5, 21)), [0]);
     const r = mapa.resultados.find(r => r.objetoId === 'ventana-sur')!;
     expect(r.muestras[0]!.iluminado).toBe(false);
+  });
+});
+
+// Hallazgos de la revisión de Checkpoint 1 (Pista B, 26/08/2026): horasSol
+// sobrecontaba intervalos inclusivos, y el azimut del sol no se rotaba por
+// sitio.sistema.norte_deg antes de armar el rayo en coordenadas locales.
+describe('azimutLocal', () => {
+  it('con norte_deg = 0, el azimut local coincide con el geográfico', () => {
+    expect(azimutLocal(90, 0)).toBe(90);
+  });
+
+  it('resta norte_deg (giro horario del eje Y local) del azimut geográfico', () => {
+    expect(azimutLocal(90, 90)).toBe(0);
+    expect(azimutLocal(200, 90)).toBe(110);
+  });
+
+  it('da la vuelta en 0°/360° sin devolver negativos', () => {
+    expect(azimutLocal(10, 90)).toBe(280);
+    expect(azimutLocal(0, -90)).toBe(90);
+  });
+});
+
+describe('horasDeSol', () => {
+  it('con todas las muestras iluminadas, da exactamente el largo del período (no lo excede)', () => {
+    const muestras = [6, 9, 12, 15, 18].map(hora => ({ hora, iluminado: true }));
+    // Período real: 18 - 6 = 12h. La fórmula vieja (conteo × paso) daba
+    // 5 muestras × 3h = 15h — más que el período evaluado.
+    expect(horasDeSol(muestras)).toBe(12);
+  });
+
+  it('con la mitad de las muestras iluminadas de forma contigua, integra por trapecios', () => {
+    const muestras = [
+      { hora: 6, iluminado: false },
+      { hora: 9, iluminado: true },
+      { hora: 12, iluminado: true },
+      { hora: 15, iluminado: false },
+    ];
+    // Trapecio 6-9: (0+1)/2 × 3 = 1.5; 9-12: (1+1)/2 × 3 = 3; 12-15: (1+0)/2 × 3 = 1.5.
+    expect(horasDeSol(muestras)).toBe(6);
+  });
+
+  it('con ninguna muestra iluminada, da 0', () => {
+    const muestras = [6, 9, 12].map(hora => ({ hora, iluminado: false }));
+    expect(horasDeSol(muestras)).toBe(0);
+  });
+
+  it('con una sola muestra, no hay período que integrar: 1h si está iluminada, si no 0', () => {
+    expect(horasDeSol([{ hora: 12, iluminado: true }])).toBe(1);
+    expect(horasDeSol([{ hora: 12, iluminado: false }])).toBe(0);
+  });
+});
+
+describe('evaluadorSolarReal.evaluar — respeta norte_deg', () => {
+  // Muro a lo largo del eje X local, en y=10 (es decir, a azimut LOCAL 0°).
+  const muro: ObjetoPrisma = {
+    id: 'muro-norte-local', tipo: 'muro', geometria: 'prisma',
+    vertices: [{ x_m: -5, y_m: 10 }, { x_m: 5, y_m: 10 }, { x_m: 5, y_m: 10.5 }, { x_m: -5, y_m: 10.5 }],
+    z0_m: 0, altura_m: 3,
+  };
+  const evaluado: ObjetoPrisma = {
+    id: 'punto-eval', tipo: 'muro', geometria: 'prisma',
+    vertices: [{ x_m: -0.5, y_m: 0 }, { x_m: 0.5, y_m: 0 }, { x_m: 0.5, y_m: 0.1 }, { x_m: -0.5, y_m: 0.1 }],
+    z0_m: 1, altura_m: 0,
+  };
+  const volumenesRotados: ObjetoVolumen[] = [muro, evaluado];
+
+  it('un sitio con norte_deg = 90 gira el sol en la escena antes de calcular la sombra', async () => {
+    // lat 0, equinoccio, 6:30 solar: sol bajo (rasante, ~7.5°) a azimut
+    // geográfico ~90° (este). Con norte_deg = 90, el azimut LOCAL queda ~0°
+    // (alineado con el muro en y=10) y lo rasante alcanza para taparlo; con
+    // norte_deg = 0 (bug), el rayo se habría armado a azimut local ~90° —
+    // casi paralelo al muro, nunca llega a y=10 — y no lo hubiera tapado.
+    const fecha = new Date(Date.UTC(2026, 2, 21));
+    const rotado: ModeloSitio = {
+      id: 's-rot', sistema: { origen: { lat: 0, lng: 0, elevacion_m: 0 }, norte_deg: 90 },
+      poligono: [], linderos: [],
+      elevacion: { valores_m: [[0, 0], [0, 0]], origenLocal: { x_m: 0, y_m: 0 }, pasoX_m: 10, pasoY_m: 10, filas: 2, columnas: 2, fuente: 'glo30' },
+      accesos: [], vistas: [],
+    };
+    const sinRotar: ModeloSitio = { ...rotado, id: 's-plano', sistema: { ...rotado.sistema, norte_deg: 0 } };
+
+    const conRotacion = await evaluadorSolarReal.evaluar(volumenesRotados, rotado, fecha, [6.5]);
+    const sinRotacion = await evaluadorSolarReal.evaluar(volumenesRotados, sinRotar, fecha, [6.5]);
+
+    const rEval = conRotacion.resultados.find(r => r.objetoId === 'punto-eval')!;
+    const rEvalPlano = sinRotacion.resultados.find(r => r.objetoId === 'punto-eval')!;
+    expect(rEval.muestras[0]!.porcentajeSombreado).toBeGreaterThan(rEvalPlano.muestras[0]!.porcentajeSombreado);
   });
 });

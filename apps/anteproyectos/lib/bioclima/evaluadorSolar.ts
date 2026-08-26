@@ -20,6 +20,38 @@ import type {
 import { diaDelAnio, posicionSolar } from './posicionSolar';
 import { direccionDesdeAzimutElevacion, factorSombreado } from './sombra';
 
+/**
+ * `posicionSolar` da el azimut geográfico (0° = norte verdadero, sentido
+ * horario). Los objetos de la escena viven en el sistema LOCAL del sitio,
+ * cuyo eje Y está girado `norte_deg` respecto del norte verdadero (misma
+ * convención, sentido horario — ver `SistemaLocal` en el contrato). Sin
+ * esta resta, un sitio con `norte_deg !== 0` calcula la sombra con el sol
+ * en la dirección equivocada dentro de la escena.
+ */
+export function azimutLocal(azimutGeografico_deg: number, norte_deg: number): number {
+  return ((azimutGeografico_deg - norte_deg) % 360 + 360) % 360;
+}
+
+/**
+ * Horas de sol de una serie de muestras {hora, iluminado}, integrando por
+ * trapecios en vez de "cantidad de muestras iluminadas × paso": esto último
+ * sobrecuenta, porque trata cada muestra como si representara un intervalo
+ * completo a cada lado, duplicando los extremos del período evaluado.
+ */
+export function horasDeSol(muestras: Array<{ hora: number; iluminado: boolean }>): number {
+  if (muestras.length <= 1) {
+    return muestras.length === 1 && muestras[0]!.iluminado ? 1 : 0;
+  }
+  let total = 0;
+  for (let i = 0; i < muestras.length - 1; i++) {
+    const paso = muestras[i + 1]!.hora - muestras[i]!.hora;
+    const ind0 = muestras[i]!.iluminado ? 1 : 0;
+    const ind1 = muestras[i + 1]!.iluminado ? 1 : 0;
+    total += paso * ((ind0 + ind1) / 2);
+  }
+  return total;
+}
+
 function puntoRepresentativo(o: ObjetoVolumen): { x_m: number; y_m: number; z_m: number } {
   if (o.geometria === 'prisma') {
     const n = o.vertices.length || 1;
@@ -42,6 +74,7 @@ export const evaluadorSolarReal: EvaluadorSolar = {
     horas: number[],
   ): Promise<MapaInsolacion> {
     const lat = sitio.sistema.origen.lat;
+    const norteDeg = sitio.sistema.norte_deg;
     const doy = diaDelAnio(fecha);
 
     const resultados: ResultadoInsolacionObjeto[] = volumenes.map(o => {
@@ -51,12 +84,13 @@ export const evaluadorSolarReal: EvaluadorSolar = {
         if (pos.elevacion_deg <= 0) {
           return { hora, iluminado: false, porcentajeSombreado: 100 };
         }
-        const rayo = { x0_m: p.x_m, y0_m: p.y_m, z0_m: p.z_m, ...direccionDesdeAzimutElevacion(pos.azimut_deg, pos.elevacion_deg) };
+        const azimut = azimutLocal(pos.azimut_deg, norteDeg);
+        const rayo = { x0_m: p.x_m, y0_m: p.y_m, z0_m: p.z_m, ...direccionDesdeAzimutElevacion(azimut, pos.elevacion_deg) };
         const sombreado = factorSombreado(volumenes, rayo, o.id);
         return { hora, iluminado: sombreado < 0.5, porcentajeSombreado: Math.round(sombreado * 100) };
       });
 
-      const horasSol = muestras.filter(m => m.iluminado).length * (horas.length > 1 ? (horas[horas.length - 1]! - horas[0]!) / (horas.length - 1) : 1);
+      const horasSol = horasDeSol(muestras);
       const porcentajeSombreado = muestras.length
         ? Math.round(muestras.reduce((s, m) => s + m.porcentajeSombreado, 0) / muestras.length)
         : 0;

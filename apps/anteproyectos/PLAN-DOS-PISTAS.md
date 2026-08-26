@@ -481,3 +481,19 @@ el mapa de terreno, no como cargar lat/lng a mano.
   hay `.env.local` en este worktree, así que no pude levantar el dev server
   contra Supabase real para probar el login a ojo). Sin esas dos cosas la
   app no arranca: el middleware exige sesión en todas las rutas.
+- 2026-08-26 — ChatGPT revisó el diff de A2 en el Checkpoint 1 y encontró
+  dos bugs reales, los dos corregidos: (1) `horasSol` contaba "muestras
+  iluminadas × paso" en vez de integrar el intervalo — sobrecontaba,
+  llegando a superar el largo real del período evaluado (5 muestras cada 3h
+  daban 15h de sol en un período de 12h). Se reemplazó por integración
+  trapezoidal (`horasDeSol`, exportado desde `lib/bioclima/evaluadorSolar.
+  ts`). (2) `evaluadorSolarReal` usaba el azimut GEOGRÁFICO de
+  `posicionSolar` directamente como si fuera el azimut del sistema LOCAL del
+  sitio — con `sitio.sistema.norte_deg !== 0` (el eje Y local girado
+  respecto del norte verdadero) el rayo se armaba apuntando a la dirección
+  equivocada dentro de la escena. Se agregó `azimutLocal()` (resta
+  `norte_deg` antes de convertir a dirección local) y se aplica antes de
+  llamar a `direccionDesdeAzimutElevacion`. 6 tests nuevos que reproducen
+  ambos bugs (incluido uno de integración con `evaluadorSolarReal.evaluar`
+  que compara el mismo sitio con `norte_deg=0` vs `90`). 123/123 tests de
+  anteproyectos, typecheck limpio.
