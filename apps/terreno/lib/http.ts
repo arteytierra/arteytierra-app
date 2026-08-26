@@ -10,5 +10,14 @@
  * Los proxies de datos públicos (terrarium, wayback, zoom-satelital, geocoder)
  * quedan en `*` a propósito: sirven datos abiertos y terrarium se lee a canvas
  * con `img.crossOrigin`, donde un CORS restrictivo podría estorbar.
+ *
+ * ⚠️ Se limpia el valor: Vercel a veces inyecta un BOM (U+FEFF), zero-width
+ * space, comillas o espacios en las env vars. Como este string va como VALOR de
+ * un header HTTP (ByteString), un solo carácter >255 hace que undici aborte con
+ * "Cannot convert argument to a ByteString" y la ruta entera devuelve 500.
  */
-export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
+function limpiarEnv(v: string | undefined): string {
+  return (v ?? '').replace(/[﻿​]/g, '').replace(/^["']|["']$/g, '').trim();
+}
+
+export const SITE_ORIGIN = limpiarEnv(process.env.NEXT_PUBLIC_SITE_URL) || 'https://arteytierra.org';
