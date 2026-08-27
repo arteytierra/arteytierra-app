@@ -24,14 +24,14 @@ export const metadata: Metadata = {
     title: 'acequia — Diseño ecosistémico del territorio | Arte y Tierra',
     description:
       'Marcá tu predio y acequia hace el resto: topografía, agua, suelo, clima, represas y diseño regenerativo en un solo lugar.',
-    images: [{ url: '/img/terreno/og.png', width: 1200, height: 630, alt: 'acequia — Diseño ecosistémico del territorio' }],
+    images: [{ url: '/img/acequia/og.png', width: 1200, height: 630, alt: 'acequia — Diseño ecosistémico del territorio' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'acequia — Diseño ecosistémico del territorio',
     description:
       'Topografía, agua, suelo, clima, represas y diseño Keyline — al marcar tu predio, sin CAD ni GIS.',
-    images: ['/img/terreno/og.png'],
+    images: ['/img/acequia/og.png'],
   },
 };
 
