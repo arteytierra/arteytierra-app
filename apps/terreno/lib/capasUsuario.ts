@@ -34,11 +34,11 @@ export function tieneEscalaCompleta(capas: CapaUsuario[]): boolean {
 }
 
 /** Tipos de elemento que se archivan solos en una carpeta de la Escala. */
-export type TipoElementoCapa = 'dibujo' | 'camino' | 'aguada' | 'zona' | 'sector' | 'pin';
+export type TipoElementoCapa = 'dibujo' | 'camino' | 'aguada' | 'zona' | 'sector' | 'pin' | 'cuenca';
 
 /**
  * Carpeta de la Escala donde cae por defecto cada herramienta (auto-archivado):
- * camino→Accesos, agua→Agua, zona→Sistemas, sector→Clima, estructura/pin→Estructuras.
+ * camino→Accesos, agua/cuenca→Agua, zona→Sistemas, sector→Clima, estructura/pin→Estructuras.
  * Devuelve undefined para 'dibujo' (usa la capa activa). Si la carpeta no existe
  * (el usuario la borró), capaDeElemento cae a la carpeta default.
  */
@@ -46,6 +46,7 @@ export function carpetaEscalaPara(tipo: TipoElementoCapa): string | undefined {
   switch (tipo) {
     case 'camino': return idKeyline(3); // 4 · Accesos
     case 'aguada': return idKeyline(2); // 3 · Agua
+    case 'cuenca': return idKeyline(2); // 3 · Agua
     case 'zona':   return idKeyline(4); // 5 · Sistemas
     case 'sector': return idKeyline(0); // 1 · Clima
     case 'pin':    return idKeyline(5); // 6 · Estructuras

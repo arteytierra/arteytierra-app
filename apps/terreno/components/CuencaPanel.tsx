@@ -8,16 +8,27 @@
  * vertedero.
  */
 import { useMemo, useState, useEffect } from 'react';
-import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2 } from 'lucide-react';
+import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2, Archive, Check } from 'lucide-react';
 import {
-  analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro,
+  analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro, type ResultadoCuenca,
 } from '@/lib/cuenca';
+import {
+  yaArchivada, resumenCuenca, type CuencaGuardada, type ParamsCuenca,
+} from '@/lib/cuencasGuardadas';
 import { confianzaCuenca } from '@/lib/saludCalculo';
 import { volumenM3, volumenEnLitros, caudalM3s, caudalEnLitros, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
 
 interface PoligonoOpcion { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
+
+interface PropsArchivo {
+  /** cuencas ya archivadas, para listarlas y no duplicar */
+  guardadas?:  CuencaGuardada[];
+  onGuardar?:  (params: ParamsCuenca, resultado: ResultadoCuenca) => void;
+  onAbrir?:    (g: CuencaGuardada) => void;
+  onEliminar?: (id: string) => void;
+}
 
 interface Props {
   tieneShader: boolean;
@@ -39,7 +50,7 @@ interface Props {
   onExtender?: () => void;          // recalcula hasta la divisoria real
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender }: Props) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
   const [coberturaId, setCoberturaId] = useState('pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
@@ -76,6 +87,26 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
       : null,
     [cuenca, resultado, precipDeClima, grupoHidro, grupo, expandida, fuenteDem, cnPredio],
   );
+
+  // ── Archivo de cuencas ──
+  const params: ParamsCuenca = useMemo(() => ({
+    coberturaId, grupo, precip_mm: parseFloat(precip) || 0, head_m: parseFloat(head) || 0.3,
+  }), [coberturaId, grupo, precip, head]);
+
+  const yaEsta = cuenca ? yaArchivada(cuenca, params, guardadas) : null;
+
+  /**
+   * Abrir una archivada restaura TAMBIÉN los parámetros con los que se calculó.
+   * Sin eso volvería la geometría pero con la cobertura y la tormenta de la
+   * cuenca anterior, y los números de la ficha no coincidirían con lo guardado.
+   */
+  const abrirGuardada = (g: CuencaGuardada) => {
+    setCoberturaId(g.params.coberturaId);
+    setGrupo(g.params.grupo);
+    setPrecip(String(g.params.precip_mm));
+    setHead(String(g.params.head_m));
+    onAbrir?.(g);
+  };
 
   return (
     <div className="space-y-4">
@@ -163,6 +194,38 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                   <Pencil className="w-3 h-3" /> Editar la cuenca calculada (pasa a polígono editable)
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Archivo. Va arriba de los resultados a propósito: se puede volver
+              a una cuenca guardada sin tener ninguna activa. */}
+          {guardadas.length > 0 && (
+            <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
+              <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1">
+                <Archive className="w-3 h-3" /> Cuencas archivadas ({guardadas.length})
+              </p>
+              {guardadas.map(g => (
+                <div key={g.id} className="flex items-start gap-2 border-t border-bone-100 pt-2 first:border-0 first:pt-0">
+                  <span className="w-2.5 h-2.5 rounded-sm shrink-0 mt-1 border" style={{ background: `${g.color}44`, borderColor: g.color }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-ink-900 truncate leading-tight">{g.nombre}</p>
+                    <p className="text-[9px] text-ink-700/55 leading-tight">{resumenCuenca(g)}</p>
+                    <p className="text-[9px] text-ink-700/40 leading-tight">
+                      {g.params.precip_mm} mm · CN según {COBERTURAS.find(c => c.id === g.params.coberturaId)?.nombre ?? g.params.coberturaId} (grupo {g.params.grupo})
+                      {!g.expandida && ' · acotada al terreno'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-0.5 shrink-0">
+                    <button onClick={() => abrirGuardada(g)} className="text-[9px] text-moss-700 hover:text-moss-900 font-medium">Abrir</button>
+                    {onEliminar && (
+                      <button onClick={() => onEliminar(g.id)} className="text-[9px] text-clay-700/70 hover:text-clay-900">Borrar</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <p className="text-[9px] text-ink-700/40 leading-relaxed">
+                Se dibujan todas juntas en el mapa. El ojo, el nombre y la carpeta se manejan desde <b>Capas</b>.
+              </p>
             </div>
           )}
 
@@ -257,6 +320,32 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                       cuenca en el límite, o borraste la tormenta— el bloque se
                       remonta abierto en vez de esconderla bajo un plegado. */}
                   {salud && <SaludCalculo key={salud.nivel} confianza={salud} />}
+
+                  {/* Archivar. Marcar otra salida borraba la cuenca anterior con
+                      todos sus números; volcarla a polígono guardaba el DIBUJO y
+                      perdía el cálculo. Un predio tiene varias cuencas que
+                      interesan —la de la represa, la del cruce de camino, la de
+                      la vaguada que se lava— y compararlas es el trabajo. */}
+                  {onGuardar && (
+                    <button
+                      onClick={() => onGuardar(params, resultado)}
+                      disabled={!!yaEsta}
+                      className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium border transition-colors ${
+                        yaEsta
+                          ? 'bg-moss-50 text-moss-700 border-moss-200 cursor-default'
+                          : 'bg-moss-700 hover:bg-moss-900 text-bone-50 border-transparent'
+                      }`}
+                    >
+                      {yaEsta
+                        ? <><Check className="w-3.5 h-3.5" /> Archivada como «{yaEsta.nombre}»</>
+                        : <><Archive className="w-3.5 h-3.5" /> Guardar esta cuenca como capa</>}
+                    </button>
+                  )}
+                  {onGuardar && !yaEsta && (
+                    <p className="text-[9px] text-ink-700/45 leading-relaxed text-center">
+                      Queda en la carpeta <b>3 · Agua</b> con el contorno y toda la ficha: cobertura, grupo, tormenta y resultados.
+                    </p>
+                  )}
 
                   <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
                     Volumen por SCS-CN (AMC II) · tc de Kirpich · caudal pico por método racional sobre la ráfaga

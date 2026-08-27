@@ -76,8 +76,9 @@ import { SaludCalculo } from './SaludCalculo';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
 import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
-import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
+import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
+import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
@@ -379,6 +380,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     handleExtenderCuenca,
     handleUsarPoligonoCuenca,
   } = useCuenca({ mojones });
+  // Cuencas archivadas: cada cálculo que el usuario decide conservar, con su
+  // ficha completa. Viven fuera de useCuenca —que maneja la cuenca ACTIVA— y se
+  // persisten con el proyecto.
+  const [cuencasGuardadas, setCuencasGuardadas] = useState<CuencaGuardada[]>([]);
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
   const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
@@ -656,6 +661,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const pinesFiltrados    = useMemo(() => capas.pines    ? pines.filter(p => !ocultosIds.has(p.id)   && (capas.analisisPredio || p.origen !== 'analisis') && !(p.capa && subCapasOcultas.has('an:' + p.capa)) && (p.origen === 'analisis' || carpetaVisible(p.capaId, 'pin'))) : [], [capas.pines, capas.analisisPredio, pines, ocultosIds, subCapasOcultas, carpetaVisible]);
   const caminosFiltrados  = useMemo(() => capas.caminos  ? caminos.filter(c => !ocultosIds.has(c.id) && (capas.analisisPredio || c.origen !== 'analisis') && !(c.capa && subCapasOcultas.has('an:' + c.capa)) && (c.origen === 'analisis' || carpetaVisible(c.capaId, 'camino'))) : [], [capas.caminos, capas.analisisPredio, caminos, ocultosIds, subCapasOcultas, carpetaVisible]);
   const aguadasFiltradas  = useMemo(() => capas.aguadas  ? aguadasLayer.filter(a => !ocultosIds.has(a.id) && carpetaVisible(a.capaId, 'aguada'))   : [], [capas.aguadas, aguadasLayer, ocultosIds, carpetaVisible]);
+  // Las cuencas archivadas cuelgan del mismo maestro que las aguadas (el ojo de
+  // "Agua"), más su ojo individual y el de la carpeta donde estén archivadas.
+  const cuencasVisibles   = useMemo(() => capas.aguadas
+    ? cuencasGuardadas
+        .filter(g => !ocultosIds.has(g.id) && carpetaVisible(g.capaId, 'cuenca'))
+        .map(g => ({ id: g.id, nombre: g.nombre, color: g.color, poligono: g.cuenca.poligono, outlet: g.cuenca.outlet }))
+    : [], [capas.aguadas, cuencasGuardadas, ocultosIds, carpetaVisible]);
   const dibujosFiltrados  = useMemo(() => capas.dibujos
     ? dibujos.filter(d => !ocultosIds.has(d.id) && !capasOcultas.has(capaDeElemento(d.capaId, capasUsuario)))
     : [], [capas.dibujos, dibujos, ocultosIds, capasOcultas, capasUsuario]);
@@ -836,6 +848,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (datosSuelo)      m['suelo']    = datosSuelo;
     if (datosExtremos)   m['extremos'] = datosExtremos;
     if (cuenca)          m['cuenca']   = cuenca;
+    if (cuencasGuardadas.length) m['cuencas_guardadas'] = cuencasGuardadas;
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
     if (represaResumen)  m['represa']  = represaResumen;
     if (riegoResumen)    m['riego']    = riegoResumen;
@@ -873,7 +886,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1819,8 +1832,31 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // Mover CUALQUIER elemento (dibujo/camino/aguada/zona/sector/pin) a una carpeta
   // de usuario. Fija capaId explícito (persiste, gana al auto-archivado por tipo).
+  // ─── Cuencas archivadas ───────────────────────────────────────────────────
+  const handleGuardarCuenca = useCallback((params: ParamsCuenca, resultado: ResultadoCuenca) => {
+    if (!cuenca) return;
+    setCuencasGuardadas(prev => [...prev, crearCuencaGuardada(cuenca, params, resultado, !!cuencaExpandida, prev)]);
+  }, [cuenca, cuencaExpandida]);
+
+  const handleAbrirCuencaGuardada = useCallback((g: CuencaGuardada) => {
+    setCuenca(g.cuenca);
+    setCuencaExpandida(g.expandida);
+    setCuencaAviso(null);
+    flyToRef.current?.(g.cuenca.outlet.lat, g.cuenca.outlet.lng);
+  }, [setCuenca, setCuencaExpandida, setCuencaAviso]);
+
+  const handleEliminarCuencaGuardada = useCallback((id: string) => {
+    setCuencasGuardadas(prev => prev.filter(g => g.id !== id));
+    setOcultosIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+  }, [setOcultosIds]);
+
+  const handleRenombrarCuencaGuardada = useCallback((id: string, nombre: string) => {
+    setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, nombre } : g));
+  }, []);
+
   const handleMoverElementoACapa = useCallback((tipo: TipoElementoCapa, id: string, capaId: string) => {
     switch (tipo) {
+      case 'cuenca': setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, capaId } : g)); break;
       case 'dibujo': setDibujos(prev => prev.map(d => d.id === id ? { ...d, capaId } : d)); break;
       case 'camino': setCaminos(prev => prev.map(c => c.id === id ? { ...c, capaId } : c)); break;
       case 'aguada': setAguadasLayer(prev => prev.map(a => a.id === id ? { ...a, capaId } : a)); break;
@@ -2137,6 +2173,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setDatosSuelo((meta['suelo']     as DatosSuelo)        ?? null);
     setDatosExtremos((meta['extremos'] as Extremos)        ?? null);
     setCuenca((meta['cuenca']        as Cuenca)            ?? null);
+    setCuencasGuardadas((meta['cuencas_guardadas'] as CuencaGuardada[]) ?? []);
     setRedAguaResumen((meta['red_agua'] as RedAguaResumen)  ?? null);
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
@@ -3136,6 +3173,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onUsarPoligono={handleUsarPoligonoCuenca}
                 onEditarCuenca={handleEditarCuenca}
                 onExtender={handleExtenderCuenca}
+                guardadas={cuencasGuardadas}
+                onGuardar={handleGuardarCuenca}
+                onAbrir={handleAbrirCuencaGuardada}
+                onEliminar={handleEliminarCuencaGuardada}
               />
             </div>
           )}
@@ -3303,6 +3344,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           silvopastura={silvopastura}
           cuencaPoligono={cuenca?.poligono ?? null}
           cuencaOutlet={cuenca?.outlet ?? null}
+          cuencasGuardadas={cuencasVisibles}
           muroLinea={muroLinea}
           potrerosLayer={potrerosLayer}
           capas={capas}
@@ -3646,6 +3688,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             onRenombrarCamino={handleRenombrarCamino} onEliminarCamino={handleEliminarCamino}
             onRenombrarDibujo={handleRenombrarDibujoCapas} onEliminarDibujo={handleEliminarDibujoCapas}
             onRenombrarAguada={handleRenombrarAguada} onEliminarAguada={handleEliminarAguada}
+            cuencasGuardadas={cuencasGuardadas} onRenombrarCuenca={handleRenombrarCuencaGuardada} onEliminarCuenca={handleEliminarCuencaGuardada}
             capasUsuario={capasUsuario} capasOcultas={capasOcultas} capaActivaId={capaActivaId}
             onSetCapaActiva={setCapaActivaId}
             onToggleCapaOculta={handleToggleCapaOculta}
@@ -3893,6 +3936,9 @@ interface PanelCapasProps {
   onEliminarDibujo:    (id: string) => void;
   onRenombrarAguada:   (id: string, nombre: string) => void;
   onEliminarAguada:    (id: string) => void;
+  cuencasGuardadas:    CuencaGuardada[];
+  onRenombrarCuenca:   (id: string, nombre: string) => void;
+  onEliminarCuenca:    (id: string) => void;
   capasUsuario:        CapaUsuario[];
   capasOcultas:        Set<string>;
   capaActivaId:        string;
@@ -3946,6 +3992,7 @@ function PanelCapas({
   onRenombrarCamino, onEliminarCamino,
   onRenombrarDibujo, onEliminarDibujo,
   onRenombrarAguada, onEliminarAguada,
+  cuencasGuardadas, onRenombrarCuenca, onEliminarCuenca,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, aislado, onAislarCarpeta, onAislarAnalisis, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
   datosShader, datosErosion, saludErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
@@ -3988,6 +4035,7 @@ function PanelCapas({
   const masterVisible: Record<TipoElementoCapa, boolean> = {
     dibujo: capas.dibujos, camino: capas.caminos, aguada: capas.aguadas,
     zona: capas.zonas, sector: capas.sectores, pin: capas.pines,
+    cuenca: capas.aguadas,   // cuelgan del mismo maestro que el resto del agua
   };
   const capasOrdenadas = [...capasUsuario].sort((a, b) => a.orden - b.orden);
   const escalaCompleta = tieneEscalaCompleta(capasUsuario);
@@ -4503,6 +4551,18 @@ function PanelCapas({
               : <span className="w-5 h-0 border-t-2 border-dashed shrink-0" style={{ borderColor: a.tipo === 'swale' ? '#26A69A' : '#66BB6A' }} />;
             const pt = (a.lat != null && a.lng != null) ? { lat: a.lat, lng: a.lng } : (a.vertices?.[0] ?? null);
             filas.push({ id: a.id, tipo: 'aguada', label: a.nombre, swatch, onRen: n => onRenombrarAguada(a.id, n), onDel: () => onEliminarAguada(a.id), pt });
+          });
+          // Cuencas archivadas: cada una es una capa con su ficha, no sólo un
+          // contorno. El label lleva el área para poder distinguirlas de un vistazo.
+          cuencasGuardadas.filter(g => folderEf(g.capaId, 'cuenca') === capa.id).forEach(g => {
+            filas.push({
+              id: g.id, tipo: 'cuenca',
+              label: `${g.nombre} · ${g.cuenca.area_ha} ha`,
+              swatch: <span className="w-3 h-3 rounded-sm shrink-0 border" style={{ background: `${g.color}44`, borderColor: g.color }} />,
+              onRen: n => onRenombrarCuenca(g.id, n),
+              onDel: () => onEliminarCuenca(g.id),
+              pt: g.cuenca.outlet,
+            });
           });
           // Zonas
           zonas.filter(z => folderEf(z.capaId, 'zona') === capa.id).forEach(z => {

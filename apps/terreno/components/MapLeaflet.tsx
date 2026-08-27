@@ -10,6 +10,7 @@ import {
   Circle as LeafCircle,
   CircleMarker,
   ImageOverlay,
+  Tooltip,
   useMap,
 } from 'react-leaflet';
 import type { LatLngExpression, LatLngTuple } from 'leaflet';
@@ -146,6 +147,8 @@ interface Props {
   silvopastura?:      ResultadoSilvo | null;
   cuencaPoligono?:    Array<{ lat: number; lng: number }> | null;
   cuencaOutlet?:      { lat: number; lng: number } | null;
+  /** cuencas archivadas visibles (contorno lleno, cada una con su color) */
+  cuencasGuardadas?:  Array<{ id: string; nombre: string; color: string; poligono: Array<{ lat: number; lng: number }>; outlet: { lat: number; lng: number } }>;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
   potrerosLayer?:     PotrerosLayout | null;
   capas?:             CapasVisibles;
@@ -249,6 +252,7 @@ function MapLeaflet({
   silvopastura = null,
   cuencaPoligono = null,
   cuencaOutlet = null,
+  cuencasGuardadas = [],
   muroLinea = null,
   potrerosLayer = null,
   capas = CAPAS_DEFAULT,
@@ -515,6 +519,30 @@ function MapLeaflet({
             />
           );
         })}
+
+        {/* ── Cuencas archivadas ──
+            Van con línea llena y su propio color, debajo de la cuenca activa
+            (que es punteada y azul): así se distingue de un vistazo cuál se
+            está editando y cuáles son las que ya quedaron guardadas. */}
+        {cuencasGuardadas.map(g => g.poligono.length >= 3 && (
+          <Polygon
+            key={`cg-${g.id}`}
+            positions={g.poligono.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: g.color, weight: 2, fillColor: g.color, fillOpacity: 0.10 }}
+          >
+            <Tooltip sticky>{g.nombre}</Tooltip>
+          </Polygon>
+        ))}
+        {cuencasGuardadas.map(g => (
+          <CircleMarker
+            key={`cgo-${g.id}`}
+            center={[g.outlet.lat, g.outlet.lng]}
+            radius={4}
+            pathOptions={{ color: '#fff', weight: 1.5, fillColor: g.color, fillOpacity: 1 }}
+          >
+            <Tooltip>{g.nombre} · salida</Tooltip>
+          </CircleMarker>
+        ))}
 
         {/* ── Cuenca de aporte ── */}
         {cuencaPoligono && cuencaPoligono.length >= 3 && (
