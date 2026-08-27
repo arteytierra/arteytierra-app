@@ -1,9 +1,21 @@
 'use client';
 
+import { Lock } from 'lucide-react';
 import type { MetricasPoligono } from '@/lib/geometria';
 import { formatearDistancia } from '@/lib/geometria';
 
-export function PoligonoPanel({ metricas }: { metricas: MetricasPoligono }) {
+interface Props {
+  metricas: MetricasPoligono;
+  /**
+   * Azimut y rumbo cuadrantal son datos de replanteo de campo (`catastro.rumbos`),
+   * no parte de la medición libre. Superficie, perímetro y longitudes siguen
+   * abiertos en Semilla; estas dos columnas se tapan.
+   */
+  rumbosBloqueados?: boolean;
+  onDesbloquearRumbos?: () => void;
+}
+
+export function PoligonoPanel({ metricas, rumbosBloqueados = false, onDesbloquearRumbos }: Props) {
   const { area_m2, area_ha, perimetro_m, linderos } = metricas;
 
   return (
@@ -66,16 +78,29 @@ export function PoligonoPanel({ metricas }: { metricas: MetricasPoligono }) {
                     {l.longitud.toFixed(1)} m
                   </td>
                   <td className="px-3 py-1.5 text-right font-mono text-ink-700">
-                    {l.azimut.toFixed(1)}°
+                    {rumbosBloqueados
+                      ? <span className="text-ink-700/25 select-none">···</span>
+                      : `${l.azimut.toFixed(1)}°`}
                   </td>
                   <td className="px-3 py-1.5 text-right font-mono text-ink-700/80 whitespace-nowrap">
-                    {l.rumbo}
+                    {rumbosBloqueados
+                      ? <span className="text-ink-700/25 select-none">···</span>
+                      : l.rumbo}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {rumbosBloqueados && (
+          <button
+            onClick={onDesbloquearRumbos}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border-t border-bone-200 bg-bone-50 text-[11px] text-ink-700/70 hover:bg-bone-100 transition-colors"
+          >
+            <Lock className="w-3 h-3 shrink-0" />
+            Azimut y rumbo para replanteo — ver planes
+          </button>
+        )}
       </div>
     </div>
   );

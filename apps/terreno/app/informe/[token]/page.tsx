@@ -13,6 +13,7 @@ import type { RiegoResumen } from '@/lib/riego';
 import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
 import { resumirEntorno, type DatosEntorno } from '@/lib/entorno';
 import { getPlanServiceRole } from '@/lib/auth/plan';
+import { can } from '@/lib/entitlements';
 import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import type { Zona } from '@/lib/zonificacion';
@@ -72,6 +73,7 @@ export default async function InformeTokenPage({ params }: PageProps) {
     carbono:  meta['carbono'] as CarbonoResumen | undefined,
     zonas:    meta['zonas'] as Zona[] | undefined,
     conMarca: planDueno === 'semilla',
+    sinRumbos: !can(planDueno, 'catastro.rumbos'),
   };
 
   return <InformeView datos={informeData} compartido />;

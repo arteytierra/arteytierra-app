@@ -16,7 +16,7 @@
  */
 import * as turf from '@turf/turf';
 import type { GrillaElevacion } from './grillaElevacion';
-import { calcularCurvas } from './curvasNivel';
+import { calcularCurvas, MAX_NIVELES, nivelesEstimados } from './curvasNivel';
 
 export interface SwaleLinea {
   cota:        number;
@@ -42,6 +42,46 @@ export interface ResultadoSwales {
 }
 
 const LARGO_MIN_M = 15;   // descarta tramos sueltos demasiado cortos
+
+/** Escalones "lindos" de separación vertical, para sugerir uno que entre en el tope. */
+const ESCALONES_V = [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10, 15, 20, 25, 50];
+
+export type MotivoSwales = 'sin_relieve' | 'demasiados_swales' | 'sin_tramos';
+
+export interface DiagnosticoSwales {
+  puede:       boolean;
+  motivo:      MotivoSwales | null;
+  desnivel_m:  number;
+  /** cuántos swales pediría la separación elegida */
+  niveles:     number;
+  max_niveles: number;
+  /** menor separación "linda" que entra en el tope (null si ni la mayor alcanza) */
+  intervalo_sugerido: number | null;
+}
+
+/**
+ * Por qué no se pueden trazar swales con esta separación, antes de intentarlo.
+ *
+ * El caso real que se veía en predios de miles de hectáreas: el desnivel total
+ * es de cientos de metros, así que una separación de 1,5 m pide cientos de
+ * curvas y `calcularCurvas` corta en seco al pasarse de `MAX_NIVELES`. El
+ * mensaje viejo culpaba a "poco desnivel o intervalo muy grande" — justo al
+ * revés de lo que pasaba.
+ */
+export function diagnosticarSwales(grilla: GrillaElevacion, intervaloV: number): DiagnosticoSwales {
+  const desnivel = grilla.elev_max - grilla.elev_min;
+  const niveles  = nivelesEstimados(desnivel, intervaloV);
+  const sugerido = ESCALONES_V.find(v => nivelesEstimados(desnivel, v) <= MAX_NIVELES) ?? null;
+
+  const base = { desnivel_m: +desnivel.toFixed(1), niveles, max_niveles: MAX_NIVELES, intervalo_sugerido: sugerido };
+  if (!(intervaloV > 0) || desnivel < intervaloV) {
+    return { ...base, puede: false, motivo: 'sin_relieve' };
+  }
+  if (niveles > MAX_NIVELES) {
+    return { ...base, puede: false, motivo: 'demasiados_swales' };
+  }
+  return { ...base, puede: true, motivo: null };
+}
 
 export function calcularSwales(
   grilla:  GrillaElevacion,

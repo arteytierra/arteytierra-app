@@ -162,14 +162,20 @@ export function InformeView({ datos, compartido = false }: Props) {
               {metricas && metricas.linderos.length > 0 && (
                 <div className="mt-4">
                   <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2">Linderos</p>
+                  {/* Azimut y rumbo son datos de replanteo (`catastro.rumbos`);
+                      sin ese plan el informe lista sólo tramo y longitud. */}
                   <Table
-                    head={['Tramo', 'Longitud', 'Azimut', 'Rumbo cuadrantal']}
-                    rows={metricas.linderos.map(l => [
-                      `M${l.desde} → M${l.hasta}`,
-                      formatearDistancia(l.longitud),
-                      `${l.azimut.toFixed(1)}°`,
-                      l.rumbo,
-                    ])}
+                    head={datos.sinRumbos
+                      ? ['Tramo', 'Longitud']
+                      : ['Tramo', 'Longitud', 'Azimut', 'Rumbo cuadrantal']}
+                    rows={metricas.linderos.map(l => datos.sinRumbos
+                      ? [`M${l.desde} → M${l.hasta}`, formatearDistancia(l.longitud)]
+                      : [
+                          `M${l.desde} → M${l.hasta}`,
+                          formatearDistancia(l.longitud),
+                          `${l.azimut.toFixed(1)}°`,
+                          l.rumbo,
+                        ])}
                   />
                 </div>
               )}

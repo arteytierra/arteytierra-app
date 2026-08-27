@@ -40,6 +40,7 @@ export interface InformeData {
   mapaDataUrl?: string;         // PNG del mapa capturado (base64)
   profesional?: PerfilProfesional; // white-label: marca del consultor que firma
   conMarca?: boolean;           // plan Semilla → marca de agua no removible
+  sinRumbos?: boolean;          // sin `catastro.rumbos` → tabla de linderos sin azimut/rumbo
 }
 
 const LS_KEY = 'terreno_informe_borrador';

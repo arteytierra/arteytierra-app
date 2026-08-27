@@ -178,6 +178,18 @@ export function RegistroForm() {
         >
           {loading ? 'Creando cuenta…' : 'Crear cuenta gratis'}
         </button>
+
+        <p className="text-[11px] leading-relaxed text-center text-ink-700/55">
+          Al crear tu cuenta aceptás los{' '}
+          <a href="/terminos" target="_blank" rel="noopener" className="text-moss-700 underline">
+            Términos de Servicio
+          </a>{' '}
+          y la{' '}
+          <a href="/privacidad" target="_blank" rel="noopener" className="text-moss-700 underline">
+            Política de Privacidad
+          </a>
+          .
+        </p>
       </form>
 
       <p className="text-xs text-center text-ink-700/60">

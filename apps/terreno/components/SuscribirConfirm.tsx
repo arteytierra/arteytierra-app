@@ -77,6 +77,17 @@ export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: P
           <p className="text-[10px] text-center text-ink-700/45 leading-relaxed">
             La renovación es automática. Podés cancelar cuando quieras; tu cuenta vuelve a Semilla y conservás tus proyectos.
           </p>
+          <p className="text-[10px] text-center text-ink-700/45 leading-relaxed">
+            Al suscribirte aceptás los{' '}
+            <a href="/terminos" target="_blank" rel="noopener" className="underline hover:text-moss-700">
+              Términos de Servicio
+            </a>{' '}
+            y la{' '}
+            <a href="/privacidad" target="_blank" rel="noopener" className="underline hover:text-moss-700">
+              Política de Privacidad
+            </a>
+            .
+          </p>
         </div>
 
         <a href="/canjear" className="mt-4 block text-center text-xs text-moss-700 hover:underline">

@@ -10,6 +10,7 @@ import {
   FileDown, FileUp, ImagePlus, Save, Download, Share2, ChevronDown, CloudOff, Check,
   Waypoints, Boxes, Moon, Palette, GripVertical, Spline, Sprout, Trees, Bird, SunDim,
   IdCard, DollarSign, Wind, TriangleAlert, BookOpen, Keyboard, Lock, Ruler, Flame, Fence,
+  Scale, ShieldCheck,
   CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList,
   Archive, Settings, Upload, Image as ImageIcon,
 } from 'lucide-react';
@@ -64,11 +65,11 @@ import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib
 import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
-import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerGrillaDensa, grillaDesdeShader, recortarGrillaA, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
-import { calcularSwales, type ResultadoSwales, type OpcionesSwales } from '@/lib/swales';
+import { calcularSwales, diagnosticarSwales, type ResultadoSwales, type OpcionesSwales, type DiagnosticoSwales } from '@/lib/swales';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
 import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
@@ -129,7 +130,8 @@ import { ControlesNavegacion, ControlesPaneles, type CapaFondo } from './Control
 import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
 import { useHistory } from '@/lib/useHistory';
 import { FeatureLock } from './FeatureLock';
-import { can, featureDeTab, tabBloqueada, BENEFICIO_FEATURE, type Plan } from '@/lib/entitlements';
+import { can, featureDeTab, tabBloqueada, planMinimo, NOMBRE_PLAN, BENEFICIO_FEATURE, type Feature, type Plan } from '@/lib/entitlements';
+import { registrarCandado } from '@/lib/telemetria';
 
 const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
   ssr: false,
@@ -667,12 +669,24 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
   const [swales, setSwales] = useState<ResultadoSwales | null>(null);
-  const handleGenerarSwales = useCallback((opts: OpcionesSwales): ResultadoSwales | null => {
+  const [swalesDiag, setSwalesDiag] = useState<DiagnosticoSwales | null>(null);
+  const handleGenerarSwales = useCallback((
+    opts: OpcionesSwales,
+    area: Array<{ lat: number; lng: number }> | null,
+  ): ResultadoSwales | null => {
     if (!grillaActiva) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return null; }
-    const r = calcularSwales(grillaActiva, mojones, opts);
-    if (!r) setModal({ type: 'alert', message: 'No se pudieron trazar swales con ese intervalo (poco desnivel o intervalo muy grande).' });
+    // Acotar a una parcela dibujada recorta la grilla Y su rango de cotas: es lo
+    // que hace viable el trazado fino en predios de miles de hectáreas, donde el
+    // desnivel del predio entero se pasa del tope de curvas.
+    const limite = area ?? mojones;
+    const grilla = area ? (recortarGrillaA(grillaActiva, area) ?? grillaActiva) : grillaActiva;
+    const diag = diagnosticarSwales(grilla, opts.intervaloV);
+    const r = diag.puede ? calcularSwales(grilla, limite, opts) : null;
+    // El intervalo puede entrar en el tope y aun así no quedar ningún tramo
+    // dentro del límite (parcela chica, curvas que la cruzan de refilón).
+    setSwalesDiag(r ? null : (diag.puede ? { ...diag, puede: false, motivo: 'sin_tramos' as const } : diag));
     setSwales(r);
-    setCapas(prev => ({ ...prev, swales: true }));
+    if (r) setCapas(prev => ({ ...prev, swales: true }));
     return r;
   }, [grillaActiva, mojones]);
   const handleColocarSwales = useCallback(() => {
@@ -1320,7 +1334,33 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       : { lat: -30.8, lng: -64.7 }
   ), [mojones]);
 
+  /**
+   * Candado para las acciones que viven FUERA del riel de herramientas, donde no
+   * llega el `FeatureLock` del panel contextual: las descargas del menú Archivo y
+   * de la paleta Cmd+K, y los rumbos de la tabla de linderos. Sin esto un plan
+   * Semilla se baja el DXF o el GeoJSON completo.
+   *
+   * Devuelve `true` si hay que cortar la acción (y deja abierto el CTA al plan
+   * que falta, registrando el intento en la telemetría de candados).
+   */
+  const pedirPlan = useCallback((feature: Feature): boolean => {
+    if (can(plan, feature)) return false;
+    const min = planMinimo(feature);
+    registrarCandado(feature, plan, 'intento');
+    setArchivoOpen(false);
+    setModal({
+      type: 'confirm',
+      message: `${BENEFICIO_FEATURE[feature]}\n\nEsta descarga está incluida en el plan ${NOMBRE_PLAN[min]}. Tu plan actual es ${NOMBRE_PLAN[plan]}.\n\n¿Querés ver los planes?`,
+      onConfirm: () => {
+        registrarCandado(feature, plan, 'cta_click');
+        window.location.href = `/suscribir?plan=${min}&periodo=anual`;
+      },
+    });
+    return true;
+  }, [plan]);
+
   const handleExportarDXF = useCallback(() => {
+    if (pedirPlan('export.dxf')) return;
     const linderos = (metricas && mojones.length >= 3)
       ? metricas.linderos.map((l, i) => ({ a: mojones[i]!, b: mojones[(i + 1) % mojones.length]!, longitud: l.longitud }))
       : [];
@@ -1338,7 +1378,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
     flashListo('DXF descargado');
-  }, [dibujos, mojones, origenGeo, proyectoActual, metricas, zonas, sectores, caminos, flashListo]);
+  }, [dibujos, mojones, origenGeo, proyectoActual, metricas, zonas, sectores, caminos, flashListo, pedirPlan]);
 
   const handleImportarDXF = useCallback((file: File) => {
     const reader = new FileReader();
@@ -1371,23 +1411,25 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
   }, [mojones, proyectoActual, metadatos, flashListo]);
 
-  const handleExportGeoJSON = useCallback(() => { exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setArchivoOpen(false); flashListo('GeoJSON descargado'); }, [mojones, zonas, sectores, pines, caminos, proyectoActual, flashListo]);
-  const handleExportKML = useCallback(() => { exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('KML descargado'); }, [mojones, proyectoActual, flashListo]);
-  const handleExportGPX = useCallback(() => { exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('GPX descargado'); }, [mojones, proyectoActual, flashListo]);
+  const handleExportGeoJSON = useCallback(() => { if (pedirPlan('export.gis')) return; exportarGeoJSON({ mojones, zonas, sectores, pines, caminos, nombre: proyectoActual?.nombre || 'terreno' }); setArchivoOpen(false); flashListo('GeoJSON descargado'); }, [mojones, zonas, sectores, pines, caminos, proyectoActual, flashListo, pedirPlan]);
+  const handleExportKML = useCallback(() => { if (pedirPlan('export.gis')) return; exportarKML(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('KML descargado'); }, [mojones, proyectoActual, flashListo, pedirPlan]);
+  const handleExportGPX = useCallback(() => { if (pedirPlan('export.gis')) return; exportarGPX(mojones, proyectoActual?.nombre || 'terreno'); setArchivoOpen(false); flashListo('GPX descargado'); }, [mojones, proyectoActual, flashListo, pedirPlan]);
 
   // Exportar el modelo de elevación activo (DEM propio si está cargado; si no, el satelital).
   const handleExportGeoTIFF = useCallback(() => {
+    if (pedirPlan('export.gis')) return;
     setArchivoOpen(false);
     if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
     descargarGeoTIFF(grillaActiva, proyectoActual?.nombre || 'terreno');
     flashListo('GeoTIFF de elevación descargado');
-  }, [grillaActiva, proyectoActual, flashListo]);
+  }, [grillaActiva, proyectoActual, flashListo, pedirPlan]);
   const handleExportMDE = useCallback(() => {
+    if (pedirPlan('export.gis')) return;
     setArchivoOpen(false);
     if (!grillaActiva) { setModal({ type: 'alert', message: 'Todavía no hay relieve. Marcá el terreno (o cargá un MDE propio) para generar el modelo de elevación.' }); return; }
     descargarMDE(grillaActiva, proyectoActual?.nombre || 'terreno');
     flashListo('MDE descargado');
-  }, [grillaActiva, proyectoActual, flashListo]);
+  }, [grillaActiva, proyectoActual, flashListo, pedirPlan]);
 
   // ─── Overlay de imagen (plano de referencia) ──────────────────────────────
   const handleCargarOverlay = useCallback((file: File) => {
@@ -2119,6 +2161,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       mapaDataUrl,
       profesional: leerPerfil() ?? undefined,
       conMarca: plan === 'semilla',
+      sinRumbos: !can(plan, 'catastro.rumbos'),
     });
     window.open('/informe/borrador', '_blank');
   }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
@@ -2479,6 +2522,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   </button>
                   <ExportItem icon={<IdCard className="w-3.5 h-3.5" />} label="Datos del profesional…" onClick={() => { setConfigOpen(false); setPerfilOpen(true); }} />
                   <div className="h-px bg-bone-100 my-1" />
+                  <ExportItem icon={<Scale className="w-3.5 h-3.5" />} label="Términos de Servicio" onClick={() => { setConfigOpen(false); window.open('/terminos', '_blank', 'noopener'); }} />
+                  <ExportItem icon={<ShieldCheck className="w-3.5 h-3.5" />} label="Política de Privacidad" onClick={() => { setConfigOpen(false); window.open('/privacidad', '_blank', 'noopener'); }} />
+                  <div className="h-px bg-bone-100 my-1" />
                   <button
                     onClick={() => { setConfigOpen(false); handleLogout(); }}
                     title={userName ? `Sesión: ${userName}` : undefined}
@@ -2613,7 +2659,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               </div>
               {metricas && (
                 <div className="border-t border-bone-200 pt-4">
-                  <PoligonoPanel metricas={metricas} />
+                  <PoligonoPanel
+                    metricas={metricas}
+                    rumbosBloqueados={!can(plan, 'catastro.rumbos')}
+                    onDesbloquearRumbos={() => pedirPlan('catastro.rumbos')}
+                  />
                 </div>
               )}
               {/* Pines de referencia */}
@@ -2926,6 +2976,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <SwalesPanel
                 grillaLista={!!grillaActiva}
                 swales={swales}
+                parcelas={poligonosCutFill}
+                diagnostico={swalesDiag}
+                precipDefault={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm}
                 onGenerar={handleGenerarSwales}
                 onColocar={handleColocarSwales}
                 onIrATopo={() => setTab('topo')}

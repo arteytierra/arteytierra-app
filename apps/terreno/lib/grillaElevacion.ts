@@ -84,6 +84,75 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
 }
 
 /**
+ * Recorta una grilla a la ventana de un polígono dibujado (una parcela dentro
+ * del predio) y recalcula `elev_min`/`elev_max` SÓLO con las celdas que caen
+ * adentro de ese polígono.
+ *
+ * El recálculo del rango es el punto de la función. Todo lo que se apoya en
+ * curvas de nivel (swales, keyline) fija sus niveles a partir del desnivel
+ * total de la grilla: en un predio de miles de hectáreas ese desnivel es tan
+ * grande que un intervalo fino pide cientos de curvas y `calcularCurvas` se
+ * corta por `MAX_NIVELES` sin dibujar ninguna. Acotado a una parcela, el
+ * desnivel es el de la parcela y el trazado vuelve a ser posible.
+ *
+ * Las cotas de la ventana se conservan tal cual (no se enmascaran a NaN): el
+ * marching squares necesita las 4 esquinas de cada celda, y el recorte fino al
+ * polígono lo hace después quien consume las líneas.
+ */
+export function recortarGrillaA(
+  g:     GrillaElevacion,
+  verts: Array<{ lat: number; lng: number }>,
+): GrillaElevacion | null {
+  if (verts.length < 3 || g.rows < 2 || g.cols < 2) return null;
+
+  const anillo = verts.map(v => [v.lng, v.lat] as [number, number]);
+  anillo.push(anillo[0]!);
+  let poly: ReturnType<typeof turf.polygon>;
+  try { poly = turf.polygon([anillo]); } catch { return null; }
+
+  const dLat = (g.latMax - g.latMin) / (g.rows - 1);
+  const dLng = (g.lngMax - g.lngMin) / (g.cols - 1);
+  if (!(dLat > 0) || !(dLng > 0)) return null;
+
+  // Ventana de la parcela, con un anillo de margen para no perder la celda del borde.
+  const lats = verts.map(v => v.lat), lngs = verts.map(v => v.lng);
+  const r0 = Math.max(0, Math.floor((Math.min(...lats) - g.latMin) / dLat) - 1);
+  const r1 = Math.min(g.rows - 1, Math.ceil((Math.max(...lats) - g.latMin) / dLat) + 1);
+  const c0 = Math.max(0, Math.floor((Math.min(...lngs) - g.lngMin) / dLng) - 1);
+  const c1 = Math.min(g.cols - 1, Math.ceil((Math.max(...lngs) - g.lngMin) / dLng) + 1);
+  const rows = r1 - r0 + 1, cols = c1 - c0 + 1;
+  if (rows < 2 || cols < 2) return null;
+
+  const elev = new Float64Array(rows * cols);
+  let min = Infinity, max = -Infinity;
+  for (let r = 0; r < rows; r++) {
+    const lat = g.latMin + (r0 + r) * dLat;
+    for (let c = 0; c < cols; c++) {
+      const v = g.elev[(r0 + r) * g.cols + (c0 + c)]!;
+      elev[r * cols + c] = v;
+      if (Number.isNaN(v)) continue;
+      const lng = g.lngMin + (c0 + c) * dLng;
+      if (!turf.booleanPointInPolygon(turf.point([lng, lat]), poly)) continue;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+  }
+  if (!Number.isFinite(min)) return null;   // la parcela no toca ninguna celda con dato
+
+  return {
+    rows, cols,
+    latMin: g.latMin + r0 * dLat,
+    latMax: g.latMin + r1 * dLat,
+    lngMin: g.lngMin + c0 * dLng,
+    lngMax: g.lngMin + c1 * dLng,
+    elev,
+    elev_min: min,
+    elev_max: max,
+    fuente: g.fuente,
+  };
+}
+
+/**
  * Grilla densa GLO-30 server-side (`/api/dem`, COGs de Copernicus). Devuelve la
  * grilla ya muestreada; null si el servicio falla → el llamador cae a Terrarium.
  */

@@ -33,10 +33,20 @@ export async function requierePlan(feature: Feature): Promise<Response | null> {
       upgrade: 'https://arteytierra.org/terreno#planes',
     });
   } catch (e) {
-    // Sin esto, cualquier excepción (env corrupto, Supabase caído, undici) sale
-    // como un 500 opaco de Next: el cliente muestra "Unexpected end of JSON
-    // input" o "respondió 500" sin pista. Devolvemos JSON con el detalle.
-    return json(500, { error: `Error de autenticación: ${String((e as Error)?.message ?? e)}` });
+    // Sin este catch, cualquier excepción (env corrupto, Supabase caído, undici)
+    // sale como un 500 opaco de Next y el cliente sólo ve "respondió 500" o
+    // "Unexpected end of JSON input", sin pista de la causa.
+    //
+    // El detalle va a donde sirve —los Runtime Logs de Vercel— y NO al cliente:
+    // el mensaje interno de una excepción de auth puede filtrar nombres de env,
+    // hosts o fragmentos de configuración. Al usuario le queda un código corto
+    // para que, si reporta el problema, se pueda encontrar la línea del log.
+    const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+    console.error(`[requierePlan ${ref}] feature=${feature}`, e);
+    return json(500, {
+      error: `No pudimos verificar tu sesión. Probá recargar la página; si sigue pasando, avisanos con el código ${ref}.`,
+      ref,
+    });
   }
 }
 
