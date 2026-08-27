@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diagnosticarSwales, calcularSwales } from '@/lib/swales';
+import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion } from '@/lib/swales';
 import { recortarGrillaA, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { MAX_NIVELES } from '@/lib/curvasNivel';
 
@@ -111,5 +111,107 @@ describe('calcularSwales sobre una parcela recortada', () => {
     expect(r!.swales.length).toBeGreaterThan(0);
     expect(r!.total_long_m).toBeGreaterThan(0);
     expect(r!.total_vol_m3).toBeGreaterThan(0);
+  });
+});
+
+describe('dimensionarSeccion', () => {
+  it('elige la profundidad más chica que deje un fondo abrible', () => {
+    // 20 m de franja · 60 mm · coef 0,4 ⇒ 0,48 m² de sección por metro.
+    const s = dimensionarSeccion(20, 60, 0.4, 1000, 1.5);
+    expect(s.area_req_m2).toBeCloseTo(0.48, 2);
+    expect(s.prof_m).toBe(0.3);
+    expect(s.base_m).toBeCloseTo(1.15, 2);
+    expect(s.area_m2).toBeCloseTo(0.48, 2);
+    expect(s.suficiente).toBe(true);
+    // Lo que se excava es exactamente lo que almacena.
+    expect(s.capacidad_m3).toBe(Math.round(s.area_m2 * 1000));
+  });
+
+  it('la boca es más ancha que el fondo por los taludes', () => {
+    const s = dimensionarSeccion(20, 60, 0.4, 1000, 1.5);
+    expect(s.ancho_sup_m).toBeCloseTo(s.base_m + 2 * s.talud_z * s.prof_m, 2);
+    expect(s.ancho_sup_m).toBeGreaterThan(s.base_m);
+  });
+
+  it('avisa cuando el volumen no entra en el tope de profundidad', () => {
+    // Franja enorme y tormenta fuerte: no hay zanja de 0,8 m que lo aguante.
+    const s = dimensionarSeccion(150, 120, 0.7, 2000, 2);
+    expect(s.suficiente).toBe(false);
+    expect(s.prof_m).toBe(0.8);
+    expect(s.cobertura_pct).toBeLessThan(50);
+    expect(s.intervalo_sugerido).not.toBeNull();
+    expect(s.intervalo_sugerido!).toBeLessThan(2);
+  });
+
+  it('el intervalo sugerido efectivamente hace entrar la sección', () => {
+    const s = dimensionarSeccion(150, 120, 0.7, 2000, 2);
+    const factor = s.intervalo_sugerido! / 2;      // la franja escala con el intervalo
+    const rehecho = dimensionarSeccion(150 * factor, 120, 0.7, 2000, s.intervalo_sugerido!);
+    expect(rehecho.suficiente).toBe(true);
+  });
+
+  it('con muy poca agua no baja del fondo mínimo constructivo', () => {
+    const s = dimensionarSeccion(5, 20, 0.1, 500, 1);
+    expect(s.base_m).toBeGreaterThanOrEqual(0.3);
+    expect(s.suficiente).toBe(true);
+  });
+
+  it('respeta un tope de profundidad más exigente', () => {
+    const s = dimensionarSeccion(60, 90, 0.5, 1000, 2, { profMax_m: 0.4 });
+    expect(s.prof_m).toBeLessThanOrEqual(0.4);
+  });
+});
+
+describe('verificarInfiltracion', () => {
+  const seccion = dimensionarSeccion(20, 60, 0.4, 1000, 1.5);
+
+  it('aplica el factor de seguridad 2 sobre el Ksat del perfil', () => {
+    const i = verificarInfiltracion(seccion, 60)!;
+    expect(i.ksat_suelo_mm_h).toBe(60);
+    expect(i.ksat_diseno_mm_h).toBe(30);
+  });
+
+  it('un suelo permeable vacía dentro del rango de diseño', () => {
+    expect(verificarInfiltracion(seccion, 60)!.clase).toBe('ok');
+  });
+
+  it('un suelo arcilloso deja el agua estancada y lo marca', () => {
+    const i = verificarInfiltracion(seccion, 2)!;
+    expect(i.clase).toBe('muy_lenta');
+    expect(i.horas_vaciado).toBeGreaterThan(48);
+  });
+
+  it('sin dato de suelo no inventa una verificación', () => {
+    expect(verificarInfiltracion(seccion, null)).toBeNull();
+    expect(verificarInfiltracion(seccion, 0)).toBeNull();
+    expect(verificarInfiltracion(null, 60)).toBeNull();
+  });
+});
+
+describe('calcularSwales · dimensionado integrado', () => {
+  const g = ladera(60, 60, 30);
+  const mojones = [
+    { lat: -30.799, lng: -64.699 },
+    { lat: -30.799, lng: -64.601 },
+    { lat: -30.701, lng: -64.601 },
+    { lat: -30.701, lng: -64.699 },
+  ];
+
+  it('devuelve la sección dimensionada junto con el trazado', () => {
+    const r = calcularSwales(g, mojones, { intervaloV: 1.5, precipMm: 70, coef: 0.45 })!;
+    expect(r.seccion).not.toBeNull();
+    expect(r.seccion!.prof_m).toBeGreaterThan(0);
+    expect(r.seccion!.capacidad_m3).toBeGreaterThan(0);
+  });
+
+  it('sin Ksat traza igual pero no verifica infiltración', () => {
+    const r = calcularSwales(g, mojones, { intervaloV: 1.5, precipMm: 70, coef: 0.45 })!;
+    expect(r.infiltracion).toBeNull();
+  });
+
+  it('con Ksat verifica el vaciado', () => {
+    const r = calcularSwales(g, mojones, { intervaloV: 1.5, precipMm: 70, coef: 0.45, ksat_mm_h: 25 })!;
+    expect(r.infiltracion).not.toBeNull();
+    expect(r.infiltracion!.horas_vaciado).toBeGreaterThan(0);
   });
 });

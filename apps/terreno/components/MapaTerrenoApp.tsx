@@ -70,6 +70,7 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { calcularSwales, diagnosticarSwales, type ResultadoSwales, type OpcionesSwales, type DiagnosticoSwales } from '@/lib/swales';
+import { hidrologiaPredio, T_POR_DEFECTO, type HidrologiaPredio } from '@/lib/hidrologiaPredio';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
 import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
@@ -661,10 +662,37 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     [datosShader],
   );
 
-  // ─── Riesgo de erosión (pendiente × flujo acumulado) ─────────────────────
+  // ─── Hidrología del predio (motor compartido) ─────────────────────────────
+  // Un solo lugar donde se responde "¿cuál es el CN, la tormenta y el coeficiente
+  // de escorrentía de este predio?". Antes cada herramienta le pedía al usuario
+  // que lo adivinara con un slider, teniendo la app el dato a mano.
+  const [periodoRetorno, setPeriodoRetorno] = useState<number>(T_POR_DEFECTO);
+  const pendienteMedia = useMemo(() => {
+    if (!datosShader || datosShader.celdas.length === 0) return null;
+    const s = datosShader.celdas.reduce((a, c) => a + c.pendiente_pct, 0);
+    return s / datosShader.celdas.length;
+  }, [datosShader]);
+
+  const hidroPredio = useMemo<HidrologiaPredio>(() => hidrologiaPredio({
+    suelo: datosSuelo?.grupo_hidro
+      ? { grupo: datosSuelo.grupo_hidro.grupo, ksat_mm_h: datosSuelo.grupo_hidro.ksat_min, capa_limitante: datosSuelo.grupo_hidro.capa_limitante }
+      : null,
+    cobertura: datosCobertura?.items.map(it => ({ wc: it.clase.valor, pct: it.pct })) ?? null,
+    tormenta: datosExtremos ? { recurrencias: datosExtremos.tormenta.recurrencias, anios: datosExtremos.anios } : null,
+    periodoRetorno,
+    contexto: {
+      fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null,
+      area_ha:       metricas?.area_ha ?? null,
+      pendiente_pct: pendienteMedia,
+    },
+  }), [datosSuelo, datosCobertura, datosExtremos, periodoRetorno, grillaActiva, datosShader, metricas, pendienteMedia]);
+
+  // ─── Riesgo de erosión (pendiente × flujo acumulado × cobertura) ─────────
   const datosErosion = useMemo<DatosErosion | null>(
-    () => datosShader && datosEscorrentia ? calcularErosion(datosShader, datosEscorrentia) : null,
-    [datosShader, datosEscorrentia],
+    () => datosShader && datosEscorrentia
+      ? calcularErosion(datosShader, datosEscorrentia, datosCobertura ? hidroPredio.usleC : null)
+      : null,
+    [datosShader, datosEscorrentia, datosCobertura, hidroPredio.usleC],
   );
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
@@ -2978,7 +3006,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 swales={swales}
                 parcelas={poligonosCutFill}
                 diagnostico={swalesDiag}
-                precipDefault={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm}
+                hidro={hidroPredio}
+                onPeriodoRetorno={setPeriodoRetorno}
+                onIrAClima={() => setTab('clima')}
+                onIrASuelo={() => setTab('suelo')}
                 onGenerar={handleGenerarSwales}
                 onColocar={handleColocarSwales}
                 onIrATopo={() => setTab('topo')}
@@ -4223,7 +4254,13 @@ function PanelCapas({
                   </div>
                 );
               })}
-              <p className="text-[9px] text-ink-700/40 pt-1 leading-snug">Pendiente × flujo acumulado (relativo al predio). Orientativo — señala dónde proteger el suelo con swales y cobertura.</p>
+              <p className="text-[9px] text-ink-700/40 pt-1 leading-snug">
+                Pendiente × flujo acumulado (relativo al predio){datosErosion.usle_c !== null ? ' × factor C de cobertura' : ''}.
+                Orientativo — señala dónde proteger el suelo con swales y cobertura.
+              </p>
+              <p className={`text-[9px] leading-snug ${datosErosion.usle_c === null ? 'text-ink-700/40' : datosErosion.factor_cobertura < 0.9 ? 'text-orange-700/80' : 'text-teal-700/80'}`}>
+                {datosErosion.nota_cobertura}
+              </p>
             </div>
           </CapaGrupo>
         )}
