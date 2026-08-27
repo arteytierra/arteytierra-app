@@ -79,6 +79,7 @@ import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@
 import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
 import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
+import { perdidaSuelo, TOLERANCIA_T_HA, type PerdidaSuelo } from '@/lib/usle';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
@@ -711,6 +712,28 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     [datosShader, datosEscorrentia, datosCobertura, hidroPredio.usleC],
   );
 
+  /**
+   * Pérdida de suelo por clase (H4). El mapa de erosión dice DÓNDE; con la
+   * lluvia anual de Clima y la textura de Suelo se cierra la USLE y también
+   * dice CUÁNTO. Sin esos dos, queda en null y la leyenda muestra sólo el
+   * índice relativo, como antes.
+   */
+  const perdidaErosion = useMemo<Record<number, PerdidaSuelo> | null>(() => {
+    const precipAnual = datosClima?.precip_anual_mm;
+    if (!datosErosion || datosErosion.usle_c === null || !precipAnual || !datosSuelo) return null;
+    const entrada = {
+      precipAnual_mm:  precipAnual,
+      clase_textura:   datosSuelo.clase_textura,
+      carbonoOrg_g_kg: datosSuelo.carbono_org,
+      usle_c:          datosErosion.usle_c,
+    };
+    const out: Record<number, PerdidaSuelo> = {};
+    datosErosion.resumen.forEach(r => {
+      if (r.pct > 0) out[r.clase] = perdidaSuelo(entrada, r.pendiente_media_pct, r.lambda_m);
+    });
+    return out;
+  }, [datosErosion, datosClima, datosSuelo]);
+
   const saludErosion = useMemo<Confianza | null>(
     () => datosErosion ? confianzaErosion({
       area_ha:        datosErosion.area_ha,
@@ -718,8 +741,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       nota_cobertura: datosErosion.nota_cobertura,
       fuenteDem:      grillaActiva?.fuente ?? datosShader?.fuente ?? null,
       textura:        datosSuelo?.clase_textura ?? null,
+      hayMagnitud:    perdidaErosion !== null,
+      precipAnual_mm: datosClima?.precip_anual_mm ?? null,
     }) : null,
-    [datosErosion, grillaActiva, datosShader, datosSuelo],
+    [datosErosion, grillaActiva, datosShader, datosSuelo, perdidaErosion, datosClima],
   );
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
@@ -3714,7 +3739,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             subCapasOcultas={subCapasOcultas}
             onToggleSubCapa={toggleSubCapa}
             datosErosion={datosErosion}
-            saludErosion={saludErosion}
+            saludErosion={saludErosion} perdidaErosion={perdidaErosion}
             haySwales={!!swales}
             hayCortinas={!!cortina}
             hayCortafuegos={!!cortafuegos}
@@ -3959,6 +3984,7 @@ interface PanelCapasProps {
   datosShader:         DatosShader | null;
   datosErosion:        DatosErosion | null;
   saludErosion:        Confianza | null;
+  perdidaErosion:      Record<number, PerdidaSuelo> | null;
   haySwales:           boolean;
   hayCortinas:         boolean;
   hayCortafuegos:      boolean;
@@ -3995,7 +4021,7 @@ function PanelCapas({
   cuencasGuardadas, onRenombrarCuenca, onEliminarCuenca,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, aislado, onAislarCarpeta, onAislarAnalisis, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, saludErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, saludErosion, perdidaErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
@@ -4342,19 +4368,32 @@ function PanelCapas({
             expanded={exp.erosion} onExpand={() => tog('erosion')}
           >
             <div className="pl-7 pr-3 pb-2 pt-1 space-y-1">
+              {/* Con clima + suelo + cobertura la USLE se cierra y cada clase
+                  deja de ser "relativo al predio" para tener magnitud: la
+                  pregunta que el índice no podía contestar era si hay que
+                  actuar o si el suelo aguanta. Va como banda ×÷2 y comparada
+                  contra la tolerancia, no como número puntual. */}
               {CLASES_EROSION.map(cl => {
                 const r = datosErosion.resumen.find(x => x.clase === cl.clase);
+                const p = r && r.pct > 0 ? perdidaErosion?.[cl.clase] : null;
                 return (
-                  <div key={cl.clase} className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: cl.color }} />
-                    <span className="text-[10px] text-ink-700/70 flex-1">{cl.label}</span>
-                    <span className="text-[10px] text-ink-700/50 tabular-nums">{r?.pct ?? 0}% · {r?.ha ?? 0} ha</span>
+                  <div key={cl.clase} className="flex items-baseline gap-2">
+                    <span className="w-3 h-3 rounded-sm shrink-0 self-center" style={{ background: cl.color }} />
+                    <span className="text-[10px] text-ink-700/70 flex-1 min-w-0">
+                      {cl.label}
+                      {p && <span className="block text-[9px] text-ink-700/45 tabular-nums leading-tight">
+                        {p.min_t_ha}–{p.max_t_ha} t/ha/año{p.veces_tolerancia >= 1 ? ` · ${p.veces_tolerancia}× la tolerancia` : ''}
+                      </span>}
+                    </span>
+                    <span className="text-[10px] text-ink-700/50 tabular-nums shrink-0">{r?.pct ?? 0}% · {r?.ha ?? 0} ha</span>
                   </div>
                 );
               })}
               <p className="text-[9px] text-ink-700/40 pt-1 leading-snug">
                 Pendiente × flujo acumulado (relativo al predio){datosErosion.usle_c !== null ? ' × factor C de cobertura' : ''}.
-                Orientativo — señala dónde proteger el suelo con swales y cobertura.
+                {perdidaErosion
+                  ? ` La pérdida sale de la USLE completa (R·K·LS·C) con la lluvia anual y tu suelo; tolerancia de referencia ${TOLERANCIA_T_HA} t/ha/año.`
+                  : ' Orientativo — señala dónde proteger el suelo con swales y cobertura.'}
               </p>
               {/* El detalle de qué entró y qué falta (incluida la nota de
                   cobertura) vive acá: es el mismo bloque que Swales, Cuenca y

@@ -94,4 +94,27 @@ describe('calcularErosion · factor de cobertura', () => {
     const chico: DatosShader = { ...shader, celdas: shader.celdas.slice(0, 3) };
     expect(calcularErosion(chico, esc!, null)).toBeNull();
   });
+
+  /**
+   * Lo que consume la USLE (H4): cada clase tiene que traer su pendiente media
+   * y su longitud de ladera, porque de ahí sale el LS. Sin esto la magnitud en
+   * t/ha/año no se puede calcular por clase.
+   */
+  it('cada clase con celdas trae pendiente media y longitud de ladera', () => {
+    const d = calcularErosion(shader, esc!, 0.04)!;
+    const conCeldas = d.resumen.filter(r => r.pct > 0);
+    expect(conCeldas.length).toBeGreaterThan(1);
+    for (const r of conCeldas) {
+      expect(r.pendiente_media_pct).toBeGreaterThan(0);
+      expect(r.lambda_m).toBeGreaterThan(0);
+    }
+  });
+
+  it('las clases más severas caen en las laderas más empinadas', () => {
+    const d = calcularErosion(shader, esc!, 0.04)!;
+    const conCeldas = d.resumen.filter(r => r.pct > 0);
+    for (let i = 1; i < conCeldas.length; i++) {
+      expect(conCeldas[i]!.pendiente_media_pct).toBeGreaterThan(conCeldas[i - 1]!.pendiente_media_pct);
+    }
+  });
 });

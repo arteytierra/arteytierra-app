@@ -223,6 +223,22 @@ describe('confianzaErosion', () => {
     expect(con.nivel).toBe('ok');   // no se arregla cargando datos: no baja el nivel
   });
 
+  it('con la USLE cerrada cambia lo que declara, sin bajar el nivel', () => {
+    const c = confianzaErosion({ ...EROSION_OK, hayMagnitud: true, textura: 'Franco-limoso', precipAnual_mm: 900 });
+    expect(ids(c)).not.toContain('sin_erodabilidad');
+    expect(nivelDe(c, 'usle_completa')).toBe('ok');
+    expect(nivelDe(c, 'sin_practicas')).toBe('ok');
+    expect(c.avisos.find(a => a.id === 'usle_completa')?.detalle).toContain('900 mm');
+    expect(c.avisos.find(a => a.id === 'usle_completa')?.detalle).toContain('Franco-limoso');
+    expect(c.nivel).toBe('alta');
+  });
+
+  it('sin magnitud invita a cargar lo que falta para cerrarla', () => {
+    const c = confianzaErosion(EROSION_OK);
+    expect(ids(c)).not.toContain('usle_completa');
+    expect(c.avisos.find(a => a.id === 'sin_erodabilidad')?.detalle).toContain('t/ha/año');
+  });
+
   it('un DEM grueso para el tamaño del predio sí baja la confianza', () => {
     const c = confianzaErosion({ ...EROSION_OK, area_ha: 4, fuenteDem: 'glo30' });
     expect(nivelDe(c, 'dem_grueso')).toBe('alerta');

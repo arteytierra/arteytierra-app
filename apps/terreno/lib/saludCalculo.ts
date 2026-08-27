@@ -227,8 +227,12 @@ export interface EntradaErosionSalud {
   usle_c:         number | null;
   nota_cobertura: string;
   fuenteDem?:     FuenteRelieve | null;
-  /** clase textural del suelo (A4), sólo para matizar qué falta */
+  /** clase textural del suelo (A4): matiza qué falta, y da el K si hay magnitud */
   textura?:       string | null;
+  /** ¿se está mostrando la pérdida en t/ha/año? (necesita clima + suelo) */
+  hayMagnitud?:   boolean;
+  /** precipitación anual usada para la erosividad R, si la hay */
+  precipAnual_mm?: number | null;
 }
 
 export function confianzaErosion(e: EntradaErosionSalud): Confianza {
@@ -256,13 +260,31 @@ export function confianzaErosion(e: EntradaErosionSalud): Confianza {
     detalle: 'El índice se normaliza contra el propio terreno, así que siempre va a haber celdas en rojo aunque el lote entero sea suave (y al revés). Sirve para decidir dónde proteger primero adentro del predio, no para comparar un campo con otro.',
   });
 
-  avisos.push({
-    id: 'sin_erodabilidad', nivel: 'ok',
-    titulo: 'Índice de relieve y cobertura, no USLE completa',
-    detalle: e.textura
-      ? `Falta la erodabilidad del suelo (K) y las prácticas de conservación (P). Tu suelo es ${e.textura}: los limosos se van con mucha menos energía que los arcillosos, así que la misma ladera puede erosionar bastante más o menos que lo que muestra el mapa.`
-      : 'Falta la erodabilidad del suelo (K) y las prácticas de conservación (P). Un suelo limoso se va con mucha menos energía que uno arcilloso sobre la misma pendiente.',
-  });
+  if (e.hayMagnitud) {
+    // Con clima y suelo cargados la USLE se cierra y el índice relativo pasa a
+    // t/ha/año. El número vale, pero es el producto de cinco aproximaciones y
+    // eso hay que decirlo con todas las letras, no en una nota al pie.
+    avisos.push({
+      id: 'usle_completa', nivel: 'ok',
+      titulo: 'La pérdida en t/ha/año es una banda, no un número',
+      detalle: `A = R·K·LS·C·P. La erosividad R sale de una regresión global sobre la lluvia anual${
+        e.precipAnual_mm ? ` (${Math.round(e.precipAnual_mm)} mm)` : ''
+      }, K de la tabla de valores típicos por textura${e.textura ? ` (${e.textura})` : ''} corregida por materia orgánica, y LS de la pendiente media y la longitud de ladera de cada clase sobre el DEM. Por eso se muestra una banda de ×÷2: sirve para saber si estás arriba o abajo de la tolerancia, no para llevar al papel.`,
+    });
+    avisos.push({
+      id: 'sin_practicas', nivel: 'ok',
+      titulo: 'Se asume P = 1: sin prácticas de conservación',
+      detalle: 'La app no sabe si hay terrazas, siembra en contorno o fajas. Si las hay, la pérdida real es menor —hasta la mitad con contorno en pendientes medias—. Se asume que no, porque suponer que sí subestimaría, que es el error caro.',
+    });
+  } else {
+    avisos.push({
+      id: 'sin_erodabilidad', nivel: 'ok',
+      titulo: 'Índice de relieve y cobertura, no USLE completa',
+      detalle: e.textura
+        ? `Falta la erodabilidad del suelo (K) y las prácticas de conservación (P). Tu suelo es ${e.textura}: los limosos se van con mucha menos energía que los arcillosos, así que la misma ladera puede erosionar bastante más o menos que lo que muestra el mapa. Cargá Clima y se completa la USLE con la pérdida en t/ha/año.`
+        : 'Falta la erodabilidad del suelo (K) y las prácticas de conservación (P). Un suelo limoso se va con mucha menos energía que uno arcilloso sobre la misma pendiente. Con Clima y Suelo cargados, la app cierra la USLE y estima la pérdida en t/ha/año.',
+    });
+  }
 
   return armarConfianza(avisos, {
     relieve:   e.fuenteDem != null,

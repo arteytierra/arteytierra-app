@@ -18,9 +18,11 @@
  * a severo que el mismo relieve con el suelo desnudo. Eso es exactamente lo que
  * hace C en la USLE — escala la magnitud, no el patrón espacial.
  *
- * Orientativo: no reemplaza un estudio de suelos (falta erodabilidad K y
- * prácticas P). Señala DÓNDE conviene proteger el suelo —swales, cobertura viva,
- * cortinas— y complementa el mapa de escorrentías.
+ * Orientativo: no reemplaza un estudio de suelos. Señala DÓNDE conviene proteger
+ * el suelo —swales, cobertura viva, cortinas— y complementa el mapa de
+ * escorrentías. El CUÁNTO, en toneladas por hectárea y año, lo estima
+ * `lib/usle.ts` a partir de la pendiente media y la longitud de ladera que este
+ * módulo devuelve por clase.
  */
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
@@ -43,7 +45,13 @@ export interface CeldaErosion {
   clase: ClaseErosion;
 }
 
-export interface ResumenErosion { clase: ClaseErosion; label: string; color: string; pct: number; ha: number }
+export interface ResumenErosion {
+  clase: ClaseErosion; label: string; color: string; pct: number; ha: number;
+  /** pendiente media de las celdas de esta clase (%) — entra al LS de la USLE */
+  pendiente_media_pct: number;
+  /** longitud de ladera representativa (m), del flujo acumulado — ídem */
+  lambda_m: number;
+}
 
 export interface DatosErosion {
   celdas:  CeldaErosion[];
@@ -90,10 +98,16 @@ export function calcularErosion(
   // Índice de poder erosivo por celda (sin clasificar todavía).
   const spi = new Float64Array(celdas.length);
   const pend = new Float64Array(celdas.length);
+  // Longitud de ladera aguas-arriba: el lado de celda por la raíz del flujo
+  // acumulado. Es la misma raíz que ya usa el SPI, leída como distancia; sirve
+  // de λ para el LS de la USLE (H4), acotada más abajo por LAMBDA_MAX_M.
+  const lado = Math.sqrt(cellAreaM2);
+  const lambda = new Float64Array(celdas.length);
   celdas.forEach((c: CeldaShader, i) => {
     const acum = esc.acumulacion.get(`${c.row},${c.col}`) ?? 1;
     pend[i] = c.pendiente_pct;
     spi[i]  = (c.pendiente_pct / 100) * Math.sqrt(acum);
+    lambda[i] = lado * Math.sqrt(acum);
   });
 
   // Referencia = percentil 90 del SPI (evita que un outlier aplaste la escala).
@@ -111,6 +125,8 @@ export function calcularErosion(
     rel < b1 ? 0 : rel < b2 ? 1 : rel < b3 ? 2 : 3;
 
   const conteo: [number, number, number, number] = [0, 0, 0, 0];
+  const sumaPend:   [number, number, number, number] = [0, 0, 0, 0];
+  const sumaLambda: [number, number, number, number] = [0, 0, 0, 0];
   const out: CeldaErosion[] = celdas.map((c, i) => {
     let clase = bandaRel(spi[i]! / ref);
     // Techo por pendiente absoluta: los llanos no llegan a alto/severo.
@@ -118,15 +134,22 @@ export function calcularErosion(
     else if (pend[i]! < p2) clase = Math.min(clase, 1) as ClaseErosion;
     else if (pend[i]! < p3) clase = Math.min(clase, 2) as ClaseErosion;
     conteo[clase] += 1;
+    sumaPend[clase]   += pend[i]!;
+    sumaLambda[clase] += lambda[i]!;
     return { row: c.row, col: c.col, latMin: c.latMin, latMax: c.latMax, lngMin: c.lngMin, lngMax: c.lngMax, clase };
   });
 
   const total = out.length;
-  const resumen: ResumenErosion[] = CLASES_EROSION.map(cl => ({
-    clase: cl.clase, label: cl.label, color: cl.color,
-    pct: Math.round((100 * conteo[cl.clase]!) / total),
-    ha:  +((conteo[cl.clase]! * cellAreaM2) / 10_000).toFixed(2),
-  }));
+  const resumen: ResumenErosion[] = CLASES_EROSION.map(cl => {
+    const n = conteo[cl.clase]!;
+    return {
+      clase: cl.clase, label: cl.label, color: cl.color,
+      pct: Math.round((100 * n) / total),
+      ha:  +((n * cellAreaM2) / 10_000).toFixed(2),
+      pendiente_media_pct: n ? +(sumaPend[cl.clase]! / n).toFixed(1) : 0,
+      lambda_m:            n ? Math.round(sumaLambda[cl.clase]! / n) : 0,
+    };
+  });
 
   return {
     celdas: out, resumen,
