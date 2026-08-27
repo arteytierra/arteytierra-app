@@ -14,21 +14,21 @@ import { PlanesTerreno } from '@/components/terreno/PlanesTerreno';
 import { REGISTRO_URL, FUNDADORES_CUPO } from '@/lib/terreno/planes';
 
 export const metadata: Metadata = {
-  title: 'Terreno — Del terreno al masterplan',
+  title: 'acequia — Diseño ecosistémico del territorio',
   description:
     'Topografía, análisis de agua, suelo, clima, represas, contexto ecosistémico y diseño Keyline — todo a partir de marcar tu predio, sin CAD ni GIS y con datos globales. Empezá gratis.',
   // Landing en modo privado por ahora: no la mostramos en la navegación ni la
   // indexamos. Sigue accesible por link directo para compartir en privado.
   robots: { index: false, follow: false },
   openGraph: {
-    title: 'Terreno — Del terreno al masterplan | Arte y Tierra',
+    title: 'acequia — Diseño ecosistémico del territorio | Arte y Tierra',
     description:
-      'Marcá tu predio y Terreno hace el resto: topografía, agua, suelo, clima, represas y diseño regenerativo en un solo lugar.',
-    images: [{ url: '/img/terreno/og.png', width: 1200, height: 630, alt: 'Terreno — Del terreno al masterplan' }],
+      'Marcá tu predio y acequia hace el resto: topografía, agua, suelo, clima, represas y diseño regenerativo en un solo lugar.',
+    images: [{ url: '/img/terreno/og.png', width: 1200, height: 630, alt: 'acequia — Diseño ecosistémico del territorio' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Terreno — Del terreno al masterplan',
+    title: 'acequia — Diseño ecosistémico del territorio',
     description:
       'Topografía, agua, suelo, clima, represas y diseño Keyline — al marcar tu predio, sin CAD ni GIS.',
     images: ['/img/terreno/og.png'],
@@ -154,30 +154,30 @@ const PERFILES = [
 
 // [TODO Jonatan] revisar respuestas de las FAQ.
 const FAQS = [
-  { q: '¿Qué necesito para usar Terreno?', a: 'Sólo un navegador. Funciona online, sin instalar nada ni comprar instrumentos. Entrás, marcás tu terreno y empezás.' },
+  { q: '¿Qué necesito para usar acequia?', a: 'Sólo un navegador. Funciona online, sin instalar nada ni comprar instrumentos. Entrás, marcás tu terreno y empezás.' },
   { q: '¿Funciona en el celular?', a: 'Sí, podés medir y dibujar desde el celular. Para el trabajo de diseño y los informes largos se disfruta más en una pantalla grande.' },
-  { q: '¿Sirve fuera de Argentina?', a: 'Sí. Los datos de elevación, clima, suelo y biodiversidad son globales, así que Terreno funciona en cualquier parte del mundo.' },
+  { q: '¿Sirve fuera de Argentina?', a: 'Sí. Los datos de elevación, clima, suelo y biodiversidad son globales, así que acequia funciona en cualquier parte del mundo.' },
   { q: '¿Qué pasa con mis datos y mis proyectos?', a: 'Son tuyos y privados. Se guardan en tu cuenta y sólo vos los ves, salvo que decidas compartir el informe por link.' },
   { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, sin permanencia. Si dejás de pagar, tu cuenta vuelve al plan Semilla y conservás tu proyecto.' },
-  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Personal desbloquea todo el análisis y el diseño para hasta 2 proyectos. Diseñador es lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
+  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Practicante desbloquea todo el análisis y el diseño para hasta 2 proyectos. Profesional es lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
   { q: '¿Cómo se paga desde otros países?', a: 'Desde Argentina, por Mercado Pago en pesos. Desde el resto del mundo, por PayPal en USD. La página muestra la moneda según desde dónde entrás.' },
-  { q: '¿Necesito saber de CAD o GIS?', a: 'No. Lo que en un software técnico lleva días de trabajo, en Terreno sucede al marcar el polígono de tu terreno.' },
+  { q: '¿Necesito saber de CAD o GIS?', a: 'No. Lo que en un software técnico lleva días de trabajo, en acequia sucede al marcar el polígono de tu terreno.' },
 ];
 
 // ─── Página ──────────────────────────────────────────────────────────────────
 
-export default async function TerrenoLanding() {
+export default async function AcequiaLanding() {
   const pais = (await headers()).get('x-vercel-ip-country') ?? undefined;
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'Terreno',
+    name: 'acequia',
     applicationCategory: 'DesignApplication',
     operatingSystem: 'Web',
     url: 'https://terreno.arteytierra.org',
     description:
-      'Plataforma de análisis y diseño territorial regenerativo: catastro, topografía, análisis hidrológico y masterplan de permacultura online.',
+      'Plataforma de diseño ecosistémico del territorio: catastro, topografía, análisis hidrológico y masterplan de permacultura online.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -193,46 +193,59 @@ export default async function TerrenoLanding() {
       <SiteHeader />
       <main>
         {/* ── HERO ── */}
-        <section className="relative bg-ink-950 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-water-500/25 via-ink-950 to-ink-950" />
-          <div className="absolute inset-0 text-water-500/15">
+        <section className="relative bg-[#1A1210] overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2E6B8A]/25 via-[#1A1210] to-[#1A1210]" />
+          <div className="absolute inset-0 text-[#2E6B8A]/15">
             <ContourLines id="contour-hero" className="h-full w-full" />
           </div>
           <div className="relative z-10 max-w-editorial mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-24 grid lg:grid-cols-2 gap-14 items-center">
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-water-300 mb-4">
-                Terreno · Diseño territorial regenerativo
+              {/* Lockup en PNG: el SVG de marca lleva el wordmark como <text> con
+                  Century Gothic, que no está en el navegador del visitante.
+                  El ancho va por estilo y no por clase: `w-auto` no está en el CSS
+                  compilado de esta app y sin él el lockup sale estirado. */}
+              <Image
+                src="/img/acequia/logo-blanco.png"
+                alt="acequia"
+                width={1200}
+                height={395}
+                priority
+                style={{ width: 'auto' }}
+                className="h-11 md:h-14 mb-6"
+              />
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-4">
+                Diseño ecosistémico del territorio
               </p>
-              <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-[1.05]">
-                Del terreno<br /><em className="text-water-300">al masterplan.</em>
+              <h1 className="font-display text-5xl md:text-6xl text-[#F5F0E8] leading-[1.05]">
+                Del terreno<br /><em className="text-[#7FB2CC]">al masterplan.</em>
               </h1>
-              <p className="mt-6 font-sans text-lg text-bone-200 max-w-lg leading-relaxed">
+              <p className="mt-6 font-sans text-lg text-[#E8D5A3]/90 max-w-lg leading-relaxed">
                 Topografía, análisis de agua, suelo, clima, represas, contexto ecosistémico y Keyline.
-                Todo a partir de marcar tu predio — <span className="text-bone-50">sin CAD ni GIS</span> y con datos globales.
+                Todo a partir de marcar tu predio — <span className="text-[#F5F0E8]">sin CAD ni GIS</span> y con datos globales.
                 Empezá gratis.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
                   href={REGISTRO_URL}
-                  className="inline-flex items-center gap-2 bg-water-500 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 shadow-lg shadow-water-500/25 hover:bg-moss-700 hover:shadow-water-500/10 transition-all"
+                  className="inline-flex items-center gap-2 bg-[#2E6B8A] text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 shadow-lg shadow-[#2E6B8A]/25 hover:bg-[#4A6741] hover:shadow-[#2E6B8A]/10 transition-all"
                 >
                   Empezá gratis <ArrowRight size={16} />
                 </a>
                 <a
                   href="#planes"
-                  className="inline-flex items-center border border-bone-50/30 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors"
+                  className="inline-flex items-center border border-[#F5F0E8]/30 text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-[#F5F0E8] transition-colors"
                 >
                   Ver planes
                 </a>
               </div>
             </div>
             <div className="relative">
-              {/* Glow turquesa detrás de la captura */}
-              <div className="absolute -inset-4 bg-water-500/20 blur-3xl rounded-full" aria-hidden="true" />
-              <div className="relative aspect-[4/3] overflow-hidden ring-1 ring-water-500/30 shadow-2xl shadow-ink-950/60">
+              {/* Glow del agua detrás de la captura */}
+              <div className="absolute -inset-4 bg-[#2E6B8A]/20 blur-3xl rounded-full" aria-hidden="true" />
+              <div className="relative aspect-[4/3] overflow-hidden ring-1 ring-[#2E6B8A]/30 shadow-2xl shadow-[#1A1210]/60">
                 <Image
                   src="/img/terreno/topografia.webp"
-                  alt="Análisis topográfico de un terreno en Terreno"
+                  alt="Análisis topográfico de un terreno en acequia"
                   fill
                   priority
                   className="object-cover"
@@ -244,14 +257,14 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── BANDA DE CONFIANZA ── */}
-        <section className="bg-ink-900 border-y border-water-500/15 px-6 py-6">
+        <section className="bg-[#241a17] border-y border-[#2E6B8A]/15 px-6 py-6">
           <div className="max-w-editorial mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6">
             {CONFIANZA.map(({ icon: Icon, t, d }) => (
               <div key={t} className="flex items-center gap-3">
-                <Icon size={22} className="text-water-300 flex-shrink-0" />
+                <Icon size={22} className="text-[#7FB2CC] flex-shrink-0" />
                 <div>
-                  <p className="font-sans font-semibold text-sm text-bone-50 leading-tight">{t}</p>
-                  <p className="font-sans text-xs text-bone-200/60 leading-tight mt-0.5">{d}</p>
+                  <p className="font-sans font-semibold text-sm text-[#F5F0E8] leading-tight">{t}</p>
+                  <p className="font-sans text-xs text-[#F5F0E8]/60 leading-tight mt-0.5">{d}</p>
                 </div>
               </div>
             ))}
@@ -259,29 +272,29 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── QUÉ ES (recorrido 01·02·03) ── */}
-        <section className="relative bg-bone-50 py-20 md:py-28 px-6 overflow-hidden">
-          <div className="absolute inset-0 text-water-500/[0.06]">
+        <section className="relative bg-[#F5F0E8] py-20 md:py-28 px-6 overflow-hidden">
+          <div className="absolute inset-0 text-[#2E6B8A]/[0.06]">
             <ContourLines id="contour-quees" className="h-full w-full" />
           </div>
           <div className="relative z-10 max-w-editorial mx-auto">
             <div className="max-w-2xl mb-14">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Qué es Terreno</p>
-              <h2 className="font-display text-4xl md:text-5xl text-ink-950 leading-tight">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#C17F3A] mb-3">Qué es acequia</p>
+              <h2 className="font-display text-4xl md:text-5xl text-[#1A1210] leading-tight">
                 Una herramienta para<br /><em>diseñar el territorio como sistema vivo.</em>
               </h2>
-              <p className="mt-5 font-sans text-ink-700 text-lg leading-relaxed">
-                El agua no es un recurso que se administra — es un sistema vivo que se puede sanar. Terreno te da el mapa para empezar.
+              <p className="mt-5 font-sans text-[#3D2010] text-lg leading-relaxed">
+                El agua no es un recurso que se administra — es un sistema vivo que se puede sanar. acequia te da el mapa para empezar.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {QUE_ES.map(({ n, icon: Icon, title, desc }) => (
-                <div key={n} className="flex flex-col gap-4 p-8 bg-bone-100 border-t-2 border-water-500/70 border-x border-b border-bone-200">
+                <div key={n} className="flex flex-col gap-4 p-8 bg-[#E8D5A3]/25 border-t-2 border-[#2E6B8A]/70 border-x border-b border-[#E8D5A3]/60">
                   <div className="flex items-center justify-between">
-                    <span className="font-display text-5xl text-water-300 leading-none">{n}</span>
-                    <Icon size={28} className="text-water-500/70" />
+                    <span className="font-display text-5xl text-[#7FB2CC] leading-none">{n}</span>
+                    <Icon size={28} className="text-[#2E6B8A]/70" />
                   </div>
-                  <h3 className="font-display text-xl text-ink-950">{title}</h3>
-                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{desc}</p>
+                  <h3 className="font-display text-xl text-[#1A1210]">{title}</h3>
+                  <p className="font-sans text-sm text-[#3D2010] leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -289,17 +302,17 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── LO QUE HACE POR VOS (4 bloques) ── */}
-        <section className="relative bg-ink-950 py-20 md:py-28 px-6 overflow-hidden">
-          <div className="absolute inset-0 text-water-500/10">
+        <section className="relative bg-[#1A1210] py-20 md:py-28 px-6 overflow-hidden">
+          <div className="absolute inset-0 text-[#2E6B8A]/10">
             <ContourLines id="contour-hace" className="h-full w-full" />
           </div>
           <div className="relative z-10 max-w-editorial mx-auto">
             <div className="max-w-2xl mb-14">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-water-300 mb-3">Lo que Terreno hace por vos</p>
-              <h2 className="font-display text-4xl md:text-5xl text-bone-50 leading-tight">
-                Vos marcás tu terreno.<br /><em className="text-water-300">Terreno hace el resto.</em>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-3">Lo que acequia hace por vos</p>
+              <h2 className="font-display text-4xl md:text-5xl text-[#F5F0E8] leading-tight">
+                Vos marcás tu terreno.<br /><em className="text-[#7FB2CC]">acequia hace el resto.</em>
               </h2>
-              <p className="mt-5 font-sans text-bone-200 text-lg leading-relaxed">
+              <p className="mt-5 font-sans text-[#E8D5A3]/90 text-lg leading-relaxed">
                 Lo que en un CAD lleva días de trabajo técnico, acá sucede al marcar el polígono.
               </p>
             </div>
@@ -308,18 +321,18 @@ export default async function TerrenoLanding() {
               {CLUSTERS.map(cluster => (
                 <div key={cluster.label}>
                   <div className="mb-6">
-                    <h3 className="font-sans font-bold text-sm uppercase tracking-widest text-water-300">{cluster.label}</h3>
-                    <span className="mt-2 block h-px w-10 bg-water-500/40" aria-hidden="true" />
+                    <h3 className="font-sans font-bold text-sm uppercase tracking-widest text-[#7FB2CC]">{cluster.label}</h3>
+                    <span className="mt-2 block h-px w-10 bg-[#2E6B8A]/40" aria-hidden="true" />
                   </div>
                   <div className="flex flex-col gap-6">
                     {cluster.items.map(({ icon: Icon, t, d }) => (
                       <div key={t} className="flex gap-3">
-                        <div className="mt-0.5 flex-shrink-0 w-9 h-9 rounded-full bg-water-500/15 border border-water-500/30 flex items-center justify-center">
-                          <Icon size={16} className="text-water-300" />
+                        <div className="mt-0.5 flex-shrink-0 w-9 h-9 rounded-full bg-[#2E6B8A]/15 border border-[#2E6B8A]/30 flex items-center justify-center">
+                          <Icon size={16} className="text-[#7FB2CC]" />
                         </div>
                         <div>
-                          <h4 className="font-sans font-semibold text-sm text-bone-50 leading-tight">{t}</h4>
-                          <p className="font-sans text-xs text-bone-200/60 mt-1 leading-relaxed">{d}</p>
+                          <h4 className="font-sans font-semibold text-sm text-[#F5F0E8] leading-tight">{t}</h4>
+                          <p className="font-sans text-xs text-[#F5F0E8]/60 mt-1 leading-relaxed">{d}</p>
                         </div>
                       </div>
                     ))}
@@ -330,11 +343,11 @@ export default async function TerrenoLanding() {
 
             {/* Capturas reales, con epígrafe */}
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-water-300/80 mb-6">Vélo en acción</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC]/80 mb-6">Vélo en acción</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {CAPTURAS.map(img => (
                   <figure key={img.src} className="group">
-                    <div className="relative aspect-[4/3] overflow-hidden ring-1 ring-water-500/20 shadow-xl shadow-ink-950/40">
+                    <div className="relative aspect-[4/3] overflow-hidden ring-1 ring-[#2E6B8A]/20 shadow-xl shadow-[#1A1210]/40">
                       <Image
                         src={img.src}
                         alt={img.alt}
@@ -343,7 +356,7 @@ export default async function TerrenoLanding() {
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </div>
-                    <figcaption className="mt-3 font-sans text-sm text-bone-200/70">{img.cap}</figcaption>
+                    <figcaption className="mt-3 font-sans text-sm text-[#F5F0E8]/70">{img.cap}</figcaption>
                   </figure>
                 ))}
               </div>
@@ -352,22 +365,22 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── PARA QUIÉN ── */}
-        <section className="bg-bone-100 py-20 md:py-24 px-6">
+        <section className="bg-[#E8D5A3]/20 py-20 md:py-24 px-6">
           <div className="max-w-editorial mx-auto">
             <div className="mb-14 text-center">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Para quién es</p>
-              <h2 className="font-display text-4xl md:text-5xl text-ink-950">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#C17F3A] mb-3">Para quién es</p>
+              <h2 className="font-display text-4xl md:text-5xl text-[#1A1210]">
                 Para quien mira un terreno<br /><em>y ve posibilidades.</em>
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {PERFILES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="p-8 bg-bone-50 border-t-2 border-water-500/70 border-x border-b border-bone-200">
-                  <div className="w-11 h-11 rounded-full bg-water-500/10 border border-water-500/25 flex items-center justify-center mb-5">
-                    <Icon size={20} className="text-water-500" />
+                <div key={title} className="p-8 bg-[#F5F0E8] border-t-2 border-[#2E6B8A]/70 border-x border-b border-[#E8D5A3]/60">
+                  <div className="w-11 h-11 rounded-full bg-[#2E6B8A]/10 border border-[#2E6B8A]/25 flex items-center justify-center mb-5">
+                    <Icon size={20} className="text-[#2E6B8A]" />
                   </div>
-                  <h3 className="font-display text-2xl text-ink-950 mb-3">{title}</h3>
-                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{desc}</p>
+                  <h3 className="font-display text-2xl text-[#1A1210] mb-3">{title}</h3>
+                  <p className="font-sans text-sm text-[#3D2010] leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -375,19 +388,19 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── PLANES ── */}
-        <section id="planes" className="bg-bone-50 py-20 md:py-28 px-6 scroll-mt-20">
+        <section id="planes" className="bg-[#F5F0E8] py-20 md:py-28 px-6 scroll-mt-20">
           <div className="max-w-editorial mx-auto">
             <div className="mb-6 text-center">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Planes y precios</p>
-              <h2 className="font-display text-4xl md:text-5xl text-ink-950">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#C17F3A] mb-3">Planes y precios</p>
+              <h2 className="font-display text-4xl md:text-5xl text-[#1A1210]">
                 Empezá gratis.<br /><em>Crecé cuando el proyecto crezca.</em>
               </h2>
             </div>
 
             {/* Banner Fundadores — TODO: mecánica exacta */}
-            <div className="max-w-2xl mx-auto mb-12 text-center bg-water-500/10 border border-water-500/25 px-6 py-4">
-              <p className="font-sans text-sm text-ink-800">
-                <strong className="text-water-500">Miembros Fundadores:</strong> los primeros {FUNDADORES_CUPO} conservan 50% de descuento de por vida.
+            <div className="max-w-2xl mx-auto mb-12 text-center bg-[#2E6B8A]/10 border border-[#2E6B8A]/25 px-6 py-4">
+              <p className="font-sans text-sm text-[#3D2010]">
+                <strong className="text-[#2E6B8A]">Miembros Fundadores:</strong> los primeros {FUNDADORES_CUPO} conservan 50% de descuento de por vida.
               </p>
             </div>
 
@@ -396,39 +409,39 @@ export default async function TerrenoLanding() {
         </section>
 
         {/* ── FAQ ── */}
-        <section className="bg-bone-100 py-20 md:py-24 px-6">
+        <section className="bg-[#E8D5A3]/20 py-20 md:py-24 px-6">
           <div className="max-w-3xl mx-auto">
             <div className="mb-10 text-center">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Preguntas frecuentes</p>
-              <h2 className="font-display text-4xl text-ink-950">Antes de empezar.</h2>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#C17F3A] mb-3">Preguntas frecuentes</p>
+              <h2 className="font-display text-4xl text-[#1A1210]">Antes de empezar.</h2>
             </div>
             <FAQ items={FAQS} />
           </div>
         </section>
 
         {/* ── CTA FINAL ── */}
-        <section className="relative bg-ink-950 py-20 md:py-28 px-6 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-water-500/20 to-ink-950" />
-          <div className="absolute inset-0 text-water-500/10">
+        <section className="relative bg-[#1A1210] py-20 md:py-28 px-6 text-center overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2E6B8A]/20 to-[#1A1210]" />
+          <div className="absolute inset-0 text-[#2E6B8A]/10">
             <ContourLines id="contour-cta" className="h-full w-full" />
           </div>
           <div className="relative z-10 max-w-2xl mx-auto">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-water-300 mb-4">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-4">
               ¿Tenés un territorio esperándote?
             </p>
-            <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-6">
-              Marcá tu terreno.<br /><em className="text-water-300">Escuchá lo que dice.</em>
+            <h2 className="font-display text-4xl md:text-5xl text-[#F5F0E8] mb-6">
+              Marcá tu terreno.<br /><em className="text-[#7FB2CC]">Escuchá lo que dice.</em>
             </h2>
             <div className="flex flex-wrap gap-4 justify-center">
               <a
                 href={REGISTRO_URL}
-                className="inline-flex items-center gap-2 bg-water-500 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 shadow-lg shadow-water-500/25 hover:bg-moss-700 transition-all"
+                className="inline-flex items-center gap-2 bg-[#2E6B8A] text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 shadow-lg shadow-[#2E6B8A]/25 hover:bg-[#4A6741] transition-all"
               >
                 Empezá gratis con Semilla <ArrowRight size={16} />
               </a>
               <Link
                 href="/asesorias"
-                className="inline-flex items-center border border-bone-50/30 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors"
+                className="inline-flex items-center border border-[#F5F0E8]/30 text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-[#F5F0E8] transition-colors"
               >
                 Prefiero acompañamiento humano
               </Link>

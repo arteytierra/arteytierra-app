@@ -82,6 +82,13 @@ const config: NextConfig = {
     ];
   },
   transpilePackages: ['@arteytierra/config', '@arteytierra/types', '@arteytierra/ui'],
+  async redirects() {
+    return [
+      // Terreno se renombró a acequia (ago 2026). Los links viejos siguen andando.
+      { source: '/terreno', destination: '/acequia', permanent: true },
+      { source: '/terreno/gracias', destination: '/acequia/gracias', permanent: true },
+    ];
+  },
 };
 
 export default config;

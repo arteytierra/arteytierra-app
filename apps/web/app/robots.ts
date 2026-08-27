@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: ['/', '/og'],
         disallow: [
+          '/acequia',
           '/terreno',
           '/admin',
           '/api',

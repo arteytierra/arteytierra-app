@@ -1,5 +1,5 @@
 /**
- * Planes de Terreno — fuente de datos del landing (separada del componente).
+ * Planes de acequia — fuente de datos del landing (separada del componente).
  * Refleja la matriz canónica `PROMPT-terreno-planes-0-matriz.md`. Si cambia la
  * matriz, se edita acá.
  *
@@ -54,12 +54,12 @@ export const PLANES: Plan[] = [
       'Muestra gratis del análisis: clima, topografía, cuenca y sectores',
       'Calendario del lugar (heladas, lluvias y ventanas de siembra)',
       '1 proyecto activo',
-      'Informe compartible (con marca de agua de Terreno)',
+      'Informe compartible (con marca de agua de acequia)',
     ],
   },
   {
     id: 'personal',
-    nombre: 'Personal',
+    nombre: 'Practicante',
     tagline: 'Todo el análisis y el diseño, para tu proyecto.',
     precioMensualUSD: 7,
     precioAnualUSD: 70,
@@ -78,7 +78,7 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'disenador',
-    nombre: 'Diseñador',
+    nombre: 'Profesional',
     tagline: 'Lo mismo, sin límite de proyectos.',
     precioMensualUSD: 12,
     precioAnualUSD: 120,
