@@ -7,6 +7,7 @@ import { MESES, centroide } from '@/lib/clima';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
 import { formatearMoneda } from '@/lib/economia';
+import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 
 interface Props {
   datos: InformeData;
@@ -588,7 +589,7 @@ export function InformeView({ datos, compartido = false }: Props) {
           <Section numero={sec.represa!} titulo="Represa / reservorio — balance anual">
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="Confiabilidad" value={`${datos.represa.confiabilidad_pct}%`} sub={datos.represa.aguanta ? 'aguanta el año' : 'con déficit'} />
-              <StatBlock label="Capacidad" value={`${(datos.represa.capacidad_m3 / 1000).toFixed(1)} dam³`} sub={`${datos.represa.capacidad_m3.toLocaleString('es-AR')} m³`} />
+              <StatBlock label="Capacidad" value={volumenM3(datos.represa.capacidad_m3)} sub={volumenEnLitros(datos.represa.capacidad_m3)} />
               <StatBlock label="Cuenca de aporte" value={`${datos.represa.cuenca_ha} ha`} sub="escurrimiento" />
               <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="por mes" />
             </div>

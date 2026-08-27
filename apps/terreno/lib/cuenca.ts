@@ -5,10 +5,12 @@
  * inverso el `flowDir` (D8) que ya calcula `escorrentias.ts` sobre la grilla
  * densa. Con la cuenca calcula: área, curva número (CN) según grupo hidrológico
  * (A4) y cobertura, escurrimiento por el método SCS para una tormenta de diseño
- * (A3), tiempo de concentración (Kirpich), caudal pico (hidrograma SCS) y el
- * ancho de vertedero necesario. Valores orientativos de diseño preliminar.
+ * (A3), tiempo de concentración (Kirpich), caudal pico (método racional sobre
+ * la ráfaga de diseño desagregada, `tormenta.ts`) y el ancho de vertedero
+ * necesario. Valores orientativos de diseño preliminar.
  */
 import type { DatosShader, CeldaShader } from './shaders';
+import { duracionDeDiseno, laminaDuracion, intensidadDuracion, caudalPicoRacional } from './tormenta';
 
 // ─── Delimitación de la cuenca ────────────────────────────────────────────────
 
@@ -267,10 +269,14 @@ export function coefEscorrentiaAnual(grupo: GrupoHidro, coberturaId: string): nu
 
 export interface ResultadoCuenca {
   cn:               number;
-  precip_mm:        number;
-  escurrimiento_mm: number;
-  volumen_m3:       number;
+  precip_mm:        number;   // lámina del evento de diseño (mm en 24 h)
+  escurrimiento_mm: number;   // lo que escurre de ese evento (mm)
+  volumen_m3:       number;   // volumen del evento completo
+  coef_evento:      number;   // Q/P del evento (0–1)
   tc_min:           number;   // tiempo de concentración
+  duracion_min:     number;   // duración de la ráfaga que produce el pico
+  lamina_rafaga_mm: number;   // lluvia de esa ráfaga (desagregada de la de 24 h)
+  intensidad_mm_h:  number;   // intensidad media de la ráfaga
   caudal_pico_m3s:  number;
   vertedero_m:      number;   // ancho de vertedero recomendado
   head_vertedero_m: number;
@@ -293,8 +299,22 @@ export function tcKirpich(L_m: number, S_m_m: number): number {
 
 /**
  * Análisis hidrológico de la cuenca para una tormenta de diseño.
- * Caudal pico por hidrograma unitario triangular SCS:
- *   qp = 0.208 · A[km²] · Q[mm] / Tp[h],  Tp ≈ 0.667 · tc.
+ *
+ * VOLUMEN — evento completo de 24 h: escurrimiento SCS-CN × área.
+ *
+ * CAUDAL PICO — método racional sobre la ráfaga de diseño (H5):
+ *   qp = C · i · A / 3.6,  con la duración = tc y la intensidad desagregada
+ *   de la lámina de 24 h (`lib/tormenta.ts`).
+ *
+ * Antes el pico salía del hidrograma unitario triangular SCS
+ * (qp = 0.208·A·Q/Tp, Tp = 0.667·tc) pero alimentado con el escurrimiento del
+ * evento ENTERO. Esa fórmula pide el escurrimiento de la duración unitaria
+ * —unos 0.133·tc, o sea un par de minutos—, así que meterle el acumulado del
+ * día equivalía a hacer llover todo el día en dos minutos: el pico salía un
+ * orden de magnitud arriba y el vertedero, absurdo (160 m de ancho para una
+ * cuenca de 50 ha). El método racional necesita la intensidad de la ráfaga,
+ * que es justamente lo que H5 sabe calcular.
+ *
  * Vertedero por vertedero rectangular de cresta ancha: Q = C·L·H^1.5.
  */
 export function analizarCuenca(
@@ -306,11 +326,13 @@ export function analizarCuenca(
 ): ResultadoCuenca {
   const Q_mm = escurrimientoSCS(precip_mm, cn);
   const volumen = (Q_mm / 1000) * cuenca.area_m2;
+  const coefEvento = precip_mm > 0 ? Q_mm / precip_mm : 0;
 
   const tc_min = tcKirpich(cuenca.long_flujo_m, cuenca.pendiente_m_m);
-  const tc_h = tc_min / 60;
-  const Tp_h = Math.max(0.01, 0.667 * tc_h);
-  const qp = 0.208 * cuenca.area_km2 * Q_mm / Tp_h;
+  const dur_min = duracionDeDiseno(tc_min);
+  const lamina = laminaDuracion(precip_mm, dur_min);
+  const i_mm_h = intensidadDuracion(precip_mm, dur_min);
+  const qp = caudalPicoRacional(coefEvento, i_mm_h, cuenca.area_km2);
 
   const H = Math.max(0.05, headVertedero_m);
   const L_vert = qp > 0 ? qp / (coefVertedero * Math.pow(H, 1.5)) : 0;
@@ -320,7 +342,11 @@ export function analizarCuenca(
     precip_mm,
     escurrimiento_mm: Math.round(Q_mm * 10) / 10,
     volumen_m3:       Math.round(volumen),
+    coef_evento:      Math.round(coefEvento * 100) / 100,
     tc_min:           Math.round(tc_min * 10) / 10,
+    duracion_min:     dur_min,
+    lamina_rafaga_mm: Math.round(lamina * 10) / 10,
+    intensidad_mm_h:  Math.round(i_mm_h),
     caudal_pico_m3s:  Math.round(qp * 100) / 100,
     vertedero_m:      Math.round(L_vert * 100) / 100,
     head_vertedero_m: H,

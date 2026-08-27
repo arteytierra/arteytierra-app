@@ -77,6 +77,7 @@ import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuego
 import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
+import { volumenM3, miles } from '@/lib/unidades';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
@@ -1991,7 +1992,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const nuevosPines = res.represas.map((s, i) => ({
       id: crypto.randomUUID(), lat: s.lat, lng: s.lng,
       nombre: `Represa ${i + 1} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0',
-      notas: `Sitio sugerido — agua ${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³, muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³`,
+      notas: `Sitio sugerido — agua ${volumenM3(s.volumen_agua_m3)}, muro ${miles(s.volumen_muro_m3)} m³`,
       capa: CAPA_REPRESAS, origen: 'analisis' as const,
     }));
     if (nuevosPines.length === 0) return;

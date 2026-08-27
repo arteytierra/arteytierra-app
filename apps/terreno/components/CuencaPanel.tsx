@@ -13,6 +13,7 @@ import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro,
 } from '@/lib/cuenca';
 import { confianzaCuenca } from '@/lib/saludCalculo';
+import { volumenM3, volumenEnLitros, caudalM3s, caudalEnLitros, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
 
@@ -70,6 +71,7 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           escurrimiento_mm: resultado.escurrimiento_mm,
           precipDeClima, grupoDeSuelo: grupoHidro != null && grupo === grupoHidro,
           expandida: !!expandida, fuenteDem, cnPredio,
+          duracion_min: resultado.duracion_min, intensidad_mm_h: resultado.intensidad_mm_h,
         })
       : null,
     [cuenca, resultado, precipDeClima, grupoHidro, grupo, expandida, fuenteDem, cnPredio],
@@ -224,16 +226,31 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                 </p>
               )}
 
-              {/* Resultados */}
+              {/* Resultados.
+                  Cada número dice en qué intervalo de tiempo vive: el volumen
+                  es de todo el evento de 24 h, el caudal pico es un instante
+                  dentro de una ráfaga de minutos. Mezclarlos es el error de
+                  lectura más fácil de cometer, así que va escrito. */}
               {resultado && (
                 <>
+                  <p className="text-[9px] text-ink-700/50 leading-relaxed">
+                    Dos escalas de tiempo distintas: el <b>volumen</b> es todo lo que escurre en el evento de 24 h;
+                    el <b>caudal pico</b> es el instante de máximo, dentro de la ráfaga corta.
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     <Stat label="Curva número (CN)" value={String(resultado.cn)} color="moss" />
-                    <Stat label="Escurrimiento" value={`${resultado.escurrimiento_mm} mm`} sub={`de ${resultado.precip_mm} mm`} />
-                    <Stat label="Volumen escurrido" value={`${(resultado.volumen_m3 / 1000).toFixed(1)} dam³`} sub={`${resultado.volumen_m3.toLocaleString()} m³`} />
-                    <Stat label="Tiempo concentr." value={`${resultado.tc_min} min`} />
-                    <Stat label="Caudal pico" value={`${resultado.caudal_pico_m3s} m³/s`} color="agua" />
-                    <Stat label="Ancho vertedero" value={`${resultado.vertedero_m} m`} sub={`carga ${resultado.head_vertedero_m} m`} color="agua" />
+                    <Stat label="Escurre" value={`${resultado.escurrimiento_mm} mm`}
+                      sub={`de ${resultado.precip_mm} mm de lluvia · ${Math.round(resultado.coef_evento * 100)} %`} />
+                    <Stat label="Volumen del evento" value={volumenM3(resultado.volumen_m3)}
+                      sub={`${volumenEnLitros(resultado.volumen_m3)} · en 24 h`} />
+                    <Stat label="Tiempo de concentración" value={duracionMin(resultado.tc_min)}
+                      sub="del punto más lejano hasta la salida" />
+                    <Stat label="Ráfaga de diseño" value={duracionMin(resultado.duracion_min)}
+                      sub={`${resultado.intensidad_mm_h} mm/h · ${resultado.lamina_rafaga_mm} mm — es la que hace el pico`} />
+                    <Stat label="Caudal pico" value={caudalM3s(resultado.caudal_pico_m3s)}
+                      sub={caudalEnLitros(resultado.caudal_pico_m3s) || 'máximo instantáneo'} color="agua" />
+                    <Stat label="Ancho de vertedero" value={`${resultado.vertedero_m} m`}
+                      sub={`para pasar el pico con ${resultado.head_vertedero_m} m de carga`} color="agua" />
                   </div>
 
                   {/* `key` por nivel: si aparece una alerta nueva —cortaste la
@@ -242,8 +259,9 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                   {salud && <SaludCalculo key={salud.nivel} confianza={salud} />}
 
                   <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
-                    SCS-CN (AMC II) · caudal pico por hidrograma unitario triangular SCS · tc Kirpich ·
-                    vertedero de cresta ancha (C=1.7). Cotas SRTM ~30 m. Diseño preliminar — verificá con estudio hidrológico local.
+                    Volumen por SCS-CN (AMC II) · tc de Kirpich · caudal pico por método racional sobre la ráfaga
+                    de duración tc, desagregada de la lámina de 24 h · vertedero de cresta ancha (C=1.7).
+                    Diseño preliminar — verificá con estudio hidrológico local.
                   </p>
                 </>
               )}

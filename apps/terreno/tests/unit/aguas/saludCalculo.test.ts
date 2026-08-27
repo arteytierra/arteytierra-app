@@ -101,6 +101,28 @@ describe('confianzaCuenca', () => {
   it('siempre deja dicho que el CN corre en humedad antecedente media', () => {
     expect(nivelDe(confianzaCuenca(CUENCA_OK), 'amc_ii')).toBe('ok');
   });
+
+  it('cuenta de qué ráfaga sale el pico, sin bajar el nivel por eso', () => {
+    expect(ids(confianzaCuenca(CUENCA_OK))).not.toContain('rafaga_desagregada');
+    const c = confianzaCuenca({ ...CUENCA_OK, duracion_min: 24.5, intensidad_mm_h: 96 });
+    const a = c.avisos.find(x => x.id === 'rafaga_desagregada')!;
+    expect(a.nivel).toBe('ok');
+    expect(a.titulo).toContain('24.5 min');
+    expect(a.detalle).toContain('IDF');
+    expect(c.nivel).toBe('alta');
+  });
+
+  it('avisa cuando la ráfaga se recortó contra el piso de duración', () => {
+    const corto = confianzaCuenca({ ...CUENCA_OK, duracion_min: 10, intensidad_mm_h: 150 });
+    expect(corto.avisos.find(x => x.id === 'rafaga_desagregada')?.detalle).toContain('se recortó');
+  });
+
+  it('arriba de 200 ha avisa que tampoco corresponde el método racional', () => {
+    const media = confianzaCuenca({ ...CUENCA_OK, area_ha: 120 });
+    expect(media.avisos.find(a => a.id === 'kirpich_rango')?.detalle).not.toContain('racional');
+    const grande = confianzaCuenca({ ...CUENCA_OK, area_ha: 900 });
+    expect(grande.avisos.find(a => a.id === 'kirpich_rango')?.detalle).toContain('racional');
+  });
 });
 
 const REPRESA_OK: EntradaRepresaSalud = {

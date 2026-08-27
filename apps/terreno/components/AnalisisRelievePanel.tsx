@@ -10,6 +10,7 @@ import { useState, useCallback } from 'react';
 import { Loader2, Mountain, Droplets, MapPin, Sparkles } from 'lucide-react';
 import { analizarTopografiaIntegral, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import type { Mojon } from '@/lib/types';
+import { volumenM3, miles } from '@/lib/unidades';
 
 interface Props {
   mojones: Mojon[];
@@ -87,7 +88,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
           {/* Represas */}
           <Grupo icono={<Droplets className="w-3.5 h-3.5 text-water-600" />} titulo={`Represas (${res.represas.length})`}>
             {res.represas.map((s, i) => (
-              <Fila key={i} izq={`#${i + 1} · ef. ${s.eficiencia}:1`} der={`${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³ · muro ${s.volumen_muro_m3.toLocaleString('es-AR')} m³`} />
+              <Fila key={i} izq={`#${i + 1} · ef. ${s.eficiencia}:1`} der={`${volumenM3(s.volumen_agua_m3)} de agua · muro ${miles(s.volumen_muro_m3)} m³`} />
             ))}
           </Grupo>
 

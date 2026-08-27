@@ -108,4 +108,32 @@ describe('analizarCuenca (integración)', () => {
     expect(humeda.volumen_m3).toBeGreaterThan(seca.volumen_m3);
     expect(humeda.caudal_pico_m3s).toBeGreaterThan(seca.caudal_pico_m3s);
   });
+
+  /**
+   * El guard que faltaba. Con el hidrograma unitario SCS alimentado con el
+   * escurrimiento del evento entero, esta misma cuenca daba ~750 L/s/ha: era
+   * hacer llover las 24 h en dos minutos. Ningún test lo agarraba porque todos
+   * miraban monotonía y signo, no magnitud.
+   */
+  it('el caudal pico específico queda en un orden de magnitud físico', () => {
+    const r = analizarCuenca(cuenca, 80, 100);
+    const l_s_ha = r.caudal_pico_m3s * 1000 / cuenca.area_ha;
+    expect(l_s_ha).toBeGreaterThan(20);
+    expect(l_s_ha).toBeLessThan(500);
+  });
+
+  it('el volumen es del evento de 24 h y el pico, de una ráfaga mucho más corta', () => {
+    const r = analizarCuenca(cuenca, 80, 100);
+    expect(r.duracion_min).toBeCloseTo(r.tc_min, 1);
+    expect(r.lamina_rafaga_mm).toBeLessThan(r.precip_mm);
+    expect(r.intensidad_mm_h).toBeGreaterThan(r.precip_mm / 24);
+    expect(r.coef_evento).toBeCloseTo(r.escurrimiento_mm / r.precip_mm, 1);
+  });
+
+  it('una cuenca muy rápida no dispara la intensidad: hay piso de duración', () => {
+    const rapida: Cuenca = { ...cuenca, long_flujo_m: 120, pendiente_m_m: 0.25 };
+    const r = analizarCuenca(rapida, 80, 100);
+    expect(r.tc_min).toBeLessThan(10);
+    expect(r.duracion_min).toBe(10);
+  });
 });

@@ -24,6 +24,7 @@ import {
 } from './hidrologiaPredio';
 import type { FuenteRelieve } from './grillaElevacion';
 import type { GrupoHidro } from './cuenca';
+import { DUR_MIN_MIN } from './tormenta';
 
 // ─── Cuenca de aporte (B2) ────────────────────────────────────────────────────
 
@@ -42,10 +43,17 @@ export interface EntradaCuencaSalud {
   fuenteDem?:       FuenteRelieve | null;
   /** CN compuesto por cobertura satelital del predio, para contrastar */
   cnPredio?:        number | null;
+  /** duración de la ráfaga de diseño usada para el pico (H5), en minutos */
+  duracion_min?:    number | null;
+  /** intensidad media de esa ráfaga (mm/h) */
+  intensidad_mm_h?: number | null;
 }
 
 /** Hasta acá Kirpich fue calibrado (cuencas agrícolas chicas). */
 const KIRPICH_HA_MAX = 80;
+
+/** Y hasta acá el método racional (misma familia de cuencas chicas). */
+const RACIONAL_HA_MAX = 200;
 
 export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
   const avisos: AvisoCalculo[] = [];
@@ -83,10 +91,15 @@ export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
   }
 
   if (e.area_ha > KIRPICH_HA_MAX) {
+    const tambienRacional = e.area_ha > RACIONAL_HA_MAX;
     avisos.push({
       id: 'kirpich_rango', nivel: 'aviso',
       titulo: `Cuenca de ${e.area_ha.toFixed(0)} ha: fuera del rango de Kirpich`,
-      detalle: `La fórmula del tiempo de concentración se calibró en cuencas de hasta ~${KIRPICH_HA_MAX} ha. Más grande que eso, subestima el tc y por lo tanto SOBREESTIMA el caudal pico: queda del lado seguro para el vertedero, pero no es el caudal real.`,
+      detalle: `La fórmula del tiempo de concentración se calibró en cuencas de hasta ~${KIRPICH_HA_MAX} ha. Más grande que eso, subestima el tc y por lo tanto SOBREESTIMA el caudal pico: queda del lado seguro para el vertedero, pero no es el caudal real.${
+        tambienRacional
+          ? ` Arriba de ~${RACIONAL_HA_MAX} ha el método racional tampoco corresponde: en cuencas así hace falta un hidrograma con tránsito, no un pico de fórmula.`
+          : ''
+      }`,
     });
   }
 
@@ -100,6 +113,16 @@ export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
   }
 
   avisosDeContexto({ fuenteDem: e.fuenteDem, area_ha: e.area_ha, objeto: 'una cuenca' }, avisos);
+
+  if (e.duracion_min != null && e.intensidad_mm_h != null) {
+    avisos.push({
+      id: 'rafaga_desagregada', nivel: 'ok',
+      titulo: `El pico sale de una ráfaga de ${e.duracion_min} min a ${e.intensidad_mm_h} mm/h`,
+      detalle: `El volumen es de todo el evento de 24 h; el caudal pico, no: lo produce la ráfaga corta que coincide con el tiempo de concentración. Como el clima sólo da la lámina diaria, esa ráfaga se desagrega con la ley potencia P(d) = P(24h)·(d/24)^0.30, que es la aproximación empírica clásica. Si conseguís curvas IDF de una estación cercana, mandan ellas.${
+        e.duracion_min <= DUR_MIN_MIN ? ` Acá el tc dio menos de ${DUR_MIN_MIN} min y se recortó ahí: abajo de eso la ley se dispara y daría una intensidad irreal.` : ''
+      }`,
+    });
+  }
 
   avisos.push({
     id: 'amc_ii', nivel: 'ok',
