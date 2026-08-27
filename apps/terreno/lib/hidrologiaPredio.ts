@@ -89,10 +89,39 @@ export interface AvisoCalculo {
   detalle: string;
 }
 
+/**
+ * Datos de entrada que una herramienta puede declarar. Cada una declara SÓLO
+ * los que realmente usa: la erosión no mira el clima y la represa no compone un
+ * CN por cobertura, así que mostrarles esos casilleros tachados mentiría sobre
+ * lo que entró al cálculo.
+ */
+export type FuenteDato = 'relieve' | 'suelo' | 'cobertura' | 'clima';
+
 export interface Confianza {
   nivel:   'alta' | 'media' | 'baja';
   avisos:  AvisoCalculo[];
-  fuentes: { suelo: boolean; cobertura: boolean; clima: boolean };
+  fuentes: Partial<Record<FuenteDato, boolean>>;
+}
+
+/**
+ * Nivel de confianza a partir de los avisos y de qué fuentes faltaron.
+ *
+ * La regla, que vale para las cuatro herramientas: una alerta o dos fuentes
+ * faltantes bajan a `baja`; un aviso o una fuente faltante dejan `media`; sólo
+ * queda `alta` cuando entró todo lo que se podía cargar y nada llamó la
+ * atención. Los avisos de nivel `ok` son afirmaciones de alcance del método
+ * —cosas que el usuario no puede arreglar cargando datos— y por eso no bajan
+ * el nivel: informan cómo leer el número, no lo desacreditan.
+ */
+export function armarConfianza(
+  avisos:  AvisoCalculo[],
+  fuentes: Partial<Record<FuenteDato, boolean>>,
+): Confianza {
+  const faltan = Object.values(fuentes).filter(v => v === false).length;
+  const nivel: Confianza['nivel'] =
+    avisos.some(a => a.nivel === 'alerta') || faltan >= 2 ? 'baja' :
+    avisos.some(a => a.nivel === 'aviso')  || faltan >= 1 ? 'media' : 'alta';
+  return { nivel, avisos, fuentes };
 }
 
 // ─── Entrada y salida ─────────────────────────────────────────────────────────
@@ -104,6 +133,8 @@ export interface ContextoHidro {
   pendiente_pct?:  number | null;
   /** el área analizada se sale de la grilla cargada (subestima la cuenca) */
   fueraDeGrilla?:  boolean;
+  /** qué se está midiendo, para redactar el aviso de DEM ("una cuenca de 30 ha") */
+  objeto?:         string;
 }
 
 export interface EntradaHidro {
@@ -262,13 +293,9 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
   avisosDeContexto(entrada.contexto, avisos);
 
   // ── Nivel de confianza ──
-  const faltan = (hayS ? 0 : 1) + (hayC ? 0 : 1) + (hayCl ? 0 : 1);
-  const hayAlerta = avisos.some(a => a.nivel === 'alerta');
-  const nivel: Confianza['nivel'] =
-    !hayCl || faltan >= 2 || hayAlerta ? 'baja' :
-    faltan === 1                       ? 'media' : 'alta';
+  const confianza = armarConfianza(avisos, { suelo: hayS, cobertura: hayC, clima: hayCl });
 
-  if (nivel === 'alta') {
+  if (confianza.nivel === 'alta') {
     avisos.unshift({
       id: 'completo', nivel: 'ok',
       titulo: 'Suelo, cobertura y clima cargados',
@@ -283,7 +310,7 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
     coef: Math.round(coef * 100) / 100,
     usleC: Math.round(usleC * 1000) / 1000,
     composicion: composicion.sort((a, b) => b.pct - a.pct),
-    confianza: { nivel, avisos, fuentes: { suelo: hayS, cobertura: hayC, clima: hayCl } },
+    confianza,
   };
 }
 
@@ -292,26 +319,27 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
  * que se le está pidiendo. Es el patrón que InfoDrainage llama "health check":
  * el número siempre sale, lo que cambia es cuánto vale.
  */
-function avisosDeContexto(ctx: ContextoHidro | undefined, avisos: AvisoCalculo[]): void {
+export function avisosDeContexto(ctx: ContextoHidro | undefined, avisos: AvisoCalculo[]): void {
   if (!ctx) return;
 
+  const obj  = ctx.objeto ?? 'un predio';
   const res  = resolucionDem(ctx.fuenteDem ?? undefined);
   const area = ctx.area_ha ?? null;
   if (res !== null && area !== null && area > 0) {
-    // Lado del predio si fuera cuadrado, en celdas de DEM.
+    // Lado del área analizada si fuera cuadrada, en celdas de DEM.
     const ladoM = Math.sqrt(area * 10_000);
     const celdas = ladoM / res;
     if (celdas < 12) {
       avisos.push({
         id: 'dem_grueso', nivel: 'alerta',
-        titulo: `DEM de ${res} m para un predio de ${area.toFixed(1)} ha`,
-        detalle: `El predio entra en unas ${Math.round(celdas)} celdas de lado: cada celda del modelo cubre ${Math.round(res * res / 100) / 100} ha. El trazado es orientativo — para replantear, cargá un DEM propio (dron o LiDAR) en Topografía.`,
+        titulo: `DEM de ${res} m para ${obj} de ${area.toFixed(1)} ha`,
+        detalle: `Entra en unas ${Math.round(celdas)} celdas de lado: cada celda del modelo cubre ${Math.round(res * res / 100) / 100} ha. El resultado es orientativo — para replantear, cargá un DEM propio (dron o LiDAR) en Topografía.`,
       });
     } else if (celdas < 30) {
       avisos.push({
         id: 'dem_justo', nivel: 'aviso',
         titulo: `DEM de ${res} m: resolución justa para ${area.toFixed(1)} ha`,
-        detalle: 'Alcanza para ver la forma del terreno y decidir el trazado, no para cotas de obra.',
+        detalle: 'Alcanza para ver la forma del terreno y decidir, no para cotas de obra.',
       });
     }
   }

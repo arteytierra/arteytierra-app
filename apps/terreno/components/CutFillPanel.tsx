@@ -7,6 +7,8 @@ import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, type Resultad
 import { simularRepresaAnual, demandaMensual, MESES_NOMBRE, type RepresaResumen } from '@/lib/represa';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
+import { confianzaRepresa } from '@/lib/saludCalculo';
+import { SaludCalculo } from './SaludCalculo';
 import type { Cuenca, GrupoHidro } from '@/lib/cuenca';
 import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
@@ -350,7 +352,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           </div>
 
           {/* ── Simulación anual (B3) ── */}
-          <RepresaSimSection res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa} grupoHidro={grupoHidro} onResumen={onResumenRepresa} />
+          <RepresaSimSection res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa} grupoHidro={grupoHidro} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa} />
         </div>
       )}
     </div>
@@ -359,8 +361,9 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
 // ─── Simulación mensual del embalse (B3) ──────────────────────────────────────
 
-function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onResumen }: {
+function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, fuenteDem = null, onResumen }: {
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
+  fuenteDem?: DatosShader['fuente'] | null;
   onResumen?: (r: RepresaResumen | null) => void;
 }) {
   const [cobertura, setCobertura] = useState('pastura_regular');
@@ -403,6 +406,18 @@ function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onRes
   } : null, [sim, res.volumen_m3, ha, demanda]);
   useEffect(() => { onResumen?.(resumen); }, [resumen, onResumen]);
   useEffect(() => () => { onResumen?.(null); }, [onResumen]);
+
+  // El área de aporte cuenta como calculada mientras siga siendo la que trajo
+  // el relieve (B2 o el muro); si la tocaste a mano, el llenado es tu supuesto.
+  const salud = useMemo(() => confianzaRepresa({
+    hayClima:            !!datosClima,
+    area_espejo_m2:      res.area_inundada_m2,
+    cuenca_ha:           parseFloat(ha) || 0,
+    cuencaCalculada:     cuencaHa != null && Math.abs((parseFloat(ha) || 0) - cuencaHa) < 0.05,
+    infiltracion_mm_dia: parseFloat(seep) || 0,
+    grupo:               grupoHidro,
+    fuenteDem,
+  }), [datosClima, res.area_inundada_m2, ha, cuencaHa, seep, grupoHidro, fuenteDem]);
 
   return (
     <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
@@ -488,6 +503,8 @@ function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, onRes
                 <Stat label="Derrame anual" valor={`${sim.derrame_anual_m3.toLocaleString('es-AR')} m³`} />
                 <Stat label="Demanda mensual" valor={`${demanda.toLocaleString('es-AR')} m³`} />
               </div>
+              <SaludCalculo key={salud.nivel} confianza={salud} />
+
               <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
                 Balance mensual: escorrentía − evaporación (ETP×espejo) − infiltración − demanda, convergido a ciclo estable. Clima NASA POWER · orientativo.
               </p>

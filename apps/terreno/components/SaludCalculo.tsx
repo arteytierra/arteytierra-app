@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ShieldCheck, TriangleAlert, OctagonAlert, ChevronDown } from 'lucide-react';
-import type { Confianza, NivelAviso } from '@/lib/hidrologiaPredio';
+import type { Confianza, FuenteDato, NivelAviso } from '@/lib/hidrologiaPredio';
 
 /**
  * Salud del cálculo (H2).
@@ -13,9 +13,13 @@ import type { Confianza, NivelAviso } from '@/lib/hidrologiaPredio';
  * dimensionado con los 50 mm inventados por defecto se veían exactamente igual.
  *
  * Este bloque muestra qué datos entraron de verdad, qué se asumió y qué avisos
- * hay sobre la validez del método. Se estrena en Swales; el contrato es
- * `Confianza`, así que replicarlo a Cuenca, Represa y Erosión es pasarle otro
- * objeto.
+ * hay sobre la validez del método. Se estrenó en Swales y hoy corre también en
+ * Cuenca, Represa y Erosión: el contrato es `Confianza`, así que cada
+ * herramienta le pasa el suyo (`lib/saludCalculo.ts`).
+ *
+ * Cada una declara sólo las fuentes que de verdad usa —la erosión no mira el
+ * clima, la represa no compone un CN— para que un casillero tachado signifique
+ * siempre lo mismo: "esto le falta a ESTE cálculo".
  */
 
 const ESTILO: Record<Confianza['nivel'], {
@@ -81,12 +85,20 @@ export function SaludCalculo({ confianza, titulo = 'Salud del cálculo' }: {
   );
 }
 
+/** Orden fijo, de lo más estructural a lo más variable. */
+const NOMBRE_FUENTE: Array<[FuenteDato, string]> = [
+  ['relieve', 'Relieve'],
+  ['suelo', 'Suelo'],
+  ['cobertura', 'Cobertura'],
+  ['clima', 'Clima'],
+];
+
 function Fuentes({ fuentes }: { fuentes: Confianza['fuentes'] }) {
-  const items: Array<[string, boolean]> = [
-    ['Suelo', fuentes.suelo],
-    ['Cobertura', fuentes.cobertura],
-    ['Clima', fuentes.clima],
-  ];
+  // Sólo los casilleros que la herramienta declaró: los que no usa ni aparecen.
+  const items = NOMBRE_FUENTE
+    .filter(([k]) => fuentes[k] !== undefined)
+    .map(([k, nombre]) => [nombre, fuentes[k]!] as const);
+  if (items.length === 0) return null;
   return (
     <div className="flex gap-1.5">
       {items.map(([nombre, ok]) => (

@@ -70,7 +70,9 @@ import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/a
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { calcularSwales, diagnosticarSwales, type ResultadoSwales, type OpcionesSwales, type DiagnosticoSwales } from '@/lib/swales';
-import { hidrologiaPredio, T_POR_DEFECTO, type HidrologiaPredio } from '@/lib/hidrologiaPredio';
+import { hidrologiaPredio, T_POR_DEFECTO, type HidrologiaPredio, type Confianza } from '@/lib/hidrologiaPredio';
+import { confianzaErosion } from '@/lib/saludCalculo';
+import { SaludCalculo } from './SaludCalculo';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
 import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
@@ -693,6 +695,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       ? calcularErosion(datosShader, datosEscorrentia, datosCobertura ? hidroPredio.usleC : null)
       : null,
     [datosShader, datosEscorrentia, datosCobertura, hidroPredio.usleC],
+  );
+
+  const saludErosion = useMemo<Confianza | null>(
+    () => datosErosion ? confianzaErosion({
+      area_ha:        datosErosion.area_ha,
+      usle_c:         datosErosion.usle_c,
+      nota_cobertura: datosErosion.nota_cobertura,
+      fuenteDem:      grillaActiva?.fuente ?? datosShader?.fuente ?? null,
+      textura:        datosSuelo?.clase_textura ?? null,
+    }) : null,
+    [datosErosion, grillaActiva, datosShader, datosSuelo],
   );
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
@@ -3082,6 +3095,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 aviso={cuencaAviso}
                 poligonos={poligonosCutFill}
                 expandida={cuencaExpandida}
+                fuenteDem={grillaActiva?.fuente ?? datosShader?.fuente ?? null}
+                cnPredio={datosCobertura ? hidroPredio.cn : null}
                 onMarcar={() => setModoCuenca(m => !m)}
                 onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); setCuencaExpandida(false); }}
                 onIrATopo={() => setTab('topo')}
@@ -3623,6 +3638,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             subCapasOcultas={subCapasOcultas}
             onToggleSubCapa={toggleSubCapa}
             datosErosion={datosErosion}
+            saludErosion={saludErosion}
             haySwales={!!swales}
             hayCortinas={!!cortina}
             hayCortafuegos={!!cortafuegos}
@@ -3863,6 +3879,7 @@ interface PanelCapasProps {
   onCargarPlantillaKeyline: () => void;
   datosShader:         DatosShader | null;
   datosErosion:        DatosErosion | null;
+  saludErosion:        Confianza | null;
   haySwales:           boolean;
   hayCortinas:         boolean;
   hayCortafuegos:      boolean;
@@ -3898,7 +3915,7 @@ function PanelCapas({
   onRenombrarAguada, onEliminarAguada,
   capasUsuario, capasOcultas, capaActivaId, onSetCapaActiva,
   onToggleCapaOculta, onRenombrarCapa, onEliminarCapa, onColorCapa, onReordenarCapa, onMoverDibujoACapa, onMoverElemento, aislado, onAislarCarpeta, onAislarAnalisis, onFlyTo, onCrearCapa, onCargarPlantillaKeyline,
-  datosShader, datosErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
+  datosShader, datosErosion, saludErosion, haySwales, hayCortinas, hayCortafuegos, haySilvopastura, analisisHecho, onIrATopo, mojones,
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
@@ -4258,9 +4275,10 @@ function PanelCapas({
                 Pendiente × flujo acumulado (relativo al predio){datosErosion.usle_c !== null ? ' × factor C de cobertura' : ''}.
                 Orientativo — señala dónde proteger el suelo con swales y cobertura.
               </p>
-              <p className={`text-[9px] leading-snug ${datosErosion.usle_c === null ? 'text-ink-700/40' : datosErosion.factor_cobertura < 0.9 ? 'text-orange-700/80' : 'text-teal-700/80'}`}>
-                {datosErosion.nota_cobertura}
-              </p>
+              {/* El detalle de qué entró y qué falta (incluida la nota de
+                  cobertura) vive acá: es el mismo bloque que Swales, Cuenca y
+                  Represa, para que la lectura sea siempre la misma. */}
+              {saludErosion && <SaludCalculo key={saludErosion.nivel} confianza={saludErosion} />}
             </div>
           </CapaGrupo>
         )}

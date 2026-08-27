@@ -12,6 +12,9 @@ import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maxim
 import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro,
 } from '@/lib/cuenca';
+import { confianzaCuenca } from '@/lib/saludCalculo';
+import type { FuenteRelieve } from '@/lib/grillaElevacion';
+import { SaludCalculo } from './SaludCalculo';
 
 interface PoligonoOpcion { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -25,6 +28,8 @@ interface Props {
   aviso?:      string | null;       // cuenca incompleta / sin resultado
   poligonos?:  PoligonoOpcion[];    // polígonos dibujados, para usar como cuenca manual
   expandida?:  boolean;             // la cuenca actual ya está extendida a la divisoria real
+  fuenteDem?:  FuenteRelieve | null;// de qué DEM salió el relieve, para la salud del cálculo
+  cnPredio?:   number | null;       // CN compuesto por cobertura satelital (H0), para contrastar
   onMarcar:    () => void;
   onLimpiar:   () => void;
   onIrATopo:   () => void;
@@ -33,7 +38,7 @@ interface Props {
   onExtender?: () => void;          // recalcula hasta la divisoria real
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender }: Props) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender }: Props) {
   const [coberturaId, setCoberturaId] = useState('pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
@@ -42,6 +47,9 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
 
   // Autocompleta la tormenta de diseño con el T10 de A3 cuando llega.
   useEffect(() => { if (precipT10) setPrecip(String(precipT10)); }, [precipT10]);
+  // Ídem el grupo hidrológico cuando termina el análisis de suelo: sin esto el
+  // CN seguía saliendo del grupo B por defecto aunque el perfil dijera otra cosa.
+  useEffect(() => { if (grupoHidro) setGrupo(grupoHidro); }, [grupoHidro]);
 
   const cobertura = COBERTURAS.find(c => c.id === coberturaId)!;
   const cn = cobertura.cn[grupo];
@@ -49,6 +57,22 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
   const resultado = useMemo(() =>
     cuenca ? analizarCuenca(cuenca, cn, parseFloat(precip) || 0, parseFloat(head) || 0.3) : null,
     [cuenca, cn, precip, head],
+  );
+
+  // La tormenta cuenta como dato del lugar sólo mientras no la hayas tocado.
+  const precipDeClima = precipT10 != null && Math.abs((parseFloat(precip) || 0) - precipT10) < 0.5;
+
+  const salud = useMemo(() =>
+    cuenca && resultado
+      ? confianzaCuenca({
+          area_ha: cuenca.area_ha, long_flujo_m: cuenca.long_flujo_m,
+          cn: resultado.cn, precip_mm: resultado.precip_mm,
+          escurrimiento_mm: resultado.escurrimiento_mm,
+          precipDeClima, grupoDeSuelo: grupoHidro != null && grupo === grupoHidro,
+          expandida: !!expandida, fuenteDem, cnPredio,
+        })
+      : null,
+    [cuenca, resultado, precipDeClima, grupoHidro, grupo, expandida, fuenteDem, cnPredio],
   );
 
   return (
@@ -193,12 +217,7 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                 </Campo>
               </div>
 
-              {grupoHidro == null && (
-                <p className="text-[10px] text-ink-700/55 flex gap-1.5">
-                  <TriangleAlert className="w-3.5 h-3.5 shrink-0 text-sun-500" />
-                  Analizá el suelo (pestaña Suelo) para autocompletar el grupo hidrológico. Mientras, elegilo a mano.
-                </p>
-              )}
+              {/* Lo que falta o se asumió sale por la salud del cálculo, más abajo. */}
               {precipT10 != null && (
                 <p className="text-[10px] text-moss-700/80">
                   Tormenta autocompletada con el T10 de Clima → Extremos ({precipT10} mm). Podés poner el T100 para el evento extremo.
@@ -216,6 +235,12 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                     <Stat label="Caudal pico" value={`${resultado.caudal_pico_m3s} m³/s`} color="agua" />
                     <Stat label="Ancho vertedero" value={`${resultado.vertedero_m} m`} sub={`carga ${resultado.head_vertedero_m} m`} color="agua" />
                   </div>
+
+                  {/* `key` por nivel: si aparece una alerta nueva —cortaste la
+                      cuenca en el límite, o borraste la tormenta— el bloque se
+                      remonta abierto en vez de esconderla bajo un plegado. */}
+                  {salud && <SaludCalculo key={salud.nivel} confianza={salud} />}
+
                   <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
                     SCS-CN (AMC II) · caudal pico por hidrograma unitario triangular SCS · tc Kirpich ·
                     vertedero de cresta ancha (C=1.7). Cotas SRTM ~30 m. Diseño preliminar — verificá con estudio hidrológico local.
