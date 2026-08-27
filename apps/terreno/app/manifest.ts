@@ -8,12 +8,14 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/mapa',
     display: 'standalone',
     background_color: '#FBF8F3',
-    theme_color: '#3A5A40',
+    // Azul agua de la marca. El ícono es el cuadrado de fondo oscuro (#1A1210),
+    // que es el que pide el paquete de marca para app icon.
+    theme_color: '#2E6B8A',
     orientation: 'any',
     icons: [
-      { src: '/logo-ayt.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: '/logo-ayt.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: '/logo-ayt.png', sizes: 'any',     type: 'image/png', purpose: 'maskable' },
+      { src: '/marca/app-icon-512.png',  sizes: '512x512',   type: 'image/png', purpose: 'any' },
+      { src: '/marca/app-icon-1024.png', sizes: '1024x1024', type: 'image/png', purpose: 'any' },
+      { src: '/marca/app-icon-512.png',  sizes: '512x512',   type: 'image/png', purpose: 'maskable' },
     ],
   };
 }

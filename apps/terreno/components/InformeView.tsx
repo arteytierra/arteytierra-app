@@ -126,7 +126,9 @@ export function InformeView({ datos, compartido = false }: Props) {
                 Arte y Tierra
               </p>
               <h1 className="font-display text-3xl text-ink-950 leading-tight">
-                acequia
+                {/* Lockup rasterizado: el SVG del wordmark depende de Century Gothic
+                    y en impresión caería a Arial. Ver public/marca/LEEME.md. */}
+                <img src="/marca/firma-negro.png" alt="acequia" width={800} height={282} style={{ width: 'auto' }} className="h-8" />
               </h1>
               <p className="text-lg text-ink-700 mt-1">{datos.nombre}</p>
             </div>
@@ -771,7 +773,7 @@ function Portada({ datos, metricas, fechaLarga }: { datos: InformeData; metricas
       </div>
 
       <div className="mt-10">
-        <p className="text-sm uppercase tracking-[0.22em] text-ink-700/50">acequia</p>
+        <img src="/marca/logo-negro.png" alt="acequia" width={1200} height={395} style={{ width: 'auto' }} className="h-9" />
         <h1 className="font-display text-4xl text-ink-950 leading-tight mt-2">{datos.nombre}</h1>
         {ubic && <p className="text-base text-ink-700 mt-2">{ubic}</p>}
       </div>
