@@ -19,7 +19,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     default: 'acequia · Diseño ecosistémico del territorio',
-    template: '%s · Arte y Tierra',
+    // La marca va PRIMERO: la pestaña del navegador se trunca a los primeros
+    // caracteres, y con '%s · acequia' el usuario veía 'Mapa ·' y nada más.
+    template: 'acequia · %s',
   },
   description:
     'acequia — diseño ecosistémico del territorio. Trazá tu predio, leé por dónde corre el agua y ordená el territorio: clima, relieve, hidrología y master plan. Un desarrollo de Arte y Tierra.',

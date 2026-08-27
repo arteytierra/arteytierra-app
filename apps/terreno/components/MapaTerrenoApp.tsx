@@ -38,6 +38,7 @@ import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
 import { EntornoPanel } from './EntornoPanel';
 import { SombrasPanel } from './SombrasPanel';
+import { Isotipo } from './Isotipo';
 import type { ObjetoSombra } from '@/lib/objetosSombra';
 import { calcularViewshed, type ResultadoViewshed } from '@/lib/viewshed';
 import { calcularMetricas } from '@/lib/geometria';
@@ -2461,7 +2462,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <button onClick={() => setPanelAbierto(p => !p)} title="Mostrar/ocultar panel" className="p-1 text-ink-700/50 hover:text-moss-700 transition-colors">
             <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
           </button>
-          <img src="/marca/isotipo-color.svg" alt="acequia" className="w-7 h-7 object-contain shrink-0" />
+          <Isotipo label="acequia" className="w-7 h-7 shrink-0 text-[#2E6B8A]" />
           <div className="min-w-0 leading-tight hidden lg:block">
             <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · acequia</p>
             <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
@@ -3440,7 +3441,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <>
             {/* ── Título (banda superior) — compacto, no tapa el mapa ─────────── */}
             <div id="captura-titulo" className="absolute top-1.5 left-3 z-[1001] pointer-events-auto flex items-baseline gap-2 max-w-[calc(100%-224px)]">
-              <img src="/marca/isotipo-color.svg" alt="" className="w-6 h-6 object-contain self-center shrink-0" />
+              <Isotipo className="w-6 h-6 self-center shrink-0 text-[#2E6B8A]" />
               <p className="font-display text-base font-bold text-ink-950 leading-tight truncate">
                 {capturaTitulo || 'Mapa del terreno'}
               </p>
@@ -3560,7 +3561,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-ink-950 text-bone-50">
                   {can(plan, 'informe.white_label') && rotulo.logo
                     ? <img src={rotulo.logo} alt="" className="w-5 h-5 object-contain shrink-0 bg-bone-50 rounded p-0.5" />
-                    : <img src="/marca/isotipo-blanco.svg" alt="" className="w-5 h-5 object-contain shrink-0" />}
+                    : <Isotipo className="w-5 h-5 shrink-0" />}
                   <div className="leading-none flex-1 min-w-0">
                     <p className="text-[6px] uppercase tracking-[0.2em] text-bone-50/60">{(can(plan, 'informe.white_label') && rotulo.marca) || 'Arte y Tierra'}</p>
                     <p className="text-[9px] font-bold truncate">{rotulo.nombre || 'Plano del terreno'}</p>

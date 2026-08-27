@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Informe · acequia',
+  // El layout raíz ya antepone 'acequia · '.
+  title: 'Informe',
   description: 'Análisis de terreno — datos orientativos generados con la herramienta de Arte y Tierra.',
 };
 
