@@ -68,7 +68,10 @@ export function SwalesPanel({
     <div className="space-y-3">
       <Encabezado />
 
-      <SaludCalculo confianza={hidro.confianza} />
+      {/* `key` por nivel: si aparece una alerta nueva (subir a T100 con serie
+          corta, por ejemplo) el bloque se remonta abierto en vez de esconderla
+          debajo de un plegado que el usuario había cerrado. */}
+      <SaludCalculo key={hidro.confianza.nivel} confianza={hidro.confianza} />
 
       {(!hidro.confianza.fuentes.clima || !hidro.confianza.fuentes.suelo) && (
         <div className="flex gap-1.5">
