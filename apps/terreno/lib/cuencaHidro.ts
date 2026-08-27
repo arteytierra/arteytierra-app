@@ -662,6 +662,13 @@ export interface SitioRepresa {
   ancho_muro_m: number;     // ancho del cierre (cuello de botella)
   volumen_muro_m3: number;  // terraplén
   eficiencia: number;       // agua ÷ muro
+  /**
+   * Contorno del espejo de agua a esa altura de muro. Un pin sobre el cauce no
+   * dice nada de la forma que va a tener el vaso: hasta acá el sitio sugerido
+   * era un ícono y había que imaginarse el resto. Con el anillo, además, el
+   * espejo se puede volcar como polígono y calcular el embalse directamente.
+   */
+  espejo: Array<{ lat: number; lng: number }>;
 }
 
 /**
@@ -722,6 +729,7 @@ export function buscarSitiosRepresa(
   let gen = 0;
 
   const sitios: SitioRepresa[] = [];
+  const idxDeSitio = new Map<SitioRepresa, number>();   // sitio → celda del muro
   for (const d of candidatos) {
     const t = fd[d]!;
     const dr = ((t / cols) | 0) - ((d / cols) | 0), dc = (t % cols) - (d % cols);
@@ -729,6 +737,7 @@ export function buscarSitiosRepresa(
     const baseElev = filled[d]!;
 
     let best: SitioRepresa | null = null;
+    let bestIdx = d;
     for (const H of alturas) {
       const L = baseElev + H;
       // Pool aguas-arriba: BFS por adyacencia inversa, celdas con cota < L.
@@ -775,10 +784,12 @@ export function buscarSitiosRepresa(
           ancho_muro_m: Math.round(anchoM),
           volumen_muro_m3: Math.round(volMuro),
           eficiencia: Math.round(efic * 10) / 10,
+          espejo: [],   // se rellena abajo, sólo para los elegidos
         };
+        bestIdx = d;
       }
     }
-    if (best) sitios.push(best);
+    if (best) { sitios.push(best); idxDeSitio.set(best, bestIdx); }
   }
 
   // Rankear por eficiencia y quedarse con los mejores bien separados entre sí.
@@ -790,7 +801,40 @@ export function buscarSitiosRepresa(
     const lejos = elegidos.every(e => Math.hypot((s.lng - e.lng) * kx, (s.lat - e.lat) * ky) > sepM);
     if (lejos) elegidos.push(s);
   }
+
+  // El espejo se recalcula recién acá, para los 6 finales: guardar el pool de
+  // los 400 candidatos × 3 alturas mientras se busca cuesta memoria de más y
+  // se tira casi todo.
+  for (const s of elegidos) {
+    const d = idxDeSitio.get(s);
+    if (d == null) continue;
+    const pool = poolAgua(inflow, filled, d, filled[d]! + s.altura_m);
+    s.espejo = simplificarAnillo(contorno(pool, g), Math.max(10, cellAvg));
+  }
   return elegidos;
+}
+
+/**
+ * Celdas inundadas aguas-arriba de un muro puesto en `d` con pelo de agua en la
+ * cota `L`: el mismo BFS por adyacencia inversa que usa el buscador, extraído
+ * para poder recorrerlo una segunda vez sobre los sitios ya elegidos.
+ */
+function poolAgua(inflow: number[][], filled: Float64Array, d: number, L: number): Set<number> {
+  const pool = new Set<number>([d]);
+  const stack = [d];
+  while (stack.length) {
+    const cur = stack.pop()!;
+    const ups = inflow[cur];
+    if (!ups) continue;
+    for (const u of ups) {
+      if (pool.has(u)) continue;
+      const e = filled[u]!;
+      if (Number.isNaN(e) || e >= L) continue;
+      pool.add(u);
+      if (pool.size < 40000) stack.push(u);
+    }
+  }
+  return pool;
 }
 
 /** Trae la grilla del predio y sugiere los mejores sitios de represa. */

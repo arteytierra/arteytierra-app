@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets } from 'lucide-react';
+import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets, Check } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, demandaMensual, MESES_NOMBRE, type RepresaResumen } from '@/lib/represa';
@@ -34,6 +34,8 @@ interface Props {
   datosShader: DatosShader | null;
   poligonos:   PoligonoCutFill[];
   onDibujarEspejo: () => void;
+  /** id de polígono a preseleccionar (lo empuja el sitio sugerido que se acaba de volcar) */
+  espejoSugerido?: string | null;
   datosClima?:   DatosClima | null;
   cuencaHa?:     number | null;   // área de la cuenca de aporte (B2), si existe
   grupoHidro?:   GrupoHidro | null;   // grupo hidrológico del suelo (A4), si existe
@@ -42,7 +44,7 @@ interface Props {
   onMuroLinea?: (linea: [{ lat: number; lng: number }, { lat: number; lng: number }] | null) => void;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, datosClima = null, cuencaHa = null, grupoHidro = null, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, espejoSugerido = null, datosClima = null, cuencaHa = null, grupoHidro = null, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
   const [selId,    setSelId]    = useState<string>('');
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
@@ -63,6 +65,11 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   const [cuencaMuroAviso, setCuencaMuroAviso] = useState<string | null>(null);
 
   const sel = poligonos.find(p => p.id === selId) ?? null;
+
+  // Cuando se vuelca un sitio sugerido, su espejo queda elegido solo: si no,
+  // el usuario acaba de apretar un botón y tiene que volver a buscar en un
+  // desplegable lo mismo que acaba de crear.
+  useEffect(() => { if (espejoSugerido) setSelId(espejoSugerido); }, [espejoSugerido]);
 
   // Sugerir el lado más bajo del polígono como muro (donde iría la presa).
   useEffect(() => {
@@ -164,43 +171,65 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Cut &amp; fill de represa</p>
+      {/* La herramienta estaba escondida detrás de sus propios requisitos: el
+          botón "Calcular embalse" no existía hasta tener el polígono elegido,
+          así que había que dibujar y seleccionar A CIEGAS para descubrir que
+          existía. Ahora los tres pasos están numerados y a la vista desde el
+          primer momento, y el botón final se ve siempre —deshabilitado y con
+          el motivo escrito— para que el destino sea visible desde el arranque. */}
+      <div className="flex items-center gap-1.5">
+        <Waves className="w-3.5 h-3.5 text-water-600" />
+        <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Calcular el embalse</p>
+      </div>
       <p className="text-[10px] text-ink-700/55 leading-relaxed">
-        Estima el volumen de agua y el movimiento de suelo de una represa dibujada (polígono o zona), integrando la elevación SRTM.
+        Cuánta agua guarda y cuánta tierra hay que mover: integra la elevación bajo el pelo de agua y dimensiona el muro.
       </p>
 
-      <button
-        onClick={onDibujarEspejo}
-        className="w-full flex items-center justify-center gap-1.5 py-2 bg-water-500/15 hover:bg-water-500/25 text-water-700 border border-water-500/40 rounded-xl text-xs font-medium transition-colors"
-      >
-        <PenLine className="w-3.5 h-3.5" /> Dibujar espejo de agua
-      </button>
-
-      {poligonos.length === 0 ? (
-        <p className="text-[11px] text-ink-700/50 bg-bone-100 rounded-lg px-3 py-2">
-          Dibujá un polígono (o zona) sobre el sitio de la represa para poder calcular.
-        </p>
-      ) : (
-        <select
-          value={selId}
-          onChange={e => setSelId(e.target.value)}
-          className="w-full text-xs bg-white border border-bone-200 rounded-lg px-2 py-1.5 text-ink-900 focus:outline-none focus:border-moss-500"
+      <Paso n={1} hecho={poligonos.length > 0} titulo="Poné el espejo de agua en el mapa">
+        <button
+          onClick={onDibujarEspejo}
+          className="w-full flex items-center justify-center gap-1.5 py-2 bg-water-500/15 hover:bg-water-500/25 text-water-700 border border-water-500/40 rounded-xl text-xs font-medium transition-colors"
         >
-          <option value="">Elegí el polígono de la represa…</option>
-          {poligonos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>
-      )}
+          <PenLine className="w-3.5 h-3.5" /> Dibujar espejo de agua
+        </button>
+        <p className="text-[9px] text-ink-700/50 leading-relaxed">
+          O traé uno de los sitios sugeridos de arriba con «Poner en el mapa»: viene con el espejo ya dibujado.
+        </p>
+      </Paso>
 
-      {sel && (
+      <Paso n={2} hecho={!!sel} titulo="Elegí cuál es">
+        {poligonos.length === 0 ? (
+          <p className="text-[10px] text-ink-700/50 bg-bone-100 rounded-lg px-2.5 py-1.5 leading-relaxed">
+            Todavía no hay ningún polígono ni zona sobre el mapa. Cuando dibujes uno, aparece acá.
+          </p>
+        ) : (
+          <select
+            value={selId}
+            onChange={e => setSelId(e.target.value)}
+            className="w-full text-xs bg-white border border-bone-200 rounded-lg px-2 py-1.5 text-ink-900 focus:outline-none focus:border-moss-500"
+          >
+            <option value="">Elegí el polígono de la represa…</option>
+            {poligonos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          </select>
+        )}
+      </Paso>
+
+      <Paso n={3} hecho={!!res} titulo="Calculá">
         <button
           onClick={analizar}
-          disabled={cargando}
-          className="w-full flex items-center justify-center gap-1.5 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-40 text-bone-50 rounded-xl text-xs font-medium transition-colors"
+          disabled={cargando || !sel}
+          title={!sel ? 'Primero elegí el polígono del espejo (paso 2)' : undefined}
+          className="w-full flex items-center justify-center gap-1.5 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-40 disabled:cursor-not-allowed text-bone-50 rounded-xl text-xs font-medium transition-colors"
         >
           {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Waves className="w-3.5 h-3.5" />}
           {cargando ? 'Calculando…' : 'Calcular embalse'}
         </button>
-      )}
+        {!sel && (
+          <p className="text-[9px] text-ink-700/45 text-center">
+            {poligonos.length === 0 ? 'Falta el espejo (paso 1).' : 'Falta elegir el polígono (paso 2).'}
+          </p>
+        )}
+      </Paso>
 
       {error && <p className="text-[10px] text-clay-600 leading-tight">{error}</p>}
 
@@ -512,6 +541,29 @@ function RepresaSimSection({ res, datosClima, cuencaHa, grupoHidro = null, fuent
           )}
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * Un paso del flujo del embalse. El número y el tilde no son decoración: acá
+ * el orden sí importa —sin espejo no hay polígono que elegir, sin polígono no
+ * hay qué calcular— y es justamente lo que no se veía.
+ */
+function Paso({ n, titulo, hecho, children }: {
+  n: number; titulo: string; hecho: boolean; children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <span className={`w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center shrink-0 transition-colors ${
+          hecho ? 'bg-moss-700 text-bone-50' : 'bg-bone-200 text-ink-700/60'
+        }`}>
+          {hecho ? <Check className="w-2.5 h-2.5" /> : n}
+        </span>
+        <span className={`text-[10px] font-semibold ${hecho ? 'text-moss-700' : 'text-ink-700/70'}`}>{titulo}</span>
+      </div>
+      <div className="pl-[22px] space-y-1.5">{children}</div>
     </div>
   );
 }

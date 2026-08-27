@@ -7,23 +7,26 @@
  * de hidrología del predio (client-side).
  */
 import { useState, useCallback } from 'react';
-import { Loader2, Sparkles, MapPin, Waves } from 'lucide-react';
+import { Loader2, Sparkles, MapPin, Waves, Check } from 'lucide-react';
 import { sugerirSitiosRepresa, bboxDeMojones, type SitioRepresa } from '@/lib/cuencaHidro';
+import { volumenM3, volumenEnLitros, miles } from '@/lib/unidades';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
   mojones: Mojon[];
-  onUbicar?: (lat: number, lng: number, nombre: string) => void;
+  /** vuelca el sitio al mapa: espejo de agua dibujado + pin del muro */
+  onPonerEnMapa?: (sitio: SitioRepresa, indice: number) => void;
 }
 
-export function SitiosRepresaPanel({ mojones, onUbicar }: Props) {
+export function SitiosRepresaPanel({ mojones, onPonerEnMapa }: Props) {
+  const [puestos, setPuestos] = useState<Set<number>>(new Set());
   const [cargando, setCargando] = useState(false);
   const [sitios, setSitios]     = useState<SitioRepresa[] | null>(null);
   const [error, setError]       = useState<string | null>(null);
 
   const buscar = useCallback(async () => {
     if (mojones.length < 3) { setError('Cargá el terreno (al menos 3 mojones) primero.'); return; }
-    setCargando(true); setError(null); setSitios(null);
+    setCargando(true); setError(null); setSitios(null); setPuestos(new Set());
     try {
       const s = await sugerirSitiosRepresa(bboxDeMojones(mojones), mojones);
       setSitios(s);
@@ -61,28 +64,39 @@ export function SitiosRepresaPanel({ mojones, onUbicar }: Props) {
                   <span className="font-mono text-sm font-bold text-moss-700">{s.eficiencia} : 1</span>
                   <span className="text-[9px] text-ink-700/50">agua/muro</span>
                 </span>
-                {onUbicar && (
-                  <button
-                    onClick={() => onUbicar(s.lat, s.lng, `Represa sugerida #${i + 1} (ef. ${s.eficiencia}:1)`)}
-                    className="text-[10px] text-water-700 hover:text-water-900 flex items-center gap-1 shrink-0"
-                  >
-                    <MapPin className="w-3 h-3" /> Ubicar
-                  </button>
-                )}
+                <span className="text-[9px] text-ink-700/55 shrink-0">{volumenEnLitros(s.volumen_agua_m3)}</span>
               </div>
               <div className="grid grid-cols-3 gap-1.5 text-[9px]">
-                <Mini label="Agua" valor={`${(s.volumen_agua_m3 / 1000).toFixed(1)} dam³`} />
-                <Mini label="Muro" valor={`${s.volumen_muro_m3.toLocaleString('es-AR')} m³`} />
+                <Mini label="Agua" valor={volumenM3(s.volumen_agua_m3)} />
+                <Mini label="Muro" valor={`${miles(s.volumen_muro_m3)} m³`} />
                 <Mini label="Espejo" valor={`${s.area_ha} ha`} />
                 <Mini label="Ancho muro" valor={`${s.ancho_muro_m} m`} />
                 <Mini label="Altura" valor={`${s.altura_m} m`} />
                 <Mini label="Cota" valor={`${s.elev} m`} />
               </div>
+              {/* Antes esto dejaba un pin y nada más: el sitio era un ícono
+                  sobre el cauce y había que imaginarse la forma del vaso.
+                  Ahora se vuelca el espejo dibujado, que además queda listo
+                  para calcular el embalse acá abajo. */}
+              {onPonerEnMapa && (
+                <button
+                  onClick={() => { onPonerEnMapa(s, i); setPuestos(prev => new Set(prev).add(i)); }}
+                  className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${
+                    puestos.has(i)
+                      ? 'bg-moss-50 text-moss-700 border-moss-200'
+                      : 'bg-water-500/15 hover:bg-water-500/25 text-water-700 border-water-500/40'
+                  }`}
+                >
+                  {puestos.has(i)
+                    ? <><Check className="w-3 h-3" /> Espejo puesto — calculá el embalse abajo</>
+                    : <><MapPin className="w-3 h-3" /> Poner el espejo en el mapa</>}
+                </button>
+              )}
             </div>
           ))}
           <p className="text-[9px] text-ink-700/45 leading-relaxed flex gap-1">
             <Waves className="w-3 h-3 shrink-0 mt-0.5 text-water-500" />
-            Estimación sobre SRTM ~30 m (muro de ladera estándar). Orientativo para elegir dónde mirar; dibujá el espejo y calculá el embalse para el detalle.
+            El espejo es el que se inunda con la altura de muro que salió mejor rankeada, sobre el relieve global (~30 m). Orientativo para elegir dónde mirar: puesto en el mapa se puede mover, y el embalse se recalcula con la elevación fina.
           </p>
         </div>
       )}

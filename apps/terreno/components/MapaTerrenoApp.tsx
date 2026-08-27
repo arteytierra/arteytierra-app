@@ -78,7 +78,7 @@ import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/c
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
 import { celdaEnPunto, type Cuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
-import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda } from '@/lib/cuencaHidro';
+import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import type { RepresaResumen } from '@/lib/represa';
@@ -534,6 +534,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
   const [espejoPendiente, setEspejoPendiente] = useState(false); // próximo polígono = espejo de agua
+  const [espejoSugeridoId, setEspejoSugeridoId] = useState<string | null>(null); // espejo volcado desde un sitio sugerido
   const [overlay, setOverlay] = useState<OverlayImagen | null>(null);
   const cursorCadRef = useRef<{ lat: number; lng: number } | null>(null);
   const cursorPosRef = useRef<{ lat: number; lng: number } | null>(null); // cursor sobre el mapa (barra de estado)
@@ -1978,10 +1979,30 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [mojones, shaderDetallado, demPropio]);
 
   // Ubicar un sitio de represa sugerido: vuela al punto y deja un pin (sin salir del tab).
-  const handleUbicarSitio = useCallback((lat: number, lng: number, nombre: string) => {
-    flyToRef.current?.(lat, lng);
-    setPines(prev => [...prev, { id: crypto.randomUUID(), lat, lng, nombre, icono: '💧', color: '#1565C0', notas: 'Sitio sugerido de represa' }]);
-  }, []);
+  /**
+   * Vuelca un sitio sugerido al mapa. Antes dejaba sólo un pin sobre el cauce,
+   * que no dice nada de la forma del vaso; ahora dibuja el ESPEJO de agua como
+   * polígono editable y lo deja preseleccionado en el cálculo del embalse, que
+   * era el otro paso que había que descubrir a ciegas.
+   */
+  const handlePonerSitioEnMapa = useCallback((s: SitioRepresa, i: number) => {
+    const nombre = `Represa sugerida #${i + 1}`;
+    if (s.espejo.length >= 3) {
+      const id = crypto.randomUUID();
+      setDibujos(d => [...d, {
+        id, tipo: 'poligono', color: '#1565C0', vertices: s.espejo, opacidad: 0.3,
+        capaId: capaActivaId, nombre: `${nombre} · espejo`,
+        notas: `Espejo con ${s.altura_m} m de muro — ${volumenM3(s.volumen_agua_m3)} de agua, eficiencia ${s.eficiencia}:1`,
+      }]);
+      setEspejoSugeridoId(id);
+    }
+    setPines(prev => [...prev, {
+      id: crypto.randomUUID(), lat: s.lat, lng: s.lng,
+      nombre: `${nombre} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0',
+      notas: `Muro sugerido — ${s.ancho_muro_m} m de ancho por ${s.altura_m} m de alto, ${miles(s.volumen_muro_m3)} m³ de terraplén`,
+    }]);
+    flyToRef.current?.(s.lat, s.lng);
+  }, [capaActivaId]);
 
   // Análisis topográfico integral: vuelca al plano represas + viviendas + caminos por cresta + cruces.
   const handleAplicarAnalisisIntegral = useCallback((res: AnalisisTopoIntegral) => {
@@ -1997,8 +2018,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }));
     if (nuevosPines.length === 0) return;
     setPines(prev => [...prev, ...nuevosPines]);
+    // Con cada pin va el espejo de agua dibujado: el pin marca el muro, el
+    // polígono muestra qué se inunda. Sin eso hay que imaginarse el vaso.
+    const espejos = res.represas
+      .filter(s => s.espejo.length >= 3)
+      .map((s, i) => ({
+        id: crypto.randomUUID(), tipo: 'poligono' as const, color: '#1565C0',
+        vertices: s.espejo, opacidad: 0.3, capaId: capaActivaId,
+        nombre: `Represa ${i + 1} · espejo`,
+        notas: `Espejo con ${s.altura_m} m de muro — ${volumenM3(s.volumen_agua_m3)} de agua`,
+      }));
+    if (espejos.length > 0) setDibujos(d => [...d, ...espejos]);
     flyToRef.current?.(nuevosPines[0]!.lat, nuevosPines[0]!.lng);
-  }, []);
+  }, [capaActivaId]);
 
   // Al correr el Análisis del predio: encender la capa de escorrentías (antes se
   // creaba pero quedaba apagada). Las sugerencias de programa las hace el master plan.
@@ -2969,9 +3001,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4 space-y-4">
-              <SitiosRepresaPanel mojones={mojones} onUbicar={handleUbicarSitio} />
+              <SitiosRepresaPanel mojones={mojones} onPonerEnMapa={handlePonerSitioEnMapa} />
               <div className="border-t border-bone-200 pt-4">
-                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
+                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} espejoSugerido={espejoSugeridoId} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
               </div>
             </div>
           )}
