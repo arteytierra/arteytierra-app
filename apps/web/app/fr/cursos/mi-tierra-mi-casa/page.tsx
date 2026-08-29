@@ -120,7 +120,7 @@ export default function MiTierraMiCasaFrPage() {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/Fak9xHjoivQ"
+                src="https://www.youtube-nocookie.com/embed/Fak9xHjoivQ"
                 title="Mi Tierra Mi Casa — vidéo promotionnelle"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

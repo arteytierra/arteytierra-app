@@ -160,7 +160,7 @@ export const COURSES: Record<string, CourseData> = {
       {
         name: 'Equipo de obra Arte y Tierra',
         role: 'Cuadrilla y acompañamiento',
-        bio: 'La formación se sostiene sobre una cuadrilla estable que trabaja la obra a diario: Julián Denaday, Ignacio Gómez, Karen Ibarra y Valentín Nonino, junto a Jonatan. Un equipo con oficio que acompaña cada fase del proceso, sumado a los voluntarios del programa de Inmersión Viva que dan vida cotidiana a la obra.',
+        bio: 'La formación se sostiene sobre una cuadrilla estable que trabaja la obra a diario: Julián Denaday y Valentín Nonino, junto a Jonatan. Un equipo con oficio que acompaña cada fase del proceso, sumado a los voluntarios del programa de Inmersión Viva que dan vida cotidiana a la obra.',
       },
     ],
     opciones: [

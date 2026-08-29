@@ -45,6 +45,28 @@ export const metadata: Metadata = {
   },
 };
 
+// ─── Motivo de marca: curvas de nivel de un cerro (la misma pieza que la OG) ─
+// Mismo trazado que `_flyers/acequia-og/og.html`: un cerro real leído por el
+// MDE, no un blanco de tiro — asimétrico, con ladera tendida al oeste y
+// faldeo abrupto al este, sangrando fuera del lienzo como en una carta
+// topográfica. Se repite acá para que el hero y la miniatura social sean la
+// misma pieza visual. El color lo pone `currentColor` desde el wrapper.
+function CerroCurvas({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 700 700" fill="none">
+      <g stroke="currentColor" fill="none" strokeLinejoin="round">
+        <path d="M352 22 C 520 44, 636 128, 664 268 C 690 400, 620 528, 486 604 C 372 668, 232 656, 146 578 C 62 502, 34 372, 78 254 C 122 134, 224 8, 352 22 Z" strokeWidth="1.5" opacity=".34" />
+        <path d="M358 84 C 500 104, 596 178, 618 288 C 640 396, 578 496, 466 556 C 370 608, 254 596, 184 530 C 114 464, 96 358, 134 262 C 172 168, 254 70, 358 84 Z" strokeWidth="1.5" opacity=".40" />
+        <path d="M366 150 C 476 168, 550 228, 566 312 C 582 392, 534 466, 448 512 C 372 552, 282 542, 226 492 C 168 440, 156 358, 188 284 C 218 214, 286 138, 366 150 Z" strokeWidth="2.4" opacity=".52" />
+        <path d="M374 214 C 452 230, 502 274, 512 334 C 522 390, 490 442, 430 472 C 376 498, 314 490, 274 454 C 232 416, 224 358, 246 306 C 266 258, 316 204, 374 214 Z" strokeWidth="1.5" opacity=".44" />
+        <path d="M380 278 C 428 290, 456 318, 460 354 C 464 388, 444 418, 408 434 C 374 448, 338 442, 314 420 C 290 396, 288 362, 302 332 C 316 304, 346 270, 380 278 Z" strokeWidth="1.5" opacity=".46" />
+        <path d="M386 330 C 412 338, 424 354, 424 372 C 424 390, 412 404, 392 410 C 372 416, 354 410, 344 396 C 336 382, 338 364, 348 350 C 358 336, 370 326, 386 330 Z" strokeWidth="1.5" opacity=".48" />
+      </g>
+      <circle cx="384" cy="371" r="5.5" fill="currentColor" opacity=".85" />
+    </svg>
+  );
+}
+
 // ─── Motivo de marca: curvas de nivel ("cartografía viva") ───────────────────
 // SVG de líneas topográficas que se repiten en tiles sin costura. El color se
 // controla con `text-*` en el wrapper (currentColor) y la opacidad con /NN.
@@ -248,12 +270,19 @@ export default async function AcequiaLanding() {
           <div className="absolute inset-0 text-[#2E6B8A]/15">
             <ContourLines id="contour-hero" className="h-full w-full" />
           </div>
-          <div className="relative z-10 max-w-editorial mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-24 grid lg:grid-cols-2 gap-14 items-center">
-            <div>
-              {/* Lockup en PNG: el SVG de marca lleva el wordmark como <text> con
-                  Century Gothic, que no está en el navegador del visitante.
-                  El ancho va por estilo y no por clase: `w-auto` no está en el CSS
-                  compilado de esta app y sin él el lockup sale estirado. */}
+          {/* Curvas de nivel del cerro: motivo de marca, apoyado a la derecha
+              como en la miniatura social. No pide espacio propio en el
+              layout — se recorta con el contenedor, así el hero sigue siendo
+              texto-primero. */}
+          <div
+            className="absolute right-0 top-1/2 pointer-events-none"
+            style={{ width: 700, height: 700, transform: 'translateY(-50%) translateX(25%)', color: '#7FB2CC', opacity: 0.5 }}
+          >
+            <CerroCurvas className="w-full h-full" />
+          </div>
+          <div className="relative z-10 max-w-editorial mx-auto px-6 pt-14 pb-16 md:pt-16 md:pb-28">
+            {/* Lockup: lo mismo que abre los flyers de la marca. */}
+            <div className="flex items-center gap-4 mb-16 md:mb-24">
               <Image
                 src="/img/acequia/logo-blanco.png"
                 alt="acequia"
@@ -261,8 +290,15 @@ export default async function AcequiaLanding() {
                 height={395}
                 priority
                 style={{ width: 'auto' }}
-                className="h-11 md:h-14 mb-6"
+                className="h-8 md:h-9"
               />
+              <span className="h-8 w-px bg-[#F5F0E8]/20" aria-hidden="true" />
+              <p className="font-sans text-[11px] font-bold uppercase tracking-widest text-[#7FB2CC] leading-snug">
+                Un desarrollo de<br />Arte y Tierra
+              </p>
+            </div>
+
+            <div className="max-w-2xl">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-4">
                 Diseño ecosistémico del territorio
               </p>
@@ -270,7 +306,7 @@ export default async function AcequiaLanding() {
                   anterior ("Del terreno al masterplan") describía el recorrido
                   del producto; éste dice la idea de marca, y de paso saca del
                   encabezado la palabra del nombre viejo. */}
-              <h1 className="font-display text-5xl md:text-6xl text-[#F5F0E8] leading-[1.05]">
+              <h1 className="font-display text-5xl md:text-7xl text-[#F5F0E8] leading-[1.05]">
                 Entendé el territorio<br /><em className="text-[#7FB2CC]">antes de intervenirlo.</em>
               </h1>
               <p className="mt-6 font-sans text-lg text-[#E8D5A3]/90 max-w-lg leading-relaxed">
@@ -299,19 +335,22 @@ export default async function AcequiaLanding() {
                 <span className="font-mono tabular-nums text-[#7FB2CC]">USD&nbsp;{DESDE_USD}</span> al mes.
               </p>
             </div>
-            <div className="relative">
-              {/* Glow del agua detrás de la captura */}
-              <div className="absolute -inset-4 bg-[#2E6B8A]/20 blur-3xl rounded-full" aria-hidden="true" />
-              <div className="relative aspect-[4/3] overflow-hidden ring-1 ring-[#2E6B8A]/30 shadow-2xl shadow-[#1A1210]/60">
-                <Image
-                  src="/img/terreno/topografia.webp"
-                  alt="Análisis topográfico de un terreno en acequia"
-                  fill
-                  priority
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
+          </div>
+        </section>
+
+        {/* ── CAPTURA DEL PRODUCTO ── */}
+        {/* La foto de topografía que antes vivía en el hero: sigue mostrando el
+            producto real, pero ya no compite con el lockup ni los círculos. */}
+        <section className="bg-[#241a17] px-6 py-16 md:py-20">
+          <div className="max-w-editorial mx-auto">
+            <div className="relative aspect-[16/9] overflow-hidden ring-1 ring-[#2E6B8A]/30 shadow-2xl shadow-[#1A1210]/60">
+              <Image
+                src="/img/terreno/topografia.webp"
+                alt="Análisis topográfico de un terreno en acequia"
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
             </div>
           </div>
         </section>

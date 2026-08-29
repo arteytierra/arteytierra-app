@@ -21,7 +21,7 @@ const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] 
   {
     name: 'Jonatan Palma',
     role: 'Director · Diseñador · Facilitador',
-    bio: 'Bioconstructor y bioarquitecto desde 2010, especializado en construcción en tierra, bioclimática y radiestesia. Formado junto a Jorge Belanko, Gernot Minke, Marco Arestra y Daniel Smite. Fundador de Arte y Tierra y de la Ecoescuela Tay Pichín.',
+    bio: 'Bioconstructor y diseñador empírico desde 2010, especializado en construcción en tierra, bioclimática y radiestesia. Formado junto a Jorge Belanko, Gernot Minke, Marco Arestra y Daniel Smite. Fundador de Arte y Tierra y de la Ecoescuela Tay Pichín.',
     img: '/img/cursos/vueltatierra/10.jpg',
   },
   {
@@ -35,18 +35,6 @@ const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] 
     role: 'Conducción de obra · Facilitador',
     bio: 'Constructor de oficio, oriundo de Los Toldos (Buenos Aires). Integra técnica y experiencia práctica en procesos constructivos, compartiendo el hacer desde una mirada consciente y en vínculo con la vida cotidiana.',
     img: 'https://drive.google.com/thumbnail?id=1ixPqThmDFMhODU8ozTbLeiRylLMGa_rz&sz=w800',
-  },
-  {
-    name: 'Ignacio Gómez Serjal',
-    role: 'Director de voluntariado · Tay Pichín',
-    bio: 'Permacultor y agricultor nacido en San Nicolás. Su camino se forjó en contacto directo con la tierra, especializándose en el trabajo de huerta y sistemas productivos a escala humana, acompañando procesos de aprendizaje desde la práctica.',
-    img: 'https://drive.google.com/thumbnail?id=1BgRX6c2SWhRL25wVk78URypKKVA74sj3&sz=w800',
-  },
-  {
-    name: 'Karen Ybarra',
-    role: 'Equipo de Ecohostel · Tay Pichín',
-    bio: 'Nacida en Tres de Febrero (Buenos Aires), su interés por la permacultura la llevó a investigar sistemas constructivos convencionales y tradicionales. Aporta una mirada sensible en la gestión del espacio y la experiencia de quienes habitan el lugar.',
-    img: 'https://drive.google.com/thumbnail?id=17CGD5Mf4J8zKKAWYWtxNoFldhhTgTufD&sz=w800',
   },
 ];
 
@@ -222,7 +210,7 @@ export default function NosotrosPage() {
           <div className="relative aspect-video bg-ink-950 overflow-hidden">
             <iframe
               className="absolute inset-0 w-full h-full border-0"
-              src="https://www.youtube.com/embed/o2iHQNweKr8"
+              src="https://www.youtube-nocookie.com/embed/o2iHQNweKr8"
               title="Jonatan Palma en el MAMM Medellín"
               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -241,7 +229,7 @@ export default function NosotrosPage() {
           <div className="relative aspect-video bg-ink-950 overflow-hidden">
             <iframe
               className="absolute inset-0 w-full h-full border-0"
-              src="https://www.youtube.com/embed/EYS4kz0ZPYE?start=809"
+              src="https://www.youtube-nocookie.com/embed/EYS4kz0ZPYE?start=809"
               title="Entrevista a Jonatan Palma — Arte y Tierra"
               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

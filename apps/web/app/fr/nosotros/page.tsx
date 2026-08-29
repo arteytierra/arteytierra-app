@@ -21,7 +21,7 @@ const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] 
   {
     name: 'Jonatan Palma',
     role: 'Directeur · Designer · Facilitateur',
-    bio: 'Bioconstructeur depuis 2010, spécialisé en construction en terre, bioclimatique et radiesthésie. Formé avec Jorge Belanko, Gernot Minke, Marco Arestra et Daniel Smite. Fondateur d\'Arte y Tierra et de l\'Écoécole Tay Pichín.',
+    bio: 'Bioconstructeur et designer empirique depuis 2010, spécialisé en construction en terre, bioclimatique et radiesthésie. Formé avec Jorge Belanko, Gernot Minke, Marco Arestra et Daniel Smite. Fondateur d\'Arte y Tierra et de l\'Écoécole Tay Pichín.',
     img: '/img/cursos/vueltatierra/10.jpg',
   },
   {
@@ -35,18 +35,6 @@ const EQUIPO: { name: string; role: string; bio: string; img: string | null }[] 
     role: 'Conduite de chantier · Facilitateur',
     bio: 'Constructeur de métier, originaire de Los Toldos (Buenos Aires). Il intègre technique et expérience pratique dans les processus constructifs, partageant le faire depuis un regard conscient et en lien avec la vie quotidienne.',
     img: 'https://drive.google.com/thumbnail?id=1ixPqThmDFMhODU8ozTbLeiRylLMGa_rz&sz=w800',
-  },
-  {
-    name: 'Ignacio Gómez Serjal',
-    role: 'Directeur du volontariat · Tay Pichín',
-    bio: 'Permaculteur et agriculteur né à San Nicolás. Son chemin s\'est forgé en contact direct avec la terre, spécialisé dans le travail du potager et les systèmes productifs à échelle humaine.',
-    img: 'https://drive.google.com/thumbnail?id=1BgRX6c2SWhRL25wVk78URypKKVA74sj3&sz=w800',
-  },
-  {
-    name: 'Karen Ybarra',
-    role: 'Équipe Écohostel · Tay Pichín',
-    bio: 'Née à Tres de Febrero (Buenos Aires), son intérêt pour la permaculture l\'a amenée à explorer les systèmes constructifs conventionnels et traditionnels. Elle apporte un regard sensible dans la gestion de l\'espace.',
-    img: 'https://drive.google.com/thumbnail?id=17CGD5Mf4J8zKKAWYWtxNoFldhhTgTufD&sz=w800',
   },
 ];
 
@@ -219,7 +207,7 @@ export default function NosotrosFrPage() {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/o2iHQNweKr8"
+                src="https://www.youtube-nocookie.com/embed/o2iHQNweKr8"
                 title="Jonatan Palma au MAMM Medellín"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -239,7 +227,7 @@ export default function NosotrosFrPage() {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/EYS4kz0ZPYE?start=809"
+                src="https://www.youtube-nocookie.com/embed/EYS4kz0ZPYE?start=809"
                 title="Entretien avec Jonatan Palma — Arte y Tierra"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

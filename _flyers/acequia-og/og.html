@@ -1,0 +1,124 @@
+<meta charset="utf-8">
+<title>acequia — OG 1200×630</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Paleta tomada de apps/web/app/acequia/page.tsx para que la OG y el landing
+     sean la misma pieza: fondo cálido oscuro, azul agua como acento, crema. */
+  :root {
+    --tinta:  #1A1210;
+    --agua:   #2E6B8A;
+    --agua-c: #7FB2CC;
+    --crema:  #F5F0E8;
+    --arena:  #E8D5A3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; }
+  body {
+    position: relative;
+    overflow: hidden;
+    background: var(--tinta);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Mismo degradé diagonal del hero. */
+  .velo {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(46,107,138,.25) 0%, var(--tinta) 55%, var(--tinta) 100%);
+  }
+
+  /* Curvas de nivel: el motivo de marca. Un cerro real leído por el MDE, no un
+     blanco de tiro — los anillos son asimétricos, con una ladera tendida al
+     oeste (curvas separadas) y un faldeo abrupto al este (curvas juntas), y
+     sangran fuera del lienzo como en una carta topográfica. */
+  .curvas { position: absolute; right: -110px; top: 50%; transform: translateY(-50%); opacity: .85; }
+
+  .contenido { position: absolute; inset: 0; padding: 64px 72px; display: flex; flex-direction: column; }
+
+  /* Masthead: el logo real, no el nombre escrito. La preview social es donde
+     más se juega el reconocimiento de marca — es la única pieza de acequia que
+     alguien ve antes de decidir si hace clic.
+     El lockup va en PNG y no en SVG: el SVG de marca lleva el wordmark como
+     <text> con Century Gothic, y Chromium headless no la tiene instalada. */
+  .masthead { display: flex; align-items: center; gap: 20px; }
+  .masthead img { height: 54px; width: auto; display: block; }
+  .masthead .barra { width: 1px; height: 30px; background: rgba(127,178,204,.38); }
+  .masthead .firma {
+    font-size: 13px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(127,178,204,.85); line-height: 1.35; max-width: 190px;
+  }
+
+  h1 {
+    margin-top: 30px;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 86px; font-weight: 700; line-height: 1.02;
+    color: var(--crema);
+    letter-spacing: -.015em;
+  }
+  h1 em { display: block; font-style: italic; color: var(--agua-c); }
+
+  .bajada {
+    margin-top: 30px;
+    font-size: 21px; line-height: 1.5; font-weight: 400;
+    color: rgba(232,213,163,.92);
+    max-width: 640px;
+  }
+  .bajada strong { color: var(--crema); font-weight: 500; }
+
+  .pie {
+    margin-top: auto;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .url { font-size: 19px; font-weight: 500; color: var(--agua-c); }
+  .cta {
+    background: var(--agua); color: var(--crema);
+    font-size: 15px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    padding: 17px 30px;
+  }
+</style>
+
+<div class="velo"></div>
+
+<svg class="curvas" width="700" height="700" viewBox="0 0 700 700" fill="none" aria-hidden="true">
+  <g stroke="#7FB2CC" fill="none" stroke-linejoin="round">
+    <!-- Cotas bajas: valle ancho y lobulado, con una quebrada entrando por el SO. -->
+    <path d="M352 22 C 520 44, 636 128, 664 268 C 690 400, 620 528, 486 604 C 372 668, 232 656, 146 578 C 62 502, 34 372, 78 254 C 122 134, 224 8, 352 22 Z"
+          stroke-width="1.5" opacity=".34"/>
+    <path d="M358 84 C 500 104, 596 178, 618 288 C 640 396, 578 496, 466 556 C 370 608, 254 596, 184 530 C 114 464, 96 358, 134 262 C 172 168, 254 70, 358 84 Z"
+          stroke-width="1.5" opacity=".40"/>
+    <!-- Cota maestra (más gruesa, como en una carta). -->
+    <path d="M366 150 C 476 168, 550 228, 566 312 C 582 392, 534 466, 448 512 C 372 552, 282 542, 226 492 C 168 440, 156 358, 188 284 C 218 214, 286 138, 366 150 Z"
+          stroke-width="2.4" opacity=".52"/>
+    <path d="M374 214 C 452 230, 502 274, 512 334 C 522 390, 490 442, 430 472 C 376 498, 314 490, 274 454 C 232 416, 224 358, 246 306 C 266 258, 316 204, 374 214 Z"
+          stroke-width="1.5" opacity=".44"/>
+    <!-- Cotas altas: el faldeo este se cierra, la ladera oeste sigue tendida. -->
+    <path d="M380 278 C 428 290, 456 318, 460 354 C 464 388, 444 418, 408 434 C 374 448, 338 442, 314 420 C 290 396, 288 362, 302 332 C 316 304, 346 270, 380 278 Z"
+          stroke-width="1.5" opacity=".46"/>
+    <path d="M386 330 C 412 338, 424 354, 424 372 C 424 390, 412 404, 392 410 C 372 416, 354 410, 344 396 C 336 382, 338 364, 348 350 C 358 336, 370 326, 386 330 Z"
+          stroke-width="1.5" opacity=".48"/>
+  </g>
+  <!-- Keypoint / cumbre. -->
+  <circle cx="384" cy="371" r="5.5" fill="#7FB2CC" opacity=".85"/>
+</svg>
+
+<div class="contenido">
+  <div class="masthead">
+    <img src="../../apps/web/public/img/acequia/logo-blanco.png" alt="acequia">
+    <span class="barra"></span>
+    <span class="firma">Un desarrollo de<br>Arte y Tierra</span>
+  </div>
+
+  <h1>Del terreno<em>al masterplan.</em></h1>
+
+  <p class="bajada">
+    Topografía · agua · clima · suelo · represas · Keyline.<br>
+    Todo al marcar tu predio — <strong>sin CAD ni GIS</strong>, con datos globales.
+  </p>
+
+  <div class="pie">
+    <span class="url">arteytierra.org/acequia</span>
+    <span class="cta">Empezá gratis →</span>
+  </div>
+</div>

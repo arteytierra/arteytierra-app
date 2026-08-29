@@ -162,7 +162,7 @@ export default function NosotrosEnPage() {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/o2iHQNweKr8"
+                src="https://www.youtube-nocookie.com/embed/o2iHQNweKr8"
                 title="Jonatan Palma at MAMM Medellín"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -182,7 +182,7 @@ export default function NosotrosEnPage() {
             <div className="relative aspect-video bg-ink-950 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/EYS4kz0ZPYE?start=809"
+                src="https://www.youtube-nocookie.com/embed/EYS4kz0ZPYE?start=809"
                 title="Interview with Jonatan Palma — Arte y Tierra"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

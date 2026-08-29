@@ -48,7 +48,7 @@ Fechas: 21 sep – 30 nov 2026 (aprox. 10 semanas).
 Precio: $1.500.000 ARS, todo incluido (hospedaje en habitación compartida en Tay Pichín + alimentación). Se reserva con seña del 10% ($150.000) por Mercado Pago.
 Cupos: 3 regulares + 2 vacantes para personas con experiencia al 50% ($750.000 ARS, hospedaje en carpa que trae la persona).
 Incluye: certificado, Manual de Diseño Simbiótico (PDF), acceso al curso grabado "Mi Tierra Mi Casa", asesorías de diseño cada 3 semanas, círculos de proceso mensuales, focalizador personal.
-Equipo (se puede nombrar): Jonatan Palma + cuadrilla Julián Denaday, Ignacio Gómez, Karen Ibarra, Valentín Nonino + voluntarios de Inmersión Viva.
+Equipo (se puede nombrar): Jonatan Palma + cuadrilla Julián Denaday, Valentín Nonino + voluntarios de Inmersión Viva.
 Inscripción: formulario + WhatsApp (sin carrito). Reserva con seña del 50%.
 Flujo: presentar (fechas, precio, las 2 vacantes con experiencia al 50%) → responder dudas → llevar a la inscripción (formulario + WhatsApp) y explicar la seña.
 

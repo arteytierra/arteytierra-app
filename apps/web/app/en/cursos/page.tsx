@@ -134,7 +134,7 @@ export default function CursosEnPage() {
             <div className="relative aspect-video overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/Fak9xHjoivQ"
+                src="https://www.youtube-nocookie.com/embed/Fak9xHjoivQ"
                 title="Mi Tierra Mi Casa — promotional video"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -154,7 +154,7 @@ export default function CursosEnPage() {
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/dSqscHL4pF8"
+                src="https://www.youtube-nocookie.com/embed/dSqscHL4pF8"
                 title="Participant testimonials — Arte y Tierra"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

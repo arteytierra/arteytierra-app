@@ -182,7 +182,7 @@ export default function TayPichinFrPage() {
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/Kk8TfOtih2s"
+                src="https://www.youtube-nocookie.com/embed/Kk8TfOtih2s"
                 title="Barrofest — festival de bioconstruction à Tay Pichín"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

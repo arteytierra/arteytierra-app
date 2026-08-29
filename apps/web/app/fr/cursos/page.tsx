@@ -173,7 +173,7 @@ export default function CursosFrPage() {
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe
                 className="absolute inset-0 w-full h-full border-0"
-                src="https://www.youtube.com/embed/dSqscHL4pF8"
+                src="https://www.youtube-nocookie.com/embed/dSqscHL4pF8"
                 title="Témoignages de participants — Arte y Tierra"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
