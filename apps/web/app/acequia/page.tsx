@@ -276,13 +276,22 @@ export default async function AcequiaLanding() {
               texto-primero. */}
           <div
             className="absolute right-0 top-1/2 pointer-events-none"
-            style={{ width: 700, height: 700, transform: 'translateY(-50%) translateX(25%)', color: '#7FB2CC', opacity: 0.5 }}
+            style={{
+              // Escala con la pantalla: a tamaño fijo tapaba medio celular.
+              width: 'clamp(300px, 46vw, 620px)',
+              height: 'clamp(300px, 46vw, 620px)',
+              transform: 'translateY(-50%) translateX(-6%)',
+              color: '#7FB2CC',
+              opacity: 0.5,
+            }}
           >
             <CerroCurvas className="w-full h-full" />
           </div>
-          <div className="relative z-10 max-w-editorial mx-auto px-6 pt-14 pb-16 md:pt-16 md:pb-28">
+          {/* El hero entra completo en una pantalla al 100%: por eso los
+              respiros son cortos y el titular no pasa de dos renglones. */}
+          <div className="relative z-10 max-w-editorial mx-auto px-6 pt-8 pb-12 md:pt-10 md:pb-16">
             {/* Lockup: lo mismo que abre los flyers de la marca. */}
-            <div className="flex items-center gap-4 mb-16 md:mb-24">
+            <div className="flex items-center gap-4 mb-8 md:mb-10">
               <Image
                 src="/img/acequia/logo-blanco.png"
                 alt="acequia"
@@ -290,30 +299,40 @@ export default async function AcequiaLanding() {
                 height={395}
                 priority
                 style={{ width: 'auto' }}
-                className="h-8 md:h-9"
+                className="h-11 md:h-14"
               />
-              <span className="h-8 w-px bg-[#F5F0E8]/20" aria-hidden="true" />
+              <span className="h-10 w-px bg-[#F5F0E8]/20" aria-hidden="true" />
               <p className="font-sans text-[11px] font-bold uppercase tracking-widest text-[#7FB2CC] leading-snug">
                 Un desarrollo de<br />Arte y Tierra
               </p>
             </div>
 
-            <div className="max-w-2xl">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-4">
+            {/* max-w-3xl y no 2xl: con el contenedor angosto el titular se
+                partía en cuatro renglones en vez de los dos que pide el
+                manual. */}
+            <div className="max-w-3xl">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-[#7FB2CC] mb-3">
                 Diseño ecosistémico del territorio
               </p>
               {/* Titular y bajada aprobados en el manual de marca v2. El titular
                   anterior ("Del terreno al masterplan") describía el recorrido
                   del producto; éste dice la idea de marca, y de paso saca del
                   encabezado la palabra del nombre viejo. */}
-              <h1 className="font-display text-5xl md:text-7xl text-[#F5F0E8] leading-[1.05]">
+              {/* Tamaño fluido y no por breakpoints: con los saltos fijos el
+                  titular se partía en cuatro renglones en el celular. El
+                  clamp lo mantiene en los dos renglones que pide el manual
+                  desde 360 px hasta pantalla grande. */}
+              <h1
+                className="font-display text-[#F5F0E8]"
+                style={{ fontSize: 'clamp(2.125rem, 1.2rem + 3.6vw, 4.75rem)', lineHeight: 1.05 }}
+              >
                 Entendé el territorio<br /><em className="text-[#7FB2CC]">antes de intervenirlo.</em>
               </h1>
-              <p className="mt-6 font-sans text-lg text-[#E8D5A3]/90 max-w-lg leading-relaxed">
+              <p className="mt-5 font-sans text-base md:text-lg text-[#E8D5A3]/90 max-w-lg leading-relaxed">
                 Delimitá un predio y obtené una lectura preliminar de relieve, agua, clima, suelo y
                 contexto, con <span className="text-[#F5F0E8]">fuentes y limitaciones visibles</span>.
               </p>
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-7 flex flex-wrap gap-4">
                 <a
                   href={REGISTRO_URL}
                   className="inline-flex items-center gap-2 bg-[#2E6B8A] text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 shadow-lg shadow-[#2E6B8A]/25 hover:bg-[#4A6741] hover:shadow-[#2E6B8A]/10 transition-all"
@@ -334,23 +353,6 @@ export default async function AcequiaLanding() {
                 Gratis, sin tarjeta. Los planes pagos arrancan en{' '}
                 <span className="font-mono tabular-nums text-[#7FB2CC]">USD&nbsp;{DESDE_USD}</span> al mes.
               </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── CAPTURA DEL PRODUCTO ── */}
-        {/* La foto de topografía que antes vivía en el hero: sigue mostrando el
-            producto real, pero ya no compite con el lockup ni los círculos. */}
-        <section className="bg-[#241a17] px-6 py-16 md:py-20">
-          <div className="max-w-editorial mx-auto">
-            <div className="relative aspect-[16/9] overflow-hidden ring-1 ring-[#2E6B8A]/30 shadow-2xl shadow-[#1A1210]/60">
-              <Image
-                src="/img/terreno/topografia.webp"
-                alt="Análisis topográfico de un terreno en acequia"
-                fill
-                className="object-cover"
-                sizes="100vw"
-              />
             </div>
           </div>
         </section>
