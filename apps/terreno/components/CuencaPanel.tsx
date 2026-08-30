@@ -7,7 +7,7 @@
  * por el método SCS para una tormenta de diseño, el caudal pico y el ancho de
  * vertedero.
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2, Archive, Check } from 'lucide-react';
 import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro, type ResultadoCuenca,
@@ -48,20 +48,35 @@ interface Props {
   onUsarPoligono?: (vertices: Array<{ lat: number; lng: number }>) => void;
   onEditarCuenca?: () => void;      // materializa la cuenca calculada en un polígono editable
   onExtender?: () => void;          // recalcula hasta la divisoria real
+  inicial?:    CuencaInputs | null;
+  onInputs?:   (i: CuencaInputs) => void;
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
-  const [coberturaId, setCoberturaId] = useState('pastura_regular');
-  const [selManual, setSelManual] = useState('');
-  const [grupo, setGrupo]     = useState<GrupoHidro>(grupoHidro ?? 'B');
-  const [precip, setPrecip]   = useState(precipT10 ? String(precipT10) : '75');
-  const [head, setHead]       = useState('0.3');
+/** Lo que el usuario elige acá; se guarda para no perderlo al cambiar de pestaña. */
+export interface CuencaInputs {
+  coberturaId: string;
+  grupo:       GrupoHidro;
+  precip:      string;
+  head:        string;
+}
 
-  // Autocompleta la tormenta de diseño con el T10 de A3 cuando llega.
-  useEffect(() => { if (precipT10) setPrecip(String(precipT10)); }, [precipT10]);
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
+  const [coberturaId, setCoberturaId] = useState(inicial?.coberturaId ?? 'pastura_regular');
+  const [selManual, setSelManual] = useState('');
+  const [grupo, setGrupo]     = useState<GrupoHidro>(inicial?.grupo ?? grupoHidro ?? 'B');
+  const [precip, setPrecip]   = useState(inicial?.precip ?? (precipT10 ? String(precipT10) : '75'));
+  const [head, setHead]       = useState(inicial?.head ?? '0.3');
+
+  useEffect(() => { onInputs?.({ coberturaId, grupo, precip, head }); }, [coberturaId, grupo, precip, head, onInputs]);
+
+  // Autocompleta la tormenta de diseño con el T10 de A3 cuando llega — salvo que
+  // la persona ya haya elegido un valor, que no queremos pisarle al volver.
+  const tocoPrecip = useRef(!!inicial?.precip);
+  const tocoGrupo  = useRef(!!inicial?.grupo);
+  useEffect(() => { if (precipT10 && !tocoPrecip.current) setPrecip(String(precipT10)); }, [precipT10]);
   // Ídem el grupo hidrológico cuando termina el análisis de suelo: sin esto el
   // CN seguía saliendo del grupo B por defecto aunque el perfil dijera otra cosa.
-  useEffect(() => { if (grupoHidro) setGrupo(grupoHidro); }, [grupoHidro]);
+  useEffect(() => { if (grupoHidro && !tocoGrupo.current) setGrupo(grupoHidro); }, [grupoHidro]);
 
   const cobertura = COBERTURAS.find(c => c.id === coberturaId)!;
   const cn = cobertura.cn[grupo];
@@ -104,6 +119,8 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
     setCoberturaId(g.params.coberturaId);
     setGrupo(g.params.grupo);
     setPrecip(String(g.params.precip_mm));
+    tocoPrecip.current = true;
+    tocoGrupo.current  = true;
     setHead(String(g.params.head_m));
     onAbrir?.(g);
   };

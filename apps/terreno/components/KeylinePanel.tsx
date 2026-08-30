@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Waypoints, Loader2, MapPin, Info, Grid3x3 } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { analizarKeyline, generarPatronCultivo, type ResultadoKeyline, type ResultadoPatron } from '@/lib/keyline';
@@ -8,28 +8,51 @@ import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
 import type { PoligonoCutFill } from './CutFillPanel';
 
+/**
+ * Detectar el keypoint descarga relieve y tarda: se guarda el resultado, no
+ * sólo los parámetros del patrón. La grilla de elevación no se guarda —pesa
+ * demasiado— y se vuelve a pedir si hace falta.
+ */
+export interface KeylineInputs {
+  res:         ResultadoKeyline | null;
+  aplicado:    boolean;
+  parcelaId:   string;
+  espaciado:   number;
+  suavizado:   number;
+  patron:      ResultadoPatron | null;
+  patronAplic: boolean;
+}
+
 interface Props {
   mojones:      Mojon[];
   datosShader:  DatosShader | null;
   parcelas:     PoligonoCutFill[];
   onAplicarGuias: (res: ResultadoKeyline) => void;
+  /** Salida opcional: colocar también las guías como caminos transitables. */
+  onAplicarComoCaminos?: (res: ResultadoKeyline) => void;
   onAplicarPatron: (res: ResultadoPatron) => void;
+  inicial?:  KeylineInputs | null;
+  onInputs?: (i: KeylineInputs) => void;
 }
 
-export function KeylinePanel({ mojones, datosShader, parcelas, onAplicarGuias, onAplicarPatron }: Props) {
+export function KeylinePanel({ mojones, datosShader, parcelas, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, inicial, onInputs }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
-  const [res,      setRes]      = useState<ResultadoKeyline | null>(null);
-  const [aplicado, setAplicado] = useState(false);
+  const [res,      setRes]      = useState<ResultadoKeyline | null>(inicial?.res ?? null);
+  const [aplicado, setAplicado] = useState(inicial?.aplicado ?? false);
   const [grilla,   setGrilla]   = useState<GrillaElevacion | null>(null);
   // Patrón de cultivo por parcela
-  const [parcelaId,   setParcelaId]   = useState('');
-  const [espaciado,   setEspaciado]   = useState(12);
-  const [suavizado,   setSuavizado]   = useState(50);
+  const [parcelaId,   setParcelaId]   = useState(inicial?.parcelaId ?? '');
+  const [espaciado,   setEspaciado]   = useState(inicial?.espaciado ?? 12);
+  const [suavizado,   setSuavizado]   = useState(inicial?.suavizado ?? 50);
   const [cargandoPat, setCargandoPat] = useState(false);
   const [errorPat,    setErrorPat]    = useState<string | null>(null);
-  const [patron,      setPatron]      = useState<ResultadoPatron | null>(null);
-  const [patronAplic, setPatronAplic] = useState(false);
+  const [patron,      setPatron]      = useState<ResultadoPatron | null>(inicial?.patron ?? null);
+  const [patronAplic, setPatronAplic] = useState(inicial?.patronAplic ?? false);
+
+  useEffect(() => {
+    onInputs?.({ res, aplicado, parcelaId, espaciado, suavizado, patron, patronAplic });
+  }, [res, aplicado, parcelaId, espaciado, suavizado, patron, patronAplic, onInputs]);
 
   const obtenerGrilla = useCallback(async (): Promise<GrillaElevacion | null> => {
     if (grilla) return grilla;
@@ -104,6 +127,18 @@ export function KeylinePanel({ mojones, datosShader, parcelas, onAplicarGuias, o
             >
               {aplicado ? 'Guías aplicadas al plano ✓' : `Aplicar ${res.guias.length} guías + keypoint al plano`}
             </button>
+            <p className="text-[9px] text-ink-700/45 leading-relaxed">
+              Las guías van a su propia capa («Keyline — guías»), no a la lista de caminos: son líneas de
+              referencia para arar y orientar cultivos, no trazas para transitar. El keypoint sí queda como pin.
+            </p>
+            {aplicado && onAplicarComoCaminos && (
+              <button
+                onClick={() => onAplicarComoCaminos(res)}
+                className="w-full py-1 rounded-lg border border-bone-300 text-[10px] font-medium text-ink-700/70 hover:border-moss-500 hover:text-moss-700 transition-colors"
+              >
+                Además, colocarlas como caminos (si alguna se va a transitar)
+              </button>
+            )}
           </div>
         )}
       </div>

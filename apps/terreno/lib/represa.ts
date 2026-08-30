@@ -46,6 +46,41 @@ export interface RepresaResumen {
   aporte_anual_m3:   number;
 }
 
+/**
+ * Todo lo que el usuario eligió en la pestaña Represa, para persistirlo con el
+ * proyecto y devolvérselo tal cual al volver.
+ *
+ * Por qué existe: hasta acá los parámetros del muro, el nivel de agua y el
+ * polígono elegido vivían en el estado local del panel. Cambiar de pestaña
+ * desmonta el panel y se perdía todo el trabajo, sin aviso. Riego y Red de agua
+ * ya guardaban sus campos así; Represa era la que faltaba.
+ *
+ * No se guarda el resultado del cálculo (la grilla de elevación pesa megas): al
+ * volver a la pestaña se recalcula solo con estos mismos parámetros.
+ */
+export interface RepresaInputs {
+  /** id del polígono del espejo de agua. */
+  poligonoId:   string;
+  /** Cota del pelo de agua (m). */
+  nivel:        number | null;
+  /** Índice del lado del polígono que hace de muro. */
+  muroIdx:      number | null;
+  tipoMuro:     'aguada' | 'ladera';
+  anchoCorona:  number;
+  taludInterno: number;
+  taludExterno: number;
+  revancha:     number;
+  /** Largo del coronamiento si se pisó a mano (null = el del lado elegido). */
+  longMuro:     number | null;
+  /** Cobertura de la cuenca de aporte (id de `COBERTURAS`). */
+  cobertura:    string;
+  coef:         string;
+  ha:           string;
+  seep:         string;
+  /** Unidad elegida para leer el volumen de agua: 'm3' o 'litros'. */
+  unidadVol?:   string;
+}
+
 export interface ParamsRepresa {
   capacidad_m3:      number;
   area_espejo_m2:    number;

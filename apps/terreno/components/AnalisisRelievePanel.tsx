@@ -6,11 +6,20 @@
  * zonas aptas para vivienda y los caminos de acceso por cresta que las conectan.
  * "Colocar en el plano" vuelca todo (pines + caminos + pins de cruce).
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Loader2, Mountain, Droplets, MapPin, Sparkles } from 'lucide-react';
 import { analizarTopografiaIntegral, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import type { Mojon } from '@/lib/types';
 import { volumenM3, miles } from '@/lib/unidades';
+
+/**
+ * El análisis integral tarda y descarga relieve: se guarda el resultado para
+ * que volver a la pestaña no obligue a repetirlo.
+ */
+export interface AnalisisInputs {
+  res:      AnalisisTopoIntegral | null;
+  colocado: boolean;
+}
 
 interface Props {
   mojones: Mojon[];
@@ -22,13 +31,17 @@ interface Props {
   /** Se dispara cuando el análisis termina bien: el padre enciende las capas de
    *  escorrentías + sugerencias y abre el panel de sugerencias. */
   onAnalizado?: () => void;
+  inicial?:  AnalisisInputs | null;
+  onInputs?: (i: AnalisisInputs) => void;
 }
 
-export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onIrATopo, onAnalizado }: Props) {
+export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onIrATopo, onAnalizado, inicial, onInputs }: Props) {
   const [cargando, setCargando] = useState(false);
-  const [res, setRes]           = useState<AnalisisTopoIntegral | null>(null);
+  const [res, setRes]           = useState<AnalisisTopoIntegral | null>(inicial?.res ?? null);
   const [error, setError]       = useState<string | null>(null);
-  const [colocado, setColocado] = useState(false);
+  const [colocado, setColocado] = useState(inicial?.colocado ?? false);
+
+  useEffect(() => { onInputs?.({ res, colocado }); }, [res, colocado, onInputs]);
 
   const analizar = useCallback(async () => {
     if (mojones.length < 3) { setError('Cargá el terreno (al menos 3 mojones) primero.'); return; }

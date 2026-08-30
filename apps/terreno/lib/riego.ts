@@ -52,11 +52,17 @@ export interface SistemaRiego {
 }
 
 export const SISTEMAS: SistemaRiego[] = [
-  { id: 'goteo',    nombre: 'Goteo',              eficiencia: 0.90, caudal_lh: 2,  esp_emisor_m: 0.5, esp_lateral_m: 1.0 },
-  { id: 'goteo_esp',nombre: 'Goteo espaciado (frutal)', eficiencia: 0.90, caudal_lh: 4, esp_emisor_m: 1.0, esp_lateral_m: 3.0 },
-  { id: 'microasp', nombre: 'Microaspersión',     eficiencia: 0.80, caudal_lh: 40, esp_emisor_m: 3.0, esp_lateral_m: 4.0 },
-  { id: 'aspersion',nombre: 'Aspersión',          eficiencia: 0.75, caudal_lh: 1000, esp_emisor_m: 12, esp_lateral_m: 12 },
-  { id: 'surco',    nombre: 'Surco / manto',      eficiencia: 0.55, caudal_lh: 0,  esp_emisor_m: 0, esp_lateral_m: 0 },
+  { id: 'goteo',      nombre: 'Goteo',                        eficiencia: 0.90, caudal_lh: 2,     esp_emisor_m: 0.5,  esp_lateral_m: 1.0 },
+  { id: 'goteo_esp',  nombre: 'Goteo espaciado (frutal)',     eficiencia: 0.90, caudal_lh: 4,     esp_emisor_m: 1.0,  esp_lateral_m: 3.0 },
+  { id: 'cinta',      nombre: 'Cinta de goteo (hortaliza)',   eficiencia: 0.90, caudal_lh: 1,     esp_emisor_m: 0.2,  esp_lateral_m: 0.75 },
+  { id: 'subsup',     nombre: 'Goteo subsuperficial',         eficiencia: 0.95, caudal_lh: 2,     esp_emisor_m: 0.4,  esp_lateral_m: 1.0 },
+  { id: 'exudante',   nombre: 'Manguera exudante',            eficiencia: 0.88, caudal_lh: 4,     esp_emisor_m: 1.0,  esp_lateral_m: 1.0 },
+  { id: 'microasp',   nombre: 'Microaspersión',               eficiencia: 0.80, caudal_lh: 40,    esp_emisor_m: 3.0,  esp_lateral_m: 4.0 },
+  { id: 'nebulizacion', nombre: 'Nebulización (invernadero)', eficiencia: 0.85, caudal_lh: 7,     esp_emisor_m: 2.0,  esp_lateral_m: 2.0 },
+  { id: 'aspersion',  nombre: 'Aspersión',                    eficiencia: 0.75, caudal_lh: 1000,  esp_emisor_m: 12,   esp_lateral_m: 12 },
+  { id: 'canon',      nombre: 'Cañón / aspersor grande',      eficiencia: 0.65, caudal_lh: 10000, esp_emisor_m: 40,   esp_lateral_m: 40 },
+  { id: 'pivote',     nombre: 'Pivote central',               eficiencia: 0.85, caudal_lh: 0,     esp_emisor_m: 0,    esp_lateral_m: 0 },
+  { id: 'surco',      nombre: 'Surco / manto',                eficiencia: 0.55, caudal_lh: 0,     esp_emisor_m: 0,    esp_lateral_m: 0 },
 ];
 
 // ─── Parámetros y resultado ────────────────────────────────────────────────────
@@ -188,7 +194,7 @@ export function calcularRiego(p: ParamsRiego): ResultadoRiego | null {
   if (horas_riego_dia !== null && horas_riego_dia > horas) {
     advertencias.push(`El sistema necesita ${horas_riego_dia} h/día en el pico pero hay ${horas} h disponibles: subí el caudal, agregá líneas o dividí el sector en turnos.`);
   }
-  if (p.sistema.id === 'surco' || p.sistema.id === 'aspersion') {
+  if (['surco', 'aspersion', 'canon'].includes(p.sistema.id)) {
     advertencias.push('Sistema de baja eficiencia: el goteo puede ahorrar 30–40 % de agua en clima seco y ventoso.');
   }
   if (intervalo >= 1) {

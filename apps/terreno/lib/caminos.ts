@@ -18,6 +18,12 @@ export interface Camino {
   capa?:      string;
   /** Carpeta de usuario (Escala de permanencia) donde está archivado. */
   capaId?:    string;
+  /**
+   * Si la traza es una red de servicio (agua, gas, luz…) en vez de un camino de
+   * andar. Ver `lib/servicios.ts`: define el color con que se dibuja y si la app
+   * sabe dimensionarla.
+   */
+  servicio?:  string;
 }
 
 export interface PuntoPerfilElevacion {

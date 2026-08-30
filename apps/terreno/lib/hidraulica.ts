@@ -16,6 +16,8 @@
 
 export interface RedAguaResumen {
   camino:            string;
+  /** Servicio de la traza (agua, riego…). Opcional: los proyectos viejos no lo tienen. */
+  servicio?:         string;
   material:          string;
   diametro:          string;   // etiqueta DN
   caudal:            string;   // p.ej. "10 L/min"
@@ -27,7 +29,7 @@ export interface RedAguaResumen {
   bomba_kw:          number | null;   // potencia eléctrica si se necesita bombeo
 }
 
-/** Campos editables del panel Red de agua, para persistir con el proyecto. */
+/** Campos editables del panel Red de servicios, para persistir con el proyecto. */
 export interface RedAguaInputs {
   caminoId:      string;
   invertir:      boolean;
@@ -38,6 +40,14 @@ export interface RedAguaInputs {
   cargaOrigen:   string;
   perdidasLocal: string;
   presionMin:    string;
+  /** Servicio que se está trazando (agua, gas, luz…). */
+  servicio?:     string;
+  /** De dónde sale el caudal: de los artefactos conectados o escrito a mano. */
+  modoCaudal?:   'artefactos' | 'manual';
+  /** Artefactos colgados de la red (id + cantidad). */
+  artefactos?:   Array<{ artefactoId: string; cantidad: number }>;
+  /** Sumar el caudal continuo del sector de riego ya calculado. */
+  sumarRiego?:   boolean;
 }
 
 // ─── Materiales (coeficiente C de Hazen-Williams) ─────────────────────────────

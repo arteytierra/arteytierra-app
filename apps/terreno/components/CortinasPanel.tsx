@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Fence, MapPin, Sparkles, Pencil, X } from 'lucide-react';
 import type { CortinaResultado } from '@/lib/cortinas';
+
+/** Lo que el usuario ajusta acá; se guarda para no perderlo al cambiar de pestaña. */
+export interface CortinasInputs { ancho: number; alto: number }
 
 interface Props {
   terrenoListo: boolean;
@@ -13,11 +16,14 @@ interface Props {
   onDibujar:    (ancho_m: number, alto_m: number) => void;
   onCancelarDibujo: () => void;
   onColocar:    () => void;
+  inicial?:     CortinasInputs | null;
+  onInputs?:    (i: CortinasInputs) => void;
 }
 
-export function CortinasPanel({ terrenoListo, tieneCasa, dibujando, cortina, onSugerir, onDibujar, onCancelarDibujo, onColocar }: Props) {
-  const [ancho, setAncho] = useState(8);
-  const [alto,  setAlto]  = useState(10);
+export function CortinasPanel({ terrenoListo, tieneCasa, dibujando, cortina, onSugerir, onDibujar, onCancelarDibujo, onColocar, inicial, onInputs }: Props) {
+  const [ancho, setAncho] = useState(inicial?.ancho ?? 8);
+  const [alto,  setAlto]  = useState(inicial?.alto ?? 10);
+  useEffect(() => { onInputs?.({ ancho, alto }); }, [ancho, alto, onInputs]);
 
   return (
     <div className="space-y-3">

@@ -95,9 +95,16 @@ export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot, snapshotIni
     return calcularCaptacion(superficies, precipMensual, consumos);
   }, [superficies, precipMensual, consumos, datosClima]);
 
+  /**
+   * Emite el snapshot aunque todavía no haya cálculo. Antes salía `null` sin
+   * clima cargado, y como el panel se desmonta al cambiar de pestaña, quien
+   * tipeaba primero las superficies y los consumos —que se cargan uno por uno,
+   * a mano— los perdía enteros sin ningún aviso.
+   */
   useEffect(() => {
     if (!onSnapshot) return;
-    onSnapshot(resultado ? { superficies, consumoCategorias: consumos, resultado } : null);
+    const hayCarga = superficies.length > 0 || consumos.length > 0;
+    onSnapshot(resultado || hayCarga ? { superficies, consumoCategorias: consumos, resultado } : null);
   }, [resultado, superficies, consumos, onSnapshot]);
 
   const inputCls =

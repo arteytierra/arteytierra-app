@@ -43,6 +43,27 @@ export function volumenEnLitros(m3: number): string {
   return `${miles(litros)} litros`;
 }
 
+/**
+ * Selector de unidad de volumen.
+ *
+ * Al principio el volumen de agua se mostraba en m³ con la equivalencia en
+ * litros entre paréntesis al lado. Se descartó: dos números pegados se
+ * confunden entre sí, y con el punto de miles del castellano ("19.041") la
+ * lectura se vuelve ambigua para cualquiera que no venga de la hidráulica.
+ * Un número por vez, y que la persona elija en qué unidad lo quiere ver.
+ */
+export type UnidadVolumen = 'm3' | 'litros';
+
+export const UNIDADES_VOLUMEN: Array<{ id: UnidadVolumen; label: string }> = [
+  { id: 'm3',     label: 'm³' },
+  { id: 'litros', label: 'litros' },
+];
+
+/** Un volumen en m³, escrito en la unidad elegida. */
+export function volumen(m3: number, unidad: UnidadVolumen): string {
+  return unidad === 'litros' ? volumenEnLitros(m3) : volumenM3(m3);
+}
+
 /** Caudal en m³/s. Abajo de 1 m³/s el número interesante es el de litros. */
 export function caudalM3s(m3s: number): string {
   if (!Number.isFinite(m3s)) return '—';

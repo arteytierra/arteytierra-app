@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Cloud } from 'lucide-react';
 import {
   calcularCalendario,
@@ -13,14 +13,20 @@ import {
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
 
+/** Lo que el usuario ajusta acá; se guarda para no perderlo al cambiar de pestaña. */
+export interface CalendarioInputs { gdBase: number; cultivoId: string }
+
 interface Props {
   datosClima:  DatosClima | null;
   onIrAClima:  () => void;
+  inicial?:    CalendarioInputs | null;
+  onInputs?:   (i: CalendarioInputs) => void;
 }
 
-export function CalendarioPanel({ datosClima, onIrAClima }: Props) {
-  const [gdBase,    setGdBase]    = useState(10);
-  const [cultivoId, setCultivoId] = useState('huerta');
+export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: Props) {
+  const [gdBase,    setGdBase]    = useState(inicial?.gdBase ?? 10);
+  const [cultivoId, setCultivoId] = useState(inicial?.cultivoId ?? 'huerta');
+  useEffect(() => { onInputs?.({ gdBase, cultivoId }); }, [gdBase, cultivoId, onInputs]);
 
   const cal = useMemo(
     () => datosClima ? calcularCalendario(datosClima) : null,

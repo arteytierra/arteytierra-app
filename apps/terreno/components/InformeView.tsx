@@ -23,7 +23,7 @@ export function InformeView({ datos, compartido = false }: Props) {
     extremos:  !!datos.extremos,
     contexto:  !!(datos.clima?.koppen && datos.mojones.length >= 3),
     topo:      !!datos.topo,
-    captacion: !!datos.captacion,
+    captacion: !!datos.captacion?.resultado,
     suelo:     !!datos.suelo,
     cobertura: !!datos.cobertura,
     entorno:   !!datos.entorno,
@@ -382,7 +382,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         )}
 
         {/* ── 4. Captación pluvial ── */}
-        {datos.captacion && (
+        {datos.captacion?.resultado && (
           <Section
             numero={sec.captacion!}
             titulo="Captación de agua de lluvia"
@@ -458,11 +458,11 @@ export function InformeView({ datos, compartido = false }: Props) {
             <Table
               head={['Mes', 'Captación (m³)', 'Consumo (m³)', 'Balance (m³)']}
               rows={MESES.map((mes, i) => {
-                const b = datos.captacion!.resultado.balance_mensual_m3[i] ?? 0;
+                const b = datos.captacion!.resultado!.balance_mensual_m3[i] ?? 0;
                 return [
                   mes,
-                  (datos.captacion!.resultado.captacion_mensual_m3[i] ?? 0).toFixed(1),
-                  (datos.captacion!.resultado.consumo_mensual_m3[i] ?? 0).toFixed(1),
+                  (datos.captacion!.resultado!.captacion_mensual_m3[i] ?? 0).toFixed(1),
+                  (datos.captacion!.resultado!.consumo_mensual_m3[i] ?? 0).toFixed(1),
                   `${b > 0 ? '+' : ''}${b.toFixed(1)}`,
                 ];
               })}

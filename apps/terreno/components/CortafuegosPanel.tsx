@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Flame, MapPin, ArrowRight } from 'lucide-react';
 import type { ResultadoCortafuegos } from '@/lib/cortafuegos';
+
+/** Lo que el usuario ajusta acá; se guarda para no perderlo al cambiar de pestaña. */
+export interface CortafuegosInputs { anchoM: number }
 
 interface Props {
   topoLista:   boolean;
@@ -10,10 +13,13 @@ interface Props {
   onGenerar:   (anchoM: number) => void;
   onColocar:   () => void;
   onIrATopo:   () => void;
+  inicial?:    CortafuegosInputs | null;
+  onInputs?:   (i: CortafuegosInputs) => void;
 }
 
-export function CortafuegosPanel({ topoLista, cortafuegos, onGenerar, onColocar, onIrATopo }: Props) {
-  const [anchoM, setAnchoM] = useState(8);
+export function CortafuegosPanel({ topoLista, cortafuegos, onGenerar, onColocar, onIrATopo, inicial, onInputs }: Props) {
+  const [anchoM, setAnchoM] = useState(inicial?.anchoM ?? 8);
+  useEffect(() => { onInputs?.({ anchoM }); }, [anchoM, onInputs]);
 
   return (
     <div className="space-y-3">

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion } from '@/lib/swales';
+import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion, pendienteMediaPct, analizarAreas, calcularSwalesMulti } from '@/lib/swales';
 import { recortarGrillaA, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { MAX_NIVELES } from '@/lib/curvasNivel';
 
@@ -213,5 +213,83 @@ describe('calcularSwales · dimensionado integrado', () => {
     const r = calcularSwales(g, mojones, { intervaloV: 1.5, precipMm: 70, coef: 0.45, ksat_mm_h: 25 })!;
     expect(r.infiltracion).not.toBeNull();
     expect(r.infiltracion!.horas_vaciado).toBeGreaterThan(0);
+  });
+});
+
+describe('pendienteMediaPct', () => {
+  it('mide la pendiente real de una ladera uniforme', () => {
+    // 40 filas sobre ~11,1 km de norte a sur, 300 m de desnivel → ~2,7%.
+    const g = ladera(40, 40, 300);
+    const alto_m = (g.latMax - g.latMin) * 111_320;
+    expect(pendienteMediaPct(g)).toBeCloseTo((300 / alto_m) * 100, 1);
+  });
+
+  it('no da cero en un lomo, donde el desnivel extremo a extremo sí es cero', () => {
+    // La trampa que tenía el cálculo viejo: los dos bordes a la misma cota.
+    const rows = 41, cols = 41;
+    const elev = new Float64Array(rows * cols);
+    for (let r = 0; r < rows; r++) {
+      const z = 100 - Math.abs(r - (rows - 1) / 2) * 2;   // techo a dos aguas
+      for (let c = 0; c < cols; c++) elev[r * cols + c] = z;
+    }
+    const g: GrillaElevacion = {
+      rows, cols, latMin: -30.80, latMax: -30.70, lngMin: -64.70, lngMax: -64.60,
+      elev, elev_min: 60, elev_max: 100,
+    };
+    expect(pendienteMediaPct(g)).toBeGreaterThan(0.5);
+  });
+
+  it('devuelve 0 en una grilla degenerada', () => {
+    expect(pendienteMediaPct(ladera(2, 2, 10))).toBe(0);
+  });
+});
+
+describe('analizarAreas', () => {
+  it('le da a cada área su pendiente y su recomendación', () => {
+    const g = ladera(40, 40, 300);
+    const [predio] = analizarAreas(g, [], [{ id: 'predio', nombre: 'Todo el predio', vertices: null }]);
+    expect(predio!.pendiente_pct).toBeGreaterThan(0);
+    expect(predio!.desnivel_m).toBeCloseTo(300, 0);
+    expect(predio!.recomendacion.fuente).toMatch(/hidrología regenerativa/i);
+  });
+
+  it('el suelo lento acerca las zanjas respecto del suelo rápido', () => {
+    const g = ladera(60, 60, 900);   // ladera empinada, dentro de tabla
+    const area = [{ id: 'a', nombre: 'A', vertices: null }];
+    const lento  = analizarAreas(g, [], area, { infiltracion: 'lenta' })[0]!;
+    const rapido = analizarAreas(g, [], area, { infiltracion: 'rapida' })[0]!;
+    if (lento.recomendacion.aplica) {
+      expect(lento.recomendacion.valor).toBeLessThanOrEqual(rapido.recomendacion.valor);
+    }
+  });
+});
+
+describe('calcularSwalesMulti', () => {
+  const g = ladera(40, 40, 300);
+  const areas = [{ id: 'predio', nombre: 'Todo el predio', vertices: null }];
+  const opts = { precipMm: 60, coef: 0.4, profMax_m: 0.8, ksat_mm_h: 10 };
+
+  it('acota la separación pedida al rango de la recomendación', () => {
+    const r = calcularSwalesMulti(g, [], areas, { predio: 999 }, opts);
+    const b = r.bloques[0]!;
+    if (b.recomendacion.aplica) {
+      expect(b.intervaloV).toBeLessThanOrEqual(b.recomendacion.max);
+      expect(b.intervaloV).toBeGreaterThanOrEqual(b.recomendacion.min);
+    }
+  });
+
+  it('suma los totales de las parcelas que salieron', () => {
+    const r = calcularSwalesMulti(g, [], areas, {}, opts);
+    const con = r.bloques.filter(b => b.resultado);
+    expect(r.total_long_m).toBe(Math.round(con.reduce((s, b) => s + b.resultado!.total_long_m, 0)));
+    expect(r.total_swales).toBe(con.reduce((s, b) => s + b.resultado!.swales.length, 0));
+  });
+
+  it('deja el diagnóstico en el bloque que no pudo trazarse', () => {
+    const plano = ladera(40, 40, 0.2);
+    const r = calcularSwalesMulti(plano, [], areas, { predio: 5 }, opts);
+    const b = r.bloques[0]!;
+    expect(b.resultado).toBeNull();
+    expect(b.diagnostico).not.toBeNull();
   });
 });

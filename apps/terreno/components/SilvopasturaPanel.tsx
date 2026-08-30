@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trees, MapPin, ArrowRight } from 'lucide-react';
 import type { ResultadoSilvo, OpcionesSilvo } from '@/lib/silvopastura';
+
+/** Lo que el usuario ajusta acá; se guarda para no perderlo al cambiar de pestaña. */
+export interface SilvoInputs { intervaloV: number; espaciamiento: number }
 
 interface Props {
   grillaLista:  boolean;
@@ -10,11 +13,14 @@ interface Props {
   onGenerar:    (opts: OpcionesSilvo) => void;
   onColocar:    () => void;
   onIrATopo:    () => void;
+  inicial?:     SilvoInputs | null;
+  onInputs?:    (i: SilvoInputs) => void;
 }
 
-export function SilvopasturaPanel({ grillaLista, silvopastura, onGenerar, onColocar, onIrATopo }: Props) {
-  const [intervaloV, setIntervaloV]       = useState(6);
-  const [espaciamiento, setEspaciamiento] = useState(6);
+export function SilvopasturaPanel({ grillaLista, silvopastura, onGenerar, onColocar, onIrATopo, inicial, onInputs }: Props) {
+  const [intervaloV, setIntervaloV]       = useState(inicial?.intervaloV ?? 6);
+  const [espaciamiento, setEspaciamiento] = useState(inicial?.espaciamiento ?? 6);
+  useEffect(() => { onInputs?.({ intervaloV, espaciamiento }); }, [intervaloV, espaciamiento, onInputs]);
 
   return (
     <div className="space-y-3">

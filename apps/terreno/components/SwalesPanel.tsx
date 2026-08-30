@@ -1,45 +1,89 @@
 'use client';
 
-import { useState } from 'react';
-import { Ruler, Droplets, ArrowRight, AlertTriangle, Sparkles, SlidersHorizontal, Timer, Shovel } from 'lucide-react';
-import type { ResultadoSwales, OpcionesSwales, DiagnosticoSwales, SeccionSwale, InfiltracionSwale } from '@/lib/swales';
+import { useState, useEffect } from 'react';
+import { Ruler, Droplets, ArrowRight, AlertTriangle, Sparkles, SlidersHorizontal, Timer, Shovel, TriangleAlert, BookOpen } from 'lucide-react';
+import type {
+  ResultadoSwalesMulti, BloqueSwales, OpcionesSwales, SeccionSwale, InfiltracionSwale,
+  AreaSwales, AnalisisArea,
+} from '@/lib/swales';
+import type { Recomendacion } from '@/lib/criterios';
 import type { HidrologiaPredio } from '@/lib/hidrologiaPredio';
 import { PERIODOS_RETORNO } from '@/lib/hidrologiaPredio';
 import { SaludCalculo } from './SaludCalculo';
-import type { PoligonoCutFill } from './CutFillPanel';
+
+type OpcionesGlobales = Omit<OpcionesSwales, 'intervaloV' | 'pendiente_pct'>;
 
 interface Props {
   grillaLista: boolean;
-  swales:      ResultadoSwales | null;
+  /** Resultado del último trazado, con el detalle por parcela. */
+  multi:       ResultadoSwalesMulti | null;
   /** Motor hidrológico compartido: CN, tormenta y coeficiente del predio. */
   hidro:       HidrologiaPredio;
-  /** Polígonos ya dibujados (parcelas/zonas/sectores) para acotar el trazado. */
-  parcelas?:   PoligonoCutFill[];
-  /** Por qué falló el último intento, para explicarlo y ofrecer una salida. */
-  diagnostico?: DiagnosticoSwales | null;
+  /**
+   * Pendiente y separación recomendada de cada área candidata (el predio y cada
+   * parcela dibujada). Lo calcula el contenedor, que es quien tiene la grilla.
+   */
+  analisis:    AnalisisArea[];
   onPeriodoRetorno: (T: number) => void;
-  /** `area` = vértices de la parcela elegida, o null para todo el predio. */
-  onGenerar:   (opts: OpcionesSwales, area: Array<{ lat: number; lng: number }> | null) => void;
+  onGenerar:   (areas: AreaSwales[], intervalos: Record<string, number>, opts: OpcionesGlobales) => void;
   onColocar:   () => void;
   onIrATopo:   () => void;
   onIrAClima:  () => void;
   onIrASuelo:  () => void;
+  inicial?:    SwalesInputs | null;
+  onInputs?:   (i: SwalesInputs) => void;
+}
+
+/** Qué parcelas se eligieron y con qué separación; se guarda con el proyecto. */
+export interface SwalesInputs {
+  profMax:    number;
+  elegidas:   string[];
+  intervalos: Record<string, number>;
+  manual:     boolean;
+  precipMm:   number;
+  coef:       number;
 }
 
 export function SwalesPanel({
-  grillaLista, swales, hidro, parcelas = [], diagnostico,
+  grillaLista, multi, hidro, analisis,
   onPeriodoRetorno, onGenerar, onColocar, onIrATopo, onIrAClima, onIrASuelo,
+  inicial, onInputs,
 }: Props) {
-  const [intervaloV, setIntervaloV] = useState(1.5);
-  const [profMax,    setProfMax]    = useState(0.8);
-  const [areaSel,    setAreaSel]    = useState('predio');
+  const [profMax, setProfMax] = useState(inicial?.profMax ?? 0.8);
 
-  // Override manual: los valores automáticos son el default, pero el usuario que
-  // tiene un dato mejor (un ensayo de infiltración, una serie de estación) puede
-  // pisarlos. Arrancan cargados con lo que dice el motor, no en cero.
-  const [manual,   setManual]   = useState(false);
-  const [precipMm, setPrecipMm] = useState(Math.round(hidro.precip_mm));
-  const [coef,     setCoef]     = useState(hidro.coef);
+  // Qué áreas se trazan y con qué separación cada una. La separación arranca en
+  // la recomendada de su propia pendiente: es la diferencia con el panel viejo,
+  // donde un único deslizador global arrancaba en 1,5 m porque sí.
+  const [elegidas,   setElegidas]   = useState<string[]>(inicial?.elegidas ?? []);
+  const [intervalos, setIntervalos] = useState<Record<string, number>>(inicial?.intervalos ?? {});
+
+  // Cuando cambia la topografía o se dibuja una parcela nueva, las áreas que
+  // todavía no tocó el usuario se recargan con su valor recomendado.
+  useEffect(() => {
+    setIntervalos(prev => {
+      const next = { ...prev };
+      for (const a of analisis) {
+        if (next[a.id] === undefined && a.recomendacion.aplica) next[a.id] = a.recomendacion.valor;
+      }
+      return next;
+    });
+    setElegidas(prev => {
+      const vivos = prev.filter(id => analisis.some(a => a.id === id));
+      if (vivos.length > 0) return vivos;
+      const primera = analisis.find(a => a.recomendacion.aplica);
+      return primera ? [primera.id] : [];
+    });
+  }, [analisis]);
+
+  // Override manual de la hidrología: los valores automáticos son el default,
+  // pero quien tiene un dato mejor (un ensayo, una serie de estación) los pisa.
+  const [manual,   setManual]   = useState(inicial?.manual ?? false);
+  const [precipMm, setPrecipMm] = useState(inicial?.precipMm ?? Math.round(hidro.precip_mm));
+  const [coef,     setCoef]     = useState(inicial?.coef ?? hidro.coef);
+
+  useEffect(() => {
+    onInputs?.({ profMax, elegidas, intervalos, manual, precipMm, coef });
+  }, [profMax, elegidas, intervalos, manual, precipMm, coef, onInputs]);
 
   const precipEfectiva = manual ? precipMm : Math.round(hidro.precip_mm);
   const coefEfectivo   = manual ? coef     : hidro.coef;
@@ -64,6 +108,26 @@ export function SwalesPanel({
     );
   }
 
+  const trazables = analisis.filter(a => a.recomendacion.aplica);
+  const activas   = elegidas.filter(id => trazables.some(a => a.id === id));
+
+  function alternar(id: string) {
+    setElegidas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+
+  function generar() {
+    const areas: AreaSwales[] = activas.map(id => {
+      const a = analisis.find(x => x.id === id)!;
+      return { id: a.id, nombre: a.nombre, vertices: null };   // el contenedor resuelve los vértices
+    });
+    onGenerar(areas, intervalos, {
+      precipMm:  precipEfectiva,
+      coef:      coefEfectivo,
+      profMax_m: profMax,
+      ksat_mm_h: hidro.ksat_mm_h,
+    });
+  }
+
   return (
     <div className="space-y-3">
       <Encabezado />
@@ -86,23 +150,6 @@ export function SwalesPanel({
             </button>
           )}
         </div>
-      )}
-
-      {parcelas.length > 0 && (
-        <label className="block">
-          <span className="text-[10px] text-ink-700/60 block mb-0.5">Área a analizar</span>
-          <select
-            value={areaSel}
-            onChange={e => setAreaSel(e.target.value)}
-            className="w-full rounded-md border border-bone-300 bg-white px-2 py-1.5 text-[11px] text-ink-900"
-          >
-            <option value="predio">Todo el predio</option>
-            {parcelas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-          </select>
-          <span className="text-[9px] text-ink-700/45 leading-tight block mt-0.5">
-            En predios grandes conviene trabajar por parcela: el desnivel es menor y los swales salen más finos.
-          </span>
-        </label>
       )}
 
       {/* ── Tormenta de diseño ─────────────────────────────────────────────── */}
@@ -150,112 +197,244 @@ export function SwalesPanel({
         )}
       </div>
 
-      {/* ── Parámetros de trazado ──────────────────────────────────────────── */}
+      {/* ── Áreas, cada una con su pendiente y su separación ───────────────── */}
       <div className="space-y-2">
-        <Campo label="Separación vertical entre swales" sufijo="m"
-          value={intervaloV} min={0.25} max={10} step={0.25} onChange={setIntervaloV}
-          ayuda="Cada cuánto de desnivel se traza un swale. Menos = más swales, más juntos y cada uno con menos agua." />
-        <Campo label="Profundidad máxima de zanja" sufijo="m"
-          value={profMax} min={0.3} max={1.2} step={0.1} onChange={setProfMax}
-          ayuda="Tope constructivo. Más de 1 m pide entibado y se vuelve peligroso de mantener." />
-
-        {manual && (
-          <>
-            <Campo label="Lluvia de diseño (evento)" sufijo="mm"
-              value={precipMm} min={5} max={300} step={5} onChange={v => setPrecipMm(Math.round(v))}
-              ayuda={`Automático sería ${Math.round(hidro.precip_mm)} mm (T${hidro.periodoRetorno} de tu clima).`} />
-            <Campo label="Coeficiente de escorrentía" sufijo=""
-              value={coef} min={0.05} max={0.95} step={0.05} onChange={setCoef}
-              ayuda={`Automático sería ${hidro.coef.toFixed(2)} (SCS-CN ${hidro.cn.toFixed(0)} sobre ${Math.round(hidro.precip_mm)} mm).`} />
-          </>
-        )}
+        <p className="text-[11px] font-semibold text-ink-900">Dónde trazar</p>
+        <p className="text-[9px] text-ink-700/55 leading-tight -mt-1">
+          Cada ladera pide su propia separación: cuanto más empinada, más rápido y más agua escurre, así
+          que las zanjas van más juntas. Podés marcar varias parcelas y se trazan todas de una vez, cada
+          una con su criterio.
+        </p>
+        {analisis.map(a => (
+          <AreaFila
+            key={a.id}
+            a={a}
+            elegida={elegidas.includes(a.id)}
+            valor={intervalos[a.id] ?? (a.recomendacion.aplica ? a.recomendacion.valor : 0)}
+            onAlternar={() => alternar(a.id)}
+            onValor={v => setIntervalos(prev => ({ ...prev, [a.id]: v }))}
+          />
+        ))}
       </div>
 
-      <button
-        onClick={() => onGenerar(
-          {
-            intervaloV,
-            precipMm:  precipEfectiva,
-            coef:      coefEfectivo,
-            profMax_m: profMax,
-            ksat_mm_h: hidro.ksat_mm_h,
-          },
-          parcelas.find(p => p.id === areaSel)?.vertices ?? null,
-        )}
-        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-teal-700 text-white text-[12px] font-semibold py-2 hover:bg-teal-800 transition-colors"
-      >
-        <Ruler className="w-3.5 h-3.5" /> Generar y dimensionar swales
-      </button>
+      {/* ── Parámetro constructivo global ──────────────────────────────────── */}
+      <Campo label="Profundidad máxima de zanja" sufijo="m"
+        value={profMax} min={0.3} max={1.2} step={0.1} onChange={setProfMax}
+        ayuda="Tope constructivo, igual para todas las parcelas. Más de 1 m pide entibado y se vuelve peligroso de mantener." />
 
-      {diagnostico && !diagnostico.puede && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
-          <p className="text-[11px] text-ink-900 font-semibold flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            No se trazaron swales
-          </p>
-          {diagnostico.motivo === 'demasiados_swales' && (
-            <p className="text-[10px] text-ink-700/75 leading-snug">
-              {areaSel === 'predio' ? 'El predio' : 'La parcela'} tiene {diagnostico.desnivel_m} m de desnivel.
-              Con {intervaloV} m de separación saldrían <strong>{diagnostico.niveles} swales</strong>, más de
-              los {diagnostico.max_niveles} que se pueden trazar de una vez.
-            </p>
-          )}
-          {diagnostico.motivo === 'sin_relieve' && (
-            <p className="text-[10px] text-ink-700/75 leading-snug">
-              {areaSel === 'predio' ? 'El predio' : 'La parcela'} tiene apenas {diagnostico.desnivel_m} m de
-              desnivel, menos que la separación de {intervaloV} m que elegiste. Bajá la separación.
-            </p>
-          )}
-          {diagnostico.motivo === 'sin_tramos' && (
-            <p className="text-[10px] text-ink-700/75 leading-snug">
-              Las curvas a {intervaloV} m no dejan ningún tramo suficientemente largo dentro
-              de {areaSel === 'predio' ? 'el predio' : 'la parcela'}. Probá con una separación menor
-              o con un área más grande.
-            </p>
-          )}
-          {diagnostico.intervalo_sugerido !== null && diagnostico.motivo === 'demasiados_swales' && (
-            <button
-              onClick={() => setIntervaloV(diagnostico.intervalo_sugerido!)}
-              className="w-full rounded-md border border-amber-500 text-amber-800 text-[11px] font-semibold py-1.5 hover:bg-amber-100 transition-colors"
-            >
-              Usar {diagnostico.intervalo_sugerido} m de separación
-            </button>
-          )}
-          {parcelas.length > 0 && areaSel === 'predio' && (
-            <p className="text-[9px] text-ink-700/55 leading-tight">
-              O elegí arriba una parcela dibujada para trazarlos con más detalle en un sector.
-            </p>
-          )}
-          {parcelas.length === 0 && (
-            <p className="text-[9px] text-ink-700/55 leading-tight">
-              Otra salida: dibujá un polígono sobre el sector que te interesa y elegilo como área a analizar.
-            </p>
-          )}
+      {manual && (
+        <div className="space-y-2">
+          <Campo label="Lluvia de diseño (evento)" sufijo="mm"
+            value={precipMm} min={5} max={300} step={5} onChange={v => setPrecipMm(Math.round(v))}
+            ayuda={`Automático sería ${Math.round(hidro.precip_mm)} mm (T${hidro.periodoRetorno} de tu clima).`} />
+          <Campo label="Coeficiente de escorrentía" sufijo=""
+            value={coef} min={0.05} max={0.95} step={0.05} onChange={setCoef}
+            ayuda={`Automático sería ${hidro.coef.toFixed(2)} (SCS-CN ${hidro.cn.toFixed(0)} sobre ${Math.round(hidro.precip_mm)} mm).`} />
         </div>
       )}
 
-      {swales && (
-        <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-3 space-y-2">
-          <div className="grid grid-cols-2 gap-2 text-center">
-            <Stat n={swales.swales.length} u="swales" />
-            <Stat n={swales.total_long_m} u="m lineales" />
-            <Stat n={swales.total_vol_m3} u="m³ interceptados" />
-            <Stat n={swales.total_capt_ha} u="ha de captación" />
+      <button
+        onClick={generar}
+        disabled={activas.length === 0}
+        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-teal-700 text-white text-[12px] font-semibold py-2 hover:bg-teal-800 transition-colors disabled:bg-bone-300 disabled:text-ink-700/40"
+      >
+        <Ruler className="w-3.5 h-3.5" />
+        {activas.length > 1
+          ? `Generar y dimensionar (${activas.length} parcelas)`
+          : 'Generar y dimensionar swales'}
+      </button>
+
+      {activas.length === 0 && (
+        <p className="text-[10px] text-amber-800 leading-snug">
+          {trazables.length === 0
+            ? 'Ninguna de las áreas tiene una pendiente que admita zanjas de infiltración. Mirá el motivo en cada una.'
+            : 'Marcá al menos un área para trazar.'}
+        </p>
+      )}
+
+      {multi && <Resultados multi={multi} onColocar={onColocar} />}
+    </div>
+  );
+}
+
+// ─── Un área con su pendiente y su separación ────────────────────────────────
+
+function AreaFila({ a, elegida, valor, onAlternar, onValor }: {
+  a: AnalisisArea;
+  elegida: boolean;
+  valor: number;
+  onAlternar: () => void;
+  onValor: (v: number) => void;
+}) {
+  const [verCriterio, setVerCriterio] = useState(false);
+  const rec = a.recomendacion;
+
+  if (!rec.aplica) {
+    return (
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 space-y-1">
+        <p className="text-[11px] font-semibold text-ink-900 flex items-center gap-1.5">
+          <TriangleAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+          {a.nombre} — no corresponden swales acá
+        </p>
+        <p className="text-[10px] text-amber-900 leading-snug">{rec.motivo}</p>
+        <p className="text-[9px] text-ink-700/55">
+          Pendiente media medida: {a.pendiente_pct}% · desnivel {a.desnivel_m} m.
+        </p>
+      </div>
+    );
+  }
+
+  const enSugerido = Math.abs(valor - rec.valor) < 0.01;
+  const distancia_m = a.pendiente_pct > 0 ? Math.round((valor / (a.pendiente_pct / 100))) : 0;
+
+  return (
+    <div className={`rounded-lg border p-2.5 space-y-1.5 transition-colors ${elegida ? 'border-teal-300 bg-teal-50/50' : 'border-bone-200 bg-white'}`}>
+      <label className="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" checked={elegida} onChange={onAlternar} className="mt-0.5 accent-teal-700" />
+        <span className="flex-1">
+          <span className="text-[11px] font-semibold text-ink-900 block leading-tight">{a.nombre}</span>
+          <span className="text-[9px] text-ink-700/55">
+            pendiente media {a.pendiente_pct}% · desnivel {a.desnivel_m} m
+          </span>
+        </span>
+      </label>
+
+      {elegida && (
+        <>
+          <div>
+            <span className="flex items-center justify-between text-[10px] text-ink-700/80">
+              <span>Separación entre zanjas</span>
+              <span className="tabular-nums font-semibold text-ink-900">
+                {valor} m de desnivel ≈ {distancia_m} m en el terreno
+              </span>
+            </span>
+            <input
+              type="range" min={rec.min} max={rec.max} step={0.25} value={valor}
+              onChange={e => onValor(+e.target.value)}
+              className="w-full accent-teal-700 mt-1"
+            />
+            <span className="flex items-center justify-between text-[8px] text-ink-700/45 tabular-nums">
+              <span>{rec.min} m</span>
+              <span className={enSugerido ? 'text-teal-700 font-semibold' : ''}>
+                {enSugerido ? 'valor recomendado' : `recomendado ${rec.valor} m`}
+              </span>
+              <span>{rec.max} m</span>
+            </span>
           </div>
-          <p className="text-[10px] text-ink-700/60 leading-snug">
-            Franja de captación ≈ {swales.ancho_franja_m} m entre swales · intervalo {swales.intervaloV} m.
-          </p>
 
-          {swales.seccion    && <Seccion s={swales.seccion} onUsarIntervalo={setIntervaloV} />}
-          {swales.infiltracion && <Infiltracion i={swales.infiltracion} />}
+          {!enSugerido && (
+            <button
+              onClick={() => onValor(rec.valor)}
+              className="w-full rounded border border-teal-600 text-teal-800 text-[10px] font-semibold py-1 hover:bg-teal-100 transition-colors"
+            >
+              Volver a los {rec.valor} m que pide la tabla
+            </button>
+          )}
 
-          <button
-            onClick={onColocar}
-            className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-teal-700 text-teal-800 text-[12px] font-semibold py-1.5 hover:bg-teal-100 transition-colors"
-          >
-            <Droplets className="w-3.5 h-3.5" /> Colocar en el plano
+          <button onClick={() => setVerCriterio(v => !v)} className="flex items-center gap-1 text-[9px] text-teal-700 font-semibold hover:underline">
+            <BookOpen className="w-3 h-3" /> {verCriterio ? 'Ocultar el criterio' : 'Por qué esta separación'}
           </button>
-        </div>
+          {verCriterio && (
+            <div className="rounded bg-white/80 p-2 space-y-1">
+              <p className="text-[9px] text-ink-700/75 leading-snug">{rec.criterio}</p>
+              {rec.ajustes.map((t, i) => (
+                <p key={i} className="text-[9px] text-ink-700/65 leading-snug">· {t}</p>
+              ))}
+              <p className="text-[8px] text-ink-700/45 leading-tight">
+                El deslizador se mueve entre {rec.min} y {rec.max} m: es el margen que admite el criterio.
+                Fuente: {rec.fuente}.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Resultados ──────────────────────────────────────────────────────────────
+
+function Resultados({ multi, onColocar }: { multi: ResultadoSwalesMulti; onColocar: () => void }) {
+  const salieron = multi.bloques.filter(b => b.resultado);
+  if (salieron.length === 0) {
+    return (
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
+        <p className="text-[11px] text-ink-900 font-semibold flex items-center gap-1.5">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" /> No se trazaron swales
+        </p>
+        {multi.bloques.map(b => <Fallo key={b.id} b={b} />)}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-3 space-y-2">
+      <div className="grid grid-cols-2 gap-2 text-center">
+        <Stat n={multi.total_swales} u="swales" />
+        <Stat n={multi.total_long_m} u="m lineales" />
+        <Stat n={multi.total_vol_m3} u="m³ interceptados" />
+        <Stat n={multi.total_excavacion_m3} u="m³ a excavar" />
+      </div>
+      <p className="text-[10px] text-ink-700/60 leading-snug">
+        {multi.total_capt_ha} ha de captación en {salieron.length} {salieron.length === 1 ? 'área' : 'áreas'}.
+        Lo que se excava es exactamente lo que la zanja almacena.
+      </p>
+
+      {multi.bloques.map(b => b.resultado
+        ? <BloqueDetalle key={b.id} b={b} solo={multi.bloques.length === 1} />
+        : <Fallo key={b.id} b={b} />)}
+
+      <button
+        onClick={onColocar}
+        className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-teal-700 text-teal-800 text-[12px] font-semibold py-1.5 hover:bg-teal-100 transition-colors"
+      >
+        <Droplets className="w-3.5 h-3.5" /> Colocar en el plano
+      </button>
+    </div>
+  );
+}
+
+function BloqueDetalle({ b, solo }: { b: BloqueSwales; solo: boolean }) {
+  const r = b.resultado!;
+  return (
+    <div className="rounded-md bg-white/70 p-2.5 space-y-1.5">
+      {!solo && (
+        <p className="text-[10px] font-semibold text-ink-900">
+          {b.nombre} <span className="font-normal text-ink-700/55">· pendiente {b.pendiente_pct}%</span>
+        </p>
+      )}
+      <p className="text-[10px] text-ink-700/70 tabular-nums leading-snug">
+        {r.swales.length} swales · {r.total_long_m.toLocaleString('es-AR')} m lineales ·
+        separación {r.intervaloV} m de desnivel ({r.ancho_franja_m} m de franja) ·
+        {' '}{r.total_vol_m3.toLocaleString('es-AR')} m³ interceptados
+      </p>
+      {r.seccion && <Seccion s={r.seccion} rec={b.recomendacion} />}
+      {r.infiltracion && <Infiltracion i={r.infiltracion} />}
+    </div>
+  );
+}
+
+function Fallo({ b }: { b: BloqueSwales }) {
+  const d = b.diagnostico;
+  if (!d) return null;
+  return (
+    <div className="rounded-md border border-amber-300 bg-amber-50 p-2 space-y-1">
+      <p className="text-[10px] font-semibold text-ink-900">{b.nombre}: sin trazado</p>
+      {d.motivo === 'demasiados_swales' && (
+        <p className="text-[9px] text-ink-700/75 leading-snug">
+          Tiene {d.desnivel_m} m de desnivel. Con {b.intervaloV} m de separación saldrían {d.niveles} swales,
+          más de los {d.max_niveles} que se pueden trazar de una vez. Dibujá parcelas más chicas y trazá por partes.
+        </p>
+      )}
+      {d.motivo === 'sin_relieve' && (
+        <p className="text-[9px] text-ink-700/75 leading-snug">
+          Tiene apenas {d.desnivel_m} m de desnivel, menos que la separación de {b.intervaloV} m.
+        </p>
+      )}
+      {d.motivo === 'sin_tramos' && (
+        <p className="text-[9px] text-ink-700/75 leading-snug">
+          Las curvas a {b.intervaloV} m no dejan ningún tramo largo adentro del área. Probá con un área más grande.
+        </p>
       )}
     </div>
   );
@@ -263,9 +442,9 @@ export function SwalesPanel({
 
 // ─── Sección dimensionada ────────────────────────────────────────────────────
 
-function Seccion({ s, onUsarIntervalo }: { s: SeccionSwale; onUsarIntervalo: (v: number) => void }) {
+function Seccion({ s, rec }: { s: SeccionSwale; rec: Recomendacion }) {
   return (
-    <div className="rounded-md bg-white/70 p-2.5 space-y-1.5">
+    <div className="space-y-1.5">
       <p className="text-[10px] font-semibold text-ink-900 flex items-center gap-1.5">
         <Shovel className="w-3 h-3 text-teal-700" /> Sección de la zanja
       </p>
@@ -274,24 +453,20 @@ function Seccion({ s, onUsarIntervalo }: { s: SeccionSwale; onUsarIntervalo: (v:
         taludes 1:{s.talud_z} → boca de {s.ancho_sup_m} m.
       </p>
       <p className="text-[9px] text-ink-700/60 leading-snug">
-        Sección {s.area_m2} m² · se excavan {s.capacidad_m3.toLocaleString('es-AR')} m³ de suelo, que es
-        justamente lo que la zanja almacena.
+        Sección {s.area_m2} m² · {s.capacidad_m3.toLocaleString('es-AR')} m³ de movimiento de suelo.
       </p>
       {!s.suficiente && (
-        <div className="rounded border border-amber-300 bg-amber-50 p-2 space-y-1.5">
+        <div className="rounded border border-amber-300 bg-amber-50 p-2 space-y-1">
           <p className="text-[10px] text-amber-900 leading-snug">
             Con el tope de profundidad elegido la zanja entra <strong>{s.cobertura_pct} %</strong> del
             agua interceptada (haría falta una sección de {s.area_req_m2} m²). El excedente rebalsa
             hacia el swale de abajo.
           </p>
-          {s.intervalo_sugerido !== null && (
-            <button
-              onClick={() => onUsarIntervalo(s.intervalo_sugerido!)}
-              className="w-full rounded border border-amber-500 text-amber-800 text-[10px] font-semibold py-1 hover:bg-amber-100 transition-colors"
-            >
-              Bajar a {s.intervalo_sugerido} m de separación (más swales, cada uno con menos agua)
-            </button>
-          )}
+          <p className="text-[9px] text-amber-900/85 leading-snug">
+            {s.intervalo_sugerido !== null && s.intervalo_sugerido >= rec.min
+              ? `Bajá la separación de esta parcela a ${s.intervalo_sugerido} m: entra en el rango del criterio y cada zanja recibe menos agua.`
+              : `Achicar la separación no alcanza sin salirse del criterio (mínimo ${rec.min} m). Subí la profundidad máxima o aceptá el rebalse controlado hacia el swale de abajo.`}
+          </p>
         </div>
       )}
     </div>
@@ -310,7 +485,7 @@ const INFIL: Record<InfiltracionSwale['clase'], { txt: string; cls: string }> = 
 function Infiltracion({ i }: { i: InfiltracionSwale }) {
   const d = INFIL[i.clase];
   return (
-    <div className="rounded-md bg-white/70 p-2.5 space-y-1">
+    <div className="space-y-1 pt-1 border-t border-bone-200">
       <p className="text-[10px] font-semibold text-ink-900 flex items-center gap-1.5">
         <Timer className="w-3 h-3 text-teal-700" /> Tiempo de vaciado
       </p>
@@ -335,9 +510,9 @@ function Encabezado() {
         <Ruler className="w-4 h-4 text-teal-700" /> Zanjas de infiltración (swales)
       </h3>
       <p className="text-[11px] text-ink-700/60 mt-0.5 leading-snug">
-        Zanjas a nivel que interceptan la escorrentía y la hacen infiltrar. Se trazan sobre las curvas
-        de nivel, se dimensiona la sección para el agua que captan y se verifica que el suelo alcance
-        a vaciarlas.
+        Zanjas a nivel que interceptan la escorrentía y la hacen infiltrar. La separación sale de la
+        pendiente de cada ladera, la sección se dimensiona para el agua que capta y se verifica que el
+        suelo alcance a vaciarla.
       </p>
     </div>
   );

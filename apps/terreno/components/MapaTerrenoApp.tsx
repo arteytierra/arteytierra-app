@@ -22,17 +22,17 @@ import { ClimaPanel } from './ClimaPanel';
 import { ContextoPanel } from './ContextoPanel';
 import { TopografiaPanel } from './TopografiaPanel';
 import { CaptacionPanel } from './CaptacionPanel';
-import { CalendarioPanel } from './CalendarioPanel';
+import { CalendarioPanel, type CalendarioInputs } from './CalendarioPanel';
 import { ProduccionPanel } from './ProduccionPanel';
 import { AptitudPanel } from './AptitudPanel';
 import { SuelosPanel } from './SuelosPanel';
 import { SolarPanel } from './SolarPanel';
 import { ZonificacionPanel } from './ZonificacionPanel';
-import { SectoresPanel } from './SectoresPanel';
-import { SitiosRepresaPanel } from './SitiosRepresaPanel';
-import { AnalisisRelievePanel } from './AnalisisRelievePanel';
+import { SectoresPanel, type SectoresInputs } from './SectoresPanel';
+import { SitiosRepresaPanel, type SitiosInputs } from './SitiosRepresaPanel';
+import { AnalisisRelievePanel, type AnalisisInputs } from './AnalisisRelievePanel';
 import { CaminosPanel } from './CaminosPanel';
-import { RedAguaPanel } from './RedAguaPanel';
+import { RedServiciosPanel } from './RedServiciosPanel';
 import { PastoreoPanel } from './PastoreoPanel';
 import { RiegoPanel } from './RiegoPanel';
 import { CoberturaPanel } from './CoberturaPanel';
@@ -66,11 +66,13 @@ import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib
 import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
-import { obtenerGrillaDensa, grillaDesdeShader, recortarGrillaA, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
-import { calcularSwales, diagnosticarSwales, type ResultadoSwales, type OpcionesSwales, type DiagnosticoSwales } from '@/lib/swales';
+import { calcularSwalesMulti, analizarAreas, unirBloques, type ResultadoSwales, type ResultadoSwalesMulti,
+  type OpcionesSwales, type AreaSwales, type AnalisisArea, type ContextoSwales } from '@/lib/swales';
+import { claseInfiltracionDeKsat, coberturaDeSatelite } from '@/lib/criterios';
 import { hidrologiaPredio, T_POR_DEFECTO, type HidrologiaPredio, type Confianza } from '@/lib/hidrologiaPredio';
 import { confianzaErosion } from '@/lib/saludCalculo';
 import { SaludCalculo } from './SaludCalculo';
@@ -82,9 +84,11 @@ import { volumenM3, miles } from '@/lib/unidades';
 import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
 import { perdidaSuelo, TOLERANCIA_T_HA, type PerdidaSuelo } from '@/lib/usle';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
-import { CuencaPanel } from './CuencaPanel';
+import { CuencaPanel, type CuencaInputs } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
-import type { RepresaResumen } from '@/lib/represa';
+import { colorServicio, type TipoServicio } from '@/lib/servicios';
+import type { RepresaResumen, RepresaInputs } from '@/lib/represa';
+import { RODEO_INICIAL, type Rodeo } from '@/lib/rodeo';
 import type { RiegoResumen, RiegoInputs } from '@/lib/riego';
 import type { PastoreoInputs } from '@/lib/pastoreo';
 import type { PotrerosLayout } from '@/lib/potreros';
@@ -99,11 +103,11 @@ import { CarbonoPanel } from './CarbonoPanel';
 import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
-import { KeylinePanel } from './KeylinePanel';
-import { SwalesPanel } from './SwalesPanel';
-import { CortafuegosPanel } from './CortafuegosPanel';
-import { CortinasPanel } from './CortinasPanel';
-import { SilvopasturaPanel } from './SilvopasturaPanel';
+import { KeylinePanel, type KeylineInputs } from './KeylinePanel';
+import { SwalesPanel, type SwalesInputs } from './SwalesPanel';
+import { CortafuegosPanel, type CortafuegosInputs } from './CortafuegosPanel';
+import { CortinasPanel, type CortinasInputs } from './CortinasPanel';
+import { SilvopasturaPanel, type SilvoInputs } from './SilvopasturaPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
 import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
@@ -204,7 +208,7 @@ const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
   { id: 'cal',         label: 'Calendario',  icon: <CalendarDays className="w-3.5 h-3.5" /> },
   { id: 'cuenca',      label: 'Cuenca',      icon: <Waves        className="w-3.5 h-3.5" /> },
   { id: 'aguadas',     label: 'Represas',    icon: <Container    className="w-3.5 h-3.5" /> },
-  { id: 'red',         label: 'Red de agua', icon: <Spline       className="w-3.5 h-3.5" /> },
+  { id: 'red',         label: 'Red de servicios', icon: <Spline       className="w-3.5 h-3.5" /> },
   { id: 'riego',       label: 'Riego',       icon: <Sprout       className="w-3.5 h-3.5" /> },
   { id: 'swales',      label: 'Swales',      icon: <Ruler        className="w-3.5 h-3.5" /> },
   { id: 'agua',        label: 'Captación',   icon: <Droplets     className="w-3.5 h-3.5" /> },
@@ -402,6 +406,34 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [datosEntorno,   setDatosEntorno]   = useState<DatosEntorno | null>(null);
   const [entornoResumen, setEntornoResumen] = useState<EntornoResumen | null>(null);
 
+  /**
+   * ─── Estado de los paneles que se desmontan al cambiar de pestaña ─────────
+   *
+   * Sólo se monta el panel de la pestaña activa. Todo lo que un panel guardaba
+   * en su propio `useState` moría al salir: las curvas keyline detectadas, los
+   * sitios de represa calculados, las zonas de vivienda, la cobertura elegida
+   * en Cuenca, los anchos de cortina y cortafuego. Se perdía trabajo real sin
+   * un solo aviso, y era casi imposible darse cuenta de por qué.
+   *
+   * Represa, Riego, Red y Pastoreo ya resolvían esto cada uno con su propio par
+   * `inicial`/`onInputs` y su propia clave en metadatos. Para el resto —que son
+   * muchos y chicos— va un único mapa: cada panel escribe bajo su clave, y todo
+   * viaja con el proyecto, así que también sobrevive a recargar la página.
+   *
+   * `usarInputs` devuelve siempre la *misma* función para una clave dada: si
+   * devolviera una nueva en cada render, el efecto del panel que la tiene como
+   * dependencia se dispararía sin parar.
+   */
+  const [panelInputs, setPanelInputs] = useState<Record<string, unknown>>({});
+  const cbPanel = useRef<Record<string, (v: unknown) => void>>({});
+  const usarInputs = useCallback((clave: string) => {
+    const previo = cbPanel.current[clave];
+    if (previo) return previo;
+    const fn = (v: unknown) => setPanelInputs(prev => ({ ...prev, [clave]: v }));
+    cbPanel.current[clave] = fn;
+    return fn;
+  }, []);
+
   // ─── Terrarium rango auto-detectado ──────────────────────────────────────
   const [terrariumRango, setTerrariumRango] = useState<{min: number; max: number} | null>(null);
 
@@ -595,6 +627,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     dibujoEnCurso, modoZona, modoSector, modoCamino,
   });
 
+  /**
+   * Marca una traza como red de un servicio y la pinta con el color de obra que
+   * le corresponde (azul agua, amarillo gas, rojo luz…), para que el plano se
+   * lea igual que la zanja.
+   */
+  const handleMarcarServicio = useCallback((id: string, servicio: TipoServicio) => {
+    const color = colorServicio(servicio);
+    setCaminos(prev => prev.map(c => c.id === id ? { ...c, servicio, ...(color ? { color } : {}) } : c));
+  }, [setCaminos]);
+
   const dibujoSel = useMemo(() => dibujos.find(d => d.id === dibujoSelId) ?? null, [dibujos, dibujoSelId]);
 
   // ─── Modales propios ──────────────────────────────────────────────────────
@@ -749,27 +791,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   );
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
+  // `swales` es la unión de todas las parcelas trazadas: la consumen el mapa y el
+  // informe, que no distinguen de qué parcela salió cada línea. El detalle por
+  // parcela vive en `swalesMulti`, que es lo que muestra el panel.
   const [swales, setSwales] = useState<ResultadoSwales | null>(null);
-  const [swalesDiag, setSwalesDiag] = useState<DiagnosticoSwales | null>(null);
-  const handleGenerarSwales = useCallback((
-    opts: OpcionesSwales,
-    area: Array<{ lat: number; lng: number }> | null,
-  ): ResultadoSwales | null => {
-    if (!grillaActiva) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return null; }
-    // Acotar a una parcela dibujada recorta la grilla Y su rango de cotas: es lo
-    // que hace viable el trazado fino en predios de miles de hectáreas, donde el
-    // desnivel del predio entero se pasa del tope de curvas.
-    const limite = area ?? mojones;
-    const grilla = area ? (recortarGrillaA(grillaActiva, area) ?? grillaActiva) : grillaActiva;
-    const diag = diagnosticarSwales(grilla, opts.intervaloV);
-    const r = diag.puede ? calcularSwales(grilla, limite, opts) : null;
-    // El intervalo puede entrar en el tope y aun así no quedar ningún tramo
-    // dentro del límite (parcela chica, curvas que la cruzan de refilón).
-    setSwalesDiag(r ? null : (diag.puede ? { ...diag, puede: false, motivo: 'sin_tramos' as const } : diag));
-    setSwales(r);
-    if (r) setCapas(prev => ({ ...prev, swales: true }));
-    return r;
-  }, [grillaActiva, mojones]);
+  const [swalesMulti, setSwalesMulti] = useState<ResultadoSwalesMulti | null>(null);
+
+  // ─── Rodeo del predio ─────────────────────────────────────────────────────
+  // Vive acá y no en un panel porque lo comparten Producción (que lo sugiere a
+  // partir de la receptividad del campo) y Represa (que dimensiona el agua con
+  // él). Antes cada pestaña tenía el suyo y nada garantizaba que fueran el mismo.
+  const [rodeo, setRodeo] = useState<Rodeo>(RODEO_INICIAL);
+  const [represaInputs, setRepresaInputs] = useState<RepresaInputs | null>(null);
   const handleColocarSwales = useCallback(() => {
     if (!swales) return;
     const nuevos = swales.swales.map((sw, i) => {
@@ -880,6 +913,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (riegoResumen)    m['riego']    = riegoResumen;
     if (riegoInputs)     m['riego_inputs']    = riegoInputs;
     if (redAguaInputs)   m['red_agua_inputs'] = redAguaInputs;
+    if (represaInputs)   m['represa_inputs']  = represaInputs;
+    if (Object.keys(panelInputs).length) m['panel_inputs'] = panelInputs;
+    m['rodeo'] = rodeo;
     if (economiaResumen) m['economia'] = economiaResumen;
     if (carbonoResumen)  m['carbono']  = carbonoResumen;
     if (potrerosLayer)   m['potreros'] = potrerosLayer;
@@ -912,7 +948,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1727,7 +1763,38 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setKeylineCheck(prev => ({ ...prev, [id]: { hecho: false, nota: '', ...prev[id], ...parcial } }));
   }, []);
 
+  /**
+   * Las guías keyline van a su propia capa, no a la lista de caminos.
+   *
+   * Un camino es una entidad con ancho, pendiente máxima y costo de obra; una
+   * guía keyline es una línea de referencia para arar y para orientar cultivos.
+   * Meterlas como caminos ensuciaba la lista con veinte entradas que nadie va a
+   * transitar y les colgaba atributos que no significan nada. El keypoint sí
+   * queda como pin: eso sí es un punto del terreno que hay que poder encontrar.
+   */
+  const CAPA_KEYLINE = 'keyline-guias';
   const handleAplicarKeyline = useCallback((res: ResultadoKeyline) => {
+    setCapasUsuario(prev => prev.some(c => c.id === CAPA_KEYLINE) ? prev : [
+      ...prev,
+      { id: CAPA_KEYLINE, nombre: 'Keyline — guías', orden: prev.length, color: '#5E35B1' },
+    ]);
+    setDibujos(prev => [
+      ...prev,
+      ...res.guias.filter(g => g.puntos.length >= 2).map(g => ({
+        id: crypto.randomUUID(),
+        tipo: 'linea' as const,
+        vertices: g.puntos,
+        grosor: g.principal ? 3 : 2,
+        color: g.principal ? '#5E35B1' : '#9575CD',
+        nombre: g.principal ? `Keyline ${g.cota} m (principal)` : `Keyline ${g.cota} m`,
+        capaId: CAPA_KEYLINE,
+      })),
+    ]);
+    setPines(prev => [...prev, { id: crypto.randomUUID(), lat: res.keypoint.lat, lng: res.keypoint.lng, nombre: `Keypoint ${res.keypoint.elevation.toFixed(0)} m`, color: '#5E35B1', icono: '📍', notas: res.nota }]);
+  }, []);
+
+  /** Salida para el caso puntual en que una guía sí vaya a ser un camino. */
+  const handleKeylineComoCaminos = useCallback((res: ResultadoKeyline) => {
     setCaminos(prev => [
       ...prev,
       ...res.guias.filter(g => g.puntos.length >= 2).map(g => {
@@ -1735,7 +1802,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         return { ...c, nombre: g.principal ? `Keyline ${g.cota} m (principal)` : `Keyline ${g.cota} m`, color: g.principal ? '#5E35B1' : '#9575CD' };
       }),
     ]);
-    setPines(prev => [...prev, { id: crypto.randomUUID(), lat: res.keypoint.lat, lng: res.keypoint.lng, nombre: `Keypoint ${res.keypoint.elevation.toFixed(0)} m`, color: '#5E35B1', icono: '📍', notas: res.nota }]);
     setTab('caminos');
   }, []);
 
@@ -1784,6 +1850,40 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     sectores.forEach(s => { if (s.vertices.length >= 3) out.push({ id: s.id, nombre: `Sector: ${s.nombre}`, vertices: s.vertices }); });
     return out;
   }, [dibujos, zonas, sectores]);
+
+  // ─── Áreas candidatas para swales, con su pendiente y su criterio ────────
+  // Se miden acá y no en el panel porque la grilla vive acá; el panel sólo
+  // muestra lo que cada ladera pide y deja jugar dentro de ese margen.
+  const areasSwales = useMemo<AreaSwales[]>(() => [
+    { id: 'predio', nombre: 'Todo el predio', vertices: null },
+    ...poligonosCutFill.map(p => ({ id: p.id, nombre: p.nombre, vertices: p.vertices })),
+  ], [poligonosCutFill]);
+
+  const ctxSwales = useMemo<ContextoSwales>(() => ({
+    infiltracion: claseInfiltracionDeKsat(hidroPredio.ksat_mm_h),
+    cobertura:    coberturaDeSatelite(datosCobertura?.veg_pct, datosCobertura?.suelo_pct),
+  }), [hidroPredio.ksat_mm_h, datosCobertura]);
+
+  const analisisSwales = useMemo<AnalisisArea[]>(
+    () => grillaActiva ? analizarAreas(grillaActiva, mojones, areasSwales, ctxSwales) : [],
+    [grillaActiva, mojones, areasSwales, ctxSwales],
+  );
+
+  const handleGenerarSwales = useCallback((
+    areas: AreaSwales[],
+    intervalos: Record<string, number>,
+    opts: Omit<OpcionesSwales, 'intervaloV' | 'pendiente_pct'>,
+  ) => {
+    if (!grillaActiva) { setModal({ type: 'alert', message: 'Primero calculá la topografía (Topografía → Calcular).' }); return; }
+    // El panel manda ids; los vértices los resuelve el contenedor, que es quien
+    // tiene los polígonos dibujados.
+    const conVertices = areas.map(a => areasSwales.find(x => x.id === a.id) ?? a);
+    const multi = calcularSwalesMulti(grillaActiva, mojones, conVertices, intervalos, opts, ctxSwales);
+    setSwalesMulti(multi);
+    const unido = unirBloques(multi);
+    setSwales(unido);
+    if (unido) setCapas(prev => ({ ...prev, swales: true }));
+  }, [grillaActiva, mojones, areasSwales, ctxSwales]);
 
   // ─── Rename / delete desde panel de capas ────────────────────────────────
   const handleRenombrarPin     = useCallback((id: string, nombre: string) => setPines(prev => prev.map(p => p.id === id ? { ...p, nombre } : p)), []);
@@ -2205,6 +2305,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
     setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
     setRedAguaInputs((meta['red_agua_inputs'] as RedAguaInputs) ?? null);
+    setRepresaInputs((meta['represa_inputs'] as RepresaInputs) ?? null);
+    setPanelInputs((meta['panel_inputs'] as Record<string, unknown>) ?? {});
+    setRodeo((meta['rodeo'] as Rodeo) ?? RODEO_INICIAL);
     setPastoreoInputs((meta['pastoreo_inputs'] as PastoreoInputs) ?? null);
     setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
     setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);
@@ -2926,7 +3029,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
-          {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
+          {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} inicial={panelInputs['calendario'] as CalendarioInputs ?? null} onInputs={usarInputs('calendario')} /></div>}
           {tab === 'solar' && (
             <div className="px-4 py-4">
               <SolarPanel
@@ -3005,7 +3108,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </div>
           )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
-          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} /></div>}
+          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">
@@ -3015,6 +3118,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 topoLista={!!datosShader && !!datosEscorrentia}
                 onIrATopo={() => setTab('topo')}
                 onAnalizado={handleAnalisisPredioListo}
+                inicial={panelInputs['analisis_relieve'] as AnalisisInputs ?? null}
+                onInputs={usarInputs('analisis_relieve')}
               />
             </div>
           )}
@@ -3059,20 +3164,33 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onIniciarDibujo={handleIniciarSector} onFinalizarSector={handleFinalizarSector} onCancelarSector={handleCancelarSector}
                 onAplicarSector={handleAplicarSectorAuto}
                 onAplicarViviendas={handleAplicarViviendas}
+                inicial={panelInputs['sectores'] as SectoresInputs ?? null}
+                onInputs={usarInputs('sectores')}
               />
             </div>
           )}
           {tab === 'aguadas' && (
             <div className="px-4 py-4 space-y-4">
-              <SitiosRepresaPanel mojones={mojones} onPonerEnMapa={handlePonerSitioEnMapa} />
+              <SitiosRepresaPanel mojones={mojones} onPonerEnMapa={handlePonerSitioEnMapa} inicial={panelInputs['sitios_represa'] as SitiosInputs ?? null} onInputs={usarInputs('sitios_represa')} />
               <div className="border-t border-bone-200 pt-4">
-                <CutFillPanel mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill} onDibujarEspejo={handleDibujarEspejo} espejoSugerido={espejoSugeridoId} datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onResumenRepresa={setRepresaResumen} onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }} onMuroLinea={setMuroLinea} />
+                <CutFillPanel
+                  mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill}
+                  onDibujarEspejo={handleDibujarEspejo} espejoSugerido={espejoSugeridoId}
+                  datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null}
+                  grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
+                  texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}
+                  inicial={represaInputs} onInputs={setRepresaInputs}
+                  rodeo={rodeo} onRodeo={setRodeo}
+                  onResumenRepresa={setRepresaResumen}
+                  onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }}
+                  onMuroLinea={setMuroLinea}
+                />
               </div>
             </div>
           )}
           {tab === 'keyline' && (
             <div className="px-4 py-4">
-              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} onAplicarGuias={handleAplicarKeyline} onAplicarPatron={handleAplicarPatron} />
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -3088,10 +3206,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'red' && (
             <div className="px-4 py-4">
-              <RedAguaPanel
+              <RedServiciosPanel
                 caminos={caminos}
                 onCargarPerfil={handleCargarPerfilCamino}
                 onIrACaminos={() => setTab('caminos')}
+                onMarcarServicio={handleMarcarServicio}
+                riego={riegoResumen ? { nombre: riegoResumen.cultivo, caudal_ls: riegoResumen.caudal_continuo_ls } : null}
+                onIrARiego={() => setTab('riego')}
                 onResumen={setRedAguaResumen}
                 inicial={redAguaInputs}
                 onInputs={setRedAguaInputs}
@@ -3112,9 +3233,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             <div className="px-4 py-4">
               <SwalesPanel
                 grillaLista={!!grillaActiva}
-                swales={swales}
-                parcelas={poligonosCutFill}
-                diagnostico={swalesDiag}
+                multi={swalesMulti}
+                analisis={analisisSwales}
                 hidro={hidroPredio}
                 onPeriodoRetorno={setPeriodoRetorno}
                 onIrAClima={() => setTab('clima')}
@@ -3122,6 +3242,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onGenerar={handleGenerarSwales}
                 onColocar={handleColocarSwales}
                 onIrATopo={() => setTab('topo')}
+                inicial={panelInputs['swales'] as SwalesInputs ?? null}
+                onInputs={usarInputs('swales')}
               />
             </div>
           )}
@@ -3136,6 +3258,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onDibujar={handleDibujarCortina}
                 onCancelarDibujo={() => setModoCamino(null)}
                 onColocar={handleColocarCortina}
+                inicial={panelInputs['cortinas'] as CortinasInputs ?? null}
+                onInputs={usarInputs('cortinas')}
               />
             </div>
           )}
@@ -3147,6 +3271,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onGenerar={handleGenerarCortafuegos}
                 onColocar={handleColocarCortafuegos}
                 onIrATopo={() => setTab('topo')}
+                inicial={panelInputs['cortafuegos'] as CortafuegosInputs ?? null}
+                onInputs={usarInputs('cortafuegos')}
               />
             </div>
           )}
@@ -3158,6 +3284,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onGenerar={handleGenerarSilvopastura}
                 onColocar={handleColocarSilvopastura}
                 onIrATopo={() => setTab('topo')}
+                inicial={panelInputs['silvopastura'] as SilvoInputs ?? null}
+                onInputs={usarInputs('silvopastura')}
               />
             </div>
           )}
@@ -3203,6 +3331,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onGuardar={handleGuardarCuenca}
                 onAbrir={handleAbrirCuencaGuardada}
                 onEliminar={handleEliminarCuencaGuardada}
+                inicial={panelInputs['cuenca_params'] as CuencaInputs ?? null}
+                onInputs={usarInputs('cuenca_params')}
               />
             </div>
           )}

@@ -6,23 +6,36 @@
  * laderas, donde un muro corto embalsa mucho. Corre el buscador sobre la grilla
  * de hidrología del predio (client-side).
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Loader2, Sparkles, MapPin, Waves, Check } from 'lucide-react';
 import { sugerirSitiosRepresa, bboxDeMojones, type SitioRepresa } from '@/lib/cuencaHidro';
 import { volumenM3, volumenEnLitros, miles } from '@/lib/unidades';
 import type { Mojon } from '@/lib/types';
 
+/**
+ * La búsqueda de sitios tarda y pega contra el DEM: se guarda el resultado, no
+ * sólo los parámetros, para no obligar a repetirla cada vez que se vuelve.
+ */
+export interface SitiosInputs {
+  sitios:  SitioRepresa[] | null;
+  puestos: number[];
+}
+
 interface Props {
   mojones: Mojon[];
   /** vuelca el sitio al mapa: espejo de agua dibujado + pin del muro */
   onPonerEnMapa?: (sitio: SitioRepresa, indice: number) => void;
+  inicial?:  SitiosInputs | null;
+  onInputs?: (i: SitiosInputs) => void;
 }
 
-export function SitiosRepresaPanel({ mojones, onPonerEnMapa }: Props) {
-  const [puestos, setPuestos] = useState<Set<number>>(new Set());
+export function SitiosRepresaPanel({ mojones, onPonerEnMapa, inicial, onInputs }: Props) {
+  const [puestos, setPuestos] = useState<Set<number>>(new Set(inicial?.puestos ?? []));
   const [cargando, setCargando] = useState(false);
-  const [sitios, setSitios]     = useState<SitioRepresa[] | null>(null);
+  const [sitios, setSitios]     = useState<SitioRepresa[] | null>(inicial?.sitios ?? null);
   const [error, setError]       = useState<string | null>(null);
+
+  useEffect(() => { onInputs?.({ sitios, puestos: [...puestos] }); }, [sitios, puestos, onInputs]);
 
   const buscar = useCallback(async () => {
     if (mojones.length < 3) { setError('Cargá el terreno (al menos 3 mojones) primero.'); return; }

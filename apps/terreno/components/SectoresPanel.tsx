@@ -34,23 +34,42 @@ interface Props {
   onAplicarSector?:  (sector: Sector) => void;
   /** Coloca las zonas de vivienda sugeridas como pines en el plano. */
   onAplicarViviendas?: (viviendas: ZonaVivienda[]) => void;
+  inicial?:  SectoresInputs | null;
+  onInputs?: (i: SectoresInputs) => void;
+}
+
+/**
+ * Las zonas de vivienda salen de un análisis de relieve que tarda: se guardan,
+ * junto con qué sectores ya se aplicaron al plano.
+ */
+export interface SectoresInputs {
+  mostrarAuto:  boolean;
+  colorModo:    string;
+  aplicadosIds: string[];
+  viviendas:    ZonaVivienda[] | null;
+  vivAplicado:  boolean;
 }
 
 export function SectoresPanel({
   mojones, datosClima, datosTopografia,
   sectores, onSectores, modoSector,
   onIniciarDibujo, onFinalizarSector, onCancelarSector, onAplicarSector, onAplicarViviendas,
+  inicial, onInputs,
 }: Props) {
   const [menuAbierto,  setMenuAbierto]  = useState(false);
   const [editandoId,   setEditandoId]   = useState<string | null>(null);
-  const [mostrarAuto,  setMostrarAuto]  = useState(true);
-  const [colorModo,    setColorModo]    = useState<string>(TIPOS_SECTOR.personalizado.color);
-  const [aplicadosIds, setAplicadosIds] = useState<Set<string>>(new Set());
+  const [mostrarAuto,  setMostrarAuto]  = useState(inicial?.mostrarAuto ?? true);
+  const [colorModo,    setColorModo]    = useState<string>(inicial?.colorModo ?? TIPOS_SECTOR.personalizado.color);
+  const [aplicadosIds, setAplicadosIds] = useState<Set<string>>(new Set(inicial?.aplicadosIds ?? []));
   // Zona de vivienda (motor de relieve)
   const [vivCargando, setVivCargando] = useState(false);
   const [vivError,    setVivError]    = useState<string | null>(null);
-  const [viviendas,   setViviendas]   = useState<ZonaVivienda[] | null>(null);
-  const [vivAplicado, setVivAplicado] = useState(false);
+  const [viviendas,   setViviendas]   = useState<ZonaVivienda[] | null>(inicial?.viviendas ?? null);
+  const [vivAplicado, setVivAplicado] = useState(inicial?.vivAplicado ?? false);
+
+  useEffect(() => {
+    onInputs?.({ mostrarAuto, colorModo, aplicadosIds: [...aplicadosIds], viviendas, vivAplicado });
+  }, [mostrarAuto, colorModo, aplicadosIds, viviendas, vivAplicado, onInputs]);
 
   const sugerirVivienda = useCallback(async () => {
     if (mojones.length < 3) { setVivError('Cargá el terreno (al menos 3 mojones) primero.'); return; }

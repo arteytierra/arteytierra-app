@@ -16,7 +16,12 @@
  */
 import * as turf from '@turf/turf';
 import type { GrillaElevacion } from './grillaElevacion';
+import { recortarGrillaA } from './grillaElevacion';
 import { calcularCurvas, MAX_NIVELES, nivelesEstimados } from './curvasNivel';
+import {
+  separacionVerticalZanjas, acotar,
+  type Recomendacion, type InfiltracionSuelo, type CoberturaLadera,
+} from './criterios';
 
 export interface SwaleLinea {
   cota:        number;
@@ -30,6 +35,16 @@ export interface OpcionesSwales {
   intervaloV: number;   // separación vertical entre swales (m)
   precipMm:   number;   // lluvia de diseño (mm por evento)
   coef:       number;   // coeficiente de escorrentía 0..1
+  /**
+   * Pendiente media del área, en %. Si viene, se usa para convertir la
+   * separación vertical en la horizontal (el ancho de franja de captación).
+   *
+   * Importa que la calcule quien llama y no esta función: la recomendación de
+   * separación sale de la misma pendiente (`lib/criterios`), y si cada lado
+   * usara su propia estimación el ancho de franja no coincidiría con la
+   * distancia de tabla que el usuario cree haber elegido.
+   */
+  pendiente_pct?: number;
   /** talud de las paredes (H:V). 1,5 es el estándar estable y desmalezable. */
   taludZ?:    number;
   /** profundidad máxima admitida para la zanja (m) */
@@ -73,6 +88,8 @@ export interface ResultadoSwales {
   total_capt_ha: number;
   ancho_franja_m: number;
   intervaloV:    number;
+  /** Pendiente media usada para el trazado (%). */
+  pendiente_pct: number;
   /** null si el trazado sale pero no se pidió dimensionar */
   seccion:       SeccionSwale | null;
   /** null si no hay dato de suelo cargado */
@@ -121,6 +138,49 @@ export function diagnosticarSwales(grilla: GrillaElevacion, intervaloV: number):
   return { ...base, puede: true, motivo: null };
 }
 
+/**
+ * Pendiente media del área, en porcentaje.
+ *
+ * Se calcula como el promedio del módulo del gradiente celda por celda, con
+ * diferencias centradas. Es distinto —y bastante mejor— que el atajo anterior,
+ * que dividía el desnivel total por la diagonal del encuadre: en un predio con
+ * una loma en el medio y dos faldeos, ese cociente daba una pendiente casi nula
+ * porque los extremos estaban a la misma cota, cuando en realidad todo el
+ * terreno tiene caída. Como la tabla de separación de zanjas se lee justamente
+ * por pendiente, ahí el atajo mandaba a trazar swales a 30 m en una ladera del
+ * 25% que pide 12 m.
+ *
+ * Limitación conocida: si la grilla viene recortada a una parcela, el recorte
+ * conserva la ventana rectangular y no enmascara a NaN lo que queda fuera del
+ * polígono, así que la pendiente es la de la ventana. En parcelas convexas y
+ * razonablemente llenas la diferencia es menor; en una parcela con forma de "L"
+ * puede meter terreno ajeno en el promedio.
+ */
+export function pendienteMediaPct(grilla: GrillaElevacion): number {
+  const { rows, cols, elev } = grilla;
+  if (rows < 3 || cols < 3) return 0;
+
+  const latRef = (grilla.latMin + grilla.latMax) / 2;
+  const dx = ((grilla.lngMax - grilla.lngMin) * 111_320 * Math.cos(latRef * Math.PI / 180)) / (cols - 1);
+  const dy = ((grilla.latMax - grilla.latMin) * 111_320) / (rows - 1);
+  if (!(dx > 0) || !(dy > 0)) return 0;
+
+  let suma = 0, n = 0;
+  for (let r = 1; r < rows - 1; r++) {
+    for (let c = 1; c < cols - 1; c++) {
+      const zE = elev[r * cols + c + 1]!,      zW = elev[r * cols + c - 1]!;
+      const zN = elev[(r + 1) * cols + c]!,    zS = elev[(r - 1) * cols + c]!;
+      if (Number.isNaN(zE) || Number.isNaN(zW) || Number.isNaN(zN) || Number.isNaN(zS)) continue;
+      const gx = (zE - zW) / (2 * dx);
+      const gy = (zN - zS) / (2 * dy);
+      suma += Math.hypot(gx, gy);
+      n++;
+    }
+  }
+  if (n === 0) return 0;
+  return +((suma / n) * 100).toFixed(2);
+}
+
 export function calcularSwales(
   grilla:  GrillaElevacion,
   mojones: Array<{ lat: number; lng: number }>,
@@ -133,12 +193,13 @@ export function calcularSwales(
   const latRef = (grilla.latMin + grilla.latMax) / 2;
   const kx = 111_320 * Math.cos(latRef * Math.PI / 180);
   const ky = 111_320;
-  const anchoM = (grilla.lngMax - grilla.lngMin) * kx;
-  const altoM  = (grilla.latMax - grilla.latMin) * ky;
-  const diagM  = Math.hypot(anchoM, altoM);
-
-  // Pendiente media del predio → separación horizontal entre swales (ancho de franja).
-  const pendMedia = Math.max((grilla.elev_max - grilla.elev_min) / Math.max(diagM, 1), 0.008);
+  // Pendiente media del área → separación horizontal entre swales (ancho de
+  // franja). Se prefiere la que calculó quien llama, para que coincida con la
+  // que se usó para recomendar el intervalo.
+  const pendPct = opts.pendiente_pct && opts.pendiente_pct > 0
+    ? opts.pendiente_pct
+    : pendienteMediaPct(grilla);
+  const pendMedia = Math.max(pendPct / 100, 0.008);
   const anchoFranja = Math.min(150, Math.max(4, intervaloV / pendMedia));
 
   const poly = polígonoDe(mojones);
@@ -177,6 +238,7 @@ export function calcularSwales(
     total_capt_ha: +(swales.reduce((s, x) => s + x.captacion_ha, 0)).toFixed(2),
     ancho_franja_m: Math.round(anchoFranja),
     intervaloV,
+    pendiente_pct: +pendPct.toFixed(2),
     seccion,
     infiltracion: verificarInfiltracion(seccion, opts.ksat_mm_h ?? null),
   };
@@ -321,4 +383,179 @@ function longitudM(puntos: Array<{ lat: number; lng: number }>, kx: number, ky: 
     total += Math.hypot((b.lng - a.lng) * kx, (b.lat - a.lat) * ky);
   }
   return total;
+}
+
+// ─── Trazado por parcelas (varias a la vez) ──────────────────────────────────
+
+/**
+ * Un área a trazar: una parcela dibujada, o el predio entero.
+ *
+ * Por qué varias a la vez. La tabla de separación se lee por pendiente, y la
+ * pendiente cambia de una ladera a otra dentro del mismo campo: trazar todo el
+ * predio con un solo intervalo es exactamente el error que la tabla viene a
+ * corregir. Con parcelas, cada una recibe su propia pendiente, su propia
+ * recomendación y su propio trazado, y el total se suma para el presupuesto.
+ */
+export interface AreaSwales {
+  id:       string;
+  nombre:   string;
+  /** null = todo el predio (se usa el límite de mojones). */
+  vertices: Array<{ lat: number; lng: number }> | null;
+}
+
+/** Contexto del suelo y la cobertura que afina la recomendación de separación. */
+export interface ContextoSwales {
+  infiltracion?: InfiltracionSuelo | null;
+  cobertura?:    CoberturaLadera | null;
+}
+
+/** Lo que hace falta saber de un área ANTES de trazar: su pendiente y qué pide. */
+export interface AnalisisArea {
+  id:            string;
+  nombre:        string;
+  pendiente_pct: number;
+  desnivel_m:    number;
+  recomendacion: Recomendacion;
+}
+
+/**
+ * Mide cada área y le calcula su separación recomendada, sin trazar nada.
+ *
+ * Es lo que alimenta los controles del panel: cada parcela muestra su pendiente
+ * real y arranca en el valor que pide la tabla, con su propio rango de trabajo.
+ */
+export function analizarAreas(
+  grilla:  GrillaElevacion,
+  mojones: Array<{ lat: number; lng: number }>,
+  areas:   AreaSwales[],
+  ctx:     ContextoSwales = {},
+): AnalisisArea[] {
+  return areas.map(a => {
+    const g = a.vertices ? (recortarGrillaA(grilla, a.vertices) ?? grilla) : grilla;
+    const pendiente_pct = pendienteMediaPct(g);
+    return {
+      id: a.id,
+      nombre: a.nombre,
+      pendiente_pct,
+      desnivel_m: +(g.elev_max - g.elev_min).toFixed(1),
+      recomendacion: separacionVerticalZanjas({
+        pendiente_pct,
+        infiltracion: ctx.infiltracion ?? null,
+        cobertura:    ctx.cobertura ?? null,
+      }),
+    };
+  });
+}
+
+export interface BloqueSwales {
+  id:            string;
+  nombre:        string;
+  pendiente_pct: number;
+  /** La separación que se usó, ya acotada al rango de la recomendación. */
+  intervaloV:    number;
+  recomendacion: Recomendacion;
+  resultado:     ResultadoSwales | null;
+  /** Por qué no salió, cuando `resultado` es null. */
+  diagnostico:   DiagnosticoSwales | null;
+}
+
+export interface ResultadoSwalesMulti {
+  bloques:       BloqueSwales[];
+  total_swales:  number;
+  total_long_m:  number;
+  total_vol_m3:  number;
+  total_capt_ha: number;
+  /** Movimiento de suelo sumado de las parcelas que salieron. */
+  total_excavacion_m3: number;
+}
+
+/**
+ * Traza swales en varias áreas de una vez, cada una con su propia separación.
+ *
+ * La separación de cada área se acota al rango de su recomendación antes de
+ * calcular: si el usuario pidió un valor fuera de rango, la app se lo dijo en el
+ * panel y acá no lo obedece a ciegas. El valor efectivamente usado vuelve en
+ * `intervaloV` de cada bloque, así que en el informe queda escrito lo que se
+ * trazó y no lo que se pidió.
+ */
+export function calcularSwalesMulti(
+  grilla:  GrillaElevacion,
+  mojones: Array<{ lat: number; lng: number }>,
+  areas:   AreaSwales[],
+  /** Separación vertical elegida por área, indexada por id. */
+  intervalos: Record<string, number>,
+  opts:    Omit<OpcionesSwales, 'intervaloV' | 'pendiente_pct'>,
+  ctx:     ContextoSwales = {},
+): ResultadoSwalesMulti {
+  const bloques: BloqueSwales[] = [];
+
+  for (const a of areas) {
+    const g = a.vertices ? (recortarGrillaA(grilla, a.vertices) ?? grilla) : grilla;
+    const limite = a.vertices ?? mojones;
+    const pendiente_pct = pendienteMediaPct(g);
+    const rec = separacionVerticalZanjas({
+      pendiente_pct,
+      infiltracion: ctx.infiltracion ?? null,
+      cobertura:    ctx.cobertura ?? null,
+    });
+
+    const pedido = intervalos[a.id] ?? (rec.aplica ? rec.valor : 1.5);
+    const intervaloV = acotar(pedido, rec);
+
+    const diag = diagnosticarSwales(g, intervaloV);
+    const resultado = diag.puede
+      ? calcularSwales(g, limite, { ...opts, intervaloV, pendiente_pct })
+      : null;
+
+    bloques.push({
+      id: a.id, nombre: a.nombre, pendiente_pct, intervaloV, recomendacion: rec,
+      resultado,
+      diagnostico: resultado ? null
+        : (diag.puede ? { ...diag, puede: false, motivo: 'sin_tramos' as const } : diag),
+    });
+  }
+
+  const con = bloques.map(b => b.resultado).filter((r): r is ResultadoSwales => r !== null);
+  return {
+    bloques,
+    total_swales:  con.reduce((s, r) => s + r.swales.length, 0),
+    total_long_m:  Math.round(con.reduce((s, r) => s + r.total_long_m, 0)),
+    total_vol_m3:  Math.round(con.reduce((s, r) => s + r.total_vol_m3, 0)),
+    total_capt_ha: +(con.reduce((s, r) => s + r.total_capt_ha, 0)).toFixed(2),
+    total_excavacion_m3: Math.round(con.reduce((s, r) => s + (r.seccion?.capacidad_m3 ?? 0), 0)),
+  };
+}
+
+/**
+ * Junta los bloques en un único resultado, para el mapa y el informe.
+ *
+ * Los totales se suman. Los escalares que describen el trazado (separación,
+ * ancho de franja, pendiente) se promedian pesados por metros lineales, porque
+ * un promedio simple daría el mismo peso a una parcela de 80 m que a una de
+ * 4 km. La sección y la verificación de infiltración se conservan sólo si hay un
+ * único bloque: con varias parcelas cada una tiene su propia sección y forzar
+ * una sola sería inventar un número. El detalle por parcela vive en `bloques`.
+ */
+export function unirBloques(multi: ResultadoSwalesMulti): ResultadoSwales | null {
+  const con = multi.bloques.filter(b => b.resultado !== null);
+  if (con.length === 0) return null;
+
+  const largo = (b: BloqueSwales) => b.resultado!.total_long_m || 1;
+  const total = con.reduce((s, b) => s + largo(b), 0);
+  const pesado = (f: (r: ResultadoSwales) => number) =>
+    con.reduce((s, b) => s + f(b.resultado!) * largo(b), 0) / total;
+
+  const unico = con.length === 1 ? con[0]!.resultado! : null;
+
+  return {
+    swales:        con.flatMap(b => b.resultado!.swales),
+    total_long_m:  multi.total_long_m,
+    total_vol_m3:  multi.total_vol_m3,
+    total_capt_ha: multi.total_capt_ha,
+    ancho_franja_m: Math.round(pesado(r => r.ancho_franja_m)),
+    intervaloV:     +pesado(r => r.intervaloV).toFixed(2),
+    pendiente_pct:  +pesado(r => r.pendiente_pct).toFixed(2),
+    seccion:      unico?.seccion      ?? null,
+    infiltracion: unico?.infiltracion ?? null,
+  };
 }

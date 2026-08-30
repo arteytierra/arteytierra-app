@@ -245,7 +245,13 @@ export function calcularCaptacion(
 export interface CaptacionSnapshot {
   superficies:       Superficie[];
   consumoCategorias: ConsumoCategoria[];
-  resultado:         ResultadoCaptacion;
+  /**
+   * El cálculo, cuando hay datos de clima cargados. Es nullable a propósito:
+   * antes el snapshot se emitía sólo si el cálculo salía, así que quien cargaba
+   * las superficies y los consumos *antes* de traer el clima perdía todo lo
+   * tipeado al cambiar de pestaña. Ahora las superficies viajan siempre.
+   */
+  resultado:         ResultadoCaptacion | null;
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
