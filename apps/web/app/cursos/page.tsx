@@ -72,7 +72,7 @@ type ProximoItem = {
 
 const FALLBACK_TODOS: TodoItem[] = [
   { slug: 'formacion-construccion-natural', name: 'Formación Integral en Construcción Natural', tag: '21 sep – 30 nov · 3 cupos + 2 con experiencia', img: '/img/cursos/bioarquitectura/1.jpg', badge: 'Presencial · 2 meses', tentativo: false, online: false },
-  { slug: 'formacion-integral-intensivo', name: 'Formación Integral — Intensivo', tag: '10 al 12 (o 17) oct · cupo máx. 25', img: '/img/cursos/bioarquitectura/9.jpg', badge: 'Intensivo · 3 u 8 días', tentativo: false, online: false },
+  { slug: 'formacion-integral-intensivo', name: 'Formación Integral — Intensivo', tag: '10 al 12 (o 17) oct · cupo máx. 25', img: '/img/cursos/casualidad/1.jpg', badge: 'Intensivo · 3 u 8 días', tentativo: false, online: false },
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
   { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
@@ -100,9 +100,9 @@ const FALLBACK_CURSOS: Curso[] = [
     slug: 'formacion-integral-intensivo', badge: 'Intensivo · 3 u 8 días', name: 'Formación Integral — Intensivo',
     tag: '10, 11 y 12 de octubre · o toda la semana hasta el 17 · San Marcos Sierras',
     desc: 'La versión corta de la Formación Integral: en 3 días recorrés la secuencia completa de un muro de tierra — adobe y quincha, revoque grueso, revoque fino y pintura. Quedate hasta el 17 y sumás techo verde, aberturas y carpintería.',
-    img: '/img/cursos/bioarquitectura/9.jpg',
+    img: '/img/cursos/casualidad/1.jpg',
     datos: [{ label: 'Cuándo', val: '10, 11 y 12 oct · o hasta el 17' }, { label: 'Lugar', val: 'San Marcos Sierras · Hospedaje en Tay Pichín' }, { label: 'Modalidad', val: 'Práctica intensiva en obra' }, { label: 'Cupos', val: 'Cupo máximo 25 personas' }],
-    contenidos: ['Muros de adobe y quincha', 'Revoque grueso', 'Revoque fino y pinturas', 'Techo verde', 'Colocación de aberturas', 'Carpintería de obra'],
+    contenidos: ['Muros de adobe y quincha', 'Revoque grueso', 'Revoque fino y pinturas', 'Techo verde', 'Radiestesia y geobiología', 'Arquitectura simbiótica', 'Carpintería de obra'],
     precio: '$120.000 – $250.000 ARS', precioNote: 'Según camping u habitación compartida, y 3 días o semana completa. Precio de lanzamiento.',
     href: '/cursos/formacion-integral-intensivo', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Intensivo de Formación Integral (10 de octubre)'),
   },
@@ -169,27 +169,40 @@ const TESTIMONIOS: Array<{ name: string; course: string; quote: string }> = [];
 
 /* ─── Components ─────────────────────────────────────── */
 
-function GridCard({ c, idx }: { c: TodoItem; idx: number }) {
-  const inner = (
-    <>
-      <div className="relative aspect-video overflow-hidden">
-        <Image src={c.img} alt={c.name} fill priority={idx < 8}
-          className={`object-cover transition-transform duration-300 group-hover:scale-105${c.tentativo ? ' grayscale opacity-60' : ''}`}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
-        <div className="absolute top-2.5 left-2.5 flex gap-1">
-          {c.online && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-2 py-0.5">Online</span>}
-          {c.tentativo && <span className="text-[10px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-2 py-0.5">Próx.</span>}
-        </div>
+/** Curso con fecha confirmada: miniatura grande, título y fecha legibles a simple vista. */
+function GridCardLarge({ c, idx }: { c: TodoItem; idx: number }) {
+  return (
+    <Link href={`/cursos/${c.slug}`} className="group relative block aspect-[4/3] overflow-hidden bg-ink-800">
+      <Image src={c.img} alt={c.name} fill priority={idx < 4}
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/15 to-transparent" />
+      {c.online && (
+        <span className="absolute top-3 left-3 text-[10px] font-sans font-bold uppercase tracking-widest bg-moss-700 text-bone-50 px-2 py-0.5">Online</span>
+      )}
+      <div className="absolute bottom-0 left-0 right-0 p-3.5 md:p-4">
+        <p className="font-sans text-sm md:text-base font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>
+        <p className="font-sans text-xs text-clay-200 leading-tight mt-1.5 line-clamp-1">{c.tag}</p>
       </div>
-      <div className="px-3 py-2.5 bg-ink-800 border-t border-ink-700">
-        <p className="font-sans text-sm font-bold text-bone-50 leading-tight line-clamp-1">{c.name}</p>
-        <p className="font-sans text-xs text-bone-100 leading-tight mt-1 line-clamp-1">{c.tag}</p>
-      </div>
-    </>
+    </Link>
   );
-  const cls = 'group overflow-hidden bg-ink-800 w-full block';
-  if (c.tentativo) return <a href="#proximamente" className={cls}>{inner}</a>;
-  return <Link href={`/cursos/${c.slug}`} className={cls}>{inner}</Link>;
+}
+
+/** Curso sin fecha confirmada: miniatura chica y apagada — sigue en la lista, pero sin competir por atención. */
+function GridCardSmall({ c }: { c: TodoItem }) {
+  return (
+    <a href="#proximamente" className="group block overflow-hidden bg-ink-800">
+      <div className="relative aspect-video overflow-hidden">
+        <Image src={c.img} alt={c.name} fill
+          className="object-cover grayscale opacity-50 transition-opacity duration-300 group-hover:opacity-70"
+          sizes="(max-width: 640px) 50vw, 25vw" />
+        <span className="absolute top-2 left-2 text-[10px] font-sans font-bold uppercase tracking-widest bg-clay-500 text-bone-50 px-2 py-0.5">Próx.</span>
+      </div>
+      <div className="px-2.5 py-2 border-t border-ink-700">
+        <p className="font-sans text-xs font-semibold text-bone-200 leading-tight line-clamp-1">{c.name}</p>
+      </div>
+    </a>
+  );
 }
 
 function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
@@ -288,6 +301,10 @@ export default async function CursosPage() {
     console.error('[CursosPage] DB fallback activado:', e);
   }
 
+  // 8 vigentes se acomodan en 2 filas parejas de 4 (o 4 de 2 en mobile); las 4 sin fecha, en su propia fila aparte.
+  const todosVigentes = todos.filter(c => !c.tentativo);
+  const todosProximos = todos.filter(c => c.tentativo);
+
   return (
     <>
       <SiteHeader />
@@ -308,12 +325,20 @@ export default async function CursosPage() {
       </section>
 
       {/* GRILLA RÁPIDA */}
-      <section className="bg-ink-900 py-8 px-6 border-b border-ink-700">
+      <section className="bg-ink-900 py-10 px-6 border-b border-ink-700">
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {todos.map((c, idx) => <GridCard key={c.slug} c={c} idx={idx} />)}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {todosVigentes.map((c, idx) => <GridCardLarge key={c.slug} c={c} idx={idx} />)}
           </div>
+          {todosProximos.length > 0 && (
+            <div className="mt-8">
+              <p className="text-[11px] font-sans font-semibold uppercase tracking-widest text-bone-400 mb-3 text-center">Sin fecha confirmada — próximamente</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {todosProximos.map(c => <GridCardSmall key={c.slug} c={c} />)}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

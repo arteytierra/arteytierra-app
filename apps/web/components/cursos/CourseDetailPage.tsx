@@ -233,14 +233,20 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                     ))}
                   </div>
                   {wideModulos.map((m, i) => (
-                    <div key={i} className="p-6 bg-clay-700/15 border-l-[3px] border-clay-500">
-                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                    <div key={i} className="p-6 md:p-7 bg-clay-700/15 border-l-[3px] border-clay-500">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
                         <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500">{m.num}</p>
-                        <h3 className="font-display text-base text-bone-100 leading-snug">{m.title}</h3>
+                        <h3 className="font-display text-lg text-bone-50 leading-snug">{m.title}</h3>
                       </div>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1.5">
+                      {m.nota && (
+                        <p className="font-sans text-sm text-bone-200 italic leading-relaxed mb-4 max-w-2xl">{m.nota}</p>
+                      )}
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
                         {m.items.map(item => (
-                          <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
+                          <li key={item} className="flex items-start gap-2 font-sans text-sm text-bone-200 leading-relaxed">
+                            <span className="mt-2 w-1 h-1 rounded-full bg-clay-500 flex-shrink-0" />
+                            {item}
+                          </li>
                         ))}
                       </ul>
                     </div>
