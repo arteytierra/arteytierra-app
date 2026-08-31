@@ -3,7 +3,21 @@
 **Tipo:** clima
 **Estado:** VIVAS — **sin verificar la respuesta**: las dos exigen clave y no se
 pidió ninguna
-**Prioridad sugerida:** media (España) / baja (Francia)
+**Prioridad sugerida:** **EN PAUSA** desde el 31/08/2026 — decisión de Jonatan.
+
+No están descartadas por licencia ni por calidad: quedan guardadas. El motivo es
+que lo que se iba a buscar en Europa —una clasificación climática que no
+dependiera de una celda de 50 km— lo resolvió
+[el mapa Köppen de 1 km de Beck](../global/koppen-beck-1km.md), que además cubre
+el planeta entero y no sólo España y Francia. Lo que estas dos sumarían encima de
+eso es dato de estación, y sale caro: hay que pedir dos claves, escribir dos
+adaptadores distintos y cargar con dos secretos más en producción, para mejorar
+dos países.
+
+**Qué las volvería a poner en la cola:** que aparezca una necesidad de dato de
+estación —serie diaria real de un punto, no climatología— y que España o Francia
+sean mercado. Antes de eso, no. La ficha se queda por eso: para no volver a
+relevarlas desde cero.
 
 Van juntas en una ficha porque comparten el mismo veredicto y el mismo obstáculo:
 son servicios meteorológicos nacionales, sirven dato de estación, y **no

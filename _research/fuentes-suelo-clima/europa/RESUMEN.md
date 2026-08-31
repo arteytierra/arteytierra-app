@@ -77,11 +77,21 @@ y un respaldo de elevación, en producción.
 
 ## Qué sigue
 
-1. **Decidir sobre el Köppen de Beck** — es lo que más mejora el producto de todo
-   lo relevado en las dos fases, y mejora el mundo entero.
-2. **Decidir sobre Open-Meteo** — no mejora nada, pero es lo único de las dos
-   fases que es un riesgo hoy.
-3. Sacar las claves de AEMET y Météo-France y **cerrar esas dos fichas**, que
-   quedaron a medias a propósito.
+Actualizado el 31/08/2026, después de que Jonatan resolviera los dos puntos que
+estaban en su cancha.
+
+1. ~~Decidir sobre el Köppen de Beck~~ → **aprobado e implementado** el mismo
+   día. El período 1991–2020 vive en `apps/terreno/datos/koppen/` y la clase del
+   predio ya sale del mapa de 1 km en vez de calcularse sobre la celda de 50 km
+   de POWER.
+2. ~~Decidir sobre Open-Meteo~~ → **se sigue con el plan gratuito por ahora**. El
+   disparador para pasar a pago es el primer suscriptor que pague, y hay que
+   corregir algo que esta carpeta decía antes: el plan Standard **no** incluye la
+   Historical Weather API, que es la que usa `clima-diario`. Está recién en
+   Professional. Standard sólo cubriría la Elevation API.
+3. ~~Sacar las claves de AEMET y Météo-France~~ → **en pausa**, ver
+   [la ficha](espana-francia-servicios-con-clave.md). Lo que se iba a buscar con
+   ellas lo resolvió el mapa de Beck, y para todo el planeta en vez de dos
+   países.
 4. Si alguna vez interesa Alemania para suelo, escribirle al BGR y pedir los
-   términos por escrito.
+   términos por escrito. **Sigue abierto**, y es lo único que queda de Europa.

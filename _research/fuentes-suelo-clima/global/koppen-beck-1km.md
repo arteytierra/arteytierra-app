@@ -2,8 +2,9 @@
 
 **Tipo:** clima
 **Estado:** VIVA
-**Prioridad sugerida:** **alta** — es el mejor hallazgo del relevamiento europeo,
-y no es europeo: sirve para todo el planeta.
+**Prioridad sugerida:** alta — era el mejor hallazgo del relevamiento europeo, y
+no es europeo: sirve para todo el planeta. **IMPLEMENTADA** el 31/08/2026 con el
+período 1991–2020.
 
 ## Qué mejora sobre la fuente global
 
@@ -94,10 +95,26 @@ desplazamiento climático del predio.
 - **Latencia observada:** 1,4 s los metadatos. La descarga del zip, ~3 min.
   Medido el 31/08/2026.
 
-Una vez hosteado, leer un píxel de un GeoTIFF es aritmética: `col = (lng + 180) /
-0.00833333`, `fila = (90 - lat) / 0.00833333`, y un `seek` al byte. No hace falta
-librería de GIS ni cargar el raster en memoria — es exactamente el mismo patrón
-que ya usa el DEM propio.
+**Corrección a lo que decía esta ficha antes de implementarla.** Decía que leer
+un píxel era aritmética pura —calcular fila y columna y hacer un `seek` al
+byte—. Es falso: al abrir el archivo resultó ser un GeoTIFF **teselado en
+bloques de 256×256 y comprimido con LZW** (14.365 teselas, `photometric = 3`,
+paleta de 8 bits). No hay byte al que saltar; el píxel vive adentro de un bloque
+comprimido.
+
+La aritmética de fila y columna sí vale:
+
+```
+col  = (lng + 180) / 0.00833333
+fila = (90 - lat)  / 0.00833333
+```
+
+pero después hay que descomprimir la tesela. En la práctica salió más barato de
+lo que suena: `geotiff` —que ya era dependencia de la app para importar MDE de
+usuario— resuelve la ventana de 1×1 leyendo y descomprimiendo **sólo la tesela
+que contiene el punto**, unos pocos kB. Los 933 millones de píxeles del mapa
+nunca entran en memoria. Medido: ~40 ms la primera lectura (abre el archivo y
+lee el directorio de teselas), ~3 ms las siguientes.
 
 ## Campos que devuelve
 
@@ -129,3 +146,21 @@ Probado el **31/08/2026**: la API de figshare responde, la licencia declarada en
 el registro es CC BY 4.0, y la tabla central del zip se leyó por *range request*
 (el servidor devolvió el rango pedido). Los tamaños de la tabla de arriba son los
 reales del archivo publicado, no estimaciones.
+
+**Implementación, el mismo día.** El archivo de `1991_2020` quedó en
+`apps/terreno/datos/koppen/`, el lector en `apps/terreno/lib/koppenBeck.ts` y la
+ruta en `app/api/clima/koppen/route.ts`. Se contrastó contra siete lugares
+conocidos de los dos hemisferios (`tests/unit/clima/koppenBeck.test.ts`), que es
+la moraleja que dejó Norteamérica: una fórmula de fila/columna con un signo
+cambiado devuelve clases plausibles pero del hemisferio equivocado, y sólo se
+nota comparando contra lugares que uno conoce.
+
+Un resultado que vale anotar: **Madrid da `BSk`, no el `Csa` de manual.** No es
+un error del mapa. Con ~420 mm anuales y ~15 °C de media, el umbral de aridez
+(`2T + 14 = 44`, por 10 = 440 mm) queda por encima de la lluvia, así que cae en
+B. Es exactamente el caso de borde que este mapa resuelve mejor que aplicar las
+reglas sobre una celda de 50 km.
+
+Las 30 clases de Beck son un subconjunto de las que ya producía
+`clasificarKoppen`: la única que el clasificador puede dar y Beck no es `As`,
+que Beck agrupa dentro de `Aw`. No hubo que decidir nada de vocabulario.

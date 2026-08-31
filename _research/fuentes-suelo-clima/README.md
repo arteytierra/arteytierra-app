@@ -57,3 +57,11 @@ después una atrás de otra para decidir el orden de implementación.
   la pide y cómo se saca, no la clave.
 - Fuentes que haya que descargar entera y hostear (un GeoTIFF nacional de 40 GB).
   Nos interesan las que se consultan por punto o por bbox, en vivo.
+
+  **Salvo que el archivo entero sea chico.** El 31/08/2026 se hizo la primera
+  excepción: el mapa Köppen de 1 km de Beck cubre el planeta en 12,5 MB, y eso
+  entra en el repo sin discusión. El criterio, entonces, no es "nunca se
+  hostea" sino **cuánto pesa cubrir todo lo que la app necesita**: si son
+  megabytes, entra y se gana no depender de ningún servicio; si son gigabytes o
+  hace falta un archivo por país, queda afuera. La decisión de cruzar ese
+  umbral la toma Jonatan, no el relevamiento.

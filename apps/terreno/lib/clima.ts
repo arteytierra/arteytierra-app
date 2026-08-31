@@ -67,6 +67,15 @@ export interface DatosClima {
   viento_medio_ms?: number;  // viento medio anual (m/s)
   viento_max_ms?:   number;  // viento máximo registrado (m/s)
   koppen?:          Koppen;
+  /** De dónde salió `koppen`: el mapa de 1 km, o las reglas sobre las medias. */
+  koppen_fuente?:   'mapa' | 'calculado';
+  /**
+   * El Köppen que dan las reglas sobre las medias mensuales, presente sólo
+   * cuando mandó el mapa **y los dos no coinciden**. Se guarda para poder
+   * mostrar la discrepancia en vez de esconderla: el mapa dice la clase pero no
+   * dice por qué, y el calculado sí sabe qué mes seco o qué isoterma la decidió.
+   */
+  koppen_calculado?: Koppen;
   aridez?:          IndiceAridez;
   gdd_anual?:       number;  // grados-día de crecimiento base 10 °C
   heladas?:         Heladas;
@@ -239,6 +248,10 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   const wdirAnual = wdir['ANN'] ?? wdir['JAN'] ?? 180;
   const viento_dir_ppal = gradosADireccion(wdirAnual);
 
+  // La clase Köppen sale del mapa de 1 km, no de las medias. Es global y no
+  // depende de la fuente de los números, así que se pide una sola vez.
+  const koppenMapa = await obtenerKoppenBeck(lat, lng);
+
   // Donde hay una fuente regional fina, pisa lo que ella mide mejor y POWER
   // queda de base. El viento sale de POWER siempre: ninguna de las regionales
   // lo mide, y es lo que decide cortinas, secado y confort.
@@ -251,10 +264,41 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       fusionarDaymet(lat, meses, d.meses),
       viento_dir_ppal,
       `${d.fuente} · viento de NASA POWER`,
+      koppenMapa,
     );
   }
 
-  return ensamblar(lat, lng, meses, viento_dir_ppal, 'NASA POWER Climatology (promedio 1981–2023)');
+  return ensamblar(
+    lat, lng, meses, viento_dir_ppal,
+    'NASA POWER Climatology (promedio 1981–2023)',
+    koppenMapa,
+  );
+}
+
+// ─── Köppen de 1 km (global) ──────────────────────────────────────────────────
+
+/**
+ * Clase Köppen leída del mapa de 1 km de Beck et al. (2023). Devuelve `null`
+ * ante cualquier problema —incluido el océano, donde el mapa no tiene clase— y
+ * el llamador se queda con el Köppen calculado a partir de las medias.
+ *
+ * El timeout es corto a propósito: del otro lado no hay servicio externo, sólo
+ * la lectura de una tesela de un archivo local. Si eso tarda más de tres
+ * segundos, algo anda mal y no vale la pena demorar el panel de clima entero
+ * por una etiqueta.
+ */
+async function obtenerKoppenBeck(lat: number, lng: number): Promise<Koppen | null> {
+  try {
+    const res = await fetch(
+      `/api/clima/koppen?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`,
+      { signal: AbortSignal.timeout(3_000) },
+    );
+    if (!res.ok) return null;
+    const json = await res.json() as { koppen?: Koppen; sinDatos?: boolean };
+    return json.sinDatos ? null : json.koppen ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Daymet 1 km (Norteamérica) ───────────────────────────────────────────────
@@ -332,6 +376,7 @@ function ensamblar(
   meses: MesDato[],
   viento_dir_ppal: string,
   fuente: string,
+  koppenMapa?: Koppen | null,
 ): DatosClima {
   const precip_anual_mm = Math.round(meses.reduce((s, m) => s + m.precip_mm, 0));
   const etp_anual_mm    = Math.round(meses.reduce((s, m) => s + m.etp_mm,    0));
@@ -350,7 +395,11 @@ function ensamblar(
   const viento_medio_ms = redondear(prom(meses.map(m => m.viento_ms)), 1);
   const viento_max_ms   = redondear(Math.max(...meses.map(m => m.viento_max_ms ?? m.viento_ms)), 1);
 
-  const koppen = clasificarKoppen(lat, meses);
+  // El mapa de 1 km manda cuando tiene dato: es un ensamble de fuentes ya
+  // clasificado, contra una regla aplicada sobre una celda de ~50 km. Cuando no
+  // lo tiene —océano, o el mapa no está disponible— queda el calculado.
+  const calculado = clasificarKoppen(lat, meses);
+  const koppen = koppenMapa ?? calculado;
   const aridez = clasificarAridez(precip_anual_mm, etp_anual_mm);
   const gdd_anual = Math.round(
     meses.reduce((s, m, i) => s + Math.max(m.tmean_c - 10, 0) * (DAYS_IN_MONTH[i] ?? 30), 0),
@@ -367,7 +416,11 @@ function ensamblar(
     fuente,
     weather_spark_url: `https://weatherspark.com/y/${encodeURIComponent(`${lat.toFixed(2)},${lng.toFixed(2)}`)}`,
     rh_anual_pct, rad_anual_kwh, amplitud_anual_c, viento_medio_ms, viento_max_ms,
-    koppen, aridez, gdd_anual, heladas,
+    koppen,
+    koppen_fuente: koppenMapa ? 'mapa' : 'calculado',
+    koppen_calculado:
+      koppenMapa && koppenMapa.codigo !== calculado.codigo ? calculado : undefined,
+    aridez, gdd_anual, heladas,
     mes_mas_seco:   mesSeco.mes,
     mes_mas_humedo: mesHumedo.mes,
   };
@@ -412,7 +465,13 @@ export function aplicarCalibracionPrecip(
     ...d,
     meses,
     precip_anual_mm,
+    // Acá el calculado le gana al mapa de 1 km, al revés que en `ensamblar`, y
+    // es a propósito: calibrar es meter una medición local que ninguna fuente
+    // global tiene: si el pluviómetro del predio corre la clase, esa es la
+    // información nueva y no tendría sentido taparla con el mapa.
     koppen: clasificarKoppen(d.lat, meses),
+    koppen_fuente: 'calculado',
+    koppen_calculado: undefined,
     aridez: clasificarAridez(precip_anual_mm, d.etp_anual_mm),
     mes_mas_seco:   mesSeco.mes,
     mes_mas_humedo: mesHumedo.mes,

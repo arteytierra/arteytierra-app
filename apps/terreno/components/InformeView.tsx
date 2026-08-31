@@ -201,6 +201,13 @@ export function InformeView({ datos, compartido = false }: Props) {
                   <p className="text-xs text-ink-700/60 uppercase tracking-wide">Clasificación climática</p>
                   <p className="font-mono font-bold text-lg text-moss-900">{datos.clima.koppen.codigo}
                     <span className="text-sm font-normal text-ink-700 ml-2">{datos.clima.koppen.descripcion}</span></p>
+                  <p className="text-[10px] text-ink-700/60 mt-0.5">
+                    {datos.clima.koppen_fuente === 'mapa'
+                      ? 'Mapa de 1 km — Beck et al. (2023), período 1991–2020'
+                      : 'Calculado con las medias mensuales del predio'}
+                    {datos.clima.koppen_calculado &&
+                      ` · con las medias daría ${datos.clima.koppen_calculado.codigo}: el predio está sobre un límite`}
+                  </p>
                 </div>
                 {datos.clima.aridez && (
                   <div className="text-right">

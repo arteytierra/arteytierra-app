@@ -107,6 +107,17 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                     <span className="text-xs font-normal text-bone-50/80 ml-2">{datos.koppen.grupo}</span>
                   </p>
                   <p className="text-xs text-bone-50/90">{datos.koppen.descripcion}</p>
+                  {/* De dónde salió la clase, y si el otro método no coincide.
+                      La diferencia se muestra en vez de esconderse: el mapa da
+                      la clase pero no dice por qué, y ver que el predio está
+                      sobre un límite es en sí un dato del lugar. */}
+                  <p className="text-[10px] text-bone-50/70 mt-1 leading-snug">
+                    {datos.koppen_fuente === 'mapa'
+                      ? 'Mapa de 1 km (Beck et al., 1991–2020)'
+                      : 'Calculado con las medias mensuales del predio'}
+                    {datos.koppen_calculado &&
+                      ` · con las medias daría ${datos.koppen_calculado.codigo}: estás sobre un límite`}
+                  </p>
                 </div>
                 {datos.aridez && (
                   <div className="text-right shrink-0">

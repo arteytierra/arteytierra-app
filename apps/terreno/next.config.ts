@@ -19,6 +19,16 @@ const config: NextConfig = {
     ],
   },
   transpilePackages: ['@arteytierra/config', '@arteytierra/types'],
+  /**
+   * El mapa Köppen de 1 km es un archivo de datos, no un import: el tracer de
+   * Next no puede verlo siguiendo el código, así que hay que nombrarlo. Sin
+   * esta línea la ruta funciona en local (lee del disco del repo) y en
+   * producción devuelve siempre `sinDatos`, que es la peor forma de fallar
+   * porque no rompe nada: simplemente se cae al Köppen calculado sin avisar.
+   */
+  outputFileTracingIncludes: {
+    '/api/clima/koppen': ['./datos/koppen/*.tif'],
+  },
 };
 
 export default config;
