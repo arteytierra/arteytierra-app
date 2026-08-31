@@ -134,8 +134,8 @@ export async function POST(req: NextRequest) {
     after(async () => {
       for (const m of toReply) {
         try {
-          if (m.isText) await generateAndSendReply({ phone: m.phone, name: m.name, text: m.text });
-          else await sendNonTextFallback(m.phone);
+          if (m.isText) await generateAndSendReply({ channel: 'whatsapp', to: m.phone, name: m.name, text: m.text });
+          else await sendNonTextFallback({ channel: 'whatsapp', to: m.phone });
         } catch (err) {
           console.error('[whatsapp] fallo respondiendo', err);
         }
