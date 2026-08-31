@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
+import type { CourseOption } from '@/lib/courses/data';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
@@ -9,11 +10,34 @@ interface Props {
   curso: string;
   whatsapp: string;
   mercadopago?: string;
+  /** Opciones de inscripción (precios) — si hay más de una, se muestra un selector. */
+  opciones?: CourseOption[];
+  /** % de seña para reservar cupo por Mercado Pago (requiere `opciones`). */
+  senaPercent?: number;
 }
 
-export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
+/** "$120.000 ARS" → 120000. Devuelve null si no hay dígitos. */
+function parsePrecioArs(precio: string): number | null {
+  const digits = precio.replace(/[^\d]/g, '');
+  return digits ? Number(digits) : null;
+}
+
+function formatArs(n: number): string {
+  return `$${Math.round(n).toLocaleString('es-AR')} ARS`;
+}
+
+export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaPercent }: Props) {
   const [status, setStatus] = useState<Status>('idle');
   const [datos, setDatos] = useState<{ email: string; name: string }>({ email: '', name: '' });
+
+  const opcionesValidas = opciones && opciones.length > 1 ? opciones : undefined;
+  const defaultOpcion = opcionesValidas && (opcionesValidas.find(o => o.highlighted) ?? opcionesValidas[0]);
+  const [opcionSel, setOpcionSel] = useState<string>(
+    defaultOpcion ? `${defaultOpcion.label} — ${defaultOpcion.precio}` : ''
+  );
+  const selectedOpcion = opcionesValidas?.find(op => `${op.label} — ${op.precio}` === opcionSel);
+  const montoTotal = selectedOpcion ? parsePrecioArs(selectedOpcion.precio) : null;
+  const senaMonto = montoTotal && senaPercent ? formatArs((montoTotal * senaPercent) / 100) : null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,6 +76,23 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
       <form onSubmit={handleSubmit} className="bg-bone-100 p-8 flex flex-col gap-5">
         <input type="hidden" name="_subject" value={`Nueva inscripción · ${curso}`} />
         <input type="hidden" name="curso" value={curso} />
+
+        {opcionesValidas && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="opcion" className="font-sans text-sm font-semibold text-ink-800">¿Qué opción querés reservar? *</label>
+            <select id="opcion" name="opcion" required value={opcionSel} onChange={e => setOpcionSel(e.target.value)}
+              className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700">
+              {opcionesValidas.map(op => (
+                <option key={op.id} value={`${op.label} — ${op.precio}`}>{op.label} — {op.precio}</option>
+              ))}
+            </select>
+            {senaMonto && (
+              <p className="font-sans text-xs text-clay-700">
+                Reservás con una seña del {senaPercent}%: <strong>{senaMonto}</strong>. El resto se paga antes de empezar.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="flex flex-col gap-1.5">
@@ -108,12 +149,14 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago }: Props) {
           {mercadopago && (
             <a href={mercadopago} target="_blank" rel="noopener noreferrer"
               className="inline-flex bg-[#00B1EA] text-white font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:opacity-90 transition-opacity">
-              Mercado Pago →
+              {senaMonto ? `Pagar seña ${senaPercent}% (${senaMonto}) →` : 'Mercado Pago →'}
             </a>
           )}
         </div>
         <p className="mt-4 font-sans text-xs text-ink-500 italic">
-          Aclarás el nombre del curso en el pago y enviás el comprobante por WhatsApp.
+          {senaMonto
+            ? `Aclarás tu nombre, la opción elegida (${selectedOpcion?.label}) y el monto de la seña en el pago, y enviás el comprobante por WhatsApp.`
+            : 'Aclarás el nombre del curso en el pago y enviás el comprobante por WhatsApp.'}
         </p>
       </div>
     </>

@@ -303,6 +303,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           <div className={`grid grid-cols-1 gap-6 ${
             course.opciones.length === 1 ? 'max-w-sm mx-auto' :
             course.opciones.length === 2 ? 'sm:grid-cols-2 max-w-2xl mx-auto' :
+            course.opciones.length === 4 ? 'sm:grid-cols-2 max-w-4xl mx-auto' :
             'sm:grid-cols-2 lg:grid-cols-3'
           }`}>
             {course.opciones.map(op => (
@@ -396,7 +397,13 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs. Cupos limitados.
             </p>
           </div>
-          <CourseEnrollForm curso={course.formCurso} whatsapp={course.whatsapp} mercadopago={course.mercadopago} />
+          <CourseEnrollForm
+            curso={course.formCurso}
+            whatsapp={course.whatsapp}
+            mercadopago={course.mercadopago}
+            opciones={course.opciones}
+            senaPercent={course.senaPercent}
+          />
 
           {/* Políticas — info de confianza antes de pagar */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
