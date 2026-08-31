@@ -329,13 +329,19 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ))}
               </div>
               </>}
-              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Análogos en el mundo · {analogos.titulo}</p>
+              {analogos && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Análogos en el mundo · {analogos.titulo} ({analogos.clase})</p>
               <p className="text-sm text-ink-700/80"><span className="font-semibold">Regiones similares:</span> {analogos.regiones.join(', ')}.</p>
               <ul className="mt-1 space-y-0.5">
                 {analogos.tecnicas.map((t, i) => (
                   <li key={i} className="text-sm text-ink-700/80 flex gap-1.5"><span className="text-moss-700 shrink-0">→</span>{t}</li>
                 ))}
               </ul>
+              {analogos.aviso && <p className="text-xs text-ink-700/60 mt-1">{analogos.aviso}</p>}
+              <p className="text-xs text-ink-700/60 mt-1">
+                Fuentes: {analogos.fuentes.map(f => f.label).join(' · ')}.
+              </p>
+              </>}
               <p className="text-xs text-ink-700/50 mt-3 italic">
                 Contenido de divulgación derivado del clima y la ubicación. Orientativo — verificá los saberes locales con las comunidades de la zona.
                 {res.ecorregion && ` ${ATRIBUCION_RESOLVE}`}

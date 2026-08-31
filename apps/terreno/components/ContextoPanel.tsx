@@ -117,9 +117,12 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
       </Seccion>}
       </>}
 
-      {/* Análogos del mundo — dependen del clima, no de la ficha */}
-      <Seccion icon={<Globe2 className="w-3.5 h-3.5" />} titulo={`Análogos en el mundo · ${analogos.titulo}`}>
-        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">Regiones con clima parecido</p>
+      {/* Análogos del mundo — dependen del clima, no de la ficha. Pueden faltar:
+          el hielo permanente no tiene sistema agrícola análogo. */}
+      {analogos && <Seccion icon={<Globe2 className="w-3.5 h-3.5" />} titulo={`Análogos en el mundo · ${analogos.titulo}`}>
+        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+          Regiones con clima parecido <span className="font-mono text-ink-700/40">{analogos.clase}</span>
+        </p>
         <div className="flex flex-wrap gap-1 mb-2">
           {analogos.regiones.map(r => (
             <span key={r} className="text-[10px] px-2 py-0.5 rounded-full bg-water-500/10 text-water-700 border border-water-500/20">{r}</span>
@@ -133,7 +136,17 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
             </li>
           ))}
         </ul>
-      </Seccion>
+        {/* Los sistemas van nombrados, sin explicar: las fuentes son el desarrollo. */}
+        <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+          {analogos.fuentes.map((f, i) => (
+            <a key={i} href={f.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {f.label}
+            </a>
+          ))}
+        </div>
+        {analogos.aviso && <p className="text-[10px] text-ink-700/60 leading-relaxed mt-2">{analogos.aviso}</p>}
+      </Seccion>}
 
       {/* Fuentes */}
       {ficha && <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">

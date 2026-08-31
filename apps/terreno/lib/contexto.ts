@@ -21,6 +21,7 @@ import { biomaGlobal, enSudamerica, fichaDeEcorregion, type Ecorregion } from '.
 import { BIOMAS_REGIONALES } from './biomasRegionales';
 import { BIOMAS_GLOBALES } from './biomasGlobales';
 import type { BiomaFicha, Fuente, SaberCultural } from './biomaTipos';
+import { ANALOGOS_KOPPEN, EQUIVALENTES, type Analogo } from './analogos';
 
 export type { BiomaFicha, Fuente, SaberCultural };
 
@@ -423,129 +424,31 @@ export function resolverBioma(
 
 // ─── Análogos por clima (Köppen) ──────────────────────────────────────────────
 
-export interface Analogo {
-  titulo: string;       // clase de clima
-  regiones: string[];   // regiones del mundo con clima parecido
-  tecnicas: string[];   // técnicas/sistemas productivos análogos
+export type { Analogo };
+
+export interface Analogos extends Analogo {
+  /** Presente cuando la clase del predio no tiene ficha propia y se usó otra. */
+  aviso: string | null;
 }
 
-const ANALOGOS: Array<{ test: (c: string) => boolean; data: Analogo }> = [
-  {
-    test: c => c.startsWith('Af') || c.startsWith('Am'),
-    data: {
-      titulo: 'Tropical húmedo',
-      regiones: ['Sudeste asiático', 'Cuenca del Congo', 'Amazonía', 'Centroamérica caribeña'],
-      tecnicas: [
-        'Sistemas agroforestales y "home gardens" multiestrato',
-        'Policultivos bajo dosel para proteger el suelo',
-        'Manejo de materia orgánica y biochar (estilo terra preta)',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('Aw') || c.startsWith('As'),
-    data: {
-      titulo: 'Sabana tropical (lluvia estival)',
-      regiones: ['Sabana africana (Sahel sur)', 'Cerrado brasileño', 'Norte de Australia'],
-      tecnicas: [
-        'Quemas controladas y manejo del fuego como herramienta',
-        'Silvopastoreo con árboles dispersos para sombra y forraje',
-        'Cosecha de agua de lluvia para la estación seca',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('BW'),
-    data: {
-      titulo: 'Desértico / árido extremo',
-      regiones: ['Norte de África y Medio Oriente', 'Atacama', 'Suroeste de EE.UU.'],
-      tecnicas: [
-        'Qanats/galerías filtrantes y captación de napas',
-        'Atrapanieblas donde hay niebla costera',
-        'Riego por goteo de alta eficiencia y agricultura de oasis',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('BS'),
-    data: {
-      titulo: 'Semiárido / estepa',
-      regiones: ['Sahel', 'Mediterráneo seco', 'Mallee australiano', 'Grandes Llanuras (EE.UU.)'],
-      tecnicas: [
-        'Keyline (Yeomans) para distribuir agua de lluvia en el paisaje',
-        'Zaï / media luna y bordos para cosechar escorrentía',
-        'Dryland farming: barbecho, mulching y cortinas rompeviento',
-        'Pastoreo planificado/holístico para regenerar el pastizal',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('Cs'),
-    data: {
-      titulo: 'Mediterráneo (verano seco)',
-      regiones: ['Cuenca mediterránea', 'California', 'Cabo (Sudáfrica)', 'SO de Australia', 'Chile central'],
-      tecnicas: [
-        'Dehesa/montado: silvopastoreo con encinas/algarrobos',
-        'Terrazas y secano de olivo, vid y legumbres',
-        'Captación de la lluvia invernal en cisternas y suelos',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('Cw'),
-    data: {
-      titulo: 'Subtropical de invierno seco / de altura',
-      regiones: ['Altiplano mexicano', 'Tierras altas de África oriental', 'Himalaya monzónico'],
-      tecnicas: [
-        'Terrazas y andenes en ladera',
-        'Cultivo escalonado por pisos altitudinales',
-        'Almacenamiento de agua para la estación seca',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('Cfa'),
-    data: {
-      titulo: 'Subtropical húmedo',
-      regiones: ['Sudeste de EE.UU.', 'Este de China', 'Este de Australia', 'Pampa húmeda'],
-      tecnicas: [
-        'Pastoreo rotativo intensivo sobre pastizal',
-        'Cultivos de cobertura y siembra directa para cuidar el suelo',
-        'Agroforestería en franjas (alley cropping)',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('Cfb') || c.startsWith('Cfc'),
-    data: {
-      titulo: 'Oceánico / templado húmedo',
-      regiones: ['Noroeste de Europa', 'Nueva Zelanda', 'Sur de Chile'],
-      tecnicas: [
-        'Silvopastoreo y cercos vivos (hedgerows)',
-        'Manejo de praderas permanentes y pastoreo rotativo',
-        'Drenaje y manejo de humedales (mallines) como forraje',
-      ],
-    },
-  },
-  {
-    test: c => c.startsWith('E') || c.startsWith('D'),
-    data: {
-      titulo: 'Frío de altura / continental',
-      regiones: ['Altiplano andino', 'Meseta tibetana', 'Tierras altas de Etiopía'],
-      tecnicas: [
-        'Camellones (waru-waru) y qochas para amortiguar heladas',
-        'Cultivos resistentes al frío (papas amargas, quinoa) y deshidratado (chuño)',
-        'Manejo de bofedales/vegas y pastoreo de camélidos',
-      ],
-    },
-  },
-];
+/**
+ * Devuelve los análogos de la clase Köppen del predio.
+ *
+ * `null` cuando no hay nada honesto que mostrar: `EF` (hielo permanente) no
+ * tiene sistema agrícola análogo, y una clase que no reconocemos tampoco.
+ */
+export function analogosDeKoppen(koppen: Koppen): Analogos | null {
+  const directo = ANALOGOS_KOPPEN[koppen.codigo];
+  if (directo) return { ...directo, aviso: null };
 
-export function analogosDeKoppen(koppen: Koppen): Analogo {
-  const found = ANALOGOS.find(a => a.test(koppen.codigo));
-  return found?.data ?? {
-    titulo: koppen.descripcion,
-    regiones: ['Regiones con clima ' + koppen.grupo.toLowerCase()],
-    tecnicas: ['Adaptá las prácticas a la disponibilidad de agua y la estacionalidad local.'],
-  };
+  const equivalente = EQUIVALENTES[koppen.codigo];
+  const ficha = equivalente ? ANALOGOS_KOPPEN[equivalente] : undefined;
+  if (ficha) {
+    return {
+      ...ficha,
+      aviso: `Tu predio es ${koppen.codigo} y todavía no tenemos análogos documentados para esa clase. Mostramos los de ${ficha.clase}, la más parecida en régimen de temperatura y lluvia.`,
+    };
+  }
+
+  return null;
 }
