@@ -83,6 +83,16 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
   const sel = poligonos.find(p => p.id === selId) ?? null;
 
+  /**
+   * `inicial` cambia de identidad cada vez que el panel guarda sus campos: el
+   * efecto de persistencia llama a `onInputs` con un objeto nuevo, el
+   * contenedor lo pone en su estado y lo vuelve a bajar como prop. Por eso no
+   * puede ir en las dependencias de un efecto — guardar dispararía el efecto, y
+   * el efecto borraba lo que se acababa de calcular. Estos efectos sólo quieren
+   * el valor con el que se montó el panel, y eso es exactamente una ref.
+   */
+  const inicialRef = useRef(inicial);
+
   // Cuando se vuelca un sitio sugerido, su espejo queda elegido solo: si no,
   // el usuario acaba de apretar un botón y tiene que volver a buscar en un
   // desplegable lo mismo que acaba de crear.
@@ -93,8 +103,9 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // pisarle al usuario una decisión que ya tomó y guardó.
   useEffect(() => {
     if (!sel || sel.vertices.length < 3 || !grilla) { setMuroIdx(null); return; }
-    if (inicial && inicial.poligonoId === sel.id && inicial.muroIdx !== null) {
-      setMuroIdx(inicial.muroIdx);
+    const guardado = inicialRef.current;
+    if (guardado && guardado.poligonoId === sel.id && guardado.muroIdx !== null) {
+      setMuroIdx(guardado.muroIdx);
       return;
     }
     const vs = sel.vertices;
@@ -105,7 +116,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     }
     setMuroIdx(best >= 0 ? best : null);
     setCuencaMuro(null); setCuencaMuroAviso(null);
-  }, [sel, grilla, inicial]);
+  }, [sel, grilla]);
 
   // Dibujar el lado-muro elegido en el mapa.
   useEffect(() => {
@@ -208,9 +219,9 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // es justamente el problema que esta persistencia viene a resolver.
   const primeraPasada = useRef(true);
   useEffect(() => {
-    if (primeraPasada.current) { primeraPasada.current = false; if (inicial) return; }
+    if (primeraPasada.current) { primeraPasada.current = false; if (inicialRef.current) return; }
     setRango(null); setNivel(null); setRes(null); setError(null); setLongMuro(null);
-  }, [selId, inicial]);
+  }, [selId]);
 
   const analizar = useCallback(async () => {
     if (!sel || sel.vertices.length < 3) { setError('Elegí un polígono cerrado.'); return; }
