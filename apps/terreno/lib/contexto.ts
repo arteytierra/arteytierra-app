@@ -395,6 +395,12 @@ export function resolverBioma(
     if (ficha) {
       return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: eco, fuente: 'ecorregion', aviso: null };
     }
+    // Dentro de Sudamérica la heurística Köppen es más específica que el bioma
+    // global: sigue mandando ella, y la ecorregión suma el nombre exacto.
+    if (enSudamerica(lat, lng)) {
+      const f = fichaBioma(determinarBioma(koppen, lat, lng, elevacion));
+      return { ficha: f, titulo: f.nombre, emoji: f.emoji, ecorregion: eco, fuente: 'koppen', aviso: null };
+    }
     const global = biomaGlobal(eco.bioma_num);
     return {
       ficha: null,

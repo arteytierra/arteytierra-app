@@ -65,12 +65,14 @@ describe('caja de Sudamérica', () => {
 });
 
 describe('resolverBioma — tres niveles', () => {
-  it('con ecorregión curada usa la ficha regional', () => {
-    // Pampa húmeda: la ficha ya existe, así que sale por el nivel 1.
+  it('en Sudamérica la ecorregión no le saca la ficha a la Pampa', () => {
+    // 576 todavía no está curado; adentro de Sudamérica manda Köppen igual y la
+    // ecorregión sólo agrega el nombre exacto. Esto es lo que evita la regresión.
     const r = resolverBioma(k('Cfa'), -34.5, -59.0, 120, E(576, 'Humid Pampas', 8));
-    // Todavía no curamos ECO_ID sudamericanos, así que cae al bioma global.
-    expect(r.fuente).toBe('bioma_global');
-    expect(r.titulo).toBe('Pastizal templado');
+    expect(r.fuente).toBe('koppen');
+    expect(r.ficha?.id).toBe('pampa');
+    expect(r.ecorregion?.eco_name).toBe('Humid Pampas');
+    expect(r.aviso).toBeNull();
   });
 
   it('Puerto Rico no devuelve una ficha sudamericana', () => {
