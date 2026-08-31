@@ -4,6 +4,8 @@
   "private": true,
   "main": "./src/index.ts",
   "exports": {
+    ".": "./src/index.ts",
+    "./acequia": "./src/acequia.ts",
     "./tailwind": "./src/tailwind.ts",
     "./tokens": "./src/tokens.ts"
   },

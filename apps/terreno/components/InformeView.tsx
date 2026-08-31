@@ -987,7 +987,8 @@ function Table({
 // página al imprimir a PDF. print-color-adjust para que salga en el PDF.
 function MarcaAgua() {
   const filas = Array.from({ length: 9 });
-  const texto = 'acequia · terreno.arteytierra.org';
+  const host = process.env.NEXT_PUBLIC_ACEQUIA_APP_HOST ?? 'terreno.arteytierra.org';
+  const texto = `acequia · ${host}`;
   return (
     <div
       aria-hidden

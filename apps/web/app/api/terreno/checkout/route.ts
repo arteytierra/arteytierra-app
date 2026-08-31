@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { crearPreapprovalMp, esPlanPago, esPeriodo } from '@/lib/terreno/suscripciones';
+import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago } from '@/lib/terreno/suscripciones';
 import { crearSubscripcionPaypal } from '@/lib/terreno/paypal';
 
 export const runtime = 'nodejs';
@@ -11,18 +11,18 @@ export const runtime = 'nodejs';
  * Lo llama la app terreno (terreno.arteytierra.org), donde el usuario está
  * logueado, pasando su access token de Supabase (Bearer). Como es el mismo
  * proyecto, el token se valida acá para obtener el user_id/email. Devuelve la
- * URL de pago (Stripe para USD, Mercado Pago para ARS). El webhook asigna el plan.
+ * URL de pago (PayPal para USD, Mercado Pago para ARS). El webhook asigna el plan.
  */
 
 const ORIGENES = new Set([
   'https://terreno.arteytierra.org',
+  'https://app.acequia.app',
   'http://localhost:3001',
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
-  const allow = origin && ORIGENES.has(origin) ? origin : 'https://terreno.arteytierra.org';
   return {
-    'Access-Control-Allow-Origin': allow,
+    ...(origin && ORIGENES.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'authorization, content-type',
     'Vary': 'Origin',
@@ -35,6 +35,11 @@ export function OPTIONS(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const headers = corsHeaders(req.headers.get('origin'));
+  const origin = req.headers.get('origin');
+
+  if (origin && !ORIGENES.has(origin)) {
+    return NextResponse.json({ error: 'Origen no permitido' }, { status: 403, headers });
+  }
 
   const auth = req.headers.get('authorization') ?? '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -50,9 +55,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const plan = String(body.plan ?? '');
   const periodo = String(body.periodo ?? '');
-  const provider = String(body.provider ?? 'stripe');
+  const provider = String(body.provider ?? '');
   if (!esPlanPago(plan) || !esPeriodo(periodo)) {
     return NextResponse.json({ error: 'Plan o período inválido' }, { status: 400, headers });
+  }
+  if (!esProveedorPago(provider)) {
+    return NextResponse.json({ error: 'Proveedor de pago inválido' }, { status: 400, headers });
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';

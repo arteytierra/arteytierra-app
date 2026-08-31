@@ -12,7 +12,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { PlanesTerreno } from '@/components/terreno/PlanesTerreno';
 import { BarraAcequia } from '@/components/terreno/BarraAcequia';
-import { REGISTRO_URL, FUNDADORES_CUPO, PLANES } from '@/lib/terreno/planes';
+import { REGISTRO_URL, PLANES } from '@/lib/terreno/planes';
 
 // El "desde" sale de los planes y no de una constante escrita a mano, para que
 // no se despegue del precio real cuando cambie.
@@ -201,9 +201,8 @@ const FUENTES: Array<{
 ];
 
 // Orden del manual: durante el MVP la comunicación se concentra en el público
-// primario, que son los estudios y profesionales. Y "Practicantes" salió de
-// acá: es el nombre de un plan, y tener una tarjeta y un plan que se llaman
-// igual pero significan cosas distintas confunde justo donde se decide.
+// primario, que son los estudios y profesionales. Los nombres de perfiles se
+// mantienen descriptivos para no competir con la nomenclatura de planes.
 const PERFILES = [
   {
     icon: Compass,
@@ -229,7 +228,7 @@ const FAQS = [
   { q: '¿Sirve fuera de Argentina?', a: 'Sí. Las fuentes de relieve, clima, suelo y biodiversidad tienen cobertura global, así que podés analizar un predio en cualquier parte del mundo. Lo que cambia es el detalle: en Estados Unidos, Francia, España o Canadá acequia usa los modelos de elevación nacionales, que son bastante más finos que el global. Cuando una fuente no alcanza para una zona, la plataforma lo avisa.' },
   { q: '¿Qué pasa con mis datos y mis proyectos?', a: 'Son tuyos y privados. Se guardan en tu cuenta y sólo vos los ves, salvo que decidas compartir el informe por link.' },
   { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, sin permanencia. Si dejás de pagar, tu cuenta vuelve al plan Semilla y conservás tu proyecto.' },
-  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Practicante desbloquea todo el análisis y el diseño para hasta 2 proyectos. Profesional es lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
+  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Personal desbloquea todo el análisis y el diseño para hasta 2 proyectos. Profesional ofrece lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
   { q: '¿Cómo se paga desde otros países?', a: 'Desde Argentina, por Mercado Pago en pesos. Desde el resto del mundo, por PayPal en USD. La página muestra la moneda según desde dónde entrás.' },
   { q: '¿Necesito saber de CAD o GIS?', a: 'No. Lo que en un software técnico lleva días de trabajo, en acequia sucede al marcar el polígono de tu terreno.' },
 ];
@@ -570,10 +569,10 @@ export default async function AcequiaLanding() {
               </h2>
             </div>
 
-            {/* Banner Fundadores — TODO: mecánica exacta */}
+            {/* Programa fundador separado de la prueba comercial. */}
             <div className="max-w-2xl mx-auto mb-12 text-center bg-[#2E6B8A]/10 border border-[#2E6B8A]/25 px-6 py-4">
               <p className="font-sans text-sm text-[#3D2010]">
-                <strong className="text-[#2E6B8A]">Miembros Fundadores:</strong> los primeros {FUNDADORES_CUPO} conservan 50% de descuento de por vida.
+                <strong className="text-[#2E6B8A]">Programa fundador:</strong> piloto cerrado de 6 a 10 participantes durante 7 días, sin costo ni tarjeta.
               </p>
             </div>
 

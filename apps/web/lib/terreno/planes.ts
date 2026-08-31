@@ -7,17 +7,14 @@
  * Desde Argentina se muestra en ARS (a ARS_POR_USD) y se paga por Mercado Pago;
  * desde el resto del mundo, en USD por PayPal.
  *
- * [TODO Jonatan] Precios finales, links de pago dedicados por plan y mecánica
- * de Fundadores. Los links de MP/PayPal de abajo son los genéricos del sitio.
+ * [TODO Jonatan] Precios finales y links de pago dedicados por plan. Los links
+ * de MP/PayPal de abajo son los genéricos del sitio.
  */
 
-export const REGISTRO_URL = 'https://terreno.arteytierra.org/registro';
+export const REGISTRO_URL = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/registro`;
 
 /** Cotización para mostrar precios en pesos a quien entra desde Argentina. */
 export const ARS_POR_USD = 1500;
-
-/** Cupo de miembros Fundadores (50% de por vida). */
-export const FUNDADORES_CUPO = 50;
 
 /** Links de pago genéricos del colectivo (los mismos que usa /asesorias). */
 export const MP_LINK = 'https://link.mercadopago.com.ar/arteytierra';
@@ -59,7 +56,7 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'personal',
-    nombre: 'Practicante',
+    nombre: 'Personal',
     tagline: 'Todo el análisis y el diseño, para tu proyecto.',
     precioMensualUSD: 7,
     precioAnualUSD: 70,
@@ -96,7 +93,7 @@ export const PLANES: Plan[] = [
     precioMensualUSD: 35,
     precioAnualUSD: 350,
     lanzamiento: true,
-    hereda: 'Todo lo de Diseñador, y además:',
+    hereda: 'Todo lo de Profesional, y además:',
     incluye: [
       'Informe con tu marca (logo y matrícula propia)',
       'Exportación DXF / CAD',

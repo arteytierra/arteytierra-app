@@ -2,17 +2,22 @@
 
 import { useState } from 'react';
 import { CreditCard, Wallet, Loader2, ArrowLeft } from 'lucide-react';
+import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS, acequiaPlanPrice } from '@arteytierra/config/acequia';
 import { iniciarCheckout, type PlanPago, type Periodo, type Proveedor } from '@/lib/suscribir';
 
 const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
-  personal:  { mensual: 7,  anual: 70 },
-  disenador: { mensual: 12, anual: 120 },
-  estudio:   { mensual: 35, anual: 350 },
+  personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
+  disenador: { mensual: acequiaPlanPrice('disenador', 'mensual'), anual: acequiaPlanPrice('disenador', 'anual') },
+  estudio:   { mensual: acequiaPlanPrice('estudio', 'mensual'),   anual: acequiaPlanPrice('estudio', 'anual') },
 };
-const NOMBRE: Record<PlanPago, string> = { personal: 'Personal', disenador: 'Diseñador', estudio: 'Estudio' };
+const NOMBRE: Record<PlanPago, string> = {
+  personal: ACEQUIA_PLANS.personal.name,
+  disenador: ACEQUIA_PLANS.disenador.name,
+  estudio: ACEQUIA_PLANS.estudio.name,
+};
 const ARS_POR_USD = 1500;
 
-export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: Periodo }) {
+export function SuscribirConfirm({ plan, periodo, trialEnabled, firstChargeDate }: { plan: PlanPago; periodo: Periodo; trialEnabled: boolean; firstChargeDate: string }) {
   const [cargando, setCargando] = useState<Proveedor | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +53,11 @@ export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: P
           <div className="text-center pb-4 border-b border-bone-200">
             <p className="font-display text-3xl text-ink-950">USD {usd}<span className="text-base text-ink-700/50 font-sans">{sufijo}</span></p>
             <p className="text-xs text-ink-700/60 mt-1">o AR$ {ars.toLocaleString('es-AR')}{sufijo} desde Argentina</p>
+            {trialEnabled && (
+              <div className="mt-4 rounded-lg bg-moss-50 border border-moss-200 px-3 py-2 text-xs text-moss-900">
+                <strong>Hoy: USD 0.</strong> Acceso completo por {ACEQUIA_TRIAL_DAYS} días. Primer cobro previsto: {firstChargeDate}, salvo cancelación previa.
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-ink-700/70 text-center">Elegí cómo pagar:</p>
@@ -75,7 +85,7 @@ export function SuscribirConfirm({ plan, periodo }: { plan: PlanPago; periodo: P
           )}
 
           <p className="text-[10px] text-center text-ink-700/45 leading-relaxed">
-            La renovación es automática. Podés cancelar cuando quieras; tu cuenta vuelve a Semilla y conservás tus proyectos.
+            La renovación es automática. Podés cancelar antes del primer cobro o más adelante; tu cuenta vuelve a Semilla y conservás tus proyectos.
           </p>
           <p className="text-[10px] text-center text-ink-700/45 leading-relaxed">
             Al suscribirte aceptás los{' '}

@@ -1,5 +1,15 @@
 import 'server-only';
 import { MercadoPagoConfig, PreApproval } from 'mercadopago';
+import {
+  ACEQUIA_PLANS,
+  ACEQUIA_TRIAL_DAYS,
+  acequiaPlanPrice,
+  addAcequiaTrialDays,
+  isAcequiaBillingPeriod,
+  isAcequiaPaidPlan,
+  type AcequiaBillingPeriod,
+  type AcequiaPaidPlanId,
+} from '@arteytierra/config/acequia';
 import { getStripe } from '@/lib/commerce/stripe';
 import { ARS_POR_USD } from './planes';
 
@@ -14,27 +24,37 @@ import { ARS_POR_USD } from './planes';
  * Reusa STRIPE_SECRET_KEY / MP_ACCESS_TOKEN ya configuradas para la tienda.
  */
 
-export type PlanPago = 'personal' | 'disenador' | 'estudio';
-export type Periodo  = 'mensual' | 'anual';
+export type PlanPago = AcequiaPaidPlanId;
+export type Periodo = AcequiaBillingPeriod;
 
 /** Precio base en USD — debe coincidir con el landing (lib/terreno/planes.ts). */
 export const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
-  personal:  { mensual: 7,  anual: 70 },
-  disenador: { mensual: 12, anual: 120 },
-  estudio:   { mensual: 35, anual: 350 },
+  personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
+  disenador: { mensual: acequiaPlanPrice('disenador', 'mensual'), anual: acequiaPlanPrice('disenador', 'anual') },
+  estudio:   { mensual: acequiaPlanPrice('estudio', 'mensual'),   anual: acequiaPlanPrice('estudio', 'anual') },
 };
 
 const NOMBRE: Record<PlanPago, string> = {
-  personal:  'Personal',
-  disenador: 'Diseñador',
-  estudio:   'Estudio',
+  personal: ACEQUIA_PLANS.personal.name,
+  disenador: ACEQUIA_PLANS.disenador.name,
+  estudio: ACEQUIA_PLANS.estudio.name,
 };
 
 export function esPlanPago(v: string): v is PlanPago {
-  return v === 'personal' || v === 'disenador' || v === 'estudio';
+  return isAcequiaPaidPlan(v);
 }
 export function esPeriodo(v: string): v is Periodo {
-  return v === 'mensual' || v === 'anual';
+  return isAcequiaBillingPeriod(v);
+}
+
+export type ProveedorPago = 'mercadopago' | 'paypal';
+export function esProveedorPago(value: string): value is ProveedorPago {
+  return value === 'mercadopago' || value === 'paypal';
+}
+
+/** La prueba queda construida pero inactiva mientras esta variable no sea true. */
+export function pruebaComercialHabilitada(): boolean {
+  return process.env.ACEQUIA_TRIAL_ENABLED === 'true';
 }
 
 interface CrearCheckoutOpts {
@@ -111,11 +131,12 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
 
   const ars = PRECIO_USD[o.plan][o.periodo] * ARS_POR_USD;
   const pre = new PreApproval(new MercadoPagoConfig({ accessToken: token }));
+  const trialEnd = pruebaComercialHabilitada() ? addAcequiaTrialDays().toISOString() : undefined;
 
   const res = await pre.create({
     body: {
       reason: `Terreno ${NOMBRE[o.plan]} (${o.periodo})`,
-      external_reference: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo }),
+      external_reference: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo, trial_days: trialEnd ? ACEQUIA_TRIAL_DAYS : 0 }),
       payer_email: o.email,
       auto_recurring: {
         // MP sólo admite frequency_type 'days' | 'months'; anual = 12 meses.
@@ -123,6 +144,7 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
         frequency_type: 'months',
         transaction_amount: ars,
         currency_id: 'ARS',
+        ...(trialEnd ? { start_date: trialEnd } : {}),
       },
       back_url: `${o.siteUrl}/terreno/gracias?plan=${o.plan}`,
       // Nota: el SDK de MP no acepta notification_url en el preapproval; los avisos

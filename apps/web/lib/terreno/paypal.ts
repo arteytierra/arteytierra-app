@@ -1,6 +1,7 @@
 import 'server-only';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
-import { PRECIO_USD, type PlanPago, type Periodo } from './suscripciones';
+import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
+import { PRECIO_USD, pruebaComercialHabilitada, type PlanPago, type Periodo } from './suscripciones';
 
 /**
  * PayPal Subscriptions — cobro internacional recurrente (USD).
@@ -11,7 +12,11 @@ import { PRECIO_USD, type PlanPago, type Periodo } from './suscripciones';
  * crean por API la primera vez y se cachean en terreno.paypal_planes.
  */
 
-const NOMBRE: Record<PlanPago, string> = { personal: 'Personal', disenador: 'Diseñador', estudio: 'Estudio' };
+const NOMBRE: Record<PlanPago, string> = {
+  personal: ACEQUIA_PLANS.personal.name,
+  disenador: ACEQUIA_PLANS.disenador.name,
+  estudio: ACEQUIA_PLANS.estudio.name,
+};
 
 function base(): string {
   return process.env.PAYPAL_ENV === 'sandbox'
@@ -54,40 +59,58 @@ async function setRef(clave: string, ref: string): Promise<void> {
   await tablaPlanes().upsert({ clave, ref }, { onConflict: 'clave' });
 }
 
-async function ensureProduct(tk: string): Promise<string> {
-  const cached = await getRef('product');
+async function ensureProduct(tk: string, conPrueba: boolean): Promise<string> {
+  const clave = conPrueba ? 'product_acequia_v1' : 'product';
+  const cached = await getRef(clave);
   if (cached) return cached;
   const res = await fetch(`${base()}/v1/catalogs/products`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'Terreno', description: 'Suscripción a Terreno', type: 'SERVICE', category: 'SOFTWARE' }),
+    body: JSON.stringify({
+      name: conPrueba ? 'Acequia' : 'Terreno',
+      description: conPrueba ? 'Suscripción a Acequia' : 'Suscripción a Terreno',
+      type: 'SERVICE',
+      category: 'SOFTWARE',
+    }),
   });
   const j = await res.json() as { id?: string };
   if (!res.ok || !j.id) throw new Error('PayPal: no pudimos crear el producto.');
-  await setRef('product', j.id);
+  await setRef(clave, j.id);
   return j.id;
 }
 
 async function ensurePlan(tk: string, plan: PlanPago, periodo: Periodo): Promise<string> {
-  const clave = `${plan}_${periodo}`;
+  const conPrueba = pruebaComercialHabilitada();
+  const clave = conPrueba
+    ? `${plan}_${periodo}_t${ACEQUIA_TRIAL_DAYS}_acequia_v1`
+    : `${plan}_${periodo}`;
   const cached = await getRef(clave);
   if (cached) return cached;
 
-  const productId = await ensureProduct(tk);
+  const productId = await ensureProduct(tk, conPrueba);
   const usd = PRECIO_USD[plan][periodo];
   const res = await fetch(`${base()}/v1/billing/plans`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       product_id: productId,
-      name: `Terreno ${NOMBRE[plan]} (${periodo})`,
-      billing_cycles: [{
-        frequency: { interval_unit: periodo === 'anual' ? 'YEAR' : 'MONTH', interval_count: 1 },
-        tenure_type: 'REGULAR',
-        sequence: 1,
-        total_cycles: 0, // 0 = infinito hasta cancelar
-        pricing_scheme: { fixed_price: { value: String(usd), currency_code: 'USD' } },
-      }],
+      name: `${conPrueba ? 'Acequia' : 'Terreno'} ${NOMBRE[plan]} (${periodo})`,
+      billing_cycles: [
+        ...(conPrueba ? [{
+          frequency: { interval_unit: 'DAY', interval_count: ACEQUIA_TRIAL_DAYS },
+          tenure_type: 'TRIAL',
+          sequence: 1,
+          total_cycles: 1,
+          pricing_scheme: { fixed_price: { value: '0', currency_code: 'USD' } },
+        }] : []),
+        {
+          frequency: { interval_unit: periodo === 'anual' ? 'YEAR' : 'MONTH', interval_count: 1 },
+          tenure_type: 'REGULAR',
+          sequence: conPrueba ? 2 : 1,
+          total_cycles: 0,
+          pricing_scheme: { fixed_price: { value: String(usd), currency_code: 'USD' } },
+        },
+      ],
       payment_preferences: {
         auto_bill_outstanding: true,
         setup_fee_failure_action: 'CONTINUE',
@@ -115,7 +138,7 @@ export async function crearSubscripcionPaypal(o: {
       custom_id: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo }),
       subscriber: { email_address: o.email },
       application_context: {
-        brand_name: 'Terreno',
+        brand_name: pruebaComercialHabilitada() ? 'Acequia' : 'Terreno',
         locale: 'es-AR',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'SUBSCRIBE_NOW',

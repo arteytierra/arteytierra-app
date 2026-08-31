@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { PLANES, REGISTRO_URL, ARS_POR_USD, type Plan } from '@/lib/terreno/planes';
 
-const SUSCRIBIR_BASE = 'https://terreno.arteytierra.org/suscribir';
+const SUSCRIBIR_BASE = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/suscribir`;
 
 type Moneda = 'ARS' | 'USD';
 

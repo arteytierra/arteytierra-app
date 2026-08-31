@@ -12,20 +12,22 @@
  * Agregar un plan futuro = editar estas tablas, nada más.
  */
 
-export type Plan = 'semilla' | 'personal' | 'disenador' | 'estudio';
+import { ACEQUIA_PLANS, type AcequiaInternalPlanId } from '@arteytierra/config/acequia';
+
+export type Plan = AcequiaInternalPlanId;
 
 /** Orden de los planes: un plan habilita todo lo de los planes inferiores.
- *  Personal y Diseñador comparten features (misma capa desbloqueada); se
+ *  Personal y Profesional comparten features (misma capa desbloqueada); se
  *  diferencian sólo en LIMITE_PROYECTOS. */
 const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, disenador: 2, estudio: 3 };
 
 export const PLANES: Plan[] = ['semilla', 'personal', 'disenador', 'estudio'];
 
 export const NOMBRE_PLAN: Record<Plan, string> = {
-  semilla:   'Semilla',
-  personal:  'Personal',
-  disenador: 'Diseñador',
-  estudio:   'Estudio',
+  semilla: ACEQUIA_PLANS.semilla.name,
+  personal: ACEQUIA_PLANS.personal.name,
+  disenador: ACEQUIA_PLANS.disenador.name,
+  estudio: ACEQUIA_PLANS.estudio.name,
 };
 
 /**
@@ -66,7 +68,7 @@ export type Feature =
   | 'colaboracion';
 
 // El plan pago MÍNIMO es 'personal' (desbloquea todo el análisis y diseño).
-// Diseñador hereda lo mismo; sólo suma proyectos ilimitados. Las de 'estudio'
+// Profesional hereda lo mismo; sólo suma proyectos ilimitados. Las de 'estudio'
 // quedan reservadas al tier superior.
 //
 // MUESTRA GRATIS (semilla, 2026-08-15): aunque usen API externa, se abren como

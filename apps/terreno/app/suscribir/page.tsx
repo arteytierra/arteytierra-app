@@ -1,11 +1,9 @@
 import { redirect } from 'next/navigation';
+import { addAcequiaTrialDays, resolveAcequiaPaidPlan, type AcequiaBillingPeriod } from '@arteytierra/config/acequia';
 import { getCurrentUser } from '@/lib/auth/session';
 import { SuscribirConfirm } from '@/components/SuscribirConfirm';
-import type { PlanPago, Periodo } from '@/lib/suscribir';
 
 export const metadata = { title: 'Suscribirme' };
-
-const PLANES_VALIDOS: PlanPago[] = ['personal', 'disenador', 'estudio'];
 
 export default async function SuscribirPage({
   searchParams,
@@ -13,10 +11,10 @@ export default async function SuscribirPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
-  const plan = (sp.plan ?? '') as PlanPago;
-  const periodo: Periodo = sp.periodo === 'mensual' ? 'mensual' : 'anual';
+  const plan = resolveAcequiaPaidPlan(sp.plan ?? '');
+  const periodo: AcequiaBillingPeriod = sp.periodo === 'mensual' ? 'mensual' : 'anual';
 
-  if (!PLANES_VALIDOS.includes(plan)) redirect('/mapa');
+  if (!plan) redirect('/mapa');
 
   // Requiere sesión; si no hay, registrarse y volver acá.
   const user = await getCurrentUser();
@@ -25,5 +23,11 @@ export default async function SuscribirPage({
     redirect(`/registro?next=${encodeURIComponent(next)}`);
   }
 
-  return <SuscribirConfirm plan={plan} periodo={periodo} />;
+  const trialEnabled = process.env.ACEQUIA_TRIAL_ENABLED === 'true';
+  // Los días de prueba salen del catálogo compartido: si cambian, cambian acá y
+  // en el plan de PayPal a la vez, que es donde tienen que coincidir sí o sí.
+  const firstCharge = addAcequiaTrialDays();
+  const firstChargeDate = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(firstCharge);
+
+  return <SuscribirConfirm plan={plan} periodo={periodo} trialEnabled={trialEnabled} firstChargeDate={firstChargeDate} />;
 }

@@ -11,7 +11,7 @@ import { requierePlan } from '@/lib/auth/apiGuard';
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 14; // 14 días
-const UA        = 'ArteyTierra-acequia/1.0 (https://terreno.arteytierra.org)';
+const UA        = `ArteyTierra-acequia/1.0 (${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://terreno.arteytierra.org'})`;
 
 interface Body { lat?: number; lng?: number; radio_km?: number; }
 

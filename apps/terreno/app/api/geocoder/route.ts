@@ -11,7 +11,7 @@ import { cacheGet, cacheSet } from '@/lib/db/cache';
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días
-const UA        = 'ArteyTierra-acequia/1.0 (https://terreno.arteytierra.org)';
+const UA        = `ArteyTierra-acequia/1.0 (${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://terreno.arteytierra.org'})`;
 
 interface Resultado {
   nombre: string;

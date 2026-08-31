@@ -14,7 +14,7 @@ libremente; tocar sólo con intención explícita y validación:
 
 | Archivo | Rol |
 |---|---|
-| `entitlements.ts` | **Fuente única de verdad** de qué habilita cada plan (Semilla/Diseñador/Estudio). |
+| `entitlements.ts` | Matriz de permisos por plan (Semilla/Personal/Profesional/Estudio); nombres y precios canónicos viven en `@arteytierra/config/acequia`. |
 | `auth/apiGuard.ts` | Guard de las rutas API (verifica sesión + plan). |
 | `auth/plan.ts`, `auth/session.ts` | Resolución de plan y sesión del usuario. |
 | `suscribir.ts` | Inicia el checkout de suscripción (la app terreno **no** tiene credenciales de pago; delega). |

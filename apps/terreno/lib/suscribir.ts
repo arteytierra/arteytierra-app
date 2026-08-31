@@ -1,5 +1,6 @@
 'use client';
 
+import type { AcequiaBillingPeriod, AcequiaPaidPlanId } from '@arteytierra/config/acequia';
 import { getSupabaseBrowserClient } from './db/browser';
 
 /**
@@ -8,8 +9,8 @@ import { getSupabaseBrowserClient } from './db/browser';
  * access token de Supabase del usuario. Devuelve/redirige a la URL de pago.
  */
 
-export type PlanPago = 'personal' | 'disenador' | 'estudio';
-export type Periodo  = 'mensual' | 'anual';
+export type PlanPago = AcequiaPaidPlanId;
+export type Periodo = AcequiaBillingPeriod;
 export type Proveedor = 'paypal' | 'mercadopago';
 
 const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'https://arteytierra.org';
