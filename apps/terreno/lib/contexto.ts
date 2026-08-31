@@ -14,6 +14,7 @@
  */
 
 import type { Koppen } from './clima';
+import { biomaGlobal, enSudamerica, fichaDeEcorregion, type Ecorregion } from './ecorregiones';
 
 export type BiomaId =
   | 'selva_tropical'
@@ -292,7 +293,12 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
 
 /**
  * Determina el bioma a partir de la clasificación Köppen, la posición y la
- * altitud (si se conoce). Heurística orientada a Latinoamérica.
+ * altitud (si se conoce).
+ *
+ * Ojo: es una heurística **sudamericana**. Las 12 fichas describen ecosistemas
+ * de acá, así que aplicarla afuera devuelve resultados sin sentido (un predio
+ * en Ohio comparte `Cfa` con Entre Ríos y salía "Espinal"). Fuera de Sudamérica
+ * usá `resolverBioma`, que consulta la ecorregión real antes de llegar acá.
  */
 export function determinarBioma(
   koppen: Koppen,
@@ -341,6 +347,78 @@ export function determinarBioma(
 
 export function fichaBioma(id: BiomaId): BiomaFicha {
   return BIOMAS[id];
+}
+
+/** Busca una ficha por id suelto (viene de la tabla de ecorregiones, que ya
+ *  nombra fichas regionales todavía no escritas). Null si no existe. */
+export function fichaPorId(id: string): BiomaFicha | null {
+  return (BIOMAS as Record<string, BiomaFicha | undefined>)[id] ?? null;
+}
+
+// ─── Resolución en tres niveles ───────────────────────────────────────────────
+
+export type FuenteBioma = 'ecorregion' | 'bioma_global' | 'koppen';
+
+export interface ResultadoBioma {
+  /** Ficha regional curada, si la hay para esta ecorregión. */
+  ficha:      BiomaFicha | null;
+  /** Título a mostrar siempre: nombre de la ficha, del bioma global o del Köppen. */
+  titulo:     string;
+  emoji:      string;
+  /** Ecorregión exacta según RESOLVE, cuando se pudo consultar. */
+  ecorregion: Ecorregion | null;
+  fuente:     FuenteBioma;
+  /** Qué le falta al resultado, en palabras. Vacío si la ficha es específica. */
+  aviso:      string | null;
+}
+
+/**
+ * Ubica el predio en el nivel más específico disponible.
+ *
+ * 1. ECO_ID con ficha curada → ficha regional.
+ * 2. ECO_ID sin ficha        → bioma global de RESOLVE (dato real, sin ficha).
+ * 3. Sin ecorregión          → Köppen, y sólo dentro de Sudamérica.
+ *
+ * El paso 3 nunca se aplica afuera: preferimos decir "no tenemos ficha" antes
+ * que describir un predio de Kansas con la vegetación del Espinal.
+ */
+export function resolverBioma(
+  koppen: Koppen,
+  lat: number,
+  lng: number,
+  elevacion?: number,
+  eco?: Ecorregion | null,
+): ResultadoBioma {
+  if (eco) {
+    const fichaId = fichaDeEcorregion(eco.eco_id);
+    const ficha = fichaId ? fichaPorId(fichaId) : null;
+    if (ficha) {
+      return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: eco, fuente: 'ecorregion', aviso: null };
+    }
+    const global = biomaGlobal(eco.bioma_num);
+    return {
+      ficha: null,
+      titulo: global?.nombre ?? eco.bioma_name,
+      emoji:  global?.emoji ?? '🌍',
+      ecorregion: eco,
+      fuente: 'bioma_global',
+      aviso: `Todavía no tenemos ficha detallada para ${eco.eco_name}. Mostramos el bioma global.`,
+    };
+  }
+
+  if (enSudamerica(lat, lng)) {
+    const ficha = fichaBioma(determinarBioma(koppen, lat, lng, elevacion));
+    return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: null, fuente: 'koppen', aviso: null };
+  }
+
+  return {
+    ficha: null,
+    titulo: koppen.descripcion,
+    emoji:  '🌍',
+    ecorregion: null,
+    fuente: 'koppen',
+    aviso: 'No se pudo consultar la ecorregión. Mostramos sólo la clasificación climática: las fichas de ecosistema de acequia todavía cubren Sudamérica.',
+  };
 }
 
 // ─── Análogos por clima (Köppen) ──────────────────────────────────────────────

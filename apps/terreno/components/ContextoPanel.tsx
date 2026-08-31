@@ -2,7 +2,9 @@
 
 import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
-import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
+import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
+import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
+import { useEcorregion } from '@/lib/useEcorregion';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 
@@ -14,7 +16,13 @@ interface Props {
 }
 
 export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Props) {
-  if (mojones.length < 3) {
+  // La ecorregión se pide antes de los cortes de arriba porque es un hook y no
+  // puede quedar detrás de un return condicional.
+  const listo = mojones.length >= 3;
+  const centro = listo ? centroide(mojones) : null;
+  const eco = useEcorregion(centro?.lat ?? null, centro?.lng ?? null);
+
+  if (!listo || !centro) {
     return (
       <div className="text-center py-8 px-4">
         <Leaf className="w-8 h-8 text-moss-700/40 mx-auto mb-2" />
@@ -42,24 +50,29 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
     );
   }
 
-  const centro = centroide(mojones);
   const elev = datosTopo?.elev_media;
-  const biomaId = determinarBioma(datosClima.koppen, centro.lat, centro.lng, elev);
-  const ficha = fichaBioma(biomaId);
+  const bioma = resolverBioma(datosClima.koppen, centro.lat, centro.lng, elev, eco);
+  const ficha = bioma.ficha;
+  const color = ficha?.color ?? '#5b6b52'; // sin ficha: verde neutro de marca
   const analogos = analogosDeKoppen(datosClima.koppen);
 
   return (
     <div className="space-y-4">
       {/* Banner de bioma */}
-      <div className="rounded-xl p-3 text-bone-50" style={{ background: `linear-gradient(135deg, ${ficha.color}, ${ficha.color}cc)` }}>
+      <div className="rounded-xl p-3 text-bone-50" style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}>
         <div className="flex items-start gap-2">
-          <span className="text-2xl leading-none">{ficha.emoji}</span>
+          <span className="text-2xl leading-none">{bioma.emoji}</span>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-bone-50/70">Ecosistema de base</p>
-            <p className="text-base font-bold leading-tight">{ficha.nombre}</p>
-            <p className="text-xs text-bone-50/90 mt-0.5">{ficha.resumen}</p>
+            <p className="text-base font-bold leading-tight">{bioma.titulo}</p>
+            {ficha && <p className="text-xs text-bone-50/90 mt-0.5">{ficha.resumen}</p>}
           </div>
         </div>
+        {bioma.ecorregion && (
+          <p className="text-[10px] text-bone-50/80 mt-2 pt-2 border-t border-bone-50/20 flex items-center gap-1">
+            <Globe2 className="w-3 h-3 shrink-0" /> Ecorregión {bioma.ecorregion.eco_id} · {bioma.ecorregion.eco_name}
+          </p>
+        )}
         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-bone-50/20 text-[10px] text-bone-50/80">
           <span className="font-mono font-bold">{datosClima.koppen.codigo}</span>
           <span>· {datosClima.koppen.descripcion}</span>
@@ -67,6 +80,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </div>
       </div>
 
+      {bioma.aviso && (
+        <p className="text-[11px] text-ink-700/70 leading-relaxed bg-bone-50 border border-bone-200 rounded-lg p-2.5">
+          {bioma.aviso}
+        </p>
+      )}
+
+      {ficha && <>
       {/* Ecosistema natural */}
       <Seccion icon={<Leaf className="w-3.5 h-3.5" />} titulo="Ecosistema natural">
         <DatoLinea icon={<Sprout className="w-3 h-3 text-moss-700" />} label="Vegetación" texto={ficha.vegetacion} />
@@ -94,8 +114,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
           ))}
         </div>
       </Seccion>
+      </>}
 
-      {/* Análogos del mundo */}
+      {/* Análogos del mundo — dependen del clima, no de la ficha */}
       <Seccion icon={<Globe2 className="w-3.5 h-3.5" />} titulo={`Análogos en el mundo · ${analogos.titulo}`}>
         <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">Regiones con clima parecido</p>
         <div className="flex flex-wrap gap-1 mb-2">
@@ -114,7 +135,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
       </Seccion>
 
       {/* Fuentes */}
-      <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">
+      {ficha && <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">
         <div className="space-y-1">
           {ficha.fuentes.map((f, i) => (
             <a key={i} href={f.url} target="_blank" rel="noreferrer"
@@ -123,11 +144,12 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
             </a>
           ))}
         </div>
-      </Seccion>
+      </Seccion>}
 
       <p className="text-[9px] text-ink-700/45 leading-tight pt-1 border-t border-bone-200">
         Contenido curado de divulgación, derivado del clima y la ubicación. Orientativo — verificá los saberes
         locales con las comunidades y fuentes de tu zona, que siempre tienen el conocimiento más preciso del lugar.
+        {bioma.ecorregion && <> {ATRIBUCION_RESOLVE}</>}
       </p>
     </div>
   );

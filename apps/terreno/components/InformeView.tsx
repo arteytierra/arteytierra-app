@@ -5,7 +5,9 @@ import type { InformeData } from '@/lib/informe';
 import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
 import { MESES, centroide } from '@/lib/clima';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
-import { determinarBioma, fichaBioma, analogosDeKoppen } from '@/lib/contexto';
+import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
+import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
+import { useEcorregion } from '@/lib/useEcorregion';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 
@@ -16,6 +18,10 @@ interface Props {
 
 export function InformeView({ datos, compartido = false }: Props) {
   const metricas = datos.metricas ?? calcularMetricas(datos.mojones);
+
+  // La ecorregión es un hook: va acá arriba, no dentro de la sección Contexto.
+  const centroPredio = datos.mojones.length >= 3 ? centroide(datos.mojones) : null;
+  const eco = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -287,15 +293,22 @@ export function InformeView({ datos, compartido = false }: Props) {
         {/* ── Contexto ecológico y cultural ── */}
         {presente.contexto && datos.clima?.koppen && (() => {
           const centro = centroide(datos.mojones);
-          const bioma = fichaBioma(determinarBioma(datos.clima.koppen, centro.lat, centro.lng, datos.topo?.elev_media));
+          const res = resolverBioma(datos.clima.koppen, centro.lat, centro.lng, datos.topo?.elev_media, eco);
+          const bioma = res.ficha;
           const analogos = analogosDeKoppen(datos.clima.koppen);
           return (
             <Section numero={sec.contexto!} titulo="Contexto ecológico y cultural">
               <div className="mb-3">
-                <p className="font-semibold text-base text-ink-950">{bioma.emoji} {bioma.nombre}</p>
-                <p className="text-sm text-ink-700/80 mt-0.5">{bioma.resumen}</p>
+                <p className="font-semibold text-base text-ink-950">{res.emoji} {res.titulo}</p>
+                {bioma && <p className="text-sm text-ink-700/80 mt-0.5">{bioma.resumen}</p>}
+                {res.ecorregion && (
+                  <p className="text-xs text-ink-700/60 mt-1">
+                    Ecorregión {res.ecorregion.eco_id} · {res.ecorregion.eco_name}
+                  </p>
+                )}
+                {res.aviso && <p className="text-sm text-ink-700/70 mt-2">{res.aviso}</p>}
               </div>
-              <Table
+              {bioma && <Table
                 head={['Aspecto', 'Descripción']}
                 rows={[
                   ['Vegetación', bioma.vegetacion],
@@ -304,7 +317,8 @@ export function InformeView({ datos, compartido = false }: Props) {
                   ['Especies clave', bioma.especies.join(', ')],
                 ]}
                 colAlign={['left', 'left']}
-              />
+              />}
+              {bioma && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">
                 {bioma.saberes.map((s, i) => (
@@ -314,6 +328,7 @@ export function InformeView({ datos, compartido = false }: Props) {
                   </div>
                 ))}
               </div>
+              </>}
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Análogos en el mundo · {analogos.titulo}</p>
               <p className="text-sm text-ink-700/80"><span className="font-semibold">Regiones similares:</span> {analogos.regiones.join(', ')}.</p>
               <ul className="mt-1 space-y-0.5">
@@ -323,6 +338,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               </ul>
               <p className="text-xs text-ink-700/50 mt-3 italic">
                 Contenido de divulgación derivado del clima y la ubicación. Orientativo — verificá los saberes locales con las comunidades de la zona.
+                {res.ecorregion && ` ${ATRIBUCION_RESOLVE}`}
               </p>
             </Section>
           );
