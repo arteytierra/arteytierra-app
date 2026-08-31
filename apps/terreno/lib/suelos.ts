@@ -1,11 +1,20 @@
 /**
- * Análisis de suelo vía SoilGrids (ISRIC).
- * API pública, sin clave. Resolución ~250 m.
- * Perfil completo 0–200 cm (6 profundidades estándar SoilGrids).
- * Agua útil y grupo hidrológico estimados por pedotransferencia
- * Saxton & Rawls (2006). Orientativos — no reemplazan análisis de laboratorio.
+ * Análisis de suelo, multi-fuente.
+ *
+ * El piso global es SoilGrids (ISRIC): API pública sin clave, ~250 m, cualquier
+ * punto del planeta. Es un modelo que interpola perfiles dispersos, así que el
+ * agua útil y el grupo hidrológico salen de pedotransferencia Saxton & Rawls
+ * (2006) a partir de la textura.
  * https://www.isric.org/explore/soilgrids
+ *
+ * Donde existe un relevamiento nacional de campo se usa ése. Hoy: SSURGO
+ * (USDA-NRCS) en Estados Unidos, con perfiles descriptos horizonte por horizonte
+ * y agua útil, conductividad y grupo hidrológico medidos. Qué fuente le toca a
+ * cada punto lo decide `lib/sueloFuentes.ts`; ahí está también cómo sumar otra.
+ *
+ * Todo esto es orientativo y no reemplaza un análisis de laboratorio.
  */
+import { fuentesNacionalesSuelo } from './sueloFuentes';
 
 /** Una capa del perfil, con propiedades e hidráulica derivada. */
 export interface CapaSuelo {
@@ -107,7 +116,29 @@ const DEPTHS: Array<{ label: string; top: number; bot: number }> = [
   { label: '100-200cm', top: 100, bot: 200 },
 ];
 
+/**
+ * Suelo del punto, de la mejor fuente disponible ahí.
+ *
+ * Donde hay un relevamiento nacional de campo se usa ése —perfiles descriptos
+ * por un edafólogo, agua útil y conductividad medidas— y SoilGrids queda como
+ * piso global. Si el servicio nacional no responde, o el punto cae fuera de lo
+ * relevado, se cae a SoilGrids sin que el usuario tenga que hacer nada: la
+ * cobertura de los servicios nacionales es irregular y un hueco no puede
+ * significar "no hay datos de suelo".
+ *
+ * La fuente efectiva viaja en `fuente` y se imprime en el informe.
+ */
 export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo> {
+  for (const f of fuentesNacionalesSuelo(lat, lng)) {
+    if (f === 'ssurgo') {
+      const d = await desdeSsurgo(lat, lng).catch(() => null);
+      if (d) return d;
+    }
+  }
+  return desdeSoilGrids(lat, lng);
+}
+
+async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   const controller = new AbortController();
@@ -173,6 +204,180 @@ export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo
   } finally {
     clearTimeout(timer);
   }
+}
+
+// ─── SSURGO (USDA-NRCS) ───────────────────────────────────────────────────────
+
+/**
+ * Un horizonte tal como lo describe SSURGO: espesor real, no una profundidad
+ * estándar. Un perfil puede ser Ap 0–23, A 23–35, Bw 35–84, C 84–200.
+ */
+export interface HorizonteSsurgo {
+  top: number; bot: number;
+  arcilla: number; arena: number; limo: number;
+  om: number; densidad_ap: number; ph: number;
+  /** mm/h, ya convertido desde los µm/s de SSURGO. */
+  ksat: number;
+  /** Fracciones volumétricas medidas, no estimadas por pedotransferencia. */
+  cc: number; pmp: number; awc_frac: number;
+}
+
+/**
+ * Perfil de SSURGO llevado a las mismas seis profundidades que usa el resto de
+ * la app.
+ *
+ * Se remapea en vez de exponer los horizontes reales porque todo lo que consume
+ * el perfil —agua útil, grupo hidrológico, USLE, swales, criterios de diseño—
+ * ya está escrito contra esas seis capas. El valor de cada capa es el promedio
+ * de los horizontes que la cruzan, ponderado por cuánto la cruzan.
+ */
+async function desdeSsurgo(lat: number, lng: number): Promise<DatosSuelo | null> {
+  const res = await fetch(`/api/suelo/ssurgo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`, {
+    signal: AbortSignal.timeout(35_000),
+  });
+  if (!res.ok) return null;
+
+  const json = await res.json() as { Table?: Array<Array<string | null>>; sinDatos?: boolean };
+  if (json.sinDatos || !Array.isArray(json.Table) || json.Table.length < 2) return null;
+
+  const [cols, ...filas] = json.Table as Array<Array<string | null>>;
+  if (!cols) return null;
+  const col = (fila: Array<string | null>, nombre: string): string | null => {
+    const i = cols.indexOf(nombre);
+    return i < 0 ? null : fila[i] ?? null;
+  };
+  const num = (v: string | null): number | null => {
+    if (v === null || v === '') return null;
+    const n = parseFloat(v);
+    return isFinite(n) ? n : null;
+  };
+
+  const horizontes: HorizonteSsurgo[] = [];
+  for (const f of filas) {
+    const top = num(col(f, 'hzdept_r')), bot = num(col(f, 'hzdepb_r'));
+    const arcilla = num(col(f, 'claytotal_r')), arena = num(col(f, 'sandtotal_r'));
+    // Sin espesor o sin textura el horizonte no aporta nada al cálculo: son
+    // típicamente horizontes orgánicos superficiales que SSURGO deja en blanco.
+    if (top === null || bot === null || bot <= top || arcilla === null || arena === null) continue;
+
+    const cc  = (num(col(f, 'wthirdbar_r'))   ?? 0) / 100;   // % volumétrico → fracción
+    const pmp = (num(col(f, 'wfifteenbar_r')) ?? 0) / 100;
+    const awc = num(col(f, 'awc_r'));                        // cm/cm, ya es fracción
+    horizontes.push({
+      top, bot,
+      arcilla, arena,
+      limo: num(col(f, 'silttotal_r')) ?? Math.max(0, 100 - arcilla - arena),
+      om:          num(col(f, 'om_r')) ?? 0,
+      densidad_ap: num(col(f, 'dbthirdbar_r')) ?? 0,
+      ph:          num(col(f, 'ph1to1h2o_r')) ?? 0,
+      ksat:        (num(col(f, 'ksat_r')) ?? 0) * 3.6,        // µm/s → mm/h
+      cc, pmp,
+      awc_frac: awc ?? Math.max(0, cc - pmp),
+    });
+  }
+  if (horizontes.length === 0) return null;
+
+  const perfil = perfilSsurgo(horizontes);
+  // Sin la capa superficial no hay resumen posible: mejor SoilGrids que un
+  // perfil que arranca a 30 cm.
+  if (perfil.length === 0 || perfil[0]!.prof_top !== 0) return null;
+
+  const primera = filas[0]!;
+  const muname   = col(primera, 'muname')   ?? 'unidad cartográfica sin nombre';
+  const compname = col(primera, 'compname') ?? 'componente dominante';
+  const comppct  = num(col(primera, 'comppct_r'));
+  const hydgrp   = col(primera, 'hydgrp');
+  const drenaje  = col(primera, 'drainagecl');
+
+  const sup = perfil[0]!;
+  const clase_textura = sup.clase_textura;
+
+  return {
+    lat, lng,
+    ph: sup.ph, carbono_org: sup.carbono_org,
+    arcilla: sup.arcilla, arena: sup.arena, limo: sup.limo,
+    densidad_ap: sup.densidad_ap, nitrogeno: sup.nitrogeno,
+    clase_textura,
+    interp: interpretarSuelo(sup.ph, sup.carbono_org, sup.arcilla, sup.arena, clase_textura, sup.nitrogeno),
+    agua_util: resumirAguaUtil(perfil),
+    grupo_hidro: grupoHidroSsurgo(hydgrp, perfil),
+    perfil,
+    fuente: `USDA-NRCS SSURGO · ${muname} — componente ${compname}`
+      + (comppct !== null ? ` (${comppct}% de la unidad)` : '')
+      + (drenaje ? ` · drenaje: ${drenaje}` : '')
+      + ' · agua útil, conductividad y grupo hidrológico medidos a campo'
+      + ' · nitrógeno estimado con C:N ≈ 10 — orientativo',
+  };
+}
+
+/**
+ * Los horizontes reales de SSURGO, llevados a las seis profundidades estándar.
+ *
+ * Cada capa es el promedio de los horizontes que la cruzan, ponderado por
+ * cuánto la cruzan. Las capas que el perfil no alcanza no se inventan: se
+ * omiten, y el resto de la app trabaja con las que hay.
+ */
+export function perfilSsurgo(horizontes: HorizonteSsurgo[]): CapaSuelo[] {
+  const perfil: CapaSuelo[] = [];
+  for (const d of DEPTHS) {
+    const partes = horizontes
+      .map(h => ({ h, ov: Math.min(d.bot, h.bot) - Math.max(d.top, h.top) }))
+      .filter(p => p.ov > 0);
+    if (partes.length === 0) continue;   // el perfil no llega hasta acá
+
+    const total = partes.reduce((a, p) => a + p.ov, 0);
+    const med = (get: (h: HorizonteSsurgo) => number) =>
+      Math.round((partes.reduce((a, p) => a + get(p.h) * p.ov, 0) / total) * 100) / 100;
+
+    const espesor_mm = (d.bot - d.top) * 10;
+    const arcilla = med(h => h.arcilla), arena = med(h => h.arena), limo = med(h => h.limo);
+    const om = med(h => h.om);
+    const awc_frac = med(h => h.awc_frac);
+
+    perfil.push({
+      label: d.label, prof_top: d.top, prof_bot: d.bot, espesor_mm,
+      ph: med(h => h.ph),
+      // SSURGO informa materia orgánica, no carbono: SOC% = MO% / 1.724 (Van
+      // Bemmelen), y de % a g/kg son diez veces.
+      carbono_org: Math.round((om / 1.724) * 10 * 100) / 100,
+      arcilla, arena, limo,
+      densidad_ap: med(h => h.densidad_ap),
+      // SSURGO no mide nitrógeno total. Se estima con C:N ≈ 10, que es la
+      // relación corriente en suelos minerales; queda declarado en `fuente`.
+      nitrogeno: Math.round((om / 1.724) * 100) / 100,
+      clase_textura: clasificarTextura(arcilla, arena, limo),
+      pmp: med(h => h.pmp), cc: med(h => h.cc), sat: 0,
+      awc_frac,
+      awc_mm: Math.round(awc_frac * espesor_mm * 10) / 10,
+      ksat: med(h => h.ksat),
+    });
+  }
+  return perfil;
+}
+
+/**
+ * Grupo hidrológico oficial de SSURGO, en vez del derivado de la conductividad.
+ *
+ * Los grupos dobles (A/D, B/D, C/D) son suelos que se comportan distinto según
+ * estén drenados o no: la primera letra vale con drenaje artificial, la segunda
+ * sin él. Tomamos la segunda, que es la condición real de un campo que todavía
+ * no se intervino y además la conservadora para dimensionar escorrentía.
+ */
+export function grupoHidroSsurgo(letra: string | null, perfil: CapaSuelo[]): GrupoHidrologico {
+  const capas = perfil.filter(c => c.prof_top < 100);
+  const lim = capas.reduce((min, c) => (c.ksat < min.ksat ? c : min), capas[0] ?? perfil[0]!);
+
+  const g = (letra ?? '').trim().toUpperCase().split('/').pop();
+  if (g !== 'A' && g !== 'B' && g !== 'C' && g !== 'D') return grupoHidrologico(perfil);
+
+  const DEF = {
+    A: { cn_pastura: 39, infiltracion: 'Muy alta',  descripcion: 'Suelos arenosos, drenaje libre. Escasa escorrentía, mucha infiltración.' },
+    B: { cn_pastura: 61, infiltracion: 'Moderada',  descripcion: 'Suelos franco-arenosos. Infiltración moderada, escorrentía baja-media.' },
+    C: { cn_pastura: 74, infiltracion: 'Lenta',     descripcion: 'Suelos franco-arcillosos. Infiltración lenta, escorrentía apreciable.' },
+    D: { cn_pastura: 80, infiltracion: 'Muy lenta', descripcion: 'Suelos arcillosos/expansivos. Poca infiltración, alta escorrentía y anegamiento.' },
+  } as const;
+
+  return { grupo: g, ...DEF[g], ksat_min: lim.ksat, capa_limitante: lim.label };
 }
 
 // ─── Pedotransferencia Saxton & Rawls (2006) ──────────────────────────────────
