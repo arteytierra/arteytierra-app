@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
 import { CourseEnrollForm } from './CourseEnrollForm';
+import { CourseGallery } from './CourseGallery';
 import { TESTIMONIOS } from '@/lib/testimonios';
 import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
 
@@ -206,19 +207,45 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             </div>
           ) : (
             /* GRILLA: módulos por tema (intensivos presenciales) */
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {course.modulos.map((m, i) => (
-                <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-700">
-                  <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{m.num}</p>
-                  <h3 className="font-display text-base text-bone-100 mb-3 leading-snug">{m.title}</h3>
-                  <ul className="flex flex-col gap-1.5">
-                    {m.items.map(item => (
-                      <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
+            (() => {
+              const topModulos = course.modulos.filter(m => !m.wide);
+              const wideModulos = course.modulos.filter(m => m.wide);
+              const topCols =
+                topModulos.length === 1 ? 'max-w-sm' :
+                topModulos.length === 2 ? 'sm:grid-cols-2 max-w-2xl' :
+                topModulos.length === 3 ? 'sm:grid-cols-2 md:grid-cols-3' :
+                'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className={`grid grid-cols-1 gap-3 mx-auto w-full ${topCols}`}>
+                    {topModulos.map((m, i) => (
+                      <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-700">
+                        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{m.num}</p>
+                        <h3 className="font-display text-base text-bone-100 mb-3 leading-snug">{m.title}</h3>
+                        <ul className="flex flex-col gap-1.5">
+                          {m.items.map(item => (
+                            <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
+                  {wideModulos.map((m, i) => (
+                    <div key={i} className="p-6 bg-clay-700/15 border-l-[3px] border-clay-500">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500">{m.num}</p>
+                        <h3 className="font-display text-base text-bone-100 leading-snug">{m.title}</h3>
+                      </div>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1.5">
+                        {m.items.map(item => (
+                          <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()
           )}
         </div>
       </section>
@@ -256,14 +283,8 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
 
       {/* GALERÍA */}
       {course.galeria.length > 0 && (
-        <section className={`py-4 px-4 ${course.trabajoFinal ? 'bg-bone-50' : 'bg-ink-950 pt-0'}`}>
-          <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-2">
-            {course.galeria.map((src, i) => (
-              <div key={i} className="relative aspect-[4/3] overflow-hidden">
-                <Image src={src} alt={`${course.name} — foto ${i + 2}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
-              </div>
-            ))}
-          </div>
+        <section className={`py-10 px-4 ${course.trabajoFinal ? 'bg-bone-50' : 'bg-ink-950 pt-0'}`}>
+          <CourseGallery images={course.galeria} alt={course.name} />
         </section>
       )}
 
@@ -392,9 +413,12 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         <div className="max-w-2xl mx-auto">
           <div className="mb-10 text-center">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Inscripción</p>
-            <h2 className="font-display text-4xl text-bone-50">Reservá tu <em>cupo.</em></h2>
+            <h2 className="font-display text-4xl text-bone-50">
+              {course.ocultarCupos ? <>Reservá tu <em>lugar.</em></> : <>Reservá tu <em>cupo.</em></>}
+            </h2>
             <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
-              Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs. Cupos limitados.
+              Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.
+              {!course.ocultarCupos && ' Cupos limitados.'}
             </p>
           </div>
           <CourseEnrollForm
@@ -403,22 +427,23 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             mercadopago={course.mercadopago}
             opciones={course.opciones}
             senaPercent={course.senaPercent}
+            ocultarCupos={course.ocultarCupos}
           />
 
           {/* Políticas — info de confianza antes de pagar */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-ink-800/60 border border-ink-700 p-5">
               <p className="font-sans font-bold text-bone-50 text-sm mb-1.5">↺ Cancelación y reembolso</p>
-              <p className="font-sans text-bone-300 text-xs leading-relaxed">
+              <p className="font-sans text-bone-200 text-xs leading-relaxed">
                 Si avisás hasta <strong className="text-bone-100">7 días antes</strong> del inicio, te devolvemos el total.
-                Pasado ese plazo, podés transferir tu cupo a otra persona o usarlo en la próxima edición.
+                Pasado ese plazo, podés transferir tu lugar a otra persona o usarlo en la próxima edición.
               </p>
             </div>
             <div className="bg-ink-800/60 border border-ink-700 p-5">
               <p className="font-sans font-bold text-bone-50 text-sm mb-1.5">
-                {isPresencial ? '✶ Cupos limitados' : '▶ Grabaciones'}
+                {course.ocultarCupos ? '✶ Grupos chicos' : isPresencial ? '✶ Cupos limitados' : '▶ Grabaciones'}
               </p>
-              <p className="font-sans text-bone-300 text-xs leading-relaxed">
+              <p className="font-sans text-bone-200 text-xs leading-relaxed">
                 {isPresencial
                   ? 'Trabajamos con grupos chicos para cuidar la experiencia. Te confirmamos disponibilidad al recibir tu inscripción.'
                   : 'Es online en vivo. Algunas sesiones quedan grabadas y disponibles para los inscriptos — te confirmamos cuáles al arrancar.'}

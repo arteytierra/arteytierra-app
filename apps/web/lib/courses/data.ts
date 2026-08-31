@@ -9,6 +9,8 @@ export interface CourseModule {
   date?: string;
   nota?: string;
   highlighted?: boolean;
+  /** En la grilla de "El programa": se muestra debajo, en un panel propio a todo el ancho, en vez de ocupar una celda de la grilla. */
+  wide?: boolean;
 }
 
 export interface CourseOption {
@@ -56,6 +58,8 @@ export interface CourseData {
   sinCarrito?: boolean;
   /** % de seña para reservar cupo por Mercado Pago desde el formulario de inscripción (además del pago completo por carrito). Requiere `opciones`. */
   senaPercent?: number;
+  /** Oculta el lenguaje de "cupos" (botón, notas, cajita de políticas) en cursos donde no aplica el framing de escasez. */
+  ocultarCupos?: boolean;
 }
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
@@ -217,9 +221,8 @@ export const COURSES: Record<string, CourseData> = {
       '/img/cursos/bioarquitectura/10.jpg',
       '/img/cursos/bioarquitectura/13.jpeg',
     ],
-    tag: '10, 11 y 12 de octubre 2026 · o toda la semana hasta el 17 · San Marcos Sierras · cupo máximo 25',
+    tag: '10, 11 y 12 de octubre 2026 · o toda la semana hasta el 17 · San Marcos Sierras',
     intro: [
-      'Esta es la versión corta — el mismo oficio, en la dosis que puedas.',
       'Los primeros 3 días son la secuencia completa de un muro de tierra: lo levantás en adobe y quincha, le das el revoque grueso, y lo cerrás con el revoque fino y la pintura natural. Al tercer día vas a haber tocado cada etapa con tus manos, de la estructura a la terminación.',
       'Si te enganchás, te quedás. Del día 4 al 17 sumamos techo verde, colocación de aberturas y carpintería de obra — y más horas de práctica en lo que ya viste, hasta que el gesto te salga solo.',
     ],
@@ -227,12 +230,12 @@ export const COURSES: Record<string, CourseData> = {
       { label: '¿Cuándo?', val: '10, 11 y 12 de octubre 2026 · o extendé hasta el 17' },
       { label: '¿Dónde?', val: 'Obra real en San Marcos Sierras · Hospedaje en Ecohostel Tay Pichín' },
       { label: 'Modalidad', val: 'Práctica intensiva en obra · grupos chicos' },
-      { label: 'Cupos', val: 'Cupo máximo 25 personas' },
+      { label: 'Grupo', val: 'Hasta 25 personas' },
     ],
     paraQuien: [
       'Nunca tocaste barro y querés una primera experiencia real, de la mano de gente con oficio.',
       'Hiciste algún taller suelto y te falta encadenar la secuencia completa de un muro.',
-      'Buscás una experiencia intensiva de pocos días, sin dejar el trabajo por dos meses.',
+      'Buscás una experiencia intensiva de pocos días.',
     ],
     vasASalir: [
       'Levantar un muro de adobe y de quincha alivianada con tus propias manos.',
@@ -244,10 +247,11 @@ export const COURSES: Record<string, CourseData> = {
       { num: 'Día 1', title: 'Muros de adobe y quincha', items: ['Comportamiento de la tierra, la paja y la madera', 'Levantar muros de adobe', 'Quincha alivianada', 'Ubicación de aberturas'] },
       { num: 'Día 2', title: 'Revoques gruesos', items: ['Ciclo de la cal', 'Mezclas y proporciones', 'Revoque grueso de barro', 'Revoque grueso de cal'] },
       { num: 'Día 3', title: 'Revoque fino y pinturas', items: ['Revoque fino de barro y de cal', 'Texturas y acabados', 'Pinturas naturales de tierra', 'Pinturas de cal y pigmentos'] },
-      { num: 'Días 4–5 · Extensión', title: 'Techo verde', items: ['Estructura y membrana impermeable', 'Sustrato y drenaje', 'Plantación y mantenimiento'] },
-      { num: 'Día 6 · Extensión', title: 'Colocación de aberturas', items: ['Premarcos y aplomado', 'Sellado e impermeabilización', 'Terminaciones alrededor del vano'] },
-      { num: 'Día 7 · Extensión', title: 'Carpintería de obra', items: ['Herramientas y uniones básicas', 'Piezas de terminación en madera', 'Mantenimiento de herramienta manual'] },
-      { num: 'Día 8 · Extensión', title: 'Más práctica y cierre', items: ['Repaso de muro, revoques y pintura', 'Terminaciones a tu ritmo', 'Cierre y certificado'] },
+      {
+        num: 'Días 4 a 8 · Extensión', title: 'Si te enganchás, te quedás',
+        items: ['Techo verde', 'Estructuras en madera', 'Colocación de aberturas', 'Más práctica de muros y revoques'],
+        wide: true,
+      },
     ],
     facilitadores: [
       JONATAN,
@@ -277,11 +281,12 @@ export const COURSES: Record<string, CourseData> = {
         highlighted: true,
       },
     ],
-    opcionesNota: 'Todos arrancan juntos el 10 de octubre. Si elegís la semana completa, seguís de largo hasta el 17. Precio de lanzamiento — cupo máximo 25 personas en total. También podés reservar tu cupo con una seña del 20% por Mercado Pago desde el formulario de inscripción.',
+    opcionesNota: 'Todos arrancan juntos el 10 de octubre. Si elegís la semana completa, seguís de largo hasta el 17. Precio de lanzamiento — grupo de hasta 25 personas en total. También podés reservar tu lugar con una seña del 20% por Mercado Pago desde el formulario de inscripción.',
     formCurso: 'Formación Integral — Intensivo · 10 al 17 de octubre 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Intensivo%20de%20Formaci%C3%B3n%20Integral%20(10%20de%20octubre)',
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
     senaPercent: 20,
+    ocultarCupos: true,
   },
 
   'bioarquitectura': {
