@@ -50,10 +50,20 @@
     color: rgba(127,178,204,.85); line-height: 1.35; max-width: 190px;
   }
 
+  /* Volanta: la misma que abre el hero del landing. La OG y la página se leen
+     una detrás de la otra, así que arrancan con la misma línea. */
+  .volanta {
+    margin-top: 34px;
+    font-size: 13px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--agua-c);
+  }
+
   h1 {
-    margin-top: 30px;
+    margin-top: 14px;
     font-family: 'Fraunces', Georgia, serif;
-    font-size: 86px; font-weight: 700; line-height: 1.02;
+    /* 72 y no 86: el titular del manual v2 es bastante más largo que el
+       anterior, y a 86 el segundo renglón se metía dentro de las curvas. */
+    font-size: 72px; font-weight: 700; line-height: 1.04;
     color: var(--crema);
     letter-spacing: -.015em;
   }
@@ -63,7 +73,7 @@
     margin-top: 30px;
     font-size: 21px; line-height: 1.5; font-weight: 400;
     color: rgba(232,213,163,.92);
-    max-width: 640px;
+    max-width: 600px;
   }
   .bajada strong { color: var(--crema); font-weight: 500; }
 
@@ -110,15 +120,19 @@
     <span class="firma">Un desarrollo de<br>Arte y Tierra</span>
   </div>
 
-  <h1>Del terreno<em>al masterplan.</em></h1>
+  <p class="volanta">Diseño ecosistémico del territorio</p>
 
+  <h1>Entendé el territorio<em>antes de intervenirlo.</em></h1>
+
+  <!-- La bajada ya no promete "datos globales" a secas: lo que distingue a
+       acequia es que cada capa dice de dónde sale y hasta dónde llega. -->
   <p class="bajada">
-    Topografía · agua · clima · suelo · represas · Keyline.<br>
-    Todo al marcar tu predio — <strong>sin CAD ni GIS</strong>, con datos globales.
+    Delimitá un predio y obtené una lectura preliminar de relieve, agua, clima,
+    suelo y contexto, con <strong>fuentes y limitaciones visibles</strong>.
   </p>
 
   <div class="pie">
-    <span class="url">arteytierra.org/acequia</span>
-    <span class="cta">Empezá gratis →</span>
+    <span class="url">acequia.app</span>
+    <span class="cta">Trazar mi terreno →</span>
   </div>
 </div>
