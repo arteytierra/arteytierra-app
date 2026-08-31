@@ -1,10 +1,14 @@
 /**
- * Datos climáticos históricos vía NASA POWER API (climatología 1981–2023).
- * Sin clave de API — uso libre, fuente NASA.
+ * Datos climáticos históricos. La base es NASA POWER (climatología 1981–2023,
+ * grilla de ~50 km, sin clave de API, uso libre), y donde existe una fuente
+ * regional más fina —hoy Daymet 1 km en Norteamérica— ésa pisa lluvia,
+ * temperatura, radiación y humedad. El viento sale siempre de POWER: es lo
+ * único que las regionales no miden. Ver `lib/climaFuentes.ts`.
  * ETP calculada con la fórmula de Hargreaves (sólo necesita T_max, T_min, latitud).
  * Clasificación Köppen-Geiger según Peel et al. (2007).
  * Resultados son valores promedio históricos — orientativos, no de precisión agronómica.
  */
+import { fuentesRegionalesClima } from './climaFuentes';
 
 export const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const;
 export type MesIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -192,9 +196,22 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   const meses: MesDato[] = MONTH_KEYS.map((key, i) => {
     const days    = DAYS_IN_MONTH[i] ?? 30;
     const precip_mm = (precip[key] ?? 0) * days;  // mm/día → mm/mes
-    const tmax_c    = tmax[key] ?? 0;
-    const tmin_c    = tmin[key] ?? 0;
-    const tmean_c   = tmean[key] ?? (tmax_c + tmin_c) / 2;
+    // Ojo con T2M_MAX/T2M_MIN del endpoint de climatología: NO son la máxima y
+    // la mínima medias del mes, son los récords absolutos de toda la serie. En
+    // Iowa dan 12,9 °C y −35,5 °C para enero, cuando la máxima media real anda
+    // en −2 °C. La media diaria sale de T2M_RANGE, que sí es la amplitud media:
+    //   tmax = T2M + rango/2   ·   tmin = T2M − rango/2
+    // Importa mucho más de lo que parece: Hargreaves usa √(tmax−tmin), así que
+    // tomar los récords infla la ETP entre 1,5× y 1,8× en todo el mundo, y con
+    // ella el balance hídrico, el índice de aridez y los meses con helada.
+    // Los récords no se guardan: los extremos de verdad —con percentiles y
+    // fechas— salen de la serie diaria de ERA5 en `lib/climaExtremos.ts`.
+    const record_max = tmax[key];
+    const record_min = tmin[key];
+    const tmean_c    = tmean[key] ?? ((record_max ?? 0) + (record_min ?? 0)) / 2;
+    const rango      = trange[key];
+    const tmax_c     = rango !== undefined ? tmean_c + rango / 2 : (record_max ?? tmean_c);
+    const tmin_c     = rango !== undefined ? tmean_c - rango / 2 : (record_min ?? tmean_c);
     const viento_ms = viento[key] ?? 0;
     const etp_mm    = calcularETPHargreaves(lat, i as MesIndex, tmax_c, tmin_c, tmean_c);
     const dirDeg    = wdir[key];
@@ -222,6 +239,100 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   const wdirAnual = wdir['ANN'] ?? wdir['JAN'] ?? 180;
   const viento_dir_ppal = gradosADireccion(wdirAnual);
 
+  // Donde hay una fuente regional fina, pisa lo que ella mide mejor y POWER
+  // queda de base. El viento sale de POWER siempre: ninguna de las regionales
+  // lo mide, y es lo que decide cortinas, secado y confort.
+  for (const f of fuentesRegionalesClima(lat, lng)) {
+    if (f !== 'daymet') continue;
+    const d = await obtenerDaymet(lat, lng);
+    if (!d) continue;
+    return ensamblar(
+      lat, lng,
+      fusionarDaymet(lat, meses, d.meses),
+      viento_dir_ppal,
+      `${d.fuente} · viento de NASA POWER`,
+    );
+  }
+
+  return ensamblar(lat, lng, meses, viento_dir_ppal, 'NASA POWER Climatology (promedio 1981–2023)');
+}
+
+// ─── Daymet 1 km (Norteamérica) ───────────────────────────────────────────────
+
+/** Lo que devuelve `/api/clima/daymet`: acá todos los campos vienen siempre,
+ *  a diferencia de `MesDato`, donde varios son opcionales porque POWER puede
+ *  no traerlos. */
+export interface MesDaymet {
+  precip_mm: number;
+  tmax_c:    number;
+  tmin_c:    number;
+  tmean_c:   number;
+  t_range_c: number;
+  rad_kwh:   number;
+  rh_pct:    number;
+  rocio_c:   number;
+}
+
+interface RespuestaDaymet {
+  meses?:    MesDaymet[];
+  años?:     number;
+  fuente?:   string;
+  sinDatos?: boolean;
+}
+
+/** Devuelve `null` ante cualquier problema: sin Daymet la app funciona con POWER. */
+async function obtenerDaymet(lat: number, lng: number): Promise<{ meses: MesDaymet[]; fuente: string } | null> {
+  try {
+    const res  = await fetch(`/api/clima/daymet?lat=${lat.toFixed(2)}&lng=${lng.toFixed(2)}`, { signal: AbortSignal.timeout(60_000) });
+    if (!res.ok) return null;
+    const json = await res.json() as RespuestaDaymet;
+    if (json.sinDatos || json.meses?.length !== 12) return null;
+    return { meses: json.meses, fuente: json.fuente ?? 'Daymet V4 R1, celda de 1 km' };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reemplaza en los meses de POWER todo lo que Daymet mide mejor —lluvia,
+ * temperatura, radiación y humedad— y recalcula la ETP con las temperaturas
+ * nuevas. Lo que Daymet no trae (viento, dirección, récords) queda como estaba.
+ */
+export function fusionarDaymet(
+  lat: number,
+  power: MesDato[],
+  daymet: MesDaymet[],
+): MesDato[] {
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+  return power.map((m, i) => {
+    const d = daymet[i];
+    if (!d) return m;
+    const etp_mm = calcularETPHargreaves(lat, i as MesIndex, d.tmax_c, d.tmin_c, d.tmean_c);
+    return {
+      ...m,
+      precip_mm: r1(d.precip_mm),
+      tmax_c:    r1(d.tmax_c),
+      tmin_c:    r1(d.tmin_c),
+      tmean_c:   r1(d.tmean_c),
+      t_range_c: r1(d.t_range_c),
+      rad_kwh:   d.rad_kwh,
+      rh_pct:    d.rh_pct,
+      rocio_c:   r1(d.rocio_c),
+      etp_mm:    r1(etp_mm),
+      balance_mm: r1(d.precip_mm - etp_mm),
+      helada_riesgo: d.tmin_c <= 3,
+    };
+  });
+}
+
+/** Agrega los doce meses en los totales, índices y clasificaciones del predio. */
+function ensamblar(
+  lat: number,
+  lng: number,
+  meses: MesDato[],
+  viento_dir_ppal: string,
+  fuente: string,
+): DatosClima {
   const precip_anual_mm = Math.round(meses.reduce((s, m) => s + m.precip_mm, 0));
   const etp_anual_mm    = Math.round(meses.reduce((s, m) => s + m.etp_mm,    0));
   const tmean_anual_c   = Math.round(
@@ -253,7 +364,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     lat, lng,
     precip_anual_mm, etp_anual_mm, tmean_anual_c, viento_dir_ppal,
     meses,
-    fuente: 'NASA POWER Climatology (promedio 1981–2023)',
+    fuente,
     weather_spark_url: `https://weatherspark.com/y/${encodeURIComponent(`${lat.toFixed(2)},${lng.toFixed(2)}`)}`,
     rh_anual_pct, rad_anual_kwh, amplitud_anual_c, viento_medio_ms, viento_max_ms,
     koppen, aridez, gdd_anual, heladas,
