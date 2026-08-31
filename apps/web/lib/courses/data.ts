@@ -60,6 +60,10 @@ export interface CourseData {
   senaPercent?: number;
   /** Oculta el lenguaje de "cupos" (botón, notas, cajita de políticas) en cursos donde no aplica el framing de escasez. */
   ocultarCupos?: boolean;
+  /** Fecha de inicio en ISO (YYYY-MM-DD). Si está y `ocultarCupos` es true, reemplaza el lenguaje de escasez por una cuenta regresiva real. */
+  startDate?: string;
+  /** Testimonios propios de este curso, si hay. Si no se define, se usan los testimonios generales de `lib/testimonios`. */
+  testimonios?: { quote: string; author: string; role: string }[];
 }
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
@@ -287,6 +291,7 @@ export const COURSES: Record<string, CourseData> = {
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
     senaPercent: 20,
     ocultarCupos: true,
+    startDate: '2026-10-10',
   },
 
   'bioarquitectura': {

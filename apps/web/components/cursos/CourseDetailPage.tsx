@@ -5,11 +5,13 @@ import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
 import { CourseEnrollForm } from './CourseEnrollForm';
 import { CourseGallery } from './CourseGallery';
+import { CourseCountdown } from './CourseCountdown';
 import { TESTIMONIOS } from '@/lib/testimonios';
 import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
 
 export function CourseDetailPage({ course }: { course: CourseData }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
+  const testimonios = course.testimonios ?? TESTIMONIOS;
 
   return (
     <main>
@@ -396,7 +398,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             <h2 className="font-display text-4xl text-ink-950">Quienes pasaron por nuestras <em>formaciones.</em></h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIOS.map((t, i) => (
+            {testimonios.map((t, i) => (
               <figure key={i} className="bg-bone-50 border-t-4 border-clay-500 p-7 flex flex-col">
                 <blockquote className="font-display text-lg text-ink-900 leading-relaxed italic flex-1">{t.quote}</blockquote>
                 <figcaption className="mt-5">
@@ -420,6 +422,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.
               {!course.ocultarCupos && ' Cupos limitados.'}
             </p>
+            {course.ocultarCupos && course.startDate && <CourseCountdown startDate={course.startDate} />}
           </div>
           <CourseEnrollForm
             curso={course.formCurso}

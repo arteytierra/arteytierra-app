@@ -26,6 +26,26 @@ export function CourseGallery({ images, alt }: Props) {
     return () => clearInterval(id);
   }, [images.length]);
 
+  const touchStartX = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartX.current = touch.clientX;
+    pausedRef.current = true;
+  }
+  function handleTouchEnd(e: React.TouchEvent) {
+    const startX = touchStartX.current;
+    touchStartX.current = null;
+    pausedRef.current = false;
+    const touch = e.changedTouches[0];
+    if (startX === null || !touch) return;
+    const delta = touch.clientX - startX;
+    const threshold = 40; // px mínimos para contar como swipe, no como tap
+    if (delta > threshold) goTo(idx - 1);
+    else if (delta < -threshold) goTo(idx + 1);
+  }
+
   if (images.length === 0) return null;
 
   return (
@@ -34,7 +54,11 @@ export function CourseGallery({ images, alt }: Props) {
       onMouseEnter={() => { pausedRef.current = true; }}
       onMouseLeave={() => { pausedRef.current = false; }}
     >
-      <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-ink-950">
+      <div
+        className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-ink-950 touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {images.map((src, i) => (
           <Image
             key={src}
