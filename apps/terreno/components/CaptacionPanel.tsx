@@ -16,17 +16,23 @@ import {
 } from '@/lib/captacion';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
+import { EscurrimientoTabla } from './EscurrimientoTabla';
+
+/** Superficies que son ladera y no obra: las únicas que la tabla 8.3 cubre. */
+const SUELO_NATURAL = new Set<TipoSuperficie>(['suelo_pasto', 'suelo_bosque', 'suelo_cultivo']);
 
 interface Props {
   datosClima:  DatosClima | null;
   onIrAClima:  () => void;
+  /** Textura del suelo (% arcilla / % arena): sugiere la clase de la tabla 8.3. */
+  texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   onSnapshot?: (snap: CaptacionSnapshot | null) => void;
   /** Datos cargados antes: al cambiar de pestaña el panel se desmonta, así
    *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
   snapshotInicial?: CaptacionSnapshot | null;
 }
 
-export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot, snapshotInicial }: Props) {
+export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, onSnapshot, snapshotInicial }: Props) {
   const [superficies, setSuperficies] = useState<Superficie[]>(
     snapshotInicial?.superficies?.length ? snapshotInicial.superficies : [nuevaSuperficieDefault()]);
   const [consumos,    setConsumos]    = useState<ConsumoCategoria[]>(
@@ -89,6 +95,20 @@ export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot, snapshotIni
     () => datosClima?.meses.map(m => m.precip_mm) ?? Array(12).fill(0),
     [datosClima],
   );
+
+  /**
+   * Lo que se junta del suelo, separado de lo que se junta de los techos.
+   *
+   * La tabla 8.3 es de escurrimiento de ladera: entra por el clima y el suelo, y
+   * no tiene nada que decir sobre una chapa. Por eso el segundo método sólo se
+   * ofrece cuando hay superficie de suelo natural cargada, y compara únicamente
+   * contra esa parte del cálculo.
+   */
+  const ladera = useMemo(() => {
+    const ids = new Set(superficies.filter(s => SUELO_NATURAL.has(s.tipo)).map(s => s.id));
+    const area_m2 = superficies.filter(s => ids.has(s.id)).reduce((a, s) => a + s.area_m2, 0);
+    return { ids, ha: area_m2 / 10000 };
+  }, [superficies]);
 
   const resultado = useMemo(() => {
     if (!datosClima || superficies.length === 0) return null;
@@ -209,6 +229,23 @@ export function CaptacionPanel({ datosClima, onIrAClima, onSnapshot, snapshotIni
               </p>
             </div>
           </div>
+
+          {/* Segundo método, sólo para la parte que se junta del suelo. */}
+          {ladera.ha > 0 && datosClima && (
+            <EscurrimientoTabla
+              precipAnualMm={precipMensual.reduce((s, p) => s + p, 0)}
+              evapAnualMm={datosClima.meses.reduce((s, m) => s + m.etp_mm, 0)}
+              areaHa={Math.round(ladera.ha * 100) / 100}
+              texturaSuelo={texturaSuelo}
+              comparar={{
+                label: 'coeficiente de escorrentía',
+                m3: Math.round(resultado.captacion_por_superficie
+                  .filter(s => ladera.ids.has(s.id))
+                  .reduce((a, s) => a + s.anual_m3, 0)),
+              }}
+              queCapta="las superficies de suelo"
+            />
+          )}
 
           {/* Desglose por superficie */}
           {resultado.captacion_por_superficie.length > 1 && (

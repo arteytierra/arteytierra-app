@@ -13,6 +13,7 @@ import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
 import { confianzaRepresa } from '@/lib/saludCalculo';
 import { volumen, UNIDADES_VOLUMEN, type UnidadVolumen } from '@/lib/unidades';
 import { SaludCalculo } from './SaludCalculo';
+import { EscurrimientoTabla } from './EscurrimientoTabla';
 import type { Cuenca, GrupoHidro } from '@/lib/cuenca';
 import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
@@ -559,7 +560,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           {/* ── Simulación anual (B3) ── */}
           <RepresaSimSection
             res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa}
-            grupoHidro={grupoHidro} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa}
+            grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa}
             rodeo={rodeo} onRodeo={onRodeo}
             cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
             coef={coefCuenca} onCoef={setCoefCuenca}
@@ -575,10 +576,11 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 // ─── Simulación mensual del embalse (B3) ──────────────────────────────────────
 
 function RepresaSimSection({
-  res, datosClima, cuencaHa, grupoHidro = null, fuenteDem = null, onResumen,
+  res, datosClima, cuencaHa, grupoHidro = null, texturaSuelo = null, fuenteDem = null, onResumen,
   rodeo, onRodeo, cobertura, onCobertura, coef, onCoef, ha, onHa, seep, onSeep,
 }: {
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
+  texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   fuenteDem?: DatosShader['fuente'] | null;
   onResumen?: (r: RepresaResumen | null) => void;
   rodeo: Rodeo; onRodeo: (r: Rodeo) => void;
@@ -736,6 +738,18 @@ function RepresaSimSection({
                 <Stat label="Derrame anual" valor={`${sim.derrame_anual_m3.toLocaleString('es-AR')} m³`} />
                 <Stat label="Demanda mensual" valor={`${demanda.toLocaleString('es-AR')} m³`} />
               </div>
+              {/* El aporte anual de arriba sale de un coeficiente; la tabla 8.3
+                  llega al mismo número por otro camino y con rango. Va acá, y no
+                  arriba, porque es un contraste del resultado, no un parámetro. */}
+              <EscurrimientoTabla
+                precipAnualMm={datosClima.meses.reduce((s, m) => s + m.precip_mm, 0)}
+                evapAnualMm={datosClima.meses.reduce((s, m) => s + m.etp_mm, 0)}
+                areaHa={parseFloat(ha) || 0}
+                texturaSuelo={texturaSuelo}
+                comparar={{ label: 'coeficiente de escorrentía', m3: sim.aporte_anual_m3 }}
+                queCapta="la cuenca de aporte"
+              />
+
               <SaludCalculo key={salud.nivel} confianza={salud} />
 
               <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
