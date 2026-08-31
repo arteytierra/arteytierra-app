@@ -32,6 +32,11 @@ Una ficha por fuente, en `<region>/<pais>-<fuente>.md`. Por ejemplo:
 Además, un `<region>/RESUMEN.md` por región con la tabla de todo lo relevado,
 ordenada por cuánto mejora sobre la fuente global.
 
+Hay también una carpeta `global/`, para lo que aparece buscando en una región
+pero sirve en todas: ahí cayeron el mapa Köppen de 1 km y el aviso de licencia de
+Open-Meteo. Cuando una ficha global salga de un relevamiento regional, enlazarla
+desde el `RESUMEN.md` de esa región.
+
 ## Regla dura sobre licencias
 
 Una fuente entra sólo si **permite uso comercial**. `acequia` es un producto que
