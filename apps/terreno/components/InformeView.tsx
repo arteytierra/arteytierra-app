@@ -314,11 +314,11 @@ export function InformeView({ datos, compartido = false }: Props) {
                   ['Vegetación', bioma.vegetacion],
                   ['Fauna', bioma.fauna],
                   ['Suelos', bioma.suelos],
-                  ['Especies clave', bioma.especies.join(', ')],
+                  ...(bioma.especies.length ? [['Especies clave', bioma.especies.join(', ')]] : []),
                 ]}
                 colAlign={['left', 'left']}
               />}
-              {bioma && <>
+              {bioma && bioma.saberes.length > 0 && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">
                 {bioma.saberes.map((s, i) => (

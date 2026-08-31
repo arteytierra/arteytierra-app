@@ -94,17 +94,18 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         <DatoLinea icon={<Mountain className="w-3 h-3 text-ink-700/60" />} label="Suelos" texto={ficha.suelos} />
       </Seccion>
 
-      {/* Especies clave */}
-      <Seccion icon={<Sprout className="w-3.5 h-3.5" />} titulo="Especies nativas clave">
+      {/* Especies clave — vacío en las fichas de bioma global, a esa escala no
+          hay especies que sean ciertas en todo el bioma. */}
+      {ficha.especies.length > 0 && <Seccion icon={<Sprout className="w-3.5 h-3.5" />} titulo="Especies nativas clave">
         <div className="flex flex-wrap gap-1">
           {ficha.especies.map(e => (
             <span key={e} className="text-[10px] px-2 py-0.5 rounded-full bg-moss-100 text-moss-900 border border-moss-200">{e}</span>
           ))}
         </div>
-      </Seccion>
+      </Seccion>}
 
       {/* Saberes ancestrales */}
-      <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
+      {ficha.saberes.length > 0 && <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
         <div className="space-y-2">
           {ficha.saberes.map((s, i) => (
             <div key={i} className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
@@ -113,7 +114,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
             </div>
           ))}
         </div>
-      </Seccion>
+      </Seccion>}
       </>}
 
       {/* Análogos del mundo — dependen del clima, no de la ficha */}

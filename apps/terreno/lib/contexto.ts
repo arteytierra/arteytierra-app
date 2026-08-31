@@ -1,20 +1,28 @@
 /**
  * Contexto ecológico y cultural del predio.
  *
- * Determina el bioma/ecoregión a partir de la clasificación Köppen (calculada en
- * lib/clima), la latitud/longitud y la altitud (si hay topografía). Para cada bioma
- * ofrece una ficha curada con: ecosistema de base, saberes ancestrales de pueblos
- * originarios y criollos/mestizos, especies clave y fuentes para profundizar.
+ * Este archivo tiene las 12 fichas sudamericanas y el resolutor `resolverBioma`,
+ * que elige entre los tres catálogos según cuánta precisión haya disponible:
  *
- * Los "análogos" en climas parecidos del mundo se derivan de la clase Köppen.
+ *   lib/contexto.ts          12 fichas sudamericanas (por Köppen y ubicación)
+ *   lib/biomasRegionales.ts  22 fichas de Norteamérica, Mesoamérica, Caribe y
+ *                            Europa (por ECO_ID curado de RESOLVE)
+ *   lib/biomasGlobales.ts    15 fichas de bioma global (cubren todo el planeta)
  *
- * Contenido curado de referencia (sin costo ni IA). Cobertura: Latinoamérica.
- * Es material orientativo y de divulgación; verificá con fuentes locales antes de
- * decisiones de manejo.
+ * Los "análogos" en climas parecidos del mundo se derivan de la clase Köppen y
+ * son independientes de la ficha.
+ *
+ * Contenido curado de referencia (sin costo ni IA). Es material orientativo y de
+ * divulgación; verificá con fuentes locales antes de decisiones de manejo.
  */
 
 import type { Koppen } from './clima';
 import { biomaGlobal, enSudamerica, fichaDeEcorregion, type Ecorregion } from './ecorregiones';
+import { BIOMAS_REGIONALES } from './biomasRegionales';
+import { BIOMAS_GLOBALES } from './biomasGlobales';
+import type { BiomaFicha, Fuente, SaberCultural } from './biomaTipos';
+
+export type { BiomaFicha, Fuente, SaberCultural };
 
 export type BiomaId =
   | 'selva_tropical'
@@ -30,26 +38,6 @@ export type BiomaId =
   | 'mediterraneo'
   | 'desierto_costero';
 
-export interface SaberCultural {
-  cultura: string;   // pueblo o tradición
-  practicas: string; // descripción de prácticas y sistemas productivos
-}
-
-export interface Fuente { label: string; url: string }
-
-export interface BiomaFicha {
-  id: BiomaId;
-  nombre: string;
-  emoji: string;
-  color: string;
-  resumen: string;
-  vegetacion: string;
-  fauna: string;
-  suelos: string;
-  saberes: SaberCultural[];
-  especies: string[];      // especies nativas clave (útiles/indicadoras)
-  fuentes: Fuente[];
-}
 
 // ─── Fichas por bioma ─────────────────────────────────────────────────────────
 
@@ -349,10 +337,15 @@ export function fichaBioma(id: BiomaId): BiomaFicha {
   return BIOMAS[id];
 }
 
-/** Busca una ficha por id suelto (viene de la tabla de ecorregiones, que ya
- *  nombra fichas regionales todavía no escritas). Null si no existe. */
+/**
+ * Busca una ficha por id en los tres catálogos, de la más específica a la más
+ * gruesa: sudamericanas → regionales → biomas globales. Null si no existe.
+ */
 export function fichaPorId(id: string): BiomaFicha | null {
-  return (BIOMAS as Record<string, BiomaFicha | undefined>)[id] ?? null;
+  return (BIOMAS as Record<string, BiomaFicha | undefined>)[id]
+      ?? BIOMAS_REGIONALES[id]
+      ?? BIOMAS_GLOBALES[id]
+      ?? null;
 }
 
 // ─── Resolución en tres niveles ───────────────────────────────────────────────
@@ -402,13 +395,14 @@ export function resolverBioma(
       return { ficha: f, titulo: f.nombre, emoji: f.emoji, ecorregion: eco, fuente: 'koppen', aviso: null };
     }
     const global = biomaGlobal(eco.bioma_num);
+    const fichaG = global ? fichaPorId(global.id) : null;
     return {
-      ficha: null,
-      titulo: global?.nombre ?? eco.bioma_name,
-      emoji:  global?.emoji ?? '🌍',
+      ficha: fichaG,
+      titulo: fichaG?.nombre ?? global?.nombre ?? eco.bioma_name,
+      emoji:  fichaG?.emoji ?? global?.emoji ?? '🌍',
       ecorregion: eco,
       fuente: 'bioma_global',
-      aviso: `Todavía no tenemos ficha detallada para ${eco.eco_name}. Mostramos el bioma global.`,
+      aviso: `Descripción a escala de bioma: todavía no tenemos ficha regional para ${eco.eco_name}, así que no listamos especies ni saberes locales.`,
     };
   }
 
