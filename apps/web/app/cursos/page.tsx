@@ -72,6 +72,7 @@ type ProximoItem = {
 
 const FALLBACK_TODOS: TodoItem[] = [
   { slug: 'formacion-construccion-natural', name: 'Formación Integral en Construcción Natural', tag: '21 sep – 30 nov · 3 cupos + 2 con experiencia', img: '/img/cursos/bioarquitectura/1.jpg', badge: 'Presencial · 2 meses', tentativo: false, online: false },
+  { slug: 'formacion-integral-intensivo', name: 'Formación Integral — Intensivo', tag: '10 al 12 (o 17) oct · cupo máx. 25', img: '/img/cursos/bioarquitectura/9.jpg', badge: 'Intensivo · 3 u 8 días', tentativo: false, online: false },
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
   { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
@@ -94,6 +95,16 @@ const FALLBACK_CURSOS: Curso[] = [
     contenidos: ['Cimientos y contrapisos', 'Estructura en madera', 'Adobe y quincha alivianada', 'Techos vivos y de chapa', 'Revoques de barro y cal', 'Biofiltros y cosecha de lluvia', 'Instalación de servicios y fin de obra'],
     precio: '$1.500.000 ARS', precioNote: 'Precio único, todo incluido (hospedaje + alimentación). Se reserva con seña del 10% ($150.000). 2 cupos con 50% de descuento para personas con experiencia previa (hospedaje en carpa propia).',
     href: '/cursos/formacion-construccion-natural', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero postularme a la Formación Integral en Construcción Natural (arranca el 21 de septiembre)'),
+  },
+  {
+    slug: 'formacion-integral-intensivo', badge: 'Intensivo · 3 u 8 días', name: 'Formación Integral — Intensivo',
+    tag: '10, 11 y 12 de octubre · o toda la semana hasta el 17 · San Marcos Sierras',
+    desc: 'La versión corta de la Formación Integral: en 3 días recorrés la secuencia completa de un muro de tierra — adobe y quincha, revoque grueso, revoque fino y pintura. Quedate hasta el 17 y sumás techo verde, aberturas y carpintería.',
+    img: '/img/cursos/bioarquitectura/9.jpg',
+    datos: [{ label: 'Cuándo', val: '10, 11 y 12 oct · o hasta el 17' }, { label: 'Lugar', val: 'San Marcos Sierras · Hospedaje en Tay Pichín' }, { label: 'Modalidad', val: 'Práctica intensiva en obra' }, { label: 'Cupos', val: 'Cupo máximo 25 personas' }],
+    contenidos: ['Muros de adobe y quincha', 'Revoque grueso', 'Revoque fino y pinturas', 'Techo verde', 'Colocación de aberturas', 'Carpintería de obra'],
+    precio: '$120.000 – $250.000 ARS', precioNote: 'Según camping u habitación compartida, y 3 días o semana completa. Precio de lanzamiento.',
+    href: '/cursos/formacion-integral-intensivo', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Intensivo de Formación Integral (10 de octubre)'),
   },
   {
     slug: 'mi-tierra-mi-casa', badge: 'Online · Acceso ilimitado', name: 'Mi Tierra, Mi Casa',

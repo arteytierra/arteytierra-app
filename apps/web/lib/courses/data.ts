@@ -200,6 +200,88 @@ export const COURSES: Record<string, CourseData> = {
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
   },
 
+  'formacion-integral-intensivo': {
+    slug: 'formacion-integral-intensivo',
+    kind: 'presencial',
+    badge: 'Intensivo · 3 u 8 días',
+    name: 'Formación Integral — Intensivo',
+    subtitle: '3 días: lo esencial del oficio — muro, revoque grueso, revoque fino y pintura de barro y cal. Quedate hasta el 17: para ir más allá, con techo verde, aberturas y carpintería.',
+    heroImg: '/img/cursos/bioarquitectura/9.jpg',
+    galeria: [
+      '/img/cursos/bioarquitectura/2.jpg',
+      '/img/cursos/bioarquitectura/4.jpg',
+      '/img/cursos/bioarquitectura/6.jpeg',
+      '/img/cursos/bioarquitectura/8.jpg',
+      '/img/cursos/bioarquitectura/10.jpg',
+      '/img/cursos/bioarquitectura/13.jpeg',
+    ],
+    tag: '10, 11 y 12 de octubre 2026 · o toda la semana hasta el 17 · San Marcos Sierras · cupo máximo 25',
+    intro: [
+      'Nació de la Formación Integral en Construcción Natural: mucha gente se anotó interesada pero no le alcanzaba el tiempo ni la plata para dos meses de obra. Esta es la versión corta — el mismo oficio, en la dosis que puedas.',
+      'Los primeros 3 días son la secuencia completa de un muro de tierra: lo levantás en adobe y quincha, le das el revoque grueso, y lo cerrás con el revoque fino y la pintura natural. Al tercer día vas a haber tocado cada etapa con tus manos, de la estructura a la terminación.',
+      'Si te enganchás, te quedás. Del día 4 al 17 sumamos techo verde, colocación de aberturas y carpintería de obra — y más horas de práctica en lo que ya viste, hasta que el gesto te salga solo.',
+    ],
+    datos: [
+      { label: '¿Cuándo?', val: '10, 11 y 12 de octubre 2026 · o extendé hasta el 17' },
+      { label: '¿Dónde?', val: 'Obra real en San Marcos Sierras · Hospedaje en Ecohostel Tay Pichín' },
+      { label: 'Modalidad', val: 'Práctica intensiva en obra · grupos chicos' },
+      { label: 'Cupos', val: 'Cupo máximo 25 personas' },
+    ],
+    paraQuien: [
+      'Te interesó la Formación Integral de 2 meses pero no te daba el tiempo ni la plata.',
+      'Nunca tocaste barro y querés una primera experiencia real, de la mano de gente con oficio.',
+      'Hiciste algún taller suelto y te falta encadenar la secuencia completa de un muro.',
+      'Buscás una experiencia intensiva de pocos días, sin dejar el trabajo por dos meses.',
+    ],
+    vasASalir: [
+      'Levantar un muro de adobe y de quincha alivianada con tus propias manos.',
+      'Mezclar y aplicar un revoque grueso de barro y de cal, en las proporciones correctas.',
+      'Cerrar una superficie con revoque fino y pintura natural de tierra o cal.',
+      'Leer el ciclo completo de un muro de tierra, de la estructura a la terminación.',
+    ],
+    modulos: [
+      { num: 'Día 1', title: 'Muros de adobe y quincha', items: ['Comportamiento de la tierra, la paja y la madera', 'Levantar muros de adobe', 'Quincha alivianada', 'Ubicación de aberturas'] },
+      { num: 'Día 2', title: 'Revoques gruesos', items: ['Ciclo de la cal', 'Mezclas y proporciones', 'Revoque grueso de barro', 'Revoque grueso de cal'] },
+      { num: 'Día 3', title: 'Revoque fino y pinturas', items: ['Revoque fino de barro y de cal', 'Texturas y acabados', 'Pinturas naturales de tierra', 'Pinturas de cal y pigmentos'] },
+      { num: 'Días 4–5 · Extensión', title: 'Techo verde', items: ['Estructura y membrana impermeable', 'Sustrato y drenaje', 'Plantación y mantenimiento'] },
+      { num: 'Día 6 · Extensión', title: 'Colocación de aberturas', items: ['Premarcos y aplomado', 'Sellado e impermeabilización', 'Terminaciones alrededor del vano'] },
+      { num: 'Día 7 · Extensión', title: 'Carpintería de obra', items: ['Herramientas y uniones básicas', 'Piezas de terminación en madera', 'Mantenimiento de herramienta manual'] },
+      { num: 'Día 8 · Extensión', title: 'Más práctica y cierre', items: ['Repaso de muro, revoques y pintura', 'Terminaciones a tu ritmo', 'Cierre y certificado'] },
+    ],
+    facilitadores: [
+      JONATAN,
+      {
+        name: 'Equipo de obra Arte y Tierra',
+        role: 'Cuadrilla y acompañamiento',
+        bio: 'La formación se sostiene sobre la misma cuadrilla estable que trabaja a diario en la Formación Integral: Julián Denaday y Valentín Nonino, junto a Jonatan, más los voluntarios de Inmersión Viva que dan vida cotidiana a la obra.',
+      },
+    ],
+    opciones: [
+      {
+        id: '3dias-carpa', label: '3 días · Camping', precio: '$120.000 ARS',
+        includes: ['Los 3 días de obra (muro, revoque grueso, revoque fino y pintura)', 'Materiales de práctica', 'Alimentación completa', 'Lugar de camping en Tay Pichín', 'Certificado de participación'],
+      },
+      {
+        id: '3dias-habitacion', label: '3 días · Habitación compartida', precio: '$150.000 ARS',
+        includes: ['Los 3 días de obra (muro, revoque grueso, revoque fino y pintura)', 'Materiales de práctica', 'Alimentación completa', 'Habitación compartida en Tay Pichín', 'Certificado de participación'],
+        highlighted: true,
+      },
+      {
+        id: 'semana-carpa', label: 'Semana completa (8 días) · Camping', precio: '$180.000 ARS',
+        includes: ['Los 3 días de muro, revoque y pintura + techo verde, aberturas y carpintería', 'Más horas de práctica en obra', 'Materiales de práctica', 'Alimentación completa', 'Lugar de camping en Tay Pichín', 'Certificado de participación'],
+      },
+      {
+        id: 'semana-habitacion', label: 'Semana completa (8 días) · Habitación compartida', precio: '$250.000 ARS',
+        includes: ['Los 3 días de muro, revoque y pintura + techo verde, aberturas y carpintería', 'Más horas de práctica en obra', 'Materiales de práctica', 'Alimentación completa', 'Habitación compartida en Tay Pichín', 'Certificado de participación'],
+        highlighted: true,
+      },
+    ],
+    opcionesNota: 'Todos arrancan juntos el 10 de octubre. Si elegís la semana completa, seguís de largo hasta el 17. Precio de lanzamiento — cupo máximo 25 personas en total.',
+    formCurso: 'Formación Integral — Intensivo · 10 al 17 de octubre 2026',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Intensivo%20de%20Formaci%C3%B3n%20Integral%20(10%20de%20octubre)',
+    mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
+  },
+
   'bioarquitectura': {
     slug: 'bioarquitectura',
     kind: 'presencial',
