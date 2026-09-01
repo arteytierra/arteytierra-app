@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { koppenBeck } from '@/lib/koppenBeck';
+import { koppenBeck, derivaKoppen, PERIODOS } from '@/lib/koppenBeck';
 
 /**
  * Lee el mapa de 1 km de verdad, no un fixture: el archivo está en el repo y
@@ -50,5 +50,71 @@ describe('koppenBeck — lectura del mapa de 1 km', () => {
     const k = await koppenBeck(-32.89, -68.85);
     expect(k).toMatchObject({ codigo: 'BWk', grupo: 'Árido' });
     expect(k?.descripcion).toMatch(/desierto/i);
+  });
+});
+
+/**
+ * Deriva climática: el mismo punto leído en 1961-1990, 1991-2020 y 2071-2099
+ * (SSP2-4.5). También contra los archivos reales, por el mismo motivo que
+ * arriba, y con lugares elegidos porque cada uno prueba un tramo distinto.
+ */
+describe('derivaKoppen — cómo se mueve la clase en el tiempo', () => {
+  it('Berna ya cambió de clase entre 1961-1990 y 1991-2020', async () => {
+    // Dfb → Cfb: dejó de tener invierno continental. Es un cambio de GRUPO,
+    // el salto más grande que registra la clasificación.
+    const d = await derivaKoppen(46.8935, 7.4821);
+    expect(d.pasado?.codigo).toBe('Dfb');
+    expect(d.presente?.codigo).toBe('Cfb');
+    expect(d.yaCambio).toBe(true);
+    expect(d.queCambia).toContain('tipo de clima');
+  });
+
+  it('Mendoza cambia recién a futuro, y lo que se mueve es el rigor térmico', async () => {
+    // BWk → BWh: sigue siendo desierto, pero deja de ser desierto FRÍO.
+    const d = await derivaKoppen(-32.89, -68.85);
+    expect(d.pasado?.codigo).toBe('BWk');
+    expect(d.presente?.codigo).toBe('BWk');
+    expect(d.futuro?.codigo).toBe('BWh');
+    expect(d.yaCambio).toBe(false);
+    expect(d.vaACambiar).toBe(true);
+    expect(d.queCambia).toContain('rigor térmico');
+  });
+
+  it('Madrid ya pasó de mediterráneo a semiárido', async () => {
+    // Csa → BSk. Explica por qué el mapa da BSk donde el manual dice Csa: no es
+    // que el mapa se equivoque, es que Madrid cambió de clase.
+    const d = await derivaKoppen(40.42, -3.70);
+    expect(d.pasado?.codigo).toBe('Csa');
+    expect(d.presente?.codigo).toBe('BSk');
+    expect(d.yaCambio).toBe(true);
+  });
+
+  it('un lugar estable no reporta ningún cambio', async () => {
+    const d = await derivaKoppen(-3.12, -60.02);   // Manaos, Af en los tres
+    expect(d.yaCambio).toBe(false);
+    expect(d.vaACambiar).toBe(false);
+    expect(d.queCambia).toBeNull();
+  });
+
+  it('en el océano no hay clase en ningún período y no se inventa un cambio', async () => {
+    const d = await derivaKoppen(0, -140);
+    expect(d.presente).toBeNull();
+    expect(d.yaCambio).toBe(false);
+    expect(d.vaACambiar).toBe(false);
+  });
+
+  it('los tres períodos tienen etiqueta y el futuro dice qué escenario es', () => {
+    expect(PERIODOS.pasado.etiqueta).toBe('1961-1990');
+    expect(PERIODOS.presente.etiqueta).toBe('1991-2020');
+    expect(PERIODOS.futuro.etiqueta).toContain('SSP2-4.5');
+  });
+
+  it('koppenBeck sin período explícito sigue devolviendo el presente', async () => {
+    const [pordefecto, presente] = await Promise.all([
+      koppenBeck(46.8935, 7.4821),
+      koppenBeck(46.8935, 7.4821, 'presente'),
+    ]);
+    expect(pordefecto?.codigo).toBe(presente?.codigo);
+    expect(pordefecto?.codigo).toBe('Cfb');
   });
 });

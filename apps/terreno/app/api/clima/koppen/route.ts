@@ -1,6 +1,6 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { requierePlan } from '@/lib/auth/apiGuard';
-import { koppenBeck, FUENTE_KOPPEN_BECK } from '@/lib/koppenBeck';
+import { derivaKoppen, PERIODOS, FUENTE_KOPPEN_BECK } from '@/lib/koppenBeck';
 
 /**
  * Köppen-Geiger de 1 km del predio (Beck et al. 2023, CC BY 4.0).
@@ -36,13 +36,27 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ error: 'Falta lat/lng.' }), { status: 400, headers: HDRS });
   }
 
-  const koppen = await koppenBeck(lat, lng);
-  if (!koppen) {
+  const d = await derivaKoppen(lat, lng);
+  if (!d.presente) {
     return new Response(JSON.stringify({ sinDatos: true }), { status: 200, headers: HDRS });
   }
 
   return new Response(
-    JSON.stringify({ koppen, fuente: FUENTE_KOPPEN_BECK }),
+    JSON.stringify({
+      koppen: d.presente,
+      // La deriva viaja aparte del `koppen`: quien sólo quiere la clase de hoy
+      // no tiene que saber que existe, y si algún período faltara del bundle el
+      // presente sigue respondiendo igual.
+      deriva: {
+        pasado:     d.pasado,
+        futuro:     d.futuro,
+        yaCambio:   d.yaCambio,
+        vaACambiar: d.vaACambiar,
+        queCambia:  d.queCambia,
+        periodos:   PERIODOS,
+      },
+      fuente: FUENTE_KOPPEN_BECK,
+    }),
     { status: 200, headers: HDRS },
   );
 }

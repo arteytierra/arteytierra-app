@@ -127,6 +127,46 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                   </div>
                 )}
               </div>
+
+              {/* Deriva climática: dónde estaba, dónde está, a dónde va.
+                  Sólo aparece si en algún tramo la clase se mueve — en un lugar
+                  climáticamente estable no hay nada que contar y la línea sería
+                  ruido. Los tres valores salen del mismo mapa leído en tres
+                  períodos, así que son comparables entre sí. */}
+              {datos.koppen_deriva && (datos.koppen_deriva.yaCambio || datos.koppen_deriva.vaACambiar) && (
+                <div className="mt-2.5 pt-2.5 border-t border-bone-50/20">
+                  <p className="text-[10px] uppercase tracking-wide text-bone-50/70 mb-1">
+                    Cómo se mueve este clima
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Deriva
+                      codigo={datos.koppen_deriva.pasado?.codigo}
+                      periodo={datos.koppen_deriva.etiquetas.pasado}
+                      apagado
+                    />
+                    <span className="text-bone-50/40">→</span>
+                    <Deriva codigo={datos.koppen.codigo} periodo="hoy" />
+                    <span className="text-bone-50/40">→</span>
+                    <Deriva
+                      codigo={datos.koppen_deriva.futuro?.codigo}
+                      periodo={datos.koppen_deriva.etiquetas.futuro}
+                      apagado
+                    />
+                  </div>
+                  {datos.koppen_deriva.queCambia && (
+                    <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
+                      Lo que se mueve es {datos.koppen_deriva.queCambia}.
+                      {datos.koppen_deriva.vaACambiar
+                        ? ' Un monte tarda treinta años en ser monte: la especie conviene elegirla para ese clima, no para el de hoy.'
+                        : ' El salto ya ocurrió: lo que anduvo históricamente acá puede no ser lo que ande ahora.'}
+                    </p>
+                  )}
+                  <p className="text-[9px] text-bone-50/50 mt-1 leading-snug">
+                    Escenario intermedio (SSP2-4.5), el que se usa de referencia
+                    para planificar. Es una proyección, no un pronóstico.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -334,6 +374,22 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
 }
 
 // ─── Gráfico mensual ──────────────────────────────────────────────────────────
+
+/**
+ * Un eslabón de la deriva climática: la clase y de qué período es. El presente
+ * va destacado y los otros dos apagados, para que se lea de un vistazo dónde
+ * está parado el predio hoy dentro de la trayectoria.
+ */
+function Deriva({ codigo, periodo, apagado }: { codigo?: string; periodo: string; apagado?: boolean }) {
+  return (
+    <div className={`text-center px-1.5 py-1 rounded ${apagado ? 'bg-bone-50/10' : 'bg-bone-50/25'}`}>
+      <p className={`font-bold leading-none ${apagado ? 'text-bone-50/70' : 'text-bone-50'}`}>
+        {codigo ?? '—'}
+      </p>
+      <p className="text-[9px] text-bone-50/60 leading-none mt-0.5">{periodo}</p>
+    </div>
+  );
+}
 
 function GraficoMensual({ meses }: { meses: MesDato[] }) {
   const maxVal = Math.max(...meses.map(m => Math.max(m.precip_mm, m.etp_mm)), 1);

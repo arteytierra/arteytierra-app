@@ -4,7 +4,8 @@
 **Estado:** VIVA
 **Prioridad sugerida:** alta — era el mejor hallazgo del relevamiento europeo, y
 no es europeo: sirve para todo el planeta. **IMPLEMENTADA** el 31/08/2026 con el
-período 1991–2020.
+período 1991–2020, y ampliada el 01/09/2026 con 1961–1990 y 2071–2099 SSP2-4.5
+para mostrar la **deriva climática** del predio (37 MB en total).
 
 ## Qué mejora sobre la fuente global
 
@@ -164,3 +165,34 @@ reglas sobre una celda de 50 km.
 Las 30 clases de Beck son un subconjunto de las que ya producía
 `clasificarKoppen`: la única que el clasificador puede dar y Beck no es `As`,
 que Beck agrupa dentro de `Aw`. No hubo que decidir nada de vocabulario.
+
+## Ampliación a tres períodos (01/09/2026)
+
+Se agregaron `1961_1990` y `2071_2099/ssp245` junto al presente. Los tres son el
+mismo mapa en tres momentos, así que se comparan píxel a píxel y la lectura de un
+punto son tres teselas de tres archivos locales, en paralelo.
+
+Del futuro se hostea sólo **SSP2-4.5**, el escenario intermedio del CMIP6 y el
+que se usa de referencia para planificar. Beck publica siete escenarios; los
+siete serían 84 MB para un abanico que nadie lee. SSP5-8.5 entra sin tocar código
+si alguna vez hace falta el peor caso.
+
+Lo que salió al leer los tres, verificado contra el archivo (no estimado):
+
+| Lugar | 1961–1990 | 1991–2020 | 2071–2099 |
+|---|---|---|---|
+| Berna, Suiza | `Dfb` | **`Cfb`** | `Cfb` |
+| Madrid, España | `Csa` | **`BSk`** | `BSk` |
+| Mendoza, Argentina | `BWk` | `BWk` | **`BWh`** |
+| Manaos, Bariloche, Londres, Ames, Singapur | — sin cambio en ningún tramo — |
+
+Dos cosas que vale anotar:
+
+1. **Madrid ya cambió de clase.** El `BSk` que devolvía el mapa —y que en la
+   implementación anterior anoté como "el manual dice `Csa`, la aritmética dice
+   `BSk`"— tiene una explicación más simple que la aritmética: en 1961–1990
+   Madrid **era** `Csa`. El manual no está equivocado, está viejo.
+2. **Un cambio de la primera letra es un cambio de régimen, no un matiz.** Berna
+   pasando de `D` a `C` significa que dejó de tener invierno continental. Eso
+   mueve qué frutal cuaja y qué especie soporta el verano, y es información que
+   la app ahora da sola.

@@ -217,6 +217,37 @@ export function InformeView({ datos, compartido = false }: Props) {
                 )}
               </div>
             )}
+            {/* Deriva climática. En el informe pesa más que en el panel: quien lo
+                lee está por decidir qué plantar, y un monte se elige para el
+                clima que va a haber. Se omite donde la clase no se mueve. */}
+            {datos.clima.koppen && datos.clima.koppen_deriva
+              && (datos.clima.koppen_deriva.yaCambio || datos.clima.koppen_deriva.vaACambiar) && (
+              <div className="mb-4 rounded-lg border border-bone-200 bg-bone-50 p-3">
+                <p className="text-xs text-ink-700/60 uppercase tracking-wide mb-1.5">Cómo se mueve este clima</p>
+                <p className="font-mono text-sm text-ink-950">
+                  {datos.clima.koppen_deriva.pasado?.codigo ?? '—'}
+                  <span className="text-ink-700/40 mx-1.5">→</span>
+                  <span className="font-bold text-moss-900">{datos.clima.koppen.codigo}</span>
+                  <span className="text-ink-700/40 mx-1.5">→</span>
+                  {datos.clima.koppen_deriva.futuro?.codigo ?? '—'}
+                </p>
+                <p className="text-[10px] text-ink-700/60 mt-0.5">
+                  {datos.clima.koppen_deriva.etiquetas.pasado} · {datos.clima.koppen_deriva.etiquetas.presente} (hoy) · {datos.clima.koppen_deriva.etiquetas.futuro}
+                </p>
+                {datos.clima.koppen_deriva.queCambia && (
+                  <p className="text-xs text-ink-700 mt-1.5 leading-relaxed">
+                    Lo que se mueve es {datos.clima.koppen_deriva.queCambia}.
+                    {datos.clima.koppen_deriva.vaACambiar
+                      ? ' Las especies de ciclo largo conviene elegirlas para ese clima y no para el actual.'
+                      : ' El salto ya ocurrió: lo que anduvo históricamente en este lugar puede no ser lo que ande hoy.'}
+                  </p>
+                )}
+                <p className="text-[10px] text-ink-700/50 mt-1 leading-relaxed">
+                  Beck et al. (2023), mismo mapa de 1 km leído en tres períodos. El futuro es el
+                  escenario intermedio SSP2-4.5: es una proyección climática, no un pronóstico.
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="Precipitación" value={`${datos.clima.precip_anual_mm} mm`} sub="anual" />
               <StatBlock label="Temperatura" value={`${datos.clima.tmean_anual_c}°C`} sub="media anual" />

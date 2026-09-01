@@ -92,34 +92,61 @@ const DESC: Record<string, { grupo: string; desc: string }> = {
 export const FUENTE_KOPPEN_BECK =
   'Köppen-Geiger 1 km, 1991–2020 — Beck et al. (2023), CC BY 4.0';
 
-const ARCHIVO = path.join(
-  process.cwd(),
-  'datos', 'koppen', 'koppen_geiger_1991_2020_1km.tif',
-);
+/**
+ * Los tres períodos que hostea la app, de los siete que publica Beck.
+ *
+ * 'presente' es el que manda: es la clase del predio hoy y la que alimenta
+ * análogos y biomas. Los otros dos existen para una sola pregunta, que es la que
+ * importa cuando se planta un monte que tarda treinta años: **¿el clima de acá
+ * ya cambió de clase, y a cuál va?**
+ *
+ * El futuro es **SSP2-4.5**, el escenario intermedio del CMIP6 —el que se usa
+ * como referencia de planificación—. Beck publica siete; traer los siete serían
+ * 84 MB para mostrar un abanico que nadie va a leer. Si alguna vez hace falta el
+ * peor caso, SSP5-8.5 está en el mismo zip y entra acá sin tocar nada más.
+ */
+export type PeriodoKoppen = 'pasado' | 'presente' | 'futuro';
+
+interface DefPeriodo { archivo: string; etiqueta: string }
+
+export const PERIODOS: Record<PeriodoKoppen, DefPeriodo> = {
+  pasado:   { archivo: 'koppen_geiger_1961_1990_1km.tif',            etiqueta: '1961-1990' },
+  presente: { archivo: 'koppen_geiger_1991_2020_1km.tif',            etiqueta: '1991-2020' },
+  futuro:   { archivo: 'koppen_geiger_2071_2099_ssp245_1km.tif',     etiqueta: '2071-2099 (SSP2-4.5)' },
+};
 
 /**
- * El archivo se abre una vez por instancia y queda cacheado: abrirlo lee el
+ * Cada archivo se abre una vez por instancia y queda cacheado: abrirlo lee el
  * directorio de teselas (14.365 offsets), y hacerlo en cada request sería el
  * grueso del costo. Si la apertura falla se guarda `null` y no se reintenta en
  * caliente: sin el mapa la app sigue con el Köppen calculado.
  */
-let tiffPromesa: Promise<GeoTIFF | null> | null = null;
+const tiffs = new Map<PeriodoKoppen, Promise<GeoTIFF | null>>();
 
-function abrir(): Promise<GeoTIFF | null> {
-  tiffPromesa ??= fromFile(ARCHIVO).catch(() => null);
-  return tiffPromesa;
+function abrir(periodo: PeriodoKoppen): Promise<GeoTIFF | null> {
+  let pr = tiffs.get(periodo);
+  if (!pr) {
+    const ruta = path.join(process.cwd(), 'datos', 'koppen', PERIODOS[periodo].archivo);
+    pr = fromFile(ruta).catch(() => null);
+    tiffs.set(periodo, pr);
+  }
+  return pr;
 }
 
 /**
  * Clase Köppen del punto, o `null` si el mapa no tiene dato ahí (océano) o no se
  * pudo leer. El llamador se queda con el Köppen calculado en ese caso.
  */
-export async function koppenBeck(lat: number, lng: number): Promise<Koppen | null> {
+export async function koppenBeck(
+  lat: number,
+  lng: number,
+  periodo: PeriodoKoppen = 'presente',
+): Promise<Koppen | null> {
   if (!isFinite(lat) || !isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return null;
   }
 
-  const tiff = await abrir();
+  const tiff = await abrir(periodo);
   if (!tiff) return null;
 
   // Píxel que contiene el punto. El `min` cubre el borde exacto: lng = 180 o
@@ -146,4 +173,61 @@ export async function koppenBeck(lat: number, lng: number): Promise<Koppen | nul
   } catch {
     return null;
   }
+}
+
+// ─── Deriva climática: dónde estaba el predio, dónde está, a dónde va ─────────
+
+export interface DerivaKoppen {
+  pasado:   Koppen | null;
+  presente: Koppen | null;
+  futuro:   Koppen | null;
+  /** La clase ya cambió entre 1961-1990 y 1991-2020. */
+  yaCambio: boolean;
+  /** La clase cambia entre 1991-2020 y 2071-2099 bajo SSP2-4.5. */
+  vaACambiar: boolean;
+  /** Qué se mueve en el salto que haya (el futuro pesa más que el pasado). */
+  queCambia: string | null;
+}
+
+/**
+ * Qué parte de la clasificación se mueve entre dos códigos Köppen. No es
+ * cosmético: cambiar de grupo (C→B) es que el lugar se vuelve árido y hay que
+ * repensar el agua; cambiar la segunda letra (f→s) es que la lluvia se corre de
+ * estación y hay que repensar el calendario; cambiar la tercera (b→a) es que los
+ * veranos se ponen calurosos y hay que repensar qué especies aguantan.
+ */
+function queSeMueve(a: string, b: string): string | null {
+  if (a === b) return null;
+  if (a[0] !== b[0]) return 'el tipo de clima: cambia el régimen de fondo, no un matiz';
+  if (a.length > 1 && b.length > 1 && a[1] !== b[1])
+    return 'la estación de las lluvias: el calendario de siembra se corre';
+  if (a.length > 2 && b.length > 2 && a[2] !== b[2])
+    return 'el rigor térmico: cambia qué especies aguantan el verano o el invierno';
+  return 'la clase, dentro del mismo grupo';
+}
+
+/**
+ * Lee el mismo punto en los tres períodos. Para plantar un monte —que tarda
+ * treinta años en ser monte— importa menos en qué clima está el predio que a
+ * cuál se dirige.
+ *
+ * Los tres archivos son locales: se leen en paralelo y es una tesela de cada uno.
+ */
+export async function derivaKoppen(lat: number, lng: number): Promise<DerivaKoppen> {
+  const [pasado, presente, futuro] = await Promise.all([
+    koppenBeck(lat, lng, 'pasado'),
+    koppenBeck(lat, lng, 'presente'),
+    koppenBeck(lat, lng, 'futuro'),
+  ]);
+
+  const yaCambio   = !!pasado   && !!presente && pasado.codigo   !== presente.codigo;
+  const vaACambiar = !!presente && !!futuro   && presente.codigo !== futuro.codigo;
+
+  // Si las dos cosas pasan, se cuenta la que todavía se puede anticipar.
+  const queCambia =
+    vaACambiar ? queSeMueve(presente!.codigo, futuro!.codigo)
+    : yaCambio ? queSeMueve(pasado!.codigo, presente!.codigo)
+    : null;
+
+  return { pasado, presente, futuro, yaCambio, vaACambiar, queCambia };
 }

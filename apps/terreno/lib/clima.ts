@@ -50,6 +50,19 @@ export interface Heladas {
   periodo_libre: string;    // descripción del período libre de heladas
 }
 
+/** Clase Köppen del predio en los tres períodos hosteados. */
+export interface DerivaClima {
+  pasado:     Koppen | null;
+  futuro:     Koppen | null;
+  /** La clase ya cambió entre 1961-1990 y 1991-2020. */
+  yaCambio:   boolean;
+  /** Cambia entre 1991-2020 y 2071-2099 bajo el escenario intermedio. */
+  vaACambiar: boolean;
+  /** Qué se mueve: el grupo, la estación de lluvias o el rigor térmico. */
+  queCambia:  string | null;
+  etiquetas:  { pasado: string; presente: string; futuro: string };
+}
+
 export interface DatosClima {
   lat: number;
   lng: number;
@@ -76,6 +89,16 @@ export interface DatosClima {
    * dice por qué, y el calculado sí sabe qué mes seco o qué isoterma la decidió.
    */
   koppen_calculado?: Koppen;
+  /**
+   * Cómo se mueve la clase del predio en el tiempo: dónde estaba (1961-1990),
+   * dónde está (1991-2020) y a dónde va (2071-2099, SSP2-4.5). Sale de leer el
+   * mismo punto en tres mapas de Beck. Está sólo si el mapa respondió.
+   *
+   * Es lo único del panel de clima que mira más allá de hoy, y existe por una
+   * razón concreta: un monte tarda treinta años en ser monte, así que la especie
+   * hay que elegirla para el clima que va a haber, no para el que hay.
+   */
+  koppen_deriva?:   DerivaClima;
   aridez?:          IndiceAridez;
   gdd_anual?:       number;  // grados-día de crecimiento base 10 °C
   heladas?:         Heladas;
@@ -250,7 +273,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
 
   // La clase Köppen sale del mapa de 1 km, no de las medias. Es global y no
   // depende de la fuente de los números, así que se pide una sola vez.
-  const koppenMapa = await obtenerKoppenBeck(lat, lng);
+  const { koppen: koppenMapa, deriva: koppenDeriva } = await obtenerKoppenBeck(lat, lng);
 
   // Donde hay una fuente regional fina, pisa lo que ella mide mejor y POWER
   // queda de base. El viento sale de POWER siempre: ninguna de las regionales
@@ -265,6 +288,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       viento_dir_ppal,
       `${d.fuente} · viento de NASA POWER`,
       koppenMapa,
+      koppenDeriva,
     );
   }
 
@@ -272,6 +296,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     lat, lng, meses, viento_dir_ppal,
     'NASA POWER Climatology (promedio 1981–2023)',
     koppenMapa,
+    koppenDeriva,
   );
 }
 
@@ -287,17 +312,42 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
  * segundos, algo anda mal y no vale la pena demorar el panel de clima entero
  * por una etiqueta.
  */
-async function obtenerKoppenBeck(lat: number, lng: number): Promise<Koppen | null> {
+async function obtenerKoppenBeck(
+  lat: number,
+  lng: number,
+): Promise<{ koppen: Koppen | null; deriva: DerivaClima | null }> {
+  const vacio = { koppen: null, deriva: null };
   try {
     const res = await fetch(
       `/api/clima/koppen?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`,
       { signal: AbortSignal.timeout(3_000) },
     );
-    if (!res.ok) return null;
-    const json = await res.json() as { koppen?: Koppen; sinDatos?: boolean };
-    return json.sinDatos ? null : json.koppen ?? null;
+    if (!res.ok) return vacio;
+    const json = await res.json() as {
+      koppen?: Koppen;
+      sinDatos?: boolean;
+      deriva?: {
+        pasado: Koppen | null; futuro: Koppen | null;
+        yaCambio: boolean; vaACambiar: boolean; queCambia: string | null;
+        periodos: Record<'pasado' | 'presente' | 'futuro', { etiqueta: string }>;
+      };
+    };
+    if (json.sinDatos || !json.koppen) return vacio;
+    const d = json.deriva;
+    return {
+      koppen: json.koppen,
+      deriva: d ? {
+        pasado: d.pasado, futuro: d.futuro,
+        yaCambio: d.yaCambio, vaACambiar: d.vaACambiar, queCambia: d.queCambia,
+        etiquetas: {
+          pasado:   d.periodos.pasado.etiqueta,
+          presente: d.periodos.presente.etiqueta,
+          futuro:   d.periodos.futuro.etiqueta,
+        },
+      } : null,
+    };
   } catch {
-    return null;
+    return vacio;
   }
 }
 
@@ -377,6 +427,7 @@ function ensamblar(
   viento_dir_ppal: string,
   fuente: string,
   koppenMapa?: Koppen | null,
+  koppenDeriva?: DerivaClima | null,
 ): DatosClima {
   const precip_anual_mm = Math.round(meses.reduce((s, m) => s + m.precip_mm, 0));
   const etp_anual_mm    = Math.round(meses.reduce((s, m) => s + m.etp_mm,    0));
@@ -420,6 +471,7 @@ function ensamblar(
     koppen_fuente: koppenMapa ? 'mapa' : 'calculado',
     koppen_calculado:
       koppenMapa && koppenMapa.codigo !== calculado.codigo ? calculado : undefined,
+    koppen_deriva: koppenDeriva ?? undefined,
     aridez, gdd_anual, heladas,
     mes_mas_seco:   mesSeco.mes,
     mes_mas_humedo: mesHumedo.mes,
