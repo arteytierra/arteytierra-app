@@ -1,11 +1,13 @@
 /**
- * Elevaciones desde OpenTopoData (SRTM 30m, ~30m resolución horizontal).
- * API pública sin clave. Límite: 100 puntos/request, 1000 req/día.
- * SRTM 30m = NASA Shuttle Radar Topography Mission, datos de 2000.
+ * Elevaciones por punto vía `/api/elevacion`, que rutea a la mejor fuente
+ * disponible para el lugar (servicio nacional donde lo hay —3DEP, IGN, HRDEM,
+ * AHN, swissALTI3D—, Copernicus GLO-30 si no, SRTM de respaldo). El panel ya no
+ * asume SRTM: la fuente viene en la respuesta y se muestra tal cual.
  *
  * ⚠️ Datos orientativos. Para proyectos de obra: contratar relevamiento GPS.
  */
 import * as turf from '@turf/turf';
+import { CREDITO_RELIEVE, PASO_RELIEVE, type FuenteRelieve } from './grillaElevacion';
 import type { Mojon } from './types';
 
 export interface PuntoElevacion {
@@ -36,11 +38,13 @@ export interface DatosTopografia {
 interface TopoResponse {
   results: Array<{ elevation: number; location: { lat: number; lng: number } }>;
   status: string;
+  /** Fuente que resolvió el pedido; la API la devuelve y antes se descartaba. */
+  fuente?: FuenteRelieve;
 }
 
 async function fetchElevaciones(
   puntos: Array<{ lat: number; lng: number }>,
-): Promise<number[]> {
+): Promise<{ elevaciones: number[]; fuente?: FuenteRelieve }> {
   // API acepta hasta 100 puntos por request
   const locs = puntos.map(p => `${p.lat},${p.lng}`).join('|');
   const controller = new AbortController();
@@ -53,7 +57,7 @@ async function fetchElevaciones(
     if (!res.ok) throw new Error(`OpenTopoData respondió ${res.status}`);
     const json: TopoResponse = await res.json();
     if (json.status !== 'OK') throw new Error('OpenTopoData: estado no OK');
-    return json.results.map(r => r.elevation);
+    return { elevaciones: json.results.map(r => r.elevation), fuente: json.fuente };
   } finally {
     clearTimeout(timer);
   }
@@ -148,7 +152,7 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     ...grillaCruda,
   ].slice(0, 100);
 
-  const elevaciones = await fetchElevaciones(todos);
+  const { elevaciones, fuente: fuenteRelieve } = await fetchElevaciones(todos);
 
   // Asignar elevaciones a mojones
   const puntos: PuntoElevacion[] = mojones.map((m, i) => ({
@@ -184,8 +188,11 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     puntos, centroide, grilla,
     elev_min, elev_max, elev_media, desnivel,
     pendiente_pct, pendiente_grados, orientacion, escurrimiento,
-    resolucion: 'SRTM 30m (~30 m/píxel)',
-    fuente: 'NASA SRTM 30m vía OpenTopoData',
+    // La fuente ya no se asume: la resuelve el router de elevación (servicio
+    // nacional donde lo hay, GLO-30 si no) y la API la devuelve. Decir 'SRTM,
+    // datos de 2000' sobre un predio suizo servido por swissALTI3D era falso.
+    resolucion: fuenteRelieve ? `~${PASO_RELIEVE[fuenteRelieve]} m/píxel` : '~30 m/píxel',
+    fuente: fuenteRelieve ? CREDITO_RELIEVE[fuenteRelieve] : 'Copernicus GLO-30 / SRTM',
   };
 }
 

@@ -63,10 +63,10 @@ import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
+import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, GRADIENTE_ELEV, GRADIENTE_PEND, type DatosShader } from '@/lib/shaders';
+import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
-import { obtenerGrillaDensa, grillaDesdeShader, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
@@ -191,6 +191,16 @@ function errMsgApp(err: unknown): string {
     if (parts.length) return parts.join(' · ');
   }
   return String(err);
+}
+
+/**
+ * Un paso o intervalo en la unidad en que se habla en el campo: centímetros por
+ * debajo del metro, metros arriba. Con AHN (50 cm) o un dron RTK, "0.5 m" se lee
+ * peor que "50 cm".
+ */
+function fmtPaso(m: number): string {
+  if (m < 1) return `${Math.round(m * 100)} cm`;
+  return `${Number.isInteger(m) ? m : m.toFixed(1)} m`;
 }
 
 // ─── Riel de navegación: definición de tabs y clústeres ─────────────────────
@@ -516,16 +526,41 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // MDE propio (dron/estación total). Si está cargado, manda sobre el satelital:
   // es la única forma de tener curvas por debajo del par de metros.
   const [demPropio, setDemPropio] = useState<DEMImportado | null>(null);
-  const pisoIntervalo = useMemo(
-    () => intervaloConfiablePara(demPropio?.pasoM ?? null),
-    [demPropio],
-  );
 
   const grillaActiva = useMemo(() => {
     if (demPropio) return demPropio.grilla;
     if (grillaCurvas && grillaKeyRef.current === mojonesKey) return grillaCurvas;
     return datosShader ? grillaDesdeShader(datosShader) : null;
   }, [demPropio, grillaCurvas, mojonesKey, datosShader]);
+
+  /**
+   * Hasta qué intervalo de curvas tiene sentido dibujar. Antes salía sólo de un
+   * MDE propio importado y, si no había, se asumía SRTM (~30 m) para todo el
+   * planeta. Con las fuentes nacionales en producción eso es falso: en Suiza el
+   * relieve viene de swissALTI3D (2 m) y en Países Bajos de AHN (50 cm), así que
+   * la app se negaba a bajar de 2 m teniendo con qué, y encima avisaba de un
+   * ruido de sensor que no existía. Ahora manda el paso efectivo de la grilla
+   * que se está usando: el mayor entre lo que da la fuente y lo que da el
+   * muestreo (que en predios chicos suele ser el que limita).
+   */
+  const pasoRelieveM = useMemo(() => {
+    if (demPropio) return demPropio.pasoM;
+    return grillaActiva ? pasoEfectivoM(grillaActiva) : null;
+  }, [demPropio, grillaActiva]);
+
+  const pisoIntervalo = useMemo(
+    () => demPropio
+      ? intervaloConfiablePara(demPropio.pasoM)
+      : intervaloConfiableRemoto(pasoRelieveM),
+    [demPropio, pasoRelieveM],
+  );
+
+  /** Cómo se llama la fuente del relieve en uso, para decirlo en vez de "SRTM". */
+  const fuenteRelieveNombre = useMemo(() => {
+    if (demPropio) return demPropio.nombre;
+    const f = grillaActiva?.fuente;
+    return f ? ETIQUETA_RELIEVE[f] : null;
+  }, [demPropio, grillaActiva]);
 
   const curvasNivel = useMemo<CurvaNivel[]>(() => {
     if (!grillaActiva) return [];
@@ -2119,7 +2154,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (shaderDetallado) {
       try {
         const grilla = await obtenerGrillaDensa(mojones, 100);
-        const ds = grilla ? shaderDesdeGrilla(grilla) : null;
+        const ds = grilla ? shaderDesdeGrilla(grilla, mojones) : null;
         if (ds) {
           setDatosShader(ds);
           setShaderLoading(false);
@@ -2465,9 +2500,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (capas.terrariumElev)
       items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: `Elevación SRTM (${terrariumElevMin}–${terrariumElevMax} m)` });
     if (capas.shaderElev && datosShader)
-      items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: 'Elevación' });
+      // Con el rango explícito: es una escala relativa a ESTE predio, así que sin
+      // los números el color no dice nada (y antes, además, compartía gradiente
+      // con el hipsométrico y en la leyenda quedaban indistinguibles).
+      items.push({ color: GRADIENTE_ELEV, label: `Elevación del predio (${Math.round(datosShader.elev_min)}–${Math.round(datosShader.elev_max)} m)` });
     if (capas.shaderPend && datosShader)
-      items.push({ color: 'linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336)', label: 'Pendiente' });
+      items.push({ color: GRADIENTE_PEND, label: `Pendiente (0–${Math.round(datosShader.pend_max)} %)` });
     if (capas.curvasNivel && curvasNivel.length > 0)
       items.push({ color: colorCurvas.normal, dash: true, label: `Curvas de nivel${intervaloCurvasEfectivo ? ` (cada ${intervaloCurvasEfectivo} m)` : ''}` });
     // Arco solar
@@ -2547,7 +2585,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       { id: 'capas',   grupo: 'Vista',    label: 'Mostrar panel de Capas',      keywords: 'layers',            accion: () => setPanelDerecho('capas') },
       { id: 'panel',   grupo: 'Vista',    label: 'Mostrar / ocultar panel lateral', keywords: 'sidebar',       accion: () => setPanelAbierto(p => !p) },
       { id: 'ayuda',   grupo: 'Vista',    label: 'Ver atajos de teclado',       keywords: 'help shortcuts',    accion: () => setAyudaOpen(true) },
-      { id: 'guia',    grupo: 'Vista',    label: 'Abrir la guía de uso',        keywords: 'ayuda manual tutorial cómo funciona', accion: () => window.open('/guia.html', '_blank', 'noopener') },
+      { id: 'guia',    grupo: 'Vista',    label: 'Abrir la guía de uso',        keywords: 'ayuda manual tutorial cómo funciona', accion: () => window.open('/guia', '_blank', 'noopener') },
     ];
     return [...irA, ...herramientas, ...acciones];
   }, [
@@ -2750,7 +2788,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <>
                 <div className="fixed inset-0 z-[1250]" onClick={() => setConfigOpen(false)} />
                 <div className="fixed bottom-2 left-[60px] w-56 max-h-[85vh] overflow-y-auto bg-white border border-bone-200 rounded-xl shadow-raised z-[1300] py-1.5">
-                  <ExportItem icon={<BookOpen className="w-3.5 h-3.5" />} label="Guía de uso" onClick={() => { setConfigOpen(false); window.open('/guia.html', '_blank', 'noopener'); }} />
+                  <ExportItem icon={<BookOpen className="w-3.5 h-3.5" />} label="Guía de uso y fuentes" onClick={() => { setConfigOpen(false); window.open('/guia', '_blank', 'noopener'); }} />
                   <ExportItem icon={<Keyboard className="w-3.5 h-3.5" />} label="Atajos de teclado" onClick={() => { setConfigOpen(false); setAyudaOpen(true); }} />
                   <div className="h-px bg-bone-100 my-1" />
                   <button
@@ -2761,6 +2799,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     Tema: <span className="font-medium capitalize">{tema}</span>
                   </button>
                   <ExportItem icon={<IdCard className="w-3.5 h-3.5" />} label="Datos del profesional…" onClick={() => { setConfigOpen(false); setPerfilOpen(true); }} />
+                  <ExportItem icon={<DollarSign className="w-3.5 h-3.5" />} label={`Mi cuenta · ${NOMBRE_PLAN[plan]}`} onClick={() => { setConfigOpen(false); window.location.href = '/cuenta'; }} />
                   <div className="h-px bg-bone-100 my-1" />
                   <ExportItem icon={<Scale className="w-3.5 h-3.5" />} label="Términos de Servicio" onClick={() => { setConfigOpen(false); window.open('/terminos', '_blank', 'noopener'); }} />
                   <ExportItem icon={<ShieldCheck className="w-3.5 h-3.5" />} label="Política de Privacidad" onClick={() => { setConfigOpen(false); window.open('/privacidad', '_blank', 'noopener'); }} />
@@ -3884,6 +3923,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             setIntervaloContorno={setIntervaloContorno}
             intervaloCurvas={intervaloCurvasEfectivo}
             demPropio={demPropio}
+            pasoRelieveM={pasoRelieveM}
+            fuenteRelieveNombre={fuenteRelieveNombre}
             pisoIntervalo={pisoIntervalo}
             curvasDemasiadas={curvasDemasiadas}
             curvasLoading={curvasLoading}
@@ -4068,6 +4109,10 @@ interface PanelCapasProps {
   setIntervaloContorno:(v: number | null) => void;
   intervaloCurvas:     number | null;
   demPropio:           DEMImportado | null;
+  /** Paso horizontal efectivo del relieve en uso (m); null si todavía no hay grilla. */
+  pasoRelieveM:        number | null;
+  /** Nombre de la fuente de relieve en uso ("swissALTI3D", "Copernicus GLO-30"…). */
+  fuenteRelieveNombre: string | null;
   pisoIntervalo:       number;
   curvasDemasiadas:    number | null;
   curvasLoading:       boolean;
@@ -4156,7 +4201,7 @@ function PanelCapas({
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
-  intervaloContorno, setIntervaloContorno, demPropio, pisoIntervalo, curvasDemasiadas,
+  intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasDemasiadas,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -4279,7 +4324,7 @@ function PanelCapas({
           <CapaItem
             visible={capas.terrariumElev}
             onToggle={() => onCapas({ ...capas, terrariumElev: !capas.terrariumElev })}
-            label={`Hipsométrico SRTM${capas.terrariumElev ? ` (${terrariumElevMin}–${terrariumElevMax} m)` : ''}`}
+            label={`Hipsométrico SRTM · altitud absoluta${capas.terrariumElev ? ` (${terrariumElevMin}–${terrariumElevMax} m)` : ''}`}
             swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)' }} />}
           />
           {capas.terrariumElev && (
@@ -4302,8 +4347,8 @@ function PanelCapas({
                 onToggle={() => capas.shaderElev
                   ? onCapas({ ...capas, shaderElev: false })
                   : onCapas({ ...capas, shaderElev: true, shaderPend: false })}
-                label="Elevación"
-                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0 0%,#66BB6A 40%,#FFEE58 70%,#8D6E63 100%)' }} />}
+                label={`Elevación del predio (${Math.round(datosShader.elev_min)}–${Math.round(datosShader.elev_max)} m)`}
+                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: GRADIENTE_ELEV }} />}
               />
               {capas.shaderElev && (
                 <div className="mx-3 mb-1 flex items-center gap-2">
@@ -4320,8 +4365,8 @@ function PanelCapas({
                 onToggle={() => capas.shaderPend
                   ? onCapas({ ...capas, shaderPend: false })
                   : onCapas({ ...capas, shaderPend: true, shaderElev: false })}
-                label="Pendiente"
-                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#4CAF50 0%,#FFEB3B 50%,#F44336 100%)' }} />}
+                label={`Pendiente (0–${Math.round(datosShader.pend_max)} %)`}
+                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: GRADIENTE_PEND }} />}
               />
               {capas.shaderPend && (
                 <div className="mx-3 mb-1 flex items-center gap-2">
@@ -4432,21 +4477,22 @@ function PanelCapas({
                       </span>
                     </p>
                   )}
-                  {demPropio ? (
+                  {fuenteRelieveNombre && (
                     <p className="text-[9px] text-moss-900 leading-relaxed">
-                      Fuente: <strong>{demPropio.nombre}</strong> (paso ≈{' '}
-                      {demPropio.pasoM < 1 ? `${(demPropio.pasoM * 100).toFixed(0)} cm` : `${demPropio.pasoM.toFixed(1)} m`}).
-                      Confiable hasta {pisoIntervalo < 1 ? `${(pisoIntervalo * 100).toFixed(0)} cm` : `${pisoIntervalo} m`}.
+                      Fuente: <strong>{fuenteRelieveNombre}</strong>
+                      {pasoRelieveM != null && <> (paso ≈ {fmtPaso(pasoRelieveM)})</>}.
+                      {' '}Confiable hasta {fmtPaso(pisoIntervalo)}.
                     </p>
-                  ) : null}
+                  )}
                   {intervaloCurvas !== null && intervaloCurvas < pisoIntervalo && (
                     <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
                       <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
                       <span>
-                        Por debajo de {pisoIntervalo < 1 ? `${(pisoIntervalo * 100).toFixed(0)} cm` : `${pisoIntervalo} m`}{' '}
-                        estas curvas ya no describen el terreno
-                        {demPropio ? '' : ': el modelo es SRTM (~30 m de paso) y a esta escala dibuja el ruido del sensor'}.
-                        Sirve para intuir la forma, <strong>no para replantear</strong>.
+                        Por debajo de {fmtPaso(pisoIntervalo)} estas curvas ya no describen el terreno
+                        {!demPropio && fuenteRelieveNombre && pasoRelieveM != null
+                          ? `: el relieve es ${fuenteRelieveNombre}, muestreado cada ~${fmtPaso(pasoRelieveM)}, y a esta escala lo que se dibuja es la interpolación`
+                          : ''}.
+                        {' '}Sirve para intuir la forma, <strong>no para replantear</strong>.
                         {demPropio ? null : <> Cargá un relevamiento propio desde <strong>Exportar → Modelo de elevación</strong>.</>}
                       </span>
                     </p>

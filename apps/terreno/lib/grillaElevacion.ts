@@ -36,6 +36,49 @@ export const CREDITO_RELIEVE: Record<FuenteRelieve, string> = {
   swisstopo: 'Relieve: swissALTI3D · © swisstopo (Suiza, datos abiertos)',
 };
 
+/**
+ * Paso horizontal (m) que cada fuente puede entregar a los tamaños de ventana que
+ * pide la app. NO es siempre el paso nativo del producto: 3DEP y HRDEM tienen
+ * 1 m donde hubo vuelo LiDAR, pero el servicio nos remuestrea a lo que pedimos y
+ * la cobertura fina no es nacional, así que acá va el número conservador —el que
+ * se puede prometer en cualquier punto de la cobertura—, no el del folleto.
+ *
+ * Sirve para una sola cosa: saber hasta qué intervalo de curvas tiene sentido
+ * dibujar. Antes la app asumía SRTM (~30 m) para todo el mundo, así que en Suiza
+ * o en Países Bajos avisaba de un ruido de sensor que ya no existe y se negaba a
+ * bajar de 2 m teniendo un modelo de 2 m y de 50 cm respectivamente.
+ */
+export const PASO_RELIEVE: Record<FuenteRelieve, number> = {
+  glo30:     30,
+  srtm30:    30,
+  terrarium: 30,
+  usuario:    1,   // se pisa con el paso real del archivo importado
+  usgs3dep:  10,   // 1 m donde hay LiDAR; 10 m es lo garantizado en todo EE.UU.
+  ignfr:      5,   // RGE ALTI es 1 m, pero el REST se consulta por lotes acotados
+  ignes:      5,   // MDT05 PNOA-LiDAR (25 m en predios muy grandes)
+  hrdemca:    2,
+  ahnnl:      0.5,
+  swisstopo:  2,
+};
+
+/**
+ * Paso EFECTIVO de una grilla ya calculada, en metros: el mayor entre lo que da
+ * la fuente y lo que da el muestreo. Es el segundo el que suele mandar —un predio
+ * de 9 ha muestreado con 120 nodos por lado son ~3 m de paso, aunque swissALTI3D
+ * tenga 2—: por debajo de esa distancia lo que se dibuja es la interpolación.
+ */
+export function pasoEfectivoM(g: GrillaElevacion): number {
+  const latC   = (g.latMin + g.latMax) / 2;
+  const anchoM = (g.lngMax - g.lngMin) * 111_320 * Math.cos(latC * Math.PI / 180);
+  const altoM  = (g.latMax - g.latMin) * 111_320;
+  const pasoGrilla = Math.max(
+    g.cols > 1 ? anchoM / (g.cols - 1) : Infinity,
+    g.rows > 1 ? altoM  / (g.rows - 1) : Infinity,
+  );
+  const pasoFuente = g.fuente ? PASO_RELIEVE[g.fuente] : PASO_RELIEVE.terrarium;
+  return Math.max(pasoFuente, Number.isFinite(pasoGrilla) ? pasoGrilla : pasoFuente);
+}
+
 export interface GrillaElevacion {
   rows:     number;
   cols:     number;

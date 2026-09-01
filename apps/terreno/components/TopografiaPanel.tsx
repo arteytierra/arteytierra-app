@@ -57,7 +57,7 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
           <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">
             Topografía
           </p>
-          <p className="text-xs text-ink-700/50 mt-0.5">SRTM 30m · NASA · enciende relieve + curvas</p>
+          <p className="text-xs text-ink-700/50 mt-0.5">{datos ? datos.resolucion : 'Mejor modelo disponible del lugar'} · enciende relieve + curvas</p>
         </div>
         <button
           onClick={handleCargar}
@@ -133,9 +133,9 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
           <div className="text-xs text-ink-700/50 leading-relaxed pt-1 border-t border-bone-200">
             <p>📡 {datos.fuente}</p>
             <p className="mt-1 italic">
-              Resolución {datos.resolucion}. Datos de 2000 — pueden diferir
-              de la topografía actual. No apto para diseño de obras sin
-              relevamiento GPS profesional.
+              Resolución {datos.resolucion}. Puede diferir de la topografía
+              actual. No apto para diseño de obras sin relevamiento GPS
+              profesional.
             </p>
           </div>
         </>

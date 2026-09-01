@@ -27,15 +27,30 @@ export interface DatosShader {
 
 // ─── Rampas de color ─────────────────────────────────────────────────────────
 
+/**
+ * Rampa del shader de elevación. Es una escala RELATIVA —del punto más bajo al
+ * más alto de ESTE predio—, no una altimetría del mundo, así que no puede usar
+ * el vocabulario hipsométrico (azul = mar, blanco = nieve): en un campo suizo
+ * entre 815 y 840 m pintaba de azul océano la parte baja y de blanco nieve la
+ * alta, y quedaba idéntica a la capa Hipsométrico, que sí es absoluta.
+ *
+ * Se usa una secuencial perceptualmente uniforme (familia viridis): ordena sin
+ * ambigüedad de oscuro a claro, se lee igual en escala de grises y con daltonismo,
+ * y no se confunde con ninguna de las otras dos rampas de la app.
+ */
 const RAMP_ELEV = [
-  { t: 0.00, r: 21,  g: 101, b: 192 },  // azul profundo
-  { t: 0.15, r: 66,  g: 165, b: 245 },  // azul claro
-  { t: 0.30, r: 102, g: 187, b: 106 },  // verde
-  { t: 0.50, r: 255, g: 238, b: 88  },  // amarillo
-  { t: 0.65, r: 255, g: 167, b: 38  },  // naranja
-  { t: 0.80, r: 141, g: 110, b: 99  },  // marrón
-  { t: 1.00, r: 236, g: 239, b: 241 },  // casi blanco
+  { t: 0.00, r: 68,  g: 1,   b: 84  },  // violeta oscuro — lo más bajo del predio
+  { t: 0.25, r: 59,  g: 82,  b: 139 },  // azul-violeta
+  { t: 0.50, r: 33,  g: 145, b: 140 },  // verde azulado
+  { t: 0.75, r: 94,  g: 201, b: 98  },  // verde
+  { t: 1.00, r: 253, g: 231, b: 37  },  // amarillo — lo más alto del predio
 ];
+
+/** La misma rampa como gradiente CSS, para el swatch de Capas y la leyenda. */
+export const GRADIENTE_ELEV =
+  'linear-gradient(90deg,#440154 0%,#3b528b 25%,#21918c 50%,#5ec962 75%,#fde725 100%)';
+export const GRADIENTE_PEND =
+  'linear-gradient(90deg,#4CAF50 0%,#FFEB3B 50%,#F44336 100%)';
 
 const RAMP_PEND = [
   { t: 0.00, r: 76,  g: 175, b: 80  },  // verde (plano)
@@ -232,7 +247,7 @@ export function shaderDesdeGrilla(grilla: {
   latMin: number; latMax: number; lngMin: number; lngMax: number;
   elev: Float64Array; elev_min: number; elev_max: number;
   fuente?: FuenteRelieve;
-}): DatosShader | null {
+}, mojones?: Array<{ lat: number; lng: number }>): DatosShader | null {
   const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
   if (rows < 2 || cols < 2) return null;
 
@@ -282,7 +297,41 @@ export function shaderDesdeGrilla(grilla: {
   }
 
   if (celdas.length < 4) return null;
+
+  // El rango de color se toma de las celdas de ADENTRO del predio, no de toda la
+  // grilla. `obtenerGrillaDensa` calcula con 8 % de margen y enmascara a 1,15×
+  // el polígono para que las escorrentías vean de dónde viene el agua; esas
+  // celdas de afuera tienen que seguir estando (hidrología, caminos), pero si
+  // fijan la escala, un predio llano al pie de una loma se pinta entero de un
+  // solo color y el shader no dice nada. El mismo rango alimenta la 'posición
+  // relativa en la ladera' de aptitud y del master plan, así que el arreglo no
+  // es sólo estético.
+  const dentro = recorteAlPredio(celdas, mojones);
+  if (dentro.length >= 4) {
+    const es = dentro.map(c => c.elevation);
+    return {
+      celdas,
+      elev_min: Math.min(...es),
+      elev_max: Math.max(...es),
+      pend_max: Math.max(...dentro.map(c => c.pendiente_pct), 1),
+      fuente:   grilla.fuente,
+    };
+  }
   return { celdas, elev_min, elev_max, pend_max, fuente: grilla.fuente };
+}
+
+/** Celdas cuyo centro cae dentro del polígono del predio (todas si no hay predio). */
+function recorteAlPredio(
+  celdas:  CeldaShader[],
+  mojones?: Array<{ lat: number; lng: number }>,
+): CeldaShader[] {
+  if (!mojones || mojones.length < 3) return celdas;
+  const anillo = mojones.map(m => [m.lng, m.lat] as [number, number]);
+  anillo.push(anillo[0]!);
+  let poly: ReturnType<typeof turf.polygon>;
+  try { poly = turf.polygon([anillo]); } catch { return celdas; }
+  return celdas.filter(c => turf.booleanPointInPolygon(
+    turf.point([(c.lngMin + c.lngMax) / 2, (c.latMin + c.latMax) / 2]), poly));
 }
 
 // ─── Puente: DatosShader desde un DEM propio importado ────────────────────────

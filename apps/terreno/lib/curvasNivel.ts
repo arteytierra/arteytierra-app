@@ -42,6 +42,22 @@ export function intervaloConfiablePara(pasoM: number | null): number {
 }
 
 /**
+ * Lo mismo, pero para un modelo REMOTO (satelital o servicio nacional), donde la
+ * regla de la media celda no se aplica igual.
+ *
+ * El motivo está en el comentario de INTERVALO_CONFIABLE_M: SRTM tiene 30 m de
+ * paso pero exactitud vertical mucho mejor, así que pedirle media celda daría
+ * 15 m —absurdo— cuando en la práctica 2 m funciona. Al revés, con swissALTI3D
+ * (2 m) o AHN (50 cm) sí se puede bajar de 2, y negarse sería tirar el dato.
+ * De ahí la regla: el piso nunca es peor que los 2 m empíricos, y mejora cuando
+ * el modelo da para más.
+ */
+export function intervaloConfiableRemoto(pasoM: number | null): number {
+  if (pasoM == null) return INTERVALO_CONFIABLE_M;
+  return Math.min(INTERVALO_CONFIABLE_M, Math.max(0.1, Math.round((pasoM / 2) * 100) / 100));
+}
+
+/**
  * Intervalo automático: apunta a una cantidad de curvas legible y lo redondea
  * a un valor "lindo".
  *
