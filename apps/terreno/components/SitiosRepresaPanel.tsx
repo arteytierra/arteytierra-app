@@ -23,7 +23,7 @@ export interface SitiosInputs {
 
 interface Props {
   mojones: Mojon[];
-  /** vuelca el sitio al mapa: espejo de agua dibujado + pin del muro */
+  /** vuelca el sitio al mapa: deja el pin del muro (el espejo se dibuja a mano) */
   onPonerEnMapa?: (sitio: SitioRepresa, indice: number) => void;
   inicial?:  SitiosInputs | null;
   onInputs?: (i: SitiosInputs) => void;
@@ -87,10 +87,11 @@ export function SitiosRepresaPanel({ mojones, onPonerEnMapa, inicial, onInputs }
                 <Mini label="Altura" valor={`${s.altura_m} m`} />
                 <Mini label="Cota" valor={`${s.elev} m`} />
               </div>
-              {/* Antes esto dejaba un pin y nada más: el sitio era un ícono
-                  sobre el cauce y había que imaginarse la forma del vaso.
-                  Ahora se vuelca el espejo dibujado, que además queda listo
-                  para calcular el embalse acá abajo. */}
+              {/* Sólo el pin del muro. El espejo se llegó a dibujar como
+                  polígono, pero el contorno sale del relieve global (~30 m) y a
+                  esa resolución es una escalera de píxeles: se leía como una
+                  medición del vaso sin serlo. El pin dice dónde mirar, que es
+                  lo que una sugerencia puede afirmar con honestidad. */}
               {onPonerEnMapa && (
                 <button
                   onClick={() => { onPonerEnMapa(s, i); setPuestos(prev => new Set(prev).add(i)); }}
@@ -101,15 +102,15 @@ export function SitiosRepresaPanel({ mojones, onPonerEnMapa, inicial, onInputs }
                   }`}
                 >
                   {puestos.has(i)
-                    ? <><Check className="w-3 h-3" /> Espejo puesto — calculá el embalse abajo</>
-                    : <><MapPin className="w-3 h-3" /> Poner el espejo en el mapa</>}
+                    ? <><Check className="w-3 h-3" /> Sitio puesto en el mapa</>
+                    : <><MapPin className="w-3 h-3" /> Poner el sitio en el mapa</>}
                 </button>
               )}
             </div>
           ))}
           <p className="text-[9px] text-ink-700/45 leading-relaxed flex gap-1">
             <Waves className="w-3 h-3 shrink-0 mt-0.5 text-water-500" />
-            El espejo es el que se inunda con la altura de muro que salió mejor rankeada, sobre el relieve global (~30 m). Orientativo para elegir dónde mirar: puesto en el mapa se puede mover, y el embalse se recalcula con la elevación fina.
+            Las cifras salen del relieve global (~30 m) con la altura de muro mejor rankeada: sirven para ordenar los sitios entre sí, no como proyecto. El pin marca dónde iría el muro; el espejo lo dibujás vos en «Cálculo de embalse», sobre las curvas de nivel finas.
           </p>
         </div>
       )}

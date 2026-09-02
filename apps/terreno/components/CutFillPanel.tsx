@@ -38,13 +38,23 @@ type TipoMuro = 'aguada' | 'ladera';
 /** Lo único que decide el tipo de obra es la revancha; el resto sale del cálculo. */
 const REVANCHA: Record<TipoMuro, number> = { aguada: 0.3, ladera: 0.5 };
 
+/**
+ * Qué parte del panel se muestra. El panel entero desplegado era una columna
+ * larguísima —pasos, muro, cuenca, simulación, notas— y para llegar a la curva
+ * de llenado había que pasar por todo lo demás. Se parte en pestañas, pero el
+ * componente sigue siendo UNO: el cálculo del embalse alimenta a la simulación,
+ * y separarlos en componentes hermanos obligaría a subir todo ese estado.
+ */
+export type SeccionRepresa = 'embalse' | 'simulacion' | 'observaciones';
+
 interface Props {
   mojones:     Mojon[];
   datosShader: DatosShader | null;
   poligonos:   PoligonoCutFill[];
   onDibujarEspejo: () => void;
-  /** id de polígono a preseleccionar (lo empuja el sitio sugerido que se acaba de volcar) */
-  espejoSugerido?: string | null;
+  /** Pestaña activa. Las otras se ocultan con CSS, no se desmontan: el embalse
+   *  calculado tiene que seguir vivo cuando se mira la simulación. */
+  seccion?: SeccionRepresa;
   datosClima?:   DatosClima | null;
   cuencaHa?:     number | null;   // área de la cuenca de aporte (B2), si existe
   grupoHidro?:   GrupoHidro | null;   // grupo hidrológico del suelo (A4), si existe
@@ -61,7 +71,7 @@ interface Props {
   onRodeo:    (r: Rodeo) => void;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, espejoSugerido = null, datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -95,11 +105,6 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
    * el valor con el que se montó el panel, y eso es exactamente una ref.
    */
   const inicialRef = useRef(inicial);
-
-  // Cuando se vuelca un sitio sugerido, su espejo queda elegido solo: si no,
-  // el usuario acaba de apretar un botón y tiene que volver a buscar en un
-  // desplegable lo mismo que acaba de crear.
-  useEffect(() => { if (espejoSugerido) setSelId(espejoSugerido); }, [espejoSugerido]);
 
   // Sugerir el lado más bajo del polígono como muro (donde iría la presa).
   // Si el proyecto ya traía un lado elegido, se respeta: no tiene sentido
@@ -289,6 +294,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
   return (
     <div className="space-y-3">
+      <div className={seccion === 'embalse' ? 'space-y-3' : 'hidden'}>
       {/* La herramienta estaba escondida detrás de sus propios requisitos: el
           botón "Calcular embalse" no existía hasta tener el polígono elegido,
           así que había que dibujar y seleccionar A CIEGAS para descubrir que
@@ -311,7 +317,8 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           <PenLine className="w-3.5 h-3.5" /> Dibujar espejo de agua
         </button>
         <p className="text-[9px] text-ink-700/50 leading-relaxed">
-          O traé uno de los sitios sugeridos de arriba con «Poner en el mapa»: viene con el espejo ya dibujado.
+          Los sitios sugeridos dejan un pin donde iría el muro: dibujá el espejo alrededor
+          de ese pin, siguiendo las curvas de nivel.
         </p>
       </Paso>
 
@@ -559,17 +566,31 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
             )}
           </div>
 
-          {/* ── Simulación anual (B3) ── */}
-          <RepresaSimSection
-            res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa}
-            grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa}
-            rodeo={rodeo} onRodeo={onRodeo}
-            cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
-            coef={coefCuenca} onCoef={setCoefCuenca}
-            ha={haCuenca} onHa={setHaCuenca}
-            seep={seep} onSeep={setSeep}
-          />
         </div>
+      )}
+      </div>
+
+      {/* Simulación y observaciones.
+          Va FUERA del bloque de arriba y se monta siempre que haya embalse
+          calculado, aunque la pestaña visible sea otra: es esta sección la que
+          emite el resumen de la represa hacia el informe y el escenario, y si se
+          desmontara al cambiar de pestaña el informe se quedaría sin represa. */}
+      {rango && nivel !== null && res ? (
+        <RepresaSimSection
+          seccion={seccion}
+          res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa}
+          grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa}
+          rodeo={rodeo} onRodeo={onRodeo}
+          cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
+          coef={coefCuenca} onCoef={setCoefCuenca}
+          ha={haCuenca} onHa={setHaCuenca}
+          seep={seep} onSeep={setSeep}
+        />
+      ) : seccion !== 'embalse' && (
+        <p className="text-[10px] text-ink-700/55 bg-bone-50 rounded-lg px-2.5 py-2 leading-relaxed">
+          Todavía no hay embalse calculado. Andá a <b>Cálculo de embalse</b>, dibujá el
+          espejo de agua y calculalo: con eso se llena esta pestaña.
+        </p>
       )}
     </div>
   );
@@ -578,9 +599,11 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 // ─── Simulación mensual del embalse (B3) ──────────────────────────────────────
 
 function RepresaSimSection({
+  seccion,
   res, datosClima, cuencaHa, grupoHidro = null, texturaSuelo = null, fuenteDem = null, onResumen,
   rodeo, onRodeo, cobertura, onCobertura, coef, onCoef, ha, onHa, seep, onSeep,
 }: {
+  seccion: SeccionRepresa;
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
   texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   fuenteDem?: DatosShader['fuente'] | null;
@@ -638,9 +661,11 @@ function RepresaSimSection({
   }), [datosClima, res.area_inundada_m2, ha, cuencaHa, seep, grupoHidro, fuenteDem]);
 
   return (
-    <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
+    <div className={seccion === 'embalse' ? 'hidden' : 'space-y-2'}>
       <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1">
-        <CalendarClock className="w-3 h-3" /> Simulación anual del embalse
+        {seccion === 'simulacion'
+          ? <><CalendarClock className="w-3 h-3" /> Simulación anual del embalse</>
+          : <><Info className="w-3 h-3" /> De dónde salen estos números</>}
       </p>
 
       {!datosClima ? (
@@ -649,6 +674,11 @@ function RepresaSimSection({
         </p>
       ) : (
         <>
+          {/* Los parámetros del balance viven en Simulación: son las perillas
+              del cálculo. Observaciones se queda con lo que dice cuánto vale
+              ese resultado —el contraste, la salud y el método— que es lo que
+              se lee una vez, no en cada ajuste. */}
+          <div className={seccion === 'simulacion' ? 'space-y-2' : 'hidden'}>
           <div className="flex items-center justify-between gap-2 bg-bone-50 rounded-lg px-2 py-1.5">
             <span className="text-[10px] text-ink-700/60 shrink-0">Cobertura de la cuenca</span>
             <select
@@ -740,9 +770,17 @@ function RepresaSimSection({
                 <Stat label="Derrame anual" valor={`${sim.derrame_anual_m3.toLocaleString('es-AR')} m³`} />
                 <Stat label="Demanda mensual" valor={`${demanda.toLocaleString('es-AR')} m³`} />
               </div>
-              {/* El aporte anual de arriba sale de un coeficiente; la tabla 8.3
-                  llega al mismo número por otro camino y con rango. Va acá, y no
-                  arriba, porque es un contraste del resultado, no un parámetro. */}
+            </>
+          )}
+          </div>
+
+          {/* ── Observaciones ── */}
+          <div className={seccion === 'observaciones' ? 'space-y-2' : 'hidden'}>
+          {sim && (
+            <>
+              {/* El aporte anual de la simulación sale de un coeficiente; la
+                  tabla 8.3 llega al mismo número por otro camino y con rango.
+                  Es un contraste del resultado, no un parámetro: por eso acá. */}
               <EscurrimientoTabla
                 precipAnualMm={datosClima.meses.reduce((s, m) => s + m.precip_mm, 0)}
                 evapAnualMm={datosClima.meses.reduce((s, m) => s + m.etp_mm, 0)}
@@ -759,6 +797,7 @@ function RepresaSimSection({
               </p>
             </>
           )}
+          </div>
         </>
       )}
     </div>

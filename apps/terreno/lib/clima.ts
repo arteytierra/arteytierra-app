@@ -99,6 +99,14 @@ export interface DatosClima {
    * hay que elegirla para el clima que va a haber, no para el que hay.
    */
   koppen_deriva?:   DerivaClima;
+  /**
+   * Por qué no hay dato del mapa de 1 km, cuando el motivo NO es que el punto
+   * esté fuera del mapa (océano). Sin esto, un mapa caído y un predio en el mar
+   * se ven exactamente igual —la app dice "calculado con las medias" y sigue— y
+   * la deriva climática desaparece de la pantalla sin que nadie sepa por qué.
+   * Que el fallback sea silencioso está bien; que sea invisible, no.
+   */
+  koppen_mapa_falla?: string;
   aridez?:          IndiceAridez;
   gdd_anual?:       number;  // grados-día de crecimiento base 10 °C
   heladas?:         Heladas;
@@ -273,7 +281,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
 
   // La clase Köppen sale del mapa de 1 km, no de las medias. Es global y no
   // depende de la fuente de los números, así que se pide una sola vez.
-  const { koppen: koppenMapa, deriva: koppenDeriva } = await obtenerKoppenBeck(lat, lng);
+  const { koppen: koppenMapa, deriva: koppenDeriva, falla: koppenFalla } = await obtenerKoppenBeck(lat, lng);
 
   // Donde hay una fuente regional fina, pisa lo que ella mide mejor y POWER
   // queda de base. El viento sale de POWER siempre: ninguna de las regionales
@@ -289,6 +297,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       `${d.fuente} · viento de NASA POWER`,
       koppenMapa,
       koppenDeriva,
+      koppenFalla,
     );
   }
 
@@ -297,6 +306,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     'NASA POWER Climatology (promedio 1981–2023)',
     koppenMapa,
     koppenDeriva,
+    koppenFalla,
   );
 }
 
@@ -307,22 +317,29 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
  * ante cualquier problema —incluido el océano, donde el mapa no tiene clase— y
  * el llamador se queda con el Köppen calculado a partir de las medias.
  *
- * El timeout es corto a propósito: del otro lado no hay servicio externo, sólo
- * la lectura de una tesela de un archivo local. Si eso tarda más de tres
- * segundos, algo anda mal y no vale la pena demorar el panel de clima entero
- * por una etiqueta.
+ * El timeout fue de 3 s mientras del otro lado había **un** archivo: la lectura
+ * es una tesela de disco local, del orden del milisegundo una vez abierto. Con
+ * la deriva climática pasaron a ser tres, y abrir cada uno significa leer su
+ * directorio de teselas (14.365 offsets) — barato en caliente, pero la primera
+ * request contra una instancia fría hace eso tres veces sobre un bundle recién
+ * descargado. Tres segundos alcanzaban para uno y no para tres, y el síntoma es
+ * justo el que no se ve: la clase cae al calculado y la proyección a futuro
+ * desaparece de la pantalla, sin error en ningún lado. Doce segundos es la
+ * espera peor de un caso frío; el panel ya está pintado mientras tanto.
  */
 async function obtenerKoppenBeck(
   lat: number,
   lng: number,
-): Promise<{ koppen: Koppen | null; deriva: DerivaClima | null }> {
+): Promise<{ koppen: Koppen | null; deriva: DerivaClima | null; falla?: string }> {
   const vacio = { koppen: null, deriva: null };
   try {
     const res = await fetch(
       `/api/clima/koppen?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`,
-      { signal: AbortSignal.timeout(3_000) },
+      { signal: AbortSignal.timeout(12_000) },
     );
-    if (!res.ok) return vacio;
+    if (!res.ok) {
+      return { ...vacio, falla: `el mapa respondió ${res.status}` };
+    }
     const json = await res.json() as {
       koppen?: Koppen;
       sinDatos?: boolean;
@@ -332,7 +349,10 @@ async function obtenerKoppenBeck(
         periodos: Record<'pasado' | 'presente' | 'futuro', { etiqueta: string }>;
       };
     };
-    if (json.sinDatos || !json.koppen) return vacio;
+    // `sinDatos` no es una falla: es el mapa diciendo que ahí no hay clase
+    // (océano). Ese caso se queda sin `falla` a propósito.
+    if (json.sinDatos) return vacio;
+    if (!json.koppen) return { ...vacio, falla: 'el mapa respondió sin la clase' };
     const d = json.deriva;
     return {
       koppen: json.koppen,
@@ -346,8 +366,9 @@ async function obtenerKoppenBeck(
         },
       } : null,
     };
-  } catch {
-    return vacio;
+  } catch (e) {
+    const timeout = e instanceof DOMException && e.name === 'TimeoutError';
+    return { ...vacio, falla: timeout ? 'el mapa tardó más de 12 s' : 'no se pudo consultar el mapa' };
   }
 }
 
@@ -428,6 +449,7 @@ function ensamblar(
   fuente: string,
   koppenMapa?: Koppen | null,
   koppenDeriva?: DerivaClima | null,
+  koppenFalla?: string,
 ): DatosClima {
   const precip_anual_mm = Math.round(meses.reduce((s, m) => s + m.precip_mm, 0));
   const etp_anual_mm    = Math.round(meses.reduce((s, m) => s + m.etp_mm,    0));
@@ -472,6 +494,7 @@ function ensamblar(
     koppen_calculado:
       koppenMapa && koppenMapa.codigo !== calculado.codigo ? calculado : undefined,
     koppen_deriva: koppenDeriva ?? undefined,
+    koppen_mapa_falla: koppenMapa ? undefined : koppenFalla,
     aridez, gdd_anual, heladas,
     mes_mas_seco:   mesSeco.mes,
     mes_mas_humedo: mesHumedo.mes,

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   Trash2, LogOut, Map, ChevronRight, MapPin, Cloud,
   FolderOpen, Mountain, Droplets, FileText, CalendarDays,
@@ -63,10 +63,12 @@ import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, GRADIENTE_ELEV, GRADIENTE_PEND, type DatosShader } from '@/lib/shaders';
+import { shaderDesdeDEM, GRADIENTE_ELEV, GRADIENTE_PEND, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerShader } from '@/lib/relieve/obtenerShader';
+import { reducerRelieve, datosDe, RELIEVE_VACIO } from '@/lib/relieve/reducerRelieve';
 import { ProveedorRelieve, fmtPaso } from '@/lib/contextoRelieve';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
@@ -110,7 +112,7 @@ import { CortafuegosPanel, type CortafuegosInputs } from './CortafuegosPanel';
 import { CortinasPanel, type CortinasInputs } from './CortinasPanel';
 import { SilvopasturaPanel, type SilvoInputs } from './SilvopasturaPanel';
 import { EscalaPermanenciaPanel, type KeylineCheck } from './EscalaPermanenciaPanel';
-import { CutFillPanel, type PoligonoCutFill } from './CutFillPanel';
+import { CutFillPanel, type PoligonoCutFill, type SeccionRepresa } from './CutFillPanel';
 import { EscenariosPanel, type EscenarioMeta } from './EscenariosPanel';
 import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
 import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos';
@@ -265,6 +267,23 @@ const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
 
 /** Predio de ejemplo (~4 ha cerca de San Marcos Sierra, Córdoba) para que el
  *  usuario nuevo vea las herramientas funcionando sin tener que dibujar antes. */
+/**
+ * Sub-pestañas del panel de represas. Es el panel más largo de la app: sitios
+ * sugeridos, tres pasos de embalse, muro, cuenca de aporte, balance mensual y
+ * notas de método, todo apilado. Partirlo en cuatro no cambia ningún cálculo,
+ * sólo el orden en que se muestran — y ese orden es el del trabajo real:
+ * primero dónde, después cuánto, después si aguanta el año, y al final de dónde
+ * salen los números.
+ */
+type SubRepresa = 'sugerencias' | SeccionRepresa;
+
+const SUBS_REPRESA: Array<{ id: SubRepresa; label: string }> = [
+  { id: 'sugerencias',    label: 'Sugerencias' },
+  { id: 'embalse',        label: 'Embalse' },
+  { id: 'simulacion',     label: 'Año' },
+  { id: 'observaciones',  label: 'Notas' },
+];
+
 const EJEMPLO_MOJONES: Array<{ lat: number; lng: number }> = [
   { lat: -30.78210, lng: -64.63520 },
   { lat: -30.78150, lng: -64.63180 },
@@ -319,13 +338,18 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   } = useCapaSuelo();
 
   // ─── Shader topográfico ───────────────────────────────────────────────────
-  const [datosShader,   setDatosShader]   = useState<DatosShader | null>(null);
-  const [shaderLoading, setShaderLoading] = useState(false);
+  // Datos + cálculo en curso + error son UNA sola cosa: nunca hay datos nuevos
+  // sin que se haya apagado el spinner, ni un error sobreviviendo a un cálculo
+  // que salió bien. Por eso van en un reducer y no en tres useState sueltos.
+  const [relieve, dispatchRelieve] = useReducer(reducerRelieve, RELIEVE_VACIO);
+  const datosShader   = datosDe(relieve);
+  const shaderLoading = relieve.fase === 'calculando';
+  const shaderError   = relieve.fase === 'error' ? relieve.mensaje : null;
+
   // ¿Se corrió el «Análisis del predio»? Recién ahí aparecen las capas de
   // escorrentías + sugerencias. Calcular la topografía sola NO las genera: eso
   // solo prende los shaders y las curvas (info topográfica).
   const [analisisHecho, setAnalisisHecho] = useState(false);
-  const [shaderError,   setShaderError]   = useState<string | null>(null);
 
   // ─── Curvas de nivel (grilla densa Terrarium + fallback shader) ──────────
   const [intervaloContorno, setIntervaloContorno] = useState<number | null>(null); // null = auto
@@ -589,7 +613,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       // deriva de él (escorrentías, aptitud, master plan, cut&fill, keyline,
       // viewshed, sombras), no solo las curvas de nivel.
       const ds = shaderDesdeDEM(dem.grilla, mojones);
-      if (ds) setDatosShader(ds);
+      if (ds) dispatchRelieve({ t: 'poner', datos: ds });
       setCapas(prev => ({ ...prev, curvasNivel: true, shaderElev: ds ? true : prev.shaderElev }));
       setModal({ type: 'alert', message:
         `Modelo de elevación cargado: ${dem.ancho}×${dem.alto} px, paso ≈ ${dem.pasoM < 1 ? `${(dem.pasoM * 100).toFixed(0)} cm` : `${dem.pasoM.toFixed(1)} m`}, cotas ${dem.grilla.elev_min.toFixed(1)}–${dem.grilla.elev_max.toFixed(1)} m${dem.epsg ? ` (EPSG ${dem.epsg})` : ''}. Ahora las curvas de nivel${ds ? ', el sombreado de pendientes y los análisis' : ''} salen de este archivo.` });
@@ -604,7 +628,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
   const [espejoPendiente, setEspejoPendiente] = useState(false); // próximo polígono = espejo de agua
-  const [espejoSugeridoId, setEspejoSugeridoId] = useState<string | null>(null); // espejo volcado desde un sitio sugerido
+  const [subRepresa, setSubRepresa] = useState<SubRepresa>('sugerencias'); // sub-pestaña del panel de represas
   const [overlay, setOverlay] = useState<OverlayImagen | null>(null);
   const cursorCadRef = useRef<{ lat: number; lng: number } | null>(null);
   const cursorPosRef = useRef<{ lat: number; lng: number } | null>(null); // cursor sobre el mapa (barra de estado)
@@ -2132,70 +2156,40 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   const handleFetchShader = useCallback(async () => {
     if (mojones.length < 3) return;
-    setShaderLoading(true);
-    setShaderError(null);
+    dispatchRelieve({ t: 'calcular' });
+
+    // La cascada de fuentes (DEM propio → grilla densa → muestreo 10×10) vive
+    // en `lib/relieve/obtenerShader`, donde se puede probar sin montar el mapa.
+    const res = await obtenerShader(mojones, { demPropio, detallado: shaderDetallado });
+    dispatchRelieve({ t: 'resuelto', res });
+
     // Motor único de relieve: encendemos el shader de altimetría + las curvas
     // de nivel (en auto). Escorrentías/sugerencias quedan como toggles aparte.
-    const activarCapas = () =>
-      setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, curvasNivel: true }));
-
-    // Si el usuario cargó su propio DEM, el relieve sale de ese archivo (no del
-    // satélite): más resolución y coherente con las curvas.
-    if (demPropio) {
-      const ds = shaderDesdeDEM(demPropio.grilla, mojones);
-      if (ds) { setDatosShader(ds); setShaderLoading(false); activarCapas(); return; }
-    }
-
-    // Modo detallado: grilla densa desde tiles Terrarium (cientos de celdas, sin API externa).
-    if (shaderDetallado) {
-      try {
-        const grilla = await obtenerGrillaDensa(mojones, 100);
-        const ds = grilla ? shaderDesdeGrilla(grilla, mojones) : null;
-        if (ds) {
-          setDatosShader(ds);
-          setShaderLoading(false);
-          activarCapas();
-          return;
-        }
-      } catch { /* cae al muestreo 10×10 */ }
-    }
-
-    // Fallback / modo rápido: muestreo 10×10 vía OpenTopoData.
-    const result = await fetchShader(mojones);
-    setShaderLoading(false);
-    if ('error' in result) {
-      setShaderError(result.error);
-    } else {
-      setDatosShader(result);
-      activarCapas();
-    }
+    if (res.ok) setCapas(prev => ({ ...prev, shaderElev: true, shaderPend: false, curvasNivel: true }));
   }, [mojones, shaderDetallado, demPropio]);
 
-  // Ubicar un sitio de represa sugerido: vuela al punto y deja un pin (sin salir del tab).
   /**
-   * Vuelca un sitio sugerido al mapa. Antes dejaba sólo un pin sobre el cauce,
-   * que no dice nada de la forma del vaso; ahora dibuja el ESPEJO de agua como
-   * polígono editable y lo deja preseleccionado en el cálculo del embalse, que
-   * era el otro paso que había que descubrir a ciegas.
+   * Vuelca un sitio sugerido al mapa: vuela al punto y deja el pin del muro.
+   *
+   * Durante un tiempo esto además dibujaba el ESPEJO de agua como polígono. La
+   * idea era buena —el pin no dice nada de la forma del vaso— pero el contorno
+   * salía mal: se calcula sobre el relieve global de ~30 m, y a esa resolución
+   * el borde del agua es una escalera de píxeles que no se parece a la curva de
+   * nivel real. Un polígono dibujado se lee como una medición, y ése no lo era.
+   *
+   * El pin sí es honesto: dice DÓNDE mirar, que es para lo que sirve una
+   * sugerencia. La forma del vaso se dibuja a mano en el paso 1 del embalse,
+   * sobre las curvas de nivel finas.
    */
   const handlePonerSitioEnMapa = useCallback((s: SitioRepresa, i: number) => {
-    const nombre = `Represa sugerida #${i + 1}`;
-    if (s.espejo.length >= 3) {
-      const id = crypto.randomUUID();
-      setDibujos(d => [...d, {
-        id, tipo: 'poligono', color: '#1565C0', vertices: s.espejo, opacidad: 0.3,
-        capaId: capaActivaId, nombre: `${nombre} · espejo`,
-        notas: `Espejo con ${s.altura_m} m de muro — ${volumenM3(s.volumen_agua_m3)} de agua, eficiencia ${s.eficiencia}:1`,
-      }]);
-      setEspejoSugeridoId(id);
-    }
     setPines(prev => [...prev, {
       id: crypto.randomUUID(), lat: s.lat, lng: s.lng,
-      nombre: `${nombre} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0',
-      notas: `Muro sugerido — ${s.ancho_muro_m} m de ancho por ${s.altura_m} m de alto, ${miles(s.volumen_muro_m3)} m³ de terraplén`,
+      nombre: `Represa sugerida #${i + 1} (ef. ${s.eficiencia}:1)`, icono: '💧', color: '#1565C0',
+      notas: `Muro sugerido — ${s.ancho_muro_m} m de ancho por ${s.altura_m} m de alto, ${miles(s.volumen_muro_m3)} m³ de terraplén. `
+           + `Embalsaría ${volumenM3(s.volumen_agua_m3)} sobre un espejo de ~${s.area_ha} ha.`,
     }]);
     flyToRef.current?.(s.lat, s.lng);
-  }, [capaActivaId]);
+  }, []);
 
   // Análisis topográfico integral: vuelca al plano represas + viviendas + caminos por cresta + cruces.
   const handleAplicarAnalisisIntegral = useCallback((res: AnalisisTopoIntegral) => {
@@ -2210,20 +2204,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       capa: CAPA_REPRESAS, origen: 'analisis' as const,
     }));
     if (nuevosPines.length === 0) return;
+    // Sólo pines: el espejo de agua no se dibuja. El contorno sale del relieve
+    // global (~30 m) y a esa resolución es una escalera de píxeles, no la curva
+    // de nivel del vaso — ver `handlePonerSitioEnMapa`.
     setPines(prev => [...prev, ...nuevosPines]);
-    // Con cada pin va el espejo de agua dibujado: el pin marca el muro, el
-    // polígono muestra qué se inunda. Sin eso hay que imaginarse el vaso.
-    const espejos = res.represas
-      .filter(s => s.espejo.length >= 3)
-      .map((s, i) => ({
-        id: crypto.randomUUID(), tipo: 'poligono' as const, color: '#1565C0',
-        vertices: s.espejo, opacidad: 0.3, capaId: capaActivaId,
-        nombre: `Represa ${i + 1} · espejo`,
-        notas: `Espejo con ${s.altura_m} m de muro — ${volumenM3(s.volumen_agua_m3)} de agua`,
-      }));
-    if (espejos.length > 0) setDibujos(d => [...d, ...espejos]);
     flyToRef.current?.(nuevosPines[0]!.lat, nuevosPines[0]!.lng);
-  }, [capaActivaId]);
+  }, []);
 
   // Al correr el Análisis del predio: encender la capa de escorrentías (antes se
   // creaba pero quedaba apagada). Las sugerencias de programa las hace el master plan.
@@ -2358,7 +2344,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     // Preferencias de capas guardadas; el shader, si existe, fuerza sus capas visibles
     const capasGuardadas = meta['capas'] as CapasVisibles | undefined;
     const shaderGuardado = (meta['shader'] as DatosShader) ?? null;
-    setDatosShader(shaderGuardado);
+    dispatchRelieve({ t: 'poner', datos: shaderGuardado });
     setAnalisisHecho(Boolean(meta['analisis_hecho']));
     setCapas(prev => {
       const base = capasGuardadas ? { ...prev, ...capasGuardadas } : prev;
@@ -2786,6 +2772,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 <div className="fixed inset-0 z-[1250]" onClick={() => setConfigOpen(false)} />
                 <div className="fixed bottom-2 left-[60px] w-56 max-h-[85vh] overflow-y-auto bg-white border border-bone-200 rounded-xl shadow-raised z-[1300] py-1.5">
                   <ExportItem icon={<BookOpen className="w-3.5 h-3.5" />} label="Guía de uso y fuentes" onClick={() => { setConfigOpen(false); window.open('/guia', '_blank', 'noopener'); }} />
+                  {process.env.NEXT_PUBLIC_PILOT_MODE_ENABLED === 'true' && <ExportItem icon={<ClipboardList className="w-3.5 h-3.5" />} label="Enviar devolución del piloto" onClick={() => { setConfigOpen(false); window.open(`${process.env.NEXT_PUBLIC_ACEQUIA_SITE_URL ?? 'https://acequia.app'}/devolucion`, '_blank', 'noopener'); }} />}
                   <ExportItem icon={<Keyboard className="w-3.5 h-3.5" />} label="Atajos de teclado" onClick={() => { setConfigOpen(false); setAyudaOpen(true); }} />
                   <div className="h-px bg-bone-100 my-1" />
                   <button
@@ -3061,7 +3048,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             buscandoCHIRPS={buscandoCHIRPS}
           /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
-          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
+          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
@@ -3206,12 +3193,36 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </div>
           )}
           {tab === 'aguadas' && (
-            <div className="px-4 py-4 space-y-4">
-              <SitiosRepresaPanel mojones={mojones} onPonerEnMapa={handlePonerSitioEnMapa} inicial={panelInputs['sitios_represa'] as SitiosInputs ?? null} onInputs={usarInputs('sitios_represa')} />
-              <div className="border-t border-bone-200 pt-4">
+            <div className="px-4 py-4 space-y-3">
+              {/* Cuatro pasos que antes venían apilados en una sola columna: para
+                  llegar a la curva de llenado había que scrollear por los sitios
+                  sugeridos, los tres pasos del embalse, el muro y la cuenca.
+                  Los paneles NO se desmontan al cambiar de sub-pestaña —se
+                  ocultan— porque el embalse calculado alimenta a la simulación. */}
+              <div className="flex gap-0.5 bg-bone-100 rounded-lg p-0.5">
+                {SUBS_REPRESA.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSubRepresa(s.id)}
+                    className={`flex-1 text-[9px] font-medium py-1.5 rounded-md transition-colors ${
+                      subRepresa === s.id ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-700/55 hover:text-ink-700'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className={subRepresa === 'sugerencias' ? '' : 'hidden'}>
+                <SitiosRepresaPanel mojones={mojones} onPonerEnMapa={handlePonerSitioEnMapa} inicial={panelInputs['sitios_represa'] as SitiosInputs ?? null} onInputs={usarInputs('sitios_represa')} />
+              </div>
+              <div className={subRepresa === 'sugerencias' ? 'hidden' : ''}>
+                {/* En «Sugerencias» este panel está oculto pero sigue montado:
+                    qué sección reciba da igual mientras no se vea. */}
                 <CutFillPanel
+                  seccion={subRepresa === 'sugerencias' ? 'embalse' : subRepresa}
                   mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill}
-                  onDibujarEspejo={handleDibujarEspejo} espejoSugerido={espejoSugeridoId}
+                  onDibujarEspejo={handleDibujarEspejo}
                   datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null}
                   grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
                   texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}

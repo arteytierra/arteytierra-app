@@ -118,6 +118,16 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                     {datos.koppen_calculado &&
                       ` · con las medias daría ${datos.koppen_calculado.codigo}: estás sobre un límite`}
                   </p>
+                  {/* El mapa falló y por eso no hay proyección a futuro. Sin
+                      esta línea la sección simplemente no aparece y el predio
+                      parece climáticamente estable, que es la conclusión
+                      opuesta a la que corresponde. */}
+                  {datos.koppen_mapa_falla && (
+                    <p className="text-[10px] text-clay-100/90 mt-1 leading-snug">
+                      Sin proyección a futuro: {datos.koppen_mapa_falla}. La clase de arriba
+                      es la calculada; volvé a actualizar el clima en un rato.
+                    </p>
+                  )}
                 </div>
                 {datos.aridez && (
                   <div className="text-right shrink-0">
