@@ -11,6 +11,7 @@ import { Loader2, Mountain, Droplets, MapPin, Sparkles } from 'lucide-react';
 import { analizarTopografiaIntegral, type AnalisisTopoIntegral } from '@/lib/cuencaHidro';
 import type { Mojon } from '@/lib/types';
 import { volumenM3, miles } from '@/lib/unidades';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 
 /**
  * El análisis integral tarda y descarga relieve: se guarda el resultado para
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onIrATopo, onAnalizado, inicial, onInputs }: Props) {
+  const relieve = useTextoRelieve();
   const [cargando, setCargando] = useState(false);
   const [res, setRes]           = useState<AnalisisTopoIntegral | null>(inicial?.res ?? null);
   const [error, setError]       = useState<string | null>(null);
@@ -114,7 +116,7 @@ export function AnalisisRelievePanel({ mojones, onAplicar, topoLista = true, onI
             {colocado ? 'Represas colocadas ✓' : 'Colocar represas en el plano'}
           </button>
           <p className="text-[9px] text-ink-700/45 leading-relaxed">
-            Sobre SRTM ~30 m — orientativo. Verificá en campo antes de construir.
+            Sobre {relieve} — orientativo. Verificá en campo antes de construir.
           </p>
         </div>
       )}

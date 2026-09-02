@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 import { Plus, Trash2, PenLine, Check, X, RotateCcw, TrendingUp, Ruler, Maximize2, Loader2, Mountain } from 'lucide-react';
 import { crearCamino, fetchPerfilElevacion, type Camino, type PerfilElevacion } from '@/lib/caminos';
 
@@ -213,7 +214,7 @@ export function CaminosPanel({
                   {cargandoId === c.id ? (
                     <div className="text-center py-4 space-y-1">
                       <div className="w-4 h-4 border-2 border-moss-700 border-t-transparent rounded-full animate-spin mx-auto" />
-                      <p className="text-xs text-ink-700/50">Consultando SRTM…</p>
+                      <p className="text-xs text-ink-700/50">Consultando el relieve…</p>
                     </div>
                   ) : c.perfil ? (
                     <PerfilChart perfil={c.perfil} color={c.color} />
@@ -277,6 +278,7 @@ export function CaminosPanel({
 // ─── Gráfico de perfil ────────────────────────────────────────────────────────
 
 function PerfilChart({ perfil, color }: { perfil: PerfilElevacion; color: string }) {
+  const relieve = useTextoRelieve();
   const { puntos, elev_min, elev_max } = perfil;
   const rango = elev_max - elev_min || 1;
   const CHART_H = 80;
@@ -322,7 +324,7 @@ function PerfilChart({ perfil, color }: { perfil: PerfilElevacion; color: string
         <div className="absolute left-1 top-0.5 text-[8px] font-mono text-ink-700/40">{elev_max.toFixed(0)}m</div>
         <div className="absolute left-1 bottom-4 text-[8px] font-mono text-ink-700/40">{elev_min.toFixed(0)}m</div>
       </div>
-      <p className="text-[9px] text-ink-700/40 italic">Perfil SRTM 30m — orientativo.</p>
+      <p className="text-[9px] text-ink-700/40 italic">Perfil sobre {relieve} — orientativo.</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 import { Waves, Mountain, MapPin } from 'lucide-react';
 import { calcularAguadas, type DatosAguadas, type ElementoAguada } from '@/lib/aguadas';
 import type { DatosTopografia } from '@/lib/topografia';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo, onAgregarAguada }: Props) {
+  const relieve = useTextoRelieve();
   const datos: DatosAguadas | null = useMemo(() => {
     if (!datosTopografia) return null;
     return calcularAguadas(mojones, datosTopografia, datosClima?.precip_anual_mm);
@@ -189,7 +191,7 @@ export function AguadasPanel({ mojones, datosTopografia, datosClima, onIrATopo, 
       </div>
 
       <p className="text-[9px] text-ink-700/40 italic">
-        Análisis basado en SRTM 30m. Precisión orientativa.
+        Análisis basado en {relieve}. Precisión orientativa.
         Para obras de infraestructura hídrica, contratar relevamiento topográfico profesional.
       </p>
     </div>

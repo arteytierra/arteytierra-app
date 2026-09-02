@@ -18,6 +18,7 @@ import type { Cuenca, GrupoHidro } from '@/lib/cuenca';
 import type { Mojon } from '@/lib/types';
 import type { DatosShader } from '@/lib/shaders';
 import type { DatosClima } from '@/lib/clima';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 
 
 export interface PoligonoCutFill { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
@@ -61,6 +62,7 @@ interface Props {
 }
 
 export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, espejoSugerido = null, datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
+  const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
@@ -395,7 +397,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
           <p className="text-[10px] text-ink-700/60 leading-relaxed flex gap-1">
             <Info className="w-3 h-3 shrink-0 mt-0.5 text-water-500" />
-            Volumen embalsado integrando la elevación SRTM bajo el nivel de agua (orientativo). El movimiento de tierra y la eficiencia del sitio están más abajo, según el tipo de obra.
+            Volumen embalsado integrando la elevación de {relieve} bajo el nivel de agua (orientativo). El movimiento de tierra y la eficiencia del sitio están más abajo, según el tipo de obra.
           </p>
 
           {/* ── Muro de la represa (trapecio) ── */}

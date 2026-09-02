@@ -13,6 +13,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Mojon } from '@/lib/types';
 import { construirVectores3D, type DatosVectores } from '@/lib/vectores3d';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 
 interface Props extends DatosVectores {
   mojones: Mojon[];
@@ -22,6 +23,7 @@ interface Props extends DatosVectores {
 }
 
 export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
+  const relieve = useTextoRelieve();
   const { mojones } = datos;
   const contRef = useRef<HTMLDivElement>(null);
   const mapRef  = useRef<maplibregl.Map | null>(null);
@@ -444,7 +446,7 @@ export function Vista3D({ onClose, zoomSatelital = 18, ...datos }: Props) {
       </button>
 
       <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-bone-50/45 text-[10px] text-center">
-        Girá e incliná con la ruedita del mouse apretada + arrastrar (o botón derecho) · arrastrá para desplazar · rueda para zoom · relieve SRTM 30 m, orientativo
+        Girá e incliná con la ruedita del mouse apretada + arrastrar (o botón derecho) · arrastrá para desplazar · rueda para zoom · relieve: {relieve}, orientativo
       </p>
     </div>
   );

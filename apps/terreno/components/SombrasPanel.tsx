@@ -9,6 +9,7 @@ import { horaStr } from '@/lib/arco_solar';
 import type { ResultadoSombras } from '@/lib/sombras';
 import type { ResultadoInsolacion } from '@/lib/insolacion';
 import { PRESETS_OBJETO, type ObjetoSombra } from '@/lib/objetosSombra';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 
 interface Zonita { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -53,6 +54,7 @@ export function SombrasPanel({
   onActivo, onDoy, onHora, onAnimar, onInsolacion, onLimpiarInsolacion,
   onAgregarObjeto, onAlturaObjeto, onEliminarObjeto, onIrATopo,
 }: Props) {
+  const relieve = useTextoRelieve();
   const arboles  = PRESETS_OBJETO.filter(p => p.tipo === 'arbol');
   const volumenes = PRESETS_OBJETO.filter(p => p.tipo === 'volumen');
 
@@ -225,7 +227,7 @@ export function SombrasPanel({
               </div>
 
               <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
-                Sombras del terreno por ray-march sobre el MDE SRTM 30 m. Las sombras de árboles y construcciones se
+                Sombras del terreno por ray-march sobre el MDE ({relieve}). Las sombras de árboles y construcciones se
                 proyectan geométricamente (mucho más finas que la celda del MDE) y suponen suelo plano bajo el objeto.
                 Hora solar, sin nubes. Orientativo para ubicar cultivos, invernaderos, viviendas y paneles.
               </p>

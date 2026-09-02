@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTextoRelieve } from '@/lib/contextoRelieve';
 import { ChevronLeft, Home, Droplets, Route, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { ResultadoSugerencias, CandidatoUbicacion } from '@/lib/sugerencias';
 
@@ -14,6 +15,7 @@ interface Props {
 export function SugerenciasPanel({
   datos, onAgregarPin, onAgregarCamino, onVolver,
 }: Props) {
+  const relieve = useTextoRelieve();
   const [agregados, setAgregados] = useState<Set<string>>(new Set());
 
   const marcarAgregado = (key: string) =>
@@ -143,7 +145,7 @@ export function SugerenciasPanel({
           <div className="flex items-start gap-2 bg-bone-50 rounded-lg p-2">
             <AlertCircle className="w-3 h-3 text-ink-700/30 shrink-0 mt-0.5" />
             <p className="text-[9px] text-ink-700/50 leading-tight italic">
-              Sugerencias basadas en topografía SRTM 30m y criterios permaculturales.
+              Sugerencias basadas en la topografía de {relieve} y criterios permaculturales.
               Verificar en campo antes de construir.
             </p>
           </div>

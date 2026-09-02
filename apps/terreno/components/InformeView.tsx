@@ -641,7 +641,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               colAlign={['left', 'right']}
             />
             <p className="text-xs text-ink-700/50 mt-2 italic">
-              Pérdida de carga por Hazen-Williams · cotas SRTM ~30 m. Diseño preliminar.
+              Pérdida de carga por Hazen-Williams · cotas de {datos.topo?.fuente ?? 'el modelo de elevación'}. Diseño preliminar.
             </p>
           </Section>
         )}
@@ -786,7 +786,7 @@ export function InformeView({ datos, compartido = false }: Props) {
         <Section numero="A" titulo="Anexo — fuentes y metodología">
           <ul className="text-xs text-ink-700/70 space-y-1 leading-relaxed list-disc pl-4">
             <li><span className="font-medium">Imagen satelital:</span> Esri World Imagery.</li>
-            <li><span className="font-medium">Topografía:</span> modelo de elevación Copernicus GLO-30 (~30 m) — © DLR/Airbus (COPERNICUS · UE · ESA); respaldo SRTM/Terrarium.</li>
+            <li><span className="font-medium">Topografía:</span> {datos.topo ? `${datos.topo.fuente} (${datos.topo.resolucion})` : 'modelo de elevación Copernicus GLO-30 (~30 m) — © DLR/Airbus (COPERNICUS · UE · ESA)'}. La app elige el mejor modelo disponible del lugar: servicios nacionales donde existen, Copernicus GLO-30 en el resto y SRTM de respaldo.</li>
             {datos.clima && <li><span className="font-medium">Clima:</span> {datos.clima.fuente ?? 'NASA POWER / Open-Meteo'}.</li>}
             {datos.extremos && <li><span className="font-medium">Extremos:</span> {datos.extremos.fuente} ({datos.extremos.periodo}).</li>}
             {datos.suelo && <li><span className="font-medium">Suelo:</span> SoilGrids (ISRIC); agua útil por pedotransferencia Saxton-Rawls (2006).</li>}

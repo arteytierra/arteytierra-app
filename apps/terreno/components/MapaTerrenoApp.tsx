@@ -67,6 +67,7 @@ import { fetchShader, shaderDesdeGrilla, shaderDesdeDEM, GRADIENTE_ELEV, GRADIEN
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { ProveedorRelieve, fmtPaso } from '@/lib/contextoRelieve';
 import { calcularAptitud, COLORES_APTITUD, type ResultadoAptitud } from '@/lib/aptitud';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
@@ -198,11 +199,6 @@ function errMsgApp(err: unknown): string {
  * debajo del metro, metros arriba. Con AHN (50 cm) o un dron RTK, "0.5 m" se lee
  * peor que "50 cm".
  */
-function fmtPaso(m: number): string {
-  if (m < 1) return `${Math.round(m * 100)} cm`;
-  return `${Number.isInteger(m) ? m : m.toFixed(1)} m`;
-}
-
 // ─── Riel de navegación: definición de tabs y clústeres ─────────────────────
 /** Definición visual de cada tab. El `id` es la clave estable que usan
  *  entitlements, snapshots y la paleta (Ctrl+K): NO cambia aunque se reagrupe
@@ -2498,7 +2494,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (capas.terreno && mojones.length >= 3)
       items.push({ color: '#D9A441', label: 'Predio' });
     if (capas.terrariumElev)
-      items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: `Elevación SRTM (${terrariumElevMin}–${terrariumElevMax} m)` });
+      items.push({ color: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)', label: `Hipsométrico global (${terrariumElevMin}–${terrariumElevMax} m)` });
     if (capas.shaderElev && datosShader)
       // Con el rango explícito: es una escala relativa a ESTE predio, así que sin
       // los números el color no dice nada (y antes, además, compartía gradiente
@@ -2595,6 +2591,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   ]);
 
   return (
+    <ProveedorRelieve nombre={fuenteRelieveNombre} pasoM={pasoRelieveM}>
     <div className="flex flex-col h-screen overflow-hidden bg-bone-50">
 
       {/* ─── Barra superior ──────────────────────────────────────────────────── */}
@@ -3140,7 +3137,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     </>
                   )}
                   <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
-                    Verde = superficie visible desde el punto (línea de visión sobre el MDE SRTM 30 m). No considera vegetación ni construcciones. Útil para miradores, torres de agua, cámaras y privacidad.
+                    Verde = superficie visible desde el punto (línea de visión sobre el MDE{fuenteRelieveNombre ? `: ${fuenteRelieveNombre}` : ''}). No considera vegetación ni construcciones. Útil para miradores, torres de agua, cámaras y privacidad.
                   </p>
                 </>
               )}
@@ -3994,6 +3991,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       {/* ─── Modal global ──────────────────────────────────────────────────── */}
       <Modal modal={modal} onClose={() => setModal(null)} />
     </div>
+    </ProveedorRelieve>
   );
 }
 
@@ -4324,7 +4322,7 @@ function PanelCapas({
           <CapaItem
             visible={capas.terrariumElev}
             onToggle={() => onCapas({ ...capas, terrariumElev: !capas.terrariumElev })}
-            label={`Hipsométrico SRTM · altitud absoluta${capas.terrariumElev ? ` (${terrariumElevMin}–${terrariumElevMax} m)` : ''}`}
+            label={`Hipsométrico global · altitud absoluta${capas.terrariumElev ? ` (${terrariumElevMin}–${terrariumElevMax} m)` : ''}`}
             swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: 'linear-gradient(90deg,#1565C0,#66BB6A,#FFEE58,#8D6E63)' }} />}
           />
           {capas.terrariumElev && (
