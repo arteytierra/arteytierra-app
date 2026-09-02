@@ -21,7 +21,6 @@ interface Params {
  * Extraído tal cual: misma lógica y mismas dependencias de los handlers.
  */
 export function useCuenca({ mojones }: Params) {
-  const [modoCuenca,      setModoCuenca]      = useState(false);
   const [cuenca,          setCuenca]          = useState<Cuenca | null>(null);
   const [cuencaLoading,   setCuencaLoading]   = useState(false);
   const [cuencaAviso,     setCuencaAviso]     = useState<string | null>(null);
@@ -77,7 +76,6 @@ export function useCuenca({ mojones }: Params) {
   }, []);
 
   return {
-    modoCuenca, setModoCuenca,
     cuenca, setCuenca,
     cuencaLoading,
     cuencaAviso, setCuencaAviso,

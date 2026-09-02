@@ -119,6 +119,7 @@ import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos
 import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
+import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
 import { COLORES_DIBUJO, distanciaMetros, medidasDibujo } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
@@ -179,10 +180,6 @@ interface DocDisenoSnapshot {
   capasUsuario: CapaUsuario[];
 }
 interface Escenario { id: string; nombre: string; creado: string; doc: DocDisenoSnapshot }
-
-interface ModoZona    { categoria: CategoriaZona; vertices: Array<{ lat: number; lng: number }> }
-interface ModoSector  { tipo: TipoSector;          vertices: Array<{ lat: number; lng: number }> }
-interface ModoCamino  { vertices: Array<{ lat: number; lng: number }>; proposito?: 'camino' | 'cortina' }
 
 interface Props { userName: string | null; plan: Plan }
 
@@ -308,8 +305,34 @@ function zoomParaBbox(bbox?: [number, number, number, number]): number {
 export function MapaTerrenoApp({ userName, plan }: Props) {
   const router = useRouter();
 
+  // ─── Modo del mapa ────────────────────────────────────────────────────────
+  // Qué espera el próximo clic. Uno solo a la vez, por construcción: prender un
+  // modo apaga los otros once porque son la misma variable. Ver `lib/mapa/modoMapa`.
+  const [modo, setModo] = useState<ModoMapa>(null);
+
+  // Lecturas del modo activo. Son proyecciones de `modo`, no estado: leerlas es
+  // preguntarle a la única variable, así que dos no pueden ser ciertas a la vez.
+  // Conservan los nombres viejos porque media app los usa para pintarse.
+  const modoZona          = modo?.k === 'zona'    ? modo : null;
+  const modoSector        = modo?.k === 'sector'  ? modo : null;
+  const modoCamino        = modo?.k === 'camino'  ? modo : null;
+  const modoDibujo        = modo?.k === 'dibujo'  ? modo.tipo : null;
+  const modoClick         = modo?.k === 'mojon';
+  const modoPinClick      = modo?.k === 'pin';
+  const modoElementoClick = modo?.k === 'elemento';
+  const modoZona0         = modo?.k === 'zona0';
+  const modoAcceso        = modo?.k === 'acceso';
+  const modoViewshed      = modo?.k === 'viewshed';
+  const modoCuenca        = modo?.k === 'cuenca';
+  const modoArbol         = modo?.k === 'arbol';
+
+  const dibujando = estaDibujando(modo);
+
+  // Lo llama el panel de sombras cuando elegís un árbol: deja el mapa esperando
+  // el clic que lo planta.
+  const pedirClicArbol = useCallback(() => setModo({ k: 'arbol' }), []);
+
   // ─── Mojones ──────────────────────────────────────────────────────────────
-  const [modoClick,     setModoClick]     = useState(false);
   const [seleccionado,  setSeleccionado]  = useState<string | null>(null);
   const [panelAbierto,  setPanelAbierto]  = useState(true);
   const [tab,           setTab]           = useState<Tab>('mojones');
@@ -400,14 +423,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const setDibujos      = useCallback((v: ElementoDibujo[]  | ((p: ElementoDibujo[])  => ElementoDibujo[]))  => commit(d => ({ ...d, dibujos:      typeof v === 'function' ? v(d.dibujos)      : v })), [commit]);
   const setCapasUsuario = useCallback((v: CapaUsuario[]     | ((p: CapaUsuario[])     => CapaUsuario[]))     => commit(d => ({ ...d, capasUsuario: typeof v === 'function' ? v(d.capasUsuario ?? CAPAS_USUARIO_INICIAL) : v })), [commit]);
 
-  const [modoZona,    setModoZona]    = useState<ModoZona | null>(null);
-  const [modoSector,  setModoSector]  = useState<ModoSector | null>(null);
-  const [modoPinClick,setModoPinClick]= useState(false);
   const [pinEditId,   setPinEditId]   = useState<string | null>(null);
-  const [modoCamino,  setModoCamino]  = useState<ModoCamino | null>(null);
   // ─── Cuenca de aporte (hook useCuenca) ────────────────────────────────────
   const {
-    modoCuenca, setModoCuenca,
     cuenca, setCuenca,
     cuencaLoading,
     cuencaAviso, setCuencaAviso,
@@ -421,7 +439,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // persisten con el proyecto.
   const [cuencasGuardadas, setCuencasGuardadas] = useState<CuencaGuardada[]>([]);
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
-  const [modoViewshed, setModoViewshed] = useState(false);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
@@ -492,10 +509,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [masterPlan,  setMasterPlan]  = useState<ElementoMasterPlan[] | null>(null);
   // Zona 0 (casa / edificio principal): punto de referencia del master plan.
   const [zona0,       setZona0]       = useState<{ lat: number; lng: number } | null>(null);
-  const [modoZona0,   setModoZona0]   = useState(false);
   // Punto de acceso al terreno (tranquera/portón): raíz de los caminos del plan.
   const [acceso,      setAcceso]      = useState<{ lat: number; lng: number } | null>(null);
-  const [modoAcceso,  setModoAcceso]  = useState(false);
   // Caminos conectores del master plan (MST zona 0 ↔ elementos), derivados.
   // Análisis de relieve (bounded, ≤120² desde el shader) para rutear los tramos
   // por el terreno en vez de líneas rectas. Se memoiza solo sobre el shader (no
@@ -623,7 +638,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [mojones]);
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
-  const [modoDibujo,     setModoDibujo]     = useState<TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null>(null);
   const [dibujoEnCurso,  setDibujoEnCurso]  = useState<DibujoEnCurso | null>(null);
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
@@ -639,7 +653,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [ayudaOpen,  setAyudaOpen]  = useState(false);
   const [bloqueActivo,   setBloqueActivo]   = useState<BloqueDef | null>(null);
   const [elementoActivo, setElementoActivo] = useState<ElementoPreset | null>(null);
-  const [modoElementoClick, setModoElementoClick] = useState(false);
   const [elementoPoli,   setElementoPoli]   = useState<ElementoPreset | null>(null);
   const [keylineCheck,   setKeylineCheck]   = useState<Record<string, KeylineCheck>>({});
   const [escenarios,     setEscenarios]     = useState<Escenario[]>([]);
@@ -730,7 +743,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     sombrasDoy, setSombrasDoy,
     sombrasHora, setSombrasHora,
     sombrasObjetos, setSombrasObjetos,
-    modoArbol, setModoArbol,
     animando,
     insolacion, setInsolacion,
     calculandoIns,
@@ -742,9 +754,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     handleAlturaObjeto,
     handleEliminarObjeto,
     handleAgregarObjeto,
-  } = useSombras({ datosShader, latCentro, zonas, dibujos });
-
-  const dibujando = modoZona || modoSector || modoCamino || modoPinClick || modoElementoClick || modoCuenca || modoViewshed || modoArbol || modoZona0 || modoAcceso || (modoDibujo && modoDibujo !== 'seleccion');
+  } = useSombras({ datosShader, latCentro, zonas, dibujos, onPedirClicArbol: pedirClicArbol });
 
   // ─── Visibilidad por item ─────────────────────────────────────────────────
   // Carpeta efectiva de un elemento: su capaId explícito o, si no tiene, la carpeta
@@ -901,8 +911,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [mojones, zona0]);
   const handleDibujarCortina = useCallback((ancho_m: number, alto_m: number) => {
     cortinaParamsRef.current = { ancho_m, alto_m };
-    setModoCamino({ vertices: [], proposito: 'cortina' });
-    setModoClick(false);
+    setModo({ k: 'camino', vertices: [], proposito: 'cortina' });
   }, []);
   const handleColocarCortina = useCallback(() => {
     if (!cortina) return;
@@ -1112,163 +1121,177 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       opacidad: 0.12, capaId: capaActivaId, nombre: 'Cuenca (editable)',
     }]);
     setDibujoSelId(id);
-    setModoDibujo('seleccion');
+    setModo({ k: 'dibujo', tipo: 'seleccion' });
     setTab('cuenca');
   }, [cuenca, capaActivaId]);
 
   // ─── Clic en mapa ─────────────────────────────────────────────────────────
   const handleMapClick = useCallback((lat: number, lng: number) => {
-    if (modoZona0) {
-      setZona0({ lat, lng });
-      setModoZona0(false);
-      return;
-    }
-    if (modoAcceso) {
-      setAcceso({ lat, lng });
-      setModoAcceso(false);
-      return;
-    }
-    if (modoArbol) {
-      const p = objetoPendienteRef.current;
-      setModoArbol(false);
-      objetoPendienteRef.current = null;
-      if (p) setSombrasObjetos(o => [...o, { ...p, tipo: 'arbol', lat, lng }]);
-      return;
-    }
-    if (modoCuenca) {
-      setModoCuenca(false);
-      void procesarCuenca(lat, lng);
-      return;
-    }
-    if (modoViewshed) {
-      setModoViewshed(false);
-      if (datosShader) {
-        const celda = celdaEnPunto(datosShader, lat, lng);
-        if (celda) setViewshed(calcularViewshed(datosShader, celda.row, celda.col, alturaObs));
-      }
-      return;
-    }
-    if (modoZona)    { setModoZona(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
-    if (modoSector)  { setModoSector(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
-    if (modoCamino)  { setModoCamino(prev => prev ? { ...prev, vertices: [...prev.vertices, { lat, lng }] } : null); return; }
-    if (modoPinClick){
-      setPines(prev => [...prev, bloqueActivo
-        ? { id: crypto.randomUUID(), lat, lng, nombre: bloqueActivo.nombre, color: bloqueActivo.color, icono: bloqueActivo.icono, notas: '' }
-        : crearPin(lat, lng)]);
-      setModoPinClick(false); setBloqueActivo(null); return;
-    }
-    if (modoElementoClick && elementoActivo) {
-      const e = elementoActivo;
-      const id = crypto.randomUUID();
-      if (e.forma === 'rect') {
-        const dLat = (e.largo_m ?? 2) / 2 / 111_320;
-        const dLng = (e.ancho_m ?? 2) / 2 / (111_320 * Math.cos(lat * Math.PI / 180));
-        setDibujos(d => [...d, {
-          id, tipo: 'poligono', color: e.color, opacidad: e.opacidad,
-          simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
-          vertices: [
-            { lat: lat + dLat, lng: lng - dLng },
-            { lat: lat + dLat, lng: lng + dLng },
-            { lat: lat - dLat, lng: lng + dLng },
-            { lat: lat - dLat, lng: lng - dLng },
-          ],
-        }]);
-      } else {
-        setDibujos(d => [...d, {
-          id, tipo: 'circulo', color: e.color,
-          lat, lng, radio: e.radio_m ?? 1, opacidad: e.opacidad,
-          simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
-        }]);
-      }
-      return; // se mantiene el sello activo para colocar varios
-    }
-    if (modoDibujo === 'medir') { setMedicionVertices(prev => [...prev, { lat, lng }]); return; }
+    if (modo === null) return;
+    switch (modo.k) {
+      case 'zona0':
+        setZona0({ lat, lng });
+        setModo(null);
+        return;
 
-    if (modoDibujo && modoDibujo !== 'seleccion') {
-      // Punto: colocación inmediata, sin dibujoEnCurso
-      if (modoDibujo === 'punto') {
-        setDibujos(d => [...d, { id: crypto.randomUUID(), tipo: 'punto', color: colorDibujo, lat, lng, capaId: capaActivaId }]);
+      case 'acceso':
+        setAcceso({ lat, lng });
+        setModo(null);
+        return;
+
+      case 'arbol': {
+        const p = objetoPendienteRef.current;
+        setModo(null);
+        objetoPendienteRef.current = null;
+        if (p) setSombrasObjetos(o => [...o, { ...p, tipo: 'arbol', lat, lng }]);
         return;
       }
-      if (modoDibujo === 'texto') {
-        const pendLat = lat, pendLng = lng;
-        setModal({
-          type: 'prompt', message: 'Escribí el texto a mostrar en el mapa:', placeholder: 'Texto…',
-          onConfirm: texto => {
-            setDibujos(prev => [...prev, {
-              id: crypto.randomUUID(), tipo: 'texto', color: colorDibujo,
-              lat: pendLat, lng: pendLng, texto, tamano: 14, capaId: capaActivaId,
-            }]);
-          },
+
+      case 'cuenca':
+        setModo(null);
+        void procesarCuenca(lat, lng);
+        return;
+
+      case 'viewshed':
+        setModo(null);
+        if (datosShader) {
+          const celda = celdaEnPunto(datosShader, lat, lng);
+          if (celda) setViewshed(calcularViewshed(datosShader, celda.row, celda.col, alturaObs));
+        }
+        return;
+
+      // Los tres que se dibujan clic a clic: acumulan y esperan el cierre a mano.
+      case 'zona':
+      case 'sector':
+      case 'camino':
+        setModo(m => agregarVertice(m, { lat, lng }));
+        return;
+
+      case 'pin':
+        setPines(prev => [...prev, bloqueActivo
+          ? { id: crypto.randomUUID(), lat, lng, nombre: bloqueActivo.nombre, color: bloqueActivo.color, icono: bloqueActivo.icono, notas: '' }
+          : crearPin(lat, lng)]);
+        setModo(null); setBloqueActivo(null);
+        return;
+
+      case 'elemento': {
+        if (!elementoActivo) return;
+        const e = elementoActivo;
+        const id = crypto.randomUUID();
+        if (e.forma === 'rect') {
+          const dLat = (e.largo_m ?? 2) / 2 / 111_320;
+          const dLng = (e.ancho_m ?? 2) / 2 / (111_320 * Math.cos(lat * Math.PI / 180));
+          setDibujos(d => [...d, {
+            id, tipo: 'poligono', color: e.color, opacidad: e.opacidad,
+            simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
+            vertices: [
+              { lat: lat + dLat, lng: lng - dLng },
+              { lat: lat + dLat, lng: lng + dLng },
+              { lat: lat - dLat, lng: lng + dLng },
+              { lat: lat - dLat, lng: lng - dLng },
+            ],
+          }]);
+        } else {
+          setDibujos(d => [...d, {
+            id, tipo: 'circulo', color: e.color,
+            lat, lng, radio: e.radio_m ?? 1, opacidad: e.opacidad,
+            simbolo: e.emoji, nombre: e.nombre, capaId: capaActivaId,
+          }]);
+        }
+        return; // se mantiene el sello activo para colocar varios
+      }
+
+      case 'mojon':
+        // Los mojones sólo se agregan con clic desde la herramienta Lugar; así no
+        // se marcan mojones sueltos trabajando en otra herramienta.
+        if (tab === 'mojones') agregarMojon(lat, lng);
+        return;
+
+      case 'dibujo': {
+        const herr = modo.tipo;
+        if (herr === 'seleccion') return;
+        if (herr === 'medir') { setMedicionVertices(prev => [...prev, { lat, lng }]); return; }
+        // Punto: colocación inmediata, sin dibujoEnCurso
+        if (herr === 'punto') {
+          setDibujos(d => [...d, { id: crypto.randomUUID(), tipo: 'punto', color: colorDibujo, lat, lng, capaId: capaActivaId }]);
+          return;
+        }
+        if (herr === 'texto') {
+          const pendLat = lat, pendLng = lng;
+          setModal({
+            type: 'prompt', message: 'Escribí el texto a mostrar en el mapa:', placeholder: 'Texto…',
+            onConfirm: texto => {
+              setDibujos(prev => [...prev, {
+                id: crypto.randomUUID(), tipo: 'texto', color: colorDibujo,
+                lat: pendLat, lng: pendLng, texto, tamano: 14, capaId: capaActivaId,
+              }]);
+            },
+          });
+          return;
+        }
+        setDibujoEnCurso(prev => {
+          if (!prev) {
+            const tipoBase: TipoDibujo =
+              herr === 'rectangulo' ? 'poligono' :
+              herr === 'mano_libre' ? 'linea' :
+              herr === 'radio_accion' ? 'circulo' :
+              herr as TipoDibujo;
+            return { tipo: tipoBase, vertices: [{ lat, lng }] };
+          }
+          const next = [...prev.vertices, { lat, lng }];
+          // Auto-finalizar círculo o radio de acción al tener 2 puntos
+          if ((herr === 'circulo' || herr === 'radio_accion') && next.length === 2) {
+            const id    = crypto.randomUUID();
+            const radio = distanciaMetros(next[0]!.lat, next[0]!.lng, next[1]!.lat, next[1]!.lng);
+            setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: herr === 'radio_accion' ? 0.08 : 0.18, capaId: capaActivaId }]);
+            return { tipo: prev.tipo, vertices: [] };
+          }
+          // Auto-finalizar cota al tener 2 puntos
+          if (herr === 'cota' && next.length === 2) {
+            const id = crypto.randomUUID();
+            setDibujos(d => [...d, { id, tipo: 'cota', color: colorDibujo, vertices: next, capaId: capaActivaId }]);
+            return { tipo: prev.tipo, vertices: [] };
+          }
+          // Auto-finalizar rectángulo al tener 2 puntos
+          if (herr === 'rectangulo' && next.length === 2) {
+            const [p1, p2] = next;
+            const id = crypto.randomUUID();
+            const vertices = [
+              { lat: p1!.lat, lng: p1!.lng },
+              { lat: p1!.lat, lng: p2!.lng },
+              { lat: p2!.lat, lng: p2!.lng },
+              { lat: p2!.lat, lng: p1!.lng },
+            ];
+            setDibujos(d => [...d, { id, tipo: 'poligono', color: colorDibujo, vertices, opacidad: 0.22, capaId: capaActivaId }]);
+            return { tipo: prev.tipo, vertices: [] };
+          }
+          // Auto-finalizar flecha al tener 2 puntos
+          if (herr === 'flecha' && next.length === 2) {
+            const id = crypto.randomUUID();
+            setDibujos(d => [...d, { id, tipo: 'flecha', color: colorDibujo, vertices: next, grosor: 3, capaId: capaActivaId }]);
+            return { tipo: prev.tipo, vertices: [] };
+          }
+          return { ...prev, vertices: next };
         });
         return;
       }
-      setDibujoEnCurso(prev => {
-        if (!prev) {
-          const tipoBase: TipoDibujo =
-            modoDibujo === 'rectangulo' ? 'poligono' :
-            modoDibujo === 'mano_libre' ? 'linea' :
-            modoDibujo === 'radio_accion' ? 'circulo' :
-            modoDibujo as TipoDibujo;
-          return { tipo: tipoBase, vertices: [{ lat, lng }] };
-        }
-        const next = [...prev.vertices, { lat, lng }];
-        // Auto-finalizar círculo o radio de acción al tener 2 puntos
-        if ((modoDibujo === 'circulo' || modoDibujo === 'radio_accion') && next.length === 2) {
-          const id    = crypto.randomUUID();
-          const radio = distanciaMetros(next[0]!.lat, next[0]!.lng, next[1]!.lat, next[1]!.lng);
-          setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: modoDibujo === 'radio_accion' ? 0.08 : 0.18, capaId: capaActivaId }]);
-          return { tipo: prev.tipo, vertices: [] };
-        }
-        // Auto-finalizar cota al tener 2 puntos
-        if (modoDibujo === 'cota' && next.length === 2) {
-          const id = crypto.randomUUID();
-          setDibujos(d => [...d, { id, tipo: 'cota', color: colorDibujo, vertices: next, capaId: capaActivaId }]);
-          return { tipo: prev.tipo, vertices: [] };
-        }
-        // Auto-finalizar rectángulo al tener 2 puntos
-        if (modoDibujo === 'rectangulo' && next.length === 2) {
-          const [p1, p2] = next;
-          const id = crypto.randomUUID();
-          const vertices = [
-            { lat: p1!.lat, lng: p1!.lng },
-            { lat: p1!.lat, lng: p2!.lng },
-            { lat: p2!.lat, lng: p2!.lng },
-            { lat: p2!.lat, lng: p1!.lng },
-          ];
-          setDibujos(d => [...d, { id, tipo: 'poligono', color: colorDibujo, vertices, opacidad: 0.22, capaId: capaActivaId }]);
-          return { tipo: prev.tipo, vertices: [] };
-        }
-        // Auto-finalizar flecha al tener 2 puntos
-        if (modoDibujo === 'flecha' && next.length === 2) {
-          const id = crypto.randomUUID();
-          setDibujos(d => [...d, { id, tipo: 'flecha', color: colorDibujo, vertices: next, grosor: 3, capaId: capaActivaId }]);
-          return { tipo: prev.tipo, vertices: [] };
-        }
-        return { ...prev, vertices: next };
-      });
-      return;
     }
-
-    // Los mojones sólo se agregan con clic desde la herramienta Lugar (tab
-    // 'mojones'); así no se marcan mojones sueltos trabajando en otra herramienta.
-    if (modoClick && tab === 'mojones') agregarMojon(lat, lng);
-  }, [modoZona0, modoAcceso, modoArbol, modoCuenca, procesarCuenca, modoViewshed, alturaObs, datosShader, modoZona, modoSector, modoCamino, modoPinClick, modoElementoClick, elementoActivo, modoClick, tab, modoDibujo, colorDibujo, capaActivaId, bloqueActivo, agregarMojon]);
+  }, [modo, procesarCuenca, alturaObs, datosShader, elementoActivo, tab, colorDibujo, capaActivaId, bloqueActivo, agregarMojon, objetoPendienteRef, setSombrasObjetos, setPines, setDibujos]);
 
   // Si el modo "agregar mojón" quedó prendido y salís de Lugar, se apaga solo.
-  useEffect(() => { if (tab !== 'mojones' && modoClick) setModoClick(false); }, [tab, modoClick]);
+  useEffect(() => { if (tab !== 'mojones' && modoClick) setModo(null); }, [tab, modoClick]);
 
   // ─── Zonas ────────────────────────────────────────────────────────────────
-  const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModoZona({ categoria, vertices: [] }); setModoClick(false); }, []);
+  const handleIniciarZona    = useCallback((categoria: CategoriaZona) => { setModo({ k: 'zona', categoria, vertices: [] }); }, []);
   const handleFinalizarZona  = useCallback((color?: string) => {
     if (!modoZona || modoZona.vertices.length < 3) return;
     setZonas(prev => [...prev, crearZona(modoZona.categoria, modoZona.vertices, color)]);
-    setModoZona(null);
-  }, [modoZona]);
-  const handleCancelarZona   = useCallback(() => setModoZona(null), []);
+    setModo(null);
+  }, [modoZona, setZonas]);
+  const handleCancelarZona   = useCallback(() => setModo(null), []);
 
   // ─── Sectores ─────────────────────────────────────────────────────────────
-  const handleIniciarSector   = useCallback((tipo: TipoSector) => { setModoSector({ tipo, vertices: [] }); setModoClick(false); }, []);
+  const handleIniciarSector   = useCallback((tipo: TipoSector) => { setModo({ k: 'sector', tipo, vertices: [] }); }, []);
   const handleFinalizarSector = useCallback((color?: string) => {
     if (!modoSector || modoSector.vertices.length < 3) return;
     const nuevo: Sector = {
@@ -1277,9 +1300,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       vertices: modoSector.vertices, notas: '', auto: false, color,
     };
     setSectores(prev => [...prev, nuevo]);
-    setModoSector(null);
-  }, [modoSector]);
-  const handleCancelarSector  = useCallback(() => setModoSector(null), []);
+    setModo(null);
+  }, [modoSector, setSectores]);
+  const handleCancelarSector  = useCallback(() => setModo(null), []);
 
   const handleAplicarSectorAuto = useCallback((sector: Sector) => {
     setSectores(prev => [...prev, sector]);
@@ -1292,13 +1315,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, []);
 
   // ─── Caminos ──────────────────────────────────────────────────────────────
-  const handleIniciarCamino   = useCallback(() => { setModoCamino({ vertices: [] }); setModoClick(false); }, []);
+  const handleIniciarCamino   = useCallback(() => { setModo({ k: 'camino', vertices: [] }); }, []);
   const handleFinalizarCamino = useCallback((color?: string) => {
     if (!modoCamino || modoCamino.vertices.length < 2) return;
     // Reutiliza el modo de trazado para dibujar el eje de una cortina.
     if (modoCamino.proposito === 'cortina') {
       const r = construirCortina(modoCamino.vertices, cortinaParamsRef.current, mojones, 'dibujada');
-      setModoCamino(null);
+      setModo(null);
       if (!r) { setModal({ type: 'alert', message: 'No se pudo construir la cortina (trazá el eje dentro del predio).' }); return; }
       setCortina(r);
       setCapas(prev => ({ ...prev, cortinas: true }));
@@ -1306,9 +1329,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     }
     const c = crearCamino(modoCamino.vertices);
     setCaminos(prev => [...prev, { ...c, color: color ?? c.color }]);
-    setModoCamino(null);
-  }, [modoCamino, mojones]);
-  const handleCancelarCamino  = useCallback(() => setModoCamino(null), []);
+    setModo(null);
+  }, [modoCamino, mojones, setCaminos]);
+  const handleCancelarCamino  = useCallback(() => setModo(null), []);
 
   // Optimiza un camino: lo reruta entre sus extremos siguiendo crestas/parteaguas,
   // con poca pendiente y evitando vertientes (las cruza en un punto: puente/alcantarilla).
@@ -1339,20 +1362,21 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
-  const handleCambiarModo = useCallback((modo: TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion' | null) => {
-    setModoDibujo(modo);
+  const handleCambiarModo = useCallback((herr: HerramientaDibujo | null) => {
+    // Cambiar de herramienta de dibujo entra al modo dibujo, y con eso apaga
+    // cualquier otro modo que estuviera esperando el clic.
+    setModo(herr ? { k: 'dibujo', tipo: herr } : null);
     const tipoParaEnCurso: TipoDibujo | null =
-      !modo || modo === 'seleccion' || modo === 'medir' ? null :
-      modo === 'rectangulo' ? 'poligono' :
-      modo === 'mano_libre'  ? 'linea' :
-      modo === 'radio_accion' ? 'circulo' :
-      modo as TipoDibujo;
+      !herr || herr === 'seleccion' || herr === 'medir' ? null :
+      herr === 'rectangulo' ? 'poligono' :
+      herr === 'mano_libre'  ? 'linea' :
+      herr === 'radio_accion' ? 'circulo' :
+      herr as TipoDibujo;
     setDibujoEnCurso(tipoParaEnCurso ? { tipo: tipoParaEnCurso, vertices: [] } : null);
     setMedicionVertices([]);
     setDibujoSelId(null);
     setEspejoPendiente(false);
     setElementoPoli(null);
-    if (modo) { setModoClick(false); }
   }, []);
 
   // Dibujar el espejo de agua de una aguada (polígono azul que el cut&fill puede usar)
@@ -1429,7 +1453,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente, elementoPoli]);
 
   const handleCancelarDibujo = useCallback(() => {
-    setModoDibujo(null);
+    setModo(null);
     setDibujoEnCurso(null);
     setMedicionVertices([]);
     setDibujoSelId(null);
@@ -1724,15 +1748,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
       // Escape: cancelar todo modo de dibujo activo y deseleccionar
       if (e.key === 'Escape') {
+        // Hay un solo modo activo: cancelarlo es volver a reposo. El dibujo libre
+        // pasa por su handler porque además tiene que soltar el trazo a medio hacer.
         if (modoDibujo) handleCancelarDibujo();
-        if (modoZona)     setModoZona(null);
-        if (modoSector)   setModoSector(null);
-        if (modoCamino)   setModoCamino(null);
-        if (modoPinClick) setModoPinClick(false);
-        if (modoElementoClick) { setModoElementoClick(false); setElementoActivo(null); }
-        if (modoZona0)    setModoZona0(false);
-        if (modoAcceso)   setModoAcceso(false);
-        if (modoClick)    setModoClick(false);
+        else setModo(null);
+        if (modoElementoClick) setElementoActivo(null);
         setDibujoSelId(null);
         return;
       }
@@ -1745,15 +1765,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         } else if (dibujoEnCurso && dibujoEnCurso.vertices.length > 0) {
           e.preventDefault();
           setDibujoEnCurso(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
-        } else if (modoZona && modoZona.vertices.length > 0) {
+        } else if (tieneVertices(modo) && modo.vertices.length > 0) {
           e.preventDefault();
-          setModoZona(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
-        } else if (modoSector && modoSector.vertices.length > 0) {
-          e.preventDefault();
-          setModoSector(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
-        } else if (modoCamino && modoCamino.vertices.length > 0) {
-          e.preventDefault();
-          setModoCamino(prev => prev ? { ...prev, vertices: prev.vertices.slice(0, -1) } : prev);
+          setModo(quitarUltimoVertice);
         }
         return;
       }
@@ -1767,8 +1781,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [
-    undo, redo, modal, dibujoEnCurso, modoDibujo, medicionVertices, modoZona, modoSector, modoCamino,
-    modoPinClick, modoElementoClick, modoZona0, modoAcceso, modoClick, dibujoSelId,
+    undo, redo, modal, dibujoEnCurso, modo, modoDibujo, medicionVertices,
+    modoZona, modoSector, modoCamino, modoElementoClick, dibujoSelId,
     handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
     handleCancelarDibujo, handleEliminarDibujo, panelAbierto, panelDerecho,
   ]);
@@ -1801,17 +1815,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const colorPreview = modoZona ? '#FFD54F' : modoSector ? '#81D4FA' : modoCamino ? (modoCamino.proposito === 'cortina' ? '#2E7D32' : '#8B4513') : colorDibujo;
 
   // ─── Etiqueta de modo para la barra de estado ─────────────────────────────
+  // La barra de estado nombra el modo activo. El dibujo libre se resuelve acá
+  // porque la barra dice qué herramienta es; el resto sale de `etiquetaModo`,
+  // que cubre los doce modos —antes la barra decía "Listo" mientras el mapa
+  // esperaba el clic de la cuenca, del observador o del árbol.
   const modoEstadoLabel = useMemo(() => {
-    if (modoZona)        return 'Dibujando zona';
-    if (modoSector)      return 'Dibujando sector';
-    if (modoCamino)      return modoCamino.proposito === 'cortina' ? 'Trazando cortina' : 'Trazando camino';
-    if (modoPinClick)    return 'Colocando pin';
     if (modoDibujo === 'medir')     return 'Midiendo';
     if (modoDibujo === 'seleccion') return dibujoSelId ? 'Elemento seleccionado' : 'Seleccionar';
-    if (modoDibujo)      return `Dibujando ${modoDibujo}`;
-    if (modoClick)       return 'Agregando mojón';
-    return 'Listo';
-  }, [modoZona, modoSector, modoCamino, modoPinClick, modoDibujo, dibujoSelId, modoClick]);
+    if (modoDibujo)                 return `Dibujando ${modoDibujo}`;
+    return etiquetaModo(modo) ?? 'Listo';
+  }, [modo, modoDibujo, dibujoSelId]);
 
   // ─── Keyline: checklist + aplicar guías al plano ──────────────────────────
   const handleCheckKeyline = useCallback((id: string, parcial: Partial<KeylineCheck>) => {
@@ -2918,7 +2931,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 )}
               </div>
               <div className="border-t border-bone-200 pt-4">
-                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModoClick(p => !p)} onAgregar={(lat, lng) => agregarMojon(lat, lng, true)} onCargarMojones={setMojones} />
+                <MojonForm modoClick={modoClick} onToggleModoClick={() => setModo(m => m?.k === 'mojon' ? null : { k: 'mojon' })} onAgregar={(lat, lng) => agregarMojon(lat, lng, true)} onCargarMojones={setMojones} />
               </div>
               {metricas && (
                 <div className="border-t border-bone-200 pt-4">
@@ -2936,7 +2949,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   <span className="text-xs text-moss-700 bg-moss-100 px-2 py-0.5 rounded-full font-medium">{pines.length}</span>
                 </div>
                 <button
-                  onClick={() => { setModoPinClick(true); setModoClick(false); }}
+                  onClick={() => setModo({ k: 'pin' })}
                   disabled={modoPinClick}
                   className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
                     modoPinClick ? 'bg-sun-500 text-ink-950 cursor-default' : 'bg-moss-700 hover:bg-moss-900 text-bone-50'
@@ -2946,7 +2959,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   {modoPinClick ? 'Hacé clic en el mapa…' : 'Agregar pin'}
                 </button>
                 {modoPinClick && (
-                  <button onClick={() => setModoPinClick(false)} className="w-full text-xs text-ink-700/50 hover:text-ink-700 py-1 transition-colors">
+                  <button onClick={() => setModo(null)} className="w-full text-xs text-ink-700/50 hover:text-ink-700 py-1 transition-colors">
                     Cancelar
                   </button>
                 )}
@@ -2976,7 +2989,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 <div className="flex items-center gap-2 bg-sun-300/20 border border-sun-300 rounded-lg px-2.5 py-1.5">
                   <span className="text-base leading-none">{bloqueActivo.icono}</span>
                   <span className="text-[11px] text-ink-900 flex-1 leading-tight">Hacé clic en el mapa: <b>{bloqueActivo.nombre}</b></span>
-                  <button onClick={() => { setBloqueActivo(null); setModoPinClick(false); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                  <button onClick={() => { setBloqueActivo(null); setModo(null); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
                 </div>
               ) : (
                 <p className="text-[10px] text-ink-700/50 leading-tight">Ningún símbolo seleccionado.</p>
@@ -2987,7 +3000,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   <div className="grid grid-cols-4 gap-1">
                     {BLOQUES.filter(b => b.grupo === grupo).map(b => (
                       <button key={b.id} title={b.nombre}
-                        onClick={() => { setBloqueActivo(b); setModoPinClick(true); setModoClick(false); }}
+                        onClick={() => { setBloqueActivo(b); setModo({ k: 'pin' }); }}
                         className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${bloqueActivo?.id === b.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
                         <span className="text-base leading-none">{b.icono}</span>
                         <span className="text-[7px] text-ink-700/60 leading-none truncate w-full px-0.5">{b.nombre}</span>
@@ -3012,7 +3025,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                       ? <>Dibujá el contorno de <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· Enter para cerrar</span></>
                       : <>Colocá en el mapa: <b>{elementoActivo.nombre}</b> <span className="text-ink-700/50">· {elementoActivo.forma === 'rect' ? `${elementoActivo.largo_m}×${elementoActivo.ancho_m} m` : `r ${elementoActivo.radio_m} m`}</span></>}
                   </span>
-                  <button onClick={() => { setElementoActivo(null); setModoElementoClick(false); setElementoPoli(null); if (modoDibujo) handleCancelarDibujo(); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
+                  <button onClick={() => { setElementoActivo(null); setElementoPoli(null); if (modoDibujo) handleCancelarDibujo(); else setModo(null); }} className="text-ink-700/40 hover:text-ink-700 transition-colors"><X className="w-3 h-3" /></button>
                 </div>
               ) : (
                 <p className="text-[10px] text-ink-700/50 leading-tight">Ningún elemento seleccionado.</p>
@@ -3024,9 +3037,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     {ELEMENTOS.filter(e => e.grupo === grupo).map(e => (
                       <button key={e.id} title={e.nombre}
                         onClick={() => {
-                          setElementoActivo(e); setModoPinClick(false); setBloqueActivo(null); setModoClick(false);
-                          if (e.forma === 'poligono') { setModoElementoClick(false); handleCambiarModo('poligono'); setElementoPoli(e); }
-                          else { setModoElementoClick(true); setElementoPoli(null); }
+                          setElementoActivo(e); setBloqueActivo(null);
+                          // Los elementos de forma libre se sellan con un clic; los que son
+                          // polígono se dibujan, así que entran al modo dibujo.
+                          if (e.forma === 'poligono') { handleCambiarModo('poligono'); setElementoPoli(e); }
+                          else { setModo({ k: 'elemento' }); setElementoPoli(null); }
                         }}
                         className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg border text-center transition-colors ${elementoActivo?.id === e.id ? 'border-moss-400 bg-moss-100' : 'border-bone-200 hover:bg-bone-50'}`}>
                         <span className="text-base leading-none">{e.emoji}</span>
@@ -3103,7 +3118,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                       onChange={e => setAlturaObs(Number(e.target.value))} className="w-full accent-moss-700" />
                     <p className="text-[9px] text-ink-700/45">Persona ≈ 1,7 m · vivienda ≈ 3–6 m · torre/molino ≈ 10–20 m.</p>
                   </div>
-                  <button onClick={() => setModoViewshed(v => !v)}
+                  <button onClick={() => setModo(m => m?.k === 'viewshed' ? null : { k: 'viewshed' })}
                     className={`w-full flex items-center justify-center gap-2 text-xs font-medium rounded-xl px-3 py-2.5 transition-colors border ${modoViewshed ? 'bg-clay-100 text-clay-700 border-clay-300' : 'bg-moss-700 text-bone-50 border-moss-700 hover:bg-moss-800'}`}>
                     <Eye className="w-4 h-4" />
                     {modoViewshed ? 'Hacé clic en el mapa…' : viewshed ? 'Elegir otro punto' : 'Elegir punto de observación'}
@@ -3167,11 +3182,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 areaPredioHa={metricas?.area_ha ?? null}
                 zona0={zona0}
                 modoMarcarZona0={modoZona0}
-                onMarcarZona0={() => { setModoZona0(v => !v); setModoAcceso(false); }}
+                onMarcarZona0={() => setModo(m => m?.k === 'zona0' ? null : { k: 'zona0' })}
                 onQuitarZona0={() => setZona0(null)}
                 acceso={acceso}
                 modoMarcarAcceso={modoAcceso}
-                onMarcarAcceso={() => { setModoAcceso(v => !v); setModoZona0(false); }}
+                onMarcarAcceso={() => setModo(m => m?.k === 'acceso' ? null : { k: 'acceso' })}
                 onQuitarAcceso={() => setAcceso(null)}
                 topoLista={!!datosShader && !!datosEscorrentia}
                 onIrATopo={() => setTab('topo')}
@@ -3303,7 +3318,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 cortina={cortina}
                 onSugerir={handleSugerirCortina}
                 onDibujar={handleDibujarCortina}
-                onCancelarDibujo={() => setModoCamino(null)}
+                onCancelarDibujo={() => setModo(null)}
                 onColocar={handleColocarCortina}
                 inicial={panelInputs['cortinas'] as CortinasInputs ?? null}
                 onInputs={usarInputs('cortinas')}
@@ -3368,8 +3383,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 expandida={cuencaExpandida}
                 fuenteDem={grillaActiva?.fuente ?? datosShader?.fuente ?? null}
                 cnPredio={datosCobertura ? hidroPredio.cn : null}
-                onMarcar={() => setModoCuenca(m => !m)}
-                onLimpiar={() => { setCuenca(null); setModoCuenca(false); setCuencaAviso(null); setCuencaExpandida(false); }}
+                onMarcar={() => setModo(m => m?.k === 'cuenca' ? null : { k: 'cuenca' })}
+                onLimpiar={() => { setCuenca(null); setModo(null); setCuencaAviso(null); setCuencaExpandida(false); }}
                 onIrATopo={() => setTab('topo')}
                 onUsarPoligono={handleUsarPoligonoCuenca}
                 onEditarCuenca={handleEditarCuenca}

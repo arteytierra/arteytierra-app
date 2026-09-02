@@ -15,6 +15,12 @@ interface Params {
   latCentro:   number | null;
   zonas:       Zona[];
   dibujos:     ElementoDibujo[];
+  /**
+   * Avisa que quedó un árbol elegido esperando el clic que lo ubica. El modo del
+   * mapa vive en el padre —es uno solo para toda la app— así que el hook no lo
+   * prende: lo pide.
+   */
+  onPedirClicArbol: () => void;
 }
 
 /**
@@ -25,12 +31,11 @@ interface Params {
  * serializador de snapshot, paneles) los use con los mismos nombres.
  * Extraído tal cual: misma lógica, mismas dependencias de efectos.
  */
-export function useSombras({ datosShader, latCentro, zonas, dibujos }: Params) {
+export function useSombras({ datosShader, latCentro, zonas, dibujos, onPedirClicArbol }: Params) {
   const [sombrasActivo,    setSombrasActivo]     = useState(false);
   const [sombrasDoy,       setSombrasDoy]        = useState(355);
   const [sombrasHora,      setSombrasHora]       = useState(9);
   const [sombrasObjetos,   setSombrasObjetos]    = useState<ObjetoSombra[]>([]);
-  const [modoArbol,        setModoArbol]         = useState(false);
   const [animando,         setAnimando]          = useState(false);
   const [insolacion,       setInsolacion]        = useState<ResultadoInsolacion | null>(null);
   const [calculandoIns,    setCalculandoIns]     = useState(false);
@@ -106,19 +111,18 @@ export function useSombras({ datosShader, latCentro, zonas, dibujos }: Params) {
   const handleAgregarObjeto = useCallback((preset: typeof PRESETS_OBJETO[number], vertices?: Vertice[]) => {
     const id = crypto.randomUUID();
     if (preset.tipo === 'arbol') {
-      setModoArbol(true);
       objetoPendienteRef.current = { id, nombre: preset.etiqueta, altura_m: preset.altura_m, radio_m: preset.radio_m ?? 3 };
+      onPedirClicArbol();
     } else if (vertices && vertices.length >= 3) {
       setSombrasObjetos(o => [...o, { id, tipo: 'volumen', nombre: preset.etiqueta, altura_m: preset.altura_m, vertices }]);
     }
-  }, []);
+  }, [onPedirClicArbol]);
 
   return {
     sombrasActivo, setSombrasActivo,
     sombrasDoy, setSombrasDoy,
     sombrasHora, setSombrasHora,
     sombrasObjetos, setSombrasObjetos,
-    modoArbol, setModoArbol,
     animando,
     insolacion, setInsolacion,
     calculandoIns,
