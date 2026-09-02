@@ -15,6 +15,7 @@
  */
 import type { TipoDibujo, ElementoDibujo, DibujoEnCurso } from '@/lib/dibujos';
 import { distanciaMetros } from '@/lib/dibujos';
+import type { HerramientaDibujo, Punto } from '@/lib/mapa/modoMapa';
 
 /**
  * Cuántos vértices necesita cada tipo para existir.
@@ -39,6 +40,59 @@ export type TipoTrazo = Exclude<TipoDibujo, 'punto' | 'texto'>;
 
 export function esTrazo(t: TipoDibujo): t is TipoTrazo {
   return t !== 'punto' && t !== 'texto';
+}
+
+/**
+ * Qué forma guarda cada herramienta.
+ *
+ * Tres herramientas no son formas sino variantes de otra: el rectángulo se
+ * guarda como polígono, la mano libre como línea y el radio de acción como
+ * círculo. Esa traducción estaba escrita a mano en tres lugares del componente
+ * —al empezar un trazo, al cambiar de herramienta y al armar la vista previa
+ * CAD— y las tres tenían que acordarse de las mismas tres excepciones.
+ *
+ * `null` para las que no guardan nada: `seleccion` edita lo que ya está y
+ * `medir` no persiste.
+ */
+const TIPO_BASE: Record<HerramientaDibujo, TipoDibujo | null> = {
+  seleccion: null,
+  medir:     null,
+  rectangulo:   'poligono',
+  mano_libre:   'linea',
+  radio_accion: 'circulo',
+  linea: 'linea', curva: 'curva', poligono: 'poligono', circulo: 'circulo',
+  texto: 'texto', cota: 'cota', flecha: 'flecha', punto: 'punto',
+};
+
+export function tipoBaseDe(h: HerramientaDibujo): TipoDibujo | null {
+  return TIPO_BASE[h];
+}
+
+/**
+ * Las herramientas que se cierran solas al llegar a su mínimo de vértices.
+ *
+ * Un círculo queda definido con centro y borde: pedir Enter después sería pedir
+ * una confirmación de algo que ya no puede cambiar. En cambio una línea o un
+ * polígono siguen aceptando puntos, así que esperan a que el usuario diga basta.
+ */
+const CIERRA_SOLA: Record<HerramientaDibujo, boolean> = {
+  circulo: true, radio_accion: true, cota: true, rectangulo: true, flecha: true,
+  linea: false, curva: false, poligono: false, mano_libre: false,
+  punto: false, texto: false, seleccion: false, medir: false,
+};
+
+export function cierraSola(h: HerramientaDibujo): boolean {
+  return CIERRA_SOLA[h];
+}
+
+/** Las cuatro esquinas del rectángulo que definen dos puntos opuestos. */
+export function rectanguloDesdeEsquinas(a: Punto, b: Punto): Punto[] {
+  return [
+    { lat: a.lat, lng: a.lng },
+    { lat: a.lat, lng: b.lng },
+    { lat: b.lat, lng: b.lng },
+    { lat: b.lat, lng: a.lng },
+  ];
 }
 
 const NOMBRE_FORMA: Record<TipoTrazo, string> = {
@@ -83,6 +137,13 @@ export interface ContextoCierre {
   elementoPoli?: { color: string; opacidad: number; emoji?: string; nombre?: string } | null;
   /** Nombre ya numerado del espejo («Espejo de agua 3»); lo cuenta el llamador. */
   nombreEspejo?: string | null;
+  /**
+   * Con qué herramienta se dibujó, cuando eso cambia la apariencia: el radio de
+   * acción es un círculo casi transparente, para que se lea el terreno abajo.
+   * (El rectángulo no entra acá: sus cuatro esquinas se arman antes, con
+   * `rectanguloDesdeEsquinas`, y lo que llega es un polígono como cualquier otro.)
+   */
+  variante?: HerramientaDibujo | null;
 }
 
 /**
@@ -130,7 +191,9 @@ export function cerrarDibujo(d: DibujoEnCurso, ctx: ContextoCierre): ElementoDib
         id, tipo: 'circulo', color, capaId,
         lat: a.lat, lng: a.lng,
         radio: distanciaMetros(a.lat, a.lng, b.lat, b.lng),
-        opacidad: 0.18,
+        // El radio de acción se dibuja encima del predio para leer distancias:
+        // más relleno que eso tapa lo que se está midiendo.
+        opacidad: ctx.variante === 'radio_accion' ? 0.08 : 0.18,
       };
     }
 

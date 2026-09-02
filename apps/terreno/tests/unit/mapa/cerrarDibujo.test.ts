@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   cerrarDibujo, puedeCerrar, motivoNoCierra, esTrazo, faltanVertices, VERTICES_MINIMOS,
+  tipoBaseDe, cierraSola, rectanguloDesdeEsquinas,
   type ContextoCierre,
 } from '@/lib/mapa/cerrarDibujo';
 import type { DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
+import type { HerramientaDibujo } from '@/lib/mapa/modoMapa';
 
 const P = { lat: -26.70, lng: -65.30 };
 const Q = { lat: -26.71, lng: -65.30 };
@@ -71,6 +73,71 @@ describe('faltanVertices', () => {
   });
 });
 
+const HERRAMIENTAS: HerramientaDibujo[] = [
+  'linea', 'curva', 'poligono', 'circulo', 'texto', 'cota', 'flecha', 'punto',
+  'seleccion', 'medir', 'rectangulo', 'mano_libre', 'radio_accion',
+];
+
+describe('tipoBaseDe', () => {
+  // Las tres herramientas que no son la forma que guardan.
+  it('traduce las variantes a la forma que se persiste', () => {
+    expect(tipoBaseDe('rectangulo')).toBe('poligono');
+    expect(tipoBaseDe('mano_libre')).toBe('linea');
+    expect(tipoBaseDe('radio_accion')).toBe('circulo');
+  });
+
+  it('las formas propias se traducen a sí mismas', () => {
+    expect(tipoBaseDe('poligono')).toBe('poligono');
+    expect(tipoBaseDe('cota')).toBe('cota');
+  });
+
+  // seleccion edita lo ya dibujado y medir no persiste: ninguna abre un trazo.
+  it('las herramientas que no guardan nada dan null', () => {
+    expect(tipoBaseDe('seleccion')).toBeNull();
+    expect(tipoBaseDe('medir')).toBeNull();
+  });
+
+  it('toda herramienta tiene una traducción declarada', () => {
+    for (const h of HERRAMIENTAS) expect(tipoBaseDe(h)).not.toBeUndefined();
+  });
+});
+
+describe('cierraSola', () => {
+  it('se cierran solas las formas que su mínimo ya define del todo', () => {
+    for (const h of ['circulo', 'radio_accion', 'cota', 'rectangulo', 'flecha'] as HerramientaDibujo[]) {
+      expect(cierraSola(h)).toBe(true);
+    }
+  });
+
+  // Estas siguen aceptando puntos, así que esperan el Enter.
+  it('línea, curva, mano libre y polígono esperan al usuario', () => {
+    for (const h of ['linea', 'curva', 'mano_libre', 'poligono'] as HerramientaDibujo[]) {
+      expect(cierraSola(h)).toBe(false);
+    }
+  });
+
+  it('lo que no dibuja un trazo nunca se cierra solo', () => {
+    for (const h of ['seleccion', 'medir', 'punto', 'texto'] as HerramientaDibujo[]) {
+      expect(cierraSola(h)).toBe(false);
+    }
+  });
+});
+
+describe('rectanguloDesdeEsquinas', () => {
+  it('arma las cuatro esquinas girando desde dos puntos opuestos', () => {
+    expect(rectanguloDesdeEsquinas({ lat: 1, lng: 10 }, { lat: 2, lng: 20 })).toEqual([
+      { lat: 1, lng: 10 }, { lat: 1, lng: 20 }, { lat: 2, lng: 20 }, { lat: 2, lng: 10 },
+    ]);
+  });
+
+  // El rectángulo entra a cerrarDibujo como un polígono cualquiera.
+  it('lo que arma alcanza el mínimo del polígono', () => {
+    const v = rectanguloDesdeEsquinas(P, R);
+    expect(v.length).toBeGreaterThanOrEqual(VERTICES_MINIMOS.poligono);
+    expect(cerrarDibujo({ tipo: 'poligono', vertices: v }, CTX)).toMatchObject({ tipo: 'poligono' });
+  });
+});
+
 describe('cerrarDibujo', () => {
   it('devuelve null en vez de un elemento a medias', () => {
     expect(cerrarDibujo(enCurso('poligono', [P, Q]), CTX)).toBeNull();
@@ -94,6 +161,14 @@ describe('cerrarDibujo', () => {
     expect(cerrarDibujo(enCurso('circulo', [P, Q, R]), CTX)).toMatchObject({ tipo: 'circulo' });
     const cota = cerrarDibujo(enCurso('cota', [P, Q, R]), CTX);
     expect(cota && 'vertices' in cota ? cota.vertices : []).toEqual([P, Q]);
+  });
+
+  // El radio de acción se dibuja encima del predio para leer distancias.
+  it('el radio de acción es un círculo más transparente', () => {
+    const radio  = cerrarDibujo(enCurso('circulo', [P, Q]), { ...CTX, variante: 'radio_accion' });
+    const comun  = cerrarDibujo(enCurso('circulo', [P, Q]), CTX);
+    expect(radio).toMatchObject({ tipo: 'circulo', opacidad: 0.08 });
+    expect(comun).toMatchObject({ tipo: 'circulo', opacidad: 0.18 });
   });
 
   it('el sello de un elemento manda sobre la paleta de dibujo', () => {

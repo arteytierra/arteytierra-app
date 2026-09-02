@@ -120,8 +120,11 @@ import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
-import { cerrarDibujo, motivoNoCierra, faltanVertices } from '@/lib/mapa/cerrarDibujo';
-import { COLORES_DIBUJO, distanciaMetros, medidasDibujo } from '@/lib/dibujos';
+import {
+  cerrarDibujo, motivoNoCierra, faltanVertices,
+  tipoBaseDe, cierraSola, rectanguloDesdeEsquinas, VERTICES_MINIMOS,
+} from '@/lib/mapa/cerrarDibujo';
+import { COLORES_DIBUJO, medidasDibujo } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
 import type { OverlayImagen } from './MapLeaflet';
@@ -640,6 +643,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
   const [dibujoEnCurso,  setDibujoEnCurso]  = useState<DibujoEnCurso | null>(null);
+  // El trazo en curso también en una ref, para que `handleMapClick` lo lea sin
+  // tenerlo de dependencia: si lo tuviera se rearmaría en cada vértice y el
+  // mapa entero se re-renderizaría clic a clic.
+  const enCursoRef = useRef<DibujoEnCurso | null>(null);
+  useEffect(() => { enCursoRef.current = dibujoEnCurso; }, [dibujoEnCurso]);
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
   // Por qué no se pudo cerrar el trazo. Va a la barra de estado y se borra sola:
@@ -1233,52 +1241,34 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           });
           return;
         }
+        const tipoBase = tipoBaseDe(herr);
+        if (!tipoBase) return;
+
         // Un vértice más es la respuesta al aviso de que faltaban: se levanta.
         setAvisoDibujo(null);
-        setDibujoEnCurso(prev => {
-          if (!prev) {
-            const tipoBase: TipoDibujo =
-              herr === 'rectangulo' ? 'poligono' :
-              herr === 'mano_libre' ? 'linea' :
-              herr === 'radio_accion' ? 'circulo' :
-              herr as TipoDibujo;
-            return { tipo: tipoBase, vertices: [{ lat, lng }] };
-          }
-          const next = [...prev.vertices, { lat, lng }];
-          // Auto-finalizar círculo o radio de acción al tener 2 puntos
-          if ((herr === 'circulo' || herr === 'radio_accion') && next.length === 2) {
-            const id    = crypto.randomUUID();
-            const radio = distanciaMetros(next[0]!.lat, next[0]!.lng, next[1]!.lat, next[1]!.lng);
-            setDibujos(d => [...d, { id, tipo: 'circulo', color: colorDibujo, lat: next[0]!.lat, lng: next[0]!.lng, radio, opacidad: herr === 'radio_accion' ? 0.08 : 0.18, capaId: capaActivaId }]);
-            return { tipo: prev.tipo, vertices: [] };
-          }
-          // Auto-finalizar cota al tener 2 puntos
-          if (herr === 'cota' && next.length === 2) {
-            const id = crypto.randomUUID();
-            setDibujos(d => [...d, { id, tipo: 'cota', color: colorDibujo, vertices: next, capaId: capaActivaId }]);
-            return { tipo: prev.tipo, vertices: [] };
-          }
-          // Auto-finalizar rectángulo al tener 2 puntos
-          if (herr === 'rectangulo' && next.length === 2) {
-            const [p1, p2] = next;
-            const id = crypto.randomUUID();
-            const vertices = [
-              { lat: p1!.lat, lng: p1!.lng },
-              { lat: p1!.lat, lng: p2!.lng },
-              { lat: p2!.lat, lng: p2!.lng },
-              { lat: p2!.lat, lng: p1!.lng },
-            ];
-            setDibujos(d => [...d, { id, tipo: 'poligono', color: colorDibujo, vertices, opacidad: 0.22, capaId: capaActivaId }]);
-            return { tipo: prev.tipo, vertices: [] };
-          }
-          // Auto-finalizar flecha al tener 2 puntos
-          if (herr === 'flecha' && next.length === 2) {
-            const id = crypto.randomUUID();
-            setDibujos(d => [...d, { id, tipo: 'flecha', color: colorDibujo, vertices: next, grosor: 3, capaId: capaActivaId }]);
-            return { tipo: prev.tipo, vertices: [] };
-          }
-          return { ...prev, vertices: next };
-        });
+
+        const previo = enCursoRef.current;
+        const desde  = previo && previo.tipo === tipoBase ? previo.vertices : [];
+        const next   = [...desde, { lat, lng }];
+
+        // Las formas que quedan definidas con su mínimo de vértices se cierran
+        // solas: un círculo con centro y borde ya no puede cambiar, pedir Enter
+        // sería pedir que confirme algo que no tiene otra opción. Antes cada una
+        // de las cuatro (círculo, cota, rectángulo, flecha) armaba su elemento a
+        // mano acá adentro, repitiendo lo que `cerrarDibujo` ya sabe hacer.
+        if (cierraSola(herr) && next.length >= VERTICES_MINIMOS[tipoBase]) {
+          const trazo: DibujoEnCurso = herr === 'rectangulo'
+            ? { tipo: 'poligono', vertices: rectanguloDesdeEsquinas(next[0]!, next[1]!) }
+            : { tipo: tipoBase, vertices: next };
+          const el = cerrarDibujo(trazo, {
+            id: crypto.randomUUID(), color: colorDibujo, capaId: capaActivaId, variante: herr,
+          });
+          if (el) setDibujos(d => [...d, el]);
+          setDibujoEnCurso({ tipo: tipoBase, vertices: [] });
+          return;
+        }
+
+        setDibujoEnCurso({ tipo: tipoBase, vertices: next });
         return;
       }
     }
@@ -1372,12 +1362,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     // Cambiar de herramienta de dibujo entra al modo dibujo, y con eso apaga
     // cualquier otro modo que estuviera esperando el clic.
     setModo(herr ? { k: 'dibujo', tipo: herr } : null);
-    const tipoParaEnCurso: TipoDibujo | null =
-      !herr || herr === 'seleccion' || herr === 'medir' ? null :
-      herr === 'rectangulo' ? 'poligono' :
-      herr === 'mano_libre'  ? 'linea' :
-      herr === 'radio_accion' ? 'circulo' :
-      herr as TipoDibujo;
+    const tipoParaEnCurso = herr ? tipoBaseDe(herr) : null;
     setDibujoEnCurso(tipoParaEnCurso ? { tipo: tipoParaEnCurso, vertices: [] } : null);
     setMedicionVertices([]);
     setDibujoSelId(null);
@@ -1797,11 +1782,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const tipoActivo = useMemo<import('./MapLeaflet').TipoActivo>(() => {
     if (modoDibujo === 'medir') return 'medir';
     if (modoDibujo && modoDibujo !== 'seleccion' && modoDibujo !== 'texto' && modoDibujo !== 'punto') {
-      // Map virtual modes to their underlying TipoDibujo for the CAD preview
-      if (modoDibujo === 'rectangulo')   return 'poligono';
-      if (modoDibujo === 'mano_libre')   return 'linea';
-      if (modoDibujo === 'radio_accion') return 'circulo';
-      return modoDibujo;
+      // La vista previa CAD dibuja la forma de fondo, no la herramienta.
+      return tipoBaseDe(modoDibujo);
     }
     if (modoZona)   return 'zona';
     if (modoSector) return 'sector';
