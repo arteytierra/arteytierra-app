@@ -138,3 +138,13 @@ export function cerrarDibujo(d: DibujoEnCurso, ctx: ContextoCierre): ElementoDib
       return { id, tipo: 'cota', color, capaId, vertices: verts.slice(0, 2) };
   }
 }
+
+/**
+ * Cuántos vértices le faltan al trazo para poder cerrarse (0 si ya puede).
+ *
+ * Es el mismo dato que `motivoNoCierra` cuenta en palabras, pero en número: el
+ * banner del mapa lo necesita para no prometer «Enter finaliza» antes de tiempo.
+ */
+export function faltanVertices(d: DibujoEnCurso): number {
+  return Math.max(0, VERTICES_MINIMOS[d.tipo] - d.vertices.length);
+}

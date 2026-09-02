@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  cerrarDibujo, puedeCerrar, motivoNoCierra, esTrazo, VERTICES_MINIMOS,
+  cerrarDibujo, puedeCerrar, motivoNoCierra, esTrazo, faltanVertices, VERTICES_MINIMOS,
   type ContextoCierre,
 } from '@/lib/mapa/cerrarDibujo';
 import type { DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
@@ -51,6 +51,23 @@ describe('motivoNoCierra', () => {
   it('cada tipo tiene un mínimo declarado', () => {
     const tipos: TipoDibujo[] = ['linea', 'curva', 'poligono', 'circulo', 'texto', 'cota', 'flecha', 'punto'];
     for (const t of tipos) expect(VERTICES_MINIMOS[t]).toBeGreaterThan(0);
+  });
+});
+
+describe('faltanVertices', () => {
+  // El banner del mapa promete "Enter finaliza" sólo cuando esto da cero.
+  it('cuenta lo que falta y nunca baja de cero', () => {
+    expect(faltanVertices(enCurso('poligono', []))).toBe(3);
+    expect(faltanVertices(enCurso('poligono', [P, Q]))).toBe(1);
+    expect(faltanVertices(enCurso('poligono', [P, Q, R]))).toBe(0);
+    expect(faltanVertices(enCurso('linea', [P, Q, R]))).toBe(0);
+  });
+
+  it('da cero exactamente cuando el trazo se puede cerrar', () => {
+    for (const v of [[], [P], [P, Q], [P, Q, R]]) {
+      const d = enCurso('poligono', v);
+      expect(faltanVertices(d) === 0).toBe(puedeCerrar(d));
+    }
   });
 });
 

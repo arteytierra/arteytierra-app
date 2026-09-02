@@ -120,7 +120,7 @@ import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
-import { cerrarDibujo, motivoNoCierra } from '@/lib/mapa/cerrarDibujo';
+import { cerrarDibujo, motivoNoCierra, faltanVertices } from '@/lib/mapa/cerrarDibujo';
 import { COLORES_DIBUJO, distanciaMetros, medidasDibujo } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
@@ -1833,6 +1833,25 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return etiquetaModo(modo) ?? 'Listo';
   }, [modo, modoDibujo, dibujoSelId, avisoDibujo]);
 
+  /**
+   * Lo que el banner amarillo dice mientras hay un trazo en curso.
+   *
+   * Antes prometía «Enter finaliza» desde el primer clic, aunque a la forma le
+   * faltaran vértices. El usuario apretaba Enter, no pasaba nada visible —el
+   * aviso caía en la barra de estado, 11 px, abajo a la izquierda y truncado— y
+   * la única lectura posible era que la tecla no andaba. El banner ya está
+   * mirando: que cuente él lo que falta.
+   */
+  const bannerDibujo = useMemo(() => {
+    if (!dibujoEnCurso) return null;
+    const n     = dibujoEnCurso.vertices.length;
+    const faltan = faltanVertices(dibujoEnCurso);
+    const cola  = faltan <= 0
+      ? 'Enter finaliza · Esc cancela'
+      : `falta${faltan !== 1 ? 'n' : ''} ${faltan} punto${faltan !== 1 ? 's' : ''} para cerrar · Esc cancela`;
+    return `Dibujando ${dibujoEnCurso.tipo} — ${n} punto${n !== 1 ? 's' : ''} · ${cola}`;
+  }, [dibujoEnCurso]);
+
   // El aviso del trazo se borra solo: es una explicación, no un error que haya
   // que despachar. Un clic más sobre el mapa también lo levanta.
   useEffect(() => {
@@ -3480,8 +3499,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
         {/* Banner de modo dibujo */}
         {(modoClick || dibujando) && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] text-sm px-5 py-2.5 rounded-full shadow-raised font-medium pointer-events-none bg-sun-500 text-ink-950 no-print">
-            {modoZona    ? `Dibujando zona — ${modoZona.vertices.length} vértices · Enter finaliza · Esc cancela`   :
+          <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-[1000] text-sm px-5 py-2.5 rounded-full shadow-raised font-medium pointer-events-none no-print ${
+            avisoDibujo ? 'bg-clay-600 text-bone-50' : 'bg-sun-500 text-ink-950'}`}>
+            {/* El aviso desplaza al modo: mientras dura, lo urgente es que
+                falta un clic, no cómo se llama la herramienta. */}
+            {avisoDibujo ? avisoDibujo :
+             modoZona    ? `Dibujando zona — ${modoZona.vertices.length} vértices · Enter finaliza · Esc cancela`   :
              modoSector  ? `Dibujando sector — ${modoSector.vertices.length} vértices · Enter finaliza · Esc cancela` :
              modoCamino  ? `${modoCamino.proposito === 'cortina' ? 'Trazando cortina' : 'Trazando camino'} — ${modoCamino.vertices.length} puntos · Enter finaliza · Esc cancela`  :
              modoPinClick? 'Hacé clic en el mapa para colocar el pin' :
@@ -3493,7 +3516,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                : modoDibujo === 'cota'
                ? (dibujoEnCurso?.vertices.length ? 'Clic en el punto final de la cota' : 'Clic en el punto inicial de la cota')
                : modoDibujo && modoDibujo !== 'seleccion'
-               ? `Dibujando ${modoDibujo} — ${dibujoEnCurso?.vertices.length ?? 0} puntos · Enter finaliza · Esc cancela`
+               ? (bannerDibujo ?? `Dibujando ${modoDibujo} — hacé clic para el primer punto · Esc cancela`)
                :            'Hacé clic en el mapa para agregar un mojón'}
           </div>
         )}
