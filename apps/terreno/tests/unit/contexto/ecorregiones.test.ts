@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-  BIOMAS_RESOLVE, ECO_ID_A_FICHA, biomaGlobal, fichaDeEcorregion, enSudamerica,
+  BIOMAS_RESOLVE, ECO_ID_A_FICHA, ECO_ID_SUDAMERICA, ECO_ID_RESTO_DEL_MUNDO,
+  biomaGlobal, fichaDeEcorregion, enSudamerica,
   type Ecorregion,
 } from '@/lib/ecorregiones';
 import { resolverBioma, determinarBioma, fichaPorId, BIOMAS } from '@/lib/contexto';
@@ -88,21 +89,38 @@ describe('catálogos de fichas', () => {
 });
 
 describe('lista blanca de ecorregiones', () => {
-  it('las 30 ecorregiones curadas apuntan a una ficha que existe', () => {
-    expect(Object.keys(ECO_ID_A_FICHA)).toHaveLength(30);
+  it('toda ecorregión curada apunta a una ficha que existe', () => {
+    // 56 sudamericanas + 30 del resto del mundo, de las 846 de RESOLVE.
+    expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(56);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(30);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
   });
 
+  it('las dos mitades no se pisan: ningún ECO_ID está en las dos', () => {
+    const sa = Object.keys(ECO_ID_SUDAMERICA);
+    const resto = Object.keys(ECO_ID_RESTO_DEL_MUNDO);
+    expect(sa.filter(id => resto.includes(id))).toEqual([]);
+    expect(sa.length + resto.length).toBe(Object.keys(ECO_ID_A_FICHA).length);
+  });
+
   it('ninguna ecorregión de afuera apunta a una ficha sudamericana', () => {
-    for (const ficha of Object.values(ECO_ID_A_FICHA)) {
+    // El bug original: un predio en Ohio salía "Espinal".
+    for (const ficha of Object.values(ECO_ID_RESTO_DEL_MUNDO)) {
       expect(Object.keys(BIOMAS), ficha).not.toContain(ficha);
+    }
+  });
+
+  it('las sudamericanas apuntan sólo a las 12 fichas sudamericanas', () => {
+    for (const ficha of Object.values(ECO_ID_SUDAMERICA)) {
+      expect(Object.keys(BIOMAS), ficha).toContain(ficha);
     }
   });
 
   it('devuelve null para una ecorregión sin curar', () => {
     expect(fichaDeEcorregion(334)).toBeNull();  // Eastern forest-boreal transition
+    expect(fichaDeEcorregion(525)).toBeNull();  // Caatinga — a propósito: no hay ficha suya
     expect(fichaDeEcorregion(495)).toBe('bosque_humedo_tropical_caribeno');
   });
 });
@@ -123,14 +141,45 @@ describe('caja de Sudamérica', () => {
 });
 
 describe('resolverBioma — tres niveles', () => {
-  it('en Sudamérica la ecorregión no le saca la ficha a la Pampa', () => {
-    // 576 todavía no está curado; adentro de Sudamérica manda Köppen igual y la
-    // ecorregión sólo agrega el nombre exacto. Esto es lo que evita la regresión.
+  it('la Pampa sale de la ecorregión, no de la heurística', () => {
     const r = resolverBioma(k('Cfa'), -34.5, -59.0, 120, E(576, 'Humid Pampas', 8));
-    expect(r.fuente).toBe('koppen');
+    expect(r.fuente).toBe('ecorregion');
     expect(r.ficha?.id).toBe('pampa');
     expect(r.ecorregion?.eco_name).toBe('Humid Pampas');
     expect(r.aviso).toBeNull();
+  });
+
+  it('Sechura ya no es Chaco seco', () => {
+    // El bug de la heurística: árido cálido al norte del paralelo 27 → chaco.
+    // Sechura es desierto costero del Pacífico, con niebla y sin lluvia.
+    expect(determinarBioma(k('BWh'), -5.9, -80.7)).toBe('chaco_seco');
+    const r = resolverBioma(k('BWh'), -5.9, -80.7, 50, E(608, 'Sechura desert', 13));
+    expect(r.fuente).toBe('ecorregion');
+    expect(r.ficha?.id).toBe('desierto_costero');
+  });
+
+  it('el páramo no se hace pasar por Puna', () => {
+    // Los dos pasan los 2800 m y ahí terminaba el parecido: el páramo recibe
+    // 1000-2000 mm al año y la puna menos de 400.
+    expect(determinarBioma(k('Cfb'), 4.8, -75.5, 3400)).toBe('puna_altoandino');
+    const r = resolverBioma(k('Cfb'), 4.8, -75.5, 3400, E(590, 'Cordillera Central páramo', 10));
+    expect(r.fuente).toBe('bioma_global');
+    expect(r.ficha?.id).toBe('resolve_montano');
+    expect(r.aviso).toContain('páramo');
+  });
+
+  it('la Caatinga cae al bioma global, no a una ficha argentina parecida', () => {
+    const r = resolverBioma(k('BSh'), -8.5, -39.5, 500, E(525, 'Caatinga', 2));
+    expect(r.fuente).toBe('bioma_global');
+    expect(r.ficha?.id).toBe('resolve_bosque_tropical_seco');
+    expect(r.ficha?.saberes).toEqual([]);
+  });
+
+  it('la Amazonía y las Yungas conservan su ficha', () => {
+    expect(resolverBioma(k('Af'), -3.1, -60.0, 40, E(484, 'Negro-Branco moist forests', 1)).ficha?.id)
+      .toBe('selva_tropical');
+    expect(resolverBioma(k('Cwa'), -23.5, -64.8, 1200, E(504, 'Southern Andean Yungas', 1)).ficha?.id)
+      .toBe('yungas');
   });
 
   it('Puerto Rico da la ficha caribeña, no una sudamericana', () => {

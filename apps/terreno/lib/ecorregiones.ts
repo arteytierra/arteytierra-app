@@ -8,8 +8,12 @@
  *
  *   1. ECO_ID curado  → ficha regional propia (la más específica que tengamos).
  *   2. BIOME_NUM      → bioma global de RESOLVE (14 clases, siempre disponible).
- *   3. Köppen         → sólo dentro de Sudamérica, donde la heurística original
- *                       fue escrita y validada. Nunca por descarte fuera de ahí.
+ *   3. Köppen         → sólo si no se pudo consultar la ecorregión, y sólo
+ *                       dentro de Sudamérica, donde la heurística fue escrita y
+ *                       validada. Nunca por descarte fuera de ahí.
+ *
+ * El orden importa: sabiendo la ecorregión real, el bioma global es un dato y
+ * la heurística climática es una conjetura. Manda el dato.
  *
  * Los datos vienen de RESOLVE Ecoregions 2017 (Dinerstein et al., BioScience
  * 2017), 846 ecorregiones y 14 biomas, licencia CC BY 4.0. Se consultan desde
@@ -49,15 +53,107 @@ export const BIOMAS_RESOLVE: Record<number, { id: string; nombre: string; emoji:
 };
 
 /**
- * Ecorregiones con ficha regional curada.
+ * Ecorregiones sudamericanas → las 12 fichas de `lib/contexto.ts`.
  *
- * Es una lista blanca deliberada: 30 de las 846 ecorregiones. Un ECO_ID que no
- * esté acá cae al bioma global, nunca a una ficha vecina "parecida". Ampliar
- * esta tabla es la forma de mejorar la cobertura sin tocar el clasificador.
+ * Antes esta mitad no existía y adentro de Sudamérica mandaba la heurística
+ * Köppen. Anda bien en la Argentina, que es donde se escribió, pero la caja de
+ * Sudamérica llega hasta el paralelo 13 norte y ahí se rompía sola: el desierto
+ * de Sechura (Perú, ~7° S) daba "Chaco seco" porque es árido cálido y está al
+ * norte del paralelo 27; el matorral de la Guajira colombiana, lo mismo; y
+ * cualquier páramo daba "Puna" por pasar los 2800 m, cuando el páramo recibe
+ * 1000–2000 mm al año y la puna menos de 400. Son ecosistemas opuestos en lo
+ * único que importa para diseñar: cuánta agua hay.
  *
- * Verificadas contra el FeatureServer de RESOLVE.
+ * El criterio para entrar acá es el mismo del resto de la tabla: la ficha tiene
+ * que describir ESA ecorregión, no una parecida. Por eso faltan a propósito la
+ * Caatinga, el Chaco húmedo, el Pantanal, los páramos, el Chocó y los valles
+ * secos interandinos: no hay ficha que sea de ellos, y ahora caen al bioma
+ * global —que es un dato real de RESOLVE— en vez de a la ficha argentina más
+ * parecida. Cada uno de esos es una ficha nueva por escribir.
+ *
+ * Los nombres del comentario son los de RESOLVE, verificados contra el
+ * FeatureServer (`ECO_ID`/`ECO_NAME`, 125 ecorregiones dentro de la caja).
  */
-export const ECO_ID_A_FICHA: Record<number, string> = {
+const SUDAMERICA: Record<number, string> = {
+  // Amazonía, várzeas y escudo guayanés
+  446: 'selva_tropical',   // Caqueta moist forests
+  463: 'selva_tropical',   // Guianan freshwater swamp forests
+  464: 'selva_tropical',   // Guianan Highlands moist forests
+  465: 'selva_tropical',   // Guianan lowland moist forests
+  466: 'selva_tropical',   // Guianan piedmont moist forests
+  467: 'selva_tropical',   // Gurupa várzea
+  469: 'selva_tropical',   // Iquitos várzea
+  473: 'selva_tropical',   // Japurá-Solimões-Negro moist forests
+  474: 'selva_tropical',   // Juruá-Purus moist forests
+  476: 'selva_tropical',   // Madeira-Tapajós moist forests
+  480: 'selva_tropical',   // Marajó várzea
+  482: 'selva_tropical',   // Monte Alegre várzea
+  483: 'selva_tropical',   // Napo moist forests
+  484: 'selva_tropical',   // Negro-Branco moist forests
+  496: 'selva_tropical',   // Purus várzea
+  497: 'selva_tropical',   // Purus-Madeira moist forests
+  498: 'selva_tropical',   // Rio Negro campinarana
+  503: 'selva_tropical',   // Solimões-Japurá moist forests
+  505: 'selva_tropical',   // Southwest Amazon moist forests
+  507: 'selva_tropical',   // Tapajós-Xingu moist forests
+  508: 'selva_tropical',   // Tocantins/Pindare moist forests
+  511: 'selva_tropical',   // Uatumã-Trombetas moist forests
+  512: 'selva_tropical',   // Ucayali moist forests
+  518: 'selva_tropical',   // Xingu-Tocantins-Araguaia moist forests
+
+  // Bosque atlántico y selva paranaense — el mismo dominio que Misiones
+  439: 'selva_tropical',   // Alto Paraná Atlantic forests
+  440: 'selva_tropical',   // Araucaria moist forests
+  441: 'selva_tropical',   // Atlantic Coast restingas
+  442: 'selva_tropical',   // Bahia coastal forests
+  443: 'selva_tropical',   // Bahia interior forests
+  485: 'selva_tropical',   // Northeast Brazil restingas
+  491: 'selva_tropical',   // Pernambuco coastal forests
+  492: 'selva_tropical',   // Pernambuco interior forests
+  500: 'selva_tropical',   // Serra do Mar coastal forests
+
+  // Selva de montaña andina (la faja de bosque nublado)
+  444: 'yungas',           // Bolivian Yungas
+  460: 'yungas',           // Eastern Cordillera Real montane forests
+  493: 'yungas',           // Peruvian Yungas
+  504: 'yungas',           // Southern Andean Yungas
+
+  // Sabanas tropicales con estación seca marcada
+  567: 'sabana_cerrado',   // Cerrado
+  570: 'sabana_cerrado',   // Guianan savanna
+  572: 'sabana_cerrado',   // Llanos
+
+  // Pastizales y bosques secos templados del Cono Sur
+  569: 'chaco_seco',       // Dry Chaco
+  574: 'pampa',            // Uruguayan savanna
+  575: 'espinal',          // Espinal
+  576: 'pampa',            // Humid Pampas
+
+  // Áridos y semiáridos
+  577: 'monte',            // Low Monte
+  592: 'monte',            // High Monte
+  587: 'puna_altoandino',  // Central Andean dry puna
+  588: 'puna_altoandino',  // Central Andean puna
+  589: 'puna_altoandino',  // Central Andean wet puna
+  598: 'desierto_costero', // Atacama desert
+  608: 'desierto_costero', // Sechura desert
+
+  // Patagonia y Chile
+  578: 'estepa_patagonica',        // Patagonian steppe
+  595: 'estepa_patagonica',        // Southern Andean steppe
+  561: 'bosque_andino_patagonico', // Magellanic subpolar forests
+  563: 'bosque_andino_patagonico', // Valdivian temperate forests
+  596: 'mediterraneo',             // Chilean Matorral
+};
+
+/**
+ * Ecorregiones del resto del mundo → fichas regionales de
+ * `lib/biomasRegionales.ts`.
+ *
+ * Ninguna apunta a una ficha sudamericana: describir un predio de Kansas con la
+ * vegetación del Espinal fue el bug que dio origen a toda esta tabla.
+ */
+const RESTO_DEL_MUNDO: Record<number, string> = {
   // Norteamérica — bosques y praderas
   329: 'bosque_templado_caducifolio_este',      // Appalachian mixed mesophytic forests
   330: 'sur_templado_humedo_eeuu',              // Appalachian Piedmont forests
@@ -98,6 +194,16 @@ export const ECO_ID_A_FICHA: Record<number, string> = {
   787: 'macaronesia',                           // Canary Islands dry woodlands and forests
   793: 'mediterraneo_europeo',                  // Iberian sclerophyllous and semi-deciduous forests
 };
+
+/**
+ * La lista blanca completa. Un ECO_ID que no esté acá cae al bioma global de
+ * RESOLVE, nunca a una ficha vecina 'parecida'. Ampliarla es la forma de mejorar
+ * la cobertura sin tocar el clasificador.
+ */
+export const ECO_ID_A_FICHA: Record<number, string> = { ...SUDAMERICA, ...RESTO_DEL_MUNDO };
+
+/** Las dos mitades por separado: el test verifica que ninguna invada a la otra. */
+export { SUDAMERICA as ECO_ID_SUDAMERICA, RESTO_DEL_MUNDO as ECO_ID_RESTO_DEL_MUNDO };
 
 /** Ficha regional curada para una ecorregión, o null si todavía no existe. */
 export function fichaDeEcorregion(ecoId: number): string | null {

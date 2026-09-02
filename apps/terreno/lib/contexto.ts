@@ -389,12 +389,13 @@ export function resolverBioma(
     if (ficha) {
       return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: eco, fuente: 'ecorregion', aviso: null };
     }
-    // Dentro de Sudamérica la heurística Köppen es más específica que el bioma
-    // global: sigue mandando ella, y la ecorregión suma el nombre exacto.
-    if (enSudamerica(lat, lng)) {
-      const f = fichaBioma(determinarBioma(koppen, lat, lng, elevacion));
-      return { ficha: f, titulo: f.nombre, emoji: f.emoji, ecorregion: eco, fuente: 'koppen', aviso: null };
-    }
+    // Adentro de Sudamérica antes mandaba la heurística Köppen cuando la
+    // ecorregión no tenía ficha. Con las 56 ecorregiones sudamericanas curadas
+    // eso dejó de convenir: lo que queda sin ficha es justamente lo que la
+    // heurística clasifica mal —Sechura daba "Chaco seco", el páramo daba
+    // "Puna"—, porque son ecosistemas que las 12 fichas argentinas no describen.
+    // Sabiendo la ecorregión real, el bioma global es un dato; la heurística,
+    // una conjetura. Manda el dato, y el aviso dice qué falta.
     const global = biomaGlobal(eco.bioma_num);
     const fichaG = global ? fichaPorId(global.id) : null;
     return {
