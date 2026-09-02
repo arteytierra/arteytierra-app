@@ -120,6 +120,7 @@ import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
 import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
+import { cerrarDibujo, motivoNoCierra } from '@/lib/mapa/cerrarDibujo';
 import { COLORES_DIBUJO, distanciaMetros, medidasDibujo } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
@@ -641,6 +642,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [dibujoEnCurso,  setDibujoEnCurso]  = useState<DibujoEnCurso | null>(null);
   const [dibujoSelId,    setDibujoSelId]    = useState<string | null>(null);
   const [medicionVertices, setMedicionVertices] = useState<Array<{ lat: number; lng: number }>>([]);
+  // Por qué no se pudo cerrar el trazo. Va a la barra de estado y se borra sola:
+  // cerrar un polígono de dos puntos antes vaciaba los vértices sin decir nada.
+  const [avisoDibujo, setAvisoDibujo] = useState<string | null>(null);
   const [espejoPendiente, setEspejoPendiente] = useState(false); // próximo polígono = espejo de agua
   const [subRepresa, setSubRepresa] = useState<SubRepresa>('sugerencias'); // sub-pestaña del panel de represas
   const [overlay, setOverlay] = useState<OverlayImagen | null>(null);
@@ -1229,6 +1233,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           });
           return;
         }
+        // Un vértice más es la respuesta al aviso de que faltaban: se levanta.
+        setAvisoDibujo(null);
         setDibujoEnCurso(prev => {
           if (!prev) {
             const tipoBase: TipoDibujo =
@@ -1423,38 +1429,38 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     });
   }, [dibujoSelId]);
 
+  /**
+   * Cierra el trazo en curso. Si todavía le faltan vértices NO lo descarta:
+   * deja el trazo como está y dice qué falta en la barra de estado. Antes se
+   * vaciaba igual, así que cerrar un polígono con dos puntos borraba el trabajo
+   * sin crear nada y sin explicar por qué.
+   */
   const handleFinalizarDibujo = useCallback(() => {
     if (!dibujoEnCurso) return;
+
+    const motivo = motivoNoCierra(dibujoEnCurso);
+    if (motivo) { setAvisoDibujo(motivo); return; }
+
     const id     = crypto.randomUUID();
-    const color  = colorDibujo;
-    const verts  = dibujoEnCurso.vertices;
     const capaId = capaActivaId;
+    // El nombre del espejo se numera contra los que ya hay, así que la
+    // construcción entra al updater: es el único lugar con la lista al día.
+    setDibujos(prev => {
+      const nombreEspejo = espejoPendiente
+        ? `Espejo de agua ${prev.filter(d => d.nombre?.startsWith('Espejo de agua')).length + 1}`
+        : null;
+      const el = cerrarDibujo(dibujoEnCurso, { id, color: colorDibujo, capaId, elementoPoli, nombreEspejo });
+      return el ? [...prev, el] : prev;
+    });
 
-    if (dibujoEnCurso.tipo === 'linea' && verts.length >= 2)
-      setDibujos(prev => [...prev, { id, tipo: 'linea',    color, vertices: verts, grosor: 3, capaId }]);
-    else if (dibujoEnCurso.tipo === 'curva' && verts.length >= 2)
-      setDibujos(prev => [...prev, { id, tipo: 'curva',    color, vertices: verts, grosor: 3, capaId }]);
-    else if (dibujoEnCurso.tipo === 'poligono' && verts.length >= 3)
-      setDibujos(prev => [...prev, elementoPoli
-        ? { id, tipo: 'poligono', color: elementoPoli.color, vertices: verts, opacidad: elementoPoli.opacidad, capaId, simbolo: elementoPoli.emoji, nombre: elementoPoli.nombre }
-        : espejoPendiente
-        ? { id, tipo: 'poligono', color: '#1E88E5', vertices: verts, opacidad: 0.42, capaId, nombre: `Espejo de agua ${prev.filter(d => d.nombre?.startsWith('Espejo de agua')).length + 1}` }
-        : { id, tipo: 'poligono', color, vertices: verts, opacidad: 0.22, capaId }]);
-    else if (dibujoEnCurso.tipo === 'circulo' && verts.length === 2) {
-      const radio = distanciaMetros(verts[0]!.lat, verts[0]!.lng, verts[1]!.lat, verts[1]!.lng);
-      setDibujos(prev => [...prev, { id, tipo: 'circulo', color, lat: verts[0]!.lat, lng: verts[0]!.lng, radio, opacidad: 0.18, capaId }]);
-    }
-    else if (dibujoEnCurso.tipo === 'cota' && verts.length === 2)
-      setDibujos(prev => [...prev, { id, tipo: 'cota', color, vertices: verts, capaId }]);
-    else if (dibujoEnCurso.tipo === 'flecha' && verts.length >= 2)
-      setDibujos(prev => [...prev, { id, tipo: 'flecha', color, vertices: verts, grosor: 3, capaId }]);
-
+    setAvisoDibujo(null);
     setDibujoEnCurso({ tipo: dibujoEnCurso.tipo, vertices: [] });
-  }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente, elementoPoli]);
+  }, [dibujoEnCurso, colorDibujo, capaActivaId, espejoPendiente, elementoPoli, setDibujos]);
 
   const handleCancelarDibujo = useCallback(() => {
     setModo(null);
     setDibujoEnCurso(null);
+    setAvisoDibujo(null);
     setMedicionVertices([]);
     setDibujoSelId(null);
     setEspejoPendiente(false);
@@ -1820,11 +1826,20 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // que cubre los doce modos —antes la barra decía "Listo" mientras el mapa
   // esperaba el clic de la cuenca, del observador o del árbol.
   const modoEstadoLabel = useMemo(() => {
+    if (avisoDibujo)                return avisoDibujo;
     if (modoDibujo === 'medir')     return 'Midiendo';
     if (modoDibujo === 'seleccion') return dibujoSelId ? 'Elemento seleccionado' : 'Seleccionar';
     if (modoDibujo)                 return `Dibujando ${modoDibujo}`;
     return etiquetaModo(modo) ?? 'Listo';
-  }, [modo, modoDibujo, dibujoSelId]);
+  }, [modo, modoDibujo, dibujoSelId, avisoDibujo]);
+
+  // El aviso del trazo se borra solo: es una explicación, no un error que haya
+  // que despachar. Un clic más sobre el mapa también lo levanta.
+  useEffect(() => {
+    if (!avisoDibujo) return;
+    const t = setTimeout(() => setAvisoDibujo(null), 5000);
+    return () => clearTimeout(t);
+  }, [avisoDibujo]);
 
   // ─── Keyline: checklist + aplicar guías al plano ──────────────────────────
   const handleCheckKeyline = useCallback((id: string, parcial: Partial<KeylineCheck>) => {
