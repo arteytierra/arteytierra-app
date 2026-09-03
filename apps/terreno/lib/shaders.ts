@@ -28,40 +28,138 @@ export interface DatosShader {
 // ─── Rampas de color ─────────────────────────────────────────────────────────
 
 /**
- * Rampa del shader de elevación. Es una escala RELATIVA —del punto más bajo al
- * más alto de ESTE predio—, no una altimetría del mundo, así que no puede usar
- * el vocabulario hipsométrico (azul = mar, blanco = nieve): en un campo suizo
- * entre 815 y 840 m pintaba de azul océano la parte baja y de blanco nieve la
- * alta, y quedaba idéntica a la capa Hipsométrico, que sí es absoluta.
+ * Un alto de la rampa: en qué punto del recorrido (0 = lo más bajo o llano del
+ * predio, 1 = lo más alto o empinado) y con qué color.
  *
- * Se usa una secuencial perceptualmente uniforme (familia viridis): ordena sin
- * ambigüedad de oscuro a claro, se lee igual en escala de grises y con daltonismo,
- * y no se confunde con ninguna de las otras dos rampas de la app.
+ * El color se escribe en hexadecimal porque es el idioma en el que se elige un
+ * color; el rgb() que necesita el canvas se deriva. Antes cada rampa vivía dos
+ * veces —los números para pintar y un `linear-gradient` escrito a mano para el
+ * swatch— y nada obligaba a que dijeran lo mismo.
  */
-const RAMP_ELEV = [
-  { t: 0.00, r: 68,  g: 1,   b: 84  },  // violeta oscuro — lo más bajo del predio
-  { t: 0.25, r: 59,  g: 82,  b: 139 },  // azul-violeta
-  { t: 0.50, r: 33,  g: 145, b: 140 },  // verde azulado
-  { t: 0.75, r: 94,  g: 201, b: 98  },  // verde
-  { t: 1.00, r: 253, g: 231, b: 37  },  // amarillo — lo más alto del predio
-];
+interface Alto { t: number; hex: string }
+type Ramp = readonly Alto[];
 
-/** La misma rampa como gradiente CSS, para el swatch de Capas y la leyenda. */
-export const GRADIENTE_ELEV =
-  'linear-gradient(90deg,#440154 0%,#3b528b 25%,#21918c 50%,#5ec962 75%,#fde725 100%)';
-export const GRADIENTE_PEND =
-  'linear-gradient(90deg,#4CAF50 0%,#FFEB3B 50%,#F44336 100%)';
+/** Una rampa con nombre: lo que el usuario elige en Capas. */
+export interface Paleta {
+  /** Cómo se llama en el desplegable. */
+  nombre: string;
+  /** Qué la distingue de las otras, en una línea; va como `title` del control. */
+  nota:   string;
+  ramp:   Ramp;
+}
 
-const RAMP_PEND = [
-  { t: 0.00, r: 76,  g: 175, b: 80  },  // verde (plano)
-  { t: 0.25, r: 205, g: 220, b: 57  },  // lima
-  { t: 0.50, r: 255, g: 235, b: 59  },  // amarillo
-  { t: 0.70, r: 255, g: 152, b: 0   },  // naranja
-  { t: 0.85, r: 244, g: 67,  b: 54  },  // rojo
-  { t: 1.00, r: 183, g: 28,  b: 28  },  // rojo oscuro
-];
+export type PaletaElev = 'terreno' | 'viridis' | 'sobria';
+export type PaletaPend = 'semaforo' | 'extrema' | 'daltonico';
 
-type Ramp = typeof RAMP_ELEV;
+/**
+ * Rampas del shader de elevación. Es una escala RELATIVA —del punto más bajo al
+ * más alto de ESTE predio—, no una altimetría del mundo, así que ninguna puede
+ * usar el vocabulario hipsométrico (azul = mar, blanco = nieve): en un campo
+ * suizo entre 815 y 840 m eso pintaba de azul océano la parte baja y de blanco
+ * nieve la alta, y quedaba idéntica a la capa Hipsométrico, que sí es absoluta.
+ */
+export const PALETAS_ELEV: Record<PaletaElev, Paleta> = {
+  // El reparto del recorrido es la mitad del asunto: en la rampa viridis los
+  // verdes se comían la mitad de arriba y un lomo suave quedaba todo del mismo
+  // verde. Acá los violetas ocupan un cuarto, los verdes otro, y la mitad de
+  // arriba se va abriendo en amarillos hasta el rojo de los picos.
+  terreno: {
+    nombre: 'Terreno',
+    nota:   'Violeta abajo, verdes al medio, amarillos arriba y rojo en los picos.',
+    ramp: [
+      { t: 0.00, hex: '#3B0B54' },  // violeta oscuro — lo más bajo del predio
+      { t: 0.12, hex: '#4A3A96' },  // violeta azulado
+      { t: 0.26, hex: '#21918C' },  // verde azulado
+      { t: 0.42, hex: '#4CAF50' },  // verde
+      { t: 0.58, hex: '#A5CC3A' },  // verde lima
+      { t: 0.70, hex: '#EDD92B' },  // amarillo
+      { t: 0.84, hex: '#FFC02E' },  // amarillo cálido
+      { t: 0.93, hex: '#F07818' },  // naranja
+      { t: 1.00, hex: '#C62222' },  // rojo — los picos
+    ],
+  },
+  viridis: {
+    nombre: 'Viridis',
+    nota:   'Perceptualmente uniforme: se lee igual en escala de grises y con daltonismo.',
+    ramp: [
+      { t: 0.00, hex: '#440154' },
+      { t: 0.25, hex: '#3B528B' },
+      { t: 0.50, hex: '#21918C' },
+      { t: 0.75, hex: '#5EC962' },
+      { t: 1.00, hex: '#FDE725' },
+    ],
+  },
+  // Poca saturación a propósito: cuando encima del relieve hay curvas, cotas y
+  // dibujos, una rampa fuerte los deja ilegibles y hay que apagar la capa para
+  // ver lo que uno dibujó.
+  sobria: {
+    nombre: 'Sobria',
+    nota:   'Crema a marrón, poco saturada: deja leer las curvas y los dibujos encima.',
+    ramp: [
+      { t: 0.00, hex: '#F6F1E4' },  // crema — lo más bajo
+      { t: 0.35, hex: '#DCC9A2' },
+      { t: 0.70, hex: '#A8875A' },
+      { t: 1.00, hex: '#4A3720' },  // marrón oscuro — lo más alto
+    ],
+  },
+};
+
+export const PALETAS_PEND: Record<PaletaPend, Paleta> = {
+  semaforo: {
+    nombre: 'Semáforo',
+    nota:   'Verde llano, amarillo laborable, rojo empinado.',
+    ramp: [
+      { t: 0.00, hex: '#4CAF50' },  // verde (plano)
+      { t: 0.25, hex: '#CDDC39' },  // lima
+      { t: 0.50, hex: '#FFEB3B' },  // amarillo
+      { t: 0.70, hex: '#FF9800' },  // naranja
+      { t: 0.85, hex: '#F44336' },  // rojo
+      { t: 1.00, hex: '#B71C1C' },  // rojo oscuro
+    ],
+  },
+  // En un cerro el semáforo satura: de la mitad para arriba es todo rojo y no se
+  // distingue una ladera trabajable de un barranco. Acá el rojo es el medio y lo
+  // verdaderamente inviable se va a morado y a negro.
+  extrema: {
+    nombre: 'Extrema',
+    nota:   'Sigue después del rojo: morado y negro para lo que ya no se trabaja.',
+    ramp: [
+      { t: 0.00, hex: '#2E7D32' },  // verde (plano)
+      { t: 0.20, hex: '#A8C83C' },  // lima
+      { t: 0.35, hex: '#FFEB3B' },  // amarillo
+      { t: 0.50, hex: '#FF9800' },  // naranja
+      { t: 0.65, hex: '#E53935' },  // rojo
+      { t: 0.80, hex: '#8E24AA' },  // morado
+      { t: 0.90, hex: '#4A148C' },  // morado oscuro
+      { t: 1.00, hex: '#150612' },  // casi negro — lo más empinado
+    ],
+  },
+  // El verde-a-rojo es justo el par que no distingue la forma más común de
+  // daltonismo, y la pendiente es el dato que más se mira. Esta recorre claro a
+  // oscuro sin usar ninguno de los dos.
+  daltonico: {
+    nombre: 'Daltónico',
+    nota:   'Amarillo a azul oscuro, sin verde ni rojo; ordena también por brillo.',
+    ramp: [
+      { t: 0.00, hex: '#FFEA46' },  // amarillo claro (plano)
+      { t: 0.35, hex: '#C0AE5C' },
+      { t: 0.60, hex: '#6D7C8C' },
+      { t: 0.85, hex: '#2C4A78' },
+      { t: 1.00, hex: '#00204D' },  // azul casi negro — lo más empinado
+    ],
+  },
+};
+
+function rgbDeHex(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/** La rampa como gradiente CSS, para el swatch de Capas y la leyenda. */
+export function gradienteCss(ramp: Ramp): string {
+  const altos = ramp.map(a => `${a.hex} ${Math.round(a.t * 100)}%`).join(',');
+  return `linear-gradient(90deg,${altos})`;
+}
 
 function interpolarColor(ramp: Ramp, t: number): string {
   const clamped = Math.max(0, Math.min(1, t));
@@ -70,22 +168,31 @@ function interpolarColor(ramp: Ramp, t: number): string {
     const b = ramp[i + 1]!;
     if (clamped >= a.t && clamped <= b.t) {
       const factor = (clamped - a.t) / (b.t - a.t);
-      const r = Math.round(a.r + (b.r - a.r) * factor);
-      const g = Math.round(a.g + (b.g - a.g) * factor);
-      const b2 = Math.round(a.b + (b.b - a.b) * factor);
+      const [ar, ag, ab] = rgbDeHex(a.hex);
+      const [br, bg, bb] = rgbDeHex(b.hex);
+      const r  = Math.round(ar + (br - ar) * factor);
+      const g  = Math.round(ag + (bg - ag) * factor);
+      const b2 = Math.round(ab + (bb - ab) * factor);
       return `rgb(${r},${g},${b2})`;
     }
   }
-  const last = ramp[ramp.length - 1]!;
-  return `rgb(${last.r},${last.g},${last.b})`;
+  const [r, g, b] = rgbDeHex(ramp[ramp.length - 1]!.hex);
+  return `rgb(${r},${g},${b})`;
 }
 
-export function colorElevacion(elev: number, min: number, max: number): string {
-  return interpolarColor(RAMP_ELEV, max > min ? (elev - min) / (max - min) : 0);
+export const PALETA_ELEV_POR_DEFECTO: PaletaElev = 'terreno';
+export const PALETA_PEND_POR_DEFECTO: PaletaPend = 'semaforo';
+
+export function colorElevacion(
+  elev: number, min: number, max: number, paleta: PaletaElev = PALETA_ELEV_POR_DEFECTO,
+): string {
+  return interpolarColor(PALETAS_ELEV[paleta].ramp, max > min ? (elev - min) / (max - min) : 0);
 }
 
-export function colorPendiente(pct: number, maxPct: number): string {
-  return interpolarColor(RAMP_PEND, maxPct > 0 ? Math.min(pct / maxPct, 1) : 0);
+export function colorPendiente(
+  pct: number, maxPct: number, paleta: PaletaPend = PALETA_PEND_POR_DEFECTO,
+): string {
+  return interpolarColor(PALETAS_PEND[paleta].ramp, maxPct > 0 ? Math.min(pct / maxPct, 1) : 0);
 }
 
 // ─── Fetch grilla ─────────────────────────────────────────────────────────────

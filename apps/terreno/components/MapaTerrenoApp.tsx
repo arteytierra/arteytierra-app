@@ -63,7 +63,11 @@ import { crearPin, ICONOS_PIN, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { shaderDesdeDEM, GRADIENTE_ELEV, GRADIENTE_PEND, type DatosShader } from '@/lib/shaders';
+import {
+  shaderDesdeDEM, gradienteCss,
+  PALETAS_ELEV, PALETAS_PEND, PALETA_ELEV_POR_DEFECTO, PALETA_PEND_POR_DEFECTO,
+  type DatosShader, type Paleta, type PaletaElev, type PaletaPend,
+} from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
@@ -119,7 +123,7 @@ import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos
 import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
 import type { ElementoDibujo, DibujoEnCurso, TipoDibujo } from '@/lib/dibujos';
-import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
+import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, NOMBRE_HERRAMIENTA, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
 import {
   cerrarDibujo, motivoNoCierra, faltanVertices,
   tipoBaseDe, cierraSola, rectanguloDesdeEsquinas, VERTICES_MINIMOS,
@@ -490,6 +494,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
   // ─── Opacidad de los shaders ──────────────────────────────────────────────
   const [opacidadShader, setOpacidadShader] = useState({ elev: 0.65, pend: 0.65 });
+
+  // ─── Paleta de los shaders ────────────────────────────────────────────────
+  // Qué rampa de color usa cada shader. No es sólo gusto: en un cerro el
+  // semáforo de pendiente satura y de la mitad para arriba es todo rojo, y una
+  // rampa fuerte de elevación tapa las curvas y los dibujos que van encima.
+  const [paletaShader, setPaletaShader] = useState<{ elev: PaletaElev; pend: PaletaPend }>({
+    elev: PALETA_ELEV_POR_DEFECTO,
+    pend: PALETA_PEND_POR_DEFECTO,
+  });
 
 
   // ─── Capas y visibilidad (hook useCapas) ──────────────────────────────────
@@ -1358,9 +1371,15 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
 
 
   // ─── Dibujo libre ─────────────────────────────────────────────────────────
+  // La última herramienta de trazado que se usó, para que la barra espaciadora
+  // la vuelva a activar sin ir a buscarla a la barra —el gesto de AutoCAD—.
+  // `seleccion` no cuenta: es la flecha, no una herramienta que se repita.
+  const ultimaHerramienta = useRef<HerramientaDibujo | null>(null);
+
   const handleCambiarModo = useCallback((herr: HerramientaDibujo | null) => {
     // Cambiar de herramienta de dibujo entra al modo dibujo, y con eso apaga
     // cualquier otro modo que estuviera esperando el clic.
+    if (herr && herr !== 'seleccion') ultimaHerramienta.current = herr;
     setModo(herr ? { k: 'dibujo', tipo: herr } : null);
     const tipoParaEnCurso = herr ? tipoBaseDe(herr) : null;
     setDibujoEnCurso(tipoParaEnCurso ? { tipo: tipoParaEnCurso, vertices: [] } : null);
@@ -1720,6 +1739,28 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
         return;
       }
 
+      // Barra espaciadora: repetir la última herramienta usada (gesto de AutoCAD).
+      // Dos cuidados. Uno: si el foco está en un control, la barra es su clic, no
+      // el nuestro, y robársela rompe el teclado. Dos: si hay un trazo a medio
+      // hacer, reactivar la herramienta lo tiraría sin decir nada —justo lo que
+      // se arregló en el cierre de dibujos—, así que ahí la barra no hace nada.
+      if (e.key === ' ') {
+        const enControl = e.target instanceof HTMLElement
+          && e.target.closest('button, select, a, [role="button"], [contenteditable]');
+        if (enControl) return;
+        e.preventDefault();
+        const herr = ultimaHerramienta.current;
+        if (!herr) { setAvisoDibujo('Todavía no usaste ninguna herramienta.'); return; }
+        if (dibujoEnCurso && dibujoEnCurso.vertices.length > 0) {
+          setAvisoDibujo('Terminá el trazo (Enter) o cancelalo (Esc) antes de repetir la herramienta.');
+          return;
+        }
+        // Sin cartel de confirmación: la barra de estado ya pasa a decir qué
+        // herramienta quedó activa, y un aviso acá se pintaría de alarma.
+        handleCambiarModo(herr);
+        return;
+      }
+
       // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
@@ -1775,7 +1816,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     undo, redo, modal, dibujoEnCurso, modo, modoDibujo, medicionVertices,
     modoZona, modoSector, modoCamino, modoElementoClick, dibujoSelId,
     handleFinalizarDibujo, handleFinalizarZona, handleFinalizarSector, handleFinalizarCamino,
-    handleCancelarDibujo, handleEliminarDibujo, panelAbierto, panelDerecho,
+    handleCancelarDibujo, handleEliminarDibujo, handleCambiarModo, panelAbierto, panelDerecho,
   ]);
 
   // ─── Geometría activa para preview CAD ────────────────────────────────────
@@ -1811,7 +1852,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (avisoDibujo)                return avisoDibujo;
     if (modoDibujo === 'medir')     return 'Midiendo';
     if (modoDibujo === 'seleccion') return dibujoSelId ? 'Elemento seleccionado' : 'Seleccionar';
-    if (modoDibujo)                 return `Dibujando ${modoDibujo}`;
+    // Con el nombre, no con la clave: la barra decía «Dibujando radio_accion».
+    if (modoDibujo)                 return `Dibujando ${NOMBRE_HERRAMIENTA[modoDibujo].toLowerCase()}`;
     return etiquetaModo(modo) ?? 'Listo';
   }, [modo, modoDibujo, dibujoSelId, avisoDibujo]);
 
@@ -2514,9 +2556,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       // Con el rango explícito: es una escala relativa a ESTE predio, así que sin
       // los números el color no dice nada (y antes, además, compartía gradiente
       // con el hipsométrico y en la leyenda quedaban indistinguibles).
-      items.push({ color: GRADIENTE_ELEV, label: `Elevación del predio (${Math.round(datosShader.elev_min)}–${Math.round(datosShader.elev_max)} m)` });
+      items.push({ color: gradienteCss(PALETAS_ELEV[paletaShader.elev].ramp), label: `Elevación del predio (${Math.round(datosShader.elev_min)}–${Math.round(datosShader.elev_max)} m)` });
     if (capas.shaderPend && datosShader)
-      items.push({ color: GRADIENTE_PEND, label: `Pendiente (0–${Math.round(datosShader.pend_max)} %)` });
+      items.push({ color: gradienteCss(PALETAS_PEND[paletaShader.pend].ramp), label: `Pendiente (0–${Math.round(datosShader.pend_max)} %)` });
     if (capas.curvasNivel && curvasNivel.length > 0)
       items.push({ color: colorCurvas.normal, dash: true, label: `Curvas de nivel${intervaloCurvasEfectivo ? ` (cada ${intervaloCurvasEfectivo} m)` : ''}` });
     // Arco solar
@@ -2554,7 +2596,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       items.push({ color: d.color, dash: esLinea, label: d.nombre });
     });
     return items;
-  }, [capas, mojones.length, datosShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, aguadasFiltradas, pinesFiltrados, dibujosFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
+  }, [capas, mojones.length, datosShader, paletaShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, aguadasFiltradas, pinesFiltrados, dibujosFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
 
   // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
   const iniciarCaptura = useCallback(() => {
@@ -2570,11 +2612,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       id: `tab-${t.id}`, grupo: 'Ir a', label: t.label, keywords: 'pestaña panel',
       accion: () => { setTab(t.id); setPanelAbierto(true); },
     }));
+    // Los nombres salen de `NOMBRE_HERRAMIENTA`: acá vive el orden, no la
+    // traducción, que ya la tiene una sola cabeza.
     const herramientas: Comando[] = ([
-      ['seleccion', 'Seleccionar'], ['linea', 'Línea'], ['poligono', 'Polígono'], ['circulo', 'Círculo'],
-      ['curva', 'Curva'], ['cota', 'Cota'], ['medir', 'Medir distancia / área'], ['texto', 'Texto'],
-    ] as Array<[TipoDibujo | 'seleccion' | 'medir', string]>).map(([m, l]) => ({
-      id: `tool-${m}`, grupo: 'Herramienta', label: l, keywords: 'dibujar dibujo',
+      'seleccion', 'linea', 'poligono', 'circulo', 'curva', 'cota', 'medir', 'texto',
+    ] as HerramientaDibujo[]).map(m => ({
+      id: `tool-${m}`, grupo: 'Herramienta', label: NOMBRE_HERRAMIENTA[m], keywords: 'dibujar dibujo',
       accion: () => handleCambiarModo(m),
     }));
     const acciones: Comando[] = [
@@ -3602,6 +3645,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           onRangoTerrarium={handleRangoTerrarium}
           opacidadShaderElev={opacidadShader.elev}
           opacidadShaderPend={opacidadShader.pend}
+          paletaShaderElev={paletaShader.elev}
+          paletaShaderPend={paletaShader.pend}
           aguadasLayer={aguadasFiltradas}
           datosArcoSolar={datosArcoSolar}
           onMoverArcoSolar={handleMoverArcoSolar}
@@ -3975,6 +4020,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             onColorCurvas={setColorCurvas}
             opacidadShader={opacidadShader}
             onOpacidadShader={setOpacidadShader}
+            paletaShader={paletaShader}
+            onPaletaShader={setPaletaShader}
             onResetTerrariumRango={handleResetTerrariumRango}
           />
         </div>
@@ -4144,6 +4191,44 @@ function PinItem({ pin, editando, onEdit, onUpdate, onDelete }: {
   );
 }
 
+/**
+ * Elegir la rampa de color de un shader.
+ *
+ * Muestra el degradé de cada opción en vez de sólo su nombre: la pregunta que se
+ * está contestando es «¿cómo se va a ver?», y un nombre no la contesta. La nota
+ * de cada paleta va como `title`, para el caso en que dos se parezcan de lejos.
+ */
+function SelectorPaleta<K extends string>({ paletas, valor, onElegir }: {
+  paletas:  Record<K, Paleta>;
+  valor:    K;
+  onElegir: (k: K) => void;
+}) {
+  return (
+    <div className="mx-3 mb-2 flex items-start gap-2">
+      <span className="text-[9px] text-ink-700/60 w-16 shrink-0 pt-0.5">Paleta:</span>
+      <div className="flex-1 flex gap-1">
+        {(Object.keys(paletas) as K[]).map(k => {
+          const p = paletas[k];
+          const activa = k === valor;
+          return (
+            <button
+              key={k}
+              onClick={() => onElegir(k)}
+              title={p.nota}
+              aria-pressed={activa}
+              className={`flex-1 min-w-0 rounded-sm overflow-hidden transition-opacity ${
+                activa ? 'ring-1 ring-moss-700' : 'opacity-55 hover:opacity-100'}`}
+            >
+              <span className="block h-2.5" style={{ background: gradienteCss(p.ramp) }} />
+              <span className="block px-0.5 text-[8px] leading-tight text-ink-700/70 truncate">{p.nombre}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Panel de capas estilo Photoshop ─────────────────────────────────────────
 
 interface PanelCapasProps {
@@ -4226,6 +4311,8 @@ interface PanelCapasProps {
   onColorCurvas:       (c: { normal: string; maestra: string }) => void;
   opacidadShader:      { elev: number; pend: number };
   onOpacidadShader:    (v: { elev: number; pend: number }) => void;
+  paletaShader:        { elev: PaletaElev; pend: PaletaPend };
+  onPaletaShader:      (v: { elev: PaletaElev; pend: PaletaPend }) => void;
   onResetTerrariumRango: () => void;
 }
 
@@ -4249,6 +4336,7 @@ function PanelCapas({
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
+  paletaShader, onPaletaShader,
   onResetTerrariumRango,
 }: PanelCapasProps) {
   const [exp, setExp] = useState({ topo: true, terreno: false, zonas: true, sectores: true, caminos: true, pines: true, hidrico: true, erosion: true, swales: true, cortinas: true, cortafuegos: true, silvopastura: true, sugerencias: true, analisis: true, aguadas: true, dibujos: true, arcSolar: true });
@@ -4392,17 +4480,24 @@ function PanelCapas({
                   ? onCapas({ ...capas, shaderElev: false })
                   : onCapas({ ...capas, shaderElev: true, shaderPend: false })}
                 label={`Elevación del predio (${Math.round(datosShader.elev_min)}–${Math.round(datosShader.elev_max)} m)`}
-                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: GRADIENTE_ELEV }} />}
+                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: gradienteCss(PALETAS_ELEV[paletaShader.elev].ramp) }} />}
               />
               {capas.shaderElev && (
-                <div className="mx-3 mb-1 flex items-center gap-2">
-                  <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
-                  <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
-                    value={opacidadShader.elev}
-                    onChange={e => onOpacidadShader({ ...opacidadShader, elev: parseFloat(e.target.value) })}
-                    className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
-                  <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.elev * 100)}%</span>
-                </div>
+                <>
+                  <div className="mx-3 mb-1 flex items-center gap-2">
+                    <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
+                    <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
+                      value={opacidadShader.elev}
+                      onChange={e => onOpacidadShader({ ...opacidadShader, elev: parseFloat(e.target.value) })}
+                      className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
+                    <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.elev * 100)}%</span>
+                  </div>
+                  <SelectorPaleta
+                    paletas={PALETAS_ELEV}
+                    valor={paletaShader.elev}
+                    onElegir={p => onPaletaShader({ ...paletaShader, elev: p })}
+                  />
+                </>
               )}
               <CapaItem
                 visible={capas.shaderPend}
@@ -4410,17 +4505,24 @@ function PanelCapas({
                   ? onCapas({ ...capas, shaderPend: false })
                   : onCapas({ ...capas, shaderPend: true, shaderElev: false })}
                 label={`Pendiente (0–${Math.round(datosShader.pend_max)} %)`}
-                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: GRADIENTE_PEND }} />}
+                swatch={<span className="w-5 h-2.5 rounded-sm shrink-0" style={{ background: gradienteCss(PALETAS_PEND[paletaShader.pend].ramp) }} />}
               />
               {capas.shaderPend && (
-                <div className="mx-3 mb-1 flex items-center gap-2">
-                  <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
-                  <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
-                    value={opacidadShader.pend}
-                    onChange={e => onOpacidadShader({ ...opacidadShader, pend: parseFloat(e.target.value) })}
-                    className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
-                  <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.pend * 100)}%</span>
-                </div>
+                <>
+                  <div className="mx-3 mb-1 flex items-center gap-2">
+                    <span className="text-[9px] text-ink-700/60 w-16 shrink-0">Intensidad:</span>
+                    <input type="range" min="0.1" max="1" step="0.05" {...bloquearDrag}
+                      value={opacidadShader.pend}
+                      onChange={e => onOpacidadShader({ ...opacidadShader, pend: parseFloat(e.target.value) })}
+                      className="flex-1 h-1.5 accent-moss-700 cursor-pointer" />
+                    <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{Math.round(opacidadShader.pend * 100)}%</span>
+                  </div>
+                  <SelectorPaleta
+                    paletas={PALETAS_PEND}
+                    valor={paletaShader.pend}
+                    onElegir={p => onPaletaShader({ ...paletaShader, pend: p })}
+                  />
+                </>
               )}
               {/* El relieve se computa desde Topo (motor único); acá solo se muestra/oculta. */}
               <button

@@ -108,6 +108,7 @@ const ATAJOS: Array<{ grupo: string; items: Array<[string, string]> }> = [
   ]},
   { grupo: 'Dibujo', items: [
     ['Enter', 'Finalizar figura en curso'],
+    ['Espacio', 'Repetir la última herramienta usada'],
     ['Backspace', 'Quitar último vértice'],
     ['Esc', 'Cancelar / deseleccionar'],
     ['Supr', 'Eliminar elemento seleccionado'],
@@ -120,6 +121,8 @@ const ATAJOS: Array<{ grupo: string; items: Array<[string, string]> }> = [
   { grupo: 'Mapa', items: [
     ['Rueda', 'Zoom'],
     ['Botón central', 'Desplazar (pan)'],
+    ['Shift + central', 'Girar el plano'],
+    ['Arrastre izquierdo', 'Desplazar, salvo con una herramienta activa'],
     ['Doble clic en vértice', 'Borrar vértice del dibujo'],
   ]},
 ];

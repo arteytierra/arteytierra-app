@@ -28,6 +28,23 @@ export interface Punto { lat: number; lng: number }
 export type HerramientaDibujo =
   | TipoDibujo | 'seleccion' | 'medir' | 'rectangulo' | 'mano_libre' | 'radio_accion';
 
+/** Cómo se llama cada herramienta cuando hay que nombrarla en pantalla. */
+export const NOMBRE_HERRAMIENTA: Record<HerramientaDibujo, string> = {
+  seleccion:    'Seleccionar',
+  medir:        'Medir distancia / área',
+  linea:        'Línea',
+  curva:        'Curva',
+  poligono:     'Polígono',
+  circulo:      'Círculo',
+  texto:        'Texto',
+  cota:         'Cota',
+  flecha:       'Flecha',
+  punto:        'Punto',
+  rectangulo:   'Rectángulo',
+  mano_libre:   'Mano libre',
+  radio_accion: 'Radio de acción',
+};
+
 /**
  * `null` es el modo de reposo: el clic no hace nada sobre el terreno.
  *

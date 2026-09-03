@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { colorElevacion, colorPendiente, type DatosShader } from '@/lib/shaders';
+import {
+  colorElevacion, colorPendiente,
+  PALETA_ELEV_POR_DEFECTO, PALETA_PEND_POR_DEFECTO,
+  type DatosShader, type PaletaElev, type PaletaPend,
+} from '@/lib/shaders';
 import { colorErosion, type DatosErosion } from '@/lib/erosion';
 import type { ResultadoSombras } from '@/lib/sombras';
 import { colorInsolacion, type ResultadoInsolacion } from '@/lib/insolacion';
@@ -20,11 +24,14 @@ import type { ResultadoViewshed } from '@/lib/viewshed';
 // ─── Shader suavizado (canvas + ImageOverlay) ────────────────────────────────
 export function ShaderCanvasLayer({
   celdas, tipo, elevMin, elevMax, pendMax, opacidad = 0.65,
+  paletaElev = PALETA_ELEV_POR_DEFECTO, paletaPend = PALETA_PEND_POR_DEFECTO,
 }: {
   celdas: DatosShader['celdas'];
   tipo: 'elev' | 'pend';
   elevMin: number; elevMax: number; pendMax: number;
   opacidad?: number;
+  paletaElev?: PaletaElev;
+  paletaPend?: PaletaPend;
 }) {
   const map = useMap();
   useEffect(() => {
@@ -70,8 +77,8 @@ export function ShaderCanvasLayer({
         const px = (y * W + x) * 4;
         if (cell) {
           const colorStr = tipo === 'elev'
-            ? colorElevacion(cell.elevation, elevMin, elevMax)
-            : colorPendiente(cell.pendiente_pct, pendMax);
+            ? colorElevacion(cell.elevation, elevMin, elevMax, paletaElev)
+            : colorPendiente(cell.pendiente_pct, pendMax, paletaPend);
           const [r, g, b] = parseRgb(colorStr);
           d[px] = r; d[px + 1] = g; d[px + 2] = b; d[px + 3] = 200;
         }
@@ -94,7 +101,7 @@ export function ShaderCanvasLayer({
     });
     ov.addTo(map);
     return () => { map.removeLayer(ov); };
-  }, [map, celdas, tipo, elevMin, elevMax, pendMax, opacidad]);
+  }, [map, celdas, tipo, elevMin, elevMax, pendMax, opacidad, paletaElev, paletaPend]);
   return null;
 }
 

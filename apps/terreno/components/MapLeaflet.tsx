@@ -26,7 +26,7 @@ import type { Sector } from '@/lib/sectores';
 import type { PotrerosLayout } from '@/lib/potreros';
 import type { Pin } from '@/lib/pines';
 import type { Camino } from '@/lib/caminos';
-import type { DatosShader } from '@/lib/shaders';
+import type { DatosShader, PaletaElev, PaletaPend } from '@/lib/shaders';
 import type { ResultadoSombras } from '@/lib/sombras';
 import type { ResultadoInsolacion } from '@/lib/insolacion';
 import type { ObjetoSombra } from '@/lib/objetosSombra';
@@ -50,7 +50,7 @@ import {
   InsolacionCanvasLayer, ViewshedCanvasLayer,
 } from './mapa/canvasLayers';
 import {
-  RotarConBotonCentral, NavegacionExposer, FlyToExposer, MapMouseTracker,
+  PanearConBotonCentral, ArrastreIzquierdoSegunModo, NavegacionExposer, FlyToExposer, MapMouseTracker,
   InvalidarSize, MapChangeWatcher, BoundsExposer, AutoFit,
 } from './mapa/exposers';
 import type { NavegacionMapa } from './mapa/exposers';
@@ -112,7 +112,8 @@ export interface OverlayImagen {
 // El helper chaikin → components/mapa/smoothing.ts (lo usan vectorLayers y dibujosLayer)
 
 // ─── Exposers de mapa → components/mapa/exposers.tsx (Fase 1) ────────────────
-// RotarConBotonCentral · NavegacionExposer · FlyToExposer · MapMouseTracker ·
+// PanearConBotonCentral · ArrastreIzquierdoSegunModo · NavegacionExposer ·
+// FlyToExposer · MapMouseTracker ·
 // InvalidarSize · MapChangeWatcher · BoundsExposer · interface NavegacionMapa
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -167,6 +168,8 @@ interface Props {
   // ── Shader opacity ──
   opacidadShaderElev?: number;
   opacidadShaderPend?: number;
+  paletaShaderElev?:   PaletaElev;
+  paletaShaderPend?:   PaletaPend;
   // ── Aguadas layer ──
   aguadasLayer?:      ElementoAguada[];
   // ── Arco solar ──
@@ -271,6 +274,8 @@ function MapLeaflet({
   onRangoTerrarium,
   opacidadShaderElev = 0.65,
   opacidadShaderPend = 0.65,
+  paletaShaderElev,
+  paletaShaderPend,
   aguadasLayer = [],
   datosArcoSolar = null,
   onMoverArcoSolar,
@@ -310,7 +315,11 @@ function MapLeaflet({
   // no rerenderiza: MapChangeWatcher reporta el mismo zoom y React descarta el set.
   const [zoomElem, setZoomElem] = useState(ZOOM_INICIAL);
 
-  const cursorClass = (modoDibujo && modoDibujo !== 'seleccion') || tipoActivo
+  // El cursor "armado": el próximo clic va a plantar algo sobre el terreno.
+  // Es la misma condición que decide si el botón izquierdo puede además panear.
+  const armado = !!((modoDibujo && modoDibujo !== 'seleccion') || tipoActivo);
+
+  const cursorClass = armado
     ? 'cursor-crosshair'
     : modoDibujo === 'seleccion'
     ? 'cursor-pointer'
@@ -324,8 +333,8 @@ function MapLeaflet({
         maxZoom={22}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
-        // Rotación (leaflet-rotate). El giro lo maneja RotarConBotonCentral;
-        // apagamos shiftKeyRotate porque Shift + central es nuestro paneo.
+        // Rotación (leaflet-rotate). El giro lo maneja PanearConBotonCentral;
+        // apagamos shiftKeyRotate porque Shift + central es nuestro giro.
         rotate
         rotateControl={false}
         shiftKeyRotate={false}
@@ -410,7 +419,8 @@ function MapLeaflet({
         />
         {medicion && medicion.length > 0 && <MedicionLayer puntos={medicion} />}
         <AutoFit mojones={mojones} />
-        <RotarConBotonCentral />
+        <PanearConBotonCentral />
+        <ArrastreIzquierdoSegunModo dibujando={armado} />
         {onCursorMove && <MapMouseTracker onMove={onCursorMove} />}
         <InvalidarSize trigger={`${capturaMode}|${layoutSignal ?? ''}`} />
         {onGetBounds  && <BoundsExposer  onReady={onGetBounds} />}
@@ -428,6 +438,7 @@ function MapLeaflet({
             celdas={datosShader.celdas} tipo="elev"
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
             pendMax={datosShader.pend_max} opacidad={opacidadShaderElev}
+            paletaElev={paletaShaderElev}
           />
         )}
         {datosShader && capas.shaderPend && (
@@ -435,6 +446,7 @@ function MapLeaflet({
             celdas={datosShader.celdas} tipo="pend"
             elevMin={datosShader.elev_min} elevMax={datosShader.elev_max}
             pendMax={datosShader.pend_max} opacidad={opacidadShaderPend}
+            paletaPend={paletaShaderPend}
           />
         )}
         {capas.erosion && datosErosion && datosErosion.celdas.length > 0 && (

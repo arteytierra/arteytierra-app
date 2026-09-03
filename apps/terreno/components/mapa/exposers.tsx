@@ -34,13 +34,18 @@ export function AutoFit({ mojones }: { mojones: Mojon[] }) {
   return null;
 }
 
-// ─── Middle-mouse pan ─────────────────────────────────────────────────────────
+// ─── Botón central del mouse ──────────────────────────────────────────────────
 
 /**
  * Botón central del mouse:
- *   · arrastrar          → gira el plano (mueve el norte)
- *   · Shift + arrastrar  → panea (vía de escape mientras se dibuja, donde el
- *                          arrastre con botón izquierdo está tomado por el CAD)
+ *   · arrastrar          → panea el mapa
+ *   · Shift + arrastrar  → gira el plano (mueve el norte)
+ *
+ * Estaban al revés: el central giraba y el paneo era el botón izquierdo. Pero el
+ * izquierdo es el que dibuja, así que mientras hay una herramienta armada no
+ * puede además mover el mapa —cada arrastre para reencuadrar quedaba a un pelo
+ * de plantar un vértice—. Ahora el paneo vive donde no compite con nada: la
+ * ruedita, que ya hacía el zoom. El giro pasa a Shift, que se usa mucho menos.
  *
  * El rumbo se imanta a 0° cuando pasa cerca, para poder volver al norte sin
  * pelearse con el mouse.
@@ -48,22 +53,26 @@ export function AutoFit({ mojones }: { mojones: Mojon[] }) {
 const GRADOS_POR_PIXEL = 0.4;
 const IMAN_NORTE_GRADOS = 3;
 
-export function RotarConBotonCentral() {
+export function PanearConBotonCentral() {
   const map = useMap();
   useEffect(() => {
     const container = map.getContainer();
     let modo: 'rotar' | 'panear' | null = null;
     let lx = 0, ly = 0;
     let bearingCrudo = map.getBearing();
+    // Si el arrastre izquierdo ya venía apagado —hay una herramienta armada—,
+    // al soltar hay que dejarlo apagado y no "arreglarlo" de prepo.
+    let arrastreVenia = true;
 
     const down = (e: MouseEvent) => {
       if (e.button !== 1) return;
       e.preventDefault();
       // Leaflet arrastra el mapa también con el botón central: su Draggable
       // aborta sólo si `which !== 1 && button !== 1`, y en el central button === 1.
-      // Sin esto, el arrastre rotaría y panearía al mismo tiempo.
+      // Sin esto, el arrastre panearía dos veces (o giraría y panearía a la vez).
+      arrastreVenia = map.dragging.enabled();
       map.dragging.disable();
-      modo = e.shiftKey ? 'panear' : 'rotar';
+      modo = e.shiftKey ? 'rotar' : 'panear';
       lx = e.clientX; ly = e.clientY;
       bearingCrudo = map.getBearing();
       container.style.cursor = modo === 'rotar' ? 'ew-resize' : 'grabbing';
@@ -84,7 +93,7 @@ export function RotarConBotonCentral() {
     const up = (e: MouseEvent) => {
       if (e.button !== 1 || !modo) return;
       modo = null;
-      map.dragging.enable();
+      if (arrastreVenia) map.dragging.enable();
       container.style.cursor = '';
     };
     // Sin esto, Chrome abre el scroll automático con el botón central.
@@ -95,13 +104,33 @@ export function RotarConBotonCentral() {
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
     return () => {
-      if (modo) { try { map.dragging.enable(); } catch { /* mapa ya destruido */ } }
+      if (modo && arrastreVenia) { try { map.dragging.enable(); } catch { /* mapa ya destruido */ } }
       container.removeEventListener('mousedown', down);
       container.removeEventListener('auxclick', noAuto);
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
     };
   }, [map]);
+  return null;
+}
+
+/**
+ * El arrastre con el botón izquierdo, mientras hay una herramienta armada.
+ *
+ * Dibujar y panear son el mismo gesto con el mismo botón: se arrastra un poco
+ * para reencuadrar y Leaflet lo toma como paneo, se arrastra dos píxeles de
+ * menos y es un clic que planta un vértice. Con una herramienta activa el mapa
+ * deja de moverse con el izquierdo y el paneo queda en la ruedita; en reposo
+ * vuelve a andar como siempre, que es como se navega en un trackpad sin botón
+ * central.
+ */
+export function ArrastreIzquierdoSegunModo({ dibujando }: { dibujando: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!dibujando) return;
+    map.dragging.disable();
+    return () => { try { map.dragging.enable(); } catch { /* mapa ya destruido */ } };
+  }, [map, dibujando]);
   return null;
 }
 
