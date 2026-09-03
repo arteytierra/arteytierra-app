@@ -180,3 +180,63 @@ describe('hidrologiaPredio · factor C para erosión', () => {
     expect(hidrologiaPredio({ ...COMPLETO, cobertura: [{ wc: 30, pct: 100 }] }).usleC).toBeCloseTo(USLE_C_REF, 3);
   });
 });
+
+/**
+ * Coeficiente ANUAL — el que llena la represa.
+ *
+ * El error que estos tests cuidan es confundirlo con `coef`, que es el de una
+ * tormenta de diseño. Son dos preguntas distintas —"cuánto escurre en el peor
+ * aguacero de la década" y "cuánta agua junta la cuenca en un año normal"— y
+ * usar el primero para dimensionar un embalse lo llena en el papel varias veces
+ * de más.
+ */
+describe('hidrologiaPredio · coeficiente anual', () => {
+  it('es bastante menor que el del evento de diseño', () => {
+    const h = hidrologiaPredio(COMPLETO);
+    expect(h.coefAnual).toBeLessThan(h.coef);
+    expect(h.coefAnual).toBeGreaterThan(0);
+  });
+
+  it('no lo mueve la tormenta: el año no depende del aguacero elegido', () => {
+    const t10  = hidrologiaPredio({ ...COMPLETO, periodoRetorno: 10 });
+    const t100 = hidrologiaPredio({ ...COMPLETO, periodoRetorno: 100 });
+    expect(t100.coef).toBeGreaterThan(t10.coef);        // el evento sí cambia
+    expect(t100.coefAnual).toBe(t10.coefAnual);         // el año, no
+  });
+
+  it('sube con el grupo hidrológico: el mismo predio en D escurre más que en A', () => {
+    const a = hidrologiaPredio({ ...COMPLETO, suelo: { ...SUELO_C, grupo: 'A' } });
+    const d = hidrologiaPredio({ ...COMPLETO, suelo: { ...SUELO_C, grupo: 'D' } });
+    expect(d.coefAnual).toBeGreaterThan(a.coefAnual);
+  });
+
+  it('el monte retiene más que el suelo desnudo', () => {
+    const monte  = hidrologiaPredio({ ...COMPLETO, cobertura: [{ wc: 10, pct: 100 }] });
+    const pelado = hidrologiaPredio({ ...COMPLETO, cobertura: [{ wc: 60, pct: 100 }] });
+    expect(monte.coefAnual).toBeLessThan(pelado.coefAnual);
+  });
+
+  // Un espejo de agua o un glaciar aguas arriba no tienen suelo que infiltre:
+  // salen de la tabla fija, no de la SCS, y tienen que pesar en el promedio.
+  it('una cuenca con laguna arriba aporta más que la misma sin ella', () => {
+    const seca  = hidrologiaPredio({ ...COMPLETO, cobertura: [{ wc: 30, pct: 100 }] });
+    const conAgua = hidrologiaPredio({ ...COMPLETO, cobertura: [{ wc: 30, pct: 70 }, { wc: 80, pct: 30 }] });
+    expect(conAgua.coefAnual).toBeGreaterThan(seca.coefAnual);
+  });
+
+  it('sin datos de cobertura cae al valor neutro, no a cero', () => {
+    const h = hidrologiaPredio({ ...COMPLETO, cobertura: null });
+    expect(h.coefAnual).toBeGreaterThan(0.03);
+    expect(h.coefAnual).toBeLessThanOrEqual(0.9);
+  });
+
+  it('queda siempre dentro de un rango físicamente posible', () => {
+    for (const wc of [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]) {
+      for (const grupo of ['A', 'B', 'C', 'D'] as const) {
+        const h = hidrologiaPredio({ ...COMPLETO, suelo: { ...SUELO_C, grupo }, cobertura: [{ wc, pct: 100 }] });
+        expect(h.coefAnual).toBeGreaterThanOrEqual(0.03);
+        expect(h.coefAnual).toBeLessThanOrEqual(0.9);
+      }
+    }
+  });
+});

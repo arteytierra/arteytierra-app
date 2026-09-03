@@ -3294,6 +3294,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 {/* En «Sugerencias» este panel está oculto pero sigue montado:
                     qué sección reciba da igual mientras no se vea. */}
                 <CutFillPanel
+                  coefAnualPredio={datosCobertura ? hidroPredio.coefAnual : null}
+                  composicionPredio={hidroPredio.composicion}
                   seccion={subRepresa === 'sugerencias' ? 'embalse' : subRepresa}
                   mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill}
                   onDibujarEspejo={handleDibujarEspejo}
@@ -3441,7 +3443,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 poligonos={poligonosCutFill}
                 expandida={cuencaExpandida}
                 fuenteDem={grillaActiva?.fuente ?? datosShader?.fuente ?? null}
-                cnPredio={datosCobertura ? hidroPredio.cn : null}
+                hidro={hidroPredio}
+                onPeriodoRetorno={setPeriodoRetorno}
                 onMarcar={() => setModo(m => m?.k === 'cuenca' ? null : { k: 'cuenca' })}
                 onLimpiar={() => { setCuenca(null); setModo(null); setCuencaAviso(null); setCuencaExpandida(false); }}
                 onIrATopo={() => setTab('topo')}

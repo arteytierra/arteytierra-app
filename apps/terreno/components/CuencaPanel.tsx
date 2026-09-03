@@ -8,7 +8,7 @@
  * vertedero.
  */
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2, Archive, Check } from 'lucide-react';
+import { Waves, MousePointerClick, Trash2, TriangleAlert, PenLine, Pencil, Maximize2, Archive, Check, Sparkles, SlidersHorizontal } from 'lucide-react';
 import {
   analizarCuenca, COBERTURAS, type Cuenca, type GrupoHidro, type ResultadoCuenca,
 } from '@/lib/cuenca';
@@ -16,6 +16,7 @@ import {
   yaArchivada, resumenCuenca, type CuencaGuardada, type ParamsCuenca,
 } from '@/lib/cuencasGuardadas';
 import { confianzaCuenca } from '@/lib/saludCalculo';
+import { PERIODOS_RETORNO, type HidrologiaPredio } from '@/lib/hidrologiaPredio';
 import { volumenM3, volumenEnLitros, caudalM3s, caudalEnLitros, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
@@ -41,7 +42,18 @@ interface Props {
   poligonos?:  PoligonoOpcion[];    // polígonos dibujados, para usar como cuenca manual
   expandida?:  boolean;             // la cuenca actual ya está extendida a la divisoria real
   fuenteDem?:  FuenteRelieve | null;// de qué DEM salió el relieve, para la salud del cálculo
-  cnPredio?:   number | null;       // CN compuesto por cobertura satelital (H0), para contrastar
+  /**
+   * Motor hidrológico compartido (H0): el mismo CN compuesto, la misma tormenta
+   * y el mismo grupo de suelo que usan Swales, Represa y Erosión.
+   *
+   * Antes esta pestaña armaba su propia hidrología con dos desplegables —una
+   * cobertura única para todo el predio y un grupo elegido a mano— así que el
+   * mismo terreno podía dar un CN acá y otro en Swales, sin que nada avisara.
+   * Ahora el número compartido es el default y los desplegables son el override.
+   */
+  hidro:       HidrologiaPredio;
+  /** Cambiar la recurrencia es global: la misma tormenta dimensiona todo el predio. */
+  onPeriodoRetorno: (T: number) => void;
   onMarcar:    () => void;
   onLimpiar:   () => void;
   onIrATopo:   () => void;
@@ -58,16 +70,20 @@ export interface CuencaInputs {
   grupo:       GrupoHidro;
   precip:      string;
   head:        string;
+  /** `undefined` en proyectos viejos: se toma como automático. */
+  auto?:       boolean;
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, cnPredio = null, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, hidro, onPeriodoRetorno, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
   const [coberturaId, setCoberturaId] = useState(inicial?.coberturaId ?? 'pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(inicial?.grupo ?? grupoHidro ?? 'B');
   const [precip, setPrecip]   = useState(inicial?.precip ?? (precipT10 ? String(precipT10) : '75'));
   const [head, setHead]       = useState(inicial?.head ?? '0.3');
+  /** `true` = CN y tormenta salen del motor compartido; `false` = los ponés vos. */
+  const [auto, setAuto]       = useState(inicial?.auto ?? true);
 
-  useEffect(() => { onInputs?.({ coberturaId, grupo, precip, head }); }, [coberturaId, grupo, precip, head, onInputs]);
+  useEffect(() => { onInputs?.({ coberturaId, grupo, precip, head, auto }); }, [coberturaId, grupo, precip, head, auto, onInputs]);
 
   // Autocompleta la tormenta de diseño con el T10 de A3 cuando llega — salvo que
   // la persona ya haya elegido un valor, que no queremos pisarle al volver.
@@ -79,15 +95,30 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
   useEffect(() => { if (grupoHidro && !tocoGrupo.current) setGrupo(grupoHidro); }, [grupoHidro]);
 
   const cobertura = COBERTURAS.find(c => c.id === coberturaId)!;
-  const cn = cobertura.cn[grupo];
+  // En automático manda el motor compartido; a mano, los dos desplegables.
+  const cn         = auto ? hidro.cn : cobertura.cn[grupo];
+  const precip_mm  = auto ? hidro.precip_mm : (parseFloat(precip) || 0);
 
   const resultado = useMemo(() =>
-    cuenca ? analizarCuenca(cuenca, cn, parseFloat(precip) || 0, parseFloat(head) || 0.3) : null,
-    [cuenca, cn, precip, head],
+    cuenca ? analizarCuenca(cuenca, cn, precip_mm, parseFloat(head) || 0.3) : null,
+    [cuenca, cn, precip_mm, head],
   );
 
   // La tormenta cuenta como dato del lugar sólo mientras no la hayas tocado.
-  const precipDeClima = precipT10 != null && Math.abs((parseFloat(precip) || 0) - precipT10) < 0.5;
+  const precipDeClima = auto
+    ? !hidro.precipAsumida
+    : (precipT10 != null && Math.abs((parseFloat(precip) || 0) - precipT10) < 0.5);
+  const grupoDeSuelo  = auto
+    ? !hidro.grupoAsumido
+    : (grupoHidro != null && grupo === grupoHidro);
+
+  /** Pasar a mano arranca de los valores calculados, no de los de fábrica. */
+  function activarManual() {
+    setCoberturaId(coberturaId);
+    setGrupo(hidro.grupo);
+    setPrecip(String(Math.round(hidro.precip_mm)));
+    setAuto(false);
+  }
 
   const salud = useMemo(() =>
     cuenca && resultado
@@ -95,18 +126,18 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           area_ha: cuenca.area_ha, long_flujo_m: cuenca.long_flujo_m,
           cn: resultado.cn, precip_mm: resultado.precip_mm,
           escurrimiento_mm: resultado.escurrimiento_mm,
-          precipDeClima, grupoDeSuelo: grupoHidro != null && grupo === grupoHidro,
-          expandida: !!expandida, fuenteDem, cnPredio,
+          precipDeClima, grupoDeSuelo,
+          expandida: !!expandida, fuenteDem, cnPredio: hidro.cn,
           duracion_min: resultado.duracion_min, intensidad_mm_h: resultado.intensidad_mm_h,
         })
       : null,
-    [cuenca, resultado, precipDeClima, grupoHidro, grupo, expandida, fuenteDem, cnPredio],
+    [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, hidro.cn],
   );
 
   // ── Archivo de cuencas ──
   const params: ParamsCuenca = useMemo(() => ({
-    coberturaId, grupo, precip_mm: parseFloat(precip) || 0, head_m: parseFloat(head) || 0.3,
-  }), [coberturaId, grupo, precip, head]);
+    coberturaId, grupo, precip_mm, head_m: parseFloat(head) || 0.3,
+  }), [coberturaId, grupo, precip_mm, head]);
 
   const yaEsta = cuenca ? yaArchivada(cuenca, params, guardadas) : null;
 
@@ -119,6 +150,9 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
     setCoberturaId(g.params.coberturaId);
     setGrupo(g.params.grupo);
     setPrecip(String(g.params.precip_mm));
+    // Lo archivado son valores fijos: restaurarlos y dejar el automático prendido
+    // los pisaría con los del predio de hoy y la ficha dejaría de coincidir.
+    setAuto(false);
     tocoPrecip.current = true;
     tocoGrupo.current  = true;
     setHead(String(g.params.head_m));
@@ -273,8 +307,58 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                 <p className="text-[9px] text-ink-700/45 leading-relaxed text-center">Acotada al terreno. Extendé si querés el aporte de toda la cuenca aguas-arriba.</p>
               )}
 
-              {/* Parámetros hidrológicos */}
-              <div className="bg-white rounded-xl border border-bone-200 p-3 grid grid-cols-2 gap-2.5">
+              {/* Parámetros hidrológicos.
+                  El CN y la tormenta salen del motor compartido (H0), el mismo
+                  que dimensiona swales y represas. Los desplegables siguen ahí
+                  para pisarlos, pero dejaron de ser el punto de partida. */}
+              <label className={auto ? 'block' : 'hidden'}>
+                <span className="text-[10px] text-ink-700/60 block mb-0.5">Tormenta de diseño</span>
+                <select
+                  value={hidro.periodoRetorno}
+                  onChange={e => onPeriodoRetorno(+e.target.value)}
+                  className="w-full rounded-md border border-bone-300 bg-white px-2 py-1.5 text-[11px] text-ink-900"
+                >
+                  {PERIODOS_RETORNO.map(T => (
+                    <option key={T} value={T}>Recurrencia {T} años (T{T})</option>
+                  ))}
+                </select>
+                <span className="text-[9px] text-ink-700/45 leading-tight block mt-0.5">
+                  El vertedero se dimensiona con el evento raro: T50 o T100 si abajo hay gente o camino.
+                </span>
+              </label>
+
+              <div className="rounded-xl border border-bone-200 bg-bone-50/70 p-2.5 space-y-2">
+                <p className="text-[10px] font-semibold text-ink-900 flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-moss-700" />
+                  {auto ? 'Calculado de tu predio' : 'Calculado del predio (referencia)'}
+                </p>
+                <div className="grid grid-cols-3 gap-1.5 text-center">
+                  <Auto n={hidro.cn.toFixed(0)} u="CN compuesto"
+                    nota={`grupo ${hidro.grupo}${hidro.grupoAsumido ? ' (asumido)' : ''}`} />
+                  <Auto n={Math.round(hidro.precip_mm).toString()} u="mm de lluvia"
+                    nota={`T${hidro.periodoRetorno} en 24 h`} />
+                  <Auto n={hidro.coef.toFixed(2)} u="coef. escorrentía"
+                    nota={`escurren ${hidro.escurrimiento_mm} mm`} />
+                </div>
+                {hidro.composicion.length > 0 && (
+                  <p className="text-[9px] text-ink-700/55 leading-tight">
+                    CN ponderado por cobertura: {hidro.composicion.slice(0, 3).map(c => `${c.nombre} ${c.pct}% (CN ${c.cn})`).join(' · ')}
+                    {hidro.composicion.length > 3 && ' …'}
+                  </p>
+                )}
+                {auto ? (
+                  <button onClick={activarManual} className="flex items-center gap-1 text-[10px] text-moss-700 font-semibold hover:underline">
+                    <SlidersHorizontal className="w-3 h-3" /> Ajustar a mano
+                  </button>
+                ) : (
+                  <button onClick={() => setAuto(true)} className="flex items-center gap-1 text-[10px] text-moss-700 font-semibold hover:underline">
+                    <Sparkles className="w-3 h-3" /> Volver a los valores calculados
+                  </button>
+                )}
+              </div>
+
+              <div className={`bg-white rounded-xl border border-bone-200 p-3 grid gap-2.5 ${auto ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className={auto ? 'hidden' : 'contents'}>
                 <Campo label="Cobertura del suelo">
                   <select value={coberturaId} onChange={e => setCoberturaId(e.target.value)}
                     className="w-full text-xs rounded-lg border border-bone-200 px-2 py-1.5 bg-white">
@@ -293,6 +377,9 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                   <input type="number" value={precip} onChange={e => setPrecip(e.target.value)} min="0" step="5"
                     className="w-full text-xs rounded-lg border border-bone-200 px-2 py-1.5" />
                 </Campo>
+                </div>
+                {/* El vertedero es geometría de la obra, no hidrología del predio:
+                    no lo decide el motor compartido y se edita siempre. */}
                 <Campo label="Carga s/ vertedero (m)">
                   <input type="number" value={head} onChange={e => setHead(e.target.value)} min="0.05" step="0.05"
                     className="w-full text-xs rounded-lg border border-bone-200 px-2 py-1.5" />
@@ -300,7 +387,7 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
               </div>
 
               {/* Lo que falta o se asumió sale por la salud del cálculo, más abajo. */}
-              {precipT10 != null && (
+              {!auto && precipT10 != null && (
                 <p className="text-[10px] text-moss-700/80">
                   Tormenta autocompletada con el T10 de Clima → Extremos ({precipT10} mm). Podés poner el T100 para el evento extremo.
                 </p>
@@ -403,6 +490,17 @@ function Stat({ label, value, sub, color }: {
       <p className="text-[10px] opacity-70 mb-0.5">{label}</p>
       <p className="font-mono text-sm font-bold leading-tight">{value}</p>
       {sub && <p className="text-[9px] opacity-70 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+/** Un número que la app dedujo sola, con su unidad y de dónde salió. */
+function Auto({ n, u, nota }: { n: string; u: string; nota: string }) {
+  return (
+    <div className="rounded bg-white/80 py-1.5 px-1">
+      <div className="text-[14px] font-bold text-moss-800 tabular-nums leading-none">{n}</div>
+      <div className="text-[9px] text-ink-700/65 mt-0.5 leading-tight">{u}</div>
+      <div className="text-[8px] text-ink-700/45 leading-tight">{nota}</div>
     </div>
   );
 }

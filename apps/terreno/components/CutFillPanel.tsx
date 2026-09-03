@@ -10,6 +10,9 @@ import { animalDe, cambiarAnimal, demandaMensual_m3, procedencia, type Rodeo } f
 import { TIPOS_ANIMAL } from '@/lib/produccion';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
+
+/** Valor del desplegable de cobertura que significa "usá el motor compartido". */
+const COBERTURA_PREDIO = 'predio';
 import { confianzaRepresa } from '@/lib/saludCalculo';
 import { volumen, UNIDADES_VOLUMEN, type UnidadVolumen } from '@/lib/unidades';
 import { SaludCalculo } from './SaludCalculo';
@@ -69,9 +72,21 @@ interface Props {
   /** Rodeo compartido con Producción: se lee y se escribe desde las dos pestañas. */
   rodeo:      Rodeo;
   onRodeo:    (r: Rodeo) => void;
+  /**
+   * Coeficiente de escorrentía ANUAL del predio, del motor compartido (H0):
+   * la misma composición de cobertura que arma el CN, ponderada por área.
+   *
+   * Hasta acá el llenado de la represa salía de un desplegable con UNA cobertura
+   * para toda la cuenca —"pastura regular"— aunque la app ya supiera, por
+   * satélite, que arriba hay 40 % de monte. Ahora ese número es la opción por
+   * defecto y el desplegable queda para pisarlo. `null` = sin datos de cobertura.
+   */
+  coefAnualPredio?: number | null;
+  /** Las tres coberturas que más pesan, para poder leer de dónde salió el coef. */
+  composicionPredio?: Array<{ nombre: string; pct: number }>;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, coefAnualPredio = null, composicionPredio = [] }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -273,8 +288,9 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // Sube al contenedor todo lo que el usuario eligió, para que viaje con el
   // proyecto. Sólo cuando hay un polígono elegido: un panel vacío no tiene nada
   // que guardar y pisaría lo que ya había.
-  const [coberturaCuenca, setCoberturaCuenca] = useState(inicial?.cobertura ?? 'pastura_regular');
-  const [coefCuenca,      setCoefCuenca]      = useState(inicial?.coef ?? String(coefEscorrentiaAnual(grupoHidro ?? 'B', 'pastura_regular')));
+  const [coberturaCuenca, setCoberturaCuenca] = useState(inicial?.cobertura ?? COBERTURA_PREDIO);
+  const [coefCuenca,      setCoefCuenca]      = useState(
+    inicial?.coef ?? String(coefAnualPredio ?? coefEscorrentiaAnual(grupoHidro ?? 'B', 'pastura_regular')));
   const [haCuenca,        setHaCuenca]        = useState(inicial?.ha ?? (cuencaHa ? String(cuencaHa) : '10'));
   const [seep,            setSeep]            = useState(inicial?.seep ?? '3');
   // En qué unidad se muestra el volumen de agua. Selector y no equivalencia
@@ -583,6 +599,8 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           rodeo={rodeo} onRodeo={onRodeo}
           cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
           coef={coefCuenca} onCoef={setCoefCuenca}
+          coefAnualPredio={coefAnualPredio} composicionPredio={composicionPredio}
+          coefGuardado={inicial?.coef ?? null}
           ha={haCuenca} onHa={setHaCuenca}
           seep={seep} onSeep={setSeep}
         />
@@ -602,6 +620,7 @@ function RepresaSimSection({
   seccion,
   res, datosClima, cuencaHa, grupoHidro = null, texturaSuelo = null, fuenteDem = null, onResumen,
   rodeo, onRodeo, cobertura, onCobertura, coef, onCoef, ha, onHa, seep, onSeep,
+  coefAnualPredio, composicionPredio, coefGuardado,
 }: {
   seccion: SeccionRepresa;
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
@@ -613,10 +632,28 @@ function RepresaSimSection({
   coef: string;      onCoef: (v: string) => void;
   ha: string;        onHa: (v: string) => void;
   seep: string;      onSeep: (v: string) => void;
+  coefAnualPredio: number | null;
+  composicionPredio: Array<{ nombre: string; pct: number }>;
+  coefGuardado: string | null;
 }) {
-  // Autocompleta el área de cuenca (desde el muro o B2) y el coef según suelo+cobertura.
+  // Autocompleta el área de cuenca (desde el muro o B2).
   useEffect(() => { if (cuencaHa) onHa(String(cuencaHa)); }, [cuencaHa, onHa]);
-  useEffect(() => { onCoef(String(coefEscorrentiaAnual(grupoHidro ?? 'B', cobertura))); }, [grupoHidro, cobertura, onCoef]);
+
+  /**
+   * El coeficiente sigue a la cobertura elegida — salvo la primera vuelta si el
+   * proyecto traía uno guardado.
+   *
+   * Sin esa excepción, volver a la pestaña Represa disparaba este efecto al
+   * montar y pisaba el coeficiente que la persona había ajustado a mano, aunque
+   * `RepresaInputs` lo tuviera bien guardado: el trabajo se perdía sin aviso.
+   */
+  const respetarGuardado = useRef(coefGuardado !== null);
+  useEffect(() => {
+    if (respetarGuardado.current) { respetarGuardado.current = false; return; }
+    onCoef(String(cobertura === COBERTURA_PREDIO
+      ? (coefAnualPredio ?? coefEscorrentiaAnual(grupoHidro ?? 'B', 'pastura_regular'))
+      : coefEscorrentiaAnual(grupoHidro ?? 'B', cobertura)));
+  }, [grupoHidro, cobertura, coefAnualPredio, onCoef]);
 
   // La demanda sale del rodeo del predio, que es el mismo que usa Producción.
   const demanda = demandaMensual_m3(rodeo);
@@ -686,9 +723,18 @@ function RepresaSimSection({
               onChange={e => onCobertura(e.target.value)}
               className="text-[10px] bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500"
             >
+              <option value={COBERTURA_PREDIO} disabled={coefAnualPredio === null}>
+                {coefAnualPredio === null ? 'Como el predio (falta Cobertura)' : 'Como el predio (satélite)'}
+              </option>
               {COBERTURAS.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
             </select>
           </div>
+          {cobertura === COBERTURA_PREDIO && composicionPredio.length > 0 && (
+            <p className="text-[9px] text-ink-700/55 leading-tight px-2 -mt-1">
+              Ponderado por lo que ve el satélite: {composicionPredio.slice(0, 3).map(c => `${c.nombre} ${c.pct}%`).join(' · ')}
+              {composicionPredio.length > 3 && ' …'}. Es el mismo criterio con el que se dimensionan swales y cuenca.
+            </p>
+          )}
 
           <div className="grid grid-cols-2 gap-1.5 bg-bone-50 rounded-lg p-2">
             <ParamRow label="Cuenca aporte (ha)" value={parseFloat(ha) || 0} onChange={v => onHa(String(v))} step={1} />

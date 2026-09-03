@@ -22,7 +22,7 @@
  * `confianza`, que dice qué faltó, qué se asumió y cuánto hay que creerle al
  * número. Todo orientativo: diseño preliminar, no proyecto ejecutivo.
  */
-import { COBERTURAS, escurrimientoSCS, type GrupoHidro } from './cuenca';
+import { COBERTURAS, coefEscorrentiaAnual, escurrimientoSCS, type GrupoHidro } from './cuenca';
 import type { FuenteRelieve } from './grillaElevacion';
 
 // ─── Mapeo ESA WorldCover → coberturas SCS ────────────────────────────────────
@@ -54,6 +54,19 @@ const MAPEO_WC: Record<number, MapeoWC> = {
   90:  { coberturaId: null,              cnFijo: 92,   usleC: 0.010 },  // Humedal herbáceo (saturado)
   95:  { coberturaId: 'monte_regular',   cnFijo: null, usleC: 0.003 },  // Manglar
   100: { coberturaId: 'matorral',        cnFijo: null, usleC: 0.020 },  // Musgo / liquen
+};
+
+/**
+ * Coeficiente de escorrentía ANUAL de las clases que no tienen equivalente en la
+ * tabla SCS, donde el grupo hidrológico del suelo no manda porque no hay suelo
+ * que infiltre. Orientativos, del mismo orden que la tabla de `cuenca.ts`: un
+ * espejo de agua devuelve casi toda la lluvia que recibe, la nieve la devuelve
+ * junta en el deshielo, y un humedal la retiene buena parte del año.
+ */
+const COEF_ANUAL_FIJO: Record<number, number> = {
+  70: 0.60,   // nieve / hielo
+  80: 0.90,   // agua
+  90: 0.45,   // humedal herbáceo
 };
 
 /** Cobertura neutra cuando no hay dato de WorldCover cargado. */
@@ -161,6 +174,16 @@ export interface HidrologiaPredio {
   escurrimiento_mm: number;
   /** fracción de la lluvia que escurre EN ESTE EVENTO — deja de ser un slider a ojo */
   coef:            number;
+  /**
+   * Fracción MEDIA ANUAL de la lluvia que llega al fondo de la cuenca, ponderada
+   * por la misma composición de cobertura que el CN.
+   *
+   * No es `coef`: aquél es de una tormenta de diseño (un evento saturante, T10 o
+   * peor) y da bastante más alto. El que dimensiona un embalse es éste — cuánta
+   * agua junta la cuenca a lo largo de un año normal—, y confundirlos llena la
+   * represa en el papel varias veces de más.
+   */
+  coefAnual:       number;
   /** factor C de USLE ponderado por cobertura (para erosión) */
   usleC:           number;
   composicion:     Array<{ nombre: string; pct: number; cn: number }>;
@@ -171,13 +194,16 @@ export interface HidrologiaPredio {
 
 const CN_POR_ID = new Map(COBERTURAS.map(c => [c.id, c]));
 
-function cnDeClase(wc: number, grupo: GrupoHidro): { cn: number; usleC: number } | null {
+function cnDeClase(wc: number, grupo: GrupoHidro): { cn: number; usleC: number; coefAnual: number } | null {
   const m = MAPEO_WC[wc];
   if (!m) return null;
-  if (m.cnFijo !== null) return { cn: m.cnFijo, usleC: m.usleC };
+  const coefAnual = m.coberturaId
+    ? coefEscorrentiaAnual(grupo, m.coberturaId)
+    : (COEF_ANUAL_FIJO[wc] ?? coefEscorrentiaAnual(grupo, COBERTURA_POR_DEFECTO));
+  if (m.cnFijo !== null) return { cn: m.cnFijo, usleC: m.usleC, coefAnual };
   const cob = m.coberturaId ? CN_POR_ID.get(m.coberturaId) : undefined;
   if (!cob) return null;
-  return { cn: cob.cn[grupo], usleC: m.usleC };
+  return { cn: cob.cn[grupo], usleC: m.usleC, coefAnual };
 }
 
 /**
@@ -204,26 +230,29 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
   const items = (entrada.cobertura ?? []).filter(c => c.pct > 0);
   const hayC = items.length > 0;
   const composicion: Array<{ nombre: string; pct: number; cn: number }> = [];
-  let cn = 0, usleC = 0, pctUsado = 0, pctSinMapa = 0;
+  let cn = 0, usleC = 0, coefAnual = 0, pctUsado = 0, pctSinMapa = 0;
 
   if (hayC) {
     for (const it of items) {
       const v = cnDeClase(it.wc, grupo);
       if (!v) { pctSinMapa += it.pct; continue; }
-      cn    += v.cn    * it.pct;
-      usleC += v.usleC * it.pct;
-      pctUsado += it.pct;
+      cn        += v.cn        * it.pct;
+      usleC     += v.usleC     * it.pct;
+      coefAnual += v.coefAnual * it.pct;
+      pctUsado  += it.pct;
       composicion.push({ nombre: nombreWC(it.wc), pct: it.pct, cn: v.cn });
     }
   }
 
   if (pctUsado > 0) {
-    cn    = cn    / pctUsado;
-    usleC = usleC / pctUsado;
+    cn        = cn        / pctUsado;
+    usleC     = usleC     / pctUsado;
+    coefAnual = coefAnual / pctUsado;
   } else {
     const cob = CN_POR_ID.get(COBERTURA_POR_DEFECTO)!;
-    cn    = cob.cn[grupo];
-    usleC = USLE_C_REF;
+    cn        = cob.cn[grupo];
+    usleC     = USLE_C_REF;
+    coefAnual = coefEscorrentiaAnual(grupo, COBERTURA_POR_DEFECTO);
     avisos.push({
       id: 'sin_cobertura', nivel: 'aviso',
       titulo: 'Sin datos de cobertura: asumí pastura en estado regular',
@@ -308,6 +337,7 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
     precip_mm: precip, periodoRetorno: T, precipAsumida: !hayCl,
     escurrimiento_mm: Math.round(Q * 10) / 10,
     coef: Math.round(coef * 100) / 100,
+    coefAnual: Math.round(Math.min(0.9, Math.max(0.03, coefAnual)) * 100) / 100,
     usleC: Math.round(usleC * 1000) / 1000,
     composicion: composicion.sort((a, b) => b.pct - a.pct),
     confianza,
