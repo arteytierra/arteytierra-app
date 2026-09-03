@@ -48,8 +48,8 @@ export interface Paleta {
   ramp:   Ramp;
 }
 
-export type PaletaElev = 'terreno' | 'viridis' | 'sobria';
-export type PaletaPend = 'semaforo' | 'extrema' | 'daltonico';
+export type PaletaElev = 'terreno' | 'viridis' | 'clasica';
+export type PaletaPend = 'semaforo' | 'extrema' | 'clasica';
 
 /**
  * Rampas del shader de elevación. Es una escala RELATIVA —del punto más bajo al
@@ -89,17 +89,25 @@ export const PALETAS_ELEV: Record<PaletaElev, Paleta> = {
       { t: 1.00, hex: '#FDE725' },
     ],
   },
-  // Poca saturación a propósito: cuando encima del relieve hay curvas, cotas y
-  // dibujos, una rampa fuerte los deja ilegibles y hay que apagar la capa para
-  // ver lo que uno dibujó.
-  sobria: {
-    nombre: 'Sobria',
-    nota:   'Crema a marrón, poco saturada: deja leer las curvas y los dibujos encima.',
+  // La rampa de los mapas de relieve de toda la vida: verdes abajo, pajizos y
+  // ocres al medio, marrones arriba y cumbres claras. Es una escala RELATIVA al
+  // predio —no una altimetría del mundo—, así que no arranca en azul (mar) ni
+  // termina en blanco (nieve): esos dos colores son los que harían leer cotas
+  // absolutas donde no las hay. Los altos están repartidos parejo y los saltos
+  // de tono son cortos, para que la transición no muestre bandas.
+  clasica: {
+    nombre: 'Clásica',
+    nota:   'La de los mapas de relieve: verde abajo, ocres al medio, marrón y cumbres claras.',
     ramp: [
-      { t: 0.00, hex: '#F6F1E4' },  // crema — lo más bajo
-      { t: 0.35, hex: '#DCC9A2' },
-      { t: 0.70, hex: '#A8875A' },
-      { t: 1.00, hex: '#4A3720' },  // marrón oscuro — lo más alto
+      { t: 0.00, hex: '#3F7A3C' },  // verde bosque — lo más bajo del predio
+      { t: 0.14, hex: '#6C9B45' },
+      { t: 0.28, hex: '#9DB855' },
+      { t: 0.42, hex: '#CBCB74' },
+      { t: 0.55, hex: '#E2CE86' },  // pajizo
+      { t: 0.68, hex: '#D3A863' },  // ocre
+      { t: 0.80, hex: '#B4804F' },  // siena
+      { t: 0.91, hex: '#8E6248' },  // marrón
+      { t: 1.00, hex: '#C6BBB2' },  // gris pardo claro — las cumbres
     ],
   },
 };
@@ -134,18 +142,20 @@ export const PALETAS_PEND: Record<PaletaPend, Paleta> = {
       { t: 1.00, hex: '#150612' },  // casi negro — lo más empinado
     ],
   },
-  // El verde-a-rojo es justo el par que no distingue la forma más común de
-  // daltonismo, y la pendiente es el dato que más se mira. Esta recorre claro a
-  // oscuro sin usar ninguno de los dos.
-  daltonico: {
-    nombre: 'Daltónico',
-    nota:   'Amarillo a azul oscuro, sin verde ni rojo; ordena también por brillo.',
+  // La escala de los manuales de geografía para pendiente: crema en lo llano y
+  // cada vez más tierra hasta el marrón oscuro de lo que ya no se trabaja. Va de
+  // claro a oscuro sin pasar por el par verde-rojo —justo el que no distingue el
+  // daltonismo más común—, así que ordena por brillo además de por color.
+  clasica: {
+    nombre: 'Clásica',
+    nota:   'Crema a marrón oscuro, como los manuales; ordena también por brillo.',
     ramp: [
-      { t: 0.00, hex: '#FFEA46' },  // amarillo claro (plano)
-      { t: 0.35, hex: '#C0AE5C' },
-      { t: 0.60, hex: '#6D7C8C' },
-      { t: 0.85, hex: '#2C4A78' },
-      { t: 1.00, hex: '#00204D' },  // azul casi negro — lo más empinado
+      { t: 0.00, hex: '#EDE6CF' },  // crema — lo llano
+      { t: 0.20, hex: '#C7CE96' },
+      { t: 0.40, hex: '#A8B063' },  // oliva
+      { t: 0.60, hex: '#B98C4C' },  // ocre
+      { t: 0.80, hex: '#8E5F3C' },  // siena
+      { t: 1.00, hex: '#4A2E20' },  // marrón oscuro — lo más empinado
     ],
   },
 };

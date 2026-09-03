@@ -222,18 +222,25 @@ export function DibujoToolbar({
 
   // ── Modo header: integrado en la barra superior ─────────────────────────────
   if (inHeader) {
+    // Mientras hay un trazo abierto, la fila se reduce a la herramienta que se
+    // está usando. Los trece botones más el "n pts", el ✓ y el ✗ no entran en el
+    // ancho que le queda a la columna del medio, y los íconos se comprimían unos
+    // sobre otros hasta quedar ilegibles justo en el momento en que hay que
+    // apretar Finalizar. Dibujando tampoco sirven: no se cambia de herramienta
+    // con una figura a medio hacer.
+    const visibles = dibujando ? HERRAMIENTAS.filter(h => h.modo === modoDibujo) : HERRAMIENTAS;
     return (
       <div className="relative flex items-center gap-0.5 h-full" style={{ pointerEvents: 'auto' }}>
         {/* Separador izquierdo */}
         <div className="w-px h-5 bg-bone-200 mr-1 shrink-0" />
 
         {/* Herramientas */}
-        {HERRAMIENTAS.map(({ modo, icon, title }) => (
+        {visibles.map(({ modo, icon, title }) => (
           <button
             key={modo}
             title={title}
             onClick={() => onModo(modoDibujo === modo ? null : modo)}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+            className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
               modoDibujo === modo ? 'bg-sun-500 text-ink-950' : 'text-ink-700/60 hover:bg-bone-100'
             }`}
           >

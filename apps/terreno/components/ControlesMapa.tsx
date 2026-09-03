@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { Plus, Minus, Layers, History, Mountain, Satellite, Map as MapIcon, ListChecks } from 'lucide-react';
 import type { NavegacionMapa } from './MapLeaflet';
 
@@ -15,6 +16,11 @@ export type CapaFondo = 'satelite' | 'topo';
  * El zoom y el rumbo son del mapa de Leaflet (viven dentro del MapContainer) y
  * llegan por el puente `NavegacionExposer`.
  */
+
+/** Cuánto gira la brújula por píxel arrastrado. */
+const GRADOS_POR_PIXEL = 0.8;
+/** Píxeles que hay que moverse para que el gesto cuente como giro y no como clic. */
+const UMBRAL_CLIC_PX = 3;
 
 // ── Navegación (barra superior) ──────────────────────────────────────────────
 
@@ -37,6 +43,7 @@ export function ControlesNavegacion({
 }: NavProps) {
   const grados = Math.round(((bearing % 360) + 360) % 360);
   const girado = Math.min(grados, 360 - grados) >= 1;
+  const arrastre = useRef<{ x: number; recorrido: number } | null>(null);
 
   return (
     <div className="flex items-center gap-1.5 no-print">
@@ -57,11 +64,38 @@ export function ControlesNavegacion({
           className={`${NAV_BTN} w-8 h-8 border-r border-bone-200`}>
           <Plus className="w-4 h-4" />
         </button>
+        {/* La brújula gira el plano arrastrándola. El giro ya existía —Shift +
+            botón central— pero en una notebook sin botón central no hay manera
+            de llegar a él, y el mapa se quedaba con el norte arriba para
+            siempre. Acá está a la vista, al lado del rumbo que informa. */}
         <button
-          onClick={() => girado && navegacion?.alNorte()}
-          disabled={!girado}
-          title={girado ? `Rumbo ${grados}° — clic para volver el norte arriba` : 'Norte arriba'}
-          className={`${NAV_BTN} h-8 gap-0.5 ${girado ? 'w-9 cursor-pointer' : 'w-8 cursor-default disabled:opacity-100'}`}
+          onPointerDown={e => {
+            if (!navegacion) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            arrastre.current = { x: e.clientX, recorrido: 0 };
+          }}
+          onPointerMove={e => {
+            const a = arrastre.current;
+            if (!a || !navegacion) return;
+            const dx = e.clientX - a.x;
+            if (dx === 0) return;
+            a.x = e.clientX;
+            a.recorrido += Math.abs(dx);
+            navegacion.girar(dx * GRADOS_POR_PIXEL);
+          }}
+          onPointerUp={e => {
+            const a = arrastre.current;
+            arrastre.current = null;
+            try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* ya soltado */ }
+            // Un arrastre que apenas se movió es un clic: vuelve al norte.
+            if (a && a.recorrido < UMBRAL_CLIC_PX && girado) navegacion?.alNorte();
+          }}
+          onPointerCancel={() => { arrastre.current = null; }}
+          disabled={!navegacion}
+          title={girado
+            ? `Rumbo ${grados}° — arrastrá para girar, clic para volver el norte arriba`
+            : 'Norte arriba — arrastrá para girar el plano'}
+          className={`${NAV_BTN} h-8 gap-0.5 cursor-ew-resize touch-none select-none ${girado ? 'w-9' : 'w-8'}`}
         >
           {/* El norte del terreno queda a -bearing respecto de la pantalla. */}
           <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"

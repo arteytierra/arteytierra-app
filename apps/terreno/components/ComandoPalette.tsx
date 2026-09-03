@@ -121,6 +121,9 @@ const ATAJOS: Array<{ grupo: string; items: Array<[string, string]> }> = [
   { grupo: 'Mapa', items: [
     ['Rueda', 'Zoom'],
     ['Botón central', 'Desplazar (pan)'],
+    ['Shift + ← →', 'Girar el plano 15°'],
+    ['Shift + ↑', 'Volver el norte arriba'],
+    ['Arrastrar la brújula', 'Girar el plano'],
     ['Shift + central', 'Girar el plano'],
     ['Arrastre izquierdo', 'Desplazar, salvo con una herramienta activa'],
     ['Doble clic en vértice', 'Borrar vértice del dibujo'],

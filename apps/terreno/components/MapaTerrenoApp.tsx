@@ -1611,6 +1611,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setPines(prev => prev.map(p => p.id === id ? { ...p, lat, lng } : p));
   }, []);
 
+  // El puente al mapa por ref y no por el estado `navegacion`: éste se declara
+  // más abajo (con el resto del mapa) y el handler de teclado vive acá arriba.
+  // Además, así el listener no se reinstala cuando el mapa termina de montar.
+  const navegacionRef = useRef<NavegacionMapa | null>(null);
+
   // ─── Atajos de teclado (estilo CAD) ───────────────────────────────────────
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -1624,6 +1629,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       if (e.key === 'F8' && !enInput) { e.preventDefault(); setOrthoActivo(p => !p); return; }
 
       if (enInput || modal) return;
+
+      // Shift + flechas = girar el plano. El giro con el mouse pide un botón
+      // central que las notebooks no tienen, así que también tiene que estar en
+      // el teclado; 15° por golpe es el paso con el que se encuadra un predio.
+      if (e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        if (e.key === 'ArrowUp') navegacionRef.current?.alNorte();
+        else navegacionRef.current?.girar(e.key === 'ArrowLeft' ? -15 : 15);
+        return;
+      }
 
       // ? = hoja de atajos
       if (e.key === '?') { e.preventDefault(); setAyudaOpen(o => !o); return; }
@@ -2096,7 +2111,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const [navegacion, setNavegacion] = useState<NavegacionMapa | null>(null);
   const [bearing,    setBearing]    = useState(0);
   const [capaFondo,  setCapaFondo]  = useState<CapaFondo>('satelite');
-  const handleGetNavegacion = useCallback((api: NavegacionMapa) => { setNavegacion(api); }, []);
+  const handleGetNavegacion = useCallback((api: NavegacionMapa) => { navegacionRef.current = api; setNavegacion(api); }, []);
   // Props estables para MapLeaflet (React.memo): sin useCallback, estas arrow
   // functions se recreaban en cada render y anulaban el memo del mapa.
   const handleMoverArcoSolar = useCallback((lat: number, lng: number) => { setArcoSolarOffset({ lat, lng }); }, []);
@@ -2556,11 +2571,21 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           <button onClick={() => setPanelAbierto(p => !p)} title="Mostrar/ocultar panel" className="p-1 text-ink-700/50 hover:text-moss-700 transition-colors">
             <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
           </button>
-          <Isotipo label="acequia" className="w-7 h-7 shrink-0 text-[#2E6B8A]" />
-          <div className="min-w-0 leading-tight hidden lg:block">
-            <p className="text-[9px] uppercase tracking-[0.15em] text-moss-700/70">Arte y Tierra · acequia</p>
-            <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display">{proyectoActual?.nombre || 'Proyecto sin guardar'}</p>
-          </div>
+          {/* El lockup de la marca, no el isotipo solo: acá adentro la app se
+              llama acequia y el que firma no viene al caso. Es un PNG y no el
+              componente inline porque el wordmark de la marca está en Century
+              Gothic, que no está en la mayoría de las máquinas —ver
+              public/marca/LEEME.md—; la clase `marca-ui` repone la inversión
+              del tema oscuro, que globals.css cancela para todas las <img>.
+              Al lado, lo único que cambia entre un proyecto y otro: su nombre. */}
+          <img
+            src="/marca/firma-negro-ui.png" alt="acequia" width={628} height={159}
+            className="marca-ui h-[22px] w-auto shrink-0"
+          />
+          <span className="w-px h-4 bg-bone-200 shrink-0 hidden lg:block" aria-hidden />
+          <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display hidden lg:block">
+            {proyectoActual?.nombre || 'Proyecto sin guardar'}
+          </p>
         </div>
 
         {/* ── Herramientas de dibujo, en columna central elástica ──

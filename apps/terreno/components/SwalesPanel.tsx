@@ -495,7 +495,9 @@ function Infiltracion({ i }: { i: InfiltracionSwale }) {
       <p className={`text-[9px] leading-snug ${d.cls}`}>{d.txt}</p>
       <p className="text-[9px] text-ink-700/50 leading-tight">
         Ksat del perfil {i.ksat_suelo_mm_h} mm/h, de diseño {i.ksat_diseno_mm_h} mm/h (factor de
-        seguridad 2: en campo siempre infiltra menos que en la estimación).
+        seguridad 2: en campo siempre infiltra menos que en la estimación). El agua se va por
+        el fondo y por los taludes —éstos contados al 50 %—, así que el tiempo baja a medida
+        que el pelo de agua desciende y la zanja se angosta.
       </p>
     </div>
   );

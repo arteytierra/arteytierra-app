@@ -87,12 +87,15 @@ describe('colorPendiente', () => {
     expect(g2 + b2).toBeLessThan(120);
   });
 
-  // El verde-a-rojo es justo el par que no distingue el daltonismo más común.
-  it('la paleta daltónica ordena también por brillo', () => {
+  // La rampa de manual va de crema a marrón oscuro. Que además baje de brillo en
+  // todo el recorrido no es un detalle estético: el verde-a-rojo es justo el par
+  // que no distingue el daltonismo más común, y la pendiente es el dato que más
+  // se mira, así que esta tiene que poder leerse sin depender del tono.
+  it('la paleta clásica ordena también por brillo', () => {
     const brillo = (s: string) => { const [r, g, b] = rgb(s); return 0.299 * r + 0.587 * g + 0.114 * b; };
     let previo = Infinity;
     for (const t of [0, 0.25, 0.5, 0.75, 1]) {
-      const actual = brillo(colorPendiente(t * 40, 40, 'daltonico'));
+      const actual = brillo(colorPendiente(t * 40, 40, 'clasica'));
       expect(actual).toBeLessThan(previo);
       previo = actual;
     }

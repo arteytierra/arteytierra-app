@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion, pendienteMediaPct, analizarAreas, calcularSwalesMulti } from '@/lib/swales';
+import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion, horasVaciado, pendienteMediaPct, analizarAreas, calcularSwalesMulti } from '@/lib/swales';
 import { recortarGrillaA, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { MAX_NIVELES } from '@/lib/curvasNivel';
 
@@ -179,6 +179,27 @@ describe('verificarInfiltracion', () => {
     const i = verificarInfiltracion(seccion, 2)!;
     expect(i.clase).toBe('muy_lenta');
     expect(i.horas_vaciado).toBeGreaterThan(48);
+  });
+
+  // El bug que se veía en pantalla: casi cualquier suelo salía advertido. Contar
+  // sólo el fondo de una zanja trapecial descarta la mayor parte de la superficie
+  // por la que el agua realmente se va.
+  it('cuenta los taludes y no sólo el fondo', () => {
+    const angosta = { base_m: 0.3, prof_m: 0.5, talud_z: 1.5 };
+    const soloFondo = ((angosta.prof_m * (angosta.base_m + angosta.talud_z * angosta.prof_m)) / angosta.base_m) / 0.01;
+    expect(horasVaciado(angosta, 10)).toBeLessThan(soloFondo / 2);
+  });
+
+  it('sin talud es la profundidad dividida por el Ksat', () => {
+    expect(horasVaciado({ base_m: 1, prof_m: 0.5, talud_z: 0 }, 10)).toBeCloseTo(50, 6);
+  });
+
+  // Menos hondo se vacía antes: es la salida que ofrece el panel cuando el suelo
+  // no da, y tiene que verse en el número.
+  it('una zanja más playa se vacía antes que una honda', () => {
+    const playa = horasVaciado({ base_m: 0.6, prof_m: 0.3, talud_z: 1.5 }, 12);
+    const honda = horasVaciado({ base_m: 0.6, prof_m: 0.8, talud_z: 1.5 }, 12);
+    expect(playa).toBeLessThan(honda);
   });
 
   it('sin dato de suelo no inventa una verificación', () => {

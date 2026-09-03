@@ -53,6 +53,16 @@ export function AutoFit({ mojones }: { mojones: Mojon[] }) {
 const GRADOS_POR_PIXEL = 0.4;
 const IMAN_NORTE_GRADOS = 3;
 
+/**
+ * El rumbo, imantado al norte: pasando cerca de 0° se pega, para poder volver a
+ * norte arriba sin pelearse con el mouse. Lo usan el giro con el mouse y el de
+ * la brújula, que tienen que sentirse igual.
+ */
+export function imantarAlNorte(grados: number): number {
+  const norm = ((grados % 360) + 360) % 360;
+  return Math.min(norm, 360 - norm) < IMAN_NORTE_GRADOS ? 0 : grados;
+}
+
 export function PanearConBotonCentral() {
   const map = useMap();
   useEffect(() => {
@@ -84,9 +94,7 @@ export function PanearConBotonCentral() {
       } else {
         // Acumulamos el rumbo sin imantar para que el imán no "pegue" el giro.
         bearingCrudo += (e.clientX - lx) * GRADOS_POR_PIXEL;
-        const norm = ((bearingCrudo % 360) + 360) % 360;
-        const cerca = Math.min(norm, 360 - norm) < IMAN_NORTE_GRADOS;
-        map.setBearing(cerca ? 0 : bearingCrudo);
+        map.setBearing(imantarAlNorte(bearingCrudo));
       }
       lx = e.clientX; ly = e.clientY;
     };
@@ -142,6 +150,8 @@ export interface NavegacionMapa {
   zoomIn:  () => void;
   zoomOut: () => void;
   alNorte: () => void;
+  /** Gira el plano tantos grados respecto del rumbo actual. */
+  girar:   (grados: number) => void;
 }
 
 /**
@@ -159,6 +169,7 @@ export function NavegacionExposer({ onReady, onBearing }: {
       zoomIn:  () => map.zoomIn(),
       zoomOut: () => map.zoomOut(),
       alNorte: () => map.setBearing(0),
+      girar:   (grados) => map.setBearing(imantarAlNorte(map.getBearing() + grados)),
     });
   }, [map, onReady]);
 

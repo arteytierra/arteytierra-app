@@ -13,10 +13,14 @@ Paquete final v1 (26/08/2026). Colores: azul agua `#2E6B8A`, negro profundo
 | `logo-color.png` | login, registro (fondo claro) | lockup completo |
 | `logo-negro.png` | portada del informe | lockup completo, un color |
 | `firma-negro.png` | encabezados estrechos del informe | símbolo + wordmark en poca altura |
+| `firma-negro-ui.png` | barra superior de /mapa | la misma firma recortada al contenido, sin el aire del original |
 | `app-icon-512.png` / `-1024.png` | manifest PWA, apple-icon | cuadrado con fondo oscuro |
 
-**Dentro de la interfaz no se usa ninguno de estos archivos**: ahí va el
-componente `components/Isotipo.tsx`. Ver abajo.
+**Dentro de la interfaz, el símbolo solo va por el componente**
+`components/Isotipo.tsx` (ver abajo). La única excepción es el lockup de la
+barra superior: el wordmark no se puede dibujar inline —depende de una
+tipografía que no está en las máquinas—, así que ahí va `firma-negro-ui.png`
+con la clase `marca-ui`, que repone la inversión del tema oscuro.
 
 ## Por qué la interfaz usa un componente y no estos SVG
 

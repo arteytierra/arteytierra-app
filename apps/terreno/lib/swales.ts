@@ -320,11 +320,27 @@ export function dimensionarSeccion(
 
 /**
  * ¿Se vacía la zanja antes de la próxima lluvia? Es la verificación que separa
- * un swale de un criadero de mosquitos. Se usa la lámina equivalente sobre el
- * FONDO (la infiltración por los taludes se desprecia, criterio conservador) y
- * el Ksat afectado por un factor de seguridad.
+ * un swale de un criadero de mosquitos.
  *
- * Referencia habitual de diseño de infiltración: vaciar en 24–48 h.
+ * El agua no baja sólo por el fondo. Una zanja de talud 1,5:1 y 0,5 m de hondo
+ * tiene 1,8 m de boca contra 0,3 m de fondo: contar sólo el fondo tiraba a la
+ * basura cinco sextos de la superficie mojada y daba tiempos de vaciado
+ * disparatados —cualquier suelo que no fuera arena salía advertido—. Acá se
+ * integra el descenso del pelo de agua con el ancho mojado que le corresponde a
+ * cada altura, contando los taludes al 50 % (criterio del BRE Digest 365 para
+ * pozos y zanjas de infiltración: la carga sobre una pared vertical es menor que
+ * sobre el fondo, y se toma la mitad del área lateral).
+ *
+ * Con `q(h) = K·(b + z·h)` por metro lineal y `A'(h) = b + 2·z·h` de superficie
+ * de agua, la integral sale cerrada:
+ *
+ *     t = (1/K) · [ 2·d − (b/z)·ln(1 + z·d/b) ]
+ *
+ * que para talud vertical (z = 0) degenera en el caso obvio, `t = d/K`.
+ *
+ * El Ksat sigue afectado por el factor de seguridad: el de pedotransferencia
+ * siempre sobreestima al de campo (compactación, sellado, colmatación).
+ * Referencia habitual de diseño: vaciar en 24–48 h.
  */
 export function verificarInfiltracion(
   seccion: SeccionSwale | null,
@@ -332,9 +348,8 @@ export function verificarInfiltracion(
 ): InfiltracionSwale | null {
   if (!seccion || ksat_mm_h === null || !(ksat_mm_h > 0) || !(seccion.base_m > 0)) return null;
 
-  const kDiseno   = ksat_mm_h / FS_KSAT;
-  const lamina_mm = (seccion.area_m2 / seccion.base_m) * 1000;
-  const horas     = lamina_mm / kDiseno;
+  const kDiseno = ksat_mm_h / FS_KSAT;
+  const horas   = horasVaciado(seccion, kDiseno);
 
   const clase: ClaseInfiltracion =
     horas <= 2  ? 'rapida'   :
@@ -347,6 +362,18 @@ export function verificarInfiltracion(
     horas_vaciado:    +horas.toFixed(1),
     clase,
   };
+}
+
+/** Cuánto tarda en vaciarse la zanja llena, con el `ksat` de diseño en mm/h. */
+export function horasVaciado(
+  seccion: Pick<SeccionSwale, 'base_m' | 'prof_m' | 'talud_z'>,
+  ksat_mm_h: number,
+): number {
+  const k = ksat_mm_h / 1000;                       // m/h
+  const { base_m: b, prof_m: d, talud_z: z } = seccion;
+  if (!(k > 0) || !(d > 0)) return 0;
+  if (!(z > 0) || !(b > 0)) return d / k;
+  return (2 * d - (b / z) * Math.log(1 + (z * d) / b)) / k;
 }
 
 function polígonoDe(mojones: Array<{ lat: number; lng: number }>): ReturnType<typeof turf.polygon> | null {
