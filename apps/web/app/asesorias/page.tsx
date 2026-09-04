@@ -247,10 +247,10 @@ export default function AsesoriasPage() {
             </a>
             <a
               href="mailto:info.arteytierra@gmail.com?subject=Asesoría%20online%20—%20quiero%20agendar"
-              className="flex items-center justify-between border border-ink-950 text-ink-950 px-8 py-5 hover:bg-ink-950 hover:text-bone-50 transition-colors"
+              className="group flex items-center justify-between border border-ink-950 text-ink-950 px-8 py-5 hover:bg-ink-950 hover:text-bone-50 transition-colors"
             >
               <span className="font-sans font-bold text-sm uppercase tracking-widest">Agendar por email</span>
-              <span className="font-sans text-xs text-ink-500">info.arteytierra@gmail.com</span>
+              <span className="font-sans text-xs text-ink-700 group-hover:text-bone-50">info.arteytierra@gmail.com</span>
             </a>
           </div>
         </div>

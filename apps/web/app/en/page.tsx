@@ -185,7 +185,7 @@ export default function EnHomePage() {
                   </div>
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-500 mb-1">{p.type}</p>
                   <p className="font-display text-base text-bone-100">{p.name}</p>
-                  <p className="font-sans text-xs text-bone-300/60">{p.meta}</p>
+                  <p className="font-sans text-xs text-bone-200/60">{p.meta}</p>
                 </Link>
               ))}
             </div>
@@ -242,7 +242,7 @@ export default function EnHomePage() {
               {TESTIMONIOS.map(t => (
                 <div key={t.author} className="flex flex-col">
                   <p className="font-display text-lg text-ink-950 italic leading-relaxed flex-1">{t.quote}</p>
-                  <div className="mt-6 pt-6 border-t border-ink-200">
+                  <div className="mt-6 pt-6 border-t border-bone-200">
                     <p className="font-sans font-bold text-sm text-ink-950">{t.author}</p>
                     <p className="font-sans text-xs text-ink-700/70">{t.role}</p>
                   </div>

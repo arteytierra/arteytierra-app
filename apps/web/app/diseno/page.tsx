@@ -180,7 +180,7 @@ export default function DisenoPage() {
       {/* TRABAJAMOS DISTINTO */}
       <section className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-5">Nuestra propuesta</p>
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-5">Nuestra propuesta</p>
           <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-8">
             Trabajamos distinto.
           </h2>
@@ -255,7 +255,7 @@ export default function DisenoPage() {
                 </div>
                 <div className="p-6 flex flex-col gap-3 flex-1">
                   <p className="font-sans text-sm text-ink-700 leading-relaxed">{s.desc}</p>
-                  <p className="font-sans text-xs text-clay-600 mt-auto leading-loose">
+                  <p className="font-sans text-xs text-clay-700 mt-auto leading-loose">
                     {s.tecnicas.join(' · ')}
                   </p>
                 </div>
@@ -266,7 +266,7 @@ export default function DisenoPage() {
               <div>
                 <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-300 mb-3">¿Por dónde empezar?</p>
                 <h3 className="font-display text-2xl text-bone-50 mb-4">Una asesoría define el camino.</h3>
-                <p className="font-sans text-sm text-bone-300 leading-relaxed">1 hora con nuestro equipo para revisar tu terreno, tu agua y tus posibilidades. Si después contratás, se descuenta.</p>
+                <p className="font-sans text-sm text-bone-200 leading-relaxed">1 hora con nuestro equipo para revisar tu terreno, tu agua y tus posibilidades. Si después contratás, se descuenta.</p>
               </div>
               <Link href="/asesorias" className="mt-8 inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-bone-200 transition-colors w-fit">
                 Agendar asesoría →
@@ -281,10 +281,10 @@ export default function DisenoPage() {
         <div className="max-w-editorial mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-2">Proyectos realizados</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-2">Proyectos realizados</p>
               <h2 className="font-display text-3xl text-bone-50">Obras reales,<br /><em>territorios vivos.</em></h2>
             </div>
-            <Link href="/proyectos" className="font-sans text-sm font-bold text-clay-400 uppercase tracking-widest hover:text-bone-50 transition-colors whitespace-nowrap">
+            <Link href="/proyectos" className="font-sans text-sm font-bold text-clay-300 uppercase tracking-widest hover:text-bone-50 transition-colors whitespace-nowrap">
               Ver todos →
             </Link>
           </div>
@@ -339,7 +339,7 @@ export default function DisenoPage() {
       <section className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-14">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-3">El proceso</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-3">El proceso</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">
               De la escucha<br />a la <em>obra.</em>
             </h2>

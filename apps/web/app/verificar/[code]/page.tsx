@@ -116,7 +116,7 @@ export default async function VerificarPage({
             </h1>
 
             {revoked && cert.revoked_reason && (
-              <p className="mt-3 text-sm text-clay-800">{cert.revoked_reason}</p>
+              <p className="mt-3 text-sm text-clay-700">{cert.revoked_reason}</p>
             )}
 
             <div className="mt-10 rounded-2xl border border-ink-950/10 bg-bone-50 p-8 text-left">

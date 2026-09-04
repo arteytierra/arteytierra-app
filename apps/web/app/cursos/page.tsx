@@ -223,8 +223,8 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
         {c.datos && (
           <div className="grid grid-cols-2 gap-2">
             {c.datos.map(d => (
-              <div key={d.label} className="bg-bone-50 px-3 py-2.5 border-l-2 border-clay-400">
-                <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-600 mb-0.5">{d.label}</p>
+              <div key={d.label} className="bg-bone-50 px-3 py-2.5 border-l-2 border-clay-500">
+                <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-700 mb-0.5">{d.label}</p>
                 <p className="text-xs font-sans text-ink-800 leading-snug">{d.val}</p>
               </div>
             ))}
@@ -233,21 +233,21 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
         {c.contenidos && (
           <div className="flex flex-wrap gap-1.5">
             {c.contenidos.map(t => (
-              <span key={t} className="text-xs font-sans text-clay-700 bg-clay-50 border border-clay-200 px-2.5 py-1">{t}</span>
+              <span key={t} className="text-xs font-sans text-clay-700 bg-clay-100 border border-clay-200 px-2.5 py-1">{t}</span>
             ))}
           </div>
         )}
         <div className="flex flex-col gap-3 pt-2 border-t border-bone-200">
           <div>
             <span className="font-display text-2xl text-ink-950">{c.precio}</span>
-            <p className="text-xs font-sans text-ink-500 mt-0.5">{c.precioNote}</p>
+            <p className="text-xs font-sans text-ink-700 mt-0.5">{c.precioNote}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href={c.href} className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-900 transition-colors">
               Inscribirme →
             </Link>
             <a href={c.whatsapp} target="_blank" rel="noopener noreferrer"
-              className="inline-flex border border-clay-400 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-50 transition-colors">
+              className="inline-flex border border-clay-700 text-clay-700 font-sans font-bold text-xs uppercase tracking-widest px-5 py-3 hover:bg-clay-200 transition-colors">
               Consultar
             </a>
           </div>
@@ -333,7 +333,7 @@ export default async function CursosPage() {
           </div>
           {todosProximos.length > 0 && (
             <div className="mt-8">
-              <p className="text-[11px] font-sans font-semibold uppercase tracking-widest text-bone-400 mb-3 text-center">Sin fecha confirmada — próximamente</p>
+              <p className="text-[11px] font-sans font-semibold uppercase tracking-widest text-bone-200 mb-3 text-center">Sin fecha confirmada — próximamente</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {todosProximos.map(c => <GridCardSmall key={c.slug} c={c} />)}
               </div>
@@ -345,7 +345,7 @@ export default async function CursosPage() {
       {/* INTRO */}
       <section className="bg-ink-950 py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-5">El enfoque</p>
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-5">El enfoque</p>
           <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-8">El conocimiento<br />vuelve a las <em>manos.</em></h2>
           <p className="font-sans text-bone-100 text-base leading-relaxed mb-4">
             Cada formación parte de una premisa: el aprendizaje verdadero ocurre en la práctica. Trabajamos sobre obras reales, en territorio vivo, con materiales del lugar y técnicas que tienen siglos de sabiduría detrás.
@@ -361,7 +361,7 @@ export default async function CursosPage() {
         <div className="max-w-editorial mx-auto mb-14">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Formaciones · 2026</p>
           <h2 className="font-display text-4xl md:text-5xl text-ink-950">Todos los<br /><em>cursos.</em></h2>
-          <p className="mt-4 font-sans text-ink-600 text-base max-w-xl">
+          <p className="mt-4 font-sans text-ink-700 text-base max-w-xl">
             Presenciales en Tay Pichín, online en vivo y a tu ritmo. Elegí la formación que más resuena con tu camino.
           </p>
         </div>
@@ -392,7 +392,7 @@ export default async function CursosPage() {
                 { icon: '💧', t: 'Diseño hidrológico', d: 'Lectura del paisaje y el agua' },
                 { icon: '🤝', t: 'Comunidad',          d: 'Círculos de la palabra y organización' },
               ].map(item => (
-                <div key={item.t} className="p-4 bg-ink-800 border border-ink-600">
+                <div key={item.t} className="p-4 bg-ink-800 border border-ink-700">
                   <div className="text-lg mb-1"><span aria-hidden="true">{item.icon}</span></div>
                   <p className="font-sans font-semibold text-sm text-bone-50">{item.t}</p>
                   <p className="font-sans text-xs text-bone-200 mt-0.5 leading-snug">{item.d}</p>
@@ -404,7 +404,7 @@ export default async function CursosPage() {
                 Inscribirme →
               </Link>
               <a href={inmersionWa} target="_blank" rel="noopener noreferrer"
-                className="inline-flex border border-bone-500/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors">
+                className="inline-flex border border-bone-200/40 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-200 transition-colors">
                 Consultar
               </a>
             </div>
@@ -418,7 +418,7 @@ export default async function CursosPage() {
           <div className="mb-10">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Próximamente</p>
             <h2 className="font-display text-4xl text-ink-950">En preparación —<br /><em>anotate antes.</em></h2>
-            <p className="mt-4 font-sans text-ink-600 text-base max-w-xl">
+            <p className="mt-4 font-sans text-ink-700 text-base max-w-xl">
               Estas formaciones no tienen fecha confirmada aún. Dejanos tu nombre y te avisamos apenas abramos inscripción.
             </p>
           </div>
@@ -477,7 +477,7 @@ export default async function CursosPage() {
                   <footer className="mt-auto pt-4 border-t border-ink-700">
                     <cite className="not-italic">
                       <span className="font-sans font-semibold text-bone-50 text-sm">{t.name}</span>
-                      <span className="font-sans text-xs text-bone-400 ml-2">· {t.course}</span>
+                      <span className="font-sans text-xs text-bone-200 ml-2">· {t.course}</span>
                     </cite>
                   </footer>
                 </blockquote>

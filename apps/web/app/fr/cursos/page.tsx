@@ -125,8 +125,8 @@ export default function CursosFrPage() {
                     <h3 className="font-display text-2xl text-bone-50">{c.title}</h3>
                     <p className="text-xs font-sans text-bone-200/70">{c.meta}</p>
                     <p className="font-sans text-sm text-bone-200 leading-relaxed">{c.desc}</p>
-                    <p className="font-sans text-sm font-bold text-clay-400 mt-2">{c.prix}</p>
-                    <span className="self-start text-xs font-sans font-bold uppercase tracking-widest text-clay-400 group-hover:text-clay-300 transition-colors">
+                    <p className="font-sans text-sm font-bold text-clay-300 mt-2">{c.prix}</p>
+                    <span className="self-start text-xs font-sans font-bold uppercase tracking-widest text-clay-300 group-hover:text-clay-200 transition-colors">
                       Voir le détail →
                     </span>
                   </div>
@@ -147,16 +147,16 @@ export default function CursosFrPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Link href="/fr/cursos/mi-tierra-mi-casa" className="group bg-clay-900 p-8 flex flex-col gap-3 hover:bg-ink-950 transition-colors">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">Formation en ligne</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Formation en ligne</p>
                 <h3 className="font-display text-2xl text-bone-50">Mi Tierra Mi Casa</h3>
                 <p className="font-sans text-sm text-bone-200 leading-relaxed">Formation intégrale en bioconstruction et habitat naturel. Accès à la demande, accompagnement communautaire.</p>
-                <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 group-hover:text-clay-300 transition-colors mt-auto">Voir la formation →</span>
+                <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 group-hover:text-clay-200 transition-colors mt-auto">Voir la formation →</span>
               </Link>
               <Link href="/fr/cursos" className="group bg-clay-900 p-8 flex flex-col gap-3 hover:bg-ink-950 transition-colors">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400">Formation en ligne</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300">Formation en ligne</p>
                 <h3 className="font-display text-2xl text-bone-50">Tadelakt en Ligne</h3>
                 <p className="font-sans text-sm text-bone-200 leading-relaxed">Technique de finition en chaux marocaine. Vidéos pratiques, fiches techniques et accès communautaire.</p>
-                <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 group-hover:text-clay-300 transition-colors mt-auto">Bientôt disponible</span>
+                <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 group-hover:text-clay-200 transition-colors mt-auto">Bientôt disponible</span>
               </Link>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function CursosFrPage() {
             <div className="text-center mb-8">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Ce que disent ceux qui sont passés par là</p>
               <h2 className="font-display text-3xl text-bone-50">Voix de la <em>communauté.</em></h2>
-              <p className="mt-2 font-sans text-sm text-bone-300/70 italic">(en espagnol)</p>
+              <p className="mt-2 font-sans text-sm text-bone-200/70 italic">(en espagnol)</p>
             </div>
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe

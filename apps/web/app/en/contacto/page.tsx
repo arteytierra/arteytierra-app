@@ -79,7 +79,7 @@ export default function ContactoEnPage() {
                     </label>
                     <input
                       name="name" type="text" required
-                      className="w-full border border-ink-300 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700"
+                      className="w-full border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700"
                       placeholder="Your name"
                     />
                   </div>
@@ -89,7 +89,7 @@ export default function ContactoEnPage() {
                     </label>
                     <input
                       name="email" type="email" required
-                      className="w-full border border-ink-300 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700"
+                      className="w-full border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700"
                       placeholder="your@email.com"
                     />
                   </div>
@@ -112,7 +112,7 @@ export default function ContactoEnPage() {
                     </label>
                     <textarea
                       name="message" required rows={5}
-                      className="w-full border border-ink-300 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700 resize-none"
+                      className="w-full border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-950 focus:outline-none focus:border-clay-700 resize-none"
                       placeholder="Tell us about your project, land, intentions or questions..."
                     />
                   </div>

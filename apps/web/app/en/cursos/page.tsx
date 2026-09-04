@@ -101,7 +101,7 @@ export default function CursosEnPage() {
                     <Image src={c.img} alt={c.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width:768px) 100vw,33vw" />
                   </div>
                   <div className="p-6">
-                    <p className="font-sans text-xs text-clay-400 mb-2">{c.subtitle}</p>
+                    <p className="font-sans text-xs text-clay-300 mb-2">{c.subtitle}</p>
                     <h3 className="font-display text-xl text-bone-50 mb-3">{c.title}</h3>
                     <p className="font-sans text-sm text-bone-200 leading-relaxed">{c.desc}</p>
                     <p className="mt-4 font-sans text-xs font-bold uppercase tracking-widest text-clay-500">More info →</p>
@@ -149,7 +149,7 @@ export default function CursosEnPage() {
             <div className="text-center mb-8">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">What participants say</p>
               <h2 className="font-display text-3xl text-bone-50">Voices from the <em>community.</em></h2>
-              <p className="mt-2 font-sans text-sm text-bone-300/70 italic">(in Spanish)</p>
+              <p className="mt-2 font-sans text-sm text-bone-200/70 italic">(in Spanish)</p>
             </div>
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe

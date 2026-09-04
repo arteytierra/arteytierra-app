@@ -185,7 +185,7 @@ export default function HospedajePage() {
       <section className="bg-ink-950 py-24 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
               San Marcos Sierras · Córdoba · Argentina
             </p>
             <h2 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight mb-8">
@@ -199,7 +199,7 @@ export default function HospedajePage() {
             </p>
             <div className="flex flex-wrap gap-3">
               {['Puntaje 9.7/10 en Booking', '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
-                <span key={b} className="text-xs font-sans font-bold text-clay-200 bg-clay-800/50 border border-clay-600 px-4 py-2 uppercase tracking-wider">
+                <span key={b} className="text-xs font-sans font-bold text-clay-200 bg-clay-900/50 border border-clay-500 px-4 py-2 uppercase tracking-wider">
                   {b}
                 </span>
               ))}

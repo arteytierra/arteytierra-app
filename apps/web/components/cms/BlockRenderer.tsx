@@ -80,7 +80,7 @@ function Block({ block }: { block: AnyBlock }) {
     case 'quote':
       return (
         <Container>
-          <blockquote className="mt-12 border-l-2 border-clay-400 pl-6">
+          <blockquote className="mt-12 border-l-2 border-clay-500 pl-6">
             <p className="font-display text-2xl italic leading-snug">"{block.data.text}"</p>
             {block.data.author && <cite className="mt-3 block text-sm not-italic text-ink-700/60">— {block.data.author}</cite>}
           </blockquote>
@@ -157,7 +157,7 @@ function Block({ block }: { block: AnyBlock }) {
       // Renderiza un placeholder ligero. El componente real podría hacer fetch del producto.
       return (
         <Container>
-          <Link href={`/cursos/${block.data.slug}` as never} className="mt-12 block rounded-2xl border border-bone-200 bg-bone-50 p-6 hover:border-clay-400 transition">
+          <Link href={`/cursos/${block.data.slug}` as never} className="mt-12 block rounded-2xl border border-bone-200 bg-bone-50 p-6 hover:border-clay-500 transition">
             <p className="text-xs uppercase tracking-[0.16em] text-clay-500">Producto destacado</p>
             <p className="mt-2 font-display text-xl">{block.data.slug}</p>
           </Link>
