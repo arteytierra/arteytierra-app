@@ -119,3 +119,43 @@ qué hacer.
   fallaron.
 - Los interruptores que quedaron encendidos y los que quedaron en `false`.
 - Lo que quedó pendiente, dicho como pendiente y no como hecho.
+
+## Lo que ya está verificado (04/09/2026) — no hace falta rehacerlo
+
+Todo esto se comprobó sobre el código, sin tocar ninguna consola. Si algo de la
+lista falla en la sesión, es que cambió algo desde esa fecha.
+
+- **El landing compila y pasa sus propias pruebas.** `npm run check` completo:
+  eslint sin hallazgos, 6 pruebas en verde, preflight OK, `next build` con 25
+  rutas. Ver la advertencia sobre el preflight en
+  `VARIABLES_PREVIEW_ACEQUIA.md`: en seco siempre da verde.
+- **Los identificadores de plan ya coinciden.** `lib/plans.ts` del landing mapea
+  `profesional → disenador` con `backendId`, y
+  `packages/config/src/acequia.ts` del monorepo declara el mismo par en
+  `ACEQUIA_PUBLIC_TO_INTERNAL`; además `resolveAcequiaPaidPlan` acepta las dos
+  formas. Precios idénticos en los dos lados (7/70, 12/120, 35/350). El
+  checkout no va a devolver 400 por este motivo.
+- **Los nombres de los argumentos de las cuatro RPC coinciden** con las firmas
+  SQL, uno por uno. Un solo nombre distinto daría "función no encontrada" recién
+  en tiempo de ejecución.
+- **Las listas blancas de eventos coinciden** con lo que emite cada lado: nueve
+  nombres en el landing, cinco en la app. Ningún evento se rechazaría.
+- **La `service_role` no llega al navegador.** La leen sólo
+  `lib/pilot-admin.ts` —que abre con `import 'server-only'`— y la ruta de API
+  del panel del piloto.
+- **`0051` es seguro de aplicar sobre los datos actuales.** Reemplaza
+  `suscripciones_estado_check`, pero los estados viejos
+  (`activa`, `vencida`, `cancelada`) son un subconjunto de los nuevos, así que
+  ninguna fila existente puede violar la restricción.
+- **El schema `terreno` sigue expuesto a la API** (`0047`), que es lo que
+  necesita la telemetría del navegador. Si dejara de estarlo, fallaría en
+  silencio: está envuelta en `try/catch` a propósito.
+
+## Después de aplicar las migraciones
+
+Correr `VERIFICACION_SESION_1.sql` (en esta misma carpeta) en el editor SQL de
+Supabase. Son sólo lecturas, se puede repetir. Verifica las 7 tablas, la RLS de
+cada una, las 5 funciones, los 11 índices, las 5 columnas nuevas de
+`terreno.suscripciones`, las 2 restricciones, la política de inserción propia,
+los schemas expuestos, y —lo más importante— que ninguna tabla del piloto haya
+quedado legible por la clave anónima.
