@@ -66,6 +66,10 @@ export interface CourseData {
   testimonios?: { quote: string; author: string; role: string }[];
   /** Link flotante a la versión hermana del curso (corta ↔ larga), mostrado en la página de detalle. */
   crossLink?: { href: string; label: string };
+  /** Label alternativo para el selector de `opciones` del formulario (ej. "Modalidad de participación" en vez de "¿Qué opción querés reservar?"). */
+  opcionesLabel?: string;
+  /** Muestra en el formulario los campos de fecha de llegada / salida estimada (estadías de duración variable, como Inmersión Viva). */
+  pedirFechasEstadia?: boolean;
 }
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
@@ -573,21 +577,22 @@ export const COURSES: Record<string, CourseData> = {
   'inmersion-viva': {
     slug: 'inmersion-viva',
     kind: 'inmersion',
-    badge: 'Inmersión · Desde 2 semanas',
+    badge: 'Voluntariado educativo · Desde 2 semanas',
     name: 'Inmersión Viva',
-    subtitle: 'Bioconstrucción, agroecología y organización colectiva aprendidas en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.',
+    subtitle: 'Nuestra versión del voluntariado: no venís a trabajar, venís a aprender un oficio de la mano de quienes lo sostienen todos los días.',
     heroImg: '/img/taypichin/carousel/5.jpg',
     galeria: ['/img/taypichin/carousel/7.jpg', '/img/taypichin/carousel/8.jpg', '/img/taypichin/carousel/9.jpg', '/img/taypichin/1.jpg'],
-    tag: 'Modalidad permanente · Tay Pichín · San Marcos Sierras',
+    tag: 'Voluntariado educativo en Tay Pichín · Entrada los lunes · Todo el año',
     intro: [
-      'Inmersión Viva es un proceso donde la bioconstrucción, la agroecología y la organización colectiva se aprenden en la práctica diaria — integradas al trabajo, la convivencia y la vida en territorio.',
-      'El aprendizaje ocurre en un espacio vivo, donde la construcción, la producción y la vida cotidiana forman parte de un mismo sistema. Durante tu estadía participás de procesos reales, integrándote a una forma de habitar más consciente, simple y conectada con la tierra.',
+      'En Tay Pichín no hay una lista de tareas para tildar: hay instructores con oficio, compartiendo un saber que pasa de mano en mano desde que el ser humano descubrió el barro. Bioconstrucción, agroecología, organización colectiva — todo se aprende haciendo, integrado a la vida diaria de la ecoescuela.',
+      'Tu aporte no es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.',
+      'Un proyecto que no paró desde noviembre de 2020, heredero de una tradición de voluntariado itinerante que Arte y Tierra sostiene desde 2014 entre Argentina, Colombia, Ecuador, Francia, Italia y Perú.',
     ],
     datos: [
       { label: 'Duración', val: 'Mínimo 2 semanas · se puede extender a un mes o más' },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
       { label: 'Práctica diaria', val: '4–6 hs en obra, huerta y sistemas productivos' },
-      { label: 'Comunidad', val: 'Asambleas, círculos de la palabra, cocina en rotación' },
+      { label: 'Ingreso', val: 'Todos los lunes · todo el año' },
     ],
     modulos: [
       { num: '🏗', title: 'Bioconstrucción', items: ['Técnicas con tierra cruda', 'Uso y lectura de materiales locales', 'Criterios constructivos en obra real', 'Revoques y terminaciones naturales'] },
@@ -602,9 +607,12 @@ export const COURSES: Record<string, CourseData> = {
       { id: 'camping', label: 'En zona de camping', precio: '$40.000 / semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
       { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000 / semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
-    opcionesNota: 'Ingresos los lunes. Mínimo 2 semanas, con posibilidad de extender a un mes o más según disponibilidad. Consultanos por WhatsApp.',
+    opcionesNota: 'Podés extenderte a un mes o más según disponibilidad — consultanos por WhatsApp.',
     formCurso: 'Inmersión Viva · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva',
+    opcionesLabel: 'Modalidad de participación',
+    pedirFechasEstadia: true,
+    ocultarCupos: true,
   },
 };
 

@@ -16,6 +16,10 @@ interface Props {
   senaPercent?: number;
   /** Oculta la palabra "cupo" en el botón (cursos sin framing de escasez). */
   ocultarCupos?: boolean;
+  /** Label alternativo para el selector de `opciones` (ej. "Modalidad de participación"). */
+  opcionesLabel?: string;
+  /** Muestra los campos de fecha de llegada / salida estimada (estadías de duración variable). */
+  pedirFechas?: boolean;
 }
 
 /** "$120.000 ARS" → 120000. Devuelve null si no hay dígitos. */
@@ -28,7 +32,7 @@ function formatArs(n: number): string {
   return `$${Math.round(n).toLocaleString('es-AR')} ARS`;
 }
 
-export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaPercent, ocultarCupos }: Props) {
+export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaPercent, ocultarCupos, opcionesLabel, pedirFechas }: Props) {
   const [status, setStatus] = useState<Status>('idle');
   const [datos, setDatos] = useState<{ email: string; name: string }>({ email: '', name: '' });
 
@@ -81,7 +85,7 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaP
 
         {opcionesValidas && (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="opcion" className="font-sans text-sm font-semibold text-ink-800">¿Qué opción querés reservar? *</label>
+            <label htmlFor="opcion" className="font-sans text-sm font-semibold text-ink-800">{opcionesLabel ?? '¿Qué opción querés reservar?'} *</label>
             <select id="opcion" name="opcion" required value={opcionSel} onChange={e => setOpcionSel(e.target.value)}
               className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700">
               {opcionesValidas.map(op => (
@@ -93,6 +97,23 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaP
                 Reservás con una seña del {senaPercent}%: <strong>{senaMonto}</strong>. El resto se paga antes de empezar.
               </p>
             )}
+          </div>
+        )}
+
+        {pedirFechas && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="fechaLlegada" className="font-sans text-sm font-semibold text-ink-800">Fecha de llegada *</label>
+              <input id="fechaLlegada" name="fechaLlegada" type="date" required min={new Date().toISOString().slice(0, 10)}
+                className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700" />
+              <p className="font-sans text-xs text-ink-700/60">Ingresamos los lunes — coordinamos el día exacto por WhatsApp.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="fechaSalida" className="font-sans text-sm font-semibold text-ink-800">Fecha de salida estimada</label>
+              <input id="fechaSalida" name="fechaSalida" type="date"
+                className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700" />
+              <p className="font-sans text-xs text-ink-700/60">Es solo una referencia — se puede extender después.</p>
+            </div>
           </div>
         )}
 
@@ -157,8 +178,8 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaP
         </div>
         <p className="mt-4 font-sans text-xs text-bone-200/70 italic">
           {senaMonto
-            ? `Aclarás tu nombre, la opción elegida (${selectedOpcion?.label}) y el monto de la seña en el pago, y enviás el comprobante por WhatsApp.`
-            : 'Aclarás el nombre del curso en el pago y enviás el comprobante por WhatsApp.'}
+            ? `Aclarás tu nombre, la opción elegida (${selectedOpcion?.label}) y el monto de la seña en la transferencia, y enviás el comprobante por WhatsApp.`
+            : 'Aclarás el nombre del curso en la transferencia y enviás el comprobante por WhatsApp.'}
         </p>
       </div>
     </>

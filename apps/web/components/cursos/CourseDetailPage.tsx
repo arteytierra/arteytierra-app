@@ -13,6 +13,7 @@ import { track } from '@/lib/analytics/track';
 
 export function CourseDetailPage({ course }: { course: CourseData }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
+  const isInmersion = course.kind === 'inmersion';
   const testimonios = course.testimonios ?? TESTIMONIOS;
 
   // Dispara ViewContent al entrar a la página del curso (navegación SPA incluida,
@@ -341,8 +342,15 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       <section className="bg-bone-50 py-20 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-12 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Inversión</p>
-            <h2 className="font-display text-4xl text-ink-950">Cómo <em>sumarte.</em></h2>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">{isInmersion ? 'Tu aporte' : 'Inversión'}</p>
+            <h2 className="font-display text-4xl text-ink-950">
+              {isInmersion ? <>Así se sostiene <em>el proyecto.</em></> : <>Cómo <em>sumarte.</em></>}
+            </h2>
+            {isInmersion && (
+              <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg mx-auto leading-relaxed">
+                Elegí tu modalidad de estadía — tu aporte cubre alimentación completa y el funcionamiento del espacio.
+              </p>
+            )}
           </div>
           <div className={`grid grid-cols-1 gap-6 ${
             course.opciones.length === 1 ? 'max-w-sm mx-auto' :
@@ -440,8 +448,9 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               {course.ocultarCupos ? <>Reservá tu <em>lugar.</em></> : <>Reservá tu <em>cupo.</em></>}
             </h2>
             <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
-              Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.
-              {!course.ocultarCupos && ' Cupos limitados.'}
+              {isInmersion
+                ? 'Contanos tus fechas y te respondemos en 24–48 hs con los próximos pasos.'
+                : <>Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.{!course.ocultarCupos && ' Cupos limitados.'}</>}
             </p>
             {course.ocultarCupos && course.startDate && <CourseCountdown startDate={course.startDate} />}
           </div>
@@ -452,6 +461,8 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
             opciones={course.opciones}
             senaPercent={course.senaPercent}
             ocultarCupos={course.ocultarCupos}
+            opcionesLabel={course.opcionesLabel}
+            pedirFechas={course.pedirFechasEstadia}
           />
 
           {/* Políticas — info de confianza antes de pagar */}

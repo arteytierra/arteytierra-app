@@ -18,10 +18,24 @@ export async function POST(req: Request) {
   const ciudad  = data.get('ciudad')?.toString().trim()  ?? '';
   const mensaje = data.get('mensaje')?.toString().trim() ?? '';
   const curso   = data.get('curso')?.toString().trim()   ?? 'Curso';
+  const opcion  = data.get('opcion')?.toString().trim()  ?? '';
+  const fechaLlegada = data.get('fechaLlegada')?.toString().trim() ?? '';
+  const fechaSalida  = data.get('fechaSalida')?.toString().trim()  ?? '';
 
   if (!nombre || !email) {
     return NextResponse.json({ error: 'missing_fields' }, { status: 400 });
   }
+
+  const rows: [string, string][] = [
+    ['Nombre', nombre],
+    ['Email', email],
+    ['WhatsApp', whatsapp || '—'],
+    ['Ciudad', ciudad || '—'],
+  ];
+  if (opcion) rows.push(['Opción', opcion]);
+  if (fechaLlegada) rows.push(['Llegada', fechaLlegada]);
+  if (fechaSalida) rows.push(['Salida', fechaSalida]);
+  rows.push(['Mensaje', mensaje || '—']);
 
   const html = `
 <!DOCTYPE html>
@@ -35,13 +49,7 @@ export async function POST(req: Request) {
       <h2 style="margin:0 0 4px;font-size:20px;color:#2D2416;">Nueva inscripción</h2>
       <p style="margin:0 0 24px;font-size:13px;color:#7A6F65;">${curso}</p>
       <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E8DCC8;">
-        ${[
-          ['Nombre',    nombre],
-          ['Email',     email],
-          ['WhatsApp',  whatsapp || '—'],
-          ['Ciudad',    ciudad   || '—'],
-          ['Mensaje',   mensaje  || '—'],
-        ].map(([label, val]) => `
+        ${rows.map(([label, val]) => `
         <tr>
           <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:12px;font-weight:700;color:#7A6F65;width:90px;vertical-align:top;">${label}</td>
           <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:13px;color:#2D2416;">${val}</td>
