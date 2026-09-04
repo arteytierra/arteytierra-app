@@ -25,6 +25,7 @@
  */
 
 import { ECO_ID_AMERICA } from './ecorregionesAmerica';
+import { ECO_ID_CANADA } from './ecorregionesCanada';
 import { ECO_ID_EUROPA } from './ecorregionesEuropa';
 import { ECO_ID_SUDAMERICA_NUEVAS } from './ecorregionesSudamerica';
 
@@ -179,6 +180,7 @@ const RESTO_CURADO_A_MANO: Record<number, string> = {
 const RESTO_DEL_MUNDO: Record<number, string> = {
   ...RESTO_CURADO_A_MANO,
   ...ECO_ID_AMERICA,
+  ...ECO_ID_CANADA,
   ...ECO_ID_EUROPA,
 };
 

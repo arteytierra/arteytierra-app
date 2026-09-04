@@ -76,3 +76,12 @@ milpa yucateca, Viñales, las Blue Mountains y Trinidad. La Patagonia y la Puna
 2. Repetir este barrido sobre Europa cuando se cierre el segundo pase; los 15
    ECO_ID que quedaron fuera de alcance (Italia, Alemania, Escandinavia, centro
    y este) van a aparecer acá igual que apareció Canadá.
+
+## Actualización 04/09/2026 — el método cambió y el hueco era mayor
+
+Este barrido por puntos encontró 10 ECO_ID canadienses sin ficha. Enumerar la
+envolvente entera contra el FeatureServer encontró **22**. Los doce que faltaban
+no eran menos importantes: eran los que no se me ocurrió tocar.
+
+América quedó cerrada con diez fichas nuevas. El método, los resultados y lo que
+implica para Europa están en `COBERTURA_RESOLVE_ENVOLVENTES.md`.

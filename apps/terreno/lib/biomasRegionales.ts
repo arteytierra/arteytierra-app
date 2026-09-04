@@ -1,6 +1,6 @@
 /**
- * Fichas regionales de ecosistema — Norteamérica, Mesoamérica, Caribe, Europa y
- * Sudamérica.
+ * Fichas regionales de ecosistema — Norteamérica, Canadá y Groenlandia,
+ * Mesoamérica, Caribe, Europa y Sudamérica.
  *
  * Se activan por ECO_ID de RESOLVE (ver la lista blanca en lib/ecorregiones.ts),
  * nunca por clima: dos regiones pueden compartir clase Köppen y no compartir ni
@@ -18,6 +18,7 @@
 
 import type { BiomaFicha } from './biomaTipos';
 import { BIOMAS_REGIONALES_AMERICA } from './biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_CANADA } from './biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from './biomasRegionalesEuropa';
 import { BIOMAS_REGIONALES_SUDAMERICA } from './biomasRegionalesSudamerica';
 
@@ -667,17 +668,20 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
 };
 
 /**
- * Las 22 escritas a mano, más las 53 americanas, las 8 europeas y las 47
- * sudamericanas que vienen de los paquetes de investigación. Los cuatro bloques
- * son disjuntos: el test lo verifica, porque un id repetido acá se resolvería en
+ * Las 22 escritas a mano, las 53 americanas, las 8 europeas y las 47
+ * sudamericanas que vienen de los paquetes de investigación, y las 10
+ * canadienses, que también se escribieron a mano pero salieron de enumerar lo
+ * que faltaba contra RESOLVE en vez de un paquete. Los cinco bloques son
+ * disjuntos: el test lo verifica, porque un id repetido acá se resolvería en
  * silencio a favor del último y una ficha quedaría muerta sin que nada falle.
  */
 export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
   ...CURADAS_A_MANO,
   ...BIOMAS_REGIONALES_AMERICA,
+  ...BIOMAS_REGIONALES_CANADA,
   ...BIOMAS_REGIONALES_EUROPA,
   ...BIOMAS_REGIONALES_SUDAMERICA,
 };
 
-/** Los cuatro bloques por separado, para que el test pueda cruzarlos. */
+/** Los cinco bloques por separado, para que el test pueda cruzarlos. */
 export { CURADAS_A_MANO as BIOMAS_REGIONALES_CURADAS };

@@ -7,6 +7,7 @@ import {
 import { resolverBioma, determinarBioma, fichaPorId, BIOMAS } from '@/lib/contexto';
 import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegionales';
 import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_CANADA } from '@/lib/biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
 import { BIOMAS_REGIONALES_SUDAMERICA } from '@/lib/biomasRegionalesSudamerica';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
@@ -67,8 +68,8 @@ describe('catálogos de fichas', () => {
   });
 
   it('toda ficha regional trae especies', () => {
-    // 22 escritas a mano + 53 americanas + 8 europeas + 47 sudamericanas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(130);
+    // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas + 47 sudamericanas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(140);
     for (const f of Object.values(BIOMAS_REGIONALES)) {
       expect(f.especies.length, f.id).toBeGreaterThan(0);
     }
@@ -81,15 +82,15 @@ describe('catálogos de fichas', () => {
     for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
       expect(f.saberes.length, f.id).toBeGreaterThan(0);
     }
-    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
       expect(f.saberes, f.id).toEqual([]);
     }
   });
 
-  it('los cuatro bloques de fichas regionales son disjuntos', () => {
+  it('los cinco bloques de fichas regionales son disjuntos', () => {
     // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
     // ficha muerta sin que falle nada.
-    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_SUDAMERICA];
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_SUDAMERICA];
     const ids = bloques.flatMap(b => Object.keys(b));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
@@ -114,9 +115,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 186 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 208 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(186);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(208);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -141,6 +142,46 @@ describe('lista blanca de ecorregiones', () => {
       expect(r.fuente, donde).toBe('bioma_global');
     }
   });
+  it('Canadá y Groenlandia quedaron cubiertos: los 22 ECO_ID del norte tienen ficha', () => {
+    // Estos 22 salieron de enumerar contra el FeatureServer todas las
+    // ecorregiones de la envolvente canadiense y restar las que ya tenían
+    // ficha. El paquete de Norteamérica declaraba '0 ECO_ID faltantes' con
+    // todos ellos afuera, porque esa cuenta se hacía contra su propia lista.
+    const norte: Array<[number, string]> = [
+      [335, 'san_lorenzo_tierras_bajas'],
+      [345, 'columbia_britanica_interior'],
+      [350, 'columbia_britanica_interior'],
+      [355, 'columbia_britanica_interior'],
+      [362, 'okanagan_bosque_seco'],
+      [365, 'haida_gwaii_hipermaritimo'],
+      [370, 'escudo_canadiense_boreal'],
+      [373, 'escudo_canadiense_boreal'],
+      [377, 'escudo_canadiense_boreal'],
+      [374, 'taiga_canadiense_permafrost'],
+      [378, 'taiga_canadiense_permafrost'],
+      [379, 'taiga_canadiense_permafrost'],
+      [381, 'taiga_canadiense_permafrost'],
+      [382, 'taiga_canadiense_permafrost'],
+      [383, 'taiga_canadiense_permafrost'],
+      [412, 'alto_artico_desierto_polar'],
+      [413, 'tundra_artica_canadiense'],
+      [414, 'tundra_artica_canadiense'],
+      [415, 'montana_artica_baffin_torngat'],
+      [421, 'montana_artica_baffin_torngat'],
+      [417, 'groenlandia_kalaallit_nunaat'],
+      [418, 'groenlandia_kalaallit_nunaat'],
+    ];
+    for (const [eco, ficha] of norte) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
+  });
+
+  it('el Okanagan deja de salir como coníferas templadas genéricas', () => {
+    // El caso concreto que motivó el lote: una de las zonas frutícolas y
+    // vitícolas más conocidas del continente recibía la ficha de bioma global.
+    const r = resolverBioma(k('Dfb'), 49.9, -119.5, 400, E(362, 'Okanogan dry forests', 5, 'Temperate Conifer Forests'));
+    expect(r.ficha?.id).toBe('okanagan_bosque_seco');
+    expect(r.fuente).toBe('ecorregion');
+  });
+
   it('las dos mitades no se pisan: ningún ECO_ID está en las dos', () => {
     const sa = Object.keys(ECO_ID_SUDAMERICA);
     const resto = Object.keys(ECO_ID_RESTO_DEL_MUNDO);
