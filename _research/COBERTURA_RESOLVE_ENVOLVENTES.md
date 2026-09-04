@@ -52,48 +52,75 @@ dos. La única con agricultura de campo abierto es la del golfo de San Lorenzo
 la de más valor por hectárea es el Okanagan, donde el límite no es el suelo sino
 la asignación de agua de riego.
 
-## Europa — el hueco es más grande de lo que decía la lista
+## Europa — cerrada, con el alcance escrito
 
-Envolventes consultadas: Iberia y Francia, Italia y Alpes orientales, Alemania y
-Europa central, Escandinavia y el Báltico, Islas Británicas, Balcanes y Grecia.
+**Actualización 04/09/2026.** El primer barrido dio 26 faltantes con seis cajas
+que llegaban hasta Grecia. Ampliar el alcance a la Unión Europea y sus
+asociados obligó a rehacer las cajas, y ahí el número volvió a moverse: **34**.
 
-**Faltan 26 ECO_ID.** El paquete de Europa occidental había dejado anotados 15
-"fuera de alcance"; de esos, sólo 11 aparecen acá, y hay **15 que no estaban en
-ninguna lista**. Los otros cuatro de aquella lista (729, 745, 833, 839) caen
-fuera de estas cajas: son de más al este.
+### Qué cuenta como Europa
 
-### Los 26, por región
+Es una decisión, no un dato, así que queda escrita. Entran los 27 de la UE, el
+EEE y la AELC (Noruega, Islandia, Suiza, Liechtenstein), el Reino Unido, y los
+países candidatos: Albania, Bosnia y Herzegovina, Kosovo, Montenegro, Macedonia
+del Norte, Serbia, Moldavia, Ucrania, Georgia y Turquía.
 
-| Región | ECO_ID |
-| --- | --- |
-| Italia y Apeninos | 644 Appenine deciduous montane, 675 Po Basin mixed, 795 Italian sclerophyllous, 802 South Apennine montane, 806 Tyrrhenian-Adriatic |
-| Balcanes y Adriático | 646 Balkan mixed, 660 Dinaric Mountains, 678 Rodope montane, 794 Illyrian deciduous, 801 Pindus Mountains |
-| Europa central y báltica | 647 Baltic mixed, 679 Sarmatic mixed, 692 Carpathian montane |
-| Estepa póntica y mar Negro | 661 East European forest steppe, 665 Euxine-Colchic broadleaf, 735 Pontic steppe |
-| Escandinavia y Ártico europeo | 708 Scandinavian coastal conifer, 774 Kola Peninsula tundra, 780 Scandinavian Montane Birch |
-| Mediterráneo sin país asignado | 701 Mediterranean conifer and mixed, 797 Mediterranean dry woodlands and steppe, 798 Mediterranean woodlands and forests |
-| Egeo, Creta y Anatolia | 785 Aegean and Western Turkey, 786 Anatolian conifer and deciduous, 789 Crete Mediterranean, 804 Southern Anatolian montane |
+Con ese corte hubo que cambiar el método de consulta. Un rectángulo sobre
+Turquía se come Siria, Irak, Irán y Azerbaiyán; uno sobre el Cáucaso se come
+Armenia y Rusia. Para esos tres casos —Turquía, Georgia, Ucrania y Moldavia— la
+caja pasó a ser un polígono que sigue la frontera a grandes rasgos. No pretende
+ser exacto: pretende no invitar a nadie que no esté en la lista.
 
-Las Islas Británicas dan 0: es la única parte de Europa que el paquete cerró de
-verdad.
+### Los 34, y las 28 fichas que los cubren
 
-### Lo que esto cambia del plan
+| Región | ECO_ID | Fichas |
+| --- | --- | --- |
+| Italia | 675, 644, 802, 795, 806 | llanura del Po · montaña apenínica · Mediterráneo tirreno-adriático e insular |
+| Balcanes y Adriático | 660, 794, 646, 678, 801 | karst dinárico · bosque ilirio · mixto balcánico · montaña Ródope-Pindo |
+| Europa central y báltica | 647, 679, 692 | morrena báltica · sarmático · Cárpatos |
+| Estepa póntica y mar Negro | 735, 661, 658, 665, 650, 812 | chernozem póntico · estepa forestal · Crimea · euxino-cólquico · Cáucaso mixto · semidesierto del Kura |
+| Escandinavia e Islandia | 708, 780, 711 | conífera costera · abedular montano · Islandia |
+| Egeo, Creta y Chipre | 785, 789, 790, 791 | esclerófilo egeo · Creta · Troodos · Mediterráneo oriental |
+| Anatolia | 786, 804, 703, 652, 725, 662, 727, 688 | Tauro · norte de Anatolia · meseta central · Anatolia oriental · Zagros |
 
-1. **El orden por superficie útil ya no es Italia → Alemania → Escandinavia.**
-   Los Balcanes y el Adriático son cinco ecorregiones que no estaban ni
-   anotadas, y ahí hay agricultura de ladera, karst y trashumancia con mucho
-   para decir. El bloque italiano sigue primero por valor agrícola —la llanura
-   del Po es la más productiva del sur de Europa—, pero el segundo debería ser
-   Balcanes, no Alemania.
-2. **Hay que decidir hasta dónde llega "Europa".** Cuatro de los 26 son
-   Anatolia y el Egeo turco, y tres más son la estepa póntica y el Cáucaso
-   colchic. Son ecorregiones europeas por bioma y no siempre por pasaporte. Si
-   entran, el relevamiento crece; si no, hay que dejar dicho en el archivo que
-   quedan afuera a propósito, para que el próximo barrido no las cuente como
-   olvido.
-3. **Tres del Mediterráneo (701, 797, 798) no tienen país claro en la
-   consulta**: son polígonos que RESOLVE reparte entre varias orillas. Antes de
-   escribir ficha hay que ver dónde pegan de verdad, por punto.
-4. **El cierre se verifica con este mismo script, no con la palabra del
-   paquete.** Ninguna entrega de Europa debería darse por cerrada sin volver a
-   correr las seis envolventes y ver 0.
+Están en `lib/ecorregionesEuropaUE.ts` y `lib/biomasRegionalesEuropaUE.ts`, los
+dos escritos a mano. Reejecutadas las trece envolventes, **0 sin ficha**.
+
+De los 15 que el paquete de Europa occidental había anotado como "fuera de
+alcance", 11 estaban acá; los otros cuatro (729, 745, 833, 839) caen fuera del
+alcance definido arriba. Y **19 de los 34 no estaban en ninguna lista**: el
+bloque anatolio entero, el caucásico, Chipre, Islandia y Crimea.
+
+### Lo que queda afuera a propósito
+
+Esto importa tanto como lo que entra: si no está escrito, el próximo barrido lo
+lee como olvido. Todos están declarados en `ESPERADOS`, dentro del script.
+
+- **Norte de África** — 701 Atlas, 797 Libia y Egipto, 798 Magreb, 833 estepa
+  norsahariana, 839 desierto atlántico sahariano. Entran por el borde sur de
+  las cajas ibérica y mediterránea y por el borde este de la de las islas
+  atlánticas, no por pisar territorio europeo.
+- **Rusia** — 774 tundra de Kola, 778 desierto ártico ruso. Verificado por
+  punto: la de Kola no entra ni en la Laponia finlandesa ni en Finnmark, que
+  resuelven a 780 y a 717.
+- **Svalbard y Jan Mayen**, que son Noruega pero que RESOLVE directamente no
+  cubre: la consulta por punto no devuelve ninguna ecorregión. Es un hueco real
+  del dato de origen, no del catálogo.
+- **Armenia y Azerbaiyán**, cuyo vínculo con la UE es de otro tipo. El 812 entra
+  igual, pero por Georgia: es el semidesierto del Kura en Kajetia.
+- **Islas del mar de Scotia** (129), reino Antártico, que entraban por el
+  vértice sudeste de la caja sudamericana.
+
+Macaronesia ya estaba cubierta por el paquete de Europa: Azores (645), Madeira
+(668), Canarias (787) y el matorral de argán (796) resuelven a `macaronesia`.
+
+### Estado
+
+| Región | Cajas | Sin ficha |
+| --- | --- | --- |
+| América | 6 | 0 |
+| Europa y asociados | 13 | 0 |
+| Sudamérica | 1 | 0 |
+
+Falta África, Asia y Oceanía, que no tienen cajas todavía. Agregarlas es
+escribir una entrada en `REGIONES`.

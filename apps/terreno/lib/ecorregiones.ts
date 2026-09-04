@@ -27,6 +27,7 @@
 import { ECO_ID_AMERICA } from './ecorregionesAmerica';
 import { ECO_ID_CANADA } from './ecorregionesCanada';
 import { ECO_ID_EUROPA } from './ecorregionesEuropa';
+import { ECO_ID_EUROPA_UE } from './ecorregionesEuropaUE';
 import { ECO_ID_SUDAMERICA_NUEVAS } from './ecorregionesSudamerica';
 
 export interface Ecorregion {
@@ -173,15 +174,17 @@ const RESTO_CURADO_A_MANO: Record<number, string> = {
 };
 
 /**
- * La unión de las tres mitades del resto del mundo. Las dos generadas vienen de
- * los paquetes de investigación y son disjuntas entre sí y con esta: un ECO_ID
- * repetido se resolvería en silencio a favor del último y el test lo rechaza.
+ * La unión de los cinco bloques del resto del mundo. Los dos generados vienen de
+ * los paquetes de investigación; los otros tres se escribieron a mano. Son
+ * disjuntos entre sí: un ECO_ID repetido se resolvería en silencio a favor del
+ * último y el test lo rechaza.
  */
 const RESTO_DEL_MUNDO: Record<number, string> = {
   ...RESTO_CURADO_A_MANO,
   ...ECO_ID_AMERICA,
   ...ECO_ID_CANADA,
   ...ECO_ID_EUROPA,
+  ...ECO_ID_EUROPA_UE,
 };
 
 /**
