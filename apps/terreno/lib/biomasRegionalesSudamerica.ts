@@ -14,8 +14,8 @@
  *
  * `saberes` va vacío a propósito en todas, igual que en los otros dos bloques
  * generados. Los saberes sudamericanos son subnacionales y necesitan geometría
- * propia con procedencia y licencia; viven en la fase 2 del paquete y todavía no
- * hay tipo ni capa para montarlos.
+ * propia con procedencia y licencia; viven en la fase 2 del paquete y se montan
+ * aparte, en `lib/saberes.ts`.
  */
 
 import type { BiomaFicha } from './biomaTipos';

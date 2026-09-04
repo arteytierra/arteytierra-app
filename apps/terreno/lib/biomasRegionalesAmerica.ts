@@ -8,7 +8,8 @@
  *
  * `saberes` va vacío a propósito en todas. Los saberes de estas regiones son
  * subnacionales y necesitan geometría propia con procedencia y licencia; viven
- * en la fase 2 del paquete y todavía no hay tipo ni capa para montarlos. Dejar
+ * en la fase 2 del paquete y se montan aparte, en `lib/saberes.ts`, donde no se
+ * activan sin geometría con procedencia y licencia. Dejar
  * la lista vacía es la garantía de que no atribuimos prácticas a un pueblo por
  * el solo hecho de que su territorio caiga adentro de una ecorregión.
  */

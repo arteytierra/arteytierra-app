@@ -10,7 +10,7 @@
  * pinar caledonio, el montano ibérico y el semiárido del sureste peninsular.
  *
  * `saberes` va vacío por la misma razón que en las americanas: la capa
- * territorial es fase 2.
+ * territorial es fase 2 y vive en `lib/saberes.ts`.
  */
 
 import type { BiomaFicha } from './biomaTipos';
