@@ -1,0 +1,81 @@
+punto	lat	lng	ECO_ID	BIOME_NUM	ECO_NAME
+IE Connemara	53.5	-9.85	651	4	Celtic broadleaf forests
+IE Tipperary	52.55	-8	651	4	Celtic broadleaf forests
+GB Cornualles	50.3	-4.9	651	4	Celtic broadleaf forests
+GB Chilterns	51.7	-0.85	663	4	English Lowlands beech forests
+GB Yorkshire Dales	54.2	-2.1	651	4	Celtic broadleaf forests
+GB Cairngorms	57.1	-3.65	691	5	Caledon conifer forests
+GB Gales Snowdonia	53.05	-3.95	651	4	Celtic broadleaf forests
+FR Bretaña	48.1	-3	664	4	European Atlantic mixed forests
+FR Normandía	49.1	-0.4	664	4	European Atlantic mixed forests
+FR Beauce	48.2	1.7	664	4	European Atlantic mixed forests
+FR Alsacia	48.4	7.5	686	4	Western European broadleaf forests
+FR Macizo Central	45.1	2.8	686	4	Western European broadleaf forests
+FR Landas	44.2	-0.8	648	4	Cantabrian mixed forests
+FR Provenza	43.8	5.7	799	12	Northeast Spain and Southern France Mediterranean forests
+FR Languedoc	43.5	3.3	799	12	Northeast Spain and Southern France Mediterranean forests
+FR Alpes Saboya	45.6	6.6	689	5	Alps conifer and mixed forests
+FR Pirineos Ariege	42.8	1.4	676	4	Pyrenees conifer and mixed forests
+FR Córcega	42.2	9.1	788	12	Corsican montane broadleaf and mixed forests
+BE Ardenas	50.2	5.6	686	4	Western European broadleaf forests
+BE Flandes	51.05	3.7	664	4	European Atlantic mixed forests
+NL Veluwe	52.1	5.8	664	4	European Atlantic mixed forests
+NL Frisia	53.15	5.8	664	4	European Atlantic mixed forests
+LU Luxemburgo	49.7	6.1	686	4	Western European broadleaf forests
+CH Jura Vaud	46.7	6.4	686	4	Western European broadleaf forests
+CH Valais	46.2	7.5	689	5	Alps conifer and mixed forests
+CH Meseta Berna	46.95	7.45	686	4	Western European broadleaf forests
+ES Galicia	42.8	-8.2	648	4	Cantabrian mixed forests
+ES Asturias	43.3	-5.9	648	4	Cantabrian mixed forests
+ES Pais Vasco	43.05	-2.4	648	4	Cantabrian mixed forests
+ES Castilla Duero	41.6	-4.7	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Extremadura	39.1	-6.2	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Andalucia Sevilla	37.4	-5.9	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+ES Almeria	37.1	-2.4	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Aragon Monegros	41.5	-0.3	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Cataluna Girona	42	2.8	799	12	Northeast Spain and Southern France Mediterranean forests
+ES Sistema Iberico	41.2	-2.5	792	12	Iberian conifer forests
+ES Sierra Nevada	37.05	-3.35	792	12	Iberian conifer forests
+ES Mallorca	39.6	3	799	12	Northeast Spain and Southern France Mediterranean forests
+PT Miño	41.8	-8.4	648	4	Cantabrian mixed forests
+PT Beira Serra Estrela	40.3	-7.6	800	12	Northwest Iberian montane forests
+PT Alentejo	38.2	-8	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+PT Algarve	37.2	-8.2	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+PT Madeira	32.75	-16.95	668	4	Madeira evergreen forests
+PT Azores Sao Miguel	37.78	-25.5	645	4	Azores temperate mixed forests
+ES Tenerife	28.3	-16.6	787	12	Canary Islands dry woodlands and forests
+ES Lanzarote	29	-13.6	796	12	Mediterranean Acacia-Argania dry woodlands and succulent thickets
+ES Cabo de Gata	36.8	-2.1	803	12	Southeast Iberian shrubs and woodlands
+ES Murcia	37.9	-1.3	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Alicante	38.4	-0.6	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Valencia interior	39.5	-1.1	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Jaen olivar	37.9	-3.6	793	12	Iberian sclerophyllous and semi-deciduous forests
+ES Madrid Gredos	40.3	-5.1	800	12	Northwest Iberian montane forests
+ES Cadiz Alcornocales	36.35	-5.55	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+ES Huelva Donana	37	-6.45	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+ES Ibiza	38.95	1.45	799	12	Northeast Spain and Southern France Mediterranean forests
+ES Menorca	39.95	4.1	799	12	Northeast Spain and Southern France Mediterranean forests
+PT Douro vinateiro	41.15	-7.55	793	12	Iberian sclerophyllous and semi-deciduous forests
+PT Monchique	37.32	-8.55	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+PT Estremadura Oeste	39.35	-9.1	805	12	Southwest Iberian Mediterranean sclerophyllous and mixed forests
+ES Fuerteventura	28.4	-14	796	12	Mediterranean Acacia-Argania dry woodlands and succulent thickets
+ES La Palma	28.7	-17.85	787	12	Canary Islands dry woodlands and forests
+ES Gran Canaria	28	-15.6	787	12	Canary Islands dry woodlands and forests
+FR Camargue	43.5	4.5	799	12	Northeast Spain and Southern France Mediterranean forests
+FR Vosgos	48.1	7	686	4	Western European broadleaf forests
+FR Cevenas	44.2	3.6	686	4	Western European broadleaf forests
+FR Jura frances	46.7	5.9	686	4	Western European broadleaf forests
+FR Aquitania Dordona	44.9	0.7	664	4	European Atlantic mixed forests
+FR Isla de Francia	48.85	2.35	664	4	European Atlantic mixed forests
+GB Orcadas	59	-3.1	672	4	North Atlantic moist mixed forests
+GB Shetland	60.3	-1.3	672	4	North Atlantic moist mixed forests
+GB Hebridas	57.7	-7.2	672	4	North Atlantic moist mixed forests
+GB Norfolk	52.65	1	651	4	Celtic broadleaf forests
+GB Kent	51.2	0.8	663	4	English Lowlands beech forests
+GB Devon Dartmoor	50.6	-3.9	651	4	Celtic broadleaf forests
+IE Donegal	54.95	-8	672	4	North Atlantic moist mixed forests
+IE Wicklow	53	-6.35	651	4	Celtic broadleaf forests
+NL Zelanda	51.5	3.8	664	4	European Atlantic mixed forests
+BE Campine	51.2	5.2	664	4	European Atlantic mixed forests
+CH Ticino oeste	46.2	8.7	689	5	Alps conifer and mixed forests
+CH Friburgo prealpes	46.6	7.1	689	5	Alps conifer and mixed forests

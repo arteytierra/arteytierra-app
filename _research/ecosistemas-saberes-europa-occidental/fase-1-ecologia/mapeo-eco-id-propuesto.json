@@ -1,0 +1,52 @@
+{
+  "_nota": "Propuesta para la lista blanca ECO_ID_A_FICHA de apps/terreno/lib/ecorregiones.ts, bloque RESTO_DEL_MUNDO. No montar sin revision de Jonatan.",
+  "_generado": "2026-09-03",
+  "conservar_actual": {
+    "645": "macaronesia",
+    "651": "atlantico_templado_oceanico",
+    "668": "macaronesia",
+    "689": "alpino_montano_europeo",
+    "787": "macaronesia",
+    "793": "mediterraneo_europeo"
+  },
+  "ampliar_sin_remapear": {
+    "676": "alpino_montano_europeo",
+    "788": "mediterraneo_europeo",
+    "796": "macaronesia",
+    "799": "mediterraneo_europeo",
+    "805": "mediterraneo_europeo"
+  },
+  "agregar": {
+    "648": "cantabrico_atlantico_iberico",
+    "663": "campina_calcarea_inglesa",
+    "664": "atlantico_llanura_noroeste",
+    "672": "atlantico_norte_turberas",
+    "686": "templado_occidental_europeo",
+    "691": "pinar_caledonio",
+    "792": "montano_iberico",
+    "800": "montano_iberico",
+    "803": "semiarido_sureste_iberico"
+  },
+  "reemplazar": {},
+  "fuera_de_alcance_relevados": {
+    "644": "Appenine deciduous montane forests - IT, pase mediterraneo oriental",
+    "647": "Baltic mixed forests - pase nordico y baltico",
+    "654": "Central European mixed forests - ya mapeado a templado_continental_europeo",
+    "672_complemento": "Feroe 729 e Islandia, misma franja atlantica norte, pase nordico",
+    "674": "Pannonian mixed forests - ya mapeado a estepa_pontica_panonica",
+    "675": "Po Basin mixed forests - IT",
+    "679": "Sarmatic mixed forests - pase baltico",
+    "701": "Mediterranean conifer and mixed forests - norte de Africa y Anatolia",
+    "708": "Scandinavian coastal conifer forests - pase nordico",
+    "717": "Scandinavian and Russian taiga - ya mapeado a boreal_nordico_turberas",
+    "729": "Faroe Islands boreal grasslands - DK",
+    "745": "Saharan halophytics - norte de Africa",
+    "780": "Scandinavian Montane Birch forest and grasslands - pase nordico",
+    "795": "Italian sclerophyllous and semi-deciduous forests - IT",
+    "797": "Mediterranean dry woodlands and steppe - norte de Africa",
+    "798": "Mediterranean woodlands and forests - norte de Africa",
+    "806": "Tyrrhenian-Adriatic sclerophyllous and mixed forests - IT y Adriatico",
+    "833": "North Saharan Xeric Steppe and Woodland - norte de Africa",
+    "839": "Saharan Atlantic coastal desert - norte de Africa"
+  }
+}
