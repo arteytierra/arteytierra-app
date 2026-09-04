@@ -5,8 +5,9 @@
  * que elige entre los tres catálogos según cuánta precisión haya disponible:
  *
  *   lib/contexto.ts          12 fichas sudamericanas (por Köppen y ubicación)
- *   lib/biomasRegionales.ts  22 fichas de Norteamérica, Mesoamérica, Caribe y
- *                            Europa (por ECO_ID curado de RESOLVE)
+ *   lib/biomasRegionales.ts  130 fichas de Norteamérica, Mesoamérica, Caribe,
+ *                            Europa y el resto de Sudamérica (por ECO_ID curado
+ *                            de RESOLVE)
  *   lib/biomasGlobales.ts    15 fichas de bioma global (cubren todo el planeta)
  *
  * Los "análogos" en climas parecidos del mundo se derivan de la clase Köppen y
@@ -26,7 +27,7 @@ import { ANALOGOS_KOPPEN, EQUIVALENTES, type Analogo } from './analogos';
 export type { BiomaFicha, Fuente, SaberCultural };
 
 export type BiomaId =
-  | 'selva_tropical'
+  | 'selva_paranaense'
   | 'sabana_cerrado'
   | 'chaco_seco'
   | 'monte'
@@ -39,44 +40,52 @@ export type BiomaId =
   | 'mediterraneo'
   | 'desierto_costero';
 
+/**
+ * Lo que puede devolver la heurística climática: las 12 fichas de acá más las
+ * dos sudamericanas regionales que el clima sí alcanza a distinguir. La
+ * Amazonía y el páramo salieron de las 12 en el montaje de Sudamérica y
+ * devolver la ficha vecina "parecida" era justamente el error a eliminar.
+ */
+export type BiomaHeuristicaId = BiomaId
+  | 'amazonia_oriental_tierra_firme'
+  | 'paramos_andinos';
+
 
 // ─── Fichas por bioma ─────────────────────────────────────────────────────────
 
 const W = (q: string) => `https://es.wikipedia.org/wiki/${encodeURIComponent(q)}`;
 
 export const BIOMAS: Record<BiomaId, BiomaFicha> = {
-  selva_tropical: {
-    id: 'selva_tropical',
-    nombre: 'Selva tropical y subtropical',
+  selva_paranaense: {
+    id: 'selva_paranaense',
+    nombre: 'Selva paranaense',
     emoji: '🌴',
     color: '#1B5E20',
-    resumen: 'Bosque húmedo de altísima biodiversidad y biomasa, con lluvias abundantes y poca estación seca (Amazonía, selva paranaense/misionera).',
+    resumen: 'Selva subtropical húmeda del Alto Paraná —Misiones, el sur de Brasil y el este del Paraguay—, de altísima biodiversidad, con marcada estacionalidad térmica y sin estación seca larga.',
     vegetacion: 'Bosque siempreverde multiestrato, lianas, epífitas, palmeras; suelos cubiertos de hojarasca con reciclaje rápido de nutrientes.',
     fauna: 'Enorme diversidad de aves, primates, felinos (yaguareté), anfibios e insectos polinizadores.',
     suelos: 'Mayormente lateríticos/oxisoles, ácidos y pobres: la fertilidad está en la biomasa viva, no en el suelo. Cuidar la cobertura es clave.',
     saberes: [
-      { cultura: 'Pueblos amazónicos (varios)', practicas: 'Chacras policultivo de mandioca, maíz, batata y frutales; manejo de "islas de bosque" y enriquecimiento del monte; las "terra preta" (tierras negras antrópicas) muestran fertilización con carbón y residuos.' },
       { cultura: 'Guaraní (selva paranaense)', practicas: 'Agricultura de claros rotativos (kokue), policultivo maíz-poroto-zapallo, aprovechamiento de yerba mate, palmito y plantas medicinales del monte.' },
       { cultura: 'Criollo/colono', practicas: 'Yerbales y cultivos bajo monte, sistemas agroforestales con sombra; el riesgo es la tala y la erosión al descubrir el suelo.' },
     ],
     especies: ['Yerba mate', 'Palmito (pindó)', 'Cedro', 'Lapacho', 'Mandioca'],
     fuentes: [
       { label: 'Selva paranaense (Wikipedia)', url: W('Selva_paranaense') },
-      { label: 'Terra preta amazónica', url: W('Terra_preta') },
       { label: 'FAO — Sistemas agroforestales', url: 'https://www.fao.org/forestry/agroforestry/es/' },
     ],
   },
   sabana_cerrado: {
     id: 'sabana_cerrado',
-    nombre: 'Sabana / Cerrado',
+    nombre: 'Cerrado',
     emoji: '🌾',
     color: '#9E9D24',
-    resumen: 'Pastizales con árboles dispersos y marcada estación seca; el fuego es un proceso ecológico natural (cerrado brasileño, llanos).',
+    resumen: 'Sabana arbolada del altiplano central brasileño, con marcada estación seca y suelos profundos; el fuego es un proceso ecológico natural, no una anomalía.',
     vegetacion: 'Gramíneas altas, árboles de corteza gruesa resistente al fuego, palmares en bajos húmedos.',
     fauna: 'Aves de pastizal, ciervos, oso hormiguero, gran diversidad de polinizadores.',
     suelos: 'Profundos pero ácidos y pobres en fósforo; responden bien al manejo de materia orgánica.',
     saberes: [
-      { cultura: 'Pueblos de los llanos', practicas: 'Quemas controladas estacionales para renovar pasto y manejar fauna; cultivo en bajos húmedos y vegas.' },
+      { cultura: 'Pueblos de sabana', practicas: 'Quemas controladas estacionales para renovar pasto y manejar fauna; cultivo en bajos húmedos y vegas.' },
       { cultura: 'Ganadería criolla extensiva', practicas: 'Pastoreo a campo con razas rústicas, aprovechamiento de palmares (frutos, hojas), rotación según lluvias.' },
     ],
     especies: ['Palma carandá', 'Algarrobo', 'Pastos nativos (Paspalum, Andropogon)'],
@@ -294,17 +303,23 @@ export function determinarBioma(
   lat: number,
   lng: number,
   elevacion?: number,
-): BiomaId {
+): BiomaHeuristicaId {
   const c = koppen.codigo;
   const grupo = c.charAt(0);
   const altoAndino = (elevacion ?? 0) >= 2800 || c === 'ET' || c === 'EF';
 
-  // Altiplano / puna: altitud o clima polar de montaña
-  if (altoAndino) return 'puna_altoandino';
+  // Altiplano de altura. Al norte del paralelo 8° S la montaña húmeda es
+  // páramo, no puna: recibe 1000-2000 mm al año contra menos de 400. Sin la
+  // ecorregión no hay dato de lluvia acá, y la latitud es la única señal que
+  // separa dos ecosistemas opuestos en lo único que importa para diseñar.
+  if (altoAndino) return lat > -8 ? 'paramos_andinos' : 'puna_altoandino';
 
   switch (grupo) {
     case 'A': // Tropical
-      return (c === 'Af' || c === 'Am') ? 'selva_tropical' : 'sabana_cerrado';
+      // Tropical siempre húmedo en Sudamérica es, por superficie, Amazonía. La
+      // selva paranaense es Cfa y se resuelve más abajo; mandar la Amazonía a
+      // la ficha del Alto Paraná era el error que arregló el montaje.
+      return (c === 'Af' || c === 'Am') ? 'amazonia_oriental_tierra_firme' : 'sabana_cerrado';
 
     case 'B': { // Árido
       const frio = c.endsWith('k');
@@ -322,6 +337,8 @@ export function determinarBioma(
       if (c.startsWith('Cs')) return 'mediterraneo';
       if ((c === 'Cfb' || c === 'Cfc') && lat < -38) return 'bosque_andino_patagonico';
       if (c.startsWith('Cw')) return 'yungas';            // invierno seco subtropical de altura → NOA
+      // Misiones y el Alto Paraná: Cfa, pero selva, no espinal.
+      if (c === 'Cfa' && lat > -28.5 && lat < -24 && lng > -57) return 'selva_paranaense';
       if (c === 'Cfa') return lat > -28 ? 'espinal' : 'pampa';
       return 'pampa';
     }
@@ -409,7 +426,9 @@ export function resolverBioma(
   }
 
   if (enSudamerica(lat, lng)) {
-    const ficha = fichaBioma(determinarBioma(koppen, lat, lng, elevacion));
+    // fichaPorId y no fichaBioma: la heurística puede devolver una ficha
+    // regional sudamericana, que vive en el otro catálogo.
+    const ficha = fichaPorId(determinarBioma(koppen, lat, lng, elevacion))!;
     return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: null, fuente: 'koppen', aviso: null };
   }
 

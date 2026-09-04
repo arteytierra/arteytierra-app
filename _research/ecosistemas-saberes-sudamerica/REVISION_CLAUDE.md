@@ -107,6 +107,38 @@ de roca/hielo antes de que la app se use en serio fuera de América.
 | Fichas huérfanas | 0 |
 | Colisiones con la entrega americana | 0 |
 
+## Montado el 04/09/2026
+
+Las tres decisiones se tomaron así:
+
+1. **La heurística Köppen se reapuntó.** `Af/Am` ya no devuelve la ficha del
+   Alto Paraná sino `amazonia_oriental_tierra_firme`, y se agregó una regla de
+   Misiones (`Cfa` entre -28,5° y -24° al este de -57°) para que la selva
+   paranaense siga siendo alcanzable sin ecorregión. El camino de altura
+   también se abrió: por encima de 2800 m, al norte del paralelo 8° S devuelve
+   `paramos_andinos` y al sur `puna_altoandino`. `determinarBioma` pasó a
+   devolver `BiomaHeuristicaId`, que son las 12 más esas dos.
+2. **`selva_tropical` se renombró a `selva_paranaense`**, con su ficha acotada
+   al Alto Paraná: se le sacó el saber de los pueblos amazónicos y la fuente de
+   la terra preta, que describen territorio que ya no es suyo. `sabana_cerrado`
+   se acotó igual al Cerrado, porque los Llanos se fueron a ficha propia.
+3. **El ECO_ID 0 quedó afuera del montaje**, como pedía la entrega. La deuda
+   sigue abierta.
+
+La forma del montaje: `montar-sudamerica.mjs` (en esta carpeta) genera
+`lib/ecorregionesSudamerica.ts` (90 ECO_ID → las 47 fichas nuevas) y
+`lib/biomasRegionalesSudamerica.ts` (las 47 fichas, todas con `saberes: []`).
+Los 19 ECO_ID que siguen perteneciendo a las 12 fichas de `contexto.ts` quedan
+a mano en `SUDAMERICA_CURADO_A_MANO`, y los dos bloques se unen con spread. El
+script corta con error si la entrega intentara pisar un ECO_ID ya reservado por
+los paquetes de América o Europa; los 15 que comparte apuntan a la misma ficha.
+
+`ECO_ID_SUDAMERICA` pasó de 56 a 109 y `BIOMAS_REGIONALES` de 83 a 130 fichas.
+El test agrega cinco casos que defienden el montaje: los seis vacíos con dueña,
+la Amazonía fuera de la ficha paranaense (por ecorregión y por heurística), la
+Mata Atlántica y los campos uruguayos separados, las tres punas y los llanos, y
+que ningún ECO_ID de los paquetes anteriores cambió de dueño.
+
 ## Estado del resto del mundo
 
 - **Mesoamérica y Norteamérica:** montado. 142 ECO_ID en
@@ -115,4 +147,4 @@ de roca/hielo antes de que la app se use en serio fuera de América.
   `ecorregionesEuropa.ts`, incluidos los tres arreglos que importaban —796 para
   que `macaronesia` se encienda en Lanzarote, 805 para que el montado alentejano
   active `mediterraneo_europeo`, y 676 para los Pirineos.
-- **Sudamérica:** esta entrega, revisada, **sin montar**.
+- **Sudamérica:** esta entrega, revisada y **montada**: 109 ECO_ID, 47 fichas nuevas.

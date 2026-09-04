@@ -1,13 +1,16 @@
 /**
- * Fichas regionales de ecosistema — Norteamérica, Mesoamérica, Caribe y Europa.
+ * Fichas regionales de ecosistema — Norteamérica, Mesoamérica, Caribe, Europa y
+ * Sudamérica.
  *
  * Se activan por ECO_ID de RESOLVE (ver la lista blanca en lib/ecorregiones.ts),
  * nunca por clima: dos regiones pueden compartir clase Köppen y no compartir ni
  * especies ni sistemas productivos. Cada ficha lleva arriba los países, los
  * ECO_ID verificados y el nivel de confianza de su investigación.
  *
- * Las fichas sudamericanas viven en lib/contexto.ts y las de bioma global, más
- * gruesas, en lib/biomasGlobales.ts.
+ * Las 12 fichas sudamericanas originales siguen viviendo en lib/contexto.ts —son
+ * las que resuelve la heurística Köppen cuando no se puede consultar RESOLVE—; el
+ * resto de Sudamérica está en lib/biomasRegionalesSudamerica.ts. Las de bioma
+ * global, más gruesas, en lib/biomasGlobales.ts.
  *
  * ARCHIVO GENERADO desde la investigación de cobertura geográfica (30/08/2026).
  * Si lo editás a mano, dejá constancia acá abajo.
@@ -16,6 +19,7 @@
 import type { BiomaFicha } from './biomaTipos';
 import { BIOMAS_REGIONALES_AMERICA } from './biomasRegionalesAmerica';
 import { BIOMAS_REGIONALES_EUROPA } from './biomasRegionalesEuropa';
+import { BIOMAS_REGIONALES_SUDAMERICA } from './biomasRegionalesSudamerica';
 
 const CURADAS_A_MANO: Record<string, BiomaFicha> = {
   // US, CA · ECO_ID 329 · Köppen Cfa, Dfa, Dfb · confianza alta
@@ -663,16 +667,17 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
 };
 
 /**
- * Las 22 escritas a mano, más las 53 americanas y las 8 europeas que vienen de
- * los paquetes de investigación. Los tres bloques son disjuntos: el test lo
- * verifica, porque un id repetido acá se resolvería en silencio a favor del
- * último y una ficha quedaría muerta sin que nada falle.
+ * Las 22 escritas a mano, más las 53 americanas, las 8 europeas y las 47
+ * sudamericanas que vienen de los paquetes de investigación. Los cuatro bloques
+ * son disjuntos: el test lo verifica, porque un id repetido acá se resolvería en
+ * silencio a favor del último y una ficha quedaría muerta sin que nada falle.
  */
 export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
   ...CURADAS_A_MANO,
   ...BIOMAS_REGIONALES_AMERICA,
   ...BIOMAS_REGIONALES_EUROPA,
+  ...BIOMAS_REGIONALES_SUDAMERICA,
 };
 
-/** Los tres bloques por separado, para que el test pueda cruzarlos. */
+/** Los cuatro bloques por separado, para que el test pueda cruzarlos. */
 export { CURADAS_A_MANO as BIOMAS_REGIONALES_CURADAS };

@@ -8,6 +8,7 @@ import { resolverBioma, determinarBioma, fichaPorId, BIOMAS } from '@/lib/contex
 import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegionales';
 import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
 import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
+import { BIOMAS_REGIONALES_SUDAMERICA } from '@/lib/biomasRegionalesSudamerica';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { Koppen } from '@/lib/clima';
 
@@ -66,8 +67,8 @@ describe('catálogos de fichas', () => {
   });
 
   it('toda ficha regional trae especies', () => {
-    // 22 escritas a mano + 53 americanas + 8 europeas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(83);
+    // 22 escritas a mano + 53 americanas + 8 europeas + 47 sudamericanas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(130);
     for (const f of Object.values(BIOMAS_REGIONALES)) {
       expect(f.especies.length, f.id).toBeGreaterThan(0);
     }
@@ -80,15 +81,15 @@ describe('catálogos de fichas', () => {
     for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
       expect(f.saberes.length, f.id).toBeGreaterThan(0);
     }
-    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_EUROPA })) {
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
       expect(f.saberes, f.id).toEqual([]);
     }
   });
 
-  it('los tres bloques de fichas regionales son disjuntos', () => {
+  it('los cuatro bloques de fichas regionales son disjuntos', () => {
     // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
     // ficha muerta sin que falle nada.
-    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_EUROPA];
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_SUDAMERICA];
     const ids = bloques.flatMap(b => Object.keys(b));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
@@ -113,8 +114,8 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 56 sudamericanas + 187 del resto del mundo, de las 846 de RESOLVE.
-    expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(56);
+    // 109 sudamericanas + 187 del resto del mundo, de las 846 de RESOLVE.
+    expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
     expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(187);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
@@ -135,15 +136,18 @@ describe('lista blanca de ecorregiones', () => {
     }
   });
 
-  it('las sudamericanas apuntan sólo a las 12 fichas sudamericanas', () => {
+  it('las sudamericanas apuntan a una ficha sudamericana, de contexto o del bloque regional', () => {
+    // Desde el montaje de Sudamérica hay dos dueños posibles: las 12 fichas de
+    // contexto.ts y las 47 regionales. Lo que no puede pasar es que una
+    // ecorregión sudamericana termine en una ficha de otro continente.
+    const propias = [...Object.keys(BIOMAS), ...Object.keys(BIOMAS_REGIONALES_SUDAMERICA)];
     for (const ficha of Object.values(ECO_ID_SUDAMERICA)) {
-      expect(Object.keys(BIOMAS), ficha).toContain(ficha);
+      expect(propias, ficha).toContain(ficha);
     }
   });
 
   it('devuelve null para una ecorregión sin curar', () => {
     expect(fichaDeEcorregion(653)).toBeNull();  // europea, deliberadamente afuera de la lista blanca
-    expect(fichaDeEcorregion(525)).toBeNull();  // Caatinga — a propósito: no hay ficha suya
     expect(fichaDeEcorregion(495)).toBe('bosque_humedo_tropical_caribeno');
   });
 });
@@ -182,25 +186,31 @@ describe('resolverBioma — tres niveles', () => {
   });
 
   it('el páramo no se hace pasar por Puna', () => {
-    // Los dos pasan los 2800 m y ahí terminaba el parecido: el páramo recibe
-    // 1000-2000 mm al año y la puna menos de 400.
-    expect(determinarBioma(k('Cfb'), 4.8, -75.5, 3400)).toBe('puna_altoandino');
+    // Los dos pasan los 2800 m y ahí termina el parecido: el páramo recibe
+    // 1000-2000 mm al año y la puna menos de 400. Con el montaje de Sudamérica
+    // el páramo tiene ficha propia y la heurística lo separa por latitud.
+    expect(determinarBioma(k('Cfb'), 4.8, -75.5, 3400)).toBe('paramos_andinos');
+    expect(determinarBioma(k('Cfb'), -22.0, -66.5, 3900)).toBe('puna_altoandino');
     const r = resolverBioma(k('Cfb'), 4.8, -75.5, 3400, E(590, 'Cordillera Central páramo', 10));
-    expect(r.fuente).toBe('bioma_global');
-    expect(r.ficha?.id).toBe('resolve_montano');
-    expect(r.aviso).toContain('páramo');
+    expect(r.fuente).toBe('ecorregion');
+    expect(r.ficha?.id).toBe('paramos_andinos');
+    expect(r.aviso).toBeNull();
   });
 
-  it('la Caatinga cae al bioma global, no a una ficha argentina parecida', () => {
+  it('la Caatinga tiene ficha propia y ya no cae al bioma global', () => {
+    // Era el ejemplo de vacío deliberado: ninguna de las 12 fichas argentinas
+    // la describe. El montaje de Sudamérica le dio dueña.
     const r = resolverBioma(k('BSh'), -8.5, -39.5, 500, E(525, 'Caatinga', 2));
-    expect(r.fuente).toBe('bioma_global');
-    expect(r.ficha?.id).toBe('resolve_bosque_tropical_seco');
+    expect(r.fuente).toBe('ecorregion');
+    expect(r.ficha?.id).toBe('caatinga');
     expect(r.ficha?.saberes).toEqual([]);
   });
 
   it('la Amazonía y las Yungas conservan su ficha', () => {
     expect(resolverBioma(k('Af'), -3.1, -60.0, 40, E(484, 'Negro-Branco moist forests', 1)).ficha?.id)
-      .toBe('selva_tropical');
+      .toBe('guayanas_bosques_tierras_bajas');
+    expect(resolverBioma(k('Af'), -3.5, -55.0, 60, E(507, 'Tapajós-Xingu moist forests', 1)).ficha?.id)
+      .toBe('amazonia_oriental_tierra_firme');
     expect(resolverBioma(k('Cwa'), -23.5, -64.8, 1200, E(504, 'Southern Andean Yungas', 1)).ficha?.id)
       .toBe('yungas');
   });
@@ -299,6 +309,59 @@ describe('resolverBioma — tres niveles', () => {
     expect(resolverBioma(k('Cfa'), 40.0, -83.0, 250, null).ficha).toBeNull();
     const conEco = resolverBioma(k('Cfa'), 40.0, -83.0, 250, E(329, 'Appalachian mixed mesophytic forests', 4));
     expect(conEco.ficha?.id).toBe('bosque_templado_caducifolio_este');
+  });
+});
+
+describe('montaje de Sudamérica', () => {
+  it('los seis vacíos deliberados ya tienen ficha propia', () => {
+    // Eran los seis que caían al bioma global porque ninguna de las 12 fichas
+    // argentinas los describe.
+    expect(fichaDeEcorregion(525)).toBe('caatinga');                 // Caatinga
+    expect(fichaDeEcorregion(571)).toBe('chaco_humedo');             // Humid Chaco
+    expect(fichaDeEcorregion(584)).toBe('pantanal');                 // Pantanal
+    expect(fichaDeEcorregion(590)).toBe('paramos_andinos');          // Cordillera Central páramo
+    expect(fichaDeEcorregion(454)).toBe('darien_humedo_panama');     // Chocó-Darién
+    expect(fichaDeEcorregion(479)).toBe('valles_secos_interandinos');// Marañón dry forests
+  });
+
+  it('la Amazonía dejó de recibir la ficha del Alto Paraná', () => {
+    // El id selva_tropical pasó a llamarse selva_paranaense justamente porque
+    // después de la partición sólo cubre el Alto Paraná.
+    expect(fichaDeEcorregion(439)).toBe('selva_paranaense');
+    expect(fichaDeEcorregion(476)).toBe('amazonia_oriental_tierra_firme');
+    expect(fichaDeEcorregion(446)).toBe('amazonia_noroccidental_tierra_firme');
+    expect(fichaDeEcorregion(505)).toBe('amazonia_suroccidental_tierra_firme');
+    expect(fichaDeEcorregion(467)).toBe('varzeas_igapos_amazonicos');
+    // Y la heurística climática tampoco: un predio amazónico sin ecorregión
+    // recibía la ficha de Misiones por el camino Af/Am.
+    expect(determinarBioma(k('Af'), -3.5, -60.0, 40)).toBe('amazonia_oriental_tierra_firme');
+    expect(determinarBioma(k('Cfa'), -26.8, -54.5, 200)).toBe('selva_paranaense');
+  });
+
+  it('la Mata Atlántica y los campos uruguayos salen de las fichas argentinas', () => {
+    expect(fichaDeEcorregion(442)).toBe('mata_atlantica_costera');
+    expect(fichaDeEcorregion(443)).toBe('mata_atlantica_interior');
+    expect(fichaDeEcorregion(440)).toBe('mata_araucaria_altura');
+    // 574 es Uruguayan savanna: campos, no pampa húmeda (576).
+    expect(fichaDeEcorregion(574)).toBe('campos_uruguayos');
+    expect(fichaDeEcorregion(576)).toBe('pampa');
+  });
+
+  it('las tres punas y los llanos dejan de ser una sola ficha', () => {
+    expect(fichaDeEcorregion(587)).toBe('puna_seca_central');
+    expect(fichaDeEcorregion(588)).toBe('puna_altoandino');
+    expect(fichaDeEcorregion(589)).toBe('puna_humeda_central');
+    expect(fichaDeEcorregion(567)).toBe('sabana_cerrado');   // Cerrado
+    expect(fichaDeEcorregion(572)).toBe('llanos_orinoquia'); // Llanos
+    expect(fichaDeEcorregion(570)).toBe('sabanas_guayanesas');
+  });
+
+  it('el montaje no le sacó ecorregiones a los paquetes anteriores', () => {
+    // La entrega sudamericana lista 15 ECO_ID que ya eran de Mesoamérica y el
+    // Caribe. Se respetan: el dueño no cambia.
+    expect(fichaDeEcorregion(495)).toBe('bosque_humedo_tropical_caribeno');
+    expect(fichaDeEcorregion(506)).toBe('talamanca_caribe_sur');
+    expect(fichaDeEcorregion(510)).toBe('trinidad_tobago_bosques');
   });
 });
 
