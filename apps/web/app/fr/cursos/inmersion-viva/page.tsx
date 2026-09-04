@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Immersion Vivante — Tay Pichín',
-  description: 'Immersion Vivante à Tay Pichín : périodes de formation aux pratiques permaculturelles, bioconstruction et agroécologie sur le territoire. San Marcos Sierras, Córdoba.',
+  description: 'Immersion Vivante à Tay Pichín : notre version du volontariat éducatif. Bioconstruction, agroécologie et organisation collective sur le territoire. San Marcos Sierras, Córdoba.',
   alternates: { canonical: '/fr/cursos/inmersion-viva' },
 };
 
@@ -14,22 +14,32 @@ const AREAS = [
   {
     icon: '🏗',
     title: 'Bioconstruction',
-    items: ['Techniques en terre crue', 'Lecture et usage des matériaux locaux', 'Critères constructifs en chantier réel'],
+    items: ['Techniques en terre crue', 'Lecture et usage des matériaux locaux', 'Critères constructifs en chantier réel', 'Enduits et finitions naturelles'],
   },
   {
     icon: '🌱',
     title: 'Agroécologie',
-    items: ['Gestion du potager et des systèmes vivants', 'Sol, compost et bio-intrants', 'Intégration des animaux et cycles productifs'],
+    items: ['Gestion du potager et des systèmes vivants', 'Sol, compost et bio-intrants', 'Intégration végétal-animal', 'Forêt comestible et zone 1'],
+  },
+  {
+    icon: '🌿',
+    title: 'Biocosmétique',
+    items: ['Récolte et séchage de plantes médicinales', 'Macérations en huile et alcool', 'Teintures mères artisanales', 'Onguents, crèmes et préparations naturelles'],
   },
   {
     icon: '💧',
-    title: 'Gestion de l\'eau',
-    items: ['Récupération des eaux de pluie', 'Phytoépuration des eaux grises', 'Observation et lecture du cycle de l\'eau'],
+    title: 'Conception hydrologique',
+    items: ['Lecture du paysage', 'Eau, climat et topographie', 'Introduction à la conception hydrologique', 'Observation des bassins versants'],
+  },
+  {
+    icon: '🎓',
+    title: 'Participation aux formations',
+    items: ['Accès libre aux ateliers organisés à l\'écoécole pendant votre séjour', 'Participation à l\'équipe logistique des formations', 'Apprentissage depuis l\'intérieur de l\'organisation pédagogique'],
   },
   {
     icon: '🤝',
     title: 'Vie communautaire',
-    items: ['Prise de décision collective', 'Économie communautaire', 'Convivialité et organisation du quotidien'],
+    items: ['Cercles de parole', 'Assemblées et prise de décision collective', 'Gestion de l\'habitat collectif', 'Vie quotidienne à l\'écoécole'],
   },
 ];
 
@@ -48,16 +58,16 @@ export default function InmersionVivaFrPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/40 to-transparent" />
           <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-              🌿 Immersion Vivante · Tay Pichín
+              🌿 Volontariat éducatif · Dès 2 semaines
             </p>
             <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
               Immersion <em>Vivante.</em>
             </h1>
             <p className="mt-3 font-display text-xl text-clay-300 italic">
-              Périodes de formation aux pratiques permaculturelles.
+              Notre version du volontariat.
             </p>
             <p className="mt-4 font-sans text-base text-bone-200 max-w-2xl leading-relaxed">
-              Bioconstruction, agroécologie et organisation collective — apprises dans la pratique quotidienne, intégrées au travail, à la convivialité et à la vie sur le territoire.
+              Vous ne venez pas travailler, vous venez apprendre un métier aux côtés de celles et ceux qui le portent chaque jour.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20voudrais%20des%20informations%20sur%20l%27Immersion%20Vivante" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
@@ -77,9 +87,15 @@ export default function InmersionVivaFrPage() {
             <h2 className="font-display text-4xl md:text-5xl text-ink-950 mb-8 leading-tight">
               On apprend en <em>faisant,</em><br />en partageant et en soutenant<br />ensemble.
             </h2>
-            <p className="font-sans text-base text-ink-700 leading-relaxed">
-              Immersion Vivante est un processus où la bioconstruction, l'agroécologie et l'organisation collective s'apprennent dans la pratique quotidienne — intégrées au travail, à la convivialité et à la vie sur le territoire. L'apprentissage se déroule dans un espace vivant, où la construction, la production et la vie quotidienne font partie d'un même système. Pendant votre séjour, vous prenez part à des processus réels et intégrez une façon d'habiter plus consciente, simple et reliée à la terre.
+            <p className="font-sans text-base text-ink-700 leading-relaxed mb-4">
+              À Tay Pichín, il n'y a pas de liste de tâches à cocher : il y a des formateurs de métier, qui transmettent un savoir qui passe de main en main depuis que l'être humain a découvert l'argile. Bioconstruction, agroécologie, organisation collective — tout s'apprend en le faisant, intégré à la vie quotidienne de l'écoécole.
             </p>
+            <p className="font-sans text-base text-ink-700 leading-relaxed">
+              Un projet qui n'a pas cessé depuis novembre 2020, héritier d'une tradition de volontariat itinérant qu'Arte y Tierra soutient depuis 2014 entre l'Argentine, la Colombie, l'Équateur, la France, l'Italie et le Pérou.
+            </p>
+            <Link href="/fr/nosotros" className="inline-flex items-center gap-1.5 mt-6 font-sans text-sm font-semibold text-moss-700 hover:text-moss-900 transition-colors">
+              Découvrez notre histoire et notre parcours →
+            </Link>
           </div>
         </section>
 
@@ -115,23 +131,28 @@ export default function InmersionVivaFrPage() {
         <section className="bg-bone-50 py-20 px-6">
           <div className="max-w-editorial mx-auto">
             <div className="mb-10">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">Modalités et tarifs</p>
-              <h2 className="font-display text-4xl md:text-5xl text-ink-950">Comment <em>participer.</em></h2>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-4">Votre contribution</p>
+              <h2 className="font-display text-4xl md:text-5xl text-ink-950">
+                Elle nous <em>pousse à continuer notre travail.</em>
+              </h2>
+              <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg leading-relaxed">
+                Ce n'est pas un paiement pour travailler : c'est ce qui soutient un projet éducatif ouvert 365 jours par an — cela couvre votre alimentation et les frais de fonctionnement pendant votre séjour parmi nous.
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mb-10">
               <div className="bg-ink-950 p-10">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Processus Initial</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">En zone de camping</p>
                 <hr className="border-clay-700/30 mb-6" />
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
-                  <strong className="text-bone-100">Camping</strong> — repas de base et hébergement en zone de camping.
+                  <strong className="text-bone-100">Alimentation complète</strong> et emplacement de camping à Tay Pichín.
                 </p>
                 <p className="font-display text-3xl text-clay-700">$40.000 ARS / sem.</p>
               </div>
               <div className="bg-clay-900 p-10">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Processus Profond</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">En chambre partagée</p>
                 <hr className="border-clay-700/30 mb-6" />
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
-                  <strong className="text-bone-100">Chambre partagée</strong> — repas de base et chambre partagée.
+                  <strong className="text-bone-100">Alimentation complète</strong> et chambre partagée à Tay Pichín.
                 </p>
                 <p className="font-display text-3xl text-clay-700">$80.000 ARS / sem.</p>
               </div>
