@@ -49,9 +49,15 @@ html[data-theme='oscuro'] .leaflet-tile {
 /* Los lockups de la marca son cromo, no contenido: tienen que invertirse con
    el resto de la interfaz. La regla de arriba cancela el filtro sobre TODA
    <img> —para que el mapa y las fotos no salgan invertidos— y un logo negro
-   quedaba negro sobre fondo negro. */
+   quedaba negro sobre fondo negro.
+
+   Va 'none', no 'invert(1)': el filtro del elemento se compone con el de
+   <html>, no lo reemplaza. Con invert(1) acá arriba quedaba invert × invert =
+   identidad y el lockup seguía negro sobre la banda ya invertida, o sea
+   invisible. Con none manda el filtro de <html> y el negro sale crema, que es
+   justo lo que se quiere. */
 html[data-theme='oscuro'] img.marca-ui {
-  filter: invert(1);
+  filter: none;
 }
 /* La Vista 3D ya es un modal oscuro a pantalla completa: invertirla la volvía
    casi blanca. Se cancela entera, y por eso el canvas de adentro no debe
