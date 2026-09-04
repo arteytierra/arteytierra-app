@@ -120,7 +120,7 @@ export default function CultivoGirgolaEnPage() {
               {MODULOS.map(m => (
                 <div key={m.n} className="bg-ink-800 p-8">
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-500 mb-1">{m.n}</p>
-                  <p className="font-sans text-xs text-bone-300/60 mb-4">{m.fecha}</p>
+                  <p className="font-sans text-xs text-bone-200/60 mb-4">{m.fecha}</p>
                   <h3 className="font-display text-xl text-bone-50 mb-4">{m.titulo}</h3>
                   <ul className="flex flex-col gap-2">
                     {m.contenido.map(c => (

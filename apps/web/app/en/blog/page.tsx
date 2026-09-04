@@ -51,7 +51,7 @@ export default async function BlogIndexEn() {
                     <p className="mt-4 text-xs uppercase tracking-[0.16em] text-clay-500">
                       {new Date(p.published_at!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                    <h2 className="mt-2 font-display text-2xl leading-tight group-hover:text-clay-600 transition">
+                    <h2 className="mt-2 font-display text-2xl leading-tight group-hover:text-clay-700 transition">
                       {p.title}
                     </h2>
                     {p.excerpt && <p className="mt-3 text-ink-700/70 line-clamp-3">{p.excerpt}</p>}

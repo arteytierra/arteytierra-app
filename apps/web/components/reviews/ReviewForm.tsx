@@ -61,7 +61,7 @@ export function ReviewForm({
               >
                 <Star
                   size={26}
-                  className={filled ? 'fill-clay-600 text-clay-600' : 'text-ink-800/30'}
+                  className={filled ? 'fill-clay-700 text-clay-700' : 'text-ink-800/30'}
                   strokeWidth={1.5}
                 />
               </button>

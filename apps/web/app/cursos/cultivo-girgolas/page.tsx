@@ -34,7 +34,7 @@ const MODULOS = [
     dia: 'Sábado',
     title: 'Sustrato, inoculación e incubación',
     nota: 'Pensado para quienes quieren producir en casa sin montar un laboratorio.',
-    accent: 'border-moss-600',
+    accent: 'border-moss-500',
     items: [
       'Tipos de sustrato y preparación',
       'Pasteurización y esterilización simple',
@@ -49,7 +49,7 @@ const MODULOS = [
     dia: 'Sábado',
     title: 'Fructificación, cosecha y escalado',
     nota: 'Para quienes quieren escalar la producción o emprender con hongos.',
-    accent: 'border-ink-400',
+    accent: 'border-bone-200',
     items: [
       'Desencadenantes de la fructificación',
       'Condiciones de temperatura y humedad',
@@ -168,13 +168,13 @@ export default function CultivoGirgolesPage() {
                 <div className="bg-ink-800 flex flex-col items-center justify-center p-8 text-center gap-2">
                   <span className="font-display text-6xl text-clay-300 leading-none">{mod.num}</span>
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-bone-50 mt-3">{mod.fecha}</p>
-                  <p className="font-sans text-[10px] uppercase tracking-widest text-bone-300">{mod.dia}</p>
+                  <p className="font-sans text-[10px] uppercase tracking-widest text-bone-200">{mod.dia}</p>
                 </div>
                 {/* Contenido */}
                 <div className="p-8">
                   <h3 className="font-display text-2xl md:text-3xl text-bone-50 mb-4 leading-snug">{mod.title}</h3>
                   {/* Nota — para quién es este módulo */}
-                  <div className="bg-clay-700/30 border-l-2 border-clay-400 pl-4 py-2 mb-6">
+                  <div className="bg-clay-700/30 border-l-2 border-clay-500 pl-4 py-2 mb-6">
                     <p className="font-sans text-sm text-clay-200 italic leading-relaxed">{mod.nota}</p>
                   </div>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -229,7 +229,7 @@ export default function CultivoGirgolesPage() {
               { titulo: 'Respaldo de FUNGO', detalle: 'Si tu bloque del Módulo II se contamina, lo reponen sin costo.' },
             ].map(item => (
               <li key={item.titulo} className="flex items-start gap-4 py-5">
-                <span className="text-clay-400 font-bold text-lg mt-0.5 flex-shrink-0">·</span>
+                <span className="text-clay-300 font-bold text-lg mt-0.5 flex-shrink-0">·</span>
                 <div>
                   <span className="font-sans font-bold text-bone-50 text-sm">{item.titulo} </span>
                   <span className="font-sans text-bone-200 text-sm leading-relaxed">{item.detalle}</span>
@@ -237,7 +237,7 @@ export default function CultivoGirgolesPage() {
               </li>
             ))}
           </ul>
-          <p className="text-center mt-8 text-xs font-sans text-clay-400 italic">No incluye hospedaje — podés alojarte en la Ecoescuela Tay Pichín.</p>
+          <p className="text-center mt-8 text-xs font-sans text-clay-300 italic">No incluye hospedaje — podés alojarte en la Ecoescuela Tay Pichín.</p>
         </div>
       </section>
 
@@ -286,7 +286,7 @@ export default function CultivoGirgolesPage() {
               <h3 className="font-display text-xl text-ink-950">Módulo suelto</h3>
               <div>
                 <div className="font-display text-4xl text-ink-950">$60.000</div>
-                <div className="text-xs font-sans text-ink-600 mt-1">ARS · USD 46 · €42</div>
+                <div className="text-xs font-sans text-ink-700 mt-1">ARS · USD 46 · €42</div>
               </div>
               <ul className="flex flex-col gap-2 mt-1 flex-1">
                 {['Un encuentro presencial', 'Materiales e insumos incluidos', 'Práctica con insumos reales', 'Te llevás lo que producís'].map(item => (
@@ -324,7 +324,7 @@ export default function CultivoGirgolesPage() {
               </a>
             </div>
           </div>
-          <p className="text-center mt-6 text-xs font-sans text-ink-500 italic">Reserva: 50% adelantado al confirmar cupo. No incluye hospedaje.</p>
+          <p className="text-center mt-6 text-xs font-sans text-ink-700 italic">Reserva: 50% adelantado al confirmar cupo. No incluye hospedaje.</p>
         </div>
       </section>
 

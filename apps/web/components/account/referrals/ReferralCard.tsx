@@ -84,7 +84,7 @@ export function ReferralCard({ code, siteUrl }: { code: ReferralSummary; siteUrl
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'moss' | 'clay' }) {
-  const color = tone === 'moss' ? 'text-moss-800' : tone === 'clay' ? 'text-clay-800' : 'text-ink-950';
+  const color = tone === 'moss' ? 'text-moss-700' : tone === 'clay' ? 'text-clay-700' : 'text-ink-950';
   return (
     <div>
       <dt className="text-xs uppercase tracking-[0.12em] text-ink-800/60">{label}</dt>

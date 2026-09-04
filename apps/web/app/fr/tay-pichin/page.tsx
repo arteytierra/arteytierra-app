@@ -105,7 +105,7 @@ export default function TayPichinFrPage() {
               <Image src="/img/taypichin/carousel/1.jpg" alt="Écolodge Tay Pichín" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             </div>
             <div className="order-1 lg:order-2">
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Écolodge</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Écolodge</p>
               <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-6 leading-tight">
                 Dormir au cœur de la <em>terre.</em>
               </h2>
@@ -154,7 +154,7 @@ export default function TayPichinFrPage() {
                 <p className="font-display text-3xl text-clay-700">$40.000 ARS / sem.</p>
               </div>
               <div className="bg-clay-900 p-10 text-center">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Processus Profond</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Processus Profond</p>
                 <hr className="border-clay-700/30 mb-6" />
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Chambre partagée</strong> — repas de base et chambre partagée.
@@ -177,7 +177,7 @@ export default function TayPichinFrPage() {
             <div className="text-center mb-8">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Évènements · Barrofest</p>
               <h2 className="font-display text-3xl text-bone-50">Un festival de <em>bioconstruction.</em></h2>
-              <p className="mt-2 font-sans text-sm text-bone-300/70">(en espagnol)</p>
+              <p className="mt-2 font-sans text-sm text-bone-200/70">(en espagnol)</p>
             </div>
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe

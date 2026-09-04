@@ -128,7 +128,7 @@ export default function InmersionVivaEnPage() {
                 <p className="font-display text-3xl text-clay-700">$40,000 ARS / week</p>
               </div>
               <div className="bg-clay-900 p-10">
-                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">Deep Process</p>
+                <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Deep Process</p>
                 <hr className="border-clay-700/30 mb-6" />
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Shared room</strong> — basic meals and shared room.

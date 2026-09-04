@@ -76,7 +76,7 @@ export default async function MiSaldoPage() {
                     <td
                       className={
                         'px-5 py-3 text-right font-medium ' +
-                        (e.amount_cents >= 0 ? 'text-moss-800' : 'text-clay-800')
+                        (e.amount_cents >= 0 ? 'text-moss-700' : 'text-clay-700')
                       }
                     >
                       {e.amount_cents >= 0 ? '+' : ''}

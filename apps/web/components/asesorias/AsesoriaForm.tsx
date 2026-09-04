@@ -38,7 +38,7 @@ export function AsesoriaForm() {
 
   if (status === 'ok') {
     return (
-      <div className="p-10 bg-moss-50 border border-moss-200">
+      <div className="p-10 bg-moss-100 border border-moss-300">
         <div className="text-center">
           <h3 className="font-display text-2xl text-ink-950 mb-3">¡Recibimos tu consulta!</h3>
           <p className="font-sans text-ink-700 text-base leading-relaxed">
@@ -66,7 +66,7 @@ export function AsesoriaForm() {
             type="text"
             required
             placeholder="Tu nombre"
-            className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:border-clay-700"
+            className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-700/40 focus:outline-none focus:border-clay-700"
           />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -77,7 +77,7 @@ export function AsesoriaForm() {
             type="email"
             required
             placeholder="tu@email.com"
-            className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:border-clay-700"
+            className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-700/40 focus:outline-none focus:border-clay-700"
           />
         </div>
       </div>
@@ -89,7 +89,7 @@ export function AsesoriaForm() {
           name="pais"
           type="text"
           placeholder="¿Desde dónde escribís?"
-          className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:border-clay-700"
+          className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-700/40 focus:outline-none focus:border-clay-700"
         />
       </div>
 
@@ -99,7 +99,7 @@ export function AsesoriaForm() {
           id="tema"
           name="tema"
           required
-          className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700"
+          className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 focus:outline-none focus:border-clay-700"
         >
           <option value="">Seleccioná un tema</option>
           <option>Agua y manejo hídrico</option>
@@ -123,25 +123,25 @@ export function AsesoriaForm() {
           required
           rows={5}
           placeholder="¿Qué estás buscando? ¿Tenés un terreno, un proyecto en curso, una duda específica? Contanos todo lo que sea relevante."
-          className="border border-bone-300 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:border-clay-700 resize-none"
+          className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-700/40 focus:outline-none focus:border-clay-700 resize-none"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label className="font-sans text-sm font-semibold text-ink-800">Tipo de sesión</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="flex items-start gap-3 p-4 border border-bone-200 cursor-pointer hover:border-clay-400 transition-colors">
+          <label className="flex items-start gap-3 p-4 border border-bone-200 cursor-pointer hover:border-clay-700 transition-colors">
             <input type="radio" name="tipo_sesion" value="puntual-usd30" className="mt-0.5" />
             <div>
               <span className="font-sans text-sm font-semibold text-ink-900 block">Consulta puntual</span>
-              <span className="font-sans text-xs text-ink-500">USD 30 · Pregunta específica</span>
+              <span className="font-sans text-xs text-ink-700">USD 30 · Pregunta específica</span>
             </div>
           </label>
-          <label className="flex items-start gap-3 p-4 border border-bone-200 cursor-pointer hover:border-clay-400 transition-colors">
+          <label className="flex items-start gap-3 p-4 border border-bone-200 cursor-pointer hover:border-clay-700 transition-colors">
             <input type="radio" name="tipo_sesion" value="diagnostico-usd60" defaultChecked className="mt-0.5" />
             <div>
               <span className="font-sans text-sm font-semibold text-ink-900 block">Diagnóstico integral</span>
-              <span className="font-sans text-xs text-ink-500">USD 60 · Revisión completa</span>
+              <span className="font-sans text-xs text-ink-700">USD 60 · Revisión completa</span>
             </div>
           </label>
         </div>
@@ -161,7 +161,7 @@ export function AsesoriaForm() {
         {status === 'sending' ? 'Enviando...' : 'Enviar consulta'}
       </button>
 
-      <p className="font-sans text-xs text-ink-400 text-center">
+      <p className="font-sans text-xs text-ink-700 text-center">
         Te respondemos en 24 horas hábiles. Sin spam, nunca.
       </p>
     </form>

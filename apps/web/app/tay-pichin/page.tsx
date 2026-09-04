@@ -260,7 +260,7 @@ export default function TayPichinPage() {
           <div className="text-center mb-8">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Eventos · Barrofest</p>
             <h2 className="font-display text-3xl text-bone-50">Un festival de <em>bioconstrucción.</em></h2>
-            <p className="mt-2 font-sans text-sm text-bone-300/70">Mini-documental del primer Barrofest en Tay Pichín.</p>
+            <p className="mt-2 font-sans text-sm text-bone-200/70">Mini-documental del primer Barrofest en Tay Pichín.</p>
           </div>
           <div className="relative aspect-video bg-ink-800 overflow-hidden">
             <iframe

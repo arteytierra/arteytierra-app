@@ -160,7 +160,7 @@ export default function AlquimiaNaturalPage() {
                 'Sentís el llamado de conectar con la naturaleza',
               ].map(item => (
                 <div key={item} className="flex gap-3 items-start">
-                  <div className="mt-1.5 w-2 h-2 bg-clay-600 flex-shrink-0" />
+                  <div className="mt-1.5 w-2 h-2 bg-clay-700 flex-shrink-0" />
                   <p className="font-sans text-sm text-ink-700">{item}</p>
                 </div>
               ))}
@@ -232,15 +232,15 @@ export default function AlquimiaNaturalPage() {
             <h2 className="font-display text-4xl text-ink-950">
               Las 8 fechas<br /><em>del ciclo.</em>
             </h2>
-            <p className="mt-3 font-sans text-ink-600 text-sm">3er sábado de cada mes · 10:00 a 12:30 hs · Tay Pichín</p>
+            <p className="mt-3 font-sans text-ink-700 text-sm">3er sábado de cada mes · 10:00 a 12:30 hs · Tay Pichín</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
             {FECHAS.map(f => (
               <div key={f.num} className="flex flex-col bg-bone-50 border border-bone-200 p-4 text-center">
-                <span className="font-display text-3xl text-clay-600 mb-1">{f.num}</span>
+                <span className="font-display text-3xl text-clay-700 mb-1">{f.num}</span>
                 <p className="font-sans font-bold text-sm text-ink-950 mb-0.5">{f.fecha}</p>
-                <p className="font-sans text-[10px] text-ink-500 uppercase tracking-wide">{f.dia}</p>
-                <p className="font-sans text-[10px] text-clay-600 mt-auto pt-2 leading-tight">{f.modulo}</p>
+                <p className="font-sans text-[10px] text-ink-700 uppercase tracking-wide">{f.dia}</p>
+                <p className="font-sans text-[10px] text-clay-700 mt-auto pt-2 leading-tight">{f.modulo}</p>
               </div>
             ))}
           </div>
@@ -281,15 +281,15 @@ export default function AlquimiaNaturalPage() {
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-4">Modalidad</p>
             <h2 className="font-display text-4xl text-bone-50 mb-6">A tu <em>ritmo.</em></h2>
             <div className="flex flex-col gap-4">
-              <div className="bg-clay-800/60 border border-clay-600 p-6">
+              <div className="bg-clay-900/50 border border-clay-500 p-6">
                 <h3 className="font-sans font-bold text-bone-50 mb-2">Ciclo completo</h3>
-                <p className="font-sans text-sm text-bone-300 leading-relaxed">
+                <p className="font-sans text-sm text-bone-200 leading-relaxed">
                   8 encuentros · Mayo a Diciembre 2026. Formación integral y profunda. Comunidad y continuidad.
                 </p>
               </div>
-              <div className="bg-clay-800/60 border border-clay-600 p-6">
+              <div className="bg-clay-900/50 border border-clay-500 p-6">
                 <h3 className="font-sans font-bold text-bone-50 mb-2">Encuentros independientes</h3>
-                <p className="font-sans text-sm text-bone-300 leading-relaxed">
+                <p className="font-sans text-sm text-bone-200 leading-relaxed">
                   Sumarte únicamente a los módulos que más resuenen. Sin obligación de continuidad.
                 </p>
               </div>
@@ -299,15 +299,15 @@ export default function AlquimiaNaturalPage() {
             <div>
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-4">Precio</p>
               <div className="flex flex-col gap-3 mb-2">
-                <div className="bg-clay-800/60 border border-clay-500 px-5 py-4">
+                <div className="bg-clay-900/50 border border-clay-500 px-5 py-4">
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Ciclo completo · 8 encuentros</p>
                   <p className="font-display text-3xl text-bone-50">$200.000</p>
                 </div>
-                <div className="bg-clay-800/60 border border-clay-600 px-5 py-4">
+                <div className="bg-clay-900/50 border border-clay-500 px-5 py-4">
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Módulo · 4 encuentros</p>
                   <p className="font-display text-3xl text-bone-50">$110.000</p>
                 </div>
-                <div className="bg-clay-800/60 border border-clay-600 px-5 py-4">
+                <div className="bg-clay-900/50 border border-clay-500 px-5 py-4">
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-200 mb-1">Encuentro suelto</p>
                   <p className="font-display text-3xl text-bone-50">$30.000 <span className="text-sm font-sans font-normal text-clay-200">(sujeto a modificación)</span></p>
                 </div>
@@ -315,7 +315,7 @@ export default function AlquimiaNaturalPage() {
             </div>
 
             {/* PAGO */}
-            <div className="bg-clay-800/60 border border-clay-500 px-5 py-5">
+            <div className="bg-clay-900/50 border border-clay-500 px-5 py-5">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-3">Datos bancarios</p>
               <div className="flex flex-col gap-1.5 font-sans text-sm text-bone-50">
                 <p><span className="text-clay-200">Titular:</span> Bianca Sartori</p>
@@ -357,7 +357,7 @@ export default function AlquimiaNaturalPage() {
             <div className="flex flex-col gap-2 mb-8">
               {['10:00 a 12:30 hs · Eco Escuela Tay Pichín', 'Teoría de saponificación en frío', 'Práctica completa: nos llevamos nuestro jabón'].map(item => (
                 <div key={item} className="flex gap-3 items-start">
-                  <div className="mt-1.5 w-2 h-2 bg-clay-600 flex-shrink-0" />
+                  <div className="mt-1.5 w-2 h-2 bg-clay-700 flex-shrink-0" />
                   <p className="font-sans text-sm text-ink-700">{item}</p>
                 </div>
               ))}

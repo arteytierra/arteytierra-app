@@ -61,7 +61,7 @@ export function CarouselGirgolas() {
             onClick={() => setIdx(i)}
             aria-label={`Foto ${i + 1}`}
             className={`relative flex-shrink-0 w-20 h-14 overflow-hidden border-2 transition-colors ${
-              i === idx ? 'border-clay-400' : 'border-transparent opacity-60 hover:opacity-100'
+              i === idx ? 'border-clay-500' : 'border-transparent opacity-60 hover:opacity-100'
             }`}
           >
             <Image src={f.src} alt={f.alt} fill className="object-cover" sizes="80px" />

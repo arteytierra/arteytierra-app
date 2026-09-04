@@ -122,7 +122,7 @@ export default function TayPichinEnPage() {
               <p className="font-sans text-base text-bone-200 leading-relaxed mb-4">
                 Rooms and camping areas built with earth, wood and natural materials. A living, breathing space where you experience the difference between concrete and a wall that breathes.
               </p>
-              <p className="font-sans text-sm text-bone-300/70 mb-2">Score 7.5 · Booking.com</p>
+              <p className="font-sans text-sm text-bone-200/70 mb-2">Score 7.5 · Booking.com</p>
               <div className="flex flex-wrap gap-4 mt-6">
                 <a
                   href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.en.html"
@@ -184,7 +184,7 @@ export default function TayPichinEnPage() {
             <div className="text-center mb-8">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Events · Barrofest</p>
               <h2 className="font-display text-3xl text-bone-50">A natural building <em>festival.</em></h2>
-              <p className="mt-2 font-sans text-sm text-bone-300/70">Mini-documentary of the first Barrofest at Tay Pichín. (in Spanish)</p>
+              <p className="mt-2 font-sans text-sm text-bone-200/70">Mini-documentary of the first Barrofest at Tay Pichín. (in Spanish)</p>
             </div>
             <div className="relative aspect-video bg-ink-800 overflow-hidden">
               <iframe
