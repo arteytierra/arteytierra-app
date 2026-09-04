@@ -1,0 +1,51 @@
+{
+  "fecha_consulta": "2026-09-03",
+  "conteos": {
+    "eco_id_bbox": 125,
+    "islas_fuera_bbox_auditadas": 2,
+    "eco_id_total_auditados": 127,
+    "eco_id_con_owner_final": 125,
+    "eco_id_mantenidos_en_fallback_global": 2,
+    "eco_id_reservados_entrega_anterior": 16,
+    "eco_id_agregar": 53,
+    "eco_id_reemplazar": 37,
+    "eco_id_ampliar_sin_remapear": 20,
+    "fichas_ecologicas_entregadas": 59,
+    "fichas_ecologicas_nuevas": 47,
+    "fichas_actuales_revisadas": 12,
+    "saberes_documentados": 29,
+    "saberes_autoactivables": 0
+  },
+  "controles": {
+    "ids_ficha_unicos": true,
+    "ids_fichas_sin_doble_owner": true,
+    "todas_las_fichas_con_saberes_vacios": true,
+    "todos_los_eco_id_con_accion": true,
+    "no_se_pisan_143_ids_reservados": true,
+    "ninguna_ficha_sudamericana_actual_huerfana": true,
+    "seis_prioridades_cubiertas": true,
+    "ningun_saber_autoactivable": true,
+    "fuentes_con_url": true
+  },
+  "detalle": {
+    "duplicateProfileIds": [],
+    "rowsWithoutDecision": [],
+    "reservedOverwrite": [],
+    "orphanedCurrent": [],
+    "priorityCoverage": {
+      "caatinga": true,
+      "chaco_humedo": true,
+      "pantanal": true,
+      "paramos": true,
+      "choco_darien": true,
+      "valles_secos": true
+    }
+  },
+  "advertencias_criticas": [
+    "ECO_ID 0 (Rock and Ice) ya está reservado como alaska_tundra_hielo_beringia. Es global y aparece en los Andes: debe refactorizarse a una ficha global antes de habilitarlo allí.",
+    "ECO_ID 578 cubre Patagonia continental y también Malvinas/Falklands en el FeatureServer. RESOLVE no permite una ficha insular separada sin una segunda geometría.",
+    "ECO_ID 601 representa Galápagos como matorral xerófilo único y no separa las zonas altas húmedas; mostrar esta limitación en UI.",
+    "Las geometrías culturales no se entregan: todas las entradas quedan documentado_sin_geometria y no son autoactivables."
+  ],
+  "valido": true
+}

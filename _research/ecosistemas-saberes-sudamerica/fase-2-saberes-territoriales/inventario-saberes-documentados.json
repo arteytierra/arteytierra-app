@@ -1,0 +1,588 @@
+[
+  {
+    "id": "chakra_amazonica_napo",
+    "nombre": "Chakra amazónica de Napo",
+    "pueblo_portadores": "Comunidades Kichwa amazónicas; liderazgo de chakramamas",
+    "pais": "EC",
+    "territorio_minimo": "Provincia de Napo, únicamente predios y comunidades del sistema SIPAM documentado",
+    "ecorregiones_resolve": [
+      483
+    ],
+    "descripcion": "Sistema agroforestal familiar diverso que integra cultivos alimentarios, árboles, especies forestales y regeneración; conserva agrobiodiversidad y continuidad entre casa, chakra y bosque.",
+    "fuente": {
+      "label": "FAO GIAHS — Amazonian Chakra",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/ecuador-amazonian-chakra/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No inferir composición, medicina, rituales ni calendarios. Usar el polígono oficial del SIPAM y atribución comunitaria.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "aja_shuar_amazonia_ecuatoriana",
+    "nombre": "Aja Shuar",
+    "pueblo_portadores": "Mujeres y comunidades Shuar",
+    "pais": "EC",
+    "territorio_minimo": "Comunidades Shuar participantes del sur-centro amazónico ecuatoriano",
+    "ecorregiones_resolve": [
+      505
+    ],
+    "descripcion": "Huerto o sistema agroforestal biodiverso asociado a producción alimentaria, regeneración de suelo, polinizadores y cuidado territorial.",
+    "fuente": {
+      "label": "FAO — Guardianes del saber, la tierra y los alimentos",
+      "url": "https://www.fao.org/americas/news/stories/detail/guardianes-del-saber/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "La fuente documenta participantes concretos, no todo el pueblo Shuar. No publicar plantas medicinales, rituales ni localizaciones sensibles.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "chakra_andina_cotacachi",
+    "nombre": "Chakra andina de Cotacachi",
+    "pueblo_portadores": "Comunidades Kichwa de Cotacachi; mujeres agricultoras",
+    "pais": "EC",
+    "territorio_minimo": "Cantón Cotacachi, sitios reconocidos por el SIPAM entre aproximadamente 2.500 y 3.400 m",
+    "ecorregiones_resolve": [
+      486,
+      593
+    ],
+    "descripcion": "Sistema agrícola diverso que conecta pisos altitudinales y conserva variedades locales mediante parcelas familiares, redes de semillas y organización comunitaria.",
+    "fuente": {
+      "label": "FAO GIAHS — Chakra andina de Cotacachi",
+      "url": "https://www.fao.org/giahs/around-the-world/detail/ecuador-andean-chakra/es",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No extender a todos los Andes ecuatorianos ni publicar calendarios rituales. La delimitación SIPAM manda sobre ECO_ID.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "agricultura_andina_cusco_puno",
+    "nombre": "Agricultura andina de Cusco y Puno",
+    "pueblo_portadores": "Comunidades Quechua y Aymara del corredor SIPAM",
+    "pais": "PE",
+    "territorio_minimo": "Microcuencas SIPAM de Cusco y Puno en el transecto Machu Picchu–Vilcanota–La Raya–Titicaca",
+    "ecorregiones_resolve": [
+      493,
+      587,
+      588,
+      589
+    ],
+    "descripcion": "Manejo complementario de pisos, terrazas, campos elevados, pequeños reservorios y rotaciones comunales; conserva cultivos y variedades altoandinas.",
+    "fuente": {
+      "label": "FAO GIAHS — Andean Agriculture, Peru",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/peru-andean-agriculture/20th-anniversary-celebrations-of-the-globally-important-agricultural-heritage-systems-%28giahs%29-programme/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No convertir técnicas en receta universal ni trasladarlas fuera del sitio. Omitir sitios sagrados, rituales y calendarios.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "sistema_camellidos_norte_chile",
+    "nombre": "Ganadería camélida y agricultura altoandina del norte de Chile",
+    "pueblo_portadores": "Comunidades Aymara, Quechua y Likan Antay",
+    "pais": "CL",
+    "territorio_minimo": "Sitios SIPAM de Arica y Parinacota, Tarapacá y Antofagasta, aproximadamente 3.000–4.500 m",
+    "ecorregiones_resolve": [
+      587,
+      588,
+      598
+    ],
+    "descripcion": "Integra camélidos, cultivos andinos y gestión comunitaria del agua con movilidad estacional adaptada a ambientes altoandinos áridos.",
+    "fuente": {
+      "label": "FAO GIAHS — sistema altoandino del norte de Chile",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/chile-high-andean-camelids-system/es",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar rutas de trashumancia, vertientes ni normas consuetudinarias. No prescribir carga animal o riego fuera del sistema.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "sistema_pehuenche_ngulumapu",
+    "nombre": "Sistema ancestral Pehuenche del Ngulumapu",
+    "pueblo_portadores": "Comunidades Mapuche-Pehuenche y familias campesinas participantes",
+    "pais": "CL",
+    "territorio_minimo": "Sitios SIPAM de la cordillera Pehuenche en el sur de Chile",
+    "ecorregiones_resolve": [
+      563,
+      595
+    ],
+    "descripcion": "Integra huertas familiares, recolección vinculada al pewen y ganadería trashumante en un paisaje de bosque y montaña.",
+    "fuente": {
+      "label": "FAO GIAHS — sistema Pehuenche",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/chile-andean-pehuenche-system/es",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar lugares de recolección, veranadas, plantas medicinales ni prácticas ceremoniales. Exige polígono SIPAM.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "agricultura_chiloe",
+    "nombre": "Agricultura de Chiloé",
+    "pueblo_portadores": "Familias agricultoras chilotas y comunidades locales del sistema SIPAM",
+    "pais": "CL",
+    "territorio_minimo": "Sitios SIPAM del archipiélago de Chiloé",
+    "ecorregiones_resolve": [
+      563
+    ],
+    "descripcion": "Sistema insular diversificado centrado en variedades locales de papa, huertas y pequeña ganadería, sostenido por selección campesina e intercambio.",
+    "fuente": {
+      "label": "FAO GIAHS — Chiloé Agriculture",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/chile-chiloe-agriculture/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No activar para todo el bosque valdiviano ni publicar material genético o conocimiento no autorizado.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "erva_mate_sombreada_parana",
+    "nombre": "Erva-mate sombreada en bosque de araucaria",
+    "pueblo_portadores": "Pueblos indígenas y comunidades tradicionales del sistema GIAHS de Paraná",
+    "pais": "BR",
+    "territorio_minimo": "Polígono GIAHS del sistema de erva-mate sombreada en Paraná",
+    "ecorregiones_resolve": [
+      440
+    ],
+    "descripcion": "Agroforestería bajo dosel nativo que integra erva-mate, alimentos, frutos y regeneración del bosque de araucaria.",
+    "fuente": {
+      "label": "FAO GIAHS — shade-grown Erva-mate",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/brazil-erva-mate/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No trasladar a toda la Mata Atlántica. No publicar reglas internas, semillas o prácticas ceremoniales sin consentimiento.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "apanhadores_sempre_vivas",
+    "nombre": "Sistema de apanhadores de flores sempre-vivas",
+    "pueblo_portadores": "Comunidades apanhadoras de flores sempre-vivas representadas por CODECEX",
+    "pais": "BR",
+    "territorio_minimo": "Seis comunidades y áreas de uso común del sistema GIAHS en Espinhaço Meridional, Minas Gerais",
+    "ecorregiones_resolve": [
+      566
+    ],
+    "descripcion": "Combina recolección manejada, pastoreo estacional en tierras comunes, huertas agroforestales y cultivos de secano a diferentes altitudes.",
+    "fuente": {
+      "label": "FAO GIAHS — Espinhaço Meridional",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/brazil-minas-gerais-agricultural-system/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar poblaciones de flores, recorridos ni técnicas finas de extracción. La geometría comunitaria y los derechos de uso son obligatorios.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "quebradeiras_coco_babacu",
+    "nombre": "Quebradeiras de coco babaçu",
+    "pueblo_portadores": "Movimento Interestadual das Quebradeiras de Coco Babaçu y comunidades asociadas",
+    "pais": "BR",
+    "territorio_minimo": "Comunidades documentadas en Maranhão, Tocantins, Pará y Piauí; no todo el ECO_ID",
+    "ecorregiones_resolve": [
+      540,
+      508,
+      518
+    ],
+    "descripcion": "Recolección y transformación integral del babaçu sostenida por conocimiento intergeneracional, organización de mujeres y defensa del acceso a palmares.",
+    "fuente": {
+      "label": "FAO Brasil — quebradeiras de coco y organización",
+      "url": "https://www.fao.org/brasil/noticias/detail-events/en/c/1156038/",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No inferir derechos de acceso por presencia de palmas. Exige territorios y organizaciones reconocidas; no publicar sitios de recolección.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "chagra_amazonia_colombiana",
+    "nombre": "Chagra amazónica colombiana",
+    "pueblo_portadores": "Familias y comunidades indígenas documentadas por cada proyecto",
+    "pais": "CO",
+    "territorio_minimo": "Comunidad fuente y su área de uso autorizada en Amazonas, Caquetá, Guainía, Guaviare, Putumayo o Vaupés",
+    "ecorregiones_resolve": [
+      446,
+      473,
+      483,
+      503
+    ],
+    "descripcion": "Sistema agroforestal de cultivos diversos, barbechos manejados y regeneración forestal; su composición y significado dependen de cada pueblo y comunidad.",
+    "fuente": {
+      "label": "FAO GLIS — chagra de una comunidad amazónica colombiana",
+      "url": "https://glis.fao.org/glis/csures/326",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No usar “chagra” como receta panamazónica. Exige fuente y consentimiento por comunidad; omitir medicina, rituales y variedades sensibles.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "gobernanza_indigena_bosque_colombia",
+    "nombre": "Gobernanza indígena de bosques amazónicos",
+    "pueblo_portadores": "Organizaciones y pueblos que priorizaron proyectos del programa Visión Amazonía",
+    "pais": "CO",
+    "territorio_minimo": "Los 69 proyectos acordados en seis departamentos, sólo una vez disponibles sus polígonos públicos autorizados",
+    "ecorregiones_resolve": [
+      446,
+      473,
+      483,
+      503
+    ],
+    "descripcion": "Iniciativas definidas autónomamente para gobernanza territorial, manejo forestal y bienestar, integrando conocimientos tradicionales y conservación.",
+    "fuente": {
+      "label": "FAO Colombia — proyectos indígenas y manejo forestal",
+      "url": "https://www.fao.org/in-action/redd-rbp-colombia/indigenous-peoples-and-forest-management/indigenous-projects/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "La página no autoriza publicar límites internos ni contenidos de cada proyecto. No activar hasta contar con geometría y atribución del proponente.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "bioay_ashaninka_yanesha",
+    "nombre": "Gestión biocultural en Oxapampa–Asháninka–Yánesha",
+    "pueblo_portadores": "Pueblos Asháninka y Yánesha y comunidades de la reserva de biosfera",
+    "pais": "PE",
+    "territorio_minimo": "Reserva de Biosfera Oxapampa–Asháninka–Yánesha, según zonificación oficial pública",
+    "ecorregiones_resolve": [
+      493,
+      512
+    ],
+    "descripcion": "Gestión de paisaje que articula conocimiento indígena y local, conservación de bosque y medios de vida en gradientes andino-amazónicos.",
+    "fuente": {
+      "label": "UNESCO — Amazon Biosphere Reserves Project, Peru",
+      "url": "https://www.unesco.org/en/amazon-biosphere-reserves-project/peru",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No atribuir una práctica única a ambos pueblos ni publicar sitios culturales. Activar sólo con la zonificación oficial pertinente.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "tacana_gestion_territorial",
+    "nombre": "Gestión territorial Tacana",
+    "pueblo_portadores": "Pueblo Tacana y organizaciones participantes",
+    "pais": "BO",
+    "territorio_minimo": "Comunidades Tacana del proyecto citado por FAO, con geometría provista por su organización",
+    "ecorregiones_resolve": [
+      505,
+      565
+    ],
+    "descripcion": "La fuente documenta conservación de biodiversidad, seguridad alimentaria y medios de vida dentro de una visión de territorio, cultura y transmisión intergeneracional.",
+    "fuente": {
+      "label": "FAO — Guardianes del saber, la tierra y los alimentos",
+      "url": "https://www.fao.org/americas/news/stories/detail/guardianes-del-saber/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No extrapolar al conjunto del ECO_ID ni revelar recursos, senderos o sitios sensibles.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "pemon_gran_sabana",
+    "nombre": "Conocimiento territorial Pemón en Gran Sabana",
+    "pueblo_portadores": "Comunidades Pemón participantes del proyecto citado por FAO",
+    "pais": "VE",
+    "territorio_minimo": "Comunidad y territorio participante en Gran Sabana, estado Bolívar",
+    "ecorregiones_resolve": [
+      570,
+      464
+    ],
+    "descripcion": "Conservación y producción local vinculadas a paisaje de sabana y bosque, con conocimiento transmitido entre generaciones.",
+    "fuente": {
+      "label": "FAO — Guardianes del saber, la tierra y los alimentos",
+      "url": "https://www.fao.org/americas/news/stories/detail/guardianes-del-saber/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar patrones de quema, sitios sagrados, recursos medicinales ni ubicación de especies. La fuente es testimonial, no un manual.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "macushi_iwokrama_rupununi",
+    "nombre": "Manejo Macushi en Iwokrama y Rupununi",
+    "pueblo_portadores": "Comunidades Macushi vinculadas a Iwokrama y áreas vecinas",
+    "pais": "GY",
+    "territorio_minimo": "Iwokrama Forest y territorios comunitarios con autorización; no toda la sabana Rupununi",
+    "ecorregiones_resolve": [
+      465,
+      570
+    ],
+    "descripcion": "Gobernanza y uso sostenible del bosque articulados con conservación, investigación y beneficios comunitarios.",
+    "fuente": {
+      "label": "Guyana Protected Areas Commission — Iwokrama",
+      "url": "https://www.pac.gov.gy/our-work/",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No inferir usos culturales de toda persona Macushi. Exige límites comunitarios y acuerdo de la institución o comunidad.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "patamona_kaieteur",
+    "nombre": "Relación territorial Patamona en Kaieteur",
+    "pueblo_portadores": "Comunidades Patamona",
+    "pais": "GY",
+    "territorio_minimo": "Entorno cultural documentado de Kaieteur con límites públicos no sensibles",
+    "ecorregiones_resolve": [
+      464,
+      466
+    ],
+    "descripcion": "La fuente oficial reconoce dependencia histórica, cultural y de medios de vida en el paisaje de tierras altas y bosques.",
+    "fuente": {
+      "label": "Guyana Protected Areas Commission",
+      "url": "https://www.pac.gov.gy/",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar sitios sagrados ni senderos tradicionales. La fuente no ofrece prácticas agrícolas transferibles.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "ip_lc_suriname_conservacion",
+    "nombre": "Conservación indígena y local en Surinam",
+    "pueblo_portadores": "Comunidades indígenas y locales participantes de iniciativas FAO documentadas",
+    "pais": "SR",
+    "territorio_minimo": "Comunidades participantes identificadas por la organización ejecutora",
+    "ecorregiones_resolve": [
+      465,
+      463,
+      570
+    ],
+    "descripcion": "Acciones de conservación, seguridad alimentaria e ingresos que se apoyan en conocimiento territorial y transmisión intergeneracional.",
+    "fuente": {
+      "label": "FAO — Guardianes del saber, la tierra y los alimentos",
+      "url": "https://www.fao.org/americas/news/stories/detail/guardianes-del-saber/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No asumir homogeneidad entre pueblos o comunidades; sin polígono y atribución específica permanece sólo como inventario.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "kayapo_islas_bosque",
+    "nombre": "Enriquecimiento de bosque por comunidades Kayapó",
+    "pueblo_portadores": "Comunidades Kayapó citadas por la literatura FAO",
+    "pais": "BR",
+    "territorio_minimo": "Tierras indígenas Kayapó donde la comunidad confirme continuidad y publicación del conocimiento",
+    "ecorregiones_resolve": [
+      507,
+      518,
+      567
+    ],
+    "descripcion": "Manejo y enriquecimiento de áreas forestales con especies útiles, descrito como parte de sistemas amazónicos de recursos comunes.",
+    "fuente": {
+      "label": "FAO — Common forest resource management",
+      "url": "https://www.fao.org/4/u9040e/u9040e13.htm",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "Fuente histórica y secundaria: requiere validación contemporánea. No publicar especies, técnicas, sitios o calendarios como receta.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "ribeirinhos_varzea_amazonica",
+    "nombre": "Manejo ribereño de várzeas y productos forestales",
+    "pueblo_portadores": "Comunidades ribeirinhas o caboclas documentadas localmente",
+    "pais": "BR",
+    "territorio_minimo": "Comunidad y tramo de várzea documentados; nunca toda la cuenca",
+    "ecorregiones_resolve": [
+      467,
+      480,
+      482,
+      496
+    ],
+    "descripcion": "Sistemas diversificados que combinan pesca, cultivos de pulso fluvial, árboles y productos no maderables en mosaicos de inundación.",
+    "fuente": {
+      "label": "FAO Unasylva — Amazon forest dwellers",
+      "url": "https://www.fao.org/4/w1033e/w1033e04.htm",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "La fuente es regional e histórica. Exige verificación actual, polígono comunitario y reglas de acceso; no publicar pesqueros o plantas medicinales.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "yanesha_bora_barbeco_manejado",
+    "nombre": "Continuo chacra–barbecho manejado en Amazonía peruana",
+    "pueblo_portadores": "Comunidades Yánesha/Amuesha y Bora citadas por la fuente",
+    "pais": "PE",
+    "territorio_minimo": "Palcazú para Yánesha/Amuesha y comunidades Bora cercanas a Iquitos, según fuente y validación local",
+    "ecorregiones_resolve": [
+      469,
+      493,
+      512
+    ],
+    "descripcion": "La parcela continúa siendo manejada durante el barbecho mediante combinación de cultivos anuales, árboles perennes y regeneración natural.",
+    "fuente": {
+      "label": "FAO — Common forest resource management",
+      "url": "https://www.fao.org/4/u9040e/u9040e13.htm",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "Documento antiguo; confirmar vigencia y autodenominación. No trasladar especies o duraciones de barbecho fuera de la comunidad.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "pantaneiros_manejo_paisaje",
+    "nombre": "Conocimiento territorial pantaneiro",
+    "pueblo_portadores": "Comunidades tradicionales pantaneiras reconocidas oficialmente",
+    "pais": "BR",
+    "territorio_minimo": "Comunidades Barra de São Lourenço, Amolar u otras con reconocimiento y polígono autorizado",
+    "ecorregiones_resolve": [
+      584
+    ],
+    "descripcion": "Conocimiento situado del pulso de inundación, movilidad y uso múltiple del paisaje pantanero para sostener medios de vida.",
+    "fuente": {
+      "label": "CNDH Brasil — comunidades tradicionales pantaneiras",
+      "url": "https://www.gov.br/mdh/pt-br/acesso-a-informacao/participacao-social/conselho-nacional-de-direitos-humanos-cndh/RELATRIOSOBREOSDIREITOSDOSPOVOSECOMUNIDADESTRADICIONAISv2.pdf",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "La fuente sustenta portadores y territorio, no una receta. No publicar rutas, pesqueros, niveles de agua ni calendarios.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "wichi_monte_chaco",
+    "nombre": "Conocimiento Wichí del monte y alimentos",
+    "pueblo_portadores": "Comunidades Wichí participantes del proyecto Wichí Lahäk",
+    "pais": "AR",
+    "territorio_minimo": "Comunidades participantes del norte de Salta y Formosa, según consentimiento del proyecto",
+    "ecorregiones_resolve": [
+      569
+    ],
+    "descripcion": "Conocimiento colectivo sobre alimentos del monte y río, documentado mediante diálogo intercultural para transmisión comunitaria.",
+    "fuente": {
+      "label": "INTA — Wichí Lahäk",
+      "url": "https://intainforma.inta.gob.ar/wichi-lahak-el-calendario-cultural-para-rescatar-y-revalorizar-saberes-ancestrales/",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "El calendario cultural pertenece a las comunidades: no copiar fechas, sitios, recetas ni plantas medicinales. Mostrar sólo una síntesis atribuida.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "guarani_erva_mate_bosque",
+    "nombre": "Agroforestería de yerba mate bajo bosque",
+    "pueblo_portadores": "Pueblos indígenas y comunidades tradicionales participantes del GIAHS; validar específicamente presencia Guaraní",
+    "pais": "BR",
+    "territorio_minimo": "Polígono GIAHS de Paraná y comunidades identificadas por el expediente",
+    "ecorregiones_resolve": [
+      439,
+      440
+    ],
+    "descripcion": "Cultivo sombreado y regeneración de bosque que integra yerba mate con alimentos y especies nativas.",
+    "fuente": {
+      "label": "FAO GIAHS — shade-grown Erva-mate",
+      "url": "https://www.fao.org/giahs/giahs-around-the-world/brazil-erva-mate/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No etiquetar automáticamente como Guaraní sin fuente comunitaria. No extender al Alto Paraná argentino o paraguayo sin investigación local.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "caatingueiros_fundos_pasto",
+    "nombre": "Sistemas territoriales de Caatingueiros y Fundos de Pasto",
+    "pueblo_portadores": "Comunidades caatingueiras y de fundos e fechos de pasto reconocidas por el Estado brasileño",
+    "pais": "BR",
+    "territorio_minimo": "Territorios tradicionales reconocidos o polígonos provistos por sus asociaciones en el semiárido",
+    "ecorregiones_resolve": [
+      525,
+      445
+    ],
+    "descripcion": "Uso comunitario y familiar situado de la Caatinga y áreas de pastoreo, asociado a identidad territorial y conocimiento de ciclos semiáridos.",
+    "fuente": {
+      "label": "MDA Brasil — pueblos y comunidades tradicionales",
+      "url": "https://www.gov.br/mda/pt-br/acesso-a-informacao/acoes-e-programas/programas-projetos-acoes-obras-e-atividades/programa-de-apoio-ao-acesso-a-terra-e-ao-territorio-e-a-protecao-socioterritorial-de-povos-e-comunidades-tradicionais-territorio-tradicional/quem-pode-acessar",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "La fuente reconoce sujetos de derecho, no describe técnicas. Antes de publicar prácticas hace falta fuente comunitaria específica.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "ganaderia_familiar_campo_natural_uruguay",
+    "nombre": "Conocimiento local de ganadería familiar sobre campo natural",
+    "pueblo_portadores": "Productores y productoras familiares participantes del Proyecto Pastizales",
+    "pais": "UY",
+    "territorio_minimo": "Zonas piloto del norte y sudeste de Uruguay documentadas por FAO/MGAP/MA",
+    "ecorregiones_resolve": [
+      574
+    ],
+    "descripcion": "Evaluación participativa y manejo adaptativo del campo natural a escala de predio y paisaje, combinando experiencia local y conocimiento técnico.",
+    "fuente": {
+      "label": "FAO Uruguay — mejores prácticas sobre campo natural",
+      "url": "https://www.fao.org/uruguay/noticias/detail/es/c/1604855/",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No presentar como saber indígena ni como receta ganadera universal. Exige identificar zona piloto y familia o colectivo participante.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "concheras_manglar_ecuador",
+    "nombre": "Recolección artesanal de concha en manglares ecuatorianos",
+    "pueblo_portadores": "Asociaciones y comunidades manglar-dependientes documentadas en la fuente",
+    "pais": "EC",
+    "territorio_minimo": "Áreas de custodia y comunidades de San Lorenzo, estuario de Cojimíes, Golfo de Guayaquil o Hualtaco según expediente autorizado",
+    "ecorregiones_resolve": [
+      615
+    ],
+    "descripcion": "Pesquería artesanal con derechos de acceso y conocimiento ecológico local de estuarios y manglares.",
+    "fuente": {
+      "label": "FAO — Rights-based Approaches in Ecuador’s Fishery for Mangrove Cockles",
+      "url": "https://www.fao.org/fishery/static/tenure-user-rights/root/volume1/C3%20Rights-based%20Approaches%20in%20Ecuador%E2%80%99s%20Fishery%20for%20Mangrove%20Cockles%20.pdf",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar bancos de concha, tallas locales, rutas ni calendarios. Usar sólo áreas de custodia públicas y autorización de la asociación.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "pesca_artesanal_orinoco_amazonia_colombia",
+    "nombre": "Pesca artesanal y de subsistencia en Orinoco y Amazonía colombiana",
+    "pueblo_portadores": "Comunidades indígenas y ribereñas y organizaciones de pesca artesanal",
+    "pais": "CO",
+    "territorio_minimo": "Cuenca, comunidad y organización participante del plan nacional de pesca a pequeña escala",
+    "ecorregiones_resolve": [
+      446,
+      473,
+      583
+    ],
+    "descripcion": "Sistemas de pesca de importancia cultural y alimentaria articulados a ríos y pulsos hidrológicos.",
+    "fuente": {
+      "label": "FAO — pesca a pequeña escala en Colombia",
+      "url": "https://www.fao.org/voluntary-guidelines-small-scale-fisheries/in-action/where-we-work/colombia/en",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No publicar pesqueros, temporadas, artes, especies sensibles ni reglas de captura. El ECO_ID no demuestra pertenencia a una comunidad.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  },
+  {
+    "id": "caiçaras_manglar_restinga_brasil",
+    "nombre": "Conocimiento territorial caiçara y pesquero artesanal",
+    "pueblo_portadores": "Comunidades caiçaras, pescadores artesanales y extrativistas costeros reconocidos oficialmente",
+    "pais": "BR",
+    "territorio_minimo": "Territorios tradicionales reconocidos y asociaciones costeras con polígono autorizado",
+    "ecorregiones_resolve": [
+      441,
+      500,
+      616
+    ],
+    "descripcion": "Inventario de portadores vinculados a mosaicos de restinga, Mata Atlántica y estuario; las prácticas concretas deben documentarse comunidad por comunidad.",
+    "fuente": {
+      "label": "MDA Brasil — pueblos y comunidades tradicionales",
+      "url": "https://www.gov.br/mda/pt-br/acesso-a-informacao/acoes-e-programas/programas-projetos-acoes-obras-e-atividades/programa-de-apoio-ao-acesso-a-terra-e-ao-territorio-e-a-protecao-socioterritorial-de-povos-e-comunidades-tradicionais-territorio-tradicional/quem-pode-acessar",
+      "fecha_consulta": "2026-09-03"
+    },
+    "cautelas": "No inferir pesca, agricultura o recolección desde la etiqueta caiçara. La fuente reconoce colectivos, no autoriza divulgar conocimiento.",
+    "estado_geometria": "documentado_sin_geometria",
+    "activacion": "NO_AUTOMATICA: exige polígono aprobado y coincidencia espacial; país, ECO_ID o Köppen sólo filtran."
+  }
+]

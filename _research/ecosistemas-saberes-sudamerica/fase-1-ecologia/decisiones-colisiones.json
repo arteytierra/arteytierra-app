@@ -1,0 +1,497 @@
+[
+  {
+    "eco_id": 0,
+    "eco_name": "Rock and Ice",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "alaska_tundra_hielo_beringia",
+    "owner_propuesto": "alaska_tundra_hielo_beringia",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Colisión crítica: Rock and Ice es un ECO_ID global multipartes. La ficha de Alaska ya reservada no describe hielo/roca andinos. No se pisa por orden del encargo; requiere refactor global antes de producción sudamericana."
+  },
+  {
+    "eco_id": 129,
+    "eco_name": "Scotia Sea Islands tundra",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": null,
+    "owner_propuesto": null,
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Intersección mínima del rectángulo con islas subantárticas; fuera de los países del encargo. Mantener fallback global."
+  },
+  {
+    "eco_id": 440,
+    "eco_name": "Araucaria moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_araucaria_altura",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 441,
+    "eco_name": "Atlantic Coast restingas",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_restingas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 442,
+    "eco_name": "Bahia coastal forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_costera",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 443,
+    "eco_name": "Bahia interior forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_interior",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 446,
+    "eco_name": "Caqueta moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_noroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 449,
+    "eco_name": "Cayos Miskitos-San Andrés and Providencia moist forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "bosque_atlantico_mosquitia",
+    "owner_propuesto": "bosque_atlantico_mosquitia",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 454,
+    "eco_name": "Chocó-Darién moist forests",
+    "accion": "AMPLIAR_SIN_REMAPEAR",
+    "owner_actual": "darien_humedo_panama",
+    "owner_propuesto": "darien_humedo_panama",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Prioridad Chocó–Darién: conservar dueño global ya entregado y ampliar esa ficha para describir también el Chocó colombiano, sin crear segundo dueño."
+  },
+  {
+    "eco_id": 461,
+    "eco_name": "Eastern Panamanian montane forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "darien_humedo_panama",
+    "owner_propuesto": "darien_humedo_panama",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 463,
+    "eco_name": "Guianan freshwater swamp forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "guayanas_bosques_inundables_delta",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 464,
+    "eco_name": "Guianan Highlands moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "pantepui_guayana_alta",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 465,
+    "eco_name": "Guianan lowland moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "guayanas_bosques_tierras_bajas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 466,
+    "eco_name": "Guianan piedmont moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "guayanas_bosques_tierras_bajas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 467,
+    "eco_name": "Gurupa várzea",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "varzeas_igapos_amazonicos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 469,
+    "eco_name": "Iquitos várzea",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "varzeas_igapos_amazonicos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 470,
+    "eco_name": "Isthmian-Atlantic moist forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "costa_rica_bosques_humedos_estacionales",
+    "owner_propuesto": "costa_rica_bosques_humedos_estacionales",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 471,
+    "eco_name": "Isthmian-Pacific moist forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "darien_humedo_panama",
+    "owner_propuesto": "darien_humedo_panama",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 473,
+    "eco_name": "Japurá-Solimões-Negro moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_noroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 474,
+    "eco_name": "Juruá-Purus moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_suroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 476,
+    "eco_name": "Madeira-Tapajós moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_oriental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 480,
+    "eco_name": "Marajó várzea",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "varzeas_igapos_amazonicos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 482,
+    "eco_name": "Monte Alegre várzea",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "varzeas_igapos_amazonicos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 483,
+    "eco_name": "Napo moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_noroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 484,
+    "eco_name": "Negro-Branco moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "guayanas_bosques_tierras_bajas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 485,
+    "eco_name": "Northeast Brazil restingas",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_restingas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 491,
+    "eco_name": "Pernambuco coastal forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_costera",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 492,
+    "eco_name": "Pernambuco interior forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_interior",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 496,
+    "eco_name": "Purus várzea",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "varzeas_igapos_amazonicos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 497,
+    "eco_name": "Purus-Madeira moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_suroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 498,
+    "eco_name": "Rio Negro campinarana",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "campinaranas_aguas_negras",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 500,
+    "eco_name": "Serra do Mar coastal forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "mata_atlantica_costera",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 503,
+    "eco_name": "Solimões-Japurá moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_noroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 505,
+    "eco_name": "Southwest Amazon moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_suroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 506,
+    "eco_name": "Talamancan montane forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "talamanca_caribe_sur",
+    "owner_propuesto": "talamanca_caribe_sur",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 507,
+    "eco_name": "Tapajós-Xingu moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_oriental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 508,
+    "eco_name": "Tocantins/Pindare moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_oriental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 510,
+    "eco_name": "Trinidad and Tobago moist forest",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "trinidad_tobago_bosques",
+    "owner_propuesto": "trinidad_tobago_bosques",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 511,
+    "eco_name": "Uatumã-Trombetas moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "guayanas_bosques_tierras_bajas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 512,
+    "eco_name": "Ucayali moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_suroccidental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 517,
+    "eco_name": "Windward Islands moist forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "antillas_menores_bosques_humedos_secos",
+    "owner_propuesto": "antillas_menores_bosques_humedos_secos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 518,
+    "eco_name": "Xingu-Tocantins-Araguaia moist forests",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "selva_tropical",
+    "owner_propuesto": "amazonia_oriental_tierra_firme",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de selva_tropical; esa ficha conserva ECO_ID 439."
+  },
+  {
+    "eco_id": 537,
+    "eco_name": "Lesser Antillean dry forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "antillas_menores_bosques_humedos_secos",
+    "owner_propuesto": "antillas_menores_bosques_humedos_secos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 541,
+    "eco_name": "Panamanian dry forests",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "bosque_seco_panameno",
+    "owner_propuesto": "bosque_seco_panameno",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 548,
+    "eco_name": "Trinidad and Tobago dry forest",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "trinidad_tobago_bosques",
+    "owner_propuesto": "trinidad_tobago_bosques",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 570,
+    "eco_name": "Guianan savanna",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "sabana_cerrado",
+    "owner_propuesto": "sabanas_guayanesas",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de sabana_cerrado; esa ficha conserva ECO_ID 567."
+  },
+  {
+    "eco_id": 572,
+    "eco_name": "Llanos",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "sabana_cerrado",
+    "owner_propuesto": "llanos_orinoquia",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de sabana_cerrado; esa ficha conserva ECO_ID 567."
+  },
+  {
+    "eco_id": 574,
+    "eco_name": "Uruguayan savanna",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "pampa",
+    "owner_propuesto": "campos_uruguayos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de pampa; esa ficha conserva ECO_ID 576."
+  },
+  {
+    "eco_id": 578,
+    "eco_name": "Patagonian steppe",
+    "accion": "AMPLIAR_SIN_REMAPEAR",
+    "owner_actual": "estepa_patagonica",
+    "owner_propuesto": "estepa_patagonica",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Conserva dueño y recibe versión ecológica sin saberes territoriales."
+  },
+  {
+    "eco_id": 587,
+    "eco_name": "Central Andean dry puna",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "puna_altoandino",
+    "owner_propuesto": "puna_seca_central",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de puna_altoandino; esa ficha conserva ECO_ID 588."
+  },
+  {
+    "eco_id": 589,
+    "eco_name": "Central Andean wet puna",
+    "accion": "REEMPLAZAR",
+    "owner_actual": "puna_altoandino",
+    "owner_propuesto": "puna_humeda_central",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "Sale de puna_altoandino; esa ficha conserva ECO_ID 588."
+  },
+  {
+    "eco_id": 599,
+    "eco_name": "Caribbean shrublands",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "matorral_xerico_caribeno",
+    "owner_propuesto": "matorral_xerico_caribeno",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 612,
+    "eco_name": "Bahamian-Antillean mangroves",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "manglares_antillanos",
+    "owner_propuesto": "manglares_antillanos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 613,
+    "eco_name": "Mesoamerican Gulf-Caribbean mangroves",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "manglares_centroamericanos",
+    "owner_propuesto": "manglares_centroamericanos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  },
+  {
+    "eco_id": 617,
+    "eco_name": "Southern Mesoamerican Pacific mangroves",
+    "accion": "CONSERVAR_ACTUAL",
+    "owner_actual": "manglares_centroamericanos",
+    "owner_propuesto": "manglares_centroamericanos",
+    "ficha_actual_quedaria_huerfana": false,
+    "resolucion": "ECO_ID ya reservado por la entrega Mesoamérica/Norteamérica; se conserva su único dueño global."
+  }
+]

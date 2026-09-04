@@ -1,0 +1,15 @@
+{
+  "fecha_consulta": "2026-09-03",
+  "total": 29,
+  "estado_geometria": {
+    "documentado_sin_geometria": 29
+  },
+  "autoactivables": 0,
+  "controles": {
+    "ids_unicos": true,
+    "fuente_por_entrada": true,
+    "cautela_por_entrada": true,
+    "ninguna_activacion_por_pais_eco_koppen": true
+  },
+  "valido": true
+}
