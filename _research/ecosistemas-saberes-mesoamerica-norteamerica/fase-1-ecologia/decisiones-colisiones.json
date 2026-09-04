@@ -1,0 +1,274 @@
+[
+  {
+    "eco_id": 329,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_templado_caducifolio_este",
+    "candidatas_investigacion": [
+      "apalaches_bosques_y_rivercane"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 330,
+    "accion": "conservar_actual",
+    "ficha_destino": "sur_templado_humedo_eeuu",
+    "candidatas_investigacion": [
+      "apalaches_bosques_y_rivercane"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 351,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_coniferas_pacifico_noroeste",
+    "candidatas_investigacion": [
+      "pacifico_noroeste_bosques_coniferas"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 384,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "tamaulipas_texas_pastizal_mezquital",
+    "candidatas_investigacion": [
+      "tamaulipas_texas_pastizal_mezquital",
+      "texas_golfo_pastizal_mezquital"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 389,
+    "accion": "conservar_actual",
+    "ficha_destino": "pradera_mixta",
+    "candidatas_investigacion": [
+      "grandes_llanuras_pradera_alta_mixta"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 392,
+    "accion": "conservar_actual",
+    "ficha_destino": "pradera_pastos_altos",
+    "candidatas_investigacion": [
+      "grandes_llanuras_pradera_alta_mixta"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 395,
+    "accion": "conservar_actual",
+    "ficha_destino": "pradera_mixta",
+    "candidatas_investigacion": [
+      "llanuras_cortas_sandhills"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 396,
+    "accion": "conservar_actual",
+    "ficha_destino": "pradera_pastos_cortos",
+    "candidatas_investigacion": [
+      "llanuras_cortas_sandhills"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 399,
+    "accion": "conservar_actual",
+    "ficha_destino": "sur_templado_humedo_eeuu",
+    "candidatas_investigacion": [
+      "sudeste_sabanas_pino_largo"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 402,
+    "accion": "conservar_actual",
+    "ficha_destino": "pradera_pastos_cortos",
+    "candidatas_investigacion": [
+      "llanuras_cortas_sandhills"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 424,
+    "accion": "conservar_actual",
+    "ficha_destino": "chaparral_californiano",
+    "candidatas_investigacion": [
+      "californias_chaparral_costero"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 428,
+    "accion": "conservar_actual",
+    "ficha_destino": "desiertos_calidos_norteamericanos",
+    "candidatas_investigacion": [
+      "desierto_chihuahuense"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 430,
+    "accion": "conservar_actual",
+    "ficha_destino": "estepa_arbustiva_gran_cuenca",
+    "candidatas_investigacion": [
+      "gran_cuenca_meseta_colorado"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 432,
+    "accion": "conservar_actual",
+    "ficha_destino": "matorral_xerofilo_altiplano_mexicano",
+    "candidatas_investigacion": [
+      "altiplano_mexicano_matorral"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 433,
+    "accion": "conservar_actual",
+    "ficha_destino": "desiertos_calidos_norteamericanos",
+    "candidatas_investigacion": [
+      "desierto_mojave"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 435,
+    "accion": "conservar_actual",
+    "ficha_destino": "desiertos_calidos_norteamericanos",
+    "candidatas_investigacion": [
+      "sonora_sinaloa_bosque_seco_desierto",
+      "desierto_sonorense_estados_unidos"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 437,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "tamaulipas_texas_pastizal_mezquital",
+    "candidatas_investigacion": [
+      "tamaulipas_texas_pastizal_mezquital",
+      "texas_golfo_pastizal_mezquital"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 487,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_mesofilo_montana",
+    "candidatas_investigacion": [
+      "oaxaca_sierras_bosques_comunales"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 494,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "selva_maya_peten_yucatan",
+    "candidatas_investigacion": [
+      "selva_maya_peten_yucatan",
+      "selva_maya_yucatan"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 495,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_humedo_tropical_caribeno",
+    "candidatas_investigacion": [
+      "puerto_rico_bosques_humedos_secos"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 502,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "montanas_mayas_pino_encino",
+    "candidatas_investigacion": [
+      "montanas_mayas_pino_encino",
+      "chiapas_bosques_montanos"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 519,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "selva_maya_peten_yucatan",
+    "candidatas_investigacion": [
+      "selva_maya_peten_yucatan",
+      "selva_maya_yucatan"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 527,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_tropical_seco_mesoamericano",
+    "candidatas_investigacion": [
+      "corredor_seco_centroamericano",
+      "pacifico_sur_chiapas_bosque_seco"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 534,
+    "accion": "conservar_actual",
+    "ficha_destino": "bosque_tropical_seco_mesoamericano",
+    "candidatas_investigacion": [
+      "balsas_jalisco_bosques_secos"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 543,
+    "accion": "conservar_actual",
+    "ficha_destino": "matorral_seco_caribeno",
+    "candidatas_investigacion": [
+      "puerto_rico_bosques_humedos_secos"
+    ],
+    "motivo": "Evita código huérfano y conserva la granularidad ya aprobada. La investigación nueva queda disponible como respaldo editorial."
+  },
+  {
+    "eco_id": 553,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "montanas_mayas_pino_encino",
+    "candidatas_investigacion": [
+      "montanas_mayas_pino_encino",
+      "chiapas_bosques_montanos"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 612,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "manglares_antillanos",
+    "candidatas_investigacion": [
+      "manglares_antillanos",
+      "everglades_manglares_sur_florida"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 613,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "manglares_centroamericanos",
+    "candidatas_investigacion": [
+      "manglares_centroamericanos",
+      "manglares_mexico"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  },
+  {
+    "eco_id": 617,
+    "accion": "unificar_candidatas",
+    "ficha_destino": "manglares_centroamericanos",
+    "candidatas_investigacion": [
+      "manglares_centroamericanos",
+      "manglares_mexico"
+    ],
+    "motivo": "Un ECO_ID debe tener un único dueño ecológico global; las diferencias por país se trasladan a la fase territorial."
+  }
+]

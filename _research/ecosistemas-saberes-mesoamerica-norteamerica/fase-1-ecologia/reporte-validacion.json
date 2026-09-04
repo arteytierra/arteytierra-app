@@ -1,0 +1,14 @@
+{
+  "generado": "2026-09-03T23:50:39.457Z",
+  "alcance": "Centroamérica, Caribe, México y Estados Unidos (incluye Alaska y Hawái)",
+  "eco_ids_investigados_unicos": 163,
+  "eco_ids_ya_presentes_y_conservados": 20,
+  "eco_ids_nuevos_para_agregar": 143,
+  "fichas_ecologicas_nuevas": 53,
+  "colisiones_con_lib": 20,
+  "colisiones_entre_paquetes": 9,
+  "faltantes": [],
+  "ids_de_ficha_nueva_duplicados": [],
+  "fichas_actuales_huerfanas": [],
+  "valido": true
+}

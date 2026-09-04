@@ -1,0 +1,977 @@
+[
+  {
+    "id": "cac_milpa_maya_ich_kool",
+    "nombre": "Milpa maya / Ich Kool",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`selva_maya_peten_yucatan`",
+    "portadores": "pueblos mayas de la península de Yucatán; para Guatemala y Belice validar la comunidad y denominación local.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "policultivo de maíz, frijoles, calabazas y especies locales; solares, meliponicultura, selección de semillas, lectura de suelos y nubes, y sucesión bosque–acahual–milpa.",
+    "cautelas": [
+      "no presentar roza-quema como instrucción aislada. La fuente FAO destaca que el ciclo depende del descanso y del conocimiento local."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO — Ich Kool, milpa maya",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == MX` y polígono de la península de Yucatán. Para `GT` o `BZ`, no reutilizar el nombre Ich Kool automáticamente.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_bosques_comunales_y_milpa_k_iche_mam",
+    "nombre": "Bosques comunales y milpa K’iche’/Mam",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`montanas_mayas_pino_encino`",
+    "portadores": "comunidades Maya K’iche’ y Mam.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "diversidad de la milpa, árboles útiles, semillas locales, restauración y reglas comunales de bosque. Reconocer el rol de mujeres en la custodia de semillas y plantas.",
+    "cautelas": [
+      "lugares ceremoniales, detalles de plantas medicinales ni la idea de una única práctica “maya”."
+    ],
+    "fuentes": [
+      {
+        "label": "CATIE — milpa K’iche’",
+        "url": "https://repositorio.catie.ac.cr/handle/11554/9716",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "CATIE — restauración con conocimientos Mam y K’iche’",
+        "url": "https://repositorio.catie.ac.cr/handle/11554/12692",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == GT` y departamentos/municipios cubiertos por la investigación original; hasta cargar esa capa, usar solo a nivel editorial.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_quesungual",
+    "nombre": "Quesungual",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`corredor_seco_centroamericano`",
+    "portadores": "campesinado del occidente de Honduras, especialmente Lempira.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "retención y poda de árboles/arbustos, siembra de maíz-frijol-sorgo, cobertura con residuos y abandono de la quema; mejora de infiltración, humedad y control de erosión.",
+    "cautelas": [
+      "no convertir distancias, densidades o podas en receta sin diagnóstico de pendiente, suelo y árbol."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO — Quesungual",
+        "url": "https://www.fao.org/4/Y5030E/y5030e19.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == HN`, `admin1` o polígono de la zona Quesungual. No activarlo en todo el ECO_ID 527.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_kuxur_rum",
+    "nombre": "Kuxur Rum",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`corredor_seco_centroamericano`",
+    "portadores": "comunidades Ch’orti’ del corredor seco de Guatemala.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "madre cacao o madreado (`Gliricidia sepium`) con granos básicos, poda, biomasa sobre el suelo, no quema y conservación de humedad.",
+    "cautelas": [
+      "conservar el nombre local y no fusionarlo con Quesungual aunque compartan principios."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO Guatemala — Kuxur Rum",
+        "url": "https://www.fao.org/guatemala/detalle/historia-de-inter%C3%A9s-humano/detail/combatir-la-sequ%C3%ADa-con-t%C3%A9cnicas-ancestrales/es",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == GT` y municipios Ch’orti’ documentados.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_conocimiento_mayangna_de_bosawas",
+    "nombre": "Conocimiento Mayangna de BOSAWAS",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`bosque_atlantico_mosquitia` y, con validación espacial, `sabanas_pino_belice_mosquitia`.",
+    "portadores": "pueblo Mayangna de Nicaragua.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "categorías propias de clasificación de flora/fauna y conocimientos sobre hábitat, reproducción, migración y aprovechamiento sostenible de peces y tortugas.",
+    "cautelas": [
+      "puntos de captura, lugares sagrados o conocimientos restringidos. La fuente fue construida con participación y consentimiento; la app debe mantener la atribución."
+    ],
+    "fuentes": [
+      {
+        "label": "UNESCO — transmisión del conocimiento Mayangna",
+        "url": "https://ich.unesco.org/en/project-education/reinforcing-the-transmission-of-mayangna-knowledge-and-culture-in-the-classroom-00493",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == NI` y territorio Mayangna dentro de BOSAWAS.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_cacao_bribri_y_cabecar",
+    "nombre": "Cacao Bribri y Cabécar",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`talamanca_caribe_sur`",
+    "portadores": "pueblos Bribri y Cabécar de Costa Rica y áreas transfronterizas documentadas.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "cacaotales diversos de dos a tres estratos; laurel, Inga, cítricos, musáceas, palmas, parches y galerías de bosque; usos múltiples de plantas.",
+    "cautelas": [
+      "las 283 especies registradas en el estudio no son una lista universal ni una receta para todas las fincas."
+    ],
+    "fuentes": [
+      {
+        "label": "CATIE — cacaotales Bribri y Cabécar",
+        "url": "https://repositorio.catie.ac.cr/handle/11554/6038",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "CATIE — plantas útiles",
+        "url": "https://repositorio.catie.ac.cr/handle/11554/6675",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "territorios indígenas o fincas de Talamanca incluidos en las fuentes; como mínimo `country_code == CR` y cantones/territorios relevantes.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_agricultura_nainu_guna",
+    "nombre": "Agricultura nainu Guna",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`darien_humedo_panama`",
+    "portadores": "pueblo Guna de Panamá.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "parcelas manejadas dentro del bosque, huertos familiares, cultivos ribereños, frutales en bordes y recolección; la diversidad espacial reduce riesgo y mantiene cobertura.",
+    "cautelas": [
+      "localización de sitios sagrados ni conocimiento ceremonial."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO — agricultura nainu",
+        "url": "https://www.fao.org/fileadmin/templates/esw/esw_new/documents/SARD/good_practices_Latin_America/13_Nainu_agriculture_Panama1.pdf",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == PA` y comarca/comunidad Guna documentada.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_vinales_y_conuco_cubano",
+    "nombre": "Viñales y conuco cubano",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`cuba_bosques_karst_y_pinares`",
+    "portadores": "familias campesinas de Viñales; conuco familiar documentado en Cuba oriental como entrada separada.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "pequeñas fincas, tabaco y métodos agrícolas tradicionales integrados al paisaje de mogotes. huerto multiestrato con alimentos, frutales, sombra y plantas de uso familiar; aclarar que composición y función varían entre hogares.",
+    "cautelas": [],
+    "fuentes": [
+      {
+        "label": "UNESCO — Valle de Viñales",
+        "url": "https://whc.unesco.org/en/list/840/",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "FAO — conuco cubano",
+        "url": "https://www.fao.org/4/w8801e/w8801e03.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "polígono del Paisaje Cultural Valle de Viñales, Pinar del Río. **No** activar por ECO_ID 459 completo.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_cockpit_country_maroon",
+    "nombre": "Cockpit Country Maroon",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`jamaica_bosque_humedo_karstico`",
+    "portadores": "Maroons de Sotavento de Jamaica.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "relación histórica con senderos y paisaje kárstico; conocimiento intergeneracional de plantas nativas y endémicas.",
+    "cautelas": [
+      "Peace Cave, Kindah tree u otros sitios como coordenadas; tampoco recetas medicinales."
+    ],
+    "fuentes": [
+      {
+        "label": "UNESCO — Cockpit Country Protected Area",
+        "url": "https://whc.unesco.org/en/tentativelists/6822/",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "polígono oficial de Cockpit Country Protected Area y validación cultural.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "cac_agroforesteria_kalinago_de_dominica",
+    "nombre": "Agroforestería Kalinago de Dominica",
+    "region": "centroamerica-caribe",
+    "ficha_base_documental": "`antillas_menores_bosques_humedos_secos`",
+    "portadores": "pueblo Kalinago de Dominica.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "sistemas multiestrato con coco/cítricos, musáceas, café/cacao y raíces; cortavientos, cercas vivas, fibras y materiales forestales.",
+    "cautelas": [
+      "no extender esta descripción a Guadalupe, Martinica, Santa Lucía u otras Antillas por compartir ECO_ID."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO — agroforestería de Dominica",
+        "url": "https://www.fao.org/4/x5656e/x5656e05.htm",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "FAO — conocimiento forestal Kalinago",
+        "url": "https://www.fao.org/4/x6689e/X6689E13.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`country_code == DM`, preferentemente polígono de Kalinago Territory.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_ich_kool_milpa_maya",
+    "nombre": "Milpa maya / Ich Kool",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "familias y comunidades mayas de la península de Yucatán.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      494,
+      519,
+      551
+    ],
+    "sintesis_publica": "policultivo de maíz, frijoles, calabazas y especies locales articulado con solares, monte y fases de descanso; selección de semillas y lectura de lluvia, suelo y sucesión.",
+    "cautelas": [
+      "no convertir la roza-quema en prescripción. Duración de descanso, fuego y especies dependen del sitio y la autoridad comunitaria."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Ich Kool",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "`MX` + Yucatán/Campeche/Quintana Roo + área maya documentada; ECO_ID frecuentes `494`, `519`, `551`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_chinampa_xochimilco",
+    "nombre": "Chinampa de Xochimilco–Tláhuac",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "comunidades y familias chinamperas.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      559
+    ],
+    "sintesis_publica": "camas elevadas construidas con sedimento y materia orgánica, red de canales, ahuejotes, riego y policultivo intensivo. El sistema enlaza producción, control hídrico y hábitat acuático.",
+    "cautelas": [
+      "calidad del agua, subsidencia y urbanización condicionan cualquier consejo actual."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Chinampas",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-chinampas-agricultural-system/en",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "polígono SIPAM de Xochimilco, Tláhuac y zona lacustre asociada; no alcanza con Ciudad de México ni ECO_ID `559`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_metepantle_tlaxcala",
+    "nombre": "Metepantle de Tlaxcala",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "familias campesinas y comunidades nahuas de Tlaxcala.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      559
+    ],
+    "sintesis_publica": "terrazas y franjas con maguey que frenan escorrentía y erosión, combinadas con maíz, frijol, calabaza, árboles y flora espontánea; conserva semillas y corredores.",
+    "cautelas": [
+      "no generalizar medidas, pendientes ni densidades de maguey."
+    ],
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Metepantle",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "municipios del sitio SIPAM en zonas montañosas de Tlaxcala; ECO_ID habitual `559`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_agua_tehuacan_cuicatlan",
+    "nombre": "Tecnologías de agua de Tehuacán–Cuicatlán",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "comunidades popolocas, nahuas, cuicatecas, mazatecas, mixtecas, ixcatecas y otras del valle, según localidad.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      610
+    ],
+    "sintesis_publica": "larga historia de domesticación de plantas y manejo de agua mediante terrazas, canales, pozos, acueductos y presas adaptados a un valle árido biodiverso.",
+    "cautelas": [
+      "no publicar ubicación de elementos arqueológicos ni conocimientos vivos sin autorización."
+    ],
+    "fuentes": [
+      {
+        "label": "UNESCO — Tehuacán-Cuicatlán",
+        "url": "https://whc.unesco.org/en/list/1534",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "polígono del sitio Patrimonio Mundial y comunidad identificada; ECO_ID `610`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_bosque_comunal_sierra_norte_oaxaca",
+    "nombre": "Tequio y manejo forestal zapoteca de Sierra Norte",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "comunidades zapotecas; la fuente ejemplifica San Pablo Macuiltianguis y Pueblos Mancomunados.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      487,
+      557
+    ],
+    "sintesis_publica": "asamblea comunal, tequio, monitoreo y decisiones colectivas organizan protección, restauración y aprovechamiento; los calendarios y actos de reciprocidad pertenecen a cada comunidad.",
+    "cautelas": [
+      "no equiparar certificación forestal con consentimiento para difundir saberes."
+    ],
+    "fuentes": [
+      {
+        "label": "CONAFOR — Pedir permiso al bosque",
+        "url": "https://www.gob.mx/conafor/articulos/pedir-permiso-al-bosque",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "CONAFOR — Pueblos Mancomunados",
+        "url": "https://www.gob.mx/conafor/prensa/pueblos-mancomunados-de-oaxaca-ejemplo-de-aprovechamiento-forestal-sostenible",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "núcleos agrarios documentados de Sierra Norte de Oaxaca; ECO_ID probables `487`, `557`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_milpa_regional",
+    "nombre": "Milpas regionales de México",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "pueblos indígenas y comunidades campesinas según región.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "la milpa es un policultivo dinámico centrado en maíz y combinado con frijoles, calabazas, chiles, tomates, quelites, arbustos y árboles según ambiente. Conserva agrobiodiversidad y conocimiento intergeneracional.",
+    "cautelas": [
+      "no reducirla a una receta fija de “tres hermanas”; nombres, especies, densidades y funciones varían."
+    ],
+    "fuentes": [
+      {
+        "label": "CONABIO — La milpa",
+        "url": "https://www.biodiversidad.gob.mx/diversidad/sistemas-productivos/milpa",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "comunidad o programa documentado; nunca `MX` completo.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_silvicultura_comunitaria",
+    "nombre": "Silvicultura comunitaria y ejidal",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "ejidos y comunidades forestales específicas.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "gobernanza comunal, ordenamiento, manejo maderable y no maderable, vigilancia y cadenas de valor pueden sostener bosque y economía local.",
+    "cautelas": [
+      "es una categoría contemporánea amplia; no llamarla ancestral ni atribuir etnia sin fuente local."
+    ],
+    "fuentes": [
+      {
+        "label": "CONAFOR — Silvicultura comunitaria",
+        "url": "https://www.gob.mx/conafor/documentos/silvicultura-comunitaria-27813",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "núcleo agrario con programa de manejo y fuente verificable; útil en Sierras Madre, Eje Volcánico y Oaxaca.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "mx_caborachi_extension_comunitaria",
+    "nombre": "Caborachi y extensión forestal comunitaria",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Ejido Caborachi, Chihuahua.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      326
+    ],
+    "sintesis_publica": "intercambio “de ejidatario a ejidatario” para manejo forestal, biodiversidad y servicios ambientales.",
+    "cautelas": [
+      "práctica contemporánea localizada; no inferir que representa a todo el pueblo Rarámuri ni a toda la Sierra Madre Occidental."
+    ],
+    "fuentes": [
+      {
+        "label": "CONAFOR — De comunidad a comunidad",
+        "url": "https://www.gob.mx/conafor/articulos/de-comunidad-a-comunidad-de-ejidatario-a-ejidatario?idiom=es",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "geometría del ejido o localidad documentada; ECO_ID probable `326`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_three_sisters_local",
+    "nombre": "Agricultura de las Tres Hermanas",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "naciones agrícolas específicas; la expresión tiene especial asociación Haudenosaunee y también variantes en otras regiones.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "maíz, frijol y calabaza se cultivan como asociación biológica y cultural; cultivares, montículos, tiempos y significados dependen de la nación.",
+    "cautelas": [
+      "la propia revisión de USDA advierte que mucha bibliografía no centró voces indígenas; usar solo como introducción."
+    ],
+    "fuentes": [
+      {
+        "label": "USDA National Agricultural Library — Three Sisters",
+        "url": "https://www.nal.usda.gov/collections/stories/three-sisters",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "nación/comunidad y proyecto documentado; no todo el este estadounidense.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_ojibwe_manoomin",
+    "nombre": "Manoomin y humedales de los Grandes Lagos",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "naciones Anishinaabe/Ojibwe vinculadas con los lagos y humedales documentados.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      333,
+      334,
+      342,
+      344
+    ],
+    "sintesis_publica": "manoomin (arroz silvestre) es alimento, ser cultural y especie indicadora; su cuidado vincula hidrología, calidad del agua, cosecha, clima y gobernanza de tratados.",
+    "cautelas": [
+      "no divulgar sitios de cosecha ni transformar protocolos culturales en instrucciones."
+    ],
+    "fuentes": [
+      {
+        "label": "NPS — recursos de conocimiento indígena, región Central",
+        "url": "https://www.nps.gov/subjects/tek/central.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "aguas de tratados o territorios tribales concretos de Grandes Lagos; ECO_ID frecuentes `333`, `334`, `342`, `344`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_rivercane_cherokee_southeast",
+    "nombre": "Rivercane y canebrakes del Sudeste",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Cherokee y otras naciones del Sudeste según proyecto.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      329,
+      331,
+      336,
+      399
+    ],
+    "sintesis_publica": "los canebrakes ribereños se mantuvieron con fuego y otros cuidados; estabilizan orillas y proveen hábitat y material culturalmente protegido.",
+    "cautelas": [
+      "técnicas de cestería y sitios de recolección no son contenido abierto por defecto."
+    ],
+    "fuentes": [
+      {
+        "label": "NPS — Rivercane",
+        "url": "https://home.nps.gov/articles/000/rivercane.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "restauración o comunidad documentada en Apalaches/Sudeste; ECO_ID frecuentes `329`, `331`, `336`, `399`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_tribal_bison_restoration",
+    "nombre": "Restauración de bisonte y conexión tribal",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "naciones de las Grandes Llanuras y proyectos tribales específicos.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      387,
+      402
+    ],
+    "sintesis_publica": "recuperación del rol ecológico del bisonte y de la relación cultural, con co-manejo y consulta temprana.",
+    "cautelas": [
+      "no inferir carga, rotación o manejo sanitario a partir de la ficha."
+    ],
+    "fuentes": [
+      {
+        "label": "U.S. Fish & Wildlife Service — Bison management policy",
+        "url": "https://www.fws.gov/policy-library/701fw8",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "rebaño, reserva/refugio o convenio documentado; ECO_ID de praderas `387`–`402` según sitio.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_pueblo_dryland_farming",
+    "nombre": "Agricultura de secano Pueblo",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Pueblos actuales vinculados con Pajarito Plateau/Río Grande y otras localidades documentadas.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      353,
+      428,
+      429
+    ],
+    "sintesis_publica": "selección de semilla, ubicación según escorrentía y microrelieve, policultivo y flexibilidad frente a heladas y lluvias variables sostienen agricultura de secano.",
+    "cautelas": [
+      "el sitio arqueológico informa historia; las comunidades Pueblo vivas deben definir el uso contemporáneo."
+    ],
+    "fuentes": [
+      {
+        "label": "NPS — Ancestral Pueblo Farming",
+        "url": "https://home.nps.gov/band/learn/historyculture/ancestral-pueblo-farming.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "comunidad/sitio del norte de Nuevo México; ECO_ID frecuentes `353`, `428`, `429`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_pinyon_juniper_cultural_landscape",
+    "nombre": "Piñón–enebro del Suroeste y Gran Cuenca",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "múltiples naciones del Suroeste y Gran Cuenca.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      356,
+      429,
+      430,
+      438
+    ],
+    "sintesis_publica": "piñones y enebros tienen usos y significados culturales; el manejo debe distinguir arbolado antiguo, expansión reciente, pastizal y mosaicos históricos.",
+    "cautelas": [
+      "la fuente resume comentarios; requiere co-producción con la tribu antes de recomendar remoción o fuego."
+    ],
+    "fuentes": [
+      {
+        "label": "BLM — Pinyon and Juniper Woodlands comment summary",
+        "url": "https://www.blm.gov/sites/default/files/docs/2024-08/Management%20and%20Conservation%20of%20Pinyon%20and%20Juniper%20Woodlands%20Comment%20Summary%20Report.pdf",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "nación y proyecto documentado dentro de `356`, `429`, `430` o `438`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_karuk_yurok_cultural_burning",
+    "nombre": "Fuego cultural Karuk y Yurok",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Karuk y Yurok, noroeste de California.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      357,
+      359
+    ],
+    "sintesis_publica": "quema cultural de baja intensidad para renovar avellano y otros recursos, favorecer calidad de tallos y recomponer mosaicos de bosque/pradera.",
+    "cautelas": [
+      "no publicar frecuencia, ventana meteorológica ni sitio como receta; el fuego exige autoridad tribal, legal y técnica."
+    ],
+    "fuentes": [
+      {
+        "label": "USFS Research — Karuk and Yurok cultural burning",
+        "url": "https://research.fs.usda.gov/treesearch/62061",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "cuencas y sitios de proyecto validados; ECO_ID frecuentes `357`, `359`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_warm_springs_fire_huckleberry",
+    "nombre": "Fuego y huckleberry de Warm Springs",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Confederated Tribes of Warm Springs: Ichishkin, Wasco y Northern Paiute.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      352,
+      354
+    ],
+    "sintesis_publica": "uso de fuego y cuidado de aperturas para huckleberry culturalmente importante, integrado con ronda estacional y principios tribales.",
+    "cautelas": [
+      "los datos geoespaciales participativos y entrevistas no deben republicarse."
+    ],
+    "fuentes": [
+      {
+        "label": "USFS Research — Warm Springs fire knowledge",
+        "url": "https://research.fs.usda.gov/treesearch/59061",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "área participativa documentada en Cascadas orientales de Oregon; ECO_ID frecuentes `352`, `354`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_nimiipuu_camas",
+    "nombre": "Camas y praderas del Noroeste",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Nimiipuu/Nez Perce y, en otras áreas, pueblos localmente documentados.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      398
+    ],
+    "sintesis_publica": "cosecha cuidadosa que deja bulbos pequeños, mantenimiento de claros/praderas y transmisión de técnicas de preparación; el conocimiento Nimiipuu ya informa manejo del NPS.",
+    "cautelas": [
+      "no señalar parches de recolección activos."
+    ],
+    "fuentes": [
+      {
+        "label": "NPS — Camas",
+        "url": "https://home.nps.gov/articles/000/camas.htm",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "Weippe/Camas Prairie y sitios validados; ECO_ID frecuente `398`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_pacific_tribal_salmon_comanagement",
+    "nombre": "Salmón y co-manejo tribal del Pacífico",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "tribus con derechos de tratado y otras naciones costeras/ribereñas específicas.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "el salmón es alimento primordial y relación cultural; tribus participan como co-gestoras de cosecha, hábitat, criaderos y recuperación.",
+    "cautelas": [
+      "derechos y datos de pesca son específicos de tratado, tribu, especie y agua."
+    ],
+    "fuentes": [
+      {
+        "label": "NOAA — West Coast salmon management",
+        "url": "https://www.fisheries.noaa.gov/west-coast/sustainable-fisheries/west-coast-salmon-and-steelhead-fisheries-management",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "NOAA — sovereign relations",
+        "url": "https://www.fisheries.noaa.gov/index.php/west-coast/partners/sovereign-relations-west-coast",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "cuenca y jurisdicción de co-manejo verificadas; ecorregiones costeras y fluviales del Pacífico.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_alaska_native_lktks",
+    "nombre": "Subsistencia y conocimiento local/tradicional de Alaska",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "comunidades y pueblos Alaska Native específicos.",
+    "paises": [],
+    "eco_ids_compatibles": [],
+    "sintesis_publica": "observaciones intergeneracionales de hielo, ríos, peces, mamíferos y estacionalidad sostienen movilidad, intercambio y subsistencia; el cambio rápido exige adaptación dirigida por comunidades.",
+    "cautelas": [
+      "nunca mostrar rutas, campamentos, ventanas de cosecha o abundancias localizadas sin permiso."
+    ],
+    "fuentes": [
+      {
+        "label": "NOAA Fisheries — Multiple Knowledge Systems and Subsistence",
+        "url": "https://www.fisheries.noaa.gov/alaska/socioeconomics/multiple-knowledge-systems-and-subsistence",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "Alaska DFG — local knowledge of Mulchatna caribou",
+        "url": "https://www.adfg.alaska.gov/index.cfm?adfg=wildlifenews.view_article&articles_id=864",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "comunidad y proyecto de co-producción; no usar `US-AK` completo.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_hawaii_ahupuaa_moku",
+    "nombre": "Ahupuaʻa, moku y gobernanza biocultural hawaiana",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Kānaka Maoli y organizaciones comunitarias de cada moku/ahupuaʻa.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      623,
+      636,
+      639,
+      640,
+      641
+    ],
+    "sintesis_publica": "manejo integrado de montaña a mar, relaciones genealógicas con ʻāina, restauración de cuencas, sistemas alimentarios y cuidado costero bajo gobernanza comunitaria.",
+    "cautelas": [
+      "ahupuaʻa es unidad territorial y social, no etiqueta climática; respetar soberanía del conocimiento."
+    ],
+    "fuentes": [
+      {
+        "label": "NOAA — Hawaiʻi Indigenous Knowledge",
+        "url": "https://sanctuaries.noaa.gov/bwet/hawaii/indigenous-knowledge.html",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "NOAA — moku climate resilience",
+        "url": "https://www.coast.noaa.gov/states/stories/hawaii.html",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "ahupuaʻa o moku documentado, no todo Hawái; ECO_ID `623`, `636`, `639`, `640`, `641` según sitio.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  },
+  {
+    "id": "us_everglades_miccosukee_seminole",
+    "nombre": "Paisaje vivo Miccosukee y Seminole de Everglades",
+    "region": "mexico-estados-unidos",
+    "ficha_base_documental": null,
+    "portadores": "Miccosukee Tribe of Indians of Florida, Seminole Tribe of Florida y otras entidades culturalmente asociadas según consulta.",
+    "paises": [],
+    "eco_ids_compatibles": [
+      581,
+      612
+    ],
+    "sintesis_publica": "movilidad, residencia y uso tradicional se adaptan al pulso de inundación, islas de árboles, cipresales y canales; la alteración hidrológica transformó el paisaje y los modos de vida.",
+    "cautelas": [
+      "no reconstruir usos de recursos ni sitios a partir de datos arqueológicos."
+    ],
+    "fuentes": [
+      {
+        "label": "NPS — Native People of Everglades",
+        "url": "https://www.nps.gov/ever/learn/historyculture/native-people.htm",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "NPS — Big Cypress foundation",
+        "url": "https://www.nps.gov/bicy/learn/management/foundation-overview.htm",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "guía NOAA para incluir conocimiento indígena",
+        "url": "https://www.noaa.gov/sites/default/files/2024-05/NOAA_Indigenous%20Knowledge_Guidance_with_Appendix_FINAL_e-signed%205-17-24%20%282%29.pdf",
+        "revisada": "2026-09-03"
+      },
+      {
+        "label": "Indigenous Stewardship Methods and NRCS Conservation Practices",
+        "url": "https://www.nrcs.usda.gov/sites/default/files/2024-10/IndigenousStewardship.pdf",
+        "revisada": "2026-09-03"
+      }
+    ],
+    "territorio": {
+      "estado": "documentado_sin_geometria",
+      "regla_textual": "sur de Florida y sitios documentados en Everglades/Big Cypress; ECO_ID `581` y localmente `612`.",
+      "geometria_id": null,
+      "fuente_geometria": null,
+      "licencia_geometria": null
+    },
+    "fuente_inventario": "insumos/mexico-estados-unidos/CAPAS_CULTURALES_LOCALES.md"
+  }
+]

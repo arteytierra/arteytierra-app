@@ -1,0 +1,425 @@
+[
+  {
+    "id": "selva_maya_peten_yucatan",
+    "nombre": "Selva Maya de Petén y Yucatán",
+    "emoji": "🌳",
+    "color": "#1F6B45",
+    "resumen": "Bosque tropical de tierras bajas sobre calizas que conecta el norte de Guatemala, Belice y la península de Yucatán. Alterna selva alta o mediana, bajos estacionalmente inundables y claros en distintas fases de sucesión.",
+    "vegetacion": "Ramón, chicozapote, caoba, cedro, ceibas, palmas y lianas; la altura y caducidad cambian con la profundidad del suelo y la duración de la sequía.",
+    "fauna": "Jaguar, tapir centroamericano, pecarí de labios blancos, mono aullador y pavo ocelado requieren grandes corredores forestales y aguadas conservadas.",
+    "suelos": "Suelos calizos someros y pedregosos alternan con arcillas en depresiones. El mantillo y la cobertura sostienen la fertilidad; removerlos acelera escorrentía, erosión y pérdida de humedad.",
+    "saberes": [
+      {"cultura": "Pueblos mayas de las tierras bajas", "practicas": "La milpa se integra con acahuales en descanso, solares, selección de semillas, meliponicultura y lectura local de suelo, lluvia y fases de sucesión. Su sostenibilidad depende de no acortar indiscriminadamente el descanso."},
+      {"cultura": "Concesiones forestales comunitarias de Petén", "practicas": "Combinan vigilancia, aprovechamiento forestal planificado y productos no madereros. Es una práctica contemporánea de gobernanza comunitaria, no debe confundirse con una tradición idéntica en toda la Selva Maya."}
+    ],
+    "especies": ["Ramón (Brosimum alicastrum)", "Chicozapote (Manilkara zapota)", "Caoba (Swietenia macrophylla)", "Ceiba (Ceiba pentandra)", "Cacao (Theobroma cacao)"],
+    "fuentes": [
+      {"label": "FAO — Ich Kool, milpa maya", "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en"},
+      {"label": "UNESCO — Reserva de Biosfera Maya", "url": "https://www.unesco.org/es/articles/reserva-de-biosfera-maya-un-referente-latinoamericano-un-ejemplo-al-mundo"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "Am"], "ecorregiones_resolve": [494, 519], "paises": ["BZ", "GT", "MX"], "confianza": "alta", "notas": "Activar saberes mayas solo con país y capa cultural; no todo el ECO_ID está bajo el mismo sistema de manejo."}
+  },
+  {
+    "id": "montanas_mayas_pino_encino",
+    "nombre": "Montañas mayas y bosques de pino-encino",
+    "emoji": "⛰️",
+    "color": "#416B3A",
+    "resumen": "Bosques montanos de Guatemala, Honduras, El Salvador y Nicaragua, con pinares, encinares, bosque nuboso y mosaicos agrícolas determinados por altitud, exposición y fuego.",
+    "vegetacion": "Pinos tropicales, encinos, liquidámbar y alisos; en laderas húmedas aparecen helechos arborescentes, epífitas y lauráceas.",
+    "fauna": "Quetzal, pavo de cacho, tapir y felinos usan gradientes altitudinales; anfibios y aves endémicas son especialmente sensibles a pérdida de bosque nuboso.",
+    "suelos": "Suelos volcánicos o arcillosos de ladera, con materia orgánica superficial. La cobertura permanente, barreras vivas y manejo de caminos son críticos frente a deslizamientos y erosión.",
+    "saberes": [
+      {"cultura": "Comunidades Maya K’iche’ y Mam de Guatemala", "practicas": "Mantienen milpas diversas, árboles útiles y bosques comunales mediante normas locales, calendarios, intercambio de semillas y organización comunitaria. Las mujeres cumplen un papel central en la custodia de agrobiodiversidad documentada."}
+    ],
+    "especies": ["Pino ocote (Pinus oocarpa)", "Pino de altura (Pinus pseudostrobus)", "Encinos (Quercus spp.)", "Liquidámbar (Liquidambar styraciflua)", "Aliso (Alnus acuminata)"],
+    "fuentes": [
+      {"label": "CATIE — milpa y agrobiodiversidad K’iche’", "url": "https://repositorio.catie.ac.cr/handle/11554/9716"},
+      {"label": "CATIE — conocimientos Maya Mam y K’iche’ en restauración", "url": "https://repositorio.catie.ac.cr/handle/11554/12692"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Cwb", "Cfb", "Cwa"], "ecorregiones_resolve": [451, 502, 553], "paises": ["GT", "HN", "SV", "NI", "MX"], "confianza": "alta", "notas": "La práctica documentada corresponde a comunidades guatemaltecas; fuera de Guatemala mostrar la ficha ecológica sin esa atribución."}
+  },
+  {
+    "id": "corredor_seco_centroamericano",
+    "nombre": "Bosque seco y corredor seco centroamericano",
+    "emoji": "🌵",
+    "color": "#A07B43",
+    "resumen": "Vertiente pacífica y valles interiores con estación seca prolongada, lluvias irregulares y parches de bosque caducifolio. Incluye el singular matorral espinoso del valle del Motagua.",
+    "vegetacion": "Árboles caducifolios, acacias, jiote, guanacaste, madre cacao, cactáceas y pastos estacionales; el dosel se abre marcadamente durante la seca.",
+    "fauna": "Venado cola blanca, iguanas, murciélagos polinizadores, loras y mamíferos medianos dependen de remanentes, cercas vivas y riberas.",
+    "suelos": "Frecuentemente someros y erosionables, con pulsos intensos de lluvia después de meses secos. Rastrojo, raíces vivas y mínima quema mejoran infiltración y amortiguan temperatura.",
+    "saberes": [
+      {"cultura": "Campesinado de Lempira, Honduras — Quesungual", "practicas": "Conserva y poda árboles y arbustos dentro de la parcela, cultiva maíz, frijol o sorgo bajo cobertura de residuos y evita la quema. La biomasa protege suelo y humedad."},
+      {"cultura": "Comunidades Ch’orti’ de Guatemala — Kuxur Rum", "practicas": "Asocian granos básicos con madre cacao (Gliricidia sepium), poda y cobertura orgánica para reducir evaporación y erosión. La adaptación se ajusta al terreno y a decisiones familiares."}
+    ],
+    "especies": ["Madre cacao (Gliricidia sepium)", "Jiote (Bursera simaruba)", "Guanacaste (Enterolobium cyclocarpum)", "Maíz (Zea mays)", "Frijol común (Phaseolus vulgaris)"],
+    "fuentes": [
+      {"label": "FAO — sistema agroforestal Quesungual", "url": "https://www.fao.org/4/Y5030E/y5030e19.htm"},
+      {"label": "FAO Guatemala — Kuxur Rum", "url": "https://www.fao.org/guatemala/detalle/historia-de-inter%C3%A9s-humano/detail/combatir-la-sequ%C3%ADa-con-t%C3%A9cnicas-ancestrales/es"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "BSh"], "ecorregiones_resolve": [527, 605], "paises": ["GT", "HN", "SV", "NI", "CR"], "confianza": "alta", "notas": "Quesungual y Kuxur Rum son capas locales distintas; no activar por ECO_ID solamente."}
+  },
+  {
+    "id": "bosque_atlantico_mosquitia",
+    "nombre": "Bosques húmedos del Caribe centroamericano y la Mosquitia",
+    "emoji": "🌧️",
+    "color": "#146B57",
+    "resumen": "Llanuras cálidas y muy húmedas de Belice, Guatemala, Honduras y Nicaragua, con selvas siempreverdes, ríos, pantanos, lagunas y bosques costeros.",
+    "vegetacion": "Caoba, cedro, santa maría, palmas, heliconias, lianas y bosques pantanosos; hacia la costa se enlazan con manglares y sabanas inundables.",
+    "fauna": "Jaguar, tapir, manatí antillano, águila harpía, monos y gran diversidad de peces y tortugas conectan cuencas, bosque y litoral.",
+    "suelos": "Muy meteorizados y lixiviados en terrazas, aluviales o hidromorfos en bajos. La fertilidad se concentra en biomasa y mantillo; drenarlos o dejarlos desnudos degrada rápido el sistema.",
+    "saberes": [
+      {"cultura": "Pueblos Mayangna de BOSAWAS", "practicas": "Clasifican hábitats y especies con categorías propias y mantienen conocimiento detallado sobre reproducción, migración y aprovechamiento de peces y tortugas. Su publicación debe conservar autoría colectiva y excluir sitios sensibles."},
+      {"cultura": "Pueblos Miskitu y comunidades ribereñas", "practicas": "Articulan pesca, huertos, parcelas en rotación y uso estacional de ríos, lagunas y bosque. La ficha reconoce el mosaico, pero no prescribe técnicas sin validación comunitaria local."}
+    ],
+    "especies": ["Caoba (Swietenia macrophylla)", "Santa María (Calophyllum brasiliense)", "Palma yolillo (Raphia taedigera)", "Cacao (Theobroma cacao)", "Mangle rojo (Rhizophora mangle)"],
+    "fuentes": [
+      {"label": "UNESCO — transmisión del conocimiento Mayangna", "url": "https://ich.unesco.org/en/project-education/reinforcing-the-transmission-of-mayangna-knowledge-and-culture-in-the-classroom-00493"},
+      {"label": "UNESCO — programa LINKS en América Latina y el Caribe", "url": "https://www.unesco.org/es/links/lac"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am"], "ecorregiones_resolve": [449, 450], "paises": ["BZ", "GT", "HN", "NI", "CO"], "confianza": "media", "notas": "ECO_ID 449 también incluye islas colombianas; no mostrar saberes Mayangna allí. La entrada Miskitu requiere una fuente local adicional antes de producción."}
+  },
+  {
+    "id": "sabanas_pino_belice_mosquitia",
+    "nombre": "Sabanas y pinares de Belice y la Mosquitia",
+    "emoji": "🌲",
+    "color": "#718B45",
+    "resumen": "Mosaico tropical de pino caribeño, pastizal, palmares y humedales sobre suelos ácidos, arenosos o encharcables. El fuego y el agua determinan la apertura del paisaje.",
+    "vegetacion": "Pino caribeño, palmas, ciperáceas, gramíneas y arbustos resistentes al fuego, con islas de bosque latifoliado y bosques de galería.",
+    "fauna": "Venado cola blanca, tapir, felinos, aves de sabana y fauna acuática usan el mosaico; la conectividad con selvas vecinas es esencial.",
+    "suelos": "Arenosos, ácidos, pobres en nutrientes y con drenaje muy variable. Las quemas fuera de régimen, el drenaje y el tránsito pesado dañan turbas, raíces y costras superficiales.",
+    "saberes": [
+      {"cultura": "Comunidades indígenas y locales de Belice, Honduras y Nicaragua", "practicas": "El uso tradicional combina pesca, recolección, parcelas y manejo de sabanas. No se documenta aquí una receta regional de fuego: cualquier recomendación requiere autoridades y conocimiento local del sitio."}
+    ],
+    "especies": ["Pino caribeño (Pinus caribaea)", "Palma de guano (Sabal spp.)", "Nance (Byrsonima crassifolia)", "Ciperáceas (Cyperaceae)", "Encinos tropicales (Quercus spp.)"],
+    "fuentes": [
+      {"label": "UNESCO — conocimiento Mayangna y biodiversidad", "url": "https://ich.unesco.org/en/project-education/reinforcing-the-transmission-of-mayangna-knowledge-and-culture-in-the-classroom-00493"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "Am"], "ecorregiones_resolve": [564, 573], "paises": ["BZ", "HN", "NI"], "confianza": "base_ecologica", "notas": "Ficha ecológica lista. Mantener el texto cultural como contexto no operativo hasta sumar fuentes participativas específicas sobre fuego y tenencia."}
+  },
+  {
+    "id": "costa_rica_bosques_humedos_estacionales",
+    "nombre": "Bosques húmedos y estacionales de Costa Rica",
+    "emoji": "🦥",
+    "color": "#2B7A4B",
+    "resumen": "Desde selvas lluviosas caribeñas hasta bosques estacionales del Pacífico, Costa Rica concentra fuertes gradientes de lluvia, relieve y exposición en poca distancia.",
+    "vegetacion": "Bosques altos con palmas, lianas y epífitas en el Caribe; en el Pacífico aparece mayor caducidad, guanacaste, pochote y parches de sabana.",
+    "fauna": "Jaguar, danta, perezosos, monos, lapas y anfibios dependen de corredores entre áreas protegidas, fincas y riberas.",
+    "suelos": "Volcánicos, muy meteorizados o aluviales según la zona. Pendientes y lluvias intensas exigen cobertura, raíces profundas y protección de nacientes y cauces.",
+    "saberes": [
+      {"cultura": "Agricultura familiar y agroforestería costarricense", "practicas": "Cercas vivas, árboles de sombra, cacao y café bajo dosel conectan producción y hábitat. La composición debe ajustarse a la vertiente y al piso altitudinal, no copiarse como paquete nacional."}
+    ],
+    "especies": ["Guanacaste (Enterolobium cyclocarpum)", "Pochote (Pachira quinata)", "Guarumo (Cecropia spp.)", "Cacao (Theobroma cacao)", "Laurel (Cordia alliodora)"],
+    "fuentes": [
+      {"label": "SINAC — Área de Conservación Guanacaste", "url": "https://sinac.go.cr/ES/ac/acg/Paginas/default.aspx"},
+      {"label": "SINAC — Área de Conservación Tortuguero", "url": "https://www.sinac.go.cr/ES/ac/acto/pnt/Paginas/default.aspx"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw"], "ecorregiones_resolve": [458, 470], "paises": ["CR", "NI", "PA"], "confianza": "media", "notas": "La ficha agrupa dos ecorregiones; conservar el nombre exacto de RESOLVE en la interfaz. El saber productivo requiere fuente local más precisa antes de atribuir comunidad."}
+  },
+  {
+    "id": "talamanca_caribe_sur",
+    "nombre": "Talamanca y Caribe sur",
+    "emoji": "🍫",
+    "color": "#285C43",
+    "resumen": "Gradiente continuo desde tierras bajas caribeñas hasta bosques nubosos, robledales y páramos de la cordillera de Talamanca entre Costa Rica y Panamá.",
+    "vegetacion": "Selva húmeda, palmas y bosques ribereños abajo; lauráceas, robles, bambúes, epífitas y vegetación achaparrada en altura.",
+    "fauna": "Jaguar, tapir, quetzal, águila harpía y numerosos anfibios aprovechan la continuidad altitudinal y las cuencas bien conservadas.",
+    "suelos": "Suelos ácidos y muy húmedos en laderas, con elevada materia orgánica en sectores fríos. La remoción del dosel aumenta erosión, deslizamientos y pérdida de nutrientes.",
+    "saberes": [
+      {"cultura": "Pueblos Bribri y Cabécar", "practicas": "Manejan cacao bajo sombra en sistemas de dos o tres estratos con laurel, Inga, cítricos, musáceas, palmas y parches de bosque. Los huertos y barbechos sostienen alimentos, materiales y diversidad útil."}
+    ],
+    "especies": ["Cacao (Theobroma cacao)", "Laurel (Cordia alliodora)", "Guaba (Inga spp.)", "Robles de altura (Quercus spp.)", "Pejibaye (Bactris gasipaes)"],
+    "fuentes": [
+      {"label": "CATIE — cacaotales Bribri y Cabécar", "url": "https://repositorio.catie.ac.cr/handle/11554/6038"},
+      {"label": "CATIE — plantas útiles en fincas Bribri y Cabécar", "url": "https://repositorio.catie.ac.cr/handle/11554/6675"},
+      {"label": "UNESCO — La Amistad", "url": "https://www.unesco.org/en/mab/la-amistad"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Cfb"], "ecorregiones_resolve": [506], "paises": ["CR", "PA"], "confianza": "alta", "notas": "El cacao sombreado se activa en territorios Bribri/Cabécar y áreas documentadas, no en toda la cordillera."}
+  },
+  {
+    "id": "darien_humedo_panama",
+    "nombre": "Bosques húmedos del Darién y Panamá oriental",
+    "emoji": "🌿",
+    "color": "#175E45",
+    "resumen": "Selvas de tierras bajas y montañas aisladas en el oriente panameño, atravesadas por grandes ríos y conectadas ecológicamente con el Chocó colombiano.",
+    "vegetacion": "Bosque siempreverde alto, palmas, lianas, cativales y bosques inundables; la composición cambia con relieve, drenaje y cercanía al litoral.",
+    "fauna": "Águila harpía, jaguar, tapir, pecaríes y primates; ríos y estuarios sostienen peces, reptiles y aves acuáticas.",
+    "suelos": "Muy húmedos y meteorizados, con aluviones fértiles a orillas de ríos y pendientes frágiles en serranías. La cobertura forestal regula caudales y protege suelos.",
+    "saberes": [
+      {"cultura": "Pueblo Guna — sistema nainu", "practicas": "Integra parcelas bajo cobertura arbórea, huertos familiares, cultivos ribereños, frutales en bordes y recolección del bosque. La ubicación de espacios sagrados no debe registrarse ni mostrarse."},
+      {"cultura": "Pueblos Emberá y Wounaan", "practicas": "Sistemas alimentarios combinan yuca, ñame, plátano, maíz, arroz, pesca y productos del bosque. La selección exacta cambia por cuenca y comunidad."}
+    ],
+    "especies": ["Cativo (Prioria copaifera)", "Chunga (Astrocaryum standleyanum)", "Cacao (Theobroma cacao)", "Yuca (Manihot esculenta)", "Plátano (Musa spp.)"],
+    "fuentes": [
+      {"label": "FAO — agricultura nainu en Panamá", "url": "https://www.fao.org/fileadmin/templates/esw/esw_new/documents/SARD/good_practices_Latin_America/13_Nainu_agriculture_Panama1.pdf"},
+      {"label": "FAO Panamá — sistemas alimentarios indígenas", "url": "https://www.fao.org/panama/noticias/detail-events/fr/c/1145785/"},
+      {"label": "UNESCO — Darién", "url": "https://www.unesco.org/en/mab/darien"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am"], "ecorregiones_resolve": [454, 461, 471], "paises": ["PA", "CO"], "confianza": "alta", "notas": "Activar nainu solo en comarcas y comunidades Guna documentadas; ECO_ID 454 continúa en Colombia."}
+  },
+  {
+    "id": "bosque_seco_panameno",
+    "nombre": "Bosque seco panameño",
+    "emoji": "🍂",
+    "color": "#9A8146",
+    "resumen": "Remanentes de bosque tropical seco del arco pacífico de Panamá, con estación seca marcada y fuerte transformación histórica por agricultura y ganadería.",
+    "vegetacion": "Dosel bajo o mediano de especies caducifolias, árboles espinosos, guanacaste, indio desnudo y pastizales secundarios.",
+    "fauna": "Venado cola blanca, ñeque, iguanas, murciélagos y aves frugívoras usan riberas, cercas vivas y fragmentos de bosque.",
+    "suelos": "Arcillosos a pedregosos, con déficit hídrico estacional. Cobertura seca, árboles dispersos y franjas ribereñas reducen temperatura y erosión al inicio de las lluvias.",
+    "saberes": [
+      {"cultura": "Agricultura familiar del Pacífico panameño", "practicas": "Patios, árboles frutales, cercas vivas y cultivos estacionales forman mosaicos útiles. No se asigna una tradición indígena única a toda esta ecorregión."}
+    ],
+    "especies": ["Guanacaste (Enterolobium cyclocarpum)", "Indio desnudo (Bursera simaruba)", "Espavé (Anacardium excelsum)", "Guácimo (Guazuma ulmifolia)", "Jobo (Spondias mombin)"],
+    "fuentes": [
+      {"label": "FAO Panamá — sistemas alimentarios y semillas", "url": "https://www.fao.org/panama/noticias/detail-events/fr/c/1145785/"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw"], "ecorregiones_resolve": [541], "paises": ["PA"], "confianza": "base_ecologica", "notas": "La práctica productiva es contextual; requiere fuente panameña subnacional antes de presentarse como recomendación."}
+  },
+  {
+    "id": "manglares_centroamericanos",
+    "nombre": "Manglares de Centroamérica",
+    "emoji": "🦀",
+    "color": "#287C6D",
+    "resumen": "Bosques intermareales del Caribe y el Pacífico centroamericano, ligados a estuarios, lagunas y deltas. Amortiguan oleaje, almacenan carbono y son criaderos de fauna acuática.",
+    "vegetacion": "Mangle rojo en bordes inundados, mangle negro y blanco hacia el interior y botoncillo en sectores más altos; salinidad e hidroperiodo ordenan las franjas.",
+    "fauna": "Cangrejos, moluscos, peces juveniles, garzas, cocodrilos y manatíes dependen de raíces, canales y conexión con pastos marinos y arrecifes.",
+    "suelos": "Lodos anóxicos ricos en carbono y sales. Abrir drenajes, compactar o cortar el flujo de mareas puede causar acidificación, subsidencia y mortalidad del bosque.",
+    "saberes": [
+      {"cultura": "Comunidades costeras y pescadoras", "practicas": "Conocen mareas, canales, épocas reproductivas y zonas de cría; combinan pesca artesanal, recolección y vigilancia. Cada regla de aprovechamiento debe provenir de la comunidad y normativa local."}
+    ],
+    "especies": ["Mangle rojo (Rhizophora mangle)", "Mangle negro (Avicennia germinans)", "Mangle blanco (Laguncularia racemosa)", "Botoncillo (Conocarpus erectus)"],
+    "fuentes": [
+      {"label": "UNESCO — MangRes Panamá", "url": "https://www.unesco.org/en/mab/mangres-panama"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw"], "ecorregiones_resolve": [613, 617], "paises": ["BZ", "GT", "HN", "SV", "NI", "CR", "PA", "MX"], "confianza": "media", "notas": "RESOLVE separa costa Caribe y Pacífico; conservar el ECO_ID. No publicar calendarios o sitios de pesca sin consentimiento."}
+  },
+  {
+    "id": "cuba_bosques_karst_y_pinares",
+    "nombre": "Bosques, karst y pinares de Cuba",
+    "emoji": "🇨🇺",
+    "color": "#3B744B",
+    "resumen": "Mosaico insular excepcionalmente diverso: bosques húmedos y secos, pinares sobre sustratos pobres, mogotes calizos, matorral xeromorfo y humedales costeros.",
+    "vegetacion": "Palmas, bosques semideciduos, pinos cubanos, encinares, cuabales y cactáceas; los mogotes conservan flora muy especializada y endémica.",
+    "fauna": "Tocororo, zunzuncito, jutías, almiquí, iguanas y numerosos moluscos terrestres; humedales y costas sostienen cocodrilos, aves y tortugas marinas.",
+    "suelos": "Muy variables: calizas someras, serpentinas pobres, arenas ácidas y turbas. En laderas de mogote y pinares la alteración del drenaje o del mantillo produce pérdidas difíciles de revertir.",
+    "saberes": [
+      {"cultura": "Campesinado de Viñales", "practicas": "Mantiene un paisaje de pequeñas fincas y métodos tradicionales, especialmente en tabaco, adaptados a suelos fértiles entre mogotes. La UNESCO lo reconoce como paisaje cultural localizado, no como modelo de toda Cuba."},
+      {"cultura": "Familias campesinas cubanas", "practicas": "El conuco o huerto familiar combina varios estratos y especies alimentarias, frutales, medicinales y de sombra; su composición responde a cada hogar y región."}
+    ],
+    "especies": ["Palma real (Roystonea regia)", "Pino cubano (Pinus cubensis)", "Júcaro (Bucida buceras)", "Caguairán (Guibourtia hymenaeifolia)", "Ceiba (Ceiba pentandra)"],
+    "fuentes": [
+      {"label": "UNESCO — Valle de Viñales", "url": "https://whc.unesco.org/en/list/840/"},
+      {"label": "UNESCO — Guanahacabibes", "url": "https://www.unesco.org/en/mab/peninsula-de-guanahacabibes"},
+      {"label": "FAO — conuco cubano", "url": "https://www.fao.org/4/w8801e/w8801e03.htm"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "Am", "Cwa"], "ecorregiones_resolve": [459, 530, 554, 579, 600], "paises": ["CU"], "confianza": "alta", "notas": "Para ecología fina convendría dividir cinco ECO_ID; Viñales requiere polígono propio y no debe activarse en todo el bosque húmedo cubano."}
+  },
+  {
+    "id": "hispaniola_bosque_humedo",
+    "nombre": "Bosques húmedos de La Española",
+    "emoji": "🌧️",
+    "color": "#28704A",
+    "resumen": "Bosques de tierras bajas y laderas húmedas compartidos por Haití y República Dominicana, con gran endemismo y marcada variación por orientación y altitud.",
+    "vegetacion": "Bosques siempreverdes y semideciduos con palmas, caobas, helechos, epífitas y árboles de hoja ancha; las fincas de café sombreado forman mosaicos secundarios.",
+    "fauna": "Solenodonte, jutía, cigua palmera, barrancolíes y anfibios endémicos dependen de remanentes conectados y microclimas húmedos.",
+    "suelos": "Calizos o volcánicos, generalmente erosionables en laderas. Árboles de sombra, barreras vivas y residuos protegen infiltración y estabilidad frente a lluvias intensas.",
+    "saberes": [
+      {"cultura": "Campesinado haitiano", "practicas": "Emplea técnicas de bajo insumo para conservar suelo, agroforestería y acción colectiva mediante agrupaciones rurales. La fuente documenta adopción voluntaria y adaptación parcela por parcela."},
+      {"cultura": "Agricultura familiar dominicana y haitiana", "practicas": "Conucos, frutales, raíces, musáceas y café bajo sombra pueden formar sistemas multiestrato. No asumir la misma composición ni historia a ambos lados de la frontera."}
+    ],
+    "especies": ["Caoba antillana (Swietenia mahagoni)", "Palma real (Roystonea hispaniolana)", "Café (Coffea arabica)", "Guama (Inga vera)", "Yuca (Manihot esculenta)"],
+    "fuentes": [
+      {"label": "FAO — manejo comunitario de cuencas en Haití", "url": "https://www.fao.org/4/v3960e/v3960e09.htm"},
+      {"label": "CEPF — perfil del ecosistema de las islas del Caribe", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw"], "ecorregiones_resolve": [468], "paises": ["HT", "DO"], "confianza": "media", "notas": "Separar contenido por país. La referencia haitiana no debe atribuirse automáticamente a República Dominicana."}
+  },
+  {
+    "id": "hispaniola_seco_pinar_humedales",
+    "nombre": "Bosques secos, pinares y humedales de La Española",
+    "emoji": "🦩",
+    "color": "#8B884B",
+    "resumen": "Mosaico de valles secos, bosques espinosos, pinares montanos y humedales salinos como la cuenca de Enriquillo. Los contrastes de lluvia y altitud son extremos.",
+    "vegetacion": "Cactáceas y arbustos espinosos en bajos secos; pino criollo y sabinas en altura; eneas, mangles y vegetación halófila alrededor de lagos y lagunas.",
+    "fauna": "Iguanas rinoceronte y de Ricord, flamencos, cocodrilo americano, aves endémicas y mamíferos nativos sobreviven en hábitats muy fragmentados.",
+    "suelos": "Calizos, pedregosos o salinos en zonas bajas y delgados en montañas. El fuego repetido degrada pinares; en cuencas cerradas, cambios hídricos alteran rápidamente salinidad y vegetación.",
+    "saberes": [
+      {"cultura": "Agricultura campesina de zonas secas", "practicas": "Combina cultivos resistentes, árboles dispersos, cercas vivas y conservación de suelo. Las prácticas haitianas documentadas deben activarse solo donde exista fuente subnacional."}
+    ],
+    "especies": ["Pino criollo (Pinus occidentalis)", "Guayacán (Guaiacum officinale)", "Caya amarilla (Sideroxylon foetidissimum)", "Cactáceas columnares", "Mangle botón (Conocarpus erectus)"],
+    "fuentes": [
+      {"label": "FAO — conservación campesina de suelo en Haití", "url": "https://www.fao.org/4/v3960e/v3960e09.htm"},
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["BSh", "Aw", "Cwb"], "ecorregiones_resolve": [532, 555, 580], "paises": ["HT", "DO"], "confianza": "base_ecologica", "notas": "Tres sistemas muy distintos agrupados para cobertura inicial; la UI debe mostrar la ecorregión exacta y evitar una única recomendación de manejo."}
+  },
+  {
+    "id": "jamaica_bosque_humedo_karstico",
+    "nombre": "Bosques húmedos y karst de Jamaica",
+    "emoji": "🦜",
+    "color": "#236746",
+    "resumen": "Bosques montanos y de caliza húmeda, desde Blue and John Crow Mountains hasta el relieve de torres y depresiones de Cockpit Country.",
+    "vegetacion": "Bosque siempreverde con helechos, bromelias, orquídeas, palmas y numerosos árboles endémicos; el karst crea microhábitats abruptos.",
+    "fauna": "Jutía jamaicana, boa jamaicana, colibrí pico rojo, mariposas y caracoles endémicos; muchas especies tienen rangos mínimos.",
+    "suelos": "Terra rossa y suelos orgánicos se acumulan en grietas y depresiones sobre caliza; en pendientes son someros y extremadamente sensibles a remoción y caminos.",
+    "saberes": [
+      {"cultura": "Maroons de Sotavento en Cockpit Country", "practicas": "Conservan rutas, sitios culturales y un conocimiento intergeneracional de plantas nativas y endémicas. La app debe reconocer ese patrimonio sin publicar usos medicinales detallados ni ubicaciones sagradas."}
+    ],
+    "especies": ["Guácima azul (Talipariti elatum)", "Palma de sierra (Gaussia attenuata)", "Bromelias", "Orquídeas", "Helechos arborescentes"],
+    "fuentes": [
+      {"label": "UNESCO — Cockpit Country Protected Area", "url": "https://whc.unesco.org/en/tentativelists/6822/"},
+      {"label": "Forestry Department Jamaica — State of Jamaica’s Forests 2024", "url": "https://www.forestry.gov.jm/resourcedocs/State_of_Jamaica_s_Forests_Report_2024-1.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am"], "ecorregiones_resolve": [472], "paises": ["JM"], "confianza": "alta", "notas": "El saber Maroon se activa solo dentro de Cockpit Country y áreas culturalmente validadas."}
+  },
+  {
+    "id": "jamaica_bosque_seco",
+    "nombre": "Bosques secos de Jamaica",
+    "emoji": "🌵",
+    "color": "#8A7A42",
+    "resumen": "Bosques y matorrales estacionales de costas y sotaventos jamaicanos, con alta diversidad local pese a doseles bajos y déficit hídrico.",
+    "vegetacion": "Árboles semideciduos, arbustos espinosos, cactáceas y vegetación costera tolerante a sal y viento.",
+    "fauna": "Iguana jamaicana, aves terrestres, murciélagos y reptiles endémicos se concentran en remanentes secos aislados.",
+    "suelos": "Calizos, someros y de baja retención de agua. La cobertura de hojarasca y el control del fuego son esenciales; la recuperación tras desmonte es lenta.",
+    "saberes": [
+      {"cultura": "Agricultura rural jamaicana", "practicas": "Sistemas mixtos con árboles, cultivos y ganado ayudan a repartir riesgo climático. Falta una fuente participativa suficiente para atribuir una práctica uniforme a toda la ecorregión."}
+    ],
+    "especies": ["Lignum vitae (Guaiacum officinale)", "Cactáceas", "Bursera spp.", "Acacias nativas", "Plumeria spp."],
+    "fuentes": [
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "Forestry Department Jamaica — State of Jamaica’s Forests 2024", "url": "https://www.forestry.gov.jm/resourcedocs/State_of_Jamaica_s_Forests_Report_2024-1.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "BSh"], "ecorregiones_resolve": [535], "paises": ["JM"], "confianza": "base_ecologica", "notas": "No reutilizar automáticamente el contenido Maroon de Cockpit Country en el bosque seco."}
+  },
+  {
+    "id": "bahamas_pinares_manglares",
+    "nombre": "Pinares y manglares de Bahamas",
+    "emoji": "🏝️",
+    "color": "#4E8063",
+    "resumen": "Islas calizas bajas con pinares abiertos en las islas mayores, monte bajo, humedales de marea y manglares muy expuestos a huracanes y salinidad.",
+    "vegetacion": "Pino caribeño var. bahamensis, palmas, matorral de coppice y cuatro especies principales de mangle según elevación e hidroperiodo.",
+    "fauna": "Loro de Bahamas, reptiles, murciélagos, aves migratorias, peces juveniles, langostas y caracoles marinos dependen del vínculo tierra-humedal-arrecife.",
+    "suelos": "Extremadamente someros sobre caliza, alcalinos y con poca agua dulce almacenada. El tránsito y el fuego severo dañan raíces; en manglar, cualquier cambio de flujo tiene efectos rápidos.",
+    "saberes": [
+      {"cultura": "Comunidades isleñas de Bahamas y Turks y Caicos", "practicas": "La pesca artesanal y el conocimiento de mareas, canales y tormentas forman parte del manejo cotidiano. Esta versión no publica sitios de pesca ni calendarios locales por falta de validación comunitaria."}
+    ],
+    "especies": ["Pino de Bahamas (Pinus caribaea var. bahamensis)", "Palma de sabal (Sabal palmetto)", "Mangle rojo (Rhizophora mangle)", "Mangle negro (Avicennia germinans)", "Cocoplum (Chrysobalanus icaco)"],
+    "fuentes": [
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Aw", "Am"], "ecorregiones_resolve": [552], "paises": ["BS", "TC"], "confianza": "base_ecologica", "notas": "La ficha cubre los pinares. Los manglares se resuelven con `manglares_antillanos` (ECO_ID 612). Se requiere fuente local para saberes antes de producción."}
+  },
+  {
+    "id": "puerto_rico_bosques_humedos_secos",
+    "nombre": "Bosques húmedos y secos de Puerto Rico",
+    "emoji": "🌦️",
+    "color": "#3F7650",
+    "resumen": "La topografía y los alisios producen un contraste abrupto entre las selvas húmedas de Luquillo y la cordillera, y el bosque seco subtropical del suroeste.",
+    "vegetacion": "Tabonuco, palma de sierra y bosque nublado en zonas húmedas; cactáceas, arbustos espinosos y árboles bajos tolerantes a viento y sal en Guánica.",
+    "fauna": "Cotorra puertorriqueña, coquíes, boa puertorriqueña, murciélagos y sapo concho; huracanes reorganizan periódicamente la estructura del bosque.",
+    "suelos": "Profundos y muy meteorizados en laderas húmedas; calizos, someros y con poca materia orgánica en el suroeste. Las recomendaciones deben distinguir ambos extremos.",
+    "saberes": [
+      {"cultura": "Conocimiento rural puertorriqueño", "practicas": "La historia de cafetales, huertos y bosques secundarios dejó mosaicos con árboles útiles. Esta ficha prioriza la base ecológica; una atribución cultural detallada requiere fuentes comunitarias puertorriqueñas adicionales."}
+    ],
+    "especies": ["Tabonuco (Dacryodes excelsa)", "Palma de sierra (Prestoea montana)", "Ausubo (Manilkara bidentata)", "Guayacán (Guaiacum officinale)", "Sebucán (Pilosocereus royenii)"],
+    "fuentes": [
+      {"label": "US Forest Service — Luquillo Experimental Forest", "url": "https://research.fs.usda.gov/iitf/forestsandranges/locations/lef"},
+      {"label": "DRNA Puerto Rico — Bosque Seco de Guánica", "url": "https://www.drna.pr.gov/wp-content/uploads/2019/02/Bosque-Seco-Gu%C3%A1nica.pdf"},
+      {"label": "US Forest Service — guía de sistemas ecológicos de Puerto Rico", "url": "https://research.fs.usda.gov/treesearch/35382"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw", "BSh"], "ecorregiones_resolve": [495, 543], "paises": ["PR"], "confianza": "alta", "notas": "Puerto Rico ya puede tener SSURGO para suelo, pero la ficha ecológica sigue siendo pertinente. Conviene separar húmedo y seco en UI."}
+  },
+  {
+    "id": "antillas_menores_bosques_humedos_secos",
+    "nombre": "Bosques húmedos y secos de las Antillas Menores",
+    "emoji": "🌋",
+    "color": "#397054",
+    "resumen": "Arco de islas volcánicas y calizas donde las laderas de barlovento sostienen selvas húmedas y bosque montano, mientras sotaventos y costas tienen bosque seco y matorral.",
+    "vegetacion": "Gommier, palmas, helechos arborescentes y epífitas en montañas húmedas; gumbo-limbo, acacias, cactáceas y matorral costero en zonas secas.",
+    "fauna": "Loros insulares, murciélagos, ranas, lagartijas y aves marinas muestran alto endemismo y gran vulnerabilidad a invasoras y pérdida de hábitat.",
+    "suelos": "Andisoles jóvenes y erosionables en islas volcánicas; calizas someras en islas bajas. Huracanes, pendientes y lluvias intensas favorecen deslizamientos cuando falta cobertura.",
+    "saberes": [
+      {"cultura": "Pueblo Kalinago de Dominica", "practicas": "En territorio Kalinago y otras zonas de Dominica se documentan sistemas multiestrato con coco o cítricos, musáceas, café o cacao y raíces, además de cortavientos, cercas vivas y artesanías con fibras del bosque."},
+      {"cultura": "Pequeña agricultura antillana", "practicas": "Huertos mixtos, árboles frutales y cultivos de raíz distribuyen riesgo frente a huracanes y mercados. No atribuir el sistema Kalinago a otras islas sin fuente propia."}
+    ],
+    "especies": ["Gommier (Dacryodes excelsa)", "Cacao (Theobroma cacao)", "Árbol del pan (Artocarpus altilis)", "Coco (Cocos nucifera)", "Larouman (Ischnosiphon arouma)"],
+    "fuentes": [
+      {"label": "FAO — sistemas agroforestales tradicionales de Dominica", "url": "https://www.fao.org/4/x5656e/x5656e05.htm"},
+      {"label": "FAO — recursos forestales y conocimiento Kalinago", "url": "https://www.fao.org/4/x6689e/X6689E13.htm"},
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw"], "ecorregiones_resolve": [475, 517, 537], "paises": ["AI", "AG", "BB", "BQ", "DM", "GD", "GP", "KN", "LC", "MF", "MQ", "MS", "BL", "SX", "VC", "VG", "VI"], "confianza": "alta", "notas": "La entrada Kalinago solo se activa en Dominica y, preferentemente, dentro del Kalinago Territory."}
+  },
+  {
+    "id": "trinidad_tobago_bosques",
+    "nombre": "Bosques de Trinidad y Tobago",
+    "emoji": "🐦",
+    "color": "#2D684A",
+    "resumen": "Bosques húmedos y secos de islas próximas a Sudamérica, con afinidades continentales y un gradiente completo desde crestas lluviosas hasta costas y arrecifes.",
+    "vegetacion": "Bosque siempreverde de cresta y ladera, palmas y lianas; parches de bosque seco, manglar y vegetación litoral en cotas bajas.",
+    "fauna": "Motmot de Trinidad, greenlet de Tobago, guácharos, monos, ocelotes en Trinidad y gran diversidad de anfibios, reptiles y aves.",
+    "suelos": "Arcillosos y muy lavados en zonas húmedas; más someros y secos en laderas de sotavento. La cobertura protege cuencas cortas que reaccionan rápido a lluvias extremas.",
+    "saberes": [
+      {"cultura": "Comunidades del nordeste de Tobago", "practicas": "La relación con el paisaje se expresa en pesca artesanal, agricultura, relatos, medicinas tradicionales y ceremonias. La fuente UNESCO reconoce ese vínculo; la app no debe detallar recetas medicinales ni homogeneizar las 15 comunidades."}
+    ],
+    "especies": ["Mora (Mora excelsa)", "Palmas (Arecaceae)", "Heliconias", "Cacao (Theobroma cacao)", "Mangle rojo (Rhizophora mangle)"],
+    "fuentes": [
+      {"label": "UNESCO — North-East Tobago Biosphere Reserve", "url": "https://www.unesco.org/en/mab/north-east-tobago"},
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw"], "ecorregiones_resolve": [510, 548], "paises": ["TT"], "confianza": "alta", "notas": "El saber descrito corresponde al nordeste de Tobago; no activarlo para toda Trinidad."}
+  },
+  {
+    "id": "matorral_xerico_caribeno",
+    "nombre": "Matorrales xéricos del Caribe",
+    "emoji": "🌵",
+    "color": "#A48655",
+    "resumen": "Paisajes áridos de islas bajas y sotaventos —incluidas las islas ABC, Caimán y sectores de las Antillas— dominados por viento, salinidad y lluvias muy variables.",
+    "vegetacion": "Cactáceas columnares, agaves, acacias, divi-divi, arbustos espinosos y vegetación halófila; el dosel es bajo y discontinuo.",
+    "fauna": "Iguanas, lagartijas, murciélagos, aves terrestres y marinas presentan endemismos insulares y dependen de charcas temporarias y vegetación costera.",
+    "suelos": "Calizos o volcánicos, someros, salinos y con poca materia orgánica. La compactación y el ramoneo intenso reducen infiltración; la revegetación debe usar procedencias locales.",
+    "saberes": [
+      {"cultura": "Comunidades rurales y pesqueras de islas áridas", "practicas": "Captación doméstica de lluvia, huertos protegidos del viento y conocimiento de especies resistentes son respuestas frecuentes, pero no existe evidencia suficiente para asignar una práctica única a todo el ECO_ID."}
+    ],
+    "especies": ["Divi-divi (Libidibia coriaria)", "Cactáceas columnares", "Agaves (Agave spp.)", "Uva de playa (Coccoloba uvifera)", "Acacias nativas"],
+    "fuentes": [
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["BSh", "BWh"], "ecorregiones_resolve": [599], "paises": ["AI", "AW", "BQ", "CW", "KY", "SX", "VG", "VI"], "confianza": "base_ecologica", "notas": "Cobertura ecológica inicial. No implementar el texto de saberes como recomendación hasta agregar fuentes por isla."}
+  },
+  {
+    "id": "manglares_antillanos",
+    "nombre": "Manglares de Bahamas y las Antillas",
+    "emoji": "🐚",
+    "color": "#26786D",
+    "resumen": "Manglares insulares en bahías, lagunas y costas protegidas, conectados con pastos marinos y arrecifes. Son barrera frente a tormentas y vivero de peces e invertebrados.",
+    "vegetacion": "Mangle rojo, negro, blanco y botoncillo forman franjas cortas condicionadas por marea, salinidad, agua dulce y sustrato calizo.",
+    "fauna": "Peces juveniles, langostas, cangrejos, moluscos, garzas, pelícanos, tortugas y manatíes usan el continuo manglar-pradera-arrecife.",
+    "suelos": "Sedimentos saturados y anóxicos almacenan carbono. Rellenos, canales, contaminación o bloqueo de mareas pueden matar el bosque aunque los árboles no se talen.",
+    "saberes": [
+      {"cultura": "Comunidades costeras antillanas", "practicas": "Lectura de mareas, refugios de fauna y respuesta a huracanes orienta pesca y restauración comunitaria. Los datos sensibles de uso deben permanecer en control de cada comunidad."},
+      {"cultura": "Comunidad de La Fe, Guanahacabibes", "practicas": "Participa en diagnóstico, monitoreo y restauración de manglar combinando observación local, educación y ciencia dentro de un proyecto UNESCO específico."}
+    ],
+    "especies": ["Mangle rojo (Rhizophora mangle)", "Mangle negro (Avicennia germinans)", "Mangle blanco (Laguncularia racemosa)", "Botoncillo (Conocarpus erectus)"],
+    "fuentes": [
+      {"label": "UNESCO — restauración comunitaria en Guanahacabibes", "url": "https://www.unesco.org/en/articles/mangres-project-advances-cuba-community-involvement-guanahacabibes-peninsula-biosphere-reserve"},
+      {"label": "CEPF — Caribbean Islands Ecosystem Profile", "url": "https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf"},
+      {"label": "RESOLVE Ecoregions 2017", "url": "https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017"}
+    ],
+    "_meta": {"koppen_tipicos": ["Af", "Am", "Aw", "BSh"], "ecorregiones_resolve": [612], "paises": ["BS", "CU", "HT", "DO", "JM", "PR", "AG", "DM", "GD", "KN", "LC", "VC", "VG", "VI", "TC"], "confianza": "alta", "notas": "La práctica de La Fe solo se activa en Guanahacabibes. En el resto, mostrar ecología y una referencia genérica a conocimiento costero sin ubicaciones sensibles."}
+  }
+]

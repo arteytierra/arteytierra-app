@@ -1,0 +1,654 @@
+{
+  "0": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "324": {
+    "ficha": "sonora_sinaloa_bosque_seco_desierto",
+    "accion": "agregar"
+  },
+  "326": {
+    "ficha": "sierras_madre_pino_encino",
+    "accion": "agregar"
+  },
+  "327": {
+    "ficha": "sierras_madre_pino_encino",
+    "accion": "agregar"
+  },
+  "328": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "329": {
+    "ficha": "bosque_templado_caducifolio_este",
+    "accion": "conservar_actual"
+  },
+  "330": {
+    "ficha": "sur_templado_humedo_eeuu",
+    "accion": "conservar_actual"
+  },
+  "331": {
+    "ficha": "apalaches_bosques_y_rivercane",
+    "accion": "agregar"
+  },
+  "332": {
+    "ficha": "gulf_mississippi_piney_woods",
+    "accion": "agregar"
+  },
+  "333": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "334": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "336": {
+    "ficha": "apalaches_bosques_y_rivercane",
+    "accion": "agregar"
+  },
+  "337": {
+    "ficha": "gulf_mississippi_piney_woods",
+    "accion": "agregar"
+  },
+  "338": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "339": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "340": {
+    "ficha": "ozarks_transicion_bosque_pradera",
+    "accion": "agregar"
+  },
+  "341": {
+    "ficha": "ozarks_transicion_bosque_pradera",
+    "accion": "agregar"
+  },
+  "342": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "343": {
+    "ficha": "ozarks_transicion_bosque_pradera",
+    "accion": "agregar"
+  },
+  "344": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "346": {
+    "ficha": "rocosas_sur_sky_islands",
+    "accion": "agregar"
+  },
+  "347": {
+    "ficha": "noreste_grandes_lagos_bosques",
+    "accion": "agregar"
+  },
+  "348": {
+    "ficha": "interior_noroeste_palouse_willamette",
+    "accion": "agregar"
+  },
+  "349": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "351": {
+    "ficha": "bosque_coniferas_pacifico_noroeste",
+    "accion": "conservar_actual"
+  },
+  "352": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "353": {
+    "ficha": "rocosas_sur_sky_islands",
+    "accion": "agregar"
+  },
+  "354": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "356": {
+    "ficha": "gran_cuenca_meseta_colorado",
+    "accion": "agregar"
+  },
+  "357": {
+    "ficha": "california_klamath_sierra_valle",
+    "accion": "agregar"
+  },
+  "358": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "359": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "360": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "361": {
+    "ficha": "rocosas_norte_praderas_montanas",
+    "accion": "agregar"
+  },
+  "363": {
+    "ficha": "gulf_mississippi_piney_woods",
+    "accion": "agregar"
+  },
+  "364": {
+    "ficha": "pacifico_noroeste_bosques_coniferas",
+    "accion": "agregar"
+  },
+  "366": {
+    "ficha": "california_klamath_sierra_valle",
+    "accion": "agregar"
+  },
+  "367": {
+    "ficha": "rocosas_sur_sky_islands",
+    "accion": "agregar"
+  },
+  "368": {
+    "ficha": "rocosas_sur_sky_islands",
+    "accion": "agregar"
+  },
+  "369": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "371": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "372": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "375": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "380": {
+    "ficha": "alaska_costa_taiga",
+    "accion": "agregar"
+  },
+  "384": {
+    "ficha": "tamaulipas_texas_pastizal_mezquital",
+    "accion": "agregar"
+  },
+  "385": {
+    "ficha": "california_klamath_sierra_valle",
+    "accion": "agregar"
+  },
+  "386": {
+    "ficha": "rocosas_norte_praderas_montanas",
+    "accion": "agregar"
+  },
+  "387": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "388": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "389": {
+    "ficha": "pradera_mixta",
+    "accion": "conservar_actual"
+  },
+  "390": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "391": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "392": {
+    "ficha": "pradera_pastos_altos",
+    "accion": "conservar_actual"
+  },
+  "393": {
+    "ficha": "sudeste_sabanas_pino_largo",
+    "accion": "agregar"
+  },
+  "394": {
+    "ficha": "rocosas_norte_praderas_montanas",
+    "accion": "agregar"
+  },
+  "395": {
+    "ficha": "pradera_mixta",
+    "accion": "conservar_actual"
+  },
+  "396": {
+    "ficha": "pradera_pastos_cortos",
+    "accion": "conservar_actual"
+  },
+  "397": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "398": {
+    "ficha": "interior_noroeste_palouse_willamette",
+    "accion": "agregar"
+  },
+  "399": {
+    "ficha": "sur_templado_humedo_eeuu",
+    "accion": "conservar_actual"
+  },
+  "400": {
+    "ficha": "sudeste_sabanas_pino_largo",
+    "accion": "agregar"
+  },
+  "401": {
+    "ficha": "grandes_llanuras_pradera_alta_mixta",
+    "accion": "agregar"
+  },
+  "402": {
+    "ficha": "pradera_pastos_cortos",
+    "accion": "conservar_actual"
+  },
+  "403": {
+    "ficha": "interior_noroeste_palouse_willamette",
+    "accion": "agregar"
+  },
+  "404": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "405": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "406": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "407": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "408": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "409": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "410": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "411": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "416": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "419": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "420": {
+    "ficha": "alaska_tundra_hielo_beringia",
+    "accion": "agregar"
+  },
+  "422": {
+    "ficha": "californias_chaparral_costero",
+    "accion": "agregar"
+  },
+  "423": {
+    "ficha": "california_klamath_sierra_valle",
+    "accion": "agregar"
+  },
+  "424": {
+    "ficha": "chaparral_californiano",
+    "accion": "conservar_actual"
+  },
+  "425": {
+    "ficha": "california_klamath_sierra_valle",
+    "accion": "agregar"
+  },
+  "426": {
+    "ficha": "baja_california_desiertos_y_sierras",
+    "accion": "agregar"
+  },
+  "427": {
+    "ficha": "altiplano_mexicano_matorral",
+    "accion": "agregar"
+  },
+  "428": {
+    "ficha": "desiertos_calidos_norteamericanos",
+    "accion": "conservar_actual"
+  },
+  "429": {
+    "ficha": "gran_cuenca_meseta_colorado",
+    "accion": "agregar"
+  },
+  "430": {
+    "ficha": "estepa_arbustiva_gran_cuenca",
+    "accion": "conservar_actual"
+  },
+  "431": {
+    "ficha": "baja_california_desiertos_y_sierras",
+    "accion": "agregar"
+  },
+  "432": {
+    "ficha": "matorral_xerofilo_altiplano_mexicano",
+    "accion": "conservar_actual"
+  },
+  "433": {
+    "ficha": "desiertos_calidos_norteamericanos",
+    "accion": "conservar_actual"
+  },
+  "434": {
+    "ficha": "interior_noroeste_palouse_willamette",
+    "accion": "agregar"
+  },
+  "435": {
+    "ficha": "desiertos_calidos_norteamericanos",
+    "accion": "conservar_actual"
+  },
+  "436": {
+    "ficha": "tamaulipas_texas_pastizal_mezquital",
+    "accion": "agregar"
+  },
+  "437": {
+    "ficha": "tamaulipas_texas_pastizal_mezquital",
+    "accion": "agregar"
+  },
+  "438": {
+    "ficha": "gran_cuenca_meseta_colorado",
+    "accion": "agregar"
+  },
+  "449": {
+    "ficha": "bosque_atlantico_mosquitia",
+    "accion": "agregar"
+  },
+  "450": {
+    "ficha": "bosque_atlantico_mosquitia",
+    "accion": "agregar"
+  },
+  "451": {
+    "ficha": "montanas_mayas_pino_encino",
+    "accion": "agregar"
+  },
+  "452": {
+    "ficha": "chiapas_bosques_montanos",
+    "accion": "agregar"
+  },
+  "453": {
+    "ficha": "chiapas_bosques_montanos",
+    "accion": "agregar"
+  },
+  "454": {
+    "ficha": "darien_humedo_panama",
+    "accion": "agregar"
+  },
+  "458": {
+    "ficha": "costa_rica_bosques_humedos_estacionales",
+    "accion": "agregar"
+  },
+  "459": {
+    "ficha": "cuba_bosques_karst_y_pinares",
+    "accion": "agregar"
+  },
+  "461": {
+    "ficha": "darien_humedo_panama",
+    "accion": "agregar"
+  },
+  "468": {
+    "ficha": "hispaniola_bosque_humedo",
+    "accion": "agregar"
+  },
+  "470": {
+    "ficha": "costa_rica_bosques_humedos_estacionales",
+    "accion": "agregar"
+  },
+  "471": {
+    "ficha": "darien_humedo_panama",
+    "accion": "agregar"
+  },
+  "472": {
+    "ficha": "jamaica_bosque_humedo_karstico",
+    "accion": "agregar"
+  },
+  "475": {
+    "ficha": "antillas_menores_bosques_humedos_secos",
+    "accion": "agregar"
+  },
+  "487": {
+    "ficha": "bosque_mesofilo_montana",
+    "accion": "conservar_actual"
+  },
+  "489": {
+    "ficha": "veracruz_tabasco_selvas_humedales",
+    "accion": "agregar"
+  },
+  "494": {
+    "ficha": "selva_maya_peten_yucatan",
+    "accion": "agregar"
+  },
+  "495": {
+    "ficha": "bosque_humedo_tropical_caribeno",
+    "accion": "conservar_actual"
+  },
+  "501": {
+    "ficha": "veracruz_tabasco_selvas_humedales",
+    "accion": "agregar"
+  },
+  "502": {
+    "ficha": "montanas_mayas_pino_encino",
+    "accion": "agregar"
+  },
+  "506": {
+    "ficha": "talamanca_caribe_sur",
+    "accion": "agregar"
+  },
+  "510": {
+    "ficha": "trinidad_tobago_bosques",
+    "accion": "agregar"
+  },
+  "514": {
+    "ficha": "veracruz_tabasco_selvas_humedales",
+    "accion": "agregar"
+  },
+  "515": {
+    "ficha": "veracruz_tabasco_selvas_humedales",
+    "accion": "agregar"
+  },
+  "517": {
+    "ficha": "antillas_menores_bosques_humedos_secos",
+    "accion": "agregar"
+  },
+  "519": {
+    "ficha": "selva_maya_peten_yucatan",
+    "accion": "agregar"
+  },
+  "521": {
+    "ficha": "centro_mexico_volcanes_bajio",
+    "accion": "agregar"
+  },
+  "522": {
+    "ficha": "balsas_jalisco_bosques_secos",
+    "accion": "agregar"
+  },
+  "527": {
+    "ficha": "bosque_tropical_seco_mesoamericano",
+    "accion": "conservar_actual"
+  },
+  "528": {
+    "ficha": "pacifico_sur_chiapas_bosque_seco",
+    "accion": "agregar"
+  },
+  "530": {
+    "ficha": "cuba_bosques_karst_y_pinares",
+    "accion": "agregar"
+  },
+  "532": {
+    "ficha": "hispaniola_seco_pinar_humedales",
+    "accion": "agregar"
+  },
+  "533": {
+    "ficha": "revillagigedo_ecosistemas_insulares",
+    "accion": "agregar"
+  },
+  "534": {
+    "ficha": "bosque_tropical_seco_mesoamericano",
+    "accion": "conservar_actual"
+  },
+  "535": {
+    "ficha": "jamaica_bosque_seco",
+    "accion": "agregar"
+  },
+  "537": {
+    "ficha": "antillas_menores_bosques_humedos_secos",
+    "accion": "agregar"
+  },
+  "541": {
+    "ficha": "bosque_seco_panameno",
+    "accion": "agregar"
+  },
+  "543": {
+    "ficha": "matorral_seco_caribeno",
+    "accion": "conservar_actual"
+  },
+  "544": {
+    "ficha": "baja_california_desiertos_y_sierras",
+    "accion": "agregar"
+  },
+  "545": {
+    "ficha": "sonora_sinaloa_bosque_seco_desierto",
+    "accion": "agregar"
+  },
+  "547": {
+    "ficha": "pacifico_sur_chiapas_bosque_seco",
+    "accion": "agregar"
+  },
+  "548": {
+    "ficha": "trinidad_tobago_bosques",
+    "accion": "agregar"
+  },
+  "550": {
+    "ficha": "veracruz_tabasco_selvas_humedales",
+    "accion": "agregar"
+  },
+  "551": {
+    "ficha": "selva_maya_yucatan",
+    "accion": "agregar"
+  },
+  "552": {
+    "ficha": "bahamas_pinares_manglares",
+    "accion": "agregar"
+  },
+  "553": {
+    "ficha": "montanas_mayas_pino_encino",
+    "accion": "agregar"
+  },
+  "554": {
+    "ficha": "cuba_bosques_karst_y_pinares",
+    "accion": "agregar"
+  },
+  "555": {
+    "ficha": "hispaniola_seco_pinar_humedales",
+    "accion": "agregar"
+  },
+  "556": {
+    "ficha": "baja_california_desiertos_y_sierras",
+    "accion": "agregar"
+  },
+  "557": {
+    "ficha": "oaxaca_sierras_bosques_comunales",
+    "accion": "agregar"
+  },
+  "558": {
+    "ficha": "oaxaca_sierras_bosques_comunales",
+    "accion": "agregar"
+  },
+  "559": {
+    "ficha": "centro_mexico_volcanes_bajio",
+    "accion": "agregar"
+  },
+  "564": {
+    "ficha": "sabanas_pino_belice_mosquitia",
+    "accion": "agregar"
+  },
+  "573": {
+    "ficha": "sabanas_pino_belice_mosquitia",
+    "accion": "agregar"
+  },
+  "579": {
+    "ficha": "cuba_bosques_karst_y_pinares",
+    "accion": "agregar"
+  },
+  "580": {
+    "ficha": "hispaniola_seco_pinar_humedales",
+    "accion": "agregar"
+  },
+  "581": {
+    "ficha": "everglades_manglares_sur_florida",
+    "accion": "agregar"
+  },
+  "599": {
+    "ficha": "matorral_xerico_caribeno",
+    "accion": "agregar"
+  },
+  "600": {
+    "ficha": "cuba_bosques_karst_y_pinares",
+    "accion": "agregar"
+  },
+  "605": {
+    "ficha": "corredor_seco_centroamericano",
+    "accion": "agregar"
+  },
+  "607": {
+    "ficha": "baja_california_desiertos_y_sierras",
+    "accion": "agregar"
+  },
+  "610": {
+    "ficha": "tehuacan_cuicatlan_matorral",
+    "accion": "agregar"
+  },
+  "612": {
+    "ficha": "manglares_antillanos",
+    "accion": "agregar"
+  },
+  "613": {
+    "ficha": "manglares_centroamericanos",
+    "accion": "agregar"
+  },
+  "614": {
+    "ficha": "manglares_mexico",
+    "accion": "agregar"
+  },
+  "617": {
+    "ficha": "manglares_centroamericanos",
+    "accion": "agregar"
+  },
+  "623": {
+    "ficha": "hawaii_bosques_humedos_secos",
+    "accion": "agregar"
+  },
+  "636": {
+    "ficha": "hawaii_bosques_humedos_secos",
+    "accion": "agregar"
+  },
+  "639": {
+    "ficha": "hawaii_matorrales_altos_bajos",
+    "accion": "agregar"
+  },
+  "640": {
+    "ficha": "hawaii_matorrales_altos_bajos",
+    "accion": "agregar"
+  },
+  "641": {
+    "ficha": "hawaii_matorrales_altos_bajos",
+    "accion": "agregar"
+  }
+}
