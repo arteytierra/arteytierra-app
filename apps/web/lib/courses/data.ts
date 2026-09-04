@@ -585,7 +585,6 @@ export const COURSES: Record<string, CourseData> = {
     tag: 'Voluntariado educativo en Tay Pichín · Entrada los lunes · Todo el año',
     intro: [
       'En Tay Pichín no hay una lista de tareas para tildar: hay instructores con oficio, compartiendo un saber que pasa de mano en mano desde que el ser humano descubrió el barro. Bioconstrucción, agroecología, organización colectiva — todo se aprende haciendo, integrado a la vida diaria de la ecoescuela.',
-      'Tu aporte no es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.',
       'Un proyecto que no paró desde noviembre de 2020, heredero de una tradición de voluntariado itinerante que Arte y Tierra sostiene desde 2014 entre Argentina, Colombia, Ecuador, Francia, Italia y Perú.',
     ],
     datos: [

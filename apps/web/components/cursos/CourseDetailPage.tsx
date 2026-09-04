@@ -109,6 +109,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           {course.intro.map((p, i) => (
             <p key={i} className="font-sans text-base text-ink-700 leading-relaxed mb-4 last:mb-0">{p}</p>
           ))}
+          {isInmersion && (
+            <Link href="/nosotros" className="inline-flex items-center gap-1.5 mt-6 font-sans text-sm font-semibold text-moss-700 hover:text-moss-900 transition-colors">
+              Conocé nuestra historia y trayectoria →
+            </Link>
+          )}
         </div>
       </section>
 
@@ -344,11 +349,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           <div className="mb-12 text-center">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">{isInmersion ? 'Tu aporte' : 'Inversión'}</p>
             <h2 className="font-display text-4xl text-ink-950">
-              {isInmersion ? <>Así se sostiene <em>el proyecto.</em></> : <>Cómo <em>sumarte.</em></>}
+              {isInmersion ? <>Nos impulsa a <em>continuar con nuestra labor.</em></> : <>Cómo <em>sumarte.</em></>}
             </h2>
             {isInmersion && (
               <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg mx-auto leading-relaxed">
-                Elegí tu modalidad de estadía — tu aporte cubre alimentación completa y el funcionamiento del espacio.
+                No es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.
               </p>
             )}
           </div>
