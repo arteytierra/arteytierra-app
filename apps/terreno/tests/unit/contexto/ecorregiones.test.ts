@@ -9,7 +9,7 @@ import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegion
 import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
 import { BIOMAS_REGIONALES_CANADA } from '@/lib/biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
-import { BIOMAS_REGIONALES_EUROPA_UE } from '@/lib/biomasRegionales';
+import { BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA } from '@/lib/biomasRegionales';
 import { BIOMAS_REGIONALES_SUDAMERICA } from '@/lib/biomasRegionalesSudamerica';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { Koppen } from '@/lib/clima';
@@ -70,8 +70,9 @@ describe('catálogos de fichas', () => {
 
   it('toda ficha regional trae especies', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
-    // + 28 de la UE y sus asociados + 47 sudamericanas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(168);
+    // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
+    // África mediterráneo + 47 sudamericanas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(210);
     for (const f of Object.values(BIOMAS_REGIONALES)) {
       expect(f.especies.length, f.id).toBeGreaterThan(0);
     }
@@ -84,15 +85,15 @@ describe('catálogos de fichas', () => {
     for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
       expect(f.saberes.length, f.id).toBeGreaterThan(0);
     }
-    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_SUDAMERICA })) {
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_MEDIO_ORIENTE, ...BIOMAS_REGIONALES_NORTE_AFRICA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
       expect(f.saberes, f.id).toEqual([]);
     }
   });
 
-  it('los seis bloques de fichas regionales son disjuntos', () => {
+  it('los ocho bloques de fichas regionales son disjuntos', () => {
     // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
     // ficha muerta sin que falle nada.
-    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_SUDAMERICA];
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA, BIOMAS_REGIONALES_SUDAMERICA];
     const ids = bloques.flatMap(b => Object.keys(b));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
@@ -117,9 +118,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 242 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 287 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(242);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(287);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -221,10 +222,71 @@ describe('lista blanca de ecorregiones', () => {
     for (const [eco, ficha] of ue) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
   });
 
-  it('el norte de África y Rusia siguen afuera, y es a propósito', () => {
+  it('Medio Oriente quedó cubierto: los 31 ECO_ID tienen ficha', () => {
+    // Mismo método que la UE: enumerar contra RESOLVE, no heredar una lista.
+    const mo: Array<[number, string]> = [
+      [56, 'arabia_sur_bosque_niebla'],
+      [59, 'yemen_montana_aterrazada'], [108, 'yemen_montana_aterrazada'],
+      [109, 'asir_altiplano_seco'],
+      [107, 'tihama_costa_arida'],
+      [105, 'socotra'],
+      [840, 'hadramaut_meseta'],
+      [115, 'mar_rojo_mangle'],
+      [837, 'mar_rojo_escarpe'],
+      [320, 'golfo_persico_mangle'],
+      [811, 'golfo_llanura_costera'],
+      [821, 'arabia_este_niebla'],
+      [809, 'desierto_arabigo'],
+      [810, 'nefud_rub_al_khali'],
+      [831, 'desierto_norarabigo'],
+      [832, 'harrat_basalto'],
+      [722, 'hajar_falaj'], [723, 'hajar_falaj'],
+      [739, 'estepa_siria_badia'],
+      [830, 'mesopotamia_jazira'],
+      [747, 'mesopotamia_marismas'],
+      [649, 'hircania_caspio'],
+      [695, 'elburz_estepa_forestal'],
+      [815, 'caspio_llanura_desertica'],
+      [756, 'kopet_dag'], [829, 'kopet_dag'],
+      [813, 'badghyz_pistacho'],
+      [757, 'kuh_rud_montano'],
+      [820, 'kavir_cuencas_endorreicas'],
+      [841, 'iran_sur_nubo_sindico'],
+      [838, 'sistan_registan'],
+    ];
+    expect(mo).toHaveLength(31);
+    for (const [eco, ficha] of mo) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
+  });
+
+  it('el norte de África mediterráneo quedó cubierto: los 14 ECO_ID tienen ficha', () => {
+    // Cinco de estos —701, 797, 798, 833, 839— estaban declarados como fuera
+    // de alcance mientras Europa era el límite. Ahora entran por derecho propio.
+    const na: Array<[number, string]> = [
+      [798, 'magreb_bosque_mediterraneo'],
+      [797, 'magreb_estepa_alfa'],
+      [701, 'atlas_conifera_montana'],
+      [758, 'alto_atlas_enebro'],
+      [744, 'nilo_delta'],
+      [745, 'chotts_sebkhas'],
+      [833, 'sahara_norte_estepa'],
+      [845, 'sahara_occidental_erg'],
+      [822, 'sahara_oriental'],
+      [842, 'sahara_sur'],
+      [839, 'sahara_costa_atlantica'],
+      [846, 'ahaggar_tassili'],
+      [844, 'uweinat_tibesti'],
+      [836, 'mar_rojo_costa_desierto'],
+    ];
+    expect(na).toHaveLength(14);
+    for (const [eco, ficha] of na) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
+  });
+
+  it('Rusia, el Sahel y el Cuerno de África siguen afuera, y es a propósito', () => {
     // Entran en las cajas de la enumeración por el borde, no por pisar
-    // territorio de la UE ni de sus asociados. Ver ecorregionesEuropaUE.ts.
-    for (const eco of [701, 797, 798, 833, 839, 774, 778]) {
+    // territorio en alcance. Verificado por punto; ver el encabezado de
+    // ecorregionesNorteAfrica.ts y la lista ESPERADOS del script.
+    //   774, 778 → Rusia    53 → Sahel    79 → Cuerno de África
+    for (const eco of [774, 778, 53, 79]) {
       expect(fichaDeEcorregion(eco), String(eco)).toBeNull();
     }
   });

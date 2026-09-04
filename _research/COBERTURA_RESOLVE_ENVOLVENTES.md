@@ -114,13 +114,68 @@ lee como olvido. Todos están declarados en `ESPERADOS`, dentro del script.
 Macaronesia ya estaba cubierta por el paquete de Europa: Azores (645), Madeira
 (668), Canarias (787) y el matorral de argán (796) resuelven a `macaronesia`.
 
+## Medio Oriente — cerrado
+
+**Alcance, escrito:** el Levante (Siria, Líbano, Israel y Palestina, Jordania),
+Mesopotamia, la península arábiga entera con Socotra, Irán, y el Cáucaso sur
+(Armenia y Azerbaiyán). Turquía y Georgia ya habían entrado con la UE.
+
+Seis cajas, tres de ellas polígonos: un rectángulo sobre Irán se come
+Turkmenistán, Afganistán y Pakistán, y uno sobre Arabia se come el Cuerno de
+África. **31 ECO_ID sin ficha, resueltos con 28 fichas nuevas.**
+
+| Bloque | ECO_ID |
+| --- | --- |
+| Arabia del sur | 56, 59, 105, 107, 108, 109, 840 |
+| Mar Rojo y Golfo | 115, 320, 811, 821, 837 |
+| Desiertos de la península | 809, 810, 831, 832 |
+| Omán | 722, 723 |
+| Levante y Mesopotamia | 739, 747, 830 |
+| Irán | 649, 695, 756, 757, 813, 815, 820, 829, 838, 841 |
+
+Cuatro casos de frontera se resolvieron midiendo, no opinando: **815** (llanura
+caspia) y **838** (Registán) devuelven punto dentro de Irán; **813** (Badgyz)
+tiene su envolvente en 60,88 °E, al oeste de la frontera iraní; **320** lleva el
+nombre del delta del Indo pero llega a 48,8 °E, o sea los manglares de hara del
+Golfo.
+
+## Norte de África mediterráneo — cerrado
+
+**Alcance, escrito:** Marruecos con el Sáhara Occidental, Argelia, Túnez, Libia
+y Egipto, con territorio completo y no sólo la franja costera. El Sahara entra a
+propósito: la foggara, el ghout y el jardín de uadi son agricultura.
+
+Cuatro cajas, **14 ECO_ID, 14 fichas**. Cinco de esos ECO_ID —701, 797, 798,
+833 y 839— estaban declarados como *fuera de alcance* mientras el límite era
+Europa. La declaración se dio de baja: ahora entran por derecho propio.
+
+| Bloque | ECO_ID |
+| --- | --- |
+| Franja mediterránea y Atlas | 701, 758, 797, 798 |
+| Nilo y depresiones salinas | 744, 745 |
+| Sahara | 822, 833, 839, 842, 844, 845, 846 |
+| Mar Rojo egipcio | 836 |
+
+**Lo que queda afuera a propósito**, verificado por punto y no por criterio:
+
+- **53** sabana de acacias del Sahel: entra por el borde sur de las cajas de
+  Marruecos y Argelia, pero los puntos en Aousserd, Tinduf y Bordj Badji
+  Mokhtar devuelven 842 y 846.
+- **79** pastizal montano etíope: entra por el vértice sudeste de la caja de
+  Egipto, en el triángulo de Halaib que administra Sudán. El punto sobre el
+  Gebel Elba devuelve 836.
+
 ### Estado
 
 | Región | Cajas | Sin ficha |
 | --- | --- | --- |
 | América | 6 | 0 |
 | Europa y asociados | 13 | 0 |
+| Medio Oriente | 6 | 0 |
+| Norte de África mediterráneo | 4 | 0 |
 | Sudamérica | 1 | 0 |
 
-Falta África, Asia y Oceanía, que no tienen cajas todavía. Agregarlas es
-escribir una entrada en `REGIONES`.
+**396 ECO_ID mapeados** de los 846 de RESOLVE, con 210 fichas regionales.
+
+Falta el resto de África, el resto de Asia y Oceanía, que no tienen cajas
+todavía. Agregarlas es escribir una entrada en `REGIONES`.

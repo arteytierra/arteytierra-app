@@ -5,8 +5,9 @@
  * que elige entre los tres catálogos según cuánta precisión haya disponible:
  *
  *   lib/contexto.ts          12 fichas sudamericanas (por Köppen y ubicación)
- *   lib/biomasRegionales.ts  168 fichas de Norteamérica, Canadá, Mesoamérica,
- *                            Caribe, Europa y sus asociados, y el resto de
+ *   lib/biomasRegionales.ts  210 fichas de Norteamérica, Canadá, Mesoamérica,
+ *                            Caribe, Europa y sus asociados, Medio Oriente, el
+ *                            norte de África mediterráneo y el resto de
  *                            Sudamérica (por ECO_ID curado de RESOLVE)
  *   lib/biomasGlobales.ts    15 fichas de bioma global (cubren todo el planeta)
  *
