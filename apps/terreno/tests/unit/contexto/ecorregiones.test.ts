@@ -114,14 +114,33 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 187 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 186 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(187);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(186);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
   });
 
+  it('el ECO_ID 0 no es de Alaska: es la roca y el hielo de todo el planeta', () => {
+    // RESOLVE usa ECO_ID 0 / BIOME_NUM 98 para 'Rock and Ice' en cualquier
+    // continente. Mientras estuvo mapeado a la ficha de Alaska, un glaciar
+    // andino o alpino salía descrito con la tundra de Beringia.
+    expect(fichaDeEcorregion(0)).toBeNull();
+
+    const hielos: Array<[string, number, number]> = [
+      ['Ventisquero Negro, Andes',  -41.2, -71.8],
+      ['Aletsch, Alpes',             46.5,   8.0],
+      ['Casquete de Groenlandia',    72.0, -40.0],
+      ['Denali, Alaska',             63.1,-151.0],
+    ];
+    for (const [donde, lat, lng] of hielos) {
+      // Tal cual responde el FeatureServer: BIOME_NUM 11 y BIOME_NAME 'N/A'.
+      const r = resolverBioma(k('ET'), lat, lng, 3000, E(0, 'Rock and Ice', 11, 'N/A'));
+      expect(r.ficha?.id, donde).toBe('resolve_roca_hielo');
+      expect(r.fuente, donde).toBe('bioma_global');
+    }
+  });
   it('las dos mitades no se pisan: ningún ECO_ID está en las dos', () => {
     const sa = Object.keys(ECO_ID_SUDAMERICA);
     const resto = Object.keys(ECO_ID_RESTO_DEL_MUNDO);

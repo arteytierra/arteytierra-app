@@ -413,7 +413,12 @@ export function resolverBioma(
     // "Puna"—, porque son ecosistemas que las 12 fichas argentinas no describen.
     // Sabiendo la ecorregión real, el bioma global es un dato; la heurística,
     // una conjetura. Manda el dato, y el aviso dice qué falta.
-    const global = biomaGlobal(eco.bioma_num);
+    // RESOLVE etiqueta la roca y el hielo con ECO_ID 0 y BIOME_NAME "N/A",
+    // pero les deja BIOME_NUM 11 —tundra—, que no es lo que son: un glaciar
+    // no tiene el suelo ni la vegetación de la tundra. El bioma 98 de la
+    // propia tabla de RESOLVE sí los describe, así que corregimos el dato.
+    const biomaNum = eco.eco_id === 0 ? 98 : eco.bioma_num;
+    const global = biomaGlobal(biomaNum);
     const fichaG = global ? fichaPorId(global.id) : null;
     return {
       ficha: fichaG,

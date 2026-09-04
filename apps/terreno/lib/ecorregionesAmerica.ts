@@ -21,8 +21,13 @@ export const ECO_ID_AMERICA: Record<number, string> = {
   375: 'alaska_costa_taiga',
   380: 'alaska_costa_taiga',
 
-  // Alaska: tundra, Beringia e hielos de montaña
-    0: 'alaska_tundra_hielo_beringia',
+  // Alaska: tundra, Beringia e hielos de montaña.
+  //
+  // Acá NO va el ECO_ID 0. RESOLVE lo usa para 'Rock and Ice' en todo el
+  // planeta —los Andes, los Alpes, el Himalaya, Groenlandia—, así que mapearlo
+  // a Alaska le ponía vegetación y fauna de Beringia a cualquier glaciar. Sin
+  // esa entrada cae al bioma 98 de RESOLVE, 'Roca y hielo', que es la
+  // respuesta correcta también para los hielos de Alaska.
   404: 'alaska_tundra_hielo_beringia',
   405: 'alaska_tundra_hielo_beringia',
   406: 'alaska_tundra_hielo_beringia',
