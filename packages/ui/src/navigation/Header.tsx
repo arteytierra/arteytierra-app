@@ -157,7 +157,7 @@ export function Header({
             {items.map((it) =>
               it.children?.length ? (
                 <div key={it.href}>
-                  <p className="px-2 pt-4 pb-1 text-xs font-semibold uppercase tracking-widest text-ink-500">
+                  <p className="px-2 pt-4 pb-1 text-xs font-semibold uppercase tracking-widest text-ink-800/80">
                     {it.label}
                   </p>
                   {it.children.map((child) => (

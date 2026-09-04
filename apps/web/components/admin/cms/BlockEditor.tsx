@@ -84,7 +84,7 @@ export function BlockEditor({ postId, initialBlocks }: Props) {
                 </button>
                 <button
                   onClick={() => removeBlock(b.id)}
-                  className="p-1.5 hover:bg-clay-100 text-clay-600 rounded"
+                  className="p-1.5 hover:bg-clay-100 text-clay-700 rounded"
                   aria-label="Eliminar"
                 >
                   <Trash2 size={14} />

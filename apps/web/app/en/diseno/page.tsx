@@ -130,7 +130,7 @@ export default function DisenoEnPage() {
                     <h3 className="font-display text-3xl text-bone-50 mb-4">{s.title}</h3>
                     <ul className="flex flex-wrap gap-2 mb-5">
                       {s.tecnicas.map(t => (
-                        <li key={t} className="font-sans text-xs text-clay-400 border border-clay-700/40 px-3 py-1">{t}</li>
+                        <li key={t} className="font-sans text-xs text-clay-300 border border-clay-700/40 px-3 py-1">{t}</li>
                       ))}
                     </ul>
                     <p className="font-sans text-sm text-bone-200 leading-relaxed">{s.body}</p>

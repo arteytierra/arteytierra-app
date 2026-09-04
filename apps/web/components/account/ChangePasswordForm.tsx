@@ -9,7 +9,7 @@ export function ChangePasswordForm() {
 
   if (state.ok) {
     return (
-      <div className="rounded-2xl border border-moss-200 bg-moss-50 p-6">
+      <div className="rounded-2xl border border-moss-300 bg-moss-100 p-6">
         <p className="font-display text-lg text-ink-950">Contraseña actualizada ✓</p>
         <p className="mt-1 text-sm text-ink-800/70">
           Tu nueva contraseña ya está activa. La vas a usar la próxima vez que inicies sesión.

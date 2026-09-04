@@ -45,7 +45,7 @@ export function GiftCardField({ applied }: { applied: string | null }) {
     return (
       <div className="rounded-2xl border border-moss-700/30 bg-moss-100/40 px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Gift size={16} className="text-moss-800" />
+          <Gift size={16} className="text-moss-700" />
           <span className="text-sm">
             Gift card <strong className="font-mono">{applied}</strong> aplicada
           </span>

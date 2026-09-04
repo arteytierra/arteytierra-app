@@ -84,7 +84,7 @@ export default function NosotrosEnPage() {
             <div>
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Founder</p>
               <h2 className="font-display text-4xl text-bone-50 mb-2">Jonatan Palma</h2>
-              <p className="font-sans text-sm text-clay-400 italic mb-6">Bioarchitect · Permaculture Designer · Educator</p>
+              <p className="font-sans text-sm text-clay-300 italic mb-6">Bioarchitect · Permaculture Designer · Educator</p>
               <p className="font-sans text-base text-bone-200 leading-relaxed mb-4">
                 Born in the city, called by the land. Jonatan studied architecture and then undertook a long journey through natural building, permaculture and sustainable design — learning by doing on real building sites across Latin America and Europe.
               </p>
@@ -143,7 +143,7 @@ export default function NosotrosEnPage() {
             </h2>
             <div className="flex flex-wrap justify-center gap-4">
               {PAISES.map(p => (
-                <span key={p} className="font-sans text-sm font-bold uppercase tracking-widest text-ink-700 border border-ink-300 px-5 py-3">
+                <span key={p} className="font-sans text-sm font-bold uppercase tracking-widest text-ink-700 border border-ink-700 px-5 py-3">
                   {p}
                 </span>
               ))}

@@ -114,7 +114,7 @@ export default function CultivoGirgolasFrPage() {
                   <div>
                     <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">{m.n}</p>
                     <h3 className="font-display text-2xl text-bone-50">{m.title}</h3>
-                    <p className="font-sans text-sm text-clay-400 italic mt-2">{m.detail}</p>
+                    <p className="font-sans text-sm text-clay-300 italic mt-2">{m.detail}</p>
                   </div>
                   <div className="md:col-span-2">
                     <p className="font-sans text-sm text-bone-200 leading-relaxed">{m.desc}</p>

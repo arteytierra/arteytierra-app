@@ -28,7 +28,7 @@ export function PostSignupNewsletter({
   if (done) return null;
 
   return (
-    <div className="mt-5 bg-bone-50 border border-bone-300 p-6">
+    <div className="mt-5 bg-bone-50 border border-bone-200 p-6">
       <p className="font-display text-lg text-ink-950 mb-1">{titulo}</p>
       <p className="font-sans text-sm text-ink-700 leading-relaxed mb-4">{texto}</p>
       <NewsletterForm
