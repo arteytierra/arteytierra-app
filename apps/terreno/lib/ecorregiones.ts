@@ -24,6 +24,9 @@
  *   https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017
  */
 
+import { ECO_ID_AMERICA } from './ecorregionesAmerica';
+import { ECO_ID_EUROPA } from './ecorregionesEuropa';
+
 export interface Ecorregion {
   eco_id:      number;
   eco_name:    string;
@@ -153,7 +156,7 @@ const SUDAMERICA: Record<number, string> = {
  * Ninguna apunta a una ficha sudamericana: describir un predio de Kansas con la
  * vegetación del Espinal fue el bug que dio origen a toda esta tabla.
  */
-const RESTO_DEL_MUNDO: Record<number, string> = {
+const RESTO_CURADO_A_MANO: Record<number, string> = {
   // Norteamérica — bosques y praderas
   329: 'bosque_templado_caducifolio_este',      // Appalachian mixed mesophytic forests
   330: 'sur_templado_humedo_eeuu',              // Appalachian Piedmont forests
@@ -193,6 +196,17 @@ const RESTO_DEL_MUNDO: Record<number, string> = {
   717: 'boreal_nordico_turberas',               // Scandinavian and Russian taiga
   787: 'macaronesia',                           // Canary Islands dry woodlands and forests
   793: 'mediterraneo_europeo',                  // Iberian sclerophyllous and semi-deciduous forests
+};
+
+/**
+ * La unión de las tres mitades del resto del mundo. Las dos generadas vienen de
+ * los paquetes de investigación y son disjuntas entre sí y con esta: un ECO_ID
+ * repetido se resolvería en silencio a favor del último y el test lo rechaza.
+ */
+const RESTO_DEL_MUNDO: Record<number, string> = {
+  ...RESTO_CURADO_A_MANO,
+  ...ECO_ID_AMERICA,
+  ...ECO_ID_EUROPA,
 };
 
 /**

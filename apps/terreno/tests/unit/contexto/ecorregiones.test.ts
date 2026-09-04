@@ -5,7 +5,9 @@ import {
   type Ecorregion,
 } from '@/lib/ecorregiones';
 import { resolverBioma, determinarBioma, fichaPorId, BIOMAS } from '@/lib/contexto';
-import { BIOMAS_REGIONALES } from '@/lib/biomasRegionales';
+import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegionales';
+import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { Koppen } from '@/lib/clima';
 
@@ -63,12 +65,33 @@ describe('catálogos de fichas', () => {
     }
   });
 
-  it('las 22 fichas regionales traen saberes y especies', () => {
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(22);
+  it('toda ficha regional trae especies', () => {
+    // 22 escritas a mano + 53 americanas + 8 europeas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(83);
     for (const f of Object.values(BIOMAS_REGIONALES)) {
-      expect(f.saberes.length, f.id).toBeGreaterThan(0);
       expect(f.especies.length, f.id).toBeGreaterThan(0);
     }
+  });
+
+  it('las escritas a mano traen saberes y las generadas los dejan vacíos', () => {
+    // No es una omisión: los saberes de estas regiones son subnacionales y
+    // necesitan geometría con procedencia y licencia. Atribuirlos a una
+    // ecorregión entera sería inventar quién practica qué y dónde.
+    for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
+      expect(f.saberes.length, f.id).toBeGreaterThan(0);
+    }
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_EUROPA })) {
+      expect(f.saberes, f.id).toEqual([]);
+    }
+  });
+
+  it('los tres bloques de fichas regionales son disjuntos', () => {
+    // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
+    // ficha muerta sin que falle nada.
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_EUROPA];
+    const ids = bloques.flatMap(b => Object.keys(b));
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
   });
 
   it('las fichas globales no atribuyen saberes ni especies a nadie', () => {
@@ -90,9 +113,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 56 sudamericanas + 30 del resto del mundo, de las 846 de RESOLVE.
+    // 56 sudamericanas + 187 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(56);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(30);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(187);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -119,7 +142,7 @@ describe('lista blanca de ecorregiones', () => {
   });
 
   it('devuelve null para una ecorregión sin curar', () => {
-    expect(fichaDeEcorregion(334)).toBeNull();  // Eastern forest-boreal transition
+    expect(fichaDeEcorregion(653)).toBeNull();  // europea, deliberadamente afuera de la lista blanca
     expect(fichaDeEcorregion(525)).toBeNull();  // Caatinga — a propósito: no hay ficha suya
     expect(fichaDeEcorregion(495)).toBe('bosque_humedo_tropical_caribeno');
   });
@@ -207,12 +230,53 @@ describe('resolverBioma — tres niveles', () => {
   });
 
   it('una ecorregión sin curar cae a la ficha de bioma global, con aviso', () => {
-    const r = resolverBioma(k('Dfb'), 44.0, -79.0, 200, E(334, 'Eastern forest-boreal transition', 4));
+    // 653 no está en la lista blanca: el ECO_ID es real, el nombre es de prueba.
+    const r = resolverBioma(k('Dfb'), 50.0, 20.0, 200, E(653, 'ecorregión sin curar', 4));
     expect(r.fuente).toBe('bioma_global');
     expect(r.ficha?.id).toBe('resolve_bosque_templado_caducifolio_mixto');
     expect(r.ficha?.saberes).toEqual([]);
-    expect(r.aviso).toContain('Eastern forest-boreal transition');
-    expect(r.ecorregion?.eco_id).toBe(334);
+    expect(r.aviso).toContain('ecorregión sin curar');
+    expect(r.ecorregion?.eco_id).toBe(653);
+  });
+
+  it('el este boreal canadiense ya tiene ficha propia', () => {
+    // Era el ejemplo de "sin curar" hasta el montaje del paquete de Norteamérica.
+    const r = resolverBioma(k('Dfb'), 44.0, -79.0, 200, E(334, 'Eastern forest-boreal transition', 4));
+    expect(r.fuente).toBe('ecorregion');
+    expect(r.ficha?.id).toBe('noreste_grandes_lagos_bosques');
+  });
+
+  it('las tres fichas que no se activaban donde están escritas ahora se activan', () => {
+    // Lanzarote y Fuerteventura son 796, no 787, y macaronesia es la ficha que
+    // lleva el enarenado, el jable y las gavias.
+    expect(fichaDeEcorregion(796)).toBe('macaronesia');
+    // El Alentejo, el Algarve, Doñana y Los Alcornocales son 805, no 793, y
+    // mediterraneo_europeo es la que lleva la dehesa y el montado.
+    expect(fichaDeEcorregion(805)).toBe('mediterraneo_europeo');
+    // Los Pirineos son 676, no 689, y la ficha alpina los nombra en su texto.
+    expect(fichaDeEcorregion(676)).toBe('alpino_montano_europeo');
+  });
+
+  it('la llanura atlántica europea deja de caer al bioma global', () => {
+    const r = resolverBioma(k('Cfb'), 48.1, -1.7, 60, E(664, 'North Atlantic moist mixed forests', 4));
+    expect(r.fuente).toBe('ecorregion');
+    expect(r.ficha?.id).toBe('atlantico_llanura_noroeste');
+  });
+
+  it('Almería no recibe la receta de la dehesa', () => {
+    // 803 es semiárido de verdad, del orden de 250 mm al año. Plegarlo al
+    // mediterráneo ibérico haría recomendar dehesa y montado en un semidesierto.
+    const r = resolverBioma(k('BSk'), 37.0, -2.1, 300, E(803, 'Southeastern Iberian shrubs and woodlands', 13));
+    expect(r.ficha?.id).toBe('semiarido_sureste_iberico');
+    expect(r.ficha?.id).not.toBe('mediterraneo_europeo');
+  });
+
+  it('Oaxaca y Kansas conservan la ficha que ya tenían', () => {
+    // El montaje agrega 143 ECO_ID americanos sin remapear ninguno de los 21
+    // que ya estaban curados.
+    expect(fichaDeEcorregion(487)).toBe('bosque_mesofilo_montana');
+    expect(fichaDeEcorregion(392)).toBe('pradera_pastos_altos');
+    expect(fichaDeEcorregion(495)).toBe('bosque_humedo_tropical_caribeno');
   });
 
   it('sin ecorregión, en Sudamérica sigue funcionando el Köppen de siempre', () => {

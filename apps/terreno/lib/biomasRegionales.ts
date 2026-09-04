@@ -14,8 +14,10 @@
  */
 
 import type { BiomaFicha } from './biomaTipos';
+import { BIOMAS_REGIONALES_AMERICA } from './biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_EUROPA } from './biomasRegionalesEuropa';
 
-export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
+const CURADAS_A_MANO: Record<string, BiomaFicha> = {
   // US, CA · ECO_ID 329 · Köppen Cfa, Dfa, Dfb · confianza alta
   // ECO_ID 329 es un ejemplo verificado por punto en los Apalaches; la ficha cubre varias ecorregiones RESOLVE y no debe activarse sólo por ese ID.
   bosque_templado_caducifolio_este: {
@@ -452,7 +454,8 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
     ],
   },
 
-  // PT, ES, FR, IT, SI, HR, BA, ME, AL, GR, MT, CY · ECO_ID 793 · Köppen Csa, Csb · confianza alta
+  // ES, FR, IT, PT · ECO_ID 793 y 788, 799, 805 · Köppen Csa, Csb · confianza alta
+  // El sur de Portugal, Doñana y Los Alcornocales son 805, no 793: la dehesa y el montado que describe esta ficha viven ahí y hasta el relevamiento de Europa occidental (09/2026) nunca se activaban. Los Balcanes y el Egeo tienen ECO_ID propios y todavía no están curados.
   // Se crea ficha propia. La etiqueta climática mediterráneo no alcanza para compartir especies y saberes entre Europa, California, Chile, Sudáfrica y Australia.
   mediterraneo_europeo: {
     id: 'mediterraneo_europeo',
@@ -481,7 +484,8 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
     ],
   },
 
-  // IE, GB, FR, ES, PT, BE, NL · ECO_ID 651 · Köppen Cfb, Cfc · confianza alta
+  // IE, GB · ECO_ID 651 · Köppen Cfb, Cfc · confianza alta
+  // El 651 es Celtic broadleaf forests: Irlanda y Gran Bretaña. La llanura atlántica de Francia, Bélgica y los Países Bajos es 664 y la franja cantábrico-atlántica ibérica es 648; las dos tienen ficha propia desde el relevamiento de Europa occidental.
   // ECO_ID 651, Celtic broadleaf forests, es representativo pero no cubre toda la región atlántica.
   atlantico_templado_oceanico: {
     id: 'atlantico_templado_oceanico',
@@ -510,7 +514,8 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
     ],
   },
 
-  // FR, DE, CH, AT, CZ, PL, SK, SI, HR, HU, RO · ECO_ID 654 · Köppen Cfb, Dfb · confianza alta
+  // DE, PL, CZ · ECO_ID 654 · Köppen Cfb, Dfb · confianza alta
+  // Alsacia, el Jura francés y el Mittelland suizo son 686, con ficha propia; el 654 verificado por punto cae en Europa central, no en Francia ni en Suiza.
   // La región EEA Continental y el bioma RESOLVE de bosque templado no son equivalentes exactos; se usa la intersección como criterio.
   templado_continental_europeo: {
     id: 'templado_continental_europeo',
@@ -598,7 +603,7 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
   },
 
   // ES, FR, AD, IT, CH, LI, DE, AT, SI, PL, SK, RO, UA · ECO_ID 689 · Köppen Cfb, Dfb, Dfc, ET · confianza alta
-  // ECO_ID 689 corresponde a Alpes; Pirineos y Cárpatos tienen otros IDs. La elevación debe ser un segundo criterio porque RESOLVE incluye valles y laderas en polígonos amplios.
+  // ECO_ID 689 son los Alpes y 676 los Pirineos, agregado en 09/2026 para que la ficha se active donde su propio texto dice; los Cárpatos siguen sin curar. La elevación debe ser un segundo criterio porque RESOLVE incluye valles y laderas en polígonos amplios.
   alpino_montano_europeo: {
     id: 'alpino_montano_europeo',
     nombre: 'Alpino y montano europeo',
@@ -656,3 +661,18 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
     ],
   },
 };
+
+/**
+ * Las 22 escritas a mano, más las 53 americanas y las 8 europeas que vienen de
+ * los paquetes de investigación. Los tres bloques son disjuntos: el test lo
+ * verifica, porque un id repetido acá se resolvería en silencio a favor del
+ * último y una ficha quedaría muerta sin que nada falle.
+ */
+export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
+  ...CURADAS_A_MANO,
+  ...BIOMAS_REGIONALES_AMERICA,
+  ...BIOMAS_REGIONALES_EUROPA,
+};
+
+/** Los tres bloques por separado, para que el test pueda cruzarlos. */
+export { CURADAS_A_MANO as BIOMAS_REGIONALES_CURADAS };
