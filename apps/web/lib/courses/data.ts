@@ -64,6 +64,8 @@ export interface CourseData {
   startDate?: string;
   /** Testimonios propios de este curso, si hay. Si no se define, se usan los testimonios generales de `lib/testimonios`. */
   testimonios?: { quote: string; author: string; role: string }[];
+  /** Link flotante a la versión hermana del curso (corta ↔ larga), mostrado en la página de detalle. */
+  crossLink?: { href: string; label: string };
 }
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
@@ -208,6 +210,7 @@ export const COURSES: Record<string, CourseData> = {
     formCurso: 'Formación Integral en Construcción Natural · 21 sep – 30 nov 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%2021%20de%20septiembre)',
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
+    crossLink: { href: '/cursos/formacion-integral-intensivo', label: '¿Preferís algo más corto? Mirá el Intensivo (3 a 8 días) →' },
   },
 
   'formacion-integral-intensivo': {
@@ -218,13 +221,16 @@ export const COURSES: Record<string, CourseData> = {
     subtitle: '3 días: lo esencial del oficio — muro, revoque grueso, revoque fino y pintura de barro y cal. Quedate hasta el 17: para ir más allá, con techo verde, aberturas y carpintería.',
     heroImg: '/img/cursos/casualidad/1.jpg',
     galeria: [
+      '/img/cursos/bioarquitectura/3.jpg',
+      '/img/cursos/bioarquitectura/7.jpg',
+      '/img/cursos/bioarquitectura/9.jpg',
+      '/img/cursos/vueltatierra/2.jpg',
+      '/img/cursos/bioarquitectura/11.jpg',
+      '/img/cursos/bioarquitectura/12.jpeg',
+      '/img/cursos/vueltatierra/10.jpg',
+      '/img/cursos/mitierramicasa/2.jpg',
       '/img/cursos/casualidad/2.jpg',
-      '/img/cursos/casualidad/3.jpg',
       '/img/cursos/casualidad/4.jpg',
-      '/img/cursos/casualidad/5.jpg',
-      '/img/cursos/casualidad/6.jpg',
-      '/img/cursos/casualidad/7.jpg',
-      '/img/cursos/casualidad/8.jpg',
     ],
     tag: '10, 11 y 12 de octubre 2026 · o toda la semana hasta el 17 · San Marcos Sierras',
     intro: [
@@ -301,6 +307,7 @@ export const COURSES: Record<string, CourseData> = {
     senaPercent: 20,
     ocultarCupos: true,
     startDate: '2026-10-10',
+    crossLink: { href: '/cursos/formacion-construccion-natural', label: '¿Querés ir a fondo? Conocé la Formación completa (2 meses) →' },
   },
 
   'bioarquitectura': {
@@ -308,7 +315,7 @@ export const COURSES: Record<string, CourseData> = {
     kind: 'presencial',
     badge: 'Intensivo presencial',
     name: 'Bioarquitectura, Construcción y Territorio',
-    subtitle: 'Dos días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico adaptado a territorios semiáridos.',
+    subtitle: 'Cuatro días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico adaptado a territorios semiáridos.',
     heroImg: '/img/cursos/bioarquitectura/1.jpg',
     galeria: [
       '/img/cursos/bioarquitectura/2.jpg',
@@ -324,13 +331,13 @@ export const COURSES: Record<string, CourseData> = {
       '/img/cursos/bioarquitectura/12.jpeg',
       '/img/cursos/bioarquitectura/13.jpeg',
     ],
-    tag: 'Intensivo · 5 y 6 de diciembre 2026 · Tay Pichín',
+    tag: 'Intensivo · 5 al 8 de diciembre 2026 · Tay Pichín',
     intro: [
-      'Dos días de experiencia intensiva donde aprenderemos integrando técnicas ancestrales de bioconstrucción con principios contemporáneos de diseño ecológico y arquitectura bioclimática adaptada a territorios semiáridos.',
+      'Cuatro días de experiencia intensiva donde aprenderemos integrando técnicas ancestrales de bioconstrucción con principios contemporáneos de diseño ecológico y arquitectura bioclimática adaptada a territorios semiáridos.',
       'Durante el encuentro trabajaremos colectivamente en distintas etapas constructivas utilizando tierra, piedra, fibras vegetales y materiales naturales, comprendiendo la vivienda como un organismo vivo en relación directa con el paisaje, el clima y las personas que la habitan.',
     ],
     datos: [
-      { label: '¿Cuándo?', val: '5 y 6 de diciembre 2026 · Sábado y domingo' },
+      { label: '¿Cuándo?', val: '5 al 8 de diciembre 2026 · 4 días' },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
       { label: 'Modalidad', val: '40% teoría · 60% práctica en obra real' },
       { label: 'Facilita', val: 'Jonatan Palma · Cupos limitados' },
@@ -352,8 +359,8 @@ export const COURSES: Record<string, CourseData> = {
       { id: 'habitacion', label: 'Habitación compartida', precio: '$160.000 ARS', precioAlt: 'USD 123', includes: ['Materiales', 'Certificado de participación', 'Alimentación completa', 'Habitación compartida en Tay Pichín'], highlighted: true },
     ],
     opcionesNota: 'Todas las opciones incluyen materiales, certificado de participación y alimentación completa durante el intensivo.',
-    formCurso: 'Bioarquitectura, Construcción y Territorio · 5 y 6 diciembre 2026',
-    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Curso%20de%20Bioarquitectura%20(5%20y%206%20diciembre)',
+    formCurso: 'Bioarquitectura, Construcción y Territorio · 5 al 8 diciembre 2026',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Curso%20de%20Bioarquitectura%20(5%20al%208%20de%20diciembre)',
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',
   },
 

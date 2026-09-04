@@ -210,13 +210,13 @@ export default async function BiocosmeticaFrPage() {
               Tous les produits sont disponibles à Tay Pichín — notre éco-école à San Marcos Sierras. Si vous venez pour un atelier, un séjour ou une immersion, vous les emportez en main propre.
             </p>
             <p className="font-sans text-sm text-bone-200 leading-relaxed">
-              Les cours d&apos;<strong className="text-bone-100">Alchimie Naturelle et Nettoyage Conscient</strong> vous apprennent à produire vos propres baumes, savons et préparations à base de plantes.
+              Nous proposons aussi des formations présentielles de bioconstruction et d&apos;agroécologie à l&apos;éco-école.
             </p>
             <Link
-              href="/fr/cursos/alquimia-natural"
+              href="/fr/cursos"
               className="mt-4 inline-flex text-xs font-sans font-bold uppercase tracking-widest text-clay-300 hover:text-bone-50 transition-colors"
             >
-              Voir le cours Alchimie Naturelle →
+              Voir toutes les formations →
             </Link>
           </div>
         </div>

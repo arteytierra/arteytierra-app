@@ -71,18 +71,22 @@ type ProximoItem = {
 /* ─── Datos estáticos de fallback ────────────────────── */
 
 const FALLBACK_TODOS: TodoItem[] = [
+  // ── Arriba: las 3 presenciales insignia ──────────────
   { slug: 'formacion-construccion-natural', name: 'Formación Integral en Construcción Natural', tag: '21 sep – 30 nov · 3 cupos + 2 con experiencia', img: '/img/cursos/bioarquitectura/1.jpg', badge: 'Presencial · 2 meses', tentativo: false, online: false },
-  { slug: 'formacion-integral-intensivo', name: 'Formación Integral — Intensivo', tag: '10 al 12 (o 17) oct · cupo máx. 25', img: '/img/cursos/casualidad/1.jpg', badge: 'Intensivo · 3 u 8 días', tentativo: false, online: false },
+  { slug: 'formacion-integral-intensivo', name: 'Formación Integral — Intensivo', tag: '10 al 12 (o 17) oct', img: '/img/cursos/mitierramicasa/2.jpg', badge: 'Intensivo · 3 u 8 días', tentativo: false, online: false },
+  { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '5–8 dic 2026',             img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
+  // ── Medio: las online ─────────────────────────────────
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
-  { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
-  { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Inicia sáb. 13 jun · Tay Pichín', img: '/img/biocosmetica/productos-todos.jpg', badge: 'Ciclo mensual',  tentativo: false, online: false },
-  { slug: 'bioarquitectura',              name: 'Bioarquitectura',               tag: '5–6 dic 2026',             img: '/img/proyectos/alihuen/5.jpg',          badge: 'Presencial',     tentativo: false, online: false },
-  { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: 'Mínimo 2 semanas',         img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
   { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Marzo 2027 · Online',      img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
+  // ── Abajo: Inmersión Viva, a todo el ancho ────────────
+  { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: 'Mínimo 2 semanas',         img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
+  // ── Próximamente (sin fecha confirmada) ───────────────
+  { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'diseno-ecosistemico-del-agua', name: 'Diseño Ecosistémico del Agua',  tag: 'Próximamente',             img: '/img/cursos/vueltatierra/3.jpg',        badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'biopiscinas',                  name: 'Biopiscinas',                   tag: 'Próximamente',             img: '/img/taypichin/carousel/5.jpg',         badge: 'Sin fecha',      tentativo: true,  online: false },
   { slug: 'revoques-naturales',           name: 'Revoques Naturales',            tag: 'Próximamente',             img: '/img/cursos/bioarquitectura/1.jpg',     badge: 'Sin fecha',      tentativo: true,  online: false },
+  { slug: 'alquimia-natural',             name: 'Alquimia Natural',              tag: 'Próximamente',             img: '/img/biocosmetica/productos-todos.jpg', badge: 'Sin fecha',      tentativo: true,  online: false },
 ];
 
 const FALLBACK_CURSOS: Curso[] = [
@@ -107,6 +111,16 @@ const FALLBACK_CURSOS: Curso[] = [
     href: '/cursos/formacion-integral-intensivo', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Intensivo de Formación Integral (10 de octubre)'),
   },
   {
+    slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
+    tag: '5 al 8 de diciembre 2026 · Tay Pichín',
+    desc: 'Cuatro días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 40% teoría, 60% práctica.',
+    img: '/img/proyectos/alihuen/5.jpg',
+    datos: [{ label: 'Fechas', val: '5 al 8 de diciembre · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    contenidos: ['Construcción con tierra', 'Diseño bioclimático', 'Quincha, cob y pirca', 'Revoques de tierra y cal', 'Techos vivos', 'Pigmentos naturales', 'Construcción colectiva'],
+    precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
+    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (5 al 8 de diciembre)'),
+  },
+  {
     slug: 'mi-tierra-mi-casa', badge: 'Online · Acceso ilimitado', name: 'Mi Tierra, Mi Casa',
     tag: 'Disponible · Empezás cuando querés',
     desc: 'Formación en bioconstrucción a tu ritmo. 4 módulos y 18 clases que recorren todas las etapas de una obra natural — de los cimientos al criterio.',
@@ -124,6 +138,8 @@ const FALLBACK_CURSOS: Curso[] = [
     precio: '$90.000', precioNote: 'Pago único · 3 módulos · acceso permanente.',
     href: '/cursos/tadelakt', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al curso de Tadelakt Online'),
   },
+  /* Alquimia Natural — pausado (ver FALLBACK_TODOS / FALLBACK_PROXIMOS para el estado "próximamente").
+     Card completa guardada acá para reactivarla sin rehacer nada apenas retomemos el ciclo:
   {
     slug: 'alquimia-natural', badge: 'Ciclo mensual · Presencial', name: 'Alquimia Natural y Limpieza Consciente',
     tag: 'Inicia sáb. 13 jun · 3er sábado de cada mes · Tay Pichín',
@@ -134,16 +150,7 @@ const FALLBACK_CURSOS: Curso[] = [
     precio: '$30.000 – $200.000', precioNote: 'Encuentro suelto · módulo (4 enc.) · ciclo completo (8 enc.)',
     href: '/cursos/alquimia-natural', whatsapp: waLink(WHATSAPP_ALQUIMIA, 'Hola, quiero info del ciclo de Alquimia Natural'),
   },
-  {
-    slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
-    tag: '5 y 6 de diciembre 2026 · Tay Pichín',
-    desc: 'Dos días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 40% teoría, 60% práctica.',
-    img: '/img/proyectos/alihuen/5.jpg',
-    datos: [{ label: 'Fechas', val: '5 y 6 de diciembre · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
-    contenidos: ['Construcción con tierra', 'Diseño bioclimático', 'Quincha, cob y pirca', 'Revoques de tierra y cal', 'Techos vivos', 'Pigmentos naturales', 'Construcción colectiva'],
-    precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
-    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (5 y 6 diciembre)'),
-  },
+  */
   {
     slug: 'vuelta-a-la-tierra', badge: 'Online en vivo · 7 semanas', name: 'La Vuelta a la Tierra',
     tag: 'A partir de marzo 2027 · Online en vivo',
@@ -161,6 +168,7 @@ const FALLBACK_PROXIMOS: ProximoItem[] = [
   { slug: 'diseno-ecosistemico-del-agua', badge: 'Taller presencial', name: 'Diseño Ecosistémico del Agua', desc: 'Hidrología regenerativa aplicada al territorio. Zanjas de infiltración, captación de lluvia, humedales y cuencas vivas. Lectura del paisaje e intervención con criterio ecosistémico.', img: '/img/cursos/vueltatierra/3.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Diseño Ecosistémico del Agua') },
   { slug: 'biopiscinas',                  badge: 'Taller presencial', name: 'Biopiscinas',                   desc: 'Diseño y construcción de piscinas naturales que se autorregulan sin químicos. Sistemas biológicos de filtración, plantas acuáticas y equilibrio ecológico para nadar en agua viva.', img: '/img/taypichin/carousel/5.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Biopiscinas') },
   { slug: 'revoques-naturales',           badge: 'Taller presencial', name: 'Revoques Naturales',            desc: 'Del barro a la cal: técnicas de revoques con materiales nobles, texturas vivas y acabados que respiran. Revoques gruesos, finos, yeso, enjarre y pinturas naturales.', img: '/img/cursos/bioarquitectura/1.jpg', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero anotarme para el taller de Revoques Naturales') },
+  { slug: 'alquimia-natural',             badge: 'Ciclo de talleres · Presencial', name: 'Alquimia Natural', desc: 'Ocho encuentros para transformar ingredientes simples y nobles en soluciones de higiene que respetan tu salud, el agua y la tierra: jabones, shampú, desodorante, limpiadores y más. En pausa — nuevas fechas a confirmar.', img: '/img/biocosmetica/productos-todos.jpg', whatsapp: waLink(WHATSAPP_ALQUIMIA, 'Hola, quiero info del ciclo de Alquimia Natural y sus próximas fechas') },
 ];
 
 /* ─── Testimonios (completar con contenido real) ─────── */
@@ -183,6 +191,22 @@ function GridCardLarge({ c, idx }: { c: TodoItem; idx: number }) {
       <div className="absolute bottom-0 left-0 right-0 p-3.5 md:p-4">
         <p className="font-sans text-sm md:text-base font-bold text-bone-50 leading-tight line-clamp-2">{c.name}</p>
         <p className="font-sans text-xs text-clay-200 leading-tight mt-1.5 line-clamp-1">{c.tag}</p>
+      </div>
+    </Link>
+  );
+}
+
+/** Inmersión Viva: la misma card grande, pero a todo el ancho — ocupa el lugar de los 3 de la fila de arriba. */
+function GridCardWide({ c }: { c: TodoItem }) {
+  return (
+    <Link href={`/cursos/${c.slug}`} className="group relative block aspect-[21/9] sm:aspect-[3/1] overflow-hidden bg-ink-800">
+      <Image src={c.img} alt={c.name} fill
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        sizes="(max-width: 640px) 100vw, 75vw" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+        <p className="font-sans text-base md:text-xl font-bold text-bone-50 leading-tight">{c.name}</p>
+        <p className="font-sans text-xs md:text-sm text-clay-200 leading-tight mt-1.5">{c.tag}</p>
       </div>
     </Link>
   );
@@ -301,9 +325,12 @@ export default async function CursosPage() {
     console.error('[CursosPage] DB fallback activado:', e);
   }
 
-  // 8 vigentes se acomodan en 2 filas parejas de 4 (o 4 de 2 en mobile); las 4 sin fecha, en su propia fila aparte.
+  // Vigentes: 2 filas de 3 (las 3 presenciales insignia + las 3 online) y, abajo, Inmersión Viva a todo el ancho.
+  // Las sin fecha confirmada van en su propia fila aparte, apagadas.
   const todosVigentes = todos.filter(c => !c.tentativo);
   const todosProximos = todos.filter(c => c.tentativo);
+  const inmersionCard = todosVigentes.find(c => c.slug === 'inmersion-viva');
+  const gridVigentes = todosVigentes.filter(c => c.slug !== 'inmersion-viva');
 
   return (
     <>
@@ -328,9 +355,14 @@ export default async function CursosPage() {
       <section className="bg-ink-900 py-10 px-6 border-b border-ink-700">
         <div className="max-w-editorial mx-auto">
           <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-5 text-center">Todas las formaciones</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {todosVigentes.map((c, idx) => <GridCardLarge key={c.slug} c={c} idx={idx} />)}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {gridVigentes.map((c, idx) => <GridCardLarge key={c.slug} c={c} idx={idx} />)}
           </div>
+          {inmersionCard && (
+            <div className="mt-3">
+              <GridCardWide c={inmersionCard} />
+            </div>
+          )}
           {todosProximos.length > 0 && (
             <div className="mt-8">
               <p className="text-[11px] font-sans font-semibold uppercase tracking-widest text-bone-400 mb-3 text-center">Sin fecha confirmada — próximamente</p>

@@ -53,11 +53,10 @@ Inscripción: formulario + WhatsApp (sin carrito). Reserva con seña del 50%.
 Flujo: presentar (fechas, precio, las 2 vacantes con experiencia al 50%) → responder dudas → llevar a la inscripción (formulario + WhatsApp) y explicar la seña.
 
 # Otros cursos (respondés si preguntan)
-- Bioarquitectura, Construcción y Territorio — Presencial (Tay Pichín) — 5-6 dic 2026 — $130.000 a $160.000 según hospedaje.
-- Alquimia Natural y Limpieza Consciente — Presencial (Tay Pichín) — mensual, 3er sábado — $30.000 suelto / $200.000 el ciclo (8 encuentros).
+- Bioarquitectura, Construcción y Territorio — Presencial (Tay Pichín) — 5 al 8 dic 2026 — $130.000 a $160.000 según hospedaje.
 - Tadelakt Online — Online, permanente — $90.000 ARS.
 - La Vuelta a la Tierra — Online en vivo (7 semanas) — desde marzo 2027 — desde $350.000 ARS (se puede en 4 pagos).
-- Cultivo de Gírgolas · Diseño Ecosistémico del Agua · Biopiscinas · Revoques Naturales — Presencial — fechas a confirmar.
+- Cultivo de Gírgolas · Diseño Ecosistémico del Agua · Biopiscinas · Revoques Naturales · Alquimia Natural y Limpieza Consciente — Presencial — en pausa / fechas a confirmar.
 
 # Hospedaje — Tay Pichín (ecohostel)
 San Marcos Sierras, Córdoba. Espacio de tierra, madera y piedra: se enseña, se construye y se hospeda. Reservas turísticas por Booking (ecohostel-tay-pichin) y Airbnb. Más info en la sección /hospedaje del sitio.

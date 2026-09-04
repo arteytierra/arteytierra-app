@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
@@ -8,10 +9,24 @@ import { CourseGallery } from './CourseGallery';
 import { CourseCountdown } from './CourseCountdown';
 import { TESTIMONIOS } from '@/lib/testimonios';
 import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
+import { track } from '@/lib/analytics/track';
 
 export function CourseDetailPage({ course }: { course: CourseData }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
   const testimonios = course.testimonios ?? TESTIMONIOS;
+
+  // Dispara ViewContent al entrar a la página del curso (navegación SPA incluida,
+  // que no recarga el documento y por lo tanto no dispara el PageView del pixel).
+  // Alimenta los públicos tibios de retargeting por curso.
+  useEffect(() => {
+    track({
+      event: 'ViewContent',
+      contentIds: [course.slug],
+      contentName: course.name,
+      contentType: 'product',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course.slug]);
 
   return (
     <main>
@@ -501,6 +516,18 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           )}
         </div>
       </section>
+      {/* Link flotante — a la versión hermana del curso (corta ↔ larga) */}
+      {course.crossLink && (
+        <Link
+          href={course.crossLink.href}
+          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 bg-ink-950 text-bone-50 font-sans font-bold text-xs sm:text-sm px-4 sm:px-5 py-3.5 shadow-lg border border-bone-50/10 hover:bg-clay-800 transition-colors max-w-[calc(100vw-2.5rem)]"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0" aria-hidden="true">
+            <path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4" />
+          </svg>
+          <span className="truncate">{course.crossLink.label}</span>
+        </Link>
+      )}
       {/* WhatsApp flotante — consulta rápida desde cualquier punto de la página */}
       <a
         href={course.whatsapp}

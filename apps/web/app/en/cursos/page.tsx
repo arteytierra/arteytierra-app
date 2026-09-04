@@ -11,10 +11,8 @@ export const metadata: Metadata = {
 };
 
 const CALENDARIO = [
-  { fecha: 'Aug 16', titulo: 'Natural Alchemy — Session 4', tipo: 'Workshop', color: 'bg-clay-900' },
-  { fecha: 'Sep 20', titulo: 'Natural Alchemy — Session 5', tipo: 'Workshop', color: 'bg-clay-900' },
-  { fecha: 'Oct 18', titulo: 'Natural Alchemy — Session 6', tipo: 'Workshop', color: 'bg-clay-900' },
-  { fecha: 'Dec 5–6', titulo: 'Bioarchitecture & Territory — Intensive', tipo: 'Intensive', color: 'bg-clay-700' },
+  { fecha: 'Oct 10–17', titulo: 'Bioconstruction Intensive (3 or 8 days)', tipo: 'Intensive', color: 'bg-clay-700' },
+  { fecha: 'Dec 5–8', titulo: 'Bioarchitecture & Territory — Intensive', tipo: 'Intensive', color: 'bg-clay-700' },
   { fecha: 'TBC', titulo: 'Mushroom Cultivation — 3 modules', tipo: 'Workshop', color: 'bg-moss-700' },
   { fecha: 'Year-round', titulo: 'Living Immersion (weekly stays)', tipo: 'Immersion', color: 'bg-ink-800' },
 ];
@@ -22,8 +20,8 @@ const CALENDARIO = [
 const DESTACADOS = [
   {
     title: 'Bioarchitecture & Territory',
-    subtitle: 'Dec 5–6, 2026 · Tay Pichín',
-    desc: '2-day intensive on natural construction techniques: raw earth, cob, quincha, earth and lime plasters.',
+    subtitle: 'Dec 5–8, 2026 · Tay Pichín',
+    desc: '4-day intensive on natural construction techniques: raw earth, cob, quincha, earth and lime plasters.',
     href: '/en/cursos/bioarquitectura',
     img: '/img/cursos/vueltatierra/1.jpg',
   },
@@ -34,13 +32,8 @@ const DESTACADOS = [
     href: '/en/cursos/cultivo-girgolas',
     img: '/img/cursos/girgolas/1.jpg',
   },
-  {
-    title: 'Natural Alchemy',
-    subtitle: '3rd Saturday of the month',
-    desc: 'Transform daily toxicity into sustainable solutions: natural soaps, deodorants and household products.',
-    href: '/en/cursos/alquimia-natural',
-    img: '/img/cursos/alquimia/1.jpg',
-  },
+  // Natural Alchemy — paused for now. Kept here for a quick reactivation, out of the array so it isn't linked:
+  // { title: 'Natural Alchemy', subtitle: '3rd Saturday of the month', desc: 'Transform daily toxicity into sustainable solutions: natural soaps, deodorants and household products.', href: '/en/cursos/alquimia-natural', img: '/img/cursos/alquimia/1.jpg' },
 ];
 
 export default function CursosEnPage() {
@@ -94,7 +87,7 @@ export default function CursosEnPage() {
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Featured</p>
               <h2 className="font-display text-4xl md:text-5xl text-bone-50">Next <em>workshops.</em></h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {DESTACADOS.map(c => (
                 <Link key={c.title} href={c.href} className="group block bg-ink-800 hover:bg-ink-700 transition-colors">
                   <div className="relative aspect-[4/3] overflow-hidden">

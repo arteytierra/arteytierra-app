@@ -210,13 +210,13 @@ export default async function BiocosmeticaPage() {
               Todos los productos están disponibles en Tay Pichín — nuestra ecoescuela en San Marcos Sierras. Si venís a un taller, estadía o inmersión, los llevás en mano.
             </p>
             <p className="font-sans text-sm text-bone-200 leading-relaxed">
-              Los cursos de <strong className="text-bone-100">Alquimia Natural y Limpieza Consciente</strong> te enseñan a producir tus propios ungüentos, jabones y preparados herbales.
+              También dictamos formaciones presenciales de bioconstrucción y agroecología en la ecoescuela.
             </p>
             <Link
-              href="/cursos/alquimia-natural"
+              href="/cursos"
               className="mt-4 inline-flex text-xs font-sans font-bold uppercase tracking-widest text-clay-300 hover:text-bone-50 transition-colors"
             >
-              Ver curso Alquimia Natural →
+              Ver todas las formaciones →
             </Link>
           </div>
         </div>
