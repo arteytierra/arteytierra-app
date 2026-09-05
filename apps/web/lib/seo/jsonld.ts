@@ -244,6 +244,37 @@ export function coursesItemListJsonLd({ courses }: CoursesItemListInput) {
   };
 }
 
+interface ProfessionalServiceInput {
+  path: string;
+  name: string;
+  description: string;
+  areaServed?: string[];
+  serviceTypes: string[];
+  priceRange?: string;
+}
+
+export function professionalServiceJsonLd(s: ProfessionalServiceInput) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    '@id': `${SITE}${s.path}#service`,
+    name: s.name,
+    description: s.description,
+    url: `${SITE}${s.path}`,
+    parentOrganization: { '@id': `${SITE}#org` },
+    areaServed: s.areaServed ?? ['AR', 'CO', 'PE', 'BO', 'EC', 'IT', 'FR'],
+    priceRange: s.priceRange,
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: s.name,
+      itemListElement: s.serviceTypes.map((t) => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: t },
+      })),
+    },
+  };
+}
+
 export function faqJsonLd(items: Array<{ q: string; a: string }>) {
   return {
     '@context': 'https://schema.org',

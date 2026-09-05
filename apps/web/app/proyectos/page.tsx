@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ProjectCard, type Project } from '@/components/proyectos/ProjectCard';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { professionalServiceJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: 'Proyectos',
@@ -79,6 +81,22 @@ export default function ProyectosPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={[
+          professionalServiceJsonLd({
+            path: '/proyectos',
+            name: 'Arte y Tierra — Proyectos de bioarquitectura y diseño hidrológico ejecutados',
+            description:
+              'Más de 40 proyectos de diseño y ejecución en bioarquitectura, hidrología regenerativa y agroecología, realizados en Argentina, Colombia, Perú, Bolivia, Ecuador, Italia y Francia.',
+            serviceTypes: ['Bioarquitectura', 'Diseño hidrológico', 'Sistemas agroecológicos'],
+          }),
+          breadcrumbJsonLd([
+            { name: 'Inicio', url: '/' },
+            { name: 'Arte y Tierra', url: '/arte-y-tierra' },
+            { name: 'Proyectos', url: '/proyectos' },
+          ]),
+        ]}
+      />
       <main>
       {/* Hero */}
       <section className="relative h-[55vh] min-h-[400px] bg-ink-950 flex items-end overflow-hidden">

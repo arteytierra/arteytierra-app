@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { professionalServiceJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: 'Diseño',
@@ -113,6 +115,28 @@ export default function DisenoPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={[
+          professionalServiceJsonLd({
+            path: '/diseno',
+            name: 'Arte y Tierra — Diseño y ejecución de proyectos en bioarquitectura',
+            description:
+              'Empresa de diseño y ejecución de proyectos en bioarquitectura, diseño hidrológico y agroecología. Diagnóstico territorial, diseño y obra, en cualquier parte del mundo.',
+            serviceTypes: [
+              'Bioarquitectura',
+              'Diseño hidrológico',
+              'Sistemas agroecológicos',
+              'Paisajismo funcional',
+              'Estrategia regenerativa integral',
+            ],
+          }),
+          breadcrumbJsonLd([
+            { name: 'Inicio', url: '/' },
+            { name: 'Arte y Tierra', url: '/arte-y-tierra' },
+            { name: 'Diseño', url: '/diseno' },
+          ]),
+        ]}
+      />
       <main>
       {/* HERO */}
       <section className="relative h-[65vh] min-h-[440px] bg-ink-950 flex items-end overflow-hidden">

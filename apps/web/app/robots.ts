@@ -33,12 +33,15 @@ export default function robots(): MetadataRoute.Robots {
           '/*?partner=*',
         ],
       },
-      // Bots de IA: bloqueo selectivo (configurable según política editorial)
+      // Bots de IA: se permite la navegación/citación (AEO), se bloquea el
+      // entrenamiento masivo de modelos con el contenido del sitio.
       { userAgent: 'GPTBot', disallow: '/' },
-      { userAgent: 'ClaudeBot', disallow: '/' },
       { userAgent: 'CCBot', disallow: '/' },
       { userAgent: 'Google-Extended', disallow: '/' },
-      { userAgent: 'PerplexityBot', disallow: '/' },
+      { userAgent: 'ClaudeBot', allow: '/' },
+      { userAgent: 'PerplexityBot', allow: '/' },
+      { userAgent: 'OAI-SearchBot', allow: '/' },
+      { userAgent: 'anthropic-ai', allow: '/' },
     ],
     sitemap: `${base}/sitemap.xml`,
     host: base,

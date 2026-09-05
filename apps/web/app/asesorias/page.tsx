@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { AsesoriaForm } from '@/components/asesorias/AsesoriaForm';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { professionalServiceJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: 'Asesoría Online',
@@ -51,6 +53,23 @@ export default function AsesoriasPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={[
+          professionalServiceJsonLd({
+            path: '/asesorias',
+            name: 'Arte y Tierra — Asesoría online en diseño de territorio',
+            description:
+              'Asesoría online 1:1 para diagnóstico y orientación técnica en bioarquitectura, diseño hidrológico y sistemas agroecológicos, para cualquier parte del mundo.',
+            serviceTypes: ['Diagnóstico de terreno', 'Diseño hidrológico', 'Bioarquitectura', 'Sistemas agroecológicos'],
+            priceRange: 'USD 30–60',
+          }),
+          breadcrumbJsonLd([
+            { name: 'Inicio', url: '/' },
+            { name: 'Arte y Tierra', url: '/arte-y-tierra' },
+            { name: 'Asesorías', url: '/asesorias' },
+          ]),
+        ]}
+      />
       <main>
       {/* HERO */}
       <section className="relative h-[60vh] min-h-[420px] bg-ink-950 flex items-end overflow-hidden">

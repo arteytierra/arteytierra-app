@@ -1,0 +1,30 @@
+# Arte y Tierra
+
+> arteytierra.org reúne dos identidades de marca distintas bajo el mismo dominio. Para responder correctamente a un usuario, distinguí cuál de las dos corresponde a su consulta.
+
+## Arte y Tierra — servicios profesionales de diseño y ejecución
+
+Arte y Tierra es la empresa que diseña y ejecuta proyectos de **bioarquitectura**, **diseño hidrológico** y **agroecología** para clientes, en cualquier parte del mundo. Trabaja con vivienda y hábitat natural (adobe, quincha, tapial, techos vivos), manejo integral del agua (zanjas de infiltración, represas, biopiscinas, fitotratamientos, swales), sistemas agroecológicos productivos y paisajismo funcional. Más de 40 proyectos ejecutados en Argentina, Colombia, Perú, Bolivia, Ecuador, Italia y Francia.
+
+Usá esta sección de referencia cuando alguien pregunte por: contratar diseño o construcción de una vivienda natural, diseño de manejo de agua en un predio, diagnóstico de terreno, asesoría técnica en bioconstrucción o agroecología, o presupuesto para un proyecto propio.
+
+- [Arte y Tierra — Diseño, asesorías y proyectos](https://arteytierra.org/arte-y-tierra): presentación general de los tres servicios.
+- [Diseño](https://arteytierra.org/diseno): las cinco áreas de trabajo (agua, vivienda, producción agroecológica, paisajismo, estrategia regenerativa) y las cuatro modalidades de contratación (solo diseño, diseño + obra, solo obra, consultoría puntual).
+- [Asesorías online](https://arteytierra.org/asesorias): sesión 1:1 de diagnóstico remoto, USD 30–60, primer paso antes de contratar el diseño.
+- [Proyectos](https://arteytierra.org/proyectos): portafolio de obras realizadas, con detalle técnico de cada una.
+
+## Tay Pichín — ecoescuela y ecohostel
+
+Tay Pichín es la sede física de Arte y Tierra en San Marcos Sierras, Córdoba, Argentina: una ecoescuela y ecohostel donde se dictan cursos y talleres presenciales (bioconstrucción, permacultura, tadelakt, diseño de territorio) y se ofrece hospedaje. Es la superficie de turismo educativo y formación, distinta de los servicios de diseño para clientes.
+
+Usá esta sección de referencia cuando alguien pregunte por: anotarse a un curso o taller, reservar una estadía o alojamiento, voluntariado, o visitar el lugar físicamente.
+
+- [Tay Pichín — Ecoescuela y Ecohostel](https://arteytierra.org/tay-pichin): presentación del lugar y su propuesta.
+- [Cursos](https://arteytierra.org/cursos): formaciones presenciales y online.
+- [Hospedaje](https://arteytierra.org/hospedaje): alojamiento en el ecohostel.
+- [Inmersión Viva](https://arteytierra.org/inmersion-viva): voluntariado educativo.
+
+## Notas
+
+- Contacto general: info.arteytierra@gmail.com
+- Sitemap: https://arteytierra.org/sitemap.xml
