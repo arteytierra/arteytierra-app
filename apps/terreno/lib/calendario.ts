@@ -5,6 +5,8 @@
  */
 import type { DatosClima, MesDato } from './clima';
 import { MESES } from './clima';
+import type { BiomaFicha } from './biomaTipos';
+import { bloqueEcorregion, type BloqueEcorregion } from './especies';
 
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
@@ -179,6 +181,15 @@ export interface CalendarioMes {
 
 export interface ResumenCalendario {
   meses:                  CalendarioMes[];
+  /**
+   * Qué se planta en ESTE lugar, y no sólo en qué meses entra cada familia de
+   * huerta. Está aparte del resto del calendario porque responde otra pregunta:
+   * el calendario dice cuándo, la ecorregión dice qué y con qué se acompaña.
+   *
+   * `null` cuando no hay clase Köppen —sin clima no hay nada que cruzar— o
+   * cuando ni la ficha ni el catálogo tienen especies para ese clima.
+   */
+  ecorregion:             BloqueEcorregion | null;
   periodo_libre_heladas:  { inicio: number; fin: number; duracion: number } | null;
   meses_helada_count:     number;
   meses_secos_count:      number;
@@ -188,7 +199,17 @@ export interface ResumenCalendario {
   mes_mas_seco:           number;
 }
 
-export function calcularCalendario(datos: DatosClima): ResumenCalendario {
+/**
+ * El calendario del predio, y —si se le pasa la ficha del ecosistema— también
+ * qué cultivar en él.
+ *
+ * La ficha es opcional a propósito. El calendario de familias se sostiene solo
+ * con el clima y no debería dejar de andar porque la ecorregión todavía no esté
+ * curada; lo que la ficha agrega es la lista de cultivos de esa ecorregión, con
+ * su rol dentro del sistema. Sin ficha, el bloque igual se arma desde el
+ * catálogo por clase climática y lo dice en su aviso.
+ */
+export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null): ResumenCalendario {
   const meses: CalendarioMes[] = datos.meses.map((m, i) => ({
     index:    i,
     nombre:   MESES[i] ?? '',
@@ -220,8 +241,13 @@ export function calcularCalendario(datos: DatosClima): ResumenCalendario {
   }
 
   const { meses: ms } = datos;
+  const ecorregion = datos.koppen
+    ? bloqueEcorregion(datos.meses, datos.koppen.codigo, ficha?.cultivos)
+    : null;
+
   return {
     meses,
+    ecorregion,
     periodo_libre_heladas: bestLen > 0 ? {
       inicio:   bestStart,
       fin:      (bestStart + bestLen - 1) % 12,

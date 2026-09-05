@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { Cloud } from 'lucide-react';
+import { Cloud, Sprout } from 'lucide-react';
 import {
   calcularCalendario,
   calcularGDD,
@@ -12,6 +12,8 @@ import {
 } from '@/lib/calendario';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
+import { LABEL_ROL, type EvaluacionEspecie, type RolEspecie } from '@/lib/especies';
+import { useFichaBioma } from '@/lib/useFichaBioma';
 
 /** Lo que el usuario ajusta acá; se guarda para no perderlo al cambiar de pestaña. */
 export interface CalendarioInputs { gdBase: number; cultivoId: string }
@@ -28,9 +30,14 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
   const [cultivoId, setCultivoId] = useState(inicial?.cultivoId ?? 'huerta');
   useEffect(() => { onInputs?.({ gdBase, cultivoId }); }, [gdBase, cultivoId, onInputs]);
 
+  // La ficha del ecosistema es la que aporta los cultivos de la ecorregión. Es
+  // opcional: sin ella el calendario se arma igual y la lista sale del catálogo
+  // por clase climática.
+  const ficha = useFichaBioma(datosClima);
+
   const cal = useMemo(
-    () => datosClima ? calcularCalendario(datosClima) : null,
-    [datosClima],
+    () => datosClima ? calcularCalendario(datosClima, ficha) : null,
+    [datosClima, ficha],
   );
   const gdd = useMemo(
     () => datosClima ? calcularGDD(datosClima.meses, gdBase) : null,
@@ -221,6 +228,48 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
         </div>
       </div>
 
+      {/* ── En esta ecorregión: qué plantar y con qué acompañarlo ──────────────
+          La tabla de familias de arriba responde "cuándo"; ésta responde "qué".
+          Van juntas y separadas: la de arriba sirve para la huerta del año, ésta
+          para el sistema que se planta una vez y dura. */}
+      {cal.ecorregion && (
+        <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
+          <div className="px-3 py-2 border-b border-bone-200 flex items-center gap-1.5 text-moss-700">
+            <Sprout className="w-3.5 h-3.5" />
+            <p className="text-xs font-medium text-ink-700">En esta ecorregión</p>
+            <span className="ml-auto text-[9px] text-ink-700/50">
+              {cal.ecorregion.viables} de {cal.ecorregion.evaluadas.length} cierran acá
+            </span>
+          </div>
+
+          <div className="p-3 space-y-3">
+            <p className="text-[10px] text-ink-700/55 leading-relaxed">
+              Cada especie se cruza con los doce meses del predio en el orden en que decide
+              cualquiera que planifica: primero si sobrevive a la mínima, después si junta el
+              calor que su ciclo pide, y recién al final cuánta agua falta. Un cultivo que no
+              sobrevive no se salva con riego, así que el agua no decide.
+            </p>
+
+            {cal.ecorregion.porRol.map(g => (
+              <div key={g.rol}>
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+                  {LABEL_ROL[g.rol as RolEspecie]}
+                </p>
+                <div className="space-y-1.5">
+                  {g.especies.map(e => <Cultivo key={e.especie.id} e={e} />)}
+                </div>
+              </div>
+            ))}
+
+            {cal.ecorregion.aviso && (
+              <p className="text-[9px] text-clay-700/80 leading-relaxed border-t border-bone-200 pt-2">
+                {cal.ecorregion.aviso}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Grados-día de crecimiento (GDD) ─────────────────────────────────── */}
       {gdd && (() => {
         const maxGdd = Math.max(...gdd.map(m => m.gdd), 1);
@@ -395,6 +444,31 @@ function StatChip({
       <p className="text-[10px] text-ink-700/60 mb-0.5">{label}</p>
       <p className={`font-mono text-sm font-bold ${txt}`}>{value}</p>
       <p className="text-[9px] text-ink-700/50 mt-0.5">{sub}</p>
+    </div>
+  );
+}
+
+/**
+ * Una especie del sistema: nombre, rol y el veredicto con su porqué.
+ *
+ * La que no cierra en este clima se muestra igual, apagada. Sacarla de la lista
+ * escondería la mitad de la información útil —saber que el cacao NO va acá, y
+ * por cuántos grados-día no va, vale tanto como saber que el café sí.
+ */
+function Cultivo({ e }: { e: EvaluacionEspecie }) {
+  const { especie: sp } = e;
+  return (
+    <div className={`rounded-lg border p-2 ${e.viable ? 'bg-moss-50 border-moss-200' : 'bg-bone-50 border-bone-200'}`}>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className={`text-xs font-semibold ${e.viable ? 'text-moss-900' : 'text-ink-700/45'}`}>
+          {sp.nombre}
+        </p>
+        <span className="text-[9px] italic text-ink-700/40 shrink-0">{sp.cientifico}</span>
+      </div>
+      <p className={`text-[10px] leading-relaxed ${e.viable ? 'text-ink-700/70' : 'text-ink-700/45'}`}>
+        {e.razon}
+      </p>
+      {e.viable && <p className="text-[9px] text-ink-700/45 leading-relaxed mt-0.5">{sp.nota}</p>}
     </div>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain } from 'lucide-react';
+import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
+import { fichaClimaFuturo } from '@/lib/climaFuturo';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import type { DatosTopografia } from '@/lib/topografia';
@@ -55,6 +56,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   const ficha = bioma.ficha;
   const color = ficha?.color ?? '#5b6b52'; // sin ficha: verde neutro de marca
   const analogos = analogosDeKoppen(datosClima.koppen);
+  // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
+  // clase futura del mapa de Beck no hay nada honesto que decir.
+  const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
 
   return (
     <div className="space-y-4">
@@ -147,6 +151,97 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </div>
         {analogos.aviso && <p className="text-[10px] text-ink-700/60 leading-relaxed mt-2">{analogos.aviso}</p>}
       </Seccion>}
+
+      {/* ── El clima al que va el predio ────────────────────────────────────
+          Va después de los análogos del presente y no antes: primero dónde
+          está el predio, después a dónde se dirige. Y muestra los análogos de
+          la clase FUTURA, que es el aporte que ninguna otra pantalla hace:
+          quién cultiva hoy, en algún lugar del mundo, en el clima que este
+          predio va a tener. */}
+      {futuro && (
+        <div className="rounded-xl border border-water-200 bg-water-50/50 overflow-hidden">
+          <div className="px-3 py-2 border-b border-water-200 flex items-center gap-1.5 text-water-700">
+            <Compass className="w-3.5 h-3.5" />
+            <p className="text-xs font-medium text-ink-700">A dónde va este clima</p>
+          </div>
+
+          <div className="p-3 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="text-center">
+                <p className="font-mono text-sm font-bold text-ink-700">{futuro.presente.codigo}</p>
+                <p className="text-[9px] text-ink-700/50">hoy</p>
+              </div>
+              <span className="text-ink-700/30">→</span>
+              <div className="text-center">
+                <p className={`font-mono text-sm font-bold ${futuro.estable ? 'text-ink-700' : 'text-clay-700'}`}>
+                  {futuro.futuro.codigo}
+                </p>
+                <p className="text-[9px] text-ink-700/50">2071-2099</p>
+              </div>
+              <p className="text-[10px] text-ink-700/65 leading-tight ml-1">{futuro.futuro.descripcion}</p>
+            </div>
+
+            {futuro.estable ? (
+              <p className="text-[11px] text-ink-700/75 leading-relaxed">
+                La clase no cambia. Eso es una buena noticia y vale escribirla: el sistema que
+                diseñes hoy sigue siendo el que le corresponde al lugar dentro de varias décadas.
+              </p>
+            ) : (
+              <>
+                {futuro.queCambia && (
+                  <p className="text-[11px] text-ink-700/80 leading-relaxed">
+                    Lo que se mueve es <b>{futuro.queCambia}</b>.
+                  </p>
+                )}
+                <ul className="space-y-1">
+                  {futuro.consecuencias.map((c, i) => (
+                    <li key={i} className="text-[11px] text-ink-700/75 leading-relaxed flex gap-1.5">
+                      <span className="text-water-700 mt-0.5">→</span><span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* Los análogos del futuro: el puente entre un código y una decisión. */}
+            {futuro.analogos && (
+              <div className="border-t border-water-200 pt-2">
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+                  Ese clima hoy existe en · {futuro.analogos.titulo}
+                </p>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {futuro.analogos.regiones.map(r => (
+                    <span key={r} className="text-[10px] px-2 py-0.5 rounded-full bg-white text-water-700 border border-water-200">{r}</span>
+                  ))}
+                </div>
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">Y ahí se cultiva así</p>
+                <ul className="space-y-1">
+                  {futuro.analogos.tecnicas.map((t, i) => (
+                    <li key={i} className="text-xs text-ink-700/75 leading-relaxed flex gap-1.5">
+                      <span className="text-moss-700 mt-0.5">→</span><span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+                {futuro.analogos.aviso && (
+                  <p className="text-[10px] text-ink-700/60 leading-relaxed mt-2">{futuro.analogos.aviso}</p>
+                )}
+              </div>
+            )}
+
+            {/* El desfasaje de horizonte y las tres advertencias. No son letra
+                chica: sin ellas el bloque se lee como un pronóstico, y no lo es. */}
+            <div className="border-t border-water-200 pt-2 space-y-1.5">
+              <p className="text-[10px] text-ink-700/60 leading-relaxed flex gap-1">
+                <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 text-clay-700/60" />
+                {futuro.horizonte}
+              </p>
+              {futuro.advertencias.map((t, i) => (
+                <p key={i} className="text-[9px] text-ink-700/50 leading-relaxed pl-4">{t}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Fuentes */}
       {ficha && <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">

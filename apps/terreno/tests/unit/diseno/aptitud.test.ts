@@ -7,10 +7,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   agruparAptitud,
+  calcularAptitud,
   type CeldaAptitud,
   type ResultadoAptitud,
   type TipoAptitud,
 } from '@/lib/aptitud';
+import type { DatosShader, CeldaShader } from '@/lib/shaders';
+import type { ModificadorAptitud } from '@/lib/biomaTipos';
 
 const SIZE = 0.001;
 
@@ -35,7 +38,7 @@ function resultado(celdas: CeldaAptitud[]): ResultadoAptitud {
     const n = celdas.filter(c => c.dominante === t).length;
     return [t, { celdas: n, pct: celdas.length ? (n / celdas.length) * 100 : 0 }];
   })) as ResultadoAptitud['resumen'];
-  return { celdas, resumen };
+  return { celdas, resumen, ajustes: [] };
 }
 
 describe('agruparAptitud', () => {
@@ -103,5 +106,109 @@ describe('agruparAptitud', () => {
 
   it('sin celdas devuelve lista vacía', () => {
     expect(agruparAptitud(resultado([]))).toEqual([]);
+  });
+});
+
+// ─── Corrección de la aptitud por el ecosistema ──────────────────────────────
+//
+// El cálculo base es puro relieve, y el relieve no sabe en qué bioma está. Estos
+// tests fijan que la corrección de la ficha se aplique ANTES de elegir el uso
+// dominante —si sólo ajustara el número mostrado, el mapa seguiría pintando el
+// uso equivocado— y que la razón viaje hasta el resultado.
+
+/** Predio sintético llano: en llano, la huerta es el uso que más puntúa. */
+function shaderLlano(n = 5): DatosShader {
+  const celdas: CeldaShader[] = [];
+  for (let row = 0; row < n; row++) {
+    for (let col = 0; col < n; col++) {
+      celdas.push({
+        row, col,
+        latMin: -34 + row * 0.001, latMax: -34 + (row + 1) * 0.001,
+        lngMin: -58 + col * 0.001, lngMax: -58 + (col + 1) * 0.001,
+        elevation: 100 + row * 0.2,
+        pendiente_pct: 2,
+      });
+    }
+  }
+  return { celdas, elev_min: 100, elev_max: 100 + (n - 1) * 0.2, pend_max: 2 };
+}
+
+describe('calcularAptitud con modificadores del ecosistema', () => {
+  const shader = shaderLlano();
+
+  it('sin modificadores el resultado no cambia y la lista de ajustes va vacía', () => {
+    const r = calcularAptitud(shader, null);
+    expect(r.ajustes).toEqual([]);
+    expect(r.celdas.length).toBe(25);
+  });
+
+  it('el ajuste se aplica al puntaje de cada celda, no sólo al resumen', () => {
+    const base = calcularAptitud(shader, null);
+    const mods: ModificadorAptitud[] = [
+      { uso: 'huerta', delta: -25, razon: 'La fertilidad está en la biomasa, no en el suelo.' },
+    ];
+    const conMod = calcularAptitud(shader, null, mods);
+    for (let i = 0; i < base.celdas.length; i++) {
+      const antes = base.celdas[i]!.scores.huerta;
+      const despues = conMod.celdas[i]!.scores.huerta;
+      expect(despues).toBe(Math.max(0, antes - 25));
+    }
+  });
+
+  it('un ajuste suficiente cambia el uso dominante, y con él lo que se pinta', () => {
+    const base = calcularAptitud(shader, null);
+    const dominanteBase = base.celdas[0]!.dominante;
+    const conMod = calcularAptitud(shader, null, [
+      { uso: dominanteBase, delta: -60, razon: 'prueba' },
+    ]);
+    expect(conMod.celdas[0]!.dominante).not.toBe(dominanteBase);
+  });
+
+  it('los puntajes siguen acotados a 0-100 por más grande que sea el delta', () => {
+    const r = calcularAptitud(shader, null, [
+      { uso: 'huerta',   delta: -500, razon: 'prueba' },
+      { uso: 'forestal', delta:  500, razon: 'prueba' },
+    ]);
+    for (const c of r.celdas) {
+      expect(c.scores.huerta).toBe(0);
+      expect(c.scores.forestal).toBe(100);
+    }
+  });
+
+  it('la razón viaja hasta el resultado: un puntaje corregido se puede discutir', () => {
+    const mods: ModificadorAptitud[] = [
+      { uso: 'forestal', delta: 20, razon: 'El sistema que sostiene este bioma es agroforestal.' },
+    ];
+    const r = calcularAptitud(shader, null, mods);
+    expect(r.ajustes).toEqual(mods);
+    expect(r.ajustes[0]!.razon).toContain('agroforestal');
+  });
+});
+
+// ─── Las fichas globales traen esa corrección para todo el planeta ───────────
+
+describe('modificadores de las fichas de bioma global', () => {
+  it('los 15 biomas de respaldo declaran su corrección de uso del suelo', async () => {
+    const { BIOMAS_GLOBALES } = await import('@/lib/biomasGlobales');
+    const fichas = Object.values(BIOMAS_GLOBALES);
+    expect(fichas.length).toBe(15);
+    for (const f of fichas) {
+      expect(f.aptitud, f.id).toBeDefined();
+      expect(f.aptitud!.length, f.id).toBeGreaterThan(0);
+      for (const m of f.aptitud!) {
+        // Un delta sin razón es exactamente lo que estos modificadores existen
+        // para evitar: el usuario tiene que poder discutir el ajuste.
+        expect(m.razon.length, f.id + ' / ' + m.uso).toBeGreaterThan(20);
+        expect(Math.abs(m.delta), f.id + ' / ' + m.uso).toBeLessThanOrEqual(40);
+      }
+    }
+  });
+
+  it('la selva húmeda desalienta la huerta abierta y favorece lo agroforestal', () => {
+    return import('@/lib/biomasGlobales').then(({ BIOMAS_GLOBALES }) => {
+      const m = BIOMAS_GLOBALES['resolve_bosque_tropical_humedo']!.aptitud!;
+      expect(m.find(x => x.uso === 'huerta')!.delta).toBeLessThan(0);
+      expect(m.find(x => x.uso === 'forestal')!.delta).toBeGreaterThan(0);
+    });
   });
 });

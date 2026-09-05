@@ -70,6 +70,7 @@ import { obtenerShader } from '@/lib/relieve/obtenerShader';
 import { reducerRelieve, datosDe, RELIEVE_VACIO } from '@/lib/relieve/reducerRelieve';
 import { ProveedorRelieve } from '@/lib/contextoRelieve';
 import { calcularAptitud, type ResultadoAptitud } from '@/lib/aptitud';
+import { useFichaBioma } from '@/lib/useFichaBioma';
 import { calcularEscorrentias, type DatosEscorrentia } from '@/lib/escorrentias';
 import { calcularErosion, type DatosErosion } from '@/lib/erosion';
 import { calcularSwalesMulti, analizarAreas, unirBloques, type ResultadoSwales, type ResultadoSwalesMulti, type OpcionesSwales, type AreaSwales, type AnalisisArea, type ContextoSwales } from '@/lib/swales';
@@ -868,9 +869,16 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [silvopastura]);
 
   // ─── Aptitud de uso del suelo (7.2) ──────────────────────────────────────
+  //
+  // Los modificadores de la ficha se aplican también acá, y no sólo en el panel:
+  // este memo es el que alimenta las zonas que se vuelcan al plano. Si el panel
+  // corrigiera los puntajes y esto no, el mapa terminaría pintando un uso
+  // distinto del que la pantalla acaba de recomendar.
+  const fichaBioma = useFichaBioma(datosClima, datosTopografia?.elev_media);
+
   const aptitud = useMemo<ResultadoAptitud | null>(
-    () => datosShader ? calcularAptitud(datosShader, datosEscorrentia) : null,
-    [datosShader, datosEscorrentia],
+    () => datosShader ? calcularAptitud(datosShader, datosEscorrentia, fichaBioma?.aptitud) : null,
+    [datosShader, datosEscorrentia, fichaBioma],
   );
 
   const [arcoSolarOffset, setArcoSolarOffset] = useState<{ lat: number; lng: number } | null>(null);
@@ -3129,7 +3137,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} /></div>}
-          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
+          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">
               <AnalisisRelievePanel

@@ -6,6 +6,7 @@
 import * as turf from '@turf/turf';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
+import type { ModificadorAptitud } from './biomaTipos';
 
 export type TipoAptitud = 'huerta' | 'frutales' | 'pasturas' | 'forestal' | 'reserva';
 
@@ -42,6 +43,10 @@ export interface CeldaAptitud {
 export interface ResultadoAptitud {
   celdas:  CeldaAptitud[];
   resumen: Record<TipoAptitud, { celdas: number; pct: number }>;
+  /** Los ajustes del ecosistema que efectivamente se aplicaron, con su razón.
+   *  Van hasta la pantalla: un puntaje corregido sin decir por qué no se puede
+   *  discutir, y acá el usuario sabe más del lugar que la app. */
+  ajustes: ModificadorAptitud[];
 }
 
 // ─── Orientación de la celda (HemSur: N = más sol = mejor) ───────────────────
@@ -100,9 +105,25 @@ function scoreReserva(pend: number, acumRel: number, elevRel: number): number {
 
 // ─── Función principal ────────────────────────────────────────────────────────
 
+/**
+ * Aptitud de uso del suelo, corregida por el ecosistema si la ficha lo pide.
+ *
+ * El cálculo base es puro relieve: pendiente, orientación, agua que junta la
+ * celda, altura relativa. Eso está bien para ordenar el predio entre sí —qué
+ * parte es más apta que cuál— pero no sabe dónde queda el predio. Una ladera
+ * norte de 8 % puntúa igual en la Amazonia y en la Patagonia, y sin embargo la
+ * decisión no es la misma: en un bosque tropical el suelo desnudo se lava en
+ * dos temporadas y el uso que corresponde es agroforestal, no huerta abierta.
+ *
+ * `modificadores` es donde entra esa corrección, y entra nombrada: cada delta
+ * viaja con la razón que lo justifica y las dos llegan juntas a la interfaz.
+ * Se aplican **antes** de elegir el uso dominante, que es el punto: si sólo se
+ * ajustara el número mostrado, el mapa seguiría pintando el uso equivocado.
+ */
 export function calcularAptitud(
   shader: DatosShader,
   escorrentia?: DatosEscorrentia | null,
+  modificadores?: ModificadorAptitud[] | null,
 ): ResultadoAptitud {
   const { celdas, elev_min, elev_max } = shader;
   const byPos = new Map<string, CeldaShader>(celdas.map(c => [`${c.row},${c.col}`, c]));
@@ -128,6 +149,11 @@ export function calcularAptitud(
       reserva:  scoreReserva(pend, acumRel, elevRel),
     };
 
+    // Corrección del ecosistema, acotada al mismo 0–100 que el resto.
+    for (const m of modificadores ?? []) {
+      scores[m.uso] = Math.max(0, Math.min(100, scores[m.uso] + m.delta));
+    }
+
     const entries   = Object.entries(scores) as [TipoAptitud, number][];
     const dominante: TipoAptitud = entries.reduce((a, b) => b[1] > a[1] ? b : a)[0];
 
@@ -145,7 +171,7 @@ export function calcularAptitud(
     return [t, { celdas: n, pct: Math.round((n / resultCeldas.length) * 1000) / 10 }];
   })) as Record<TipoAptitud, { celdas: number; pct: number }>;
 
-  return { celdas: resultCeldas, resumen };
+  return { celdas: resultCeldas, resumen, ajustes: modificadores ?? [] };
 }
 
 // ─── Agrupar celdas en polígonos contiguos ───────────────────────────────────
