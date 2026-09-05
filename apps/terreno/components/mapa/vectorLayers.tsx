@@ -181,14 +181,45 @@ export function CurvasNivelLayer({ curvas, colorNormal = '#E91E63', colorMaestra
     const intervalo = curvas.length >= 2 ? curvas[1]!.cota - curvas[0]!.cota : 0;
     const pasoMaestra = intervalo * 5;
 
-    const etiquetar = (lat: number, lng: number, cota: number, color: string) => {
+    const etiquetar = (lat: number, lng: number, texto: string, color: string) => {
       const icon = L.divIcon({
-        html: `<span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;background:rgba(255,255,255,0.9);padding:0 2px;border-radius:2px;white-space:nowrap;box-shadow:0 0 0 0.5px rgba(0,0,0,0.15);">${cota} m</span>`,
+        html: `<span style="font-size:8px;font-weight:700;color:${color};font-family:sans-serif;background:rgba(255,255,255,0.9);padding:0 2px;border-radius:2px;white-space:nowrap;box-shadow:0 0 0 0.5px rgba(0,0,0,0.15);">${texto}</span>`,
         className: '', iconSize: undefined, iconAnchor: [10, 5],
       });
       const mk = L.marker([lat, lng], { icon, interactive: false });
       mk.addTo(map);
       layers.push(mk);
+    };
+
+    /**
+     * Marcas hacia adentro sobre una curva de depresión.
+     *
+     * Es la convención de carta topográfica y es lo que resuelve la ambigüedad
+     * de fondo: dos anillos con la misma cota, uno cerro y otro hoya, se
+     * dibujan idénticos. El texto ya lleva el triángulo, pero la marca se lee
+     * de un vistazo y sin zoom.
+     */
+    const marcarDepresion = (puntos: Array<{ lat: number; lng: number }>, color: string) => {
+      const n = puntos.length;
+      if (n < 6) return;
+      const cLat = puntos.reduce((a, p) => a + p.lat, 0) / n;
+      const cLng = puntos.reduce((a, p) => a + p.lng, 0) / n;
+      const paso = Math.max(2, Math.floor(n / 10));
+      for (let i = 0; i < n; i += paso) {
+        const p = puntos[i]!;
+        const dLat = cLat - p.lat, dLng = cLng - p.lng;
+        const d = Math.hypot(dLat, dLng);
+        if (d === 0) continue;
+        // Largo de la marca: una fracción del radio del anillo, para que
+        // escale con anillos chicos y no invada los grandes.
+        const largo = Math.min(d * 0.22, d);
+        const tick = L.polyline(
+          [[p.lat, p.lng], [p.lat + (dLat / d) * largo, p.lng + (dLng / d) * largo]] as LatLngTuple[],
+          { color, weight: 1.2, opacity: 0.85, interactive: false, lineCap: 'round' },
+        );
+        tick.addTo(map);
+        layers.push(tick);
+      }
     };
 
     curvas.forEach((curva, idx) => {
@@ -216,16 +247,37 @@ export function CurvasNivelLayer({ curvas, colorNormal = '#E91E63', colorMaestra
         layers.push(pl);
       });
 
-      // Etiquetas de cota: más referencias que antes. Las maestras se rotulan en
-      // dos puntos espaciados; las normales largas, una de cada dos, en su medio.
-      const masLarga = curva.lineas.reduce((best, l) => l.puntos.length > best.puntos.length ? l : best, curva.lineas[0]!);
+      // ── Curvas cerradas: SIEMPRE con la cota, y diciendo qué son ──────────
+      //
+      // Antes se rotulaba una sola línea por cota —la más larga— y las no
+      // maestras sólo una de cada dos y con 24 puntos o más. Un pico o una hoya
+      // es siempre un anillo chico: nunca era la más larga, casi nunca llegaba a
+      // 24 puntos, y quedaba mudo. Justo el rasgo que hay que poder leer.
+      //
+      // La etiqueta va en el punto más al norte del anillo: queda arriba de la
+      // curva, sin taparle el interior, que es donde se mira el relieve.
+      curva.lineas.forEach(linea => {
+        if (!linea.cerrada || linea.puntos.length < 3) return;
+        const norte = linea.puntos.reduce((best, p) => p.lat > best.lat ? p : best, linea.puntos[0]!);
+        const marca = linea.tipo === 'cima' ? '▲ ' : linea.tipo === 'depresion' ? '▼ ' : '';
+        etiquetar(norte.lat, norte.lng, `${marca}${curva.cota} m`, color);
+        if (linea.tipo === 'depresion') marcarDepresion(linea.puntos, color);
+      });
+
+      // ── Curvas abiertas: la cota como referencia de lectura ───────────────
+      // Las maestras se rotulan en dos puntos espaciados; las normales largas,
+      // una de cada dos, en su medio. Sólo entre las abiertas: las cerradas ya
+      // se rotularon arriba y volver a hacerlo apilaría dos etiquetas.
+      const abiertas = curva.lineas.filter(l => !l.cerrada);
+      const masLarga = abiertas.reduce<typeof abiertas[number] | null>(
+        (best, l) => !best || l.puntos.length > best.puntos.length ? l : best, null);
       if (masLarga && masLarga.puntos.length >= 2) {
         const n = masLarga.puntos.length;
         if (esMaestra) {
-          [0.33, 0.66].forEach(f => { const p = masLarga.puntos[Math.floor(n * f)]!; etiquetar(p.lat, p.lng, curva.cota, color); });
+          [0.33, 0.66].forEach(f => { const p = masLarga.puntos[Math.floor(n * f)]!; etiquetar(p.lat, p.lng, `${curva.cota} m`, color); });
         } else if (idx % 2 === 0 && n >= 24) {
           const p = masLarga.puntos[Math.floor(n / 2)]!;
-          etiquetar(p.lat, p.lng, curva.cota, color);
+          etiquetar(p.lat, p.lng, `${curva.cota} m`, color);
         }
       }
     });

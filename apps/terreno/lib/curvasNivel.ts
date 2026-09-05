@@ -7,7 +7,22 @@
 import type { GrillaElevacion } from './grillaElevacion';
 
 export interface Punto      { lat: number; lng: number }
-export interface LineaNivel { puntos: Punto[]; cerrada: boolean }
+
+/**
+ * Qué es una curva cerrada: una cima (el terreno sube hacia adentro) o una
+ * depresión (baja hacia adentro). Sin esto, un anillo rotulado `340 m` es
+ * ambiguo — puede ser un cerro o una hoya, y la diferencia decide dónde va una
+ * represa y dónde no. `null` en las líneas abiertas y en los anillos que caen
+ * fuera de la grilla.
+ */
+export type TipoCerrada = 'cima' | 'depresion';
+
+export interface LineaNivel {
+  puntos: Punto[];
+  cerrada: boolean;
+  /** Sólo en las cerradas: hacia dónde sube el terreno adentro del anillo. */
+  tipo: TipoCerrada | null;
+}
 export interface CurvaNivel { cota: number; lineas: LineaNivel[] }
 
 /**
@@ -89,6 +104,83 @@ export const MAX_NIVELES = 60;
 export function nivelesEstimados(desnivel: number, intervalo: number): number {
   if (!(intervalo > 0)) return 0;
   return Math.floor(desnivel / intervalo);
+}
+
+/**
+ * Clasifica un anillo cerrado como cima o depresión mirando el terreno de
+ * adentro.
+ *
+ * El criterio es directo: se recorren los nodos de la grilla que caen dentro
+ * del anillo y se compara su elevación media contra la cota de la curva. Si el
+ * interior está más alto, es una cima; si está más bajo, una hoya. Se trabaja
+ * en coordenadas de grilla (fila, columna) y no en grados, para que el test de
+ * punto-en-polígono no dependa de la latitud.
+ *
+ * Los anillos chicos —que son justamente los picos y las depresiones que más
+ * importan— pueden no contener ningún nodo. Para esos se cae al centroide del
+ * anillo, muestreado por vecino más cercano.
+ */
+function clasificarAnillo(
+  puntos: Punto[],
+  z: number,
+  g: GrillaElevacion,
+): TipoCerrada | null {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  const fila = (lat: number) => ((lat - latMin) / (latMax - latMin)) * (rows - 1);
+  const col  = (lng: number) => ((lng - lngMin) / (lngMax - lngMin)) * (cols - 1);
+
+  const rs = puntos.map(p => fila(p.lat));
+  const cs = puntos.map(p => col(p.lng));
+
+  const r0 = Math.max(0, Math.floor(Math.min(...rs)));
+  const r1 = Math.min(rows - 1, Math.ceil(Math.max(...rs)));
+  const c0 = Math.max(0, Math.floor(Math.min(...cs)));
+  const c1 = Math.min(cols - 1, Math.ceil(Math.max(...cs)));
+
+  const dentro = (r: number, c: number) => {
+    let hit = false;
+    for (let i = 0, j = puntos.length - 1; i < puntos.length; j = i++) {
+      const ri = rs[i]!, ci = cs[i]!, rj = rs[j]!, cj = cs[j]!;
+      if ((ri > r) !== (rj > r) && c < ((cj - ci) * (r - ri)) / (rj - ri) + ci) hit = !hit;
+    }
+    return hit;
+  };
+
+  let suma = 0, n = 0, arriba = 0, abajo = 0;
+  for (let r = r0; r <= r1; r++) {
+    for (let c = c0; c <= c1; c++) {
+      const v = elev[r * cols + c]!;
+      if (isNaN(v) || !dentro(r, c)) continue;
+      suma += v; n++;
+      if (v > z) arriba++;
+      else if (v < z) abajo++;
+    }
+  }
+
+  if (n === 0) {
+    // Anillo más chico que una celda: el centroide, al vecino más cercano.
+    const rc = Math.round(rs.reduce((x, y) => x + y, 0) / rs.length);
+    const cc = Math.round(cs.reduce((x, y) => x + y, 0) / cs.length);
+    if (rc < 0 || rc >= rows || cc < 0 || cc >= cols) return null;
+    const v = elev[rc * cols + cc]!;
+    if (isNaN(v)) return null;
+    suma = v; n = 1;
+    if (v > z) arriba++;
+    else if (v < z) abajo++;
+  }
+
+  // Primero el caso limpio: si adentro no hay nada por debajo de la cota, el
+  // anillo encierra terreno más alto y es una cima; al revés, una hoya. Esto
+  // resuelve bien los anillos chicos de la cumbre y del fondo, donde la media
+  // empata contra la cota por la resolución de la grilla y el promedio solo no
+  // alcanzaría para decidir.
+  if (arriba > 0 && abajo === 0) return 'cima';
+  if (abajo > 0 && arriba === 0) return 'depresion';
+  // Interior mezclado (una cima con una hoya adentro, por ejemplo): manda el
+  // promedio. Si tampoco hay diferencia, es una meseta y no se decide.
+  const media = suma / n;
+  if (media === z) return null;
+  return media > z ? 'cima' : 'depresion';
 }
 
 // ─── Marching squares con encadenado ─────────────────────────────────────────
@@ -211,7 +303,7 @@ export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): Curv
       if (usado.has(key) || vecinos.length !== 1) continue;
       const cadena = caminar(key);
       if (cadena.length >= 2) {
-        lineas.push({ puntos: cadena.map(k => puntosArista.get(k)!), cerrada: false });
+        lineas.push({ puntos: cadena.map(k => puntosArista.get(k)!), cerrada: false, tipo: null });
       }
     }
     // Luego loops cerrados (todo lo que quedó)
@@ -219,7 +311,8 @@ export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): Curv
       if (usado.has(key)) continue;
       const cadena = caminar(key);
       if (cadena.length >= 3) {
-        lineas.push({ puntos: cadena.map(k => puntosArista.get(k)!), cerrada: true });
+        const puntos = cadena.map(k => puntosArista.get(k)!);
+        lineas.push({ puntos, cerrada: true, tipo: clasificarAnillo(puntos, z, grilla) });
       }
     }
 

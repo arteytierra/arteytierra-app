@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets, Check } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
-import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, type ResultadoEmbalse } from '@/lib/cutfill';
+import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilTerreno, balanceTierra, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, MESES_NOMBRE, type RepresaResumen, type RepresaInputs } from '@/lib/represa';
 import { anchoCorona, taludesSugeridos, claseSueloSugerida, evaluar, type Recomendacion } from '@/lib/criterios';
 import { animalDe, cambiarAnimal, demandaMensual_m3, procedencia, type Rodeo } from '@/lib/rodeo';
@@ -226,15 +226,44 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
   const evalCorona = useMemo(() => evaluar(muroP.anchoCorona, recCorona), [muroP.anchoCorona, recCorona]);
 
+  /**
+   * Perfil del terreno natural bajo el eje del muro.
+   *
+   * Es lo que evita el error de fondo del cálculo anterior: sin esto el muro se
+   * dimensionaba como un prisma de altura constante igual a la profundidad
+   * MÁXIMA del vaso, cuando el muro real baja a cero contra los estribos. Como
+   * la sección crece con el cuadrado de la altura, el terraplén salía entre 2,5
+   * y 3 veces más grande de lo que es.
+   */
+  const perfilMuro = useMemo(() => {
+    if (!grilla || !sel || muroIdx === null || sel.vertices.length < 3) return null;
+    const vs = sel.vertices;
+    return perfilTerreno(grilla, vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!);
+  }, [grilla, sel, muroIdx]);
+
+  // Cuánto banco hace falta por m³ compactado. Los arcillosos contraen más.
+  const factorContraccion = claseSuelo?.clase === 'arenoso_superficial' ? 1.10
+    : claseSuelo?.clase === 'areno_arcilloso' ? 1.15 : 1.25;
+
   const muro = useMemo(() => res ? dimensionarMuro({
     profMax_m: res.prof_max_m, revancha_m: muroP.revancha, anchoCorona_m: muroP.anchoCorona,
     taludInterno: muroP.taludInterno, taludExterno: muroP.taludExterno, longitud_m: longitud,
-  }) : null, [res, muroP, longitud]);
+    perfilTerreno_m: perfilMuro ?? undefined,
+    cotaCorona_m: nivel != null ? nivel + muroP.revancha : undefined,
+    factorContraccion,
+  }) : null, [res, muroP, longitud, perfilMuro, nivel, factorContraccion]);
 
-  // Eficiencia del sitio = agua embalsada ÷ tierra del muro (terraplén). Cuanto
-  // más agua se embalsa con menos muro —un buen cuello de botella entre laderas—
+  /**
+   * Balance de tierra. La tierra del terraplén sale de adentro del vaso, del
+   * lado más alto, así que el mismo movimiento que cuesta plata también gana
+   * capacidad: cada m³ excavado bajo el nivel de agua es un m³ más de agua.
+   */
+  const balance = useMemo(() => muro && res ? balanceTierra(muro, res) : null, [muro, res]);
+
+  // Eficiencia del sitio = agua total ÷ tierra movida en banco. Cuanto más agua
+  // se embalsa con menos movimiento —un buen cuello de botella entre laderas—
   // más eficiente el emplazamiento.
-  const eficiencia = muro && res && muro.volumenTierra_m3 > 0 ? res.volumen_m3 / muro.volumenTierra_m3 : 0;
+  const eficiencia = balance?.eficiencia ?? 0;
 
   // Reset al cambiar de polígono. La primera pasada se saltea cuando venimos de
   // un proyecto guardado: si no, el efecto borra el nivel que acabamos de
@@ -452,18 +481,58 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 <line x1="46" y1="12" x2="74" y2="12" stroke="#4E342E" strokeWidth="1.5" />
                 {/* cotas */}
                 <text x="60" y="9" textAnchor="middle" fontSize="6" fill="#5D4037">corona {muro.anchoCorona_m} m</text>
-                <text x="60" y="59.5" textAnchor="middle" fontSize="6" fill="#5D4037">base {muro.anchoBase_m} m</text>
+                <text x="60" y="59.5" textAnchor="middle" fontSize="6" fill="#5D4037">base {muro.anchoBase_m} m (máx.)</text>
                 <text x="20" y="36" textAnchor="middle" fontSize="6" fill="#1565C0">agua</text>
                 <text x="98" y="36" textAnchor="start" fontSize="6" fill="#5D4037">h {muro.alto_m} m</text>
               </svg>
 
               <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                <Stat label="Alto (con revancha)" valor={`${muro.alto_m} m`} />
-                <Stat label="Ancho de base" valor={`${muro.anchoBase_m} m`} />
+                <Stat label="Alto máx. / medio" valor={`${muro.alto_m} / ${muro.altoMedio_m} m`} />
+                <Stat label="Base máx. / media" valor={`${muro.anchoBase_m} / ${muro.anchoBaseMedio_m} m`} />
                 <Stat label="Áng. interno" valor={`${muro.anguloInterno_deg}°`} />
                 <Stat label="Áng. externo" valor={`${muro.anguloExterno_deg}°`} />
-                <Stat label="Sección" valor={`${muro.seccion_m2} m²`} />
+                <Stat label="Sección máx. / media" valor={`${muro.seccion_m2} / ${muro.seccionMedia_m2} m²`} />
                 <Stat label="Vol. terraplén" valor={`${muro.volumenTierra_m3.toLocaleString('es-AR')} m³`} />
+              </div>
+
+              {/* Por qué hay dos números y no uno. El muro es una cuña en planta:
+                  tiene su altura máxima en el punto más hondo del cuello y baja a
+                  cero contra los estribos. Mostrar sólo el máximo —que es lo que
+                  se hacía— hacía leer la base más ancha como si fuera el ancho
+                  del muro en todo su largo. */}
+              {muro.perfilUsado ? (
+                <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
+                  <Info className="w-3 h-3 shrink-0 mt-0.5 text-moss-700/50" />
+                  El muro se calcula punto por punto sobre el perfil del terreno bajo el eje elegido, no como un prisma de altura constante: por eso hay un máximo y un promedio. El volumen del terraplén es la integral de la sección a lo largo del eje.
+                </p>
+              ) : (
+                <p className="text-[9px] text-clay-700/80 leading-relaxed flex gap-1">
+                  <Info className="w-3 h-3 shrink-0 mt-0.5" />
+                  Sin perfil del terreno bajo el eje: el muro se estima como un prisma de altura constante, que sobredimensiona el terraplén. Elegí el lado del polígono que hace de muro para afinar el cálculo.
+                </p>
+              )}
+
+              {muro.sinMuro && (
+                <p className="text-[9px] text-moss-700 leading-relaxed font-medium">
+                  Con este nivel de agua el terreno del eje ya está por encima: la obra es una excavación, no un muro. Todo el suelo que saques se convierte en capacidad.
+                </p>
+              )}
+
+              {/* ── Partidas de obra, en el orden en que se ejecutan ── */}
+              <div className="bg-bone-50 rounded-lg p-2 space-y-1">
+                <p className="text-[10px] font-semibold text-ink-700">Movimiento de suelo, por partida</p>
+                <Partida n={1} label="Destape de la huella" valor={muro.partidas.destape_m3}
+                  nota="Suelo vegetal retirado bajo el muro. No va adentro del terraplén: se pudre y deja huecos. Se acopia." />
+                <Partida n={2} label="Zanja de anclaje" valor={muro.partidas.zanjaExcavacion_m3}
+                  nota="Se excava bajo el eje hasta material firme, antes de empezar el muro." />
+                <Partida n={3} label="Relleno arcilloso de la zanja" valor={muro.partidas.zanjaArcilla_m3}
+                  nota="Arcilla compactada en capas, para que el agua no se vaya por debajo del muro." />
+                <Partida n={4} label="Núcleo impermeable" valor={muro.partidas.nucleo_m3}
+                  nota="La tierra más profunda y arcillosa del préstamo, al centro de la contención." />
+                <Partida n={5} label="Espaldones" valor={muro.partidas.espaldones_m3}
+                  nota="La tierra de profundidad media hace el cuerpo de los dos taludes." />
+                <Partida n={6} label="Revestimiento del talud externo" valor={muro.partidas.revestimiento_m3}
+                  nota="El suelo vegetal del destape, devuelto sobre la cara de aguas abajo para que agarre pasto." />
               </div>
 
               {/* ── Ancho de corona: el parámetro que manda ── */}
@@ -495,8 +564,9 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                     <p className="text-[9px] text-clay-700 leading-relaxed font-medium">{evalCorona.mensaje}</p>
                   )}
                   <p className="text-[9px] text-ink-700/45 leading-relaxed">
-                    Al mover la corona cambia el ancho de base: base = corona + alto × (talud int. + talud ext.)
-                    = {muroP.anchoCorona} + {muro.alto_m} × ({muroP.taludInterno} + {muroP.taludExterno}) = <b>{muro.anchoBase_m} m</b>.
+                    Al mover la corona cambia el ancho de base: base = corona + alto × (talud int. + talud ext.).
+                    En la sección más honda, {muroP.anchoCorona} + {muro.alto_m} × ({muroP.taludInterno} + {muroP.taludExterno}) = <b>{muro.anchoBase_m} m</b>;
+                    a lo largo del eje el promedio es <b>{muro.anchoBaseMedio_m} m</b>, porque el muro se afina hacia los estribos.
                   </p>
                 </div>
               )}
@@ -532,9 +602,30 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 </span>
                 <span className="font-mono text-sm font-bold text-moss-700">{eficiencia.toFixed(1)} : 1</span>
               </div>
-              <p className="text-[9px] text-ink-700/50 leading-relaxed">
-                {res.volumen_m3.toLocaleString('es-AR')} m³ de agua ÷ {muro.volumenTierra_m3.toLocaleString('es-AR')} m³ de muro.
-              </p>
+              {balance && (
+                <p className="text-[9px] text-ink-700/50 leading-relaxed">
+                  {balance.volumenAgua_m3.toLocaleString('es-AR')} m³ de agua ÷ {balance.banco_m3.toLocaleString('es-AR')} m³ de tierra movida (en banco, con factor de contracción {muro.factorContraccion}).
+                </p>
+              )}
+
+              {/* ── Balance de tierra: el préstamo sale de adentro del vaso ── */}
+              {balance && !muro.sinMuro && (
+                <div className="rounded-lg border border-water-200 bg-water-50/60 p-2 space-y-1">
+                  <p className="text-[10px] font-semibold text-ink-700">Balance de tierra</p>
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                    <Stat label="Compactado en obra" valor={`${balance.compactado_m3.toLocaleString('es-AR')} m³`} />
+                    <Stat label="A excavar (banco)" valor={`${balance.banco_m3.toLocaleString('es-AR')} m³`} />
+                    <Stat label="Agua que gana el vaso" valor={`+${balance.capacidadExtra_m3.toLocaleString('es-AR')} m³`} />
+                    <Stat label="Baja el fondo" valor={`${(balance.profundizacionMedia_m * 100).toFixed(0)} cm`} />
+                  </div>
+                  <p className={`text-[9px] leading-relaxed ${balance.viable ? 'text-ink-700/55' : 'text-clay-700 font-medium'}`}>
+                    {balance.nota}
+                  </p>
+                  <p className="text-[9px] text-ink-700/45 leading-relaxed">
+                    Agua sobre el terreno natural {res.volumen_m3.toLocaleString('es-AR')} m³ + {balance.capacidadExtra_m3.toLocaleString('es-AR')} m³ que gana la excavación del préstamo = <b>{balance.volumenAgua_m3.toLocaleString('es-AR')} m³</b>.
+                  </p>
+                </div>
+              )}
               <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
                 <Info className="w-3 h-3 shrink-0 mt-0.5 text-moss-700/50" />
                 m³ de agua embalsada ÷ m³ del muro (terraplén). Cuanto más agua se embalsa con menos muro —un buen cuello de botella entre laderas— mayor la eficiencia y mejor el sitio elegido.
@@ -891,6 +982,30 @@ function Stat({ label, valor }: { label: string; valor: string }) {
     <div className="bg-bone-50 rounded px-2 py-1">
       <span className="text-ink-700/50">{label}</span><br />
       <span className="font-mono font-bold text-ink-900">{valor}</span>
+    </div>
+  );
+}
+
+/**
+ * Una partida del movimiento de suelo, numerada por orden de ejecución.
+ *
+ * El número no es decorativo: la secuencia es parte del método. Si el suelo
+ * vegetal no se retira antes de compactar, el muro se asienta; si el núcleo se
+ * arma con la tierra de arriba en vez de la profunda, filtra.
+ */
+function Partida({ n, label, valor, nota }: { n: number; label: string; valor: number; nota: string }) {
+  return (
+    <div className="flex gap-1.5 items-baseline">
+      <span className="font-mono text-[9px] text-ink-700/40 shrink-0 w-3">{n}.</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex justify-between gap-2">
+          <span className="text-[10px] text-ink-700/70">{label}</span>
+          <span className="font-mono text-[10px] font-bold text-ink-900 shrink-0">
+            {valor.toLocaleString('es-AR')} m³
+          </span>
+        </div>
+        <p className="text-[9px] text-ink-700/45 leading-relaxed">{nota}</p>
+      </div>
     </div>
   );
 }
