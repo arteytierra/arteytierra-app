@@ -55,6 +55,7 @@ Variables** y en **Settings → Domains**.
 | `_research/_encargos/SESION_1_MIGRACIONES.sql` | las cuatro migraciones concatenadas, listas para pegar de una |
 | `_research/_encargos/VERIFICACION_SESION_1.sql` | los diez controles de lectura del paso 2 |
 | `_research/_encargos/VARIABLES_PREVIEW_ACEQUIA.md` | la lista de variables del paso 3 |
+| `_research/_encargos/CARGA_ENV_VERCEL.md` | **hoja de ejecución del paso 3**: una tabla por proyecto, fila por variable, con el orden respecto de los dominios, la trampa del BOM y cómo verificar |
 
 ---
 
@@ -186,6 +187,13 @@ dar por buenos vos con la tabla de arriba.
 ---
 
 ## Paso 3 — Variables de la vista previa del landing
+
+> **Para ejecutar este paso mirando la pantalla, usá
+> `_research/_encargos/CARGA_ENV_VERCEL.md`.** Ahí está lo mismo que sigue acá
+> pero desarmado en tablas fila por fila, con los dos proyectos de Vercel, el
+> orden respecto de los dominios, la traducción de cada error del preflight y
+> qué hacer con `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`. Lo de abajo queda como la
+> explicación de fondo.
 
 ### Qué es una variable de entorno, y por qué acá
 
