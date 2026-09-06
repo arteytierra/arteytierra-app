@@ -15,7 +15,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { ESPECIES, ESPECIES_POR_ID, resolverEspecies } from '@/lib/especies';
-import { BIOMAS, resolverBioma } from '@/lib/contexto';
+import { BIOMAS, componerAptitud, resolverBioma } from '@/lib/contexto';
 import { BIOMAS_REGIONALES } from '@/lib/biomasRegionales';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { BiomaFicha } from '@/lib/biomaTipos';
@@ -159,5 +159,87 @@ describe('cobertura del catálogo de cultivos', () => {
       expect(e.koppen, e.id).not.toContain('E');
       expect(e.koppen, e.id).not.toContain('EF');
     }
+  });
+});
+
+describe('la región corrige por uso, no por lista entera', () => {
+  const heredada = [
+    { uso: 'huerta',   delta: -25, razon: 'del bioma' },
+    { uso: 'forestal', delta:  20, razon: 'del bioma' },
+  ] as const;
+
+  it('sin lista propia, la región usa la del bioma tal cual', () => {
+    expect(componerAptitud(undefined, [...heredada])).toEqual([...heredada]);
+    expect(componerAptitud([], [...heredada])).toEqual([...heredada]);
+  });
+
+  it('el uso que la región nombra pisa al del bioma, y el resto sobrevive', () => {
+    // Este es el punto de todo el cambio. Antes, decir una sola cosa costaba
+    // perder las otras: agregar un matiz borraba lo que ya estaba bien.
+    const salida = componerAptitud(
+      [{ uso: 'huerta', delta: 0, razon: 'acá el río repone limo todos los años' }],
+      [...heredada],
+    );
+    expect(salida).toHaveLength(2);
+    expect(salida[0]).toEqual({ uso: 'huerta', delta: 0, razon: 'acá el río repone limo todos los años' });
+    expect(salida[1]).toEqual(heredada[1]);   // el forestal del bioma sigue ahí
+  });
+
+  it('el uso que el bioma no nombra se agrega al final', () => {
+    const salida = componerAptitud(
+      [{ uso: 'reserva', delta: 25, razon: 'es la fábrica de agua de la cuenca' }],
+      [...heredada],
+    );
+    expect(salida.map(m => m.uso)).toEqual(['huerta', 'forestal', 'reserva']);
+  });
+
+  it('ninguna ficha declara dos veces el mismo uso', () => {
+    // Con la composición por uso, un duplicado hace que uno de los dos se
+    // pierda en silencio y nadie se entere de cuál.
+    for (const f of TODAS) {
+      const usos = (f.aptitud ?? []).map(m => m.uso);
+      expect(new Set(usos).size, f.id).toBe(usos.length);
+    }
+  });
+
+  it('un delta 0 sigue siendo un ajuste, y viaja con su razón', () => {
+    // Cancelar una advertencia del bioma es una afirmación, no un silencio:
+    // tiene que llegar a la pantalla diciendo por qué acá no aplica.
+    const ceros = TODAS.flatMap(f => (f.aptitud ?? []).filter(m => m.delta === 0));
+    expect(ceros.length).toBeGreaterThan(0);
+    for (const m of ceros) expect(m.razon.length).toBeGreaterThan(20);
+  });
+});
+
+describe('correcciones regionales que contradicen a su bioma', () => {
+  it('el páramo no se foresta, aunque el bioma montano premie forestar', () => {
+    // Bioma 10, pastizal montano: +10 forestal. En el páramo el pino y el
+    // eucalipto secan el suelo orgánico y bajan el rendimiento hídrico de la
+    // cuenca, así que la región lo pisa y lo deja en negativo.
+    const r = resolverBioma(k('Cfb'), 4.8, -75.4, 3600, E(590, 'Cordillera Central páramo', 10));
+    expect(r.ficha?.id).toBe('paramos_andinos');
+    const forestal = r.ficha!.aptitud!.find(m => m.uso === 'forestal')!;
+    expect(forestal.delta).toBeLessThan(0);
+    expect(BIOMAS_GLOBALES['resolve_montano']!.aptitud!.find(m => m.uso === 'forestal')!.delta)
+      .toBeGreaterThan(0);
+  });
+
+  it('la várzea hereda del bioma todo menos lo que el río desmiente', () => {
+    const global = BIOMAS_GLOBALES['resolve_bosque_tropical_humedo']!;
+    const propia = BIOMAS_REGIONALES['varzeas_igapos_amazonicos']!.aptitud!;
+    const salida = componerAptitud(propia, global.aptitud);
+
+    // La huerta deja de estar castigada: la fertilidad acá sí está en el suelo,
+    // porque la crecida lo repone todos los años.
+    expect(salida.find(m => m.uso === 'huerta')!.delta).toBe(0);
+    // Y el premio agroforestal del bioma, que sigue siendo cierto, no se perdió.
+    expect(salida.find(m => m.uso === 'forestal')).toEqual(
+      global.aptitud!.find(m => m.uso === 'forestal'),
+    );
+  });
+
+  it('el préstamo compuesto tampoco ensucia el catálogo', () => {
+    resolverBioma(k('Cfb'), 4.8, -75.4, 3600, E(590, 'Cordillera Central páramo', 10));
+    expect(BIOMAS_REGIONALES['paramos_andinos']!.aptitud).toHaveLength(3);
   });
 });

@@ -104,8 +104,11 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
           <div className="p-3 space-y-2">
             {ajustes.map((m, i) => (
               <div key={i} className="flex gap-2">
-                <span className={`font-mono text-[10px] font-bold shrink-0 w-8 text-right ${m.delta >= 0 ? 'text-moss-700' : 'text-clay-700'}`}>
-                  {m.delta >= 0 ? '+' : ''}{m.delta}
+                {/* Un delta 0 no es un ajuste que no pasó: es la región diciendo que la
+                    advertencia del bioma acá no aplica, y por qué. Va en neutro para que
+                    no se lea ni como premio ni como castigo. */}
+                <span className={`font-mono text-[10px] font-bold shrink-0 w-8 text-right ${m.delta === 0 ? 'text-ink-700/50' : m.delta > 0 ? 'text-moss-700' : 'text-clay-700'}`}>
+                  {m.delta > 0 ? '+' : ''}{m.delta}
                 </span>
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold text-ink-700">{LABELS_APTITUD[m.uso]}</p>

@@ -35,6 +35,10 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Brezo comun (Calluna vulgaris)',
     ],
     cultivos: ['trigo', 'remolacha_azucarera', 'papa', 'colza', 'lino', 'manzano', 'raigras', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'pasturas', delta: 15, razon: 'La pradera permanente sobre gleysol y suelo de pólder es el uso que manda el agua: el limitante es el encharcamiento invernal y la compactación, no la seca.' },
+      { uso: 'huerta', delta: 0, razon: 'El loess de la llanura es tierra de huerta de primera. Lo que la limita es la erosión laminar, y eso se corrige con cubierta viva y seto sobre talud, no bajando la ambición.' },
+    ],
     fuentes: [
       { label: 'EEA - Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'EEA - EUNIS habitat classification', url: 'https://www.eea.europa.eu/en/datahub/datahubitem-view/638330ea-90e6-4e41-81ea-e70f25ae7117' },
@@ -113,6 +117,9 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Viburno lantana (Viburnum lantana)',
     ],
     cultivos: ['trigo', 'cebada', 'colza', 'lino', 'cerezo', 'lavanda', 'veza', 'raigras'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'La creta fisurada drena tan rápido que el agua desaparece del perfil. Sobre rendzina somera la retención se juega en materia orgánica y sombra, y una represa sobre creta rara vez sostiene lámina.' },
+    ],
     fuentes: [
       { label: 'JNCC - UK BAP priority habitats', url: 'https://jncc.gov.uk/our-work/uk-bap-priority-habitats/' },
       { label: 'Natural England - National Character Area profiles', url: 'https://www.gov.uk/government/publications/national-character-area-profiles-data-for-local-decision-making' },
@@ -139,6 +146,10 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Esfagno (Sphagnum spp.)',
     ],
     cultivos: ['papa', 'avena', 'cebada', 'raigras', 'trebol_blanco', 'espino_amarillo'],
+    aptitud: [
+      { uso: 'forestal', delta: -20, razon: 'Plantar sobre turbera drenada libera más carbono del que fija el árbol, y en la práctica ese fue el destino de buena parte de la turbera escocesa. Acá el premio forestal del bioma boreal está al revés.' },
+      { uso: 'reserva', delta: 20, razon: 'La turbera viva es el mayor almacén de carbono del noroeste europeo, y la regla es que no se drena: drenarla hunde la cota y no mejora la pastura de forma estable.' },
+    ],
     fuentes: [
       { label: 'JNCC - UK BAP priority habitats', url: 'https://jncc.gov.uk/our-work/uk-bap-priority-habitats/' },
       { label: 'IUCN UK Peatland Programme', url: 'https://www.iucn-uk-peatlandprogramme.org/' },
@@ -217,6 +228,10 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Cornical (Periploca angustifolia)',
     ],
     cultivos: ['almendro', 'olivo', 'higuera', 'granado', 'vid', 'datilera', 'garbanzo', 'lenteja'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'El cuadro abierto no pasa el verano. El sistema que funciona acá es la captación de escorrentía —boquera y careo de rambla— sobre costra caliza o yesífera.' },
+      { uso: 'reserva', delta: 10, razon: 'Los eventos de 60 a 100 mm en pocas horas mueven el suelo entero de una ladera desnuda: la cubierta no es un lujo estético.' },
+    ],
     fuentes: [
       { label: 'UNCCD - Desertification overview', url: 'https://www.unccd.int/land-and-life/desertification/overview' },
       { label: 'MITECO - Lucha contra la desertificacion', url: 'https://www.miteco.gob.es/es/biodiversidad/temas/desertificacion-restauracion/lucha-contra-la-desertificacion.html' },

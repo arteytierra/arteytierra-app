@@ -285,6 +285,10 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Salmón Chinook (Oncorhynchus tshawytscha)',
     ],
     cultivos: ['almendro', 'nogal', 'vid', 'olivo', 'naranjo', 'durazno', 'arroz', 'lavanda', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'En el aluvión profundo del valle la huerta sí va: es una de las regiones hortícolas más productivas del mundo. Pero va enteramente con agua traída, y la asignación de riego es el límite real, no el suelo.' },
+      { uso: 'reserva', delta: 10, razon: 'En los sustratos ultramáficos del Klamath, con flora serpentinícola endémica, no hay uso agrícola que valga lo que se pierde.' },
+    ],
     fuentes: [
       { label: 'USFS — Karuk and Yurok cultural burning', url: 'https://research.fs.usda.gov/treesearch/62061' },
       { label: 'NOAA — Original Salmon Stewards', url: 'https://www.fisheries.noaa.gov/west-coast/endangered-species-conservation/original-salmon-stewards' },
@@ -310,6 +314,10 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Salvia negra (Salvia mellifera)',
     ],
     cultivos: ['olivo', 'vid', 'almendro', 'aguacate', 'naranjo', 'cerezo', 'higuera', 'veza'],
+    aptitud: [
+      { uso: 'reserva', delta: 15, razon: 'Después del incendio la costra hidrofóbica dispara flujos de detritos: la ladera de chaparral quemada es un riesgo aguas abajo, no una oportunidad de uso.' },
+      { uso: 'forestal', delta: -10, razon: 'Forestar el chaparral no lo restaura. Es un matorral adaptado al fuego, no un bosque que falta.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'USFS — Indigenous fire stewardship', url: 'https://research.fs.usda.gov/treesearch/62060' },
@@ -334,6 +342,9 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Maíz (Zea mays)',
     ],
     cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'amaranto', 'chia', 'aguacate', 'durazno', 'nopal', 'agave'],
+    aptitud: [
+      { uso: 'huerta', delta: 10, razon: 'Los andosoles de ceniza están entre los mejores suelos de huerta del continente, y la milpa lleva milenios probándolo. El límite del Bajío es el agua: se extrae más de lo que recarga.' },
+    ],
     fuentes: [
       { label: 'FAO — Chinampas', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-chinampas-agricultural-system/en' },
       { label: 'FAO — Metepantle', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en' },
@@ -588,6 +599,9 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Wiliwili (Erythrina sandwicensis)',
     ],
     cultivos: ['taro', 'arbol_pan', 'name', 'batata', 'cafe', 'cacao', 'platano', 'coco', 'cana_azucar'],
+    aptitud: [
+      { uso: 'reserva', delta: 20, razon: 'Es el sitio con más extinciones documentadas del planeta. Cada hectárea que se abre entra ungulado e invasora, y el bosque no vuelve solo.' },
+    ],
     fuentes: [
       { label: 'NOAA — Hawaiʻi Indigenous Knowledge', url: 'https://sanctuaries.noaa.gov/bwet/hawaii/indigenous-knowledge.html' },
       { label: 'NOAA — Moku climate resilience', url: 'https://www.coast.noaa.gov/states/stories/hawaii.html' },
@@ -1110,6 +1124,9 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Cacao (Theobroma cacao)',
     ],
     cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'yuca', 'cacao', 'inga', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'La milpa de roza sobre caliza somera funciona con descanso largo, y ese es el punto: el suelo está en las bolsas entre piedra y la fertilidad es el mantillo. Con descanso corto el sistema se cae; con descanso, es el uso histórico y el que mejor conserva.' },
+    ],
     fuentes: [
       { label: 'FAO — Ich Kool, milpa maya', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       { label: 'UNESCO — Reserva de Biosfera Maya', url: 'https://www.unesco.org/es/articles/reserva-de-biosfera-maya-un-referente-latinoamericano-un-ejemplo-al-mundo' },
@@ -1209,6 +1226,9 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Rivercane (Arundinaria spp.)',
     ],
     cultivos: ['pecan', 'batata', 'mani', 'caupi', 'maiz_tropical', 'sorgo', 'durazno', 'arandano'],
+    aptitud: [
+      { uso: 'forestal', delta: 10, razon: 'La sabana de pino de hoja larga se mantiene con fuego prescripto cada dos o tres años: acá el uso forestal incluye quemar, no evitarlo. Excluir el fuego cierra el dosel y se pierde el sotobosque, que es donde está la diversidad.' },
+    ],
     fuentes: [
       { label: 'NRCS — Cultural Burning factsheet index', url: 'https://www.nrcs.usda.gov/resources/guides-and-instructions/prescribed-burning-ac-338-conservation-practice-standard' },
       { label: 'NPS — Rivercane', url: 'https://home.nps.gov/articles/000/rivercane.htm' },

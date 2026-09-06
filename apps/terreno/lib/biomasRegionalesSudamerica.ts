@@ -346,6 +346,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Aroeira-do-sertão',
     ],
     cultivos: ['umbu', 'sisal', 'caupi', 'mijo', 'sorgo', 'mani', 'batata', 'nopal', 'moringa'],
+    aptitud: [
+      { uso: 'pasturas', delta: -5, razon: 'El premio al pastoreo del bosque seco no vale acá: sobre roca cristalina somera y con lluvia irregular, la carga se paga con suelo desnudo y erosión, no con menos kilos. Lo que aguanta es caatinga en pie con ramoneo, no pastura sembrada.' },
+      { uso: 'huerta', delta: -20, razon: 'Sin cosecha de agua —cisterna, barreiro, barragem— la huerta no pasa la seca.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -421,6 +425,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Lychnophora',
       'Paepalanthus',
       'Orquídeas rupestres',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -30, razon: 'Suelo somero, arenoso y oligotrófico sobre afloramiento: no hay perfil donde poner una huerta.' },
+      { uso: 'reserva', delta: 25, razon: 'Endemismo altísimo y por afloramiento, cada uno con su flora: lo que corresponde acá es no usar.' },
     ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -703,6 +711,9 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Palma llanera',
     ],
     cultivos: ['arroz', 'maiz_tropical', 'cana_azucar', 'guandul', 'crotalaria', 'pasto_elefante', 'gliricidia', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'Los suelos ácidos de la altillanura tienen aluminio intercambiable alto: sin encalado y fósforo la huerta no arranca por más que llueva.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1034,6 +1045,11 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Puya',
     ],
     cultivos: ['papa', 'oca', 'ulluco', 'tarwi', 'quinoa', 'cebada'],
+    aptitud: [
+      { uso: 'reserva', delta: 25, razon: 'El páramo es la fábrica de agua de las ciudades andinas: el suelo orgánico retiene en lluvia y entrega en seca. Drenarlo, quemarlo o ararlo libera carbono y no se recompone en una vida.' },
+      { uso: 'pasturas', delta: -15, razon: 'El pisoteo compacta el suelo orgánico y corta justo la función de retención por la que el páramo importa aguas abajo.' },
+      { uso: 'forestal', delta: -10, razon: 'Forestar el páramo con pino o eucalipto lo seca: baja el rendimiento hídrico de la cuenca en vez de subirlo. Acá el bioma montano dice lo contrario de lo que corresponde.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1086,6 +1102,11 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Distichia muscoides',
     ],
     cultivos: ['quinoa', 'papa', 'oca', 'ulluco', 'tarwi', 'cebada', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Sobre los 3.500 m, con helada casi todo el año y aridisoles pedregosos, la huerta sólo cierra bajo cubierta o en terraza abrigada.' },
+      { uso: 'frutales', delta: -25, razon: 'No hay ventana libre de helada suficiente para fruta de carozo o de pepita a campo.' },
+      { uso: 'pasturas', delta: 10, razon: 'La carga baja sobre pastizal y tolar es el uso histórico. El bofedal es el que sostiene la majada en seca, y es también el que no aguanta sobrecarga.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1137,6 +1158,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Victoria boliviana',
     ],
     cultivos: ['arroz', 'yuca', 'platano', 'maiz_tropical', 'caupi', 'cacao', 'pasto_elefante', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'El camellón precolombino es la respuesta local: la huerta va arriba de la loma construida, no en el bajo. Media docena de centímetros de cota decide si la raíz respira.' },
+      { uso: 'reserva', delta: 10, razon: 'El pulso de anegamiento y seca es el sistema. Drenarlo lo apaga.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1188,6 +1213,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Cactáceas columnares',
     ],
     cultivos: ['maiz_tropical', 'poroto_trepador', 'chile_seco', 'aguacate', 'vid', 'cana_azucar', 'guandul', 'nopal'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'A diferencia de la ladera abierta, el fondo de valle con acequia es tierra de huerta: es donde está la agricultura andina de riego. El límite es el agua y la sal de los fondos cerrados, no la pendiente.' },
+      { uso: 'frutales', delta: 10, razon: 'Valle seco con riego y amplitud térmica marcada es el sitio frutícola de los Andes.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1215,6 +1244,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Kapok de várzea',
     ],
     cultivos: ['arroz', 'acai', 'yuca', 'platano', 'taro', 'caupi'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'La regla del bioma —la fertilidad está en la biomasa, no en el suelo— no vale en la várzea: la crecida repone limo todos los años. La huerta va en la bajante, sobre el sedimento nuevo, y se levanta antes de la próxima creciente. En igapó, sobre arena ácida, no.' },
+      { uso: 'reserva', delta: 10, razon: 'El pulso de crecida es lo que hace el sistema. Drenar para ganar tierra firme lo cancela, y con él se va la fertilidad que lo hacía valer la pena.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },

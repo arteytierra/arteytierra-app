@@ -52,6 +52,9 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Sauce blanco (Salix alba)',
     ],
     cultivos: ['arroz', 'maiz_tropical', 'soja', 'remolacha_azucarera', 'vid', 'durazno', 'manzano', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: 10, razon: 'Fluvisoles profundos con freática a pocos metros: fertilidad y retención altas. Lo que limita es el manejo —compactación, pérdida de materia orgánica y nitratos—, no la capacidad del suelo.' },
+    ],
     fuentes: [ATLAS_SUELOS, ESDAC, RESOLVE],
   },
 
@@ -118,6 +121,10 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Enebro común (Juniperus communis)',
     ],
     cultivos: ['papa', 'centeno', 'castano', 'vid', 'olivo', 'lavanda', 'raigras', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'Sobre caliza el suelo está en los huecos, no en las laderas: la tierra de labor son las dolinas y los poljes, y en el polje el riesgo pasa a ser la inundación estacional.' },
+      { uso: 'reserva', delta: 15, razon: 'Lo que se aplica arriba llega al acuífero en horas y sale en el manantial del que bebe el pueblo de abajo. Acá la protección del agua manda sobre la elección de uso.' },
+    ],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -448,6 +455,10 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Cárice de arena (Leymus arenarius)',
     ],
     cultivos: ['papa', 'cebada', 'avena', 'raigras', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'pasturas', delta: -15, razon: 'El andosol seco y sin cubierta vuela con el viento, y ese es el mecanismo que desmanteló el suelo de media isla con el pastoreo de ovejas. Cerrar el pastoreo en el área erosionada es el primer paso.' },
+      { uso: 'forestal', delta: 10, razon: 'Fijar la arena con altramuz y gramínea y replantar abedul es el trabajo de conservación de suelos de la isla desde 1907.' },
+    ],
     fuentes: [LANDGRAEDSLAN, WRB, RESOLVE],
   },
 

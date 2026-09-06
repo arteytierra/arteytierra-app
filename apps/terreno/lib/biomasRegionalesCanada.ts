@@ -95,6 +95,9 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Álamo negro del oeste (Populus trichocarpa)',
     ],
     cultivos: ['vid', 'manzano', 'cerezo', 'durazno', 'damasco', 'cebolla', 'lavanda', 'alfalfa'],
+    aptitud: [
+      { uso: 'frutales', delta: 15, razon: 'El Okanagan es la región frutícola de Canadá: amplitud térmica marcada y un lago que modera la helada. El cuello de botella es la asignación de riego y la eficiencia, no el suelo.' },
+    ],
     fuentes: [BEC_BC, CANSIS_SUELOS, RESOLVE],
   },
 
@@ -139,6 +142,9 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Abedul papelero (Betula papyrifera)',
     ],
     cultivos: ['papa', 'avena', 'cebada', 'arandano', 'alforfon', 'arroz_salvaje', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'pasturas', delta: 10, razon: 'El Cinturón de Arcilla de Abitibi y Cochrane rompe la regla del Escudo: arcilla lacustre profunda, con forraje y ganadería reales. Ahí el problema se invierte y pasa a ser drenaje lento y compactación en húmedo, no falta de suelo.' },
+    ],
     fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
   },
 

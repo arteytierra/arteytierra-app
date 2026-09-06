@@ -75,6 +75,9 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Pistacho del Atlas (Pistacia atlantica)',
     ],
     cultivos: ['cebada', 'trigo', 'lenteja', 'garbanzo', 'olivo', 'pistacho', 'alfalfa'],
+    aptitud: [
+      { uso: 'pasturas', delta: -15, razon: 'La mata de esparto y el suelo son la misma cosa: el macollo frena el viento y hace montículo fértil a su pie. Arrancarlo deja la costra caliza al descubierto y eso no se revierte con descanso: hay que replantar la mata.' },
+    ],
     fuentes: [ICARDA, ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -119,6 +122,10 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Festuca de altura (Festuca mairei)',
     ],
     cultivos: ['cebada', 'nogal', 'manzano', 'damasco', 'papa', 'alfalfa'],
+    aptitud: [
+      { uso: 'pasturas', delta: 0, razon: 'El pastizal de altura aguanta donde se mantiene el agdal —el cierre estacional que decide la asamblea del pueblo— y se pela hasta la roca donde se rompió. La variable acá es institucional, no técnica.' },
+      { uso: 'reserva', delta: 10, razon: 'El horizonte orgánico sobre caliza y cuarcita es delgado y el pisoteo lo levanta en una temporada.' },
+    ],
     fuentes: [ATLAS_AFRICA, SOILGRIDS, RESOLVE],
   },
 
@@ -141,6 +148,10 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Sicomoro (Ficus sycomorus)',
     ],
     cultivos: ['arroz', 'algodon', 'trigo', 'cebolla', 'naranjo', 'datilera', 'sesamo', 'berseem'],
+    aptitud: [
+      { uso: 'huerta', delta: 15, razon: 'Vertisoles y fluvisoles profundos sobre limo etíope, entre los mejores suelos agrícolas que existen. El castigo del bioma desierto describe la meseta, no el delta.' },
+      { uso: 'reserva', delta: 0, razon: 'Acá no hay costra biológica de desierto que cuidar. Lo que sí hay que cuidar es la lámina de lavado: en el norte del delta la freática salina está a un metro.' },
+    ],
     fuentes: [ATLAS_AFRICA, HWSD, WRB, RESOLVE],
   },
 

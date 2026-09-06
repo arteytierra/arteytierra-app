@@ -502,6 +502,10 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Pino carrasco (Pinus halepensis)',
     ],
     cultivos: ['olivo', 'vid', 'trigo', 'almendro', 'higuera', 'algarrobo_es', 'encina', 'alcornoque', 'lavanda', 'garbanzo'],
+    aptitud: [
+      { uso: 'pasturas', delta: 10, razon: 'La dehesa y el montado son silvopastoreo: arbolado disperso sobre pastizal, y las dos capas se sostienen entre sí.' },
+      { uso: 'forestal', delta: 10, razon: 'Por la misma razón: acá el árbol y la pastura no compiten por la hectárea, conviven en ella.' },
+    ],
     fuentes: [
       { label: 'FAO — Montado Agrosilvipastoral System of the Serpa Hills', url: 'https://www.fao.org/giahs/giahs-around-the-world/portugal-montado-serpa' },
       { label: 'FAO — State of Mediterranean Forests 2018', url: 'https://openknowledge.fao.org/3/CA2081EN/ca2081en.PDF' },
@@ -624,6 +628,10 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Esfagno báltico (Sphagnum balticum)',
     ],
     cultivos: ['cebada', 'avena', 'centeno', 'papa', 'arandano', 'alforfon', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'forestal', delta: -15, razon: 'Drenar turba para forestar provoca subsidencia, emisiones y más riesgo de incendio. El premio forestal del bioma vale sobre el podzol mineral, no sobre la turba.' },
+      { uso: 'reserva', delta: 20, razon: 'La turba fría almacena en superficie el carbono y los nutrientes de miles de años. Una campaña de drenaje los suelta de una vez.' },
+    ],
     fuentes: [
       { label: 'European Commission — Natura 2000 in the Boreal Region', url: 'https://www.termeszetvedelem.hu/_user/downloads/EUs%20kiadvanyok/Natura2000_boreal_region.pdf' },
       { label: 'EEA — Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },

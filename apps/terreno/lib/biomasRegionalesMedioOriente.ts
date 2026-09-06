@@ -76,6 +76,9 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Cebada silvestre (Hordeum spontaneum)',
     ],
     cultivos: ['trigo', 'cebada', 'algodon', 'lenteja', 'garbanzo', 'sesamo', 'datilera', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -5, razon: 'El limo del Tigris es bueno; lo que limita es la sal. Sin drenaje colector y lámina de lavado la freática salada sube a la zona de raíces, y eso no se resuelve parcela por parcela.' },
+    ],
     fuentes: [ICARDA, HWSD, WRB, RESOLVE],
   },
 
@@ -98,6 +101,10 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Sauce del Éufrates (Salix acmophylla)',
     ],
     cultivos: ['arroz', 'datilera', 'trigo', 'cebada', 'berseem', 'alfalfa'],
+    aptitud: [
+      { uso: 'reserva', delta: 25, razon: 'Lo que queda de marisma quedó después de una desecación deliberada. El limitante hoy es caudal y salinidad aguas arriba: lo que se recupera se recupera con agua, no con obra en la parcela.' },
+      { uso: 'huerta', delta: -20, razon: 'Donde se secó, la turba se oxidó y dejó costra salina dura. Volver a inundar trae el agua, pero el suelo ya quedó otro.' },
+    ],
     fuentes: [WRB, HWSD, RESOLVE],
   },
 
@@ -337,6 +344,9 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Dodonaea viscosa',
     ],
     cultivos: ['cafe', 'sorgo', 'mijo', 'trigo', 'cebada', 'vid', 'granado', 'durazno'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'Acá el suelo es una construcción, no un dato del terreno: el muro de piedra seca frena la escorrentía y precipita el sedimento. Sobre terraza mantenida la huerta va; la variable no es la aptitud sino el mantenimiento, porque reparar cuesta mucho más que sostener.' },
+    ],
     fuentes: [GIAHS, HWSD, WRB, RESOLVE],
   },
 
@@ -425,6 +435,10 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Croton socotranus',
     ],
     cultivos: ['datilera', 'sorgo', 'mijo', 'moringa'],
+    aptitud: [
+      { uso: 'reserva', delta: 25, razon: 'Endemismo extremo y una sola cohorte vieja de dragos: el problema no es el suelo, es que no hay regeneración.' },
+      { uso: 'pasturas', delta: -20, razon: 'El pastoreo continuo de cabras reemplazó al rotativo con cierres estacionales, y es justamente lo que bloquea esa regeneración.' },
+    ],
     fuentes: [WRB, RESOLVE],
   },
 
@@ -447,6 +461,10 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Azufaifo (Ziziphus spina-christi)',
     ],
     cultivos: ['datilera', 'granado', 'damasco', 'nogal', 'higuera', 'trigo', 'cebada', 'alfalfa'],
+    aptitud: [
+      { uso: 'frutales', delta: 10, razon: 'La terraza de oasis bajo palmeral es el sistema: suelo acarreado, sombra de datilera y riego por turno de falaj. Es frutal en tres estratos, no cuadro abierto.' },
+      { uso: 'huerta', delta: -10, razon: 'Fuera del alcance del falaj no hay agua, y sobre serpentina la relación calcio-magnesio invertida y el níquel alto descartan parte del macizo.' },
+    ],
     fuentes: [AFLAJ, GIAHS, HWSD, RESOLVE],
   },
 

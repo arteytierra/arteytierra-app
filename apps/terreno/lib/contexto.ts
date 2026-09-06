@@ -22,7 +22,7 @@ import type { Koppen } from './clima';
 import { biomaGlobal, enSudamerica, fichaDeEcorregion, type Ecorregion } from './ecorregiones';
 import { BIOMAS_REGIONALES } from './biomasRegionales';
 import { BIOMAS_GLOBALES } from './biomasGlobales';
-import type { BiomaFicha, Fuente, SaberCultural } from './biomaTipos';
+import type { BiomaFicha, Fuente, ModificadorAptitud, SaberCultural } from './biomaTipos';
 import { ANALOGOS_KOPPEN, EQUIVALENTES, type Analogo } from './analogos';
 
 export type { BiomaFicha, Fuente, SaberCultural };
@@ -561,24 +561,51 @@ export interface ResultadoBioma {
 }
 
 /**
- * Le presta a una ficha regional los modificadores de aptitud de su bioma.
+ * Compone la corrección de aptitud de la región con la de su bioma, uso por uso.
  *
- * La corrección de aptitud vive en las fichas de bioma global —ahí es donde una
- * restricción de uso del suelo es cierta sin inventar nada— pero la ficha que
- * llega a la pantalla es la regional cuando existe. Sin este préstamo pasaba lo
- * contrario de lo buscado: **cuanto mejor cubierta estaba una región, menos
- * corrección recibía**, porque tener ficha regional tapaba la del bioma. Un
- * predio en Oaxaca o en el Cauca perdía la advertencia que sí veía uno en un
- * ECO_ID sin curar.
+ * La corrección vive en las fichas de bioma global —ahí una restricción de uso
+ * del suelo es cierta sin inventar nada— pero la ficha que llega a la pantalla
+ * es la regional cuando existe. Sin este préstamo pasaba lo contrario de lo
+ * buscado: **cuanto mejor cubierta estaba una región, menos corrección
+ * recibía**, porque tener ficha regional tapaba la del bioma.
  *
- * La ficha regional que declara su propia lista manda: es más específica. Se
- * devuelve una copia para no ensuciar el catálogo, que es un módulo compartido.
+ * La composición es **por uso, no por lista**. Antes, una ficha regional que
+ * quería decir una sola cosa —que en la várzea la huerta sí va, porque el río
+ * repone limo todos los años— perdía de paso las otras cuatro correcciones del
+ * bioma, que seguían siendo ciertas. El costo de agregar un matiz era borrar lo
+ * que ya estaba bien, y eso es exactamente al revés.
+ *
+ * Ahora la región pisa sólo el uso que nombra y hereda el resto. Un `delta: 0`
+ * con su razón es una cancelación explícita: sirve para decir "acá esta
+ * advertencia del bioma no aplica, y este es el motivo", que es una afirmación
+ * distinta de callarse.
  */
+export function componerAptitud(
+  propia?: ModificadorAptitud[],
+  heredada?: ModificadorAptitud[],
+): ModificadorAptitud[] {
+  const mia = propia ?? [];
+  if (!mia.length) return heredada ?? [];
+
+  const porUso = new Map(mia.map(m => [m.uso, m]));
+  const pisados = new Set<ModificadorAptitud['uso']>();
+  const salida: ModificadorAptitud[] = [];
+
+  for (const h of heredada ?? []) {
+    const propio = porUso.get(h.uso);
+    if (propio) pisados.add(h.uso);
+    salida.push(propio ?? h);
+  }
+  for (const m of mia) if (!pisados.has(m.uso)) salida.push(m);
+  return salida;
+}
+
+/** Devuelve una copia: el catálogo de fichas es un módulo compartido. */
 function conAptitudDelBioma(ficha: BiomaFicha, biomaNum: number): BiomaFicha {
-  if (ficha.aptitud?.length) return ficha;
   const global = biomaGlobal(biomaNum);
   const heredada = global ? fichaPorId(global.id)?.aptitud : undefined;
-  return heredada?.length ? { ...ficha, aptitud: heredada } : ficha;
+  const compuesta = componerAptitud(ficha.aptitud, heredada);
+  return compuesta.length ? { ...ficha, aptitud: compuesta } : ficha;
 }
 
 /**
