@@ -92,7 +92,7 @@ for (const s of meso) {
     fuentes: (gemelo ? [...s.fuentes, ...gemelo.fuentes] : (s.fuentes ?? []))
       .filter((f, i, a) => a.findIndex((o) => o.url === f.url) === i)
       .map((f) => ({ label: f.label, url: f.url, revisada: f.revisada })),
-    estado: 'documentado_sin_geometria',
+    estado: s.territorio?.estado ?? 'documentado_sin_geometria',
     fuenteInventario: `_research/ecosistemas-saberes-mesoamerica-norteamerica/${s.fuente_inventario}`,
   });
 }
@@ -128,7 +128,7 @@ for (const s of suda) {
     sintesisPublica: s.descripcion,
     cautelas: s.cautelas ? [s.cautelas] : [],
     fuentes: s.fuente ? [{ label: s.fuente.label, url: s.fuente.url, revisada: s.fuente.fecha_consulta }] : [],
-    estado: 'documentado_sin_geometria',
+    estado: s.territorio?.estado ?? 'documentado_sin_geometria',
     fuenteInventario: '_research/ecosistemas-saberes-sudamerica/fase-2-saberes-territoriales/inventario-saberes-documentados.json',
   });
 }
@@ -155,6 +155,7 @@ const bloques = saberes.map((s) => `  {
     fuenteInventario: ${q(s.fuenteInventario)},
   },`).join('\n');
 
+const aprobados = saberes.filter((s) => s.estado === 'aprobado').length;
 const porRegion = saberes.reduce((acc, s) => ({ ...acc, [s.region]: (acc[s.region] ?? 0) + 1 }), {});
 
 const cabecera = `/**
@@ -174,9 +175,9 @@ const cabecera = `/**
  *
  * Por eso ninguno de estos ${saberes.length} se activa por país, por Köppen ni por
  * ecorregión: hace falta un polígono con procedencia y licencia verificadas, y
- * el punto tiene que caer adentro. Hoy hay ${saberes.length} documentados y cero
- * activables, porque el registro de geometrías está vacío a propósito. La regla
- * y el registro viven en \`lib/saberes.ts\`.
+ * el punto tiene que caer adentro. Hoy hay ${saberes.length} documentados y
+ * ${aprobados} con territorio aprobado. La regla y el registro de geometrías
+ * viven en \`lib/saberes.ts\`.
  *
  * Reparto: ${Object.entries(porRegion).map(([r, n]) => `${r} ${n}`).join(', ')}.
  */
@@ -192,4 +193,5 @@ fs.writeFileSync(path.join(repo, 'apps', 'terreno', 'lib', 'saberesTerritoriales
 console.log('escritos', saberes.length, JSON.stringify(porRegion));
 console.log('con fuentes', saberes.filter((s) => s.fuentes.length).length);
 console.log('con ecoIds', saberes.filter((s) => s.ecoIdsCompatibles.length).length);
+console.log('aprobados', saberes.filter((s) => s.estado === 'aprobado').map((s) => s.id));
 console.log('sin paises', saberes.filter((s) => !s.paises.length).map((s) => s.id));

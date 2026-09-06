@@ -14,10 +14,11 @@
  *   7. Si el saber declara ECO_ID compatibles, el del punto está entre ellos.
  *   8. El punto cae dentro del polígono.
  *
- * Hoy `GEOMETRIAS_SABERES` está vacío, así que `saberesActivos` devuelve
- * siempre `[]`. Eso no es un pendiente que quedó a medias: es el estado
- * correcto mientras no haya cartografía con procedencia y licencia. Cargar un
- * polígono y poner el saber en `aprobado` lo activa; nada más hace falta.
+ * `GEOMETRIAS_SABERES` estuvo vacío a propósito hasta que hubo una geometría
+ * con procedencia y licencia verificadas. Hoy tiene una —el Quesungual sobre el
+ * departamento de Lempira— y por eso `saberesActivos` ya puede devolver algo,
+ * pero sólo adentro de ese polígono: en todo el resto del mundo sigue
+ * devolviendo `[]`, que es el estado correcto mientras no haya cartografía.
  *
  * Para uso editorial —listar qué hay documentado para una región, escribir una
  * nota, armar una convocatoria— está `saberesDocumentados`, que no pretende que
@@ -26,6 +27,7 @@
 
 import * as turf from '@turf/turf';
 
+import { GEOMETRIAS } from './geometriasSaberes';
 import { SABERES_TERRITORIALES } from './saberesTerritoriales';
 import type { GeometriaSaber, SaberTerritorial } from './saberesTipos';
 
@@ -50,9 +52,11 @@ export const LICENCIAS_ADMITIDAS: readonly string[] = [
 ];
 
 /**
- * Registro de geometrías aprobadas, indexado por `saberId`.
+ * Registro de geometrías aprobadas, indexado por `saberId`. Los polígonos viven
+ * en `geometriasSaberes.ts` para que acá se pueda leer la regla sin scrollear
+ * cientos de vértices.
  *
- * Vacío a propósito. Para agregar una:
+ * Para agregar una:
  *
  *   1. Conseguir el polígono de una fuente que publique licencia.
  *   2. Verificar que la licencia esté en `LICENCIAS_ADMITIDAS`.
@@ -61,12 +65,16 @@ export const LICENCIAS_ADMITIDAS: readonly string[] = [
  *   4. Agregar la entrada acá y pasar el saber a `estado: 'aprobado'` en el
  *      inventario de `_research/`, y regenerar `saberesTerritoriales.ts`.
  *
- * Los tres candidatos más cercanos son los europeos marcados
- * `cartografia_oficial_sin_licencia`: cañadas reales (ES), polders y
- * waterschappen (NL) y crofting townships (GB). Tienen cartografía oficial
- * publicada y les falta sólo el paso 2.
+ * El primero que pasó los cuatro pasos es el Quesungual: es campesino y no de
+ * un pueblo originario, así que el paso 3 no aplicaba, y el departamento de
+ * Lempira tiene polígono publicado bajo ODbL. Los saberes indígenas de América
+ * necesitan el acuerdo antes que el mapa, no después.
+ *
+ * Los tres candidatos europeos marcados `cartografia_oficial_sin_licencia`
+ * —cañadas reales (ES), polders y waterschappen (NL), crofting townships (GB)—
+ * tienen cartografía oficial publicada y les falta sólo el paso 2.
  */
-export const GEOMETRIAS_SABERES: Readonly<Record<string, GeometriaSaber>> = {};
+export const GEOMETRIAS_SABERES: Readonly<Record<string, GeometriaSaber>> = GEOMETRIAS;
 
 export type MotivoBloqueo =
   | 'sin_fuente'
@@ -132,8 +140,9 @@ export function evaluarSaber(
 }
 
 /**
- * Los saberes que se pueden mostrar como propios del predio. Devuelve `[]`
- * mientras el registro de geometrías esté vacío, que es hoy.
+ * Los saberes que se pueden mostrar como propios del predio. Devuelve `[]` para
+ * cualquier punto que no caiga en uno de los polígonos del registro, que hoy es
+ * casi todo el planeta.
  */
 export function saberesActivos(
   punto: PuntoConsulta,

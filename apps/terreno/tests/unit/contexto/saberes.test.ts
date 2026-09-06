@@ -74,17 +74,36 @@ describe('inventario de saberes territoriales', () => {
     expect(raros).toEqual([]);
   });
 
-  it('no deja ninguno aprobado mientras no haya cartografía con licencia', () => {
-    expect(SABERES_TERRITORIALES.filter((s) => s.estado === 'aprobado')).toEqual([]);
+  it('sólo aprueba lo que tiene geometría cargada: ni uno más', () => {
+    const aprobados = SABERES_TERRITORIALES.filter((s) => s.estado === 'aprobado').map((s) => s.id);
+    expect(aprobados).toEqual(['cac_quesungual']);
+    for (const id of aprobados) expect(GEOMETRIAS_SABERES[id]).toBeDefined();
   });
 });
 
 describe('registro de geometrías', () => {
-  it('está vacío a propósito', () => {
-    expect(Object.keys(GEOMETRIAS_SABERES)).toEqual([]);
+  it('tiene sólo las que pasaron procedencia y licencia', () => {
+    expect(Object.keys(GEOMETRIAS_SABERES)).toEqual(['cac_quesungual']);
   });
 
-  it('y por eso ningún punto activa nada, en ningún país', () => {
+  it('cada geometría declara fuente, url y una licencia admitida', () => {
+    for (const [id, g] of Object.entries(GEOMETRIAS_SABERES)) {
+      expect(g.saberId).toBe(id);
+      expect(g.fuente.trim()).not.toBe('');
+      expect(g.url.trim()).not.toBe('');
+      expect(LICENCIAS_ADMITIDAS).toContain(g.licencia);
+    }
+  });
+
+  it('cada anillo exterior está cerrado y no es degenerado', () => {
+    for (const g of Object.values(GEOMETRIAS_SABERES)) {
+      const anillo = g.anillos[0] ?? [];
+      expect(anillo.length).toBeGreaterThan(3);
+      expect(anillo[0]).toEqual(anillo[anillo.length - 1]);
+    }
+  });
+
+  it('sigue sin activar nada donde no hay polígono cargado', () => {
     const puntos = [
       { lat: -34.6, lng: -58.4, pais: 'AR', ecoId: 575 },   // Buenos Aires
       { lat: 37.0, lng: -3.3, pais: 'ES', ecoId: 805 },     // Alpujarra
@@ -92,6 +111,28 @@ describe('registro de geometrías', () => {
       { lat: -0.9, lng: -77.8, pais: 'EC', ecoId: 483 },    // Napo
     ];
     for (const p of puntos) expect(saberesActivos(p)).toEqual([]);
+  });
+});
+
+describe('Quesungual: la primera activación de América', () => {
+  const gracias = { lat: 14.5906, lng: -88.5811, pais: 'HN' };  // cabecera de Lempira
+
+  it('se activa en Lempira', () => {
+    expect(saberesActivos(gracias).map((s) => s.id)).toEqual(['cac_quesungual']);
+  });
+
+  it('no se activa en el resto de Honduras, aunque el país coincida', () => {
+    // Tegucigalpa: mismo país, misma ecorregión de bosque seco, otro territorio.
+    expect(saberesActivos({ lat: 14.0723, lng: -87.2068, pais: 'HN' })).toEqual([]);
+  });
+
+  it('no se activa del otro lado de la frontera, a pocos km del polígono', () => {
+    // Nueva Ocotepeque (HN) y el oriente de El Salvador quedan afuera del anillo.
+    expect(saberesActivos({ lat: 13.85, lng: -88.6, pais: 'SV' })).toEqual([]);
+  });
+
+  it('sin país no activa, aunque el punto caiga adentro', () => {
+    expect(saberesActivos({ lat: gracias.lat, lng: gracias.lng })).toEqual([]);
   });
 });
 
@@ -161,8 +202,8 @@ describe('resumen', () => {
       documentados: 85,
       conFuente: 59,
       conEcorregiones: 45,
-      conGeometria: 0,
-      aprobados: 0,
+      conGeometria: 1,
+      aprobados: 1,
     });
   });
 });

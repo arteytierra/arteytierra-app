@@ -1,11 +1,12 @@
 'use client';
 
-import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle } from 'lucide-react';
+import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { fichaClimaFuturo } from '@/lib/climaFuturo';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
+import { useSaberes } from '@/lib/useSaberes';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 
@@ -22,6 +23,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   const listo = mojones.length >= 3;
   const centro = listo ? centroide(mojones) : null;
   const eco = useEcorregion(centro?.lat ?? null, centro?.lng ?? null);
+  // Los saberes territoriales no salen de la ficha: se activan por polígono.
+  // Devuelve [] en casi todo el planeta y eso no es una falla.
+  const saberesTerritorio = useSaberes(centro?.lat ?? null, centro?.lng ?? null, eco?.eco_id);
 
   if (!listo || !centro) {
     return (
@@ -120,6 +124,47 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </div>
       </Seccion>}
       </>}
+
+      {/* Saberes territoriales — capa 2. Separada de los saberes de la ficha a
+          propósito: aquéllos describen un bioma, éstos son de comunidades
+          concretas y sólo aparecen si el predio cae dentro de un polígono con
+          procedencia y licencia verificadas. */}
+      {saberesTerritorio.length > 0 && <Seccion icon={<MapPin className="w-3.5 h-3.5" />} titulo="Saber territorial documentado acá">
+        <div className="space-y-2">
+          {saberesTerritorio.map(({ saber, geometria }) => (
+            <div key={saber.id} className="bg-white rounded-lg p-3 border border-clay-200">
+              <p className="text-xs font-semibold text-ink-700">{saber.nombre}</p>
+              <p className="text-[10px] text-ink-700/60 mt-0.5">Portan: {saber.portadores}</p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1.5">{saber.sintesisPublica}</p>
+              {saber.cautelas.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {saber.cautelas.map((c, i) => (
+                    <li key={i} className="text-[11px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" /><span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+                {saber.fuentes.map((f, i) => (
+                  <a key={i} href={f.url} target="_blank" rel="noreferrer"
+                    className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+                    <ExternalLink className="w-3 h-3 shrink-0" /> {f.label}
+                  </a>
+                ))}
+                <p className="text-[10px] text-ink-700/50 leading-relaxed">
+                  Territorio según <a href={geometria.url} target="_blank" rel="noreferrer" className="underline">{geometria.fuente}</a> · {geometria.licencia}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+          Aparece porque el predio cae dentro del territorio documentado, no por el país ni por
+          la ecorregión. Es una descripción publicada, no una recomendación de manejo: lo que
+          corresponda hacer se conversa con quienes portan el saber.
+        </p>
+      </Seccion>}
 
       {/* Análogos del mundo — dependen del clima, no de la ficha. Pueden faltar:
           el hielo permanente no tiene sistema agrícola análogo. */}

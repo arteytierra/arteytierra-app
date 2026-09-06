@@ -15,9 +15,9 @@
  *
  * Por eso ninguno de estos 85 se activa por país, por Köppen ni por
  * ecorregión: hace falta un polígono con procedencia y licencia verificadas, y
- * el punto tiene que caer adentro. Hoy hay 85 documentados y cero
- * activables, porque el registro de geometrías está vacío a propósito. La regla
- * y el registro viven en `lib/saberes.ts`.
+ * el punto tiene que caer adentro. Hoy hay 85 documentados y
+ * 1 con territorio aprobado. La regla y el registro de geometrías
+ * viven en `lib/saberes.ts`.
  *
  * Reparto: mesoamerica-caribe 9, mexico-estados-unidos 21, europa-occidental 26, sudamerica 29.
  */
@@ -59,7 +59,7 @@ export const SABERES_TERRITORIALES: readonly SaberTerritorial[] = [
     fuentes: [
       { label: "FAO — Quesungual", url: "https://www.fao.org/4/Y5030E/y5030e19.htm", revisada: "2026-09-03" },
     ],
-    estado: "documentado_sin_geometria",
+    estado: "aprobado",
     fuenteInventario: "_research/ecosistemas-saberes-mesoamerica-norteamerica/insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md",
   },
   {

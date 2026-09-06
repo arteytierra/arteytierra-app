@@ -8,6 +8,7 @@ import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
+import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 
@@ -22,6 +23,8 @@ export function InformeView({ datos, compartido = false }: Props) {
   // La ecorregión es un hook: va acá arriba, no dentro de la sección Contexto.
   const centroPredio = datos.mojones.length >= 3 ? centroide(datos.mojones) : null;
   const eco = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
+  // Los saberes territoriales también son un hook y por la misma razón van acá.
+  const saberesTerritorio = useSaberes(centroPredio?.lat ?? null, centroPredio?.lng ?? null, eco?.eco_id);
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -366,6 +369,31 @@ export function InformeView({ datos, compartido = false }: Props) {
                   </div>
                 ))}
               </div>
+              </>}
+              {/* Saberes territoriales — no salen de la ficha del bioma sino de un
+                  polígono con licencia en el que el predio cae adentro. Por eso van
+                  después y con su propio encabezado: no son lo mismo. */}
+              {saberesTerritorio.length > 0 && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saber territorial documentado en este predio</p>
+              <div className="space-y-3">
+                {saberesTerritorio.map(({ saber, geometria }) => (
+                  <div key={saber.id} className="text-sm">
+                    <p className="font-semibold text-ink-950">{saber.nombre}</p>
+                    <p className="text-xs text-ink-700/60">Portan: {saber.portadores}</p>
+                    <p className="text-ink-700/80 mt-1">{saber.sintesisPublica}</p>
+                    {saber.cautelas.map((c, i) => (
+                      <p key={i} className="text-xs text-clay-700 mt-1">Cautela: {c}</p>
+                    ))}
+                    <p className="text-xs text-ink-700/55 mt-1">
+                      Fuentes: {saber.fuentes.map(f => f.label).join(' · ')}. Territorio según {geometria.fuente} ({geometria.licencia}).
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-ink-700/55 mt-2">
+                Aparece por caer dentro del territorio documentado, no por el país ni por la
+                ecorregión. Es una descripción publicada, no una recomendación de manejo.
+              </p>
               </>}
               {analogos && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Análogos en el mundo · {analogos.titulo} ({analogos.clase})</p>

@@ -80,11 +80,11 @@
       }
     ],
     "territorio": {
-      "estado": "documentado_sin_geometria",
+      "estado": "aprobado",
       "regla_textual": "`country_code == HN`, `admin1` o polígono de la zona Quesungual. No activarlo en todo el ECO_ID 527.",
-      "geometria_id": null,
-      "fuente_geometria": null,
-      "licencia_geometria": null
+      "geometria_id": "hn_lempira_admin1",
+      "fuente_geometria": "OpenStreetMap — relación 4627393, Departamento de Lempira (HN-LE)",
+      "licencia_geometria": "ODbL-1.0"
     },
     "fuente_inventario": "insumos/centroamerica-caribe/CAPAS_CULTURALES_LOCALES.md"
   },
