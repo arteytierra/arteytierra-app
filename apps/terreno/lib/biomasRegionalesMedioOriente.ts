@@ -53,6 +53,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Pistacho de estepa (Pistacia atlantica)',
       'Retama blanca (Retama raetam)',
     ],
+    cultivos: ['cebada', 'trigo', 'lenteja', 'garbanzo', 'olivo', 'pistacho', 'alfalfa'],
     fuentes: [ICARDA, HWSD, RESOLVE],
   },
 
@@ -74,6 +75,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Regaliz (Glycyrrhiza glabra)',
       'Cebada silvestre (Hordeum spontaneum)',
     ],
+    cultivos: ['trigo', 'cebada', 'algodon', 'lenteja', 'garbanzo', 'sesamo', 'datilera', 'alfalfa'],
     fuentes: [ICARDA, HWSD, WRB, RESOLVE],
   },
 
@@ -95,6 +97,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Junco (Schoenoplectus litoralis)',
       'Sauce del Éufrates (Salix acmophylla)',
     ],
+    cultivos: ['arroz', 'datilera', 'trigo', 'cebada', 'berseem', 'alfalfa'],
     fuentes: [WRB, HWSD, RESOLVE],
   },
 
@@ -116,6 +119,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Calligonum (Calligonum comosum)',
       'Panicum turgidum',
     ],
+    cultivos: ['datilera', 'cebada', 'cebolla', 'granado', 'berseem', 'alfalfa'],
     fuentes: [ICARDA, HWSD, RESOLVE],
   },
 
@@ -137,6 +141,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Higuera silvestre (Ficus palmata)',
       'Cebada silvestre (Hordeum spontaneum)',
     ],
+    cultivos: ['cebada', 'trigo', 'vid', 'higuera', 'olivo', 'granado', 'alfalfa'],
     fuentes: [HWSD, WRB, RESOLVE],
   },
 
@@ -158,6 +163,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Rhanterium epapposum',
       'Calotropis (Calotropis procera)',
     ],
+    cultivos: ['datilera', 'cebolla', 'granado', 'moringa', 'berseem', 'alfalfa'],
     fuentes: [HWSD, SOILGRIDS, RESOLVE],
   },
 
@@ -200,6 +206,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Zygophyllum qatarense',
       'Mangle gris (Avicennia marina)',
     ],
+    cultivos: ['datilera', 'cebolla', 'granado', 'sesamo', 'moringa', 'berseem', 'alfalfa'],
     fuentes: [WRB, HWSD, RESOLVE],
   },
 
@@ -242,6 +249,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Cyperus conglomeratus',
       'Zygophyllum qatarense',
     ],
+    cultivos: ['datilera', 'sesamo', 'moringa', 'alfalfa'],
     fuentes: [HWSD, RESOLVE],
   },
 
@@ -263,6 +271,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Aloe (Aloe vera)',
       'Salvadora persica',
     ],
+    cultivos: ['cafe', 'sorgo', 'mijo', 'datilera', 'granado', 'higuera', 'sesamo', 'moringa'],
     fuentes: [HWSD, RESOLVE],
   },
 
@@ -305,6 +314,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Dobera glabra',
       'Panicum turgidum',
     ],
+    cultivos: ['mijo', 'sorgo', 'sesamo', 'algodon', 'datilera', 'sisal', 'moringa'],
     fuentes: [GIAHS, HWSD, RESOLVE],
   },
 
@@ -326,6 +336,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Sorgo (Sorghum bicolor)',
       'Dodonaea viscosa',
     ],
+    cultivos: ['cafe', 'sorgo', 'mijo', 'trigo', 'cebada', 'vid', 'granado', 'durazno'],
     fuentes: [GIAHS, HWSD, WRB, RESOLVE],
   },
 
@@ -347,6 +358,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Acebuche (Olea europaea subsp. cuspidata)',
       'Cebada (Hordeum vulgare)',
     ],
+    cultivos: ['cafe', 'sorgo', 'mijo', 'trigo', 'granado', 'higuera', 'damasco', 'alfalfa'],
     fuentes: [HWSD, RESOLVE],
   },
 
@@ -368,6 +380,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Ficus vasta',
       'Euphorbia balsamifera',
     ],
+    cultivos: ['coco', 'platano', 'cafe', 'sorgo', 'sesamo', 'moringa'],
     fuentes: [HWSD, WRB, RESOLVE],
   },
 
@@ -389,6 +402,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Sorgo (Sorghum bicolor)',
       'Acacia (Vachellia tortilis)',
     ],
+    cultivos: ['datilera', 'sorgo', 'mijo', 'sesamo', 'moringa', 'alfalfa'],
     fuentes: [HWSD, RESOLVE],
   },
 
@@ -410,6 +424,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Boswellia elongata',
       'Croton socotranus',
     ],
+    cultivos: ['datilera', 'sorgo', 'mijo', 'moringa'],
     fuentes: [WRB, RESOLVE],
   },
 
@@ -431,6 +446,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Granado (Punica granatum)',
       'Azufaifo (Ziziphus spina-christi)',
     ],
+    cultivos: ['datilera', 'granado', 'damasco', 'nogal', 'higuera', 'trigo', 'cebada', 'alfalfa'],
     fuentes: [AFLAJ, GIAHS, HWSD, RESOLVE],
   },
 
@@ -452,6 +468,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Acacia (Vachellia tortilis)',
       'Tamarisco (Tamarix aphylla)',
     ],
+    cultivos: ['datilera', 'sesamo', 'sorgo', 'algodon', 'granado', 'cebolla', 'moringa'],
     fuentes: [HWSD, WRB, RESOLVE],
   },
 
@@ -473,6 +490,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Ajenjo (Artemisia sieberi)',
       'Zygophyllum eurypterum',
     ],
+    cultivos: ['pistacho', 'azafran', 'datilera', 'granado', 'trigo', 'cebada', 'alfalfa'],
     fuentes: [GIAHS, HWSD, WRB, RESOLVE],
   },
 
@@ -494,6 +512,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Aliso del Cáucaso (Alnus subcordata)',
       'Boj (Buxus hyrcana)',
     ],
+    cultivos: ['arroz', 'naranjo', 'avellano', 'castano', 'nogal', 'soja', 'arandano', 'vid'],
     fuentes: [HIRCANIA, SOILGRIDS, WRB, RESOLVE],
   },
 
@@ -515,6 +534,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Nogal (Juglans regia)',
       'Astragalus gossypinus',
     ],
+    cultivos: ['trigo', 'cebada', 'papa', 'nogal', 'vid', 'damasco', 'azafran', 'alfalfa'],
     fuentes: [SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -536,6 +556,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Regaliz (Glycyrrhiza glabra)',
       'Calligonum caput-medusae',
     ],
+    cultivos: ['algodon', 'trigo', 'cebada', 'granado', 'vid', 'alfalfa'],
     fuentes: [SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -557,6 +578,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Granado silvestre (Punica granatum)',
       'Almendro (Amygdalus spinosissima)',
     ],
+    cultivos: ['trigo', 'cebada', 'pistacho', 'vid', 'damasco', 'nogal', 'alfalfa'],
     fuentes: [SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -578,6 +600,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Poa bulbosa',
       'Carex pachystylis',
     ],
+    cultivos: ['pistacho', 'trigo', 'cebada', 'damasco', 'alfalfa'],
     fuentes: [SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -599,6 +622,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Ajenjo (Artemisia aucheri)',
       'Pistacho del Atlas (Pistacia atlantica)',
     ],
+    cultivos: ['trigo', 'cebada', 'nogal', 'vid', 'damasco', 'azafran', 'pistacho', 'alfalfa'],
     fuentes: [SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -620,6 +644,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Calligonum comosum',
       'Alhagi maurorum',
     ],
+    cultivos: ['trigo', 'cebada', 'datilera', 'sesamo', 'alfalfa'],
     fuentes: [HWSD, WRB, RESOLVE],
   },
 };

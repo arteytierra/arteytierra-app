@@ -49,6 +49,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Tsuga canadiense (Tsuga canadensis)',
       'Nogal negro (Juglans nigra)',
     ],
+    cultivos: ['manzano', 'arce_azucarero', 'castano', 'trigo', 'maiz_tropical', 'soja', 'avena', 'arandano', 'trebol_blanco'],
     fuentes: [
       { label: 'EPA HERO — Eastern temperate forests', url: 'https://hero.epa.gov/reference/3123056/' },
       { label: 'National Park Service — Indigenous Fire Practices Shape our Land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
@@ -78,6 +79,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Schizachyrium (Schizachyrium scoparium)',
       'Equinácea pálida (Echinacea pallida)',
     ],
+    cultivos: ['maiz_tropical', 'soja', 'trigo', 'avena', 'girasol', 'alfalfa', 'trebol_blanco', 'raigras'],
     fuentes: [
       { label: 'National Park Service — Wildland Fire in Tallgrass Prairie', url: 'https://www.nps.gov/articles/wildland-fire-in-tallgrass-prairie.htm' },
       { label: 'National Park Service — Indigenous Fire Practices Shape our Land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
@@ -107,6 +109,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Schizachyrium (Schizachyrium scoparium)',
       'Artemisa plateada (Artemisia cana)',
     ],
+    cultivos: ['trigo', 'sorgo', 'girasol', 'avena', 'cebada', 'mijo', 'alfalfa'],
     fuentes: [
       { label: 'US Forest Service — Northwestern Great Plains Mixed-Grass Prairie', url: 'https://research.fs.usda.gov/sites/default/files/feis/bps/11410_40.pdf' },
       { label: 'USDA NRCS — Mixedgrass Prairie ecological site', url: 'https://edit.sc.egov.usda.gov/catalogs/esd/052X/R052XN178MT' },
@@ -136,6 +139,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Yuca de las llanuras (Yucca glauca)',
       'Pasto galleta (Pleuraphis jamesii)',
     ],
+    cultivos: ['trigo', 'sorgo', 'mijo', 'cebada', 'girasol', 'alfalfa'],
     fuentes: [
       { label: 'US Forest Service — Western Great Plains Shortgrass Prairie', url: 'https://www.fs.usda.gov/database/feis/pdfs/other/NatureServe_2013.pdf' },
       { label: 'US Forest Service — Poa arida, plains bluegrass', url: 'https://research.fs.usda.gov/feis/species-reviews/poaari' },
@@ -165,6 +169,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Agave de Palmer (Agave palmeri)',
       'Yuca de Mojave (Yucca schidigera)',
     ],
+    cultivos: ['datilera', 'granado', 'chile_seco', 'cebolla', 'nopal', 'agave', 'mezquite', 'alfalfa'],
     fuentes: [
       { label: 'National Park Service — Sonoran Desert Network Ecosystems', url: 'https://www.nps.gov/im/sodn/ecosystems.htm' },
       { label: 'National Park Service — Native Peoples of the Sonoran Desert: The O’odham', url: 'https://home.nps.gov/articles/oodham.htm' },
@@ -194,6 +199,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Enebro de Utah (Juniperus osteosperma)',
       'Atriplex de cuatro alas (Atriplex canescens)',
     ],
+    cultivos: ['trigo', 'cebada', 'papa', 'cebolla', 'damasco', 'alfalfa', 'espino_amarillo'],
     fuentes: [
       { label: 'USGS — SageSTEP, Sagebrush Steppe Treatment Evaluation Project', url: 'https://www.usgs.gov/centers/forest-and-rangeland-ecosystem-science-center/science/sagestep-sagebrush-steppe-treatment' },
       { label: 'USGS — Piñon and Juniper Field Guide', url: 'https://pubs.usgs.gov/circ/1335/' },
@@ -223,6 +229,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Abeto de Douglas (Pseudotsuga menziesii)',
       'Arándano siempreverde (Vaccinium ovatum)',
     ],
+    cultivos: ['manzano', 'cerezo', 'avellano', 'arandano', 'papa', 'lupulo', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'National Park Service — Plants, Lewis and Clark National Historical Park', url: 'https://www.nps.gov/lewi/learn/nature/plants.htm' },
       { label: 'US Forest Service — Traditional and Local Ecological Knowledge About Forest Biodiversity in the Pacific Northwest', url: 'https://www.fs.usda.gov/pnw/pubs/pnw_gtr751.pdf' },
@@ -252,6 +259,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Encino costero (Quercus agrifolia)',
       'Salvia negra (Salvia mellifera)',
     ],
+    cultivos: ['olivo', 'vid', 'almendro', 'aguacate', 'naranjo', 'higuera', 'lavanda', 'veza'],
     fuentes: [
       { label: 'National Park Service — Wildland Fire in Chaparral', url: 'https://www.nps.gov/articles/wildland-fire-in-chaparral.htm' },
       { label: 'National Park Service — Indigenous Fire Practices Shape our Land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
@@ -281,6 +289,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Alerce americano (Larix laricina)',
       'Abedul papirífero (Betula papyrifera)',
     ],
+    cultivos: ['cebada', 'avena', 'centeno', 'papa', 'colza', 'alforfon', 'trebol_blanco'],
     fuentes: [
       { label: 'Natural Resources Canada — 8 facts about Canada’s boreal forest', url: 'https://natural-resources.canada.ca/forests-forestry/sustainable-forest-management/8-facts-about-canada-s-boreal-forest' },
       { label: 'Natural Resources Canada — Fire ecology', url: 'https://natural-resources.canada.ca/forests-forestry/wildland-fires/fire-ecology?wbdisable=true' },
@@ -311,6 +320,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Pasto alambre (Aristida stricta)',
       'Palmito serrucho (Serenoa repens)',
     ],
+    cultivos: ['pecan', 'batata', 'mani', 'maiz_tropical', 'soja', 'algodon', 'caupi', 'arandano', 'durazno'],
     fuentes: [
       { label: 'US Forest Service — Longleaf Pine, Silvics of North America', url: 'https://research.fs.usda.gov/silvics/longleaf-pine' },
       { label: 'US Forest Service — Managing composition of piedmont forests with prescribed fire', url: 'https://research.fs.usda.gov/treesearch/23456' },
@@ -340,6 +350,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Tepeguaje (Lysiloma acapulcense)',
       'Cazahuate (Ipomoea arborescens)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'sesamo', 'cana_azucar', 'gliricidia', 'vetiver'],
     fuentes: [
       { label: 'CONABIO — Selvas secas', url: 'https://biodiversidad.gob.mx/ecosistemas/selvaSeca' },
       { label: 'FAO AGRIS — Los sistemas agroforestales tradicionales de México', url: 'https://agris.fao.org/search/es/records/675abb150ce2cede71cf2d04' },
@@ -369,6 +380,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Árbol de las manitas (Chiranthodendron pentadactylon)',
       'Helecho arborescente (Cyathea fulva)',
     ],
+    cultivos: ['cafe', 'aguacate', 'maiz_tropical', 'poroto_trepador', 'vainilla', 'platano_sombra', 'inga', 'nogal_cafetero'],
     fuentes: [
       { label: 'CONABIO — Bosques nublados', url: 'https://biodiversidad.gob.mx/ecosistemas/bosqueNublado' },
       { label: 'FAO AGRIS — Los sistemas agroforestales tradicionales de México', url: 'https://agris.fao.org/search/es/records/675abb150ce2cede71cf2d04' },
@@ -398,6 +410,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Mezquite dulce (Prosopis laevigata)',
       'Gobernadora (Larrea tridentata)',
     ],
+    cultivos: ['maiz_tropical', 'amaranto', 'chia', 'chile_seco', 'nopal', 'agave', 'mezquite'],
     fuentes: [
       { label: 'CONABIO — Matorrales', url: 'https://www.biodiversidad.gob.mx/ecosistemas/matorral' },
       { label: 'FAO — Metepantle Ancestral Agricultural System in Tlaxcala', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en' },
@@ -426,6 +439,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Palma real puertorriqueña (Roystonea borinquena)',
       'María (Calophyllum antillanum)',
     ],
+    cultivos: ['cafe', 'cacao', 'platano', 'name', 'taro', 'arbol_pan', 'coco', 'vainilla', 'inga'],
     fuentes: [
       { label: 'US Forest Service — Guide to the ecological systems of Puerto Rico', url: 'https://research.fs.usda.gov/treesearch/35382' },
       { label: 'US Forest Service — Landscape units of Puerto Rico', url: 'https://research.fs.usda.gov/treesearch/38528' },
@@ -455,6 +469,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Pitahaya de Puerto Rico (Leptocereus quadricostatus)',
       'Uva de playa (Coccoloba uvifera)',
     ],
+    cultivos: ['coco', 'sisal', 'guandul', 'sorgo', 'chile_seco', 'batata', 'moringa', 'nopal'],
     fuentes: [
       { label: 'Puerto Rico DRNA — Bosque Seco de Guánica', url: 'https://www.drna.pr.gov/programas-y-proyectos/zona-costanera/el-bosque-seco-de-guanica-patrimonio-de-la-humanidad/' },
       { label: 'US Forest Service — Structural variability and species diversity of a dwarf Caribbean dry forest', url: 'https://research.fs.usda.gov/treesearch/41810' },
@@ -486,6 +501,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Madroño (Arbutus unedo)',
       'Pino carrasco (Pinus halepensis)',
     ],
+    cultivos: ['olivo', 'vid', 'trigo', 'almendro', 'higuera', 'algarrobo_es', 'encina', 'alcornoque', 'lavanda', 'garbanzo'],
     fuentes: [
       { label: 'FAO — Montado Agrosilvipastoral System of the Serpa Hills', url: 'https://www.fao.org/giahs/giahs-around-the-world/portugal-montado-serpa' },
       { label: 'FAO — State of Mediterranean Forests 2018', url: 'https://openknowledge.fao.org/3/CA2081EN/ca2081en.PDF' },
@@ -516,6 +532,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Espino albar (Crataegus monogyna)',
       'Brezo común (Calluna vulgaris)',
     ],
+    cultivos: ['raigras', 'trebol_blanco', 'avena', 'papa', 'manzano', 'arandano', 'colza', 'sauce_mimbre'],
     fuentes: [
       { label: 'EEA — Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'FAO — Trees outside forests: Streuobst, hedgerows and riparian buffers', url: 'https://www.fao.org/4/x3989e/x3989e08.htm' },
@@ -546,6 +563,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Tilo de hoja pequeña (Tilia cordata)',
       'Abeto blanco (Abies alba)',
     ],
+    cultivos: ['trigo', 'cebada', 'centeno', 'colza', 'remolacha_azucarera', 'papa', 'manzano', 'lupulo', 'trebol_blanco'],
     fuentes: [
       { label: 'EEA — Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'FAO — Trees outside forests: Streuobst, hedgerows and riparian buffers', url: 'https://www.fao.org/4/x3989e/x3989e08.htm' },
@@ -575,6 +593,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Roble común (Quercus robur)',
       'Arce tártaro (Acer tataricum)',
     ],
+    cultivos: ['trigo', 'girasol', 'maiz_tropical', 'cebada', 'colza', 'vid', 'damasco', 'alfalfa'],
     fuentes: [
       { label: 'FAO — Soil Map of the World, Volume V: Europe', url: 'https://www.fao.org/4/as354e/as354e.pdf' },
       { label: 'FAO — Grasslands of the World: Temperate Eurasia', url: 'https://www.fao.org/4/y8344e/y8344e0h.htm' },
@@ -604,6 +623,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Arándano rojo (Vaccinium vitis-idaea)',
       'Esfagno báltico (Sphagnum balticum)',
     ],
+    cultivos: ['cebada', 'avena', 'centeno', 'papa', 'arandano', 'alforfon', 'trebol_blanco'],
     fuentes: [
       { label: 'European Commission — Natura 2000 in the Boreal Region', url: 'https://www.termeszetvedelem.hu/_user/downloads/EUs%20kiadvanyok/Natura2000_boreal_region.pdf' },
       { label: 'EEA — Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
@@ -633,6 +653,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Rhododendron ferrugíneo (Rhododendron ferrugineum)',
       'Edelweiss (Leontopodium nivale)',
     ],
+    cultivos: ['papa', 'cebada', 'centeno', 'manzano', 'castano', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'European Commission — Natura 2000 in the Alpine Region', url: 'https://op.europa.eu/en/publication-detail/-/publication/9a738f76-c937-478d-b720-1562a53385e4/' },
       { label: 'FAO — Traditional Hay Milk Farming in the Austrian Alpine Arc', url: 'https://www.fao.org/giahs/giahs-around-the-world/austria-traditional-hay-milk-farming-system/en' },
@@ -662,6 +683,7 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Faya (Morella faya)',
       'Brezo arbóreo (Erica arborea)',
     ],
+    cultivos: ['platano', 'vid', 'papa', 'batata', 'higuera', 'naranjo', 'aguacate', 'castano'],
     fuentes: [
       { label: 'FAO — Agricultural Systems in Jable and Volcanic Sands in Lanzarote', url: 'https://www.fao.org/giahs/around-the-world/detail/spain-lanzarote-volcanic-systems/' },
       { label: 'Gobierno de Canarias — Directrices de ordenación del suelo agrario', url: 'https://www.gobiernodecanarias.org/agricultura/docs/desarrollo-rural/dosa_avance/01_Memoria_Avance_signed.pdf' },

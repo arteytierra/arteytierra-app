@@ -64,6 +64,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Babaçu',
       'Copaíba',
     ],
+    cultivos: ['yuca', 'acai', 'castana_brasil', 'pupunha', 'cacao', 'platano', 'caupi', 'inga'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -88,6 +89,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Caoba',
       'Aguaje',
     ],
+    cultivos: ['yuca', 'castana_brasil', 'pupunha', 'cacao', 'platano', 'maracuya', 'maiz_tropical', 'inga'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -137,6 +139,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Juan bueno',
       'Pangue insular',
     ],
+    cultivos: ['papa', 'avena', 'manzano', 'trebol_blanco'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -162,6 +165,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Soto',
       'Cuta',
     ],
+    cultivos: ['maiz_tropical', 'soja', 'sorgo', 'caupi', 'sesamo', 'cana_azucar', 'algarrobo_ar', 'vetiver'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -186,6 +190,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Castanha-do-pará',
       'Babaçu',
     ],
+    cultivos: ['soja', 'maiz_tropical', 'sorgo', 'algodon', 'caupi', 'cana_azucar', 'crotalaria', 'vetiver'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -211,6 +216,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Bacuri',
       'Burití',
     ],
+    cultivos: ['yuca', 'arroz', 'caupi', 'maiz_tropical', 'batata', 'coco', 'cana_azucar', 'vetiver'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -312,6 +318,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Palo santo',
       'Hualtaco',
     ],
+    cultivos: ['maiz_tropical', 'caupi', 'sesamo', 'chile_seco', 'algodon', 'gliricidia', 'nopal'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -338,6 +345,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Xique-xique',
       'Aroeira-do-sertão',
     ],
+    cultivos: ['umbu', 'sisal', 'caupi', 'mijo', 'sorgo', 'mani', 'batata', 'nopal', 'moringa'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -363,6 +371,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Ingá',
       'Helechos',
     ],
+    cultivos: ['cafe', 'platano', 'yuca', 'maiz_tropical', 'caupi', 'batata', 'naranjo', 'inga'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -516,6 +525,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Pterocarpus officinalis',
       'Heliconias',
     ],
+    cultivos: ['arroz', 'yuca', 'acai', 'platano', 'coco', 'caupi'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -541,6 +551,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Balatá',
       'Palmas Euterpe',
     ],
+    cultivos: ['yuca', 'acai', 'cacao', 'platano', 'arroz', 'caupi', 'pupunha', 'inga'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -566,6 +577,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Samán',
       'Gramíneas palustres',
     ],
+    cultivos: ['arroz', 'cacao', 'platano', 'coco', 'caupi', 'cana_azucar'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -814,6 +826,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Embaúba',
       'Bromelias',
     ],
+    cultivos: ['cacao', 'platano', 'yuca', 'cana_azucar', 'coco', 'maracuya', 'pupunha', 'inga'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -865,6 +878,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Guapira',
       'Cereus fernambucensis',
     ],
+    cultivos: ['coco', 'yuca', 'batata', 'name', 'maracuya', 'caupi'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -890,6 +904,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Ipê-roxo',
       'Cereus',
     ],
+    cultivos: ['cafe', 'maiz_tropical', 'soja', 'cana_azucar', 'naranjo', 'maracuya', 'crotalaria', 'vetiver'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -966,6 +981,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Aguapé',
       'Ipê-amarelo',
     ],
+    cultivos: ['arroz', 'maiz_tropical', 'caupi', 'batata', 'cana_azucar', 'pasto_elefante', 'algarrobo_ar'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1095,6 +1111,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Helechos nativos',
       'Aves marinas',
     ],
+    cultivos: ['batata', 'taro', 'name', 'platano', 'cana_azucar', 'coco'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1119,6 +1136,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Gramíneas de inundación',
       'Victoria boliviana',
     ],
+    cultivos: ['arroz', 'yuca', 'platano', 'maiz_tropical', 'caupi', 'cacao', 'pasto_elefante', 'vetiver'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1143,6 +1161,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Byrsonima',
       'Axonopus',
     ],
+    cultivos: ['yuca', 'maiz_tropical', 'caupi', 'sorgo', 'crotalaria', 'pasto_elefante', 'gliricidia'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1195,6 +1214,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Victoria amazónica',
       'Kapok de várzea',
     ],
+    cultivos: ['arroz', 'acai', 'yuca', 'platano', 'taro', 'caupi'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },

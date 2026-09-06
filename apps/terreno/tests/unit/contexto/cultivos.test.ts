@@ -14,7 +14,7 @@
  * cubierta la región, menos advertencia recibía el usuario.
  */
 import { describe, it, expect } from 'vitest';
-import { ESPECIES_POR_ID, resolverEspecies } from '@/lib/especies';
+import { ESPECIES, ESPECIES_POR_ID, resolverEspecies } from '@/lib/especies';
 import { BIOMAS, resolverBioma } from '@/lib/contexto';
 import { BIOMAS_REGIONALES } from '@/lib/biomasRegionales';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
@@ -108,5 +108,56 @@ describe('herencia de la aptitud del bioma', () => {
     // ECO_ID 0 es roca y hielo; el bioma que RESOLVE le deja no describe nada.
     const r = resolverBioma(k('ET'), -50.0, -73.0, 2000, E(0, 'Rock and Ice', 11));
     expect(r.ficha).not.toBeNull();
+  });
+});
+
+describe('cobertura del catálogo de cultivos', () => {
+  /**
+   * Las únicas fichas regionales sin cultivos, y por qué.
+   *
+   * Manglar, hielo, erg y roca desnuda no tienen respuesta honesta a "qué
+   * planto acá", y la isla que es reserva tampoco: en Revillagigedo, Malpelo,
+   * Desventuradas y Galápagos la respuesta correcta es no plantar. La arena
+   * blanca amazónica (campinarana) y el campo rupestre son suelos que no
+   * sostienen cultivo aunque llueva encima.
+   *
+   * Sin lista se cae al catálogo por clase Köppen, que avisa que es genérico.
+   * Eso es lo que corresponde acá; inventar una lista sería peor.
+   */
+  const SIN_CULTIVOS = new Set([
+    'alaska_tundra_hielo_beringia', 'alto_artico_desierto_polar',
+    'montana_artica_baffin_torngat', 'tundra_artica_canadiense',
+    'manglares_mexico', 'manglares_centroamericanos', 'manglares_antillanos',
+    'manglares_pacifico_suramericano', 'manglares_atlantico_sur_brasil',
+    'manglares_amazon_orinoco_caribe_sur', 'golfo_persico_mangle', 'mar_rojo_mangle',
+    'nefud_rub_al_khali', 'sahara_occidental_erg', 'sahara_oriental', 'chotts_sebkhas',
+    'revillagigedo_ecosistemas_insulares', 'isla_malpelo_xerica', 'islas_desventuradas',
+    'galapagos_matorral_xerico', 'pantepui_guayana_alta',
+    'campinaranas_aguas_negras', 'campos_rupestres',
+  ]);
+
+  it('toda ficha regional declara cultivos salvo las excluidas a propósito', () => {
+    for (const f of Object.values(BIOMAS_REGIONALES)) {
+      if (SIN_CULTIVOS.has(f.id)) continue;
+      expect(f.cultivos?.length, f.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('las excluidas siguen sin lista, y no por olvido', () => {
+    // Si una entra al catálogo de cultivos hay que sacarla de acá a mano: el
+    // test obliga a decidirlo, no deja que pase de largo.
+    for (const id of SIN_CULTIVOS) {
+      expect(BIOMAS_REGIONALES[id], id).toBeDefined();
+      expect(BIOMAS_REGIONALES[id]!.cultivos, id).toBeUndefined();
+    }
+  });
+
+  it('ninguna especie del catálogo declara el grupo polar entero', () => {
+    // 'E' o 'EF' sueltos harían que el bloque de un predio de hielo ofrezca
+    // cultivos. Sólo 'ET' explícito es seguro.
+    for (const e of ESPECIES) {
+      expect(e.koppen, e.id).not.toContain('E');
+      expect(e.koppen, e.id).not.toContain('EF');
+    }
   });
 });

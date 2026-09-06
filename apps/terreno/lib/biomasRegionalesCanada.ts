@@ -50,6 +50,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Abedul amarillo (Betula alleghaniensis)',
       'Alerce americano (Larix laricina)',
     ],
+    cultivos: ['maiz_tropical', 'soja', 'trigo', 'avena', 'arce_azucarero', 'manzano', 'arandano', 'trebol_blanco'],
     fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
   },
 
@@ -71,6 +72,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Cedro rojo occidental (Thuja plicata)',
       'Álamo temblón (Populus tremuloides)',
     ],
+    cultivos: ['trigo', 'cebada', 'colza', 'papa', 'manzano', 'alfalfa', 'raigras', 'espino_amarillo'],
     fuentes: [BEC_BC, CANSIS_ECO, RESOLVE],
   },
 
@@ -92,6 +94,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Artemisa (Artemisia tridentata)',
       'Álamo negro del oeste (Populus trichocarpa)',
     ],
+    cultivos: ['vid', 'manzano', 'cerezo', 'durazno', 'damasco', 'cebolla', 'lavanda', 'alfalfa'],
     fuentes: [BEC_BC, CANSIS_SUELOS, RESOLVE],
   },
 
@@ -113,6 +116,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Tsuga occidental (Tsuga heterophylla)',
       'Salal (Gaultheria shallon)',
     ],
+    cultivos: ['papa', 'avena', 'arandano', 'raigras', 'trebol_blanco', 'sauce_mimbre'],
     fuentes: [BEC_BC, CANSIS_ECO, RESOLVE],
   },
 
@@ -134,6 +138,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Álamo temblón (Populus tremuloides)',
       'Abedul papelero (Betula papyrifera)',
     ],
+    cultivos: ['papa', 'avena', 'cebada', 'arandano', 'alforfon', 'arroz_salvaje', 'trebol_blanco'],
     fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
   },
 
@@ -155,6 +160,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Té del Labrador (Rhododendron groenlandicum)',
       'Liquen de reno (Cladonia rangiferina)',
     ],
+    cultivos: ['papa', 'cebada', 'arandano'],
     fuentes: [CANSIS_ECO, CANSIS_SUELOS, CAFF],
   },
 
@@ -239,6 +245,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Angélica (Angelica archangelica)',
       'Dryas (Dryas octopetala)',
     ],
+    cultivos: ['papa', 'cebada', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'Pinngortitaleriffik — Instituto de Recursos Naturales de Groenlandia', url: 'https://natur.gl/' },
       CAFF,

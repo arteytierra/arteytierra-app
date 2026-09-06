@@ -34,6 +34,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Abedul de Alaska (Betula neoalaskana)',
       'Salmón rojo (Oncorhynchus nerka)',
     ],
+    cultivos: ['papa', 'cebada', 'avena', 'arandano', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'NOAA — Multiple Knowledge Systems and Subsistence', url: 'https://www.fisheries.noaa.gov/alaska/socioeconomics/multiple-knowledge-systems-and-subsistence' },
       { label: 'ADF&G — Local knowledge of Mulchatna caribou', url: 'https://www.adfg.alaska.gov/index.cfm?adfg=wildlifenews.view_article&articles_id=864' },
@@ -108,6 +109,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Coco (Cocos nucifera)',
       'Larouman (Ischnosiphon arouma)',
     ],
+    cultivos: ['coco', 'platano', 'name', 'taro', 'arbol_pan', 'cacao', 'cafe', 'batata'],
     fuentes: [
       { label: 'FAO — sistemas agroforestales tradicionales de Dominica', url: 'https://www.fao.org/4/x5656e/x5656e05.htm' },
       { label: 'FAO — recursos forestales y conocimiento Kalinago', url: 'https://www.fao.org/4/x6689e/X6689E13.htm' },
@@ -132,6 +134,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Tsuga (Tsuga canadensis)',
       'Rivercane (Arundinaria gigantea)',
     ],
+    cultivos: ['arce_azucarero', 'manzano', 'castano', 'maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'arandano', 'avena'],
     fuentes: [
       { label: 'NPS — Rivercane', url: 'https://home.nps.gov/articles/000/rivercane.htm' },
       { label: 'NPS — Native influence on Blue Ridge', url: 'https://www.nps.gov/blri/learn/historyculture/native-american-culture-and-influence.htm' },
@@ -157,6 +160,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Mangle negro (Avicennia germinans)',
       'Cocoplum (Chrysobalanus icaco)',
     ],
+    cultivos: ['coco', 'batata', 'name', 'guandul', 'chile_seco', 'maiz_tropical', 'sisal'],
     fuentes: [
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -230,6 +234,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Cacao (Theobroma cacao)',
       'Mangle rojo (Rhizophora mangle)',
     ],
+    cultivos: ['cacao', 'coco', 'yuca', 'platano', 'arroz', 'caupi', 'pupunha', 'inga'],
     fuentes: [
       { label: 'UNESCO — transmisión del conocimiento Mayangna', url: 'https://ich.unesco.org/en/project-education/reinforcing-the-transmission-of-mayangna-knowledge-and-culture-in-the-classroom-00493' },
       { label: 'UNESCO — programa LINKS en América Latina y el Caribe', url: 'https://www.unesco.org/es/links/lac' },
@@ -255,6 +260,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Guácimo (Guazuma ulmifolia)',
       'Jobo (Spondias mombin)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'sorgo', 'sesamo', 'cana_azucar', 'guandul', 'gliricidia', 'vetiver'],
     fuentes: [
       { label: 'FAO Panamá — sistemas alimentarios y semillas', url: 'https://www.fao.org/panama/noticias/detail-events/fr/c/1145785/' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -278,6 +284,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Roble azul (Quercus douglasii)',
       'Salmón Chinook (Oncorhynchus tshawytscha)',
     ],
+    cultivos: ['almendro', 'nogal', 'vid', 'olivo', 'naranjo', 'durazno', 'arroz', 'lavanda', 'alfalfa'],
     fuentes: [
       { label: 'USFS — Karuk and Yurok cultural burning', url: 'https://research.fs.usda.gov/treesearch/62061' },
       { label: 'NOAA — Original Salmon Stewards', url: 'https://www.fisheries.noaa.gov/west-coast/endangered-species-conservation/original-salmon-stewards' },
@@ -377,6 +384,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Maíz (Zea mays)',
       'Frijol común (Phaseolus vulgaris)',
     ],
+    cultivos: ['maiz_tropical', 'sorgo', 'caupi', 'guandul', 'sesamo', 'gliricidia', 'nopal', 'vetiver'],
     fuentes: [
       { label: 'FAO — sistema agroforestal Quesungual', url: 'https://www.fao.org/4/Y5030E/y5030e19.htm' },
       { label: 'FAO Guatemala — Kuxur Rum', url: 'https://www.fao.org/guatemala/detalle/historia-de-inter%C3%A9s-humano/detail/combatir-la-sequ%C3%ADa-con-t%C3%A9cnicas-ancestrales/es' },
@@ -402,6 +410,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Cacao (Theobroma cacao)',
       'Laurel (Cordia alliodora)',
     ],
+    cultivos: ['cafe', 'cacao', 'cana_azucar', 'yuca', 'vainilla', 'pupunha', 'platano_sombra', 'inga'],
     fuentes: [
       { label: 'SINAC — Área de Conservación Guanacaste', url: 'https://sinac.go.cr/ES/ac/acg/Paginas/default.aspx' },
       { label: 'SINAC — Área de Conservación Tortuguero', url: 'https://www.sinac.go.cr/ES/ac/acto/pnt/Paginas/default.aspx' },
@@ -427,6 +436,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Caguairán (Guibourtia hymenaeifolia)',
       'Ceiba (Ceiba pentandra)',
     ],
+    cultivos: ['cafe', 'cacao', 'platano', 'yuca', 'name', 'batata', 'coco', 'cana_azucar', 'inga'],
     fuentes: [
       { label: 'UNESCO — Valle de Viñales', url: 'https://whc.unesco.org/en/list/840/' },
       { label: 'UNESCO — Guanahacabibes', url: 'https://www.unesco.org/en/mab/peninsula-de-guanahacabibes' },
@@ -452,6 +462,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Yuca (Manihot esculenta)',
       'Plátano (Musa spp.)',
     ],
+    cultivos: ['cacao', 'platano', 'yuca', 'arroz', 'name', 'coco', 'pupunha', 'inga'],
     fuentes: [
       { label: 'FAO — agricultura nainu en Panamá', url: 'https://www.fao.org/fileadmin/templates/esw/esw_new/documents/SARD/good_practices_Latin_America/13_Nainu_agriculture_Panama1.pdf' },
       { label: 'FAO Panamá — sistemas alimentarios indígenas', url: 'https://www.fao.org/panama/noticias/detail-events/fr/c/1145785/' },
@@ -476,6 +487,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Mangle rojo (Rhizophora mangle)',
       'Pino slash del sur de Florida (Pinus elliottii var. densa)',
     ],
+    cultivos: ['coco', 'naranjo', 'aguacate', 'arbol_pan', 'batata', 'cana_azucar'],
     fuentes: [
       { label: 'NPS — Everglades ecosystems and people', url: 'https://www.nps.gov/articles/everglades.htm' },
       { label: 'NPS — Big Cypress foundation', url: 'https://www.nps.gov/bicy/learn/management/foundation-overview.htm' },
@@ -500,6 +512,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Enebro de Utah (Juniperus osteosperma)',
       'Indian ricegrass (Achnatherum hymenoides)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'trigo', 'cebada', 'papa', 'durazno', 'alfalfa'],
     fuentes: [
       { label: 'BLM — Pinyon and Juniper Woodlands', url: 'https://www.blm.gov/sites/default/files/docs/2024-08/Management%20and%20Conservation%20of%20Pinyon%20and%20Juniper%20Woodlands%20Comment%20Summary%20Report.pdf' },
       { label: 'NPS — Indigenous Knowledge, Southwest', url: 'https://home.nps.gov/subjects/tek/southwest.htm' },
@@ -524,6 +537,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Little bluestem (Schizachyrium scoparium)',
       'Indian grass (Sorghastrum nutans)',
     ],
+    cultivos: ['trigo', 'sorgo', 'mijo', 'girasol', 'cebada', 'maiz_tropical', 'alfalfa'],
     fuentes: [
       { label: 'USFWS — Bison management and Tribal connection', url: 'https://www.fws.gov/policy-library/701fw8' },
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
@@ -548,6 +562,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Pino loblolly (Pinus taeda)',
       'Rivercane (Arundinaria gigantea)',
     ],
+    cultivos: ['pecan', 'batata', 'mani', 'arroz', 'soja', 'algodon', 'caupi', 'arandano'],
     fuentes: [
       { label: 'NPS — Rivercane', url: 'https://home.nps.gov/articles/000/rivercane.htm' },
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
@@ -572,6 +587,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Hāpuʻu (Cibotium spp.)',
       'Wiliwili (Erythrina sandwicensis)',
     ],
+    cultivos: ['taro', 'arbol_pan', 'name', 'batata', 'cafe', 'cacao', 'platano', 'coco', 'cana_azucar'],
     fuentes: [
       { label: 'NOAA — Hawaiʻi Indigenous Knowledge', url: 'https://sanctuaries.noaa.gov/bwet/hawaii/indigenous-knowledge.html' },
       { label: 'NOAA — Moku climate resilience', url: 'https://www.coast.noaa.gov/states/stories/hawaii.html' },
@@ -596,6 +612,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Māmane (Sophora chrysophylla)',
       'Albatros de Laysan (Phoebastria immutabilis)',
     ],
+    cultivos: ['batata', 'coco', 'cafe', 'sisal', 'moringa'],
     fuentes: [
       { label: 'NOAA — Hawaiʻi Indigenous Knowledge', url: 'https://sanctuaries.noaa.gov/bwet/hawaii/indigenous-knowledge.html' },
       { label: 'NOAA — Moku climate resilience', url: 'https://www.coast.noaa.gov/states/stories/hawaii.html' },
@@ -621,6 +638,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Guama (Inga vera)',
       'Yuca (Manihot esculenta)',
     ],
+    cultivos: ['cacao', 'cafe', 'platano', 'yuca', 'name', 'arbol_pan', 'coco', 'vainilla', 'inga'],
     fuentes: [
       { label: 'FAO — manejo comunitario de cuencas en Haití', url: 'https://www.fao.org/4/v3960e/v3960e09.htm' },
       { label: 'CEPF — perfil del ecosistema de las islas del Caribe', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
@@ -646,6 +664,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Cactáceas columnares',
       'Mangle botón (Conocarpus erectus)',
     ],
+    cultivos: ['guandul', 'sorgo', 'batata', 'chile_seco', 'coco', 'sisal', 'moringa', 'nopal'],
     fuentes: [
       { label: 'FAO — conservación campesina de suelo en Haití', url: 'https://www.fao.org/4/v3960e/v3960e09.htm' },
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
@@ -670,6 +689,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Bluebunch wheatgrass (Pseudoroegneria spicata)',
       'Sagebrush (Artemisia tridentata)',
     ],
+    cultivos: ['trigo', 'cebada', 'lenteja', 'garbanzo', 'colza', 'lupulo', 'avellano', 'arandano', 'raigras'],
     fuentes: [
       { label: 'NPS — Camas', url: 'https://home.nps.gov/articles/000/camas.htm' },
       { label: 'NPS — Indigenous burning at Fort Vancouver', url: 'https://www.nps.gov/articles/fovaclrindiancountry.htm' },
@@ -695,6 +715,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Orquídeas',
       'Helechos arborescentes',
     ],
+    cultivos: ['cafe', 'cacao', 'name', 'platano', 'arbol_pan', 'coco', 'vainilla', 'inga'],
     fuentes: [
       { label: 'UNESCO — Cockpit Country Protected Area', url: 'https://whc.unesco.org/en/tentativelists/6822/' },
       { label: 'Forestry Department Jamaica — State of Jamaica’s Forests 2024', url: 'https://www.forestry.gov.jm/resourcedocs/State_of_Jamaica_s_Forests_Report_2024-1.pdf' },
@@ -720,6 +741,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Acacias nativas',
       'Plumeria spp.',
     ],
+    cultivos: ['guandul', 'batata', 'sorgo', 'chile_seco', 'coco', 'sisal', 'moringa'],
     fuentes: [
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
       { label: 'Forestry Department Jamaica — State of Jamaica’s Forests 2024', url: 'https://www.forestry.gov.jm/resourcedocs/State_of_Jamaica_s_Forests_Report_2024-1.pdf' },
@@ -815,6 +837,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Uva de playa (Coccoloba uvifera)',
       'Acacias nativas',
     ],
+    cultivos: ['sisal', 'guandul', 'sorgo', 'batata', 'chile_seco', 'coco', 'moringa', 'nopal'],
     fuentes: [
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -864,6 +887,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Tsuga (Tsuga canadensis)',
       'Manoomin (Zizania palustris)',
     ],
+    cultivos: ['arce_azucarero', 'manzano', 'arandano', 'arroz_salvaje', 'avena', 'papa', 'maiz_tropical', 'soja', 'trebol_blanco'],
     fuentes: [
       { label: 'NPS — Indigenous Knowledge, Central', url: 'https://www.nps.gov/subjects/tek/central.htm' },
       { label: 'USDA NAL — Three Sisters', url: 'https://www.nal.usda.gov/collections/stories/three-sisters' },
@@ -913,6 +937,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Big bluestem (Andropogon gerardii)',
       'Cedro rojo (Juniperus virginiana)',
     ],
+    cultivos: ['pecan', 'maiz_tropical', 'soja', 'trigo', 'durazno', 'batata', 'arandano', 'alfalfa'],
     fuentes: [
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
       { label: 'NRCS — Ecological Site Descriptions', url: 'https://www.nrcs.usda.gov/getting-assistance/technical-assistance/ecological-sciences/ecological-site-descriptions' },
@@ -937,6 +962,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Huckleberry (Vaccinium membranaceum)',
       'Salmón Chinook (Oncorhynchus tshawytscha)',
     ],
+    cultivos: ['avellano', 'arandano', 'manzano', 'cerezo', 'papa', 'lupulo', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'USFS — Warm Springs fire knowledge', url: 'https://research.fs.usda.gov/treesearch/59061' },
       { label: 'NOAA — Puget Sound Tribal co-management', url: 'https://www.fisheries.noaa.gov/west-coast/sustainable-fisheries/puget-sound-salmon-and-steelhead-fisheries' },
@@ -1007,6 +1033,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Álamo temblón (Populus tremuloides)',
       'Festuca de Idaho (Festuca idahoensis)',
     ],
+    cultivos: ['cebada', 'trigo', 'avena', 'papa', 'colza', 'alfalfa', 'trebol_blanco'],
     fuentes: [
       { label: 'USDA-NRCS — Indigenous Stewardship Methods', url: 'https://www.nrcs.usda.gov/sites/default/files/2024-10/IndigenousStewardship.pdf' },
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
@@ -1031,6 +1058,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Pino piñonero (Pinus edulis)',
       'Blue grama (Bouteloua gracilis)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'manzano', 'durazno', 'pecan', 'alfalfa'],
     fuentes: [
       { label: 'NPS — Ancestral Pueblo Farming', url: 'https://home.nps.gov/band/learn/historyculture/ancestral-pueblo-farming.htm' },
       { label: 'NPS — Indigenous Knowledge, Southwest', url: 'https://home.nps.gov/subjects/tek/southwest.htm' },
@@ -1056,6 +1084,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Ciperáceas (Cyperaceae)',
       'Encinos tropicales (Quercus spp.)',
     ],
+    cultivos: ['maiz_tropical', 'yuca', 'arroz', 'caupi', 'coco', 'guandul', 'pasto_elefante', 'gliricidia'],
     fuentes: [
       { label: 'UNESCO — conocimiento Mayangna y biodiversidad', url: 'https://ich.unesco.org/en/project-education/reinforcing-the-transmission-of-mayangna-knowledge-and-culture-in-the-classroom-00493' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -1179,6 +1208,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Saw palmetto (Serenoa repens)',
       'Rivercane (Arundinaria spp.)',
     ],
+    cultivos: ['pecan', 'batata', 'mani', 'caupi', 'maiz_tropical', 'sorgo', 'durazno', 'arandano'],
     fuentes: [
       { label: 'NRCS — Cultural Burning factsheet index', url: 'https://www.nrcs.usda.gov/resources/guides-and-instructions/prescribed-burning-ac-338-conservation-practice-standard' },
       { label: 'NPS — Rivercane', url: 'https://home.nps.gov/articles/000/rivercane.htm' },
@@ -1204,6 +1234,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Robles de altura (Quercus spp.)',
       'Pejibaye (Bactris gasipaes)',
     ],
+    cultivos: ['cacao', 'cafe', 'yuca', 'vainilla', 'pupunha', 'platano_sombra', 'inga', 'nogal_cafetero'],
     fuentes: [
       { label: 'CATIE — cacaotales Bribri y Cabécar', url: 'https://repositorio.catie.ac.cr/handle/11554/6038' },
       { label: 'CATIE — plantas útiles en fincas Bribri y Cabécar', url: 'https://repositorio.catie.ac.cr/handle/11554/6675' },
@@ -1278,6 +1309,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Cacao (Theobroma cacao)',
       'Mangle rojo (Rhizophora mangle)',
     ],
+    cultivos: ['cacao', 'cafe', 'coco', 'name', 'platano', 'arroz', 'caupi', 'inga'],
     fuentes: [
       { label: 'UNESCO — North-East Tobago Biosphere Reserve', url: 'https://www.unesco.org/en/mab/north-east-tobago' },
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },

@@ -52,6 +52,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Acebuche (Olea europaea var. sylvestris)',
       'Lentisco (Pistacia lentiscus)',
     ],
+    cultivos: ['olivo', 'vid', 'trigo', 'higuera', 'almendro', 'alcornoque', 'encina', 'algarrobo_es', 'garbanzo'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -73,6 +74,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Azufaifo (Ziziphus lotus)',
       'Pistacho del Atlas (Pistacia atlantica)',
     ],
+    cultivos: ['cebada', 'trigo', 'lenteja', 'garbanzo', 'olivo', 'pistacho', 'alfalfa'],
     fuentes: [ICARDA, ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -94,6 +96,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Pino salgareño (Pinus nigra subsp. mauretanica)',
       'Enebro turífero (Juniperus thurifera)',
     ],
+    cultivos: ['nogal', 'manzano', 'damasco', 'trigo', 'cebada', 'papa', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, SOILGRIDS, HWSD, RESOLVE],
   },
 
@@ -115,6 +118,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Alyssum spinosum',
       'Festuca de altura (Festuca mairei)',
     ],
+    cultivos: ['cebada', 'nogal', 'manzano', 'damasco', 'papa', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, SOILGRIDS, RESOLVE],
   },
 
@@ -136,6 +140,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Tamarisco (Tamarix nilotica)',
       'Sicomoro (Ficus sycomorus)',
     ],
+    cultivos: ['arroz', 'algodon', 'trigo', 'cebolla', 'naranjo', 'datilera', 'sesamo', 'berseem'],
     fuentes: [ATLAS_AFRICA, HWSD, WRB, RESOLVE],
   },
 
@@ -178,6 +183,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Granado (Punica granatum)',
       'Anabasis articulata',
     ],
+    cultivos: ['datilera', 'cebada', 'granado', 'higuera', 'olivo', 'cebolla', 'alfalfa'],
     fuentes: [GIAHS, ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -241,6 +247,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Cornulaca monacantha',
       'Balanites (Balanites aegyptiaca)',
     ],
+    cultivos: ['mijo', 'sorgo', 'caupi', 'sesamo', 'datilera', 'acacia_goma', 'moringa'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -262,6 +269,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Zygophyllum gaetulum',
       'Launaea arborescens',
     ],
+    cultivos: ['datilera', 'cebolla', 'moringa', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -283,6 +291,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Acacia (Vachellia laeta)',
       'Rhus tripartita',
     ],
+    cultivos: ['trigo', 'cebada', 'datilera', 'higuera', 'granado', 'cebolla', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -304,6 +313,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Panicum turgidum',
       'Cymbopogon schoenanthus',
     ],
+    cultivos: ['datilera', 'mijo', 'cebada', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 
@@ -325,6 +335,7 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Moringa peregrina',
       'Dracaena ombet',
     ],
+    cultivos: ['datilera', 'sesamo', 'cebolla', 'moringa', 'alfalfa'],
     fuentes: [ATLAS_AFRICA, HWSD, RESOLVE],
   },
 };

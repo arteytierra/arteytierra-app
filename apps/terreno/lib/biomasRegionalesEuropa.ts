@@ -34,6 +34,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Aliso negro (Alnus glutinosa)',
       'Brezo comun (Calluna vulgaris)',
     ],
+    cultivos: ['trigo', 'remolacha_azucarera', 'papa', 'colza', 'lino', 'manzano', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'EEA - Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'EEA - EUNIS habitat classification', url: 'https://www.eea.europa.eu/en/datahub/datahubitem-view/638330ea-90e6-4e41-81ea-e70f25ae7117' },
@@ -59,6 +60,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Arce sicomoro (Acer pseudoplatanus)',
       'Serbal de cazadores (Sorbus aucuparia)',
     ],
+    cultivos: ['trigo', 'colza', 'remolacha_azucarera', 'manzano', 'nogal', 'castano', 'lupulo', 'raigras'],
     fuentes: [
       { label: 'EEA - Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'EEA - EUNIS habitat classification', url: 'https://www.eea.europa.eu/en/datahub/datahubitem-view/638330ea-90e6-4e41-81ea-e70f25ae7117' },
@@ -84,6 +86,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Abedul (Betula alba)',
       'Tojo (Ulex europaeus)',
     ],
+    cultivos: ['maiz_tropical', 'papa', 'manzano', 'castano', 'nogal', 'arandano', 'raigras', 'trebol_blanco'],
     fuentes: [
       { label: 'EEA - Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
       { label: 'JRC ESDAC - European Soil Data Centre', url: 'https://esdac.jrc.ec.europa.eu/' },
@@ -109,6 +112,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Espino albar (Crataegus monogyna)',
       'Viburno lantana (Viburnum lantana)',
     ],
+    cultivos: ['trigo', 'cebada', 'colza', 'lino', 'cerezo', 'lavanda', 'veza', 'raigras'],
     fuentes: [
       { label: 'JNCC - UK BAP priority habitats', url: 'https://jncc.gov.uk/our-work/uk-bap-priority-habitats/' },
       { label: 'Natural England - National Character Area profiles', url: 'https://www.gov.uk/government/publications/national-character-area-profiles-data-for-local-decision-making' },
@@ -134,6 +138,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Molinia (Molinia caerulea)',
       'Esfagno (Sphagnum spp.)',
     ],
+    cultivos: ['papa', 'avena', 'cebada', 'raigras', 'trebol_blanco', 'espino_amarillo'],
     fuentes: [
       { label: 'JNCC - UK BAP priority habitats', url: 'https://jncc.gov.uk/our-work/uk-bap-priority-habitats/' },
       { label: 'IUCN UK Peatland Programme', url: 'https://www.iucn-uk-peatlandprogramme.org/' },
@@ -159,6 +164,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Serbal de cazadores (Sorbus aucuparia)',
       'Arandano (Vaccinium myrtillus)',
     ],
+    cultivos: ['avena', 'cebada', 'papa', 'arandano', 'raigras', 'espino_amarillo'],
     fuentes: [
       { label: 'JNCC - Habitats Directive H91C0 Caledonian forest', url: 'https://sac.jncc.gov.uk/habitat/H91C0/' },
       { label: 'JNCC - UK BAP priority habitats', url: 'https://jncc.gov.uk/our-work/uk-bap-priority-habitats/' },
@@ -184,6 +190,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Sabina albar (Juniperus thurifera)',
       'Piorno serrano (Cytisus oromediterraneus)',
     ],
+    cultivos: ['centeno', 'cebada', 'papa', 'castano', 'nogal', 'manzano', 'lavanda', 'trebol_blanco'],
     fuentes: [
       { label: 'MITECO - Mapa Forestal de Espana', url: 'https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/mfe50.html' },
       { label: 'EEA - Biogeographical regions in Europe', url: 'https://www.eea.europa.eu/en/analysis/maps-and-charts/biogeographical-regions-in-europe-2' },
@@ -209,6 +216,7 @@ export const BIOMAS_REGIONALES_EUROPA: Record<string, BiomaFicha> = {
       'Tomillo (Thymus spp.)',
       'Cornical (Periploca angustifolia)',
     ],
+    cultivos: ['almendro', 'olivo', 'higuera', 'granado', 'vid', 'datilera', 'garbanzo', 'lenteja'],
     fuentes: [
       { label: 'UNCCD - Desertification overview', url: 'https://www.unccd.int/land-and-life/desertification/overview' },
       { label: 'MITECO - Lucha contra la desertificacion', url: 'https://www.miteco.gob.es/es/biodiversidad/temas/desertificacion-restauracion/lucha-contra-la-desertificacion.html' },

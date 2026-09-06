@@ -51,6 +51,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Carpe blanco (Carpinus betulus)',
       'Sauce blanco (Salix alba)',
     ],
+    cultivos: ['arroz', 'maiz_tropical', 'soja', 'remolacha_azucarera', 'vid', 'durazno', 'manzano', 'alfalfa'],
     fuentes: [ATLAS_SUELOS, ESDAC, RESOLVE],
   },
 
@@ -72,6 +73,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino laricio de Calabria (Pinus nigra subsp. laricio)',
       'Abeto blanco (Abies alba)',
     ],
+    cultivos: ['castano', 'trigo', 'olivo', 'vid', 'papa', 'lenteja', 'nogal', 'raigras'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -93,6 +95,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Algarrobo (Ceratonia siliqua)',
       'Pino carrasco (Pinus halepensis)',
     ],
+    cultivos: ['olivo', 'vid', 'naranjo', 'almendro', 'higuera', 'trigo', 'alcornoque', 'algarrobo_es'],
     fuentes: [ATLAS_SUELOS, ESDAC, RESOLVE],
   },
 
@@ -114,6 +117,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino negro dinárico (Pinus nigra subsp. dalmatica)',
       'Enebro común (Juniperus communis)',
     ],
+    cultivos: ['papa', 'centeno', 'castano', 'vid', 'olivo', 'lavanda', 'raigras', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -135,6 +139,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Tilo de hoja pequeña (Tilia cordata)',
       'Cerezo silvestre (Prunus avium)',
     ],
+    cultivos: ['maiz_tropical', 'trigo', 'vid', 'castano', 'manzano', 'nogal', 'durazno', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -156,6 +161,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Carpe blanco (Carpinus betulus)',
       'Endrino (Prunus spinosa)',
     ],
+    cultivos: ['trigo', 'maiz_tropical', 'girasol', 'vid', 'durazno', 'castano', 'nogal', 'alfalfa'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -177,6 +183,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Haya oriental (Fagus sylvatica subsp. orientalis)',
       'Pino silvestre (Pinus sylvestris)',
     ],
+    cultivos: ['papa', 'centeno', 'cebada', 'castano', 'nogal', 'manzano', 'lavanda', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -198,6 +205,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Aliso negro (Alnus glutinosa)',
       'Carpe blanco (Carpinus betulus)',
     ],
+    cultivos: ['centeno', 'papa', 'colza', 'cebada', 'avena', 'alforfon', 'manzano', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, ESDAC, RESOLVE],
   },
 
@@ -219,6 +227,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Tilo de hoja pequeña (Tilia cordata)',
       'Aliso negro (Alnus glutinosa)',
     ],
+    cultivos: ['centeno', 'avena', 'papa', 'cebada', 'lino', 'alforfon', 'arandano', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, ESDAC, RESOLVE],
   },
 
@@ -240,6 +249,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Arce sicómoro (Acer pseudoplatanus)',
       'Pino enano (Pinus mugo)',
     ],
+    cultivos: ['papa', 'centeno', 'avena', 'cebada', 'manzano', 'nogal', 'raigras', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -261,6 +271,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Arce tártaro (Acer tataricum)',
       'Almendro enano (Prunus tenella)',
     ],
+    cultivos: ['trigo', 'girasol', 'maiz_tropical', 'cebada', 'colza', 'soja', 'damasco', 'alfalfa'],
     fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
   },
 
@@ -282,6 +293,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Fresno común (Fraxinus excelsior)',
       'Olmo campestre (Ulmus minor)',
     ],
+    cultivos: ['trigo', 'girasol', 'maiz_tropical', 'remolacha_azucarera', 'soja', 'cebada', 'manzano', 'alfalfa'],
     fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
   },
 
@@ -303,6 +315,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pistacho mútico (Pistacia mutica)',
       'Coscoja (Quercus coccifera)',
     ],
+    cultivos: ['vid', 'durazno', 'damasco', 'almendro', 'nogal', 'trigo', 'olivo', 'lavanda'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -324,6 +337,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Castaño (Castanea sativa)',
       'Abeto del Cáucaso (Abies nordmanniana)',
     ],
+    cultivos: ['avellano', 'naranjo', 'castano', 'nogal', 'arandano', 'maiz_tropical', 'vid', 'raigras'],
     fuentes: [SOILGRIDS, WRB, RESOLVE],
   },
 
@@ -345,6 +359,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Rododendro caucásico (Rhododendron caucasicum)',
       'Vid silvestre (Vitis vinifera subsp. sylvestris)',
     ],
+    cultivos: ['nogal', 'castano', 'vid', 'manzano', 'durazno', 'trigo', 'cebada', 'papa'],
     fuentes: [SOILGRIDS, WRB, RESOLVE],
   },
 
@@ -366,6 +381,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Tamarisco (Tamarix ramosissima)',
       'Álamo del Éufrates (Populus euphratica)',
     ],
+    cultivos: ['algodon', 'trigo', 'cebada', 'granado', 'vid', 'damasco', 'pistacho', 'alfalfa'],
     fuentes: [SOILGRIDS, WRB, RESOLVE],
   },
 
@@ -387,6 +403,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Aliso gris (Alnus incana)',
       'Serbal de cazadores (Sorbus aucuparia)',
     ],
+    cultivos: ['cebada', 'avena', 'centeno', 'papa', 'arandano', 'raigras', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -408,6 +425,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Camarina negra (Empetrum nigrum)',
       'Liquen de reno (Cladonia rangiferina)',
     ],
+    cultivos: ['papa', 'cebada', 'arandano', 'raigras', 'trebol_blanco'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -429,6 +447,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Camarina negra (Empetrum nigrum)',
       'Cárice de arena (Leymus arenarius)',
     ],
+    cultivos: ['papa', 'cebada', 'avena', 'raigras', 'trebol_blanco'],
     fuentes: [LANDGRAEDSLAN, WRB, RESOLVE],
   },
 
@@ -450,6 +469,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Algarrobo (Ceratonia siliqua)',
       'Madroño griego (Arbutus andrachne)',
     ],
+    cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'trigo', 'garbanzo', 'sesamo', 'algarrobo_es'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -471,6 +491,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Algarrobo (Ceratonia siliqua)',
       'Aulaga cretense (Sarcopoterium spinosum)',
     ],
+    cultivos: ['olivo', 'vid', 'naranjo', 'algarrobo_es', 'higuera', 'almendro', 'garbanzo', 'lenteja'],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -492,6 +513,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Enebro fenicio (Juniperus phoenicea)',
       'Algarrobo (Ceratonia siliqua)',
     ],
+    cultivos: ['olivo', 'vid', 'algarrobo_es', 'almendro', 'naranjo', 'higuera', 'papa', 'garbanzo'],
     fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
   },
 
@@ -513,6 +535,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Laurel (Laurus nobilis)',
       'Pistacho terebinto (Pistacia terebinthus)',
     ],
+    cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'pistacho', 'trigo', 'garbanzo', 'algarrobo_es'],
     fuentes: [TARIM, SOILGRIDS, RESOLVE],
   },
 
@@ -534,6 +557,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Enebro poligamo (Juniperus excelsa)',
       'Quejigo de Anatolia (Quercus infectoria)',
     ],
+    cultivos: ['manzano', 'nogal', 'damasco', 'cebada', 'trigo', 'lenteja', 'pistacho', 'papa'],
     fuentes: [TARIM, SOILGRIDS, RESOLVE],
   },
 
@@ -555,6 +579,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Castaño (Castanea sativa)',
       'Picea oriental (Picea orientalis)',
     ],
+    cultivos: ['avellano', 'maiz_tropical', 'castano', 'nogal', 'cerezo', 'arandano', 'papa', 'raigras'],
     fuentes: [TARIM, SOILGRIDS, RESOLVE],
   },
 
@@ -576,6 +601,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Ajenjo (Artemisia fragrans)',
       'Plumero (Stipa lessingiana)',
     ],
+    cultivos: ['trigo', 'cebada', 'lenteja', 'garbanzo', 'girasol', 'damasco', 'azafran', 'alfalfa'],
     fuentes: [TARIM, WRB, RESOLVE],
   },
 
@@ -597,6 +623,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Álamo blanco (Populus alba)',
       'Espino cerval (Rhamnus pallasii)',
     ],
+    cultivos: ['trigo', 'cebada', 'papa', 'lenteja', 'nogal', 'damasco', 'alfalfa', 'trebol_blanco'],
     fuentes: [TARIM, SOILGRIDS, RESOLVE],
   },
 
@@ -618,6 +645,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Almendro silvestre (Amygdalus orientalis)',
       'Plátano oriental (Platanus orientalis)',
     ],
+    cultivos: ['trigo', 'cebada', 'garbanzo', 'lenteja', 'nogal', 'vid', 'pistacho', 'damasco'],
     fuentes: [TARIM, SOILGRIDS, RESOLVE],
   },
 };
