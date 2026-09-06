@@ -151,6 +151,48 @@ export const ESPECIES: Especie[] = [
     tmin_letal_c: 6, agua_mm: 450, kc: 0.90, koppen: ['A', 'Aw', 'Cfa', 'Cwa'],
     nota: 'Leguminosa de verano para incorporar antes de floración.',
   },
+  {
+    id: 'cana_azucar', nombre: 'Caña de azúcar', cientifico: 'Saccharum officinarum',
+    rol: 'principal', perenne: true, tbase_c: 12, gdd_ciclo: 4000,
+    tmin_letal_c: 5, agua_mm: 1600, kc: 1.10, koppen: ['Af', 'Am', 'Aw', 'Cfa', 'Cwa'],
+    nota: 'Rebrota de soca varios años; el problema no es plantarla sino que la cosecha quemada deja el suelo desnudo.',
+  },
+  {
+    id: 'arroz', nombre: 'Arroz', cientifico: 'Oryza sativa',
+    rol: 'principal', perenne: false, tbase_c: 12, gdd_ciclo: 2200,
+    tmin_letal_c: 8, agua_mm: 1200, kc: 1.15, koppen: ['Af', 'Am', 'Aw', 'Cfa', 'Cwa'],
+    nota: 'De secano en tierra alta o inundado: el consumo de agua lo decide el sistema, no la planta.',
+  },
+  {
+    id: 'maracuya', nombre: 'Maracuyá', cientifico: 'Passiflora edulis',
+    rol: 'principal', perenne: true, tbase_c: 13, gdd_ciclo: 2400,
+    tmin_letal_c: 3, agua_mm: 1200, kc: 0.95, koppen: ['Af', 'Am', 'Aw', 'Cfa', 'Cwa'],
+    nota: 'Trepadora de vida corta: da tres o cuatro años y se replanta; sin espaldera no hay cosecha.',
+  },
+  {
+    id: 'vainilla', nombre: 'Vainilla', cientifico: 'Vanilla planifolia',
+    rol: 'asociado', perenne: true, tbase_c: 15, gdd_ciclo: 3200,
+    tmin_letal_c: 10, agua_mm: 2000, kc: 0.90, koppen: ['Af', 'Am'],
+    nota: 'Trepa un tutor vivo y se poliniza a mano: es cultivo de sotobosque, no de parcela abierta.',
+  },
+  {
+    id: 'nogal_cafetero', nombre: 'Nogal cafetero / laurel', cientifico: 'Cordia alliodora',
+    rol: 'sombra', perenne: true, tbase_c: 15, gdd_ciclo: 0,
+    tmin_letal_c: 8, agua_mm: 1500, kc: 0.85, koppen: ['Af', 'Am', 'Aw', 'Cfa', 'Cwa', 'Cwb'],
+    nota: 'Sombra del cafetal que además se cosecha como madera; se regenera sola de semilla.',
+  },
+  {
+    id: 'pasto_elefante', nombre: 'Pasto elefante', cientifico: 'Cenchrus purpureus',
+    rol: 'cobertura', perenne: true, tbase_c: 15, gdd_ciclo: 0,
+    tmin_letal_c: 5, agua_mm: 1200, kc: 1.00, koppen: ['Af', 'Am', 'Aw', 'Cfa', 'Cwa'],
+    nota: 'Corte y acarreo: mucha biomasa por hectárea para forraje o mulch, a cambio de exigir fertilidad.',
+  },
+  {
+    id: 'crotalaria', nombre: 'Crotalaria', cientifico: 'Crotalaria juncea',
+    rol: 'abono_verde', perenne: false, tbase_c: 12, gdd_ciclo: 1500,
+    tmin_letal_c: 6, agua_mm: 500, kc: 0.90, koppen: ['A', 'Cfa', 'Cwa', 'BSh'],
+    nota: 'Abono verde de verano que además baja la población de nematodos del suelo.',
+  },
 
   // ── Trópico y subtrópico con estación seca (Aw, Cw, BSh) ──────────────────
   {
@@ -182,6 +224,116 @@ export const ESPECIES: Especie[] = [
     rol: 'cerco', perenne: true, tbase_c: 15, gdd_ciclo: 0,
     tmin_letal_c: 6, agua_mm: 900, kc: 0.80, koppen: ['A', 'BSh', 'Cwa'],
     nota: 'Se planta de estaca, rebrota a la poda y el corte va al suelo como abono.',
+  },
+  {
+    id: 'aguacate', nombre: 'Palta / aguacate', cientifico: 'Persea americana',
+    rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 2600,
+    tmin_letal_c: -2, agua_mm: 1200, kc: 0.85, koppen: ['Cwb', 'Cwa', 'Cfa', 'Csa', 'Csb', 'Am', 'Aw'],
+    nota: 'Raíz superficial que se ahoga: el drenaje decide más que la lluvia.',
+  },
+  {
+    id: 'amaranto', nombre: 'Amaranto / kiwicha', cientifico: 'Amaranthus cruentus',
+    rol: 'asociado', perenne: false, tbase_c: 10, gdd_ciclo: 1500,
+    tmin_letal_c: 3, agua_mm: 400, kc: 0.85, koppen: ['Cwb', 'Cwa', 'BSh', 'BSk', 'Aw'],
+    nota: 'Grano de la milpa de altura: cierra ciclo con poca agua y la hoja se come tierna.',
+  },
+  {
+    id: 'chia', nombre: 'Chía', cientifico: 'Salvia hispanica',
+    rol: 'asociado', perenne: false, tbase_c: 10, gdd_ciclo: 1400,
+    tmin_letal_c: 4, agua_mm: 450, kc: 0.80, koppen: ['Aw', 'Cwa', 'Cwb', 'BSh'],
+    nota: 'Florece por día corto: sembrada fuera de fecha crece mucho y no grana.',
+  },
+  {
+    id: 'chile_seco', nombre: 'Chile / ají de secado', cientifico: 'Capsicum annuum',
+    rol: 'principal', perenne: false, tbase_c: 12, gdd_ciclo: 1700,
+    tmin_letal_c: 5, agua_mm: 600, kc: 1.00, koppen: ['Aw', 'Cwa', 'Cwb', 'BSh', 'BSk', 'Csa'],
+    nota: 'Se seca al sol después de cosechar: pide el final del ciclo sin lluvia.',
+  },
+  {
+    id: 'guandul', nombre: 'Guandul / gandul', cientifico: 'Cajanus cajan',
+    rol: 'abono_verde', perenne: true, tbase_c: 12, gdd_ciclo: 2200,
+    tmin_letal_c: 2, agua_mm: 600, kc: 0.85, koppen: ['Aw', 'Am', 'BSh', 'Cwa', 'Cfa'],
+    nota: 'Arbusto leguminoso que da grano y sombra baja; la raíz rompe el piso duro.',
+  },
+  {
+    id: 'mezquite', nombre: 'Mezquite', cientifico: 'Prosopis laevigata',
+    rol: 'sombra', perenne: true, tbase_c: 12, gdd_ciclo: 0,
+    tmin_letal_c: -10, agua_mm: 350, kc: 0.45, koppen: ['BSh', 'BSk', 'BWh', 'Cwb'],
+    nota: 'El algarrobo del altiplano: sombra, vaina de forraje y nitrógeno donde no llueve.',
+  },
+  {
+    id: 'mistol', nombre: 'Mistol', cientifico: 'Ziziphus mistol',
+    rol: 'asociado', perenne: true, tbase_c: 13, gdd_ciclo: 0,
+    tmin_letal_c: -6, agua_mm: 400, kc: 0.45, koppen: ['BSh', 'BWh', 'Aw', 'Cfa'],
+    nota: 'Fruta de secano del monte chaqueño; se aprovecha en arrope y en harina.',
+  },
+  {
+    id: 'chanar', nombre: 'Chañar', cientifico: 'Geoffroea decorticans',
+    rol: 'cerco', perenne: true, tbase_c: 12, gdd_ciclo: 0,
+    tmin_letal_c: -10, agua_mm: 300, kc: 0.45, koppen: ['BSh', 'BSk', 'BWh', 'BWk', 'Cfa'],
+    nota: 'Rebrota de raíz y arma cortina espinosa; el fruto llega en pleno verano seco.',
+  },
+  {
+    id: 'vetiver', nombre: 'Vetiver', cientifico: 'Chrysopogon zizanioides',
+    rol: 'cobertura', perenne: true, tbase_c: 12, gdd_ciclo: 0,
+    tmin_letal_c: 0, agua_mm: 800, kc: 0.80, koppen: ['A', 'Cfa', 'Cwa', 'Cwb', 'BSh', 'Csa'],
+    nota: 'Barrera viva en curva de nivel: raíz vertical de metros que no compite de costado.',
+  },
+
+  // ── Andes tropicales de altura (Cwb, Cfb de montaña, ET) ──────────────────
+  //
+  // El piso andino entre 1800 y 4000 m no es "templado" ni "tropical": tiene
+  // día parejo todo el año y la estación la marca la lluvia, no la temperatura.
+  // Los cultivos de acá responden al fotoperíodo corto y a la helada de
+  // madrugada, dos cosas que no le pasan a un cultivo templado de la misma
+  // media anual.
+  {
+    id: 'lulo', nombre: 'Lulo / naranjilla', cientifico: 'Solanum quitoense',
+    rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 2000,
+    tmin_letal_c: 4, agua_mm: 1500, kc: 0.90, koppen: ['Cfb', 'Cwb', 'Cfa', 'Am'],
+    nota: 'Quiere media sombra y humedad pareja: a pleno sol se le quema la hoja.',
+  },
+  {
+    id: 'mora_andina', nombre: 'Mora de Castilla', cientifico: 'Rubus glaucus',
+    rol: 'principal', perenne: true, tbase_c: 8, gdd_ciclo: 1800,
+    tmin_letal_c: -2, agua_mm: 1400, kc: 0.85, koppen: ['Cfb', 'Cwb'],
+    nota: 'Se conduce en espaldera y se poda cada año; sin poda se cierra y deja de producir.',
+  },
+  {
+    id: 'uchuva', nombre: 'Uchuva / aguaymanto', cientifico: 'Physalis peruviana',
+    rol: 'principal', perenne: true, tbase_c: 8, gdd_ciclo: 1800,
+    tmin_letal_c: 0, agua_mm: 900, kc: 0.90, koppen: ['Cfb', 'Cwb', 'Cfa'],
+    nota: 'Perenne que conviene manejar como bienal: rinde dos años y después decae.',
+  },
+  {
+    id: 'tomate_arbol', nombre: 'Tomate de árbol', cientifico: 'Solanum betaceum',
+    rol: 'asociado', perenne: true, tbase_c: 8, gdd_ciclo: 2000,
+    tmin_letal_c: 0, agua_mm: 1200, kc: 0.90, koppen: ['Cfb', 'Cwb', 'Cfa'],
+    nota: 'Raíz superficial y copa pesada: sin cortina de viento se tumba cargado.',
+  },
+  {
+    id: 'arracacha', nombre: 'Arracacha', cientifico: 'Arracacia xanthorrhiza',
+    rol: 'principal', perenne: false, tbase_c: 8, gdd_ciclo: 2600,
+    tmin_letal_c: 2, agua_mm: 900, kc: 0.90, koppen: ['Cfb', 'Cwb', 'Cfa'],
+    nota: 'Ciclo de diez a doce meses: ocupa la parcela el año entero.',
+  },
+  {
+    id: 'oca', nombre: 'Oca', cientifico: 'Oxalis tuberosa',
+    rol: 'asociado', perenne: false, tbase_c: 5, gdd_ciclo: 1500,
+    tmin_letal_c: -2, agua_mm: 500, kc: 0.90, koppen: ['ET', 'Cwb', 'Cwc', 'BSk'],
+    nota: 'Tuberiza por día corto, después de la papa: alarga la cosecha del año andino.',
+  },
+  {
+    id: 'ulluco', nombre: 'Ulluco / papa lisa', cientifico: 'Ullucus tuberosus',
+    rol: 'asociado', perenne: false, tbase_c: 5, gdd_ciclo: 1400,
+    tmin_letal_c: -2, agua_mm: 500, kc: 0.90, koppen: ['ET', 'Cwb', 'Cwc', 'BSk'],
+    nota: 'Aguanta la helada mejor que la papa, pero se guarda bastante menos tiempo.',
+  },
+  {
+    id: 'tarwi', nombre: 'Tarwi / chocho', cientifico: 'Lupinus mutabilis',
+    rol: 'abono_verde', perenne: false, tbase_c: 5, gdd_ciclo: 1900,
+    tmin_letal_c: -3, agua_mm: 450, kc: 0.85, koppen: ['ET', 'Cwb', 'Cwc', 'BSk'],
+    nota: 'Fija nitrógeno en altura y además da grano; el amargor se saca lavando, no cocinando.',
   },
 
   // ── Mediterráneo (Cs) ─────────────────────────────────────────────────────
@@ -265,6 +417,48 @@ export const ESPECIES: Especie[] = [
     tmin_letal_c: -30, agua_mm: 900, kc: 1.10, koppen: ['Cfb', 'Dfb', 'Dfc', 'Cfa'],
     nota: 'Cortina de bajo húmedo; se corta cada año y la vara se usa.',
   },
+  {
+    id: 'yerba_mate', nombre: 'Yerba mate', cientifico: 'Ilex paraguariensis',
+    rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 2400,
+    tmin_letal_c: -3, agua_mm: 1600, kc: 0.90, koppen: ['Cfa', 'Cfb', 'Am'],
+    nota: 'Nació de sotobosque: bajo dosel rinde menos por planta y el yerbal dura décadas más.',
+  },
+  {
+    id: 'naranjo', nombre: 'Naranjo', cientifico: 'Citrus sinensis',
+    rol: 'principal', perenne: true, tbase_c: 13, gdd_ciclo: 2200,
+    tmin_letal_c: -4, agua_mm: 900, kc: 0.70, koppen: ['Cfa', 'Csa', 'Cwa', 'Aw', 'BSh'],
+    nota: 'La helada arruina la fruta antes de matar el árbol: el bajo frío es el peor lugar del predio.',
+  },
+  {
+    id: 'durazno', nombre: 'Durazno', cientifico: 'Prunus persica',
+    rol: 'principal', perenne: true, tbase_c: 7, gdd_ciclo: 1400,
+    tmin_letal_c: -18, agua_mm: 700, kc: 0.90, koppen: ['Cfa', 'Cfb', 'Csa', 'Csb', 'BSk', 'Dfb'],
+    nota: 'Pide menos frío que el manzano, pero florece antes y por eso se hiela más seguido.',
+  },
+  {
+    id: 'cerezo', nombre: 'Cerezo', cientifico: 'Prunus avium',
+    rol: 'principal', perenne: true, tbase_c: 6, gdd_ciclo: 1300,
+    tmin_letal_c: -22, agua_mm: 700, kc: 0.90, koppen: ['Csb', 'Cfb', 'Dfb', 'Csa'],
+    nota: 'La lluvia sobre la fruta madura la parte: el riesgo es la primavera húmeda, no el invierno.',
+  },
+  {
+    id: 'avellano_chileno', nombre: 'Avellano chileno', cientifico: 'Gevuina avellana',
+    rol: 'asociado', perenne: true, tbase_c: 6, gdd_ciclo: 1400,
+    tmin_letal_c: -8, agua_mm: 1400, kc: 0.90, koppen: ['Cfb', 'Csb'],
+    nota: 'Estrato medio del bosque valdiviano: crece a la sombra del renoval y fructifica en otoño.',
+  },
+  {
+    id: 'avena', nombre: 'Avena', cientifico: 'Avena sativa',
+    rol: 'cobertura', perenne: false, tbase_c: 2, gdd_ciclo: 1300,
+    tmin_letal_c: -12, agua_mm: 400, kc: 0.90, koppen: ['Cfa', 'Cfb', 'Csb', 'Dfb', 'BSk'],
+    nota: 'Cobertura de invierno que se pastorea o se rola: tapa el suelo hasta la siembra de verano.',
+  },
+  {
+    id: 'girasol', nombre: 'Girasol', cientifico: 'Helianthus annuus',
+    rol: 'principal', perenne: false, tbase_c: 8, gdd_ciclo: 1600,
+    tmin_letal_c: 2, agua_mm: 550, kc: 1.00, koppen: ['Cfa', 'Cfb', 'BSk', 'BSh', 'Dfb'],
+    nota: 'Raíz pivotante que busca agua profunda: entra donde el maíz ya no cierra el ciclo.',
+  },
 
   // ── Continental y frío (D, ET) ────────────────────────────────────────────
   {
@@ -328,6 +522,12 @@ export const ESPECIES: Especie[] = [
     rol: 'principal', perenne: false, tbase_c: 5, gdd_ciclo: 1400,
     tmin_letal_c: -4, agua_mm: 450, kc: 1.00, koppen: ['BSk', 'BWh', 'Csa', 'Cfa', 'Cfb'],
     nota: 'Bulbifica por largo del día: la variedad tiene que ser de la latitud.',
+  },
+  {
+    id: 'tamarugo', nombre: 'Tamarugo', cientifico: 'Prosopis tamarugo',
+    rol: 'sombra', perenne: true, tbase_c: 12, gdd_ciclo: 0,
+    tmin_letal_c: -4, agua_mm: 200, kc: 0.35, koppen: ['BWh', 'BWk', 'BSh', 'BSk'],
+    nota: 'Vive de la napa salina, no de la lluvia: se planta donde hay agua abajo, no donde llueve.',
   },
 ];
 

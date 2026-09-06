@@ -70,10 +70,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Guaraní (selva paranaense)', practicas: 'Agricultura de claros rotativos (kokue), policultivo maíz-poroto-zapallo, aprovechamiento de yerba mate, palmito y plantas medicinales del monte.' },
       { cultura: 'Criollo/colono', practicas: 'Yerbales y cultivos bajo monte, sistemas agroforestales con sombra; el riesgo es la tala y la erosión al descubrir el suelo.' },
     ],
-    especies: ['Yerba mate', 'Palmito (pindó)', 'Cedro', 'Lapacho', 'Mandioca'],
+    especies: [
+      'Yerba mate (Ilex paraguariensis)',
+      'Palmito / pindó (Euterpe edulis)',
+      'Cedro misionero (Cedrela fissilis)',
+      'Lapacho negro (Handroanthus heptaphyllus)',
+      'Guatambú (Balfourodendron riedelianum)',
+      'Palo rosa (Aspidosperma polyneuron)',
+      'Ambay (Cecropia pachystachya)',
+    ],
+    cultivos: ['yerba_mate', 'maracuya', 'cana_azucar', 'naranjo', 'maiz_tropical', 'poroto_trepador', 'yuca', 'crotalaria', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: -20, razon: 'La fertilidad está en la hojarasca, no en el suelo rojo: descubierto se lava en dos o tres temporadas. Va en claro chico y con cobertura permanente.' },
+      { uso: 'forestal', delta: 20, razon: 'El sistema que sostiene esta selva es agroforestal de varios estratos —yerbal bajo monte— antes que la parcela de suelo limpio.' },
+      { uso: 'reserva', delta: 10, razon: 'Queda menos de la décima parte de la selva original: cada parche en pie vale más como conexión entre montes que como lote.' },
+    ],
     fuentes: [
-      { label: 'Selva paranaense (Wikipedia)', url: W('Selva_paranaense') },
-      { label: 'FAO — Sistemas agroforestales', url: 'https://www.fao.org/forestry/agroforestry/es/' },
+      { label: 'Fundación Vida Silvestre — Bosque Atlántico del Alto Paraná', url: 'https://www.vidasilvestre.org.ar/' },
+      { label: 'Ministerio de Ecología de Misiones', url: 'https://ecologia.misiones.gob.ar/' },
+      { label: 'INTA — yerba mate y sistemas bajo monte', url: 'https://www.argentina.gob.ar/inta' },
     ],
   },
   sabana_cerrado: {
@@ -89,10 +104,24 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos de sabana', practicas: 'Quemas controladas estacionales para renovar pasto y manejar fauna; cultivo en bajos húmedos y vegas.' },
       { cultura: 'Ganadería criolla extensiva', practicas: 'Pastoreo a campo con razas rústicas, aprovechamiento de palmares (frutos, hojas), rotación según lluvias.' },
     ],
-    especies: ['Palma carandá', 'Algarrobo', 'Pastos nativos (Paspalum, Andropogon)'],
+    especies: [
+      'Pequi (Caryocar brasiliense)',
+      'Baru (Dipteryx alata)',
+      'Buriti (Mauritia flexuosa)',
+      'Carandá (Copernicia alba)',
+      'Ipê do cerrado (Handroanthus ochraceus)',
+      'Pastos nativos (Paspalum, Andropogon)',
+    ],
+    cultivos: ['sorgo', 'maiz_tropical', 'arroz', 'cana_azucar', 'guandul', 'crotalaria', 'pasto_elefante', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'Suelo profundo pero ácido y muy pobre en fósforo: la huerta recién arranca después de varios años de materia orgánica.' },
+      { uso: 'pasturas', delta: 10, razon: 'El pastizal con árboles dispersos es la forma nativa del bioma; la ganadería bien cargada lo imita en vez de reemplazarlo.' },
+      { uso: 'reserva', delta: 5, razon: 'El fuego es parte del ecosistema, pero las veredas y bajos húmedos son el refugio que no se quema: conviene dejarlos aparte.' },
+    ],
     fuentes: [
-      { label: 'Cerrado (Wikipedia)', url: W('Cerrado') },
-      { label: 'Sabana (Wikipedia)', url: W('Sabana') },
+      { label: 'Embrapa Cerrados', url: 'https://www.embrapa.br/cerrados' },
+      { label: 'MapBiomas — cobertura y uso del suelo en Brasil', url: 'https://brasil.mapbiomas.org/' },
+      { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
     ],
   },
   chaco_seco: {
@@ -108,10 +137,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Wichí, Qom (Toba), Pilagá', practicas: 'Recolección estacional de algarroba, mistol y chañar (harinas, arrope, bebidas); apicultura de meliponas (abejas sin aguijón); pesca y horticultura en costas de ríos.' },
       { cultura: 'Criollo chaqueño', practicas: 'Cría de cabras y vacunos a monte; "puestos" con aguadas y represas; aprovechamiento de la sombra y forraje del algarrobo; carbón y postes de quebracho (históricamente sobreexplotado).' },
     ],
-    especies: ['Algarrobo blanco y negro', 'Quebracho colorado', 'Mistol', 'Chañar', 'Tusca'],
+    especies: [
+      'Quebracho colorado santiagueño (Schinopsis lorentzii)',
+      'Algarrobo blanco (Neltuma alba)',
+      'Algarrobo negro (Neltuma nigra)',
+      'Mistol (Ziziphus mistol)',
+      'Chañar (Geoffroea decorticans)',
+      'Tusca (Vachellia aroma)',
+      'Palo santo (Bulnesia sarmientoi)',
+    ],
+    cultivos: ['maiz_tropical', 'sorgo', 'zapallo_milpa', 'poroto_trepador', 'cebolla', 'mistol', 'algarrobo_ar', 'chanar'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'Suelos fértiles pero frágiles: desmontados y a suelo desnudo se erosionan y se salinizan rápido. La huerta va con media sombra y reparo.' },
+      { uso: 'pasturas', delta: -10, razon: 'La carga alta a monte abierto es la causa principal de degradación acá; el silvopastoril con sombra sostiene más animales que el desmonte.' },
+      { uso: 'forestal', delta: 15, razon: 'Algarrobo, quebracho y mistol dan sombra, forraje y madera sin descubrir el suelo: es el uso que el bioma banca mejor.' },
+    ],
     fuentes: [
-      { label: 'Gran Chaco (Wikipedia)', url: W('Gran_Chaco') },
       { label: 'INTA — Región Chaqueña', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'Ministerio de Ambiente — Bosques nativos (Ley 26.331)', url: 'https://www.argentina.gob.ar/ambiente/bosques' },
+      { label: 'FAO — sistemas silvopastoriles', url: 'https://www.fao.org/forestry/agroforestry/es/' },
     ],
   },
   monte: {
@@ -127,10 +171,24 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Huarpe', practicas: 'Manejo del agua de deshielo con acequias y "lagunas" (humedales de Guanacache); cultivo en oasis, recolección de algarroba, cestería con junco.' },
       { cultura: 'Criollo cuyano/puntano', practicas: 'Acequias de riego heredadas, cría caprina a campo, jarilla como leña y medicina; sombra y forraje del algarrobo; cosecha de agua en represas.' },
     ],
-    especies: ['Jarilla', 'Algarrobo dulce', 'Retamo', 'Chañar', 'Tuna/penca'],
+    especies: [
+      'Jarilla (Larrea divaricata, L. cuneifolia)',
+      'Algarrobo dulce (Neltuma flexuosa)',
+      'Retamo (Bulnesia retama)',
+      'Chañar (Geoffroea decorticans)',
+      'Tuna / penca (Opuntia sulphurea)',
+      'Zampa (Atriplex lampa)',
+    ],
+    cultivos: ['vid', 'olivo', 'durazno', 'nogal', 'cebolla', 'alfalfa', 'algarrobo_ar', 'chanar'],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Sin riego no hay huerta: la lluvia del año no cubre ni un ciclo corto. Donde llega acequia, vertiente o napa la cuenta cambia por completo.' },
+      { uso: 'pasturas', delta: -15, razon: 'La cobertura entre matas es rala y no se repone sola: el sobrepastoreo deja suelo desnudo y el viento se lleva lo poco que hay.' },
+      { uso: 'reserva', delta: 10, razon: 'El jarillal tarda décadas en volver; conservar la mata en pie sale mucho más barato que restaurarla.' },
+    ],
     fuentes: [
-      { label: 'Monte (ecorregión) — Wikipedia', url: W('Monte_(ecorregión)') },
-      { label: 'Lagunas de Guanacache', url: W('Lagunas_de_Guanacache') },
+      { label: 'IADIZA-CONICET — ecología de zonas áridas', url: 'https://www.mendoza.conicet.gov.ar/portal/iadiza/' },
+      { label: 'INTA — Mendoza y San Juan', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'Lagunas de Guanacache, Desaguadero y del Bebedero (sitio Ramsar)', url: 'https://rsis.ramsar.org/ris/1467' },
     ],
   },
   espinal: {
@@ -146,10 +204,23 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos del litoral y centro', practicas: 'Recolección de algarroba y frutos del monte, caza y pesca; uso de la madera dura para herramientas.' },
       { cultura: 'Criollo', practicas: 'Sistemas silvopastoriles con algarrobo y ñandubay (sombra + forraje + madera), apicultura, postes y leña; manejo del monte como reserva forrajera para la seca.' },
     ],
-    especies: ['Ñandubay', 'Algarrobo', 'Espinillo (aromito)', 'Tala'],
+    especies: [
+      'Ñandubay (Neltuma affinis)',
+      'Algarrobo negro (Neltuma nigra)',
+      'Espinillo / aromito (Vachellia caven)',
+      'Tala (Celtis ehrenbergiana)',
+      'Chañar (Geoffroea decorticans)',
+      'Flechilla (Nassella spp.)',
+    ],
+    cultivos: ['trigo', 'avena', 'girasol', 'maiz_tropical', 'naranjo', 'alfalfa', 'trebol_blanco', 'algarrobo_ar'],
+    aptitud: [
+      { uso: 'forestal', delta: 15, razon: 'El silvopastoril con algarrobo y ñandubay —sombra, forraje y madera sobre el mismo pastizal— es la forma histórica del bioma y la que mejor aguanta la seca.' },
+      { uso: 'pasturas', delta: 5, razon: 'El pastizal bajo bosque abierto es el estado nativo: la pastura no compite con el monte, se complementan.' },
+      { uso: 'reserva', delta: 5, razon: 'El Espinal es de los bosques nativos más reducidos del país; los relictos con árboles viejos ya casi no se reponen.' },
+    ],
     fuentes: [
-      { label: 'Espinal (Wikipedia)', url: W('Espinal_(ecorregión)') },
-      { label: 'Sistemas silvopastoriles (INTA)', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'INTA — sistemas silvopastoriles del Espinal', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'Ministerio de Ambiente — Bosques nativos (Ley 26.331)', url: 'https://www.argentina.gob.ar/ambiente/bosques' },
     ],
   },
   pampa: {
@@ -165,10 +236,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos pampeanos (Het, luego mapuche-tehuelche)', practicas: 'Cultura cazadora-recolectora de guanaco y ñandú; uso del fuego para manejar el pastizal y atraer fauna; redes de intercambio.' },
       { cultura: 'Gaucho / criollo', practicas: 'Ganadería extensiva sobre pastizal natural, pastoreo trashumante histórico; el desafío actual es la rotación y la conservación del pastizal frente a la agricultura continua.' },
     ],
-    especies: ['Flechilla', 'Paja colorada', 'Cortadera', 'Tala (en bordes)'],
+    especies: [
+      'Flechilla (Nassella, Jarava spp.)',
+      'Paja colorada (Paspalum quadrifarium)',
+      'Cortadera (Cortaderia selloana)',
+      'Pasto miel (Paspalum dilatatum)',
+      'Tala (Celtis ehrenbergiana)',
+      'Coronillo (Scutia buxifolia)',
+    ],
+    cultivos: ['trigo', 'maiz_tropical', 'girasol', 'durazno', 'avena', 'veza', 'alfalfa', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'huerta', delta: 10, razon: 'Molisoles profundos y bien provistos: pocas veces vas a encontrar mejor suelo de huerta, mientras no se compacte.' },
+      { uso: 'pasturas', delta: 10, razon: 'El pastizal es el ecosistema nativo, y la pastura rotada es lo que repone la materia orgánica que la agricultura continua saca.' },
+      { uso: 'forestal', delta: -10, razon: 'No hay bosque nativo acá salvo en bordes y barrancas: forestar el pastizal cambia el bioma en lugar de trabajarlo.' },
+      { uso: 'reserva', delta: 5, razon: 'Queda muy poco pastizal pampeano sin arar: un potrero de pastizal natural es hoy un bien escaso.' },
+    ],
     fuentes: [
-      { label: 'Pampa (Wikipedia)', url: W('Pampa') },
-      { label: 'Pastizales — Fundación Vida Silvestre', url: 'https://www.vidasilvestre.org.ar/' },
+      { label: 'Alianza del Pastizal', url: 'https://alianzadelpastizal.org.ar/' },
+      { label: 'INTA — pastizales naturales y manejo del pastoreo', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'Fundación Vida Silvestre — Pastizales', url: 'https://www.vidasilvestre.org.ar/' },
     ],
   },
   yungas: {
@@ -184,10 +270,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos andinos del NOA (incl. influencia incaica)', practicas: 'Andenes/terrazas de cultivo en ladera para frenar erosión y ganar suelo; cultivo escalonado por pisos altitudinales (maíz abajo, papa y quinoa arriba); caminos y acopio.' },
       { cultura: 'Criollo del pedemonte', practicas: 'Agricultura de subsistencia en terrazas, ganadería trashumante (verano arriba, invierno abajo), aprovechamiento de la madera y plantas medicinales del monte.' },
     ],
-    especies: ['Cedro coya', 'Nogal criollo', 'Tipa', 'Pacará', 'Maíz andino'],
+    especies: [
+      'Cedro coya (Cedrela lilloi)',
+      'Nogal criollo (Juglans australis)',
+      'Tipa blanca (Tipuana tipu)',
+      'Pacará (Enterolobium contortisiliquum)',
+      'Aliso del cerro (Alnus acuminata)',
+      'Queñoa (Polylepis australis)',
+      'Laurel de la falda (Cinnamomum porphyrium)',
+    ],
+    cultivos: ['cafe', 'cana_azucar', 'naranjo', 'aguacate', 'maiz_tropical', 'poroto_trepador', 'inga', 'nogal_cafetero', 'vetiver'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'La pendiente con lluvia fuerte se lleva el suelo apenas queda descubierto: acá la huerta va en terraza o andén, nunca en tabla corrida.' },
+      { uso: 'forestal', delta: 20, razon: 'La selva de ladera es la que captura el agua de la nube y la entrega abajo; el uso que la mantiene en pie es el de varios estratos.' },
+      { uso: 'reserva', delta: 10, razon: 'Los corredores altitudinales son lo que permite que la fauna suba y baje con la estación: cortarlos aísla al predio y a los vecinos.' },
+    ],
     fuentes: [
-      { label: 'Yungas (Wikipedia)', url: W('Yungas') },
-      { label: 'Andenes / terrazas de cultivo', url: W('Andén_(agricultura)') },
+      { label: 'Fundación ProYungas', url: 'https://proyungas.org.ar/' },
+      { label: 'INTA — Yungas y pedemonte del NOA', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'FAO — terrazas y andenes de ladera', url: 'https://www.fao.org/giahs/es/' },
     ],
   },
   puna_altoandino: {
@@ -203,11 +304,26 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos andinos (kolla, atacama, aymara; herencia incaica)', practicas: 'Camellones/waru-waru y qochas (lagunas) para amortiguar heladas y cosechar agua; andenes; cultivo de papas amargas y su deshidratación en chuño aprovechando heladas; pastoreo de camélidos; chacras dispersas en varios pisos para repartir riesgo.' },
       { cultura: 'Criollo puneño', practicas: 'Pastoreo de llamas y ovejas, intercambio de productos entre pisos (trueque), manejo de vegas y bofedales (humedales de altura) como forraje permanente.' },
     ],
-    especies: ['Ichu (paja brava)', 'Tola', 'Queñoa', 'Papa andina', 'Quinoa'],
+    especies: [
+      'Ichu / paja brava (Jarava ichu)',
+      'Tola (Parastrephia lepidophylla)',
+      'Queñoa (Polylepis tarapacana)',
+      'Yareta (Azorella compacta)',
+      'Cardón (Echinopsis atacamensis)',
+      'Papa amarga (Solanum juzepczukii)',
+      'Quinoa (Chenopodium quinoa)',
+    ],
+    cultivos: ['quinoa', 'papa', 'oca', 'ulluco', 'tarwi', 'amaranto', 'cebada', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -20, razon: 'La helada es casi diaria y la radiación quema: sin muro, camellón o qocha que amortigüe, la huerta no pasa el año.' },
+      { uso: 'frutales', delta: -25, razon: 'No hay una ventana libre de helada lo bastante larga como para que un frutal cierre ciclo.' },
+      { uso: 'pasturas', delta: -10, razon: 'La estepa de ichu repone muy lento; el forraje de verdad está en las vegas y bofedales, que son chicos y se degradan rápido.' },
+      { uso: 'reserva', delta: 10, razon: 'Vegas y bofedales son el corazón hídrico de la cuenca: valen más protegidos que pastoreados.' },
+    ],
     fuentes: [
-      { label: 'Puna (Wikipedia)', url: W('Puna_(región)') },
+      { label: 'FAO SIPAM — sistemas agrícolas andinos', url: 'https://www.fao.org/giahs/es/' },
+      { label: 'INTA — Puna, camélidos y bofedales', url: 'https://www.argentina.gob.ar/inta' },
       { label: 'Waru waru / camellones', url: W('Waru_waru') },
-      { label: 'FAO — Sistemas SIPAM andinos', url: 'https://www.fao.org/giahs/es/' },
     ],
   },
   estepa_patagonica: {
@@ -223,10 +339,24 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Tehuelche y mapuche', practicas: 'Cultura cazadora-recolectora del guanaco (alimento, abrigo, toldos); trashumancia siguiendo pasturas y agua; uso de reparos naturales contra el viento.' },
       { cultura: 'Criollo patagónico', practicas: 'Ganadería ovina extensiva con manejo de carga para no degradar el coironal; uso de mallines (humedales) como reserva forrajera; cortinas y reparos contra el viento dominante del oeste.' },
     ],
-    especies: ['Coirón', 'Neneo', 'Calafate', 'Mata negra'],
+    especies: [
+      'Coirón blanco (Festuca pallescens)',
+      'Coirón amargo (Pappostipa speciosa)',
+      'Neneo (Mulinum spinosum)',
+      'Calafate (Berberis microphylla)',
+      'Mata negra (Junellia tridens)',
+      'Junco de mallín (Juncus balticus)',
+    ],
+    cultivos: ['papa', 'cebada', 'avena', 'cerezo', 'manzano', 'alfalfa', 'trebol_blanco', 'sauce_mimbre'],
+    aptitud: [
+      { uso: 'huerta', delta: -20, razon: 'El viento del oeste seca y quiebra: sin cortina y sin riego no hay huerta que prospere, por bueno que sea el suelo.' },
+      { uso: 'frutales', delta: -15, razon: 'Sólo cierran con reparo y riego, como en los valles bajo riego; a campo abierto el viento arranca la flor antes del cuaje.' },
+      { uso: 'pasturas', delta: -15, razon: 'El coironal se degrada con carga alta y no vuelve: la erosión eólica es la forma que toma el sobrepastoreo acá.' },
+      { uso: 'reserva', delta: 10, razon: 'Los mallines son una porción mínima de la superficie y la mayor parte del forraje: protegerlos es lo que sostiene todo lo demás.' },
+    ],
     fuentes: [
-      { label: 'Estepa patagónica (Wikipedia)', url: W('Estepa_patagónica') },
-      { label: 'Mallines patagónicos (INTA)', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'INTA Bariloche — manejo de pastizales y mallines patagónicos', url: 'https://www.argentina.gob.ar/inta' },
+      { label: 'Observatorio Nacional de Degradación de Tierras y Desertificación', url: 'https://www.desertificacion.gob.ar/' },
     ],
   },
   bosque_andino_patagonico: {
@@ -242,10 +372,26 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Mapuche', practicas: 'Recolección del piñón de la araucaria (pehuén) como alimento base; huertas (lof) de papa y cereales rústicos; manejo del bosque y plantas medicinales (lawen); aprovechamiento de la madera sin talar todo el monte.' },
       { cultura: 'Criollo cordillerano', practicas: 'Ganadería en claros y mallines, huertas familiares protegidas del frío, fruticultura de clima frío; manejo del fuego con cuidado por el riesgo de incendios.' },
     ],
-    especies: ['Araucaria (pehuén)', 'Lenga', 'Ñire', 'Coihue', 'Ciprés de la cordillera'],
+    especies: [
+      'Araucaria / pehuén (Araucaria araucana)',
+      'Lenga (Nothofagus pumilio)',
+      'Ñire (Nothofagus antarctica)',
+      'Coihue (Nothofagus dombeyi)',
+      'Ciprés de la cordillera (Austrocedrus chilensis)',
+      'Maitén (Maytenus boaria)',
+      'Michay (Berberis darwinii)',
+    ],
+    cultivos: ['manzano', 'cerezo', 'arandano', 'papa', 'avellano_chileno', 'trebol_blanco', 'sauce_mimbre', 'aliso'],
+    aptitud: [
+      { uso: 'huerta', delta: 5, razon: 'Los andisoles volcánicos retienen agua y materia orgánica: la huerta anda bien una vez corregida la acidez.' },
+      { uso: 'frutales', delta: 10, razon: 'La fruta fina de clima frío —cereza, arándano, manzana— encuentra acá el frío invernal que pide y un verano sin lluvia sobre la fruta.' },
+      { uso: 'forestal', delta: 15, razon: 'Manejo del bosque nativo antes que reemplazo por plantación: el ñire y la lenga se aprovechan sin talar el monte entero.' },
+      { uso: 'reserva', delta: 10, razon: 'Es uno de los bosques templados mejor conservados del planeta, y el fuego es lo único que lo revierte de golpe.' },
+    ],
     fuentes: [
-      { label: 'Bosque andino-patagónico (Wikipedia)', url: W('Bosque_andino_patagónico') },
-      { label: 'Araucaria / pehuén', url: W('Araucaria_araucana') },
+      { label: 'CIEFAP — Centro de Investigación y Extensión Forestal Andino Patagónico', url: 'https://ciefap.org.ar/' },
+      { label: 'Administración de Parques Nacionales', url: 'https://www.argentina.gob.ar/parquesnacionales' },
+      { label: 'CONAF — bosque nativo (Chile)', url: 'https://www.conaf.cl/' },
     ],
   },
   mediterraneo: {
@@ -261,10 +407,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos de Chile central', practicas: 'Cultivo aprovechando la lluvia invernal, recolección de frutos del matorral, manejo de quebradas con más humedad.' },
       { cultura: 'Tradición agrícola mediterránea', practicas: 'Secano: cultivos de invierno-primavera (trigo, legumbres), olivos y vides de bajo riego, terrazas en ladera, captación de la lluvia estacional.' },
     ],
-    especies: ['Quillay', 'Espino', 'Litre', 'Olivo', 'Vid'],
+    especies: [
+      'Quillay (Quillaja saponaria)',
+      'Espino (Vachellia caven)',
+      'Litre (Lithrea caustica)',
+      'Peumo (Cryptocarya alba)',
+      'Boldo (Peumus boldus)',
+      'Palma chilena (Jubaea chilensis)',
+      'Chagual (Puya chilensis)',
+    ],
+    cultivos: ['vid', 'olivo', 'aguacate', 'almendro', 'cerezo', 'durazno', 'trigo', 'higuera', 'veza'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'La lluvia cae en invierno y la huerta pide agua en verano: sin acumulación o riego, ese desfasaje decide todo el diseño.' },
+      { uso: 'frutales', delta: 15, razon: 'Olivo, vid y almendro son de este clima exacto: producen con el agua del invierno y agradecen el verano seco.' },
+      { uso: 'reserva', delta: 5, razon: 'El matorral esclerófilo se recupera del fuego pero no del despeje repetido; la quebrada con más humedad es el núcleo a dejar en pie.' },
+    ],
     fuentes: [
-      { label: 'Clima mediterráneo (Wikipedia)', url: W('Clima_mediterráneo') },
-      { label: 'Bosque esclerófilo', url: W('Bosque_esclerófilo') },
+      { label: 'CONAF — bosque esclerófilo y sequía', url: 'https://www.conaf.cl/' },
+      { label: 'INIA Chile — agricultura de secano mediterráneo', url: 'https://www.inia.cl/' },
+      { label: 'Ministerio del Medio Ambiente de Chile', url: 'https://mma.gob.cl/' },
     ],
   },
   desierto_costero: {
@@ -280,10 +441,25 @@ export const BIOMAS: Record<BiomaId, BiomaFicha> = {
       { cultura: 'Pueblos costeros andinos', practicas: 'Aprovechamiento de oasis y ríos de deshielo, cultivo en valles, captación de humedad de las lomas; pesca y recolección marina.' },
       { cultura: 'Tecnología tradicional/contemporánea', practicas: 'Atrapanieblas (mallas que cosechan agua de la camanchaca), riego por goteo desde napas y vertientes, agricultura de oasis muy eficiente en agua.' },
     ],
-    especies: ['Tamarugo', 'Cactáceas', 'Flora de lomas'],
+    especies: [
+      'Tamarugo (Prosopis tamarugo)',
+      'Algarrobo del norte (Neltuma chilensis)',
+      'Cactus candelabro (Browningia candelaris)',
+      'Flora de lomas (Nolana spp.)',
+      'Añañuca (Rhodophiala spp.)',
+      'Tillandsia de niebla (Tillandsia landbeckii)',
+    ],
+    cultivos: ['datilera', 'granado', 'vid', 'olivo', 'cebolla', 'alfalfa', 'nopal', 'tamarugo'],
+    aptitud: [
+      { uso: 'huerta', delta: -30, razon: 'No llueve. Todo cultivo depende de napa, río de deshielo o atrapanieblas: sin una de las tres, no hay huerta posible.' },
+      { uso: 'frutales', delta: -20, razon: 'Sólo en oasis con agua asegurada; a secano ningún frutal cierra ciclo acá.' },
+      { uso: 'pasturas', delta: -25, razon: 'No hay pasto que reponer: la carga ganadera sobre las lomas de neblina las destruye y no vuelven.' },
+      { uso: 'reserva', delta: 15, razon: 'Las lomas de neblina son endemismo puro y florecen sólo algunos años: se protegen o se pierden.' },
+    ],
     fuentes: [
-      { label: 'Desierto de Atacama (Wikipedia)', url: W('Desierto_de_Atacama') },
-      { label: 'Atrapanieblas', url: W('Atrapaniebla') },
+      { label: 'CONAF — Reserva Nacional Pampa del Tamarugal', url: 'https://www.conaf.cl/' },
+      { label: 'INIA Chile — agricultura del desierto de Atacama', url: 'https://www.inia.cl/' },
+      { label: 'SERNANP Perú — lomas costeras', url: 'https://www.gob.pe/sernanp' },
     ],
   },
 };
@@ -385,6 +561,27 @@ export interface ResultadoBioma {
 }
 
 /**
+ * Le presta a una ficha regional los modificadores de aptitud de su bioma.
+ *
+ * La corrección de aptitud vive en las fichas de bioma global —ahí es donde una
+ * restricción de uso del suelo es cierta sin inventar nada— pero la ficha que
+ * llega a la pantalla es la regional cuando existe. Sin este préstamo pasaba lo
+ * contrario de lo buscado: **cuanto mejor cubierta estaba una región, menos
+ * corrección recibía**, porque tener ficha regional tapaba la del bioma. Un
+ * predio en Oaxaca o en el Cauca perdía la advertencia que sí veía uno en un
+ * ECO_ID sin curar.
+ *
+ * La ficha regional que declara su propia lista manda: es más específica. Se
+ * devuelve una copia para no ensuciar el catálogo, que es un módulo compartido.
+ */
+function conAptitudDelBioma(ficha: BiomaFicha, biomaNum: number): BiomaFicha {
+  if (ficha.aptitud?.length) return ficha;
+  const global = biomaGlobal(biomaNum);
+  const heredada = global ? fichaPorId(global.id)?.aptitud : undefined;
+  return heredada?.length ? { ...ficha, aptitud: heredada } : ficha;
+}
+
+/**
  * Ubica el predio en el nivel más específico disponible.
  *
  * 1. ECO_ID con ficha curada → ficha regional.
@@ -405,7 +602,11 @@ export function resolverBioma(
     const fichaId = fichaDeEcorregion(eco.eco_id);
     const ficha = fichaId ? fichaPorId(fichaId) : null;
     if (ficha) {
-      return { ficha, titulo: ficha.nombre, emoji: ficha.emoji, ecorregion: eco, fuente: 'ecorregion', aviso: null };
+      return {
+        ficha: conAptitudDelBioma(ficha, eco.bioma_num),
+        titulo: ficha.nombre, emoji: ficha.emoji,
+        ecorregion: eco, fuente: 'ecorregion', aviso: null,
+      };
     }
     // Adentro de Sudamérica antes mandaba la heurística Köppen cuando la
     // ecorregión no tenía ficha. Con las 56 ecorregiones sudamericanas curadas

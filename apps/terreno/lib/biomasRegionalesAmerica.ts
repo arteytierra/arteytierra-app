@@ -82,6 +82,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Mezquite (Prosopis spp.)',
       'Candelilla (Euphorbia antisyphilitica)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'amaranto', 'chile_seco', 'nopal', 'agave', 'mezquite'],
     fuentes: [
       { label: 'FAO — recursos no maderables de zonas áridas mexicanas', url: 'https://www.fao.org/4/j2215s/j2215s08.htm' },
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
@@ -179,6 +180,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Torote (Bursera microphylla)',
       'Pino piñonero (Pinus cembroides)',
     ],
+    cultivos: ['datilera', 'granado', 'olivo', 'vid', 'cebolla', 'nopal', 'agave', 'mezquite'],
     fuentes: [
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -202,6 +204,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Pochote (Ceiba aesculifolia)',
       'Pitaya (Stenocereus spp.)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'cana_azucar', 'agave', 'gliricidia', 'vetiver'],
     fuentes: [
       { label: 'CONABIO — La milpa', url: 'https://www.biodiversidad.gob.mx/diversidad/sistemas-productivos/milpa' },
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
@@ -299,6 +302,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Manzanitas (Arctostaphylos spp.)',
       'Salvia negra (Salvia mellifera)',
     ],
+    cultivos: ['olivo', 'vid', 'almendro', 'aguacate', 'naranjo', 'cerezo', 'higuera', 'veza'],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'USFS — Indigenous fire stewardship', url: 'https://research.fs.usda.gov/treesearch/62060' },
@@ -322,6 +326,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Maguey (Agave spp.)',
       'Maíz (Zea mays)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'amaranto', 'chia', 'aguacate', 'durazno', 'nopal', 'agave'],
     fuentes: [
       { label: 'FAO — Chinampas', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-chinampas-agricultural-system/en' },
       { label: 'FAO — Metepantle', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en' },
@@ -346,6 +351,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Pinos (Pinus spp.)',
       'Cacao (Theobroma cacao)',
     ],
+    cultivos: ['cafe', 'aguacate', 'maiz_tropical', 'poroto_trepador', 'platano_sombra', 'inga', 'nogal_cafetero', 'vetiver'],
     fuentes: [
       { label: 'FAO — traditional agrifood systems in Mexico', url: 'https://www.fao.org/newsroom/story/traditional-agrifood-systems-conserve-biodiversity-and-support-nutrition-in-mexico/en' },
       { label: 'CONAFOR — política forestal con pertinencia cultural', url: 'https://www.gob.mx/conafor/prensa/conafor-emite-las-reglas-de-operacion-del-programa-desarrollo-forestal-sustentable-para-el-bienestar-2025?idiom=es-MX' },
@@ -833,6 +839,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Liquidámbar (Liquidambar styraciflua)',
       'Aliso (Alnus acuminata)',
     ],
+    cultivos: ['cafe', 'maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'aguacate', 'inga', 'nogal_cafetero', 'vetiver'],
     fuentes: [
       { label: 'CATIE — milpa y agrobiodiversidad K’iche’', url: 'https://repositorio.catie.ac.cr/handle/11554/9716' },
       { label: 'CATIE — conocimientos Maya Mam y K’iche’ en restauración', url: 'https://repositorio.catie.ac.cr/handle/11554/12692' },
@@ -881,6 +888,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Liquidámbar (Liquidambar styraciflua)',
       'Magnolias (Magnolia spp.)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'cafe', 'amaranto', 'chile_seco', 'inga', 'agave'],
     fuentes: [
       { label: 'CONAFOR — Pedir permiso al bosque', url: 'https://www.gob.mx/conafor/articulos/pedir-permiso-al-bosque' },
       { label: 'CONAFOR — Pueblos Mancomunados', url: 'https://www.gob.mx/conafor/prensa/pueblos-mancomunados-de-oaxaca-ejemplo-de-aprovechamiento-forestal-sostenible' },
@@ -953,6 +961,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Copal (Bursera spp.)',
       'Cazahuate (Ipomoea spp.)',
     ],
+    cultivos: ['maiz_tropical', 'chile_seco', 'cana_azucar', 'zapallo_milpa', 'guandul', 'gliricidia', 'vetiver'],
     fuentes: [
       { label: 'CONABIO — La milpa', url: 'https://www.biodiversidad.gob.mx/diversidad/sistemas-productivos/milpa' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -1071,6 +1080,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Ceiba (Ceiba pentandra)',
       'Cacao (Theobroma cacao)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'yuca', 'cacao', 'inga', 'vetiver'],
     fuentes: [
       { label: 'FAO — Ich Kool, milpa maya', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       { label: 'UNESCO — Reserva de Biosfera Maya', url: 'https://www.unesco.org/es/articles/reserva-de-biosfera-maya-un-referente-latinoamericano-un-ejemplo-al-mundo' },
@@ -1095,6 +1105,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Caoba (Swietenia macrophylla)',
       'Ceiba (Ceiba pentandra)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'zapallo_milpa', 'chile_seco', 'yuca', 'platano', 'inga', 'vetiver'],
     fuentes: [
       { label: 'FAO — Ich Kool, milpa maya', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       { label: 'CONABIO — La milpa', url: 'https://www.biodiversidad.gob.mx/diversidad/sistemas-productivos/milpa' },
@@ -1119,6 +1130,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Encinos (Quercus spp.)',
       'Madroño (Arbutus spp.)',
     ],
+    cultivos: ['maiz_tropical', 'poroto_trepador', 'amaranto', 'durazno', 'manzano', 'aguacate', 'cafe', 'chile_seco'],
     fuentes: [
       { label: 'CONAFOR — Silvicultura comunitaria', url: 'https://www.gob.mx/conafor/documentos/silvicultura-comunitaria-27813' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -1142,6 +1154,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Mezquite (Prosopis spp.)',
       'Palo verde (Parkinsonia spp.)',
     ],
+    cultivos: ['sorgo', 'chile_seco', 'cebolla', 'naranjo', 'datilera', 'nopal', 'agave', 'mezquite'],
     fuentes: [
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
@@ -1215,6 +1228,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Huisache (Vachellia farnesiana)',
       'Zacates nativos (Bouteloua spp.)',
     ],
+    cultivos: ['sorgo', 'mijo', 'chile_seco', 'naranjo', 'alfalfa', 'guandul', 'nopal', 'mezquite'],
     fuentes: [
       { label: 'EPA — Ecoregions of North America', url: 'https://www.epa.gov/eco-research/ecoregions-north-america' },
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
@@ -1239,6 +1253,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Izote (Yucca periculosa)',
       'Mezquite (Prosopis laevigata)',
     ],
+    cultivos: ['maiz_tropical', 'amaranto', 'chia', 'chile_seco', 'nopal', 'agave', 'mezquite'],
     fuentes: [
       { label: 'UNESCO — Tehuacán-Cuicatlán', url: 'https://whc.unesco.org/en/list/1534' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -1287,6 +1302,7 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Tule (Typha domingensis)',
       'Mangle rojo (Rhizophora mangle)',
     ],
+    cultivos: ['cafe', 'cacao', 'vainilla', 'cana_azucar', 'yuca', 'platano_sombra', 'inga', 'nogal_cafetero', 'pasto_elefante'],
     fuentes: [
       { label: 'CONABIO — Regiones hidrológicas prioritarias', url: 'https://www.biodiversidad.gob.mx/pais/regiones-hidrologicas-prioritarias-de-mexico' },
       { label: 'CONABIO — Ecosistemas de México', url: 'https://www.biodiversidad.gob.mx/ecosistemas/ecosismex.html' },
