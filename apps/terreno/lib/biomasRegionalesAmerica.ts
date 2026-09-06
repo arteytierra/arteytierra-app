@@ -1,10 +1,17 @@
 /**
  * Fichas regionales de Norteamérica, México, Centroamérica y el Caribe.
  *
- * ARCHIVO GENERADO desde _research/ecosistemas-saberes-mesoamerica-norteamerica/
- * fase-1-ecologia/fichas-ecologicas-nuevas.json. No editar a mano: se regenera
- * desde el paquete de investigación, que es donde vive la trazabilidad (fuentes,
- * puntos verificados por consulta espacial y nivel de confianza por ficha).
+ * Salió una vez de _research/ecosistemas-saberes-mesoamerica-norteamerica/
+ * fase-1-ecologia/fichas-ecologicas-nuevas.json, que es donde vive la
+ * trazabilidad (fuentes, puntos verificados por consulta espacial y nivel de
+ * confianza por ficha). Pero **hoy se mantiene a mano**: no quedó ningún script
+ * que lo vuelva a escribir, y `cultivos` y `aptitud` se agregaron después del
+ * montaje y no existen en el JSON. El encabezado decía "ARCHIVO GENERADO, no
+ * editar a mano" y eso ya no era cierto: quien lo respetara no podía corregir
+ * nada, y quien intentara regenerarlo no tenía con qué.
+ *
+ * Si algún día vuelve a haber generador, tiene que arrastrar `cultivos` y
+ * `aptitud` desde el paquete, como ya hace el de Sudamérica.
  *
  * `saberes` va vacío a propósito en todas. Los saberes de estas regiones son
  * subnacionales y necesitan geometría propia con procedencia y licencia; viven

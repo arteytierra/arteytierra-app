@@ -115,8 +115,11 @@ let bioTs = `/**
  *
  * \`saberes\` va vacío a propósito en todas, igual que en los otros dos bloques
  * generados. Los saberes sudamericanos son subnacionales y necesitan geometría
- * propia con procedencia y licencia; viven en la fase 2 del paquete y todavía no
- * hay tipo ni capa para montarlos.
+ * propia con procedencia y licencia; viven aparte, en \`lib/saberes.ts\`.
+ *
+ * \`cultivos\` y \`aptitud\` también salen del JSON del paquete. Si hay que
+ * corregir una aptitud, se corrige allá y se vuelve a correr esto: editar el
+ * archivo de lib/ funciona hasta el próximo montaje y después se pierde.
  */
 
 import type { BiomaFicha } from './biomaTipos';
@@ -137,6 +140,15 @@ for (const f of nuevas) {
   bioTs += `    suelos: ${q(f.suelos)},\n`;
   bioTs += `    saberes: [],\n`;
   bioTs += `    especies: ${lista(f.especies, '    ')},\n`;
+  // cultivos y aptitud son opcionales y viven en el JSON del paquete. Estuvieron
+  // un tiempo sólo en el archivo de lib/, escritos a mano encima de lo generado:
+  // correr este script los borraba sin avisar. Ahora entran por acá.
+  if (f.cultivos?.length) bioTs += `    cultivos: [${f.cultivos.map(q).join(', ')}],\n`;
+  if (f.aptitud?.length) {
+    bioTs += `    aptitud: [\n`;
+    for (const a of f.aptitud) bioTs += `      { uso: ${q(a.uso)}, delta: ${a.delta}, razon: ${q(a.razon)} },\n`;
+    bioTs += `    ],\n`;
+  }
   bioTs += `    fuentes: [\n`;
   for (const s of f.fuentes) bioTs += `      { label: ${q(s.label)}, url: ${q(s.url)} },\n`;
   bioTs += `    ],\n  },\n`;

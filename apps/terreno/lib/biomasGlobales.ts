@@ -217,6 +217,8 @@ export const BIOMAS_GLOBALES: Record<string, BiomaFicha> = {
       { uso: 'reserva', delta: 30, razon: 'Es la defensa de costa y la guardería de la pesca: se conserva, no se convierte.' },
       { uso: 'huerta', delta: -35, razon: 'Suelo salino y anegado.' },
       { uso: 'pasturas', delta: -30, razon: 'Suelo salino y anegado.' },
+      { uso: 'frutales', delta: -35, razon: 'Ningún frutal tolera la salinidad y la falta de oxígeno del suelo intermareal. Plantar exige drenar, y drenar es lo que destruye el manglar.' },
+      { uso: 'forestal', delta: -25, razon: 'Los usos forestales del manglar son de extracción baja y selectiva —leña, taninos, postes—, no de rodal manejado. Medirlo como recurso maderero es el camino por el que estos bosques se perdieron.' },
     ],
   ),
 
@@ -231,6 +233,7 @@ export const BIOMAS_GLOBALES: Record<string, BiomaFicha> = {
       { uso: 'huerta', delta: -40, razon: 'Sin suelo no hay uso agrícola posible.' },
       { uso: 'pasturas', delta: -30, razon: 'Sin suelo no hay uso agrícola posible.' },
       { uso: 'frutales', delta: -40, razon: 'Sin suelo no hay uso agrícola posible.' },
+      { uso: 'forestal', delta: -40, razon: 'Sin suelo no hay uso agrícola posible.' },
     ],
   ),
 };

@@ -14,8 +14,11 @@
  *
  * `saberes` va vacío a propósito en todas, igual que en los otros dos bloques
  * generados. Los saberes sudamericanos son subnacionales y necesitan geometría
- * propia con procedencia y licencia; viven en la fase 2 del paquete y se montan
- * aparte, en `lib/saberes.ts`.
+ * propia con procedencia y licencia; viven aparte, en `lib/saberes.ts`.
+ *
+ * `cultivos` y `aptitud` también salen del JSON del paquete. Si hay que
+ * corregir una aptitud, se corrige allá y se vuelve a correr esto: editar el
+ * archivo de lib/ funciona hasta el próximo montaje y después se pierde.
  */
 
 import type { BiomaFicha } from './biomaTipos';
@@ -140,6 +143,12 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Pangue insular',
     ],
     cultivos: ['papa', 'avena', 'manzano', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'frutales', delta: -20, razon: 'El bioma templado premia los frutales; acá cada especie que se introduce es un riesgo. Más de la mitad de la flora es endémica y las invasoras ya son la principal amenaza del archipiélago.' },
+      { uso: 'forestal', delta: -25, razon: 'Plantar en pendiente volcánica de isla es cambiar bosque endémico por especies que después no se sacan.' },
+      { uso: 'pasturas', delta: -25, razon: 'Los herbívoros introducidos son parte del problema: sin cobertura, la pendiente volcánica se va al mar.' },
+      { uso: 'reserva', delta: 30, razon: 'Es una de las floras insulares más singulares del planeta y cabe entera en unos pocos kilómetros cuadrados.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -401,6 +410,11 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Orquídeas de arena blanca',
       'Bromelias terrestres',
     ],
+    aptitud: [
+      { uso: 'forestal', delta: -20, razon: 'El bioma húmedo premia el manejo forestal porque el ciclo de nutrientes es rápido. Sobre arena blanca no lo es: el espodosol es oligotrófico y el sistema tarda décadas en volver. Extraer madera acá descapitaliza el suelo, no lo aprovecha.' },
+      { uso: 'huerta', delta: -35, razon: 'Arena ácida sin reserva de nutrientes ni capacidad de retener agua. Producir exige traer todo de afuera, todos los años.' },
+      { uso: 'reserva', delta: 25, razon: 'Es sensible al tránsito y al fuego, y una vez quemada la campinarana no vuelve al estado anterior en una vida humana.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -508,6 +522,12 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Scalesia',
       'Cactus de lava',
       'Tortuga gigante',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'La zona alta húmeda produce, pero la baja es árida y de suelo discontinuo. Lo que decide no es la fertilidad sino el agua y la bioseguridad: en Galápagos cada insumo que entra puede traer una especie que no se va más.' },
+      { uso: 'frutales', delta: -25, razon: 'La mora, la guayaba y otras frutales introducidas son hoy las invasoras que más territorio ganan en las islas.' },
+      { uso: 'pasturas', delta: -25, razon: 'La ganadería de las zonas altas es la puerta de entrada de pasturas invasoras y la principal presión sobre la vegetación nativa.' },
+      { uso: 'reserva', delta: 30, razon: 'Un archipiélago donde la mayor parte de lo que crece no crece en ningún otro lado.' },
     ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -661,6 +681,13 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Diploglossus millepunctatus',
       'Cangrejo de Malpelo',
     ],
+    aptitud: [
+      { uso: 'huerta', delta: -40, razon: 'No hay suelo: detritos y guano en fisuras de roca volcánica. No hay dónde plantar.' },
+      { uso: 'frutales', delta: -40, razon: 'No hay suelo ni agua dulce, y la isla es un santuario marino deshabitado.' },
+      { uso: 'pasturas', delta: -40, razon: 'No hay suelo ni vegetación que sostenga carga alguna.' },
+      { uso: 'forestal', delta: -40, razon: 'Sobre roca desnuda no hay forestación posible.' },
+      { uso: 'reserva', delta: 30, razon: 'El valor de Malpelo está en las aves marinas y en el mar que la rodea, y depende de que la isla siga sin uso.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -684,6 +711,12 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Atriplex insular',
       'Helechos rupícolas',
       'Liquenes',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -35, razon: 'Islotes hiperáridos sin agua dulce permanente. No hay de dónde regar.' },
+      { uso: 'frutales', delta: -35, razon: 'Suelo somero, viento y sal constantes, y ninguna especie introducida que no sea un riesgo para una flora endémica mínima.' },
+      { uso: 'pasturas', delta: -35, razon: 'Sin agua ni cobertura que aguante pastoreo. El guano de las aves es el único aporte de nutrientes y depende de que no se las moleste.' },
+      { uso: 'reserva', delta: 30, razon: 'La vegetación terrestre es escasa y endémica: lo que hay sólo se sostiene si no se toca.' },
     ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
@@ -812,6 +845,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Guabiroba',
     ],
     cultivos: ['yerba_mate', 'manzano', 'durazno', 'arandano', 'maiz_tropical', 'nogal', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'forestal', delta: 0, razon: 'De la floresta con araucaria queda una fracción mínima de lo que hubo, y la especie está amenazada. Lo que corresponde es enriquecer y manejar bajo dosel —la yerba mate sombreada es el ejemplo vivo—, no medir el rodal como recurso maderero.' },
+      { uso: 'reserva', delta: 25, razon: 'Cada remanente en pie vale más como remanente que como cualquier otra cosa: la conectividad entre parches es lo que le falta al sistema.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -838,6 +875,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Bromelias',
     ],
     cultivos: ['cacao', 'platano', 'yuca', 'cana_azucar', 'coco', 'maracuya', 'pupunha', 'inga'],
+    aptitud: [
+      { uso: 'forestal', delta: 0, razon: 'Es uno de los bosques más reducidos y más fragmentados del mundo. La producción que corresponde es agroforestal sobre lo ya abierto, no manejo del remanente.' },
+      { uso: 'reserva', delta: 25, razon: 'El valor del parche está en que siga siendo parche y se conecte con los vecinos.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -864,6 +905,10 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Barriguda',
     ],
     cultivos: ['yerba_mate', 'cana_azucar', 'naranjo', 'maracuya', 'maiz_tropical', 'nogal_cafetero', 'crotalaria', 'vetiver'],
+    aptitud: [
+      { uso: 'forestal', delta: 0, razon: 'Es uno de los bosques más reducidos y más fragmentados del mundo. La producción que corresponde es agroforestal sobre lo ya abierto, no manejo del remanente.' },
+      { uso: 'reserva', delta: 25, razon: 'El valor del parche está en que siga siendo parche y se conecte con los vecinos.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -890,6 +935,11 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Cereus fernambucensis',
     ],
     cultivos: ['coco', 'yuca', 'batata', 'name', 'maracuya', 'caupi'],
+    aptitud: [
+      { uso: 'forestal', delta: -15, razon: 'Arenas cuaternarias detrás del cordón dunar: el bosque de restinga se sostiene sobre poco y no aguanta extracción.' },
+      { uso: 'huerta', delta: -30, razon: 'Arena muy permeable, ácida y pobre, con sal y viento encima. Lo que se cultiva acá se cultiva en cantero levantado y con materia orgánica traída.' },
+      { uso: 'reserva', delta: 25, razon: 'La restinga es lo que fija la duna y frena el mar. Abrirla es perder la defensa de costa.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1019,6 +1069,12 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Brocchinia',
       'Orquídeas tepuyanas',
     ],
+    aptitud: [
+      { uso: 'forestal', delta: -30, razon: 'Suelos someros sobre arenisca y crecimiento lentísimo: no hay volumen que extraer ni tiempo para reponerlo.' },
+      { uso: 'huerta', delta: -35, razon: 'Casi no hay suelo, y el que hay es ácido y extremadamente pobre. La agricultura de los tepuyes está en las tierras bajas del pie, no arriba.' },
+      { uso: 'pasturas', delta: -30, razon: 'La vegetación de cumbre no rebrota como una pastura y el endemismo por tepuy es de los más altos del planeta.' },
+      { uso: 'reserva', delta: 30, razon: 'Las turberas de cumbre almacenan agua y carbono y alimentan las cuencas de abajo. Es lo que el lugar hace mejor.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
@@ -1133,6 +1189,12 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Aves marinas',
     ],
     cultivos: ['batata', 'taro', 'name', 'platano', 'cana_azucar', 'coco'],
+    aptitud: [
+      { uso: 'huerta', delta: 10, razon: 'La agricultura tradicional rapanui resolvió acá el viento y la sequía edáfica con manavai —recintos de piedra— y acolchado de roca. Es un sistema probado en la isla, no un cultivo trasplantado.' },
+      { uso: 'forestal', delta: -10, razon: 'La isla ya perdió su bosque una vez. La forestación con especies introducidas no lo repone: lo que falta es cobertura permanente contra la erosión eólica.' },
+      { uso: 'pasturas', delta: -20, razon: 'El sobrepastoreo sostenido es lo que mantiene el suelo descubierto y la erosión activa.' },
+      { uso: 'reserva', delta: 15, razon: 'Queda poquísima vegetación nativa y está en sitios muy acotados.' },
+    ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },

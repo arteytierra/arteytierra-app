@@ -611,7 +611,28 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical para ECO_ID 440; conserva identidad de bosque mixto de altura."
-    }
+    },
+    "cultivos": [
+      "yerba_mate",
+      "manzano",
+      "durazno",
+      "arandano",
+      "maiz_tropical",
+      "nogal",
+      "trebol_blanco"
+    ],
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": 0,
+        "razon": "De la floresta con araucaria queda una fracción mínima de lo que hubo, y la especie está amenazada. Lo que corresponde es enriquecer y manejar bajo dosel —la yerba mate sombreada es el ejemplo vivo—, no medir el rodal como recurso maderero."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "Cada remanente en pie vale más como remanente que como cualquier otra cosa: la conectividad entre parches es lo que le falta al sistema."
+      }
+    ]
   },
   {
     "id": "mata_atlantica_restingas",
@@ -658,7 +679,32 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 441 y 485; la restinga no es bosque de tierra firme."
-    }
+    },
+    "cultivos": [
+      "coco",
+      "yuca",
+      "batata",
+      "name",
+      "maracuya",
+      "caupi"
+    ],
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": -15,
+        "razon": "Arenas cuaternarias detrás del cordón dunar: el bosque de restinga se sostiene sobre poco y no aguanta extracción."
+      },
+      {
+        "uso": "huerta",
+        "delta": -30,
+        "razon": "Arena muy permeable, ácida y pobre, con sal y viento encima. Lo que se cultiva acá se cultiva en cantero levantado y con materia orgánica traída."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "La restinga es lo que fija la duna y frena el mar. Abrirla es perder la defensa de costa."
+      }
+    ]
   },
   {
     "id": "mata_atlantica_costera",
@@ -706,7 +752,29 @@
       ],
       "confianza": "alta",
       "notas": "Agrupa 442, 491 y 500; siempre mostrar ECO_NAME para distinguir Bahía, Pernambuco y Serra do Mar."
-    }
+    },
+    "cultivos": [
+      "cacao",
+      "platano",
+      "yuca",
+      "cana_azucar",
+      "coco",
+      "maracuya",
+      "pupunha",
+      "inga"
+    ],
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": 0,
+        "razon": "Es uno de los bosques más reducidos y más fragmentados del mundo. La producción que corresponde es agroforestal sobre lo ya abierto, no manejo del remanente."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "El valor del parche está en que siga siendo parche y se conecte con los vecinos."
+      }
+    ]
   },
   {
     "id": "mata_atlantica_interior",
@@ -753,7 +821,29 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 443 y 492."
-    }
+    },
+    "cultivos": [
+      "yerba_mate",
+      "cana_azucar",
+      "naranjo",
+      "maracuya",
+      "maiz_tropical",
+      "nogal_cafetero",
+      "crotalaria",
+      "vetiver"
+    ],
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": 0,
+        "razon": "Es uno de los bosques más reducidos y más fragmentados del mundo. La producción que corresponde es agroforestal sobre lo ya abierto, no manejo del remanente."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "El valor del parche está en que siga siendo parche y se conecte con los vecinos."
+      }
+    ]
   },
   {
     "id": "amazonia_noroccidental_tierra_firme",
@@ -801,7 +891,16 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 446, 473, 483 y 503. Excluye várzeas e igapós."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "platano",
+      "cacao",
+      "maracuya",
+      "maiz_tropical",
+      "inga",
+      "crotalaria"
+    ]
   },
   {
     "id": "amazonia_suroccidental_tierra_firme",
@@ -848,7 +947,17 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 474, 497, 505 y 512."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "castana_brasil",
+      "pupunha",
+      "cacao",
+      "platano",
+      "maracuya",
+      "maiz_tropical",
+      "inga"
+    ]
   },
   {
     "id": "amazonia_oriental_tierra_firme",
@@ -893,7 +1002,17 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 476, 507, 508 y 518; ECO_NAME sigue visible por diferencias entre interfluvios."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "acai",
+      "castana_brasil",
+      "pupunha",
+      "cacao",
+      "platano",
+      "caupi",
+      "inga"
+    ]
   },
   {
     "id": "varzeas_igapos_amazonicos",
@@ -941,7 +1060,27 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en cinco ECO_ID inundables. La ficha conserva la distinción várzea/igapó en el texto."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "acai",
+      "yuca",
+      "platano",
+      "taro",
+      "caupi"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": 0,
+        "razon": "La regla del bioma —la fertilidad está en la biomasa, no en el suelo— no vale en la várzea: la crecida repone limo todos los años. La huerta va en la bajante, sobre el sedimento nuevo, y se levanta antes de la próxima creciente. En igapó, sobre arena ácida, no."
+      },
+      {
+        "uso": "reserva",
+        "delta": 10,
+        "razon": "El pulso de crecida es lo que hace el sistema. Drenar para ganar tierra firme lo cancela, y con él se va la fertilidad que lo hacía valer la pena."
+      }
+    ]
   },
   {
     "id": "guayanas_bosques_tierras_bajas",
@@ -994,7 +1133,17 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 465, 466, 484 y 511."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "acai",
+      "cacao",
+      "platano",
+      "arroz",
+      "caupi",
+      "pupunha",
+      "inga"
+    ]
   },
   {
     "id": "guayanas_bosques_inundables_delta",
@@ -1044,7 +1193,15 @@
       ],
       "confianza": "alta",
       "notas": "ECO_ID 463 sale de selva_tropical y se une con 488, que era un vacío."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "yuca",
+      "acai",
+      "platano",
+      "coco",
+      "caupi"
+    ]
   },
   {
     "id": "pantepui_guayana_alta",
@@ -1095,7 +1252,29 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en 464 y agrega 490. No divulgar ubicaciones de especies raras."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": -30,
+        "razon": "Suelos someros sobre arenisca y crecimiento lentísimo: no hay volumen que extraer ni tiempo para reponerlo."
+      },
+      {
+        "uso": "huerta",
+        "delta": -35,
+        "razon": "Casi no hay suelo, y el que hay es ácido y extremadamente pobre. La agricultura de los tepuyes está en las tierras bajas del pie, no arriba."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -30,
+        "razon": "La vegetación de cumbre no rebrota como una pastura y el endemismo por tepuy es de los más altos del planeta."
+      },
+      {
+        "uso": "reserva",
+        "delta": 30,
+        "razon": "Las turberas de cumbre almacenan agua y carbono y alimentan las cuencas de abajo. Es lo que el lugar hace mejor."
+      }
+    ]
   },
   {
     "id": "campinaranas_aguas_negras",
@@ -1143,7 +1322,24 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza selva_tropical en ECO_ID 498."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "forestal",
+        "delta": -20,
+        "razon": "El bioma húmedo premia el manejo forestal porque el ciclo de nutrientes es rápido. Sobre arena blanca no lo es: el espodosol es oligotrófico y el sistema tarda décadas en volver. Extraer madera acá descapitaliza el suelo, no lo aprovecha."
+      },
+      {
+        "uso": "huerta",
+        "delta": -35,
+        "razon": "Arena ácida sin reserva de nutrientes ni capacidad de retener agua. Producir exige traer todo de afuera, todos los años."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "Es sensible al tránsito y al fuego, y una vez quemada la campinarana no vuelve al estado anterior en una vida humana."
+      }
+    ]
   },
   {
     "id": "caatinga_enclaves_humedos",
@@ -1189,7 +1385,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 445; no confundir con Caatinga seca 525."
-    }
+    },
+    "cultivos": [
+      "cafe",
+      "platano",
+      "yuca",
+      "maiz_tropical",
+      "caupi",
+      "batata",
+      "naranjo",
+      "inga"
+    ]
   },
   {
     "id": "bosques_montanos_andes_norte",
@@ -1241,7 +1447,18 @@
       ],
       "confianza": "alta",
       "notas": "Agrega cinco ECO_ID montanos de Colombia, Ecuador y Venezuela."
-    }
+    },
+    "cultivos": [
+      "cafe",
+      "lulo",
+      "mora_andina",
+      "tomate_arbol",
+      "arracacha",
+      "aguacate",
+      "platano_sombra",
+      "inga",
+      "nogal_cafetero"
+    ]
   },
   {
     "id": "montanas_caribe_norte",
@@ -1289,7 +1506,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega 456 y 499; el aislamiento exige mostrar ECO_NAME."
-    }
+    },
+    "cultivos": [
+      "cafe",
+      "aguacate",
+      "lulo",
+      "mora_andina",
+      "maracuya",
+      "platano_sombra",
+      "inga",
+      "nogal_cafetero"
+    ]
   },
   {
     "id": "bosques_humedos_caribe_colombia_venezuela",
@@ -1333,7 +1560,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega 447 y 478. No reemplaza Chocó-Darién 454, reservado en la entrega anterior."
-    }
+    },
+    "cultivos": [
+      "cacao",
+      "platano",
+      "yuca",
+      "maiz_tropical",
+      "cana_azucar",
+      "guandul",
+      "gliricidia",
+      "nogal_cafetero"
+    ]
   },
   {
     "id": "bosque_humedo_occidente_ecuador",
@@ -1375,7 +1612,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 516."
-    }
+    },
+    "cultivos": [
+      "cacao",
+      "platano",
+      "yuca",
+      "maracuya",
+      "vainilla",
+      "inga",
+      "nogal_cafetero",
+      "pasto_elefante"
+    ]
   },
   {
     "id": "valles_secos_interandinos",
@@ -1431,7 +1678,29 @@
       ],
       "confianza": "alta",
       "notas": "Prioridad 1. Agrupa Marañón, valles secos bolivianos, Cauca, Magdalena y Patía; ECO_NAME debe permanecer visible."
-    }
+    },
+    "cultivos": [
+      "maiz_tropical",
+      "poroto_trepador",
+      "chile_seco",
+      "aguacate",
+      "vid",
+      "cana_azucar",
+      "guandul",
+      "nopal"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": 0,
+        "razon": "A diferencia de la ladera abierta, el fondo de valle con acequia es tierra de huerta: es donde está la agricultura andina de riego. El límite es el agua y la sal de los fondos cerrados, no la pendiente."
+      },
+      {
+        "uso": "frutales",
+        "delta": 10,
+        "razon": "Valle seco con riego y amplitud térmica marcada es el sitio frutícola de los Andes."
+      }
+    ]
   },
   {
     "id": "bosques_secos_caribe_colombia_venezuela",
@@ -1477,7 +1746,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega Apure–Villavicencio, Lara–Falcón, Maracaibo y Sinú. Guajira xerófila queda aparte."
-    }
+    },
+    "cultivos": [
+      "sorgo",
+      "mijo",
+      "maiz_tropical",
+      "chile_seco",
+      "guandul",
+      "gliricidia",
+      "nopal",
+      "vetiver"
+    ]
   },
   {
     "id": "bosques_secos_tumbes_ecuador_peru",
@@ -1529,7 +1808,16 @@
       ],
       "confianza": "alta",
       "notas": "Agrega 531 y 549; no mezclar con desierto de Sechura 608."
-    }
+    },
+    "cultivos": [
+      "maiz_tropical",
+      "caupi",
+      "sesamo",
+      "chile_seco",
+      "algodon",
+      "gliricidia",
+      "nopal"
+    ]
   },
   {
     "id": "caatinga",
@@ -1575,7 +1863,30 @@
       ],
       "confianza": "alta",
       "notas": "Prioridad 1. Agrega ECO_ID 525 y se mantiene separada de enclaves húmedos 445."
-    }
+    },
+    "cultivos": [
+      "umbu",
+      "sisal",
+      "caupi",
+      "mijo",
+      "sorgo",
+      "mani",
+      "batata",
+      "nopal",
+      "moringa"
+    ],
+    "aptitud": [
+      {
+        "uso": "pasturas",
+        "delta": -5,
+        "razon": "El premio al pastoreo del bosque seco no vale acá: sobre roca cristalina somera y con lluvia irregular, la carga se paga con suelo desnudo y erosión, no con menos kilos. Lo que aguanta es caatinga en pie con ramoneo, no pastura sembrada."
+      },
+      {
+        "uso": "huerta",
+        "delta": -20,
+        "razon": "Sin cosecha de agua —cisterna, barreiro, barragem— la huerta no pasa la seca."
+      }
+    ]
   },
   {
     "id": "mata_atlantica_seca",
@@ -1621,7 +1932,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 524."
-    }
+    },
+    "cultivos": [
+      "cafe",
+      "maiz_tropical",
+      "soja",
+      "cana_azucar",
+      "naranjo",
+      "maracuya",
+      "crotalaria",
+      "vetiver"
+    ]
   },
   {
     "id": "bosque_seco_chiquitano",
@@ -1664,7 +1985,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 529. No es una extensión del Chaco seco."
-    }
+    },
+    "cultivos": [
+      "maiz_tropical",
+      "soja",
+      "sorgo",
+      "caupi",
+      "sesamo",
+      "cana_azucar",
+      "algarrobo_ar",
+      "vetiver"
+    ]
   },
   {
     "id": "bosque_seco_mato_grosso",
@@ -1710,7 +2041,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 481; RESOLVE lo ubica en bioma húmedo pese al nombre dry forests."
-    }
+    },
+    "cultivos": [
+      "soja",
+      "maiz_tropical",
+      "sorgo",
+      "algodon",
+      "caupi",
+      "cana_azucar",
+      "crotalaria",
+      "vetiver"
+    ]
   },
   {
     "id": "bosques_babacu_maranhao",
@@ -1756,7 +2097,17 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 540. El conocimiento de quebradeiras va sólo en la capa territorial."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "arroz",
+      "caupi",
+      "maiz_tropical",
+      "batata",
+      "coco",
+      "cana_azucar",
+      "vetiver"
+    ]
   },
   {
     "id": "sabanas_guayanesas",
@@ -1805,7 +2156,16 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza sabana_cerrado para ECO_ID 570; no trasladar prácticas del Cerrado brasileño."
-    }
+    },
+    "cultivos": [
+      "yuca",
+      "maiz_tropical",
+      "caupi",
+      "sorgo",
+      "crotalaria",
+      "pasto_elefante",
+      "gliricidia"
+    ]
   },
   {
     "id": "llanos_orinoquia",
@@ -1848,7 +2208,24 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza sabana_cerrado para ECO_ID 572."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "maiz_tropical",
+      "cana_azucar",
+      "guandul",
+      "crotalaria",
+      "pasto_elefante",
+      "gliricidia",
+      "vetiver"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -15,
+        "razon": "Los suelos ácidos de la altillanura tienen aluminio intercambiable alto: sin encalado y fósforo la huerta no arranca por más que llueva."
+      }
+    ]
   },
   {
     "id": "sabanas_beni",
@@ -1892,7 +2269,29 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 565. El manejo de montículos prehispánicos requiere investigación territorial propia."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "yuca",
+      "platano",
+      "maiz_tropical",
+      "caupi",
+      "cacao",
+      "pasto_elefante",
+      "vetiver"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": 0,
+        "razon": "El camellón precolombino es la respuesta local: la huerta va arriba de la loma construida, no en el bajo. Media docena de centímetros de cota decide si la raíz respira."
+      },
+      {
+        "uso": "reserva",
+        "delta": 10,
+        "razon": "El pulso de anegamiento y seca es el sistema. Drenarlo lo apaga."
+      }
+    ]
   },
   {
     "id": "campos_rupestres",
@@ -1942,7 +2341,19 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 566. No publicar sitios exactos de recolección de flora."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -30,
+        "razon": "Suelo somero, arenoso y oligotrófico sobre afloramiento: no hay perfil donde poner una huerta."
+      },
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "Endemismo altísimo y por afloramiento, cada uno con su flora: lo que corresponde acá es no usar."
+      }
+    ]
   },
   {
     "id": "campos_uruguayos",
@@ -1990,7 +2401,17 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza pampa para ECO_ID 574; no asumir suelo pampeano profundo en todo el polígono."
-    }
+    },
+    "cultivos": [
+      "trigo",
+      "avena",
+      "girasol",
+      "maiz_tropical",
+      "durazno",
+      "vid",
+      "alfalfa",
+      "trebol_blanco"
+    ]
   },
   {
     "id": "chaco_humedo",
@@ -2042,7 +2463,18 @@
       ],
       "confianza": "alta",
       "notas": "Prioridad 1. Agrega ECO_ID 571 y queda explícitamente separado de Chaco seco 569."
-    }
+    },
+    "cultivos": [
+      "maiz_tropical",
+      "sorgo",
+      "cana_azucar",
+      "naranjo",
+      "girasol",
+      "mistol",
+      "algarrobo_ar",
+      "chanar",
+      "vetiver"
+    ]
   },
   {
     "id": "humedales_guayaquil",
@@ -2084,7 +2516,15 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 582."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "cacao",
+      "platano",
+      "coco",
+      "caupi",
+      "cana_azucar"
+    ]
   },
   {
     "id": "humedales_orinoco",
@@ -2127,7 +2567,13 @@
       ],
       "confianza": "alta",
       "notas": "Agrega ECO_ID 583; no se activa saber pesquero por ecorregión completa."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "yuca",
+      "guandul",
+      "pasto_elefante"
+    ]
   },
   {
     "id": "pantanal",
@@ -2179,7 +2625,16 @@
       ],
       "confianza": "alta",
       "notas": "Prioridad 1. Agrega ECO_ID 584."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "maiz_tropical",
+      "caupi",
+      "batata",
+      "cana_azucar",
+      "pasto_elefante",
+      "algarrobo_ar"
+    ]
   },
   {
     "id": "humedales_parana_mesopotamia",
@@ -2229,7 +2684,16 @@
       ],
       "confianza": "alta",
       "notas": "Agrega 585 y 586; la dinámica fluvial es la condición dominante."
-    }
+    },
+    "cultivos": [
+      "arroz",
+      "yerba_mate",
+      "naranjo",
+      "maiz_tropical",
+      "trebol_blanco",
+      "pasto_elefante",
+      "sauce_mimbre"
+    ]
   },
   {
     "id": "puna_seca_central",
@@ -2278,7 +2742,33 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza puna_altoandino en ECO_ID 587 para separar el extremo seco."
-    }
+    },
+    "cultivos": [
+      "quinoa",
+      "papa",
+      "oca",
+      "ulluco",
+      "tarwi",
+      "cebada",
+      "alfalfa"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -25,
+        "razon": "Sobre los 3.500 m, con helada casi todo el año y aridisoles pedregosos, la huerta sólo cierra bajo cubierta o en terraza abrigada."
+      },
+      {
+        "uso": "frutales",
+        "delta": -25,
+        "razon": "No hay ventana libre de helada suficiente para fruta de carozo o de pepita a campo."
+      },
+      {
+        "uso": "pasturas",
+        "delta": 10,
+        "razon": "La carga baja sobre pastizal y tolar es el uso histórico. El bofedal es el que sostiene la majada en seca, y es también el que no aguanta sobrecarga."
+      }
+    ]
   },
   {
     "id": "puna_humeda_central",
@@ -2325,7 +2815,17 @@
       ],
       "confianza": "alta",
       "notas": "Reemplaza puna_altoandino en ECO_ID 589."
-    }
+    },
+    "cultivos": [
+      "papa",
+      "quinoa",
+      "oca",
+      "ulluco",
+      "tarwi",
+      "amaranto",
+      "cebada",
+      "trebol_blanco"
+    ]
   },
   {
     "id": "paramos_andinos",
@@ -2376,7 +2876,32 @@
       ],
       "confianza": "alta",
       "notas": "Prioridad 1. Agrega cuatro ECO_ID y corrige la confusión previa con puna por altitud."
-    }
+    },
+    "cultivos": [
+      "papa",
+      "oca",
+      "ulluco",
+      "tarwi",
+      "quinoa",
+      "cebada"
+    ],
+    "aptitud": [
+      {
+        "uso": "reserva",
+        "delta": 25,
+        "razon": "El páramo es la fábrica de agua de las ciudades andinas: el suelo orgánico retiene en lluvia y entrega en seca. Drenarlo, quemarlo o ararlo libera carbono y no se recompone en una vida."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -15,
+        "razon": "El pisoteo compacta el suelo orgánico y corta justo la función de retención por la que el páramo importa aguas abajo."
+      },
+      {
+        "uso": "forestal",
+        "delta": -10,
+        "razon": "Forestar el páramo con pino o eucalipto lo seca: baja el rendimiento hídrico de la cuenca en vez de subirlo. Acá el bioma montano dice lo contrario de lo que corresponde."
+      }
+    ]
   },
   {
     "id": "matorrales_xericos_caribe_suramericano",
@@ -2422,7 +2947,14 @@
       ],
       "confianza": "alta",
       "notas": "Agrega Araya-Paria, Guajira-Barranquilla, La Costa y Paraguaná; ECO_ID 599 sigue reservado al Caribe insular."
-    }
+    },
+    "cultivos": [
+      "mijo",
+      "sorgo",
+      "chile_seco",
+      "guandul",
+      "nopal"
+    ]
   },
   {
     "id": "manglares_amazon_orinoco_caribe_sur",
@@ -2605,7 +3137,35 @@
       ],
       "confianza": "alta",
       "notas": "Auditoría insular. Agrega ECO_ID 560 con ficha propia; no agrupar con bosque valdiviano continental."
-    }
+    },
+    "cultivos": [
+      "papa",
+      "avena",
+      "manzano",
+      "trebol_blanco"
+    ],
+    "aptitud": [
+      {
+        "uso": "frutales",
+        "delta": -20,
+        "razon": "El bioma templado premia los frutales; acá cada especie que se introduce es un riesgo. Más de la mitad de la flora es endémica y las invasoras ya son la principal amenaza del archipiélago."
+      },
+      {
+        "uso": "forestal",
+        "delta": -25,
+        "razon": "Plantar en pendiente volcánica de isla es cambiar bosque endémico por especies que después no se sacan."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -25,
+        "razon": "Los herbívoros introducidos son parte del problema: sin cobertura, la pendiente volcánica se va al mar."
+      },
+      {
+        "uso": "reserva",
+        "delta": 30,
+        "razon": "Es una de las floras insulares más singulares del planeta y cabe entera en unos pocos kilómetros cuadrados."
+      }
+    ]
   },
   {
     "id": "islas_desventuradas",
@@ -2651,7 +3211,29 @@
       ],
       "confianza": "media",
       "notas": "Auditoría insular. Agrega ECO_ID 562; información terrestre limitada y sin saberes territoriales publicables."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -35,
+        "razon": "Islotes hiperáridos sin agua dulce permanente. No hay de dónde regar."
+      },
+      {
+        "uso": "frutales",
+        "delta": -35,
+        "razon": "Suelo somero, viento y sal constantes, y ninguna especie introducida que no sea un riesgo para una flora endémica mínima."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -35,
+        "razon": "Sin agua ni cobertura que aguante pastoreo. El guano de las aves es el único aporte de nutrientes y depende de que no se las moleste."
+      },
+      {
+        "uso": "reserva",
+        "delta": 30,
+        "razon": "La vegetación terrestre es escasa y endémica: lo que hay sólo se sostiene si no se toca."
+      }
+    ]
   },
   {
     "id": "isla_malpelo_xerica",
@@ -2693,7 +3275,34 @@
       ],
       "confianza": "alta",
       "notas": "Auditoría insular. Agrega ECO_ID 604; no presentar como terreno agrícola."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -40,
+        "razon": "No hay suelo: detritos y guano en fisuras de roca volcánica. No hay dónde plantar."
+      },
+      {
+        "uso": "frutales",
+        "delta": -40,
+        "razon": "No hay suelo ni agua dulce, y la isla es un santuario marino deshabitado."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -40,
+        "razon": "No hay suelo ni vegetación que sostenga carga alguna."
+      },
+      {
+        "uso": "forestal",
+        "delta": -40,
+        "razon": "Sobre roca desnuda no hay forestación posible."
+      },
+      {
+        "uso": "reserva",
+        "delta": 30,
+        "razon": "El valor de Malpelo está en las aves marinas y en el mar que la rodea, y depende de que la isla siga sin uso."
+      }
+    ]
   },
   {
     "id": "galapagos_matorral_xerico",
@@ -2735,7 +3344,29 @@
       ],
       "confianza": "alta",
       "notas": "Auditoría fuera de la caja continental. Agrega ECO_ID 601, pero la UI debe advertir que RESOLVE no separa las zonas húmedas insulares."
-    }
+    },
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": -15,
+        "razon": "La zona alta húmeda produce, pero la baja es árida y de suelo discontinuo. Lo que decide no es la fertilidad sino el agua y la bioseguridad: en Galápagos cada insumo que entra puede traer una especie que no se va más."
+      },
+      {
+        "uso": "frutales",
+        "delta": -25,
+        "razon": "La mora, la guayaba y otras frutales introducidas son hoy las invasoras que más territorio ganan en las islas."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -25,
+        "razon": "La ganadería de las zonas altas es la puerta de entrada de pasturas invasoras y la principal presión sobre la vegetación nativa."
+      },
+      {
+        "uso": "reserva",
+        "delta": 30,
+        "razon": "Un archipiélago donde la mayor parte de lo que crece no crece en ningún otro lado."
+      }
+    ]
   },
   {
     "id": "rapa_nui_bosque_subtropical_transformado",
@@ -2777,6 +3408,36 @@
       ],
       "confianza": "media",
       "notas": "Auditoría fuera de la caja continental. Agrega ECO_ID 628; no reconstruir prácticas históricas ni sitios sagrados en la app."
-    }
+    },
+    "cultivos": [
+      "batata",
+      "taro",
+      "name",
+      "platano",
+      "cana_azucar",
+      "coco"
+    ],
+    "aptitud": [
+      {
+        "uso": "huerta",
+        "delta": 10,
+        "razon": "La agricultura tradicional rapanui resolvió acá el viento y la sequía edáfica con manavai —recintos de piedra— y acolchado de roca. Es un sistema probado en la isla, no un cultivo trasplantado."
+      },
+      {
+        "uso": "forestal",
+        "delta": -10,
+        "razon": "La isla ya perdió su bosque una vez. La forestación con especies introducidas no lo repone: lo que falta es cobertura permanente contra la erosión eólica."
+      },
+      {
+        "uso": "pasturas",
+        "delta": -20,
+        "razon": "El sobrepastoreo sostenido es lo que mantiene el suelo descubierto y la erosión activa."
+      },
+      {
+        "uso": "reserva",
+        "delta": 15,
+        "razon": "Queda poquísima vegetación nativa y está en sitios muy acotados."
+      }
+    ]
   }
 ]
