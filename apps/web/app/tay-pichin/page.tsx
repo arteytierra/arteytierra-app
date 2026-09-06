@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Ecoescuela y Ecohostel',
@@ -38,6 +40,12 @@ export default function TayPichinPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Inicio', url: '/' },
+          { name: 'Tay Pichín', url: '/tay-pichin' },
+        ])}
+      />
       <main>
       {/* HERO */}
       <section className="relative h-[80vh] min-h-[540px] bg-ink-950 flex items-end overflow-hidden">

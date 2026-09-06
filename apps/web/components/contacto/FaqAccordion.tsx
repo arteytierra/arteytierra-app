@@ -1,32 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { CONTACTO_FAQ, type FaqItem } from '@/lib/seo/faq-contacto';
 
-const FAQ = [
-  {
-    q: '¿Trabajan fuera de Argentina?',
-    a: 'Sí. Hemos trabajado en Argentina, Colombia, Perú, Bolivia, Italia y Francia. Operamos de manera itinerante en cualquier parte del mundo donde nos inviten a sembrar.',
-  },
-  {
-    q: '¿Cuánto cuesta un proyecto?',
-    a: 'Cada proyecto es único — depende de la escala, los materiales locales disponibles, la complejidad del terreno y el alcance del acompañamiento. Después de una primera conversación podemos darte un rango estimativo.',
-  },
-  {
-    q: '¿Necesito experiencia para los talleres?',
-    a: 'No. Los talleres están pensados para todo nivel — se aprende haciendo, con acompañamiento del equipo. Lo que sí hace falta es disposición real a trabajar con el cuerpo y aprender en grupo.',
-  },
-  {
-    q: '¿En qué idiomas trabajan?',
-    a: 'Español, francés, portugués e inglés. Para proyectos en otros idiomas, podemos coordinar traducción.',
-  },
-];
-
-export function FaqAccordion() {
+export function FaqAccordion({ items = CONTACTO_FAQ }: { items?: FaqItem[] }) {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
     <div className="flex flex-col">
-      {FAQ.map((item, i) => (
+      {items.map((item, i) => (
         <div key={i} className="border-t border-clay-700/30 last:border-b">
           <button
             onClick={() => setOpen(open === i ? null : i)}

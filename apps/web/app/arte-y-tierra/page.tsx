@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: { absolute: 'Arte y Tierra — Diseño, asesorías y proyectos' },
@@ -38,6 +40,12 @@ export default function ArteYTierraPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Inicio', url: '/' },
+          { name: 'Arte y Tierra', url: '/arte-y-tierra' },
+        ])}
+      />
       <main>
         {/* HERO */}
         <section className="bg-ink-950 py-24 px-6">

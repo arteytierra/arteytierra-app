@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
 export const metadata: Metadata = {
   title: 'Nosotros',
@@ -52,6 +54,12 @@ export default function NosotrosPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Inicio', url: '/' },
+          { name: 'Nosotros', url: '/nosotros' },
+        ])}
+      />
       <main>
       {/* HERO */}
       <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">

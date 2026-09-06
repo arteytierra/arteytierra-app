@@ -5,6 +5,9 @@ import { ContactForm } from '@/components/contacto/ContactForm';
 import { FaqAccordion } from '@/components/contacto/FaqAccordion';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { faqJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
+import { CONTACTO_FAQ } from '@/lib/seo/faq-contacto';
 
 export const metadata: Metadata = {
   title: 'Contacto',
@@ -16,6 +19,15 @@ export default function ContactoPage() {
   return (
     <>
       <SiteHeader />
+      <JsonLd
+        data={[
+          faqJsonLd(CONTACTO_FAQ),
+          breadcrumbJsonLd([
+            { name: 'Inicio', url: '/' },
+            { name: 'Contacto', url: '/contacto' },
+          ]),
+        ]}
+      />
       <main>
       {/* HERO */}
       <section className="relative h-[55vh] min-h-[380px] bg-ink-950 flex items-end overflow-hidden">
