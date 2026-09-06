@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest';
 import {
   colorElevacion, colorPendiente, gradienteCss,
   PALETAS_ELEV, PALETAS_PEND, PALETA_ELEV_POR_DEFECTO, PALETA_PEND_POR_DEFECTO,
+  normalizarPaletaShader, PALETA_SHADER_POR_DEFECTO,
   type Paleta, type PaletaElev, type PaletaPend,
 } from '@/lib/shaders';
 
@@ -106,5 +107,40 @@ describe('colorPendiente', () => {
       const igual = colorPendiente(20, 40, k) === colorPendiente(20, 40);
       expect(igual).toBe(k === PALETA_PEND_POR_DEFECTO);
     }
+  });
+});
+
+describe('la paleta elegida se recuerda entre recargas', () => {
+  /**
+   * La elección de rampa se guarda en el navegador, así que lo que se lee de
+   * vuelta lo escribió una versión anterior de la app. Si una rampa se renombra
+   * o se saca, ese valor viejo sigue guardado: sin validarlo, `PALETAS_ELEV[p]`
+   * da `undefined` y el shader se pinta con nada. Por eso se valida contra el
+   * catálogo en vez de confiar en lo guardado.
+   */
+  it('acepta una preferencia que existe en el catálogo', () => {
+    expect(normalizarPaletaShader({ elev: 'viridis', pend: 'extrema' }))
+      .toEqual({ elev: 'viridis', pend: 'extrema' });
+  });
+
+  it('una rampa que ya no existe vuelve al defecto, no a undefined', () => {
+    const r = normalizarPaletaShader({ elev: 'rampa_que_borramos', pend: 'extrema' });
+    expect(r.elev).toBe(PALETA_ELEV_POR_DEFECTO);
+    expect(PALETAS_ELEV[r.elev]).toBeDefined();
+    expect(r.pend).toBe('extrema');   // el que sí existe no se pierde de paso
+  });
+
+  it('sin nada guardado —primera visita o storage limpio— da el defecto', () => {
+    for (const vacio of [null, undefined, {}, 'no es un objeto', 42]) {
+      expect(normalizarPaletaShader(vacio)).toEqual(PALETA_SHADER_POR_DEFECTO);
+    }
+  });
+
+  it('el defecto es una paleta real de cada catálogo', () => {
+    expect(PALETAS_ELEV[PALETA_SHADER_POR_DEFECTO.elev]).toBeDefined();
+    expect(PALETAS_PEND[PALETA_SHADER_POR_DEFECTO.pend]).toBeDefined();
+    expect(PALETA_SHADER_POR_DEFECTO).toEqual({
+      elev: PALETA_ELEV_POR_DEFECTO, pend: PALETA_PEND_POR_DEFECTO,
+    });
   });
 });

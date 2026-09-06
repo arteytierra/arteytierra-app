@@ -10,7 +10,7 @@ import { PanelCapas } from './mapa/PanelCapas';
 import { ExportItem, MojonItem, PinItem, BarraEstado } from './mapa/controles';
 import {
   Trash2, LogOut, Map, ChevronRight, MapPin, Cloud, FolderOpen, Mountain,
-  FileText, Sun, Eye, Camera, X, Undo2, Redo2, FileDown,
+  FileText, Sun, Eye, Camera, X, FileDown,
   FileUp, ImagePlus, Save, Download, CloudOff, Check, Moon, Palette,
   IdCard, DollarSign, BookOpen, Keyboard, Scale, ShieldCheck, Sparkles, ClipboardList,
   Archive, Settings, Upload, Image as ImageIcon,
@@ -53,6 +53,7 @@ import { usePerfilElevacion } from '@/hooks/usePerfilElevacion';
 import { useCuenca } from '@/hooks/useCuenca';
 import { useCadSnap } from '@/hooks/useCadSnap';
 import { useVistaShell } from '@/hooks/useVistaShell';
+import { usePaletaShader } from '@/hooks/usePaletaShader';
 import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { useCapaTopografia } from '@/hooks/useCapaTopografia';
@@ -62,7 +63,7 @@ import { crearPin, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
-import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, PALETA_ELEV_POR_DEFECTO, PALETA_PEND_POR_DEFECTO, type DatosShader, type PaletaElev, type PaletaPend } from '@/lib/shaders';
+import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader } from '@/lib/shaders';
 import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
@@ -96,7 +97,6 @@ import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { MasterPlanPanel } from './MasterPlanPanel';
-import { DibujoToolbar } from './DibujoToolbar';
 import { PerfilProfesionalModal } from './PerfilProfesionalModal';
 import { leerPerfil } from '@/lib/profesional';
 import { EconomiaPanel } from './EconomiaPanel';
@@ -140,7 +140,8 @@ import type { Zona, CategoriaZona } from '@/lib/zonificacion';
 import type { Sector, TipoSector } from '@/lib/sectores';
 import { TIPOS_SECTOR } from '@/lib/sectores';
 import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
-import { ControlesNavegacion, ControlesPaneles, type CapaFondo } from './ControlesMapa';
+import { ControlesPaneles, type CapaFondo } from './ControlesMapa';
+import { BarraSuperior } from './BarraSuperior';
 import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
 import { useHistory } from '@/lib/useHistory';
 import { FeatureLock } from './FeatureLock';
@@ -394,14 +395,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // ─── Opacidad de los shaders ──────────────────────────────────────────────
   const [opacidadShader, setOpacidadShader] = useState({ elev: 0.65, pend: 0.65 });
 
-  // ─── Paleta de los shaders ────────────────────────────────────────────────
-  // Qué rampa de color usa cada shader. No es sólo gusto: en un cerro el
-  // semáforo de pendiente satura y de la mitad para arriba es todo rojo, y una
-  // rampa fuerte de elevación tapa las curvas y los dibujos que van encima.
-  const [paletaShader, setPaletaShader] = useState<{ elev: PaletaElev; pend: PaletaPend }>({
-    elev: PALETA_ELEV_POR_DEFECTO,
-    pend: PALETA_PEND_POR_DEFECTO,
-  });
+  // ─── Paleta de los shaders (hook usePaletaShader) ─────────────────────────
+  // La elección de rampa se recuerda por dispositivo: era lo único de la vista
+  // que se perdía en cada recarga, y en esta pantalla se recarga seguido.
+  const { paletaShader, setPaletaShader } = usePaletaShader();
 
 
   // ─── Capas y visibilidad (hook useCapas) ──────────────────────────────────
@@ -2574,94 +2571,46 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     <div className="flex flex-col h-screen overflow-hidden bg-bone-50">
 
       {/* ─── Barra superior ──────────────────────────────────────────────────── */}
-      <header className="relative flex items-center h-12 px-3 border-b border-bone-200 bg-white shrink-0 z-[1200]">
-        <div className="flex items-center gap-2.5 min-w-0 shrink-0">
-          <button onClick={() => setPanelAbierto(p => !p)} title="Mostrar/ocultar panel" className="p-1 text-ink-700/50 hover:text-moss-700 transition-colors">
-            <ChevronRight className={`w-4 h-4 transition-transform ${panelAbierto ? 'rotate-180' : ''}`} />
-          </button>
-          {/* El lockup de la marca, no el isotipo solo: acá adentro la app se
-              llama acequia y el que firma no viene al caso. Es un PNG y no el
-              componente inline porque el wordmark de la marca está en Century
-              Gothic, que no está en la mayoría de las máquinas —ver
-              public/marca/LEEME.md—; la clase `marca-ui` repone la inversión
-              del tema oscuro, que globals.css cancela para todas las <img>.
-              Al lado, lo único que cambia entre un proyecto y otro: su nombre. */}
-          <img
-            src="/marca/firma-negro-ui.png" alt="acequia" width={628} height={159}
-            className="marca-ui h-[22px] w-auto shrink-0"
-          />
-          <span className="w-px h-4 bg-bone-200 shrink-0 hidden lg:block" aria-hidden />
-          <p className="text-sm font-medium text-ink-950 truncate max-w-[14rem] font-display hidden lg:block">
-            {proyectoActual?.nombre || 'Proyecto sin guardar'}
-          </p>
-        </div>
-
-        {/* ── Herramientas de dibujo, en columna central elástica ──
-            (antes iban en `absolute left-1/2`, fuera del flujo, y su extremo
-            derecho pisaba el chip "Sin guardar" y el botón Guardar). */}
-        <div className="flex-1 flex items-center justify-center min-w-0 h-full px-2">
-          <DibujoToolbar
-            inHeader
-            modoDibujo={modoDibujo}
-            colorActivo={colorDibujo}
-            enCurso={dibujoEnCurso}
-            seleccionado={dibujoSelId}
-            colorSeleccionado={dibujoSel?.color}
-            nombreSeleccionado={dibujoSel?.nombre}
-            notasSeleccionado={dibujoSel?.notas}
-            medidasSeleccionado={dibujoSel ? medidasDibujo(dibujoSel) : undefined}
-            capasUsuario={capasUsuario}
-            capaSeleccionado={dibujoSel ? capaDeElemento(dibujoSel.capaId, capasUsuario) : undefined}
-            onMoverACapa={capaId => { if (dibujoSelId) handleMoverDibujoACapa(dibujoSelId, capaId); }}
-            onCambiarColor={handleCambiarColorDibujo}
-            onMoverAdelante={handleMoverAdelante}
-            onMoverAtras={handleMoverAtras}
-            onModo={handleCambiarModo}
-            onColor={setColorDibujo}
-            onTransformar={handleTransformar}
-            onFinalizar={handleFinalizarDibujo}
-            onCancelar={handleCancelarDibujo}
-            onEliminar={handleEliminarDibujo}
-            onRenombrar={handleRenombrarDibujo}
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Estado de guardado en la nube (clic = guardar). El resto de "Archivo"
-              —guardar como, importar, exportar— vive en el pie del riel. */}
-          <button
-            onClick={() => void handleGuardarNube()}
-            disabled={guardandoNube}
-            title={estadoGuardado.titulo}
-            className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 ${estadoGuardado.clase}`}
-          >
-            {estadoGuardado.icono}
-            <span className="hidden lg:inline">{estadoGuardado.label}</span>
-          </button>
-          {/* Captura del plano: abrir el editor de plano o guardar PNG directo. */}
-          <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
-            <button onClick={iniciarCaptura} title="Capturar mapa — editor de plano (rótulo + leyenda)" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 transition-colors border-r border-bone-200"><Camera className="w-4 h-4" /><span className="hidden xl:inline text-[11px] font-medium">Capturar</span></button>
-            <button onClick={handleGuardarPng} disabled={guardandoPng} title="Guardar PNG del mapa" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              {guardandoPng ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-4 h-4" />}<span className="hidden xl:inline text-[11px] font-medium">PNG</span>
-            </button>
-          </div>
-          {/* Deshacer / rehacer agrupados. */}
-          <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
-            <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)" className="w-8 h-8 flex items-center justify-center text-ink-700/50 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-20 disabled:cursor-not-allowed transition-colors border-r border-bone-200"><Undo2 className="w-4 h-4" /></button>
-            <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Shift+Z)" className="w-8 h-8 flex items-center justify-center text-ink-700/50 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"><Redo2 className="w-4 h-4" /></button>
-          </div>
-          {/* Navegación del mapa: 3D · zoom · brújula · satélite/topo · histórico. */}
-          <ControlesNavegacion
-            navegacion={navegacion}
-            bearing={bearing}
-            capaFondo={capaFondo}
-            onCapaFondo={setCapaFondo}
-            habilitarVistas={mojones.length >= 3}
-            onHistorico={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); }}
-            on3D={() => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); }}
-          />
-        </div>
-      </header>
+      <BarraSuperior
+        panelAbierto={panelAbierto}
+        onTogglePanel={() => setPanelAbierto(p => !p)}
+        nombreProyecto={proyectoActual?.nombre ?? null}
+        dibujo={{
+          modoDibujo,
+          colorActivo: colorDibujo,
+          enCurso: dibujoEnCurso,
+          seleccionado: dibujoSelId,
+          colorSeleccionado: dibujoSel?.color,
+          nombreSeleccionado: dibujoSel?.nombre,
+          notasSeleccionado: dibujoSel?.notas,
+          medidasSeleccionado: dibujoSel ? medidasDibujo(dibujoSel) : undefined,
+          capasUsuario,
+          capaSeleccionado: dibujoSel ? capaDeElemento(dibujoSel.capaId, capasUsuario) : undefined,
+          onMoverACapa: capaId => { if (dibujoSelId) handleMoverDibujoACapa(dibujoSelId, capaId); },
+          onCambiarColor: handleCambiarColorDibujo,
+          onMoverAdelante: handleMoverAdelante,
+          onMoverAtras: handleMoverAtras,
+          onModo: handleCambiarModo,
+          onColor: setColorDibujo,
+          onTransformar: handleTransformar,
+          onFinalizar: handleFinalizarDibujo,
+          onCancelar: handleCancelarDibujo,
+          onEliminar: handleEliminarDibujo,
+          onRenombrar: handleRenombrarDibujo,
+        }}
+        nav={{
+          navegacion,
+          bearing,
+          capaFondo,
+          onCapaFondo: setCapaFondo,
+          habilitarVistas: mojones.length >= 3,
+          onHistorico: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); },
+          on3D: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
+        }}
+        guardado={{ estado: estadoGuardado, guardando: guardandoNube, onGuardar: () => void handleGuardarNube() }}
+        captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPng, guardandoPng }}
+        historial={{ onUndo: undo, onRedo: redo, puedeUndo: canUndo, puedeRedo: canRedo }}
+      />
 
       {/* ─── Cuerpo: panel + mapa ────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden relative">

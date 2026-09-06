@@ -193,6 +193,31 @@ function interpolarColor(ramp: Ramp, t: number): string {
 export const PALETA_ELEV_POR_DEFECTO: PaletaElev = 'terreno';
 export const PALETA_PEND_POR_DEFECTO: PaletaPend = 'semaforo';
 
+/** Qué rampa usa cada shader. Es preferencia de vista, no dato del predio. */
+export interface PaletaShader { elev: PaletaElev; pend: PaletaPend }
+
+export const PALETA_SHADER_POR_DEFECTO: PaletaShader = {
+  elev: PALETA_ELEV_POR_DEFECTO,
+  pend: PALETA_PEND_POR_DEFECTO,
+};
+
+/**
+ * Valida una preferencia de paleta contra el catálogo, en vez de confiar en ella.
+ *
+ * Lo que llega acá lo escribió una versión anterior de la app en el navegador
+ * del usuario. Si una rampa se renombra o se saca, ese valor sigue guardado, y
+ * sin este chequeo `PALETAS_ELEV[paleta]` da `undefined` y el shader se pinta
+ * con nada. Ante cualquier duda vuelve al defecto, que es lo que el usuario ya
+ * venía viendo.
+ */
+export function normalizarPaletaShader(guardado: unknown): PaletaShader {
+  const g = (guardado ?? {}) as Partial<Record<keyof PaletaShader, string>>;
+  return {
+    elev: g.elev && g.elev in PALETAS_ELEV ? g.elev as PaletaElev : PALETA_SHADER_POR_DEFECTO.elev,
+    pend: g.pend && g.pend in PALETAS_PEND ? g.pend as PaletaPend : PALETA_SHADER_POR_DEFECTO.pend,
+  };
+}
+
 export function colorElevacion(
   elev: number, min: number, max: number, paleta: PaletaElev = PALETA_ELEV_POR_DEFECTO,
 ): string {
