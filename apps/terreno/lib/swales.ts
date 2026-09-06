@@ -148,24 +148,41 @@ export function diagnosticarSwales(grilla: GrillaElevacion, intervaloV: number):
  * porque los extremos estaban a la misma cota, cuando en realidad todo el
  * terreno tiene caída. Como la tabla de separación de zanjas se lee justamente
  * por pendiente, ahí el atajo mandaba a trazar swales a 30 m en una ladera del
- * 25% que pide 12 m.
+ * 25 % que pide 12 m.
  *
- * Limitación conocida: si la grilla viene recortada a una parcela, el recorte
- * conserva la ventana rectangular y no enmascara a NaN lo que queda fuera del
- * polígono, así que la pendiente es la de la ventana. En parcelas convexas y
- * razonablemente llenas la diferencia es menor; en una parcela con forma de "L"
- * puede meter terreno ajeno en el promedio.
+ * `limite` es el polígono de la parcela, y resuelve la limitación que este
+ * cálculo arrastraba. `recortarGrillaA` devuelve la **ventana rectangular** de
+ * la parcela con las cotas intactas —el marching squares necesita las cuatro
+ * esquinas de cada celda, así que no puede enmascarar a NaN—, y sin el polígono
+ * el promedio salía de esa ventana entera. En un predio grande eso no es un
+ * detalle: una franja diagonal sobre una ladera tiene una envolvente que abarca
+ * media estancia, y la separación de zanjas terminaba leída de una pendiente
+ * que no era la de la franja. El gradiente se sigue midiendo con los vecinos de
+ * la grilla completa —el de una celda de borde es real y usarlo es correcto—;
+ * lo que el polígono decide es **qué celdas entran al promedio**.
+ *
+ * Si el polígono es más angosto que el paso de la grilla no queda ninguna celda
+ * adentro. Ahí se cae a la ventana, que es la respuesta vieja: peor que la
+ * nueva, mejor que un cero.
  */
-export function pendienteMediaPct(grilla: GrillaElevacion): number {
+export function pendienteMediaPct(
+  grilla: GrillaElevacion,
+  limite?: Array<{ lat: number; lng: number }> | null,
+): number {
   const { rows, cols, elev } = grilla;
   if (rows < 3 || cols < 3) return 0;
 
   const latRef = (grilla.latMin + grilla.latMax) / 2;
-  const dx = ((grilla.lngMax - grilla.lngMin) * 111_320 * Math.cos(latRef * Math.PI / 180)) / (cols - 1);
-  const dy = ((grilla.latMax - grilla.latMin) * 111_320) / (rows - 1);
+  const dLat = (grilla.latMax - grilla.latMin) / (rows - 1);
+  const dLng = (grilla.lngMax - grilla.lngMin) / (cols - 1);
+  const dx = (dLng * 111_320 * Math.cos(latRef * Math.PI / 180));
+  const dy = (dLat * 111_320);
   if (!(dx > 0) || !(dy > 0)) return 0;
 
-  let suma = 0, n = 0;
+  const poly = limite && limite.length >= 3 ? polígonoDe(limite) : null;
+
+  let suma = 0, n = 0;          // celdas adentro del polígono
+  let sumaTodo = 0, nTodo = 0;  // toda la ventana, por si no entra ninguna
   for (let r = 1; r < rows - 1; r++) {
     for (let c = 1; c < cols - 1; c++) {
       const zE = elev[r * cols + c + 1]!,      zW = elev[r * cols + c - 1]!;
@@ -173,12 +190,19 @@ export function pendienteMediaPct(grilla: GrillaElevacion): number {
       if (Number.isNaN(zE) || Number.isNaN(zW) || Number.isNaN(zN) || Number.isNaN(zS)) continue;
       const gx = (zE - zW) / (2 * dx);
       const gy = (zN - zS) / (2 * dy);
-      suma += Math.hypot(gx, gy);
-      n++;
+      const g = Math.hypot(gx, gy);
+      sumaTodo += g; nTodo++;
+      if (poly) {
+        const lat = grilla.latMin + r * dLat;
+        const lng = grilla.lngMin + c * dLng;
+        if (!turf.booleanPointInPolygon(turf.point([lng, lat]), poly)) continue;
+      }
+      suma += g; n++;
     }
   }
-  if (n === 0) return 0;
-  return +((suma / n) * 100).toFixed(2);
+  if (n > 0)     return +((suma / n) * 100).toFixed(2);
+  if (nTodo > 0) return +((sumaTodo / nTodo) * 100).toFixed(2);
+  return 0;
 }
 
 export function calcularSwales(
@@ -198,7 +222,7 @@ export function calcularSwales(
   // que se usó para recomendar el intervalo.
   const pendPct = opts.pendiente_pct && opts.pendiente_pct > 0
     ? opts.pendiente_pct
-    : pendienteMediaPct(grilla);
+    : pendienteMediaPct(grilla, mojones);
   const pendMedia = Math.max(pendPct / 100, 0.008);
   const anchoFranja = Math.min(150, Math.max(4, intervaloV / pendMedia));
 
@@ -459,7 +483,7 @@ export function analizarAreas(
 ): AnalisisArea[] {
   return areas.map(a => {
     const g = a.vertices ? (recortarGrillaA(grilla, a.vertices) ?? grilla) : grilla;
-    const pendiente_pct = pendienteMediaPct(g);
+    const pendiente_pct = pendienteMediaPct(g, a.vertices ?? mojones);
     return {
       id: a.id,
       nombre: a.nombre,
@@ -519,7 +543,7 @@ export function calcularSwalesMulti(
   for (const a of areas) {
     const g = a.vertices ? (recortarGrillaA(grilla, a.vertices) ?? grilla) : grilla;
     const limite = a.vertices ?? mojones;
-    const pendiente_pct = pendienteMediaPct(g);
+    const pendiente_pct = pendienteMediaPct(g, limite);
     const rec = separacionVerticalZanjas({
       pendiente_pct,
       infiltracion: ctx.infiltracion ?? null,

@@ -314,3 +314,88 @@ describe('calcularSwalesMulti', () => {
     expect(b.diagnostico).not.toBeNull();
   });
 });
+
+describe('la pendiente de la parcela es la de la parcela, no la de su envolvente', () => {
+  /**
+   * El caso del predio grande, que es donde esto se vuelve caro.
+   *
+   * `recortarGrillaA` devuelve la ventana rectangular de la parcela con las
+   * cotas intactas: el marching squares necesita las cuatro esquinas de cada
+   * celda, así que no puede enmascarar a NaN lo de afuera. Antes el promedio
+   * salía de esa ventana entera, y una parcela en diagonal sobre una ladera
+   * tiene una envolvente que abarca medio campo. La separación de zanjas se lee
+   * justamente por pendiente: leerla del promedio equivocado manda a abrir
+   * zanjas cada 30 m donde la ladera pide 12.
+   */
+
+  /** Predio que se empina de oeste a este, sin saltos: la caída de cada columna
+   *  crece de 20 m a 200 m. Así la pendiente del promedio depende de verdad de
+   *  qué parte del campo se mire, y no de un escalón artificial. */
+  function faldeoCreciente(rows: number, cols: number): GrillaElevacion {
+    const elev = new Float64Array(rows * cols);
+    for (let c = 0; c < cols; c++) {
+      const desnivel = 20 + 180 * (c / (cols - 1));
+      for (let r = 0; r < rows; r++) elev[r * cols + c] = (r / (rows - 1)) * desnivel;
+    }
+    return {
+      rows, cols,
+      latMin: -30.80, latMax: -30.70,
+      lngMin: -64.70, lngMax: -64.60,
+      elev, elev_min: 0, elev_max: 200,
+    };
+  }
+
+  const G = faldeoCreciente(60, 60);
+
+  /** Triángulo apoyado en el lado oeste —la parte mansa— cuya caja envolvente
+   *  es, sin embargo, el predio entero. Es la forma que rompía el cálculo. */
+  const CUNA_OESTE = [
+    { lat: -30.799, lng: -64.699 },
+    { lat: -30.701, lng: -64.699 },
+    { lat: -30.799, lng: -64.601 },
+  ];
+
+  const MOJONES = [
+    { lat: -30.80, lng: -64.70 }, { lat: -30.80, lng: -64.60 },
+    { lat: -30.70, lng: -64.60 }, { lat: -30.70, lng: -64.70 },
+  ];
+
+  it('el recorte no achica nada: la envolvente de la cuña es el predio entero', () => {
+    // Si la envolvente fuera más chica, el test de abajo no probaría nada.
+    const recortada = recortarGrillaA(G, CUNA_OESTE)!;
+    expect(recortada.rows).toBe(G.rows);
+    expect(recortada.cols).toBe(G.cols);
+  });
+
+  it('con polígono mide la cuña mansa; sin polígono, el promedio de todo', () => {
+    const recortada = recortarGrillaA(G, CUNA_OESTE)!;
+    expect(pendienteMediaPct(recortada, CUNA_OESTE))
+      .toBeLessThan(pendienteMediaPct(recortada));
+  });
+
+  it('la parcela mansa no hereda la pendiente del faldeo entero', () => {
+    const [predio, cuna] = analizarAreas(G, MOJONES, [
+      { id: 'predio', nombre: 'Todo el predio', vertices: null },
+      { id: 'cuna',   nombre: 'Cuña oeste',     vertices: CUNA_OESTE },
+    ]);
+    expect(cuna!.pendiente_pct).toBeLessThan(predio!.pendiente_pct);
+  });
+
+  it('una parcela más angosta que el paso de la grilla cae a la ventana, no a cero', () => {
+    // Sin ninguna celda adentro, la respuesta vieja sigue siendo mejor que un 0,
+    // que la tabla leería como terreno llano y resolvería con zanjas lejísimo.
+    const hilo = [
+      { lat: -30.75000, lng: -64.65000 },
+      { lat: -30.75000, lng: -64.64999 },
+      { lat: -30.74999, lng: -64.64999 },
+      { lat: -30.74999, lng: -64.65000 },
+    ];
+    expect(pendienteMediaPct(G, hilo)).toBe(pendienteMediaPct(G));
+    expect(pendienteMediaPct(G, hilo)).toBeGreaterThan(0);
+  });
+
+  it('sin límite se comporta igual que antes', () => {
+    const g = ladera(40, 40, 30);
+    expect(pendienteMediaPct(g, null)).toBe(pendienteMediaPct(g));
+  });
+});
