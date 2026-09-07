@@ -433,6 +433,10 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Liquen de reno (Cladonia rangiferina)',
     ],
     cultivos: ['papa', 'cebada', 'arandano', 'raigras', 'trebol_blanco'],
+    aptitud: [
+      { uso: 'forestal', delta: -15, razon: 'No es que no crezca bosque: el abedular es el bosque, y es el último antes del pastizal alpino. Lo que no va es sustituirlo por plantación de conífera, que arriba del límite térmico ni prospera ni deja volver al abedul.' },
+      { uso: 'reserva', delta: 20, razon: 'La alfombra de liquen y musgo es la que aísla el suelo y la que come el reno; rota por vehículo o por sobrepastoreo tarda décadas en rehacerse.' },
+    ],
     fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
   },
 
@@ -613,6 +617,9 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Plumero (Stipa lessingiana)',
     ],
     cultivos: ['trigo', 'cebada', 'lenteja', 'garbanzo', 'girasol', 'damasco', 'azafran', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'El suelo da: lo que no da es el agua. La cuenca de Konya lleva décadas de bombeo por encima de la recarga, con subsidencia y dolinas de colapso, y el regadío sin drenaje saliniza. Huerta acá se decide por el agua disponible, no por la fertilidad.' },
+    ],
     fuentes: [TARIM, WRB, RESOLVE],
   },
 

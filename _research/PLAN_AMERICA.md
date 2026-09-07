@@ -155,8 +155,46 @@ como sospechosos— **heredan bien**. El pastizal templado y el desierto ya dice
 lo correcto para ellos. El problema ahí es de texto, no de aptitud, y va al
 bloque 3.
 
-**Pendiente:** Europa, Medio Oriente, norte de África y el resto del mundo, con
-el mismo método y la tabla que ya está descargada.
+**Hecho (07/09) — Europa, Medio Oriente y norte de África: 5 fichas.** Son 78
+fichas en cuatro catálogos (Europa occidental, resto de la UE y asociados,
+Medio Oriente, norte de África), las 78 con ECO_ID mapeado. Cinco heredaban
+mal, y una de ellas la rompí yo el día anterior:
+
+- **Abedular montano escandinavo** — *regresión propia*. Al ponerle
+  `forestal -35` a la tundra global, esta ficha —que es literalmente el último
+  bosque antes del pastizal alpino— pasó a heredar que acá no se foresta. Ahora
+  dice lo que corresponde: el bosque ya está, lo que sobra es sustituirlo por
+  plantación de conífera. La lección es que un modificador global nuevo hay que
+  cruzarlo contra **todas** las fichas que cuelgan de ese bioma, no sólo contra
+  la que motivó el cambio.
+- **Estepa siria (badia)** — el caso más claro de todos. Heredaba `huerta +10`
+  del pastizal templado, que está calibrado sobre chernozem (Pampa, Ucrania).
+  La ficha dice literalmente lo contrario en su propio resumen: "tierra de
+  pastoreo desde hace milenios, no de cultivo, y casi todo lo que salió mal acá
+  salió mal por confundir las dos cosas". `pasturas +20` se deja tal cual: ahí
+  la corrección tiene que distinguir "acá no se puede" de "acá no se puede así".
+- **Meseta de Anatolia** — mismo `huerta +10` heredado. El suelo da; lo que no
+  da es el agua. La cuenca de Konya lleva décadas de bombeo por encima de la
+  recarga, con subsidencia y dolinas de colapso.
+- **Chotts y sebkhas** — heredaban `pasturas +5` del pastizal inundable, que
+  supone crecida dulce estacional. Un chott es lo contrario: es donde termina
+  la sal de toda la cuenca.
+- **Grandes arenales (Nefud y Rub al-Jali)** — el desierto global está calibrado
+  sobre desiertos con agricultura real. Acá no hay asentamiento permanente.
+  `pasturas` se deja heredado a propósito: el pastoreo camellero del corredor
+  interdunar existe.
+
+**Y una que se decidió no tocar:** las cuencas endorreicas de Irán central. El
+fondo salino y el abanico aluvial con qanat conviven en la misma ficha, así que
+un modificador único mentiría en una de las dos mitades. Es un problema de
+texto —de gradiente dentro de la ficha—, no de herencia.
+
+**De paso:** `biomasRegionalesEuropa.ts` decía "ARCHIVO GENERADO. No editar a
+mano" y **no tiene generador**, exactamente igual que el catálogo americano. El
+encabezado quedó corregido.
+
+**Pendiente:** el resto del mundo —África subsahariana, Asia y Oceanía— con el
+mismo método y la tabla que ya está descargada.
 
 ### Bloque 3 — Espesar el paquete de EE.UU., México y el Caribe
 

@@ -1,8 +1,11 @@
 /**
  * Fichas regionales de Europa occidental.
  *
- * ARCHIVO GENERADO desde _research/ecosistemas-saberes-europa-occidental/
- * fase-1-ecologia/fichas-ecologicas-propuestas.json. No editar a mano.
+ * ESCRITO A MANO. El contenido salió de _research/ecosistemas-saberes-europa-occidental/
+ * fase-1-ecologia/fichas-ecologicas-propuestas.json, pero **no hay generador**:
+ * ese paquete es la fuente de la investigación, no de este archivo. El
+ * encabezado decía lo contrario y era falso, igual que el del catálogo
+ * americano. Editar acá es lo correcto; nada lo pisa.
  *
  * Cubren el hueco que dejaban las cuatro fichas europeas viejas: la llanura
  * atlántica del noroeste, el templado occidental, el Cantábrico-atlántico

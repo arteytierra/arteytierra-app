@@ -54,6 +54,9 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Retama blanca (Retama raetam)',
     ],
     cultivos: ['cebada', 'trigo', 'lenteja', 'garbanzo', 'olivo', 'pistacho', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -20, razon: 'Entre 100 y 250 mm el cultivo no cierra, y el intento deja el daño: arar la badia para cebada de secano rompió la costra biológica que sujetaba el suelo y no volvió el matorral. Pastoreo sí; labranza no.' },
+    ],
     fuentes: [ICARDA, HWSD, RESOLVE],
   },
 
@@ -191,6 +194,10 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Cyperus conglomeratus',
       'Dipterygium glaucum',
       'Tribulus arabicus',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -40, razon: 'No es un desierto con poca agua: es arena móvil sin freática accesible ni asentamiento permanente. Lo que hay se hace en el corredor interdunar y de paso, no en un predio.' },
+      { uso: 'forestal', delta: -35, razon: 'Sobre duna viva no se planta: se fija. Calligonum y Haloxylon son sujeción de arena, y eso es obra, no producción.' },
     ],
     fuentes: [HWSD, SOILGRIDS, RESOLVE],
   },

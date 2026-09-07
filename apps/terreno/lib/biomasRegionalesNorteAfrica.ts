@@ -173,6 +173,10 @@ export const BIOMAS_REGIONALES_NORTE_AFRICA: Record<string, BiomaFicha> = {
       'Tamarisco (Tamarix gallica)',
       'Suaeda fruticosa',
     ],
+    aptitud: [
+      { uso: 'pasturas', delta: -25, razon: 'La costra del chott no es pastizal inundable: es sal. Lo que crece son halófitas que el ganado apenas toca, y el pisoteo del borde húmedo rompe la costra y activa la deflación.' },
+      { uso: 'forestal', delta: -25, razon: 'Con freática salina somera el árbol se cierra por sodio antes que por sequía. La excepción es el tamarisco de borde, que es cortina, no plantación.' },
+    ],
     fuentes: [GIAHS, ATLAS_AFRICA, WRB, RESOLVE],
   },
 
