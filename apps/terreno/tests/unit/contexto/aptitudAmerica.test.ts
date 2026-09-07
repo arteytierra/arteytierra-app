@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { BIOMAS_GLOBALES } from '../../../lib/biomasGlobales';
+import { BIOMAS_REGIONALES_AMERICA } from '../../../lib/biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_CANADA } from '../../../lib/biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_SUDAMERICA } from '../../../lib/biomasRegionalesSudamerica';
 import { componerAptitud } from '../../../lib/contexto';
 import type { BiomaFicha, ModificadorAptitud } from '../../../lib/biomaTipos';
@@ -16,7 +18,9 @@ const delta = (aptitud: ModificadorAptitud[], uso: ModificadorAptitud['uso']) =>
   aptitud.find((m) => m.uso === uso)?.delta;
 
 const ficha = (id: string): BiomaFicha => {
-  const f = BIOMAS_REGIONALES_SUDAMERICA[id];
+  const f = BIOMAS_REGIONALES_SUDAMERICA[id]
+    ?? BIOMAS_REGIONALES_AMERICA[id]
+    ?? BIOMAS_REGIONALES_CANADA[id];
   if (!f) throw new Error(`no existe la ficha ${id}`);
   return f;
 };
@@ -83,5 +87,50 @@ describe('el manglar habla de los cinco usos', () => {
     for (const id of ['manglares_pacifico_suramericano', 'manglares_atlantico_sur_brasil', 'manglares_amazon_orinoco_caribe_sur']) {
       expect(efectiva(id, 'resolve_manglar')).toHaveLength(5);
     }
+  });
+});
+
+describe('lo mismo al norte del ecuador', () => {
+  it('Revillagigedo no hereda pasturas recomendadas del bosque seco', () => {
+    // El ganado introducido fue el daño principal del archipiélago; el bioma
+    // global no puede saberlo y da pasturas +10.
+    expect(delta(BIOMAS_GLOBALES['resolve_bosque_tropical_seco']!.aptitud!, 'pasturas')).toBe(10);
+    const a = efectiva('revillagigedo_ecosistemas_insulares', 'resolve_bosque_tropical_seco');
+    expect(delta(a, 'pasturas')).toBeLessThan(0);
+    expect(delta(a, 'reserva')).toBeGreaterThan(0);
+  });
+
+  it('el matorral hawaiano tampoco: la sabana le daría pasturas +20', () => {
+    expect(delta(BIOMAS_GLOBALES['resolve_sabana_tropical']!.aptitud!, 'pasturas')).toBe(20);
+    expect(delta(efectiva('hawaii_matorrales_altos_bajos', 'resolve_sabana_tropical'), 'pasturas'))
+      .toBeLessThan(0);
+  });
+
+  it('en los Everglades lo que decide es el drenaje, no la fertilidad', () => {
+    const a = efectiva('everglades_manglares_sur_florida', 'resolve_pastizal_inundable');
+    expect(delta(a, 'huerta')).toBeLessThan(delta(BIOMAS_GLOBALES['resolve_pastizal_inundable']!.aptitud!, 'huerta')!);
+    expect(delta(a, 'forestal')).toBeLessThan(0);
+  });
+
+  it('el desierto polar no es tundra con menos pasto: no hay pastura posible', () => {
+    // La tundra global deja pasturas sin modificador a propósito —el caribú y
+    // las ovejas del sur de Groenlandia pastan tundra de verdad—, así que la
+    // negativa tiene que ponerla la ficha regional.
+    expect(delta(BIOMAS_GLOBALES['resolve_tundra']!.aptitud!, 'pasturas')).toBeUndefined();
+    expect(delta(efectiva('alto_artico_desierto_polar', 'resolve_tundra'), 'pasturas')).toBeLessThan(0);
+  });
+
+  it('y ninguna tundra queda con lo forestal en positivo, que es su definición', () => {
+    expect(delta(BIOMAS_GLOBALES['resolve_tundra']!.aptitud!, 'forestal')).toBeLessThan(0);
+    for (const id of ['tundra_artica_canadiense', 'groenlandia_kalaallit_nunaat', 'alto_artico_desierto_polar']) {
+      expect(delta(efectiva(id, 'resolve_tundra'), 'forestal')).toBeLessThan(0);
+    }
+  });
+});
+
+describe('los 15 biomas globales hablan, todos', () => {
+  it('ninguno se queda sin modificadores: la herencia es lo que ve el usuario', () => {
+    const mudos = Object.values(BIOMAS_GLOBALES).filter((f) => !f.aptitud?.length).map((f) => f.id);
+    expect(mudos).toEqual([]);
   });
 });

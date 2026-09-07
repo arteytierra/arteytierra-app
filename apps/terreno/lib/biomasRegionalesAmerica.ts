@@ -506,6 +506,11 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Pino slash del sur de Florida (Pinus elliottii var. densa)',
     ],
     cultivos: ['coco', 'naranjo', 'aguacate', 'arbol_pan', 'batata', 'cana_azucar'],
+    aptitud: [
+      { uso: 'huerta', delta: -30, razon: 'El problema no es la fertilidad sino el drenaje: la turba sobre caliza se oxida y el suelo se hunde apenas se baja el agua, y después arde bajo tierra. Lo que se cultiva en el sur de Florida se cultiva sobre lo ya drenado hace un siglo, y esa deuda todavía se está pagando.' },
+      { uso: 'forestal', delta: -20, razon: 'Pinelands, cipresales y manglares se manejan con fuego y con el pulso de agua, no como rodal.' },
+      { uso: 'reserva', delta: 25, razon: 'El pulso estacional de agua es el sistema entero. Cada canal que lo corta se paga aguas abajo, en la bahía.' },
+    ],
     fuentes: [
       { label: 'NPS — Everglades ecosystems and people', url: 'https://www.nps.gov/articles/everglades.htm' },
       { label: 'NPS — Big Cypress foundation', url: 'https://www.nps.gov/bicy/learn/management/foundation-overview.htm' },
@@ -634,6 +639,11 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Albatros de Laysan (Phoebastria immutabilis)',
     ],
     cultivos: ['batata', 'coco', 'cafe', 'sisal', 'moringa'],
+    aptitud: [
+      { uso: 'pasturas', delta: -25, razon: 'La sabana tropical daría pasturas +20 y acá es al revés: la ganadería de altura y las gramíneas forrajeras introducidas son la principal presión sobre el matorral nativo, y traen consigo un ciclo de fuego que antes no existía.' },
+      { uso: 'forestal', delta: -10, razon: 'Estos matorrales están por encima del límite del bosque o sobre lava reciente. Plantar árboles no restaura nada: cambia un ecosistema por otro.' },
+      { uso: 'reserva', delta: 25, razon: 'Endemismo altísimo en muy poca superficie, y en las islas bajas del noroeste la cota es de pocos metros sobre el mar.' },
+    ],
     fuentes: [
       { label: 'NOAA — Hawaiʻi Indigenous Knowledge', url: 'https://sanctuaries.noaa.gov/bwet/hawaii/indigenous-knowledge.html' },
       { label: 'NOAA — Moku climate resilience', url: 'https://www.coast.noaa.gov/states/stories/hawaii.html' },
@@ -1030,6 +1040,13 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       'Guayabillo (Psidium socorrense)',
       'Palma de Socorro (Brahea edulis)',
       'Zenzontle de Socorro (Mimus graysoni)',
+    ],
+    aptitud: [
+      { uso: 'pasturas', delta: -35, razon: 'El bosque seco tropical premia las pasturas; acá el ganado introducido fue el daño principal —las ovejas de Socorro se erradicaron después de décadas de erosión— y el archipiélago está deshabitado y protegido.' },
+      { uso: 'huerta', delta: -30, razon: 'Suelos volcánicos someros, sin agua dulce permanente y con endemismo alto: cada insumo que llega a la isla es una vía de entrada de invasoras.' },
+      { uso: 'frutales', delta: -30, razon: 'Ninguna especie introducida es inocua en una isla oceánica de este tamaño.' },
+      { uso: 'forestal', delta: -30, razon: 'La recuperación de la cobertura es lenta y lo que hay es endémico: no hay volumen que extraer ni margen para reemplazarlo.' },
+      { uso: 'reserva', delta: 30, razon: 'Es el corazón terrestre de la reserva marina más grande de México, y su valor depende de que las islas sigan sin uso.' },
     ],
     fuentes: [
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },

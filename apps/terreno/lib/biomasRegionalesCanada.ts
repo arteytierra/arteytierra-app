@@ -209,6 +209,11 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Dryas (Dryas integrifolia)',
       'Cochlearia ártica (Cochlearia groenlandica)',
     ],
+    aptitud: [
+      { uso: 'pasturas', delta: -30, razon: 'La tundra sostiene caribú y, en el sur de Groenlandia, ovejas; el desierto polar no. Menos de 150 mm al año y cobertura vegetal por debajo del 20 %: no hay forraje que reponer lo que se coma.' },
+      { uso: 'forestal', delta: -35, razon: 'Está a miles de kilómetros del límite del bosque.' },
+      { uso: 'reserva', delta: 30, razon: 'La formación de suelo es tan lenta que la huella de un vehículo dura décadas, y los oasis de fondo de fiordo concentran casi toda la vida del archipiélago en muy poca superficie.' },
+    ],
     fuentes: [CAFF, CANSIS_ECO, RESOLVE],
   },
 

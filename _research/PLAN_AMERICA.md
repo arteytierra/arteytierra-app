@@ -101,9 +101,12 @@ corrección cuesta una entrada y no borra nada.
 
 El instrumento que faltaba: cruzar cada ECO_ID con su BIOME_NUM de RESOLVE y
 listar, por ficha, **la aptitud heredada al lado de la propia**. Con eso a la
-vista los errores saltan solos. Para Sudamérica el insumo ya estaba en el
-paquete (`insumos/resolve-sudamerica-bbox-2026-09-03.json`); para Norteamérica
-y el Caribe hay que traer el equivalente antes de tocar nada.
+vista los errores saltan solos.
+
+Ese insumo ya no falta para ninguna región: `_research/resolve-eco-id-bioma-2026-09-07.json`
+tiene los **847 ECO_ID del mundo** con su bioma, nombre y realm, traídos del
+FeatureServer con `returnDistinctValues`. Sirve para Asia, África y Oceanía
+cuando les toque, sin volver a pedir nada.
 
 **Hecho (06/09) — Sudamérica, 11 fichas + 1 bioma global:**
 
@@ -125,10 +128,35 @@ y el Caribe hay que traer el equivalente antes de tocar nada.
   isla y la huerta queda en positivo. La corrección tiene que distinguir "acá no
   se puede" de "acá no se puede así".
 
-**Pendiente en el mismo bloque:** el equivalente para Norteamérica, México y el
-Caribe (Revillagigedo, Hawái ya tiene aptitud propia, Everglades, Palouse y su
-loess, Gran Cuenca), que necesita primero la tabla ECO_ID → BIOME_NUM de esa
-envolvente.
+**Hecho (07/09) — Norteamérica, México y el Caribe: 4 fichas + 1 bioma global.**
+Se revisaron las 63 fichas de los catálogos de América y Canadá, ficha por ficha
+y bioma por bioma (varias tocan tres o cuatro biomas distintos). Sólo cuatro
+tenían la herencia equivocada:
+
+- **Revillagigedo** heredaba `pasturas +10` del bosque seco tropical. El ganado
+  introducido fue el daño principal del archipiélago —las ovejas de Socorro se
+  erradicaron tras décadas de erosión— y las islas están deshabitadas.
+- **Matorrales altos y bajos de Hawái** heredaban `pasturas +20` de la sabana
+  tropical. La ganadería de altura y las gramíneas forrajeras introducidas son la
+  presión principal, y traen un ciclo de fuego que antes no existía.
+- **Everglades** — lo que decide no es la fertilidad sino el drenaje: la turba
+  sobre caliza se oxida, el suelo se hunde y después arde bajo tierra.
+- **Alto Ártico, desierto polar** — la tundra global deja `pasturas` sin
+  modificador **a propósito**, porque el caribú y las ovejas del sur de
+  Groenlandia pastan tundra de verdad. Con menos de 150 mm al año y cobertura
+  por debajo del 20 %, acá no. La negativa la pone la ficha regional, que es
+  donde corresponde.
+- **Bioma global:** la tundra no decía nada de `forestal`, siendo que "más allá
+  del límite del bosque" es literalmente su definición. Arreglado una vez.
+
+**Y algo que conviene anotar porque ahorra trabajo:** el Palouse y su loess, la
+Gran Cuenca y la meseta del Colorado —los tres que este mismo plan había marcado
+como sospechosos— **heredan bien**. El pastizal templado y el desierto ya dicen
+lo correcto para ellos. El problema ahí es de texto, no de aptitud, y va al
+bloque 3.
+
+**Pendiente:** Europa, Medio Oriente, norte de África y el resto del mundo, con
+el mismo método y la tabla que ya está descargada.
 
 ### Bloque 3 — Espesar el paquete de EE.UU., México y el Caribe
 

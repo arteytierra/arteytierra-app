@@ -178,6 +178,7 @@ export const BIOMAS_GLOBALES: Record<string, BiomaFicha> = {
     [
       { uso: 'huerta', delta: -35, razon: 'Suelo helado buena parte del año y estación de crecimiento de pocas semanas.' },
       { uso: 'frutales', delta: -30, razon: 'No hay bioma frutícola acá: el ciclo no cierra.' },
+      { uso: 'forestal', delta: -35, razon: 'La tundra es, por definición, lo que empieza donde termina el bosque. Plantar árboles acá no es manejo forestal: es cambiar el bioma.' },
       { uso: 'reserva', delta: 25, razon: 'La capa activa tarda siglos en recomponerse de una intervención.' },
     ],
   ),
