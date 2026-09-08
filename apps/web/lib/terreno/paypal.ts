@@ -17,8 +17,12 @@ const NOMBRE: Record<PlanPago, string> = {
   disenador: ACEQUIA_PLANS.disenador.name,
 };
 
+function entorno(): 'sandbox' | 'live' {
+  return process.env.PAYPAL_ENV === 'sandbox' ? 'sandbox' : 'live';
+}
+
 function base(): string {
-  return process.env.PAYPAL_ENV === 'sandbox'
+  return entorno() === 'sandbox'
     ? 'https://api-m.sandbox.paypal.com'
     : 'https://api-m.paypal.com';
 }
@@ -50,12 +54,21 @@ async function token(): Promise<string> {
 function tablaPlanes(): any {
   return (createSupabaseAdminClient() as any).schema('terreno').from('paypal_planes');
 }
+/**
+ * Los identificadores de producto y de plan de PayPal NO son intercambiables entre
+ * sandbox y live: un plan creado probando no existe para la API real. Por eso el
+ * entorno va dentro de la clave del cache — si no, al pasar a producción se
+ * reusarían los identificadores de la prueba y el alta fallaría sin decir por qué.
+ */
+function clavePorEntorno(clave: string): string {
+  return `${entorno()}:${clave}`;
+}
 async function getRef(clave: string): Promise<string | null> {
-  const { data } = await tablaPlanes().select('ref').eq('clave', clave).maybeSingle();
+  const { data } = await tablaPlanes().select('ref').eq('clave', clavePorEntorno(clave)).maybeSingle();
   return (data?.ref as string | undefined) ?? null;
 }
 async function setRef(clave: string, ref: string): Promise<void> {
-  await tablaPlanes().upsert({ clave, ref }, { onConflict: 'clave' });
+  await tablaPlanes().upsert({ clave: clavePorEntorno(clave), ref }, { onConflict: 'clave' });
 }
 
 async function ensureProduct(tk: string, conPrueba: boolean): Promise<string> {
@@ -95,11 +108,15 @@ async function ensurePlan(tk: string, plan: PlanPago, periodo: Periodo): Promise
       product_id: productId,
       name: `${conPrueba ? 'Acequia' : 'Terreno'} ${NOMBRE[plan]} (${periodo})`,
       billing_cycles: [
+        // El precio cero va explícito. PayPal admite un TRIAL sin `pricing_scheme`,
+        // pero entonces el importe queda a criterio del intérprete de turno; con el
+        // cero escrito no hay forma de que la prueba cobre algo.
         ...(conPrueba ? [{
           frequency: { interval_unit: 'DAY', interval_count: ACEQUIA_TRIAL_DAYS },
           tenure_type: 'TRIAL',
           sequence: 1,
           total_cycles: 1,
+          pricing_scheme: { fixed_price: { value: '0', currency_code: 'USD' } },
         }] : []),
         {
           frequency: { interval_unit: periodo === 'anual' ? 'YEAR' : 'MONTH', interval_count: 1 },

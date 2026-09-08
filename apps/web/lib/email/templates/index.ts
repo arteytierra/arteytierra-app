@@ -317,8 +317,10 @@ const renderers: { [K in TemplateName]: Renderer<K> } = {
 
   'terreno-trial-ending': (v, { locale }) => {
     const subject = t(locale, {
-      es: `Mañana se hace el primer cobro de Acequia ${v.planName}`,
-      en: `Your first Acequia ${v.planName} charge is tomorrow`,
+      // Sin "mañana": el cron corre una vez por día, así que el aviso puede salir
+      // entre 12 y 36 h antes. La fecha exacta va en el cuerpo.
+      es: `Tu prueba de Acequia ${v.planName} está por terminar`,
+      en: `Your Acequia ${v.planName} trial is ending soon`,
     });
     const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
     const intro = t(locale, {
