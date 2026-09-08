@@ -179,7 +179,7 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaP
         <p className="mt-4 font-sans text-xs text-bone-200/70 italic">
           {senaMonto
             ? `Aclarás tu nombre, la opción elegida (${selectedOpcion?.label}) y el monto de la seña en la transferencia, y enviás el comprobante por WhatsApp.`
-            : 'Aclarás el nombre del curso en la transferencia y enviás el comprobante por WhatsApp.'}
+            : 'Aclarás tu nombre completo en la transferencia y enviás el comprobante por WhatsApp.'}
         </p>
       </div>
     </>

@@ -33,8 +33,8 @@ const AREAS = [
   },
   {
     icon: '🎓',
-    title: 'Course participation',
-    items: ['Free access to workshops held at the ecoschool during your stay', 'Participation as part of the courses\' logistics team', 'Learning from inside the pedagogical organization'],
+    title: 'Workshop participation',
+    items: ['Free access to workshops held at the ecoschool during your stay', 'Participation as part of the workshops\' logistics team', 'Learning from inside the pedagogical organization'],
   },
   {
     icon: '🤝',
