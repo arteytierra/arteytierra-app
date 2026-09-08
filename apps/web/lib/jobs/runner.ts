@@ -13,7 +13,8 @@ export type JobName =
   | 'refresh-recommendations'
   | 'process-scheduled-deletions'
   | 'process-webhook-deliveries'
-  | 'weekly-db-snapshot';
+  | 'weekly-db-snapshot'
+  | 'acequia-aviso-cobro';
 
 export type JobHandler = (admin: ReturnType<typeof createSupabaseAdminClient>) => Promise<Record<string, unknown>>;
 

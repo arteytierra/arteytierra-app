@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago } from '@/lib/terreno/suscripciones';
+import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados } from '@/lib/terreno/suscripciones';
 import { crearSubscripcionPaypal } from '@/lib/terreno/paypal';
 
 export const runtime = 'nodejs';
@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
   const headers = corsHeaders(req.headers.get('origin'));
   const origin = req.headers.get('origin');
 
+  // Un solo interruptor manda acá. ACEQUIA_TRIAL_ENABLED decide si el alta lleva
+  // 3 días de prueba, no si se puede cobrar: exigirlo también dejaría el checkout
+  // en 503 para siempre, porque esa variable vive en otro proyecto de Vercel.
+  if (!pagosAcequiaHabilitados()) {
+    return NextResponse.json({ error: 'Los pagos todavía no están habilitados.' }, { status: 503, headers });
+  }
+
   if (origin && !ORIGENES.has(origin)) {
     return NextResponse.json({ error: 'Origen no permitido' }, { status: 403, headers });
   }
@@ -63,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Proveedor de pago inválido' }, { status: 400, headers });
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
+  const siteUrl = process.env.NEXT_PUBLIC_ACEQUIA_SITE_URL ?? 'https://acequia.app';
   const email = user.email ?? '';
 
   try {

@@ -45,3 +45,33 @@ export async function iniciarCheckout(
   if (!url) throw new Error('No recibimos la URL de pago.');
   window.location.href = url;
 }
+
+export interface ResultadoBaja {
+  /** Cancelar antes del primer cobro: nunca se cobró nada. */
+  enPrueba: boolean;
+  /** Si ya había un período pago en curso, el acceso sigue hasta esta fecha. */
+  accesoHasta: string | null;
+}
+
+/**
+ * Da de baja la renovación. La web cancela primero en Mercado Pago o PayPal y
+ * recién después actualiza la cuenta, así no queda un cobro vivo sin acceso.
+ */
+export async function darDeBajaSuscripcion(): Promise<ResultadoBaja> {
+  const supabase = getSupabaseBrowserClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error('Iniciá sesión para dar de baja la suscripción.');
+
+  const res = await fetch(`${WEB_URL}/api/terreno/suscripcion`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const msg = (await res.json().catch(() => ({}))).error ?? 'No pudimos dar de baja la suscripción.';
+    throw new Error(msg);
+  }
+  const j = await res.json() as { enPrueba?: boolean; accesoHasta?: string | null };
+  return { enPrueba: j.enPrueba ?? false, accesoHasta: j.accesoHasta ?? null };
+}

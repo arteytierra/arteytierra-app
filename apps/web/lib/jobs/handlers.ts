@@ -232,6 +232,38 @@ async function refreshRecommendations() {
   return { ok: true };
 }
 
+// Acequia: avisa "en ~24 h se hace el primer cobro" a quien está en prueba.
+// La ventana es ancha (18–30 h antes de trial_end) porque el cron corre una vez
+// por día; `aviso_cobro_at` es lo que evita el reenvío.
+const acequiaAvisoCobro: JobHandler = async (admin) => {
+  const { esPlanPago, esPeriodo } = await import('@/lib/terreno/suscripciones');
+  const { marcarAvisoCobroEnviado } = await import('@/lib/terreno/fulfillment-suscripcion');
+  const { notificarAvisoPrimerCobro } = await import('@/lib/terreno/notificaciones-suscripcion');
+
+  const ahora = Date.now();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (admin as any)
+    .schema('terreno').from('suscripciones')
+    .select('user_id, plan, periodo, trial_end')
+    .eq('estado', 'prueba')
+    .is('aviso_cobro_at', null)
+    .gte('trial_end', new Date(ahora + 18 * 3600 * 1000).toISOString())
+    .lte('trial_end', new Date(ahora + 30 * 3600 * 1000).toISOString());
+  if (error) throw new Error(error.message);
+
+  const filas = (data ?? []) as Array<{ user_id: string; plan: string; periodo: string; trial_end: string }>;
+  let enviados = 0;
+  for (const f of filas) {
+    if (!esPlanPago(f.plan) || !esPeriodo(f.periodo)) continue;
+    await notificarAvisoPrimerCobro({
+      userId: f.user_id, plan: f.plan, periodo: f.periodo, trialEnd: f.trial_end,
+    });
+    await marcarAvisoCobroEnviado(f.user_id);
+    enviados++;
+  }
+  return { revisados: filas.length, enviados };
+};
+
 export const HANDLERS = {
   'cleanup-expired-newsletter': cleanupExpiredNewsletter,
   'cleanup-pending-orders': cleanupPendingOrders,
@@ -244,6 +276,7 @@ export const HANDLERS = {
   'process-scheduled-deletions': processScheduledDeletions,
   'process-webhook-deliveries': processWebhookDeliveries,
   'weekly-db-snapshot': weeklyDbSnapshot,
+  'acequia-aviso-cobro': acequiaAvisoCobro,
 } as const;
 
 export type ValidJobName = keyof typeof HANDLERS;
