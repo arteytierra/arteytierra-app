@@ -84,7 +84,25 @@ de las dos. Ahí el arreglo es de texto, no de herencia.
 
 ---
 
-## 3. Los calendarios — el pendiente que nadie levantó todavía
+## 3. Los calendarios — tres de cuatro, resueltos el 08/09
+
+> **Estado al 08/09/2026.** Los puntos **a**, **b** y **c** de abajo están
+> hechos y en producción. Queda abierto sólo el **d**, el fotoperiodo.
+>
+> - **Horas de frío** → `lib/horasFrio.ts`. Modelo clásico de Weinberger, banda
+>   de 0 a 7,2 °C, estimada de las medias mensuales con el día modelado como
+>   sinusoide. La ventana de dormancia son los seis meses consecutivos que más
+>   acumulan, buscados en círculo, así que sirve en los dos hemisferios.
+>   `evaluarEspecie` gana la tercera forma de fallar: el caduco que pasa el
+>   invierno, junta el calor y aun así no cuaja. Trece especies llevan el número.
+> - **El balance hídrico sigue a la ecorregión** → `cultivosDeFicha`. Cuando la
+>   ficha declara cultivos, manda la ficha; sin ficha, la lista genérica.
+> - **Cuatro familias de clima cálido** — raíces tropicales, musáceas, frutales
+>   tropicales y granos de clima cálido. Y la tabla oculta las familias sin
+>   ningún mes posible, diciendo cuántas ocultó.
+>
+> Lo que sigue abajo es el diagnóstico original, que se deja escrito porque
+> explica por qué eran deudas y no mejoras.
 
 Acá hay más deuda de la que figura en ningún plan. El calendario está calculado
 100 % desde NASA POWER y no toca ninguna API extra, lo cual está bien. Pero:
@@ -132,10 +150,17 @@ licencia admitida.
 
 Lo que falta, en el orden que corresponde:
 
-1. **Los tres europeos con cartografía oficial ya publicada** — cañadas reales (ES,
-   MITECO), polders y waterschappen (NL), crofting townships (GB). Les falta un solo
-   paso: **verificar la licencia**. Ninguno es saber de pueblo originario, así que
-   no requiere acuerdo comunitario. Es el camino más corto.
+1. ~~**Los tres europeos con cartografía oficial ya publicada.**~~ **Verificado el
+   08/09/2026: es uno de tres, no tres de tres.** Sólo los **polders y
+   waterschappen (NL)** quedan viables — PDOK publica polígonos bajo CC-BY-4.0,
+   que sí está admitida, y hay servicio Atom. Las **cañadas reales (ES)** están
+   bloqueadas dos veces: la licencia del MITECO es de atribución propia y no
+   figura entre las admitidas, y sobre todo **la cartografía es de líneas**, con
+   lo que la condición "el punto cae adentro del polígono" no tiene cómo
+   evaluarse sin inventar un buffer. Los **crofting townships (GB)** también:
+   el open data de la Crofting Commission es tabular, y los límites viven en un
+   producto pago de Registers of Scotland derivado de Ordnance Survey. El detalle
+   está en `ESTADO_FASE_2_SABERES.md`.
 2. **Los 26 saberes europeos tienen `fuentes: []`** porque el relevamiento citó por
    región y no por saber. La condición 1 exige fuente, así que están doblemente
    bloqueados. Atribuir una URL a cada uno es trabajo de escritorio.
@@ -259,23 +284,30 @@ del repo y no compila para Vercel (vinext/Cloudflare).
 
 ## 9. Qué haría yo, y en qué orden
 
-**Primero, lo barato que cierra razonamientos ya escritos.** Las horas de frío del
-calendario y conectar `CULTIVOS_KC` a `ficha.cultivos`. Son dos tardes, usan datos
-que ya están cargados, y arreglan que la app diga una cosa en el texto y otra en el
-número. Hoy la ficha habla de horas de frío y el calendario no las calcula.
+~~**Primero, lo barato que cierra razonamientos ya escritos.**~~ **Hecho el
+08/09/2026:** horas de frío, el balance hídrico atado a `ficha.cultivos` y las
+cuatro familias de clima cálido. El calendario ya sabe hablarle a Java, que era
+la precondición para montar fichas de Java.
 
-**Segundo, las familias tropicales del calendario.** Antes de montar fichas de Java
-conviene que el calendario sepa hablarle a Java. Si no, la ficha nueva va a caer
-sobre un calendario que recomienda arveja.
+~~**Cuarto, las tres licencias europeas de saberes.**~~ **Verificado el
+08/09/2026, y rindió menos de lo esperado:** una de tres, no tres de tres. Queda
+por montar el polígono neerlandés, que es media tarde: confirmar la licencia en
+la metadata del NGR, bajar el Atom de PDOK, simplificar y cargar la entrada en
+`GEOMETRIAS_SABERES` con la atribución que CC-BY exige. Pasaría de 1 saber
+activo a 2.
 
-**Tercero, Indomalaya volcánica.** Es el encargo de mayor rendimiento del catálogo:
-más error corregido por ficha escrita que cualquier otra región del planeta.
+**Lo que queda, en orden:**
 
-**Cuarto, las tres licencias europeas de saberes.** Es una tarde de escritorio y
-podría triplicar los saberes activos de la app.
-
-**Quinto, el paso 8**, cuando vos digas. No antes, porque es el único bloque donde
-equivocarse cuesta plata y no sólo tiempo.
+1. **Indomalaya volcánica.** El encargo de mayor rendimiento del catálogo: más
+   error corregido por ficha escrita que cualquier otra región del planeta. Y
+   ahora cae sobre un calendario que ya nombra lo que ahí se come.
+2. **El polígono neerlandés**, arriba.
+3. **Las fuentes por saber de los 26 europeos**, que están doblemente bloqueados
+   por `fuentes: []`. Escritorio puro.
+4. **El fotoperiodo** en `aptitudMes`, que es la única de las cuatro deudas del
+   calendario que quedó abierta.
+5. **El paso 8**, cuando vos digas. No antes, porque es el único bloque donde
+   equivocarse cuesta plata y no sólo tiempo.
 
 El bloque 3 —espesar EE.UU. y México— va de fondo, por tandas, sin bloquear nada.
 
