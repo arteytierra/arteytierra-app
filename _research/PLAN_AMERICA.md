@@ -193,8 +193,36 @@ texto —de gradiente dentro de la ficha—, no de herencia.
 mano" y **no tiene generador**, exactamente igual que el catálogo americano. El
 encabezado quedó corregido.
 
-**Pendiente:** el resto del mundo —África subsahariana, Asia y Oceanía— con el
-mismo método y la tabla que ya está descargada.
+**Medido (07/09) — el resto del mundo, y el diagnóstico cambia.** El barrido de
+aptitud heredada no se puede repetir en África subsahariana, Asia y Oceanía,
+**porque ahí no hay fichas regionales que auditar**. Son 396 de las 847
+ecorregiones de RESOLVE las que tienen ficha; las otras 451 reciben el bioma
+global y nada más. Indomalaya está en 1/106, Australasia en 0/83, el Afrotrópico
+en 7/116.
+
+La medición completa, con la tabla por reino, el reparto de las 451 por bioma y
+el encargo priorizado, está en `_research/COBERTURA_MUNDO.md`. El titular es que
+el bloque más grande —150 ecorregiones de bosque tropical húmedo sin ficha— es
+también donde el modificador global miente más: `huerta -25` está escrito sobre
+el oxisol amazónico y media Indomalaya se sostiene sobre andisoles volcánicos.
+
+Se corrigió lo que se podía corregir sin inventar ecología:
+
+- **Pradera de pastos cortos** (High Plains). Heredaba `huerta +10` del pastizal
+  templado y la ficha se contradecía sola: dice "Aridisoles con baja reserva de
+  agua" y no lista un solo cultivo de huerta. Es el mismo caso que Konya —la
+  huerta se riega con el Ogallala, que se extrae por encima de su recarga—, y
+  Konya ya se había corregido. Cuarta vez que el pastizal templado global
+  aparece hablando por una estepa seca.
+- **La razón de `huerta` del bosque tropical húmedo global**, acotada a los
+  suelos lixiviados que efectivamente dominan el bioma y nombrando la excepción
+  volcánica. El delta no se movió a propósito: bajarlo arreglaría Java rompiendo
+  la Amazonia, porque la distinción es geográfica y el bioma global no tiene
+  forma de expresarla.
+
+**Pendiente:** las fichas de Indomalaya volcánica, Australasia, África tropical y
+Asia paleártica. Eso ya no es corrección de herencia sino relevamiento, y va por
+el circuito de siempre: GPT releva, Claude monta.
 
 ### Bloque 3 — Espesar el paquete de EE.UU., México y el Caribe
 

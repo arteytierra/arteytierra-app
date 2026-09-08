@@ -54,7 +54,7 @@ export const BIOMAS_GLOBALES: Record<string, BiomaFicha> = {
     'Diversidad muy alta y muy repartida: gran parte de la fauna vive en el dosel. Muchas especies frugívoras cumplen el rol de dispersar semillas, del que depende la regeneración del bosque.',
     'Suelos profundos pero pobres y ácidos, muy lixiviados por la lluvia. La fertilidad está en el mantillo y el reciclado rápido de materia orgánica: dejarlos desnudos los agota en pocos ciclos.',
     [
-      { uso: 'huerta', delta: -25, razon: 'La fertilidad está en la biomasa viva, no en el suelo: abierto y desnudo se lava en pocas temporadas. La huerta va en claros chicos y con cobertura permanente.' },
+      { uso: 'huerta', delta: -25, razon: 'En los suelos lixiviados que dominan el bioma la fertilidad está en la biomasa viva y no en el suelo: abierto y desnudo se lava en pocas temporadas, así que la huerta va en claros chicos y con cobertura permanente. Donde el suelo es volcánico joven —Java, Bali, Luzón, buena parte de Nueva Guinea— la restricción no aplica: ahí el limitante es la pendiente, no la fertilidad.' },
       { uso: 'forestal', delta: 20, razon: 'El sistema productivo que sostiene este bioma es agroforestal de varios estratos, no de suelo limpio.' },
     ],
   ),

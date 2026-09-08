@@ -140,6 +140,9 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
       'Pasto galleta (Pleuraphis jamesii)',
     ],
     cultivos: ['trigo', 'sorgo', 'mijo', 'cebada', 'girasol', 'alfalfa'],
+    aptitud: [
+      { uso: 'huerta', delta: -15, razon: 'Suelos someros, poca reserva de agua y lluvia muy variable: los cultivos de la zona son de grano y de secano. La huerta que existe se riega con el acuífero Ogallala, que se extrae muy por encima de su recarga, así que acá se decide por el agua disponible y no por la fertilidad. Ararla a secano es lo que produjo el Dust Bowl.' },
+    ],
     fuentes: [
       { label: 'US Forest Service — Western Great Plains Shortgrass Prairie', url: 'https://www.fs.usda.gov/database/feis/pdfs/other/NatureServe_2013.pdf' },
       { label: 'US Forest Service — Poa arida, plains bluegrass', url: 'https://research.fs.usda.gov/feis/species-reviews/poaari' },
