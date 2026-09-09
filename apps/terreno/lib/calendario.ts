@@ -9,6 +9,12 @@ import type { BiomaFicha } from './biomaTipos';
 import { bloqueEcorregion, resolverEspecies, type BloqueEcorregion } from './especies';
 import { calcularHorasFrio, type HorasFrio } from './horasFrio';
 
+export {
+  calcularFotoperiodo, horasLuz, LUZ_MINIMA_H, LUZ_NULA_H,
+  type Fotoperiodo,
+} from './fotoperiodo';
+import { calcularFotoperiodo, LUZ_MINIMA_H, LUZ_NULA_H, type Fotoperiodo } from './fotoperiodo';
+
 // El cálculo vive en `horasFrio.ts` para que `especies.ts` pueda usarlo sin
 // import circular, pero se sigue leyendo desde acá porque es parte del
 // calendario del predio.
@@ -196,7 +202,15 @@ export const FAMILIAS: FamiliaVegetal[] = [
 
 // ─── Aptitud por mes ──────────────────────────────────────────────────────────
 
-export function aptitudMes(m: MesDato, f: FamiliaVegetal): AptitudMes {
+/**
+ * Qué tan bien le va a esa familia en ese mes.
+ *
+ * `luz_h` es opcional porque el cálculo de temperatura se sostiene solo y hay
+ * tests y llamadas que sólo preguntan por eso. Cuando viene, la luz **sólo
+ * puede bajar** el veredicto, nunca subirlo: un mes que la temperatura descarta
+ * no se rescata porque haya sol.
+ */
+export function aptitudMes(m: MesDato, f: FamiliaVegetal, luz_h?: number): AptitudMes {
   const heladaFuerte  = m.tmin_c < -3;
   const heladaReal    = m.tmin_c <= 0;
   const heladaPosible = m.tmin_c <= 2;
@@ -215,9 +229,25 @@ export function aptitudMes(m: MesDato, f: FamiliaVegetal): AptitudMes {
   if (heladaPosible && !f.tolera_helada) return 'posible';
 
   // Fuera del rango óptimo pero dentro de límites
-  if (m.tmean_c < f.tmin_opt - 2 || m.tmean_c > f.tmax_opt + 3) return 'posible';
+  const porTemperatura: AptitudMes =
+    (m.tmean_c < f.tmin_opt - 2 || m.tmean_c > f.tmax_opt + 3) ? 'posible' : 'optimo';
 
-  return 'optimo';
+  return limitarPorLuz(porTemperatura, luz_h);
+}
+
+/**
+ * El día corto le pone techo al mes.
+ *
+ * Debajo de 10 h de luz el crecimiento vegetativo se detiene —el período de
+ * Perséfone— y debajo de 9 h no hay nada que hacer a cielo abierto. Es una
+ * corrección de latitud alta: a menos de ~40° el día no baja nunca de 10 h y
+ * esta función devuelve lo que le entra.
+ */
+export function limitarPorLuz(a: AptitudMes, luz_h?: number): AptitudMes {
+  if (luz_h === undefined || a === 'no_apto') return a;
+  if (luz_h < LUZ_NULA_H) return 'no_apto';
+  if (luz_h < LUZ_MINIMA_H) return 'posible';
+  return a;
 }
 
 // ─── Resultado completo ───────────────────────────────────────────────────────
@@ -234,6 +264,7 @@ export interface CalendarioMes {
   helada_p:    boolean;  // tmin <= 2 (riesgo de helada)
   seco:        boolean;  // balance < -20
   lluvioso:    boolean;  // balance > 20
+  luz_h:       number;   // horas de luz a mitad de mes
   aptitud:     Record<string, AptitudMes>;
 }
 
@@ -256,6 +287,12 @@ export interface ResumenCalendario {
    * `null` sólo si faltan meses de clima.
    */
   horas_frio:             HorasFrio | null;
+  /**
+   * Las horas de luz de cada mes. Es la tercera pata de la ventana de siembra,
+   * junto con la temperatura y el agua, y la única que no sale del clima sino
+   * de la latitud: no depende del año que venga.
+   */
+  fotoperiodo:            Fotoperiodo;
   periodo_libre_heladas:  { inicio: number; fin: number; duracion: number } | null;
   meses_helada_count:     number;
   meses_secos_count:      number;
@@ -276,6 +313,8 @@ export interface ResumenCalendario {
  * catálogo por clase climática y lo dice en su aviso.
  */
 export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null): ResumenCalendario {
+  const fotoperiodo = calcularFotoperiodo(datos.lat);
+
   const meses: CalendarioMes[] = datos.meses.map((m, i) => ({
     index:    i,
     nombre:   MESES[i] ?? '',
@@ -288,7 +327,10 @@ export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null)
     helada_p: m.tmin_c <= 2,
     seco:     m.balance_mm < -20,
     lluvioso: m.balance_mm > 20,
-    aptitud:  Object.fromEntries(FAMILIAS.map(f => [f.id, aptitudMes(m, f)])),
+    luz_h:    fotoperiodo.por_mes[i] ?? 12,
+    aptitud:  Object.fromEntries(
+      FAMILIAS.map(f => [f.id, aptitudMes(m, f, fotoperiodo.por_mes[i])]),
+    ),
   }));
 
   const frostSet = new Set(meses.filter(m => m.helada).map(m => m.index));
@@ -315,6 +357,7 @@ export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null)
     meses,
     ecorregion,
     horas_frio: calcularHorasFrio(datos.meses),
+    fotoperiodo,
     periodo_libre_heladas: bestLen > 0 ? {
       inicio:   bestStart,
       fin:      (bestStart + bestLen - 1) % 12,

@@ -84,10 +84,10 @@ de las dos. Ahí el arreglo es de texto, no de herencia.
 
 ---
 
-## 3. Los calendarios — tres de cuatro, resueltos el 08/09
+## 3. Los calendarios — las cuatro deudas, cerradas el 08/09
 
-> **Estado al 08/09/2026.** Los puntos **a**, **b** y **c** de abajo están
-> hechos y en producción. Queda abierto sólo el **d**, el fotoperiodo.
+> **Estado al 08/09/2026.** Los cuatro puntos de abajo están hechos y en
+> producción. Esta sección deja de ser deuda pendiente y pasa a ser registro.
 >
 > - **Horas de frío** → `lib/horasFrio.ts`. Modelo clásico de Weinberger, banda
 >   de 0 a 7,2 °C, estimada de las medias mensuales con el día modelado como
@@ -100,6 +100,14 @@ de las dos. Ahí el arreglo es de texto, no de herencia.
 > - **Cuatro familias de clima cálido** — raíces tropicales, musáceas, frutales
 >   tropicales y granos de clima cálido. Y la tabla oculta las familias sin
 >   ningún mes posible, diciendo cuántas ocultó.
+> - **Fotoperiodo** → `lib/fotoperiodo.ts`. Duración del día por el modelo CBM
+>   (Forsythe 1995) desde la latitud y el día del año, con el clamp de sol de
+>   medianoche y noche polar. El umbral es el **período de Perséfone**: debajo de
+>   10 h de luz el crecimiento vegetativo se detiene, debajo de 9 h no hay nada
+>   que hacer a cielo abierto. `aptitudMes` toma la luz como tercer parámetro y
+>   ésta **sólo puede bajar** el veredicto, nunca subirlo. Como a menos de ~40°
+>   de latitud el día no baja nunca de 10 h, la regla no toca jamás un predio
+>   tropical: corrige exactamente donde estaba el error.
 >
 > Lo que sigue abajo es el diagnóstico original, que se deja escrito porque
 > explica por qué eran deudas y no mejoras.
@@ -130,11 +138,21 @@ sobre datos que ya tenemos (Utah o Richardson sobre las medias mensuales) y cier
 un razonamiento que hoy está a medias.
 
 **d) `aptitudMes` no mira fotoperiodo.** Decide con temperatura media, mínima y
-helada. Para hoja y crucíferas en latitud alta eso sobrestima la ventana: en junio
-en Escocia la temperatura da, la luz no.
+helada. Para hoja y crucíferas en latitud alta eso sobrestima la ventana: la
+temperatura da y la luz no.
 
-Ninguna de las cuatro rompe nada hoy. Las cuatro empeoran a medida que la app se
-usa más lejos del Cono Sur, que es justo la dirección en la que viene creciendo.
+> Una aclaración sobre el ejemplo con el que se escribió esto. Decía "en junio en
+> Escocia la temperatura da, la luz no", y junio en Escocia es justamente el mes
+> de más luz del año —diecisiete horas—. El mes que sobra por temperatura es el
+> **de hombro**: octubre y noviembre tienen media de 8 a 10 °C, que a la lechuga
+> le sirven, con nueve horas de día, que no. La corrección implementada mira la
+> luz mes a mes, así que agarra el caso real esté donde esté —y, espejado, el
+> mismo problema en Ushuaia entre mayo y julio.
+
+Ninguna de las cuatro rompía nada. Las cuatro empeoraban a medida que la app se
+usa más lejos del Cono Sur, que es justo la dirección en la que viene creciendo:
+el clima extremo del calendario —Java de un lado, Escocia del otro— era donde
+más se equivocaba. Las cuatro están cerradas, con 33 tests entre las dos tandas.
 
 ---
 
@@ -304,9 +322,7 @@ activo a 2.
 2. **El polígono neerlandés**, arriba.
 3. **Las fuentes por saber de los 26 europeos**, que están doblemente bloqueados
    por `fuentes: []`. Escritorio puro.
-4. **El fotoperiodo** en `aptitudMes`, que es la única de las cuatro deudas del
-   calendario que quedó abierta.
-5. **El paso 8**, cuando vos digas. No antes, porque es el único bloque donde
+4. **El paso 8**, cuando vos digas. No antes, porque es el único bloque donde
    equivocarse cuesta plata y no sólo tiempo.
 
 El bloque 3 —espesar EE.UU. y México— va de fondo, por tandas, sin bloquear nada.

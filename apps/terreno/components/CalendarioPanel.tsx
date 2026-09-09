@@ -9,6 +9,8 @@ import {
   cultivosDeFicha,
   FAMILIAS,
   LABEL_BANDA_FRIO,
+  LUZ_MINIMA_H,
+  LUZ_NULA_H,
   type AptitudMes,
 } from '@/lib/calendario';
 import type { DatosClima } from '@/lib/clima';
@@ -187,6 +189,20 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
                   {m.precip}
                 </div>
 
+                {/* Barra de luz — sólo donde el día llega a ser corto. En
+                    latitud media o baja no aporta y ocupa lugar. */}
+                {cal.fotoperiodo.limita && (
+                  <div
+                    title={`Luz: ${m.luz_h} h de día`}
+                    className={`h-3 rounded-sm flex items-center justify-center text-[7px] font-medium
+                      ${m.luz_h < LUZ_NULA_H   ? 'bg-ink-700/25 text-ink-700/70'
+                      : m.luz_h < LUZ_MINIMA_H ? 'bg-ink-700/10 text-ink-700/50'
+                      : 'bg-sun-100 text-sun-700'}`}
+                  >
+                    {Math.round(m.luz_h)}h
+                  </div>
+                )}
+
                 {/* Ícono helada */}
                 {m.helada && (
                   <p className="text-center text-[8px]">❄</p>
@@ -203,6 +219,9 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
               { cls: 'bg-moss-100',       label: 'Óptimo' },
               { cls: 'bg-water-500/30',   label: 'Lluv.' },
               { cls: 'bg-clay-200/60',    label: 'Seco' },
+              ...(cal.fotoperiodo.limita
+                ? [{ cls: 'bg-ink-700/10', label: 'Día corto' }]
+                : []),
             ].map(l => (
               <span key={l.label} className="flex items-center gap-1 text-[9px] text-ink-700/60">
                 <span className={`w-2.5 h-2.5 rounded-sm ${l.cls} inline-block`} />
@@ -278,6 +297,12 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
             <p className="text-[9px] text-ink-700/40 pt-1">
               No se listan {familiasOcultas} familia{familiasOcultas > 1 ? 's' : ''} más:
               en este clima no tienen ningún mes posible.
+            </p>
+          )}
+          {cal.fotoperiodo.limita && (
+            <p className="text-[9px] text-ink-700/50 pt-1 leading-relaxed">
+              {cal.fotoperiodo.lectura} Los meses de día corto ya están
+              descontados de la tabla: la temperatura sola los daba por buenos.
             </p>
           )}
         </div>
