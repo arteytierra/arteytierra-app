@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados } from '@/lib/terreno/suscripciones';
+import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados, puedePagarAcequia } from '@/lib/terreno/suscripciones';
 import { crearSubscripcionPaypal } from '@/lib/terreno/paypal';
 
 export const runtime = 'nodejs';
@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
   );
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) return NextResponse.json({ error: 'Sesión inválida' }, { status: 401, headers });
+
+  // Modo ensayo: durante la prueba de cobro real sólo cobran los correos de la
+  // lista. La respuesta es la misma que con los pagos apagados a propósito: quien
+  // no está en la lista no tiene por qué enterarse de que hay un ensayo en curso.
+  if (!puedePagarAcequia(user.email ?? '')) {
+    return NextResponse.json({ error: 'Los pagos todavía no están habilitados.' }, { status: 503, headers });
+  }
 
   const body = await req.json().catch(() => ({}));
   const plan = String(body.plan ?? '');
