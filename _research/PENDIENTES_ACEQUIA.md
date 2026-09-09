@@ -196,6 +196,32 @@ ECO_ID curados son de Puerto Rico. Vuelven cuando se curen los de Cuba y La Espa
 
 ## 5. Espesar lo que ya existe (bloque 3 del plan de América)
 
+> **Tanda 1 hecha el 08/09/2026.** Diez fichas engrosadas —las de `suelos` más
+> corto del paquete—: rocosas del norte, Tamaulipas–Texas, Hawái, Sonora–Sinaloa,
+> sierras de Oaxaca, noreste y Grandes Lagos, Tehuacán-Cuicatlán, sky islands,
+> montanos de Chiapas y Balsas–Jalisco. Cada una pasó de 4 especies a 7 y de un
+> `suelos` de dos líneas a uno del registro de Canadá: nombrar el orden de
+> suelo, decir cómo se comporta y decir qué implica para quien lo trabaja.
+>
+> Movió el promedio del paquete de **154 a 219 caracteres** de `suelos`, y las
+> fichas con 4 especies o menos de **35 a 25**. Quedan **cuatro tandas**.
+>
+> **Y una corrección de la medición anterior.** Este informe decía que Canadá
+> tenía las 10 fichas sin fuentes. Era falso, y el error era del script que las
+> contaba: Canadá cita por constante compartida —`[CANSIS_ECO, CANSIS_SUELOS,
+> RESOLVE]`— y no con objetos `{ label }` inline como el resto, así que la
+> expresión regular veía cero. Las 10 siempre tuvieron tres.
+>
+> Lo que sí era cierto, en una versión más chica: eran **las mismas tres
+> cartografías generales repetidas en las diez**. Eso hace la ficha trazable
+> pero no verificable — no hay dónde ir a chequear lo que la ficha concreta
+> afirma. Seis ya tienen además una fuente propia del lugar (la ley de rotación
+> de la papa de la Isla del Príncipe Eduardo, el antelope-brush del Okanagan, el
+> plan de Gwaii Haanas, el permafrost de NRCan, Torngat, y Groenlandia con Asiaq).
+> Las otras cuatro —escudo boreal, tundra ártica, desierto polar, interior de
+> Columbia Británica— siguen con marco general, que en su caso alcanza más
+> porque son regiones sin agricultura de campo.
+
 El paquete de EE.UU., México y el Caribe es el más flaco de todos:
 
 - **35 fichas con sólo 4 especies nativas**

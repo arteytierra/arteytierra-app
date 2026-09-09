@@ -31,6 +31,23 @@ const RESOLVE = { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.goo
 const BEC_BC = { label: 'BC — Biogeoclimatic Ecosystem Classification', url: 'https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/ecosystems/biogeoclimatic-ecosystem-classification' };
 const CAFF = { label: 'CAFF — Conservation of Arctic Flora and Fauna', url: 'https://www.caff.is/' };
 
+/**
+ * Y las específicas de cada región, que son las que dicen algo que las tres de
+ * arriba no pueden decir. Las tres compartidas describen el marco: dónde
+ * empieza y termina cada ecozona y qué orden de suelo le toca. Estas describen
+ * el lugar: por qué la rotación de la papa está legislada en la Isla del
+ * Príncipe Eduardo, cuánto queda del antelope-brush del Okanagan, quién decide
+ * en Gwaii Haanas. Una ficha con las tres genéricas nada más es trazable pero
+ * no es verificable: no hay dónde ir a chequear lo que la ficha afirma.
+ */
+const PEI_ROTACION = { label: 'PEI — Agricultural Crop Rotation Act', url: 'https://www.princeedwardisland.ca/sites/default/files/legislation/a-08-01-agricultural_crop_rotation_act.pdf' };
+const BC_ANTELOPE = { label: 'BC — Antelope-brush ecosystems', url: 'https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/species-ecosystems-at-risk/brochures/antelope_brush_ecosystems.pdf' };
+const GWAII_HAANAS = { label: 'Gwaii Haanas — Gina ʻWaadluxan KilGuhlGa Land-Sea-People Management Plan', url: 'https://parks.canada.ca/pn-np/bc/gwaiihaanas/info/plan' };
+const NRCAN_PERMAFROST = { label: 'NRCan — Permafrost, Ice and Snow', url: 'https://natural-resources.canada.ca/science-data/science-research/permafrost-ice-snow' };
+const TORNGAT = { label: 'Parks Canada — Torngat Mountains, naturaleza y ciencia', url: 'https://parks.canada.ca/pn-np/nl/torngats/nature' };
+const GRONLANDIA_BIO = { label: 'Greenland Institute of Natural Resources — The Biodiversity of Greenland', url: 'https://natur.gl/wp-content/uploads/2019/07/55-Biodiversity_of_Greenland.pdf' };
+const ASIAQ = { label: 'Asiaq — Greenland Survey', url: 'https://www.asiaq.gl/en/' };
+
 export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
   // CA · ECO_ID 335 · la única del lote con agricultura de campo abierto
   san_lorenzo_tierras_bajas: {
@@ -51,7 +68,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Alerce americano (Larix laricina)',
     ],
     cultivos: ['maiz_tropical', 'soja', 'trigo', 'avena', 'arce_azucarero', 'manzano', 'arandano', 'trebol_blanco'],
-    fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
+    fuentes: [PEI_ROTACION, CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
   },
 
   // CA · ECO_ID 345, 350, 355
@@ -98,7 +115,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     aptitud: [
       { uso: 'frutales', delta: 15, razon: 'El Okanagan es la región frutícola de Canadá: amplitud térmica marcada y un lago que modera la helada. El cuello de botella es la asignación de riego y la eficiencia, no el suelo.' },
     ],
-    fuentes: [BEC_BC, CANSIS_SUELOS, RESOLVE],
+    fuentes: [BC_ANTELOPE, BEC_BC, CANSIS_SUELOS, RESOLVE],
   },
 
   // CA · ECO_ID 365
@@ -120,7 +137,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Salal (Gaultheria shallon)',
     ],
     cultivos: ['papa', 'avena', 'arandano', 'raigras', 'trebol_blanco', 'sauce_mimbre'],
-    fuentes: [BEC_BC, CANSIS_ECO, RESOLVE],
+    fuentes: [GWAII_HAANAS, BEC_BC, CANSIS_ECO, RESOLVE],
   },
 
   // CA · ECO_ID 370, 373, 377
@@ -167,7 +184,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Liquen de reno (Cladonia rangiferina)',
     ],
     cultivos: ['papa', 'cebada', 'arandano'],
-    fuentes: [CANSIS_ECO, CANSIS_SUELOS, CAFF],
+    fuentes: [NRCAN_PERMAFROST, CANSIS_ECO, CANSIS_SUELOS, CAFF],
   },
 
   // CA · ECO_ID 413, 414
@@ -235,7 +252,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Sajifraga púrpura (Saxifraga oppositifolia)',
       'Salvelino ártico (Salvelinus alpinus)',
     ],
-    fuentes: [CAFF, CANSIS_ECO, RESOLVE],
+    fuentes: [TORNGAT, CAFF, CANSIS_ECO, RESOLVE],
   },
 
   // GL · ECO_ID 417, 418
@@ -258,6 +275,8 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     ],
     cultivos: ['papa', 'cebada', 'raigras', 'trebol_blanco'],
     fuentes: [
+      GRONLANDIA_BIO,
+      ASIAQ,
       { label: 'Pinngortitaleriffik — Instituto de Recursos Naturales de Groenlandia', url: 'https://natur.gl/' },
       CAFF,
       RESOLVE,
