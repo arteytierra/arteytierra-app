@@ -60,6 +60,27 @@ export function pagosAcequiaHabilitados(): boolean {
   return process.env.ACEQUIA_PAYMENTS_ENABLED === 'true';
 }
 
+/**
+ * Modo ensayo: con `ACEQUIA_PAYMENTS_TEST_EMAILS` cargada, sólo esos correos pueden
+ * pagar; al resto el checkout le responde igual que si los pagos estuvieran apagados.
+ *
+ * Existe por un motivo concreto: la sección de planes de arteytierra.org/acequia
+ * enlaza al checkout sin interruptor propio, así que prender los pagos en producción
+ * los abre a cualquiera que se registre. Esto permite hacer el cobro real de prueba
+ * sin ofrecerle una suscripción al público antes de que los textos legales estén.
+ *
+ * Vacía o ausente, no cambia nada: manda `ACEQUIA_PAYMENTS_ENABLED` como siempre.
+ */
+export function puedePagarAcequia(email: string): boolean {
+  if (!pagosAcequiaHabilitados()) return false;
+  const lista = (process.env.ACEQUIA_PAYMENTS_TEST_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (lista.length === 0) return true;
+  return lista.includes(email.trim().toLowerCase());
+}
+
 export function tasaArsPorUsd(): number {
   const value = Number(process.env.ACEQUIA_ARS_PER_USD);
   if (!Number.isFinite(value) || value <= 0) {
