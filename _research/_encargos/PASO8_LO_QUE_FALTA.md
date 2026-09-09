@@ -26,6 +26,31 @@ Tres cosas que estaban en la lista y salieron:
 
 ---
 
+## Por qué las variables van en `arteytierra.org` y no en `acequia.app`
+
+Son tres piezas con tres papeles distintos:
+
+| Dominio | Proyecto de Vercel | Qué hace con el pago |
+| --- | --- | --- |
+| `acequia.app` | `acequia-landing-piloto` | La vidriera. Sólo muestra los botones. |
+| `terreno.arteytierra.org` (mañana `app.acequia.app`) | `terreno` | La app donde la persona está logueada; desde ahí toca "Suscribirme". |
+| `arteytierra.org` | `arteytierra-app-web` | **El motor.** Acá viven `/api/terreno/checkout` y los webhooks de MP y PayPal. |
+
+Las claves de cobro van donde está el código que cobra, y ese código está en
+`apps/web`, que es `arteytierra.org`. Está ahí porque la cuenta de Mercado Pago
+es la misma con la que ya cobra la tienda: un solo token, un solo webhook, un
+solo lugar donde mirar cuando algo falla.
+
+**Nadie termina en `arteytierra.org` al pagar.** El botón le pide una URL de pago
+a esa API por atrás y el navegador salta directo a Mercado Pago o a PayPal. La
+única vez que aparece ese dominio es en la URL del webhook, que es una
+conversación entre servidores que la persona nunca ve.
+
+El día que Acequia tenga su propio backend, mudarlo es cambiar variables de
+entorno. Hoy no hay motivo.
+
+---
+
 ## 1 · El piloto (independiente de todo lo demás)
 
 Pegá **`PILOTO_CODIGO_ACCESO.sql`** en el editor SQL de Supabase.
@@ -135,15 +160,35 @@ Las credenciales ya están. Lo único a verificar es que la notificación
 configurada en tu cuenta de Mercado Pago incluya los eventos de suscripción,
 porque hasta ahora sólo cobraba pagos sueltos de la tienda.
 
-En `mercadopago.com.ar` → **Tus integraciones → tu aplicación → Webhooks**, la
-URL `https://arteytierra.org/api/webhooks/mercadopago` tiene que tener marcados,
-además de lo que ya tenga:
+No está en el panel común de Mercado Pago sino en el de desarrolladores. Entrá
+derecho acá:
+
+```
+https://www.mercadopago.com.ar/developers/panel/app
+```
+
+Elegís la aplicación de la que sacaste las credenciales de producción y en el
+menú de la izquierda: **Webhooks → Configurar notificaciones**.
+
+Hay dos columnas, **Modo productivo** y **Modo de pruebas**. La que importa es
+la productiva. La URL tiene que ser exactamente:
+
+```
+https://arteytierra.org/api/webhooks/mercadopago
+```
+
+Y en la lista de eventos, además de lo que ya tengas tildado (`payment`, de la
+tienda), marcá:
 
 - `subscription_preapproval`
 - `subscription_authorized_payment`
 
 Si sólo figura `payment`, las altas de suscripción no van a llegar nunca y la
 persona pagaría sin que se le active el plan.
+
+**Si no ves ninguna aplicación en la lista**, es que las credenciales que tenés
+salieron de otra cuenta o de otro usuario de Mercado Pago. Entrá con la misma
+cuenta desde la que copiaste el Access Token de producción.
 
 ---
 
