@@ -39,6 +39,11 @@ Las variables no entran a un build que ya existe.
 
 ## 2. El cron diario
 
+**Por qué no te aparecía nada en Cron Jobs:** el archivo que lo declara estaba
+commiteado en una rama, no en `main`. Vercel lee esa configuración del deploy de
+producción, así que mientras no llegue a `main` la pestaña está vacía — no había
+nada roto. Con el push a `main` aparece solo.
+
 **No hay que configurar nada en el panel de Vercel.** Ya dejé el archivo
 `apps/web/vercel.json`, que le dice a Vercel que llame todos los días a las
 13:00 UTC (10 de la mañana en Argentina) al aviso de "en un día se hace el primer
@@ -68,6 +73,43 @@ Dos cosas que arreglé hoy y que hacen que esto sea seguro de hacer:
 - **La prueba gratis lleva el precio cero escrito.** Antes el ciclo de prueba se
   creaba sin importe. Lo más probable es que PayPal lo tomara como gratis, pero
   "lo más probable" no alcanza cuando del otro lado hay una tarjeta.
+
+---
+
+## 3 bis. El cobro real sin esperar la revisión legal
+
+Vos preferís saltar directo a pagar de verdad vos mismo. Se puede, pero había un
+problema que encontré al revisarlo: **la sección de planes de
+`arteytierra.org/acequia` enlaza al checkout sin ningún interruptor propio.**
+Prender `ACEQUIA_PAYMENTS_ENABLED` en Production alcanzaba para que cualquiera
+que se registre pueda contratar de verdad — sin Términos aprobados. Eso es lo que
+obligaba a esperar la revisión legal.
+
+Lo resolví con una variable nueva: **`ACEQUIA_PAYMENTS_TEST_EMAILS`**. Cargándola
+con tu correo, sólo vos podés pagar; a cualquier otra persona el checkout le
+responde igual que si los pagos estuvieran apagados. El día que abras, borrás la
+variable y queda abierto para todos.
+
+Entonces, para la prueba real:
+
+| Variable | Proyecto | Valor |
+| --- | --- | --- |
+| `ACEQUIA_PAYMENTS_TEST_EMAILS` | `arteytierra-app-web` | tu correo |
+| `ACEQUIA_PAYMENTS_ENABLED` | `arteytierra-app-web` | `true` |
+| `PAYMENT_WEBHOOKS_ENABLED` | `arteytierra-app-web` | `true` |
+| `PAYPAL_*` (las cuatro) | `arteytierra-app-web` | las **live**, y webhook live al mismo `https://arteytierra.org/api/webhooks/paypal` |
+| `NEXT_PUBLIC_PAYMENTS_ENABLED` | `acequia-landing-piloto` | **dejalo en `false`** |
+| `ACEQUIA_TRIAL_ENABLED` | `terreno` | ver abajo |
+
+Sobre `ACEQUIA_TRIAL_ENABLED`: en `true` el alta arranca con 3 días de prueba y
+**no te cobra hasta el cuarto día**. Si lo que querés es ver la plata hoy,
+ponelo en `false`, hacé el cobro, y después prendelo. Yo haría las dos: primero
+en `false` para ver el cobro entrar, después en `true` para ver que la prueba
+tampoco cobre.
+
+Después: entrás con tu usuario a
+`https://terreno.arteytierra.org/suscribir?plan=personal&periodo=mensual`,
+pagás una vez por Mercado Pago y otra por PayPal, y te das de baja vos mismo.
 
 ---
 
@@ -129,12 +171,12 @@ se copian a `app/terminos/page.tsx` y `app/privacidad/page.tsx` del landing.
 
 ---
 
-## Una cosa que no es técnica y sigue abierta
+## Las ofertas: quedaron dos, como pediste
 
-Hoy hay **tres ofertas distintas al mismo público**: el piloto fundador de 7 días
-sin tarjeta, la prueba comercial de 3 días con tarjeta, y "los primeros 50 con 50%
-de por vida", que sigue publicada en `apps/web/app/acequia/page.tsx:576`.
+Lo del "50% de por vida" **ya no está publicado en ningún lado**. Lo busqué en
+`apps/web`, en el landing y en el catálogo de planes: no aparece. Se había quitado
+en el commit `3d42520`, cuando los planes pasaron a tener un solo nombre. Mi aviso
+anterior apuntaba a una versión vieja del archivo — no había nada que borrar.
 
-No es un error de código —las tres funcionan— pero alguien que entra hoy no
-entiende cuál le toca. Conviene resolverlo antes de empezar a comunicar, no
-después. No lo toco sin que me digas cuál queda.
+Quedan las dos que querías: **piloto fundador** (7 días, sin tarjeta) y **prueba
+comercial** (3 días, con tarjeta).
