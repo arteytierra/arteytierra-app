@@ -36,7 +36,8 @@ type N8nEvent =
   | 'scholarship-approved'
   | 'scholarship-rejected'
   | 'partner-applied'
-  | 'partner-decision';
+  | 'partner-decision'
+  | 'oficio-applied';
 
 export async function emitN8nEvent<T extends Record<string, unknown>>(
   event: N8nEvent,

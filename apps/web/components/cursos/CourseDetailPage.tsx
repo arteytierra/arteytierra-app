@@ -45,7 +45,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-14">
           <div className="flex items-center gap-3 mb-4">
             <Link href="/cursos" className="text-xs font-sans text-clay-300 hover:text-bone-100 transition-colors uppercase tracking-widest">
-              Cursos
+              {isInmersion ? 'Eco Escuela' : 'Cursos'}
             </Link>
             <span className="text-clay-500 text-xs">›</span>
             <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 bg-clay-700/60 px-2.5 py-1">
@@ -102,7 +102,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       {/* INTRO */}
       <section className="bg-bone-50 py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-5">El curso</p>
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-moss-700 mb-5">{isInmersion ? 'La vivencia' : 'El curso'}</p>
           <h2 className="font-display text-4xl md:text-5xl text-ink-950 mb-8">
             Aprender <em>construyendo.</em>
           </h2>
@@ -423,6 +423,27 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         </div>
       </section>
 
+      {/* OFICIO — beca completa a cambio de un servicio */}
+      {isInmersion && (
+        <section className="bg-clay-700/10 border-y border-clay-700/30 py-16 px-6">
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">¿Tenés un oficio para aportar?</p>
+            <h2 className="font-display text-3xl md:text-4xl text-ink-950 mb-4">
+              Electricistas, plomeros, herreros, carpinteros, <em>comunicadores…</em>
+            </h2>
+            <p className="font-sans text-sm text-ink-700 leading-relaxed max-w-lg mx-auto mb-6">
+              Si tenés un oficio y querés ponerlo al servicio de la construcción de la ecoescuela, podés acceder a una <strong>beca completa</strong> para vivir la Inmersión Viva. Postulación por formulario y entrevista previa por videollamada.
+            </p>
+            <Link
+              href="/cursos/inmersion-viva/oficio"
+              className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
+            >
+              Postularme con mi oficio →
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* INSCRIPCIÓN */}
       {/* TESTIMONIOS */}
       <section className="bg-bone-100 py-20 px-6 border-t border-bone-200">
@@ -502,7 +523,9 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           {isPresencial ? <>Quedáte en <em>Tay Pichín.</em></> : <>Hablemos <em>antes.</em></>}
         </h2>
         <p className="font-sans text-ink-700 text-sm max-w-md mx-auto mb-6 leading-relaxed">
-          {isPresencial
+          {isInmersion
+            ? 'La vivencia se sostiene en la Ecoescuela, de lunes a lunes — vivís, comés y aprendés ahí mismo.'
+            : isPresencial
             ? 'El curso se desarrolla en la Ecoescuela. Podés hospedarte ahí mismo y vivir la experiencia completa.'
             : 'Una consulta sin costo para ayudarte a elegir el camino que más se alinea con lo que buscás.'}
         </p>
