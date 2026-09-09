@@ -6,8 +6,9 @@ import {
   calcularCalendario,
   calcularGDD,
   calcularBalanceCultivo,
+  cultivosDeFicha,
   FAMILIAS,
-  CULTIVOS_KC,
+  LABEL_BANDA_FRIO,
   type AptitudMes,
 } from '@/lib/calendario';
 import type { DatosClima } from '@/lib/clima';
@@ -43,11 +44,30 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
     () => datosClima ? calcularGDD(datosClima.meses, gdBase) : null,
     [datosClima, gdBase],
   );
-  const balanceCultivo = useMemo(() => {
-    if (!datosClima) return null;
-    const cultivo = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
-    return calcularBalanceCultivo(datosClima.meses, cultivo.kc);
-  }, [datosClima, cultivoId]);
+  // Los cultivos del balance salen de la ficha de la ecorregión cuando la hay.
+  // El id guardado puede ser de otra ecorregión —el usuario movió el predio—,
+  // así que se valida contra la lista vigente y no contra lo que quedó guardado.
+  const cultivos = useMemo(() => cultivosDeFicha(ficha?.cultivos), [ficha]);
+  const cultivo  = useMemo(
+    () => cultivos.find(c => c.id === cultivoId) ?? cultivos[0]!,
+    [cultivos, cultivoId],
+  );
+
+  const balanceCultivo = useMemo(
+    () => datosClima ? calcularBalanceCultivo(datosClima.meses, cultivo.kc) : null,
+    [datosClima, cultivo],
+  );
+
+  // Familias que tienen al menos un mes no descartado. Sin esto la tabla suma
+  // trece filas y en Ushuaia nueve están en gris, mientras que en Java las
+  // templadas ocupan el lugar de las que sí importan.
+  const familias      = useMemo(() => {
+    if (!cal) return FAMILIAS;
+    const sirve = (id: string) => cal.meses.some(m => m.aptitud[id] !== 'no_apto');
+    const vivas = FAMILIAS.filter(f => sirve(f.id));
+    return vivas.length > 0 ? vivas : FAMILIAS;
+  }, [cal]);
+  const familiasOcultas = FAMILIAS.length - familias.length;
 
   if (!datosClima || !cal) {
     return (
@@ -102,6 +122,35 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
           color="neutro"
         />
       </div>
+
+      {/* ── Horas de frío ────────────────────────────────────────────────────────
+          El período libre de heladas dice cuánto verano hay. Éste dice si hubo
+          invierno: sin frío acumulado el frutal de hoja caduca vive y no cuaja,
+          y es lo primero que hay que saber antes de plantar un monte. */}
+      {cal.horas_frio && (
+        <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
+          <div className="px-3 py-2 border-b border-bone-200 flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-xs font-medium text-ink-700">Frío invernal</p>
+            <span className={`text-[10px] font-semibold ${
+              cal.horas_frio.banda === 'nulo'  ? 'text-clay-600'
+              : cal.horas_frio.banda === 'bajo'  ? 'text-sun-600'
+              : 'text-moss-700'
+            }`}>
+              {cal.horas_frio.total} h · {LABEL_BANDA_FRIO[cal.horas_frio.banda]}
+            </span>
+          </div>
+          <div className="px-3 py-2 space-y-1.5">
+            <p className="text-[10px] text-ink-700/70 leading-relaxed">{cal.horas_frio.lectura}</p>
+            <p className="text-[9px] text-ink-700/45 leading-relaxed">
+              Horas entre 0 y 7,2 °C acumuladas de {MESES[cal.horas_frio.ventana.inicio]} a{' '}
+              {MESES[cal.horas_frio.ventana.fin]}, estimadas desde las medias mensuales.
+              Es el modelo en el que están publicados los requerimientos del frutal
+              caduco, y sirve para comparar y descartar — no reemplaza una medición
+              con registro horario en el predio.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Timeline mensual ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
@@ -191,7 +240,7 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
               </tr>
             </thead>
             <tbody>
-              {FAMILIAS.map((f, fi) => (
+              {familias.map((f, fi) => (
                 <tr key={f.id} className={`border-t border-bone-200/50 ${fi % 2 === 0 ? '' : 'bg-bone-50/40'}`}>
                   <td className="px-3 py-1 text-ink-700 font-medium whitespace-nowrap" title={f.ejemplos}>
                     {f.nombre}
@@ -219,12 +268,18 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
 
         {/* Ejemplos de cada familia */}
         <div className="px-3 py-2 border-t border-bone-200 space-y-1">
-          {FAMILIAS.map(f => (
+          {familias.map(f => (
             <p key={f.id} className="text-[9px] text-ink-700/50">
               <span className="font-medium text-ink-700/70">{f.nombre}:</span>{' '}
               {f.ejemplos}
             </p>
           ))}
+          {familiasOcultas > 0 && (
+            <p className="text-[9px] text-ink-700/40 pt-1">
+              No se listan {familiasOcultas} familia{familiasOcultas > 1 ? 's' : ''} más:
+              en este clima no tienen ningún mes posible.
+            </p>
+          )}
         </div>
       </div>
 
@@ -319,7 +374,6 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
 
       {/* ── Balance hídrico por cultivo ──────────────────────────────────────── */}
       {balanceCultivo && (() => {
-        const cultivo = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
         const mesesDeficit = balanceCultivo.filter(m => m.balance < 0).length;
         return (
           <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
@@ -330,7 +384,7 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
                 onChange={e => setCultivoId(e.target.value)}
                 className="text-[10px] border border-bone-200 rounded px-1.5 py-0.5 bg-white text-ink-700 focus:outline-none focus:ring-1 focus:ring-moss-500"
               >
-                {CULTIVOS_KC.map(c => (
+                {cultivos.map(c => (
                   <option key={c.id} value={c.id}>{c.nombre} (Kc {c.kc})</option>
                 ))}
               </select>

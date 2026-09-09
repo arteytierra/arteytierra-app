@@ -25,6 +25,7 @@
  */
 import type { MesDato } from './clima';
 import { MESES } from './clima';
+import { calcularHorasFrio } from './horasFrio';
 
 const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
@@ -76,6 +77,18 @@ export interface Especie {
   agua_mm: number;
   /** Kc medio del ciclo (FAO-56 simplificado), para estimar la ETc. */
   kc: number;
+  /**
+   * Horas de frío que la especie necesita para salir de la dormancia, en el
+   * modelo clásico de 0 a 7,2 °C (ver `lib/horasFrio.ts`).
+   *
+   * Sólo lo llevan las caducas donde el frío es efectivamente el límite y donde
+   * el número está publicado en las tablas de pomología. **No es una propiedad
+   * de la especie sino de la variedad**: hay durazno de 200 horas y durazno de
+   * 900. El número que va acá es el de la variedad común, que es contra el que
+   * conviene decidir cuando todavía no se eligió una. Ausente = el frío no es
+   * lo que decide, y no hay que inventarle una cifra.
+   */
+  horas_frio?: number;
   /** Grupos o clases Köppen donde el cultivo está documentado. Un grupo suelto
    *  ('A', 'C') vale para todas sus clases. */
   koppen: string[];
@@ -449,18 +462,21 @@ export const ESPECIES: Especie[] = [
     id: 'vid', nombre: 'Vid', cientifico: 'Vitis vinifera',
     rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 1400,
     tmin_letal_c: -12, agua_mm: 500, kc: 0.60, koppen: ['Csa', 'Csb', 'BSk', 'Cfa', 'Cfb'],
+    horas_frio: 200,
     nota: 'La calidad sale del déficit controlado, no del riego pleno.',
   },
   {
     id: 'almendro', nombre: 'Almendro', cientifico: 'Prunus dulcis',
     rol: 'principal', perenne: true, tbase_c: 7, gdd_ciclo: 1500,
     tmin_letal_c: -10, agua_mm: 700, kc: 0.85, koppen: ['Csa', 'Csb', 'BSk'],
+    horas_frio: 300,
     nota: 'Florece temprano: la helada tardía es el riesgo real, no el frío.',
   },
   {
     id: 'higuera', nombre: 'Higuera', cientifico: 'Ficus carica',
     rol: 'asociado', perenne: true, tbase_c: 10, gdd_ciclo: 1600,
     tmin_letal_c: -9, agua_mm: 550, kc: 0.70, koppen: ['Csa', 'Csb', 'BSk', 'Cfa'],
+    horas_frio: 100,
     nota: 'Se conforma con poco y da sombra de copa baja al ganado.',
   },
   {
@@ -510,12 +526,14 @@ export const ESPECIES: Especie[] = [
     id: 'pistacho', nombre: 'Pistacho', cientifico: 'Pistacia vera',
     rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 3000,
     tmin_letal_c: -20, agua_mm: 500, kc: 0.65, koppen: ['BSk', 'BWk', 'BSh', 'Csa'],
+    horas_frio: 800,
     nota: 'Verano largo y seco con invierno frío; la humedad en floración le arruina el año entero.',
   },
   {
     id: 'damasco', nombre: 'Damasco / albaricoque', cientifico: 'Prunus armeniaca',
     rol: 'principal', perenne: true, tbase_c: 7, gdd_ciclo: 1800,
     tmin_letal_c: -20, agua_mm: 600, kc: 0.85, koppen: ['BSk', 'Csa', 'Dsa', 'Cfb'],
+    horas_frio: 500,
     nota: 'Florece temprano: en valle con helada tardía se pierde la cosecha, no el árbol.',
   },
   {
@@ -529,18 +547,21 @@ export const ESPECIES: Especie[] = [
     id: 'manzano', nombre: 'Manzano', cientifico: 'Malus domestica',
     rol: 'principal', perenne: true, tbase_c: 6, gdd_ciclo: 1300,
     tmin_letal_c: -25, agua_mm: 700, kc: 0.90, koppen: ['Cfb', 'Cfa', 'Dfb', 'Csb'],
+    horas_frio: 800,
     nota: 'Pide horas de frío: en invierno tibio no cuaja aunque el verano sobre.',
   },
   {
     id: 'nogal', nombre: 'Nogal', cientifico: 'Juglans regia',
     rol: 'sombra', perenne: true, tbase_c: 10, gdd_ciclo: 1700,
     tmin_letal_c: -20, agua_mm: 800, kc: 0.85, koppen: ['Cfa', 'Cfb', 'Dfa', 'Dfb', 'Csa'],
+    horas_frio: 700,
     nota: 'Dosel de dehesa y madera; su hoja inhibe a la vecina de abajo.',
   },
   {
     id: 'avellano', nombre: 'Avellano', cientifico: 'Corylus avellana',
     rol: 'asociado', perenne: true, tbase_c: 6, gdd_ciclo: 1100,
     tmin_letal_c: -22, agua_mm: 750, kc: 0.85, koppen: ['Cfb', 'Dfb', 'Cfa'],
+    horas_frio: 800,
     nota: 'Estrato medio de setos productivos; rebrota de cepa para leña.',
   },
   {
@@ -583,12 +604,14 @@ export const ESPECIES: Especie[] = [
     id: 'durazno', nombre: 'Durazno', cientifico: 'Prunus persica',
     rol: 'principal', perenne: true, tbase_c: 7, gdd_ciclo: 1400,
     tmin_letal_c: -18, agua_mm: 700, kc: 0.90, koppen: ['Cfa', 'Cfb', 'Csa', 'Csb', 'BSk', 'Dfb'],
+    horas_frio: 600,
     nota: 'Pide menos frío que el manzano, pero florece antes y por eso se hiela más seguido.',
   },
   {
     id: 'cerezo', nombre: 'Cerezo', cientifico: 'Prunus avium',
     rol: 'principal', perenne: true, tbase_c: 6, gdd_ciclo: 1300,
     tmin_letal_c: -22, agua_mm: 700, kc: 0.90, koppen: ['Csb', 'Cfb', 'Dfb', 'Csa'],
+    horas_frio: 900,
     nota: 'La lluvia sobre la fruta madura la parte: el riesgo es la primavera húmeda, no el invierno.',
   },
   {
@@ -650,6 +673,7 @@ export const ESPECIES: Especie[] = [
     id: 'pecan', nombre: 'Pecán', cientifico: 'Carya illinoinensis',
     rol: 'principal', perenne: true, tbase_c: 10, gdd_ciclo: 2800,
     tmin_letal_c: -25, agua_mm: 900, kc: 0.90, koppen: ['Cfa', 'Cwa', 'Dfa', 'BSk'],
+    horas_frio: 400,
     nota: 'Verano largo y caliente con agua: más al norte cuaja igual, pero no llega a llenar la nuez.',
   },
   {
@@ -681,6 +705,7 @@ export const ESPECIES: Especie[] = [
     id: 'arandano', nombre: 'Arándano', cientifico: 'Vaccinium corymbosum',
     rol: 'principal', perenne: true, tbase_c: 6, gdd_ciclo: 1000,
     tmin_letal_c: -25, agua_mm: 700, kc: 0.90, koppen: ['Dfb', 'Cfb', 'Cfa'],
+    horas_frio: 700,
     nota: 'Quiere suelo ácido y mucho frío invernal; no se adapta al pH alto.',
   },
   {
@@ -719,6 +744,7 @@ export const ESPECIES: Especie[] = [
     id: 'granado', nombre: 'Granado', cientifico: 'Punica granatum',
     rol: 'asociado', perenne: true, tbase_c: 10, gdd_ciclo: 1700,
     tmin_letal_c: -10, agua_mm: 600, kc: 0.75, koppen: ['BWh', 'BSh', 'BSk', 'Csa'],
+    horas_frio: 150,
     nota: 'Segundo estrato del oasis, bajo la palmera y sobre la huerta.',
   },
   {
@@ -822,6 +848,24 @@ export function evaluarEspecie(esp: Especie, meses: MesDato[]): EvaluacionEspeci
       return { especie: esp, siembra: [], viable: false, duracion_meses: 0, riego_mm: deficit,
         razon: `Sobrevive el invierno pero no junta calor para producir: ${Math.round(gddAnual)} grados-día al año contra ${esp.gdd_ciclo} que pide.` };
     }
+
+    // La tercera forma de fallar, y la que faltaba: el caduco que pasa el
+    // invierno y junta el calor, y aun así no cuaja porque el invierno fue
+    // tibio. Un manzano en Miami cumple las dos condiciones de arriba. Éste es
+    // el único caso en que sobra clima y falta frío, así que va después.
+    if (esp.horas_frio !== undefined) {
+      const frio = calcularHorasFrio(meses);
+      if (frio && frio.total < esp.horas_frio) {
+        const holgado = frio.total >= esp.horas_frio * 0.8;
+        if (!holgado) {
+          return { especie: esp, siembra: [], viable: false, duracion_meses: 0, riego_mm: deficit,
+            razon: `El invierno es demasiado tibio para que despierte: ${frio.total} horas de frío contra ${esp.horas_frio} que pide la variedad común. Vive, pero no cuaja.` };
+        }
+        return { especie: esp, siembra: [], viable: true, duracion_meses: 0, riego_mm: deficit,
+          razon: `Justo en el límite de frío: ${frio.total} horas contra ${esp.horas_frio} de la variedad común. Va, pero eligiendo variedad de bajo requerimiento.` };
+      }
+    }
+
     return { especie: esp, siembra: [], viable: true, duracion_meses: 0, riego_mm: deficit,
       razon: deficit > 0
         ? `Pasa el invierno y junta el calor. Faltan unos ${deficit} mm al año que hay que reponer con riego o cosecha de agua.`

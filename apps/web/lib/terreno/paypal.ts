@@ -15,11 +15,14 @@ import { PRECIO_USD, pruebaComercialHabilitada, type PlanPago, type Periodo } fr
 const NOMBRE: Record<PlanPago, string> = {
   personal: ACEQUIA_PLANS.personal.name,
   disenador: ACEQUIA_PLANS.disenador.name,
-  estudio: ACEQUIA_PLANS.estudio.name,
 };
 
+function entorno(): 'sandbox' | 'live' {
+  return process.env.PAYPAL_ENV === 'sandbox' ? 'sandbox' : 'live';
+}
+
 function base(): string {
-  return process.env.PAYPAL_ENV === 'sandbox'
+  return entorno() === 'sandbox'
     ? 'https://api-m.sandbox.paypal.com'
     : 'https://api-m.paypal.com';
 }
@@ -51,12 +54,21 @@ async function token(): Promise<string> {
 function tablaPlanes(): any {
   return (createSupabaseAdminClient() as any).schema('terreno').from('paypal_planes');
 }
+/**
+ * Los identificadores de producto y de plan de PayPal NO son intercambiables entre
+ * sandbox y live: un plan creado probando no existe para la API real. Por eso el
+ * entorno va dentro de la clave del cache — si no, al pasar a producción se
+ * reusarían los identificadores de la prueba y el alta fallaría sin decir por qué.
+ */
+function clavePorEntorno(clave: string): string {
+  return `${entorno()}:${clave}`;
+}
 async function getRef(clave: string): Promise<string | null> {
-  const { data } = await tablaPlanes().select('ref').eq('clave', clave).maybeSingle();
+  const { data } = await tablaPlanes().select('ref').eq('clave', clavePorEntorno(clave)).maybeSingle();
   return (data?.ref as string | undefined) ?? null;
 }
 async function setRef(clave: string, ref: string): Promise<void> {
-  await tablaPlanes().upsert({ clave, ref }, { onConflict: 'clave' });
+  await tablaPlanes().upsert({ clave: clavePorEntorno(clave), ref }, { onConflict: 'clave' });
 }
 
 async function ensureProduct(tk: string, conPrueba: boolean): Promise<string> {
@@ -96,6 +108,9 @@ async function ensurePlan(tk: string, plan: PlanPago, periodo: Periodo): Promise
       product_id: productId,
       name: `${conPrueba ? 'Acequia' : 'Terreno'} ${NOMBRE[plan]} (${periodo})`,
       billing_cycles: [
+        // El precio cero va explícito. PayPal admite un TRIAL sin `pricing_scheme`,
+        // pero entonces el importe queda a criterio del intérprete de turno; con el
+        // cero escrito no hay forma de que la prueba cobre algo.
         ...(conPrueba ? [{
           frequency: { interval_unit: 'DAY', interval_count: ACEQUIA_TRIAL_DAYS },
           tenure_type: 'TRIAL',
@@ -135,15 +150,20 @@ export async function crearSubscripcionPaypal(o: {
     headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       plan_id: planId,
-      custom_id: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo }),
+      custom_id: JSON.stringify({
+        user_id: o.userId,
+        plan: o.plan,
+        periodo: o.periodo,
+        trial_days: pruebaComercialHabilitada() ? ACEQUIA_TRIAL_DAYS : 0,
+      }),
       subscriber: { email_address: o.email },
       application_context: {
         brand_name: pruebaComercialHabilitada() ? 'Acequia' : 'Terreno',
         locale: 'es-AR',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'SUBSCRIBE_NOW',
-        return_url: `${o.siteUrl}/terreno/gracias?plan=${o.plan}`,
-        cancel_url: `${o.siteUrl}/terreno#planes`,
+        return_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].publicId}`,
+        cancel_url: `${o.siteUrl}/planes?estado=pago-cancelado`,
       },
     }),
   });
@@ -162,13 +182,14 @@ export async function fetchPaypalSubscription(id: string): Promise<{
   const res = await fetch(`${base()}/v1/billing/subscriptions/${id}`, {
     headers: { Authorization: `Bearer ${tk}` },
   });
+  if (!res.ok) throw new Error(`PayPal: suscripción no disponible (${res.status}).`);
   return res.json();
 }
 
 /** Verifica la firma del webhook contra la API de PayPal. */
 export async function verifyPaypalWebhook(headers: Headers, rawBody: string): Promise<boolean> {
   const webhookId = process.env.PAYPAL_WEBHOOK_ID;
-  if (!webhookId) return true; // dev sin webhook id
+  if (!webhookId) return false;
   const tk = await token();
   const res = await fetch(`${base()}/v1/notifications/verify-webhook-signature`, {
     method: 'POST',
@@ -185,4 +206,18 @@ export async function verifyPaypalWebhook(headers: Headers, rawBody: string): Pr
   });
   const j = await res.json() as { verification_status?: string };
   return j.verification_status === 'SUCCESS';
+}
+
+/** Cancela la renovación en PayPal. El acceso local abonado se conserva hasta su vencimiento. */
+export async function cancelarSubscripcionPaypal(id: string): Promise<void> {
+  const tk = await token();
+  const res = await fetch(`${base()}/v1/billing/subscriptions/${encodeURIComponent(id)}/cancel`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: 'Cancelación solicitada desde la cuenta de Acequia' }),
+  });
+  if (res.status === 204) return;
+  const body = await res.text().catch(() => '');
+  console.error('[paypal cancel]', { status: res.status, body: body.slice(0, 300) });
+  throw new Error('PayPal no pudo cancelar la renovación.');
 }

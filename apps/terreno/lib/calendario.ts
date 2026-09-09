@@ -6,7 +6,16 @@
 import type { DatosClima, MesDato } from './clima';
 import { MESES } from './clima';
 import type { BiomaFicha } from './biomaTipos';
-import { bloqueEcorregion, type BloqueEcorregion } from './especies';
+import { bloqueEcorregion, resolverEspecies, type BloqueEcorregion } from './especies';
+import { calcularHorasFrio, type HorasFrio } from './horasFrio';
+
+// El cálculo vive en `horasFrio.ts` para que `especies.ts` pueda usarlo sin
+// import circular, pero se sigue leyendo desde acá porque es parte del
+// calendario del predio.
+export {
+  calcularHorasFrio, UMBRAL_FRIO_C, LABEL_BANDA_FRIO,
+  type HorasFrio, type BandaFrio,
+} from './horasFrio';
 
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
@@ -56,6 +65,27 @@ export interface BalanceCultivoMes {
   etc_mm:    number;   // Evapotranspiración del cultivo = ETP × Kc
   precip_mm: number;
   balance:   number;   // precip - ETc (positivo = superávit, negativo = déficit)
+}
+
+/**
+ * Los cultivos ofrecidos para el balance hídrico en ESTE predio.
+ *
+ * `CULTIVOS_KC` es una lista fija de diez, y son diez del Cono Sur: soja,
+ * girasol, olivo, alfalfa. Mientras tanto el catálogo de especies tiene 107 con
+ * su Kc, y la ficha de la ecorregión ya declara cuáles corresponden acá — es lo
+ * que el bloque "en esta ecorregión" viene mostrando. El balance hídrico era la
+ * única parte del calendario que seguía ignorando esa lista: preguntaba cuánta
+ * agua le falta a la soja en un predio donde nadie planta soja.
+ *
+ * Cuando la ficha trae cultivos, manda la ficha. Cuando no —ecorregión sin
+ * curar, o clima sin ficha— se cae a la lista genérica, que para eso está.
+ */
+export function cultivosDeFicha(idsFicha?: string[]): CultivoKc[] {
+  const deFicha = idsFicha?.length ? resolverEspecies(idsFicha) : [];
+  if (deFicha.length === 0) return CULTIVOS_KC;
+  return deFicha
+    .map(e => ({ id: e.id, nombre: e.nombre, kc: e.kc }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 }
 
 export function calcularBalanceCultivo(meses: MesDato[], kc: number): BalanceCultivoMes[] {
@@ -134,6 +164,34 @@ export const FAMILIAS: FamiliaVegetal[] = [
     tmin_opt: 12, tmax_opt: 24, tmin_limite: -2, tmax_limite: 32,
     tolera_helada: true, agua: 'medio', color: 'bg-pink-100',
   },
+  // ── Familias de clima cálido ───────────────────────────────────────────────
+  //
+  // Las nueve de arriba son las de una huerta templada, que es donde arrancó la
+  // app. Con el catálogo de ecorregiones cubriendo el trópico, un predio en Java
+  // o en Kerala recibía una tabla que le hablaba de brócoli y arveja y no
+  // nombraba nada de lo que ahí se come. Estas cuatro tapan ese hueco: son las
+  // familias sobre las que se sostiene la comida en clima cálido y todas tienen
+  // ventana de plantación, así que la tabla de meses les corresponde.
+  {
+    id: 'raices_trop', nombre: 'Raíces tropicales', ejemplos: 'mandioca, batata, taro, ñame',
+    tmin_opt: 22, tmax_opt: 32, tmin_limite: 12, tmax_limite: 38,
+    tolera_helada: false, agua: 'medio', color: 'bg-stone-100',
+  },
+  {
+    id: 'musaceas', nombre: 'Musáceas', ejemplos: 'banano, plátano',
+    tmin_opt: 24, tmax_opt: 32, tmin_limite: 14, tmax_limite: 38,
+    tolera_helada: false, agua: 'alto', color: 'bg-teal-100',
+  },
+  {
+    id: 'frutales_trop', nombre: 'Frutales tropicales', ejemplos: 'papaya, piña, mango, maracuyá',
+    tmin_opt: 21, tmax_opt: 33, tmin_limite: 10, tmax_limite: 40,
+    tolera_helada: false, agua: 'medio', color: 'bg-orange-50',
+  },
+  {
+    id: 'granos_calidos', nombre: 'Granos de clima cálido', ejemplos: 'arroz, sorgo, mijo, caupí',
+    tmin_opt: 22, tmax_opt: 34, tmin_limite: 10, tmax_limite: 42,
+    tolera_helada: false, agua: 'medio', color: 'bg-yellow-50',
+  },
 ];
 
 // ─── Aptitud por mes ──────────────────────────────────────────────────────────
@@ -190,6 +248,14 @@ export interface ResumenCalendario {
    * cuando ni la ficha ni el catálogo tienen especies para ese clima.
    */
   ecorregion:             BloqueEcorregion | null;
+  /**
+   * El frío invernal acumulado, que es la otra mitad de la pregunta que el
+   * período libre de heladas contesta a medias: ése dice cuánto verano hay,
+   * éste dice si hubo invierno suficiente para que el caduco despierte.
+   *
+   * `null` sólo si faltan meses de clima.
+   */
+  horas_frio:             HorasFrio | null;
   periodo_libre_heladas:  { inicio: number; fin: number; duracion: number } | null;
   meses_helada_count:     number;
   meses_secos_count:      number;
@@ -248,6 +314,7 @@ export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null)
   return {
     meses,
     ecorregion,
+    horas_frio: calcularHorasFrio(datos.meses),
     periodo_libre_heladas: bestLen > 0 ? {
       inicio:   bestStart,
       fin:      (bestStart + bestLen - 1) % 12,

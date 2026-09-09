@@ -11,7 +11,13 @@ export type TemplateName =
   | 'partner-decision'
   | 'reservation-confirmed'
   | 'password-reset'
-  | 'welcome';
+  | 'welcome'
+  | 'terreno-trial-started'
+  | 'terreno-trial-ending'
+  | 'terreno-first-charge'
+  | 'terreno-renewed'
+  | 'terreno-payment-failed'
+  | 'terreno-cancelled';
 
 export interface TemplateVars {
   'order-paid': { name: string; orderId: string; totalLabel: string; url: string };
@@ -24,6 +30,12 @@ export interface TemplateVars {
   'reservation-confirmed': { name: string; lodgingTitle: string; checkIn: string; checkOut: string; url: string };
   'password-reset': { name: string; resetUrl: string };
   'welcome': { name: string; siteUrl: string };
+  'terreno-trial-started': { name: string; planName: string; priceLabel: string; firstChargeLabel: string; manageUrl: string };
+  'terreno-trial-ending': { name: string; planName: string; priceLabel: string; firstChargeLabel: string; manageUrl: string };
+  'terreno-first-charge': { name: string; planName: string; priceLabel: string; nextChargeLabel: string; manageUrl: string };
+  'terreno-renewed': { name: string; planName: string; priceLabel: string; nextChargeLabel: string; manageUrl: string };
+  'terreno-payment-failed': { name: string; planName: string; updateUrl: string };
+  'terreno-cancelled': { name: string; planName: string; enPrueba: boolean; accesoHastaLabel: string };
 }
 
 export interface RenderedEmail {
@@ -41,7 +53,7 @@ type Renderer<T extends TemplateName> = (vars: TemplateVars[T], ctx: RendererCtx
 // ─────────────────────────────────────────────────────────────
 // i18n micro-helper
 // ─────────────────────────────────────────────────────────────
-function t(locale: Locale, dict: Record<Locale, string>): string {
+function t(locale: Locale, dict: Partial<Record<Locale, string>> & { es: string }): string {
   return dict[locale] ?? dict.es;
 }
 
@@ -283,6 +295,109 @@ const renderers: { [K in TemplateName]: Renderer<K> } = {
     const cta = t(locale, { es: 'Explorar', en: 'Explore', pt: 'Explorar', fr: 'Explorer' });
     const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.siteUrl}">${cta}</a></p>`;
     const text = `${greet}\n\n${intro}\n\n${cta}: ${v.siteUrl}`;
+    return { subject, html, text };
+  },
+
+  // ─── Acequia · ciclo de cobro ───────────────────────────────────────────────
+  'terreno-trial-started': (v, { locale }) => {
+    const subject = t(locale, {
+      es: `Empezó tu prueba de Acequia ${v.planName}`,
+      en: `Your Acequia ${v.planName} trial has started`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = t(locale, {
+      es: `Tu prueba del plan <strong>${v.planName}</strong> ya está activa. Es gratis por 3 días. Si no la cancelás antes, el <strong>${v.firstChargeLabel}</strong> se hace el primer cobro de <strong>${v.priceLabel}</strong> y la suscripción sigue.`,
+      en: `Your <strong>${v.planName}</strong> trial is active. It's free for 3 days. Unless you cancel first, on <strong>${v.firstChargeLabel}</strong> we charge <strong>${v.priceLabel}</strong> and the subscription continues.`,
+    });
+    const cta = t(locale, { es: 'Ver mi suscripción', en: 'View my subscription' });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.manageUrl}">${cta}</a></p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}\n\n${cta}: ${v.manageUrl}`;
+    return { subject, html, text };
+  },
+
+  'terreno-trial-ending': (v, { locale }) => {
+    const subject = t(locale, {
+      // Sin "mañana": el cron corre una vez por día, así que el aviso puede salir
+      // entre 12 y 36 h antes. La fecha exacta va en el cuerpo.
+      es: `Tu prueba de Acequia ${v.planName} está por terminar`,
+      en: `Your Acequia ${v.planName} trial is ending soon`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = t(locale, {
+      es: `Te avisamos: el <strong>${v.firstChargeLabel}</strong> se hace el primer cobro de <strong>${v.priceLabel}</strong> por tu plan <strong>${v.planName}</strong>. Si querés, todavía estás a tiempo de cancelar sin que se cobre nada.`,
+      en: `Heads up: on <strong>${v.firstChargeLabel}</strong> we charge <strong>${v.priceLabel}</strong> for your <strong>${v.planName}</strong> plan. You can still cancel before then at no cost.`,
+    });
+    const cta = t(locale, { es: 'Gestionar suscripción', en: 'Manage subscription' });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.manageUrl}">${cta}</a></p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}\n\n${cta}: ${v.manageUrl}`;
+    return { subject, html, text };
+  },
+
+  'terreno-first-charge': (v, { locale }) => {
+    const subject = t(locale, {
+      es: `Cobro confirmado · Acequia ${v.planName}`,
+      en: `Payment confirmed · Acequia ${v.planName}`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = t(locale, {
+      es: `Se hizo el primer cobro de <strong>${v.priceLabel}</strong> por tu plan <strong>${v.planName}</strong>. La próxima renovación es el <strong>${v.nextChargeLabel}</strong>.`,
+      en: `We charged the first <strong>${v.priceLabel}</strong> for your <strong>${v.planName}</strong> plan. Next renewal: <strong>${v.nextChargeLabel}</strong>.`,
+    });
+    const cta = t(locale, { es: 'Ver mi suscripción', en: 'View my subscription' });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.manageUrl}">${cta}</a></p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}\n\n${cta}: ${v.manageUrl}`;
+    return { subject, html, text };
+  },
+
+  'terreno-renewed': (v, { locale }) => {
+    const subject = t(locale, {
+      es: `Renovación cobrada · Acequia ${v.planName}`,
+      en: `Renewal charged · Acequia ${v.planName}`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = t(locale, {
+      es: `Renovamos tu plan <strong>${v.planName}</strong> por <strong>${v.priceLabel}</strong>. La próxima renovación es el <strong>${v.nextChargeLabel}</strong>.`,
+      en: `We renewed your <strong>${v.planName}</strong> plan for <strong>${v.priceLabel}</strong>. Next renewal: <strong>${v.nextChargeLabel}</strong>.`,
+    });
+    const cta = t(locale, { es: 'Ver mi suscripción', en: 'View my subscription' });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.manageUrl}">${cta}</a></p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}\n\n${cta}: ${v.manageUrl}`;
+    return { subject, html, text };
+  },
+
+  'terreno-payment-failed': (v, { locale }) => {
+    const subject = t(locale, {
+      es: `No pudimos cobrar tu plan Acequia ${v.planName}`,
+      en: `We couldn't charge your Acequia ${v.planName} plan`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = t(locale, {
+      es: `El último intento de cobro de tu plan <strong>${v.planName}</strong> falló. Revisá el medio de pago para no perder el acceso.`,
+      en: `The last charge for your <strong>${v.planName}</strong> plan failed. Please check your payment method to keep access.`,
+    });
+    const cta = t(locale, { es: 'Actualizar pago', en: 'Update payment' });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p><p><a class="btn" href="${v.updateUrl}">${cta}</a></p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}\n\n${cta}: ${v.updateUrl}`;
+    return { subject, html, text };
+  },
+
+  'terreno-cancelled': (v, { locale }) => {
+    const subject = t(locale, {
+      es: `Se canceló tu suscripción a Acequia ${v.planName}`,
+      en: `Your Acequia ${v.planName} subscription was cancelled`,
+    });
+    const greet = t(locale, { es: `Hola ${v.name},`, en: `Hi ${v.name},` });
+    const intro = v.enPrueba
+      ? t(locale, {
+          es: `Cancelaste durante la prueba, así que <strong>no se cobró nada</strong>. Tu cuenta vuelve al plan gratuito Semilla.`,
+          en: `You cancelled during the trial, so <strong>nothing was charged</strong>. Your account goes back to the free Semilla plan.`,
+        })
+      : t(locale, {
+          es: `Tu plan <strong>${v.planName}</strong> queda activo hasta el <strong>${v.accesoHastaLabel}</strong> y no se vuelve a cobrar. Después la cuenta pasa al plan gratuito Semilla.`,
+          en: `Your <strong>${v.planName}</strong> plan stays active until <strong>${v.accesoHastaLabel}</strong> with no further charges. After that the account moves to the free Semilla plan.`,
+        });
+    const html = `<h1>${subject}</h1><p>${greet}</p><p>${intro}</p>`;
+    const text = `${greet}\n\n${stripHtml(intro)}`;
     return { subject, html, text };
   },
 };

@@ -11,7 +11,6 @@ import {
   type AcequiaPaidPlanId,
 } from '@arteytierra/config/acequia';
 import { getStripe } from '@/lib/commerce/stripe';
-import { ARS_POR_USD } from './planes';
 
 /**
  * Cobro recurrente de los planes de Terreno.
@@ -24,24 +23,24 @@ import { ARS_POR_USD } from './planes';
  * Reusa STRIPE_SECRET_KEY / MP_ACCESS_TOKEN ya configuradas para la tienda.
  */
 
-export type PlanPago = AcequiaPaidPlanId;
+// Estudio sigue existiendo como plan interno para cuentas históricas, pero no se
+// ofrece ni puede comprarse desde la web pública.
+export type PlanPago = Extract<AcequiaPaidPlanId, 'personal' | 'disenador'>;
 export type Periodo = AcequiaBillingPeriod;
 
 /** Precio base en USD — debe coincidir con el landing (lib/terreno/planes.ts). */
 export const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
   personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
   disenador: { mensual: acequiaPlanPrice('disenador', 'mensual'), anual: acequiaPlanPrice('disenador', 'anual') },
-  estudio:   { mensual: acequiaPlanPrice('estudio', 'mensual'),   anual: acequiaPlanPrice('estudio', 'anual') },
 };
 
 const NOMBRE: Record<PlanPago, string> = {
   personal: ACEQUIA_PLANS.personal.name,
   disenador: ACEQUIA_PLANS.disenador.name,
-  estudio: ACEQUIA_PLANS.estudio.name,
 };
 
 export function esPlanPago(v: string): v is PlanPago {
-  return isAcequiaPaidPlan(v);
+  return (v === 'personal' || v === 'disenador') && isAcequiaPaidPlan(v);
 }
 export function esPeriodo(v: string): v is Periodo {
   return isAcequiaBillingPeriod(v);
@@ -55,6 +54,18 @@ export function esProveedorPago(value: string): value is ProveedorPago {
 /** La prueba queda construida pero inactiva mientras esta variable no sea true. */
 export function pruebaComercialHabilitada(): boolean {
   return process.env.ACEQUIA_TRIAL_ENABLED === 'true';
+}
+
+export function pagosAcequiaHabilitados(): boolean {
+  return process.env.ACEQUIA_PAYMENTS_ENABLED === 'true';
+}
+
+export function tasaArsPorUsd(): number {
+  const value = Number(process.env.ACEQUIA_ARS_PER_USD);
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error('ACEQUIA_ARS_PER_USD no está configurada con un valor válido.');
+  }
+  return value;
 }
 
 interface CrearCheckoutOpts {
@@ -105,20 +116,47 @@ export function proximaVigencia(periodo: Periodo): string {
 export async function fetchMpPreapproval(id: string): Promise<{
   status?: string;
   external_reference?: string;
+  auto_recurring?: { start_date?: string };
 }> {
   const token = process.env.MP_ACCESS_TOKEN;
   if (!token) throw new Error('MP_ACCESS_TOKEN no configurada');
   const pre = new PreApproval(new MercadoPagoConfig({ accessToken: token }));
-  return pre.get({ id });
+  // El tipo del SDK no declara start_date dentro de auto_recurring, pero la API sí
+  // lo devuelve: es la fecha del primer cobro, o sea el fin de la prueba.
+  return pre.get({ id }) as unknown as Promise<{
+    status?: string;
+    external_reference?: string;
+    auto_recurring?: { start_date?: string };
+  }>;
+}
+
+export async function fetchMpAuthorizedPayment(id: string): Promise<{
+  preapproval_id?: string;
+  status?: string;
+  date_created?: string;
+  payment?: { id?: number; status?: string; status_detail?: string };
+}> {
+  const accessToken = process.env.MP_ACCESS_TOKEN;
+  if (!accessToken) throw new Error('MP_ACCESS_TOKEN no configurada');
+  const res = await fetch(`https://api.mercadopago.com/authorized_payments/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Mercado Pago: factura no disponible (${res.status}).`);
+  return res.json();
 }
 
 /** Parsea el external_reference JSON que embebimos en el preapproval. */
-export function parseRefMp(ref: string | undefined): { userId: string; plan: PlanPago; periodo: Periodo } | null {
+export function parseRefMp(ref: string | undefined): { userId: string; plan: PlanPago; periodo: Periodo; trialDays: number } | null {
   if (!ref) return null;
   try {
-    const o = JSON.parse(ref) as { user_id?: string; plan?: string; periodo?: string };
+    const o = JSON.parse(ref) as { user_id?: string; plan?: string; periodo?: string; trial_days?: number };
     if (o.user_id && o.plan && o.periodo && esPlanPago(o.plan) && esPeriodo(o.periodo)) {
-      return { userId: o.user_id, plan: o.plan, periodo: o.periodo };
+      return {
+        userId: o.user_id,
+        plan: o.plan,
+        periodo: o.periodo,
+        trialDays: Number.isFinite(o.trial_days) ? Math.max(0, Number(o.trial_days)) : 0,
+      };
     }
   } catch { /* no-json */ }
   return null;
@@ -129,13 +167,13 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
   const token = process.env.MP_ACCESS_TOKEN;
   if (!token) throw new Error('MP_ACCESS_TOKEN no configurada');
 
-  const ars = PRECIO_USD[o.plan][o.periodo] * ARS_POR_USD;
+  const ars = Math.round(PRECIO_USD[o.plan][o.periodo] * tasaArsPorUsd());
   const pre = new PreApproval(new MercadoPagoConfig({ accessToken: token }));
   const trialEnd = pruebaComercialHabilitada() ? addAcequiaTrialDays().toISOString() : undefined;
 
   const res = await pre.create({
     body: {
-      reason: `Terreno ${NOMBRE[o.plan]} (${o.periodo})`,
+      reason: `Acequia ${NOMBRE[o.plan]} (${o.periodo})`,
       external_reference: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo, trial_days: trialEnd ? ACEQUIA_TRIAL_DAYS : 0 }),
       payer_email: o.email,
       auto_recurring: {
@@ -146,7 +184,7 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
         currency_id: 'ARS',
         ...(trialEnd ? { start_date: trialEnd } : {}),
       },
-      back_url: `${o.siteUrl}/terreno/gracias?plan=${o.plan}`,
+      back_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].publicId}`,
       // Nota: el SDK de MP no acepta notification_url en el preapproval; los avisos
       // de suscripción van a la URL configurada en el panel de la aplicación (debe
       // apuntar a producción: https://arteytierra.org/api/webhooks/mercadopago).
@@ -154,4 +192,20 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
     },
   });
   return res.init_point ?? '';
+}
+
+/** Cancela la renovación de una suscripción de Mercado Pago. */
+export async function cancelarPreapprovalMp(id: string): Promise<void> {
+  const accessToken = process.env.MP_ACCESS_TOKEN;
+  if (!accessToken) throw new Error('MP_ACCESS_TOKEN no configurada');
+  const res = await fetch(`https://api.mercadopago.com/preapproval/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'cancelled' }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[mercadopago cancel]', { status: res.status, body: body.slice(0, 300) });
+    throw new Error('Mercado Pago no pudo cancelar la renovación.');
+  }
 }

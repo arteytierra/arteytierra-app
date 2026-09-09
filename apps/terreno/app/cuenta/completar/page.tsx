@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import { requireUser } from '@/lib/auth/session';
+import { ProfileCompletionForm } from '@/components/ProfileCompletionForm';
+export const metadata = { title: 'Completar cuenta' };
+export default async function CompleteAccountPage() { const user = await requireUser('/cuenta/completar'); return <main className="min-h-screen bg-bone-50 px-4 py-10"><section className="mx-auto max-w-lg"><header className="mb-8 flex items-center justify-between gap-4"><img src="/marca/logo-color.png" alt="acequia" width={1200} height={395} className="h-9 w-auto" /><Link href="/cuenta" className="text-sm text-moss-700 hover:underline">Volver a mi cuenta</Link></header><div className="rounded-2xl border border-bone-200 bg-white p-7 shadow-paper"><p className="eyebrow">Cuenta incompleta</p><h1 className="mt-2 font-display text-4xl text-ink-950">Terminemos de preparar tu acceso.</h1><p className="mb-7 mt-3 text-sm leading-relaxed text-ink-700/70">Tu sesión está activa y tus proyectos están seguros. Sólo falta cómo querés que te llamemos.</p><ProfileCompletionForm initialName={user.fullName ?? ''} /></div></section></main>; }

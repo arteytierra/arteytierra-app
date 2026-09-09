@@ -6,9 +6,16 @@ import { PLANES, type Plan } from '@/lib/entitlements';
 
 function planEfectivo(data: Record<string, unknown> | null): Plan {
   if (!data) return 'semilla';
-  if (data['estado'] !== 'activa') return 'semilla';
-  const hasta = data['vigente_hasta'];
-  if (hasta && new Date(hasta as string).getTime() < Date.now()) return 'semilla';
+  const estado = data['estado'];
+  if (estado === 'prueba') {
+    const trialEnd = data['trial_end'];
+    if (!trialEnd || new Date(trialEnd as string).getTime() <= Date.now()) return 'semilla';
+  } else if (estado === 'activa') {
+    const hasta = data['vigente_hasta'];
+    if (hasta && new Date(hasta as string).getTime() < Date.now()) return 'semilla';
+  } else {
+    return 'semilla';
+  }
   const plan = data['plan'];
   return typeof plan === 'string' && (PLANES as readonly string[]).includes(plan)
     ? (plan as Plan) : 'semilla';
@@ -32,13 +39,16 @@ export async function getPlanServiceRole(userId: string): Promise<Plan> {
     const svc = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+    const selectFields = process.env.ACEQUIA_TRIAL_ENABLED === 'true'
+      ? 'plan, estado, vigente_hasta, trial_end'
+      : 'plan, estado, vigente_hasta';
     const { data } = await (svc as unknown as {
       schema: (s: string) => { from: (t: string) => { select: (c: string) => {
         eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> };
       } } };
     })
       .schema('terreno').from('suscripciones')
-      .select('plan, estado, vigente_hasta')
+      .select(selectFields)
       .eq('user_id', userId)
       .maybeSingle();
     return planEfectivo(data);
@@ -58,6 +68,9 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   if (!userId) return 'semilla';
   const supabase = await createSupabaseServerClient();
 
+  const selectFields = process.env.ACEQUIA_TRIAL_ENABLED === 'true'
+    ? 'plan, estado, vigente_hasta, trial_end'
+    : 'plan, estado, vigente_hasta';
   const { data } = await (supabase as unknown as {
     schema: (s: string) => {
       from: (t: string) => {
@@ -71,19 +84,51 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   })
     .schema('terreno')
     .from('suscripciones')
-    .select('plan, estado, vigente_hasta')
+    .select(selectFields)
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (!data) return 'semilla';
-  if (data['estado'] !== 'activa') return 'semilla';
-  const hasta = data['vigente_hasta'];
-  if (hasta && new Date(hasta as string).getTime() < Date.now()) return 'semilla';
-
-  const plan = data['plan'];
-  return typeof plan === 'string' && (PLANES as readonly string[]).includes(plan)
-    ? (plan as Plan) : 'semilla';
+  return planEfectivo(data);
 });
+
+export interface SuscripcionActual {
+  plan: string;
+  estado: string;
+  periodo: string | null;
+  provider: string | null;
+  vigenteHasta: string | null;
+  finDePrueba: string | null;
+  seDaDeBajaAlFinal: boolean;
+}
+
+/**
+ * La suscripción tal cual está en la base, para mostrarla en "Mi cuenta".
+ * Devuelve null si la persona nunca contrató nada (plan Semilla).
+ */
+export async function leerSuscripcionActual(userId: string): Promise<SuscripcionActual | null> {
+  if (!userId) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await (supabase as unknown as {
+    schema: (s: string) => { from: (t: string) => { select: (c: string) => {
+      eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> };
+    } } };
+  })
+    .schema('terreno').from('suscripciones')
+    .select('plan, estado, periodo, provider, vigente_hasta, trial_end, cancel_at_period_end')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!data) return null;
+  return {
+    plan: String(data['plan'] ?? 'semilla'),
+    estado: String(data['estado'] ?? ''),
+    periodo: (data['periodo'] as string | null) ?? null,
+    provider: (data['provider'] as string | null) ?? null,
+    vigenteHasta: (data['vigente_hasta'] as string | null) ?? null,
+    finDePrueba: (data['trial_end'] as string | null) ?? null,
+    seDaDeBajaAlFinal: Boolean(data['cancel_at_period_end']),
+  };
+}
 
 /** Plan del usuario actual (o 'semilla' si no hay sesión). */
 export async function getPlanActual(): Promise<Plan> {
