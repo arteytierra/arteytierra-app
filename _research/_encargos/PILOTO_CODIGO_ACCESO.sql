@@ -10,7 +10,7 @@
 --   1. Le mandás el código por correo.
 --   2. Entra a  https://terreno.arteytierra.org/canjear?codigo=FUNDADOR26
 --   3. Si no tiene cuenta, la crea ahí mismo (así queda su contacto) y vuelve.
---   4. Queda con plan Profesional por 14 días. Al vencer, vuelve sola a Semilla.
+--   4. Queda con plan Personal por 7 días. Al vencer, vuelve sola a Semilla.
 --
 -- ANTES DE PEGAR: confirmá que la URL del proyecto de Supabase abierto sea
 -- https://ojlvflmqcyxdnvhbnhgp.supabase.co  — si no coincide, pará.
@@ -20,12 +20,11 @@
 -- `familia` lo hace excluyente con cualquier otro código de la misma familia:
 -- nadie puede acumular dos pruebas de fundador, ni ahora ni más adelante.
 --
--- Sobre los 14 días: lo que promete la página es una semana de trabajo. El
--- código dura 14 para que una demora de agenda —un encuentro que se corre tres
--- días— no le coma la prueba a nadie. El reloj arranca cuando la persona canjea,
--- no cuando vos creás el código.
+-- 7 días de plan Personal, como quedó definido. El reloj arranca cuando la
+-- persona canjea, no cuando vos creás el código: mandá el link cerca del
+-- encuentro inicial, no antes, para que la semana le rinda entera.
 INSERT INTO terreno.codigos (codigo, plan, dias, usos_max, activo, familia, nota)
-VALUES ('FUNDADOR26', 'disenador', 14, 10, true, 'piloto-fundador',
+VALUES ('FUNDADOR26', 'personal', 7, 10, true, 'piloto-fundador',
         'Programa fundador 2026: 6 a 10 participantes, sin costo ni tarjeta.')
 ON CONFLICT (codigo) DO UPDATE
   SET plan     = EXCLUDED.plan,
@@ -36,7 +35,7 @@ ON CONFLICT (codigo) DO UPDATE
       nota     = EXCLUDED.nota;
 
 -- ─── 2. Comprobación ────────────────────────────────────────────────────────
--- Tiene que devolver una fila: FUNDADOR26 · disenador · 14 · 10 · 0 · true
+-- Tiene que devolver una fila: FUNDADOR26 · personal · 7 · 10 · 0 · true
 SELECT codigo, plan, dias, usos_max, usos, activo, familia
 FROM terreno.codigos
 WHERE familia = 'piloto-fundador';
