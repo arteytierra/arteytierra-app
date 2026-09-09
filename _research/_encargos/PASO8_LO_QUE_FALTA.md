@@ -1,182 +1,205 @@
-# Paso 8 — todo lo que falta, en orden
+# Paso 8 — dejar pagos y suscripciones funcionando
 
-Actualizado el 08/09/2026, después de que aplicaras el SQL.
+Actualizado el 08/09/2026. Reemplaza las versiones anteriores.
 
-La base ya está lista: `aviso_cobro_at` existe, el respaldo está hecho y las
-7 filas siguen intactas. **La 0051 no hay que aplicarla: ya está aplicada.** Se
-aplicó el 08/09 desde una copia vieja del archivo, y lo único que le faltaba —esa
-columna— es justamente lo que acabás de agregar con la 0053. No queda ninguna
-migración pendiente.
+**La decisión que ordena todo:** el sistema queda **abierto**, para que vos o
+cualquier otra persona pueda contratar y pagar de verdad. No es el lanzamiento
+—no hay campaña, ni marca aprobada, ni revisión legal— pero el circuito de cobro
+queda operativo y probado.
 
-De acá en adelante son seis pasos. Los cuatro primeros no cobran plata a nadie.
-
----
-
-## 1. Variables en Vercel · proyecto `arteytierra-app-web`
-
-Settings → Environment Variables → Add New, en **Production, Preview y Development**.
-
-| Variable | Valor | Para qué |
-| --- | --- | --- |
-| `ACEQUIA_PAYMENTS_ENABLED` | `false` **por ahora** | el interruptor que habilita cobrar. Se prende recién en el paso 6 |
-| `ACEQUIA_ARS_PER_USD` | la cotización del dólar que quieras usar, un número, ej. `1450` | con cuánto se pasa el precio USD a pesos en Mercado Pago |
-| `NEXT_PUBLIC_ACEQUIA_SITE_URL` | `https://acequia.app` | a dónde vuelve la persona después de pagar |
-| `CRON_SECRET` | una cadena larga al azar que inventes vos | protege el aviso automático de cobro |
-
-**`ACEQUIA_ARS_PER_USD` no tiene valor por defecto a propósito.** Si falta, el
-checkout de Mercado Pago falla con un error claro. Es preferible eso a cobrar en
-pesos con una cotización vieja escondida en el código.
-
-Sobre esa cotización: la escribís vos a mano y no se actualiza sola. Cuando el
-dólar se mueva, hay que cambiarla acá. **Ojo:** cambiarla no modifica lo que ya
-se le cobra a quien está suscrito — Mercado Pago congela el importe en pesos al
-momento del alta. Sólo afecta a las altas nuevas.
-
-Después de cargarlas: **Deployments → el último de `main` → "..." → Redeploy.**
-Las variables no entran a un build que ya existe.
+La base de datos ya está lista. **No queda ninguna migración pendiente.**
 
 ---
 
-## 2. El cron diario
+## Lo que ya no hay que hacer
 
-**Por qué no te aparecía nada en Cron Jobs:** el archivo que lo declara estaba
-commiteado en una rama, no en `main`. Vercel lee esa configuración del deploy de
-producción, así que mientras no llegue a `main` la pestaña está vacía — no había
-nada roto. Con el push a `main` aparece solo.
+Tres cosas que estaban en la lista y salieron:
 
-**No hay que configurar nada en el panel de Vercel.** Ya dejé el archivo
-`apps/web/vercel.json`, que le dice a Vercel que llame todos los días a las
-13:00 UTC (10 de la mañana en Argentina) al aviso de "en un día se hace el primer
-cobro". Se activa solo en el próximo deploy.
-
-Vercel firma esa llamada con el `CRON_SECRET` que cargaste en el paso 1 — por eso
-esa variable va antes que el deploy. Sin ella, el aviso responde 401 y no manda nada.
-
-Para comprobar que quedó: Vercel → proyecto `arteytierra-app-web` → pestaña
-**Cron Jobs**. Tiene que figurar `/api/cron/acequia-aviso-cobro`, una vez por día.
+- **Mercado Pago no necesita ninguna variable nueva.** La suscripción de Acequia
+  reusa el mismo `MP_ACCESS_TOKEN` y el mismo webhook que ya cobra en la tienda.
+  Ya está en producción y funcionando.
+- **El cron no se configura en el panel.** Va declarado en `apps/web/vercel.json`.
+  No aparecía en la pestaña Cron Jobs porque ese archivo todavía no había llegado
+  a `main`; con el deploy aparece solo.
+- **La oferta del "50% de por vida" ya no existe** en el código. Se había quitado
+  antes. Quedan las dos que querías: piloto fundador y prueba comercial de 3 días.
 
 ---
 
-## 3. Sandbox de PayPal
+## 1 · El piloto (independiente de todo lo demás)
 
-Está todo escrito en `PASO8_PAYPAL_SANDBOX.md`, al lado de este archivo, y sigue
-vigente palabra por palabra. En resumen: creás la app de sandbox, marcás los cinco
-eventos, y cargás `PAYPAL_ENV=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`
-y `PAYPAL_WEBHOOK_ID`.
+Pegá **`PILOTO_CODIGO_ACCESO.sql`** en el editor SQL de Supabase.
 
-Dos cosas que arreglé hoy y que hacen que esto sea seguro de hacer:
+Crea `FUNDADOR26`: plan Personal, 7 días, hasta 10 personas. A cada anotado le
+mandás este link:
 
-- **Los planes de sandbox ya no se confunden con los de producción.** El código
-  guardaba el identificador de plan de PayPal sin anotar de qué entorno venía. Al
-  pasar de sandbox a live habría reusado el plan de juguete contra la API real, y
-  el alta habría fallado sin decir por qué. Ahora el entorno va dentro de la clave.
-- **La prueba gratis lleva el precio cero escrito.** Antes el ciclo de prueba se
-  creaba sin importe. Lo más probable es que PayPal lo tomara como gratis, pero
-  "lo más probable" no alcanza cuando del otro lado hay una tarjeta.
+```
+https://terreno.arteytierra.org/canjear?codigo=FUNDADOR26
+```
 
----
+Entra sin tarjeta y sin pasar por el checkout. **Este camino no depende de nada
+de lo que sigue** — ni de los pagos, ni de PayPal, ni de la revisión legal.
 
-## 3 bis. El cobro real sin esperar la revisión legal
+El reloj de los 7 días arranca cuando la persona canjea, no cuando creás el
+código. Mandá el link cerca del encuentro inicial para que la semana rinda entera.
 
-Vos preferís saltar directo a pagar de verdad vos mismo. Se puede, pero había un
-problema que encontré al revisarlo: **la sección de planes de
-`arteytierra.org/acequia` enlaza al checkout sin ningún interruptor propio.**
-Prender `ACEQUIA_PAYMENTS_ENABLED` en Production alcanzaba para que cualquiera
-que se registre pueda contratar de verdad — sin Términos aprobados. Eso es lo que
-obligaba a esperar la revisión legal.
-
-Lo resolví con una variable nueva: **`ACEQUIA_PAYMENTS_TEST_EMAILS`**. Cargándola
-con tu correo, sólo vos podés pagar; a cualquier otra persona el checkout le
-responde igual que si los pagos estuvieran apagados. El día que abras, borrás la
-variable y queda abierto para todos.
-
-Entonces, para la prueba real:
-
-| Variable | Proyecto | Valor |
-| --- | --- | --- |
-| `ACEQUIA_PAYMENTS_TEST_EMAILS` | `arteytierra-app-web` | tu correo |
-| `ACEQUIA_PAYMENTS_ENABLED` | `arteytierra-app-web` | `true` |
-| `PAYMENT_WEBHOOKS_ENABLED` | `arteytierra-app-web` | `true` |
-| `PAYPAL_*` (las cuatro) | `arteytierra-app-web` | las **live**, y webhook live al mismo `https://arteytierra.org/api/webhooks/paypal` |
-| `NEXT_PUBLIC_PAYMENTS_ENABLED` | `acequia-landing-piloto` | **dejalo en `false`** |
-| `ACEQUIA_TRIAL_ENABLED` | `terreno` | ver abajo |
-
-Sobre `ACEQUIA_TRIAL_ENABLED`: en `true` el alta arranca con 3 días de prueba y
-**no te cobra hasta el cuarto día**. Si lo que querés es ver la plata hoy,
-ponelo en `false`, hacé el cobro, y después prendelo. Yo haría las dos: primero
-en `false` para ver el cobro entrar, después en `true` para ver que la prueba
-tampoco cobre.
-
-Después: entrás con tu usuario a
-`https://terreno.arteytierra.org/suscribir?plan=personal&periodo=mensual`,
-pagás una vez por Mercado Pago y otra por PayPal, y te das de baja vos mismo.
+Y revisá en Vercel, proyecto `acequia-landing-piloto`, que
+`NEXT_PUBLIC_PILOT_APPLICATIONS_ENABLED` esté en `true` si querés que se sigan
+anotando personas nuevas. No afecta a las ya anotadas.
 
 ---
 
-## 4. Las pruebas en sandbox (paso 8.4)
+## 2 · Deploy
 
-Esto lo hacemos juntos: vos disparás desde el navegador, yo miro la base y los
-registros. Para arrancar hace falta prender **sólo** `PAYMENT_WEBHOOKS_ENABLED=true`
-y `ACEQUIA_PAYMENTS_ENABLED=true` en Preview — **no en Production** —, así nadie
-que entre a la web se cruza con un checkout.
+Sin esto no anda nada de lo que sigue: el código está commiteado pero todavía no
+llegó a producción. Ya dejé la rama armada, mergeada y verificada.
 
-Los cinco casos, en este orden:
-
-1. **Alta con prueba de 3 días.** Contratás Personal mensual con la cuenta
-   Personal de sandbox. Tiene que quedar `estado='prueba'`, `trial_end` a 3 días,
-   y llegarte el correo "Empezó tu prueba". **PayPal no debe cobrar nada.**
-2. **Primer cobro.** Desde el simulador de webhooks de PayPal disparás un
-   `PAYMENT.SALE.COMPLETED`. La fila pasa a `activa` y llega el correo "Cobro
-   confirmado" — no el de renovación.
-3. **Cobro rechazado.** Un `BILLING.SUBSCRIPTION.SUSPENDED`. La suscripción se
-   corta y la persona vuelve a Semilla.
-4. **Baja durante la prueba.** Desde "Mi cuenta" en la app, botón "Dar de baja".
-   Tiene que cancelarse **en PayPal también** —no sólo en nuestra base— y el
-   mensaje decir "no se te cobró nada".
-5. **Evento repetido.** El mismo evento del caso 2, disparado dos veces. La
-   segunda tiene que contestar `duplicate: true` y no tocar nada. Es la prueba de
-   que un reintento de PayPal no cobra dos veces.
-
-Y el mismo circuito con Mercado Pago, que no necesita sandbox aparte: usás las
-tarjetas de prueba de MP.
-
-**Avisame cuando tengas las variables cargadas y te paso los pasos exactos de cada
-caso, con qué mirar en cada uno.** No lo escribo ahora porque la mitad depende de
-cómo te queden numeradas las cuentas de sandbox.
+Esto deploya `arteytierra.org`. Los pagos siguen apagados hasta que cargues las
+variables del punto 3, así que es un deploy seguro.
 
 ---
 
-## 5. La revisión legal
+## 3 · Variables en Vercel · proyecto `arteytierra-app-web`
 
-`REVISION_LEGAL_ACEQUIA.md` tiene los Términos y la Privacidad reescritos y
-listos. Falta que los mire alguien con responsabilidad legal. Recién con ese "ok"
-se copian a `app/terminos/page.tsx` y `app/privacidad/page.tsx` del landing.
+Settings → Environment Variables → Add New, en **Production, Preview y
+Development**.
 
-**Esto bloquea el paso 6, no los anteriores.** Podés hacer sandbox mientras tanto.
+| Variable | Valor |
+| --- | --- |
+| `ACEQUIA_PAYMENTS_ENABLED` | `true` |
+| `PAYMENT_WEBHOOKS_ENABLED` | `true` |
+| `ACEQUIA_ARS_PER_USD` | la cotización del dólar, un número (ej. `1450`) |
+| `NEXT_PUBLIC_ACEQUIA_SITE_URL` | `https://acequia.app` |
+| `CRON_SECRET` | una cadena larga al azar que inventes vos |
+
+**No cargues `ACEQUIA_PAYMENTS_TEST_EMAILS`.** Esa variable existe en el código
+para poder cerrar el checkout a una lista de correos. Dejándola sin cargar, el
+sistema queda abierto a todos, que es lo que querés. Queda disponible por si
+alguna vez necesitás cerrarlo de nuevo sin tocar código.
+
+Sobre `ACEQUIA_ARS_PER_USD`: no tiene valor por defecto a propósito — si falta,
+el checkout de Mercado Pago falla con un error claro en vez de cobrar con una
+cotización vieja escondida. La escribís a mano y no se actualiza sola. Cambiarla
+**no** modifica lo que ya se le cobra a quien está suscrito: Mercado Pago congela
+el importe en pesos al momento del alta.
 
 ---
 
-## 6. El corte: cobrar de verdad
+## 4 · PayPal en vivo
 
-Último, y de a uno, comprobando entre cada uno:
+Es lo único que falta crear desde cero. Los pasos están en
+**`PASO8_PAYPAL_SANDBOX.md`**, con una diferencia: hacés todo en la pestaña
+**Live**, no en Sandbox.
 
-1. `PAYMENT_WEBHOOKS_ENABLED=true` en Production.
-2. Las cuatro variables de PayPal pasan de sandbox a **live**, y creás la webhook
-   *live* apuntando al mismo `https://arteytierra.org/api/webhooks/paypal`.
-3. `ACEQUIA_PAYMENTS_ENABLED=true` y `NEXT_PUBLIC_PAYMENTS_ENABLED=true`.
-4. `ACEQUIA_TRIAL_ENABLED=true` en el proyecto `terreno`.
-5. **Una operación real con tu propia tarjeta**, una por Mercado Pago y otra por
-   PayPal, y después te das de baja vos mismo para ver que la baja funcione con
-   plata de verdad de por medio.
+En `https://developer.paypal.com/dashboard/`, con la cuenta **Business** de Arte
+y Tierra:
+
+1. **Apps & Credentials → pestaña Live → Create App.** Nombre: `Acequia`.
+   Dejá tildado **Subscriptions** en Features.
+2. Copiá el **Client ID** y el **Secret**.
+3. **Add Webhook**, con esta URL exacta:
+   `https://arteytierra.org/api/webhooks/paypal`
+   (no la URL larga `...vercel.app`: esa cambia en cada deploy y la webhook
+   quedaría muerta).
+4. Marcá exactamente estos cinco eventos:
+   - `Billing subscription activated`
+   - `Billing subscription cancelled`
+   - `Billing subscription expired`
+   - `Billing subscription suspended`
+   - `Payment sale completed`
+5. Copiá el **Webhook ID** que se genera.
+
+Y cargá en Vercel, mismo proyecto y mismos tres entornos:
+
+| Variable | Valor |
+| --- | --- |
+| `PAYPAL_ENV` | el texto literal `live` |
+| `PAYPAL_CLIENT_ID` | del punto 2 |
+| `PAYPAL_CLIENT_SECRET` | del punto 2 |
+| `PAYPAL_WEBHOOK_ID` | del punto 5 |
+
+**Tipealas a mano, no las pegues.** Un carácter invisible copiado del panel de
+PayPal rompe la autenticación sin dar un error claro.
+
+**No hay que crear ningún plan a mano.** El código crea el producto y los planes
+solo, la primera vez que alguien contrata, con los precios del catálogo
+(`packages/config/src/acequia.ts`). Los guarda en `terreno.paypal_planes` con el
+entorno adentro de la clave, así que un plan de sandbox nunca se confunde con uno
+real.
 
 ---
 
-## Las ofertas: quedaron dos, como pediste
+## 5 · Mercado Pago: una sola cosa que revisar
 
-Lo del "50% de por vida" **ya no está publicado en ningún lado**. Lo busqué en
-`apps/web`, en el landing y en el catálogo de planes: no aparece. Se había quitado
-en el commit `3d42520`, cuando los planes pasaron a tener un solo nombre. Mi aviso
-anterior apuntaba a una versión vieja del archivo — no había nada que borrar.
+Las credenciales ya están. Lo único a verificar es que la notificación
+configurada en tu cuenta de Mercado Pago incluya los eventos de suscripción,
+porque hasta ahora sólo cobraba pagos sueltos de la tienda.
 
-Quedan las dos que querías: **piloto fundador** (7 días, sin tarjeta) y **prueba
-comercial** (3 días, con tarjeta).
+En `mercadopago.com.ar` → **Tus integraciones → tu aplicación → Webhooks**, la
+URL `https://arteytierra.org/api/webhooks/mercadopago` tiene que tener marcados,
+además de lo que ya tenga:
+
+- `subscription_preapproval`
+- `subscription_authorized_payment`
+
+Si sólo figura `payment`, las altas de suscripción no van a llegar nunca y la
+persona pagaría sin que se le active el plan.
+
+---
+
+## 6 · Prender la prueba de 3 días · proyecto `terreno`
+
+| Variable | Valor |
+| --- | --- |
+| `ACEQUIA_TRIAL_ENABLED` | `true` |
+
+Vive en otro proyecto de Vercel que el resto. Con esto, el alta arranca con 3
+días de prueba y el primer cobro cae al cuarto día.
+
+**Para tu primera prueba conviene ponerlo en `false`**: así el cobro entra al
+instante y ves la plata. Después lo prendés y comprobás que la prueba no cobre.
+
+---
+
+## 7 · Mostrar los botones en la landing · proyecto `acequia-landing-piloto`
+
+| Variable | Valor |
+| --- | --- |
+| `NEXT_PUBLIC_PAYMENTS_ENABLED` | `true` |
+
+Este es el último y el que hace visible el checkout desde `acequia.app`. Hasta
+que no lo prendas, los botones de pago aparecen deshabilitados con un cartel de
+"los cobros siguen desactivados".
+
+**Ojo con el orden:** `arteytierra.org/acequia` enlaza al checkout sin
+interruptor propio, así que desde el punto 3 ya se puede contratar por ese
+camino. Este punto sólo agrega el camino desde la landing nueva.
+
+---
+
+## 8 · La prueba de cobro
+
+Con todo lo anterior:
+
+1. Entrás con tu usuario a
+   `https://terreno.arteytierra.org/suscribir?plan=personal&periodo=mensual`
+2. Pagás por **Mercado Pago**. Avisame y miro en la base que la fila quede
+   `activa`, con el `provider_ref` correcto y sin eventos duplicados.
+3. Repetís por **PayPal**.
+4. Te das de baja vos mismo desde "Mi cuenta" y comprobamos que la baja también
+   se haga en el proveedor, no sólo en nuestra base.
+
+Después de eso el sistema queda operativo para cualquiera.
+
+---
+
+## Lo que queda pendiente y no bloquea nada de esto
+
+- **La revisión legal.** `REVISION_LEGAL_ACEQUIA.md` tiene los Términos y la
+  Privacidad escritos y listos; falta que los mire alguien con responsabilidad
+  legal, y después se copian a `app/terminos/page.tsx` y `app/privacidad/page.tsx`
+  de la landing. Hacelo antes de la campaña de lanzamiento.
+- **La aprobación de la marca.**
+- **Los 3 días de la prueba comercial** están definidos en un solo lugar
+  (`ACEQUIA_TRIAL_DAYS` en `packages/config/src/acequia.ts`). Si los cambiás,
+  cambian a la vez en la app, en los correos y en el plan de PayPal.
