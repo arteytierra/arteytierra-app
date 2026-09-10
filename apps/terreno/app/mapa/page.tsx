@@ -5,7 +5,7 @@ import { MapaTerrenoApp } from '@/components/MapaTerrenoApp';
 export const metadata = { title: 'Mapa' };
 
 export default async function MapaPage() {
-  const user = await requireUser();
+  const user = await requireUser('/mapa');
   const plan = await getPlan(user.id);
 
   return (

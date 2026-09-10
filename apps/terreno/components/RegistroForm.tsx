@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
+import { safeInternalPath } from '@/lib/navigation';
 
-/** Destino post-registro: `?next=` si es una ruta interna segura, si no el mapa. */
+/** Destino post-registro: `?next=` si es una ruta interna segura, si no la bienvenida. */
 function destinoNext(): string {
-  if (typeof window === 'undefined') return '/mapa';
+  if (typeof window === 'undefined') return '/bienvenida';
   const n = new URLSearchParams(window.location.search).get('next');
-  return n && n.startsWith('/') ? n : '/mapa';
+  return safeInternalPath(n, '/bienvenida');
 }
 
 export function RegistroForm() {
@@ -24,7 +25,8 @@ export function RegistroForm() {
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get('next');
-    if (n) setLoginHref(`/login?next=${encodeURIComponent(n)}`);
+    const safe = safeInternalPath(n, '/bienvenida');
+    setLoginHref(`/login?next=${encodeURIComponent(safe)}`);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -80,10 +82,14 @@ export function RegistroForm() {
     setError(null);
     setGoogleLoading(true);
     const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoNext())}` },
     });
+    if (error) {
+      setError('No pudimos abrir el registro con Google. Probá nuevamente.');
+      setGoogleLoading(false);
+    }
   }
 
   if (aviso) {
@@ -130,6 +136,9 @@ export function RegistroForm() {
           </label>
           <input
             type="text"
+            required
+            minLength={2}
+            maxLength={120}
             value={nombre}
             onChange={e => setNombre(e.target.value)}
             placeholder="Cómo te llamás"
@@ -176,7 +185,7 @@ export function RegistroForm() {
           disabled={loading || googleLoading}
           className="w-full py-2.5 px-4 bg-moss-700 hover:bg-moss-900 text-bone-50 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
-          {loading ? 'Creando cuenta…' : 'Crear cuenta gratis'}
+          {loading ? 'Creando cuenta…' : 'Crear cuenta'}
         </button>
 
         <p className="text-[11px] leading-relaxed text-center text-ink-700/55">

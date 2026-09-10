@@ -27,8 +27,8 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   };
 });
 
-export async function requireUser(): Promise<SessionUser> {
+export async function requireUser(returnTo = '/mapa'): Promise<SessionUser> {
   const user = await getCurrentUser();
-  if (!user) redirect('/login');
+  if (!user) redirect(`/login?estado=sesion-vencida&next=${encodeURIComponent(returnTo)}`);
   return user;
 }

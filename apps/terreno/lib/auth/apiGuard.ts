@@ -30,7 +30,7 @@ export async function requierePlan(feature: Feature): Promise<Response | null> {
       error: `Esta función está incluida en el plan ${NOMBRE_PLAN[min]}.`,
       feature,
       plan_minimo: min,
-      upgrade: 'https://arteytierra.org/terreno#planes',
+      upgrade: 'https://acequia.app/planes',
     });
   } catch (e) {
     // Sin este catch, cualquier excepción (env corrupto, Supabase caído, undici)

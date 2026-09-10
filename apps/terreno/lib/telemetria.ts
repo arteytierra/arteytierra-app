@@ -11,6 +11,11 @@ import { getSupabaseBrowserClient } from '@/lib/db/browser';
 import type { Feature, Plan } from '@/lib/entitlements';
 
 export type EventoCandado = 'intento' | 'modal_abierto' | 'cta_click';
+export type EventoRecorrido = 'page_view' | 'onboarding_started' | 'map_opened' | 'account_viewed' | 'feedback_opened';
+export async function registrarRecorrido(eventName: EventoRecorrido, path: string, metadata: Record<string, string | number | boolean | null> = {}): Promise<void> {
+  if (process.env.NEXT_PUBLIC_PRODUCT_ANALYTICS_ENABLED !== 'true') return;
+  try { const supabase = getSupabaseBrowserClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return; await (supabase as any).schema('terreno').from('eventos_recorrido').insert({ user_id: user.id, event_name: eventName, path: path.slice(0, 500), metadata }); } catch { /* best-effort */ }
+}
 
 export async function registrarCandado(
   feature: Feature,

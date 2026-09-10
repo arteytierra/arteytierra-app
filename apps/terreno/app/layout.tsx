@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
 import { RegistrarSW } from '@/components/RegistrarSW';
+import { ProductJourneyTracker } from '@/components/ProductJourneyTracker';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -37,7 +38,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-AR" className={`${fraunces.variable} ${inter.variable}`}>
-      <body>{children}<RegistrarSW /></body>
+      <body><ProductJourneyTracker />{children}<RegistrarSW /></body>
     </html>
   );
 }

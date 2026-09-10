@@ -3787,7 +3787,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                     </div>
                   ) : (
                     <p className="pt-1 mt-1 border-t border-bone-200 text-[8px] text-ink-700/50 leading-tight">
-                      🔒 Logo y marca propios en el rótulo: plan <span className="font-semibold text-water-700">Estudio</span>.
+                      🔒 Logo y marca propios todavía no forman parte de los planes públicos.
                     </p>
                   )}
                 </div>
@@ -3970,4 +3970,3 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     </ProveedorRelieve>
   );
 }
-

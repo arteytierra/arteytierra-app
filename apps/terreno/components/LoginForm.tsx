@@ -3,15 +3,24 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
+import { safeInternalPath } from '@/lib/navigation';
+
+const stateMessages: Record<string, { text: string; positive?: boolean }> = {
+  'sesion-vencida': { text: 'Tu sesión terminó por seguridad. Volvé a ingresar para continuar.' },
+  'enlace-vencido': { text: 'El enlace venció o ya fue utilizado. Solicitá uno nuevo si necesitás recuperar el acceso.' },
+  'enlace-invalido': { text: 'El enlace no es válido. Ingresá nuevamente desde esta pantalla.' },
+  'password-actualizada': { text: 'La contraseña se actualizó. Ya podés ingresar con la nueva clave.', positive: true },
+  'cuenta-incompleta': { text: 'Ingresá para completar los datos que faltan en tu cuenta.' },
+};
 
 /** Destino post-login: `?next=` si es ruta interna segura, si no el mapa. */
 function destinoNext(): string {
   if (typeof window === 'undefined') return '/mapa';
   const n = new URLSearchParams(window.location.search).get('next');
-  return n && n.startsWith('/') ? n : '/mapa';
+  return safeInternalPath(n, '/mapa');
 }
 
-export function LoginForm() {
+export function LoginForm({ initialState, nextPath = '/mapa' }: { initialState?: string; nextPath?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,11 +28,14 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [registroHref, setRegistroHref] = useState('/registro');
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
+  const initialMessage = initialState ? stateMessages[initialState] : undefined;
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get('next');
-    if (n) setRegistroHref(`/registro?next=${encodeURIComponent(n)}`);
-  }, []);
+    const safe = safeInternalPath(n, nextPath);
+    setRegistroHref(`/registro?next=${encodeURIComponent(safe)}`);
+  }, [nextPath]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,7 +51,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push(destinoNext());
+    router.push(safeInternalPath(destinoNext(), nextPath));
     router.refresh();
   }
 
@@ -47,10 +59,33 @@ export function LoginForm() {
     setError(null);
     setGoogleLoading(true);
     const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destinoNext())}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeInternalPath(destinoNext(), nextPath))}` },
     });
+    if (error) {
+      setError('No pudimos abrir el acceso con Google. Probá nuevamente.');
+      setGoogleLoading(false);
+    }
+  }
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error } = await getSupabaseBrowserClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/auth/nueva-password')}`,
+    });
+    setLoading(false);
+    if (error?.message.toLowerCase().includes('rate')) {
+      setError('Esperá unos minutos antes de solicitar otro correo.');
+      return;
+    }
+    setError('Si existe una cuenta con ese correo, vas a recibir un enlace seguro para cambiar la contraseña.');
+  }
+
+  if (mode === 'reset') {
+    return <form onSubmit={handleReset} className="space-y-4"><div><h2 className="font-display text-2xl text-ink-950">Recuperar acceso</h2><p className="mt-2 text-sm leading-relaxed text-ink-700/65">Te enviaremos un enlace seguro al correo de tu cuenta.</p></div><div><label className="mb-1.5 block text-sm font-medium text-ink-700">Email</label><input type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" className="w-full rounded-lg border border-bone-200 bg-white px-3 py-2.5 text-sm text-ink-950 focus:border-moss-500 focus:outline-none focus:ring-2 focus:ring-moss-500/40" /></div>{error && <p role="status" className="rounded-lg bg-water-50 px-3 py-2 text-sm text-water-900">{error}</p>}<button type="submit" disabled={loading} className="w-full rounded-lg bg-moss-700 px-4 py-2.5 text-sm font-medium text-bone-50 disabled:opacity-50">{loading ? 'Enviando…' : 'Enviar enlace'}</button><button type="button" onClick={() => { setMode('login'); setError(null); }} className="w-full text-center text-sm text-moss-700 hover:underline">Volver a ingresar</button></form>;
   }
 
   return (
@@ -105,11 +140,13 @@ export function LoginForm() {
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-danger-500 bg-danger-500/8 px-3 py-2 rounded-lg">
-            {error}
+        {(error || initialMessage) && (
+          <p role="status" className={`px-3 py-2 text-sm rounded-lg ${!error && initialMessage?.positive ? 'bg-moss-50 text-moss-900' : 'text-danger-500 bg-danger-500/8'}`}>
+            {error || initialMessage?.text}
           </p>
         )}
+
+        <button type="button" onClick={() => { setMode('reset'); setError(null); }} className="text-xs font-medium text-moss-700 hover:underline">Olvidé mi contraseña</button>
 
         <button
           type="submit"

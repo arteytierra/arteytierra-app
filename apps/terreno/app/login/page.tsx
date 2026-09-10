@@ -1,12 +1,15 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { LoginForm } from '@/components/LoginForm';
+import { safeInternalPath } from '@/lib/navigation';
 
 export const metadata = { title: 'Ingresar' };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ estado?: string; next?: string }> }) {
+  const query = await searchParams;
+  const nextPath = safeInternalPath(query.next, '/mapa');
   const user = await getCurrentUser();
-  if (user) redirect('/mapa');
+  if (user) redirect(nextPath);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bone-50 px-4">
@@ -24,7 +27,7 @@ export default async function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-2xl border border-bone-200 p-6 shadow-paper">
-          <LoginForm />
+          <LoginForm initialState={query.estado} nextPath={nextPath} />
         </div>
       </div>
     </div>
