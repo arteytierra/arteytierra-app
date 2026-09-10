@@ -38,6 +38,7 @@ Workflows exportados listos para importar en una instancia n8n self-hosted (o n8
 | 03  | `03-newsletter-welcome.json`     | Webhook `newsletter-subscribed`          | Secuencia bienvenida (2 emails)                            |
 | 04  | `04-reservation-reminder.json`   | Cron cada 6h                             | Recordatorio 48h antes de llegada                          |
 | 05  | `05-ical-sync.json`              | Cron cada 30min                          | Sync iCal Airbnb/Booking → tabla `availability` (blocked) |
+| 10  | `10-chatbot-omnicanal.json`      | Webhook `meta-inbox` (WhatsApp/IG/Messenger) + Gmail Trigger | Chatbot con Claude — responde DIRECTO (sin borradores), escala obra/diseño privado a Jonatan por email. Importado inactivo el 16/08/2026, ver `../PROMPT-chatbot-omnicanal-n8n-2026-08.md` |
 
 ## Eventos emitidos por la app
 
@@ -71,6 +72,23 @@ Todos requieren `Authorization: Bearer ${N8N_INTERNAL_TOKEN}`.
 - `GET  /api/n8n/abandoned-carts?hours=2&maxHours=72`
 - `GET  /api/n8n/reservations?upcomingDays=14&status=confirmed`
 - `POST /api/n8n/availability/block` — bloquea slot desde iCal externo
+
+## Chatbot omnicanal (workflow 10)
+
+Variables de entorno adicionales (n8n):
+```
+META_VERIFY_TOKEN=<string cualquiera, el que se carga también en la config del webhook de Meta>
+WHATSAPP_PHONE_ID / WHATSAPP_TOKEN   (ya definidos arriba)
+IG_PAGE_ACCESS_TOKEN=<Page Access Token, permiso instagram_manage_messages>
+FB_PAGE_ACCESS_TOKEN=<Page Access Token, permiso pages_messaging>
+CHATBOT_MODEL=claude-sonnet-5   (opcional, default en el workflow)
+```
+Credenciales de n8n a crear en la UI (el import las deja sin mapear, con id `TODO_*`):
+- Anthropic API (`ANTHROPIC_API_KEY`)
+- Postgres apuntando a Supabase (memoria de conversación — NO usar la VM, tiene 1 GB de RAM)
+- Gmail OAuth2 (la misma que usa Gmail Trigger — se reusa para responder y para avisar a Jonatan)
+
+Pendiente antes de activar: validar firma `X-Hub-Signature-256` de Meta (nodo "Webhook Meta (eventos)"), confirmar el endpoint exacto de envío de IG (Graph API cambia de versión en versión), y decidir la herramienta de agenda para Inmersión Viva (no está en este workflow todavía).
 
 ## Notas
 

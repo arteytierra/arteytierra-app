@@ -574,14 +574,16 @@
     "resumen": "Bosque húmedo subtropical de planaltos frescos, dominado por araucaria brasileña y mezclado con lauráceas y mirtáceas.",
     "vegetacion": "Dosel emergente de Araucaria angustifolia sobre bosque siempreverde o semideciduo, con yerba mate, imbuia, helechos y bambúes.",
     "fauna": "Papagayo charao, yacutinga, mono aullador, felinos y pequeños mamíferos consumidores de piñones.",
-    "suelos": "Suelos profundos, ácidos y arcillosos derivados de basaltos; alta materia orgánica superficial bajo clima húmedo y fresco.",
+    "suelos": "Arcillas profundas derivadas de basalto, ácidas y con mucha materia orgánica en superficie por el clima fresco y húmedo, que frena la descomposición. Es de los mejores suelos del sur de Brasil y sostiene un bosque que casi no existe más: queda alrededor del tres por ciento del araucarial original. La helada es el otro dato de manejo, porque acá sí hiela y el aire frío se acumula en el fondo del valle, de modo que la parte baja de un lote puede ser inutilizable para frutal mientras la media ladera funciona. El sistema tradicional que aprovecha esto es la caíva o faxinal: yerba mate y ganado bajo la araucaria en pie, con el pinhón como cosecha de otoño.",
     "saberes": [],
     "especies": [
-      "Araucaria brasileña",
-      "Yerba mate",
-      "Imbuia",
-      "Xaxim",
-      "Guabiroba"
+      "Araucaria (Araucaria angustifolia)",
+      "Yerba mate (Ilex paraguariensis)",
+      "Imbuia (Ocotea porosa)",
+      "Xaxim (Dicksonia sellowiana)",
+      "Guabiroba (Campomanesia xanthocarpa)",
+      "Pino paraná joven (Podocarpus lambertii)",
+      "Loro charão (Amazona pretrei)"
     ],
     "fuentes": [
       {
@@ -642,14 +644,16 @@
     "resumen": "Mosaico costero sobre arenas cuaternarias sometido a sal, viento, sequía edáfica e inundación local.",
     "vegetacion": "Herbazales de dunas, matorrales, bromeliales y bosques bajos; la estructura cambia en pocos metros con relieve y nivel freático.",
     "fauna": "Lagartijas, anfibios de charcas temporarias, aves costeras y pequeños mamíferos endémicos o restringidos.",
-    "suelos": "Arenas muy permeables, ácidas y pobres en nutrientes; podzoles y depresiones orgánicas o anegables aparecen detrás de cordones dunares.",
+    "suelos": "Arena de playa, ácida, sin arcilla y sin ninguna reserva de nutrientes, con podzoles donde la materia orgánica se acumuló abajo en una capa oscura y endurecida. Lo que sostiene la vegetación no es el suelo sino la napa, que está a pocos decímetros: por eso la estructura cambia por completo en veinte metros de distancia, de herbazal de duna a bosque bajo, siguiendo el nivel del agua y no la fertilidad. Cualquier drenaje o relleno mueve esa napa y se lleva la comunidad entera, que es exactamente lo que hace el loteo costero. El aerosol salino poda el frente de duna, así que el cordón de adelante protege a todo lo de atrás y romperlo mata tierra adentro.",
     "saberes": [],
     "especies": [
-      "Clusia",
-      "Aechmea",
-      "Ipomoea pes-caprae",
-      "Guapira",
-      "Cereus fernambucensis"
+      "Clusia (Clusia hilariana)",
+      "Bromelia de restinga (Aechmea nudicaulis)",
+      "Batatilla de playa (Ipomoea pes-caprae)",
+      "Guapira (Guapira opposita)",
+      "Cactus de restinga (Cereus fernambucensis)",
+      "Caju de restinga (Anacardium occidentale)",
+      "Pitanga (Eugenia uniflora)"
     ],
     "fuentes": [
       {
@@ -714,14 +718,16 @@
     "resumen": "Bosques tropicales húmedos entre costa y sierras orientales de Brasil, con lluvia oceánica, fuerte gradiente altitudinal y alto endemismo.",
     "vegetacion": "Bosque ombrófilo denso con palmeras, lauráceas, mirtáceas, lianas, bromelias y orquídeas; niebla frecuente en laderas altas.",
     "fauna": "Muriquis, tamarinos, perezosos, tucanes, jacutingas y numerosos anfibios endémicos.",
-    "suelos": "Suelos muy meteorizados y ácidos, a menudo someros en laderas; la cobertura protege contra erosión intensa bajo lluvias abundantes.",
+    "suelos": "Suelos ácidos y muy lavados, someros en la ladera de la Serra do Mar, bajo lluvias que superan los dos mil milímetros y caen concentradas. La ladera se sostiene porque la sostiene la raíz, y cuando se la saca el resultado no es erosión laminar sino deslizamiento: el suelo entero se va de una vez, en horas, y abajo suele haber gente. Ese es el riesgo que define el uso del suelo acá, más que cualquier consideración de fertilidad. El nutriente está en la hojarasca y en las bromelias del dosel, que guardan agua y materia orgánica arriba del suelo. En el pie de ladera y en las planicies aluviales hay tierra buena y profunda; es la única parte que admite cultivo abierto.",
     "saberes": [],
     "especies": [
-      "Palmito juçara",
-      "Jequitibá",
-      "Pau-brasil",
-      "Embaúba",
-      "Bromelias"
+      "Palmito juçara (Euterpe edulis)",
+      "Jequitibá (Cariniana legalis)",
+      "Pau-brasil (Paubrasilia echinata)",
+      "Embaúba (Cecropia glaziovii)",
+      "Bromelia de dosel (Vriesea gigantea)",
+      "Cambuci (Campomanesia phaea)",
+      "Mono tití león dorado (Leontopithecus rosalia)"
     ],
     "fuentes": [
       {
@@ -784,14 +790,16 @@
     "resumen": "Bosques estacionales del interior nordestino, más secos y fragmentados que la franja atlántica costera.",
     "vegetacion": "Bosque semideciduo a deciduo con dosel más abierto, lianas y transiciones hacia caatinga y cerrados.",
     "fauna": "Puma, margay, monos, pecaríes y aves forestales que dependen de corredores entre fragmentos.",
-    "suelos": "Suelos profundos pero variables, desde latosoles ácidos hasta terrenos más fértiles; la estación seca y la fragmentación elevan el riesgo de fuego.",
+    "suelos": "Acá está la tierra roxa: arcilla roja profunda derivada de basalto, de las mejores del continente, con estructura excelente y fertilidad natural alta. Por eso este bosque fue el primero en desaparecer —el café y después la soja fueron detrás del basalto— y por eso hoy queda menos del diez por ciento. El costo se pagó en erosión: décadas de café en surco a favor de la pendiente se llevaron el horizonte superficial de regiones enteras, y lo que revirtió eso no fue enmienda sino terraza, curva de nivel y siembra directa. Fuera del basalto hay Latossolos ácidos y bastante más pobres que se parecen de lejos. La estación seca sumada a la fragmentación mete fuego por el borde.",
     "saberes": [],
     "especies": [
-      "Pau-d’arco",
-      "Jatobá",
-      "Jequitibá",
-      "Sucupira",
-      "Barriguda"
+      "Pau-d'arco (Handroanthus impetiginosus)",
+      "Jatobá (Hymenaea courbaril)",
+      "Jequitibá (Cariniana estrellensis)",
+      "Sucupira (Bowdichia virgilioides)",
+      "Barriguda (Ceiba speciosa)",
+      "Peroba rosa (Aspidosperma polyneuron)",
+      "Palmito juçara (Euterpe edulis)"
     ],
     "fuentes": [
       {
@@ -853,14 +861,16 @@
     "resumen": "Selvas siempreverdes de tierra firme del piedemonte y las cuencas de Caquetá, Napo, Japurá y Solimões, sin inundación fluvial anual generalizada.",
     "vegetacion": "Dosel alto y multiestrato con palmeras, leguminosas, lianas y epífitas; mosaicos de colinas, terrazas y bosques de piedemonte.",
     "fauna": "Jaguar, danta amazónica, monos lanudos, águila harpía, guacamayos y una diversidad excepcional de anfibios y peces de cabeceras.",
-    "suelos": "Predominan ultisoles y oxisoles ácidos y pobres; terrazas jóvenes y piedemontes pueden ser más fértiles. La biomasa y la hojarasca concentran nutrientes.",
+    "suelos": "Ultisoles y Oxisoles ácidos y muy pobres en las colinas, con terrazas y piedemontes bastante mejores por el aporte andino. Lo que sostiene el sistema es un ciclo cerrado: la micorriza toma el nutriente de la hojarasca y lo devuelve a la raíz sin que pase por el suelo, de modo que el perfil puede ser pobrísimo y el bosque enorme. Acá casi no hay estación seca, así que no hay ventana de quema confiable: el sistema que funciona es la chagra chica con descanso largo y, cada vez más, cortar y dejar el material como cobertura en vez de quemarlo. Un desmonte grande no se recupera; uno de media hectárea rodeado de bosque, sí.",
     "saberes": [],
     "especies": [
-      "Ceiba",
-      "Ungurahua",
-      "Castaña amazónica",
-      "Cedro",
-      "Palmas de dosel"
+      "Ceiba (Ceiba pentandra)",
+      "Ungurahui (Oenocarpus bataua)",
+      "Castaña amazónica (Bertholletia excelsa)",
+      "Cedro (Cedrela odorata)",
+      "Chontaduro (Bactris gasipaes)",
+      "Canangucha (Mauritia flexuosa)",
+      "Copoazú (Theobroma grandiflorum)"
     ],
     "fuentes": [
       {
@@ -910,14 +920,16 @@
     "resumen": "Selvas de tierra firme del arco suroccidental amazónico, con fuerte gradiente de estacionalidad y grandes ríos pero extensas superficies no inundables.",
     "vegetacion": "Bosques altos con palmeras, bambusales de Guadua en sectores occidentales y transiciones a bosques estacionales hacia el sur.",
     "fauna": "Jaguar, pecarí labiado, lobo de río, monos, guacamayos y águila harpía.",
-    "suelos": "Suelos meteorizados y ácidos, con parches jóvenes de origen andino; la compactación y la erosión aumentan tras desmontes y caminos.",
+    "suelos": "Es la Amazonía con mejor suelo, y por una razón concreta: el sedimento baja de los Andes y es joven, así que hay bases y hay fósforo donde más al este no hay. Eso vuelve viable acá una agricultura que a mil kilómetros no lo es, y explica por qué la frontera empujó por este lado. El costo es que son suelos de textura fina y en pendiente suave: desmontados, se compactan bajo la lluvia y bajo la pezuña, el agua deja de entrar y la cárcava aparece en pocos ciclos. Los bambusales de guadua marcan suelos que ya se cayeron alguna vez, y el camino nuevo es siempre el primer vector de todo lo demás.",
     "saberes": [],
     "especies": [
-      "Castaña amazónica",
-      "Shihuahuaco",
-      "Bambú Guadua",
-      "Caoba",
-      "Aguaje"
+      "Castaña amazónica (Bertholletia excelsa)",
+      "Shihuahuaco (Dipteryx micrantha)",
+      "Bambú guadua (Guadua sarcocarpa)",
+      "Caoba (Swietenia macrophylla)",
+      "Aguaje (Mauritia flexuosa)",
+      "Cedro (Cedrela odorata)",
+      "Ungurahui (Oenocarpus bataua)"
     ],
     "fuentes": [
       {
@@ -967,14 +979,16 @@
     "resumen": "Selvas de tierra firme entre Madeira, Tapajós, Xingu, Tocantins y Pindaré, con una estación seca creciente hacia el arco sur y oriental.",
     "vegetacion": "Bosques altos siempreverdes a estacionales, lianas y palmeras; enclaves abiertos y transiciones hacia cerrado y bosques secos.",
     "fauna": "Jaguar, tapir, monos araña y capuchinos, águila harpía, guacamayos y tortugas terrestres.",
-    "suelos": "Latosoles y argisoles antiguos, ácidos y pobres; el déficit estacional incrementa vulnerabilidad a incendios antrópicos.",
+    "suelos": "Latossolos amarillos viejísimos, ácidos, con aluminio alto y con el fósforo como carencia permanente. La fertilidad no está en el perfil: está en la hojarasca y en un tapiz de raíces finas y micorrizas que intercepta el nutriente antes de que baje. Sacado el bosque, salen dos o tres cosechas y después el pasto se degrada; lo que sigue es ganado, compactación y menos infiltración todavía. La excepción son las terras pretas de índio, suelo negro hecho por gente con carbón, hueso y residuo, fértil ochocientos años después: la prueba de que acá el suelo se construye. El déficit estacional deja entrar el fuego por el borde, y lo que el fuego se lleva es justamente el mantillo.",
     "saberes": [],
     "especies": [
-      "Castaña amazónica",
-      "Ipê",
-      "Angelim",
-      "Babaçu",
-      "Copaíba"
+      "Castaña amazónica (Bertholletia excelsa)",
+      "Ipê (Handroanthus serratifolius)",
+      "Angelim (Dinizia excelsa)",
+      "Babaçu (Attalea speciosa)",
+      "Copaíba (Copaifera langsdorffii)",
+      "Açaí (Euterpe oleracea)",
+      "Cumaru (Dipteryx odorata)"
     ],
     "fuentes": [
       {
@@ -1022,14 +1036,16 @@
     "resumen": "Bosques y humedales sometidos al pulso anual de inundación de ríos amazónicos; la duración, profundidad y química del agua organizan el paisaje.",
     "vegetacion": "Bosques inundables, palmares, lagos, gramalotes y vegetación flotante. Las várzeas de aguas blancas son más fértiles que los igapós de aguas negras.",
     "fauna": "Manatí amazónico, delfines de río, caimanes, capibaras, peces migratorios, aves acuáticas y primates ribereños.",
-    "suelos": "Sedimentos aluviales jóvenes y relativamente fértiles en várzea; arenas y suelos muy pobres y ácidos en igapó. El drenaje artificial rompe el pulso ecológico.",
+    "suelos": "Dos suelos opuestos que el mapa suele juntar. La várzea de agua blanca recibe cada año el limo de los Andes y es la mejor tierra de la Amazonía; el calendario de cultivo es el calendario de la creciente, con cinco o seis meses de barro descubierto y fértil y el resto bajo agua. El igapó de agua negra, en cambio, es arena ácida lavada hasta el cuarzo, con tan poco nutriente que el río viene teñido de taninos y casi no tiene peces de fondo: ahí no hay agricultura posible y confundirlo con várzea es el error caro. Drenar cualquiera de los dos rompe el pulso, que es lo único que repone la fertilidad.",
     "saberes": [],
     "especies": [
-      "Aguaje",
-      "Açaí",
-      "Camu-camu",
-      "Victoria amazónica",
-      "Kapok de várzea"
+      "Aguaje (Mauritia flexuosa)",
+      "Açaí (Euterpe oleracea)",
+      "Camu-camu (Myrciaria dubia)",
+      "Victoria amazónica (Victoria amazonica)",
+      "Ceiba de várzea (Ceiba pentandra)",
+      "Cacao de monte (Theobroma cacao)",
+      "Capinurí (Maquira coriacea)"
     ],
     "fuentes": [
       {
@@ -1290,14 +1306,16 @@
     "resumen": "Mosaicos de bosque bajo, matorral y sabana amazónica sobre arenas blancas extremadamente pobres y a menudo encharcadas.",
     "vegetacion": "Campinarana forestada, arbustiva y gramíneo-leñosa con dosel bajo, raíces superficiales y flora especializada.",
     "fauna": "Aves restringidas a arenas blancas, primates y pequeños vertebrados; alta especialización local.",
-    "suelos": "Espodosoles arenosos, muy ácidos y oligotróficos, con acumulación subsuperficial de materia orgánica y aluminio; son muy sensibles al tránsito y al fuego.",
+    "suelos": "Podzoles sobre arena blanca: cuarzo lavado hasta el final, sin arcilla y sin reserva, con la materia orgánica y el aluminio acumulados abajo en una capa endurecida que estanca el agua y que hace que la misma superficie se inunde en lluvia y se seque como playa en verano. Todo el nutriente del sistema está adentro de la planta, no en el suelo, y por eso el dosel es bajo y la raíz superficial. Es el único ambiente del paquete donde el fuego no abre una sucesión sino que deja arena desnuda que no vuelve a tener bosque en escala humana. La decisión honesta acá es no abrir, y el tránsito ya es impacto.",
     "saberes": [],
     "especies": [
-      "Macucu",
-      "Caraipa",
-      "Mauritia",
-      "Orquídeas de arena blanca",
-      "Bromelias terrestres"
+      "Macucu (Aldina heterophylla)",
+      "Caraipa (Caraipa densifolia)",
+      "Buriti (Mauritia carana)",
+      "Orquídeas de arena blanca (Epidendrum spp.)",
+      "Bromelias terrestres (Aechmea spp.)",
+      "Cunuri (Pradosia schomburgkiana)",
+      "Sphagnum de campina (Sphagnum spp.)"
     ],
     "fuentes": [
       {
@@ -1355,14 +1373,16 @@
     "resumen": "Islas de bosque húmedo o subhúmedo sobre sierras del Nordeste brasileño, rodeadas por la matriz semiárida de Caatinga.",
     "vegetacion": "Bosques montanos y brejos de altitude con elementos atlánticos y amazónicos, epífitas y cursos de agua más persistentes.",
     "fauna": "Aves forestales aisladas, pequeños mamíferos, anfibios y reptiles con endemismos locales.",
-    "suelos": "Más profundos y húmedos que la matriz semiárida, pero a menudo inclinados y erosivos; funcionan como refugios climáticos.",
+    "suelos": "Islas de humedad en medio del semiárido: sierras que interceptan el viento húmedo y reciben el doble o el triple de lluvia que la matriz de alrededor, con suelos bastante más profundos y con materia orgánica de verdad. Eso las hizo históricamente la despensa agrícola del sertão y también su punto más frágil, porque son laderas empinadas con lluvia fuerte: una vez desmontadas pierden suelo mucho más rápido que la caatinga plana, y no hay de dónde reponerlo. Son además los refugios climáticos de la región, donde quedaron especies del bosque atlántico y amazónico. Lo que conviene arriba es café o frutal bajo sombra; el cultivo limpio se lleva el brejo en una generación.",
     "saberes": [],
     "especies": [
-      "Bromelias",
-      "Orquídeas",
-      "Jatobá",
-      "Ingá",
-      "Helechos"
+      "Bromelias (Vriesea spp.)",
+      "Orquídeas de brejo (Epidendrum spp.)",
+      "Jatobá (Hymenaea courbaril)",
+      "Ingá (Inga vera)",
+      "Helecho arborescente (Cyathea phalerata)",
+      "Pau-d'arco (Handroanthus impetiginosus)",
+      "Cedro (Cedrela odorata)"
     ],
     "fuentes": [
       {
@@ -1411,14 +1431,16 @@
     "resumen": "Bosques nublados y montanos de las cordilleras septentrionales, fragmentados naturalmente por valles y con enorme recambio de especies con la altura.",
     "vegetacion": "Lauráceas, encenillos, palmas de cera, podocarpáceas, helechos arborescentes, bambúes y abundantes epífitas.",
     "fauna": "Oso andino, danta de montaña, puma, gallito de roca, tucanes andinos y numerosos anfibios endémicos.",
-    "suelos": "Andisoles e inceptisoles húmedos, ricos en materia orgánica pero inestables en pendientes; la niebla aporta agua adicional.",
+    "suelos": "Andisoles e Inceptisoles muy orgánicos, oscuros y livianos, en pendientes donde el suelo se sostiene porque lo sostiene la raíz. La niebla no es un detalle de paisaje: el bosque la peina y aporta un extra de agua que en meses secos es la única entrada, así que talar la ladera de arriba seca la de abajo. El derrumbe es acá el mecanismo natural de renovación, y por eso el problema no es que ocurra sino dónde se lo provoca: el corte de camino mal drenado concentra el escurrimiento y dispara la ladera entera. El café con sombra funciona porque copia la estructura del bosque; a pleno sol, el mismo suelo se lava en pocos años.",
     "saberes": [],
     "especies": [
-      "Palma de cera",
-      "Encenillo",
-      "Podocarpus",
-      "Aliso andino",
-      "Quina"
+      "Palma de cera (Ceroxylon quindiuense)",
+      "Encenillo (Weinmannia tomentosa)",
+      "Podocarpus (Podocarpus oleifolius)",
+      "Aliso andino (Alnus acuminata)",
+      "Quina (Cinchona pubescens)",
+      "Cedro de altura (Cedrela montana)",
+      "Yarumo (Cecropia telealba)"
     ],
     "fuentes": [
       {
@@ -1474,14 +1496,16 @@
     "resumen": "Bosques montanos aislados de la Cordillera de la Costa venezolana y Sierra Nevada de Santa Marta, con gradientes desde el Caribe seco hasta cumbres nubladas.",
     "vegetacion": "Bosques siempreverdes montanos, palmares, helechos, epífitas y parches de bosque achaparrado en crestas.",
     "fauna": "Puma, mono aullador, paujiles, colibríes y anfibios de distribución muy restringida.",
-    "suelos": "Suelos húmedos de montaña, someros en laderas y con acumulación orgánica bajo niebla; alta susceptibilidad a movimientos en masa.",
+    "suelos": "Macizos aislados y muy empinados, con suelos someros en la ladera y una capa orgánica gruesa bajo la niebla, donde la pendiente y la lluvia hacen que el movimiento en masa sea la forma normal en que el sistema se renueva. Por eso lo que define el manejo es la traza: dónde va el camino, cómo se drena y qué corte se deja sin vegetar. La Sierra Nevada de Santa Marta tiene además la respuesta ya construida y todavía funcionando —terrazas, muros y canales de piedra de hace siglos, dimensionados justamente para que el agua baje sin llevarse la ladera—. El café con sombra sobre esas terrazas es el uso que el suelo aguanta; el potrero en la misma pendiente, no.",
     "saberes": [],
     "especies": [
-      "Palma de cera",
-      "Podocarpus",
-      "Cedro de montaña",
-      "Bromelias",
-      "Lauráceas"
+      "Palma de cera (Ceroxylon ceriferum)",
+      "Podocarpus (Podocarpus rospigliosii)",
+      "Cedro de montaña (Cedrela montana)",
+      "Bromelias (Tillandsia spp.)",
+      "Lauráceas (Ocotea spp.)",
+      "Aliso andino (Alnus acuminata)",
+      "Cóndor andino (Vultur gryphus)"
     ],
     "fuentes": [
       {
@@ -1588,14 +1612,16 @@
     "resumen": "Bosques tropicales húmedos y subhúmedos al oeste de los Andes ecuatorianos, con alta diversidad y transición hacia Chocó y bosques secos tumbesinos.",
     "vegetacion": "Dosel alto con palmeras, ceibas, lauráceas, lianas y epífitas; bosques semideciduos en el extremo más estacional.",
     "fauna": "Mono araña de cabeza café, jaguar, tucanes, anfibios y aves endémicas del Chocó-Tumbes.",
-    "suelos": "Suelos arcillosos y muy meteorizados en colinas; aluviales en llanuras. Las lluvias intensas y pendientes elevan riesgo de erosión.",
+    "suelos": "Arcillas rojas muy meteorizadas en la colina y aluviones fértiles en la llanura, bajo una de las lluvias más intensas del continente. Con esa intensidad, el suelo desnudo no es una opción de manejo sino una pérdida medible por tormenta: lo que decide no es cuánto llueve al año sino cuántos minutos al año el suelo queda sin cobertura. Por eso funciona la agroforestería —cacao y plátano bajo árbol, con la hojarasca haciendo de techo— y fracasa el cultivo limpio en pendiente. En la llanura el problema cambia de signo: drenaje lento, napa alta y compactación por maquinaria, y ahí la cota vuelve a mandar sobre la fertilidad.",
     "saberes": [],
     "especies": [
-      "Tagua",
-      "Balsa",
-      "Ceibo",
-      "Guayacán",
-      "Palma real"
+      "Tagua (Phytelephas aequatorialis)",
+      "Balsa (Ochroma pyramidale)",
+      "Ceibo (Ceiba trichistandra)",
+      "Guayacán (Handroanthus chrysanthus)",
+      "Palma real (Attalea colenda)",
+      "Cacao nacional (Theobroma cacao)",
+      "Laurel (Cordia alliodora)"
     ],
     "fuentes": [
       {
@@ -1640,14 +1666,16 @@
     "resumen": "Bosques secos y matorrales encerrados entre cordilleras, con fuerte sombra de lluvia, ríos estacionales y elevado endemismo.",
     "vegetacion": "Bosque deciduo bajo, cactáceas, acacias, molles y matorral espinoso; franjas ribereñas contrastan con laderas secas.",
     "fauna": "Venados, zorros, felinos pequeños, loros, colibríes y reptiles adaptados a calor y sequía.",
-    "suelos": "Suelos pedregosos o aluviales, frecuentemente someros y erosionables; salinidad local en fondos cerrados.",
+    "suelos": "Valles a sombra de lluvia, con suelos someros y pedregosos en la ladera, aluviones profundos en el fondo y sal acumulada donde la cuenca no tiene salida. Riegan desde hace milenios y por eso el riesgo real es la salinización: sin lámina de lavado y sin drenaje de salida, dos décadas de riego alcanzan para arruinar un fondo de valle. La infraestructura de suelo que resuelve la ladera ya existe y está abandonada: la terraza, el andén, que corta la pendiente, guarda el agua y creó suelo profundo donde no lo había. Rehabilitar terraza rinde más que cualquier enmienda, porque lo que falta acá no es nutriente sino profundidad y agua quieta.",
     "saberes": [],
     "especies": [
-      "Molle",
-      "Tara",
-      "Ceiba",
-      "Prosopis",
-      "Cactáceas columnares"
+      "Molle (Schinus molle)",
+      "Tara (Caesalpinia spinosa)",
+      "Ceibo (Ceiba insignis)",
+      "Algarrobo (Neltuma alba)",
+      "Cactus columnar (Browningia candelaris)",
+      "Chachacomo (Escallonia resinosa)",
+      "Retama (Senna birostris)"
     ],
     "fuentes": [
       {
@@ -1776,14 +1804,16 @@
     "resumen": "Bosques deciduos del Pacífico ecuatorial sometidos a una estación seca prolongada y lluvias muy variables asociadas a El Niño.",
     "vegetacion": "Ceibales, algarrobales, guayacanes y matorral espinoso; el dosel reverdece rápidamente con las lluvias.",
     "fauna": "Zorro de Sechura, venado cola blanca, mono aullador de la costa, perico macareño y aves endémicas tumbesinas.",
-    "suelos": "Suelos secos y a menudo pedregosos o arcillosos; abanicos y valles aluviales son más profundos, pero susceptibles a erosión torrencial.",
+    "suelos": "Suelos pedregosos y arcillosos en la ladera y abanicos aluviales profundos en el valle, con salinidad donde se riega sin drenaje. Lo que gobierna acá no es el año promedio sino El Niño: en un año normal el algarrobo vive de una raíz pivotante que baja veinte metros hasta la napa y el resto del sistema apenas se mueve; en un año Niño llueve diez veces más, el desierto se cubre de pasto, se regenera todo el bosque de una vez y a la vez el agua torrencial se lleva suelo y camino. Así que el manejo tiene dos calendarios: el de la sequía, que es de conservación, y el del Niño, que es la única ventana real de plantación y de daño.",
     "saberes": [],
     "especies": [
-      "Ceibo",
-      "Algarrobo peruano",
-      "Guayacán",
-      "Palo santo",
-      "Hualtaco"
+      "Ceibo (Ceiba trichistandra)",
+      "Algarrobo (Neltuma pallida)",
+      "Guayacán (Handroanthus chrysanthus)",
+      "Palo santo (Bursera graveolens)",
+      "Hualtaco (Loxopterygium huasango)",
+      "Faique (Vachellia macracantha)",
+      "Zapote de perro (Colicodendron scabridum)"
     ],
     "fuentes": [
       {
@@ -1837,14 +1867,16 @@
     "resumen": "Bosque y matorral semiárido exclusivamente brasileño, regido por lluvias escasas e irregulares y sequías plurianuales.",
     "vegetacion": "Bosque bajo deciduo, cactáceas, bromelias terrestres y arbustos espinosos; muchas plantas rebrotan o almacenan agua.",
     "fauna": "Guacamayo de Lear, armadillos, mocó, zorro cangrejero y reptiles del sertão.",
-    "suelos": "Muy variables y a menudo someros sobre roca cristalina; fertilidad local moderada, pero baja infiltración y erosión intensa en superficies desnudas.",
+    "suelos": "Suelos someros sobre roca cristalina, de fertilidad química razonable y de pésima capacidad de guardar agua: veinte o treinta centímetros y abajo la piedra. Con esa profundidad, el problema no es cuánta lluvia cae sino cuánta entra, porque cae de golpe sobre superficie desnuda y se va escurriendo. De ahí que la obra que cambia el año no sea la enmienda sino la que frena y guarda agua: la barragem subterrânea, un muro plástico enterrado en el lecho de un arroyo temporario que retiene la humedad del aluvión y deja sembrar en seco. Y el riesgo del riego acá es la sal: sin drenaje de salida, un perímetro irrigado se saliniza en pocos años. El bosque rebrota del tocón, no de la semilla.",
     "saberes": [],
     "especies": [
-      "Mandacaru",
-      "Umbuzeiro",
-      "Juazeiro",
-      "Xique-xique",
-      "Aroeira-do-sertão"
+      "Mandacaru (Cereus jamacaru)",
+      "Umbuzeiro (Spondias tuberosa)",
+      "Juazeiro (Sarcomphalus joazeiro)",
+      "Xique-xique (Pilosocereus gounellei)",
+      "Aroeira (Myracrodruon urundeuva)",
+      "Catingueira (Cenostigma pyramidale)",
+      "Facheiro (Pilosocereus pachycladus)"
     ],
     "fuentes": [
       {
@@ -1906,14 +1938,16 @@
     "resumen": "Bosques estacionales deciduos del interior oriental de Brasil, en contacto con Caatinga, Cerrado y Mata Atlántica húmeda.",
     "vegetacion": "Dosel mediano que pierde gran parte de sus hojas, árboles de madera densa, lianas y cactáceas en afloramientos.",
     "fauna": "Muriquis y primates localmente, felinos, pecaríes, armadillos y aves de bosque estacional.",
-    "suelos": "Suelos más fértiles que muchos bosques húmedos vecinos, a menudo sobre calizas; muy expuestos a erosión tras la deforestación.",
+    "suelos": "Bosque seco sobre caliza, y eso lo cambia todo respecto de sus vecinos húmedos: el suelo es más rico en calcio, tiene pH alto en vez de bajo y no arrastra el problema de aluminio que domina el resto de Brasil. Es tierra buena, y por eso está casi toda desmontada. Dos consecuencias. Una: con pH alto, el hierro y el zinc quedan trabados aunque estén presentes, así que la carencia que aparece no es la que uno esperaría. Otra: es karst, con cuevas y sumideros, de modo que lo que se derrama en superficie llega al agua subterránea en horas y sin filtro. En seco el árbol pierde la hoja justo cuando llegan las primeras lluvias fuertes, y ahí se va el suelo desnudo.",
     "saberes": [],
     "especies": [
-      "Aroeira",
-      "Angico",
-      "Barriguda",
-      "Ipê-roxo",
-      "Cereus"
+      "Aroeira (Myracrodruon urundeuva)",
+      "Angico (Anadenanthera colubrina)",
+      "Barriguda (Ceiba pubiflora)",
+      "Ipê-roxo (Handroanthus impetiginosus)",
+      "Cactus de afloramiento (Cereus jamacaru)",
+      "Gonçalo-alves (Astronium fraxinifolium)",
+      "Pequi (Caryocar brasiliense)"
     ],
     "fuentes": [
       {
@@ -1962,14 +1996,16 @@
     "resumen": "Gran bosque estacional de transición entre Amazonía, Cerrado y Chaco, con estación seca marcada y un dosel todavía continuo.",
     "vegetacion": "Bosques semideciduos con tajibo, cuchi, curupaú y soto; afloramientos rocosos y sabanas intercaladas.",
     "fauna": "Jaguar, tapir, pecarí, armadillo gigante, pavas y guacamayos.",
-    "suelos": "Suelos antiguos y variables, desde rojos profundos hasta someros sobre roca; el fuego repetido simplifica el bosque.",
+    "suelos": "Suelos del escudo precámbrico, viejos y muy desparejos: rojos y profundos en los llanos, apenas un manto sobre roca en las lomas y los afloramientos. Es un bosque seco que arde, pero que evolucionó con fuego raro y de baja intensidad, no con el anual: cuando la quema para pastura se repite todos los años, las especies de madera dura que tardan décadas en llegar a porte no alcanzan a reponerse y el bosque se simplifica a rebrote y pasto. Después del incendio grande el suelo queda hidrófobo unas semanas y las primeras lluvias escurren enteras. La regeneración sale del tocón y de la raíz, así que dejar el tocón en pie vale más que plantar.",
     "saberes": [],
     "especies": [
-      "Tajibo",
-      "Cuchi",
-      "Curupaú",
-      "Soto",
-      "Cuta"
+      "Tajibo (Handroanthus impetiginosus)",
+      "Cuchi (Astronium urundeuva)",
+      "Curupaú (Anadenanthera colubrina)",
+      "Soto (Schinopsis brasiliensis)",
+      "Cuta (Astronium fraxinifolium)",
+      "Momoqui (Caesalpinia pluviosa)",
+      "Motacú (Attalea phalerata)"
     ],
     "fuentes": [
       {
@@ -2015,14 +2051,16 @@
     "resumen": "Bosques tropicales estacionales del sur amazónico, en la transición con Cerrado, sometidos a una estación seca creciente.",
     "vegetacion": "Bosque semideciduo alto con lianas, palmeras y especies amazónicas mezcladas con elementos del Cerrado.",
     "fauna": "Jaguar, tapir, pecarí, monos y aves forestales del arco sur amazónico.",
-    "suelos": "Latosoles y argisoles ácidos; la sequía estacional vuelve al bosque especialmente vulnerable a incendios de borde.",
+    "suelos": "Latossolos y Argissolos profundos, ácidos y con aluminio, físicamente excelentes y químicamente pobres: buena estructura, buen drenaje y raíz que baja sin problema una vez corregida la acidez. Esa corrección —cal incorporada en profundidad, más yeso para el aluminio del subsuelo, más fósforo en dosis altas al principio porque el suelo lo fija— es exactamente lo que convirtió a esta franja en frontera agrícola, y es una inversión de años, no de campaña. El límite real es el fuego de borde: con tres o cuatro meses secos y el bosque fragmentado, el incendio entra por el filo del lote, se lleva el mantillo y deja el suelo desnudo justo antes de las lluvias de octubre.",
     "saberes": [],
     "especies": [
-      "Copaíba",
-      "Ipê",
-      "Jatobá",
-      "Castanha-do-pará",
-      "Babaçu"
+      "Copaíba (Copaifera langsdorffii)",
+      "Ipê (Handroanthus impetiginosus)",
+      "Jatobá (Hymenaea courbaril)",
+      "Castanha-do-pará (Bertholletia excelsa)",
+      "Babaçu (Attalea speciosa)",
+      "Cedro (Cedrela fissilis)",
+      "Aroeira (Myracrodruon urundeuva)"
     ],
     "fuentes": [
       {
@@ -2071,14 +2109,16 @@
     "resumen": "Mosaico de bosque estacional y palmares de babaçu en la transición entre Amazonía, Cerrado y Caatinga.",
     "vegetacion": "Palmares densos de babaçu, bosques secundarios, capoeiras y remanentes semideciduos; la palma coloniza claros y áreas perturbadas.",
     "fauna": "Monos, armadillos, pecaríes, aves frugívoras y polinizadores de mosaicos forestales.",
-    "suelos": "Suelos generalmente ácidos y meteorizados, con fertilidad variable; la cobertura de palmar protege pero no sustituye la diversidad del bosque maduro.",
+    "suelos": "Suelos ácidos y meteorizados, de fertilidad despareja, donde lo que hay que leer no es el perfil sino la palmera: el babaçu es una especie que coloniza el disturbio, así que un palmar denso está diciendo que ahí hubo bosque y se cortó. La palma protege el suelo y da coco todo el año —de eso vive el trabajo de las quebradeiras— pero su sombra y su densidad frenan la vuelta del bosque, de modo que el palmar es una etapa y no un destino. Lo que funciona es enriquecer abajo con frutal y leguminosa en vez de rozar; el fuego repetido, en cambio, lo consolida, porque el babaçu rebrota del meristema enterrado y sus competidores no.",
     "saberes": [],
     "especies": [
-      "Babaçu",
-      "Jatobá",
-      "Ipê",
-      "Bacuri",
-      "Burití"
+      "Babaçu (Attalea speciosa)",
+      "Jatobá (Hymenaea courbaril)",
+      "Ipê (Handroanthus impetiginosus)",
+      "Bacuri (Platonia insignis)",
+      "Buriti (Mauritia flexuosa)",
+      "Sucupira (Bowdichia virgilioides)",
+      "Cajá (Spondias mombin)"
     ],
     "fuentes": [
       {
@@ -2249,14 +2289,16 @@
     "resumen": "Mosaico de sabanas, islas de bosque y humedales estacionales en las planicies de los Llanos de Moxos y alto Madeira.",
     "vegetacion": "Pastizales inundables, palmares, bosques de galería e islas forestales sobre microrelieves elevados.",
     "fauna": "Ciervo de los pantanos, paraba barba azul, londra, capibara, caimanes y aves acuáticas.",
-    "suelos": "Suelos aluviales hidromorfos con ciclos de anegamiento y sequía; pequeñas diferencias de cota controlan oxígeno y vegetación.",
+    "suelos": "Suelos aluviales hidromórficos con un piso arcilloso que no deja bajar el agua, de modo que la llanura se anega no por exceso de lluvia sino por falta de drenaje profundo, y después se seca hasta agrietarse. Otra vez la cota decide: unos centímetros separan el pastizal que se inunda de la isla de monte que no. Y varias de esas islas no son naturales. En el Beni hay miles de kilómetros de camellones, terraplenes y lomas construidos antes de la conquista para levantar el nivel de siembra, mover el agua y concentrar suelo fértil; es un paisaje agrícola de ingeniería, todavía legible desde el aire, y la referencia más directa que existe para trabajar hoy esta llanura.",
     "saberes": [],
     "especies": [
-      "Palma motacú",
-      "Tajibo",
-      "Patujú",
-      "Gramíneas de inundación",
-      "Victoria boliviana"
+      "Motacú (Attalea phalerata)",
+      "Tajibo (Handroanthus impetiginosus)",
+      "Patujú (Heliconia rostrata)",
+      "Cañuela de inundación (Hymenachne amplexicaulis)",
+      "Victoria boliviana (Victoria boliviana)",
+      "Palma real (Mauritia flexuosa)",
+      "Ciervo de los pantanos (Blastocerus dichotomus)"
     ],
     "fuentes": [
       {
@@ -2315,14 +2357,16 @@
     "resumen": "Sabanas montanas y afloramientos rocosos de las sierras brasileñas, con suelos mínimos, nacientes y excepcional endemismo vegetal.",
     "vegetacion": "Pastizales rupestres, matorrales, rosetas, siemprevivas, orquídeas y bromelias entre cuarcitas y arenas.",
     "fauna": "Lobo de crin, pequeños mamíferos, colibríes, anfibios de cabeceras y numerosos polinizadores.",
-    "suelos": "Muy someros, arenosos, ácidos y oligotróficos; turberas de nacientes y grietas húmedas concentran materia orgánica.",
+    "suelos": "Arena de cuarcita, ácida y de las más pobres del planeta: tan poco fósforo hay que las plantas de acá desarrollaron raíces especializadas en racimo que exudan ácidos para arrancarlo de la roca, la misma solución que apareció en los suelos viejos de Australia y del Cabo. Es un ambiente que no se cultiva y donde tampoco tiene sentido intentarlo; lo que importa es otra cosa: en las grietas y en las nacientes hay turba, y esa turba es la que regula el agua que baja a toda la región. Se quema o se drena una vez y no se rehace. El endemismo es altísimo y de escala mínima —una ladera puede tener especies que no están en la de enfrente—, así que el daño puntual es extinción.",
     "saberes": [],
     "especies": [
-      "Sempre-vivas",
-      "Vellozia",
-      "Lychnophora",
-      "Paepalanthus",
-      "Orquídeas rupestres"
+      "Sempre-viva (Comanthera elegans)",
+      "Canela-de-ema (Vellozia squamata)",
+      "Arnica da serra (Lychnophora pinaster)",
+      "Paepalanthus (Paepalanthus polyanthus)",
+      "Orquídea rupestre (Cattleya crispata)",
+      "Bromelia rupícola (Dyckia spp.)",
+      "Turbera de nacientes (Sphagnum spp.)"
     ],
     "fuentes": [
       {
@@ -2377,14 +2421,16 @@
     "resumen": "Pastizales subtropicales del Uruguay, sur de Brasil y noreste argentino, con mosaicos de campo, palmares, serranías y bosques ribereños.",
     "vegetacion": "Gramíneas C3 y C4, hierbas, pajonales, palmares de butiá y bosques de quebrada o galería.",
     "fauna": "Venado de campo, ñandú, mulita, zorro de campo y aves como capuchinos y tero.",
-    "suelos": "Muy heterogéneos: profundos sobre basalto o sedimentos, someros en sierras y arenosos en costas; la cobertura permanente es clave.",
+    "suelos": "Suelos oscuros y profundos hechos por la raíz del pastizal, igual que en las praderas de Norteamérica, con mucha variación: hondos sobre basalto y sedimentos, someros y pedregosos en las sierras, arenosos en el noreste. Muchos tienen un horizonte arcilloso denso a media profundidad que estanca el agua arriba y corta la raíz, así que el mismo lote se anega y se seca. La cobertura permanente es lo que los mantiene, y sacarla es el problema conocido del país: la expansión de la agricultura anual disparó una erosión tan medible que Uruguay terminó exigiendo por ley un plan de uso y manejo de suelos por chacra, con rotación aprobada. Es la única regulación de este tipo en la región.",
     "saberes": [],
     "especies": [
-      "Paspalum",
-      "Andropogon",
-      "Flechillas",
-      "Butiá",
-      "Carqueja"
+      "Paspalum (Paspalum notatum)",
+      "Andropogon (Andropogon lateralis)",
+      "Flechilla (Nassella neesiana)",
+      "Butiá (Butia odorata)",
+      "Carqueja (Baccharis trimera)",
+      "Espinillo (Vachellia caven)",
+      "Venado de campo (Ozotoceros bezoarticus)"
     ],
     "fuentes": [
       {
@@ -2435,14 +2481,16 @@
     "resumen": "Llanura subtropical más lluviosa que el Chaco seco, con bosques, sabanas de palmeras, esteros y lagunas sometidos a pulsos de inundación.",
     "vegetacion": "Quebrachales húmedos, palmares de caranday, pajonales, selvas en galería y vegetación acuática.",
     "fauna": "Carpincho, yacaré, aguará guazú, mono carayá, tapir, pecaríes y gran diversidad de aves acuáticas.",
-    "suelos": "Arcillosos y aluviales, con drenaje impedido, sodicidad o salinidad en bajos; alternan saturación y contracción estacional.",
+    "suelos": "Arcillas pesadas y aluviones con el drenaje trabado, y en los bajos un horizonte nátrico: una capa densa de sodio, a veces a treinta centímetros, que la raíz no atraviesa y que hace que el mismo lote se inunde en verano y se seque como ladrillo en invierno. Eso —no la lluvia, que sobra— es lo que fija la aptitud, y por eso el relieve local se lee en tres escalones: el albardón alto donde está el monte y la casa, la media loma donde se siembra, y el bajo que sólo aguanta pajonal y palmar. Romper el sodio pide yeso y materia orgánica, y años. Arar en húmedo sobre esta arcilla deja un piso de arado que dura más que el cultivo que lo causó.",
     "saberes": [],
     "especies": [
-      "Quebracho colorado chaqueño",
-      "Caranday",
-      "Urunday",
-      "Palo piedra",
-      "Paja amarilla"
+      "Quebracho colorado chaqueño (Schinopsis balansae)",
+      "Caranday (Copernicia alba)",
+      "Urunday (Astronium balansae)",
+      "Palo piedra (Diplokeleba floribunda)",
+      "Paja amarilla (Sorghastrum setosum)",
+      "Ñangapirí (Eugenia uniflora)",
+      "Timbó (Enterolobium contortisiliquum)"
     ],
     "fuentes": [
       {
@@ -2498,14 +2546,16 @@
     "resumen": "Planicies y humedales estacionales de la cuenca baja del Guayas, sometidos a inundaciones, sedimentación y una estación seca marcada.",
     "vegetacion": "Herbazales inundables, pantanos, bosques ribereños y transiciones a bosque seco y manglar.",
     "fauna": "Aves acuáticas, iguanas, peces estacionales, anfibios y pequeños mamíferos de humedal.",
-    "suelos": "Aluviales finos, arcillosos e hidromorfos; alta fertilidad potencial pero anoxia, salinidad y compactación limitan el uso.",
+    "suelos": "Arcillas aluviales finas, hidromórficas y de fertilidad alta en potencia, con la anoxia y la compactación como límites reales y no la falta de nutriente. El arroz funciona porque le sirve exactamente eso que a otros cultivos los mata. Dos cuidados que cambian el resultado: hacia el estuario los sedimentos tienen azufre, y drenarlos los acidifica de forma permanente, igual que en el manglar; y en la estación seca la cuña salina sube por los ramales del Guayas, de modo que el agua de riego de marzo puede no ser la misma que la de agosto. La pisada del ganado sobre arcilla saturada cierra el poro y ese daño dura años.",
     "saberes": [],
     "especies": [
-      "Totora",
-      "Lechuguín",
-      "Guachapelí",
-      "Samán",
-      "Gramíneas palustres"
+      "Totora (Schoenoplectus californicus)",
+      "Lechuguín (Eichhornia crassipes)",
+      "Guachapelí (Albizia guachapele)",
+      "Samán (Samanea saman)",
+      "Gramalote (Paspalum fasciculatum)",
+      "Pechiche (Vitex gigantea)",
+      "Arroz (Oryza sativa)"
     ],
     "fuentes": [
       {
@@ -2599,14 +2649,16 @@
     "resumen": "Una de las mayores planicies inundables continentales, donde el pulso del río Paraguay conecta sabanas, bosques, lagunas y canales.",
     "vegetacion": "Campos inundables, cambarazales, carandazales, capões boscosos, vegetación acuática y bosques ribereños.",
     "fauna": "Jaguar, ciervo de los pantanos, nutria gigante, yacarés, tuiuiú y enorme diversidad de peces.",
-    "suelos": "Sedimentos aluviales jóvenes, con hidromorfía, anoxia y fertilidad espacialmente variable; el microrelieve controla duración de la inundación.",
+    "suelos": "Una cuenca sedimentaria casi plana donde el microrrelieve manda sobre todo lo demás: unos decímetros separan el campo que se inunda medio año de la cordilheira arenosa que nunca se moja y que es la única tierra firme, la que sostiene el monte, el casco y el ganado en creciente. Hay sodio y sal en las salinas, que son lagunas cerradas y no tierras degradadas. Lo que hay que entender del calendario es que el agua llega tarde: la lluvia cae en el altiplano de Mato Grosso y el pico de creciente aparece acá dos o tres meses después, así que el año no se lee mirando el cielo local. Cualquier terraplén que corte el escurrimiento seca de un lado y ahoga del otro.",
     "saberes": [],
     "especies": [
-      "Carandá",
-      "Cambarà",
-      "Paratudo",
-      "Aguapé",
-      "Ipê-amarelo"
+      "Carandá (Copernicia alba)",
+      "Cambará (Vochysia divergens)",
+      "Paratudo (Tabebuia aurea)",
+      "Aguapé (Eichhornia azurea)",
+      "Ipê-amarelo (Handroanthus heptaphyllus)",
+      "Acuri (Attalea phalerata)",
+      "Jacaré del Pantanal (Caiman yacare)"
     ],
     "fuentes": [
       {
@@ -2660,14 +2712,16 @@
     "resumen": "Planicies, islas, esteros y sabanas inundables del Paraná medio e inferior y la Mesopotamia, modeladas por crecientes y estiajes.",
     "vegetacion": "Pajonales, camalotales, juncales, bosques de sauce y aliso de río, palmares y selvas en galería.",
     "fauna": "Carpincho, ciervo de los pantanos, lobito de río, yacaré, peces migratorios y aves acuáticas.",
-    "suelos": "Aluviales jóvenes e hidromorfos, continuamente redistribuidos; albardones bien drenados alternan con bajos anóxicos.",
+    "suelos": "El suelo de las islas lo hace el río y lo vuelve a hacer todos los años: albardón de arena y limo grueso pegado al canal, bien drenado y fértil, y detrás el bajo arcilloso y anóxico que se inunda. Sembrar en el bajo es perder; el albardón es el único piso confiable, y aun así la creciente decide el calendario. Lo que rompió el equilibrio en la última década fue meter ganado en cantidad y quemar el pajonal para rebrote: el fuego repetido oxida la materia orgánica de un suelo que se sostiene sobre eso, y el pisoteo sobre suelo saturado lo compacta y le baja la infiltración justo donde el humedal tiene que absorber. Las represas aguas arriba retienen el sedimento que repone todo esto.",
     "saberes": [],
     "especies": [
-      "Sauce criollo",
-      "Aliso de río",
-      "Irupé",
-      "Camalote",
-      "Pindó"
+      "Sauce criollo (Salix humboldtiana)",
+      "Aliso de río (Tessaria integrifolia)",
+      "Irupé (Victoria cruziana)",
+      "Camalote (Eichhornia crassipes)",
+      "Pindó (Syagrus romanzoffiana)",
+      "Ceibo (Erythrina crista-galli)",
+      "Carpincho (Hydrochoerus hydrochaeris)"
     ],
     "fuentes": [
       {
@@ -2719,14 +2773,16 @@
     "resumen": "Altiplano frío y muy árido con grandes amplitudes térmicas, salares y vegetación rala concentrada alrededor de humedales.",
     "vegetacion": "Tolares, pajonales abiertos, yaretales y bofedales muy localizados junto a manantiales y cursos de agua.",
     "fauna": "Vicuña, suri, flamencos altoandinos, vizcacha y zorro culpeo.",
-    "suelos": "Aridisoles pedregosos, salinos o volcánicos, con poca materia orgánica; vegas y bofedales tienen suelos orgánicos frágiles.",
+    "suelos": "Aridisoles pedregosos, volcánicos o salinos, con muy poca materia orgánica, agua escasa y boro y arsénico presentes en varias cuencas cerradas. La productividad entera no está en esa matriz sino en las vegas y bofedales, manchas orgánicas junto a manantiales que ocupan una fracción mínima del territorio y sostienen todo el pastoreo: la capacidad de carga de una estancia se cuenta en hectáreas de vega, no en hectáreas totales. Son frágiles de un modo particular, porque no las degrada el uso local sino el bombeo lejano; bajar la napa unos centímetros las seca sin que se vea la causa. El hielo y el deshielo diario levantan la superficie y matan la plántula que no arraigó.",
     "saberes": [],
     "especies": [
-      "Tola",
-      "Yareta",
-      "Ichu",
-      "Queñoa",
-      "Distichia muscoides"
+      "Tola (Parastrephia lepidophylla)",
+      "Yareta (Azorella compacta)",
+      "Ichu (Jarava ichu)",
+      "Queñoa (Polylepis tarapacana)",
+      "Bofedal de Distichia (Distichia muscoides)",
+      "Vicuña (Vicugna vicugna)",
+      "Cactus cardón (Echinopsis atacamensis)"
     ],
     "fuentes": [
       {
@@ -2794,14 +2850,16 @@
     "resumen": "Pastizales altoandinos fríos con lluvias estivales mayores, lagunas, turberas y redes de bofedales que almacenan agua.",
     "vegetacion": "Pajonales densos de ichu, céspedes, bofedales, tolares y bosques relictos de queñoa.",
     "fauna": "Vicuña, taruca, zambullidor del Titicaca, flamencos, vizcachas y aves de humedal.",
-    "suelos": "Suelos minerales fríos alternan con turbas y horizontes orgánicos saturados; el drenaje o pisoteo concentrado degrada lentamente los bofedales.",
+    "suelos": "Suelos minerales fríos donde la materia orgánica se acumula porque no alcanza el calor para descomponerla, alternando con bofedales que son turba de verdad: metros de material vegetal que Distichia y Oxychloe fueron apilando durante milenios y que guardan el agua del deshielo y la sueltan en seco. Un bofedal sobrepastoreado en un punto se pela, se seca el borde y la turba empieza a oxidarse; lo que tardó mil años no vuelve con una temporada de descanso. En la llanura del altiplano la tecnología que resuelve el otro problema —la helada— es el campo elevado, el waru waru, donde el agua del canal devuelve de noche el calor del día y levanta la temperatura del cultivo un par de grados.",
     "saberes": [],
     "especies": [
-      "Ichu",
-      "Queñoa",
-      "Puya raimondii",
-      "Distichia",
-      "Oxychloe"
+      "Ichu (Jarava ichu)",
+      "Queñoa (Polylepis incana)",
+      "Puya de Raimondi (Puya raimondii)",
+      "Distichia (Distichia muscoides)",
+      "Oxychloe (Oxychloe andina)",
+      "Kolli (Buddleja coriacea)",
+      "Alpaca (Vicugna pacos)"
     ],
     "fuentes": [
       {
@@ -2851,14 +2909,16 @@
     "resumen": "Ecosistemas fríos y muy húmedos por encima del bosque andino, con niebla, lluvias abundantes y suelos que regulan agua; no son puna árida.",
     "vegetacion": "Pajonales, frailejonales, chuscales, matorrales, turberas, humedales y bosques achaparrados.",
     "fauna": "Oso andino, danta de montaña, venados, cóndor, colibríes y anfibios endémicos.",
-    "suelos": "Andisoles y suelos orgánicos profundos, fríos y de alta capacidad de retención; drenaje, quema o labranza pueden liberar carbono y perder regulación hídrica.",
+    "suelos": "Andisoles con alófana, un mineral de la ceniza volcánica que retiene dos o tres veces su peso en agua: eso, y no la lluvia, es lo que hace del páramo la fábrica de agua de los Andes del norte. Tiene dos consecuencias duras. La primera es que fija el fósforo con una fuerza enorme, así que lo que se aplica casi no queda disponible. La segunda es la que decide todo: si el suelo se drena, se ara o se quema y llega a secarse, la alófana se deshidrata de forma irreversible y ya no vuelve a absorber agua como antes. No se recupera con descanso. Por eso la frontera de la papa subiendo se mide en caudal perdido río abajo.",
     "saberes": [],
     "especies": [
-      "Frailejones",
-      "Chusquea",
-      "Calamagrostis",
-      "Polylepis",
-      "Puya"
+      "Frailejón (Espeletia grandiflora)",
+      "Chusque (Chusquea tessellata)",
+      "Paja de páramo (Calamagrostis effusa)",
+      "Colorado (Polylepis sericea)",
+      "Puya (Puya clava-herculis)",
+      "Almohadilla (Plantago rigida)",
+      "Oso andino (Tremarctos ornatus)"
     ],
     "fuentes": [
       {
@@ -3031,14 +3091,16 @@
     "resumen": "Manglares tropicales del Pacífico de Colombia, Ecuador y extremo norte peruano, sobre estuarios lluviosos o estacionales y amplias planicies de marea.",
     "vegetacion": "Mangle rojo de gran porte en el norte húmedo, mangle negro, blanco y jelí; canales, playones y bosque de guandal asociado.",
     "fauna": "Piangua, cangrejos, camarones, peces juveniles, garzas, pelícanos y mamíferos costeros.",
-    "suelos": "Sedimentos mareales blandos, anóxicos y salinos con alto carbono; la elevación centimétrica cambia inundación y especie dominante.",
+    "suelos": "Lodos mareales blandos, sin oxígeno y con azufre: el mismo mecanismo que en el Caribe, drenarlos los acidifica hasta pH tres y no hay encalado que lo arregle. Acá se suma que llueve muchísimo, así que el agua de los ríos diluye la sal y el mangle rojo alcanza portes que no tiene en ningún otro lado del continente. Lo que ordena el bosque es la cota, medida en centímetros: unos pocos separan al mangle del guandal de agua dulce tierra adentro, y un terraplén que corra esa línea cambia la especie dominante de un lado y del otro. La concha y el cangrejo del fango son la economía del sistema y dependen de que el fango siga inundándose.",
     "saberes": [],
     "especies": [
-      "Mangle rojo",
-      "Mangle negro",
-      "Mangle blanco",
-      "Jelí",
-      "Nato"
+      "Mangle rojo (Rhizophora mangle)",
+      "Mangle negro (Avicennia germinans)",
+      "Mangle blanco (Laguncularia racemosa)",
+      "Jelí (Conocarpus erectus)",
+      "Nato (Mora oleifera)",
+      "Piñuelo (Pelliciera rhizophorae)",
+      "Concha negra (Anadara tuberculosa)"
     ],
     "fuentes": [
       {
@@ -3075,14 +3137,16 @@
     "resumen": "Manglares subtropicales y tropicales del litoral atlántico sur brasileño, ligados a estuarios, lagunas y planicies de marea.",
     "vegetacion": "Mangle rojo, negro y blanco con marismas y bosques de restinga adyacentes; menor porte hacia el límite austral.",
     "fauna": "Cangrejo uçá, ostras, peces juveniles, garzas, martines pescadores y mamíferos estuarinos.",
-    "suelos": "Lodos salobres anóxicos con abundante materia orgánica; relleno, canalización y pérdida de mareas degradan rápidamente el sistema.",
+    "suelos": "Lodos salobres sin oxígeno, cargados de materia orgánica y con azufre: drenados o rellenados se acidifican y no vuelven, la misma historia que en el resto de los manglares del catálogo. Lo específico de acá es que es el límite austral del sistema: hacia el sur el mangle pierde porte, se achaparra y termina cediéndole el lugar a la marisma de Spartina, así que un manglar de dos metros no es un manglar degradado sino uno en su borde de distribución. El cangrejo uçá es la economía local y depende de que el fango siga inundándose con la marea; cualquier obra que corte el intercambio mareal mata primero la pesca y después el bosque.",
     "saberes": [],
     "especies": [
-      "Mangle rojo",
-      "Mangle negro",
-      "Mangle blanco",
-      "Cangrejo uçá",
-      "Spartina"
+      "Mangle rojo (Rhizophora mangle)",
+      "Mangle negro (Avicennia schaueriana)",
+      "Mangle blanco (Laguncularia racemosa)",
+      "Cangrejo uçá (Ucides cordatus)",
+      "Spartina (Sporobolus alterniflorus)",
+      "Botoncillo (Conocarpus erectus)",
+      "Guará (Eudocimus ruber)"
     ],
     "fuentes": [
       {
@@ -3121,14 +3185,16 @@
     "resumen": "Bosques insulares templados oceánicos de origen volcánico, extraordinariamente endémicos y vulnerables a invasoras y erosión.",
     "vegetacion": "Bosques siempreverdes, matorrales y helechales con numerosas plantas exclusivas del archipiélago.",
     "fauna": "Picaflor de Juan Fernández, cachudito de Juan Fernández, fardelas y lobo fino de Juan Fernández.",
-    "suelos": "Suelos volcánicos en pendientes abruptas, húmedos pero muy erosionables cuando invasoras, incendios o herbívoros eliminan cobertura.",
+    "suelos": "Suelos volcánicos en laderas muy empinadas, húmedos y con buena materia orgánica mientras están cubiertos, y de los más erosionables del catálogo cuando no lo están. La secuencia que arruina la isla está documentada y es siempre la misma: la cabra y el conejo comen la plántula, el helecho arborescente y el bosque de luma no se reponen, entran la zarzamora y el maqui, que cubren pero no fijan igual, y en la primera tormenta la ladera se va. El endemismo es de los más altos del planeta por superficie, así que cada ladera perdida se lleva especies que no están en ningún otro lado. Acá restaurar suelo y controlar herbívoro exótico son la misma tarea, no dos.",
     "saberes": [],
     "especies": [
-      "Luma de Juan Fernández",
-      "Chonta de Juan Fernández",
-      "Cuminia",
-      "Juan bueno",
-      "Pangue insular"
+      "Luma de Juan Fernández (Nothomyrcia fernandeziana)",
+      "Chonta (Juania australis)",
+      "Cuminia (Cuminia eriantha)",
+      "Juan bueno (Rhaphithamnus venustus)",
+      "Pangue insular (Gunnera peltata)",
+      "Naranjillo (Fagara mayu)",
+      "Picaflor de Juan Fernández (Sephanoides fernandensis)"
     ],
     "fuentes": [
       {
@@ -3195,14 +3261,16 @@
     "resumen": "Islas volcánicas hiperaisladas de San Félix y San Ambrosio, con vegetación terrestre escasa, endémica y condicionada por aridez oceánica.",
     "vegetacion": "Matorral bajo, herbazales y plantas rupícolas en grietas y laderas; cobertura muy discontinua.",
     "fauna": "Aves marinas nidificantes, lagartijas endémicas e invertebrados insulares; el entorno marino concentra gran diversidad.",
-    "suelos": "Suelos volcánicos someros, secos y expuestos a viento, sal y erosión; depósitos de guano aportan nutrientes localmente.",
+    "suelos": "Suelos volcánicos someros y secos sobre islas chicas y muy ventosas, donde el aerosol salino y la falta de agua limitan más que la fertilidad. El nutriente entra por el guano, así que la cobertura vegetal está literalmente donde están las aves y desaparece donde la colonia se retira. Casi no llueve y no hay curso de agua permanente; la humedad que cuenta es la que condensa la niebla sobre la roca. La superficie es discontinua y frágil: el pisoteo y, sobre todo, los herbívoros introducidos —cabras y conejos— pelan la ladera, y sin raíz el viento se lleva la fracción fina que tardó siglos en formarse. El manejo acá es erradicación de exóticas y control de desembarco.",
     "saberes": [],
     "especies": [
-      "Thamnoseris",
-      "Sanambrosia",
-      "Atriplex insular",
-      "Helechos rupícolas",
-      "Liquenes"
+      "Thamnoseris (Thamnoseris lacerata)",
+      "Sanambrosia (Sanctambrosia manicata)",
+      "Atriplex insular (Atriplex chilensis)",
+      "Helecho rupícola (Asplenium spp.)",
+      "Líquenes costeros (Roccella spp.)",
+      "Petrel de San Ambrosio (Pterodroma spp.)",
+      "Lobo fino de Juan Fernández (Arctocephalus philippii)"
     ],
     "fuentes": [
       {
@@ -3263,14 +3331,16 @@
     "resumen": "Pequeña isla volcánica oceánica, rocosa y aislada, con vegetación terrestre mínima sostenida por lluvia, niebla y nutrientes de aves marinas.",
     "vegetacion": "Parches de helechos, líquenes y vegetación herbácea baja en grietas e islotes.",
     "fauna": "Piquero de Nazca, lagartos y cangrejo terrestre endémicos; el sistema terrestre depende fuertemente de aportes marinos.",
-    "suelos": "Prácticamente ausentes; detritos y guano se acumulan en fisuras de roca volcánica.",
+    "suelos": "No hay suelo: hay roca volcánica desnuda y, en las fisuras, una mezcla de detrito y guano donde se agarran helechos y líquenes. Toda la entrada de nutrientes viene del mar por vía de las aves, así que la colonia de piqueros no es fauna que vive sobre el ecosistema sino la que lo fabrica. No hay agricultura posible ni escenario en que la haya, y la única pregunta de manejo que importa acá es de bioseguridad: una rata o una semilla llegada en una bota terminan con endemismos que no existen en ningún otro lugar del mundo. El agua dulce es la que se condensa de la niebla y se junta en huecos de la roca.",
     "saberes": [],
     "especies": [
-      "Pityrogramma dealbata",
-      "Líquenes Caloplaca",
-      "Anolis agassizi",
-      "Diploglossus millepunctatus",
-      "Cangrejo de Malpelo"
+      "Helecho plateado (Pityrogramma dealbata)",
+      "Líquenes (Caloplaca spp.)",
+      "Lagarto de Malpelo (Anolis agassizi)",
+      "Lagartija de Malpelo (Diploglossus millepunctatus)",
+      "Cangrejo de Malpelo (Johngarthia malpilensis)",
+      "Piquero de Nazca (Sula granti)",
+      "Tiburón martillo (Sphyrna lewini)"
     ],
     "fuentes": [
       {
@@ -3332,14 +3402,16 @@
     "resumen": "Ecosistemas volcánicos insulares cuya zonación va de litoral y matorral árido a transiciones húmedas; RESOLVE los representa con un único ECO_ID xerófilo.",
     "vegetacion": "Palo santo, cactus Opuntia y lava, matorral de transición; en islas altas aparecen zonas húmedas de Scalesia que el ECO_ID no separa.",
     "fauna": "Tortugas gigantes, iguanas terrestres, pinzones de Darwin, sinsontes y reptiles endémicos.",
-    "suelos": "Suelos volcánicos jóvenes y discontinuos; cenizas más desarrolladas en zonas altas húmedas, roca desnuda y costras en zonas áridas.",
+    "suelos": "Suelos volcánicos jóvenes y discontinuos, con lava desnuda, ceniza y bolsones de material más desarrollado, y con el agua —no el nutriente— como límite absoluto en la zona árida. La isla funciona en pisos: abajo, roca y matorral seco que vive de la garúa; arriba, ceniza meteorizada, niebla constante y suelo profundo, que es donde está toda la agricultura y donde están todos los problemas de invasoras. La particularidad de manejo es que acá el herbívoro grande es endémico y necesario: la tortuga gigante mueve semilla, abre camino y pisa; las que sobran son las cabras y los chanchos, que en pendiente volcánica pelan el suelo en pocos años y disparan erosión que no se repone.",
     "saberes": [],
     "especies": [
-      "Opuntia de Galápagos",
-      "Palo santo",
-      "Scalesia",
-      "Cactus de lava",
-      "Tortuga gigante"
+      "Opuntia de Galápagos (Opuntia echios)",
+      "Palo santo (Bursera graveolens)",
+      "Scalesia (Scalesia pedunculata)",
+      "Cactus de lava (Brachycereus nesioticus)",
+      "Tortuga gigante (Chelonoidis niger)",
+      "Manzanillo (Hippomane mancinella)",
+      "Algodón de Darwin (Gossypium darwinii)"
     ],
     "fuentes": [
       {
@@ -3396,14 +3468,16 @@
     "resumen": "Islas subtropicales extremadamente aisladas del Pacífico suroriental; la vegetación actual de Rapa Nui está profundamente transformada y no equivale a un bosque intacto.",
     "vegetacion": "Pastizales y matorrales secundarios dominan Rapa Nui; persisten helechos, especies costeras y programas de restauración de flora nativa. Sala y Gómez es roca oceánica con aves marinas.",
     "fauna": "Aves marinas, reptiles e invertebrados; gran parte del endemismo terrestre histórico se perdió o está restringido.",
-    "suelos": "Volcánicos, meteorizados y muy expuestos a erosión eólica e hídrica cuando falta cobertura.",
+    "suelos": "Suelos volcánicos meteorizados que quedaron sin bosque hace siglos y desde entonces pierden material por viento y por escorrentía, sobre una isla sin ríos permanentes donde el agua se infiltra y sale por la costa. La respuesta local a eso es una tecnología de suelo, no de riego: los manavai, recintos circulares de piedra que cortan el viento y elevan la humedad adentro, y el acolchado con piedra volcánica esparcida sobre la superficie, que baja la evaporación, modera la temperatura y va liberando nutrientes al meteorizarse. Es una de las respuestas más completas que existen a suelo pobre y viento constante, y sigue siendo la referencia para restaurar la isla.",
     "saberes": [],
     "especies": [
-      "Toromiro (en restauración)",
-      "Sophora",
-      "Triumfetta semitriloba",
-      "Helechos nativos",
-      "Aves marinas"
+      "Toromiro (Sophora toromiro)",
+      "Mahute (Broussonetia papyrifera)",
+      "Hau hau (Triumfetta semitriloba)",
+      "Helecho nativo (Doodia paschalis)",
+      "Ngaoho (Caesalpinia major)",
+      "Totora del Rano Raraku (Schoenoplectus californicus)",
+      "Gaviotín apizarrado (Onychoprion lunatus)"
     ],
     "fuentes": [
       {

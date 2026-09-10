@@ -250,6 +250,33 @@ ECO_ID curados son de Puerto Rico. Vuelven cuando se curen los de Cuba y La Espa
 > 12 fichas con menos de tres y el script dice 0, y hasta que no se mida con un
 > instrumento confiable ninguno de los dos números sirve para decidir nada.
 >
+> **Tandas 2 a 4, el 10/09/2026: Sudamérica queda cerrada.** Las 37 fichas que
+> faltaban, en tres tandas por región. Amazonía y Andes y Pacífico —las tres
+> Amazonías de tierra firme, várzeas e igapós, campinaranas, babaçu, páramos,
+> bosques montanos, valles interandinos, las dos punas, montañas del Caribe,
+> Chocó ecuatoriano, bosques secos de Tumbes, humedales de Guayaquil y manglares
+> del Pacífico—; Brasil seco y los humedales del sur —Caatinga y sus brejos,
+> campos rupestres, Mato Grosso, Chiquitano, Pantanal, Beni, Chaco húmedo y
+> humedales del Paraná—; y Mata Atlántica, campos del sur y las islas oceánicas
+> —costera, interior, seca, restingas, araucaria, manglares del Atlántico sur,
+> campos uruguayos, Malpelo, Rapa Nui, Desventuradas, Galápagos y Juan Fernández—.
+>
+> El paquete pasó de **126 a 638 caracteres** de `suelos` de promedio,
+> **ninguna ficha por debajo de 200** y **ninguna con 5 especies o menos**: las
+> 47 tienen siete y con binomial.
+>
+> **Queda una desprolijidad nueva, dicha para que no sorprenda:** Sudamérica
+> ahora escribe más largo que América (638 contra 359). No es un defecto —el
+> texto largo es el que dice el mecanismo— pero es disparejo, y si alguna vez
+> hay que emparejar, lo que hay que subir es América, no bajar Sudamérica.
+>
+> **Y una nota de proceso.** El archivo generado
+> `lib/biomasRegionalesSudamerica.ts` de estas tres tandas no entró por un
+> commit propio: quedó adentro del merge `32f80e3`, que otra sesión estaba
+> cerrando en el mismo árbol de trabajo al mismo tiempo. El contenido está
+> completo y verificado en HEAD, pero el historial no lo muestra donde uno lo
+> buscaría. Trabajar dos sesiones sobre la misma copia de trabajo hace esto.
+>
 > **Y una corrección de la medición anterior.** Este informe decía que Canadá
 > tenía las 10 fichas sin fuentes. Era falso, y el error era del script que las
 > contaba: Canadá cita por constante compartida —`[CANSIS_ECO, CANSIS_SUELOS,

@@ -44,3 +44,10 @@ POSTDEPLOY_CHECKLIST.md
 apps/web/_seed/
 
 .vercel
+
+# Artefactos de compilación y logs sueltos: se regeneran, y su ruido tapa los
+# cambios de verdad en el estado del repo.
+*.tsbuildinfo
+next-env.d.ts
+_gen.err
+_gen.out
