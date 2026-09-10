@@ -1090,14 +1090,16 @@
     "resumen": "Bosques húmedos sobre geología muy antigua del Escudo Guayanés y cuencas Negro–Branco, con endemismo elevado y extensas áreas continuas.",
     "vegetacion": "Bosques altos siempreverdes, palmares y bosques de piedemonte; especies de madera densa y mosaicos sobre arenas blancas o rocas precámbricas.",
     "fauna": "Jaguar, tapir, gallito de las rocas, águila harpía, monos y una ictiofauna muy diversa.",
-    "suelos": "Suelos extremadamente meteorizados, ácidos y oligotróficos; arenas blancas y afloramientos generan mosaicos edáficos de baja resiliencia.",
+    "suelos": "Suelos lavados hasta el fondo, ácidos y oligotróficos, y en manchones arena blanca cuarzosa que es prácticamente un podzol sin reserva ninguna. El nutriente no está en el suelo sino arriba, en la biomasa y en un tapiz de raíces finas que atrapa lo que cae de la hojarasca antes de que llegue al perfil: por eso el bosque se sostiene sobre nada y por eso, cuando se lo saca, no queda nada. Sobre arena blanca la vegetación no vuelve en escala humana, y ahí la decisión honesta es no abrir. En los suelos de arcilla el sistema que funciona es el de parcela chica con descanso largo y árbol permanente.",
     "saberes": [],
     "especies": [
-      "Greenheart",
-      "Wallaba",
-      "Mora",
-      "Balatá",
-      "Palmas Euterpe"
+      "Greenheart (Chlorocardium rodiei)",
+      "Wallaba (Eperua falcata)",
+      "Mora (Mora excelsa)",
+      "Balatá (Manilkara bidentata)",
+      "Palma manaca (Euterpe oleracea)",
+      "Purpleheart (Peltogyne venosa)",
+      "Kakaralli (Eschweilera spp.)"
     ],
     "fuentes": [
       {
@@ -1153,14 +1155,16 @@
     "resumen": "Pantanos forestados y bosques deltaicos de muy baja pendiente, controlados por inundación dulce, mareas y sedimentos costeros.",
     "vegetacion": "Palmares pantanosos, bosques de pantano, herbazales y transiciones a manglar; canales y diques naturales producen mosaicos finos.",
     "fauna": "Manatí antillano y amazónico según cuenca, nutria gigante, caimanes, ibis, garzas y peces estuarinos.",
-    "suelos": "Suelos hidromorfos, arcillosos u orgánicos, con anoxia prolongada; salinidad variable cerca de estuarios.",
+    "suelos": "Suelos hidromorfos, arcillosos u orgánicos, con anoxia buena parte del año y con azufre heredado del sedimento marino: drenarlos los vuelve ácidos de forma permanente, igual que en el manglar vecino. Lo único trabajable son los albardones, los lomos de sedimento grueso que el río deja al costado del canal, y ahí es donde está históricamente el conuco y el cacao. Detrás del albardón el bajo se inunda y sólo sirve para palma. En seco la cuña salina sube por los caños varios kilómetros, así que el agua que sirve en agosto puede no servir en marzo.",
     "saberes": [],
     "especies": [
-      "Mora excelsa",
-      "Euterpe oleracea",
-      "Mauritia flexuosa",
-      "Pterocarpus officinalis",
-      "Heliconias"
+      "Mora (Mora excelsa)",
+      "Açaí (Euterpe oleracea)",
+      "Moriche (Mauritia flexuosa)",
+      "Sangre de drago (Pterocarpus officinalis)",
+      "Heliconias (Heliconia spp.)",
+      "Temiche (Manicaria saccifera)",
+      "Cacao (Theobroma cacao)"
     ],
     "fuentes": [
       {
@@ -1211,14 +1215,16 @@
     "resumen": "Montañas y mesetas de arenisca aisladas sobre el Escudo Guayanés, con gradientes abruptos, nubes frecuentes y altísimo endemismo.",
     "vegetacion": "Bosques montanos, matorrales, turberas, sabanas de altura y vegetación rupícola; cada tepuy funciona como isla biogeográfica.",
     "fauna": "Gallito de las rocas, ranas y lagartijas endémicas, pequeños mamíferos y aves de montaña.",
-    "suelos": "Suelos someros, ácidos y extremadamente pobres sobre areniscas; turberas locales almacenan agua y carbono.",
+    "suelos": "Sobre la arenisca del tepuy casi no hay suelo mineral: hay turba ácida y arena de cuarzo puro, con una pobreza de nutrientes tan extrema que la vegetación resolvió el nitrógeno comiendo insectos en vez de tomarlo del perfil. La turba está saturada y esa agua es la que alimenta los ríos de abajo; si se seca una vez, se oxida y no vuelve a formarse en escala humana. Una huella de pisada llega a la roca desnuda y queda a la vista por décadas. Acá el manejo correcto no es productivo sino de tránsito: por dónde se camina y dónde no se prende fuego.",
     "saberes": [],
     "especies": [
-      "Heliamphora",
-      "Bonnetia",
-      "Stegolepis",
-      "Brocchinia",
-      "Orquídeas tepuyanas"
+      "Heliamphora (Heliamphora spp.)",
+      "Bonnetia (Bonnetia roraimae)",
+      "Stegolepis (Stegolepis guianensis)",
+      "Brocchinia (Brocchinia reducta)",
+      "Orquídeas tepuyanas (Epidendrum spp.)",
+      "Drosera (Drosera roraimae)",
+      "Turbera de Sphagnum (Sphagnum spp.)"
     ],
     "fuentes": [
       {
@@ -1526,14 +1532,16 @@
     "resumen": "Bosques húmedos de tierras bajas y piedemontes del Catatumbo, Magdalena y Urabá, entre Andes y Caribe.",
     "vegetacion": "Bosques altos con palmeras, ceibas, leguminosas, lianas y humedales ribereños; transiciones rápidas hacia bosque seco.",
     "fauna": "Jaguar, tapir, mono araña, paujiles, tucanes y anfibios tropicales.",
-    "suelos": "Aluviales jóvenes en valles y suelos meteorizados en colinas; drenaje y fertilidad varían mucho con terraza y río.",
+    "suelos": "Dos suelos distintos a pocos metros uno del otro: en la vega, aluviones jóvenes y profundos que el río repone en cada creciente y que son la mejor tierra de la región; en la loma, arcillas rojas muy meteorizadas, ácidas y de fertilidad baja, que se ven parecidas y no lo son. La distinción vega/loma explica casi todo el rendimiento y casi todos los errores de plantación. En la loma el problema real es la compactación: ganado en pendiente y en húmedo cierra el poro, el agua deja de entrar y empieza a correr, y a partir de ahí la pérdida de suelo es rápida.",
     "saberes": [],
     "especies": [
-      "Ceiba",
-      "Cativo",
-      "Caracolí",
-      "Palma milpesos",
-      "Cedro"
+      "Ceiba (Ceiba pentandra)",
+      "Cativo (Prioria copaifera)",
+      "Caracolí (Anacardium excelsum)",
+      "Palma milpesos (Oenocarpus bataua)",
+      "Cedro (Cedrela odorata)",
+      "Guácimo (Guazuma ulmifolia)",
+      "Nogal cafetero (Cordia alliodora)"
     ],
     "fuentes": [
       {
@@ -1710,14 +1718,16 @@
     "resumen": "Bosques tropicales deciduos y matorrales estacionales de llanuras interiores y cuencas caribeñas, con sequía anual marcada.",
     "vegetacion": "Bosque bajo a mediano que pierde hojas, cardonales, espinares, palmares y bosques ribereños persistentes.",
     "fauna": "Venado cola blanca, pecarí, ocelote, iguanas, guacamayas y aves de bosque seco.",
-    "suelos": "Suelos desde aluviales relativamente fértiles hasta arcillosos y salinos; alta erosión al retirar cobertura durante la estación seca.",
+    "suelos": "Mezcla de aluviones fértiles en los valles y Vertisoles arcillosos que se agrietan en seco y se vuelven intrabajables en húmedo, con manchas salinas cerca de la costa. La ventana de laboreo es corta y no se negocia: fuera de ella la máquina compacta o no entra. El riesgo grande es la estación seca con el suelo descubierto, porque el árbol pierde la hoja justo cuando llegan las primeras lluvias fuertes y ahí se va el suelo en pocas horas. La raíz de este bosque baja mucho más de lo que sugiere el porte, y es lo que explica que rebrote solo si se lo deja: la regeneración acá sale del tocón, no de la semilla.",
     "saberes": [],
     "especies": [
-      "Dividivi",
-      "Caracolí",
-      "Ceiba",
-      "Cují",
-      "Guayacán"
+      "Dividivi (Libidibia coriaria)",
+      "Caracolí (Anacardium excelsum)",
+      "Ceiba (Ceiba pentandra)",
+      "Cují (Prosopis juliflora)",
+      "Guayacán (Bulnesia arborea)",
+      "Trupillo (Vachellia farnesiana)",
+      "Guácimo (Guazuma ulmifolia)"
     ],
     "fuentes": [
       {
@@ -2117,14 +2127,16 @@
     "resumen": "Extensas sabanas tropicales sobre el Escudo Guayanés, interrumpidas por bosques de galería, humedales y serranías.",
     "vegetacion": "Pastizales, sabanas arbustivas, morichales y bosques ribereños; la humedad del suelo y el fuego producen mosaicos.",
     "fauna": "Oso hormiguero gigante, venado, jaguar, armadillos, aves de pastizal y peces de cabeceras.",
-    "suelos": "Suelos viejos, ácidos y pobres, a menudo arenosos; depresiones estacionales presentan hidromorfía.",
+    "suelos": "Oxisoles y Ultisoles de los más viejos del mundo: llevan tanto tiempo lavándose que ya casi no queda mineral que aporte nada, el fósforo es el nutriente que falta siempre y la saturación de aluminio ronda el ochenta por ciento. Debajo hay plintita, una capa moteada de hierro que mientras está húmeda se corta con pala y que expuesta al sol y al ciclo seco endurece en piedra que ya no vuelve atrás: por eso el corte de camino y el destronque total son irreversibles acá. La fertilidad que hay está en el entramado de raíces del pastizal, no en el perfil, y los morichales marcan dónde está el agua todo el año.",
     "saberes": [],
     "especies": [
-      "Trachypogon",
-      "Moriche",
-      "Curatella americana",
-      "Byrsonima",
-      "Axonopus"
+      "Trachypogon (Trachypogon spicatus)",
+      "Moriche (Mauritia flexuosa)",
+      "Chaparro (Curatella americana)",
+      "Manteco (Byrsonima crassifolia)",
+      "Axonopus (Axonopus purpusii)",
+      "Merey de sabana (Anacardium occidentale)",
+      "Palma llanera (Copernicia tectorum)"
     ],
     "fuentes": [
       {
@@ -2175,14 +2187,16 @@
     "resumen": "Sabanas tropicales de la cuenca del Orinoco con alternancia anual entre sequía e inundación y grandes gradientes de drenaje.",
     "vegetacion": "Pastizales abiertos, sabanas arboladas, morichales, esteros y bosques de galería; bancos, bajos y esteros sostienen comunidades distintas.",
     "fauna": "Chigüiro, venado de cola blanca, oso hormiguero, caimán del Orinoco, anaconda y grandes bandadas de aves acuáticas.",
-    "suelos": "Predominan suelos ácidos y pobres; planicies aluviales alternan anoxia e intensa desecación, mientras bancos elevados drenan mejor.",
+    "suelos": "Oxisoles ácidos de la altillanura con saturación de aluminio por encima del ochenta por ciento y pH cerca de cuatro y medio: la raíz no baja, y como no baja, la seca de tres meses la mata aunque haya agua a un metro. La cal en superficie no corrige eso porque el calcio casi no migra; lo que cambió la región fue incorporarla en profundidad una sola vez, con yeso para el aluminio del subsuelo, y eso es inversión de años, no de campaña. La otra lectura es el relieve, que acá se mide en decímetros: el banco drena y se siembra, el bajo se anega, el estero es agua parte del año. Y hay plintita: expuesta, endurece y no vuelve.",
     "saberes": [],
     "especies": [
-      "Moriche",
-      "Chaparra",
-      "Samán",
-      "Trachypogon",
-      "Palma llanera"
+      "Moriche (Mauritia flexuosa)",
+      "Chaparro (Curatella americana)",
+      "Samán (Samanea saman)",
+      "Trachypogon (Trachypogon vestitus)",
+      "Palma llanera (Copernicia tectorum)",
+      "Alcornoco (Bowdichia virgilioides)",
+      "Merecure (Licania pyrifolia)"
     ],
     "fuentes": [
       {
@@ -2534,14 +2548,16 @@
     "resumen": "Complejo de esteros, lagunas, sabanas inundables y bosques ribereños regido por el pulso anual del Orinoco y sus tributarios.",
     "vegetacion": "Herbazales acuáticos, morichales, bosques de galería y vegetación flotante; comunidades cambian con profundidad y duración del agua.",
     "fauna": "Caimán del Orinoco, tonina, manatí, chigüiro, anaconda, peces migratorios y aves acuáticas.",
-    "suelos": "Aluviales e hidromorfos con periodos de anoxia y desecación; sedimentos y conectividad lateral sostienen productividad.",
+    "suelos": "Suelos aluviales e hidromorfos que hace el pulso de creciente y no el clima: cuatro o cinco meses bajo agua sin oxígeno y otros tantos de desecación dura, y en ese vaivén se libera el nutriente que sostiene la productividad. Cortar la conexión lateral con un terraplén o una vía deja el suelo de un lado sin el sedimento anual y del otro con agua estancada, y ambos lados pierden. El estero se agrieta al secarse y esas grietas son por donde entra el agua del año siguiente. La cota manda: treinta centímetros separan lo que se puede sembrar de lo que sólo aguanta pasto.",
     "saberes": [],
     "especies": [
-      "Moriche",
-      "Congrio",
-      "Bora",
-      "Paspalum inundable",
-      "Victoria amazónica"
+      "Moriche (Mauritia flexuosa)",
+      "Congrio (Acosmium nitens)",
+      "Bora (Eichhornia crassipes)",
+      "Paspalum inundable (Paspalum fasciculatum)",
+      "Victoria amazónica (Victoria amazonica)",
+      "Chigüire (Hydrochoerus hydrochaeris)",
+      "Palma llanera (Copernicia tectorum)"
     ],
     "fuentes": [
       {
@@ -2911,14 +2927,16 @@
     "resumen": "Cardonales y matorrales áridos de la costa caribeña de Colombia y Venezuela, bajo lluvias escasas, alta evaporación y vientos salinos.",
     "vegetacion": "Cactáceas columnares, cujíes, dividivis, agaves, bromelias terrestres y herbazales efímeros.",
     "fauna": "Cardenal guajiro, iguanas, lagartijas, zorros, murciélagos nectarívoros y aves marinas costeras.",
-    "suelos": "Aridisoles someros, pedregosos o arenosos, frecuentemente salinos; costras y dunas son sensibles al tránsito.",
+    "suelos": "Aridisoles someros y pedregosos, muchos con caliche a poca profundidad y con sales que suben por capilaridad apenas se riega sin drenaje de salida. Entre arbusto y arbusto lo que sostiene la superficie es una costra biológica que se rompe de una sola pasada de vehículo y tarda décadas en rehacerse: rota, el alisio de la Guajira se lleva la fracción fina, que es justo la que retiene agua. La lluvia es poca y de golpe, así que lo que define el año no es cuánto llueve sino dónde se frena esa agua, y por eso el jagüey es la obra que decide, no la enmienda.",
     "saberes": [],
     "especies": [
-      "Cardón",
-      "Cují",
-      "Dividivi",
-      "Agave cocui",
-      "Melocactus"
+      "Cardón (Stenocereus griseus)",
+      "Cují (Prosopis juliflora)",
+      "Dividivi (Libidibia coriaria)",
+      "Cocuy (Agave cocui)",
+      "Melocactus (Melocactus curvispinus)",
+      "Trupillo (Vachellia tortuosa)",
+      "Buffel (Cenchrus ciliaris)"
     ],
     "fuentes": [
       {
@@ -2964,14 +2982,16 @@
     "resumen": "Manglares y humedales mareales de grandes deltas y costas sedimentarias del norte sudamericano, modulados por agua dulce, sedimentos y salinidad.",
     "vegetacion": "Bosques de mangle rojo, negro, blanco y botoncillo, marismas, planicies de marea y bosques pantanosos tierra adentro.",
     "fauna": "Manatí, caimanes, nutrias, cangrejos, moluscos, peces juveniles, ibis y garzas.",
-    "suelos": "Lodos finos anóxicos, salobres y ricos en carbono; dependen del intercambio mareal y del aporte fluvial.",
+    "suelos": "Lodos finos sin oxígeno, salobres, con muchísimo carbono guardado y con azufre en forma de pirita. Mientras están inundados no pasa nada; el día que se drenan para una camaronera o un terraplén, la pirita se oxida y el suelo se acidifica hasta pH tres o menos, libera aluminio y hierro, mata la raíz y el pez aguas abajo, y eso no se corrige con encalado en ninguna escala razonable. Es el caso más claro del catálogo donde la decisión correcta es no drenar. El sedimento del río es lo que mantiene la cota frente al mar, así que una presa aguas arriba se siente acá como pérdida de tierra.",
     "saberes": [],
     "especies": [
-      "Mangle rojo",
-      "Mangle negro",
-      "Mangle blanco",
-      "Botoncillo",
-      "Mora de pantano"
+      "Mangle rojo (Rhizophora mangle)",
+      "Mangle negro (Avicennia germinans)",
+      "Mangle blanco (Laguncularia racemosa)",
+      "Botoncillo (Conocarpus erectus)",
+      "Mora de pantano (Mora oleifera)",
+      "Helecho de manglar (Acrostichum aureum)",
+      "Cangrejo azul (Cardisoma guanhumi)"
     ],
     "fuentes": [
       {

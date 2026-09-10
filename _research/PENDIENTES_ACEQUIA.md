@@ -224,6 +224,32 @@ ECO_ID curados son de Puerto Rico. Vuelven cuando se curen los de Cuba y La Espa
 > argumento es que el texto de suelo es donde se apoya el razonamiento de
 > aptitud, Sudamérica está hoy peor que el paquete que este informe señalaba.
 >
+> **Tanda 1 de Sudamérica hecha el 10/09/2026.** El norte: Escudo Guayanés,
+> Orinoco y Caribe suramericano —sabanas guayanesas, manglares del Amazonas y
+> el Orinoco, bosques inundables del delta, Pantepui, matorrales xerófilos del
+> Caribe, bosques húmedos del Caribe colombiano, humedales del Orinoco, Llanos,
+> bosques de tierras bajas del Escudo y bosques secos del Caribe—. Diez fichas
+> con `suelos` nuevo y `especies` de 5 a 7, y en estas diez las especies pasan
+> a llevar binomial, que es como cita el paquete de América.
+>
+> El promedio de `suelos` del paquete sudamericano pasó de **126 a 225
+> caracteres**, y las fichas por debajo de 200 bajaron de **47 a 37**.
+>
+> **Cómo se toca este paquete.** `lib/biomasRegionalesSudamerica.ts` es
+> generado: la fuente es `fichas-ecologicas-nuevas.json` y el montaje es
+> `montar-sudamerica.mjs`. Editar el archivo de `lib/` funciona hasta el
+> próximo montaje y después se pierde. Esta tanda entró por el JSON y se montó,
+> así que el cambio sobrevive.
+>
+> **Una medición mal hecha, anotada para no repetirla.** Al medir el archivo
+> generado con una expresión regular, el promedio dio 397 caracteres y cero
+> fichas por debajo de 200 —los dos números falsos, por la misma clase de error
+> que había inventado lo de las fuentes de Canadá—. Los números de arriba están
+> medidos sobre el JSON, que es dato y no texto a parsear. **La cuenta de
+> fuentes de América sigue sin verificar** por esa misma razón: el informe dice
+> 12 fichas con menos de tres y el script dice 0, y hasta que no se mida con un
+> instrumento confiable ninguno de los dos números sirve para decidir nada.
+>
 > **Y una corrección de la medición anterior.** Este informe decía que Canadá
 > tenía las 10 fichas sin fuentes. Era falso, y el error era del script que las
 > contaba: Canadá cita por constante compartida —`[CANSIS_ECO, CANSIS_SUELOS,
