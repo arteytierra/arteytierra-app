@@ -206,6 +206,24 @@ ECO_ID curados son de Puerto Rico. Vuelven cuando se curen los de Cuba y La Espa
 > Movió el promedio del paquete de **154 a 219 caracteres** de `suelos`, y las
 > fichas con 4 especies o menos de **35 a 25**. Quedan **cuatro tandas**.
 >
+> **Tandas 2 y 3 hechas el 09/09/2026.** Otras veinte fichas, con el mismo
+> criterio de elegir las de `suelos` más corto. La tanda 2 fue EE.UU. y Alaska
+> —taiga y tundra de Alaska, Grandes Llanuras, sabanas de pino largo, bajo
+> Mississippi, Palouse–Willamette, California interior, Pacífico Noroeste,
+> Ozarks y Apalaches—; la tanda 3, México, la Gran Cuenca y las Californias
+> —Altiplano, matorrales altos de Hawái, Pacífico sur y Chiapas, Sierras Madre,
+> Eje Volcánico y Bajío, Veracruz–Tabasco, Baja California, Selva Maya, Gran
+> Cuenca y chaparral costero—.
+>
+> Con esto el paquete de América quedó en **359 caracteres** de `suelos` de
+> promedio, a la par de Canadá (363), y **ninguna ficha con 4 especies o menos**.
+> El bloque 3 está cerrado para América.
+>
+> **Lo que sigue estando flaco es Sudamérica**, no EE.UU.: 47 fichas con un
+> `suelos` de **126 caracteres** de promedio y las 47 por debajo de 200. Si el
+> argumento es que el texto de suelo es donde se apoya el razonamiento de
+> aptitud, Sudamérica está hoy peor que el paquete que este informe señalaba.
+>
 > **Y una corrección de la medición anterior.** Este informe decía que Canadá
 > tenía las 10 fichas sin fuentes. Era falso, y el error era del script que las
 > contaba: Canadá cita por constante compartida —`[CANSIS_ECO, CANSIS_SUELOS,
