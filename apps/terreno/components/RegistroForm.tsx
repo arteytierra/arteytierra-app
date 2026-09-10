@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 /** Destino post-registro: `?next=` si es una ruta interna segura, si no el mapa. */
 function destinoNext(): string {
   if (typeof window === 'undefined') return '/mapa';
-  const n = new URLSearchParams(window.location.search).get('next');
-  return n && n.startsWith('/') ? n : '/mapa';
+  // La comprobación anterior era `startsWith('/')`, que deja pasar
+  // `//sitio-externo.com`. Ver lib/rutaInterna.ts.
+  return rutaInterna(new URLSearchParams(window.location.search).get('next'));
 }
 
 export function RegistroForm() {
@@ -24,7 +26,7 @@ export function RegistroForm() {
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get('next');
-    if (n) setLoginHref(`/login?next=${encodeURIComponent(n)}`);
+    if (n) setLoginHref(`/login?next=${encodeURIComponent(rutaInterna(n))}`);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {

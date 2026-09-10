@@ -1,0 +1,15 @@
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+/*
+ * Al guardar vuelve a /cuenta, que es de donde se llega acá.
+ *
+ * Antes empujaba a /bienvenida, una página que todavía no está en main: la
+ * persona guardaba su nombre y caía en un 404. Cuando el onboarding se
+ * publique, este destino vuelve a ser /bienvenida.
+ */
+export function ProfileCompletionForm({ initialName = '' }: { initialName?: string }) {
+  const router = useRouter(); const [name, setName] = useState(initialName); const [message, setMessage] = useState<string | null>(null); const [loading, setLoading] = useState(false);
+  async function submit(event: React.FormEvent) { event.preventDefault(); setLoading(true); setMessage(null); try { const response = await fetch('/api/cuenta/perfil', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fullName: name }) }); const result = await response.json() as { ok?: boolean; error?: string }; if (!response.ok || !result.ok) throw new Error(result.error || 'No pudimos guardar los cambios.'); router.push('/cuenta'); router.refresh(); } catch (error) { setMessage(error instanceof Error ? error.message : 'No pudimos guardar los cambios.'); setLoading(false); } }
+  return <form onSubmit={submit} className="space-y-5"><div><label className="mb-1.5 block text-sm font-medium text-ink-700">Nombre completo</label><input required minLength={2} maxLength={120} value={name} onChange={e => setName(e.target.value)} autoComplete="name" placeholder="Cómo querés que te llamemos" className="w-full rounded-lg border border-bone-200 bg-white px-3 py-2.5 text-sm focus:border-moss-500 focus:outline-none focus:ring-2 focus:ring-moss-500/40" /></div><p className="text-xs leading-relaxed text-ink-700/60">Lo usamos para personalizar la bienvenida y las comunicaciones de la cuenta. No modifica el correo con el que ingresás.</p>{message && <p role="alert" className="rounded-lg bg-danger-500/8 px-3 py-2 text-sm text-danger-500">{message}</p>}<button disabled={loading} type="submit" className="w-full rounded-lg bg-moss-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{loading ? 'Guardando…' : 'Guardar y continuar'}</button></form>;
+}
