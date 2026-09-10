@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/db/server';
-import { safeInternalPath } from '@/lib/navigation';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = safeInternalPath(searchParams.get('next'), '/mapa');
+  const next = rutaInterna(searchParams.get('next'), '/mapa');
 
   if (code) {
     const supabase = await createSupabaseServerClient();

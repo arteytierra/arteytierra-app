@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
-import { safeInternalPath } from '@/lib/navigation';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 const stateMessages: Record<string, { text: string; positive?: boolean }> = {
   'sesion-vencida': { text: 'Tu sesión terminó por seguridad. Volvé a ingresar para continuar.' },
@@ -17,7 +17,7 @@ const stateMessages: Record<string, { text: string; positive?: boolean }> = {
 function destinoNext(): string {
   if (typeof window === 'undefined') return '/mapa';
   const n = new URLSearchParams(window.location.search).get('next');
-  return safeInternalPath(n, '/mapa');
+  return rutaInterna(n, '/mapa');
 }
 
 export function LoginForm({ initialState, nextPath = '/mapa' }: { initialState?: string; nextPath?: string }) {
@@ -33,7 +33,7 @@ export function LoginForm({ initialState, nextPath = '/mapa' }: { initialState?:
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get('next');
-    const safe = safeInternalPath(n, nextPath);
+    const safe = rutaInterna(n, nextPath);
     setRegistroHref(`/registro?next=${encodeURIComponent(safe)}`);
   }, [nextPath]);
 
@@ -51,7 +51,7 @@ export function LoginForm({ initialState, nextPath = '/mapa' }: { initialState?:
       return;
     }
 
-    router.push(safeInternalPath(destinoNext(), nextPath));
+    router.push(rutaInterna(destinoNext(), nextPath));
     router.refresh();
   }
 
@@ -61,7 +61,7 @@ export function LoginForm({ initialState, nextPath = '/mapa' }: { initialState?:
     const supabase = getSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeInternalPath(destinoNext(), nextPath))}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(rutaInterna(destinoNext(), nextPath))}` },
     });
     if (error) {
       setError('No pudimos abrir el acceso con Google. Probá nuevamente.');

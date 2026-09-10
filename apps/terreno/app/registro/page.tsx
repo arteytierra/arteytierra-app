@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { RegistroForm } from '@/components/RegistroForm';
-import { safeInternalPath } from '@/lib/navigation';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 export const metadata = { title: 'Crear cuenta' };
 
 export default async function RegistroPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const query = await searchParams;
   const user = await getCurrentUser();
-  if (user) redirect(safeInternalPath(query.next, '/bienvenida'));
+  if (user) redirect(rutaInterna(query.next, '/bienvenida'));
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bone-50 px-4">

@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { LoginForm } from '@/components/LoginForm';
-import { safeInternalPath } from '@/lib/navigation';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 export const metadata = { title: 'Ingresar' };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ estado?: string; next?: string }> }) {
   const query = await searchParams;
-  const nextPath = safeInternalPath(query.next, '/mapa');
+  const nextPath = rutaInterna(query.next, '/mapa');
   const user = await getCurrentUser();
   if (user) redirect(nextPath);
 

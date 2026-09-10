@@ -2,6 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/db/server';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 export interface SessionUser {
   id: string;
@@ -27,8 +28,17 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   };
 });
 
-export async function requireUser(returnTo = '/mapa'): Promise<SessionUser> {
+/**
+ * Exige sesión. Si no hay, manda a /login y vuelve acá después de entrar.
+ *
+ * `volverA` se valida igual que cualquier otro `next=`, aunque hoy lo escriba
+ * siempre nuestro propio código: si mañana alguien lo arma con un dato de la
+ * URL, no se convierte en una puerta de salida del sitio.
+ */
+export async function requireUser(volverA = '/mapa'): Promise<SessionUser> {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?estado=sesion-vencida&next=${encodeURIComponent(returnTo)}`);
+  if (!user) {
+    redirect(`/login?estado=sesion-vencida&next=${encodeURIComponent(rutaInterna(volverA))}`);
+  }
   return user;
 }

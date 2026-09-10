@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/db/browser';
-import { safeInternalPath } from '@/lib/navigation';
+import { rutaInterna } from '@/lib/rutaInterna';
 
 /** Destino post-registro: `?next=` si es una ruta interna segura, si no la bienvenida. */
 function destinoNext(): string {
   if (typeof window === 'undefined') return '/bienvenida';
   const n = new URLSearchParams(window.location.search).get('next');
-  return safeInternalPath(n, '/bienvenida');
+  return rutaInterna(n, '/bienvenida');
 }
 
 export function RegistroForm() {
@@ -25,7 +25,7 @@ export function RegistroForm() {
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get('next');
-    const safe = safeInternalPath(n, '/bienvenida');
+    const safe = rutaInterna(n, '/bienvenida');
     setLoginHref(`/login?next=${encodeURIComponent(safe)}`);
   }, []);
 
