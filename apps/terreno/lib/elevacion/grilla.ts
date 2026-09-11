@@ -48,8 +48,8 @@ async function abrirVentana(latTile: number, lonTile: number, bbox: BBox): Promi
 
   const toPx = (lng: number) => ((lng - minX) / (maxX - minX)) * W;
   const toPy = (lat: number) => ((maxY - lat) / (maxY - minY)) * H;
-  let x0 = Math.max(0, Math.floor(toPx(iw)));
-  let y0 = Math.max(0, Math.floor(toPy(inn)));   // inn = norte → py menor
+  const x0 = Math.max(0, Math.floor(toPx(iw)));
+  const y0 = Math.max(0, Math.floor(toPy(inn)));   // inn = norte → py menor
   const x1 = Math.min(W, Math.ceil(toPx(ie)) + 1);
   const y1 = Math.min(H, Math.ceil(toPy(is)) + 1);
   const ww = x1 - x0, hh = y1 - y0;

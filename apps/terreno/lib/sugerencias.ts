@@ -234,7 +234,7 @@ export function calcularSugerencias(
   celdaBorde.sort((a, b) => a.elevation - b.elevation);
   const entrada = celdaBorde[0]!;
 
-  let camino: Array<{ lat: number; lng: number }> = [];
+  const camino: Array<{ lat: number; lng: number }> = [];
   let longitudTotal = 0;
   let pendienteMedia = 0;
 

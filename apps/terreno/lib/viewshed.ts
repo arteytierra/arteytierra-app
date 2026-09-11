@@ -72,7 +72,7 @@ export function calcularViewshed(ds: DatosShader, oRow: number, oCol: number, al
       const targetSlope = (c.elevation - eyeZ) / distM;
       // Marcha por la línea de visión, acumulando la pendiente máxima intermedia.
       const pasos = Math.max(2, Math.ceil(distCells));
-      let maxSlope = -Infinity, bloqueado = false;
+      let maxSlope = -Infinity;
       for (let s = 1; s < pasos; s++) {
         const f = s / pasos;
         const zt = bilinear(or + dRow * f, oc + dCol * f);
@@ -81,7 +81,6 @@ export function calcularViewshed(ds: DatosShader, oRow: number, oCol: number, al
         const slope = (zt - eyeZ) / dm;
         if (slope > maxSlope) maxSlope = slope;
       }
-      void bloqueado;
       visible = targetSlope >= maxSlope - 1e-6;
     }
     if (visible) visibles++;

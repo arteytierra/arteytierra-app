@@ -200,8 +200,8 @@ function filletPolilinea(pts: Local[], radio: number, cerrada: boolean): Local[]
     const bis = vnorm({ x: u.x + w.x, y: u.y + w.y });
     const dCent = r / Math.sin(ang / 2);
     const O = { x: B.x + bis.x * dCent, y: B.y + bis.y * dCent };
-    let a1 = Math.atan2(P1.y - O.y, P1.x - O.x);
-    let a2 = Math.atan2(P2.y - O.y, P2.x - O.x);
+    const a1 = Math.atan2(P1.y - O.y, P1.x - O.x);
+    const a2 = Math.atan2(P2.y - O.y, P2.x - O.x);
     let dA = a2 - a1;
     while (dA > Math.PI) dA -= 2 * Math.PI;
     while (dA < -Math.PI) dA += 2 * Math.PI;

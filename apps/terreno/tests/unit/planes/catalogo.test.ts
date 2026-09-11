@@ -36,8 +36,9 @@ describe('catálogo de planes', () => {
 
     const orden = ['semilla', 'personal', 'disenador', 'estudio'] as const;
     for (let i = 1; i < orden.length; i += 1) {
-      expect(LIMITE_PROYECTOS[orden[i]]).toBeGreaterThan(LIMITE_PROYECTOS[orden[i - 1]]);
-      expect(Number.isFinite(LIMITE_PROYECTOS[orden[i]])).toBe(true);
+      const actual = orden[i]!, previo = orden[i - 1]!;
+      expect(LIMITE_PROYECTOS[actual]).toBeGreaterThan(LIMITE_PROYECTOS[previo]);
+      expect(Number.isFinite(LIMITE_PROYECTOS[actual])).toBe(true);
     }
   });
 
