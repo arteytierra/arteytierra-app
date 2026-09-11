@@ -56,7 +56,8 @@ export async function guardarProyecto(
   if (!user) throw new Error('No hay sesión activa.');
 
   // Tope de proyectos por plan (feedback inmediato; el trigger en DB es el que
-  // enforcea de verdad). Semilla = 1, Personal = 2, resto ilimitado.
+  // enforcea de verdad). Los números viven en LIMITE_PROYECTOS, y la migración
+  // 0053 los repite del lado de la base: si cambia uno, tiene que cambiar el otro.
   const limite = LIMITE_PROYECTOS[plan];
   if (Number.isFinite(limite)) {
     const { count } = await tabla()

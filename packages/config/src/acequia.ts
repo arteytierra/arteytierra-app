@@ -16,7 +16,7 @@ export interface AcequiaPlanDefinition {
 export const ACEQUIA_PLANS: Record<AcequiaInternalPlanId, AcequiaPlanDefinition> = {
   semilla: { publicId: 'semilla', internalId: 'semilla', name: 'Semilla', monthlyUsd: null, annualUsd: null },
   personal: { publicId: 'personal', internalId: 'personal', name: 'Personal', monthlyUsd: 7, annualUsd: 70 },
-  disenador: { publicId: 'profesional', internalId: 'disenador', name: 'Profesional', monthlyUsd: 12, annualUsd: 120 },
+  disenador: { publicId: 'profesional', internalId: 'disenador', name: 'Profesional', monthlyUsd: 15, annualUsd: 150 },
   estudio: { publicId: 'estudio', internalId: 'estudio', name: 'Estudio', monthlyUsd: 35, annualUsd: 350 },
 };
 

@@ -17,8 +17,8 @@ import { ACEQUIA_PLANS, type AcequiaInternalPlanId } from '@arteytierra/config/a
 export type Plan = AcequiaInternalPlanId;
 
 /** Orden de los planes: un plan habilita todo lo de los planes inferiores.
- *  Personal y Profesional comparten features (misma capa desbloqueada); se
- *  diferencian sólo en LIMITE_PROYECTOS. */
+ *  Personal y Profesional comparten la capa de análisis y diseño; se
+ *  diferencian en LIMITE_PROYECTOS y en el informe con marca propia. */
 const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, disenador: 2, estudio: 3 };
 
 export const PLANES: Plan[] = ['semilla', 'personal', 'disenador', 'estudio'];
@@ -68,8 +68,8 @@ export type Feature =
   | 'colaboracion';
 
 // El plan pago MÍNIMO es 'personal' (desbloquea todo el análisis y diseño).
-// Profesional hereda lo mismo; sólo suma proyectos ilimitados. Las de 'estudio'
-// quedan reservadas al tier superior.
+// Profesional hereda lo mismo y suma más proyectos y el informe con marca
+// propia. Las de 'estudio' quedan reservadas al tier superior.
 //
 // MUESTRA GRATIS (semilla, 2026-08-15): aunque usen API externa, se abren como
 // vitrina del producto — clima, topografía, cuenca (usa el DEM) y sectores.
@@ -105,7 +105,7 @@ const FEATURES: Record<Feature, Plan> = {
   'sugerencias':         'personal',
   // Entrega.
   'informe.sin_marca':   'personal',
-  'informe.white_label': 'estudio',
+  'informe.white_label': 'disenador',
   'export.gis':          'personal',
   'export.dxf':          'estudio',
   'colaboracion':        'estudio',
@@ -121,12 +121,13 @@ export function planMinimo(feature: Feature): Plan {
   return FEATURES[feature];
 }
 
-/** Límite de proyectos activos por plan (Infinity = sin tope). */
+/** Límite de proyectos activos por plan (Infinity = sin tope).
+ *  Espejo exacto de la migración 0053: los dos lados tienen que decir lo mismo. */
 export const LIMITE_PROYECTOS: Record<Plan, number> = {
   semilla:   1,
   personal:  2,
-  disenador: Infinity,
-  estudio:   Infinity,
+  disenador: 10,
+  estudio:   50,
 };
 
 /**
