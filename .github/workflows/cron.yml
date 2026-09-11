@@ -10,6 +10,10 @@ on:
     - cron: '0 9 1 * *'    # monthly-referral-payouts — mensual día 1, 09:00 UTC
     - cron: '0 4 * * 0'    # reindex-search — semanal (domingo)
     - cron: '*/15 * * * *' # live-session-reminders — cada 15 min
+    - cron: '*/10 * * * *' # process-webhook-deliveries — cada 10 min
+    - cron: '30 2 * * *'   # process-scheduled-deletions — diaria 02:30 UTC
+    - cron: '0 5 * * 1'    # weekly-db-snapshot — semanal (lunes)
+    - cron: '40 4 * * *'   # refresh-recommendations — diaria 04:40 UTC
 
 concurrency:
   group: cron-${{ github.event.schedule || github.event_name }}
@@ -71,3 +75,39 @@ jobs:
       - run: |
           curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://arteytierra.org/api/cron/live-session-reminders
+
+  # Los cuatro de abajo existían en lib/jobs/handlers.ts pero no los llamaba
+  # nadie: ni este workflow ni los crons de vercel.json. Es decir, nunca
+  # corrieron. El más grave era process-scheduled-deletions, que es el que
+  # ejecuta los pedidos de borrado de cuenta que promete /privacidad.
+  process-webhook-deliveries:
+    if: github.event.schedule == '*/10 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/process-webhook-deliveries
+
+  process-scheduled-deletions:
+    if: github.event.schedule == '30 2 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/process-scheduled-deletions
+
+  weekly-db-snapshot:
+    if: github.event.schedule == '0 5 * * 1' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/weekly-db-snapshot
+
+  refresh-recommendations:
+    if: github.event.schedule == '40 4 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://arteytierra.org/api/cron/refresh-recommendations

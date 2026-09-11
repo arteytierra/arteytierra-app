@@ -19,9 +19,24 @@ const BUCKET = 'scholarships';
 const MAX_PHOTOS = 6;
 const NOTIFY_EMAIL = 'info.arteytierra@gmail.com';
 
+/** El formulario es público: todo lo que llega se escapa antes de entrar al HTML del mail. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const EXTENSIONES_OK = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif']);
+
 export async function createOficioUploadUrlAction(input: { filename: string }) {
   const safe = input.filename.trim().replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
   if (!safe) throw new Error('Falta nombre de archivo');
+  // La acción es pública (el formulario no pide cuenta), así que al menos el
+  // bucket sólo recibe imágenes y no cualquier cosa que alguien quiera alojar.
+  const ext = safe.includes('.') ? safe.split('.').pop()!.toLowerCase() : '';
+  if (!EXTENSIONES_OK.has(ext)) throw new Error('Sólo aceptamos imágenes (jpg, png, webp, heic)');
   const path = `oficio/${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${safe}`;
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.storage.from(BUCKET).createSignedUploadUrl(path);
@@ -115,8 +130,8 @@ export async function submitOficioApplicationAction(input: OficioApplicationInpu
           .map(
             ([label, val]) => `
         <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:12px;font-weight:700;color:#7A6F65;width:130px;vertical-align:top;">${label}</td>
-          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:13px;color:#2D2416;">${val}</td>
+          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:12px;font-weight:700;color:#7A6F65;width:130px;vertical-align:top;">${esc(label)}</td>
+          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:13px;color:#2D2416;">${esc(val)}</td>
         </tr>`,
           )
           .join('')}
@@ -139,7 +154,7 @@ export async function submitOficioApplicationAction(input: OficioApplicationInpu
   });
   if (!ok) throw new Error('No se pudo enviar la postulación. Probá de nuevo o escribinos por WhatsApp.');
 
-  emitN8nEvent('oficio-applied', {
+  void emitN8nEvent('oficio-applied', {
     nombre,
     email,
     whatsapp,

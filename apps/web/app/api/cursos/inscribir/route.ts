@@ -4,6 +4,15 @@ import { sendEmail } from '@/lib/integrations/resend';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/** El formulario es público: lo que llega se escapa antes de entrar al HTML del mail. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function POST(req: Request) {
   let data: FormData;
   try {
@@ -47,12 +56,12 @@ export async function POST(req: Request) {
     </td></tr>
     <tr><td style="padding:32px;">
       <h2 style="margin:0 0 4px;font-size:20px;color:#2D2416;">Nueva inscripción</h2>
-      <p style="margin:0 0 24px;font-size:13px;color:#7A6F65;">${curso}</p>
+      <p style="margin:0 0 24px;font-size:13px;color:#7A6F65;">${esc(curso)}</p>
       <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E8DCC8;">
         ${rows.map(([label, val]) => `
         <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:12px;font-weight:700;color:#7A6F65;width:90px;vertical-align:top;">${label}</td>
-          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:13px;color:#2D2416;">${val}</td>
+          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:12px;font-weight:700;color:#7A6F65;width:90px;vertical-align:top;">${esc(label)}</td>
+          <td style="padding:10px 0;border-bottom:1px solid #E8DCC8;font-size:13px;color:#2D2416;">${esc(val)}</td>
         </tr>`).join('')}
       </table>
     </td></tr>

@@ -7,7 +7,10 @@ export const dynamic = 'force-dynamic';
 
 function csvEscape(v: unknown): string {
   if (v === null || v === undefined) return '';
-  const s = String(v);
+  let s = String(v);
+  // Igual que en el export de finanzas: `= + - @` al principio lo toma Excel
+  // como fórmula, y acá también hay texto cargado por terceros.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

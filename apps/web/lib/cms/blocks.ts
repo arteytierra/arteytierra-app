@@ -81,11 +81,18 @@ export type BlockOf<T extends BlockType> = {
 };
 export type AnyBlock = { [K in BlockType]: BlockOf<K> }[BlockType];
 
-/** Schema del documento entero (lo que se guarda en jsonb). */
+/**
+ * Schema del documento entero (lo que se guarda en jsonb).
+ *
+ * `type` va como `string` y no como `z.enum(blockTypes)` a propósito: `z.array`
+ * rechaza el arreglo entero si un solo elemento falla, así que con el enum acá
+ * un único bloque de tipo viejo o desconocido dejaba la página entera en blanco.
+ * El filtrado por tipo lo hace `parseDocument`, bloque por bloque.
+ */
 export const documentSchema = z.array(
   z.object({
     id: z.string().min(1),
-    type: z.enum(blockTypes),
+    type: z.string().min(1),
     data: z.record(z.unknown()),
   }),
 );

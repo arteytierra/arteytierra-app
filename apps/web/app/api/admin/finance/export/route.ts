@@ -6,7 +6,11 @@ export const runtime = 'nodejs';
 
 function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return '';
-  const s = String(value);
+  let s = String(value);
+  // Los datos vienen de formularios públicos y terminan abiertos en Excel: un
+  // valor que arranca con = + - @ lo interpreta como fórmula. El apóstrofo al
+  // frente lo neutraliza sin cambiar lo que se lee en la celda.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (s.includes(',') || s.includes('"') || s.includes('\n')) {
     return `"${s.replace(/"/g, '""')}"`;
   }
