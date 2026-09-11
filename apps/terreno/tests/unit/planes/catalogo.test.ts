@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { ACEQUIA_PLANS, acequiaPlanPrice } from '@arteytierra/config/acequia';
@@ -47,7 +47,12 @@ describe('catálogo de planes', () => {
     // cliente y el trigger empiezan a decir cosas distintas.
     // Relativo a este archivo: vitest corre parado en apps/terreno.
     const raiz = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..');
-    const sql = readFileSync(join(raiz, 'supabase/migrations/0053_terreno_limites_planes.sql'), 'utf8');
+    // Se busca por nombre y no por numero: la migracion ya se renumero una vez
+    // y el test no tiene por que romperse cada vez que eso pase.
+    const dir = join(raiz, 'supabase/migrations');
+    const archivo = readdirSync(dir).find((n) => n.endsWith('_terreno_limites_planes.sql'));
+    expect(archivo, 'falta la migracion de topes de planes').toBeTruthy();
+    const sql = readFileSync(join(dir, archivo!), 'utf8');
     const normalizado = sql.replace(/[ 	]+/g, ' ');
     for (const [plan, limite] of Object.entries(LIMITE_PROYECTOS)) {
       expect(normalizado).toContain(`WHEN '${plan}' THEN ${limite}`);
