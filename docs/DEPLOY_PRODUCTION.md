@@ -1,133 +1,183 @@
 # Deploy a producción — Arte y Tierra
 
-Guía operacional para subir la plataforma a Cloudflare Pages + Supabase Cloud.
+> Este documento describía un deploy por **Cloudflare Pages** que nunca fue el
+> que se usó en producción, y hablaba de migraciones "0001 → 0032". Reescrito el
+> 10/09/2026 contra lo que realmente pasa.
 
-## 0. Pre-flight checklist
+## Cómo se publica, en una línea
 
-- [ ] `pnpm typecheck` pasa sin errores
-- [ ] `pnpm test` (unit + e2e contra build) en verde
-- [ ] Variables del `.env.example` completas para el ambiente prod
-- [ ] DNS de `arteytierra.org` apuntando al CDN (Cloudflare)
-- [ ] Backup del WordPress viejo guardado (`/web/WPvieja/`)
+**No hay que hacer nada.** Vercel tiene la integración con GitHub: apenas entra
+un commit a `main`, los dos proyectos buildean y publican solos.
 
-## 1. Supabase Cloud — setup inicial
+| Proyecto Vercel | App | Dominio |
+|---|---|---|
+| `jonatan-ayt/arteytierra-app-web` | `apps/web` | arteytierra.org |
+| `terreno` | `apps/terreno` | app.acequia.app |
 
-1. Crear proyecto en [supabase.com/dashboard](https://supabase.com/dashboard) (región: South America East — São Paulo).
-2. Copiar `URL`, `anon key` y `service_role key` a vuestro `.env.production`.
-3. Aplicar migraciones:
-   ```bash
-   supabase link --project-ref <ref>
-   pnpm db:push                # corre 0001 → 0032 en orden
-   ```
-4. Crear bucket `backups` (privado) desde Storage UI o:
-   ```sql
-   insert into storage.buckets (id, name, public) values ('backups', 'backups', false);
-   ```
-5. **Exposed schemas** — Settings → API → "Exposed schemas":
-   ```
-   public, app, shop, edu, book, cms, fin, help
-   ```
-   Los 8 schemas custom DEBEN estar listados o las queries `.schema(...)` van a 404.
+Dos cosas que hay que tener presentes:
 
-6. Habilitar **Realtime** en las tablas necesarias (ya viene de la migration 0020):
-   - `app.notifications`
-   - `edu.thread_replies`
-   - `edu.threads`
-6. Configurar **Auth**:
-   - Site URL = `https://arteytierra.org`
-   - Redirect URLs: `https://arteytierra.org/auth/callback`
-   - Email templates → personalizar con branding (Subjects + body bilingüe)
-   - Habilitar provider OAuth si va a haber (Google / Apple)
+1. **CI no es una compuerta.** `.github/workflows/ci.yml` no tiene job de deploy,
+   y Vercel no mira el resultado de CI. Un commit con CI en rojo se publica
+   igual. La única compuerta real es la local, antes de pushear.
+2. **Un build roto no se nota mirando el sitio.** Si el build falla, Vercel
+   sigue sirviendo el último bueno y la web se ve perfecta. Hay que confirmar el
+   *deploy*, no el sitio (ver §5).
 
-## 2. Cloudflare Pages — deploy
+La landing de `acequia.app` **no** está en este repo ni en este ciclo: va por
+`vercel --prod` desde su propia carpeta.
 
-1. Push de la branch `main` a GitHub/GitLab.
-2. En Cloudflare Pages → "Create project" → conectar repo.
-3. Build settings:
-   - Framework preset: **Next.js**
-   - Build command: `pnpm install && pnpm build`
-   - Build output directory: `apps/web/.next`
-   - Node version: `20`
-4. Variables de entorno → pegar todas las del `.env.example` con valores prod.
-5. Custom domain → agregar `arteytierra.org` y `www.arteytierra.org`.
-6. Habilitar **Cache rules**:
-   - `/_next/static/*` → cache 1 año, immutable
-   - `/api/*` → no cache (bypass)
-   - `/og` → cache 1 día (la imagen ya tiene `Cache-Control: max-age=31536000` del code)
+## 0. Compuerta, antes de pushear
 
-## 3. Cron jobs (Cloudflare Workers o Vercel Cron)
+Parado en la app que se tocó (`apps/web` o `apps/terreno`):
 
-Ver `docs/CRON_JOBS.md` para la lista completa. Para Cloudflare:
-
-```toml
-# wrangler.toml (worker que llama a /api/jobs/{name})
-name = "ay-cron"
-[triggers]
-crons = [
-  "0 3 * * *",     # cleanup-pending-orders, refresh-recommendations
-  "*/30 * * * *",  # cart-abandonment-sweep, process-webhook-deliveries
-  "0 9 * * 1",     # weekly-db-snapshot (lunes 9am)
-  "0 4 * * *",     # process-scheduled-deletions (GDPR)
-]
+```bash
+npx tsc --noEmit
+npx next build
+npx vitest run
 ```
 
-Cada cron debe enviar header `Authorization: Bearer ${CRON_SECRET}` al endpoint `/api/jobs/<name>`.
+Y el lint, desde la raíz:
+
+```bash
+pnpm lint
+```
+
+Los cuatro en exit 0. `vitest` no resuelve desde la raíz del repo: hay que estar
+parado en la app.
+
+> El lint recién sirve desde el 10/09/2026. Hasta ese día ninguna de las dos apps
+> tenía `eslint.config.mjs`, `next lint` caía en el asistente interactivo y salía
+> 1: el job `lint` de CI venía fallando en todas las corridas y en los hechos no
+> se linteaba nada. Un lint verde de antes de esa fecha no prueba nada.
+
+## 1. Supabase
+
+Un solo proyecto: `ojlvflmqcyxdnvhbnhgp` (región us-east-1, Postgres 17).
+
+Las migraciones viven en `supabase/migrations/` y van hasta la **0055**.
+Producción está aplicada hasta la **0052**; 0053, 0054 y 0055 están escritas y
+sin aplicar.
+
+```bash
+supabase link --project-ref ojlvflmqcyxdnvhbnhgp
+pnpm db:push
+```
+
+**Aplicar migraciones es decisión de Jonatan, no de un agente.** Y numerar dos
+archivos con el mismo prefijo rompe el orden: pasó con las dos `0053` (se
+renumeró la de terreno a `0054`).
+
+**Exposed schemas** — Settings → API. Los schemas custom tienen que estar
+listados o las queries `.schema(...)` responden 404:
+
+```
+public, app, shop, edu, book, cms, fin, help, terreno, anteproyectos
+```
+
+**Auth** — Site URL `https://arteytierra.org`, redirect
+`https://arteytierra.org/auth/callback`.
+
+## 2. Variables de entorno
+
+La plantilla es `.env.example` y sale de barrer `process.env.*` en las dos apps.
+Los valores viven en Vercel, por proyecto. Nunca en el repo.
+
+Tres banderas fallan **cerradas** — sin el valor exacto `'true'` la función
+queda apagada. Es a propósito:
+
+- `ACEQUIA_PAYMENTS_ENABLED` — cobros de acequia
+- `PAYMENT_WEBHOOKS_ENABLED` — procesamiento de webhooks de pago
+- `BOT_ENABLED` — el chatbot de IG/FB/Gmail
+
+**Ojo con `BOT_ENABLED`:** hasta el 10/09/2026 fallaba *abierta* (el bot
+contestaba si la variable no estaba). Se invirtió. Si el bot está en uso, hay que
+poner `BOT_ENABLED=true` en Vercel o deja de responder.
+
+Y `NEXT_PUBLIC_APP_VERSION` conviene apuntarla a `$VERCEL_GIT_COMMIT_SHA`: sin
+eso, `/api/health` responde `"version":"dev"` y no se puede saber qué build está
+vivo — que es justo lo que hace falta cuando se sospecha de un build roto.
+
+## 3. Cron
+
+Ver `docs/CRON_JOBS.md`. Resumen: doce jobs, dos schedulers
+(`.github/workflows/cron.yml` para once, `apps/web/vercel.json` para
+`acequia-aviso-cobro`), todos contra `/api/cron/<job>` con
+`Authorization: Bearer $CRON_SECRET`.
 
 ## 4. Webhooks externos
 
-Configurar URLs en cada provider:
-
-| Provider | URL | Eventos clave |
+| Provider | URL | Eventos |
 |---|---|---|
-| Stripe | `https://arteytierra.org/api/webhooks/stripe` | `checkout.session.completed`, `payment_intent.succeeded`, `charge.refunded` |
-| Mercado Pago | `https://arteytierra.org/api/webhooks/mercadopago` | `payment` |
-| Resend | `https://arteytierra.org/api/email/webhook` | `email.delivered`, `email.opened`, `email.bounced` |
-| Postmark | misma URL | OpenTracking + Bounce |
+| Stripe | `/api/webhooks/stripe` | `checkout.session.completed`, `payment_intent.succeeded`, `charge.refunded`¹, `customer.subscription.*` |
+| Mercado Pago | `/api/webhooks/mercadopago` | `payment`, `preapproval` |
+| PayPal | `/api/webhooks/paypal` | `BILLING.SUBSCRIPTION.*` |
+| Postmark | `/api/webhooks/postmark` | delivery, bounce, open |
 
-Cada uno con su signing secret en el `.env`.
+Cada uno con su signing secret. Los tres de pago están además detrás de
+`PAYMENT_WEBHOOKS_ENABLED`.
 
-## 5. Smoke test post-deploy
+¹ `charge.refunded` está **registrado pero vacío** (`TODO` en la ruta): un
+reembolso hoy no marca la orden, no revoca el enrollment ni devuelve stock. Se
+hace a mano.
+
+## 5. Verificar el deploy (no el sitio)
 
 ```bash
-# Health
-curl https://arteytierra.org/api/health
-# → { "status": "ok", "checks": { ... } }
-
-# OG image
-curl -I 'https://arteytierra.org/og?title=Test&kind=course'
-# → 200, content-type: image/png
-
-# Robots y sitemap
-curl https://arteytierra.org/robots.txt
-curl https://arteytierra.org/sitemap.xml
-
-# Health en mobile (PWA)
-# Abrir https://arteytierra.org en Chrome mobile → debería ofrecer "Instalar"
+cd apps/web
+npx vercel@latest ls --prod | grep -oE "https://[a-z0-9-]+\.vercel\.app"
+npx vercel@latest inspect <esa-url>
 ```
 
-## 6. Monitoring
+Buscar `status ● Ready`, y que el `inspect` mencione el commit propio: si no, el
+deploy que está Ready es uno anterior y el nuestro todavía no salió.
 
-- **Uptime**: Better Uptime / UptimeRobot apuntando a `/api/health` con check cada 5min.
-- **Errores**: el log de `app.server_errors` (DB) — ver en `/admin/observabilidad`.
-- **Core Web Vitals**: `/admin/observabilidad` con P75 LCP/INP/CLS.
-- **Auditoría**: `/admin/auditoria` para acciones sensibles (refunds, payouts, anonimización).
+`vercel ls` por sí solo no sirve para esperar: sin terminal interactiva imprime
+las URLs sin la columna de estado.
 
-## 7. Backup & DR
+## 6. Smoke test
 
-- **DB snapshots**: cron `weekly-db-snapshot` corre lunes 9am → NDJSON por tabla a `backups/{snapshot_id}/` en Supabase Storage.
-- **Supabase tiene PITR** (point-in-time recovery) 7 días en plan Pro, 14 días en plan Team.
-- **Bucket `private` (videos cursos)**: replicación manual a R2 (Cloudflare) recomendada para DR cross-cloud.
+```bash
+curl -s https://arteytierra.org/api/health          # status ok, database ok, env ok
+curl -sI 'https://arteytierra.org/og?title=Test&kind=course'   # 200 image/png
+curl -sI https://arteytierra.org/                   # 200
+curl -sI https://arteytierra.org/tienda             # 200
+curl -s  https://arteytierra.org/robots.txt
+curl -s  https://arteytierra.org/sitemap.xml
+```
 
-## 8. Rollback
+Y si el deploy tocó cabeceras, confirmar la CSP:
 
-Cloudflare Pages mantiene los últimos N deploys → un click rollback desde el dashboard.
+```bash
+curl -sI https://arteytierra.org/ | grep -i content-security-policy
+```
 
-Para rollback de DB:
-- Si la migración rompió algo: `supabase db reset --linked` (⚠ destructivo) + restaurar de snapshot.
-- Si fue una fila mal: restaurar la tabla afectada desde el último NDJSON snapshot.
+## 7. Monitoreo
 
-## 9. Compliance
+- **Uptime**: check cada 5 min a `/api/health`.
+- **Errores de servidor**: `app.server_errors` → `/admin/observabilidad`.
+- **Core Web Vitals**: `/admin/observabilidad` (P75 de LCP/INP/CLS).
+- **Corridas de cron**: `app.job_runs`.
+- **Auditoría**: `/admin/auditoria` (reembolsos, payouts, anonimizaciones).
 
-- GDPR/LGPD: ver `/admin/privacidad` para el queue de solicitudes (export/delete con 30d cooling-off).
-- Cookie consent: el banner se monta en RootLayout y persiste en `app.consents`.
-- Audit log: cualquier acción staff queda en `app.audit_log` con `severity` y `target`.
+## 8. Backup y recuperación
+
+- `weekly-db-snapshot` (lunes 05:00 UTC) escribe NDJSON por tabla a
+  `backups/{snapshot_id}/` en Supabase Storage.
+- Supabase tiene PITR según plan.
+- El bucket `private` (videos de cursos) no tiene réplica cross-cloud.
+
+## 9. Rollback
+
+Vercel guarda los deploys anteriores: se promueve uno viejo desde el dashboard
+en un click. Eso vuelve atrás el código, **no la base**.
+
+Para la base: restaurar la tabla afectada desde el último NDJSON, o PITR.
+`supabase db reset --linked` es destructivo y no va contra producción.
+
+## 10. Cumplimiento
+
+- Bajas de cuenta: `/admin/privacidad` es la cola; quien las ejecuta es el cron
+  `process-scheduled-deletions`, que es lo que respalda la promesa de
+  `/privacidad`.
+- Consentimiento de cookies: banner en el RootLayout, se guarda en `app.consents`.
+- Toda acción de staff queda en `app.audit_log`.

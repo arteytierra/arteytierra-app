@@ -1,34 +1,97 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
-    "NODE_ENV",
-    "NEXT_PUBLIC_SITE_URL",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "STRIPE_SECRET_KEY",
-    "STRIPE_WEBHOOK_SECRET",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+    "ACEQUIA_ARS_PER_USD",
+    "ACEQUIA_AVISOS_EMAIL",
+    "ACEQUIA_PAYMENTS_ENABLED",
+    "ACEQUIA_PAYMENTS_TEST_EMAILS",
+    "ACEQUIA_TRIAL_ENABLED",
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_MODEL",
+    "BOT_ENABLED",
+    "BOT_ESCALATION_EMAIL",
+    "CERT_SIGNING_SECRET",
+    "CRON_SECRET",
+    "EMAIL_FROM",
+    "EMAIL_REPLY_TO",
+    "ENABLE_LOCALES",
+    "JITSI_APP_ID",
+    "JITSI_DOMAIN",
+    "JITSI_KEY_ID",
+    "JITSI_PRIVATE_KEY",
+    "META_APP_SECRET",
+    "META_CAPI_TEST_CODE",
+    "META_CAPI_TOKEN",
+    "META_PAGE_ACCESS_TOKEN",
+    "META_PIXEL_ID",
+    "META_VERIFY_TOKEN",
     "MP_ACCESS_TOKEN",
     "MP_WEBHOOK_SECRET",
-    "RESEND_API_KEY",
+    "N8N_INTERNAL_TOKEN",
+    "N8N_WEBHOOK_TOKEN",
     "N8N_WEBHOOK_URL",
-    "META_PIXEL_ID",
-    "META_CAPI_TOKEN",
-    "NEXT_PUBLIC_GA_ID"
+    "NEXT_PUBLIC_ACEQUIA_APP_HOST",
+    "NEXT_PUBLIC_ACEQUIA_APP_URL",
+    "NEXT_PUBLIC_ACEQUIA_SITE_URL",
+    "NEXT_PUBLIC_APP_VERSION",
+    "NEXT_PUBLIC_BUILD_ID",
+    "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+    "NEXT_PUBLIC_META_PIXEL_ID",
+    "NEXT_PUBLIC_PILOT_MODE_ENABLED",
+    "NEXT_PUBLIC_PRODUCT_ANALYTICS_ENABLED",
+    "NEXT_PUBLIC_RUM_SAMPLE_RATE",
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+    "NEXT_PUBLIC_WEB_URL",
+    "PAYMENT_WEBHOOKS_ENABLED",
+    "PAYPAL_CLIENT_ID",
+    "PAYPAL_CLIENT_SECRET",
+    "PAYPAL_ENV",
+    "PAYPAL_WEBHOOK_ID",
+    "PILOT_NOTIFICATION_WEBHOOK_TOKEN",
+    "POSTMARK_API_KEY",
+    "POSTMARK_WEBHOOK_TOKEN",
+    "RESEND_API_KEY",
+    "RUM_SAMPLE_RATE",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_SUBJECT",
+    "WHATSAPP_PHONE_ID",
+    "WHATSAPP_TOKEN",
+    "WHATSAPP_VERIFY_TOKEN"
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "lint":      { "dependsOn": ["^build"] },
-    "typecheck": { "dependsOn": ["^build"] },
-    "test":      { "dependsOn": ["^build"] },
-    "clean":     { "cache": false }
+    "lint": { "dependsOn": ["^build"] },
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "clean": {
+      "cache": false
+    }
   }
 }

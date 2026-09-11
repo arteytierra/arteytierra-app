@@ -45,6 +45,9 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
+      # Corre las dos apps. Este job venia fallando en todas las corridas hasta
+      # el 10/09/2026: ninguna de las dos tenia eslint.config.mjs, asi que
+      # `next lint` caia en el asistente interactivo y salia 1.
       - run: pnpm lint
 
   unit:
@@ -58,6 +61,7 @@ jobs:
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @arteytierra/web test
+      - run: pnpm --filter @arteytierra/terreno test
       - uses: actions/upload-artifact@v4
         if: always()
         with:

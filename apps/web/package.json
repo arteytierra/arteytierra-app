@@ -12,9 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install --with-deps chromium webkit",
-    "pages:build": "opennextjs-cloudflare build && node -e \"const{rmSync}=require('fs');try{rmSync('.open-next/assets/docs',{recursive:true,force:true})}catch{}\"",
-    "pages:deploy": "wrangler deploy"
+    "test:e2e:install": "playwright install --with-deps chromium webkit"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
@@ -37,8 +35,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.11",
-    "wrangler": "^4.97.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.5",

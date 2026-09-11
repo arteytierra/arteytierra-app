@@ -19,6 +19,19 @@ import { BOT_SYSTEM_PROMPT } from './knowledge-base';
 
 export type BotChannel = 'whatsapp' | 'messenger' | 'instagram';
 
+/**
+ * El bot contesta sólo si alguien lo prendió a propósito.
+ *
+ * Antes la condición era BOT_ENABLED !== 'false', o sea que la variable
+ * ausente dejaba al bot respondiendo: era la única bandera del repo que fallaba
+ * abierta. Un deploy a un entorno nuevo, o un borrado accidental de la variable
+ * en Vercel, ponía a Claude a hablarles a los clientes sin que nadie lo hubiera
+ * decidido. Ahora hay que escribir 'true' para que hable.
+ */
+function botHabilitado(): boolean {
+  return process.env.BOT_ENABLED === 'true';
+}
+
 const HISTORY_LIMIT = 16;
 const ESCALATION_EMAIL = process.env.BOT_ESCALATION_EMAIL || 'info.arteytierra@gmail.com';
 
@@ -66,7 +79,7 @@ async function sendAndLog(admin: Admin, channel: BotChannel, to: string, text: s
 
 /** Respuesta cuando el mensaje entrante no es texto (imagen, audio, etc.). */
 export async function sendNonTextFallback(opts: { channel: BotChannel; to: string }): Promise<void> {
-  if (process.env.BOT_ENABLED === 'false') return;
+  if (!botHabilitado()) return;
   const admin = createSupabaseAdminClient();
   try {
     await sendAndLog(
@@ -87,7 +100,7 @@ export async function generateAndSendReply(opts: {
   name?: string | null;
   text: string;
 }): Promise<void> {
-  if (process.env.BOT_ENABLED === 'false') return;
+  if (!botHabilitado()) return;
 
   const admin = createSupabaseAdminClient();
   const channel = opts.channel;
