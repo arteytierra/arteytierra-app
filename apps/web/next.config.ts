@@ -32,7 +32,10 @@ const config: NextConfig = {
   async headers() {
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://js.stripe.com https://www.youtube-nocookie.com https://player.vimeo.com https://sdk.mercadopago.com",
+      // `static.cloudflareinsights.com` lo inyecta solo el proxy de Cloudflare
+      // cuando está en Proxied: sin esto, el beacon de analytics se bloquea en
+      // cada carga y llena la consola de producción con un error de CSP.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://static.cloudflareinsights.com https://js.stripe.com https://www.youtube-nocookie.com https://player.vimeo.com https://sdk.mercadopago.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
@@ -43,7 +46,11 @@ const config: NextConfig = {
       "manifest-src 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self' https://checkout.stripe.com https://www.mercadopago.com",
+      // El píxel de Meta, cuando el evento no entra en una URL, lo manda armando
+      // un <form> contra facebook.com/tr. Sin este origen acá, `form-action` lo
+      // bloqueaba y esos eventos — los más gordos, los de compra — no llegaban
+      // nunca, con las campañas optimizando sobre datos incompletos.
+      "form-action 'self' https://checkout.stripe.com https://www.mercadopago.com https://www.facebook.com",
       "upgrade-insecure-requests",
     ].join('; ');
 
