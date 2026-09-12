@@ -6,6 +6,15 @@
 -- (y por PUBLIC, que es el default de Postgres). Se corrigio directo contra la
 -- base, en seis pasos, sin dejar archivo. Esto es ese resultado en una pieza.
 --
+-- Lo que costo entender en esos seis pasos: el permiso no venia de `anon`,
+-- venia de PUBLIC. Postgres le da EXECUTE a PUBLIC a toda funcion nueva y
+-- `anon` lo hereda, asi que revocarle a `anon` no hace nada mientras el `=X/`
+-- siga en la ACL. Por eso aca se revoca a PUBLIC y se vuelve a conceder, una
+-- por una, solo a quien la necesita. (Hubo un segundo archivo con este mismo
+-- numero, 0056_seguridad_rpc_expuestas.sql, escrito antes de consolidar; se
+-- borro porque la base registra un solo 0056 y este es el que refleja lo que
+-- quedo aplicado.)
+--
 -- El criterio: nadie ejecuta nada salvo que haga falta. Solo tres grupos
 -- quedan alcanzables desde el navegador.
 --

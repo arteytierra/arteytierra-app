@@ -34,8 +34,20 @@ INSERT INTO supabase_migrations.schema_migrations (version, name)
 VALUES ('0058','nombre_descriptivo') ON CONFLICT (version) DO NOTHING;
 ```
 
+Si aplicaste con `apply_migration`, no insertes otra fila: renombrá la que dejó
+el conector, que además guarda el SQL que se ejecutó. Una fila con timestamp
+que queda al lado de la numerada es deriva igual, y el 12/09/2026 había siete.
+
+```sql
+UPDATE supabase_migrations.schema_migrations
+   SET version = '0058', name = 'nombre_descriptivo'
+ WHERE version = '20260911013734';
+```
+
 Antes de dar por cerrado cualquier trabajo de base, compará `list_migrations`
-contra `ls supabase/migrations`. Si no coinciden, hay deriva.
+contra `ls supabase/migrations`. Si no coinciden, hay deriva. Y si hay otra
+sesión trabajando en paralelo, mirá `git log main..<su rama>` antes de dar por
+faltante una migración: puede estar aplicada y escrita, sólo que sin pushear.
 
 ## Permisos: mirá quién usa la función antes de revocar
 
