@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": ["VERCEL_GIT_COMMIT_SHA"],
   "globalEnv": [
     "ACEQUIA_ARS_PER_USD",
     "ACEQUIA_AVISOS_EMAIL",

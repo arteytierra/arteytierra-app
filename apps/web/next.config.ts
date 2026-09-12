@@ -5,6 +5,18 @@ const config: NextConfig = {
   poweredByHeader: false,
   compress: true,
   productionBrowserSourceMaps: false,
+
+  // `/api/health` informa qué build está vivo. Venía diciendo "dev" en
+  // producción porque NEXT_PUBLIC_APP_VERSION no estaba definida en ningún lado,
+  // así que para saber qué commit estaba sirviendo había que cruzar timestamps
+  // del `vercel inspect` contra el `git log`. VERCEL_GIT_COMMIT_SHA la pone
+  // Vercel sola en cada build; los siete caracteres alcanzan para identificarlo.
+  env: {
+    NEXT_PUBLIC_APP_VERSION:
+      process.env.NEXT_PUBLIC_APP_VERSION ??
+      process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
+      'dev',
+  },
   experimental: {
     // typedRoutes desactivado: las rutas dinámicas con interpolación de strings
     // (ej. `/admin/crm/usuarios/${id}`) generan falsos errores TS2322/TS2345.
