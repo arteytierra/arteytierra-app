@@ -25,22 +25,22 @@ import { getStripe } from '@/lib/commerce/stripe';
 
 // Estudio sigue existiendo como plan interno para cuentas históricas, pero no se
 // ofrece ni puede comprarse desde la web pública.
-export type PlanPago = Extract<AcequiaPaidPlanId, 'personal' | 'disenador'>;
+export type PlanPago = Extract<AcequiaPaidPlanId, 'personal' | 'profesional'>;
 export type Periodo = AcequiaBillingPeriod;
 
 /** Precio base en USD — debe coincidir con el landing (lib/terreno/planes.ts). */
 export const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
   personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
-  disenador: { mensual: acequiaPlanPrice('disenador', 'mensual'), anual: acequiaPlanPrice('disenador', 'anual') },
+  profesional: { mensual: acequiaPlanPrice('profesional', 'mensual'), anual: acequiaPlanPrice('profesional', 'anual') },
 };
 
 const NOMBRE: Record<PlanPago, string> = {
   personal: ACEQUIA_PLANS.personal.name,
-  disenador: ACEQUIA_PLANS.disenador.name,
+  profesional: ACEQUIA_PLANS.profesional.name,
 };
 
 export function esPlanPago(v: string): v is PlanPago {
-  return (v === 'personal' || v === 'disenador') && isAcequiaPaidPlan(v);
+  return (v === 'personal' || v === 'profesional') && isAcequiaPaidPlan(v);
 }
 export function esPeriodo(v: string): v is Periodo {
   return isAcequiaBillingPeriod(v);
@@ -205,7 +205,7 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
         currency_id: 'ARS',
         ...(trialEnd ? { start_date: trialEnd } : {}),
       },
-      back_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].publicId}`,
+      back_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].id}`,
       // Nota: el SDK de MP no acepta notification_url en el preapproval; los avisos
       // de suscripción van a la URL configurada en el panel de la aplicación (debe
       // apuntar a producción: https://arteytierra.org/api/webhooks/mercadopago).

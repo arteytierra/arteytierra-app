@@ -1,7 +1,12 @@
 /**
  * Planes de acequia — fuente de datos del landing (separada del componente).
- * Refleja la matriz canónica `PROMPT-terreno-planes-0-matriz.md`. Si cambia la
- * matriz, se edita acá.
+ *
+ * Los precios NO se escriben acá: se leen de `@arteytierra/config/acequia`, que
+ * es lo mismo que cobra el checkout. Hasta el 11/09/2026 esta vidriera anunciaba
+ * Profesional a USD 12 mientras el cobro salía 15, y prometía "proyectos
+ * ilimitados" cuando el trigger de la base ya topaba en 10 desde la 0054.
+ * Mostrar un número y cobrar otro es la peor falla posible de esta parte del
+ * producto, así que ahora hay una sola fuente.
  *
  * Cobro (lanzamiento): links de pago directos + asignación manual del plan.
  * Desde Argentina se muestra en ARS (a ARS_POR_USD) y se paga por Mercado Pago;
@@ -22,8 +27,10 @@ export function paypalLink(usd: number): string {
   return `https://paypal.me/arteytierra/${usd}`;
 }
 
+import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
+
 export interface Plan {
-  id: 'semilla' | 'personal' | 'disenador' | 'estudio';
+  id: 'semilla' | 'personal' | 'profesional' | 'estudio';
   nombre: string;
   tagline: string;
   /** null = gratis */
@@ -56,10 +63,10 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'personal',
-    nombre: 'Personal',
+    nombre: ACEQUIA_PLANS.personal.name,
     tagline: 'Todo el análisis y el diseño, para tu proyecto.',
-    precioMensualUSD: 7,
-    precioAnualUSD: 70,
+    precioMensualUSD: ACEQUIA_PLANS.personal.monthlyUsd,
+    precioAnualUSD: ACEQUIA_PLANS.personal.annualUsd,
     destacado: true,
     lanzamiento: true,
     hereda: 'Todo lo de Semilla, y además:',
@@ -70,34 +77,35 @@ export const PLANES: Plan[] = [
       'Sugerencias automáticas de diseño',
       'Rumbos y replanteo de mojones',
       'Informe sin marca de agua',
-      'Hasta 2 proyectos activos',
+      `Hasta ${ACEQUIA_PLANS.personal.projects} proyectos activos`,
     ],
   },
   {
-    id: 'disenador',
-    nombre: 'Profesional',
-    tagline: 'Lo mismo, sin límite de proyectos.',
-    precioMensualUSD: 12,
-    precioAnualUSD: 120,
+    id: 'profesional',
+    nombre: ACEQUIA_PLANS.profesional.name,
+    tagline: 'Para quien diseña predios y los entrega firmados.',
+    precioMensualUSD: ACEQUIA_PLANS.profesional.monthlyUsd,
+    precioAnualUSD: ACEQUIA_PLANS.profesional.annualUsd,
     lanzamiento: true,
     hereda: 'Todo lo de Personal, y además:',
     incluye: [
-      'Proyectos ilimitados',
+      'Informe con tu marca: tu logo y tu matrícula',
+      'Exportación a GeoJSON, KML y GPX',
+      `Hasta ${ACEQUIA_PLANS.profesional.projects} proyectos activos`,
       'Ideal si trabajás varios terrenos a la vez',
     ],
   },
   {
     id: 'estudio',
-    nombre: 'Estudio',
-    tagline: 'Para consultores y equipos que entregan.',
-    precioMensualUSD: 35,
-    precioAnualUSD: 350,
+    nombre: ACEQUIA_PLANS.estudio.name,
+    tagline: 'Para el equipo que entrega varios proyectos a la vez.',
+    precioMensualUSD: ACEQUIA_PLANS.estudio.monthlyUsd,
+    precioAnualUSD: ACEQUIA_PLANS.estudio.annualUsd,
     lanzamiento: true,
     hereda: 'Todo lo de Profesional, y además:',
     incluye: [
-      'Informe con tu marca (logo y matrícula propia)',
-      'Exportación DXF / CAD',
-      'Multiusuario y colaboración',
+      `${ACEQUIA_PLANS.estudio.seats} cuentas de usuario, cada una con sus ${ACEQUIA_PLANS.estudio.projects} proyectos activos`,
+      'Exportación DXF / CAD por capas',
       'Soporte prioritario',
     ],
   },

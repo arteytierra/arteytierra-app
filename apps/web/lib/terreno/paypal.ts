@@ -14,7 +14,7 @@ import { PRECIO_USD, pruebaComercialHabilitada, type PlanPago, type Periodo } fr
 
 const NOMBRE: Record<PlanPago, string> = {
   personal: ACEQUIA_PLANS.personal.name,
-  disenador: ACEQUIA_PLANS.disenador.name,
+  profesional: ACEQUIA_PLANS.profesional.name,
 };
 
 function entorno(): 'sandbox' | 'live' {
@@ -162,7 +162,7 @@ export async function crearSubscripcionPaypal(o: {
         locale: 'es-AR',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'SUBSCRIBE_NOW',
-        return_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].publicId}`,
+        return_url: `${o.siteUrl}/gracias?plan=${ACEQUIA_PLANS[o.plan].id}`,
         cancel_url: `${o.siteUrl}/planes?estado=pago-cancelado`,
       },
     }),

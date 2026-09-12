@@ -7,12 +7,12 @@ import { iniciarCheckout, type PlanPago, type Periodo, type Proveedor } from '@/
 
 const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
   personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
-  disenador: { mensual: acequiaPlanPrice('disenador', 'mensual'), anual: acequiaPlanPrice('disenador', 'anual') },
+  profesional: { mensual: acequiaPlanPrice('profesional', 'mensual'), anual: acequiaPlanPrice('profesional', 'anual') },
   estudio:   { mensual: acequiaPlanPrice('estudio', 'mensual'),   anual: acequiaPlanPrice('estudio', 'anual') },
 };
 const NOMBRE: Record<PlanPago, string> = {
   personal: ACEQUIA_PLANS.personal.name,
-  disenador: ACEQUIA_PLANS.disenador.name,
+  profesional: ACEQUIA_PLANS.profesional.name,
   estudio: ACEQUIA_PLANS.estudio.name,
 };
 const ARS_POR_USD = 1500;

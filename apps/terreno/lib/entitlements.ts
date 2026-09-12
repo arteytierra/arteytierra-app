@@ -12,21 +12,21 @@
  * Agregar un plan futuro = editar estas tablas, nada más.
  */
 
-import { ACEQUIA_PLANS, type AcequiaInternalPlanId } from '@arteytierra/config/acequia';
+import { ACEQUIA_PLANS, type AcequiaPlanId } from '@arteytierra/config/acequia';
 
-export type Plan = AcequiaInternalPlanId;
+export type Plan = AcequiaPlanId;
 
 /** Orden de los planes: un plan habilita todo lo de los planes inferiores.
  *  Personal y Profesional comparten la capa de análisis y diseño; se
  *  diferencian en LIMITE_PROYECTOS y en el informe con marca propia. */
-const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, disenador: 2, estudio: 3 };
+const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, profesional: 2, estudio: 3 };
 
-export const PLANES: Plan[] = ['semilla', 'personal', 'disenador', 'estudio'];
+export const PLANES: Plan[] = ['semilla', 'personal', 'profesional', 'estudio'];
 
 export const NOMBRE_PLAN: Record<Plan, string> = {
   semilla: ACEQUIA_PLANS.semilla.name,
   personal: ACEQUIA_PLANS.personal.name,
-  disenador: ACEQUIA_PLANS.disenador.name,
+  profesional: ACEQUIA_PLANS.profesional.name,
   estudio: ACEQUIA_PLANS.estudio.name,
 };
 
@@ -105,7 +105,7 @@ const FEATURES: Record<Feature, Plan> = {
   'sugerencias':         'personal',
   // Entrega.
   'informe.sin_marca':   'personal',
-  'informe.white_label': 'disenador',
+  'informe.white_label': 'profesional',
   'export.gis':          'personal',
   'export.dxf':          'estudio',
   'colaboracion':        'estudio',
@@ -121,13 +121,24 @@ export function planMinimo(feature: Feature): Plan {
   return FEATURES[feature];
 }
 
-/** Límite de proyectos activos por plan (Infinity = sin tope).
- *  Espejo exacto de la migración 0053: los dos lados tienen que decir lo mismo. */
+/** Proyectos activos por cuenta. Se lee del catálogo para que no haya dos
+ *  fuentes de verdad; el trigger de la base (migración 0057) tiene que decir lo
+ *  mismo y hay un test que lo verifica contra el SQL. */
 export const LIMITE_PROYECTOS: Record<Plan, number> = {
-  semilla:   1,
-  personal:  2,
-  disenador: 10,
-  estudio:   50,
+  semilla:     ACEQUIA_PLANS.semilla.projects,
+  personal:    ACEQUIA_PLANS.personal.projects,
+  profesional: ACEQUIA_PLANS.profesional.projects,
+  estudio:     ACEQUIA_PLANS.estudio.projects,
+};
+
+/** Cuentas de usuario que incluye el plan. Estudio son cinco cuentas
+ *  independientes —cada una con sus 10 proyectos— y no cinco personas
+ *  editando el mismo proyecto a la vez. */
+export const LIMITE_CUENTAS: Record<Plan, number> = {
+  semilla:     ACEQUIA_PLANS.semilla.seats,
+  personal:    ACEQUIA_PLANS.personal.seats,
+  profesional: ACEQUIA_PLANS.profesional.seats,
+  estudio:     ACEQUIA_PLANS.estudio.seats,
 };
 
 /**
@@ -204,7 +215,7 @@ export const BENEFICIO_FEATURE: Record<Feature, string> = {
   'informe.white_label':  'El informe con tu propia marca, logo y matrícula.',
   'export.gis':           'Exportá tu predio a GeoJSON, KML y GPX.',
   'export.dxf':           'Exportá a DXF/CAD por capas para tu estudio.',
-  'colaboracion':         'Trabajá el proyecto en equipo, con varios usuarios.',
+  'colaboracion':         'Hasta 5 cuentas para tu equipo, cada una con sus proyectos.',
 };
 
 /** ¿Este tab está bloqueado para el plan dado? */
