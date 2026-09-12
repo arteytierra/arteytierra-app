@@ -39,7 +39,6 @@
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/leaflet": "^1.9.14",
     "@types/node": "^22.10.2",
     "@types/proj4": "^2.5.5",
