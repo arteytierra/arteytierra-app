@@ -25,6 +25,18 @@ mismo árbol. Nunca `git add -A`: stagear archivo por archivo y acotar el commit
 con pathspecs (`git commit -F msg.txt -- ruta/uno ruta/dos`), o te llevás
 puesto lo que stageó la otra sesión.
 
+**Por eso, si venís a escribir código, trabajá en tu propio worktree.** Crealo
+apenas arranques, con un nombre que diga quién sos (`acequia`, `webs`,
+`chatbot`), y quedate ahí toda la sesión: es una carpeta de archivos y un índice
+propios sobre la misma historia de git, así que ya no podés pisar a nadie ni
+que te pisen. Al terminar, conservalo si vas a volver.
+
+La excepción es el rol de orquestador —revisar, auditar, coordinar—, que se
+queda en el checkout principal y no crea worktree. Cada worktree se instala sus
+propias dependencias y pesa cerca de 500 MB: son para trabajar, no para
+acumular. Si ves worktrees viejos de sesiones muertas, avisá antes de borrarlos:
+pueden tener commits que no están en `main`.
+
 **`/mapa` y `/informe/*` están detrás de login.** No se pueden verificar desde
 el navegador del agente y no se consultan endpoints de producción. Esas rutas
 las valida Jonatan.
