@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
+import { resolverVersion } from '@/lib/version';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,11 @@ export const dynamic = 'force-dynamic';
  * Usado por uptime checks (Better Uptime, UptimeRobot, n8n).
  *
  * Devuelve 200 con detalle si todo OK; 503 si alguna dependencia falla.
+ *
+ * `version` sale del entorno de ejecución, no de una constante de build: ver
+ * `lib/version.ts` para por qué eso importa (un build reusado de caché mentía
+ * sobre qué commit estaba vivo, que es el único dato que este endpoint aporta
+ * y que no se puede conseguir de otro modo sin cruzar timestamps a mano).
  */
 export async function GET() {
   const checks: Record<string, { ok: boolean; ms?: number; error?: string }> = {};
@@ -39,12 +45,17 @@ export async function GET() {
     : { ok: false, error: `missing: ${missing.join(', ')}` };
 
   const allOk = Object.values(checks).every((c) => c.ok);
+  const { version, build, buildReusado } = resolverVersion(process.env);
   return NextResponse.json(
     {
       status: allOk ? 'ok' : 'degraded',
       checks,
       total_ms: Date.now() - start,
-      version: process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev',
+      /** Commit del deployment vivo. */
+      version,
+      /** Commit con el que se compiló el bundle: más viejo si el build se reusó. */
+      build,
+      build_reusado: buildReusado,
     },
     { status: allOk ? 200 : 503 },
   );
