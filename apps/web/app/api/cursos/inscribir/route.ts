@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/integrations/resend';
+import { createSupabaseAdminClient } from '@/lib/db/admin';
+import { limitar, ipDe, demasiadosIntentos } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,6 +16,10 @@ function esc(s: string): string {
 }
 
 export async function POST(req: Request) {
+  // El formulario es público y no pide nada para enviarse. Sin tope, un script
+  // en loop llena la casilla y la tabla de contactos en minutos.
+  if (!limitar(`inscribir:${ipDe(req)}`, 5, 60_000)) return demasiadosIntentos();
+
   let data: FormData;
   try {
     data = await req.formData();
@@ -69,14 +75,50 @@ export async function POST(req: Request) {
 </body>
 </html>`;
 
-  const ok = await sendEmail({
+  // Primero se guarda, después se avisa.
+  //
+  // Hasta hoy esto era sólo un mail: si Resend fallaba, o si el mail se perdía
+  // entre otros mil, la inscripción no existía en ningún lado. Ya pasó una vez
+  // que la única casilla de contacto del sitio rebotaba. Un lead que alguien se
+  // tomó el trabajo de escribir no puede depender de que un tercero entregue.
+  let guardado = false;
+  try {
+    const admin = createSupabaseAdminClient();
+    const notas = [
+      `Curso: ${curso}`,
+      opcion ? `Opción: ${opcion}` : null,
+      fechaLlegada ? `Llegada: ${fechaLlegada}` : null,
+      fechaSalida ? `Salida: ${fechaSalida}` : null,
+      ciudad ? `Ciudad: ${ciudad}` : null,
+      mensaje || null,
+    ].filter(Boolean).join('\n');
+
+    const { error } = await admin.schema('app').from('contacts').insert({
+      email,
+      full_name: nombre,
+      phone: whatsapp || null,
+      source: 'inscripcion-curso',
+      tags: ['curso', curso],
+      lifecycle_stage: 'lead',
+      notes: notas,
+    });
+    if (error) throw error;
+    guardado = true;
+  } catch (err) {
+    console.error('[inscribir] no se pudo guardar el contacto', err);
+  }
+
+  const avisado = await sendEmail({
     to: 'info.arteytierra@gmail.com',
     from: 'Arte y Tierra · Web <notificaciones@arteytierra.org>',
     subject: `Inscripción · ${curso} · ${nombre}`,
     html,
   });
 
-  if (!ok) {
+  // Sólo es un error para quien se inscribe si no quedó registrada en ningún
+  // lado. Si se guardó pero el mail no salió, el dato está y se ve en el panel:
+  // hacerla completar el formulario de nuevo sería perderlo por segunda vez.
+  if (!guardado && !avisado) {
     return NextResponse.json({ error: 'send_failed' }, { status: 500 });
   }
 
