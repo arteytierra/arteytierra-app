@@ -30,8 +30,12 @@ const columns = [
   {
     title: 'Legal',
     items: [
-      { label: 'Privacidad',       href: '/privacidad' },
-      { label: 'Eliminar datos',   href: '/eliminar-datos' },
+      { label: 'Términos de venta', href: '/terminos' },
+      { label: 'Privacidad',        href: '/privacidad' },
+      { label: 'Eliminar datos',    href: '/eliminar-datos' },
+      // El botón de arrepentimiento tiene que poder alcanzarse desde cualquier
+      // página del sitio (Res. 424/2020). El pie está en todas: acá cumple.
+      { label: 'Botón de arrepentimiento', href: '/arrepentimiento' },
     ],
   },
 ];

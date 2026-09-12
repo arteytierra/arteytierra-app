@@ -25,6 +25,12 @@ const STATIC_ROUTES: Array<{ path: string; freq: MetadataRoute.Sitemap[number]['
   { path: 'hospedaje', freq: 'weekly', priority: 0.85 },
   { path: 'blog', freq: 'weekly', priority: 0.85 },
   { path: 'contacto', freq: 'yearly', priority: 0.4 },
+  // Las legales estaban fuera del sitemap. Son parte de lo que alguien mira
+  // antes de dejar la tarjeta, y el botón de arrepentimiento tiene que poder
+  // encontrarse sin depender de que alguien recorra el pie.
+  { path: 'terminos', freq: 'yearly', priority: 0.3 },
+  { path: 'privacidad', freq: 'yearly', priority: 0.3 },
+  { path: 'arrepentimiento', freq: 'yearly', priority: 0.3 },
 ];
 
 const TYPE_TO_PATH: Record<string, string> = {
