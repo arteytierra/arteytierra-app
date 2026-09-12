@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Check } from 'lucide-react';
-import { PLANES, REGISTRO_URL, ARS_POR_USD, type Plan } from '@/lib/terreno/planes';
+import { PLANES, REGISTRO_URL, type Plan } from '@/lib/terreno/planes';
 
 const SUSCRIBIR_BASE = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/suscribir`;
 /** Para los planes cuyo alta pasa por una persona (hoy, Estudio). */
@@ -10,22 +10,34 @@ const CONSULTA_URL = '/contacto';
 
 type Moneda = 'ARS' | 'USD';
 
-function fmt(usd: number, moneda: Moneda): string {
-  return moneda === 'ARS'
-    ? `AR$ ${Math.round(usd * ARS_POR_USD).toLocaleString('es-AR')}`
+/**
+ * La cotización llega como prop desde el servidor porque es la misma con la que
+ * Mercado Pago va a cobrar (ACEQUIA_ARS_PER_USD). Estaba escrita acá como 1500 y
+ * el precio en pesos que leía el visitante no era el que se le cobraba. Si no
+ * está configurada no hay vista en pesos: no se muestra un precio inventado.
+ */
+function fmt(usd: number, moneda: Moneda, arsPorUsd: number | null): string {
+  return moneda === 'ARS' && arsPorUsd !== null
+    ? `AR$ ${Math.round(usd * arsPorUsd).toLocaleString('es-AR')}`
     : `USD ${usd}`;
 }
 
-export function PlanesTerreno({ paisInicial }: { paisInicial?: string }) {
+export function PlanesTerreno({ paisInicial, arsPorUsd }: { paisInicial?: string; arsPorUsd: number | null }) {
+  const monedas: Moneda[] = arsPorUsd === null ? ['USD'] : ['ARS', 'USD'];
   const [anual, setAnual] = useState(true);
-  const [moneda, setMoneda] = useState<Moneda>(paisInicial === 'AR' ? 'ARS' : 'USD');
+  const [moneda, setMoneda] = useState<Moneda>(
+    arsPorUsd !== null && paisInicial === 'AR' ? 'ARS' : 'USD',
+  );
 
   return (
     <div>
       {/* Controles: moneda + periodo */}
       <div className="flex flex-col items-center gap-6 mb-12">
-        <div className="inline-flex rounded-full border border-[#E8D5A3]/60 p-1 bg-[#F5F0E8]">
-          {(['ARS', 'USD'] as Moneda[]).map(m => (
+        <div
+          className="inline-flex rounded-full border border-[#E8D5A3]/60 p-1 bg-[#F5F0E8]"
+          hidden={monedas.length < 2}
+        >
+          {monedas.map(m => (
             <button
               key={m}
               type="button"
@@ -70,20 +82,20 @@ export function PlanesTerreno({ paisInicial }: { paisInicial?: string }) {
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
         {PLANES.map(plan => (
-          <PlanCard key={plan.id} plan={plan} anual={anual} moneda={moneda} />
+          <PlanCard key={plan.id} plan={plan} anual={anual} moneda={moneda} arsPorUsd={arsPorUsd} />
         ))}
       </div>
 
       <p className="text-center font-sans text-xs text-[#3D2010]/60 mt-8 max-w-2xl mx-auto">
-        {moneda === 'ARS'
-          ? `Precios en pesos a ${ARS_POR_USD} $/USD. Pagás por Mercado Pago con renovación automática; cancelás cuando quieras.`
+        {moneda === 'ARS' && arsPorUsd !== null
+          ? `Precios en pesos a ${arsPorUsd.toLocaleString('es-AR')} $/USD, la misma cotización con la que se cobra. Pagás por Mercado Pago con renovación automática; cancelás cuando quieras.`
           : 'Precios en USD. Pagás por PayPal con renovación automática; cancelás cuando quieras.'}
       </p>
     </div>
   );
 }
 
-function PlanCard({ plan, anual, moneda }: { plan: Plan; anual: boolean; moneda: Moneda }) {
+function PlanCard({ plan, anual, moneda, arsPorUsd }: { plan: Plan; anual: boolean; moneda: Moneda; arsPorUsd: number | null }) {
   const gratis = plan.precioMensualUSD == null;
   const usd = anual ? plan.precioAnualUSD : plan.precioMensualUSD;
   const periodo = anual ? '/año' : '/mes';
@@ -130,7 +142,7 @@ function PlanCard({ plan, anual, moneda }: { plan: Plan; anual: boolean; moneda:
           <span className="font-display text-3xl">Gratis</span>
         ) : (
           <>
-            <span className="font-display text-3xl font-mono">{fmt(usd!, moneda)}</span>
+            <span className="font-display text-3xl font-mono">{fmt(usd!, moneda, arsPorUsd)}</span>
             <span className={`font-sans text-sm mb-1 ${plan.destacado ? 'text-[#E8D5A3]' : 'text-[#3D2010]/60'}`}>{periodo}</span>
           </>
         )}
@@ -142,7 +154,7 @@ function PlanCard({ plan, anual, moneda }: { plan: Plan; anual: boolean; moneda:
       )}
       {!gratis && anual && (
         <p className={`font-sans text-xs mt-1 font-mono ${plan.destacado ? 'text-[#E8D5A3]/80' : 'text-[#3D2010]/60'}`}>
-          Equivale a {fmt(Math.round((plan.precioAnualUSD! / 12) * 10) / 10, moneda)}/mes
+          Equivale a {fmt(Math.round((plan.precioAnualUSD! / 12) * 10) / 10, moneda, arsPorUsd)}/mes
         </p>
       )}
 

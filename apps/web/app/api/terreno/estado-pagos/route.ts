@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
 import { corsAcequia } from '@/lib/terreno/cors';
+import { tasaArsPorUsdParaMostrar } from '@/lib/terreno/cotizacion';
 import {
   pagosAcequiaHabilitados,
   pruebaComercialHabilitada,
-  tasaArsPorUsd,
 } from '@/lib/terreno/suscripciones';
 
 export const runtime = 'nodejs';
@@ -48,20 +48,13 @@ export function OPTIONS(req: NextRequest) {
 export function GET(req: NextRequest) {
   const headers = corsAcequia(req.headers.get('origin'), 'GET, OPTIONS');
 
-  let arsPorUsd: number | null = null;
-  try {
-    arsPorUsd = tasaArsPorUsd();
-  } catch {
-    // Sin cotización no se muestra el precio en pesos. Es la regla de siempre:
-    // degradar avisando antes que rellenar con un número plausible.
-    arsPorUsd = null;
-  }
-
   const cuerpo: EstadoPagos = {
     pagos: pagosAcequiaHabilitados(),
     prueba: pruebaComercialHabilitada(),
     diasPrueba: ACEQUIA_TRIAL_DAYS,
-    arsPorUsd,
+    // Sin cotización no se muestra el precio en pesos. Es la regla de siempre:
+    // degradar avisando antes que rellenar con un número plausible.
+    arsPorUsd: tasaArsPorUsdParaMostrar(),
   };
   return NextResponse.json(cuerpo, { headers });
 }

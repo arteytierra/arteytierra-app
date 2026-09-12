@@ -13,6 +13,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { PlanesTerreno } from '@/components/terreno/PlanesTerreno';
 import { BarraAcequia } from '@/components/terreno/BarraAcequia';
 import { REGISTRO_URL, PLANES } from '@/lib/terreno/planes';
+import { tasaArsPorUsdParaMostrar } from '@/lib/terreno/cotizacion';
 
 // El "desde" sale de los planes y no de una constante escrita a mano, para que
 // no se despegue del precio real cuando cambie.
@@ -576,7 +577,7 @@ export default async function AcequiaLanding() {
               </p>
             </div>
 
-            <PlanesTerreno paisInicial={pais} />
+            <PlanesTerreno paisInicial={pais} arsPorUsd={tasaArsPorUsdParaMostrar()} />
           </div>
         </section>
 

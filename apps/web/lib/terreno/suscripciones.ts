@@ -12,6 +12,7 @@ import {
   type AcequiaPaidPlanId,
 } from '@arteytierra/config/acequia';
 import { getStripe } from '@/lib/commerce/stripe';
+import { tasaArsPorUsd } from './cotizacion';
 
 /**
  * Cobro recurrente de los planes de Terreno.
@@ -93,13 +94,7 @@ export function puedePagarAcequia(email: string): boolean {
   return lista.includes(email.trim().toLowerCase());
 }
 
-export function tasaArsPorUsd(): number {
-  const value = Number(process.env.ACEQUIA_ARS_PER_USD);
-  if (!Number.isFinite(value) || value <= 0) {
-    throw new Error('ACEQUIA_ARS_PER_USD no está configurada con un valor válido.');
-  }
-  return value;
-}
+export { tasaArsPorUsd } from './cotizacion';
 
 interface CrearCheckoutOpts {
   plan:    PlanPago;

@@ -8,24 +8,17 @@
  * Mostrar un número y cobrar otro es la peor falla posible de esta parte del
  * producto, así que ahora hay una sola fuente.
  *
- * Cobro (lanzamiento): links de pago directos + asignación manual del plan.
- * Desde Argentina se muestra en ARS (a ARS_POR_USD) y se paga por Mercado Pago;
- * desde el resto del mundo, en USD por PayPal.
+ * La cotización del peso tampoco se escribe acá. Estaba como
+ * `ARS_POR_USD = 1500` y la vidriera la imprimía en la letra chica mientras
+ * Mercado Pago cobraba con `ACEQUIA_ARS_PER_USD`: dos precios para lo mismo.
+ * Ahora sale de `lib/terreno/cotizacion.ts` y la página se la pasa al
+ * componente; si no está configurada, no se muestra ningún precio en pesos.
  *
- * [TODO Jonatan] Precios finales y links de pago dedicados por plan. Los links
- * de MP/PayPal de abajo son los genéricos del sitio.
+ * Desde Argentina se cobra en ARS por Mercado Pago; desde el resto del mundo,
+ * en USD por PayPal.
  */
 
 export const REGISTRO_URL = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/registro`;
-
-/** Cotización para mostrar precios en pesos a quien entra desde Argentina. */
-export const ARS_POR_USD = 1500;
-
-/** Links de pago genéricos del colectivo (los mismos que usa /asesorias). */
-export const MP_LINK = 'https://link.mercadopago.com.ar/arteytierra';
-export function paypalLink(usd: number): string {
-  return `https://paypal.me/arteytierra/${usd}`;
-}
 
 import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
 
@@ -85,6 +78,7 @@ export const PLANES: Plan[] = [
       'Sugerencias automáticas de diseño',
       'Rumbos y replanteo de mojones',
       'Informe sin marca de agua',
+      'Exportación a GeoJSON, KML y GPX',
       `Hasta ${ACEQUIA_PLANS.personal.projects} proyectos activos`,
     ],
   },
@@ -99,7 +93,6 @@ export const PLANES: Plan[] = [
     hereda: 'Todo lo de Personal, y además:',
     incluye: [
       'Informe con tu marca: tu logo y tu matrícula',
-      'Exportación a GeoJSON, KML y GPX',
       `Hasta ${ACEQUIA_PLANS.profesional.projects} proyectos activos`,
       'Ideal si trabajás varios terrenos a la vez',
     ],

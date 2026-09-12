@@ -11,7 +11,10 @@
  * Estos tests no miran `esPlanPago` porque vive en un módulo server-only que
  * arrastra Stripe y Mercado Pago. Miran la única fuente que las dos partes leen.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'node:path';
 import { ACEQUIA_PLANS, acequiaSelfCheckout, type AcequiaPlanId } from '@arteytierra/config/acequia';
 import { PLANES } from '@/lib/terreno/planes';
 
@@ -60,6 +63,66 @@ describe('vidriera y checkout ofrecen lo mismo', () => {
       if (!ACEQUIA_PLANS[id].selfCheckout) continue;
       expect(ACEQUIA_PLANS[id].monthlyUsd).toBeGreaterThan(0);
       expect(ACEQUIA_PLANS[id].annualUsd).toBeGreaterThan(0);
+    }
+  });
+});
+
+/**
+ * La cotización del peso es un precio, y los precios no se escriben dos veces.
+ *
+ * La vidriera tenía `ARS_POR_USD = 1500` y hasta lo imprimía en la letra chica
+ * ("Precios en pesos a 1500 $/USD"), mientras `crearPreapprovalMp` armaba el
+ * importe con `ACEQUIA_ARS_PER_USD`. Si esa variable no vale 1500 —y no tiene
+ * por qué, es la que se actualiza cuando se mueve el dólar—, el visitante leía
+ * un precio y se le cobraba otro.
+ */
+describe('la cotización que se muestra es la que se cobra', () => {
+  const original = process.env.ACEQUIA_ARS_PER_USD;
+  afterEach(() => {
+    if (original === undefined) delete process.env.ACEQUIA_ARS_PER_USD;
+    else process.env.ACEQUIA_ARS_PER_USD = original;
+  });
+
+  async function cotizacion() {
+    return import('@/lib/terreno/cotizacion');
+  }
+
+  it('sin la variable no se muestra ningún precio en pesos', async () => {
+    delete process.env.ACEQUIA_ARS_PER_USD;
+    const { tasaArsPorUsdParaMostrar, tasaArsPorUsd } = await cotizacion();
+    expect(tasaArsPorUsdParaMostrar()).toBeNull();
+    // Para cobrar, en cambio, la ausencia tiene que explotar: un preapproval con
+    // importe NaN es peor que un error.
+    expect(() => tasaArsPorUsd()).toThrow();
+  });
+
+  it('un valor imposible se trata como ausente', async () => {
+    const { tasaArsPorUsdParaMostrar } = await cotizacion();
+    for (const valor of ['0', '-1500', 'mil quinientos', '']) {
+      process.env.ACEQUIA_ARS_PER_USD = valor;
+      expect(tasaArsPorUsdParaMostrar(), valor).toBeNull();
+    }
+  });
+
+  it('devuelve la cotización configurada, sin redondearla por su cuenta', async () => {
+    process.env.ACEQUIA_ARS_PER_USD = '1423.75';
+    const { tasaArsPorUsdParaMostrar } = await cotizacion();
+    expect(tasaArsPorUsdParaMostrar()).toBe(1423.75);
+  });
+
+  it('ni la vidriera ni su componente escriben una cotización propia', () => {
+    const base = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+    const archivos = [
+      join(base, 'lib', 'terreno', 'planes.ts'),
+      join(base, 'components', 'terreno', 'PlanesTerreno.tsx'),
+    ];
+    for (const archivo of archivos) {
+      const codigo = readFileSync(archivo, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .split('\n')
+        .filter((linea) => !linea.trimStart().startsWith('//'))
+        .join('\n');
+      expect(codigo, archivo).not.toMatch(/ARS_POR_USD\s*=\s*\d/);
     }
   });
 });
