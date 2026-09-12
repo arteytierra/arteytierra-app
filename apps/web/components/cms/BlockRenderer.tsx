@@ -158,7 +158,7 @@ function Block({ block }: { block: AnyBlock }) {
       return (
         <Container>
           <Link href={`/cursos/${block.data.slug}` as never} className="mt-12 block rounded-2xl border border-bone-200 bg-bone-50 p-6 hover:border-clay-400 transition">
-            <p className="text-xs uppercase tracking-[0.16em] text-clay-500">Producto destacado</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-clay-700">Producto destacado</p>
             <p className="mt-2 font-display text-xl">{block.data.slug}</p>
           </Link>
         </Container>

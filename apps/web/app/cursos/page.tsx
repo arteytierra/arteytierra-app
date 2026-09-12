@@ -240,7 +240,7 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
       </div>
       <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-5">
         <div>
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{c.tag}</p>
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-2">{c.tag}</p>
           <h3 className="font-display text-2xl md:text-3xl text-ink-950">{c.name}</h3>
         </div>
         <p className="font-sans text-base text-ink-700 leading-relaxed">{c.desc}</p>

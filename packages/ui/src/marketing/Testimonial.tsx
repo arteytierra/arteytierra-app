@@ -12,11 +12,17 @@ interface TestimonialProps {
 export function Testimonial({ body, author, role, avatarUrl, rating, className }: TestimonialProps) {
   return (
     <figure className={cn('rounded-2xl bg-bone-100 p-8 md:p-10', className)}>
+      {/* El puntaje va en texto y las estrellas quedan de adorno: sun-500 sobre
+          bone-100 da 2,12 de contraste y la WCAG pide 3:1 cuando el grafico es
+          la unica forma de leer el dato. */}
       {rating && (
-        <div className="flex gap-0.5 mb-4 text-sun-500">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} className={i < rating ? 'opacity-100' : 'opacity-20'}>★</span>
-          ))}
+        <div className="mb-4">
+          <span className="sr-only">{rating} de 5 estrellas</span>
+          <div aria-hidden className="flex gap-0.5 text-sun-500">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} className={i < rating ? 'opacity-100' : 'opacity-20'}>★</span>
+            ))}
+          </div>
         </div>
       )}
       <blockquote className="font-display text-2xl md:text-3xl leading-snug text-ink-950">

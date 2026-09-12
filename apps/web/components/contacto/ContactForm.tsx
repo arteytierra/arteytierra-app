@@ -92,7 +92,7 @@ export function ContactForm() {
       </div>
 
       <div>
-        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">
+        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-3">
           ¿Qué buscás? Podés marcar varios
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

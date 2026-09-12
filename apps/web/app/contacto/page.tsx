@@ -63,7 +63,7 @@ export default function ContactoPage() {
           {/* CONTACTO DIRECTO */}
           <div className="lg:col-span-2 flex flex-col gap-8">
             <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-5">Contacto directo</p>
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-5">Contacto directo</p>
               <div className="flex flex-col gap-4">
                 <a href="mailto:info.arteytierra@gmail.com"
                   className="flex items-center gap-3 font-sans text-sm text-bone-200 hover:text-bone-50 transition-colors">

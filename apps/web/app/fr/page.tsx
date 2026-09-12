@@ -252,7 +252,7 @@ export default function FrHomePage() {
                   <p className="font-display text-lg text-bone-100 leading-relaxed italic">{t.quote}</p>
                   <div className="mt-auto">
                     <span className="text-sm font-sans font-semibold text-clay-300">— {t.author}</span>
-                    {t.role && <span className="text-sm font-sans text-clay-500"> · {t.role}</span>}
+                    {t.role && <span className="text-sm font-sans text-clay-300"> · {t.role}</span>}
                   </div>
                 </div>
               ))}

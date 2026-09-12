@@ -197,7 +197,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                   className={`p-6 border-l-4 ${m.highlighted ? 'bg-clay-700 border-clay-500' : 'bg-clay-700/10 border-clay-700'}`}
                 >
                   <div className="flex flex-wrap items-baseline gap-3 mb-2">
-                    <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500">{m.num}</span>
+                    <span className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200">{m.num}</span>
                     {m.date && <span className="text-xs font-sans text-bone-200">{m.date}</span>}
                   </div>
                   <h3 className={`font-display text-xl mb-3 ${m.highlighted ? 'text-bone-50' : 'text-bone-100'}`}>{m.title}</h3>
@@ -207,11 +207,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                   {m.teoria && m.practica ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1.5">Teoría</p>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-200 mb-1.5">Teoría</p>
                         <p className="font-sans text-sm text-bone-200 leading-relaxed">{m.teoria}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1.5">Práctica</p>
+                        <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-200 mb-1.5">Práctica</p>
                         <p className="font-sans text-sm text-bone-200 leading-relaxed">{m.practica}</p>
                       </div>
                     </div>

@@ -163,7 +163,7 @@ export default function TayPichinPage() {
 
           {/* Contenido */}
           <div>
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">— Ecohostel</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">— Ecohostel</p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-6 leading-tight">
               Dormir dentro de la <em>tierra.</em>
             </h2>

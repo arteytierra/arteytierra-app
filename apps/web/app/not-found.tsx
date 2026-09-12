@@ -8,7 +8,7 @@ export default function NotFound() {
       <SiteHeader />
       <main className="min-h-[65vh] bg-bone-50 flex items-center justify-center px-6 py-24">
         <div className="max-w-xl text-center">
-          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-5">
+          <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-5">
             Error 404
           </p>
           <h1 className="font-display text-5xl md:text-6xl text-ink-950 mb-6 leading-tight">

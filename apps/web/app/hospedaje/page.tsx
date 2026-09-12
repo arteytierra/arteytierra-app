@@ -95,11 +95,21 @@ const RESENAS = [
   },
 ];
 
+/**
+ * Las estrellas son el puntaje: no hay texto al lado que diga lo mismo. En
+ * sun-500 sobre fondo claro dan 2,12 de contraste, muy por debajo del 3:1 que
+ * pide la WCAG para un grafico con significado. En vez de tocar el color de
+ * marca se les saca el significado: el puntaje va en texto para lectores de
+ * pantalla y los signos quedan de adorno.
+ */
 function Stars({ n, max = 5 }: { n: number; max?: number }) {
   const normalized = max === 10 ? Math.round(n / 2) : n;
   return (
-    <span className="text-sun-500 text-sm tracking-tight">
-      {'★'.repeat(normalized)}{'☆'.repeat(5 - normalized)}
+    <span className="text-sm tracking-tight">
+      <span className="sr-only">{normalized} de 5 estrellas</span>
+      <span aria-hidden className="text-sun-500">
+        {'★'.repeat(normalized)}{'☆'.repeat(5 - normalized)}
+      </span>
     </span>
   );
 }

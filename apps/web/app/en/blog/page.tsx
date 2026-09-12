@@ -48,7 +48,7 @@ export default async function BlogIndexEn() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.cover_url} alt="" className="aspect-[4/3] w-full rounded-2xl object-cover" />
                     )}
-                    <p className="mt-4 text-xs uppercase tracking-[0.16em] text-clay-500">
+                    <p className="mt-4 text-xs uppercase tracking-[0.16em] text-clay-700">
                       {new Date(p.published_at!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                     <h2 className="mt-2 font-display text-2xl leading-tight group-hover:text-clay-600 transition">
