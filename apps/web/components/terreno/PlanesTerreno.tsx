@@ -5,6 +5,8 @@ import { Check } from 'lucide-react';
 import { PLANES, REGISTRO_URL, ARS_POR_USD, type Plan } from '@/lib/terreno/planes';
 
 const SUSCRIBIR_BASE = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/suscribir`;
+/** Para los planes cuyo alta pasa por una persona (hoy, Estudio). */
+const CONSULTA_URL = '/contacto';
 
 type Moneda = 'ARS' | 'USD';
 
@@ -87,10 +89,21 @@ function PlanCard({ plan, anual, moneda }: { plan: Plan; anual: boolean; moneda:
   const periodo = anual ? '/año' : '/mes';
 
   const proveedor = moneda === 'ARS' ? 'mercadopago' : 'paypal';
+  // Un plan que no se contrata solo no lleva botón de pago. Estudio lo llevaba
+  // y el checkout no lo acepta —sus cinco asientos se dan de alta a mano—, así
+  // que el visitante recorría la confirmación del plan más caro para recibir un
+  // error. Quién puede comprarse solo lo dice `ACEQUIA_PLANS[].selfCheckout`,
+  // la misma fuente que valida el checkout.
   const pagoHref = gratis
     ? REGISTRO_URL
-    : `${SUSCRIBIR_BASE}?plan=${plan.id}&periodo=${anual ? 'anual' : 'mensual'}&pago=${proveedor}`;
-  const pagoLabel = gratis ? 'Empezá gratis' : 'Suscribirme';
+    : plan.compraEnLinea
+      ? `${SUSCRIBIR_BASE}?plan=${plan.id}&periodo=${anual ? 'anual' : 'mensual'}&pago=${proveedor}`
+      : `${CONSULTA_URL}?plan=${plan.id}`;
+  const pagoLabel = gratis
+    ? 'Empezá gratis'
+    : plan.compraEnLinea
+      ? 'Suscribirme'
+      : 'Pedir una cuenta';
 
   return (
     <div

@@ -28,14 +28,34 @@ export interface AcequiaPlanDefinition {
    *  cinco cuentas independientes, cada una con su propio tope de proyectos, no
    *  cinco personas sobre el mismo proyecto. */
   seats: number;
+  /** El plan se contrata solo, de punta a punta, sin que nadie intervenga.
+   *
+   *  Falso no significa "no se vende": significa que el alta pasa por una
+   *  persona. Semilla es gratis y se resuelve con el registro. Estudio no se
+   *  puede cobrar todavia porque sus cinco asientos se dan de alta a mano, y
+   *  ofrecerlo con un boton de pago fue exactamente el problema: la vidriera de
+   *  arteytierra.org/acequia lo anunciaba a 35/350 y mandaba al checkout, que
+   *  rechaza cualquier plan que no sea Personal o Profesional. El visitante
+   *  recorria la pantalla de confirmacion del plan mas caro para recibir un
+   *  error al final. Con los pagos apagados eso no se notaba.
+   *
+   *  Cuando los asientos de Estudio esten implementados, esto pasa a true y el
+   *  boton de la vidriera vuelve al checkout sin tocar nada mas. */
+  selfCheckout: boolean;
 }
 
 export const ACEQUIA_PLANS: Record<AcequiaPlanId, AcequiaPlanDefinition> = {
-  semilla:      { id: 'semilla',      name: 'Semilla',      monthlyUsd: null, annualUsd: null, projects: 1,  seats: 1 },
-  personal:     { id: 'personal',     name: 'Personal',     monthlyUsd: 7,    annualUsd: 70,   projects: 2,  seats: 1 },
-  profesional:  { id: 'profesional',  name: 'Profesional',  monthlyUsd: 15,   annualUsd: 150,  projects: 10, seats: 1 },
-  estudio:      { id: 'estudio',      name: 'Estudio',      monthlyUsd: 35,   annualUsd: 350,  projects: 10, seats: 5 },
+  semilla:      { id: 'semilla',      name: 'Semilla',      monthlyUsd: null, annualUsd: null, projects: 1,  seats: 1, selfCheckout: false },
+  personal:     { id: 'personal',     name: 'Personal',     monthlyUsd: 7,    annualUsd: 70,   projects: 2,  seats: 1, selfCheckout: true  },
+  profesional:  { id: 'profesional',  name: 'Profesional',  monthlyUsd: 15,   annualUsd: 150,  projects: 10, seats: 1, selfCheckout: true  },
+  estudio:      { id: 'estudio',      name: 'Estudio',      monthlyUsd: 35,   annualUsd: 350,  projects: 10, seats: 5, selfCheckout: false },
 };
+
+/** Los planes que una persona puede contratar sin que intervenga nadie. */
+export function acequiaSelfCheckout(plan: string): boolean {
+  const resuelto = resolveAcequiaPaidPlan(plan);
+  return resuelto !== null && ACEQUIA_PLANS[resuelto].selfCheckout;
+}
 
 export function isAcequiaPaidPlan(value: string): value is AcequiaPaidPlanId {
   return value === 'personal' || value === 'profesional' || value === 'estudio';

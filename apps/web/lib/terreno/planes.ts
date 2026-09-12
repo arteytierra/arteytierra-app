@@ -42,11 +42,18 @@ export interface Plan {
   /** Encabezado de la lista, ej. "Todo lo de Semilla, y además:" */
   hereda?: string;
   incluye: string[];
+  /**
+   * El plan se contrata solo. Sale de `ACEQUIA_PLANS[].selfCheckout`, que es la
+   * misma fuente que decide qué acepta el checkout, para que la vidriera no
+   * pueda volver a ofrecer un botón de pago que termina en un error.
+   */
+  compraEnLinea: boolean;
 }
 
 export const PLANES: Plan[] = [
   {
     id: 'semilla',
+    compraEnLinea: ACEQUIA_PLANS.semilla.selfCheckout,
     nombre: 'Semilla',
     tagline: 'Conocé tu terreno. Gratis, para siempre.',
     precioMensualUSD: null,
@@ -63,6 +70,7 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'personal',
+    compraEnLinea: ACEQUIA_PLANS.personal.selfCheckout,
     nombre: ACEQUIA_PLANS.personal.name,
     tagline: 'Todo el análisis y el diseño, para tu proyecto.',
     precioMensualUSD: ACEQUIA_PLANS.personal.monthlyUsd,
@@ -82,6 +90,7 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'profesional',
+    compraEnLinea: ACEQUIA_PLANS.profesional.selfCheckout,
     nombre: ACEQUIA_PLANS.profesional.name,
     tagline: 'Para quien diseña predios y los entrega firmados.',
     precioMensualUSD: ACEQUIA_PLANS.profesional.monthlyUsd,
@@ -97,6 +106,7 @@ export const PLANES: Plan[] = [
   },
   {
     id: 'estudio',
+    compraEnLinea: ACEQUIA_PLANS.estudio.selfCheckout,
     nombre: ACEQUIA_PLANS.estudio.name,
     tagline: 'Para el equipo que entrega varios proyectos a la vez.',
     precioMensualUSD: ACEQUIA_PLANS.estudio.monthlyUsd,

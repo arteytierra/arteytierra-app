@@ -79,6 +79,32 @@ describe('catálogo de planes', () => {
     }
   });
 
+  it('el trigger de la base cuenta la prueba como plan pago', () => {
+    // La 0051 miraba estado IN ('prueba','activa'); la 0057 reescribió la
+    // función para arreglarle el ELSE NULL y se quedó sólo con 'activa'. Con la
+    // prueba prendida, eso le daba el tope de Semilla —un proyecto— a alguien
+    // que está probando Profesional, mientras planEfectivo() del servidor le
+    // daba el plan entero. Lo arregló la 0062 y queda fijado acá.
+    const raiz = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..');
+    const dir = join(raiz, 'supabase/migrations');
+    const archivo = readdirSync(dir)
+      .filter((n) => n.endsWith('.sql'))
+      .sort()
+      .reverse()
+      .find((n) => readFileSync(join(dir, n), 'utf8').includes('lim := CASE plan_usuario'));
+    // Se miran las sentencias, no los comentarios: el encabezado de la 0062
+    // explica cuál era el ELSE NULL que se arregló, y nombrarlo no es tenerlo.
+    const sql = readFileSync(join(dir, archivo!), 'utf8')
+      .split('\n')
+      .filter((linea) => !linea.trimStart().startsWith('--'))
+      .join('\n');
+    expect(sql).toContain("s.estado = 'prueba'");
+    expect(sql).toContain('s.trial_end > now()');
+    // Y el default del CASE sigue siendo el tope más chico, no "sin tope".
+    expect(sql).toMatch(/ELSE 1\s*$/m);
+    expect(sql).not.toContain('ELSE NULL');
+  });
+
   it('el informe con marca propia arranca en Profesional', () => {
     expect(can('personal', 'informe.white_label')).toBe(false);
     expect(can('profesional', 'informe.white_label')).toBe(true);

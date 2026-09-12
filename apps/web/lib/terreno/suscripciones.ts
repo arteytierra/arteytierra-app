@@ -4,6 +4,7 @@ import {
   ACEQUIA_PLANS,
   ACEQUIA_TRIAL_DAYS,
   acequiaPlanPrice,
+  acequiaSelfCheckout,
   addAcequiaTrialDays,
   isAcequiaBillingPeriod,
   isAcequiaPaidPlan,
@@ -39,8 +40,19 @@ const NOMBRE: Record<PlanPago, string> = {
   profesional: ACEQUIA_PLANS.profesional.name,
 };
 
+/**
+ * Qué planes acepta el checkout. Lo decide `selfCheckout` del catálogo
+ * compartido y no una lista escrita acá: la vidriera lee lo mismo, así que no
+ * puede volver a ofrecer un botón de pago para un plan que esto rechaza.
+ */
 export function esPlanPago(v: string): v is PlanPago {
-  return (v === 'personal' || v === 'profesional') && isAcequiaPaidPlan(v);
+  if (!isAcequiaPaidPlan(v) || !acequiaSelfCheckout(v)) return false;
+  // `PlanPago` excluye 'estudio' estáticamente, y `PRECIO_USD` y `NOMBRE` de
+  // arriba tampoco lo tienen, así que esta línea además de filtrar estrecha el
+  // tipo. El día que Estudio se pueda cobrar no alcanza con poner `selfCheckout`
+  // en true: hay que ampliar el tipo y las dos tablas. Lo recuerda el test
+  // `apps/web/tests/unit/acequia-planes.test.ts`.
+  return v !== 'estudio';
 }
 export function esPeriodo(v: string): v is Periodo {
   return isAcequiaBillingPeriod(v);

@@ -1,5 +1,10 @@
 import { redirect } from 'next/navigation';
-import { addAcequiaTrialDays, resolveAcequiaPaidPlan, type AcequiaBillingPeriod } from '@arteytierra/config/acequia';
+import {
+  acequiaSelfCheckout,
+  addAcequiaTrialDays,
+  resolveAcequiaPaidPlan,
+  type AcequiaBillingPeriod,
+} from '@arteytierra/config/acequia';
 import { getCurrentUser } from '@/lib/auth/session';
 import { SuscribirConfirm } from '@/components/SuscribirConfirm';
 
@@ -15,6 +20,12 @@ export default async function SuscribirPage({
   const periodo: AcequiaBillingPeriod = sp.periodo === 'mensual' ? 'mensual' : 'anual';
 
   if (!plan) redirect('/mapa');
+
+  // Un plan válido puede no ser contratable solo. Estudio es el caso: sus cinco
+  // asientos se dan de alta a mano y el checkout lo rechaza. Sin esta guarda la
+  // pantalla de confirmación se mostraba igual y el error llegaba recién al
+  // apretar el botón de pago, después de anunciar el precio.
+  if (!acequiaSelfCheckout(plan)) redirect('/mapa');
 
   // Requiere sesión; si no hay, registrarse y volver acá.
   const user = await getCurrentUser();
