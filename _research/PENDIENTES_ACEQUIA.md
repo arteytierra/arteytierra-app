@@ -156,7 +156,21 @@ más se equivocaba. Las cuatro están cerradas, con 33 tests entre las dos tanda
 
 ---
 
-## 4. Los saberes territoriales — 1 activo de 85
+## 4. Los saberes territoriales — 2 activos de 85
+
+> **12/09/2026: el segundo se activó, y la vía fue otra.** `polder_y_waterschap`
+> (Países Bajos) está aprobado y en el código. El dataset oficial de PDOK que este
+> informe daba por viable resultó **CC BY-NC-ND 4.0** en la ficha del Nationaal
+> Georegister: prohíbe cobrar y prohíbe derivar, o sea las dos cosas que hace la app.
+> Se activó por OpenStreetMap bajo ODbL, la misma vía del Quesungual, disolviendo las
+> 21 jurisdicciones antes de simplificar. De los tres europeos con cartografía oficial
+> la cuenta real por esa vía es **cero de tres**, no uno de tres: las cañadas reales son
+> líneas y los límites de crofting no son datos abiertos. El detalle, en
+> `ESTADO_FASE_2_SABERES.md`.
+>
+> El punto 2 de abajo (las fuentes por saber de los 26 europeos) dejó de ser un
+> bloqueo estructural: el generador ahora las lee de la ficha del inventario, y el
+> neerlandés ya tiene tres verificadas. Los otros 25 siguen con `fuentes: []`.
 
 La capa está construida, probada y conectada a la interfaz (`/api/saberes`, el hook,
 la sección en `ContextoPanel` y en `InformeView`, con la atribución que ODbL exige).

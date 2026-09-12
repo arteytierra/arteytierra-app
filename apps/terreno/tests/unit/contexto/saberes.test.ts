@@ -76,14 +76,14 @@ describe('inventario de saberes territoriales', () => {
 
   it('sólo aprueba lo que tiene geometría cargada: ni uno más', () => {
     const aprobados = SABERES_TERRITORIALES.filter((s) => s.estado === 'aprobado').map((s) => s.id);
-    expect(aprobados).toEqual(['cac_quesungual']);
+    expect(aprobados).toEqual(['cac_quesungual', 'polder_y_waterschap']);
     for (const id of aprobados) expect(GEOMETRIAS_SABERES[id]).toBeDefined();
   });
 });
 
 describe('registro de geometrías', () => {
   it('tiene sólo las que pasaron procedencia y licencia', () => {
-    expect(Object.keys(GEOMETRIAS_SABERES)).toEqual(['cac_quesungual']);
+    expect(Object.keys(GEOMETRIAS_SABERES)).toEqual(['cac_quesungual', 'polder_y_waterschap']);
   });
 
   it('cada geometría declara fuente, url y una licencia admitida', () => {
@@ -133,6 +133,45 @@ describe('Quesungual: la primera activación de América', () => {
 
   it('sin país no activa, aunque el punto caiga adentro', () => {
     expect(saberesActivos({ lat: gracias.lat, lng: gracias.lng })).toEqual([]);
+  });
+});
+
+describe('Polder y waterschap: la primera de Europa', () => {
+  // El polígono son las 21 jurisdicciones de waterschap disueltas (OSM, ODbL).
+  it('se activa en Ámsterdam', () => {
+    expect(saberesActivos({ lat: 52.3728, lng: 4.8936, pais: 'NL' }).map((s) => s.id))
+      .toEqual(['polder_y_waterschap']);
+  });
+
+  it('se activa en el pólder de Beemster, que es el caso de manual', () => {
+    // Droogmakerij de Beemster, Patrimonio Mundial: pólder de 1612.
+    expect(saberesActivos({ lat: 52.55, lng: 4.92, pais: 'NL' }).map((s) => s.id))
+      .toEqual(['polder_y_waterschap']);
+  });
+
+  it('se activa en Limburgo, donde hay waterschap y no hay pólder', () => {
+    // No es un error: el polígono es la jurisdicción de la institución, y la
+    // cautela del saber lo dice. Queda fijado para que nadie lo "corrija"
+    // recortando el polígono sin cambiar también lo que el saber afirma.
+    const activos = saberesActivos({ lat: 50.8514, lng: 5.691, pais: 'NL' });
+    expect(activos.map((s) => s.id)).toEqual(['polder_y_waterschap']);
+    expect(activos[0]?.cautelas[0]).toContain('no el perímetro de los pólderes');
+  });
+
+  it('no se activa del otro lado de la frontera', () => {
+    // Amberes y Colonia están a menos de 50 km del polígono.
+    expect(saberesActivos({ lat: 51.2194, lng: 4.4025, pais: 'BE' })).toEqual([]);
+    expect(saberesActivos({ lat: 50.9375, lng: 6.9603, pais: 'DE' })).toEqual([]);
+  });
+
+  it('no se activa en el mar del Norte', () => {
+    expect(saberesActivos({ lat: 52.5, lng: 3.5, pais: 'NL' })).toEqual([]);
+  });
+
+  it('declara las tres fuentes verificadas y una licencia admitida', () => {
+    const saber = SABERES_TERRITORIALES.find((s) => s.id === 'polder_y_waterschap');
+    expect(saber?.fuentes).toHaveLength(3);
+    expect(GEOMETRIAS_SABERES['polder_y_waterschap']?.licencia).toBe('ODbL-1.0');
   });
 });
 
@@ -200,10 +239,12 @@ describe('resumen', () => {
   it('cuenta lo que hay y lo que falta', () => {
     expect(resumenSaberes()).toEqual({
       documentados: 85,
-      conFuente: 59,
+      // 60 y no 59: el waterschap neerlandés estrenó las fuentes por saber de
+      // Europa, que el relevamiento había citado por región.
+      conFuente: 60,
       conEcorregiones: 45,
-      conGeometria: 1,
-      aprobados: 1,
+      conGeometria: 2,
+      aprobados: 2,
     });
   });
 });

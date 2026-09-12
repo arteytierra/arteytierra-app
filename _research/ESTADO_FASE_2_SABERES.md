@@ -56,7 +56,68 @@ Para uso editorial —una nota, un índice, una convocatoria— está
 `saberesDocumentados({ pais, region })`, que lista sin pretender que el saber
 sea del predio de quien mira.
 
+## Actualización del 12/09/2026 — dos activos, y el neerlandés no salió por donde se esperaba
+
+**El waterschap neerlandés está activo, pero por OpenStreetMap y no por PDOK.**
+Lo que sigue abajo daba este saber por viable con la cartografía oficial. Se fue
+a buscarla y la licencia no aguantó la verificación:
+
+- El feed Atom del servicio de PDOK declara `CC-BY-SA-4.0` en `<rights>`, que sí
+  está admitida. **Pero la ficha del dataset en el Nationaal Georegister**
+  —`465f0e0b-9e7f-4a5f-b005-9fd0c9131e97`, el registro que PDOK mismo señala
+  como autoridad de cada conjunto— declara en `gmd:otherConstraints` un anchor a
+  `creativecommons.org/licenses/by-nc-nd/4.0/deed.nl`, con el texto *"Niet
+  Commercieel, Geen Afgeleide Werken, Naamsvermelding verplicht"*.
+- **CC BY-NC-ND es incompatible dos veces**: NC prohíbe el uso comercial y
+  acequia cobra; ND prohíbe las obras derivadas y el polígono hay que
+  simplificarlo. No hay forma de usarlo.
+
+De los tres europeos con cartografía oficial, entonces, la cuenta corregida por
+esa vía es **cero de tres**, no uno de tres. La advertencia que este mismo
+documento se hacía —"PDOK aclara que cada dataset puede declarar la suya en la
+metadata del NGR, así que hay que confirmarla en la ficha concreta y no en la
+política general"— era exactamente el problema, y se cumplió.
+
+**Lo que sí funcionó: la vía del Quesungual.** Las 21 jurisdicciones de
+waterschap están mapeadas en OpenStreetMap como relaciones administrativas, bajo
+**ODbL-1.0**, que permite uso comercial y derivadas con atribución y misma
+licencia. Se trajeron por el lookup de Nominatim, se **disolvieron** y después se
+simplificaron: 33 polígonos y 110.678 vértices quedaron en uno con 23 anillos y
+557 vértices, con el área moviéndose 0,01 % (41.297 km² contra 41.292).
+
+El orden importa, y es la parte reutilizable del método: simplificar cada
+jurisdicción por separado corre cada borde interno unos cientos de metros para su
+lado y deja huecos entre vecinas. En un hueco el punto no cae en ningún
+waterschap y el saber no se activaría por una razón que no es territorial.
+
+Verificado contra 15 puntos conocidos antes de cargarlo: las diez ciudades
+neerlandesas de la prueba caen adentro (Ámsterdam, Beemster, Róterdam,
+Maastricht, Texel, Leeuwarden, Groninga, Enschede, Middelburg y Lelystad), y
+Amberes, Bruselas, Colonia, Emden y el mar del Norte quedan afuera.
+
+**Qué delimita:** la jurisdicción del waterschap, que es la institución que
+administra el agua, no el pólder. Limburgo tiene waterschap y no tiene pólderes.
+Es una cota superior honesta —el mismo caso que Lempira— y está escrito en las
+cautelas del saber, que se muestran siempre. Hay un test que fija que se activa
+en Limburgo *a propósito*, para que nadie lo "corrija" recortando el polígono sin
+cambiar también lo que el saber afirma.
+
+**De paso, estrenó las fuentes por saber de Europa.** Los 26 europeos nacieron
+con `fuentes: []` porque el relevamiento citó por región. El neerlandés lleva
+tres, verificadas el 12/09/2026 contra la URL: la Waterschapswet en
+wetten.overheid.nl, la página de waterschappen de Rijksoverheid y la ficha 899 de
+UNESCO (Droogmakerij de Beemster). El generador ahora lee `fuentes`,
+`portadores`, `cautelas`, `eco_ids_compatibles` y `territorio.estado` de la ficha
+del inventario en vez de tenerlos escritos en el código, así que el próximo
+europeo se activa editando el JSON.
+
+**Cuenta al 12/09/2026:** 85 documentados · 60 con fuente · 45 con ecorregiones ·
+**2 con geometría y aprobados** (`cac_quesungual`, `polder_y_waterschap`).
+
 ## Lo que falta, y en qué orden conviene
+
+> **Leer esta sección junto con la actualización de arriba.** El punto 1 quedó
+> resuelto para los Países Bajos, y descartado para los otros dos.
 
 **1. Los tres europeos con cartografía oficial ya publicada.** Estaban marcados
 `cartografia_oficial_sin_licencia` y se suponía que les faltaba un solo paso:

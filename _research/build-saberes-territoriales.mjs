@@ -57,12 +57,25 @@ const PAIS_EURO = {
   bisses_del_valais: ['CH'],
 };
 
-// El relevamiento europeo anoto cuales tienen cartografia oficial publicada y
-// esperan solo la verificacion de licencia. Son los tres candidatos reales a
-// pasar a geometria sin trabajo de campo.
+// El relevamiento europeo anoto cuales tienen cartografia oficial publicada, y
+// se suponia que a los tres les faltaba solo verificar la licencia. Verificado
+// el 08 y el 12/09/2026: por esa via no se activa ninguno de los tres.
+//
+//   · Canadas reales (ES): la cartografia del MITECO es de LINEAS, y un punto
+//     no cae "dentro" de una linea sin inventar un buffer. Ademas su licencia
+//     es de atribucion propia del ministerio, que no es de las admitidas.
+//   · Crofting (GB): los limites viven en un producto pago de Registers of
+//     Scotland derivado de Ordnance Survey. El open data es tabular.
+//   · Polder y waterschap (NL): el feed Atom de PDOK dice CC-BY-SA-4.0, pero la
+//     ficha del dataset en el NGR declara CC BY-NC-ND 4.0 — no comercial y sin
+//     derivadas. Incumple las dos cosas que acequia necesita.
+//
+// El waterschap se activo igual, por OpenStreetMap bajo ODbL, que es la misma
+// via del Quesungual. Eso ya no se decide aca: lo declara su ficha en el
+// inventario con `territorio.estado`, y esta lista solo marca a los que siguen
+// esperando. Un id que aparezca en las dos partes gana por la ficha.
 const CON_CARTOGRAFIA_OFICIAL = new Set([
   'trashumancia_por_canadas_reales',
-  'polder_y_waterschap',
   'crofting',
 ]);
 
@@ -102,16 +115,24 @@ for (const s of euro) {
     id: s.id,
     nombre: s.nombre,
     region: 'europa-occidental',
-    portadores: s.region_cultural,
+    // `region_cultural` del inventario europeo no son los portadores: es la
+    // region donde el saber se practica. Sirve de respaldo, pero el que se
+    // active tiene que nombrar a sus portadores en la ficha.
+    portadores: s.portadores ?? s.region_cultural,
     paises: PAIS_EURO[s.id] ?? [],
-    ecoIdsCompatibles: [],
+    ecoIdsCompatibles: s.eco_ids_compatibles ?? [],
     territorioMinimo: `${s.territorio_declarado} — unidad mínima: ${s.territorio_minimo}.`,
-    sintesisPublica: s.descripcion,
-    cautelas: s.cautela ? [s.cautela] : [],
-    // El relevamiento europeo cito las fuentes por region, no por saber; estan
-    // en FUENTES.md y todavia no se pueden atribuir una a una.
-    fuentes: [],
-    estado: CON_CARTOGRAFIA_OFICIAL.has(s.id) ? 'cartografia_oficial_sin_licencia' : 'documentado_sin_geometria',
+    sintesisPublica: s.sintesis_publica ?? s.descripcion,
+    cautelas: s.cautelas ?? (s.cautela ? [s.cautela] : []),
+    // El relevamiento europeo cito las fuentes por region, no por saber, y
+    // estan en FUENTES.md: los 26 nacieron con `fuentes: []`. Las que se
+    // atribuyen una a una se escriben en la ficha del inventario, y de ahi
+    // salen; sin fuente la compuerta no activa, asi que esto no es cosmetico.
+    fuentes: (s.fuentes ?? []).map((f) => ({
+      label: f.label, url: f.url, revisada: f.revisada ?? f.fecha_consulta,
+    })),
+    estado: s.territorio?.estado
+      ?? (CON_CARTOGRAFIA_OFICIAL.has(s.id) ? 'cartografia_oficial_sin_licencia' : 'documentado_sin_geometria'),
     fuenteInventario: '_research/ecosistemas-saberes-europa-occidental/CAPAS_CULTURALES_LOCALES.md',
   });
 }

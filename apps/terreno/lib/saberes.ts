@@ -15,10 +15,11 @@
  *   8. El punto cae dentro del polígono.
  *
  * `GEOMETRIAS_SABERES` estuvo vacío a propósito hasta que hubo una geometría
- * con procedencia y licencia verificadas. Hoy tiene una —el Quesungual sobre el
- * departamento de Lempira— y por eso `saberesActivos` ya puede devolver algo,
- * pero sólo adentro de ese polígono: en todo el resto del mundo sigue
- * devolviendo `[]`, que es el estado correcto mientras no haya cartografía.
+ * con procedencia y licencia verificadas. Hoy tiene dos —el Quesungual sobre el
+ * departamento de Lempira y el waterschap neerlandés— y por eso
+ * `saberesActivos` ya puede devolver algo, pero sólo adentro de esos dos
+ * polígonos: en todo el resto del mundo sigue devolviendo `[]`, que es el
+ * estado correcto mientras no haya cartografía.
  *
  * Para uso editorial —listar qué hay documentado para una región, escribir una
  * nota, armar una convocatoria— está `saberesDocumentados`, que no pretende que
@@ -70,9 +71,20 @@ export const LICENCIAS_ADMITIDAS: readonly string[] = [
  * Lempira tiene polígono publicado bajo ODbL. Los saberes indígenas de América
  * necesitan el acuerdo antes que el mapa, no después.
  *
- * Los tres candidatos europeos marcados `cartografia_oficial_sin_licencia`
- * —cañadas reales (ES), polders y waterschappen (NL), crofting townships (GB)—
- * tienen cartografía oficial publicada y les falta sólo el paso 2.
+ * El segundo es el waterschap neerlandés, y su historia es la advertencia del
+ * paso 2. Los tres candidatos europeos estaban marcados
+ * `cartografia_oficial_sin_licencia` porque tenían cartografía oficial
+ * publicada y se suponía que sólo faltaba mirar la licencia. Mirada de cerca,
+ * **ninguno de los tres servía**: las cañadas reales españolas son líneas —un
+ * punto no cae "dentro" de una línea— y su licencia es de atribución propia
+ * del MITECO; los límites de crofting escoceses no son datos abiertos; y el
+ * dataset neerlandés de PDOK, que el relevamiento daba por CC-BY-4.0 leyendo la
+ * política general, declara en la ficha del Nationaal Georegister CC BY-NC-ND
+ * 4.0: prohíbe cobrar y prohíbe derivar, o sea prohíbe las dos cosas que esta
+ * app hace. Se activó igual, pero por la misma vía que el Quesungual:
+ * OpenStreetMap bajo ODbL. La lección es la del paso 2 escrita al pie: la
+ * licencia que vale es la del conjunto concreto, no la del portal que lo
+ * publica.
  */
 export const GEOMETRIAS_SABERES: Readonly<Record<string, GeometriaSaber>> = GEOMETRIAS;
 

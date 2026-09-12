@@ -16,7 +16,7 @@
  * Por eso ninguno de estos 85 se activa por país, por Köppen ni por
  * ecorregión: hace falta un polígono con procedencia y licencia verificadas, y
  * el punto tiene que caer adentro. Hoy hay 85 documentados y
- * 1 con territorio aprobado. La regla y el registro de geometrías
+ * 2 con territorio aprobado. La regla y el registro de geometrías
  * viven en `lib/saberes.ts`.
  *
  * Reparto: mesoamerica-caribe 9, mexico-estados-unidos 21, europa-occidental 26, sudamerica 29.
@@ -763,14 +763,22 @@ export const SABERES_TERRITORIALES: readonly SaberTerritorial[] = [
     id: "polder_y_waterschap",
     nombre: "Polder y waterschap",
     region: "europa-occidental",
-    portadores: "Francia, Bélgica, Países Bajos, Luxemburgo",
+    portadores: "Waterschappen y hoogheemraadschappen: 21 corporaciones públicas de derecho propio, con junta electa y potestad de cobrar su propio impuesto",
     paises: ["NL"],
     ecoIdsCompatibles: [],
     territorioMinimo: "Países Bajos — unidad mínima: polder.",
-    sintesisPublica: "Gestión colectiva del nivel freático por corporación de agua, con estatuto público desde el siglo XIII.",
-    cautelas: [],
-    fuentes: [],
-    estado: "cartografia_oficial_sin_licencia",
+    sintesisPublica: "El nivel del agua lo administra una corporación pública propia —el waterschap—, con junta electa e impuesto propio, separada del municipio y de la provincia. Las primeras son del siglo XIII y hoy son 21; la Waterschapswet fija su estatuto. Sobre esa administración se sostiene el pólder: tierra ganada al agua que sólo sigue siendo tierra mientras alguien bombee.",
+    cautelas: [
+      "El polígono es la jurisdicción del waterschap, que administra el agua, no el perímetro de los pólderes. Limburgo tiene waterschap y no tiene pólderes: dentro del polígono hay territorio que nunca se ganó al agua.",
+      "Es una institución, no una técnica que un predio pueda adoptar por su cuenta: lo que la hace funcionar es la junta electa, el impuesto y la obligación legal de mantener un nivel de agua acordado entre vecinos.",
+      "La cartografía oficial de PDOK quedó afuera a propósito: su ficha en el Nationaal Georegister declara CC BY-NC-ND 4.0, que prohíbe el uso comercial y las obras derivadas. El polígono que se usa es de OpenStreetMap.",
+    ],
+    fuentes: [
+      { label: "Waterschapswet — el estatuto público de los waterschappen (wetten.overheid.nl, BWBR0005108)", url: "https://wetten.overheid.nl/BWBR0005108/", revisada: "2026-09-12" },
+      { label: "Waterschappen — Rijksoverheid (gobierno de los Países Bajos)", url: "https://www.rijksoverheid.nl/themas/klimaat-milieu-en-natuur/waterschappen", revisada: "2026-09-12" },
+      { label: "Droogmakerij de Beemster (Beemster Polder) — Patrimonio Mundial UNESCO, ficha 899", url: "https://whc.unesco.org/en/list/899/", revisada: "2026-09-12" },
+    ],
+    estado: "aprobado",
     fuenteInventario: "_research/ecosistemas-saberes-europa-occidental/CAPAS_CULTURALES_LOCALES.md",
   },
   {
