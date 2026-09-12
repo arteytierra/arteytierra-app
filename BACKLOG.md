@@ -90,14 +90,37 @@ línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si u
 - [ ] Setear las variables de entorno que falten en Vercel.
 - [ ] Validar `/mapa` y `/informe/*` en producción (están detrás de login y
   ningún agente puede verlas).
-- [ ] Decidir si se sube a GitHub la rama
-  `claude/agente-anteproyectos-arquitectonicos-34f532`: **13 commits de
-  anteproyectos que hoy existen sólo en este disco.**
+- [ ] **Prender la protección de contraseñas filtradas** en Supabase:
+  Authentication → Policies. Es un clic y no hay herramienta MCP que lo haga.
+- [x] ~~Subir la rama de anteproyectos, que existía sólo en este disco.~~
+  Respaldada el 12/09 como `backup/anteproyectos-a4` (13 commits). La rama
+  local sigue siendo `claude/agente-anteproyectos-arquitectonicos-34f532`.
 - [ ] Conectores: autorizar GitHub, reconectar Zoom, y desinstalar los bundles
   de plugin duplicados (`/plugin manage` en una terminal `claude`
   interactiva). Ver la memoria `reference_conectores_estado`.
 
 ---
+
+## No tocar — está así a propósito
+
+Cosas que un advisor o un linter va a marcar y que **no** son errores. Si te las
+encontrás, no las "arregles" sin hablarlo.
+
+- **Las tres extensiones en el esquema `public`** (`pg_trgm`, `unaccent`,
+  `citext`). `citext` respalda el tipo de la columna `app.contacts.email`:
+  moverlas de esquema arriesga referencias de tipo de columna, por un lint
+  cosmético.
+- **Tres wrappers `IMMUTABLE` ejecutables por `PUBLIC`**
+  (`immutable_unaccent` ×2, `immutable_array_to_string`). Alimentan expresiones
+  de índice de la búsqueda, no leen datos, y cerrarlas puede romper los índices.
+- **`app.is_staff()` y `app.is_admin()` con `EXECUTE` para `anon`.** Las evalúan
+  las políticas RLS de `cms.*` con el rol del visitante. Sin ese permiso la
+  política no devuelve falso: revienta, y el sitio público deja de mostrar
+  contenido. Ya pasó una vez.
+- **El alias `disenador` → `profesional`** en `resolveAcequiaPaidPlan()`. Es la
+  red que sostiene los links viejos y los pagos ya cobrados con el nombre
+  anterior. No se borra hasta que ningún cliente lo mande — y hoy la landing
+  todavía lo manda.
 
 ## Sin dueño asignado
 

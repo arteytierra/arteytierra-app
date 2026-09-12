@@ -32,10 +32,23 @@ propios sobre la misma historia de git, así que ya no podés pisar a nadie ni
 que te pisen. Al terminar, conservalo si vas a volver.
 
 La excepción es el rol de orquestador —revisar, auditar, coordinar—, que se
-queda en el checkout principal y no crea worktree. Cada worktree se instala sus
-propias dependencias y pesa cerca de 500 MB: son para trabajar, no para
-acumular. Si ves worktrees viejos de sesiones muertas, avisá antes de borrarlos:
-pueden tener commits que no están en `main`.
+queda en el checkout principal y no crea worktree. Si ves worktrees viejos de
+sesiones muertas, avisá antes de borrarlos: pueden tener commits que no están
+en `main`.
+
+Un worktree nuevo **sólo trae lo que está en git**. Le faltan dos cosas y hay
+que reponerlas antes de arrancar, desde el checkout principal
+(`C:\Arte y Tierra\0. Claude`):
+
+```bash
+cp "/c/Arte y Tierra/0. Claude/apps/terreno/.env.local" apps/terreno/.env.local
+cp "/c/Arte y Tierra/0. Claude/apps/web/.env.local"     apps/web/.env.local
+pnpm install
+```
+
+Los `.env.local` están ignorados a propósito y así tiene que seguir: **nunca se
+commitean**. Y `pnpm install` deja unos 500 MB por worktree, así que son para
+trabajar, no para acumular.
 
 **`/mapa` y `/informe/*` están detrás de login.** No se pueden verificar desde
 el navegador del agente y no se consultan endpoints de producción. Esas rutas
