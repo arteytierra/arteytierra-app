@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { cancelarPreapprovalMp } from '@/lib/terreno/suscripciones';
 import { cancelarSubscripcionPaypal } from '@/lib/terreno/paypal';
 import { leerSuscripcionTerreno, cancelarSuscripcionTerreno } from '@/lib/terreno/fulfillment-suscripcion';
+import { corsAcequia } from '@/lib/terreno/cors';
 
 export const runtime = 'nodejs';
 
@@ -18,23 +19,8 @@ export const runtime = 'nodejs';
  * nada local y el usuario ve un error.
  */
 
-const ORIGENES = new Set([
-  'https://terreno.arteytierra.org',
-  'https://app.acequia.app',
-  'http://localhost:3001',
-]);
-
-function corsHeaders(origin: string | null): Record<string, string> {
-  return {
-    ...(origin && ORIGENES.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
-    'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, content-type',
-    'Vary': 'Origin',
-  };
-}
-
 export function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, { status: 204, headers: corsHeaders(req.headers.get('origin')) });
+  return new NextResponse(null, { status: 204, headers: corsAcequia(req.headers.get('origin'), 'GET, DELETE, OPTIONS') });
 }
 
 async function usuarioDe(req: NextRequest): Promise<{ id: string } | null> {
@@ -50,7 +36,7 @@ async function usuarioDe(req: NextRequest): Promise<{ id: string } | null> {
 }
 
 export async function GET(req: NextRequest) {
-  const headers = corsHeaders(req.headers.get('origin'));
+  const headers = corsAcequia(req.headers.get('origin'), 'GET, DELETE, OPTIONS');
   const user = await usuarioDe(req);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401, headers });
 
@@ -73,7 +59,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const headers = corsHeaders(req.headers.get('origin'));
+  const headers = corsAcequia(req.headers.get('origin'), 'GET, DELETE, OPTIONS');
   const user = await usuarioDe(req);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401, headers });
 

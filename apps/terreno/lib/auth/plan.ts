@@ -3,6 +3,16 @@ import { cache } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseServerClient } from '@/lib/db/server';
 import { PLANES, type Plan } from '@/lib/entitlements';
+import type { SuscripcionActual } from '@/lib/suscripcionEstado';
+
+/**
+ * Columnas que necesita `planEfectivo`. Se pedían con o sin `trial_end` según
+ * `ACEQUIA_TRIAL_ENABLED`, de cuando la columna todavía no existía. Existe desde
+ * la migración 0051, y la bandera en falso hacía que una prueba vigente se leyera
+ * como Semilla: la persona entraba en la prueba y la app le mostraba el plan
+ * gratis. La bandera decide si se ofrece una prueba, no si se la ve.
+ */
+const COLUMNAS_PLAN = 'plan, estado, vigente_hasta, trial_end';
 
 function planEfectivo(data: Record<string, unknown> | null): Plan {
   if (!data) return 'semilla';
@@ -39,16 +49,13 @@ export async function getPlanServiceRole(userId: string): Promise<Plan> {
     const svc = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const selectFields = process.env.ACEQUIA_TRIAL_ENABLED === 'true'
-      ? 'plan, estado, vigente_hasta, trial_end'
-      : 'plan, estado, vigente_hasta';
     const { data } = await (svc as unknown as {
       schema: (s: string) => { from: (t: string) => { select: (c: string) => {
         eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> };
       } } };
     })
       .schema('terreno').from('suscripciones')
-      .select(selectFields)
+      .select(COLUMNAS_PLAN)
       .eq('user_id', userId)
       .maybeSingle();
     return planEfectivo(data);
@@ -68,9 +75,6 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   if (!userId) return 'semilla';
   const supabase = await createSupabaseServerClient();
 
-  const selectFields = process.env.ACEQUIA_TRIAL_ENABLED === 'true'
-    ? 'plan, estado, vigente_hasta, trial_end'
-    : 'plan, estado, vigente_hasta';
   const { data } = await (supabase as unknown as {
     schema: (s: string) => {
       from: (t: string) => {
@@ -84,22 +88,14 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   })
     .schema('terreno')
     .from('suscripciones')
-    .select(selectFields)
+    .select(COLUMNAS_PLAN)
     .eq('user_id', userId)
     .maybeSingle();
 
   return planEfectivo(data);
 });
 
-export interface SuscripcionActual {
-  plan: string;
-  estado: string;
-  periodo: string | null;
-  provider: string | null;
-  vigenteHasta: string | null;
-  finDePrueba: string | null;
-  seDaDeBajaAlFinal: boolean;
-}
+export type { SuscripcionActual } from '@/lib/suscripcionEstado';
 
 /**
  * La suscripción tal cual está en la base, para mostrarla en "Mi cuenta".

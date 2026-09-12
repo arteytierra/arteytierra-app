@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
 import { darDeBajaSuscripcion } from '@/lib/suscribir';
 import type { SuscripcionActual } from '@/lib/auth/plan';
+import { estadoEfectivo, rotuloEstado, type EstadoEfectivo } from '@/lib/suscripcionEstado';
 
 /**
  * Estado real de la suscripción y baja en un clic.
@@ -26,7 +28,9 @@ const PROVEEDOR: Record<string, string> = {
 };
 
 export default function SuscripcionPanel({ suscripcion }: { suscripcion: SuscripcionActual }) {
-  const [estado, setEstado] = useState(suscripcion.estado);
+  // El estado que se muestra es el efectivo, no el crudo de la fila: una
+  // suscripción `activa` con la vigencia pasada ya no da acceso, y decía "Activa".
+  const [estado, setEstado] = useState<EstadoEfectivo>(() => estadoEfectivo(suscripcion));
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,17 +66,14 @@ export default function SuscripcionPanel({ suscripcion }: { suscripcion: Suscrip
     <section className="border-bone-200 mt-5 rounded-2xl border bg-white p-6 md:p-8">
       <p className="eyebrow">Suscripción</p>
       <h2 className="font-display text-ink-950 mt-3 text-2xl">
-        {enPrueba ? 'Estás en la prueba de 3 días' : 'Tu suscripción'}
+        {enPrueba ? `Estás en la prueba de ${ACEQUIA_TRIAL_DAYS} días` : 'Tu suscripción'}
       </h2>
 
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
         <div>
           <dt className="text-ink-700/50 text-xs uppercase tracking-wider">Estado</dt>
           <dd className="text-ink-950 mt-1 text-sm font-semibold">
-            {estado === 'prueba' && 'En prueba'}
-            {estado === 'activa' && (suscripcion.seDaDeBajaAlFinal ? 'Activa, sin renovación' : 'Activa')}
-            {estado === 'cancelada' && 'Dada de baja'}
-            {estado === 'vencida' && 'Vencida'}
+            {rotuloEstado(estado, suscripcion.seDaDeBajaAlFinal)}
           </dd>
         </div>
         <div>
@@ -82,7 +83,9 @@ export default function SuscripcionPanel({ suscripcion }: { suscripcion: Suscrip
           <dd className="text-ink-950 mt-1 text-sm font-semibold">
             {estado === 'cancelada'
               ? 'No hay más cobros'
-              : fecha(enPrueba ? suscripcion.finDePrueba : suscripcion.vigenteHasta)}
+              : estado === 'vencida'
+                ? 'Sin cobro programado'
+                : fecha(enPrueba ? suscripcion.finDePrueba : suscripcion.vigenteHasta)}
           </dd>
         </div>
         <div>

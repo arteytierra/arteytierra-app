@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { CreditCard, Wallet, Loader2, ArrowLeft } from 'lucide-react';
-import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS, acequiaPlanPrice } from '@arteytierra/config/acequia';
+import { ACEQUIA_PLANS, acequiaPlanPrice } from '@arteytierra/config/acequia';
 import { iniciarCheckout, type PlanPago, type Periodo, type Proveedor } from '@/lib/suscribir';
+import type { EstadoPagos } from '@/lib/estadoPagosDato';
 
 const PRECIO_USD: Record<PlanPago, Record<Periodo, number>> = {
   personal:  { mensual: acequiaPlanPrice('personal', 'mensual'),  anual: acequiaPlanPrice('personal', 'anual') },
@@ -15,14 +16,22 @@ const NOMBRE: Record<PlanPago, string> = {
   profesional: ACEQUIA_PLANS.profesional.name,
   estudio: ACEQUIA_PLANS.estudio.name,
 };
-const ARS_POR_USD = 1500;
 
-export function SuscribirConfirm({ plan, periodo, trialEnabled, firstChargeDate }: { plan: PlanPago; periodo: Periodo; trialEnabled: boolean; firstChargeDate: string }) {
+/**
+ * Confirmación de la suscripción: dice el precio y qué se cobra hoy.
+ *
+ * Todo lo que esta pantalla afirma sobre el cobro viene de `pagos`, que lo
+ * contestó la web. Antes la cotización del peso estaba escrita acá —1500— y el
+ * importe que Mercado Pago iba a cobrar salía de `ACEQUIA_ARS_PER_USD`: dos
+ * números para el mismo precio, y el que veía el usuario no era el que se le
+ * cobraba.
+ */
+export function SuscribirConfirm({ plan, periodo, pagos, fechaPrimerCobro }: { plan: PlanPago; periodo: Periodo; pagos: EstadoPagos; fechaPrimerCobro: string }) {
   const [cargando, setCargando] = useState<Proveedor | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const usd = PRECIO_USD[plan][periodo];
-  const ars = usd * ARS_POR_USD;
+  const ars = pagos.arsPorUsd === null ? null : Math.round(usd * pagos.arsPorUsd);
   const sufijo = periodo === 'anual' ? '/año' : '/mes';
 
   async function pagar(provider: Proveedor) {
@@ -52,19 +61,30 @@ export function SuscribirConfirm({ plan, periodo, trialEnabled, firstChargeDate 
         <div className="bg-white rounded-2xl border border-bone-200 p-6 shadow-paper space-y-4">
           <div className="text-center pb-4 border-b border-bone-200">
             <p className="font-display text-3xl text-ink-950">USD {usd}<span className="text-base text-ink-700/50 font-sans">{sufijo}</span></p>
-            <p className="text-xs text-ink-700/60 mt-1">o AR$ {ars.toLocaleString('es-AR')}{sufijo} desde Argentina</p>
-            {trialEnabled && (
+            {ars !== null && (
+              <p className="text-xs text-ink-700/60 mt-1">o AR$ {ars.toLocaleString('es-AR')}{sufijo} desde Argentina</p>
+            )}
+            {pagos.prueba && (
               <div className="mt-4 rounded-lg bg-moss-50 border border-moss-200 px-3 py-2 text-xs text-moss-900">
-                <strong>Hoy: USD 0.</strong> Acceso completo por {ACEQUIA_TRIAL_DAYS} días. Primer cobro previsto: {firstChargeDate}, salvo cancelación previa.
+                <strong>Hoy: USD 0.</strong> Acceso completo por {pagos.diasPrueba} días. Primer cobro previsto: {fechaPrimerCobro}, salvo cancelación previa.
               </div>
+            )}
+            {!pagos.prueba && (
+              <p className="mt-4 text-xs text-ink-700/60">El primer cobro es hoy y la renovación es automática.</p>
             )}
           </div>
 
-          <p className="text-xs text-ink-700/70 text-center">Elegí cómo pagar:</p>
+          {pagos.pagos ? (
+            <p className="text-xs text-ink-700/70 text-center">Elegí cómo pagar:</p>
+          ) : (
+            <p className="rounded-lg bg-bone-100 px-3 py-2 text-center text-xs text-ink-700/70">
+              Los cobros están cerrados por ahora. Escribinos y te damos de alta a mano.
+            </p>
+          )}
 
           <button
             onClick={() => pagar('mercadopago')}
-            disabled={cargando !== null}
+            disabled={cargando !== null || !pagos.pagos}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#009EE3] hover:brightness-95 text-white font-medium rounded-lg transition-all disabled:opacity-50 text-sm"
           >
             {cargando === 'mercadopago' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
@@ -73,7 +93,7 @@ export function SuscribirConfirm({ plan, periodo, trialEnabled, firstChargeDate 
 
           <button
             onClick={() => pagar('paypal')}
-            disabled={cargando !== null}
+            disabled={cargando !== null || !pagos.pagos}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-ink-950 hover:bg-moss-800 text-bone-50 font-medium rounded-lg transition-all disabled:opacity-50 text-sm"
           >
             {cargando === 'paypal' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados, puedePagarAcequia } from '@/lib/terreno/suscripciones';
 import { crearSubscripcionPaypal } from '@/lib/terreno/paypal';
+import { corsAcequia, esOrigenAcequia } from '@/lib/terreno/cors';
 
 export const runtime = 'nodejs';
 
@@ -14,27 +15,12 @@ export const runtime = 'nodejs';
  * URL de pago (PayPal para USD, Mercado Pago para ARS). El webhook asigna el plan.
  */
 
-const ORIGENES = new Set([
-  'https://terreno.arteytierra.org',
-  'https://app.acequia.app',
-  'http://localhost:3001',
-]);
-
-function corsHeaders(origin: string | null): Record<string, string> {
-  return {
-    ...(origin && ORIGENES.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, content-type',
-    'Vary': 'Origin',
-  };
-}
-
 export function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, { status: 204, headers: corsHeaders(req.headers.get('origin')) });
+  return new NextResponse(null, { status: 204, headers: corsAcequia(req.headers.get('origin'), 'POST, OPTIONS') });
 }
 
 export async function POST(req: NextRequest) {
-  const headers = corsHeaders(req.headers.get('origin'));
+  const headers = corsAcequia(req.headers.get('origin'), 'POST, OPTIONS');
   const origin = req.headers.get('origin');
 
   // Un solo interruptor manda acá. ACEQUIA_TRIAL_ENABLED decide si el alta lleva
@@ -44,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Los pagos todavía no están habilitados.' }, { status: 503, headers });
   }
 
-  if (origin && !ORIGENES.has(origin)) {
+  if (origin && !esOrigenAcequia(origin)) {
     return NextResponse.json({ error: 'Origen no permitido' }, { status: 403, headers });
   }
 

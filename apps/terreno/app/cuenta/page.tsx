@@ -3,17 +3,31 @@ import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
 import { requireUser } from '@/lib/auth/session';
 import { getPlan, leerSuscripcionActual } from '@/lib/auth/plan';
 import SuscripcionPanel from '@/components/SuscripcionPanel';
+import { estadoEfectivo, type EstadoEfectivo } from '@/lib/suscripcionEstado';
 
 export const metadata = { title: 'Mi cuenta' };
 
 const acequiaSiteUrl = process.env.NEXT_PUBLIC_ACEQUIA_SITE_URL ?? 'https://acequia.app';
+
+/**
+ * Qué dice la tarjeta de "Cobro" para cada estado. Sale de `estadoEfectivo`,
+ * la misma regla con la que el servidor decide el acceso: una fila `activa`
+ * con la vigencia pasada mostraba "Al día" arriba y plan Semilla al lado.
+ */
+const COBRO: Record<EstadoEfectivo, { titulo: string; nota: string }> = {
+  sin_suscripcion: { titulo: 'Sin cargo', nota: 'El plan Semilla no tiene ningún cobro asociado.' },
+  prueba:          { titulo: 'En prueba', nota: 'El detalle y la baja están más abajo.' },
+  activa:          { titulo: 'Al día',    nota: 'El detalle y la baja están más abajo.' },
+  vencida:         { titulo: 'Vencido',   nota: 'El acceso volvió a Semilla. El detalle está más abajo.' },
+  cancelada:       { titulo: 'Sin cargo', nota: 'Diste de baja la suscripción. El detalle está más abajo.' },
+};
 
 export default async function AccountPage() {
   const user = await requireUser('/cuenta');
   const plan = await getPlan(user.id);
   const planName = ACEQUIA_PLANS[plan].name;
   const suscripcion = await leerSuscripcionActual(user.id);
-  const tieneSuscripcion = suscripcion !== null && suscripcion.estado !== 'cancelada';
+  const cobro = COBRO[estadoEfectivo(suscripcion)];
 
   return (
     <main className="bg-bone-50 min-h-screen px-4 py-10">
@@ -38,8 +52,7 @@ export default async function AccountPage() {
             Tu plan, tus datos y tus decisiones.
           </h1>
           <p className="text-ink-700/70 mt-3 text-sm">
-            La información comercial real aparecerá aquí cuando esté confirmada por Supabase y el
-            proveedor de pago.
+            El plan que ves acá es el que el servidor usa para habilitar las herramientas.
           </p>
         </div>
         <section className="grid gap-4 md:grid-cols-3">
@@ -57,16 +70,8 @@ export default async function AccountPage() {
           </article>
           <article className="border-bone-200 rounded-2xl border bg-white p-6">
             <span className="text-ink-700/50 text-xs uppercase tracking-wider">Cobro</span>
-            <h2 className="font-display text-ink-950 mt-5 text-3xl">
-              {tieneSuscripcion
-                ? suscripcion!.estado === 'prueba' ? 'En prueba' : 'Al día'
-                : 'Sin cargo'}
-            </h2>
-            <p className="text-ink-700/65 mt-2 text-sm">
-              {tieneSuscripcion
-                ? 'El detalle y la baja están más abajo.'
-                : 'El plan Semilla no tiene ningún cobro asociado.'}
-            </p>
+            <h2 className="font-display text-ink-950 mt-5 text-3xl">{cobro.titulo}</h2>
+            <p className="text-ink-700/65 mt-2 text-sm">{cobro.nota}</p>
           </article>
         </section>
         {!user.fullName && (

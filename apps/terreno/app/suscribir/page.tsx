@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
 import {
   acequiaSelfCheckout,
-  addAcequiaTrialDays,
   resolveAcequiaPaidPlan,
   type AcequiaBillingPeriod,
 } from '@arteytierra/config/acequia';
 import { getCurrentUser } from '@/lib/auth/session';
+import { leerEstadoPagos } from '@/lib/estadoPagos';
 import { SuscribirConfirm } from '@/components/SuscribirConfirm';
 
 export const metadata = { title: 'Suscribirme' };
@@ -34,11 +34,25 @@ export default async function SuscribirPage({
     redirect(`/registro?next=${encodeURIComponent(next)}`);
   }
 
-  const trialEnabled = process.env.ACEQUIA_TRIAL_ENABLED === 'true';
-  // Los días de prueba salen del catálogo compartido: si cambian, cambian acá y
-  // en el plan de PayPal a la vez, que es donde tienen que coincidir sí o sí.
-  const firstCharge = addAcequiaTrialDays();
-  const firstChargeDate = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(firstCharge);
+  // Esta pantalla anuncia lo que va a pasar al apretar el botón, y lo que pasa
+  // al apretar el botón lo decide la web, que es la que tiene las credenciales
+  // de cobro. Por eso se lo pregunta en vez de leer su propio entorno: los días
+  // de prueba y la cotización del peso viven allá.
+  const pagos = await leerEstadoPagos();
+  const primerCobro = new Date();
+  primerCobro.setUTCDate(primerCobro.getUTCDate() + pagos.diasPrueba);
+  const fechaPrimerCobro = new Intl.DateTimeFormat('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(primerCobro);
 
-  return <SuscribirConfirm plan={plan} periodo={periodo} trialEnabled={trialEnabled} firstChargeDate={firstChargeDate} />;
+  return (
+    <SuscribirConfirm
+      plan={plan}
+      periodo={periodo}
+      pagos={pagos}
+      fechaPrimerCobro={fechaPrimerCobro}
+    />
+  );
 }

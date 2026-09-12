@@ -2,6 +2,7 @@
 
 import type { AcequiaBillingPeriod, AcequiaPaidPlanId } from '@arteytierra/config/acequia';
 import { getSupabaseBrowserClient } from './db/browser';
+import { URL_WEB } from './urlWeb';
 
 /**
  * Inicia el checkout de una suscripción. La app terreno no tiene las credenciales
@@ -13,7 +14,6 @@ export type PlanPago = AcequiaPaidPlanId;
 export type Periodo = AcequiaBillingPeriod;
 export type Proveedor = 'paypal' | 'mercadopago';
 
-const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'https://arteytierra.org';
 
 export async function iniciarCheckout(
   plan: PlanPago,
@@ -31,7 +31,7 @@ export async function iniciarCheckout(
     return;
   }
 
-  const res = await fetch(`${WEB_URL}/api/terreno/checkout`, {
+  const res = await fetch(`${URL_WEB}/api/terreno/checkout`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
     body: JSON.stringify({ plan, periodo, provider }),
@@ -63,7 +63,7 @@ export async function darDeBajaSuscripcion(): Promise<ResultadoBaja> {
   const token = session?.access_token;
   if (!token) throw new Error('Iniciá sesión para dar de baja la suscripción.');
 
-  const res = await fetch(`${WEB_URL}/api/terreno/suscripcion`, {
+  const res = await fetch(`${URL_WEB}/api/terreno/suscripcion`, {
     method: 'DELETE',
     headers: { authorization: `Bearer ${token}` },
   });
