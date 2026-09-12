@@ -73,6 +73,11 @@ Semilla (gratis, 1 proyecto) · Personal (7/70, 2) · Profesional (15/150, 10) �
 Estudio (35/350, 10 proyectos × 5 cuentas). Los asientos de Estudio **todavía no
 están implementados**: hoy se resuelven a mano.
 
+Hay un sexto consumidor que este repo no puede vigilar: `lib/plans.ts` de la
+landing `acequia.app`, que vive en **otro repositorio**
+(`arteytierra/acequia-landing`) y es una copia a mano. Ya se desincronizó. El
+contrato completo está en la skill `fuente-unica-de-verdad`.
+
 ## Lo que más importa en este código
 
 acequia no falla estrellándose: falla **imprimiendo un número plausible y
