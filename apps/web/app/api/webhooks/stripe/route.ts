@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/commerce/stripe';
 import { markOrderPaid } from '@/lib/commerce/fulfillment';
+import { ordenDePago, marcarOrdenReembolsada } from '@/lib/commerce/refunds';
+import { log } from '@/lib/observability/logger';
 import { activarSuscripcionTerreno, cancelarSuscripcionTerreno } from '@/lib/terreno/fulfillment-suscripcion';
 import type { PlanPago, Periodo } from '@/lib/terreno/suscripciones';
 
@@ -66,7 +68,23 @@ export async function POST(request: NextRequest) {
       }
 
       case 'charge.refunded': {
-        // TODO: marcar orden como refunded + revocar enrollment
+        // Un reembolso hecho a mano desde el panel de Stripe no pasa por
+        // nuestro boton, asi que sin esto la orden seguia figurando como
+        // pagada y el curso seguia abierto despues de devolver la plata.
+        const charge = event.data.object as Stripe.Charge;
+        const pi = typeof charge.payment_intent === 'string'
+          ? charge.payment_intent
+          : charge.payment_intent?.id ?? null;
+        if (pi) {
+          const orderId = await ordenDePago(pi);
+          // Solo cuando se devolvio todo. Un reembolso parcial necesita una
+          // decision humana sobre si el acceso se corta o no, y marcarla
+          // entera seria mentir sobre lo que paso.
+          if (orderId && charge.amount_refunded >= charge.amount) {
+            const cambio = await marcarOrdenReembolsada(orderId);
+            if (cambio) log.info('order.refunded_via_webhook', { orderId, charge: charge.id });
+          }
+        }
         break;
       }
 

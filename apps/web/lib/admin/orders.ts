@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireStaff } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
+import { pedirReembolsoAlProveedor, marcarOrdenReembolsada } from '@/lib/commerce/refunds';
 import { emitN8nEvent } from '@/lib/integrations/n8n';
 import { log } from '@/lib/observability/logger';
 
@@ -33,30 +34,51 @@ export async function resendOrderEmail(orderId: string) {
   return { ok: true };
 }
 
+/**
+ * Reembolsa una orden de verdad.
+ *
+ * Antes esto marcaba la orden como 'refunded' y emitia un evento de n8n para que
+ * un workflow hiciera el reembolso. Los workflows estan apagados: la orden
+ * quedaba marcada como devuelta sin que se moviera un peso. Ahora se le pide
+ * primero al proveedor y la orden solo se marca si el proveedor confirma.
+ */
 export async function refundOrder(orderId: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
-  const { data: order, error } = await admin
-    .schema('shop').from('orders')
-    .update({ status: 'refunded' })
-    .eq('id', orderId)
-    .eq('status', 'paid')
-    .select('id, provider, provider_order_id, total_cents, currency')
-    .single();
-  if (error || !order) throw new Error('No se pudo marcar como reembolsada');
 
-  // Disparar n8n: el workflow procesa refund en Stripe/MP y notifica al cliente
+  const { data: order } = await admin
+    .schema('shop').from('orders')
+    .select('id, status, provider, provider_order_id, total_cents, currency')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (!order) throw new Error('No encontramos la orden.');
+  if (order.status === 'refunded') return { ok: true, yaEstaba: true };
+  if (order.status !== 'paid') throw new Error('Solo se puede reembolsar una orden pagada.');
+
+  // Si esto tira, no se toca la orden: es exactamente lo que queremos.
+  const refundId = await pedirReembolsoAlProveedor({
+    orderId: order.id,
+    provider: order.provider,
+    totalCents: order.total_cents,
+  });
+
+  await marcarOrdenReembolsada(order.id);
+
+  // El aviso al cliente sigue yendo por n8n, pero ya no es lo que hace el
+  // reembolso: si no sale, el dinero volvio igual.
   void emitN8nEvent('order-cancelled', {
     order_id: order.id,
     refund: true,
     provider: order.provider,
     provider_order_id: order.provider_order_id,
+    refund_id: refundId,
     amount_cents: order.total_cents,
     currency: order.currency,
   });
 
   revalidatePath(`/admin/ventas/${orderId}`);
-  log.info('order.refund_requested', { orderId });
+  log.info('order.refunded', { orderId, refundId });
   return { ok: true };
 }
 

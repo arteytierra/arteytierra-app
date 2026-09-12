@@ -21,13 +21,16 @@ export function OrderActions({ orderId, status }: { orderId: string; status: str
   }
 
   function refund() {
-    if (!confirm('¿Reembolsar esta orden? Esta acción no es reversible.')) return;
+    // El texto dice lo que va a pasar de verdad: hasta hoy decia 'Reembolso
+    // solicitado' y no se solicitaba nada, porque el workflow que lo iba a
+    // hacer esta apagado.
+    if (!confirm('Se le va a pedir el reembolso al proveedor y se le devuelve el dinero a la persona. No se puede deshacer. ¿Seguimos?')) return;
     start(async () => {
       try {
-        await refundOrder(orderId);
-        setMsg('Reembolso solicitado.');
+        const r = await refundOrder(orderId);
+        setMsg(r?.yaEstaba ? 'Ya estaba reembolsada.' : 'Reembolsada. El dinero volvió por el mismo medio de pago.');
       } catch (e) {
-        setMsg(e instanceof Error ? e.message : 'Error');
+        setMsg(e instanceof Error ? e.message : 'No se pudo reembolsar. La orden queda como estaba.');
       }
     });
   }
