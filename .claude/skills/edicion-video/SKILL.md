@@ -105,7 +105,8 @@ ninguno.
 
 ```bash
 # 1. transcribir a SRT en español
-whisper entrada.mp4 --language Spanish --model medium --output_format srt
+python _scripts/transcribir.py entrada.mp4            # modelo small por defecto
+python _scripts/transcribir.py entrada.mp4 --modelo medium   # si hay ruido
 
 # 2. revisar y corregir entrada.srt a mano
 
