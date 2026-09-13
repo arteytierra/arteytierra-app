@@ -97,17 +97,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Visitor anónimo: cookie ay_vid 1 año
-  if (!request.cookies.get('ay_vid')) {
-    const vid = crypto.randomUUID();
-    response.cookies.set('ay_vid', vid, {
-      httpOnly: false,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 365 * 24 * 60 * 60,
-      path: '/',
-    });
-  }
+  // `ay_vid` (visitante anónimo) ya no se estampa acá: la crea `ScriptArranque`
+  // en el navegador. Una respuesta con `Set-Cookie` no la cachea el CDN, así que
+  // estamparla en toda primera visita le costaba el cache justo a la visita que
+  // más importa. El servidor la sigue leyendo igual donde ya la leía.
 
   // Si hay un touch UTM, marcar last-touch landing por header para que el RSC pueda registrarlo
   if (utmTouched) {
@@ -146,6 +139,26 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  const isStaffOnly = STAFF_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  const esPuertaDeAuth = pathname === '/auth/login' || pathname === '/auth/registro';
+
+  // Sin cookie de Supabase no hay sesión que refrescar, y `getUser()` es una
+  // llamada de red: pagarla en cada visita anónima a una página pública le
+  // ponía piso a la latencia de todo el sitio, cache o no cache. Una ruta
+  // privada sin cookie tampoco necesita preguntar: no hay a quién autenticar.
+  const tieneCookieDeSesion = request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+  if (!tieneCookieDeSesion) {
+    if (isProtected || isStaffOnly) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/login';
+      url.searchParams.set('next', pathname);
+      return NextResponse.redirect(url);
+    }
+    if (!esPuertaDeAuth) return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -167,10 +180,6 @@ export async function middleware(request: NextRequest) {
 
   // IMPORTANTE: getUser() refresca el token y propaga las cookies via setAll
   const { data: { user } } = await supabase.auth.getUser();
-  const { pathname } = request.nextUrl;
-
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
-  const isStaffOnly = STAFF_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
 
   if ((isProtected || isStaffOnly) && !user) {
     const url = request.nextUrl.clone();

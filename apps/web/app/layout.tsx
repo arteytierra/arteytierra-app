@@ -12,8 +12,7 @@ import { WebVitals } from '@/components/observability/WebVitals';
 import { CommandK } from '@/components/search/CommandK';
 import { AttributionBeacon } from '@/components/analytics/AttributionBeacon';
 import { ConsentBanner } from '@/components/privacy/ConsentBanner';
-import { getLocale } from '@/lib/i18n';
-import { LOCALE_NATIVE_TAGS } from '@/lib/i18n/config';
+import { ScriptArranque } from '@/components/site/ScriptArranque';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -76,12 +75,16 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
-  const tag = LOCALE_NATIVE_TAGS[locale] ?? 'es-AR';
+/**
+ * El layout no lee `headers()` ni `cookies()` a propósito: cualquiera de las dos
+ * marca la request como dinámica y arrastra a las 161 rutas del sitio con ella.
+ * El idioma lo ajusta `ScriptArranque` a partir de la URL, antes de pintar.
+ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={tag} className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="es-AR" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
       <body>
+        <ScriptArranque />
         <SiteProviders>{children}</SiteProviders>
         <JsonLd data={[ORG_JSONLD, WEBSITE_JSONLD]} />
         <Pixels />

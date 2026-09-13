@@ -109,10 +109,6 @@ export default function AlquimiaNaturalPage() {
               className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:bg-clay-900 transition-colors">
               Inscribirme →
             </a>
-            <a href="/docs/alquimia-natural-programa.pdf" target="_blank" rel="noopener noreferrer"
-              className="inline-flex border border-bone-50/50 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:border-bone-50 transition-colors">
-              Descargar programa PDF
-            </a>
           </div>
         </div>
       </section>
@@ -331,10 +327,6 @@ export default function AlquimiaNaturalPage() {
               target="_blank" rel="noopener noreferrer"
               className="inline-flex bg-bone-50 text-clay-900 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-bone-200 transition-colors w-fit">
               Inscribirme por WhatsApp →
-            </a>
-            <a href="/docs/alquimia-natural-programa.pdf" target="_blank" rel="noopener noreferrer"
-              className="font-sans text-sm text-clay-200 underline underline-offset-4 hover:text-bone-50 transition-colors w-fit">
-              ↓ Descargar programa completo en PDF
             </a>
           </div>
         </div>

@@ -15,14 +15,11 @@
     --color-border: 232 225 210;    /* bone-200 */
   }
 
-  [data-theme='dark'] {
-    --color-bg: 15 20 16;
-    --color-surface: 28 36 30;
-    --color-ink: 242 237 227;
-    --color-muted: 163 177 138;
-    --color-accent: 232 192 120;
-    --color-border: 42 53 44;
-  }
+  /* Acá vivía una paleta oscura bajo [data-theme='dark'] que no pintaba nada:
+     nadie estampaba nunca ese atributo y no hay una sola clase `dark:` en los
+     114 componentes del sitio, que traen el color escrito en hexadecimal. Un
+     modo oscuro de verdad empieza por reemplazar esos hexadecimales por los
+     tokens; mientras tanto, seis variables muertas sólo hacen creer que existe. */
 
   html {
     -webkit-text-size-adjust: 100%;
@@ -43,6 +40,41 @@
 
   ::selection {
     background-color: rgb(var(--color-accent) / 0.35);
+  }
+
+  /* Quien pidió menos movimiento en su sistema operativo lo pidió en serio: hay
+     24 tarjetas que se agrandan al pasar el puntero, animaciones de entrada y
+     tres componentes con framer-motion. Nada se esconde esperando una animación
+     que ya no corre, así que apagarlas no deja contenido invisible. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      animation-delay: 0s !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+      scroll-behavior: auto !important;
+    }
+    /* El zoom al pasar el puntero es el movimiento más presente del sitio y no
+       comunica nada que el borde y el cursor no comuniquen ya. Se neutralizan
+       las variables de Tailwind y no `transform`, porque hay elementos que usan
+       transform para ubicarse (centrados con -translate-x-1/2) y apagárselos
+       los correría de lugar. */
+    .hover\:scale-105:hover,
+    .hover\:scale-110:hover,
+    .group:hover .group-hover\:scale-105 {
+      --tw-scale-x: 1 !important;
+      --tw-scale-y: 1 !important;
+    }
+    .hover\:-translate-y-0\.5:hover,
+    .hover\:-translate-y-1:hover {
+      --tw-translate-y: 0 !important;
+    }
   }
 }
 
