@@ -375,37 +375,59 @@ Nada de esto es código todavía. Son consultas.
 
 ---
 
-## 8. Comercial — el paso 8, que es el que traba la plata
+## 8. Comercial — el paso 8 ya pasó, y pasó sin que nadie lo dijera
 
-Esto no es del motor ecológico pero es lo que separa a la app de cobrar.
+Todo lo que había escrito acá describía un cobro apagado esperando una señal.
+Verificado el 12/09/2026 contra producción, no era así.
 
-**Estado hoy:** Semilla (gratis, 1 proyecto, cuatro funciones abiertas) está activo.
-La prueba comercial de 3 días está **construida y apagada**.
+**Estado real:** `ACEQUIA_PAYMENTS_ENABLED`, `PAYMENT_WEBHOOKS_ENABLED` y
+`ACEQUIA_TRIAL_ENABLED` están las tres en `true` en `arteytierra-app-web`, y
+`ACEQUIA_PAYMENTS_TEST_EMAILS` no está cargada: cualquiera que se registre puede
+pagar. Se puede comprobar sin sesión en
+`https://arteytierra.org/api/terreno/estado-pagos`.
 
-`ACEQUIA_TRIAL_ENABLED` está en `false` y **tiene que quedar en `false`**. Prenderlo
-hoy no es "no pasa nada": la migración `0051` no está aplicada, y `lib/auth/plan.ts`
-pediría columnas que no existen. **La app rompe para todos, no sólo para los de
-prueba.** Además, la mitad del código que lo lee está en el árbol de trabajo sin
-commitear.
+No se notó porque nunca entró un pago: `terreno.suscripcion_eventos_proveedor`
+tiene cero filas y las siete suscripciones son `provider=manual`.
 
-Orden que hay que respetar:
+### Lo que estaba mal cuando el cobro ya estaba prendido
 
-1. Punto de reversión, guardar constraints y funciones viejas.
-2. Aplicar `0051` + los bloques de verificación 5, 6 y 7.
-3. Crear los planes en **Mercado Pago** (AR) y **PayPal** (internacional) a los
-   precios congelados: personal 7/70, diseñador 12/120, estudio 35/350 USD.
-4. Probar el circuito entero en sandbox: alta con prueba, primer cobro, rechazo,
-   cancelación durante la prueba, cambio de plan.
-5. Sumar `https://app.acequia.app` al CORS del checkout, que vive en `apps/web`.
-6. Prender `PAYMENT_WEBHOOKS_ENABLED`, después `NEXT_PUBLIC_PAYMENTS_ENABLED`, y
-   **último de todo** `ACEQUIA_TRIAL_ENABLED`.
-7. Una transacción real controlada con tarjeta propia antes de abrirlo.
+- **La 0051 sí estaba aplicada.** Lo que faltaba eran dos columnas que el código
+  escribe, `cancel_at_period_end` y `cancelled_at`. PostgREST rechaza la consulta
+  entera cuando una columna del `select` no existe, así que el primer pago real
+  habría cobrado y después fallado al asignar el plan, con los reintentos fallando
+  igual. Lo arregla la `0062`.
+- **El trigger de topes había perdido el estado `prueba`** cuando la 0057 lo
+  reescribió: alguien en prueba de Profesional recibía el plan completo del
+  servidor y el tope de un proyecto de la base. También en la `0062`.
+- **`ACEQUIA_TRIAL_ENABLED` estaba cargada en `terreno` y no en**
+  **`arteytierra-app-web`.** `/suscribir` la leía de su propio entorno y anunciaba
+  tres días gratis; el checkout, que es el que crea el plan en PayPal, la leía del
+  suyo y cobraba el mismo día. Ahora la pantalla se lo pregunta al que cobra, por
+  `/api/terreno/estado-pagos`, y la variable está cargada en los dos proyectos.
+- **La vidriera mostraba el dólar a 1500 y el cobro sale a 1520.** Profesional
+  anual se anunciaba a AR$ 225.000 y Mercado Pago cobra AR$ 228.000. La cotización
+  estaba escrita a mano en dos componentes.
+- **Estudio tenía botón "Suscribirme"** hacia un checkout que lo rechaza, porque
+  sus cinco asientos se dan de alta a mano.
 
-**Reparto:** los webhooks con idempotencia, la lógica de cancelación durante la
-prueba y los correos del ciclo de cobro los hago yo, cuando digas que arrancamos.
-Aplicar `0051`, crear los planes y cargar variables en Vercel los hacés vos — no
-toco credenciales ni aprieto botones irreversibles.
+### Lo que falta, y de quién es
 
+1. **Decidir si el cobro sigue abierto al público** o se restringe con
+   `ACEQUIA_PAYMENTS_TEST_EMAILS` hasta hacer la transacción real. → Jonatan.
+2. **Confirmar las URL de webhook** en los paneles de Mercado Pago y PayPal. El
+   SDK de MP no acepta `notification_url` en el preapproval: sale de la
+   configuración de la aplicación y tiene que ser
+   `https://arteytierra.org/api/webhooks/mercadopago`. → Jonatan.
+3. **Una transacción real controlada:** alta, primer cobro, cancelación durante la
+   prueba y cambio de plan. → Jonatan.
+4. **Los cinco asientos de Estudio** no existen en la base. Es una feature, no un
+   ajuste. → app + Jonatan.
+
+Los planes de PayPal no hay que crearlos a mano: `lib/terreno/paypal.ts` crea
+producto y plan por API en el primer uso y los cachea en `terreno.paypal_planes`.
+Ojo con lo que ya está cacheado: la entrada `personal_anual` se creó sin prueba,
+cuando la bandera estaba apagada del lado de la web. Con la prueba prendida la
+clave del plan cambia y se crea uno nuevo, así que la vieja queda ahí sin uso.
 **Mudanza a acequia.app:** pasos 6 a 9 del runbook sin hacer. La web nueva está fuera
 del repo y no compila para Vercel (vinext/Cloudflare).
 

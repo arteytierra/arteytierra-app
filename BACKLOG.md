@@ -8,7 +8,7 @@ arreglo. Cuando encuentres algo nuevo que no vas a hacer ahora, agregalo con una
 línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si un
 ítem no es tuyo, no lo hagas: avisá.
 
-Última revisión: 12/09/2026.
+Última revisión: 12/09/2026 (bloque de cobro y hemisferio).
 
 ---
 
@@ -35,9 +35,20 @@ línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si u
 ### Cobro y planes
 - [ ] La cuenta Estudio activa tiene exactamente 10 proyectos: está en el tope,
   la próxima creación se le rechaza. Confirmar si es la de Jonatan.
-- [ ] `ACEQUIA_PAYMENTS_ENABLED` está definida en el proyecto
-  `arteytierra-app-web` pero marcada como sensible: la CLI no lee el valor.
-  Marcar como sensible una bandera booleana es una mala configuración.
+- [ ] **Decidir si el cobro sigue abierto al público.** `ACEQUIA_PAYMENTS_ENABLED`
+  y `PAYMENT_WEBHOOKS_ENABLED` están en `true` en producción y
+  `ACEQUIA_PAYMENTS_TEST_EMAILS` no está cargada, así que cualquiera que se
+  registre puede pagar. Con la lista cargada, sólo esos correos pagan y el
+  resto recibe la misma respuesta que si estuviera apagado. → *Jonatan*
+- [ ] Los coeficientes de escurrimiento (`TIPOS_SUPERFICIE`) y los consumos de
+  referencia (`CONSUMO_REFS`) de `lib/captacion.ts` no tienen fuente trazada.
+  Con ellos se dimensiona un tanque. Están dentro de los rangos habituales y el
+  encabezado del módulo lo dice, pero el informe los publica como propios. → *app*
+- [ ] La lista de `incluye` de cada plan en `apps/web/lib/terreno/planes.ts` no
+  se puede comparar con un test contra `apps/terreno/lib/entitlements.ts`, que es
+  lo que la app habilita: viven en apps distintas. La vidriera anunciaba la
+  exportación GIS como ventaja de Profesional cuando Personal ya la tenía, y no
+  hubo test que lo agarrara. Mover la matriz de features a `packages/config`. → *app*
 
 ### Deuda estructural
 - [ ] Partir `MapaTerrenoApp.tsx`: ~4.000 líneas, cierra sobre 393
@@ -55,7 +66,11 @@ línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si u
 - [ ] Fichas pendientes: Australasia, África tropical, Asia paleártica.
 - [ ] Indomalaya volcánica.
 - [ ] Los 26 saberes europeos con `fuentes: []` necesitan fuente por saber.
-- [ ] Polígono holandés: licencia NGR, PDOK Atom, `GEOMETRIAS_SABERES` CC-BY.
+- [x] ~~Polígono holandés: licencia NGR, PDOK Atom, `GEOMETRIAS_SABERES` CC-BY.~~
+  Resuelto el 12/09 y no por donde se esperaba: la ficha del Nationaal
+  Georegister declara **CC BY-NC-ND 4.0**, que prohíbe cobrar y prohíbe derivar.
+  El saber se activó por OpenStreetMap bajo ODbL. La licencia que vale es la del
+  conjunto concreto, no la del portal que lo publica.
 - [ ] Uruguay: MGAP / CONEAT.
 - [ ] SoilGrids: chequear la arcilla resuelta por profundidad.
 - [ ] Carta de licencia a BGR.
@@ -68,6 +83,8 @@ línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si u
 - [ ] Los dos ítems urgentes de la landing (arriba).
 - [ ] Revisar la lista de `features` de cada plan en la landing contra
   `apps/terreno/lib/entitlements.ts`, que es lo que la app realmente habilita.
+  La vidriera de `apps/web` ya tenía uno: anunciaba la exportación GIS como
+  ventaja de Profesional y `export.gis` está en `personal` desde siempre.
 - [ ] Proponer cómo atar los números de la landing al monorepo. Hoy es una copia
   a mano en otro repo y ya se desincronizó tres veces. Ver la skill
   `fuente-unica-de-verdad`.
@@ -84,10 +101,23 @@ línea que diga *qué se rompe si no se hace*, no sólo qué hay que tocar. Si u
 
 ## Jonatan — nadie más puede hacer esto
 
-- [ ] Crear los planes en Mercado Pago y en PayPal.
-- [ ] Correr el circuito de sandbox de punta a punta.
-- [ ] Una transacción real controlada.
-- [ ] Setear las variables de entorno que falten en Vercel.
+- [ ] **Confirmar las URL de webhook** en los paneles de Mercado Pago y PayPal.
+  Los webhooks están habilitados y verifican firma, pero si el panel apunta a
+  otra URL el cobro entra y el plan no se asigna. El SDK de MP no acepta
+  `notification_url` en el preapproval: sale de la configuración de la
+  aplicación, y tiene que ser `https://arteytierra.org/api/webhooks/mercadopago`.
+- [ ] Una transacción real controlada: alta, primer cobro, cancelación durante la
+  prueba y cambio de plan.
+- [x] ~~Crear los planes en Mercado Pago y en PayPal.~~ PayPal no los necesita a
+  mano: `lib/terreno/paypal.ts` crea producto y plan por API en el primer uso y
+  los cachea en `terreno.paypal_planes`.
+- [x] ~~Setear las variables de entorno que falten en Vercel.~~ Las del cobro
+  están las cuatro y son legibles: `ACEQUIA_PAYMENTS_ENABLED`,
+  `PAYMENT_WEBHOOKS_ENABLED`, `ACEQUIA_TRIAL_ENABLED` y `ACEQUIA_ARS_PER_USD`.
+  Falta decidir `ACEQUIA_PAYMENTS_TEST_EMAILS` (arriba).
+- [ ] La suscripción `personal/activa` venció el 01/09 y la fila sigue diciendo
+  activa. El código la degrada a Semilla bien, pero esa persona no tiene el plan
+  que su fila dice. Son datos de un cliente: la decisión es tuya.
 - [ ] Validar `/mapa` y `/informe/*` en producción (están detrás de login y
   ningún agente puede verlas).
 - [ ] **Prender la protección de contraseñas filtradas** en Supabase:
