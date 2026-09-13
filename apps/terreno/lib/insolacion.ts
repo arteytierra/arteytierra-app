@@ -36,12 +36,10 @@ export interface ResultadoInsolacion {
   con_objetos: boolean;
 }
 
-/** Fechas clave del año (hemisferio sur). */
-export const FECHAS_CLAVE = [
-  { clave: 'solsticio_invierno', etiqueta: 'Solsticio de invierno', mes: 6,  dia: 21 },
-  { clave: 'equinoccios',        etiqueta: 'Equinoccios',           mes: 9,  dia: 21 },
-  { clave: 'solsticio_verano',   etiqueta: 'Solsticio de verano',   mes: 12, dia: 21 },
-];
+// FECHAS_CLAVE se borró: no la importaba nadie y rotulaba el 21 de junio como
+// "Solsticio de invierno" para todo el planeta. Si vuelve a hacer falta un
+// selector de fechas clave, los nombres los resuelve lib/estaciones.ts por
+// latitud, y el día del solsticio alto lo da doyDelSolsticio de sectores.ts.
 
 /**
  * @param pasoMin Resolución temporal en minutos. 20 es un buen equilibrio:

@@ -1,11 +1,14 @@
 /**
  * arco_solar.ts — Trayectoria del sol proyectada sobre el mapa.
- * 3 fechas clave: solsticio de verano, equinoccios, solsticio de invierno.
+ * 3 fechas clave: los dos solsticios (21 dic y 21 jun) y los equinoccios. Cual de
+ * los dos solsticios es el de verano lo decide la latitud, no el calendario.
  * Proyección azimutal equidistante: centro = cénit, borde = horizonte.
  *
  * Fórmulas: Cooper (1969) para declinación, hora solar verdadera.
  * Azimut: atan2 desde norte, sentido horario (0=N, 90=E, 180=S, 270=O).
  */
+
+import { nombreDelSolsticio } from './estaciones';
 
 const DEG = Math.PI / 180;
 const RAD = 180 / Math.PI;
@@ -43,11 +46,23 @@ type LL = { lat: number; lng: number };
 
 // ─── Metadatos de cada fecha ──────────────────────────────────────────────────
 
-const FECHAS_META: Record<FechaArco, { doy: number; label: string; labelCorto: string; color: string }> = {
-  solsticio_verano:   { doy: 355, label: 'Solsticio de verano (21 dic)',  labelCorto: 'Verano',     color: '#FF5722' },
-  equinoccio:         { doy: 80,  label: 'Equinoccios (21 mar / 23 sep)', labelCorto: 'Equinoccio', color: '#43A047' },
-  solsticio_invierno: { doy: 172, label: 'Solsticio de invierno (21 jun)', labelCorto: 'Invierno',  color: '#1E88E5' },
-};
+/**
+ * Las tres fechas del arco, con su nombre resuelto por la latitud.
+ *
+ * Las claves siguen diciendo `solsticio_verano` y `solsticio_invierno` porque
+ * nombran el día del año —355 y 172— y eso no se mueve. Lo que se mueve es qué
+ * estación es cada uno: en el norte el del 21 de junio es el de verano, y el
+ * panel lo rotulaba "Invierno" encima del arco más alto del año.
+ */
+function fechasMeta(lat: number): Record<FechaArco, { doy: number; label: string; labelCorto: string; color: string }> {
+  const dic = nombreDelSolsticio('diciembre', lat);
+  const jun = nombreDelSolsticio('junio', lat);
+  return {
+    solsticio_verano:   { doy: 355, ...dic, color: '#FF5722' },
+    equinoccio:         { doy: 80,  label: 'Equinoccios (21 mar / 23 sep)', labelCorto: 'Equinoccio', color: '#43A047' },
+    solsticio_invierno: { doy: 172, ...jun, color: '#1E88E5' },
+  };
+}
 
 // ─── Astronomía ───────────────────────────────────────────────────────────────
 
@@ -121,8 +136,9 @@ export function horaStr(horaDecimal: number): string {
 export function calcularArcoSolar(lat: number, lng: number, radio_m: number): DatosArcoSolar {
   const centro: LL = { lat, lng };
 
-  const arcos: ArcoSolar[] = (Object.keys(FECHAS_META) as FechaArco[]).map(fecha => {
-    const { doy, label, labelCorto, color } = FECHAS_META[fecha]!;
+  const META = fechasMeta(lat);
+  const arcos: ArcoSolar[] = (Object.keys(META) as FechaArco[]).map(fecha => {
+    const { doy, label, labelCorto, color } = META[fecha]!;
     const { salida, puesta } = horasSalida(lat, doy);
     const horas_luz = puesta - salida;
 

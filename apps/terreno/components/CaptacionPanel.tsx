@@ -112,7 +112,7 @@ export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, on
 
   const resultado = useMemo(() => {
     if (!datosClima || superficies.length === 0) return null;
-    return calcularCaptacion(superficies, precipMensual, consumos);
+    return calcularCaptacion(superficies, precipMensual, consumos, datosClima.lat);
   }, [superficies, precipMensual, consumos, datosClima]);
 
   /**

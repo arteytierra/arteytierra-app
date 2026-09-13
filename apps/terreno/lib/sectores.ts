@@ -5,6 +5,7 @@
  */
 import type { DatosClima } from './clima';
 import type { DatosTopografia } from './topografia';
+import { azimutVientoFrio } from './cortinas';
 
 export type TipoSector =
   | 'sol_verano'
@@ -84,35 +85,61 @@ export function calcularSectoresAuto(
       auto:     true,
     });
 
-    // Viento frío: en hemisferio sur suele venir del SO en invierno
+    // El viento frío llega desde el lado del polo. La nota decía "protegerse del
+    // SO" en cualquier latitud, que es el Pampero del hemisferio sur; en el norte
+    // el frío entra por el NO y la cortina iba al lado equivocado de la casa. El
+    // azimut lo resuelve `azimutVientoFrio`, que ya lo tenía bien para los dos.
     const mesMasF = clima.meses.reduce((b, m, i) => m.tmean_c < clima.meses[b]!.tmean_c ? i : b, 0);
+    const rumboFrio = rumboDeAzimut(azimutVientoFrio(lat));
     sectores.push({
       id:    'auto-viento-frio',
       tipo:  'viento_frio',
       nombre: 'Viento frío (invierno)',
       vertices: [],
-      notas: `Mes más frío: ${clima.meses[mesMasF]?.mes} (${clima.meses[mesMasF]?.tmean_c}°C). Protegerse del SO con cortinas forestales.`,
+      notas: `Mes más frío: ${clima.meses[mesMasF]?.mes} (${clima.meses[mesMasF]?.tmean_c}°C). Protegerse del ${rumboFrio} con cortinas forestales.`,
       auto: true,
     });
   }
 
-  // Sector sol: en hemisferio sur el sol pasa por el NORTE
-  if (lat < 0) {
+  // Sectores de sol. Estaban detrás de un `if (lat < 0)`: un predio de España,
+  // Canadá o los Países Bajos no recibía ninguno y nada avisaba por qué. Y el
+  // texto del sur estaba copiado de bibliografía del norte: decía que en verano
+  // el sol sale por el NE y se pone por el NO, que es el recorrido de verano del
+  // hemisferio NORTE. Medido con el propio motor en Córdoba, el 21 de diciembre
+  // el sol sale con azimut 116° (ESE) y se pone con 244° (OSO). El recorrido
+  // NE→NO es, en el sur, el de INVIERNO. Estaban al revés.
+  //
+  // Ahora los rumbos se calculan y no se afirman.
+  for (const cual of ['verano', 'invierno'] as const) {
+    const doy = doyDelSolsticio(cual, lat);
+    const s = azimutsSolsticio(lat, doy);
+    const alto = cual === 'verano';
+
+    if (s.siempreAbajo) {
+      sectores.push({
+        id: `auto-sol-${cual}`,
+        tipo: alto ? 'sol_verano' : 'sol_invierno',
+        nombre: alto ? 'Sol del solsticio alto' : 'Noche polar',
+        vertices: [],
+        notas: 'En esta latitud el sol no sale ese día: no hay recorrido que dibujar.',
+        auto: true,
+      });
+      continue;
+    }
+
+    const porDonde = s.porElNorte ? 'norte' : 'sur';
+    const recorrido = s.siempreArriba
+      ? 'el sol no se pone: da la vuelta completa al horizonte'
+      : `sale por el ${rumboDeAzimut(s.amanecer)} y se pone por el ${rumboDeAzimut(s.atardecer)}`;
     sectores.push({
-      id:       'auto-sol-verano',
-      tipo:     'sol_verano',
-      nombre:   'Sol de verano (NE→NO)',
+      id: `auto-sol-${cual}`,
+      tipo: alto ? 'sol_verano' : 'sol_invierno',
+      nombre: alto ? 'Sol de verano (trayectoria alta)' : 'Sol de invierno (trayectoria baja)',
       vertices: [],
-      notas:    'En hemisferio sur el sol sale por el NE y se pone en el NO en verano. Máxima elevación al norte.',
-      auto:     true,
-    });
-    sectores.push({
-      id:       'auto-sol-invierno',
-      tipo:     'sol_invierno',
-      nombre:   'Sol de invierno (E→O, bajo)',
-      vertices: [],
-      notas:    'En invierno el sol describe una trayectoria baja hacia el norte. Importante para invernaderos y termosifones.',
-      auto:     true,
+      notas: alto
+        ? `En el solsticio de verano ${recorrido}, y pasa por el ${porDonde} a máxima elevación.`
+        : `En el solsticio de invierno ${recorrido}, con una trayectoria baja hacia el ${porDonde}. Es la que manda para invernaderos, termosifones y sombra de invierno.`,
+      auto: true,
     });
   }
 
@@ -145,6 +172,33 @@ const WIND_AZ: Record<string, number> = {
   O: 270, ONO: 292.5, NO: 315, NNO: 337.5,
 };
 function dirAzimut(dir: string): number { return WIND_AZ[dir.toUpperCase()] ?? 0; }
+
+/** Azimut → rumbo de la rosa de 16 puntas. El inverso de `dirAzimut`. */
+export function rumboDeAzimut(az: number): string {
+  const norm = ((az % 360) + 360) % 360;
+  let mejor = 'N';
+  let dist = 360;
+  for (const [rumbo, grados] of Object.entries(WIND_AZ)) {
+    const d = Math.min(Math.abs(norm - grados), 360 - Math.abs(norm - grados));
+    if (d < dist) { dist = d; mejor = rumbo; }
+  }
+  return mejor;
+}
+
+/**
+ * Qué día del año es el solsticio de verano y cuál el de invierno.
+ *
+ * En el norte el sol está más alto el 21 de junio (doy 172) y más bajo el 21 de
+ * diciembre (355); en el sur es al revés. La geometría mapeaba `sol_verano` al
+ * 21 de diciembre siempre, así que en el norte el sector "de verano" dibujaba el
+ * arco de invierno.
+ */
+export function doyDelSolsticio(cual: 'verano' | 'invierno', lat: number): number {
+  const junio = 172;
+  const diciembre = 355;
+  const alto = lat >= 0 ? junio : diciembre;
+  return cual === 'verano' ? alto : (alto === junio ? diciembre : junio);
+}
 
 /** Genera una cuña (pie-slice) desde centro hacia un arco azimutal. */
 function arcoPolar(
@@ -179,11 +233,35 @@ function cuña(
 }
 
 /** Azimuts de amanecer y atardecer para un día del año. */
-function azimutsSolsticio(lat: number, doy: number): { amanecer: number; atardecer: number } {
+/**
+ * Azimuts de salida y puesta del sol, y por qué lado del cielo pasa.
+ *
+ * `porElNorte` no es el hemisferio: es si la declinación del día queda al norte
+ * de la latitud del predio. En Córdoba el sol pasa por el norte los 365 días; en
+ * Ámsterdam, por el sur; en Quito depende del mes. De eso depende para qué lado
+ * se dibuja el arco, y dibujarlo para el lado que no es pone la sombra de la casa
+ * enfrente en vez de detrás.
+ *
+ * Arriba del círculo polar el sol puede no ponerse o no salir. Antes devolvía un
+ * arco de este a oeste, que no es ninguna de las dos cosas.
+ */
+export function azimutsSolsticio(lat: number, doy: number): {
+  amanecer: number;
+  atardecer: number;
+  porElNorte: boolean;
+  siempreArriba: boolean;
+  siempreAbajo: boolean;
+} {
   const phi  = lat * DEG_S;
   const decl = 23.45 * DEG_S * Math.sin(2 * Math.PI * (284 + doy) / 365);
+  const porElNorte = decl > phi;
   const cosWs = -Math.tan(phi) * Math.tan(decl);
-  if (Math.abs(cosWs) >= 1) return { amanecer: 90, atardecer: 270 };
+  if (cosWs <= -1) {
+    return { amanecer: 0, atardecer: 360, porElNorte, siempreArriba: true, siempreAbajo: false };
+  }
+  if (cosWs >= 1) {
+    return { amanecer: 0, atardecer: 0, porElNorte, siempreArriba: false, siempreAbajo: true };
+  }
 
   const Hs = Math.acos(cosWs);
 
@@ -198,7 +276,30 @@ function azimutsSolsticio(lat: number, doy: number): { amanecer: number; atardec
     return ((r * RAD_S) + 360) % 360;
   }
 
-  return { amanecer: az(-Hs), atardecer: az(+Hs) };
+  return { amanecer: az(-Hs), atardecer: az(+Hs), porElNorte, siempreArriba: false, siempreAbajo: false };
+}
+
+/**
+ * El arco que recorre el sol ese día, barrido por el lado correcto.
+ *
+ * `arcoPolar` barre en sentido horario del primer azimut al segundo. Yendo del
+ * atardecer al amanecer se pasa por el norte, que es lo que corresponde cuando
+ * el sol culmina al norte; en el hemisferio norte hay que ir del amanecer al
+ * atardecer para pasar por el sur. Con el orden fijo, un predio de Ámsterdam
+ * recibía el arco espejado: el sol dibujado detrás de la casa y no delante.
+ */
+function arcoDelSol(
+  centro: { lat: number; lng: number },
+  lat: number,
+  doy: number,
+  radio_m: number,
+): Array<{ lat: number; lng: number }> {
+  const s = azimutsSolsticio(lat, doy);
+  if (s.siempreAbajo) return [];
+  if (s.siempreArriba) return arcoPolar(centro, 0, 359.9, radio_m, 60);
+  return s.porElNorte
+    ? arcoPolar(centro, s.atardecer, s.amanecer, radio_m)
+    : arcoPolar(centro, s.amanecer, s.atardecer, radio_m);
 }
 
 /**
@@ -217,22 +318,22 @@ export function generarVerticesSector(
 
   switch (tipo) {
     case 'sol_verano': {
-      const { amanecer, atardecer } = azimutsSolsticio(lat, 355); // 21 dic
-      // El arco va desde el lado del atardecer hacia el amanecer pasando por el norte
-      return arcoPolar(centro, atardecer, amanecer, radio_m);
+      return arcoDelSol(centro, lat, doyDelSolsticio('verano', lat), radio_m);
     }
     case 'sol_invierno': {
-      const { amanecer, atardecer } = azimutsSolsticio(lat, 172); // 21 jun
-      return arcoPolar(centro, atardecer, amanecer, radio_m);
+      return arcoDelSol(centro, lat, doyDelSolsticio('invierno', lat), radio_m);
     }
     case 'viento_ppal': {
       const az = clima ? dirAzimut(clima.viento_dir_ppal) : 0;
       return cuña(centro, az, 70, radio_m);
     }
     case 'viento_frio': {
-      // Hemisferio sur: viento frío del SO (Pampero); norte: NO
-      const az = lat < 0 ? 225 : 315;
-      return cuña(centro, az, 55, radio_m);
+      // Este módulo decía SO en el sur y NO en el norte —el Pampero—, y cortinas.ts
+      // decía S y N. Dos respuestas para la misma pregunta, y la cuña del sector
+      // caía en un lado mientras la cortina sugerida iba en el otro. Manda
+      // `azimutVientoFrio`: el aire frío viene del polo en todas partes, y que en
+      // la Pampa entre del SO es un hecho sobre la Pampa, no sobre el planeta.
+      return cuña(centro, azimutVientoFrio(lat), 55, radio_m);
     }
     case 'fuego': {
       const az = topo ? dirAzimut(topo.orientacion) : (lat < 0 ? 0 : 180);

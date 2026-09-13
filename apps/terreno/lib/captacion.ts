@@ -1,8 +1,27 @@
 /**
- * Cálculo de captación pluvial y dimensionamiento de tanque.
- * Fórmula base: V(m³) = P(mm) × A(m²) × C / 1000
- *   P = precipitación, A = área de captación, C = coeficiente de escorrentía.
+ * Captación pluvial y dimensionamiento del tanque.
+ *
+ * V (m³) = P (mm) × A (m²) × C / 1000, donde P es la precipitación del mes, A el
+ * área de captación en planta y C el coeficiente de escurrimiento de la
+ * superficie. La división por 1000 convierte mm·m² a m³: 1 mm sobre 1 m² es 1 L.
+ *
+ * El tanque se dimensiona por el método de la curva de masa (Rippl): la reserva
+ * necesaria es el mayor déficit acumulado a lo largo del año, contando que el
+ * tanque no guarda más de lo que se vació.
+ *
+ * LO QUE ESTE MÓDULO TODAVÍA NO PUEDE CITAR: los coeficientes C de
+ * TIPOS_SUPERFICIE y los consumos de referencia de CONSUMO_REFS son valores de
+ * orden de magnitud sin fuente trazada. Caen dentro de los rangos habituales,
+ * pero mientras no tengan cita no son un dato: el panel los ofrece como
+ * sugerencia editable, y eso es lo que son. Trazarlos antes de que el informe
+ * los publique como propios.
  */
+
+import {
+  ETIQUETAS_TRIMESTRE,
+  MESES_POR_TRIMESTRE,
+  nombresDeTemporada,
+} from './estaciones';
 
 // ─── Superficies ──────────────────────────────────────────────────────────────
 
@@ -73,15 +92,6 @@ export interface ConsumoCategoria {
   litros_dia_por_unidad: number;
 }
 
-// ─── Temporadas (Hemisferio Sur) ──────────────────────────────────────────────
-
-const TEMPORADAS = [
-  { nombre: 'Verano',    meses_idx: [11, 0, 1],  meses_label: 'Dic · Ene · Feb' },
-  { nombre: 'Otoño',     meses_idx: [2,  3, 4],  meses_label: 'Mar · Abr · May' },
-  { nombre: 'Invierno',  meses_idx: [5,  6, 7],  meses_label: 'Jun · Jul · Ago' },
-  { nombre: 'Primavera', meses_idx: [8,  9, 10], meses_label: 'Sep · Oct · Nov' },
-] as const;
-
 // ─── Tipos de resultado ───────────────────────────────────────────────────────
 
 export interface CaptacionPorSuperficie {
@@ -143,8 +153,10 @@ const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
 export function calcularCaptacion(
   superficies: Superficie[],
-  precipMensual: number[],          // mm por mes, 12 valores
+  precipMensual: number[],          // mm por mes, 12 valores, índice 0 = enero
   consumoCategorias: ConsumoCategoria[],
+  /** Latitud del predio, para nombrar las estaciones. Sin ella no se nombran. */
+  lat?: number | null,
 ): ResultadoCaptacion {
 
   // --- Captación por superficie ---
@@ -193,16 +205,40 @@ export function calcularCaptacion(
   const balance_anual_m3       = Math.round((captacion_anual_m3 - consumo_anual_m3) * 10) / 10;
   const meses_deficit          = balance_mensual_m3.filter(b => b < 0).length;
 
-  // --- Tanque recomendado ---
+  // --- Tanque recomendado (curva de masa) ---
+  // El año se recorre dos veces. La seca puede empezar en noviembre y terminar
+  // en marzo, y cortando el conteo el 31 de diciembre ese déficit se parte al
+  // medio: el tanque salía chico justo en el caso más común de un clima con
+  // estación seca de verano. Con el acumulado topado en cero —el tanque no
+  // guarda más de lo que se vació— dos vueltas alcanzan para que el mes por el
+  // que se arranca deje de importar, y se mide sobre la segunda.
+  //
+  // Con déficit anual la curva de masa no cierra: no hay excedente que guardar y
+  // dos vueltas darían el doble sin significado. Ahí se dimensiona sobre un año,
+  // y los que cuentan la verdad son meses_deficit y balance_anual_m3, que ya
+  // dicen que con un tanque no se arregla.
+  const vueltas = balance_anual_m3 >= 0 ? 2 : 1;
   let acumulado = 0;
   let maxDeficit = 0;
-  for (const b of balance_mensual_m3) {
-    acumulado  = Math.min(acumulado + b, 0);
-    maxDeficit = Math.min(maxDeficit, acumulado);
+  for (let vuelta = 1; vuelta <= vueltas; vuelta++) {
+    for (const b of balance_mensual_m3) {
+      acumulado = Math.min(acumulado + b, 0);
+      if (vuelta === vueltas) maxDeficit = Math.min(maxDeficit, acumulado);
+    }
   }
+  // El 1,2 es un margen sobre el déficit calculado: la serie mensual es un
+  // promedio y un año más seco que la media no está en ella. El piso de medio
+  // mes de consumo evita recomendar un tanque ridículo cuando el balance da
+  // holgado todos los meses. Los dos son criterios de diseño de esta app, no
+  // valores publicados, y por eso están con nombre y no escondidos en la cuenta.
+  const MARGEN_SOBRE_DEFICIT = 1.2;
+  const RESERVA_MINIMA_MESES = 0.5;
   const consumo_mes_promedio    = consumo_anual_m3 / 12;
   const tanque_recomendado_m3   = Math.round(
-    Math.max(Math.abs(maxDeficit) * 1.2, consumo_mes_promedio * 0.5) * 10,
+    Math.max(
+      Math.abs(maxDeficit) * MARGEN_SOBRE_DEFICIT,
+      consumo_mes_promedio * RESERVA_MINIMA_MESES,
+    ) * 10,
   ) / 10;
 
   const captMinMes              = Math.max(Math.min(...captacion_mensual_m3), 0);
@@ -210,12 +246,13 @@ export function calcularCaptacion(
   const cobertura_minima_dias   = consumoDiario_m3 > 0 ? Math.round(captMinMes / consumoDiario_m3) : 0;
 
   // --- Balance trimestral ---
-  const balance_trimestral: BalanceTrimestral[] = TEMPORADAS.map(t => {
-    const captacion_m3 = Math.round(t.meses_idx.reduce((sum: number, mi) => sum + (captacion_mensual_m3[mi] ?? 0), 0) * 10) / 10;
-    const consumo_m3   = Math.round(t.meses_idx.reduce((sum: number, mi) => sum + (consumo_mensual_m3[mi] ?? 0), 0) * 10) / 10;
+  const nombres = nombresDeTemporada(lat);
+  const balance_trimestral: BalanceTrimestral[] = MESES_POR_TRIMESTRE.map((meses, i) => {
+    const captacion_m3 = Math.round(meses.reduce((sum, mi) => sum + (captacion_mensual_m3[mi] ?? 0), 0) * 10) / 10;
+    const consumo_m3   = Math.round(meses.reduce((sum, mi) => sum + (consumo_mensual_m3[mi] ?? 0), 0) * 10) / 10;
     return {
-      nombre:       t.nombre,
-      meses_label:  t.meses_label,
+      nombre:       nombres[i] ?? ETIQUETAS_TRIMESTRE[i]!,
+      meses_label:  ETIQUETAS_TRIMESTRE[i]!,
       captacion_m3,
       consumo_m3,
       balance_m3:   Math.round((captacion_m3 - consumo_m3) * 10) / 10,

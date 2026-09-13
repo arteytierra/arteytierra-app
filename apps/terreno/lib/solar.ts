@@ -7,6 +7,7 @@
  */
 import type { DatosClima } from './clima';
 import { MESES } from './clima';
+import { estacionDelMes } from './estaciones';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -84,13 +85,6 @@ function formatHora(horasDesdeMedianoche: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-// Estación para hemisferio sur
-function estacion(mesIdx: number): string {
-  if ([11, 0, 1].includes(mesIdx)) return 'Verano';
-  if ([2, 3, 4].includes(mesIdx))  return 'Otoño';
-  if ([5, 6, 7].includes(mesIdx))  return 'Invierno';
-  return 'Primavera';
-}
 
 // ─── Función principal ────────────────────────────────────────────────────────
 
@@ -109,7 +103,7 @@ export function calcularSolar(lat: number, lng: number, _clima?: DatosClima): Da
       elev_solar_noon: Math.round(elev * 10) / 10,
       amanecer_hh:     formatHora(amanecer),
       atardecer_hh:    formatHora(atardecer),
-      estacion:        estacion(i),
+      estacion:        estacionDelMes(i, lat),
     };
   });
 
