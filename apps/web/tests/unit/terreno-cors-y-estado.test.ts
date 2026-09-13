@@ -28,9 +28,10 @@ function fuentesDeRutas(): { nombre: string; codigo: string }[] {
 }
 
 describe('CORS de las rutas de acequia', () => {
-  it('están los tres orígenes de la app y ninguno más', () => {
+  it('están los orígenes de acequia y ninguno más', () => {
     expect([...ORIGENES_ACEQUIA].sort()).toEqual([
       'http://localhost:3001',
+      'https://acequia.app',
       'https://app.acequia.app',
       'https://terreno.arteytierra.org',
     ]);
@@ -68,6 +69,14 @@ describe('estado-pagos no puede contradecir al checkout', () => {
 
   it('no lee ninguna variable de entorno por su cuenta', () => {
     expect(ruta).not.toContain('process.env');
+  });
+
+  it('publica el catálogo leyéndolo del paquete de configuración', () => {
+    // Es lo que la vidriera de acequia.app verifica contra su copia. Si esto se
+    // escribiera a mano acá, el guardián estaría comparando una copia con otra.
+    expect(ruta).toContain("from '@arteytierra/config/acequia'");
+    expect(ruta).toContain('ACEQUIA_PLANS');
+    expect(ruta).toContain('planes: publicarPlanes()');
   });
 
   it('no expone nada que no se vea en la pantalla siguiente', () => {

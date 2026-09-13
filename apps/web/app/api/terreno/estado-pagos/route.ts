@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
+import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS, type AcequiaPlanId } from '@arteytierra/config/acequia';
 import { corsAcequia } from '@/lib/terreno/cors';
 import { tasaArsPorUsdParaMostrar } from '@/lib/terreno/cotizacion';
 import {
@@ -29,6 +29,18 @@ export const dynamic = 'force-dynamic';
  * y entonces la pantalla no muestra el precio en pesos en vez de inventarlo.
  */
 
+/** Un plan, tal como lo cobra y lo topa el sistema. */
+export interface PlanPublicado {
+  mensual: number | null;
+  anual: number | null;
+  /** Proyectos activos por cuenta; lo aplica el trigger de la migración 0057. */
+  proyectos: number;
+  /** Cuentas de usuario que incluye el plan. */
+  cuentas: number;
+  /** Si es false, el alta pasa por una persona y `/suscribir` rechaza el plan. */
+  checkoutPropio: boolean;
+}
+
 export interface EstadoPagos {
   /** Si es false, el checkout responde 503 y no hay nada que ofrecer. */
   pagos: boolean;
@@ -36,6 +48,31 @@ export interface EstadoPagos {
   prueba: boolean;
   diasPrueba: number;
   arsPorUsd: number | null;
+  /**
+   * El catálogo completo, para que ninguna vidriera tenga que copiarlo a mano.
+   *
+   * `acequia.app` vive en otro repositorio y su `lib/plans.ts` es una copia
+   * escrita a mano: ya anunció USD 12 mientras el cobro salía 15, "proyectos
+   * ilimitados" con un tope de 10, y "hasta 50 proyectos" en Estudio cuando el
+   * trigger corta en 10. Publicándolo acá, esa copia tiene contra qué
+   * verificarse, y lo que verifica es lo que está desplegado cobrando, no un
+   * archivo que también podría haber quedado viejo.
+   */
+  planes: Record<AcequiaPlanId, PlanPublicado>;
+}
+
+function publicarPlanes(): Record<AcequiaPlanId, PlanPublicado> {
+  const salida = {} as Record<AcequiaPlanId, PlanPublicado>;
+  for (const plan of Object.values(ACEQUIA_PLANS)) {
+    salida[plan.id] = {
+      mensual: plan.monthlyUsd,
+      anual: plan.annualUsd,
+      proyectos: plan.projects,
+      cuentas: plan.seats,
+      checkoutPropio: plan.selfCheckout,
+    };
+  }
+  return salida;
 }
 
 export function OPTIONS(req: NextRequest) {
@@ -55,6 +92,7 @@ export function GET(req: NextRequest) {
     // Sin cotización no se muestra el precio en pesos. Es la regla de siempre:
     // degradar avisando antes que rellenar con un número plausible.
     arsPorUsd: tasaArsPorUsdParaMostrar(),
+    planes: publicarPlanes(),
   };
   return NextResponse.json(cuerpo, { headers });
 }

@@ -10,6 +10,10 @@ import 'server-only';
 export const ORIGENES_ACEQUIA = new Set([
   'https://terreno.arteytierra.org',
   'https://app.acequia.app',
+  // La vidriera pública también consulta el estado de pagos y el catálogo. Sin
+  // este origen la consulta se hace igual desde su servidor, pero cualquier
+  // lectura desde el navegador la bloquea el CORS sin decir por qué.
+  'https://acequia.app',
   'http://localhost:3001',
 ]);
 

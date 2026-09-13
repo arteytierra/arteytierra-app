@@ -18,7 +18,7 @@
  * en USD por PayPal.
  */
 
-export const REGISTRO_URL = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/registro`;
+export { ACEQUIA_REGISTRO_URL as REGISTRO_URL } from './app-url';
 
 import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
 

@@ -10,6 +10,7 @@ import {
 import { FAQ } from '@arteytierra/ui/marketing';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { ACEQUIA_APP_URL } from '@/lib/terreno/app-url';
 import { PlanesTerreno } from '@/components/terreno/PlanesTerreno';
 import { BarraAcequia } from '@/components/terreno/BarraAcequia';
 import { REGISTRO_URL, PLANES } from '@/lib/terreno/planes';
@@ -245,7 +246,7 @@ export default async function AcequiaLanding() {
     name: 'acequia',
     applicationCategory: 'DesignApplication',
     operatingSystem: 'Web',
-    url: 'https://terreno.arteytierra.org',
+    url: ACEQUIA_APP_URL,
     // Categoría comercial del manual de marca v2 (02 · Posicionamiento).
     description:
       'Plataforma de diagnóstico y diseño territorial asistido: reúne datos geoespaciales dispersos y los convierte en hallazgos, trazados e informes preliminares, con la procedencia y la incertidumbre de cada dato a la vista.',

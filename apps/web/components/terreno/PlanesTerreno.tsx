@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { PLANES, REGISTRO_URL, type Plan } from '@/lib/terreno/planes';
 
-const SUSCRIBIR_BASE = `${process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org'}/suscribir`;
+import { ACEQUIA_SUSCRIBIR_URL as SUSCRIBIR_BASE } from '@/lib/terreno/app-url';
 /** Para los planes cuyo alta pasa por una persona (hoy, Estudio). */
 const CONSULTA_URL = '/contacto';
 

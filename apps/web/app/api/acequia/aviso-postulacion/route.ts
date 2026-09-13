@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/integrations/resend';
+import { ACEQUIA_APP_URL } from '@/lib/terreno/app-url';
 
 export const runtime = 'nodejs';
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       <p>Los datos completos (oficio, región, tipo de terreno, motivación) están
       en la tabla <code>public.acequia_pilot_applications</code> de Supabase.</p>
       <p>Para darle acceso, mandale:<br>
-      <a href="https://terreno.arteytierra.org/canjear?codigo=FUNDADOR26">https://terreno.arteytierra.org/canjear?codigo=FUNDADOR26</a></p>
+      <a href="${ACEQUIA_APP_URL}/canjear?codigo=FUNDADOR26">${ACEQUIA_APP_URL}/canjear?codigo=FUNDADOR26</a></p>
     `,
   });
 

@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
 import { sendTransactional } from '@/lib/email';
 import { PRECIO_USD, type PlanPago, type Periodo } from './suscripciones';
+import { ACEQUIA_APP_URL as APP_URL } from './app-url';
 
 /**
  * Correos del ciclo de cobro de Acequia. Los disparan los webhooks después de
@@ -14,7 +15,6 @@ import { PRECIO_USD, type PlanPago, type Periodo } from './suscripciones';
  * igual persiste la fila pero el provider queda en noop.
  */
 
-const APP_URL = process.env.NEXT_PUBLIC_ACEQUIA_APP_URL ?? 'https://terreno.arteytierra.org';
 const URL_CUENTA = `${APP_URL}/cuenta`;
 const URL_PAGO = `${APP_URL}/suscribir`;
 

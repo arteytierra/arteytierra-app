@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { ACEQUIA_MAPA_URL } from '@/lib/terreno/app-url';
 
 export const metadata: Metadata = {
   title: 'Gracias — acequia',
@@ -35,7 +36,7 @@ export default function GraciasAcequia() {
             recargá la página en un rato.
           </p>
           <a
-            href="https://terreno.arteytierra.org/mapa"
+            href={ACEQUIA_MAPA_URL}
             className="inline-flex items-center gap-2 bg-[#1A1210] text-[#F5F0E8] font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-[#4A6741] transition-colors"
           >
             Volver a acequia
