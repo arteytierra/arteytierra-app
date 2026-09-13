@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+// `@supabase/ssr` se carga cuando hace falta: el middleware corre en cada
+// request del sitio y la enorme mayoria son visitas anonimas a paginas publicas,
+// que ni siquiera llegan hasta aca.
 
 const PROTECTED_PREFIXES = [
   '/mi-cuenta',
@@ -159,6 +161,7 @@ export async function middleware(request: NextRequest) {
     if (!esPuertaDeAuth) return response;
   }
 
+  const { createServerClient } = await import('@supabase/ssr');
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
