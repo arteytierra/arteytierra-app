@@ -6,6 +6,7 @@
  * eBird…) agregadas por GBIF.
  */
 import type { Mojon } from './types';
+import { titulo, ubicacionTexto, type ContextoActual } from './contextoActual';
 
 export interface Ubicacion {
   localidad:    string | null;
@@ -32,6 +33,8 @@ export interface DatosEntorno {
   ubicacion:     Ubicacion | null;
   biodiversidad: Biodiversidad | null;
   osm:           EntornoOSM | null;
+  /** Qué actividad industrial hay alrededor. `null` si el payload es de antes. */
+  contexto_actual: ContextoActual | null;
   radio_km:      number;
   // Derivados
   fauna:         number;
@@ -108,14 +111,21 @@ export async function obtenerEntorno(mojones: Mojon[]): Promise<DatosEntorno> {
     if (osm.cursos_agua.length) resumen_texto.push(`Cursos de agua próximos: ${osm.cursos_agua.slice(0, 4).join(', ')}.`);
   }
 
+  const ctx = json.contexto_actual ?? null;
+  if (ctx?.consultado && ctx.presencias.length) {
+    const tres = ctx.presencias.slice(0, 3).map(p => `${titulo(p).toLowerCase()} ${ubicacionTexto(p)}`);
+    resumen_texto.push(`Actividad industrial mapeada en ${ctx.radio_km} km: ${tres.join('; ')}.`);
+  }
+
   return {
     ubicacion: u ?? null,
     biodiversidad: bio,
     osm: osm ?? null,
+    contexto_actual: ctx,
     radio_km,
     fauna, flora, hongos, amenazadas, especies_top,
     resumen_texto,
-    fuente: 'GBIF (biodiversidad) · OpenStreetMap/Nominatim + Overpass (ubicación y entorno) — datos abiertos, orientativos',
+    fuente: 'GBIF (biodiversidad) · OpenStreetMap/Nominatim + Overpass (ubicación, entorno y contexto actual) — datos abiertos, orientativos',
   };
 }
 
@@ -132,6 +142,7 @@ export interface EntornoResumen {
   especies_top: Array<{ nombre: string; obs: number }>;
   areas_protegidas: string[];
   radio_km:   number;
+  contexto_actual: ContextoActual | null;
 }
 
 export function resumirEntorno(d: DatosEntorno): EntornoResumen {
@@ -144,5 +155,7 @@ export function resumirEntorno(d: DatosEntorno): EntornoResumen {
     especies_top: d.especies_top.slice(0, 6),
     areas_protegidas: d.osm?.areas_protegidas ?? [],
     radio_km: d.radio_km,
+    // Un proyecto guardado antes de que existiera esta capa no lo trae.
+    contexto_actual: d.contexto_actual ?? null,
   };
 }

@@ -1,12 +1,21 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
+import {
+  agrupar, consultaOverpass, distanciaKm, RADIO_CONTEXTO_KM, TOPE_ELEMENTOS,
+  type ContextoActual, type RasgoCrudo,
+} from '@/lib/contextoActual';
 
 /**
  * Contexto vivo del predio (D1) — datos abiertos sin clave:
  *  - Nominatim (OSM): ubicación administrativa (localidad, depto, provincia, país).
  *  - GBIF: biodiversidad observada en el radio (total, reinos, categorías IUCN, top especies).
  *  - Overpass (OSM): agua, áreas protegidas y poblado cercano — best-effort, degradación elegante.
+ *  - Overpass (OSM): contexto actual — qué actividad industrial hay en 25 km, a qué
+ *    distancia y en qué rumbo. Sin nombres: ver `lib/contextoActual.ts`.
+ *
+ * Las cuatro consultas salen en paralelo, así que el techo de tiempo es la más
+ * lenta y no la suma.
  */
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
@@ -25,19 +34,23 @@ export async function POST(req: Request) {
   if (typeof lat !== 'number' || typeof lng !== 'number') return err('Faltan lat/lng.', 400);
   const radio = Math.max(1, Math.min(15, b.radio_km ?? 3));
 
-  const dbKey = `entorno:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
+  // La versión va en la clave a propósito: el caché guarda el JSON ya armado, así
+  // que un payload viejo no tiene los campos nuevos y los devolvería faltando
+  // durante catorce días. Subirla es la forma de que el campo nuevo se vea hoy.
+  const dbKey = `entorno:v2:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
   const dbHit = await cacheGet<{ raw: string }>(dbKey);
   if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
-  const [ubicacion, bio, osm] = await Promise.all([
+  const [ubicacion, bio, osm, contexto_actual] = await Promise.all([
     reverseGeocode(lat, lng),
     gbif(lat, lng, radio),
     overpass(lat, lng, radio),
+    contextoActual(lat, lng),
   ]);
 
   if (!bio && !ubicacion) return err('No se pudo obtener el contexto (servicios no disponibles).', 503);
 
-  const payload = JSON.stringify({ ubicacion, biodiversidad: bio, osm, radio_km: radio });
+  const payload = JSON.stringify({ ubicacion, biodiversidad: bio, osm, contexto_actual, radio_km: radio });
   await cacheSet(dbKey, { raw: payload }, CACHE_TTL);
   return new Response(payload, { status: 200, headers: HDRS });
 }
@@ -80,7 +93,52 @@ async function gbif(lat: number, lng: number, radioKm: number) {
   } catch { return null; }
 }
 
-// ─── Overpass (best-effort) ──────────────────────────────────────────────────────
+// ─── Overpass ────────────────────────────────────────────────────────────────
+
+const ESPEJOS_OVERPASS = [
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+];
+
+/**
+ * Le pregunta a Overpass, probando el segundo espejo si el primero falla.
+ *
+ * `null` es "no se pudo preguntar" y `[]` es "no hay nada": la diferencia importa
+ * río abajo, porque de una lista vacía el panel afirma algo y de un `null` no.
+ */
+async function pedirOverpass(q: string): Promise<RasgoCrudo[] | null> {
+  for (const server of ESPEJOS_OVERPASS) {
+    try {
+      const res = await fetch(server, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+        body: 'data=' + encodeURIComponent(q),
+        signal: AbortSignal.timeout(22_000),
+      });
+      const ct = res.headers.get('content-type') ?? '';
+      if (!res.ok || !ct.includes('json')) continue;
+      const j = await res.json() as { elements?: RasgoCrudo[] };
+      return j.elements ?? [];
+    } catch { /* probar siguiente espejo */ }
+  }
+  return null;
+}
+
+/** Contexto actual: qué actividad industrial hay alrededor. Ver `lib/contextoActual.ts`. */
+async function contextoActual(lat: number, lng: number): Promise<ContextoActual> {
+  const els = await pedirOverpass(consultaOverpass(lat, lng, RADIO_CONTEXTO_KM));
+  if (!els) {
+    return { radio_km: RADIO_CONTEXTO_KM, presencias: [], consultado: false, truncado: false };
+  }
+  return {
+    radio_km: RADIO_CONTEXTO_KM,
+    presencias: agrupar(els, lat, lng),
+    consultado: true,
+    truncado: els.length >= TOPE_ELEMENTOS,
+  };
+}
+
+/** Agua, áreas protegidas y poblados cercanos — best-effort. */
 async function overpass(lat: number, lng: number, radioKm: number) {
   const r = Math.round(radioKm * 1000);
   const rBig = Math.max(r, 9000);
@@ -91,51 +149,32 @@ async function overpass(lat: number, lng: number, radioKm: number) {
     + `way(around:${rBig},${lat},${lng})[boundary=protected_area];`
     + `node(around:${rBig},${lat},${lng})[place~"town|village|city|hamlet"];`
     + `);out tags center 80;`;
-  for (const server of ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter']) {
-    try {
-      const res = await fetch(server, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
-        body: 'data=' + encodeURIComponent(q),
-        signal: AbortSignal.timeout(22_000),
-      });
-      const ct = res.headers.get('content-type') ?? '';
-      if (!res.ok || !ct.includes('json')) continue;
-      const j = await res.json() as { elements?: Array<{ type: string; tags?: Record<string, string>; lat?: number; lon?: number; center?: { lat: number; lon: number } }> };
-      const els = j.elements ?? [];
-      const waterways = new Set<string>();
-      const cuerposAgua = new Set<string>();
-      const protegidas = new Set<string>();
-      const poblados: Array<{ nombre: string; tipo: string; dist_km: number }> = [];
-      for (const e of els) {
-        const t = e.tags ?? {};
-        if (t['waterway'] && t['name']) waterways.add(t['name']);
-        if (t['natural'] === 'water' && t['name']) cuerposAgua.add(t['name']);
-        if (t['boundary'] === 'protected_area' && t['name']) protegidas.add(t['name']);
-        if (t['place'] && t['name']) {
-          const c = e.center ?? { lat: e.lat, lon: e.lon };
-          if (c.lat != null && c.lon != null) {
-            poblados.push({ nombre: t['name'], tipo: t['place'], dist_km: Math.round(haversine(lat, lng, c.lat, c.lon) * 10) / 10 });
-          }
-        }
-      }
-      poblados.sort((a, b) => a.dist_km - b.dist_km);
-      return {
-        cursos_agua: [...waterways].slice(0, 8),
-        cuerpos_agua: [...cuerposAgua].slice(0, 6),
-        areas_protegidas: [...protegidas].slice(0, 6),
-        poblados: poblados.slice(0, 5),
-      };
-    } catch { /* probar siguiente mirror */ }
-  }
-  return null;
-}
+  const els = await pedirOverpass(q);
+  if (!els) return null;
 
-function haversine(la1: number, lo1: number, la2: number, lo2: number): number {
-  const R = 6371, rad = Math.PI / 180;
-  const dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad;
-  const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLo / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
+  const waterways = new Set<string>();
+  const cuerposAgua = new Set<string>();
+  const protegidas = new Set<string>();
+  const poblados: Array<{ nombre: string; tipo: string; dist_km: number }> = [];
+  for (const e of els) {
+    const t = e.tags ?? {};
+    if (t['waterway'] && t['name']) waterways.add(t['name']);
+    if (t['natural'] === 'water' && t['name']) cuerposAgua.add(t['name']);
+    if (t['boundary'] === 'protected_area' && t['name']) protegidas.add(t['name']);
+    if (t['place'] && t['name']) {
+      const c = e.center ?? { lat: e.lat, lon: e.lon };
+      if (c.lat != null && c.lon != null) {
+        poblados.push({ nombre: t['name'], tipo: t['place'], dist_km: Math.round(distanciaKm(lat, lng, c.lat, c.lon) * 10) / 10 });
+      }
+    }
+  }
+  poblados.sort((a, b) => a.dist_km - b.dist_km);
+  return {
+    cursos_agua: [...waterways].slice(0, 8),
+    cuerpos_agua: [...cuerposAgua].slice(0, 6),
+    areas_protegidas: [...protegidas].slice(0, 6),
+    poblados: poblados.slice(0, 5),
+  };
 }
 
 function err(msg: string, status: number) {

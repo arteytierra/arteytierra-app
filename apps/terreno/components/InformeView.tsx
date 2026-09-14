@@ -11,6 +11,7 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
+import { ROTULO_CLASE, titulo, ubicacionTexto } from '@/lib/contextoActual';
 
 interface Props {
   datos: InformeData;
@@ -460,6 +461,39 @@ export function InformeView({ datos, compartido = false }: Props) {
             {datos.entorno.areas_protegidas.length > 0 && (
               <p className="text-xs text-ink-700/70 mt-2">Áreas protegidas cercanas: {datos.entorno.areas_protegidas.slice(0, 4).join(', ')}.</p>
             )}
+
+            {/* Contexto actual: la actividad, nunca quién la realiza. Ver lib/contextoActual.ts. */}
+            {datos.entorno.contexto_actual?.consultado && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-ink-900 mb-2">
+                  Contexto actual: actividad industrial en {datos.entorno.contexto_actual.radio_km} km
+                </p>
+                {datos.entorno.contexto_actual.presencias.length > 0 ? (
+                  <>
+                    <Table
+                      head={['Actividad', 'Cantidad', 'Distancia y rumbo']}
+                      rows={datos.entorno.contexto_actual.presencias.map(p => [
+                        `${ROTULO_CLASE[p.clase]} — ${titulo(p)}`,
+                        String(p.cantidad),
+                        ubicacionTexto(p),
+                      ])}
+                      colAlign={['left', 'right', 'right']}
+                    />
+                    <p className="text-xs text-ink-700/70 mt-2">
+                      Distancia al borde del rasgo mapeado; rumbo hacia su centro. Se nombra la
+                      actividad y no a quien la realiza.
+                      {datos.entorno.contexto_actual.truncado && ' Las cantidades son un piso: hay más de los que entran en una consulta.'}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-ink-700/70">
+                    No hay actividad industrial mapeada en OpenStreetMap dentro del radio. La cobertura
+                    del mapa es despareja y se releva a mano: que no figure no significa que no exista.
+                  </p>
+                )}
+              </div>
+            )}
+
             <p className="text-xs text-ink-700/50 mt-2 italic">
               GBIF (biodiversidad) + OpenStreetMap — datos abiertos de ciencia ciudadana, orientativos.
             </p>

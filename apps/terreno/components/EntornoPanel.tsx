@@ -4,11 +4,15 @@
  * Contexto vivo del predio (D1) — biodiversidad (GBIF), ubicación y entorno (OSM).
  */
 import { useState, useEffect } from 'react';
-import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf } from 'lucide-react';
+import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf, Factory, Pickaxe, Flame, Zap, Trash2 } from 'lucide-react';
 import {
   obtenerEntorno, resumirEntorno, etiquetaIUCN,
   type DatosEntorno, type EntornoResumen,
 } from '@/lib/entorno';
+import {
+  ROTULO_CLASE, titulo, ubicacionTexto,
+  type ClaseContexto, type ContextoActual, type Presencia,
+} from '@/lib/contextoActual';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -139,9 +143,86 @@ export function EntornoPanel({ mojones, datos, onDatos, onResumen }: Props) {
             </div>
           )}
 
+          {datos.contexto_actual && <ContextoActualBloque ctx={datos.contexto_actual} />}
+
           <p className="text-[9px] text-ink-700/45 italic leading-relaxed">{datos.fuente}</p>
         </>
       )}
+    </div>
+  );
+}
+
+const ICONO_CLASE: Record<ClaseContexto, typeof Factory> = {
+  mineria: Pickaxe, hidrocarburos: Flame, energia: Zap, residuos: Trash2, industria: Factory,
+};
+
+/**
+ * Qué actividad industrial hay alrededor del predio.
+ *
+ * Se nombra la actividad y nunca a quien la hace: ver `lib/contextoActual.ts`.
+ * Los tres estados posibles se dicen distinto a propósito —hay algo, no hay nada
+ * mapeado, no se pudo preguntar—, porque los últimos dos se parecen en la
+ * pantalla y no significan lo mismo en el territorio.
+ */
+function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
+  const porClase = new Map<ClaseContexto, Presencia[]>();
+  for (const p of ctx.presencias) {
+    const lista = porClase.get(p.clase);
+    if (lista) lista.push(p); else porClase.set(p.clase, [p]);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2.5">
+      <p className="text-xs font-medium text-ink-700 flex items-center gap-1.5">
+        <Factory className="w-3.5 h-3.5 text-clay-700" />
+        Contexto actual — qué hay alrededor
+      </p>
+
+      {!ctx.consultado ? (
+        <p className="text-[11px] text-ink-700/70 leading-relaxed">
+          No se pudo consultar el servicio de mapas en este momento. No es que no haya nada:
+          es que no se pudo preguntar. Volvé a intentar en un rato.
+        </p>
+      ) : ctx.presencias.length === 0 ? (
+        <p className="text-[11px] text-ink-700/70 leading-relaxed">
+          No hay actividad industrial <span className="font-medium">mapeada</span> en {ctx.radio_km} km
+          a la redonda. OpenStreetMap se releva a mano y su cobertura es despareja: en buena parte
+          del continente la minería chica y los pozos todavía no están cargados. Que no aparezca
+          no quiere decir que no exista.
+        </p>
+      ) : (
+        <>
+          {[...porClase.entries()].map(([clase, lista]) => {
+            const Ico = ICONO_CLASE[clase];
+            return (
+              <div key={clase} className="space-y-1">
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/55 flex items-center gap-1">
+                  <Ico className="w-3 h-3" />{ROTULO_CLASE[clase]}
+                </p>
+                {lista.map((p, i) => (
+                  <div key={i} className="text-[11px] text-ink-700/85 flex gap-1.5 pl-4">
+                    <span className="flex-1">
+                      {titulo(p)}
+                      {p.cantidad > 1 && <span className="text-ink-700/55"> · {p.cantidad} en el radio</span>}
+                    </span>
+                    <span className="shrink-0 font-mono text-ink-700/70">{ubicacionTexto(p)}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+          {ctx.truncado && (
+            <p className="text-[10px] text-ink-700/60 leading-relaxed">
+              Hay más de los que entran en una consulta: las cantidades son un piso, no un total.
+            </p>
+          )}
+        </>
+      )}
+
+      <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
+        OpenStreetMap (ODbL), radio de {ctx.radio_km} km. La distancia es al borde del rasgo mapeado
+        y el rumbo, hacia su centro. Se nombra la actividad, no a quien la realiza.
+      </p>
     </div>
   );
 }
