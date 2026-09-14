@@ -10,27 +10,44 @@
  * tres pantallas, y repetir el encadenado en cada una es la forma de que se
  * desincronicen.
  *
- * El hook de ecorregión ya redondea el punto a ~1 km y cachea, así que llamarlo
- * desde varios paneles no multiplica las consultas.
+ * El hook de ecorregión cachea por punto redondeado a ~1 km, así que llamarlo
+ * desde varios paneles no multiplica las consultas: la primera pantalla que
+ * pregunta paga la espera y las demás la reciben ya resuelta.
  */
 import type { DatosClima } from './clima';
 import { resolverBioma } from './contexto';
 import { useEcorregion } from './useEcorregion';
 import type { BiomaFicha } from './biomaTipos';
 
-/**
- * `null` cuando todavía no hay clima —sin clase Köppen no hay ficha— o cuando
- * el punto no tiene ficha curada ni respaldo global. Los llamadores tienen que
- * seguir funcionando sin ella: la ficha suma, no habilita.
- */
+export interface FichaDelPredio {
+  /**
+   * `null` cuando todavía no hay clima —sin clase Köppen no hay ficha— o cuando
+   * el punto no tiene ficha curada ni respaldo global. Los llamadores tienen que
+   * seguir funcionando sin ella: la ficha suma, no habilita.
+   */
+  ficha: BiomaFicha | null;
+  /**
+   * `true` mientras la ecorregión está en vuelo. Importa porque la ficha que se
+   * arma sin ella sale de la heurística Köppen y puede no ser la misma que la
+   * de la ecorregión real: quien muestre algo derivado de la ficha no debería
+   * presentarlo como definitivo mientras esto sea `true`.
+   */
+  resolviendo: boolean;
+}
+
 export function useFichaBioma(
   datosClima: DatosClima | null,
   elevacion?: number,
-): BiomaFicha | null {
+): FichaDelPredio {
   const lat = datosClima?.lat ?? null;
   const lng = datosClima?.lng ?? null;
-  const eco = useEcorregion(lat, lng);
+  const { eco, resolviendo } = useEcorregion(lat, lng);
 
-  if (!datosClima?.koppen || lat === null || lng === null) return null;
-  return resolverBioma(datosClima.koppen, lat, lng, elevacion, eco).ficha;
+  if (!datosClima?.koppen || lat === null || lng === null) {
+    return { ficha: null, resolviendo: false };
+  }
+  return {
+    ficha: resolverBioma(datosClima.koppen, lat, lng, elevacion, eco).ficha,
+    resolviendo,
+  };
 }

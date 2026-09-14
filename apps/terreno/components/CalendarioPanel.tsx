@@ -36,7 +36,7 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
   // La ficha del ecosistema es la que aporta los cultivos de la ecorregión. Es
   // opcional: sin ella el calendario se arma igual y la lista sale del catálogo
   // por clase climática.
-  const ficha = useFichaBioma(datosClima);
+  const { ficha, resolviendo } = useFichaBioma(datosClima);
 
   const cal = useMemo(
     () => datosClima ? calcularCalendario(datosClima, ficha) : null,
@@ -70,6 +70,21 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
     return vivas.length > 0 ? vivas : FAMILIAS;
   }, [cal]);
   const familiasOcultas = FAMILIAS.length - familias.length;
+
+  // La ficha decide qué cultivos se listan y con qué Kc se arma el balance.
+  // Mientras la ecorregión está en vuelo, esa lista sale de la heurística
+  // Köppen y después la reemplaza otra: el cultivo elegido se perdía solo y el
+  // balance cambiaba sin que nadie tocara nada.
+  if (datosClima && resolviendo) {
+    return (
+      <div className="text-center py-8 px-4 space-y-3">
+        <Cloud className="w-8 h-8 text-moss-700/40 mx-auto animate-pulse" />
+        <p className="text-xs text-ink-700/60 leading-relaxed">
+          Identificando la ecorregión: de ahí sale la lista de cultivos del lugar.
+        </p>
+      </div>
+    );
+  }
 
   if (!datosClima || !cal) {
     return (

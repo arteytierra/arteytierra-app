@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onAplicarZonas, onIrATopo }: Props) {
-  const ficha = useFichaBioma(
+  const { ficha, resolviendo } = useFichaBioma(
     datosClima ?? null,
     datosShader ? (datosShader.elev_min + datosShader.elev_max) / 2 : undefined,
   );
@@ -30,6 +30,31 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
     () => datosShader ? calcularAptitud(datosShader, datosEscorrentia, ficha?.aptitud) : null,
     [datosShader, datosEscorrentia, ficha],
   );
+
+  /**
+   * La corrección por ecosistema cambia los puntajes, los porcentajes y el
+   * mapa. Mientras la ecorregión está en vuelo, `ficha` sale de la heurística
+   * Köppen y puede no ser la del predio: en Sorata la tabla mostraba primero
+   * "−20 huerta / −25 frutales / −10 pasturas / +10 reserva" con 99,7 % forestal
+   * y después "+10 forestal / −10 huerta" con 99,8 %. Dos lecturas del mismo
+   * terreno, la primera con cara de definitiva.
+   *
+   * Se espera. En la práctica casi no se nota: la ecorregión se consulta apenas
+   * hay clima, se cachea por punto y para cuando alguien abre esta pestaña ya
+   * suele estar resuelta.
+   */
+  if (datosShader && resolviendo) {
+    return (
+      <div className="text-center py-8 px-4 space-y-3">
+        <Leaf className="w-8 h-8 text-moss-700/40 mx-auto animate-pulse" />
+        <p className="text-xs text-ink-700/60 leading-relaxed">
+          Identificando la ecorregión para corregir la aptitud. El relieve ya está calculado;
+          falta saber en qué ecosistema cae, que es lo que decide si una ladera de este porte
+          es para huerta, para pastura o para monte.
+        </p>
+      </div>
+    );
+  }
 
   if (!datosShader || !resultado) {
     return (

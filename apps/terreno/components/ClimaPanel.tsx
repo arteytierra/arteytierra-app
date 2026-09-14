@@ -182,7 +182,18 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
 
           {/* Resumen anual */}
           <div className="grid grid-cols-2 gap-2">
-            <StatCard icon={<Droplets className="w-3.5 h-3.5" />} label="Precipitación" value={`${datos.precip_anual_mm} mm`}  sub="anual" color="water" />
+            {/* La lluvia es el único de estos números que todavía se puede mover:
+                mientras CHIRPS está en vuelo, el valor que se muestra es el de la
+                grilla de ~50 km de POWER y al llegar el satelital de ~5 km cambia.
+                Decirlo acá y no sólo abajo en el bloque de calibración, que queda
+                fuera de pantalla: el número que se lee es el de arriba. */}
+            <StatCard
+              icon={<Droplets className="w-3.5 h-3.5" />}
+              label="Precipitación"
+              value={`${datos.precip_anual_mm} mm`}
+              sub={buscandoCHIRPS && !calibracion ? "anual · afinando…" : "anual"}
+              color="water"
+            />
             <StatCard icon={<Thermometer className="w-3.5 h-3.5" />} label="Temperatura" value={`${datos.tmean_anual_c}°C`}    sub="media anual" color="sun" />
             {datos.rh_anual_pct !== undefined && (
               <StatCard icon={<Droplets className="w-3.5 h-3.5" />} label="Humedad rel." value={`${datos.rh_anual_pct}%`}    sub="media anual" color="water" />

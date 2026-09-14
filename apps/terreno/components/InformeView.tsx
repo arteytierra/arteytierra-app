@@ -22,9 +22,13 @@ export function InformeView({ datos, compartido = false }: Props) {
 
   // La ecorregión es un hook: va acá arriba, no dentro de la sección Contexto.
   const centroPredio = datos.mojones.length >= 3 ? centroide(datos.mojones) : null;
-  const eco = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
+  const { eco, resolviendo: resolviendoEco } = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
   // Los saberes territoriales también son un hook y por la misma razón van acá.
-  const saberesTerritorio = useSaberes(centroPredio?.lat ?? null, centroPredio?.lng ?? null, eco?.eco_id);
+  // Esperan a la ecorregión: la compuerta del saber evalúa el ECO_ID.
+  const saberesTerritorio = useSaberes(centroPredio?.lat ?? null, centroPredio?.lng ?? null, {
+    ecoId: eco?.eco_id,
+    listo: !resolviendoEco,
+  });
 
   // Numeración dinámica de secciones según las presentes
   const presente = {

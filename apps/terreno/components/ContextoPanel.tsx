@@ -22,10 +22,14 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   // puede quedar detrás de un return condicional.
   const listo = mojones.length >= 3;
   const centro = listo ? centroide(mojones) : null;
-  const eco = useEcorregion(centro?.lat ?? null, centro?.lng ?? null);
+  const { eco, resolviendo: resolviendoEco } = useEcorregion(centro?.lat ?? null, centro?.lng ?? null);
   // Los saberes territoriales no salen de la ficha: se activan por polígono.
-  // Devuelve [] en casi todo el planeta y eso no es una falla.
-  const saberesTerritorio = useSaberes(centro?.lat ?? null, centro?.lng ?? null, eco?.eco_id);
+  // Devuelve [] en casi todo el planeta y eso no es una falla. Espera a que la
+  // ecorregión se asiente porque la compuerta del saber usa el ECO_ID.
+  const saberesTerritorio = useSaberes(centro?.lat ?? null, centro?.lng ?? null, {
+    ecoId: eco?.eco_id,
+    listo: !resolviendoEco,
+  });
 
   if (!listo || !centro) {
     return (
@@ -56,6 +60,52 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   }
 
   const elev = datosTopo?.elev_media;
+
+  /**
+   * Hasta que la ecorregión no se asiente no hay ecosistema que nombrar.
+   *
+   * Sin ella `resolverBioma` arma la ficha por la heurística Köppen, y esa
+   * ficha se mostraba entera —nombre, vegetación, fauna, suelos, saberes—
+   * durante el segundo que tardaba la consulta. En Sorata el predio decía
+   * "Puna y altoandino" y después pasaba a "Puna húmeda central": dos
+   * ecosistemas distintos, los dos con cara de definitivos, y el segundo
+   * además con otra lista de especies y sin la sección de saberes. Un dato
+   * provisorio que no se anuncia como provisorio es un dato equivocado.
+   *
+   * Lo que sí está firme desde el principio es la clase climática: sale del
+   * mapa de Köppen y no depende de esta consulta. Se muestra, y el resto
+   * espera. Cuando la ecorregión falla, `resolverBioma` devuelve el respaldo
+   * por Köppen con su aviso, que es un estado final y sí se muestra.
+   */
+  if (resolviendoEco) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-xl p-3 text-bone-50 bg-moss-700">
+          <div className="flex items-start gap-2">
+            <Globe2 className="w-6 h-6 shrink-0 animate-pulse text-bone-50/80" />
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-bone-50/70">Ecosistema de base</p>
+              <p className="text-base font-bold leading-tight">Identificando la ecorregión…</p>
+              <p className="text-xs text-bone-50/90 mt-0.5">
+                El ecosistema del predio sale de su ecorregión, no del clima. Un segundo.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-bone-50/20 text-[10px] text-bone-50/80">
+            <span className="font-mono font-bold">{datosClima.koppen.codigo}</span>
+            <span>· {datosClima.koppen.descripcion}</span>
+            {elev !== undefined && <span className="ml-auto flex items-center gap-0.5"><Mountain className="w-3 h-3" />{Math.round(elev)} m</span>}
+          </div>
+        </div>
+        <div className="space-y-2" aria-hidden>
+          {[0, 1, 2].map(i => (
+            <div key={i} className="h-14 rounded-xl border border-bone-200 bg-white/70 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const bioma = resolverBioma(datosClima.koppen, centro.lat, centro.lng, elev, eco);
   const ficha = bioma.ficha;
   const color = ficha?.color ?? '#5b6b52'; // sin ficha: verde neutro de marca
@@ -112,8 +162,18 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </div>
       </Seccion>}
 
-      {/* Saberes ancestrales */}
-      {ficha.saberes.length > 0 && <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
+      {/* Saberes ancestrales de la ficha.
+
+          Vienen vacíos en 188 de las 210 fichas regionales, y no es que falte
+          cargarlos: los tres bloques generados desde los paquetes de
+          investigación no atribuyen prácticas a ninguna cultura, porque a
+          escala de ecorregión eso sería inventar. Las únicas que los traen son
+          las 22 fichas argentinas escritas a mano antes de ese criterio.
+
+          Hasta ahora la sección simplemente no aparecía, y el silencio se leía
+          como "acá no hay nada". Cuando no hay, se dice qué falta para que
+          haya. */}
+      {ficha.saberes.length > 0 ? <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
         <div className="space-y-2">
           {ficha.saberes.map((s, i) => (
             <div key={i} className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
@@ -122,7 +182,21 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
             </div>
           ))}
         </div>
-      </Seccion>}
+      </Seccion> : (
+        <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            Esta ficha no le atribuye prácticas a ninguna cultura, y es a propósito. Decir que un
+            saber es de un pueblo necesita territorio, procedencia y acuerdo verificados, y eso se
+            resuelve por polígono, no por ecorregión: una ecorregión abarca muchos pueblos y ninguno
+            la ocupa entera.
+          </p>
+          <p className="text-xs text-ink-700/70 leading-relaxed mt-2">
+            Los que sí cumplen esa condición aparecen más abajo, en su propia sección, y sólo cuando
+            el predio cae adentro del territorio documentado. Que no haya no significa que no
+            existan: significa que todavía no tenemos con qué afirmarlo acá.
+          </p>
+        </Seccion>
+      )}
       </>}
 
       {/* Saberes territoriales — capa 2. Separada de los saberes de la ficha a

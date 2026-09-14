@@ -871,7 +871,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // este memo es el que alimenta las zonas que se vuelcan al plano. Si el panel
   // corrigiera los puntajes y esto no, el mapa terminaría pintando un uso
   // distinto del que la pantalla acaba de recomendar.
-  const fichaBioma = useFichaBioma(datosClima, datosTopografia?.elev_media);
+  const { ficha: fichaBioma } = useFichaBioma(datosClima, datosTopografia?.elev_media);
 
   const aptitud = useMemo<ResultadoAptitud | null>(
     () => datosShader ? calcularAptitud(datosShader, datosEscorrentia, fichaBioma?.aptitud) : null,
