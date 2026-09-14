@@ -83,7 +83,11 @@ describe('el panel no se queda callado cuando no hay saberes', () => {
     // leía como "acá no hay saberes".
     expect(panel).not.toContain('{ficha.saberes.length > 0 && <Seccion');
     expect(panel).toContain('ficha.saberes.length > 0 ?');
-    expect(panel).toContain('no le atribuye prácticas a ninguna cultura');
+    // La explicación se reescribió cuando apareció la capa de prácticas
+    // fechadas (lib/practicasHistoricas.ts): la sección dejó de ser sólo un 'no'
+    // y pasó a decir qué condición hace falta para que haya un saber atribuido.
+    expect(panel).toContain('Saberes atribuidos a una cultura');
+    expect(panel).toContain('de quién es');
   });
 
   it('no nombra un ecosistema mientras la ecorregión está en vuelo', () => {

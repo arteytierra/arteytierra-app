@@ -1,6 +1,6 @@
 'use client';
 
-import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin } from 'lucide-react';
+import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin, History } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { fichaClimaFuturo } from '@/lib/climaFuturo';
@@ -9,6 +9,7 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
+import type { VigenciaPractica } from '@/lib/biomaTipos';
 
 interface Props {
   mojones:    Mojon[];
@@ -109,6 +110,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   const bioma = resolverBioma(datosClima.koppen, centro.lat, centro.lng, elev, eco);
   const ficha = bioma.ficha;
   const color = ficha?.color ?? '#5b6b52'; // sin ficha: verde neutro de marca
+  // Las inyecta fichaPorId desde lib/practicasHistoricas.ts; la ficha generada
+  // nunca las trae. Vacío es el estado normal mientras se releva el resto.
+  const practicas = ficha?.practicas ?? [];
   const analogos = analogosDeKoppen(datosClima.koppen);
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
@@ -162,17 +166,53 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </div>
       </Seccion>}
 
-      {/* Saberes ancestrales de la ficha.
+      {/* Prácticas documentadas en el territorio.
+
+          La respuesta al agujero que dejaban los `saberes: []`. Una ecorregión
+          no permite decir de quién es una práctica, pero sí qué se hizo acá y
+          cuándo: el registro fecha el rasgo —el camellón, el muro, el canal—,
+          no la identidad de quien lo levantó. Ver lib/practicasHistoricas.ts. */}
+      {practicas.length > 0 && <Seccion icon={<History className="w-3.5 h-3.5" />} titulo="Prácticas documentadas en el territorio">
+        <div className="space-y-2">
+          {practicas.map((p, i) => (
+            <div key={i} className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-semibold text-moss-900">{p.practica}</p>
+                <span className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded-full border ${ESTILO_VIGENCIA[p.vigencia]}`}>
+                  {ROTULO_VIGENCIA[p.vigencia]}
+                </span>
+              </div>
+              <p className="text-[10px] text-ink-700/55 mt-0.5">{p.periodo}</p>
+              <p className="text-xs text-ink-700/75 leading-relaxed mt-1.5">{p.detalle}</p>
+              <div className="mt-2 flex flex-col gap-1">
+                {p.fuentes.map(f => (
+                  <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer"
+                     className="text-[10px] text-moss-700 hover:text-moss-900 inline-flex items-start gap-1 leading-snug">
+                    <ExternalLink className="w-2.5 h-2.5 mt-0.5 shrink-0" />{f.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-ink-700/50 leading-relaxed mt-2.5">
+          Van fechadas y sin atribuir: lo que una excavación data es la obra, no quién la hizo, y a
+          escala de ecorregión —que abarca muchos pueblos y ninguno la ocupa entera— ponerle un
+          nombre sería inventarlo. Donde la fuente sí lo dice, está en el texto.
+        </p>
+      </Seccion>}
+
+      {/* Saberes atribuidos de la ficha.
 
           Vienen vacíos en 188 de las 210 fichas regionales, y no es que falte
           cargarlos: los tres bloques generados desde los paquetes de
-          investigación no atribuyen prácticas a ninguna cultura, porque a
-          escala de ecorregión eso sería inventar. Las únicas que los traen son
-          las 22 fichas argentinas escritas a mano antes de ese criterio.
+          investigación no atribuyen prácticas a ninguna cultura. Las únicas que
+          los traen son las 22 fichas argentinas escritas a mano antes de ese
+          criterio.
 
-          Hasta ahora la sección simplemente no aparecía, y el silencio se leía
-          como "acá no hay nada". Cuando no hay, se dice qué falta para que
-          haya. */}
+          Cuando no hay, se dice qué falta. La explicación se acorta si arriba
+          ya salieron prácticas documentadas: ahí la sección dejó de ser un
+          agujero y no hace falta justificarla dos veces. */}
       {ficha.saberes.length > 0 ? <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
         <div className="space-y-2">
           {ficha.saberes.map((s, i) => (
@@ -183,18 +223,20 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
           ))}
         </div>
       </Seccion> : (
-        <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
+        <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes atribuidos a una cultura">
           <p className="text-xs text-ink-700/70 leading-relaxed">
-            Esta ficha no le atribuye prácticas a ninguna cultura, y es a propósito. Decir que un
-            saber es de un pueblo necesita territorio, procedencia y acuerdo verificados, y eso se
-            resuelve por polígono, no por ecorregión: una ecorregión abarca muchos pueblos y ninguno
-            la ocupa entera.
+            Acá va un saber cuando se puede decir <strong>de quién es</strong>, y eso necesita
+            territorio, procedencia y acuerdo verificados. Se resuelve por polígono, no por
+            ecorregión: aparece más abajo, y sólo si el predio cae adentro del territorio
+            documentado.
           </p>
-          <p className="text-xs text-ink-700/70 leading-relaxed mt-2">
-            Los que sí cumplen esa condición aparecen más abajo, en su propia sección, y sólo cuando
-            el predio cae adentro del territorio documentado. Que no haya no significa que no
-            existan: significa que todavía no tenemos con qué afirmarlo acá.
-          </p>
+          {practicas.length === 0 && (
+            <p className="text-xs text-ink-700/70 leading-relaxed mt-2">
+              Para esta ecorregión tampoco tenemos todavía prácticas fechadas sin atribuir, que es
+              el otro modo de contarlo. Que no haya no significa que no existan: significa que
+              todavía no tenemos con qué afirmarlo acá.
+            </p>
+          )}
         </Seccion>
       )}
       </>}
@@ -382,6 +424,20 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
     </div>
   );
 }
+
+const ROTULO_VIGENCIA: Record<VigenciaPractica, string> = {
+  en_uso:       'En uso',
+  en_retroceso: 'En retroceso',
+  historica:    'Documentada',
+};
+
+/** `historica` no lleva color de alarma: que una práctica no se haga más es un
+ *  dato del registro, no una falla del predio. */
+const ESTILO_VIGENCIA: Record<VigenciaPractica, string> = {
+  en_uso:       'bg-moss-100 text-moss-900 border-moss-200',
+  en_retroceso: 'bg-clay-100 text-clay-900 border-clay-200',
+  historica:    'bg-bone-100 text-ink-700/70 border-bone-300',
+};
 
 function Seccion({ icon, titulo, children }: { icon: React.ReactNode; titulo: string; children: React.ReactNode }) {
   return (

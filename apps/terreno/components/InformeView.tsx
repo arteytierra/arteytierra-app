@@ -363,6 +363,24 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ]}
                 colAlign={['left', 'left']}
               />}
+              {/* Prácticas documentadas: fechadas y sin atribuir. Van antes de los
+                  saberes porque son la capa que sí existe en casi cualquier predio.
+                  El informe se lee en voz alta delante de gente, así que el período y
+                  la fuente viajan con cada una. Ver lib/practicasHistoricas.ts. */}
+              {bioma?.practicas?.length ? <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Prácticas documentadas en el territorio</p>
+              <div className="space-y-2">
+                {bioma.practicas.map((pr, i) => (
+                  <div key={i} className="text-sm">
+                    <span className="font-semibold text-moss-700">{pr.practica}</span>
+                    <span className="text-ink-700/60"> · {pr.periodo}</span>
+                    <p className="text-ink-700/80">{pr.detalle}</p>
+                    <p className="text-[10px] text-ink-700/50 mt-0.5">Fuente: {pr.fuentes.map(f => f.label).join(" · ")}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">Fechadas y sin atribución de autoría: el registro data la obra, no quién la hizo.</p>
+              </> : null}
               {bioma && bioma.saberes.length > 0 && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">

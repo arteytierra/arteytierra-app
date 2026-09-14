@@ -23,6 +23,7 @@ import { biomaGlobal, enSudamerica, fichaDeEcorregion, type Ecorregion } from '.
 import { BIOMAS_REGIONALES } from './biomasRegionales';
 import { BIOMAS_GLOBALES } from './biomasGlobales';
 import type { BiomaFicha, Fuente, ModificadorAptitud, SaberCultural } from './biomaTipos';
+import { practicasDeFicha } from './practicasHistoricas';
 import { ANALOGOS_KOPPEN, EQUIVALENTES, type Analogo } from './analogos';
 
 export type { BiomaFicha, Fuente, SaberCultural };
@@ -537,10 +538,19 @@ export function fichaBioma(id: BiomaId): BiomaFicha {
  * gruesa: sudamericanas → regionales → biomas globales. Null si no existe.
  */
 export function fichaPorId(id: string): BiomaFicha | null {
-  return (BIOMAS as Record<string, BiomaFicha | undefined>)[id]
+  const ficha = (BIOMAS as Record<string, BiomaFicha | undefined>)[id]
       ?? BIOMAS_REGIONALES[id]
       ?? BIOMAS_GLOBALES[id]
       ?? null;
+  if (!ficha) return null;
+
+  // Las prácticas documentadas se inyectan acá y no viven en los catálogos
+  // porque los catálogos regionales son archivos generados: lo que se escriba
+  // ahí se pierde en el próximo montaje desde _research/. Este es además el
+  // único embudo por el que pasan las tres vías de resolución —ficha regional,
+  // bioma global y heurística Köppen—, así que alcanza con decorarlo una vez.
+  const practicas = practicasDeFicha(id);
+  return practicas.length ? { ...ficha, practicas } : ficha;
 }
 
 // ─── Resolución en tres niveles ───────────────────────────────────────────────
