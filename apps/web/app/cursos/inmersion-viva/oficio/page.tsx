@@ -6,13 +6,13 @@ import { OficioApplyForm } from '@/components/cursos/OficioApplyForm';
 
 export const metadata: Metadata = {
   title: 'Voluntariado de oficio · Beca completa — Inmersión Viva',
-  description: 'Aportá tu oficio (electricidad, plomería, herrería, carpintería, comunicación...) a la construcción de la ecoescuela Tay Pichín y accedé a una beca completa para la Inmersión Viva.',
+  description: 'Aportá tu oficio (electricidad, plomería, herrería, carpintería, mecánica...) a la construcción de la ecoescuela Tay Pichín y accedé a una beca completa para la Inmersión Viva.',
   alternates: { canonical: '/cursos/inmersion-viva/oficio' },
 };
 
 const EJEMPLOS = [
-  'Electricidad', 'Plomería', 'Herrería', 'Carpintería', 'Comunicación / community management',
-  'Diseño gráfico', 'Fotografía y video', 'Nutrición', 'Salud y primeros auxilios', 'Mecánica',
+  'Electricidad', 'Plomería', 'Herrería', 'Carpintería', 'Diseño gráfico',
+  'Fotografía y video', 'Nutrición', 'Salud y primeros auxilios', 'Mecánica',
 ];
 
 export default function OficioPage() {

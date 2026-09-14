@@ -151,7 +151,7 @@ export function OficioApplyForm() {
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="of-oficio" className="font-sans text-sm font-semibold text-ink-800">Servicio que querés brindar *</label>
-          <input id="of-oficio" name="oficio" type="text" required placeholder="Electricidad, plomería, herrería, carpintería, comunicación..."
+          <input id="of-oficio" name="oficio" type="text" required placeholder="Electricidad, plomería, herrería, carpintería, mecánica..."
             className="border border-bone-200 bg-white px-4 py-3 font-sans text-sm text-ink-900 placeholder:text-ink-700/40 focus:outline-none focus:border-clay-700" />
         </div>
       </div>
