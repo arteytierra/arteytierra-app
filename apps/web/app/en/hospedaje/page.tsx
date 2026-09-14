@@ -33,7 +33,7 @@ const AMENITIES = [
 
 // Las mismas tres reseñas que estan publicadas en castellano y en frances,
 // traducidas. Las que habia antes no existian: tres testimonios inventados con
-// puntajes de 9,2 a 9,5 en la unica pagina del sitio donde nadie los iba a
+// puntajes inflados en la unica pagina del sitio donde nadie los iba a
 // cotejar. Ver `lib/hospedaje/booking.ts`.
 const RESENAS = [
   {

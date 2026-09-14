@@ -316,7 +316,7 @@ export default function HospedajePage() {
           >
             <div>
               <p className="font-sans font-bold text-lg mb-2">Booking.com</p>
-              <p className="font-sans text-sm opacity-80 leading-relaxed">Reserva inmediata, cancelación flexible según tarifa. Puntaje 9.7/10.</p>
+              <p className="font-sans text-sm opacity-80 leading-relaxed">Reserva inmediata, cancelación flexible según tarifa. Puntaje {puntajeBooking()}/10 sobre {comentariosBooking()} comentarios.</p>
             </div>
             <span className="mt-6 font-sans font-bold text-sm uppercase tracking-widest">Reservar →</span>
           </a>

@@ -56,11 +56,13 @@ describe('el puntaje de Booking', () => {
   });
 
   it('no esta copiado en ninguna pagina ni componente', () => {
-    // Un numero con decimales a menos de 40 caracteres de la palabra Booking,
-    // en cualquiera de los dos ordenes. Alcanza para "7,5 · Booking.com",
-    // "Score 7.5 on Booking" y "Puntaje 9.7/10 en Booking".
+    // Dos formas de escribirlo. Una: un numero con decimales a menos de 40
+    // caracteres de la palabra Booking, en cualquiera de los dos ordenes —
+    // "7,5 · Booking.com", "Score 7.5 on Booking". La otra: la palabra puntaje
+    // y un decimal, aunque Booking quede lejos en la misma linea; asi estaba
+    // escondido el segundo 9.7 de /hospedaje, a noventa caracteres del nombre.
     const sospechoso =
-      /(\d+[.,]\d+[^\n]{0,40}Booking)|(Booking[^\n]{0,40}\d+[.,]\d+)/i;
+      /(\d+[.,]\d+[^\n]{0,40}Booking)|(Booking[^\n]{0,40}\d+[.,]\d+)|((?:puntaje|puntuaci|score|note)[^\n]{0,15}\d+[.,]\d+)/i;
     const copias: string[] = [];
 
     for (const carpeta of ['app', 'components', 'lib']) {
