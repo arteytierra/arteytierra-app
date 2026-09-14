@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
 
 const INTERESES = [
   'Bioarchitecture project',
@@ -25,7 +26,7 @@ export default function ContactoEnPage() {
     const form = e.currentTarget;
     const data = new FormData(form);
     try {
-      const res = await fetch('https://formspree.io/f/mvzlarvb', {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },

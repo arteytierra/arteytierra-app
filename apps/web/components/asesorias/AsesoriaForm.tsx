@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
+import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
@@ -15,7 +16,7 @@ export function AsesoriaForm() {
     const form = e.currentTarget;
     const data = new FormData(form);
     try {
-      const res = await fetch('https://formspree.io/f/mvzlarvb', {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         headers: { Accept: 'application/json' },
         body: data,

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
 
 const INTERESES = [
   { name: 'interes_bioarq', label: 'Projet de bioarchitecture' },
@@ -32,7 +33,7 @@ export default function ContactoFrPage() {
     try {
       const form = e.currentTarget;
       const data = new FormData(form);
-      const res = await fetch('https://formspree.io/f/mvzlarvb', {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },

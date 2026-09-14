@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
+import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
 
 const INTERESES = [
   { name: 'interes_bioarq', label: 'Proyecto de bioarquitectura' },
@@ -25,7 +26,7 @@ export function ContactForm() {
     try {
       const form = e.currentTarget;
       const data = new FormData(form);
-      const res = await fetch('https://formspree.io/f/mvzlarvb', {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },

@@ -5,6 +5,7 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { professionalServiceJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
+import { ProyectoForm } from '@/components/diseno/ProyectoForm';
 
 export const metadata: Metadata = {
   title: 'Diseño',
@@ -334,8 +335,6 @@ export default function DisenoPage() {
       </section>
 
       {/* MODOS DE CONTRATACIÓN */}
-
-      {/* MODOS DE CONTRATACIÓN */}
       <section className="bg-bone-50 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-14 text-center">
@@ -393,31 +392,34 @@ export default function DisenoPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-clay-700 py-20 px-6 text-center">
-        <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-200 mb-4">
-          El primer paso es conocer tu tierra
-        </p>
-        <h2 className="font-display text-4xl md:text-5xl text-bone-50 mb-5">
-          Empezá con una<br /><em>asesoría online.</em>
-        </h2>
-        <p className="font-sans text-bone-100 text-lg max-w-lg mx-auto mb-8 leading-relaxed">
-          1 hora con nuestro equipo. Revisamos tu terreno, tu agua, tus ideas y posibilidades.
-          Si después contratás el diseño, los USD 60 se descuentan.
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link
-            href="/asesorias"
-            className="inline-flex bg-ink-950 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-800 transition-colors"
-          >
-            Agendar asesoría →
-          </Link>
-          <Link
-            href="/proyectos"
-            className="inline-flex border border-bone-50/50 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors"
-          >
-            Ver proyectos
-          </Link>
+      {/* CONSULTA */}
+      <section id="consulta" className="bg-ink-950 py-20 md:py-28 px-6">
+        <div className="max-w-editorial mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20">
+          <div>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">
+              El primer paso es conocer tu tierra
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl text-bone-50 leading-tight mb-6">
+              Contanos<br /><em>tu proyecto.</em>
+            </h2>
+            <p className="font-sans text-lg text-bone-200 leading-relaxed mb-5">
+              Leemos cada consulta. Respondemos con una primera lectura del lugar: qué vemos
+              posible, desde dónde empezaríamos y qué necesitamos para avanzar.
+            </p>
+            <p className="font-sans text-base text-bone-300/80 leading-relaxed mb-8">
+              Trabajamos en cualquier parte del mundo. Si preferís hablar antes que escribir,
+              escribinos directo.
+            </p>
+            <a
+              href="https://wa.me/5493549431594?text=Hola%21%20Escribo%20por%20un%20proyecto%20de%20dise%C3%B1o."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex border border-bone-50/40 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:border-bone-50 transition-colors"
+            >
+              WhatsApp →
+            </a>
+          </div>
+          <ProyectoForm />
         </div>
       </section>
     </main>
