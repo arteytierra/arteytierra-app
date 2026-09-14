@@ -396,7 +396,7 @@ export default function DisenoPage() {
       <section id="consulta" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20">
           <div>
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-400 mb-4">
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
               El primer paso es conocer tu tierra
             </p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50 leading-tight mb-6">
@@ -406,7 +406,7 @@ export default function DisenoPage() {
               Leemos cada consulta. Respondemos con una primera lectura del lugar: qué vemos
               posible, desde dónde empezaríamos y qué necesitamos para avanzar.
             </p>
-            <p className="font-sans text-base text-bone-300/80 leading-relaxed mb-8">
+            <p className="font-sans text-base text-bone-200/80 leading-relaxed mb-8">
               Trabajamos en cualquier parte del mundo. Si preferís hablar antes que escribir,
               escribinos directo.
             </p>

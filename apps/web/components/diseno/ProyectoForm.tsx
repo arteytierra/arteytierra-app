@@ -42,10 +42,6 @@ const PLAZOS = [
 
 type Estado = 'inicial' | 'enviando' | 'enviado' | 'error';
 
-const campo =
-  'bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-400 transition-colors';
-const etiqueta = 'font-sans text-sm font-semibold text-bone-100';
-
 export function ProyectoForm() {
   const [estado, setEstado] = useState<Estado>('inicial');
   const [datos, setDatos] = useState({ nombre: '', email: '' });
@@ -79,7 +75,7 @@ export function ProyectoForm() {
 
   if (estado === 'enviado') {
     return (
-      <div className="bg-clay-700/25 border border-clay-600 p-8 md:p-10">
+      <div className="bg-clay-700/25 border border-clay-500 p-8 md:p-10">
         <p className="font-display text-3xl text-bone-50 mb-3">Recibimos tu consulta.</p>
         <p className="font-sans text-base text-bone-200 leading-relaxed">
           Te escribimos dentro de las próximas 48 horas hábiles. Si querés adelantar algo
@@ -112,42 +108,42 @@ export function ProyectoForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-nombre" className={etiqueta}>Nombre *</label>
+          <label htmlFor="dis-nombre" className="font-sans text-sm font-semibold text-bone-100">Nombre *</label>
           <input id="dis-nombre" name="nombre" type="text" required autoComplete="name"
-            placeholder="Tu nombre" className={campo} />
+            placeholder="Tu nombre" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-email" className={etiqueta}>Email *</label>
+          <label htmlFor="dis-email" className="font-sans text-sm font-semibold text-bone-100">Email *</label>
           <input id="dis-email" name="email" type="email" required autoComplete="email"
-            placeholder="tu@email.com" className={campo} />
+            placeholder="tu@email.com" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-lugar" className={etiqueta}>¿Dónde queda el terreno?</label>
+          <label htmlFor="dis-lugar" className="font-sans text-sm font-semibold text-bone-100">¿Dónde queda el terreno?</label>
           <input id="dis-lugar" name="lugar" type="text"
-            placeholder="Localidad, provincia y país" className={campo} />
+            placeholder="Localidad, provincia y país" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-whatsapp" className={etiqueta}>WhatsApp</label>
+          <label htmlFor="dis-whatsapp" className="font-sans text-sm font-semibold text-bone-100">WhatsApp</label>
           <input id="dis-whatsapp" name="whatsapp" type="tel" autoComplete="tel"
-            placeholder="Con código de país" className={campo} />
+            placeholder="Con código de país" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-superficie" className={etiqueta}>Superficie, en hectáreas</label>
+          <label htmlFor="dis-superficie" className="font-sans text-sm font-semibold text-bone-100">Superficie, en hectáreas</label>
           <input id="dis-superficie" name="superficie_hectareas" type="text" inputMode="decimal"
-            placeholder="Por ejemplo, 2,5" className={campo} />
+            placeholder="Por ejemplo, 2,5" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors" />
           <p className="font-sans text-xs text-bone-200/60">
             Si todavía no la sabés, dejalo vacío.
           </p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="dis-modo" className={etiqueta}>¿Cómo te imaginás trabajarlo?</label>
-          <select id="dis-modo" name="modo" className={`${campo} appearance-none`} defaultValue="">
+          <label htmlFor="dis-modo" className="font-sans text-sm font-semibold text-bone-100">¿Cómo te imaginás trabajarlo?</label>
+          <select id="dis-modo" name="modo" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors appearance-none" defaultValue="">
             <option value="" disabled>Elegí una opción</option>
             {MODOS.map(m => (
               <option key={m} value={m} className="text-ink-950">{m}</option>
@@ -157,7 +153,7 @@ export function ProyectoForm() {
       </div>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className={`${etiqueta} mb-1`}>¿Qué necesitás? Podés marcar varios</legend>
+        <legend className="font-sans text-sm font-semibold text-bone-100 mb-1">¿Qué necesitás? Podés marcar varios</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {DISCIPLINAS.map(d => (
             <label key={d.name} className="flex items-center gap-3 cursor-pointer group">
@@ -172,8 +168,8 @@ export function ProyectoForm() {
       </fieldset>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="dis-plazo" className={etiqueta}>¿Cuándo te gustaría empezar?</label>
-        <select id="dis-plazo" name="plazo" className={`${campo} appearance-none sm:w-1/2`} defaultValue="">
+        <label htmlFor="dis-plazo" className="font-sans text-sm font-semibold text-bone-100">¿Cuándo te gustaría empezar?</label>
+        <select id="dis-plazo" name="plazo" className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors appearance-none sm:w-1/2" defaultValue="">
           <option value="" disabled>Elegí una opción</option>
           {PLAZOS.map(p => (
             <option key={p} value={p} className="text-ink-950">{p}</option>
@@ -182,10 +178,10 @@ export function ProyectoForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="dis-mensaje" className={etiqueta}>Contanos del lugar y de la idea *</label>
+        <label htmlFor="dis-mensaje" className="font-sans text-sm font-semibold text-bone-100">Contanos del lugar y de la idea *</label>
         <textarea id="dis-mensaje" name="mensaje" required rows={5}
           placeholder="Qué hay hoy en el terreno, cómo se comporta el agua, qué te gustaría que pase ahí. Todo lo que nos cuentes acorta la primera conversación."
-          className={`${campo} resize-none`} />
+          className="bg-bone-50/10 border border-bone-50/20 text-bone-50 placeholder-bone-200/40 font-sans text-sm px-4 py-3 focus:outline-none focus:border-clay-500 transition-colors resize-none" />
       </div>
 
       {estado === 'error' && (

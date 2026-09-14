@@ -559,7 +559,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       {course.crossLink && (
         <Link
           href={course.crossLink.href}
-          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 bg-ink-950 text-bone-50 font-sans font-bold text-xs sm:text-sm px-4 sm:px-5 py-3.5 shadow-lg border border-bone-50/10 hover:bg-clay-800 transition-colors max-w-[calc(100vw-2.5rem)]"
+          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 bg-ink-950 text-bone-50 font-sans font-bold text-xs sm:text-sm px-4 sm:px-5 py-3.5 shadow-lg border border-bone-50/10 hover:bg-clay-900 transition-colors max-w-[calc(100vw-2.5rem)]"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0" aria-hidden="true">
             <path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4" />
