@@ -1,0 +1,27 @@
+{
+  "name": "@arteytierra/placas",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Placas animadas de marca para video, renderizadas con Remotion.",
+  "scripts": {
+    "estudio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts",
+    "componer": "remotion compositions src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@arteytierra/config": "workspace:*",
+    "@remotion/google-fonts": "4.0.524",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "remotion": "4.0.524",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.524",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2"
+  }
+}
