@@ -3,10 +3,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL, puntajeBooking } from '@/lib/hospedaje/booking';
 
 export const metadata: Metadata = {
   title: 'EcoHostel Tay Pichín — Accommodation in Earth Architecture',
-  description: 'Stay at EcoHostel Tay Pichín: rooms and camping built with natural materials. San Marcos Sierras, Córdoba, Argentina. Score 7.5 on Booking.com.',
+  description: `Stay at EcoHostel Tay Pichín: rooms and camping built with natural materials. San Marcos Sierras, Córdoba, Argentina. Score ${puntajeBooking('en')} on Booking.com.`,
   alternates: { canonical: '/en/hospedaje' },
 };
 
@@ -30,21 +31,25 @@ const AMENITIES = [
   { icon: '🧘', text: 'Meditation and yoga space' },
 ];
 
+// Las mismas tres reseñas que estan publicadas en castellano y en frances,
+// traducidas. Las que habia antes no existian: tres testimonios inventados con
+// puntajes de 9,2 a 9,5 en la unica pagina del sitio donde nadie los iba a
+// cotejar. Ver `lib/hospedaje/booking.ts`.
 const RESENAS = [
   {
-    text: "An experience that goes beyond accommodation. The space breathes, the food is homemade and Jonatan and the team make you feel part of something larger.",
-    author: 'Marie, France',
-    score: '9.2',
+    text: "An ideal place to stay if what you are after is quiet and a friendly atmosphere. The project is fascinating and you can tell it was made with care. Fully equipped kitchen, natural pool and plenty of corners where you feel at ease. My partner and I stayed nine days and they felt short. We will be back.",
+    author: 'Marian Encinar, Spain · Google',
+    score: '5/5',
   },
   {
-    text: "Tay Pichín changed the way I see how I want to live. The earthen walls, the garden, the people... I went back three times.",
-    author: 'Lucas, Argentina',
-    score: '9.5',
+    text: "The place is very charming. Beautiful views, very green, and everything thought through with the wellbeing of the land in mind. Joni and the volunteer are very kind and I felt at home.",
+    author: 'Pía, Germany · Booking',
+    score: '10/10',
   },
   {
-    text: "It is a truly special place. You come to rest and end up learning about permaculture and natural building without even realizing it.",
-    author: 'Valentina, Colombia',
-    score: '8.8',
+    text: "A beautiful, quiet place. Jonatan and his team are outstanding. I had never used a dry toilet and adapted without trouble. I had a great time and I am grateful for the experience.",
+    author: 'Sergio, Argentina · Airbnb',
+    score: '5/5',
   },
 ];
 
@@ -73,7 +78,7 @@ export default function HospedajeEnPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
-                href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.en.html"
+                href={BOOKING_URL.en}
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors"
               >

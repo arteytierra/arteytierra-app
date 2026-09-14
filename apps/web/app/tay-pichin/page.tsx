@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
@@ -174,17 +175,17 @@ export default function TayPichinPage() {
             {/* Badge Booking */}
             <div className="inline-flex items-center gap-3 bg-bone-50/10 px-4 py-3 mb-8">
               <div className="bg-clay-500 text-ink-950 font-sans font-black text-lg px-3 py-1 leading-none">
-                7,5
+                {puntajeBooking()}
               </div>
               <div>
                 <p className="font-sans font-bold text-bone-100 text-sm">Booking.com</p>
-                <p className="font-sans text-bone-200 text-xs">59 reseñas verificadas</p>
+                <p className="font-sans text-bone-200 text-xs">{comentariosBooking()} reseñas verificadas</p>
               </div>
             </div>
 
             <div className="flex flex-col gap-3">
               <a
-                href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.es.html"
+                href={BOOKING_URL.es}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex justify-center bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:bg-clay-900 transition-colors"

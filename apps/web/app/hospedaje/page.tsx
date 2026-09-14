@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
 
 export const metadata: Metadata = {
   title: 'Ecohostel Tay Pichín — Hospedaje en San Marcos Sierras',
@@ -11,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 const AIRBNB_URL = 'https://www.airbnb.com.ar/rooms/1346556039732742474';
-const BOOKING_URL = 'https://www.booking.com/hotel/ar/ecohostel-tay-pichin.es-ar.html';
 const WA_URL = 'https://wa.me/5493549431594?text=Hola%21%20Quiero%20consultar%20por%20hospedaje%20en%20Tay%20Pichín.';
 
 const PRECIOS = [
@@ -142,7 +142,7 @@ export default function HospedajePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <a
-              href={BOOKING_URL}
+              href={BOOKING_URL.es}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:bg-clay-900 transition-colors"
@@ -208,7 +208,7 @@ export default function HospedajePage() {
               Dormís en construcciones de barro, comés lo que brota del monte y la huerta, nadás en una biopiscina que regenera. Tay Pichín es la sede física de Arte y Tierra — ecoescuela, ecohostel y espacio de encuentro para quienes quieren aprender haciendo.
             </p>
             <div className="flex flex-wrap gap-3">
-              {['Puntaje 9.7/10 en Booking', '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
+              {[`Puntaje ${puntajeBooking()}/10 en Booking · ${comentariosBooking()} comentarios`, '★★★★★ en Airbnb', '★★★★★ en Google'].map(b => (
                 <span key={b} className="text-xs font-sans font-bold text-clay-200 bg-clay-800/50 border border-clay-600 px-4 py-2 uppercase tracking-wider">
                   {b}
                 </span>
@@ -309,7 +309,7 @@ export default function HospedajePage() {
             </h2>
           </div>
           <a
-            href={BOOKING_URL}
+            href={BOOKING_URL.es}
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-col justify-between bg-[#003580] text-white p-7 hover:opacity-90 transition-opacity"

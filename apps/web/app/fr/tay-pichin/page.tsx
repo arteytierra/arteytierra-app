@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Écoécole et Écolodge',
@@ -116,14 +117,14 @@ export default function TayPichinFrPage() {
                 Ici, vous pouvez observer, apprendre ou prendre part à des pratiques comme la bioconstruction, l'agroécologie, le soin de l'eau et la vie communautaire. Chaque séjour soutient des processus locaux.
               </p>
               <div className="flex items-center gap-3 mb-8 bg-bone-50/5 px-4 py-3 w-fit">
-                <div className="bg-clay-700 text-bone-50 font-bold text-lg px-3 py-1">7,5</div>
+                <div className="bg-clay-700 text-bone-50 font-bold text-lg px-3 py-1">{puntajeBooking('fr')}</div>
                 <div className="text-sm text-bone-200 leading-tight">
                   <strong className="text-bone-100">Booking.com</strong><br />
-                  <span className="opacity-75">59 avis vérifiés</span>
+                  <span className="opacity-75">{comentariosBooking()} avis vérifiés</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <a href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.fr.html" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors">
+                <a href={BOOKING_URL.fr} target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors">
                   Réserver sur Booking →
                 </a>
                 <a href="https://www.airbnb.com.ar/rooms/1346556039732742474" target="_blank" rel="noopener noreferrer" className="inline-flex border border-bone-200/50 text-bone-200 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:border-bone-50 hover:text-bone-50 transition-colors">

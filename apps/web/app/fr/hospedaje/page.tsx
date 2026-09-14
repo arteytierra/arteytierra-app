@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL } from '@/lib/hospedaje/booking';
 
 export const metadata: Metadata = {
   title: 'Écolodge Tay Pichín — Hébergement à San Marcos Sierras',
@@ -81,7 +82,7 @@ export default function HospedajeFrPage() {
               Hébergement en architecture naturelle et habitat régénératif. Pour ceux qui cherchent à se reposer dans un espace vivant, construit avec intention et en harmonie avec son environnement.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.fr.html" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
+              <a href={BOOKING_URL.fr} target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
                 Réserver sur Booking →
               </a>
               <a href="https://www.airbnb.com.ar/rooms/1346556039732742474" target="_blank" rel="noopener noreferrer" className="inline-flex border border-bone-50/50 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-bone-50 transition-colors">
@@ -126,7 +127,7 @@ export default function HospedajeFrPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-4">
-              <a href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.fr.html" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
+              <a href={BOOKING_URL.fr} target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
                 Booking.com →
               </a>
               <a href="https://www.airbnb.com.ar/rooms/1346556039732742474" target="_blank" rel="noopener noreferrer" className="inline-flex border border-ink-950 text-ink-950 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-ink-950 hover:text-bone-50 transition-colors">

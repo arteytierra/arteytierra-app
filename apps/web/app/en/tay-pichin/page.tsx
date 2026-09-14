@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Permaculture EcoSchool & EcoHostel',
@@ -122,10 +123,10 @@ export default function TayPichinEnPage() {
               <p className="font-sans text-base text-bone-200 leading-relaxed mb-4">
                 Rooms and camping areas built with earth, wood and natural materials. A living, breathing space where you experience the difference between concrete and a wall that breathes.
               </p>
-              <p className="font-sans text-sm text-bone-300/70 mb-2">Score 7.5 · Booking.com</p>
+              <p className="font-sans text-sm text-bone-300/70 mb-2">Score {puntajeBooking('en')} · {comentariosBooking()} reviews on Booking.com</p>
               <div className="flex flex-wrap gap-4 mt-6">
                 <a
-                  href="https://www.booking.com/hotel/ar/ecohostel-tay-pichin.en.html"
+                  href={BOOKING_URL.en}
                   target="_blank" rel="noopener noreferrer"
                   className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:bg-clay-900 transition-colors"
                 >
