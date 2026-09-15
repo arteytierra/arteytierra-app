@@ -12,7 +12,9 @@ Paquete final v1 (26/08/2026). Colores: azul agua `#2E6B8A`, negro profundo
 | `isotipo-negro.svg` | impresión a un color | — |
 | `logo-color.png` | login, registro (fondo claro) | lockup completo |
 | `logo-negro.png` | portada del informe | lockup completo, un color |
+| `logo-blanco.png` | placas de video sobre fondo oscuro | lockup completo en blanco, fondo transparente |
 | `firma-negro.png` | encabezados estrechos del informe | símbolo + wordmark en poca altura |
+| `firma-blanca.png` | lower thirds sobre metraje oscuro | la firma en blanco, fondo transparente |
 | `firma-negro-ui.png` | barra superior de /mapa | la misma firma recortada al contenido, sin el aire del original |
 | `app-icon-512.png` / `-1024.png` | manifest PWA, apple-icon | cuadrado con fondo oscuro |
 
@@ -36,6 +38,19 @@ geometría de la variante **favicon** (dos anillos, trazo 28) en vez de la del
 isotipo grande (cuatro anillos, trazo 10,5): a 20–28 px el trazo fino cae por
 debajo del píxel y los cuatro anillos se empastan. Es la compensación óptica
 que trae la marca para tamaños chicos, no una deformación.
+
+## Los blancos del paquete son blanco puro, no el blanco cálido
+
+`logo-blanco.png` y `firma-blanca.png` tienen el trazo en **`#FFFFFF`**, no en el
+blanco cálido `#F5F0E8` que declara el manual. Son los archivos aprobados del
+paquete v1 y se usan tal cual: recolorear un lockup va contra la regla de marca.
+
+Importa saberlo en dos lados. En video, blanco puro sobre el negro profundo tiene
+más contraste del que tiene el resto del sistema, y en una placa se nota. En web,
+un lockup blanco al lado de texto en `#F5F0E8` se ve de dos blancos distintos.
+
+Si alguna vez se decide unificar, se re-exporta desde
+`C:\Arte y Tierra\Acequia\Acequia_Logo_Final_v1` — no se recolorea el PNG.
 
 ## Por qué los lockups son PNG y no SVG
 

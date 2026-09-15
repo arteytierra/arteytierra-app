@@ -17,6 +17,10 @@ export const COLORES = marcaAcequia;
 export const LOGOS = {
   /** Lockup completo, sobre fondo claro. */
   color: 'marca/logo-color.png',
+  /** Lockup completo en blanco, para fondo oscuro. Trazo #FFFFFF, no el crema. */
+  blanco: 'marca/logo-blanco.png',
+  /** La firma en blanco: lower thirds sobre metraje oscuro. */
+  firmaBlanca: 'marca/firma-blanca.png',
   /** Lockup completo a un color, sobre fondo claro. */
   negro: 'marca/logo-negro.png',
   /** Símbolo + wordmark en poca altura: para lower thirds. */

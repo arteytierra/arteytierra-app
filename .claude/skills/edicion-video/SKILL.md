@@ -209,16 +209,19 @@ pnpm --filter @arteytierra/placas render LowerThird lower.mov \
   --props='{"nombre":"Jonatan","rol":"Arte y Tierra"}'
 ```
 
-Las placas que hay hoy: `AperturaAcequia` (16:9 y 9:16), `LowerThird` y
+Las placas que hay hoy: `AperturaAcequia` y `AperturaAcequiaOscura`
+(cada una en 16:9 y 9:16), `LowerThird` y
 `PlacaDato` —un número que cuenta hasta su valor, con la unidad y **la fuente
 citada**, que no es opcional: mismo criterio que los motores de cálculo.
 
 Tres cosas que se aprendieron armándolo y conviene no volver a descubrir:
 
-- **La apertura va sobre fondo crema, no sobre el negro profundo.** El paquete
-  de marca no tiene un lockup blanco rasterizado, y el wordmark no se puede
-  dibujar con texto porque depende de Century Gothic. Si algún día hace falta
-  una apertura sobre oscuro, primero hay que exportar `logo-blanco.png`.
+- **La apertura viene en clara y oscura.** `AperturaAcequia` sobre crema y
+  `AperturaAcequiaOscura` sobre el negro profundo, cada una en 16:9 y 9:16. La
+  oscura usa `logo-blanco.png`: el lockup **no se recolorea**, se cambia por la
+  variante que corresponde. Ojo que el blanco del paquete es `#FFFFFF` puro y no
+  el blanco cálido de la marca, así que sobre el negro profundo tiene más
+  contraste que el resto del sistema.
 - **Las tipografías se empaquetan con `@remotion/google-fonts`**, no se toman
   del sistema. Si se tomaran del sistema, el mismo proyecto renderizado en otra
   máquina saldría distinto sin avisar. Y se piden sólo los pesos que se usan:

@@ -22,7 +22,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.horizontal}
         schema={esquemaApertura}
-        defaultProps={{ bajada: 'Leer el territorio antes de moverlo' }}
+        defaultProps={{ bajada: 'Leer el territorio antes de moverlo', fondo: 'crema' as const }}
       />
 
       <Composition
@@ -32,7 +32,27 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.vertical}
         schema={esquemaApertura}
-        defaultProps={{ bajada: 'Leer el territorio antes de moverlo' }}
+        defaultProps={{ bajada: 'Leer el territorio antes de moverlo', fondo: 'crema' as const }}
+      />
+
+      <Composition
+        id="AperturaAcequiaOscura"
+        component={AperturaAcequia}
+        durationInFrames={FPS * 3}
+        fps={FPS}
+        {...FORMATOS.horizontal}
+        schema={esquemaApertura}
+        defaultProps={{ bajada: 'Leer el territorio antes de moverlo', fondo: 'oscuro' as const }}
+      />
+
+      <Composition
+        id="AperturaAcequiaOscuraVertical"
+        component={AperturaAcequia}
+        durationInFrames={FPS * 3}
+        fps={FPS}
+        {...FORMATOS.vertical}
+        schema={esquemaApertura}
+        defaultProps={{ bajada: 'Leer el territorio antes de moverlo', fondo: 'oscuro' as const }}
       />
 
       <Composition
