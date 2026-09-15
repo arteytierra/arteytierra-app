@@ -4,13 +4,13 @@
  * Contexto vivo del predio (D1) — biodiversidad (GBIF), ubicación y entorno (OSM).
  */
 import { useState, useEffect } from 'react';
-import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf, Factory, Pickaxe, Flame, Zap, Trash2 } from 'lucide-react';
+import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf, Factory, Pickaxe, Flame, Zap, Trash2, Cable } from 'lucide-react';
 import {
   obtenerEntorno, resumirEntorno, etiquetaIUCN,
   type DatosEntorno, type EntornoResumen,
 } from '@/lib/entorno';
 import {
-  ROTULO_CLASE, titulo, ubicacionTexto,
+  ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_LINEAL_KM,
   type ClaseContexto, type ContextoActual, type Presencia,
 } from '@/lib/contextoActual';
 import type { Mojon } from '@/lib/types';
@@ -154,10 +154,11 @@ export function EntornoPanel({ mojones, datos, onDatos, onResumen }: Props) {
 
 const ICONO_CLASE: Record<ClaseContexto, typeof Factory> = {
   mineria: Pickaxe, hidrocarburos: Flame, energia: Zap, residuos: Trash2, industria: Factory,
+  infraestructura: Cable,
 };
 
 /**
- * Qué actividad industrial hay alrededor del predio.
+ * Qué actividad industrial e infraestructura de paso hay alrededor del predio.
  *
  * Se nombra la actividad y nunca a quien la hace: ver `lib/contextoActual.ts`.
  * Los tres estados posibles se dicen distinto a propósito —hay algo, no hay nada
@@ -185,7 +186,7 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
         </p>
       ) : ctx.presencias.length === 0 ? (
         <p className="text-[11px] text-ink-700/70 leading-relaxed">
-          No hay actividad industrial <span className="font-medium">mapeada</span> en {ctx.radio_km} km
+          No hay actividad industrial ni infraestructura de paso <span className="font-medium">mapeada</span> en {ctx.radio_km} km
           a la redonda. OpenStreetMap se releva a mano y su cobertura es despareja: en buena parte
           del continente la minería chica y los pozos todavía no están cargados. Que no aparezca
           no quiere decir que no exista.
@@ -203,7 +204,7 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
                   <div key={i} className="text-[11px] text-ink-700/85 flex gap-1.5 pl-4">
                     <span className="flex-1">
                       {titulo(p)}
-                      {p.cantidad > 1 && <span className="text-ink-700/55"> · {p.cantidad} en el radio</span>}
+                      {p.cantidad > 1 && <span className="text-ink-700/55"> · {cantidadTexto(p)}</span>}
                     </span>
                     <span className="shrink-0 font-mono text-ink-700/70">{ubicacionTexto(p)}</span>
                   </div>
@@ -221,7 +222,8 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
 
       <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
         OpenStreetMap (ODbL), radio de {ctx.radio_km} km. La distancia es al borde del rasgo mapeado
-        y el rumbo, hacia su centro. Se nombra la actividad, no a quien la realiza.
+        y el rumbo, hacia su centro; en ductos y líneas, al punto más cercano de la traza, que se
+        buscan en {RADIO_LINEAL_KM} km. Se nombra la actividad, no a quien la realiza.
       </p>
     </div>
   );

@@ -2,7 +2,7 @@ import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
 import {
-  agrupar, consultaOverpass, distanciaKm, RADIO_CONTEXTO_KM, TOPE_ELEMENTOS,
+  agrupar, consultaOverpass, distanciaKm, hayTruncamiento, RADIO_CONTEXTO_KM,
   type ContextoActual, type RasgoCrudo,
 } from '@/lib/contextoActual';
 
@@ -11,8 +11,9 @@ import {
  *  - Nominatim (OSM): ubicación administrativa (localidad, depto, provincia, país).
  *  - GBIF: biodiversidad observada en el radio (total, reinos, categorías IUCN, top especies).
  *  - Overpass (OSM): agua, áreas protegidas y poblado cercano — best-effort, degradación elegante.
- *  - Overpass (OSM): contexto actual — qué actividad industrial hay en 25 km, a qué
- *    distancia y en qué rumbo. Sin nombres: ver `lib/contextoActual.ts`.
+ *  - Overpass (OSM): contexto actual — qué actividad industrial hay en 25 km y qué
+ *    ductos y líneas de alta tensión pasan en 10 km, a qué distancia y en qué
+ *    rumbo. Sin nombres: ver `lib/contextoActual.ts`.
  *
  * Las cuatro consultas salen en paralelo, así que el techo de tiempo es la más
  * lenta y no la suma.
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
   // La versión va en la clave a propósito: el caché guarda el JSON ya armado, así
   // que un payload viejo no tiene los campos nuevos y los devolvería faltando
   // durante catorce días. Subirla es la forma de que el campo nuevo se vea hoy.
-  const dbKey = `entorno:v2:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
+  const dbKey = `entorno:v3:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
   const dbHit = await cacheGet<{ raw: string }>(dbKey);
   if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
@@ -134,7 +135,7 @@ async function contextoActual(lat: number, lng: number): Promise<ContextoActual>
     radio_km: RADIO_CONTEXTO_KM,
     presencias: agrupar(els, lat, lng),
     consultado: true,
-    truncado: els.length >= TOPE_ELEMENTOS,
+    truncado: hayTruncamiento(els),
   };
 }
 

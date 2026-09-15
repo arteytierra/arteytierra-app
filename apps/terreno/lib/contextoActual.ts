@@ -30,17 +30,35 @@
  * entre no haber encontrado y no haber podido preguntar (`consultado`), y la
  * interfaz nunca escribe "no hay".
  *
+ * ── Lo que no es un lugar sino una traza: ductos y líneas ───────────────────
+ *
+ * Un ducto (`man_made=pipeline`, 377.000 usos) y una línea de alta tensión
+ * (`power=line`, 1,18 millones) no ocupan un punto: son una traza de decenas de
+ * kilómetros. Overpass devuelve la caja que los envuelve, y la distancia al
+ * centro de esa caja no dice nada sobre por dónde pasan —un gasoducto que cruza
+ * el alambrado y otro que pasa a 40 km pueden dar el mismo número—. Por eso
+ * estuvieron afuera del módulo hasta poder medirlos bien.
+ *
+ * Ahora se les pide la geometría completa (`out geom`) y se mide contra el
+ * trazado, segmento por segmento: la distancia es al punto más cercano de la
+ * traza y el rumbo apunta a ese punto. Es la única magnitud de este archivo que
+ * no sale de una fórmula entre dos puntos, así que tiene su propio caso
+ * publicado en el test. Ver `distanciaASegmentoKm`.
+ *
+ * Y valen la molestia porque no son contexto: son una restricción. Una
+ * servidumbre de paso es una franja donde no se planta, no se construye y no
+ * entra una máquina alta. Saber que la línea pasa a 300 m al este cambia dónde
+ * va la cortina forestal.
+ *
  * ── Qué se dejó afuera a propósito ──────────────────────────────────────────
  *
- * Los ductos (`man_made=pipeline`, 377.000 usos, y relevantes por servidumbre).
- * Un ducto es una línea de decenas de kilómetros: Overpass devuelve su centro, y
- * la distancia a ese centro no dice nada sobre a qué distancia pasa del predio.
- * Un número plausible y equivocado es peor que no tenerlo. Para incluirlos hay
- * que traer la geometría completa y medir contra el trazado.
+ * `power=minor_line`, la línea de distribución rural: 1,64 millones de usos,
+ * más que la de alta tensión, y está en el fondo de cualquier campo. Marcarla
+ * sería marcar todo.
  *
- * `landuse=industrial` también queda afuera: 1,4 millones de usos, marca
- * cualquier parque industrial y en el periurbano ahogaría la lista. La fábrica
- * concreta ya entra por `man_made=works`.
+ * `landuse=industrial`: 1,4 millones de usos, marca cualquier parque industrial
+ * y en el periurbano ahogaría la lista. La fábrica concreta ya entra por
+ * `man_made=works`.
  */
 import { rumboDeAzimut } from './sectores';
 
@@ -54,15 +72,30 @@ import { rumboDeAzimut } from './sectores';
  */
 export const RADIO_CONTEXTO_KM = 25;
 
+/**
+ * Radio de consulta para las trazas, en kilómetros.
+ *
+ * Más chico que el otro a propósito. Un ducto o una línea a 20 km no imponen
+ * nada sobre el predio: no hay servidumbre, no hay franja, no hay restricción de
+ * plantación. Lo que importa de una traza es que pase cerca, y a 10 km ya dejó
+ * de pasar cerca. Además la geometría completa se paga por vértice, y traer el
+ * trazado de cada línea en 25 km a la redonda es un payload que no compra nada.
+ */
+export const RADIO_LINEAL_KM = 10;
+
 /** Tope de elementos que se le piden a Overpass. Ver `truncado`. */
 export const TOPE_ELEMENTOS = 400;
+
+/** Tope aparte para las trazas: cada una viene con todos sus vértices. */
+export const TOPE_LINEAS = 120;
 
 export type ClaseContexto =
   | 'mineria'
   | 'hidrocarburos'
   | 'energia'
   | 'residuos'
-  | 'industria';
+  | 'industria'
+  | 'infraestructura';
 
 /** Lo que se muestra de un rasgo. Nada de acá sale de un tag de texto libre. */
 export interface Etiqueta {
@@ -111,6 +144,46 @@ const FUENTE_ENERGIA: Record<string, string> = {
 };
 
 /**
+ * `substance=*` — qué lleva un ducto. Los valores salen de taginfo ordenados por
+ * uso: `gas` (176.000) y `oil` (89.500) son los dos que mandan.
+ *
+ * Importa cuál es, y no como curiosidad: un acueducto y un poliducto de
+ * combustible no significan lo mismo a cien metros de la casa.
+ */
+const SUSTANCIA: Record<string, string> = {
+  gas: 'gas', natural_gas: 'gas natural', oil: 'petróleo',
+  hydrocarbons: 'hidrocarburos', ngl: 'líquidos de gas natural',
+  lpg: 'GLP', LNG: 'GNL', fuel: 'combustible',
+  water: 'agua', hot_water: 'agua caliente', rainwater: 'agua de lluvia',
+  sewage: 'cloacal', wastewater: 'efluentes', waterwaste: 'efluentes',
+  drain: 'desagüe', heat: 'calor', steam: 'vapor',
+  brine: 'salmuera', slurry: 'pulpa mineral (mineroducto)',
+  chemicals: 'productos químicos', ammonia: 'amoníaco', hydrogen: 'hidrógeno',
+  ethylene: 'etileno', propylene: 'propileno',
+};
+
+/**
+ * `voltage=*` en kilovoltios, o `undefined`.
+ *
+ * El tag viene en voltios y a veces con varios valores separados por `;`, uno
+ * por terna. Se toma el mayor, que es el que manda la franja de servidumbre.
+ *
+ * No es un texto libre que se muestre crudo: sólo pasa si parsea entero y si
+ * cae en el rango de una línea de transmisión real (1 kV a 1.200 kV). Un
+ * "132000 (ex 33000)" no entra, y está bien que no entre.
+ */
+export function tensionKv(voltage: string | undefined): string | undefined {
+  if (!voltage) return undefined;
+  let mayor = 0;
+  for (const parte of voltage.split(';')) {
+    if (!/^\d{3,7}$/.test(parte.trim())) return undefined;
+    mayor = Math.max(mayor, Number(parte.trim()));
+  }
+  if (mayor < 1_000 || mayor > 1_200_000) return undefined;
+  return `${Math.round(mayor / 1000)} kV`;
+}
+
+/**
  * Clasifica un rasgo de OSM. `null` si no es nada de lo que se busca.
  *
  * Lee sólo los tags que deciden la actividad. `name` y `operator` no se tocan.
@@ -139,12 +212,20 @@ export function clasificar(tags: Record<string, string>): Etiqueta | null {
     case 'gasometer':       return { clase: 'hidrocarburos', que: 'Gasómetro' };
     case 'wastewater_plant': return { clase: 'residuos', que: 'Planta de tratamiento de efluentes' };
     case 'works':            return { clase: 'industria', que: 'Planta industrial' };
+    // Traza, no lugar: la distancia se mide contra el trazado. Ver el encabezado.
+    case 'pipeline': {
+      const s = tags['substance'];
+      return { clase: 'infraestructura', que: 'Ducto', detalle: s ? SUSTANCIA[s] : undefined };
+    }
     default: break;
   }
 
   if (tags['power'] === 'plant') {
     const f = tags['plant:source'];
     return { clase: 'energia', que: 'Central eléctrica', detalle: f ? FUENTE_ENERGIA[f] : undefined };
+  }
+  if (tags['power'] === 'line') {
+    return { clase: 'infraestructura', que: 'Línea de alta tensión', detalle: tensionKv(tags['voltage']) };
   }
   return null;
 }
@@ -190,14 +271,96 @@ export function distanciaACajaKm(lat: number, lon: number, caja: Caja): number {
   return distanciaKm(lat, lon, cLat, cLon);
 }
 
+// ─── Distancia a una traza ──────────────────────────────────────────────────
+
+/** Un vértice del trazado, tal como lo devuelve Overpass con `out geom`. */
+export interface Vertice { lat: number; lon: number }
+
+/**
+ * Punto de destino a `km` de (lat, lon) siguiendo un azimut inicial.
+ *
+ * Fórmula directa sobre la esfera. Acá sirve para una sola cosa: ubicar el punto
+ * del trazado que queda más cerca del predio, que es al que después se le mide
+ * el rumbo.
+ */
+function destino(lat: number, lon: number, azGrados: number, km: number): Vertice {
+  const d = km / R_TIERRA_KM, t = azGrados * GRADO;
+  const f1 = lat * GRADO, l1 = lon * GRADO;
+  const f2 = Math.asin(Math.sin(f1) * Math.cos(d) + Math.cos(f1) * Math.sin(d) * Math.cos(t));
+  const l2 = l1 + Math.atan2(
+    Math.sin(t) * Math.sin(d) * Math.cos(f1),
+    Math.cos(d) - Math.sin(f1) * Math.sin(f2),
+  );
+  return { lat: f2 / GRADO, lon: (((l2 / GRADO) + 540) % 360) - 180 };
+}
+
+const acotar = (x: number) => Math.min(1, Math.max(-1, x));
+
+/**
+ * Distancia al punto más cercano de un tramo de traza, y ese punto.
+ *
+ * Es el error de rumbo (*cross-track distance*) del formulario de navegación,
+ * recortado a los extremos del tramo: si la perpendicular cae fuera del tramo,
+ * lo más cercano es una de las dos puntas.
+ *
+ * `Math.acos` devuelve siempre un valor positivo, así que el tramo "hacia atrás"
+ * no se distingue solo: lo decide el coseno del ángulo entre el rumbo al punto y
+ * el rumbo del tramo. Sin ese chequeo, una línea que termina 5 km al norte del
+ * predio se reporta como si pasara al lado.
+ *
+ * Unidades: grados decimales entra, kilómetros sale. Válido sobre la esfera de
+ * 6371 km; a las distancias de este módulo (≤ 25 km) el error contra el
+ * elipsoide es de metros.
+ */
+export function distanciaASegmentoKm(
+  lat: number, lon: number, a: Vertice, b: Vertice,
+): { km: number; punto: Vertice } {
+  const d13 = distanciaKm(a.lat, a.lon, lat, lon);
+  const d12 = distanciaKm(a.lat, a.lon, b.lat, b.lon);
+  if (d12 === 0) return { km: d13, punto: a };
+  if (d13 === 0) return { km: 0, punto: a };
+
+  const t13 = azimutGrados(a.lat, a.lon, lat, lon) * GRADO;
+  const t12 = azimutGrados(a.lat, a.lon, b.lat, b.lon) * GRADO;
+
+  if (Math.cos(t13 - t12) < 0) return { km: d13, punto: a };
+
+  const dxt = Math.asin(acotar(Math.sin(d13 / R_TIERRA_KM) * Math.sin(t13 - t12))) * R_TIERRA_KM;
+  const dat = Math.acos(acotar(
+    Math.cos(d13 / R_TIERRA_KM) / Math.cos(dxt / R_TIERRA_KM),
+  )) * R_TIERRA_KM;
+
+  if (dat > d12) return { km: distanciaKm(b.lat, b.lon, lat, lon), punto: b };
+  return { km: Math.abs(dxt), punto: destino(a.lat, a.lon, t12 / GRADO, dat) };
+}
+
+/** Lo mismo sobre la polilínea entera: el tramo más cercano gana. */
+export function distanciaATrazaKm(
+  lat: number, lon: number, traza: Vertice[],
+): { km: number; punto: Vertice } | null {
+  if (traza.length === 0) return null;
+  if (traza.length === 1) {
+    const v = traza[0]!;
+    return { km: distanciaKm(lat, lon, v.lat, v.lon), punto: v };
+  }
+  let mejor: { km: number; punto: Vertice } | null = null;
+  for (let i = 1; i < traza.length; i++) {
+    const r = distanciaASegmentoKm(lat, lon, traza[i - 1]!, traza[i]!);
+    if (!mejor || r.km < mejor.km) mejor = r;
+  }
+  return mejor;
+}
+
 // ─── Agregación ─────────────────────────────────────────────────────────────
 
 export interface RasgoCrudo {
-  tags?:   Record<string, string>;
-  lat?:    number;
-  lon?:    number;
-  center?: { lat: number; lon: number };
-  bounds?: Caja;
+  tags?:     Record<string, string>;
+  lat?:      number;
+  lon?:      number;
+  center?:   { lat: number; lon: number };
+  bounds?:   Caja;
+  /** Trazado completo, sólo en lo que se pidió con `out geom`. */
+  geometry?: Vertice[];
 }
 
 /**
@@ -214,32 +377,48 @@ export function agrupar(rasgos: RasgoCrudo[], lat: number, lng: number): Presenc
     const et = clasificar(r.tags ?? {});
     if (!et) continue;
 
-    const centro = centroDe(r);
-    if (!centro) continue;
-
-    const dist = redondear(r.bounds
-      ? distanciaACajaKm(lat, lng, r.bounds)
-      : distanciaKm(lat, lng, centro.lat, centro.lon));
+    const m = medir(r, lat, lng);
+    if (!m) continue;
 
     const clave = `${et.que}|${et.detalle ?? ''}`;
     const previo = grupos.get(clave);
     if (!previo) {
-      grupos.set(clave, {
-        ...et,
-        cantidad: 1,
-        dist_km: dist,
-        rumbo: rumboDeAzimut(azimutGrados(lat, lng, centro.lat, centro.lon)),
-      });
+      grupos.set(clave, { ...et, cantidad: 1, dist_km: m.dist_km, rumbo: rumboDeAzimut(m.azimut) });
       continue;
     }
     previo.cantidad += 1;
-    if (dist < previo.dist_km) {
-      previo.dist_km = dist;
-      previo.rumbo = rumboDeAzimut(azimutGrados(lat, lng, centro.lat, centro.lon));
+    if (m.dist_km < previo.dist_km) {
+      previo.dist_km = m.dist_km;
+      previo.rumbo = rumboDeAzimut(m.azimut);
     }
   }
 
   return [...grupos.values()].sort((a, b) => a.dist_km - b.dist_km);
+}
+
+/**
+ * A qué distancia y en qué dirección queda un rasgo. `null` si no trae posición.
+ *
+ * Tres formas, porque son tres cosas distintas:
+ *
+ *  - **Traza** (ducto, línea): al punto más cercano del trazado, y el rumbo
+ *    hacia ese punto. El centro de una traza no significa nada.
+ *  - **Superficie** (cantera, relleno): al borde de la caja envolvente —el
+ *    frente de explotación está en el borde, no en el medio— y el rumbo hacia el
+ *    centro, que es lo que ubica el rasgo en la rosa.
+ *  - **Punto** (pozo, antorcha): lo obvio.
+ */
+function medir(r: RasgoCrudo, lat: number, lng: number): { dist_km: number; azimut: number } | null {
+  if (r.geometry?.length) {
+    const t = distanciaATrazaKm(lat, lng, r.geometry);
+    if (t) return { dist_km: redondear(t.km), azimut: azimutGrados(lat, lng, t.punto.lat, t.punto.lon) };
+  }
+  const centro = centroDe(r);
+  if (!centro) return null;
+  const dist = r.bounds
+    ? distanciaACajaKm(lat, lng, r.bounds)
+    : distanciaKm(lat, lng, centro.lat, centro.lon);
+  return { dist_km: redondear(dist), azimut: azimutGrados(lat, lng, centro.lat, centro.lon) };
 }
 
 /**
@@ -277,23 +456,44 @@ function redondear(km: number): number {
 // ─── La consulta ────────────────────────────────────────────────────────────
 
 /**
- * Overpass QL.
+ * Overpass QL. Dos conjuntos con dos salidas distintas, en una sola consulta.
  *
- * `out tags bb` y no `out tags center bb`: pidiendo las dos formas, Overpass
- * devuelve sólo la caja y los ways vienen sin centro. La caja alcanza —da la
- * distancia al borde y, promediando, el punto para el rumbo—, y los nodos traen
- * su `lat`/`lon` igual. Ver `centroDe`.
+ * Lo que ocupa un lugar sale con `out tags bb` y no con `out tags center bb`:
+ * pidiendo las dos formas, Overpass devuelve sólo la caja y los ways vienen sin
+ * centro. La caja alcanza —da la distancia al borde y, promediando, el punto
+ * para el rumbo—, y los nodos traen su `lat`/`lon` igual. Ver `centroDe`.
+ *
+ * Lo que es una traza sale con `out tags geom`, que trae todos los vértices, en
+ * un radio más chico y con su propio tope: la geometría se paga por vértice.
  */
 export function consultaOverpass(lat: number, lng: number, radioKm: number): string {
   const m = Math.round(radioKm * 1000);
+  const mLineal = Math.round(RADIO_LINEAL_KM * 1000);
   const en = (filtro: string) => `nwr(around:${m},${lat},${lng})${filtro};`;
+  const linea = (filtro: string) => `way(around:${mLineal},${lat},${lng})${filtro};`;
   return '[out:json][timeout:20];('
     + en('[landuse=quarry]')
     + en('[landuse=landfill]')
     + en('[industrial=mine]')
     + en('[man_made~"^(mineshaft|adit|tailings_pond|petroleum_well|flare|gasometer|wastewater_plant|works)$"]')
     + en('[power=plant]')
-    + `);out tags bb ${TOPE_ELEMENTOS};`;
+    + ')->.lugares;('
+    + linea('[man_made=pipeline]')
+    + linea('[power=line]')
+    + ')->.trazas;'
+    + `.lugares out tags bb ${TOPE_ELEMENTOS};`
+    + `.trazas out tags geom ${TOPE_LINEAS};`;
+}
+
+/**
+ * ¿Se alcanzó alguno de los dos topes? Entonces las cantidades son un piso.
+ *
+ * Los dos conjuntos vuelven mezclados en una sola lista, así que se separan por
+ * lo único que los distingue: la traza trae `geometry` y el lugar no.
+ */
+export function hayTruncamiento(els: RasgoCrudo[]): boolean {
+  const trazas = els.filter(e => e.geometry?.length).length;
+  return trazas >= TOPE_LINEAS || (els.length - trazas) >= TOPE_ELEMENTOS;
 }
 
 // ─── Texto ──────────────────────────────────────────────────────────────────
@@ -304,6 +504,7 @@ export const ROTULO_CLASE: Record<ClaseContexto, string> = {
   energia:       'Generación de energía',
   residuos:      'Residuos y efluentes',
   industria:     'Industria',
+  infraestructura: 'Ductos y líneas',
 };
 
 /** "Cantera a cielo abierto (oro)" · "Central eléctrica (a gas)" */
@@ -311,8 +512,26 @@ export function titulo(p: Etiqueta): string {
   return p.detalle ? `${p.que} (${p.detalle})` : p.que;
 }
 
-/** "a 3,4 km al NNO" · "dentro del predio o lindando" */
+/**
+ * Cómo se cuenta un grupo. "46 en el radio" · "13 tramos mapeados"
+ *
+ * En una traza el conteo no es de ductos: es de *ways* de OpenStreetMap, y un
+ * solo gasoducto puede estar cargado en trece tramos porque cambia el diámetro,
+ * cruza una jurisdicción o lo mapeó otra persona. Escribir "13 ductos" sería el
+ * error típico de este archivo: un número plausible que no es el que se cree.
+ * Trece tramos mapeados sí es cierto, y además dice algo —que la red está densa
+ * por ahí—.
+ */
+export function cantidadTexto(p: Presencia): string {
+  if (p.clase !== 'infraestructura') return `${p.cantidad} en el radio`;
+  return p.cantidad === 1 ? '1 tramo mapeado' : `${p.cantidad} tramos mapeados`;
+}
+
+/** "a 3,4 km al NNO" · "dentro del predio o lindando" · "cruza el predio o pasa al lado" */
 export function ubicacionTexto(p: Presencia): string {
+  // Una traza no está "adentro": pasa. Y si pasa, lo que hay que ir a mirar es
+  // la servidumbre, no la distancia.
+  if (p.dist_km === 0 && p.clase === 'infraestructura') return 'cruza el predio o pasa al lado';
   if (p.dist_km === 0) return 'dentro del predio o lindando';
   const km = p.dist_km < 10 ? p.dist_km.toLocaleString('es-AR') : String(p.dist_km);
   return `a ${km} km al ${p.rumbo}`;

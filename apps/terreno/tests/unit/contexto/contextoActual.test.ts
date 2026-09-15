@@ -4,8 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import {
   clasificar, agrupar, distanciaKm, azimutGrados, distanciaACajaKm,
-  consultaOverpass, titulo, ubicacionTexto,
-  RADIO_CONTEXTO_KM, ROTULO_CLASE,
+  distanciaASegmentoKm, distanciaATrazaKm, tensionKv, hayTruncamiento,
+  consultaOverpass, titulo, ubicacionTexto, cantidadTexto,
+  RADIO_CONTEXTO_KM, RADIO_LINEAL_KM, ROTULO_CLASE, TOPE_LINEAS, TOPE_ELEMENTOS,
   type RasgoCrudo,
 } from '@/lib/contextoActual';
 
@@ -80,6 +81,66 @@ describe('distancia y rumbo', () => {
   });
 });
 
+describe('distancia a una traza', () => {
+  // Un ducto y una línea de alta tensión no están en un lugar: pasan. La
+  // distancia que importa es al trazado, y es la única magnitud del módulo que
+  // no sale de una fórmula entre dos puntos. Por eso arranca con un caso
+  // publicado, igual que la distancia.
+  const LAX = { lat: 33.95, lon: -118.4 };
+  const JFK = { lat: 40.633333, lon: -73.783333 };
+
+  it('reproduce el error de rumbo publicado del formulario de navegación', () => {
+    // Ed Williams, Aviation Formulary v1.46, §"Cross track error": para el punto
+    // D = N34°30′ O116°30′ sobre la ruta LAX → JFK, el error de rumbo publicado
+    // es 7,4512 millas náuticas a la derecha del curso, y la distancia recorrida
+    // sobre el curso hasta el pie de la perpendicular, 99,588 millas náuticas.
+    //
+    // Como el pie de la perpendicular cae adentro del tramo, la distancia mínima
+    // del punto a la traza ES ese error de rumbo. La tolerancia sale de lo mismo
+    // que en el caso LAX–JFK: el formulario usa la esfera de 1′ de arco por
+    // milla náutica (R = 6366,7 km) y acá se usa el radio medio IUGG.
+    const publicadoKm = 7.4512 * 1.852;
+    const { km } = distanciaASegmentoKm(34.5, -116.5, LAX, JFK);
+    expect(Math.abs(km - publicadoKm)).toBeLessThan(0.05);
+  });
+
+  it('el punto más cercano cae sobre el trazado y a la distancia publicada', () => {
+    // La distancia sola no alcanza: el rumbo se mide hacia ese punto, así que si
+    // está mal ubicado la flecha apunta a cualquier lado con la distancia bien.
+    // A 99,588 nm de LAX sobre el curso, sobre el meridiano de California no.
+    const { punto } = distanciaASegmentoKm(34.5, -116.5, LAX, JFK);
+    expect(distanciaKm(LAX.lat, LAX.lon, punto.lat, punto.lon)).toBeCloseTo(99.588 * 1.852, 0);
+    expect(distanciaKm(34.5, -116.5, punto.lat, punto.lon)).toBeCloseTo(7.4512 * 1.852, 1);
+  });
+
+  it('un tramo sobre el ecuador da la separación exacta en latitud', () => {
+    // Caso analítico: el tramo va por el ecuador y el punto está 0,1° al norte
+    // de su mitad. La distancia tiene que ser 0,1° de meridiano, 11,12 km.
+    const a = { lat: 0, lon: 0 }, b = { lat: 0, lon: 1 };
+    expect(distanciaASegmentoKm(0.1, 0.5, a, b).km).toBeCloseTo(11.12, 1);
+  });
+
+  it('cuando la perpendicular cae fuera del tramo, mide contra la punta', () => {
+    // Es el chequeo que más importa y el que falta en media internet: `acos`
+    // devuelve siempre positivo, así que sin mirar el signo del avance, una línea
+    // que termina lejos del predio se reporta como si pasara al lado.
+    const a = { lat: 0, lon: 0 }, b = { lat: 0, lon: 1 };
+    expect(distanciaASegmentoKm(0, 2, a, b).km).toBeCloseTo(111.19, 1);   // pasado el final
+    expect(distanciaASegmentoKm(0, -2, a, b).km).toBeCloseTo(222.39, 1);  // antes del principio
+  });
+
+  it('sobre la polilínea gana el tramo más cercano, no el primero', () => {
+    // Una traza en L: el predio está pegado al segundo tramo y lejos del primero.
+    const traza = [{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }, { lat: 1, lon: 1 }];
+    const r = distanciaATrazaKm(0.5, 1.05, traza);
+    expect(r!.km).toBeCloseTo(5.56, 1);
+  });
+
+  it('una traza vacía no se ubica en el golfo de Guinea', () => {
+    expect(distanciaATrazaKm(-31.4, -64.2, [])).toBeNull();
+  });
+});
+
 describe('clasificación de rasgos', () => {
   it('reconoce las actividades que la consulta pide', () => {
     expect(clasificar({ landuse: 'quarry' })?.clase).toBe('mineria');
@@ -98,6 +159,29 @@ describe('clasificación de rasgos', () => {
     expect(clasificar({ power: 'plant', 'plant:source': 'fusion' })?.detalle).toBeUndefined();
   });
 
+  it('reconoce las trazas y dice qué llevan', () => {
+    expect(clasificar({ man_made: 'pipeline' })?.clase).toBe('infraestructura');
+    expect(clasificar({ man_made: 'pipeline', substance: 'gas' })?.detalle).toBe('gas');
+    expect(clasificar({ man_made: 'pipeline', substance: 'slurry' })?.detalle).toBe('pulpa mineral (mineroducto)');
+    expect(clasificar({ power: 'line' })?.que).toBe('Línea de alta tensión');
+    // Un acueducto y un poliducto de combustible no significan lo mismo a cien
+    // metros de la casa: si la sustancia no está en la tabla, se calla.
+    expect(clasificar({ man_made: 'pipeline', substance: 'unobtanio' })?.detalle).toBeUndefined();
+  });
+
+  it('la tensión sale en kV y sólo si el tag parsea entero', () => {
+    expect(tensionKv('132000')).toBe('132 kV');
+    expect(tensionKv('500000;132000')).toBe('500 kV');  // manda la terna mayor
+    expect(tensionKv('33000')).toBe('33 kV');
+    // Texto libre que no es un número no se muestra crudo, aunque tenga cifras.
+    expect(tensionKv('132000 (ex 33000)')).toBeUndefined();
+    expect(tensionKv('alta')).toBeUndefined();
+    expect(tensionKv(undefined)).toBeUndefined();
+    // Fuera del rango de una línea de transmisión real.
+    expect(tensionKv('220')).toBeUndefined();
+    expect(tensionKv('9000000')).toBeUndefined();
+  });
+
   it('ignora lo que no es actividad industrial', () => {
     expect(clasificar({ amenity: 'school' })).toBeNull();
     expect(clasificar({ landuse: 'farmland' })).toBeNull();
@@ -114,7 +198,7 @@ describe('clasificación de rasgos', () => {
     for (const v of manMade) {
       expect(clasificar({ man_made: v }), `man_made=${v} se pide y no se clasifica`).not.toBeNull();
     }
-    for (const [, clave, valor] of [...q.matchAll(/\[(landuse|industrial|power)=([a-z_]+)\]/g)]) {
+    for (const [, clave, valor] of [...q.matchAll(/\[(landuse|industrial|power|man_made)=([a-z_]+)\]/g)]) {
       expect(clasificar({ [clave!]: valor! }), `${clave}=${valor} se pide y no se clasifica`).not.toBeNull();
     }
   });
@@ -202,6 +286,57 @@ describe('agregación', () => {
     expect(q, 'pedir center junto con bb deja a los ways sin centro').not.toContain('center');
   });
 
+  it('a las trazas les pide la geometría, y en su propio radio', () => {
+    const q = consultaOverpass(-31.4, -64.2, RADIO_CONTEXTO_KM);
+    expect(q, 'sin `out geom` el ducto llega sin trazado y se mide contra la caja')
+      .toContain(`out tags geom ${TOPE_LINEAS}`);
+    expect(q).toContain(`around:${RADIO_LINEAL_KM * 1000},`);
+    expect(q).toContain(`around:${RADIO_CONTEXTO_KM * 1000},`);
+  });
+
+  it('mide el ducto contra su trazado y no contra su caja', () => {
+    // La razón por la que los ductos estuvieron afuera del módulo, y es peor que
+    // impreciso. Este ducto hace una L y su caja envolvente encierra al predio:
+    // medido contra la caja, la distancia da cero y la app anuncia un gasoducto
+    // lindando con el alambrado. El ducto pasa a 44 km.
+    const enL: RasgoCrudo = {
+      tags: { man_made: 'pipeline', substance: 'gas' },
+      bounds: { minlat: -31.8, minlon: -64.9, maxlat: -31.0, maxlon: -63.5 },
+      geometry: [{ lat: -31.0, lon: -64.9 }, { lat: -31.0, lon: -63.5 }, { lat: -31.8, lon: -63.5 }],
+    };
+    expect(distanciaACajaKm(-31.4, -64.2, enL.bounds!), 'la caja se come el predio entero').toBe(0);
+
+    const [p] = agrupar([enL], -31.4, -64.2);
+    expect(p!.dist_km, `el ducto pasa a 44 km, no lindando`).toBe(44);
+    expect(p!.rumbo).toBe('N');
+    expect(p!.detalle).toBe('gas');
+  });
+
+  it('la línea que pasa al lado sale con su rumbo y no con el del centro', () => {
+    // De norte a sur, 500 m al este. El rumbo apunta al punto por donde pasa,
+    // que es el único dato con el que alguien mueve la cortina forestal.
+    const linea: RasgoCrudo = {
+      tags: { power: 'line', voltage: '132000' },
+      geometry: [{ lat: -31.8, lon: -64.194 }, { lat: -31.0, lon: -64.194 }],
+    };
+    const [p] = agrupar([linea], -31.4, -64.2);
+    expect(p!.dist_km).toBeCloseTo(0.6, 1);
+    expect(p!.rumbo).toBe('E');
+    expect(titulo(p!)).toBe('Línea de alta tensión (132 kV)');
+    expect(ubicacionTexto(p!)).toBe('a 0,6 km al E');
+  });
+
+  it('el tope de trazas se cuenta aparte del de lugares', () => {
+    // Vienen mezcladas en una sola lista y los topes son distintos: si se
+    // contaran juntas, 120 líneas no marcarían truncamiento y las cantidades se
+    // leerían como totales cuando son un piso.
+    const traza = (): RasgoCrudo => ({ tags: { power: 'line' }, geometry: [{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }] });
+    const pozo = (): RasgoCrudo => ({ tags: { man_made: 'petroleum_well' }, lat: 0, lon: 0 });
+    expect(hayTruncamiento(Array.from({ length: TOPE_LINEAS }, traza))).toBe(true);
+    expect(hayTruncamiento(Array.from({ length: TOPE_LINEAS - 1 }, traza))).toBe(false);
+    expect(hayTruncamiento(Array.from({ length: TOPE_ELEMENTOS }, pozo))).toBe(true);
+  });
+
   it('descarta el rasgo que no trae posición en vez de ubicarlo en cualquier lado', () => {
     expect(agrupar([{ tags: { landuse: 'quarry' } }], -31.4, -64.2)).toEqual([]);
   });
@@ -213,7 +348,9 @@ describe('agregación', () => {
       { tags: { landuse: 'landfill' }, lat: -31.5, lon: -64.4 },
       { tags: { man_made: 'works' }, lat: -31.5, lon: -64.5 },
       { tags: { man_made: 'flare' }, lat: -31.5, lon: -64.6 },
+      { tags: { man_made: 'pipeline' }, geometry: [{ lat: -31.5, lon: -64.7 }, { lat: -31.6, lon: -64.7 }] },
     ], -31.4, -64.2);
+    expect(new Set(clases.map(p => p.clase)).size).toBe(6);
     for (const p of clases) expect(ROTULO_CLASE[p.clase]).toBeTruthy();
   });
 });
@@ -230,6 +367,24 @@ describe('cómo se lee', () => {
     expect(ubicacionTexto({ ...base, dist_km: 3.4, rumbo: 'NNO' })).toBe('a 3,4 km al NNO');
     expect(ubicacionTexto({ ...base, dist_km: 18, rumbo: 'SE' })).toBe('a 18 km al SE');
     expect(ubicacionTexto({ ...base, dist_km: 0, rumbo: 'N' })).toBe('dentro del predio o lindando');
+  });
+
+  it('trece tramos de ducto no son trece ductos', () => {
+    // Un solo gasoducto puede estar cargado en trece `way` de OSM porque cambia
+    // de diámetro o cruza una jurisdicción. "13 ductos" es el número plausible y
+    // equivocado; "13 tramos mapeados" es cierto y además dice algo.
+    const ducto = { clase: 'infraestructura', que: 'Ducto', dist_km: 4.6, rumbo: 'NE' } as const;
+    expect(cantidadTexto({ ...ducto, cantidad: 13 })).toBe('13 tramos mapeados');
+    expect(cantidadTexto({ ...ducto, cantidad: 1 })).toBe('1 tramo mapeado');
+    expect(cantidadTexto({ clase: 'hidrocarburos', que: 'Pozo', cantidad: 46, dist_km: 1.9, rumbo: 'N' }))
+      .toBe('46 en el radio');
+  });
+
+  it('una traza no está adentro del predio: pasa', () => {
+    // "Dentro del predio" describe una cantera. Un ducto que da cero no está
+    // adentro, cruza, y lo que hay que ir a mirar entonces es la servidumbre.
+    const ducto = { clase: 'infraestructura', que: 'Ducto', cantidad: 1, dist_km: 0, rumbo: 'N' } as const;
+    expect(ubicacionTexto(ducto)).toBe('cruza el predio o pasa al lado');
   });
 });
 

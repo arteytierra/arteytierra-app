@@ -33,7 +33,7 @@ export interface DatosEntorno {
   ubicacion:     Ubicacion | null;
   biodiversidad: Biodiversidad | null;
   osm:           EntornoOSM | null;
-  /** Qué actividad industrial hay alrededor. `null` si el payload es de antes. */
+  /** Qué actividad e infraestructura hay alrededor. `null` si el payload es de antes. */
   contexto_actual: ContextoActual | null;
   radio_km:      number;
   // Derivados
@@ -114,7 +114,7 @@ export async function obtenerEntorno(mojones: Mojon[]): Promise<DatosEntorno> {
   const ctx = json.contexto_actual ?? null;
   if (ctx?.consultado && ctx.presencias.length) {
     const tres = ctx.presencias.slice(0, 3).map(p => `${titulo(p).toLowerCase()} ${ubicacionTexto(p)}`);
-    resumen_texto.push(`Actividad industrial mapeada en ${ctx.radio_km} km: ${tres.join('; ')}.`);
+    resumen_texto.push(`Actividad e infraestructura mapeadas en ${ctx.radio_km} km: ${tres.join('; ')}.`);
   }
 
   return {
