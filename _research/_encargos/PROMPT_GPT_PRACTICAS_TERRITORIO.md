@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 6 entradas sobre 5 ecorregiones de 210.
+hoy tiene 21 entradas sobre 20 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -15,9 +15,9 @@ voz alta delante de un vecino.
 
 ## Para qué es
 
-En el panel de contexto de acequia, 188 de las 210 fichas de ecorregión tienen la
-sección de saberes vacía, **a propósito**: atribuirle una práctica a un pueblo a
-escala de ecorregión sería inventar, porque una ecorregión abarca muchos pueblos
+En el panel de contexto de acequia, la enorme mayoría de las 222 fichas de
+ecorregión tienen la sección de saberes vacía, **a propósito**: atribuirle una
+práctica a un pueblo a escala de ecorregión sería inventar, porque abarca muchos
 y ninguno la ocupa entera. El resultado era una sección en blanco que se leía
 como "acá no hay nada", que es falso.
 
@@ -49,7 +49,7 @@ identificador existía, el trabajo era otro. Por eso cada entrada lleva un campo
 podés abrir la fuente, la entrada no se escribe.
 
 **3. Es preferible una ecorregión vacía que una entrada dudosa.** No hay ninguna
-obligación de cubrir las 210. Una respuesta de veinte entradas sólidas vale más
+obligación de cubrir las 222. Una respuesta de veinte entradas sólidas vale más
 que una de cien con la mitad relleno. Si un bloque entero no tiene nada
 documentado, la respuesta correcta es una lista vacía y una línea diciéndolo.
 
@@ -57,10 +57,22 @@ documentado, la respuesta correcta es una lista vacía y una línea diciéndolo.
 registro arqueológico de la cuenca documenta camellones desde el 1000 a.C." y no
 "acá se hacían camellones".
 
-**5. No se deduce el pueblo del mapa, nunca.** Si la fuente nombra al pueblo, se
-lo nombra **como lo nombra ella y dentro de `detalle`**, en tercera persona: "la
-literatura lo atribuye a…". Callar una autoría que la fuente afirma no es
-prudencia, es borrarla. Lo que no se hace es inferirla.
+**5. La autoría se copia de la fuente: ni se inventa ni se borra.** Son dos
+errores opuestos y los dos cuentan como error.
+
+*No inventarla:* el pueblo no se deduce del mapa, nunca. Si la fuente no dice
+quién, la entrada no dice quién, y con el período alcanza.
+
+*No borrarla:* **si la fuente nombra al pueblo, hay que nombrarlo**, como lo
+nombra ella y dentro de `detalle`, en tercera persona — "el Servicio de Parques
+lo atribuye a los hohokam". Callar una autoría que la fuente afirma no es
+prudencia: es borrarla, y a escala de un informe que alguien lee en voz alta,
+es hacer desaparecer a la gente del lugar donde vivió.
+
+Esta segunda mitad ya falló una vez. En el primer lote, tres entradas tenían la
+autoría textual en la cita de respaldo —hohokam, ojibwe, taíno— y la ocultaban
+en el texto publicado. Si tu `verificacion` nombra un pueblo y tu `detalle` no,
+está mal.
 
 **6. Le tiene que servir a alguien que está diseñando un predio.** No es una
 entrada de enciclopedia: es información para alguien que va a decidir dónde pone
@@ -111,15 +123,23 @@ fecha que pusiste.
 
 **Un bloque por vez**, en este orden, que es el de utilidad para el negocio:
 
-1. **H. Argentina** — 22 fichas. Es el mercado y es donde hay más fuente
-   accesible (INTA, CONICET, universidades nacionales).
-2. **A. Sudamérica** — 47 fichas.
-3. **B. México, Centroamérica y Estados Unidos** — hay mucho SIPAM/FAO.
-4. **F. Medio Oriente** y **G. Norte de África** — mucha obra hidráulica
+1. **Prioridad 1 — Argentina**, las 12 fichas que encabezan el anexo. Es el
+   mercado y es donde hay más fuente accesible (INTA, CONICET, universidades
+   nacionales, Parques Nacionales).
+2. **B. Sudamérica** — el resto del continente, 47 fichas.
+3. **D. México, Centroamérica y Estados Unidos** — hay mucho SIPAM/FAO.
+4. **H. Medio Oriente** e **I. Norte de África** — mucha obra hidráulica
    documentada por UNESCO.
-5. **E. Unión Europea**, **D. Europa no comunitaria**, **C. Canadá y Alaska**.
+5. **G. Unión Europea**, **F. Europa no comunitaria**, **E. Canadá y Alaska**.
 
-Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo.
+Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
+del anexo son los que están en el anexo**: no hay que inferir a qué región
+pertenece un id por su nombre, ni asumir que el rótulo de un bloque describe a
+todas sus fichas. Si algo no cierra, decilo en las tres líneas del cierre —el
+primer lote lo hizo y estuvo bien: el anexo tenía un bloque mal rotulado y ese
+aviso fue lo que lo destapó.
+
+Las fichas marcadas con ✓ en el anexo ya tienen práctica cargada: saltearlas.
 
 Al final de cada bloque, tres líneas: cuántas ecorregiones quedaron sin entrada,
 cuáles te parecen las que más faltan y por qué no las pudiste sostener. Esa lista
@@ -134,6 +154,13 @@ Antes de montar, sobre una muestra: se abre la URL, se busca la frase de
 contiene lo que dice `verificacion` no se corrige — **se descarta el lote y se
 vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
+
+Del primer lote, 15 de 17 se verificaron palabra por palabra contra la fuente.
+Las otras dos no se montaron, y no porque la cita fallara sino porque no se
+pudo abrir el archivo: un PDF del USDA con el certificado vencido y otro de
+CONABIO sin capa de texto legible. **Conviene evitar los PDF escaneados o muy
+pesados cuando hay una página HTML equivalente**: una fuente que no se puede
+abrir vale lo mismo que ninguna, aunque sea real.
 
 Después corre `pnpm --filter @arteytierra/terreno test`, que chequea lo
 mecánico: fuente presente, `https`, nada de enciclopedias, período no vacío,

@@ -1,6 +1,56 @@
-_Generado desde los catálogos. 210 fichas en total._
+# Anexo — los ids de ficha
 
-### A. Sudamérica — 47 fichas
+_Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
+
+Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
+entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
+
+Las 20 marcadas con ✓ ya tienen al menos una práctica cargada.
+
+---
+
+## Prioridad 1 — Argentina (12 fichas)
+
+Estos ids también aparecen abajo, en el bloque del archivo al que pertenecen.
+Son las ecorregiones cuya ficha nombra a la Argentina: es el mercado del
+producto y donde más fuente accesible hay (INTA, CONICET, universidades
+nacionales, parques nacionales).
+
+- `selva_paranaense` — Selva paranaense
+- `chaco_seco` — Chaco seco
+- `monte` — Monte de llanuras y mesetas
+- `espinal` — Espinal / bosque seco templado
+- `pampa` — Pampa / pastizal templado
+- `yungas` — Yungas / selva de montaña
+- `puna_altoandino` — Puna y altoandino
+- `estepa_patagonica` — Estepa patagónica
+- `bosque_andino_patagonico` — Bosque andino-patagónico
+- `campos_uruguayos` — Campos y pastizales uruguayos
+- `chaco_humedo` — Chaco húmedo
+- `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia
+
+---
+
+## A. Sudamérica — fichas base (las 12 que resuelve la heurística Köppen) — 12 fichas
+
+_`lib/contexto.ts`_
+
+- `selva_paranaense` — Selva paranaense
+- `sabana_cerrado` — Cerrado
+- `chaco_seco` — Chaco seco
+- `monte` — Monte de llanuras y mesetas
+- `espinal` — Espinal / bosque seco templado
+- `pampa` — Pampa / pastizal templado
+- `yungas` — Yungas / selva de montaña
+- `puna_altoandino` — Puna y altoandino
+- `estepa_patagonica` — Estepa patagónica
+- `bosque_andino_patagonico` — Bosque andino-patagónico
+- `mediterraneo` — Matorral mediterráneo
+- `desierto_costero` — Desierto costero
+
+## B. Sudamérica — resto del continente — 47 fichas
+
+_`lib/biomasRegionalesSudamerica.ts`_
 
 - `amazonia_noroccidental_tierra_firme` — Amazonía noroccidental de tierra firme
 - `amazonia_oriental_tierra_firme` — Amazonía oriental y meridional de tierra firme
@@ -42,15 +92,44 @@ _Generado desde los catálogos. 210 fichas en total._
 - `pantanal` — Pantanal
 - `pantepui_guayana_alta` — Pantepui y tierras altas guayanesas
 - `paramos_andinos` — Páramos de los Andes del norte
-- `puna_humeda_central` — Puna húmeda central
+- `puna_humeda_central` — Puna húmeda central ✓ *(ya tiene práctica cargada)*
 - `puna_seca_central` — Puna seca central
-- `rapa_nui_bosque_subtropical_transformado` — Rapa Nui y Sala y Gómez
+- `rapa_nui_bosque_subtropical_transformado` — Rapa Nui y Sala y Gómez ✓ *(ya tiene práctica cargada)*
 - `sabanas_beni` — Sabanas inundables del Beni
 - `sabanas_guayanesas` — Sabanas del Escudo Guayanés
 - `valles_secos_interandinos` — Valles secos interandinos
 - `varzeas_igapos_amazonicos` — Várzeas e igapós amazónicos
 
-### B. México, Centroamérica y Estados Unidos — 53 fichas
+## C. Norteamérica, Mesoamérica, Caribe y Europa — catálogo base — 22 fichas
+
+_`lib/biomasRegionales.ts`_
+
+- `bosque_templado_caducifolio_este` — Bosque templado caducifolio del este ✓ *(ya tiene práctica cargada)*
+- `pradera_pastos_altos` — Pradera de pastos altos ✓ *(ya tiene práctica cargada)*
+- `pradera_mixta` — Pradera mixta ✓ *(ya tiene práctica cargada)*
+- `pradera_pastos_cortos` — Pradera de pastos cortos ✓ *(ya tiene práctica cargada)*
+- `desiertos_calidos_norteamericanos` — Desiertos cálidos norteamericanos ✓ *(ya tiene práctica cargada)*
+- `estepa_arbustiva_gran_cuenca` — Estepa arbustiva de la Gran Cuenca ✓ *(ya tiene práctica cargada)*
+- `bosque_coniferas_pacifico_noroeste` — Bosque de coníferas del Pacífico noroeste ✓ *(ya tiene práctica cargada)*
+- `chaparral_californiano` — Chaparral californiano ✓ *(ya tiene práctica cargada)*
+- `taiga_borde_agricola` — Bosque boreal y borde agrícola ✓ *(ya tiene práctica cargada)*
+- `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos
+- `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano
+- `bosque_mesofilo_montana` — Bosque mesófilo de montaña
+- `matorral_xerofilo_altiplano_mexicano` — Matorral xerófilo del Altiplano mexicano ✓ *(ya tiene práctica cargada)*
+- `bosque_humedo_tropical_caribeno` — Bosque húmedo tropical caribeño insular ✓ *(ya tiene práctica cargada)*
+- `matorral_seco_caribeno` — Matorral y bosque seco costero del Caribe ✓ *(ya tiene práctica cargada)*
+- `mediterraneo_europeo` — Bosque y matorral mediterráneo europeo ✓ *(ya tiene práctica cargada)*
+- `atlantico_templado_oceanico` — Atlántico templado oceánico
+- `templado_continental_europeo` — Bosque templado continental europeo
+- `estepa_pontica_panonica` — Estepa póntica y panónica
+- `boreal_nordico_turberas` — Bosque boreal nórdico y turberas
+- `alpino_montano_europeo` — Alpino y montano europeo ✓ *(ya tiene práctica cargada)*
+- `macaronesia` — Macaronesia ✓ *(ya tiene práctica cargada)*
+
+## D. México, Centroamérica y Estados Unidos — 53 fichas
+
+_`lib/biomasRegionalesAmerica.ts`_
 
 - `alaska_costa_taiga` — Alaska: bosque costero y taiga
 - `alaska_tundra_hielo_beringia` — Alaska: tundra, Beringia e hielos de montaña
@@ -64,7 +143,7 @@ _Generado desde los catálogos. 210 fichas en total._
 - `bosque_seco_panameno` — Bosque seco panameño
 - `california_klamath_sierra_valle` — California: Klamath, Sierra Nevada, Valle Central y bosques interiores
 - `californias_chaparral_costero` — Chaparral costero y montano de las Californias
-- `centro_mexico_volcanes_bajio` — Eje Volcánico, altiplanos del centro y Bajío
+- `centro_mexico_volcanes_bajio` — Eje Volcánico, altiplanos del centro y Bajío ✓ *(ya tiene práctica cargada)*
 - `chiapas_bosques_montanos` — Bosques montanos de Chiapas y Chimalapas
 - `corredor_seco_centroamericano` — Bosque seco y corredor seco centroamericano
 - `costa_rica_bosques_humedos_estacionales` — Bosques húmedos y estacionales de Costa Rica
@@ -106,7 +185,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `trinidad_tobago_bosques` — Bosques de Trinidad y Tobago
 - `veracruz_tabasco_selvas_humedales` — Selvas, montañas y humedales de Veracruz–Tabasco
 
-### C. Canadá y Alaska — 10 fichas
+## E. Canadá, Alaska y Groenlandia — 10 fichas
+
+_`lib/biomasRegionalesCanada.ts`_
 
 - `san_lorenzo_tierras_bajas` — Tierras bajas del golfo de San Lorenzo
 - `columbia_britanica_interior` — Interior de Columbia Británica y piedemonte de Alberta
@@ -119,7 +200,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `montana_artica_baffin_torngat` — Montaña ártica: Baffin oriental y Torngat
 - `groenlandia_kalaallit_nunaat` — Kalaallit Nunaat: la franja libre de hielo de Groenlandia
 
-### D. Europa no comunitaria y asociados — 8 fichas
+## F. Europa no comunitaria y asociados — 8 fichas
+
+_`lib/biomasRegionalesEuropa.ts`_
 
 - `atlantico_llanura_noroeste` — Llanura atlantica del noroeste europeo
 - `templado_occidental_europeo` — Bosque templado de Europa occidental
@@ -130,7 +213,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `montano_iberico` — Montana iberica
 - `semiarido_sureste_iberico` — Semiarido del sureste iberico
 
-### E. Unión Europea — 28 fichas
+## G. Unión Europea — 28 fichas
+
+_`lib/biomasRegionalesEuropaUE.ts`_
 
 - `po_llanura_aluvial` — Llanura aluvial del Po
 - `apeninos_montano` — Montaña apenínica
@@ -161,7 +246,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `anatolia_oriental_montana` — Montaña y estepa de Anatolia oriental
 - `zagros_estepa_forestal` — Estepa forestal del Zagros
 
-### F. Medio Oriente — 28 fichas
+## H. Medio Oriente — 28 fichas
+
+_`lib/biomasRegionalesMedioOriente.ts`_
 
 - `estepa_siria_badia` — Estepa siria (badia)
 - `mesopotamia_jazira` — Llanura mesopotámica (Yazira)
@@ -181,9 +268,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `arabia_sur_bosque_niebla` — Bosque de niebla del Dofar
 - `hadramaut_meseta` — Meseta y uadis del Hadramaut
 - `socotra` — Socotra
-- `hajar_falaj` — Montañas del Hajar y sus aflaj
+- `hajar_falaj` — Montañas del Hajar y sus aflaj ✓ *(ya tiene práctica cargada)*
 - `iran_sur_nubo_sindico` — Sur de Irán nubo-síndico
-- `kavir_cuencas_endorreicas` — Cuencas endorreicas de Irán central
+- `kavir_cuencas_endorreicas` — Cuencas endorreicas de Irán central ✓ *(ya tiene práctica cargada)*
 - `hircania_caspio` — Bosque hircano del Caspio
 - `elburz_estepa_forestal` — Estepa forestal del Elburz
 - `caspio_llanura_desertica` — Llanura desértica caspia
@@ -192,7 +279,9 @@ _Generado desde los catálogos. 210 fichas en total._
 - `kuh_rud_montano` — Sierras de Kuh Rud y el este iraní
 - `sistan_registan` — Arenales de Sistán y Registán
 
-### G. Norte de África — 14 fichas
+## I. Norte de África — 14 fichas
+
+_`lib/biomasRegionalesNorteAfrica.ts`_
 
 - `magreb_bosque_mediterraneo` — Bosque mediterráneo del Magreb
 - `magreb_estepa_alfa` — Estepa de alfa y altiplanos
@@ -208,28 +297,3 @@ _Generado desde los catálogos. 210 fichas en total._
 - `ahaggar_tassili` — Macizos del Ahaggar y el Tassili
 - `uweinat_tibesti` — Macizos de Uweinat y Tibesti
 - `mar_rojo_costa_desierto` — Desierto costero del mar Rojo
-
-### H. Argentina (fichas curadas a mano) — 22 fichas
-
-- `bosque_templado_caducifolio_este` — Bosque templado caducifolio del este
-- `pradera_pastos_altos` — Pradera de pastos altos
-- `pradera_mixta` — Pradera mixta
-- `pradera_pastos_cortos` — Pradera de pastos cortos
-- `desiertos_calidos_norteamericanos` — Desiertos cálidos norteamericanos
-- `estepa_arbustiva_gran_cuenca` — Estepa arbustiva de la Gran Cuenca
-- `bosque_coniferas_pacifico_noroeste` — Bosque de coníferas del Pacífico noroeste
-- `chaparral_californiano` — Chaparral californiano
-- `taiga_borde_agricola` — Bosque boreal y borde agrícola
-- `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos
-- `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano
-- `bosque_mesofilo_montana` — Bosque mesófilo de montaña
-- `matorral_xerofilo_altiplano_mexicano` — Matorral xerófilo del Altiplano mexicano
-- `bosque_humedo_tropical_caribeno` — Bosque húmedo tropical caribeño insular
-- `matorral_seco_caribeno` — Matorral y bosque seco costero del Caribe
-- `mediterraneo_europeo` — Bosque y matorral mediterráneo europeo
-- `atlantico_templado_oceanico` — Atlántico templado oceánico
-- `templado_continental_europeo` — Bosque templado continental europeo
-- `estepa_pontica_panonica` — Estepa póntica y panónica
-- `boreal_nordico_turberas` — Bosque boreal nórdico y turberas
-- `alpino_montano_europeo` — Alpino y montano europeo
-- `macaronesia` — Macaronesia
