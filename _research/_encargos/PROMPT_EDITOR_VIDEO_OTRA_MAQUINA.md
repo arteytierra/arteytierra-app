@@ -90,7 +90,16 @@ Windows la muestre en la lista de fuentes. La prueba está en la skill
 otro con un nombre inventado y compara los hashes. Si son iguales, Inter no está
 y los subtítulos van a salir con otra tipografía sin avisar.
 
-### 5. El repositorio
+### 5. El repositorio — y con él, Remotion
+
+**Remotion no se instala aparte. Viene con el repositorio.** Vive en
+`packages/placas/` como workspace del monorepo, con su versión clavada
+(`4.0.524`). Un `npm install remotion` suelto por fuera sería otra versión, sin
+los tokens de marca ni las placas, y rendering distinto del que sale acá. Si
+alguna vez hay que actualizarlo, se actualiza en el repo y se commitea.
+
+Por eso hay que clonar el monorepo completo, aunque el trabajo sea video: ahí
+están las placas, los tokens de color, los logos y las recetas de la skill.
 
 ```bash
 git clone https://github.com/arteytierra/arteytierra-app.git
@@ -100,7 +109,12 @@ git clone https://github.com/arteytierra/arteytierra-app.git
 cd arteytierra-app && pnpm install
 ```
 
-Pesa. Después, probar que las placas renderizan:
+Eso instala todo el monorepo. Si el disco aprieta, alcanza con
+`pnpm install --filter @arteytierra/placas...` —sólo las placas y la config—,
+pero con eso **no** se pueden correr las verificaciones del repo antes de
+commitear. Si vas a tocar código, instalá todo.
+
+Después, probar que las placas se resuelven:
 
 ```bash
 pnpm --filter @arteytierra/placas componer
@@ -108,7 +122,34 @@ pnpm --filter @arteytierra/placas componer
 
 Tienen que salir seis: `AperturaAcequia`, `AperturaAcequiaVertical`,
 `AperturaAcequiaOscura`, `AperturaAcequiaOscuraVertical`, `LowerThird` y
-`PlacaDato`. El primer render se baja un Chrome propio de Remotion (113 MB).
+`PlacaDato`.
+
+Y **hacé un render de prueba ahora, no en medio de un trabajo**, porque el primer
+render se baja un Chrome propio de Remotion (113 MB) antes de empezar:
+
+```bash
+pnpm --filter @arteytierra/placas render AperturaAcequiaOscura prueba.mp4
+```
+
+Tienen que salir tres segundos con el lockup blanco sobre el negro profundo. Si
+el wordmark "acequia" se ve con otra tipografía, algo está mal: avisá antes de
+seguir.
+
+### 6. Cuánto espacio hace falta
+
+Medido sobre la instalación real, en una máquina donde todo esto arranca de
+cero:
+
+| Qué | Cuánto |
+|---|---|
+| el repositorio clonado | ~400 MB |
+| `node_modules` del monorepo | ~1 GB |
+| la caché de paquetes de pnpm | ~1,3 GB |
+| el Chrome de Remotion | 113 MB |
+
+Unos **3 GB** para tener el entorno andando, antes de un solo archivo de video.
+Súmenle el metraje y el doble del metraje en intermedios. Si la máquina tiene
+menos de 20 GB libres, decilo antes de empezar.
 
 ---
 
@@ -174,11 +215,17 @@ Si el espacio te bloquea, avisá: no borres material por tu cuenta.
 
 #### Remotion: por qué está y no cualquier otra cosa
 
-Vive en `packages/placas/`, workspace propio. Genera video desde React, y su
-ventaja acá es específica: **lee los tokens de marca del monorepo**. Los colores
-salen de `packages/config/src/tokens.ts` (`marcaAcequia`) y el logo de
-`apps/terreno/public/marca/`, sin copiarlo. Una placa sale con exactamente los
-colores y el logo del sitio, y el día que cambien, cambian solas.
+Vive en `packages/placas/`, workspace propio del monorepo, con la versión
+clavada. **No se instala aparte: ya vino con el repositorio.** Si algo de
+Remotion parece faltar, es que falta correr `pnpm install`, no que haya que
+instalarlo suelto.
+
+Genera video desde React, y su ventaja acá es específica: **lee los tokens de
+marca del monorepo**. Los colores salen de `packages/config/src/tokens.ts`
+(`marcaAcequia`) y el logo de `apps/terreno/public/marca/`, sin copiarlo. Una
+placa sale con exactamente los colores y el logo del sitio, y el día que
+cambien, cambian solas. Esa es la razón por la que se clona el monorepo entero
+para un trabajo de video: sin él no hay placas, ni tokens, ni logos.
 
 ```bash
 pnpm --filter @arteytierra/placas estudio
