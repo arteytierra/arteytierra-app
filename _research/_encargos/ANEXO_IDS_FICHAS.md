@@ -5,7 +5,7 @@ _Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 20 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 61 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -16,18 +16,18 @@ Son las ecorregiones cuya ficha nombra a la Argentina: es el mercado del
 producto y donde más fuente accesible hay (INTA, CONICET, universidades
 nacionales, parques nacionales).
 
-- `selva_paranaense` — Selva paranaense
-- `chaco_seco` — Chaco seco
-- `monte` — Monte de llanuras y mesetas
-- `espinal` — Espinal / bosque seco templado
-- `pampa` — Pampa / pastizal templado
-- `yungas` — Yungas / selva de montaña
-- `puna_altoandino` — Puna y altoandino
-- `estepa_patagonica` — Estepa patagónica
-- `bosque_andino_patagonico` — Bosque andino-patagónico
-- `campos_uruguayos` — Campos y pastizales uruguayos
-- `chaco_humedo` — Chaco húmedo
-- `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia
+- `selva_paranaense` — Selva paranaense ✓ *(ya tiene práctica cargada)*
+- `chaco_seco` — Chaco seco ✓ *(ya tiene práctica cargada)*
+- `monte` — Monte de llanuras y mesetas ✓ *(ya tiene práctica cargada)*
+- `espinal` — Espinal / bosque seco templado ✓ *(ya tiene práctica cargada)*
+- `pampa` — Pampa / pastizal templado ✓ *(ya tiene práctica cargada)*
+- `yungas` — Yungas / selva de montaña ✓ *(ya tiene práctica cargada)*
+- `puna_altoandino` — Puna y altoandino ✓ *(ya tiene práctica cargada)*
+- `estepa_patagonica` — Estepa patagónica ✓ *(ya tiene práctica cargada)*
+- `bosque_andino_patagonico` — Bosque andino-patagónico ✓ *(ya tiene práctica cargada)*
+- `campos_uruguayos` — Campos y pastizales uruguayos ✓ *(ya tiene práctica cargada)*
+- `chaco_humedo` — Chaco húmedo ✓ *(ya tiene práctica cargada)*
+- `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia ✓ *(ya tiene práctica cargada)*
 
 ---
 
@@ -35,70 +35,70 @@ nacionales, parques nacionales).
 
 _`lib/contexto.ts`_
 
-- `selva_paranaense` — Selva paranaense
-- `sabana_cerrado` — Cerrado
-- `chaco_seco` — Chaco seco
-- `monte` — Monte de llanuras y mesetas
-- `espinal` — Espinal / bosque seco templado
-- `pampa` — Pampa / pastizal templado
-- `yungas` — Yungas / selva de montaña
-- `puna_altoandino` — Puna y altoandino
-- `estepa_patagonica` — Estepa patagónica
-- `bosque_andino_patagonico` — Bosque andino-patagónico
-- `mediterraneo` — Matorral mediterráneo
-- `desierto_costero` — Desierto costero
+- `selva_paranaense` — Selva paranaense ✓ *(ya tiene práctica cargada)*
+- `sabana_cerrado` — Cerrado ✓ *(ya tiene práctica cargada)*
+- `chaco_seco` — Chaco seco ✓ *(ya tiene práctica cargada)*
+- `monte` — Monte de llanuras y mesetas ✓ *(ya tiene práctica cargada)*
+- `espinal` — Espinal / bosque seco templado ✓ *(ya tiene práctica cargada)*
+- `pampa` — Pampa / pastizal templado ✓ *(ya tiene práctica cargada)*
+- `yungas` — Yungas / selva de montaña ✓ *(ya tiene práctica cargada)*
+- `puna_altoandino` — Puna y altoandino ✓ *(ya tiene práctica cargada)*
+- `estepa_patagonica` — Estepa patagónica ✓ *(ya tiene práctica cargada)*
+- `bosque_andino_patagonico` — Bosque andino-patagónico ✓ *(ya tiene práctica cargada)*
+- `mediterraneo` — Matorral mediterráneo ✓ *(ya tiene práctica cargada)*
+- `desierto_costero` — Desierto costero ✓ *(ya tiene práctica cargada)*
 
 ## B. Sudamérica — resto del continente — 47 fichas
 
 _`lib/biomasRegionalesSudamerica.ts`_
 
-- `amazonia_noroccidental_tierra_firme` — Amazonía noroccidental de tierra firme
-- `amazonia_oriental_tierra_firme` — Amazonía oriental y meridional de tierra firme
+- `amazonia_noroccidental_tierra_firme` — Amazonía noroccidental de tierra firme ✓ *(ya tiene práctica cargada)*
+- `amazonia_oriental_tierra_firme` — Amazonía oriental y meridional de tierra firme ✓ *(ya tiene práctica cargada)*
 - `amazonia_suroccidental_tierra_firme` — Amazonía suroccidental de tierra firme
 - `bosque_humedo_occidente_ecuador` — Bosques húmedos del occidente ecuatoriano
 - `bosque_juan_fernandez` — Bosques templados de Juan Fernández
-- `bosque_seco_chiquitano` — Bosque seco chiquitano
+- `bosque_seco_chiquitano` — Bosque seco chiquitano ✓ *(ya tiene práctica cargada)*
 - `bosque_seco_mato_grosso` — Bosques estacionales del Mato Grosso
-- `bosques_babacu_maranhao` — Bosques de babaçu de Maranhão
-- `bosques_humedos_caribe_colombia_venezuela` — Bosques húmedos del Caribe colombiano y Catatumbo
-- `bosques_montanos_andes_norte` — Bosques montanos de los Andes del norte
-- `bosques_secos_caribe_colombia_venezuela` — Bosques secos del Caribe suramericano y Orinoquía occidental
-- `bosques_secos_tumbes_ecuador_peru` — Bosques secos de Tumbes, Piura y Ecuador
-- `caatinga` — Caatinga
-- `caatinga_enclaves_humedos` — Enclaves húmedos de la Caatinga
+- `bosques_babacu_maranhao` — Bosques de babaçu de Maranhão ✓ *(ya tiene práctica cargada)*
+- `bosques_humedos_caribe_colombia_venezuela` — Bosques húmedos del Caribe colombiano y Catatumbo ✓ *(ya tiene práctica cargada)*
+- `bosques_montanos_andes_norte` — Bosques montanos de los Andes del norte ✓ *(ya tiene práctica cargada)*
+- `bosques_secos_caribe_colombia_venezuela` — Bosques secos del Caribe suramericano y Orinoquía occidental ✓ *(ya tiene práctica cargada)*
+- `bosques_secos_tumbes_ecuador_peru` — Bosques secos de Tumbes, Piura y Ecuador ✓ *(ya tiene práctica cargada)*
+- `caatinga` — Caatinga ✓ *(ya tiene práctica cargada)*
+- `caatinga_enclaves_humedos` — Enclaves húmedos de la Caatinga ✓ *(ya tiene práctica cargada)*
 - `campinaranas_aguas_negras` — Campinaranas del río Negro
 - `campos_rupestres` — Campos rupestres de Espinhaço
-- `campos_uruguayos` — Campos y pastizales uruguayos
-- `chaco_humedo` — Chaco húmedo
+- `campos_uruguayos` — Campos y pastizales uruguayos ✓ *(ya tiene práctica cargada)*
+- `chaco_humedo` — Chaco húmedo ✓ *(ya tiene práctica cargada)*
 - `galapagos_matorral_xerico` — Galápagos: zonas áridas y de transición
 - `guayanas_bosques_inundables_delta` — Bosques inundables de Guayanas y delta del Orinoco
-- `guayanas_bosques_tierras_bajas` — Bosques de tierras bajas del Escudo Guayanés
-- `humedales_guayaquil` — Pastizales inundables de Guayaquil
+- `guayanas_bosques_tierras_bajas` — Bosques de tierras bajas del Escudo Guayanés ✓ *(ya tiene práctica cargada)*
+- `humedales_guayaquil` — Pastizales inundables de Guayaquil ✓ *(ya tiene práctica cargada)*
 - `humedales_orinoco` — Humedales del Orinoco
-- `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia
+- `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia ✓ *(ya tiene práctica cargada)*
 - `isla_malpelo_xerica` — Isla Malpelo: roca oceánica xerófila
 - `islas_desventuradas` — Islas Desventuradas: matorral oceánico
-- `llanos_orinoquia` — Llanos del Orinoco
+- `llanos_orinoquia` — Llanos del Orinoco ✓ *(ya tiene práctica cargada)*
 - `manglares_amazon_orinoco_caribe_sur` — Manglares del Amazonas, Orinoco y Caribe sur
-- `manglares_atlantico_sur_brasil` — Manglares del Atlántico sur de Brasil
-- `manglares_pacifico_suramericano` — Manglares del Pacífico suramericano
-- `mata_araucaria_altura` — Bosque de araucaria de la Mata Atlántica
-- `mata_atlantica_costera` — Bosques húmedos costeros de la Mata Atlántica
-- `mata_atlantica_interior` — Bosques interiores de la Mata Atlántica
-- `mata_atlantica_restingas` — Restingas atlánticas
+- `manglares_atlantico_sur_brasil` — Manglares del Atlántico sur de Brasil ✓ *(ya tiene práctica cargada)*
+- `manglares_pacifico_suramericano` — Manglares del Pacífico suramericano ✓ *(ya tiene práctica cargada)*
+- `mata_araucaria_altura` — Bosque de araucaria de la Mata Atlántica ✓ *(ya tiene práctica cargada)*
+- `mata_atlantica_costera` — Bosques húmedos costeros de la Mata Atlántica ✓ *(ya tiene práctica cargada)*
+- `mata_atlantica_interior` — Bosques interiores de la Mata Atlántica ✓ *(ya tiene práctica cargada)*
+- `mata_atlantica_restingas` — Restingas atlánticas ✓ *(ya tiene práctica cargada)*
 - `mata_atlantica_seca` — Bosques secos atlánticos de Brasil
 - `matorrales_xericos_caribe_suramericano` — Matorrales xerófilos del Caribe suramericano
-- `montanas_caribe_norte` — Montañas húmedas del Caribe suramericano
-- `pantanal` — Pantanal
+- `montanas_caribe_norte` — Montañas húmedas del Caribe suramericano ✓ *(ya tiene práctica cargada)*
+- `pantanal` — Pantanal ✓ *(ya tiene práctica cargada)*
 - `pantepui_guayana_alta` — Pantepui y tierras altas guayanesas
-- `paramos_andinos` — Páramos de los Andes del norte
+- `paramos_andinos` — Páramos de los Andes del norte ✓ *(ya tiene práctica cargada)*
 - `puna_humeda_central` — Puna húmeda central ✓ *(ya tiene práctica cargada)*
-- `puna_seca_central` — Puna seca central
+- `puna_seca_central` — Puna seca central ✓ *(ya tiene práctica cargada)*
 - `rapa_nui_bosque_subtropical_transformado` — Rapa Nui y Sala y Gómez ✓ *(ya tiene práctica cargada)*
-- `sabanas_beni` — Sabanas inundables del Beni
+- `sabanas_beni` — Sabanas inundables del Beni ✓ *(ya tiene práctica cargada)*
 - `sabanas_guayanesas` — Sabanas del Escudo Guayanés
-- `valles_secos_interandinos` — Valles secos interandinos
-- `varzeas_igapos_amazonicos` — Várzeas e igapós amazónicos
+- `valles_secos_interandinos` — Valles secos interandinos ✓ *(ya tiene práctica cargada)*
+- `varzeas_igapos_amazonicos` — Várzeas e igapós amazónicos ✓ *(ya tiene práctica cargada)*
 
 ## C. Norteamérica, Mesoamérica, Caribe y Europa — catálogo base — 22 fichas
 

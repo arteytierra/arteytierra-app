@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 21 entradas sobre 20 ecorregiones de 222.
+hoy tiene 62 entradas sobre 61 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -72,7 +72,10 @@ es hacer desaparecer a la gente del lugar donde vivió.
 Esta segunda mitad ya falló una vez. En el primer lote, tres entradas tenían la
 autoría textual en la cita de respaldo —hohokam, ojibwe, taíno— y la ocultaban
 en el texto publicado. Si tu `verificacion` nombra un pueblo y tu `detalle` no,
-está mal.
+está mal. En el segundo lote no volvió a pasar en ninguna de las 44: kichwa y
+kijus en Napo, mapuche en Lanín, chiquitanos, quilombolas del Vale do Ribeira,
+caiçaras, kogui, wiwa, arhuaco y kankuamo en la Sierra Nevada, cocamilla en el
+Huallaga, quebradeiras de coco babaçu. Así va.
 
 **6. Le tiene que servir a alguien que está diseñando un predio.** No es una
 entrada de enciclopedia: es información para alguien que va a decidir dónde pone
@@ -123,14 +126,14 @@ fecha que pusiste.
 
 **Un bloque por vez**, en este orden, que es el de utilidad para el negocio:
 
-1. **Prioridad 1 — Argentina**, las 12 fichas que encabezan el anexo. Es el
-   mercado y es donde hay más fuente accesible (INTA, CONICET, universidades
-   nacionales, Parques Nacionales).
-2. **B. Sudamérica** — el resto del continente, 47 fichas.
-3. **D. México, Centroamérica y Estados Unidos** — hay mucho SIPAM/FAO.
-4. **H. Medio Oriente** e **I. Norte de África** — mucha obra hidráulica
+1. ~~Prioridad 1 — Argentina~~ y ~~B. Sudamérica~~: **hechos**. Las 12
+   argentinas están completas y de Sudamérica quedan sólo los ids que no
+   tuvieron evidencia específica; están listados en
+   `practicas-documentadas-ecorregion/COBERTURA_SUDAMERICA_A_B_C.md`.
+2. **D. México, Centroamérica y Estados Unidos** — hay mucho SIPAM/FAO.
+3. **H. Medio Oriente** e **I. Norte de África** — mucha obra hidráulica
    documentada por UNESCO.
-5. **G. Unión Europea**, **F. Europa no comunitaria**, **E. Canadá y Alaska**.
+4. **G. Unión Europea**, **F. Europa no comunitaria**, **E. Canadá y Alaska**.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -155,12 +158,26 @@ contiene lo que dice `verificacion` no se corrige — **se descarta el lote y se
 vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
 
-Del primer lote, 15 de 17 se verificaron palabra por palabra contra la fuente.
-Las otras dos no se montaron, y no porque la cita fallara sino porque no se
-pudo abrir el archivo: un PDF del USDA con el certificado vencido y otro de
-CONABIO sin capa de texto legible. **Conviene evitar los PDF escaneados o muy
-pesados cuando hay una página HTML equivalente**: una fuente que no se puede
-abrir vale lo mismo que ninguna, aunque sea real.
+Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
+44. Las que no se montaron casi nunca fallaron la cita: falló el archivo. Un PDF
+del USDA con el certificado vencido, otro de CONABIO sin capa de texto, un
+documento de UNESCO que devuelve 403 a todo lo que no sea un navegador, y una
+nota de FAO Brasil que **desapareció del sitio**. **Conviene evitar los PDF
+escaneados o muy pesados cuando hay una página HTML equivalente**, y preferir
+una página estable —la ficha SIPAM del sistema, el registro del repositorio— a
+una nota de prensa: una fuente que no se puede abrir vale lo mismo que ninguna,
+aunque sea real.
+
+Dos avisos concretos que salieron del segundo lote:
+
+- **La URL se copia del lugar donde está el archivo.** El PDF de Embrapa se
+  citó en `infoteca` cuando vive en `alice`: daba 404 y es el mismo documento.
+- **La `verificacion` va en el idioma de la fuente.** Si el texto está en
+  español o en portugués, la frase se copia en español o en portugués. Una
+  traducción al inglés, por fiel que sea, rompe la comparación mecánica y
+  obliga a revisar a ojo. Tampoco se abrevia adentro de la cita: si la fuente
+  escribe "Globally Important Agricultural Heritage System (GIAHS)", eso es lo
+  que va.
 
 Después corre `pnpm --filter @arteytierra/terreno test`, que chequea lo
 mecánico: fuente presente, `https`, nada de enciclopedias, período no vacío,

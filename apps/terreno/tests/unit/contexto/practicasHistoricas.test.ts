@@ -4,11 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import { PRACTICAS_POR_FICHA, practicasDeFicha } from '@/lib/practicasHistoricas';
 import { fichaPorId } from '@/lib/contexto';
+import { BIOMAS_REGIONALES_EUROPA_UE } from '@/lib/biomasRegionalesEuropaUE';
 
 /*
  * El contrato de las prácticas documentadas.
  *
- * Esta capa existe porque 188 de las 210 fichas regionales tienen `saberes: []`
+ * Esta capa existe porque 200 de las 222 fichas regionales tienen `saberes: []`
  * a propósito —a escala de ecorregión atribuirle una práctica a un pueblo sería
  * inventar— y la sección quedaba vacía, que se leía como "acá no hay nada".
  * Decir qué se hizo y cuándo sí se puede: es lo que el registro fecha.
@@ -101,8 +102,14 @@ describe('dónde vive esta capa', () => {
     // `practicas: []` y `practicas: undefined` se renderizan igual hoy, pero el
     // día que alguien escriba `ficha.practicas &&` dejan de hacerlo. Que no
     // aparezca el campo es la señal correcta.
-    const sinPracticas = fichaPorId('amazonia_noroccidental_tierra_firme');
-    expect(sinPracticas).not.toBeNull();
+    //
+    // La ficha se busca en vez de nombrarse: la versión anterior clavaba un id
+    // que el lote siguiente llenó, y el test empezó a fallar por haber hecho
+    // bien el trabajo.
+    const sinPracticas = Object.keys(BIOMAS_REGIONALES_EUROPA_UE).map((id) => fichaPorId(id)).find(
+      (f) => f !== null && !PRACTICAS_POR_FICHA[f.id],
+    );
+    expect(sinPracticas, 'todas las fichas de la UE ya tienen práctica: elegí otro catálogo').toBeTruthy();
     expect(sinPracticas?.practicas).toBeUndefined();
   });
 

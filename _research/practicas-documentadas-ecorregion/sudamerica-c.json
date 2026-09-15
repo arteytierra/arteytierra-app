@@ -1,0 +1,122 @@
+[
+  {
+    "fichaId": "mata_araucaria_altura",
+    "practica": "Erva-mate sombreada dentro del bosque de araucaria",
+    "periodo": "Uso indígena antiguo y manejo comunitario sostenido durante siglos; vigente en 2026",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Pueblos indígenas Rio d’Areia y familias de Paraná cultivan erva-mate dentro del bosque nativo, manejando cobertura, regeneración y diversidad sin sustituir el dosel. La cosecha de hojas cada tres años, la propagación local y el mantenimiento de frutales y especies forestales protegen suelo, agua y continuidad productiva.",
+    "fuentes": [
+      {
+        "label": "FAO — Mate: the drink that keeps a forest alive",
+        "url": "https://www.fao.org/newsroom/story/mate-the-drink-that-keeps-a-forest-alive/en"
+      }
+    ],
+    "verificacion": "It shows how local communities have managed forests sustainably for centuries, protecting biodiversity, generating income and maintaining strong cultural identities."
+  },
+  {
+    "fichaId": "mata_atlantica_costera",
+    "practica": "Cacao cabruca bajo árboles de la Mata Atlántica",
+    "periodo": "Aproximadamente 250 años de cultivo en Bahía; vigente en 2008",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "El sistema cabruca implanta cacao bajo sombra después de ralear selectivamente la vegetación, manteniendo buena parte del arbolado y la función forestal. En el sur de Bahía se lo documenta como una forma agroforestal capaz de proteger biodiversidad, suelos y manantiales, aunque requiere enriquecimiento y manejo que eviten simplificar el dosel.",
+    "fuentes": [
+      {
+        "label": "Secretaria da Agricultura da Bahia — Sistema de cacau cabruca preservando os mananciais",
+        "url": "https://www.ba.gov.br/seagri/noticias/2008/12/09/sistema-de-cacau-cabruca-preservando-os-mananciais"
+      }
+    ],
+    "verificacion": "O cacau é uma cultura agroflorestal que, durante 250 anos, gerou divisas e riquezas para a Bahia"
+  },
+  {
+    "fichaId": "mata_atlantica_interior",
+    "practica": "Coivara quilombola con barbecho",
+    "periodo": "Practicada durante siglos; en transformación y retroceso desde mediados del siglo XX",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "detalle": "Comunidades quilombolas del Vale do Ribeira abren rozas temporales, cultivan y luego dejan barbecho para que la vegetación y el suelo se recuperen antes de un nuevo ciclo. La práctica depende de suficiente superficie, tiempos largos y reglas comunitarias; la reducción territorial y las restricciones desde la década de 1950 alteraron su funcionamiento.",
+    "fuentes": [
+      {
+        "label": "Universidade de São Paulo — Ecologia histórica de populações quilombolas do Vale do Ribeira",
+        "url": "https://teses.usp.br/teses/disponiveis/41/41134/tde-07032010-134736/pt-br.html"
+      }
+    ],
+    "verificacion": "A principal estratégia de subsistência destas populações ao longo dos séculos foi a coivara"
+  },
+  {
+    "fichaId": "mata_atlantica_restingas",
+    "practica": "Roça de coivara caiçara con descanso de la tierra",
+    "periodo": "Herencia indígena y colonial; actualmente en retroceso",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "detalle": "Las comunidades caiçaras de restingas, manglares y laderas atlánticas practican roza itinerante para mandioca, maíz, poroto, caña, ñame y plantas medicinales, seguida por un período de pousio. ICMBio señala que la agricultura pierde espacio frente a otras fuentes de ingreso, de modo que su referencia de diseño es el ciclo completo cultivo–descanso y no la quema aislada.",
+    "fuentes": [
+      {
+        "label": "ICMBio — Povos e Comunidades Tradicionais, cultura caiçara",
+        "url": "https://www.gov.br/icmbio/pt-br/assuntos/unidade-de-conservacao/unidades-de-biomas/marinho/lista-de-ucs/apa-de-cairucu/povos-e-comunidades-tradicionais/"
+      }
+    ],
+    "verificacion": "esta técnica itinerante consiste, basicamente, na derrubada e queima da mata para utilizar o terreno para cultivo, seguindo-se um período de pousio"
+  },
+  {
+    "fichaId": "montanas_caribe_norte",
+    "practica": "Agricultura indígena distribuida en gradiente altitudinal",
+    "periodo": "Sistema tradicional registrado oficialmente y vigente al momento de la publicación",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En la Sierra Nevada de Santa Marta, poblados Kogui, Wiwa, Arhuaco y Kankuamo se enlazan con los ríos y distribuyen cultivos desde tierras bajas hasta páramos. En cotas bajas aparecen cacao, café, plátano y caña, mientras la papa ocupa alturas mayores; esta zonificación vertical vincula microclimas, agua y productos en un solo territorio.",
+    "fuentes": [
+      {
+        "label": "Parques Nacionales Naturales de Colombia — Comunidades de la Sierra Nevada de Santa Marta",
+        "url": "https://old.parquesnacionales.gov.co/portal/es/ecoturismo/parques/region-caribe/parque-nacional-natural-sierra-nevada-de-santa-marta-2/comunidades/"
+      }
+    ],
+    "verificacion": "Los poblados indígenas se localizan por lo general siguiendo el curso de los ríos"
+  },
+  {
+    "fichaId": "manglares_pacifico_suramericano",
+    "practica": "Recolección de concha prieta durante la bajamar",
+    "periodo": "Desde tiempos precolombinos y vigente en el registro contemporáneo",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En la costa ecuatoriana, pescadores artesanales recolectan conchas entre raíces de manglar durante la marea baja y reconocen bancos productivos mediante experiencia y uso consuetudinario. En Esmeraldas la actividad se realiza tradicionalmente en grupos familiares con mujeres y niños; las concesiones actuales pueden organizar transporte y áreas comunales de cosecha.",
+    "fuentes": [
+      {
+        "label": "FAO Fisheries — Mangrove cockle fisheries and tenure in Ecuador",
+        "url": "https://www.fao.org/fishery/static/tenure-user-rights/root/volume1/C13.pdf"
+      }
+    ],
+    "verificacion": "dependent on mangrove forests in the intertidal swamps of Central and South America since pre-Colombian times."
+  },
+  {
+    "fichaId": "manglares_atlantico_sur_brasil",
+    "practica": "Extracción diversificada de caranguejo-uçá y mariscos",
+    "periodo": "Práctica tradicional documentada oficialmente en 1994",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Catadores y marisqueiros extraen caranguejo-uçá y otras especies del manglar, diversificando la captura según disponibilidad. Para su traducción a manejo predial o comunitario deben conservarse canales y refugios, respetarse talla, época reproductiva y vedas vigentes, y no inferirse que el registro de 1994 describe el estado actual de cada población.",
+    "fuentes": [
+      {
+        "label": "ICMBio — Relatório de ordenamento do caranguejo-uçá, 1994",
+        "url": "https://www.gov.br/icmbio/pt-br/assuntos/centros-de-pesquisa/biodiversidade-marinha-do-sudeste-e-sul/acervo-digital/relatorio-de-ordenamento/caranguejo/rel_1994_caranguejo_uca_ma.pdf"
+      }
+    ],
+    "verificacion": "Além do caranguejo-uçá, os catadores (marisqueiros) diversificam a captura extraindo do manguezal outras espécies"
+  },
+  {
+    "fichaId": "varzeas_igapos_amazonicos",
+    "practica": "Pesca Cocamilla ajustada al pulso de inundación",
+    "periodo": "Documentada en una comunidad tradicional a mediados de la década de 1970",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "La comunidad Cocamilla estudiada en la llanura del Huallaga intensificaba la pesca durante aguas bajas, cuando los peces se concentraban, y reducía el esfuerzo durante la creciente. El calendario también se coordinaba con agricultura y caza; mujeres participaban en cosechas comunales y en el manejo de canoas, mostrando que el sistema productivo seguía el ciclo hidrológico completo.",
+    "fuentes": [
+      {
+        "label": "FAO — Management systems for riverine fisheries",
+        "url": "https://www.fao.org/4/x6848e/X6848E06.HTM"
+      }
+    ],
+    "verificacion": "The intensity with which the Cocamilla fish varies considerably over the year."
+  }
+]

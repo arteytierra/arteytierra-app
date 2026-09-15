@@ -93,7 +93,7 @@ export type VigenciaPractica =
 /**
  * Una práctica documentada en el territorio, fechada y sin dueño declarado.
  *
- * Es la respuesta a un problema concreto: 188 de las 210 fichas regionales
+ * Es la respuesta a un problema concreto: 200 de las 222 fichas regionales
  * tienen `saberes: []` porque atribuirle una práctica a un pueblo a escala de
  * ecorregión sería inventar —una ecorregión abarca muchos pueblos y ninguno la
  * ocupa entera—, y el resultado era una sección vacía que se leía como "acá no
