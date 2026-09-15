@@ -5,7 +5,7 @@ _Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 61 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 88 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -113,7 +113,7 @@ _`lib/biomasRegionales.ts`_
 - `bosque_coniferas_pacifico_noroeste` — Bosque de coníferas del Pacífico noroeste ✓ *(ya tiene práctica cargada)*
 - `chaparral_californiano` — Chaparral californiano ✓ *(ya tiene práctica cargada)*
 - `taiga_borde_agricola` — Bosque boreal y borde agrícola ✓ *(ya tiene práctica cargada)*
-- `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos
+- `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos ✓ *(ya tiene práctica cargada)*
 - `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano
 - `bosque_mesofilo_montana` — Bosque mesófilo de montaña
 - `matorral_xerofilo_altiplano_mexicano` — Matorral xerófilo del Altiplano mexicano ✓ *(ya tiene práctica cargada)*
@@ -131,33 +131,33 @@ _`lib/biomasRegionales.ts`_
 
 _`lib/biomasRegionalesAmerica.ts`_
 
-- `alaska_costa_taiga` — Alaska: bosque costero y taiga
-- `alaska_tundra_hielo_beringia` — Alaska: tundra, Beringia e hielos de montaña
+- `alaska_costa_taiga` — Alaska: bosque costero y taiga ✓ *(ya tiene práctica cargada)*
+- `alaska_tundra_hielo_beringia` — Alaska: tundra, Beringia e hielos de montaña ✓ *(ya tiene práctica cargada)*
 - `altiplano_mexicano_matorral` — Matorrales del Altiplano y Meseta Central
-- `antillas_menores_bosques_humedos_secos` — Bosques húmedos y secos de las Antillas Menores
-- `apalaches_bosques_y_rivercane` — Bosques de los Apalaches y Piedmont
+- `antillas_menores_bosques_humedos_secos` — Bosques húmedos y secos de las Antillas Menores ✓ *(ya tiene práctica cargada)*
+- `apalaches_bosques_y_rivercane` — Bosques de los Apalaches y Piedmont ✓ *(ya tiene práctica cargada)*
 - `bahamas_pinares_manglares` — Pinares y manglares de Bahamas
-- `baja_california_desiertos_y_sierras` — Desiertos, oasis y sierras de Baja California
+- `baja_california_desiertos_y_sierras` — Desiertos, oasis y sierras de Baja California ✓ *(ya tiene práctica cargada)*
 - `balsas_jalisco_bosques_secos` — Bosques secos de Balsas y Jalisco
-- `bosque_atlantico_mosquitia` — Bosques húmedos del Caribe centroamericano y la Mosquitia
+- `bosque_atlantico_mosquitia` — Bosques húmedos del Caribe centroamericano y la Mosquitia ✓ *(ya tiene práctica cargada)*
 - `bosque_seco_panameno` — Bosque seco panameño
-- `california_klamath_sierra_valle` — California: Klamath, Sierra Nevada, Valle Central y bosques interiores
+- `california_klamath_sierra_valle` — California: Klamath, Sierra Nevada, Valle Central y bosques interiores ✓ *(ya tiene práctica cargada)*
 - `californias_chaparral_costero` — Chaparral costero y montano de las Californias
 - `centro_mexico_volcanes_bajio` — Eje Volcánico, altiplanos del centro y Bajío ✓ *(ya tiene práctica cargada)*
 - `chiapas_bosques_montanos` — Bosques montanos de Chiapas y Chimalapas
-- `corredor_seco_centroamericano` — Bosque seco y corredor seco centroamericano
+- `corredor_seco_centroamericano` — Bosque seco y corredor seco centroamericano ✓ *(ya tiene práctica cargada)*
 - `costa_rica_bosques_humedos_estacionales` — Bosques húmedos y estacionales de Costa Rica
-- `cuba_bosques_karst_y_pinares` — Bosques, karst y pinares de Cuba
-- `darien_humedo_panama` — Bosques húmedos del Darién y Panamá oriental
-- `everglades_manglares_sur_florida` — Everglades y manglares del sur de Florida
+- `cuba_bosques_karst_y_pinares` — Bosques, karst y pinares de Cuba ✓ *(ya tiene práctica cargada)*
+- `darien_humedo_panama` — Bosques húmedos del Darién y Panamá oriental ✓ *(ya tiene práctica cargada)*
+- `everglades_manglares_sur_florida` — Everglades y manglares del sur de Florida ✓ *(ya tiene práctica cargada)*
 - `gran_cuenca_meseta_colorado` — Gran Cuenca, Meseta del Colorado y estepas de Wyoming
-- `grandes_llanuras_pradera_alta_mixta` — Grandes Llanuras: pradera alta, mixta y sabanas
-- `gulf_mississippi_piney_woods` — Llanura del Mississippi, Golfo y Piney Woods
-- `hawaii_bosques_humedos_secos` — Hawái: bosques húmedos y secos
+- `grandes_llanuras_pradera_alta_mixta` — Grandes Llanuras: pradera alta, mixta y sabanas ✓ *(ya tiene práctica cargada)*
+- `gulf_mississippi_piney_woods` — Llanura del Mississippi, Golfo y Piney Woods ✓ *(ya tiene práctica cargada)*
+- `hawaii_bosques_humedos_secos` — Hawái: bosques húmedos y secos ✓ *(ya tiene práctica cargada)*
 - `hawaii_matorrales_altos_bajos` — Hawái: matorrales altos, bajos e islas noroccidentales
 - `hispaniola_bosque_humedo` — Bosques húmedos de La Española
 - `hispaniola_seco_pinar_humedales` — Bosques secos, pinares y humedales de La Española
-- `interior_noroeste_palouse_willamette` — Praderas, robledales y estepas del Noroeste interior
+- `interior_noroeste_palouse_willamette` — Praderas, robledales y estepas del Noroeste interior ✓ *(ya tiene práctica cargada)*
 - `jamaica_bosque_humedo_karstico` — Bosques húmedos y karst de Jamaica
 - `jamaica_bosque_seco` — Bosques secos de Jamaica
 - `manglares_antillanos` — Manglares de Bahamas y las Antillas
@@ -165,23 +165,23 @@ _`lib/biomasRegionalesAmerica.ts`_
 - `manglares_mexico` — Manglares del Golfo, Caribe y Pacífico mexicano
 - `matorral_xerico_caribeno` — Matorrales xéricos del Caribe
 - `montanas_mayas_pino_encino` — Montañas mayas y bosques de pino-encino
-- `noreste_grandes_lagos_bosques` — Bosques del Nordeste y Grandes Lagos
-- `oaxaca_sierras_bosques_comunales` — Sierras de Oaxaca: pino-encino y bosque mesófilo
-- `ozarks_transicion_bosque_pradera` — Ozarks y transición bosque–pradera del Medio Oeste
-- `pacifico_noroeste_bosques_coniferas` — Bosques de coníferas del Pacífico Noroeste
+- `noreste_grandes_lagos_bosques` — Bosques del Nordeste y Grandes Lagos ✓ *(ya tiene práctica cargada)*
+- `oaxaca_sierras_bosques_comunales` — Sierras de Oaxaca: pino-encino y bosque mesófilo ✓ *(ya tiene práctica cargada)*
+- `ozarks_transicion_bosque_pradera` — Ozarks y transición bosque–pradera del Medio Oeste ✓ *(ya tiene práctica cargada)*
+- `pacifico_noroeste_bosques_coniferas` — Bosques de coníferas del Pacífico Noroeste ✓ *(ya tiene práctica cargada)*
 - `pacifico_sur_chiapas_bosque_seco` — Bosques secos del Pacífico sur y Depresión de Chiapas
 - `revillagigedo_ecosistemas_insulares` — Islas Revillagigedo
-- `rocosas_norte_praderas_montanas` — Rocosas del norte y praderas de piedemonte
-- `rocosas_sur_sky_islands` — Rocosas del sur y bosques montanos del Suroeste
+- `rocosas_norte_praderas_montanas` — Rocosas del norte y praderas de piedemonte ✓ *(ya tiene práctica cargada)*
+- `rocosas_sur_sky_islands` — Rocosas del sur y bosques montanos del Suroeste ✓ *(ya tiene práctica cargada)*
 - `sabanas_pino_belice_mosquitia` — Sabanas y pinares de Belice y la Mosquitia
-- `selva_maya_peten_yucatan` — Selva Maya de Petén y Yucatán
-- `selva_maya_yucatan` — Selva Maya y península de Yucatán
+- `selva_maya_peten_yucatan` — Selva Maya de Petén y Yucatán ✓ *(ya tiene práctica cargada)*
+- `selva_maya_yucatan` — Selva Maya y península de Yucatán ✓ *(ya tiene práctica cargada)*
 - `sierras_madre_pino_encino` — Bosques de pino-encino de las Sierras Madre
 - `sonora_sinaloa_bosque_seco_desierto` — Desierto Sonorense y transición seca de Sonora–Sinaloa
-- `sudeste_sabanas_pino_largo` — Sabanas y pinares abiertos del Sudeste
-- `talamanca_caribe_sur` — Talamanca y Caribe sur
+- `sudeste_sabanas_pino_largo` — Sabanas y pinares abiertos del Sudeste ✓ *(ya tiene práctica cargada)*
+- `talamanca_caribe_sur` — Talamanca y Caribe sur ✓ *(ya tiene práctica cargada)*
 - `tamaulipas_texas_pastizal_mezquital` — Pastizales costeros y mezquitales de Tamaulipas–Texas
-- `tehuacan_cuicatlan_matorral` — Valle de Tehuacán–Cuicatlán
+- `tehuacan_cuicatlan_matorral` — Valle de Tehuacán–Cuicatlán ✓ *(ya tiene práctica cargada)*
 - `trinidad_tobago_bosques` — Bosques de Trinidad y Tobago
 - `veracruz_tabasco_selvas_humedales` — Selvas, montañas y humedales de Veracruz–Tabasco
 

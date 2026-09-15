@@ -1,0 +1,396 @@
+[
+  {
+    "fichaId": "alaska_costa_taiga",
+    "practica": "Pesca tradicional Ahtna en Tanada Creek",
+    "periodo": "Desde hace más de 1.000 años; continúa en uso",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "El pueblo Ahtna mantiene en Batzulnetas un sitio tradicional de pesca de salmón y transmite allí conocimientos de subsistencia y cultura. Para el diseño territorial, el registro obliga a conservar el paso y los pulsos estacionales de los peces, y a coordinar cualquier obra hidráulica con los titulares culturales del lugar; la estación moderna de monitoreo del parque no debe confundirse con una estructura tradicional Ahtna.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Tanada Creek Fish Weir",
+        "url": "https://www.nps.gov/wrst/learn/management/tanada-creek-fish-weir.htm"
+      }
+    ],
+    "verificacion": "the traditional fishing site on Tanada Creek that has been used by the Ahtna people for more than 1,000 years."
+  },
+  {
+    "fichaId": "alaska_tundra_hielo_beringia",
+    "practica": "Almacenamiento subterráneo de alimentos en Beringia",
+    "periodo": "Tradicional; transformada hacia mediados del siglo XX y revisada comunitariamente entre 2023 y 2025",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "detalle": "Pueblos indígenas de Beringia conservaron alimentos cosechados localmente en sótanos de hielo, escondites subterráneos y pozos. La pérdida de permafrost estable y los cambios sociales alteran su desempeño, por lo que cualquier recuperación exige medir el régimen térmico e hídrico local y trabajar con las comunidades de Sivuqaq, Gambell y Point Hope, no copiar una sección constructiva genérica.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Underground food storage practices in Beringian communities",
+        "url": "https://www.nps.gov/subjects/beringia/sharing-knowledge-of-food-life-history-and-underground-food-storage-practices-in-beringian-communities.htm"
+      }
+    ],
+    "verificacion": "By the mid-20th century, their food storage practices had changed due to rapid environmental fluctuations and social changes."
+  },
+  {
+    "fichaId": "antillas_menores_bosques_humedos_secos",
+    "practica": "Agroforestería multiestrato tradicional de Dominica",
+    "periodo": "Durante siglos; todavía en uso cuando fue documentada en 1991",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Pequeños agricultores y fincas de Dominica combinaron cocoteros o cítricos en el estrato alto, banano, café o cacao en niveles intermedios y raíces cerca del suelo. La disposición aprovecha verticalmente parcelas húmedas y escarpadas y mantiene cobertura permanente; la fuente de 1991 registra continuidad en el territorio entonces denominado Carib Territory y en otros sitios, pero no demuestra por sí sola su extensión actual.",
+    "fuentes": [
+      {
+        "label": "FAO — Agroforestry systems in Dominica",
+        "url": "https://www.fao.org/4/x5656e/x5656e05.htm"
+      }
+    ],
+    "verificacion": "has been a traditional system used for centuries by small farmers as well as on big estates."
+  },
+  {
+    "fichaId": "apalaches_bosques_y_rivercane",
+    "practica": "Manejo de rivercane mediante fuego indígena",
+    "periodo": "Histórica y aún viva en la cestería; el hábitat conserva cerca del 2 % de su extensión anterior",
+    "tipo": "fuego",
+    "vigencia": "en_retroceso",
+    "detalle": "Pueblos indígenas de los Apalaches favorecieron los cañaverales de rivercane con fuego y otras intervenciones, y comunidades Cherokee mantienen su uso cultural en la cestería. El manejo sostenía claros ribereños soleados, limitaba la invasión leñosa y aportaba estabilización de orillas; su aplicación actual requiere autoridad tribal y planificación específica de fuego, no una receta predial genérica.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Rivercane",
+        "url": "https://home.nps.gov/articles/000/rivercane.htm"
+      }
+    ],
+    "verificacion": "Historically, Indigenous peoples helped to foster rivercane ecosystems through the use of fire and other practices."
+  },
+  {
+    "fichaId": "baja_california_desiertos_y_sierras",
+    "practica": "Oasis agroforestales de las misiones bajacalifornianas",
+    "periodo": "Introducidos durante la fundación de dieciséis misiones entre 1697 y 1774; algunos oasis productivos perduran",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "La agricultura irrigada de estos oasis surgió con las misiones jesuitas, no como una práctica agrícola prehispánica: el estudio registra campos de cereales y legumbres, huertos, frutales y viñedos asociados al control del agua. Su interés de diseño está en concentrar diversidad productiva alrededor de surgencias escasas, pero debe conservarse el contexto colonial y no atribuirse el sistema introducido a los pueblos indígenas que ya usaban esos lugares de agua.",
+    "fuentes": [
+      {
+        "label": "Sociedad y Ambiente — La agricultura fundacional de los oasis de Baja California",
+        "url": "https://revistas.ecosur.mx/sociedadyambiente/index.php/sya/article/download/2933/1978/6560"
+      }
+    ],
+    "verificacion": "Este estudio analiza el tipo de agricultura establecida en las 16 misiones del periodo fundacional (1697-1774)."
+  },
+  {
+    "fichaId": "bosque_atlantico_mosquitia",
+    "practica": "Cacao agroforestal con sombra diversa en Siuna",
+    "periodo": "En uso; documentado en quince fincas en 2025",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Productores de El Hormiguero, Siuna, manejan cacao con árboles frutales, maderables y leguminosos y ajustan progresivamente la sombra mediante conocimiento local. La combinación de varios estratos, injertos o clones y cobertura arbórea ofrece una referencia para amortiguar calor y lluvia, pero el registro corresponde a quince fincas y no autoriza extrapolar una identidad étnica ni una receta única a toda la Mosquitia.",
+    "fuentes": [
+      {
+        "label": "AGRIS — Estructura arbórea y conocimiento local sobre manejo de sombra en sistemas agroforestales con cacao",
+        "url": "https://agris.fao.org/search/en/providers/125479/records/6995a389e6c33ba92ad64a94"
+      }
+    ],
+    "verificacion": "El estudio se realizó en 15 fincas mediante encuestas validadas por el Centro Agronómico Tropical de Investigación y Enseñanza (CATIE) y observación de campo."
+  },
+  {
+    "fichaId": "california_klamath_sierra_valle",
+    "practica": "Quema cultural Karuk y Yurok para varas de avellano",
+    "periodo": "Revitalizada y documentada en sitios con quemas entre 1989 y 2019",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "Pueblos Karuk y Yurok revitalizan la quema cultural para producir tallos rectos de avellano destinados a la cestería y recuperar relaciones sociales y ecológicas. El monitoreo encontró mayor disponibilidad de tallos útiles después de quemas frecuentes, pero la frecuencia y la ejecución pertenecen a programas indígenas situados y no deben convertirse en una prescripción universal de fuego.",
+    "fuentes": [
+      {
+        "label": "US Forest Service — Revitalized Karuk and Yurok cultural burning to enhance California hazelnut",
+        "url": "https://research.fs.usda.gov/treesearch/62061"
+      }
+    ],
+    "verificacion": "Plots burned at high frequency (at least three burn events from 1989 to 2019) had 1.86-fold greater hazelnut shrubs"
+  },
+  {
+    "fichaId": "corredor_seco_centroamericano",
+    "practica": "Sistema agroforestal Quesungual sin quema",
+    "periodo": "Documentado en Quesungual en 1992; ampliamente adoptado entre 1995 y 1998 y vigente al cierre del informe",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "Agricultores del sur de Lempira conservan y podan árboles dentro de parcelas de maíz, sorgo y frijol, acomodan el rastrojo pendiente abajo y preparan el terreno a mano sin quemarlo. El sistema reduce erosión y evaporación y mejora la infiltración y la humedad del suelo; debe adaptarse a la composición arbórea y a las reglas locales en lugar de reducirse a una lista fija de especies.",
+    "fuentes": [
+      {
+        "label": "FAO — The Quesungual slash and mulch agroforestry system",
+        "url": "https://www.fao.org/4/Y5030E/y5030e19.htm"
+      }
+    ],
+    "verificacion": "It was in 1992 that the method of agricultural production known today as the Quesungual system was discovered in the village of that name."
+  },
+  {
+    "fichaId": "cuba_bosques_karst_y_pinares",
+    "practica": "Cultivo tradicional de tabaco en el valle de Viñales",
+    "periodo": "Desde comienzos del siglo XIX; técnicas tradicionales todavía en uso al momento de la inscripción",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Pequeños productores del valle de Viñales mantienen métodos tradicionales para el tabaco y emplean tracción animal porque la mecanización puede reducir su calidad. En un paisaje kárstico de suelos cultivables discontinuos, la lección de diseño es ajustar escala, acceso y labores a los fondos de valle sin presentar una economía colonial del tabaco como saber indígena.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Viñales Valley",
+        "url": "https://whc.unesco.org/en/list/840/"
+      }
+    ],
+    "verificacion": "Traditional methods of agriculture have survived largely unchanged on this plain for several centuries, particularly for growing tobacco."
+  },
+  {
+    "fichaId": "darien_humedo_panama",
+    "practica": "Agricultura Nainu de rotación y sucesión forestal",
+    "periodo": "En uso al menos hacia 2000; la sucesión de parcela alcanza bosque secundario en veinte años o más",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "El pueblo que la fuente denomina Kuna maneja en Narganá parcelas con árboles útiles, cereales, tubérculos y hortalizas, alternando cultivo y descanso hasta recuperar bosque secundario. La sucesión, la diversidad y el mantenimiento de cobertura en laderas distribuyen producción y restauración en el tiempo; trasladarla exige gobernanza Guna y suficiente superficie para completar el barbecho.",
+    "fuentes": [
+      {
+        "label": "FAO — Nainu agriculture in Panama",
+        "url": "https://www.fao.org/fileadmin/templates/esw/esw_new/documents/SARD/good_practices_Latin_America/13_Nainu_agriculture_Panama1.pdf"
+      }
+    ],
+    "verificacion": "The practice is carried out in Narganà, one of the four areas of the Kuna Yala area."
+  },
+  {
+    "fichaId": "everglades_manglares_sur_florida",
+    "practica": "Huertos seminolas en islas altas del humedal",
+    "periodo": "Entre 1842 y 1855, antes de la destrucción documentada del campamento",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "El jefe seminola Holata Micco, conocido también como Billie Bowlegs, y su familia mantuvieron frutales y huertos en tierras relativamente altas y fértiles dentro del paisaje húmedo. El caso muestra una implantación productiva ajustada a microrelieves secos, pero es un registro histórico interrumpido violentamente en 1855 y no evidencia continuidad de esa parcela ni una técnica general para los Everglades.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Deep Lake",
+        "url": "https://www.nps.gov/bicy/learn/historyculture/deep-lake.htm"
+      }
+    ],
+    "verificacion": "However, in 1855, either intentionally, or by accident, a group of US Army engineers and surveyors destroyed the camp, fruit trees, and gardens"
+  },
+  {
+    "fichaId": "grandes_llanuras_pradera_alta_mixta",
+    "practica": "Quema indígena para sostener la pradera y el bisonte",
+    "periodo": "Antes del asentamiento europeo; parte de un régimen de fuego que sostuvo la pradera durante los últimos 5.000 años",
+    "tipo": "fuego",
+    "vigencia": "historica",
+    "detalle": "Pueblos indígenas de las llanuras usaron fuego para producir brotes verdes y atraer bisontes, reforzando procesos que también iniciaban los rayos. La quema limitaba el avance leñoso y renovaba el pastizal, pero el registro ecológico regional no define una frecuencia transferible ni reemplaza la autoridad tribal, el análisis de combustible o la normativa actual.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Fire regime at Tallgrass Prairie",
+        "url": "https://www.nps.gov/tapr/learn/nature/fire-regime.htm"
+      }
+    ],
+    "verificacion": "Most ecologists agree that for the last 5,000 years, prairie vegetation would have diminished if not for the burning of these grasslands."
+  },
+  {
+    "fichaId": "gulf_mississippi_piney_woods",
+    "practica": "Campos elevados misisipianos con fertilización orgánica",
+    "periodo": "Período misisipiano, hace entre 500 y 1.000 años",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "Pueblos del período misisipiano construyeron montículos de suelo en campos de valles fluviales y los fertilizaron con pescado u otros materiales orgánicos. La asociación de maíz en el centro, frijol en los lados y calabaza como cobertura organizaba volumen de suelo, nutrientes y estratos vegetales, pero se presenta como evidencia histórica y no como continuidad tribal contemporánea.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Mississippian Period: 500 to 1,000 years ago",
+        "url": "https://www.nps.gov/articles/000/mississippian-period-500-to-1,000-years-ago.htm"
+      }
+    ],
+    "verificacion": "These fields were then filled with mound-like structures formed by piling soils together and fertilized with fish or other organic materials."
+  },
+  {
+    "fichaId": "hawaii_bosques_humedos_secos",
+    "practica": "Estanques costeros hawaianos integrados al ahupuaʻa",
+    "periodo": "Construidos principalmente entre 1200 y 1600; restauración comunitaria contemporánea documentada desde 2013",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "Hawaianos nativos construyeron estanques costeros con muros de roca y aperturas enrejadas que admitían peces juveniles, mantenían el intercambio de agua y retenían ejemplares de cosecha. Los loko iʻa formaban parte del sistema territorial ahupuaʻa desde montaña a mar; las restauraciones actuales son comunitarias y responden a condiciones y metas propias de cada cuenca, por lo que no deben copiarse sólo por su geometría.",
+    "fuentes": [
+      {
+        "label": "NOAA Fisheries — Hawaiian Fishponds",
+        "url": "https://www.fisheries.noaa.gov/feature-story/hawaiian-fishponds-providing-physical-and-cultural-sustenance"
+      }
+    ],
+    "verificacion": "Hawaiians typically built many of their ponds between the years 1200 and 1600."
+  },
+  {
+    "fichaId": "interior_noroeste_palouse_willamette",
+    "practica": "Cosecha Nimiipuu de camas con resiembra por selección",
+    "periodo": "Documentada en septiembre de 1805; continúa en uso",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Familias Nez Perce o Nimiipuu cosechan bulbos de camas y dejan los ejemplares pequeños para que sigan creciendo, una selección que renueva el parche alimentario. La práctica vincula calendario, identificación precisa de plantas y apertura de la pradera; conservarla requiere evitar compactación y pérdida del hábitat y acompañar el manejo Nimiipuu, no tratar el bulbo como un recurso silvestre sin titulares.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Camas",
+        "url": "https://home.nps.gov/articles/000/camas.htm"
+      }
+    ],
+    "verificacion": "When Meriwether Lewis and William Clark arrived at Weippe Prairie in September 1805, Nez Perce families were processing the camas bulbs"
+  },
+  {
+    "fichaId": "noreste_grandes_lagos_bosques",
+    "practica": "Quema cultural ojibwe para arándanos en Stockton Island",
+    "periodo": "Durante siglos; reintroducida en Stockton Island en 2017 y repetida en 2021",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "Pueblos ojibwe de los Grandes Lagos usaron fuego para favorecer arándanos en los pinares abiertos de Stockton Island y reactivaron quemas culturales con alianzas tribales contemporáneas. La práctica mantiene claros y plantas de alimento, pero su diseño y ejecución corresponden a las comunidades Red Cliff, Bad River y otras organizaciones tribales participantes, junto con las condiciones actuales del sitio.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Indigenous fire practices shape our land",
+        "url": "https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm"
+      }
+    ],
+    "verificacion": "local Ojibwe tribes used fire to promote the harvest on Stockton Island for centuries."
+  },
+  {
+    "fichaId": "oaxaca_sierras_bosques_comunales",
+    "practica": "Manejo forestal comunitario zapoteco en Capulálpam",
+    "periodo": "Desde 1981; cambio de método silvícola en 1993 y continuidad documentada",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "La comunidad forestal zapoteca de Capulálpam de Méndez estableció manejo comunitario al terminar la concesión industrial y luego adoptó selección en grupos y árboles semilleros, acompañados por monitoreo permanente. La experiencia permite pensar mosaicos de corta, regeneración y seguimiento en bosques mixtos, pero sus reglas comunales, inventarios y decisiones no son sustituibles por un turno forestal genérico.",
+    "fuentes": [
+      {
+        "label": "Madera y Bosques — Manejo forestal en la Sierra Juárez de Oaxaca",
+        "url": "https://www.scielo.org.mx/scielo.php?pid=S1405-04712019000300203&script=sci_arttext"
+      }
+    ],
+    "verificacion": "En 1981, año en que terminó la concesión a Fapatux, se estableció el manejo forestal comunitario."
+  },
+  {
+    "fichaId": "ozarks_transicion_bosque_pradera",
+    "practica": "Quema indígena otoñal de praderas de los Ozarks",
+    "periodo": "Documentada por una observación colonial de 1750; continuidad no establecida por la fuente",
+    "tipo": "fuego",
+    "vigencia": "historica",
+    "detalle": "Una observación colonial de 1750 atribuyó a pueblos indígenas de la región la quema de praderas al final del otoño, cuando el pasto estaba seco. El parque explica que el fuego conserva claros, sabanas y especies adaptadas frente al avance de árboles, pero la cita histórica no identifica un pueblo concreto ni basta para definir intensidad, frecuencia o autorización actuales.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Prescribed burns at Ozark National Scenic Riverways",
+        "url": "https://www.nps.gov/ozar/learn/management/prescribedburns.htm"
+      }
+    ],
+    "verificacion": "set fire to the prairies toward the end of autumn, when the grass is dry"
+  },
+  {
+    "fichaId": "pacifico_noroeste_bosques_coniferas",
+    "practica": "Fuego cultural de Warm Springs en bosques mixtos húmedos",
+    "periodo": "En uso tradicional hasta aproximadamente 1940; actualmente investigada para restauración",
+    "tipo": "fuego",
+    "vigencia": "en_retroceso",
+    "detalle": "Pueblos Ichishkin, Kitsht Wasco y Numu de Warm Springs manejaron con fuego de baja severidad un mosaico de bosque mixto, praderas y parches de arándano. La interrupción del fuego cultural redujo la productividad de áreas históricas de cosecha; su restauración debe quedar bajo liderazgo tribal y considerar la estructura actual del bosque, no reproducir sin más una frecuencia histórica.",
+    "fuentes": [
+      {
+        "label": "US Forest Service — Historical Indigenous land-use explains plant functional trait diversity",
+        "url": "https://research.fs.usda.gov/treesearch/59061"
+      }
+    ],
+    "verificacion": "Cessation of fire use by ∼1940 has caused a decline in huckleberry productivity throughout much of the historical harvest zone."
+  },
+  {
+    "fichaId": "rocosas_norte_praderas_montanas",
+    "practica": "Fuego cultural salish y pend d’Oreille",
+    "periodo": "Durante miles de años; con usos contemporáneos documentados por las tribus",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "Pueblos salish, pend d’Oreille y vecinos usaron fuego periódico en las Rocosas del norte para favorecer alimentos, medicinas, forraje y espacios de tránsito. Organizaciones tribales contemporáneas vuelven a aplicar conocimiento cultural frente a combustibles acumulados, pero cada quema requiere liderazgo indígena, objetivos locales y evaluación actual de riesgo.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Indigenous fire practices shape our land",
+        "url": "https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm"
+      }
+    ],
+    "verificacion": "tribes such as the Salish, Pend d’Oreille, and others periodically set fire to the land for thousands of years"
+  },
+  {
+    "fichaId": "rocosas_sur_sky_islands",
+    "practica": "Agricultura de secano pueblo en suelos de pómez",
+    "periodo": "Durante unos 400 años en Frijoles Canyon; registro arqueológico e histórico",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Los Pueblo ancestrales cultivaron maíz, frijol y calabaza en suelos de pómez mediante diques pequeños, acolchado de grava, cuadros de cultivo y hoyos profundos y espaciados. El pómez absorbía agua y la liberaba lentamente a las raíces, una adaptación al secano del Pajarito Plateau; se trata de evidencia histórica en un paisaje que sigue siendo culturalmente significativo para pueblos Pueblo actuales.",
+    "fuentes": [
+      {
+        "label": "National Park Service — Ancestral Pueblo farming",
+        "url": "https://home.nps.gov/band/learn/historyculture/ancestral-pueblo-farming.htm"
+      }
+    ],
+    "verificacion": "But the Ancestral Pueblo used it in Frijoles Canyon for about 400 years."
+  },
+  {
+    "fichaId": "selva_maya_peten_yucatan",
+    "practica": "Concesiones forestales comunitarias de la Reserva de Biosfera Maya",
+    "periodo": "Desde 1990; manejo comunitario vigente al momento de la publicación",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Colectivos comunitarios organizados junto con ACOFOP y CONAP manejan concesiones forestales en la Reserva de Biosfera Maya mediante patrullaje, monitoreo, prevención de incendios y aprovechamiento regulado. El modelo vincula medios de vida y conservación a escala de paisaje, pero es una institucionalidad contemporánea del Petén y no debe etiquetarse automáticamente como práctica maya ancestral.",
+    "fuentes": [
+      {
+        "label": "UNESCO — Reserva de Biosfera Maya, un referente latinoamericano",
+        "url": "https://www.unesco.org/es/articles/reserva-de-biosfera-maya-un-referente-latinoamericano-un-ejemplo-al-mundo"
+      }
+    ],
+    "verificacion": "Desde 1990 los gestores y actores de la Reserva de Biosfera promueven el equilibrio entre las actividades humanas y el cuidado de la biosfera."
+  },
+  {
+    "fichaId": "selva_maya_yucatan",
+    "practica": "Milpa maya peninsular Ich Kool",
+    "periodo": "Desde hace más de 3.500 años; continúa en uso",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Familias mayas de la península de Yucatán mantienen una policultura de maíz y especies asociadas dentro de un mosaico de cultivo, descanso y sucesión forestal. El sistema conserva semillas y distribuye riesgo frente a suelos kársticos someros y lluvias variables; cualquier adaptación debe preservar el ciclo territorial completo y la autoría maya, no copiar sólo la asociación de cultivos.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Ich Kool, Mayan Milpa System",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en"
+      }
+    ],
+    "verificacion": "The Peninsular Mayan milpa has sustained the population of the Yucatan Peninsula for more than 3,500 years until today"
+  },
+  {
+    "fichaId": "sudeste_sabanas_pino_largo",
+    "practica": "Quema indígena en sabanas de pino largo",
+    "periodo": "Anterior al asentamiento no indígena; interrumpida durante los últimos tres siglos",
+    "tipo": "fuego",
+    "vigencia": "historica",
+    "detalle": "Pueblos indígenas del sudeste usaron fuego junto con los incendios por rayos para mantener el ecosistema abierto de pino largo, mejorar hábitat de caza y limitar combustibles. La sustitución posterior por agricultura y plantaciones de pino loblolly redujo ese paisaje; la evidencia explica una trayectoria ecológica, pero no identifica en esta fuente una comunidad contemporánea ni una pauta operativa de quema.",
+    "fuentes": [
+      {
+        "label": "US Forest Service — Native American use of fire in the longleaf pine ecosystem",
+        "url": "https://research.fs.usda.gov/treesearch/36500"
+      }
+    ],
+    "verificacion": "In the last 3 centuries however, the range of longleaf ecosystem has been gradually replaced first by agriculture and then by loblolly pine farming."
+  },
+  {
+    "fichaId": "talamanca_caribe_sur",
+    "practica": "Cacao agroforestal bribri y cabécar",
+    "periodo": "En uso y documentado en 305 fincas en 2003; manual comunitario publicado en 2015",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Fincas bribri y cabécar de Talamanca combinan cacao y banano con árboles de sombra frutales, leguminosos y maderables en dos o tres estratos, además de bosque, huertos y protección de quebradas. La estructura ofrece cobertura y diversidad productiva, pero el diseño debe partir del conocimiento y de las decisiones familiares indígenas, no de una densidad de sombra trasladada mecánicamente.",
+    "fuentes": [
+      {
+        "label": "AGRIS — Diagnóstico agroforestal de fincas cacaoteras Bribri y Cabécar",
+        "url": "https://agris.fao.org/search/en/providers/124212/records/69b95c8cce5e0ae4f87879a4"
+      },
+      {
+        "label": "FAO Family Farming — Manual de Prácticas Ancestrales Bribri y Cabecar",
+        "url": "https://www.fao.org/family-farming/detail/en/c/1755144/"
+      }
+    ],
+    "verificacion": "Se diagnosticaron agroforestalmente 305 fincas cacaoteras orgánicas en los territorios indígenas Bribri y Cabécar de Talamanca, Limón, Costa Rica."
+  },
+  {
+    "fichaId": "tehuacan_cuicatlan_matorral",
+    "practica": "Manejo histórico del agua en Tehuacán-Cuicatlán",
+    "periodo": "Desarrollado durante milenios dentro de una secuencia de adaptación humana de más de 12.000 años",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "El paisaje conserva canales, pozos, acueductos, represas y terrazas que documentan respuestas prolongadas a la escasez de agua y a la domesticación de plantas. La combinación de captación, conducción y nivelación ofrece principios de diseño para ambientes áridos, pero cada elemento pertenece a secuencias y sociedades distintas y no debe presentarse como un único sistema inmutable de 12.000 años.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Tehuacán-Cuicatlán Valley",
+        "url": "https://whc.unesco.org/en/list/1534/"
+      }
+    ],
+    "verificacion": "The archaeological evidence reveals the long sequence of human adaptations that took place in the area for over 12,000 years."
+  }
+]

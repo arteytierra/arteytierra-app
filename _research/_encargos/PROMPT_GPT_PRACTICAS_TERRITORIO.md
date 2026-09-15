@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 62 entradas sobre 61 ecorregiones de 222.
+hoy tiene 89 entradas sobre 88 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -75,7 +75,18 @@ en el texto publicado. Si tu `verificacion` nombra un pueblo y tu `detalle` no,
 está mal. En el segundo lote no volvió a pasar en ninguna de las 44: kichwa y
 kijus en Napo, mapuche en Lanín, chiquitanos, quilombolas del Vale do Ribeira,
 caiçaras, kogui, wiwa, arhuaco y kankuamo en la Sierra Nevada, cocamilla en el
-Huallaga, quebradeiras de coco babaçu. Así va.
+Huallaga, quebradeiras de coco babaçu. En el tercero tampoco, en ninguna de las
+26. Así va.
+
+Y en el tercer lote apareció la otra mitad ejercitada a fondo, que es lo que hay
+que seguir haciendo: seis entradas **se niegan explícitamente a atribuir**.
+`baja_california_desiertos_y_sierras` aclara que los oasis vienen de las
+misiones jesuitas y no de una práctica prehispánica; `cuba_bosques_karst_y_pinares`
+pide no presentar una economía colonial del tabaco como saber indígena;
+`selva_maya_peten_yucatan` avisa que las concesiones forestales son una
+institucionalidad contemporánea del Petén y no una práctica maya ancestral;
+`ozarks_transicion_bosque_pradera` dice que la observación colonial de 1750 no
+identifica un pueblo concreto. Eso es exactamente la regla.
 
 **6. Le tiene que servir a alguien que está diseñando un predio.** No es una
 entrada de enciclopedia: es información para alguien que va a decidir dónde pone
@@ -126,14 +137,20 @@ fecha que pusiste.
 
 **Un bloque por vez**, en este orden, que es el de utilidad para el negocio:
 
-1. ~~Prioridad 1 — Argentina~~ y ~~B. Sudamérica~~: **hechos**. Las 12
-   argentinas están completas y de Sudamérica quedan sólo los ids que no
-   tuvieron evidencia específica; están listados en
-   `practicas-documentadas-ecorregion/COBERTURA_SUDAMERICA_A_B_C.md`.
-2. **D. México, Centroamérica y Estados Unidos** — hay mucho SIPAM/FAO.
-3. **H. Medio Oriente** e **I. Norte de África** — mucha obra hidráulica
-   documentada por UNESCO.
-4. **G. Unión Europea**, **F. Europa no comunitaria**, **E. Canadá y Alaska**.
+1. ~~Prioridad 1 — Argentina~~, ~~A y B. Sudamérica~~ y ~~D. México,
+   Centroamérica y Estados Unidos~~: **hechos**. Las 12 argentinas están
+   completas y América quedó casi entera. De los tres lo que falta son los ids
+   que no tuvieron evidencia específica, listados en
+   `practicas-documentadas-ecorregion/COBERTURA_SUDAMERICA_A_B_C.md` y
+   `COBERTURA_BLOQUE_D.md`.
+2. **H. Medio Oriente** (2 de 28) e **I. Norte de África** (0 de 14) — mucha
+   obra hidráulica documentada por UNESCO: qanats, foggaras, aflaj, jessour,
+   terrazas de Yemen y Omán. Es el bloque con más fuente de organismo por ficha.
+3. **G. Unión Europea** (0 de 28) y **F. Europa no comunitaria** (0 de 8).
+4. **E. Canadá, Alaska y Groenlandia** (0 de 10) — Alaska ya tiene dos entradas
+   cargadas desde el bloque D; fijate en el anexo cuáles.
+5. Lo que quedó suelto: **C. Norteamérica, Mesoamérica, Caribe y Europa**
+   (16 de 22) y el resto de B y D.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -159,25 +176,37 @@ vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
-44. Las que no se montaron casi nunca fallaron la cita: falló el archivo. Un PDF
-del USDA con el certificado vencido, otro de CONABIO sin capa de texto, un
-documento de UNESCO que devuelve 403 a todo lo que no sea un navegador, y una
-nota de FAO Brasil que **desapareció del sitio**. **Conviene evitar los PDF
-escaneados o muy pesados cuando hay una página HTML equivalente**, y preferir
-una página estable —la ficha SIPAM del sistema, el registro del repositorio— a
-una nota de prensa: una fuente que no se puede abrir vale lo mismo que ninguna,
-aunque sea real.
+44; del tercero, **las 26**. Las que no se montaron casi nunca fallaron la cita:
+falló el archivo. Un PDF de CONABIO sin capa de texto, un documento de UNESCO
+que devuelve 403 a todo lo que no sea un navegador, y una nota de FAO Brasil que
+**desapareció del sitio**. **Conviene evitar los PDF escaneados o muy pesados
+cuando hay una página HTML equivalente**, y preferir una página estable —la
+ficha SIPAM del sistema, el registro del repositorio— a una nota de prensa: una
+fuente que no se puede abrir vale lo mismo que ninguna, aunque sea real.
 
-Dos avisos concretos que salieron del segundo lote:
+Cuatro avisos concretos que salieron de la revisión:
 
 - **La URL se copia del lugar donde está el archivo.** El PDF de Embrapa se
   citó en `infoteca` cuando vive en `alice`: daba 404 y es el mismo documento.
-- **La `verificacion` va en el idioma de la fuente.** Si el texto está en
-  español o en portugués, la frase se copia en español o en portugués. Una
-  traducción al inglés, por fiel que sea, rompe la comparación mecánica y
-  obliga a revisar a ojo. Tampoco se abrevia adentro de la cita: si la fuente
-  escribe "Globally Important Agricultural Heritage System (GIAHS)", eso es lo
-  que va.
+  Y una dirección del NPS se copió con la coma de "1,000" adentro, donde la
+  página usa un guion.
+- **Citá el lugar que se puede abrir, no el agregador.** `research.fs.usda.gov`
+  devuelve 403 a cualquier cliente, navegador incluido; los tres artículos que
+  se citaron desde ahí eran abiertos en la revista que los publicó (*Fire
+  Ecology*, *Sustainability*) o en el repositorio de la universidad
+  (PDXScholar). Ante la duda, la revista o el repositorio antes que el catálogo
+  del organismo.
+- **La etiqueta describe el documento que abre la URL.** En el tercer lote tres
+  etiquetas nombraban otra cosa: un artículo vecino del mismo equipo, o el
+  organismo en vez de la revista. La cita se verifica igual, pero el lector que
+  la sigue termina en otro lado. Van autor, año y dónde se publicó.
+- **La `verificacion` va en el idioma de la fuente, entera y sin abreviar.** Si
+  el texto está en español o en portugués, la frase se copia en español o en
+  portugués. Y no se saca nada del medio: UNESCO escribe "las actividades
+  humanas **que allí se desarrollan** y el cuidado de la biosfera", y la cita
+  entregada sacó esas tres palabras. Ya había pasado antes con "Globally
+  Important Agricultural Heritage System (GIAHS)" abreviado a "GIAHS". Es la
+  única regla que se incumplió dos veces: copiar y pegar, no resumir.
 
 Después corre `pnpm --filter @arteytierra/terreno test`, que chequea lo
 mecánico: fuente presente, `https`, nada de enciclopedias, período no vacío,
