@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
 
   const ok = await sendEmail({
     to: destino,
+    // Mismo remitente que el resto de los avisos internos del sitio: si cada
+    // uno sale de una direccion distinta, en la casilla no hay forma de
+    // filtrarlos juntos y la mitad termina en Promociones.
+    from: 'Arte y Tierra · Web <notificaciones@arteytierra.org>',
+    replyTo: body.email,
     subject: `Postulación al piloto: ${nombre}`,
     html: `
       <p><strong>${nombre}</strong> se postuló al programa fundador de Acequia.</p>
