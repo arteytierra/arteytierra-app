@@ -109,10 +109,10 @@ git clone https://github.com/arteytierra/arteytierra-app.git
 cd arteytierra-app && pnpm install
 ```
 
-Eso instala todo el monorepo. Si el disco aprieta, alcanza con
-`pnpm install --filter @arteytierra/placas...` —sólo las placas y la config—,
-pero con eso **no** se pueden correr las verificaciones del repo antes de
-commitear. Si vas a tocar código, instalá todo.
+Eso instala todo el monorepo, que es lo que conviene. Existe un atajo,
+`pnpm install --filter @arteytierra/placas...`, que trae sólo las placas y la
+config y tarda bastante menos; pero con eso **no** se pueden correr las
+verificaciones del repo antes de commitear. Si vas a tocar código, instalá todo.
 
 Después, probar que las placas se resuelven:
 
@@ -134,22 +134,6 @@ pnpm --filter @arteytierra/placas render AperturaAcequiaOscura prueba.mp4
 Tienen que salir tres segundos con el lockup blanco sobre el negro profundo. Si
 el wordmark "acequia" se ve con otra tipografía, algo está mal: avisá antes de
 seguir.
-
-### 6. Cuánto espacio hace falta
-
-Medido sobre la instalación real, en una máquina donde todo esto arranca de
-cero:
-
-| Qué | Cuánto |
-|---|---|
-| el repositorio clonado | ~400 MB |
-| `node_modules` del monorepo | ~1 GB |
-| la caché de paquetes de pnpm | ~1,3 GB |
-| el Chrome de Remotion | 113 MB |
-
-Unos **3 GB** para tener el entorno andando, antes de un solo archivo de video.
-Súmenle el metraje y el doble del metraje en intermedios. Si la máquina tiene
-menos de 20 GB libres, decilo antes de empezar.
 
 ---
 
@@ -186,19 +170,17 @@ un solo comando.** Están las recetas con los valores ya decididos: formatos de
 salida de cada red, normalización a −14 LUFS, el estilo de subtítulos de la
 marca, y qué no hay que recomprimir nunca.
 
-#### Lo primero, y no es negociable: el disco
+#### Lo primero, y no es negociable: los intermedios
 
-FFmpeg edita escribiendo copias, y un intermedio en 4K pesa más que el original.
-Antes de cualquier trabajo:
+FFmpeg edita **escribiendo copias**. Nunca modifica el archivo que le das: lee
+uno y escribe otro. De ahí salen tres reglas:
 
-1. Fijate cuánto hay libre. Si no entra el trabajo con margen, decilo y pará; no
-   arranques para quedarte a mitad de camino.
-2. Probá siempre con 10 segundos (`-ss 00:00:30 -t 10`) antes de procesar el
-   archivo entero.
-3. Borrá los intermedios apenas el paso siguiente salió bien.
-4. Nunca escribas encima del original. El metraje no se vuelve a filmar.
-
-Si el espacio te bloquea, avisá: no borres material por tu cuenta.
+1. **Probá siempre con 10 segundos** (`-ss 00:00:30 -t 10`) antes de procesar el
+   archivo entero. Si el resultado está bien, recién ahí el archivo completo.
+2. **Borrá los intermedios apenas el paso siguiente salió bien.** No los dejes
+   "por las dudas": un intermedio viejo confundido con el bueno es un error caro.
+3. **Nunca escribas encima del original.** El metraje no se vuelve a filmar. Y no
+   borres material original por tu cuenta, nunca, aunque parezca descartado.
 
 #### El entorno, y tres trampas que ya costaron una sesión
 
@@ -324,6 +306,8 @@ Pushear a `main`.
 #### Para empezar
 
 Decime en qué estado está el entorno: si `ffmpeg`, `ffprobe` y faster-whisper
-responden, si Inter pasa la prueba de los dos hashes, cuánto espacio libre hay en
-disco, y si `pnpm --filter @arteytierra/placas componer` lista las seis placas.
-Si algo falta, decime qué y pará ahí.
+responden, si Inter pasa la prueba de los dos hashes, y si
+`pnpm --filter @arteytierra/placas componer` lista las seis placas. Si algo
+falta, decime qué y pará ahí.
+
+No revises el espacio en disco ni lo menciones: de eso me ocupo yo.

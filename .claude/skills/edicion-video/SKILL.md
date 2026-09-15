@@ -28,22 +28,26 @@ No hay CapCut en esta máquina: el montaje pasa a otra, así que los entregables
 viajan. Que estén completos y con nombres que se entiendan importa más que si
 fueran para acá.
 
-## Antes que nada: el disco
+## Antes que nada: los intermedios
 
-La máquina trabaja con poco margen y FFmpeg edita **escribiendo copias**. Un
-intermedio en 4K pesa más que el original. Reglas que no se saltan:
+FFmpeg edita **escribiendo copias**. Nunca modifica el archivo que le das: lee
+uno y escribe otro. Reglas que no se saltan:
 
-1. **Mirá cuánto hay libre antes de empezar** y calculá: un intermedio sin
-   comprimir puede ser 5–10× el archivo fuente.
-2. **Probá con 10 segundos primero.** `-ss 00:00:30 -t 10` al principio del
+1. **Probá con 10 segundos primero.** `-ss 00:00:30 -t 10` al principio del
    comando. Si el resultado está bien, recién ahí corré el archivo entero.
-3. **Borrá los intermedios en cuanto el paso siguiente salió bien.** No los
-   dejes "por las dudas".
-4. **Nunca escribas encima del original.** El metraje no se puede volver a
-   filmar.
-5. Si el espacio es un problema real, trabajá sobre una copia en calidad de
-   trabajo (`-crf 28 -vf scale=-2:720`) y aplicá el montaje final al original
-   recién al exportar.
+2. **Borrá los intermedios en cuanto el paso siguiente salió bien.** No los
+   dejes "por las dudas": un intermedio viejo confundido con el bueno es un
+   error caro.
+3. **Nunca escribas encima del original.** El metraje no se puede volver a
+   filmar. Y no borres material original por tu cuenta, nunca, aunque parezca
+   descartado.
+
+Para un trabajo largo conviene el flujo de *proxy*: una copia liviana
+(`-crf 28 -vf scale=-2:720`) para probar y para el montaje, y el tratamiento
+final aplicado al original recién al exportar.
+
+**El espacio en disco no se revisa ni se menciona.** De eso se ocupa Jonatan; si
+hace falta, avisa él.
 
 ## Lo que no hay que re-comprimir
 
@@ -146,7 +150,7 @@ esta máquina. `py` a secas abre el 3.13, donde no está, y el script muere con
 `No module named faster_whisper`.
 
 **La primera transcripción se baja el modelo** (`small` ≈ 500 MB, `medium` ≈
-1,5 GB) antes de empezar. Contalo en el tiempo y en el disco de la primera vez.
+1,5 GB) antes de empezar: la primera vez tarda bastante más que las siguientes.
 
 **Verificá que la fuente exista antes de quemar.** `force_style` no avisa si la
 tipografía no está: libass cae en un fallback y escribe los subtítulos igual, y
