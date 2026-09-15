@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
+import { CONTACTO_ENDPOINT } from '@/lib/forms/contacto';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
 
 /**
@@ -52,7 +52,7 @@ export function ProyectoForm() {
     const formulario = e.currentTarget;
     const data = new FormData(formulario);
     try {
-      const respuesta = await fetch(FORMSPREE_ENDPOINT, {
+      const respuesta = await fetch(CONTACTO_ENDPOINT, {
         method: 'POST',
         headers: { Accept: 'application/json' },
         body: data,
@@ -103,6 +103,7 @@ export function ProyectoForm() {
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-6">
+      <input type="hidden" name="_fuente" value="diseno" />
       <input type="hidden" name="_subject" value="Nueva consulta de diseño · arteytierra.org" />
       <input type="hidden" name="form-name" value="diseno" />
 
