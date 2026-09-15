@@ -1,0 +1,126 @@
+[
+  {
+    "fichaId": "atlantico_llanura_noroeste",
+    "practica": "Setos sobre talud con zanja de drenaje",
+    "periodo": "Configuración dominante establecida entre 1750 y 1850; vigente",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "En Irlanda, muchos setos se plantaron sobre bancos de tierra o piedra construidos con material extraído de una zanja paralela. El conjunto contiene ganado, corta el viento, evacua excedentes y forma corredores de vegetación entre parcelas. Su manejo requiere podas o recepes escalonados para no eliminar simultáneamente refugio y floración en toda la finca.",
+    "fuentes": [
+      {
+        "label": "The Heritage Council — Conserving Hedgerows",
+        "url": "https://www.heritagecouncil.ie/content/files/conserving_hedgerows_2mb.pdf"
+      }
+    ],
+    "verificacion": "Much of Ireland’s hedgerow landscape, as we know it today, was established between 1750 and 1850"
+  },
+  {
+    "fichaId": "templado_occidental_europeo",
+    "practica": "Bocage de parcelas cerradas por setos vivos",
+    "periodo": "Formado desde fines de la Edad Media y transformado por las mutaciones agrícolas contemporáneas",
+    "tipo": "suelo",
+    "vigencia": "en_retroceso",
+    "detalle": "En el oeste de Francia, generaciones de agricultores cerraron campos y praderas con setos arbolados, taludes y zanjas. La red reduce viento y escorrentía, separa animales de cultivos y produce leña, sombra y conectividad ecológica. La mecanización y la concentración parcelaria simplificaron muchos paisajes, por lo que se registra como sistema en retroceso y no como un patrón intacto.",
+    "fuentes": [
+      {
+        "label": "INRAE — Le bocage: de la fin du Moyen Âge aux mutations agricoles contemporaines",
+        "url": "https://belinrae.inrae.fr/index.php?id=240642&lvl=notice_display"
+      }
+    ],
+    "verificacion": "à la fin du moyen age aux mutations agricoles contemporaines"
+  },
+  {
+    "fichaId": "cantabrico_atlantico_iberico",
+    "practica": "Terrazas agrarias para conservar suelo y agua",
+    "periodo": "Desde los primeros siglos de la Alta Edad Media; con sectores aún cultivados y otros abandonados",
+    "tipo": "suelo",
+    "vigencia": "en_retroceso",
+    "detalle": "En Galicia, muros y rellenos transformaron laderas en superficies de cultivo más profundas y estables. La sucesión de bancales frena escorrentía, retiene sedimento y agua y limita la erosión en pendientes húmedas. La investigación del CSIC sitúa el origen del sistema regional en los primeros siglos altomedievales, sin atribuirlo a un pueblo específico.",
+    "fuentes": [
+      {
+        "label": "Ballesteros-Arias (2020), Universidad del País Vasco / INCIPIT-CSIC — El paisaje rural gallego",
+        "url": "https://www.incipit.csic.es/es/produccion_cientifica/trabajo_academico/tesis-de-doctorado/el-paisaje-rural-gallego-la-arqueologia-y-la-etnografia-como-metodos-de-estudio-sobre-su-genesis-y-t1070"
+      },
+      {
+        "label": "Revista Pirineos-CSIC — Terrazas agrícolas y conservación del suelo y el agua",
+        "url": "https://pirineos.revistas.csic.es/index.php/pirineos/article/view/302"
+      }
+    ],
+    "verificacion": "el origen del sistema agrario en terrazas de Galicia data de los primeros siglos de la Alta Edad Media"
+  },
+  {
+    "fichaId": "campina_calcarea_inglesa",
+    "practica": "Rotación ovino-cereal sobre pastizal calcáreo",
+    "periodo": "Durante aproximadamente 3.000 años; persiste bajo nuevas formas de producción y conservación",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "En South Downs, las ovejas pastaban el césped calcáreo y luego se encerraban de noche sobre campos arables. El estiércol transfería fertilidad desde la pastura hacia el cereal y el pastoreo mantenía una cubierta corta y diversa. La separación moderna entre ganadería y agricultura debilitó el ciclo, aunque el pastoreo ovino sigue siendo central para conservar el paisaje.",
+    "fuentes": [
+      {
+        "label": "South Downs National Park — Sustainable meat production and sheep-and-corn husbandry",
+        "url": "https://www.southdowns.gov.uk/providing-a-local-solution-to-sustainable-meat-production-in-the-south-downs/"
+      }
+    ],
+    "verificacion": "For 3,000 years or so, the South Downs have been sheep run."
+  },
+  {
+    "fichaId": "atlantico_norte_turberas",
+    "practica": "Rotación de machair con algas, barbecho y pastoreo estacional",
+    "periodo": "Durante más de mil años; vigente",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "Los crofters de las Hébridas cultivan franjas del machair arenoso en rotación y dejan otras en barbecho y pastoreo estacional. Las algas aportan nutrientes y materia orgánica sin herbicidas, mientras el descanso mantiene la fertilidad y la flora del pastizal. La alternancia espacial impide que toda la llanura costera pierda cobertura al mismo tiempo.",
+    "fuentes": [
+      {
+        "label": "NatureScot — Scottish machair management",
+        "url": "https://presscentre.nature.scot/news/snh-puts-scottish-machair-on-the-map"
+      }
+    ],
+    "verificacion": "for more than a thousand years have been managed using seasonal grazing, rotational cultivation without herbicides and using only natural fertilisers such as seaweed"
+  },
+  {
+    "fichaId": "pinar_caledonio",
+    "practica": "Shieling: trashumancia estival de ganado",
+    "periodo": "Durante el período medieval y épocas posteriores; hoy principalmente histórica",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "Comunidades rurales escocesas trasladaban familias y ganado a pasturas estivales de altura, donde usaban pequeñas cabañas o shielings. El movimiento reservaba los campos bajos para producir heno y llevaba el pastoreo hacia forraje que sólo estaba disponible en verano. Los conjuntos arqueológicos conservan cabañas, corrales y relaciones directas con agua y rutas de acceso.",
+    "fuentes": [
+      {
+        "label": "Historic Environment Scotland — Shieling settlement, South Uist",
+        "url": "https://portal.historicenvironment.scot/apex/f?p=1505%3A300%3A%3A%3A%3A%3AVIEWTYPE%2CVIEWREF%3Adesignation%2CSM5332"
+      }
+    ],
+    "verificacion": "rural transhumance practices in South Uist and more generally in Scotland during the medieval and later period"
+  },
+  {
+    "fichaId": "montano_iberico",
+    "practica": "Acequias de careo para recargar acuíferos de montaña",
+    "periodo": "Operativas desde al menos el siglo XI; todavía mantenidas por comunidades de regantes",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "En Sierra Nevada, acequias sin revestir desvían agua de deshielo y arroyos hacia laderas permeables durante la estación húmeda. El agua se infiltra y reaparece semanas o meses después en manantiales y cursos más bajos, ampliando la disponibilidad estival. Las comunidades de regantes limpian canales y abren o cierran derivaciones según nieve, suelo y demanda.",
+    "fuentes": [
+      {
+        "label": "Universidad de Granada — El sistema de recarga de las acequias de careo",
+        "url": "https://canal.ugr.es/noticia/sierra-nevada-sistema-recarga-agua-subterranea-mas-antiguo-europa/"
+      }
+    ],
+    "verificacion": "ya había acequias de careo operativas en Sierra Nevada en el siglo XI"
+  },
+  {
+    "fichaId": "semiarido_sureste_iberico",
+    "practica": "Regadío histórico escalonado de Cojáyar",
+    "periodo": "Configurado y reconfigurado entre los siglos XVI y XXI",
+    "tipo": "agua",
+    "vigencia": "en_retroceso",
+    "detalle": "En Cojáyar, la captación y conducción por gravedad distribuyó agua escasa entre bancales de una montaña semiárida. La red enlaza fuente, acequias, depósitos y parcelas, y su funcionamiento depende tanto de la topografía como de turnos y mantenimiento colectivo. El estudio histórico muestra cinco siglos de ajustes, además de abandono parcial y pérdida de continuidad en tramos recientes.",
+    "fuentes": [
+      {
+        "label": "Estudios Geográficos-CSIC — Paisaje histórico del regadío de Cojáyar",
+        "url": "https://estudiosgeograficos.revistas.csic.es/index.php/estudiosgeograficos/article/download/1117/1623?inline=1"
+      }
+    ],
+    "verificacion": "en su proceso de configuración y reconfiguración a lo largo de los últimos cinco siglos de historia (ss. XVI-XXI)"
+  }
+]

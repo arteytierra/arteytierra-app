@@ -5,7 +5,7 @@ _Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 114 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 155 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -189,62 +189,62 @@ _`lib/biomasRegionalesAmerica.ts`_
 
 _`lib/biomasRegionalesCanada.ts`_
 
-- `san_lorenzo_tierras_bajas` — Tierras bajas del golfo de San Lorenzo
-- `columbia_britanica_interior` — Interior de Columbia Británica y piedemonte de Alberta
-- `okanagan_bosque_seco` — Bosque seco del Okanagan
-- `haida_gwaii_hipermaritimo` — Bosque hipermarítimo de Haida Gwaii
-- `escudo_canadiense_boreal` — Bosque boreal cerrado del escudo canadiense
-- `taiga_canadiense_permafrost` — Taiga abierta con permafrost
-- `tundra_artica_canadiense` — Tundra ártica canadiense
+- `san_lorenzo_tierras_bajas` — Tierras bajas del golfo de San Lorenzo ✓ *(ya tiene práctica cargada)*
+- `columbia_britanica_interior` — Interior de Columbia Británica y piedemonte de Alberta ✓ *(ya tiene práctica cargada)*
+- `okanagan_bosque_seco` — Bosque seco del Okanagan ✓ *(ya tiene práctica cargada)*
+- `haida_gwaii_hipermaritimo` — Bosque hipermarítimo de Haida Gwaii ✓ *(ya tiene práctica cargada)*
+- `escudo_canadiense_boreal` — Bosque boreal cerrado del escudo canadiense ✓ *(ya tiene práctica cargada)*
+- `taiga_canadiense_permafrost` — Taiga abierta con permafrost ✓ *(ya tiene práctica cargada)*
+- `tundra_artica_canadiense` — Tundra ártica canadiense ✓ *(ya tiene práctica cargada)*
 - `alto_artico_desierto_polar` — Desierto polar del Alto Ártico
-- `montana_artica_baffin_torngat` — Montaña ártica: Baffin oriental y Torngat
-- `groenlandia_kalaallit_nunaat` — Kalaallit Nunaat: la franja libre de hielo de Groenlandia
+- `montana_artica_baffin_torngat` — Montaña ártica: Baffin oriental y Torngat ✓ *(ya tiene práctica cargada)*
+- `groenlandia_kalaallit_nunaat` — Kalaallit Nunaat: la franja libre de hielo de Groenlandia ✓ *(ya tiene práctica cargada)*
 
 ## F. Europa no comunitaria y asociados — 8 fichas
 
 _`lib/biomasRegionalesEuropa.ts`_
 
-- `atlantico_llanura_noroeste` — Llanura atlantica del noroeste europeo
-- `templado_occidental_europeo` — Bosque templado de Europa occidental
-- `cantabrico_atlantico_iberico` — Atlantico cantabrico e iberico noroccidental
-- `campina_calcarea_inglesa` — Campina calcarea del sureste ingles
-- `atlantico_norte_turberas` — Borde atlantico norte: turbera, machair y viento
-- `pinar_caledonio` — Pinar caledonio y paramo escoces
-- `montano_iberico` — Montana iberica
-- `semiarido_sureste_iberico` — Semiarido del sureste iberico
+- `atlantico_llanura_noroeste` — Llanura atlantica del noroeste europeo ✓ *(ya tiene práctica cargada)*
+- `templado_occidental_europeo` — Bosque templado de Europa occidental ✓ *(ya tiene práctica cargada)*
+- `cantabrico_atlantico_iberico` — Atlantico cantabrico e iberico noroccidental ✓ *(ya tiene práctica cargada)*
+- `campina_calcarea_inglesa` — Campina calcarea del sureste ingles ✓ *(ya tiene práctica cargada)*
+- `atlantico_norte_turberas` — Borde atlantico norte: turbera, machair y viento ✓ *(ya tiene práctica cargada)*
+- `pinar_caledonio` — Pinar caledonio y paramo escoces ✓ *(ya tiene práctica cargada)*
+- `montano_iberico` — Montana iberica ✓ *(ya tiene práctica cargada)*
+- `semiarido_sureste_iberico` — Semiarido del sureste iberico ✓ *(ya tiene práctica cargada)*
 
 ## G. Unión Europea — 28 fichas
 
 _`lib/biomasRegionalesEuropaUE.ts`_
 
-- `po_llanura_aluvial` — Llanura aluvial del Po
-- `apeninos_montano` — Montaña apenínica
-- `mediterraneo_italiano_insular` — Mediterráneo tirreno-adriático e insular
+- `po_llanura_aluvial` — Llanura aluvial del Po ✓ *(ya tiene práctica cargada)*
+- `apeninos_montano` — Montaña apenínica ✓ *(ya tiene práctica cargada)*
+- `mediterraneo_italiano_insular` — Mediterráneo tirreno-adriático e insular ✓ *(ya tiene práctica cargada)*
 - `dinaricos_karst` — Karst de los Alpes Dináricos
-- `iliria_adriatico` — Bosque caducifolio ilirio
+- `iliria_adriatico` — Bosque caducifolio ilirio ✓ *(ya tiene práctica cargada)*
 - `balcanes_mixto` — Bosque mixto balcánico
-- `montana_balcanica_sur` — Montaña balcánica meridional: Ródope y Pindo
-- `baltico_morrena` — Bosque mixto báltico sobre morrena joven
-- `sarmatico_boreonemoral` — Bosque mixto sarmático
-- `carpatos_montano` — Bosque montano de los Cárpatos
-- `estepa_pontica_chernozem` — Estepa póntica y chernozem
-- `estepa_forestal_este` — Estepa forestal de Europa oriental
-- `crimea_submediterraneo` — Complejo submediterráneo de Crimea
+- `montana_balcanica_sur` — Montaña balcánica meridional: Ródope y Pindo ✓ *(ya tiene práctica cargada)*
+- `baltico_morrena` — Bosque mixto báltico sobre morrena joven ✓ *(ya tiene práctica cargada)*
+- `sarmatico_boreonemoral` — Bosque mixto sarmático ✓ *(ya tiene práctica cargada)*
+- `carpatos_montano` — Bosque montano de los Cárpatos ✓ *(ya tiene práctica cargada)*
+- `estepa_pontica_chernozem` — Estepa póntica y chernozem ✓ *(ya tiene práctica cargada)*
+- `estepa_forestal_este` — Estepa forestal de Europa oriental ✓ *(ya tiene práctica cargada)*
+- `crimea_submediterraneo` — Complejo submediterráneo de Crimea ✓ *(ya tiene práctica cargada)*
 - `euxino_colquico` — Bosque euxino-cólquico
-- `caucaso_mixto` — Bosque mixto del Cáucaso
-- `kura_semidesierto` — Semidesierto y estepa del Kura
-- `costa_conifera_escandinava` — Conífera costera escandinava
-- `abedular_montano_escandinavo` — Abedular montano escandinavo
-- `islandia_abedular` — Abedular boreal y tundra alpina de Islandia
-- `egeo_esclerofilo` — Esclerófilo del Egeo y Anatolia occidental
-- `creta_mediterranea` — Mediterráneo de Creta
-- `chipre_troodos` — Mediterráneo de Chipre y el macizo del Troodos
-- `mediterraneo_oriental_conifera` — Conífera y frondosa del Mediterráneo oriental
-- `tauro_conifera_montana` — Conífera montana del Tauro y Anatolia mediterránea
+- `caucaso_mixto` — Bosque mixto del Cáucaso ✓ *(ya tiene práctica cargada)*
+- `kura_semidesierto` — Semidesierto y estepa del Kura ✓ *(ya tiene práctica cargada)*
+- `costa_conifera_escandinava` — Conífera costera escandinava ✓ *(ya tiene práctica cargada)*
+- `abedular_montano_escandinavo` — Abedular montano escandinavo ✓ *(ya tiene práctica cargada)*
+- `islandia_abedular` — Abedular boreal y tundra alpina de Islandia ✓ *(ya tiene práctica cargada)*
+- `egeo_esclerofilo` — Esclerófilo del Egeo y Anatolia occidental ✓ *(ya tiene práctica cargada)*
+- `creta_mediterranea` — Mediterráneo de Creta ✓ *(ya tiene práctica cargada)*
+- `chipre_troodos` — Mediterráneo de Chipre y el macizo del Troodos ✓ *(ya tiene práctica cargada)*
+- `mediterraneo_oriental_conifera` — Conífera y frondosa del Mediterráneo oriental ✓ *(ya tiene práctica cargada)*
+- `tauro_conifera_montana` — Conífera montana del Tauro y Anatolia mediterránea ✓ *(ya tiene práctica cargada)*
 - `ponto_anatolia_norte` — Conífera y frondosa del norte de Anatolia
-- `meseta_anatolia_estepa` — Estepa de la meseta de Anatolia central
-- `anatolia_oriental_montana` — Montaña y estepa de Anatolia oriental
-- `zagros_estepa_forestal` — Estepa forestal del Zagros
+- `meseta_anatolia_estepa` — Estepa de la meseta de Anatolia central ✓ *(ya tiene práctica cargada)*
+- `anatolia_oriental_montana` — Montaña y estepa de Anatolia oriental ✓ *(ya tiene práctica cargada)*
+- `zagros_estepa_forestal` — Estepa forestal del Zagros ✓ *(ya tiene práctica cargada)*
 
 ## H. Medio Oriente — 28 fichas
 

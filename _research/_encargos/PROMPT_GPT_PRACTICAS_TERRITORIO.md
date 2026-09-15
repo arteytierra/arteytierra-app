@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 115 entradas sobre 114 ecorregiones de 222.
+hoy tiene 156 entradas sobre 155 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -97,6 +97,17 @@ Yemen —**al-ʿanah**, **al-ʿawn**, **al-tajyish**—. **El nombre local de la
 práctica también se copia**, no sólo el del pueblo: es la palabra con la que el
 lector puede seguir buscando.
 
+El quinto lote es el mejor en esto y conviene tomarlo de modelo. El bloque de
+Canadá nombra la autoría en las nueve entradas —"el pueblo T'exelc, hoy Williams
+Lake First Nation", el pueblo syilx Okanagan, los haida, las comunidades ojibwa,
+los gwich'in, el conocimiento Inuvialuit, los inuit de Baffin— y varias entradas
+además dicen hasta dónde llega la fuente: `haida_gwaii_hipermaritimo` aclara que
+la descripción es de Charles Newcombe a fines del siglo XIX y que las
+excavaciones **no hallaron prueba arqueológica de cultivo**, así que no proyecta
+antigüedad; `islandia_abedular` avisa que los mismos indicadores podrían
+reflejar pastoreo; `meseta_anatolia_estepa` documenta la rotación pero dice que
+no prueba que sea óptima hoy. Eso es exactamente el tono.
+
 **6. Le tiene que servir a alguien que está diseñando un predio.** No es una
 entrada de enciclopedia: es información para alguien que va a decidir dónde pone
 la huerta. Qué es, cómo funciona, y por qué funciona **acá** —qué limitante del
@@ -157,11 +168,20 @@ fecha que pusiste.
    `COBERTURA_BLOQUE_H_MEDIO_ORIENTE.md` y `COBERTURA_BLOQUE_I_NORTE_AFRICA.md`,
    más `socotra` y `uweinat_tibesti`, que se devolvieron: ver
    `REVISION_LOTE_4.md`.
-3. **G. Unión Europea** (0 de 28) y **F. Europa no comunitaria** (0 de 8).
-4. **E. Canadá, Alaska y Groenlandia** (0 de 10) — Alaska ya tiene dos entradas
-   cargadas desde el bloque D; fijate en el anexo cuáles.
-5. Lo que quedó suelto: **C. Norteamérica, Mesoamérica, Caribe y Europa**
-   (16 de 22) y el resto de B, D, H e I.
+3. ~~**G. Unión Europea**, **F. Europa no comunitaria** y **E. Canadá, Alaska y
+   Groenlandia**~~: **hechos**. F quedó completo; G, 24 de 28; E, 9 de 10.
+
+**Con eso los nueve bloques están abiertos y no falta ningún continente.** Lo que
+queda son **67 fichas sueltas** repartidas por todo el anexo: las que no tuvieron
+evidencia específica en su lote. Están listadas, bloque por bloque, en los
+`COBERTURA_*.md` de `practicas-documentadas-ecorregion/`. De ahora en más el
+trabajo ya no es por bloque sino por ficha, y la pregunta cambia: no es "¿qué
+falta cubrir?" sino "¿por qué esta no se pudo sostener, y hay otra fuente?".
+
+Las cuatro que más conviene volver a intentar, porque son regiones con mucha
+bibliografía y el hueco sorprende: `dinaricos_karst`, `balcanes_mixto`,
+`euxino_colquico` y `ponto_anatolia_norte`. Y en Medio Oriente, `estepa_siria_badia`
+y `mesopotamia_jazira`.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -187,7 +207,8 @@ vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
-44; del tercero, **las 26**; del cuarto, **las 24**. Las que no se montaron casi
+44; del tercero, **las 26**; del cuarto, **las 24**; del quinto, **las 41**. Las
+que no se montaron casi
 nunca fallaron la cita: falló el archivo, o falló el resto de la entrada.
 **Conviene evitar los PDF escaneados o muy pesados cuando hay una página HTML
 equivalente**, y preferir una página estable —la ficha SIPAM del sistema, el
@@ -221,13 +242,18 @@ Cinco avisos concretos que salieron de la revisión:
   (PDXScholar). Ante la duda, la revista o el repositorio antes que el catálogo
   del organismo. `whc.unesco.org`, en cambio, **no** es un problema: lo que
   parecía un bloqueo era una limitación de la herramienta de acá.
-- **La etiqueta describe el documento que abre la URL.** Ya pasó cuatro veces:
-  tres en el tercer lote —un artículo vecino del mismo equipo, o el organismo en
-  vez de la revista— y una en el cuarto, donde `fao.org/4/y1275e/` se citó como
-  "Drainage water reuse in Egypt" y es *Case Studies on Water Conservation in
-  the Mediterranean Region*, de Vidal y otros, con Egipto como uno de los casos.
-  La cita se verifica igual, pero el lector que la sigue termina en otro lado.
-  Van autor, año y dónde se publicó.
+- **La etiqueta describe el documento que abre la URL.** Es el defecto que
+  aparece en todos los lotes y que ningún test caza: ya van siete. Tres en el
+  tercero —un artículo vecino del mismo equipo, o el organismo en vez de la
+  revista—, uno en el cuarto —`fao.org/4/y1275e/` citado como "Drainage water
+  reuse in Egypt", cuando es *Case Studies on Water Conservation in the
+  Mediterranean Region* de Vidal y otros, con Egipto como uno de los casos— y
+  tres en el quinto: **dos títulos inventados** (el artículo de Copes-Gerbitz
+  sobre Ne Sextsine y el de Livarda sobre Palaikastro, este último además con la
+  revista equivocada) y una plataforma de la FAO puesta como autora de un texto
+  de Barbara Knowles. **Si no podés copiar el título exacto del documento, no
+  inventes uno corto que lo describa.** Van autor, año, título y dónde se
+  publicó.
 - **La `verificacion` va en el idioma de la fuente, entera, sin abreviar y sin
   corregir.** Si el texto está en español o en portugués, la frase se copia en
   español o en portugués. Y no se saca nada del medio: UNESCO escribe "las
@@ -239,7 +265,12 @@ Cinco avisos concretos que salieron de la revisión:
   la frase del Land of Frankincense. Es la regla que más se incumple. Tampoco se
   le arregla la ortografía a la fuente: la FAO escribe "long-**tern** climate
   change" en su propio resumen y la cita lo escribió bien, lo que rompe la
-  comparación literal igual que abreviarla. Copiar y pegar, no resumir ni
+  comparación literal igual que abreviarla. Y en el quinto lote apareció la
+  versión más costosa: la **cita reescrita**. La tesis dice "sitúan el origen del
+  sistema agrario en terrazas de Galicia **en** los primeros siglos de la Alta
+  Edad Media" y la frase entregada decía "**data de** los primeros siglos". Dice
+  lo mismo y no sirve para nada: una cita entre comillas que nadie va a encontrar
+  buscando esas palabras deja de ser una cita. Copiar y pegar, no resumir ni
   editar.
 
 Después corre `pnpm --filter @arteytierra/terreno test`, que chequea lo

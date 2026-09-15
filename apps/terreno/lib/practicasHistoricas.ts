@@ -39,13 +39,13 @@ import type { PracticaHistorica } from './biomaTipos';
  *
  * ESTADO
  *
- * 115 entradas sobre 114 ecorregiones de 222. América está cubierta casi
- * entera, y con Medio Oriente y el norte de África entra el arco seco donde más
- * obra hidráulica hay documentada por organismos. Lo que falta es Europa —la
- * Unión y los no comunitarios— y Canadá, Alaska y Groenlandia. Es trabajo de
- * relevamiento con fuente, no de programación: el encargo está en
- * `_research/_encargos/`, y cada lote se verifica abriendo las URLs antes de
- * montarlo.
+ * 156 entradas sobre 155 ecorregiones de 222, y con esto los nueve bloques del
+ * anexo están abiertos: América, Medio Oriente, el norte de África, Europa y el
+ * norte de Canadá y Groenlandia. Lo que queda no es un continente entero sino
+ * las fichas sueltas que no tuvieron evidencia específica, listadas en los
+ * `COBERTURA_*.md`. Es trabajo de relevamiento con fuente, no de programación:
+ * el encargo está en `_research/_encargos/`, y cada lote se verifica abriendo
+ * las URLs antes de montarlo.
  */
 export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
   // ── Centro de México ────────────────────────────────────────────────────────
@@ -1599,6 +1599,567 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Tassili n’Ajjer, miles de pinturas, grabados, habitaciones, túmulos y recintos registran el pasaje de fauna silvestre a escenas de vida pastoril y, más tarde, caballos y camellos. El registro muestra que la producción animal se adaptó a cambios prolongados de clima y disponibilidad de agua. No permite reconstruir un calendario exacto de pastoreo, por lo que la entrada conserva sólo lo que la evidencia visual y arqueológica sostiene.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Tassili n\'Ajjer', url: 'https://whc.unesco.org/en/list/179' },
+      ],
+    },
+  ],
+
+  // ── Canada oriental y el San Lorenzo ──────────────────────────────────────────
+  san_lorenzo_tierras_bajas: [
+    {
+      practica: 'Milpa iroquesa de maíz, poroto y calabaza',
+      periodo: 'Desde al menos el siglo XIII; práctica histórica documentada en la época de Jacques Cartier',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Los iroqueses del San Lorenzo cultivaban maíz, porotos y calabazas en aldeas semipermanentes y sembraban al comienzo del verano. La combinación aprovechaba verticalmente el espacio: el maíz servía de soporte, el poroto trepaba y la calabaza cubría el suelo. Los restos de maíz más antiguos hallados en el valle y citados por Parques Canadá datan del siglo XIII.',
+      fuentes: [
+        { label: 'Parques Canadá — La agricultura de los iroqueses del San Lorenzo', url: 'https://parks.canada.ca/lhn-nhs/qc/cartierbrebeuf/culture/autochtone-indigenous/natcul6' },
+      ],
+    },
+  ],
+
+  // ── Columbia Britanica y el interior seco ─────────────────────────────────────
+  columbia_britanica_interior: [
+    {
+      practica: 'Quemas culturales de baja severidad en Ne Sextsine',
+      periodo: 'Documentadas entre 1550 y 1982; fuertemente reducidas desde la colonización',
+      tipo: 'fuego',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El pueblo T\'exelc, hoy Williams Lake First Nation, aplicó fuego frecuente alrededor de la aldea, campamentos y corredores de tránsito de Ne Sextsine. Las quemas de baja severidad mantenían un mosaico abierto y productivo, con intervalos medianos de dieciocho años a escala de parcela. El estudio combina dendrocronología, carbón del suelo y conocimiento ecológico T\'exelc, y registra el quiebre asociado a la colonización.',
+      fuentes: [
+        { label: 'Copes-Gerbitz, Daniels y Hagerman (2022) — The contribution of Indigenous stewardship to an historical mixed-severity fire regime in British Columbia, Canada, Ecological Applications 33(3) (copia abierta en PubMed Central)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10078449/' },
+      ],
+    },
+  ],
+  okanagan_bosque_seco: [
+    {
+      practica: 'Quema cultural syilx de baja intensidad',
+      periodo: 'Anterior a la colonización; actualmente en recuperación mediante quemas culturales y prescritas',
+      tipo: 'fuego',
+      vigencia: 'en_uso',
+      detalle:
+        'El pueblo syilx Okanagan realizaba quemas controladas y regulares de baja intensidad en sus territorios secos. El fuego renovaba plantas alimenticias y medicinales, reducía combustibles y conservaba claros dentro del bosque. Tras décadas de supresión colonial, las comunidades están recuperando la práctica en colaboración con equipos técnicos y autoridades provinciales.',
+      fuentes: [
+        { label: 'Forest Enhancement Society of British Columbia (2025) — Indigenous-led cultural and prescribed fire', url: 'https://fesbc.ca/wp-content/uploads/2025/09/2025-Special-Report.pdf' },
+        { label: 'Okanagan Nation Alliance — Munro prescribed burns', url: 'https://syilx.org/projects/munro-prescribed-burns/' },
+      ],
+    },
+  ],
+  haida_gwaii_hipermaritimo: [
+    {
+      practica: 'Jardines haida de trébol de raíz',
+      periodo: 'Documentados etnográficamente a fines del siglo XIX; sin confirmación arqueológica de cultivo anterior',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Los haida despejaban piedras de parcelas costeras destinadas al trébol de raíz y cercaban los jardines para protegerlos. La práctica muestra una modificación deliberada y mantenida del suelo para una planta alimenticia perenne. Parques Canadá aclara que la descripción procede de Charles Newcombe a fines del siglo XIX y que las excavaciones citadas no hallaron prueba arqueológica de cultivo, por lo que no se proyecta hacia una antigüedad mayor.',
+      fuentes: [
+        { label: 'Parques Canadá — Arqueología en Gwaii Haanas y jardines de trébol haida', url: 'https://parks.canada.ca/pn-np/bc/gwaiihaanas/nature/conservation/culturelles-cultural/archeologie-archaeology/subaquatique-underwater' },
+      ],
+    },
+  ],
+
+  // ── Escudo, taiga y Artico canadiense ─────────────────────────────────────────
+  escudo_canadiense_boreal: [
+    {
+      practica: 'Cosecha ojibwa de manomin desde canoa',
+      periodo: 'Durante más de mil años; vigente en comunidades de la región',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades ojibwa cosechan manomin o arroz silvestre en aguas someras y tranquilas del Escudo Canadiense. Una persona impulsa la canoa y otra inclina las panojas sobre la borda y las golpea suavemente, de modo que parte de la semilla cae al agua y regenera el rodal. La placa patrimonial de Manitoba documenta más de mil años de uso alimentario local.',
+      fuentes: [
+        { label: 'Gobierno de Manitoba — Wild Rice Harvesting / Manomin', url: 'https://www.manitoba.ca/chc/hrb/plaques/plaq1307.html' },
+      ],
+    },
+  ],
+  taiga_canadiense_permafrost: [
+    {
+      practica: 'Cercos gwich\'in para conducir caribúes',
+      periodo: 'Usados hasta aproximadamente 1920; hoy conservados como patrimonio arqueológico y cultural',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Los gwich\'in construían largas alas de madera que guiaban a los caribúes hacia un corral y luego a un paso estrecho de captura. El sistema concentraba el movimiento de una manada migratoria mediante conocimiento de rutas, relieve y comportamiento animal. Parques Canadá registra cuarenta y seis sitios entre Alaska, Yukón y Territorios del Noroeste, incluidos siete en Vuntut.',
+      fuentes: [
+        { label: 'Parques Canadá — Caribou fences, Vuntut National Park', url: 'https://parks.canada.ca/pn-np/yt/vuntut/culture/cloture-fence?wbdisable=true' },
+      ],
+    },
+  ],
+  tundra_artica_canadiense: [
+    {
+      practica: 'Caches de piedra para conservar carne de caribú',
+      periodo: 'Confirmadas por restos de caribú de aproximadamente 250 y 400 años',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'En Many Caches, estructuras circulares de piedra protegían carne de caribú del sol y de carroñeros hasta que pudiera transportarse o consumirse. La investigación de Parques Canadá incorporó conocimiento Inuvialuit para interpretar y documentar el sitio. Dos fragmentos óseos fechados por radiocarbono sitúan el uso al menos entre hace unos 250 y 400 años.',
+      fuentes: [
+        { label: 'Parques Canadá — Many Caches: archaeology and Inuvialuit knowledge', url: 'https://www.parks.canada.ca/nature/science/autochtones-indigenous/caches' },
+      ],
+    },
+  ],
+  montana_artica_baffin_torngat: [
+    {
+      practica: 'Inuksuit para orientar desplazamientos y caza',
+      periodo: 'Anteriores a la llegada neo-inuit al Ártico oriental hacia fines del siglo XII; con continuidad inuit',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la isla de Baffin, los inuksuit y otras estructuras de piedra señalan direcciones, fuentes de alimento, peligros y lugares de espera. Algunas alineaciones también canalizan animales hacia cazadores, convirtiendo el relieve abierto en infraestructura de captura. Parques Canadá documenta su presencia antes de la migración neo-inuit al Ártico oriental y su continuidad dentro de la cultura inuit.',
+      fuentes: [
+        { label: 'Parques Canadá — Inuksuit on southern Baffin Island', url: 'https://parks.canada.ca/culture/cseh-twih/202343' },
+      ],
+    },
+  ],
+
+  // ── Groenlandia ───────────────────────────────────────────────────────────────
+  groenlandia_kalaallit_nunaat: [
+    {
+      practica: 'Riego y abonado de praderas de heno nórdicas',
+      periodo: 'Desde fines del siglo X hasta el siglo XV',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'Los colonos nórdicos del sudoeste de Groenlandia regaban y abonaban campos próximos a las granjas para producir heno. Zanjas y pequeños canales distribuían el deshielo durante los déficits estivales, mientras el estiércol devolvía nutrientes al suelo. El forraje conservado hacía posible mantener ganado estabulado durante el invierno y fue abandonado con la desaparición de los asentamientos medievales.',
+      fuentes: [
+        { label: 'University of Edinburgh Research Explorer — Insect fossils and irrigation in medieval Greenland', url: 'https://www.research.ed.ac.uk/en/publications/insect-fossils-and-irrigation-in-medieval-greenland/' },
+      ],
+    },
+  ],
+
+  // ── Islas britanicas e Irlanda ────────────────────────────────────────────────
+  atlantico_llanura_noroeste: [
+    {
+      practica: 'Setos sobre talud con zanja de drenaje',
+      periodo: 'Configuración dominante establecida entre 1750 y 1850; vigente',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Irlanda, muchos setos se plantaron sobre bancos de tierra o piedra construidos con material extraído de una zanja paralela. El conjunto contiene ganado, corta el viento, evacua excedentes y forma corredores de vegetación entre parcelas. Su manejo requiere podas o recepes escalonados para no eliminar simultáneamente refugio y floración en toda la finca.',
+      fuentes: [
+        { label: 'The Heritage Council — Conserving Hedgerows', url: 'https://www.heritagecouncil.ie/content/files/conserving_hedgerows_2mb.pdf' },
+      ],
+    },
+  ],
+  campina_calcarea_inglesa: [
+    {
+      practica: 'Rotación ovino-cereal sobre pastizal calcáreo',
+      periodo: 'Durante aproximadamente 3.000 años; persiste bajo nuevas formas de producción y conservación',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En South Downs, las ovejas pastaban el césped calcáreo y luego se encerraban de noche sobre campos arables. El estiércol transfería fertilidad desde la pastura hacia el cereal y el pastoreo mantenía una cubierta corta y diversa. La separación moderna entre ganadería y agricultura debilitó el ciclo, aunque el pastoreo ovino sigue siendo central para conservar el paisaje.',
+      fuentes: [
+        { label: 'South Downs National Park — Sustainable meat production and sheep-and-corn husbandry', url: 'https://www.southdowns.gov.uk/providing-a-local-solution-to-sustainable-meat-production-in-the-south-downs/' },
+      ],
+    },
+  ],
+  atlantico_norte_turberas: [
+    {
+      practica: 'Rotación de machair con algas, barbecho y pastoreo estacional',
+      periodo: 'Durante más de mil años; vigente',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'Los crofters de las Hébridas cultivan franjas del machair arenoso en rotación y dejan otras en barbecho y pastoreo estacional. Las algas aportan nutrientes y materia orgánica sin herbicidas, mientras el descanso mantiene la fertilidad y la flora del pastizal. La alternancia espacial impide que toda la llanura costera pierda cobertura al mismo tiempo.',
+      fuentes: [
+        { label: 'NatureScot — Scottish machair management', url: 'https://presscentre.nature.scot/news/snh-puts-scottish-machair-on-the-map' },
+      ],
+    },
+  ],
+  pinar_caledonio: [
+    {
+      practica: 'Shieling: trashumancia estival de ganado',
+      periodo: 'Durante el período medieval y épocas posteriores; hoy principalmente histórica',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'Comunidades rurales escocesas trasladaban familias y ganado a pasturas estivales de altura, donde usaban pequeñas cabañas o shielings. El movimiento reservaba los campos bajos para producir heno y llevaba el pastoreo hacia forraje que sólo estaba disponible en verano. Los conjuntos arqueológicos conservan cabañas, corrales y relaciones directas con agua y rutas de acceso.',
+      fuentes: [
+        { label: 'Historic Environment Scotland — Shieling settlement, South Uist', url: 'https://portal.historicenvironment.scot/apex/f?p=1505%3A300%3A%3A%3A%3A%3AVIEWTYPE%2CVIEWREF%3Adesignation%2CSM5332' },
+      ],
+    },
+  ],
+
+  // ── Francia atlantica ─────────────────────────────────────────────────────────
+  templado_occidental_europeo: [
+    {
+      practica: 'Bocage de parcelas cerradas por setos vivos',
+      periodo: 'Formado desde fines de la Edad Media y transformado por las mutaciones agrícolas contemporáneas',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En el oeste de Francia, generaciones de agricultores cerraron campos y praderas con setos arbolados, taludes y zanjas. La red reduce viento y escorrentía, separa animales de cultivos y produce leña, sombra y conectividad ecológica. La mecanización y la concentración parcelaria simplificaron muchos paisajes, por lo que se registra como sistema en retroceso y no como un patrón intacto.',
+      fuentes: [
+        { label: 'INRAE — Le bocage: de la fin du Moyen Âge aux mutations agricoles contemporaines', url: 'https://belinrae.inrae.fr/index.php?id=240642&lvl=notice_display' },
+      ],
+    },
+  ],
+
+  // ── Peninsula iberica ─────────────────────────────────────────────────────────
+  cantabrico_atlantico_iberico: [
+    {
+      practica: 'Terrazas agrarias para conservar suelo y agua',
+      periodo: 'Desde los primeros siglos de la Alta Edad Media; con sectores aún cultivados y otros abandonados',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Galicia, muros y rellenos transformaron laderas en superficies de cultivo más profundas y estables. La sucesión de bancales frena escorrentía, retiene sedimento y agua y limita la erosión en pendientes húmedas. La investigación del CSIC sitúa el origen del sistema regional en los primeros siglos altomedievales, sin atribuirlo a un pueblo específico.',
+      fuentes: [
+        { label: 'Ballesteros-Arias (2020), Universidad del País Vasco / INCIPIT-CSIC — El paisaje rural gallego', url: 'https://www.incipit.csic.es/es/produccion_cientifica/trabajo_academico/tesis-de-doctorado/el-paisaje-rural-gallego-la-arqueologia-y-la-etnografia-como-metodos-de-estudio-sobre-su-genesis-y-t1070' },
+        { label: 'Revista Pirineos-CSIC — Terrazas agrícolas y conservación del suelo y el agua', url: 'https://pirineos.revistas.csic.es/index.php/pirineos/article/view/302' },
+      ],
+    },
+  ],
+  montano_iberico: [
+    {
+      practica: 'Acequias de careo para recargar acuíferos de montaña',
+      periodo: 'Operativas desde al menos el siglo XI; todavía mantenidas por comunidades de regantes',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'En Sierra Nevada, acequias sin revestir desvían agua de deshielo y arroyos hacia laderas permeables durante la estación húmeda. El agua se infiltra y reaparece semanas o meses después en manantiales y cursos más bajos, ampliando la disponibilidad estival. Las comunidades de regantes limpian canales y abren o cierran derivaciones según nieve, suelo y demanda.',
+      fuentes: [
+        { label: 'Universidad de Granada — El sistema de recarga de las acequias de careo', url: 'https://canal.ugr.es/noticia/sierra-nevada-sistema-recarga-agua-subterranea-mas-antiguo-europa/' },
+      ],
+    },
+  ],
+  semiarido_sureste_iberico: [
+    {
+      practica: 'Regadío histórico escalonado de Cojáyar',
+      periodo: 'Configurado y reconfigurado entre los siglos XVI y XXI',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Cojáyar, la captación y conducción por gravedad distribuyó agua escasa entre bancales de una montaña semiárida. La red enlaza fuente, acequias, depósitos y parcelas, y su funcionamiento depende tanto de la topografía como de turnos y mantenimiento colectivo. El estudio histórico muestra cinco siglos de ajustes, además de abandono parcial y pérdida de continuidad en tramos recientes.',
+      fuentes: [
+        { label: 'Estudios Geográficos-CSIC — Paisaje histórico del regadío de Cojáyar', url: 'https://estudiosgeograficos.revistas.csic.es/index.php/estudiosgeograficos/article/download/1117/1623?inline=1' },
+      ],
+    },
+  ],
+
+  // ── Italia y el Adriatico ─────────────────────────────────────────────────────
+  po_llanura_aluvial: [
+    {
+      practica: 'Bonificación hidráulica renacentista del delta del Po',
+      periodo: 'Entre los siglos XIV y XVI; trazado todavía reconocible y mantenido',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'La familia Este impulsó el drenaje de grandes extensiones pantanosas del delta del Po y creó canales, caminos y fincas agrícolas. La red convirtió humedales en tierras productivas y organizó conjuntamente evacuación, circulación y control del agua. UNESCO señala que la trama renacentista sigue siendo reconocible, aunque hoy depende de infraestructura y mantenimiento hidráulico contemporáneos.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Ferrara, City of the Renaissance, and its Po Delta', url: 'https://whc.unesco.org/en/list/733/' },
+      ],
+    },
+  ],
+  apeninos_montano: [
+    {
+      practica: 'Trashumancia por tratturi entre montaña y llanura',
+      periodo: 'Con trazas prerromanas, ampliadas en época romana y reutilizadas durante siglos',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Los pastores trasladaban rebaños por una red de amplias vías pecuarias entre pasturas altas estivales y llanuras de invierno. La movilidad seguía la estacionalidad del forraje y evitaba sostener el ganado todo el año en un único piso ecológico. UNESCO documenta origen prerromano y ampliación romana de la red, hoy conservada de manera fragmentaria.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — The Transhumance Routes', url: 'https://whc.unesco.org/en/tentativelists/5005/' },
+      ],
+    },
+  ],
+  mediterraneo_italiano_insular: [
+    {
+      practica: 'Vid ad alberello en hoyo protector',
+      periodo: 'Práctica transmitida entre generaciones y vigente; inscrita por UNESCO en 2014',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Pantelleria, cada vid se planta dentro de una concavidad y se poda en seis ramas radiales próximas al suelo. La forma reduce exposición al viento, recoge humedad y permite que la planta soporte sequía y radiación intensa. Todo el ciclo se realiza manualmente y el conocimiento continúa dentro de la comunidad isleña.',
+      fuentes: [
+        { label: 'UNESCO Intangible Cultural Heritage — Vite ad alberello of Pantelleria', url: 'https://ich.unesco.org/en/RL/traditional-agricultural-practice-of-cultivating-the-vite-ad-alberello-head-trained-bush-vines-of-the-community-of-pantelleria-00720?RL=00720&lang=en' },
+      ],
+    },
+  ],
+  iliria_adriatico: [
+    {
+      practica: 'Parcelario griego con muros secos y captación de lluvia',
+      periodo: 'Desde el siglo IV a.C.; estructura parcelaria aún legible y parcialmente cultivada',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Los colonos griegos organizaron la llanura de Stari Grad en parcelas rectangulares separadas por muros de piedra seca. Canales, cisternas y pequeñas obras recuperaban lluvia, mientras la geometría permitía cultivar vid y olivo en un suelo pedregoso. La trama ha mantenido su escala básica durante unos veinticuatro siglos, aunque con cambios de cultivo y propiedad.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Committee — Stari Grad Plain decision', url: 'https://whc.unesco.org/en/decisions/1490' },
+      ],
+    },
+  ],
+
+  // ── Balcanes, Egeo y Creta ────────────────────────────────────────────────────
+  montana_balcanica_sur: [
+    {
+      practica: 'Trashumancia estacional entre Pindos y las llanuras',
+      periodo: 'Tradición antigua todavía observada cuando fue documentada por FAO',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Pastores, entre ellos comunidades valacas, trasladaban ovejas desde invernadas de llanura hacia pastos montanos del Pindos en primavera y regresaban en otoño. El calendario seguía las festividades de San Jorge y San Demetrio y coordinaba ruta, disponibilidad de pasto y trabajo familiar. FAO registra continuidad, pero también el reemplazo parcial por transporte motorizado y asentamiento permanente.',
+      fuentes: [
+        { label: 'FAO — Transhumant sheep and goat production in Greece', url: 'https://www.fao.org/4/X6508E/X6508E04.htm' },
+      ],
+    },
+  ],
+  egeo_esclerofilo: [
+    {
+      practica: 'Cultivo familiar de lentisco para mástique',
+      periodo: 'Vigente y transmitido entre generaciones; inscrito por UNESCO en 2014',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el sur de Quíos, familias podan y fertilizan lentiscos, limpian y nivelan el suelo y practican incisiones estivales para obtener resina. El piso claro permite recoger gotas sin mezclarlas con tierra y cada etapa reparte tareas y conocimiento dentro del hogar. La producción depende de árboles vivos y de cuidados repetidos, no de extraerlos una sola vez.',
+      fuentes: [
+        { label: 'UNESCO Intangible Cultural Heritage — Know-how of cultivating mastic on Chios', url: 'https://ich.unesco.org/en/RL/know-how-of-cultivating-mastic-on-the-island-of-chios-00993' },
+      ],
+    },
+  ],
+  creta_mediterranea: [
+    {
+      practica: 'Manejo temprano de olivos integrado con ovicaprinos',
+      periodo: 'Desde el Neolítico Final y durante la Edad del Bronce; evidencia arqueobiológica',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'La evidencia de Creta oriental indica manejo de olivos a gran escala desde el Neolítico Final. Los restos botánicos y faunísticos muestran una economía donde olivar, cultivos intensivos y pastoreo extensivo de ovejas y cabras se relacionaban. Se registra como sistema histórico porque la fuente reconstruye usos prehistóricos y no demuestra continuidad predial directa hasta hoy.',
+      fuentes: [
+        { label: 'Livarda y otros (2021) — Mediterranean polyculture revisited: olive, grape and subsistence strategies at Palaikastro, East Crete, between the Late Neolithic and Late Bronze Age, Journal of Anthropological Archaeology 61 (copia abierta en el Dipòsit Digital de la UB)', url: 'https://diposit.ub.edu/items/4696aff1-05d2-431e-bc51-0eca13562ad8' },
+      ],
+    },
+  ],
+  chipre_troodos: [
+    {
+      practica: 'Terrazas vitícolas de piedra seca con canaletas de lluvia',
+      periodo: 'Expansión de fines del siglo XIX y comienzos del XX; abandono mayoritario desde la década de 1950',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En los Wine Villages de Troodos, muros calizos sostienen suelos de vid sobre pendientes y reducen erosión y viento. Canaletas de tierra recogen y conducen lluvia entre bancales donde no hay riego permanente. La caída de la viticultura dejó muchas terrazas sin uso, aunque el patrón todavía estructura el paisaje.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Wine Village Terraces, Cyprus', url: 'https://whc.unesco.org/document/5301' },
+      ],
+    },
+  ],
+
+  // ── Baltico y Escandinavia ────────────────────────────────────────────────────
+  baltico_morrena: [
+    {
+      practica: 'Praderas arboladas mantenidas por siega y pastoreo',
+      periodo: 'Paisajes semejantes desde hace 7.000–8.000 años; mantenimiento agrícola regular documentado posteriormente',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Estonia, la siega regular y el pastoreo ligero mantienen praderas con árboles dispersos y una flora extremadamente diversa. El sistema produce heno, forraje, leña, frutos y otros recursos sin cerrar completamente el dosel. Al cesar el corte, el bosque recoloniza rápidamente, por lo que su continuidad depende de trabajo anual.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Estonian wooded meadows', url: 'https://whc.unesco.org/en/tentativelists/1854/' },
+      ],
+    },
+  ],
+  sarmatico_boreonemoral: [
+    {
+      practica: 'Roza y quema con centeno y barbecho forestal',
+      periodo: 'Integral al poblamiento de Savo del Norte desde al menos el siglo XV; residual después de la Segunda Guerra Mundial',
+      tipo: 'fuego',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Finlandia oriental se talaban y quemaban parcelas de coníferas para sembrar centeno sobre la ceniza. Tras pocas cosechas, el sitio quedaba en barbecho forestal prolongado y el cultivo se desplazaba, por lo que el sistema dependía de mucha superficie y baja frecuencia. Hoy sobrevive principalmente como práctica demostrativa y patrimonio vivo en pocos establecimientos.',
+      fuentes: [
+        { label: 'Metsähallitus — Management plan for Telkkämäki slash-and-burn heritage farm', url: 'https://julkaisut.metsa.fi/assets/pdf/lp/Asarja/a170-2.pdf' },
+      ],
+    },
+  ],
+  costa_conifera_escandinava: [
+    {
+      practica: 'Protección de eideres y recolección de plumón',
+      periodo: 'Parte de un sistema pesquero-agrícola sostenido durante 1.500 años; en retroceso',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En el archipiélago de Vega, familias construyen refugios y nidos, protegen a las eideres durante la cría y recolectan plumón una vez que las aves se retiran. La relación aporta un material valioso sin matar al animal y articula pesca, pequeña agricultura y trabajo estacional. UNESCO destaca especialmente el papel histórico de las mujeres en la continuidad del sistema.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Vegaøyan, The Vega Archipelago', url: 'https://whc.unesco.org/en/list/1143/' },
+      ],
+    },
+  ],
+  abedular_montano_escandinavo: [
+    {
+      practica: 'Migración anual sámi con rebaños de renos',
+      periodo: 'Ciclo anual plenamente establecido en los siglos XVI y XVII; vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades sámi desplazan rebaños entre bosques invernales y pasturas montanas de verano siguiendo nieve, líquenes y alivio de insectos. La ruta reparte la presión sobre ambientes que no ofrecen alimento equivalente todo el año. UNESCO sitúa la consolidación completa del ciclo anual migratorio en los siglos XVI y XVII.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Laponian Area', url: 'https://whc.unesco.org/en/list/774' },
+      ],
+    },
+  ],
+  islandia_abedular: [
+    {
+      practica: 'Pradera húmeda de heno para sostener ganado en invierno',
+      periodo: 'Desarrollada durante el período medieval; evidencia paleoecológica',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'En Helgadalur, el registro paleoecológico muestra que la gestión medieval se concentró en desarrollar una pradera de heno. El corte y secado del pasto húmedo convertía el breve crecimiento estival en forraje almacenable para el invierno. La fuente advierte que algunos indicadores también podrían reflejar pastoreo estacional o de baja densidad, por lo que la función no se presenta como exclusiva.',
+      fuentes: [
+        { label: 'Riddell et al. (2022), Vegetation History and Archaeobotany — Land-use histories of two Icelandic farms', url: 'https://steinunn.hi.is/files/2022-09/Rid_2021.pdf' },
+      ],
+    },
+  ],
+
+  // ── Carpatos y las estepas del este ───────────────────────────────────────────
+  carpatos_montano: [
+    {
+      practica: 'Praderas de heno seminaturales de Transilvania',
+      periodo: 'Mantenidas durante aproximadamente mil años; vigentes pero amenazadas',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Comunidades rurales de Transilvania siegan praderas floridas para guardar forraje invernal y luego permiten pastoreo controlado. El corte tardío deja completar ciclos de floración y evita que arbustos y bosque cierren el ambiente. FAO destaca que estos paisajes sobrevivieron alrededor de mil años, pero enfrentan abandono e intensificación.',
+      fuentes: [
+        { label: 'Knowles, B. (2011) — Mountain Hay Meadows: the Romanian Context and the Effects of Policy on High Nature Value Farming, Pogány-havas Microregion Association (ficha de la Plataforma de Agricultura Familiar de la FAO)', url: 'https://www.fao.org/family-farming/detail/en/c/308472/' },
+      ],
+    },
+  ],
+  estepa_pontica_chernozem: [
+    {
+      practica: 'Cortinas forestales contra viento y pérdida de humedad',
+      periodo: 'Impulsadas institucionalmente desde 1891 tras una sequía y hambruna severas',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'Filas de árboles se establecieron entre campos de la estepa para disminuir velocidad del viento, atrapar nieve y reducir erosión y evaporación. El diseño protege el chernozem y distribuye mejor la humedad sobre grandes superficies cerealistas. La comisión rusa de 1891 convirtió experiencias previas en un programa sistemático de protección forestal agrícola.',
+      fuentes: [
+        { label: 'FAO — Shelterbelts in the Russian steppe', url: 'https://www.fao.org/4/x5349e/x5349e02.htm' },
+      ],
+    },
+  ],
+  estepa_forestal_este: [
+    {
+      practica: 'Forestación de barrancos, arenas y bordes agrícolas',
+      periodo: 'Desde comienzos del siglo XX; con continuidad en redes protectoras actuales',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la estepa forestal ucraniana se implantaron bosques y franjas protectoras alrededor de campos, barrancos y arenas móviles. La vegetación leñosa corta viento, estabiliza suelo y conecta manchas forestales dentro de una matriz agrícola. FAO sitúa la expansión institucional de este trabajo al comienzo del siglo XX.',
+      fuentes: [
+        { label: 'FAO — Forestry and protective afforestation in Ukraine', url: 'https://www.fao.org/4/y1842e/y1842e39.htm' },
+      ],
+    },
+  ],
+  crimea_submediterraneo: [
+    {
+      practica: 'Chora griega parcelada para viñedo',
+      periodo: 'Siglos IV y III a.C.; paisaje arqueológico',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Los colonos griegos dóricos de Chersonese dividieron la península en lotes regulares con muros, caminos y granjas. Muchas parcelas se organizaron para viñedo y combinaron producción rural con el abastecimiento de la ciudad. La ficha conserva esta práctica como evidencia histórica de planificación agraria, no como manejo vigente.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Ancient City of Tauric Chersonese and its Chora', url: 'https://whc.unesco.org/en/list/1411' },
+      ],
+    },
+  ],
+
+  // ── Caucaso y el Caspio ───────────────────────────────────────────────────────
+  caucaso_mixto: [
+    {
+      practica: 'Trashumancia tushin de ovinos resistentes',
+      periodo: 'Raza y sistema formados en los siglos XIII–XIV; todavía utilizados',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'Los tushin de Georgia desarrollaron ovinos capaces de recorrer largas distancias entre pasturas de montaña y llanuras invernales. Los rebaños aprovechan estaciones complementarias y reducen la necesidad de encerrar o alimentar animales todo el año. La rusticidad de pezuñas y cuerpo forma parte del sistema tanto como las rutas y los calendarios.',
+      fuentes: [
+        { label: 'FAO — Sheep and goat breeds of Georgia: Tushin sheep', url: 'https://www.fao.org/4/ah759e/AH759E12.htm' },
+      ],
+    },
+  ],
+  kura_semidesierto: [
+    {
+      practica: 'Trashumancia vertical khinalig por el Köç Yolu',
+      periodo: 'Forma antigua de movilidad todavía vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'El pueblo khinalig mueve rebaños entre pasturas estivales de alta montaña y llanuras invernales del centro de Azerbaiyán. La ruta de unos doscientos kilómetros enlaza campamentos, pozos, abrevaderos y lugares de descanso mediante conocimiento transmitido. La movilidad vertical ajusta carga animal y agua a estaciones muy contrastantes.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Khinalig People and Köç Yolu Transhumance Route', url: 'https://whc.unesco.org/en/list/1696' },
+      ],
+    },
+  ],
+
+  // ── Anatolia y el Levante ─────────────────────────────────────────────────────
+  mediterraneo_oriental_conifera: [
+    {
+      practica: 'Terrazas de Battir con riego rotativo por manantiales',
+      periodo: 'Continuidad documentada durante al menos un milenio; vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'En Battir, muros secos forman terrazas irrigadas para hortalizas y terrazas secas para olivos y vides. Manantiales alimentan canales y estanques, y las familias distribuyen el agua mediante turnos temporales heredados. El mantenimiento colectivo de muros y conducciones conserva suelo fértil y permite cultivar una ladera abrupta.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Palestine: Land of Olives and Vines, Battir', url: 'https://whc.unesco.org/en/list/1492' },
+      ],
+    },
+  ],
+  tauro_conifera_montana: [
+    {
+      practica: 'Trashumancia caprina y ovina hacia yaylas',
+      periodo: 'Sistema tradicional todavía común al momento de la documentación de FAO',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En las montañas mediterráneas de Turquía, rebaños dejan las tierras bajas cálidas y secas al final de la primavera y suben a pasturas frescas. Permanecen cuatro o cinco meses en los yaylas y regresan en otoño según clima y forraje. La movilidad reduce presión estival sobre ambientes bajos y usa un recurso montano breve.',
+      fuentes: [
+        { label: 'FAO — Sheep and goats in Turkey', url: 'https://www.fao.org/4/ah224e/AH224E03.htm' },
+      ],
+    },
+  ],
+  meseta_anatolia_estepa: [
+    {
+      practica: 'Rotación cereal-barbecho en secano',
+      periodo: 'Práctica tradicional vigente al momento de la documentación de FAO',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el secano de Turquía central, una campaña de cereal alterna con un año sin cultivo. El barbecho permite preparar el suelo para la siguiente siembra y sus rastrojos y malezas son aprovechados por ovejas y cabras. La fuente documenta el sistema a gran escala, pero no demuestra que sea óptimo bajo las condiciones climáticas actuales.',
+      fuentes: [
+        { label: 'FAO — Sheep and goats in Turkey', url: 'https://www.fao.org/4/ah224e/AH224E03.htm' },
+      ],
+    },
+  ],
+  anatolia_oriental_montana: [
+    {
+      practica: 'Huertas irrigadas de Hevsel junto al Tigris',
+      periodo: 'Abastecen a Diyarbakır desde hace siglos; todavía productivas',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Las huertas de Hevsel ocupan la franja fértil entre las murallas de Diyarbakır y el río Tigris. Canales y manantiales sostienen hortalizas, frutales y otros alimentos próximos a la ciudad, además de articular drenaje y biodiversidad ribereña. UNESCO las reconoce como parte continua del paisaje cultural urbano y no como un parque ornamental.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Diyarbakır Fortress and Hevsel Gardens Cultural Landscape', url: 'https://whc.unesco.org/fr/list/1488' },
+      ],
+    },
+  ],
+  zagros_estepa_forestal: [
+    {
+      practica: 'Viñedo de Jowzan con conducción rastrera y qanat',
+      periodo: 'Durante al menos 800 años; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Jowzan, las vides se conducen próximas al suelo y reciben riegos espaciados desde una red de qanats. Las familias ajustan el calendario mediante observación de hojas y estación, mientras el ganado consume malezas y restos de poda y devuelve estiércol. La integración limita insumos externos y mantiene un cultivo perenne bajo condiciones secas y frías.',
+      fuentes: [
+        { label: 'FAO GIAHS — Jowzan Valley Grape Production System, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-grape-production-system/en' },
       ],
     },
   ],
