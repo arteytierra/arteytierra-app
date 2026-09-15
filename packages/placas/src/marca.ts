@@ -25,6 +25,17 @@ export const LOGOS = {
   negro: 'marca/logo-negro.png',
   /** Símbolo + wordmark en poca altura: para lower thirds. */
   firma: 'marca/firma-negro.png',
+  /** Lockup con el isotipo en azul agua y el wordmark claro, para fondo oscuro. */
+  azulOscuro: 'marca/logo-azul-oscuro.png',
+  /** El mismo, con el wordmark en crema en vez de blanco puro. */
+  azulCrema: 'marca/logo-azul-crema.png',
+  /**
+   * El wordmark "acequia.app" entero, rasterizado con Century Gothic. Las placas
+   * lo recortan para mostrar sólo "acequia" y corren el recorte para revelar el
+   * dominio: así el kerning es el de la tipografía y nada se mueve al aparecer.
+   */
+  wordmarkAppBlanco: 'marca/wordmark-app-blanco.png',
+  wordmarkAppTinta: 'marca/wordmark-app-tinta.png',
   /** Símbolo solo, trazo puro: escala sin riesgo. */
   isotipoBlanco: 'marca/isotipo-blanco.svg',
   isotipoColor: 'marca/isotipo-color.svg',

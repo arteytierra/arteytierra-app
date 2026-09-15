@@ -4,13 +4,26 @@ import { z } from 'zod';
 import { COLORES, LOGOS } from '../marca';
 import { DISPLAY } from '../tipografia';
 
+/** Qué lockup usa cada fondo. */
+const LOCKUP = {
+  crema: LOGOS.color,
+  oscuro: LOGOS.blanco,
+  'oscuro-azul': LOGOS.azulCrema,
+} as const;
+
 export const esquemaApertura = z.object({
   bajada: z.string(),
   /**
-   * Sobre `oscuro` va el lockup blanco del paquete de marca, no el de color:
-   * el lockup no se recolorea, se cambia por la variante que corresponde.
+   * Cada fondo trae su propia variante del lockup, porque el lockup **no se
+   * recolorea**: se cambia por la que corresponde.
+   *
+   * - `crema`: el lockup de color, isotipo azul y wordmark en negro profundo.
+   * - `oscuro`: el lockup blanco del paquete v1.
+   * - `oscuro-azul`: isotipo en azul agua y wordmark en crema. El azul sobre el
+   *   negro profundo tiene poco contraste para texto, así que el wordmark va
+   *   claro y el azul queda en el símbolo, que es donde está en el original.
    */
-  fondo: z.enum(['crema', 'oscuro']).default('crema'),
+  fondo: z.enum(['crema', 'oscuro', 'oscuro-azul']).default('crema'),
 });
 
 /** Apertura de marca: el lockup entra, y una línea de agua se dibuja por debajo. */
@@ -18,7 +31,7 @@ export const AperturaAcequia: React.FC<z.infer<typeof esquemaApertura>> = ({ baj
   const cuadro = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const vertical = height > width;
-  const oscuro = fondo === 'oscuro';
+  const oscuro = fondo !== 'crema';
 
   // `spring` da la curva del sitio: entra con cuerpo y frena sin rebotar.
   const entrada = spring({ frame: cuadro, fps, config: { damping: 200 } });
@@ -45,7 +58,7 @@ export const AperturaAcequia: React.FC<z.infer<typeof esquemaApertura>> = ({ baj
       }}
     >
       <Img
-        src={staticFile(oscuro ? LOGOS.blanco : LOGOS.color)}
+        src={staticFile(LOCKUP[fondo])}
         style={{ width: anchoLogo, opacity: entrada, transform: `scale(${escala})` }}
       />
 
