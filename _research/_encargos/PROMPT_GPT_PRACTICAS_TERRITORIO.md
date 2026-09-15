@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 89 entradas sobre 88 ecorregiones de 222.
+hoy tiene 115 entradas sobre 114 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -88,6 +88,15 @@ institucionalidad contemporánea del Petén y no una práctica maya ancestral;
 `ozarks_transicion_bosque_pradera` dice que la observación colonial de 1750 no
 identifica un pueblo concreto. Eso es exactamente la regla.
 
+En el cuarto lote, donde las fuentes nombran sistemas por lugar —Figuig, Siwa,
+Gonabad, Liwa— más que por pueblo, la mitad de "no borrar" casi no se ejercitó, y
+se perdieron dos nombres que la fuente sí daba: la presentación de la FAO
+identifica a la población de Imilchil y Amellagou como **Ait Hdidou** y **Ait
+Marghad**, y UNESCO nombra las prácticas colectivas de reparación de terrazas en
+Yemen —**al-ʿanah**, **al-ʿawn**, **al-tajyish**—. **El nombre local de la
+práctica también se copia**, no sólo el del pueblo: es la palabra con la que el
+lector puede seguir buscando.
+
 **6. Le tiene que servir a alguien que está diseñando un predio.** No es una
 entrada de enciclopedia: es información para alguien que va a decidir dónde pone
 la huerta. Qué es, cómo funciona, y por qué funciona **acá** —qué limitante del
@@ -143,14 +152,16 @@ fecha que pusiste.
    que no tuvieron evidencia específica, listados en
    `practicas-documentadas-ecorregion/COBERTURA_SUDAMERICA_A_B_C.md` y
    `COBERTURA_BLOQUE_D.md`.
-2. **H. Medio Oriente** (2 de 28) e **I. Norte de África** (0 de 14) — mucha
-   obra hidráulica documentada por UNESCO: qanats, foggaras, aflaj, jessour,
-   terrazas de Yemen y Omán. Es el bloque con más fuente de organismo por ficha.
+2. ~~**H. Medio Oriente** e **I. Norte de África**~~: **hechos**. Quedaron
+   cargadas 24 de 28 en H y 11 de 14 en I. Lo que falta está en
+   `COBERTURA_BLOQUE_H_MEDIO_ORIENTE.md` y `COBERTURA_BLOQUE_I_NORTE_AFRICA.md`,
+   más `socotra` y `uweinat_tibesti`, que se devolvieron: ver
+   `REVISION_LOTE_4.md`.
 3. **G. Unión Europea** (0 de 28) y **F. Europa no comunitaria** (0 de 8).
 4. **E. Canadá, Alaska y Groenlandia** (0 de 10) — Alaska ya tiene dos entradas
    cargadas desde el bloque D; fijate en el anexo cuáles.
 5. Lo que quedó suelto: **C. Norteamérica, Mesoamérica, Caribe y Europa**
-   (16 de 22) y el resto de B y D.
+   (16 de 22) y el resto de B, D, H e I.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -176,15 +187,28 @@ vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
-44; del tercero, **las 26**. Las que no se montaron casi nunca fallaron la cita:
-falló el archivo. Un PDF de CONABIO sin capa de texto, un documento de UNESCO
-que devuelve 403 a todo lo que no sea un navegador, y una nota de FAO Brasil que
-**desapareció del sitio**. **Conviene evitar los PDF escaneados o muy pesados
-cuando hay una página HTML equivalente**, y preferir una página estable —la
-ficha SIPAM del sistema, el registro del repositorio— a una nota de prensa: una
-fuente que no se puede abrir vale lo mismo que ninguna, aunque sea real.
+44; del tercero, **las 26**; del cuarto, **las 24**. Las que no se montaron casi
+nunca fallaron la cita: falló el archivo, o falló el resto de la entrada.
+**Conviene evitar los PDF escaneados o muy pesados cuando hay una página HTML
+equivalente**, y preferir una página estable —la ficha SIPAM del sistema, el
+registro del repositorio— a una nota de prensa: una fuente que no se puede abrir
+vale lo mismo que ninguna, aunque sea real.
 
-Cuatro avisos concretos que salieron de la revisión:
+Cinco avisos concretos que salieron de la revisión:
+
+- **La `verificacion` sostiene la fecha; la fuente tiene que sostener toda la
+  entrada.** Es lo que falló en el cuarto lote y no lo caza ningún test. Dos
+  entradas tenían la frase textual y una fuente que no hablaba de lo que la
+  entrada afirmaba: `socotra` declaraba trashumancia vertical en busca de agua
+  citando un artículo sobre la economía del pastoreo, que no contiene
+  `mobility`, `highland` ni `transhumance`; `uweinat_tibesti` decía que el arte
+  rupestre registra cabras y perros en cientos de sitios y que "el museo
+  advierte" sobre la datación, y el informe de UNESCO no menciona cabras ni
+  perros, dice que Jebel Ouenat es el único punto de agua en cientos de
+  kilómetros —no que haya cientos de sitios— y nombra un museo una sola vez, en
+  los agradecimientos. Las dos se devolvieron. Antes de escribir el `detalle`,
+  preguntate qué oración de la fuente respalda cada afirmación; si alguna no
+  tiene ninguna, sacala.
 
 - **La URL se copia del lugar donde está el archivo.** El PDF de Embrapa se
   citó en `infoteca` cuando vive en `alice`: daba 404 y es el mismo documento.
@@ -195,18 +219,28 @@ Cuatro avisos concretos que salieron de la revisión:
   se citaron desde ahí eran abiertos en la revista que los publicó (*Fire
   Ecology*, *Sustainability*) o en el repositorio de la universidad
   (PDXScholar). Ante la duda, la revista o el repositorio antes que el catálogo
-  del organismo.
-- **La etiqueta describe el documento que abre la URL.** En el tercer lote tres
-  etiquetas nombraban otra cosa: un artículo vecino del mismo equipo, o el
-  organismo en vez de la revista. La cita se verifica igual, pero el lector que
-  la sigue termina en otro lado. Van autor, año y dónde se publicó.
-- **La `verificacion` va en el idioma de la fuente, entera y sin abreviar.** Si
-  el texto está en español o en portugués, la frase se copia en español o en
-  portugués. Y no se saca nada del medio: UNESCO escribe "las actividades
-  humanas **que allí se desarrollan** y el cuidado de la biosfera", y la cita
-  entregada sacó esas tres palabras. Ya había pasado antes con "Globally
-  Important Agricultural Heritage System (GIAHS)" abreviado a "GIAHS". Es la
-  única regla que se incumplió dos veces: copiar y pegar, no resumir.
+  del organismo. `whc.unesco.org`, en cambio, **no** es un problema: lo que
+  parecía un bloqueo era una limitación de la herramienta de acá.
+- **La etiqueta describe el documento que abre la URL.** Ya pasó cuatro veces:
+  tres en el tercer lote —un artículo vecino del mismo equipo, o el organismo en
+  vez de la revista— y una en el cuarto, donde `fao.org/4/y1275e/` se citó como
+  "Drainage water reuse in Egypt" y es *Case Studies on Water Conservation in
+  the Mediterranean Region*, de Vidal y otros, con Egipto como uno de los casos.
+  La cita se verifica igual, pero el lector que la sigue termina en otro lado.
+  Van autor, año y dónde se publicó.
+- **La `verificacion` va en el idioma de la fuente, entera, sin abreviar y sin
+  corregir.** Si el texto está en español o en portugués, la frase se copia en
+  español o en portugués. Y no se saca nada del medio: UNESCO escribe "las
+  actividades humanas **que allí se desarrollan** y el cuidado de la biosfera",
+  y la cita entregada sacó esas tres palabras. Ya van cuatro veces: "Globally
+  Important Agricultural Heritage System (GIAHS)" abreviado a "GIAHS" en el
+  segundo lote, ése en el tercero, y en el cuarto "the evolution of human life
+  **on the edge of the Sahara** from 6000 BC" y un paréntesis entero sacado de
+  la frase del Land of Frankincense. Es la regla que más se incumple. Tampoco se
+  le arregla la ortografía a la fuente: la FAO escribe "long-**tern** climate
+  change" en su propio resumen y la cita lo escribió bien, lo que rompe la
+  comparación literal igual que abreviarla. Copiar y pegar, no resumir ni
+  editar.
 
 Después corre `pnpm --filter @arteytierra/terreno test`, que chequea lo
 mecánico: fuente presente, `https`, nada de enciclopedias, período no vacío,

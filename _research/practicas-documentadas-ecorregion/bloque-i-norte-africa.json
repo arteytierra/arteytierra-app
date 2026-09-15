@@ -1,0 +1,167 @@
+[
+  {
+    "fichaId": "magreb_bosque_mediterraneo",
+    "practica": "Sistema agro-silvo-pastoral del argán en terrazas secas",
+    "periodo": "Durante siglos; vigente",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En Ait Souab-Ait Mansour, el argán se integra con cultivos anuales y perennes, pastoreo y terrazas de piedra seca. Los muros crean suelo cultivable, retienen agua y reducen erosión; depósitos subterráneos matifyia guardan lluvia para atravesar períodos secos. La diversidad de estratos reparte producción entre aceite, forraje, cereal, carne y leña en suelos pobres.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Argan-based agro-sylvo-pastoral system within Ait Souab-Ait Mansour, Morocco",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/morocco-argan-based-system/en"
+      }
+    ],
+    "verificacion": "Argan trees have been cultivated for centuries in the agro-forestry-pastoral system"
+  },
+  {
+    "fichaId": "magreb_estepa_alfa",
+    "practica": "Derechos consuetudinarios para rotar pastoreo en estepa",
+    "periodo": "Desarrollado a lo largo de siglos; vigente",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "En AbbouLakhal y Figuig, el uso de pastizales se organiza mediante territorios pastorales reconocidos y consenso tribal, complementando el oasis cultivado. Los rebaños aprovechan grandes estepas extensivas sin convertirlas en parcelas permanentes, mientras las reglas de acceso reducen sobreuso y conflicto. El sistema funciona porque la movilidad y el derecho de uso se diseñan juntos, no como decisiones separadas.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — The ksour of Figuig: oasis and pastoral culture around social management of water and land",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/morocco-ksour-figuig-oasis/en"
+      }
+    ],
+    "verificacion": "building peace and social cohesion through the centuries"
+  },
+  {
+    "fichaId": "atlas_conifera_montana",
+    "practica": "Oasis frío con rotación, agroforestería y ganadería integrada",
+    "periodo": "Durante siglos; vigente",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En Imilchil-Amellago, pequeñas parcelas fértiles junto al río combinan cereal, hortalizas y frutales con pasturas montanas. La rotación y la agroforestería reparten riesgo climático, mientras el estiércol conecta el rebaño con la fertilidad de los cultivos. El mosaico concentra la agricultura donde hay agua y conserva el resto como pastizal de uso estacional.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Oases System in Atlas Mountains, Morocco",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/morocco-cold-oases-system/en"
+      }
+    ],
+    "verificacion": "Through centuries the cold oases systems have been the most sustainable and adapted methods"
+  },
+  {
+    "fichaId": "alto_atlas_enebro",
+    "practica": "Agdal: cierre estacional de pasturas de altura",
+    "periodo": "Práctica tradicional de larga duración; vigente",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "El agdal de Imilchil-Amellago cierra sectores de pastura durante el crecimiento y la semillazón, y los reabre cuando la vegetación puede soportar el ganado. La presentación técnica de FAO documenta cierres de marzo a junio y apertura posterior para vacunos y caballos. El criterio de diseño es reservar superficie y calendario antes de que falte forraje, manteniendo zonas de descanso reconocibles para toda la comunidad.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Oases System in Atlas Mountains of Morocco (technical presentation)",
+        "url": "https://www.fao.org/fileadmin/templates/giahs/Presentations/beijing/Seddik_Saidi-Oases_System_in_Altas_Mountains_of_Morocco.pdf"
+      }
+    ],
+    "verificacion": "Closed from March to June"
+  },
+  {
+    "fichaId": "nilo_delta",
+    "practica": "Riego de cuenca con la inundación anual del Nilo",
+    "periodo": "Sistema histórico anterior a la presa de Asuán; reemplazado por riego perenne en el siglo XX",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "La agricultura histórica del valle y delta retenía la crecida anual en cuencas delimitadas para que el agua infiltrara y depositara limo antes de regresar al río. El sistema alineaba calendario de siembra, relieve y fertilidad con un pulso anual, sin exigir bombeo continuo. La presa alta de Asuán permitió riego perenne y terminó con ese régimen como base productiva.",
+    "fuentes": [
+      {
+        "label": "FAO — Drainage water reuse in Egypt",
+        "url": "https://www.fao.org/4/y1275e/y1275e00.pdf"
+      }
+    ],
+    "verificacion": "Until recent times, agricultural production in Egypt was sustained by the annual flooding of the Nile"
+  },
+  {
+    "fichaId": "chotts_sebkhas",
+    "practica": "Ghout: palmeras plantadas junto a la capa freática",
+    "periodo": "Desde el siglo XV; vigente pero amenazado",
+    "tipo": "agua",
+    "vigencia": "en_retroceso",
+    "detalle": "En Oued Souf se excava una depresión en la duna hasta acercar las raíces de las palmeras al nivel freático, evitando bombeo. Bajo las palmeras se cultivan frutales y hortalizas; barreras de hojas frenan arena y el hueco se limpia periódicamente según dirección y velocidad del viento. El sistema ahorra energía, pero el bombeo regional y el drenaje deficiente están secando o anegando ghouts.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Ghout Oasis System, El Oued, Algeria",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/algeria-ghout-oasis-system/en"
+      }
+    ],
+    "verificacion": "During the 15th century, ghout oasis system has been developed resulting from the adaptation of the farmers to the arid climate"
+  },
+  {
+    "fichaId": "sahara_norte_estepa",
+    "practica": "Khettara y turnos de agua medidos por tiempo",
+    "periodo": "Construido y ajustado durante siglos; vigente",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "En Figuig, galerías khettara conducen agua del acuífero por gravedad a estanques y canales del oasis. El derecho se mide en tiempo de flujo —kharrouba— y no en volumen, de modo que cada usuario recibe un turno sin poder extraer más agua que la disponible. El mantenimiento rotativo twiza vincula infraestructura, reparto y trabajo colectivo en una sola regla operativa.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — The ksour of Figuig: oasis and pastoral culture around social management of water and land",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/morocco-ksour-figuig-oasis/en"
+      }
+    ],
+    "verificacion": "building peace and social cohesion through the centuries"
+  },
+  {
+    "fichaId": "sahara_oriental",
+    "practica": "Oasis de Siwa con policultivo en tres alturas",
+    "periodo": "Área agraria reconocida como muy antigua; vigente",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En Siwa, palmeras datileras forman el estrato alto, olivos y otros frutales el intermedio, y hortalizas, forrajes o cereal ocupan el piso bajo. La estructura reduce viento y radiación, aumenta humedad relativa y crea un microclima donde pueden crecer cultivos que no soportarían el desierto abierto. Un supervisor tradicional organiza horarios precisos de apertura y cierre de canales.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Dates Production System in Siwa Oasis, Egypt",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/egypt-siwa-oasis-dates-system/en"
+      }
+    ],
+    "verificacion": "Recognized as a very ancient agrarian area, Siwa oasis is a repository of distinctive date palm varieties and other crops"
+  },
+  {
+    "fichaId": "sahara_sur",
+    "practica": "Movilidad pastoral entre pasturas húmedas y secas",
+    "periodo": "Desarrollada hace unos 7.000 años en el norte de África; vigente",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "La síntesis de FAO sitúa el desarrollo del pastoralismo norteafricano hace unos siete milenios como respuesta a una aridez creciente e imprevisible. Mover el rebaño permite usar áreas secas durante la estación húmeda y reservar sectores más húmedos para la estación seca, siguiendo agua y forraje en lugar de forzar una carga fija. Es una estrategia territorial: requiere corredores y acuerdos de acceso, no sólo rotación dentro de un potrero.",
+    "fuentes": [
+      {
+        "label": "FAO — Pastoralism in Africa’s Drylands: Reducing Risks, Addressing Vulnerability and Enhancing Resilience",
+        "url": "https://www.fao.org/family-farming/detail/en/c/1170752/"
+      }
+    ],
+    "verificacion": "It developed 7,000 years ago in response to long-term climate change. It spread throughout Northern Africa"
+  },
+  {
+    "fichaId": "ahaggar_tassili",
+    "practica": "Ganadería documentada por arte rupestre y recintos",
+    "periodo": "Entre 6000 a.C. y los primeros siglos de nuestra era",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "En Tassili n’Ajjer, miles de pinturas, grabados, habitaciones, túmulos y recintos registran el pasaje de fauna silvestre a escenas de vida pastoril y, más tarde, caballos y camellos. El registro muestra que la producción animal se adaptó a cambios prolongados de clima y disponibilidad de agua. No permite reconstruir un calendario exacto de pastoreo, por lo que la entrada conserva sólo lo que la evidencia visual y arqueológica sostiene.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Tassili n'Ajjer",
+        "url": "https://whc.unesco.org/en/list/179"
+      }
+    ],
+    "verificacion": "More than 15,000 drawings and engravings record the climatic changes, the animal migrations and the evolution of human life from 6000 BC"
+  },
+  {
+    "fichaId": "uweinat_tibesti",
+    "practica": "Pastoralismo bovino alrededor de manantiales de montaña",
+    "periodo": "Durante la fase húmeda regional de hace 12.000 a 7.000 años; la cronología local exacta sigue abierta",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "El arte rupestre de Jebel Uweinat muestra rebaños bovinos en cientos de sitios y registra también cabras, perros y camellos. Los manantiales permanentes y el microclima del macizo ofrecían agua y refugio cuando la llanura circundante se volvía más árida, concentrando campamentos pastoriles sin convertir el desierto abierto en pastura estable. La fecha es aproximada porque el museo advierte la dificultad de datar directamente las pinturas.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre (2004) — Workshop on the Conservation and Management of the Proposed Jebel Ouenat Protected Area",
+        "url": "https://whc.unesco.org/archive/2004-ouenat.pdf"
+      }
+    ],
+    "verificacion": "between 12,000 and 7,000 BP, when favourable climatic conditions enabled the development of the first African pastoral societies"
+  }
+]

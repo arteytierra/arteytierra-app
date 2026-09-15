@@ -1,0 +1,197 @@
+[
+  {
+    "fichaId": "mesopotamia_marismas",
+    "practica": "Cría de búfalos y aprovechamiento de juncos en humedal",
+    "periodo": "Durante miles de años; interrumpida por el drenaje de fines del siglo XX y retomada parcialmente desde 2003",
+    "tipo": "ganaderia",
+    "vigencia": "en_retroceso",
+    "detalle": "La misión de UNESCO documenta que las comunidades árabes de las marismas sostuvieron durante milenios la cría de búfalos, la pesca y la construcción con juncos, antes del drenaje forzado. El sistema depende de conservar agua somera y vegetación palustre: los juncos aportan forraje y material constructivo, mientras los búfalos aprovechan un ambiente que no admite agricultura convencional. La fuente señala que la cría de búfalos y las casas de juncos continúan, aunque con menor población y materiales nuevos.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre (2025) — Reactive Monitoring Mission to the Ahwar of Southern Iraq",
+        "url": "https://whc.unesco.org/document/223567"
+      }
+    ],
+    "verificacion": "The local community (the “Marsh Arabs”) lived traditionally for thousands of years before being radically uprooted through the draining of the marshes"
+  },
+  {
+    "fichaId": "desierto_norarabigo",
+    "practica": "Comederos de caza colectiva mediante cometas del desierto",
+    "periodo": "Desde hace al menos 9.000 años en Jordania y el norte de Arabia",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "El registro arqueológico documenta largas alineaciones de piedra que conducían animales silvestres hacia recintos rodeados de fosas. La disposición usa la topografía y el movimiento del rebaño para concentrar un recurso disperso en el desierto; muestra que la ubicación de cercos, embudos y puntos de captura se diseñaba a escala de paisaje. Es evidencia histórica de caza colectiva, no una práctica aplicable hoy sobre fauna silvestre.",
+    "fuentes": [
+      {
+        "label": "Crassard et al. (2023) — The oldest plans to scale of humanmade mega-structures, PLOS ONE",
+        "url": "https://journals.plos.org/plosone/doi?id=10.1371/journal.pone.0277927"
+      }
+    ],
+    "verificacion": "humanmade archaeological mega-traps that are dated to at least 9,000 years ago for the oldest"
+  },
+  {
+    "fichaId": "harrat_basalto",
+    "practica": "Diques de gravedad para captar crecidas de uadi",
+    "periodo": "Desde los primeros siglos de nuestra era; algunos diques de Khaybar podrían ser preislámicos",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Los diques históricos de Khaybar y Medina cerraban pasos estrechos de los uadis para retener lluvias torrenciales y alimentar canales hacia campos próximos. La obra combina captación, laminación de la crecida y distribución posterior: reduce daño aguas abajo y convierte pulsos breves en una reserva agrícola. UNESCO advierte que varias cronologías siguen en debate, por eso el período conserva esa incertidumbre.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Water Management in Saudi Arabia: The Ancient Dams",
+        "url": "https://whc.unesco.org/en/tentativelists/6637"
+      }
+    ],
+    "verificacion": "large-scale dams in the region were developed much later, in the first centuries CE"
+  },
+  {
+    "fichaId": "nefud_rub_al_khali",
+    "practica": "Oasis datilero en tres estratos con riego falaj",
+    "periodo": "Desarrollado durante milenios; vigente con apoyo creciente de bombeo",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "La FAO documenta en Liwa un dosel de palmeras, frutales intermedios y cultivos anuales, abastecido por canales falaj que conducen agua por gravedad. Los tres estratos moderan viento, temperatura y humedad relativa, permitiendo producción en el borde del Rub al-Jali. La fuente aclara que el flujo natural ya no alcanza y hoy se complementa con agua bombeada.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Al Ain and Liwa Historical Date Palm Oases, United Arab Emirates",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/united-arab-emirates-al-ain-liwa-date-palm-oases/en"
+      }
+    ],
+    "verificacion": "Developed over millennia to create sustainable palm-based agricultural systems"
+  },
+  {
+    "fichaId": "tihama_costa_arida",
+    "practica": "Riego por avenida con diques y acequias masqua",
+    "periodo": "Practicado durante miles de años; vigente",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "La documentación de FAO describe el desvío de avenidas estacionales desde los uadis mediante pequeños diques de tierra o piedra hacia acequias tradicionales llamadas masqua. En la Tihama, el sistema reparte sobre terrazas una crecida que de otro modo sería destructiva y permite sembrar sorgo, mijo y maíz sin depender de lluvia local regular. También recarga acuíferos someros y llena abrevaderos.",
+    "fuentes": [
+      {
+        "label": "FAO — Being the Change in Yemen: Improving Integrated Water Resources Management for Food Security",
+        "url": "https://www.fao.org/countryprofiles/news-archive/detail-news/en/c/1634924/"
+      }
+    ],
+    "verificacion": "Spate irrigation is practiced in Yemen along wadi courses and in the plains. It has been practised for thousands of years"
+  },
+  {
+    "fichaId": "yemen_montana_aterrazada",
+    "practica": "Terrazas de piedra para cosechar lluvia en laderas",
+    "periodo": "Desde al menos el tercer milenio a.C.; todavía en uso",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "Las terrazas convierten pendientes abruptas en superficies cultivables y frenan la escorrentía para que el agua infiltre en el perfil. Los muros retienen suelo fértil, reducen erosión y distribuyen lluvias estacionales en una montaña semiárida con muy poca tierra llana. UNESCO documenta continuidad funcional y reparación comunitaria de muros después de crecidas.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Agricultural Terraces in Yemen",
+        "url": "https://whc.unesco.org/en/tentativelists/6875/"
+      }
+    ],
+    "verificacion": "evidence of their existence since at least the third millennium BC"
+  },
+  {
+    "fichaId": "asir_altiplano_seco",
+    "practica": "Hima: descanso rotativo de pasturas y montes",
+    "periodo": "Durante más de 1.400 años; aún persiste en decenas de reservas",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "El sistema hima separa cíclicamente áreas de pastoreo, bosque o floración para que la vegetación se regenere antes de volver a usarse. En Asir, cada aldea gobernaba una o más reservas mediante normas consuetudinarias, ajustando acceso, estación y tipo de aprovechamiento. Para el diseño predial, el principio transferible es dejar descansos espacialmente explícitos y ligados al ciclo de semillazón, no abrir toda la superficie a la vez.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — The Rural Cultural Landscapes of Sarawat Mountains",
+        "url": "https://whc.unesco.org/en/tentativelists/6640/"
+      }
+    ],
+    "verificacion": "Practiced for more than 1,400 years in the Arabian Peninsula, al-hima"
+  },
+  {
+    "fichaId": "arabia_sur_bosque_niebla",
+    "practica": "Sangrado tradicional del árbol de incienso",
+    "periodo": "Desde la Antigüedad; documentado en el comercio al menos desde fines del siglo I a.C. y vigente",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En los uadis de Dofar se recolecta resina de Boswellia sacra mediante incisiones repetidas, conservando árboles vivos en un ambiente extremadamente seco. El puerto de Khor Rori fue establecido a fines del siglo I a.C. dentro del comercio regional del incienso, y Wadi Dawkah conserva la producción en su contexto natural. La ubicación del arbolado en uadis y el cuidado del individuo productor son más importantes que maximizar densidad o desmontar el sotobosque.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Land of Frankincense",
+        "url": "https://whc.unesco.org/en/list/1010"
+      }
+    ],
+    "verificacion": "The port was refounded at the end of the 1st century by LL'ad Yalutas to control the trade in Dhofar incense"
+  },
+  {
+    "fichaId": "hadramaut_meseta",
+    "practica": "Riego de campos con crecidas estacionales de uadi",
+    "periodo": "Practicado durante miles de años en Yemen; aún vigente en Hadramaut, aunque en retroceso frente al bombeo",
+    "tipo": "agua",
+    "vigencia": "en_retroceso",
+    "detalle": "El riego por avenida desvía pulsos de crecida hacia parcelas escalonadas y deja que el sedimento y el agua se distribuyan antes de pasar al nivel siguiente. En Hadramaut, esta lógica permite una campaña después de lluvias lejanas aun donde no hay curso permanente; la expansión de pozos motorizados redujo su uso. Su diseño exige aliviaderos y rutas de excedente, porque la misma crecida que riega puede erosionar.",
+    "fuentes": [
+      {
+        "label": "FAO — Being the Change in Yemen: Improving Integrated Water Resources Management for Food Security",
+        "url": "https://www.fao.org/countryprofiles/news-archive/detail-news/en/c/1634924/"
+      }
+    ],
+    "verificacion": "Spate irrigation is practiced in Yemen along wadi courses and in the plains. It has been practised for thousands of years"
+  },
+  {
+    "fichaId": "socotra",
+    "practica": "Trashumancia vertical en busca de agua",
+    "periodo": "Práctica milenaria; vigente pero en retroceso desde fines del siglo XX",
+    "tipo": "ganaderia",
+    "vigencia": "en_retroceso",
+    "detalle": "La documentación de Socotra describe hogares con residencia relativamente estable que mueven cabras, ovejas y vacunos estacionalmente, sobre todo siguiendo la disponibilidad de agua. Los movimientos suelen subir a tierras altas durante la estación seca y regresar a costa y valles cuando allí vuelve el agua. La movilidad distribuye presión sobre un forraje escaso y evita dimensionar cada asentamiento para sostener el rebaño todo el año.",
+    "fuentes": [
+      {
+        "label": "Elie (2014) — Soqotra's pastoral economy: from core to auxiliary livelihood, Pastoralism",
+        "url": "https://link.springer.com/article/10.1186/s13570-014-0015-4"
+      }
+    ],
+    "verificacion": "The practice of pastoralism is millennia-old in Soqotra"
+  },
+  {
+    "fichaId": "kuh_rud_montano",
+    "practica": "Qanat y azafrán de bajo consumo hídrico",
+    "periodo": "Qanats con más de 2.500 años de suministro; sistema de azafrán vigente",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "En Gonabad, túneles subterráneos interceptan el acuífero y conducen agua por gravedad hasta parcelas de azafrán, un cultivo de alto valor y baja demanda hídrica. Llevar el agua bajo tierra reduce evaporación y evita extraer desde el fondo del acuífero; la distribución comunitaria organiza turnos y mantenimiento. La combinación responde a aridez extrema sin suponer que el acuífero es ilimitado.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Qanat-based Saffron Farming System in Gonabad, Iran",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/iran-qanat-based-saffron-system/en"
+      }
+    ],
+    "verificacion": "supplied water for over 2500 years"
+  },
+  {
+    "fichaId": "elburz_estepa_forestal",
+    "practica": "Jardines de inundación del Bāghestān",
+    "periodo": "Desde hace miles de años; vigente",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "Al pie del Elburz, el Bāghestān de Qazvin remodela la cuenca con diques y parcelas para extender crecidas estacionales sobre huertos de pistacho, almendro, vid y albaricoque. El agua queda retenida e infiltra lentamente; dos inundaciones anuales sostienen los árboles durante el verano y a la vez protegen la ciudad aguas abajo. El mantenimiento se concentra en diques, poda, injerto y limpieza, no en riego continuo.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Ancient Traditional Gardens of Qazvin Bāghestān, Iran",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/iran-qazvin-ancient-gardens/en"
+      }
+    ],
+    "verificacion": "The traditional Gardens of Qazvin are a flood-spreading system that dates back to thousands of years ago"
+  },
+  {
+    "fichaId": "sistan_registan",
+    "practica": "Molino vertical asbad movido por los vientos de 120 días",
+    "periodo": "De origen medieval o anterior en Sistán; difundido fuera de Irán hacia el siglo XII",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Los asbad orientan aberturas al viento estacional fuerte para mover un eje vertical y moler cereal sin agua ni combustible. En Sistán, la tecnología convierte una limitante —viento persistente y escasez hídrica— en energía de procesamiento próxima al cultivo. La ubicación y orientación del edificio forman parte del sistema tanto como la maquinaria.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Asbads (windmill) of Iran",
+        "url": "https://whc.unesco.org/en/tentativelists/6192"
+      }
+    ],
+    "verificacion": "The first Asbads seem to have been originated in Sistan"
+  }
+]

@@ -5,7 +5,7 @@ _Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 88 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 114 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -54,7 +54,7 @@ _`lib/biomasRegionalesSudamerica.ts`_
 
 - `amazonia_noroccidental_tierra_firme` — Amazonía noroccidental de tierra firme ✓ *(ya tiene práctica cargada)*
 - `amazonia_oriental_tierra_firme` — Amazonía oriental y meridional de tierra firme ✓ *(ya tiene práctica cargada)*
-- `amazonia_suroccidental_tierra_firme` — Amazonía suroccidental de tierra firme
+- `amazonia_suroccidental_tierra_firme` — Amazonía suroccidental de tierra firme ✓ *(ya tiene práctica cargada)*
 - `bosque_humedo_occidente_ecuador` — Bosques húmedos del occidente ecuatoriano
 - `bosque_juan_fernandez` — Bosques templados de Juan Fernández
 - `bosque_seco_chiquitano` — Bosque seco chiquitano ✓ *(ya tiene práctica cargada)*
@@ -67,7 +67,7 @@ _`lib/biomasRegionalesSudamerica.ts`_
 - `caatinga` — Caatinga ✓ *(ya tiene práctica cargada)*
 - `caatinga_enclaves_humedos` — Enclaves húmedos de la Caatinga ✓ *(ya tiene práctica cargada)*
 - `campinaranas_aguas_negras` — Campinaranas del río Negro
-- `campos_rupestres` — Campos rupestres de Espinhaço
+- `campos_rupestres` — Campos rupestres de Espinhaço ✓ *(ya tiene práctica cargada)*
 - `campos_uruguayos` — Campos y pastizales uruguayos ✓ *(ya tiene práctica cargada)*
 - `chaco_humedo` — Chaco húmedo ✓ *(ya tiene práctica cargada)*
 - `galapagos_matorral_xerico` — Galápagos: zonas áridas y de transición
@@ -96,7 +96,7 @@ _`lib/biomasRegionalesSudamerica.ts`_
 - `puna_seca_central` — Puna seca central ✓ *(ya tiene práctica cargada)*
 - `rapa_nui_bosque_subtropical_transformado` — Rapa Nui y Sala y Gómez ✓ *(ya tiene práctica cargada)*
 - `sabanas_beni` — Sabanas inundables del Beni ✓ *(ya tiene práctica cargada)*
-- `sabanas_guayanesas` — Sabanas del Escudo Guayanés
+- `sabanas_guayanesas` — Sabanas del Escudo Guayanés ✓ *(ya tiene práctica cargada)*
 - `valles_secos_interandinos` — Valles secos interandinos ✓ *(ya tiene práctica cargada)*
 - `varzeas_igapos_amazonicos` — Várzeas e igapós amazónicos ✓ *(ya tiene práctica cargada)*
 
@@ -115,7 +115,7 @@ _`lib/biomasRegionales.ts`_
 - `taiga_borde_agricola` — Bosque boreal y borde agrícola ✓ *(ya tiene práctica cargada)*
 - `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos ✓ *(ya tiene práctica cargada)*
 - `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano
-- `bosque_mesofilo_montana` — Bosque mesófilo de montaña
+- `bosque_mesofilo_montana` — Bosque mesófilo de montaña ✓ *(ya tiene práctica cargada)*
 - `matorral_xerofilo_altiplano_mexicano` — Matorral xerófilo del Altiplano mexicano ✓ *(ya tiene práctica cargada)*
 - `bosque_humedo_tropical_caribeno` — Bosque húmedo tropical caribeño insular ✓ *(ya tiene práctica cargada)*
 - `matorral_seco_caribeno` — Matorral y bosque seco costero del Caribe ✓ *(ya tiene práctica cargada)*
@@ -252,48 +252,48 @@ _`lib/biomasRegionalesMedioOriente.ts`_
 
 - `estepa_siria_badia` — Estepa siria (badia)
 - `mesopotamia_jazira` — Llanura mesopotámica (Yazira)
-- `mesopotamia_marismas` — Marismas del Tigris y el Éufrates (Ahwar)
-- `desierto_norarabigo` — Desierto norarábigo
-- `harrat_basalto` — Altiplano basáltico (harrat)
+- `mesopotamia_marismas` — Marismas del Tigris y el Éufrates (Ahwar) ✓ *(ya tiene práctica cargada)*
+- `desierto_norarabigo` — Desierto norarábigo ✓ *(ya tiene práctica cargada)*
+- `harrat_basalto` — Altiplano basáltico (harrat) ✓ *(ya tiene práctica cargada)*
 - `desierto_arabigo` — Desierto arábigo
-- `nefud_rub_al_khali` — Grandes arenales (Nefud y Rub al-Jali)
+- `nefud_rub_al_khali` — Grandes arenales (Nefud y Rub al-Jali) ✓ *(ya tiene práctica cargada)*
 - `golfo_llanura_costera` — Llanura costera del Golfo
 - `golfo_persico_mangle` — Manglar del Golfo y el mar Arábigo
 - `arabia_este_niebla` — Arenales de niebla del este arábigo
 - `mar_rojo_escarpe` — Escarpe y llanura del mar Rojo
 - `mar_rojo_mangle` — Manglar del mar Rojo
-- `tihama_costa_arida` — Tihama, llanura costera del mar Rojo
-- `yemen_montana_aterrazada` — Montaña aterrazada del Yemen
-- `asir_altiplano_seco` — Altiplano seco del Asir
-- `arabia_sur_bosque_niebla` — Bosque de niebla del Dofar
-- `hadramaut_meseta` — Meseta y uadis del Hadramaut
+- `tihama_costa_arida` — Tihama, llanura costera del mar Rojo ✓ *(ya tiene práctica cargada)*
+- `yemen_montana_aterrazada` — Montaña aterrazada del Yemen ✓ *(ya tiene práctica cargada)*
+- `asir_altiplano_seco` — Altiplano seco del Asir ✓ *(ya tiene práctica cargada)*
+- `arabia_sur_bosque_niebla` — Bosque de niebla del Dofar ✓ *(ya tiene práctica cargada)*
+- `hadramaut_meseta` — Meseta y uadis del Hadramaut ✓ *(ya tiene práctica cargada)*
 - `socotra` — Socotra
 - `hajar_falaj` — Montañas del Hajar y sus aflaj ✓ *(ya tiene práctica cargada)*
 - `iran_sur_nubo_sindico` — Sur de Irán nubo-síndico
 - `kavir_cuencas_endorreicas` — Cuencas endorreicas de Irán central ✓ *(ya tiene práctica cargada)*
 - `hircania_caspio` — Bosque hircano del Caspio
-- `elburz_estepa_forestal` — Estepa forestal del Elburz
+- `elburz_estepa_forestal` — Estepa forestal del Elburz ✓ *(ya tiene práctica cargada)*
 - `caspio_llanura_desertica` — Llanura desértica caspia
 - `kopet_dag` — Kopet Dag
 - `badghyz_pistacho` — Sabana de pistacho de Badgyz
-- `kuh_rud_montano` — Sierras de Kuh Rud y el este iraní
-- `sistan_registan` — Arenales de Sistán y Registán
+- `kuh_rud_montano` — Sierras de Kuh Rud y el este iraní ✓ *(ya tiene práctica cargada)*
+- `sistan_registan` — Arenales de Sistán y Registán ✓ *(ya tiene práctica cargada)*
 
 ## I. Norte de África — 14 fichas
 
 _`lib/biomasRegionalesNorteAfrica.ts`_
 
-- `magreb_bosque_mediterraneo` — Bosque mediterráneo del Magreb
-- `magreb_estepa_alfa` — Estepa de alfa y altiplanos
-- `atlas_conifera_montana` — Conífera de montaña del Atlas
-- `alto_atlas_enebro` — Enebral de altura del Alto Atlas
-- `nilo_delta` — Delta y valle del Nilo
-- `chotts_sebkhas` — Chotts y sebkhas saharianas
-- `sahara_norte_estepa` — Estepa norsahariana y oasis de foggara
+- `magreb_bosque_mediterraneo` — Bosque mediterráneo del Magreb ✓ *(ya tiene práctica cargada)*
+- `magreb_estepa_alfa` — Estepa de alfa y altiplanos ✓ *(ya tiene práctica cargada)*
+- `atlas_conifera_montana` — Conífera de montaña del Atlas ✓ *(ya tiene práctica cargada)*
+- `alto_atlas_enebro` — Enebral de altura del Alto Atlas ✓ *(ya tiene práctica cargada)*
+- `nilo_delta` — Delta y valle del Nilo ✓ *(ya tiene práctica cargada)*
+- `chotts_sebkhas` — Chotts y sebkhas saharianas ✓ *(ya tiene práctica cargada)*
+- `sahara_norte_estepa` — Estepa norsahariana y oasis de foggara ✓ *(ya tiene práctica cargada)*
 - `sahara_occidental_erg` — Sahara occidental y grandes ergs
-- `sahara_oriental` — Sahara oriental y desierto líbico
-- `sahara_sur` — Sahara meridional
+- `sahara_oriental` — Sahara oriental y desierto líbico ✓ *(ya tiene práctica cargada)*
+- `sahara_sur` — Sahara meridional ✓ *(ya tiene práctica cargada)*
 - `sahara_costa_atlantica` — Costa atlántica sahariana
-- `ahaggar_tassili` — Macizos del Ahaggar y el Tassili
+- `ahaggar_tassili` — Macizos del Ahaggar y el Tassili ✓ *(ya tiene práctica cargada)*
 - `uweinat_tibesti` — Macizos de Uweinat y Tibesti
 - `mar_rojo_costa_desierto` — Desierto costero del mar Rojo

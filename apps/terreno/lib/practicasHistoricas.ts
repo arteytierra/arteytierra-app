@@ -39,11 +39,13 @@ import type { PracticaHistorica } from './biomaTipos';
  *
  * ESTADO
  *
- * 89 entradas sobre 88 ecorregiones de 222. América está cubierta casi entera
- * —Sudamérica, México, Centroamérica, el Caribe y Estados Unidos— y falta el
- * resto del mundo. Es trabajo de relevamiento con fuente, no de programación:
- * el encargo está en `_research/_encargos/`, y cada lote se verifica abriendo
- * las URLs antes de montarlo.
+ * 115 entradas sobre 114 ecorregiones de 222. América está cubierta casi
+ * entera, y con Medio Oriente y el norte de África entra el arco seco donde más
+ * obra hidráulica hay documentada por organismos. Lo que falta es Europa —la
+ * Unión y los no comunitarios— y Canadá, Alaska y Groenlandia. Es trabajo de
+ * relevamiento con fuente, no de programación: el encargo está en
+ * `_research/_encargos/`, y cada lote se verifica abriendo las URLs antes de
+ * montarlo.
  */
 export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
   // ── Centro de México ────────────────────────────────────────────────────────
@@ -563,6 +565,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
     },
   ],
 
+  amazonia_suroccidental_tierra_firme: [
+    {
+      practica: 'Movimiento de tierra y jardines forestales Aquiry',
+      periodo: 'Desde hace más de 2500 años; geoglifos fechados entre 600 a.C. y 850 d.C.',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'En Acre y Amazonas, las comunidades constructoras de geoglifos Aquiry levantaron recintos, zanjas, terraplenes y caminos vinculados con el manejo del suelo, el agua y jardines forestales. La persistencia de castaña y palmeras domesticadas o semidomesticadas alrededor de las obras muestra que el diseño productivo y la estructura forestal formaban un mismo paisaje gestionado.',
+      fuentes: [
+        { label: 'Nature — Over 20,000 precolonial earthworks in Southwest Amazonia', url: 'https://www.nature.com/articles/s41586-026-10835-7' },
+      ],
+    },
+  ],
   // ── Andes tropicales ──────────────────────────────────────────────────────────
   bosques_montanos_andes_norte: [
     {
@@ -725,6 +740,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
     },
   ],
 
+  sabanas_guayanesas: [
+    {
+      practica: 'Manejo Pemón del fuego en la Gran Sabana',
+      periodo: 'Practicado durante siglos; observado por UNESCO e IUCN en 1999',
+      tipo: 'fuego',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades Pemón de Canaima aplican procedimientos tradicionales de encendido y control en la Gran Sabana, donde el fuego participa de la dinámica ecológica. La fuente documenta quemas pequeñas y controladas, pero cualquier traducción a manejo predial debe reconocer la autoridad y el conocimiento Pemón y someterse al plan de fuego y la legislación vigentes.',
+      fuentes: [
+        { label: 'UNESCO–IUCN — Mission report to Canaima National Park', url: 'https://whc.unesco.org/document/134048' },
+      ],
+    },
+  ],
   // ── Llanuras inundables y bosque seco del interior ────────────────────────────
   sabanas_beni: [
     {
@@ -885,6 +913,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
     },
   ],
 
+  campos_rupestres: [
+    {
+      practica: 'Recolección estacional de flores siempre-vivas',
+      periodo: 'Práctica secular y vigente; reconocida por FAO en 2020',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Familias campesinas y quilombolas del Espinhaço suben entre abril y octubre para recolectar flores siempre-vivas y permanecer semanas en la sierra. El manejo regula momento e intensidad según el ciclo natural para permitir renovación, y se articula con custodia e intercambio de semillas y plantas alimentarias y medicinales.',
+      fuentes: [
+        { label: 'FAO Brasil — Apanhadoras e apanhadores de flores sempre-vivas (copia archivada del 04/01/2023: la nota ya no está en fao.org)', url: 'https://web.archive.org/web/20230104000110/https://www.fao.org/brasil/noticias/detail-events/fr/c/1265788/' },
+      ],
+    },
+  ],
   // ── Alaska y Hawái ────────────────────────────────────────────────────────────
   alaska_costa_taiga: [
     {
@@ -1153,6 +1194,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
     },
   ],
 
+  bosque_mesofilo_montana: [
+    {
+      practica: 'Cafetal diversificado bajo sombra',
+      periodo: 'Desde fines del siglo XVIII en México; expansión regional durante los siglos XIX y XX',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'La documentación de CONABIO sitúa la introducción del café a fines del siglo XVIII y describe cafetales diversificados bajo sombra entreverados con bosque mesófilo. El dosel amortigua sol y lluvia, conserva humedad y mantiene continuidad arbórea en laderas; el contraste importante es con plantaciones a pleno sol, que eliminan esa función.',
+      fuentes: [
+        { label: 'CONABIO — Cien casos de éxito: Cafetales y biodiversidad', url: 'https://www.biodiversidad.gob.mx/pais/cien_casos/pdf/Cien%20casos.pdf' },
+      ],
+    },
+  ],
   // ── Centroamérica ─────────────────────────────────────────────────────────────
   corredor_seco_centroamericano: [
     {
@@ -1245,6 +1299,306 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pequeños agricultores y fincas de Dominica combinaron cocoteros o cítricos en el estrato alto, banano, café o cacao en niveles intermedios y raíces cerca del suelo. La disposición aprovecha verticalmente parcelas húmedas y escarpadas y mantiene cobertura permanente; la fuente de 1991 registra continuidad en el territorio entonces denominado Carib Territory y en otros sitios, pero no demuestra por sí sola su extensión actual.',
       fuentes: [
         { label: 'FAO — Agroforestry systems in Dominica', url: 'https://www.fao.org/4/x5656e/x5656e05.htm' },
+      ],
+    },
+  ],
+
+  // ── Mesopotamia y desierto sirio-arabigo ──────────────────────────────────────
+  mesopotamia_marismas: [
+    {
+      practica: 'Cría de búfalos y aprovechamiento de juncos en humedal',
+      periodo: 'Durante miles de años; interrumpida por el drenaje de fines del siglo XX y retomada parcialmente desde 2003',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'La misión de UNESCO documenta que las comunidades árabes de las marismas sostuvieron durante milenios la cría de búfalos, la pesca y la construcción con juncos, antes del drenaje forzado. El sistema depende de conservar agua somera y vegetación palustre: los juncos aportan forraje y material constructivo, mientras los búfalos aprovechan un ambiente que no admite agricultura convencional. La fuente señala que la cría de búfalos y las casas de juncos continúan, aunque con menor población y materiales nuevos.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre (2025) — Reactive Monitoring Mission to the Ahwar of Southern Iraq', url: 'https://whc.unesco.org/document/223567' },
+      ],
+    },
+  ],
+  desierto_norarabigo: [
+    {
+      practica: 'Comederos de caza colectiva mediante cometas del desierto',
+      periodo: 'Desde hace al menos 9.000 años en Jordania y el norte de Arabia',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El registro arqueológico documenta largas alineaciones de piedra que conducían animales silvestres hacia recintos rodeados de fosas. La disposición usa la topografía y el movimiento del rebaño para concentrar un recurso disperso en el desierto; muestra que la ubicación de cercos, embudos y puntos de captura se diseñaba a escala de paisaje. Es evidencia histórica de caza colectiva, no una práctica aplicable hoy sobre fauna silvestre.',
+      fuentes: [
+        { label: 'Crassard et al. (2023) — The oldest plans to scale of humanmade mega-structures, PLOS ONE', url: 'https://journals.plos.org/plosone/doi?id=10.1371/journal.pone.0277927' },
+      ],
+    },
+  ],
+  harrat_basalto: [
+    {
+      practica: 'Diques de gravedad para captar crecidas de uadi',
+      periodo: 'Desde los primeros siglos de nuestra era; algunos diques de Khaybar podrían ser preislámicos',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'Los diques históricos de Khaybar y Medina cerraban pasos estrechos de los uadis para retener lluvias torrenciales y alimentar canales hacia campos próximos. La obra combina captación, laminación de la crecida y distribución posterior: reduce daño aguas abajo y convierte pulsos breves en una reserva agrícola. UNESCO advierte que varias cronologías siguen en debate, por eso el período conserva esa incertidumbre.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Water Management in Saudi Arabia: The Ancient Dams', url: 'https://whc.unesco.org/en/tentativelists/6637' },
+      ],
+    },
+  ],
+
+  // ── Peninsula arabiga ─────────────────────────────────────────────────────────
+  nefud_rub_al_khali: [
+    {
+      practica: 'Oasis datilero en tres estratos con riego falaj',
+      periodo: 'Desarrollado durante milenios; vigente con apoyo creciente de bombeo',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'La FAO documenta en Liwa un dosel de palmeras, frutales intermedios y cultivos anuales, abastecido por canales falaj que conducen agua por gravedad. Los tres estratos moderan viento, temperatura y humedad relativa, permitiendo producción en el borde del Rub al-Jali. La fuente aclara que el flujo natural ya no alcanza y hoy se complementa con agua bombeada.',
+      fuentes: [
+        { label: 'FAO GIAHS — Al Ain and Liwa Historical Date Palm Oases, United Arab Emirates', url: 'https://www.fao.org/giahs/giahs-around-the-world/united-arab-emirates-al-ain-liwa-date-palm-oases/en' },
+      ],
+    },
+  ],
+  asir_altiplano_seco: [
+    {
+      practica: 'Hima: descanso rotativo de pasturas y montes',
+      periodo: 'Durante más de 1.400 años; aún persiste en decenas de reservas',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'El sistema hima separa cíclicamente áreas de pastoreo, bosque o floración para que la vegetación se regenere antes de volver a usarse. En Asir, cada aldea gobernaba una o más reservas mediante normas consuetudinarias, ajustando acceso, estación y tipo de aprovechamiento. Para el diseño predial, el principio transferible es dejar descansos espacialmente explícitos y ligados al ciclo de semillazón, no abrir toda la superficie a la vez.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — The Rural Cultural Landscapes of Sarawat Mountains', url: 'https://whc.unesco.org/en/tentativelists/6640/' },
+      ],
+    },
+  ],
+  arabia_sur_bosque_niebla: [
+    {
+      practica: 'Sangrado tradicional del árbol de incienso',
+      periodo: 'Desde la Antigüedad; documentado en el comercio al menos desde fines del siglo I a.C. y vigente',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En los uadis de Dofar se recolecta resina de Boswellia sacra mediante incisiones repetidas, conservando árboles vivos en un ambiente extremadamente seco. El puerto de Khor Rori fue establecido a fines del siglo I a.C. dentro del comercio regional del incienso, y Wadi Dawkah conserva la producción en su contexto natural. La ubicación del arbolado en uadis y el cuidado del individuo productor son más importantes que maximizar densidad o desmontar el sotobosque.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Land of Frankincense', url: 'https://whc.unesco.org/en/list/1010' },
+      ],
+    },
+  ],
+
+  // ── Yemen ─────────────────────────────────────────────────────────────────────
+  tihama_costa_arida: [
+    {
+      practica: 'Riego por avenida con diques y acequias masqua',
+      periodo: 'Practicado durante miles de años; vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'La documentación de FAO describe el desvío de avenidas estacionales desde los uadis mediante pequeños diques de tierra o piedra hacia acequias tradicionales llamadas masqua. En la Tihama, el sistema reparte sobre terrazas una crecida que de otro modo sería destructiva y permite sembrar sorgo, mijo y maíz sin depender de lluvia local regular. También recarga acuíferos someros y llena abrevaderos.',
+      fuentes: [
+        { label: 'FAO — Being the Change in Yemen: Improving Integrated Water Resources Management for Food Security', url: 'https://www.fao.org/countryprofiles/news-archive/detail-news/en/c/1634924/' },
+      ],
+    },
+  ],
+  yemen_montana_aterrazada: [
+    {
+      practica: 'Terrazas de piedra para cosechar lluvia en laderas',
+      periodo: 'Desde al menos el tercer milenio a.C.; todavía en uso',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'Las terrazas convierten pendientes abruptas en superficies cultivables y frenan la escorrentía para que el agua infiltre en el perfil. Los muros retienen suelo fértil, reducen erosión y distribuyen lluvias estacionales en una montaña semiárida con muy poca tierra llana. UNESCO documenta continuidad funcional y reparación comunitaria de muros después de crecidas.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Agricultural Terraces in Yemen', url: 'https://whc.unesco.org/en/tentativelists/6875/' },
+      ],
+    },
+  ],
+  hadramaut_meseta: [
+    {
+      practica: 'Riego de campos con crecidas estacionales de uadi',
+      periodo: 'Practicado durante miles de años en Yemen; aún vigente en Hadramaut, aunque en retroceso frente al bombeo',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El riego por avenida desvía pulsos de crecida hacia parcelas escalonadas y deja que el sedimento y el agua se distribuyan antes de pasar al nivel siguiente. En Hadramaut, esta lógica permite una campaña después de lluvias lejanas aun donde no hay curso permanente; la expansión de pozos motorizados redujo su uso. Su diseño exige aliviaderos y rutas de excedente, porque la misma crecida que riega puede erosionar.',
+      fuentes: [
+        { label: 'FAO — Being the Change in Yemen: Improving Integrated Water Resources Management for Food Security', url: 'https://www.fao.org/countryprofiles/news-archive/detail-news/en/c/1634924/' },
+      ],
+    },
+  ],
+
+  // ── Iran y Sistan ─────────────────────────────────────────────────────────────
+  kuh_rud_montano: [
+    {
+      practica: 'Qanat y azafrán de bajo consumo hídrico',
+      periodo: 'Qanats con más de 2.500 años de suministro; sistema de azafrán vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'En Gonabad, túneles subterráneos interceptan el acuífero y conducen agua por gravedad hasta parcelas de azafrán, un cultivo de alto valor y baja demanda hídrica. Llevar el agua bajo tierra reduce evaporación y evita extraer desde el fondo del acuífero; la distribución comunitaria organiza turnos y mantenimiento. La combinación responde a aridez extrema sin suponer que el acuífero es ilimitado.',
+      fuentes: [
+        { label: 'FAO GIAHS — Qanat-based Saffron Farming System in Gonabad, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-qanat-based-saffron-system/en' },
+      ],
+    },
+  ],
+  elburz_estepa_forestal: [
+    {
+      practica: 'Jardines de inundación del Bāghestān',
+      periodo: 'Desde hace miles de años; vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Al pie del Elburz, el Bāghestān de Qazvin remodela la cuenca con diques y parcelas para extender crecidas estacionales sobre huertos de pistacho, almendro, vid y albaricoque. El agua queda retenida e infiltra lentamente; dos inundaciones anuales sostienen los árboles durante el verano y a la vez protegen la ciudad aguas abajo. El mantenimiento se concentra en diques, poda, injerto y limpieza, no en riego continuo.',
+      fuentes: [
+        { label: 'FAO GIAHS — Ancient Traditional Gardens of Qazvin Bāghestān, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-qazvin-ancient-gardens/en' },
+      ],
+    },
+  ],
+  sistan_registan: [
+    {
+      practica: 'Molino vertical asbad movido por los vientos de 120 días',
+      periodo: 'De origen medieval o anterior en Sistán; difundido fuera de Irán hacia el siglo XII',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Los asbad orientan aberturas al viento estacional fuerte para mover un eje vertical y moler cereal sin agua ni combustible. En Sistán, la tecnología convierte una limitante —viento persistente y escasez hídrica— en energía de procesamiento próxima al cultivo. La ubicación y orientación del edificio forman parte del sistema tanto como la maquinaria.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Asbads (windmill) of Iran', url: 'https://whc.unesco.org/en/tentativelists/6192' },
+      ],
+    },
+  ],
+
+  // ── Magreb y Atlas ────────────────────────────────────────────────────────────
+  magreb_bosque_mediterraneo: [
+    {
+      practica: 'Sistema agro-silvo-pastoral del argán en terrazas secas',
+      periodo: 'Durante siglos; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Ait Souab-Ait Mansour, el argán se integra con cultivos anuales y perennes, pastoreo y terrazas de piedra seca. Los muros crean suelo cultivable, retienen agua y reducen erosión; depósitos subterráneos matifyia guardan lluvia para atravesar períodos secos. La diversidad de estratos reparte producción entre aceite, forraje, cereal, carne y leña en suelos pobres.',
+      fuentes: [
+        { label: 'FAO GIAHS — Argan-based agro-sylvo-pastoral system within Ait Souab-Ait Mansour, Morocco', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-argan-based-system/en' },
+      ],
+    },
+  ],
+  magreb_estepa_alfa: [
+    {
+      practica: 'Derechos consuetudinarios para rotar pastoreo en estepa',
+      periodo: 'Desarrollado a lo largo de siglos; vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En AbbouLakhal y Figuig, el uso de pastizales se organiza mediante territorios pastorales reconocidos y consenso tribal, complementando el oasis cultivado. Los rebaños aprovechan grandes estepas extensivas sin convertirlas en parcelas permanentes, mientras las reglas de acceso reducen sobreuso y conflicto. El sistema funciona porque la movilidad y el derecho de uso se diseñan juntos, no como decisiones separadas.',
+      fuentes: [
+        { label: 'FAO GIAHS — The ksour of Figuig: oasis and pastoral culture around social management of water and land', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-ksour-figuig-oasis/en' },
+      ],
+    },
+  ],
+  atlas_conifera_montana: [
+    {
+      practica: 'Oasis frío con rotación, agroforestería y ganadería integrada',
+      periodo: 'Durante siglos; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Imilchil-Amellago, pequeñas parcelas fértiles junto al río combinan cereal, hortalizas y frutales con pasturas montanas. La rotación y la agroforestería reparten riesgo climático, mientras el estiércol conecta el rebaño con la fertilidad de los cultivos. El mosaico concentra la agricultura donde hay agua y conserva el resto como pastizal de uso estacional.',
+      fuentes: [
+        { label: 'FAO GIAHS — Oases System in Atlas Mountains, Morocco', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-cold-oases-system/en' },
+      ],
+    },
+  ],
+  alto_atlas_enebro: [
+    {
+      practica: 'Agdal: cierre estacional de pasturas de altura',
+      periodo: 'Práctica tradicional de larga duración; vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'El agdal de Imilchil-Amellago cierra sectores de pastura durante el crecimiento y la semillazón, y los reabre cuando la vegetación puede soportar el ganado. La presentación técnica de FAO documenta cierres de marzo a junio y apertura posterior para vacunos y caballos. El criterio de diseño es reservar superficie y calendario antes de que falte forraje, manteniendo zonas de descanso reconocibles para toda la comunidad.',
+      fuentes: [
+        { label: 'FAO GIAHS — Oases System in Atlas Mountains of Morocco (technical presentation)', url: 'https://www.fao.org/fileadmin/templates/giahs/Presentations/beijing/Seddik_Saidi-Oases_System_in_Altas_Mountains_of_Morocco.pdf' },
+      ],
+    },
+  ],
+
+  // ── Sahara y sus oasis ────────────────────────────────────────────────────────
+  sahara_norte_estepa: [
+    {
+      practica: 'Khettara y turnos de agua medidos por tiempo',
+      periodo: 'Construido y ajustado durante siglos; vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'En Figuig, galerías khettara conducen agua del acuífero por gravedad a estanques y canales del oasis. El derecho se mide en tiempo de flujo —kharrouba— y no en volumen, de modo que cada usuario recibe un turno sin poder extraer más agua que la disponible. El mantenimiento rotativo twiza vincula infraestructura, reparto y trabajo colectivo en una sola regla operativa.',
+      fuentes: [
+        { label: 'FAO GIAHS — The ksour of Figuig: oasis and pastoral culture around social management of water and land', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-ksour-figuig-oasis/en' },
+      ],
+    },
+  ],
+  chotts_sebkhas: [
+    {
+      practica: 'Ghout: palmeras plantadas junto a la capa freática',
+      periodo: 'Desde el siglo XV; vigente pero amenazado',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Oued Souf se excava una depresión en la duna hasta acercar las raíces de las palmeras al nivel freático, evitando bombeo. Bajo las palmeras se cultivan frutales y hortalizas; barreras de hojas frenan arena y el hueco se limpia periódicamente según dirección y velocidad del viento. El sistema ahorra energía, pero el bombeo regional y el drenaje deficiente están secando o anegando ghouts.',
+      fuentes: [
+        { label: 'FAO GIAHS — Ghout Oasis System, El Oued, Algeria', url: 'https://www.fao.org/giahs/giahs-around-the-world/algeria-ghout-oasis-system/en' },
+      ],
+    },
+  ],
+  sahara_oriental: [
+    {
+      practica: 'Oasis de Siwa con policultivo en tres alturas',
+      periodo: 'Área agraria reconocida como muy antigua; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En Siwa, palmeras datileras forman el estrato alto, olivos y otros frutales el intermedio, y hortalizas, forrajes o cereal ocupan el piso bajo. La estructura reduce viento y radiación, aumenta humedad relativa y crea un microclima donde pueden crecer cultivos que no soportarían el desierto abierto. Un supervisor tradicional organiza horarios precisos de apertura y cierre de canales.',
+      fuentes: [
+        { label: 'FAO GIAHS — Dates Production System in Siwa Oasis, Egypt', url: 'https://www.fao.org/giahs/giahs-around-the-world/egypt-siwa-oasis-dates-system/en' },
+      ],
+    },
+  ],
+  nilo_delta: [
+    {
+      practica: 'Riego de cuenca con la inundación anual del Nilo',
+      periodo: 'Sistema histórico anterior a la presa de Asuán; reemplazado por riego perenne en el siglo XX',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'La agricultura histórica del valle y delta retenía la crecida anual en cuencas delimitadas para que el agua infiltrara y depositara limo antes de regresar al río. El sistema alineaba calendario de siembra, relieve y fertilidad con un pulso anual, sin exigir bombeo continuo. La presa alta de Asuán permitió riego perenne y terminó con ese régimen como base productiva.',
+      fuentes: [
+        { label: 'Vidal, Comeau, Plusquellec y Gadelle (2001) — Case Studies on Water Conservation in the Mediterranean Region, FAO/IPTRID, Roma (el caso de Egipto, p. 44)', url: 'https://www.fao.org/4/y1275e/y1275e00.pdf' },
+      ],
+    },
+  ],
+  sahara_sur: [
+    {
+      practica: 'Movilidad pastoral entre pasturas húmedas y secas',
+      periodo: 'Desarrollada hace unos 7.000 años en el norte de África; vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'La síntesis de FAO sitúa el desarrollo del pastoralismo norteafricano hace unos siete milenios como respuesta a una aridez creciente e imprevisible. Mover el rebaño permite usar áreas secas durante la estación húmeda y reservar sectores más húmedos para la estación seca, siguiendo agua y forraje en lugar de forzar una carga fija. Es una estrategia territorial: requiere corredores y acuerdos de acceso, no sólo rotación dentro de un potrero.',
+      fuentes: [
+        { label: 'FAO (2018) — Pastoralism in Africa’s Drylands: Reducing Risks, Addressing Vulnerability and Enhancing Resilience, Roma (repositorio abierto de la FAO)', url: 'https://openknowledge.fao.org/handle/20.500.14283/ca1312en' },
+      ],
+    },
+  ],
+
+  // ── Macizos centrales del Sahara ──────────────────────────────────────────────
+  ahaggar_tassili: [
+    {
+      practica: 'Ganadería documentada por arte rupestre y recintos',
+      periodo: 'Entre 6000 a.C. y los primeros siglos de nuestra era',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'En Tassili n’Ajjer, miles de pinturas, grabados, habitaciones, túmulos y recintos registran el pasaje de fauna silvestre a escenas de vida pastoril y, más tarde, caballos y camellos. El registro muestra que la producción animal se adaptó a cambios prolongados de clima y disponibilidad de agua. No permite reconstruir un calendario exacto de pastoreo, por lo que la entrada conserva sólo lo que la evidencia visual y arqueológica sostiene.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Tassili n\'Ajjer', url: 'https://whc.unesco.org/en/list/179' },
       ],
     },
   ],
