@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import { PRACTICAS_POR_FICHA, practicasDeFicha } from '@/lib/practicasHistoricas';
 import { fichaPorId } from '@/lib/contexto';
-import { BIOMAS_REGIONALES_EUROPA_UE } from '@/lib/biomasRegionalesEuropaUE';
+import { BIOMAS_REGIONALES } from '@/lib/biomasRegionales';
 
 /*
  * El contrato de las prácticas documentadas.
@@ -105,11 +105,19 @@ describe('dónde vive esta capa', () => {
     //
     // La ficha se busca en vez de nombrarse: la versión anterior clavaba un id
     // que el lote siguiente llenó, y el test empezó a fallar por haber hecho
-    // bien el trabajo.
-    const sinPracticas = Object.keys(BIOMAS_REGIONALES_EUROPA_UE).map((id) => fichaPorId(id)).find(
+    // bien el trabajo. Clavar un catálogo tiene el mismo problema y ya pasó:
+    // el séptimo lote cerró la Unión Europea y dejó al test sin sujeto. Por eso
+    // ahora busca en todos los catálogos regionales a la vez.
+    //
+    // El día que no encuentre ninguna, la capa estará completa y este test
+    // tendrá que armarse una ficha de mentira para seguir probando lo mismo.
+    const sinPracticas = Object.keys(BIOMAS_REGIONALES).map((id) => fichaPorId(id)).find(
       (f) => f !== null && !PRACTICAS_POR_FICHA[f.id],
     );
-    expect(sinPracticas, 'todas las fichas de la UE ya tienen práctica: elegí otro catálogo').toBeTruthy();
+    expect(
+      sinPracticas,
+      'ninguna ficha regional quedó sin práctica: armá una ficha sintética para este test',
+    ).toBeTruthy();
     expect(sinPracticas?.practicas).toBeUndefined();
   });
 

@@ -39,9 +39,9 @@ import type { PracticaHistorica } from './biomaTipos';
  *
  * ESTADO
  *
- * 173 entradas sobre 172 ecorregiones de 222, con los nueve bloques del anexo
- * abiertos: América, Medio Oriente, el norte de África, Europa y el norte de
- * Canadá y Groenlandia. Lo que queda no es un continente entero sino las fichas
+ * 182 entradas sobre 181 ecorregiones de 222, con los nueve bloques del anexo
+ * abiertos y tres ya cerrados: el catálogo base, Europa no comunitaria y la
+ * Unión Europea. Lo que queda no es un continente entero sino las 41 fichas
  * sueltas que no tuvieron evidencia específica, listadas en los
  * `COBERTURA_*.md`. Es trabajo de relevamiento con fuente, no de programación:
  * el encargo está en `_research/_encargos/`, y cada lote se verifica abriendo
@@ -1513,6 +1513,32 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  estepa_siria_badia: [
+    {
+      practica: 'Trashumancia estacional con reserva de pastura hema',
+      periodo: 'Desde tiempos antiguos hasta la Segunda Guerra Mundial; en retroceso acelerado desde 1958',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'La FAO describe a las comunidades pastoriles beduinas de la Badia siria moviendo los rebaños con las lluvias y manteniendo derechos de pastoreo sobre ciertos recursos como hema, pastura reservada para la sequía o la emergencia. Entraban a la estepa con las lluvias de otoño y salían al agotarse el agua superficial a fines de primavera, de modo que la pastura descansaba buena parte del año y el número de animales quedaba limitado a lo que el período de escasez podía sostener; en verano pastaban los rastrojos y las pajas de los campos agrícolas. Después de la Segunda Guerra Mundial el transporte motorizado, la nacionalización de la tierra de pastoreo —que quedó de acceso abierto y sin supervisión— y la introducción del alimento concentrado en 1958 rompieron esos límites.',
+      fuentes: [
+        { label: 'FAO (2005) — Grasslands of the World, The Near East: Syrian Arab Republic', url: 'https://www.fao.org/4/y8344e/y8344e0i.htm' },
+      ],
+    },
+  ],
+  mesopotamia_jazira: [
+    {
+      practica: 'Cereal de secano fertilizado por pastoreo y residuos domésticos',
+      periodo: 'Más de 8.000 años; intensificación documentada en la Edad del Bronce temprana',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'El estudio geoarqueológico de la Jazira —la franja semiárida del creciente fértil entre el Tigris y el Éufrates— registra más de ocho milenios de asentamiento y cultivo sobre el suelo típico, el Xerosol cálcico, que produce cereal en la mayoría de los años regado sólo por la lluvia. El análisis de fosfatos del suelo y el muestreo extensivo de tiestos mostraron que el suelo de arada se enriqueció con desechos animales y de los asentamientos, posiblemente por el pastoreo y el abonado en la antigüedad. En la Edad del Bronce temprana el uso del suelo se intensificó y cada asentamiento aparece rodeado de un halo de dispersión cerámica, que corresponde a los momentos de máxima población. El artículo es de acceso pago: esta entrada se apoya en su resumen público.',
+      fuentes: [
+        { label: 'Wilkinson, T. J. (1990) — Soil development and early land use in the Jazira region, Upper Mesopotamia, World Archaeology 22(1): 87-103 (resumen público; el texto completo es de pago)', url: 'https://www.tandfonline.com/doi/abs/10.1080/00438243.1990.9980131' },
+      ],
+    },
+  ],
 
   // ── Peninsula arabiga ─────────────────────────────────────────────────────────
   nefud_rub_al_khali: [
@@ -1636,6 +1662,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  badghyz_pistacho: [
+    {
+      practica: 'Implantación rala de pistacho en hoyos para restaurar laderas áridas',
+      periodo: 'Ensayos desde 1930; siembra corregida desde 1931 y continuidad posterior',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El programa forestal de Badghyz ensayó pistachos en hoyos en 1930, corrigió la técnica al año siguiente y llegó a formar casi cinco mil hectáreas de arbolado implantado hacia 1985. La experiencia abandonó las densidades altas: con el espaciamiento semejante al natural los árboles fructificaban a los 15–16 años, frente a 25–30 años en plantaciones densas. Es una práctica técnica contemporánea de restauración y producción —no un saber ancestral atribuido a un pueblo— para una especie resistente a sequía, plagas y enfermedades en laderas áridas.',
+      fuentes: [
+        { label: 'State News Agency of Turkmenistan (2018) — Badkhyz hills is the area of distribution of natural pistachios', url: 'https://turkmenistan.gov.tm/index.php/en/post/10005/badkhyz-hills-is-the-area-of-distribution-of-natural-pistachios' },
+      ],
+    },
+  ],
 
   // ── Magreb y Atlas ────────────────────────────────────────────────────────────
   magreb_bosque_mediterraneo: [
@@ -1754,6 +1793,33 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La síntesis de FAO sitúa el desarrollo del pastoralismo norteafricano hace unos siete milenios como respuesta a una aridez creciente e imprevisible. Mover el rebaño permite usar áreas secas durante la estación húmeda y reservar sectores más húmedos para la estación seca, siguiendo agua y forraje en lugar de forzar una carga fija. Es una estrategia territorial: requiere corredores y acuerdos de acceso, no sólo rotación dentro de un potrero.',
       fuentes: [
         { label: 'FAO (2018) — Pastoralism in Africa’s Drylands: Reducing Risks, Addressing Vulnerability and Enhancing Resilience, Roma (repositorio abierto de la FAO)', url: 'https://openknowledge.fao.org/handle/20.500.14283/ca1312en' },
+      ],
+    },
+  ],
+  sahara_costa_atlantica: [
+    {
+      practica: 'Pesca imraguen de mújol a pie con red de hombro',
+      periodo: 'Registrada por exploradores portugueses desde el siglo XV; vigente',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Los imraguen del Banc d’Arguin viven casi exclusivamente de los cardúmenes migratorios: pescan a pie con red de hombro para el mújol y con red de espera desde lanchas tradicionales a vela para la corvina. La evaluación patrimonial describe sus técnicas como no modificadas desde que las registraron los exploradores portugueses del siglo XV, e incluye entre ellas la colaboración con delfines salvajes para acorralar los cardúmenes de mújol. Unos 500 imraguen viven en siete aldeas dentro del parque y sostienen su economía con esa pesca de subsistencia.',
+      fuentes: [
+        { label: 'IUCN / UNESCO World Heritage Centre (1989) — Banc d’Arguin National Park 506, advisory body evaluation', url: 'https://whc.unesco.org/archive/advisory_body_evaluation/506.pdf' },
+        { label: 'FAO — Les ressources halieutiques de la ZEE mauritanienne: description des pêcheries imraguen', url: 'https://www.fao.org/4/r9048f/R9048F02.htm' },
+      ],
+    },
+  ],
+  mar_rojo_costa_desierto: [
+    {
+      practica: 'Poda y cuidado nómada de acacias forrajeras',
+      periodo: 'Representada desde el Reino Nuevo egipcio (1539-1075 a. C.); todavía practicada en el siglo XXI',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Pastores nómadas hadandawa, amar ar, bishaari, ababda y maʿaza de las colinas del mar Rojo cosechan forraje de Acacia tortilis sacudiendo las ramas con el cayado y podándolas. La poda se hace sobre la subespecie raddiana y nunca sobre la subespecie tortilis, que no rebrota bien después de cortada; se corta para alimentar a los animales o para renovar árboles secos, débiles o demasiado crecidos, con procedimientos que los beja llaman waak, los ababda janii y los maʿaza tahsiin. Los autores señalan que sacudir y podar para cosechar forraje son prácticas antiguas, representadas ya en el Reino Nuevo egipcio, y que sigan en uso sugiere que estos pueblos desarrollaron hace mucho técnicas eficaces y sostenibles en lugar de sobreexplotar un árbol del que dependen. La sedentarización y la pérdida de vigencia de las leyes tribales están debilitando esa continuidad.',
+      fuentes: [
+        { label: 'Hobbs et al. (2014) — Acacia trees on the cultural landscapes of the Red Sea Hills, Biodiversity and Conservation 23', url: 'https://link.springer.com/article/10.1007/s10531-014-0755-x' },
       ],
     },
   ],
@@ -2077,6 +2143,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  dinaricos_karst: [
+    {
+      practica: 'Pastoreo con fuego controlado para mantener el saltus',
+      periodo: 'Durante siglos; fuerte retroceso desde la segunda mitad del siglo XX',
+      tipo: 'fuego',
+      vigencia: 'en_retroceso',
+      detalle:
+        'La síntesis histórica del karst dinárico croata documenta siglos de pastoralismo y el uso deliberado del fuego para mantener el saltus —el matorral de pastoreo— e impedir que volviera a cerrarse como bosque, promoviendo la regeneración del pastizal: el rebrote posterior al fuego es mucho más rico en minerales y proteína, y junto con las sales de la ceniza mejoraba la calidad del forraje. La fuente distingue esos fuegos deliberados de los incendios no controlados, y atribuye la degradación del karst —deforestación y uso insostenible del pastizal— al sobrepastoreo, no a la quema. El abandono rural reciente acumuló combustible y elevó el riesgo de incendio.',
+      fuentes: [
+        { label: 'Tekić, Fuerst-Bjeliš y Cvitanović (2024) — Landscape Change and Fire Risk in the Croatian Dinaric Karst: Looking Back and Moving Forward, en Environmental Histories of the Dinaric Karst, Environmental History 17 (acceso abierto)', url: 'https://link.springer.com/chapter/10.1007/978-3-031-56089-7_5' },
+      ],
+    },
+  ],
 
   // ── Balcanes, Egeo y Creta ────────────────────────────────────────────────────
   montana_balcanica_sur: [
@@ -2128,6 +2207,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En los Wine Villages de Troodos, muros calizos sostienen suelos de vid sobre pendientes y reducen erosión y viento. Canaletas de tierra recogen y conducen lluvia entre bancales donde no hay riego permanente. La caída de la viticultura dejó muchas terrazas sin uso, aunque el patrón todavía estructura el paisaje.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Wine Village Terraces, Cyprus', url: 'https://whc.unesco.org/document/5301' },
+      ],
+    },
+  ],
+  balcanes_mixto: [
+    {
+      practica: 'Aprovechamiento múltiple de robledales para leña, forraje y frutos',
+      periodo: 'Neolítico temprano a tardío, 6500–4900 a. C. calibrados',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El análisis antracológico de 18 yacimientos neolíticos entre la llanura del bajo Danubio y la costa egea muestra que la vegetación buscada eran los robledales caducifolios mixtos termófilos, con un sotobosque rico en árboles, arbustos y hierbas que dan frutos y necesitan luz: de ahí salían la leña, el pasto forestal, el forraje y los frutos recolectados. Los datos indican estabilidad y sostenibilidad en la obtención de leña durante todo el período considerado, y sugieren que el uso del territorio favorecía ese sotobosque. El artículo es de acceso pago: esta entrada se apoya en su resumen público, que sostiene lo anterior.',
+      fuentes: [
+        { label: 'Marinova y Ntinou (2018) — Neolithic woodland management and land-use in south-eastern Europe: The anthracological evidence from Northern Greece and Bulgaria, Quaternary International 496 (resumen público; el texto completo es de pago)', url: 'https://doi.org/10.1016/j.quaint.2017.04.004' },
       ],
     },
   ],
@@ -2306,6 +2398,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  euxino_colquico: [
+    {
+      practica: 'Cultivo de mijo resistente a inundaciones en montículos habitados',
+      periodo: 'Siglo XVIII a. C.; ocupación del montículo desde el siglo XX a. C.',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'En Tabakoni, en las tierras bajas de Colchis occidental, el registro arqueológico recuperó mijo cultivado (Panicum miliaceum) y hojas de hoz dentro de un asentamiento levantado sucesivamente con rellenos y nivelaciones sobre suelos aluviales anegados. La acumulación de granos de mijo, del siglo XVIII a. C., es uno de los registros más antiguos de mijo cultivado en la región. Los autores asocian la aparición de un paisaje pantanoso abierto con cultivos que incluirían al mijo, resistente a las inundaciones, y explican que el ambiente anegado exigía una base sólida y elevar el terreno para poder habitarlo. La evidencia prueba esa combinación en Tabakoni y sitios comparables de Colchis; no autoriza a atribuirla a toda la ecorregión ni a una población cuyo nombre la fuente no establece.',
+      fuentes: [
+        { label: 'Mörtz y otros (2026) — Dating Tabakoni: the chronology of a Bronze Age settlement mound in Colchis, Antiquity 100(409): 56-74 (acceso abierto)', url: 'https://www.cambridge.org/core/journals/antiquity/article/dating-tabakoni-the-chronology-of-a-bronze-age-settlement-mound-in-colchis/3B9DDCD0C7D931EF4D2BA7EF88F423EA' },
+      ],
+    },
+  ],
 
   // ── Anatolia y el Levante ─────────────────────────────────────────────────────
   mediterraneo_oriental_conifera: [
@@ -2370,6 +2475,20 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Jowzan, las vides se conducen próximas al suelo y reciben riegos espaciados desde una red de qanats. Las familias ajustan el calendario mediante observación de hojas y estación, mientras el ganado consume malezas y restos de poda y devuelve estiércol. La integración limita insumos externos y mantiene un cultivo perenne bajo condiciones secas y frías.',
       fuentes: [
         { label: 'FAO GIAHS — Jowzan Valley Grape Production System, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-grape-production-system/en' },
+      ],
+    },
+  ],
+  ponto_anatolia_norte: [
+    {
+      practica: 'Avellanar perenne adaptado a la franja húmeda del mar Negro',
+      periodo: 'Producción documentada desde hace 2.300 años; exportación durante los últimos seis siglos; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Los documentos revisados por investigadores turcos sitúan la producción de avellana en la costa del mar Negro, al norte de Anatolia, hace 2.300 años, y su exportación durante los últimos seis siglos; Giresun aparece como el primer lugar donde se puso en cultivo. Una revisión agronómica ubica la región vieja del cultivo en Ordu, Giresun, Trabzon, Rize y Artvin, describe esa franja del mar Negro oriental como especialmente apta por su ecología y señala que las labores tradicionales siguen siendo intensivas en mano de obra. Para diseñar un predio, el antecedente respalda un cultivo perenne adaptado a esa franja húmeda, pero no prueba por sí solo que cualquier manejo histórico del suelo sea sostenible.',
+      fuentes: [
+        { label: 'Bak, Karadeniz, Şenyurt y Celap (2018) — Ülkemiz Fındık Yetiştiriciliğinin Dünü ve Bugünü, Bahçe 47', url: 'https://dergipark.org.tr/en/pub/bahce/article/1809063' },
+        { label: 'İslam (2018) — Hazelnut culture in Turkey, Akademik Ziraat Dergisi 7(2)', url: 'https://dergipark.org.tr/en/pub/azd/article/476665' },
       ],
     },
   ],

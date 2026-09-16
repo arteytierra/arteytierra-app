@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 173 entradas sobre 172 ecorregiones de 222.
+hoy tiene 182 entradas sobre 181 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -173,21 +173,30 @@ fecha que pusiste.
 4. ~~**Complementos B, C y D**~~: **hechos**. 17 entradas sobre huecos
    declarados en lotes anteriores. **C quedó cerrado**: 22 de 22. B subió a 37
    de 47 y D a 36 de 53.
+5. ~~**Complemento E: prioridades y huecos**~~: **hecho**. 9 entradas, entre
+   ellas las seis fichas que este encargo marcaba como prioritarias. **G quedó
+   cerrado**: 28 de 28. H subió a 17 de 28 e I a 12 de 14.
 
-**Con eso los nueve bloques están abiertos y no falta ningún continente.** Lo que
-queda son **50 fichas sueltas** repartidas por todo el anexo: las que no tuvieron
-evidencia específica en su lote. Están listadas, bloque por bloque, en los
+**Con eso los nueve bloques están abiertos, tres están completos —el catálogo
+base, Europa no comunitaria y la Unión Europea— y no falta ningún continente.**
+Lo que queda son **41 fichas sueltas** repartidas por todo el anexo: las que no
+tuvieron evidencia específica en su lote. Están listadas, bloque por bloque, en los
 `COBERTURA_*.md` de `practicas-documentadas-ecorregion/`. De ahora en más el
 trabajo ya no es por bloque sino por ficha, y la pregunta cambia: no es "¿qué
 falta cubrir?" sino "¿por qué esta no se pudo sostener, y hay otra fuente?".
 
-**Medio Oriente es hoy el bloque más vacío: 14 de 28 sin entrada.** Después
-viene D, con 17 de 53, casi todo Centroamérica, el Caribe y los manglares.
+**D es hoy el bloque más vacío: 17 de 53 sin entrada**, casi todo
+Centroamérica, el Caribe y los manglares, que es además donde más bibliografía
+hay. Después vienen H, con 11 de 28, y B, con 10 de 47.
 
-Las cuatro que más conviene volver a intentar, porque son regiones con mucha
-bibliografía y el hueco sorprende: `dinaricos_karst`, `balcanes_mixto`,
-`euxino_colquico` y `ponto_anatolia_norte`. Y en Medio Oriente, `estepa_siria_badia`
-y `mesopotamia_jazira`.
+Las dos que más conviene volver a intentar, porque son regiones agrícolas viejas
+y el hueco sorprende: `hircania_caspio` y `kopet_dag`. Las seis prioridades
+anteriores se cerraron en el séptimo lote.
+
+Y las que probablemente **no** tengan respuesta, donde lo correcto es devolverlas
+vacías antes que forzarlas: `socotra`, `uweinat_tibesti`,
+`alto_artico_desierto_polar`, `islas_desventuradas`,
+`revillagigedo_ecosistemas_insulares`, `isla_malpelo_xerica`.
 
 Lo que el sexto lote deja como lección para los que faltan: **los huecos que
 quedan son huecos difíciles**, y la tentación va a ser llenarlos con una fuente
@@ -219,7 +228,7 @@ error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
 44; del tercero, **las 26**; del cuarto, **las 24**; del quinto, **las 41**; del
-sexto, **las 17**. Las que no se montaron casi
+sexto, **las 17**; del séptimo, **las 9**. Las que no se montaron casi
 nunca fallaron la cita: falló el archivo, o falló el resto de la entrada.
 **Conviene evitar los PDF escaneados o muy pesados cuando hay una página HTML
 equivalente**, y preferir una página estable —la ficha SIPAM del sistema, el
@@ -242,6 +251,16 @@ Cinco avisos concretos que salieron de la revisión:
   preguntate qué oración de la fuente respalda cada afirmación; si alguna no
   tiene ninguna, sacala.
 
+- **El `periodo` tiene que estar escrito en la fuente.** Es el peor defecto de
+  los siete lotes y apareció recién en el séptimo:
+  `mar_rojo_costa_desierto` fechaba la práctica "desde aproximadamente 5500 años
+  antes del presente" y el artículo no dice eso en ninguna parte —dice que
+  sacudir y podar acacias está representado ya en el Reino Nuevo egipcio,
+  1539-1075 a. C., dos milenios más acá—. Esta capa existe porque la práctica se
+  le atribuye a un tiempo y no a una cultura: si el período no sale de la
+  fuente, no queda nada que el lector pueda comprobar. Antes que estimar una
+  antigüedad, escribí la que la fuente imprime, aunque sea más vaga.
+
 - **Si la fuente es de pago, el `detalle` no puede pasarse del resumen.** En el
   sexto lote, `hawaii_matorrales_altos_bajos` citaba un artículo cerrado de
   *Current Anthropology* y describía alineamientos, senderos, parcelas, bandas
@@ -258,6 +277,19 @@ Cinco avisos concretos que salieron de la revisión:
   tempranos". Callar una autoría que la fuente afirma es tan grave como
   inventarla.
 
+- **ResearchGate no es el lugar de publicación.** En el séptimo lote,
+  `balcanes_mixto` citaba una copia de ResearchGate de un artículo de
+  *Quaternary International*: subida por un usuario, puede no ser la versión
+  final, puede desaparecer sin aviso y además responde 403. La URL va al DOI o
+  al sitio de la revista. Lo mismo vale para Academia.edu y Scribd.
+
+- **Un boletín oficial no es un trabajo revisado.** `badghyz_pistacho` se apoya
+  en la agencia estatal de noticias de Turkmenistán. Se aceptó porque lo que
+  afirma es la historia de un programa forestal del propio Estado —ensayos de
+  1930, casi cinco mil hectáreas en 1985— y ahí el Estado es fuente primaria de
+  sus propios actos. Una afirmación ecológica o agronómica no se sostiene con
+  una fuente así.
+
 - **La URL se copia del lugar donde está el archivo.** El PDF de Embrapa se
   citó en `infoteca` cuando vive en `alice`: daba 404 y es el mismo documento.
   Y una dirección del NPS se copió con la coma de "1,000" adentro, donde la
@@ -270,7 +302,9 @@ Cinco avisos concretos que salieron de la revisión:
   del organismo. `whc.unesco.org`, en cambio, **no** es un problema: lo que
   parecía un bloqueo era una limitación de la herramienta de acá.
 - **La etiqueta describe el documento que abre la URL.** Es el defecto que
-  aparece en todos los lotes y que ningún test caza: ya van catorce. Tres en el
+  aparece en todos los lotes y que ningún test caza: van catorce en siete
+  lotes, **ninguna en el séptimo**, que fue el primero donde las etiquetas
+  vinieron completas. Tres en el
   tercero —un artículo vecino del mismo equipo, o el organismo en vez de la
   revista—, uno en el cuarto —`fao.org/4/y1275e/` citado como "Drainage water
   reuse in Egypt", cuando es *Case Studies on Water Conservation in the

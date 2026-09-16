@@ -5,7 +5,7 @@ _Generado desde los catálogos el 2026-09-16. **222 fichas** en total._
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 172 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 181 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -220,9 +220,9 @@ _`lib/biomasRegionalesEuropaUE.ts`_
 - `po_llanura_aluvial` — Llanura aluvial del Po ✓ *(ya tiene práctica cargada)*
 - `apeninos_montano` — Montaña apenínica ✓ *(ya tiene práctica cargada)*
 - `mediterraneo_italiano_insular` — Mediterráneo tirreno-adriático e insular ✓ *(ya tiene práctica cargada)*
-- `dinaricos_karst` — Karst de los Alpes Dináricos
+- `dinaricos_karst` — Karst de los Alpes Dináricos ✓ *(ya tiene práctica cargada)*
 - `iliria_adriatico` — Bosque caducifolio ilirio ✓ *(ya tiene práctica cargada)*
-- `balcanes_mixto` — Bosque mixto balcánico
+- `balcanes_mixto` — Bosque mixto balcánico ✓ *(ya tiene práctica cargada)*
 - `montana_balcanica_sur` — Montaña balcánica meridional: Ródope y Pindo ✓ *(ya tiene práctica cargada)*
 - `baltico_morrena` — Bosque mixto báltico sobre morrena joven ✓ *(ya tiene práctica cargada)*
 - `sarmatico_boreonemoral` — Bosque mixto sarmático ✓ *(ya tiene práctica cargada)*
@@ -230,7 +230,7 @@ _`lib/biomasRegionalesEuropaUE.ts`_
 - `estepa_pontica_chernozem` — Estepa póntica y chernozem ✓ *(ya tiene práctica cargada)*
 - `estepa_forestal_este` — Estepa forestal de Europa oriental ✓ *(ya tiene práctica cargada)*
 - `crimea_submediterraneo` — Complejo submediterráneo de Crimea ✓ *(ya tiene práctica cargada)*
-- `euxino_colquico` — Bosque euxino-cólquico
+- `euxino_colquico` — Bosque euxino-cólquico ✓ *(ya tiene práctica cargada)*
 - `caucaso_mixto` — Bosque mixto del Cáucaso ✓ *(ya tiene práctica cargada)*
 - `kura_semidesierto` — Semidesierto y estepa del Kura ✓ *(ya tiene práctica cargada)*
 - `costa_conifera_escandinava` — Conífera costera escandinava ✓ *(ya tiene práctica cargada)*
@@ -241,7 +241,7 @@ _`lib/biomasRegionalesEuropaUE.ts`_
 - `chipre_troodos` — Mediterráneo de Chipre y el macizo del Troodos ✓ *(ya tiene práctica cargada)*
 - `mediterraneo_oriental_conifera` — Conífera y frondosa del Mediterráneo oriental ✓ *(ya tiene práctica cargada)*
 - `tauro_conifera_montana` — Conífera montana del Tauro y Anatolia mediterránea ✓ *(ya tiene práctica cargada)*
-- `ponto_anatolia_norte` — Conífera y frondosa del norte de Anatolia
+- `ponto_anatolia_norte` — Conífera y frondosa del norte de Anatolia ✓ *(ya tiene práctica cargada)*
 - `meseta_anatolia_estepa` — Estepa de la meseta de Anatolia central ✓ *(ya tiene práctica cargada)*
 - `anatolia_oriental_montana` — Montaña y estepa de Anatolia oriental ✓ *(ya tiene práctica cargada)*
 - `zagros_estepa_forestal` — Estepa forestal del Zagros ✓ *(ya tiene práctica cargada)*
@@ -250,8 +250,8 @@ _`lib/biomasRegionalesEuropaUE.ts`_
 
 _`lib/biomasRegionalesMedioOriente.ts`_
 
-- `estepa_siria_badia` — Estepa siria (badia)
-- `mesopotamia_jazira` — Llanura mesopotámica (Yazira)
+- `estepa_siria_badia` — Estepa siria (badia) ✓ *(ya tiene práctica cargada)*
+- `mesopotamia_jazira` — Llanura mesopotámica (Yazira) ✓ *(ya tiene práctica cargada)*
 - `mesopotamia_marismas` — Marismas del Tigris y el Éufrates (Ahwar) ✓ *(ya tiene práctica cargada)*
 - `desierto_norarabigo` — Desierto norarábigo ✓ *(ya tiene práctica cargada)*
 - `harrat_basalto` — Altiplano basáltico (harrat) ✓ *(ya tiene práctica cargada)*
@@ -275,7 +275,7 @@ _`lib/biomasRegionalesMedioOriente.ts`_
 - `elburz_estepa_forestal` — Estepa forestal del Elburz ✓ *(ya tiene práctica cargada)*
 - `caspio_llanura_desertica` — Llanura desértica caspia
 - `kopet_dag` — Kopet Dag
-- `badghyz_pistacho` — Sabana de pistacho de Badgyz
+- `badghyz_pistacho` — Sabana de pistacho de Badgyz ✓ *(ya tiene práctica cargada)*
 - `kuh_rud_montano` — Sierras de Kuh Rud y el este iraní ✓ *(ya tiene práctica cargada)*
 - `sistan_registan` — Arenales de Sistán y Registán ✓ *(ya tiene práctica cargada)*
 
@@ -293,7 +293,7 @@ _`lib/biomasRegionalesNorteAfrica.ts`_
 - `sahara_occidental_erg` — Sahara occidental y grandes ergs
 - `sahara_oriental` — Sahara oriental y desierto líbico ✓ *(ya tiene práctica cargada)*
 - `sahara_sur` — Sahara meridional ✓ *(ya tiene práctica cargada)*
-- `sahara_costa_atlantica` — Costa atlántica sahariana
+- `sahara_costa_atlantica` — Costa atlántica sahariana ✓ *(ya tiene práctica cargada)*
 - `ahaggar_tassili` — Macizos del Ahaggar y el Tassili ✓ *(ya tiene práctica cargada)*
 - `uweinat_tibesti` — Macizos de Uweinat y Tibesti
-- `mar_rojo_costa_desierto` — Desierto costero del mar Rojo
+- `mar_rojo_costa_desierto` — Desierto costero del mar Rojo ✓ *(ya tiene práctica cargada)*
