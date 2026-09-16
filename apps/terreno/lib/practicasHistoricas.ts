@@ -39,10 +39,10 @@ import type { PracticaHistorica } from './biomaTipos';
  *
  * ESTADO
  *
- * 156 entradas sobre 155 ecorregiones de 222, y con esto los nueve bloques del
- * anexo están abiertos: América, Medio Oriente, el norte de África, Europa y el
- * norte de Canadá y Groenlandia. Lo que queda no es un continente entero sino
- * las fichas sueltas que no tuvieron evidencia específica, listadas en los
+ * 173 entradas sobre 172 ecorregiones de 222, con los nueve bloques del anexo
+ * abiertos: América, Medio Oriente, el norte de África, Europa y el norte de
+ * Canadá y Groenlandia. Lo que queda no es un continente entero sino las fichas
+ * sueltas que no tuvieron evidencia específica, listadas en los
  * `COBERTURA_*.md`. Es trabajo de relevamiento con fuente, no de programación:
  * el encargo está en `_research/_encargos/`, y cada lote se verifica abriendo
  * las URLs antes de montarlo.
@@ -711,6 +711,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  bosque_humedo_occidente_ecuador: [
+    {
+      practica: 'Agroforestería precolombina de anuales, frutales y especies forestales',
+      periodo: 'Cultura Jama-Coaque II, aproximadamente 400–1430 d. C.',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Las comunidades Jama-Coaque II del valle del Jama manejaron un sistema que combinaba anuales domesticadas, árboles perennes y taxones útiles del bosque. Los conjuntos arqueobotánicos y arqueofaunísticos de catorce sitios del valle apuntan a un paisaje manejado como mosaico de bosques fragmentados, no a un campo abierto de cultivo continuo.',
+      fuentes: [
+        { label: 'Stahl y Pearsall (2011) — Late pre-Columbian agroforestry in the tropical lowlands of western Ecuador, Quaternary International 249: 43-52 (resumen público; el texto completo es de pago)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S1040618211002540' },
+      ],
+    },
+  ],
 
   // ── Guayanas y Orinoquia ──────────────────────────────────────────────────────
   guayanas_bosques_tierras_bajas: [
@@ -750,6 +763,32 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las comunidades Pemón de Canaima aplican procedimientos tradicionales de encendido y control en la Gran Sabana, donde el fuego participa de la dinámica ecológica. La fuente documenta quemas pequeñas y controladas, pero cualquier traducción a manejo predial debe reconocer la autoridad y el conocimiento Pemón y someterse al plan de fuego y la legislación vigentes.',
       fuentes: [
         { label: 'UNESCO–IUCN — Mission report to Canaima National Park', url: 'https://whc.unesco.org/document/134048' },
+      ],
+    },
+  ],
+  guayanas_bosques_inundables_delta: [
+    {
+      practica: 'Campos elevados y drenajes en sabanas costeras inundables',
+      periodo: '650–1650 d. C.; expansión principal entre 1000 y 1450 d. C.',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'Poblaciones arauquinoides de las Guayanas elevaron miles de superficies de cultivo y excavaron canales, zanjas y caminos en sabanas costeras anegadas o estacionalmente inundables. Elevar el montículo no siempre alcanzaba para proteger los cultivos, y por eso se cavaron canales para controlar la variación del nivel del agua; la forma de los montículos —redondos, cuadrados, rectangulares o alargados— parece responder a la profundidad.',
+      fuentes: [
+        { label: 'Rostain, S. (2010) — Pre-Columbian Earthworks in Coastal Amazonia, Diversity 2(3): 331-352', url: 'https://www.mdpi.com/1424-2818/2/3/331' },
+      ],
+    },
+  ],
+  humedales_orinoco: [
+    {
+      practica: 'Conucos elevados construidos con palas de madera',
+      periodo: 'Documentada en 1745',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'El misionero Gumilla registró en 1745 que los otomacos construían campos elevados con palas de madera en los Llanos venezolanos, y los describió cultivando sobre campos elevados en la confluencia del Orinoco con el Apure. Elevar el horizonte de cultivo cumplía una función de drenaje donde la sabana se anega cada año.',
+      fuentes: [
+        { label: 'Rostain, S. (2010) — Pre-Columbian Earthworks in Coastal Amazonia, Diversity 2(3): 331-352', url: 'https://www.mdpi.com/1424-2818/2/3/331' },
       ],
     },
   ],
@@ -966,6 +1005,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  hawaii_matorrales_altos_bajos: [
+    {
+      practica: 'Sistema de campos de secano de Kohala',
+      periodo: 'Primera expansión desde el siglo XIV; segunda expansión después de mediados del siglo XVII',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'El sistema de campos de secano de la vertiente de sotavento de Kohala permite datar con precisión su desarrollo —expansión e intensificación— combinando datación cronométrica y relativa. Se identifican dos vías, y el mismo patrón se reconoce en otros cuatro sistemas de secano de Maui, Molokaʻi y Hawaiʻi. El artículo es de acceso pago: esta entrada se apoya en su resumen público, que fecha el desarrollo pero no describe la forma de los campos ni los cultivos.',
+      fuentes: [
+        { label: 'Ladefoged y Graves (2008) — Variable Development of Dryland Agriculture in Hawaiʻi: A Fine-Grained Chronology from the Kohala Field System, Hawaiʻi Island, Current Anthropology 49(5)', url: 'https://www.journals.uchicago.edu/doi/10.1086/591424' },
+      ],
+    },
+  ],
 
   // ── Oeste de Estados Unidos ───────────────────────────────────────────────────
   pacifico_noroeste_bosques_coniferas: [
@@ -1043,6 +1095,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pueblos indígenas de las llanuras usaron fuego para producir brotes verdes y atraer bisontes, reforzando procesos que también iniciaban los rayos. La quema limitaba el avance leñoso y renovaba el pastizal, pero el registro ecológico regional no define una frecuencia transferible ni reemplaza la autoridad tribal, el análisis de combustible o la normativa actual.',
       fuentes: [
         { label: 'National Park Service — Fire regime at Tallgrass Prairie', url: 'https://www.nps.gov/tapr/learn/nature/fire-regime.htm' },
+      ],
+    },
+  ],
+  gran_cuenca_meseta_colorado: [
+    {
+      practica: 'Riego de plantas silvestres alimenticias en Owens Valley',
+      periodo: 'Documentada a comienzos del período histórico; origen anterior no fechado',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'Los paiute de Owens Valley construyeron y mantuvieron acequias para regar gramíneas de semilla y otras plantas alimenticias sin depender de cultivos domesticados. La derivación de arroyos expandía y estabilizaba la producción vegetal en el piso árido del valle, y constituye un sistema indígena de vegecultura desarrollado localmente.',
+      fuentes: [
+        { label: 'Lawton, Wilke, DeDecker y Mason (1976) — Agriculture Among the Paiute of Owens Valley, The Journal of California Anthropology 3(1) (copia abierta en eScholarship)', url: 'https://escholarship.org/uc/item/0595h88m' },
       ],
     },
   ],
@@ -1207,6 +1272,58 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  bosque_tropical_seco_mesoamericano: [
+    {
+      practica: 'Milpa maya peninsular como mosaico agroforestal',
+      periodo: 'Más de 3.500 años hasta la actualidad',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Agricultores mayas peninsulares asocian maíz, frijol, calabaza y otras especies, y alternan parcelas cultivadas con vegetación secundaria en recuperación. El barbecho forestal devuelve biomasa y nutrientes a suelos kársticos someros y pobres, mientras la diversidad de parcelas distribuye el riesgo frente a huracanes, incendios y variabilidad de lluvias.',
+      fuentes: [
+        { label: 'FAO GIAHS — Ich Kool: Mayan milpa of the Yucatan peninsula', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
+      ],
+    },
+  ],
+  balsas_jalisco_bosques_secos: [
+    {
+      practica: 'Cultivo y transformación integral del agave',
+      periodo: 'Al menos dos mil años; destilación de tequila desde el siglo XVI',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En los valles y laderas del volcán de Tequila se cultiva agave, una perenne resistente a la sequía cuya piña se fermenta y cuyas fibras se destinaban a textiles. La cultura de Teuchitlán también construyó terrazas agrícolas entre 200 y 900 d. C.; el paisaje productivo continuó luego con bebidas fermentadas y, desde el siglo XVI, tequila destilado.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Agave Landscape and Ancient Industrial Facilities of Tequila', url: 'https://whc.unesco.org/en/list/1209' },
+      ],
+    },
+  ],
+  manglares_mexico: [
+    {
+      practica: 'Corrales móviles de ramas de mangle para pesca estuarina',
+      periodo: 'Documentada entre 1602 y 1605',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Pescadores nativos de Marismas Nacionales trenzaban ramas de mangle para formar corrales móviles que atravesaban los canales del estuario. El obispo Alonso de la Mota y Escobar los describió entre 1602 y 1605 junto con lo que sostenían: ostras, camarones, mojarras, lisas y pámpanos. Las capturas abundantes podían malograrse cuando quedaban atrapados tiburones grandes o cocodrilos, que rompían la estructura con la cola y liberaban el pescado.',
+      fuentes: [
+        { label: 'Rubio-Cisneros, Aburto-Oropeza, Jackson y Ezcurra (2017) — Coastal Exploitation Throughout Marismas Nacionales Wetlands in Northwest Mexico, Tropical Conservation Science 10', url: 'https://journals.sagepub.com/doi/10.1177/1940082917697261' },
+      ],
+    },
+  ],
+  sonora_sinaloa_bosque_seco_desierto: [
+    {
+      practica: 'Canales y riego de escorrentía en el desierto de Sonora',
+      periodo: 'Agricultura regional desde hace unos 3.000 años; canales hohokam abandonados hacia el siglo XV',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'Los hohokam construyeron grandes redes de canales en valles fluviales como el Gila, mientras otros agricultores tempranos sembraban junto a los cauces para captar la escorrentía de la estación de lluvias: el riego que los tohono o’odham llaman Ak-Chin. Ambos sistemas concentraban agua breve y espacialmente dispersa para sostener cultivos en un ambiente desértico de lluvias variables.',
+      fuentes: [
+        { label: 'U.S. National Park Service — Sonoran Desert Network Ecosystems', url: 'https://www.nps.gov/im/sodn/ecosystems.htm' },
+      ],
+    },
+  ],
   // ── Centroamérica ─────────────────────────────────────────────────────────────
   corredor_seco_centroamericano: [
     {
@@ -1299,6 +1416,59 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pequeños agricultores y fincas de Dominica combinaron cocoteros o cítricos en el estrato alto, banano, café o cacao en niveles intermedios y raíces cerca del suelo. La disposición aprovecha verticalmente parcelas húmedas y escarpadas y mantiene cobertura permanente; la fuente de 1991 registra continuidad en el territorio entonces denominado Carib Territory y en otros sitios, pero no demuestra por sí sola su extensión actual.',
       fuentes: [
         { label: 'FAO — Agroforestry systems in Dominica', url: 'https://www.fao.org/4/x5656e/x5656e05.htm' },
+      ],
+    },
+  ],
+  bahamas_pinares_manglares: [
+    {
+      practica: 'Quema del paisaje para agricultura y aprovechamiento de madera',
+      periodo: 'Desde aproximadamente 830 d. C.; transformación forestal marcada hacia 970–1200 d. C.',
+      tipo: 'fuego',
+      vigencia: 'historica',
+      detalle:
+        'Los lucayos aumentaron las quemas en Gran Ábaco para abrir espacios agrícolas y obtener madera, con yuca como cultivo principal documentado. La perturbación redujo palmas y latifoliadas y favoreció la expansión de pinares pirógenos, mostrando cómo el manejo del fuego resolvía el desmonte pero alteraba la resiliencia del bosque insular.',
+      fuentes: [
+        { label: 'Fall, van Hengstum, Lavold-Foote, Donnelly y otros (2021) — Human arrival and landscape dynamics in the northern Bahamas, PNAS 118(10) (copia abierta en PubMed Central)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7958357/' },
+      ],
+    },
+  ],
+  hispaniola_bosque_humedo: [
+    {
+      practica: 'Conucos elevados para raíces y policultivos taínos',
+      periodo: 'Tradición ostionoide desde aproximadamente 600 d. C.; intensificación taína después de 1100 d. C.',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'Poblaciones ostionoides y luego taínas de La Española practicaban cultivo intensivo de raíces en conucos, montículos o parcelas elevadas pequeñas. La yuca era el cultivo principal, y también se sembraban papas, porotos, maní y ajíes; la agricultura se complementaba con la pesca y los mariscos abundantes de la región.',
+      fuentes: [
+        { label: 'Florida Museum of Natural History — Taíno Culture History', url: 'https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-culture/' },
+        { label: 'Florida Museum of Natural History — Taíno Society', url: 'https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-society/' },
+      ],
+    },
+  ],
+  jamaica_bosque_humedo_karstico: [
+    {
+      practica: 'Uso multifuncional del bosque kárstico por comunidades cimarronas',
+      periodo: 'Desde el período cimarrón anterior al tratado de 1739, con continuidad actual',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Los cimarrones de Sotavento utilizaron el Cockpit Country como fuente de alimentos, refugio, agua y medicina, además de aprovechar cuevas, sumideros y senderos para sostener comunidades autónomas. La lectura fina del karst permitió localizar recursos y desplazarse por un relieve difícil, y la relación medicinal, espiritual y de subsistencia con el bosque continúa en su cultura.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Cockpit Country Protected Area', url: 'https://whc.unesco.org/en/tentativelists/6822' },
+      ],
+    },
+  ],
+  jamaica_bosque_seco: [
+    {
+      practica: 'Agroforestería y quema para cultivar yuca en White Marl',
+      periodo: 'Aproximadamente 1050–450 años calibrados antes del presente',
+      tipo: 'fuego',
+      vigencia: 'historica',
+      detalle:
+        'La comunidad precolonial de White Marl manejó la vegetación mediante agroforestería y fuego, con fitolitos de yuca presentes durante toda la ocupación. Las quemas abrieron áreas de cultivo y condujeron una transición desde vegetación arbórea hacia palmares y, más tarde, un paisaje más abierto, sin que el cambio se explique por el paleoclima.',
+      fuentes: [
+        { label: 'Elliott, Maezumi, Robinson, Burn, Gosling, Mickleburgh, Walters y Beier (2022) — The legacy of 1300 years of land use in Jamaica, Journal of Island and Coastal Archaeology (copia abierta en el repositorio de Liverpool John Moores University)', url: 'https://researchonline.ljmu.ac.uk/id/eprint/18124/' },
       ],
     },
   ],
@@ -1782,6 +1952,20 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  atlantico_templado_oceanico: [
+    {
+      practica: 'Praderas de agua para producir heno y pasto',
+      periodo: 'Desde la Edad Media hasta fines del siglo XIX; supervivencias posteriores puntuales',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Agricultores ingleses cortaban canales en la pradera junto a ríos y arroyos para desviar agua y hacerla correr sobre el pasto, que quedaba cubierto de limo fértil. Los canales se diseñaban para poder bloquearse o abrirse y así controlar el flujo. El sistema aumentaba la cosecha de heno y dejaba un pastoreo más rico una vez cortada la hierba, y tomaba formas distintas según la región.',
+      fuentes: [
+        { label: 'English Heritage — History of Meadows', url: 'https://www.english-heritage.org.uk/learn/histories/history-of-meadows/' },
+        { label: 'Historic England (2018) — Water Meadows: Introductions to Heritage Assets', url: 'https://historicengland.org.uk/images-books/publications/iha-water-meadows/' },
+      ],
+    },
+  ],
 
   // ── Francia atlantica ─────────────────────────────────────────────────────────
   templado_occidental_europeo: [
@@ -2014,6 +2198,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+  boreal_nordico_turberas: [
+    {
+      practica: 'Siega de heno en turberas para la alimentación invernal',
+      periodo: 'Desde comienzos de la Edad Media; abandono general durante el siglo XX',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'En el norte de Suecia se segaban prácticamente todas las turberas aptas para obtener heno destinado al ganado durante el invierno. Como la siega reduce la biomasa, era común cortar cada dos años, y muchos productores inundaban artificialmente la turbera para imitar la productividad de las praderas litorales que se inundan solas. Hoy todo el heno se produce en campos fertilizados y las turberas pasaron a clasificarse como tierra improductiva.',
+      fuentes: [
+        { label: 'Norstedt, Maher Hasselquist y Laudon (2021) — From Haymaking to Wood Production: Past Use of Mires in Northern Sweden Affect Current Ecosystem Services and Function, Rural Landscapes 8(1): 2', url: 'https://www.diva-portal.org/smash/get/diva2%3A1528964/FULLTEXT01.pdf' },
+      ],
+    },
+  ],
 
   // ── Carpatos y las estepas del este ───────────────────────────────────────────
   carpatos_montano: [
@@ -2065,6 +2262,19 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los colonos griegos dóricos de Chersonese dividieron la península en lotes regulares con muros, caminos y granjas. Muchas parcelas se organizaron para viñedo y combinaron producción rural con el abastecimiento de la ciudad. La ficha conserva esta práctica como evidencia histórica de planificación agraria, no como manejo vigente.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Ancient City of Tauric Chersonese and its Chora', url: 'https://whc.unesco.org/en/list/1411' },
+      ],
+    },
+  ],
+  estepa_pontica_panonica: [
+    {
+      practica: 'Pastoreo extensivo de razas rústicas en la puszta',
+      periodo: 'Más de dos milenios hasta la actualidad',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'La sociedad pastoril de Hortobágy conduce razas ganaderas rústicas adaptadas al mosaico de pastizales alcalinos, estepas, praderas y humedales de la gran llanura húngara. El uso extensivo y estacional, hoy concentrado entre abril y octubre, conserva el carácter abierto del paisaje y evita sustituirlo por agricultura intensiva.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Hortobágy National Park, the Puszta', url: 'https://whc.unesco.org/en/list/474/' },
       ],
     },
   ],
@@ -2160,6 +2370,21 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Jowzan, las vides se conducen próximas al suelo y reciben riegos espaciados desde una red de qanats. Las familias ajustan el calendario mediante observación de hojas y estación, mientras el ganado consume malezas y restos de poda y devuelve estiércol. La integración limita insumos externos y mantiene un cultivo perenne bajo condiciones secas y frías.',
       fuentes: [
         { label: 'FAO GIAHS — Jowzan Valley Grape Production System, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-grape-production-system/en' },
+      ],
+    },
+  ],
+
+  // ── Europa central ──────────────────────────────────────────────────────────────
+  templado_continental_europeo: [
+    {
+      practica: 'Red de estanques de peces para producción y amortiguación de crecidas',
+      periodo: 'Siglos XV y XVI hasta la actualidad',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades de la cuenca de Třeboň mantienen una red de 460 estanques y lagos artificiales conectada con la llanura de inundación del Lužnice, hoy la mayor producción de pescado de agua dulce de Europa: unas 3.000 toneladas por año, 95% carpas. Los estudios confirmaron que esos estanques y los humedales del río son los que mitigan las crecidas, de modo que la infraestructura productiva funciona además como reducción del riesgo de inundación.',
+      fuentes: [
+        { label: 'UNESCO (2018, actualizado en 2023) — Addressing climate-related risks and economic development go hand in hand in Třeboň', url: 'https://www.unesco.org/en/articles/addressing-climate-related-risks-and-economic-development-go-hand-hand-trebon' },
       ],
     },
   ],

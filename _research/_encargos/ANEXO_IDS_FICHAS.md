@@ -1,11 +1,11 @@
 # Anexo — los ids de ficha
 
-_Generado desde los catálogos el 2026-09-15. **222 fichas** en total._
+_Generado desde los catálogos el 2026-09-16. **222 fichas** en total._
 
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 155 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 172 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -55,7 +55,7 @@ _`lib/biomasRegionalesSudamerica.ts`_
 - `amazonia_noroccidental_tierra_firme` — Amazonía noroccidental de tierra firme ✓ *(ya tiene práctica cargada)*
 - `amazonia_oriental_tierra_firme` — Amazonía oriental y meridional de tierra firme ✓ *(ya tiene práctica cargada)*
 - `amazonia_suroccidental_tierra_firme` — Amazonía suroccidental de tierra firme ✓ *(ya tiene práctica cargada)*
-- `bosque_humedo_occidente_ecuador` — Bosques húmedos del occidente ecuatoriano
+- `bosque_humedo_occidente_ecuador` — Bosques húmedos del occidente ecuatoriano ✓ *(ya tiene práctica cargada)*
 - `bosque_juan_fernandez` — Bosques templados de Juan Fernández
 - `bosque_seco_chiquitano` — Bosque seco chiquitano ✓ *(ya tiene práctica cargada)*
 - `bosque_seco_mato_grosso` — Bosques estacionales del Mato Grosso
@@ -71,10 +71,10 @@ _`lib/biomasRegionalesSudamerica.ts`_
 - `campos_uruguayos` — Campos y pastizales uruguayos ✓ *(ya tiene práctica cargada)*
 - `chaco_humedo` — Chaco húmedo ✓ *(ya tiene práctica cargada)*
 - `galapagos_matorral_xerico` — Galápagos: zonas áridas y de transición
-- `guayanas_bosques_inundables_delta` — Bosques inundables de Guayanas y delta del Orinoco
+- `guayanas_bosques_inundables_delta` — Bosques inundables de Guayanas y delta del Orinoco ✓ *(ya tiene práctica cargada)*
 - `guayanas_bosques_tierras_bajas` — Bosques de tierras bajas del Escudo Guayanés ✓ *(ya tiene práctica cargada)*
 - `humedales_guayaquil` — Pastizales inundables de Guayaquil ✓ *(ya tiene práctica cargada)*
-- `humedales_orinoco` — Humedales del Orinoco
+- `humedales_orinoco` — Humedales del Orinoco ✓ *(ya tiene práctica cargada)*
 - `humedales_parana_mesopotamia` — Humedales del Paraná y Mesopotamia ✓ *(ya tiene práctica cargada)*
 - `isla_malpelo_xerica` — Isla Malpelo: roca oceánica xerófila
 - `islas_desventuradas` — Islas Desventuradas: matorral oceánico
@@ -114,16 +114,16 @@ _`lib/biomasRegionales.ts`_
 - `chaparral_californiano` — Chaparral californiano ✓ *(ya tiene práctica cargada)*
 - `taiga_borde_agricola` — Bosque boreal y borde agrícola ✓ *(ya tiene práctica cargada)*
 - `sur_templado_humedo_eeuu` — Sur templado húmedo de Estados Unidos ✓ *(ya tiene práctica cargada)*
-- `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano
+- `bosque_tropical_seco_mesoamericano` — Bosque tropical seco mesoamericano ✓ *(ya tiene práctica cargada)*
 - `bosque_mesofilo_montana` — Bosque mesófilo de montaña ✓ *(ya tiene práctica cargada)*
 - `matorral_xerofilo_altiplano_mexicano` — Matorral xerófilo del Altiplano mexicano ✓ *(ya tiene práctica cargada)*
 - `bosque_humedo_tropical_caribeno` — Bosque húmedo tropical caribeño insular ✓ *(ya tiene práctica cargada)*
 - `matorral_seco_caribeno` — Matorral y bosque seco costero del Caribe ✓ *(ya tiene práctica cargada)*
 - `mediterraneo_europeo` — Bosque y matorral mediterráneo europeo ✓ *(ya tiene práctica cargada)*
-- `atlantico_templado_oceanico` — Atlántico templado oceánico
-- `templado_continental_europeo` — Bosque templado continental europeo
-- `estepa_pontica_panonica` — Estepa póntica y panónica
-- `boreal_nordico_turberas` — Bosque boreal nórdico y turberas
+- `atlantico_templado_oceanico` — Atlántico templado oceánico ✓ *(ya tiene práctica cargada)*
+- `templado_continental_europeo` — Bosque templado continental europeo ✓ *(ya tiene práctica cargada)*
+- `estepa_pontica_panonica` — Estepa póntica y panónica ✓ *(ya tiene práctica cargada)*
+- `boreal_nordico_turberas` — Bosque boreal nórdico y turberas ✓ *(ya tiene práctica cargada)*
 - `alpino_montano_europeo` — Alpino y montano europeo ✓ *(ya tiene práctica cargada)*
 - `macaronesia` — Macaronesia ✓ *(ya tiene práctica cargada)*
 
@@ -136,9 +136,9 @@ _`lib/biomasRegionalesAmerica.ts`_
 - `altiplano_mexicano_matorral` — Matorrales del Altiplano y Meseta Central
 - `antillas_menores_bosques_humedos_secos` — Bosques húmedos y secos de las Antillas Menores ✓ *(ya tiene práctica cargada)*
 - `apalaches_bosques_y_rivercane` — Bosques de los Apalaches y Piedmont ✓ *(ya tiene práctica cargada)*
-- `bahamas_pinares_manglares` — Pinares y manglares de Bahamas
+- `bahamas_pinares_manglares` — Pinares y manglares de Bahamas ✓ *(ya tiene práctica cargada)*
 - `baja_california_desiertos_y_sierras` — Desiertos, oasis y sierras de Baja California ✓ *(ya tiene práctica cargada)*
-- `balsas_jalisco_bosques_secos` — Bosques secos de Balsas y Jalisco
+- `balsas_jalisco_bosques_secos` — Bosques secos de Balsas y Jalisco ✓ *(ya tiene práctica cargada)*
 - `bosque_atlantico_mosquitia` — Bosques húmedos del Caribe centroamericano y la Mosquitia ✓ *(ya tiene práctica cargada)*
 - `bosque_seco_panameno` — Bosque seco panameño
 - `california_klamath_sierra_valle` — California: Klamath, Sierra Nevada, Valle Central y bosques interiores ✓ *(ya tiene práctica cargada)*
@@ -150,19 +150,19 @@ _`lib/biomasRegionalesAmerica.ts`_
 - `cuba_bosques_karst_y_pinares` — Bosques, karst y pinares de Cuba ✓ *(ya tiene práctica cargada)*
 - `darien_humedo_panama` — Bosques húmedos del Darién y Panamá oriental ✓ *(ya tiene práctica cargada)*
 - `everglades_manglares_sur_florida` — Everglades y manglares del sur de Florida ✓ *(ya tiene práctica cargada)*
-- `gran_cuenca_meseta_colorado` — Gran Cuenca, Meseta del Colorado y estepas de Wyoming
+- `gran_cuenca_meseta_colorado` — Gran Cuenca, Meseta del Colorado y estepas de Wyoming ✓ *(ya tiene práctica cargada)*
 - `grandes_llanuras_pradera_alta_mixta` — Grandes Llanuras: pradera alta, mixta y sabanas ✓ *(ya tiene práctica cargada)*
 - `gulf_mississippi_piney_woods` — Llanura del Mississippi, Golfo y Piney Woods ✓ *(ya tiene práctica cargada)*
 - `hawaii_bosques_humedos_secos` — Hawái: bosques húmedos y secos ✓ *(ya tiene práctica cargada)*
-- `hawaii_matorrales_altos_bajos` — Hawái: matorrales altos, bajos e islas noroccidentales
-- `hispaniola_bosque_humedo` — Bosques húmedos de La Española
+- `hawaii_matorrales_altos_bajos` — Hawái: matorrales altos, bajos e islas noroccidentales ✓ *(ya tiene práctica cargada)*
+- `hispaniola_bosque_humedo` — Bosques húmedos de La Española ✓ *(ya tiene práctica cargada)*
 - `hispaniola_seco_pinar_humedales` — Bosques secos, pinares y humedales de La Española
 - `interior_noroeste_palouse_willamette` — Praderas, robledales y estepas del Noroeste interior ✓ *(ya tiene práctica cargada)*
-- `jamaica_bosque_humedo_karstico` — Bosques húmedos y karst de Jamaica
-- `jamaica_bosque_seco` — Bosques secos de Jamaica
+- `jamaica_bosque_humedo_karstico` — Bosques húmedos y karst de Jamaica ✓ *(ya tiene práctica cargada)*
+- `jamaica_bosque_seco` — Bosques secos de Jamaica ✓ *(ya tiene práctica cargada)*
 - `manglares_antillanos` — Manglares de Bahamas y las Antillas
 - `manglares_centroamericanos` — Manglares de Centroamérica
-- `manglares_mexico` — Manglares del Golfo, Caribe y Pacífico mexicano
+- `manglares_mexico` — Manglares del Golfo, Caribe y Pacífico mexicano ✓ *(ya tiene práctica cargada)*
 - `matorral_xerico_caribeno` — Matorrales xéricos del Caribe
 - `montanas_mayas_pino_encino` — Montañas mayas y bosques de pino-encino
 - `noreste_grandes_lagos_bosques` — Bosques del Nordeste y Grandes Lagos ✓ *(ya tiene práctica cargada)*
@@ -177,7 +177,7 @@ _`lib/biomasRegionalesAmerica.ts`_
 - `selva_maya_peten_yucatan` — Selva Maya de Petén y Yucatán ✓ *(ya tiene práctica cargada)*
 - `selva_maya_yucatan` — Selva Maya y península de Yucatán ✓ *(ya tiene práctica cargada)*
 - `sierras_madre_pino_encino` — Bosques de pino-encino de las Sierras Madre
-- `sonora_sinaloa_bosque_seco_desierto` — Desierto Sonorense y transición seca de Sonora–Sinaloa
+- `sonora_sinaloa_bosque_seco_desierto` — Desierto Sonorense y transición seca de Sonora–Sinaloa ✓ *(ya tiene práctica cargada)*
 - `sudeste_sabanas_pino_largo` — Sabanas y pinares abiertos del Sudeste ✓ *(ya tiene práctica cargada)*
 - `talamanca_caribe_sur` — Talamanca y Caribe sur ✓ *(ya tiene práctica cargada)*
 - `tamaulipas_texas_pastizal_mezquital` — Pastizales costeros y mezquitales de Tamaulipas–Texas

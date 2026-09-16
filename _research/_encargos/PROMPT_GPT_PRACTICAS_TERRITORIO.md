@@ -1,7 +1,7 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 156 entradas sobre 155 ecorregiones de 222.
+hoy tiene 173 entradas sobre 172 ecorregiones de 222.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -170,18 +170,29 @@ fecha que pusiste.
    `REVISION_LOTE_4.md`.
 3. ~~**G. Unión Europea**, **F. Europa no comunitaria** y **E. Canadá, Alaska y
    Groenlandia**~~: **hechos**. F quedó completo; G, 24 de 28; E, 9 de 10.
+4. ~~**Complementos B, C y D**~~: **hechos**. 17 entradas sobre huecos
+   declarados en lotes anteriores. **C quedó cerrado**: 22 de 22. B subió a 37
+   de 47 y D a 36 de 53.
 
 **Con eso los nueve bloques están abiertos y no falta ningún continente.** Lo que
-queda son **67 fichas sueltas** repartidas por todo el anexo: las que no tuvieron
+queda son **50 fichas sueltas** repartidas por todo el anexo: las que no tuvieron
 evidencia específica en su lote. Están listadas, bloque por bloque, en los
 `COBERTURA_*.md` de `practicas-documentadas-ecorregion/`. De ahora en más el
 trabajo ya no es por bloque sino por ficha, y la pregunta cambia: no es "¿qué
 falta cubrir?" sino "¿por qué esta no se pudo sostener, y hay otra fuente?".
 
+**Medio Oriente es hoy el bloque más vacío: 14 de 28 sin entrada.** Después
+viene D, con 17 de 53, casi todo Centroamérica, el Caribe y los manglares.
+
 Las cuatro que más conviene volver a intentar, porque son regiones con mucha
 bibliografía y el hueco sorprende: `dinaricos_karst`, `balcanes_mixto`,
 `euxino_colquico` y `ponto_anatolia_norte`. Y en Medio Oriente, `estepa_siria_badia`
 y `mesopotamia_jazira`.
+
+Lo que el sexto lote deja como lección para los que faltan: **los huecos que
+quedan son huecos difíciles**, y la tentación va a ser llenarlos con una fuente
+que no alcanza. Es preferible devolver diez fichas vacías que una entrada cuyo
+`detalle` el lector no pueda comprobar.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -207,8 +218,8 @@ vuelve a pedir**, porque una cita que no dice lo que se le atribuye no es un
 error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
-44; del tercero, **las 26**; del cuarto, **las 24**; del quinto, **las 41**. Las
-que no se montaron casi
+44; del tercero, **las 26**; del cuarto, **las 24**; del quinto, **las 41**; del
+sexto, **las 17**. Las que no se montaron casi
 nunca fallaron la cita: falló el archivo, o falló el resto de la entrada.
 **Conviene evitar los PDF escaneados o muy pesados cuando hay una página HTML
 equivalente**, y preferir una página estable —la ficha SIPAM del sistema, el
@@ -231,6 +242,22 @@ Cinco avisos concretos que salieron de la revisión:
   preguntate qué oración de la fuente respalda cada afirmación; si alguna no
   tiene ninguna, sacala.
 
+- **Si la fuente es de pago, el `detalle` no puede pasarse del resumen.** En el
+  sexto lote, `hawaii_matorrales_altos_bajos` citaba un artículo cerrado de
+  *Current Anthropology* y describía alineamientos, senderos, parcelas, bandas
+  de lluvia y batata: nada de eso está en el resumen público, que es lo único
+  que se puede leer. La fecha sí estaba, así que la entrada se montó recortada,
+  diciendo dónde termina lo que la fuente permite comprobar. Un resumen alcanza
+  para fechar una práctica y casi nunca para describirla; si no hay copia
+  abierta, escribí sólo lo que el resumen dice.
+
+- **Si la fuente nombra al pueblo, la entrada lo nombra.** Volvió el error del
+  primer lote. El Servicio de Parques dice que el riego de escorrentía del
+  desierto de Sonora "se llama Ak-Chin por los tohono o'odham", y la entrada de
+  `sonora_sinaloa_bosque_seco_desierto` hablaba de "otros agricultores
+  tempranos". Callar una autoría que la fuente afirma es tan grave como
+  inventarla.
+
 - **La URL se copia del lugar donde está el archivo.** El PDF de Embrapa se
   citó en `infoteca` cuando vive en `alice`: daba 404 y es el mismo documento.
   Y una dirección del NPS se copió con la coma de "1,000" adentro, donde la
@@ -243,7 +270,7 @@ Cinco avisos concretos que salieron de la revisión:
   del organismo. `whc.unesco.org`, en cambio, **no** es un problema: lo que
   parecía un bloqueo era una limitación de la herramienta de acá.
 - **La etiqueta describe el documento que abre la URL.** Es el defecto que
-  aparece en todos los lotes y que ningún test caza: ya van siete. Tres en el
+  aparece en todos los lotes y que ningún test caza: ya van catorce. Tres en el
   tercero —un artículo vecino del mismo equipo, o el organismo en vez de la
   revista—, uno en el cuarto —`fao.org/4/y1275e/` citado como "Drainage water
   reuse in Egypt", cuando es *Case Studies on Water Conservation in the
@@ -251,9 +278,13 @@ Cinco avisos concretos que salieron de la revisión:
   tres en el quinto: **dos títulos inventados** (el artículo de Copes-Gerbitz
   sobre Ne Sextsine y el de Livarda sobre Palaikastro, este último además con la
   revista equivocada) y una plataforma de la FAO puesta como autora de un texto
-  de Barbara Knowles. **Si no podés copiar el título exacto del documento, no
-  inventes uno corto que lo describa.** Van autor, año, título y dónde se
-  publicó.
+  de Barbara Knowles. En el sexto, **siete de golpe**, todas de la misma forma:
+  la revista o el organismo en lugar del autor —"Quaternary International —
+  Late pre-Columbian agroforestry...", "Current Anthropology — Variable
+  Development..."—, sin autor, sin año y sin volumen. Ninguna miente, pero
+  ninguna permite encontrar el trabajo si la URL se cae. **Si no podés copiar el
+  título exacto del documento, no inventes uno corto que lo describa.** Van
+  autor, año, título y dónde se publicó.
 - **La `verificacion` va en el idioma de la fuente, entera, sin abreviar y sin
   corregir.** Si el texto está en español o en portugués, la frase se copia en
   español o en portugués. Y no se saca nada del medio: UNESCO escribe "las
