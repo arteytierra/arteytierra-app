@@ -18,7 +18,13 @@ import { buildSocial } from '@/lib/seo/og';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getReviewAggregate } from '@/lib/reviews';
 
-export const revalidate = 60;
+// Cada vez que vence esta ventana y alguien entra, la pagina se vuelve a
+// renderizar entera en el servidor: es CPU facturado. Con 60 segundos, una
+// pagina con visitas sostenidas —justo la que recibe una pauta— se regeneraba
+// hasta 1.440 veces por dia sin que el contenido hubiera cambiado. 300 la
+// alinea con el resto del sitio; una edicion desde el panel tarda como mucho
+// cinco minutos en verse.
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

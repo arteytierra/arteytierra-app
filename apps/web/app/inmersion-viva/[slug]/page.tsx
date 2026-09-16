@@ -10,7 +10,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { eventJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
 import { buildSocial } from '@/lib/seo/og';
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
