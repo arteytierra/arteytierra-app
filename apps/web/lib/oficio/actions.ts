@@ -147,12 +147,38 @@ export async function submitOficioApplicationAction(input: OficioApplicationInpu
 </body>
 </html>`;
 
+  // Primero queda anotada, después se avisa. Al revés, un fallo de Resend
+  // borraba la postulación: durante meses éste fue el formulario con más
+  // volumen del sitio y ninguno de esos leads llegó nunca al CRM.
+  const notas = rows
+    .filter(([label]) => label !== 'Nombre' && label !== 'Email' && label !== 'WhatsApp')
+    .map(([label, val]) => `${label}: ${val}`)
+    .join(' · ');
+  const { error: errorGuardado } = await admin.schema('app').from('contacts').insert({
+    email,
+    full_name: nombre,
+    phone: whatsapp || null,
+    source: 'voluntariado-oficio',
+    tags: ['web', 'voluntariado', 'oficio'],
+    lifecycle_stage: 'lead',
+    notes: notas,
+  });
+  if (errorGuardado) console.error('[oficio] no se pudo guardar el contacto', errorGuardado);
+  const guardado = !errorGuardado;
+
   const ok = await sendEmail({
     to: NOTIFY_EMAIL,
+    // Mismo remitente que el resto de los avisos internos: si cada uno sale de
+    // una dirección distinta, en la casilla no hay forma de filtrarlos juntos.
+    from: 'Arte y Tierra · Web <notificaciones@arteytierra.org>',
+    // Contestar el aviso le escribe a quien se postuló, no a la casilla del sitio.
+    replyTo: email,
     subject: `Postulación oficio · ${oficio} · ${nombre}`,
     html,
   });
-  if (!ok) throw new Error('No se pudo enviar la postulación. Probá de nuevo o escribinos por WhatsApp.');
+  // Sólo se le pide reintentar si además no quedó guardada. Si está en el CRM,
+  // el dato no se perdió aunque el mail no haya salido.
+  if (!ok && !guardado) throw new Error('No se pudo enviar la postulación. Probá de nuevo o escribinos por WhatsApp.');
 
   void emitN8nEvent('oficio-applied', {
     nombre,
