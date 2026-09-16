@@ -32,7 +32,13 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
   return (
     <main>
       {/* HERO */}
-      <section className="relative h-[65vh] min-h-[440px] bg-ink-950 flex items-end overflow-hidden">
+      {/* La altura es un minimo, no una medida fija. Con `h-[65vh]` el bloque
+          —breadcrumb, titulo, bajada, fecha y tres botones— no entraba en un
+          telefono angosto y, anclado abajo por `items-end`, se desbordaba
+          hacia arriba: el titulo del curso arrancaba 119px por encima del
+          viewport y se leia cortado. Es lo primero que ve quien llega de un
+          anuncio. Con `min-h` la seccion crece con el contenido. */}
+      <section className="relative min-h-[65vh] md:min-h-[440px] md:h-[65vh] bg-ink-950 flex items-end overflow-hidden">
         <Image
           src={course.heroImg}
           alt={course.name}
@@ -42,7 +48,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/40 to-transparent" />
-        <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-14">
+        <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pt-28 pb-14 md:pt-0">
           <div className="flex items-center gap-3 mb-4">
             <Link href="/cursos" className="text-xs font-sans text-clay-300 hover:text-bone-100 transition-colors uppercase tracking-widest">
               {isInmersion ? 'Eco Escuela' : 'Cursos'}

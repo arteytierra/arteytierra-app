@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
+import { track } from '@/lib/analytics/track';
 import type { CourseOption } from '@/lib/courses/data';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
@@ -57,7 +58,22 @@ export function CourseEnrollForm({ curso, whatsapp, mercadopago, opciones, senaP
         body: fd,
       });
       setStatus(res.ok ? 'ok' : 'error');
-      if (res.ok) form.reset();
+      if (res.ok) {
+        // La conversion de esta pagina. Sin esto Meta solo ve visitas: la
+        // campaña no puede optimizar por quien se inscribe, que es lo unico
+        // que importa cuando hay plata puesta en la pauta. Va por pixel y por
+        // CAPI con el mismo id, asi un bloqueador no borra la señal.
+        track({
+          event: 'Lead',
+          contentName: curso,
+          contentIds: [curso],
+          contentType: 'product',
+          ...(montoTotal ? { value: montoTotal, currency: 'ARS' } : {}),
+          email: String(fd.get('email') ?? '') || undefined,
+          phone: String(fd.get('whatsapp') ?? '') || undefined,
+        });
+        form.reset();
+      }
     } catch {
       setStatus('error');
     }
