@@ -135,6 +135,13 @@ export function etiquetaIUCN(cat: string): string { return IUCN_LABEL[cat] ?? ca
 // ─── Resumen para el informe ────────────────────────────────────────────────────
 export interface EntornoResumen {
   ubicacion:  string | null;
+  /**
+   * La ubicación sin armar, campo por campo. `ubicacion` ya es una frase y no
+   * se puede volver a partir, y el registro de comunidades indígenas del INAI
+   * se resuelve por provincia y departamento. `null` en un proyecto guardado
+   * antes de que existiera esta capa.
+   */
+  admin:      Ubicacion | null;
   total_bio:  number;
   fauna:      number;
   flora:      number;
@@ -150,6 +157,7 @@ export function resumirEntorno(d: DatosEntorno): EntornoResumen {
   const ubic = u ? [u.localidad, u.departamento, u.provincia, u.pais].filter(Boolean).join(', ') : null;
   return {
     ubicacion: ubic || null,
+    admin: u ?? null,
     total_bio: d.biodiversidad?.total ?? 0,
     fauna: d.fauna, flora: d.flora, amenazadas: d.amenazadas,
     especies_top: d.especies_top.slice(0, 6),

@@ -1,24 +1,29 @@
 'use client';
 
-import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin, History } from 'lucide-react';
+import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin, History, Landmark } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { fichaClimaFuturo } from '@/lib/climaFuturo';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
+import { registroDelPunto, FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI } from '@/lib/pueblosOriginarios';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
+import type { Ubicacion } from '@/lib/entorno';
 import type { VigenciaPractica } from '@/lib/biomaTipos';
 
 interface Props {
   mojones:    Mojon[];
   datosClima: DatosClima | null;
   datosTopo:  DatosTopografia | null;
+  /** La resuelve el análisis de Entorno con Nominatim. `null` hasta que se corra. */
+  ubicacion:  Ubicacion | null;
   onIrAClima: () => void;
+  onIrAEntorno: () => void;
 }
 
-export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Props) {
+export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrAClima, onIrAEntorno }: Props) {
   // La ecorregión se pide antes de los cortes de arriba porque es un hook y no
   // puede quedar detrás de un return condicional.
   const listo = mojones.length >= 3;
@@ -114,6 +119,10 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
   // nunca las trae. Vacío es el estado normal mientras se releva el resto.
   const practicas = ficha?.practicas ?? [];
   const analogos = analogosDeKoppen(datosClima.koppen);
+  // Qué pueblos tienen comunidades registradas acá. No sale de la ecorregión ni
+  // del clima: sale de la provincia y el departamento, que los resuelve el
+  // análisis de Entorno. Argentina por ahora.
+  const registro = registroDelPunto(ubicacion);
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
@@ -240,6 +249,145 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, onIrAClima }: Pr
         </Seccion>
       )}
       </>}
+
+      {/* Pueblos originarios con comunidades registradas.
+
+          La tercera capa, y la única que no sale del mapa físico: sale de un
+          registro del Estado. Contesta qué pueblos tienen hoy comunidades
+          inscriptas o relevadas por la Ley 26.160 en esta provincia y en este
+          departamento — no qué pueblos habitaron la zona, que es otra pregunta
+          y la contestan las prácticas fechadas de más arriba.
+
+          Va afuera del bloque de la ficha a propósito: depende de la ubicación
+          administrativa y no de la ecorregión, así que aparece incluso donde no
+          hay ficha de bioma. Ver lib/pueblosOriginarios.ts. */}
+      <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios con comunidades registradas">
+        {registro.estado === 'sin_ubicacion' && (
+          <div className="space-y-2">
+            <p className="text-xs text-ink-700/70 leading-relaxed">
+              Esto se resuelve por provincia y departamento, no por clima ni por ecorregión, y
+              todavía no sabemos en cuál está el predio. Lo ubica el análisis de Entorno.
+            </p>
+            <button
+              onClick={onIrAEntorno}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-xs font-medium transition-colors"
+            >
+              <MapPin className="w-3 h-3" /> Ir a Entorno
+            </button>
+          </div>
+        )}
+
+        {registro.estado === 'fuera_de_argentina' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El predio está en {registro.pais}, y este registro es argentino: sale del INAI. Que no
+            haya nada acá no dice nada sobre {registro.pais} — dice que todavía no relevamos el
+            registro equivalente de ese país.
+          </p>
+        )}
+
+        {registro.estado === 'jurisdiccion_desconocida' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El geocodificador devolvió «{registro.provincia}» y no es ninguna de las 24
+            jurisdicciones argentinas que conocemos, así que preferimos no contestar antes que
+            contestar de más. No significa que no haya comunidades registradas.
+          </p>
+        )}
+
+        {registro.estado === 'sin_comunidades' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            En {registro.jurisdiccion} el registro del INAI no tiene comunidades inscriptas ni
+            relevadas, y es la única jurisdicción del país en esa situación. Es un dato del
+            registro, no del territorio: dice que ninguna comunidad hizo ahí el trámite.
+          </p>
+        )}
+
+        {registro.estado === 'con_registro' && <>
+          {/* El departamento primero, cuando se pudo casar: es la escala a la
+              que el dato sirve. La provincia queda de marco. */}
+          {registro.departamento ? (
+            <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {registro.departamento.departamento} · {registro.provincia.provincia}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {registro.departamento.comunidades === 1
+                  ? 'Una comunidad registrada'
+                  : `${registro.departamento.comunidades} comunidades registradas`}
+                {registro.departamento.pueblos.length === 1 ? ', de un pueblo:' : ', de estos pueblos:'}
+              </p>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {registro.departamento.pueblos.map(p => (
+                  <span key={p.pueblo} className="text-[10px] px-2 py-0.5 rounded-full bg-moss-100 text-moss-900 border border-moss-200">
+                    {p.pueblo} <span className="text-moss-700/70">· {p.comunidades}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-ink-700/60 leading-relaxed bg-bone-50 border border-bone-200 rounded-lg p-2.5">
+              El departamento que devolvió el geocodificador no coincide con ninguno del registro,
+              así que la respuesta es provincial. Preferimos eso a elegir un departamento parecido.
+            </p>
+          )}
+
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+            En toda la provincia de {registro.provincia.provincia}
+          </p>
+          <p className="text-xs text-ink-700/80 leading-relaxed">
+            {registro.provincia.comunidades} comunidades registradas, {registro.provincia.conPersoneria} con
+            personería jurídica inscripta, y estos pueblos:
+          </p>
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {registro.provincia.pueblos.map(p => (
+              <span key={p.pueblo} className="text-[10px] px-2 py-0.5 rounded-full bg-bone-100 text-ink-700/80 border border-bone-300">
+                {p.pueblo} <span className="text-ink-700/50">· {p.comunidades}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* El relevamiento de la Ley 26.160 es el dato que le sirve a quien va
+              a intervenir: dice si el territorio de al lado está medido o no. */}
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+            Relevamiento territorial (Ley 26.160)
+          </p>
+          <p className="text-xs text-ink-700/75 leading-relaxed">
+            {registro.provincia.relevamiento.culminado} culminado
+            {' · '}{registro.provincia.relevamiento.iniciado + registro.provincia.relevamiento.en_tramite} en curso
+            {' · '}{registro.provincia.relevamiento.sin_relevar} sin relevar
+            {registro.provincia.relevamiento.sin_dato > 0 && <> · {registro.provincia.relevamiento.sin_dato} sin dato</>}
+          </p>
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2.5">
+            Es una lista, no un mapa: no decimos dónde está cada comunidad. Los pueblos van
+            escritos como los escribe el registro, con sus variantes, porque decidir cómo se llama
+            un pueblo no es trabajo de una app. Y los números cuentan comunidades en las que el
+            registro anota a ese pueblo, así que la columna puede sumar más que el total: hay
+            comunidades anotadas con más de un pueblo.
+          </p>
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">Un departamento que no figura no es un territorio
+            sin pueblos originarios:</strong> es un territorio sin comunidades <em>registradas</em>.
+            El registro depende de que una comunidad haya iniciado y sostenido un trámite ante el
+            Estado, así que su ausencia habla del trámite y no de la gente.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_REGISTRO_AR.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_REGISTRO_AR.label}
+            </a>
+            <a href={MAPA_INAI.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {MAPA_INAI.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              Foto del registro al {FECHA_REGISTRO_AR} · {FUENTE_REGISTRO_AR.licencia}. El registro
+              se mueve; esta tabla no.
+            </p>
+          </div>
+        </>}
+      </Seccion>
 
       {/* Saberes territoriales — capa 2. Separada de los saberes de la ficha a
           propósito: aquéllos describen un bioma, éstos son de comunidades

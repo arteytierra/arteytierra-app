@@ -12,6 +12,7 @@ import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
+import { registroDelPunto, FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR } from '@/lib/pueblosOriginarios';
 
 interface Props {
   datos: InformeData;
@@ -30,6 +31,10 @@ export function InformeView({ datos, compartido = false }: Props) {
     ecoId: eco?.eco_id,
     listo: !resolviendoEco,
   });
+  // Los pueblos con comunidades registradas no salen de la ecorregión: salen de
+  // la provincia y el departamento que resolvió el análisis de Entorno. Un
+  // proyecto guardado antes de esta capa no trae `admin` y la sección no sale.
+  const registroPueblos = registroDelPunto(datos.entorno?.admin ?? null);
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -382,6 +387,44 @@ export function InformeView({ datos, compartido = false }: Props) {
               </div>
               <p className="text-[10px] text-ink-700/50 mt-1.5">Fechadas y sin atribución de autoría: el registro data la obra, no quién la hizo.</p>
               </> : null}
+              {/* Pueblos originarios con comunidades registradas. Va acá, pegado a
+                  las prácticas, pero no sale de la ficha del bioma: sale del
+                  registro del INAI por provincia y departamento. Es el dato del
+                  presente —quiénes están hoy, y si su territorio está relevado—
+                  mientras las prácticas de arriba son el del pasado.
+
+                  El informe se lee en voz alta, así que la advertencia sobre lo que
+                  el registro no dice viaja siempre con los números. Ver
+                  lib/pueblosOriginarios.ts. */}
+              {registroPueblos.estado === 'con_registro' && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Pueblos originarios con comunidades registradas</p>
+              {registroPueblos.departamento && (
+                <p className="text-sm text-ink-700/80">
+                  En {registroPueblos.departamento.departamento}, {registroPueblos.provincia.provincia}:{' '}
+                  {registroPueblos.departamento.comunidades === 1
+                    ? 'una comunidad registrada'
+                    : `${registroPueblos.departamento.comunidades} comunidades registradas`}
+                  {', de '}
+                  {registroPueblos.departamento.pueblos.map(p => p.pueblo).join(', ')}.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la provincia de {registroPueblos.provincia.provincia}:{' '}
+                {registroPueblos.provincia.comunidades} comunidades registradas de{' '}
+                {registroPueblos.provincia.pueblos.length} pueblos, con el relevamiento territorial
+                de la Ley 26.160 culminado en {registroPueblos.provincia.relevamiento.culminado} y
+                sin iniciar en {registroPueblos.provincia.relevamiento.sin_relevar}.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos: {registroPueblos.provincia.pueblos.map(p => p.pueblo).join(', ')}.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_REGISTRO_AR.label} · {FUENTE_REGISTRO_AR.licencia}. Foto del
+                registro al {FECHA_REGISTRO_AR}. Que un departamento no figure no significa que no
+                haya pueblos originarios: significa que no hay comunidades registradas, y el
+                registro depende de un trámite ante el Estado.
+              </p>
+              </>}
               {bioma && bioma.saberes.length > 0 && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">
