@@ -35,13 +35,38 @@ que no esté ahí, se pide: **no se recolorea un logo**.
 
 ## Parte A — preparar la máquina (una vez)
 
-Windows. Todo esto se corre en PowerShell, y ninguno pide permisos de
-administrador.
+Windows. Nada de esto pide permisos de administrador.
+
+### Quién hace qué
+
+La regla corta: **Claude corre los comandos; vos hacés lo que abre una ventana.**
+
+Un agente puede correr `winget`, `pnpm`, `git` y las verificaciones: son
+comandos, salen siempre igual y si algo falla lo lee en la salida. Lo que no
+puede hacer es lo que pasa fuera de la terminal —apretar *Instalar* en el menú
+de una fuente, iniciar sesión en GitHub— y hay algo que **no debe** hacer aunque
+pudiera: escribir una contraseña o un token. Eso lo ponés vos, en la ventana que
+corresponda, y no pasa por el chat.
+
+| Paso | Quién |
+|---|---|
+| 1. Node 24 y pnpm | Claude |
+| 2. FFmpeg | Claude — y después **vos** cerrás y abrís la terminal |
+| 3. Python 3.12 y faster-whisper | Claude |
+| 4. La tipografía Inter | **vos**, a mano; Claude verifica después |
+| 5. Clonar el repositorio | Claude — el inicio de sesión de GitHub es **tuyo** |
+| 6. Render de prueba | Claude |
+
+En la práctica: le pegás a Claude los pasos 1, 2, 3, 5 y 6 —puede ser todo
+junto, en un solo mensaje— y hacés vos el 4 mientras tanto.
 
 ### 1. Node 24 y pnpm
 
 ```bash
 winget install OpenJS.NodeJS
+```
+
+```bash
 npm install -g pnpm@9
 ```
 
@@ -51,10 +76,12 @@ npm install -g pnpm@9
 winget install Gyan.FFmpeg
 ```
 
-Importante: el shim queda en `%LOCALAPPDATA%\Microsoft\WinGet\Links`, que entra
-al PATH pero **no en la terminal que ya estaba abierta**. Hay que cerrarla y
-abrir otra. Verificar que la compilación traiga `libass` —sin eso no se pueden
-quemar subtítulos—:
+El shim queda en `%LOCALAPPDATA%\Microsoft\WinGet\Links`, que entra al PATH pero
+**no en la terminal que ya estaba abierta**. Cerrala y abrí otra: eso lo tenés
+que hacer vos, porque una sesión no puede refrescar su propio PATH.
+
+Ya en la terminal nueva, que Claude verifique que la compilación trae `libass`
+—sin eso no se pueden quemar subtítulos—:
 
 ```bash
 ffmpeg -version | tr ' ' '\n' | grep -E "libass|libx264|fontconfig"
@@ -76,19 +103,34 @@ Va **3.12 a propósito**. Si se instala en el 3.13, después `py` abre el 3.13 p
 defecto y todo parece funcionar hasta que no funciona. La primera transcripción
 se baja el modelo (`small` ≈ 500 MB).
 
-### 4. La tipografía Inter
+### 4. La tipografía Inter — este paso es a mano
 
-Se baja de `https://github.com/rsms/inter/releases` (v4.1, unos 34 MB) y se
-instalan **las estáticas de `extras/ttf`**, no `InterVariable.ttf`: libass maneja
-mal las variable fonts y te da un peso que no pediste sin decir nada.
+Instalar una fuente en Windows es un menú del explorador, no un comando. Hay
+maneras de hacerlo por consola, pero la que anda sin permisos de administrador
+es el click derecho. Son siete pasos:
 
-Seleccionar todos los `.ttf` de esa carpeta, botón derecho → *Instalar*.
+1. Abrí `https://github.com/rsms/inter/releases` en el navegador.
+2. En la versión más nueva (v4.1 o posterior), bajá el zip que dice
+   `Inter-4.1.zip`, unos 34 MB. Está en **Assets**, abajo del texto de la
+   publicación; hay que desplegarlo si aparece plegado.
+3. Descomprimilo: click derecho sobre el zip → *Extraer todo* → *Extraer*.
+4. Entrá a la carpeta **`extras/ttf/`**. Es esa, no la raíz. En la raíz está
+   `InterVariable.ttf`, que es la variable font: libass la maneja mal y te
+   devuelve un peso que no pediste, sin decir nada.
+5. Seleccioná todos los `.ttf` de esa carpeta con `Ctrl+A`. Son unos cuantos;
+   se instalan todos juntos.
+6. Click derecho → **Instalar**. Si el menú no lo muestra, es el menú corto de
+   Windows 11: *Mostrar más opciones* → *Instalar*. No elijas *Instalar para
+   todos los usuarios*: pide administrador y no hace falta.
+7. Windows no avisa cuando termina. Para confirmar, abrí *Configuración →
+   Personalización → Fuentes* y buscá "Inter": tienen que aparecer varios pesos.
 
-Después **verificar que libass la ve de verdad**, que no es lo mismo que que
-Windows la muestre en la lista de fuentes. La prueba está en la skill
-`edicion-video`, en la sección de subtítulos: renderiza un fotograma con Inter y
-otro con un nombre inventado y compara los hashes. Si son iguales, Inter no está
-y los subtítulos van a salir con otra tipografía sin avisar.
+Y acá está la trampa: **que Windows la muestre en la lista no quiere decir que
+FFmpeg la vea**. Son dos registros distintos. Pedile a Claude la prueba de los
+dos hashes —está en la skill `edicion-video`, en la sección de subtítulos—: se
+renderiza un fotograma con Inter y otro con un nombre de fuente inventado y se
+comparan los hashes. Si dan iguales, Inter no está donde libass la busca y los
+subtítulos van a salir con otra tipografía sin avisar.
 
 ### 5. El repositorio — y con él, Remotion
 
@@ -105,6 +147,13 @@ están las placas, los tokens de color, los logos y las recetas de la skill.
 git clone https://github.com/arteytierra/arteytierra-app.git
 ```
 
+El repo es privado, así que la primera vez git pide iniciar sesión y abre una
+ventana del navegador. **Ese paso es tuyo**: entrás con la cuenta de GitHub del
+estudio, y queda guardado en el Administrador de credenciales de Windows para
+siempre. No le pases un token a Claude por chat ni lo pegues dentro de un
+comando: el comando queda escrito en el historial y en la configuración de
+permisos, en texto plano.
+
 ```bash
 cd arteytierra-app && pnpm install
 ```
@@ -114,21 +163,23 @@ Eso instala todo el monorepo, que es lo que conviene. Existe un atajo,
 config y tarda bastante menos; pero con eso **no** se pueden correr las
 verificaciones del repo antes de commitear. Si vas a tocar código, instalá todo.
 
-Después, probar que las placas se resuelven:
+### 6. Que las placas se resuelven, y un render de prueba
 
 ```bash
 pnpm --filter @arteytierra/placas componer
 ```
 
-Tienen que salir seis: `AperturaAcequia`, `AperturaAcequiaVertical`,
-`AperturaAcequiaOscura`, `AperturaAcequiaOscuraVertical`, `LowerThird` y
-`PlacaDato`.
+Tiene que listar las cinco aperturas —`AperturaClara`, `AperturaOscura`,
+`AperturaOscuraAzul`, `AperturaApp` y `AperturaAppClara`—, cada una con su
+gemela `…Vertical`, más `LowerThird` y `PlacaDato`. Al final aparecen `GenLockup` y
+`GenWordmark`: **no son placas**, son generadores de PNG de marca y no se montan
+en ningún video.
 
-Y **hacé un render de prueba ahora, no en medio de un trabajo**, porque el primer
-render se baja un Chrome propio de Remotion (113 MB) antes de empezar:
+Y **hacé el render de prueba ahora, no en medio de un trabajo**, porque el
+primero se baja un Chrome propio de Remotion (113 MB) antes de empezar:
 
 ```bash
-pnpm --filter @arteytierra/placas render AperturaAcequiaOscura prueba.mp4
+pnpm --filter @arteytierra/placas render AperturaOscura prueba.mp4
 ```
 
 Tienen que salir tres segundos con el lockup blanco sobre el negro profundo. Si
@@ -218,7 +269,7 @@ pnpm --filter @arteytierra/placas componer
 ```
 
 ```bash
-pnpm --filter @arteytierra/placas render AperturaAcequiaOscura apertura.mp4
+pnpm --filter @arteytierra/placas render AperturaOscura apertura.mp4
 ```
 
 Los textos se pasan con `--props` en JSON (`bajada`, `nombre`, `rol`, `valor`,
@@ -307,7 +358,7 @@ Pushear a `main`.
 
 Decime en qué estado está el entorno: si `ffmpeg`, `ffprobe` y faster-whisper
 responden, si Inter pasa la prueba de los dos hashes, y si
-`pnpm --filter @arteytierra/placas componer` lista las seis placas. Si algo
+`pnpm --filter @arteytierra/placas componer` lista las placas. Si algo
 falta, decime qué y pará ahí.
 
 No revises el espacio en disco ni lo menciones: de eso me ocupo yo.

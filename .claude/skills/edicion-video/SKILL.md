@@ -204,8 +204,8 @@ pnpm --filter @arteytierra/placas estudio
 pnpm --filter @arteytierra/placas componer
 
 # renderizar, con el texto que se le pase
-pnpm --filter @arteytierra/placas render AperturaAcequia apertura.mp4 \
-  --props='{"bajada":"Leer el territorio antes de moverlo"}'
+pnpm --filter @arteytierra/placas render AperturaOscura apertura.mp4 \
+  --props='{"bajada":"Plataforma de estudio, diseño y planificación ecosistémica"}'
 
 # un lower third para superponer en CapCut: ProRes 4444, que lleva canal alfa
 pnpm --filter @arteytierra/placas render LowerThird lower.mov \
@@ -213,19 +213,28 @@ pnpm --filter @arteytierra/placas render LowerThird lower.mov \
   --props='{"nombre":"Jonatan","rol":"Arte y Tierra"}'
 ```
 
-Las placas que hay hoy: `AperturaAcequia` y `AperturaAcequiaOscura`
-(cada una en 16:9 y 9:16), `LowerThird` y
+Las placas que hay hoy son cinco aperturas —`AperturaClara` sobre crema,
+`AperturaOscura` sobre el negro profundo, `AperturaOscuraAzul` con el isotipo
+en azul agua, y `AperturaApp` y `AperturaAppClara`, que rematan revelando el
+`.app`—, cada una con su gemela `…Vertical` en 9:16; más `LowerThird` y
 `PlacaDato` —un número que cuenta hasta su valor, con la unidad y **la fuente
 citada**, que no es opcional: mismo criterio que los motores de cálculo.
 
-Tres cosas que se aprendieron armándolo y conviene no volver a descubrir:
+Aparte están `GenLockup` y `GenWordmark`, que **no son placas**: generan los PNG
+de marca que después se commitean. Ver `src/generadores/Generadores.tsx`.
 
-- **La apertura viene en clara y oscura.** `AperturaAcequia` sobre crema y
-  `AperturaAcequiaOscura` sobre el negro profundo, cada una en 16:9 y 9:16. La
-  oscura usa `logo-blanco.png`: el lockup **no se recolorea**, se cambia por la
-  variante que corresponde. Ojo que el blanco del paquete es `#FFFFFF` puro y no
+Cuatro cosas que se aprendieron armándolo y conviene no volver a descubrir:
+
+- **La apertura viene en clara, oscura y oscura con el isotipo azul**, cada una
+  en 16:9 y 9:16. Las oscuras usan `logo-blanco.png`: el lockup **no se
+  recolorea**, se cambia por la variante que corresponde. Ojo que el blanco del paquete es `#FFFFFF` puro y no
   el blanco cálido de la marca, así que sobre el negro profundo tiene más
   contraste que el resto del sistema.
+- **El `.app` no se dibuja aparte.** `AperturaApp` muestra el PNG entero de
+  "acequia.app" recortado justo donde termina "acequia", y animar es correr ese
+  recorte. Así el kerning es el que puso la tipografía y "acequia" no se mueve
+  un píxel. El punto de corte (`FIN_DE_ACEQUIA`) está medido sobre el propio
+  PNG: si alguna vez se regenera el wordmark, hay que volver a medirlo.
 - **Las tipografías se empaquetan con `@remotion/google-fonts`**, no se toman
   del sistema. Si se tomaran del sistema, el mismo proyecto renderizado en otra
   máquina saldría distinto sin avisar. Y se piden sólo los pesos que se usan:
