@@ -1,7 +1,11 @@
 # Encargo a GPT — prácticas documentadas por ecorregión
 
 Escrito el 14/09/2026. Alimenta `apps/terreno/lib/practicasHistoricas.ts`, que
-hoy tiene 182 entradas sobre 181 ecorregiones de 222.
+hoy tiene 201 entradas sobre 200 ecorregiones de 222. **El relevamiento está
+cerrado.** Las 22 fichas que siguen sin práctica no son un pendiente: son 22
+decisiones de no sostener una afirmación con una fuente que no alcanzaba, con el
+motivo escrito una por una en `COBERTURA_COMPLEMENTO_F_CIERRE.md`. Este archivo
+queda como el contrato por si aparece una fuente nueva.
 
 El reparto es el mismo que funcionó con las fichas ecológicas: **GPT releva y
 redacta, acá se monta y se verifica.** Lo que cambia respecto de aquel encargo es
@@ -176,32 +180,44 @@ fecha que pusiste.
 5. ~~**Complemento E: prioridades y huecos**~~: **hecho**. 9 entradas, entre
    ellas las seis fichas que este encargo marcaba como prioritarias. **G quedó
    cerrado**: 28 de 28. H subió a 17 de 28 e I a 12 de 14.
+6. ~~**Complemento F: el cierre**~~: **hecho**. 18 entradas nuevas más `socotra`
+   corregida, y las 22 restantes auditadas una por una y devueltas vacías con su
+   motivo. **A y E quedaron cerrados**: 12 de 12 y 10 de 10.
 
-**Con eso los nueve bloques están abiertos, tres están completos —el catálogo
-base, Europa no comunitaria y la Unión Europea— y no falta ningún continente.**
-Lo que queda son **41 fichas sueltas** repartidas por todo el anexo: las que no
-tuvieron evidencia específica en su lote. Están listadas, bloque por bloque, en los
-`COBERTURA_*.md` de `practicas-documentadas-ecorregion/`. De ahora en más el
-trabajo ya no es por bloque sino por ficha, y la pregunta cambia: no es "¿qué
-falta cubrir?" sino "¿por qué esta no se pudo sostener, y hay otra fuente?".
+**Con eso el relevamiento terminó: 200 fichas de 222, y cinco de los nueve
+bloques completos** —las doce fichas base de Sudamérica, el catálogo base,
+Canadá-Alaska-Groenlandia, Europa no comunitaria y la Unión Europea—.
 
-**D es hoy el bloque más vacío: 17 de 53 sin entrada**, casi todo
-Centroamérica, el Caribe y los manglares, que es además donde más bibliografía
-hay. Después vienen H, con 11 de 28, y B, con 10 de 47.
+**Las 22 que quedan vacías, y por qué.** Están repartidas en cuatro bloques: 9
+en D, 8 en B, 3 en H y 2 en I. Los motivos se repiten y conviene leerlos juntos,
+porque describen el límite del método y no un descuido:
 
-Las dos que más conviene volver a intentar, porque son regiones agrícolas viejas
-y el hueco sorprende: `hircania_caspio` y `kopet_dag`. Las seis prioridades
-anteriores se cerraron en el séptimo lote.
+- **Islas oceánicas sin ocupación agrícola documentada**: `islas_desventuradas`,
+  `isla_malpelo_xerica`, `bosque_juan_fernandez`,
+  `revillagigedo_ecosistemas_insulares`. No hay nada que relevar; fabricar una
+  práctica para una isla protegida sería inventar.
+- **La bibliografía existe pero habla de un país o de una región mayor y no
+  distingue la ecorregión**: `californias_chaparral_costero`,
+  `hispaniola_seco_pinar_humedales` (los conucos taínos están documentados a
+  escala insular), `montanas_mayas_pino_encino` (la evidencia de Toledo no
+  separa la franja montana de las tierras bajas), `pantepui_guayana_alta` (el
+  fuego pemón es de la Gran Sabana, no de las cumbres), `bosque_seco_panameno`,
+  `pacifico_sur_chiapas_bosque_seco`, `sabanas_pino_belice_mosquitia`,
+  `matorral_xerico_caribeno`, `tamaulipas_texas_pastizal_mezquital`,
+  `bosque_seco_mato_grosso`, `campinaranas_aguas_negras`,
+  `mata_atlantica_seca`, `matorrales_xericos_caribe_suramericano`,
+  `caspio_llanura_desertica`, `mar_rojo_escarpe`, `sahara_occidental_erg`.
+- **La fuente prueba el uso pero no describe la mecánica**:
+  `golfo_persico_mangle` —la arqueobotánica demuestra explotación prolongada del
+  manglar sin decir cómo se hacía— y `uweinat_tibesti`, cuya entrada anterior se
+  retiró y cuya búsqueda nueva tampoco reunió práctica, fecha y territorio.
 
-Y las que probablemente **no** tengan respuesta, donde lo correcto es devolverlas
-vacías antes que forzarlas: `socotra`, `uweinat_tibesti`,
-`alto_artico_desierto_polar`, `islas_desventuradas`,
-`revillagigedo_ecosistemas_insulares`, `isla_malpelo_xerica`.
-
-Lo que el sexto lote deja como lección para los que faltan: **los huecos que
-quedan son huecos difíciles**, y la tentación va a ser llenarlos con una fuente
-que no alcanza. Es preferible devolver diez fichas vacías que una entrada cuyo
-`detalle` el lector no pueda comprobar.
+**Si un lote nuevo llega alguna vez, es por una de estas fichas y con una fuente
+que resuelva exactamente lo que faltaba.** La regla no cambia: es preferible
+devolver diez fichas vacías que una entrada cuyo `detalle` el lector no pueda
+comprobar. Ya pasó dos veces que una entrada forzada hubo que devolverla
+—`socotra` y `uweinat_tibesti`—, y de las dos sólo una encontró después la
+fuente que la sostenía.
 
 Los ids están en `ANEXO_IDS_FICHAS.md`, al lado de este archivo. **Los bloques
 del anexo son los que están en el anexo**: no hay que inferir a qué región
@@ -228,7 +244,7 @@ error de redacción, es el único error que este archivo no puede tener.
 
 Del primer lote se verificaron 15 de 17 palabra por palabra; del segundo, 41 de
 44; del tercero, **las 26**; del cuarto, **las 24**; del quinto, **las 41**; del
-sexto, **las 17**; del séptimo, **las 9**. Las que no se montaron casi
+sexto, **las 17**; del séptimo, **las 9**; del octavo, **las 19**. Las que no se montaron casi
 nunca fallaron la cita: falló el archivo, o falló el resto de la entrada.
 **Conviene evitar los PDF escaneados o muy pesados cuando hay una página HTML
 equivalente**, y preferir una página estable —la ficha SIPAM del sistema, el
@@ -277,6 +293,13 @@ Cinco avisos concretos que salieron de la revisión:
   tempranos". Callar una autoría que la fuente afirma es tan grave como
   inventarla.
 
+- **Un índice bibliográfico no es el lugar de publicación, y un endpoint de
+  descarga tampoco.** En el octavo lote, `hircania_caspio` citaba una ficha de
+  **RePEc**, que describe el artículo pero no lo aloja, y `kopet_dag` citaba el
+  *galley* del Journal of Political Ecology, que es la URL que dispara la
+  descarga del PDF y no una página que se pueda leer. Las dos van al DOI. Si la
+  revista es de acceso abierto, mejor todavía: decilo en la etiqueta.
+
 - **ResearchGate no es el lugar de publicación.** En el séptimo lote,
   `balcanes_mixto` citaba una copia de ResearchGate de un artículo de
   *Quaternary International*: subida por un usuario, puede no ser la versión
@@ -302,9 +325,9 @@ Cinco avisos concretos que salieron de la revisión:
   del organismo. `whc.unesco.org`, en cambio, **no** es un problema: lo que
   parecía un bloqueo era una limitación de la herramienta de acá.
 - **La etiqueta describe el documento que abre la URL.** Es el defecto que
-  aparece en todos los lotes y que ningún test caza: van catorce en siete
-  lotes, **ninguna en el séptimo**, que fue el primero donde las etiquetas
-  vinieron completas. Tres en el
+  aparece en todos los lotes y que ningún test caza: van catorce en ocho
+  lotes, **ninguna en los dos últimos**, que vinieron con autor, año y
+  publicación completos en todas las entradas. Tres en el
   tercero —un artículo vecino del mismo equipo, o el organismo en vez de la
   revista—, uno en el cuarto —`fao.org/4/y1275e/` citado como "Drainage water
   reuse in Egypt", cuando es *Case Studies on Water Conservation in the

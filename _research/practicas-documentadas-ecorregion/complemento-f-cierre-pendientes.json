@@ -1,0 +1,272 @@
+[
+  {
+    "fichaId": "altiplano_mexicano_matorral",
+    "practica": "Metepantle: mosaico de terrazas con agave y milpa",
+    "periodo": "Desde hace más de 3.000 años; vigente y reconocido como SIPAM en 2025",
+    "tipo": "suelo",
+    "vigencia": "en_uso",
+    "detalle": "La FAO atribuye al conocimiento nahua de las familias agrícolas de Tlaxcala un mosaico en terrazas que combina maíz, agave, frijol, calabaza y plantas silvestres. La fuente documenta continuidad, conservación de semillas y biodiversidad de tierras áridas, pero no proporciona dimensiones ni una receta técnica universal. Para un predio del altiplano, el antecedente útil es la diversificación espacial de la ladera con especies perennes y anuales, no la copia de una terraza sin diagnóstico local.",
+    "fuentes": [
+      {
+        "label": "FAO (2025) — Metepantle: Sistema agrícola ancestral en las zonas montañosas de Tlaxcala, SIPAM",
+        "url": "https://www.fao.org/giahs/around-the-world/detail/mexico-tlaxcala-system/es"
+      }
+    ],
+    "verificacion": "Durante más de 3 000 años, las familias agrícolas de Tlaxcala han mantenido el sistema metepantle"
+  },
+  {
+    "fichaId": "chiapas_bosques_montanos",
+    "practica": "Milpa tzeltal articulada con el ch’ulel del maíz",
+    "periodo": "Documentada mediante trabajo etnográfico entre marzo y julio de 2013; vigente al momento del estudio",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En cuatro comunidades tzeltales de Tenejapa, la milpa y el maíz se documentan como práctica agrícola y como parte de una relación ritual con cerros, manantiales, semillas y cosechas. El estudio presenta al campesino u «hombre de cultivo» como cuidador y generador de abundancia, y registra la persistencia de esa integración entre práctica, reproducción de lo vivo y representación simbólica. La fuente sirve para mantener unida la dimensión productiva y cultural de la milpa, pero no ofrece una prescripción agronómica trasladable sin consulta comunitaria.",
+    "fuentes": [
+      {
+        "label": "D’Alessandro y González (2017) — La práctica de la milpa, el ch’ulel y el maíz como elementos articuladores de la cosmovisión sobre la naturaleza entre los tzeltales de Tenejapa, Estudios de Cultura Maya 50",
+        "url": "https://www.scielo.org.mx/scielo.php?lng=es&nrm=iso&pid=S0185-25742017000200271&script=sci_arttext_plus&tlng=es"
+      }
+    ],
+    "verificacion": "El trabajo etnográfico se realizó en cuatro comunidades aledañas a la cabecera municipal de Tenejapa de marzo a julio de 2013."
+  },
+  {
+    "fichaId": "costa_rica_bosques_humedos_estacionales",
+    "practica": "Cultivo de granos con riego manual de sequía y almacenamiento",
+    "periodo": "Período Sapoá-Ometepe, 800–1550 d. C.",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "La síntesis arqueológica del Museo Nacional para Cañas-Liberia registra maíz, frijol, calabaza, chile y árboles frutales, con preparación por tala y quema, azadas de madera, piedra o concha y riego manual de algunos campos durante las sequías. Tras la cosecha, el grano se guardaba en lugares especiales; los sitios se concentraban cerca de cursos con mejor caudal anual dentro de una zona de bosque tropical seco en transición a húmedo. El libro distingue la evidencia arqueológica de lo informado por cronistas y no permite atribuir cada operación exclusivamente a los chorotegas.",
+    "fuentes": [
+      {
+        "label": "Guerrero Miranda y Solís del Vecchio (1997) — Los pueblos antiguos de la zona Cañas-Liberia del año 300 al 1500 después de Cristo, Museo Nacional de Costa Rica",
+        "url": "https://www.museocostarica.go.cr/wp-content/uploads/Publicaciones/arqueologia/Los-pueblos-antiguos-Canas-Liberia.pdf"
+      }
+    ],
+    "verificacion": "PERÍODO SAPOA-OMETEPE (800-1550 d.C.)"
+  },
+  {
+    "fichaId": "manglares_antillanos",
+    "practica": "Cultivo, cosecha y procesamiento de plantas alimentarias junto al manglar",
+    "periodo": "Edad Cerámica tardía, entre 1290 y 780 años calibrados antes del presente",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "En Anse Trabaud, Martinica, los depósitos enterrados bajo sedimentos de manglar conservaron plantas alimentarias cultivadas y cosechadas en el sitio, luego procesadas y consumidas por una comunidad indígena. La secuencia también muestra que el asentamiento se desplazó tierra adentro frente a la erosión costera y los cambios de la barrera litoral. Es un caso localizado de producción alimentaria y reorganización del asentamiento en un borde lagunar vulnerable, no una práctica demostrada para todas las Antillas.",
+    "fuentes": [
+      {
+        "label": "Hofman et al. (2023) — Mangrove Archives: Unravelling Human-environment Interactions from Deeply Buried Deposits at the Site Anse Trabaud, Martinique, Environmental Archaeology 28(3)",
+        "url": "https://www.tandfonline.com/doi/full/10.1080/14614103.2021.1921676"
+      }
+    ],
+    "verificacion": "The archaeological deposits are dated to 1290–780 cal BP (2σ)."
+  },
+  {
+    "fichaId": "manglares_centroamericanos",
+    "practica": "Concentración de salmuera y cocción de sal en cocinas de manglar",
+    "periodo": "Economía costera maya entre 600 a. C. y 1500 d. C.; salinas excavadas principalmente del Clásico",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "En las salinas de Paynes Creek, sur de Belice, productores mayas vertían agua a través de sedimento salino para enriquecer la salmuera y reducir tiempo de hervor y consumo de leña. Después la hervían en vasijas sobre fuego dentro de cocinas de postes y techo vegetal; la turba de mangle rojo preservó los edificios hoy sumergidos. La evidencia sitúa esta producción doméstica excedentaria dentro de una economía costera de sal, recursos marinos, cultivos arbóreos e intercambio con ciudades del interior.",
+    "fuentes": [
+      {
+        "label": "McKillop (2024) — Flooded mangrove landscapes hide ancient Maya coastal sites in Belize, Journal of Island and Coastal Archaeology 19(3)",
+        "url": "https://www.tandfonline.com/doi/full/10.1080/15564894.2022.2163323"
+      }
+    ],
+    "verificacion": "This article includes a discussion of the coastal economy from the Middle Preclassic through the Postclassic periods (600 B.C.–A.D. 1500)."
+  },
+  {
+    "fichaId": "sierras_madre_pino_encino",
+    "practica": "Recolección rarámuri de plantas del bosque según uso y conocimiento local",
+    "periodo": "Trabajo de campo entre 2002 y 2004; vigente al momento del estudio",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En Cuiteco, Sierra Tarahumara, campesinos rarámuri participaron en recorridos, reuniones y entrevistas sobre plantas de bosque de pino, pino-encino, vegetación secundaria, ribera, barbechos, parcelas y huertos. El estudio registró una división de tareas: las mujeres reunían principalmente plantas medicinales y comestibles, y los hombres materiales para bienes domésticos, leña y construcción, sin diferencia general de conocimiento entre ambos. La ficha debe conservar esa autoría comunitaria y la diversidad interna; no reducir el saber rarámuri a una lista botánica indiferenciada.",
+    "fuentes": [
+      {
+        "label": "Camou-Guerrero, Reyes-García, Martínez-Ramos y Casas (2008) — Knowledge and Use Value of Plant Species in a Rarámuri Community: A Gender Perspective for Conservation, Human Ecology 36",
+        "url": "https://tesiunamdocumentos.dgb.unam.mx/ptd2008/octubre/0634436/0634436_A1.pdf"
+      }
+    ],
+    "verificacion": "Ethnobotanical research and collection of botanical samples were conducted between 2002 and 2004 with the collaboration of Rarámuri campesinos"
+  },
+  {
+    "fichaId": "trinidad_tobago_bosques",
+    "practica": "Cultivo de cacao criollo y trinitario en fincas y plantaciones",
+    "periodo": "Desde 1525; comercio desde comienzos del siglo XVIII; transición hacia pequeños productores después de 1807",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "detalle": "La historia sectorial de Trinidad registra la primera plantación española de cacao criollo en 1525, introducciones comerciales desde Venezuela alrededor de 1678 y la posterior formación del híbrido trinitario con forastero. También documenta el origen colonial y esclavista de la expansión, seguido por una clase de pequeños productores tras la abolición del tráfico esclavista. Es una práctica histórica insular todavía presente pero en retroceso; la fuente no autoriza a presentarla como saber indígena ni a omitir su régimen laboral.",
+    "fuentes": [
+      {
+        "label": "Bekele (2004) — The History of Cocoa Production in Trinidad and Tobago, Cocoa Research Unit, University of the West Indies",
+        "url": "https://sta.uwi.edu/cru/sites/default/files/cru/HistoryCocoaProductionTT.pdf"
+      }
+    ],
+    "verificacion": "It has been reported that the Spaniards first planted the Criollo (native) variety in Trinidad in 1525"
+  },
+  {
+    "fichaId": "veracruz_tabasco_selvas_humedales",
+    "practica": "Campos elevados con gestión hidráulica comunitaria",
+    "periodo": "Período Clásico mesoamericano",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "La teledetección en la cuenca de Tlalixcoyan, Veracruz, identificó unas 15.000 hectáreas de campos elevados conectados con grupos de plazas cívico-ceremoniales. Por su escala, los autores proponen cooperación local y descentralizada para construir y mantener recursos hidráulicos y agrícolas comunes, más allá de una sola familia o linaje. Es una hipótesis sustentada en patrones lidar que aún requiere pruebas de campo para sus detalles organizativos.",
+    "fuentes": [
+      {
+        "label": "Stoner, Stark, VanDerwarker y Urquhart (2021) — Between land and water: Hydraulic engineering in the Tlalixcoyan basin, Veracruz, Mexico, Journal of Anthropological Archaeology 61",
+        "url": "https://www.sciencedirect.com/science/article/abs/pii/S0278416520302373"
+      }
+    ],
+    "verificacion": "The Classic lowlands of Veracruz developed 15,000 ha of raised-field intensifications."
+  },
+  {
+    "fichaId": "galapagos_matorral_xerico",
+    "practica": "Extracción de sal costera para curar pescado",
+    "periodo": "1886, 1924–1930 y década de 1960",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "Colonos de Galápagos extrajeron sal de James Bay, en Santiago, en tres períodos documentados y la usaron para curar pescado. La actividad también abastecía una demanda ocasional del continente cuando lluvias intensas inundaban sus salinas costeras. Es una adaptación económica histórica de colonos en una isla árida, no un saber ancestral ni una práctica recomendada para un ecosistema protegido.",
+    "fuentes": [
+      {
+        "label": "Oxford y Watkins (2009) — Galápagos: Both Sides of the Coin, texto reproducido por Galápagos Conservancy en History of Galápagos",
+        "url": "https://www.galapagos.org/about_galapagos/history/"
+      }
+    ],
+    "verificacion": "Colonists also mined salt from James Bay on Santiago Island in 1886, from 1924 to 1930, and in the 1960s."
+  },
+  {
+    "fichaId": "manglares_amazon_orinoco_caribe_sur",
+    "practica": "Pesca intensificada y uso estacional de recursos costeros",
+    "periodo": "Entre 7500 y 2000 años antes del presente",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "Siete concheros de la costa noroccidental de Guyana registran estrategias de forrajeo costero durante el Holoceno temprano y medio. La integración de zooarqueología e isótopos relaciona fluctuaciones climáticas con intensificación de la pesca, movilidad, uso estacional de recursos y expansión del manglar. El registro no identifica un pueblo histórico concreto ni demuestra una técnica uniforme en toda la costa amazónico-orinoquense.",
+    "fuentes": [
+      {
+        "label": "Daggers y Plew (2026) — Inferring Human Predation and Land Use: An Examination of the Northwestern Guyana Coast Shell Midden Records Amid Environmental Change, Quaternary 9(2)",
+        "url": "https://www.mdpi.com/2571-550X/9/2/24"
+      }
+    ],
+    "verificacion": "We synthesize recently excavated data and archival museum collection for seven sites dating between 7500 and 2000 BP"
+  },
+  {
+    "fichaId": "arabia_este_niebla",
+    "practica": "Cosecha de resina de incienso en wadis de Dhofar",
+    "periodo": "Producción y comercio desde la Antigüedad; cosecha vigente",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En Wadi Dawkah, Omán, la resina de Boswellia sacra se produjo, recolectó y comerció dentro de una red que vinculaba los wadis del interior costero con oasis y puertos de Dhofar. Los árboles crecen en el lecho aluvial de un wadi que drena estacionalmente hacia Rub al-Jali bajo calor extremo, y la cosecha continúa. UNESCO documenta la continuidad territorial y comercial, pero no identifica por nombre a quienes realizan hoy la extracción ni describe el corte de sangrado.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Land of Frankincense",
+        "url": "https://whc.unesco.org/en/list/1010"
+      }
+    ],
+    "verificacion": "Wadi Dawkah is a major place where the frankincense tree can still be found and frankincense is harvested to this day."
+  },
+  {
+    "fichaId": "desierto_arabigo",
+    "practica": "Hema: reserva consuetudinaria de pastos y agua",
+    "periodo": "Desde tiempos preislámicos; transformación profunda bajo sistemas estatales modernos",
+    "tipo": "ganaderia",
+    "vigencia": "en_retroceso",
+    "detalle": "Pastores nómadas de la península Arábiga reservaban tierras mediante el hema para conservar recursos escasos de pasto y agua; la protección se sostenía en derecho consuetudinario y solidaridad tribal. El acceso de otros grupos requería permiso del consejo y los derechos de usufructo estaban regulados. La fuente advierte que proyectos estatales posteriores reinventaron el nombre hema y que no debe suponerse continuidad automática entre la institución histórica y cualquier cooperativa moderna.",
+    "fuentes": [
+      {
+        "label": "Triulzi (2002) — Empty and populated landscapes: the Bedouin of the Syrian Arab Republic between development and State, FAO Land Reform 2002/2",
+        "url": "https://www.fao.org/4/y2519t/y2519t04.htm"
+      }
+    ],
+    "verificacion": "The historical origin of hema is unknown, but pastoral nomads in the Arabian Peninsula practised it in pre-Islamic times."
+  },
+  {
+    "fichaId": "golfo_llanura_costera",
+    "practica": "Oasis datilero irrigado con manantiales, pozos y canales abiertos",
+    "periodo": "Del Neolítico al presente",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "Al-Ahsa organiza jardines y palmerales mediante manantiales, pozos, canales abiertos y un lago de drenaje sobre una capa freática somera. UNESCO describe una tradición agrícola continua cuya distribución de agua estructura el oasis y que aún mantiene cultivos junto a 2,5 millones de palmeras datileras. La continuidad no implica que todas las obras actuales sean neolíticas: el paisaje evolucionó y la distribución de agua cambió en las últimas décadas.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Al-Ahsa Oasis, an Evolving Cultural Landscape",
+        "url": "https://whc.unesco.org/en/list/1563"
+      }
+    ],
+    "verificacion": "They represent traces of continued human settlement in the Gulf region from the Neolithic to the present"
+  },
+  {
+    "fichaId": "hircania_caspio",
+    "practica": "Pastoreo de altura en las montañas Talesh",
+    "periodo": "Desde hace aproximadamente 6.500 años",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "Un testigo de sedimento del lago Neor conservó durante 6.500 años escarabajos coprófagos y polen asociado con actividad agropastoril. La combinación con evidencia arqueológica indica pastoreo en las alturas de Talesh, junto al borde oriental del bosque hircano; el título plantea la trashumancia como posibilidad, no como hecho definitivamente probado. Por eso la ficha conserva «pastoreo de altura» y no inventa una ruta estacional.",
+    "fuentes": [
+      {
+        "label": "Ponel et al. (2013) — Fossil beetles as possible evidence for transhumance during the middle and late Holocene in the high mountains of Talysch (Talesh) in NW Iran?, Environmental Archaeology 18(3)",
+        "url": "https://ideas.repec.org/a/taf/yenvxx/v18y2013i3p201-210.html"
+      }
+    ],
+    "verificacion": "pastoralism was practised in the high elevation surroundings of Neor in Talysch Mountains at least since ca. 6500 years ago."
+  },
+  {
+    "fichaId": "iran_sur_nubo_sindico",
+    "practica": "Palmeras datileras en hoyos profundos para aprovechar lluvia invernal",
+    "periodo": "Documentada en el siglo XII",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Ebn al-Balji registró en los distritos costeros de Korān e Īrāhestān, Fars, palmeras datileras plantadas en hoyos tan profundos que sólo sobresalían las copas adultas. La fuente explica que el objetivo era aprovechar al máximo la lluvia invernal limitada. Es una solución histórica localizada del litoral sur iraní; no prueba que el sistema siga en uso ni que sea apropiado donde la salinidad o el nivel freático difieran.",
+    "fuentes": [
+      {
+        "label": "Alam (1994; actualización 2016) — DATE PALM, Encyclopaedia Iranica VII(2)",
+        "url": "https://www.iranicaonline.org/articles/date-palm/"
+      }
+    ],
+    "verificacion": "In the 12th century Ebn al-Balḵī reported that in the coastal districts of Korān and Īrāhestān in Fārs date palms were grown in deep pits"
+  },
+  {
+    "fichaId": "kopet_dag",
+    "practica": "Riego por gravedad y cuencas combinado con cereal resistente y rebaños",
+    "periodo": "Desde el V milenio a. C.",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "En el piedemonte del Kopet Dag, pequeños caudales montanos relativamente estables sostuvieron mijo, cebada, trigo y frijol mungo tolerantes a la sequía, combinados con ovejas y cabras. El agua se manejó con flujo gravitacional, cuencas y captación en cuencas, una configuración agropastoril documentada desde el V milenio a. C. La fuente compara oasis de Asia interior y no identifica un único pueblo autor de toda la secuencia.",
+    "fuentes": [
+      {
+        "label": "Brite (2016) — Irrigation in the Khorezm oasis, past and present: a political ecology perspective, Journal of Political Ecology 23",
+        "url": "https://journals.librarypublishing.arizona.edu/jpe/article/1948/galley/2207/view/"
+      }
+    ],
+    "verificacion": "This kind of agropastoralism was in place in the Kopet Dag foothills as early as the 5th Millennium B.C."
+  },
+  {
+    "fichaId": "mar_rojo_mangle",
+    "practica": "Recolección y pesca de manglar con transporte en dromedario",
+    "periodo": "Trabajo de campo entre 1992 y 1997; vigente al momento del estudio",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En torno a la aldea de Agetai, costa sudanesa del mar Rojo, grupos beja recolectaban madera a la deriva, manglar y gasterópodos y también pescaban. El dromedario permitía llegar en grupo a bajos fangosos, arena, arrecifes e islas someras, transportar recursos y cruzar sólo cuando viento, marea y corriente lo permitían. Quince sitios estaban bajo derechos territoriales colectivos y otros grupos necesitaban permiso de los residentes ejllab, de modo que la práctica incluye reglas de acceso además de transporte.",
+    "fuentes": [
+      {
+        "label": "Nawata (2001) — Coastal Resource Use by Camel Pastoralists: A Case Study of Gathering and Fishing Activities among the Beja in Eastern Sudan, Nilo-Ethiopian Studies 7",
+        "url": "https://www.janestudies.org/wp-content/uploads/2018/files/NES_no7%282001%29_Nawata.pdf"
+      }
+    ],
+    "verificacion": "Fieldwork was carried out during the period 1992-97"
+  },
+  {
+    "fichaId": "alto_artico_desierto_polar",
+    "practica": "Cachés de alimento para períodos sin caza",
+    "periodo": "Ocupación Independence I iniciada hace aproximadamente 4.000 años; uso posterior por poblaciones Thule",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "En Kettle Lake, Quttinirpaaq, las poblaciones Independence I cazaban buey almizclero, pescaban salvelino, reunían sauce para fuego y almacenaban comida en cachés de piedra para cuando escaseaba la caza. Siglos después, las poblaciones Thule —antepasadas de los inuit— también dejaron tres cachés en una cota más baja, con una brecha aproximada de dos mil años entre ambas ocupaciones. La fuente separa ambos conjuntos y declara incierta cualquier movilidad estacional entre costa e interior.",
+    "fuentes": [
+      {
+        "label": "Parks Canada — Kettle Lake Walking Tour, Quttinirpaaq National Park",
+        "url": "https://parks.canada.ca/-/media/pn-np/nu/quttinirpaaq/wet4/pdf/lac-kettle-lake-en.pdf"
+      }
+    ],
+    "verificacion": "Scientists have dated the remains of human cultures in the High Arctic to approximately 4000 years ago"
+  }
+]

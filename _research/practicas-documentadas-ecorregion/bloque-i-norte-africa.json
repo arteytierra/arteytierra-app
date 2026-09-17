@@ -148,20 +148,5 @@
       }
     ],
     "verificacion": "More than 15,000 drawings and engravings record the climatic changes, the animal migrations and the evolution of human life from 6000 BC"
-  },
-  {
-    "fichaId": "uweinat_tibesti",
-    "practica": "Pastoralismo bovino alrededor de manantiales de montaña",
-    "periodo": "Durante la fase húmeda regional de hace 12.000 a 7.000 años; la cronología local exacta sigue abierta",
-    "tipo": "ganaderia",
-    "vigencia": "historica",
-    "detalle": "El arte rupestre de Jebel Uweinat muestra rebaños bovinos en cientos de sitios y registra también cabras, perros y camellos. Los manantiales permanentes y el microclima del macizo ofrecían agua y refugio cuando la llanura circundante se volvía más árida, concentrando campamentos pastoriles sin convertir el desierto abierto en pastura estable. La fecha es aproximada porque el museo advierte la dificultad de datar directamente las pinturas.",
-    "fuentes": [
-      {
-        "label": "UNESCO World Heritage Centre (2004) — Workshop on the Conservation and Management of the Proposed Jebel Ouenat Protected Area",
-        "url": "https://whc.unesco.org/archive/2004-ouenat.pdf"
-      }
-    ],
-    "verificacion": "between 12,000 and 7,000 BP, when favourable climatic conditions enabled the development of the first African pastoral societies"
   }
 ]

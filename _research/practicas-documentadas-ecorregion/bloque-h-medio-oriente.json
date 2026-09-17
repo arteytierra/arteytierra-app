@@ -136,18 +136,18 @@
   },
   {
     "fichaId": "socotra",
-    "practica": "Trashumancia vertical en busca de agua",
-    "periodo": "Práctica milenaria; vigente pero en retroceso desde fines del siglo XX",
-    "tipo": "ganaderia",
+    "practica": "Yaharuf: traslado estacional a los huertos de dátiles",
+    "periodo": "Práctica del período del Sultanato todavía vigente en 2014, aunque menos extendida",
+    "tipo": "recoleccion",
     "vigencia": "en_retroceso",
-    "detalle": "La documentación de Socotra describe hogares con residencia relativamente estable que mueven cabras, ovejas y vacunos estacionalmente, sobre todo siguiendo la disponibilidad de agua. Los movimientos suelen subir a tierras altas durante la estación seca y regresar a costa y valles cuando allí vuelve el agua. La movilidad distribuye presión sobre un forraje escaso y evita dimensionar cada asentamiento para sostener el rebaño todo el año.",
+    "detalle": "En Socotra, pescadores de la costa y pastores del interior se trasladaban a los huertos de dátiles en junio y julio, antes del monzón del sudoeste, para convertirse temporalmente en cosechadores. Ese movimiento, llamado yaharuf, podía hacerse por relevos de pocos días o mantener a las familias en el huerto durante toda la cosecha; históricamente amortiguaba el hambre estacional. La práctica seguía viva durante el estudio, pero con menor alcance que durante el Sultanato, por lo que no se presenta como trashumancia ganadera ni como continuidad intacta.",
     "fuentes": [
       {
-        "label": "Elie (2014) — Soqotra's pastoral economy: from core to auxiliary livelihood, Pastoralism",
-        "url": "https://link.springer.com/article/10.1186/s13570-014-0015-4"
+        "label": "Elie (2014) — Pastoralism in Soqotra: external entanglements and communal mutations, Pastoralism 4",
+        "url": "https://link.springer.com/article/10.1186/s13570-014-0016-3"
       }
     ],
-    "verificacion": "The practice of pastoralism is millennia-old in Soqotra"
+    "verificacion": "This movement is still practiced by many people, although it is less extensive than during the Sultanate period"
   },
   {
     "fichaId": "kuh_rud_montano",
