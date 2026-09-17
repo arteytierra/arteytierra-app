@@ -12,7 +12,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { lodgingJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld';
 import { buildSocial } from '@/lib/seo/og';
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

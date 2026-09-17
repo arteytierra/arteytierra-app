@@ -13,7 +13,7 @@ import { buildSocial } from '@/lib/seo/og';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getReviewAggregate } from '@/lib/reviews';
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Notes from the hills: agroecology, hydrology, natural building.',
   alternates: { canonical: '/en/blog' },
 };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function BlogIndexEn() {
   const admin = createSupabaseAdminClient();

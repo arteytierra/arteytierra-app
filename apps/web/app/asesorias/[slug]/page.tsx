@@ -7,7 +7,7 @@ import { AddToCartButton } from '@/components/shop/AddToCartButton';
 import { getProductBySlug } from '@/lib/commerce/products';
 import { getResourceByProductSlug } from '@/lib/book/queries';
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

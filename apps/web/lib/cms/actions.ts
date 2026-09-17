@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireStaff } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
+import { revalidarPost } from '@/lib/cache/rutas-publicas';
 import { documentSchema, parseDocument, type AnyBlock } from './blocks';
 
 const titleSchema = z.string().min(1).max(200);
@@ -22,6 +23,10 @@ export async function savePostBlocks(postId: string, blocks: AnyBlock[]) {
   if (error) throw new Error(error.message);
 
   revalidatePath('/admin/blog');
+  // Guardar el cuerpo no avisaba a la nota publicada: el texto nuevo aparecia
+  // recien cuando vencia la ventana de revalidacion.
+  const { data: post } = await admin.schema('cms').from('posts').select('slug').eq('id', postId).maybeSingle();
+  revalidarPost(post?.slug);
   return { ok: true };
 }
 
@@ -34,12 +39,15 @@ export async function updatePostMeta(
   if (patch.slug !== undefined) slugSchema.parse(patch.slug);
 
   const admin = createSupabaseAdminClient();
+  const { data: anterior } = await admin.schema('cms').from('posts').select('slug').eq('id', postId).maybeSingle();
   const { error } = await admin.schema('cms').from('posts').update(patch).eq('id', postId);
   if (error) throw new Error(error.message);
 
   revalidatePath('/admin/blog');
-  revalidatePath('/blog');
-  if (patch.slug) revalidatePath(`/blog/${patch.slug}`);
+  revalidarPost(patch.slug ?? anterior?.slug);
+  // Si le cambiaron el slug, la direccion vieja tambien tiene que rearmarse:
+  // si no, sigue sirviendo la nota como si nada hubiera pasado.
+  if (patch.slug && anterior?.slug && anterior.slug !== patch.slug) revalidarPost(anterior.slug);
   return { ok: true };
 }
 
@@ -65,7 +73,8 @@ export async function publishPost(postId: string, publish: boolean) {
     .update({ published_at: publish ? new Date().toISOString() : null })
     .eq('id', postId);
   revalidatePath('/admin/blog');
-  revalidatePath('/blog');
+  const { data: post } = await admin.schema('cms').from('posts').select('slug').eq('id', postId).maybeSingle();
+  revalidarPost(post?.slug);
 }
 
 /** Helper para cargar y normalizar el documento al editor. */

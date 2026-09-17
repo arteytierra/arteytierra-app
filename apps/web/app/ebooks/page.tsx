@@ -5,7 +5,7 @@ import { ProductGrid } from '@/components/shop/ProductGrid';
 import { listProducts } from '@/lib/commerce/products';
 
 export const metadata = { title: 'Ebooks', description: 'Manuales descargables de bioarquitectura, agua y oficios.' };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function EbooksPage() {
   const products = await listProducts({ type: 'ebook' });

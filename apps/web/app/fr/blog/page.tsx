@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Notes depuis les collines : agroécologie, hydrologie, construction naturelle.',
   alternates: { canonical: '/fr/blog' },
 };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function BlogIndexFr() {
   const admin = createSupabaseAdminClient();

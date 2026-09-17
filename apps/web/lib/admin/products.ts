@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireStaff } from '@/lib/auth/session';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
+import { revalidarProducto } from '@/lib/cache/rutas-publicas';
 
 const productType = z.enum(['course', 'ebook', 'physical', 'service', 'lodging', 'immersion', 'consult', 'biocosmetic']);
 
@@ -64,10 +65,12 @@ export async function upsertProduct(id: string | null, input: ProductInput) {
     const { error } = await admin.schema('shop').from('products').update(parsed as never).eq('id', id);
     if (error) throw new Error(error.message);
     revalidatePath(`/admin/productos/${id}`);
+    revalidarProducto(parsed.type, parsed.slug);
   } else {
     const { data, error } = await admin.schema('shop').from('products').insert(parsed as never).select('id').single();
     if (error) throw new Error(error.message);
     revalidatePath('/admin/productos');
+    revalidarProducto(parsed.type, parsed.slug);
     return { id: data.id };
   }
 
@@ -78,23 +81,39 @@ export async function upsertProduct(id: string | null, input: ProductInput) {
 export async function toggleProductActive(id: string, isActive: boolean) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
+  const { data: antes } = await admin
+    .schema('shop').from('products')
+    .select('slug, type')
+    .eq('id', id)
+    .maybeSingle();
   await admin.schema('shop').from('products').update({ is_active: isActive }).eq('id', id);
   revalidatePath('/admin/productos');
+  // Publicar o despublicar algo tiene que verse ya: es la accion con la que se
+  // saca de la vidriera un curso que se lleno o un producto que no hay.
+  if (antes) revalidarProducto(antes.type, antes.slug);
 }
 
 export async function deleteProduct(id: string) {
   await requireStaff();
   const admin = createSupabaseAdminClient();
   // Soft-delete: marcar inactivo. Hard-delete sólo si nunca se vendió.
+  const { data: antes } = await admin
+    .schema('shop').from('products')
+    .select('slug, type')
+    .eq('id', id)
+    .maybeSingle();
   const { count } = await admin
     .schema('shop').from('order_items')
     .select('id', { count: 'exact', head: true })
     .eq('product_id', id);
   if ((count ?? 0) > 0) {
     await admin.schema('shop').from('products').update({ is_active: false }).eq('id', id);
+    revalidatePath('/admin/productos');
+    if (antes) revalidarProducto(antes.type, antes.slug);
     return { soft: true };
   }
   await admin.schema('shop').from('products').delete().eq('id', id);
   revalidatePath('/admin/productos');
+  if (antes) revalidarProducto(antes.type, antes.slug);
   return { soft: false };
 }

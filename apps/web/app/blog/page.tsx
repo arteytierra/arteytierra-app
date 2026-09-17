@@ -8,7 +8,7 @@ export const metadata = {
   title: 'Diario',
   description: 'Notas desde el monte: agroecología, hidrología, bioconstrucción.',
 };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function BlogIndex() {
   const admin = createSupabaseAdminClient();

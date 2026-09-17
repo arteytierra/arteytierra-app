@@ -19,12 +19,13 @@ import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getReviewAggregate } from '@/lib/reviews';
 
 // Cada vez que vence esta ventana y alguien entra, la pagina se vuelve a
-// renderizar entera en el servidor: es CPU facturado. Con 60 segundos, una
-// pagina con visitas sostenidas —justo la que recibe una pauta— se regeneraba
-// hasta 1.440 veces por dia sin que el contenido hubiera cambiado. 300 la
-// alinea con el resto del sitio; una edicion desde el panel tarda como mucho
-// cinco minutos en verse.
-export const revalidate = 300;
+// renderizar entera en el servidor: es CPU facturado, y con visitas sostenidas
+// —justo la pagina que recibe una pauta— se pagaba ese render todo el dia sin
+// que el contenido hubiera cambiado. Un dia es la ventana correcta porque ya no
+// es la unica forma de ver un cambio: guardar desde el panel marca vencida esta
+// pagina al instante (revalidarProducto en lib/cache/rutas-publicas.ts). Esto
+// es solo la red de seguridad para lo que se edite fuera del panel.
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

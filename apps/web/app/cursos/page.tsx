@@ -10,7 +10,7 @@ import { buildSocial } from '@/lib/seo/og';
 import { YouTubeFacade } from '@/components/media/YouTubeFacade';
 import { getCoursesForLanding, getProductCover } from '@/lib/commerce/products';
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 const META_TITLE = 'Ecoescuela';
 const META_DESC =

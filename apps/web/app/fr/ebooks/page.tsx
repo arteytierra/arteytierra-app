@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Manuels téléchargeables sur la bioarchitecture, l’eau et les métiers traditionnels.',
   alternates: { canonical: '/fr/ebooks' },
 };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function EbooksFrPage() {
   const products = await listProducts({ type: 'ebook' });
