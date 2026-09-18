@@ -20,6 +20,21 @@ una vez). Las credenciales de Vercel no se tocan.
 que el sitio se ve bien igual. Verificá el *deployment*, no la página:
 `npx vercel@latest inspect <url>` tiene que decir `● Ready`.
 
+**Y `● Ready` tampoco alcanza:** un deployment puede estar construido y no ser
+el que sirve el dominio. El 18/09/2026, con un incidente de Vercel abierto, el
+disparador volvió a deployar el commit *anterior* veinte minutos después y
+promovió eso a producción: `app.acequia.app` quedó sirviendo código viejo con
+el deployment nuevo en `● Ready` al lado. La verificación que cierra el ciclo
+es preguntarle al dominio, no al deployment:
+
+```bash
+npx vercel@latest inspect https://app.acequia.app   # y https://arteytierra.org
+```
+
+Si el dominio quedó en el deployment equivocado, se corrige con
+`npx vercel@latest promote <url-del-deployment-bueno>`; no hace falta
+reconstruir nada.
+
 **El índice de git es compartido.** Puede haber otra sesión trabajando en el
 mismo árbol. Nunca `git add -A`: stagear archivo por archivo y acotar el commit
 con pathspecs (`git commit -F msg.txt -- ruta/uno ruta/dos`), o te llevás
