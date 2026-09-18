@@ -3,10 +3,12 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import {
-  registroDelPunto, casarNombre, normalizarNombreAdmin,
+  registroDelPunto, censoDelPunto, casarNombre, normalizarNombreAdmin,
+  porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR,
 } from '@/lib/pueblosOriginarios';
 import { REGISTRO_AR } from '@/lib/pueblosOriginariosAr';
+import { CENSO_AR, CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import type { Ubicacion } from '@/lib/entorno';
 
 /*
@@ -257,7 +259,11 @@ describe('el panel de contexto', () => {
   const panel = leer('components/ContextoPanel.tsx');
 
   it('muestra la sección y la resuelve con la ubicación, no con la ecorregión', () => {
-    expect(panel).toContain('Pueblos originarios con comunidades registradas');
+    // La sección se llama «Pueblos originarios» y adentro tiene dos rótulos,
+    // uno por fuente: desde que entró el censo, el título no puede prometer
+    // sólo comunidades registradas.
+    expect(panel).toContain('titulo="Pueblos originarios"');
+    expect(panel).toContain('Comunidades registradas · INAI');
     expect(panel).toContain('registroDelPunto(ubicacion)');
   });
 
@@ -291,5 +297,212 @@ describe('el panel de contexto', () => {
     expect(informe).toContain("registroDelPunto(datos.entorno?.admin ?? null)");
     expect(informe).toContain('no significa que no');
     expect(informe).toContain('Ley 26.160');
+  });
+});
+
+/*
+ * ── El Censo 2022, que es la otra fuente ────────────────────────────────────
+ *
+ * Mide otra cosa: personas que se reconocen indígenas donde viven, no
+ * comunidades con trámite. Los riesgos son otros dos.
+ *
+ * El primero es el de siempre en esta app: un número plausible y equivocado. La
+ * tabla se arma de 72 planillas del INDEC, y cinco de las que publica
+ * censo.gob.ar tienen adentro otra provincia —el archivo de Chubut trae
+ * Formosa—. El generador lo detecta porque compara cada cuadro contra el cuadro
+ * nacional; estos tests defienden ese cierre desde este lado, para que una
+ * regeneración futura no meta los pueblos de una provincia en otra.
+ *
+ * El segundo es leer el censo como si fuera un padrón. Un tercio de quienes se
+ * reconocen indígenas no declaró pueblo: la lista es lo que contestó quien
+ * contestó, y la pantalla tiene que decirlo.
+ */
+
+const sumaCenso = (f: (p: typeof CENSO_AR[number]) => number) =>
+  CENSO_AR.reduce((n, p) => n + f(p), 0);
+
+describe('la tabla del Censo 2022', () => {
+  it('tiene las cifras publicadas del total del país', () => {
+    // Salen de los cuadros de resultados definitivos del INDEC y están
+    // congeladas a propósito: si alguien regenera la tabla con otra
+    // distribución, este test falla y hay que mirar el cambio a mano.
+    expect(CENSO_PAIS.indigena).toBe(1306730);
+    expect(CENSO_PAIS.poblacion).toBe(45618787);
+    expect(CENSO_PAIS.sinInformacion).toBe(431703);
+    expect(CENSO_PAIS.pueblos).toBe(58);
+    expect(CENSO_AR.length).toBe(24);
+    expect(sumaCenso(p => p.departamentos.length)).toBe(527);
+  });
+
+  it('las 24 jurisdicciones suman el total del país', () => {
+    expect(sumaCenso(p => p.indigena)).toBe(CENSO_PAIS.indigena);
+    expect(sumaCenso(p => p.poblacion)).toBe(CENSO_PAIS.poblacion);
+    expect(sumaCenso(p => p.sinInformacion)).toBe(CENSO_PAIS.sinInformacion);
+  });
+
+  it('cada provincia cierra por departamento y por pueblo', () => {
+    for (const p of CENSO_AR) {
+      const porDepartamento = p.departamentos.reduce((n, d) => n + d.indigena, 0);
+      expect(porDepartamento, `${p.provincia} no cierra por departamento`).toBe(p.indigena);
+      const porPueblo = p.pueblos.reduce((n, x) => n + x.personas, 0) + p.sinInformacion;
+      expect(porPueblo, `${p.provincia} no cierra por pueblo`).toBe(p.indigena);
+    }
+  });
+
+  it('nadie tiene más gente indígena que habitantes', () => {
+    // Un cruce mal hecho entre el cuadro de población indígena y el de
+    // estructura daría justo esto, y el porcentaje saldría arriba de 100.
+    for (const p of CENSO_AR) {
+      expect(p.indigena, p.provincia).toBeLessThanOrEqual(p.poblacion);
+      for (const d of p.departamentos) {
+        expect(d.indigena, `${p.provincia} / ${d.departamento}`).toBeLessThanOrEqual(d.poblacion);
+      }
+    }
+  });
+
+  it('las provincias del registro del INAI están todas en el censo', () => {
+    // Las dos capas se muestran juntas y se buscan por el mismo rótulo de
+    // provincia. Si una tabla se regenera con otro rótulo, la sección del censo
+    // desaparecería sin que nadie lo note.
+    for (const p of REGISTRO_AR) {
+      expect(CENSO_AR.map(c => c.provincia), `${p.provincia} no está en el censo`).toContain(p.provincia);
+    }
+  });
+
+  it('los pueblos vienen del más numeroso al menos, para poder cortar la cola', () => {
+    for (const p of CENSO_AR) {
+      const personas = p.pueblos.map(x => x.personas);
+      expect([...personas].sort((a, b) => b - a), p.provincia).toEqual(personas);
+    }
+  });
+
+  it('no unifica los nombres de pueblo con los del INAI', () => {
+    // El censo escribe «Qom/Toba» y el INAI «Qom (Toba)». Emparejarlos haría
+    // creer que una fuente confirma a la otra, y son dos preguntas distintas
+    // hechas por dos organismos distintos. Si alguien los unifica, esto falla.
+    const salta = CENSO_AR.find(p => p.provincia === 'Salta')!;
+    expect(salta.pueblos.map(p => p.pueblo)).toContain('Qom/Toba');
+    const saltaInai = REGISTRO_AR.find(p => p.provincia === 'Salta')!;
+    expect(saltaInai.pueblos.map(p => p.pueblo)).toContain('Qom (Toba)');
+  });
+
+  it('Jujuy es la de mayor proporción y Buenos Aires la de más gente', () => {
+    // Dos invariantes de la publicación del INDEC que se romperían si dos
+    // provincias se cruzaran entre sí, que es exactamente lo que pasa en los
+    // archivos que publica censo.gob.ar.
+    const porProporcion = [...CENSO_AR].sort((a, b) => b.indigena / b.poblacion - a.indigena / a.poblacion);
+    expect(porProporcion[0]!.provincia).toBe('Jujuy');
+    const porCantidad = [...CENSO_AR].sort((a, b) => b.indigena - a.indigena);
+    expect(porCantidad[0]!.provincia).toBe('Buenos Aires');
+    expect(CENSO_AR.find(p => p.provincia === 'Salta')!.indigena).toBe(142870);
+  });
+});
+
+describe('el censo del punto', () => {
+  it('contesta por departamento cuando el nombre casa', () => {
+    const c = censoDelPunto(ubic({ provincia: 'Salta', departamento: 'Departamento Iruya' }));
+    expect(c.estado).toBe('con_censo');
+    if (c.estado === 'con_censo') {
+      expect(c.provincia.provincia).toBe('Salta');
+      expect(c.departamento?.departamento).toBe('Iruya');
+    }
+  });
+
+  it('en la Ciudad de Buenos Aires el registro no tiene comunidades y el censo cuenta 74.724 personas', () => {
+    // Es el caso que justifica la segunda fuente: las dos cosas son ciertas a
+    // la vez. Si alguna vez una rama tapa a la otra, acá se ve.
+    const u = ubic({ provincia: 'Ciudad Autónoma de Buenos Aires', departamento: 'Comuna 7' });
+    expect(registroDelPunto(u).estado).toBe('sin_comunidades');
+    const c = censoDelPunto(u);
+    expect(c.estado).toBe('con_censo');
+    if (c.estado === 'con_censo') {
+      expect(c.provincia.indigena).toBe(74724);
+      expect(c.departamento?.departamento).toBe('Comuna 7');
+    }
+  });
+
+  it('cuando el departamento no casa, contesta la provincia y no otro departamento', () => {
+    // «Rosario» es subconjunto de Rosario de Lerma y de Rosario de la Frontera:
+    // entre dos candidatos no se elige.
+    const c = censoDelPunto(ubic({ provincia: 'Salta', departamento: 'Rosario' }));
+    expect(c.estado).toBe('con_censo');
+    if (c.estado === 'con_censo') expect(c.departamento).toBeNull();
+  });
+
+  it('las tres formas de no saber son las mismas que las del registro', () => {
+    expect(censoDelPunto(null).estado).toBe('sin_ubicacion');
+    expect(censoDelPunto(ubic({ pais: 'Bolivia', provincia: 'La Paz' })).estado).toBe('fuera_de_argentina');
+    expect(censoDelPunto(ubic({ provincia: 'Provincia Inventada' })).estado).toBe('jurisdiccion_desconocida');
+  });
+
+  it('las 24 jurisdicciones resuelven por su nombre', () => {
+    for (const p of CENSO_AR) {
+      expect(censoDelPunto(ubic({ provincia: p.provincia })).estado, p.provincia).toBe('con_censo');
+    }
+  });
+});
+
+describe('cómo se muestran los números del censo', () => {
+  it('el porcentaje va con una décima y coma decimal', () => {
+    expect(porcentaje(142870, 1434225)).toBe('10,0');
+    expect(porcentaje(CENSO_PAIS.indigena, CENSO_PAIS.poblacion)).toBe('2,9');
+  });
+
+  it('un total en cero no devuelve Infinity ni NaN', () => {
+    // Pasaría si una provincia quedara sin población: el informe imprimiría
+    // «Infinity%» y nadie lo vería venir.
+    expect(porcentaje(5, 0)).toBe('—');
+  });
+
+  it('la cola de pueblos se resume y se dice cuánta gente quedó afuera', () => {
+    const salta = CENSO_AR.find(p => p.provincia === 'Salta')!;
+    const { visibles, resto } = pueblosDestacados(salta.pueblos, 5);
+    expect(visibles).toHaveLength(5);
+    expect(resto.pueblos).toBe(salta.pueblos.length - 5);
+    expect(visibles.reduce((n, p) => n + p.personas, 0) + resto.personas)
+      .toBe(salta.pueblos.reduce((n, p) => n + p.personas, 0));
+  });
+
+  it('una provincia con pocos pueblos no tiene cola', () => {
+    const { resto } = pueblosDestacados([{ pueblo: 'Mbya Guaraní', personas: 10 }], 12);
+    expect(resto).toEqual({ pueblos: 0, personas: 0 });
+  });
+});
+
+describe('el panel y el informe con las dos fuentes', () => {
+  const panel = leer('components/ContextoPanel.tsx');
+  const informe = leer('components/InformeView.tsx');
+
+  it('el panel resuelve el censo con la misma ubicación y atiende sus ramas', () => {
+    expect(panel).toContain('censoDelPunto(ubicacion)');
+    for (const estado of ['sin_ubicacion', 'fuera_de_argentina', 'jurisdiccion_desconocida']) {
+      expect(panel, `el panel no atiende ${estado}`).toContain(`registro.estado === '${estado}'`);
+    }
+    expect(panel).toContain("censo.estado === 'con_censo'");
+  });
+
+  it('distingue las dos fuentes en la pantalla', () => {
+    // Si se mezclan, el lector suma comunidades con personas.
+    expect(panel).toContain('Comunidades registradas · INAI');
+    expect(panel).toContain('Personas que se reconocen indígenas · Censo 2022');
+  });
+
+  it('dice que el censo cuenta gente donde vive y no territorio', () => {
+    // Es el malentendido posible de esta capa: leer el conteo como si dijera de
+    // quién es la tierra.
+    expect(panel).toMatch(/cuenta personas donde viven, no\s+territorio/);
+    expect(informe).toMatch(/autorreconocimiento donde la\s+persona vive, no territorio/);
+  });
+
+  it('muestra cuánta gente no declaró pueblo, en las dos pantallas', () => {
+    expect(panel).toMatch(/no declararon a qué pueblo pertenecen/);
+    expect(informe).toMatch(/no\s+declararon a qué pueblo pertenecen/);
+  });
+
+  it('el informe lleva las dos secciones y cita las dos fuentes', () => {
+    expect(informe).toContain('Personas que se reconocen indígenas (Censo 2022)');
+    expect(informe).toContain('censoDelPunto(datos.entorno?.admin ?? null)');
+    expect(informe).toContain('FUENTE_CENSO_2022.label');
+    expect(informe).toContain('FUENTE_REGISTRO_AR.label');
   });
 });

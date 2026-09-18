@@ -7,7 +7,11 @@ import { fichaClimaFuturo } from '@/lib/climaFuturo';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
-import { registroDelPunto, FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI } from '@/lib/pueblosOriginarios';
+import {
+  registroDelPunto, censoDelPunto, porcentaje, pueblosDestacados,
+  FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI, FUENTE_CENSO_2022,
+} from '@/lib/pueblosOriginarios';
+import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -123,6 +127,14 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // del clima: sale de la provincia y el departamento, que los resuelve el
   // análisis de Entorno. Argentina por ahora.
   const registro = registroDelPunto(ubicacion);
+  // La otra mitad de la misma pregunta: cuánta gente se reconoce indígena o
+  // descendiente donde está el predio. Sale del Censo 2022 y no del registro,
+  // así que puede haber personas donde no hay comunidades inscriptas.
+  const censo = censoDelPunto(ubicacion);
+  // El censo tiene cola larga —en Salta hay pueblos con una sola persona—, así
+  // que se muestran los más numerosos y el resto se resume. Se calcula acá para
+  // no meter la decisión en el JSX.
+  const censoPueblos = censo.estado === 'con_censo' ? pueblosDestacados(censo.provincia.pueblos) : null;
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
@@ -250,18 +262,22 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
       )}
       </>}
 
-      {/* Pueblos originarios con comunidades registradas.
+      {/* Pueblos originarios.
 
-          La tercera capa, y la única que no sale del mapa físico: sale de un
-          registro del Estado. Contesta qué pueblos tienen hoy comunidades
-          inscriptas o relevadas por la Ley 26.160 en esta provincia y en este
-          departamento — no qué pueblos habitaron la zona, que es otra pregunta
-          y la contestan las prácticas fechadas de más arriba.
+          La tercera capa, y la única que no sale del mapa físico: sale de dos
+          fuentes del Estado que miden cosas distintas. El registro del INAI
+          cuenta comunidades con trámite; el Censo 2022 cuenta personas que se
+          reconocen indígenas donde viven. Ninguna de las dos contesta qué
+          pueblos habitaron la zona — eso es otra pregunta y la contestan las
+          prácticas fechadas de más arriba.
 
           Va afuera del bloque de la ficha a propósito: depende de la ubicación
           administrativa y no de la ecorregión, así que aparece incluso donde no
           hay ficha de bioma. Ver lib/pueblosOriginarios.ts. */}
-      <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios con comunidades registradas">
+      <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios">
+        {/* Las tres maneras de no saber son de las dos capas a la vez: si no
+            sabemos en qué provincia está el predio, no sabemos ni lo uno ni lo
+            otro. Se escriben una sola vez. */}
         {registro.estado === 'sin_ubicacion' && (
           <div className="space-y-2">
             <p className="text-xs text-ink-700/70 leading-relaxed">
@@ -279,9 +295,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
 
         {registro.estado === 'fuera_de_argentina' && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en {registro.pais}, y este registro es argentino: sale del INAI. Que no
-            haya nada acá no dice nada sobre {registro.pais} — dice que todavía no relevamos el
-            registro equivalente de ese país.
+            El predio está en {registro.pais}, y las dos fuentes de esta sección son argentinas: el
+            registro del INAI y el Censo 2022. Que no haya nada acá no dice nada sobre{' '}
+            {registro.pais} — dice que todavía no relevamos las fuentes equivalentes de ese país.
           </p>
         )}
 
@@ -289,7 +305,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El geocodificador devolvió «{registro.provincia}» y no es ninguna de las 24
             jurisdicciones argentinas que conocemos, así que preferimos no contestar antes que
-            contestar de más. No significa que no haya comunidades registradas.
+            contestar de más. No significa que no haya pueblos originarios.
+          </p>
+        )}
+
+        {(registro.estado === 'sin_comunidades' || registro.estado === 'con_registro') && (
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            Comunidades registradas · INAI
           </p>
         )}
 
@@ -297,7 +319,8 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           <p className="text-xs text-ink-700/70 leading-relaxed">
             En {registro.jurisdiccion} el registro del INAI no tiene comunidades inscriptas ni
             relevadas, y es la única jurisdicción del país en esa situación. Es un dato del
-            registro, no del territorio: dice que ninguna comunidad hizo ahí el trámite.
+            registro, no del territorio: dice que ninguna comunidad hizo ahí el trámite. El censo,
+            más abajo, cuenta la gente que igual está.
           </p>
         )}
 
@@ -384,6 +407,91 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             <p className="text-[10px] text-ink-700/50 leading-relaxed">
               Foto del registro al {FECHA_REGISTRO_AR} · {FUENTE_REGISTRO_AR.licencia}. El registro
               se mueve; esta tabla no.
+            </p>
+          </div>
+        </>}
+
+        {/* El censo, que es la otra pregunta. Va siempre que sepamos la
+            provincia, incluso donde el registro no tiene comunidades: en la
+            Ciudad de Buenos Aires no hay ninguna inscripta y el censo cuenta
+            74.724 personas, y esa diferencia es justamente el aporte. */}
+        {censo.estado === 'con_censo' && censoPueblos && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-4 mb-1">
+            Personas que se reconocen indígenas · Censo 2022
+          </p>
+
+          {censo.departamento ? (
+            <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censo.departamento.departamento} · {censo.provincia.provincia}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censo.departamento.indigena === 1
+                  ? 'Una persona se reconoce indígena o descendiente de pueblos originarios'
+                  : `${censo.departamento.indigena.toLocaleString('es-AR')} personas se reconocen indígenas o descendientes de pueblos originarios`}
+                : el {porcentaje(censo.departamento.indigena, censo.departamento.poblacion)}% de
+                las {censo.departamento.poblacion.toLocaleString('es-AR')} que viven ahí en
+                viviendas particulares.
+              </p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-ink-700/60 leading-relaxed bg-bone-50 border border-bone-200 rounded-lg p-2.5">
+              El departamento que devolvió el geocodificador no coincide con ninguno de los que
+              publica el censo, así que la respuesta es provincial.
+            </p>
+          )}
+
+          <p className="text-xs text-ink-700/80 leading-relaxed mt-2">
+            En toda la provincia son {censo.provincia.indigena.toLocaleString('es-AR')} personas,
+            el {porcentaje(censo.provincia.indigena, censo.provincia.poblacion)}% de la población
+            en viviendas particulares. En todo el país el promedio es{' '}
+            {porcentaje(CENSO_PAIS.indigena, CENSO_PAIS.poblacion)}%.
+          </p>
+
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+            Pueblos declarados en {censo.provincia.provincia}
+          </p>
+          {/* El color va con opacidad y no con water-100/200, que no existen en
+              la paleta: Tailwind los descarta en silencio y la fichita quedaría
+              sin fondo ni borde. */}
+          <div className="flex flex-wrap gap-1">
+            {censoPueblos.visibles.map(p => (
+              <span key={p.pueblo} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                {p.pueblo} <span className="text-water-700/60">· {p.personas.toLocaleString('es-AR')}</span>
+              </span>
+            ))}
+          </div>
+          {censoPueblos.resto.pueblos > 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-1.5">
+              Y {censoPueblos.resto.pueblos} pueblos más, {censoPueblos.resto.personas.toLocaleString('es-AR')} personas
+              entre todos.
+            </p>
+          )}
+
+          {censo.provincia.sinInformacion > 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+              Otras {censo.provincia.sinInformacion.toLocaleString('es-AR')} personas
+              —el {porcentaje(censo.provincia.sinInformacion, censo.provincia.indigena)}% de las que
+              se reconocen indígenas en la provincia— no declararon a qué pueblo pertenecen. La
+              lista de arriba es lo que contestó quien contestó, no un padrón.
+            </p>
+          )}
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
+            territorio.</strong> Alguien que se reconoce kolla y vive en Rosario suma en Santa Fe,
+            y eso no dice nada sobre la tierra de Santa Fe. Para saber si hay territorio en trámite
+            al lado del predio, el dato es el del registro.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_CENSO_2022.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2022.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              Censo del 18 de mayo de 2022, resultados definitivos publicados en marzo de 2024.
+              Cuadros 1, 8 y 10 de población indígena y cuadro 3 de estructura, por provincia.
             </p>
           </div>
         </>}

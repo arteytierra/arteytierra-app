@@ -12,7 +12,11 @@ import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
-import { registroDelPunto, FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR } from '@/lib/pueblosOriginarios';
+import {
+  registroDelPunto, censoDelPunto, porcentaje, pueblosDestacados,
+  FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
+} from '@/lib/pueblosOriginarios';
+import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 
 interface Props {
   datos: InformeData;
@@ -35,6 +39,12 @@ export function InformeView({ datos, compartido = false }: Props) {
   // la provincia y el departamento que resolvió el análisis de Entorno. Un
   // proyecto guardado antes de esta capa no trae `admin` y la sección no sale.
   const registroPueblos = registroDelPunto(datos.entorno?.admin ?? null);
+  // El censo contesta la otra mitad: cuánta gente se reconoce indígena acá. Va
+  // aunque el registro no tenga comunidades, porque son dos cosas distintas.
+  const censoPueblos = censoDelPunto(datos.entorno?.admin ?? null);
+  const censoLista = censoPueblos.estado === 'con_censo'
+    ? pueblosDestacados(censoPueblos.provincia.pueblos, 8)
+    : null;
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -423,6 +433,43 @@ export function InformeView({ datos, compartido = false }: Props) {
                 registro al {FECHA_REGISTRO_AR}. Que un departamento no figure no significa que no
                 haya pueblos originarios: significa que no hay comunidades registradas, y el
                 registro depende de un trámite ante el Estado.
+              </p>
+              </>}
+
+              {/* La misma sección, la otra fuente. El registro cuenta trámites y
+                  el censo cuenta gente, y en el informe conviene que se lean
+                  juntas: en la Ciudad de Buenos Aires el registro no tiene
+                  ninguna comunidad y el censo cuenta 74.724 personas. */}
+              {censoPueblos.estado === 'con_censo' && censoLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Personas que se reconocen indígenas (Censo 2022)</p>
+              {censoPueblos.departamento && (
+                <p className="text-sm text-ink-700/80">
+                  En {censoPueblos.departamento.departamento}, {censoPueblos.provincia.provincia}:{' '}
+                  {censoPueblos.departamento.indigena.toLocaleString('es-AR')} personas se reconocen
+                  indígenas o descendientes de pueblos originarios, el{' '}
+                  {porcentaje(censoPueblos.departamento.indigena, censoPueblos.departamento.poblacion)}% de
+                  la población en viviendas particulares.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la provincia de {censoPueblos.provincia.provincia}:{' '}
+                {censoPueblos.provincia.indigena.toLocaleString('es-AR')} personas, el{' '}
+                {porcentaje(censoPueblos.provincia.indigena, censoPueblos.provincia.poblacion)}% de
+                la población en viviendas particulares, contra{' '}
+                {porcentaje(CENSO_PAIS.indigena, CENSO_PAIS.poblacion)}% en todo el país.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población declarada:{' '}
+                {censoLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}
+                {censoLista.resto.pueblos > 0 && `, y ${censoLista.resto.pueblos} pueblos más`}.{' '}
+                {censoPueblos.provincia.sinInformacion > 0 && (
+                  <>Otras {censoPueblos.provincia.sinInformacion.toLocaleString('es-AR')} personas no
+                  declararon a qué pueblo pertenecen.</>
+                )}
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022.label}. El censo cuenta autorreconocimiento donde la
+                persona vive, no territorio: no dice de quién es la tierra ni quién estuvo antes.
               </p>
               </>}
               {bioma && bioma.saberes.length > 0 && <>
