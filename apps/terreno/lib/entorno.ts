@@ -13,6 +13,18 @@ export interface Ubicacion {
   departamento: string | null;
   provincia:    string | null;
   pais:         string | null;
+  /**
+   * La división que Nominatim pone en `suburb` dentro de una conurbación.
+   *
+   * En Chile es la **comuna**, que es la unidad del censo: un punto en Ñuñoa
+   * devuelve `city: "Santiago"` y `suburb: "Ñuñoa"`, así que sin este campo la
+   * capa de pueblos originarios habría contestado con la comuna de Santiago.
+   * En otros países acá viene un barrio y ninguna capa lo mira.
+   *
+   * Opcional porque los payloads de `/api/entorno` cacheados desde antes no lo
+   * traen: quien lo use tiene que poder contestar sin él.
+   */
+  comuna?:      string | null;
 }
 
 export interface Biodiversidad {

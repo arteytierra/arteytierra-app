@@ -3,12 +3,14 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import {
-  registroDelPunto, censoDelPunto, casarNombre, normalizarNombreAdmin,
-  porcentaje, pueblosDestacados,
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, provinciaChilena,
+  casarNombre, normalizarNombreAdmin, porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR,
+  FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
 } from '@/lib/pueblosOriginarios';
 import { REGISTRO_AR } from '@/lib/pueblosOriginariosAr';
 import { CENSO_AR, CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
+import { CENSO_CL, CENSO_CL_PAIS, CENSO_CL_PUEBLOS } from '@/lib/censoIndigena2024Cl';
 import type { Ubicacion } from '@/lib/entorno';
 
 /*
@@ -504,5 +506,355 @@ describe('el panel y el informe con las dos fuentes', () => {
     expect(informe).toContain('censoDelPunto(datos.entorno?.admin ?? null)');
     expect(informe).toContain('FUENTE_CENSO_2022.label');
     expect(informe).toContain('FUENTE_REGISTRO_AR.label');
+  });
+});
+
+/*
+ * Chile. La misma pregunta, otro país, y una sola de las dos fuentes.
+ *
+ * Lo que defiende este bloque, además de que los números cierren:
+ *
+ * 1. Que la comuna del Gran Santiago no se confunda. Nominatim devuelve
+ *    `city: "Santiago"` para un punto en Ñuñoa y pone la comuna en `suburb`.
+ *    Si el resolvedor mirara `city`, Ñuñoa —9.927 personas— saldría publicada
+ *    con los 23.972 de la comuna de Santiago. Los casos de acá salen de
+ *    consultar Nominatim de verdad, punto por punto.
+ * 2. Que el denominador sea el mismo en los cuatro niveles, y que la cifra que
+ *    publica el INE con su propio denominador siga estando para poder citarla.
+ * 3. Que las dos listas de pueblos no se cruzen ni se sumen entre países: la
+ *    chilena es cerrada y la argentina abierta.
+ * 4. Que la ausencia del registro de CONADI se diga y no se tape.
+ */
+
+const ubicCl = (u: Partial<Ubicacion>): Ubicacion => ({
+  localidad: null, departamento: null, provincia: null, pais: 'Chile', comuna: null, ...u,
+});
+
+describe('la tabla del Censo 2024 de Chile', () => {
+  it('tiene las 16 regiones y las 346 comunas, y cierran contra el total del país', () => {
+    expect(CENSO_CL).toHaveLength(16);
+    expect(CENSO_CL.flatMap(r => r.comunas)).toHaveLength(346);
+
+    const indigena = CENSO_CL.reduce((n, r) => n + r.indigena, 0);
+    const poblacion = CENSO_CL.reduce((n, r) => n + r.poblacion, 0);
+    expect(indigena).toBe(CENSO_CL_PAIS.indigena);
+    expect(indigena).toBe(2_105_863);
+    expect(poblacion).toBe(CENSO_CL_PAIS.poblacion);
+    expect(poblacion).toBe(18_480_432);
+  });
+
+  it('cada región cierra por comuna y por pueblo', () => {
+    for (const r of CENSO_CL) {
+      const porComuna = r.comunas.reduce((n, c) => n + c.indigena, 0);
+      expect(porComuna, r.region).toBe(r.indigena);
+
+      const porPueblo = r.pueblos.reduce((n, p) => n + p.personas, 0) + r.otroPueblo + r.sinDeclarar;
+      expect(porPueblo, r.region).toBe(r.indigena);
+
+      expect(r.comunas.reduce((n, c) => n + c.poblacion, 0), r.region).toBe(r.poblacion);
+    }
+  });
+
+  it('nadie tiene más gente de pueblos originarios que habitantes', () => {
+    for (const r of CENSO_CL) {
+      for (const c of r.comunas) {
+        expect(c.indigena, `${c.comuna} (${r.region})`).toBeLessThanOrEqual(c.poblacion);
+      }
+    }
+  });
+
+  it('los 346 nombres de comuna son únicos, que es lo que permite buscarlos por nombre', () => {
+    const nombres = CENSO_CL.flatMap(r => r.comunas.map(c => c.comuna));
+    expect(new Set(nombres).size).toBe(nombres.length);
+  });
+
+  it('la lista de pueblos es cerrada: once rótulos, no los 58 de la Argentina', () => {
+    expect(CENSO_CL_PAIS.pueblos).toBe(11);
+    expect(CENSO_CL_PUEBLOS).toHaveLength(11);
+    expect(CENSO_CL_PUEBLOS.map(p => p.pueblo)).toContain('Mapuche');
+    expect(CENSO_CL_PUEBLOS.map(p => p.pueblo)).toContain('Rapa Nui');
+    // «Otro» y «Pueblo no declarado» son columnas de la planilla y no pueblos.
+    // Si alguna vez entran a la lista, el conteo de pueblos miente.
+    expect(CENSO_CL_PUEBLOS.map(p => p.pueblo)).not.toContain('Otro');
+    expect(CENSO_CL_PUEBLOS.map(p => p.pueblo)).not.toContain('Pueblo no declarado');
+  });
+
+  it('con lista cerrada casi nadie deja el pueblo sin declarar, al revés que en la Argentina', () => {
+    // 2.395 sobre 2.105.863 en Chile; 431.703 sobre 1.306.730 en la Argentina.
+    // Es la diferencia entre marcar una casilla y escribir una respuesta, y es
+    // la razón por la que las dos listas no son comparables.
+    expect(CENSO_CL_PAIS.sinDeclarar).toBe(2_395);
+    expect(CENSO_CL_PAIS.sinDeclarar / CENSO_CL_PAIS.indigena).toBeLessThan(0.01);
+    expect(CENSO_PAIS.sinInformacion / CENSO_PAIS.indigena).toBeGreaterThan(0.3);
+    // Lo que en Chile queda afuera de la lista son los de «Otro».
+    expect(CENSO_CL_PAIS.otroPueblo).toBe(20_631);
+  });
+
+  it('el universo incluye viviendas colectivas y situación de calle, al revés que el argentino', () => {
+    // El INDEC cuenta población indígena sólo en viviendas particulares; el INE
+    // de Chile le preguntó a toda la población censada. Por eso acá el
+    // denominador es la población censada entera y no hace falta un cuadro de
+    // estructura como en la Argentina.
+    const suma = CENSO_CL_PAIS.viviendasParticulares
+      + CENSO_CL_PAIS.viviendasColectivas
+      + CENSO_CL_PAIS.situacionDeCalle;
+    expect(suma).toBe(CENSO_CL_PAIS.poblacion);
+    expect(CENSO_CL_PAIS.viviendasColectivas).toBeGreaterThan(0);
+  });
+
+  it('guarda la cifra que publica el INE, que sale de otro denominador', () => {
+    // El INE divide por quienes respondieron la pregunta y publica 11,5%. La
+    // app divide por la población censada, que es el único denominador que
+    // existe por comuna, y da 11,4%. Las dos tienen que estar: la de la app
+    // para comparar niveles entre sí, la del INE para citarla como está.
+    expect(PORCENTAJE_PAIS_CL).toBe('11,4');
+    expect(CENSO_CL_PAIS.porcentajeIne).toBe('11,5');
+    expect(CENSO_CL_PAIS.respondieron).toBeLessThan(CENSO_CL_PAIS.poblacion);
+    expect(porcentaje(CENSO_CL_PAIS.indigena, CENSO_CL_PAIS.respondieron)).toBe('11,5');
+  });
+
+  it('los pueblos de cada región vienen ordenados de mayor a menor', () => {
+    for (const r of CENSO_CL) {
+      const personas = r.pueblos.map(p => p.personas);
+      expect([...personas].sort((a, b) => b - a), r.region).toEqual(personas);
+    }
+  });
+
+  it('La Araucanía y la Metropolitana son las dos puntas del país', () => {
+    const araucania = CENSO_CL.find(r => r.region === 'La Araucanía')!;
+    const metro = CENSO_CL.find(r => r.region === 'Metropolitana de Santiago')!;
+    const arica = CENSO_CL.find(r => r.region === 'Arica y Parinacota')!;
+
+    // La mayor cantidad está en la Metropolitana, igual que en la Argentina
+    // está en Buenos Aires: es donde vive más gente, no donde hay más presencia.
+    expect(metro.indigena).toBe(545_700);
+    expect(Math.max(...CENSO_CL.map(r => r.indigena))).toBe(metro.indigena);
+    // La mayor proporción está en Arica y Parinacota, y La Araucanía tiene la
+    // mayor cantidad fuera de la capital: 347.285 personas, el 34% de la región.
+    expect(araucania.indigena).toBe(347_285);
+    expect(porcentaje(arica.indigena, arica.poblacion)).toBe('35,9');
+    expect(porcentaje(metro.indigena, metro.poblacion)).toBe('7,4');
+    // En La Araucanía el pueblo con más población declarada es el mapuche.
+    expect(araucania.pueblos[0]!.pueblo).toBe('Mapuche');
+  });
+});
+
+describe('el censo chileno del punto', () => {
+  it('resuelve la comuna cuando Nominatim la da como localidad', () => {
+    // Temuco: city=Temuco, county=Provincia de Cautín, state=Región de la Araucanía.
+    const r = censoChilenoDelPunto(ubicCl({
+      localidad: 'Temuco', departamento: 'Provincia de Cautín', provincia: 'Región de la Araucanía',
+    }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.region.region).toBe('La Araucanía');
+    expect(r.comuna?.comuna).toBe('Temuco');
+    expect(r.comuna?.indigena).toBe(71_483);
+    expect(r.provincia?.provincia).toBe('Cautín');
+  });
+
+  it('no confunde Ñuñoa con la comuna de Santiago, que es el error que pagaría caro', () => {
+    // Nominatim: suburb=Ñuñoa, city=Santiago. Mirar `city` daría 23.972 en vez
+    // de 9.927 —dos veces y media—, con la fuente citada y el número redondo.
+    const nunoa = censoChilenoDelPunto(ubicCl({
+      comuna: 'Ñuñoa', localidad: 'Santiago',
+      departamento: 'Provincia de Santiago', provincia: 'Región Metropolitana de Santiago',
+    }));
+    expect(nunoa.estado).toBe('con_censo');
+    if (nunoa.estado !== 'con_censo') return;
+    expect(nunoa.comuna?.comuna).toBe('Ñuñoa');
+    expect(nunoa.comuna?.indigena).toBe(9_927);
+
+    // El mismo punto sin `suburb` —un payload cacheado de antes del campo— cae
+    // en la comuna de Santiago. No es ideal y es lo que Nominatim dio: lo que
+    // importa es que con el dato disponible no se elija mal.
+    const santiago = censoChilenoDelPunto(ubicCl({
+      localidad: 'Santiago', departamento: 'Provincia de Santiago',
+      provincia: 'Región Metropolitana de Santiago',
+    }));
+    if (santiago.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(santiago.comuna?.indigena).toBe(23_972);
+    expect(santiago.comuna?.indigena).not.toBe(nunoa.comuna?.indigena);
+  });
+
+  it('Maipú también sale del suburb, y no es la provincia que suena parecido', () => {
+    const r = censoChilenoDelPunto(ubicCl({
+      comuna: 'Maipú', localidad: 'Santiago',
+      departamento: 'Provincia de Santiago', provincia: 'Región Metropolitana de Santiago',
+    }));
+    if (r.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(r.comuna?.comuna).toBe('Maipú');
+    expect(r.comuna?.indigena).toBe(39_002);
+    // La comuna de Maipú está en la provincia de Santiago. La provincia de
+    // Maipo existe y son otras cuatro comunas: la provincia sale de la tabla y
+    // nunca de lo que se parezca al nombre de la comuna.
+    expect(r.provincia?.provincia).toBe('Santiago');
+    const maipo = provinciaChilena(r.region, 'Maipo');
+    expect(maipo!.comunas).toBe(4);
+    expect(maipo!.indigena).not.toBe(r.provincia!.indigena);
+  });
+
+  it('las dieciséis regiones se resuelven con el rótulo que devuelve Nominatim', () => {
+    // «Región de la Araucanía» contra «La Araucanía», «Región del Biobío»
+    // contra «Biobío», «Región Aysén del General Carlos Ibáñez del Campo».
+    const rotulos: Array<[string, string]> = [
+      ['Región de Arica y Parinacota', 'Arica y Parinacota'],
+      ['Región de Tarapacá', 'Tarapacá'],
+      ['Región de Antofagasta', 'Antofagasta'],
+      ['Región de Atacama', 'Atacama'],
+      ['Región de Coquimbo', 'Coquimbo'],
+      ['Región de Valparaíso', 'Valparaíso'],
+      ['Región Metropolitana de Santiago', 'Metropolitana de Santiago'],
+      ['Región del Libertador General Bernardo O\'Higgins', 'Libertador General Bernardo O\'Higgins'],
+      ['Región del Maule', 'Maule'],
+      ['Región de Ñuble', 'Ñuble'],
+      ['Región del Biobío', 'Biobío'],
+      ['Región de la Araucanía', 'La Araucanía'],
+      ['Región de Los Ríos', 'Los Ríos'],
+      ['Región de Los Lagos', 'Los Lagos'],
+      ['Región Aysén del General Carlos Ibáñez del Campo', 'Aysén del General Carlos Ibáñez del Campo'],
+      ['Región de Magallanes y de la Antártica Chilena', 'Magallanes y de la Antártica Chilena'],
+    ];
+    expect(rotulos).toHaveLength(16);
+    for (const [deNominatim, delIne] of rotulos) {
+      const r = censoChilenoDelPunto(ubicCl({ provincia: deNominatim }));
+      expect(r.estado, deNominatim).toBe('con_censo');
+      if (r.estado === 'con_censo') expect(r.region.region, deNominatim).toBe(delIne);
+    }
+  });
+
+  it('cae a la provincia cuando la comuna no casa, y a la región cuando tampoco', () => {
+    // Nominatim da la provincia en un campo propio, así que el respaldo es más
+    // fino que en la Argentina.
+    const conProvincia = censoChilenoDelPunto(ubicCl({
+      localidad: 'Un paraje que no es una comuna',
+      departamento: 'Provincia de Cautín', provincia: 'Región de la Araucanía',
+    }));
+    if (conProvincia.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(conProvincia.comuna).toBeNull();
+    expect(conProvincia.provincia?.provincia).toBe('Cautín');
+    expect(conProvincia.provincia!.comunas).toBeGreaterThan(1);
+
+    const soloRegion = censoChilenoDelPunto(ubicCl({ provincia: 'Región de la Araucanía' }));
+    if (soloRegion.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(soloRegion.comuna).toBeNull();
+    expect(soloRegion.provincia).toBeNull();
+    expect(soloRegion.region.region).toBe('La Araucanía');
+  });
+
+  it('la provincia sumada es exactamente la suma de sus comunas', () => {
+    const region = CENSO_CL.find(r => r.region === 'Arica y Parinacota')!;
+    const p = provinciaChilena(region, 'Parinacota');
+    expect(p).not.toBeNull();
+    const suyas = region.comunas.filter(c => c.provincia === 'Parinacota');
+    expect(p!.comunas).toBe(suyas.length);
+    expect(p!.indigena).toBe(suyas.reduce((n, c) => n + c.indigena, 0));
+    expect(p!.poblacion).toBe(suyas.reduce((n, c) => n + c.poblacion, 0));
+    // Una provincia que no existe no devuelve ceros: devuelve null.
+    expect(provinciaChilena(region, 'Cautín')).toBeNull();
+  });
+
+  it('las tres maneras de no saber suenan igual que en la Argentina', () => {
+    expect(censoChilenoDelPunto(null).estado).toBe('sin_ubicacion');
+    expect(censoChilenoDelPunto(ubicCl({ pais: null })).estado).toBe('sin_ubicacion');
+    expect(censoChilenoDelPunto(ubicCl({ provincia: null })).estado).toBe('sin_ubicacion');
+
+    const afuera = censoChilenoDelPunto(ubicCl({ pais: 'Argentina', provincia: 'Salta' }));
+    expect(afuera.estado).toBe('fuera_de_chile');
+
+    const raro = censoChilenoDelPunto(ubicCl({ provincia: 'Región de Aconcagua' }));
+    expect(raro.estado).toBe('region_desconocida');
+  });
+
+  it('las dos capas no se pisan: un punto argentino no resuelve censo chileno y al revés', () => {
+    const enSalta = ubic({ provincia: 'Salta', departamento: 'Departamento Iruya' });
+    expect(censoDelPunto(enSalta).estado).toBe('con_censo');
+    expect(censoChilenoDelPunto(enSalta).estado).toBe('fuera_de_chile');
+
+    const enTemuco = ubicCl({ localidad: 'Temuco', provincia: 'Región de la Araucanía' });
+    expect(censoChilenoDelPunto(enTemuco).estado).toBe('con_censo');
+    expect(censoDelPunto(enTemuco).estado).toBe('fuera_de_argentina');
+  });
+
+  it('las 346 comunas resuelven, y ninguna devuelve un número de otra', () => {
+    for (const region of CENSO_CL) {
+      for (const comuna of region.comunas) {
+        const r = censoChilenoDelPunto(ubicCl({
+          comuna: comuna.comuna, provincia: `Región de ${region.region}`,
+        }));
+        expect(r.estado, comuna.comuna).toBe('con_censo');
+        if (r.estado !== 'con_censo') continue;
+        expect(r.comuna?.codigo, comuna.comuna).toBe(comuna.codigo);
+      }
+    }
+  });
+});
+
+describe('las dos fuentes de Chile, y la que falta', () => {
+  it('dice por qué no está el registro de CONADI, en vez de omitirlo', () => {
+    expect(REGISTRO_CL_FALTANTE.organismo).toContain('CONADI');
+    expect(REGISTRO_CL_FALTANTE.motivo).toMatch(/licencia/);
+    const panel = leer('components/ContextoPanel.tsx');
+    expect(panel).toContain('REGISTRO_CL_FALTANTE.organismo');
+    expect(panel).toContain('REGISTRO_CL_FALTANTE.motivo');
+    expect(leer('components/InformeView.tsx')).toContain('REGISTRO_CL_FALTANTE.organismo');
+  });
+
+  it('el censo chileno viaja con su licencia, que es CompartirIgual', () => {
+    // CC BY-SA 4.0 permite uso comercial y obliga a que la adaptación lleve la
+    // misma licencia, así que la tabla generada tiene que declararlo.
+    expect(FUENTE_CENSO_2024_CL.licencia).toBe('CC BY-SA 4.0');
+    expect(leer('lib/censoIndigena2024Cl.ts')).toContain('CC BY-SA 4.0');
+    expect(leer('components/ContextoPanel.tsx')).toContain('FUENTE_CENSO_2024_CL.licencia');
+    expect(leer('components/InformeView.tsx')).toContain('FUENTE_CENSO_2024_CL.licencia');
+  });
+
+  it('el panel muestra el denominador del INE al lado del propio', () => {
+    const panel = leer('components/ContextoPanel.tsx');
+    expect(panel).toContain('CENSO_CL_PAIS.porcentajeIne');
+    expect(panel).toContain('CENSO_CL_PAIS.respondieron');
+    expect(panel).toMatch(/no está publicado por comuna/);
+  });
+
+  it('ya no dice que fuera de la Argentina no hay nada relevado', () => {
+    const panel = leer('components/ContextoPanel.tsx');
+    // La rama de «fuera de la Argentina» tiene que mirar el censo chileno: si
+    // sólo mirara el país, un predio en Chile leería que no hay fuentes
+    // mientras más abajo se le muestran los números del censo.
+    expect(panel).toContain("registro.estado === 'fuera_de_argentina' && censoCl.estado !== 'con_censo'");
+    expect(panel).toContain('las de Chile');
+  });
+
+  it('el panel y el informe hablan de comuna en Chile y de departamento en la Argentina', () => {
+    const panel = leer('components/ContextoPanel.tsx');
+    expect(panel).toContain('Pertenencia a un pueblo indígena · Censo 2024 · Chile');
+    expect(panel).toContain('censoCl.comuna.comuna');
+    expect(panel).toMatch(/población censada/);
+    const informe = leer('components/InformeView.tsx');
+    expect(informe).toContain('Censo 2024, Chile');
+    expect(informe).toContain('censoCl.comuna.comuna');
+  });
+
+  it('el panel dice que la lista chilena es cerrada y no la compara con la argentina', () => {
+    const panel = leer('components/ContextoPanel.tsx');
+    expect(panel).toMatch(/lista chilena\s*\n?\s*es cerrada|lista chilena es cerrada/);
+    expect(panel).toContain('19.253');
+    expect(panel).toMatch(/no se puede\s*\n?\s*comparar con la lista argentina/i);
+  });
+
+  it('nunca escribe que no hay pueblos originarios', () => {
+    for (const archivo of ['components/ContextoPanel.tsx', 'components/InformeView.tsx']) {
+      const texto = leer(archivo).toLowerCase();
+      expect(texto, archivo).not.toMatch(/no hay pueblos originarios en/);
+    }
+  });
+
+  it('el campo comuna de la ubicación sale del suburb de Nominatim', () => {
+    // Sin esto la comuna del Gran Santiago no llega nunca al resolvedor.
+    const ruta = leer('app/api/entorno/route.ts');
+    expect(ruta).toContain("comuna: a['suburb']");
+    // Y es opcional porque los payloads cacheados de antes no lo traen: el
+    // resolvedor tiene que poder contestar sin él.
+    expect(leer('lib/entorno.ts')).toContain('comuna?:');
   });
 });

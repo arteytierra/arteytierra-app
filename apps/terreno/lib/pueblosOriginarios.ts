@@ -1,9 +1,17 @@
 import type { Ubicacion } from './entorno';
 import { REGISTRO_AR } from './pueblosOriginariosAr';
 import { CENSO_AR } from './censoIndigena2022Ar';
+import { CENSO_CL, CENSO_CL_PAIS, type CensoClComuna, type CensoClRegion } from './censoIndigena2024Cl';
 
 /**
- * Pueblos originarios en el territorio del predio. Argentina, por ahora.
+ * Pueblos originarios en el territorio del predio. Argentina y Chile.
+ *
+ * Cada país entra con las fuentes que tiene y con una licencia que las
+ * permita, y no con un promedio de las dos. La Argentina tiene registro y
+ * censo; Chile tiene el censo, y el registro de CONADI queda afuera porque su
+ * única copia abierta no declara licencia de reutilización. Lo que no está se
+ * dice en la pantalla: el relevamiento país por país vive en
+ * `_research/pueblos-originarios-paises/`. El bloque chileno está más abajo.
  *
  * ── Dos fuentes que no dicen lo mismo, y está bien ──────────────────────────
  *
@@ -253,6 +261,9 @@ export function normalizarNombreAdmin(s: string): string {
   const RUIDO = new Set([
     'departamento', 'depto', 'dpto', 'partido', 'comuna', 'municipio',
     'provincia', 'pedania', 'distrito', 'de', 'del', 'la', 'las', 'el', 'los',
+    // Chile: Nominatim escribe «Región de la Araucanía» y el INE «La
+    // Araucanía»; sin esto no casaba ninguna de las dieciséis.
+    'region',
   ]);
 
   return base
@@ -406,3 +417,148 @@ export function censoDelPunto(u: Ubicacion | null): CensoDelPunto {
 
   return { estado: 'con_censo', provincia, departamento };
 }
+
+// ── Chile: el Censo 2024, y una sola fuente ─────────────────────────────────
+
+/**
+ * Chile tiene las mismas dos fuentes que la Argentina, y acá hay una sola.
+ *
+ * El censo está: el INE publica la tabla de pueblos indígenas u originarios
+ * por región y por comuna, con licencia CC BY-SA 4.0 de sus datos abiertos,
+ * que permite uso comercial con atribución y obliga a que las adaptaciones
+ * lleven la misma licencia.
+ *
+ * **El registro no.** El equivalente del INAI es el Registro Nacional de
+ * Agrupaciones Indígenas de CONADI, y su sistema de consulta pide RUN y
+ * contraseña. La única copia pública que se encontró es una capa derivada que
+ * publica la Superintendencia del Medio Ambiente en un servicio ArcGIS —4.311
+ * comunidades vigentes, todas con coordenada— que **no declara ninguna
+ * licencia de reutilización**. Con eso no se escribe código: acequia cobra, y
+ * una fuente sin licencia declarada no es una fuente disponible. Además mezcla
+ * años de georreferenciación y repite claves de registro, así que tampoco
+ * estaría lista.
+ *
+ * Por eso el panel dice que falta el registro, en vez de mostrar el censo solo
+ * como si fuera todo lo que hay. El relevamiento completo está en
+ * `_research/pueblos-originarios-paises/chile.json`.
+ *
+ * ── Los números, y el denominador ──────────────────────────────────────────
+ *
+ * El INE publica 11,5% dividiendo por las 18.370.540 personas que
+ * respondieron la pregunta. Acá se divide por las 18.480.432 censadas, que es
+ * el único denominador publicado por comuna, y entonces el país da 11,4%. Es
+ * el mismo criterio en los cuatro niveles, así que comuna, provincia, región y
+ * país se pueden comparar entre sí. `CENSO_CL_PAIS.porcentajeIne` guarda la
+ * cifra oficial para poder citarla como la publica el INE.
+ *
+ * ── Las dos listas de pueblos no se comparan ───────────────────────────────
+ *
+ * La chilena es **cerrada**: once alternativas para marcar, las de la ley
+ * 19.253 y sus modificaciones. La argentina es **abierta**: 58 rótulos que
+ * escribió quien respondía. Por eso «Quechua» no es el mismo dato en las dos
+ * —en Chile es una casilla y en la Argentina una respuesta—, y por eso en
+ * Chile sólo 2.395 personas quedaron sin declarar pueblo contra 431.703 en la
+ * Argentina: con lista cerrada casi nadie deja el casillero vacío. Lo que en
+ * Chile queda afuera de la lista son las 20.631 personas de «Otro».
+ */
+
+/** Una provincia chilena, sumada de sus comunas. El INE no la publica sola. */
+export interface CensoClProvincia {
+  provincia: string;
+  poblacion: number;
+  indigena: number;
+  comunas: number;
+}
+
+/**
+ * Qué dice el censo chileno del punto. Tres formas de no saber, iguales a las
+ * de la Argentina, y una de saber con tres niveles de precisión: la comuna si
+ * se pudo fijar, la provincia si no, y la región siempre.
+ */
+export type CensoClDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_chile'; pais: string }
+  | { estado: 'region_desconocida'; region: string }
+  | {
+      estado: 'con_censo';
+      region: CensoClRegion;
+      /** `null` si no se pudo fijar ni la comuna ni la provincia. */
+      provincia: CensoClProvincia | null;
+      /** `null` si el geocodificador no dio una comuna reconocible. */
+      comuna: CensoClComuna | null;
+    };
+
+export const FUENTE_CENSO_2024_CL = {
+  label: 'INE Chile — Censo de Población y Vivienda 2024, pueblos indígenas u originarios',
+  url: 'https://censo2024.ine.gob.cl/estadisticas/',
+  licencia: 'CC BY-SA 4.0',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_CL_FALTANTE = {
+  organismo: 'CONADI — Registro Nacional de Agrupaciones Indígenas',
+  motivo: 'la consulta pública pide clave y la única copia abierta no declara licencia de reutilización',
+} as const;
+
+const PAISES_CL = new Set(['chile', 'república de chile', 'republic of chile']);
+
+const REGIONES_CL = CENSO_CL.map(r => r.region);
+
+/** Suma las comunas de una provincia. El INE publica región y comuna, no el medio. */
+export function provinciaChilena(region: CensoClRegion, nombre: string): CensoClProvincia | null {
+  const suyas = region.comunas.filter(c => c.provincia === nombre);
+  if (!suyas.length) return null;
+  return {
+    provincia: nombre,
+    poblacion: suyas.reduce((s, c) => s + c.poblacion, 0),
+    indigena: suyas.reduce((s, c) => s + c.indigena, 0),
+    comunas: suyas.length,
+  };
+}
+
+/**
+ * Cuánta gente es o se considera perteneciente a un pueblo indígena u
+ * originario donde está el predio, según el Censo 2024.
+ *
+ * Función pura, como la argentina. La diferencia está en de dónde sale la
+ * unidad chica: en Chile la comuna no viene en un campo administrativo propio.
+ * Nominatim la pone en `suburb` cuando el punto cae en una conurbación —Ñuñoa
+ * y Maipú devuelven `city: "Santiago"`— y en `city`/`town`/`village` cuando la
+ * comuna es una sola localidad. Se prueban en ese orden, del más específico al
+ * menos, y **sólo dentro de la región ya resuelta**: los 346 nombres de comuna
+ * son únicos en el país, así que ahí no hay ambigüedad posible.
+ *
+ * Si la comuna no casa se contesta la provincia, que Nominatim sí da como
+ * campo propio (`county` = «Provincia de Cautín»). Si tampoco, la región. Una
+ * comuna equivocada es peor que una región cierta.
+ */
+export function censoChilenoDelPunto(u: Ubicacion | null): CensoClDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!PAISES_CL.has(u.pais.trim().toLowerCase())) {
+    return { estado: 'fuera_de_chile', pais: u.pais };
+  }
+  if (!u.provincia) return { estado: 'sin_ubicacion' };
+
+  const rotulo = casarNombre(u.provincia, REGIONES_CL, x => x);
+  if (!rotulo) return { estado: 'region_desconocida', region: u.provincia };
+
+  const region = CENSO_CL.find(r => r.region === rotulo);
+  // No puede pasar: la lista sale de esta misma tabla. Si pasa, «no sé».
+  if (!region) return { estado: 'region_desconocida', region: u.provincia };
+
+  let comuna: CensoClComuna | null = null;
+  for (const candidato of [u.comuna, u.localidad]) {
+    if (!candidato) continue;
+    comuna = casarNombre(candidato, region.comunas, c => c.comuna);
+    if (comuna) break;
+  }
+
+  const nombreProvincia = comuna?.provincia
+    ?? (u.departamento ? casarNombre(u.departamento, [...new Set(region.comunas.map(c => c.provincia))], x => x) : null);
+  const provincia = nombreProvincia ? provinciaChilena(region, nombreProvincia) : null;
+
+  return { estado: 'con_censo', region, provincia, comuna };
+}
+
+/** El porcentaje del país con el mismo denominador que usa la app. */
+export const PORCENTAJE_PAIS_CL = porcentaje(CENSO_CL_PAIS.indigena, CENSO_CL_PAIS.poblacion);

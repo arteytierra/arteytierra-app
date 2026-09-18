@@ -1,0 +1,100 @@
+{
+  "pais": "Chile",
+  "iso3": "CHL",
+  "registro": {
+    "existe": true,
+    "organismo": "Corporación Nacional de Desarrollo Indígena (CONADI); capa publicada por la Superintendencia del Medio Ambiente (SMA)",
+    "nombre": "Comunidades Indigenas - CONADI",
+    "que_cuenta": "Registros puntuales de comunidades indígenas vigentes según el Registro Nacional de Agrupaciones Indígenas (RNAI) de CONADI.",
+    "url_pagina": "https://ideserver.sma.gob.cl/arcgis/rest/services/IDE/Patrimonio_cultural/MapServer/0",
+    "url_archivo": "https://ideserver.sma.gob.cl/arcgis/rest/services/IDE/Patrimonio_cultural/MapServer/0/query?where=1%3D1&outFields=%2A&returnGeometry=true&resultRecordCount=1000&f=pjson",
+    "formato": "api",
+    "fecha_distribucion": null,
+    "licencia": "No declarada en el servicio ArcGIS REST consultado",
+    "licencia_url": null,
+    "uso_comercial": "no_dice",
+    "niveles": [
+      "nacional",
+      "region",
+      "provincia",
+      "comuna"
+    ],
+    "columnas": [
+      "OBJECTID",
+      "Shape",
+      "REGI_N",
+      "PROVINCIA",
+      "COMUNA",
+      "DIRECCI_N_",
+      "COMUNIDAD",
+      "REGISTRO",
+      "FECHA_GEO",
+      "FUENTE_INF",
+      "ESTADO",
+      "ESTE",
+      "NORTE",
+      "OBSERVACIO"
+    ],
+    "filas": 4311,
+    "tiene_coordenadas": true,
+    "filas_sin_coordenada": 0,
+    "verificado": true,
+    "como_se_verifico": "Consultado el 2026-09-17 mediante la operación Query del servicio ArcGIS REST. returnCountOnly devolvió 4.311 y se recorrieron cinco páginas ordenadas por OBJECTID, con resultRecordCount=1000: las 4.311 entidades tienen geometría x/y. La primera entidad es OBJECTID 1, comunidad APUSMANTA WARMIKUNA, comuna ANDACOLLO, región COQUIMBO, estado VIGENTE, con geometría -71.07809784, -30.230350814. El servicio limita cada respuesta a 1.000 registros y declara como fuente y derechos a CONADI (2024), pero no declara una licencia de reutilización."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadísticas (INE)",
+    "anio": 2024,
+    "fecha_relevamiento": "2024-03-09",
+    "pregunta": "¿Es o se considera perteneciente a algún pueblo indígena u originario?",
+    "universo": "Todas las personas residentes habituales censadas en viviendas particulares, viviendas colectivas y en situación de calle; el porcentaje publicado usa como base a quienes respondieron la pregunta 28.",
+    "total_declarado": 2105863,
+    "poblacion_base": 18370540,
+    "url_cuadros": "https://censo2024.ine.gob.cl/estadisticas/",
+    "urls_archivos": [
+      "https://censo2024.ine.gob.cl/wp-content/uploads/2025/06/P2-Pueblos-indigenas.xlsx",
+      "https://censo2024.ine.gob.cl/wp-content/uploads/2025/12/Reporte_segunda_etapa_participacion_intercultural_CPV2024.pdf",
+      "https://censo2024.ine.gob.cl/wp-content/uploads/2025/03/Cuestionario-Censo-2024-VP.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "region",
+      "provincia",
+      "comuna"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": false,
+    "sin_declarar_pueblo": 2395,
+    "verificado": true,
+    "como_se_verifico": "Planilla P2-Pueblos-indigenas.xlsx descargada el 2026-09-17 (582.740 bytes). La hoja 1 contiene el total país, 2.105.863, y 16 regiones que suman exactamente ese total; las categorías de pueblo también suman 2.105.863. La hoja 2 contiene 346 comunas y sus totales vuelven a sumar 2.105.863. El informe oficial de Participación Intercultural declara que 18.370.540 personas respondieron la pregunta 28 y que 2.395 casos positivos figuran como No sabe/no responde; el cuestionario oficial confirma la pregunta textual y que se aplica a todas las personas. El levantamiento comenzó el 9 de marzo y finalizó el 31 de julio de 2024."
+  },
+  "pueblos": [
+    "Mapuche",
+    "Aymara",
+    "Rapa Nui",
+    "Atacameño o Lickanantay",
+    "Quechua",
+    "Colla",
+    "Diaguita",
+    "Kawésqar",
+    "Yagán",
+    "Chango",
+    "Selk'nam",
+    "Otro"
+  ],
+  "lo_que_no_dice": [
+    "El registro cuenta filas georreferenciadas de comunidades vigentes y no personas, socios, hogares ni toda la población indígena.",
+    "La ausencia de una comunidad en el registro o en una región no demuestra ausencia de pueblos originarios: depende de la inscripción administrativa y de la cobertura y actualización de la capa.",
+    "Los puntos del registro no delimitan tierras, títulos ni territorios ancestrales; varias observaciones dicen que la ubicación es aproximada o tomada del domicilio o código postal.",
+    "El censo mide autoidentificación en el lugar de residencia habitual y no pertenencia a una comunidad registrada, propiedad de la tierra ni territorio ancestral."
+  ],
+  "trampas": [
+    "La descripción de la capa dice que actualiza nuevos registros a marzo de 2024 con excepción de La Araucanía y Los Lagos, pero la capa sí contiene entidades de ambas regiones; por eso no debe suponerse la misma fecha de actualización para todas las filas.",
+    "La API devuelve como máximo 1.000 entidades por consulta. Una descarga sin paginación deja afuera 3.311 de las 4.311 filas sin advertirlo si no se revisa exceededTransferLimit.",
+    "Hay cuatro claves REGI_N+REGISTRO repetidas en ocho filas. Tres parecen duplicaciones de la misma comunidad con georreferenciaciones de distintos años y una reutiliza el registro 1152 para dos comunidades distintas de Aysén; REGISTRO no sirve como identificador único por sí solo.",
+    "FECHA_GEO es el año de georreferenciación y no la fecha de inscripción de la comunidad. Todas las entidades tienen punto, pero varias observaciones lo califican como ubicación aproximada o referencial.",
+    "Pueblo no declarado (2.395) no es lo mismo que no responder la pregunta 28. Hubo 18.370.540 respuestas válidas sobre una población censada de 18.480.432, de modo que 109.892 personas quedaron fuera del denominador publicado.",
+    "La pregunta y las alternativas no son idénticas a las del Censo 2017: en 2024 se añadió la fórmula «es o se considera» y aparecen Chango y Selk'nam como opciones. Las variaciones intercensales requieren explicar el cambio de instrumento."
+  ],
+  "notas": "El Censo 2024 se distribuye bajo Creative Commons Reconocimiento-CompartirIgual 4.0 Internacional según los términos oficiales del INE (https://www.ine.gob.cl/terminos-de-uso-y-licencia-de-datos-abiertos): permite uso comercial con atribución, indicación de cambios y obligación de CompartirIgual para adaptaciones. El RNAI completo existe y el INE lo inventaría como «Registro de comunidades indígenas», pero su sistema operativo en https://sistemas.conadi.cl/registro2.0/ exige RUN y contraseña; la fuente pública verificable usada aquí es la capa derivada SMA/CONADI. La fecha_distribucion del registro queda en null porque el metadato sólo dice «a marzo 2024» y no publica un día exacto."
+}

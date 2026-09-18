@@ -69,6 +69,9 @@ async function reverseGeocode(lat: number, lng: number) {
       departamento: a['county'] ?? a['state_district'] ?? null,
       provincia: a['state'] ?? null,
       pais: a['country'] ?? null,
+      // En Chile la comuna —la unidad del censo— cae acá cuando el punto está
+      // en una conurbación: Ñuñoa y Maipú devuelven `city: "Santiago"`.
+      comuna: a['suburb'] ?? a['city_district'] ?? null,
     };
   } catch { return null; }
 }

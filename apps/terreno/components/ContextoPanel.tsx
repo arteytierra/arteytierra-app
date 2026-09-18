@@ -8,10 +8,12 @@ import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import {
-  registroDelPunto, censoDelPunto, porcentaje, pueblosDestacados,
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI, FUENTE_CENSO_2022,
+  FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
+import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -135,6 +137,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // que se muestran los más numerosos y el resto se resume. Se calcula acá para
   // no meter la decisión en el JSX.
   const censoPueblos = censo.estado === 'con_censo' ? pueblosDestacados(censo.provincia.pueblos) : null;
+  // Chile, que entra con una sola de las dos fuentes: el censo del INE está y
+  // el registro de CONADI no, porque su única copia abierta no declara
+  // licencia. Cada país se resuelve con su propia tabla y sus propias palabras.
+  const censoCl = censoChilenoDelPunto(ubicacion);
+  const censoClPueblos = censoCl.estado === 'con_censo' ? pueblosDestacados(censoCl.region.pueblos) : null;
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
@@ -293,11 +300,15 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         )}
 
-        {registro.estado === 'fuera_de_argentina' && (
+        {/* Fuera de la Argentina y fuera de Chile. La condición mira el censo
+            chileno y no sólo el país: si el predio está en Chile hay fuente, y
+            esta frase sería falsa. */}
+        {registro.estado === 'fuera_de_argentina' && censoCl.estado !== 'con_censo' && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en {registro.pais}, y las dos fuentes de esta sección son argentinas: el
-            registro del INAI y el Censo 2022. Que no haya nada acá no dice nada sobre{' '}
-            {registro.pais} — dice que todavía no relevamos las fuentes equivalentes de ese país.
+            El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
+            Argentina —el registro del INAI y el Censo 2022— y las de Chile —el Censo 2024 del
+            INE—. Que no haya nada acá no dice nada sobre {registro.pais}: dice que todavía no
+            relevamos el registro ni el censo de ese país.
           </p>
         )}
 
@@ -492,6 +503,108 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             <p className="text-[10px] text-ink-700/50 leading-relaxed">
               Censo del 18 de mayo de 2022, resultados definitivos publicados en marzo de 2024.
               Cuadros 1, 8 y 10 de población indígena y cuadro 3 de estructura, por provincia.
+            </p>
+          </div>
+        </>}
+
+        {/* Chile. Está en la misma sección y no en otra porque es la misma
+            pregunta; lo que cambia es el organismo, la unidad territorial y
+            que acá hay una sola de las dos fuentes. */}
+        {censoCl.estado === 'region_desconocida' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El predio está en Chile y el geocodificador devolvió «{censoCl.region}», que no es
+            ninguna de las 16 regiones que publica el censo. Preferimos no contestar antes que
+            contestar de más. No significa que no haya pueblos originarios.
+          </p>
+        )}
+
+        {censoCl.estado === 'con_censo' && censoClPueblos && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            Pertenencia a un pueblo indígena · Censo 2024 · Chile
+          </p>
+
+          {/* La comuna primero: es la unidad a la que el dato sirve. Si no se
+              pudo fijar se baja a la provincia, y si tampoco, a la región. */}
+          {censoCl.comuna ? (
+            <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoCl.comuna.comuna} · {censoCl.comuna.provincia} · {censoCl.region.region}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoCl.comuna.indigena === 1
+                  ? 'Una persona es o se considera perteneciente a un pueblo indígena u originario'
+                  : `${censoCl.comuna.indigena.toLocaleString('es-AR')} personas son o se consideran pertenecientes a un pueblo indígena u originario`}
+                : el {porcentaje(censoCl.comuna.indigena, censoCl.comuna.poblacion)}% de
+                las {censoCl.comuna.poblacion.toLocaleString('es-AR')} censadas en la comuna.
+              </p>
+            </div>
+          ) : censoCl.provincia ? (
+            <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                Provincia de {censoCl.provincia.provincia} · {censoCl.region.region}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoCl.provincia.indigena.toLocaleString('es-AR')} personas
+                —el {porcentaje(censoCl.provincia.indigena, censoCl.provincia.poblacion)}% de
+                las {censoCl.provincia.poblacion.toLocaleString('es-AR')} censadas en
+                sus {censoCl.provincia.comunas} comunas—. La comuna exacta no se pudo fijar con lo
+                que devolvió el geocodificador, así que la respuesta es provincial.
+              </p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-ink-700/60 leading-relaxed bg-bone-50 border border-bone-200 rounded-lg p-2.5">
+              No se pudo fijar ni la comuna ni la provincia con lo que devolvió el geocodificador,
+              así que la respuesta es regional.
+            </p>
+          )}
+
+          <p className="text-xs text-ink-700/80 leading-relaxed mt-2">
+            En toda la región {censoCl.region.region} son{' '}
+            {censoCl.region.indigena.toLocaleString('es-AR')} personas, el{' '}
+            {porcentaje(censoCl.region.indigena, censoCl.region.poblacion)}% de la población
+            censada. En todo Chile el promedio es {PORCENTAJE_PAIS_CL}%.
+          </p>
+
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+            Pueblos declarados en {censoCl.region.region}
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {censoClPueblos.visibles.map(p => (
+              <span key={p.pueblo} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                {p.pueblo} <span className="text-water-700/60">· {p.personas.toLocaleString('es-AR')}</span>
+              </span>
+            ))}
+          </div>
+
+          {censoCl.region.otroPueblo > 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+              Otras {censoCl.region.otroPueblo.toLocaleString('es-AR')} personas marcaron «otro
+              pueblo», que el censo no abre. <strong className="text-ink-700/70">La lista chilena
+              es cerrada:</strong> son las {CENSO_CL_PAIS.pueblos} alternativas de la ley 19.253 y
+              sus modificaciones, con Chango desde 2020 y Selk&#39;nam desde 2023. No se puede
+              comparar con la lista argentina, que es abierta y la escribió quien respondía.
+            </p>
+          )}
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
+            territorio.</strong> Y la otra fuente —el {REGISTRO_CL_FALTANTE.organismo}, que es el
+            equivalente del registro argentino— no está acá: {REGISTRO_CL_FALTANTE.motivo}. Así que
+            esta sección no dice si hay tierra indígena inscripta al lado del predio.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_CENSO_2024_CL.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2024_CL.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              Censo levantado entre el 9 de marzo y el 31 de julio de 2024, tabla publicada el
+              30/06/2025 y actualizada el 04/12/2025 · {FUENTE_CENSO_2024_CL.licencia}. El
+              porcentaje se calcula sobre la población censada; el INE publica{' '}
+              {CENSO_CL_PAIS.porcentajeIne}% para el país porque divide por las{' '}
+              {CENSO_CL_PAIS.respondieron.toLocaleString('es-AR')} personas que respondieron la
+              pregunta, y ese denominador no está publicado por comuna.
             </p>
           </div>
         </>}

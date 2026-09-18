@@ -13,10 +13,12 @@ import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
 import {
-  registroDelPunto, censoDelPunto, porcentaje, pueblosDestacados,
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
+  FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
+import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 
 interface Props {
   datos: InformeData;
@@ -44,6 +46,12 @@ export function InformeView({ datos, compartido = false }: Props) {
   const censoPueblos = censoDelPunto(datos.entorno?.admin ?? null);
   const censoLista = censoPueblos.estado === 'con_censo'
     ? pueblosDestacados(censoPueblos.provincia.pueblos, 8)
+    : null;
+  // Chile tiene el censo del INE y no el registro de CONADI, y el informe dice
+  // las dos cosas. Es su propia tabla: nada se promedia entre países.
+  const censoCl = censoChilenoDelPunto(datos.entorno?.admin ?? null);
+  const censoClLista = censoCl.estado === 'con_censo'
+    ? pueblosDestacados(censoCl.region.pueblos, 8)
     : null;
 
   // Numeración dinámica de secciones según las presentes
@@ -470,6 +478,53 @@ export function InformeView({ datos, compartido = false }: Props) {
               <p className="text-[10px] text-ink-700/50 mt-1.5">
                 Fuente: {FUENTE_CENSO_2022.label}. El censo cuenta autorreconocimiento donde la
                 persona vive, no territorio: no dice de quién es la tierra ni quién estuvo antes.
+              </p>
+              </>}
+
+              {/* Chile, con una sola de las dos fuentes. El informe lo dice: el
+                  registro de CONADI no está, y por qué. Callarlo dejaría creer
+                  que el censo es todo lo que hay. */}
+              {censoCl.estado === 'con_censo' && censoClLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Pertenencia a un pueblo indígena u originario (Censo 2024, Chile)</p>
+              {censoCl.comuna ? (
+                <p className="text-sm text-ink-700/80">
+                  En la comuna de {censoCl.comuna.comuna}, {censoCl.region.region}:{' '}
+                  {censoCl.comuna.indigena.toLocaleString('es-AR')} personas son o se consideran
+                  pertenecientes a un pueblo indígena u originario, el{' '}
+                  {porcentaje(censoCl.comuna.indigena, censoCl.comuna.poblacion)}% de
+                  las {censoCl.comuna.poblacion.toLocaleString('es-AR')} censadas ahí.
+                </p>
+              ) : censoCl.provincia && (
+                <p className="text-sm text-ink-700/80">
+                  En la provincia de {censoCl.provincia.provincia}, {censoCl.region.region}:{' '}
+                  {censoCl.provincia.indigena.toLocaleString('es-AR')} personas, el{' '}
+                  {porcentaje(censoCl.provincia.indigena, censoCl.provincia.poblacion)}% de la
+                  población censada en sus {censoCl.provincia.comunas} comunas. La comuna exacta no
+                  se pudo determinar.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la región {censoCl.region.region}:{' '}
+                {censoCl.region.indigena.toLocaleString('es-AR')} personas, el{' '}
+                {porcentaje(censoCl.region.indigena, censoCl.region.poblacion)}% de la población
+                censada, contra {PORCENTAJE_PAIS_CL}% en todo Chile.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población declarada:{' '}
+                {censoClLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}.{' '}
+                {censoCl.region.otroPueblo > 0 && (
+                  <>Otras {censoCl.region.otroPueblo.toLocaleString('es-AR')} personas marcaron «otro
+                  pueblo»: la lista del censo chileno es cerrada, son las {CENSO_CL_PAIS.pueblos}{' '}
+                  alternativas reconocidas por la ley 19.253 y sus modificaciones.</>
+                )}
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2024_CL.label} · {FUENTE_CENSO_2024_CL.licencia}. El
+                porcentaje se calcula sobre la población censada; el INE publica{' '}
+                {CENSO_CL_PAIS.porcentajeIne}% para el país porque divide por quienes respondieron
+                la pregunta, y ese denominador no está publicado por comuna. El censo cuenta
+                personas donde viven, no territorio. La segunda fuente —el{' '}
+                {REGISTRO_CL_FALTANTE.organismo}— no está incluida: {REGISTRO_CL_FALTANTE.motivo}.
               </p>
               </>}
               {bioma && bioma.saberes.length > 0 && <>

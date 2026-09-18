@@ -133,6 +133,25 @@ Todos los campos van siempre. Lo que no se sabe va en `null` y el motivo en
    Cada fuente tiene su versión de esto y hay que escribirla.
 10. **JSON válido, UTF-8, una entrada por país.** Se valida antes de entregar.
 
+11. **La columna residual no es un pueblo.** «Otro», «Otra», «Sin especificar»,
+    «Otras declaraciones», «Pueblo no declarado» son categorías del formulario y
+    van fuera de `pueblos`, con su número en `notas` o en `sin_declarar_pueblo`
+    según cuál sea. Pasó con Chile: la planilla tiene once pueblos y trece
+    columnas.
+
+12. **Decí sobre qué denominador el organismo calcula su porcentaje**, y si ese
+    denominador está publicado al nivel más fino o sólo para el total del país.
+    Va en `notas`. Pasó con Chile: el INE publica 11,5% dividiendo por quienes
+    respondieron la pregunta, y ese número no existe por comuna, así que la app
+    tuvo que usar la población censada y explicar la diferencia.
+
+13. **Si la lista de pueblos es cerrada, decilo en `notas`.** Una lista de
+    alternativas para marcar y una lista de respuestas escritas no son el mismo
+    dato y no se comparan entre países. En Chile son once casillas de la ley
+    19.253 y por eso sólo el 0,1% no declaró pueblo; en la Argentina la lista es
+    abierta y el 33% no declaró. Sin ese aviso, la comparación parece un
+    hallazgo y es un artefacto del formulario.
+
 ## Ejemplo terminado — Argentina
 
 No hay que rehacerlo. Es el estándar de «listo»: este nivel de detalle en cada
