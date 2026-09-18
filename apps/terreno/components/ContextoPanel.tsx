@@ -300,10 +300,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         )}
 
-        {/* Fuera de la Argentina y fuera de Chile. La condición mira el censo
-            chileno y no sólo el país: si el predio está en Chile hay fuente, y
-            esta frase sería falsa. */}
-        {registro.estado === 'fuera_de_argentina' && censoCl.estado !== 'con_censo' && (
+        {/* Fuera de la Argentina y fuera de Chile. La condición pregunta por
+            las dos capas y no por el país: si el predio está en Chile esta
+            frase es falsa, incluso cuando la región no se pudo resolver —ahí
+            contesta el aviso chileno de más abajo, que dice otra cosa. */}
+        {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile' && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022— y las de Chile —el Censo 2024 del

@@ -818,11 +818,21 @@ describe('las dos fuentes de Chile, y la que falta', () => {
 
   it('ya no dice que fuera de la Argentina no hay nada relevado', () => {
     const panel = leer('components/ContextoPanel.tsx');
-    // La rama de «fuera de la Argentina» tiene que mirar el censo chileno: si
-    // sólo mirara el país, un predio en Chile leería que no hay fuentes
-    // mientras más abajo se le muestran los números del censo.
-    expect(panel).toContain("registro.estado === 'fuera_de_argentina' && censoCl.estado !== 'con_censo'");
+    // La rama de «fuera de la Argentina» tiene que preguntar por las dos capas.
+    // Con `censoCl.estado !== 'con_censo'` un punto chileno con la región sin
+    // resolver leía las dos cosas a la vez: que no relevamos su país y que su
+    // región no está entre las dieciséis. Sólo se escribe si está fuera de los
+    // dos países.
+    expect(panel).toContain("registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'");
     expect(panel).toContain('las de Chile');
+  });
+
+  it('un punto chileno con la región sin resolver no lee que no relevamos Chile', () => {
+    const raro = ubicCl({ provincia: 'Región de Aconcagua' });
+    expect(censoChilenoDelPunto(raro).estado).toBe('region_desconocida');
+    // La otra capa lo ve como extranjero, y esa es justamente la combinación
+    // que hacía aparecer los dos mensajes contradictorios.
+    expect(registroDelPunto(raro).estado).toBe('fuera_de_argentina');
   });
 
   it('el panel y el informe hablan de comuna en Chile y de departamento en la Argentina', () => {
