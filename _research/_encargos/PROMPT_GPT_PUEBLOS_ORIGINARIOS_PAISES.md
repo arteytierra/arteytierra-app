@@ -152,6 +152,34 @@ Todos los campos van siempre. Lo que no se sabe va en `null` y el motivo en
     abierta y el 33% no declaró. Sin ese aviso, la comparación parece un
     hallazgo y es un artefacto del formulario.
 
+14. **Decí si el censo indígena es un operativo aparte del censo nacional.** Si
+    lo es, el numerador y el denominador salen de relevamientos distintos y la
+    app no puede publicar un porcentaje sin mentir. Va en `notas`, y con él la
+    respuesta a: ¿hay una población total publicada al mismo nivel geográfico
+    que la población indígena? Pasó con Paraguay: el INE monta un IV Censo
+    Indígena con cuestionario y censistas propios, así que la app muestra
+    personas y sólo calcula el porcentaje del país, que es el único que el INE
+    publica con las dos puntas.
+
+15. **Si el total oficial no es la suma del cuadro, decí qué le falta y si eso
+    está abierto por territorio.** En Paraguay el titular es 140.049 y los
+    cuadros suman 137.547: la diferencia son 2.502 personas que el Censo
+    Nacional captó por tenencia de carnet, y no hay ningún cuadro que las abra
+    por departamento. Sin eso, la app suma mal o publica un total que sus
+    propias tablas no sostienen.
+
+16. **Fijate si un rótulo de pueblo lleva adentro el separador que usa el
+    cuadro.** En Paraguay la columna de pueblos separa con barras y dos pueblos
+    se llaman «Guarani Occidental / Pueblo Guarani» y «Toba Maskoy / Toba
+    Enenlhet», porque el pueblo se cambió el nombre y el INE conserva las dos
+    formas. Partir por el separador inventa pueblos y borra decisiones de
+    autodenominación. Va en `trampas`, con el separador que usa cada cuadro.
+
+17. **Decí si los archivos descargables traen las tildes que trae la
+    publicación.** Los cuatro CSV del INE paraguayo son ASCII puro y el PDF
+    escribe Nivaclé y Angaité. No hay que reponerlas —la regla 3 manda—, pero
+    sí avisar, porque la app tiene que decidir qué muestra y explicarlo.
+
 ## Ejemplo terminado — Argentina
 
 No hay que rehacerlo. Es el estándar de «listo»: este nivel de detalle en cada
