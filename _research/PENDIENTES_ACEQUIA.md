@@ -379,6 +379,16 @@ Nada de esto es código todavía. Son consultas.
   nombradas, **Asunción** —la única jurisdicción sin departamento en Nominatim— y
   **Pilar (Ñeembucú)**, que tiene que decir que el operativo no fue para allá y no que
   no conocemos el departamento.
+  Para Perú, donde la respuesta es departamental y no baja: **Huaraz (Áncash)**, que
+  es el caso de la tilde —Nominatim contesta «Ancash» pelado y el INEI escribe
+  «Áncash»—; **Iquitos (Loreto)** o **Pucallpa (Ucayali)**, donde el grupo grande
+  tiene que ser el amazónico y las lenguas de arriba Shipibo/Konibo o Kukama;
+  **Puno** o **Cusco**, donde tiene que ser el andino y el quechua o el aimara;
+  **Callao**, que el censo escribe «Provincia Constitucional del Callao» y el
+  geocodificador «Callao» a secas; y **Lima**, que tiene que contestar por el
+  departamento entero y no por «Lima Metropolitana». En los cinco, el porcentaje
+  tiene que decir **«de 12 y más años»**: sin eso el número se lee contra los de
+  Chile y la Argentina, que son sobre toda la población.
 
 ---
 
