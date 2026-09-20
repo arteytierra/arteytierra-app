@@ -14,15 +14,18 @@ import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
+  censoPeruanoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
-  localidadesDestacadas,
+  localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
+  FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
+import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 
 interface Props {
   datos: InformeData;
@@ -66,6 +69,13 @@ export function InformeView({ datos, compartido = false }: Props) {
     : null;
   const censoPyLocalidades = censoPy.estado === 'con_censo' && censoPy.distrito
     ? localidadesDestacadas(censoPy.distrito, 5)
+    : null;
+  // Perú tiene el censo del INEI y no la BDPI del Ministerio de Cultura, que se
+  // baja entera y no declara licencia. Y contesta por departamento y nada más:
+  // los anexos no bajan a provincia ni a distrito.
+  const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
+  const lenguasPe = censoPe.estado === 'con_censo'
+    ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
 
   // Numeración dinámica de secciones según las presentes
@@ -613,6 +623,45 @@ export function InformeView({ datos, compartido = false }: Props) {
                 {REGISTRO_PY_FALTANTE.organismo}— no está incluida: {REGISTRO_PY_FALTANTE.motivo}.
               </p>
               </>}
+
+              {/* Perú. Una sola fuente otra vez, y una sola escala: el INEI no
+                  baja del departamento. El informe lo dice en vez de sugerir
+                  una precisión que no tiene. */}
+              {censoPe.estado === 'con_censo' && lenguasPe && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena u originaria (Censo 2017, Perú)</p>
+              <p className="text-sm text-ink-700/80">
+                En {censoPe.departamento.departamento}:{' '}
+                {censoPe.departamento.indigena.toLocaleString('es-AR')} personas se declararon
+                indígenas u originarias, el{' '}
+                {porcentaje(censoPe.departamento.indigena, censoPe.departamento.censada12)}% de
+                las {censoPe.departamento.censada12.toLocaleString('es-AR')} censadas de 12 y más
+                años, contra {PORCENTAJE_PAIS_PE}% en todo el Perú. De los Andes{' '}
+                {censoPe.departamento.andes.toLocaleString('es-AR')} y de la Amazonía{' '}
+                {censoPe.departamento.amazonia.toLocaleString('es-AR')}; el INEI las publica
+                separadas y el total es esa suma.
+              </p>
+              {lenguasPe.originarias.length > 0 && (
+                <p className="text-sm text-ink-700/80 mt-1">
+                  Lengua materna de esa población:{' '}
+                  {lenguasPe.originarias.map(l => `${l.lengua} (${l.personas.toLocaleString('es-AR')})`).join(', ')}
+                  {lenguasPe.castellano > 0
+                    && `, y castellano ${lenguasPe.castellano.toLocaleString('es-AR')}`}. La lengua
+                  materna no es el pueblo: es la que se aprendió en la niñez.
+                </p>
+              )}
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2017_PE.label} · {FUENTE_CENSO_2017_PE.licencia}. Momento
+                censal del 22 de octubre de 2017. El universo son las personas de 12 y más años,
+                que es a quienes se les hizo la pregunta: en todo el país{' '}
+                {CENSO_PE_PAIS.indigena.toLocaleString('es-AR')} de{' '}
+                {CENSO_PE_PAIS.censada12.toLocaleString('es-AR')}. La respuesta es departamental
+                porque los anexos del INEI no bajan a provincia ni a distrito, y el censo no
+                publica un conteo comparable para cada uno de los 55 pueblos que reconoce el
+                Ministerio de Cultura. La segunda fuente —la {REGISTRO_PE_FALTANTE.organismo}— no
+                está incluida: {REGISTRO_PE_FALTANTE.motivo}.
+              </p>
+              </>}
+
               {bioma && bioma.saberes.length > 0 && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">

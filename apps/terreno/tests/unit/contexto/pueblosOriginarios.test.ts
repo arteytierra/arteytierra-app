@@ -4,16 +4,19 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
-  provinciaChilena, pueblosDeLocalidadPy,
+  censoPeruanoDelPunto,
+  provinciaChilena, pueblosDeLocalidadPy, lenguasDelDepartamentoPe,
   casarNombre, normalizarNombreAdmin, porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
+  FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE,
 } from '@/lib/pueblosOriginarios';
 import { REGISTRO_AR } from '@/lib/pueblosOriginariosAr';
 import { CENSO_AR, CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL, CENSO_CL_PAIS, CENSO_CL_PUEBLOS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY, CENSO_PY_PAIS, CENSO_PY_PUEBLOS, PUEBLOS_PY } from '@/lib/censoIndigena2022Py';
+import { CENSO_PE, CENSO_PE_PAIS, LENGUAS_PE } from '@/lib/censoIndigena2017Pe';
 import type { Ubicacion } from '@/lib/entorno';
 
 /*
@@ -1223,21 +1226,310 @@ describe('las dos fuentes de Paraguay, y la que falta', () => {
     expect(informe).toMatch(/un pueblo y no dos/);
   });
 
-  it('la rama de «fuera de todo» pregunta por los tres países', () => {
+  it('la rama de «fuera de todo» pregunta por los cuatro países', () => {
     // Con dos, un punto paraguayo sin departamento resuelto leía a la vez que
     // no relevamos su país y que su departamento no está entre los quince. Es
-    // la misma falla que ya había aparecido con Chile.
+    // la misma falla que ya había aparecido con Chile, y que vuelve a aparecer
+    // cada vez que se suma un país y no se suma a esta condición.
     expect(panel).toContain("censoPy.estado === 'fuera_de_paraguay'");
+    expect(panel).toContain("censoPe.estado === 'fuera_de_peru'");
     expect(panel).toContain('las de Paraguay');
 
     const raro = ubicPy({ provincia: 'Departamento del Chaco Boreal' });
     expect(censoParaguayoDelPunto(raro).estado).toBe('departamento_desconocido');
     expect(registroDelPunto(raro).estado).toBe('fuera_de_argentina');
     expect(censoChilenoDelPunto(raro).estado).toBe('fuera_de_chile');
+    expect(censoPeruanoDelPunto(raro).estado).toBe('fuera_de_peru');
   });
 
   it('el vacío de los tres departamentos habla del operativo y no de la gente', () => {
     expect(panel).toMatch(/Eso dice adónde fue el operativo, no que no haya/);
     expect(informe).toMatch(/Eso dice adónde fue el operativo, no que no haya gente/);
+  });
+});
+
+/*
+ * Perú. La misma pregunta, el cuarto país, y el primero que contesta con una
+ * sola escala.
+ *
+ * Lo que defiende este bloque, además de que los números cierren:
+ *
+ * 1. **Que el denominador sea el de las personas de 12 y más años.** La
+ *    pregunta 25 no se le hizo a los menores de 12. Dividir por la población
+ *    total daría un porcentaje más chico, igual de creíble y de otra cosa, que
+ *    es exactamente la falla que describe `lib/README.md`. Por eso el test
+ *    exige que las dos pantallas escriban la edad al lado del porcentaje.
+ * 2. **Que `indigena` sea la suma de los dos grupos y no otra cosa.** El INEI
+ *    publica los Andes y la Amazonía separados y el total nacional de 5.984.708
+ *    no es una fila de ningún cuadro.
+ * 3. **Que la lengua materna no se presente como la lista de pueblos.** Son
+ *    2.473.986 los indígenas andinos que declaran castellano; si la pantalla
+ *    dijera «pueblos» ahí estaría afirmando algo falso sobre casi la mitad de
+ *    ellos.
+ * 4. **Que se diga que la respuesta es departamental y no baja.** Los anexos no
+ *    abren por provincia ni por distrito, y sugerir precisión que no hay es
+ *    peor que admitir el grano grueso.
+ *
+ * Los casos de ubicación salen de consultar Nominatim de verdad, punto por
+ * punto, igual que los chilenos y los paraguayos.
+ */
+
+const ubicPe = (u: Partial<Ubicacion>): Ubicacion => ({
+  localidad: null, departamento: null, provincia: null, pais: 'Perú',
+  comuna: null, ...u,
+});
+
+describe('la tabla del Censo 2017 del Perú', () => {
+  it('son los veinticinco departamentos, sin repetidos', () => {
+    expect(CENSO_PE).toHaveLength(25);
+    expect(new Set(CENSO_PE.map(d => d.departamento)).size).toBe(25);
+  });
+
+  it('los departamentos suman exactamente el país, en las tres cifras', () => {
+    const suma = (f: (d: typeof CENSO_PE[number]) => number) => CENSO_PE.reduce((s, d) => s + f(d), 0);
+    expect(suma(d => d.andes)).toBe(CENSO_PE_PAIS.andes);
+    expect(suma(d => d.amazonia)).toBe(CENSO_PE_PAIS.amazonia);
+    expect(suma(d => d.censada12)).toBe(CENSO_PE_PAIS.censada12);
+  });
+
+  it('`indigena` es la suma de los dos grupos, en el país y en cada departamento', () => {
+    // El total nacional no es una fila de ningún cuadro del INEI: es esta suma,
+    // y por eso se verifica en vez de copiarse.
+    expect(CENSO_PE_PAIS.indigena).toBe(CENSO_PE_PAIS.andes + CENSO_PE_PAIS.amazonia);
+    expect(CENSO_PE_PAIS.indigena).toBe(5984708);
+    for (const d of CENSO_PE) {
+      expect(d.indigena, d.departamento).toBe(d.andes + d.amazonia);
+    }
+  });
+
+  it('las cuatro categorías nacionales cierran el universo de la pregunta', () => {
+    // Es lo que permite sumar el denominador de tres anexos distintos sin
+    // estimarlo: las cuatro son excluyentes y exhaustivas.
+    const { andes, amazonia, afroperuano, resto, censada12 } = CENSO_PE_PAIS;
+    expect(andes + amazonia + afroperuano + resto).toBe(censada12);
+    expect(censada12).toBe(23196391);
+  });
+
+  it('la lengua materna suma la población indígena del departamento', () => {
+    expect(LENGUAS_PE).toHaveLength(15);
+    for (const d of CENSO_PE) {
+      expect(d.lenguas, d.departamento).toHaveLength(LENGUAS_PE.length);
+      expect(d.lenguas.reduce((s, n) => s + n, 0), d.departamento).toBe(d.indigena);
+    }
+  });
+
+  it('ningún departamento tiene cero población indígena', () => {
+    // Por eso esta capa no tiene rama de «acá no hay»: el más chico es Tumbes.
+    for (const d of CENSO_PE) expect(d.indigena, d.departamento).toBeGreaterThan(0);
+    const menor = [...CENSO_PE].sort((a, b) => a.indigena - b.indigena)[0];
+    expect(menor?.departamento).toBe('Tumbes');
+    expect(menor?.indigena).toBe(3660);
+  });
+
+  it('cada departamento tiene más gente censada que gente indígena', () => {
+    for (const d of CENSO_PE) expect(d.censada12, d.departamento).toBeGreaterThan(d.indigena);
+  });
+
+  it('el grupo grande cambia de departamento en departamento', () => {
+    // Promediar los dos grupos borraría justamente esto, que es lo que hace
+    // distinto a un predio en Ucayali de uno en Puno.
+    const de = (n: string) => CENSO_PE.find(d => d.departamento === n);
+    expect(de('Puno')!.andes).toBeGreaterThan(de('Puno')!.amazonia);
+    expect(de('Loreto')!.amazonia).toBeGreaterThan(de('Loreto')!.andes);
+    expect(de('Ucayali')!.amazonia).toBeGreaterThan(de('Ucayali')!.andes);
+  });
+
+  it('Callao entra con su nombre largo, que es el del INEI', () => {
+    expect(CENSO_PE.some(d => d.departamento === 'Provincia Constitucional del Callao')).toBe(true);
+    // La abreviatura del cuadro no queda en la tabla.
+    expect(CENSO_PE.some(d => d.departamento.includes('Prov.'))).toBe(false);
+  });
+
+  it('los dos pedazos de Lima no están montados como departamentos', () => {
+    // «Provincia de Lima» y «Región Lima» suman Lima y el script lo comprueba,
+    // pero no se montan: el geocodificador no los distingue sin riesgo.
+    expect(CENSO_PE.some(d => d.departamento === 'Lima')).toBe(true);
+    expect(CENSO_PE.some(d => /Provincia de Lima|Región Lima/.test(d.departamento))).toBe(false);
+  });
+
+  it('el archivo generado no tiene llamadas al pie pegadas a un nombre', () => {
+    // El cuadro las escribe «Provincia de Lima 2/» y el número cambia entre
+    // cuadros. Si una se coló, el cotejo entre anexos se hizo mal.
+    for (const d of CENSO_PE) expect(d.departamento, d.departamento).not.toMatch(/\d\/$/);
+  });
+});
+
+describe('el censo peruano del punto', () => {
+  it('sin ubicación no contesta', () => {
+    expect(censoPeruanoDelPunto(null).estado).toBe('sin_ubicacion');
+    expect(censoPeruanoDelPunto(ubicPe({})).estado).toBe('sin_ubicacion');
+  });
+
+  it('afuera del Perú lo dice, y no dice que no haya pueblos', () => {
+    const cl = censoPeruanoDelPunto({ localidad: null, departamento: null, provincia: 'Maule', pais: 'Chile' });
+    expect(cl).toEqual({ estado: 'fuera_de_peru', pais: 'Chile' });
+  });
+
+  it('resuelve el departamento desde `state`, que es donde lo pone Nominatim', () => {
+    // Cusco, -13.5320/-71.9675: state «Cusco».
+    const r = censoPeruanoDelPunto(ubicPe({ provincia: 'Cusco', localidad: 'Wanchaq' }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Cusco');
+    expect(r.departamento.andes).toBe(716013);
+  });
+
+  it('casa «Ancash» sin tilde contra el «Áncash» del INEI', () => {
+    // Nominatim devuelve «Ancash» pelado en Huaraz, -9.5278/-77.5289, y el
+    // cuadro del INEI escribe «Áncash». Sin normalizar los diacríticos el
+    // departamento más poblado de la sierra norte no casaba con nada.
+    const r = censoPeruanoDelPunto(ubicPe({ provincia: 'Ancash', localidad: 'Huaraz' }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Áncash');
+  });
+
+  it('Callao casa por el nombre corto que devuelve el geocodificador', () => {
+    // -12.0566/-77.1181: state «Callao», y el censo lo escribe «Provincia
+    // Constitucional del Callao». Es subconjunto de palabras y único.
+    const r = censoPeruanoDelPunto(ubicPe({ provincia: 'Callao', localidad: 'Callao' }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Provincia Constitucional del Callao');
+  });
+
+  it('Lima resuelve al departamento y no a uno de sus pedazos', () => {
+    // -12.0464/-77.0428 devuelve state «Lima» y state_district «Lima
+    // Metropolitana». El segundo no se mira: a Callao, que es otro
+    // departamento, Nominatim le pone el mismo state_district.
+    const r = censoPeruanoDelPunto(ubicPe({
+      provincia: 'Lima', departamento: 'Lima Metropolitana', localidad: 'Lima',
+    }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Lima');
+    expect(r.departamento.censada12).toBe(7782282);
+  });
+
+  it('un rótulo que no reconocemos se admite, no se rellena', () => {
+    const r = censoPeruanoDelPunto(ubicPe({ provincia: 'Departamento de Tarapacá' }));
+    expect(r).toEqual({ estado: 'departamento_desconocido', departamento: 'Departamento de Tarapacá' });
+  });
+
+  it('no mira el campo `departamento` de la ubicación, que en Perú es la provincia', () => {
+    // En Perú los niveles están corridos: `provincia` sale de `state` y es el
+    // departamento; `departamento` sale de `county` y es la provincia. Mirar el
+    // segundo devolvería «Maynas» donde el censo dice «Loreto».
+    const r = censoPeruanoDelPunto(ubicPe({ provincia: 'Loreto', departamento: 'Maynas', localidad: 'Iquitos' }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Loreto');
+  });
+
+  it('los veinticinco departamentos resuelven con su propio nombre', () => {
+    for (const d of CENSO_PE) {
+      const r = censoPeruanoDelPunto(ubicPe({ provincia: d.departamento }));
+      expect(r.estado, d.departamento).toBe('con_censo');
+    }
+  });
+});
+
+describe('las lenguas maternas del departamento peruano', () => {
+  const de = (n: string) => CENSO_PE.find(d => d.departamento === n)!;
+
+  it('parte en originarias, castellano y resto, y no pierde a nadie', () => {
+    for (const d of CENSO_PE) {
+      const { originarias, castellano, resto } = lenguasDelDepartamentoPe(d);
+      const suma = originarias.reduce((s, l) => s + l.personas, 0) + castellano + resto;
+      expect(suma, d.departamento).toBe(d.indigena);
+    }
+  });
+
+  it('el castellano no se cuenta entre las lenguas originarias', () => {
+    for (const d of CENSO_PE) {
+      const { originarias } = lenguasDelDepartamentoPe(d);
+      expect(originarias.map(l => l.lengua), d.departamento).not.toContain('Castellano');
+    }
+  });
+
+  it('ordena de mayor a menor y saca las que dieron cero', () => {
+    const { originarias } = lenguasDelDepartamentoPe(de('Amazonas'));
+    expect(originarias[0]?.lengua).toBe('Awajún/Aguaruna');
+    expect(originarias[0]?.personas).toBe(28951);
+    for (const l of originarias) expect(l.personas).toBeGreaterThan(0);
+    for (let i = 1; i < originarias.length; i++) {
+      expect(originarias[i]!.personas).toBeLessThanOrEqual(originarias[i - 1]!.personas);
+    }
+  });
+
+  it('las barras de una lengua no se parten', () => {
+    // «Awajún/Aguaruna» y «Shipibo/Konibo» son dos nombres de una lengua, igual
+    // que las barras de los pueblos paraguayos. Partirlas inventaría lenguas.
+    const { originarias } = lenguasDelDepartamentoPe(de('Ucayali'));
+    expect(originarias.map(l => l.lengua)).toContain('Shipibo/Konibo');
+    expect(originarias.map(l => l.lengua)).not.toContain('Shipibo');
+  });
+
+  it('el castellano es la lengua materna de la mayoría de los indígenas andinos', () => {
+    // Es el número que sostiene la advertencia de la pantalla. Si alguna vez
+    // deja de ser cierto, la frase hay que reescribirla.
+    expect(CENSO_PE_PAIS.castellanoAndes).toBe(2473986);
+    expect(CENSO_PE_PAIS.castellanoAndes / CENSO_PE_PAIS.andes).toBeGreaterThan(0.4);
+  });
+});
+
+describe('las dos fuentes del Perú, y la que falta', () => {
+  const panel = leer('components/ContextoPanel.tsx');
+  const informe = leer('components/InformeView.tsx');
+
+  it('el porcentaje siempre viaja con la edad del universo', () => {
+    // Sin «de 12 y más años» el número es la mitad de un dato: el lector lo
+    // compararía contra el de Chile o el de la Argentina, que son sobre toda la
+    // población.
+    expect(panel).toMatch(/de 12 y más años/);
+    expect(informe).toMatch(/censadas de 12 y más\s*\n?\s*años/);
+    expect(panel).toMatch(/La edad del universo no es un detalle/);
+  });
+
+  it('dice por qué no está la BDPI, en vez de omitirla', () => {
+    expect(REGISTRO_PE_FALTANTE.organismo).toContain('BDPI');
+    expect(REGISTRO_PE_FALTANTE.motivo).toMatch(/no declara ninguna licencia/);
+    expect(panel).toContain('REGISTRO_PE_FALTANTE.organismo');
+    expect(panel).toContain('REGISTRO_PE_FALTANTE.motivo');
+    expect(informe).toContain('REGISTRO_PE_FALTANTE.organismo');
+    expect(informe).toContain('REGISTRO_PE_FALTANTE.motivo');
+  });
+
+  it('el censo peruano viaja con la condición de uso que declara el INEI', () => {
+    expect(FUENTE_CENSO_2017_PE.licencia).toMatch(/uso comercial/);
+    expect(FUENTE_CENSO_2017_PE.licencia).toMatch(/INEI/);
+    expect(panel).toContain('FUENTE_CENSO_2017_PE.licencia');
+    expect(informe).toContain('FUENTE_CENSO_2017_PE.licencia');
+  });
+
+  it('las dos pantallas dicen que la respuesta es departamental y no baja', () => {
+    expect(panel).toMatch(/Esta respuesta es departamental y no baja/);
+    expect(informe).toMatch(/La respuesta es departamental/);
+    expect(panel).toMatch(/no por\s*\n?\s*provincia ni por distrito/);
+  });
+
+  it('las dos pantallas aclaran que la lengua materna no es el pueblo', () => {
+    expect(panel).toMatch(/La lengua materna no es el pueblo/);
+    expect(informe).toMatch(/La lengua\s*\n?\s*materna no es el pueblo/);
+    expect(panel).toContain('CENSO_PE_PAIS.castellanoAndes');
+  });
+
+  it('las dos pantallas abren los dos grupos en vez de mostrar sólo el total', () => {
+    for (const [archivo, texto] of [['panel', panel], ['informe', informe]] as const) {
+      expect(texto, archivo).toContain('censoPe.departamento.andes');
+      expect(texto, archivo).toContain('censoPe.departamento.amazonia');
+    }
+  });
+
+  it('ninguna rama peruana dice que no haya pueblos originarios', () => {
+    // La misma regla que en los otros tres países: el vacío es sobre personas.
+    const raro = censoPeruanoDelPunto(ubicPe({ provincia: 'Tarapacá' }));
+    expect(raro.estado).toBe('departamento_desconocido');
+    expect(panel).toMatch(/No significa que no haya pueblos\s*\n?\s*originarios\./);
   });
 });

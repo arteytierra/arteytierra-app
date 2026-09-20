@@ -6,22 +6,28 @@ import {
   CENSO_PY, CENSO_PY_PAIS, PUEBLOS_PY,
   type CensoPyDepartamento, type CensoPyDistrito, type CensoPyLocalidad, type CensoPyPueblo,
 } from './censoIndigena2022Py';
+import {
+  CENSO_PE, CENSO_PE_PAIS, LENGUAS_PE, LENGUAS_ORIGINARIAS_PE, type CensoPeDepartamento,
+} from './censoIndigena2017Pe';
 
 /**
- * Pueblos originarios en el territorio del predio. Argentina, Chile y Paraguay.
+ * Pueblos originarios en el territorio del predio. Argentina, Chile, Paraguay
+ * y Perú.
  *
  * Cada país entra con las fuentes que tiene y con una licencia que las
- * permita, y no con un promedio de las tres. La Argentina tiene registro y
- * censo. Chile tiene el censo, y el registro de CONADI queda afuera porque su
- * única copia abierta no declara licencia de reutilización. Paraguay tiene el
- * censo, y el registro del INDI queda afuera porque directamente no está
- * publicado. Lo que no está se dice en la pantalla: el relevamiento país por
- * país vive en `_research/pueblos-originarios-paises/`. Los bloques chileno y
- * paraguayo están más abajo.
+ * permita, y no con un promedio de los cuatro. La Argentina tiene registro y
+ * censo. Los otros tres entran con el censo solo, y en cada uno el registro
+ * falta por un motivo distinto: el de CONADI tiene una copia abierta que no
+ * declara licencia, el del INDI directamente no está publicado, y el del
+ * Ministerio de Cultura del Perú se baja entero y tampoco dice qué se puede
+ * hacer con él. Lo que no está se dice en la pantalla: el relevamiento país por
+ * país vive en `_research/pueblos-originarios-paises/`. Los bloques chileno,
+ * paraguayo y peruano están más abajo.
  *
- * **Los tres no se suman ni se comparan entre sí.** Cada censo tiene su
+ * **Los cuatro no se suman ni se comparan entre sí.** Cada censo tiene su
  * pregunta, su universo y su lista de pueblos —abierta en la Argentina, cerrada
- * en Chile, cerrada y en un operativo aparte en Paraguay—, así que los
+ * en Chile, cerrada y en un operativo aparte en Paraguay, y en el Perú ni
+ * siquiera hay lista de pueblos sino dos grandes grupos—, así que los
  * porcentajes de un país no se leen contra los del otro. Cada bloque explica el
  * suyo.
  *
@@ -802,3 +808,161 @@ export function localidadesDestacadas(d: CensoPyDistrito, cuantas = 6): {
 
 /** El porcentaje del país, el único que se puede calcular con las dos puntas publicadas. */
 export const PORCENTAJE_PAIS_PY = porcentaje(CENSO_PY_PAIS.total, CENSO_PY_PAIS.poblacionPais);
+
+// ── Perú: un censo que sólo llega al departamento ──────────────────────────
+
+/**
+ * Perú es el cuarto país, y el que contesta más grueso.
+ *
+ * El Censo 2017 pregunta por la autoidentificación —la pregunta 25, «por sus
+ * costumbres y sus antepasados, ¿usted se siente o considera…»— dentro del
+ * cuestionario nacional, así que el numerador y el denominador salen del mismo
+ * operativo y el porcentaje se puede calcular, como en la Argentina y en Chile.
+ * Lo que no hay es escala: **los anexos del INEI llegan al departamento y no
+ * bajan a provincia ni a distrito.** Un predio en Perú se contesta con su
+ * departamento y nada más, y la pantalla lo dice en vez de fingir precisión.
+ *
+ * ── El universo, que acá no es todo el mundo ───────────────────────────────
+ *
+ * La pregunta se le hizo sólo a las personas de **12 y más años**: 23.196.391
+ * de las censadas. De ellas, 5.984.708 se declararon indígenas u originarias.
+ * Dividir esas 5.984.708 por la población total del país daría un número más
+ * chico y sin sentido, así que el denominador viaja en la tabla y la pantalla
+ * aclara la edad cada vez que muestra el porcentaje.
+ *
+ * ── Dos grupos que el INEI publica separados ───────────────────────────────
+ *
+ * «Indígena u originaria de los Andes» —quechua, aimara y otro pueblo andino,
+ * 5.771.885— e «indígena u originaria de la Amazonía» —212.823—. El total de
+ * 5.984.708 no es una fila de ningún cuadro: es la suma de esas dos, y por eso
+ * el panel las muestra por separado. En Amazonas o en Ucayali el grupo grande
+ * es el amazónico y en Puno o en Cusco el andino; sumarlos sin abrirlos
+ * escondería justamente eso.
+ *
+ * ── La segunda fuente tampoco está, y por un tercer motivo ─────────────────
+ *
+ * El equivalente del INAI es la **Base de Datos Oficial de Pueblos Indígenas u
+ * Originarios (BDPI)** del Ministerio de Cultura, y acá el problema no es que
+ * no exista ni que esté cerrada: existe, se baja, tiene 9.332 localidades con
+ * departamento, provincia y distrito, y **no declara ninguna licencia** —ni la
+ * página, ni el XLSX, ni el manual, ni el geoportal—. Acceso público no es
+ * permiso de reutilización, y acequia cobra. Tampoco trae geometría: marca
+ * 4.589 localidades como georreferenciadas pero no publica una sola coordenada,
+ * y el visor responde por un servicio JSON que el Ministerio no documenta como
+ * API estable.
+ *
+ * Son tres formas distintas de faltar, una por país: en Chile la copia existe y
+ * no declara licencia, en Paraguay la base directamente no está publicada, y
+ * acá el archivo se baja entero y nadie dice qué se puede hacer con él.
+ *
+ * ── La lengua materna no es el pueblo ──────────────────────────────────────
+ *
+ * El censo no publica un conteo comparable para cada uno de los 55 pueblos
+ * oficiales. Lo más cerca que llega es el cuadro de **lengua o idioma materna
+ * aprendida en la niñez**, que sí viene por departamento, y es lo que muestra
+ * el panel. No es lo mismo y no se presenta como si lo fuera: 2.473.986 de los
+ * 5.771.885 indígenas de los Andes declaran castellano como lengua materna, y
+ * ese dato habla de la historia de la lengua, no de quién es quién.
+ */
+
+/**
+ * Qué dice el censo peruano del punto. Las mismas tres formas de no saber que
+ * en los otros tres países, y una sola de saber: el departamento. Los
+ * veinticinco tienen población indígena censada —el más chico es Tumbes, con
+ * 3.660 personas—, así que acá no existe la rama del «no hay».
+ */
+export type CensoPeDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_peru'; pais: string }
+  | { estado: 'departamento_desconocido'; departamento: string }
+  | { estado: 'con_censo'; departamento: CensoPeDepartamento };
+
+export const FUENTE_CENSO_2017_PE = {
+  label: 'INEI Perú — Censos Nacionales 2017, autoidentificación étnica (resultados finales)',
+  url: 'https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib1642/',
+  licencia: 'uso comercial contemplado por el INEI, citando la fuente',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_PE_FALTANTE = {
+  organismo: 'Ministerio de Cultura — Base de Datos Oficial de Pueblos Indígenas u Originarios (BDPI)',
+  motivo: 'el archivo de 9.332 localidades se baja entero, pero no declara ninguna licencia de reutilización',
+} as const;
+
+/**
+ * Nominatim devuelve «Perú», con tilde. Se parte por la barra igual que en
+ * Paraguay: el rótulo de OSM puede pasar a ser bilingüe —el quechua y el aimara
+ * son oficiales donde predominan— y ese día la capa tiene que seguir
+ * disparando.
+ */
+function esPeru(pais: string): boolean {
+  const NOMBRES = new Set(['peru', 'republica del peru', 'piruw', 'piruw suyu']);
+  return pais.split('/').some(parte => NOMBRES.has(normalizarNombreAdmin(parte)));
+}
+
+const DEPARTAMENTOS_PE = CENSO_PE.map(d => d.departamento);
+
+/**
+ * En qué departamento peruano cae el punto.
+ *
+ * Función pura, como las otras tres. Lo propio de Perú es que **los nombres de
+ * los niveles están corridos respecto de la Argentina**: lo que en la ubicación
+ * se llama `provincia` sale de `state` y en Perú es el *departamento*, y lo que
+ * se llama `departamento` sale de `county`, que en Perú es la *provincia*. Como
+ * el censo sólo llega al departamento, esta función mira `provincia` y nada
+ * más; el otro campo no se toca, justamente para que nadie lo confunda.
+ *
+ * Callao entra por su nombre corto: el censo lo escribe «Provincia
+ * Constitucional del Callao» y el geocodificador contesta «Callao», que es
+ * subconjunto de palabras y único entre los veinticinco.
+ */
+export function censoPeruanoDelPunto(u: Ubicacion | null): CensoPeDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!esPeru(u.pais)) return { estado: 'fuera_de_peru', pais: u.pais };
+  if (!u.provincia) return { estado: 'sin_ubicacion' };
+
+  const rotulo = casarNombre(u.provincia, DEPARTAMENTOS_PE, x => x);
+  if (!rotulo) return { estado: 'departamento_desconocido', departamento: u.provincia };
+
+  const departamento = CENSO_PE.find(d => d.departamento === rotulo);
+  // No puede pasar: la lista sale de esta misma tabla. Si pasa, «no sé».
+  if (!departamento) return { estado: 'departamento_desconocido', departamento: u.provincia };
+
+  return { estado: 'con_censo', departamento };
+}
+
+/** Una lengua materna declarada en el departamento, con su gente. */
+export interface LenguaPe {
+  lengua: string;
+  personas: number;
+}
+
+/**
+ * Las lenguas maternas del departamento, partidas en tres.
+ *
+ * `originarias` son las nueve categorías de lengua originaria del cuadro, de
+ * mayor a menor y sin las que dieron cero. `castellano` va aparte porque no es
+ * un resto: es la lengua materna de la mayoría de la población indígena andina,
+ * y mezclarlo entre las otras taparía ese hecho. `resto` junta portugués, otra
+ * lengua extranjera, lengua de señas, quien no escucha ni habla y quien no
+ * contestó; son pocos y no se esconden, se cuentan.
+ */
+export function lenguasDelDepartamentoPe(d: CensoPeDepartamento): {
+  originarias: LenguaPe[];
+  castellano: number;
+  resto: number;
+} {
+  const originarias = d.lenguas
+    .slice(0, LENGUAS_ORIGINARIAS_PE)
+    .map((personas, i) => ({ lengua: LENGUAS_PE[i] ?? '', personas }))
+    .filter(l => l.personas > 0)
+    .sort((a, b) => b.personas - a.personas);
+
+  const castellano = d.lenguas[LENGUAS_ORIGINARIAS_PE] ?? 0;
+  const resto = d.lenguas.slice(LENGUAS_ORIGINARIAS_PE + 1).reduce((s, n) => s + n, 0);
+
+  return { originarias, castellano, resto };
+}
+
+/** El porcentaje del país, sobre las personas de 12 y más años. */
+export const PORCENTAJE_PAIS_PE = porcentaje(CENSO_PE_PAIS.indigena, CENSO_PE_PAIS.censada12);

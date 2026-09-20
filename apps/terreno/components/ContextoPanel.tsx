@@ -9,15 +9,18 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
+  censoPeruanoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
-  localidadesDestacadas,
+  localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI, FUENTE_CENSO_2022,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
+  FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
+import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -155,6 +158,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
     : null;
   const localidadesPy = censoPy.estado === 'con_censo' && censoPy.distrito
     ? localidadesDestacadas(censoPy.distrito)
+    : null;
+  // Perú, cuarto país y el que contesta más grueso: los anexos del INEI llegan
+  // al departamento y no bajan. Tampoco hay lista de pueblos comparable, así
+  // que lo que se muestra al lado de los dos grupos es la lengua materna.
+  const censoPe = censoPeruanoDelPunto(ubicacion);
+  const lenguasPe = censoPe.estado === 'con_censo'
+    ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
@@ -314,19 +324,19 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         )}
 
-        {/* Fuera de los tres países relevados. La condición pregunta por las
-            tres capas y no por el país: si el predio está en Chile o en
-            Paraguay esta frase es falsa, incluso cuando la división no se pudo
-            resolver —ahí contestan los avisos de más abajo, que dicen otra
-            cosa. */}
+        {/* Fuera de los cuatro países relevados. La condición pregunta por las
+            cuatro capas y no por el país: si el predio está en Chile, en
+            Paraguay o en el Perú esta frase es falsa, incluso cuando la
+            división no se pudo resolver —ahí contestan los avisos de más abajo,
+            que dicen otra cosa. */}
         {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'
-          && censoPy.estado === 'fuera_de_paraguay' && (
+          && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru' && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
-            INE— y las de Paraguay —el IV Censo Indígena 2022 del INE—. Que no haya nada acá no
-            dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el censo
-            de ese país.
+            INE—, las de Paraguay —el IV Censo Indígena 2022 del INE— y las del Perú —el Censo
+            2017 del INEI—. Que no haya nada acá no dice nada sobre {registro.pais}: dice que
+            todavía no relevamos el registro ni el censo de ese país.
           </p>
         )}
 
@@ -771,6 +781,101 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
               por declarar que tienen carnet indígena, y que ningún cuadro abre por departamento.
               Los nombres van como los escribe el cuadro: los archivos que publica el INE no traen
               tildes, aunque su propia publicación escriba Nivaclé, Angaité, Guaraní y Tavyterã.
+            </p>
+          </div>
+        </>}
+
+        {/* Perú. Cuarto país, y el primero que contesta con una sola escala: el
+            INEI no baja del departamento. Lo que se gana en lugar del detalle
+            territorial es la lengua materna, que sí viene abierta y que no se
+            presenta como si fuera la lista de pueblos. */}
+        {censoPe.estado === 'departamento_desconocido' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El predio está en el Perú y el geocodificador devolvió
+            «{censoPe.departamento}», que no es ninguno de los 25 departamentos que conocemos.
+            Preferimos no contestar antes que contestar de más. No significa que no haya pueblos
+            originarios.
+          </p>
+        )}
+
+        {censoPe.estado === 'con_censo' && lenguasPe && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            Población indígena u originaria · Censo 2017 · Perú
+          </p>
+
+          <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+            <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+              {censoPe.departamento.departamento}
+            </p>
+            <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+              {censoPe.departamento.indigena.toLocaleString('es-AR')} personas se declararon
+              indígenas u originarias, sobre{' '}
+              {censoPe.departamento.censada12.toLocaleString('es-AR')} censadas{' '}
+              <strong className="text-ink-700">de 12 y más años</strong>: el{' '}
+              {porcentaje(censoPe.departamento.indigena, censoPe.departamento.censada12)}%.
+            </p>
+            <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+              De los Andes {censoPe.departamento.andes.toLocaleString('es-AR')} · de la
+              Amazonía {censoPe.departamento.amazonia.toLocaleString('es-AR')}. El INEI las publica
+              separadas y acá van igual: el total no es una fila de ningún cuadro, es esta suma.
+            </p>
+          </div>
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">La edad del universo no es un detalle.</strong> La
+            pregunta por la autoidentificación se le hizo sólo a las personas de 12 y más años, así
+            que el porcentaje es sobre ellas. Dividir por la población total del departamento daría
+            un número más chico que no mide lo mismo.
+          </p>
+
+          {lenguasPe.originarias.length > 0 && <>
+            <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+              Lengua materna de esa población
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {lenguasPe.originarias.map(l => (
+                <span key={l.lengua} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                  {l.lengua} <span className="text-water-700/60">· {l.personas.toLocaleString('es-AR')}</span>
+                </span>
+              ))}
+              {lenguasPe.castellano > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-bone-200 text-ink-700/70 border border-bone-300">
+                  Castellano <span className="text-ink-700/45">· {lenguasPe.castellano.toLocaleString('es-AR')}</span>
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-1.5">
+              <strong className="text-ink-700/70">La lengua materna no es el pueblo.</strong> Es la
+              que aprendió en la niñez, y en todo el país {CENSO_PE_PAIS.castellanoAndes.toLocaleString('es-AR')} de
+              los {CENSO_PE_PAIS.andes.toLocaleString('es-AR')} indígenas de los Andes declaran
+              castellano. Está acá porque el censo no publica un conteo comparable para cada uno de
+              los 55 pueblos que reconoce el Ministerio de Cultura, y esto es lo más cerca que
+              llega. Las barras —Awajún/Aguaruna, Shipibo/Konibo— son dos nombres de una lengua, no
+              dos lenguas.
+            </p>
+          </>}
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">Esta respuesta es departamental y no baja.</strong>{' '}
+            Los anexos del INEI abren por edad, por sexo y por área urbana o rural, pero no por
+            provincia ni por distrito. Y la otra fuente —la {REGISTRO_PE_FALTANTE.organismo}, que
+            es el equivalente del registro argentino— no está acá: {REGISTRO_PE_FALTANTE.motivo}.
+            Así que esta sección no dice qué comunidades hay al lado del predio ni si están
+            tituladas.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_CENSO_2017_PE.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2017_PE.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              Momento censal del 22 de octubre de 2017 · {FUENTE_CENSO_2017_PE.licencia}. En todo
+              el país son {CENSO_PE_PAIS.indigena.toLocaleString('es-AR')} personas —el{' '}
+              {PORCENTAJE_PAIS_PE}% de {CENSO_PE_PAIS.censada12.toLocaleString('es-AR')} censadas de
+              12 y más años—. Los números son los de la publicación final, que recodifica las
+              respuestas: dan 5.179.774 quechuas donde los primeros perfiles difundidos daban
+              5.176.809.
             </p>
           </div>
         </>}
