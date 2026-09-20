@@ -13,12 +13,16 @@ import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
 import {
-  registroDelPunto, censoDelPunto, censoChilenoDelPunto, porcentaje, pueblosDestacados,
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
+  porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
+  localidadesDestacadas,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
+  FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
+import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 
 interface Props {
   datos: InformeData;
@@ -52,6 +56,16 @@ export function InformeView({ datos, compartido = false }: Props) {
   const censoCl = censoChilenoDelPunto(datos.entorno?.admin ?? null);
   const censoClLista = censoCl.estado === 'con_censo'
     ? pueblosDestacados(censoCl.region.pueblos, 8)
+    : null;
+  // Paraguay tiene el censo del INE y no el registro del INDI, que existe por
+  // ley y no está publicado. Y su censo indígena es un operativo aparte del
+  // nacional, así que el informe habla de personas y no de porcentajes.
+  const censoPy = censoParaguayoDelPunto(datos.entorno?.admin ?? null);
+  const censoPyLista = censoPy.estado === 'con_censo'
+    ? pueblosDestacados(pueblosDelDepartamentoPy(censoPy.departamento), 8)
+    : null;
+  const censoPyLocalidades = censoPy.estado === 'con_censo' && censoPy.distrito
+    ? localidadesDestacadas(censoPy.distrito, 5)
     : null;
 
   // Numeración dinámica de secciones según las presentes
@@ -525,6 +539,78 @@ export function InformeView({ datos, compartido = false }: Props) {
                 la pregunta, y ese denominador no está publicado por comuna. El censo cuenta
                 personas donde viven, no territorio. La segunda fuente —el{' '}
                 {REGISTRO_CL_FALTANTE.organismo}— no está incluida: {REGISTRO_CL_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Paraguay. También con una sola fuente, y con un censo que es
+                  un operativo aparte del nacional: el informe dice las personas
+                  y no inventa un porcentaje que mezclaría dos relevamientos. */}
+              {censoPy.estado === 'sin_comunidades' && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena (IV Censo Indígena 2022, Paraguay)</p>
+              <p className="text-sm text-ink-700/80">
+                El operativo del IV Censo Indígena 2022 no relevó comunidades
+                en {censoPy.departamento}: salió a censar catorce de los diecisiete departamentos
+                del país, más Asunción. Eso dice adónde fue el operativo, no que no haya gente. Las{' '}
+                {CENSO_PY_PAIS.porCarnet.toLocaleString('es-AR')} personas que el Censo Nacional
+                contó aparte, por declarar que tienen carnet indígena, no están abiertas por
+                departamento en ningún cuadro.
+              </p>
+              </>}
+
+              {censoPy.estado === 'con_censo' && censoPyLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena (IV Censo Indígena 2022, Paraguay)</p>
+              {censoPy.distrito && censoPyLocalidades ? (
+                <>
+                  <p className="text-sm text-ink-700/80">
+                    En el distrito de {censoPy.distrito.distrito}, {censoPy.departamento.departamento}:{' '}
+                    {censoPy.distrito.censadas.toLocaleString('es-AR')} personas censadas
+                    en {censoPy.distrito.localidades.length === 1
+                      ? 'una comunidad, aldea, barrio o núcleo de familias'
+                      : `${censoPy.distrito.localidades.length} comunidades, aldeas, barrios o núcleos de familias`}.
+                  </p>
+                  <p className="text-sm text-ink-700/80 mt-1">
+                    {censoPyLocalidades.visibles.map(l => {
+                      const { pueblos } = pueblosDeLocalidadPy(l);
+                      return `${l.nombre} (${l.censadas.toLocaleString('es-AR')} personas: ${pueblos.join(', ')})`;
+                    }).join('; ')}
+                    {censoPyLocalidades.resto.localidades > 0
+                      && `; y ${censoPyLocalidades.resto.localidades} más, con ${censoPyLocalidades.resto.personas.toLocaleString('es-AR')} personas entre todas`}.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  El distrito exacto no se pudo determinar, así que la respuesta es departamental.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En todo {censoPy.departamento.departamento}:{' '}
+                {censoPy.departamento.indigena.toLocaleString('es-AR')} personas indígenas
+                en {censoPy.departamento.distritos.length} distritos.
+                {censoPy.departamento.noIndigena > 0 && (
+                  <> Otras {censoPy.departamento.noIndigena.toLocaleString('es-AR')} personas viven
+                  en esas mismas comunidades y el censo las cuenta como no indígenas.</>
+                )}
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población censada:{' '}
+                {censoPyLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}
+                {censoPyLista.resto.pueblos > 0 && `, y ${censoPyLista.resto.pueblos} pueblos más`}. Los
+                nombres con barra son un pueblo y no dos: el INE conserva las dos formas porque el
+                pueblo se cambió el nombre y no quiere perder la comparación con los censos
+                anteriores.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022_PY.label} · {FUENTE_CENSO_2022_PY.licencia}. Relevado
+                desde el 9 de noviembre de 2022, durante quince días. No se publica porcentaje por
+                departamento a propósito: este censo es un operativo aparte del censo nacional, así
+                que el único denominador disponible mediría otra cosa que el numerador. El total
+                oficial del país es {CENSO_PY_PAIS.total.toLocaleString('es-AR')} personas
+                —el {PORCENTAJE_PAIS_PY}% de {CENSO_PY_PAIS.poblacionPais.toLocaleString('es-AR')}—,
+                que suma {CENSO_PY_PAIS.operativo.toLocaleString('es-AR')} del operativo indígena
+                y {CENSO_PY_PAIS.porCarnet.toLocaleString('es-AR')} captadas por el Censo Nacional
+                por tenencia de carnet, que ningún cuadro abre por departamento. El censo cuenta
+                personas donde viven, no territorio. La segunda fuente —el{' '}
+                {REGISTRO_PY_FALTANTE.organismo}— no está incluida: {REGISTRO_PY_FALTANTE.motivo}.
               </p>
               </>}
               {bioma && bioma.saberes.length > 0 && <>

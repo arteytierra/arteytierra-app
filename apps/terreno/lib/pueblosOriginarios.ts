@@ -2,16 +2,28 @@ import type { Ubicacion } from './entorno';
 import { REGISTRO_AR } from './pueblosOriginariosAr';
 import { CENSO_AR } from './censoIndigena2022Ar';
 import { CENSO_CL, CENSO_CL_PAIS, type CensoClComuna, type CensoClRegion } from './censoIndigena2024Cl';
+import {
+  CENSO_PY, CENSO_PY_PAIS, PUEBLOS_PY,
+  type CensoPyDepartamento, type CensoPyDistrito, type CensoPyLocalidad, type CensoPyPueblo,
+} from './censoIndigena2022Py';
 
 /**
- * Pueblos originarios en el territorio del predio. Argentina y Chile.
+ * Pueblos originarios en el territorio del predio. Argentina, Chile y Paraguay.
  *
  * Cada país entra con las fuentes que tiene y con una licencia que las
- * permita, y no con un promedio de las dos. La Argentina tiene registro y
- * censo; Chile tiene el censo, y el registro de CONADI queda afuera porque su
- * única copia abierta no declara licencia de reutilización. Lo que no está se
- * dice en la pantalla: el relevamiento país por país vive en
- * `_research/pueblos-originarios-paises/`. El bloque chileno está más abajo.
+ * permita, y no con un promedio de las tres. La Argentina tiene registro y
+ * censo. Chile tiene el censo, y el registro de CONADI queda afuera porque su
+ * única copia abierta no declara licencia de reutilización. Paraguay tiene el
+ * censo, y el registro del INDI queda afuera porque directamente no está
+ * publicado. Lo que no está se dice en la pantalla: el relevamiento país por
+ * país vive en `_research/pueblos-originarios-paises/`. Los bloques chileno y
+ * paraguayo están más abajo.
+ *
+ * **Los tres no se suman ni se comparan entre sí.** Cada censo tiene su
+ * pregunta, su universo y su lista de pueblos —abierta en la Argentina, cerrada
+ * en Chile, cerrada y en un operativo aparte en Paraguay—, así que los
+ * porcentajes de un país no se leen contra los del otro. Cada bloque explica el
+ * suyo.
  *
  * ── Dos fuentes que no dicen lo mismo, y está bien ──────────────────────────
  *
@@ -562,3 +574,231 @@ export function censoChilenoDelPunto(u: Ubicacion | null): CensoClDelPunto {
 
 /** El porcentaje del país con el mismo denominador que usa la app. */
 export const PORCENTAJE_PAIS_CL = porcentaje(CENSO_CL_PAIS.indigena, CENSO_CL_PAIS.poblacion);
+
+// ── Paraguay: el censo indígena, que es un operativo aparte ────────────────
+
+/**
+ * Paraguay es el tercer país y el primero donde el censo indígena **no vive
+ * adentro del censo nacional**.
+ *
+ * En la Argentina y en Chile la pregunta por la pertenencia viaja en el
+ * cuestionario que se le hace a todo el mundo, así que el numerador y el
+ * denominador salen del mismo operativo y el porcentaje se puede calcular a
+ * cualquier escala. Acá no: el INE monta un **IV Censo Nacional de Población y
+ * Viviendas para Pueblos Indígenas**, que sale a censar comunidades, aldeas,
+ * barrios, núcleos de familias e individualidades, con cuestionario propio,
+ * censistas indígenas y capacitación en doce lenguas indígenas. Empezó el 9 de
+ * noviembre de 2022 y duró quince días.
+ *
+ * Eso tiene tres consecuencias que se ven en la pantalla:
+ *
+ *   1. **No hay porcentaje por departamento.** El numerador es de un operativo
+ *      y el único denominador disponible es del otro, con otro universo.
+ *      Dividirlos daría un número creíble que no significa lo que parece —la
+ *      falla que describe `lib/README.md`—, así que acá se muestran personas y
+ *      no proporciones. El país sí lleva porcentaje, porque el INE publica las
+ *      dos puntas: 140.049 de 6.109.903.
+ *
+ *   2. **El total oficial y el de las tablas no son el mismo número.** Las
+ *      tablas por departamento suman 137.547, que es lo que levantó el operativo
+ *      indígena; las 2.502 personas que el Censo Nacional captó aparte, por
+ *      declarar que tienen carnet indígena, no están abiertas por departamento
+ *      en ningún cuadro. La resta se dice, no se esconde.
+ *
+ *   3. **Abajo del departamento no se puede separar quién es indígena.** El
+ *      operativo censó comunidades enteras, y adentro vive gente que el censo
+ *      rotula «No indigena» —1.245 personas en todo el país—. El cuadro por
+ *      departamento las separa; el cuadro por localidad publica una sola
+ *      población. Por eso los distritos y las localidades hablan de «personas
+ *      censadas» y los departamentos de «personas indígenas».
+ *
+ * ── La segunda fuente tampoco está, y por otro motivo que en Chile ─────────
+ *
+ * El equivalente del INAI es el registro del **INDI**, creado por la Ley 904/81
+ * y el Decreto 8545/2006, que inscribe liderazgos reconocidos, personerías
+ * jurídicas de comunidades, títulos de inmuebles con plano georreferenciado y
+ * organizaciones indígenas e indigenistas. La norma existe y dice qué tiene que
+ * contener. La base no está publicada: no hay tabla, consulta ni descarga, ni en
+ * el INDI ni en Datos.gov.py. En Chile la copia existe y le falta licencia; acá
+ * directamente no hay copia.
+ *
+ * El Cuadro C1 del censo **no lo reemplaza**: le pregunta a cada comunidad si
+ * tiene personería jurídica y 494 de 557 contestan que sí, pero eso es una
+ * declaración censal, no un padrón de inscripciones vigentes.
+ *
+ * ── Los dos nombres con barra ──────────────────────────────────────────────
+ *
+ * «Guarani Occidental / Pueblo Guarani» y «Toba Maskoy / Toba Enenlhet» son un
+ * pueblo cada uno. La barra no es una lista: es el registro de que un pueblo se
+ * cambió el nombre y el INE conserva las dos formas para no perder
+ * comparabilidad con los censos anteriores. Las comunidades de Casanillo y
+ * Pesempo-o se autodenominaron Toba Enenlhet en este censo; la Organización
+ * Pueblo Guaraní acordó en un congreso de julio de 2022 llamarse Pueblo Guaraní
+ * en todas sus comunidades. El INE lo resuelve diciendo que «el censo es por
+ * declaración» y conservando las dos. Partir esas barras inventa cuatro pueblos
+ * y borra dos decisiones.
+ *
+ * ── Las tildes que faltan ──────────────────────────────────────────────────
+ *
+ * Los cuatro CSV del INE son ASCII puro. Su propia publicación escribe Nivaclé,
+ * Angaité, Guaraní y Tavyterã; el archivo que se puede bajar, no. Los nombres
+ * quedan como los escribe el cuadro y la pantalla lo aclara, porque reponer las
+ * tildes de los que pudimos leer y no las del resto haría creer que el INE
+ * escribe unos con tilde y otros sin.
+ */
+
+/**
+ * Qué dice el censo paraguayo del punto. Las mismas tres formas de no saber que
+ * en los otros dos países, y una de saber con dos niveles: el distrito si se
+ * pudo fijar, el departamento siempre.
+ */
+export type CensoPyDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_paraguay'; pais: string }
+  | { estado: 'departamento_desconocido'; departamento: string }
+  /**
+   * Departamento paraguayo reconocido donde el operativo no censó comunidades.
+   * Son tres —Cordillera, Misiones y Ñeembucú— y tienen su propia frase: decir
+   * que no reconocemos el rótulo sería falso, y dejar el vacío sería peor.
+   */
+  | { estado: 'sin_comunidades'; departamento: string }
+  | {
+      estado: 'con_censo';
+      departamento: CensoPyDepartamento;
+      /** `null` si el geocodificador no dio un distrito reconocible. */
+      distrito: CensoPyDistrito | null;
+    };
+
+export const FUENTE_CENSO_2022_PY = {
+  label: 'INE Paraguay — IV Censo Nacional de Población y Viviendas para Pueblos Indígenas 2022',
+  url: 'https://www.datos.gov.py/dataset/iv-censo-nacional-ind%C3%ADgena-2022-resultados-finales-de-poblaci%C3%B3n-y-viviendas',
+  licencia: 'Licencia de Uso de la Información Pública del Gobierno Paraguayo (Decreto 4064/2015)',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_PY_FALTANTE = {
+  organismo: 'INDI — Registro Nacional de Comunidades Indígenas',
+  motivo: 'la ley y el decreto que lo crean están publicados, pero la base no: no hay tabla, consulta ni descarga',
+} as const;
+
+/** El rótulo con que el censo cuenta a quienes viven en la comunidad sin ser indígenas. */
+export const NO_INDIGENA_PY = 'No indigena';
+
+/**
+ * Nominatim devuelve el país bilingüe: «Paraguay / Paraguái». Se parte por la
+ * barra y alcanza con que una de las dos mitades sea el país, así que si mañana
+ * cambia el orden o desaparece una, sigue casando.
+ */
+function esParaguay(pais: string): boolean {
+  const NOMBRES = new Set(['paraguay', 'paraguai', 'republica del paraguay']);
+  return pais.split('/').some(parte => NOMBRES.has(normalizarNombreAdmin(parte)));
+}
+
+const DEPARTAMENTOS_PY = CENSO_PY.map(d => d.departamento);
+
+/**
+ * Los tres departamentos donde el operativo no salió a censar comunidades.
+ *
+ * Paraguay tiene diecisiete departamentos más Asunción, y el censo indígena
+ * cubrió catorce y la capital. Sin esta lista, un predio en Pilar leería que no
+ * reconocemos «Ñeembucú», que es falso: lo reconocemos perfecto, y lo que hay
+ * que decir es que el operativo no fue para allá. Es la misma distinción que
+ * hace la capa argentina entre `jurisdiccion_desconocida` y `sin_comunidades`.
+ */
+const SIN_COMUNIDADES_PY = ['Cordillera', 'Misiones', 'Ñeembucú'];
+
+/**
+ * En qué departamento paraguayo cae el punto, y en qué distrito.
+ *
+ * Función pura, como las otras dos. Lo propio de Paraguay está en de dónde sale
+ * cada nivel:
+ *
+ * **El departamento** viene en `state`, salvo en Asunción. Asunción no es un
+ * departamento sino el Distrito Capital, y OSM la modela como ciudad: devuelve
+ * `city: "Asunción"` y ningún `state`. Como el censo la cuenta entre las quince
+ * jurisdicciones, hay una rama que la busca por nombre de localidad —y sólo a
+ * ella, para que ningún distrito homónimo se haga pasar por departamento—.
+ *
+ * **El distrito** viene en `city`/`town`, que es donde `/api/entorno` pone la
+ * localidad; Paraguay no usa `county`, así que el campo `departamento` de la
+ * ubicación llega vacío y no se mira. Si el distrito no casa se contesta el
+ * departamento: un distrito equivocado es peor que un departamento cierto.
+ */
+export function censoParaguayoDelPunto(u: Ubicacion | null): CensoPyDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!esParaguay(u.pais)) return { estado: 'fuera_de_paraguay', pais: u.pais };
+
+  const rotulo = u.provincia ? casarNombre(u.provincia, DEPARTAMENTOS_PY, x => x) : null;
+  let departamento = rotulo ? CENSO_PY.find(d => d.departamento === rotulo) ?? null : null;
+
+  if (!departamento && !u.provincia) {
+    // Sólo Asunción. Ver el comentario de arriba.
+    const capital = [u.localidad, u.comuna].some(n => n && casarNombre(n, ['Asuncion'], x => x));
+    if (capital) departamento = CENSO_PY.find(d => d.departamento === 'Asuncion') ?? null;
+  }
+
+  if (!departamento) {
+    const dicho = u.provincia ?? u.localidad;
+    if (!dicho) return { estado: 'sin_ubicacion' };
+    const vacio = casarNombre(dicho, SIN_COMUNIDADES_PY, x => x);
+    return vacio
+      ? { estado: 'sin_comunidades', departamento: vacio }
+      : { estado: 'departamento_desconocido', departamento: dicho };
+  }
+
+  let distrito: CensoPyDistrito | null = null;
+  for (const candidato of [u.localidad, u.comuna]) {
+    if (!candidato) continue;
+    distrito = casarNombre(candidato, departamento.distritos, d => d.distrito);
+    if (distrito) break;
+  }
+
+  return { estado: 'con_censo', departamento, distrito };
+}
+
+/**
+ * Los pueblos del departamento, aplanados de sus familias y ordenados de mayor
+ * a menor. El cuadro los publica agrupados por familia lingüística, que sirve
+ * para leer la composición pero no para contestar «quiénes viven acá».
+ */
+export function pueblosDelDepartamentoPy(d: CensoPyDepartamento): CensoPyPueblo[] {
+  return d.familias.flatMap(f => f.pueblos).sort((a, b) => b.personas - a.personas);
+}
+
+/**
+ * Los pueblos de una localidad, con sus nombres en vez de sus índices.
+ *
+ * «No indigena» sale de la lista y vuelve como bandera: es un rótulo del censo
+ * sobre quién más vive en la comunidad, no un pueblo, y mezclarlo entre los
+ * otros lo haría leer como uno.
+ */
+export function pueblosDeLocalidadPy(l: CensoPyLocalidad): { pueblos: string[]; conNoIndigenas: boolean } {
+  const rotulos = l.pueblos.map(i => PUEBLOS_PY[i] ?? '').filter(Boolean);
+  return {
+    pueblos: rotulos.filter(p => p !== NO_INDIGENA_PY),
+    conNoIndigenas: rotulos.includes(NO_INDIGENA_PY),
+  };
+}
+
+/**
+ * Las localidades del distrito, de mayor a menor, con una cola resumida.
+ *
+ * Mismo criterio que `pueblosDestacados`: el distrito de Mariscal Estigarribia
+ * tiene decenas de localidades y una lista entera tapa a las tres donde vive
+ * casi toda la gente. Lo que queda afuera se cuenta, no se esconde.
+ */
+export function localidadesDestacadas(d: CensoPyDistrito, cuantas = 6): {
+  visibles: CensoPyLocalidad[];
+  resto: { localidades: number; personas: number };
+} {
+  const ordenadas = [...d.localidades].sort((a, b) => b.censadas - a.censadas);
+  const visibles = ordenadas.slice(0, cuantas);
+  const cola = ordenadas.slice(cuantas);
+  return {
+    visibles,
+    resto: { localidades: cola.length, personas: cola.reduce((s, l) => s + l.censadas, 0) },
+  };
+}
+
+/** El porcentaje del país, el único que se puede calcular con las dos puntas publicadas. */
+export const PORCENTAJE_PAIS_PY = porcentaje(CENSO_PY_PAIS.total, CENSO_PY_PAIS.poblacionPais);

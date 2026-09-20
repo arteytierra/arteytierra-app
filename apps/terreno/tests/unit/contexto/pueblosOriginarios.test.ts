@@ -3,14 +3,17 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import {
-  registroDelPunto, censoDelPunto, censoChilenoDelPunto, provinciaChilena,
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
+  provinciaChilena, pueblosDeLocalidadPy,
   casarNombre, normalizarNombreAdmin, porcentaje, pueblosDestacados,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
+  FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
 } from '@/lib/pueblosOriginarios';
 import { REGISTRO_AR } from '@/lib/pueblosOriginariosAr';
 import { CENSO_AR, CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL, CENSO_CL_PAIS, CENSO_CL_PUEBLOS } from '@/lib/censoIndigena2024Cl';
+import { CENSO_PY, CENSO_PY_PAIS, CENSO_PY_PUEBLOS, PUEBLOS_PY } from '@/lib/censoIndigena2022Py';
 import type { Ubicacion } from '@/lib/entorno';
 
 /*
@@ -866,5 +869,375 @@ describe('las dos fuentes de Chile, y la que falta', () => {
     // Y es opcional porque los payloads cacheados de antes no lo traen: el
     // resolvedor tiene que poder contestar sin él.
     expect(leer('lib/entorno.ts')).toContain('comuna?:');
+  });
+});
+
+/*
+ * Paraguay. La misma pregunta, el tercer país, y la primera vez que el censo
+ * indígena no vive adentro del censo nacional.
+ *
+ * Lo que defiende este bloque, además de que los números cierren:
+ *
+ * 1. **Que los dos pueblos con barra en el nombre no se partan.** «Guarani
+ *    Occidental / Pueblo Guarani» y «Toba Maskoy / Toba Enenlhet» son un pueblo
+ *    cada uno, y la columna del cuadro A3 separa pueblos justamente con barras.
+ *    Partirlas inventa cuatro pueblos y borra dos decisiones de autodenominación
+ *    que el INE documentó a propósito.
+ * 2. **Que no aparezca ningún porcentaje por departamento.** El numerador sale
+ *    del operativo indígena y el denominador saldría del Censo Nacional: dos
+ *    relevamientos, dos universos. El cociente sería creíble y no significaría
+ *    lo que parece.
+ * 3. **Que Asunción resuelva.** Es la única jurisdicción sin `state` en
+ *    Nominatim —es el Distrito Capital— y sin su rama no contestaría nunca.
+ * 4. **Que los tres departamentos donde el operativo no fue tengan su frase.**
+ *    Ñeembucú existe y lo reconocemos: lo que falta es el operativo, no el
+ *    departamento, y una cosa no se dice con las palabras de la otra.
+ *
+ * Los casos de ubicación salen de consultar Nominatim de verdad, punto por
+ * punto, igual que los chilenos.
+ */
+
+const ubicPy = (u: Partial<Ubicacion>): Ubicacion => ({
+  localidad: null, departamento: null, provincia: null, pais: 'Paraguay / Paraguái',
+  comuna: null, ...u,
+});
+
+describe('la tabla del IV Censo Indígena 2022 de Paraguay', () => {
+  it('tiene las 15 jurisdicciones, los 118 distritos y las 834 localidades', () => {
+    expect(CENSO_PY).toHaveLength(15);
+    expect(CENSO_PY.flatMap(d => d.distritos)).toHaveLength(118);
+    const localidades = CENSO_PY.flatMap(d => d.distritos.flatMap(x => x.localidades));
+    expect(localidades).toHaveLength(834);
+    expect(CENSO_PY_PAIS.localidades).toBe(834);
+  });
+
+  it('el A2 y el A3 cierran entre sí, departamento por departamento', () => {
+    // Son dos cuadros distintos del mismo operativo: el A2 abre por pueblo y el
+    // A3 por localidad. Si no coinciden, una de las dos agregaciones se rompió
+    // y nadie lo notaría mirando la pantalla.
+    for (const d of CENSO_PY) {
+      const porDistrito = d.distritos.reduce((n, x) => n + x.censadas, 0);
+      expect(porDistrito, d.departamento).toBe(d.indigena + d.noIndigena);
+
+      const porLocalidad = d.distritos.reduce(
+        (n, x) => n + x.localidades.reduce((m, l) => m + l.censadas, 0), 0);
+      expect(porLocalidad, d.departamento).toBe(porDistrito);
+
+      const porFamilia = d.familias.reduce((n, f) => n + f.personas, 0);
+      expect(porFamilia, d.departamento).toBe(d.indigena);
+      for (const f of d.familias) {
+        expect(f.pueblos.reduce((n, p) => n + p.personas, 0), `${d.departamento}/${f.familia}`)
+          .toBe(f.personas);
+      }
+    }
+  });
+
+  it('el país cierra, y el total oficial no es el de estas tablas', () => {
+    const indigena = CENSO_PY.reduce((n, d) => n + d.indigena, 0);
+    const noIndigena = CENSO_PY.reduce((n, d) => n + d.noIndigena, 0);
+    expect(indigena).toBe(CENSO_PY_PAIS.indigena);
+    expect(noIndigena).toBe(CENSO_PY_PAIS.noIndigena);
+    expect(noIndigena).toBe(1_245);
+    // Lo que levantó el operativo indígena.
+    expect(indigena + noIndigena).toBe(CENSO_PY_PAIS.operativo);
+    expect(CENSO_PY_PAIS.operativo).toBe(137_547);
+    // Y el total que publica el INE, que le agrega los captados por carnet.
+    expect(CENSO_PY_PAIS.operativo + CENSO_PY_PAIS.porCarnet).toBe(CENSO_PY_PAIS.total);
+    expect(CENSO_PY_PAIS.total).toBe(140_049);
+    expect(CENSO_PY_PAIS.porCarnet).toBe(2_502);
+  });
+
+  it('el país por pueblo suma lo mismo que el país por departamento', () => {
+    expect(CENSO_PY_PUEBLOS).toHaveLength(19);
+    expect(CENSO_PY_PUEBLOS.reduce((n, p) => n + p.personas, 0)).toBe(CENSO_PY_PAIS.indigena);
+    // Los cuatro que publica el propio INE en su informe de resultados.
+    const de = (p: string) => CENSO_PY_PUEBLOS.find(x => x.pueblo === p)!.personas;
+    expect(de('Mbya Guarani')).toBe(28_278);
+    expect(de('Nivacle')).toBe(18_280);
+    expect(de('Enlhet Norte')).toBe(9_874);
+    expect(de('Guana')).toBe(556);
+  });
+
+  it('los dos pueblos con barra en el nombre son uno cada uno, y no cuatro', () => {
+    // Es la trampa del cuadro A3: la columna separa pueblos con barras, y estos
+    // dos rótulos traen una adentro. Si el armador la partiera, acá habría 21
+    // pueblos y aparecerían «Pueblo Guarani» y «Toba Enenlhet» sueltos.
+    expect(PUEBLOS_PY).toContain('Guarani Occidental / Pueblo Guarani');
+    expect(PUEBLOS_PY).toContain('Toba Maskoy / Toba Enenlhet');
+    expect(PUEBLOS_PY).not.toContain('Pueblo Guarani');
+    expect(PUEBLOS_PY).not.toContain('Toba Enenlhet');
+    expect(PUEBLOS_PY).not.toContain('Guarani Occidental');
+    expect(PUEBLOS_PY).not.toContain('Toba Maskoy');
+    // 19 pueblos más el rótulo de quienes no son indígenas y viven ahí.
+    expect(PUEBLOS_PY).toHaveLength(20);
+    expect(PUEBLOS_PY[PUEBLOS_PY.length - 1]).toBe('No indigena');
+    expect(CENSO_PY_PAIS.pueblos).toBe(19);
+  });
+
+  it('las localidades sólo apuntan a pueblos que existen en la lista', () => {
+    for (const d of CENSO_PY) {
+      for (const x of d.distritos) {
+        for (const l of x.localidades) {
+          expect(l.pueblos.length, `${l.nombre} sin pueblos`).toBeGreaterThan(0);
+          for (const i of l.pueblos) {
+            expect(PUEBLOS_PY[i], `${l.nombre} apunta a ${i}`).toBeDefined();
+          }
+        }
+      }
+    }
+  });
+
+  it('«No indigena» no se cuela entre los pueblos de una localidad', () => {
+    // La localidad más poblada del país los tiene a los dos: pueblos de verdad
+    // y el rótulo. El rótulo sale de la lista y vuelve como bandera.
+    const ujelhavos = CENSO_PY
+      .flatMap(d => d.distritos.flatMap(x => x.localidades))
+      .find(l => l.censadas === 3_107)!;
+    const { pueblos, conNoIndigenas } = pueblosDeLocalidadPy(ujelhavos);
+    expect(conNoIndigenas).toBe(true);
+    expect(pueblos).not.toContain('No indigena');
+    expect(pueblos.length).toBe(ujelhavos.pueblos.length - 1);
+    expect(pueblos).toContain('Guarani Occidental / Pueblo Guarani');
+  });
+
+  it('los nombres no llevan tildes porque los archivos del INE tampoco', () => {
+    // Decisión, no descuido: los cuatro CSV son ASCII puro aunque la publicación
+    // escriba Nivaclé y Angaité. Se reponen el día que el INE publique una tabla
+    // con tildes, y hasta entonces la pantalla lo aclara.
+    const rotulos = PUEBLOS_PY.join(' ');
+    expect(rotulos.normalize('NFD')).toBe(rotulos);
+    expect(leer('components/ContextoPanel.tsx')).toMatch(/no traen\s*\n?\s*tildes/);
+  });
+
+  it('nadie tiene más gente indígena que censada', () => {
+    for (const d of CENSO_PY) {
+      expect(d.indigena, d.departamento).toBeLessThanOrEqual(d.indigena + d.noIndigena);
+      for (const x of d.distritos) {
+        expect(x.censadas, x.distrito).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('el Chaco concentra la población, al revés que en la Argentina y en Chile', () => {
+    // Presidente Hayes y Boquerón juntos son más del 40% del país, y son los dos
+    // departamentos menos poblados en términos generales. Acá la mayor cantidad
+    // no está donde vive más gente.
+    const hayes = CENSO_PY.find(d => d.departamento === 'Presidente Hayes')!;
+    const boqueron = CENSO_PY.find(d => d.departamento === 'Boqueron')!;
+    expect(hayes.indigena).toBe(29_592);
+    expect(boqueron.indigena).toBe(29_443);
+    expect((hayes.indigena + boqueron.indigena) / CENSO_PY_PAIS.indigena).toBeGreaterThan(0.4);
+  });
+
+  it('el porcentaje del país es el único que se calcula, y con las dos puntas publicadas', () => {
+    expect(PORCENTAJE_PAIS_PY).toBe('2,3');
+    expect(CENSO_PY_PAIS.poblacionPais).toBe(6_109_903);
+    expect(porcentaje(CENSO_PY_PAIS.total, CENSO_PY_PAIS.poblacionPais)).toBe(PORCENTAJE_PAIS_PY);
+  });
+});
+
+describe('el censo paraguayo del punto', () => {
+  it('resuelve el distrito cuando Nominatim lo da como localidad', () => {
+    // Horqueta: town=Horqueta, state=Concepción, y ningún county.
+    const r = censoParaguayoDelPunto(ubicPy({ localidad: 'Horqueta', provincia: 'Concepción' }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Concepcion');
+    expect(r.distrito?.distrito).toBe('Horqueta');
+    expect(r.distrito?.censadas).toBe(254);
+  });
+
+  it('Asunción resuelve aunque Nominatim no le dé departamento', () => {
+    // Es el Distrito Capital: OSM devuelve city=Asunción y ningún state. Sin la
+    // rama que la busca por localidad, la única jurisdicción urbana del censo
+    // no contestaría nunca.
+    const r = censoParaguayoDelPunto(ubicPy({ localidad: 'Asunción', provincia: null }));
+    expect(r.estado).toBe('con_censo');
+    if (r.estado !== 'con_censo') return;
+    expect(r.departamento.departamento).toBe('Asuncion');
+    expect(r.departamento.indigena).toBe(404);
+    expect(r.distrito?.censadas).toBe(420);
+    expect(r.distrito?.localidades).toHaveLength(2);
+  });
+
+  it('el suburb de una ciudad grande no tapa al distrito', () => {
+    // Ciudad del Este: suburb=Microcentro, city=Ciudad del Este. El distrito
+    // sale de `localidad` y el barrio no casa con nada, que es lo correcto.
+    const r = censoParaguayoDelPunto(ubicPy({
+      comuna: 'Microcentro', localidad: 'Ciudad del Este', provincia: 'Alto Paraná',
+    }));
+    if (r.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(r.departamento.departamento).toBe('Alto Parana');
+    expect(r.distrito?.distrito).toBe('Ciudad del Este');
+    expect(r.distrito?.censadas).toBe(412);
+  });
+
+  it('los quince departamentos resuelven con el rótulo que devuelve Nominatim', () => {
+    // Nominatim los escribe con tilde y el cuadro del INE sin ninguna.
+    const rotulos: Array<[string, string]> = [
+      ['Concepción', 'Concepcion'],
+      ['San Pedro', 'San Pedro'],
+      ['Guairá', 'Guaira'],
+      ['Caaguazú', 'Caaguazu'],
+      ['Caazapá', 'Caazapa'],
+      ['Itapúa', 'Itapua'],
+      ['Paraguarí', 'Paraguari'],
+      ['Alto Paraná', 'Alto Parana'],
+      ['Central', 'Central'],
+      ['Amambay', 'Amambay'],
+      ['Canindeyú', 'Canindeyu'],
+      ['Presidente Hayes', 'Presidente Hayes'],
+      ['Boquerón', 'Boqueron'],
+      ['Alto Paraguay', 'Alto Paraguay'],
+    ];
+    expect(rotulos).toHaveLength(14);
+    for (const [deNominatim, delIne] of rotulos) {
+      const r = censoParaguayoDelPunto(ubicPy({ provincia: deNominatim }));
+      expect(r.estado, deNominatim).toBe('con_censo');
+      if (r.estado === 'con_censo') expect(r.departamento.departamento, deNominatim).toBe(delIne);
+    }
+    // La quince es Asunción, que llega por otro campo.
+    const capital = censoParaguayoDelPunto(ubicPy({ localidad: 'Asunción' }));
+    expect(capital.estado).toBe('con_censo');
+  });
+
+  it('los tres departamentos sin operativo tienen su propia frase', () => {
+    // Pilar, San Juan Bautista y Caacupé: Nominatim devuelve el departamento
+    // perfectamente y el censo no tiene comunidades ahí. Decir «no reconocemos
+    // Ñeembucú» sería falso.
+    for (const nombre of ['Ñeembucú', 'Misiones', 'Cordillera']) {
+      const r = censoParaguayoDelPunto(ubicPy({ provincia: nombre, localidad: 'Pilar' }));
+      expect(r.estado, nombre).toBe('sin_comunidades');
+    }
+    // Un rótulo que de verdad no conocemos sí cae en la otra rama.
+    const raro = censoParaguayoDelPunto(ubicPy({ provincia: 'Departamento del Chaco Boreal' }));
+    expect(raro.estado).toBe('departamento_desconocido');
+  });
+
+  it('los 118 distritos resuelven y ninguno devuelve el número de otro', () => {
+    for (const d of CENSO_PY) {
+      for (const x of d.distritos) {
+        const r = censoParaguayoDelPunto(ubicPy({ localidad: x.distrito, provincia: d.departamento }));
+        expect(r.estado, x.distrito).toBe('con_censo');
+        if (r.estado !== 'con_censo') continue;
+        expect(r.departamento.departamento, x.distrito).toBe(d.departamento);
+        // Puede no casar —hay nombres con apóstrofo y abreviaturas—, y eso es
+        // aceptable: lo que no puede es casar con el distrito equivocado.
+        if (r.distrito) expect(r.distrito.distrito, x.distrito).toBe(x.distrito);
+      }
+    }
+  });
+
+  it('cae al departamento cuando el distrito no casa', () => {
+    const r = censoParaguayoDelPunto(ubicPy({
+      localidad: 'Un paraje que no es un distrito', provincia: 'Boquerón',
+    }));
+    if (r.estado !== 'con_censo') throw new Error('debería resolver');
+    expect(r.distrito).toBeNull();
+    expect(r.departamento.departamento).toBe('Boqueron');
+    expect(r.departamento.indigena).toBe(29_443);
+  });
+
+  it('el país bilingüe de Nominatim no lo deja afuera', () => {
+    // OSM devuelve «Paraguay / Paraguái». Con una comparación literal contra
+    // «Paraguay», toda la capa no habría disparado jamás y el síntoma habría
+    // sido una sección vacía, no un error.
+    for (const pais of ['Paraguay / Paraguái', 'Paraguay', 'Paraguái']) {
+      const r = censoParaguayoDelPunto(ubicPy({ pais, provincia: 'Boquerón' }));
+      expect(r.estado, pais).toBe('con_censo');
+    }
+  });
+
+  it('las tres maneras de no saber suenan igual que en los otros dos países', () => {
+    expect(censoParaguayoDelPunto(null).estado).toBe('sin_ubicacion');
+    expect(censoParaguayoDelPunto(ubicPy({ pais: null })).estado).toBe('sin_ubicacion');
+    expect(censoParaguayoDelPunto(ubicPy({ provincia: null })).estado).toBe('sin_ubicacion');
+    expect(censoParaguayoDelPunto(ubicPy({ pais: 'Argentina', provincia: 'Salta' })).estado)
+      .toBe('fuera_de_paraguay');
+  });
+
+  it('las tres capas no se pisan', () => {
+    const enBoqueron = ubicPy({ provincia: 'Boquerón', localidad: 'Filadelfia' });
+    expect(censoParaguayoDelPunto(enBoqueron).estado).toBe('con_censo');
+    expect(registroDelPunto(enBoqueron).estado).toBe('fuera_de_argentina');
+    expect(censoChilenoDelPunto(enBoqueron).estado).toBe('fuera_de_chile');
+
+    const enSalta = ubic({ provincia: 'Salta', departamento: 'Departamento Iruya' });
+    expect(censoParaguayoDelPunto(enSalta).estado).toBe('fuera_de_paraguay');
+
+    const enTemuco = ubicCl({ localidad: 'Temuco', provincia: 'Región de la Araucanía' });
+    expect(censoParaguayoDelPunto(enTemuco).estado).toBe('fuera_de_paraguay');
+  });
+});
+
+describe('las dos fuentes de Paraguay, y la que falta', () => {
+  const panel = leer('components/ContextoPanel.tsx');
+  const informe = leer('components/InformeView.tsx');
+
+  it('no publica ningún porcentaje por departamento, y dice por qué', () => {
+    // Es la decisión central de este país: el numerador sale del operativo
+    // indígena y el denominador saldría del Censo Nacional. El cociente sería
+    // creíble y no significaría lo que parece.
+    expect(panel).not.toMatch(/porcentaje\(censoPy/);
+    expect(informe).not.toMatch(/porcentaje\(censoPy/);
+    expect(panel).toMatch(/Acá no va ningún porcentaje/);
+    expect(informe).toMatch(/No se publica porcentaje por\s*\n?\s*departamento a propósito/);
+  });
+
+  it('dice por qué no está el registro del INDI, en vez de omitirlo', () => {
+    expect(REGISTRO_PY_FALTANTE.organismo).toContain('INDI');
+    expect(REGISTRO_PY_FALTANTE.motivo).toMatch(/no hay tabla, consulta ni descarga/);
+    expect(panel).toContain('REGISTRO_PY_FALTANTE.organismo');
+    expect(panel).toContain('REGISTRO_PY_FALTANTE.motivo');
+    expect(informe).toContain('REGISTRO_PY_FALTANTE.organismo');
+  });
+
+  it('el censo paraguayo viaja con su licencia, que permite uso comercial', () => {
+    expect(FUENTE_CENSO_2022_PY.licencia).toMatch(/Gobierno Paraguayo/);
+    expect(FUENTE_CENSO_2022_PY.licencia).toMatch(/4064\/2015/);
+    expect(leer('lib/censoIndigena2022Py.ts')).toMatch(/4064\/2015/);
+    expect(panel).toContain('FUENTE_CENSO_2022_PY.licencia');
+    expect(informe).toContain('FUENTE_CENSO_2022_PY.licencia');
+  });
+
+  it('las dos pantallas separan el total oficial del de las tablas', () => {
+    // 140.049 y 137.547 no son el mismo número y la diferencia tiene nombre.
+    for (const [archivo, texto] of [['panel', panel], ['informe', informe]] as const) {
+      expect(texto, archivo).toContain('CENSO_PY_PAIS.operativo');
+      expect(texto, archivo).toContain('CENSO_PY_PAIS.porCarnet');
+      expect(texto, archivo).toMatch(/carnet indígena/);
+    }
+  });
+
+  it('el panel nombra las comunidades del distrito, que es a lo que sirve el dato', () => {
+    expect(panel).toContain('Población indígena · IV Censo Indígena 2022 · Paraguay');
+    expect(panel).toContain('pueblosDeLocalidadPy');
+    expect(panel).toContain('censoPy.distrito.distrito');
+    expect(informe).toContain('IV Censo Indígena 2022, Paraguay');
+  });
+
+  it('explica que la barra en un nombre es un cambio de denominación', () => {
+    expect(panel).toMatch(/un pueblo, no\s*\n?\s*dos/);
+    expect(panel).toContain('Toba Enenlhet');
+    expect(panel).toContain('Pueblo Guaraní');
+    expect(informe).toMatch(/un pueblo y no dos/);
+  });
+
+  it('la rama de «fuera de todo» pregunta por los tres países', () => {
+    // Con dos, un punto paraguayo sin departamento resuelto leía a la vez que
+    // no relevamos su país y que su departamento no está entre los quince. Es
+    // la misma falla que ya había aparecido con Chile.
+    expect(panel).toContain("censoPy.estado === 'fuera_de_paraguay'");
+    expect(panel).toContain('las de Paraguay');
+
+    const raro = ubicPy({ provincia: 'Departamento del Chaco Boreal' });
+    expect(censoParaguayoDelPunto(raro).estado).toBe('departamento_desconocido');
+    expect(registroDelPunto(raro).estado).toBe('fuera_de_argentina');
+    expect(censoChilenoDelPunto(raro).estado).toBe('fuera_de_chile');
+  });
+
+  it('el vacío de los tres departamentos habla del operativo y no de la gente', () => {
+    expect(panel).toMatch(/Eso dice adónde fue el operativo, no que no haya/);
+    expect(informe).toMatch(/Eso dice adónde fue el operativo, no que no haya gente/);
   });
 });
