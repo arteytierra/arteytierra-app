@@ -33,12 +33,17 @@ Una carpeta `_research/pueblos-originarios-paises/` con:
 Primero los cuatro limítrofes que comparten pueblos con la lista argentina
 (mapuche, aymara, quechua, guaraní, wichí, qom):
 
-1. Chile 2. Bolivia 3. Paraguay 4. Perú
+1. ~~Chile~~ 2. ~~Bolivia~~ 3. ~~Paraguay~~ 4. ~~Perú~~ — los cuatro relevados.
 
-Después: 5. Brasil 6. Uruguay 7. Colombia 8. Ecuador 9. México.
+Sigue: 5. Brasil 6. Uruguay 7. Colombia 8. Ecuador 9. México.
 
 **Un país por vez, terminado y validado, antes de pasar al siguiente.** Cuatro
 países bien relevados valen más que nueve a medias.
+
+Montados en la app van tres: Chile, Paraguay y Perú, cada uno con el censo y sin
+el registro. **Bolivia está relevada y no montada**, y el motivo es la licencia:
+los términos del INE no otorgan una y condicionan el uso comercial, así que
+entra el día que haya autorización escrita.
 
 ## Esquema del JSON
 
@@ -179,6 +184,41 @@ Todos los campos van siempre. Lo que no se sabe va en `null` y el motivo en
     publicación.** Los cuatro CSV del INE paraguayo son ASCII puro y el PDF
     escribe Nivaclé y Angaité. No hay que reponerlas —la regla 3 manda—, pero
     sí avisar, porque la app tiene que decidir qué muestra y explicarlo.
+
+18. **Decí a quiénes se les hizo la pregunta.** En Perú la autoidentificación se
+    le preguntó sólo a las personas de **12 y más años**, así que el
+    denominador publicado es 23.196.391 y no la población del país. Un censo
+    puede recortar el universo por edad, por tipo de vivienda o por condición de
+    residencia, y el recorte no siempre está en el título del cuadro. Va en
+    `censo.universo`, con el número del denominador, y en `trampas` si dividir
+    por el total nacional da un porcentaje creíble y equivocado.
+
+19. **Decí si el denominador está en un solo cuadro o hay que sumarlo.** El INEI
+    publica un anexo por grupo —andino, amazónico, afroperuano—, cada uno contra
+    la misma columna residual, y ninguno trae las cuatro categorías juntas. Si
+    hay que sumarlas, decí **cuáles son, si son excluyentes y exhaustivas, y si
+    la suma cierra exactamente** contra el total publicado. Si no cierra, no es
+    un denominador: es una estimación y se dice así.
+
+20. **Decí cuál es la versión final de las cifras.** Perú difundió primero un
+    perfil con 5.176.809 quechuas y después publicó la recodificación final con
+    5.179.774. Si el organismo publicó más de una vez el mismo dato, decí cuál
+    hay que implementar y por qué, y poné las dos cifras en `trampas`. Una app
+    que mezcla versiones parece inconsistente consigo misma.
+
+21. **Fijate si el rótulo del territorio trae pegada la llamada al pie, y si el
+    número de la llamada cambia entre cuadros.** El INEI escribe «Provincia de
+    Lima 2/» en un cuadro y «Provincia de Lima 3/» en otro. Cotejar dos cuadros
+    por el rótulo crudo deja filas sin casar **en silencio**, que es la peor
+    forma de fallar. Va en `trampas`.
+
+22. **Acceso público no es permiso de reutilización.** La BDPI peruana se baja
+    entera —9.332 localidades, 4,8 MB— y no declara licencia en ninguna parte:
+    ni la página, ni el archivo, ni el manual, ni el geoportal. Eso es
+    `uso_comercial: "no_dice"`, igual que una base cerrada, y el motivo va en
+    `notas`. Y si el archivo **dice** que una fila está georreferenciada pero no
+    publica latitud ni longitud, `tiene_coordenadas` es `false`: el indicador
+    habla de lo que el organismo tiene, no de lo que entrega.
 
 ## Ejemplo terminado — Argentina
 
