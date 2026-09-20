@@ -372,6 +372,13 @@ Nada de esto es código todavía. Son consultas.
   reescribir historia publicada sin decirlo.
 - **`/mapa` e `/informe/*` son auth-gated** y no se pueden verificar en preview. La
   validación en producción la hace Jonatan.
+  Lo que hay para probar de la capa de pueblos originarios, país por país:
+  **Temuco o Putre** para Chile y un punto en **Ñuñoa** para confirmar que la comuna
+  resuelve a Ñuñoa y no a Santiago; **Salta, Jujuy y CABA** para la Argentina; y para
+  Paraguay **Filadelfia (Boquerón)** o **Yby Yau (Concepción)**, que traen comunidades
+  nombradas, **Asunción** —la única jurisdicción sin departamento en Nominatim— y
+  **Pilar (Ñeembucú)**, que tiene que decir que el operativo no fue para allá y no que
+  no conocemos el departamento.
 
 ---
 
