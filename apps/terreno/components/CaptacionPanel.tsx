@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Plus, Trash2, Droplets, Cloud } from 'lucide-react';
 import {
   calcularCaptacion,
+  coefDeSuperficie,
   nuevaSuperficieDefault,
   nuevaConsumoDefault,
   TIPOS_SUPERFICIE,
@@ -14,6 +15,7 @@ import {
   type TipoConsumo,
   type CaptacionSnapshot,
 } from '@/lib/captacion';
+import type { GrupoHidro } from '@/lib/cuenca';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
 import { EscurrimientoTabla } from './EscurrimientoTabla';
@@ -26,13 +28,21 @@ interface Props {
   onIrAClima:  () => void;
   /** Textura del suelo (% arcilla / % arena): sugiere la clase de la tabla 8.3. */
   texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
+  /**
+   * Grupo hidrológico del suelo del predio (A a D), de SoilGrids por
+   * Saxton-Rawls. Es lo que hace que las tres superficies de ladera dejen de
+   * usar un coeficiente plano: sobre suelo arenoso el plano sobreestimaba la
+   * captación hasta 3,9 veces. `null` mientras el análisis de suelo no llegó,
+   * y ahí el panel lo dice en vez de disimularlo.
+   */
+  grupoHidro?: GrupoHidro | null;
   onSnapshot?: (snap: CaptacionSnapshot | null) => void;
   /** Datos cargados antes: al cambiar de pestaña el panel se desmonta, así
    *  vuelve con lo que había en vez de reiniciarse a los valores por defecto. */
   snapshotInicial?: CaptacionSnapshot | null;
 }
 
-export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, onSnapshot, snapshotInicial }: Props) {
+export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, grupoHidro = null, onSnapshot, snapshotInicial }: Props) {
   const [superficies, setSuperficies] = useState<Superficie[]>(
     snapshotInicial?.superficies?.length ? snapshotInicial.superficies : [nuevaSuperficieDefault()]);
   const [consumos,    setConsumos]    = useState<ConsumoCategoria[]>(
@@ -56,11 +66,11 @@ export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, on
       if (s.id !== id) return s;
       const next = { ...s, ...campo };
       if (campo.tipo && campo.tipo !== 'personalizado') {
-        next.coef = TIPOS_SUPERFICIE[campo.tipo].coef;
+        next.coef = coefDeSuperficie(campo.tipo, grupoHidro).coef;
       }
       return next;
     }));
-  }, []);
+  }, [grupoHidro]);
 
   // ── Consumos ────────────────────────────────────────────────────────────────
   const agregarConsumo = useCallback((tipo: TipoConsumo) => {
@@ -168,6 +178,7 @@ export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, on
         </div>
         {superficies.map(s => (
           <SuperficieRow
+            grupoHidro={grupoHidro}
             key={s.id}
             superficie={s}
             onUpdate={campo => actualizarSuperficie(s.id, campo)}
@@ -392,15 +403,22 @@ function AgregarConsumoMenu({ onAgregar }: { onAgregar: (t: TipoConsumo) => void
 // ─── Fila de superficie ───────────────────────────────────────────────────────
 
 function SuperficieRow({
-  superficie, onUpdate, onDelete, soloUna,
+  superficie, onUpdate, onDelete, soloUna, grupoHidro,
 }: {
   superficie: Superficie;
   onUpdate: (campo: Partial<Superficie>) => void;
   onDelete: () => void;
   soloUna: boolean;
+  grupoHidro: GrupoHidro | null;
 }) {
   const inputCls =
     'w-full px-2 py-1.5 rounded-md border border-bone-200 bg-white text-ink-950 text-xs focus:outline-none focus:ring-2 focus:ring-moss-500/30 focus:border-moss-500 transition-colors';
+
+  // El coeficiente que le corresponde HOY a cada tipo, con el suelo de este
+  // predio. El del catálogo sólo vale para techos y pavimentos.
+  const resuelto = coefDeSuperficie(superficie.tipo, grupoHidro);
+  const editado = superficie.tipo !== 'personalizado'
+    && Math.abs(superficie.coef - resuelto.coef) > 0.001;
 
   return (
     <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
@@ -425,9 +443,13 @@ function SuperficieRow({
         onChange={e => onUpdate({ tipo: e.target.value as TipoSuperficie })}
         className={inputCls}
       >
+        {/* El C del rótulo es el que se va a aplicar, no el del catálogo: para
+            una ladera los dos son distintos apenas hay análisis de suelo. */}
         {(Object.entries(TIPOS_SUPERFICIE) as [TipoSuperficie, typeof TIPOS_SUPERFICIE[TipoSuperficie]][]).map(
           ([key, info]) => (
-            <option key={key} value={key}>{info.label} (C={info.coef})</option>
+            <option key={key} value={key}>
+              {info.label} (C={coefDeSuperficie(key, grupoHidro).coef})
+            </option>
           ),
         )}
       </select>
@@ -449,6 +471,22 @@ function SuperficieRow({
           />
         </div>
       </div>
+
+      {resuelto.origen === 'predio' && !editado && (
+        <p className="text-[10px] leading-relaxed text-moss-700">
+          C = {resuelto.coef} sale del suelo de este predio (grupo hidrológico{' '}
+          {grupoHidro}), no de una tabla general.
+        </p>
+      )}
+      {resuelto.aviso && !editado && (
+        <p className="text-[10px] leading-relaxed text-ink-700/60">{resuelto.aviso}</p>
+      )}
+      {editado && (
+        <p className="text-[10px] leading-relaxed text-ink-700/60">
+          Coeficiente puesto a mano. El que corresponde a{' '}
+          {TIPOS_SUPERFICIE[superficie.tipo].label.toLowerCase()} acá es {resuelto.coef}.
+        </p>
+      )}
     </div>
   );
 }

@@ -1,9 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import {
   calcularCaptacion,
+  coefDeSuperficie,
+  COBERTURA_SCS_DE_SUPERFICIE,
+  CONSUMO_REFS,
+  FUENTES_CONSUMO,
+  TIPOS_SUPERFICIE,
   type ConsumoCategoria,
   type Superficie,
+  type TipoSuperficie,
 } from '@/lib/captacion';
+import { coefEscorrentiaAnual, type GrupoHidro } from '@/lib/cuenca';
 import { nombresDeTemporada } from '@/lib/estaciones';
 
 /*
@@ -146,5 +153,191 @@ describe('el tanque cubre la seca aunque cruce el año', () => {
     // Con dos daría casi el doble, que sería una cifra sin sentido físico.
     expect(seco.tanque_recomendado_m3).toBeLessThan(seco.consumo_anual_m3 * 1.25);
     expect(seco.tanque_recomendado_m3).toBeGreaterThan(seco.consumo_anual_m3 * 0.8);
+  });
+});
+
+/*
+ * De dónde sale el coeficiente de escorrentía.
+ *
+ * Hasta el 23/09/2026 las tres superficies de suelo traían un número plano
+ * —0,25, 0,15 y 0,35— para cualquier predio del planeta, mientras la app ya
+ * derivaba el coeficiente real del grupo hidrológico de SoilGrids y la
+ * cobertura de WorldCover. Captación era la única herramienta de diseño que
+ * había quedado afuera de esa migración.
+ *
+ * Lo que hace daño de ese error no es que esté mal: es en qué dirección está
+ * mal. La tabla plana acierta sobre arcilla y sobreestima sobre arena, o sea
+ * que el tanque sale chico justo donde el suelo no guarda nada.
+ */
+describe('el coeficiente de escorrentía de cada superficie', () => {
+  const GRUPOS: GrupoHidro[] = ['A', 'B', 'C', 'D'];
+
+  it('un techo no le pregunta al suelo, porque WorldCover no ve un techo', () => {
+    // Aunque se pase la hidrología del predio, la chapa sigue siendo chapa.
+    const r = coefDeSuperficie('techo_metal', 'A');
+    expect(r.coef).toBe(0.90);
+    expect(r.origen).toBe('tabla');
+    expect(r.aviso).toContain('material');
+  });
+
+  it('una ladera con análisis de suelo usa el del predio y no el de la tabla', () => {
+    const arenoso = coefEscorrentiaAnual('A', 'pastura_regular');
+    const r = coefDeSuperficie('suelo_pasto', 'A');
+    expect(r.origen).toBe('predio');
+    expect(r.coef).toBe(arenoso);
+    expect(r.aviso).toBeNull();
+    // Y es sustancialmente menor que el plano que había antes.
+    expect(r.coef).toBeLessThan(TIPOS_SUPERFICIE.suelo_pasto.coef);
+  });
+
+  it('sin análisis de suelo cae a la tabla, pero lo dice y dice para qué lado', () => {
+    const r = coefDeSuperficie('suelo_pasto', null);
+    expect(r.origen).toBe('tabla');
+    expect(r.coef).toBe(0.25);
+    expect(r.aviso).toContain('sobreestimar');
+  });
+
+  it('el error que se corrigió, medido: hasta 3,9x sobre suelo arenoso', () => {
+    // Este es el test que justifica el cambio. Si alguien vuelve a poner un
+    // coeficiente plano, acá se ve cuánto miente.
+    const medido: Record<string, number> = {};
+    for (const [tipo, cobertura] of Object.entries(COBERTURA_SCS_DE_SUPERFICIE)) {
+      const plano = TIPOS_SUPERFICIE[tipo as TipoSuperficie].coef;
+      medido[tipo] = plano / coefEscorrentiaAnual('A', cobertura!);
+    }
+    expect(medido.suelo_pasto).toBeCloseTo(3.1, 1);
+    expect(medido.suelo_bosque).toBeCloseTo(2.5, 1);
+    expect(medido.suelo_cultivo).toBeCloseTo(3.9, 1);
+
+    // Y sobre arcilla la tabla acertaba: por eso nadie lo vio.
+    for (const [tipo, cobertura] of Object.entries(COBERTURA_SCS_DE_SUPERFICIE)) {
+      const plano = TIPOS_SUPERFICIE[tipo as TipoSuperficie].coef;
+      expect(plano / coefEscorrentiaAnual('D', cobertura!), tipo).toBeGreaterThan(0.7);
+      expect(plano / coefEscorrentiaAnual('D', cobertura!), tipo).toBeLessThan(1.2);
+    }
+  });
+
+  it('el rango declarado de cada ladera es el que da el motor hidrológico', () => {
+    // Una sola fuente de verdad: si alguien toca COEF_BASE_GRUPO en cuenca.ts,
+    // el rango que imprime el panel de captación deja de ser cierto y este test
+    // lo agarra antes que el informe.
+    for (const [tipo, cobertura] of Object.entries(COBERTURA_SCS_DE_SUPERFICIE)) {
+      const valores = GRUPOS.map(g => coefEscorrentiaAnual(g, cobertura!));
+      const rango = TIPOS_SUPERFICIE[tipo as TipoSuperficie].rango!;
+      expect(rango[0], `${tipo} piso`).toBe(Math.min(...valores));
+      expect(rango[1], `${tipo} techo`).toBe(Math.max(...valores));
+    }
+  });
+
+  it('toda superficie de ladera sabe a qué cobertura SCS corresponde', () => {
+    // Sin la correspondencia, `coefDeSuperficie` no tendría a quién preguntarle
+    // y caería a la tabla en silencio.
+    for (const [tipo, ref] of Object.entries(TIPOS_SUPERFICIE)) {
+      if (ref.naturaleza !== 'ladera') continue;
+      expect(COBERTURA_SCS_DE_SUPERFICIE[tipo as TipoSuperficie], tipo).toBeDefined();
+    }
+  });
+});
+
+/*
+ * Los consumos de referencia.
+ *
+ * Estuvieron sin fuente trazada desde que se escribió el módulo, con el propio
+ * encabezado avisando que no eran un dato. Ahora cada fila cita la publicación
+ * de donde sale y el rango que esa publicación publica.
+ */
+describe('los consumos de referencia y sus fuentes', () => {
+  it('cada valor por defecto cae adentro del rango que declara', () => {
+    // Es la verificación barata que agarra el error de tipeo que nadie mira:
+    // un default fuera de su propio rango es un número inventado.
+    for (const [tipo, ref] of Object.entries(CONSUMO_REFS)) {
+      if (!ref.rango) continue;
+      expect(ref.litros_dia_por_unidad, `${tipo} piso`).toBeGreaterThanOrEqual(ref.rango[0]);
+      expect(ref.litros_dia_por_unidad, `${tipo} techo`).toBeLessThanOrEqual(ref.rango[1]);
+    }
+  });
+
+  it('todas las filas menos las tres declaradas citan una publicación', () => {
+    // `huerta` y `cultivo_extensivo` no citan a propósito: la demanda de riego
+    // real la calcula el balance hídrico con la ETc del cultivo, y esos dos
+    // números son un orden de magnitud para arrancar. `personalizado` lo pone
+    // el usuario. Las otras seis sí tienen que citar.
+    const sinFuente = Object.entries(CONSUMO_REFS)
+      .filter(([, r]) => r.fuente === null)
+      .map(([t]) => t)
+      .sort();
+    expect(sinFuente).toEqual(['cultivo_extensivo', 'huerta', 'personalizado']);
+
+    for (const [tipo, ref] of Object.entries(CONSUMO_REFS)) {
+      if (!ref.fuente) continue;
+      expect(FUENTES_CONSUMO[ref.fuente], tipo).toBeDefined();
+    }
+  });
+
+  it('toda fila explicita qué supone, porque el default no se lee solo', () => {
+    // 80 L/persona/día no es "lo que necesita una persona": es lo que gasta una
+    // casa con agua adentro. La misma tabla de FAO da 2 a 4 si hay que ir a
+    // buscarla. Sin el supuesto escrito, el número miente por omisión.
+    for (const [tipo, ref] of Object.entries(CONSUMO_REFS)) {
+      if (tipo === 'personalizado') continue;   // lo escribe el usuario
+      expect(ref.supuesto.length, tipo).toBeGreaterThan(60);
+    }
+    expect(CONSUMO_REFS.domestico.supuesto).toContain('10');
+  });
+
+  it('el uso doméstico es el tramo de FAO que corresponde a una casa con agua adentro', () => {
+    // FAO 2011, tabla 19.1: "Water in the home for toilet, tap and shower,
+    // 60–100 litres per day". El default es el centro de ese tramo.
+    expect(CONSUMO_REFS.domestico.rango).toEqual([60, 100]);
+    expect(CONSUMO_REFS.domestico.litros_dia_por_unidad).toBe(80);
+    expect(FUENTES_CONSUMO.fao.url).toContain('i2433e');
+  });
+
+  it('el bovino es la vaca de carne mejorada de la tabla 19.2', () => {
+    // FAO 2011, tabla 19.2: "Upgraded beef cows ... 50" litros por día.
+    expect(CONSUMO_REFS.bovinos.litros_dia_por_unidad).toBe(50);
+    expect(CONSUMO_REFS.bovinos.fuente).toBe('fao');
+  });
+});
+
+/*
+ * El caso resuelto, que es lo que pide el contrato de motor-de-calculo.
+ */
+describe('un caso con número conocido de punta a punta', () => {
+  it('V = P x A x C / 1000, con las unidades cerrando', () => {
+    // Techo de 100 m2, 1.000 mm de lluvia al año repartidos en doce meses
+    // iguales, chapa con C = 0,90. Son 1.000 L por milimetro y por cada 1.000
+    // m2, asi que: 1.000 mm x 100 m2 x 0,90 / 1.000 = 90 m3 al año.
+    const precip = Array.from({ length: 12 }, () => 1000 / 12);
+    const r = calcularCaptacion(
+      [{ id: 't', tipo: 'techo_metal', nombre: 'Techo', area_m2: 100, coef: 0.90 }],
+      precip,
+      [],
+      -34,
+    );
+    expect(r.captacion_anual_m3).toBeCloseTo(90, 0);
+    // Y un milimetro sobre un metro cuadrado es un litro, que es de donde sale
+    // la division por 1.000. Con 1 m2 el resultado se pierde en el redondeo
+    // —el modulo redondea a 0,01 m3 por mes—, asi que se verifica con 1.000 m2,
+    // donde 1 mm tiene que dar exactamente 1.000 L.
+    const unMm = calcularCaptacion(
+      [{ id: 't', tipo: 'personalizado', nombre: 'T', area_m2: 1000, coef: 1 }],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [],
+      -34,
+    );
+    expect(unMm.captacion_anual_litros).toBe(1000);
+  });
+
+  it('anual_litros no promete mas precision de la que tiene', () => {
+    // El campo se llama "litros" pero sale de anual_m3, que viene redondeado a
+    // 0,1 m3: siempre es multiplo de 100. Esta escrito en el tipo y se fija
+    // aca para que nadie lo lea como una medicion al litro.
+    const precip = [120, 110, 95, 60, 35, 20, 15, 18, 40, 70, 90, 115];
+    const r = calcularCaptacion(
+      [{ id: 't', tipo: 'techo_metal', nombre: 'Techo', area_m2: 40, coef: 0.90 }],
+      precip, [], -34,
+    );
+    expect(r.captacion_por_superficie[0]!.anual_litros % 100).toBe(0);
   });
 });
