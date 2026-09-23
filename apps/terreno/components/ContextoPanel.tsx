@@ -490,9 +490,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
             Pueblos declarados en {censo.provincia.provincia}
           </p>
-          {/* El color va con opacidad y no con water-100/200, que no existen en
-              la paleta: Tailwind los descarta en silencio y la fichita quedaría
-              sin fondo ni borde. */}
+          {/* El color va con opacidad y no con water-100/200. Se escribió así
+              porque esos dos tonos no existían: Tailwind los descartaba en
+              silencio y la fichita quedaba sin fondo ni borde. Ya existen en
+              `tailwind.config.ts`, así que esto es una opción y no una
+              limitación; se deja como está porque la opacidad se ve bien. */}
           <div className="flex flex-wrap gap-1">
             {censoPueblos.visibles.map(p => (
               <span key={p.pueblo} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
