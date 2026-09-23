@@ -20,7 +20,6 @@ import { PoligonoPanel } from './PoligonoPanel';
 import { ProyectosPanel } from './ProyectosPanel';
 import { BuscadorLugar, type ResultadoBusqueda } from './BuscadorLugar';
 import { ClimaPanel } from './ClimaPanel';
-import { ContextoPanel } from './ContextoPanel';
 import { TopografiaPanel } from './TopografiaPanel';
 import { CaptacionPanel } from './CaptacionPanel';
 import { CalendarioPanel, type CalendarioInputs } from './CalendarioPanel';
@@ -158,6 +157,20 @@ const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
       </div>
     </div>
   ),
+});
+
+/*
+ * El panel de contexto entra por separado porque arrastra las cuatro tablas de
+ * censo indígena —Argentina, Chile, Paraguay y Perú— que suman 263 kB de
+ * fuente. Estáticas quedaban en el bundle de /mapa aunque el usuario no abriera
+ * nunca la pestaña, y cada país nuevo de la capa las hacía crecer.
+ *
+ * Se carga al abrir la pestaña, que es también la primera vez que hace falta:
+ * el panel ya se renderiza solo con `tab === 'contexto'`.
+ */
+const ContextoPanel = dynamic(() => import('./ContextoPanel').then(m => m.ContextoPanel), {
+  ssr: false,
+  loading: () => <p className="text-sm text-ink-700/60">Cargando el contexto del predio…</p>,
 });
 
 const Vista3D = dynamic(() => import('./Vista3D').then(m => m.Vista3D), { ssr: false });
