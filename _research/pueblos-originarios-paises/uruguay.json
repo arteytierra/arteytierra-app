@@ -1,0 +1,69 @@
+{
+  "pais": "Uruguay",
+  "iso3": "URY",
+  "registro": {
+    "existe": false,
+    "organismo": "No identificado: no se localizó un organismo que publique un registro nacional específico de pueblos, comunidades o tierras indígenas",
+    "nombre": "No se identificó un registro administrativo nacional específico",
+    "que_cuenta": "No aplica: las fuentes oficiales localizadas reconocen organizaciones y comunidades en ámbitos de participación, pero no publican un padrón administrativo con unidades, vigencia y cobertura nacional.",
+    "url_pagina": "https://www.gub.uy/institucion-nacional-derechos-humanos-uruguay/institucional/informacion-gestion/resoluciones/resolucion-creacion-grupo-trabajo-proteccion",
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": "No aplica: no se identificó una base de registros publicada cuya licencia pudiera transcribirse",
+    "licencia_url": null,
+    "uso_comercial": "no_dice",
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "Consultado el 2026-09-23. Se buscaron registros, padrones y conjuntos descargables en sitios gub.uy, en el Catálogo Nacional de Datos Abiertos y en fuentes institucionales vinculadas con pueblos indígenas. La resolución de 2026 de la Institución Nacional de Derechos Humanos y Defensoría del Pueblo crea un grupo de trabajo e invita a numerosas organizaciones de la sociedad civil, pero no declara que la enumeración sea un registro, no define criterios de alta o baja, no informa cobertura exhaustiva, no asigna identificadores y no ofrece tabla, API ni geometría. Por eso la lista de invitados no se convirtió en padrón y `verificado` queda en false. Tampoco se usó el registro general de asociaciones civiles del Ministerio de Educación y Cultura porque no es específico de pueblos indígenas y no permite inferir exhaustivamente identidad, comunidad o territorio."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadística (INE)",
+    "anio": 2023,
+    "fecha_relevamiento": null,
+    "pregunta": "(nombre), ¿cree tener ascendencia… 1 … afro o negra? 2 … asiática? 3 … blanca? 4 … indígena? 5 … otra",
+    "universo": "Población total. Para cada persona se marca Sí o No en cada una de cinco ascendencias; si respondió Sí en más de una, se pregunta cuál considera principal.",
+    "total_declarado": null,
+    "poblacion_base": 3499451,
+    "url_cuadros": "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/anuario-estadistico-nacional-2025-vol-102/21-informacion-censal/215",
+    "urls_archivos": [
+      "https://www5.ine.gub.uy/documents/ANUARIOS/Anuario%202025/2%20-%20POBLACI%C3%93N/2.1%20Informaci%C3%B3n%20Censal/2.1.4.xlsx",
+      "https://www5.ine.gub.uy/documents/ANUARIOS/Anuario%202025/2%20-%20POBLACI%C3%93N/2.1%20Informaci%C3%B3n%20Censal/2.1.5.xlsx",
+      "https://www4.ine.gub.uy/Anda5/index.php/catalog/781/download/1493",
+      "https://www4.ine.gub.uy/Anda5/index.php/catalog/781/download/1496"
+    ],
+    "niveles": [
+      "nacional",
+      "departamento"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "Consultado y descargado el 2026-09-23. El cuadro 2.1.4.xlsx (13.355 bytes) publica para 2023 un 6,3% de respuestas Sí en la categoría Indígena y aclara que el universo es la población total. El cuadro 2.1.5.xlsx (25.502 bytes) contiene una fila nacional y los 19 departamentos: el valor indígena es 6,3% nacional, 6,6% en la primera fila departamental (Montevideo) y 6,9% en la última (Treinta y Tres). Ambos archivos publican porcentajes redondeados y no un número absoluto; por eso `total_declarado` queda en null y no se multiplicó 6,3% por la población total. El diccionario de variables de la versión julio de 2026 (XLSX de 311.369 bytes) confirma PERER01_4, con códigos 1 Sí y 2 No, PERER02 para la ascendencia principal y un total ponderado de 3.499.451 personas con fecha de referencia 31 de mayo de 2023. El operativo no tuvo un único día: el autocenso comenzó el 29 de abril de 2023 y la fase presencial terminó el 29 de septiembre, por lo que `fecha_relevamiento` queda en null y la fecha de referencia no se presenta como fecha de recolección. El cuestionario oficial (PDF de 276.912 bytes, 10 páginas) se renderizó completo y se revisó visualmente la página 5: la pregunta 8 se aplica a todas las personas, permite respuestas múltiples y no pide pueblo específico. La pregunta 9 sólo solicita la ascendencia principal cuando hubo más de un Sí. `sin_declarar_pueblo` queda en null porque el cuestionario no pregunta pueblo y los cuadros no publican una categoría de pueblo no declarado."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "La ausencia de un padrón público no dice que no existan comunidades u organizaciones indígenas; sólo dice que no se encontró un registro administrativo nacional específico, exhaustivo y reutilizable.",
+    "El censo pregunta por ascendencia indígena, no por pertenencia a un pueblo determinado, nombre de comunidad, organización ni vínculo territorial.",
+    "El censo no dice de quién es la tierra, dónde está una comunidad ni si una persona integra alguna de las organizaciones invitadas por la INDDHH.",
+    "Los porcentajes departamentales no identifican localidades, municipios, predios ni puntos y no sirven como geometría de comunidades.",
+    "Los cuadros agregados abiertos no publican el total absoluto exacto de respuestas Sí para ascendencia indígena ni una cantidad de personas sin pueblo declarado."
+  ],
+  "trampas": [
+    "La presentación inicial de resultados finales del 10 de diciembre de 2024 difundió 6,4% de ascendencia indígena; los Anuarios Estadísticos 2024 y 2025 publican 6,3% como dato final. Esta ficha usa el cuadro más nuevo y deja documentada la diferencia.",
+    "El 6,3% está redondeado a un decimal. Multiplicarlo por 3.499.451 produce una estimación, no el total exacto de personas, y violaría la regla del encargo que prohíbe estimar números.",
+    "Cada persona podía responder Sí a más de una ascendencia. Las categorías afro, asiática, blanca, indígena y otra no son mutuamente excluyentes y no deben sumarse para obtener población total.",
+    "Ascendencia indígena no equivale a pertenencia declarada a un pueblo específico. El cuestionario no enumera Charrúa, Chaná ni ningún otro pueblo.",
+    "La resolución de la INDDHH enumera organizaciones invitadas a un grupo de trabajo. No es un registro, una certificación de personería, una lista exhaustiva de comunidades ni una capa territorial.",
+    "La versión julio de 2026 de los microdatos pondera personas efectivamente censadas y excluye la enumeración administrativa del archivo individual; el total ponderado representa la población estimada al 31 de mayo de 2023 y no es simplemente el número de filas.",
+    "El acceso a los microdatos individuales exige aceptar condiciones que limitan su uso a investigación científica y estadística y prohíben redistribuirlos o venderlos sin consentimiento escrito del INE. Esas condiciones no se aceptaron para este relevamiento y los microdatos no deben incorporarse a la app.",
+    "Los XLSX agregados del Anuario están publicados para descarga, pero su página y cada archivo no adjuntan una licencia estándar de reutilización. No debe suponerse automáticamente que la Licencia de Datos Abiertos de Uruguay cubre esos archivos fuera del Catálogo Nacional de Datos Abiertos."
+  ],
+  "notas": "Los nombres Charrúa y Chaná aparecen en comunicaciones oficiales de la INDDHH, pero no se copiaron a `pueblos` porque no provienen de una columna de pueblo del registro o del censo seleccionado. La codiguera abierta de AGESIC sólo contiene la categoría genérica `Indígena` para ascendencia racial y tampoco es una lista de pueblos. Para implementación comercial segura, el insumo agregado requiere una confirmación escrita del INE sobre reutilización de los cuadros del Anuario; los microdatos individuales quedan fuera por sus condiciones restrictivas."
+}

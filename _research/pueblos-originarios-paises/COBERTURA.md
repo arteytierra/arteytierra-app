@@ -1,6 +1,6 @@
 # Cobertura — fuentes de pueblos originarios por país
 
-Verificación actualizada el 2026-09-20. Argentina no se vuelve a relevar porque el encargo la declara terminada.
+Verificación actualizada el 2026-09-24. Argentina no se vuelve a relevar porque el encargo la declara terminada.
 
 | País | ¿Registro? | ¿Censo? | ¿Descargable? | Licencia apta | Qué falta |
 |---|---|---|---|---|---|
@@ -8,6 +8,10 @@ Verificación actualizada el 2026-09-20. Argentina no se vuelve a relevar porque
 | Bolivia | Sí, pero no como base pública. El RIPIO registra la identidad de pueblos solicitantes en trámites TIOC. | Sí. Censo 2024, 4.302.484 personas autoidentificadas; tabulados por departamento, provincia y municipio/TIOC. | Registro: no. Censo: sí, cuatro XLSX, cuestionario y metadatos. | Registro: no dice. Censo: no se aprueba para uso comercial sin confirmación escrita del INE; sus términos no otorgan una licencia y condicionan el uso comercial. | Obtener del Viceministerio de Tierras una exportación del RIPIO con cobertura, campos, coordenadas y licencia; pedir al INE autorización o aclaración escrita para uso comercial de los tabulados. |
 | Paraguay | Sí, pero no como base pública. El INDI registra liderazgos, personerías, inmuebles y organizaciones. | Sí. Censo 2022, total oficial de 140.049 personas combinando el operativo indígena y casos del Censo Nacional; tablas hasta comunidad, aldea, barrio, núcleo e individualidades. | Registro: no. Censo: sí, CSV y PDF. | Registro: no dice. Censo: sí, Licencia de Uso de la Información Pública del Gobierno Paraguayo, con atribución y sin sugerir patrocinio oficial. | Obtener del INDI una exportación del registro con vigencia, campos, geometría y licencia; para una capa puntual, conseguir las coordenadas oficiales porque los CSV censales sólo publican nombres de localidad. |
 | Perú | Sí. La BDPI publica 9.332 localidades indígenas u originarias y un archivo complementario de 40.279 centros poblados censales. | Sí. Censo 2017, resultado final recodificado de 5.984.708 personas indígenas u originarias de 12 años y más; anexos por departamento, sexo, edad y área. | Sí. BDPI y censo en XLSX y PDF; la geometría del visor no tiene descarga vectorial ni API documentada. | BDPI: no dice. Censo: uso comercial expresamente contemplado por INEI, aunque sin licencia estándar adjunta a cada archivo. | Obtener del Ministerio de Cultura una licencia o autorización comercial para la BDPI y una exportación estable de geometrías de localidades; no sustituirlas por las coordenadas de centros poblados. |
+| Brasil | Sí. FUNAI publica 4.676 puntos de aldeas (4.667 activos y 9 inactivos); la capa complementaria tiene 639 Tierras Indígenas. | Sí. Censo 2022 actualizado: 1.694.836 personas; 391 rótulos específicos y tabla por municipio. | Parcial. El ODS de FUNAI y los XLSX/JSON del IBGE descargan; el WFS XLSX/CSV de FUNAI devolvió 403. | FUNAI: no dice uso comercial ni transformación; requiere aclaración. IBGE: sí bajo la política de datos abiertos, con atribución y sin licencia estándar por archivo. | Obtener de FUNAI un enlace estable en formato admitido y autorización escrita para transformación comercial; no montar el WFS mientras devuelva 403. |
+| Uruguay | No se identificó un registro administrativo nacional específico. La lista de organizaciones invitadas por la INDDHH no es un padrón. | Sí. Censo 2023: 6,3% declara ascendencia indígena; no se publica un total absoluto exacto ni pueblo específico en los cuadros agregados. | Parcial. Los XLSX, diccionario y cuestionario descargan; los microdatos individuales exigen aceptar condiciones restrictivas. | No aprobada. Los cuadros agregados no adjuntan licencia estándar y los microdatos limitan el uso a investigación y prohíben redistribución o venta sin consentimiento. | Pedir al INE el total absoluto oficial y autorización comercial para reutilizar los cuadros agregados; confirmar institucionalmente si existe o se proyecta un padrón de comunidades u organizaciones. |
+| Colombia | Sí. La ANT publica 984 polígonos de resguardos indígenas formalizados; 0 geometrías nulas. | Sí. CNPV 2018: 1.905.617 personas; 123 rótulos con población y 22.298 casos `Indigena Sin Información`. | Sí. Registro por FeatureServer/GeoJSON y censo por XLSX/PDF; la descarga CSV del Hub estaba rezagada en 968 filas. | ANT: sí, CC BY-SA 4.0, con atribución y CompartirIgual. DANE: no aprobada para redistribución en la app sin visto bueno escrito. | Consumir la API viva de ANT y no el CSV rezagado; separar el derivado CC BY-SA; pedir al DANE autorización escrita antes de montar los tabulados censales en el producto pago. |
+| Ecuador | Sí. La SGDPN publica un registro acumulativo verificable de 4.410 filas, con organizaciones y ubicación administrativa, pero sin geometría y con duplicados declarados. | Sí. Censo 2022: 1.302.057 personas; 33 rótulos específicos, 17.675 `No sabe/No responde` y 1.420 en `Otras nacionalidades/Otros Pueblos`. | Sí. Registro acumulativo en PDF y censo en XLSX/PDF; los CSV mensuales 2026 devolvieron HTTP 403 y no se verificaron. | Registro: sí, `Creative Commons Attribution`, sin versión indicada. Censo: no tiene licencia estándar adjunta al recurso y requiere aclaración para redistribución comercial. | Pedir a la SGDPN una exportación tabular acumulativa y georreferenciada, y confirmar la versión de CC BY; pedir al INEC autorización escrita para montar los tabulados censales en el producto pago. |
 
 ## Estado de Chile
 
@@ -44,6 +48,53 @@ Verificación actualizada el 2026-09-20. Argentina no se vuelve a relevar porque
 - Censo: la tabla final recodificada publica 5.771.885 indígenas u originarios de los Andes y 212.823 de la Amazonía; suman exactamente 5.984.708 sobre una base de 23.196.391 personas censadas de 12 años y más.
 - Los dos anexos XLSX se abrieron y los 25 totales departamentales cierran exactamente con los dos totales nacionales; la pregunta 25 y el cuadro final se revisaron visualmente en los PDF oficiales.
 - La BDPI no declara licencia ni condiciones de reutilización comercial y queda pendiente de autorización. INEI sí contempla expresamente el uso de resultados por empresas privadas para actividades comerciales, con cita de la fuente.
+
+## Estado de Brasil
+
+- JSON válido y todos los campos del contrato presentes.
+- FUNAI: el espejo ODS de aldeas contiene 4.676 filas, 13 columnas, 4.667 registros activos, 9 inactivos y ninguna coordenada ausente. Se comprobaron las filas inicial y final y 563 fechas de alta vacías.
+- Los enlaces WFS oficiales para XLSX y CSV devolvieron HTTP 403 durante la prueba. Por la regla dura del encargo, `registro.verificado` queda en `false`, aunque el ODS oficial alternativo sí pudo descargarse y abrirse.
+- La capa complementaria de Tierras Indígenas contiene 639 registros: 491 regularizados, 67 declarados, 37 delimitados, 24 encaminados a RI, 14 homologados y 6 en estudio. El ODS no incluye geometría.
+- Censo: la API SIDRA publica el total actualizado de 1.694.836 personas, compuesto por 1.227.642 de color o raza indígena y 467.194 que se consideran indígenas bajo la pregunta territorial controlada.
+- La tabla seleccionada registra 1.262.812 personas con una o dos etnias informadas y 432.024 en cuatro estados sin determinación completa. Cada persona podía declarar hasta dos etnias, por lo que no deben sumarse rótulos como si fueran personas únicas.
+- La tabla complementaria 20 contiene 391 rótulos específicos, además de 12 agrupaciones oficiales y una categoría genérica americana que se excluyeron de `pueblos`. La tabla 25 aporta 38.273 filas numéricas para 4.833 municipios.
+- El cuestionario oficial fue revisado visualmente: la pregunta de autoidentificación indígena sólo se aplicaba en áreas indígenas a quienes no habían marcado color o raza indígena; la pregunta de etnia admitía hasta dos respuestas.
+- FUNAI permite reproducir con cita, pero no autoriza de modo explícito transformación ni uso comercial y el pie del sitio usa CC BY-ND 3.0; hace falta aclaración escrita antes del montaje. Los resultados del IBGE se encuadran en su política de datos abiertos, con atribución y las condiciones que correspondan, aunque los archivos no adjuntan una licencia estándar individual.
+
+## Estado de Uruguay
+
+- JSON válido, esquema y orden de claves exactos; todos los campos del contrato están presentes.
+- Registro: no se localizó una base estatal específica y exhaustiva de pueblos, comunidades o tierras indígenas. La resolución 2026 de la INDDHH enumera organizaciones invitadas a un grupo de trabajo, pero no define altas, bajas, cobertura, identificadores, tabla ni geometría; por eso `registro.existe` y `registro.verificado` quedan en `false`.
+- Censo: los cuadros 2.1.4 y 2.1.5 del Anuario 2025 se descargaron y abrieron. Publican 6,3% de respuestas afirmativas para ascendencia indígena y desglose porcentual para los 19 departamentos.
+- Los cuadros agregados sólo publican porcentajes redondeados. `total_declarado` queda en `null`: multiplicar 6,3% por 3.499.451 sería una estimación y no un total oficial exacto.
+- El diccionario de variables de julio de 2026 confirma una población ponderada de 3.499.451, PERER01_4 para ascendencia indígena, PERER02 para ascendencia principal y fecha de referencia 31 de mayo de 2023.
+- El cuestionario oficial de 10 páginas se renderizó completo y se revisó visualmente la página 5. La pregunta 8 se aplica a todas las personas, permite responder Sí a varias ascendencias y no pregunta pueblo específico; por eso `pueblos` queda vacío y `sin_declarar_pueblo` en `null`.
+- La presentación inicial de diciembre de 2024 difundió 6,4%; los Anuarios 2024 y 2025 publican 6,3% como dato final. Se adopta el valor más nuevo y se documenta el cambio.
+- Los microdatos individuales no se descargaron: el acceso exige aceptar uso exclusivo para investigación científica y estadística, prohíbe redistribuir o vender sin consentimiento escrito y requiere obligaciones adicionales. Los cuadros agregados abiertos tampoco adjuntan una licencia estándar por archivo, por lo que hace falta confirmación del INE antes de uso comercial.
+
+## Estado de Colombia
+
+- JSON válido, esquema y orden de claves exactos; los 123 valores de `pueblos` son únicos y copian el primer bloque codificado del visor DANE.
+- Registro: el servicio FeatureServer de la ANT devolvió 984 resguardos formalizados y una consulta geométrica separada confirmó 0 geometrías nulas.
+- La capa tiene 19 `CODIGO_DANE` vacíos, 2 departamentos vacíos, 2 municipios vacíos y 1 `PUEBLO` vacío; esos registros no deben perderse al hacer joins.
+- La descarga CSV del Hub devolvió sólo 968 filas y el GeoJSON completo descargado presentó un valor de coordenada dañado. Para montaje debe consultarse la API viva y controlarse que entregue 984 entidades.
+- La licencia ANT es CC BY-SA 4.0: permite uso comercial, exige atribución y obliga a compartir bajo la misma licencia la base adaptada. Conviene mantener el derivado de datos separado del código de la app.
+- Censo: la hoja `1` del visor XLSX suma exactamente 1.905.617 personas en sus primeros 124 rótulos; `Indigena Sin Información` aporta 22.298 y se guarda aparte.
+- La hoja repite esos 124 rótulos con otra nomenclatura. Sumar sus 248 filas duplica exactamente el total y es un error de lectura.
+- El cuadro de hogares particulares publica 1.876.752 indígenas, no 1.905.617, porque excluye los Lugares Especiales de Alojamiento. La ficha conserva el total indígena integral y documenta la diferencia.
+- DANE autoriza la cita, pero su página de microdatos prohíbe reproducir los datos en medios que los pongan a disposición de múltiples usuarios sin visto bueno escrito. El censo queda pendiente de autorización para montaje comercial.
+
+## Estado de Ecuador
+
+- JSON válido, esquema y orden de claves exactos; los 33 valores de `pueblos` son únicos y copian literalmente los rótulos específicos de la hoja `3` del tabulado oficial.
+- Registro: el PDF acumulativo de enero de 2023 tiene 441 páginas y filas numeradas de 1 a 4.410. Se revisaron visualmente la primera y la última página.
+- Las 4.410 filas no equivalen a comunidades únicas: la matriz mezcla comunidades, uniones, asociaciones, fundaciones y movimientos, e incluye duplicados explícitos como la fila 4, marcada `REPETIDO CON 141`.
+- El registro publica provincia, cantón y parroquia, pero no latitud, longitud ni geometría. Los CSV mensuales 2026 son más recientes, aunque el portal devolvió HTTP 403 y no pudieron verificarse.
+- El catálogo nacional declara `Creative Commons Attribution` sin número de versión. Se admite uso comercial con atribución, pero no debe presentarse como CC BY 4.0 sin confirmación institucional.
+- Censo: la hoja `1` publica 16.938.986 personas y 1.302.057 indígenas. La hoja `3` cierra ese total con 1.282.962 en 33 rótulos específicos, 1.420 en `Otras nacionalidades/Otros Pueblos` y 17.675 en `No sabe/No responde`.
+- Se revisó visualmente la página 5 del cuestionario oficial: la pregunta 11 capta autoidentificación según cultura y costumbres y la 12 pregunta nacionalidad o pueblo a quienes respondieron Indígena.
+- El valor preliminar difundido en 2023 fue 1.301.887. Se adopta 1.302.057 porque es el valor del XLSX temático posterior y reproducible.
+- El recurso censal no adjunta una licencia estándar. Hace falta una confirmación del INEC antes de redistribuir los tabulados en una aplicación paga.
 
 ## Verificación al montar — 18 y 20/09/2026
 
