@@ -9,18 +9,20 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
-  censoPeruanoDelPunto,
+  censoPeruanoDelPunto, censoBrasilenoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
   localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI, FUENTE_CENSO_2022,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
+  FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR, municipiosDestacadosBr,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
+import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -163,6 +165,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // al departamento y no bajan. Tampoco hay lista de pueblos comparable, así
   // que lo que se muestra al lado de los dos grupos es la lengua materna.
   const censoPe = censoPeruanoDelPunto(ubicacion);
+  const censoBr = censoBrasilenoDelPunto(ubicacion);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
@@ -324,19 +327,21 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         )}
 
-        {/* Fuera de los cuatro países relevados. La condición pregunta por las
-            cuatro capas y no por el país: si el predio está en Chile, en
-            Paraguay o en el Perú esta frase es falsa, incluso cuando la
-            división no se pudo resolver —ahí contestan los avisos de más abajo,
-            que dicen otra cosa. */}
+        {/* Fuera de los cinco países relevados. La condición pregunta por las
+            cinco capas y no por el país: si el predio está en Chile, en
+            Paraguay, en el Perú o en Brasil esta frase es falsa, incluso cuando
+            la división no se pudo resolver —ahí contestan los avisos de más
+            abajo, que dicen otra cosa. */}
         {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'
-          && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru' && (
+          && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru'
+          && censoBr.estado === 'fuera_de_brasil' && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
-            INE—, las de Paraguay —el IV Censo Indígena 2022 del INE— y las del Perú —el Censo
-            2017 del INEI—. Que no haya nada acá no dice nada sobre {registro.pais}: dice que
-            todavía no relevamos el registro ni el censo de ese país.
+            INE—, las de Paraguay —el IV Censo Indígena 2022 del INE—, las del Perú —el Censo
+            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. Que no haya nada acá no
+            dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el
+            censo de ese país.
           </p>
         )}
 
@@ -878,6 +883,123 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
               12 y más años—. Los números son los de la publicación final, que recodifica las
               respuestas: dan 5.179.774 quechuas donde los primeros perfiles difundidos daban
               5.176.809.
+            </p>
+          </div>
+        </>}
+
+        {/* Brasil. Quinto país, y el primero que contesta a escala de
+            municipio. El estado no sirve para un predio: Amazonas tiene 490.935
+            personas indígenas repartidas en un territorio más grande que media
+            Argentina. Cuando el municipio no se puede resolver se contesta el
+            estado y se dice que es más grueso, en vez de arriesgar el municipio
+            equivocado. */}
+        {censoBr.estado === 'estado_desconocido' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El predio está en Brasil y el geocodificador devolvió
+            «{censoBr.nombre}», que no es ninguno de los 27 estados que conocemos. Preferimos no
+            contestar antes que contestar de más. No significa que no haya pueblos originarios.
+          </p>
+        )}
+
+        {(censoBr.estado === 'con_censo' || censoBr.estado === 'con_estado') && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            População indígena · Censo 2022 · Brasil
+          </p>
+
+          <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+            {censoBr.estado === 'con_censo' ? <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoBr.municipio.municipio} · {censoBr.uf.sigla}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoBr.municipio.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                {censoBr.municipio.poblacion.toLocaleString('es-AR')} habitantes del municipio: el{' '}
+                {porcentaje(censoBr.municipio.indigena, censoBr.municipio.poblacion)}%.
+              </p>
+              <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                En todo {censoBr.uf.estado} son{' '}
+                {censoBr.uf.indigena.toLocaleString('es-AR')} sobre{' '}
+                {censoBr.uf.poblacion.toLocaleString('es-AR')} —el{' '}
+                {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%—. El municipio brasileño
+                incluye la ciudad y toda su zona rural, así que es la escala que le corresponde a
+                un campo.
+              </p>
+            </> : <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoBr.uf.estado} · {censoBr.uf.sigla}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoBr.uf.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                {censoBr.uf.poblacion.toLocaleString('es-AR')} habitantes del estado: el{' '}
+                {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%.
+              </p>
+              <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                <strong className="text-ink-700">Esta respuesta es del estado entero, no del
+                municipio.</strong>{' '}
+                {censoBr.municipioBuscado
+                  ? <>El geocodificador devolvió «{censoBr.municipioBuscado}», que no es ninguno de
+                      los {censoBr.uf.municipios.length} municipios de {censoBr.uf.estado} —suele
+                      pasar en zona rural, donde contesta con el nombre de un paraje—.</>
+                  : <>El geocodificador no devolvió localidad para este punto.</>}{' '}
+                A escala de estado el número dice poco: Brasil es grande y la población indígena
+                está muy concentrada.
+              </p>
+            </>}
+          </div>
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">El total son dos preguntas, no una.</strong> De los{' '}
+            {CENSO_BR_PAIS.indigena.toLocaleString('es-AR')} del país,{' '}
+            {CENSO_BR_PAIS.corRaca.toLocaleString('es-AR')} declararon «cor ou raça indígena» en la
+            pregunta general y {CENSO_BR_PAIS.seConsidera.toLocaleString('es-AR')} no la declararon
+            pero dijeron considerarse indígenas. Esa segunda pregunta sólo se hizo dentro de
+            tierras y localidades indígenas, así que está concentrada donde hay tierras demarcadas
+            y no se puede leer como si fuera comparable entre estados.
+          </p>
+
+          {censoBr.estado === 'con_censo' && censoBr.municipio.indigena === 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+              <strong className="text-ink-700/70">Cero también es un dato.</strong> El censo no
+              contó ninguna persona indígena en este municipio, y son{' '}
+              {CENSO_BR_PAIS.municipiosSinIndigenas.toLocaleString('es-AR')} de los{' '}
+              {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} del país. No dice que nunca haya
+              habido nadie: dice qué contó este censo, en 2022, con estas preguntas.
+            </p>
+          )}
+
+          {censoBr.uf.indigena > 0 && (() => {
+            const top = municipiosDestacadosBr(censoBr.uf);
+            return top.length > 0 ? <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+                Municipios con más población indígena en {censoBr.uf.sigla}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {top.map(m => (
+                  <span key={m.codigo} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                    {m.municipio} <span className="text-water-700/60">· {m.indigena.toLocaleString('es-AR')}</span>
+                  </span>
+                ))}
+              </div>
+            </> : null;
+          })()}
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">Esto no dice dónde están las tierras
+            indígenas.</strong> Las demarca y publica la {REGISTRO_BR_FALTANTE.organismo}, y no
+            está acá: {REGISTRO_BR_FALTANTE.motivo}. Así que esta sección no dice si el predio
+            linda con una tierra demarcada ni en qué etapa está.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_CENSO_2022_BR.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2022_BR.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              {FUENTE_CENSO_2022_BR.licencia}. En todo el país son{' '}
+              {CENSO_BR_PAIS.indigena.toLocaleString('es-AR')} personas —el {PORCENTAJE_PAIS_BR}% de{' '}
+              {CENSO_BR_PAIS.poblacion.toLocaleString('es-AR')} habitantes—, en{' '}
+              {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} municipios.
             </p>
           </div>
         </>}

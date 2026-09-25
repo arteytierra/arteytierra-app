@@ -9,10 +9,13 @@ import {
 import {
   CENSO_PE, CENSO_PE_PAIS, LENGUAS_PE, LENGUAS_ORIGINARIAS_PE, type CensoPeDepartamento,
 } from './censoIndigena2017Pe';
+import {
+  CENSO_BR, CENSO_BR_PAIS, type CensoBrEstado, type CensoBrMunicipio,
+} from './censoIndigena2022Br';
 
 /**
- * Pueblos originarios en el territorio del predio. Argentina, Chile, Paraguay
- * y Perú.
+ * Pueblos originarios en el territorio del predio. Argentina, Chile, Paraguay,
+ * Perú y Brasil.
  *
  * Cada país entra con las fuentes que tiene y con una licencia que las
  * permita, y no con un promedio de los cuatro. La Argentina tiene registro y
@@ -966,3 +969,123 @@ export function lenguasDelDepartamentoPe(d: CensoPeDepartamento): {
 
 /** El porcentaje del país, sobre las personas de 12 y más años. */
 export const PORCENTAJE_PAIS_PE = porcentaje(CENSO_PE_PAIS.indigena, CENSO_PE_PAIS.censada12);
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Brasil — Censo Demográfico 2022 (IBGE)
+ *
+ * El quinto país, y el primero que contesta a escala de municipio.
+ *
+ * Los otros cuatro contestan en la división grande: departamento en la
+ * Argentina y en el Perú, comuna en Chile, localidad en el Paraguay. Brasil
+ * obliga a bajar un nivel porque el estado no dice nada útil de un predio:
+ * Amazonas tiene 490.935 personas indígenas repartidas en un territorio más
+ * grande que toda la Argentina al norte del Colorado. El municipio brasileño,
+ * en cambio, incluye la ciudad sede y toda su zona rural, así que es la unidad
+ * que le corresponde a un campo.
+ *
+ * **Por qué el municipio se busca DENTRO del estado y no en la lista entera.**
+ * Medido sobre los 5.570: hay 240 nombres que se repiten en más de un estado
+ * —«Bom Jesus», «Santa Luzia», «Boa Vista»— y ninguno que se repita dentro del
+ * mismo. Buscar en la lista global dejaría esos 240 sin respuesta, porque
+ * `casarNombre` no contesta cuando hay empate; buscar dentro del estado es
+ * unívoco para los 5.570.
+ *
+ * **Dos maneras de acertar, no una.** El geocodificador devuelve el estado en
+ * `provincia` y el municipio en `localidad`, pero en zonas rurales profundas
+ * puede contestar con el nombre de un poblado que no es el municipio. Cuando
+ * eso pasa no se inventa: se contesta con el estado y se dice que el municipio
+ * no se pudo identificar. Es peor dar el municipio equivocado que dar el
+ * estado y aclararlo.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Qué dice el censo brasileño del punto.
+ *
+ * A diferencia de los otros cuatro países hay **dos** formas de acertar, porque
+ * hay dos niveles: `con_estado` cuando se supo el estado pero no el municipio,
+ * y `con_censo` cuando se supieron los dos. La primera no es un error: es una
+ * respuesta más gruesa, y la pantalla la dice como tal.
+ */
+export type CensoBrDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_brasil'; pais: string }
+  | { estado: 'estado_desconocido'; nombre: string }
+  | { estado: 'con_estado'; uf: CensoBrEstado; municipioBuscado: string | null }
+  | { estado: 'con_censo'; uf: CensoBrEstado; municipio: CensoBrMunicipio };
+
+export const FUENTE_CENSO_2022_BR = {
+  label: 'IBGE — Censo Demográfico 2022, população indígena (tabelas SIDRA 9718 e 4709)',
+  url: 'https://www.ibge.gov.br/estatisticas/sociais/populacao/22827-censo-demografico-2022.html',
+  licencia: 'política de datos abiertos del IBGE, citando la fuente',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_BR_FALTANTE = {
+  organismo: 'FUNAI — Fundação Nacional dos Povos Indígenas (tierras indígenas y aldeas)',
+  motivo: 'el sitio se publica bajo CC BY-ND 3.0, que prohíbe las obras derivadas: montar la capa sería una',
+} as const;
+
+/**
+ * Nominatim contesta «Brasil» en portugués y «Brazil» en inglés. Se parte por
+ * la barra igual que en el Paraguay y el Perú, por si el rótulo pasa a ser
+ * bilingüe.
+ */
+function esBrasil(pais: string): boolean {
+  const NOMBRES = new Set(['brasil', 'brazil', 'republica federativa do brasil', 'republica federativa del brasil']);
+  return pais.split('/').some(parte => NOMBRES.has(normalizarNombreAdmin(parte)));
+}
+
+const ESTADOS_BR = CENSO_BR.map(e => e.estado);
+
+/**
+ * En qué estado y municipio brasileño cae el punto.
+ *
+ * Función pura, como las otras cuatro. El estado sale de `provincia` (el
+ * `state` de Nominatim) y el municipio de `localidad` (su `city` o `town`,
+ * que en Brasil es el municipio entero y no sólo la mancha urbana).
+ *
+ * El estado se intenta primero por nombre y después por sigla: el
+ * geocodificador puede contestar «SP» o «São Paulo», y las siglas de dos letras
+ * no sobreviven a `normalizarNombreAdmin`, que descarta las palabras de una
+ * sola letra pero conserva las de dos.
+ */
+export function censoBrasilenoDelPunto(u: Ubicacion | null): CensoBrDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!esBrasil(u.pais)) return { estado: 'fuera_de_brasil', pais: u.pais };
+  if (!u.provincia) return { estado: 'sin_ubicacion' };
+
+  const rotulo = casarNombre(u.provincia, ESTADOS_BR, x => x);
+  const uf = rotulo
+    ? CENSO_BR.find(e => e.estado === rotulo) ?? null
+    : CENSO_BR.find(e => normalizarNombreAdmin(e.sigla) === normalizarNombreAdmin(u.provincia!)) ?? null;
+
+  if (!uf) return { estado: 'estado_desconocido', nombre: u.provincia };
+
+  // El municipio, buscado sólo entre los de ESTE estado: ver el encabezado.
+  const buscado = u.localidad ?? null;
+  if (!buscado) return { estado: 'con_estado', uf, municipioBuscado: null };
+
+  const municipio = casarNombre(buscado, uf.municipios, m => m.municipio);
+  if (!municipio) return { estado: 'con_estado', uf, municipioBuscado: buscado };
+
+  return { estado: 'con_censo', uf, municipio };
+}
+
+/**
+ * Los municipios del estado con más población indígena, para dar contexto.
+ *
+ * Se devuelven sólo los que tienen gente: un estado como Río de Janeiro tiene
+ * 65 de sus 92 municipios en cero, y llenar la lista con ceros no informa. Si
+ * el estado entero está en cero —no pasa hoy, los 27 tienen— la lista vuelve
+ * vacía y la pantalla lo dice.
+ */
+export function municipiosDestacadosBr(uf: CensoBrEstado, cuantos = 6): CensoBrMunicipio[] {
+  return uf.municipios
+    .filter(m => m.indigena > 0)
+    .sort((a, b) => b.indigena - a.indigena)
+    .slice(0, cuantos);
+}
+
+/** El porcentaje del país, sobre la población residente del Censo 2022. */
+export const PORCENTAJE_PAIS_BR = porcentaje(CENSO_BR_PAIS.indigena, CENSO_BR_PAIS.poblacion);

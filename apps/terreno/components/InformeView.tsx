@@ -14,18 +14,20 @@ import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
-  censoPeruanoDelPunto,
+  censoPeruanoDelPunto, censoBrasilenoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
   localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
   FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
+  FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR,
 } from '@/lib/pueblosOriginarios';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
+import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 
 interface Props {
   datos: InformeData;
@@ -74,6 +76,7 @@ export function InformeView({ datos, compartido = false }: Props) {
   // baja entera y no declara licencia. Y contesta por departamento y nada más:
   // los anexos no bajan a provincia ni a distrito.
   const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
+  const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
@@ -659,6 +662,57 @@ export function InformeView({ datos, compartido = false }: Props) {
                 publica un conteo comparable para cada uno de los 55 pueblos que reconoce el
                 Ministerio de Cultura. La segunda fuente —la {REGISTRO_PE_FALTANTE.organismo}— no
                 está incluida: {REGISTRO_PE_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Brasil. La primera respuesta a escala de municipio, y la
+                  primera que puede ser de dos niveles: si el municipio no se
+                  resuelve, el informe da el estado y dice que es mas grueso.
+                  Un informe que promete precision que no tiene es peor que uno
+                  que admite la que tiene. */}
+              {(censoBr.estado === 'con_censo' || censoBr.estado === 'con_estado') && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">População indígena (Censo 2022, Brasil)</p>
+              {censoBr.estado === 'con_censo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoBr.municipio.municipio} ({censoBr.uf.sigla}):{' '}
+                  {censoBr.municipio.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                  {censoBr.municipio.poblacion.toLocaleString('es-AR')} habitantes, el{' '}
+                  {porcentaje(censoBr.municipio.indigena, censoBr.municipio.poblacion)}%. En todo{' '}
+                  {censoBr.uf.estado} son {censoBr.uf.indigena.toLocaleString('es-AR')} sobre{' '}
+                  {censoBr.uf.poblacion.toLocaleString('es-AR')} —el{' '}
+                  {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%—, contra{' '}
+                  {PORCENTAJE_PAIS_BR}% en todo Brasil. El municipio brasileño incluye la ciudad y
+                  toda su zona rural, así que es la escala que le corresponde a un campo.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  En {censoBr.uf.estado} ({censoBr.uf.sigla}):{' '}
+                  {censoBr.uf.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                  {censoBr.uf.poblacion.toLocaleString('es-AR')} habitantes, el{' '}
+                  {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%, contra{' '}
+                  {PORCENTAJE_PAIS_BR}% en todo Brasil. <strong>Este dato es del estado entero y
+                  no del municipio</strong>
+                  {censoBr.municipioBuscado
+                    ? <>: el geocodificador devolvió «{censoBr.municipioBuscado}», que no es
+                        ninguno de los {censoBr.uf.municipios.length} municipios de{' '}
+                        {censoBr.uf.estado}</>
+                    : <>: no se pudo determinar la localidad del punto</>}
+                  . A escala de estado el número dice poco, porque la población indígena de Brasil
+                  está muy concentrada.
+                </p>
+              )}
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022_BR.label} · {FUENTE_CENSO_2022_BR.licencia}. En todo el
+                país son {CENSO_BR_PAIS.indigena.toLocaleString('es-AR')} personas sobre{' '}
+                {CENSO_BR_PAIS.poblacion.toLocaleString('es-AR')} habitantes, en{' '}
+                {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} municipios —
+                {CENSO_BR_PAIS.municipiosSinIndigenas.toLocaleString('es-AR')} de ellos sin ninguna
+                persona indígena censada—. El total combina dos preguntas:{' '}
+                {CENSO_BR_PAIS.corRaca.toLocaleString('es-AR')} declararon «cor ou raça indígena» y{' '}
+                {CENSO_BR_PAIS.seConsidera.toLocaleString('es-AR')} no la declararon pero dijeron
+                considerarse indígenas, pregunta que sólo se hizo dentro de tierras y localidades
+                indígenas. Las tierras indígenas no están incluidas: las publica la{' '}
+                {REGISTRO_BR_FALTANTE.organismo} y {REGISTRO_BR_FALTANTE.motivo}.
               </p>
               </>}
 
