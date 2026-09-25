@@ -47,10 +47,22 @@ export interface EntradaCuencaSalud {
   duracion_min?:    number | null;
   /** intensidad media de esa ráfaga (mm/h) */
   intensidad_mm_h?: number | null;
+  /** pendiente media del recorrido de flujo (m/m), para el rango de Kirpich */
+  pendiente_m_m?:   number | null;
+  /** factor de ajuste de Kirpich aplicado, con su razón (ver `cuenca.ts`) */
+  tc_factor?:       number | null;
+  tc_kirpich_min?:  number | null;
+  tc_min?:          number | null;
 }
 
 /** Hasta acá Kirpich fue calibrado (cuencas agrícolas chicas). */
 const KIRPICH_HA_MAX = 80;
+
+/** Y entre estas pendientes: las siete cuencas de Tennessee de Kirpich (1940)
+ *  tenían entre 3 y 10 %. Abajo de 3 % la fórmula devuelve tiempos cortos que
+ *  no son los de un terreno llano. */
+const KIRPICH_PEND_MIN = 0.03;
+const KIRPICH_PEND_MAX = 0.10;
 
 /** Y hasta acá el método racional (misma familia de cuencas chicas). */
 const RACIONAL_HA_MAX = 200;
@@ -100,6 +112,34 @@ export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
           ? ` Arriba de ~${RACIONAL_HA_MAX} ha el método racional tampoco corresponde: en cuencas así hace falta un hidrograma con tránsito, no un pico de fórmula.`
           : ''
       }`,
+    });
+  }
+
+  // Pendiente fuera del rango en el que Kirpich fue ajustado. No invalida el
+  // número —no hay otro mejor sin curvas IDF locales— pero cambia de qué lado
+  // está el error, y eso hay que decirlo antes de que alguien compre una caño.
+  if (e.pendiente_m_m != null && e.pendiente_m_m > 0) {
+    const p = e.pendiente_m_m;
+    if (p < KIRPICH_PEND_MIN || p > KIRPICH_PEND_MAX) {
+      const llano = p < KIRPICH_PEND_MIN;
+      avisos.push({
+        id: 'kirpich_pendiente', nivel: 'aviso',
+        titulo: `Pendiente media ${(p * 100).toFixed(1)} %: fuera del ${KIRPICH_PEND_MIN * 100}–${KIRPICH_PEND_MAX * 100} % de Kirpich`,
+        detalle: llano
+          ? 'En terreno tan llano el agua no se encauza: se extiende en lámina y tarda bastante más de lo que dice la fórmula. El tiempo de concentración queda CORTO y el caudal pico, alto. Sirve para dimensionar del lado seguro; no lo tomes como el caudal que va a pasar.'
+          : 'En pendientes así de fuertes la fórmula extrapola hacia arriba. Con una obra que no perdone, verificá el tiempo de concentración con el método de velocidades del NRCS (NEH-630, cap. 15).',
+      });
+    }
+  }
+
+  // El ajuste de Kirpich, dicho en voz alta. Es una corrección grande —duplica
+  // el tc— y no puede pasar escondida adentro de un número: si el recorrido va
+  // por una cuneta o un arroyito formado, el factor no corresponde.
+  if (e.tc_factor != null && e.tc_factor !== 1 && e.tc_kirpich_min != null && e.tc_min != null) {
+    avisos.push({
+      id: 'kirpich_ajuste', nivel: 'ok',
+      titulo: `Tiempo de concentración ajustado ×${e.tc_factor}: ${e.tc_kirpich_min} → ${e.tc_min} min`,
+      detalle: 'Kirpich se calibró en cuencas con cauce definido, y el agua desparramada sobre el suelo tarda alrededor del doble. El factor es el publicado (FHWA HEC-22; Rossmiller 1980), no un ajuste nuestro. Si el recorrido de tu cuenca va por una cuneta, una zanja o un arroyito ya formado, el factor no corresponde y el tc real está más cerca del valor sin ajustar.',
     });
   }
 

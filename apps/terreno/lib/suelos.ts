@@ -141,13 +141,19 @@ export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo
 async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
+  // 45 s y no 35: el proxy reintenta hasta tres veces contra ISRIC, que limita
+  // por IP y cuelga los pedidos que exceden el cupo (ver app/api/suelo/route.ts).
+  // Si el cliente corta antes que el proxy, se pierde el reintento que iba a
+  // entrar y el usuario ve un error que ya estaba resuelto del otro lado.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 35_000);
+  const timer = setTimeout(() => controller.abort(), 45_000);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    const json = await res.json() as SoilGridsResponse & { error?: string };
-    if (json.error) throw new Error(json.error);
-    if (!res.ok) throw new Error(`SoilGrids respondió ${res.status}`);
+    // Si el proxy se cayó entero la respuesta no es JSON: un SyntaxError crudo
+    // en pantalla no le sirve a nadie.
+    const json = await res.json().catch(() => null) as (SoilGridsResponse & { error?: string }) | null;
+    if (json?.error) throw new Error(json.error);
+    if (!res.ok || !json) throw new Error(`El servicio de suelo no respondió (${res.status}). Probá de nuevo en un minuto.`);
 
     const layers = json.properties.layers;
 

@@ -2319,11 +2319,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [programaMP, zona0, acceso]);
 
-  const handleAplicarZonasAptitud = useCallback((zonasNuevas: import('@/lib/zonificacion').Zona[]) => {
-    setZonas(prev => [...prev, ...zonasNuevas]);
-    setTab('zonas');
-  }, []);
-
   // ─── Proyectos ────────────────────────────────────────────────────────────
   const handleCargarProyecto = useCallback((p: Proyecto) => {
     const meta = (p.metadatos ?? {}) as Record<string, unknown>;
@@ -3137,7 +3132,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} /></div>}
-          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
+          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">
               <AnalisisRelievePanel

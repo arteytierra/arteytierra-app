@@ -72,14 +72,20 @@ export const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const))
  *  cambian: entitlements, snapshots y la paleta (Ctrl+K) siguen intactos. */
 export const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] }> = [
   { id: 'ubicacion', label: 'Tu terreno',                            corto: 'Lugar',     icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
-  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'contexto', 'entorno', 'cal', 'solar', 'sombras'],           esenciales: ['clima', 'contexto'] },
-  { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud', 'visibilidad'], esenciales: ['topo', 'analisis'] },
+  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'contexto', 'entorno', 'cal', 'solar'],                       esenciales: ['clima', 'contexto'] },
+  { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud'],               esenciales: ['topo', 'analisis'] },
   { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
-  { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra'],             esenciales: ['masterplan', 'zonas'] },
+  { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra', 'sombras', 'visibilidad'], esenciales: ['masterplan', 'zonas'] },
   { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
 ];
 // `economia` (Entrega) y `proyectos` no están en el riel: se alcanzan desde la
 // barra superior. El riel es, exactamente, la Escala de Permanencia.
+//
+// `sombras` y `visibilidad` viven en el peldaño 4 y no en Clima ni en Relieve.
+// No son lecturas del sitio: son las dos preguntas que se hacen una vez que hay
+// algo puesto en el plano —dónde da la sombra de este árbol, qué se ve desde
+// esta loma— y se contestan moviendo lo que está dibujado. Pertenecen al
+// peldaño donde se decide la ubicación, no al que describe el lugar.
 export const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
 );

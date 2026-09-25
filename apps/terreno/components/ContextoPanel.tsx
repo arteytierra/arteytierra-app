@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Leaf, Sprout, Users, Globe2, ExternalLink, Cloud, BookOpen, Bird, Mountain, Compass, AlertTriangle, MapPin, History, Landmark } from 'lucide-react';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
@@ -47,6 +48,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // Los saberes territoriales no salen de la ficha: se activan por polígono.
   // Devuelve [] en casi todo el planeta y eso no es una falla. Espera a que la
   // ecorregión se asiente porque la compuerta del saber usa el ECO_ID.
+  // Cuál de las cuatro fichas se está mirando. Va acá arriba con el resto de
+  // los hooks: abajo hay tres salidas tempranas y un hook no puede quedar
+  // detrás de un return.
+  const [pestanaElegida, setPestanaElegida] = useState<PestanaContexto>('ecosistema');
+
   const saberesTerritorio = useSaberes(centro?.lat ?? null, centro?.lng ?? null, {
     ecoId: eco?.eco_id,
     listo: !resolviendoEco,
@@ -173,6 +179,29 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // clase futura del mapa de Beck no hay nada honesto que decir.
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
 
+  /**
+   * Las cuatro fichas, y cuáles tienen algo adentro.
+   *
+   * El panel juntaba cinco preguntas distintas en una sola columna de scroll:
+   * qué ecosistema es, qué se hizo acá, quién vive acá, a qué se parece en el
+   * mundo y a dónde va el clima. Apiladas, la de abajo no existe — nadie baja
+   * ochocientos píxeles para enterarse de los análogos.
+   *
+   * Una pestaña vacía es peor que ninguna: prometé algo y no lo tengas. Por eso
+   * se arman con lo que efectivamente hay, y si la elegida se queda sin
+   * contenido —cambió el predio y esta ecorregión no trae ficha— se cae sola a
+   * la primera disponible en vez de mostrar el panel en blanco.
+   */
+  const disponibles: Array<{ id: PestanaContexto; label: string; icon: React.ReactNode }> = [
+    ...(ficha ? [{ id: 'ecosistema' as const, label: 'Ecosistema', icon: <Leaf className="w-3 h-3" /> }] : []),
+    ...(ficha ? [{ id: 'saberes'    as const, label: 'Saberes',    icon: <Users className="w-3 h-3" /> }] : []),
+    { id: 'pueblos' as const, label: 'Pueblos', icon: <Landmark className="w-3 h-3" /> },
+    ...((analogos || futuro) ? [{ id: 'analogos' as const, label: 'Análogos', icon: <Globe2 className="w-3 h-3" /> }] : []),
+  ];
+  const pestana: PestanaContexto = disponibles.some(p => p.id === pestanaElegida)
+    ? pestanaElegida
+    : (disponibles[0]?.id ?? 'pueblos');
+
   return (
     <div className="space-y-4">
       {/* Banner de bioma */}
@@ -203,7 +232,31 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
         </p>
       )}
 
-      {ficha && <>
+      {/* ── Las fichas ────────────────────────────────────────────────────
+          Pegadas arriba: en un panel de 300 px que scrollea, un selector que
+          se va con el contenido deja de ser navegación. */}
+      {disponibles.length > 1 && (
+        <div className="sticky top-0 z-10 -mx-4 px-4 py-2 bg-bone-50/95 backdrop-blur-sm border-b border-bone-200">
+          <div className="flex flex-wrap gap-1" role="tablist">
+            {disponibles.map(p => (
+              <button
+                key={p.id}
+                role="tab"
+                aria-selected={pestana === p.id}
+                onClick={() => setPestanaElegida(p.id)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors ${
+                  pestana === p.id
+                    ? 'bg-moss-700 text-bone-50 border-moss-700'
+                    : 'bg-white text-ink-700/70 border-bone-200 hover:border-moss-300 hover:text-ink-900'
+                }`}>
+                {p.icon}{p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {ficha && pestana === 'ecosistema' && <>
       {/* Ecosistema natural */}
       <Seccion icon={<Leaf className="w-3.5 h-3.5" />} titulo="Ecosistema natural">
         <DatoLinea icon={<Sprout className="w-3 h-3 text-moss-700" />} label="Vegetación" texto={ficha.vegetacion} />
@@ -220,7 +273,9 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           ))}
         </div>
       </Seccion>}
+      </>}
 
+      {ficha && pestana === 'saberes' && <>
       {/* Prácticas documentadas en el territorio.
 
           La respuesta al agujero que dejaban los `saberes: []`. Una ecorregión
@@ -308,7 +363,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           Va afuera del bloque de la ficha a propósito: depende de la ubicación
           administrativa y no de la ecorregión, así que aparece incluso donde no
           hay ficha de bioma. Ver lib/pueblosOriginarios.ts. */}
-      <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios">
+      {pestana === 'pueblos' && <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios">
         {/* Las tres maneras de no saber son de las dos capas a la vez: si no
             sabemos en qué provincia está el predio, no sabemos ni lo uno ni lo
             otro. Se escriben una sola vez. */}
@@ -525,8 +580,8 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
 
           <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
             <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
-            territorio.</strong> Alguien que se reconoce kolla y vive en Rosario suma en Santa Fe,
-            y eso no dice nada sobre la tierra de Santa Fe. Para saber si hay territorio en trámite
+            territorio.</strong> Alguien que se reconoce parte de un pueblo del noroeste y vive
+            en Rosario suma en Santa Fe, y eso no dice nada sobre la tierra de Santa Fe. Para saber si hay territorio en trámite
             al lado del predio, el dato es el del registro.
           </p>
 
@@ -1003,13 +1058,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </p>
           </div>
         </>}
-      </Seccion>
+      </Seccion>}
 
       {/* Saberes territoriales — capa 2. Separada de los saberes de la ficha a
           propósito: aquéllos describen un bioma, éstos son de comunidades
           concretas y sólo aparecen si el predio cae dentro de un polígono con
           procedencia y licencia verificadas. */}
-      {saberesTerritorio.length > 0 && <Seccion icon={<MapPin className="w-3.5 h-3.5" />} titulo="Saber territorial documentado acá">
+      {pestana === 'saberes' && saberesTerritorio.length > 0 && <Seccion icon={<MapPin className="w-3.5 h-3.5" />} titulo="Saber territorial documentado acá">
         <div className="space-y-2">
           {saberesTerritorio.map(({ saber, geometria }) => (
             <div key={saber.id} className="bg-white rounded-lg p-3 border border-clay-200">
@@ -1048,7 +1103,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
 
       {/* Análogos del mundo — dependen del clima, no de la ficha. Pueden faltar:
           el hielo permanente no tiene sistema agrícola análogo. */}
-      {analogos && <Seccion icon={<Globe2 className="w-3.5 h-3.5" />} titulo={`Análogos en el mundo · ${analogos.titulo}`}>
+      {pestana === 'analogos' && analogos && <Seccion icon={<Globe2 className="w-3.5 h-3.5" />} titulo={`Análogos en el mundo · ${analogos.titulo}`}>
         <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
           Regiones con clima parecido <span className="font-mono text-ink-700/40">{analogos.clase}</span>
         </p>
@@ -1083,7 +1138,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           la clase FUTURA, que es el aporte que ninguna otra pantalla hace:
           quién cultiva hoy, en algún lugar del mundo, en el clima que este
           predio va a tener. */}
-      {futuro && (
+      {pestana === 'analogos' && futuro && (
         <div className="rounded-xl border border-water-200 bg-water-50/50 overflow-hidden">
           <div className="px-3 py-2 border-b border-water-200 flex items-center gap-1.5 text-water-700">
             <Compass className="w-3.5 h-3.5" />
@@ -1169,7 +1224,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
       )}
 
       {/* Fuentes */}
-      {ficha && <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">
+      {ficha && pestana === 'ecosistema' && <Seccion icon={<BookOpen className="w-3.5 h-3.5" />} titulo="Para profundizar">
         <div className="space-y-1">
           {ficha.fuentes.map((f, i) => (
             <a key={i} href={f.url} target="_blank" rel="noreferrer"
@@ -1224,3 +1279,15 @@ function DatoLinea({ icon, label, texto }: { icon: React.ReactNode; label: strin
     </div>
   );
 }
+
+/**
+ * Las cuatro preguntas que contesta este panel, cada una en su ficha.
+ *
+ * No son cuatro cajones para repartir texto: son cuatro preguntas distintas que
+ * antes competían por el mismo scroll.
+ *   · ecosistema — qué es este lugar, según la ecorregión
+ *   · saberes    — qué se hizo acá, fechado, y de quién es cuando se sabe
+ *   · pueblos    — qué dicen los censos del Estado sobre quién vive acá
+ *   · analogos   — a qué se parece en el mundo y a dónde va el clima
+ */
+type PestanaContexto = 'ecosistema' | 'saberes' | 'pueblos' | 'analogos';

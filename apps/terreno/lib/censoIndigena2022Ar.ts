@@ -14,9 +14,18 @@ import type { CensoProvincia } from './pueblosOriginarios';
  * Dos cosas que hay que decir cada vez que se muestran estos números:
  *
  * 1. El censo cuenta **autorreconocimiento donde la persona vive**, no
- *    territorio. Alguien que se reconoce kolla y vive en Rosario suma en Santa
- *    Fe. Por eso esta capa no dice de quién es la tierra ni quién estuvo antes:
- *    dice cuánta gente se reconoce indígena hoy, ahí.
+ *    territorio. Alguien que se reconoce parte de un pueblo del noroeste y
+ *    vive en Rosario suma en Santa Fe. Por eso esta capa no dice de quién es la
+ *    tierra ni quién estuvo antes: dice cuánta gente se reconoce indígena hoy,
+ *    ahí.
+ *
+ *    El ejemplo va sin nombrar un pueblo a propósito. Los rótulos del censo
+ *    —«Kolla», «Qom/Toba», «Diaguita»— se muestran tal cual los publica el
+ *    INDEC, porque son lo que la gente contestó y cambiarlos sería falsear la
+ *    fuente. Pero usar uno de esos nombres como ejemplo genérico, en minúscula
+ *    y en nuestra propia prosa, es otra cosa: fuera de la tabla, «kolla» en
+ *    minúscula circula como término despectivo para la gente del altiplano.
+ *    En el dato, el nombre de la fuente; en el texto nuestro, ninguno.
  *
  * 2. 431.703 personas —el 33% de las que se reconocen indígenas— no
  *    declararon a qué pueblo pertenecen. La lista de pueblos no es un padrón:

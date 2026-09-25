@@ -17,7 +17,7 @@ import {
 } from '@/lib/cuencasGuardadas';
 import { confianzaCuenca } from '@/lib/saludCalculo';
 import { PERIODOS_RETORNO, type HidrologiaPredio } from '@/lib/hidrologiaPredio';
-import { volumenM3, volumenEnLitros, caudalM3s, caudalEnLitros, duracionMin } from '@/lib/unidades';
+import { volumenM3, volumenEnLitros, caudalM3s, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
 
@@ -99,9 +99,14 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
   const cn         = auto ? hidro.cn : cobertura.cn[grupo];
   const precip_mm  = auto ? hidro.precip_mm : (parseFloat(precip) || 0);
 
+  // La cobertura manda dos veces: el CN (cuánto escurre) y el ajuste de Kirpich
+  // (cuánto tarda en llegar). En automático sale de la cobertura satelital; a
+  // mano, del desplegable.
+  const coberturaTc = auto ? hidro.coberturaId : coberturaId;
+
   const resultado = useMemo(() =>
-    cuenca ? analizarCuenca(cuenca, cn, precip_mm, parseFloat(head) || 0.3) : null,
-    [cuenca, cn, precip_mm, head],
+    cuenca ? analizarCuenca(cuenca, cn, precip_mm, parseFloat(head) || 0.3, { coberturaId: coberturaTc }) : null,
+    [cuenca, cn, precip_mm, head, coberturaTc],
   );
 
   // La tormenta cuenta como dato del lugar sólo mientras no la hayas tocado.
@@ -129,6 +134,9 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           precipDeClima, grupoDeSuelo,
           expandida: !!expandida, fuenteDem, cnPredio: hidro.cn,
           duracion_min: resultado.duracion_min, intensidad_mm_h: resultado.intensidad_mm_h,
+          pendiente_m_m: cuenca.pendiente_m_m,
+          tc_factor: resultado.tc_factor, tc_kirpich_min: resultado.tc_kirpich_min,
+          tc_min: resultado.tc_min,
         })
       : null,
     [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, hidro.cn],
@@ -408,17 +416,61 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                     <Stat label="Curva número (CN)" value={String(resultado.cn)} color="moss" />
                     <Stat label="Escurre" value={`${resultado.escurrimiento_mm} mm`}
                       sub={`de ${resultado.precip_mm} mm de lluvia · ${Math.round(resultado.coef_evento * 100)} %`} />
-                    <Stat label="Volumen del evento" value={volumenM3(resultado.volumen_m3)}
-                      sub={`${volumenEnLitros(resultado.volumen_m3)} · en 24 h`} />
+                    <Stat label="Volumen que escurre" value={volumenM3(resultado.volumen_m3)}
+                      sub={`${volumenEnLitros(resultado.volumen_m3)} · todo el evento de 24 h`} />
                     <Stat label="Tiempo de concentración" value={duracionMin(resultado.tc_min)}
-                      sub="del punto más lejano hasta la salida" />
+                      sub={resultado.tc_factor === 1
+                        ? 'del punto más lejano hasta la salida'
+                        : `Kirpich ${resultado.tc_kirpich_min} min ×${resultado.tc_factor}: ${resultado.tc_razon}`} />
                     <Stat label="Ráfaga de diseño" value={duracionMin(resultado.duracion_min)}
                       sub={`${resultado.intensidad_mm_h} mm/h · ${resultado.lamina_rafaga_mm} mm — es la que hace el pico`} />
                     <Stat label="Caudal pico" value={caudalM3s(resultado.caudal_pico_m3s)}
-                      sub={caudalEnLitros(resultado.caudal_pico_m3s) || 'máximo instantáneo'} color="agua" />
+                      sub={`${Math.round(resultado.caudal_pico_m3s * 1000 / Math.max(0.01, cuenca.area_ha))} L/s por hectárea`} color="agua" />
                     <Stat label="Ancho de vertedero" value={`${resultado.vertedero_m} m`}
                       sub={`para pasar el pico con ${resultado.head_vertedero_m} m de carga`} color="agua" />
                   </div>
+
+                  {/* ── Qué es el CN ─────────────────────────────────────────
+                      "Curva número 69" no le dice nada a nadie que no venga de
+                      la hidrología, y es EL número del que cuelgan los otros
+                      cinco. Se explica acá, con los valores de esta cuenca
+                      calculados en vivo: la retención S y la abstracción
+                      inicial son las dos cantidades en milímetros que hacen
+                      entender por qué una lluvia chica no escurre nada. */}
+                  <details className="bg-white rounded-xl border border-bone-200 overflow-hidden group">
+                    <summary className="px-3 py-2 text-[11px] font-medium text-ink-700 cursor-pointer select-none flex items-center gap-1.5 hover:bg-bone-50">
+                      <Waves className="w-3 h-3 text-moss-700" />
+                      ¿Qué significa CN {resultado.cn}?
+                    </summary>
+                    <div className="px-3 pb-3 space-y-2 text-[10px] text-ink-700/75 leading-relaxed">
+                      <p>
+                        La <b>curva número</b> es un índice de 30 a 98 que resume, en un solo valor,
+                        cuánta lluvia se va por arriba y cuánta entra en el suelo. Lo armó el
+                        Servicio de Conservación de Suelos de Estados Unidos cruzando el tipo de
+                        suelo con lo que hay plantado encima. <b>30</b> es monte sobre arena: se
+                        chupa casi todo. <b>98</b> es hormigón: no entra nada. No es un porcentaje
+                        y no se lee como tal.
+                      </p>
+                      <p>
+                        Del CN sale <b>S</b>, que sí está en milímetros y es la parte que se
+                        entiende: cuánta agua puede guardar este suelo antes de que empiece a
+                        correr. S = 25.400 / {resultado.cn} − 254 = <b>{Math.round(25400 / resultado.cn - 254)} mm</b>.
+                      </p>
+                      <p>
+                        De esos, los primeros <b>{Math.round((25400 / resultado.cn - 254) * 0.2)} mm</b> —el
+                        20 % de S— se van en mojar el pasto, llenar los charcos y humedecer la
+                        superficie <i>antes</i> de que escurra una gota. Por eso una llovizna no
+                        hace nada y esta tormenta de {resultado.precip_mm} mm escurre{' '}
+                        {resultado.escurrimiento_mm} mm: no es que se pierda el {100 - Math.round(resultado.coef_evento * 100)} %
+                        en el aire, es que el suelo se lo queda.
+                      </p>
+                      <p className="text-ink-700/55">
+                        Un CN más alto no es «peor»: es un suelo más duro o una cobertura más
+                        rala. La manera de bajarlo es cobertura viva, materia orgánica y menos
+                        compactación — y eso baja el pico y el volumen a la vez.
+                      </p>
+                    </div>
+                  </details>
 
                   {/* `key` por nivel: si aparece una alerta nueva —cortaste la
                       cuenca en el límite, o borraste la tormenta— el bloque se
@@ -452,7 +504,8 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                   )}
 
                   <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
-                    Volumen por SCS-CN (AMC II) · tc de Kirpich · caudal pico por método racional sobre la ráfaga
+                    Volumen por SCS-CN (AMC II) · tc de Kirpich (1940) con el factor de ajuste por tipo de
+                    recorrido de FHWA HEC-22 · caudal pico por método racional sobre la ráfaga
                     de duración tc, desagregada de la lámina de 24 h · vertedero de cresta ancha (C=1.7).
                     Diseño preliminar — verificá con estudio hidrológico local.
                   </p>

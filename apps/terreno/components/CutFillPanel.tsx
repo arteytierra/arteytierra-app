@@ -574,10 +574,19 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
               {/* Taludes y resto */}
               <div className="space-y-1.5 bg-bone-50 rounded-lg p-2">
                 <ParamRow label="Largo del muro (m)" value={longitud} onChange={v => setLongMuro(v)} step={1} />
-                <ParamRow label="Talud interno (H:1V)" value={muroP.taludInterno} onChange={v => { setMuroAuto(false); setMuroP(p => ({ ...p, taludInterno: v })); }} step={0.5} />
-                <ParamRow label="Talud externo (H:1V)" value={muroP.taludExterno} onChange={v => { setMuroAuto(false); setMuroP(p => ({ ...p, taludExterno: v })); }} step={0.5} />
+                <ParamRow label="Talud interno · lado del agua (H:1V)" value={muroP.taludInterno} onChange={v => { setMuroAuto(false); setMuroP(p => ({ ...p, taludInterno: v })); }} step={0.5} />
+                <ParamRow label="Talud externo · lado seco (H:1V)" value={muroP.taludExterno} onChange={v => { setMuroAuto(false); setMuroP(p => ({ ...p, taludExterno: v })); }} step={0.5} />
                 <ParamRow label="Revancha (m)" value={muroP.revancha} onChange={v => setMuroP(p => ({ ...p, revancha: v }))} step={0.1} />
               </div>
+
+              {/* ── Qué quiere decir H:1V ───────────────────────────────────
+                  Es la notación estándar de movimiento de suelo y no la conoce
+                  nadie que no venga de la obra. Y no es un detalle: el talud
+                  decide el ancho de base y con él todo el volumen de terraplén,
+                  así que alguien lo va a mover. Se explica con el muro que está
+                  dibujado, no en abstracto: qué se corre en horizontal, cuánta
+                  pendiente es y cuántos metros de campo ocupa cada cara. */}
+              <TaludExplicado interno={muroP.taludInterno} externo={muroP.taludExterno} alto={muro.alto_m} />
 
               <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
                 <Info className="w-3 h-3 shrink-0 mt-0.5 text-ink-700/40" />
@@ -1007,5 +1016,64 @@ function Partida({ n, label, valor, nota }: { n: number; label: string; valor: n
         <p className="text-[9px] text-ink-700/45 leading-relaxed">{nota}</p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Qué quiere decir «H:1V», con el muro que está dibujado.
+ *
+ * H:1V es cuántos metros HORIZONTALES por cada metro VERTICAL. Un talud 2,5
+ * significa que por cada metro que sube el muro, la cara se corre 2,5 m: es una
+ * pendiente de 1 en 2,5, o sea 40 %, unos 22°. Cuanto más grande el número, más
+ * tendido el talud — al revés de lo que sugiere la intuición.
+ *
+ * No es un dato de ficha: el talud decide el ancho de base
+ * (base = corona + alto × (interno + externo)) y con él todo el movimiento de
+ * suelo y la superficie de campo que el muro se come. Por eso, además de la
+ * definición, van los metros que ocupa cada cara en ESTE muro.
+ *
+ * Y el interno va siempre más tendido que el externo: está saturado, le pega el
+ * oleaje y, sobre todo, la condición crítica es el vaciado rápido —cuando la
+ * represa baja de golpe, el agua que quedó adentro del terraplén empuja hacia
+ * afuera sin el agua del vaso que la contenía—. Ese es el lado que desliza.
+ */
+function TaludExplicado({ interno, externo, alto }: { interno: number; externo: number; alto: number }) {
+  const pct = (h: number) => (h > 0 ? Math.round(100 / h) : 0);
+  const grados = (h: number) => (h > 0 ? (Math.atan(1 / h) * 180 / Math.PI).toFixed(0) : '0');
+  const corrida = (h: number) => Math.round(h * alto * 10) / 10;
+
+  return (
+    <details className="bg-white rounded-lg border border-bone-200 overflow-hidden">
+      <summary className="px-2 py-1.5 text-[10px] font-medium text-ink-700 cursor-pointer select-none hover:bg-bone-50">
+        ¿Qué es un talud «H:1V»?
+      </summary>
+      <div className="px-2 pb-2 space-y-1.5 text-[9px] text-ink-700/75 leading-relaxed">
+        <p>
+          <b>Metros horizontales por cada metro vertical.</b> Talud {interno} quiere decir que
+          por cada metro que sube el muro, la cara se corre {interno} m hacia el costado.
+          Número más grande = talud más tendido, no más parado.
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <div className="bg-water-50/70 border border-water-200 rounded px-2 py-1.5">
+            <p className="text-[9px] font-semibold text-ink-700">Interno · {interno}:1</p>
+            <p className="text-ink-700/60">lado del agua</p>
+            <p className="font-mono text-ink-900">{pct(interno)} % · {grados(interno)}°</p>
+            <p className="text-ink-700/55">ocupa {corrida(interno)} m de ancho con {alto} m de alto</p>
+          </div>
+          <div className="bg-bone-50 border border-bone-200 rounded px-2 py-1.5">
+            <p className="text-[9px] font-semibold text-ink-700">Externo · {externo}:1</p>
+            <p className="text-ink-700/60">lado seco</p>
+            <p className="font-mono text-ink-900">{pct(externo)} % · {grados(externo)}°</p>
+            <p className="text-ink-700/55">ocupa {corrida(externo)} m de ancho con {alto} m de alto</p>
+          </div>
+        </div>
+        <p className="text-ink-700/55">
+          El interno va siempre más tendido. Está saturado, le pega el oleaje y la condición que
+          lo hace deslizar es el <b>vaciado rápido</b>: cuando la represa baja de golpe, el agua
+          que quedó adentro del terraplén empuja hacia afuera y ya no está la del vaso
+          sosteniéndola. Parar ese talud para ahorrar tierra es donde se rompen los muros.
+        </p>
+      </div>
+    </details>
   );
 }

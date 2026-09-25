@@ -186,6 +186,12 @@ export interface HidrologiaPredio {
   coefAnual:       number;
   /** factor C de USLE ponderado por cobertura (para erosión) */
   usleC:           number;
+  /**
+   * Cobertura SCS dominante por área. La consume el ajuste de Kirpich en
+   * `cuenca.ts`: el agua no tarda lo mismo en bajar por un pastizal que por
+   * una superficie dura, y ese factor cambia el caudal pico.
+   */
+  coberturaId:     string;
   composicion:     Array<{ nombre: string; pct: number; cn: number }>;
   confianza:       Confianza;
 }
@@ -194,16 +200,16 @@ export interface HidrologiaPredio {
 
 const CN_POR_ID = new Map(COBERTURAS.map(c => [c.id, c]));
 
-function cnDeClase(wc: number, grupo: GrupoHidro): { cn: number; usleC: number; coefAnual: number } | null {
+function cnDeClase(wc: number, grupo: GrupoHidro): { cn: number; usleC: number; coefAnual: number; coberturaId: string } | null {
   const m = MAPEO_WC[wc];
   if (!m) return null;
   const coefAnual = m.coberturaId
     ? coefEscorrentiaAnual(grupo, m.coberturaId)
     : (COEF_ANUAL_FIJO[wc] ?? coefEscorrentiaAnual(grupo, COBERTURA_POR_DEFECTO));
-  if (m.cnFijo !== null) return { cn: m.cnFijo, usleC: m.usleC, coefAnual };
+  if (m.cnFijo !== null) return { cn: m.cnFijo, usleC: m.usleC, coefAnual, coberturaId: m.coberturaId ?? COBERTURA_POR_DEFECTO };
   const cob = m.coberturaId ? CN_POR_ID.get(m.coberturaId) : undefined;
   if (!cob) return null;
-  return { cn: cob.cn[grupo], usleC: m.usleC, coefAnual };
+  return { cn: cob.cn[grupo], usleC: m.usleC, coefAnual, coberturaId: cob.id };
 }
 
 /**
@@ -231,6 +237,8 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
   const hayC = items.length > 0;
   const composicion: Array<{ nombre: string; pct: number; cn: number }> = [];
   let cn = 0, usleC = 0, coefAnual = 0, pctUsado = 0, pctSinMapa = 0;
+  // Cobertura dominante por área: la usa el ajuste de Kirpich, no el CN.
+  let coberturaId = COBERTURA_POR_DEFECTO, pctDominante = 0;
 
   if (hayC) {
     for (const it of items) {
@@ -240,6 +248,7 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
       usleC     += v.usleC     * it.pct;
       coefAnual += v.coefAnual * it.pct;
       pctUsado  += it.pct;
+      if (it.pct > pctDominante) { pctDominante = it.pct; coberturaId = v.coberturaId; }
       composicion.push({ nombre: nombreWC(it.wc), pct: it.pct, cn: v.cn });
     }
   }
@@ -339,6 +348,7 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
     coef: Math.round(coef * 100) / 100,
     coefAnual: Math.round(Math.min(0.9, Math.max(0.03, coefAnual)) * 100) / 100,
     usleC: Math.round(usleC * 1000) / 1000,
+    coberturaId,
     composicion: composicion.sort((a, b) => b.pct - a.pct),
     confianza,
   };

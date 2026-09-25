@@ -42,7 +42,15 @@ export interface CeldaAptitud {
 
 export interface ResultadoAptitud {
   celdas:  CeldaAptitud[];
-  resumen: Record<TipoAptitud, { celdas: number; pct: number }>;
+  /** Superficie de UNA celda de la grilla (m²). Es el paso del DEM proyectado
+   *  a la latitud del predio: a −32° una celda de Copernicus GLO-30 mide unos
+   *  30 × 25 m. Viaja para que la pantalla pueda hablar en metros cuadrados en
+   *  vez de en celdas, que es una unidad de la implementación y no del campo. */
+  area_celda_m2: number;
+  /** Suma de todas las celdas analizadas (m²). No es el área del predio: es la
+   *  parte del predio que quedó cubierta por la grilla del relieve. */
+  area_total_m2: number;
+  resumen: Record<TipoAptitud, { celdas: number; area_m2: number; pct: number }>;
   /** Los ajustes del ecosistema que efectivamente se aplicaron, con su razón.
    *  Van hasta la pantalla: un puntaje corregido sin decir por qué no se puede
    *  discutir, y acá el usuario sabe más del lugar que la app. */
@@ -164,14 +172,41 @@ export function calcularAptitud(
     };
   });
 
-  // Resumen por tipo
+  // Resumen por tipo, en metros cuadrados.
+  const area_celda_m2 = areaCelda(celdas);
+  const area_total_m2 = resultCeldas.length * area_celda_m2;
   const tiposAptitud: TipoAptitud[] = ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'];
   const resumen = Object.fromEntries(tiposAptitud.map(t => {
     const n = resultCeldas.filter(c => c.dominante === t).length;
-    return [t, { celdas: n, pct: Math.round((n / resultCeldas.length) * 1000) / 10 }];
-  })) as Record<TipoAptitud, { celdas: number; pct: number }>;
+    return [t, {
+      celdas:  n,
+      area_m2: Math.round(n * area_celda_m2),
+      pct:     resultCeldas.length ? Math.round((n / resultCeldas.length) * 1000) / 10 : 0,
+    }];
+  })) as ResultadoAptitud['resumen'];
 
-  return { celdas: resultCeldas, resumen, ajustes: modificadores ?? [] };
+  return { celdas: resultCeldas, area_celda_m2, area_total_m2, resumen, ajustes: modificadores ?? [] };
+}
+
+/**
+ * Superficie de una celda de la grilla, en m².
+ *
+ * Las celdas vienen en grados: hay que proyectarlas. Un grado de latitud son
+ * 111.320 m en cualquier parte; uno de longitud, eso mismo por el coseno de la
+ * latitud —a −32° son 94.300 m, un 15 % menos—. Ignorar el coseno inflaría
+ * todas las superficies un 15 % en la Argentina central y un 50 % en Ushuaia.
+ *
+ * Se mide sobre la primera celda porque la grilla es regular en grados: todas
+ * miden lo mismo salvo una diferencia de milésimas entre el borde norte y el
+ * sur del predio, que a escala de un campo no llega al metro cuadrado.
+ */
+function areaCelda(celdas: CeldaShader[]): number {
+  const c = celdas[0];
+  if (!c) return 0;
+  const lat0   = (c.latMin + c.latMax) / 2;
+  const dLat_m = (c.latMax - c.latMin) * 111_320;
+  const dLng_m = (c.lngMax - c.lngMin) * 111_320 * Math.cos(lat0 * Math.PI / 180);
+  return dLat_m * dLng_m;
 }
 
 // ─── Agrupar celdas en polígonos contiguos ───────────────────────────────────

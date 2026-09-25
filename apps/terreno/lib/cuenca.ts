@@ -273,7 +273,10 @@ export interface ResultadoCuenca {
   escurrimiento_mm: number;   // lo que escurre de ese evento (mm)
   volumen_m3:       number;   // volumen del evento completo
   coef_evento:      number;   // Q/P del evento (0–1)
-  tc_min:           number;   // tiempo de concentración
+  tc_min:           number;   // tiempo de concentración efectivo (Kirpich ajustado)
+  tc_kirpich_min:   number;   // lo que da Kirpich crudo, antes del ajuste
+  tc_factor:        number;   // el factor aplicado (ver `ajusteKirpich`)
+  tc_razon:         string;   // por qué ese factor, en una línea
   duracion_min:     number;   // duración de la ráfaga que produce el pico
   lamina_rafaga_mm: number;   // lluvia de esa ráfaga (desagregada de la de 24 h)
   intensidad_mm_h:  number;   // intensidad media de la ráfaga
@@ -291,10 +294,61 @@ export function escurrimientoSCS(precip_mm: number, cn: number): number {
   return (precip_mm - Ia) ** 2 / (precip_mm - Ia + S);
 }
 
-/** Tiempo de concentración de Kirpich (min). L en m, S en m/m. */
+/**
+ * Tiempo de concentración de Kirpich (min). L en m, S en m/m.
+ *
+ * Kirpich, Z.P. (1940), «Time of concentration of small agricultural
+ * watersheds», Civil Engineering 10(6):362. Ajustada sobre siete cuencas
+ * rurales de Tennessee de 0,5 a 45 ha, con pendientes de 3 a 10 % y
+ * **cauces bien definidos**. Fuera de eso hay que ajustarla: ver
+ * `ajusteKirpich`.
+ */
 export function tcKirpich(L_m: number, S_m_m: number): number {
   if (L_m <= 0 || S_m_m <= 0) return 0;
   return 0.0195 * Math.pow(L_m, 0.77) * Math.pow(S_m_m, -0.385);
+}
+
+/**
+ * El factor que le faltaba a Kirpich, y por qué importa.
+ *
+ * La fórmula se ajustó sobre cuencas **con cauce**: agua corriendo por una
+ * zanja o un arroyito, que va mucho más rápido que la misma agua desparramada
+ * sobre un pastizal. Aplicada cruda a un potrero sin cauce devuelve un tc
+ * demasiado corto, y un tc corto es caro: la ráfaga de diseño dura menos, la
+ * intensidad sube, y el caudal pico —que es proporcional a esa intensidad—
+ * termina inflado. En un predio llano de 2,5 ha eso era la diferencia entre
+ * 210 y 130 L/s.
+ *
+ * Los factores son los publicados, no estimados acá. FHWA HEC-22 (Urban
+ * Drainage Design Manual, 3.ª ed., 2009, tabla de ajustes de Kirpich), y antes
+ * Rossmiller (1980):
+ *
+ *   · escurrimiento superficial sobre pasto o suelo desnudo ......... × 2,0
+ *   · escurrimiento sobre hormigón o asfalto ........................ × 0,4
+ *   · cauce natural bien definido (el caso de Kirpich) .............. × 1,0
+ *
+ * Se elige por la cobertura, que es el dato que la app ya tiene. Lo que no
+ * tiene es si hay un cauce formado, así que asume que no lo hay: en un predio
+ * de pocas hectáreas casi nunca lo hay, y equivocarse para ese lado alarga el
+ * tc y baja el pico, que es el lado que hay que justificar — por eso el panel
+ * muestra los dos números y el factor.
+ */
+export interface AjusteTc { factor: number; razon: string }
+
+export function ajusteKirpich(coberturaId?: string | null): AjusteTc {
+  if (coberturaId === 'urbano') {
+    return { factor: 0.4, razon: 'el agua corre sobre superficie dura, más rápido que en el ensayo de Kirpich' };
+  }
+  return { factor: 2, razon: 'el agua corre desparramada sobre el suelo y no por un cauce formado' };
+}
+
+/** Tiempo de concentración efectivo: Kirpich con el ajuste que pide el terreno. */
+export function tcConcentracion(L_m: number, S_m_m: number, coberturaId?: string | null): {
+  tc_min: number; kirpich_min: number; factor: number; razon: string;
+} {
+  const kirpich_min = tcKirpich(L_m, S_m_m);
+  const { factor, razon } = ajusteKirpich(coberturaId);
+  return { tc_min: kirpich_min * factor, kirpich_min, factor, razon };
 }
 
 /**
@@ -305,6 +359,17 @@ export function tcKirpich(L_m: number, S_m_m: number): number {
  * CAUDAL PICO — método racional sobre la ráfaga de diseño (H5):
  *   qp = C · i · A / 3.6,  con la duración = tc y la intensidad desagregada
  *   de la lámina de 24 h (`lib/tormenta.ts`).
+ *
+ * El tc sale de Kirpich CON el factor de ajuste por tipo de recorrido
+ * (`ajusteKirpich`). Sin ese factor —que es parte del método publicado, no un
+ * agregado nuestro— la fórmula devuelve el tc de una cuenca con cauce aplicado
+ * a un potrero sin cauce, y el pico sale alrededor de un 40 % alto.
+ *
+ * El método racional en sí no cambió y no está en discusión: contrastado contra
+ * el pico gráfico del TR-55 (NRCS, 1986) sobre el mismo caso —2,5 ha, CN 69,
+ * P24 = 94 mm— los dos se mueven juntos y se acercan cuando el tc es el
+ * ajustado. Lo que estaba mal no era la fórmula del pico sino el tiempo de
+ * concentración que se le daba de entrada.
  *
  * Antes el pico salía del hidrograma unitario triangular SCS
  * (qp = 0.208·A·Q/Tp, Tp = 0.667·tc) pero alimentado con el escurrimiento del
@@ -322,13 +387,20 @@ export function analizarCuenca(
   cn: number,
   precip_mm: number,
   headVertedero_m = 0.3,
-  coefVertedero = 1.7,
+  opciones: {
+    /** Cobertura dominante del recorrido: decide el ajuste de Kirpich. */
+    coberturaId?: string | null;
+    coefVertedero?: number;
+  } = {},
 ): ResultadoCuenca {
+  const { coberturaId = null, coefVertedero = 1.7 } = opciones;
+
   const Q_mm = escurrimientoSCS(precip_mm, cn);
   const volumen = (Q_mm / 1000) * cuenca.area_m2;
   const coefEvento = precip_mm > 0 ? Q_mm / precip_mm : 0;
 
-  const tc_min = tcKirpich(cuenca.long_flujo_m, cuenca.pendiente_m_m);
+  const tc = tcConcentracion(cuenca.long_flujo_m, cuenca.pendiente_m_m, coberturaId);
+  const tc_min = tc.tc_min;
   const dur_min = duracionDeDiseno(tc_min);
   const lamina = laminaDuracion(precip_mm, dur_min);
   const i_mm_h = intensidadDuracion(precip_mm, dur_min);
@@ -344,6 +416,9 @@ export function analizarCuenca(
     volumen_m3:       Math.round(volumen),
     coef_evento:      Math.round(coefEvento * 100) / 100,
     tc_min:           Math.round(tc_min * 10) / 10,
+    tc_kirpich_min:   Math.round(tc.kirpich_min * 10) / 10,
+    tc_factor:        tc.factor,
+    tc_razon:         tc.razon,
     duracion_min:     dur_min,
     lamina_rafaga_mm: Math.round(lamina * 10) / 10,
     intensidad_mm_h:  Math.round(i_mm_h),

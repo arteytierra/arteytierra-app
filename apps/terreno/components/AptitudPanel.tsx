@@ -2,11 +2,10 @@
 
 import { useMemo } from 'react';
 import { Mountain, Leaf } from 'lucide-react';
-import { calcularAptitud, agruparAptitud, LABELS_APTITUD, COLORES_APTITUD, type TipoAptitud, type ResultadoAptitud } from '@/lib/aptitud';
-import { crearZona } from '@/lib/zonificacion';
+import { calcularAptitud, LABELS_APTITUD, COLORES_APTITUD, type TipoAptitud, type ResultadoAptitud } from '@/lib/aptitud';
+import { superficie, superficieEnHa } from '@/lib/unidades';
 import type { DatosShader } from '@/lib/shaders';
 import type { DatosEscorrentia } from '@/lib/escorrentias';
-import type { Zona } from '@/lib/zonificacion';
 import type { DatosClima } from '@/lib/clima';
 import { useFichaBioma } from '@/lib/useFichaBioma';
 
@@ -16,11 +15,10 @@ interface Props {
   /** Sólo para resolver la ficha del ecosistema, que corrige los puntajes. Sin
    *  clima la aptitud se calcula igual, con el relieve solo. */
   datosClima?:     DatosClima | null;
-  onAplicarZonas:  (zonas: Zona[]) => void;
   onIrATopo:       () => void;
 }
 
-export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onAplicarZonas, onIrATopo }: Props) {
+export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onIrATopo }: Props) {
   const { ficha, resolviendo } = useFichaBioma(
     datosClima ?? null,
     datosShader ? (datosShader.elev_min + datosShader.elev_max) / 2 : undefined,
@@ -73,44 +71,6 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
   const tipos: TipoAptitud[] = ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'];
   const ajustes = resultado.ajustes;
 
-  function handleAplicarZonas() {
-    if (!resultado) return;
-    const categoriaMap: Record<TipoAptitud, import('@/lib/zonificacion').CategoriaZona> = {
-      huerta:   'huerta',
-      frutales: 'frutales',
-      pasturas: 'pasturas',
-      forestal: 'monte_nativo',
-      reserva:  'monte_nativo',
-    };
-    const colorMap: Record<TipoAptitud, string> = {
-      huerta:   '#2E7D32',
-      frutales: '#689F38',
-      pasturas: '#F9A825',
-      forestal: '#5D4037',
-      reserva:  '#78909C',
-    };
-
-    // Un polígono por cada mancha contigua de aptitud dominante (no una caja
-    // envolvente por tipo, que cubría todo el predio y se superponía).
-    const clusters = agruparAptitud(resultado);
-    const contadorPorTipo = new Map<TipoAptitud, number>();
-
-    const zonas: Zona[] = clusters.map(cl => {
-      const base   = crearZona(categoriaMap[cl.tipo], cl.anillo);
-      const nombre = LABELS_APTITUD[cl.tipo].replace(' — ', ': ');
-      const nMismo = clusters.filter(c => c.tipo === cl.tipo).length;
-      let etiqueta = nombre;
-      if (nMismo > 1) {
-        const idx = (contadorPorTipo.get(cl.tipo) ?? 0) + 1;
-        contadorPorTipo.set(cl.tipo, idx);
-        etiqueta = `${nombre} ${idx}`;
-      }
-      return { ...base, nombre: etiqueta, color: colorMap[cl.tipo] };
-    });
-
-    onAplicarZonas(zonas);
-  }
-
   return (
     <div className="space-y-4">
       <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">Aptitud de uso del suelo</p>
@@ -152,7 +112,15 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
       {/* Resumen visual */}
       <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
         <div className="px-3 py-2 border-b border-bone-200">
-          <p className="text-xs font-medium text-ink-700">Distribución por aptitud ({resultado.celdas.length} celdas)</p>
+          <p className="text-xs font-medium text-ink-700">Distribución por aptitud</p>
+          {/* La superficie analizada, no la del predio: la grilla del relieve
+              puede no llegar a los bordes. Decirlo acá evita que alguien reste
+              esto contra la superficie del plano y crea que falta tierra. */}
+          <p className="text-[9px] text-ink-700/50 leading-tight mt-0.5">
+            {superficie(resultado.area_total_m2)}
+            {superficieEnHa(resultado.area_total_m2) && ` · ${superficieEnHa(resultado.area_total_m2)}`} analizados,
+            en celdas de {Math.round(resultado.area_celda_m2)} m²
+          </p>
         </div>
         <div className="p-3 space-y-2">
           {tipos.map(tipo => {
@@ -162,7 +130,8 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
                 <div className="w-3 h-3 rounded-sm shrink-0" style={{ background: COLORES_APTITUD[tipo] }} />
                 <span className="text-[9px] text-ink-700 flex-1 leading-tight">{LABELS_APTITUD[tipo]}</span>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <div className="w-20 h-1.5 bg-bone-100 rounded-full overflow-hidden">
+                  <span className="text-[9px] font-mono text-ink-700/55 w-16 text-right">{superficie(r.area_m2)}</span>
+                  <div className="w-14 h-1.5 bg-bone-100 rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: COLORES_APTITUD[tipo] }} />
                   </div>
                   <span className="text-[9px] font-mono text-ink-700/60 w-8 text-right">{r.pct}%</span>
@@ -180,20 +149,17 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onApli
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: COLORES_APTITUD[tipo] }} />
               <p className="text-[10px] font-semibold text-ink-700">{LABELS_APTITUD[tipo]}</p>
-              <span className="ml-auto text-[9px] font-mono text-ink-700/60">{resultado.resumen[tipo].celdas} celdas · {resultado.resumen[tipo].pct}%</span>
+              <span className="ml-auto text-[9px] font-mono text-ink-700/60 text-right shrink-0">
+                {superficie(resultado.resumen[tipo].area_m2)}
+                {superficieEnHa(resultado.resumen[tipo].area_m2) && ` · ${superficieEnHa(resultado.resumen[tipo].area_m2)}`}
+                {' · '}{resultado.resumen[tipo].pct}%
+              </span>
             </div>
             <p className="text-[9px] text-ink-700/60 leading-relaxed">{DESCRIPCION_APTITUD[tipo]}</p>
           </div>
         ))}
       </div>
 
-      {/* Botón aplicar como zonas */}
-      <button
-        onClick={handleAplicarZonas}
-        className="w-full py-2.5 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-      >
-        Aplicar como zonas editables
-      </button>
       <p className="text-[8px] text-ink-700/40 italic px-1">
         Crea zonas por aptitud dominante en base a pendiente, orientación y acumulación hídrica.
         No reemplaza relevamiento agronómico/edafológico profesional.

@@ -7,6 +7,8 @@ import { describe, it, expect } from 'vitest';
 import {
   escurrimientoSCS,
   tcKirpich,
+  tcConcentracion,
+  ajusteKirpich,
   coefEscorrentiaAnual,
   analizarCuenca,
   type Cuenca,
@@ -57,6 +59,42 @@ describe('tcKirpich (tiempo de concentración)', () => {
   });
 });
 
+/**
+ * El factor que le faltaba a Kirpich.
+ *
+ * La fórmula se ajustó en cuencas CON cauce, y el agua desparramada sobre un
+ * pastizal tarda alrededor del doble. Sin el factor, el tc salía corto, la
+ * ráfaga de diseño más intensa y el caudal pico ~40 % alto. Los valores son los
+ * publicados (FHWA HEC-22, 3.ª ed.; Rossmiller 1980), no estimados acá.
+ */
+describe('ajusteKirpich / tcConcentracion', () => {
+  it('sobre pasto, suelo desnudo o cultivo el factor es 2', () => {
+    for (const cob of ['pastura_regular', 'monte_bueno', 'barbecho', 'cultivo_pobre', null, undefined]) {
+      expect(ajusteKirpich(cob).factor).toBe(2);
+    }
+  });
+
+  it('sobre superficie dura el agua va más rápido que en el ensayo: factor 0,4', () => {
+    expect(ajusteKirpich('urbano').factor).toBe(0.4);
+  });
+
+  it('el factor viaja con su razón, para que se pueda discutir', () => {
+    expect(ajusteKirpich('pastura_regular').razon).toMatch(/cauce/);
+  });
+
+  it('tcConcentracion devuelve el crudo y el ajustado, y uno es el otro por el factor', () => {
+    const t = tcConcentracion(1000, 0.05, 'pastura_regular');
+    expect(t.kirpich_min).toBeCloseTo(12.6, 1);
+    expect(t.tc_min).toBeCloseTo(t.kirpich_min * t.factor, 6);
+    expect(t.tc_min).toBeCloseTo(25.2, 0);
+  });
+
+  it('una superficie dura acorta el tc respecto del mismo recorrido con pasto', () => {
+    expect(tcConcentracion(1000, 0.05, 'urbano').tc_min)
+      .toBeLessThan(tcConcentracion(1000, 0.05, 'pastura_regular').tc_min);
+  });
+});
+
 describe('coefEscorrentiaAnual', () => {
   it('modula la base del grupo por la cobertura y redondea a 2 decimales', () => {
     // A (0.08) × monte_bueno (0.6) = 0.048 → 0.05
@@ -96,7 +134,10 @@ describe('analizarCuenca (integración)', () => {
     // volumen = (Q/1000) · área ; con Q≈50.5 mm y 100.000 m² → ~5050 m³
     expect(r.volumen_m3).toBeGreaterThan(4500);
     expect(r.volumen_m3).toBeLessThan(5600);
-    expect(r.tc_min).toBeCloseTo(12.6, 0);
+    // 12,6 de Kirpich × 2 por escurrimiento sobre el suelo, sin cauce formado.
+    expect(r.tc_kirpich_min).toBeCloseTo(12.6, 1);
+    expect(r.tc_factor).toBe(2);
+    expect(r.tc_min).toBeCloseTo(25.2, 0);
     expect(r.caudal_pico_m3s).toBeGreaterThan(0);
     expect(r.vertedero_m).toBeGreaterThan(0);
     expect(r.head_vertedero_m).toBe(0.3);
