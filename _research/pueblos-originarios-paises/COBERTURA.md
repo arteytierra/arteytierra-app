@@ -222,3 +222,62 @@ denominador correcto es el recortado y hay que escribirlo al lado del
 porcentaje. Y cuando el denominador no esté en un solo cuadro, verificar que las
 categorías que se suman sean excluyentes, exhaustivas y que cierren exacto contra
 el total publicado; si no cierran, no es un denominador.
+
+## Verificación al montar — 24/09/2026
+
+**Brasil: montado, sólo el censo.** Tabla en
+`apps/terreno/lib/censoIndigena2022Br.ts`, armada por `build-censo-brasil.mjs`
+desde cinco respuestas de la API SIDRA congeladas en `sidra-brasil/`. Se
+verificaron los cuatro cierres y cerraron todos: el nacional (1.694.836 sobre
+203.080.756), los 27 estados contra el nacional, los 5.570 municipios contra su
+estado uno por uno, y los dos quesitos contra el total en los 27.
+
+Es el primer país que contesta a escala de **municipio**. Los otros cuatro
+contestan en la división grande; acá no alcanza, porque el estado no dice nada
+de un predio: Amazonas tiene 490.935 personas indígenas repartidas en un
+territorio más grande que media Argentina, y São Gabriel da Cachoeira —un
+municipio de ese mismo estado— tiene 48.256 sobre 51.795 habitantes, el 93%.
+
+Tres cosas que el relevamiento no podía ver y aparecieron al montar:
+
+- **240 nombres de municipio se repiten en más de un estado**, y ninguno se
+  repite dentro del mismo. O sea que el municipio hay que buscarlo dentro del
+  estado ya resuelto: en la lista global esos 240 empatan y `casarNombre` —bien—
+  no contesta. Es la diferencia entre responder 5.570 municipios y responder
+  5.330.
+- **El geocodificador acierta el municipio, no la ciudad.** Se probaron tres
+  puntos: `city`/`town` de Nominatim devuelve Codajás, Ribeirão Preto y Cuiabá,
+  que son municipios enteros y no manchas urbanas. Pero en zona rural profunda
+  puede contestar un paraje, así que la capa tiene **dos** formas de acertar:
+  con municipio, o con el estado diciendo que es más grueso.
+- **El guion de SIDRA es cero, no dato faltante.** Son 737 municipios sin
+  ninguna persona indígena. Leerlos como «sin dato» y saltearlos habría hecho
+  que la suma no cerrara. El generador distingue `-` de `..` y `...` y aborta si
+  aparece uno de los otros dos.
+
+**Colombia, Ecuador y Uruguay: no se montan, y por la misma razón que Bolivia.**
+El relevamiento de los tres está bien y los censos cierran. Lo que falta es
+permiso:
+
+- **Colombia.** El DANE autoriza la cita pero prohíbe reproducir los datos en
+  medios que los pongan a disposición de múltiples usuarios sin visto bueno
+  escrito. Eso describe exactamente una app. El registro de resguardos de la ANT
+  sí es CC BY-SA 4.0 y se podría usar, pero es otra capa —geometría de
+  resguardos, no censo— y su cláusula de CompartirIgual obliga a mantener el
+  derivado separado.
+- **Ecuador.** El recurso censal del INEC no adjunta licencia estándar. El
+  registro de la SGDPN es `Creative Commons Attribution` sin número de versión,
+  pero es un PDF de 441 páginas sin geometría y con duplicados declarados.
+- **Uruguay.** Los cuadros agregados del Anuario no adjuntan licencia y los
+  microdatos limitan el uso a investigación y prohíben redistribuir o vender.
+  Además el censo pregunta por **ascendencia**, no por pueblo: no enumera
+  Charrúa ni Chaná, publica 6,3% redondeado y ningún absoluto. Aunque hubiera
+  permiso, esta capa no tendría qué mostrar sin cambiar lo que promete.
+
+Lo que destraba a los cuatro —con Bolivia— es una autorización escrita, no más
+relevamiento. Los JSON quedan listos para el día que esté.
+
+**Para los que siguen:** cuando un país obliga a bajar de escala, lo primero que
+hay que medir es si los nombres de la unidad chica son únicos dentro de la
+grande, y **después de normalizar**, que es donde se pierden los acentos. Si no
+lo son, el cruce tiene que ir anidado y no plano.
