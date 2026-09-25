@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { diagnosticarSwales, calcularSwales, dimensionarSeccion, verificarInfiltracion, horasVaciado, pendienteMediaPct, analizarAreas, calcularSwalesMulti } from '@/lib/swales';
 import { recortarGrillaA, type GrillaElevacion } from '@/lib/grillaElevacion';
-import { MAX_NIVELES } from '@/lib/curvasNivel';
+import { NIVELES_MUCHOS } from '@/lib/curvasNivel';
 
 /**
  * Ladera plana inclinada de sur a norte, para tener un desnivel exacto y
@@ -26,7 +26,7 @@ describe('diagnosticarSwales', () => {
     const d = diagnosticarSwales(ladera(40, 40, 30), 1.5);
     expect(d.puede).toBe(true);
     expect(d.motivo).toBeNull();
-    expect(d.niveles).toBeLessThanOrEqual(MAX_NIVELES);
+    expect(d.niveles).toBeLessThanOrEqual(NIVELES_MUCHOS);
   });
 
   it('detecta el caso del predio grande: demasiados swales, no "poco desnivel"', () => {

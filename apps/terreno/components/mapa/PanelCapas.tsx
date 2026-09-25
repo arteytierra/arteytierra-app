@@ -8,7 +8,7 @@ import { type Pin } from '@/lib/pines';
 import { type Camino } from '@/lib/caminos';
 import { type DatosArcoSolar } from '@/lib/arco_solar';
 import { gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader, type Paleta, type PaletaElev, type PaletaPend } from '@/lib/shaders';
-import { MAX_NIVELES } from '@/lib/curvasNivel';
+
 import type { DEMImportado } from '@/lib/demImport';
 import { fmtPaso } from '@/lib/contextoRelieve';
 import { CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
@@ -78,7 +78,7 @@ interface PanelCapasProps {
   /** Nombre de la fuente de relieve en uso ("swissALTI3D", "Copernicus GLO-30"…). */
   fuenteRelieveNombre: string | null;
   pisoIntervalo:       number;
-  curvasDemasiadas:    number | null;
+  curvasMuchas:        number | null;
   curvasLoading:       boolean;
   datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
@@ -167,7 +167,7 @@ export function PanelCapas({
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
-  intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasDemasiadas,
+  intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasMuchas,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -427,7 +427,7 @@ export function PanelCapas({
                 <div className="mx-3 mb-2 space-y-1.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[9px] text-ink-700/60">Cada:</span>
-                    {[0.25, 0.5, 1, 2, 5, 10, 20, 50].map(v => (
+                    {[0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50].map(v => (
                       <button key={v}
                         onClick={() => setIntervaloContorno(v)}
                         className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${intervaloContorno === v ? 'bg-moss-700 text-bone-50' : 'bg-bone-100 text-ink-700 hover:bg-bone-200'}`}
@@ -448,13 +448,12 @@ export function PanelCapas({
                       className="w-16 px-1.5 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[9px] font-mono focus:outline-none focus:border-moss-500"
                     />
                   </div>
-                  {curvasDemasiadas && (
+                  {curvasMuchas && (
                     <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
                       <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
                       <span>
-                        Ese intervalo pide <strong>{curvasDemasiadas} curvas</strong> y el máximo es {MAX_NIVELES},
-                        así que no se dibuja ninguna. Es mucho desnivel para un intervalo tan chico:
-                        subilo, o recortá el predio.
+                        Ese intervalo pide <strong>{curvasMuchas} curvas</strong>. Se dibujan igual,
+                        pero el mapa puede tardar unos segundos y verse cargado.
                       </span>
                     </p>
                   )}

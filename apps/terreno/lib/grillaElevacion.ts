@@ -134,9 +134,12 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
  * El recálculo del rango es el punto de la función. Todo lo que se apoya en
  * curvas de nivel (swales, keyline) fija sus niveles a partir del desnivel
  * total de la grilla: en un predio de miles de hectáreas ese desnivel es tan
- * grande que un intervalo fino pide cientos de curvas y `calcularCurvas` se
- * corta por `MAX_NIVELES` sin dibujar ninguna. Acotado a una parcela, el
- * desnivel es el de la parcela y el trazado vuelve a ser posible.
+ * grande que un intervalo fino pide cientos de curvas. Acotado a una parcela,
+ * el desnivel es el de la parcela y el trazado vuelve a ser posible.
+ *
+ * Al 24/09/2026 eso ya no afecta a las curvas de nivel en sí —el tope del motor
+ * se sacó y se dibujan todas las que se pidan—, pero sigue valiendo para las
+ * herramientas de diseño que tienen su propio límite de obra, como los swales.
  *
  * Las cotas de la ventana se conservan tal cual (no se enmascaran a NaN): el
  * marching squares necesita las 4 esquinas de cada celda, y el recorte fino al

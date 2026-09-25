@@ -94,11 +94,35 @@ export function intervaloAutomatico(desnivel: number, areaHa?: number, pisoM?: n
 }
 
 /**
- * Tope de curvas a dibujar. Cada nivel recorre la grilla entera, así que un
- * intervalo muy chico para el desnivel del predio congela el navegador.
- * `calcularCurvas` devuelve vacío al pasarse; la UI avisa por qué.
+ * A partir de acá son MUCHAS curvas: la app avisa, pero no se niega.
+ *
+ * Hasta el 24/09/2026 esto era un tope duro y `calcularCurvas` devolvía vacío
+ * al pasarse. El efecto real no era limitar: era apagar. Con 67 m de desnivel
+ * —un predio de sierra cualquiera— el intervalo de 1 m ya pedía 67 niveles y el
+ * mapa salía sin una sola curva. El que subía un relevamiento propio de dron o
+ * RTK, que es justamente quien tiene derecho a pedir curvas finas, era el
+ * primero en chocarse.
+ *
+ * El criterio ahora es el del resto de la app: informar el límite del dato y
+ * dejar decidir. Quien voló su terreno sabe con qué lo voló, y cualquier
+ * trazado se verifica in situ de todos modos.
+ *
+ * Que se haya podido sacar es consecuencia de haber arreglado el costo: ver la
+ * medición en `clasificarAnillo`. Clasificar los anillos se llevaba el 70% del
+ * tiempo y ahora no se mide.
  */
-export const MAX_NIVELES = 60;
+export const NIVELES_MUCHOS = 60;
+
+/**
+ * Techo absoluto, contra el pedido absurdo: un intervalo de 1 mm sobre 200 m de
+ * desnivel son 200.000 niveles y ninguna máquina lo termina.
+ *
+ * No es el umbral de aviso —ese es `NIVELES_MUCHOS`, y está 60 veces más
+ * abajo—: es la red para que un valor mal tipeado no cuelgue la pestaña. En uso
+ * legítimo no se toca: 4.000 curvas son 400 m de desnivel a 10 cm, más de lo
+ * que cualquier predio real combina con esa precisión.
+ */
+export const TECHO_NIVELES = 4_000;
 
 /** Cuántas curvas saldrían — para avisar antes de que no se dibuje ninguna. */
 export function nivelesEstimados(desnivel: number, intervalo: number): number {
@@ -107,8 +131,80 @@ export function nivelesEstimados(desnivel: number, intervalo: number): number {
 }
 
 /**
- * Clasifica un anillo cerrado como cima o depresión mirando el terreno de
- * adentro.
+ * Clasifica un anillo cerrado como cima o depresión SONDEANDO sus extremos.
+ *
+ * Es la versión rápida, y la que corre casi siempre. La idea: en el vértice más
+ * al sur de un anillo simple, el interior queda necesariamente hacia el norte;
+ * en el más al norte, hacia el sur; y lo mismo al este y al oeste. Con cuatro
+ * sondeos a medio paso de grilla hacia adentro alcanza para decidir, y los
+ * cuatro salen de UNA pasada sobre los vértices — sin recorrer la grilla.
+ *
+ * Por qué importa: el método exhaustivo mira todos los nodos del bbox del
+ * anillo y por cada uno hace punto-en-polígono contra todos sus vértices, o sea
+ * O(nodos × vértices). Medido el 24/09/2026 sobre una grilla de 300×300 con 67 m
+ * de desnivel, eso costaba 14 ms POR ANILLO y se llevaba el 70% del tiempo
+ * total de calcular las curvas (564 ms contra 168 ms del mismo relieve sin
+ * anillos cerrados). Era lo que obligaba a tener un tope de niveles.
+ *
+ * Cuando los cuatro sondeos no coinciden —un anillo con forma de U, de herradura
+ * o de riñón, donde un extremo puede caer sobre un entrante— no se adivina: se
+ * cae al método exhaustivo, que sigue siendo exacto. Son pocos y el costo se
+ * paga sólo ahí.
+ */
+function clasificarAnillo(
+  puntos: Punto[],
+  z: number,
+  g: GrillaElevacion,
+): TipoCerrada | null {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  if (puntos.length < 3) return null;
+
+  const fila = (lat: number) => ((lat - latMin) / (latMax - latMin)) * (rows - 1);
+  const col  = (lng: number) => ((lng - lngMin) / (lngMax - lngMin)) * (cols - 1);
+
+  // Una sola pasada: los cuatro vértices extremos en coordenadas de grilla.
+  let rMin = Infinity, rMax = -Infinity, cMin = Infinity, cMax = -Infinity;
+  let pRMin = 0, pRMax = 0, pCMin = 0, pCMax = 0;
+  for (let i = 0; i < puntos.length; i++) {
+    const p = puntos[i]!;
+    const r = fila(p.lat), c = col(p.lng);
+    if (r < rMin) { rMin = r; pRMin = i; }
+    if (r > rMax) { rMax = r; pRMax = i; }
+    if (c < cMin) { cMin = c; pCMin = i; }
+    if (c > cMax) { cMax = c; pCMax = i; }
+  }
+  // Anillo más chico que una celda: no hay "adentro" que sondear.
+  if (rMax - rMin < 1 && cMax - cMin < 1) return clasificarAnilloExhaustivo(puntos, z, g);
+
+  // Cada extremo se sondea medio paso hacia el interior del anillo.
+  const sondeos: Array<[number, number]> = [
+    [fila(puntos[pRMin]!.lat) + 0.5, col(puntos[pRMin]!.lng)],
+    [fila(puntos[pRMax]!.lat) - 0.5, col(puntos[pRMax]!.lng)],
+    [fila(puntos[pCMin]!.lat),       col(puntos[pCMin]!.lng) + 0.5],
+    [fila(puntos[pCMax]!.lat),       col(puntos[pCMax]!.lng) - 0.5],
+  ];
+
+  let arriba = 0, abajo = 0, iguales = 0;
+  for (const [r, c] of sondeos) {
+    const rr = Math.round(r), cc = Math.round(c);
+    if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) continue;
+    const v = elev[rr * cols + cc]!;
+    if (isNaN(v)) continue;
+    if (v > z) arriba++;
+    else if (v < z) abajo++;
+    else iguales++;
+  }
+
+  // Consenso limpio: todos los sondeos válidos apuntan al mismo lado.
+  if (arriba > 0 && abajo === 0 && iguales === 0) return 'cima';
+  if (abajo > 0 && arriba === 0 && iguales === 0) return 'depresion';
+  // Sin consenso (anillo cóncavo, o interior justo en la cota): el exhaustivo.
+  return clasificarAnilloExhaustivo(puntos, z, g);
+}
+
+/**
+ * El clasificador exacto, por fuerza bruta. Hoy es el respaldo de
+ * `clasificarAnillo`, no el camino principal.
  *
  * El criterio es directo: se recorren los nodos de la grilla que caen dentro
  * del anillo y se compara su elevación media contra la cota de la curva. Si el
@@ -120,7 +216,7 @@ export function nivelesEstimados(desnivel: number, intervalo: number): number {
  * importan— pueden no contener ningún nodo. Para esos se cae al centroide del
  * anillo, muestreado por vecino más cercano.
  */
-function clasificarAnillo(
+export function clasificarAnilloExhaustivo(
   puntos: Punto[],
   z: number,
   g: GrillaElevacion,
@@ -196,8 +292,9 @@ export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): Curv
   const start = Math.ceil(elev_min / intervalo) * intervalo;
   const niveles: number[] = [];
   for (let z = start; z <= elev_max; z += intervalo) niveles.push(z);
-  // Guardia de rendimiento: cada nivel recorre toda la grilla.
-  if (niveles.length > MAX_NIVELES) return [];
+  // Sólo el absurdo se corta. Lo "mucho" se avisa arriba, en la UI, que es
+  // donde se puede decir por qué; acá abajo no hay forma de explicar un vacío.
+  if (niveles.length > TECHO_NIVELES) return [];
 
   const curvas: CurvaNivel[] = [];
 

@@ -63,7 +63,7 @@ import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, NIVELES_MUCHOS, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { obtenerShader } from '@/lib/relieve/obtenerShader';
@@ -537,11 +537,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       : null;
   }, [intervaloContorno, grillaActiva, metricas, pisoIntervalo]);
 
-  /** Cuántas curvas pidió el intervalo elegido: si se pasa del tope no se dibuja ninguna. */
-  const curvasDemasiadas = useMemo(() => {
+  /** Cuántas curvas pidió el intervalo elegido, cuando son muchas. No bloquea
+   *  nada: es para que el usuario sepa por qué va a tardar antes de que tarde. */
+  const curvasMuchas = useMemo(() => {
     if (!grillaActiva || intervaloCurvasEfectivo == null) return null;
     const n = nivelesEstimados(grillaActiva.elev_max - grillaActiva.elev_min, intervaloCurvasEfectivo);
-    return n > MAX_NIVELES ? n : null;
+    return n > NIVELES_MUCHOS ? n : null;
   }, [grillaActiva, intervaloCurvasEfectivo]);
 
   const handleCargarDEM = useCallback(async (file: File) => {
@@ -3910,7 +3911,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             pasoRelieveM={pasoRelieveM}
             fuenteRelieveNombre={fuenteRelieveNombre}
             pisoIntervalo={pisoIntervalo}
-            curvasDemasiadas={curvasDemasiadas}
+            curvasMuchas={curvasMuchas}
             curvasLoading={curvasLoading}
             colorCurvas={colorCurvas}
             onColorCurvas={setColorCurvas}
