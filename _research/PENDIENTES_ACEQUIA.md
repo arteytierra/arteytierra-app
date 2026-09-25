@@ -429,14 +429,50 @@ Nada de esto es código todavía. Son consultas.
   Contarlas a mano es lo que falla: la primera medición se comió seis de las diez
   de `water` porque el patrón matcheaba `water-50` adentro de `water-500`.
 
-- **La vidriera cobra por algo que la app ya regala.** Al mudar la matriz de
-  entitlements a `packages/config` y atar cada renglón de la vidriera a su
-  feature, apareció que «Curvas de nivel, relieve y vista 3D» figura como
-  beneficio de Personal mientras las tres cuelgan de `analisis.topo`, que es
-  muestra gratis en Semilla desde el 15/08/2026. → **Jonatan**: o el renglón baja
-  a Semilla, o `analisis.topo` deja de ser muestra gratis. Las dos son decisiones
-  comerciales; queda anotado en `DIVERGENCIAS_CONOCIDAS` del test de apps/web,
-  que además falla si se arregla y nadie saca la excepción.
+- ~~**La vidriera cobra por algo que la app ya regala.**~~ **Resuelto el
+  24/09/2026, y por una tercera salida.** Las dos que yo había planteado eran
+  bajar el renglón a Semilla o sacarle a `analisis.topo` la condición de muestra
+  gratis. Jonatan eligió otra: **acotar la muestra por tamaño**.
+  `ACEQUIA_TOPO_SEMILLA_HA = 0.5` — en Semilla la topografía sale gratis hasta
+  media hectárea, y de ahí para arriba la pide `analisis.topo_sin_limite`
+  (Personal), que es lo que la vidriera vende de verdad. Los dos renglones pasan
+  a ser ciertos y `DIVERGENCIAS_CONOCIDAS` queda vacío.
+
+  Queda dicho lo que el número implica: media hectárea es un cuadrado de 70 m de
+  lado y el modelo global tiene 30 m de paso, o sea 2,4 celdas por lado. Con el
+  intervalo confiable de 2 m hace falta más de 3% de pendiente para que aparezca
+  UNA curva, así que en terreno plano la muestra sale vacía. Si se siente pobre,
+  el número a mover es el tope y no el candado.
+
+### Lo que apareció el 24/09/2026
+
+- **El tope de curvas de nivel no limitaba: apagaba.** `calcularCurvas` devolvía
+  vacío al pasar de sesenta niveles, y ese umbral se cruzaba con 67 m de
+  desnivel y 1 m de intervalo — un predio de sierra cualquiera. El que sube un
+  relevamiento propio de dron o RTK, que es quien tiene derecho a pedir curvas
+  finas, era el primero en chocarse. **Y el tope no estaba donde parecía el
+  costo**: midiendo, el 70% del tiempo no dibujaba curvas sino que decidía si
+  cada anillo era cima o hoya, a 14 ms por anillo. Arreglado eso —sondeo de
+  cuatro extremos en vez de recorrer la grilla—, el tope pudo salir. De paso el
+  método nuevo resultó **más correcto** en relieve anidado: el viejo marcaba
+  como depresión el borde de una loma con una hoya adentro, que es justo la
+  forma donde se evalúa una represa.
+
+- **Los swales conservan su tope, ahora explícito y por otro motivo.** Lo
+  heredaban del motor. Sin esa línea pasarían de no trazar nada a trazar
+  doscientos swales: se ve razonable en pantalla y no se construye. El límite es
+  de obra, no de cálculo, y por eso quedó en la herramienta.
+
+- **Agujero conocido del tope por superficie**, anotado para que nadie lo
+  descubra creyendo que es nuevo: `grillaElevacion.ts` cae a las teselas
+  Terrarium cuando `/api/dem` no responde, y ese proxy no está guardado porque
+  sirve teselas públicas. No es una regresión —ese camino ya existía para toda
+  feature bloqueada— pero cerrarlo es un trabajo propio: hay que guardar el
+  proxy sin romper el mapa base.
+
+- **`/api/elevacion` quedó sin tope a propósito.** Devuelve puntos sueltos, no
+  relieve; capar ahí rompería mediciones sin proteger nada, porque reconstruir
+  un relieve por esa vía pide cientos de requests de 500 puntos.
 
 - **El heredoc de bash se come las barras invertidas en este entorno.** Un `\\d`
   llega como `d`. Ya produjo un test que pasaba sin mirar un solo archivo —el
