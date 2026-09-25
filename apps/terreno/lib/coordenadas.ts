@@ -111,3 +111,34 @@ export function decimalAGMS(valor: number, esLatitud: boolean): string {
     : valor >= 0 ? 'E' : 'O';
   return `${deg}°${String(min).padStart(2, '0')}'${String(sec).padStart(5, '0')}"${hemi}`;
 }
+
+
+// ─── Superficie de una ventana geográfica ─────────────────────────────────────
+
+/**
+ * Superficie de un bbox en hectáreas.
+ *
+ * Método: proyección plana equirectangular local, con el ancho corregido por el
+ * coseno de la latitud media. Un grado de latitud son 111.320 m (radio medio de
+ * la Tierra, WGS84); un grado de longitud son esos mismos metros por el coseno
+ * de la latitud, porque los meridianos convergen hacia los polos.
+ *
+ * Unidades: `w s e n` en grados decimales, resultado en hectáreas.
+ *
+ * Rango de validez: ventanas chicas —las de un predio, hasta algunas decenas de
+ * kilómetros— y latitudes medias. El error de la aproximación plana crece con
+ * el tamaño de la ventana y cerca de los polos, donde el coseno se derrumba.
+ * Para una ventana de 1 km a 35° de latitud el error es del orden del 0,1%.
+ *
+ * Para qué NO sirve: medir la superficie de un predio. Un bbox no es el
+ * polígono — un terreno en diagonal tiene un bbox mucho mayor que su área. La
+ * superficie del predio se mide sobre los mojones, no acá. Esto decide topes
+ * sobre la ventana que se le pide a un servicio de elevación, que es lo que esa
+ * ventana efectivamente cuesta.
+ */
+export function haDeBBox(w: number, s: number, e: number, n: number): number {
+  const latC   = (s + n) / 2;
+  const anchoM = (e - w) * 111_320 * Math.cos(latC * Math.PI / 180);
+  const altoM  = (n - s) * 111_320;
+  return Math.abs(anchoM * altoM) / 10_000;
+}

@@ -144,7 +144,7 @@ import { BarraSuperior } from './BarraSuperior';
 import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
 import { useHistory } from '@/lib/useHistory';
 import { FeatureLock } from './FeatureLock';
-import { can, featureDeTab, tabBloqueada, planMinimo, NOMBRE_PLAN, BENEFICIO_FEATURE, type Feature, type Plan } from '@/lib/entitlements';
+import { can, featureDeTab, tabBloqueada, tabBloqueadaConArea, planMinimo, NOMBRE_PLAN, BENEFICIO_FEATURE, type Feature, type Plan } from '@/lib/entitlements';
 import { registrarCandado } from '@/lib/telemetria';
 
 const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
@@ -522,6 +522,14 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     const f = grillaActiva?.fuente;
     return f ? ETIQUETA_RELIEVE[f] : null;
   }, [demPropio, grillaActiva]);
+
+  /** El candado de topografía, que además del plan mira el tamaño del predio:
+   *  la muestra gratis de Semilla está acotada por superficie. Se calcula una
+   *  vez porque lo consultan el riel, la vista 3D y el histórico. */
+  const topoBloqueada = useMemo(
+    () => tabBloqueadaConArea(plan, 'topo', metricas?.area_ha ?? null),
+    [plan, metricas],
+  );
 
   const curvasNivel = useMemo<CurvaNivel[]>(() => {
     if (!grillaActiva) return [];
@@ -2618,8 +2626,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           capaFondo,
           onCapaFondo: setCapaFondo,
           habilitarVistas: mojones.length >= 3,
-          onHistorico: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); },
-          on3D: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
+          onHistorico: () => { if (topoBloqueada) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); },
+          on3D: () => { if (topoBloqueada) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
         }}
         guardado={{ estado: estadoGuardado, guardando: guardandoNube, onGuardar: () => void handleGuardarNube() }}
         captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPng, guardandoPng }}
@@ -2641,7 +2649,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               tabActivo={tab}
               onToggle={() => setGrupoRiel(prev => (prev === g.id ? '' : g.id))}
               onElegir={handleElegirTab}
-              bloqueada={(id) => tabBloqueada(plan, id)}
+              bloqueada={(id) => tabBloqueadaConArea(plan, id, metricas?.area_ha ?? null)}
             />
           ))}
 

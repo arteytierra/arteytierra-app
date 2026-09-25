@@ -13,8 +13,14 @@
 
 import {
   ACEQUIA_PLANS, ACEQUIA_FEATURES, ACEQUIA_PLAN_ORDER,
+  ACEQUIA_TOPO_SEMILLA_HA, acequiaTopoPermitida,
   type AcequiaPlanId, type AcequiaFeature,
 } from '@arteytierra/config/acequia';
+
+/** El tope de superficie de la muestra de topografía, y la pregunta que lo
+ *  aplica. Se re-exportan para que la app no importe dos paquetes distintos
+ *  según si pregunta por una feature o por el tope. */
+export { ACEQUIA_TOPO_SEMILLA_HA, acequiaTopoPermitida };
 
 export type Plan = AcequiaPlanId;
 
@@ -119,6 +125,7 @@ export function featureDeTab(tab: string): Feature | null {
 export const BENEFICIO_FEATURE: Record<Feature, string> = {
   'catastro.rumbos':      'Rumbos y replanteo de mojones, con precisión de campo profesional.',
   'analisis.topo':        'Pendientes, orientaciones, curvas de nivel y relieve de tu predio.',
+  'analisis.topo_sin_limite': 'La topografía de un predio de cualquier tamaño, sin el tope de la muestra.',
   'analisis.clima':       'Lluvia, temperatura, heladas y extremos climáticos del lugar.',
   'analisis.contexto':    'El bioma, los saberes locales y análogos climáticos de tu territorio.',
   'analisis.entorno':     'Biodiversidad observada alrededor y el contexto vivo del predio.',
@@ -154,4 +161,18 @@ export const BENEFICIO_FEATURE: Record<Feature, string> = {
 export function tabBloqueada(plan: Plan, tab: string): boolean {
   const f = featureDeTab(tab);
   return f != null && !can(plan, f);
+}
+
+/**
+ * Lo mismo, pero contemplando el tope de superficie de la muestra de
+ * topografía. Es la que tiene que usar la UI.
+ *
+ * Existe separada de `tabBloqueada` porque hay lugares que preguntan por el tab
+ * sin tener a mano la superficie del predio, y forzarlos a inventar un valor
+ * sería peor. Acá la regla queda en un solo lugar y es la misma que aplica
+ * `requiereTopoDe` en el servidor: si se cambia una, el test las compara.
+ */
+export function tabBloqueadaConArea(plan: Plan, tab: string, ha: number | null): boolean {
+  if (tabBloqueada(plan, tab)) return true;
+  return featureDeTab(tab) === 'analisis.topo' && !acequiaTopoPermitida(plan, ha);
 }

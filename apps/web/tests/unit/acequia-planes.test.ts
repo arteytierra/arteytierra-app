@@ -155,13 +155,13 @@ describe('la vidriera promete lo que el candado habilita', () => {
     'Todas las herramientas de dibujo sobre el mapa': null,
     'Medición: superficie y perímetro': null,
     'Mapa satelital y navegación completa': null,
-    'Muestra gratis del análisis: clima, topografía, cuenca y sectores': 'analisis.clima',
+    'Muestra gratis del análisis: clima, cuenca y sectores': 'analisis.clima',
     'Calendario del lugar (heladas, lluvias y ventanas de siembra)': 'analisis.clima',
     '1 proyecto activo': null,
     'Informe compartible (con marca de agua de acequia)': null,
     // Personal
     'El análisis completo: agua, suelo, biodiversidad, solar, aptitud y más': 'analisis.aptitud',
-    'Curvas de nivel, relieve y vista 3D': 'analisis.topo',
+    'Curvas de nivel, relieve y vista 3D, sin límite de tamaño': 'analisis.topo_sin_limite',
     'Diseño Keyline, agroforestal, riego y pastoreo': 'diseno.keyline',
     'Sugerencias automáticas de diseño': 'sugerencias',
     'Rumbos y replanteo de mojones': 'catastro.rumbos',
@@ -176,20 +176,19 @@ describe('la vidriera promete lo que el candado habilita', () => {
   };
 
   /**
-   * El unico renglon que hoy NO cierra, anotado a proposito en vez de tapado.
+   * Vacío, y que siga así.
    *
-   * La vidriera vende "Curvas de nivel, relieve y vista 3D" como beneficio de
-   * Personal, pero las tres cuelgan de `analisis.topo`, que es MUESTRA GRATIS
-   * en Semilla desde el 15/08/2026 — el boton de 3D pregunta literalmente por
-   * `tabBloqueada(plan, 'topo')`. O sea que el sitio cobra por algo que la app
-   * ya regala.
+   * Tuvo una entrada entre el 23 y el 24/09/2026: la vidriera vendia "Curvas de
+   * nivel, relieve y vista 3D" como beneficio de Personal mientras
+   * `analisis.topo` era muestra gratis en Semilla, o sea que el sitio cobraba
+   * algo que la app ya regalaba. Se cerró acotando la muestra por TAMAÑO
+   * (`ACEQUIA_TOPO_SEMILLA_HA`) y separando la feature que Personal vende de
+   * verdad, `analisis.topo_sin_limite`. Ahora los dos renglones son ciertos.
    *
-   * No se arregla solo porque las dos salidas son decisiones comerciales y no
-   * tecnicas: o el renglon baja a Semilla (y Semilla se ve mas generosa), o
-   * `analisis.topo` deja de ser muestra gratis (y Semilla pierde el relieve).
-   * Lo decide Jonatan. Mientras tanto queda acá, visible y contado.
+   * Agregar algo acá es declarar que se cobra por algo que ya se regala, o al
+   * revés. Se puede, pero se escribe por qué y quién lo decidió.
    */
-  const DIVERGENCIAS_CONOCIDAS = new Set(['Curvas de nivel, relieve y vista 3D']);
+  const DIVERGENCIAS_CONOCIDAS = new Set<string>();
 
   it('cada renglón de la vidriera declara si tiene feature detrás o no', () => {
     const sinDeclarar: string[] = [];
@@ -236,9 +235,9 @@ describe('la vidriera promete lo que el candado habilita', () => {
     }
     // Sólo puede haber divergencias que alguien haya mirado y anotado.
     expect(regaladas.filter((r) => !DIVERGENCIAS_CONOCIDAS.has(r))).toEqual([]);
-    // Y la conocida tiene que seguir existiendo: si se arregla, este test avisa
-    // para sacarla de la lista en vez de dejar una excepción muerta.
-    expect(regaladas).toContain('Curvas de nivel, relieve y vista 3D');
+    // Y ninguna excepción muerta: si se arregla una divergencia y nadie la saca
+    // de la lista, la excepción queda tapando la siguiente.
+    for (const d of DIVERGENCIAS_CONOCIDAS) expect(regaladas, 'excepción muerta: ' + d).toContain(d);
   });
 
   it('toda feature de la matriz es alcanzable por algún plan que se vende', () => {

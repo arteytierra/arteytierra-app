@@ -104,7 +104,9 @@ export function addAcequiaTrialDays(from = new Date()): Date {
  *
  * Ojo con esa excepción al escribir la vidriera: `analisis.topo` incluye las
  * curvas de nivel, el relieve y la vista 3D —el botón de 3D pregunta por ese
- * mismo permiso—, así que las tres están en Semilla.
+ * mismo permiso—, así que las tres están en Semilla, pero SÓLO hasta
+ * `ACEQUIA_TOPO_SEMILLA_HA`. De ahí para arriba las pide
+ * `analisis.topo_sin_limite`, que es lo que Personal vende de verdad.
  */
 
 /** Cada cosa que un plan puede habilitar. Las claves son jerárquicas para que
@@ -112,6 +114,7 @@ export function addAcequiaTrialDays(from = new Date()): Date {
 export type AcequiaFeature =
   | 'catastro.rumbos'
   | 'analisis.topo'
+  | 'analisis.topo_sin_limite'
   | 'analisis.clima'
   | 'analisis.contexto'
   | 'analisis.entorno'
@@ -151,7 +154,8 @@ export const ACEQUIA_PLAN_ORDER: Record<AcequiaPlanId, number> = {
 export const ACEQUIA_FEATURES: Record<AcequiaFeature, AcequiaPlanId> = {
   'catastro.rumbos':     'personal',
   // Análisis.
-  'analisis.topo':       'semilla',   // muestra gratis (DEM)
+  'analisis.topo':       'semilla',   // muestra gratis (DEM), acotada por ACEQUIA_TOPO_SEMILLA_HA
+  'analisis.topo_sin_limite': 'personal', // la misma topografía, en un predio de cualquier tamaño
   'analisis.clima':      'semilla',   // muestra gratis (Open-Meteo)
   'analisis.contexto':   'personal',
   'analisis.entorno':    'personal',
@@ -188,4 +192,44 @@ export const ACEQUIA_FEATURES: Record<AcequiaFeature, AcequiaPlanId> = {
 /** ¿El plan habilita la feature? Es la misma cuenta que hace `can()` en la app. */
 export function acequiaPlanHabilita(plan: AcequiaPlanId, feature: AcequiaFeature): boolean {
   return ACEQUIA_PLAN_ORDER[plan] >= ACEQUIA_PLAN_ORDER[ACEQUIA_FEATURES[feature]];
+}
+
+/* ─── El tope de superficie de la muestra de topografía ───────────────────────
+ *
+ * Decisión comercial de Jonatan, 24/09/2026, y la salida a una divergencia que
+ * apareció al atar la vidriera con el candado: el sitio vendía "Curvas de
+ * nivel, relieve y vista 3D" como beneficio de Personal mientras
+ * `analisis.topo` era muestra gratis en Semilla desde el 15/08/2026. O sea que
+ * se cobraba algo que la app ya regalaba.
+ *
+ * En vez de sacar la muestra o de bajar el renglón, la muestra se acota por
+ * TAMAÑO: media hectárea alcanza para que se entienda qué hace la herramienta,
+ * y un predio de verdad —que es donde esto sirve para diseñar— pide Personal.
+ * Así los dos renglones de la vidriera dicen la verdad y ninguno pisa al otro.
+ *
+ * Qué hay que saber antes de moverlo. Media hectárea es un cuadrado de 70 m de
+ * lado, y el modelo de elevación global tiene 30 m de paso: son 2,4 celdas por
+ * lado. Con el intervalo confiable de 2 m hace falta más de 3% de pendiente
+ * para que aparezca UNA sola curva, así que en terreno plano la muestra sale
+ * vacía. Está medido y dicho; si algún día la muestra se siente pobre, el
+ * número a mover es éste y no el candado.
+ */
+export const ACEQUIA_TOPO_SEMILLA_HA = 0.5;
+
+/**
+ * ¿Este plan puede ver la topografía de un predio de `ha` hectáreas?
+ *
+ * Es la única pregunta que hay que hacer: el tope y la feature juntos. Tanto el
+ * candado de la app como los guards de `/api/dem` y `/api/elevacion` pasan por
+ * acá, para que no haya dos versiones de la regla.
+ *
+ * `ha` null significa que todavía no se sabe la superficie —el predio no está
+ * cerrado— y entonces no se bloquea: el usuario no puede quedar trabado por un
+ * dato que la app aún no calculó. El guard del servidor sí tiene siempre un
+ * bbox, así que ahí nunca llega null.
+ */
+export function acequiaTopoPermitida(plan: AcequiaPlanId, ha: number | null): boolean {
+  if (acequiaPlanHabilita(plan, 'analisis.topo_sin_limite')) return true;
+  if (!acequiaPlanHabilita(plan, 'analisis.topo')) return false;
+  return ha == null || ha <= ACEQUIA_TOPO_SEMILLA_HA;
 }
