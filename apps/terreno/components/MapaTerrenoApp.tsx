@@ -63,7 +63,7 @@ import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, NIVELES_MUCHOS, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvasProgresivo, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, NIVELES_MUCHOS, type CurvaNivel } from '@/lib/curvasNivel';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { obtenerShader } from '@/lib/relieve/obtenerShader';
@@ -531,11 +531,40 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     [plan, metricas],
   );
 
-  const curvasNivel = useMemo<CurvaNivel[]>(() => {
-    if (!grillaActiva) return [];
+  /**
+   * Las curvas se calculan por tandas, cediendo el hilo entre una y otra.
+   *
+   * Era un `useMemo` de una sola pasada, y alcanzaba mientras el motor no
+   * dejaba pasar de sesenta niveles. Sin ese tope, un intervalo de 10 cm son
+   * 674 curvas y 3,4 s: en una pasada eso traba la pestaña entera y hasta la
+   * barra de progreso quedaría congelada, porque el hilo que la repinta es el
+   * mismo que calcula.
+   *
+   * Las curvas viejas se quedan en pantalla mientras se calculan las nuevas.
+   * Vaciarlas primero haría parpadear el mapa en cada movimiento del intervalo,
+   * que es justo cuando el usuario está comparando.
+   */
+  const [curvasNivel, setCurvasNivel] = useState<CurvaNivel[]>([]);
+  const [progresoCurvas, setProgresoCurvas] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!grillaActiva) { setCurvasNivel([]); setProgresoCurvas(null); return; }
     const intervalo = intervaloContorno
       ?? intervaloAutomatico(grillaActiva.elev_max - grillaActiva.elev_min, metricas?.area_ha, pisoIntervalo);
-    return calcularCurvas(grillaActiva, intervalo);
+
+    const ac = new AbortController();
+    setProgresoCurvas(0);
+    void calcularCurvasProgresivo(grillaActiva, intervalo, {
+      signal: ac.signal,
+      onProgreso: setProgresoCurvas,
+    }).then(cs => {
+      // Sin esta guarda, un cálculo abandonado pisaría el resultado del que lo
+      // reemplazó: el usuario movería el intervalo y vería el anterior.
+      if (ac.signal.aborted) return;
+      setCurvasNivel(cs);
+      setProgresoCurvas(null);
+    });
+    return () => ac.abort();
   }, [grillaActiva, intervaloContorno, metricas, pisoIntervalo]);
 
   const intervaloCurvasEfectivo = useMemo(() => {
@@ -3920,6 +3949,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             fuenteRelieveNombre={fuenteRelieveNombre}
             pisoIntervalo={pisoIntervalo}
             curvasMuchas={curvasMuchas}
+            progresoCurvas={progresoCurvas}
             curvasLoading={curvasLoading}
             colorCurvas={colorCurvas}
             onColorCurvas={setColorCurvas}

@@ -79,6 +79,9 @@ interface PanelCapasProps {
   fuenteRelieveNombre: string | null;
   pisoIntervalo:       number;
   curvasMuchas:        number | null;
+  /** Fracción calculada (0 a 1) mientras se dibujan las curvas, o null si no
+   *  hay nada en curso. Ver `calcularCurvasProgresivo`. */
+  progresoCurvas:      number | null;
   curvasLoading:       boolean;
   datosArcoSolar:      DatosArcoSolar | null;
   zonas:               Zona[];
@@ -167,7 +170,7 @@ export function PanelCapas({
   masterPlanHay, masterPlan, hayConectoresMP, subCapasOcultas, onToggleSubCapa,
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
-  intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasMuchas,
+  intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasMuchas, progresoCurvas,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -448,6 +451,26 @@ export function PanelCapas({
                       className="w-16 px-1.5 py-0.5 rounded border border-bone-200 bg-white text-ink-900 text-[9px] font-mono focus:outline-none focus:border-moss-500"
                     />
                   </div>
+                  {progresoCurvas !== null && (
+                    <div className="flex items-center gap-1.5" role="status" aria-live="polite">
+                      <div
+                        className="h-1 flex-1 rounded-full bg-bone-200 overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={Math.round(progresoCurvas * 100)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Calculando las curvas de nivel"
+                      >
+                        <div
+                          className="h-full bg-moss-600 transition-[width] duration-150 ease-linear"
+                          style={{ width: `${Math.round(progresoCurvas * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-[9px] font-mono text-ink-700/60 tabular-nums shrink-0">
+                        {Math.round(progresoCurvas * 100)}%
+                      </span>
+                    </div>
+                  )}
                   {curvasMuchas && (
                     <p className="text-[9px] text-clay-700 leading-relaxed flex gap-1">
                       <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
