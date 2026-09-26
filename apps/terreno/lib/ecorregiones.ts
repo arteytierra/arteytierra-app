@@ -28,6 +28,7 @@ import { ECO_ID_AMERICA } from './ecorregionesAmerica';
 import { ECO_ID_CANADA } from './ecorregionesCanada';
 import { ECO_ID_EUROPA } from './ecorregionesEuropa';
 import { ECO_ID_EUROPA_UE } from './ecorregionesEuropaUE';
+import { ECO_ID_INDOMALAYA } from './ecorregionesIndomalaya';
 import { ECO_ID_MEDIO_ORIENTE } from './ecorregionesMedioOriente';
 import { ECO_ID_NORTE_AFRICA } from './ecorregionesNorteAfrica';
 import { ECO_ID_SUDAMERICA_NUEVAS } from './ecorregionesSudamerica';
@@ -176,7 +177,7 @@ const RESTO_CURADO_A_MANO: Record<number, string> = {
 };
 
 /**
- * La unión de los siete bloques del resto del mundo. Los dos generados vienen de
+ * La unión de los ocho bloques del resto del mundo. Los dos generados vienen de
  * los paquetes de investigación; los otros cinco se escribieron a mano, y de
  * esos, cuatro salieron de enumerar contra RESOLVE en vez de heredar una lista.
  * Son disjuntos entre sí: un ECO_ID repetido se resolvería en silencio a favor
@@ -188,6 +189,7 @@ const RESTO_DEL_MUNDO: Record<number, string> = {
   ...ECO_ID_CANADA,
   ...ECO_ID_EUROPA,
   ...ECO_ID_EUROPA_UE,
+  ...ECO_ID_INDOMALAYA,
   ...ECO_ID_MEDIO_ORIENTE,
   ...ECO_ID_NORTE_AFRICA,
 };

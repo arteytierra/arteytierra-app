@@ -9,7 +9,7 @@ import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegion
 import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
 import { BIOMAS_REGIONALES_CANADA } from '@/lib/biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
-import { BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA } from '@/lib/biomasRegionales';
+import { BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA } from '@/lib/biomasRegionales';
 import { BIOMAS_REGIONALES_SUDAMERICA } from '@/lib/biomasRegionalesSudamerica';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { Koppen } from '@/lib/clima';
@@ -68,12 +68,19 @@ describe('catálogos de fichas', () => {
     }
   });
 
-  it('toda ficha regional trae especies', () => {
+  it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
-    // África mediterráneo + 47 sudamericanas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(210);
+    // África mediterráneo + 32 de Indomalaya + 47 sudamericanas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(242);
+
+    // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
+    // con nombre científico, y deducirla de las ecorregiones vecinas sería
+    // inventar. Si aparece una fuente que las nombre hay que sacarla de acá a
+    // mano: el test obliga a decidirlo, no deja que pase de largo.
+    const SIN_ESPECIES = new Set(['chao_phraya_deciduo']);
     for (const f of Object.values(BIOMAS_REGIONALES)) {
+      if (SIN_ESPECIES.has(f.id)) { expect(f.especies, f.id).toEqual([]); continue; }
       expect(f.especies.length, f.id).toBeGreaterThan(0);
     }
   });
@@ -85,15 +92,15 @@ describe('catálogos de fichas', () => {
     for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
       expect(f.saberes.length, f.id).toBeGreaterThan(0);
     }
-    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_MEDIO_ORIENTE, ...BIOMAS_REGIONALES_NORTE_AFRICA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_INDOMALAYA, ...BIOMAS_REGIONALES_MEDIO_ORIENTE, ...BIOMAS_REGIONALES_NORTE_AFRICA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
       expect(f.saberes, f.id).toEqual([]);
     }
   });
 
-  it('los ocho bloques de fichas regionales son disjuntos', () => {
+  it('los nueve bloques de fichas regionales son disjuntos', () => {
     // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
     // ficha muerta sin que falle nada.
-    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA, BIOMAS_REGIONALES_SUDAMERICA];
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA, BIOMAS_REGIONALES_SUDAMERICA];
     const ids = bloques.flatMap(b => Object.keys(b));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
@@ -118,9 +125,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 287 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 320 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(287);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(320);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -279,6 +286,61 @@ describe('lista blanca de ecorregiones', () => {
     ];
     expect(na).toHaveLength(14);
     for (const [eco, ficha] of na) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
+  });
+
+  it('Indomalaya quedó cubierta: los 33 ECO_ID tienen ficha', () => {
+    // Esta lista no salió de enumerar una envolvente como Canadá, la UE o el
+    // norte de África: salió de buscar dónde el bioma global estaba diciendo
+    // un número equivocado. Son 33 ECO_ID en 32 fichas —229 y 288 comparten
+    // java_bali_montano— y el resto de Indomalaya sigue cayendo al bioma
+    // global a propósito. Ver ecorregionesIndomalaya.ts.
+    const im: Array<[number, string]> = [
+      [253, 'ghats_norte_deciduo'],
+      [254, 'ghats_norte_montano'],
+      [270, 'ghats_sur_deciduo'],
+      [271, 'ghats_sur_montano'],
+      [274, 'sri_lanka_humedo_bajo'],
+      [275, 'sri_lanka_montano'],
+      [301, 'sri_lanka_zona_seca'],
+      [222, 'valle_brahmaputra'],
+      [238, 'gangetica_inferior'],
+      [287, 'gangetica_superior'],
+      [282, 'pantanos_sundarbans'],
+      [234, 'pantanos_irrawaddy'],
+      [235, 'irrawaddy_deciduo'],
+      [224, 'pantanos_chao_phraya'],
+      [225, 'chao_phraya_deciduo'],
+      [285, 'pantanos_tonle_sap'],
+      [266, 'pantanos_rio_rojo'],
+      [278, 'sumatra_bajo'],
+      [279, 'sumatra_montano'],
+      [277, 'pantanos_sumatra'],
+      [305, 'pinar_toba'],
+      [289, 'java_occidental_bajo'],
+      [230, 'java_oriental_bali_bajo'],
+      [229, 'java_bali_montano'], [288, 'java_bali_montano'],
+      [273, 'pantanos_borneo_suroeste'],
+      [241, 'luzon_bajo'],
+      [240, 'luzon_montano'],
+      [303, 'pinar_luzon'],
+      [248, 'mindoro'],
+      [231, 'negros_panay'],
+      [246, 'mindanao_montano'],
+      [247, 'mindanao_visayas_oriental'],
+    ];
+    expect(im).toHaveLength(33);
+    for (const [eco, ficha] of im) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
+  });
+
+  it('el resto de Indomalaya sigue cayendo al bioma global, y es a propósito', () => {
+    // El lote cubrió las 33 que corregían un número, no una región cerrada.
+    // Estos tres son ECO_ID reales del rango indomalayo que quedaron sin
+    // curar; no se ponen sus nombres porque no se verificaron contra el
+    // FeatureServer. Si algún día se cierra Indomalaya dejan de ser null y
+    // hay que venir a sacarlos de acá.
+    for (const eco of [226, 259, 272]) {
+      expect(fichaDeEcorregion(eco), String(eco)).toBeNull();
+    }
   });
 
   it('Rusia, el Sahel y el Cuerno de África siguen afuera, y es a propósito', () => {
