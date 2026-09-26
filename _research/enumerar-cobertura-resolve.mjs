@@ -30,6 +30,7 @@ const TABLAS = [
   'ecorregionesSudamerica.ts',
   'ecorregionesEuropa.ts',
   'ecorregionesEuropaUE.ts',
+  'ecorregionesIndomalaya.ts',
   'ecorregionesMedioOriente.ts',
   'ecorregionesNorteAfrica.ts',
 ];
