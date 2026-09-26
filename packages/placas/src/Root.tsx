@@ -2,8 +2,11 @@ import { Composition } from 'remotion';
 
 import { AperturaAcequia, esquemaApertura } from './composiciones/AperturaAcequia';
 import { AperturaAcequiaApp, esquemaAperturaApp } from './composiciones/AperturaAcequiaApp';
+import { BandaBase, Fuente, esquemaFuente } from './composiciones/BandaPie';
 import { LowerThird, esquemaLowerThird } from './composiciones/LowerThird';
+import { PlacaCruce, esquemaCruce } from './composiciones/PlacaCruce';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
+import { Titular, esquemaTitular } from './composiciones/Titular';
 import {
   COLORES_GEN,
   GenLockup,
@@ -23,6 +26,27 @@ import { FORMATOS, FPS } from './marca';
 
 /** La bajada de la marca. Un solo lugar: si cambia, cambia en todas las placas. */
 const BAJADA = 'Plataforma de estudio, diseño y planificación ecosistémica';
+
+/**
+ * Los números del video de presentación, tal como los devolvió acequia sobre el
+ * predio que se filmó: 31,15 ha en Burruyacu, Tucumán, clima Cwa.
+ *
+ * Están acá y no sueltos en la placa para que se vean todos juntos y se note si
+ * alguno deja de coincidir con el metraje. Si se refilma con otro predio, se
+ * cambian acá y las dos versiones —horizontal y vertical— salen iguales.
+ */
+const CRUCE = {
+  lluviaMm: 134.4,
+  tormenta: '10 años',
+  suelo: 'Franco-arcilloso · grupo C',
+  pendientePct: 21.5,
+  cobertura: 'Bosque 100 %',
+  cn: 73,
+  escurreMm: 63.8,
+  escurrePct: 47,
+  volumenM3: 179787,
+  cuencaHa: 282,
+} as const;
 
 export const Root: React.FC = () => {
   return (
@@ -129,6 +153,94 @@ export const Root: React.FC = () => {
         {...FORMATOS.vertical}
         schema={esquemaAperturaApp}
         defaultProps={{ bajada: BAJADA, fondo: 'crema' as const }}
+      />
+
+      {/* ── El video de presentación ──────────────────────────────────────
+          La banda es un PNG que se estira debajo de todo el montaje; el pie de
+          fuente y los titulares son MOV con alfa que se apoyan encima. Ver
+          _research/video-acequia/MONTAJE.md. */}
+      <Composition
+        id="BandaBase"
+        component={BandaBase}
+        durationInFrames={1}
+        fps={FPS}
+        {...FORMATOS.horizontal}
+      />
+
+      <Composition
+        id="BandaBaseVertical"
+        component={BandaBase}
+        durationInFrames={1}
+        fps={FPS}
+        {...FORMATOS.vertical}
+      />
+
+      <Composition
+        id="Fuente"
+        component={Fuente}
+        durationInFrames={FPS * 3}
+        fps={FPS}
+        {...FORMATOS.horizontal}
+        schema={esquemaFuente}
+        defaultProps={{ capa: 'Relieve', fuente: 'Copernicus GLO-30 · © DLR e.V.' }}
+      />
+
+      <Composition
+        id="FuenteVertical"
+        component={Fuente}
+        durationInFrames={FPS * 3}
+        fps={FPS}
+        {...FORMATOS.vertical}
+        schema={esquemaFuente}
+        defaultProps={{ capa: 'Relieve', fuente: 'Copernicus GLO-30 · © DLR e.V.' }}
+      />
+
+      <Composition
+        id="Titular"
+        component={Titular}
+        durationInFrames={FPS * 4}
+        fps={FPS}
+        {...FORMATOS.horizontal}
+        schema={esquemaTitular}
+        defaultProps={{
+          texto: 'Un terreno cualquiera.',
+          anclaje: 'derecha' as const,
+          segundo: '',
+        }}
+      />
+
+      <Composition
+        id="TitularVertical"
+        component={Titular}
+        durationInFrames={FPS * 4}
+        fps={FPS}
+        {...FORMATOS.vertical}
+        schema={esquemaTitular}
+        defaultProps={{
+          texto: 'Un terreno cualquiera.',
+          anclaje: 'centro' as const,
+          segundo: '',
+        }}
+      />
+
+      <Composition
+        id="PlacaCruce"
+        component={PlacaCruce}
+        durationInFrames={FPS * 12}
+        fps={FPS}
+        {...FORMATOS.horizontal}
+        schema={esquemaCruce}
+        defaultProps={{ ...CRUCE }}
+      />
+
+      <Composition
+        id="PlacaCruceVertical"
+        component={PlacaCruce}
+        durationInFrames={FPS * 12}
+        fps={FPS}
+        {...FORMATOS.vertical}
+        schema={esquemaCruce}
+        defaultProps={{ ...CRUCE }}
       />
 
       <Composition

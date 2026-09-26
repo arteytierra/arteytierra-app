@@ -52,3 +52,17 @@ export const FORMATOS = {
   /** Feed cuadrado. */
   cuadrado: { width: 1080, height: 1080 },
 } as const;
+
+/**
+ * Alto de la banda del pie, en píxeles, para el formato que se le pase.
+ *
+ * El número sale de una medición, no del gusto: sobre 1920×1080 el metraje trae
+ * la barra de Chrome que avisa que se está compartiendo la pantalla ocupando de
+ * y=952 a y=1021, y abajo de eso viven la atribución de Leaflet y la barra de
+ * estado de la app. 140 px desde abajo se las llevan a las tres con margen.
+ *
+ * El vertical se recorta del horizontal tomando el alto completo y 607 px de
+ * ancho, así que todo crece ×16/9: los mismos 140 px pasan a ser 249. Se
+ * redondea a 250 para no arrastrar un decimal por toda la placa.
+ */
+export const ALTO_BANDA = (ancho: number, alto: number): number => (alto > ancho ? 250 : 140);
