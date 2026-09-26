@@ -1,0 +1,480 @@
+[
+  {
+    "id": "java_bali_montano",
+    "nombre": "Selvas montanas volcánicas de Java y Bali",
+    "emoji": "🌋",
+    "color": "#2E7D32",
+    "resumen": "Bosques por encima de ~1.000 m sobre los conos volcánicos de Java y del centro de Bali: una de las islas más activas del planeta, con veinte volcanes con actividad histórica. Húmedo y casi sin estación seca al oeste; al este y en Bali el clima pasa a tropical con estación seca. Queda poco bosque: una quinta parte al oeste y alrededor de un cuarto al este, en fragmentos aislados cumbre por cumbre. WWF advierte que el desmonte de estas cabeceras altera el rendimiento hídrico, los picos de crecida y la sedimentación de los ríos.",
+    "vegetacion": "Por debajo de ~1.200 m hay selva siempreverde y semisiempreverde. El montano bajo lo dominan fagáceas y lauráceas (Lithocarpus, Quercus, Castanopsis), con emergentes escasos como Altingia excelsa y podocarpáceas, y abundantes helechos arborescentes. Desde ~1.800 m empieza el bosque montano alto, cargado de musgo (Aerobryum), con Dacrycarpus y ericáceas (Rhododendron, Vaccinium, Gaultheria). Por encima de 3.000 m queda un bosque subalpino de un solo estrato arbóreo, con edelweiss de Java. Entre ~1.000 y 1.200 m hay un recambio florístico real, con géneros templados como Primula, Ranunculus, Viola y Berberis.",
+    "fauna": "Al oeste viven 64 mamíferos, 14 de ellos endémicos o casi endémicos. Entre ellos están el gibón de Java (Hylobates moloch) y el surili (Presbytis comata), los primates más amenazados de Indonesia, además de Mus vulcani y Pithecheir melanurus. Hay más de 230 aves, con 30 endemismos, entre ellos el águila-azor de Java (Spizaetus bartelsi) y la salangana de los volcanes (Aerodramus vulcanorum). El leopardo de Java (Panthera pardus melas) y el cuón (Cuon alpinus) persisten en el sector oriental.",
+    "suelos": "El sustrato son volcanitas terciarias y cuaternarias, sedimentos aluviales y calizas coralinas levantadas (WWF). En el área fusionada, HWSD v2 da Andosols 41% (≈ Andisols), Luvisols 21% (≈ Alfisols), Acrisols 18% (≈ Ultisols), además de Leptosols, Cambisols y Regosols. El reparto no es parejo: el sector este y Bali (229) tiene 62% de Andosols y 0% de Acrisols, mientras que el oeste (288) tiene 29% de Andosols y 28% de Acrisols. SoilGrids clasifica la mayor parte como Cambisols (75%), con 14% de Andosols. Discrepa en el grupo, pero coincide en que los suelos lixiviados son minoría. En Lembang (Java occidental) los perfiles son Typic Hapludands (Umbric Andosols), con solum de 150 cm o más, densidad aparente de 0,40 a 0,68 g/cm³ y retención de P mayor al 90%. En el Dieng, los Andisols de ladera bajo papa rendían unas 30 t/ha, y hoy rinden 12 a 15 t/ha por desbalance de nutrientes y erosión. En Indonesia, el 62% de los suelos volcánicos está sobre pendientes mayores al 30%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Altingia", "cientifico": "Altingia excelsa", "tipo": "nativa", "nota": "Uno de los pocos emergentes del montano bajo (WWF)." },
+      { "nombre": "Podocarpo de Java", "cientifico": "Dacrycarpus imbricatus", "tipo": "nativa", "nota": "Conífera que sube del montano bajo al alto (WWF, como Dacrycarpus)." },
+      { "nombre": "Edelweiss de Java", "cientifico": "Anaphalis javanica", "tipo": "nativa", "nota": "Característica del piso subalpino, por encima de 3.000 m." },
+      { "nombre": "Robles tropicales", "cientifico": "Lithocarpus spp., Quercus spp., Castanopsis spp.", "tipo": "nativa", "nota": "Dominan el montano bajo junto con las lauráceas." },
+      { "nombre": "Rododendros y arándanos de montaña", "cientifico": "Rhododendron spp., Vaccinium spp.", "tipo": "nativa", "nota": "Ericáceas del montano alto y subalpino." },
+      { "nombre": "Papa", "cientifico": "Solanum tuberosum", "tipo": "cultivo", "nota": "Cultivo introducido. Es el principal cultivo de las laderas andosólicas del Dieng, entre 1.000 y 2.500 m (Tamad et al. 2023)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0167 «Western Java montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0167" },
+      { "label": "WWF, ficha de ecorregión IM0112 «Eastern Java-Bali montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0112" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Hati et al. 2021, Differences in Andisols properties… Lembang, West Java, IOP Conf. Ser. EES 648:012009, doi:10.1088/1755-1315/648/1/012009 (consultado 2026-09-26)", "url": "https://iopscience.iop.org/article/10.1088/1755-1315/648/1/012009" },
+      { "label": "Tamad, Soesanto y Karim 2023, potato cultivation in slope Andisols (Dieng), BIOTROPIA 30(2), doi:10.11598/btb.2023.30.2.1902 (consultado 2026-09-26)", "url": "https://journal.biotrop.org/index.php/biotropia/article/download/1902/742" },
+      { "label": "Sukarman, Dariah y Suratman 2020, Tanah vulkanik di lahan kering berlereng…, J. Penelitian dan Pengembangan Pertanian 39(1):21-34, doi:10.21082/jp3.v39n1.2020.p21-34 (consultado 2026-09-26)", "url": "https://www.academia.edu/105632055/TANAH_VULKANIK_DI_LAHAN_KERING_BERLERENG_DAN_POTENSINYA_UNTUK_PERTANIAN_DI_INDONESIA_Volcanic_Soils_in_Sloping_Dry_Land_and_Its_Potential_for_Agriculture_in_Indonesia" },
+      { "label": "Suprayogo et al. 2020, Infiltration-friendly land uses… Rejoso watershed, East Java, HESSD, doi:10.5194/hess-2020-2 (consultado 2026-09-26)", "url": "https://hess.copernicus.org/preprints/hess-2020-2/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [229, 288],
+      "paises": ["Indonesia"],
+      "confianza": "media",
+      "notas": "RESOLVE: 229 «Eastern Java-Bali montane rain forests» (WWF IM0112) y 288 «Western Java montane rain forests» (WWF IM0167). La fusión sigue el agrupamiento acordado, pero los datos muestran dos subzonas. 229 es más estacional (4–6 meses secos en su parte baja) y tiene más Andosols. 288 es perhúmedo y tiene un 28% de Acrisols en HWSD. Si el modificador tiene que distinguirlas: HWSD da 0 para 229 y −5 para 288, y SoilGrids da −5 y 0. En la cuenca del Rejoso, en las laderas del Bromo (Suprayogo et al. 2020), los Andisols de la zona alta (>800 m) infiltran más que los Inceptisols de la zona media. Para mantener la infiltración y la erosión en niveles aceptables hizo falta más de 55% de cobertura arbórea arriba y más de 80% en la zona media. Es el dato hídrico más útil para diseñar en esta ficha. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: el texto del bioma («suelos lixiviados… fertilidad en la biomasa») no describe esta ficha. Suelo dominante según HWSD v2: Andosols 41% (≈ Andisols), Luvisols 21% (≈ Alfisols) y solo 18% de Acrisols (≈ Ultisols). SoilGrids también da una minoría lixiviada: 10%. Aplicando la regla da −5 con las dos fuentes. El límite real no es la fertilidad sino la pendiente, la erosión y la retención de P (>90% en Lembang). Si acequia ya penaliza la pendiente por separado, la fracción andosólica podría valorarse positiva.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "java_occidental_bajo",
+    "nombre": "Selvas bajas de Java occidental",
+    "emoji": "🌾",
+    "color": "#558B2F",
+    "resumen": "Tierras por debajo de 1.000 m que rodean la cordillera volcánica del oeste de Java. Forman una franja de unos 500 km de largo y nunca más de 60 km de ancho. Es la parte más húmeda y más rica en especies de Java, pero queda solo un 5% del hábitat original. Alberga al rinoceronte de Java.",
+    "vegetacion": "Hay selva siempreverde y semisiempreverde, con Artocarpus elasticus, Dysoxylum caulostachyum, langsat (Lansium domesticum) y Planchonia valida. Hacia el este aparecen bosque húmedo deciduo y seco deciduo, con 1.500 a 4.000 mm y 4 a 6 meses secos. También hay bosques sobre caliza y pantanos de agua dulce. En total son más de 3.800 especies de plantas, entre ellas dos Rafflesia.",
+    "fauna": "Hay 101 mamíferos y más de 350 aves. Vive acá el rinoceronte de Java (Rhinoceros sondaicus), en peligro crítico, junto con el gibón de Java (Hylobates moloch), el surili (Presbytis comata) y el águila-azor de Java (Spizaetus bartelsi).",
+    "suelos": "El sustrato son volcanitas terciarias y cuaternarias, aluviones y calizas coralinas levantadas (WWF). HWSD v2 da un mosaico: Acrisols 24% (≈ Ultisols), Fluvisols 22% (≈ Entisols fluvénticos), Leptosols 12%, Nitisols 10% (≈ Alfisols/Ultisols kándicos), Luvisols 10% (≈ Alfisols) y Technosols 9,5% (suelo urbano). SoilGrids da Cambisols 48% y Ferralsols 31% (≈ Oxisols). Ninguna de las dos fuentes muestra un dominio de suelos volcánicos jóvenes en la franja baja. Los Andosols quedan en los conos, que corresponden a la ficha montana.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Terap", "cientifico": "Artocarpus elasticus", "tipo": "nativa", "nota": "Árbol característico de la selva siempreverde de Java (WWF)." },
+      { "nombre": "Langsat", "cientifico": "Lansium domesticum", "tipo": "nativa", "nota": "Frutal del dosel de la selva siempreverde de Java, también cultivado." },
+      { "nombre": "—", "cientifico": "Dysoxylum caulostachyum", "tipo": "nativa", "nota": "Meliácea de la selva siempreverde (WWF)." },
+      { "nombre": "—", "cientifico": "Planchonia valida", "tipo": "nativa", "nota": "Lecitidácea de la selva siempreverde (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0168 «Western Java rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0168" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [289],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 289 «Western Java rain forests» (WWF IM0168). Resultado contrario a la premisa del encargo: la franja baja de Java occidental no es mayoritariamente andosólica en ninguna de las dos bases. La fracción lixiviada es chica en HWSD (24%, lo que da −5) y moderada en SoilGrids (37%, lo que da −10). Propongo −5 con confianza baja. Para cerrarlo haría falta el mapa de suelos nacional de BBSDLP (Peta Tanah 1:250.000), que no pude abrir. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: suelo dominante según HWSD v2 en mosaico. Solo el 24% son Acrisols (≈ Ultisols) lixiviados. El resto son Fluvisols (≈ Entisols fluvénticos), Nitisols y Luvisols (≈ Alfisols), de base alta. Según FAO, los Nitisols están entre los suelos más productivos del trópico húmedo. SoilGrids da una fracción lixiviada mayor (37%), por lo que con esa fuente sería −10. El −25 del bioma sobreestima la limitación de fertilidad.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "java_oriental_bali_bajo",
+    "nombre": "Bosques bajos estacionales de Java oriental y Bali",
+    "emoji": "🌿",
+    "color": "#7CB342",
+    "resumen": "Tierras bajas de la mitad este de Java y de Bali, unos 54.000 km². Son más secas y menos diversas que las del oeste: bosque húmedo deciduo con 1.500 a 4.000 mm y 4 a 6 meses secos, y bosque seco deciduo con menos de 1.500 mm y más de 6 meses secos. Quedan fragmentos mínimos de bosque natural y menos del 4% está protegido. Acá la cuestión del agua es la estación seca, más que el exceso de lluvia.",
+    "vegetacion": "Hay bosque húmedo deciduo, selva semisiempreverde sobre la costa sur (con 2 a 4 meses secos), bosque seco deciduo y bosque sobre caliza en laderas con suelo somero. Los árboles comunes de tierras bajas son Homalium tomentosum, Albizia lebbekoides, Cassia fistula, Tetrameles nudiflora y Artocarpus elasticus. Los incendios antrópicos dejan rodales monoespecíficos.",
+    "fauna": "Hay endemismos como el ciervo de Bawean (Axis kuhlii) y el cerdo verrugoso de Java (Sus verrucosus), además de banteng (Bos javanicus) y marta de garganta amarilla (Martes flavigula robinsoni). El estornino de Bali (Leucopsar rothschildi) está en peligro crítico. Los tigres de Java y de Bali se extinguieron. Hay presión fuerte de caza, sobre todo de murciélagos frugívoros.",
+    "suelos": "El sustrato son volcanitas terciarias y cuaternarias, aluviones y calizas coralinas levantadas, con suelos someros en las laderas calcáreas (WWF). Las dos bases globales se contradicen de plano. HWSD v2 da Luvisols 34% (≈ Alfisols), Vertisols 20%, Fluvisols 15% (≈ Entisols fluvénticos), Andosols 8%, Leptosols 8% y Nitisols 5%, sin suelos lixiviados. SoilGrids da Ferralsols 60% (≈ Oxisols) y Acrisols 20% (≈ Ultisols), es decir, un 82% lixiviado. SoilGrids WRB tiene sesgos documentados en el trópico y su mapa se volvió a correr por distorsiones en latitudes bajas, pero HWSD también es un mapa de escala gruesa. Sin el mapa nacional no puedo decidir entre las dos.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Binong", "cientifico": "Tetrameles nudiflora", "tipo": "nativa", "nota": "Árbol común del bosque bajo estacional (WWF)." },
+      { "nombre": "Caña fístula", "cientifico": "Cassia fistula", "tipo": "nativa", "nota": "Árbol común de las tierras bajas de Java oriental y Bali (WWF)." },
+      { "nombre": "—", "cientifico": "Albizia lebbekoides", "tipo": "nativa", "nota": "Árbol común de tierras bajas (WWF)." },
+      { "nombre": "—", "cientifico": "Homalium tomentosum", "tipo": "nativa", "nota": "Árbol común de tierras bajas (WWF)." },
+      { "nombre": "Clavo de olor", "cientifico": "Syzygium aromaticum", "tipo": "cultivo", "nota": "Base de sistemas agroforestales en la zona media (400–800 m) del Rejoso (Suprayogo et al. 2020). No es nativo acá: POWO da como área nativa solo Maluku, al este de la línea de Wallace." },
+      { "nombre": "Café", "cientifico": "Coffea spp.", "tipo": "cultivo", "nota": "Base de sistemas agroforestales en la zona media del Rejoso (Suprayogo et al. 2020). Es introducido." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0113 «Eastern Java-Bali rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0113" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Suprayogo et al. 2020, Infiltration-friendly land uses… Rejoso watershed, East Java, HESSD, doi:10.5194/hess-2020-2 (consultado 2026-09-26)", "url": "https://hess.copernicus.org/preprints/hess-2020-2/" },
+      { "label": "Kew POWO, Syzygium aromaticum, área nativa (consultado 2026-09-26)", "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:601421-1" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [230],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 230 «Eastern Java-Bali rain forests» (WWF IM0113). No propongo modificador porque las dos fuentes que nombran el suelo se contradicen por 20 puntos: con HWSD da 0 y con SoilGrids, −20. Para resolverlo hace falta el mapa de suelos de BBSDLP de Java Oriental y Bali. Dato hídrico útil: en la zona media del Rejoso (400–800 m), los sistemas agroforestales necesitaron más de 80% de cobertura arbórea para sostener la infiltración (Suprayogo et al. 2020). Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "sumatra_bajo",
+    "nombre": "Selvas bajas de Sumatra",
+    "emoji": "🌳",
+    "color": "#1B5E20",
+    "resumen": "Tierras bajas de Sumatra, incluidas Simeulue, Nias y casi toda Bangka: unos 260.000 km². Es un clima tropical húmedo, con cerca de 6.000 mm al oeste de Barisan y más de 2.500 mm al este, y casi nunca más de tres meses secos seguidos. Selva de dipterocarpáceas con 111 especies de la familia. Hacia 1997 quedaba alrededor del 40%, y el ritmo de pérdida era de unos 2.800 km² por año entre 1985 y 1997.",
+    "vegetacion": "Selva de dipterocarpáceas con emergentes de hasta 70 m: Dipterocarpus, Parashorea, Shorea y Dryobalanops. Hay 111 especies de dipterocarpáceas, 6 de ellas endémicas. También hay bosques de ulin (Eusideroxylon zwageri) y más de 100 especies de Ficus. Acá crecen Rafflesia arnoldii, la flor más grande, y Amorphophallus titanum.",
+    "fauna": "Rinoceronte de Sumatra (Dicerorhinus sumatrensis), tapir malayo (Tapirus indicus), elefante asiático (Elephas maximus), tigre de Sumatra (Panthera tigris), orangután, siamang (Hylobates syndactylus) y pantera nebulosa. Hay más de 450 aves, entre ellas 10 cálaos y el argos real (Argusianus argus).",
+    "suelos": "WWF describe como suelos predominantes de tierras bajas los podzólicos, asociados con «altosols» o litosoles, y rendzinas sobre las calizas del norte. En la nomenclatura indonesia antigua, los podzólicos son suelos ácidos lixiviados, aproximadamente Ultisols. HWSD v2 lo confirma: Acrisols 47% (≈ Ultisols), Umbrisols ácricos 17% (22% de Umbrisols en total), Fluvisols 7,5%, Ferralsols 6% (≈ Oxisols) y Histosols 2,6%. SoilGrids da Ferralsols 49% (≈ Oxisols), Histosols 19%, Nitisols 15% y Acrisols 9%. Las turberas grandes están en otra ecorregión, Sumatran peat swamp forests. Los Andosols son el 0,1% en SoilGrids y en HWSD no figuran entre los grupos principales: la fertilidad volcánica está en Barisan y no llega a estas tierras bajas.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Keruing", "cientifico": "Dipterocarpus spp.", "tipo": "nativa", "nota": "Emergentes de la selva baja (WWF)." },
+      { "nombre": "Meranti", "cientifico": "Shorea spp.", "tipo": "nativa", "nota": "Dipterocarpáceas dominantes del dosel emergente." },
+      { "nombre": "Alcanforero de Borneo", "cientifico": "Dryobalanops spp.", "tipo": "nativa", "nota": "Emergente dominante (WWF)." },
+      { "nombre": "Ulin, hierro de Borneo", "cientifico": "Eusideroxylon zwageri", "tipo": "nativa", "nota": "Forma bosques propios (WWF)." },
+      { "nombre": "Rafflesia", "cientifico": "Rafflesia arnoldii", "tipo": "nativa", "nota": "Parásita de lianas. Su flor puede llegar a 1 m de diámetro." },
+      { "nombre": "Aro gigante", "cientifico": "Amorphophallus titanum", "tipo": "nativa", "nota": "Su inflorescencia supera los 2 m." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0158 «Sumatran lowland rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0158" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Sukarman, Dariah y Suratman 2020, Tanah vulkanik di lahan kering berlereng…, J. Penelitian dan Pengembangan Pertanian 39(1):21-34, doi:10.21082/jp3.v39n1.2020.p21-34 (consultado 2026-09-26)", "url": "https://www.academia.edu/105632055/TANAH_VULKANIK_DI_LAHAN_KERING_BERLERENG_DAN_POTENSINYA_UNTUK_PERTANIAN_DI_INDONESIA_Volcanic_Soils_in_Sloping_Dry_Land_and_Its_Potential_for_Agriculture_in_Indonesia" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [278],
+      "paises": ["Indonesia"],
+      "confianza": "media",
+      "notas": "RESOLVE: 278 «Sumatran lowland rain forests» (WWF IM0158). La premisa del encargo (grupo A, andisoles) no se sostiene para esta ecorregión. Las tres fuentes coinciden en que dominan los suelos lixiviados, así que el −25 del bioma está cerca de ser correcto. Según FAO, en Acrisols la agricultura de bajos insumos rinde poco y prosperan cultivos tolerantes a la acidez. Indonesia tiene 2,59 millones de ha de Andosols en Sumatra (Sukarman et al. 2020), pero en esta ecorregión no figuran entre los grupos principales de ninguna de las dos bases. Ese dato va a la ficha montana. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -20,
+          "razon": "Huerta: el −25 del bioma es casi correcto. Suelo dominante: podzólicos según WWF; Acrisols 47% (≈ Ultisols) más Umbrisols ácricos y Ferralsols (≈ Oxisols) según HWSD v2, un 72% lixiviado. SoilGrids da un 58% lixiviado, que con la regla daría −15. Propongo −20 y no −25 porque hay un 7–8% de Fluvisols (≈ Entisols fluvénticos) en las vegas, que no sufren esta limitación.",
+          "pisa_global": -25,
+          "fuente": "WWF IM0158; HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sumatra_montano",
+    "nombre": "Selvas montanas de la cordillera de Barisan",
+    "emoji": "⛰️",
+    "color": "#33691E",
+    "resumen": "Bosques por encima de 1.000 m a lo largo de la cordillera de Barisan, que recorre toda la costa oeste de Sumatra: unos 73.000 km². Llueven más de 2.500 mm por año y casi nunca hay más de tres meses secos seguidos. Es la ecorregión mejor conservada de este grupo, con alrededor de 40% protegido, incluido Kerinci-Seblat. Por su posición sobre la divisoria de la isla, es cabecera de las cuencas de ambas vertientes.",
+    "vegetacion": "El montano bajo tiene fagáceas y lauráceas: Lithocarpus, Quercus, Castanea y Cinnamomum. El montano alto es un bosque enano o élfico, con coníferas como Dacrycarpus imbricatus y ericáceas (Rhododendron, Vaccinium). En el piso subalpino hay árboles bajos con gramíneas (Agrostis, Festuca), juncos y ciperáceas.",
+    "fauna": "Tiene 7 mamíferos endémicos, entre ellos el langur de Thomas (Presbytis thomasi), el conejo de Sumatra (Nesolagus netscheri) y Mus crociduroides, además del tigre de Sumatra, el rinoceronte de Sumatra y el serau (Capricornis sumatraensis). Hay 8 aves endémicas, como el faisán de Sumatra (Lophura hoogerwerfi), el cuco terrestre de Sumatra (Carpococcyx viridis) y Cochoa beccarii.",
+    "suelos": "Barisan es un cinturón de plegamiento con vulcanismo de los últimos 25 millones de años (WWF). Aun así, WWF describe como predominantes los suelos podzólicos, asociados con «altosols» o litosoles, es decir, suelos lixiviados. HWSD v2 da Umbrisols 65% (40% ácricos y 22% cámbicos, ≈ Inceptisols de horizonte úmbrico), Andosols 18% (≈ Andisols) y Acrisols 5%. SoilGrids da Cambisols 37%, Andosols 32% y Ferralsols 28%. Los Andosols son reales pero no dominan: están en los conos activos. Sumatra concentra el 48% de los Andosols de Indonesia, unos 2,6 millones de ha, y el 62% de los suelos volcánicos del país está sobre pendientes mayores al 30% (Sukarman et al. 2020).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Podocarpo", "cientifico": "Dacrycarpus imbricatus", "tipo": "nativa", "nota": "Conífera del bosque montano alto (WWF)." },
+      { "nombre": "Robles tropicales", "cientifico": "Lithocarpus spp., Quercus spp.", "tipo": "nativa", "nota": "Dominan el montano bajo." },
+      { "nombre": "Canelos", "cientifico": "Cinnamomum spp.", "tipo": "nativa", "nota": "Lauráceas del montano bajo (WWF)." },
+      { "nombre": "Rododendros", "cientifico": "Rhododendron spp.", "tipo": "nativa", "nota": "Ericáceas del bosque élfico." },
+      { "nombre": "Rafflesia", "cientifico": "Rafflesia arnoldii", "tipo": "nativa", "nota": "WWF la registra también en esta ecorregión." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0159 «Sumatran montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0159" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Sukarman, Dariah y Suratman 2020, Tanah vulkanik di lahan kering berlereng…, J. Penelitian dan Pengembangan Pertanian 39(1):21-34, doi:10.21082/jp3.v39n1.2020.p21-34 (consultado 2026-09-26)", "url": "https://www.academia.edu/105632055/TANAH_VULKANIK_DI_LAHAN_KERING_BERLERENG_DAN_POTENSINYA_UNTUK_PERTANIAN_DI_INDONESIA_Volcanic_Soils_in_Sloping_Dry_Land_and_Its_Potential_for_Agriculture_in_Indonesia" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [279],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 279 «Sumatran montane rain forests» (WWF IM0159). HWSD da −15 (50% lixiviado) y SoilGrids −5 (28%). WWF nombra suelos podzólicos, lo que desempata a favor de HWSD. Propongo −15 con confianza baja: la ficha mezcla conos andosólicos fértiles con laderas de Umbrisols ácricos, y con esta escala el promedio borra esa diferencia. Donde el predio caiga sobre un cono activo, el valor real probablemente esté más cerca de 0. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -15,
+          "razon": "Huerta: la cordillera volcánica no es un bloque andosólico. Suelo dominante según HWSD v2: Umbrisols 65%, de los cuales 40% son ácricos (≈ Inceptisols úmbricos, lixiviados). Los Andosols (≈ Andisols) son el 18%. WWF describe la región como de suelos podzólicos predominantes. SoilGrids da 32% de Andosols y 28% lixiviado, que daría −5. La pendiente agrava el límite.",
+          "pisa_global": -25,
+          "fuente": "WWF IM0159; HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pinar_toba",
+    "nombre": "Pinares tropicales de Sumatra (Toba y Barisan)",
+    "emoji": "🌲",
+    "color": "#4E6E3A",
+    "resumen": "Pinares de Pinus merkusii en el norte de Sumatra, alrededor del lago Toba y sobre Barisan: unos 2.800 km². Son los únicos rodales de esta especie al sur del ecuador. Los pinos ocupan los sectores más secos de la cordillera, sobre todo en las laderas del este, a la sombra de lluvia. Se queman con frecuencia, por causas naturales y humanas.",
+    "vegetacion": "Pinar de Pinus merkusii en mosaico con selva montana. WWF describe la ecorregión como dominada por esta especie.",
+    "fauna": "Tiene 12 aves casi endémicas, entre ellas el pavón bronceado (Polyplectron chalcurum), el minivet de la Sonda (Pericrocotus miniatus) y el niltava de Sumatra (Niltava sumatrana). No tiene mamíferos endémicos ni casi endémicos.",
+    "suelos": "Las fuentes no concuerdan. HWSD v2 da Umbrisols ácricos 49%, Cambisols dístricos 17%, Acrisols 16% y Andosols 10%. SoilGrids da Andosols 54%, Ferralsols 26% y Cambisols 17%. No encontré una fuente regional abierta que nombre el suelo de los pinares de Toba.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Pino de Sumatra, tusam", "cientifico": "Pinus merkusii", "tipo": "nativa", "nota": "Especie dominante. Estos son sus únicos rodales naturales al sur del ecuador (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0304 «Sumatran tropical pine forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0304" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [305],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 305 «Sumatran tropical pine forests» (WWF IM0304). Bioma: coníferas tropicales y subtropicales. No propongo modificador por dos razones. Primero, no tengo el valor global de huerta para este bioma. Segundo, HWSD (66% lixiviado, −15) y SoilGrids (26%, −5) discrepan en 10 puntos. Para resolverlo harían falta el mapa de BBSDLP de Sumatra Utara o un estudio de perfiles sobre la toba de Toba. La lista de especies es mínima a propósito: WWF solo nombra al pino como flora.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "pinar_luzon",
+    "nombre": "Pinares de la Cordillera Central de Luzón",
+    "emoji": "🌲",
+    "color": "#5D7B3A",
+    "resumen": "Pinares de Benguet (Pinus kesiya) por encima de 1.000 m en la Cordillera Central, al noroeste de Luzón: unos 7.000 km². Llueven alrededor de 2.500 mm por año, y más de 4.000 mm algunos años en el monte Pulog. La estacionalidad es marcada: seco de noviembre a abril y lluvias máximas de mayo a agosto. Las temperaturas rondan los 20 °C y rara vez pasan de 26 °C. Los tifones golpean las laderas del oeste.",
+    "vegetacion": "Pinar de Pinus kesiya, que WWF también cita como P. insularis, entre 1.000 y 2.500 m. Forma un paisaje de pastizal con árboles, intercalado con bosque montano.",
+    "fauna": "Las ratas de las nubes (Crateromys, Phloeomys) son mamíferos endémicos. Hay 23 aves casi endémicas, y el piquituerto (Loxia curvirostra) vive en el pinar.",
+    "suelos": "La región se formó con vulcanismo y fricción de placas hace al menos 15 millones de años (WWF). HWSD v2 da Acrisols 72% (≈ Ultisols) y Nitisols 27% (≈ Alfisols/Ultisols kándicos). SoilGrids da Cambisols 83% y Acrisols 10%. A escala nacional, los Ultisols son el orden más extenso de Filipinas, con 41,5% del territorio (Ronda 2005). En Benguet, la pérdida de suelo sin medidas de conservación es de unas 62 t/ha/año.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Pino de Benguet", "cientifico": "Pinus kesiya", "tipo": "nativa", "nota": "Especie dominante entre 1.000 y 2.500 m (WWF; sinónimo P. insularis)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0302 «Luzon tropical pine forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0302" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Ronda 2005, Soil, water and climatic resources of the Philippines, JIRCAS Int. Symp. Series 13:41-52 (consultado 2026-09-26)", "url": "https://www.jircas.go.jp/sites/default/files/publication/intlsymp/intlsymp-13_41-52.pdf" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [303],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 303 «Luzon tropical pine forests» (WWF IM0302). Bioma: coníferas tropicales y subtropicales. No propongo modificador. Falta el valor global de huerta de este bioma, y HWSD (72% lixiviado, −20) y SoilGrids (10%, −5) discrepan en 15 puntos. El dato de erosión de Benguet (62 t/ha/año) indica que, sea cual sea el suelo, la ladera es el límite dominante para la huerta. Para resolverlo haría falta el mapa de suelos de BSWM de Benguet y Mountain Province.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "luzon_montano",
+    "nombre": "Selvas montanas de Luzón",
+    "emoji": "🏔️",
+    "color": "#2E5D34",
+    "resumen": "Bosques por encima de ~1.000 m en la Sierra Madre norte y sur, los montes Sapocoy, Magnas y Agnamala, y los montes de Zambales: unos 8.300 km². En algunos sectores llueven hasta 10.000 mm por año, el cuádruple que en las tierras bajas. La Sierra Madre tiene poca estacionalidad (seco de diciembre a abril). El norte de la Cordillera Central y Zambales son más estacionales. Luzón es oceánica: nunca estuvo unida al continente.",
+    "vegetacion": "Desde ~1.000 m, los robles y laureles reemplazan a las dipterocarpáceas de abajo. Abundan las epífitas y los pandanos trepadores (Freycinetia). En las cumbres hay bosque montano alto o élfico. El frío frena la descomposición, y el suelo del bosque acumula un mantillo grueso de humus.",
+    "fauna": "Archboldomys musseri es endémico estricto. Entre los casi endémicos están Otopteropus cartilagonodus, Tryphomys adustus y Apomys sacobianus. Hay aves como la pita de Koch (Pitta kochi), Ptilinopus marchei y el cálao de Luzón (Penelopides manillae), y mamíferos grandes como el macaco cangrejero, el cerdo verrugoso filipino (Sus philippensis) y el ciervo filipino (Cervus mariannus).",
+    "suelos": "HWSD v2 da Acrisols 71% (≈ Ultisols) y Nitisols 26% (≈ Alfisols/Ultisols kándicos). SoilGrids da Cambisols 69%, Acrisols 19% y Ferralsols 11%. Solo el 1% son Andosols en cualquiera de las dos bases. A escala nacional, los Ultisols son el orden más extenso de Filipinas, con 41,5% (Ronda 2005).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Pandanos trepadores", "cientifico": "Freycinetia spp.", "tipo": "nativa", "nota": "Comunes en el bosque montano (WWF)." },
+      { "nombre": "Robles y laureles", "cientifico": "Fagaceae, Lauraceae", "tipo": "nativa", "nota": "Dominan desde ~1.000 m (WWF). La ficha no da géneros." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0122 «Luzon montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0122" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Ronda 2005, Soil, water and climatic resources of the Philippines, JIRCAS Int. Symp. Series 13:41-52 (consultado 2026-09-26)", "url": "https://www.jircas.go.jp/sites/default/files/publication/intlsymp/intlsymp-13_41-52.pdf" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [240],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 240 «Luzon montane rain forests» (WWF IM0122). Pese al nombre del grupo, no hay andisoles dominantes. No propongo modificador: HWSD da −20 (71% lixiviado) y SoilGrids −5 (30%). El dato nacional de Ronda favorece a HWSD, pero no es regional y no alcanza para desempatar. Para resolverlo haría falta el mapa de BSWM de la Sierra Madre y Zambales. En Zambales hay un complejo ofiolítico (ultramáfico) que no verifiqué para esta ficha. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "luzon_bajo",
+    "nombre": "Selvas bajas de Luzón",
+    "emoji": "🌾",
+    "color": "#689F38",
+    "resumen": "Tierras bajas de Luzón por debajo de ~1.000 m: unos 95.600 km², incluidos la llanura central, el valle del Cagayán y el arco de Bicol. Las temperaturas son de 25 a 28 °C. El régimen de lluvia cambia según el sector: el suroeste recibe lluvia todo el año; el valle del Cagayán es seco de noviembre a abril; el sureste es más lluvioso de mayo a enero; el noroeste tiene estación lluviosa de mayo a octubre y seca de noviembre a abril. Queda un 24% de cobertura forestal.",
+    "vegetacion": "Selva de dipterocarpáceas de hasta 60 m de altura, con troncos de 1 a 2 m de diámetro. Hay manglares, bosque de playa con Casuarina y Barringtonia, y pastizales.",
+    "fauna": "El águila filipina (Pithecophaga jefferyi) tiene entre 52 y 104 individuos en Luzón. Viven acá el zorro volador de corona dorada (Acerodon jubatus), la musaraña-ratón de Isarog (Archboldomys luzonensis) y la oropéndola de Isabela (Oriolus isabellae).",
+    "suelos": "HWSD v2 da Nitisols 43% (≈ Alfisols/Ultisols kándicos), Acrisols 16% (≈ Ultisols), Vertisols 10%, Cambisols gleicos 10%, Luvisols 8% (≈ Alfisols) y Andosols 7% (≈ Andisols). SoilGrids da Cambisols 41%, Acrisols 23%, Gleysols 11%, Ferralsols 11% (≈ Oxisols) y Vertisols 7%. Según FAO, los Nitisols están entre los suelos más productivos del trópico húmedo, aunque con alta sorción de P.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Dipterocarpáceas", "cientifico": "Dipterocarpaceae", "tipo": "nativa", "nota": "Dominan la selva baja (WWF). La ficha de WWF no da especies." },
+      { "nombre": "Casuarina", "cientifico": "Casuarina spp.", "tipo": "nativa", "nota": "Bosque de playa (WWF)." },
+      { "nombre": "Barringtonia", "cientifico": "Barringtonia spp.", "tipo": "nativa", "nota": "Bosque de playa (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0123 «Luzon rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0123" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "IUSS Working Group WRB 2022, World Reference Base for Soil Resources, 4.ª ed. (consultado 2026-09-26)", "url": "https://files.isric.org/public/documents/WRB_fourth_edition_2022-12-18.pdf" },
+      { "label": "Ronda 2005, Soil, water and climatic resources of the Philippines, JIRCAS Int. Symp. Series 13:41-52 (consultado 2026-09-26)", "url": "https://www.jircas.go.jp/sites/default/files/publication/intlsymp/intlsymp-13_41-52.pdf" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [241],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 241 «Luzon rain forests» (WWF IM0123). La ficha mezcla la llanura aluvial central, el valle del Cagayán y el arco volcánico de Bicol, y por eso el promedio es grueso. HWSD da −5 (16% lixiviado) y SoilGrids −10 (33%). Propongo −5. Los Gleysols y Cambisols gleicos (alrededor de 10%) indican drenaje impedido en la llanura: es un problema de agua, no de fertilidad. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: el texto del bioma no describe esta ficha. Suelo dominante según HWSD v2: Nitisols 43% (≈ Alfisols/Ultisols kándicos, de los más productivos del trópico húmedo según FAO), más Vertisols y Luvisols (≈ Alfisols). Los Acrisols (≈ Ultisols) son solo el 16%. SoilGrids da 33% lixiviado, que daría −10.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mindanao_montano",
+    "nombre": "Selvas montanas de Mindanao",
+    "emoji": "🦅",
+    "color": "#2F6B3A",
+    "resumen": "Bosques montanos de Mindanao hasta 2.700 m (Kitanglad, Apo y los altos de Bukidnon): unos 18.100 km². El clima es tropical húmedo, modificado por la altura. En Malaybalay llueven 2.569 mm y a 1.500 m, 2.825 mm. Hacia 1988 quedaba alrededor del 29% del bosque de Mindanao. Es el hábitat del águila filipina.",
+    "vegetacion": "Bosque de dipterocarpáceas de colina (Hopea, Shorea, Dipterocarpus), bosque montano bajo y alto (Lithocarpus, Cinnamomum, Agathis), bosque musgoso élfico y pastizales de cumbre. Abundan los helechos arborescentes (Cyathea) y las orquídeas epífitas.",
+    "fauna": "Águila filipina (Pithecophaga jefferyi), en peligro crítico; martín pescador de gorro azul (Actenoides hombroni); cerdo verrugoso filipino (Sus philippensis); ciervo filipino (Cervus mariannus nigricans); tupaya filipina (Urogale everetti); rata lunar de Mindanao (Podogymnura truei).",
+    "suelos": "Casi toda Bukidnon es de origen volcánico, salvo el sur, que es sedimentario (Dejarme-Calalang y Colinet 2014). Según esa revisión, los órdenes presentes son Inceptisols, Ultisols y Alfisols. En la montaña probablemente conservan rasgos ándicos, pero no se clasifican como Andisols porque el Andisol pierde sus propiedades al meteorizarse. La limitante principal es la fijación de P: entre 85 y 90% del P inorgánico agregado queda no disponible. Además, un pH menor a 5,5 indica riesgo de toxicidad por Al. HWSD v2 da Nitisols 45%, Acrisols 35% (≈ Ultisols) y Andosols 18%. SoilGrids da Ferralsols 44%, Cambisols 39% y Acrisols 12%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Almácigas", "cientifico": "Agathis spp.", "tipo": "nativa", "nota": "Conífera del bosque montano (WWF)." },
+      { "nombre": "Lauán y afines", "cientifico": "Shorea spp., Hopea spp., Dipterocarpus spp.", "tipo": "nativa", "nota": "Dipterocarpáceas del bosque de colina." },
+      { "nombre": "Helechos arborescentes", "cientifico": "Cyathea spp.", "tipo": "nativa", "nota": "Comunes en el montano (WWF)." },
+      { "nombre": "Canelos", "cientifico": "Cinnamomum spp.", "tipo": "nativa", "nota": "Lauráceas montanas (WWF)." },
+      { "nombre": "Ananá", "cientifico": "Ananas comosus", "tipo": "cultivo", "nota": "Uno de los cultivos dominantes de Bukidnon, junto con caña, maíz, hortalizas y arroz (Dejarme-Calalang y Colinet 2014). Es neotropical." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0128 «Mindanao montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0128" },
+      { "label": "Dejarme-Calalang y Colinet 2014, A review of soils and crops in the Bukidnon Highlands, BASE 18(4):544-557 (consultado 2026-09-26)", "url": "https://popups.uliege.be/1780-4507/index.php?id=11691" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Ronda 2005, Soil, water and climatic resources of the Philippines, JIRCAS Int. Symp. Series 13:41-52 (consultado 2026-09-26)", "url": "https://www.jircas.go.jp/sites/default/files/publication/intlsymp/intlsymp-13_41-52.pdf" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [246],
+      "paises": ["Filipinas"],
+      "confianza": "media",
+      "notas": "RESOLVE: 246 «Mindanao montane rain forests» (WWF IM0128). HWSD da −10 (35% lixiviado) y SoilGrids −15 (55%). Están a ≤5 puntos, así que propongo −10, con apoyo de la revisión regional de Bukidnon. La revisión de Bukidnon abarca la provincia entera, no solo la franja por encima de 1.000 m. Ronda (2005) informa que todos los suelos de altura de Bukidnon son deficientes en N y P. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -10,
+          "razon": "Huerta: son suelos de origen volcánico ya meteorizados, no andisoles jóvenes. Suelo dominante según la revisión regional: Inceptisols, Ultisols y Alfisols, con fijación de P del 85–90%. HWSD v2 da Nitisols 45% y Acrisols 35% (≈ Ultisols). El −25 del bioma exagera, pero un límite existe: P, acidez y pendiente.",
+          "pisa_global": -25,
+          "fuente": "Dejarme-Calalang y Colinet 2014 (BASE 18(4)); HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mindanao_visayas_oriental",
+    "nombre": "Selvas bajas de Mindanao y las Visayas orientales",
+    "emoji": "🌧️",
+    "color": "#388E3C",
+    "resumen": "Tierras bajas, por debajo de 1.000 m, de Mindanao, Samar, Leyte, Bohol y sus islas satélite: unos 105.000 km². Durante el Pleistoceno fueron una sola isla, el «Gran Mindanao». El clima es tropical húmedo. En el norte los tifones (julio a noviembre) pueden aportar hasta un tercio de la lluvia anual. Mindanao queda al sur de la trayectoria principal de los tifones.",
+    "vegetacion": "El bosque dominante era de dipterocarpáceas (caoba filipina), desde el nivel del mar hasta más de 400 m, de 45 a 65 m de altura y con tres estratos. En el bosque de colina alto aparecen Shorea polysperma, robles, castaños y Elaeocarpus. Hay manglar y bosque de playa.",
+    "fauna": "Cerdo verrugoso filipino, ciervo filipino, tarsero filipino (Tarsius syrichta), colugo filipino (Cynocephalus volans), tupaya filipina, águila filipina y cocodrilo filipino (Crocodylus mindorensis).",
+    "suelos": "La geología es heterogénea. Mindanao y las Visayas llegaron a su posición actual en los últimos 25 millones de años (WWF). El borde oriental tiene ofiolitas mesozoicas en Samar, Tacloban, Malitbog, el sureste de Bohol, Dinagat y Pujada (Dimalanta et al. 2020). Sobre las unidades ultramáficas de Dinagat se forman lateritas niquelíferas (Barrientos et al. 2024). HWSD v2 da Nitisols 46%, Acrisols 20% (≈ Ultisols), Luvisols 11% (≈ Alfisols), Cambisols 9%, Gleysols 7% y Andosols 4,5%. SoilGrids da Acrisols 38%, Ferralsols 31% (≈ Oxisols) y Cambisols 27%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Lauán", "cientifico": "Shorea polysperma", "tipo": "nativa", "nota": "Del bosque de dipterocarpáceas de colina alto (WWF)." },
+      { "nombre": "Dipterocarpáceas", "cientifico": "Dipterocarpaceae", "tipo": "nativa", "nota": "Forman el bosque dominante hasta más de 400 m." },
+      { "nombre": "Elaeocarpos", "cientifico": "Elaeocarpus spp.", "tipo": "nativa", "nota": "Del bosque de colina alto (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0129 «Mindanao-Eastern Visayas rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0129" },
+      { "label": "Dimalanta et al. 2020, proto-Philippine Sea Plate ophiolites, Geoscience Frontiers, doi:10.1016/j.gsf.2019.01.005 (consultado 2026-09-26)", "url": "https://www.sciencedirect.com/science/article/pii/S1674987119300349" },
+      { "label": "Barrientos et al. 2024, Cagdianao nickel laterite, Dinagat, IOP Conf. Ser. EES 1373:012041, doi:10.1088/1755-1315/1373/1/012041 (consultado 2026-09-26)", "url": "https://ouci.dntb.gov.ua/en/works/4YEdKGR4/" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [247],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 247 «Mindanao-Eastern Visayas rain forests» (WWF IM0129). No propongo modificador: HWSD da −5 (20% lixiviado) y SoilGrids −15 (68%). Además, la ficha incluye enclaves ultramáficos, con lateritas pobres en nutrientes y ricas en Ni, que ningún promedio representa. Sería mejor tratarlos como una capa geológica aparte en la app. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "negros_panay",
+    "nombre": "Selvas de Negros, Panay y Cebú",
+    "emoji": "🌋",
+    "color": "#43A047",
+    "resumen": "Negros, Panay, Cebú, Masbate, Ticao y Guimaras: unos 35.000 km². Clima tropical húmedo con unos 2.419 mm por año. Julio y agosto son los meses más lluviosos. Las costas oeste de Panay y Negros tienen estación seca de noviembre a febrero. En 1988 Negros tenía 4% de bosque, Panay 8% y Cebú un 0,3% del original.",
+    "vegetacion": "Selva de dipterocarpáceas (Dipterocarpus, Shorea, Hopea, con narra, Pterocarpus indicus) de 45 a 65 m, bosque de dipterocarpáceas de colina alto y bosque montano con robles, laureles y castaños.",
+    "fauna": "Ciervo moteado filipino (Cervus alfredi), cerdo verrugoso de las Visayas (Sus cebifrons), cocodrilo filipino, paloma apuñalada de Negros (Gallicolumba keayi), cálao tarictic (Penelopides panini) y pájaro-flor de Cebú (Dicaeum quadricolor).",
+    "suelos": "La geología varía según la isla. Casi todas emergieron hace 6 millones de años o menos. Negros tiene una cadena de volcanes. Cebú tiene un espinazo abrupto de calizas, margas y karst con pendientes mayores al 18% (WWF). HWSD v2 da Nitisols 39% (≈ Alfisols/Ultisols kándicos), Luvisols 19% (≈ Alfisols), Acrisols 14% (≈ Ultisols), Andosols 9% (≈ Andisols) y Vertisols 8%. SoilGrids da Acrisols 58%, Cambisols 30% y Andosols 5%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Narra", "cientifico": "Pterocarpus indicus", "tipo": "nativa", "nota": "Árbol de la selva de dipterocarpáceas (WWF)." },
+      { "nombre": "Apitong y afines", "cientifico": "Dipterocarpus spp.", "tipo": "nativa", "nota": "Dosel emergente." },
+      { "nombre": "Lauán", "cientifico": "Shorea spp.", "tipo": "nativa", "nota": "Dosel emergente." },
+      { "nombre": "Yakal y afines", "cientifico": "Hopea spp.", "tipo": "nativa", "nota": "Dipterocarpácea del dosel." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0114 «Greater Negros-Panay rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0114" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [231],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 231 «Greater Negros-Panay rain forests» (WWF IM0114). No propongo modificador: HWSD da −5 (14% lixiviado) y SoilGrids −15 (62%). La ficha junta una isla volcánica (Negros), una de calizas (Cebú) y Panay, y ninguna fuente abierta separa sus suelos. Para resolverlo haría falta el mapa de BSWM por provincia. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "mindoro",
+    "nombre": "Selvas de Mindoro",
+    "emoji": "🐃",
+    "color": "#4C8C4A",
+    "resumen": "La isla de Mindoro y las islas Semirara: unos 10.100 km². La costa oeste tiene estación lluviosa con el monzón del suroeste (junio a octubre) y seca con el del noreste (noviembre a febrero). En 1988 quedaba un 8,5% de bosque.",
+    "vegetacion": "Selva siempreverde de tierras bajas hasta unos 400 m o más, bosque abierto entre 650 y 1.000 m, y bosque musgoso por encima. Históricamente hubo selva de dipterocarpáceas y bosque semicaducifolio. Quedan restos de Pinus merkusii a baja altura.",
+    "fauna": "Tamaraw (Bubalus mindorensis), cerdo verrugoso filipino, cocodrilo filipino y paloma apuñalada de Mindoro (Gallicolumba platenae).",
+    "suelos": "Mindoro no es un arco volcánico joven. Junto con Palawan y las Calamianes, se separó del continente asiático hace unos 32 millones de años (bajo el mar) y emergió hace 5 a 10 millones de años (WWF). HWSD v2 da Acrisols 50% (≈ Ultisols), Nitisols 29%, Cambisols gleicos 16% y Andosols 2%. SoilGrids da Cambisols 53%, Acrisols 22%, Gleysols 11% y Andosols 9,5%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Pino de Mindoro", "cientifico": "Pinus merkusii", "tipo": "nativa", "nota": "Quedan rodales limitados a baja altura (WWF)." },
+      { "nombre": "Dipterocarpáceas", "cientifico": "Dipterocarpaceae", "tipo": "nativa", "nota": "La selva de dipterocarpáceas era la vegetación histórica (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0130 «Mindoro rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0130" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [248],
+      "paises": ["Filipinas"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 248 «Mindoro rain forests» (WWF IM0130). Se confirma la sospecha: el núcleo de la isla es un fragmento continental, no volcánico. Aun así no propongo modificador, porque HWSD da −15 (50% lixiviado) y SoilGrids −5 (25%). Para resolverlo haría falta el mapa de BSWM de Mindoro. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando.",
+      "modificadores_propuestos": []
+    }
+  }
+]

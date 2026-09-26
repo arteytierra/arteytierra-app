@@ -1,0 +1,296 @@
+[
+  {
+    "id": "ghats_norte_deciduo",
+    "nombre": "Bosques húmedos deciduos de los Ghats occidentales del norte",
+    "emoji": "🌳",
+    "color": "#6D8B3A",
+    "resumen": "Franja de bosque húmedo deciduo que rodea las selvas montanas en el tramo norte de los Ghats occidentales, en Maharashtra y Karnataka: unos 48.000 km². Llueven entre 1.500 y 2.000 mm, con 4 a 5 meses secos. La temperatura media es de 24 a 27 °C, y tierra adentro la máxima pasa de 40 °C. Más de tres cuartos del hábitat natural fue desmontado o convertido.",
+    "vegetacion": "Teca (Tectona grandis), Grewia tiliifolia, Lagerstroemia lanceolata, Dillenia pentagyna, Pterocarpus marsupium, Xylia xylocarpa, Adina cordifolia y palisandro (Dalbergia latifolia). Los tecales sobre suelo laterítico tienen un sotobosque típico de Cleistanthus collinus, Holarrhena antidysenterica, Bauhinia racemosa y Kydia calycina.",
+    "fauna": "Tigre, elefante asiático, gaur, loris esbelto (Loris tardigradus) y oso bezudo. Más de 345 aves, entre ellas el cálao gris de Malabar (Ocyceros griseus) y el gran cálao (Buceros bicornis).",
+    "suelos": "El sustrato es el basalto del Deccan. Sobre las mesetas residuales de la escarpa hay una coraza laterítica formada a partir de los basaltos de la Formación Panhala, y en la planicie del Konkan otra laterita más joven (Widdowson y Cox 1996). WWF describe los tecales sobre suelos lateríticos. HWSD v2 da Nitisols 59% (≈ Alfisols/Ultisols kándicos), Plinthosols dístricos 12% (laterita), Luvisols crómicos 11% (≈ Alfisols) y Vertisols 9%. SoilGrids da Leptosols 29%, Luvisols 29% y Vertisols 25%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "Dominante sobre suelos lateríticos (WWF)." },
+      { "nombre": "Palisandro de la India", "cientifico": "Dalbergia latifolia", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Vengai, kino de Malabar", "cientifico": "Pterocarpus marsupium", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Irul", "cientifico": "Xylia xylocarpa", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "—", "cientifico": "Cleistanthus collinus", "tipo": "nativa", "nota": "Sotobosque de tecales sobre laterita (WWF)." },
+      { "nombre": "Pimienta negra", "cientifico": "Piper nigrum", "tipo": "cultivo", "nota": "POWO da como área nativa solo Sri Lanka y considera introducida a India. Contradice el supuesto del encargo." },
+      { "nombre": "Caucho", "cientifico": "Hevea brasiliensis", "tipo": "cultivo", "nota": "Las plantaciones de caucho, té y café son una amenaza principal (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0134 «North Western Ghats moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0134" },
+      { "label": "Widdowson y Cox 1996, Uplift and erosional history of the Deccan Traps: evidence from laterites…, EPSL 137:57-69, doi:10.1016/0012-821X(95)00211-T (consultado 2026-09-26)", "url": "https://www.sciencedirect.com/science/article/abs/pii/0012821X9500211T" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Kew POWO, Piper nigrum — área nativa (consultado 2026-09-26)", "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:682369-1" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [253],
+      "paises": ["India"],
+      "confianza": "media",
+      "notas": "RESOLVE: 253 «North Western Ghats moist deciduous forests» (WWF IM0134). HWSD da −5 (12% de laterita) y SoilGrids 0 (4%). Coinciden, así que propongo −5. El agua manda por la estacionalidad: 4 a 5 meses secos después de un monzón concentrado. Sobre basalto con coraza laterítica, la infiltración y la retención dependen de si la coraza está intacta o no. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: el suelo derivado de basalto es mayormente de base alta. Según HWSD v2: Nitisols (≈ Alfisols/Ultisols kándicos, de los más productivos del trópico húmedo según FAO) 59%, Luvisols (≈ Alfisols) y Vertisols. La laterita (Plinthosols, ≈ Oxisols plínticos) es el 12%. SoilGrids tampoco ve lixiviación importante. El −25 del bioma exagera.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ghats_norte_montano",
+    "nombre": "Selvas montanas de los Ghats occidentales del norte",
+    "emoji": "⛰️",
+    "color": "#2E5D34",
+    "resumen": "Selvas siempreverdes de los Ghats occidentales del norte: unos 30.800 km². La cordillera sube de golpe desde casi el nivel del mar por el oeste y baja a unos 500 m sobre la meseta del Deccan por el este. Las laderas de barlovento reciben más de 2.500 mm, y hacia el este hay sombra de lluvia. Queda un 42% del hábitat y un 13% está protegido.",
+    "vegetacion": "Familias Dipterocarpaceae, Clusiaceae, Anacardiaceae, Sapotaceae y Meliaceae, con Lauraceae por encima de 900 m. Especies como Syzygium spp., Rhododendron nilgiricum, Myristica malabarica y Diospyros sylvatica.",
+    "fauna": "Murciélago de cola libre de Wroughton (Otomops wroughtoni), civeta de Malabar (Viverra civettina), tigre y elefante. Más de 325 aves, entre ellas la paloma de los Nilgiri (Columba elphinstonii) y el cálao gris de Malabar.",
+    "suelos": "Las cumbres y mesetas de la escarpa conservan una coraza laterítica desarrollada sobre los basaltos de la Formación Panhala, la más joven de la secuencia del Deccan (Widdowson y Cox 1996). HWSD v2 da Nitisols 50% y Plinthosols dístricos 43% (laterita, ≈ Oxisols plínticos). SoilGrids da Cambisols 28%, Luvisols 25%, Acrisols 21% y Leptosols 19%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Nuez moscada silvestre de Malabar", "cientifico": "Myristica malabarica", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Rododendro de los Nilgiri", "cientifico": "Rhododendron nilgiricum", "tipo": "nativa", "nota": "WWF, como R. nilgiricum." },
+      { "nombre": "Ébano de montaña", "cientifico": "Diospyros sylvatica", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Jambos", "cientifico": "Syzygium spp.", "tipo": "nativa", "nota": "WWF." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0135 «North Western Ghats montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0135" },
+      { "label": "Widdowson y Cox 1996, Uplift and erosional history of the Deccan Traps: evidence from laterites…, EPSL 137:57-69, doi:10.1016/0012-821X(95)00211-T (consultado 2026-09-26)", "url": "https://www.sciencedirect.com/science/article/abs/pii/0012821X9500211T" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [254],
+      "paises": ["India"],
+      "confianza": "media",
+      "notas": "RESOLVE: 254 «North Western Ghats montane rain forests» (WWF IM0135). El texto de WWF enumera Tamil Nadu, Kerala, Karnataka y Maharashtra, lo que no cuadra con el tramo norte. Uso solo el polígono. HWSD da −10 (43% de laterita) y SoilGrids −5 (21%): propongo −10. La minería de hierro y manganeso que cita WWF está ligada a estas lateritas. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -10,
+          "razon": "Huerta: el perfil es de coraza laterítica sobre basalto. Según HWSD v2: Plinthosols dístricos (laterita, ≈ Oxisols plínticos) 43% y Nitisols 50%. SoilGrids da 21% de Acrisols (≈ Ultisols). La laterita sí es pobre y lixiviada, pero no domina todo el polígono.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); Widdowson y Cox 1996; SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ghats_sur_deciduo",
+    "nombre": "Bosques húmedos deciduos de los Ghats occidentales del sur",
+    "emoji": "🐘",
+    "color": "#7CB342",
+    "resumen": "Franja de bosque húmedo deciduo que rodea las selvas montanas del tramo sur de los Ghats, en Kerala y Tamil Nadu: unos 23.700 km². Por la sombra de lluvia, algunos sectores de sotavento reciben menos de un quinto de los 3.000 mm o más que caen arriba. Queda alrededor de un cuarto del hábitat.",
+    "vegetacion": "Adina cordifolia, Albizia odoratissima, A. procera, Alstonia scholaris, Bombax ceiba, cedro rojo (Toona ciliata), palisandro (Dalbergia latifolia), Lagerstroemia, Pterocarpus marsupium, teca, Terminalia y Xylia xylocarpa.",
+    "fauna": "Tigre, elefante, gaur, langur de los Nilgiri (Semnopithecus johnii), oso bezudo, cuón y loris esbelto. Hay 322 aves, entre ellas el florícano menor.",
+    "suelos": "El basamento es precámbrico del terreno granulítico del sur de la India: charnockitas y gneises (Srikantappa y Ravindra Kumar 1987; Raith et al. 1990). Los suelos lateríticos de Kerala de referencia son Ultisols, de pH y CIC bajos, con arcillas 1:1 y gibbsita (Chandran et al. 2005). HWSD v2 da Nitisols 40%, Luvisols crómicos 31% (≈ Alfisols), Plinthosols 16% (laterita) y Umbrisols ácricos 7%. SoilGrids da Cambisols 43%, Acrisols 20% (≈ Ultisols) y Luvisols 18%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Cedro rojo de la India", "cientifico": "Toona ciliata", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Árbol del diablo", "cientifico": "Alstonia scholaris", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Ceibo de la India", "cientifico": "Bombax ceiba", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Palisandro de la India", "cientifico": "Dalbergia latifolia", "tipo": "nativa", "nota": "WWF." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0150 «South Western Ghats moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0150" },
+      { "label": "Srikantappa y Ravindra Kumar 1987, Gneiss-charnockite relation around Ponmudi, southern Kerala, Proc. Indian Acad. Sci. (EPS) 96(1) (consultado 2026-09-26)", "url": "https://www.ias.ac.in/article/fulltext/jess/096/01/0001-0010" },
+      { "label": "Raith et al. 1990, The granulite terrane of the Nilgiri Hills (Southern India), Springer, doi:10.1007/978-94-009-2055-2_17 (consultado 2026-09-26)", "url": "https://link.springer.com/content/pdf/10.1007/978-94-009-2055-2_17.pdf" },
+      { "label": "Chandran et al. 2005, Lateritic soils of Kerala, India: their mineralogy, genesis and taxonomy, Aust. J. Soil Res. 43(7):839-852, doi:10.1071/SR04128 (consultado 2026-09-26)", "url": "https://connectsci.au/sr/article-abstract/43/7/839/45941/Lateritic-soils-of-Kerala-India-their-mineralogy?redirectedFrom=fulltext" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [270],
+      "paises": ["India"],
+      "confianza": "media",
+      "notas": "RESOLVE: 270 «South Western Ghats moist deciduous forests» (WWF IM0150). HWSD y SoilGrids dan los dos −5 (24% y 23% lixiviado). WWF señala el pastoreo y la quema como amenaza principal. En sotavento, el agua es el limitante antes que el suelo. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: mosaico sobre charnockita y gneis. Suelo dominante según HWSD v2: Nitisols y Luvisols (≈ Alfisols), con 24% de laterita y Umbrisols ácricos. SoilGrids da 23% de Acrisols (≈ Ultisols). Las dos fuentes coinciden en −5.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ghats_sur_montano",
+    "nombre": "Selvas montanas y sholas de los Ghats occidentales del sur",
+    "emoji": "☁️",
+    "color": "#1B5E20",
+    "resumen": "Selvas montanas por encima de 1.000 m en el tramo sur de los Ghats, con varios picos de más de 2.000 m: unos 22.500 km². El monzón del suroeste deja más de 2.500 mm, y en algunos sectores más de 8.000 mm por año. Casi dos tercios del bosque natural fue desmontado.",
+    "vegetacion": "Selva montana siempreverde con Cullenia exarillata, Mesua ferrea, Palaquium ellipticum y Podocarpus wallichianus. Entre 1.900 y 2.220 m está el complejo shola-pastizal: manchones de bosque (Pygeum gardneri, Schefflera racemosa, Rhododendron nilgiricum) en una matriz de pastizal de Chrysopogon zeylanicus y Themeda tremula.",
+    "fauna": "Tigre, elefante, tahr de los Nilgiri (Nilgiritragus hylocrius) y macaco de cola de león (Macaca silenus). Tiene tres aves endémicas estrictas, entre ellas el bisbita de los Nilgiri (Anthus nilghiriensis).",
+    "suelos": "El basamento son granulitas enderbíticas y charnockitas arcaicas; el macizo de los Nilgiri expone corteza inferior metamorfizada hace unos 2.500 millones de años (Raith et al. 1990). HWSD v2 da Plinthosols dístricos 43% (laterita), Nitisols 41%, Umbrisols ácricos 11% y Luvisols 6%. SoilGrids da Cambisols 68%, Acrisols 21% y Luvisols 9%. El Kerala Soil Survey describe los Ultisols como suelos pobres en bases de las zonas de lluvia alta, con limitaciones de fertilidad.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Cardamomo", "cientifico": "Elettaria cardamomum", "tipo": "nativa", "nota": "POWO da como área nativa los Ghats occidentales. Aquí se cultiva bajo el dosel, y WWF cuenta su expansión como amenaza." },
+      { "nombre": "Nahor", "cientifico": "Mesua ferrea", "tipo": "nativa", "nota": "Selva montana (WWF)." },
+      { "nombre": "—", "cientifico": "Cullenia exarillata", "tipo": "nativa", "nota": "Selva montana siempreverde (WWF)." },
+      { "nombre": "Podocarpo", "cientifico": "Podocarpus wallichianus", "tipo": "nativa", "nota": "WWF, como P. wallichiana." },
+      { "nombre": "Rododendro de los Nilgiri", "cientifico": "Rhododendron nilgiricum", "tipo": "nativa", "nota": "Shola (WWF)." },
+      { "nombre": "—", "cientifico": "Chrysopogon zeylanicus", "tipo": "nativa", "nota": "Pastizal de altura (WWF)." },
+      { "nombre": "Té", "cientifico": "Camellia sinensis", "tipo": "cultivo", "nota": "La conversión a té, café, cardamomo y teca es la amenaza principal (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0151 «South Western Ghats montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0151" },
+      { "label": "Raith et al. 1990, The granulite terrane of the Nilgiri Hills (Southern India), Springer, doi:10.1007/978-94-009-2055-2_17 (consultado 2026-09-26)", "url": "https://link.springer.com/content/pdf/10.1007/978-94-009-2055-2_17.pdf" },
+      { "label": "Kerala Soil Survey, Soils of Kerala — agrupamiento taxonómico (consultado 2026-09-26)", "url": "https://www.keralasoils.gov.in/en/taxanomic-grouping-soils" },
+      { "label": "Chandran et al. 2005, Lateritic soils of Kerala, India: their mineralogy, genesis and taxonomy, Aust. J. Soil Res. 43(7):839-852, doi:10.1071/SR04128 (consultado 2026-09-26)", "url": "https://connectsci.au/sr/article-abstract/43/7/839/45941/Lateritic-soils-of-Kerala-India-their-mineralogy?redirectedFrom=fulltext" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Kew POWO, Elettaria cardamomum — área nativa (consultado 2026-09-26)", "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:796556-1/general-information" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [271],
+      "paises": ["India"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 271 «South Western Ghats montane rain forests» (WWF IM0151). No propongo modificador: HWSD da −15 (54%: laterita y Umbrisols ácricos) y SoilGrids −5 (21%). Las fuentes de Kerala (Ultisols en zonas de lluvia alta) son estatales, no del polígono, así que no alcanzan para desempatar, con el mismo criterio que usé en Luzón montano. Hace falta el mapa de NBSS&LUP de los distritos de montaña. Dato hídrico: el mosaico shola-pastizal funciona como esponja de cabecera, y los embalses hidroeléctricos son una amenaza que cita WWF. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "sri_lanka_humedo_bajo",
+    "nombre": "Selvas bajas de la zona húmeda de Sri Lanka",
+    "emoji": "🐸",
+    "color": "#2E7D32",
+    "resumen": "Selvas por debajo de 1.000 m en el cuarto suroeste de Sri Lanka: unos 12.500 km². El monzón del suroeste (mayo a septiembre), extendido por los períodos intermonzónicos, deja más de 5.000 mm. La temperatura casi no varía en el año (27 a 30 °C). Queda alrededor del 8% de la selva original. Tiene más de 250 ranas endémicas.",
+    "vegetacion": "Selva de dipterocarpáceas con Dipterocarpus zeylanicus, D. hispidus, Shorea affinis, Vitex altissima, Mesua ferrea y Syzygium rubicundum.",
+    "fauna": "Leopardo de Sri Lanka (Panthera pardus kotiya), elefante asiático, cucal de pico verde (Centropus chlororhynchos) y tordo silbador de Sri Lanka (Myophonus blighi).",
+    "suelos": "WWF: «los suelos de esta ecorregión de zona húmeda son podzólicos rojo-amarillos», la designación local de suelos ácidos lixiviados. La zona húmeda tiene Ultisols, Inceptisols, Histosols y Entisols, con meteorización avanzada: caolinita y gibbsita, sin esmectitas (Indraratne 2020). HWSD v2 da Acrisols 45% (≈ Ultisols), Plinthosols 16%, Cambisols flúvicos 15%, Umbrisols ácricos 12% y Luvisols 9%. SoilGrids da Acrisols 55%, Cambisols 23% y Ferralsols 19% (≈ Oxisols).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Hora", "cientifico": "Dipterocarpus zeylanicus", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "—", "cientifico": "Shorea affinis", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Na, palo de hierro", "cientifico": "Mesua ferrea", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Milla", "cientifico": "Vitex altissima", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Pimienta negra", "cientifico": "Piper nigrum", "tipo": "nativa", "nota": "POWO da a Sri Lanka como su única área nativa. No pude verificar en qué ecorregión de la isla crece silvestre." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0154 «Sri Lanka lowland rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0154" },
+      { "label": "Indraratne 2020, Soil mineralogy of Sri Lanka, en Mapa (ed.) The Soils of Sri Lanka, Springer, doi:10.1007/978-3-030-44144-9_4 (consultado 2026-09-26)", "url": "https://link.springer.com/chapter/10.1007/978-3-030-44144-9_4" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Kew POWO, Piper nigrum — área nativa (consultado 2026-09-26)", "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:682369-1" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [274],
+      "paises": ["Sri Lanka"],
+      "confianza": "media",
+      "notas": "RESOLVE: 274 «Sri Lanka lowland rain forests» (WWF IM0154). Las tres fuentes coinciden: HWSD −20, SoilGrids −20 y WWF con suelos podzólicos rojo-amarillos. Es una de las pocas fichas de las 33 donde el −25 del bioma es casi correcto. La lluvia de más de 5.000 mm es el motor de la lixiviación. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -20,
+          "razon": "Huerta: el −25 del bioma casi acierta. Suelo dominante: podzólicos rojo-amarillos (WWF), Acrisols (≈ Ultisols) 45% según HWSD v2 y 55% según SoilGrids, más laterita y Ferralsols (≈ Oxisols). La mineralogía de caolinita y gibbsita confirma una meteorización avanzada. Queda −20 y no −25 por los Cambisols flúvicos de los valles.",
+          "pisa_global": -25,
+          "fuente": "WWF IM0154; HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC); Indraratne 2020"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sri_lanka_montano",
+    "nombre": "Selvas montanas de Sri Lanka",
+    "emoji": "🌫️",
+    "color": "#33691E",
+    "resumen": "Selvas montanas y submontanas por encima de 1.000 m en el macizo central, con picos de más de 2.500 m, y en la cordillera de Knuckles, que pasa los 1.800 m: unos 3.100 km² en el polígono RESOLVE. Llueven de 2.500 a 5.000 mm, la mayor parte con el monzón del suroeste y un aporte del noreste (diciembre a marzo). La temperatura baja unos 0,5 °C cada 100 m.",
+    "vegetacion": "Dipterocarpus, Shorea gardneri, Calophyllum y Syzygium. En el bosque nuboso de altura hay Rhododendron.",
+    "fauna": "Mamíferos endémicos como Srilankamys ohiensis y la musaraña Feroculus feroculus. Aves endémicas como el tordo silbador de Sri Lanka y el lorito colgante de Sri Lanka (Loriculus beryllinus). También vive el leopardo de Sri Lanka.",
+    "suelos": "WWF: «el tipo de suelo predominante son los suelos podzólicos rojo-amarillos». La zona húmeda está muy meteorizada (Indraratne 2020). HWSD v2 da Acrisols 79% (≈ Ultisols) y Luvisols crómicos 21% (≈ Alfisols). SoilGrids da Cambisols 73% y Andosols 17%. En Sri Lanka no hay vulcanismo, así que esos Andosols son probablemente un artefacto del modelo, lo que resta confianza a SoilGrids en esta ficha.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "—", "cientifico": "Shorea gardneri", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Keena", "cientifico": "Calophyllum spp.", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Rododendro", "cientifico": "Rhododendron sp.", "tipo": "nativa", "nota": "Bosque nuboso de altura (WWF)." },
+      { "nombre": "Té", "cientifico": "Camellia sinensis", "tipo": "cultivo", "nota": "Las plantaciones de té son la amenaza principal (WWF)." },
+      { "nombre": "Cardamomo", "cientifico": "Elettaria cardamomum", "tipo": "cultivo", "nota": "Introducido en Sri Lanka según POWO (nativo de los Ghats). WWF cita sus plantaciones como amenaza." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0155 «Sri Lanka montane rain forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0155" },
+      { "label": "Indraratne 2020, Soil mineralogy of Sri Lanka, en Mapa (ed.) The Soils of Sri Lanka, Springer, doi:10.1007/978-3-030-44144-9_4 (consultado 2026-09-26)", "url": "https://link.springer.com/chapter/10.1007/978-3-030-44144-9_4" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Kew POWO, Elettaria cardamomum — área nativa (consultado 2026-09-26)", "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:796556-1/general-information" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [275],
+      "paises": ["Sri Lanka"],
+      "confianza": "media",
+      "notas": "RESOLVE: 275 «Sri Lanka montane rain forests» (WWF IM0155). WWF da 9.843 millas² como superficie, lo que no cuadra con el polígono RESOLVE de unos 3.100 km². Uso el polígono. HWSD da −20 (79%) y SoilGrids 0 (10%). WWF nombra suelos podzólicos rojo-amarillos y desempata a favor de HWSD, el mismo criterio que en Sumatra montano. Propongo −20. La pendiente y el reemplazo por té agravan la erosión en la cabecera de la isla. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -20,
+          "razon": "Huerta: suelo dominante según WWF, podzólicos rojo-amarillos. HWSD v2 da Acrisols (≈ Ultisols) 79% y Luvisols (≈ Alfisols) 21%. SoilGrids no ve lixiviación, pero predice Andosols en una isla sin volcanes, lo que la hace poco confiable acá. El −25 del bioma casi acierta.",
+          "pisa_global": -25,
+          "fuente": "WWF IM0155; HWSD v2 (FAO/IIASA 2023); Indraratne 2020; SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sri_lanka_zona_seca",
+    "nombre": "Bosques secos siempreverdes de la zona seca de Sri Lanka",
+    "emoji": "🐘",
+    "color": "#A1887F",
+    "resumen": "La mayor parte de Sri Lanka, salvo el cuarto suroeste, el macizo central y la península de Jaffna: unos 48.200 km². Es llana, con inselbergs y colinas aisladas; el punto más alto es Ritigala (766 m). Llueven de 1.500 a 2.000 mm con el monzón del noreste (diciembre a marzo) y el resto del año es mayormente seco. Tiene numerosos reservorios antiguos que formaban parte de un extenso sistema de riego. Alrededor del 75% está deforestado y un 17% protegido.",
+    "vegetacion": "Bosque seco siempreverde con Manilkara hexandra, Chloroxylon swietenia, Drypetes sepiaria, Limonia acidissima (Feronia limonia), Vitex altissima, Syzygium spp. y Chukrasia tabularis. Hay sabanas talawa con Terminalia y Pterocarpus marsupium, y pastizales villu con Cymbopogon y Themeda.",
+    "fauna": "Elefante asiático (entre 2.500 y 4.000 individuos), leopardo de Sri Lanka, oso bezudo y loris esbelto. Hay 270 aves, entre ellas la gallina de Sri Lanka (Gallus lafayettii) y el pelícano oriental (Pelecanus philippensis). En los reservorios viven cocodrilos de las marismas y marinos, y varanos acuáticos (Varanus salvator).",
+    "suelos": "En la zona seca la meteorización es menor: caolinita, esmectita, vermiculita y mica, sin minerales muy meteorizados (Indraratne 2020). De los 118 suelos de la isla, 54 se describen en la zona seca (Dassanayake et al. 2020). Los «Reddish Brown Earths» de la zona seca se clasifican como Alfisols (Mapa y Yapa 1992). HWSD v2 da Luvisols 76% (72% crómicos, ≈ Alfisols), Fluvisols éutricos 9% y Ferralsols 5%. SoilGrids da Acrisols 53% (≈ Ultisols), Cambisols 19% y Ferralsols 9%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Palu", "cientifico": "Manilkara hexandra", "tipo": "nativa", "nota": "Dominante del bosque seco siempreverde (WWF)." },
+      { "nombre": "Satinwood de Ceilán", "cientifico": "Chloroxylon swietenia", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Manzana de madera", "cientifico": "Limonia acidissima", "tipo": "nativa", "nota": "WWF, como Feronia limonia." },
+      { "nombre": "Hulanhik", "cientifico": "Chukrasia tabularis", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Gammalu", "cientifico": "Pterocarpus marsupium", "tipo": "nativa", "nota": "Sabana talawa (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0212 «Sri Lanka dry-zone dry evergreen forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0212" },
+      { "label": "Indraratne 2020, Soil mineralogy of Sri Lanka, en Mapa (ed.) The Soils of Sri Lanka, Springer, doi:10.1007/978-3-030-44144-9_4 (consultado 2026-09-26)", "url": "https://link.springer.com/chapter/10.1007/978-3-030-44144-9_4" },
+      { "label": "Dassanayake, De Silva y Mapa 2020, Major soils of the Dry Zone and their classification, doi:10.1007/978-3-030-44144-9_5 (consultado 2026-09-26)", "url": "https://link.springer.com/chapter/10.1007/978-3-030-44144-9_5" },
+      { "label": "Mapa y Yapa 1992, gravel horizon in reddish brown earth soils (alfisols), Tropical Agriculturist 148:53-61, registro AGRIS (consultado 2026-09-26)", "url": "https://agris.fao.org/search/en/records/64722fc653aa8c896301c0e9" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [301],
+      "paises": ["Sri Lanka"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 301 «Sri Lanka dry-zone dry evergreen forests» (WWF IM0212). Bioma: bosque seco tropical y subtropical. No tengo su valor global de huerta, así que pisa_global queda en null. HWSD da 0 y SoilGrids −15 (62%). La mineralogía poco meteorizada de la zona seca (Indraratne 2020) y la identidad Reddish Brown Earths = Alfisols (Mapa y Yapa 1992) desempatan a favor de HWSD. Propongo 0, pero solo sirve si 'delta' reemplaza; si se suma, no se puede usar sin el valor del bioma. Lo que limita la huerta acá es el agua, no el suelo: el régimen es de una sola estación de lluvias. Los reservorios antiguos que registra WWF son la infraestructura de cosecha de agua de la zona. Regla usada (propuesta, a revisar): valor = −25 × fracción de suelos lixiviados/ácidos en HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols y Umbrisols ácricos), redondeado a 5; el resto de los suelos vale 0, no positivo, porque pendiente y retención de P siguen limitando. Se propone solo si HWSD y SoilGrids dan valores a ≤5 puntos, o si una tercera fuente que nombra el suelo desempata. 'delta' se entiende como el valor que reemplaza a pisa_global, no como un sumando. En los Ghats, los Plinthosols de HWSD (lateritas) cuentan como lixiviados.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": 0,
+          "razon": "Huerta: suelo dominante, Reddish Brown Earths ≈ Alfisols. HWSD v2 da Luvisols crómicos (≈ Alfisols) 76%, de base alta, con arcillas poco meteorizadas (esmectita, vermiculita). SoilGrids da Acrisols (53%), pero la mineralogía descrita para la zona seca no es la de un Ultisol. La fertilidad no es el límite; el agua sí.",
+          "pisa_global": null,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); Indraratne 2020; Mapa y Yapa 1992; SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  }
+]

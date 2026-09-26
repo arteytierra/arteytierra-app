@@ -1,0 +1,479 @@
+[
+  {
+    "id": "valle_brahmaputra",
+    "nombre": "Bosques semisiempreverdes del valle del Brahmaputra",
+    "emoji": "🦏",
+    "color": "#2E7D32",
+    "resumen": "Llanura aluvial del Brahmaputra, casi toda en Assam, con bordes en Arunachal Pradesh, Nagaland y las tierras bajas de Bután: unos 56.700 km². El monzón del suroeste (junio a septiembre) entra encajonado entre el Himalaya y las colinas Mizo y descarga entre 1.500 y 3.000 mm. Queda alrededor de un cuarto del bosque y un 5% está protegido. En Assam hay unas 250.000 ha crónicamente inundables. De diciembre a febrero la humedad del suelo es muy baja y hace falta riego.",
+    "vegetacion": "Dosel de 20 a 30 m con Syzygium, Cinnamomum, Artocarpus, magnoliáceas, Terminalia myriocarpa, T. citrina, T. tomentosa, Tetrameles, Stereospermum y sal (Shorea robusta). En el sotobosque hay Phoebe, Machilus, Actinodaphne, Polyalthia, Mesua ferrea y bambúes (Dendrocalamus hamiltonii, Melocanna bambusoides).",
+    "fauna": "122 mamíferos, entre ellos el rinoceronte indio (Rhinoceros unicornis), el elefante asiático, el tigre, el jabalí pigmeo (Sus salvanius), la liebre híspida (Caprolagus hispidus), el langur dorado (Semnopithecus geei) y la pantera nebulosa. Más de 370 aves. En el río vive el delfín del Ganges (Platanista gangetica).",
+    "suelos": "El sustrato son aluviones profundos del Brahmaputra y sus afluentes, como el Manas y el Subansiri (WWF). Los suelos de Assam son ácidos (pH 4,5–5,8) en todas las zonas agroclimáticas salvo la de colinas (Baishya et al. 2009). Las bases globales discrepan sobre el grupo. HWSD v2 da Acrisols 71% (≈ Ultisols), Cambisols éutricos 17% y Regosols dístricos 6%. SoilGrids da Cambisols 83% (≈ Inceptisols), con Fluvisols, Vertisols y Acrisols cerca del 4–5% cada uno.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Sal", "cientifico": "Shorea robusta", "tipo": "nativa", "nota": "Parte del dosel (WWF)." },
+      { "nombre": "Nahor, palo de hierro", "cientifico": "Mesua ferrea", "tipo": "nativa", "nota": "Sotobosque (WWF)." },
+      { "nombre": "Hollock", "cientifico": "Terminalia myriocarpa", "tipo": "nativa", "nota": "Dosel (WWF)." },
+      { "nombre": "Binong", "cientifico": "Tetrameles nudiflora", "tipo": "nativa", "nota": "Dosel (WWF, como Tetrameles)." },
+      { "nombre": "Bambú", "cientifico": "Dendrocalamus hamiltonii", "tipo": "nativa", "nota": "Sotobosque (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0105 «Brahmaputra Valley semi-evergreen forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0105" },
+      { "label": "Baishya et al. 2009, Constraints and opportunities of crop diversification in Assam, Indian J. Agronomy 54(2):200-205 (consultado 2026-09-26)", "url": "https://pub.isa-india.in/index.php/ija/article/view/4781" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [222],
+      "paises": ["India", "Bután"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 222 «Brahmaputra Valley semi-evergreen forests» (WWF IM0105). No propongo modificador: HWSD da −20 (73% lixiviado) y SoilGrids 0 (4%). La acidez medida (pH 4,5–5,8) confirma que hay acidez, pero no dice si el suelo es un Acrisol lixiviado o un Cambisol dístrico aluvial, que es justo lo que separa a las dos fuentes. Para resolverlo haría falta el mapa de suelos de NBSS&LUP de Assam, que no pude abrir. El agua pesa en las dos direcciones: 250.000 ha crónicamente inundables y déficit hídrico de diciembre a febrero. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": []
+    }
+  },
+  {
+    "id": "pantanos_chao_phraya",
+    "nombre": "Pantanos de agua dulce del Chao Phraya",
+    "emoji": "🌾",
+    "color": "#558B2F",
+    "resumen": "Llanura aluvial del Chao Phraya en el centro de Tailandia, unos 400 km de largo por 180 km de ancho, alrededor de 38.900 km². El clima es monzónico húmedo con unos 1.400 mm por año. La llanura central baja fue una gran bahía del mar de la China Meridional hace 6.000 a 8.000 años. La llanura alta, a más de 20 m sobre el nivel del mar, nunca tuvo inundación mareal. Casi no queda vegetación original: la reemplazaron el arrozal, la ciudad, los camarones y las hortalizas.",
+    "vegetacion": "Pantano boscoso con Dipterocarpus alatus y formaciones de Typha, Phragmites y Pandanus, que pasaban a manglar hacia la costa. Hoy es casi totalmente arrozal y área urbana.",
+    "fauna": "Mamíferos endémicos: Niviventer hinpoon, Leopoldamys neilli e Hipposideros halophyllus. En el pasado vivían acá el tigre, el elefante y el rinoceronte de Java. Aves: cigüeña picoabierta asiática (Anastomus oscitans) y la golondrina de río de ojos blancos (Pseudochelidon sirintarae).",
+    "suelos": "En la llanura central baja hay limos cuaternarios de 15 a 30 m sobre arcillas marinas blandas (WWF). En esas arcillas se formó pirita a partir de raíces de manglar. Tailandia tiene unos 8.800 km² de suelos sulfatados ácidos, concentrados en esta llanura de unos 36.000 km². El pH de campo va de 4,6 a 5,1 y el del suelo secado al aire, de 3,5 a 3,7 (Janjirawuttikul et al. 2010). HWSD v2 da Gleysols 37% (30% tiónicos, ≈ Sulfaquepts), Acrisols gleicos 28% (≈ Ultisols), Fluvisols éutricos 22% (≈ Entisols fluvénticos) y Vertisols 5%. SoilGrids da Fluvisols 57%, Gleysols 15% y Luvisols 9%, pero no distingue los tiónicos.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Yang", "cientifico": "Dipterocarpus alatus", "tipo": "nativa", "nota": "Árbol del pantano boscoso original (WWF)." },
+      { "nombre": "Totora", "cientifico": "Typha sp.", "tipo": "nativa", "nota": "Formaciones pantanosas (WWF)." },
+      { "nombre": "Carrizo", "cientifico": "Phragmites sp.", "tipo": "nativa", "nota": "Formaciones pantanosas (WWF)." },
+      { "nombre": "Arroz", "cientifico": "Oryza sativa", "tipo": "cultivo", "nota": "Reemplazó casi todo el hábitat original (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0107 «Chao Phraya freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0107" },
+      { "label": "Janjirawuttikul, Umitsu y Vijarnsorn 2010, Paleoenvironment of acid sulfate soil formation in the Lower Central Plain of Thailand, Res. J. Environ. Sci. 4(4):336-358, doi:10.3923/rjes.2010.336.358 (consultado 2026-09-26)", "url": "https://scialert.net/fulltext/?doi=rjes.2010.336.358" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [224],
+      "paises": ["Tailandia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 224 «Chao Phraya freshwater swamp forests» (WWF IM0107). El modificador de huerta sigue siendo negativo, pero por otra razón que la del bioma: el suelo sulfatado ácido, no la lixiviación. Drenado o removido, el suelo libera ácido sulfúrico. La fracción tiónica tiene dos fuentes: HWSD da 30% y la literatura, unos 8.800 sobre 36.000 km² de la llanura baja, alrededor de 24%. Eso solo aporta entre −5 y −8. La fracción de Acrisols gleicos es discutida: 28% en HWSD y 5% en SoilGrids. El total queda entre −7 y −15. Propongo −10 con confianza baja. PEATMAP no registra turba. En el diseño, la regla práctica es no bajar el nivel freático por debajo de la capa pirítica y no exponer el material sulfídico en excavaciones: es la versión local de «el agua manda». Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -10,
+          "razon": "Huerta: el −25 del bioma acierta en el signo pero no en la causa. Suelo dominante según HWSD v2: Gleysols tiónicos 30% (≈ Sulfaquepts, suelos sulfatados ácidos, con pH secado al aire de 3,5–3,7), confirmados por el mapeo tailandés. A eso se suman Acrisols gleicos (≈ Ultisols) en proporción discutida, y Fluvisols éutricos (≈ Entisols fluvénticos) fértiles en los albardones. Drenar para hacer huerta oxida la pirita.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); Janjirawuttikul et al. 2010 (doi:10.3923/rjes.2010.336.358); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "chao_phraya_deciduo",
+    "nombre": "Bosques húmedos deciduos de la llanura del Chao Phraya",
+    "emoji": "🍂",
+    "color": "#8D6E63",
+    "resumen": "Mosaico de parches de bosque a los dos lados del Chao Phraya, con afinidades con varias ecorregiones vecinas: unos 20.300 km². Llueven entre 1.000 y 1.100 mm al oeste y unos 1.300 mm al este, y el 80% cae con el monzón del suroeste (mayo a octubre). Hay karst calizo en las llanuras de Ratchaburi y Phetchaburi. Un 7% está protegido.",
+    "vegetacion": "Bosque húmedo deciduo en parches. La ficha de WWF no da especies dominantes. Sobre el karst de Ratchaburi y Phetchaburi persiste bosque más seco.",
+    "fauna": "Elefante asiático, banteng, gibón de gorro (Hylobates pileatus), cocodrilo siamés (Crocodylus siamensis), faisán siamés (Lophura diardi), urraca de Indochina (Cissa hypoleuca), cigüeña lanuda (Ciconia episcopus), serau y el murciélago endémico Myotis rosseti.",
+    "suelos": "HWSD v2 da Acrisols 62% (≈ Ultisols), Luvisols crómicos 12% (≈ Alfisols), Leptosols 10% (sobre el karst) y Nitisols 7%. SoilGrids da Acrisols 66%, Cambisols 19% y Luvisols 7%. Las dos fuentes coinciden: no es aluvión de creciente sino suelo lixiviado de terrazas y colinas que bordean la llanura.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Mandioca", "cientifico": "Manihot esculenta", "tipo": "cultivo", "nota": "La conversión a mandioca es una de las amenazas principales (WWF). Es neotropical. Según FAO, en Acrisols prosperan los cultivos tolerantes a la acidez." },
+      { "nombre": "Caña de azúcar", "cientifico": "Saccharum officinarum", "tipo": "cultivo", "nota": "Otra conversión principal (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0108 «Chao Phraya lowland moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0108" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "FAO 2001, Lecture notes on the major soils of the world — Nitisols y Acrisols (consultado 2026-09-26)", "url": "https://www.fao.org/docrep/003/y1899e/y1899e08a.htm" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [225],
+      "paises": ["Tailandia"],
+      "confianza": "media",
+      "notas": "RESOLVE: 225 «Chao Phraya lowland moist deciduous forests» (WWF IM0108). La premisa del grupo B no se cumple acá: pese al nombre, la ecorregión ocupa las tierras altas lixiviadas que rodean la llanura, no el aluvión. Las dos bases coinciden (−15 y −15). La lista de especies nativas queda vacía porque WWF no da flora con nombre científico para esta ecorregión. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -15,
+          "razon": "Huerta: suelo dominante Acrisols (≈ Ultisols), 62% según HWSD v2 y 66% según SoilGrids: suelos ácidos lixiviados de terraza y colina. El −25 del bioma exagera poco. Los Luvisols (≈ Alfisols) y Nitisols (alrededor de 20%) moderan el valor.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_irrawaddy",
+    "nombre": "Pantanos de agua dulce del delta del Irrawaddy",
+    "emoji": "🌊",
+    "color": "#00796B",
+    "resumen": "Delta del Irrawaddy sobre el golfo de Bengala, con manglares y pantanos de agua dulce: unos 15.100 km². Es casi todo llano. Por el oeste lo limita la cordillera de Rakhine (Arakan Yoma), de 1.287 m al norte a 428 m al sur. No tiene áreas protegidas.",
+    "vegetacion": "En el norte hay teca, Xylia kerrii, Bombax (Salmalia) malabarica, Millettia pendula, Dalbergia kurzii, Spondias pinnata, Terminalia bellirica, T. tomentosa y Vitex. En el sur hay Xylia, Bombax, Dalbergia kurzii, T. bellirica, Adina cordifolia y Spondias. El bambú Melocanna bambusoides es extenso, y también hay Bambusa tulda y Dendrocalamus longispathus.",
+    "fauna": "Elefante asiático, sambar (Cervus unicolor), ciervo porcino (C. porcinus), jabalí, tigre, leopardo y cocodrilo marino (Crocodylus porosus). Es un paso importante de aves migratorias: chorlos, playeros, agujas, cigüeñas, garzas y patos.",
+    "suelos": "WWF describe al oeste lutitas y rocas sedimentarias, con suelos pardo amarillentos a gley, y al este suelos franco arenosos y calcáreos. HWSD v2 da Gleysols éutricos 93% (≈ Aquepts/Aquents), Solonchaks gleicos 3% y Nitisols 3%. SoilGrids da Fluvisols 81% (≈ Entisols fluvénticos) y Gleysols 11%. PEATMAP registra un 8% de turba.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Pyinkado", "cientifico": "Xylia xylocarpa var. kerrii", "tipo": "nativa", "nota": "WWF la cita como Xylia kerri." },
+      { "nombre": "Palisandro de Birmania", "cientifico": "Dalbergia kurzii", "tipo": "nativa", "nota": "Norte y sur (WWF)." },
+      { "nombre": "Ciruelo jobo de monte", "cientifico": "Spondias pinnata", "tipo": "nativa", "nota": "Norte y sur (WWF)." },
+      { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "Sector norte (WWF)." },
+      { "nombre": "Bambú", "cientifico": "Melocanna bambusoides", "tipo": "nativa", "nota": "Extenso (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0116 «Irrawaddy freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0116" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [234],
+      "paises": ["Myanmar"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 234 «Irrawaddy freshwater swamp forests» (WWF IM0116). Con HWSD más PEATMAP, la fracción problemática es 11,5% (Solonchaks 3% y turba 8%), que da −5. SoilGrids da 5%, que da 0. La diferencia es de redondeo. Lo que manda en la huerta del delta es el anegamiento, que la regla deliberadamente no penaliza porque se maneja con obra de agua. Si la app no modela la inundación por separado, este valor subestima el límite real. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: aluvión deltaico. Suelo dominante: Gleysols éutricos (93% según HWSD v2) y Fluvisols (≈ Entisols fluvénticos, 81% según SoilGrids), fértiles y sin lixiviación. El −25 del bioma no aplica. Quedan −5 por los parches salinos (alrededor de 3%) y de turba (alrededor de 8%, PEATMAP).",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); PEATMAP (Xu et al. 2018); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "irrawaddy_deciduo",
+    "nombre": "Bosques húmedos deciduos del Irrawaddy",
+    "emoji": "🌳",
+    "color": "#6D8B3A",
+    "resumen": "Cuenca del Irrawaddy, cuencas del Bago Yoma y piedemonte del Rakhine Yoma: unos 138.000 km². Llueven más de 1.500 mm, con períodos secos. El bosque ocupa tierras bien drenadas, onduladas o de colina, de hasta 1.000 m.",
+    "vegetacion": "Teca (Tectona grandis), pyinkado (Xylia kerrii), Terminalia tomentosa, T. bellirica, T. pyrifolia, padauk (Pterocarpus macrocarpus) y Mitragyna rotundifolia. Bambúes: Bambusa polymorpha, Cephalostachyum pergracile y Dendrocalamus hamiltonii.",
+    "fauna": "Elefante, tigre, gaur (Bos gaurus), sambar, oso malayo (Helarctos malayanus) y cuón. Unas 350 aves, entre ellas el casi endémico charlatán de garganta blanca (Turdoides gularis).",
+    "suelos": "WWF dice que los suelos pertenecen a la «serie Irrawaddian»: arenas fluviales con fósiles de vertebrados terrestres y acuáticos. HWSD v2 da Acrisols 31% (≈ Ultisols), Gleysols 17%, Cambisols flúvicos 12%, Nitisols 13%, Luvisols crómicos 12% (≈ Alfisols) y Vertisols 7%. SoilGrids da Acrisols 56%, Luvisols 15% y Vertisols 9%.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "Dominante (WWF). También es la madera cultivada más conocida de la región." },
+      { "nombre": "Pyinkado", "cientifico": "Xylia xylocarpa var. kerrii", "tipo": "nativa", "nota": "WWF la cita como Xylia kerri." },
+      { "nombre": "Padauk", "cientifico": "Pterocarpus macrocarpus", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Terminalia", "cientifico": "Terminalia bellirica", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Bambú", "cientifico": "Cephalostachyum pergracile", "tipo": "nativa", "nota": "WWF." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0117 «Irrawaddy moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0117" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [235],
+      "paises": ["Myanmar"],
+      "confianza": "media",
+      "notas": "RESOLVE: 235 «Irrawaddy moist deciduous forests» (WWF IM0117). HWSD da −10 (33% lixiviado) y SoilGrids −15 (56%): están dentro de 5 puntos, así que propongo −10. Igual que en la 225, la ecorregión ocupa tierras bien drenadas de colina más que la llanura de inundación. No la fusiono con la 234, como acordamos. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -10,
+          "razon": "Huerta: mosaico. Suelo dominante según HWSD v2: Acrisols (≈ Ultisols) 31%, más Nitisols, Luvisols (≈ Alfisols), Vertisols y Gleysols aluviales, alrededor de 60% no lixiviado. SoilGrids da más Acrisols (56%), que daría −15. El −25 del bioma exagera.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gangetica_inferior",
+    "nombre": "Bosques húmedos deciduos de la llanura gangética inferior",
+    "emoji": "🌾",
+    "color": "#9CCC65",
+    "resumen": "Llanura baja del Ganges y el Brahmaputra en Bihar, Bengala Occidental, Assam, Uttar Pradesh, Odisha y la mayor parte de Bangladesh: unos 253.500 km². El monzón deja más de 3.500 mm entre junio y septiembre y los ciclones del golfo de Bengala causan inundaciones extensas. Queda alrededor del 3% bajo bosque natural.",
+    "vegetacion": "Bombax ceiba, Albizia procera, Duabanga sonneratioides, Sterculia villosa, sal (Shorea robusta), Acacia catechu, sisu (Dalbergia sissoo) y Pterospermum acerifolium. Las especies adaptadas al fuego son Ziziphus mauritiana, Madhuca longifolia (latifolia) y Butea monosperma.",
+    "fauna": "Tigre, rinoceronte indio, elefante asiático, gaur, oso bezudo (Melursus ursinus) y nutria lisa (Lutrogale perspicillata). Aves: florícano de Bengala (Houbaropsis bengalensis), florícano menor (Sypheotides indicus) y pigargo de Pallas (Haliaeetus leucoryphus).",
+    "suelos": "WWF describe un aluvión arcilloso de drenaje pobre y, en los bajos ribereños más estables pero inundables, suelos más arenosos con parches de arcilla. HWSD v2 da Gleysols 36% (≈ Aquepts), Cambisols 26%, Fluvisols 16% (≈ Entisols fluvénticos, mayormente calcáricos) y Luvisols 10% (≈ Alfisols). Los lixiviados suman 7% y la turba (PEATMAP) 1,5%. SoilGrids da Fluvisols 45% y Cambisols 38%, con 6% lixiviado.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Ceibo de la India", "cientifico": "Bombax ceiba", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Sal", "cientifico": "Shorea robusta", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Sisu", "cientifico": "Dalbergia sissoo", "tipo": "nativa", "nota": "Dominante (WWF)." },
+      { "nombre": "Mahua", "cientifico": "Madhuca longifolia", "tipo": "nativa", "nota": "Tolerante al fuego (WWF, como Madhuca latifolia)." },
+      { "nombre": "Llama del bosque", "cientifico": "Butea monosperma", "tipo": "nativa", "nota": "Tolerante al fuego (WWF)." },
+      { "nombre": "Arroz", "cientifico": "Oryza sativa", "tipo": "cultivo", "nota": "Con el paso al riego con agua subterránea en los años 70 se expandió el arroz de estación seca (Chakraborty et al. 2015)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0120 «Lower Gangetic Plains moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0120" },
+      { "label": "Chakraborty, Mukherjee y Ahmed 2015, A review of groundwater arsenic in the Bengal Basin, Current Pollution Reports 1:220-247, doi:10.1007/s40726-015-0022-0 (consultado 2026-09-26)", "url": "https://link.springer.com/article/10.1007/s40726-015-0022-0" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [238],
+      "paises": ["India", "Bangladesh"],
+      "confianza": "media",
+      "notas": "RESOLVE: 238 «Lower Gangetic Plains moist deciduous forests» (WWF IM0120). Las dos bases coinciden en 0. Alerta de agua, no de suelo: el acuífero de la cuenca de Bengala tiene arsénico geogénico. En Bangladesh hay entre 30 y 35 millones de personas expuestas a más de 50 µg/L. Desde los años 70 ese agua se usa para regar el arroz de estación seca, y el arroz es la principal vía dietaria donde el agua de bebida está limpia (Chakraborty et al. 2015). Para la huerta de un predio, lo que conviene es cosecha de lluvia y agua superficial antes que pozo. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": 0,
+          "razon": "Huerta: aluvión reciente. Suelo dominante: Gleysols, Cambisols y Fluvisols (≈ Aquepts, Inceptisols, Entisols fluvénticos) según HWSD v2 y SoilGrids, con solo 6–7% lixiviado. El −25 del bioma es falso acá. El límite real es el agua: el drenaje pobre, los ciclones y el arsénico del agua subterránea. Van en notas porque no son atributos del suelo.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_rio_rojo",
+    "nombre": "Pantanos de agua dulce del río Rojo",
+    "emoji": "🌾",
+    "color": "#7CB342",
+    "resumen": "Pantanos de agua dulce del curso inferior del río Rojo, en el norte de Vietnam: unos 10.700 km². El pantano boscoso crecía sobre suelos minerales inundados de forma permanente o estacional, en franjas de hasta 5 km a lo largo de los ríos o alrededor de lagos. Está casi totalmente desmontado para agricultura y asentamientos, y no tiene áreas protegidas.",
+    "vegetacion": "Según los registros históricos que cita WWF, la comunidad original pudo haber estado dominada por Melaleuca. Casi no queda bosque pantanoso.",
+    "fauna": "Sin aves ni mamíferos endémicos. Históricamente sostenía gran diversidad de peces de agua dulce, aves y mamíferos (WWF).",
+    "suelos": "HWSD v2 da Gleysols 51% (46% éutricos y 6% tiónicos), Fluvisols éutricos 31% (≈ Entisols fluvénticos), Technosols 8% y Acrisols 8%. SoilGrids da Cambisols 64%, Acrisols 28% y Fluvisols 8%. PEATMAP no registra turba.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Melaleuca", "cientifico": "Melaleuca sp.", "tipo": "nativa", "nota": "Posible dominante original según registros históricos (WWF). No hay especie confirmada." },
+      { "nombre": "Arroz", "cientifico": "Oryza sativa", "tipo": "cultivo", "nota": "Uso agrícola que reemplazó el pantano (WWF: conversión a agricultura)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0147 «Red River freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0147" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [266],
+      "paises": ["Vietnam"],
+      "confianza": "media",
+      "notas": "RESOLVE: 266 «Red River freshwater swamp forests» (WWF IM0147). HWSD da −5 (13%: Acrisols más tiónicos) y SoilGrids −5 (28%). Coinciden. Hay un 6% de Gleysols tiónicos, así que vale la misma cautela que en el Chao Phraya al excavar o drenar. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: aluvión deltaico. Suelo dominante según HWSD v2: Gleysols y Fluvisols éutricos (≈ Aquepts y Entisols fluvénticos). Solo un 8% son Acrisols (≈ Ultisols) y un 6% Gleysols tiónicos (sulfatados ácidos). SoilGrids también da −5. El −25 del bioma no aplica.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_borneo_suroeste",
+    "nombre": "Pantanos de agua dulce del suroeste de Borneo",
+    "emoji": "🌴",
+    "color": "#00695C",
+    "resumen": "Pantanos de agua dulce sobre llanuras aluviales bajas, justo tierra adentro de la costa suroeste de Borneo, con algunos parches hacia el centro: unos 36.600 km². El clima es tropical húmedo. Se inundan periódicamente con agua dulce rica en minerales, de pH mayor a 6. Queda boscoso solo alrededor del 1,4% del área original.",
+    "vegetacion": "Adina, Alstonia, Campnosperma, Dillenia, Dyera, Erythrina, Eugenia, Ficus, Gluta, Lophopetalum, Memecylon, Metroxylon, Pandanus, Pentaspadon, Shorea y Vatica, con leguminosas altas (Koompassia), Calophyllum, Melanorrhoea y sagú de pantano (Metroxylon sagu).",
+    "fauna": "Macaco cangrejero (Macaca fascicularis), orangután de Borneo (Pongo pygmaeus) y más de 360 aves.",
+    "suelos": "WWF define esta ecorregión como pantano mineral: terrazas aluviales profundas, fértiles y bien regadas, sin cantidades importantes de turba. Las bases de datos no coinciden con esa definición. HWSD v2 da Histosols 28%, Fluvisols dístricos 27%, Gleysols 23% y Podzols gleicos 16% (arenas blancas muy pobres). PEATMAP marca un 41% del polígono como turbera. SoilGrids da Histosols 96%. Lo más probable es que el polígono RESOLVE incluya bordes de las turberas vecinas. En turba drenada, el hundimiento es de unos 142 cm en los primeros 5 años y luego de alrededor de 5 cm por año, y en más del 90% se debe a oxidación (Hooijer et al. 2012).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Sagú de pantano", "cientifico": "Metroxylon sagu", "tipo": "nativa", "nota": "WWF lo lista como componente del pantano. Es también fuente tradicional de almidón." },
+      { "nombre": "Jelutong", "cientifico": "Dyera sp.", "tipo": "nativa", "nota": "Género listado por WWF." },
+      { "nombre": "Terentang", "cientifico": "Campnosperma sp.", "tipo": "nativa", "nota": "Género listado por WWF." },
+      { "nombre": "Kempas", "cientifico": "Koompassia sp.", "tipo": "nativa", "nota": "Leguminosa alta (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0153 «Southwest Borneo freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0153" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Hooijer et al. 2012, Subsidence and carbon loss in drained tropical peatlands, Biogeosciences 9:1053, doi:10.5194/bg-9-1053-2012 (consultado 2026-09-26)", "url": "https://bg.copernicus.org/articles/9/1053/2012/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [273],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 273 «Southwest Borneo freshwater swamp forests» (WWF IM0153). Confirma lo que te había anticipado: WWF dice aluvión mineral fértil, pero los tres mapas ven turba en una fracción importante, de 28% a 96%. Con HWSD más PEATMAP la fracción problemática es 62%: 19% lixiviados, sobre todo Podzols, 2% tiónicos y 41% de turba. Eso da −15. SoilGrids daría −25. Propongo −15 con confianza baja. El número es negativo, pero no por lixiviación: sobre turba, la huerta exige drenar, y drenar hunde y quema la turba. En la parte mineral de pH mayor a 6 la huerta es viable con manejo del agua. Recomiendo que acequia superponga una capa de turbera (PEATMAP u otra) y, donde caiga turba, aplique una cautela explícita de no drenar, más allá del número. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -15,
+          "razon": "Huerta: el valor es negativo por turba, no por lixiviación. Suelo dominante: Histosols (turba), 41% del polígono según PEATMAP y 28% según HWSD v2, más Podzols gleicos (≈ Spodosols) 16%. El resto son Fluvisols y Gleysols aluviales fértiles. Drenar turba tropical produce un hundimiento de alrededor de 5 cm/año sostenido (Hooijer et al. 2012). SoilGrids (96% Histosols) daría −25.",
+          "pisa_global": -25,
+          "fuente": "PEATMAP (Xu et al. 2018); HWSD v2 (FAO/IIASA 2023); Hooijer et al. 2012; SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_sumatra",
+    "nombre": "Pantanos de agua dulce de Sumatra",
+    "emoji": "🐊",
+    "color": "#00897B",
+    "resumen": "Parches disjuntos de pantano de agua dulce en la llanura aluvial del este de Sumatra: unos 18.000 km². El clima es tropical húmedo. Los árboles soportan inundaciones prolongadas que vuelven anaeróbico el suelo. El agua viene del río y de la lluvia, no de la turba. Queda menos de un quinto del hábitat natural.",
+    "vegetacion": "Adina, Alstonia, Campnosperma, Dillenia, Dyera, Erythrina, Eugenia, Ficus, Gluta, Lophopetalum, Memecylon, Metroxylon, Pandanus, Pentaspadon, Shorea y Vatica. En el sur, Melaleuca cubre áreas extensas.",
+    "fauna": "Elefante asiático, tapir malayo, tigre de Sumatra, pantera nebulosa, cocodrilo marino, falso gavial (Tomistoma schlegelii) y pato de alas blancas (Asarcornis scutulata).",
+    "suelos": "WWF describe suelos aluviales fértiles y muy variados. HWSD v2 da Fluvisols dístricos 42% (≈ Entisols fluvénticos), Acrisols férricos 18% (≈ Ultisols), Histosols 17% y Gleysols úmbricos 16%. PEATMAP marca 25% de turba. SoilGrids da Histosols 88%. Igual que en Borneo, lo más probable es que el polígono RESOLVE incluya bordes de las turberas vecinas.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Melaleuca, cayeputi", "cientifico": "Melaleuca sp.", "tipo": "nativa", "nota": "Cubre áreas extensas en el sur. WWF la cita como M. leucadendron, pero esa especie es nativa de Maluku a Australia, así que no confirmo la especie." },
+      { "nombre": "Sagú de pantano", "cientifico": "Metroxylon sagu", "tipo": "nativa", "nota": "Listado por WWF (como Metroxylon)." },
+      { "nombre": "Jelutong", "cientifico": "Dyera sp.", "tipo": "nativa", "nota": "Género listado por WWF." },
+      { "nombre": "Meranti", "cientifico": "Shorea sp.", "tipo": "nativa", "nota": "Género listado por WWF." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0157 «Sumatran freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0157" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Hooijer et al. 2012, Subsidence and carbon loss in drained tropical peatlands, Biogeosciences 9:1053, doi:10.5194/bg-9-1053-2012 (consultado 2026-09-26)", "url": "https://bg.copernicus.org/articles/9/1053/2012/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [277],
+      "paises": ["Indonesia"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 277 «Sumatran freshwater swamp forests» (WWF IM0157). Con HWSD más PEATMAP, la fracción problemática es 44% (19% Acrisols y 25% turba), que da −10. SoilGrids daría −25. Propongo −10 con confianza baja. Vale la misma recomendación de capa de turba y cautela de no drenar que en la 273. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -10,
+          "razon": "Huerta: el valor es negativo por turba y lixiviación parcial. Suelo dominante según HWSD v2: Fluvisols (≈ Entisols fluvénticos) 42%, pero con Histosols (turba), 25% según PEATMAP, y Acrisols (≈ Ultisols) 18%. Sobre turba, drenar causa un hundimiento de alrededor de 5 cm/año (Hooijer et al. 2012). SoilGrids (88% Histosols) daría −25.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); PEATMAP (Xu et al. 2018); Hooijer et al. 2012; SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_sundarbans",
+    "nombre": "Pantanos salobres de agua dulce de los Sundarbans",
+    "emoji": "🐅",
+    "color": "#26A69A",
+    "resumen": "Pantanos detrás del manglar de los Sundarbans, a caballo entre Bangladesh y Bengala Occidental: unos 14.500 km². El agua es apenas salobre y se vuelve dulce en la estación lluviosa, cuando las plumas del Ganges y el Brahmaputra empujan fuera la intrusión salina. Llueven más de 3.500 mm. Los ciclones son frecuentes y devastadores. Solo 130 km² están protegidos.",
+    "vegetacion": "Heritiera minor (fomes), Xylocarpus moluccensis, Bruguiera conjugata, Sonneratia apetala, Avicennia officinalis y Sonneratia caseolaris.",
+    "fauna": "Tigre, leopardo, delfín del Ganges (Platanista gangetica) y gavial (Gavialis gangeticus).",
+    "suelos": "Recibe aluvión cada año del Ganges y el Brahmaputra (WWF). HWSD v2 da Gleysols 59% (≈ Aquepts), Histosols 25%, Fluvisols 6%, Solonchaks 5% y un 3,5% de tiónicos. PEATMAP marca 7% de turba. SoilGrids da Fluvisols 98% y Solonchaks 2%. El agua subterránea del delta de Bengala tiene arsénico geogénico (Chakraborty et al. 2015).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Sundri", "cientifico": "Heritiera fomes", "tipo": "nativa", "nota": "WWF la cita como Heritiera minor, sinónimo de H. fomes." },
+      { "nombre": "Keora", "cientifico": "Sonneratia apetala", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Mangle negro", "cientifico": "Avicennia officinalis", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Pasur", "cientifico": "Xylocarpus moluccensis", "tipo": "nativa", "nota": "WWF." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0162 «Sundarbans freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0162" },
+      { "label": "Chakraborty, Mukherjee y Ahmed 2015, A review of groundwater arsenic in the Bengal Basin, Current Pollution Reports 1:220-247, doi:10.1007/s40726-015-0022-0 (consultado 2026-09-26)", "url": "https://link.springer.com/article/10.1007/s40726-015-0022-0" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [282],
+      "paises": ["Bangladesh", "India"],
+      "confianza": "baja",
+      "notas": "RESOLVE: 282 «Sundarbans freshwater swamp forests» (WWF IM0162). Con HWSD más PEATMAP la fracción problemática es 15% (salinos 5%, tiónicos 3,5% y turba 7%), que da −5. HWSD con sus propios Histosols (25%) daría −10, y SoilGrids 0. Propongo −5 con confianza baja. El riesgo que crece es hídrico: el desvío de caudal del Ganges en la represa de Farakka, que WWF cita como amenaza, reduce el empuje de agua dulce que expulsa la cuña salina. A eso se suma el arsénico del acuífero. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: aluvión deltaico, sin lixiviación. Suelo dominante: Gleysols y Fluvisols (≈ Aquepts, Entisols fluvénticos) según HWSD v2 y SoilGrids. Tiene fracciones menores de Solonchaks (≈ Salids), Gleysols tiónicos y turba (7% según PEATMAP) que penalizan poco. El −25 del bioma no aplica, pero la salinidad estacional sí limita.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); PEATMAP (Xu et al. 2018); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pantanos_tonle_sap",
+    "nombre": "Bosques y matorrales inundables del Tonlé Sap",
+    "emoji": "🐟",
+    "color": "#4DB6AC",
+    "resumen": "Llanura de inundación del Tonlé Sap, en Camboya: unos 25.900 km². La mayor parte queda bajo agua al menos seis meses, de agosto a enero o febrero, y el bosque enano pantanoso, de seis a ocho meses. La estructura de la vegetación depende sobre todo de la microvariación de la humedad del suelo y del pulso de inundación. Queda muy poco bosque en estado prístino.",
+    "vegetacion": "Matorral de árboles bajos, con euforbiáceas, fabáceas y combretáceas, Barringtonia acutangula y Terminalia cambodiana, endémica local. Bosque enano pantanoso dominado por Barringtonia acutangula y Diospyros cambodiana. Tiene la invasora Mimosa pigra.",
+    "fauna": "Gibón de gorro, tigre, cuón, oso malayo, pantera nebulosa, leopardo y banteng. Aves: grulla sarus oriental (Grus antigone), ibis de hombros blancos (Pseudibis davisoni) e ibis gigante (Thaumatibis gigantea).",
+    "suelos": "HWSD v2 da Gleysols 71% (58% éutricos y 12% tiónicos), Fluvisols éutricos 25% (≈ Entisols fluvénticos) y Acrisols 3%. SoilGrids da Fluvisols 78%, Acrisols 12% y Cambisols 5%. PEATMAP no registra turba. En el polígono, un 17% es agua libre del lago.",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Barringtonia de río", "cientifico": "Barringtonia acutangula", "tipo": "nativa", "nota": "Dominante del bosque enano inundable (WWF)." },
+      { "nombre": "Ébano de Camboya", "cientifico": "Diospyros cambodiana", "tipo": "nativa", "nota": "Codominante (WWF)." },
+      { "nombre": "—", "cientifico": "Terminalia cambodiana", "tipo": "nativa", "nota": "Endémica local (WWF)." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0164 «Tonle Sap freshwater swamp forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0164" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Xu, Morris, Liu y Holden 2018, PEATMAP (Asia, SEA_Peatland), Catena, doi:10.1016/j.catena.2017.09.010; datos doi:10.5518/252 — superpuesto al polígono RESOLVE (consultado 2026-09-26)", "url": "https://archive.researchdata.leeds.ac.uk/251/" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [285],
+      "paises": ["Camboya"],
+      "confianza": "media",
+      "notas": "RESOLVE: 285 «Tonle Sap freshwater swamp forests» (WWF IM0164). HWSD da −5 (15%: tiónicos 12% y Acrisols 3%) y SoilGrids −5 (12%). Coinciden. El limitante real es la inundación de seis a ocho meses. La huerta cabe en la ventana de bajante o sobre bordos altos, y ese diseño con el pulso del agua no está en el número. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": -5,
+          "razon": "Huerta: aluvión lacustre-fluvial. Suelo dominante: Gleysols y Fluvisols éutricos (≈ Aquepts y Entisols fluvénticos), casi sin lixiviación. HWSD v2 marca un 12% de Gleysols tiónicos (sulfatados ácidos). El −25 del bioma no aplica.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gangetica_superior",
+    "nombre": "Bosques húmedos deciduos de la llanura gangética superior",
+    "emoji": "🌾",
+    "color": "#AFB42B",
+    "resumen": "Curso superior del Ganges en Uttar Pradesh, Haryana y Bihar: unos 262.600 km². La lluvia viene del monzón del golfo de Bengala y decrece de este a oeste. Queda menos del 5% del hábitat y menos del 1% está protegido.",
+    "vegetacion": "Sal (Shorea robusta) de 25 a 35 m, con Terminalia tomentosa, T. bellirica, Lagerstroemia parviflora, Adina cordifolia, Dillenia pentagyna, Stereospermum suaveolens y Ficus. Hay parches de pastizal con Saccharum spontaneum, S. narenga, S. bengalense y vetiver (Chrysopogon zizanioides).",
+    "fauna": "Tigre, rinoceronte indio, elefante, gaur, barasinga (Rucervus duvaucelii), oso bezudo y antílope de cuatro cuernos (Tetracerus quadricornis). Aves: avutarda india (Ardeotis nigriceps), florícano menor, cálao gris indio (Ocyceros birostris) y cálao pío oriental (Anthracoceros albirostris). Reptiles y cetáceos: delfín del Ganges, cocodrilo de las marismas (Crocodylus palustris) y gavial.",
+    "suelos": "Aluviones profundos depositados por el Ganges (WWF). HWSD v2 da Cambisols éutricos 50% (≈ Inceptisols), Luvisols 37% (≈ Alfisols) y Fluvisols calcáricos 5%, sin suelos lixiviados. SoilGrids da Cambisols 93% y Vertisols 4%. Ninguna base registra los suelos sódicos (usar) a esta escala, pero son reales. De los 2,35 millones de ha de suelos salinos o sódicos de la llanura indogangética, 1,79 millones son sódicos, con pH 8,5–10, PSI mayor a 15 y baja permeabilidad. Uttar Pradesh tiene 1,37 millones de ha de suelos afectados por sales. Se recuperan con 10 a 15 t/ha de yeso (Kumar y Sharma 2020).",
+    "saberes": [],
+    "especies": [
+      { "nombre": "Sal", "cientifico": "Shorea robusta", "tipo": "nativa", "nota": "Dosel de 25–35 m (WWF)." },
+      { "nombre": "Kans", "cientifico": "Saccharum spontaneum", "tipo": "nativa", "nota": "Pastizal (WWF). Es pariente silvestre de la caña." },
+      { "nombre": "Vetiver", "cientifico": "Chrysopogon zizanioides", "tipo": "nativa", "nota": "Pastizal (WWF, como Vetiveria zizanioides)." },
+      { "nombre": "Jarul", "cientifico": "Lagerstroemia parviflora", "tipo": "nativa", "nota": "WWF." },
+      { "nombre": "Haldu", "cientifico": "Haldina cordifolia", "tipo": "nativa", "nota": "WWF, como Adina cordifolia." }
+    ],
+    "fuentes": [
+      { "label": "WWF, ficha de ecorregión IM0166 «Upper Gangetic Plains moist deciduous forests» (consultado 2026-09-26)", "url": "https://ecoregions.worldwildlife.org/ecoregions/im0166" },
+      { "label": "Kumar y Sharma 2020, Soil salinity and food security in India, Front. Sustain. Food Syst., doi:10.3389/fsufs.2020.533781 (consultado 2026-09-26)", "url": "https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2020.533781/full" },
+      { "label": "FAO/IIASA, Harmonized World Soil Database v2.0, 2023: raster 30″ y base SMU, clases WRB ponderadas por SHARE dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/harmonized-world-soil-database-v20/en/" },
+      { "label": "ISRIC, SoilGrids WRB MostProbable (re-corrida 2017, ~250 m), muestreada dentro del polígono RESOLVE (consultado 2026-09-26)", "url": "https://files.isric.org/soilgrids/latest/data/wrb/" },
+      { "label": "Hengl et al. 2017, SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 — precisión y sesgos del mapa WRB (consultado 2026-09-26)", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748" },
+      { "label": "Dinerstein et al. 2017, Ecoregions2017 (RESOLVE), shapefile usado para los polígonos (consultado 2026-09-26)", "url": "https://storage.googleapis.com/teow2016/Ecoregions2017.zip" }
+    ],
+    "_meta": {
+      "ecorregiones_resolve": [287],
+      "paises": ["India"],
+      "confianza": "media",
+      "notas": "RESOLVE: 287 «Upper Gangetic Plains moist deciduous forests» (WWF IM0166). WWF dice que la lluvia anual promedia menos de 500 mm. La cifra contradice el propio gradiente monzónico que describe la ficha y no pude verificarla con otra fuente, así que no la uso. Los suelos sódicos no aparecen en HWSD ni en SoilGrids. Aun si los 1,79 millones de ha sódicos de toda la llanura indogangética cayeran en esta ecorregión, serían menos del 7% de sus alrededor de 26 millones de ha, y el valor seguiría redondeando a 0. En el predio, el diagnóstico es otro: una costra blanca, pH mayor a 8,5 o un suelo que no infiltra indican usar, y ahí el valor real es muy negativo hasta hacer la enmienda con yeso. Sugiero que acequia lo trate como alerta puntual. Regla para el grupo B (extensión de la de la tanda 1, a revisar): valor = −25 × fracción de suelos con limitante severa para huerta, redondeado a 5. Esa fracción suma los lixiviados de HWSD v2 (Acrisols, Ferralsols, Alisols, Plinthosols, Podzols, Lixisols, Umbrisols ácricos), los tiónicos (sulfatados ácidos), los salinos o sódicos y la turba. La turba se toma de PEATMAP, que reemplaza a los Histosols de HWSD. El contraste con SoilGrids usa lixiviados + Histosols + Solonchaks/Solonetz, porque SoilGrids no trae calificadores y no ve los tiónicos. El anegamiento de Gleysols y Fluvisols no penaliza: es un problema de manejo del agua (camellones, bordos), no de fertilidad, y el aluvión fértil vale 0, no positivo. 'delta' reemplaza a pisa_global.",
+      "modificadores_propuestos": [
+        {
+          "uso": "huerta",
+          "delta": 0,
+          "razon": "Huerta: aluvión gangético maduro. Suelo dominante: Cambisols éutricos (≈ Inceptisols) y Luvisols (≈ Alfisols), 87% según HWSD v2, sin suelos lixiviados. SoilGrids coincide. El −25 del bioma es falso acá. Los parches sódicos (usar) son el limitante real a escala de predio, pero representan menos del 7% del área.",
+          "pisa_global": -25,
+          "fuente": "HWSD v2 (FAO/IIASA 2023); SoilGrids WRB (ISRIC); Kumar y Sharma 2020 (doi:10.3389/fsufs.2020.533781)"
+        }
+      ]
+    }
+  }
+]
