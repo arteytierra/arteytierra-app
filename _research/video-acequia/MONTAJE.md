@@ -27,16 +27,16 @@ corrige.
 | 03 | `b2-t01-clima-05` | 123 s | El clima cargando 8–11 s; **la ficha Cwa aparece a los 11 s**; los números hasta ~25 s |
 | 04 | `b2-t01-contextoyentorno-08` | 153 s | **Yungas / selva de montaña aparece a los 30 s**; ecosistema 30–48 s; pueblos originarios ~60–90 s; especies ~95–125 s |
 | 05 | `b2-t01-mojones-03` | 37 s | El perímetro dibujándose clic por clic, 8–22 s; cierra en 22 s y el panel da la superficie en 24 s |
-| 06 | `b2-t01-suelo-cobertura-…-06y07` | 74 s | Suelo: botón 4–7 s, **resultado a los 7 s**. Cobertura: botón 28–32 s, **resultado a los 33 s**. Shader de pendientes 39–62 s |
+| 06 | `b2-t01-suelo-cobertura-…-06y07` | 74 s | Suelo: botón 4–7 s, **resultado a los 7,8 s**. Cobertura: botón 28–32 s, **resultado a los 33 s**. Shader de pendientes 39–62 s |
 | 07 | `b2-t01-topografia-04` | 68 s | El relieve cargando: **el panel se llena a los 12,5 s y el shader pinta a los 13 s**. Shader a pantalla completa ~45–55 s |
 | 08 | `b3-t01-aptitud,escorrentias,cuenca-09` | 127 s | Aptitud 0–25 s; curvas ~30–60 s; **la cuenca resuelve 98–102 s; los números 106–110 s; la salud del cálculo 116–126 s** |
-| 09 | `b3-t01-caminos,keyline,swales-11` | 214 s | Camino trazándose 8–18 s; **el perfil de elevación aparece a los 32 s**; red de servicios ~45–57 s; **keyline 58–62 s**; swales ~110–214 s |
+| 09 | `b3-t01-caminos,keyline,swales-11` | 214 s | Camino trazándose 8–18 s; **el perfil de elevación aparece a los 32 s**; red de servicios 45–67 s; **el keypoint del keyline aparece a los 69,7 s** y el panel queda hasta 76; swales ~110–214 s |
 | 10 | `b3-t01-cortavientos,cortafuegos-13` | 132 s | Clima repetido 0–55 s (no sirve); cortina trazándose 62–80 s; **la cortina puesta 83–95 s**; cortafuegos 98–125 s |
 | 11 | `b3-t01-embalseycaptacion-10` | 405 s | **Los sitios de represa sugeridos con su volumen, 95–100 s**; dibujo del espejo 101–200 s; captación de lluvia ~290–405 s |
 | 12 | `b3-t01-masterplan…guardadodfx-14` | 210 s | Master plan 0–64 s; **el informe PDF 65–122 s** (el anexo de fuentes en 115–122); **el menú de exportar 139–147 s**; **escritorio personal ~170–190 s**; AutoCAD 192–210 s — **ver abajo, no se usa** |
 | 13 | `b3-t01-sectores-14` | 61 s | Los sectores con los abanicos de sol y viento. Entero, lo mejor 38–48 s |
 | 14 | `b3-t01-swale,produccion,potreros,calendario-12` | 375 s | Swales 0–132 s; **el panel de pastoreo con los 28 potreros a los 135 s**; los potreros dibujados en el mapa desde ~200 s; calendario ~340–375 s |
-| 15 | `b3-t01-swalebueno-11` | 156 s | Los swales de cerca sobre el shader. **Lo mejor, 36–50 s**; de 70 s en adelante está demasiado cerca |
+| 15 | `b3-t01-swalebueno-11` | 156 s | Los swales de cerca sobre el shader. **Un cartel modal tapa la pantalla entre 37 y 41 s**; lo mejor es 42–50; de 70 s en adelante está demasiado cerca |
 
 ---
 
@@ -117,7 +117,7 @@ real sobre este predio y **ninguno está redondeado**.
 corre hacia el SO.
 
 **Clima** (*NASA POWER · Köppen Beck 1 km, 1991–2020*) — **Cwa**, templado
-subtropical de invierno seco. **992 mm** de lluvia anual, 19,1 °C de media,
+subtropical de invierno seco. **908 mm** de lluvia anual, 19,1 °C de media,
 ETP 1502 mm (Hargreaves), humedad 63 %, viento principal ENE a 3,6 m/s,
 GDD 3326.
 
@@ -131,8 +131,8 @@ alto), fertilidad alta, densidad aparente 1,16 g/cm³, agua útil 288,4 mm.
 
 **Ecorregión** (*RESOLVE*) — Yungas / selva de montaña.
 
-**Pastoreo** — 28 potreros de 1,11 ha, balance forrajero 531 %, carga
-instantánea 4,5 EV/ha, 4.779 m de alambrado, 932 postes, 2 bebederos.
+**Pastoreo** — 28 potreros de 1,11 ha, balance forrajero 533 %, carga
+instantánea 4,5 EV/ha, 4.787 m de alambrado, 933 postes, 2 bebederos.
 
 **Sectores** — 5 detectados: viento ENE, viento frío de invierno, sol de verano
 (trayectoria alta), sol de invierno (trayectoria baja), riesgo de fuego en la
@@ -189,31 +189,78 @@ lo hace CapCut.
 | `02-descenso-cola` | 01 | 20,5 | 3,0 | El polígono ya encuadrado, velocidad normal |
 | `03-perimetro` | 05 | 7,0 | 17,0 | Los seis mojones clic por clic, hasta que cierra. **Va a 5,5×** |
 | `04-relieve` | 07 | 10,8 | 3,5 | Botón → el panel se llena → el shader pinta con las curvas |
-| `05-clima` | 03 | 9,3 | 3,5 | "Cargando…" → la ficha Cwa con los 992 mm |
-| `06-suelo` | 06 | 5,5 | 3,5 | Botón → franco-arcilloso, pH 6,2, 35,9 g/kg |
+| `05-clima` | 03 | 9,3 | 3,5 | "Cargando…" → la ficha Cwa con los 908 mm |
+| `06-suelo` | 06 | 6,3 | 4,5 | "Consultando SoilGrids…" → franco-arcilloso, pH 6,2, 35,9 g/kg |
 | `07-cobertura` | 06 | 30,5 | 4,5 | "Analizando cobertura…" → bosque/arbolado 100 % |
 | `08-ecorregion-yungas` | 04 | 28,8 | 3,5 | "Cargando el contexto…" → Yungas / selva de montaña |
 | `09-cuenca-resolviendo` | 08 | 97,5 | 5,0 | "Calculando cuenca…" → 281,98 ha → la cuenca se dibuja sola |
 | `10-cuenca-numero` | 08 | 106,5 | 3,0 | El panel con CN 73 y los 179.787 m³ en pantalla |
-| `11-keyline` | 09 | 58,0 | 4,0 | Botón → keypoint a 823 m → las keylines sobre el relieve |
-| `12-swales` | 15 | 38,0 | 5,0 | Los swales sobre las curvas de nivel |
+| `11-keyline` | 09 | 68,3 | 4,0 | Botón → "Analizando relieve…" → keypoint a 823 m, con las dos pendientes |
+| `12-swales` | 15 | 42,0 | 5,0 | Los seis swales puestos sobre el hipsométrico, con el panel dimensionándolos |
 | `13-represa` | 11 | 95,5 | 4,0 | Los sitios sugeridos, cada uno con su volumen |
 | `14-camino-perfil` | 09 | 30,5 | 3,5 | "Consultando el relieve…" → el perfil de elevación se dibuja |
 | `15-cortina` | 10 | 84,0 | 4,0 | La cortina puesta, con su franja de protección |
-| `16a-potreros-panel` | 14 | 135,0 | 4,5 | 28 potreros, 1,11 ha, 531 % de balance, 4.779 m de alambrado |
-| `16b-potreros-mapa` | 14 | 229,0 | 4,5 | Los mismos números con las subdivisiones dibujadas. **Trae el cartelito amarillo de "Dibujando polígono"** |
-| `17-informe` | 12 | 65,3 | 4,7 | Página en blanco → la tapa → el resumen ejecutivo |
+| `16a-potreros-panel` | 14 | 132,3 | 4,5 | 533 % de balance forrajero, 28 potreros de 1,11 ha, 4.787 m de alambrado, 933 postes |
+| `16b-potreros-mapa` | 14 | 229,0 | 4,5 | Los mismos números con las subdivisiones dibujadas. **Trae el cartel amarillo de "Dibujando polígono"** |
+| `17-informe` | 12 | 68,6 | 3,6 | Página en blanco → la tapa con "Terreno sin nombre" y la foto |
+| `17b-resumen` | 12 | 73,2 | 3,6 | El scroll que llega al resumen ejecutivo con los siete números |
 | `18-anexo-fuentes` | 12 | 115,5 | 4,0 | El anexo: cada capa con su fuente y su fecha |
-| `19-exportar` | 12 | 139,5 | 4,0 | El menú con "Informe PDF" y "DXF (AutoCAD)" |
 | `20-salud-del-calculo` | 08 | 116,5 | 4,5 | Confianza media · fuera del rango de Kirpich |
 | `21-sectores-cierre` | 13 | 39,0 | 6,0 | Todo el diseño junto con los abanicos de sol y viento |
 | `22-shader-pendientes` | 06 | 39,0 | 4,0 | De reserva: el shader de pendientes a pantalla completa |
 
-**El 16 va en dos versiones y hay que elegir una.** La `a` tiene el panel limpio
-y todos los números pero los potreros todavía no están dibujados; la `b` los
-tiene dibujados sobre el terreno pero arrastra el cartel amarillo de un modo de
-dibujo que quedó abierto. Mi voto es la `a`: en cuatro segundos se leen los
-números, y las líneas de subdivisión a ese zoom casi no se ven igual.
+**El 16 va en la versión `a`**, decidido por Jonatan: el panel limpio con los
+veintiocho potreros, las 1,11 ha y el 533 % de balance, sin el cartel amarillo
+de "Dibujando polígono" que arrastra la `b`. La `b` queda cortada por si alguna
+vez hace falta ver las subdivisiones dibujadas sobre el terreno, pero no entra
+en ningún montaje.
+
+### El corte del informe se rehizo, y el de exportar se cayó
+
+El `17-informe` original arrancaba en 65,3 y los primeros dos segundos y medio
+eran **el menú de exportar abierto**, con "DXF (AutoCAD)" a la vista; la tapa
+del informe recién aparecía sobre el final. Jonatan pidió no mostrar la parte de
+exportar a AutoCAD, así que:
+
+- `17-informe` se recortó de nuevo desde **68,6**, que es donde la página está en
+  blanco y la tapa se dibuja sola.
+- Se agregó `17b-resumen` desde **73,2**, el scroll que llega al resumen
+  ejecutivo con la superficie, la lluvia, el clima, la pendiente, el agua útil,
+  el suelo y la cobertura en una sola pantalla.
+- **`19-exportar` se descartó y se borró.** Era el mismo menú visto de nuevo, y
+  un corte que no va a entrar en ningún montaje no tiene por qué quedar en la
+  carpeta de entrega esperando que alguien lo use por error.
+
+El titular que acompañaba ese bloque decía *"Sale en PDF. Sale en DXF."*. Ahora
+dice **"Todo esto sale en un informe." / "Con cada fuente y cada fecha."**: el
+video no puede prometer una exportación que decidió no mostrar. La exportación a
+DXF existe y sigue siendo un argumento fuerte para un profesional — pero va en la
+landing y en la documentación, no acá.
+
+### Cinco cortes estaban mirando otra cosa
+
+Al armar los verticales hubo que mirar cada corte cuadro por cuadro para elegir
+la columna del recorte, y ahí aparecieron cuatro que no mostraban lo que decía
+su nombre. Los cuatro se volvieron a cortar. Queda anotado porque la lección no
+es de este video: **un corte no está verificado hasta que alguien mira adentro**,
+y una lista de tiempos tomada de una pasada rápida es una hipótesis.
+
+| Corte | Qué mostraba | Qué muestra ahora |
+|---|---|---|
+| `11-keyline` | El panel de **red de servicios**, con alguien clickeando Agua / Riego / Gas. El keyline nunca aparecía: en el clip 09 está en 68–76 s, no en 58–62 | El botón, "Analizando relieve…" y el keypoint a 823 m con las dos pendientes |
+| `12-swales` | Un **cartel modal** —"Se colocaron 6 swales en el plano"— tapando la pantalla con el fondo desenfocado | Los seis swales puestos sobre el hipsométrico, con el panel dimensionándolos |
+| `17-informe` | Los primeros dos segundos y medio eran **el menú de exportar**, con "DXF (AutoCAD)" a la vista | La página en blanco y la tapa del informe dibujándose |
+| `06-suelo` | Alcanzaba, pero justo: el "Consultando SoilGrids…" se va recién a los 7,8 s y el corte dejaba nueve décimas de resultado | Arranca en 6,3 y deja casi dos segundos de franco-arcilloso en pantalla |
+| `16a-potreros-panel` | **También traía el cartel amarillo de "Dibujando polígono"** — el que se suponía que sólo tenía la `b`. Aparece a los 137 s y el corte arrancaba en 135 | Arranca en 132,3, sobre la ventana limpia de 132,5 a 136,8 |
+
+Y tres números del relevamiento también estaban mal. La precipitación anual del
+predio es **908 mm**, no 992 —se lee en el panel de clima, y el informe la
+redondea a 900—; el balance forrajero es **533 %**, no 531; y el alambrado de
+subdivisión son **4.787 m con 933 postes**, no 4.779 con 932.
+
+Ninguno cambia el argumento del video, y por eso mismo vale anotarlos: los tres
+venían de leer un panel a ojo en una captura chica, no de la app. Los números de
+las placas sí salen de `Root.tsx` y se compararon contra el metraje uno por uno.
 
 ### Por qué se recomprimieron, en vez de cortar con `-c copy`
 
@@ -230,130 +277,220 @@ que se agrega antes de la exportación final.
 
 ---
 
+
 ## El montaje, segundo a segundo
 
-Suma **exactamente 90,0 s**. Las duraciones de acá son las que entran, no las
-del archivo: los cortes traen aire y hay que ajustarlos en CapCut.
+Suma **exactamente 90,0 s**: 2700 cuadros a 30 fps, con cada segmento fijado por
+`-frames:v` y no por `-t`. Está armado y se arma solo con
+[`montaje.sh`](montaje.sh); la tabla de abajo es lo mismo que dice el script,
+escrito para leer.
 
-**La banda va primero y abajo de todo**, estirada de 0:00 a 1:30. Todo lo demás
-se apoya encima.
+**La banda va abajo de todo**, en los veintidós segmentos de metraje. Las dos
+placas que van a pantalla completa —el cruce y el cierre— no la llevan, porque
+no tienen nada que tapar.
 
-### 0:00 – 0:08,4 · El salto de escala
+| Entra | Dur. | Qué | Desde el corte | Encima |
+|---|---|---|---|---|
+| 0:00,0 | 0,4 | Negro | — | — |
+| 0:00,4 | 6,7 | `01-descenso` **a 2,985×** | 0,0 | `Titular` "Un terreno cualquiera." desde 1,6 |
+| 0:07,1 | 2,4 | `02-descenso-cola` | 0,3 | `Titular` "Todo lo que acequia ya sabe de él." |
+| 0:09,5 | 3,1 | `03-perimetro` **a 5,484×** | 0,0 | `Titular` "No cargás nada." / "Marcás el perímetro." |
+| 0:12,6 | 2,8 | `04-relieve` | 0,4 | RELIEVE — Copernicus GLO-30 · © DLR e.V. |
+| 0:15,4 | 2,8 | `05-clima` | 0,4 | CLIMA — NASA POWER · Köppen Beck 1 km |
+| 0:18,2 | 2,8 | `06-suelo` | 0,5 | SUELO — ISRIC SoilGrids v2.0 |
+| 0:21,0 | 2,8 | `07-cobertura` | 0,9 | COBERTURA — ESA WorldCover 10 m |
+| 0:23,8 | 2,8 | `08-ecorregion-yungas` | 0,5 | ECORREGIÓN — RESOLVE Ecoregions 2017 |
+| 0:26,6 | 4,4 | `09-cuenca-resolviendo` | 0,3 | — |
+| 0:31,0 | 12,0 | **`PlacaCruce`** | — | — |
+| 0:43,0 | 3,0 | `10-cuenca-numero` | 0,0 | — |
+| 0:46,0 | 3,5 | `11-keyline` | 0,3 | `Titular` "Dónde va el agua." |
+| 0:49,5 | 3,0 | `12-swales` | 0,7 | — |
+| 0:52,5 | 3,5 | `13-represa` | 0,3 | — |
+| 0:56,0 | 3,0 | `14-camino-perfil` | 0,4 | `Titular` "Dónde va el camino." |
+| 0:59,0 | 3,0 | `15-cortina` | 0,5 | `Titular` "Dónde va el árbol." |
+| 1:02,0 | 3,5 | `16a-potreros-panel` | 0,5 | `Titular` "Dónde entra el animal." |
+| 1:05,5 | 3,5 | `17-informe` | 0,0 | `Titular` "Todo esto sale en un informe." / "Con cada fuente y cada fecha." |
+| 1:09,0 | 3,0 | `17b-resumen` | 0,5 | — |
+| 1:12,0 | 3,5 | `18-anexo-fuentes` | 0,0 | — |
+| 1:15,5 | 4,5 | `20-salud-del-calculo` | 0,0 | `Titular` "Y te dice cuándo no confiar en el número." |
+| 1:20,0 | 5,0 | `21-sectores-cierre` | 1,0 | — |
+| 1:25,0 | 5,0 | **`AperturaAppClara`** | — | — |
 
-| Entra | Sale | Qué | Encima |
-|---|---|---|---|
-| 0:00,0 | 0:00,4 | Negro | — |
-| 0:00,4 | 0:07,1 | `01-descenso` **a 3×** (20,0 → 6,7 s) | `Titular` "Un terreno cualquiera." desde 0:02 |
-| 0:07,1 | 0:08,4 | `02-descenso-cola`, 1,3 s de los 3,0 | `Titular` "Todo lo que acequia ya sabe de él." |
+Cuatro decisiones de ritmo que no son obvias leyendo la tabla:
 
-Nada de logo al principio: si el gancho no entra en dos segundos, el video no se
-ve.
-
-### 0:08,4 – 0:25,5 · Lo que llega solo
-
-| Entra | Qué | Dur. | Pie de fuente |
-|---|---|---|---|
-| 0:08,4 | `03-perimetro` **a 5,5×** (17,0 → 3,1 s) | 3,1 | — · `Titular` "No cargás nada." / "Marcás el perímetro." |
-| 0:11,5 | `04-relieve` | 2,8 | RELIEVE — Copernicus GLO-30 · © DLR e.V. |
-| 0:14,3 | `05-clima` | 2,8 | CLIMA — NASA POWER · Köppen Beck 1 km |
-| 0:17,1 | `06-suelo` | 2,8 | SUELO — ISRIC SoilGrids v2.0 |
-| 0:19,9 | `07-cobertura` | 2,8 | COBERTURA — ESA WorldCover 10 m |
-| 0:22,7 | `08-ecorregion-yungas` | 2,8 | ECORREGIÓN — RESOLVE |
-
-### 0:25,5 – 0:45,5 · El cruce
-
-| Entra | Qué | Dur. |
-|---|---|---|
-| 0:25,5 | `09-cuenca-resolviendo` | 5,0 |
-| 0:30,5 | **`PlacaCruce`**, entera | 12,0 |
-| 0:42,5 | `10-cuenca-numero` | 3,0 |
-
-Volver al panel después de la placa no es relleno: es la prueba de que el número
-de la placa está en la app y no lo dibujó el editor.
-
-### 0:45,5 – 1:05,0 · Las decisiones
-
-Seis cortes secos. Acá el video acelera y ningún plano respira.
-
-| Entra | Qué | Dur. | Encima |
-|---|---|---|---|
-| 0:45,5 | `11-keyline` | 3,5 | `Titular` "Dónde va el agua." |
-| 0:49,0 | `12-swales` | 3,5 | — |
-| 0:52,5 | `13-represa` | 3,5 | — |
-| 0:56,0 | `14-camino-perfil` | 3,0 | `Titular` "Dónde va el camino." |
-| 0:59,0 | `15-cortina` | 3,0 | `Titular` "Dónde va el árbol." |
-| 1:02,0 | `16a-potreros-panel` | 3,0 | `Titular` "Dónde entra el animal." |
-
-### 1:05,0 – 1:25,0 · Lo que te llevás, y la honestidad
-
-| Entra | Qué | Dur. | Encima |
-|---|---|---|---|
-| 1:05,0 | `17-informe` | 4,5 | `Titular` "Sale en PDF. Sale en DXF." |
-| 1:09,5 | `18-anexo-fuentes` | 3,0 | — |
-| 1:12,5 | `19-exportar` | 3,0 | — |
-| 1:15,5 | `20-salud-del-calculo` | 4,5 | `Titular` "Y te dice cuándo no confiar en el número." |
-| 1:20,0 | `21-sectores-cierre` | 5,0 | — |
-
-Ese corte de la salud del cálculo se lleva cuatro segundos y medio enteros. Es
-el beat más valioso del video y el único que un competidor no puede copiar sin
-construirlo.
-
-### 1:25,0 – 1:30,0 · Cierre
-
-| Entra | Qué | Dur. |
-|---|---|---|
-| 1:25,0 | **`AperturaAppClara`** con la bajada "Un proyecto gratis. Sin tarjeta." | 5,0 |
-
-El `.app` aparece al final del remate, que es exactamente para lo que se armó esa
-placa.
+- **Nada de logo al principio.** Si el gancho no entra en dos segundos, el video
+  no se ve. La marca aparece a los ochenta y cinco.
+- **Volver al panel después de la placa del cruce** (0:43) no es relleno: es la
+  prueba de que los 179.787 m³ están en la app y no los dibujó el editor.
+- **Entre 0:46 y 1:05 no respira ningún plano.** Seis cortes secos: agua, swales,
+  represa, camino, árbol, animal. Es la parte del video que más se parece a
+  trabajar.
+- **La salud del cálculo se lleva cuatro segundos y medio enteros**, más que
+  cualquier otro plano de metraje. Es el único beat que un competidor no puede
+  copiar sin construirlo.
 
 ---
 
-## Cómo se renderizan las placas
+## Los verticales
 
-Desde la raíz del repo. Las que se superponen van en **ProRes 4444**, que es lo
-que lleva canal alfa; las que van solas, en MP4.
+Dos, los dos de 1080×1920 y los dos con los subtítulos ya quemados.
+
+### El recorte es dirigido, plano por plano
+
+Un vertical sacado de un 16:9 pierde dos tercios del cuadro, así que **la
+pregunta no es cómo recortar sino qué mirar**. Y en acequia hay dos cosas
+distintas para mirar: el panel de la izquierda, que es donde están los números, y
+el mapa de la derecha, que es donde pasa el dibujo.
+
+La ventana es de **607×1080** —el alto completo, que es lo que manda el 9:16— y
+después se agranda ×1,78 a 1080×1920. De yapa, los 140 px de la banda pasan a
+ser 250, que es exactamente lo que devuelve `ALTO_BANDA` para vertical: los dos
+formatos terminan usando la misma medida sin que haya que retocar nada.
+
+| Plano | `x` | Qué queda adentro |
+|---|---|---|
+| `01-descenso` | 726 | El polígono centrado en el mapa |
+| `03-perimetro` | 877 | Los mojones apareciendo, sin el panel |
+| `04-relieve` | 860 | El shader pintando el terreno |
+| `05-clima` | 70 | El panel: la ficha Cwa con los 908 mm |
+| `06-suelo` | 70 | El panel: franco-arcilloso, pH 6,2 |
+| `07-cobertura` | 70 | El panel: bosque 100 % |
+| `08-ecorregion-yungas` | 70 | El panel: Yungas / selva de montaña |
+| `09-cuenca-resolviendo` | 745 | La cuenca dibujándose sola |
+| `11-keyline` | 40 | El panel: keypoint 823 m y las dos pendientes |
+| `13-represa` | 40 | El panel: cuatro sitios con su relación agua/muro y sus litros |
+| `16a-potreros-panel` | 40 | El panel de pastoreo completo |
+| `20-salud-del-calculo` | 40 | Las cuatro observaciones, legibles |
+
+El criterio es simple y se repite: **cuando lo que aparece se lee en el panel,
+el recorte va al panel; cuando se dibuja en el mapa, va al mapa.** Los cinco
+planos de "lo que llega solo" se reparten así: el relieve al mapa —porque el
+shader es lo que se entiende en un segundo— y los otros cuatro al panel, porque
+un color plano sobre el terreno no dice nada y un número sí.
+
+Ocho de los doce terminaron yendo al panel, y no por comodidad: acequia dibuja
+poco sobre el mapa y calcula mucho al costado. El keypoint del keyline es un
+punto morado de veinte píxeles, y los sitios de represa **no se dibujan**: son
+cuatro fichas con su relación agua/muro y sus litros. Recortar al mapa en esos
+dos planos habría dejado un vertical de curvas de nivel bonitas que no dicen
+nada.
+
+### Vertical de 30 s — 900 cuadros
+
+| Entra | Dur. | Qué | `x` | Encima |
+|---|---|---|---|---|
+| 0,0 | 2,8 | `01-descenso` a 7,14× | 726 | `TitularVertical` "Un terreno cualquiera." |
+| 2,8 | 1,8 | `03-perimetro` a 9,44× | 877 | subtítulo |
+| 4,6 | 1,2 | `04-relieve` | 860 | subtítulo |
+| 5,8 | 1,2 | `05-clima` | 70 | subtítulo |
+| 7,0 | 1,2 | `06-suelo` | 70 | subtítulo |
+| 8,2 | 1,2 | `07-cobertura` | 70 | subtítulo |
+| 9,4 | 1,2 | `08-ecorregion-yungas` | 70 | subtítulo |
+| 10,6 | 1,8 | `09-cuenca-resolviendo` | 745 | subtítulo |
+| 12,4 | 6,5 | **`PlacaCruceVertical`** a ritmo 1,8 | — | — |
+| 18,9 | 1,8 | `11-keyline` | 40 | subtítulo |
+| 20,7 | 1,5 | `13-represa` | 40 | subtítulo |
+| 22,2 | 1,5 | `16a-potreros-panel` | 40 | subtítulo |
+| 23,7 | 2,8 | `20-salud-del-calculo` | 40 | `TitularVertical` "Y te dice cuándo no confiar." |
+| 26,5 | 3,5 | **`AperturaAppClaraVertical`** a ritmo 1,4 | — | — |
+
+### Vertical de 15 s — 450 cuadros
+
+| Entra | Dur. | Qué | `x` | Encima |
+|---|---|---|---|---|
+| 0,0 | 2,0 | `01-descenso` a 10× | 726 | `TitularVertical` "Un terreno cualquiera." |
+| 2,0 | 0,8 | `04-relieve` | 860 | subtítulo |
+| 2,8 | 0,8 | `05-clima` | 70 | subtítulo |
+| 3,6 | 0,8 | `06-suelo` | 70 | subtítulo |
+| 4,4 | 0,8 | `07-cobertura` | 70 | subtítulo |
+| 5,2 | 5,0 | **`PlacaCruceVertical`** a ritmo 2,4 | — | — |
+| 10,2 | 1,8 | `20-salud-del-calculo` | 40 | `TitularVertical` "Y cuándo no confiar." |
+| 12,0 | 3,0 | **`AperturaAppClaraVertical`** a ritmo 1,67 | — | — |
+
+### El `ritmo` de las placas, y por qué no se aceleró el archivo
+
+La placa del cruce dura doce segundos en horizontal y el vertical de 30 s tiene
+seis y medio para darle. Lo obvio sería acelerar el MP4 ya renderizado — y sería
+un error: eso también acelera el contador, que es lo único de la placa que **no**
+se puede apurar sin que se lea como un efecto en vez de como una cuenta.
+
+Así que `PlacaCruce` y `AperturaAcequiaApp` tomaron una prop nueva, `ritmo`, que
+escala el cuadro de entrada. Cada resorte se recalcula a la velocidad nueva y el
+contador sigue siendo lineal con salida suave, sólo que más corto. Es una línea
+de código y evita tres versiones distintas de la misma placa.
+
+### Los subtítulos
+
+Quemados, en ASS y no en SRT, por una razón concreta: cuando al filtro
+`subtitles` de ffmpeg le entra un SRT, arma el script con PlayRes 384×288. Ahí
+dentro, `MarginV 110` no son 110 píxeles sino 110 de 288 —o sea 733 sobre 1920—
+y el subtítulo termina en el medio del cuadro. Declarando `PlayResX/Y` igual al
+video, `Fontsize` y `MarginV` vuelven a ser píxeles de verdad.
+
+`MarginV` es **110**: adentro de la banda de 250 px, sobre negro profundo, y
+arriba de donde Instagram pone su interfaz.
+
+Y el track **no repite lo que ya dice una placa**. Donde hay titular o donde la
+placa lleva su propio texto, el subtítulo calla. Por eso el vertical de 30 s
+tiene siete líneas y el de 15 s tiene dos: el resto del tiempo ya hay texto en
+pantalla, y dos textos a la vez no se leen, se esquivan.
+
+Los archivos son [`subtitulos-30s.ass`](subtitulos-30s.ass) y
+[`subtitulos-15s.ass`](subtitulos-15s.ass).
+
+---
+
+## Cómo se produce todo
+
+Dos comandos. El primero renderiza las 28 placas; el segundo arma los tres
+videos.
 
 ```bash
-pnpm --filter @arteytierra/placas estudio
+pnpm --filter @arteytierra/placas render-video
 ```
-
-La banda, una vez, para estirarla toda la línea de tiempo:
 
 ```bash
-pnpm --filter @arteytierra/placas exec remotion still src/index.ts BandaBase banda.png
+bash _research/video-acequia/montaje.sh
 ```
 
-El cruce, que va solo y a pantalla completa:
+El script de Remotion está en
+[`packages/placas/scripts/render-video.mjs`](../../packages/placas/scripts/render-video.mjs)
+y es, además de un script, **la lista de materiales del video**: si un titular
+cambia de texto o una placa cambia de duración, se cambia ahí. Empaqueta una
+sola vez y renderiza las veintiocho en serie; con `remotion render` suelto serían
+veintiocho empaquetados.
 
-```bash
-pnpm --filter @arteytierra/placas render PlacaCruce cruce.mp4
-```
+El de montaje arma cada elemento como un segmento suelto —con su recorte, su
+velocidad, la banda y los MOV con alfa ya encima, todos con los mismos parámetros
+de codificación— y recién después los pega con el demuxer `concat` y `-c copy`.
+Esa es la única parte del proceso donde `-c copy` es honesto: cada segmento
+empieza en un keyframe porque acaba de nacer, así que el pegado no recomprime
+nada y no agrega una generación.
 
-Un pie de fuente, uno por capa:
-
-```bash
-pnpm --filter @arteytierra/placas render Fuente pie-relieve.mov --codec=prores --prores-profile=4444 --props='{"capa":"Relieve","fuente":"Copernicus GLO-30 · © DLR e.V."}'
-```
-
-Un titular, con su segundo renglón cuando el guión lo pide:
-
-```bash
-pnpm --filter @arteytierra/placas render Titular tit-01.mov --codec=prores --prores-profile=4444 --props='{"texto":"No cargás nada.","segundo":"Marcás el perímetro.","anclaje":"derecha"}'
-```
-
-Los números del cruce viven en `packages/placas/src/Root.tsx`, en la constante
-`CRUCE`, todos juntos. Si alguna vez se refilma con otro predio se cambian ahí y
-las dos versiones —horizontal y vertical— salen iguales.
+Nada de esto toca el repo. Las placas caen en
+`C:\Arte y Tierra\Acequia\videoapp-1\placas\` y los videos en
+`…\videoapp-1\salida\`.
 
 ---
 
 ## Lo que queda
 
-- **El vertical de 30 s y el de 15 s**, después de aprobada la madre. El crop es
-  dirigido plano por plano: el mapa se recorta bien, los paneles hay que
-  reencuadrarlos.
-- **El SRT de los verticales**, tipeado desde los textos del guión. Quemado con
-  `MarginV` entre 80 y 140, que si no Instagram lo tapa.
-- **La música.** Sigue siendo lo que más cambia el resultado y lo único que no
-  puedo resolver acá: hace falta una pista con licencia.
+- **La música.** Sigue siendo lo que más cambia el resultado y lo único que no se
+  puede resolver acá: hace falta una pista con licencia. Sin ella los tres
+  videos están mudos, que es como están hoy.
+- **La voz en off**, si se decide grabarla. El guión, con los tiempos, las
+  pausas y lo que no se dice, está en [`VOZ-EN-OFF.md`](VOZ-EN-OFF.md).
+- **El cuadrado de 1:1** para el feed, si hace falta. Sale del mismo material:
+  es otra tabla de `x` y otra lista de segmentos.
+
+### Para la próxima grabación
+
+Tres cosas que costaron trabajo y se arreglan del lado de la cámara:
+
+1. **La barra de Screenity tiene un botón *Ocultar*.** Apretarlo devuelve los
+   140 px de abajo.
+2. **Grabar con menos carga, o con OBS.** Los quince clips dicen 30 fps y
+   ninguno los tiene: la cadencia real va de 21,2 a 29,9, y baja justo donde el
+   panel estaba pesado.
+3. **Abrir el DXF en un AutoCAD limpio**, sin otros dibujos abiertos y sin pasar
+   por el escritorio.

@@ -44,6 +44,18 @@ export const esquemaCruce = z.object({
   volumenM3: z.number(),
   /** Superficie de la cuenca de aporte, en hectáreas. */
   cuencaHa: z.number(),
+  /**
+   * Cuántas veces más rápido corre la placa. 1 es el ritmo del horizontal, que
+   * son 12 segundos y respira.
+   *
+   * Existe porque el vertical de 30 s no tiene 12 segundos para dar: tiene 6 y
+   * medio. La alternativa era acelerar el archivo ya renderizado, y eso también
+   * acelera el contador — que es lo único de la placa que **no** se puede
+   * apurar sin que se lea como un efecto en vez de como una cuenta. Escalando
+   * el cuadro de entrada, el resorte de cada elemento se recalcula a la
+   * velocidad nueva y el contador sigue siendo lineal con salida suave.
+   */
+  ritmo: z.number().default(1),
 });
 
 /** Los cuatro ingredientes, en el orden en que los nombra el guión. */
@@ -60,8 +72,9 @@ export const PlacaCruce: React.FC<z.infer<typeof esquemaCruce>> = ({
   escurrePct,
   volumenM3,
   cuencaHa,
+  ritmo,
 }) => {
-  const cuadro = useCurrentFrame();
+  const cuadro = useCurrentFrame() * ritmo;
   const { fps, width, height } = useVideoConfig();
   const vertical = height > width;
 

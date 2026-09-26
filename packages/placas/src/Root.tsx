@@ -122,7 +122,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.horizontal}
         schema={esquemaAperturaApp}
-        defaultProps={{ bajada: BAJADA, fondo: 'oscuro' as const }}
+        defaultProps={{ bajada: BAJADA, fondo: 'oscuro' as const, ritmo: 1 }}
       />
 
       <Composition
@@ -132,7 +132,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.vertical}
         schema={esquemaAperturaApp}
-        defaultProps={{ bajada: BAJADA, fondo: 'oscuro' as const }}
+        defaultProps={{ bajada: BAJADA, fondo: 'oscuro' as const, ritmo: 1 }}
       />
 
       <Composition
@@ -142,7 +142,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.horizontal}
         schema={esquemaAperturaApp}
-        defaultProps={{ bajada: BAJADA, fondo: 'crema' as const }}
+        defaultProps={{ bajada: BAJADA, fondo: 'crema' as const, ritmo: 1 }}
       />
 
       <Composition
@@ -152,7 +152,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.vertical}
         schema={esquemaAperturaApp}
-        defaultProps={{ bajada: BAJADA, fondo: 'crema' as const }}
+        defaultProps={{ bajada: BAJADA, fondo: 'crema' as const, ritmo: 1 }}
       />
 
       {/* ── El video de presentación ──────────────────────────────────────
@@ -230,7 +230,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.horizontal}
         schema={esquemaCruce}
-        defaultProps={{ ...CRUCE }}
+        defaultProps={{ ...CRUCE, ritmo: 1 }}
       />
 
       <Composition
@@ -240,7 +240,7 @@ export const Root: React.FC = () => {
         fps={FPS}
         {...FORMATOS.vertical}
         schema={esquemaCruce}
-        defaultProps={{ ...CRUCE }}
+        defaultProps={{ ...CRUCE, ritmo: 1 }}
       />
 
       <Composition

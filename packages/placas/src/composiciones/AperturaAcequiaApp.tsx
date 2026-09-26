@@ -7,6 +7,12 @@ import { DISPLAY } from '../tipografia';
 export const esquemaAperturaApp = z.object({
   bajada: z.string(),
   fondo: z.enum(['crema', 'oscuro']).default('oscuro'),
+  /**
+   * Cuántas veces más rápido corre la apertura. 1 son los 5 segundos del cierre
+   * horizontal; el vertical la corre a 1,4 para cerrar en 3,5 sin que el `.app`
+   * quede afuera. Ver la nota de `ritmo` en `PlacaCruce`.
+   */
+  ritmo: z.number().default(1),
 });
 
 /**
@@ -36,8 +42,12 @@ const RELACION_WORDMARK = 2039 / 310;
  * El corrimiento hacia la izquierda es sólo del contenedor, para que
  * "acequia.app" termine centrado igual que estaba "acequia".
  */
-export const AperturaAcequiaApp: React.FC<z.infer<typeof esquemaAperturaApp>> = ({ bajada, fondo }) => {
-  const cuadro = useCurrentFrame();
+export const AperturaAcequiaApp: React.FC<z.infer<typeof esquemaAperturaApp>> = ({
+  bajada,
+  fondo,
+  ritmo,
+}) => {
+  const cuadro = useCurrentFrame() * ritmo;
   const { fps, width, height } = useVideoConfig();
   const vertical = height > width;
   const oscuro = fondo === 'oscuro';

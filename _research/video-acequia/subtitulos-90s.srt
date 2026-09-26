@@ -1,0 +1,110 @@
+1
+00:00:00,400 --> 00:00:07,100
+Un terreno cualquiera.
+Treinta y una hectáreas en Burruyacu, Tucumán.
+
+2
+00:00:07,100 --> 00:00:09,500
+Sin nombre, sin proyecto, sin nada cargado.
+
+3
+00:00:09,500 --> 00:00:12,600
+Marcás seis mojones y listo.
+
+4
+00:00:12,600 --> 00:00:15,400
+El relieve: setenta y dos metros de desnivel.
+
+5
+00:00:15,400 --> 00:00:18,200
+El clima: novecientos ocho milímetros al año.
+
+6
+00:00:18,200 --> 00:00:21,000
+El suelo: franco-arcilloso, de infiltración lenta.
+
+7
+00:00:21,000 --> 00:00:23,800
+La cobertura: bosque, el cien por ciento.
+
+8
+00:00:23,800 --> 00:00:26,600
+Y la ecorregión: Yungas, selva de montaña.
+
+9
+00:00:26,600 --> 00:00:31,000
+Y la cuenca que entra al campo desde arriba:
+doscientas ochenta y dos hectáreas.
+
+10
+00:00:33,000 --> 00:00:36,000
+Nada de esto es nuevo:
+los datos abiertos los baja cualquiera.
+
+11
+00:00:36,000 --> 00:00:38,000
+Cruzarlos es otra cosa.
+
+12
+00:00:38,000 --> 00:00:41,000
+Lluvia, suelo, pendiente y cobertura:
+curva número setenta y tres.
+
+13
+00:00:41,000 --> 00:00:43,000
+Ciento ochenta millones de litros escurriendo.
+
+14
+00:00:43,000 --> 00:00:46,000
+Ese número sale de la app.
+
+15
+00:00:46,000 --> 00:00:49,500
+Y ahí empieza el diseño. Dónde va el agua.
+
+16
+00:00:49,500 --> 00:00:52,500
+Zanjas de infiltración sobre las curvas de nivel.
+
+17
+00:00:52,500 --> 00:00:56,000
+Dónde conviene la represa, y cuánto junta.
+
+18
+00:00:56,000 --> 00:00:59,000
+Por dónde sube el camino.
+
+19
+00:00:59,000 --> 00:01:02,000
+Dónde va la cortina rompevientos.
+
+20
+00:01:02,000 --> 00:01:05,500
+Y dónde entra el animal: veintiocho potreros.
+
+21
+00:01:05,500 --> 00:01:09,000
+Todo esto sale en un informe.
+
+22
+00:01:09,000 --> 00:01:12,000
+Con el resumen ejecutivo adelante.
+
+23
+00:01:12,000 --> 00:01:15,500
+Y cada capa con su fuente y su fecha.
+
+24
+00:01:15,500 --> 00:01:20,000
+Y con lo que casi ningún software dice:
+cuándo no confiar en el número.
+
+25
+00:01:20,000 --> 00:01:25,000
+Un plan completo, sobre datos que podés auditar,
+en una tarde.
+
+26
+00:01:25,000 --> 00:01:30,000
+acequia.app
+Un proyecto gratis. Sin tarjeta.

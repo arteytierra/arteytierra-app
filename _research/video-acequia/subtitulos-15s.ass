@@ -1,0 +1,20 @@
+[Script Info]
+; Subtítulos quemados del vertical de 15 s. Mismo criterio que el de 30 s:
+; PlayRes igual al video para que MarginV sean píxeles, y silencio donde una
+; placa ya lleva texto —acá eso es casi todo el video, porque el cruce se come
+; cinco segundos de los quince.
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.709
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: acequia,Inter,46,&H00E8F0F5,&H00E8F0F5,&H0010121A,&H0010121A,-1,0,0,0,100,100,0,0,1,2,0,2,70,70,110,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:02.10,0:00:03.50,acequia,,0,0,0,,El relieve. El clima.
+Dialogue: 0,0:00:03.60,0:00:05.10,acequia,,0,0,0,,El suelo. La cobertura.
