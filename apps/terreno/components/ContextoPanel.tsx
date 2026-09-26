@@ -19,6 +19,7 @@ import {
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR, municipiosDestacadosBr,
 } from '@/lib/pueblosOriginarios';
+import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
@@ -175,6 +176,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
+  // Los países que entran sólo con la cifra nacional: Bolivia, Colombia,
+  // Ecuador y Uruguay porque el dato local espera una autorización de licencia,
+  // y Canadá porque la licencia alcanza pero falta el relevamiento provincial.
+  // Ver lib/pueblosOriginariosNacional.ts.
+  const paisNac = paisNacionalDelPunto(ubicacion);
   // A dónde va el predio, y quién vive hoy en ese clima. Puede faltar: sin la
   // clase futura del mapa de Beck no hay nada honesto que decir.
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
@@ -389,12 +395,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             abajo, que dicen otra cosa. */}
         {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'
           && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru'
-          && censoBr.estado === 'fuera_de_brasil' && (
+          && censoBr.estado === 'fuera_de_brasil' && !paisNac && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
             INE—, las de Paraguay —el IV Censo Indígena 2022 del INE—, las del Perú —el Censo
-            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. Que no haya nada acá no
+            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. De Bolivia, Colombia,
+            Ecuador, Uruguay y Canadá tenemos la cifra nacional. Que no haya nada acá no
             dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el
             censo de ese país.
           </p>
@@ -1056,6 +1063,89 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
               {CENSO_BR_PAIS.poblacion.toLocaleString('es-AR')} habitantes—, en{' '}
               {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} municipios.
             </p>
+          </div>
+        </>}
+
+        {/* Los países que entran sólo con la cifra nacional.
+
+            No es un adelanto de algo mejor: es lo que se puede decir hoy sin
+            pedirle permiso a nadie, porque citar un número con su fuente no es
+            redistribuir una tabla. El dato local espera una autorización escrita
+            en cuatro de los cinco, y en Canadá espera un relevamiento.
+
+            Lo que esta tarjeta tiene que hacer bien es no dejar que el número se
+            lea como más de lo que es: va con la pregunta literal, con el universo
+            y con la lista de lo que no dice, que es la parte importante. */}
+        {paisNac && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            {paisNac.operativo} · {paisNac.pais}
+          </p>
+
+          <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+            <p className="text-xs text-ink-700/80 leading-relaxed">
+              {paisNac.total !== null ? <>
+                <strong className="text-ink-700">{paisNac.total.toLocaleString('es-AR')} personas</strong>
+                {(() => {
+                  const pct = porcentajeNacional(paisNac);
+                  if (!pct) return ' en todo el país.';
+                  return paisNac.base !== null
+                    ? <> en todo el país: el {pct}% de {paisNac.base.toLocaleString('es-AR')} {paisNac.baseDice}.</>
+                    : <> en todo el país, el {pct}% según {paisNac.organismoSigla}.</>;
+                })()}
+              </> : <>
+                El {paisNac.porcentajePublicado}% de las{' '}
+                {paisNac.base?.toLocaleString('es-AR')} {paisNac.baseDice} contestó que sí.{' '}
+                <strong className="text-ink-700">{paisNac.organismoSigla} no publica un total de
+                personas</strong>, así que acá no hay uno: sacarlo del porcentaje sería una
+                estimación nuestra.
+              </>}
+            </p>
+
+            <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+              La pregunta fue «{paisNac.pregunta}» · {paisNac.universo}
+            </p>
+
+            {paisNac.desglose.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {paisNac.desglose.map(d => (
+                  <span key={d.etiqueta}
+                    className="text-[10px] px-1.5 py-0.5 bg-white rounded border border-bone-200 text-ink-700/70">
+                    {d.etiqueta} {d.personas.toLocaleString('es-AR')}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">No hay dato del lugar del predio.</strong>{' '}
+            Es el número de todo el país y nada más: {paisNac.porQueNoHayDatoLocal}.
+          </p>
+
+          <ul className="mt-2 space-y-1">
+            {paisNac.loQueNoDice.map((t, i) => (
+              <li key={i} className="text-[10px] text-ink-700/55 leading-relaxed flex gap-1.5">
+                <span className="text-clay-400 shrink-0">·</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={paisNac.fuente.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {paisNac.fuente.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              {paisNac.organismo} ({paisNac.organismoSigla}). {paisNac.licencia}.
+            </p>
+            {/* Statistics Canada exige esta frase textual en cualquier producto
+                derivado. No es decorativa: es la condición de la licencia. */}
+            {paisNac.atribucionExigida && (
+              <p className="text-[10px] text-ink-700/45 leading-relaxed italic">
+                {paisNac.atribucionExigida}
+              </p>
+            )}
           </div>
         </>}
       </Seccion>}

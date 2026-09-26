@@ -23,6 +23,7 @@ import {
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR,
 } from '@/lib/pueblosOriginarios';
+import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
 import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
@@ -77,6 +78,9 @@ export function InformeView({ datos, compartido = false }: Props) {
   // los anexos no bajan a provincia ni a distrito.
   const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
   const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
+  // Bolivia, Colombia, Ecuador, Uruguay y Canada entran solo con la cifra
+  // nacional. Ver lib/pueblosOriginariosNacional.ts.
+  const paisNac = paisNacionalDelPunto(datos.entorno?.admin ?? null);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
@@ -713,6 +717,49 @@ export function InformeView({ datos, compartido = false }: Props) {
                 considerarse indígenas, pregunta que sólo se hizo dentro de tierras y localidades
                 indígenas. Las tierras indígenas no están incluidas: las publica la{' '}
                 {REGISTRO_BR_FALTANTE.organismo} y {REGISTRO_BR_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Los paises que entran solo con la cifra nacional. En el informe
+                  importa mas que en el panel que no se lea como un dato del
+                  predio, porque el informe se imprime y despues se discute sin
+                  nosotros: de ahi que la advertencia vaya en la misma oracion
+                  que el numero y no en una nota al pie. */}
+              {paisNac && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">
+                Pueblos originarios en {paisNac.pais} ({paisNac.operativo})
+              </p>
+              <p className="text-sm text-ink-700/80">
+                {paisNac.total !== null ? <>
+                  En todo {paisNac.pais} son {paisNac.total.toLocaleString('es-AR')} personas
+                  {(() => {
+                    const pct = porcentajeNacional(paisNac);
+                    if (!pct) return '';
+                    return paisNac.base !== null
+                      ? `, el ${pct}% de ${paisNac.base.toLocaleString('es-AR')} ${paisNac.baseDice}`
+                      : `, el ${pct}% segun ${paisNac.organismoSigla}`;
+                  })()}
+                  , en respuesta a «{paisNac.pregunta}».
+                </> : <>
+                  En todo {paisNac.pais}, el {paisNac.porcentajePublicado}% de las{' '}
+                  {paisNac.base?.toLocaleString('es-AR')} {paisNac.baseDice} contestó que sí a
+                  «{paisNac.pregunta}». {paisNac.organismoSigla} no publica un total de personas y
+                  acá no se calcula uno.
+                </>}{' '}
+                <strong>Este número es de todo el país y no del lugar del predio</strong>:{' '}
+                {paisNac.porQueNoHayDatoLocal}.
+              </p>
+              <ul className="mt-1.5 space-y-0.5">
+                {paisNac.loQueNoDice.map((t, i) => (
+                  <li key={i} className="text-[10px] text-ink-700/55 leading-relaxed">· {t}</li>
+                ))}
+              </ul>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {paisNac.fuente.label} · {paisNac.organismo} ({paisNac.organismoSigla}).{' '}
+                {paisNac.licencia}.
+                {paisNac.desglose.length > 0 && <> Desglose que publica la fuente:{' '}
+                  {paisNac.desglose.map(d => `${d.etiqueta} ${d.personas.toLocaleString('es-AR')}`).join(' · ')}.</>}
+                {paisNac.atribucionExigida && <> {paisNac.atribucionExigida}</>}
               </p>
               </>}
 

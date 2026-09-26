@@ -1,8 +1,13 @@
 # ¿Hay otra fuente que evite las cartas?
 
 Relevado el **26/09/2026**, a raíz de una pregunta concreta: Bolivia, Colombia,
-Ecuador y Brasil están relevados pero no montados porque falta una autorización
+Ecuador y Uruguay están relevados pero no montados porque falta una autorización
 de licencia. ¿Hay manera de no depender de que contesten?
+
+> **Corregido el 27/09/2026.** La primera versión de este documento decía «Bolivia,
+> Colombia, Ecuador y Brasil». Brasil **ya está montado** desde antes, con el Censo
+> 2022 del IBGE y a escala de municipio; lo que le falta es la capa territorial de
+> FUNAI, que es otra cosa. El cuarto país que espera autorización es **Uruguay**.
 
 **Respuesta corta: no hay un dataset alternativo que arregle la licencia.** Las
 dos plataformas que parecían el atajo, verificadas hoy, explícitamente no lo son.
@@ -62,9 +67,10 @@ hay que citarla como autoridad no es una fuente.
 Es lo más importante de todo esto y no necesita permiso de nadie.
 
 **Decir un número citando la fuente no es reutilizar un dataset.** «Según el
-Censo 2022 del IBGE, en Brasil hay 1.694.836 personas indígenas» es un hecho con
+Censo 2018 del DANE, en Colombia hay 1.905.617 personas indígenas» es un hecho con
 atribución: es lo que hace cualquier diario. Lo que necesita licencia es montar
-**la tabla**: los 5.570 municipios, los 984 polígonos, los 4.676 puntos.
+**la tabla**: los 1.122 municipios, los 984 polígonos, los 123 pueblos con su
+población.
 
 Eso permite partir la capa en dos y publicar hoy la mitad de arriba:
 
@@ -154,8 +160,10 @@ que ahí hay usuarios a los que la capa les serviría.
 ## Qué haría, en orden
 
 1. **Publicar el total nacional con cita** de Bolivia, Colombia, Ecuador y
-   Brasil. No necesita permiso y cambia cuatro países de «nada» a «algo».
+   Uruguay. No necesita permiso y cambia cuatro países de «nada» a «algo».
+   ✅ Hecho el 27/09/2026, en `lib/pueblosOriginariosNacional.ts`.
 2. **Sumar Canadá**, que no requiere ninguna carta.
+   ✅ Hecho el 27/09/2026, en el mismo archivo, con la cifra nacional.
 3. **Sumar Estados Unidos**, confirmando primero la declaración de dominio
    público y la leyenda de atribución.
 4. **Esperar las cartas** para el dato local y los polígonos. Siguen siendo
