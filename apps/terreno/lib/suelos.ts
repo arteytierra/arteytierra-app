@@ -104,6 +104,36 @@ interface SoilGridsLayer {
 
 interface SoilGridsResponse {
   properties: { layers: SoilGridsLayer[] };
+  /**
+   * Lo agrega nuestro proxy cuando el perfil salió de leer los rásters en vez de
+   * la API de consulta de ISRIC (ver `app/api/suelo/route.ts`). Es opcional a
+   * propósito: las respuestas guardadas antes de ese cambio son de la API a
+   * 250 m y no lo traen, así que la ausencia significa «250 m, API de consulta».
+   */
+  _acequia?: {
+    fuente: 'cog-1000m';
+    resolucion_m: number;
+    /** Km que hubo que alejarse del punto para encontrar un píxel con dato. */
+    desplazamiento_km: number | null;
+  };
+}
+
+/**
+ * Texto de la fuente, con la resolución que el dato realmente tiene.
+ *
+ * Importa más de lo que parece. La app decía «~250 m» para todo, y desde que el
+ * piso global se lee de los rásters agregados eso sería falso en la mayoría de
+ * los puntos. Ya nos pasó con el relieve, que anunciaba «SRTM 30 m» mientras
+ * usaba un DEM nacional. Si el número salió de una grilla de 1 km, la pantalla
+ * dice 1 km.
+ */
+function fuenteSoilGrids(meta: SoilGridsResponse['_acequia']): string {
+  const paso = meta ? `~${meta.resolucion_m >= 1000 ? `${meta.resolucion_m / 1000} km` : `${meta.resolucion_m} m`}` : '~250 m';
+  const corrido = meta?.desplazamiento_km
+    ? ` · el píxel del punto no tiene dato: el valor es del más cercano con dato, a ${meta.desplazamiento_km} km`
+    : '';
+  return `ISRIC SoilGrids v2.0 (0–200 cm, ${paso}) · agua útil y grupo hidrológico por `
+       + `pedotransferencia Saxton-Rawls (2006) — orientativo${corrido}`;
 }
 
 /** Profundidades estándar SoilGrids con su rango top/bottom en cm. */
@@ -205,7 +235,7 @@ async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
       arcilla: sup.arcilla, arena: sup.arena, limo: sup.limo,
       densidad_ap: sup.densidad_ap, nitrogeno: sup.nitrogeno,
       clase_textura, interp, perfil, agua_util, grupo_hidro,
-      fuente: 'ISRIC SoilGrids v2.0 (0–200 cm, ~250 m) · agua útil y grupo hidrológico por pedotransferencia Saxton-Rawls (2006) — orientativo',
+      fuente: fuenteSoilGrids(json._acequia),
     };
   } finally {
     clearTimeout(timer);
