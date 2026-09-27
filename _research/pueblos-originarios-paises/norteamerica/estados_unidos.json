@@ -1,0 +1,71 @@
+{
+  "pais": "Estados Unidos",
+  "iso3": "USA",
+  "registro": {
+    "existe": true,
+    "organismo": "Bureau of Indian Affairs (BIA), Department of the Interior, publicado en el Federal Register",
+    "nombre": "Indian Entities Recognized by and Eligible To Receive Services From the United States Bureau of Indian Affairs (aviso 2026-01899, 30/01/2026)",
+    "que_cuenta": "Una fila es una entidad tribal reconocida federalmente (Indian Tribe o Alaska Native entity) con su nombre legal. No es un padrón de personas ni de miembros, no incluye tribus reconocidas solo por los estados y no trae territorio.",
+    "url_pagina": "https://www.federalregister.gov/documents/2026/01/30/2026-01899/indian-entities-recognized-by-and-eligible-to-receive-services-from-the-united-states-bureau-of",
+    "url_archivo": "https://www.govinfo.gov/content/pkg/FR-2026-01-30/pdf/2026-01899.pdf",
+    "formato": "pdf",
+    "fecha_distribucion": "2026-01-30",
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": "no_dice",
+    "niveles": [
+      "nacional"
+    ],
+    "columnas": [
+      "nombre de la entidad"
+    ],
+    "filas": null,
+    "tiene_coordenadas": false,
+    "filas_sin_coordenada": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: busqué con la API del Federal Register el aviso más reciente de la serie (el anterior es del 11/12/2024) y bajé el PDF de govinfo (5 páginas). El SUMMARY dice: «This notice publishes the current list of 575 Tribal entities». Incluye el alta de la Lumbee Tribe of North Carolina por la NDAA FY2026 (18/12/2025), con condiciones para acceder a servicios. No conté las 575 filas: el PDF está a tres columnas y los nombres se parten en varias líneas, así que filas queda en null y 575 es la cifra que declara el aviso. Ni el Federal Register ni govinfo declaran una licencia en las páginas que abrí; como obra federal probablemente no tenga copyright, pero eso es deducción y no va como dato."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "U.S. Census Bureau",
+    "anio": 2020,
+    "fecha_relevamiento": null,
+    "pregunta": "«What is Person 1's race? Mark ☒ one or more boxes AND print origins.» Casilla: «American Indian or Alaska Native – Print name of enrolled or principal tribe(s), for example, Navajo Nation, Blackfeet Tribe, Mayan, Aztec, Native Village of Barrow Inupiat Traditional Government, Nome Eskimo Community, etc.»",
+    "universo": "Toda la población residente (331.449.281 en los 50 estados y DC; Puerto Rico va aparte).",
+    "total_declarado": 3727135,
+    "poblacion_base": 331449281,
+    "url_cuadros": "https://www2.census.gov/programs-surveys/decennial/2020/data/redistricting-supplementary-tables/redistricting-supplementary-table-01.pdf",
+    "urls_archivos": [
+      "https://www2.census.gov/programs-surveys/decennial/2020/data/01-Redistricting_File--PL_94-171/National/us2020.npl.zip",
+      "https://www2.census.gov/programs-surveys/decennial/2020/data/redistricting-supplementary-tables/redistricting-supplementary-table-01.pdf",
+      "https://www2.census.gov/programs-surveys/decennial/2020/technical-documentation/questionnaires-and-instructions/questionnaires/2020-informational-questionnaire-english_DI-Q1.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "estado",
+      "condado",
+      "área AIANNH (reserva, trust land, área estadística)",
+      "bloque"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: la API api.census.gov redirige a missing_key sin clave, así que bajé el archivo nacional PL 94-171 (us2020.npl.zip). En el nivel 010 (nación), P0010001 = 331.449.281 y P0010005 (American Indian and Alaska Native alone) = 3.727.135. El mismo archivo trae 704 filas de nivel 250 (áreas AIANNH). Abrí la Supplementary Table 1: AIAN «Alone» 3.727.135, «In combination» 5.938.923, «Alone or in combination» 9.666.058. Abrí el cuestionario 2020 y copié la pregunta."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "El censo no cuenta afiliación tribal: la casilla pide escribir la «enrolled or principal tribe», pero los conteos por tribu (Detailed DHC-A) no los abrí, así que pueblos queda vacío.",
+    "La lista de 575 entidades reconocidas es otra cosa: nombres legales de gobiernos tribales, no rótulos del censo. Por eso no los copié en pueblos.",
+    "Native Hawaiian and Other Pacific Islander es otra categoría de raza y se dejó afuera a propósito.",
+    "Puerto Rico no está en el total de 331.449.281."
+  ],
+  "trampas": [
+    "Hay dos cifras oficiales: AIAN alone 3.727.135 y AIAN alone or in combination 9.666.058. Propongo alone porque es un conteo de personas que no se superpone con otras razas; la otra cuenta respuestas, y la propia tabla del Census Bureau advierte que la suma de «alone or in combination» «adds to more than the total population». No se suman.",
+    "La casilla AIAN incluye expresamente a indígenas de América Latina («Mayan, Aztec»): no todas las personas AIAN pertenecen a pueblos de Estados Unidos.",
+    "Las áreas AIANNH del censo (704 en el archivo PL, 864 polígonos en TIGER 2024) no son la lista de 575 entidades: incluyen trust lands, áreas estadísticas y tierras hawaianas, y una tribu puede tener varias.",
+    "El Tribal Leaders Directory del BIA (FeatureServer, 602 filas) no es la lista del Federal Register (575) y trae nombres, correos y teléfonos de autoridades: no se usa como padrón y no se publica.",
+    "El diccionario de datos de data.gov enlaza como licencia del Tribal Leaders Directory a idmanagement.gov/license, que no es una licencia de datos del BIA."
+  ],
+  "notas": "Estados Unidos entra con AIAN alone 2020 (confirmar la elección) y la lista federal de 575 entidades reconocidas (enero de 2026). Todo abierto y descargable; ninguna de las páginas oficiales que abrí declara licencia con esas palabras."
+}

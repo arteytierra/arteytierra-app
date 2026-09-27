@@ -1,0 +1,74 @@
+{
+  "pais": "Canadá",
+  "iso3": "CAN",
+  "registro": {
+    "existe": true,
+    "organismo": "Indigenous Services Canada (ISC) / Services aux Autochtones Canada",
+    "nombre": "First Nations Location (Premières Nations – emplacement)",
+    "que_cuenta": "Una fila es una First Nation (banda) con su número de banda y un punto de ubicación. No es el Indian Register (el registro de personas, que no es público), no incluye a Métis ni Inuit y el punto no es un territorio.",
+    "url_pagina": "https://open.canada.ca/data/en/dataset/b6567c5c-8339-4055-99fa-63f92114d9e4",
+    "url_archivo": "https://data.sac-isc.gc.ca/geomatics/rest/directories/arcgisoutput/DonneesOuvertes_OpenData/Premiere_Nation_First_Nation/Premiere_Nation_First_Nation_SHP.zip",
+    "formato": "shp",
+    "fecha_distribucion": "2026-04-14",
+    "licencia": "Open Government Licence - Canada",
+    "licencia_url": "https://open.canada.ca/en/open-government-licence-canada",
+    "uso_comercial": "si",
+    "niveles": [
+      "nacional"
+    ],
+    "columnas": [
+      "BAND_NBR",
+      "BAND_NAME",
+      "geometry"
+    ],
+    "filas": 638,
+    "tiene_coordenadas": true,
+    "filas_sin_coordenada": 0,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: consulté la API CKAN de open.canada.ca: dataset «First Nations Location», organización Indigenous Services Canada, license_title «Open Government Licence - Canada», modificado el 2026-04-14. Bajé el SHP y el GPKG: 638 filas, 0 sin geometría, columnas BAND_NBR/BAND_NAME (band_number/band_name en el GPKG). Abrí la OGL-Canada: concede usar la información «including for commercial purposes» con atribución. fecha_distribucion es la fecha de modificación de los metadatos, no una fecha de distribución declarada."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Statistics Canada",
+    "anio": 2021,
+    "fecha_relevamiento": null,
+    "pregunta": "Pregunta 24: «Is this person First Nations, Métis or Inuk (Inuit)?» Nota: «First Nations (North American Indian) includes Status and Non-Status Indians.» Opciones: «No, not First Nations, Métis or Inuk (Inuit)», «Yes, First Nations (North American Indian)», «Yes, Métis», «Yes, Inuk (Inuit)». Indigenous identity se deriva de las preguntas 24, 26 y 27.",
+    "universo": "Población en hogares particulares; muestra del 25 % (cuestionario 2A-L), y 100 % en comunidades de First Nations, asentamientos Métis, regiones inuit y zonas remotas (2A-R).",
+    "total_declarado": 1807250,
+    "poblacion_base": 36328480,
+    "url_cuadros": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810026401",
+    "urls_archivos": [
+      "https://www150.statcan.gc.ca/n1/tbl/csv/98100264-eng.zip"
+    ],
+    "niveles": [
+      "nacional",
+      "provincia/territorio",
+      "dentro/fuera de reserva",
+      "Inuit Nunangat y sus regiones"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": 35225,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: pedí a la WDS de StatCan la descarga de la tabla 98-10-0264-01, bajé el CSV (75.600 filas) y filtré Canada / Total estatus / Total edad / Total género / Count / Total residencia. Resultado: Total 36.328.480; Indigenous identity 1.807.250; First Nations (North American Indian) 1.048.405; Métis 624.220; Inuk (Inuit) 70.540; Multiple Indigenous responses 28.855; Indigenous responses not included elsewhere 35.225; Non-Indigenous 34.521.230. Copié la pregunta de la página oficial del cuestionario 2A-L 2021. La Statistics Canada Open Licence concede «use, reproduce, publish, freely distribute, or sell the Information». sin_declarar_pueblo usa «Indigenous responses not included elsewhere», que es la categoría más cercana y no es exactamente «sin especificar»."
+  },
+  "pueblos": [
+    "First Nations (North American Indian)",
+    "Métis",
+    "Inuk (Inuit)"
+  ],
+  "lo_que_no_dice": [
+    "El censo no desagrega por Nación o banda en esta tabla; los tres rótulos son los grupos de la pregunta 24.",
+    "El Indian Register de ISC (personas con estatus) no es público y no se usa.",
+    "Hubo censo en 2026 (cuestionario 2A-L 2026 publicado); no busqué si ya hay resultados de identidad indígena.",
+    "Registered or Treaty Indian status está en la misma tabla: es una condición legal, no una identidad, y no reemplaza al total."
+  ],
+  "trampas": [
+    "63 reservas y asentamientos quedaron «incompletely enumerated» en 2021: los totales los excluyen y subestiman a las First Nations dentro de reserva (lo dice la guía de referencia de StatCan).",
+    "Los datos son de muestra del 25 % y la tabla trae intervalos de confianza: usar la fila «Count», no los límites.",
+    "Una persona puede declarar más de un grupo (Multiple Indigenous responses 28.855): First Nations + Métis + Inuk no suman 1.807.250 sin esa fila.",
+    "Cuatro nombres de First Nations Location empiezan con «?» tanto en el SHP como en el GPKG («?aqam», «?Akisq'nuk First Nation», etc.): es un carácter perdido en la codificación (probablemente ʔ). No se «corrige» a mano; se pide el nombre correcto a ISC.",
+    "Los puntos de First Nations Location son coordenadas de comunidades: no se publican en el mapa. A lo sumo sirven para cruzar con polígonos oficiales de reservas."
+  ],
+  "notas": "Canadá es el caso más limpio de la región: censo 2021 con pregunta literal, tabla descargable y licencia abierta que permite venta, y una lista de 638 First Nations con OGL-Canada."
+}

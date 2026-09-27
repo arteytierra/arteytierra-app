@@ -1,6 +1,8 @@
 # Cobertura — fuentes de pueblos originarios por país
 
-Verificación actualizada el 2026-09-24. Argentina no se vuelve a relevar porque el encargo la declara terminada.
+Verificación actualizada el 2026-09-27. Argentina no se vuelve a relevar porque el encargo la declara terminada.
+
+Centroamérica y el Caribe tienen su propia tabla en `centroamerica-caribe/COBERTURA.md`, y Norteamérica en `norteamerica/COBERTURA.md`.
 
 | País | ¿Registro? | ¿Censo? | ¿Descargable? | Licencia apta | Qué falta |
 |---|---|---|---|---|---|
@@ -11,7 +13,65 @@ Verificación actualizada el 2026-09-24. Argentina no se vuelve a relevar porque
 | Brasil | Sí. FUNAI publica 4.676 puntos de aldeas (4.667 activos y 9 inactivos); la capa complementaria tiene 639 Tierras Indígenas. | Sí. Censo 2022 actualizado: 1.694.836 personas; 391 rótulos específicos y tabla por municipio. | Parcial. El ODS de FUNAI y los XLSX/JSON del IBGE descargan; el WFS XLSX/CSV de FUNAI devolvió 403. | FUNAI: no dice uso comercial ni transformación; requiere aclaración. IBGE: sí bajo la política de datos abiertos, con atribución y sin licencia estándar por archivo. | Obtener de FUNAI un enlace estable en formato admitido y autorización escrita para transformación comercial; no montar el WFS mientras devuelva 403. |
 | Uruguay | No se identificó un registro administrativo nacional específico. La lista de organizaciones invitadas por la INDDHH no es un padrón. | Sí. Censo 2023: 6,3% declara ascendencia indígena; no se publica un total absoluto exacto ni pueblo específico en los cuadros agregados. | Parcial. Los XLSX, diccionario y cuestionario descargan; los microdatos individuales exigen aceptar condiciones restrictivas. | No aprobada. Los cuadros agregados no adjuntan licencia estándar y los microdatos limitan el uso a investigación y prohíben redistribución o venta sin consentimiento. | Pedir al INE el total absoluto oficial y autorización comercial para reutilizar los cuadros agregados; confirmar institucionalmente si existe o se proyecta un padrón de comunidades u organizaciones. |
 | Colombia | Sí. La ANT publica 984 polígonos de resguardos indígenas formalizados; 0 geometrías nulas. | Sí. CNPV 2018: 1.905.617 personas; 123 rótulos con población y 22.298 casos `Indigena Sin Información`. | Sí. Registro por FeatureServer/GeoJSON y censo por XLSX/PDF; la descarga CSV del Hub estaba rezagada en 968 filas. | ANT: sí, CC BY-SA 4.0, con atribución y CompartirIgual. DANE: no aprobada para redistribución en la app sin visto bueno escrito. | Consumir la API viva de ANT y no el CSV rezagado; separar el derivado CC BY-SA; pedir al DANE autorización escrita antes de montar los tabulados censales en el producto pago. |
+| México | Sí. El INPI publica el Catálogo Nacional de Pueblos y Comunidades Indígenas y Afromexicanas (DOF 21/02/2025), con pueblos, comunidades y municipios. | Sí. Censo 2020 del INEGI: 7.364.645 hablantes de lengua indígena de 3 años y más, hasta municipio y localidad. La autoadscripción va aparte, en el cuestionario ampliado, y el INEGI la publica redondeada en unos 23,2 millones. | Sí los dos. El ITER del censo baja en 32 zip por entidad; el catálogo se consulta en sitio y tiene el PDF del DOF colgado. | Censo: **sí**. Los Términos de Libre Uso del INEGI dicen textual «Puede explotar comercialmente la información». Catálogo: no dice nada. | Del censo, nada: ya está montado con dato local por municipio. Del catálogo, autorización escrita del INPI y el correo de su Unidad de Transparencia, que no se pudo leer porque gob.mx devuelve una cáscara de JavaScript. |
 | Ecuador | Sí. La SGDPN publica un registro acumulativo verificable de 4.410 filas, con organizaciones y ubicación administrativa, pero sin geometría y con duplicados declarados. | Sí. Censo 2022: 1.302.057 personas; 33 rótulos específicos, 17.675 `No sabe/No responde` y 1.420 en `Otras nacionalidades/Otros Pueblos`. | Sí. Registro acumulativo en PDF y censo en XLSX/PDF; los CSV mensuales 2026 devolvieron HTTP 403 y no se verificaron. | Registro: sí, `Creative Commons Attribution`, sin versión indicada. Censo: no tiene licencia estándar adjunta al recurso y requiere aclaración para redistribución comercial. | Pedir a la SGDPN una exportación tabular acumulativa y georreferenciada, y confirmar la versión de CC BY; pedir al INEC autorización escrita para montar los tabulados censales en el producto pago. |
+
+## Estado de México
+
+Relevado y **montado** el 27/09/2026. Es el tercer país de la capa que entra con
+dato local sin esperar autorización de nadie, con Canadá y Guatemala, y el más
+grande con diferencia. Ficha completa en `mexico.json`.
+
+- **La licencia alcanza y está verificada en dos lugares.** El archivo de
+  metadatos de cada entidad del ITER declara
+  `license: https://www.inegi.org.mx/inegi/terminos.html`, y esa página dice
+  textual: «Puede explotar comercialmente la información, utilizándola como
+  insumo para generar otros productos o servicios». Trae dos obligaciones que la
+  pantalla cumple: acreditar al INEGI con su fórmula, y **avisarle al usuario
+  final de cualquier transformación** —la única es sumar de municipio a entidad y
+  a país—.
+- **Los números cierran por dos caminos independientes.** Bajé los 32 archivos
+  ITER y sumé las filas de total: los 2.469 municipios y las 32 entidades dan, por
+  separado y exacto, 7.364.645 hablantes, 865.972 monolingües, 119.976.584
+  personas de 3 años y más, 126.014.024 habitantes y 2.576.213 personas
+  afromexicanas. El total de hablantes coincide con la cifra que trajo el
+  relevamiento por chat, que llegó por otro camino.
+- **Lo que se monta es lengua, no identidad, y ahí está lo importante.** El
+  cuestionario básico pregunta si la persona habla una lengua indígena; la
+  autoadscripción se pregunta en el ampliado, que es muestra, y da unos 23,2
+  millones: cerca de tres veces más gente. No se monta porque el INEGI la publica
+  redondeada y repartir un número redondeado entre 2.469 municipios sería
+  inventarlo. Tampoco se resta: restarle 7.364.645 a un número redondeado daría
+  una precisión que no existe. El panel y el informe dicen las dos cifras.
+- **El insumo congelado es un recorte, no una copia.** El ITER tiene 231 columnas
+  y 195.662 filas de localidad; en `iter-mexico/iter-municipios.csv` quedan nueve
+  columnas y las 2.501 filas de total. Son 138 KB en vez de 36 MB, y es
+  exactamente lo que los términos llaman «extraer parcialmente la información».
+  El script que lo baja está al lado y trae su propio lector de zip, porque esta
+  máquina no tiene un `tar` que lea zip.
+- **El catálogo del INPI no se monta, y el motivo no es el que decía el
+  relevamiento.** `catalogo.inpi.gob.mx` **sí abre** desde acá (200, 56 KB): es un
+  WordPress con API REST, tres accesos de consulta, una página `/cedulas/` y el PDF
+  del DOF del 21/02/2025. El dato es accesible; lo que falta es el permiso. Y ahí
+  la asimetría pesa más que en otros casos: es un registro de identidades de
+  comunidades concretas, no una estadística agregada, así que publicarlo sin
+  autorización no es un riesgo legal nuestro, es usar el nombre de alguien sin
+  haber preguntado. Borrador del pedido en `cartas/06-inpi-mexico.md`.
+- **Corrección al relevamiento sobre los nombres.** Decía que siete rótulos del
+  catálogo son denominaciones que los propios pueblos rechazan —Apache, Chontal de
+  Tabasco, Huave, Huichol, Pápago, Tarasco, Tlapaneco— y que habría que arrastrar
+  la nota del INPI. Leído el sitio hoy, el INPI **ya escribe la mayoría con el
+  endónimo adelante**: «N'dee o N'nee o Ndé» y no Apache, «Wixárika» y no Huichol,
+  «P'urhépecha» y no Tarasco, «Ikoots o Huave», «Me'phaa o Tlapaneco», «Tohono
+  O'otham o Pápago». El único que sigue apareciendo sólo con el exónimo en ese
+  listado es «Chontal de Tabasco».
+- **Las trampas quedaron escritas**: el indicador de «población en hogares
+  indígenas» (11.800.247) que el INEGI rotula «población indígena» y no es ni
+  hablantes ni autoadscripción; que el denominador son los de 3 años y más y no la
+  población total; los dos «San Juan Mixtepec» y los dos «San Pedro Mixtepec» de
+  Oaxaca, que van del 3,9 % al 94,5 % y por eso el módulo no elige; los 90 nombres
+  de municipio repetidos entre entidades; y los nombres oficiales de entidad, que
+  no son los de uso.
 
 ## Estado de Chile
 

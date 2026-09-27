@@ -1,11 +1,17 @@
-# Las cinco cartas
+# Las seis cartas
 
 Cuatro censos relevados, validados y listos para montar que **no se montan por
-falta de permiso, no por falta de trabajo**, más un quinto pedido que es de otra
-naturaleza: la capa territorial de FUNAI para el Brasil, cuyo censo ya está
-montado. El JSON de cada país está al lado,
-en `../`. El día que llegue una autorización, montar el país es trabajo de
-horas, no de días: Brasil tardó una tarde.
+falta de permiso, no por falta de trabajo**, más dos pedidos que son de otra
+naturaleza: la capa territorial de FUNAI para el Brasil y el Catálogo Nacional de
+Pueblos del INPI para México, dos países cuyo censo ya está montado. El JSON de
+cada país está al lado, en `../`. El día que llegue una autorización, montar el
+país es trabajo de horas, no de días: Brasil tardó una tarde.
+
+**La sexta es distinta de las otras cinco y conviene no tratarla igual.** A los
+institutos de estadística les pedimos permiso para reproducir cifras agregadas. Al
+INPI le pedimos permiso para reproducir **nombres de pueblos**. No es un trámite de
+licencia, es preguntar antes de usar el nombre de alguien, y la carta está escrita
+así a propósito.
 
 El detalle de por qué cada uno está bloqueado está en `../COBERTURA.md`.
 
@@ -18,6 +24,7 @@ El detalle de por qué cada uno está bloqueado está en `../COBERTURA.md`.
 | `03-inec-ecuador.md` | INEC Ecuador | `inec@inec.gob.ec` | Sistema de tickets: https://www.ecuadorencifras.gob.ec/requerimientos-de-informacion/ — **conviene hacer las dos cosas** |
 | `04-ine-uruguay.md` | INE Uruguay | `difusion@ine.gub.uy` | — |
 | `05-funai-brasil.md` | FUNAI Brasil | **no va por correo:** Fala.BR https://falabr.cgu.gov.br/ | `sic@funai.gov.br`, sólo si la plataforma está caída |
+| `06-inpi-mexico.md` | INPI México | **sin verificar:** falta el correo de la Unidad de Transparencia | Plataforma Nacional de Transparencia: https://www.plataformadetransparencia.org.mx/ |
 
 Las primeras cuatro direcciones se verificaron el **24/09/2026** en la página oficial de
 cada organismo (y, en el caso del Ecuador, en la Guía Oficial de Trámites del
@@ -27,9 +34,28 @@ que el pedido de acceso a la información se registra en Fala.BR y que el correo
 del SIC es sólo contingencia. Está abierto a cualquier persona «independente de
 idade ou nacionalidade», así que no hace falta CPF brasileño.
 
+## El destinatario de la sexta está sin verificar
+
+Las cinco primeras llevan direcciones comprobadas en la página oficial de cada
+organismo. **La del INPI no.** Lo que se comprobó el 27/09/2026:
+
+- `catalogo.inpi.gob.mx` **sí abre** —200, 56 KB, con API REST, tres accesos de
+  consulta, una página `/cedulas/` y el PDF del DOF del 21/02/2025—. Un
+  relevamiento anterior decía que fallaba por certificado; hoy no falla. El dato
+  es accesible: lo que falta es el permiso, que es otra cosa.
+- `www.inpi.gob.mx` redirige a `gob.mx/inpi`, que devuelve una cáscara de
+  JavaScript sin texto. No se pudo leer ninguna página de contacto, y ninguna
+  página del catálogo publica un correo.
+- `plataformadetransparencia.org.mx` no abre desde esta máquina (falla el TLS).
+
+Así que antes de mandarla hay que entrar a `gob.mx/inpi` desde un navegador
+normal y buscar la Unidad de Transparencia, o el área que administra el catálogo.
+Si no hay correo, la vía que corresponde es la solicitud por la Plataforma
+Nacional de Transparencia: es gratuita y tiene plazo de ley.
+
 ## Antes de mandarlas
 
-Las cinco cartas tienen dos campos a completar, marcados entre corchetes:
+Las seis cartas tienen dos campos a completar, marcados entre corchetes:
 
 - `[APELLIDO]`
 - `[TELÉFONO CON CÓDIGO DE PAÍS]` — conviene que esté: es un pedido a un
@@ -38,7 +64,7 @@ Las cinco cartas tienen dos campos a completar, marcados entre corchetes:
 
 Y una decisión: si Arte y Tierra tiene una razón social registrada, conviene
 nombrarla. A un organismo público le cambia el encuadre que el pedido venga de
-una persona o de una empresa, y las cinco cartas dicen explícitamente que el
+una persona o de una empresa, y las seis cartas dicen explícitamente que el
 producto es pago.
 
 ## Qué pide cada una
@@ -66,11 +92,25 @@ No son cinco veces la misma carta. Lo que bloquea a cada país es distinto:
   6,3% redondeado, y multiplicarlo sería una estimación nuestra) y las
   condiciones de reutilización de los cuadros agregados. La carta aclara que no
   pedimos microdatos.
+- **México (INPI)** — no es el censo, que ya está montado con el INEGI y cuya
+  licencia autoriza expresamente el uso comercial, sino el **Catálogo Nacional de
+  Pueblos y Comunidades**, que es la única lista oficial de pueblos de México. El
+  bloqueo no es una licencia contradictoria: es que **no hay ninguna declaración**
+  sobre qué puede hacerse con la información. La carta pide sólo los **nombres de
+  pueblo** y el municipio, escritos como el propio catálogo los escribe —hoy ya
+  usa los endónimos: «Wixárika», «N'dee o N'nee o Ndé», «P'urhépecha»—, y renuncia
+  por escrito a todo dato de comunidad individual: nombres, autoridades,
+  domicilios, cédulas y constancias. Y pregunta dos cosas que ninguna otra
+  pregunta: si el INPI considera que hay una forma correcta de presentarlo, y si
+  existe un canal para que una comunidad pida no aparecer en aplicaciones de
+  terceros.
 
 ## Lo que ninguna pide
 
-Ninguna pide microdatos. Ninguna propone redistribuir los archivos: las cinco
-dicen explícitamente que no habría descarga del archivo desde la aplicación. Y
+Ninguna pide microdatos. Ninguna propone redistribuir los archivos: las seis
+dicen explícitamente que no habría descarga del archivo desde la aplicación. Y la
+del INPI agrega el límite más fuerte de todas: **ningún dato de comunidad
+individual**, que es la parte del catálogo que no nos corresponde tener. Y
 la de FUNAI agrega un límite que las otras no necesitan: **no republicar las
 coordenadas de las aldeas.** Ofrece mostrar si el predio cae dentro de una Terra
 Indígena o a qué distancia está, y la cantidad de aldeas agregada por TI, pero
