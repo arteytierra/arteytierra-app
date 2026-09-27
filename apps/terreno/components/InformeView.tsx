@@ -1003,6 +1003,18 @@ export function InformeView({ datos, compartido = false }: Props) {
             numero={sec.suelo!}
             titulo="Análisis de suelo"
           >
+            {/* El aviso de turba va antes de cualquier número: el informe se
+                imprime y se discute sin nosotros al lado, y "no drenar" no puede
+                quedar debajo de una tabla de texturas. */}
+            {datos.suelo.organico && (
+              <div className="mb-4 border-l-4 border-clay-700 bg-clay-100 px-3 py-2">
+                <p className="text-[11px] font-semibold text-clay-700 uppercase tracking-wide">
+                  {datos.suelo.organico.nivel === 'turba' ? 'Turba: no drenar' : 'Suelo orgánico'}
+                </p>
+                <p className="text-xs text-ink-900 leading-relaxed mt-0.5">{datos.suelo.organico.cautela}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed mt-1">{datos.suelo.organico.detalle}</p>
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="pH (0–5 cm)" value={String(datos.suelo.ph)} sub={datos.suelo.interp.ph.clase} />
               <StatBlock label="C. orgánico" value={`${datos.suelo.carbono_org} g/kg`} sub={datos.suelo.interp.carbono.clase} />

@@ -15,6 +15,7 @@
  * Todo esto es orientativo y no reemplaza un análisis de laboratorio.
  */
 import { fuentesNacionalesSuelo } from './sueloFuentes';
+import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
 
 /** Una capa del perfil, con propiedades e hidráulica derivada. */
 export interface CapaSuelo {
@@ -74,6 +75,12 @@ export interface DatosSuelo {
   perfil:        CapaSuelo[];       // 6 capas 0–200 cm
   agua_util:     AguaUtilPerfil;
   grupo_hidro:   GrupoHidrologico;
+  /**
+   * Turba o suelo orgánico en el punto, o `null` si el perfil no llega al
+   * umbral. `null` no afirma que no haya turba: a 1 km la celda promedia y
+   * diluye las turberas chicas. Ver `lib/sueloOrganico.ts`.
+   */
+  organico:      SueloOrganico | null;
   fuente:        string;
 }
 
@@ -159,6 +166,13 @@ const DEPTHS: Array<{ label: string; top: number; bot: number }> = [
  * La fuente efectiva viaja en `fuente` y se imprime en el informe.
  */
 export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo> {
+  const datos = await sinOrganico(lat, lng);
+  // Se calcula acá y no en cada builder porque depende sólo del perfil, y el
+  // perfil lo arman igual SoilGrids y SSURGO. Un solo lugar, un solo criterio.
+  return { ...datos, organico: detectarSueloOrganico(datos.perfil) };
+}
+
+async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'>> {
   for (const f of fuentesNacionalesSuelo(lat, lng)) {
     if (f === 'ssurgo') {
       const d = await desdeSsurgo(lat, lng).catch(() => null);
@@ -168,7 +182,7 @@ export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo
   return desdeSoilGrids(lat, lng);
 }
 
-async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
+async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'>> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   // 45 s y no 35: el proxy reintenta hasta tres veces contra ISRIC, que limita
@@ -267,7 +281,7 @@ export interface HorizonteSsurgo {
  * ya está escrito contra esas seis capas. El valor de cada capa es el promedio
  * de los horizontes que la cruzan, ponderado por cuánto la cruzan.
  */
-async function desdeSsurgo(lat: number, lng: number): Promise<DatosSuelo | null> {
+async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'> | null> {
   const res = await fetch(`/api/suelo/ssurgo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`, {
     signal: AbortSignal.timeout(35_000),
   });

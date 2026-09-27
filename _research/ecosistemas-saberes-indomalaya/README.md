@@ -103,10 +103,22 @@ frase ahora dice que la excepción es el cono volcánico, no la isla.
 ## Lo que quedó afuera, y es una decisión aparte
 
 - **PEATMAP** (Xu et al. 2018, archivo de Leeds) se **cita** como fuente de la
-  fracción de turba de cuatro fichas. **Montar la capa** —que es lo que
-  recomienda el relevamiento, para que donde caiga turba aparezca una cautela
-  explícita de no drenar— es distribuir un dataset y necesita revisar su
-  licencia. No verificada. Pendiente.
+  fracción de turba de cuatro fichas. La licencia se verificó el 26/09/2026 y
+  **cierra: CC BY 4.0**, uso comercial y redistribución con atribución.
+
+  Aun así **los polígonos no se montaron**, y no por derechos sino por peso: se
+  publica como shapefile por continente (Europa 170 MB, Sudamérica 83 MB, Asia
+  27 MB; unos 350 MB), sin versión ráster ni consulta por punto. Rasterizar eso
+  a mano produce un mapa plausible y corrido, que es el peor resultado para una
+  capa cuya única función es decir «tu predio está sobre turba».
+
+  La cautela sí se montó, y sale del punto en vez del polígono:
+  `lib/sueloOrganico.ts` detecta turba con el criterio de Histosol de WRB 2022
+  —≥ 20 % de carbono orgánico en ≥ 40 cm— sobre el carbono que SoilGrids ya trae
+  en cada consulta, con un segundo escalón en el 12 % del USDA para lo que la
+  celda de 1 km diluye. Validado contra seis puntos medidos. Si algún día
+  conviene dibujar las turberas en el mapa, la licencia ya está verificada y la
+  decisión pasa a ser de peso, no de derechos.
 - **HWSD v2**: la página de FAO no declara licencia. Alcanza para citarla, no
   para montar la tabla.
 - **Las páginas de ecorregión de WWF** se autodeclaran «no longer being

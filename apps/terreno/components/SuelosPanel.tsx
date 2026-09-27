@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { Layers, MapPin, Droplets, Waves } from 'lucide-react';
+import { Layers, MapPin, Droplets, Waves, AlertTriangle } from 'lucide-react';
 import { obtenerSuelo, type DatosSuelo, type InterpItem, type CapaSuelo } from '@/lib/suelos';
 import { centroide } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
@@ -114,6 +114,24 @@ export function SuelosPanel({
                   {datos.nitrogeno >= 1 ? 'Nivel adecuado' : datos.nitrogeno >= 0.5 ? 'Nivel medio — incorporar leguminosas' : 'Nivel bajo — enriquecer con N orgánico'}
                 </p>
               </div>
+
+              {/* Turba o suelo orgánico — antes que el perfil a propósito: si el
+                  predio está sobre turba, eso manda sobre todos los demás
+                  números del panel. */}
+              {datos.organico && (
+              <div className={`rounded-xl border p-3 space-y-1.5 ${
+                datos.organico.nivel === 'turba'
+                  ? 'bg-clay-100 border-clay-300'
+                  : 'bg-sun-300/20 border-sun-300'
+              }`}>
+                <p className="text-xs font-semibold text-clay-700 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  {datos.organico.nivel === 'turba' ? 'Turba: no drenar' : 'Suelo orgánico'}
+                </p>
+                <p className="text-[11px] text-ink-900 leading-relaxed">{datos.organico.cautela}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed">{datos.organico.detalle}</p>
+              </div>
+              )}
 
               {/* Perfil vertical 0–200 cm */}
               {datos.perfil?.length > 0 && <PerfilSueloChart perfil={datos.perfil} />}
