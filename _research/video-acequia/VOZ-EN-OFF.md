@@ -4,6 +4,11 @@ Locución para la madre de 90 s, y las dos versiones cortas. Los tiempos son los
 del montaje: cada línea entra en el segundo donde entra su plano, y están
 calculadas para que ninguna corra.
 
+> **Hay otro registro sobre la mesa.** Tres propuestas en primera persona —el
+> diseñador contando su propia herramienta— están en
+> [`VOZ-EN-OFF-propuestas.md`](VOZ-EN-OFF-propuestas.md). Entran en los mismos
+> huecos de la línea de tiempo, sin reeditar nada.
+
 ---
 
 ## Primero, si conviene ponerle voz
