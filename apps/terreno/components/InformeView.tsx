@@ -14,7 +14,7 @@ import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
-  censoPeruanoDelPunto, censoBrasilenoDelPunto,
+  censoPeruanoDelPunto, censoBrasilenoDelPunto, censoMexicanoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
   localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
@@ -22,6 +22,7 @@ import {
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR,
+  FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
@@ -29,6 +30,7 @@ import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
+import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
 
 interface Props {
   datos: InformeData;
@@ -78,8 +80,9 @@ export function InformeView({ datos, compartido = false }: Props) {
   // los anexos no bajan a provincia ni a distrito.
   const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
   const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
-  // Once paises entran solo con la cifra nacional: cuatro sudamericanos,
-  // Canada y seis de Centroamerica y el Caribe.
+  const censoMx = censoMexicanoDelPunto(datos.entorno?.admin ?? null);
+  // Doce paises entran solo con la cifra nacional: cuatro sudamericanos, Canada
+  // y Estados Unidos, y seis de Centroamerica y el Caribe.
   // Ver lib/pueblosOriginariosNacional.ts.
   const paisNac = paisNacionalDelPunto(datos.entorno?.admin ?? null);
   const lenguasPe = censoPe.estado === 'con_censo'
@@ -718,6 +721,83 @@ export function InformeView({ datos, compartido = false }: Props) {
                 considerarse indígenas, pregunta que sólo se hizo dentro de tierras y localidades
                 indígenas. Las tierras indígenas no están incluidas: las publica la{' '}
                 {REGISTRO_BR_FALTANTE.organismo} y {REGISTRO_BR_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Mexico. El informe se imprime y se discute sin nosotros, asi
+                  que la aclaracion de que esto cuenta lengua y no identidad va
+                  en la misma oracion que el numero: son 7,4 millones de
+                  hablantes contra unos 23,2 millones que se consideran
+                  indigenas, y un informe que muestre el primero sin el segundo
+                  esta subestimando por tres a quien tiene enfrente. */}
+              {(censoMx.estado === 'con_censo' || censoMx.estado === 'con_entidad'
+                || censoMx.estado === 'municipio_ambiguo') && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Hablantes de lengua indígena (Censo 2020, México)</p>
+              {censoMx.estado === 'con_censo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.municipio.municipio} ({censoMx.entidad.entidad}):{' '}
+                  {censoMx.municipio.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, sobre{' '}
+                  {censoMx.municipio.tresYMas.toLocaleString('es-AR')} de esa edad en el municipio,
+                  el {porcentaje(censoMx.municipio.hablantes, censoMx.municipio.tresYMas)}%
+                  {censoMx.municipio.monolingues > 0
+                    ? <>, y de ésas{' '}
+                        {censoMx.municipio.monolingues.toLocaleString('es-AR')} no hablan español</>
+                    : null}
+                  . En todo {censoMx.entidad.entidad} son{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} —el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%—, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México.
+                </p>
+              ) : censoMx.estado === 'municipio_ambiguo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.entidad.entidad}:{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México. <strong>Este dato es de la entidad entera y
+                  no del municipio</strong>: hay {censoMx.cuantos} municipios llamados
+                  «{censoMx.nombre}» —el censo escribe el nombre sin el distrito que los
+                  distingue— y entre ellos la proporción de hablantes va del 4 % al 95 %, así que
+                  elegir uno sería arriesgar un número muy equivocado.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.entidad.entidad}:{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, sobre{' '}
+                  {censoMx.entidad.tresYMas.toLocaleString('es-AR')} de esa edad, el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México. <strong>Este dato es de la entidad entera y
+                  no del municipio</strong>
+                  {censoMx.municipioBuscado
+                    ? <>: el geocodificador devolvió «{censoMx.municipioBuscado}», que no es
+                        ninguno de los {censoMx.entidad.municipios.length} municipios de{' '}
+                        {censoMx.entidad.entidad}</>
+                    : <>: no se pudo determinar el municipio del punto</>}
+                  . A escala de entidad el número dice poco: en Oaxaca hay municipios del 4 % y
+                  municipios del 99 %.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1.5">
+                <strong>Esto cuenta lengua, no identidad, y la diferencia es grande.</strong> El
+                censo le preguntó a toda la población si habla una lengua indígena:{' '}
+                {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} personas en el país. La pregunta
+                por considerarse indígena se hizo en el cuestionario ampliado, que es una muestra, y
+                da alrededor de {AUTOADSCRIPCION_MX.aproximado}, cerca de tres veces más. Esa cifra
+                no se puede repartir por municipio porque el INEGI la publica redondeada, así que el
+                número de arriba deja afuera a la mayoría de las personas indígenas de México.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                {FUENTE_CENSO_2020_MX.atribucion} · {FUENTE_CENSO_2020_MX.licencia}. En todo el país
+                son {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} personas sobre{' '}
+                {CENSO_MX_PAIS.tresYMas.toLocaleString('es-AR')} de 3 años y más, en{' '}
+                {CENSO_MX_PAIS.municipios.toLocaleString('es-AR')} municipios —
+                {CENSO_MX_PAIS.municipiosSinHablantes} de ellos sin ningún hablante—.{' '}
+                {FUENTE_CENSO_2020_MX.transformacion}. Aparte, y sin sumarse,{' '}
+                {CENSO_MX_PAIS.afro.toLocaleString('es-AR')} personas del país se consideran
+                afromexicanas. El censo no desagrega por pueblo: la lista de los 71 pueblos la
+                publica el {REGISTRO_MX_FALTANTE.organismo} y {REGISTRO_MX_FALTANTE.motivo}.
               </p>
               </>}
 

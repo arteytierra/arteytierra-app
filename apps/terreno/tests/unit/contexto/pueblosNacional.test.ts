@@ -17,7 +17,7 @@ const u = (pais: string | null): Ubicacion => ({
 });
 
 describe('paisNacionalDelPunto', () => {
-  it('reconoce los once países y sólo esos once', () => {
+  it('reconoce los doce países y sólo esos doce', () => {
     expect(paisNacionalDelPunto(u('Bolivia'))?.iso2).toBe('BO');
     expect(paisNacionalDelPunto(u('Colombia'))?.iso2).toBe('CO');
     expect(paisNacionalDelPunto(u('Ecuador'))?.iso2).toBe('EC');
@@ -29,7 +29,9 @@ describe('paisNacionalDelPunto', () => {
     expect(paisNacionalDelPunto(u('Costa Rica'))?.iso2).toBe('CR');
     expect(paisNacionalDelPunto(u('El Salvador'))?.iso2).toBe('SV');
     expect(paisNacionalDelPunto(u('San Vicente y las Granadinas'))?.iso2).toBe('VC');
-    expect(PAISES_NACIONAL).toHaveLength(11);
+    expect(paisNacionalDelPunto(u('Estados Unidos'))?.iso2).toBe('US');
+    expect(paisNacionalDelPunto(u('United States'))?.iso2).toBe('US');
+    expect(PAISES_NACIONAL).toHaveLength(12);
   });
 
   it('no contesta por los países que ya tienen dato local', () => {
@@ -38,6 +40,32 @@ describe('paisNacionalDelPunto', () => {
     for (const p of ['Argentina', 'Chile', 'Paraguay', 'Perú', 'Brasil', 'Brazil', 'México']) {
       expect(paisNacionalDelPunto(u(p)), p).toBeNull();
     }
+  });
+
+  it('Groenlandia no entra, porque su registro no pregunta por pueblo', () => {
+    // No es olvido y no es falta de permiso: el registro de población danés no
+    // tiene pregunta étnica, así que no hay ninguna cifra de pueblo que citar.
+    // Los 56.740 habitantes y los 49.721 nacidos en Groenlandia son otra cosa.
+    for (const p of ['Groenlandia', 'Greenland', 'Kalaallit Nunaat']) {
+      expect(paisNacionalDelPunto(u(p)), p).toBeNull();
+    }
+  });
+
+  it('Estados Unidos entra con AIAN alone y dice que existe la otra cifra', () => {
+    // Son 3.727.135 «alone» contra 9.666.058 «alone or in combination». La
+    // segunda cuenta respuestas y no personas: la tabla del propio Census Bureau
+    // advierte que su suma pasa la población total. Si alguien cambia el total por
+    // el más grande, este test lo frena.
+    const us = PAISES_NACIONAL.find(p => p.iso2 === 'US')!;
+    expect(us.total).toBe(3_727_135);
+    expect(us.base).toBe(331_449_281);
+    expect(us.loQueNoDice.some(t => t.includes('9.666.058'))).toBe(true);
+    // Y la trampa de la casilla: incluye indígenas de América Latina.
+    expect(us.loQueNoDice.some(t => /Mayan|Aztec/.test(t))).toBe(true);
+    // La licencia no está declarada, así que es cita y no hay atribución exigida.
+    expect(us.permiso).toBe('solo_cita');
+    expect(us.atribucionExigida).toBeNull();
+    expect(us.licencia).toMatch(/deducci/);
   });
 
   it('los siete de Centroamérica y el Caribe que no entran siguen en null', () => {
@@ -125,7 +153,7 @@ describe('el contrato de cada ficha', () => {
     // con cita, sólo decir la cifra con atribución.
     const abiertas = PAISES_NACIONAL.filter(p => p.permiso === 'licencia_abierta').map(p => p.iso2);
     expect(abiertas.sort()).toEqual(['CA', 'GT']);
-    for (const iso of ['BO', 'CO', 'EC', 'UY', 'PA', 'NI', 'CR', 'SV', 'VC']) {
+    for (const iso of ['BO', 'CO', 'EC', 'UY', 'US', 'PA', 'NI', 'CR', 'SV', 'VC']) {
       expect(PAISES_NACIONAL.find(p => p.iso2 === iso)!.permiso, iso).toBe('solo_cita');
     }
   });

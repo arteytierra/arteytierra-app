@@ -12,27 +12,39 @@ import {
 import {
   CENSO_BR, CENSO_BR_PAIS, type CensoBrEstado, type CensoBrMunicipio,
 } from './censoIndigena2022Br';
+import {
+  CENSO_MX, CENSO_MX_PAIS, MUNICIPIOS_AMBIGUOS_MX,
+  type CensoMxEntidad, type CensoMxMunicipio,
+} from './censoIndigena2020Mx';
 
 /**
  * Pueblos originarios en el territorio del predio. Argentina, Chile, Paraguay,
- * Perú y Brasil.
+ * Perú, Brasil y México.
  *
  * Cada país entra con las fuentes que tiene y con una licencia que las
- * permita, y no con un promedio de los cuatro. La Argentina tiene registro y
- * censo. Los otros tres entran con el censo solo, y en cada uno el registro
+ * permita, y no con un promedio de los seis. La Argentina tiene registro y
+ * censo. Los otros cinco entran con el censo solo, y en cada uno el registro
  * falta por un motivo distinto: el de CONADI tiene una copia abierta que no
- * declara licencia, el del INDI directamente no está publicado, y el del
+ * declara licencia, el del INDI directamente no está publicado, el del
  * Ministerio de Cultura del Perú se baja entero y tampoco dice qué se puede
- * hacer con él. Lo que no está se dice en la pantalla: el relevamiento país por
- * país vive en `_research/pueblos-originarios-paises/`. Los bloques chileno,
- * paraguayo y peruano están más abajo.
+ * hacer con él, el de la FUNAI se publica con una licencia que prohíbe las obras
+ * derivadas, y el catálogo del INPI de México no declara nada y su sitio no
+ * abre. Lo que no está se dice en la pantalla: el relevamiento país por país
+ * vive en `_research/pueblos-originarios-paises/`. Los bloques chileno,
+ * paraguayo, peruano, brasileño y mexicano están más abajo.
  *
- * **Los cuatro no se suman ni se comparan entre sí.** Cada censo tiene su
+ * **Los seis no se suman ni se comparan entre sí.** Cada censo tiene su
  * pregunta, su universo y su lista de pueblos —abierta en la Argentina, cerrada
  * en Chile, cerrada y en un operativo aparte en Paraguay, y en el Perú ni
  * siquiera hay lista de pueblos sino dos grandes grupos—, así que los
  * porcentajes de un país no se leen contra los del otro. Cada bloque explica el
  * suyo.
+ *
+ * México es el caso extremo de eso y conviene tenerlo presente al leer
+ * cualquier comparación: su censo básico no pregunta por identidad sino por
+ * **lengua**, así que su 6,1 % no es del mismo tipo que el 1,7 % de Chile ni que
+ * el 0,8 % de Brasil. Cuenta menos gente a propósito, y el bloque mexicano
+ * explica por qué se montó igual.
  *
  * ── Dos fuentes que no dicen lo mismo, y está bien ──────────────────────────
  *
@@ -1089,3 +1101,190 @@ export function municipiosDestacadosBr(uf: CensoBrEstado, cuantos = 6): CensoBrM
 
 /** El porcentaje del país, sobre la población residente del Censo 2022. */
 export const PORCENTAJE_PAIS_BR = porcentaje(CENSO_BR_PAIS.indigena, CENSO_BR_PAIS.poblacion);
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * México — Censo de Población y Vivienda 2020 (INEGI)
+ *
+ * El sexto país, el segundo que contesta a escala de municipio, y el tercero de
+ * toda la capa que entra **sin esperar la autorización de nadie**: los Términos
+ * de Libre Uso del INEGI, que son la licencia declarada en el archivo de
+ * metadatos del ITER, dicen textual «Puede explotar comercialmente la
+ * información, utilizándola como insumo para generar otros productos o
+ * servicios». Los otros dos son Canadá y Guatemala.
+ *
+ * ── Lo que este número cuenta, y es más angosto que en los otros cinco ──────
+ *
+ * En Brasil y en Chile el censo pregunta por **identidad**. En México, el
+ * cuestionario que se le aplica a toda la población pregunta por **lengua**: son
+ * 7.364.645 hablantes de lengua indígena de 3 años y más. La autoadscripción se
+ * mide aparte, en el cuestionario ampliado, que es muestra, y da alrededor de
+ * 23,2 millones: **tres veces más gente.**
+ *
+ * Se monta la lengua y no la autoadscripción por una razón que no es de
+ * preferencia: la lengua es un conteo exacto y existe hasta el municipio, y la
+ * autoadscripción es una estimación muestral que el INEGI publica redondeada.
+ * Repartir «23,2 millones» entre 2.469 municipios sería inventar. Pero entonces
+ * el número que la app muestra deja afuera a la mayoría de la gente que se
+ * considera indígena en México, y eso hay que decirlo en la pantalla, no acá.
+ * Es el mismo criterio que en Colombia —donde no se publica el porcentaje
+ * porque el DANE usa otro denominador— llevado al otro extremo: acá el dato
+ * existe y es exacto, y lo que falta es la mitad de la pregunta.
+ *
+ * ── Tres campos del geocodificador, y los tres hacen falta ─────────────────
+ *
+ * En México, Nominatim pone el municipio en `county`, que en la ubicación cae en
+ * `departamento`. Medido sobre puntos reales:
+ *
+ *   Ocosingo (Chiapas)     county «Ocosingo»            town «Ocosingo»
+ *   rural de Oaxaca        county «San Jerónimo Coatlán» **sin localidad**
+ *   Coyoacán (CDMX)        sin county, suburb «Coyoacán»
+ *   Mérida (Yucatán)       sin county, city «Mérida»
+ *
+ * O sea: si sólo se mirara `localidad`, como en Brasil, el predio rural de
+ * Oaxaca —el caso que importa— no obtendría municipio; si sólo se mirara
+ * `departamento`, Mérida y las alcaldías de la Ciudad de México quedarían
+ * afuera. Así que se prueban los tres, en ese orden, y gana el primero que
+ * resuelve. El orden no es arbitrario: `departamento` es el campo que en México
+ * *es* el municipio, y los otros dos son rescates.
+ *
+ * ── Los cuatro municipios que no se pueden nombrar ─────────────────────────
+ *
+ * Oaxaca tiene dos «San Juan Mixtepec» y dos «San Pedro Mixtepec»: el ITER
+ * escribe el nombre sin el distrito que los distingue. `casarNombre` no contesta
+ * cuando hay empate, así que el punto baja a la respuesta de la entidad. Está
+ * bien que baje: los dos San Pedro Mixtepec son el 3,9 % y el 94,5 % de
+ * hablantes, y acertar el equivocado sería errarle por veinticuatro veces. La
+ * pantalla explica por qué bajó, con nombre y todo, en vez de decir «no se pudo».
+ *
+ * ── Los nombres oficiales no son los de uso ────────────────────────────────
+ *
+ * El INEGI escribe «Coahuila de Zaragoza», «Michoacán de Ocampo», «Veracruz de
+ * Ignacio de la Llave» y «México» para el Estado de México, y el geocodificador
+ * contesta las formas cortas. Eso lo resuelve `casarNombre` por subconjunto de
+ * palabras sin ninguna tabla de alias, y hay un test que lo fija para los cuatro
+ * casos, porque es el tipo de cosa que se rompe en silencio.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Qué dice el censo mexicano del punto.
+ *
+ * Como Brasil, dos formas de acertar: `con_entidad` cuando se supo la entidad
+ * pero no el municipio, y `con_censo` cuando se supieron los dos. Y una tercera
+ * que Brasil no tiene: `municipio_ambiguo`, para los cuatro municipios de Oaxaca
+ * cuyo nombre se repite. No es un error ni un dato faltante, es un empate, y la
+ * pantalla lo cuenta distinto porque se explica distinto.
+ */
+export type CensoMxDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_mexico'; pais: string }
+  | { estado: 'entidad_desconocida'; nombre: string }
+  | { estado: 'con_entidad'; entidad: CensoMxEntidad; municipioBuscado: string | null }
+  | { estado: 'municipio_ambiguo'; entidad: CensoMxEntidad; nombre: string; cuantos: number }
+  | { estado: 'con_censo'; entidad: CensoMxEntidad; municipio: CensoMxMunicipio };
+
+export const FUENTE_CENSO_2020_MX = {
+  label: 'INEGI — Censo de Población y Vivienda 2020, Principales resultados por localidad (ITER)',
+  url: 'https://www.inegi.org.mx/programas/ccpv/2020/',
+  /**
+   * La atribución que los términos del INEGI piden con esta fórmula exacta
+   * («Fuente: INEGI, nombre del producto de donde se extrae la información»).
+   * No es decorativa: es la condición de la licencia.
+   */
+  atribucion: 'Fuente: INEGI, Censo de Población y Vivienda 2020',
+  licencia: 'Términos de Libre Uso de la Información del INEGI, que permiten la explotación comercial citando la fuente',
+  licenciaUrl: 'https://www.inegi.org.mx/inegi/terminos.html',
+  /**
+   * La otra obligación de los términos: avisarle al usuario final de cualquier
+   * transformación. La única que hay es sumar de municipio a entidad y a país.
+   */
+  transformacion: 'las sumas por entidad y por país las hace acequia a partir de los municipios del ITER; el INEGI no las avala',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_MX_FALTANTE = {
+  organismo: 'INPI — Catálogo Nacional de Pueblos y Comunidades Indígenas y Afromexicanas',
+  motivo:
+    'el catálogo no declara qué se puede hacer con él y su sitio no abre desde acá: ' +
+    'sin eso, montar los 71 pueblos sería publicar una lista de identidades sin permiso',
+} as const;
+
+/**
+ * Nominatim contesta «México» en español y «Mexico» en inglés. Se parte por la
+ * barra igual que en el Paraguay y el Perú.
+ *
+ * «Estados Unidos Mexicanos» entra porque es el nombre constitucional y aparece
+ * en algunos rótulos: sin él, un punto podría quedar sin país. Ojo con el otro
+ * lado de esa moneda: `normalizarNombreAdmin('Estados Unidos')` da «estados
+ * unidos», que no está en esta lista, así que un predio en Estados Unidos no se
+ * lee como mexicano.
+ */
+function esMexico(pais: string): boolean {
+  const NOMBRES = new Set(['mexico', 'estados unidos mexicanos']);
+  return pais.split('/').some(parte => NOMBRES.has(normalizarNombreAdmin(parte)));
+}
+
+const ENTIDADES_MX = CENSO_MX.map(e => e.entidad);
+
+/**
+ * En qué entidad y municipio mexicano cae el punto.
+ *
+ * Función pura, como las otras cinco. La entidad sale de `provincia` (el `state`
+ * de Nominatim) y el municipio se busca **sólo entre los de esa entidad**: hay
+ * 90 nombres que se repiten entre entidades —«Guadalupe», «Hidalgo», «Juárez»—
+ * y buscarlos en la lista global no devolvería ninguno.
+ *
+ * El municipio se prueba contra tres campos, en orden, y gana el primero que
+ * resuelve: ver el encabezado, con los cuatro puntos medidos que obligan a los
+ * tres.
+ */
+export function censoMexicanoDelPunto(u: Ubicacion | null): CensoMxDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!esMexico(u.pais)) return { estado: 'fuera_de_mexico', pais: u.pais };
+  if (!u.provincia) return { estado: 'sin_ubicacion' };
+
+  const rotulo = casarNombre(u.provincia, ENTIDADES_MX, x => x);
+  const entidad = rotulo ? CENSO_MX.find(e => e.entidad === rotulo) ?? null : null;
+  if (!entidad) return { estado: 'entidad_desconocida', nombre: u.provincia };
+
+  const candidatos = [u.departamento, u.comuna ?? null, u.localidad].filter((x): x is string => !!x);
+
+  for (const buscado of candidatos) {
+    const municipio = casarNombre(buscado, entidad.municipios, m => m.municipio);
+    if (municipio) return { estado: 'con_censo', entidad, municipio };
+
+    // El empate de los Mixtepec: el nombre existe y es correcto, lo que falta es
+    // el distrito que los distingue. Se dice eso y no «no se encontró».
+    const homonimos = MUNICIPIOS_AMBIGUOS_MX.find(
+      a => a.entidad === entidad.entidad && normalizarNombreAdmin(a.nombre) === normalizarNombreAdmin(buscado),
+    );
+    if (homonimos) {
+      return { estado: 'municipio_ambiguo', entidad, nombre: homonimos.nombre, cuantos: homonimos.claves.length };
+    }
+  }
+
+  return { estado: 'con_entidad', entidad, municipioBuscado: candidatos[0] ?? null };
+}
+
+/**
+ * Los municipios de la entidad con más hablantes, para dar contexto.
+ *
+ * Igual que en Brasil: sólo los que tienen gente. Los 36 municipios del país sin
+ * ningún hablante no se listan acá —eso se dice en la ficha del municipio, donde
+ * significa algo— porque una fila «· 0» no informa.
+ */
+export function municipiosDestacadosMx(e: CensoMxEntidad, cuantos = 6): CensoMxMunicipio[] {
+  return e.municipios
+    .filter(m => m.hablantes > 0)
+    .sort((a, b) => b.hablantes - a.hablantes)
+    .slice(0, cuantos);
+}
+
+/**
+ * El porcentaje del país, sobre la población de 3 años y más.
+ *
+ * El denominador **no** es la población total: la pregunta por lengua se le hace
+ * a las personas de 3 años y más, así que dividir por los 126.014.024 daría un
+ * número más chico y estaría contestando otra pregunta.
+ */
+export const PORCENTAJE_PAIS_MX = porcentaje(CENSO_MX_PAIS.hablantes, CENSO_MX_PAIS.tresYMas);

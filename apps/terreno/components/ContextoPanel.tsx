@@ -10,7 +10,7 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
-  censoPeruanoDelPunto, censoBrasilenoDelPunto,
+  censoPeruanoDelPunto, censoBrasilenoDelPunto, censoMexicanoDelPunto,
   porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
   localidadesDestacadas, lenguasDelDepartamentoPe,
   FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, MAPA_INAI, FUENTE_CENSO_2022,
@@ -18,6 +18,7 @@ import {
   FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR, municipiosDestacadosBr,
+  FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX, municipiosDestacadosMx,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
@@ -25,6 +26,7 @@ import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
 import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
+import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -173,10 +175,15 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // que lo que se muestra al lado de los dos grupos es la lengua materna.
   const censoPe = censoPeruanoDelPunto(ubicacion);
   const censoBr = censoBrasilenoDelPunto(ubicacion);
+  // México, sexto país. El municipio no viene en `localidad` como en Brasil:
+  // Nominatim lo pone en `county`, que acá cae en `departamento`, y un predio
+  // rural de Oaxaca puede venir sin localidad ninguna. Ver el bloque mexicano de
+  // lib/pueblosOriginarios.ts.
+  const censoMx = censoMexicanoDelPunto(ubicacion);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
-  // Los once países que entran sólo con la cifra nacional: Bolivia, Colombia,
+  // Los doce países que entran sólo con la cifra nacional: Bolivia, Colombia,
   // Ecuador y Uruguay porque el dato local espera una autorización de licencia,
   // y Canadá porque la licencia alcanza pero falta el relevamiento provincial.
   // Ver lib/pueblosOriginariosNacional.ts.
@@ -388,22 +395,24 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         )}
 
-        {/* Fuera de los cinco países relevados. La condición pregunta por las
-            cinco capas y no por el país: si el predio está en Chile, en
-            Paraguay, en el Perú o en Brasil esta frase es falsa, incluso cuando
-            la división no se pudo resolver —ahí contestan los avisos de más
-            abajo, que dicen otra cosa. */}
+        {/* Fuera de los seis países relevados. La condición pregunta por las
+            seis capas y no por el país: si el predio está en Chile, en
+            Paraguay, en el Perú, en Brasil o en México esta frase es falsa,
+            incluso cuando la división no se pudo resolver —ahí contestan los
+            avisos de más abajo, que dicen otra cosa. */}
         {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'
           && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru'
-          && censoBr.estado === 'fuera_de_brasil' && !paisNac && (
+          && censoBr.estado === 'fuera_de_brasil' && censoMx.estado === 'fuera_de_mexico'
+          && !paisNac && (
           <p className="text-xs text-ink-700/70 leading-relaxed">
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
             INE—, las de Paraguay —el IV Censo Indígena 2022 del INE—, las del Perú —el Censo
-            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. De otros once países
+            2017 del INEI—, las de Brasil —el Censo 2022 del IBGE— y las de México —el Censo
+            2020 del INEGI—. De otros doce países
             tenemos la cifra nacional: Bolivia, Colombia, Ecuador, Uruguay, Canadá,
-            Guatemala, Panamá, Nicaragua, Costa Rica, El Salvador y San Vicente y las
-            Granadinas. Que no haya nada acá no
+            Estados Unidos, Guatemala, Panamá, Nicaragua, Costa Rica, El Salvador y San
+            Vicente y las Granadinas. Que no haya nada acá no
             dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el
             censo de ese país.
           </p>
@@ -1068,12 +1077,172 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         </>}
 
+
+        {/* México. Sexto país, segundo a escala de municipio, y el que obliga a
+            decir en la pantalla algo que los otros cinco no: que el número mide
+            lengua y no identidad, y que por eso deja afuera a la mayoría de la
+            gente que se considera indígena. Sin esa frase la tarjeta sería
+            exacta y engañosa a la vez. */}
+        {censoMx.estado === 'entidad_desconocida' && (
+          <p className="text-xs text-ink-700/70 leading-relaxed">
+            El predio está en México y el geocodificador devolvió
+            «{censoMx.nombre}», que no es ninguna de las {CENSO_MX_PAIS.entidades} entidades
+            federativas que conocemos. Preferimos no contestar antes que contestar de más. No
+            significa que no haya pueblos originarios.
+          </p>
+        )}
+
+        {(censoMx.estado === 'con_censo' || censoMx.estado === 'con_entidad'
+          || censoMx.estado === 'municipio_ambiguo') && <>
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+            Hablantes de lengua indígena · Censo 2020 · México
+          </p>
+
+          <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+            {censoMx.estado === 'con_censo' ? <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoMx.municipio.municipio} · {censoMx.entidad.entidad}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoMx.municipio.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                hablan una lengua indígena, sobre{' '}
+                {censoMx.municipio.tresYMas.toLocaleString('es-AR')} de esa edad en el municipio:
+                el {porcentaje(censoMx.municipio.hablantes, censoMx.municipio.tresYMas)}%.
+              </p>
+              {censoMx.municipio.monolingues > 0 && (
+                <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                  De esas, {censoMx.municipio.monolingues.toLocaleString('es-AR')} no hablan
+                  español. Es el dato que decide en qué lengua se habla una reunión, y si hace
+                  falta traducción para que el proyecto se discuta de verdad.
+                </p>
+              )}
+              <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                En todo {censoMx.entidad.entidad} son{' '}
+                {censoMx.entidad.hablantes.toLocaleString('es-AR')} sobre{' '}
+                {censoMx.entidad.tresYMas.toLocaleString('es-AR')} —el{' '}
+                {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%—.
+              </p>
+            </> : censoMx.estado === 'municipio_ambiguo' ? <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoMx.entidad.entidad}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más hablan
+                una lengua indígena en {censoMx.entidad.entidad}, sobre{' '}
+                {censoMx.entidad.tresYMas.toLocaleString('es-AR')} de esa edad: el{' '}
+                {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%.
+              </p>
+              <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                <strong className="text-ink-700">Hay {censoMx.cuantos} municipios que se llaman
+                «{censoMx.nombre}» y no sabemos en cuál está el predio.</strong> El censo escribe el
+                nombre sin el distrito que los distingue, y entre esos {censoMx.cuantos} la
+                proporción de hablantes va del 4 % al 95 %: contestar uno al azar sería errarle por
+                mucho. Así que esta respuesta es de la entidad entera.
+              </p>
+            </> : <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoMx.entidad.entidad}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más hablan
+                una lengua indígena, sobre{' '}
+                {censoMx.entidad.tresYMas.toLocaleString('es-AR')} de esa edad en la entidad: el{' '}
+                {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%.
+              </p>
+              <p className="text-[11px] text-ink-700/65 leading-relaxed mt-1.5">
+                <strong className="text-ink-700">Esta respuesta es de la entidad, no del
+                municipio.</strong>{' '}
+                {censoMx.municipioBuscado
+                  ? <>El geocodificador devolvió «{censoMx.municipioBuscado}», que no es ninguno de
+                      los {censoMx.entidad.municipios.length} municipios de{' '}
+                      {censoMx.entidad.entidad} —suele pasar en zona rural, donde contesta con el
+                      nombre de un paraje—.</>
+                  : <>El geocodificador no devolvió ni municipio ni localidad para este punto.</>}{' '}
+                A escala de entidad el número dice poco: en Oaxaca hay municipios del 4 % y
+                municipios del 99 %.
+              </p>
+            </>}
+          </div>
+
+          {/* La frase que no puede faltar. El número es exacto y contesta la
+              mitad de la pregunta; sin esto se lee como si contestara toda. */}
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">Esto cuenta lengua, no identidad.</strong> El
+            cuestionario que se le hizo a toda la población pregunta si la persona habla una lengua
+            indígena, y son {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} en el país. La
+            pregunta por considerarse indígena se hizo aparte, en el cuestionario ampliado —que es
+            una muestra— y da alrededor de {AUTOADSCRIPCION_MX.aproximado}: cerca de tres veces más
+            gente. Esa cifra no está acá porque {AUTOADSCRIPCION_MX.porQueNoEstaPorMunicipio}. Así
+            que este número deja afuera a la mayoría de las personas indígenas de México, y no es
+            un error del censo: es otra pregunta.
+          </p>
+
+          {censoMx.estado === 'con_censo' && censoMx.municipio.hablantes === 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+              <strong className="text-ink-700/70">Cero también es un dato.</strong> En 2020 nadie
+              declaró hablar una lengua indígena en este municipio, y son{' '}
+              {CENSO_MX_PAIS.municipiosSinHablantes} de los{' '}
+              {CENSO_MX_PAIS.municipios.toLocaleString('es-AR')} del país. No dice que no haya
+              pueblos originarios: dice que nadie declaró hablar la lengua.
+            </p>
+          )}
+
+          {censoMx.estado === 'con_censo' && censoMx.municipio.afro > 0 && (
+            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+              <strong className="text-ink-700/70">Otra pregunta, otra población.</strong>{' '}
+              {censoMx.municipio.afro.toLocaleString('es-AR')} personas del municipio se consideran
+              afromexicanas o afrodescendientes. No es población indígena y no se suma con la de
+              arriba: son {CENSO_MX_PAIS.afro.toLocaleString('es-AR')} en todo el país y el censo
+              las cuenta con su propia pregunta.
+            </p>
+          )}
+
+          {censoMx.entidad.hablantes > 0 && (() => {
+            const top = municipiosDestacadosMx(censoMx.entidad);
+            return top.length > 0 ? <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+                Municipios con más hablantes en {censoMx.entidad.entidad}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {top.map(m => (
+                  <span key={m.clave} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                    {m.municipio} <span className="text-water-700/60">· {m.hablantes.toLocaleString('es-AR')}</span>
+                  </span>
+                ))}
+              </div>
+            </> : null;
+          })()}
+
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
+            <strong className="text-ink-700/70">Esto no dice qué pueblos son.</strong> El censo no
+            desagrega por pueblo, y la lista de los 71 pueblos la publica el{' '}
+            {REGISTRO_MX_FALTANTE.organismo}: no está acá porque{' '}
+            {REGISTRO_MX_FALTANTE.motivo}.
+          </p>
+
+          <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+            <a href={FUENTE_CENSO_2020_MX.url} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+              <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2020_MX.label}
+            </a>
+            <p className="text-[10px] text-ink-700/50 leading-relaxed">
+              {FUENTE_CENSO_2020_MX.atribucion}. {FUENTE_CENSO_2020_MX.licencia}. En todo el país
+              son {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} personas —el{' '}
+              {PORCENTAJE_PAIS_MX}% de {CENSO_MX_PAIS.tresYMas.toLocaleString('es-AR')} de 3 años y
+              más—, en {CENSO_MX_PAIS.municipios.toLocaleString('es-AR')} municipios.{' '}
+              {FUENTE_CENSO_2020_MX.transformacion}.
+            </p>
+          </div>
+        </>}
+
         {/* Los países que entran sólo con la cifra nacional.
 
             No es un adelanto de algo mejor: es lo que se puede decir hoy sin
             pedirle permiso a nadie, porque citar un número con su fuente no es
             redistribuir una tabla. El dato local espera una autorización escrita
-            en cuatro de los cinco, y en Canadá espera un relevamiento.
+            en seis de los doce; en Canadá y en Guatemala espera un relevamiento
+            subnacional, y en Estados Unidos espera que alguien declare por escrito
+            qué se puede hacer con un dato que ya está publicado entero.
 
             Lo que esta tarjeta tiene que hacer bien es no dejar que el número se
             lea como más de lo que es: va con la pregunta literal, con el universo

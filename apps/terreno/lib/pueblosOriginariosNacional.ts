@@ -35,6 +35,13 @@
  * la región. Los otros cinco de Centroamérica y el Caribe entran como cita,
  * igual que los sudamericanos.
  *
+ * Estados Unidos entra como cita y por un motivo que no tiene ningún otro: **el
+ * dato está todo publicado y descargable —hasta el bloque, con 704 áreas
+ * AIANNH— y lo que falta es la licencia.** Ninguna de las páginas oficiales
+ * declara una. Que una obra del gobierno federal probablemente no tenga derecho
+ * de autor es una deducción razonable, y una deducción no es una autorización:
+ * alcanza para citar una cifra, no para montar los tabulados.
+ *
  * ## La regla que se respeta en todo el archivo
  *
  * Ninguna cifra de acá se calcula: todas se leen de la fuente. Y el porcentaje
@@ -121,7 +128,7 @@ export interface PaisNacional {
 }
 
 /**
- * Los cinco países.
+ * Los doce países.
  *
  * Cada uno con sus palabras: la pregunta boliviana incluye a los afrobolivianos
  * en la misma respuesta afirmativa, la uruguaya pregunta por *ascendencia* y
@@ -282,6 +289,45 @@ export const PAISES_NACIONAL: readonly PaisNacional[] = [
       'Son tres pueblos distintos y no uno: First Nations, Métis e Inuit. El total no los reemplaza y StatCan no los funde en una palabra.',
       'Los tres números del desglose no suman el total. StatCan redondea a múltiplos de 5, y además 64.080 personas declararon más de una identidad indígena o una no contemplada en la lista.',
       'Esta cifra no dice dónde están las reservas ni los territorios de los tratados, ni si el predio cae en uno.',
+    ],
+  },
+  // ── Norteamérica ──────────────────────────────────────────────────────────
+  // Relevamiento del 27/09/2026 en `_research/pueblos-originarios-paises/
+  // norteamerica/`. Canadá ya estaba. Groenlandia queda afuera y no es olvido:
+  // su registro de población no tiene pregunta étnica, así que no hay ninguna
+  // cifra de pueblo que publicar —son 56.740 habitantes, 49.721 nacidos en
+  // Groenlandia, y eso no es lo mismo—.
+  {
+    iso2: 'US',
+    pais: 'Estados Unidos',
+    alias: ['estados unidos', 'estados unidos de america', 'united states', 'united states of america', 'usa', 'ee uu'],
+    organismo: 'U.S. Census Bureau',
+    organismoSigla: 'Census Bureau',
+    operativo: '2020 Census (Redistricting Data, PL 94-171)',
+    pregunta:
+      'What is Person 1\'s race? Mark one or more boxes AND print origins. Casilla: «American Indian or Alaska Native — Print name of enrolled or principal tribe(s)».',
+    universo: 'Toda la población residente de los 50 estados y el Distrito de Columbia. Puerto Rico se releva aparte y no está en el total.',
+    total: 3_727_135,
+    base: 331_449_281,
+    baseDice: 'habitantes de los 50 estados y el Distrito de Columbia',
+    porcentajePublicado: null,
+    desglose: [],
+    fuente: {
+      label: 'U.S. Census Bureau — 2020 Census Redistricting Data (PL 94-171), archivo nacional',
+      url: 'https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html',
+    },
+    licencia:
+      'ninguna de las páginas oficiales declara una licencia con esas palabras. Como obra del gobierno federal probablemente no tenga derecho de autor, pero eso es una deducción nuestra y no una autorización',
+    permiso: 'solo_cita',
+    atribucionExigida: null,
+    porQueNoHayDatoLocal:
+      'el dato local existe y está descargable —hay 704 áreas AIANNH en el archivo nacional, y baja hasta el bloque—, así que acá no falta trabajo: falta una declaración escrita de que se puede usar comercialmente',
+    loQueNoDice: [
+      'Hay dos cifras oficiales y ésta es la más chica. «AIAN alone» son 3.727.135 personas; «AIAN alone or in combination» son 9.666.058. Mostramos la primera porque cuenta personas que no se superponen con otra raza, mientras la segunda cuenta respuestas: la propia tabla del Census Bureau advierte que la suma de «alone or in combination» pasa la población total del país. Las dos son oficiales y no se suman entre sí.',
+      'La casilla del censo incluye expresamente a indígenas de América Latina —da como ejemplos «Mayan» y «Aztec»—, así que no todas las personas contadas pertenecen a pueblos de Estados Unidos.',
+      'No hay desagregado por pueblo acá. El censo pide escribir la tribu, pero los conteos por tribu se publican en otro archivo que no relevamos.',
+      'La lista federal de 575 entidades tribales reconocidas (Federal Register, 30/01/2026) es otra cosa: son nombres legales de gobiernos tribales, no rótulos del censo, y no se emparejan con esta cifra.',
+      'Esta cifra no dice dónde están las reservas ni si el predio cae en una.',
     ],
   },
   // ── Centroamérica y el Caribe ─────────────────────────────────────────────
