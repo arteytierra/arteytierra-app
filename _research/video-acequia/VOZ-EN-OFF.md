@@ -6,7 +6,8 @@ calculadas para que ninguna corra.
 
 > **Hay otro registro sobre la mesa.** Tres propuestas en primera persona —el
 > diseñador contando su propia herramienta— están en
-> [`VOZ-EN-OFF-propuestas.md`](VOZ-EN-OFF-propuestas.md). Entran en los mismos
+> [`VOZ-EN-OFF-jonatan.md`](VOZ-EN-OFF-jonatan.md) —sobre el texto que escribió
+> Jonatan— y en [`VOZ-EN-OFF-propuestas.md`](VOZ-EN-OFF-propuestas.md). Entran en los mismos
 > huecos de la línea de tiempo, sin reeditar nada.
 
 ---
