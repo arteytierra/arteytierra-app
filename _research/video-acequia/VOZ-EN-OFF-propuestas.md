@@ -1,5 +1,10 @@
 # Voz en off — tres propuestas en primera persona
 
+> **Ronda superada.** Jonatan escribió su propio texto y sobre eso se armaron
+> tres opciones nuevas, en [`VOZ-EN-OFF-jonatan.md`](VOZ-EN-OFF-jonatan.md).
+> De acá sobrevive la mecánica del tramo de relevamiento: la pantalla muestra
+> el ahora y la voz cuenta el antes.
+
 El guión de [`VOZ-EN-OFF.md`](VOZ-EN-OFF.md) está escrito en registro de
 narrador: explica el producto desde afuera. Estas tres propuestas son lo
 contrario —**alguien contando su propia herramienta**, desde el lugar del
