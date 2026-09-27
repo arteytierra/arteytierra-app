@@ -1,0 +1,74 @@
+{
+  "pais": "Panamá",
+  "iso3": "PAN",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: las comarcas y territorios son unidades del censo; el registro de tierras colectivas queda para la fase de cartografía. existe: false significa «no encontrado» como padrón de comunidades."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadística y Censo (INEC), Contraloría General de la República de Panamá",
+    "anio": 2023,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita: no encontré el cuestionario. La definición oficial: «Se consideró como población indígena todo aquel informante que declara pertenecer a algún grupo originario independientemente de la localidad donde fue empadronado».",
+    "universo": "Población censada (4.064.780 personas).",
+    "total_declarado": 698114,
+    "poblacion_base": 4064780,
+    "url_cuadros": "https://www.inec.gob.pa/publicaciones/Default3.aspx?ID_PUBLICACION=1199&ID_CATEGORIA=19&ID_SUBCATEGORIA=71",
+    "urls_archivos": [
+      "https://www.inec.gob.pa/archivos/P0289562520231009163041CUADRO%2020.pdf",
+      "https://www.inec.gob.pa/archivos/P0289562520231009163041CUADRO%2020.xls",
+      "https://www.inec.gob.pa/archivos/P053342420231009161532Comentarios_Poblacion%20RFB%202023%20VF.pdf",
+      "https://www.inec.gob.pa/archivos/P0705547520231009161454Definiciones%20y%20explicaciones%20Censo%202023%20RFB-VF.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "provincia",
+      "comarca indígena"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": 975,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: abrí la página de publicación del XII Censo 2023 en el INEC; declara «Licencia Creative Commons Atribución 4.0 Internacional». Bajé y abrí el Cuadro 20 en PDF (73 páginas): total nacional de población indígena 698.114. Por grupo: Kuna 112.319, Ngäbe 444.878, Buglé 23.898, Naso 5.568, Teribe 1.331, Bokota 590, Emberá 51.657, Wounaan 10.634, Bri Bri 766, Otro grupo indígena 45.498, No declarado 975; la suma da 698.114. El comentario de población del INEC dice: «el 17.2% de la población censada de 4,064,780 personas, declararon pertenecer a alguna etnia indígena, 698,114 personas»."
+  },
+  "pueblos": [
+    "Kuna",
+    "Ngäbe",
+    "Buglé",
+    "Naso",
+    "Teribe",
+    "Bokota",
+    "Emberá",
+    "Wounaan",
+    "Bri Bri"
+  ],
+  "lo_que_no_dice": [
+    "La población afrodescendiente (1.286.857 según el comentario del INEC) se vio y se dejó afuera a propósito.",
+    "No encontré el cuestionario 2023 ni el texto literal de la pregunta.",
+    "El Cuadro 20 desagrega por provincia y comarca, no por corregimiento; no revisé si otro cuadro baja a corregimiento."
+  ],
+  "trampas": [
+    "El Cuadro 20 lista «Naso» y «Teribe» por separado: son rótulos de la fuente y no se unifican, aunque en otras fuentes aparezcan como un mismo pueblo.",
+    "«Otro grupo indígena» (45.498) es grande: no es un pueblo y no se reparte entre los demás.",
+    "La página declara CC BY 4.0 en el bloque de licencia y «Todos los derechos reservados» en el pie: se toma la licencia explícita, pero conviene confirmarlo por escrito.",
+    "El denominador del porcentaje es la población censada, no la población de las comarcas."
+  ],
+  "notas": "Panamá tiene dato 2023 por grupo y comarca con licencia CC BY 4.0 declarada: es montable. Falta: la pregunta literal y la cartografía de comarcas."
+}

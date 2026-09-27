@@ -176,7 +176,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
-  // Los países que entran sólo con la cifra nacional: Bolivia, Colombia,
+  // Los once países que entran sólo con la cifra nacional: Bolivia, Colombia,
   // Ecuador y Uruguay porque el dato local espera una autorización de licencia,
   // y Canadá porque la licencia alcanza pero falta el relevamiento provincial.
   // Ver lib/pueblosOriginariosNacional.ts.
@@ -400,8 +400,10 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
             Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
             INE—, las de Paraguay —el IV Censo Indígena 2022 del INE—, las del Perú —el Censo
-            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. De Bolivia, Colombia,
-            Ecuador, Uruguay y Canadá tenemos la cifra nacional. Que no haya nada acá no
+            2017 del INEI— y las de Brasil —el Censo 2022 del IBGE—. De otros once países
+            tenemos la cifra nacional: Bolivia, Colombia, Ecuador, Uruguay, Canadá,
+            Guatemala, Panamá, Nicaragua, Costa Rica, El Salvador y San Vicente y las
+            Granadinas. Que no haya nada acá no
             dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el
             censo de ese país.
           </p>

@@ -78,8 +78,9 @@ export function InformeView({ datos, compartido = false }: Props) {
   // los anexos no bajan a provincia ni a distrito.
   const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
   const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
-  // Bolivia, Colombia, Ecuador, Uruguay y Canada entran solo con la cifra
-  // nacional. Ver lib/pueblosOriginariosNacional.ts.
+  // Once paises entran solo con la cifra nacional: cuatro sudamericanos,
+  // Canada y seis de Centroamerica y el Caribe.
+  // Ver lib/pueblosOriginariosNacional.ts.
   const paisNac = paisNacionalDelPunto(datos.entorno?.admin ?? null);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)

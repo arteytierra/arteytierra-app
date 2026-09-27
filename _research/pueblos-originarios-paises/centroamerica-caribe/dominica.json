@@ -1,0 +1,59 @@
+{
+  "pais": "Dominica",
+  "iso3": "DMA",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué el registro del Territorio Kalinago; queda para la fase de cartografía. existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Central Statistics Office of Dominica",
+    "anio": 2011,
+    "fecha_relevamiento": null,
+    "pregunta": null,
+    "universo": "Población total (71.293).",
+    "total_declarado": null,
+    "poblacion_base": 71293,
+    "url_cuadros": "https://stats.gov.dm/census/",
+    "urls_archivos": [
+      "https://stats.gov.dm/wp-content/uploads/2019/06/Population_and_Housing_Census_2011.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "parroquia",
+      "localidad"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: bajé y abrí el informe del Population and Housing Census 2011 (29 páginas). Población total al 14 de mayo de 2011: 71.293. El informe no trae tabla de etnicidad: busqué «Kalinago», «Carib», «Indigenous» y «ethnic» y sólo aparece la localidad «Carib Territory», con 2.145 habitantes en 2011. Esa cifra cuenta residentes de la localidad, no personas Kalinago, así que no es total_declarado."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "El informe 2011 no publica autoidentificación étnica: no hay dato de población Kalinago.",
+    "No encontré resultados de un censo 2021/2022 en el sitio.",
+    "No encontré licencia publicada."
+  ],
+  "trampas": [
+    "«Carib Territory» 2.145 son habitantes de una localidad, no población indígena: puede haber Kalinago fuera y no Kalinago dentro.",
+    "El censo rotula la localidad «Carib Territory»; se copia como lo escribe la fuente y no se reemplaza por otro nombre."
+  ],
+  "notas": "Dominica tiene el único territorio indígena con nombre propio del Caribe insular en el censo, pero sin pregunta étnica. Falta: dato étnico, polígono oficial del Territorio y licencia."
+}

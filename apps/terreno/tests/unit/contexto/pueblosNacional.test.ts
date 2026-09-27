@@ -17,18 +17,36 @@ const u = (pais: string | null): Ubicacion => ({
 });
 
 describe('paisNacionalDelPunto', () => {
-  it('reconoce los cinco países y sólo esos cinco', () => {
+  it('reconoce los once países y sólo esos once', () => {
     expect(paisNacionalDelPunto(u('Bolivia'))?.iso2).toBe('BO');
     expect(paisNacionalDelPunto(u('Colombia'))?.iso2).toBe('CO');
     expect(paisNacionalDelPunto(u('Ecuador'))?.iso2).toBe('EC');
     expect(paisNacionalDelPunto(u('Uruguay'))?.iso2).toBe('UY');
     expect(paisNacionalDelPunto(u('Canada'))?.iso2).toBe('CA');
+    expect(paisNacionalDelPunto(u('Guatemala'))?.iso2).toBe('GT');
+    expect(paisNacionalDelPunto(u('Panamá'))?.iso2).toBe('PA');
+    expect(paisNacionalDelPunto(u('Nicaragua'))?.iso2).toBe('NI');
+    expect(paisNacionalDelPunto(u('Costa Rica'))?.iso2).toBe('CR');
+    expect(paisNacionalDelPunto(u('El Salvador'))?.iso2).toBe('SV');
+    expect(paisNacionalDelPunto(u('San Vicente y las Granadinas'))?.iso2).toBe('VC');
+    expect(PAISES_NACIONAL).toHaveLength(11);
   });
 
   it('no contesta por los países que ya tienen dato local', () => {
     // Si contestara, el predio brasileño vería dos bloques diciendo cosas
     // distintas sobre lo mismo.
     for (const p of ['Argentina', 'Chile', 'Paraguay', 'Perú', 'Brasil', 'Brazil', 'México']) {
+      expect(paisNacionalDelPunto(u(p)), p).toBeNull();
+    }
+  });
+
+  it('los siete de Centroamérica y el Caribe que no entran siguen en null', () => {
+    // No es olvido y cada uno tiene su motivo, anotado en el relevamiento:
+    // Belice publica sólo porcentajes; República Dominicana no pregunta por
+    // pueblo indígena —sus categorías fueron de color de piel—; Honduras,
+    // Trinidad y Tobago, Cuba, Haití y Dominica no se pudieron abrir o no
+    // traen el dato. Si alguno entra, hay que sacarlo de esta lista a mano.
+    for (const p of ['Belice', 'Honduras', 'República Dominicana', 'Cuba', 'Haití', 'Dominica', 'Trinidad y Tobago']) {
       expect(paisNacionalDelPunto(u(p)), p).toBeNull();
     }
   });
@@ -79,11 +97,17 @@ describe('el contrato de cada ficha', () => {
     expect(uy.porcentajePublicado).toBe('6,3');
   });
 
-  it('una ficha sin total tiene que traer porcentaje publicado, y al revés', () => {
-    // Si las dos cosas faltan no hay nada que mostrar, y la tarjeta quedaría
+  it('cada ficha trae algo contable: total, porcentaje publicado o desglose', () => {
+    // Si las tres cosas faltan no hay nada que mostrar, y la tarjeta quedaría
     // diciendo el nombre del censo y nada más.
+    //
+    // El desglose entró como tercera opción por Guatemala: el INE publica
+    // Maya, Garífuna y Xinka por separado y ningún total «indígena». Sumarlos
+    // sería un cálculo nuestro, así que la ficha muestra los tres y ninguna
+    // suma.
     for (const p of PAISES_NACIONAL) {
-      expect(p.total !== null || p.porcentajePublicado !== null, p.pais).toBe(true);
+      const contable = p.total !== null || p.porcentajePublicado !== null || p.desglose.length > 0;
+      expect(contable, p.pais).toBe(true);
     }
   });
 
@@ -96,11 +120,49 @@ describe('el contrato de cada ficha', () => {
     }
   });
 
-  it('los cuatro que esperan autorización quedan marcados como solo_cita', () => {
-    for (const iso of ['BO', 'CO', 'EC', 'UY']) {
+  it('sólo Canadá y Guatemala tienen licencia abierta; el resto es cita', () => {
+    // La distinción manda: con licencia abierta se puede montar el tabulado;
+    // con cita, sólo decir la cifra con atribución.
+    const abiertas = PAISES_NACIONAL.filter(p => p.permiso === 'licencia_abierta').map(p => p.iso2);
+    expect(abiertas.sort()).toEqual(['CA', 'GT']);
+    for (const iso of ['BO', 'CO', 'EC', 'UY', 'PA', 'NI', 'CR', 'SV', 'VC']) {
       expect(PAISES_NACIONAL.find(p => p.iso2 === iso)!.permiso, iso).toBe('solo_cita');
     }
-    expect(PAISES_NACIONAL.find(p => p.iso2 === 'CA')!.permiso).toBe('licencia_abierta');
+  });
+
+  it('el que tiene licencia abierta arrastra su atribución', () => {
+    // CC BY no exige una frase textual como StatCan, pero sí exige atribuir:
+    // sin este campo el uso no está cubierto.
+    for (const p of PAISES_NACIONAL.filter(x => x.permiso === 'licencia_abierta')) {
+      expect(p.atribucionExigida, p.pais).toBeTruthy();
+    }
+  });
+
+  it('Guatemala no suma sus tres pueblos, y lo dice', () => {
+    // 6.207.503 + 19.529 + 264.167 = 6.491.199, un número que el INE no
+    // publica. Si alguien lo pone como total, este test lo frena.
+    const gt = PAISES_NACIONAL.find(p => p.iso2 === 'GT')!;
+    expect(gt.total).toBeNull();
+    expect(gt.desglose).toHaveLength(3);
+    expect(gt.loQueNoDice.some(t => t.includes('6.491.199'))).toBe(true);
+  });
+
+  it('Nicaragua no divide, porque su total no es «población indígena»', () => {
+    // Incluye Creole y Mestizo de la Costa Caribe. Un porcentaje etiquetado
+    // «indígena» sobre ese numerador diría algo falso.
+    const ni = PAISES_NACIONAL.find(p => p.iso2 === 'NI')!;
+    expect(ni.base).toBeNull();
+    expect(porcentajeNacional(ni)).toBeNull();
+    expect(ni.loQueNoDice.some(t => t.includes('Creole'))).toBe(true);
+  });
+
+  it('Panamá arrastra la contradicción de su propia licencia', () => {
+    // La página declara CC BY 4.0 arriba y «todos los derechos reservados»
+    // abajo. Hasta que se aclare, es cita: el texto lo dice para que nadie
+    // lo monte creyendo que está habilitado.
+    const pa = PAISES_NACIONAL.find(p => p.iso2 === 'PA')!;
+    expect(pa.permiso).toBe('solo_cita');
+    expect(pa.licencia).toMatch(/contradice|Todos los derechos reservados/);
   });
 
   it('Canadá arrastra la atribución textual que exige Statistics Canada', () => {

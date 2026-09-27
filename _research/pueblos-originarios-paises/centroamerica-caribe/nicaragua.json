@@ -1,0 +1,71 @@
+{
+  "pais": "Nicaragua",
+  "iso3": "NIC",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué el registro de territorios titulados de la Costa Caribe; queda para la fase de cartografía. existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadísticas y Censos (INEC), hoy INIDE",
+    "anio": 2005,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita: el Resumen Censal dice que en 2005 «se investiga por primera vez el auto reconocimiento o pertenencia a pueblos indígenas o comunidades étnicas, para todas las personas residentes».",
+    "universo": "Todas las personas residentes en el territorio nacional.",
+    "total_declarado": 443847,
+    "poblacion_base": 5142098,
+    "url_cuadros": "https://www.inide.gob.ni/docu/censos2005/ResumenCensal/Resumen2.pdf",
+    "urls_archivos": [
+      "https://www.inide.gob.ni/docu/censos2005/ResumenCensal/Resumen2.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "área urbana/rural"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": false,
+    "sin_declarar_pueblo": 66933,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: bajé y abrí el Resumen Censal del VIII Censo de Población 2005 (56 páginas). Tabla 1.13: «LA REPÚBLICA 443 847» personas autoidentificadas con un pueblo indígena o comunidad étnica. Filas: Rama 4.185, Garífuna 3.271, Mayangna-Sumu 9.756, Miskitu 120.817, Ulwa 698, Creole (Kriol) 19.890, Mestizo de la Costa Caribe 112.253, Xiu-Sutiava 19.949, Nahoa-Nicarao 11.113, Chorotega-Nahua-Mange 46.002, Cacaopera-Matagalpa 15.240, Otro 13.740, No sabe 47.473, Ignorado 19.460. La suma de filas da 443.847. sin_declarar_pueblo = No sabe + Ignorado = 66.933: es la única suma del archivo y se hace porque ambas son categorías que la propia fuente marca como sin pueblo; si se prefiere, van por separado. Población total 2005: 5.142.098."
+  },
+  "pueblos": [
+    "Rama",
+    "Garífuna",
+    "Mayangna-Sumu",
+    "Miskitu",
+    "Ulwa",
+    "Xiu-Sutiava",
+    "Nahoa-Nicarao",
+    "Chorotega- Nahua-Mange",
+    "Cacaopera-Matagalpa"
+  ],
+  "lo_que_no_dice": [
+    "El total de 443.847 es «pueblo indígena o comunidad étnica»: incluye Creole (Kriol) 19.890 y Mestizo de la Costa Caribe 112.253, que no son pueblos indígenas. Se vieron y quedan fuera de pueblos a propósito.",
+    "El dato es de 2005; no encontré resultados étnicos de un censo posterior.",
+    "No hay desagregado territorial en el resumen (sólo urbano/rural).",
+    "No encontré licencia publicada del INIDE."
+  ],
+  "trampas": [
+    "total_declarado no es «población indígena»: resta Creole y Mestizo de la Costa Caribe da otro número, y ese cálculo no se hace acá.",
+    "«No sabe» (47.473) e «Ignorado» (19.460) están adentro del total: son personas que se reconocen parte de un pueblo o comunidad pero no dicen cuál.",
+    "La grafía «Chorotega- Nahua-Mange» lleva un espacio en la fuente; se copia tal cual.",
+    "El texto del resumen escribe «Ulva» y la tabla «Ulwa»: se usa el de la tabla y se declara."
+  ],
+  "notas": "Nicaragua tiene un solo dato censal de autoidentificación (2005), con pueblos y comunidades étnicas mezclados en el mismo total. Falta: dato más reciente, desagregado territorial y licencia."
+}

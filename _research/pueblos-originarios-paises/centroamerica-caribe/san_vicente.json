@@ -1,0 +1,57 @@
+{
+  "pais": "San Vicente y las Granadinas",
+  "iso3": "VCT",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué un registro de comunidades; existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Statistical Office, Saint Vincent and the Grenadines",
+    "anio": 2023,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita: el cuestionario está en el Apéndice 3 del informe, en imagen.",
+    "universo": "Household population (108.764).",
+    "total_declarado": 5587,
+    "poblacion_base": 108764,
+    "url_cuadros": "https://stats.gov.vc/census/",
+    "urls_archivos": [
+      "https://stats.gov.vc/wp-content/uploads/2026/05/SVG-2023-Census-Report.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "census division"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: bajé y abrí el «SVG 2023 Census Report» (281 páginas). Tabla 2-3: «Indigenous People» 5.587 en 2023 (3.280 en 2012, 3.898 en 2001); «All Groups» 108.764; «Not Stated» 134. El informe describe al grupo como «Carib/Amerindian» y registra su concentración en Sandy Bay (27.5 %) y Georgetown (19.0 %) según la Tabla 2-7."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "El censo no separa pueblos: «Indigenous People» es una sola categoría; el texto habla de «Carib and Garifuna heritage» sin cifras por separado.",
+    "No encontré licencia publicada."
+  ],
+  "trampas": [
+    "«Not Stated» (134) es no respuesta a etnicidad en general, no «indígena sin pueblo»: sin_declarar_pueblo queda en null.",
+    "El aumento de 70 % entre 2012 y 2023 lo atribuye el propio informe, entre otras cosas, a mayor autorreconocimiento: no es sólo crecimiento demográfico."
+  ],
+  "notas": "San Vicente publica un total indígena 2023 y su distribución por división censal. Falta: licencia."
+}
