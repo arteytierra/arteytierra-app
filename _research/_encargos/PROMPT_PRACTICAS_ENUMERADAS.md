@@ -1,4 +1,4 @@
-# Encargo para una sesión de Claude en la nube — prácticas agropecuarias enumeradas por ecorregión
+# Encargo — prácticas agropecuarias enumeradas por ecorregión
 
 Escrito el 28/09/2026. **Este archivo es el prompt completo: se pega tal cual en
 la sesión nueva y no hace falta nada más.**
@@ -6,6 +6,14 @@ la sesión nueva y no hace falta nada más.**
 Reemplaza en alcance —no en reglas— al encargo `PROMPT_GPT_PRACTICAS_TERRITORIO.md`,
 que cerró con 201 entradas. Las reglas de ese archivo siguen vigentes todas y
 están repetidas acá para que esta sesión no tenga que ir a buscarlas.
+
+> **Nota de versión.** Este archivo se llamaba `PROMPT_NUBE_PRACTICAS_ENUMERADAS.md`
+> y daba por sentado que la sesión corría en la nube. El 28/09/2026 una sesión de
+> nube intentó el lote 1 y no pudo escribir **ninguna** entrada: la política de
+> red de ese entorno rechazaba los dominios académicos, y además el GitHub App no
+> tenía permiso sobre el repo, así que tampoco podía pushear. Perdió la sesión
+> entera descubriéndolo. De ahí salen las dos secciones nuevas: **el preflight**
+> y **cómo se abre una fuente**. Leelas antes que nada.
 
 ---
 
@@ -24,6 +32,115 @@ Sos una sesión de Claude Code trabajando sobre el monorepo de Arte y Tierra.
 Antes de tocar nada, leé `CLAUDE.md` en la raíz y
 `apps/terreno/lib/README.md`. Son el contrato del repo y valen más que este
 archivo si alguna vez se contradicen.
+
+### Tu propio worktree
+
+Hay otras sesiones sobre el mismo árbol y el índice de git es compartido. Armate
+el tuyo apenas arranques y quedate ahí:
+
+```bash
+git -C "C:/Arte y Tierra/0. Claude" worktree add ".claude/worktrees/practicas" -b claude/practicas-enumeradas
+cd "C:/Arte y Tierra/0. Claude/.claude/worktrees/practicas"
+cp "C:/Arte y Tierra/0. Claude/apps/terreno/.env.local" apps/terreno/.env.local
+cp "C:/Arte y Tierra/0. Claude/apps/web/.env.local"     apps/web/.env.local
+pnpm install
+```
+
+Un worktree nuevo sólo trae lo que está en git: le faltan los `.env.local` y
+`node_modules`. Los `.env.local` están ignorados a propósito y **nunca se
+commitean**.
+
+---
+
+## El preflight, antes de buscar la primera fuente
+
+**Tres minutos, cinco comprobaciones, y ninguna entrada escrita hasta que las
+cinco pasen.** Esto existe porque una sesión entera se fue en averiguar que el
+entorno no servía. Si alguna falla, **parás y avisás**: no hay forma honesta de
+seguir sin red o sin poder pushear, y simular que sí la hay es peor que no
+empezar.
+
+1. **¿Resuelve un DOI?**
+   `WebFetch` sobre `https://doi.org/10.5194/hess-11-1633-2007`. Tiene que
+   redirigir a `hess.copernicus.org` y, al seguir el redirect, decir
+   *Updated world map of the Köppen-Geiger climate classification*. Si no
+   resuelve, no tenés red útil.
+2. **¿Buscás?** Una `WebSearch` cualquiera que devuelva resultados.
+3. **¿Abrís una página que le dice que no al fetcher?** Abrí cualquier artículo
+   de `scielo.cl` en el panel del navegador y leelo con `get_page_text`. Tiene
+   que traer el texto completo. Esto es lo que decide si podés trabajar con las
+   fuentes latinoamericanas, que son la mitad del encargo.
+4. **¿Podés pushear?** `git push origin claude/practicas-enumeradas` con la rama
+   recién creada y vacía. Si da 403, no sigas: todo lo que escribas se va a
+   quedar en un commit local que nadie va a ver.
+5. **¿Corre la compuerta?** `pnpm typecheck` una vez, en frío. Si `pnpm install`
+   quedó a medias te vas a enterar acá y no cuatro horas después.
+
+Anotá el resultado de los cinco en la primera línea de tu primer
+`COBERTURA_LOTE_NN.md`. Al que venga después le ahorra la misma tarde.
+
+---
+
+## Cómo se abre una fuente
+
+La regla de oro del encargo es que **la URL se abre antes de escribirla**. Esa
+regla no se negocia, pero hay que saber abrirla: un servidor que contesta `403`
+**no es un dominio bloqueado**, y confundir las dos cosas hace abandonar fuentes
+que estaban perfectamente disponibles.
+
+La escalera, en orden. Bajás un peldaño sólo cuando el anterior falló:
+
+1. **`WebSearch`** para encontrar candidatas. Devuelve títulos y URLs; todavía no
+   leíste nada.
+2. **`WebFetch`** sobre la URL. Es lo más rápido y además te contesta una
+   pregunta sobre el contenido. Aprovechá eso: preguntale directamente *«¿dice
+   de qué pueblo es la práctica y desde cuándo? Citame la frase textual»*, que
+   es exactamente lo que después va al campo `verificacion`.
+3. **Si da `403` o `429`, no la descartes: es antibot, no ausencia.** Abrila en
+   el **panel del navegador** (`preview_start` con la `url`, después
+   `get_page_text`). Está comprobado: un artículo de `scielo.cl` que a `WebFetch`
+   le devolvió `403` abre entero por esta vía. Lo mismo pasa con varios
+   repositorios institucionales.
+4. **Si el navegador se cuelga** —pasó con `repositorio.inia.gob.pe`, que agotó
+   los 300 s sin cargar— **no insistas más de una vez**. Buscá otra fuente para
+   el mismo hecho y anotá la URL que no abrió en el `COBERTURA`. Diez minutos
+   peleando con un sitio lento es un lote que no se cierra.
+5. **`404` es otra cosa:** la URL está mal. Verificá que no la hayas inferido.
+
+**Leer el resumen no es leer el trabajo.** Si sólo pudiste abrir el abstract, la
+entrada puede decir únicamente lo que el abstract dice. No completes el método,
+ni la fecha, ni la extensión con lo que te parece que el artículo diría.
+
+### El `label` se copia de la página. No se reconstruye
+
+Esto no es una formalidad y ya falló: en el lote 3 del 28/09/2026, **las doce
+fuentes eran de `scielo.org.ar`, que devuelve `403`**, y la sesión escribió los
+`label` sin abrir ninguna. El resultado fue que los PID eran reales y los títulos
+no. Un caso llegó más lejos: la entrada de los yerbales de Misiones citaba *«Los
+yerbateros: la fuerza de trabajo… (1875-1903)»* y fechaba la práctica en esa
+franja, pero el artículo que hay en ese PID es *«Estado y producción: la
+actividad yerbatera en el territorio nacional de Misiones (1926-1953)»*. **La
+fecha de la entrada salía de un título inventado.** En el lote 2, con los mismos
+403 de `scielo.org.mx`, los títulos estaban bien y los autores no: donde decía
+«Flores-Cruz et al.» la portada dice «Álvarez-Duarte, García-Moya, Suárez-Espinosa
+y otros».
+
+Por eso, y sin excepción:
+
+- El **título**, los **apellidos** y el **número de volumen** se copian de la
+  portada del artículo que tenés abierto. No de la memoria, no del snippet del
+  buscador, no del patrón del identificador.
+- Si el buscador te dio un PID pero la página no abre por ninguna de las dos
+  vías, **la entrada no se escribe**, y el PID va al `COBERTURA` como pendiente.
+  Un `403` es motivo para cambiar de herramienta, nunca para escribir de memoria.
+- Antes de cerrar el lote, releé tus `label` contra las páginas. Si una fuente
+  cambió de título entre lo que buscaste y lo que abriste, es que estás citando
+  otro trabajo.
+
+**Y las tildes son parte del texto.** El lote 3 salió entero sin acentos
+—«Extraccion», «Practica», «prehispanico», «Parana»—. Esto se imprime en la
+pantalla y en el informe de un producto en español argentino: una `á` faltante es
+un defecto, no un detalle de codificación.
 
 ---
 
@@ -117,6 +234,38 @@ cruzado: cada ficha se lee sola.
 
 ---
 
+## El ritmo: se trabaja por barridos, no de a una
+
+Buscar, abrir y escribir **una** práctica por vez es la forma más cara de hacer
+esto: cada entrada vuelve a pagar el mismo contexto. Dentro de un lote, el
+trabajo va en tres barridos.
+
+**Barrido 1 — búsqueda.** Todas las `WebSearch` del lote, varias por turno.
+Quince ecorregiones son quince a veinte búsquedas: entran en dos o tres turnos,
+no en veinte. Salís con una lista de URLs candidatas y nada escrito.
+
+**Barrido 2 — apertura.** Las `WebFetch` **en paralelo, de a seis u ocho por
+turno**, cada una con su pregunta de verificación. Juntá aparte las que dieron
+`403` y abrilas después por el navegador, que va de a una.
+
+**Barrido 3 — escritura.** El JSON del lote, las entradas de TypeScript y el
+`COBERTURA`, y recién ahí **una sola** corrida de compuerta y **un solo** commit.
+No una compuerta por ecorregión: tarda lo mismo con una entrada que con sesenta.
+
+**Lo único que no se batchea es la verificación.** Cada entrada se escribe
+después de haber leído su fuente, nunca antes. «Escribo las cinco y después
+chequeo» es exactamente el movimiento por el que entró el DOI equivocado de Rapa
+Nui: cuando llega el momento de chequear, el texto ya suena bien y nadie lo mira
+de verdad.
+
+**Presupuesto de contexto.** Un lote de quince ecorregiones con cuatro entradas
+son sesenta fuentes leídas, y eso pesa. Si a mitad de lote ves que el contexto se
+acorta, **cerrá el lote con las ecorregiones que ya tenés terminadas** —commit y
+push— y arrancá el siguiente con las que faltaban. Un lote chico cerrado vale; un
+lote grande sin commitear no vale nada.
+
+---
+
 ## Los archivos que podés tocar, y ninguno más
 
 **Podés escribir en:**
@@ -157,7 +306,7 @@ modifica**. Leé su JSDoc completo antes de escribir la primera.
       practica: 'Nombre corto del rasgo o del sistema',
       periodo: 'Cuándo, en texto. "Desde ~1000 a.C."; "Prehispánica, en uso"; "Documentada en 2016"',
       tipo: 'suelo',        // ver TipoPractica en biomaTipos.ts
-      vigencia: 'en_uso',   // 'en_uso' | 'historica'
+      vigencia: 'en_uso',   // 'en_uso' | 'en_retroceso' | 'historica'
       detalle:
         'Qué es, cómo funciona y por qué funciona acá. Dos a cuatro oraciones. ' +
         'Si la fuente nombra al pueblo, se lo nombra acá, como lo nombra ella.',
@@ -231,7 +380,8 @@ No corras `next build` en esta sesión: no estás tocando componentes y tarda.
 3. Escribís el `COBERTURA_LOTE_NN.md`: qué ecorregiones cubriste, cuántas
    entradas por cada una, y **el motivo de cada ecorregión que quedó en menos de
    3**. Ese motivo es contenido, no burocracia: es lo que evita que el próximo
-   lote vuelva a buscar donde ya se buscó.
+   lote vuelva a buscar donde ya se buscó. Va también la lista de URLs que no
+   pudiste abrir, con el síntoma (`403`, timeout, `404`).
 4. Corrés la compuerta.
 5. Commiteás **con pathspecs explícitos**, archivo por archivo:
 
@@ -243,7 +393,7 @@ git commit -F mensaje.txt -- apps/terreno/lib/practicasHistoricas.ts _research/p
 llevás puesto lo que stageó otra.
 
 6. `git push origin claude/practicas-enumeradas`. **Nada de `HEAD:main`**: en este
-   repo el push a `main` dispara el deploy en Vercel, y esta rama no se deploya.
+repo el push a `main` dispara el deploy en Vercel, y esta rama no se deploya.
 
 El mensaje de commit dice qué bloque cubrió, cuántas entradas, y cuántas
 ecorregiones quedaron abajo de 3 con el motivo resumido. Terminalo con:
@@ -251,6 +401,21 @@ ecorregiones quedaron abajo de 3 con el motivo resumido. Terminalo con:
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 ```
+
+---
+
+## Herramientas: lo que sirve y lo que no
+
+No hace falta ningún conector ni plugin para este encargo, y **ninguna de las
+skills del repo aplica**: `motor-de-calculo` es para los cálculos físicos,
+`migracion-supabase` para la base, `fuente-unica-de-verdad` para los planes.
+Ninguna toca esta capa. Si alguna sesión te dice que le falta un conector de
+GitHub para trabajar, se equivocó de diagnóstico: con el repo clonado, `git push`
+alcanza y sobra.
+
+Lo que sí usás, todo el tiempo: `WebSearch`, `WebFetch`, el panel del navegador
+para las que dan `403`, y `git grep` —nunca `grep -rn`, que se come el timeout
+con `node_modules`—.
 
 ---
 
@@ -269,6 +434,15 @@ tarea que se pierde del todo.
 
 ## Lo que no hay que hacer, junto
 
+- No empezar sin haber pasado el preflight.
+- No dar por bloqueada una fuente que devolvió `403` sin probarla en el navegador.
+- No escribir un `label` —título, apellidos, volumen— sin tener la página abierta
+  delante.
+- No escribir sin tildes.
+- No tocar nada fuera de la tabla de archivos permitidos. Si en el camino
+  encontrás un arreglo que hay que hacer —pasó con el `version: 9` de
+  `pnpm/action-setup` en el CI—, **va en un commit aparte y se avisa**, no se
+  mezcla con un lote de prácticas.
 - No pushear a `main` ni deployar.
 - No tocar los catálogos generados, los paneles, ni la capa de pueblos.
 - No usar `git add -A` ni `git stash` a secas.
