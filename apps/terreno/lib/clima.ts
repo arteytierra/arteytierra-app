@@ -10,6 +10,7 @@
  */
 import { fuentesRegionalesClima } from './climaFuentes';
 import { diagnosticarAltura, type CorreccionAltura } from './climaAltura';
+import { rotuloKoppen } from './koppenTexto';
 
 export {
   GRADIENTE_TERMICO_C_KM, UMBRAL_IGNORAR_M, UMBRAL_AVISO_M,
@@ -727,35 +728,6 @@ function radiacionExtraterrestre(lat_deg: number, mes: MesIndex): number {
 
 // ─── Köppen-Geiger (Peel et al. 2007) ─────────────────────────────────────────
 
-const KOPPEN_DESC: Record<string, { grupo: string; desc: string }> = {
-  Af:  { grupo: 'Tropical',    desc: 'Selva tropical lluviosa' },
-  Am:  { grupo: 'Tropical',    desc: 'Monzónico tropical' },
-  Aw:  { grupo: 'Tropical',    desc: 'Sabana tropical (invierno seco)' },
-  As:  { grupo: 'Tropical',    desc: 'Sabana tropical (verano seco)' },
-  BWh: { grupo: 'Árido',       desc: 'Desierto cálido' },
-  BWk: { grupo: 'Árido',       desc: 'Desierto frío' },
-  BSh: { grupo: 'Árido',       desc: 'Estepa cálida (semiárido cálido)' },
-  BSk: { grupo: 'Árido',       desc: 'Estepa fría (semiárido frío)' },
-  Csa: { grupo: 'Templado',    desc: 'Mediterráneo de verano cálido' },
-  Csb: { grupo: 'Templado',    desc: 'Mediterráneo de verano templado' },
-  Csc: { grupo: 'Templado',    desc: 'Mediterráneo de verano fresco' },
-  Cwa: { grupo: 'Templado',    desc: 'Subtropical húmedo de invierno seco' },
-  Cwb: { grupo: 'Templado',    desc: 'Subtropical de altura, invierno seco' },
-  Cwc: { grupo: 'Templado',    desc: 'Templado frío de invierno seco' },
-  Cfa: { grupo: 'Templado',    desc: 'Subtropical húmedo sin estación seca' },
-  Cfb: { grupo: 'Templado',    desc: 'Oceánico templado' },
-  Cfc: { grupo: 'Templado',    desc: 'Oceánico subpolar' },
-  Dsa: { grupo: 'Continental', desc: 'Continental, verano seco y cálido' },
-  Dsb: { grupo: 'Continental', desc: 'Continental, verano seco templado' },
-  Dwa: { grupo: 'Continental', desc: 'Continental, invierno seco y cálido' },
-  Dwb: { grupo: 'Continental', desc: 'Continental, invierno seco templado' },
-  Dfa: { grupo: 'Continental', desc: 'Continental húmedo, verano cálido' },
-  Dfb: { grupo: 'Continental', desc: 'Continental húmedo, verano templado' },
-  Dfc: { grupo: 'Continental', desc: 'Subártico (taiga)' },
-  ET:  { grupo: 'Polar',       desc: 'Tundra / altoandino' },
-  EF:  { grupo: 'Polar',       desc: 'Hielo permanente' },
-};
-
 /** Clasifica el clima según Köppen-Geiger a partir de las medias mensuales. */
 export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
   const T = meses.map(m => m.tmean_c);
@@ -803,7 +775,11 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     let p = 'f';
     if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
     else if (PwinDry < PsumWet / 10) p = 'w';
-    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : 'c';
+    // 22 °C, no 21: es el umbral de la tabla 1 de Peel et al. (2007), que es la
+    // fuente citada arriba y la que usa el mapa de Beck que manda cuando hay
+    // dato. Con 21 un lugar de verano templado salía «a», y el rótulo decía
+    // «verano cálido» de un verano que no llega.
+    const t = Thot >= 22 ? 'a' : mesesCalidos >= 4 ? 'b' : 'c';
     codigo = `C${p}${t}`;
   }
   // D — Continental
@@ -811,7 +787,7 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     let p = 'f';
     if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
     else if (PwinDry < PsumWet / 10) p = 'w';
-    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : Tcold < -38 ? 'd' : 'c';
+    const t = Thot >= 22 ? 'a' : mesesCalidos >= 4 ? 'b' : Tcold < -38 ? 'd' : 'c';
     codigo = `D${p}${t}`;
   }
   // E — Polar / altoandino
@@ -819,8 +795,12 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     codigo = Thot > 0 ? 'ET' : 'EF';
   }
 
-  const info = KOPPEN_DESC[codigo] ?? { grupo: '—', desc: codigo };
-  return { codigo, grupo: info.grupo, descripcion: info.desc };
+  // El rótulo sale de lib/koppenTexto.ts, que es la única tabla de las 31
+  // clases: acá vivía una copia a la que le faltaban las cinco de invierno
+  // riguroso (Dsc, Dsd, Dwc, Dwd, Dfd), que este mismo clasificador devuelve y
+  // que se mostraban como un guión.
+  const info = rotuloKoppen(codigo);
+  return { codigo, grupo: info.grupo, descripcion: info.titulo };
 }
 
 // ─── Índice de aridez (UNEP) ──────────────────────────────────────────────────

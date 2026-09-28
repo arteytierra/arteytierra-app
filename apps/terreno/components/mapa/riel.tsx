@@ -117,6 +117,14 @@ export const SUBS_REPRESA: Array<{ id: SubRepresa; label: string }> = [
  * vertical, y en CSS basta con que un eje no sea `visible` para que el otro pase
  * a `auto`, así que cualquier cosa que asome por la izquierda queda recortada.
  */
+/** El tooltip del encabezado dice a qué herramienta abre, que es lo que el clic
+ *  hace: sin eso el usuario no tiene cómo saber que el grupo lleva a algún lado
+ *  y no sólo despliega. */
+function tituloEncabezado(label: string, primero: Tab | undefined): string {
+  const def = primero ? TAB_DEF.get(primero) : undefined;
+  return def ? `${label} — abre ${def.label}` : label;
+}
+
 /** Un botón de tab en el riel (ícono cuadrado con candado si está bloqueado). */
 function RielTab({ def, activo, lock, onElegir }: {
   def: { id: Tab; label: string; icon: React.ReactNode };
@@ -144,7 +152,12 @@ function RielTab({ def, activo, lock, onElegir }: {
 }
 
 /** Un clúster colapsable del riel: encabezado con ícono + label corto, y —si
- *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto. */
+ *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto.
+ *
+ *  `onToggle` no es sólo desplegar: quien lo pasa abre además la primera
+ *  herramienta del grupo, porque el número del riel promete una lectura del
+ *  terreno y no una lista de íconos. Ver `handleElegirGrupo` en
+ *  MapaTerrenoApp. */
 export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada }: {
   grupo: { id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] };
   abierto: boolean;
@@ -194,7 +207,7 @@ export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bl
 
   return (
     <div className="w-full flex flex-col items-center">
-      <button onClick={onToggle} title={grupo.label} aria-expanded={abierto}
+      <button onClick={onToggle} title={tituloEncabezado(grupo.label, esenciales[0] ?? grupo.tabs[0])} aria-expanded={abierto}
         className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
           contieneActivo && !abierto
             ? 'text-moss-700 bg-moss-50'

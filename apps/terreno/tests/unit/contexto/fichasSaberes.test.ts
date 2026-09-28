@@ -72,22 +72,28 @@ describe('los saberes de las fichas', () => {
   });
 });
 
-describe('el panel no se queda callado cuando no hay saberes', () => {
+describe('la pestaña de saberes existe sólo si tiene algo adentro', () => {
   const panel = readFileSync(
     join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'components', 'ContextoPanel.tsx'),
     'utf8',
   );
 
-  it('explica por qué la ficha no atribuye, en vez de esconder la sección', () => {
-    // Antes la sección se omitía si el arreglo venía vacío, y el silencio se
-    // leía como "acá no hay saberes".
-    expect(panel).not.toContain('{ficha.saberes.length > 0 && <Seccion');
-    expect(panel).toContain('ficha.saberes.length > 0 ?');
-    // La explicación se reescribió cuando apareció la capa de prácticas
-    // fechadas (lib/practicasHistoricas.ts): la sección dejó de ser sólo un 'no'
-    // y pasó a decir qué condición hace falta para que haya un saber atribuido.
-    expect(panel).toContain('Saberes atribuidos a una cultura');
-    expect(panel).toContain('de quién es');
+  /**
+   * Este test decía lo contrario hasta el 28/09/2026: que la sección tenía que
+   * aparecer igual y explicar por qué no atribuye. La explicación era correcta
+   * —un saber se atribuye con territorio, procedencia y acuerdo verificados— y
+   * aun así estaba mal puesta: se abría en 188 de 210 fichas para no decir
+   * nada. Jonatan lo pidió al revés, y tiene razón: «si no está el dato, que
+   * directamente no aparezca esa parte». El porqué sigue escrito, en el código.
+   */
+  it('si no hay prácticas, ni saberes, ni territorio documentado, no hay pestaña', () => {
+    expect(panel).toContain('const haySaberes = practicas.length > 0');
+    expect(panel).toContain("(ficha?.saberes.length ?? 0) > 0");
+    expect(panel).toContain('saberesTerritorio.length > 0');
+    expect(panel).toContain("...(haySaberes ? [{ id: 'saberes'");
+    // Y la sección de adentro tampoco tiene rama de consuelo.
+    expect(panel).toContain('{ficha.saberes.length > 0 && <Seccion');
+    expect(panel).not.toContain('Saberes atribuidos a una cultura');
   });
 
   it('no nombra un ecosistema mientras la ecorregión está en vuelo', () => {

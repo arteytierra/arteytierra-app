@@ -2508,6 +2508,34 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setPanelAbierto(true);
   }, [tab, panelAbierto]);
 
+  /**
+   * Clic en el encabezado de un clúster del riel (1 Clima, 2 Relieve, 3 Agua…).
+   *
+   * Abre el grupo **y** su primera herramienta: el peldaño promete una lectura
+   * del terreno —2 Relieve es «contame el relieve»— y antes contestaba con una
+   * lista de íconos y un segundo clic. Ahora Relieve abre Topografía, Agua abre
+   * Cuenca, Clima abre Clima.
+   *
+   * La primera es la primera que se ve, no la primera de `tabs`: el grupo
+   * muestra `esenciales` arriba y el resto detrás de «Más…». Hoy coinciden, y
+   * si alguna vez dejan de coincidir manda lo que el riel muestra.
+   *
+   * Segundo clic sobre el grupo ya abierto y ya parado en esa pestaña: se
+   * pliega, igual que un ícono de tab. Es la única forma de cerrar el acordeón.
+   */
+  const handleElegirGrupo = useCallback((g: (typeof GRUPOS_RIEL)[number]) => {
+    const primero = g.esenciales?.[0] ?? g.tabs[0];
+    if (!primero) return;
+    if (grupoRiel === g.id && tab === primero && panelAbierto) {
+      setGrupoRiel('');
+      setPanelAbierto(false);
+      return;
+    }
+    setGrupoRiel(g.id);
+    setTab(primero);
+    setPanelAbierto(true);
+  }, [grupoRiel, tab, panelAbierto]);
+
   // Cuando el tab activo cambia (clic en el riel, Ctrl+K, flujo interno),
   // abrimos su clúster para que quede visible en el acordeón.
   useEffect(() => {
@@ -2677,7 +2705,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               grupo={g}
               abierto={grupoRiel === g.id}
               tabActivo={tab}
-              onToggle={() => setGrupoRiel(prev => (prev === g.id ? '' : g.id))}
+              onToggle={() => handleElegirGrupo(g)}
               onElegir={handleElegirTab}
               bloqueada={(id) => tabBloqueadaConArea(plan, id, metricas?.area_ha ?? null)}
             />
@@ -3053,7 +3081,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             pendientePct={datosTopografia?.pendiente_pct ?? null}
             buscandoCHIRPS={buscandoCHIRPS}
           /></div>}
-          {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} ubicacion={datosEntorno?.ubicacion ?? null} onIrAClima={() => setTab('clima')} onIrAEntorno={() => setTab('entorno')} /></div>}
+          {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} ubicacion={datosEntorno?.ubicacion ?? null} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}

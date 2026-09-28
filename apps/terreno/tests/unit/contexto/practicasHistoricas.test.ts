@@ -148,9 +148,11 @@ describe('el panel de contexto', () => {
     expect(panel).toContain('{practicas.length > 0 &&');
   });
 
-  it('sigue explicando por qué no atribuye, pero sin ser un muro cuando hay prácticas', () => {
-    expect(panel).toContain('{practicas.length === 0 &&');
-    expect(panel).toContain('Saberes atribuidos a una cultura');
+  it('y cuando no las hay tampoco abre la pestaña para decirlo', () => {
+    // Regla de silencio, 28/09/2026: la explicación de por qué no se atribuye
+    // vive en el código y no en una sección vacía. Ver fichasSaberes.test.ts.
+    expect(panel).toContain('const haySaberes = practicas.length > 0');
+    expect(panel).not.toContain('Saberes atribuidos a una cultura');
   });
 
   it('el informe también las lleva, con período y fuente', () => {

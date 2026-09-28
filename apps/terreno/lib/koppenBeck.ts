@@ -33,6 +33,7 @@
 import path from 'node:path';
 import { fromFile, type GeoTIFF } from 'geotiff';
 import type { Koppen } from '@/lib/clima';
+import { rotuloKoppen } from '@/lib/koppenTexto';
 
 /** Grilla del archivo: global, EPSG:4326, 30 arcsec. */
 const RES = 1 / 120; // 0,00833333°
@@ -50,44 +51,18 @@ const CLASES = [
 ] as const;
 
 /**
- * Grupo y descripción en castellano. Se definen acá y no se importan de
- * `lib/clima.ts` a propósito: ese módulo es de cliente y arrastraría medio
- * `clima.ts` adentro de la función. Las 30 clases de Beck son un subconjunto de
- * las que ya maneja el clasificador —la única que él puede producir y Beck no
- * es `As`, que Beck agrupa dentro de `Aw`—, así que los textos coinciden.
+ * El grupo y el rótulo en castellano salen de `lib/koppenTexto.ts`, que es la
+ * única tabla de las 31 clases.
+ *
+ * Acá había una copia, con el argumento de que importar de `lib/clima.ts`
+ * arrastraría medio módulo de cliente adentro de la función serverless. El
+ * argumento era bueno y el resultado no: las dos tablas se escribieron con
+ * palabras distintas, así que la misma clase se llamaba «Selva tropical
+ * lluviosa» o «Selva tropical (lluvia todo el año)» según de dónde hubiera
+ * salido —del clasificador o del mapa—, que es justo lo que no puede pasar
+ * cuando las dos aparecen en la misma pantalla. `koppenTexto` no importa nada:
+ * son tablas y una función pura, y pesa menos que la copia que reemplaza.
  */
-const DESC: Record<string, { grupo: string; desc: string }> = {
-  Af:  { grupo: 'Tropical',    desc: 'Selva tropical (lluvia todo el año)' },
-  Am:  { grupo: 'Tropical',    desc: 'Monzónico' },
-  Aw:  { grupo: 'Tropical',    desc: 'Sabana (invierno seco)' },
-  BWh: { grupo: 'Árido',       desc: 'Desierto cálido' },
-  BWk: { grupo: 'Árido',       desc: 'Desierto frío' },
-  BSh: { grupo: 'Árido',       desc: 'Estepa cálida (semiárido cálido)' },
-  BSk: { grupo: 'Árido',       desc: 'Estepa fría (semiárido frío)' },
-  Csa: { grupo: 'Templado',    desc: 'Mediterráneo de verano cálido' },
-  Csb: { grupo: 'Templado',    desc: 'Mediterráneo de verano templado' },
-  Csc: { grupo: 'Templado',    desc: 'Mediterráneo de verano fresco' },
-  Cwa: { grupo: 'Templado',    desc: 'Subtropical de invierno seco' },
-  Cwb: { grupo: 'Templado',    desc: 'Templado de altura, invierno seco' },
-  Cwc: { grupo: 'Templado',    desc: 'Templado frío, invierno seco' },
-  Cfa: { grupo: 'Templado',    desc: 'Húmedo de verano cálido' },
-  Cfb: { grupo: 'Templado',    desc: 'Oceánico (verano templado)' },
-  Cfc: { grupo: 'Templado',    desc: 'Oceánico frío (subpolar)' },
-  Dsa: { grupo: 'Continental', desc: 'Continental de verano seco y cálido' },
-  Dsb: { grupo: 'Continental', desc: 'Continental de verano seco y templado' },
-  Dsc: { grupo: 'Continental', desc: 'Continental de verano seco y fresco' },
-  Dsd: { grupo: 'Continental', desc: 'Continental de verano seco, invierno muy frío' },
-  Dwa: { grupo: 'Continental', desc: 'Continental de invierno seco y verano cálido' },
-  Dwb: { grupo: 'Continental', desc: 'Continental de invierno seco y verano templado' },
-  Dwc: { grupo: 'Continental', desc: 'Continental de invierno seco y verano fresco' },
-  Dwd: { grupo: 'Continental', desc: 'Continental de invierno seco muy frío' },
-  Dfa: { grupo: 'Continental', desc: 'Continental húmedo de verano cálido' },
-  Dfb: { grupo: 'Continental', desc: 'Continental húmedo de verano templado' },
-  Dfc: { grupo: 'Continental', desc: 'Subártico' },
-  Dfd: { grupo: 'Continental', desc: 'Subártico de invierno extremo' },
-  ET:  { grupo: 'Polar',       desc: 'Tundra / altoandino' },
-  EF:  { grupo: 'Polar',       desc: 'Hielo permanente' },
-};
 
 export const FUENTE_KOPPEN_BECK =
   'Köppen-Geiger 1 km, 1991–2020 — Beck et al. (2023), CC BY 4.0';
@@ -168,8 +143,8 @@ export async function koppenBeck(
     // archivo no es el que creemos: tampoco ahí se inventa una clase.
     if (!codigo) return null;
 
-    const info = DESC[codigo]!;
-    return { codigo, grupo: info.grupo, descripcion: info.desc };
+    const info = rotuloKoppen(codigo);
+    return { codigo, grupo: info.grupo, descripcion: info.titulo };
   } catch {
     return null;
   }

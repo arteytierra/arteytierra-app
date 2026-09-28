@@ -4,6 +4,7 @@ import { FileDown, ArrowLeft } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
 import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
 import { MESES, centroide } from '@/lib/clima';
+import { textoKoppen } from '@/lib/koppenTexto';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
@@ -283,6 +284,15 @@ export function InformeView({ datos, compartido = false }: Props) {
                 )}
               </div>
             )}
+            {/* Qué quiere decir la clase, en palabras. En un informe impreso
+                pesa más que en el panel: el lector no tiene a quién
+                preguntarle qué es un «Cwa». Ver lib/koppenTexto.ts. */}
+            {datos.clima.koppen && (() => {
+              const t = textoKoppen(datos.clima.koppen.codigo);
+              return t && (
+                <p className="mb-4 text-xs text-ink-700/80 leading-relaxed">{t.prosa}</p>
+              );
+            })()}
             {/* Deriva climática. En el informe pesa más que en el panel: quien lo
                 lee está por decidir qué plantar, y un monte se elige para el
                 clima que va a haber. Se omite donde la clase no se mueve. */}
@@ -308,6 +318,17 @@ export function InformeView({ datos, compartido = false }: Props) {
                       : ' El salto ya ocurrió: lo que anduvo históricamente en este lugar puede no ser lo que ande hoy.'}
                   </p>
                 )}
+                {/* Y qué clima es ése, dicho igual que el de hoy. */}
+                {datos.clima.koppen_deriva.futuro
+                  && datos.clima.koppen_deriva.futuro.codigo !== datos.clima.koppen.codigo
+                  && (() => {
+                    const t = textoKoppen(datos.clima.koppen_deriva.futuro.codigo);
+                    return t && (
+                      <p className="text-xs text-ink-700/80 mt-1.5 leading-relaxed">
+                        <span className="font-semibold">{t.codigo}, {t.titulo}:</span> {t.prosa}
+                      </p>
+                    );
+                  })()}
                 <p className="text-[10px] text-ink-700/50 mt-1 leading-relaxed">
                   Beck et al. (2023), mismo mapa de 1 km leído en tres períodos. El futuro es el
                   escenario intermedio SSP2-4.5: es una proyección climática, no un pronóstico.

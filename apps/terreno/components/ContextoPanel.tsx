@@ -19,6 +19,7 @@ import {
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR, municipiosDestacadosBr,
   FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX, municipiosDestacadosMx,
+  hayDatoDePueblos,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
@@ -39,10 +40,9 @@ interface Props {
   /** La resuelve el análisis de Entorno con Nominatim. `null` hasta que se corra. */
   ubicacion:  Ubicacion | null;
   onIrAClima: () => void;
-  onIrAEntorno: () => void;
 }
 
-export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrAClima, onIrAEntorno }: Props) {
+export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrAClima }: Props) {
   // La ecorregión se pide antes de los cortes de arriba porque es un hook y no
   // puede quedar detrás de un return condicional.
   const listo = mojones.length >= 3;
@@ -193,6 +193,44 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   const futuro = fichaClimaFuturo(datosClima.koppen, datosClima.koppen_deriva);
 
   /**
+   * Si la capa de pueblos originarios tiene algo que decir en este punto.
+   *
+   * La pestaña existía siempre y se abría, en la mayor parte del planeta, para
+   * explicar por qué estaba vacía: que el predio cae fuera de los países
+   * relevados, que el geocodificador devolvió una jurisdicción que no
+   * conocemos, que Entorno todavía no corrió. Eran explicaciones honestas y
+   * eran, igual, una promesa incumplida: quien hace clic en «Pueblos» quiere
+   * saber quién vive ahí, no por qué no lo sabemos nosotros.
+   *
+   * Ahora la pestaña aparece cuando alguna de las siete fuentes contesta. Las
+   * dos ausencias medidas por el Estado —una jurisdicción argentina sin
+   * comunidades inscriptas, un departamento paraguayo adonde el operativo no
+   * fue— siguen contando como dato, porque hablan de la fuente y eso es
+   * justamente lo que la sección cuenta. Ver `hayDatoDePueblos`.
+   */
+  const hayPueblos = hayDatoDePueblos({
+    registroAr: registro.estado,
+    censoAr:    censo.estado,
+    cl:         censoCl.estado,
+    py:         censoPy.estado,
+    pe:         censoPe.estado,
+    br:         censoBr.estado,
+    mx:         censoMx.estado,
+    nacional:   !!paisNac,
+  });
+
+  /**
+   * Lo mismo para la pestaña de saberes, por el mismo motivo. Abría en 188 de
+   * 210 fichas para explicar que un saber sólo se atribuye cuando hay
+   * territorio, procedencia y acuerdo verificados. Es cierto y está escrito en
+   * el código; no tiene por qué ser una pestaña vacía en la pantalla de alguien
+   * que está diseñando un predio.
+   */
+  const haySaberes = practicas.length > 0
+    || (ficha?.saberes.length ?? 0) > 0
+    || saberesTerritorio.length > 0;
+
+  /**
    * Las cuatro fichas, y cuáles tienen algo adentro.
    *
    * El panel juntaba cinco preguntas distintas en una sola columna de scroll:
@@ -207,8 +245,8 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
    */
   const disponibles: Array<{ id: PestanaContexto; label: string; icon: React.ReactNode }> = [
     ...(ficha ? [{ id: 'ecosistema' as const, label: 'Ecosistema', icon: <Leaf className="w-3 h-3" /> }] : []),
-    ...(ficha ? [{ id: 'saberes'    as const, label: 'Saberes',    icon: <Users className="w-3 h-3" /> }] : []),
-    { id: 'pueblos' as const, label: 'Pueblos', icon: <Landmark className="w-3 h-3" /> },
+    ...(haySaberes ? [{ id: 'saberes' as const, label: 'Saberes',  icon: <Users className="w-3 h-3" /> }] : []),
+    ...(hayPueblos ? [{ id: 'pueblos' as const, label: 'Pueblos',  icon: <Landmark className="w-3 h-3" /> }] : []),
     ...((analogos || futuro) ? [{ id: 'analogos' as const, label: 'Análogos', icon: <Globe2 className="w-3 h-3" /> }] : []),
   ];
   const pestana: PestanaContexto = disponibles.some(p => p.id === pestanaElegida)
@@ -333,10 +371,12 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           los traen son las 22 fichas argentinas escritas a mano antes de ese
           criterio.
 
-          Cuando no hay, se dice qué falta. La explicación se acorta si arriba
-          ya salieron prácticas documentadas: ahí la sección dejó de ser un
-          agujero y no hace falta justificarla dos veces. */}
-      {ficha.saberes.length > 0 ? <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
+          Cuando no hay, no hay: la sección explicaba el vacío —que un saber se
+          atribuye sólo con territorio, procedencia y acuerdo verificados— y esa
+          explicación pertenece al código, no a la pantalla de alguien que está
+          diseñando un predio. Si no hay ni prácticas ni saberes ni territorio
+          documentado, la pestaña entera no aparece. */}
+      {ficha.saberes.length > 0 && <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes ancestrales y tradicionales">
         <div className="space-y-2">
           {ficha.saberes.map((s, i) => (
             <div key={i} className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
@@ -345,23 +385,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </div>
           ))}
         </div>
-      </Seccion> : (
-        <Seccion icon={<Users className="w-3.5 h-3.5" />} titulo="Saberes atribuidos a una cultura">
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            Acá va un saber cuando se puede decir <strong>de quién es</strong>, y eso necesita
-            territorio, procedencia y acuerdo verificados. Se resuelve por polígono, no por
-            ecorregión: aparece más abajo, y sólo si el predio cae adentro del territorio
-            documentado.
-          </p>
-          {practicas.length === 0 && (
-            <p className="text-xs text-ink-700/70 leading-relaxed mt-2">
-              Para esta ecorregión tampoco tenemos todavía prácticas fechadas sin atribuir, que es
-              el otro modo de contarlo. Que no haya no significa que no existan: significa que
-              todavía no tenemos con qué afirmarlo acá.
-            </p>
-          )}
-        </Seccion>
-      )}
+      </Seccion>}
       </>}
 
       {/* Pueblos originarios.
@@ -377,55 +401,13 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           administrativa y no de la ecorregión, así que aparece incluso donde no
           hay ficha de bioma. Ver lib/pueblosOriginarios.ts. */}
       {pestana === 'pueblos' && <Seccion icon={<Landmark className="w-3.5 h-3.5" />} titulo="Pueblos originarios">
-        {/* Las tres maneras de no saber son de las dos capas a la vez: si no
-            sabemos en qué provincia está el predio, no sabemos ni lo uno ni lo
-            otro. Se escriben una sola vez. */}
-        {registro.estado === 'sin_ubicacion' && (
-          <div className="space-y-2">
-            <p className="text-xs text-ink-700/70 leading-relaxed">
-              Esto se resuelve por provincia y departamento, no por clima ni por ecorregión, y
-              todavía no sabemos en cuál está el predio. Lo ubica el análisis de Entorno.
-            </p>
-            <button
-              onClick={onIrAEntorno}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-xs font-medium transition-colors"
-            >
-              <MapPin className="w-3 h-3" /> Ir a Entorno
-            </button>
-          </div>
-        )}
-
-        {/* Fuera de los seis países relevados. La condición pregunta por las
-            seis capas y no por el país: si el predio está en Chile, en
-            Paraguay, en el Perú, en Brasil o en México esta frase es falsa,
-            incluso cuando la división no se pudo resolver —ahí contestan los
-            avisos de más abajo, que dicen otra cosa. */}
-        {registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'
-          && censoPy.estado === 'fuera_de_paraguay' && censoPe.estado === 'fuera_de_peru'
-          && censoBr.estado === 'fuera_de_brasil' && censoMx.estado === 'fuera_de_mexico'
-          && !paisNac && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en {registro.pais}, y las fuentes que tenemos relevadas son las de
-            Argentina —el registro del INAI y el Censo 2022—, las de Chile —el Censo 2024 del
-            INE—, las de Paraguay —el IV Censo Indígena 2022 del INE—, las del Perú —el Censo
-            2017 del INEI—, las de Brasil —el Censo 2022 del IBGE— y las de México —el Censo
-            2020 del INEGI—. De otros doce países
-            tenemos la cifra nacional: Bolivia, Colombia, Ecuador, Uruguay, Canadá,
-            Estados Unidos, Guatemala, Panamá, Nicaragua, Costa Rica, El Salvador y San
-            Vicente y las Granadinas. Que no haya nada acá no
-            dice nada sobre {registro.pais}: dice que todavía no relevamos el registro ni el
-            censo de ese país.
-          </p>
-        )}
-
-        {registro.estado === 'jurisdiccion_desconocida' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El geocodificador devolvió «{registro.provincia}» y no es ninguna de las 24
-            jurisdicciones argentinas que conocemos, así que preferimos no contestar antes que
-            contestar de más. No significa que no haya pueblos originarios.
-          </p>
-        )}
-
+        {/* Acá vivían las tres maneras de no saber —el predio está fuera de los
+            países relevados, el geocodificador devolvió una jurisdicción que no
+            conocemos, o Entorno todavía no corrió— cada una con su párrafo
+            explicando el vacío. Ya no están: la pestaña no existe cuando no hay
+            dato (ver `hayDatoDePueblos`), así que nadie abre una sección para
+            que le digan que está vacía. Lo que quedó acá adentro es lo que
+            alguna fuente sí contesta. */}
         {(registro.estado === 'sin_comunidades' || registro.estado === 'con_registro') && (
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
             Comunidades registradas · INAI
@@ -497,20 +479,19 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             {registro.provincia.relevamiento.sin_dato > 0 && <> · {registro.provincia.relevamiento.sin_dato} sin dato</>}
           </p>
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2.5">
-            Es una lista, no un mapa: no decimos dónde está cada comunidad. Los pueblos van
-            escritos como los escribe el registro, con sus variantes, porque decidir cómo se llama
-            un pueblo no es trabajo de una app. Y los números cuentan comunidades en las que el
-            registro anota a ese pueblo, así que la columna puede sumar más que el total: hay
-            comunidades anotadas con más de un pueblo.
-          </p>
+          <Cautela claim="Es una lista, no un mapa.">
+            No decimos dónde está cada comunidad. Los pueblos van escritos como los escribe el
+            registro, con sus variantes, porque decidir cómo se llama un pueblo no es trabajo de
+            una app. Y los números cuentan comunidades en las que el registro anota a ese pueblo,
+            así que la columna puede sumar más que el total: hay comunidades anotadas con más de
+            un pueblo.
+          </Cautela>
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">Un departamento que no figura no es un territorio
-            sin pueblos originarios:</strong> es un territorio sin comunidades <em>registradas</em>.
+          <Cautela claim="Un departamento que no figura no es un territorio sin pueblos originarios:">
+            es un territorio sin comunidades <em>registradas</em>.
             El registro depende de que una comunidad haya iniciado y sostenido un trámite ante el
             Estado, así que su ausencia habla del trámite y no de la gente.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_REGISTRO_AR.url} target="_blank" rel="noreferrer"
@@ -596,12 +577,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </p>
           )}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
-            territorio.</strong> Alguien que se reconoce parte de un pueblo del noroeste y vive
+          <Cautela claim="El censo cuenta personas donde viven, no territorio.">
+            Alguien que se reconoce parte de un pueblo del noroeste y vive
             en Rosario suma en Santa Fe, y eso no dice nada sobre la tierra de Santa Fe. Para saber si hay territorio en trámite
             al lado del predio, el dato es el del registro.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2022.url} target="_blank" rel="noreferrer"
@@ -618,14 +598,6 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
         {/* Chile. Está en la misma sección y no en otra porque es la misma
             pregunta; lo que cambia es el organismo, la unidad territorial y
             que acá hay una sola de las dos fuentes. */}
-        {censoCl.estado === 'region_desconocida' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en Chile y el geocodificador devolvió «{censoCl.region}», que no es
-            ninguna de las 16 regiones que publica el censo. Preferimos no contestar antes que
-            contestar de más. No significa que no haya pueblos originarios.
-          </p>
-        )}
-
         {censoCl.estado === 'con_censo' && censoClPueblos && <>
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
             Pertenencia a un pueblo indígena · Censo 2024 · Chile
@@ -694,12 +666,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </p>
           )}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
-            territorio.</strong> Y la otra fuente —el {REGISTRO_CL_FALTANTE.organismo}, que es el
+          <Cautela claim="El censo cuenta personas donde viven, no territorio.">
+            Y la otra fuente —el {REGISTRO_CL_FALTANTE.organismo}, que es el
             equivalente del registro argentino— no está acá: {REGISTRO_CL_FALTANTE.motivo}. Así que
             esta sección no dice si hay tierra indígena inscripta al lado del predio.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2024_CL.url} target="_blank" rel="noreferrer"
@@ -722,15 +693,6 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             indígena es un operativo aparte del censo nacional, y eso se nota en
             que no hay ningún porcentaje por departamento: el numerador y el
             denominador saldrían de dos relevamientos distintos. */}
-        {censoPy.estado === 'departamento_desconocido' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en Paraguay y el geocodificador devolvió
-            «{censoPy.departamento}», que no es ninguna de las jurisdicciones que conocemos.
-            Preferimos no contestar antes que contestar de más. No significa que no haya pueblos
-            originarios.
-          </p>
-        )}
-
         {/* Los tres departamentos donde el operativo no fue. El vacío es sobre
             personas, así que se explica de qué es el vacío. */}
         {censoPy.estado === 'sin_comunidades' && (
@@ -828,23 +790,21 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           {/* Los dos nombres con barra no son dos pueblos, y la barra dice
               algo. Se explica una vez, y sólo si alguno está a la vista. */}
           {censoPyPueblos.visibles.some(p => p.pueblo.includes(' / ')) && (
-            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-              <strong className="text-ink-700/70">Los nombres con barra son un pueblo, no
-              dos.</strong> El INE conserva las dos formas porque el pueblo se cambió el nombre y
+            <Cautela claim="Los nombres con barra son un pueblo, no dos.">
+              El INE conserva las dos formas porque el pueblo se cambió el nombre y
               quiere no perder la comparación con los censos anteriores: las comunidades de
               Casanillo y Pesempo&#39;o se autodenominaron Toba Enenlhet en este censo, y la
               Organización Pueblo Guaraní acordó en julio de 2022 llamarse Pueblo Guaraní en todas
               sus comunidades. El censo es por declaración.
-            </p>
+            </Cautela>
           )}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">El censo cuenta personas donde viven, no
-            territorio.</strong> Y la otra fuente —el {REGISTRO_PY_FALTANTE.organismo}, que es el
+          <Cautela claim="El censo cuenta personas donde viven, no territorio.">
+            Y la otra fuente —el {REGISTRO_PY_FALTANTE.organismo}, que es el
             equivalente del registro argentino— no está acá: {REGISTRO_PY_FALTANTE.motivo}. Así que
             esta sección no dice si hay personería, liderazgo reconocido ni tierra titulada al lado
             del predio.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2022_PY.url} target="_blank" rel="noreferrer"
@@ -869,15 +829,6 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             INEI no baja del departamento. Lo que se gana en lugar del detalle
             territorial es la lengua materna, que sí viene abierta y que no se
             presenta como si fuera la lista de pueblos. */}
-        {censoPe.estado === 'departamento_desconocido' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en el Perú y el geocodificador devolvió
-            «{censoPe.departamento}», que no es ninguno de los 25 departamentos que conocemos.
-            Preferimos no contestar antes que contestar de más. No significa que no haya pueblos
-            originarios.
-          </p>
-        )}
-
         {censoPe.estado === 'con_censo' && lenguasPe && <>
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
             Población indígena u originaria · Censo 2017 · Perú
@@ -901,12 +852,12 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </p>
           </div>
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">La edad del universo no es un detalle.</strong> La
+          <Cautela claim="La edad del universo no es un detalle.">
+            La
             pregunta por la autoidentificación se le hizo sólo a las personas de 12 y más años, así
             que el porcentaje es sobre ellas. Dividir por la población total del departamento daría
             un número más chico que no mide lo mismo.
-          </p>
+          </Cautela>
 
           {lenguasPe.originarias.length > 0 && <>
             <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
@@ -924,25 +875,24 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-1.5">
-              <strong className="text-ink-700/70">La lengua materna no es el pueblo.</strong> Es la
+            <Cautela claim="La lengua materna no es el pueblo.">
+              Es la
               que aprendió en la niñez, y en todo el país {CENSO_PE_PAIS.castellanoAndes.toLocaleString('es-AR')} de
               los {CENSO_PE_PAIS.andes.toLocaleString('es-AR')} indígenas de los Andes declaran
               castellano. Está acá porque el censo no publica un conteo comparable para cada uno de
               los 55 pueblos que reconoce el Ministerio de Cultura, y esto es lo más cerca que
               llega. Las barras —Awajún/Aguaruna, Shipibo/Konibo— son dos nombres de una lengua, no
               dos lenguas.
-            </p>
+            </Cautela>
           </>}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">Esta respuesta es departamental y no baja.</strong>{' '}
+          <Cautela claim="Esta respuesta es departamental y no baja.">
             Los anexos del INEI abren por edad, por sexo y por área urbana o rural, pero no por
             provincia ni por distrito. Y la otra fuente —la {REGISTRO_PE_FALTANTE.organismo}, que
             es el equivalente del registro argentino— no está acá: {REGISTRO_PE_FALTANTE.motivo}.
             Así que esta sección no dice qué comunidades hay al lado del predio ni si están
             tituladas.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2017_PE.url} target="_blank" rel="noreferrer"
@@ -966,14 +916,6 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             Argentina. Cuando el municipio no se puede resolver se contesta el
             estado y se dice que es más grueso, en vez de arriesgar el municipio
             equivocado. */}
-        {censoBr.estado === 'estado_desconocido' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en Brasil y el geocodificador devolvió
-            «{censoBr.nombre}», que no es ninguno de los 27 estados que conocemos. Preferimos no
-            contestar antes que contestar de más. No significa que no haya pueblos originarios.
-          </p>
-        )}
-
         {(censoBr.estado === 'con_censo' || censoBr.estado === 'con_estado') && <>
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
             População indígena · Censo 2022 · Brasil
@@ -1020,24 +962,24 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </>}
           </div>
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">El total son dos preguntas, no una.</strong> De los{' '}
+          <Cautela claim="El total son dos preguntas, no una.">
+            De los{' '}
             {CENSO_BR_PAIS.indigena.toLocaleString('es-AR')} del país,{' '}
             {CENSO_BR_PAIS.corRaca.toLocaleString('es-AR')} declararon «cor ou raça indígena» en la
             pregunta general y {CENSO_BR_PAIS.seConsidera.toLocaleString('es-AR')} no la declararon
             pero dijeron considerarse indígenas. Esa segunda pregunta sólo se hizo dentro de
             tierras y localidades indígenas, así que está concentrada donde hay tierras demarcadas
             y no se puede leer como si fuera comparable entre estados.
-          </p>
+          </Cautela>
 
           {censoBr.estado === 'con_censo' && censoBr.municipio.indigena === 0 && (
-            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-              <strong className="text-ink-700/70">Cero también es un dato.</strong> El censo no
+            <Cautela claim="Cero también es un dato.">
+              El censo no
               contó ninguna persona indígena en este municipio, y son{' '}
               {CENSO_BR_PAIS.municipiosSinIndigenas.toLocaleString('es-AR')} de los{' '}
               {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} del país. No dice que nunca haya
               habido nadie: dice qué contó este censo, en 2022, con estas preguntas.
-            </p>
+            </Cautela>
           )}
 
           {censoBr.uf.indigena > 0 && (() => {
@@ -1056,12 +998,11 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </> : null;
           })()}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">Esto no dice dónde están las tierras
-            indígenas.</strong> Las demarca y publica la {REGISTRO_BR_FALTANTE.organismo}, y no
+          <Cautela claim="Esto no dice dónde están las tierras indígenas.">
+            Las demarca y publica la {REGISTRO_BR_FALTANTE.organismo}, y no
             está acá: {REGISTRO_BR_FALTANTE.motivo}. Así que esta sección no dice si el predio
             linda con una tierra demarcada ni en qué etapa está.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2022_BR.url} target="_blank" rel="noreferrer"
@@ -1083,15 +1024,6 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             lengua y no identidad, y que por eso deja afuera a la mayoría de la
             gente que se considera indígena. Sin esa frase la tarjeta sería
             exacta y engañosa a la vez. */}
-        {censoMx.estado === 'entidad_desconocida' && (
-          <p className="text-xs text-ink-700/70 leading-relaxed">
-            El predio está en México y el geocodificador devolvió
-            «{censoMx.nombre}», que no es ninguna de las {CENSO_MX_PAIS.entidades} entidades
-            federativas que conocemos. Preferimos no contestar antes que contestar de más. No
-            significa que no haya pueblos originarios.
-          </p>
-        )}
-
         {(censoMx.estado === 'con_censo' || censoMx.estado === 'con_entidad'
           || censoMx.estado === 'municipio_ambiguo') && <>
           <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
@@ -1166,8 +1098,8 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
 
           {/* La frase que no puede faltar. El número es exacto y contesta la
               mitad de la pregunta; sin esto se lee como si contestara toda. */}
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">Esto cuenta lengua, no identidad.</strong> El
+          <Cautela claim="Esto cuenta lengua, no identidad.">
+            El
             cuestionario que se le hizo a toda la población pregunta si la persona habla una lengua
             indígena, y son {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} en el país. La
             pregunta por considerarse indígena se hizo aparte, en el cuestionario ampliado —que es
@@ -1175,26 +1107,25 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             gente. Esa cifra no está acá porque {AUTOADSCRIPCION_MX.porQueNoEstaPorMunicipio}. Así
             que este número deja afuera a la mayoría de las personas indígenas de México, y no es
             un error del censo: es otra pregunta.
-          </p>
+          </Cautela>
 
           {censoMx.estado === 'con_censo' && censoMx.municipio.hablantes === 0 && (
-            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-              <strong className="text-ink-700/70">Cero también es un dato.</strong> En 2020 nadie
+            <Cautela claim="Cero también es un dato.">
+              En 2020 nadie
               declaró hablar una lengua indígena en este municipio, y son{' '}
               {CENSO_MX_PAIS.municipiosSinHablantes} de los{' '}
               {CENSO_MX_PAIS.municipios.toLocaleString('es-AR')} del país. No dice que no haya
               pueblos originarios: dice que nadie declaró hablar la lengua.
-            </p>
+            </Cautela>
           )}
 
           {censoMx.estado === 'con_censo' && censoMx.municipio.afro > 0 && (
-            <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-              <strong className="text-ink-700/70">Otra pregunta, otra población.</strong>{' '}
+            <Cautela claim="Otra pregunta, otra población.">
               {censoMx.municipio.afro.toLocaleString('es-AR')} personas del municipio se consideran
               afromexicanas o afrodescendientes. No es población indígena y no se suma con la de
               arriba: son {CENSO_MX_PAIS.afro.toLocaleString('es-AR')} en todo el país y el censo
               las cuenta con su propia pregunta.
-            </p>
+            </Cautela>
           )}
 
           {censoMx.entidad.hablantes > 0 && (() => {
@@ -1213,12 +1144,12 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             </> : null;
           })()}
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">Esto no dice qué pueblos son.</strong> El censo no
+          <Cautela claim="Esto no dice qué pueblos son.">
+            El censo no
             desagrega por pueblo, y la lista de los 71 pueblos la publica el{' '}
             {REGISTRO_MX_FALTANTE.organismo}: no está acá porque{' '}
             {REGISTRO_MX_FALTANTE.motivo}.
-          </p>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={FUENTE_CENSO_2020_MX.url} target="_blank" rel="noreferrer"
@@ -1288,19 +1219,19 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
             )}
           </div>
 
-          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-2">
-            <strong className="text-ink-700/70">No hay dato del lugar del predio.</strong>{' '}
+          {/* Lo que el número no dice va adentro de la cautela y no afuera:
+              es, exactamente, el «por qué». */}
+          <Cautela claim="No hay dato del lugar del predio.">
             Es el número de todo el país y nada más: {paisNac.porQueNoHayDatoLocal}.
-          </p>
-
-          <ul className="mt-2 space-y-1">
-            {paisNac.loQueNoDice.map((t, i) => (
-              <li key={i} className="text-[10px] text-ink-700/55 leading-relaxed flex gap-1.5">
-                <span className="text-clay-400 shrink-0">·</span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
+            <ul className="mt-1.5 space-y-1">
+              {paisNac.loQueNoDice.map((t, i) => (
+                <li key={i} className="flex gap-1.5">
+                  <span className="text-clay-400 shrink-0">·</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          </Cautela>
 
           <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
             <a href={paisNac.fuente.url} target="_blank" rel="noreferrer"
@@ -1527,6 +1458,35 @@ function Seccion({ icon, titulo, children }: { icon: React.ReactNode; titulo: st
       </div>
       <div className="p-3">{children}</div>
     </div>
+  );
+}
+
+/**
+ * Una cautela: la afirmación en una línea y el desarrollo detrás de «por qué».
+ *
+ * Cada número de esta sección viene con una advertencia que hace falta —el
+ * censo cuenta personas donde viven y no territorio, el dato mexicano mide
+ * lengua y no identidad, cero es un dato— y todas juntas eran seis párrafos
+ * grises debajo de una tarjeta. Leídas en bloque no se leen: la pantalla parece
+ * estar disculpándose y el dato queda sepultado.
+ *
+ * La afirmación se lee siempre, que es la parte que no se puede perder. El
+ * desarrollo está a un clic, para quien quiera saber por qué. Es un `<details>`
+ * nativo: funciona sin estado, sin JavaScript y con el teclado.
+ */
+function Cautela({ claim, children }: { claim: string; children: React.ReactNode }) {
+  return (
+    <details className="group mt-2">
+      <summary className="list-none cursor-pointer text-[10px] leading-relaxed text-ink-700/70 marker:content-none [&::-webkit-details-marker]:hidden">
+        <span className="font-semibold text-ink-700/80">{claim}</span>{' '}
+        <span className="text-water-500 group-open:hidden">por qué</span>
+        <span className="text-water-500 hidden group-open:inline">cerrar</span>
+      </summary>
+      {/* `div` y no `p`: alguna cautela trae una lista adentro —lo que el
+          número nacional no dice— y un `ul` dentro de un `p` es HTML inválido
+          que React desarma en la hidratación. */}
+      <div className="text-[10px] text-ink-700/55 leading-relaxed mt-1">{children}</div>
+    </details>
   );
 }
 

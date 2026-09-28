@@ -275,12 +275,23 @@ describe('el panel de contexto', () => {
     expect(panel).toContain('registroDelPunto(ubicacion)');
   });
 
-  it('atiende las cinco ramas: ninguna se cae en un vacío sin explicación', () => {
-    for (const estado of [
-      'sin_ubicacion', 'fuera_de_argentina', 'jurisdiccion_desconocida',
-      'sin_comunidades', 'con_registro',
-    ]) {
+  /**
+   * Regla de silencio, 28/09/2026. Este test pedía que las cinco ramas del
+   * registro estuvieran atendidas en el panel, incluidas las tres de no saber.
+   * Jonatan pidió lo contrario: que cuando no hay dato la sección no aparezca,
+   * en vez de abrirse para explicar el vacío. Las tres ramas de no saber ya no
+   * llegan al panel —la pestaña no existe— y por eso no están en el JSX.
+   * Lo que sigue estando, y este test cuida, es que las dos que sí son un dato
+   * se muestren, y que la compuerta sea la función y no un `||` suelto.
+   */
+  it('muestra las dos ramas con dato, y la compuerta decide las demás', () => {
+    for (const estado of ['sin_comunidades', 'con_registro']) {
       expect(panel, `el panel no atiende ${estado}`).toContain(`registro.estado === '${estado}'`);
+    }
+    expect(panel).toContain('hayDatoDePueblos({');
+    expect(panel).toContain("...(hayPueblos ? [{ id: 'pueblos'");
+    for (const estado of ['sin_ubicacion', 'jurisdiccion_desconocida']) {
+      expect(panel, `${estado} vuelve a tener párrafo`).not.toContain(`registro.estado === '${estado}'`);
     }
   });
 
@@ -481,12 +492,11 @@ describe('el panel y el informe con las dos fuentes', () => {
   const panel = leer('components/ContextoPanel.tsx');
   const informe = leer('components/InformeView.tsx');
 
-  it('el panel resuelve el censo con la misma ubicación y atiende sus ramas', () => {
+  it('el panel resuelve el censo con la misma ubicación y muestra lo que hay', () => {
     expect(panel).toContain('censoDelPunto(ubicacion)');
-    for (const estado of ['sin_ubicacion', 'fuera_de_argentina', 'jurisdiccion_desconocida']) {
-      expect(panel, `el panel no atiende ${estado}`).toContain(`registro.estado === '${estado}'`);
-    }
     expect(panel).toContain("censo.estado === 'con_censo'");
+    // Las ramas de no saber las resuelve la compuerta, no un párrafo.
+    expect(panel).toContain('censoAr:    censo.estado');
   });
 
   it('distingue las dos fuentes en la pantalla', () => {
@@ -822,15 +832,17 @@ describe('las dos fuentes de Chile, y la que falta', () => {
     expect(panel).toMatch(/no está publicado por comuna/);
   });
 
-  it('ya no dice que fuera de la Argentina no hay nada relevado', () => {
+  it('ya no hay ninguna rama que cuente lo que no relevamos', () => {
     const panel = leer('components/ContextoPanel.tsx');
-    // La rama de «fuera de la Argentina» tiene que preguntar por las dos capas.
-    // Con `censoCl.estado !== 'con_censo'` un punto chileno con la región sin
-    // resolver leía las dos cosas a la vez: que no relevamos su país y que su
-    // región no está entre las dieciséis. Sólo se escribe si está fuera de los
-    // dos países.
-    expect(panel).toContain("registro.estado === 'fuera_de_argentina' && censoCl.estado === 'fuera_de_chile'");
-    expect(panel).toContain('las de Chile');
+    // Esta rama existía para que un punto chileno con la región sin resolver no
+    // leyera dos mensajes contradictorios —que no relevamos su país y que su
+    // región no está entre las dieciséis—. La regla de silencio del 28/09/2026
+    // disolvió el problema entero: ninguno de los dos mensajes se escribe, la
+    // pestaña simplemente no aparece. Lo que sigue importando es que la
+    // compuerta mire a Chile además de a la Argentina.
+    expect(panel).not.toContain("registro.estado === 'fuera_de_argentina'");
+    expect(panel).not.toContain('las de Chile');
+    expect(panel).toContain('cl:         censoCl.estado');
   });
 
   it('un punto chileno con la región sin resolver no lee que no relevamos Chile', () => {
@@ -1226,14 +1238,18 @@ describe('las dos fuentes de Paraguay, y la que falta', () => {
     expect(informe).toMatch(/un pueblo y no dos/);
   });
 
-  it('la rama de «fuera de todo» pregunta por los cuatro países', () => {
-    // Con dos, un punto paraguayo sin departamento resuelto leía a la vez que
-    // no relevamos su país y que su departamento no está entre los quince. Es
-    // la misma falla que ya había aparecido con Chile, y que vuelve a aparecer
-    // cada vez que se suma un país y no se suma a esta condición.
-    expect(panel).toContain("censoPy.estado === 'fuera_de_paraguay'");
-    expect(panel).toContain("censoPe.estado === 'fuera_de_peru'");
-    expect(panel).toContain('las de Paraguay');
+  it('la compuerta pregunta por las siete fuentes, no por cuatro', () => {
+    // La falla que esto cuida es vieja y se repitió con cada país nuevo: una
+    // condición que enumera países a mano y a la que alguien se olvida de sumar
+    // el que acaba de entrar. Ahora la enumeración es una sola, la de
+    // `hayDatoDePueblos`, y el panel le pasa los siete estados.
+    for (const campo of [
+      'registroAr: registro.estado', 'censoAr:    censo.estado', 'cl:         censoCl.estado',
+      'py:         censoPy.estado', 'pe:         censoPe.estado', 'br:         censoBr.estado',
+      'mx:         censoMx.estado', 'nacional:   !!paisNac',
+    ]) {
+      expect(panel, `la compuerta no mira ${campo}`).toContain(campo);
+    }
 
     const raro = ubicPy({ provincia: 'Departamento del Chaco Boreal' });
     expect(censoParaguayoDelPunto(raro).estado).toBe('departamento_desconocido');
@@ -1526,10 +1542,14 @@ describe('las dos fuentes del Perú, y la que falta', () => {
     }
   });
 
-  it('ninguna rama peruana dice que no haya pueblos originarios', () => {
-    // La misma regla que en los otros tres países: el vacío es sobre personas.
+  it('un departamento que no reconocemos no dice nada, ni para bien ni para mal', () => {
+    // El panel decía «preferimos no contestar antes que contestar de más. No
+    // significa que no haya pueblos originarios», que era verdad y era una
+    // sección abierta para disculparse. Desde la regla de silencio no se
+    // escribe: la compuerta ve `departamento_desconocido` y no hay pestaña.
     const raro = censoPeruanoDelPunto(ubicPe({ provincia: 'Tarapacá' }));
     expect(raro.estado).toBe('departamento_desconocido');
-    expect(panel).toMatch(/No significa que no haya pueblos\s*\n?\s*originarios\./);
+    expect(panel).not.toMatch(/No significa que no haya pueblos/);
+    expect(panel).not.toMatch(/Preferimos no contestar/);
   });
 });

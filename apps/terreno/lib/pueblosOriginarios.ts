@@ -1288,3 +1288,53 @@ export function municipiosDestacadosMx(e: CensoMxEntidad, cuantos = 6): CensoMxM
  * número más chico y estaría contestando otra pregunta.
  */
 export const PORCENTAJE_PAIS_MX = porcentaje(CENSO_MX_PAIS.hablantes, CENSO_MX_PAIS.tresYMas);
+
+// ─── ¿Hay algo que decir en este punto? ──────────────────────────────────────
+
+/**
+ * Los estados de las siete fuentes en el punto, que es lo único que hace falta
+ * para saber si la sección tiene contenido.
+ */
+export interface EstadosPueblos {
+  registroAr: RegistroDelPunto['estado'];
+  censoAr:    CensoDelPunto['estado'];
+  cl:         CensoClDelPunto['estado'];
+  py:         CensoPyDelPunto['estado'];
+  pe:         CensoPeDelPunto['estado'];
+  br:         CensoBrDelPunto['estado'];
+  mx:         CensoMxDelPunto['estado'];
+  /** Alguno de los doce países que entran sólo con la cifra nacional. */
+  nacional:   boolean;
+}
+
+/**
+ * Si alguna fuente contesta algo sobre este punto.
+ *
+ * Sirve para decidir si la pestaña de pueblos originarios existe. Jonatan lo
+ * pidió así y tiene razón: una sección que se abre para decir «de este país no
+ * relevamos nada» es una promesa incumplida en la cara del usuario, y encima
+ * sugiere que el vacío es del territorio cuando es nuestro.
+ *
+ * **Dos ausencias sí son dato y cuentan como contenido**, porque las midió el
+ * Estado y no nosotros: `sin_comunidades` de la Argentina —una jurisdicción
+ * donde el registro del INAI no tiene ni una comunidad inscripta, que es un
+ * dato sobre el trámite— y `sin_comunidades` del Paraguay —un departamento
+ * adonde el operativo del IV Censo Indígena no fue—. Las dos hablan de la
+ * fuente, que es exactamente lo que la sección está para contar.
+ *
+ * Todo lo demás —el predio está fuera de los países relevados, el
+ * geocodificador devolvió una jurisdicción que no conocemos, o Entorno todavía
+ * no corrió— es no saber, y no saber se calla.
+ */
+export function hayDatoDePueblos(e: EstadosPueblos): boolean {
+  return (
+    e.registroAr === 'con_registro' || e.registroAr === 'sin_comunidades'
+    || e.censoAr === 'con_censo'
+    || e.cl === 'con_censo'
+    || e.py === 'con_censo' || e.py === 'sin_comunidades'
+    || e.pe === 'con_censo'
+    || e.br === 'con_censo' || e.br === 'con_estado'
+    || e.mx === 'con_censo' || e.mx === 'con_entidad' || e.mx === 'municipio_ambiguo'
+    || e.nacional
+  );
+}

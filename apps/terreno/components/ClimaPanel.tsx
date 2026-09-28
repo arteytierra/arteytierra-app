@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock, Mountain } from 'lucide-react';
 import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
+import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
 import type { Mojon } from '@/lib/types';
 
@@ -138,12 +139,33 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                 )}
               </div>
 
+              {/* Qué quiere decir la clase.
+                  Hasta acá la pantalla decía «Cwa · Subtropical de invierno
+                  seco» y se terminaba: para quien no tiene la tabla de Köppen
+                  en la cabeza eso es una sigla. Cada letra es una regla con un
+                  número —el mes más cálido pasa de 22 °C, el mes más seco del
+                  invierno recibe menos de un décimo del mes más lluvioso del
+                  verano— y eso es lo que se escribe. Describe la CLASE, no este
+                  predio: los grados y los milímetros de acá están abajo. */}
+              {(() => {
+                const t = textoKoppen(datos.koppen.codigo);
+                return t && (
+                  <p className="text-[11px] text-bone-50/85 leading-relaxed mt-2.5 pt-2.5 border-t border-bone-50/20">
+                    {t.prosa}
+                  </p>
+                );
+              })()}
+
               {/* Deriva climática: dónde estaba, dónde está, a dónde va.
-                  Sólo aparece si en algún tramo la clase se mueve — en un lugar
-                  climáticamente estable no hay nada que contar y la línea sería
-                  ruido. Los tres valores salen del mismo mapa leído en tres
-                  períodos, así que son comparables entre sí. */}
-              {datos.koppen_deriva && (datos.koppen_deriva.yaCambio || datos.koppen_deriva.vaACambiar) && (
+                  Los tres valores salen del mismo mapa leído en tres períodos,
+                  así que son comparables entre sí.
+
+                  Aparecía sólo cuando la clase se movía en algún tramo. Ahora
+                  aparece siempre que el mapa contestó, porque «no se mueve» es
+                  una respuesta —y es la que le interesa a quien está por
+                  plantar un monte—: sin la línea, el predio estable y el predio
+                  que nadie miró se veían exactamente igual. */}
+              {datos.koppen_deriva && (
                 <div className="mt-2.5 pt-2.5 border-t border-bone-50/20">
                   <p className="text-[10px] uppercase tracking-wide text-bone-50/70 mb-1">
                     Cómo se mueve este clima
@@ -171,7 +193,36 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                         : ' El salto ya ocurrió: lo que anduvo históricamente acá puede no ser lo que ande ahora.'}
                     </p>
                   )}
-                  <p className="text-[9px] text-bone-50/50 mt-1 leading-snug">
+
+                  {/* La clase no se mueve. Se dice, en vez de callarlo: es un
+                      resultado, y el que más tranquiliza a quien planta. */}
+                  {!datos.koppen_deriva.yaCambio && !datos.koppen_deriva.vaACambiar && (
+                    <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
+                      La clase es la misma en los tres períodos: el tipo de clima del predio no
+                      cambia. Adentro de una clase igual se mueven los números —una clase abarca
+                      un rango ancho—, pero el régimen de fondo se mantiene.
+                    </p>
+                  )}
+
+                  {/* Y qué era, y qué va a ser, en palabras. Sólo de los
+                      períodos cuya clase es distinta de la de hoy: repetir el
+                      mismo párrafo tres veces no informa nada. */}
+                  {datos.koppen_deriva.pasado
+                    && datos.koppen_deriva.pasado.codigo !== datos.koppen.codigo && (
+                    <ClaseDeOtroPeriodo
+                      rotulo={`Era ${datos.koppen_deriva.etiquetas.pasado}`}
+                      codigo={datos.koppen_deriva.pasado.codigo}
+                    />
+                  )}
+                  {datos.koppen_deriva.futuro
+                    && datos.koppen_deriva.futuro.codigo !== datos.koppen.codigo && (
+                    <ClaseDeOtroPeriodo
+                      rotulo={`Va a ser ${datos.koppen_deriva.etiquetas.futuro}`}
+                      codigo={datos.koppen_deriva.futuro.codigo}
+                    />
+                  )}
+
+                  <p className="text-[9px] text-bone-50/50 mt-1.5 leading-snug">
                     Escenario intermedio (SSP2-4.5), el que se usa de referencia
                     para planificar. Es una proyección, no un pronóstico.
                   </p>
@@ -435,6 +486,23 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
  * va destacado y los otros dos apagados, para que se lea de un vistazo dónde
  * está parado el predio hoy dentro de la trayectoria.
  */
+/**
+ * Qué clima era, o qué clima va a ser, dicho en palabras. Va debajo de la
+ * cadena de códigos: el `Dfb → Cfb` de arriba es exacto y no se entiende solo.
+ */
+function ClaseDeOtroPeriodo({ rotulo, codigo }: { rotulo: string; codigo: string }) {
+  const t = textoKoppen(codigo);
+  if (!t) return null;
+  return (
+    <div className="mt-2 pt-2 border-t border-bone-50/15">
+      <p className="text-[10px] font-semibold text-bone-50/85 leading-snug">
+        {rotulo} · <span className="font-mono">{t.codigo}</span>, {t.titulo}
+      </p>
+      <p className="text-[10px] text-bone-50/65 leading-relaxed mt-0.5">{t.prosa}</p>
+    </div>
+  );
+}
+
 function Deriva({ codigo, periodo, apagado }: { codigo?: string; periodo: string; apagado?: boolean }) {
   return (
     <div className={`text-center px-1.5 py-1 rounded ${apagado ? 'bg-bone-50/10' : 'bg-bone-50/25'}`}>
