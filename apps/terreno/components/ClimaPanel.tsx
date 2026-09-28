@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock } from 'lucide-react';
+import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock, Mountain } from 'lucide-react';
 import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
 import type { Mojon } from '@/lib/types';
@@ -204,6 +204,40 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             )}
             <StatCard icon={<Wind className="w-3.5 h-3.5" />}    label="Viento ppal."   value={datos.viento_dir_ppal}          sub={datos.viento_medio_ms !== undefined ? `${datos.viento_medio_ms} m/s medio` : 'dirección'} color="moss" />
           </div>
+
+          {/* Corrección de temperatura por altura.
+              Va acá, pegada a los números que modifica, y no en una nota al pie:
+              la temperatura, la ETP, el GDD y las heladas que se están leyendo
+              arriba son las corregidas. Aparece sólo cuando hubo corrección —si
+              el desnivel contra la celda es despreciable no hay nada que contar—.
+              Ver lib/climaAltura.ts. */}
+          {datos.correccion_altura && (
+            <div className={`rounded-lg p-2.5 border ${
+              datos.correccion_altura.confianza === 'gruesa'
+                ? 'bg-clay-50 border-clay-200'
+                : 'bg-bone-50 border-bone-200'
+            }`}>
+              <div className="flex items-start gap-2">
+                <Mountain className="w-3.5 h-3.5 mt-0.5 shrink-0 text-ink-700/60" />
+                <div>
+                  <p className="text-xs font-semibold text-ink-900">
+                    Temperatura corregida por altura
+                    <span className="ml-1.5 font-mono font-normal text-ink-700/70">
+                      {datos.correccion_altura.delta_c > 0 ? '+' : ''}
+                      {datos.correccion_altura.delta_c.toLocaleString('es-AR')} °C
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-ink-700/70 leading-relaxed mt-0.5">
+                    {datos.correccion_altura.leyenda}
+                  </p>
+                  <p className="text-[10px] text-ink-700/50 leading-relaxed mt-1">
+                    La lluvia no se corrige así: cambia con la altura pero no con un
+                    gradiente, y eso lo resuelve la calibración de abajo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Indicadores agronómicos */}
           <div className="grid grid-cols-3 gap-2">

@@ -9,6 +9,13 @@
  * Resultados son valores promedio históricos — orientativos, no de precisión agronómica.
  */
 import { fuentesRegionalesClima } from './climaFuentes';
+import { diagnosticarAltura, type CorreccionAltura } from './climaAltura';
+
+export {
+  GRADIENTE_TERMICO_C_KM, UMBRAL_IGNORAR_M, UMBRAL_AVISO_M,
+  deltaTemperaturaC, diagnosticarAltura,
+  type CorreccionAltura, type ConfianzaAltura,
+} from './climaAltura';
 
 export const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const;
 export type MesIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -114,6 +121,23 @@ export interface DatosClima {
   mes_mas_humedo?:  string;
   /** Presente si la precipitación fue calibrada con un dato local. */
   calibracion?:     CalibracionPrecip;
+  /**
+   * Altura, en metros, que la fuente climática le asigna a la celda de la que
+   * salieron estos números. La informa NASA POWER en `geometry.coordinates[2]`.
+   *
+   * No es un dato de color: es el denominador de la corrección por altura. En
+   * montaña la celda de ~50 km promedia el valle con la cumbre, y sin esta
+   * altura no hay forma de saber en qué punto de ese promedio está el predio.
+   */
+  altura_celda_m?:  number;
+  /**
+   * Presente cuando la temperatura fue corregida por la diferencia de altura
+   * entre el predio y la celda. Ausente significa que el dato se usa tal cual,
+   * ya sea porque el desnivel es despreciable o porque todavía no se conoce la
+   * altura del predio — y son dos cosas distintas que la pantalla distingue.
+   * Ver `lib/climaAltura.ts`.
+   */
+  correccion_altura?: CorreccionAltura;
 }
 
 /**
@@ -196,6 +220,12 @@ interface PowerResponse {
   properties: {
     parameter: Record<string, Record<string, number>>;
   };
+  /**
+   * `[lng, lat, altura_m]`. El tercer valor es la altura que POWER le asigna a
+   * la celda, y es la pieza que faltaba para corregir la temperatura en montaña.
+   * Ver `lib/climaAltura.ts`.
+   */
+  geometry?: { coordinates?: number[] };
 }
 
 const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31] as const;
@@ -220,6 +250,11 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   if (json.error) throw new Error(json.error);
   if (!res.ok) throw new Error(`NASA POWER respondió con error ${res.status}.`);
   const param = json.properties.parameter;
+
+  // La altura de la celda, que POWER manda y hasta ahora se tiraba. Con ella se
+  // corrige la temperatura en montaña; sin ella no se corrige nada.
+  const alturaCelda = json.geometry?.coordinates?.[2];
+  const altura_celda_m = Number.isFinite(alturaCelda) ? alturaCelda : undefined;
 
   const precip  = param['PRECTOTCORR'] ?? {};
   const tmean   = param['T2M'] ?? {};
@@ -290,6 +325,9 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     if (f !== 'daymet') continue;
     const d = await obtenerDaymet(lat, lng);
     if (!d) continue;
+    // Daymet es de 1 km y ya resuelve la altura: su temperatura NO se corrige, y
+    // por eso este camino no arrastra `altura_celda_m`. Marcar la celda de POWER
+    // acá haría que se corrigiera un dato que no lo necesita.
     return ensamblar(
       lat, lng,
       fusionarDaymet(lat, meses, d.meses),
@@ -301,13 +339,16 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     );
   }
 
-  return ensamblar(
-    lat, lng, meses, viento_dir_ppal,
-    'NASA POWER Climatology (promedio 1981–2023)',
-    koppenMapa,
-    koppenDeriva,
-    koppenFalla,
-  );
+  return {
+    ...ensamblar(
+      lat, lng, meses, viento_dir_ppal,
+      'NASA POWER Climatology (promedio 1981–2023)',
+      koppenMapa,
+      koppenDeriva,
+      koppenFalla,
+    ),
+    altura_celda_m,
+  };
 }
 
 // ─── Köppen de 1 km (global) ──────────────────────────────────────────────────
@@ -552,6 +593,81 @@ export function aplicarCalibracionPrecip(
     mes_mas_humedo: mesHumedo.mes,
     calibracion: cal,
     fuente: `${d.fuente} · precipitación calibrada${cal.fuente ? ` con ${cal.fuente}` : ''}`,
+  };
+}
+
+/**
+ * Devuelve una copia de los datos con la temperatura corregida por la diferencia
+ * de altura entre el predio y la celda de la fuente, y **todo lo derivado
+ * recomputado**: la ETP de Hargreaves, el balance mensual, el total anual de
+ * ETP, la aridez, los grados-día, los meses con riesgo de helada y el Köppen
+ * calculado. Todos dependen de la temperatura.
+ *
+ * El método y su rango de validez están en `lib/climaAltura.ts`. Acá sólo se
+ * aplica.
+ *
+ * Devuelve los datos **sin tocar** en tres casos, y los tres son correctos:
+ * cuando la fuente no informó la altura de su celda, cuando no se conoce todavía
+ * la altura del predio, y cuando el desnivel es menor que el umbral. Un dato sin
+ * `correccion_altura` es un dato que se usa tal cual y la pantalla lo dice.
+ *
+ * Aplicar SIEMPRE sobre los datos crudos y **después** de la calibración de
+ * precipitación, porque el balance mensual depende de las dos cosas. Si ya
+ * traen corrección, se devuelven intactos: corregir dos veces duplicaría el
+ * delta y el resultado seguiría pareciendo razonable, que es justo el error que
+ * este archivo existe para no cometer.
+ *
+ * Lo que la corrección NO hace: cambiar la amplitud térmica diaria. Se le suma
+ * el mismo delta a la máxima y a la mínima, así que `t_range_c` queda igual. La
+ * amplitud sí crece con la altura, pero no con un gradiente universal, y
+ * moverla a ojo cambiaría la ETP —Hargreaves usa √(tmax−tmin)— sin ninguna
+ * fuente atrás.
+ */
+export function aplicarCorreccionAltura(
+  d: DatosClima,
+  alturaPredioM: number | null | undefined,
+): DatosClima {
+  if (d.correccion_altura) return d;
+
+  const correccion = diagnosticarAltura(d.altura_celda_m, alturaPredioM);
+  if (!correccion || correccion.delta_c === 0) return d;
+
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+  const delta = correccion.delta_c;
+
+  const meses: MesDato[] = d.meses.map((m, i) => {
+    const tmax_c  = m.tmax_c  + delta;
+    const tmin_c  = m.tmin_c  + delta;
+    const tmean_c = m.tmean_c + delta;
+    const etp_mm  = calcularETPHargreaves(d.lat, i as MesIndex, tmax_c, tmin_c, tmean_c);
+    return {
+      ...m,
+      tmax_c:  r1(tmax_c),
+      tmin_c:  r1(tmin_c),
+      tmean_c: r1(tmean_c),
+      etp_mm:  r1(etp_mm),
+      balance_mm: r1(m.precip_mm - etp_mm),
+      helada_riesgo: tmin_c <= 3,
+    };
+  });
+
+  // Se rearma con `ensamblar` para no repetir acá los ocho agregados que
+  // dependen de la temperatura. El Köppen del mapa de Beck se le devuelve tal
+  // como estaba: es de 1 km y ya resuelve la altura, así que no se recalcula.
+  const armado = ensamblar(
+    d.lat, d.lng, meses, d.viento_dir_ppal, d.fuente,
+    d.koppen_fuente === 'mapa' ? d.koppen ?? null : null,
+    d.koppen_deriva ?? null,
+    d.koppen_mapa_falla,
+  );
+
+  return {
+    ...armado,
+    // `ensamblar` no los conoce: se reponen para no perderlos en el camino.
+    calibracion:    d.calibracion,
+    altura_celda_m: d.altura_celda_m,
+    correccion_altura: correccion,
+    fuente: `${d.fuente} · temperatura corregida por altura (${delta > 0 ? '+' : ''}${delta.toLocaleString('es-AR')} °C)`,
   };
 }
 

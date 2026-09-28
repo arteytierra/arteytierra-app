@@ -356,6 +356,29 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
               </div>
             ))}
 
+            {/* Lo que el clima banca y la ficha no nombra.
+                Va aparte y rotulado distinto porque es otra afirmación: arriba
+                dice "acá se cultiva esto", documentado para la ecorregión; acá
+                dice "el clima lo permite", que es más ancho y más flojo. Existe
+                porque el borde de un polígono de RESOLVE no es el borde de un
+                sistema productivo, y con la lista cerrada un cafetal que caía en
+                el valle de al lado no tenía forma de recuperar el café. */}
+            {cal.ecorregion.tambienPorClima.length > 0 && (
+              <div className="border-t border-bone-200 pt-2.5">
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+                  El clima también permite
+                </p>
+                <p className="text-[10px] text-ink-700/55 leading-relaxed mb-1.5">
+                  Estas no figuran en la ficha de la ecorregión y el clima del predio las
+                  banca. Son una pista, no una recomendación: preguntá en la zona antes de
+                  plantar cualquiera de éstas.
+                </p>
+                <div className="space-y-1.5">
+                  {cal.ecorregion.tambienPorClima.map(e => <Cultivo key={e.especie.id} e={e} />)}
+                </div>
+              </div>
+            )}
+
             {cal.ecorregion.aviso && (
               <p className="text-[9px] text-clay-700/80 leading-relaxed border-t border-bone-200 pt-2">
                 {cal.ecorregion.aviso}

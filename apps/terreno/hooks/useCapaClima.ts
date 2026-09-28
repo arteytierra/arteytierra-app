@@ -2,33 +2,51 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-  aplicarCalibracionPrecip, obtenerPrecipCHIRPS, centroide,
+  aplicarCalibracionPrecip, aplicarCorreccionAltura, obtenerPrecipCHIRPS, centroide,
   type DatosClima, type CalibracionPrecip,
 } from '@/lib/clima';
+import { obtenerElevacionPuntos } from '@/lib/elevacion';
 import type { Extremos } from '@/lib/climaExtremos';
 
 /**
  * Capa de clima del terreno: el dato crudo de POWER (`datosClimaRaw`), la
- * calibración de precipitación (manual o automática por CHIRPS) y los extremos.
+ * calibración de precipitación (manual o automática por CHIRPS), la corrección
+ * de temperatura por altura y los extremos.
  *
- * `datosClima` — lo que consume toda la app — es el derivado
- * `aplicarCalibracionPrecip(crudo, calibración)`. Apenas hay clima crudo, el hook
- * busca CHIRPS (~5 km) y lo aplica como calibración automática, **sin pisar nunca**
- * una calibración cargada a mano. Se intenta una sola vez por celda (~5 km): si el
- * usuario la quita, no vuelve sola.
+ * `datosClima` — lo que consume toda la app — es el derivado de encadenar las dos
+ * correcciones sobre el crudo, **en este orden y no en el otro**:
  *
- * Extraído de `MapaTerrenoApp` (Fase 1, etapa 2). No cambia comportamiento.
+ *   1. `aplicarCalibracionPrecip` arregla la lluvia, que la grilla de ~50 km
+ *      subestima en terreno quebrado.
+ *   2. `aplicarCorreccionAltura` arregla la temperatura, que la misma grilla
+ *      devuelve para la altura media de la celda y no para la del predio.
+ *
+ * El orden importa porque el balance hídrico mensual es `precip − ETP` y las dos
+ * correcciones mueven un término cada una: la altura tiene que ver la lluvia ya
+ * calibrada para recomputar el balance bien. Al revés, la calibración pisaría la
+ * ETP corregida con la vieja.
+ *
+ * Apenas hay clima crudo, el hook busca CHIRPS (~5 km) y lo aplica como
+ * calibración automática, **sin pisar nunca** una calibración cargada a mano. Se
+ * intenta una sola vez por celda (~5 km): si el usuario la quita, no vuelve sola.
+ *
+ * La altura del predio entra por dos caminos, y el mejor gana. Si el análisis de
+ * relieve ya corrió, manda `alturaTopoM` —la media de todo el predio, que es el
+ * dato bueno—. Si no corrió, el hook pide la elevación del centroide, que es una
+ * sola consulta y alcanza para corregir: sin esto la corrección no existiría
+ * hasta que alguien abriera la pestaña de topografía, y el clima se mira antes.
+ *
+ * Extraído de `MapaTerrenoApp` (Fase 1, etapa 2).
  */
-export function useCapaClima(mojones: Array<{ lat: number; lng: number }>) {
+export function useCapaClima(
+  mojones: Array<{ lat: number; lng: number }>,
+  alturaTopoM?: number | null,
+) {
   const [datosClimaRaw, setDatosClimaRaw] = useState<DatosClima | null>(null);
   const [calibracionPrecip, setCalibracionPrecip] = useState<CalibracionPrecip | null>(null);
   const [datosExtremos, setDatosExtremos] = useState<Extremos | null>(null);
   const [buscandoCHIRPS, setBuscandoCHIRPS] = useState(false);
-
-  const datosClima = useMemo(
-    () => (datosClimaRaw ? aplicarCalibracionPrecip(datosClimaRaw, calibracionPrecip) : null),
-    [datosClimaRaw, calibracionPrecip],
-  );
+  const [alturaPunto, setAlturaPunto] = useState<number | null>(null);
 
   // La celda redondeada (~5 km) evita reintentar con cada mojón que se mueve.
   const celdaClima = useMemo(() => {
@@ -36,6 +54,20 @@ export function useCapaClima(mojones: Array<{ lat: number; lng: number }>) {
     const c = centroide(mojones);
     return { lat: Math.round(c.lat / 0.05) * 0.05, lng: Math.round(c.lng / 0.05) * 0.05 };
   }, [mojones]);
+
+  // El relieve gana cuando está: es la media del predio y no un punto suelto.
+  const alturaPredioM = alturaTopoM ?? alturaPunto;
+
+  const datosClima = useMemo(
+    () => {
+      if (!datosClimaRaw) return null;
+      return aplicarCorreccionAltura(
+        aplicarCalibracionPrecip(datosClimaRaw, calibracionPrecip),
+        alturaPredioM,
+      );
+    },
+    [datosClimaRaw, calibracionPrecip, alturaPredioM],
+  );
 
   const hayClimaCrudo = !!datosClimaRaw;
   const hayCalibracionManual = calibracionPrecip?.origen === 'manual';
@@ -57,6 +89,27 @@ export function useCapaClima(mojones: Array<{ lat: number; lng: number }>) {
 
     return () => ctrl.abort();
   }, [hayClimaCrudo, celdaClima, chirpsIntentado, hayCalibracionManual]);
+
+  // Altura del centroide, sólo si hace falta: si el relieve ya la dio, no se
+  // pide. Se reintenta al cambiar de celda y se queda en null si falla, que es
+  // lo mismo que no tenerla: sin altura no se corrige y la pantalla lo aclara.
+  const necesitaAltura = hayClimaCrudo && alturaTopoM == null;
+  useEffect(() => { setAlturaPunto(null); }, [celdaClima]);
+
+  useEffect(() => {
+    if (!necesitaAltura || !celdaClima) return;
+    let vivo = true;
+    const c = centroide(mojones);
+    obtenerElevacionPuntos([{ lat: c.lat, lng: c.lng }])
+      .then(r => {
+        const z = r.elevaciones[0];
+        if (vivo && typeof z === 'number' && Number.isFinite(z)) setAlturaPunto(z);
+      })
+      .catch(() => { /* sin altura no se corrige; no es un error que mostrar */ });
+    return () => { vivo = false; };
+    // `mojones` cambia de identidad con cada arrastre: la dependencia es la celda.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [necesitaAltura, celdaClima]);
 
   return {
     datosClima, datosClimaRaw, setDatosClimaRaw,

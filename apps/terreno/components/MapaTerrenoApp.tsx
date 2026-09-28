@@ -326,13 +326,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const capasUsuario = doc.capasUsuario ?? CAPAS_USUARIO_INICIAL;
 
   // ─── Capa de clima (hook useCapaClima) ────────────────────────────────────
-  // Clima crudo (POWER) + calibración de lluvia (manual/CHIRPS) + extremos.
+  // Clima crudo (POWER) + calibración de lluvia (manual/CHIRPS) + corrección de
+  // temperatura por altura + extremos.
+  //
+  // La altura media del relieve entra acá porque la celda de POWER es de ~50 km
+  // y devuelve la temperatura de su altura media, no la del predio: en montaña
+  // eso son varios grados. Si el relieve todavía no corrió, el hook se consigue
+  // la altura del centroide por su cuenta. Ver lib/climaAltura.ts.
   const {
     datosClima, datosClimaRaw, setDatosClimaRaw,
     calibracionPrecip, setCalibracionPrecip,
     datosExtremos, setDatosExtremos,
     buscandoCHIRPS,
-  } = useCapaClima(mojones);
+  } = useCapaClima(mojones, datosTopografia?.elev_media);
 
   // Shims drop-in: misma firma que los useState anteriores, ruteado por historial
   const setMojones      = useCallback((v: Mojon[]           | ((p: Mojon[])           => Mojon[]))           => commit(d => ({ ...d, mojones:      typeof v === 'function' ? v(d.mojones)      : v })), [commit]);
