@@ -73,6 +73,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO SIPAM — Sistema agrícola ancestral Metepantle, Tlaxcala', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en' },
       ],
     },
+    {
+      practica: 'Extracción del aguamiel y producción de pulque (tlachiquero)',
+      periodo: 'Práctica documentada en Puebla y Tlaxcala en 2015-2016; en retroceso desde mediados del siglo XX',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Productores de cuatro municipios de Puebla y Tlaxcala cultivan principalmente Agave salmiana en parcelas de dos a tres hectáreas y extraen aguamiel raspando la piña a los diez o catorce años. Los tlachiqueros —especialistas en la extracción— ajustan la operación al ciclo lunar: tapan con luna llena y agujerean con luna creciente para reducir la pudrición. La superficie sembrada cayó de más de doce mil hectáreas en 1960 a menos de mil en 2014; el artículo documenta sin embargo la persistencia del cultivo y del conocimiento asociado en las comunidades estudiadas, junto con la integración del maguey en bordos tipo metepantle.',
+      fuentes: [
+        { label: 'Flores-Cruz et al. (2018) — Conocimiento tradicional, cultivo y aprovechamiento del maguey pulquero en municipios de Puebla y Tlaxcala, Polibotánica 45: 205-229', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-27682018000100205&script=sci_arttext_plus&tlng=es' },
+      ],
+    },
   ],
 
   // ── Altiplano del Titicaca ──────────────────────────────────────────────────
@@ -1414,6 +1425,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Tehuacán-Cuicatlán Valley', url: 'https://whc.unesco.org/en/list/1534/' },
       ],
     },
+    {
+      practica: 'Milpa con cactáceas columnares en el Valle de Tehuacán',
+      periodo: 'Sistema documentado como vigente al momento de la publicación en 2013',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el Valle Semiárido de Tehuacán-Cuicatlán, productores integran cactáceas columnares —nopalli (Opuntia pilifera) y chichipe (Polaskia chichipe)— en sistemas policultivos con maíz y frijol y en solares peridomésticos. Las cactáceas delimitan parcelas, producen fruto y forraje en condiciones de aridez extrema donde la mayoría de los frutales no prospera, y su presencia en el paisaje es evidencia de siglos de selección local de plantas. Tehuacán es reconocido como uno de los centros históricos de domesticación de cactáceas útiles en Mesoamérica.',
+      fuentes: [
+        { label: 'Blancas, Casas, Rangel-Landa et al. (2013) — Plant management in the Tehuacán-Cuicatlán Valley, Mexico, Economic Botany / Etnobiología 11(2): 1-31', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982013000400001' },
+      ],
+    },
   ],
   oaxaca_sierras_bosques_comunales: [
     {
@@ -1425,6 +1447,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La comunidad forestal zapoteca de Capulálpam de Méndez estableció manejo comunitario al terminar la concesión industrial y luego adoptó selección en grupos y árboles semilleros, acompañados por monitoreo permanente. La experiencia permite pensar mosaicos de corta, regeneración y seguimiento en bosques mixtos, pero sus reglas comunales, inventarios y decisiones no son sustituibles por un turno forestal genérico.',
       fuentes: [
         { label: 'Madera y Bosques — Manejo forestal en la Sierra Juárez de Oaxaca', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-04712019000300203&script=sci_arttext' },
+      ],
+    },
+    {
+      practica: 'Sistemas agroforestales zapotecos: solar, cafetal y milpa en Las Delicias',
+      periodo: 'Documentados como vigentes en 2020 en comunidad zapoteca de la Sierra Juárez',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la comunidad zapoteca de Las Delicias, Sierra Juárez de Oaxaca, el registro etnobotánico identifica el solar peridoméstico, el cafetal de sombra y la milpa como los tres sistemas agroforestales principales. Cada uno cumple funciones distintas y complementarias: el solar concentra especies medicinales, frutales y condimentarias cerca de la casa; el cafetal mantiene diversidad arbórea con ingreso monetario; la milpa asegura la base alimentaria. El estudio documenta que el conjunto provee alimento a la familia y complementa el ingreso, lo que sustenta el diseño de predios que articulan los tres estratos en lugar de especializarse en uno solo.',
+      fuentes: [
+        { label: 'Tlacotempa-Morales, Alcántara-Onofre y Torres-García (2020) — Registro etnobotánico en una comunidad zapoteca de la Sierra Juárez de Oaxaca, Revista Mexicana de Ciencias Forestales 11(57)', url: 'https://scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982020000100128' },
+      ],
+    },
+    {
+      practica: 'Conservación de diversidad de maíz criollo en Los Loxicha',
+      periodo: 'Práctica en uso al momento del estudio; las variedades llevan generaciones de selección local',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En cinco municipios zapotecos de la Sierra Sur de Oaxaca (Los Loxicha), agricultores conservan treinta y seis variedades tradicionales de maíz que corresponden a diez razas agronómicas, el veinte por ciento de las razas reportadas para todo México. Las variedades circulan mediante selección de semilla propia, trueque y compra entre productores vecinos; ese flujo génico entre parcelas es el mecanismo que genera y mantiene la diversidad in situ. El registro sitúa a los sistemas milperos de la Sierra Sur entre los bancos genéticos en uso más robustos del país.',
+      fuentes: [
+        { label: 'Perales, Benz y Brush (2005) / Pérez-Herrera, Chávez-Servia et al. (2015) — Diversidad de maíz en la sierra sur de Oaxaca, México: conocimiento y manejo tradicional, Polibotánica 39: 219-250', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1405-27682015000100009' },
       ],
     },
   ],
@@ -1440,6 +1484,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO GIAHS — Ich Kool, Mayan Milpa System', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       ],
     },
+    {
+      practica: 'Meliponicultura maya (ko\'olel kaab)',
+      periodo: 'Actividad ancestral; documentada en vías de desaparición en Campeche (2018)',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'La cría de la abeja sin aguijón ko\'olel kaab (Melipona beecheii) es una práctica ancestral maya documentada en Campeche que retrocede por la introducción de la abeja europea y el cambio en el uso del suelo. Las colmenas se mantienen en troncos tallados dentro del solar y producen miel con propiedades medicinales distintas a las de la abeja africanizada. La polinización que genera ko\'olel kaab es funcional para varias plantas del huerto y del monte bajo, lo que la convierte en un componente productivo del sistema familiar más allá del producto cosechado directamente.',
+      fuentes: [
+        { label: 'Villanueva-Gutiérrez, Roubik y Colli-Ucán (2005 / actualización Nates-Parra 2018) — La cría de la abeja sin aguijón ko\'olel kaab (Melipona beecheii) como actividad ancestral en vías de desaparición, Acta Zoológica Mexicana 34(2)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0185-25742018000200227' },
+      ],
+    },
+    {
+      practica: 'Solar maya como agroecosistema de soberanía alimentaria',
+      periodo: 'Sistema prehispánico; documentado como vigente en Yucatán en 2022',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Familias mayas de la Península de Yucatán mantienen solares que combinan maíz, calabaza, chile habanero, plantas medicinales, árboles frutales y animales domésticos en un espacio adyacente a la casa. La gestión es principalmente femenina y el conocimiento se transmite en la práctica cotidiana; el solar provee una diversidad de alimentos y medicinas que el mercado formal raramente ofrece a la misma escala local. Es además reservorio de semillas criollas y de saberes sobre plantas del monte sin otro lugar de custodia formal; su continuidad depende de la disponibilidad de tiempo femenino y del acceso a la tierra.',
+      fuentes: [
+        { label: 'Ortega-Hernández, Montes-Recinos y Torres-Dosal (2022) — La (re)producción de las tradiciones agroalimentarias en los solares mayas de la Península de Yucatán, Estudios Sociales 32(60)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692022000200120' },
+      ],
+    },
   ],
 
   bosque_mesofilo_montana: [
@@ -1452,6 +1518,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La documentación de CONABIO sitúa la introducción del café a fines del siglo XVIII y describe cafetales diversificados bajo sombra entreverados con bosque mesófilo. El dosel amortigua sol y lluvia, conserva humedad y mantiene continuidad arbórea en laderas; el contraste importante es con plantaciones a pleno sol, que eliminan esa función.',
       fuentes: [
         { label: 'CONABIO — Cien casos de éxito: Cafetales y biodiversidad', url: 'https://www.biodiversidad.gob.mx/pais/cien_casos/pdf/Cien%20casos.pdf' },
+      ],
+    },
+    {
+      practica: 'Agroecosistema rotacional totonaco de vainilla',
+      periodo: 'Desde mediados del siglo XVIII hasta la década de 1970; documentado como histórico',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'En el norte de Veracruz, agricultores totonacos alternaron ciclos de milpa de dos a cuatro años con plantaciones de vainilla de diez a veinte años; la vainilla precisaba la sombra que sólo ofrecía el bosque mesófilo intervenido con moderación. La rotación distribuía trabajo e ingreso en el tiempo y mantenía cobertura arbórea entre cultivos. Este sistema sostuvo la condición de México como principal productor mundial de vainilla hasta la década de 1970, cuando la vainilla sintética y el cambio en el uso del suelo redujeron las plantaciones tradicionales totonacan.',
+      fuentes: [
+        { label: 'García-Mendoza, Velasco-Velasco y Gallardo-López (2025) — Rotational management of vanilla agroecosystems by Totonac farmers in Veracruz, Mexico, Ecology and Society 31(1): art.7', url: 'https://ecologyandsociety.org/vol31/iss1/art7/' },
       ],
     },
   ],
@@ -1519,6 +1596,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'D’Alessandro y González (2017) — La práctica de la milpa, el ch’ulel y el maíz como elementos articuladores de la cosmovisión sobre la naturaleza entre los tzeltales de Tenejapa, Estudios de Cultura Maya 50', url: 'https://www.scielo.org.mx/scielo.php?lng=es&nrm=iso&pid=S0185-25742017000200271&script=sci_arttext_plus&tlng=es' },
       ],
     },
+    {
+      practica: 'Cafetales de sombra con diversidad arbórea en Chiapas',
+      periodo: 'Documentados en 2025 en fincas de la región cafetalera de Chiapas',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Cafetales de Chiapas que se superponen con bosque mesófilo y selva mediana conservan ciento cuarenta y seis especies arbóreas como sombra, distribuidas según la elevación y el tipo de bosque circundante. Los sistemas en contacto directo con bosque mesófilo muestran la mayor diversidad arbórea y funcionan como corredor biológico en paisajes fragmentados. El estudio documenta que la sombra diversa no es un subproducto marginal sino una condición estructural del cafetal chiapaneco que mantiene cobertura de dosel y reservorios de carbono dentro de la lógica productiva familiar.',
+      fuentes: [
+        { label: 'Pérez-Luna, Soto-Pinto y Villanueva-López (2025) — Diversidad arbórea en cafetales bajo sombra de Chiapas, Revista Mexicana de Ciencias Forestales 16(78)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext_plus&pid=S2007-11322025000200148&lng=es&tlng=es&nrm=iso' },
+      ],
+    },
   ],
   sierras_madre_pino_encino: [
     {
@@ -1543,6 +1631,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La teledetección en la cuenca de Tlalixcoyan, Veracruz, identificó unas 15.000 hectáreas de campos elevados conectados con grupos de plazas cívico-ceremoniales. Por su escala, los autores proponen cooperación local y descentralizada para construir y mantener recursos hidráulicos y agrícolas comunes, más allá de una sola familia o linaje. Es una hipótesis sustentada en patrones lidar que aún requiere pruebas de campo para sus detalles organizativos.',
       fuentes: [
         { label: 'Stoner, Stark, VanDerwarker y Urquhart (2021) — Between land and water: Hydraulic engineering in the Tlalixcoyan basin, Veracruz, Mexico, Journal of Anthropological Archaeology 61: 101264 (resumen y conclusiones destacadas públicos; el texto completo es de pago)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0278416520302373' },
+      ],
+    },
+    {
+      practica: 'Procesamiento artesanal chontal del cacao en la Chontalpa',
+      periodo: 'Documentado como vigente en Jalpa de Méndez y Centro, Tabasco',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la Chontalpa, Tabasco, familias chontales producen chocolate artesanal casero mediante fermentación de las semillas, secado al sol, tostado en comal de barro y molienda tradicional del cacao (Theobroma cacao L.). La fermentación local preserva microbiomas y aromas que el procesamiento industrial no puede reproducir; el producto circula como alimento y como recurso ceremonial dentro de la economía familiar. La fuente vincula la práctica a una herencia de la cultura olmeca, aunque señala que el chocolate artesanal compite en desventaja con el chocolate industrializado importado.',
+      fuentes: [
+        { label: 'Mariaca-Méndez, García-Moya y Lozoya-Saldaña (2018) — El chocolate casero artesanal en la Chontalpa, Tabasco: elaboración, usos e importancia, Revista de Geografía Agrícola 60', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692018000100005' },
       ],
     },
   ],
@@ -1585,6 +1684,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO — Reserva de Biosfera Maya, un referente latinoamericano', url: 'https://www.unesco.org/es/articles/reserva-de-biosfera-maya-un-referente-latinoamericano-un-ejemplo-al-mundo' },
       ],
     },
+    {
+      practica: 'Recolección comunitaria de xate, chicle y pimienta en el Petén',
+      periodo: 'Extracción documentada desde hace treinta a setenta años en la Reserva de Biosfera Maya',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Comunidades del Petén guatemalteco han recolectado durante generaciones xate (Chamaedorea elegans y C. oblongata para exportación floral), chicle (Manilkara zapota, base del chicle natural) y pimienta negra (Pimenta dioica) en la Reserva de Biosfera Maya. Los tres productos entran en decline por sobreexplotación, lo que motivó la transición hacia concesiones forestales comunitarias como mecanismo regulador del acceso. La FAO documenta que la combinación de extracción regulada y reforestación dentro de la concesión ofrece una alternativa al desmonte para comunidades que dependen económicamente del bosque.',
+      fuentes: [
+        { label: 'FAO Non-Wood News (1997) — Non-timber forest products in the Petén, Guatemala: xate, chicle and allspice', url: 'https://www.fao.org/4/w7700e/W7700e05.htm' },
+      ],
+    },
   ],
   talamanca_caribe_sur: [
     {
@@ -1597,6 +1707,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       fuentes: [
         { label: 'AGRIS — Diagnóstico agroforestal de fincas cacaoteras Bribri y Cabécar', url: 'https://agris.fao.org/search/en/providers/124212/records/69b95c8cce5e0ae4f87879a4' },
         { label: 'FAO Family Farming — Manual de Prácticas Ancestrales Bribri y Cabecar', url: 'https://www.fao.org/family-farming/detail/en/c/1755144/' },
+      ],
+    },
+    {
+      practica: 'Manejo de plantas útiles en cacaotales Bribri y Cabécar',
+      periodo: 'Documentado en 2003 con 180 participantes indígenas de Talamanca',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Familias Bribri y Cabécar de Talamanca conservan doscientas ochenta y tres especies vegetales útiles dentro y alrededor de sus cacaotales, distribuidas en ocho categorías de uso que incluyen alimentación, construcción, medicina y rituales. El estudio de 2003, con ciento ochenta participantes indígenas en talleres participativos, identificó ocho especies prioritarias poco documentadas fuera del territorio —entre ellas dos palmas (Geonoma congesta e Iriartea deltoidea), tres maderables y dos lianas— que el manejo familiar conserva con criterios propios. La gestión va más allá de la estructura del cacetal como sistema agroforestal y abarca el territorio completo: parcela, monte y quebrada.',
+      fuentes: [
+        { label: 'Ocampo-Sanchez, R. (2004) — Plantas útiles en cacaotales Bribri y Cabécar, Talamanca, Costa Rica, Tesis MSc, CATIE, Turrialba', url: 'https://repositorio.catie.ac.cr/handle/11554/6675' },
       ],
     },
   ],
