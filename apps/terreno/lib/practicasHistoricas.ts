@@ -89,6 +89,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Erickson, C. (1987) — The dating of raised-field agriculture in the Lake Titicaca Basin (PDF, Univ. of Pennsylvania)', url: 'https://anthropology.sas.upenn.edu/sites/default/files/page/EricksonDatingRaisedFieldAgricultureLakeTiticacvaBasinPeru1987.pdf' },
       ],
     },
+    {
+      practica: 'Laimes y aynokas (rotación comunal por sectores)',
+      periodo: 'Sistema ancestral; documentado como vigente por FAO en 2018',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la cuenca del Titicaca las comunidades dividen el territorio en sectores —laimes o aynokas— que rotan entre cinco y veinte años de cultivo seguidos de años de descanso. El turno sincroniza a toda la comunidad en el mismo sector a la vez, facilitando el control de heladas, plagas y acceso al riego comunal; su diseño implica planificación a escala de cuenca, no de parcela.',
+      fuentes: [
+        { label: 'FAO SIPAM — Andean Agriculture of Peru: aynokas y sistema de rotación comunal', url: 'https://www.fao.org/giahs/giahs-around-the-world/peru-andean-agriculture/en/' },
+      ],
+    },
+    {
+      practica: 'Pastoreo de camélidos en bofedales de altura',
+      periodo: 'Más de 3000 años, desde tiempos prehispánicos hasta la actualidad',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En los bofedales de la puna húmeda, llamas y alpacas se crían dentro de sistemas comunitarios que articulan pastoreo, reproducción y cuidado de humedales. La diversidad de razas nativas adaptadas a la altitud y los saberes de manejo del rebaño (tama) son conocimiento aplicado para diseñar sistemas de pastoreo en altura y evaluar la carga máxima sin degradar el humedal.',
+      fuentes: [
+        { label: 'FAO y Ministerio de Agricultura de Chile — Ganadería camélida sostenible en el territorio altoandino', url: 'https://www.fao.org/americas/publications/enfoques/ganaderia-camelida/' },
+      ],
+    },
   ],
 
   // ── Rapa Nui ────────────────────────────────────────────────────────────────
@@ -551,6 +573,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO Agroforestry — The Amazonian Chakra in Napo, Ecuador', url: 'https://www.fao.org/agroforestry/fao%27s-work/faos-work/article-detail/the-amazonian-chakra--a-traditional-agroforestry-system-managed-by-indigenous-communities-in-napo-province--ecuador/' },
       ],
     },
+    {
+      practica: 'Pesca artesanal con conocimiento ecológico local (Kichwa, Siona, Cofán)',
+      periodo: 'Práctica de larga historia; documentada mediante entrevistas a 53 pescadores en 2026',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En siete comunidades del noroccidente amazónico ecuatoriano, pescadores Kichwa, Siona y Cofán identificaron rutas migratorias de peces, hábitats de desove y patrones de abundancia estacional que estructuran el calendario de pesca. Ese conocimiento ecológico local orienta la presión de pesca según el ciclo hidrológico y puede articularse con manejo predial para conservar quebradas, bosques de galería y acceso comunitario al agua.',
+      fuentes: [
+        { label: 'Ethnobiology and Conservation — Local Ecological Knowledge, Fishing Practices and Threats among Kichwa, Cofán and Siona Fishers in the Ecuadorian Amazon (2026)', url: 'https://ethnobioconservation.com/ebc/en/article/view/1099' },
+      ],
+    },
   ],
   amazonia_oriental_tierra_firme: [
     {
@@ -605,6 +638,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Secrets of the Andean chakras', url: 'https://www.fao.org/newsroom/story/secrets-of-the-andean-chakras/' },
       ],
     },
+    {
+      practica: 'Huertos caseros pluriestrato en los Andes colombianos',
+      periodo: 'Práctica campesina tradicional; registrada en 13 veredas de Nariño en 2017',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el municipio de Ancuya, Nariño, los huertos domésticos albergan hasta 142 especies de árboles, arbustos y cultivos alimenticios y medicinales distribuidos en varios estratos. Estos sistemas conservan semillas locales, diversifican la dieta, proveen materiales y medicina, y mantienen el conocimiento de manejo de especies asociadas; ofrecen un modelo de alta diversidad adaptado a predios de montaña sin requerir insumos externos.',
+      fuentes: [
+        { label: 'Montenegro et al. (2017) — Home gardens agrobiodiversity in the Colombian Andes, Revista de Ciencias Agrícolas Vol. 34 No. 1', url: 'https://revistas.udenar.edu.co/index.php/rfacia/article/view/3418' },
+      ],
+    },
   ],
   valles_secos_interandinos: [
     {
@@ -616,6 +660,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En la comunidad de Jatichulaya, Charazani, se abren kanis o surcos de conducción adaptados a pendientes fuertes y alineados con las curvas de nivel. El reparto está a cargo de un Agente de Aguas y el trazado evita erosión, aunque la fuente destaca su elevada demanda de mano de obra.',
       fuentes: [
         { label: 'FAO AGRIS — La práctica de riegos ancestrales andinos: el riego por Kanis', url: 'https://agris.fao.org/search/en/providers/125077/records/67653b7bfccf879925c0e927' },
+      ],
+    },
+    {
+      practica: 'Andenes (terrazas de cultivo) en laderas andinas',
+      periodo: 'Más de 5000 años; sistema declarado SIPAM por FAO en 2018',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'En los valles secos interandinos, los andenes transforman laderas empinadas en superficies de cultivo horizontales que retienen suelo, almacenan humedad y regulan el escurrimiento. Cada terraza incluye un muro de piedra, un relleno estructurado en capas y un sistema de drenaje que canaliza el exceso sin erosionar el talud; en pendientes mayores al 30 % son la infraestructura fundamental del cultivo.',
+      fuentes: [
+        { label: 'FAO SIPAM — Andean Agriculture of Peru: terrazas andinas como herencia agrícola mundial', url: 'https://www.fao.org/giahs/giahs-around-the-world/peru-andean-agriculture/en/' },
       ],
     },
   ],
@@ -631,6 +686,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO AGRIS — Historical evolution of water control in an Andean community of Ecuador', url: 'https://agris.fao.org/search/en/providers/122439/records/6851663faab9439e79fca265' },
       ],
     },
+    {
+      practica: 'Conservación y selección de papas nativas (Solanum spp.)',
+      periodo: 'Desde la domesticación andina hace ~8000 años; catálogo actualizado al 2020',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El INIA del Perú registra más de 750 variedades de papa nativa y mantiene más de 3000 en evaluación. Las comunidades andinas seleccionaron estas variedades por tolerancia a heladas, sequías y distintas altitudes. La diversidad de formas, colores y comportamientos térmicos hace que la papa nativa sea tanto un banco genético productivo como una herramienta concreta de distribución del riesgo climático en predios de páramo y puna alta.',
+      fuentes: [
+        { label: 'INIA Perú — Nota de prensa: más de 750 variedades de papa nativa registradas (2020)', url: 'https://www.inia.gob.pe/2020-nota-071/' },
+      ],
+    },
   ],
   puna_seca_central: [
     {
@@ -642,6 +708,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Comunidades altoandinas crían llamas y alpacas y mantienen la cultura de la tama o rebaño, vinculando pastoreo, reproducción y cuidado de humedales. El diseño territorial debe proteger bofedales, distribuir la presión de pastoreo y conservar diversidad de razas, combinando saber tradicional con sanidad y monitoreo actuales.',
       fuentes: [
         { label: 'FAO y Ministerio de Agricultura de Chile — Ganadería camélida sostenible en el territorio altoandino', url: 'https://www.fao.org/americas/publications/enfoques/ganaderia-camelida/' },
+      ],
+    },
+    {
+      practica: 'Elaboración de chuño y moraya (liofilización natural a cielo abierto)',
+      periodo: 'Técnica ancestral del altiplano sur de Perú y Bolivia; documentada en 2004',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el altiplano a más de 3800 m s. n. m., las comunidades someten la papa a unos cincuenta días que alternan noches con heladas de hasta -10 °C y días de sol intenso (junio-agosto). El congelamiento nocturno rompe las células y el sol deseca; el resultado es chuño negro o moraya/tunta blanca (lavada en agua corriente). La deshidratación permite almacenar el producto por décadas sin instalaciones especiales; su referencia principal es el terreno y el ciclo climático.',
+      fuentes: [
+        { label: 'LEISA — Chuño blanco, tunta o moraya: un proceso natural de conservación (Revista de Agroecología, vol. 20 n.° 3, 2004)', url: 'https://leisa-al.org/web/revista/volumen-20-numero-03/chuno-blanco-tunta-o-moraya-un-proceso-natural-de-conservacion/' },
+      ],
+    },
+    {
+      practica: 'Qochas (microreservorios de lluvia en la puna seca)',
+      periodo: 'Tecnología ancestral; recuperada con apoyo del PACC Perú; documentada en 2019',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En los departamentos de Cusco y Apurímac el programa PACC Perú recuperó 194 microreservorios —qochas— con capacidad total de 83 177 m³. Cada qocha es una depresión excavada que capta lluvia y escorrentía concentrada para abastecer ganado y cultivos en períodos secos. En la puna seca, donde el déficit hídrico es el principal limitante, el sistema puede multiplicarse con maquinaria liviana siguiendo la misma lógica de captación por microcuenca.',
+      fuentes: [
+        { label: 'MINAM Perú — Las qochas: sistemas de recargas de agua en microcuencas altoandinas', url: 'https://www.minam.gob.pe/glaciares/historia-inspiradoras/las-qochas-sistemas-de-recargas-de-agua-en-microcuencas-altoandinas/' },
       ],
     },
   ],
@@ -659,6 +747,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Parques Nacionales Naturales de Colombia — Plan de manejo Sierra Nevada de Santa Marta', url: 'https://intranet.parquesnacionales.gov.co/wp-content/uploads/2016/05/SierraNevadaPM2009.pdf' },
       ],
     },
+    {
+      practica: 'Conuco venezolano como sistema de policultivo itinerante',
+      periodo: 'Práctica multiétnica vigente; documentada en cinco grupos étnicos venezolanos en 2018',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El conuco es el espacio productivo central de comunidades indígenas venezolanas de los bosques húmedos del Caribe y la Amazonia. Combina yuca amarga y dulce, plátano, ñame y múltiples especies útiles en un arreglo que imita la estratificación del bosque vecino. La fuente lo analiza dentro de un sistema agroalimentario que incluye pesca, caza y recolección, y que organiza los paisajes productivos de estos grupos con criterio territorial y no solo predial.',
+      fuentes: [
+        { label: 'Redalyc — Paisajes agroalimentarios: análisis de medios de vida de indígenas venezolanos (2018)', url: 'https://www.redalyc.org/journal/3761/376157736008/' },
+      ],
+    },
   ],
   bosques_secos_caribe_colombia_venezuela: [
     {
@@ -670,6 +769,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las sociedades prehispánicas del Bajo San Jorge y La Mojana construyeron una red extensa de canales y camellones para almacenar, drenar y distribuir el agua. El sistema acompañaba los ciclos naturales de inundación y sedimentación en vez de intentar eliminarlos, una referencia valiosa para zonificar cotas productivas y vías de excedencia.',
       fuentes: [
         { label: 'ICANH — Sistema Hidráulico Arqueológico del Bajo Río San Jorge y La Mojana', url: 'https://www.icanh.gov.co/sobre-nosotros/proyectos-estrategicos/sistema-hidraulico-arqueologico-del-bajo-rio-san-jorge-y-la-mojana' },
+      ],
+    },
+    {
+      practica: 'Jagüeyes (lagunas de captación de lluvia en bosque seco del Caribe)',
+      periodo: 'Práctica tradicional vigente en la región; documentada en Sucre, Colombia, en 2017',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'En Montes de María, Sucre (Colombia), se identificaron más de 500 jagüeyes activos: excavaciones en campo o potreros que captan lluvia y escorrentía para abastecer ganado y cultivos durante la estación seca. La fuente documenta su uso sostenido y relaciona la eficiencia con la forma, la profundidad y la protección del talud; pueden replicarse con maquinaria liviana en cualquier finca del bosque seco del Caribe.',
+      fuentes: [
+        { label: 'De La Ossa V. et al. (2017) — Jagüeyes: alternativa sostenible para el manejo del agua en bosque seco tropical, Colombia Forestal', url: 'https://dialnet.unirioja.es/servlet/articulo?codigo=9423177' },
       ],
     },
   ],
@@ -685,6 +795,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Parques Nacionales Naturales de Colombia — Comunidades de la Sierra Nevada de Santa Marta', url: 'https://old.parquesnacionales.gov.co/portal/es/ecoturismo/parques/region-caribe/parque-nacional-natural-sierra-nevada-de-santa-marta-2/comunidades/' },
       ],
     },
+    {
+      practica: 'Terrazas de cultivo escalonadas de la cultura Tairona',
+      periodo: 'Período Nahuange, 200–900 d.C.; Período Tairona, 900–1600 d.C.',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'La civilización Tairona de la Sierra Nevada construyó terrazas de cultivo escalonadas donde se sembraron maíz, yuca, aguacate, batatas, ñames, auyamas, ajíes y algodonales. Las terrazas formaban parte de una organización territorial con caminos de piedra y canales de drenaje; son todavía legibles en el paisaje de algunos sectores de la Sierra Nevada y documentan cómo se habilitó el cultivo en laderas empinadas del Caribe húmedo.',
+      fuentes: [
+        { label: 'Banrepcultural — Enciclopedia Tairona (Red Cultural del Banco de la República de Colombia)', url: 'https://enciclopedia.banrepcultural.org/index.php/Tairona' },
+      ],
+    },
   ],
   bosques_secos_tumbes_ecuador_peru: [
     {
@@ -696,6 +817,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En la península de Santa Elena, las albarradas almacenan agua de lluvia y escorrentía para atravesar la estación seca. Entrevistas a adultos mayores la identificaron como el saber ancestral más reconocido; su adopción actual requiere calcular cuenca aportante, vertedero y seguridad de la presa según la normativa local.',
       fuentes: [
         { label: 'Revista Amazónica Ciencia y Tecnología — Saberes ancestrales agropecuarios en la Península de Santa Elena', url: 'https://revistas.uea.edu.ec/index.php/racyt/article/download/107/272?inline=1' },
+      ],
+    },
+    {
+      practica: 'Manejo tradicional del algarrobo (Prosopis pallida) en bosque seco',
+      periodo: 'Práctica ancestral; documentada en Santa Elena, Ecuador, en 2014',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En los bosques secos de Santa Elena, Ecuador, comunidades locales recolectan y procesan las vainas del algarrobo (Prosopis pallida) para alimentación humana y animal. La especie tolera la sequía extrema y suelos salinos, fija nitrógeno y estabiliza suelos degradados; su manejo integrado incluye regeneración natural dirigida, podas periódicas y cosecha de vainas en temporada, sin requerir riego ni insumos externos.',
+      fuentes: [
+        { label: 'Aguilera Peña (2014) — El algarrobo Prosopis pallida en los ecosistemas secos de Santa Elena, Ecuador, DELOS Vol. 7 No. 20', url: 'https://dialnet.unirioja.es/servlet/articulo?codigo=6453560' },
       ],
     },
   ],
@@ -735,6 +867,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las comunidades Jama-Coaque II del valle del Jama manejaron un sistema que combinaba anuales domesticadas, árboles perennes y taxones útiles del bosque. Los conjuntos arqueobotánicos y arqueofaunísticos de catorce sitios del valle apuntan a un paisaje manejado como mosaico de bosques fragmentados, no a un campo abierto de cultivo continuo.',
       fuentes: [
         { label: 'Stahl y Pearsall (2011) — Late pre-Columbian agroforestry in the tropical lowlands of western Ecuador, Quaternary International 249: 43-52 (resumen público; el texto completo es de pago)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S1040618211002540' },
+      ],
+    },
+    {
+      practica: 'Recolección de frutos del bosque y labranza de canoas (pueblo Chachi)',
+      periodo: 'Práctica transmitida generacionalmente; documentada en comunidades Chachi en 2023',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades Chachi de la provincia de Esmeraldas cosechan piña, zapote, papaya, guayaba y otros frutos silvestres del bosque húmedo occidental y labran canoas, bateas y canaletes con maderas seleccionadas del dosel. El sistema no usa fertilizantes ni pesticidas y depende del conocimiento de qué árbol sirve para cada uso y en qué ciclo del año recolectar; identificar esas especies indica qué conservar o reforzar en cualquier diseño de dosel para este tipo de bosque.',
+      fuentes: [
+        { label: 'Cimarrón Añapa et al. (2023) — Cultura Organizacional y Administración de la Nacionalidad Chachi, Revista Mundo Recursivo Vol. 6 No. 2', url: 'https://www.atlantic.edu.ec/ojs/index.php/mundor/article/download/219/289?inline=1' },
       ],
     },
   ],
