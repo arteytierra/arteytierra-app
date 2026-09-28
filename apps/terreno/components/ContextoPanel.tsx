@@ -19,6 +19,8 @@ import {
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR, municipiosDestacadosBr,
   FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX, municipiosDestacadosMx,
+  FUENTE_CENSO_2018_GT, REGISTRO_GT_FALTANTE, PORCENTAJES_PAIS_GT, ROTULO_PUEBLO_GT,
+  censoGuatemaltecoDelPunto, municipiosDestacadosGt, comunidadesDestacadasGt, puebloMayorGt,
   hayDatoDePueblos,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
@@ -28,6 +30,7 @@ import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
+import { CENSO_GT_PAIS } from '@/lib/censoIndigena2018Gt';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { Mojon } from '@/lib/types';
 import type { Ubicacion } from '@/lib/entorno';
@@ -180,10 +183,14 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
   // rural de Oaxaca puede venir sin localidad ninguna. Ver el bloque mexicano de
   // lib/pueblosOriginarios.ts.
   const censoMx = censoMexicanoDelPunto(ubicacion);
+  // Guatemala, septimo pais. Mismo camino que Mexico -departamento en
+  // `provincia`, municipio en `departamento`- y una diferencia que se ve en
+  // pantalla: aca no hay un total indigena, hay tres pueblos con su cifra.
+  const censoGt = censoGuatemaltecoDelPunto(ubicacion);
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
-  // Los doce países que entran sólo con la cifra nacional: Bolivia, Colombia,
+  // Los once países que entran sólo con la cifra nacional: Bolivia, Colombia,
   // Ecuador y Uruguay porque el dato local espera una autorización de licencia,
   // y Canadá porque la licencia alcanza pero falta el relevamiento provincial.
   // Ver lib/pueblosOriginariosNacional.ts.
@@ -216,6 +223,7 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
     pe:         censoPe.estado,
     br:         censoBr.estado,
     mx:         censoMx.estado,
+    gt:         censoGt.estado,
     nacional:   !!paisNac,
   });
 
@@ -1166,13 +1174,148 @@ export function ContextoPanel({ mojones, datosClima, datosTopo, ubicacion, onIrA
           </div>
         </>}
 
+        {/* Guatemala. Séptimo país, tercero a escala de municipio, y el primero
+            de Centroamérica con dato local.
+
+            Lo que esta tarjeta tiene que hacer bien es **no sumar**. El INE
+            cuenta Maya, Garífuna y Xinka por separado y no publica el total; los
+            tres salen con su cifra y ninguno se funde con otro. Y las 22
+            comunidades lingüísticas van abajo y adentro del pueblo Maya, no al
+            lado: sumarlas contaría dos veces a la misma gente. */}
+        {(censoGt.estado === 'con_censo' || censoGt.estado === 'con_departamento') && (() => {
+          const depto = censoGt.departamento;
+          // El territorio del que se habla: el municipio si se lo pudo
+          // identificar, y si no el departamento entero. Las dos formas traen
+          // las mismas cuatro cifras y la misma lista de comunidades.
+          const t = censoGt.estado === 'con_censo' ? censoGt.municipio : depto;
+          const mayor = puebloMayorGt(depto);
+          const municipiosTop = municipiosDestacadosGt(depto, mayor);
+          const comunidades = comunidadesDestacadasGt(t.comunidades);
+          return <>
+            <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+              Pueblo de pertenencia · Censo 2018 · Guatemala
+            </p>
+
+            <div className="bg-bone-50 rounded-lg p-2.5 border border-bone-200">
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50">
+                {censoGt.estado === 'con_censo'
+                  ? <>{censoGt.municipio.municipio} · {depto.departamento}</>
+                  : depto.departamento}
+              </p>
+              <p className="text-xs text-ink-700/80 leading-relaxed mt-1">
+                Sobre {t.poblacion.toLocaleString('es-AR')} personas censadas
+                {censoGt.estado === 'con_censo' ? ' en el municipio' : ' en el departamento'}:{' '}
+                <strong className="text-ink-700">
+                  {t.maya.toLocaleString('es-AR')} del pueblo Maya
+                </strong>{' '}
+                —el {porcentaje(t.maya, t.poblacion)}%—,{' '}
+                {t.xinka.toLocaleString('es-AR')} Xinka y{' '}
+                {t.garifuna.toLocaleString('es-AR')} Garífuna.
+              </p>
+              {censoGt.estado === 'con_departamento' && (
+                <p className="text-[11px] text-ink-700/60 leading-relaxed mt-1.5">
+                  {censoGt.municipioBuscado
+                    ? <>El geocodificador devolvió «{censoGt.municipioBuscado}», que no es ninguno
+                        de los {depto.municipios.length} municipios de {depto.departamento}. La
+                        cifra es la del departamento entero.</>
+                    : <>No se pudo identificar el municipio, así que la cifra es la del
+                        departamento entero.</>}
+                </p>
+              )}
+            </div>
+
+            {/* La frase que no puede faltar, y que acá es una resta y no una
+                suma: el número que no está es el que cualquiera esperaría. */}
+            <Cautela claim="Acá no hay un total «indígena», y no es un olvido.">
+              El INE
+              publica cada pueblo por su cuenta y no publica la suma. Sumarlos es fácil y por eso
+              mismo no se hace: el resultado se vería igual de oficial que los otros tres números y
+              no lo avala ningún cuadro del censo. Quien necesite el total lo suma sabiendo que lo
+              está sumando.
+            </Cautela>
+
+            {comunidades.length > 0 && <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+                Comunidades lingüísticas mayas{censoGt.estado === 'con_censo'
+                  ? ` en ${censoGt.municipio.municipio}` : ` en ${depto.departamento}`}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {comunidades.map(([nombre, personas]) => (
+                  <span key={nombre} className="text-[10px] px-2 py-0.5 rounded-full bg-water-400/10 text-water-700 border border-water-400/30">
+                    {nombre} <span className="text-water-700/60">· {personas.toLocaleString('es-AR')}</span>
+                  </span>
+                ))}
+              </div>
+              <Cautela claim="Estas 22 están adentro del pueblo Maya.">
+                No son
+                pueblos que se agreguen: son la subdivisión del cuadro A6 dentro de los{' '}
+                {t.maya.toLocaleString('es-AR')} mayas de acá, y suman exactamente ese número.
+                Sumarlas al pueblo Maya contaría dos veces a la misma gente.
+              </Cautela>
+            </>}
+
+            {t.maya === 0 && t.garifuna === 0 && t.xinka === 0 && (
+              <Cautela claim="Cero también es un dato.">
+                En 2018
+                nadie declaró pertenecer a un pueblo originario en este territorio. La pregunta se
+                le hizo a toda la población censada, así que el cero es una respuesta del censo y
+                no un dato que falte.
+              </Cautela>
+            )}
+
+            {municipiosTop.length > 0 && <>
+              <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mt-3 mb-1">
+                Municipios con más población {ROTULO_PUEBLO_GT[mayor]} en {depto.departamento}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {municipiosTop.map(m => (
+                  <span key={m.codigo} className="text-[10px] px-2 py-0.5 rounded-full bg-earth-400/10 text-earth-700 border border-earth-400/30">
+                    {m.municipio} <span className="text-earth-700/60">· {m[mayor].toLocaleString('es-AR')}</span>
+                  </span>
+                ))}
+              </div>
+            </>}
+
+            <Cautela claim="Esto es una jurisdicción, no un territorio.">
+              El censo
+              baja hasta lugar poblado y trae el centroide de cada uno, y eso no se usa: un
+              centroide censal no dibuja dónde vive un pueblo. Lo que se muestra es el municipio,
+              que es una división administrativa y contesta cuánta gente de cada pueblo fue
+              censada ahí.
+            </Cautela>
+
+            <Cautela claim="Falta la otra fuente.">
+              No se encontró{' '}
+              {REGISTRO_GT_FALTANTE.organismo}: {REGISTRO_GT_FALTANTE.motivo}. O sea que acá hay
+              censo y no hay registro, y las dos cosas contestan preguntas distintas.
+            </Cautela>
+
+            <div className="mt-2 pt-2 border-t border-bone-200 space-y-1">
+              <a href={FUENTE_CENSO_2018_GT.url} target="_blank" rel="noreferrer"
+                className="flex items-center gap-1.5 text-[11px] text-water-500 hover:text-water-700 transition-colors">
+                <ExternalLink className="w-3 h-3 shrink-0" /> {FUENTE_CENSO_2018_GT.label}
+              </a>
+              <p className="text-[10px] text-ink-700/50 leading-relaxed">
+                {FUENTE_CENSO_2018_GT.atribucion}. {FUENTE_CENSO_2018_GT.licencia}. En todo el país
+                son {CENSO_GT_PAIS.maya.toLocaleString('es-AR')} personas del pueblo Maya —el{' '}
+                {PORCENTAJES_PAIS_GT.maya}%—, {CENSO_GT_PAIS.xinka.toLocaleString('es-AR')} Xinka
+                —el {PORCENTAJES_PAIS_GT.xinka}%— y{' '}
+                {CENSO_GT_PAIS.garifuna.toLocaleString('es-AR')} Garífuna, sobre{' '}
+                {CENSO_GT_PAIS.poblacion.toLocaleString('es-AR')} personas censadas en{' '}
+                {CENSO_GT_PAIS.municipios} municipios. La pregunta se le hizo a toda la población y
+                las categorías del cuadro suman exactamente ese total: no hay «no declarado».
+              </p>
+            </div>
+          </>;
+        })()}
+
         {/* Los países que entran sólo con la cifra nacional.
 
             No es un adelanto de algo mejor: es lo que se puede decir hoy sin
             pedirle permiso a nadie, porque citar un número con su fuente no es
             redistribuir una tabla. El dato local espera una autorización escrita
-            en seis de los doce; en Canadá y en Guatemala espera un relevamiento
-            subnacional, y en Estados Unidos espera que alguien declare por escrito
+            en seis de los once; en Canadá espera un relevamiento subnacional, y
+            en Estados Unidos espera que alguien declare por escrito
             qué se puede hacer con un dato que ya está publicado entero.
 
             Lo que esta tarjeta tiene que hacer bien es no dejar que el número se

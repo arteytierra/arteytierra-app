@@ -20,7 +20,8 @@ Centroamérica y el Caribe tienen su propia tabla en `centroamerica-caribe/COBER
 
 Relevado y **montado** el 27/09/2026. Es el tercer país de la capa que entra con
 dato local sin esperar autorización de nadie, con Canadá y Guatemala, y el más
-grande con diferencia. Ficha completa en `mexico.json`.
+grande con diferencia. (Guatemala dejó de ser una promesa el 28/09/2026: está
+montado con dato local por municipio. Ver `centroamerica-caribe/COBERTURA.md`.) Ficha completa en `mexico.json`.
 
 - **La licencia alcanza y está verificada en dos lugares.** El archivo de
   metadatos de cada entidad del ITER declara

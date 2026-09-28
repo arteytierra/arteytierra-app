@@ -2,7 +2,7 @@
 
 | País | ¿Registro? | ¿Censo? | ¿Descargable? | Licencia apta | Qué falta |
 |---|---|---|---|---|---|
-| Guatemala | No encontrado (falta revisar RIC) | Sí, 2018, por pueblo hasta lugar poblado | Sí (xlsx, INE) | Sí: CC BY declarada en el dataset | Boleta literal; revisar RIC |
+| Guatemala **(montado)** | No encontrado (falta revisar RIC) | Sí, 2018, por pueblo hasta lugar poblado | Sí (xlsx, INE) | Sí: CC BY declarada en el dataset | Boleta literal; revisar RIC |
 | Belice | No buscado | Sí, 2022, solo % | PDF de presentación | No declarada | Cifras absolutas y licencia |
 | El Salvador | No buscado | Sí, 2024: 68.148 total, pueblos solo en % | No (página ArcGIS) | No declarada | Tabulados, cuestionario, autorización del BCR |
 | Honduras | No buscado | 2013 existe; sin abrir | No (host temporal caído) | No verificada | Abrir fichas 2013 o esperar el censo 2025 |
@@ -17,6 +17,23 @@
 | Haití | — | No revisado | — | — | Todo |
 
 ## Estado de Guatemala
+
+**Montado el 28/09/2026** en `apps/terreno/lib/censoIndigena2018Gt.ts`, por
+departamento y por municipio, con las 22 comunidades lingüísticas mayas adentro
+del pueblo Maya. Lo arma `build-censo-guatemala.mjs` desde los dos XLSX
+congelados en `xlsx-guatemala/`, con siete verificaciones que lo hacen caer si
+un total no cierra; las siete cerraron a la primera. Guatemala salió de
+`PAISES_NACIONAL`: si se quedara, un predio guatemalteco vería dos bloques
+diciendo cosas distintas sobre lo mismo.
+
+Lo que **no** se montó, a propósito: las hojas A5.3 y A6.3, que bajan a 20.036
+lugares poblados con el centroide de cada uno. Un centroide censal no es un
+territorio y la capa no dibuja dónde vive un pueblo.
+
+Lo que sigue pendiente: la boleta literal del censo 2018 y el Registro de
+Información Catastral, que inscribe tierras comunales y podría ser la segunda
+fuente que hoy falta.
+
 - Abrí la API CKAN de datos.ine.gob.gt: el dataset «censo-2018-lugares-poblados» declara «Creative Commons Attribution».
 - Bajé el cuadro A5. Total 14.901.286; Maya 6.207.503; Garífuna 19.529; Xinka 264.167. Las columnas suman exactamente el total, así que no hay categoría «no declarado».
 - En la hoja A5_3 hay 20.036 lugares poblados, 313 de ellos sin coordenada.

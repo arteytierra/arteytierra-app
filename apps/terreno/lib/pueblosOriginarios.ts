@@ -16,6 +16,10 @@ import {
   CENSO_MX, CENSO_MX_PAIS, MUNICIPIOS_AMBIGUOS_MX,
   type CensoMxEntidad, type CensoMxMunicipio,
 } from './censoIndigena2020Mx';
+import {
+  CENSO_GT, CENSO_GT_PAIS,
+  type CensoGtDepartamento, type CensoGtMunicipio, type ComunidadMaya,
+} from './censoIndigena2018Gt';
 
 /**
  * Pueblos originarios en el territorio del predio. Argentina, Chile, Paraguay,
@@ -1289,6 +1293,205 @@ export function municipiosDestacadosMx(e: CensoMxEntidad, cuantos = 6): CensoMxM
  */
 export const PORCENTAJE_PAIS_MX = porcentaje(CENSO_MX_PAIS.hablantes, CENSO_MX_PAIS.tresYMas);
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Guatemala — Censo 2018 (INE)
+ *
+ * El séptimo país, el tercero a escala de municipio, y el cuarto que entra
+ * **sin esperarle la firma a nadie**: el dataset del INE declara Creative
+ * Commons Attribution en el portal de datos abiertos. Por eso era el que
+ * convenía montar primero de toda Centroamérica, y por eso Guatemala deja hoy
+ * la lista de los países que entran sólo con la cifra nacional.
+ *
+ * ── Lo que Guatemala tiene y los otros seis no ─────────────────────────────
+ *
+ * Un denominador limpio. La variable es **pueblo de pertenencia**, por
+ * autoidentificación, y se le pregunta a toda la población censada: no hay
+ * recorte de edad como en el Perú, no es una pregunta por lengua como en
+ * México, y las seis categorías del cuadro suman exactamente los 14.901.286
+ * censados, sin «no declarado». El porcentaje es directo y no necesita nota al
+ * pie.
+ *
+ * ── Y lo que no tiene: un total indígena ───────────────────────────────────
+ *
+ * El INE publica Maya, Garífuna y Xinka por separado y **no publica la suma**.
+ * Acá tampoco se hace: sumarlos daría 6.491.199 personas, un número que se vería
+ * igual de oficial que los otros y que ningún cuadro del censo avala. Los tres
+ * salen con su cifra y cada uno con su porcentaje.
+ *
+ * Es la misma disciplina que en el resto de la capa, sólo que acá se nota más,
+ * porque la suma es fácil y la tentación es grande.
+ *
+ * ── Las 22 comunidades lingüísticas están adentro del pueblo Maya ──────────
+ *
+ * K'iche', Q'eqchi', Mam y Kaqchikel no son pueblos que se agreguen a la lista:
+ * son la subdivisión del cuadro A6 dentro de los 6.207.503 mayas. Viajan en
+ * `comunidades`, adentro del territorio, y nunca al lado de `maya`. Sumarlas
+ * contaría dos veces a la misma gente.
+ *
+ * Y son lo que hace que la capa diga algo del predio y no del país: en Sololá
+ * el pueblo Maya es el 96 % y eso solo no ubica a nadie; que sean K'iche' y
+ * Kaqchikel, sí.
+ *
+ * ── Por qué el municipio, y por qué buscado dentro del departamento ────────
+ *
+ * Son 340 municipios en 22 departamentos, y el municipio guatemalteco incluye
+ * la cabecera y su área rural, así que es la unidad que le corresponde a un
+ * campo. Medido sobre los 340: **no hay dos municipios con el mismo nombre
+ * dentro de un mismo departamento**, así que buscar ahí adentro es unívoco. En
+ * la lista global no lo sería —«San Francisco», «San Pedro»…— y `casarNombre`
+ * no contesta cuando hay empate.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Qué dice el censo guatemalteco del punto.
+ *
+ * Como Brasil y México: `con_departamento` cuando se supo el departamento pero
+ * no el municipio, y `con_censo` cuando se supieron los dos. La primera no es
+ * un error sino una respuesta más gruesa, y la pantalla la dice como tal.
+ */
+export type CensoGtDelPunto =
+  | { estado: 'sin_ubicacion' }
+  | { estado: 'fuera_de_guatemala'; pais: string }
+  | { estado: 'departamento_desconocido'; nombre: string }
+  | { estado: 'con_departamento'; departamento: CensoGtDepartamento; municipioBuscado: string | null }
+  | { estado: 'con_censo'; departamento: CensoGtDepartamento; municipio: CensoGtMunicipio };
+
+export const FUENTE_CENSO_2018_GT = {
+  label: 'INE Guatemala — XII Censo Nacional de Población y VII de Vivienda 2018, cuadros A5 y A6',
+  /**
+   * El dataset del portal de datos abiertos, que es donde está declarada la
+   * licencia. El visor `censo2018.ine.gob.gt` no la repite, así que se cita
+   * éste y no aquél.
+   */
+  url: 'https://datos.ine.gob.gt/dataset/censo-2018-lugares-poblados',
+  atribucion: 'Fuente: INE, XII Censo Nacional de Población y VII de Vivienda 2018',
+  licencia: 'Creative Commons Attribution, declarada en el propio dataset del portal de datos abiertos del INE',
+  licenciaUrl: 'https://opendefinition.org/licenses/cc-by/',
+} as const;
+
+/** Por qué no está la segunda fuente. Va en la pantalla, no sólo acá. */
+export const REGISTRO_GT_FALTANTE = {
+  organismo: 'un registro nacional de comunidades indígenas comparable al del INAI argentino',
+  motivo:
+    'no se encontró publicado; queda por revisar el Registro de Información Catastral, ' +
+    'que inscribe tierras comunales y podría cambiar esta respuesta',
+} as const;
+
+/**
+ * Nominatim contesta «Guatemala» y, en algunos rótulos, el nombre largo. Se
+ * parte por la barra igual que en los otros países por si pasa a ser bilingüe.
+ *
+ * Ojo con el homónimo, que acá es triple: «Guatemala» es el país, uno de los 22
+ * departamentos y uno de los 340 municipios. Esta función mira **sólo** `pais`,
+ * y el departamento y el municipio se resuelven después y cada uno en su lista.
+ */
+function esGuatemala(pais: string): boolean {
+  const NOMBRES = new Set(['guatemala', 'republica de guatemala']);
+  return pais.split('/').some(parte => NOMBRES.has(normalizarNombreAdmin(parte)));
+}
+
+const DEPARTAMENTOS_GT = CENSO_GT.map(d => d.departamento);
+
+/**
+ * En qué departamento y municipio guatemalteco cae el punto.
+ *
+ * Función pura, como las otras seis. El departamento sale de `provincia` (el
+ * `state` de Nominatim, que en Guatemala es el nivel 4) y el municipio se prueba
+ * contra tres campos en orden —`departamento` (el `county`, que es el nivel 6),
+ * la comuna y la localidad—, igual que en México: gana el primero que resuelve,
+ * y si ninguno resuelve se contesta con el departamento y se dice que el
+ * municipio no se pudo identificar. Es peor dar el municipio equivocado.
+ */
+export function censoGuatemaltecoDelPunto(u: Ubicacion | null): CensoGtDelPunto {
+  if (!u || !u.pais) return { estado: 'sin_ubicacion' };
+  if (!esGuatemala(u.pais)) return { estado: 'fuera_de_guatemala', pais: u.pais };
+  if (!u.provincia) return { estado: 'sin_ubicacion' };
+
+  const rotulo = casarNombre(u.provincia, DEPARTAMENTOS_GT, x => x);
+  const departamento = rotulo ? CENSO_GT.find(d => d.departamento === rotulo) ?? null : null;
+  if (!departamento) return { estado: 'departamento_desconocido', nombre: u.provincia };
+
+  const candidatos = [u.departamento, u.comuna ?? null, u.localidad].filter((x): x is string => !!x);
+  for (const buscado of candidatos) {
+    const municipio = casarNombre(buscado, departamento.municipios, m => m.municipio);
+    if (municipio) return { estado: 'con_censo', departamento, municipio };
+  }
+
+  return { estado: 'con_departamento', departamento, municipioBuscado: candidatos[0] ?? null };
+}
+
+/** Los tres pueblos que el censo guatemalteco cuenta por separado. */
+export type PuebloGt = 'maya' | 'garifuna' | 'xinka';
+
+/** Cómo se escribe cada uno en pantalla. */
+export const ROTULO_PUEBLO_GT: Record<PuebloGt, string> = {
+  maya: 'Maya', garifuna: 'Garífuna', xinka: 'Xinka',
+};
+
+/**
+ * Cuál de los tres pueblos es el más numeroso en un territorio.
+ *
+ * Sirve para no encabezar todas las listas con el mismo: en Santa Rosa y en
+ * Jutiapa el pueblo Xinka es mayoría de la población indígena y ordenar por
+ * Maya mostraría el departamento equivocado. Es una decisión de qué se muestra
+ * primero, no un cálculo sobre el dato.
+ *
+ * Empate a cero —no pasa hoy en ningún departamento— devuelve `maya`, que es la
+ * columna que el cuadro pone primero.
+ */
+export function puebloMayorGt(t: { maya: number; garifuna: number; xinka: number }): PuebloGt {
+  if (t.xinka > t.maya && t.xinka >= t.garifuna) return 'xinka';
+  if (t.garifuna > t.maya && t.garifuna > t.xinka) return 'garifuna';
+  return 'maya';
+}
+
+/**
+ * Los municipios del departamento con más gente de un pueblo, para dar contexto.
+ *
+ * Se pide el pueblo en vez de sumar los tres: sumarlos sería fabricar el total
+ * indígena que el INE no publica, aunque fuera sólo para ordenar una lista. Y
+ * la lista se rotula con el pueblo que muestra, así que lo que se ve es lo que
+ * dice.
+ *
+ * Sólo los que tienen gente: una fila «· 0» no informa.
+ */
+export function municipiosDestacadosGt(
+  d: CensoGtDepartamento, pueblo: PuebloGt, cuantos = 6,
+): CensoGtMunicipio[] {
+  return d.municipios
+    .filter(m => m[pueblo] > 0)
+    .sort((a, b) => b[pueblo] - a[pueblo])
+    .slice(0, cuantos);
+}
+
+/**
+ * Las comunidades lingüísticas mayas de un territorio, de mayor a menor.
+ *
+ * El dato viaja en el orden alfabético del cuadro, que es el del INE y el que
+ * permite auditarlo contra el XLSX. Ordenar por tamaño es una decisión de
+ * pantalla y por eso vive acá y no en el archivo de datos.
+ */
+export function comunidadesDestacadasGt(
+  comunidades: ComunidadMaya[], cuantas = 6,
+): ComunidadMaya[] {
+  return [...comunidades].sort((a, b) => b[1] - a[1]).slice(0, cuantas);
+}
+
+/**
+ * Los tres porcentajes del país, sobre la población censada entera.
+ *
+ * El denominador es la población total y no hace falta aclarar ningún recorte:
+ * la pregunta por pueblo de pertenencia se le hizo a todo el mundo y las seis
+ * categorías suman exactamente los 14.901.286. Tampoco hay un cuarto
+ * porcentaje: el total indígena no existe en el cuadro.
+ */
+export const PORCENTAJES_PAIS_GT = {
+  maya:     porcentaje(CENSO_GT_PAIS.maya, CENSO_GT_PAIS.poblacion),
+  garifuna: porcentaje(CENSO_GT_PAIS.garifuna, CENSO_GT_PAIS.poblacion),
+  xinka:    porcentaje(CENSO_GT_PAIS.xinka, CENSO_GT_PAIS.poblacion),
+} as const;
+
 // ─── ¿Hay algo que decir en este punto? ──────────────────────────────────────
 
 /**
@@ -1303,7 +1506,8 @@ export interface EstadosPueblos {
   pe:         CensoPeDelPunto['estado'];
   br:         CensoBrDelPunto['estado'];
   mx:         CensoMxDelPunto['estado'];
-  /** Alguno de los doce países que entran sólo con la cifra nacional. */
+  gt:         CensoGtDelPunto['estado'];
+  /** Alguno de los once países que entran sólo con la cifra nacional. */
   nacional:   boolean;
 }
 
@@ -1335,6 +1539,7 @@ export function hayDatoDePueblos(e: EstadosPueblos): boolean {
     || e.pe === 'con_censo'
     || e.br === 'con_censo' || e.br === 'con_estado'
     || e.mx === 'con_censo' || e.mx === 'con_entidad' || e.mx === 'municipio_ambiguo'
+    || e.gt === 'con_censo' || e.gt === 'con_departamento'
     || e.nacional
   );
 }

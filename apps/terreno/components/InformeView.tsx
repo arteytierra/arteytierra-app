@@ -24,6 +24,8 @@ import {
   FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
   FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR,
   FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX,
+  FUENTE_CENSO_2018_GT, REGISTRO_GT_FALTANTE, PORCENTAJES_PAIS_GT, ROTULO_PUEBLO_GT,
+  censoGuatemaltecoDelPunto, comunidadesDestacadasGt, puebloMayorGt, municipiosDestacadosGt,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
 import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
@@ -32,6 +34,7 @@ import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
 import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
+import { CENSO_GT_PAIS } from '@/lib/censoIndigena2018Gt';
 
 interface Props {
   datos: InformeData;
@@ -82,6 +85,7 @@ export function InformeView({ datos, compartido = false }: Props) {
   const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
   const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
   const censoMx = censoMexicanoDelPunto(datos.entorno?.admin ?? null);
+  const censoGt = censoGuatemaltecoDelPunto(datos.entorno?.admin ?? null);
   // Doce paises entran solo con la cifra nacional: cuatro sudamericanos, Canada
   // y Estados Unidos, y seis de Centroamerica y el Caribe.
   // Ver lib/pueblosOriginariosNacional.ts.
@@ -821,6 +825,73 @@ export function InformeView({ datos, compartido = false }: Props) {
                 publica el {REGISTRO_MX_FALTANTE.organismo} y {REGISTRO_MX_FALTANTE.motivo}.
               </p>
               </>}
+
+              {/* Guatemala. Lo que el informe tiene que hacer bien aca es no
+                  sumar: el INE cuenta Maya, Garifuna y Xinka por separado y no
+                  publica el total. Un informe impreso se discute despues sin
+                  nosotros, asi que la frase va pegada al numero y no al pie. */}
+              {(censoGt.estado === 'con_censo' || censoGt.estado === 'con_departamento') && (() => {
+                const depto = censoGt.departamento;
+                const t = censoGt.estado === 'con_censo' ? censoGt.municipio : depto;
+                const donde = censoGt.estado === 'con_censo'
+                  ? `${censoGt.municipio.municipio} (${depto.departamento})`
+                  : depto.departamento;
+                const mayor = puebloMayorGt(depto);
+                const top = comunidadesDestacadasGt(t.comunidades, 4);
+                return <>
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">
+                  Pueblo de pertenencia (Censo 2018, Guatemala)
+                </p>
+                <p className="text-sm text-ink-700/80">
+                  En {donde}, sobre {t.poblacion.toLocaleString('es-AR')} personas censadas:{' '}
+                  {t.maya.toLocaleString('es-AR')} del pueblo Maya —el{' '}
+                  {porcentaje(t.maya, t.poblacion)}%, contra {PORCENTAJES_PAIS_GT.maya}% en todo
+                  el país—, {t.xinka.toLocaleString('es-AR')} Xinka y{' '}
+                  {t.garifuna.toLocaleString('es-AR')} Garífuna.
+                  {censoGt.estado === 'con_departamento' && <>
+                    {' '}<strong>Este dato es del departamento entero y no del municipio</strong>
+                    {censoGt.municipioBuscado
+                      ? <>: el geocodificador devolvió «{censoGt.municipioBuscado}», que no es
+                          ninguno de los {depto.municipios.length} municipios de{' '}
+                          {depto.departamento}</>
+                      : <>: no se pudo determinar el municipio del punto</>}.
+                  </>}
+                </p>
+                <p className="text-sm text-ink-700/80 mt-1.5">
+                  <strong>Los tres no se suman acá, y no es un olvido.</strong> El INE publica cada
+                  pueblo por su cuenta y no publica un total «indígena»; sumarlos daría un número
+                  que se vería igual de oficial que los otros y que ningún cuadro del censo avala.
+                  {top.length > 0 && <>
+                    {' '}Dentro del pueblo Maya, las comunidades lingüísticas más numerosas de{' '}
+                    {censoGt.estado === 'con_censo' ? censoGt.municipio.municipio : depto.departamento}{' '}
+                    son {top.map(([n, p]) => `${n} (${p.toLocaleString('es-AR')})`).join(', ')}.
+                    Son una subdivisión de esos {t.maya.toLocaleString('es-AR')} mayas y suman
+                    exactamente ese número: no se agregan.
+                  </>}
+                </p>
+                {censoGt.estado === 'con_censo' && (() => {
+                  const otros = municipiosDestacadosGt(depto, mayor, 4)
+                    .filter(m => m.codigo !== censoGt.municipio.codigo);
+                  return otros.length > 0 ? (
+                    <p className="text-sm text-ink-700/80 mt-1.5">
+                      Los municipios con más población {ROTULO_PUEBLO_GT[mayor]} de{' '}
+                      {depto.departamento} son{' '}
+                      {otros.map(m => `${m.municipio} (${m[mayor].toLocaleString('es-AR')})`).join(', ')}.
+                    </p>
+                  ) : null;
+                })()}
+                <p className="text-[10px] text-ink-700/50 mt-1.5">
+                  {FUENTE_CENSO_2018_GT.atribucion} · {FUENTE_CENSO_2018_GT.licencia}. La pregunta
+                  por pueblo de pertenencia se le hizo a toda la población censada
+                  —{CENSO_GT_PAIS.poblacion.toLocaleString('es-AR')} personas en{' '}
+                  {CENSO_GT_PAIS.municipios} municipios— y las categorías del cuadro suman
+                  exactamente ese total: no hay «no declarado», así que el porcentaje es directo.
+                  El censo baja hasta lugar poblado y trae el centroide de cada uno; eso no se usa,
+                  porque un centroide censal no dibuja dónde vive un pueblo. No se encontró{' '}
+                  {REGISTRO_GT_FALTANTE.organismo}: {REGISTRO_GT_FALTANTE.motivo}.
+                </p>
+                </>;
+              })()}
 
               {/* Los paises que entran solo con la cifra nacional. En el informe
                   importa mas que en el panel que no se lea como un dato del

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   hayDatoDePueblos, registroDelPunto, censoDelPunto, censoChilenoDelPunto,
   censoParaguayoDelPunto, censoPeruanoDelPunto, censoBrasilenoDelPunto,
-  censoMexicanoDelPunto, type EstadosPueblos,
+  censoMexicanoDelPunto, censoGuatemaltecoDelPunto, type EstadosPueblos,
 } from '@/lib/pueblosOriginarios';
 import { paisNacionalDelPunto } from '@/lib/pueblosOriginariosNacional';
 import type { Ubicacion } from '@/lib/entorno';
@@ -24,6 +24,7 @@ function estados(u: Ubicacion | null): EstadosPueblos {
     pe:         censoPeruanoDelPunto(u).estado,
     br:         censoBrasilenoDelPunto(u).estado,
     mx:         censoMexicanoDelPunto(u).estado,
+    gt:         censoGuatemaltecoDelPunto(u).estado,
     nacional:   !!paisNacionalDelPunto(u),
   };
 }
@@ -50,13 +51,14 @@ describe('cuándo la sección de pueblos originarios no aparece', () => {
 });
 
 describe('cuándo sí aparece', () => {
-  it('los seis países con dato local', () => {
+  it('los siete países con dato local', () => {
     expect(hay({ pais: 'Argentina', provincia: 'Salta', departamento: 'Orán', localidad: '' })).toBe(true);
     expect(hay({ pais: 'Chile', provincia: 'Región de La Araucanía', departamento: '', localidad: '' })).toBe(true);
     expect(hay({ pais: 'Paraguay', provincia: 'Boquerón', departamento: '', localidad: '' })).toBe(true);
     expect(hay({ pais: 'Perú', provincia: 'Cusco', departamento: '', localidad: '' })).toBe(true);
     expect(hay({ pais: 'Brasil', provincia: 'Amazonas', departamento: '', localidad: '' })).toBe(true);
     expect(hay({ pais: 'México', provincia: 'Oaxaca', departamento: '', localidad: '' })).toBe(true);
+    expect(hay({ pais: 'Guatemala', provincia: 'Sololá', departamento: '', localidad: '' })).toBe(true);
   });
 
   it('un país que entra sólo con la cifra nacional', () => {
@@ -71,7 +73,8 @@ describe('las dos ausencias que sí son un dato', () => {
     expect(hayDatoDePueblos({
       registroAr: 'sin_comunidades', censoAr: 'jurisdiccion_desconocida',
       cl: 'fuera_de_chile', py: 'fuera_de_paraguay', pe: 'fuera_de_peru',
-      br: 'fuera_de_brasil', mx: 'fuera_de_mexico', nacional: false,
+      br: 'fuera_de_brasil', mx: 'fuera_de_mexico', gt: 'fuera_de_guatemala',
+      nacional: false,
     })).toBe(true);
   });
 
@@ -79,7 +82,8 @@ describe('las dos ausencias que sí son un dato', () => {
     expect(hayDatoDePueblos({
       registroAr: 'fuera_de_argentina', censoAr: 'fuera_de_argentina',
       cl: 'fuera_de_chile', py: 'sin_comunidades', pe: 'fuera_de_peru',
-      br: 'fuera_de_brasil', mx: 'fuera_de_mexico', nacional: false,
+      br: 'fuera_de_brasil', mx: 'fuera_de_mexico', gt: 'fuera_de_guatemala',
+      nacional: false,
     })).toBe(true);
   });
 
@@ -87,7 +91,7 @@ describe('las dos ausencias que sí son un dato', () => {
     expect(hayDatoDePueblos({
       registroAr: 'sin_ubicacion', censoAr: 'sin_ubicacion', cl: 'sin_ubicacion',
       py: 'sin_ubicacion', pe: 'sin_ubicacion', br: 'sin_ubicacion',
-      mx: 'sin_ubicacion', nacional: false,
+      mx: 'sin_ubicacion', gt: 'sin_ubicacion', nacional: false,
     })).toBe(false);
   });
 });

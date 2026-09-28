@@ -28,12 +28,14 @@
  * porque el dato subnacional es un relevamiento aparte, no porque falte
  * permiso.
  *
- * Guatemala entra por la misma puerta desde el 27/09/2026: el propio dataset
- * del INE declara Creative Commons Attribution en su API, y además **publica
- * hasta lugar poblado, con coordenadas**. O sea que ahí el dato local no espera
- * una carta, espera que lo montemos: es lo primero que conviene hacer de toda
- * la región. Los otros cinco de Centroamérica y el Caribe entran como cita,
- * igual que los sudamericanos.
+ * **Guatemala ya no está acá.** Entró como cifra nacional el 27/09/2026, y al
+ * día siguiente salió: el dataset del INE declaraba Creative Commons
+ * Attribution y publicaba hasta lugar poblado, así que el dato local no
+ * esperaba una carta sino que lo montáramos. Está montado desde el 28/09/2026
+ * en `censoIndigena2018Gt.ts`, por departamento y por municipio, y por eso el
+ * país salió de esta lista: si se quedara, un predio guatemalteco vería dos
+ * bloques hablando de lo mismo y diciendo cosas distintas. Los otros cinco de
+ * Centroamérica y el Caribe entran como cita, igual que los sudamericanos.
  *
  * Estados Unidos entra como cita y por un motivo que no tiene ningún otro: **el
  * dato está todo publicado y descargable —hasta el bloque, con 704 áreas
@@ -128,7 +130,7 @@ export interface PaisNacional {
 }
 
 /**
- * Los doce países.
+ * Los once países.
  *
  * Cada uno con sus palabras: la pregunta boliviana incluye a los afrobolivianos
  * en la misma respuesta afirmativa, la uruguaya pregunta por *ascendencia* y
@@ -332,47 +334,11 @@ export const PAISES_NACIONAL: readonly PaisNacional[] = [
   },
   // ── Centroamérica y el Caribe ─────────────────────────────────────────────
   // Relevamiento del 26/09/2026 en `_research/pueblos-originarios-paises/
-  // centroamerica-caribe/`. Seis de trece países entran: los otros siete o no
+  // centroamerica-caribe/`. Seis de trece países entran —Guatemala por su
+  // cuenta, con dato local—: los otros siete o no
   // publican cifras absolutas (Belice sólo porcentajes), o no preguntan por
   // pueblo (República Dominicana), o no se pudo abrir la fuente (Honduras,
   // Trinidad y Tobago, Cuba, Haití, Dominica).
-  {
-    iso2: 'GT',
-    pais: 'Guatemala',
-    alias: ['guatemala'],
-    organismo: 'Instituto Nacional de Estadística',
-    organismoSigla: 'INE',
-    operativo: 'Censo 2018 (cuadros A5 y A6)',
-    pregunta: 'No se encontró la boleta censal publicada. El INE rotula la variable «Pueblo de pertenencia» y describe el criterio como autoidentificación.',
-    universo: 'Población total censada. Los cuadros A5 cubren a las 14.901.286 personas censadas, y sus columnas suman exactamente ese total: no hay categoría «no declarado».',
-    // El INE no publica un total «indígena»: publica cada pueblo por separado.
-    // Sumar Maya + Garífuna + Xinka daría 6.491.199 y sería un cálculo nuestro.
-    total: null,
-    base: 14_901_286,
-    baseDice: 'personas censadas en 2018',
-    porcentajePublicado: null,
-    desglose: [
-      { etiqueta: 'Maya', personas: 6_207_503 },
-      { etiqueta: 'Garífuna', personas: 19_529 },
-      { etiqueta: 'Xinka', personas: 264_167 },
-    ],
-    fuente: {
-      label: 'INE Guatemala — Censo 2018, cuadro A5 «Población total censada por pueblos»',
-      url: 'https://datos.ine.gob.gt/dataset/censo-2018-lugares-poblados',
-    },
-    licencia: 'Creative Commons Attribution, declarada por el propio dataset en la API CKAN del INE (opendefinition cc-by)',
-    permiso: 'licencia_abierta',
-    atribucionExigida: 'Instituto Nacional de Estadística de Guatemala, Censo 2018, bajo licencia Creative Commons Attribution. Elaboración propia a partir de los cuadros A5 y A6.',
-    porQueNoHayDatoLocal:
-      'acá el dato local sí existe y sí se puede usar: el cuadro A5 baja a 22 departamentos, 340 municipios y 20.036 lugares poblados, 19.723 de ellos con coordenada, con licencia abierta declarada. Todavía no está montado, y es lo primero que conviene montar de toda la región',
-    loQueNoDice: [
-      'Acá no hay un total «indígena»: el INE publica cada pueblo por separado y no una suma. Sumar Maya, Garífuna y Xinka daría 6.491.199, pero sería un cálculo nuestro y no el dato del censo.',
-      'Las 22 comunidades lingüísticas mayas del cuadro A6 suman exactamente el total Maya: son un desglose de Maya, no pueblos adicionales.',
-      'Ladina(o) (8.346.120), Afrodescendiente/Creole/Afromestizo (27.647) y Extranjera(o) (36.320) son las otras categorías del mismo cuadro y no son pueblos originarios.',
-      'No se encontró la boleta del censo 2018, así que la pregunta literal no se puede transcribir.',
-      'No se encontró un registro administrativo de comunidades. Eso no dice que no exista: dice que no lo encontramos.',
-    ],
-  },
   {
     iso2: 'PA',
     pais: 'Panamá',

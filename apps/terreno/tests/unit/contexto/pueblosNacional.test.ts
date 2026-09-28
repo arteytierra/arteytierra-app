@@ -17,13 +17,12 @@ const u = (pais: string | null): Ubicacion => ({
 });
 
 describe('paisNacionalDelPunto', () => {
-  it('reconoce los doce países y sólo esos doce', () => {
+  it('reconoce los once países y sólo esos once', () => {
     expect(paisNacionalDelPunto(u('Bolivia'))?.iso2).toBe('BO');
     expect(paisNacionalDelPunto(u('Colombia'))?.iso2).toBe('CO');
     expect(paisNacionalDelPunto(u('Ecuador'))?.iso2).toBe('EC');
     expect(paisNacionalDelPunto(u('Uruguay'))?.iso2).toBe('UY');
     expect(paisNacionalDelPunto(u('Canada'))?.iso2).toBe('CA');
-    expect(paisNacionalDelPunto(u('Guatemala'))?.iso2).toBe('GT');
     expect(paisNacionalDelPunto(u('Panamá'))?.iso2).toBe('PA');
     expect(paisNacionalDelPunto(u('Nicaragua'))?.iso2).toBe('NI');
     expect(paisNacionalDelPunto(u('Costa Rica'))?.iso2).toBe('CR');
@@ -31,13 +30,13 @@ describe('paisNacionalDelPunto', () => {
     expect(paisNacionalDelPunto(u('San Vicente y las Granadinas'))?.iso2).toBe('VC');
     expect(paisNacionalDelPunto(u('Estados Unidos'))?.iso2).toBe('US');
     expect(paisNacionalDelPunto(u('United States'))?.iso2).toBe('US');
-    expect(PAISES_NACIONAL).toHaveLength(12);
+    expect(PAISES_NACIONAL).toHaveLength(11);
   });
 
   it('no contesta por los países que ya tienen dato local', () => {
     // Si contestara, el predio brasileño vería dos bloques diciendo cosas
     // distintas sobre lo mismo.
-    for (const p of ['Argentina', 'Chile', 'Paraguay', 'Perú', 'Brasil', 'Brazil', 'México']) {
+    for (const p of ['Argentina', 'Chile', 'Paraguay', 'Perú', 'Brasil', 'Brazil', 'México', 'Guatemala']) {
       expect(paisNacionalDelPunto(u(p)), p).toBeNull();
     }
   });
@@ -129,10 +128,9 @@ describe('el contrato de cada ficha', () => {
     // Si las tres cosas faltan no hay nada que mostrar, y la tarjeta quedaría
     // diciendo el nombre del censo y nada más.
     //
-    // El desglose entró como tercera opción por Guatemala: el INE publica
-    // Maya, Garífuna y Xinka por separado y ningún total «indígena». Sumarlos
-    // sería un cálculo nuestro, así que la ficha muestra los tres y ninguna
-    // suma.
+    // El desglose entró como tercera opción por Guatemala, que ya no está acá
+    // —tiene dato local desde el 28/09/2026—, y quedó sosteniendo a Canadá y a
+    // Costa Rica, que publican partes y no un total que las cubra.
     for (const p of PAISES_NACIONAL) {
       const contable = p.total !== null || p.porcentajePublicado !== null || p.desglose.length > 0;
       expect(contable, p.pais).toBe(true);
@@ -148,11 +146,11 @@ describe('el contrato de cada ficha', () => {
     }
   });
 
-  it('sólo Canadá y Guatemala tienen licencia abierta; el resto es cita', () => {
+  it('sólo Canadá tiene licencia abierta; el resto es cita', () => {
     // La distinción manda: con licencia abierta se puede montar el tabulado;
     // con cita, sólo decir la cifra con atribución.
     const abiertas = PAISES_NACIONAL.filter(p => p.permiso === 'licencia_abierta').map(p => p.iso2);
-    expect(abiertas.sort()).toEqual(['CA', 'GT']);
+    expect(abiertas.sort()).toEqual(['CA']);
     for (const iso of ['BO', 'CO', 'EC', 'UY', 'US', 'PA', 'NI', 'CR', 'SV', 'VC']) {
       expect(PAISES_NACIONAL.find(p => p.iso2 === iso)!.permiso, iso).toBe('solo_cita');
     }
@@ -164,15 +162,6 @@ describe('el contrato de cada ficha', () => {
     for (const p of PAISES_NACIONAL.filter(x => x.permiso === 'licencia_abierta')) {
       expect(p.atribucionExigida, p.pais).toBeTruthy();
     }
-  });
-
-  it('Guatemala no suma sus tres pueblos, y lo dice', () => {
-    // 6.207.503 + 19.529 + 264.167 = 6.491.199, un número que el INE no
-    // publica. Si alguien lo pone como total, este test lo frena.
-    const gt = PAISES_NACIONAL.find(p => p.iso2 === 'GT')!;
-    expect(gt.total).toBeNull();
-    expect(gt.desglose).toHaveLength(3);
-    expect(gt.loQueNoDice.some(t => t.includes('6.491.199'))).toBe(true);
   });
 
   it('Nicaragua no divide, porque su total no es «población indígena»', () => {
