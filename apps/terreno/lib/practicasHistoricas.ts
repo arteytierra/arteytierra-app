@@ -727,6 +727,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Ethnobiology and Conservation — Local Ecological Knowledge, Fishing Practices and Threats among Kichwa, Cofán and Siona Fishers in the Ecuadorian Amazon (2026)', url: 'https://ethnobioconservation.com/ebc/en/article/view/1099' },
       ],
     },
+    {
+      practica: 'Cosecha comunitaria de castaña por ribereños no indígenas en Roraima',
+      periodo: 'Práctica documentada en Caroebe, Roraima, en 2023; transmitida desde la infancia',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En Caroebe, Roraima, cosechadores rurales no indígenas —colindantes con territorios Wai Wai y Yanomami— organizan la recolección de castaña como trabajo colectivo e iniciático: la mayoría comenzó a participar en la infancia para ayudar a sus familias. El estudio de 2023 documenta el conocimiento ecológico local sobre cuándo y cómo cosechar sin dañar la regeneración del castañal, y la tensión creciente entre continuidad de la práctica y la presión comercial sobre los rodales.',
+      fuentes: [
+        { label: 'Souza, Oliveira et al. (2023) — Harvesting Bertholletia excelsa in a western Amazon rural community: local ecological knowledge and meaning to nut-crackers, Journal of Ethnobiology and Ethnomedicine 19: 61', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10724944/' },
+      ],
+    },
   ],
   amazonia_oriental_tierra_firme: [
     {
@@ -738,6 +749,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Poblaciones indígenas amazónicas cultivaron en claros parcialmente quemados y dejaron suelos oscuros con carbón vegetal persistente. La fuente presenta como probable, no demostrada, la creación intencional de terra preta; la lección verificable es su capacidad duradera de retener nutrientes en suelos tropicales pobres.',
       fuentes: [
         { label: 'Smithsonian Institution — Amazonia’s Terra Preta', url: 'https://forces.si.edu/soils/02_08_04.html' },
+      ],
+    },
+    {
+      practica: 'Cosecha y replante deliberado de castaña por el pueblo Kayapó',
+      periodo: 'Documentado mediante entrevistas en aldeas Kayapó del sureste amazónico en 2009-2011; publicado en 2014',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Las aldeas Kayapó del sureste amazónico combinan cosecha de baja intensidad con replante deliberado de semillas y plántulas de castaña a través de sus territorios. El estudio muestra que esa combinación de extracción y dispersión activa no reduce la densidad de adultos reproductores, e implica una forma de selección y enriquecimiento forestal que amplía la distribución de la especie en el paisaje y es transferible como estrategia de manejo silvopastoril no destructivo.',
+      fuentes: [
+        { label: 'Ribeiro, Jerozolimski et al. (2014) — Anthropogenic Landscape in Southeastern Amazonia: Contemporary Impacts of Low-Intensity Harvesting and Dispersal of Brazil Nuts by the Kayapó, PLoS ONE 9(7): e104271', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4100818/' },
+      ],
+    },
+    {
+      practica: 'Policultura agroforestal con fuego de baja intensidad en la cuenca del Tapajós',
+      periodo: 'Documentada arqueobotánicamente en los últimos 4500 años en el sitio Serra do Maguari-1, Belterra (Pará)',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'En la meseta de Belterra sobre el Tapajós (Pará), la evidencia paleobotánica de 4500 años muestra policultura continua: alta cobertura arbórea, aumento de palmeras, presencia de cultivares y escasas herbáceas señalan ciclos de cultivo-barbecho corto con quema controlada de baja intensidad. El artículo argumenta que este sistema de agroforestería, y no el bosque primario ni la agricultura intensiva, fue la base de sedentarismo y crecimiento poblacional en el Amazonas oriental; es un antecedente de largo plazo compatible con la conservación del dosel arbóreo.',
+      fuentes: [
+        { label: 'Maezumi, Alves, Robinson et al. (2018) — The legacy of 4,500 years of polyculture agroforestry in the eastern Amazon, Nature Plants 4(8): 540-547', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6119467/' },
       ],
     },
   ],
@@ -753,6 +786,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Management systems for riverine fisheries', url: 'https://www.fao.org/4/x6848e/X6848E06.HTM' },
       ],
     },
+    {
+      practica: 'Agricultura ribeirinha adaptativa ante inundaciones en la várzea del Solimões',
+      periodo: 'Documentada en las reservas de Mamirauá y Amanã (Amazonas) en 2021',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En las reservas de Mamirauá y Amanã (Amazonas), comunidades ribeirinhas distribuyen yuca, zapallo, poroto, banana, sandía y frutales nativos y exóticos entre parcelas pequeñas, huertos familiares, áreas comunales y bosques secundarios. El artículo documenta estrategias adaptativas frente a eventos climáticos extremos —inundaciones y sequías atípicas— y muestra que los productores redistribuyen los cultivos temporalmente según la fase hidrológica, ajustando dónde y cuánto producir sin abandonar la base productiva.',
+      fuentes: [
+        { label: 'Ávila, Clement, Junqueira, Ticktin y Steward (2021) — Adaptive management strategies of local communities in two Amazonian floodplain ecosystems in the face of extreme climate events, Journal of Ethnobiology 41(3): 409-426', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7612842/' },
+      ],
+    },
+    {
+      practica: 'Ingeniería hidráulica xinguano: trasmallos, lagunas y corrales de tortugas',
+      periodo: 'Complejo documentado arqueológica y etnográficamente entre los Kuikuro del alto Xingu; publicado en 2007',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En el alto Xingu (Mato Grosso), la sociedad Kuikuro administró lagunas estacionales modificadas con corrales de tortugas, almacenamiento subterráneo de manioc y trasmallos en canales. Los trasmallos siguieron en uso al momento de la publicación (2007); el resto del sistema hidráulico —lagunas artificiales y corrales— se había abandonado en gran medida durante el siglo XX. El artículo integra estas infraestructuras en un paisaje cultural del Xingu del período 800-1500 d.C. que articulaba agricultura, pesca y ganadería acuática en un mismo diseño territorial.',
+      fuentes: [
+        { label: 'Heckenberger, Russell, Toney y Schmidt (2007) — The legacy of cultural landscapes in the Brazilian Amazon: implications for biodiversity, Philosophical Transactions of the Royal Society B 362: 197-208', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2311456/' },
+      ],
+    },
   ],
 
   amazonia_suroccidental_tierra_firme: [
@@ -765,6 +820,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Acre y Amazonas, las comunidades constructoras de geoglifos Aquiry levantaron recintos, zanjas, terraplenes y caminos vinculados con el manejo del suelo, el agua y jardines forestales. La persistencia de castaña y palmeras domesticadas o semidomesticadas alrededor de las obras muestra que el diseño productivo y la estructura forestal formaban un mismo paisaje gestionado.',
       fuentes: [
         { label: 'Nature — Over 20,000 precolonial earthworks in Southwest Amazonia', url: 'https://www.nature.com/articles/s41586-026-10835-7' },
+      ],
+    },
+    {
+      practica: 'Cultivo temprano de manioc y zapallo con formación de tierra negra antrópica en el alto Madeira',
+      periodo: 'Evidencia arqueobotánica del Holoceno temprano y medio (~9000-3000 AP) en Teotônio, Rondônia',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'En el sitio Teotônio sobre el río Madeira (Rondônia), el registro arqueobotánico del Holoceno temprano y medio muestra domesticados como manioc y zapallo, frutos como pequiá y guayaba, y una de las secuencias más antiguas de tierra negra antrópica documentadas en la Amazonia. El artículo sostiene que el suroeste amazónico fue un centro temprano independiente de domesticación de plantas; para el diseño predial, la tierra negra antrópica es un antecedente verificado de enmienda con carbón vegetal para retener nutrientes en suelos tropicales de baja fertilidad.',
+      fuentes: [
+        { label: 'Watling, Shock, Mongeló, Almeida, Kater, De Oliveira y Neves (2018) — Direct archaeological evidence for Southwestern Amazonia as an early plant domestication and food production centre, PLoS ONE 13(7): e0199868', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6059402/' },
+      ],
+    },
+    {
+      practica: 'Manejo de plantas alimenticias por los Huni Kuĩ (Kaxinawá) en el bajo río Jordão, Acre',
+      periodo: 'Documentado en tres comunidades de la TI Kaxinawá do Baixo Rio Jordão; publicado en 2023',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la TI Kaxinawá do Baixo Rio Jordão (Acre), el pueblo Huni Kuĩ maneja 89 especies vegetales alimenticias nativas —60% dentro de sistemas de producción activa— combinando huertos familiares, agroforestales, rozas y capoeiras. La categoría más frecuente son las plantas semisilvestres: individuos que germinan espontáneamente junto a sendas o en áreas perturbadas y son cuidados o trasplantados, generando un continuo entre lo silvestre y lo cultivado que define el manejo Huni Kuĩ del territorio.',
+      fuentes: [
+        { label: 'Pilnik, Argentim, Kinupp, Haverroth y Ming (2023) — Traditional botanical knowledge: food plants from the Huni Kuĩ indigenous people, Acre, western Brazilian Amazon, Rodriguésia 74: e00482021', url: 'https://www.scielo.br/j/rod/a/pQ8rtZgnG9SLwB6KsPf3Pyg/?format=html&lang=en&ilang=en' },
       ],
     },
   ],
@@ -1944,6 +2021,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       fuentes: [
         { label: 'Florida Museum of Natural History — Taíno Culture History', url: 'https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-culture/' },
         { label: 'Florida Museum of Natural History — Taíno Society', url: 'https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-society/' },
+      ],
+    },
+    {
+      practica: 'Jardines criollos multiestratos con café en Haití',
+      periodo: 'Sistema documentado en 28 fincas de los departamentos Nord y Grande-Anse de Haití; publicado en 2024',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En los departamentos Nord y Grande-Anse de Haití, el sistema llamado Jardín Criollo combina café con árboles frutales, maderables y carboneros en el estrato alto, cacao, banana y plátano en niveles intermedios, y ñame y taro en el nivel inferior. El artículo documenta que este tipo de finca domina la producción cafetera haitiana con insumos mínimos y conserva mayor diversidad genética del café arábiga que muchas fincas tecnificadas, gracias a décadas de selección local no sistemática por los productores.',
+      fuentes: [
+        { label: 'Millet, Allinne, Vi, Marraccini et al. (2024) — Haitian coffee agroforestry systems harbor complex arabica variety mixtures and under-recognized genetic diversity, PLoS ONE 19(4): e0299493', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11020479/' },
       ],
     },
   ],
