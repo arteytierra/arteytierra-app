@@ -398,6 +398,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Gallero (2019) — Cambios y permanencias en la producción de yerba mate, HALAC / CONICET-UNaM', url: 'https://www.halacsolcha.org/index.php/halac/article/download/341/353/822' },
       ],
     },
+    {
+      practica: 'Extraccion en yerbales nativos del monte misionero',
+      periodo: 'Fase extractiva 1875-1903',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Rodriguez (2015) reconstruye la etapa de extraccion de yerba mate en yerbales naturales de Misiones entre 1875 y 1903, antes de que la colonizacion y la industria reorganizaran la produccion. La selva generaba renta extractiva sin necesidad de desforestar; el antecedente orienta a conservar el dosel misionero y aprovechar la yerba dentro del monte en vez de convertir el predio en una plantacion a pleno sol.',
+      fuentes: [
+        { label: 'Rodriguez (2015) — Los yerbateros: la fuerza de trabajo en la explotacion yerbatera de Misiones (1875-1903), Folia Historica del Nordeste 23', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0325-82382015000100003' },
+      ],
+    },
+    {
+      practica: 'Zapecado, raido y barbacua: beneficio de la yerba mate en el monte',
+      periodo: 'Desde el periodo extractivo hasta principios del siglo XX',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Flores Perez (2025) describe las tres etapas del beneficio de la yerba mate realizadas en el propio monte misionero: el zapecado al fuego para fijar la hoja recien cosechada, el raido para reducir su volumen, y el secado final en la barbacua sobre fuego lento. El proceso completo en el lugar de cosecha permitia trasladar un producto estabilizado; la infraestructura de beneficio dentro del monte hacia rentable la selva como unidad productiva sin necesidad de trasladar la hoja verde a una planta industrial.',
+      fuentes: [
+        { label: 'Flores Perez (2025) — El trabajo en la yerba mate: tecnicas de beneficio en Misiones, Trabajo y Sociedad 26(45)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1514-68712025000200010' },
+      ],
+    },
   ],
   chaco_seco: [
     {
@@ -409,6 +431,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'INTA define esta modalidad como el pastoreo y ramoneo de animales dentro del bosque nativo del Parque Chaqueño, simultáneo al uso de abras y cañadas. En el diseño del predio, conservar un mosaico de monte y claros aporta ramoneo, frutos, sombra y refugio; la carga debe ajustarse al forraje disponible y a la categoría legal del bosque para que el aprovechamiento no se convierta en degradación.',
       fuentes: [
         { label: 'INTA (2015) — Problemáticas de la innovación en la ganadería bovina de la provincia de Chaco', url: 'https://repositorio.inta.gob.ar/bitstream/handle/20.500.12123/1874/INTA_CICPES_InstdeEconomia_Ondo_Misi_S_Problematicas_innovacion_ganaderia_bovina_Chaco.pdf?isAllowed=y&sequence=2' },
+      ],
+    },
+    {
+      practica: 'Recoleccion y molienda del algarrobo (Prosopis flexuosa)',
+      periodo: 'Holoceno tardio; documentado arqueologicamente en el noroeste arido',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Llano et al. (2012) analizan fitolitos y residuos en artefactos de molienda del Holoceno tardio en el noroeste arido argentino y muestran que Prosopis flexuosa fue un recurso central: sus frutos se molian en morteros para obtener harina con la que se preparaban patay y anapa. El algarrobo concentra calorias, proteinas y azucares sin requerir cultivo ni riego; para el diseno del predio, mantener algarrobales evita la dependencia hidrica del huerto y ofrece cosecha en los anios mas secos, cuando otros cultivos fallan.',
+      fuentes: [
+        { label: 'Llano et al. (2012) — Uso de plantas en el tardioholoceno del noroeste arido argentino, Intersecciones en Antropologia 13(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2012000200015' },
+      ],
+    },
+    {
+      practica: 'Elaboracion de arrope y aloja de chañar (Geoffroea decorticans)',
+      periodo: 'Practica viva documentada en comunidades del noroeste arido',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Saur Palmieri et al. (2019) documentan en comunidades del noroeste arido el procesamiento del chanar: los frutos maduros se hierven para obtener arrope, un jarabe denso de alto valor calorico que se conserva por meses; la fermentacion controlada del mismo mosto produce aloja. La doble cadena de procesamiento transforma un recurso estacional en un producto almacenable, relevante para predios con suelos salino-alcalinos donde el chanar prospera sin riego y otras especies no producen.',
+      fuentes: [
+        { label: 'Saur Palmieri et al. (2019) — Recoleccion y uso del chanar en el noroeste arido argentino, Intersecciones en Antropologia 20(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2019000200167' },
       ],
     },
   ],
@@ -463,6 +507,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Administración de Parques Nacionales — Patrimonio cultural de la Reserva Nacional El Nogalar de Los Toldos', url: 'https://www.argentina.gob.ar/parquesnacionales/region-noroeste/reserva-nacional-el-nogalar-de-los-toldos/patrimonio-cultural' },
       ],
     },
+    {
+      practica: 'Agricultura multifuncional por pisos altitudinales en la cuenca del rio Zenta',
+      periodo: 'Documentada hacia 2005; sin fecha inicial determinada en la fuente',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Hilgert y Gil (2005) registran en la cuenca del rio Zenta, Jujuy, que las familias combinaban pequenas parcelas en distintos pisos altitudinales con recoleccion de plantas silvestres, ganaderia menor y elaboracion de productos derivados. La logica de pisos distribuye el riesgo climatico entre ambientes con distintos regimenes de lluvia y helada; la fuente orienta a tratar cada piso como un sector de produccion diferenciado en vez de replicar el mismo cultivo en toda la pendiente.',
+      fuentes: [
+        { label: 'Hilgert y Gil (2005) — Especies comestibles y plantas utiles en la cuenca del rio Zenta, Darwiniana 43(1-4)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932005000100003' },
+      ],
+    },
+    {
+      practica: 'Conservacion in situ de variedades criollas de maiz en Caspala, Jujuy',
+      periodo: 'Documentada hacia 2013; practica activa en familias de la quebrada de Zenta',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Ramos, Hilgert y Lambare (2013) documentan en Caspala la conservacion activa de mas de diez variedades criollas de maiz mantenidas por familias que seleccionan semilla propia cada temporada. La diversidad intraespecifica reduce la vulnerabilidad ante heladas, granizo y sequia porque distintas variedades toleran distintos momentos de siembra y condiciones de suelo; el estudio muestra que esa variabilidad no se mantiene sola: depende de la decision anual de sembrar al menos una planta de cada tipo y guardar la semilla con criterios propios.',
+      fuentes: [
+        { label: 'Ramos, Hilgert y Lambare (2013) — Variedades locales de maiz en la quebrada de Zenta, Bol. Soc. Arg. Botanica 48(3-4)', url: 'https://www.scielo.org.ar/scielo.php?pid=S1851-23722013000300022&script=sci_arttext' },
+      ],
+    },
   ],
   puna_altoandino: [
     {
@@ -476,6 +542,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional San Guillermo', url: 'https://www.argentina.gob.ar/node/439347' },
       ],
     },
+    {
+      practica: 'Terrazas y andenes de cultivo prehispanicos en Moreta, Puna de Jujuy',
+      periodo: 'Prehispanico; documentado arqueologicamente en Angiorama et al. (2019)',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'Angiorama et al. (2019) relevan en Moreta un sistema de terrazas de cultivo construidas con muros de piedra sobre laderas y quebradas laterales, articulado con estructuras de almacenamiento y caminos. Los andenes retienen suelo, capturan humedad y prolongan la temporada productiva al moderar la temperatura nocturna; la fuente documenta su abandono y discute las condiciones sociales que hacian posible su construccion y mantenimiento, un dato relevante para dimensionar el esfuerzo colectivo que requeriria cualquier rehabilitacion a escala predial.',
+      fuentes: [
+        { label: 'Angiorama et al. (2019) — Terrazas y estructuras de cultivo en Moreta, Puna de Jujuy, Relaciones 44(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1852-14792019000100001' },
+      ],
+    },
+    {
+      practica: 'Cultivo de quinoa, maiz y poroto en la puna meridional argentina',
+      periodo: 'Prehispanico; documentado en el registro arqueobotanico regional',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Rodriguez (2013) reconstruye el conjunto de especies cultivadas en la puna meridional a partir del registro arqueobotanico: quinoa, maiz y poroto aparecen combinados con variedades adaptadas a la corta temporada libre de heladas. La combinacion de leguminosa fijadora de nitrogeno, cereal y pseudocereal producidos en el mismo espacio reduce la necesidad de insumos externos y cubre distintos requerimientos nutricionales; la fuente muestra que esa diversidad de especies tenia respaldo material en la puna mucho antes de la conquista.',
+      fuentes: [
+        { label: 'Rodriguez (2013) — Plantas cultivadas en la puna meridional argentina: evidencia arqueobotanica, Intersecciones en Antropologia 14(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2013000200003' },
+      ],
+    },
   ],
   estepa_patagonica: [
     {
@@ -487,6 +575,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Parques Nacionales documenta puestos ganaderos de veranada instalados sobre la Meseta del Lago Buenos Aires a lo largo del siglo XX, mientras los cascos de estancia quedaban al pie o en sus estribaciones. La separación espacial permite llevar la hacienda a los pastos estivales de altura y reservar otros sectores para el resto del año, una lógica útil para distribuir la presión de pastoreo en ambientes de oferta muy estacional.',
       fuentes: [
         { label: 'Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Patagonia', url: 'https://www.argentina.gob.ar/parquesnacionales/patagonia-austral/parque-nacional-patagonia/patrimonio-cultural' },
+      ],
+    },
+    {
+      practica: 'Estrategias colectivas de caza del guanaco en Fuego-Patagonia',
+      periodo: 'Prehispanico hasta el siglo XX; documentado en registro arqueologico y etnografico',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Borrero (2013) sistematiza para Fuego-Patagonia las estrategias de caza del guanaco: palenques y corrales de caza, tecnicas de aproximacion con grupos coordinados y aprovechamiento completo de la res. La caza grupal con conocimiento detallado del terreno y los patrones de movimiento estacional del guanaco reducia la incertidumbre de la caceria individual; la fuente es relevante para entender la logica de manejo de una especie que hoy vuelve a ser una opcion productiva en la Patagonia.',
+      fuentes: [
+        { label: 'Borrero (2013) — Caza del guanaco en Fuego-Patagonia: estrategias y aprovechamiento, Comechingonia 17(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000100003' },
+      ],
+    },
+    {
+      practica: 'Procesamiento de cuero de guanaco y confeccion de quillangos',
+      periodo: 'Documentado en comunidades mapuche-tehuelche del noroeste patagonico hacia 2018',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Fernandez y Guillermo (2018) documentan entre mujeres mapuche-tehuelche el procesamiento del cuero de guanaco para confeccionar quillangos: el cuero fresco se estira, raspa y soba hasta lograr el espesor uniforme necesario para el cosido, luego se tine con tinturas vegetales. El quillango concentra el conocimiento sobre el animal, los materiales locales y la tecnologia de costura en un producto de alta durabilidad; la fuente describe una cadena completa que convierte un subproducto de la caza en un bien de alta durabilidad sin insumos externos.',
+      fuentes: [
+        { label: 'Fernandez y Guillermo (2018) — Saberes textiles mapuche-tehuelche: el quillango de guanaco, La Aljaba 22(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1669-57042018000200003' },
       ],
     },
   ],
@@ -539,6 +649,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Parques Nacionales atribuye a comunidades indígenas que habitaron el Paraná inferior desde hace al menos 1.700 años la pesca con arpones y redes, y señala que habrían ahumado y conservado pescado para el invierno. El conjunto vincula captura y almacenamiento: aprovechar la abundancia estacional del humedal y conservarla reduce la dependencia de pesca diaria cuando baja la disponibilidad.',
       fuentes: [
         { label: 'Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Ciervo de los Pantanos', url: 'https://www.argentina.gob.ar/parquesnacionales/centro/parque-nacional-ciervo-de-los-pantanos/patrimonio-cultural' },
+      ],
+    },
+    {
+      practica: 'Horticultura prehispanica en Los Tres Cerros, Delta del Parana',
+      periodo: 'Prehispanico; documentado arqueobotanicamente en Sanchez et al. (2013)',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Sanchez et al. (2013) reportan en el sitio Los Tres Cerros evidencia fitolitica de procesamiento de tuberculos, palmeras y cucurbitaceas en contextos prehispanicos, lo que indica horticultura dentro o junto a los monticulos de tierra. La combinacion de pesca, recoleccion y cultivo en el mismo humedal reduce la presion sobre cualquiera de los recursos por separado; para el diseno predial en ambientes inundables, el dato orienta a integrar zonas elevadas para huertos con acceso directo al cuerpo de agua.',
+      fuentes: [
+        { label: 'Sanchez et al. (2013) — Evidencias arqueobotanicas en Los Tres Cerros, Delta del Parana, Darwiniana nueva serie 1(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932013000200002' },
+      ],
+    },
+    {
+      practica: 'Construccion de monticulos (cerritos) como infraestructura productiva',
+      periodo: 'Prehispanico; documentado en Gianotti y Bonomo (2013)',
+      tipo: 'suelo',
+      vigencia: 'historica',
+      detalle:
+        'Gianotti y Bonomo (2013) documentan para la cuenca del Plata que los monticulos artificiales no eran solo sitios de habitacion: en varios casos concentraban suelos mejorados, semillas y restos de plantas cultivadas, convirtiendolos en infraestructura productiva levantada sobre el nivel de inundacion. Construir tierra sobre tierra en un paisaje plano y anegadizo transforma la dinamica hidrica local: los cerritos retienen humedad en seco y escapan al agua en la crecida, creando el unico suelo agricola estable en ese ambiente.',
+      fuentes: [
+        { label: 'Gianotti y Bonomo (2013) — Cerritos como paisaje productivo en la cuenca del Plata, Comechingonia 17(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000200006' },
       ],
     },
   ],
