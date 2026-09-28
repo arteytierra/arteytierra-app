@@ -81,7 +81,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'Productores de cuatro municipios de Puebla y Tlaxcala cultivan principalmente Agave salmiana en parcelas de dos a tres hectáreas y extraen aguamiel raspando la piña a los diez o catorce años. Los tlachiqueros —especialistas en la extracción— ajustan la operación al ciclo lunar: tapan con luna llena y agujerean con luna creciente para reducir la pudrición. La superficie sembrada cayó de más de doce mil hectáreas en 1960 a menos de mil en 2014; el artículo documenta sin embargo la persistencia del cultivo y del conocimiento asociado en las comunidades estudiadas, junto con la integración del maguey en bordos tipo metepantle.',
       fuentes: [
-        { label: 'Flores-Cruz et al. (2018) — Conocimiento tradicional, cultivo y aprovechamiento del maguey pulquero en municipios de Puebla y Tlaxcala, Polibotánica 45: 205-229', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-27682018000100205&script=sci_arttext_plus&tlng=es' },
+        { label: 'Álvarez-Duarte et al. (2018) — Conocimiento tradicional, cultivo y aprovechamiento del maguey pulquero en los municipios de Puebla y Tlaxcala, Polibotánica 45: 205-229', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-27682018000100205&script=sci_arttext_plus&tlng=es' },
       ],
     },
   ],
@@ -399,25 +399,25 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
     {
-      practica: 'Extraccion en yerbales nativos del monte misionero',
-      periodo: 'Fase extractiva 1875-1903',
+      practica: 'Extracción en yerbales nativos del monte misionero',
+      periodo: 'Fase extractiva 1926-1953',
       tipo: 'recoleccion',
       vigencia: 'historica',
       detalle:
-        'Rodriguez (2015) reconstruye la etapa de extraccion de yerba mate en yerbales naturales de Misiones entre 1875 y 1903, antes de que la colonizacion y la industria reorganizaran la produccion. La selva generaba renta extractiva sin necesidad de desforestar; el antecedente orienta a conservar el dosel misionero y aprovechar la yerba dentro del monte en vez de convertir el predio en una plantacion a pleno sol.',
+        'Rodríguez (2015) reconstruye la etapa de extracción de yerba mate en yerbales naturales de Misiones entre 1926 y 1953, antes de que la colonización y la industria reorganizaran la producción. La selva generaba renta extractiva sin necesidad de desforestar; el antecedente orienta a conservar el dosel misionero y aprovechar la yerba dentro del monte en vez de convertir el predio en una plantación a pleno sol.',
       fuentes: [
-        { label: 'Rodriguez (2015) — Los yerbateros: la fuerza de trabajo en la explotacion yerbatera de Misiones (1875-1903), Folia Historica del Nordeste 23', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0325-82382015000100003' },
+        { label: 'Rodríguez (2015) — Estado y producción: la actividad yerbatera en el territorio nacional de Misiones (1926-1953), Folia Histórica del Nordeste 23', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0325-82382015000100003' },
       ],
     },
     {
-      practica: 'Zapecado, raido y barbacua: beneficio de la yerba mate en el monte',
-      periodo: 'Desde el periodo extractivo hasta principios del siglo XX',
+      practica: 'Zapecado, raído y barbacuá: beneficio de la yerba mate en el monte',
+      periodo: 'Desde el período extractivo hasta principios del siglo XX',
       tipo: 'recoleccion',
       vigencia: 'historica',
       detalle:
-        'Flores Perez (2025) describe las tres etapas del beneficio de la yerba mate realizadas en el propio monte misionero: el zapecado al fuego para fijar la hoja recien cosechada, el raido para reducir su volumen, y el secado final en la barbacua sobre fuego lento. El proceso completo en el lugar de cosecha permitia trasladar un producto estabilizado; la infraestructura de beneficio dentro del monte hacia rentable la selva como unidad productiva sin necesidad de trasladar la hoja verde a una planta industrial.',
+        'Florez Pérez (2025) describe las tres etapas del beneficio de la yerba mate realizadas en el propio monte misionero: el zapecado al fuego para fijar la hoja recién cosechada, el raído para reducir su volumen, y el secado final en la barbacuá sobre fuego lento. El proceso completo en el lugar de cosecha permitía trasladar un producto estabilizado; la infraestructura de beneficio dentro del monte hacía rentable la selva como unidad productiva sin necesidad de trasladar la hoja verde a una planta industrial.',
       fuentes: [
-        { label: 'Flores Perez (2025) — El trabajo en la yerba mate: tecnicas de beneficio en Misiones, Trabajo y Sociedad 26(45)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1514-68712025000200010' },
+        { label: 'Florez Pérez (2025) — El trabajo infantil en la cosecha de yerba mate en Misiones. De la extracción en los yerbales nativos a la actualidad, Trabajo y Sociedad 26(45)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1514-68712025000200010' },
       ],
     },
   ],
@@ -434,25 +434,25 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
     {
-      practica: 'Recoleccion y molienda del algarrobo (Prosopis flexuosa)',
-      periodo: 'Holoceno tardio; documentado arqueologicamente en el noroeste arido',
+      practica: 'Recolección y molienda del algarrobo (Prosopis flexuosa)',
+      periodo: 'Holoceno tardío; documentado arqueológicamente en el noroeste árido',
       tipo: 'recoleccion',
       vigencia: 'en_retroceso',
       detalle:
-        'Llano et al. (2012) analizan fitolitos y residuos en artefactos de molienda del Holoceno tardio en el noroeste arido argentino y muestran que Prosopis flexuosa fue un recurso central: sus frutos se molian en morteros para obtener harina con la que se preparaban patay y anapa. El algarrobo concentra calorias, proteinas y azucares sin requerir cultivo ni riego; para el diseno del predio, mantener algarrobales evita la dependencia hidrica del huerto y ofrece cosecha en los anios mas secos, cuando otros cultivos fallan.',
+        'Llano et al. (2012) analizan fitolitos y residuos en artefactos de molienda del Holoceno tardío en el noroeste árido argentino y muestran que Prosopis flexuosa fue un recurso central: sus frutos se molían en morteros para obtener harina con la que se preparaban patay y anapa. El algarrobo concentra calorías, proteínas y azúcares sin requerir cultivo ni riego; para el diseño del predio, mantener algarrobales evita la dependencia hídrica del huerto y ofrece cosecha en los años más secos, cuando otros cultivos fallan.',
       fuentes: [
-        { label: 'Llano et al. (2012) — Uso de plantas en el tardioholoceno del noroeste arido argentino, Intersecciones en Antropologia 13(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2012000200015' },
+        { label: 'Llano et al. (2012) — Arqueología experimental y valoración nutricional del fruto de algarrobo (Prosopis flexuosa), Intersecciones en Antropología 13(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2012000200015' },
       ],
     },
     {
-      practica: 'Elaboracion de arrope y aloja de chañar (Geoffroea decorticans)',
-      periodo: 'Practica viva documentada en comunidades del noroeste arido',
+      practica: 'Elaboración de arrope y aloja de chañar (Geoffroea decorticans)',
+      periodo: 'Práctica viva documentada en comunidades del noroeste árido',
       tipo: 'recoleccion',
       vigencia: 'en_retroceso',
       detalle:
-        'Saur Palmieri et al. (2019) documentan en comunidades del noroeste arido el procesamiento del chanar: los frutos maduros se hierven para obtener arrope, un jarabe denso de alto valor calorico que se conserva por meses; la fermentacion controlada del mismo mosto produce aloja. La doble cadena de procesamiento transforma un recurso estacional en un producto almacenable, relevante para predios con suelos salino-alcalinos donde el chanar prospera sin riego y otras especies no producen.',
+        'Saur Palmieri, Trillo y López (2019) documentan en comunidades del noroeste árido el procesamiento del chañar: los frutos maduros se hierven para obtener arrope, un jarabe denso de alto valor calórico que se conserva por meses; la fermentación controlada del mismo mosto produce aloja. La doble cadena de procesamiento transforma un recurso estacional en un producto almacenable, relevante para predios con suelos salino-alcalinos donde el chañar prospera sin riego y otras especies no producen.',
       fuentes: [
-        { label: 'Saur Palmieri et al. (2019) — Recoleccion y uso del chanar en el noroeste arido argentino, Intersecciones en Antropologia 20(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2019000200167' },
+        { label: 'Saur Palmieri, Trillo y López (2019) — Rasgos diagnósticos en frutos y residuos secos de la cocción de chañar (Geoffroea decorticans, Fabaceae) para identificar prácticas poscolecta, Intersecciones en Antropología 20(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2019000200167' },
       ],
     },
   ],
@@ -508,25 +508,25 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
     {
-      practica: 'Agricultura multifuncional por pisos altitudinales en la cuenca del rio Zenta',
+      practica: 'Agricultura multifuncional por pisos altitudinales en la cuenca del río Zenta',
       periodo: 'Documentada hacia 2005; sin fecha inicial determinada en la fuente',
       tipo: 'cultivo',
       vigencia: 'en_retroceso',
       detalle:
-        'Hilgert y Gil (2005) registran en la cuenca del rio Zenta, Jujuy, que las familias combinaban pequenas parcelas en distintos pisos altitudinales con recoleccion de plantas silvestres, ganaderia menor y elaboracion de productos derivados. La logica de pisos distribuye el riesgo climatico entre ambientes con distintos regimenes de lluvia y helada; la fuente orienta a tratar cada piso como un sector de produccion diferenciado en vez de replicar el mismo cultivo en toda la pendiente.',
+        'Hilgert y Gilg (2005) registran en la cuenca del río Zenta, Salta, que las familias combinaban pequeñas parcelas en distintos pisos altitudinales con recolección de plantas silvestres, ganadería menor y elaboración de productos derivados. La lógica de pisos distribuye el riesgo climático entre ambientes con distintos regímenes de lluvia y helada; la fuente orienta a tratar cada piso como un sector de producción diferenciado en vez de replicar el mismo cultivo en toda la pendiente.',
       fuentes: [
-        { label: 'Hilgert y Gil (2005) — Especies comestibles y plantas utiles en la cuenca del rio Zenta, Darwiniana 43(1-4)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932005000100003' },
+        { label: 'Hilgert y Gilg (2005) — Traditional andean agriculture and changing processes in the Zenta River basin, Salta, northwestern Argentina, Darwiniana 43(1-4): 30-43', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932005000100003' },
       ],
     },
     {
-      practica: 'Conservacion in situ de variedades criollas de maiz en Caspala, Jujuy',
-      periodo: 'Documentada hacia 2013; practica activa en familias de la quebrada de Zenta',
+      practica: 'Conservación in situ de variedades criollas de maíz en Caspalá, Jujuy',
+      periodo: 'Documentada hacia 2013; práctica activa en familias de la quebrada de Zenta',
       tipo: 'cultivo',
       vigencia: 'en_retroceso',
       detalle:
-        'Ramos, Hilgert y Lambare (2013) documentan en Caspala la conservacion activa de mas de diez variedades criollas de maiz mantenidas por familias que seleccionan semilla propia cada temporada. La diversidad intraespecifica reduce la vulnerabilidad ante heladas, granizo y sequia porque distintas variedades toleran distintos momentos de siembra y condiciones de suelo; el estudio muestra que esa variabilidad no se mantiene sola: depende de la decision anual de sembrar al menos una planta de cada tipo y guardar la semilla con criterios propios.',
+        'Ramos, Hilgert y Lambaré (2013) documentan en Caspalá la conservación activa de más de diez variedades criollas de maíz mantenidas por familias que seleccionan semilla propia cada temporada. La diversidad intraespecífica reduce la vulnerabilidad ante heladas, granizo y sequía porque distintas variedades toleran distintos momentos de siembra y condiciones de suelo; el estudio muestra que esa variabilidad no se mantiene sola: depende de la decisión anual de sembrar al menos una planta de cada tipo y guardar la semilla con criterios propios.',
       fuentes: [
-        { label: 'Ramos, Hilgert y Lambare (2013) — Variedades locales de maiz en la quebrada de Zenta, Bol. Soc. Arg. Botanica 48(3-4)', url: 'https://www.scielo.org.ar/scielo.php?pid=S1851-23722013000300022&script=sci_arttext' },
+        { label: 'Ramos, Hilgert y Lambaré (2013) — Agricultura tradicional y riqueza de maíces (Zea mays). Estudio de Caso en Caspalá, Bol. Soc. Arg. Botánica 48(3-4)', url: 'https://www.scielo.org.ar/scielo.php?pid=S1851-23722013000300022&script=sci_arttext' },
       ],
     },
   ],
@@ -543,25 +543,25 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
     {
-      practica: 'Terrazas y andenes de cultivo prehispanicos en Moreta, Puna de Jujuy',
-      periodo: 'Prehispanico; documentado arqueologicamente en Angiorama et al. (2019)',
+      practica: 'Terrazas y andenes de cultivo prehispánicos en Moreta, Puna de Jujuy',
+      periodo: 'Prehispánico; documentado arqueológicamente en Angiorama et al. (2019)',
       tipo: 'suelo',
       vigencia: 'historica',
       detalle:
-        'Angiorama et al. (2019) relevan en Moreta un sistema de terrazas de cultivo construidas con muros de piedra sobre laderas y quebradas laterales, articulado con estructuras de almacenamiento y caminos. Los andenes retienen suelo, capturan humedad y prolongan la temporada productiva al moderar la temperatura nocturna; la fuente documenta su abandono y discute las condiciones sociales que hacian posible su construccion y mantenimiento, un dato relevante para dimensionar el esfuerzo colectivo que requeriria cualquier rehabilitacion a escala predial.',
+        'Angiorama et al. (2019) relevan en Moreta un sistema de terrazas de cultivo construidas con muros de piedra sobre laderas y quebradas laterales, articulado con estructuras de almacenamiento y caminos. Los andenes retienen suelo, capturan humedad y prolongan la temporada productiva al moderar la temperatura nocturna; la fuente documenta su abandono y discute las condiciones sociales que hacían posible su construcción y mantenimiento, un dato relevante para dimensionar el esfuerzo colectivo que requeriría cualquier rehabilitación a escala predial.',
       fuentes: [
-        { label: 'Angiorama et al. (2019) — Terrazas y estructuras de cultivo en Moreta, Puna de Jujuy, Relaciones 44(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1852-14792019000100001' },
+        { label: 'Angiorama et al. (2019) — Historia ocupacional y prácticas productivas en Moreta (Puna de Jujuy, Argentina) durante tiempos prehispánicos y coloniales, Relaciones 44(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1852-14792019000100001' },
       ],
     },
     {
-      practica: 'Cultivo de quinoa, maiz y poroto en la puna meridional argentina',
-      periodo: 'Prehispanico; documentado en el registro arqueobotanico regional',
+      practica: 'Cultivo de quinoa, maíz y poroto en la puna meridional argentina',
+      periodo: 'Prehispánico; documentado en el registro arqueobotánico regional',
       tipo: 'cultivo',
       vigencia: 'historica',
       detalle:
-        'Rodriguez (2013) reconstruye el conjunto de especies cultivadas en la puna meridional a partir del registro arqueobotanico: quinoa, maiz y poroto aparecen combinados con variedades adaptadas a la corta temporada libre de heladas. La combinacion de leguminosa fijadora de nitrogeno, cereal y pseudocereal producidos en el mismo espacio reduce la necesidad de insumos externos y cubre distintos requerimientos nutricionales; la fuente muestra que esa diversidad de especies tenia respaldo material en la puna mucho antes de la conquista.',
+        'Rodríguez (2013) reconstruye el conjunto de especies cultivadas en la puna meridional a partir del registro arqueobotánico: quinoa, maíz y poroto aparecen combinados con variedades adaptadas a la corta temporada libre de heladas. La combinación de leguminosa fijadora de nitrógeno, cereal y pseudocereal producidos en el mismo espacio reduce la necesidad de insumos externos y cubre distintos requerimientos nutricionales; la fuente muestra que esa diversidad de especies tenía respaldo material en la puna mucho antes de la conquista.',
       fuentes: [
-        { label: 'Rodriguez (2013) — Plantas cultivadas en la puna meridional argentina: evidencia arqueobotanica, Intersecciones en Antropologia 14(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2013000200003' },
+        { label: 'Rodríguez (2013) — Los grupos humanos y las plantas en la Puna meridional argentina: arqueobotánica de Antofagasta de la Sierra, Intersecciones en Antropología 14(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2013000200003' },
       ],
     },
   ],
@@ -579,24 +579,24 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
     },
     {
       practica: 'Estrategias colectivas de caza del guanaco en Fuego-Patagonia',
-      periodo: 'Prehispanico hasta el siglo XX; documentado en registro arqueologico y etnografico',
+      periodo: 'Prehispánico hasta el siglo XX; documentado en registro arqueológico y etnográfico',
       tipo: 'recoleccion',
       vigencia: 'historica',
       detalle:
-        'Borrero (2013) sistematiza para Fuego-Patagonia las estrategias de caza del guanaco: palenques y corrales de caza, tecnicas de aproximacion con grupos coordinados y aprovechamiento completo de la res. La caza grupal con conocimiento detallado del terreno y los patrones de movimiento estacional del guanaco reducia la incertidumbre de la caceria individual; la fuente es relevante para entender la logica de manejo de una especie que hoy vuelve a ser una opcion productiva en la Patagonia.',
+        'Borrero (2013) analiza las estrategias de caza del guanaco en Fuego-Patagonia a partir del registro arqueológico: coordinación de grupos de cazadores con conocimiento del terreno y de los patrones estacionales de movimiento de las tropillas. El artículo cuestiona al mismo tiempo la interpretación de ciertos sitios como matanzas masivas en un único evento, señalando que el registro óseo se explicaría mejor como la acumulación de episodios reiterados; la fuente vale tanto por lo que documenta sobre las estrategias colectivas como por la cautela que impone sobre rendimientos de caza supuestos. Para el diseño predial, el antecedente orienta a tratar al guanaco como un recurso de largo plazo que demanda manejo territorial, no explotación puntual.',
       fuentes: [
-        { label: 'Borrero (2013) — Caza del guanaco en Fuego-Patagonia: estrategias y aprovechamiento, Comechingonia 17(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000100003' },
+        { label: 'Borrero (2013) — Estrategias de caza en Fuego-Patagonia, Comechingonia 17(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000100003' },
       ],
     },
     {
-      practica: 'Procesamiento de cuero de guanaco y confeccion de quillangos',
-      periodo: 'Documentado en comunidades mapuche-tehuelche del noroeste patagonico hacia 2018',
+      practica: 'Procesamiento de cuero de guanaco y confección de quillangos',
+      periodo: 'Documentado en comunidades mapuche-tehuelche del noroeste patagónico hacia 2018',
       tipo: 'recoleccion',
       vigencia: 'en_retroceso',
       detalle:
-        'Fernandez y Guillermo (2018) documentan entre mujeres mapuche-tehuelche el procesamiento del cuero de guanaco para confeccionar quillangos: el cuero fresco se estira, raspa y soba hasta lograr el espesor uniforme necesario para el cosido, luego se tine con tinturas vegetales. El quillango concentra el conocimiento sobre el animal, los materiales locales y la tecnologia de costura en un producto de alta durabilidad; la fuente describe una cadena completa que convierte un subproducto de la caza en un bien de alta durabilidad sin insumos externos.',
+        'Fernández y Guillermo (2018) documentan entre mujeres mapuche-tehuelche el procesamiento del cuero de guanaco para confeccionar quillangos: el cuero fresco se estira, raspa y soba hasta lograr el espesor uniforme necesario para el cosido, luego se tiñe con tinturas vegetales. El quillango concentra el conocimiento sobre el animal, los materiales locales y la tecnología de costura en un producto de alta durabilidad; la fuente describe una cadena completa que convierte un subproducto de la caza en un bien de alta durabilidad sin insumos externos.',
       fuentes: [
-        { label: 'Fernandez y Guillermo (2018) — Saberes textiles mapuche-tehuelche: el quillango de guanaco, La Aljaba 22(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1669-57042018000200003' },
+        { label: 'Fernández y Guillermo (2018) — Saberes, prácticas y cultura material de las mujeres indígenas patagónicas: la vestimenta como diacrítico identitario, La Aljaba 22(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1669-57042018000200003' },
       ],
     },
   ],
@@ -652,25 +652,25 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
     {
-      practica: 'Horticultura prehispanica en Los Tres Cerros, Delta del Parana',
-      periodo: 'Prehispanico; documentado arqueobotanicamente en Sanchez et al. (2013)',
+      practica: 'Horticultura prehispánica en Los Tres Cerros, Delta del Paraná',
+      periodo: 'Prehispánico; documentado arqueobotánicamente en Sánchez et al. (2013)',
       tipo: 'cultivo',
       vigencia: 'historica',
       detalle:
-        'Sanchez et al. (2013) reportan en el sitio Los Tres Cerros evidencia fitolitica de procesamiento de tuberculos, palmeras y cucurbitaceas en contextos prehispanicos, lo que indica horticultura dentro o junto a los monticulos de tierra. La combinacion de pesca, recoleccion y cultivo en el mismo humedal reduce la presion sobre cualquiera de los recursos por separado; para el diseno predial en ambientes inundables, el dato orienta a integrar zonas elevadas para huertos con acceso directo al cuerpo de agua.',
+        'Sánchez et al. (2013) reportan en el sitio Los Tres Cerros evidencia fitolítica de procesamiento de tubérculos, palmeras y cucurbitáceas en contextos prehispánicos, lo que indica horticultura dentro o junto a los montículos de tierra. La combinación de pesca, recolección y cultivo en el mismo humedal reduce la presión sobre cualquiera de los recursos por separado; para el diseño predial en ambientes inundables, el dato orienta a integrar zonas elevadas para huertos con acceso directo al cuerpo de agua.',
       fuentes: [
-        { label: 'Sanchez et al. (2013) — Evidencias arqueobotanicas en Los Tres Cerros, Delta del Parana, Darwiniana nueva serie 1(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932013000200002' },
+        { label: 'Sánchez et al. (2013) — Primeros resultados sobre el uso prehispánico de los vegetales en el sitio arqueológico Los Tres Cerros 1 (Victoria, Entre Ríos, Argentina): análisis del registro biosilíceo, Darwiniana nueva serie 1(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932013000200002' },
       ],
     },
     {
-      practica: 'Construccion de monticulos (cerritos) como infraestructura productiva',
-      periodo: 'Prehispanico; documentado en Gianotti y Bonomo (2013)',
+      practica: 'Construcción de montículos (cerritos) como infraestructura productiva',
+      periodo: 'Prehispánico; documentado en Gianotti y Bonomo (2013)',
       tipo: 'suelo',
       vigencia: 'historica',
       detalle:
-        'Gianotti y Bonomo (2013) documentan para la cuenca del Plata que los monticulos artificiales no eran solo sitios de habitacion: en varios casos concentraban suelos mejorados, semillas y restos de plantas cultivadas, convirtiendolos en infraestructura productiva levantada sobre el nivel de inundacion. Construir tierra sobre tierra en un paisaje plano y anegadizo transforma la dinamica hidrica local: los cerritos retienen humedad en seco y escapan al agua en la crecida, creando el unico suelo agricola estable en ese ambiente.',
+        'Gianotti y Bonomo (2013) documentan para la cuenca del Plata que los montículos artificiales no eran solo sitios de habitación: en varios casos concentraban suelos mejorados, semillas y restos de plantas cultivadas, convirtiéndolos en infraestructura productiva levantada sobre el nivel de inundación. Construir tierra sobre tierra en un paisaje plano y anegadizo transforma la dinámica hídrica local: los cerritos retienen humedad en seco y escapan al agua en la crecida, creando el único suelo agrícola estable en ese ambiente.',
       fuentes: [
-        { label: 'Gianotti y Bonomo (2013) — Cerritos como paisaje productivo en la cuenca del Plata, Comechingonia 17(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000200006' },
+        { label: 'Gianotti y Bonomo (2013) — De montículos a paisajes: procesos de transformación y construcción de paisajes en el sur de la cuenca del Plata, Comechingonia 17(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000200006' },
       ],
     },
   ],
@@ -1565,7 +1565,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'En el Valle Semiárido de Tehuacán-Cuicatlán, productores integran cactáceas columnares —nopalli (Opuntia pilifera) y chichipe (Polaskia chichipe)— en sistemas policultivos con maíz y frijol y en solares peridomésticos. Las cactáceas delimitan parcelas, producen fruto y forraje en condiciones de aridez extrema donde la mayoría de los frutales no prospera, y su presencia en el paisaje es evidencia de siglos de selección local de plantas. Tehuacán es reconocido como uno de los centros históricos de domesticación de cactáceas útiles en Mesoamérica.',
       fuentes: [
-        { label: 'Blancas, Casas, Rangel-Landa et al. (2013) — Plant management in the Tehuacán-Cuicatlán Valley, Mexico, Economic Botany / Etnobiología 11(2): 1-31', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982013000400001' },
+        { label: 'Moreno-Calles, Toledo y Casas (2013) — Los sistemas agroforestales tradicionales de México: una aproximación biocultural, Botanical Sciences 91(4)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982013000400001' },
       ],
     },
   ],
@@ -1578,7 +1578,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'La comunidad forestal zapoteca de Capulálpam de Méndez estableció manejo comunitario al terminar la concesión industrial y luego adoptó selección en grupos y árboles semilleros, acompañados por monitoreo permanente. La experiencia permite pensar mosaicos de corta, regeneración y seguimiento en bosques mixtos, pero sus reglas comunales, inventarios y decisiones no son sustituibles por un turno forestal genérico.',
       fuentes: [
-        { label: 'Madera y Bosques — Manejo forestal en la Sierra Juárez de Oaxaca', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-04712019000300203&script=sci_arttext' },
+        { label: 'Ramírez Santiago et al. (2019) — Efectos del aprovechamiento forestal en la estructura y diversidad de rodales mixtos en la Sierra Juárez de Oaxaca, Madera y Bosques 25(3)', url: 'https://www.scielo.org.mx/scielo.php?pid=S1405-04712019000300203&script=sci_arttext' },
       ],
     },
     {
@@ -1589,7 +1589,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'En la comunidad zapoteca de Las Delicias, Sierra Juárez de Oaxaca, el registro etnobotánico identifica el solar peridoméstico, el cafetal de sombra y la milpa como los tres sistemas agroforestales principales. Cada uno cumple funciones distintas y complementarias: el solar concentra especies medicinales, frutales y condimentarias cerca de la casa; el cafetal mantiene diversidad arbórea con ingreso monetario; la milpa asegura la base alimentaria. El estudio documenta que el conjunto provee alimento a la familia y complementa el ingreso, lo que sustenta el diseño de predios que articulan los tres estratos en lugar de especializarse en uno solo.',
       fuentes: [
-        { label: 'Tlacotempa-Morales, Alcántara-Onofre y Torres-García (2020) — Registro etnobotánico en una comunidad zapoteca de la Sierra Juárez de Oaxaca, Revista Mexicana de Ciencias Forestales 11(57)', url: 'https://scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982020000100128' },
+        { label: 'Pascual-Mendoza et al. (2020) — Sistemas agroforestales de una comunidad zapoteca de la Sierra Norte de Oaxaca, Botanical Sciences 98(1)', url: 'https://scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982020000100128' },
       ],
     },
     {
@@ -1600,7 +1600,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'En cinco municipios zapotecos de la Sierra Sur de Oaxaca (Los Loxicha), agricultores conservan treinta y seis variedades tradicionales de maíz que corresponden a diez razas agronómicas, el veinte por ciento de las razas reportadas para todo México. Las variedades circulan mediante selección de semilla propia, trueque y compra entre productores vecinos; ese flujo génico entre parcelas es el mecanismo que genera y mantiene la diversidad in situ. El registro sitúa a los sistemas milperos de la Sierra Sur entre los bancos genéticos en uso más robustos del país.',
       fuentes: [
-        { label: 'Perales, Benz y Brush (2005) / Pérez-Herrera, Chávez-Servia et al. (2015) — Diversidad de maíz en la sierra sur de Oaxaca, México: conocimiento y manejo tradicional, Polibotánica 39: 219-250', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1405-27682015000100009' },
+        { label: 'Rendón-Aguilar et al. (2015) — Diversidad de maíz en la sierra sur de Oaxaca, México: conocimiento y manejo tradicional, Polibotánica 39', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1405-27682015000100009' },
       ],
     },
   ],
@@ -1624,7 +1624,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'La cría de la abeja sin aguijón ko\'olel kaab (Melipona beecheii) es una práctica ancestral maya documentada en Campeche que retrocede por la introducción de la abeja europea y el cambio en el uso del suelo. Las colmenas se mantienen en troncos tallados dentro del solar y producen miel con propiedades medicinales distintas a las de la abeja africanizada. La polinización que genera ko\'olel kaab es funcional para varias plantas del huerto y del monte bajo, lo que la convierte en un componente productivo del sistema familiar más allá del producto cosechado directamente.',
       fuentes: [
-        { label: 'Villanueva-Gutiérrez, Roubik y Colli-Ucán (2005 / actualización Nates-Parra 2018) — La cría de la abeja sin aguijón ko\'olel kaab (Melipona beecheii) como actividad ancestral en vías de desaparición, Acta Zoológica Mexicana 34(2)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0185-25742018000200227' },
+        { label: 'Pat Fernández et al. (2018) — Condición y perspectivas de la meliponicultura en comunidades mayas de la reserva de la biósfera Los Petenes, Estudios de Cultura Maya 52', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0185-25742018000200227' },
       ],
     },
     {
@@ -1635,7 +1635,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'Familias mayas de la Península de Yucatán mantienen solares que combinan maíz, calabaza, chile habanero, plantas medicinales, árboles frutales y animales domésticos en un espacio adyacente a la casa. La gestión es principalmente femenina y el conocimiento se transmite en la práctica cotidiana; el solar provee una diversidad de alimentos y medicinas que el mercado formal raramente ofrece a la misma escala local. Es además reservorio de semillas criollas y de saberes sobre plantas del monte sin otro lugar de custodia formal; su continuidad depende de la disponibilidad de tiempo femenino y del acceso a la tierra.',
       fuentes: [
-        { label: 'Ortega-Hernández, Montes-Recinos y Torres-Dosal (2022) — La (re)producción de las tradiciones agroalimentarias en los solares mayas de la Península de Yucatán, Estudios Sociales 32(60)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692022000200120' },
+        { label: 'Cabrera-Pacheco (2022) — La (re)producción de las tradiciones agroalimentarias en los solares mayas de la Península de Yucatán, Estudios Sociales 32(60)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692022000200120' },
       ],
     },
   ],
@@ -1736,7 +1736,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'Cafetales de Chiapas que se superponen con bosque mesófilo y selva mediana conservan ciento cuarenta y seis especies arbóreas como sombra, distribuidas según la elevación y el tipo de bosque circundante. Los sistemas en contacto directo con bosque mesófilo muestran la mayor diversidad arbórea y funcionan como corredor biológico en paisajes fragmentados. El estudio documenta que la sombra diversa no es un subproducto marginal sino una condición estructural del cafetal chiapaneco que mantiene cobertura de dosel y reservorios de carbono dentro de la lógica productiva familiar.',
       fuentes: [
-        { label: 'Pérez-Luna, Soto-Pinto y Villanueva-López (2025) — Diversidad arbórea en cafetales bajo sombra de Chiapas, Revista Mexicana de Ciencias Forestales 16(78)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext_plus&pid=S2007-11322025000200148&lng=es&tlng=es&nrm=iso' },
+        { label: 'Verdugo Morales et al. (2025) — Riqueza de especies y diversidad arbórea en un gradiente altitudinal en cafetales de Chiapas, Revista Mexicana de Ciencias Forestales 16(88)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext_plus&pid=S2007-11322025000200148&lng=es&tlng=es&nrm=iso' },
       ],
     },
   ],
@@ -1773,7 +1773,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'En la Chontalpa, Tabasco, familias chontales producen chocolate artesanal casero mediante fermentación de las semillas, secado al sol, tostado en comal de barro y molienda tradicional del cacao (Theobroma cacao L.). La fermentación local preserva microbiomas y aromas que el procesamiento industrial no puede reproducir; el producto circula como alimento y como recurso ceremonial dentro de la economía familiar. La fuente vincula la práctica a una herencia de la cultura olmeca, aunque señala que el chocolate artesanal compite en desventaja con el chocolate industrializado importado.',
       fuentes: [
-        { label: 'Mariaca-Méndez, García-Moya y Lozoya-Saldaña (2018) — El chocolate casero artesanal en la Chontalpa, Tabasco: elaboración, usos e importancia, Revista de Geografía Agrícola 60', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692018000100005' },
+        { label: 'Córdova Lázaro et al. (2018) — Chocolate casero tradicional en la región de la Chontalpa Tabasco, México: actores y saberes locales, Estudios Sociales 28(52)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692018000100005' },
       ],
     },
   ],
