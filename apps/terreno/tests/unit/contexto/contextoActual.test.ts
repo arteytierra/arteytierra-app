@@ -5,8 +5,9 @@ import { join, dirname } from 'node:path';
 import {
   clasificar, agrupar, distanciaKm, azimutGrados, distanciaACajaKm,
   distanciaASegmentoKm, distanciaATrazaKm, tensionKv, hayTruncamiento,
-  consultaOverpass, titulo, ubicacionTexto, cantidadTexto,
-  RADIO_CONTEXTO_KM, RADIO_LINEAL_KM, ROTULO_CLASE, TOPE_LINEAS, TOPE_ELEMENTOS,
+  consultaOverpass, titulo, ubicacionTexto, cantidadTexto, cultivoTexto,
+  RADIO_CONTEXTO_KM, RADIO_LINEAL_KM, RADIO_CULTIVO_KM,
+  ROTULO_CLASE, TOPE_LINEAS, TOPE_ELEMENTOS, TOPE_CULTIVOS,
   type RasgoCrudo,
 } from '@/lib/contextoActual';
 
@@ -192,14 +193,42 @@ describe('clasificación de rasgos', () => {
     // Si alguien suma un tag a la consulta y se olvida del clasificador, los
     // elementos llegan y se tiran en silencio: se paga el tiempo de Overpass y
     // no se muestra nada. Esto lo caza.
+    //
+    // Se arma el pedido entero y no cada `[clave=valor]` por separado, porque
+    // dos filtros tienen una segunda condición que es la que los vuelve
+    // clasificables: el tanque sólo entra si declara contenido y el campo sólo
+    // entra si declara cultivo. Leer la primera condición sola diría que el
+    // módulo pide basura, y lo que pide es exactamente lo que sabe leer.
     const q = consultaOverpass(-31.4, -64.2, RADIO_CONTEXTO_KM);
-    const manMade = q.match(/man_made~"\^\(([^)]+)\)\$"/)?.[1]?.split('|') ?? [];
-    expect(manMade.length).toBeGreaterThan(0);
-    for (const v of manMade) {
-      expect(clasificar({ man_made: v }), `man_made=${v} se pide y no se clasifica`).not.toBeNull();
-    }
-    for (const [, clave, valor] of [...q.matchAll(/\[(landuse|industrial|power|man_made)=([a-z_]+)\]/g)]) {
-      expect(clasificar({ [clave!]: valor! }), `${clave}=${valor} se pide y no se clasifica`).not.toBeNull();
+
+    // Para una condición de mera presencia —`[crop]`— hace falta un valor que la
+    // satisfaga. Es el único lugar donde el test elige por su cuenta.
+    const REPRESENTATIVO: Record<string, string> = { crop: 'soy' };
+
+    // El `(` que abre cada grupo queda pegado al primer pedido, así que no se
+    // ancla al principio de la línea.
+    const pedidos = q.split(';').filter(s => /(nwr|way)\(around:/.test(s));
+    expect(pedidos.length, 'la consulta dejó de pedir cosas').toBeGreaterThan(10);
+
+    for (const pedido of pedidos) {
+      const condiciones = [...pedido.matchAll(/\[([a-z_:]+)(?:(=|~)"?([^\]"]+)"?)?\]/g)];
+      expect(condiciones.length, `pedido sin condiciones: ${pedido}`).toBeGreaterThan(0);
+
+      // Cada alternativa de un `~"^(a|b)$"` es un caso aparte, y las condiciones
+      // de un mismo pedido se combinan entre sí.
+      let variantes: Record<string, string>[] = [{}];
+      for (const [, clave, op, valor] of condiciones) {
+        const valores = op === '~'
+          ? (valor!.match(/\^\(([^)]+)\)\$/)?.[1]?.split('|') ?? [valor!])
+          : op === '=' ? [valor!]
+          : [REPRESENTATIVO[clave!] ?? ''];
+        expect(valores[0], `falta un valor representativo para [${clave}]`).toBeTruthy();
+        variantes = variantes.flatMap(v => valores.map(x => ({ ...v, [clave!]: x })));
+      }
+
+      for (const tags of variantes) {
+        expect(clasificar(tags), `${JSON.stringify(tags)} se pide y no se clasifica`).not.toBeNull();
+      }
     }
   });
 });
@@ -408,5 +437,187 @@ describe('la interfaz no afirma que no hay nada', () => {
     const informe = leer('components/InformeView.tsx');
     expect(informe).toContain('no significa que no exista');
     expect(informe).toContain('no a quien la realiza');
+  });
+});
+
+/*
+ * La agroindustria y el cultivo de alrededor.
+ *
+ * Esta capa trajo un riesgo que el resto del módulo no tenía: dos de sus tags
+ * son de los más usados del planeta. `landuse=farmland` tiene 11,7 millones de
+ * usos y `man_made=storage_tank` 878.000, contra los 254.000 de la cantera. Si
+ * entran sin filtro, no rompen nada de forma visible: llenan el tope de
+ * elementos y las canteras dejan de aparecer, con total naturalidad. Es la misma
+ * familia de falla que la de `centroDe`, que escondió 53 de 71 rasgos sin tirar
+ * un solo error.
+ *
+ * Por eso la mitad de este bloque no prueba lo que el módulo muestra, sino lo
+ * que el módulo se abstiene de pedir.
+ */
+describe('qué se cultiva alrededor', () => {
+  it('los dos nombres del maíz son el mismo cultivo', () => {
+    // `corn` (19.812 usos) y `maize` (1.676) conviven en OSM para lo mismo.
+    expect(cultivoTexto('corn')).toBe('maíz');
+    expect(cultivoTexto('maize')).toBe('maíz');
+  });
+
+  it('traduce una rotación declarada con punto y coma', () => {
+    // `wheat;barley` tiene 2.551 usos: es una rotación, no un error de carga.
+    expect(cultivoTexto('wheat;barley')).toBe('trigo y cebada');
+  });
+
+  it('no traduce media rotación', () => {
+    // Si un valor no está en la tabla, no se traduce ninguno: "trigo y" —o peor,
+    // "trigo" a secas— diría algo que el campo no dice.
+    expect(cultivoTexto('wheat;quinoa_espacial')).toBeUndefined();
+  });
+
+  it('no repite el nombre cuando los dos valores son el mismo cultivo', () => {
+    expect(cultivoTexto('corn;maize')).toBe('maíz');
+  });
+
+  it('los valores que no nombran ningún cultivo no son un cultivo', () => {
+    // `no` (10.330) y `yes` (9.416) suman casi 20.000 usos y no dicen qué se
+    // siembra. Tampoco `mixed` ni `field_cropland`.
+    for (const v of ['no', 'yes', 'mixed', 'field_cropland', '']) {
+      expect(cultivoTexto(v), `crop=${v} no debería nombrar un cultivo`).toBeUndefined();
+    }
+  });
+
+  it('el campo que no declara qué se siembra no entra', () => {
+    // La regla del silencio aplicada al dato que casi siempre falta: que al lado
+    // haya campo no es información. Qué se siembra, sí.
+    expect(clasificar({ landuse: 'farmland' })).toBeNull();
+    expect(clasificar({ landuse: 'farmland', crop: 'no' })).toBeNull();
+  });
+
+  it('el campo que lo declara entra con su cultivo', () => {
+    const c = clasificar({ landuse: 'farmland', crop: 'soy' });
+    expect(c).toEqual({ clase: 'cultivo', que: 'Campo de cultivo', detalle: 'soja' });
+    expect(titulo(c!)).toBe('Campo de cultivo (soja)');
+  });
+
+  it('el viñedo no dice "(uva)"', () => {
+    expect(clasificar({ landuse: 'vineyard', crop: 'grape' })).toEqual({
+      clase: 'cultivo', que: 'Viñedo',
+    });
+  });
+
+  it('se cuentan parcelas mapeadas y no "en el radio", porque el radio es otro', () => {
+    // En la misma lista conviven los 25 km de la cantera y los 5 del cultivo.
+    const p = { clase: 'cultivo' as const, que: 'Campo de cultivo', cantidad: 3, dist_km: 0.4, rumbo: 'NNO' };
+    expect(cantidadTexto(p)).toBe('3 parcelas mapeadas');
+    expect(cantidadTexto({ ...p, cantidad: 1 })).toBe('1 parcela mapeada');
+  });
+});
+
+describe('la agroindustria, y los dos tags que había que domar', () => {
+  it('el tanque de agua no es contexto industrial', () => {
+    // `content=water` son 172.000 de los 878.000 usos de storage_tank.
+    expect(clasificar({ man_made: 'storage_tank', content: 'water' })).toBeNull();
+  });
+
+  it('el tanque que no declara contenido tampoco', () => {
+    expect(clasificar({ man_made: 'storage_tank' })).toBeNull();
+  });
+
+  it('el tanque de combustible sí, y dice qué guarda', () => {
+    expect(clasificar({ man_made: 'storage_tank', content: 'fuel' })).toEqual({
+      clase: 'industria', que: 'Tanque de almacenamiento', detalle: 'combustible',
+    });
+  });
+
+  it('la laguna de purines entra, que es la que importa al lado de una casa', () => {
+    expect(clasificar({ man_made: 'storage_tank', content: 'slurry' })?.detalle).toBe('purines');
+  });
+
+  it('silo, frigorífico, aserradero, molino e invernadero son agroindustria', () => {
+    const casos: [Record<string, string>, string][] = [
+      [{ man_made: 'silo' }, 'Silo'],
+      [{ man_made: 'bunker_silo' }, 'Silo bunker (forraje)'],
+      [{ industrial: 'slaughterhouse' }, 'Frigorífico o matadero'],
+      [{ industrial: 'sawmill' }, 'Aserradero'],
+      [{ industrial: 'grinding_mill' }, 'Molino'],
+      [{ industrial: 'agriculture' }, 'Planta agroindustrial'],
+      [{ landuse: 'greenhouse_horticulture' }, 'Invernaderos'],
+      [{ landuse: 'animal_keeping' }, 'Cría de animales a corral'],
+    ];
+    for (const [tags, que] of casos) {
+      const c = clasificar(tags);
+      expect(c?.clase, JSON.stringify(tags)).toBe('agroindustria');
+      expect(c?.que).toBe(que);
+    }
+  });
+
+  it('el corral no se llama feedlot', () => {
+    // `landuse=animal_keeping` es cría a corral en general: puede ser un piquete
+    // de caballos. El tag no distingue y la app no debe inventar la diferencia.
+    expect(clasificar({ landuse: 'animal_keeping' })?.que).not.toMatch(/feedlot|engorde/i);
+  });
+
+  it('la chimenea es industria y el silo no', () => {
+    expect(clasificar({ man_made: 'chimney' })?.clase).toBe('industria');
+    expect(clasificar({ man_made: 'silo' })?.clase).toBe('agroindustria');
+  });
+
+  it('cada clase que clasificar puede devolver tiene rótulo', () => {
+    // El Record obliga en compilación; esto lo fija también en ejecución, para
+    // que un rótulo vacío no pase de largo.
+    for (const rotulo of Object.values(ROTULO_CLASE)) {
+      expect(rotulo.length).toBeGreaterThan(3);
+    }
+    expect(ROTULO_CLASE.agroindustria).toBe('Agroindustria');
+    expect(ROTULO_CLASE.cultivo).toContain('cultiva');
+  });
+});
+
+describe('lo que la consulta se abstiene de pedir', () => {
+  const q = consultaOverpass(-34.6, -58.4, RADIO_CONTEXTO_KM);
+
+  it('nunca pide el campo sin cultivo declarado', () => {
+    // La prueba que sostiene todo el diseño. `landuse=farmland` son 11,7
+    // millones de polígonos: pedirlo suelto llenaría el tope y las canteras
+    // desaparecerían sin un solo error. Siempre va con [crop].
+    expect(q).toContain('[landuse=farmland][crop]');
+    expect(q).not.toMatch(/\[landuse=farmland\](?!\[crop\])/);
+  });
+
+  it('nunca pide tanques de agua', () => {
+    expect(q).toContain('[man_made=storage_tank][content~');
+    expect(q).not.toContain('[man_made=storage_tank];');
+    expect(q).not.toMatch(/content~"[^"]*\bwater\b/);
+  });
+
+  it('los cultivos van en su propio radio, más chico que el de la cantera', () => {
+    expect(RADIO_CULTIVO_KM).toBeLessThan(RADIO_CONTEXTO_KM);
+    expect(q).toContain(`around:${RADIO_CULTIVO_KM * 1000},`);
+    expect(q).toContain(`around:${RADIO_CONTEXTO_KM * 1000},`);
+  });
+
+  it('los tres conjuntos salen con su propio tope', () => {
+    expect(q).toContain(`.lugares out tags bb ${TOPE_ELEMENTOS};`);
+    expect(q).toContain(`.trazas out tags geom ${TOPE_LINEAS};`);
+    expect(q).toContain(`.cultivos out tags bb ${TOPE_CULTIVOS};`);
+  });
+
+  it('el campo descartado ocupa el tope de los cultivos y no el de los lugares', () => {
+    // Un campo con crop=no viajó, ocupó lugar en su conjunto y después no se
+    // muestra. Contarlo como lugar avisaría de un truncamiento que no pasó.
+    const campos: RasgoCrudo[] = Array.from({ length: TOPE_CULTIVOS }, () => ({
+      tags: { landuse: 'farmland', crop: 'no' },
+      center: { lat: -34.6, lon: -58.4 },
+    }));
+    expect(hayTruncamiento(campos)).toBe(true);
+    expect(hayTruncamiento(campos.slice(0, 5))).toBe(false);
+  });
+
+  it('el panel avisa que el radio del cultivo es otro y que no es un modelo de deriva', () => {
+    const panel = leer('components/EntornoPanel.tsx');
+    // Sin los saltos de línea del JSX: si no, el test se rompe con un reformateo
+    // y no con un cambio de sentido, que es lo único que acá importa.
+    const texto = panel.replace(/\s+/g, ' ');
+    expect(texto).toContain('RADIO_CULTIVO_KM');
+    expect(texto).toContain('sólo aparecen los campos que declaran qué se siembra');
+    expect(texto).toContain('no un modelo de deriva de agroquímicos');
   });
 });

@@ -12,7 +12,7 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
-import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto } from '@/lib/contextoActual';
+import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM } from '@/lib/contextoActual';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
   censoPeruanoDelPunto, censoBrasilenoDelPunto, censoMexicanoDelPunto,
@@ -949,7 +949,8 @@ export function InformeView({ datos, compartido = false }: Props) {
             {datos.entorno.contexto_actual?.consultado && (
               <div className="mt-4">
                 <p className="text-sm font-medium text-ink-900 mb-2">
-                  Contexto actual: actividad industrial e infraestructura en {datos.entorno.contexto_actual.radio_km} km
+                  Contexto actual: actividad industrial, agroindustria e infraestructura
+                  en {datos.entorno.contexto_actual.radio_km} km, y qué se cultiva en {RADIO_CULTIVO_KM} km
                 </p>
                 {datos.entorno.contexto_actual.presencias.length > 0 ? (
                   <>
@@ -965,13 +966,17 @@ export function InformeView({ datos, compartido = false }: Props) {
                     <p className="text-xs text-ink-700/70 mt-2">
                       Distancia al borde del rasgo mapeado y rumbo hacia su centro; en ductos y
                       líneas de alta tensión, al punto más cercano de la traza.
+                      Los cultivos se buscan en un radio menor, de {RADIO_CULTIVO_KM} km, y sólo
+                      figuran los campos que declaran qué se siembra en ellos, que son una minoría:
+                      es un radio de vecindad y no un modelo de deriva de agroquímicos.
                       Se nombra la actividad y no a quien la realiza.
                       {datos.entorno.contexto_actual.truncado && ' Las cantidades son un piso: hay más de los que entran en una consulta.'}
                     </p>
                   </>
                 ) : (
                   <p className="text-xs text-ink-700/70">
-                    No hay actividad industrial ni infraestructura de paso mapeada en OpenStreetMap dentro del radio. La cobertura
+                    No hay actividad industrial, agroindustria ni infraestructura de paso mapeada en OpenStreetMap dentro del radio,
+                    ni campos que declaren qué se siembra en ellos. La cobertura
                     del mapa es despareja y se releva a mano: que no figure no significa que no exista.
                   </p>
                 )}

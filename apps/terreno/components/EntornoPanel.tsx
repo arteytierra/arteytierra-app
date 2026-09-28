@@ -4,13 +4,13 @@
  * Contexto vivo del predio (D1) — biodiversidad (GBIF), ubicación y entorno (OSM).
  */
 import { useState, useEffect } from 'react';
-import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf, Factory, Pickaxe, Flame, Zap, Trash2, Cable } from 'lucide-react';
+import { Bird, TriangleAlert, Loader2, MapPin, ShieldAlert, Waves, Leaf, Factory, Pickaxe, Flame, Zap, Trash2, Cable, Warehouse, Wheat } from 'lucide-react';
 import {
   obtenerEntorno, resumirEntorno, etiquetaIUCN,
   type DatosEntorno, type EntornoResumen,
 } from '@/lib/entorno';
 import {
-  ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_LINEAL_KM,
+  ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_LINEAL_KM, RADIO_CULTIVO_KM,
   type ClaseContexto, type ContextoActual, type Presencia,
 } from '@/lib/contextoActual';
 import type { Mojon } from '@/lib/types';
@@ -154,7 +154,7 @@ export function EntornoPanel({ mojones, datos, onDatos, onResumen }: Props) {
 
 const ICONO_CLASE: Record<ClaseContexto, typeof Factory> = {
   mineria: Pickaxe, hidrocarburos: Flame, energia: Zap, residuos: Trash2, industria: Factory,
-  infraestructura: Cable,
+  agroindustria: Warehouse, cultivo: Wheat, infraestructura: Cable,
 };
 
 /**
@@ -186,10 +186,11 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
         </p>
       ) : ctx.presencias.length === 0 ? (
         <p className="text-[11px] text-ink-700/70 leading-relaxed">
-          No hay actividad industrial ni infraestructura de paso <span className="font-medium">mapeada</span> en {ctx.radio_km} km
-          a la redonda. OpenStreetMap se releva a mano y su cobertura es despareja: en buena parte
-          del continente la minería chica y los pozos todavía no están cargados. Que no aparezca
-          no quiere decir que no exista.
+          No hay actividad industrial, agroindustria ni infraestructura de paso <span className="font-medium">mapeada</span> en {ctx.radio_km} km
+          a la redonda, ni cultivos declarados en {RADIO_CULTIVO_KM} km. OpenStreetMap se releva a
+          mano y su cobertura es despareja: en buena parte del continente la minería chica y los
+          pozos todavía no están cargados, y casi ningún campo dice qué se siembra en él. Que no
+          aparezca no quiere decir que no exista.
         </p>
       ) : (
         <>
@@ -223,7 +224,9 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
       <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
         OpenStreetMap (ODbL), radio de {ctx.radio_km} km. La distancia es al borde del rasgo mapeado
         y el rumbo, hacia su centro; en ductos y líneas, al punto más cercano de la traza, que se
-        buscan en {RADIO_LINEAL_KM} km. Se nombra la actividad, no a quien la realiza.
+        buscan en {RADIO_LINEAL_KM} km. Los cultivos se buscan en {RADIO_CULTIVO_KM} km y sólo
+        aparecen los campos que declaran qué se siembra, que son pocos. Es un radio de vecindad, no
+        un modelo de deriva de agroquímicos. Se nombra la actividad, no a quien la realiza.
       </p>
     </div>
   );

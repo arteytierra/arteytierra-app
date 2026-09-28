@@ -59,6 +59,47 @@
  * `landuse=industrial`: 1,4 millones de usos, marca cualquier parque industrial
  * y en el periurbano ahogaría la lista. La fábrica concreta ya entra por
  * `man_made=works`.
+ *
+ * ── La agroindustria, y por qué entra acá y no en otro módulo ───────────────
+ *
+ * Silos, molinos, frigoríficos, aserraderos, invernaderos, corrales de engorde,
+ * chimeneas y tanques. Para quien diseña un predio son la misma pregunta que la
+ * cantera —qué hay alrededor, a qué distancia, en qué rumbo— y responderla en
+ * otro lugar de la pantalla sería partir en dos una sola lectura del entorno.
+ *
+ * Dos de esos tags son enormes y hubo que domarlos, porque un rasgo que está en
+ * todas partes no informa: informa el que está cerca de éste.
+ *
+ * `man_made=storage_tank` tiene 878.000 usos y el más común de todos es el
+ * tanque de agua (`content=water`, 172.000). Un tanque de agua no es contexto
+ * industrial, y uno cuyo contenido nadie declaró tampoco dice nada. Por eso sólo
+ * entran los que **declaran un contenido que significa algo**: combustible,
+ * hidrocarburos, purines, efluentes, químicos. Es el mismo criterio que el de
+ * los cultivos, más abajo.
+ *
+ * ── El cultivo de alrededor: por qué no alcanza con pedir `farmland` ────────
+ *
+ * `landuse=farmland` tiene **11,7 millones de usos**: es el polígono rural más
+ * común del planeta. Pedirlo como se pide una cantera rompería el módulo de una
+ * forma que no se ve —llenaría el tope de elementos con campos y las canteras
+ * dejarían de aparecer, sin ningún error— y además no diría nada: "campo de
+ * cultivo a 0 km" es la definición de estar en el campo.
+ *
+ * Lo que sirve no es que haya un campo: es **qué se cultiva**. Así que sólo
+ * entra el campo que lo declara (`crop=*`, 1,36 millones de usos) y cuyo valor
+ * está en la tabla de abajo. Si nadie lo cargó, no hay sección: es la regla del
+ * silencio, aplicada a un dato que casi siempre falta.
+ *
+ * Y va con su propio radio, más chico. Los cultivos a 25 km describen la región,
+ * no el predio —eso ya lo dice la ficha de ecorregión—. A 5 km todavía son el
+ * vecino: lo que se pulveriza ahí es lo que puede llegar acá. Es un radio de
+ * vecindad, **no un modelo de deriva de agroquímicos**; qué llega y qué no
+ * depende del viento, del equipo y del producto, y afirmarlo sería inventar.
+ *
+ * Los valores de `crop` se traducen con una tabla cerrada porque el campo viene
+ * sucio: conviven `corn` (19.812) y `maize` (1.676) para lo mismo, hay
+ * `cana-de-açúcar` en portugués (8.410), y `no` y `yes` suman casi 20.000 usos
+ * que no nombran ningún cultivo. Un valor que no esté en la tabla no se muestra.
  */
 import { rumboDeAzimut } from './sectores';
 
@@ -83,11 +124,33 @@ export const RADIO_CONTEXTO_KM = 25;
  */
 export const RADIO_LINEAL_KM = 10;
 
-/** Tope de elementos que se le piden a Overpass. Ver `truncado`. */
-export const TOPE_ELEMENTOS = 400;
+/**
+ * Radio de consulta para los cultivos, en kilómetros.
+ *
+ * El más chico de los tres, y a propósito. Saber que hay soja a 25 km no dice
+ * nada de este predio: dice en qué región está, y eso ya lo contesta la ficha de
+ * ecorregión con mejor información. A 5 km el cultivo todavía es el vecino.
+ *
+ * Es un radio de vecindad, no un modelo de deriva: ver el encabezado.
+ */
+export const RADIO_CULTIVO_KM = 5;
+
+/**
+ * Tope de elementos que se le piden a Overpass. Ver `truncado`.
+ *
+ * Subió de 400 a 600 cuando entraron los nueve tags de agroindustria. El tope no
+ * está para cuidar el payload —`out tags bb` es liviano— sino para que una
+ * familia numerosa no desplace a otra: Overpass no devuelve en ningún orden
+ * garantizado, así que si el tope se llena de silos, la cantera puede no venir.
+ * Subirlo baja esa probabilidad; no la elimina, y por eso `truncado` se muestra.
+ */
+export const TOPE_ELEMENTOS = 600;
 
 /** Tope aparte para las trazas: cada una viene con todos sus vértices. */
 export const TOPE_LINEAS = 120;
+
+/** Tope aparte para los cultivos, que van en su propio radio. */
+export const TOPE_CULTIVOS = 200;
 
 export type ClaseContexto =
   | 'mineria'
@@ -95,6 +158,8 @@ export type ClaseContexto =
   | 'energia'
   | 'residuos'
   | 'industria'
+  | 'agroindustria'
+  | 'cultivo'
   | 'infraestructura';
 
 /** Lo que se muestra de un rasgo. Nada de acá sale de un tag de texto libre. */
@@ -163,6 +228,86 @@ const SUSTANCIA: Record<string, string> = {
 };
 
 /**
+ * `crop=*` — qué se cultiva. Tabla cerrada: un valor que no esté acá no se
+ * muestra, y el campo que lo traía tampoco.
+ *
+ * Los valores salen de taginfo ordenados por uso, no del wiki. Se ve en la
+ * forma de la tabla: `corn` (19.812) y `maize` (1.676) son el mismo maíz,
+ * `olive` y `olives` el mismo olivo, y `cana-de-açúcar` (8.410) está en
+ * portugués porque así lo cargó quien mapeó el nordeste brasileño.
+ *
+ * Quedan afuera `no` (10.330), `yes` (9.416), `mixed`, `field_cropland` y
+ * `grain`: son valores frecuentes que no nombran ningún cultivo. Un campo así
+ * no entra, porque lo único que esta capa aporta es saber qué se siembra.
+ */
+const CULTIVO: Record<string, string> = {
+  rice: 'arroz', paddy: 'arroz', cereal: 'cereal', wheat: 'trigo',
+  barley: 'cebada', oat: 'avena', rye: 'centeno', corn: 'maíz', maize: 'maíz',
+  soy: 'soja', soybean: 'soja', sunflower: 'girasol', rape: 'colza',
+  cotton: 'algodón', sugarcane: 'caña de azúcar',
+  'cana-de-açúcar': 'caña de azúcar', 'cana-de-açucar': 'caña de azúcar',
+  sugar_beet: 'remolacha azucarera', beet: 'remolacha',
+  potato: 'papa', cassava: 'mandioca', sorghum: 'sorgo',
+  grass: 'pastura', forage: 'forraje', alfalfa: 'alfalfa',
+  vegetable: 'hortalizas', market_gardening: 'huerta', asparagus: 'espárrago',
+  strawberry: 'frutilla', cranberries: 'arándanos', cranberry: 'arándanos',
+  grape: 'uva', olive: 'olivo', olives: 'olivo',
+  coffee: 'café', tea: 'té', cacao: 'cacao', tobacco: 'tabaco',
+  hop: 'lúpulo', lavender: 'lavanda', flowers: 'flores',
+  banana: 'banana', coconut: 'coco', date: 'dátil', palm: 'palma',
+  oil_palm: 'palma aceitera', rubber: 'caucho', agave: 'agave',
+};
+
+/**
+ * `content=*` — qué guarda un tanque o un silo.
+ *
+ * Decide dos cosas distintas. En un silo es el detalle: grano o ensilaje.
+ * En un tanque decide **si el tanque entra o no**, porque `storage_tank` tiene
+ * 878.000 usos y el valor más frecuente es `water` (172.000): un tanque de agua
+ * no es contexto industrial. Ver `CONTENIDO_QUE_IMPORTA`.
+ */
+const CONTENIDO: Record<string, string> = {
+  oil: 'petróleo', fuel: 'combustible', gas: 'gas', propane: 'propano',
+  chemicals: 'productos químicos', salt: 'sal',
+  slurry: 'purines', manure: 'estiércol', sewage: 'líquido cloacal',
+  wastewater: 'efluentes', silage: 'ensilaje', grain: 'grano',
+  crop: 'cosecha', feed: 'alimento balanceado', wine: 'vino', beer: 'cerveza',
+  water: 'agua', drinking_water: 'agua potable', hot_water: 'agua caliente',
+};
+
+/**
+ * Los contenidos que hacen que un tanque sea contexto y no mobiliario rural.
+ *
+ * Un tanque de agua no se muestra, y uno que no declara contenido tampoco: si
+ * nadie dijo qué hay adentro, la app no tiene nada que contar. Es el mismo
+ * criterio que el del campo sin `crop`.
+ */
+const CONTENIDO_QUE_IMPORTA = new Set([
+  'oil', 'fuel', 'gas', 'propane', 'chemicals',
+  'slurry', 'manure', 'sewage', 'wastewater',
+]);
+
+/**
+ * Traduce un `crop=*`, que puede venir con varios valores separados por `;`.
+ *
+ * `wheat;barley` tiene 2.551 usos: es una rotación declarada, no un error.
+ * Se traducen todos o no se traduce ninguno, igual que en `tensionKv`: media
+ * rotación traducida sería peor que ninguna.
+ */
+export function cultivoTexto(crop: string | undefined): string | undefined {
+  if (!crop) return undefined;
+  const partes = crop.split(';').map(p => p.trim()).filter(Boolean);
+  if (!partes.length || partes.length > 3) return undefined;
+  const nombres: string[] = [];
+  for (const p of partes) {
+    const n = CULTIVO[p];
+    if (!n) return undefined;
+    if (!nombres.includes(n)) nombres.push(n);
+  }
+  return nombres.join(' y ');
+}
+
+/**
  * `voltage=*` en kilovoltios, o `undefined`.
  *
  * El tag viene en voltios y a veces con varios valores separados por `;`, uno
@@ -197,8 +342,40 @@ export function clasificar(tags: Record<string, string>): Etiqueta | null {
   if (tags['landuse'] === 'landfill') {
     return { clase: 'residuos', que: 'Relleno sanitario o basural' };
   }
-  if (tags['industrial'] === 'mine') {
-    return { clase: 'mineria', que: 'Mina', detalle: recurso(tags['resource']) };
+  if (tags['landuse'] === 'greenhouse_horticulture') {
+    return { clase: 'agroindustria', que: 'Invernaderos' };
+  }
+  if (tags['landuse'] === 'animal_keeping') {
+    // No dice "feedlot": `animal_keeping` es cría a corral en general y puede ser
+    // un piquete de caballos. El tag no distingue y la app tampoco debería.
+    return { clase: 'agroindustria', que: 'Cría de animales a corral' };
+  }
+  if (tags['landuse'] === 'plant_nursery') {
+    return { clase: 'cultivo', que: 'Vivero' };
+  }
+  if (tags['landuse'] === 'vineyard') {
+    // Sin detalle: "Viñedo (uva)" no agrega nada.
+    return { clase: 'cultivo', que: 'Viñedo' };
+  }
+  if (tags['landuse'] === 'orchard') {
+    return { clase: 'cultivo', que: 'Plantación frutal', detalle: cultivoTexto(tags['crop'] ?? tags['trees']) };
+  }
+  if (tags['landuse'] === 'farmland') {
+    // El campo sin cultivo declarado no entra: ver el encabezado. Lo único que
+    // esta capa aporta es qué se siembra al lado, no que al lado haya campo.
+    const c = cultivoTexto(tags['crop']);
+    return c ? { clase: 'cultivo', que: 'Campo de cultivo', detalle: c } : null;
+  }
+
+  switch (tags['industrial']) {
+    case 'mine':          return { clase: 'mineria', que: 'Mina', detalle: recurso(tags['resource']) };
+    case 'sawmill':       return { clase: 'agroindustria', que: 'Aserradero' };
+    case 'slaughterhouse': return { clase: 'agroindustria', que: 'Frigorífico o matadero' };
+    case 'grinding_mill': return { clase: 'agroindustria', que: 'Molino' };
+    case 'agriculture':   return { clase: 'agroindustria', que: 'Planta agroindustrial' };
+    case 'scrap_yard':    return { clase: 'residuos', que: 'Depósito de chatarra' };
+    case 'brickyard':     return { clase: 'industria', que: 'Ladrillería' };
+    default: break;
   }
 
   switch (tags['man_made']) {
@@ -212,6 +389,16 @@ export function clasificar(tags: Record<string, string>): Etiqueta | null {
     case 'gasometer':       return { clase: 'hidrocarburos', que: 'Gasómetro' };
     case 'wastewater_plant': return { clase: 'residuos', que: 'Planta de tratamiento de efluentes' };
     case 'works':            return { clase: 'industria', que: 'Planta industrial' };
+    case 'chimney':          return { clase: 'industria', que: 'Chimenea industrial' };
+    case 'silo':      return { clase: 'agroindustria', que: 'Silo', detalle: CONTENIDO[tags['content'] ?? ''] };
+    case 'bunker_silo': return { clase: 'agroindustria', que: 'Silo bunker (forraje)' };
+    // El tanque entra sólo si declara un contenido que significa algo: con
+    // 878.000 usos, el más común es el tanque de agua. Ver CONTENIDO_QUE_IMPORTA.
+    case 'storage_tank': {
+      const c = tags['content'];
+      if (!c || !CONTENIDO_QUE_IMPORTA.has(c)) return null;
+      return { clase: 'industria', que: 'Tanque de almacenamiento', detalle: CONTENIDO[c] };
+    }
     // Traza, no lugar: la distancia se mide contra el trazado. Ver el encabezado.
     case 'pipeline': {
       const s = tags['substance'];
@@ -469,31 +656,59 @@ function redondear(km: number): number {
 export function consultaOverpass(lat: number, lng: number, radioKm: number): string {
   const m = Math.round(radioKm * 1000);
   const mLineal = Math.round(RADIO_LINEAL_KM * 1000);
+  const mCultivo = Math.round(RADIO_CULTIVO_KM * 1000);
   const en = (filtro: string) => `nwr(around:${m},${lat},${lng})${filtro};`;
   const linea = (filtro: string) => `way(around:${mLineal},${lat},${lng})${filtro};`;
-  return '[out:json][timeout:20];('
+  const cultivo = (filtro: string) => `nwr(around:${mCultivo},${lat},${lng})${filtro};`;
+  // El filtro de contenido del tanque va en el servidor y no sólo en `clasificar`:
+  // si los tanques de agua viajaran, se comerían el tope y desplazarían al resto.
+  const contenidos = [...CONTENIDO_QUE_IMPORTA].join('|');
+  return '[out:json][timeout:25];('
     + en('[landuse=quarry]')
     + en('[landuse=landfill]')
-    + en('[industrial=mine]')
-    + en('[man_made~"^(mineshaft|adit|tailings_pond|petroleum_well|flare|gasometer|wastewater_plant|works)$"]')
+    + en('[landuse=greenhouse_horticulture]')
+    + en('[landuse=animal_keeping]')
+    + en('[industrial~"^(mine|sawmill|slaughterhouse|grinding_mill|agriculture|scrap_yard|brickyard)$"]')
+    + en('[man_made~"^(mineshaft|adit|tailings_pond|petroleum_well|flare|gasometer|wastewater_plant|works|chimney|silo|bunker_silo)$"]')
+    + en(`[man_made=storage_tank][content~"^(${contenidos})$"]`)
     + en('[power=plant]')
     + ')->.lugares;('
     + linea('[man_made=pipeline]')
     + linea('[power=line]')
-    + ')->.trazas;'
+    + ')->.trazas;('
+    // Sólo el campo que declara qué se siembra: `landuse=farmland` solo tiene
+    // 11,7 millones de usos y no dice nada. Ver el encabezado.
+    + cultivo('[landuse=farmland][crop]')
+    + cultivo('[landuse~"^(orchard|vineyard|plant_nursery)$"]')
+    + ')->.cultivos;'
     + `.lugares out tags bb ${TOPE_ELEMENTOS};`
-    + `.trazas out tags geom ${TOPE_LINEAS};`;
+    + `.trazas out tags geom ${TOPE_LINEAS};`
+    + `.cultivos out tags bb ${TOPE_CULTIVOS};`;
 }
 
 /**
- * ¿Se alcanzó alguno de los dos topes? Entonces las cantidades son un piso.
+ * ¿Se alcanzó alguno de los tres topes? Entonces las cantidades son un piso.
  *
- * Los dos conjuntos vuelven mezclados en una sola lista, así que se separan por
- * lo único que los distingue: la traza trae `geometry` y el lugar no.
+ * Los tres conjuntos vuelven mezclados en una sola lista y hay que separarlos.
+ * La traza se reconoce por su `geometry`; el cultivo, por su `landuse`, porque
+ * sale con `out tags bb` igual que un lugar y no hay nada en la forma del
+ * elemento que los distinga.
+ *
+ * Se mira el tag y no el resultado de `clasificar`: un campo con `crop=no` vino
+ * del conjunto de cultivos y ocupó su lugar en ese tope, aunque después no se
+ * muestre. Contarlo como lugar inflaría el otro conteo y avisaría de un
+ * truncamiento que no pasó.
  */
+const LANDUSE_CULTIVO = new Set(['farmland', 'orchard', 'vineyard', 'plant_nursery']);
+
 export function hayTruncamiento(els: RasgoCrudo[]): boolean {
-  const trazas = els.filter(e => e.geometry?.length).length;
-  return trazas >= TOPE_LINEAS || (els.length - trazas) >= TOPE_ELEMENTOS;
+  let trazas = 0, cultivos = 0, lugares = 0;
+  for (const e of els) {
+    if (e.geometry?.length) { trazas += 1; continue; }
+    if (LANDUSE_CULTIVO.has(e.tags?.['landuse'] ?? '')) { cultivos += 1; continue; }
+    lugares += 1;
+  }
+  return trazas >= TOPE_LINEAS || cultivos >= TOPE_CULTIVOS || lugares >= TOPE_ELEMENTOS;
 }
 
 // ─── Texto ──────────────────────────────────────────────────────────────────
@@ -504,6 +719,8 @@ export const ROTULO_CLASE: Record<ClaseContexto, string> = {
   energia:       'Generación de energía',
   residuos:      'Residuos y efluentes',
   industria:     'Industria',
+  agroindustria: 'Agroindustria',
+  cultivo:       'Qué se cultiva alrededor',
   infraestructura: 'Ductos y líneas',
 };
 
@@ -523,8 +740,16 @@ export function titulo(p: Etiqueta): string {
  * por ahí—.
  */
 export function cantidadTexto(p: Presencia): string {
-  if (p.clase !== 'infraestructura') return `${p.cantidad} en el radio`;
-  return p.cantidad === 1 ? '1 tramo mapeado' : `${p.cantidad} tramos mapeados`;
+  if (p.clase === 'infraestructura') {
+    return p.cantidad === 1 ? '1 tramo mapeado' : `${p.cantidad} tramos mapeados`;
+  }
+  // El cultivo no puede decir "en el radio": el suyo es otro, más chico, y en la
+  // misma lista conviven los dos. Se cuentan parcelas mapeadas, que además es lo
+  // que son —una chacra puede estar dibujada en cinco polígonos—.
+  if (p.clase === 'cultivo') {
+    return p.cantidad === 1 ? '1 parcela mapeada' : `${p.cantidad} parcelas mapeadas`;
+  }
+  return `${p.cantidad} en el radio`;
 }
 
 /** "a 3,4 km al NNO" · "dentro del predio o lindando" · "cruza el predio o pasa al lado" */
