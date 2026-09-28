@@ -1,0 +1,146 @@
+[
+  {
+    "fichaId": "selva_paranaense",
+    "practica": "Extracción en yerbales nativos del monte misionero",
+    "periodo": "Fase extractiva 1926-1953",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Rodríguez (2015) — Estado y producción: la actividad yerbatera en el territorio nacional de Misiones (1926-1953), Folia Histórica del Nordeste 23",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0325-82382015000100003"
+    },
+    "verificacion": "A partir de 1926, por medio de un decreto firmado por el Presidente Marcelo T. Alvear, la Dirección Nacional de Tierras establece la obligación de residencia"
+  },
+  {
+    "fichaId": "selva_paranaense",
+    "practica": "Zapecado, raído y barbacuá: beneficio de la yerba mate en el monte",
+    "periodo": "Desde el período extractivo hasta principios del siglo XX",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Florez Pérez (2025) — El trabajo infantil en la cosecha de yerba mate en Misiones. De la extracción en los yerbales nativos a la actualidad, Trabajo y Sociedad 26(45)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1514-68712025000200010"
+    },
+    "verificacion": "Con los primeros destellos del alba, los tareferos y sus guaynos se dirigían al manchón de yerba y encendían el fuego para zapecar la yerba cortada el día anterior. Luego del zapecado, se formaba un raído que pesaba entre 150 a 200 kilos y que eran trasladados sobre la espalda del tarefero unos 1.000 o 2.000 metros de distancia hasta el barbacuá"
+  },
+  {
+    "fichaId": "chaco_seco",
+    "practica": "Recolección y molienda del algarrobo (Prosopis flexuosa)",
+    "periodo": "Holoceno tardío; documentado arqueológicamente en el noroeste árido",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Llano et al. (2012) — Arqueología experimental y valoración nutricional del fruto de algarrobo (Prosopis flexuosa), Intersecciones en Antropología 13(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2012000200015"
+    },
+    "verificacion": "Entre los productos elaborados a partir de la vaina se incluyen panes, jaleas, bebidas con y sin alcohol, vainas simplemente hervidas y harina tostada"
+  },
+  {
+    "fichaId": "chaco_seco",
+    "practica": "Elaboración de arrope y aloja de chañar (Geoffroea decorticans)",
+    "periodo": "Práctica viva documentada en comunidades del noroeste árido",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Saur Palmieri, Trillo y López (2019) — Rasgos diagnósticos en frutos y residuos secos de la cocción de chañar (Geoffroea decorticans, Fabaceae) para identificar prácticas poscolecta, Intersecciones en Antropología 20(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2019000200167"
+    },
+    "verificacion": "los consumen como fruta fresca o los muelen para elaborar bebidas fermentadas ('aloja') o no fermentadas ('añapa')"
+  },
+  {
+    "fichaId": "yungas",
+    "practica": "Agricultura multifuncional por pisos altitudinales en la cuenca del río Zenta",
+    "periodo": "Documentada hacia 2005; sin fecha inicial determinada en la fuente",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Hilgert y Gilg (2005) — Traditional andean agriculture and changing processes in the Zenta River basin, Salta, northwestern Argentina, Darwiniana 43(1-4): 30-43",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932005000100003"
+    },
+    "verificacion": "In the high lands cultivation is carried out in permanent small plots while shifting agriculture is used in slopes in the medium and low sectors of the area, where woodlands and forests are located"
+  },
+  {
+    "fichaId": "yungas",
+    "practica": "Conservación in situ de variedades criollas de maíz en Caspalá, Jujuy",
+    "periodo": "Documentada hacia 2013; práctica activa en familias de la quebrada de Zenta",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Ramos, Hilgert y Lambaré (2013) — Agricultura tradicional y riqueza de maíces (Zea mays). Estudio de Caso en Caspalá, Bol. Soc. Arg. Botánica 48(3-4)",
+      "url": "https://www.scielo.org.ar/scielo.php?pid=S1851-23722013000300022&script=sci_arttext"
+    },
+    "verificacion": "En la región andina argentina, los maíces cultivados en el ámbito doméstico provienen de 'semillas' (término empleado localmente para referirse a los frutos) de la cosecha anterior, combinadas con 'semillas' obtenidas del intercambio con vecinos"
+  },
+  {
+    "fichaId": "puna_altoandino",
+    "practica": "Terrazas y andenes de cultivo prehispánicos en Moreta, Puna de Jujuy",
+    "periodo": "Prehispánico; documentado arqueológicamente en Angiorama et al. (2019)",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Angiorama et al. (2019) — Historia ocupacional y prácticas productivas en Moreta (Puna de Jujuy, Argentina) durante tiempos prehispánicos y coloniales, Relaciones 44(1)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1852-14792019000100001"
+    },
+    "verificacion": "Los andenes se presentan sobre laderas conformando entre 70 y 100 plataformas planas levantadas y separadas por montículos de despedres."
+  },
+  {
+    "fichaId": "puna_altoandino",
+    "practica": "Cultivo de quinoa, maíz y poroto en la puna meridional argentina",
+    "periodo": "Prehispánico; documentado en el registro arqueobotánico regional",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Rodríguez (2013) — Los grupos humanos y las plantas en la Puna meridional argentina: arqueobotánica de Antofagasta de la Sierra, Intersecciones en Antropología 14(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1850-373X2013000200003"
+    },
+    "verificacion": "En la capa 3x de PP4 (ca. 700 AP) se recuperaron semillas (datadas en 760 ± 40 AP, UGA-15089 y 690 ± 50 AP, UGA-15090) y un tallo de Chenopodium quinoa Willd. -Quínoa- (Chenopodiaceae) y una semilla de Poroto, Phaseolus vulgaris L. (Fabaceae)."
+  },
+  {
+    "fichaId": "estepa_patagonica",
+    "practica": "Estrategias colectivas de caza del guanaco en Fuego-Patagonia",
+    "periodo": "Prehispánico hasta el siglo XX; documentado en registro arqueológico y etnográfico",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Borrero (2013) — Estrategias de caza en Fuego-Patagonia, Comechingonia 17(1)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000100003"
+    },
+    "verificacion": "aún no se han identificado bone beds atribuibles a eventos únicos de caza de guanacos"
+  },
+  {
+    "fichaId": "estepa_patagonica",
+    "practica": "Procesamiento de cuero de guanaco y confección de quillangos",
+    "periodo": "Documentado en comunidades mapuche-tehuelche del noroeste patagónico hacia 2018",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Fernández y Guillermo (2018) — Saberes, prácticas y cultura material de las mujeres indígenas patagónicas: la vestimenta como diacrítico identitario, La Aljaba 22(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1669-57042018000200003"
+    },
+    "verificacion": "Se empieza por sacar al sol las pieles, estaqueándolas con espinas de algarrobo. Una vez secas, se las recoge para rascarlas con un pedazo de pedernal, ágata, obsidiana, o vidrio a veces"
+  },
+  {
+    "fichaId": "humedales_parana_mesopotamia",
+    "practica": "Horticultura prehispánica en Los Tres Cerros, Delta del Paraná",
+    "periodo": "Prehispánico; documentado arqueobotánicamente en Sánchez et al. (2013)",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Sánchez et al. (2013) — Primeros resultados sobre el uso prehispánico de los vegetales en el sitio arqueológico Los Tres Cerros 1 (Victoria, Entre Ríos, Argentina): análisis del registro biosilíceo, Darwiniana nueva serie 1(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0011-67932013000200002"
+    },
+    "verificacion": "morfotipos relacionados con la familia Cucurbitaceae (morfotipos Mc01-Mc04 o grupo J) [...] Los fitolitos arecoides, Gl01-Gl05 (grupo I) se presentan con escasa frecuencia en todo el perfil"
+  },
+  {
+    "fichaId": "humedales_parana_mesopotamia",
+    "practica": "Construcción de montículos (cerritos) como infraestructura productiva",
+    "periodo": "Prehispánico; documentado en Gianotti y Bonomo (2013)",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Gianotti y Bonomo (2013) — De montículos a paisajes: procesos de transformación y construcción de paisajes en el sur de la cuenca del Plata, Comechingonia 17(2)",
+      "url": "https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272013000200006"
+    },
+    "verificacion": "fitolitos atribuibles a la cáscara del fruto de mate (Lagenaria siceraria) y a la hoja y chala del maíz (Zea mays)"
+  }
+]
