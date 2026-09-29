@@ -204,6 +204,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Indigenous Fire Practices Shape our Land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
       ],
     },
+    {
+      practica: 'Intercultivo de las Tres Hermanas por los Haudenosaunee',
+      periodo: 'Con evidencia arqueologica desde ca. 1070 d.C.; practicado por al menos 500 anos',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'La revision historica de Ngapo et al. (2021) documenta el sistema de intercultivo haudenosaunee que combina maiz, poroto y zapallo en la misma parcela: el maiz actua como espaldera para los porotos trepadores, los porotos fijan nitrogeno atmosferico que fertiliza el suelo, y el zapallo cubre el terreno con sus hojas anchas para suprimir malezas y retener humedad. La evidencia arqueologica situa el sistema en el noreste de Norteamerica desde ca. 1070 d.C. con al menos 500 anos de practica sostenida. La fuente incluye analisis de la preparacion alimentaria indigena con los tres cultivos.',
+      fuentes: [
+        { label: 'Ngapo et al. (2021) — Three Sisters intercropping Indigenous food preparation, Foods / PMC8001537', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8001537/' },
+      ],
+    },
   ],
   pradera_pastos_altos: [
     {
@@ -298,6 +309,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Bison Bellows: The Buffalo Jump (2016)', url: 'https://www.nps.gov/articles/bison-bellows-3-31-16.htm' },
       ],
     },
+    {
+      practica: 'Recoleccion y procesamiento de plantas silvestres nativas de la pradera corta para alimentacion',
+      periodo: 'Precontacto; analisis nutricional documentado en 2018',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Kindscher et al. (2018) examinaron 50 especies de plantas nativas del centro de los Estados Unidos usadas tradicionalmente por pueblos indigenas de la Gran Llanura para alimentacion. En la pradera corta destacan la calabaza buffalo (Cucurbita foetidissima), gramineas silvestres, Chenopodium (quinoa silvestre) y amaranto, recolectados estacionalmente y procesados para obtener semillas, frutos y hojas con alto contenido proteico y de fibra dietetica. El analisis nutricional de las 50 especies documenta tecnicas de recoleccion selectiva y procesamiento que permitieron aprovecharlas en climas semiaridos de la Gran Llanura.',
+      fuentes: [
+        { label: 'Kindscher et al. (2018) — Nutritional Properties of Native Plants and Traditional Foods from the Central United States, Ethnobiology Letters 9(2)', url: 'https://ojs.ethnobiology.org/index.php/ebl/article/view/1219' },
+      ],
+    },
   ],
   desiertos_calidos_norteamericanos: [
     {
@@ -309,6 +331,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El registro del valle del Salt documenta cientos de kilómetros de canales excavados para llevar crecidas fluviales a campos de maíz, frijol, calabaza y algodón. La red convertía un río alternadamente seco y torrencial en agua distribuible, resolviendo la aridez y permitiendo cultivar superficies estables durante siglos. El Servicio de Parques atribuye la obra a los hohokam y la fecha desde alrededor del 300 a.C.',
       fuentes: [
         { label: 'National Park Service — Arizona: Crosscut Powerplant', url: 'https://www.nps.gov/articles/arizona-crosscut-powerplant.htm' },
+      ],
+    },
+    {
+      practica: 'Cosecha de frutos de saguaro y capullos de cholla por los Tohono O\'odham',
+      periodo: 'Practicada durante milenios en el desierto sonorense; vigente en la actualidad',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Los Tohono O\'odham realizan anualmente entre junio y julio la cosecha del fruto del saguaro (baidaj), acompanada de ceremonias religiosas y reuniones comunitarias que refuerzan la identidad cultural. Utilizan varas largas hechas con costillas de saguaro seco para derribar los frutos maduros desde lo alto de los cactus. Por separado, recolectan capullos de cholla (Cylindropuntia spp.) con pinzas articuladas de madera antes de que las espinas endurezcan. El Servicio de Parques documenta ambas practicas como elementos activos de la cultura O\'odham en el desierto de Sonora, con la cosecha descrita a partir de informantes directos de la comunidad.',
+      fuentes: [
+        { label: 'NPS (2024) — Native Peoples of the Sonoran Desert: The O\'odham', url: 'https://www.nps.gov/articles/oodham.htm' },
       ],
     },
   ],
@@ -337,6 +370,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — The Cultural Landscape of Fort Vancouver: Indian Country, pre-1824', url: 'https://www.nps.gov/articles/fovaclrindiancountry.htm' },
       ],
     },
+    {
+      practica: 'Gestion indigena de salmon del Pacifico mediante weirs y cuotas de apertura nocturna',
+      periodo: 'Precontacto hasta siglo XIX; sintetizado en revision cientifica de 2021',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Atlas et al. (2021) sintetizan los sistemas indigenas de gestion del salmon del Pacifico (Oncorhynchus spp.) en rios del noroeste, documentando el uso de weirs —estructuras de madera que canalizaban el salmon hacia trampas— con reglas de gobernanza que obligaban a abrir el paso nocturno para que parte del cardumen alcanzara los frezaderos aguas arriba. Este sistema multi-tribal produjo rendimientos resilientes durante milenios y los autores proponen retomarlo como base para la gestion contemporanea del salmon en cuencas del noroeste del Pacifico que hoy enfrentan colapsos poblacionales.',
+      fuentes: [
+        { label: 'Atlas et al. (2021) — Indigenous Systems of Management for Culturally and Ecologically Resilient Pacific Salmon, BioScience 71(2)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7882363/' },
+      ],
+    },
   ],
   chaparral_californiano: [
     {
@@ -361,6 +405,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La documentación de Apostle Islands registra quemas de baja intensidad para abrir el sotobosque y aumentar la producción de arándanos. En el borde boreal, donde el cierre leñoso reduce las plantas de luz, el fuego dirigido conserva parches abiertos; el parque volvió a aplicarlo con naciones y organismos tribales. La fuente atribuye esas quemas a las comunidades ojibwe de la zona y dice que sostuvieron la cosecha de la isla Stockton durante siglos.',
       fuentes: [
         { label: 'National Park Service — Stockton Island Prescribed Burn Restores Cultural Landscapes', url: 'https://www.nps.gov/articles/000/stockton-island-prescribed-burn-restores-cultural-landscapes.htm' },
+      ],
+    },
+    {
+      practica: 'Produccion de azucar de arce en el iskigamizigan (sugarbush) por los Anishinaabe',
+      periodo: 'Precontacto hasta el presente; practica activa con revitalizacion documentada',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'El Servicio de Parques documenta el iskigamizigan —el campamento de produccion de azucar de arce en la lengua ojibwe— como practica central de los Anishinaabe en el borde agricola boreal. En primavera, las comunidades migraban a los bosques de acer saccharum para sangrar los arboles, recolectar la savia y procesarla mediante ebullicion en recipientes de abedul o, tras el contacto europeo, en ollas de hierro. El azucar resultante funcionaba como conservante, condimento y bien de intercambio, y el campamento era un espacio de transmision intergeneracional de conocimiento y renovacion cultural.',
+      fuentes: [
+        { label: 'NPS — Iskigamizigan: The Sugarbush', url: 'https://www.nps.gov/articles/000/iskigamizigan-sugarbush.htm' },
       ],
     },
   ],
@@ -1920,6 +1975,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Tanada Creek Fish Weir', url: 'https://www.nps.gov/wrst/learn/management/tanada-creek-fish-weir.htm' },
       ],
     },
+    {
+      practica: 'Quemas controladas para caribu y bayas silvestres por los Gwich\'in y Koyukon de Alaska',
+      periodo: 'Durante milenios; documentado con evidencia historica y entrevistas entre 1999 y 2004',
+      tipo: 'fuego',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Natcher et al. (2007) documentaron quemas controladas por pueblos Gwich\'in y Koyukon de la taiga interior de Alaska para abrir el sotobosque, mejorar el habitat para el caribu y potenciar la produccion de bayas silvestres. Los incendios culturales eran intencionales y coordinados entre comunidades, con variabilidad espacial vinculada a los recursos que cada grupo priorizaba estacionalmente. Los autores identifican diferencias intertribales en la seleccion de sitios de quema y en la frecuencia, reflejando adaptaciones locales del manejo del fuego en la taiga boreal-artica de la cuenca del Yukon.',
+      fuentes: [
+        { label: 'Natcher et al. (2007) — Factors Contributing to the Cultural and Spatial Variability of Landscape Burning by Native Peoples of Interior Alaska, Ecology and Society 12(1)', url: 'https://www.ecologyandsociety.org/vol12/iss1/art7/' },
+      ],
+    },
   ],
   alaska_tundra_hielo_beringia: [
     {
@@ -1931,6 +1997,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pueblos indígenas de Beringia conservaron alimentos cosechados localmente en sótanos de hielo, escondites subterráneos y pozos. La pérdida de permafrost estable y los cambios sociales alteran su desempeño, por lo que cualquier recuperación exige medir el régimen térmico e hídrico local y trabajar con las comunidades de Sivuqaq, Gambell y Point Hope, no copiar una sección constructiva genérica.',
       fuentes: [
         { label: 'National Park Service — Underground food storage practices in Beringian communities', url: 'https://www.nps.gov/subjects/beringia/sharing-knowledge-of-food-life-history-and-underground-food-storage-practices-in-beringian-communities.htm' },
+      ],
+    },
+    {
+      practica: 'Caceria comunal de caribu con lineas de inuksuit y corrales de sauce por los Nunamiut',
+      periodo: 'Tradicional; documentada por el NPS en Gates of the Arctic (2021)',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Los Nunamiut construian lineas convergentes de figuras de piedra (inuksuit) de hasta ocho kilometros de largo para guiar manadas de caribu hacia corrales de ramas de sauce con lazos de cuero crudo, o hacia rios y lagos donde cazadores en kayak los esperaban. Estas cacerias comunales involucraban hombres, mujeres, ninos y ancianos en roles coordinados, y eran el principal evento subsistencial del otono. El Servicio de Parques documenta el sistema en Gates of the Arctic National Park & Preserve, donde los Nunamiut mantienen presencia cultural activa.',
+      fuentes: [
+        { label: 'NPS Gates of the Arctic — Nunamiut: The Caribou People (2021)', url: 'https://www.nps.gov/gaar/learn/historyculture/nunamiut-the-caribou-people.htm' },
       ],
     },
   ],
@@ -1946,6 +2023,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'NOAA Fisheries — Hawaiian Fishponds', url: 'https://www.fisheries.noaa.gov/feature-story/hawaiian-fishponds-providing-physical-and-cultural-sustenance' },
       ],
     },
+    {
+      practica: 'Agroforesteria hawaiana de laderas con ulu, kukui y coco en el sistema ahupua\'a',
+      periodo: 'Precontacto; potencial de los terrenos marginales documentado en 2023',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Lee y Lincoln (2023) demostraron que los sistemas agroforestales hawaianos cubrian terrenos marginales con especies arboreas como ulu (breadfruit, Artocarpus altilis), kukui (nuez de vela) y coco, complementando los campos de loi (taro inundado) y los huertos de secano. Estos bosques cultivados aportaban madera, medicina y alimento de reserva mientras mejoraban la fertilidad de laderas volcanicas que no admitian cultivo intensivo. Los autores amplian la comprension del sistema territorial ahupua\'a identificando terrenos marginales como parte activa e integrada de la produccion alimentaria tradicional hawaiana.',
+      fuentes: [
+        { label: 'Lee y Lincoln (2023) — Forgotten forests: expanding potential land use in traditional Hawaiian agroecosystems, Ecology and Society 28(4)', url: 'https://ecologyandsociety.org/vol28/iss4/art21/' },
+      ],
+    },
   ],
   hawaii_matorrales_altos_bajos: [
     {
@@ -1957,6 +2045,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El sistema de campos de secano de la vertiente de sotavento de Kohala permite datar con precisión su desarrollo —expansión e intensificación— combinando datación cronométrica y relativa. Se identifican dos vías, y el mismo patrón se reconoce en otros cuatro sistemas de secano de Maui, Molokaʻi y Hawaiʻi. El artículo es de acceso pago: esta entrada se apoya en su resumen público, que fecha el desarrollo pero no describe la forma de los campos ni los cultivos.',
       fuentes: [
         { label: 'Ladefoged y Graves (2008) — Variable Development of Dryland Agriculture in Hawaiʻi: A Fine-Grained Chronology from the Kohala Field System, Hawaiʻi Island, Current Anthropology 49(5)', url: 'https://www.journals.uchicago.edu/doi/10.1086/591424' },
+      ],
+    },
+    {
+      practica: 'Recoleccion de plantas medicinales nativas hawaianas por los kahuna lapaau',
+      periodo: 'Precontacto; documentada con analisis biomedico en 2018',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Werner, Lee y Kamaka (2018) documentaron las propiedades terapeuticas historicas de plantas nativas hawaianas: kukui para afecciones cutaneas e infantiles, popolo para enfermedades respiratorias, awa para insomnio y dolores musculares, y ohia lehua para facilitar el parto. Estas plantas se recolectaban en ambientes de matorral y bosque de media montana y se preparaban con tecnicas de infusion, masticado y aplicacion topica transmitidas por los kahuna lapaau. Los autores publicaron el trabajo en el contexto de un jardin medicinal de la Universidad de Hawai que preserva el conocimiento fitoterapeutico tradicional hawaiano.',
+      fuentes: [
+        { label: 'Werner, Lee y Kamaka (2018) — Mala Laau Lapaaau: Hawaiian Healing Garden at JABSOM, Hawaii Journal of Medicine & Public Health 77(5)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5945929/' },
       ],
     },
   ],
@@ -1974,6 +2073,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Steen-Adams y otros (2019) — Traditional knowledge of fire use by the Confederated Tribes of Warm Springs in the eastside Cascades of Oregon, Forest Ecology and Management (copia abierta en PDXScholar)', url: 'https://pdxscholar.library.pdx.edu/iss_pub/120/' },
       ],
     },
+    {
+      practica: 'Tecnicas ancestrales de pesca de salmon en el Columbia: dipnets, hoop nets y plataformas',
+      periodo: 'Tecnicas transmitidas generacionalmente; documentadas activamente por la CRITFC',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'La Columbia River Inter-Tribal Fish Commission (CRITFC), organizacion oficial de las cuatro tribus del Tratado de 1855 (Yakama, Nez Perce, Umatilla y Warm Springs), documenta tecnicas ancestrales de pesca de salmon en el rio Columbia: plataformas de madera construidas sobre el rio con dipnets de hasta 7,5 metros de palo de pino, hoop nets de 1,8-2,4 m de aro, y redes de bolsa con pesos y flotadores. Los materiales originales (redes de canamo, madera de pino, amarres de sinew) y los nudos de red se transmiten generacionalmente como tecnicas de ingenieria heredadas de generacion en generacion.',
+      fuentes: [
+        { label: 'CRITFC (Columbia River Inter-Tribal Fish Commission) — Fishing Techniques, Tribal Salmon Culture', url: 'https://critfc.org/salmon-culture/tribal-salmon-culture/fishing-techniques/' },
+      ],
+    },
   ],
   interior_noroeste_palouse_willamette: [
     {
@@ -1985,6 +2095,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Familias Nez Perce o Nimiipuu cosechan bulbos de camas y dejan los ejemplares pequeños para que sigan creciendo, una selección que renueva el parche alimentario. La práctica vincula calendario, identificación precisa de plantas y apertura de la pradera; conservarla requiere evitar compactación y pérdida del hábitat y acompañar el manejo Nimiipuu, no tratar el bulbo como un recurso silvestre sin titulares.',
       fuentes: [
         { label: 'National Park Service — Camas', url: 'https://home.nps.gov/articles/000/camas.htm' },
+      ],
+    },
+    {
+      practica: 'Quemas anuales de otono para mantener praderas de roble blanco de Oregon por los Kalapuya',
+      periodo: 'Documentada en registros historicos de 1826-1847; de origen anterior indeterminado',
+      tipo: 'fuego',
+      vigencia: 'historica',
+      detalle:
+        'Boyd (1999) reconstruyo el calendario de quemas Kalapuya en el Valle Willamette usando registros historicos de 1826 a 1847, demostrando que incendios anuales de baja intensidad en otono mantenian praderas de roble blanco de Oregon (Quercus garryana) que de otro modo habrian sido colonizadas por coniferas. Las quemas estaban coordinadas con ciclos de alimento clave —camas, bellotas y avellanas— y con la caza de venado y elk, constituyendo un manejo deliberado e integrado del paisaje. El capitulo es descargable en abierto en el repositorio PDXScholar de Portland State University.',
+      fuentes: [
+        { label: 'Boyd (1999) — Strategies of Indian Burning in the Willamette Valley, en Indians, Fire and the Land in the Pacific Northwest (OSU Press / PDXScholar)', url: 'https://pdxscholar.library.pdx.edu/anth_fac/165/' },
       ],
     },
   ],
@@ -2000,6 +2121,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Marks-Block, Lake y Curran (2021) — Revitalized Karuk and Yurok cultural burning to enhance California hazelnut for basketweaving, Fire Ecology 17:6', url: 'https://fireecology.springeropen.com/articles/10.1186/s42408-021-00092-6' },
       ],
     },
+    {
+      practica: 'Pesca de salmon con weirs y gobernanza de apertura nocturna por los Yurok del bajo Klamath',
+      periodo: 'Precontacto hasta siglo XIX; documentado en revision cientifica de 2021',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Atlas et al. (2021) documentaron el uso de weirs —estructuras ribereñas de madera que canalizaban el salmon hacia trampas— en el bajo rio Klamath por los Yurok. Las reglas de gobernanza incluian la apertura nocturna obligatoria del weir para permitir que parte del cardumen alcanzara los frezaderos rio arriba, sosteniendo la reproduccion. Los autores argumentan que este sistema produjo rendimientos resilientes durante milenios y proponen retomarlo como base de la gestion contemporanea del salmon del Pacifico (Oncorhynchus spp.) en el norte de California.',
+      fuentes: [
+        { label: 'Atlas et al. (2021) — Indigenous Systems of Management for Culturally and Ecologically Resilient Pacific Salmon, BioScience 71(2)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7882363/' },
+      ],
+    },
   ],
   rocosas_norte_praderas_montanas: [
     {
@@ -2011,6 +2143,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pueblos salish, pend d’Oreille y vecinos usaron fuego periódico en las Rocosas del norte para favorecer alimentos, medicinas, forraje y espacios de tránsito. Organizaciones tribales contemporáneas vuelven a aplicar conocimiento cultural frente a combustibles acumulados, pero cada quema requiere liderazgo indígena, objetivos locales y evaluación actual de riesgo.',
       fuentes: [
         { label: 'National Park Service — Indigenous fire practices shape our land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
+      ],
+    },
+    {
+      practica: 'Cosecha selectiva de bulbos de camas (Camassia quamash) en praderas humedas del norte de las Rocosas',
+      periodo: 'Milenios de practica indigena; ensayo experimental validado 2015-2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Stucki, Rodhouse y Reuter (2021) evaluaron durante seis anos en norte de Idaho (territorio Nez Perce y Salish) el efecto de la cosecha selectiva de bulbos adultos de camas. La cosecha sostenida de mas de 800 bulbos por temporada mantuvo o incremento las poblaciones adultas, y la combinacion de quema y cosecha tuvo efecto positivo sobre los adultos. El estudio valida el conocimiento ecologico tradicional: la cosecha era manejo activo de las praderas humedas subalpinas, no solo aprovechamiento extractivo, y el estudio evalua su implementacion en un area protegida con colaboracion tribal.',
+      fuentes: [
+        { label: 'Stucki, Rodhouse y Reuter (2021) — Effects of traditional harvest and burning on common camas abundance in Northern Idaho, Ecology and Evolution', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8668748/' },
       ],
     },
   ],
@@ -2026,6 +2169,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Ancestral Pueblo farming', url: 'https://home.nps.gov/band/learn/historyculture/ancestral-pueblo-farming.htm' },
       ],
     },
+    {
+      practica: 'Cultivo de agave domesticado en campos de piedra aridos por Hohokam y Sinagua en Arizona',
+      periodo: 'Ca. 700-1450 d.C. (evidencia arqueologica y analisis de ADN)',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Hodgson y colaboradores (2023) identificaron seis taxones de agave domesticados por Hohokam, Sinagua y Ancestral Pueblo en Arizona: A. murpheyi, A. delamateri, A. phillipsiana, A. sanpedroensis, A. verdensis y A. yavapaiensis. Los cultivaban en terrazas y campos de roca construidos en bajadas aridas, con hornos de tierra para asar los corazones. El ADN sugiere al menos tres domesticaciones locales independientes, posicionando a Arizona como centro secundario de domesticacion del agave. Los clones persisten hoy asociados a las estructuras agricolas originales como legado vivo del paisaje precontacto.',
+      fuentes: [
+        { label: 'Hodgson et al. (2023) — Pre-contact Agave domesticates: living legacy plants in Arizona\'s landscape, Annals of Botany 132(4)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10799993/' },
+      ],
+    },
   ],
   grandes_llanuras_pradera_alta_mixta: [
     {
@@ -2039,6 +2193,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Fire regime at Tallgrass Prairie', url: 'https://www.nps.gov/tapr/learn/nature/fire-regime.htm' },
       ],
     },
+    {
+      practica: 'Agricultura ribereña de milpa y girasol por mujeres Hidatsa, Mandan y Arikara en el rio Knife',
+      periodo: 'Ca. 1200-1845 d.C. (pueblos documentados arqueologicamente)',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'En los pueblos de tierra del rio Knife (actual Dakota del Norte), las mujeres Hidatsa, Mandan y Arikara cultivaban maiz, frijol, calabaza y girasol usando herramientas de hueso de bisonte y madera. Los excedentes se deshidrataban y almacenaban en pozos de cache subterraneos. Sus cosechas eran el bien de intercambio mas demandado de la region: tribus nomadas como Cheyenne, Crow y Assiniboine viajaban a comerciar pieles y metalware por estas cosechas vegetales, convirtiendo a los pueblos del rio Knife en centros comerciales permanentes de las Grandes Llanuras.',
+      fuentes: [
+        { label: 'NPS Knife River Indian Villages — Subsistence: Tribal Nutrition & Health', url: 'https://www.nps.gov/articles/subsistence.htm' },
+      ],
+    },
   ],
   gran_cuenca_meseta_colorado: [
     {
@@ -2050,6 +2215,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los paiute de Owens Valley construyeron y mantuvieron acequias para regar gramíneas de semilla y otras plantas alimenticias sin depender de cultivos domesticados. La derivación de arroyos expandía y estabilizaba la producción vegetal en el piso árido del valle, y constituye un sistema indígena de vegecultura desarrollado localmente.',
       fuentes: [
         { label: 'Lawton, Wilke, DeDecker y Mason (1976) — Agriculture Among the Paiute of Owens Valley, The Journal of California Anthropology 3(1) (copia abierta en eScholarship)', url: 'https://escholarship.org/uc/item/0595h88m' },
+      ],
+    },
+    {
+      practica: 'Recoleccion estacional de pinones (Pinus monophylla) por los Shoshone-Paiute del Sur',
+      periodo: 'Precontacto hasta el presente; reconocida formalmente en Great Basin NP',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Los Shoshone-Paiute del Sur migraban estacionalmente en otono a los bosques de pinon-junipero del Gran Cuenca para cosechar pinones de Pinus monophylla, semilla con alta densidad calorica almacenada en cestas para sustentar la dieta invernal. El Servicio de Parques documenta la practica en Great Basin National Park y la reconoce en su planificacion de visitas: acuerdos de recoleccion tribal permiten que la practica continue actualmente. La pagina del parque describe la importancia historica y contemporanea de la cosecha para las comunidades indigenas de la region.',
+      fuentes: [
+        { label: 'NPS Great Basin National Park — Pine Nut Gathering', url: 'https://www.nps.gov/grba/planyourvisit/pinenutgathering.htm' },
       ],
     },
   ],
@@ -2218,6 +2394,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La síntesis forestal del sudeste registra que el fuego se usó para manipular el ambiente y que los primeros colonos adoptaron quemas periódicas para mejorar el forraje y frenar el sotobosque. El régimen de superficie coincide con la adaptación del pino largo y mantiene una sabana abierta donde, sin fuego, avanzan leñosas densas.',
       fuentes: [
         { label: 'Oswalt y otros (2012) — History and Current Condition of Longleaf Pine in the Southern United States, USDA Forest Service GTR-SRS-166 (GovInfo)', url: 'https://www.govinfo.gov/content/pkg/GOVPUB-A13-PURL-gpo39900/pdf/GOVPUB-A13-PURL-gpo39900.pdf' },
+      ],
+    },
+    {
+      practica: 'Cosecha y manejo del wasdi (ramps, Allium tricoccum) en bosques apalaches por los Cherokee',
+      periodo: 'Historica continua; investigacion colaborativa documentada 2018-2023',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Baumflek et al. (2023) documentaron en los Apalaches del sureste la cosecha del wasdi (Allium tricoccum, ramps), planta alimenticia y medicinal central para los Cherokee del Eastern Band. La investigacion colaborativa entre el USFS, la nacion Cherokee y socios universitarios evaluo experimentalmente tasas de cosecha sostenibles en bosques mesofilos de Blue Ridge. El articulo argumenta que la soberania alimentaria indigena y la investigacion participativa deben guiar el manejo, frente a la presion comercial creciente que amenaza las poblaciones silvestres de wasdi.',
+      fuentes: [
+        { label: 'Baumflek et al. (2023) — Doing research together: wasdi (Allium tricoccum) plants guide dynamic research collaborations in Cherokee landscapes, Ecology and Society 28(2)', url: 'https://ecologyandsociety.org/vol28/iss2/art13/' },
       ],
     },
   ],
@@ -2845,6 +3032,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'LeFebvre et al. (2019) — Lucayan management of hutias in the Bahamas, PLoS ONE 14(9): e0220284', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6759148/' },
       ],
     },
+    {
+      practica: 'Cosecha del caracol reina (Lobatus gigas) por los Lucayo en San Salvador, Bahamas',
+      periodo: 'Ca. 600-1500 d.C. (periodo precontacto Lucayo)',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Ruga, Meyer y Huntley (2019) analizaron 284 ejemplares de Lobatus gigas (caracol reina) con datacion por radiocarbono de conchales en 7 sitios de la isla de San Salvador, Bahamas. En el periodo Lucayo (anterior a 1492 CE), el 47% de la cosecha correspondia a ejemplares juveniles, indice menor que en periodos historicos posteriores, lo que sugiere un aprovechamiento comparativamente mas sostenible del recurso marino. La acumulacion sistematica de conchales evidencia que la cosecha del caracol era una practica alimentaria central en la dieta del pueblo Lucayo, con un patron de explotacion que preservo la estructura demografica de la poblacion.',
+      fuentes: [
+        { label: 'Ruga, Meyer y Huntley (2019) — Conch Fritters Through Time: Human Predation on Lobatus gigas, PALAIOS 34(8) / NSF PAR', url: 'https://par.nsf.gov/biblio/10155301-conch-fritters-through-time-human-predation-population-demographics-lobatus-gigas-san-salvador-island-bahamas' },
+      ],
+    },
   ],
   hispaniola_bosque_humedo: [
     {
@@ -2903,6 +3101,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Campbell y colaboradores (2021) documentaron en Millbank, Blue Mountains, que el 77% de los hogares cosecha directamente del bosque: ñame como cultivo principal bajo dosel, complementado por banana, plátano, plantas medicinales y caza de cerdo silvestre. La comunidad mantiene herencia Maroon y organiza la relación con el bosque según conocimiento intergeneracional sobre qué cosechar, cuándo y en qué parte del territorio. El estudio identifica la cosecha silvestre como práctica de soberanía alimentaria y no solo como subsistencia de emergencia.',
       fuentes: [
         { label: 'Campbell et al. (2021) — Wild food harvesting and Maroon heritage in the Blue Mountains, Jamaica, Frontiers in Sustainable Food Systems', url: 'https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.663863/full' },
+      ],
+    },
+    {
+      practica: 'Recoleccion de raices forestales para tonicos por comunidades cimarronas de Jamaica',
+      periodo: 'Desde el periodo cimarron (siglo XVII); practica activa documentada en 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Vandebroek et al. (2021) documentaron en comunidades cimarronas (Maroon) del noreste de Jamaica la recoleccion silvestre de raices de Smilax spp. (chainey root y sarsaparilla) en bosques de las Blue Mountains y John Crow Mountains. El proceso incluye recoleccion en fases lunares especificas, secado al sol o a la sombra, coccion en decoccion y fermentacion larga ("curado"). Los participantes atribuyen el origen de esta tradicion a los cimarrones que huyeron y sobrevivieron en los bosques, conectando la practica con la historia de resistencia y autonomia de sus comunidades en el bosque humedo montano.',
+      fuentes: [
+        { label: 'Vandebroek et al. (2021) — Root Tonics and Resilience: Building Strength, Health, and Heritage in Jamaica, Frontiers in Sustainable Food Systems 5', url: 'https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.640171/full' },
       ],
     },
   ],
