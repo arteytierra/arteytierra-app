@@ -152,6 +152,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO — Sistemas de riego aflaj de Omán (2006)', url: 'https://whc.unesco.org/es/list/1207/' },
       ],
     },
+    {
+      practica: 'Terrazas colgantes jalba con abono de caprinos en Al Jabal Al Akhdar',
+      periodo: 'Más de 1.500 años de agricultura irrigada documentados; vigente en 2021',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En las laderas de Al Jabal Al Akhdar, Omán, agricultores construyeron terrazas de piedra de 1,7 a 30 m² llamadas jalba para cultivar granados, rosas, duraznos y nueces con agua de aflaj. Cada parcela recibe abono de caprinos y ovinos producido localmente; el acceso a las terrazas más altas demanda hasta una hora de caminata. Buerkert y colaboradores (2021) documentan que la intensificación en terrazas bajas y el abandono de las altas se explica por los altos costos de trabajo y transporte, no por pérdida de conocimiento.',
+      fuentes: [
+        { label: 'Buerkert et al. (2021) — Hanging gardens of Oman: traditional agroforestry terraces on mountain slopes, Scientific Reports 11:7258', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8032693/' },
+      ],
+    },
   ],
 
   // ── Meseta iraní ────────────────────────────────────────────────────────────
@@ -195,6 +206,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Fire Regime, Tallgrass Prairie National Preserve', url: 'https://www.nps.gov/tapr/learn/nature/fire-regime.htm' },
       ],
     },
+    {
+      practica: 'Recolección de timpsila (nabo silvestre) por mujeres Mandan, Hidatsa y Arikara',
+      periodo: 'Práctica ancestral; documentada en Knife River Indian Villages National Historic Site',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Las mujeres Mandan, Hidatsa y Arikara recolectaban timpsila (Psoralea esculenta, nabo silvestre) en las praderas altas, lo pelaban con los dientes, trenzaban las raíces para secarlas al sol y las almacenaban en fosas subterráneas. El Servicio de Parques documenta que este sistema de recolección y almacenamiento era parte central de la economía de subsistencia, junto con la caza de bisontes y el cultivo de maíz, en las aldeas del río Knife.',
+      fuentes: [
+        { label: 'National Park Service — Subsistence at Knife River Indian Villages', url: 'https://www.nps.gov/articles/subsistence.htm' },
+      ],
+    },
   ],
   pradera_mixta: [
     {
@@ -208,6 +230,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Patch-Burn Grazing', url: 'https://www.nps.gov/articles/000/patch-burn-grazing.htm' },
       ],
     },
+    {
+      practica: 'Horticultura sedentaria Hidatsa y Mandan: maíz, calabaza, girasol y frijol',
+      periodo: 'Documentada por testimonio de Buffalo Bird Woman; anterior al siglo XIX',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'Las mujeres Hidatsa y Mandan cultivaban parcelas de tres a cinco acres con maíz, calabaza, girasoles y frijoles cerca del río Missouri, usando la ribera aluvial como zona fértil. El testimonio de Buffalo Bird Woman, documentado por el Servicio Histórico de Dakota del Norte, describe la selección de semillas, la preparación de suelo y el almacenamiento subterráneo de la cosecha en fosas forradas de hierba. El sistema era la base alimentaria de las aldeas estables en la pradera mixta.',
+      fuentes: [
+        { label: 'State Historical Society of North Dakota — Indian Gardening in the Northern Plains', url: 'https://history.nd.gov/exhibits/gardening/indiangardening1.html' },
+      ],
+    },
   ],
   pradera_pastos_cortos: [
     {
@@ -219,6 +252,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La historia ambiental de las Grandes Llanuras registra fuegos deliberados para conducir animales o atraerlos después al rebrote. En la pradera corta, donde el agua y el forraje son discontinuos, el momento y la posición de la quema modificaban la distribución de la caza; no equivale a recomendar una quema sin prescripción actual.',
       fuentes: [
         { label: 'National Park Service — Fire History of the Great Plains', url: 'https://www.nps.gov/lamr/learn/nature/fire-history-of-the-great-plains.htm' },
+      ],
+    },
+    {
+      practica: 'Saltos de bisonte: cacería comunal en barrancas de las praderas',
+      periodo: 'Practicada durante milenios antes de la extinción funcional de los bisontes en el siglo XIX',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Las comunidades de las Grandes Llanuras organizaban saltos de bisonte en los que corredores ("lobos") formaban una V humana para dirigir las manadas hacia una barranca. Cincuenta bisontes producían entre 11.000 y 20.000 libras de carne que se procesaba, secaba y almacenaba. El Servicio de Parques documenta que los saltos se practicaron durante miles de años y fueron reemplazados por el uso del caballo, que permitió caza individual más eficiente; no constituyen una recomendación de manejo actual.',
+      fuentes: [
+        { label: 'National Park Service — Bison Bellows: The Buffalo Jump (2016)', url: 'https://www.nps.gov/articles/bison-bellows-3-31-16.htm' },
       ],
     },
   ],
@@ -357,6 +401,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — The Amalfi Lemon and its layered resilient landscape', url: 'https://www.fao.org/newsroom/story/the-amalfi-lemon-and-its-layered-resilient-landscape/en' },
       ],
     },
+    {
+      practica: 'Dehesa agrosilvopastoril: rotación de ganado mixto bajo encinas y alcornoques',
+      periodo: 'Sistema documentado en 114 fincas de Córdoba, España; publicado en 2018',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'Maroto-Molina y colaboradores (2018) analizaron 114 fincas de dehesa en Córdoba y encontraron que el sistema combina ganado vacuno, ovino y porcino ibérico bajo un dosel de encinas y alcornoques, con apareamiento estacional ajustado al ciclo de la bellota y al ritmo de regeneración del estrato herbáceo. La rotación de potreros y el manejo diferenciado por especie animal permiten aprovechar el estrato arbolado, el pasto y el fruto sin degradar ninguno de los tres. La diversidad de especies ganaderas distribuye la presión de pastoreo y reduce riesgo frente a fluctuaciones del mercado o del clima.',
+      fuentes: [
+        { label: 'Maroto-Molina et al. (2018) — Análisis de los sistemas ganaderos de dehesa, Rev. Mexicana de Ciencias Pecuarias 9(4):811-833', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-11242018000400811' },
+      ],
+    },
   ],
   alpino_montano_europeo: [
     {
@@ -370,6 +425,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO SIPAM — Traditional Hay Milk Farming in the Austrian Alpine Arc', url: 'https://www.fao.org/giahs/giahs-around-the-world/austria-traditional-hay-milk-farming-system/en' },
       ],
     },
+    {
+      practica: 'Recolección estacional de plantas medicinales silvestres en el Alto Adigio',
+      periodo: 'Práctica documentada como vigente en 2022 en comunidades del Alto Adigio (Tirol del Sur)',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Petelka y colaboradores (2022) documentaron la recolección estacional de plantas medicinales en el Alto Adigio: Arnica montana, Sambucus nigra, flores de tilo y otras especies del piso alpino. El sistema incluye permisos municipales de cosecha, protocolos que limitan la cantidad extraída por unidad de superficie y transmisión intergeneracional del conocimiento sobre épocas, altitudes y técnicas de secado. El estudio identifica que la continuidad de la práctica depende tanto del acceso legal al territorio como del mantenimiento de la estructura de pasto alpino abierto que alberga las plantas.',
+      fuentes: [
+        { label: 'Petelka et al. (2022) — Seasonal harvesting of wild medicinal plants in the Alps, Ecology and Society 27(4):14', url: 'https://ecologyandsociety.org/vol27/iss4/art14/' },
+      ],
+    },
   ],
   macaronesia: [
     {
@@ -381,6 +447,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El registro histórico de Madeira fecha las levadas desde los primeros asentamientos portugueses. Las acequias captan agua de sectores húmedos y la conducen por gravedad a laderas agrícolas más secas; así desacoplan el cultivo de la distribución muy desigual de lluvia y alimentaron primero caña de azúcar y luego viña y otros cultivos.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Levadas of Madeira Island', url: 'https://whc.unesco.org/en/tentativelists/6230/' },
+      ],
+    },
+    {
+      practica: 'Viticultura en hoyos volcánicos con zocos en La Geria, Lanzarote',
+      periodo: 'Desarrollada desde el siglo XVIII tras las erupciones de 1730-1736; vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En La Geria, los agricultores excavaron a mano hoyos cónicos en la lapilli volcánica (picón), plantaron una cepa en el fondo y levantaron un semicírculo de piedra seca (zoco) para protegerla del viento. La capa de ceniza volcánica actúa como mulch que captura la humedad nocturna y la libera lentamente hacia las raíces, sin riego artificial; el sistema permitió cultivar vid en uno de los territorios más áridos de Europa. FAO lo documentó como práctica productiva activa con reconocimiento patrimonial.',
+      fuentes: [
+        { label: "FAO Newsroom — Lanzarote's volcanic miracle: farming under ash and stone (2025)", url: 'https://www.fao.org/newsroom/story/lanzarotes-volcanic-miracle/en' },
       ],
     },
   ],
@@ -1217,6 +1294,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'American Antiquity — Ridged Fields in the Rio Guayas Valley, Ecuador', url: 'https://www.cambridge.org/core/journals/american-antiquity/article/abs/ridged-fields-in-the-rio-guayas-valley-ecuador/AF5F97EE20D765AC79DFC934843E4A29' },
       ],
     },
+    {
+      practica: 'Pesca artesanal tradicional en el Golfo de Guayaquil (Puerto Bolívar)',
+      periodo: 'Práctica intergeneracional documentada en comunidades del Golfo de Guayaquil; publicado en 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Fernández-Espinosa y colaboradores (2021) documentaron la pesca artesanal en Puerto Bolívar como práctica transmitida de generación en generación con fuerte identidad cultural. El estudio analiza el impacto de la expansión camaronera sobre los manglares del Golfo, que redujo los espacios tradicionales de pesca y desplazó a comunidades que habían organizado su economía en torno al ecosistema costero. La fuente identifica la práctica artesanal como recurso de soberanía alimentaria y arraigo territorial frente a la presión industrial.',
+      fuentes: [
+        { label: 'Fernández-Espinosa et al. (2021) — Pesca artesanal y manglares en el Golfo de Guayaquil, Revista de Ciencias Sociales (Ve) 27(2):386-400', url: 'https://zenodo.org/records/4968788' },
+      ],
+    },
   ],
   manglares_pacifico_suramericano: [
     {
@@ -1386,6 +1474,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'ICMBio — Plano de manejo RPPN Estância Ecológica SESC Pantanal', url: 'https://www.gov.br/icmbio/pt-br/assuntos/biodiversidade/unidade-de-conservacao/unidades-de-biomas/cerrado/lista-de-ucs/rppn-estancia-ecologica-sesc-pantanal/arquivos/rppn_sesc_pantanalplanodemanejo.pdf/%40%40download/file/rppn_sesc_pantanalPLANODEMANEJO.pdf' },
       ],
     },
+    {
+      practica: 'Pesca artesanal de ribereños pantaneiros (30 pescadores, 79 especies)',
+      periodo: 'Práctica tradicional documentada en comunidades ribereñas de Mato Grosso; publicado en 2024',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Figueiredo, Barros y Da Silva (2024) documentaron la pesca artesanal de comunidades ribereñas del Pantanal de Mato Grosso: 30 pescadores identificaron 79 espécies y describieron técnicas de cebo vivo, carnada preparada y pesca nocturna sincronizada con el pulso hidrológico. El estudio muestra que el conocimiento local estructura el calendario de pesca según nivel de agua y migración de especies, lo que reduce la presión en épocas de reproducción sin que exista un protocolo formal de manejo. Para el diseño predial, la fuente orienta a conservar los corredores fluviales y las zonas de desborde que mantienen la conectividad del humedal.',
+      fuentes: [
+        { label: 'Figueiredo, Barros y Da Silva (2024) — Pesca artesanal e conhecimento ecológico local no Pantanal, Revista Geografias 20(2)', url: 'https://periodicos.ufmg.br/index.php/geografias/article/view/52625' },
+      ],
+    },
   ],
   bosque_seco_chiquitano: [
     {
@@ -1414,6 +1513,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO AGRIS — Seasonal fire management by traditional cattle ranchers prevents the spread of wildfire in the Brazilian Cerrado', url: 'https://agris.fao.org/search/en/providers/122535/records/65df4349b766d82b1800f444' },
       ],
     },
+    {
+      practica: 'Recolección y preparación del pequi quilombola (Caryocar brasiliense)',
+      periodo: 'Práctica documentada en comunidades quilombolas de Minas Gerais; publicado en 2016',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Pinto y colaboradores (2016) documentaron el uso del pequi (Caryocar brasiliense) en comunidades quilombolas del Cerrado de Minas Gerais: recolección del fruto caído, extracción del carozo con técnica manual para evitar las espinas internas, cocción en aceite y preparación de platos tradicionales. La especie es central para la identidad alimentaria del Cerrado; las familias conocen los árboles productivos de su territorio y los calendarios de fructificación de cada ejemplar. El estudio documenta que las comunidades quilombolas son custodias activas de poblaciones de pequi en paisajes agropecuarios fragmentados.',
+      fuentes: [
+        { label: 'Pinto et al. (2016) — Uses and conservation of Caryocar brasiliense by quilombola communities, Brazilian Journal of Biology 76(2): 511-519', url: 'https://www.scielo.br/j/bjb/a/Y5VMnVX4vQZFgHb68ypQZ9m/?lang=en' },
+      ],
+    },
   ],
   caatinga: [
     {
@@ -1425,6 +1535,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las Comunidades Tradicionales Fundo de Pasto del Sertão do São Francisco gestionan en común áreas de Caatinga para la cría extensiva, junto con espacios familiares de cultivo. El uso colectivo y las reglas sociales permiten distribuir el acceso a forraje nativo en el semiárido y deben considerarse inseparables de cualquier propuesta física de potreros o cierres.',
       fuentes: [
         { label: 'Embrapa — Comunidades tradicionais Fundo de Pasto y agrobiodiversidad de la Caatinga', url: 'https://www.alice.cnptia.embrapa.br/alice/bitstream/doc/1140187/1/Fundo-de-pasto.-Bianchini.2022.pdf' },
+      ],
+    },
+    {
+      practica: 'Cisternas de placa P1MC: captación de agua de lluvia en el semiárido',
+      periodo: 'Programa documentado desde el inicio de los años 2000; evaluado en 2016',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Gomes y Heller (2016) evaluaron las cisternas de placa del Programa Um Milhão de Cisternas (P1MC) en 37 comunidades rurales de Pernambuco y Minas Gerais: estructuras de 16.000 litros construidas con placas de cimento, tela metálica y cal, que captan la lluvia de tejados y la almacenan para consumo doméstico. El estudio documenta que las cisternas redujeron la dependencia de fuentes contaminadas y el tiempo de acarreo de agua, con impacto especialmente significativo en la salud de niños y mujeres. La tecnología está basada en conocimientos campesinos de captación de agua previos al programa y fue escalada con participación comunitaria.',
+      fuentes: [
+        { label: 'Gomes y Heller (2016) — Cisternas de placa: acceso al agua en el semiárido, Engenharia Sanitária e Ambiental 21(3): 623-633', url: 'https://www.scielo.br/j/esa/a/4BS7RNWWrPRkkzv7zgLxZ7F/?format=html&lang=pt' },
       ],
     },
   ],
@@ -1453,6 +1574,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Agência de Notícias IBGE — Quebradeiras de coco babaçu preservam tradição no interior do Maranhão', url: 'https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/23624-quebradeiras-de-coco-babacu-preservam-tradicao-no-interior-do-maranhao' },
       ],
     },
+    {
+      practica: 'Uso medicinal del babaçu (Attalea speciosa) en comunidad quilombola de Maranhão',
+      periodo: 'Práctica documentada en la comunidad quilombola Olho d\'Água dos Grilos; publicado en 2022',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Amorim, Lucena y Almeida Jr. (2022) documentaron el uso medicinal del babaçu en la comunidad quilombola Olho d\'Água dos Grilos (Maranhão): el endocarpio carbonizado se usa en pomadas y cataplasmas, el aceite de la almendra en ungüentos para inflamaciones y el mesocarpio en preparados digestivos. El estudio calculó un Valor de Uso máximo de 3,68 para la palma, superior a cualquier otra especie registrada, lo que la identifica como especie-clave del sistema medicinal quilombola. La práctica complementa y no sustituye la recolección y quiebra de coco para alimentación documentada en otras fuentes del acervo.',
+      fuentes: [
+        { label: 'Amorim, Lucena y Almeida Jr. (2022) — Etnobotánica medicinal del babaçu en comunidad quilombola, RBGAS 9(23): 1427-1446', url: 'https://doi.org/10.21438/rbgas(2022)092319' },
+      ],
+    },
   ],
   mata_araucaria_altura: [
     {
@@ -1466,6 +1598,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Mate: the drink that keeps a forest alive', url: 'https://www.fao.org/newsroom/story/mate-the-drink-that-keeps-a-forest-alive/en' },
       ],
     },
+    {
+      practica: 'Recolección del pinhão (semilla de Araucaria angustifolia) por más de 180 familias en Paraná',
+      periodo: 'Cosecha de 2023: 347.090 kg documentados; práctica transmitida por generaciones',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Starzynski y colaboradores (2026) documentaron la recolección comunitaria del pinhão —semilla de Araucaria angustifolia— en el municipio de Bituruna (Paraná), donde más de 180 familias cosecharon 347.090 kg en 2023. La práctica se realiza entre mayo y agosto, cuando las piñas maduran y caen; el conocimiento de cuáles araucarias producen más, cuándo iniciar la cosecha y cómo almacenar sin perder calidad es parte del patrimonio cultural del bioma. Las araucarias productoras son reconocidas y cuidadas por las familias que las trabajan, lo que genera incentivos concretos para su conservación dentro del bosque nativo.',
+      fuentes: [
+        { label: 'Starzynski et al. (2026) — Colheita de pinhão em Bituruna (Paraná): famílias, volumes e territórios, Hoehnea 53: e472025 (preprint SciELO)', url: 'https://preprints.scielo.org/index.php/scielo/preprint/view/15784/version/16577' },
+      ],
+    },
   ],
   mata_atlantica_costera: [
     {
@@ -1477,6 +1620,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El sistema cabruca implanta cacao bajo sombra después de ralear selectivamente la vegetación, manteniendo buena parte del arbolado y la función forestal. En el sur de Bahía se lo documenta como una forma agroforestal capaz de proteger biodiversidad, suelos y manantiales, aunque requiere enriquecimiento y manejo que eviten simplificar el dosel.',
       fuentes: [
         { label: 'Secretaria da Agricultura da Bahia — Sistema de cacau cabruca preservando os mananciais', url: 'https://www.ba.gov.br/seagri/noticias/2008/12/09/sistema-de-cacau-cabruca-preservando-os-mananciais' },
+      ],
+    },
+    {
+      practica: 'Uso de plantas medicinales por comunidades rurales de Itacaré y Maraú (Bahia)',
+      periodo: 'Relevamiento etnobotánico documentado en 2006 en comunidades rurales de Itacaré y Maraú, Bahia',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Pinto, Amorozo y Furlan (2006) relevaron el uso de plantas medicinales en comunidades rurales de la costa del cacao (Bahia) y documentaron 98 especies utilizadas para tratar dolencias comunes: infusiones y macerados de especies del bosque atlántico costero como Petiveria alliacea, Plectranthus amboineus y Lippia alba. El estudio registra que las personas adultas mayores concentran el conocimiento, que la mayoría de las plantas se obtiene en huertos peridomésticos o en fragmentos de Mata Atlántica cercanos, y que la transmisión intergeneracional está en retroceso. Para el diseño predial, la fuente orienta a mantener en los bordes y huertos las especies de mayor valor de uso local.',
+      fuentes: [
+        { label: 'Pinto, Amorozo y Furlan (2006) — Conhecimento popular sobre plantas medicinais em comunidades rurais de Mata Atlântica, Itacaré, BA, Acta Botanica Brasilica 20(4): 751-762', url: 'https://scielo.br/scielo.php?pid=S0102-33062006000400001&script=sci_arttext' },
       ],
     },
   ],
@@ -1530,6 +1684,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Familias campesinas y quilombolas del Espinhaço suben entre abril y octubre para recolectar flores siempre-vivas y permanecer semanas en la sierra. El manejo regula momento e intensidad según el ciclo natural para permitir renovación, y se articula con custodia e intercambio de semillas y plantas alimentarias y medicinales.',
       fuentes: [
         { label: 'FAO Brasil — Apanhadoras e apanhadores de flores sempre-vivas (copia archivada del 04/01/2023: la nota ya no está en fao.org)', url: 'https://web.archive.org/web/20230104000110/https://www.fao.org/brasil/noticias/detail-events/fr/c/1265788/' },
+      ],
+    },
+    {
+      practica: 'Extracción de plantas medicinales del campo rupestre: arnica mineira en Ouro Preto',
+      periodo: 'Práctica documentada en comunidades extractivistas de la Cadena del Espinhaço; publicado en 2015',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Messias y colaboradores (2015) documentaron la recolección de plantas medicinales en los campos rupestres de Ouro Preto y Mariana (Minas Gerais), con énfasis en la arnica mineira (Lychnophora spp.): sus inflorescencias y hojas se cosechan manualmente para preparar pomadas y tinturas antiinflamatorias de alta demanda local. El estudio identificó 104 plantas medicinales en 76 familias, con usos en afecciones respiratorias, reumáticas y cutáneas. La recolección se realiza en los campos abiertos sobre afloramientos de cuarcita, donde las especies son endémicas y la extracción no regulada genera sobrepresión; la fuente orienta a planificar cuotas de cosecha y sitios de cultivo complementario para reducir la dependencia del extractivismo silvestre.',
+      fuentes: [
+        { label: 'Messias et al. (2015) — Plantas medicinais usadas por agricultores de Ouro Preto, Revista Brasileira de Plantas Medicinais 17(1): 76-104', url: 'https://scielo.br/scielo.php?lang=en&pid=S1516-05722015000100076&script=sci_arttext' },
       ],
     },
   ],
@@ -1693,6 +1858,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Indigenous fire practices shape our land', url: 'https://www.nps.gov/subjects/fire/indigenous-fire-practices-shape-our-land.htm' },
       ],
     },
+    {
+      practica: 'Las Tres Hermanas Haudenosaunee: policultivo de maíz, frijol y calabaza',
+      periodo: 'Documentado como práctica del noreste durante siglos; análisis de eficiencia publicado en 2016',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Mt. Pleasant (2016) calculó la productividad calórica del sistema Tres Hermanas Haudenosaunee (Iroquois) combinando datos agronómicos y registros históricos: la asociación maíz-frijol-calabaza producía aproximadamente 12,25 × 10⁶ kcal/ha, por encima del maíz en monocultivo. El maíz aportaba estructura para el frijol, el frijol fijaba nitrógeno y la calabaza cubría el suelo; la nixtamalización del maíz con cal completaba el perfil nutricional. El estudio sitúa la práctica en el noreste y los Grandes Lagos como base alimentaria de poblaciones sedentarias, no como técnica de subsistencia marginal.',
+      fuentes: [
+        { label: 'Mt. Pleasant (2016) — A new paradigm for pre-Columbian agriculture in North America, Ethnobiology Letters 7(1)', url: 'https://ojs.ethnobiology.org/index.php/ebl/article/view/721' },
+      ],
+    },
   ],
   apalaches_bosques_y_rivercane: [
     {
@@ -1706,6 +1882,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'National Park Service — Rivercane', url: 'https://home.nps.gov/articles/000/rivercane.htm' },
       ],
     },
+    {
+      practica: 'Cosecha Cherokee de wasdi (ramps, Allium tricoccum) con protocolo de no-arranque',
+      periodo: 'Práctica de la Banda Oriental de los Cherokee; documentada en 2023',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Chen y colaboradores (2023) documentaron el protocolo Cherokee de cosecha de wasdi (Allium tricoccum) en los Apalaches: los recolectores cortan hojas y tallos y dejan intactos la raíz y el rizoma, lo que permite la regeneración del bulbo en la misma temporada. La Banda Oriental de los Cherokee mantiene este protocolo activamente en sus territorios en las montañas del suroeste de Carolina del Norte; el estudio documenta que las poblaciones cosechadas según este método muestran menor reducción de densidad que las sometidas a arranque completo. El wasdi es especie de sotobosque sombreado dependiente del mantillo forestal.',
+      fuentes: [
+        { label: 'Chen et al. (2023) — Cherokee ramp harvesting protocols support population persistence, Ecology and Society 28(2):13', url: 'https://ecologyandsociety.org/vol28/iss2/art13/' },
+      ],
+    },
   ],
   ozarks_transicion_bosque_pradera: [
     {
@@ -1717,6 +1904,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Una observación colonial de 1750 atribuyó a pueblos indígenas de la región la quema de praderas al final del otoño, cuando el pasto estaba seco. El parque explica que el fuego conserva claros, sabanas y especies adaptadas frente al avance de árboles, pero la cita histórica no identifica un pueblo concreto ni basta para definir intensidad, frecuencia o autorización actuales.',
       fuentes: [
         { label: 'National Park Service — Prescribed burns at Ozark National Scenic Riverways', url: 'https://www.nps.gov/ozar/learn/management/prescribedburns.htm' },
+      ],
+    },
+    {
+      practica: 'Forrajeo estacional Osage: nueces, uvas silvestres, pawpaw y raíces',
+      periodo: 'Documentado en Missouri Encyclopedia con base en fuentes históricas del siglo XVIII al XIX',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Lookingbill (2020) documenta que el pueblo Osage organizaba expediciones de forrajeo en agosto y septiembre para recolectar nueces, avellanas, pacanas, uvas silvestres, pawpaws y raíces en las colinas de los Ozarks, complementando los jardines de maíz, frijol y calabaza mantenidos cerca de las aldeas. El forrajeo aprovechaba la productividad otoñal del ecotono entre bosque y pradera antes de los largos inviernos del Missouri. Es un registro histórico de una práctica interrumpida por el desplazamiento forzado; la fuente no documenta continuidad contemporánea en los Ozarks.',
+      fuentes: [
+        { label: 'Lookingbill (2020) — Osage Nation, Missouri Encyclopedia', url: 'https://missouriencyclopedia.org/groupsorganizations/osage' },
       ],
     },
   ],
@@ -1745,6 +1943,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Zhang, Majumdar y Schelhas (2010) — Changes in Woodland Use from Longleaf Pine to Loblolly Pine, Sustainability 2(9)', url: 'https://www.mdpi.com/2071-1050/2/9/2734' },
       ],
     },
+    {
+      practica: 'Horticultura Muscogee/Creek: maíz como mitad de la dieta, conservación de semillas',
+      periodo: 'Práctica documentada en el huerto cultural Muscogee; publicado en 2019',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Tyner y colaboradores (2019) documentaron el huerto cultural Muscogee (Creek) y registraron que el maíz constituía históricamente la mitad de la dieta del pueblo, con variedades patrimoniales conservadas mediante selección propia. El proyecto Ekvn-Yefolecv (Nuestra Tierra) trabaja para recuperar la agricultura tradicional en los bosques de pino largo del sudeste, con siembra de variedades de maíz, calabaza y frijol sin insumos externos. El estudio identifica la conservación de semillas como práctica de soberanía alimentaria activa, no como arqueología agrícola.',
+      fuentes: [
+        { label: "Tyner et al. (2019) — Este Mvskokvlke Em Vye Cvpofuce: the Mvskoke Cultural Community Garden, Tribal College Journal 30(3)", url: 'https://tribalcollegejournal.org/este-mvskokvlke-em-vye-cupofuce-the-mvskoke-cultural-community-garden/' },
+      ],
+    },
   ],
   sur_templado_humedo_eeuu: [
     {
@@ -1769,6 +1978,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El jefe seminola Holata Micco, conocido también como Billie Bowlegs, y su familia mantuvieron frutales y huertos en tierras relativamente altas y fértiles dentro del paisaje húmedo. El caso muestra una implantación productiva ajustada a microrelieves secos, pero es un registro histórico interrumpido violentamente en 1855 y no evidencia continuidad de esa parcela ni una técnica general para los Everglades.',
       fuentes: [
         { label: 'National Park Service — Deep Lake', url: 'https://www.nps.gov/bicy/learn/historyculture/deep-lake.htm' },
+      ],
+    },
+    {
+      practica: 'Watercourts Calusa: recintos de sedimento y concha para almacenar peces vivos',
+      periodo: 'Aproximadamente 1300-1400 d.C., en el sitio de Key Marco y zonas adyacentes',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Thompson y colaboradores (2020) identificaron y describieron los watercourts Calusa: estructuras rectangulares de 2.670 a 3.350 m² construidas con sedimento y concha que funcionaban como reservorios de agua conectados a la bahía para mantener peces vivos después de la captura. Las redes de tiro y el ahumado y secado completaban la cadena: captura, almacenamiento, procesamiento y conservación en un ecosistema costero sin refrigeración. El sistema redujo la incertidumbre de la pesca diaria y sostuvo una de las jefaturas indígenas más complejas del sudeste norteamericano sin necesidad de agricultura.',
+      fuentes: [
+        { label: 'Thompson et al. (2020) — Calusa aquaculture: watercourts and the origins of fishing infrastructure, PNAS 117(15): 8374-8381', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7165460/' },
       ],
     },
   ],
@@ -2173,6 +2393,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Nainu agriculture in Panama', url: 'https://www.fao.org/fileadmin/templates/esw/esw_new/documents/SARD/good_practices_Latin_America/13_Nainu_agriculture_Panama1.pdf' },
       ],
     },
+    {
+      practica: 'Etnobotánica Emberá del Río Gatún: 81 especies, 206 usos medicinales, alimentarios y constructivos',
+      periodo: 'Documentado en comunidades Emberá del Río Gatún, cuenca del Canal; publicado en 2020',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Carballo, Farnum Castro y Murillo Godoy (2020) documentaron el conocimiento botánico de comunidades Emberá del Río Gatún e identificaron 81 especies con 206 usos: plantas medicinales para diabetes, afecciones respiratorias y parasitosis; frutas y vegetales cultivados y silvestres; maderas para construcción de canoas; fibras para artesanías. El estudio muestra que la comunidad mantiene un sistema de conocimiento activo que articula bosque húmedo, cultivos de roza y ribera, y que ese conocimiento varía por edad y género. Para el diseño predial en el Darién, la fuente orienta a identificar las especies de mayor índice de uso relativo y conservarlas en el sistema productivo.',
+      fuentes: [
+        { label: 'Carballo, Farnum Castro y Murillo Godoy (2020) — Etnobotánica Emberá del Río Gatún, Scientia 30(2): 42-59', url: 'https://www.redalyc.org/journal/6517/651769122003/html/' },
+      ],
+    },
   ],
   costa_rica_bosques_humedos_estacionales: [
     {
@@ -2186,6 +2417,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Guerrero Miranda y Solís del Vecchio (1997) — Los pueblos antiguos de la zona Cañas-Liberia del año 300 al 1500 después de Cristo, Museo Nacional de Costa Rica', url: 'https://www.museocostarica.go.cr/wp-content/uploads/Publicaciones/arqueologia/Los-pueblos-antiguos-Canas-Liberia.pdf' },
       ],
     },
+    {
+      practica: 'Cultivo y conservación de 6 variedades nativas de frijol Chorotega (territorio Matambú)',
+      periodo: 'Variedades conservadas por agricultores Chorotega del territorio Matambú, Nicoya; publicado en 2026',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Campo-Molina y colaboradores (2026) documentaron el cultivo de seis variedades nativas de frijol (Phaseolus vulgaris) en el territorio Chorotega de Matambú, Nicoya: Mantequilla, Nica, Revuelto, Sesenteno, Turrialba y Vaina Blanca. Cada variedad tiene ciclo, textura y uso culinario diferenciado; las familias guardan semilla propia entre cosechas y seleccionan los granos de mejor forma. El estudio las registra como práctica de soberanía alimentaria activa en un territorio indígena donde el frijol es base de la dieta y marcador de identidad cultural Chorotega.',
+      fuentes: [
+        { label: 'Campo-Molina et al. (2026) — Variedades nativas de frijol del territorio Chorotega Matambú, Revista Tecnología en Marcha 39(2)', url: 'https://revistas.tec.ac.cr/index.php/tec_marcha/article/view/8104' },
+      ],
+    },
   ],
   manglares_centroamericanos: [
     {
@@ -2197,6 +2439,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En las salinas de Paynes Creek, sur de Belice, productores mayas vertían agua a través de sedimento salino para enriquecer la salmuera y reducir tiempo de hervor y consumo de leña. Después la hervían en vasijas sobre fuego dentro de cocinas de postes y techo vegetal; la turba de mangle rojo preservó los edificios hoy sumergidos. La evidencia sitúa esta producción doméstica excedentaria dentro de una economía costera de sal, recursos marinos, cultivos arbóreos e intercambio con ciudades del interior.',
       fuentes: [
         { label: 'McKillop (2024) — Flooded mangrove landscapes hide ancient Maya coastal sites in Belize, The Journal of Island and Coastal Archaeology 19(3): 484-504 (acceso abierto)', url: 'https://www.tandfonline.com/doi/full/10.1080/15564894.2022.2163323' },
+      ],
+    },
+    {
+      practica: 'Recolección manual de piangua (Anadara tuberculosa) en el Golfo Dulce, Costa Rica',
+      periodo: 'Práctica documentada en comunidades de Golfito y Puerto Jiménez; publicado en 2015',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Silva-Benavides y Bonilla (2015) documentaron la recolección manual de piangua (Anadara tuberculosa) por mujeres y hombres de comunidades costeras de Golfito y Puerto Jiménez en el Golfo Dulce (Costa Rica). La actividad se realiza manualmente durante la marea baja entre las raíces del mangle rojo, con conocimiento local sobre los bancos productivos y las épocas de veda reproductiva. El estudio analiza densidades poblacionales de la piangua y señala que la cosecha no regulada puede reducir el tamaño promedio de los organismos; la fuente orienta a articular los sistemas comunitarios de manejo con la biología del bivalvo.',
+      fuentes: [
+        { label: 'Silva-Benavides y Bonilla (2015) — Recolección de piangua en el Golfo Dulce, Rev. Biología Tropical 63 Suppl. 1', url: 'https://www.scielo.sa.cr/scielo.php?script=sci_arttext&pid=S0034-77442015000500287' },
       ],
     },
   ],
@@ -2214,6 +2467,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Viñales Valley', url: 'https://whc.unesco.org/en/list/840/' },
       ],
     },
+    {
+      practica: 'Meliponicultura cubana con Melipona beecheii (abeja nativa sin aguijón)',
+      periodo: 'Práctica precolombina documentada en Cuba; vigente en retroceso al momento del estudio en 2018',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Genaro y Lóriga (2018) documentaron la cría de Melipona beecheii por campesinos cubanos en las provincias de Pinar del Río, Matanzas y Mayabeque: colmenas en troncos ahuecados dentro del solar familiar, manejo de enjambres, cosecha de miel con propiedades medicinales distintas a las de la abeja africanizada y transmisión del conocimiento por vía familiar. La práctica es de origen precolombino y fue documentada desde el período indígena; la introducción de Apis mellifera y la pérdida de floración nativa explican su retroceso en las últimas décadas. Para el diseño predial, la fuente orienta a conservar la flora melífera nativa que sostiene a Melipona en solares y agroecosistemas de baja escala.',
+      fuentes: [
+        { label: 'Genaro y Lóriga (2018) — Meliponicultura con Melipona beecheii en Cuba, Insecta Mundi 643: 1-18', url: 'https://zenodo.org/records/3708208' },
+      ],
+    },
   ],
   antillas_menores_bosques_humedos_secos: [
     {
@@ -2227,6 +2491,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Agroforestry systems in Dominica', url: 'https://www.fao.org/4/x5656e/x5656e05.htm' },
       ],
     },
+    {
+      practica: 'Sistema botánico de Bwa Mawego (Dominica): tubérculos, medicinales y frutales en herencia Kalinago',
+      periodo: 'Sistema documentado en Bwa Mawego, comunidad de herencia Kalinago, Dominica; publicado en 2016',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Quinlan y colaboradores (2016) documentaron el sistema de conocimiento botánico de Bwa Mawego, una comunidad rural de Dominica con herencia Kalinago: 50 especies de uso cotidiano entre tubérculos (taro/dasheen, ñame), vegetales, hierbas aromáticas, árboles frutales y plantas medicinales. El estudio analizó la transmisión del conocimiento en niños de 7 a 14 años dentro de familias extendidas y encontró que la exposición diaria en el hogar, no la educación formal, determina el conocimiento botánico. La práctica articula huerto peridoméstico, conuco y bosque de galería como unidades de aprendizaje y producción.',
+      fuentes: [
+        { label: 'Quinlan et al. (2016) — Children\'s acquisition of ethnobotanical knowledge in a Caribbean horticultural village, Journal of Ethnobiology 36(2): 433-456', url: 'https://bioone.org/journals/journal-of-ethnobiology/volume-36/issue-2/0278-0771-36.2.433/Childrens-Acquisition-of-Ethnobotanical-Knowledge-in-a-Caribbean-Horticultural-Village/10.2993/0278-0771-36.2.433.full' },
+      ],
+    },
   ],
   bahamas_pinares_manglares: [
     {
@@ -2238,6 +2513,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los lucayos aumentaron las quemas en Gran Ábaco para abrir espacios agrícolas y obtener madera, con yuca como cultivo principal documentado. La perturbación redujo palmas y latifoliadas y favoreció la expansión de pinares pirógenos, mostrando cómo el manejo del fuego resolvía el desmonte pero alteraba la resiliencia del bosque insular.',
       fuentes: [
         { label: 'Fall, van Hengstum, Lavold-Foote, Donnelly y otros (2021) — Human arrival and landscape dynamics in the northern Bahamas, PNAS 118(10) (copia abierta en PubMed Central)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7958357/' },
+      ],
+    },
+    {
+      practica: 'Manejo antrópico de la hutia bahamense (Geocapromys ingrahami): traslado y alimentación deliberada',
+      periodo: 'Período Cerámico Tardío, aproximadamente 950-1500 d.C.',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'LeFebvre y colaboradores (2019) documentaron evidencia zooarqueológica de que los Lucayo trasladaron hutias bahamenses (Geocapromys ingrahami) entre islas y les proporcionaron alimento deliberadamente durante el período Cerámico Tardío. La combinación de translocación entre islas, alimentación y protección indica una forma de gestión de fauna silvestre para asegurar disponibilidad proteica en un archipiélago con recursos terrestres limitados. Los autores interpretan esta práctica como manejo proto-domesticatorio de un mamífero insular, no como domesticación completa.',
+      fuentes: [
+        { label: 'LeFebvre et al. (2019) — Lucayan management of hutias in the Bahamas, PLoS ONE 14(9): e0220284', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6759148/' },
       ],
     },
   ],
@@ -2289,6 +2575,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Cockpit Country Protected Area', url: 'https://whc.unesco.org/en/tentativelists/6822' },
       ],
     },
+    {
+      practica: 'Cosecha silvestre cimarrona: ñame, banana y caza en las Blue Mountains (Millbank)',
+      periodo: 'Práctica documentada en la comunidad de Millbank, Blue Mountains; publicado en 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Campbell y colaboradores (2021) documentaron en Millbank, Blue Mountains, que el 77% de los hogares cosecha directamente del bosque: ñame como cultivo principal bajo dosel, complementado por banana, plátano, plantas medicinales y caza de cerdo silvestre. La comunidad mantiene herencia Maroon y organiza la relación con el bosque según conocimiento intergeneracional sobre qué cosechar, cuándo y en qué parte del territorio. El estudio identifica la cosecha silvestre como práctica de soberanía alimentaria y no solo como subsistencia de emergencia.',
+      fuentes: [
+        { label: 'Campbell et al. (2021) — Wild food harvesting and Maroon heritage in the Blue Mountains, Jamaica, Frontiers in Sustainable Food Systems', url: 'https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.663863/full' },
+      ],
+    },
   ],
   jamaica_bosque_seco: [
     {
@@ -2300,6 +2597,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La comunidad precolonial de White Marl manejó la vegetación mediante agroforestería y fuego, con fitolitos de yuca presentes durante toda la ocupación. Las quemas abrieron áreas de cultivo y condujeron una transición desde vegetación arbórea hacia palmares y, más tarde, un paisaje más abierto, sin que el cambio se explique por el paleoclima.',
       fuentes: [
         { label: 'Elliott, Maezumi, Robinson, Burn, Gosling, Mickleburgh, Walters y Beier (2022) — The legacy of 1300 years of land use in Jamaica, Journal of Island and Coastal Archaeology (copia abierta en el repositorio de Liverpool John Moores University)', url: 'https://researchonline.ljmu.ac.uk/id/eprint/18124/' },
+      ],
+    },
+    {
+      practica: 'Elaboración de root tonics: bebidas fermentadas con raíces y cortezas del bosque jamaicano',
+      periodo: 'Práctica documentada en Jamaica como herencia afrojamaicana e indígena; publicado en 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Vandebroek y colaboradores (2021) documentaron la elaboración de root tonics en Jamaica: bebidas fermentadas preparadas a partir de raíces, cortezas, lianas y hojas secas cosechadas en el bosque seco y en el bosque húmedo de galería. El sistema involucra conocimiento de qué especies combinar, cuánto tiempo fermentar y para qué dolencias usar cada preparado, con raíces culturales afrojamaicanas e indígenas. La práctica articula el bosque secundario y los márgenes de camino como fuente de materia prima medicinal y de identidad cultural, lo que la convierte en argumento para conservar parches de vegetación leñosa en predios de producción.',
+      fuentes: [
+        { label: 'Vandebroek et al. (2021) — Root tonics and Jamaican forest ethnobotany, Frontiers in Sustainable Food Systems', url: 'https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.640171/full' },
       ],
     },
   ],
@@ -2315,6 +2623,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Hofman y otros (2023) — Mangrove Archives: Unravelling Human-environment Interactions from Deeply Buried Deposits at the Site Anse Trabaud, Martinique, Lesser Antilles (1290-780 cal BP), Environmental Archaeology 28(3) (acceso abierto)', url: 'https://www.tandfonline.com/doi/full/10.1080/14614103.2021.1921676' },
       ],
     },
+    {
+      practica: 'Cosecha artesanal de ostras de mangle (Crassostrea rhizophorae) en Puerto Rico',
+      periodo: 'Práctica de origen precolombino; documentada en Puerto Rico como vigente en 2026',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Gómez-Andújar y colaboradores (2026) documentaron la cosecha artesanal de ostras de mangle (Crassostrea rhizophorae) en Puerto Rico: extracción manual con machete de las ostras adheridas a las raíces aéreas del mangle rojo, práctica de origen indígena precolombino que continúa en comunidades costeras. El estudio analiza la viabilidad de la cosecha sostenible y documenta el conocimiento local sobre temporadas, densidades y técnicas para evitar dañar el árbol hospedador. La fuente identifica la práctica como parte de la identidad costera puertorriqueña y como alternativa económica de bajo impacto en humedales de manglar.',
+      fuentes: [
+        { label: 'Gómez-Andújar et al. (2026) — Artisanal harvest of mangrove oysters in Puerto Rico, Frontiers in Marine Science', url: 'https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2026.1882443/full' },
+      ],
+    },
   ],
   trinidad_tobago_bosques: [
     {
@@ -2326,6 +2645,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La historia sectorial de Trinidad registra la primera plantación española de cacao criollo en 1525, introducciones comerciales desde Venezuela alrededor de 1678 y la posterior formación del híbrido trinitario con forastero. También documenta el origen colonial y esclavista de la expansión, seguido por una clase de pequeños productores tras la abolición del tráfico esclavista. Es una práctica histórica insular todavía presente pero en retroceso; la fuente no autoriza a presentarla como saber indígena ni a omitir su régimen laboral.',
       fuentes: [
         { label: 'Bekele (2004) — The History of Cocoa Production in Trinidad and Tobago, Cocoa Research Unit, University of the West Indies', url: 'https://sta.uwi.edu/cru/sites/default/files/cru/HistoryCocoaProductionTT.pdf' },
+      ],
+    },
+    {
+      practica: 'Uso medicinal de plantas por comunidades rurales de Trinidad: 917 remedios únicos',
+      periodo: '450 hogares en 50 comunidades rurales de Trinidad; publicado en 2015',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Clement y colaboradores (2015) documentaron el uso medicinal de plantas en 50 comunidades rurales de Trinidad a través de encuestas a 450 hogares: 917 remedios únicos para afecciones respiratorias, genitourinarias y posnatales, principalmente en forma de infusiones y baños preparados con plantas del huerto doméstico, del bosque secundario y de los bordes de camino. El estudio identifica herencia cultural Arawak y Carib en los usos de plantas del bosque nativo, junto con influencias africanas e indo-caribeñas en el sistema medicinal doméstico. La práctica depende de mantener huertos peridomésticos con diversidad de especies y acceso a parches de vegetación nativa.',
+      fuentes: [
+        { label: 'Clement et al. (2015) — Medicinal plant use in rural Trinidad: 917 remedies, 450 households, J. Ethnobiology and Ethnomedicine 11(67)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4570261/' },
       ],
     },
   ],
@@ -2341,6 +2671,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La misión de UNESCO documenta que las comunidades árabes de las marismas sostuvieron durante milenios la cría de búfalos, la pesca y la construcción con juncos, antes del drenaje forzado. El sistema depende de conservar agua somera y vegetación palustre: los juncos aportan forraje y material constructivo, mientras los búfalos aprovechan un ambiente que no admite agricultura convencional. La fuente señala que la cría de búfalos y las casas de juncos continúan, aunque con menor población y materiales nuevos.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre (2025) — Reactive Monitoring Mission to the Ahwar of Southern Iraq', url: 'https://whc.unesco.org/document/223567' },
+      ],
+    },
+    {
+      practica: 'Pesca tradicional con arpón y redes por los Ma\'dān de las marismas del sur de Iraq',
+      periodo: 'Práctica milenaria documentada en estudio de caso IPSI de 2012; en retroceso desde el drenaje de los años 1990',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El estudio de caso de IPSI documenta la pesca tradicional de los Ma\'dān en las marismas del sur de Iraq: el arpón es el método principal para especies grandes, complementado por redes de tiro para peces más pequeños y redes fijas en la orilla. Los pescadores respetan periodos de restricción estacional durante el desove y transmiten el conocimiento de hábitats, épocas y técnicas de generación en generación. El drenaje forzado de los años noventa destruyó las marismas y desplazó a las comunidades; la restauración parcial desde 2003 no recuperó la densidad de peces ni los patrones culturales de pesca previos.',
+      fuentes: [
+        { label: 'IPSI/UNU-IAS (2012) — Traditional fishing by Marsh Arabs in the Southern Marshes of Iraq, Satoyama Initiative Case Study', url: 'https://satoyamainitiative.org/case_studies/iraq-traditional-agriculture-by-marsh-arabs-in-the-southern-marshes/' },
       ],
     },
   ],
@@ -2501,6 +2842,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las terrazas convierten pendientes abruptas en superficies cultivables y frenan la escorrentía para que el agua infiltre en el perfil. Los muros retienen suelo fértil, reducen erosión y distribuyen lluvias estacionales en una montaña semiárida con muy poca tierra llana. UNESCO documenta continuidad funcional y reparación comunitaria de muros después de crecidas.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Agricultural Terraces in Yemen', url: 'https://whc.unesco.org/en/tentativelists/6875/' },
+      ],
+    },
+    {
+      practica: 'Apicultura tradicional yemení: colmenas de tronco, caña y arcilla; migración estacional',
+      periodo: 'Práctica documentada en Yemen con tres etapas históricas de desarrollo; vigente en 2003',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Khanbash (2003) describe las tres etapas de la apicultura tradicional yemení: colmenas primitivas en troncos huecos o cestas vegetales, colmenas tradicionales khayzarān de cañas o arcilla de 100-125 cm y migración estacional de colmenas hacia flores de matorral y cultivos de montaña para aprovechar distintas floraciones. El sistema integra conocimiento del calendario floral, del comportamiento de las abejas y de los territorios de migración; la miel yemení de montaña tiene alta reputación regional. La fuente describe la apicultura como práctica productiva central en la economía de la montaña aterrazada yemení.',
+      fuentes: [
+        { label: 'Khanbash (2003) — Traditional beekeeping in Yemen, OpenEdition Books / CEFAS', url: 'https://books.openedition.org/cefas/2884?lang=en' },
       ],
     },
   ],
