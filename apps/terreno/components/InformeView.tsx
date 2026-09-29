@@ -13,6 +13,10 @@ import { useSaberes } from '@/lib/useSaberes';
 import {
   porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
 } from '@/lib/sueloPorQue';
+import {
+  CONSECUENCIA, confianzaDelMapa, ladoEquivalenteKm,
+  ROTULO_CONFIANZA, ROCA_NO_ES_MATERIAL_PARENTAL, FUENTE_MACROSTRAT,
+} from '@/lib/rocaMadre';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM, RADIO_INFRAESTRUCTURA_KM } from '@/lib/contextoActual';
@@ -1248,6 +1252,66 @@ export function InformeView({ datos, compartido = false }: Props) {
               </>
             )}
 
+            {/* La roca de abajo. Antes del «por qué», que la usa: cuando el
+                suelo no sigue al clima, el material parental suele ser la
+                explicación. */}
+            {datos.suelo.roca && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">La roca de abajo</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <StatBlock
+                    label="Unidad geológica"
+                    value={datos.suelo.roca.unidad}
+                    sub={datos.suelo.roca.edad.periodo ?? 'período no declarado'}
+                  />
+                  <StatBlock
+                    label="Edad"
+                    value={datos.suelo.roca.edad.desde_ma != null && datos.suelo.roca.edad.hasta_ma != null
+                      ? `${Math.round(datos.suelo.roca.edad.desde_ma)}–${Math.round(datos.suelo.roca.edad.hasta_ma)} Ma`
+                      : 's/d'}
+                    sub="millones de años"
+                  />
+                  <StatBlock
+                    label="Detalle del mapa"
+                    value={datos.suelo.roca.mapa.poligono_km2 != null
+                      ? `~${ladoEquivalenteKm(datos.suelo.roca.mapa.poligono_km2)} km`
+                      : 's/d'}
+                    sub="lado del polígono medio"
+                  />
+                </div>
+                {datos.suelo.roca.litologias.length > 0 && (
+                  <p className="text-xs text-ink-700/70">
+                    Litologías declaradas: {datos.suelo.roca.litologias.join(', ')}.
+                  </p>
+                )}
+                {datos.suelo.roca.familia && (
+                  <>
+                    <p className="text-xs font-semibold text-ink-800">
+                      {CONSECUENCIA[datos.suelo.roca.familia].titulo}
+                    </p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed">
+                      {CONSECUENCIA[datos.suelo.roca.familia].hereda}
+                    </p>
+                    <p className="text-xs text-clay-700 leading-relaxed">
+                      → {CONSECUENCIA[datos.suelo.roca.familia].cuidado}
+                    </p>
+                  </>
+                )}
+                <p className="text-xs text-ink-700/70 leading-relaxed">
+                  {ROTULO_CONFIANZA[confianzaDelMapa(datos.suelo.roca.mapa.poligono_km2)]}
+                  {datos.suelo.roca.mapa.poligono_km2 != null &&
+                    ` En este mapa el polígono promedio cubre ${datos.suelo.roca.mapa.poligono_km2.toLocaleString('es-AR')} km².`}
+                </p>
+                <p className="text-xs text-ink-700/70 leading-relaxed">
+                  {ROCA_NO_ES_MATERIAL_PARENTAL}
+                </p>
+                <p className="text-[10px] text-ink-700/50 leading-relaxed italic">
+                  {datos.suelo.roca.mapa.nombre} · {datos.suelo.roca.mapa.cita} — vía{' '}
+                  {FUENTE_MACROSTRAT.label}, {FUENTE_MACROSTRAT.licencia}.
+                </p>
+              </div>
+            )}
+
             {/* Por qué el suelo es así. En el informe no hay «desplegar»: esto
                 se imprime y se discute sin nosotros, así que cada cautela va
                 entera y a la vista. */}
@@ -1556,6 +1620,7 @@ export function InformeView({ datos, compartido = false }: Props) {
             {datos.clima && <li><span className="font-medium">Clima:</span> {datos.clima.fuente ?? 'NASA POWER / Open-Meteo'}.</li>}
             {datos.extremos && <li><span className="font-medium">Extremos:</span> {datos.extremos.fuente} ({datos.extremos.periodo}).</li>}
             {datos.suelo && <li><span className="font-medium">Suelo:</span> SoilGrids (ISRIC); agua útil por pedotransferencia Saxton-Rawls (2006).</li>}
+            {datos.suelo?.roca && <li><span className="font-medium">Geología:</span> {FUENTE_MACROSTRAT.atribucion}. {datos.suelo.roca.mapa.cita}</li>}
             {datos.cobertura && <li><span className="font-medium">Cobertura:</span> ESA WorldCover 10 m ({datos.cobertura.anio}).</li>}
             {datos.entorno && <li><span className="font-medium">Biodiversidad:</span> GBIF; entorno OpenStreetMap.</li>}
             {datos.carbono && <li><span className="font-medium">Carbono:</span> coeficientes medios de literatura (orientativo).</li>}

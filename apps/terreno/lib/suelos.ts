@@ -16,6 +16,7 @@
  */
 import { fuentesNacionalesSuelo } from './sueloFuentes';
 import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
+import { obtenerRocaMadre, type RocaMadre } from './rocaMadre';
 
 /** Una capa del perfil, con propiedades e hidráulica derivada. */
 export interface CapaSuelo {
@@ -81,6 +82,14 @@ export interface DatosSuelo {
    * diluye las turberas chicas. Ver `lib/sueloOrganico.ts`.
    */
   organico:      SueloOrganico | null;
+  /**
+   * Roca de base del punto, o `null` si ningún mapa geológico lo cubre o el
+   * servicio no respondió. Nunca hace fallar el análisis de suelo: es una capa
+   * que agrega contexto sobre lo que el suelo pudo haber heredado.
+   *
+   * Ojo con leerla como el material parental: ver `lib/rocaMadre.ts`.
+   */
+  roca:          RocaMadre | null;
   fuente:        string;
 }
 
@@ -166,13 +175,19 @@ const DEPTHS: Array<{ label: string; top: number; bot: number }> = [
  * La fuente efectiva viaja en `fuente` y se imprime en el informe.
  */
 export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo> {
-  const datos = await sinOrganico(lat, lng);
-  // Se calcula acá y no en cada builder porque depende sólo del perfil, y el
-  // perfil lo arman igual SoilGrids y SSURGO. Un solo lugar, un solo criterio.
-  return { ...datos, organico: detectarSueloOrganico(datos.perfil) };
+  // La roca va en paralelo: es otra fuente, no depende del perfil y no tiene
+  // por qué esperarlo ni hacerlo esperar. Si falla devuelve null por su cuenta.
+  const [datos, roca] = await Promise.all([
+    sinOrganico(lat, lng),
+    obtenerRocaMadre(lat, lng),
+  ]);
+  // El orgánico se calcula acá y no en cada builder porque depende sólo del
+  // perfil, y el perfil lo arman igual SoilGrids y SSURGO. Un solo lugar, un
+  // solo criterio.
+  return { ...datos, organico: detectarSueloOrganico(datos.perfil), roca };
 }
 
-async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'>> {
+async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
   for (const f of fuentesNacionalesSuelo(lat, lng)) {
     if (f === 'ssurgo') {
       const d = await desdeSsurgo(lat, lng).catch(() => null);
@@ -182,7 +197,7 @@ async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, '
   return desdeSoilGrids(lat, lng);
 }
 
-async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'>> {
+async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   // 45 s y no 35: el proxy reintenta hasta tres veces contra ISRIC, que limita
@@ -281,7 +296,7 @@ export interface HorizonteSsurgo {
  * ya está escrito contra esas seis capas. El valor de cada capa es el promedio
  * de los horizontes que la cruzan, ponderado por cuánto la cruzan.
  */
-async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico'> | null> {
+async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'> | null> {
   const res = await fetch(`/api/suelo/ssurgo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`, {
     signal: AbortSignal.timeout(35_000),
   });

@@ -1,12 +1,17 @@
 'use client';
 
 import { useCallback } from 'react';
-import { Layers, MapPin, Droplets, Waves, AlertTriangle, Cloud, Sprout, Bug, TreePine } from 'lucide-react';
+import { Layers, MapPin, Droplets, Waves, AlertTriangle, Cloud, Sprout, Bug, TreePine, Mountain } from 'lucide-react';
 import { obtenerSuelo, type DatosSuelo, type InterpItem, type CapaSuelo } from '@/lib/suelos';
 import {
   porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
   type PorQueEsteSuelo, type LecturaSuelo,
 } from '@/lib/sueloPorQue';
+import {
+  CONSECUENCIA, confianzaDelMapa, ladoEquivalenteKm,
+  ROTULO_CONFIANZA, ROCA_NO_ES_MATERIAL_PARENTAL, FUENTE_MACROSTRAT,
+  type RocaMadre,
+} from '@/lib/rocaMadre';
 import { centroide, type DatosClima } from '@/lib/clima';
 import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
@@ -144,6 +149,12 @@ export function SuelosPanel({
 
               {/* Perfil vertical 0–200 cm */}
               {datos.perfil?.length > 0 && <PerfilSueloChart perfil={datos.perfil} />}
+
+              {/* La roca de abajo. Va antes del «por qué» y no después porque es
+                  una de las respuestas que el «por qué» anda buscando: cuando el
+                  suelo no sigue al clima, el material parental suele ser la
+                  explicación, y conviene tenerla leída. */}
+              {datos.roca && <RocaMadreCard r={datos.roca} />}
 
               {/* Por qué este suelo es así. Va acá, después de los números y del
                   perfil, porque explica los dos: el pH y la textura de arriba, y
@@ -288,6 +299,96 @@ function Lectura({ l }: { l: LecturaSuelo }) {
           {l.quienManda}
         </Cautela>
       )}
+    </div>
+  );
+}
+
+/**
+ * La roca de abajo, y qué le heredaría al suelo.
+ *
+ * Tres cosas tienen que leerse sí o sí, y por eso ninguna está detrás de un
+ * clic: qué unidad es, **de qué mapa salió y con qué detalle**, y que la roca de
+ * base no es necesariamente el material parental del suelo. Las dos últimas son
+ * las que impiden que alguien lea un polígono de 16.000 km² como el dato de su
+ * campo.
+ */
+function RocaMadreCard({ r }: { r: RocaMadre }) {
+  const conf = confianzaDelMapa(r.mapa.poligono_km2);
+  const cons = r.familia ? CONSECUENCIA[r.familia] : null;
+
+  return (
+    <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2.5">
+      <p className="text-xs font-medium text-ink-700 flex items-center gap-1.5">
+        <Mountain className="w-3.5 h-3.5 text-clay-700" /> La roca de abajo
+      </p>
+
+      <div>
+        <p className="text-sm font-semibold text-ink-900 leading-snug">{r.unidad}</p>
+        {r.formacion && r.formacion !== r.unidad && (
+          <p className="text-[10px] text-ink-700/60">{r.formacion}</p>
+        )}
+        <p className="text-[10px] text-ink-700/60 mt-0.5">
+          {r.edad.periodo ? `${r.edad.periodo} · ` : ''}
+          {r.edad.desde_ma != null && r.edad.hasta_ma != null
+            ? `entre ${Math.round(r.edad.desde_ma)} y ${Math.round(r.edad.hasta_ma)} millones de años`
+            : 'edad no declarada por el mapa'}
+        </p>
+      </div>
+
+      {r.litologias.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {r.litologias.map((l, i) => (
+            <span key={i} className="text-[10px] bg-bone-100 text-ink-700/80 rounded-full px-2 py-0.5">{l}</span>
+          ))}
+        </div>
+      )}
+
+      {cons ? (
+        <div className="bg-bone-50 rounded-lg p-2.5 space-y-1.5">
+          <p className="text-[11px] font-semibold text-ink-800 leading-snug">{cons.titulo}</p>
+          <p className="text-[10px] text-ink-700/70 leading-relaxed">{cons.hereda}</p>
+          <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+            <span className="shrink-0 mt-0.5">→</span>{cons.cuidado}
+          </p>
+        </div>
+      ) : (
+        <p className="text-[10px] text-ink-700/60 leading-relaxed bg-bone-50 rounded-lg p-2">
+          El mapa nombra la unidad pero no alcanza a decir de qué familia de roca es, así que
+          no se anuncia ninguna herencia. Queda el nombre, que sirve para buscarlo.
+        </p>
+      )}
+
+      {/* El detalle del mapa, que es lo que decide cuánto de todo esto se puede
+          creer. Nunca detrás de un clic. */}
+      <div className={`rounded-lg p-2 text-[10px] leading-relaxed ${
+        conf === 'predio' ? 'bg-moss-50 text-moss-900' : 'bg-sun-300/20 text-ink-800'
+      }`}>
+        {ROTULO_CONFIANZA[conf]}
+        {r.mapa.poligono_km2 != null && (
+          <> En este mapa el polígono promedio cubre{' '}
+            <span className="font-mono">{r.mapa.poligono_km2.toLocaleString('es-AR')} km²</span>,
+            {' '}unos {ladoEquivalenteKm(r.mapa.poligono_km2)} km de lado.
+          </>
+        )}
+      </div>
+
+      <Cautela claim="Esto es la roca de base, no necesariamente el material del suelo.">
+        {ROCA_NO_ES_MATERIAL_PARENTAL}
+      </Cautela>
+
+      {r.descripcion && (
+        <details className="group">
+          <summary className="list-none cursor-pointer text-[10px] text-water-500 marker:content-none [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">Ver la descripción del mapa original</span>
+            <span className="hidden group-open:inline">Cerrar la descripción</span>
+          </summary>
+          <p className="text-[10px] text-ink-700/55 leading-relaxed mt-1">{r.descripcion}</p>
+        </details>
+      )}
+
+      <p className="text-[9px] text-ink-700/40 leading-relaxed italic">
+        {r.mapa.nombre} · {r.mapa.cita} — vía {FUENTE_MACROSTRAT.label}, {FUENTE_MACROSTRAT.licencia}.
+      </p>
     </div>
   );
 }

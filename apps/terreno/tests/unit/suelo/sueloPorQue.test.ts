@@ -58,6 +58,7 @@ const suelo = (o: Partial<DatosSuelo> = {}): DatosSuelo => ({
   agua_util:   { total_mm_100: 140, total_mm_200: 250, por_capa: [], clase: '', color: 'verde', descripcion: '' },
   grupo_hidro: { grupo: 'B', ksat_min: 12, capa_limitante: '', cn_pastura: 61, infiltracion: '', descripcion: '' },
   organico: null,
+  roca: null,
   fuente: 'test',
   ...o,
 });
