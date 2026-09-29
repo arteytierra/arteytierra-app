@@ -1,9 +1,14 @@
 'use client';
 
 import { useCallback } from 'react';
-import { Layers, MapPin, Droplets, Waves, AlertTriangle } from 'lucide-react';
+import { Layers, MapPin, Droplets, Waves, AlertTriangle, Cloud, Sprout, Bug, TreePine } from 'lucide-react';
 import { obtenerSuelo, type DatosSuelo, type InterpItem, type CapaSuelo } from '@/lib/suelos';
-import { centroide } from '@/lib/clima';
+import {
+  porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
+  type PorQueEsteSuelo, type LecturaSuelo,
+} from '@/lib/sueloPorQue';
+import { centroide, type DatosClima } from '@/lib/clima';
+import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -14,13 +19,17 @@ interface Props {
   onCargando: (v: boolean) => void;
   error:      string | null;
   onError:    (e: string | null) => void;
+  /** Para explicar por qué el suelo es así. Sin esto la sección no aparece. */
+  datosClima:  DatosClima | null;
+  onIrAClima:  () => void;
 }
 
 export function SuelosPanel({
-  mojones, datos, onDatos, cargando, onCargando, error, onError,
+  mojones, datos, onDatos, cargando, onCargando, error, onError, datosClima, onIrAClima,
 }: Props) {
 
   const centro = mojones.length > 0 ? centroide(mojones) : null;
+  const porQue = porQueEsteSuelo(datos, datosClima);
 
   const handleAnalizar = useCallback(async () => {
     if (!centro) return;
@@ -136,6 +145,27 @@ export function SuelosPanel({
               {/* Perfil vertical 0–200 cm */}
               {datos.perfil?.length > 0 && <PerfilSueloChart perfil={datos.perfil} />}
 
+              {/* Por qué este suelo es así. Va acá, después de los números y del
+                  perfil, porque explica los dos: el pH y la textura de arriba, y
+                  la forma de la curva de carbono del perfil. */}
+              {porQue
+                ? <PorQueSuelo p={porQue} />
+                : (
+                  <div className="bg-bone-50 rounded-xl border border-bone-200 p-3 text-center space-y-2">
+                    <p className="text-xs text-ink-700/70 leading-relaxed">
+                      Con el clima del predio esta pantalla puede explicar <strong>por qué</strong> el
+                      suelo es así: por qué tiene ese pH, esa textura y esa materia orgánica.
+                    </p>
+                    <button
+                      onClick={onIrAClima}
+                      className="mx-auto flex items-center gap-1.5 px-4 py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      <Cloud className="w-3.5 h-3.5" />
+                      Ir a Clima
+                    </button>
+                  </div>
+                )}
+
               {/* Agua útil */}
               {datos.agua_util && (
               <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
@@ -213,6 +243,197 @@ export function SuelosPanel({
 }
 
 // ─── Componentes internos ─────────────────────────────────────────────────────
+
+/** Coma decimal, que es como se escribe un número en castellano. */
+const coma = (n: number, dec = 2) => n.toFixed(dec).replace('.', ',');
+
+/**
+ * Una lectura: lo que el clima predice, lo que el dato mide, y qué significa que
+ * no coincidan.
+ *
+ * El acuerdo se pinta, y se pinta al revés de lo que uno esperaría: la
+ * discrepancia **no es roja**. Que el suelo no siga al clima no es un problema
+ * del predio ni un error del dato; es el material parental hablando, y suele ser
+ * la parte más informativa de toda la sección. Rojo diría "esto está mal".
+ */
+function Lectura({ l }: { l: LecturaSuelo }) {
+  return (
+    <div className="bg-bone-50 rounded-lg p-2.5 space-y-1.5">
+      <p className="text-[11px] font-semibold text-ink-800 leading-snug">{l.titulo}</p>
+      <p className="text-[10px] text-ink-700/70 leading-relaxed">{l.porque}</p>
+
+      <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+        <div className="bg-white rounded-md border border-bone-200 p-1.5">
+          <p className="text-[9px] text-ink-700/50 mb-0.5">Lo que haría este clima</p>
+          <p className="text-[10px] text-ink-800 leading-snug">{l.esperado}</p>
+        </div>
+        <div className="bg-white rounded-md border border-bone-200 p-1.5">
+          <p className="text-[9px] text-ink-700/50 mb-0.5">Lo que mide el predio</p>
+          <p className="text-[10px] text-ink-800 leading-snug">{l.medido}</p>
+        </div>
+      </div>
+
+      {l.acuerdo === 'coincide' && (
+        <p className="text-[10px] text-moss-700">
+          Coinciden: acá el clima alcanza para explicar el número.
+        </p>
+      )}
+      {l.acuerdo === 'sin_prediccion' && (
+        <p className="text-[10px] text-ink-700/55">
+          En este régimen el clima no permite predecir esta propiedad, así que no se predice.
+        </p>
+      )}
+      {l.acuerdo === 'discrepa' && l.quienManda && (
+        <Cautela claim="No coinciden, y ahí está lo interesante.">
+          {l.quienManda}
+        </Cautela>
+      )}
+    </div>
+  );
+}
+
+/**
+ * «Por qué este suelo es así»: el eslabón que faltaba entre el panel de clima y
+ * el de suelo.
+ *
+ * El panel contestaba muy bien *qué* hay y nunca *por qué*, y el por qué es lo
+ * único que permite anticipar. La sección entera se apoya en `lib/sueloPorQue.ts`
+ * y no decide nada por su cuenta: acá sólo se elige el orden de lectura, que va
+ * del marco (los cinco factores) al mecanismo (agua y calor), de ahí a las dos
+ * propiedades que se pueden contrastar, y termina en lo que el propio perfil
+ * delata sobre la vegetación que lo construyó.
+ */
+function PorQueSuelo({ p }: { p: PorQueEsteSuelo }) {
+  const v = p.biologia.velocidad;
+
+  return (
+    <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-3">
+      <p className="text-xs font-medium text-ink-700 flex items-center gap-1.5">
+        <Sprout className="w-3.5 h-3.5 text-moss-700" /> Por qué este suelo es así
+      </p>
+
+      <p className="text-[10px] text-ink-700/70 leading-relaxed">
+        Un suelo es el resultado de cinco factores: clima, organismos, relieve, material
+        parental y tiempo (Jenny, 1941). De los cinco, acequia conoce bien uno —el clima—,
+        así que <strong>no explica: predice y compara</strong>. Dice qué suelo haría este
+        clima, muestra el que hay, y cuando no coinciden nombra a los sospechosos.
+      </p>
+
+      {/* ── Los dos manubrios ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-water-500/10 rounded-lg p-2">
+          <p className="text-[9px] text-ink-700/60">Agua · P/ETP</p>
+          <p className="font-mono text-sm font-bold text-water-500">{coma(p.aridez.valor)}</p>
+          <p className="text-[9px] text-ink-700/70 leading-snug mt-0.5">{ROTULO_HUMEDAD[p.humedad]}</p>
+        </div>
+        <div className="bg-sun-300/20 rounded-lg p-2">
+          <p className="text-[9px] text-ink-700/60">Calor · media anual</p>
+          <p className="font-mono text-sm font-bold text-clay-700">{coma(p.tmedia_c, 1)} °C</p>
+          <p className="text-[9px] text-ink-700/70 leading-snug mt-0.5">{ROTULO_TERMICO[p.termico]}</p>
+        </div>
+      </div>
+      <p className="text-[9px] text-ink-700/50 leading-relaxed">
+        {Math.round(p.precip_mm)} mm de lluvia contra {Math.round(p.etp_mm)} mm que el sol y el
+        aire pueden evaporar{p.koppen ? ` · Köppen ${p.koppen}` : ''} · {ROTULO_INTENSIDAD[p.intensidad].toLowerCase()}.
+      </p>
+
+      {/* ── Las lecturas contrastables ──────────────────────────────────────── */}
+      {p.lecturas.map((l, i) => <Lectura key={i} l={l} />)}
+
+      {/* `div` y no `p`: adentro va una Cautela, que es un `<details>`, y un
+          `details` dentro de un `p` es HTML inválido que React desarma. */}
+      {p.bt && (
+        <div className="bg-bone-50 rounded-lg p-2">
+          <p className="text-[10px] text-ink-700/70 leading-relaxed">
+            <strong className="text-ink-800">La arcilla bajó.</strong> La capa {p.bt.capa} tiene{' '}
+            {coma(p.bt.razon, 1)} veces la arcilla de la superficie. Eso es el agua arrastrando
+            arcilla hacia abajo durante mucho tiempo, y donde se deposita arma una capa más pesada
+            que frena el agua y las raíces.
+          </p>
+          <Cautela claim="Es una sospecha, no un diagnóstico.">
+            El criterio del horizonte argílico de la taxonomía del USDA pide un aumento de al
+            menos 1,2× y que ocurra dentro de 30 cm verticales, sobre horizontes descriptos a
+            campo. Acá se compara entre las seis profundidades fijas de la fuente, que ya vienen
+            suavizadas. Confirmarlo requiere abrir una calicata.
+          </Cautela>
+        </div>
+      )}
+
+      {/* ── La vida del suelo ───────────────────────────────────────────────── */}
+      <div className="bg-moss-50 rounded-lg border border-moss-200 p-2.5 space-y-1.5">
+        <p className="text-[11px] font-semibold text-moss-900 flex items-center gap-1.5">
+          <Bug className="w-3.5 h-3.5 shrink-0" /> La vida del suelo: {p.biologia.regimen.toLowerCase()}
+        </p>
+        {v && (
+          <p className="text-[10px] text-moss-700">
+            A esta temperatura la materia orgánica se descompone{' '}
+            <span className="font-mono font-semibold">{coma(v.min)}× a {coma(v.max)}×</span>{' '}
+            respecto de un sitio de 10 °C.
+          </p>
+        )}
+        <p className="text-[10px] text-ink-700/70 leading-relaxed">{p.biologia.detalle}</p>
+        <p className="text-[10px] text-moss-700 leading-relaxed flex gap-1.5">
+          <span className="shrink-0 mt-0.5">→</span>{p.biologia.manejo}
+        </p>
+        {v && (
+          <Cautela claim="La banda es ancha a propósito.">
+            La descomposición aproximadamente se duplica cada 10 °C, pero el factor exacto (Q10)
+            está entre 1,5 y 2,5 según el sustrato y el sitio, y además baja a temperaturas
+            altas. Un solo número acá sería precisión falsa: se informan los dos extremos.
+          </Cautela>
+        )}
+      </div>
+
+      {/* ── La huella de la vegetación ──────────────────────────────────────── */}
+      {p.huella && (
+        <div className="bg-bone-50 rounded-lg p-2.5 space-y-1.5">
+          <p className="text-[11px] font-semibold text-ink-800 flex items-center gap-1.5">
+            <TreePine className="w-3.5 h-3.5 shrink-0 text-moss-700" />
+            Este suelo lo construyó {p.huella.parecido === 'bosque' ? 'el monte'
+              : p.huella.parecido === 'pastizal' ? 'el pasto'
+              : p.huella.parecido === 'matorral' ? 'un matorral de raíz profunda'
+              : 'algo que no es la vegetación de arriba'}
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <div className="bg-white rounded-md border border-bone-200 p-1.5">
+              <p className="text-[9px] text-ink-700/50">Carbono en los primeros 20 cm</p>
+              <p className="font-mono text-sm font-bold text-ink-900">{p.huella.fraccion_0_20_pct} %</p>
+              <p className="text-[9px] text-ink-700/50">del primer metro</p>
+            </div>
+            <div className="bg-white rounded-md border border-bone-200 p-1.5">
+              <p className="text-[9px] text-ink-700/50">Stock 0–100 cm</p>
+              <p className="font-mono text-sm font-bold text-moss-700">{p.huella.stock_t_ha_100} t/ha</p>
+              <p className="text-[9px] text-ink-700/50">de carbono orgánico</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-ink-700/70 leading-relaxed">{p.huella.lectura}</p>
+          <Cautela claim="La referencia son 2.700 perfiles, no este predio.">
+            Jobbágy y Jackson (2000) midieron que del carbono del primer metro está en los
+            primeros 20 cm cerca del 50 % en bosques, el 42 % en pastizales y el 33 % en
+            matorrales. Acá se compara contra esos valores. La distribución dice quién puso el
+            carbono, no qué especie había: un suelo arado durante décadas puede haber perdido la
+            firma original.
+          </Cautela>
+        </div>
+      )}
+
+      {/* ── De dónde sale cada afirmación ───────────────────────────────────── */}
+      <details className="group">
+        <summary className="list-none cursor-pointer text-[10px] text-water-500 marker:content-none [&::-webkit-details-marker]:hidden">
+          <span className="group-open:hidden">Ver las fuentes de esta sección</span>
+          <span className="hidden group-open:inline">Cerrar las fuentes</span>
+        </summary>
+        <ul className="mt-1.5 space-y-1">
+          {FUENTES_POR_QUE.map((f, i) => (
+            <li key={i} className="text-[9px] text-ink-700/55 leading-relaxed">
+              <span className="text-ink-700/80">{f.tema}:</span> {f.cita}
+            </li>
+          ))}
+        </ul>
+      </details>
+    </div>
+  );
+}
 
 function SueloStat({
   label, value, interp,

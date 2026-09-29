@@ -10,6 +10,9 @@ import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
+import {
+  porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
+} from '@/lib/sueloPorQue';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
 import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM, RADIO_INFRAESTRUCTURA_KM } from '@/lib/contextoActual';
@@ -93,6 +96,10 @@ export function InformeView({ datos, compartido = false }: Props) {
   const lenguasPe = censoPe.estado === 'con_censo'
     ? lenguasDelDepartamentoPe(censoPe.departamento)
     : null;
+
+  // Por qué el suelo del predio es como es. Necesita el clima y el suelo:
+  // sin los dos devuelve null y la subsección no se imprime.
+  const porQue = porQueEsteSuelo(datos.suelo ?? null, datos.clima ?? null);
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -1239,6 +1246,106 @@ export function InformeView({ datos, compartido = false }: Props) {
                   />
                 )}
               </>
+            )}
+
+            {/* Por qué el suelo es así. En el informe no hay «desplegar»: esto
+                se imprime y se discute sin nosotros, así que cada cautela va
+                entera y a la vista. */}
+            {porQue && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">
+                  Por qué este suelo es así
+                </p>
+                <p className="text-xs text-ink-700/80 leading-relaxed">
+                  Un suelo es el resultado de cinco factores: clima, organismos, relieve, material
+                  parental y tiempo (Jenny, 1941). De los cinco, este informe conoce bien uno —el
+                  clima del punto, medido mes por mes—, así que lo que sigue no explica: predice
+                  qué suelo haría este clima y lo compara con el medido. Donde no coinciden, manda
+                  el material parental, la edad de la superficie o la posición en la ladera, y eso
+                  se dice en vez de inventar una causa.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <StatBlock label="Balance P/ETP" value={porQue.aridez.valor.toFixed(2).replace('.', ',')} sub={ROTULO_HUMEDAD[porQue.humedad]} />
+                  <StatBlock label="Media anual" value={`${porQue.tmedia_c.toFixed(1).replace('.', ',')} °C`} sub={ROTULO_TERMICO[porQue.termico]} />
+                  <StatBlock label="Meteorización" value={ROTULO_INTENSIDAD[porQue.intensidad].replace('Meteorización ', '')} sub={porQue.koppen ? `Köppen ${porQue.koppen}` : 'del clima del punto'} />
+                </div>
+
+                {porQue.lecturas.map((l, i) => (
+                  <div key={i} className="border-l-2 border-bone-200 pl-2.5">
+                    <p className="text-xs font-semibold text-ink-800">{l.titulo}</p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed mt-0.5">{l.porque}</p>
+                    <p className="text-xs text-ink-700/70 leading-relaxed mt-1">
+                      <span className="font-medium text-ink-700">Este clima haría:</span> {l.esperado}{' '}
+                      <span className="font-medium text-ink-700">El predio mide:</span> {l.medido}
+                    </p>
+                    {l.acuerdo === 'discrepa' && l.quienManda && (
+                      <p className="text-xs text-clay-700 leading-relaxed mt-1">
+                        No coinciden, y ahí está lo interesante: {l.quienManda}
+                      </p>
+                    )}
+                    {l.acuerdo === 'sin_prediccion' && (
+                      <p className="text-xs text-ink-700/60 mt-1">
+                        En este régimen el clima no permite predecir esta propiedad, así que no se predice.
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                {porQue.bt && (
+                  <p className="text-xs text-ink-700/80 leading-relaxed">
+                    <span className="font-semibold text-ink-800">La arcilla bajó.</span> La capa{' '}
+                    {porQue.bt.capa} tiene {porQue.bt.razon.toFixed(1).replace('.', ',')} veces la
+                    arcilla de la superficie: agua arrastrando arcilla hacia abajo durante mucho
+                    tiempo, que donde se deposita arma una capa más pesada y frena el agua y las
+                    raíces. Es una sospecha y no un diagnóstico — el criterio del horizonte
+                    argílico (USDA) pide 1,2× dentro de 30 cm verticales, sobre horizontes
+                    descriptos a campo, y acá se compara entre profundidades fijas y suavizadas.
+                  </p>
+                )}
+
+                <div className="border-l-2 border-moss-200 pl-2.5">
+                  <p className="text-xs font-semibold text-ink-800">
+                    La vida del suelo: {porQue.biologia.regimen.toLowerCase()}
+                  </p>
+                  {porQue.biologia.velocidad && (
+                    <p className="text-xs text-ink-700/80 mt-0.5">
+                      A esta temperatura la materia orgánica se descompone{' '}
+                      {porQue.biologia.velocidad.min.toFixed(2).replace('.', ',')}× a{' '}
+                      {porQue.biologia.velocidad.max.toFixed(2).replace('.', ',')}× respecto de un
+                      sitio de 10 °C. La banda es ancha a propósito: el factor Q10 está entre 1,5 y
+                      2,5 según el sustrato y el sitio, y un solo número sería precisión falsa.
+                    </p>
+                  )}
+                  <p className="text-xs text-ink-700/80 leading-relaxed mt-1">{porQue.biologia.detalle}</p>
+                  <p className="text-xs text-moss-700 leading-relaxed mt-1">→ {porQue.biologia.manejo}</p>
+                </div>
+
+                {porQue.huella && (
+                  <div className="border-l-2 border-moss-200 pl-2.5">
+                    <p className="text-xs font-semibold text-ink-800">
+                      Este suelo lo construyó {porQue.huella.parecido === 'bosque' ? 'el monte'
+                        : porQue.huella.parecido === 'pastizal' ? 'el pasto'
+                        : porQue.huella.parecido === 'matorral' ? 'un matorral de raíz profunda'
+                        : 'algo que no es la vegetación de arriba'}
+                    </p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed mt-0.5">
+                      El {porQue.huella.fraccion_0_20_pct} % del carbono del primer metro está en los
+                      primeros 20 cm, sobre un stock de {porQue.huella.stock_t_ha_100} t/ha.{' '}
+                      {porQue.huella.lectura}
+                    </p>
+                    <p className="text-xs text-ink-700/60 leading-relaxed mt-1">
+                      La referencia son 2.700 perfiles y no este predio: Jobbágy y Jackson (2000)
+                      midieron cerca del 50 % en bosques, 42 % en pastizales y 33 % en matorrales.
+                      La distribución dice quién puso el carbono, no qué especie había; un suelo
+                      arado durante décadas puede haber perdido la firma original.
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-ink-700/50 leading-relaxed">
+                  Fuentes de esta sección: {FUENTES_POR_QUE.map(f => f.cita).join(' · ')}
+                </p>
+              </div>
             )}
 
             {datos.suelo.interp.recomendaciones.length > 0 && (

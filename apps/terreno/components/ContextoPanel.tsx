@@ -6,6 +6,7 @@ import { centroide, type DatosClima } from '@/lib/clima';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { fichaClimaFuturo } from '@/lib/climaFuturo';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
+import { Cautela } from './Cautela';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import {
@@ -1601,35 +1602,6 @@ function Seccion({ icon, titulo, children }: { icon: React.ReactNode; titulo: st
       </div>
       <div className="p-3">{children}</div>
     </div>
-  );
-}
-
-/**
- * Una cautela: la afirmación en una línea y el desarrollo detrás de «por qué».
- *
- * Cada número de esta sección viene con una advertencia que hace falta —el
- * censo cuenta personas donde viven y no territorio, el dato mexicano mide
- * lengua y no identidad, cero es un dato— y todas juntas eran seis párrafos
- * grises debajo de una tarjeta. Leídas en bloque no se leen: la pantalla parece
- * estar disculpándose y el dato queda sepultado.
- *
- * La afirmación se lee siempre, que es la parte que no se puede perder. El
- * desarrollo está a un clic, para quien quiera saber por qué. Es un `<details>`
- * nativo: funciona sin estado, sin JavaScript y con el teclado.
- */
-function Cautela({ claim, children }: { claim: string; children: React.ReactNode }) {
-  return (
-    <details className="group mt-2">
-      <summary className="list-none cursor-pointer text-[10px] leading-relaxed text-ink-700/70 marker:content-none [&::-webkit-details-marker]:hidden">
-        <span className="font-semibold text-ink-700/80">{claim}</span>{' '}
-        <span className="text-water-500 group-open:hidden">por qué</span>
-        <span className="text-water-500 hidden group-open:inline">cerrar</span>
-      </summary>
-      {/* `div` y no `p`: alguna cautela trae una lista adentro —lo que el
-          número nacional no dice— y un `ul` dentro de un `p` es HTML inválido
-          que React desarma en la hidratación. */}
-      <div className="text-[10px] text-ink-700/55 leading-relaxed mt-1">{children}</div>
-    </details>
   );
 }
 
