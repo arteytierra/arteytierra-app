@@ -979,6 +979,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Montenegro et al. (2017) — Home gardens agrobiodiversity in the Colombian Andes, Revista de Ciencias Agrícolas Vol. 34 No. 1', url: 'https://revistas.udenar.edu.co/index.php/rfacia/article/view/3418' },
       ],
     },
+    {
+      practica: 'Recolección y preparación de plantas medicinales en comunidades andinas de Nariño, Colombia',
+      periodo: 'Documentado en Genoy, municipio de Pasto, Nariño, Colombia, hacia 2012',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Angulo, Rosero y González Insuasti (2012) documentaron en el corregimiento de Genoy, a 2700 m s. n. m. en las laderas del volcán Galeras, un sistema vivo de conocimiento botánico: los pobladores identificaron 80 especies medicinales —nativas y exóticas— y describieron sus formas de preparación (infusiones, cataplasmas, baños) y las afecciones que atienden. El estudio distingue entre sabedores formales y conocimiento doméstico difundido, y constata que las plantas se recolectan en parches de bosque secundario, bordes y huertos caseros. Para el diseño predial en bosques montanos andinos, la fuente orienta a identificar qué franjas de vegetación y qué especies cumplen esa función local antes de definir qué se conserva o replanta.',
+      fuentes: [
+        { label: 'Angulo, Rosero y González Insuasti (2012) — Estudio etnobotánico de plantas medicinales en Genoy, municipio de Pasto, Revista Universidad y Salud 14(2)', url: 'https://revistas.udenar.edu.co/index.php/usalud/article/view/1277' },
+      ],
+    },
   ],
   valles_secos_interandinos: [
     {
@@ -1088,6 +1099,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Redalyc — Paisajes agroalimentarios: análisis de medios de vida de indígenas venezolanos (2018)', url: 'https://www.redalyc.org/journal/3761/376157736008/' },
       ],
     },
+    {
+      practica: 'Pesca artesanal con corrales, atarrayas y trampas en la Ciénaga Grande de Santa Marta',
+      periodo: 'Documentado en comunidad pesquera de la Ciénaga Grande de Santa Marta, Colombia, hacia 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Carrillo Rada y Mendoza Curvelo (2021) analizan las implicaciones sociomateriales de las tecnologías pesqueras en una comunidad de la Ciénaga Grande de Santa Marta: corrales de madera y zarzo, atarrayas, chinchorros y trampas organizan el trabajo pesquero en función de la temporada de lluvia y la distribución del recurso en el estuario. El artículo muestra cómo las herramientas son también dispositivos de organización social y de conocimiento del cuerpo de agua, y documenta que su evolución material (de fibras vegetales al nailon) no alteró la lógica de distribución territorial de los sitios de pesca. Para el diseño predial en sistemas de humedal caribeño, el estudio ilustra el principio de ajustar el método a la heterogeneidad espacial del recurso en lugar de estandarizar la técnica.',
+      fuentes: [
+        { label: 'Carrillo Rada y Mendoza Curvelo (2021) — Implicaciones sociomateriales de las tecnologías pesqueras en la Ciénaga Grande de Santa Marta, Revista Jangwa Pana 20(2)', url: 'https://www.redalyc.org/journal/5880/588072311005/html/' },
+      ],
+    },
   ],
   bosques_secos_caribe_colombia_venezuela: [
     {
@@ -1112,6 +1134,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'De La Ossa V. et al. (2017) — Jagüeyes: alternativa sostenible para el manejo del agua en bosque seco tropical, Colombia Forestal', url: 'https://dialnet.unirioja.es/servlet/articulo?codigo=9423177' },
       ],
     },
+    {
+      practica: 'Agropaisajes con policultivos y plantas útiles en el bosque seco del Caribe colombiano',
+      periodo: 'Documentado en agropaisajes del Caribe colombiano; publicado en 2026',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Zuluaga Zuluaga (2026) realizó un estudio etnobotánico cuantitativo en agropaisajes del Caribe colombiano —incluyendo zonas de transición entre bosque seco tropical y vegetación secundaria— e identificó el rol de las plantas útiles en la conservación de remanentes de bosque seco. La investigación muestra que los paisajes de uso mixto con policultivos, huertos y corredores de vegetación nativa mantienen una proporción relevante de la flora regional, mientras que la simplificación hacia pastizales o monocultivos reduce drásticamente esa diversidad. Para el diseño predial en el bosque seco del Caribe, el estudio orienta a preservar franjas de vegetación heterogénea y a diversificar los sistemas productivos como condición para sostener la riqueza florística local.',
+      fuentes: [
+        { label: 'Zuluaga Zuluaga (2026) — Etnobotánica Cuantitativa en Agro-Paisajes del Caribe Colombiano: Implicaciones para la Conservación del Bosque Seco Tropical, RIAA 17(1)', url: 'https://dialnet.unirioja.es/servlet/articulo?codigo=10493027' },
+      ],
+    },
   ],
   montanas_caribe_norte: [
     {
@@ -1134,6 +1167,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La civilización Tairona de la Sierra Nevada construyó terrazas de cultivo escalonadas donde se sembraron maíz, yuca, aguacate, batatas, ñames, auyamas, ajíes y algodonales. Las terrazas formaban parte de una organización territorial con caminos de piedra y canales de drenaje; son todavía legibles en el paisaje de algunos sectores de la Sierra Nevada y documentan cómo se habilitó el cultivo en laderas empinadas del Caribe húmedo.',
       fuentes: [
         { label: 'Banrepcultural — Enciclopedia Tairona (Red Cultural del Banco de la República de Colombia)', url: 'https://enciclopedia.banrepcultural.org/index.php/Tairona' },
+      ],
+    },
+    {
+      practica: 'Etnobotánica medicinal Kogui en los pisos altitudinales de la Sierra Nevada de Santa Marta',
+      periodo: 'Documentado con mamos Kogui en el Río Palomino, Sierra Nevada de Santa Marta, Colombia, en 2013',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Carbonó-Delahoz y Dib-Diazgranados (2013) documentaron con mamos —sacerdotes y dirigentes espirituales— del pueblo Kogui en el Río Palomino 189 especies medicinales en 162 géneros y 77 familias, recorriendo distintos pisos climáticos desde la zona costera hasta el subpáramo. Los recorridos registraron preparaciones, partes usadas y tipo de dolencia atendida; el análisis cuantitativo permite ordenar las especies por índice de importancia cultural y muestra que el conocimiento más compartido entre informantes corresponde a especies de pisos intermedios con mayor accesibilidad. Para el diseño predial en montañas del Caribe norte, la fuente indica qué especies nativas concentran valor medicinal colectivo en cada piso altitudinal y qué tipo de parche de vegetación las alberga.',
+      fuentes: [
+        { label: 'Carbonó-Delahoz y Dib-Diazgranados (2013) — Plantas medicinales usadas por los Cogui en el Río Palomino, Sierra Nevada de Santa Marta, Caldasia 35(2)', url: 'https://revistas.unal.edu.co/index.php/cal/article/view/41206' },
       ],
     },
   ],
@@ -1208,6 +1252,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las comunidades Chachi de la provincia de Esmeraldas cosechan piña, zapote, papaya, guayaba y otros frutos silvestres del bosque húmedo occidental y labran canoas, bateas y canaletes con maderas seleccionadas del dosel. El sistema no usa fertilizantes ni pesticidas y depende del conocimiento de qué árbol sirve para cada uso y en qué ciclo del año recolectar; identificar esas especies indica qué conservar o reforzar en cualquier diseño de dosel para este tipo de bosque.',
       fuentes: [
         { label: 'Cimarrón Añapa et al. (2023) — Cultura Organizacional y Administración de la Nacionalidad Chachi, Revista Mundo Recursivo Vol. 6 No. 2', url: 'https://www.atlantic.edu.ec/ojs/index.php/mundor/article/download/219/289?inline=1' },
+      ],
+    },
+    {
+      practica: 'Uso y recolección de plantas por comunidades afrodescendientes de la cuenca del río Mira, Ecuador',
+      periodo: 'Documentado en visitas de campo de julio-agosto 2021 en la cuenca del río Mira (Esmeraldas, Carchi, Imbabura)',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Cerón Martínez y Burbano Delgado (2025) inventariaron las especies vegetales —y un hongo— usadas por comunidades afrodescendientes de la cuenca del río Mira, en el noroeste de Ecuador. El levantamiento identificó 218 especies con usos en alimentación, medicina, construcción, artesanía y rituales, distribuidas desde el manglar costero hasta el matorral montano seco. La concentración de usos en el bosque húmedo occidental y en los bordes ribereños indica qué estratos de vegetación agrupan el conocimiento etnobotánico activo y cuáles merecen conservación prioritaria en un predio de este tipo de bosque.',
+      fuentes: [
+        { label: 'Cerón Martínez y Burbano Delgado (2025) — Prospección del recurso florístico afrodescendiente, cuenca del río Mira, Ecuador, CINCHONIA 20(1)', url: 'https://revistadigital.uce.edu.ec/index.php/CINCHONIA/article/view/8180' },
       ],
     },
   ],
@@ -1755,6 +1810,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Moreno-Calles, Toledo y Casas (2013) — Los sistemas agroforestales tradicionales de México: una aproximación biocultural, Botanical Sciences 91(4)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982013000400001' },
       ],
     },
+    {
+      practica: 'Agrosilviculturas tradicionales que conservan la diversidad vegetal nativa en el Valle de Tehuacán-Cuicatlán',
+      periodo: 'Documentado en 30 sistemas agroforestales de cinco ecosistemas del Valle de Tehuacán-Cuicatlán; publicado en 2024',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Rendón-Sandoval, Moreno-Calles y colaboradores (2024) evaluaron treinta sistemas agroforestales en cinco ecosistemas del Valle de Tehuacán-Cuicatlán y encontraron que conservan aproximadamente el 68 % de la riqueza de plantas nativas de la vegetación natural adyacente. Los sistemas incluyen milpas con cactáceas columnares, huertos con mezquite, bordas y vergeles en los que la integración de especies silvestres útiles es estructural y no incidental. El estudio muestra que la alta diversidad de los agroecosistemas tradicionales de Tehuacán es resultado de décadas de selección activa de plantas nativas por los productores; para el diseño predial en el matorral semiárido, orienta a conservar y multiplicar las especies de mayor valor de uso en lugar de reemplazarlas por variedades comerciales.',
+      fuentes: [
+        { label: 'Rendón-Sandoval et al. (2024) — Agrosilviculturas tradicionales y diversidad vegetal nativa del Valle de Tehuacán-Cuicatlán, Botanical Sciences 102(3)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982024000300898' },
+      ],
+    },
   ],
   oaxaca_sierras_bosques_comunales: [
     {
@@ -1850,6 +1916,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'García-Mendoza, Velasco-Velasco y Gallardo-López (2025) — Rotational management of vanilla agroecosystems by Totonac farmers in Veracruz, Mexico, Ecology and Society 31(1): art.7', url: 'https://ecologyandsociety.org/vol31/iss1/art7/' },
       ],
     },
+    {
+      practica: 'Aprovechamiento estacional de hongos silvestres comestibles en las tierras altas de Chiapas',
+      periodo: 'Documentado en comunidades de las tierras altas de Chiapas; publicado en 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Ruan-Soto, Cifuentes, Garibay-Orijel y Caballero (2021) compararon la disponibilidad y los patrones de aprovechamiento de hongos silvestres entre tierras altas —bosque mesófilo y bosque de pino-encino— y tierras bajas de Chiapas. Las tierras altas presentaron mayor riqueza de etnotaxones (35 especies reconocidas localmente) y mayor biomasa disponible, lo que explica estrategias de recolección más intensivas y un calendario de aprovechamiento más extendido que en las tierras bajas. La fuente documenta que el conocimiento fúngico local es preciso en identificación, estacionalidad y hábitat, y que las comunidades serranas articulan la recolección de hongos con otros usos del bosque en un mismo ciclo anual; para el diseño predial, orienta a mantener la diversidad de substratos y la continuidad del dosel como condición para que los sistemas de recolección fúngica locales sigan siendo viables.',
+      fuentes: [
+        { label: 'Ruan-Soto, Cifuentes, Garibay-Orijel y Caballero (2021) — Comparación de la disponibilidad de hongos comestibles en tierras altas y bajas de Chiapas y sus implicaciones en estrategias de aprovechamiento, Acta Botánica Mexicana 128', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0187-71512021000100103' },
+      ],
+    },
   ],
   bosque_tropical_seco_mesoamericano: [
     {
@@ -1926,6 +2003,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Verdugo Morales et al. (2025) — Riqueza de especies y diversidad arbórea en un gradiente altitudinal en cafetales de Chiapas, Revista Mexicana de Ciencias Forestales 16(88)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext_plus&pid=S2007-11322025000200148&lng=es&tlng=es&nrm=iso' },
       ],
     },
+    {
+      practica: 'Farmacopea vegetal del pueblo Chol en los bosques montanos de Chiapas',
+      periodo: 'Documentado con curanderos choles de Tila, bosques montanos del norte de Chiapas, México; publicado en 2023',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Rejón-Orantes, Sánchez-Cartela, Gutiérrez-Sarmiento y colaboradores (2023) documentaron 35 especies de plantas medicinales usadas por curanderos choles de Tila —municipio enclavado en los bosques montanos del norte de Chiapas— para afecciones principalmente gastrointestinales, antiinflamatorias y febriles. El estudio registra los preparados (decocciones, infusiones, baños), las partes utilizadas y la procedencia de las plantas, que incluye el huerto doméstico, el monte bajo y el bosque secundario. La farmacopea chol es activa en comunidades donde la consulta médica formal tiene acceso limitado; para el diseño predial en bosques montanos de Chiapas, la fuente orienta a integrar en franjas de borde o en el huerto las especies medicinales de mayor demanda local como condición de acceso y autonomía sanitaria.',
+      fuentes: [
+        { label: 'Rejón-Orantes et al. (2023) — Ethnobotany of medicinal plants used in the Chol ethnic group from Tila, Chiapas, Mexico, Polibotánica 56', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1405-27682023000200249' },
+      ],
+    },
   ],
   sierras_madre_pino_encino: [
     {
@@ -1961,6 +2049,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En la Chontalpa, Tabasco, familias chontales producen chocolate artesanal casero mediante fermentación de las semillas, secado al sol, tostado en comal de barro y molienda tradicional del cacao (Theobroma cacao L.). La fermentación local preserva microbiomas y aromas que el procesamiento industrial no puede reproducir; el producto circula como alimento y como recurso ceremonial dentro de la economía familiar. La fuente vincula la práctica a una herencia de la cultura olmeca, aunque señala que el chocolate artesanal compite en desventaja con el chocolate industrializado importado.',
       fuentes: [
         { label: 'Córdova Lázaro et al. (2018) — Chocolate casero tradicional en la región de la Chontalpa Tabasco, México: actores y saberes locales, Estudios Sociales 28(52)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692018000100005' },
+      ],
+    },
+    {
+      practica: 'Agroecosistemas multiestrato totonacos y resiliencia biocultural en el Totonacapan veracruzano',
+      periodo: 'Documentado en agroecosistemas del Totonacapan veracruzano; publicado en 2019',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Cuevas Coeto, Vera Castillo y Cuevas Sánchez (2019) evaluaron con quince indicadores de resiliencia ecológica y cultural los agroecosistemas totonacos del Totonacapan, incluyendo la milpa, el huerto familiar con vainilla, los sistemas de frijol y chile. El trabajo concluye que mayor adhesión al legado biocultural totonaca correlaciona con mayor resiliencia: los sistemas que mantienen la milpa como base, la vainilla dentro del huerto y la diversidad de cultivos son más estables frente a perturbaciones que los que adoptaron variedades mejoradas o monocultivos. La fuente es relevante porque documenta directamente la Totonacapan veracruzana, cuna de la vainilla, y muestra que la resiliencia no depende de un componente aislado sino de la articulación de los tres sistemas en el paisaje familiar.',
+      fuentes: [
+        { label: 'Cuevas Coeto, Vera Castillo y Cuevas Sánchez (2019) — Resiliencia y sostenibilidad de agroecosistemas tradicionales de México: Totonacapan, Revista Mexicana de Ciencias Agrícolas 10(1)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-09342019000100165' },
       ],
     },
   ],
@@ -2014,6 +2113,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO Non-Wood News (1997) — Non-timber forest products in the Petén, Guatemala: xate, chicle and allspice', url: 'https://www.fao.org/4/w7700e/W7700e05.htm' },
       ],
     },
+    {
+      practica: 'Meliponicultura maya como práctica biocultural y de manejo de biodiversidad en la Península de Yucatán',
+      periodo: 'Práctica de raíces prehispánicas; analizada en contextos contemporáneos de conflicto territorial en Yucatán hacia 2021',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'López Barreto (2021) analiza la meliponicultura —cría de abejas nativas sin aguijón, principalmente Melipona beecheii (Xunancab o Xunan Kab)— como práctica biocultural maya de raíces prehispánicas que articula la defensa territorial en la Península de Yucatán. El artículo documenta el retroceso de la práctica por la sustitución de la abeja melífera europea y el cambio en el uso del suelo, y examina dos conflictos ambientales en los que comunidades mayas utilizaron la meliponicultura como argumento de defensa de su territorio y su sistema productivo. La práctica mantiene colmenas en troncos tallados dentro del solar o en el monte, genera miel con propiedades medicinales reconocidas y provee servicios de polinización a las plantas del huerto y del bosque; para el diseño predial, la fuente ilustra cómo una especie nativa de polinizador puede ser al mismo tiempo fuente de alimento, medicina y vínculo cultural, y orienta a conservar el monte bajo y la diversidad floral que la sostiene.',
+      fuentes: [
+        { label: 'López Barreto (2021) — La decolonialidad como alternativa para la conservación de la biodiversidad: el caso de la meliponicultura en la Península de Yucatán, Península 16(1)', url: 'https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1870-57662021000100029' },
+      ],
+    },
   ],
   talamanca_caribe_sur: [
     {
@@ -2037,6 +2147,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Familias Bribri y Cabécar de Talamanca conservan doscientas ochenta y tres especies vegetales útiles dentro y alrededor de sus cacaotales, distribuidas en ocho categorías de uso que incluyen alimentación, construcción, medicina y rituales. El estudio de 2003, con ciento ochenta participantes indígenas en talleres participativos, identificó ocho especies prioritarias poco documentadas fuera del territorio —entre ellas dos palmas (Geonoma congesta e Iriartea deltoidea), tres maderables y dos lianas— que el manejo familiar conserva con criterios propios. La gestión va más allá de la estructura del cacetal como sistema agroforestal y abarca el territorio completo: parcela, monte y quebrada.',
       fuentes: [
         { label: 'Ocampo-Sanchez, R. (2004) — Plantas útiles en cacaotales Bribri y Cabécar, Talamanca, Costa Rica, Tesis MSc, CATIE, Turrialba', url: 'https://repositorio.catie.ac.cr/handle/11554/6675' },
+      ],
+    },
+    {
+      practica: 'Conservación de diversidad arbórea y faunística en cacaotales de sombra Bribri de Talamanca',
+      periodo: 'Documentado en fincas Bribri de Baja Talamanca, Limón, Costa Rica; publicado en 2001',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Guiracocha, Harvey, Somarriba, Krauss y Carrillo (2001) compararon la biodiversidad de árboles y mamíferos entre sistemas agroforestales de cacao-banano y bosques de fincas Bribri en Baja Talamanca. Los resultados muestran que los cacaotales bajo sombra diversa albergan una proporción significativa de la riqueza de mamíferos del bosque circundante, incluyendo especies frugívoras y omnívoras. La diversidad de la sombra —la combinación de frutales, leguminosos y maderables, no solo banano— es el factor que explica esa capacidad de retención faunística. Para el diseño predial en Talamanca, el estudio orienta a mantener un dosel heterogéneo de varias especies de sombra como condición para que el sistema productivo funcione también como hábitat y corredor entre parches de bosque.',
+      fuentes: [
+        { label: 'Guiracocha, Harvey, Somarriba, Krauss y Carrillo (2001) — Conservación de la biodiversidad en sistemas agroforestales con cacao y banano en Talamanca, Agroforestería en las Américas 8(30)', url: 'https://repositorio.catie.ac.cr/handle/11554/5948' },
       ],
     },
   ],
@@ -2142,6 +2263,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En los departamentos Nord y Grande-Anse de Haití, el sistema llamado Jardín Criollo combina café con árboles frutales, maderables y carboneros en el estrato alto, cacao, banana y plátano en niveles intermedios, y ñame y taro en el nivel inferior. El artículo documenta que este tipo de finca domina la producción cafetera haitiana con insumos mínimos y conserva mayor diversidad genética del café arábiga que muchas fincas tecnificadas, gracias a décadas de selección local no sistemática por los productores.',
       fuentes: [
         { label: 'Millet, Allinne, Vi, Marraccini et al. (2024) — Haitian coffee agroforestry systems harbor complex arabica variety mixtures and under-recognized genetic diversity, PLoS ONE 19(4): e0299493', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11020479/' },
+      ],
+    },
+    {
+      practica: 'Farmacopea de plantas medicinales en comunidades rurales de Haití',
+      periodo: 'Encuesta en 120 hogares de ocho comunas del departamento occidental de Haití; publicado en 2024',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Thesnor, Cheremond, Sylvestre y colaboradores (2024) realizaron una encuesta etnobotánica en 120 hogares de ocho comunas del departamento occidental de Haití y documentaron 75 especies vegetales de 43 familias usadas en preparados medicinales: infusiones, macerados, baños y cataplasmas principalmente para afecciones gastrointestinales, febriles y respiratorias. El estudio señala que la mayoría de las plantas se obtiene de huertos peridomésticos y de remanentes de bosque cercanos, y que el conocimiento persiste en poblaciones rurales pese a la alta tasa de deforestación en el país. Para el diseño predial, la fuente orienta a integrar en el estrato de huerta o en los bordes del terreno las especies de mayor relevancia medicinal local, incluso en contextos donde el bosque nativo esté muy degradado.',
+      fuentes: [
+        { label: 'Thesnor, Cheremond, Sylvestre et al. (2024) — Survey on the Traditional Use of Medicinal Herbs in Haiti: Knowledge, Practices and Efficacy, Plants 13(17): 2383', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11396795/' },
       ],
     },
   ],
