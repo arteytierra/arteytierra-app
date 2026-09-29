@@ -468,6 +468,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Secretaría de Ambiente y Desarrollo Sustentable / WOCAT — Guía de buenas prácticas, Región Nuevo Cuyo', url: 'https://wocat.net/documents/939/NUEVO_CUYO_Gu%C3%ADas_buenas_pr%C3%A1cticas.pdf' },
       ],
     },
+    {
+      practica: 'Cosecha y procesamiento de algarrobo para alimento, bebida y construcción',
+      periodo: 'Documentado en comunidades del Monte; práctica anterior al registro bibliográfico',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Alvarez y Villagra (2010) sintetizan el rol de Prosopis flexuosa en el Monte: las vainas se consumen frescas o secas, se muelen para obtener harina y patay, se fermentan para preparar chicha o aloja, y se usan con fines medicinales; la madera abastece leña y construcción. Para un predio en zona árida, conservar al menos un rodal de algarrobo implica tener disponible una fuente diversificada de alimentación, forraje y materiales sin necesidad de irrigación adicional.',
+      fuentes: [
+        { label: 'Alvarez y Villagra (2010) — Prosopis flexuosa (Fabaceae, Mimosoideae): una especie clave para los habitantes del Monte árido argentino, Kurtziana 35(1)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1852-59622010000100005' },
+      ],
+    },
+    {
+      practica: 'Elaboración de patay y harina de algarroba en comunidades del Monte',
+      periodo: 'Documentado en comunidades del Monte árido hacia 2018; práctica anterior al registro',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Moreno, Torres y Campos (2018) registran en comunidades del Monte la recolección de vainas maduras de algarroba para secarlas, molerlas en mortero y producir harina o patay. El patay se amasa con agua, se moldea y se hornea sin fermentar; la harina tiene usos directos en comidas y bebidas. El estudio identifica al algarrobo como la especie de mayor multifuncionalidad en el paisaje de los entrevistados, lo que orienta a diseñar el predio con núcleos de Prosopis productores en lugar de tratarlos como maleza.',
+      fuentes: [
+        { label: 'Moreno, Torres y Campos (2018) — Usos actuales del algarrobo en comunidades del Monte árido argentino, Etnobiología 16(3)', url: 'https://ri.conicet.gov.ar/handle/11336/92631' },
+      ],
+    },
   ],
   espinal: [
     {
@@ -481,6 +503,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'CERZOS-CONICET — Estrategias para la recuperación y el manejo de pastizales naturales degradados de la región central argentina', url: 'https://bahiablanca.conicet.gov.ar/boletin/boletin29/indexd279.html?Itemid=154&id=101&option=com_content&view=article' },
       ],
     },
+    {
+      practica: 'Cosecha y fermentación de algarroba y frutas silvestres por los Ranqueles',
+      periodo: 'Siglo XIX; documentado en fuentes históricas y etnobotánicas',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Musaubach y Plos (2015) reconstruyen a partir de fuentes históricas del siglo XIX el uso alimentario de la flora nativa por los Ranqueles en el Espinal: de las distintas algarrobas "hacen chichas, restregándolas en agua tibia"; el chañar se usa para bebidas y el piquillín se seca para conservar durante el invierno. La diversidad de fuentes silvestres distribuye el riesgo estacional; el trabajo documenta una lógica de aprovechamiento multiespecies que orienta la composición de cortinas y bosques en galería dentro del predio.',
+      fuentes: [
+        { label: 'Musaubach y Plos (2015) — Plantas silvestres comestibles utilizadas por los Ranqueles del siglo XIX en el Espinal argentino, Comechingonia 19(2)', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S1851-00272015000200011' },
+      ],
+    },
+    {
+      practica: 'Aprovechamiento forestal y cinegético del caldenar por los Ranqueles',
+      periodo: 'Siglos XVIII y XIX; documentado en registros históricos y dendrocronología',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Tapia y Dussart (2013) reconstruyen el uso del caldenar pampeano por los Ranqueles combinando registros históricos de 1742 a 1879 con series dendrocronológicas de Prosopis caldenia. La reconstrucción muestra cómo la tala selectiva para madera y leña se superpuso con circuitos de caza mayor; los anillos de crecimiento permiten identificar años de mayor perturbación. Para el diseño predial el trabajo provee una línea de base del caldenar y evidencia de que su manejo selectivo precedió por mucho a la ganadería extensiva actual.',
+      fuentes: [
+        { label: 'Tapia y Dussart (2013) — Reconstrucción del uso del caldenar por los Ranqueles mediante dendrocronología e historia (1742-1879), Revista del Museo de La Plata Sec. Antropología 13(87)', url: 'https://publicaciones.fcnym.unlp.edu.ar/rmlp/article/view/2232' },
+      ],
+    },
   ],
   pampa: [
     {
@@ -492,6 +536,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'CONICET registra que, después de varios años consecutivos de cultivo, se dejaba temporalmente la tierra para pastoreo vacuno con el fin de recuperar productividad. Para un predio, el antecedente propone interrumpir la agricultura continua con una fase pastoril; la fuente señala que esta rotación perdió terreno desde la década de 1970 por el uso creciente de fertilizantes.',
       fuentes: [
         { label: 'CONICET (2015) — Fertilidad y productividad en el suelo pampeano: pasado, presente y futuro', url: 'https://www.conicet.gov.ar/fertilidad-y-productividad-en-el-suelo-pampeano-pasado-presente-y-futuro/' },
+      ],
+    },
+    {
+      practica: 'Captura de ganado cimarrón mediante estructuras de piedra en Tandilia',
+      periodo: 'Período posthispánico; documentado arqueológicamente en Tandilia',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'Pedrotta (2016) documenta en el Sistema de Tandilia los sitios Cerro Guacho I y II, estructuras de piedra interpretadas como instalaciones de captura de ganado cimarrón por grupos indígenas durante el período posthispánico. La disposición de los muros sugiere que el rodeo utilizaba el relieve natural como barrera complementaria y no requería grandes inversiones en infraestructura fija. Para un predio de la Pampa, el hallazgo ilustra el aprovechamiento de la topografía como herramienta de manejo animal sin insumos externos.',
+      fuentes: [
+        { label: 'Pedrotta (2016) — El uso del espacio en el Sistema de Tandilia durante el período posthispánico, Revista Arqueología 22(2)', url: 'https://sedici.unlp.edu.ar/handle/10915/102946' },
       ],
     },
   ],
@@ -612,6 +667,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Lanín', url: 'https://www.argentina.gob.ar/parquesnacionales/regionpatagonia/parque-nacional-lanin/patrimonio-cultural' },
       ],
     },
+    {
+      practica: 'Cosecha Mapuche del piñón con prácticas de regeneración (Araucaria araucana)',
+      periodo: 'Documentado hacia 2020 en comunidades mapuche del norte de la Patagonia; en retroceso',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Canale y Ladio (2020) documentan entre familias Mapuche técnicas de recolección del piñón de Araucaria araucana que favorecen la regeneración: se cosechan piñas maduras del suelo, se respetan araucarias productoras clave y se mantienen prácticas que los entrevistados reconocen como "quedando en desuso". El trabajo identifica una brecha entre saberes tradicionales de bajo impacto y prácticas de cosecha más intensivas, y orienta a conservar araucarias madre y franjas de regeneración libre de pisoteo.',
+      fuentes: [
+        { label: 'Canale y Ladio (2020) — Cosecha del piñón y prácticas Mapuche de manejo de Araucaria araucana, Gaia Scientia 14(1)', url: 'https://periodicos.ufpb.br/index.php/gaia/article/view/47620' },
+      ],
+    },
+    {
+      practica: 'Farmacopea vegetal Mapuche en el bosque andino-patagónico',
+      periodo: 'Documentado en comunidades mapuche de Patagonia austral hacia 2017',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Bernal Ochoa, Colares y Consolini (2017) relevaron 49 especies medicinales usadas por comunidades Mapuche en Patagonia austral, entre ellas Fuchsia magellanica, Berberis microphylla y Acaena pinnatifida, con indicaciones para afecciones respiratorias, digestivas y de piel. La farmacopea se apoya en plantas del bosque nativo y del ecotono con la estepa; su integración al diseño predial implica conservar parches de vegetación heterogénea con acceso regular y sin extracción masiva para sostener la disponibilidad de las especies clave.',
+      fuentes: [
+        { label: 'Bernal Ochoa, Colares y Consolini (2017) — Plantas medicinales usadas por comunidades mapuche en Patagonia austral, Revista Farmacéutica 159(1)', url: 'https://sedici.unlp.edu.ar/handle/10915/151230' },
+      ],
+    },
   ],
   campos_uruguayos: [
     {
@@ -625,6 +702,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'MGAP, Udelar, INIA e Instituto Plan Agropecuario — Producción animal sostenible en pastoreo sobre campo natural', url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/sites/ministerio-ganaderia-agricultura-pesca/files/documentos/publicaciones/Producci%C3%B3n%20animal%20sostenible%20en%20pastoreo%20sobre%20campo%20natural.pdf' },
       ],
     },
+    {
+      practica: 'Rodeos y expediciones de captura de ganado cimarrón (Guaraní, misiones jesuíticas)',
+      periodo: 'Siglo XVII; documentado en registros misionales de Yapeyú',
+      tipo: 'ganaderia',
+      vigencia: 'historica',
+      detalle:
+        'Moraes (2020) reconstruye a partir de registros misionales las expediciones guaraní de captura de ganado cimarrón desde Yapeyú en la cuenca del río Uruguay: partidas de cuarenta o cincuenta hombres con cinco caballos cada uno salían a los llanos y realizaban rodeos diarios para que el ganado no se dispersara. La escala del esfuerzo —cientos de personas coordinadas en ciclos estacionales— muestra una gestión territorial activa del campo natural que precedió en décadas al sistema estanciero colonial.',
+      fuentes: [
+        { label: 'Moraes (2020) — Ganadería guaraní en las misiones jesuíticas del río Uruguay (siglo XVII), Mundo Agrario 21(46)', url: 'https://www.scielo.org.ar/scielo.php?pid=S1515-59942020000100132&script=sci_arttext&tlng=es' },
+      ],
+    },
   ],
   chaco_humedo: [
     {
@@ -636,6 +724,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El manual de INTA para Formosa y Chaco recomienda realizar la quema en agosto o septiembre y restringirla a años con lluvias normales o buenas, cuando la humedad del suelo reduce la severidad y favorece el rebrote. La práctica remueve material envejecido y recupera accesibilidad y calidad del forraje, pero debe planificarse con cortafuegos, descanso posterior y exclusión durante sequías.',
       fuentes: [
         { label: 'INTA EEA El Colorado (2024) — Manual de pastizales para la producción ganadera de Formosa y Chaco', url: 'https://repositorio.inta.gob.ar/bitstream/handle/20.500.12123/17406/INTA_CRChaco-Formosa_EEAElColorado_Miranda_FW_Manual_de_pastizales_para_la_producci%C3%B3n_ganadera.pdf?isAllowed=y&sequence=1' },
+      ],
+    },
+    {
+      practica: 'Circuitos estacionales de caza y recolección en monte y palmares (Qom, Formosa)',
+      periodo: 'Documentado hacia 2014 en comunidades Qom de Formosa; práctica en retroceso',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Tola y Medrano (2014) documentan los circuitos estacionales de los Qom en el Chaco húmedo de Formosa: la movilidad entre el monte y los palmares permitía cazar, pescar y recolectar según la época del año, con regulaciones propias sobre el aprovechamiento de cada especie. La fuente señala que esos circuitos están en retroceso por la fragmentación del territorio; para el diseño predial, el patrón orienta a pensar la conectividad de parches y el calendario de uso en lugar de una producción fija concentrada.',
+      fuentes: [
+        { label: 'Tola y Medrano (2014) — Circuitos territoriales y regulación del aprovechamiento de recursos Qom en el Chaco húmedo de Formosa, Folia Histórica del Nordeste 22', url: 'https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0325-82382014000200011' },
+      ],
+    },
+    {
+      practica: 'Uso diversificado de flora nativa por los Toba (Qom) en el Chaco oriental',
+      periodo: 'Documentado en comunidades Toba del Chaco oriental hacia 2009',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Scarpa (2009) inventarió 179 taxones nativos usados por los Toba del Chaco oriental para alimentación, medicina y artesanía, identificando a este grupo como el de mayor diversidad de especies aprovechadas en la región chaqueña. La riqueza de usos documenta una relación densa con el ecosistema que no se reduce a pocas plantas dominantes; para el diseño predial orienta a preservar la heterogeneidad de estratos y la diversidad específica en lugar de simplificar la vegetación hacia unas pocas especies productivas.',
+      fuentes: [
+        { label: 'Scarpa (2009) — Flora medicinal y alimentaria de los Toba (Qom) del Chaco oriental argentino, Journal of Applied Botany and Food Quality 83(1)', url: 'https://ri.conicet.gov.ar/handle/11336/20350' },
       ],
     },
   ],
