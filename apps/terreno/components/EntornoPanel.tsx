@@ -10,7 +10,7 @@ import {
   type DatosEntorno, type EntornoResumen,
 } from '@/lib/entorno';
 import {
-  ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_LINEAL_KM, RADIO_CULTIVO_KM,
+  ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_INFRAESTRUCTURA_KM, RADIO_CULTIVO_KM,
   type ClaseContexto, type ContextoActual, type Presencia,
 } from '@/lib/contextoActual';
 import type { Mojon } from '@/lib/types';
@@ -223,8 +223,10 @@ function ContextoActualBloque({ ctx }: { ctx: ContextoActual }) {
 
       <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
         OpenStreetMap (ODbL), radio de {ctx.radio_km} km. La distancia es al borde del rasgo mapeado
-        y el rumbo, hacia su centro; en ductos y líneas, al punto más cercano de la traza, que se
-        buscan en {RADIO_LINEAL_KM} km. Los cultivos se buscan en {RADIO_CULTIVO_KM} km y sólo
+        y el rumbo, hacia su centro; en ductos y líneas, al punto más cercano de la traza. La
+        infraestructura —ductos, líneas y estaciones transformadoras— se busca en{' '}
+        {RADIO_INFRAESTRUCTURA_KM} km, porque no contamina sino que restringe, y una restricción
+        lejos no restringe. Los cultivos se buscan en {RADIO_CULTIVO_KM} km y sólo
         aparecen los campos que declaran qué se siembra, que son pocos. Es un radio de vecindad, no
         un modelo de deriva de agroquímicos. Se nombra la actividad, no a quien la realiza.
       </p>

@@ -50,6 +50,45 @@
  * entra una máquina alta. Saber que la línea pasa a 300 m al este cambia dónde
  * va la cortina forestal.
  *
+ * ── La estación transformadora, que es el nodo que le faltaba a la línea ────
+ *
+ * La línea de alta tensión ya estaba y la central también; faltaba el lugar
+ * donde la línea termina. Una estación de transmisión es un predio cercado con
+ * transformadores, con todas las ternas de la zona convergiendo encima: no es
+ * un dato curioso, es dónde se aprieta la servidumbre.
+ *
+ * `power=substation` tiene **885.000 usos** y hay que domarlo igual que al
+ * tanque, porque el promedio de esos 885.000 no es lo que uno se imagina. De
+ * los 631.000 que declaran clase, **441.000 son `minor_distribution`**: el
+ * transformador de poste, que está en el fondo de cualquier campo. Es
+ * exactamente el argumento por el que `power=minor_line` está afuera —marcarlo
+ * sería marcar todo—, y si viajaran se comerían el tope de elementos y las
+ * canteras dejarían de aparecer.
+ *
+ * Así que entran tres clases y nada más: `transmission` (38.356),
+ * `traction` (10.770) y `converter` (1.225). Las tres son instalaciones de
+ * escala industrial y ninguna abunda, así que la que aparece cerca informa.
+ *
+ * Y quedan afuera cuatro que podrían parecer candidatas:
+ *
+ * - `distribution` (87.004) es la estación de barrio: real, pero de la escala
+ *   del poste y no de la de la traza.
+ * - `industrial` (18.535) y `generation` (8.547) son la estación *adentro* de
+ *   una fábrica o de una central, y las dos ya están nombradas por
+ *   `man_made=works` y `power=plant`. Pedirlas mostraría el mismo lugar dos
+ *   veces, a la misma distancia y con dos nombres.
+ * - Las **254.000 que no declaran clase** no entran, por la misma razón que el
+ *   tanque sin contenido: si nadie dijo qué es, la app no tiene nada que contar.
+ *
+ * La tensión sale de `voltage` con la misma función que la línea, así que un
+ * "132000 (ex 33000)" se cae solo. Ver `tensionKv`.
+ *
+ * **Y va en el radio de la línea, no en el de la cantera.** No es una traza
+ * —no tiene trazado que medir, así que sale con los lugares—, pero comparte con
+ * la traza lo que la hace importar: no contamina, restringe. Una restricción a
+ * 20 km no restringe. Ver `RADIO_INFRAESTRUCTURA_KM`, que por eso dejó de
+ * llamarse «radio de las trazas».
+ *
  * ── Qué se dejó afuera a propósito ──────────────────────────────────────────
  *
  * `power=minor_line`, la línea de distribución rural: 1,64 millones de usos,
@@ -114,15 +153,23 @@ import { rumboDeAzimut } from './sectores';
 export const RADIO_CONTEXTO_KM = 25;
 
 /**
- * Radio de consulta para las trazas, en kilómetros.
+ * Radio de consulta para la infraestructura, en kilómetros.
  *
- * Más chico que el otro a propósito. Un ducto o una línea a 20 km no imponen
- * nada sobre el predio: no hay servidumbre, no hay franja, no hay restricción de
- * plantación. Lo que importa de una traza es que pase cerca, y a 10 km ya dejó
- * de pasar cerca. Además la geometría completa se paga por vértice, y traer el
- * trazado de cada línea en 25 km a la redonda es un payload que no compra nada.
+ * Más chico que el otro a propósito, y por un motivo distinto del que achica el
+ * de los cultivos. Un ducto, una línea o una estación transformadora **no
+ * contaminan nada**: lo que hacen es imponer una franja donde no se planta, no
+ * se construye y no entra una máquina alta. Y una restricción que está a 20 km
+ * no restringe: no hay servidumbre, no hay franja, no hay nada. A 10 km todavía
+ * puede tocar el alambrado.
+ *
+ * Por eso no comparte el radio de la cantera, que sí es 25 km y por la razón
+ * contraria: ahí lo que viaja es el polvo y el agua, no la traza.
+ *
+ * Para las trazas hay además un motivo material: la geometría completa se paga
+ * por vértice, y traer el trazado de cada línea en 25 km a la redonda es un
+ * payload que no compra nada.
  */
-export const RADIO_LINEAL_KM = 10;
+export const RADIO_INFRAESTRUCTURA_KM = 10;
 
 /**
  * Radio de consulta para los cultivos, en kilómetros.
@@ -206,6 +253,17 @@ const FUENTE_ENERGIA: Record<string, string> = {
   biomass: 'a biomasa', coal: 'a carbón', oil: 'a fuel oil', battery: 'de baterías',
   waste: 'por quema de residuos', biogas: 'a biogás', diesel: 'a gasoil',
   geothermal: 'geotérmica', nuclear: 'nuclear',
+};
+
+/**
+ * `substation=*` — qué clase de estación transformadora es. **Tabla cerrada, y
+ * acá la tabla es el filtro**: un valor que no esté no se muestra y, además, ni
+ * se pide. Ver `consultaOverpass` y el encabezado.
+ */
+const SUBESTACION: Record<string, string> = {
+  transmission: 'Estación transformadora de alta tensión',
+  traction:     'Subestación de tracción ferroviaria',
+  converter:    'Estación convertidora (corriente continua)',
 };
 
 /**
@@ -413,6 +471,14 @@ export function clasificar(tags: Record<string, string>): Etiqueta | null {
   }
   if (tags['power'] === 'line') {
     return { clase: 'infraestructura', que: 'Línea de alta tensión', detalle: tensionKv(tags['voltage']) };
+  }
+  // La estación entra sólo si declara de qué clase es: con 885.000 usos, el
+  // valor más común con diferencia es el transformador de poste. Ver SUBESTACION
+  // y el encabezado.
+  if (tags['power'] === 'substation') {
+    const que = SUBESTACION[tags['substation'] ?? ''];
+    if (!que) return null;
+    return { clase: 'infraestructura', que, detalle: tensionKv(tags['voltage']) };
   }
   return null;
 }
@@ -655,11 +721,16 @@ function redondear(km: number): number {
  */
 export function consultaOverpass(lat: number, lng: number, radioKm: number): string {
   const m = Math.round(radioKm * 1000);
-  const mLineal = Math.round(RADIO_LINEAL_KM * 1000);
+  const mInfra = Math.round(RADIO_INFRAESTRUCTURA_KM * 1000);
   const mCultivo = Math.round(RADIO_CULTIVO_KM * 1000);
   const en = (filtro: string) => `nwr(around:${m},${lat},${lng})${filtro};`;
-  const linea = (filtro: string) => `way(around:${mLineal},${lat},${lng})${filtro};`;
+  const linea = (filtro: string) => `way(around:${mInfra},${lat},${lng})${filtro};`;
   const cultivo = (filtro: string) => `nwr(around:${mCultivo},${lat},${lng})${filtro};`;
+  // La estación no es una traza —no tiene trazado que medir— así que sale con
+  // el resto de los lugares, pero en el radio de la infraestructura y no en el
+  // de la cantera: no contamina, restringe, y una restricción a 20 km no
+  // restringe. Overpass admite radios distintos dentro de un mismo conjunto.
+  const cerca = (filtro: string) => `nwr(around:${mInfra},${lat},${lng})${filtro};`;
   // El filtro de contenido del tanque va en el servidor y no sólo en `clasificar`:
   // si los tanques de agua viajaran, se comerían el tope y desplazarían al resto.
   const contenidos = [...CONTENIDO_QUE_IMPORTA].join('|');
@@ -672,6 +743,11 @@ export function consultaOverpass(lat: number, lng: number, radioKm: number): str
     + en('[man_made~"^(mineshaft|adit|tailings_pond|petroleum_well|flare|gasometer|wastewater_plant|works|chimney|silo|bunker_silo)$"]')
     + en(`[man_made=storage_tank][content~"^(${contenidos})$"]`)
     + en('[power=plant]')
+    // El filtro de clase va en el servidor por el mismo motivo que el del
+    // tanque: si viajaran los 441.000 transformadores de poste, se comerían el
+    // tope y desplazarían al resto. Las clases salen de la tabla y no de una
+    // lista escrita acá, para que no puedan separarse.
+    + cerca(`[power=substation][substation~"^(${Object.keys(SUBESTACION).join('|')})$"]`)
     + ')->.lugares;('
     + linea('[man_made=pipeline]')
     + linea('[power=line]')

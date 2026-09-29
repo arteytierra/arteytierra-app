@@ -12,7 +12,7 @@ import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
-import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM } from '@/lib/contextoActual';
+import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM, RADIO_INFRAESTRUCTURA_KM } from '@/lib/contextoActual';
 import {
   registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
   censoPeruanoDelPunto, censoBrasilenoDelPunto, censoMexicanoDelPunto,
@@ -1037,6 +1037,9 @@ export function InformeView({ datos, compartido = false }: Props) {
                     <p className="text-xs text-ink-700/70 mt-2">
                       Distancia al borde del rasgo mapeado y rumbo hacia su centro; en ductos y
                       líneas de alta tensión, al punto más cercano de la traza.
+                      La infraestructura eléctrica y los ductos se buscan en un radio de{' '}
+                      {RADIO_INFRAESTRUCTURA_KM} km y no en el del resto: no contaminan, restringen,
+                      y una restricción lejos no restringe.
                       Los cultivos se buscan en un radio menor, de {RADIO_CULTIVO_KM} km, y sólo
                       figuran los campos que declaran qué se siembra en ellos, que son una minoría:
                       es un radio de vecindad y no un modelo de deriva de agroquímicos.

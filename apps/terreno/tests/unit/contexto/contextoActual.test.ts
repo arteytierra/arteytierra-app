@@ -6,7 +6,7 @@ import {
   clasificar, agrupar, distanciaKm, azimutGrados, distanciaACajaKm,
   distanciaASegmentoKm, distanciaATrazaKm, tensionKv, hayTruncamiento,
   consultaOverpass, titulo, ubicacionTexto, cantidadTexto, cultivoTexto,
-  RADIO_CONTEXTO_KM, RADIO_LINEAL_KM, RADIO_CULTIVO_KM,
+  RADIO_CONTEXTO_KM, RADIO_INFRAESTRUCTURA_KM, RADIO_CULTIVO_KM,
   ROTULO_CLASE, TOPE_LINEAS, TOPE_ELEMENTOS, TOPE_CULTIVOS,
   type RasgoCrudo,
 } from '@/lib/contextoActual';
@@ -319,7 +319,7 @@ describe('agregación', () => {
     const q = consultaOverpass(-31.4, -64.2, RADIO_CONTEXTO_KM);
     expect(q, 'sin `out geom` el ducto llega sin trazado y se mide contra la caja')
       .toContain(`out tags geom ${TOPE_LINEAS}`);
-    expect(q).toContain(`around:${RADIO_LINEAL_KM * 1000},`);
+    expect(q).toContain(`around:${RADIO_INFRAESTRUCTURA_KM * 1000},`);
     expect(q).toContain(`around:${RADIO_CONTEXTO_KM * 1000},`);
   });
 
@@ -571,6 +571,72 @@ describe('la agroindustria, y los dos tags que había que domar', () => {
   });
 });
 
+describe('la estación transformadora, que es el nodo que le faltaba a la línea', () => {
+  it('el transformador de poste no es contexto', () => {
+    // 441.000 de los 631.000 que declaran clase. Es el mismo argumento por el
+    // que `power=minor_line` está afuera: marcarlo sería marcar todo.
+    expect(clasificar({ power: 'substation', substation: 'minor_distribution' })).toBeNull();
+  });
+
+  it('la estación que no declara de qué clase es, tampoco', () => {
+    // 254.000 de los 885.000. Si nadie dijo qué es, no hay nada que contar:
+    // el mismo criterio que el tanque sin contenido y que el campo sin cultivo.
+    expect(clasificar({ power: 'substation' })).toBeNull();
+    expect(clasificar({ power: 'substation', substation: 'yes' })).toBeNull();
+  });
+
+  it('la estación de barrio queda afuera y la de transmisión entra', () => {
+    expect(clasificar({ power: 'substation', substation: 'distribution' })).toBeNull();
+
+    const e = clasificar({ power: 'substation', substation: 'transmission', voltage: '132000' });
+    expect(e?.clase).toBe('infraestructura');
+    expect(e?.que).toContain('alta tensión');
+    expect(e?.detalle).toBe('132 kV');
+  });
+
+  it('la de una fábrica o una central no entra, porque ya están nombradas', () => {
+    // Mostrarlas pondría el mismo lugar dos veces en la lista, a la misma
+    // distancia y con dos nombres: `man_made=works` y `power=plant` ya lo dicen.
+    expect(clasificar({ power: 'substation', substation: 'industrial' })).toBeNull();
+    expect(clasificar({ power: 'substation', substation: 'generation' })).toBeNull();
+  });
+
+  it('la tensión pasa por el mismo filtro que la de la línea', () => {
+    // Un "132000 (ex 33000)" no es un entero y se cae solo, acá igual que allá.
+    const sucio = clasificar({ power: 'substation', substation: 'traction', voltage: '132000 (ex 33000)' });
+    expect(sucio?.que).toContain('tracción');
+    expect(sucio?.detalle).toBeUndefined();
+
+    // Y de varias ternas manda la mayor, que es la que fija la franja.
+    expect(clasificar({ power: 'substation', substation: 'converter', voltage: '500000;220000' })?.detalle)
+      .toBe('500 kV');
+  });
+
+  it('no nombra al operador de la estación', () => {
+    // La regla de todo el módulo, fijada también acá: es una instalación con
+    // dueño conocido y es justo donde la tentación de nombrarlo es mayor.
+    const e = clasificar({
+      power: 'substation', substation: 'transmission',
+      name: 'ET Rodríguez del Busto', operator: 'Una Empresa S.A.',
+    });
+    expect(JSON.stringify(e)).not.toContain('Rodríguez');
+    expect(JSON.stringify(e)).not.toContain('Empresa');
+  });
+
+  it('cuenta como lugar y no como cultivo ni como traza', () => {
+    // Sale con `out tags bb`, sin geometry y sin landuse, así que tiene que
+    // caer en el tope de lugares. Si cayera en otro, el aviso de truncamiento
+    // hablaría del conjunto equivocado.
+    const ets: RasgoCrudo[] = Array.from({ length: TOPE_ELEMENTOS }, (_, i) => ({
+      type: 'way', id: i,
+      tags: { power: 'substation', substation: 'transmission' },
+      bounds: { minlat: -34.6, minlon: -58.4, maxlat: -34.59, maxlon: -58.39 },
+    }));
+    expect(hayTruncamiento(ets)).toBe(true);
+    expect(hayTruncamiento(ets.slice(0, TOPE_CULTIVOS))).toBe(false);
+  });
+});
+
 describe('lo que la consulta se abstiene de pedir', () => {
   const q = consultaOverpass(-34.6, -58.4, RADIO_CONTEXTO_KM);
 
@@ -586,6 +652,29 @@ describe('lo que la consulta se abstiene de pedir', () => {
     expect(q).toContain('[man_made=storage_tank][content~');
     expect(q).not.toContain('[man_made=storage_tank];');
     expect(q).not.toMatch(/content~"[^"]*\bwater\b/);
+  });
+
+  it('la estación va en el radio de la infraestructura, no en el de la cantera', () => {
+    // No es una traza —sale con los lugares, sin geometría— pero comparte con la
+    // traza lo que la hace importar: restringe en vez de contaminar, y una
+    // restricción a 20 km no restringe.
+    const pedido = q.split(';').find(s => s.includes('[power=substation]'));
+    expect(pedido, 'la consulta dejó de pedir la estación').toBeDefined();
+    expect(pedido).toContain(`around:${RADIO_INFRAESTRUCTURA_KM * 1000},`);
+    expect(pedido).not.toContain(`around:${RADIO_CONTEXTO_KM * 1000},`);
+    // Y sigue siendo un lugar: si se colara en el conjunto de trazas, saldría
+    // con `out geom` y se mediría contra un trazado que no tiene.
+    expect(pedido).toMatch(/^nwr\(/);
+  });
+
+  it('nunca pide el transformador de poste', () => {
+    // La otra prueba del mismo tipo que la del campo. `power=substation` son
+    // 885.000 usos y 441.000 de ellos son `minor_distribution`: el poste del
+    // fondo de cualquier campo. Suelto, llenaría el tope de lugares.
+    expect(q).toContain('[power=substation][substation~');
+    expect(q).not.toContain('[power=substation];');
+    expect(q).not.toMatch(/substation~"[^"]*minor_distribution/);
+    expect(q).not.toMatch(/substation~"[^"]*\bdistribution\b/);
   });
 
   it('los cultivos van en su propio radio, más chico que el de la cantera', () => {
