@@ -40,6 +40,15 @@ const config: NextConfig = {
   outputFileTracingIncludes: {
     '/api/clima/koppen': ['./datos/koppen/*.tif'],
   },
+  /**
+   * La guía vivía en dos lados: la ruta `/guia` y un `public/guia.html`
+   * estático que era el que estaba completo y el que se había quedado viejo.
+   * Quedó una sola, en `/guia`. El archivo se borró, así que esta redirección
+   * es lo único que sostiene los enlaces que ya se repartieron.
+   */
+  async redirects() {
+    return [{ source: '/guia.html', destination: '/guia', permanent: true }];
+  },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
