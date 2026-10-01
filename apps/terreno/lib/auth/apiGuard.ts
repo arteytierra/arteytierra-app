@@ -67,12 +67,17 @@ function json(status: number, body: unknown): Response {
  * (ver `packages/config/src/acequia.ts`), así que el plan solo no alcanza para
  * decidir: hay que saber qué superficie se está pidiendo.
  *
- * Límite conocido, escrito para que nadie lo descubra creyendo que es un
- * agujero nuevo: `grillaElevacion.ts` cae a las teselas Terrarium cuando
- * `/api/dem` no responde, y ese proxy no está guardado porque sirve teselas
- * públicas. Un usuario decidido podría reconstruir relieve por ahí. No es una
- * regresión —ese camino ya existía para toda feature bloqueada— y cerrarlo es
- * otro trabajo: hay que guardar el proxy sin romper el mapa base.
+ * Desde el 01/10/2026 lo aplican los DOS endpoints que sacan relieve:
+ * `/api/dem` con el bbox que recibe, y `/api/elevacion` con la envolvente de los
+ * puntos pedidos. Antes `/api/elevacion` usaba `requierePlan('analisis.topo')` a
+ * secas, que en Semilla siempre alcanza, así que el tope de superficie se
+ * esquivaba pidiendo el mismo dato con otra forma.
+ *
+ * Lo que QUEDA afuera a propósito: `/api/terrarium`. No lleva candado, y el
+ * porqué está escrito en esa ruta — no se puede aplicar un tope de superficie
+ * por tesela, y el bucket de AWS Open Data que sirve se lee sin clave y sin
+ * nosotros, así que cerrarlo no le negaría el dato a nadie. Ahí lo que se
+ * protege es el ancho de banda propio, con un límite por IP.
  */
 export async function requiereTopoDe(haDelPedido: number): Promise<Response | null> {
   try {

@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { ipDe, limitar } from '@/lib/rateLimit';
 
 /**
  * Búsqueda de localidad/dirección (forward geocoding) vía Nominatim (OSM).
@@ -30,6 +31,18 @@ export async function GET(req: Request) {
   const dbKey = `geocode:${q.toLowerCase()}`;
   const dbHit = await cacheGet<{ raw: string }>(dbKey);
   if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
+
+  // El límite va DESPUÉS de la caché: una búsqueda ya resuelta no le cuesta nada
+  // a Nominatim, así que no tiene por qué gastar cupo. Lo que se limita es salir
+  // a pedirle.
+  //
+  // Nominatim es un servicio comunitario con una política de uso explícita —un
+  // pedido por segundo, nada de uso masivo— y la sanción es el bloqueo de la IP,
+  // que nos dejaría sin buscador de lugares para todos. Hasta hoy esta ruta no
+  // tenía ningún límite: alguien tecleando rápido, o un script, le pegaba de
+  // corrido con nuestro User-Agent.
+  if (!limitar(`geocode:${ipDe(req)}`, 30, 60_000))
+    return err('Demasiadas búsquedas seguidas. Esperá unos segundos.', 429);
 
   try {
     const u = 'https://nominatim.openstreetmap.org/search'
