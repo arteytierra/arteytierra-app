@@ -461,6 +461,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Winter et al. (2017) — Agronomic Challenges and Opportunities for Smallholder Terrace Agriculture, Frontiers in Plant Science', url: 'https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2017.00331/full' },
       ],
     },
+    {
+      practica: 'Parcelas de provision (provision grounds) con panapen en jardines forestales mixtos',
+      periodo: 'Siglos XVIII-XIX, vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Comunidades rurales de Jamaica, Trinidad y Tobago, San Vicente y San Cristobal y Nieves cultivan el panapen (Artocarpus altilis) en provision grounds —sistemas mixtos de jardin forestal originados en la epoca de esclavitud— integrado como sombreador de cacao, rompeviento y bordura. Se documentan 51 nombres vernaculos y cuatro sistemas de produccion: bordura (35 %), huerto domestico (34 %), policultivo (29 %) y monocultura (2 %). El 68 % cultiva para consumo propio y redistribucion comunitaria, manteniendo redes de reciprocidad caracteristicas del bosque humedo caribeno.',
+      fuentes: [
+        { label: 'Daley et al. (2022) — Folk nomenclature and traditional knowledge of breadfruit diversity in four Anglophone Caribbean countries. J Ethnobiology Ethnomedicine 18:65', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9650817/' },
+      ],
+    },
   ],
   matorral_seco_caribeno: [
     {
@@ -471,7 +482,18 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       detalle:
         'La reconstrucción histórica de La Española describe el conuco precolombino y sigue su registro hasta el siglo XVIII. El montículo concentra suelo fértil y residuos, mejora infiltración sin dejar raíces anegadas y permite policultivo; esas funciones son relevantes tanto frente a aguaceros breves como a estaciones secas.',
       fuentes: [
-        { label: 'Orioli, L. (2022) — Il Conuco: una pratica colturale pre-colombiana, Rivista di Storia dell’Agricoltura', url: 'https://www.storiaagricoltura.it/articoli/alla-ricerca-del-contributo-americano-alla-costituzione-della-nostra-agricoltura-il-conuco-una-prati/2167' },
+        { label: 'Orioli, L. (2022) — Il Conuco: una pratica colturale pre-colombiana, Rivista di Storia dell\'Agricoltura', url: 'https://www.storiaagricoltura.it/articoli/alla-ricerca-del-contributo-americano-alla-costituzione-della-nostra-agricoltura-il-conuco-una-prati/2167' },
+      ],
+    },
+    {
+      practica: 'Extraccion artesanal de sal en la salina costera de Pampatar, isla Margarita',
+      periodo: 'Colonial - siglo XX (cierre 1994)',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Pobladores de Pampatar (municipio Maneiro, isla Margarita, Nueva Esparta, Venezuela) extraian sal de la salina costera de manera artesanal: se sacaba con las manos, la totuma y el saco de sisal, y la molian con palos y piedra de moler. Once informantes de 60 a 90 anos documentan el proceso como actividad comunal central hasta mediados del siglo XX. ENSAL regulo la actividad desde 1969 y el cierre definitivo de la extraccion artesanal ocurrio en 1994.',
+      fuentes: [
+        { label: 'Revista Procesos Historicos (2016) — Salina de Pampatar: Reminiscencias. Venezuela 15(30)', url: 'https://ve.scielo.org/scielo.php?script=sci_arttext&pid=S1010-29142016000200007' },
       ],
     },
   ],
@@ -2611,6 +2633,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO GIAHS — Ich Kool: Mayan milpa of the Yucatan peninsula', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       ],
     },
+    {
+      practica: 'Manejo y domesticacion del jicaro (Crescentia cujete) para utensilios rituales y cotidianos en la Peninsula de Yucatan',
+      periodo: 'Precolombino, vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Comunidades mayas de la Peninsula de Yucatan distinguen cuatro variedades de jicaro (morfotipo silvestre uas y tres domesticados: luch, sac luch y yaax luch), propagan clonalmente las domesticadas por estacas en huertos de traspatio (solar) y seleccionan activamente por redondez y tamano del fruto. Los cuencos de jicaro se usan en la ceremonia de peticion de lluvia ch\'a chaak para servir saka\' y balche\', para consumo cotidiano de pozol y chocolate, y el 42,5 % de los entrevistados los comercializa en Dia de Muertos.',
+      fuentes: [
+        { label: 'Aguirre-Dugua et al. (2013) — Phenotypic differentiation between wild and domesticated varieties of Crescentia cujete and culturally relevant uses in the Yucatan Peninsula. J Ethnobiology Ethnomedicine 9:76', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3842825/' },
+      ],
+    },
   ],
   balsas_jalisco_bosques_secos: [
     {
@@ -2747,6 +2780,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — The Quesungual slash and mulch agroforestry system', url: 'https://www.fao.org/4/Y5030E/y5030e19.htm' },
       ],
     },
+    {
+      practica: 'Meliponicultura ancestral con jicote (Melipona beecheii) en el corredor seco de Nicaragua',
+      periodo: 'Precolombino, vigente',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En el municipio de El Sauce (Leon, Nicaragua, zona seca del Pacifico norte), 56 apicultores practican la crianza de seis especies de abejas nativas sin aguijon: principalmente Melipona beecheii (jicote estrella) y Tetragonisca angustula (marielita), alojadas en cajas rusticas (73 % de las colmenas). La miel se destina al consumo familiar y uso medicinal. El estudio caracteriza la practica como parte de la cultura ancestral de Nicaragua, heredada de los pueblos indigenas mesoamericanos que sacralizaban estas abejas.',
+      fuentes: [
+        { label: 'Lopez-Perez et al. — Caracterizacion de la meliponicultura en El Sauce, Leon, Nicaragua. Universitas UNAN-Leon 16(1)', url: 'https://doi.org/10.5377/universitas.v16i1.19073' },
+      ],
+    },
   ],
   bosque_atlantico_mosquitia: [
     {
@@ -2758,6 +2802,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Productores de El Hormiguero, Siuna, manejan cacao con árboles frutales, maderables y leguminosos y ajustan progresivamente la sombra mediante conocimiento local. La combinación de varios estratos, injertos o clones y cobertura arbórea ofrece una referencia para amortiguar calor y lluvia, pero el registro corresponde a quince fincas y no autoriza extrapolar una identidad étnica ni una receta única a toda la Mosquitia.',
       fuentes: [
         { label: 'AGRIS — Estructura arbórea y conocimiento local sobre manejo de sombra en sistemas agroforestales con cacao', url: 'https://agris.fao.org/search/en/providers/125479/records/6995a389e6c33ba92ad64a94' },
+      ],
+    },
+    {
+      practica: 'Pesca artesanal de tortuga verde (Chelonia mydas) con redes sobre sleeping rocks por comunidades Miskitu',
+      periodo: 'Precolombino, vigente; cuantificado 1991-2011',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Los pescadores Miskitu de la Mosquitia caribena de Nicaragua operan redes de malla grande sobre afloramientos rocosos submarinos —sleeping rocks— donde las tortugas verdes regresan al atardecer a descansar tras el pastoreo diurno; las redes se revisan al amanecer. La pesca fue historicamente estacional y combinada con agricultura y caza, cumpliendo obligaciones de reciprocidad comunitaria. Entre 1991 y 2011, 14 sitios de desembarco registraron mas de 171.000 tortugas capturadas, primera cuantificacion del sistema a escala regional.',
+      fuentes: [
+        { label: 'Lagueux et al. (2014) — Artisanal Green Turtle Fishery of Caribbean Nicaragua: Catch Rates and Trends, 1991-2011. PLOS ONE 9(4):e94667', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3989241/' },
       ],
     },
   ],
