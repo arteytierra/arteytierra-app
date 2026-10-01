@@ -4144,6 +4144,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Ferrara, City of the Renaissance, and its Po Delta', url: 'https://whc.unesco.org/en/list/733/' },
       ],
     },
+    {
+      practica: 'Recolección de plantas silvestres comestibles en las islas de la laguna de Venecia',
+      periodo: 'Documentado entre 2022 y 2025 en Sant’Erasmo y Vignole',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Las islas de Sant’Erasmo y Vignole son refugios bioculturales del delta del Po donde 18 agricultores y 31 pescadores fueron entrevistados entre 2022 y 2025. Se documentaron 39 taxones de plantas silvestres comestibles con preparaciones culinarias y datos de comercialización. El 94 % de los agricultores utiliza plantas silvestres (70 % también las vende), nombrando los 39 taxones, mientras que sólo el 10 % de los pescadores reconocía alguna planta silvestre. El 35 % de los usos documentados no habían sido registrados previamente a escala regional o nacional. La brecha de conocimiento entre agricultores y pescadores revela que el saber está ligado al contacto cotidiano con el suelo y la vegetación de la laguna.',
+      fuentes: [
+        { label: 'Floridia, Mendoza, Fantinato, Zocchi et al. (2026) — Local farmers, custodians of wild food plant knowledge and uses in the touristified Venice Lagoon, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13185300/' },
+      ],
+    },
   ],
   apeninos_montano: [
     {
@@ -4179,6 +4190,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Pantelleria, cada vid se planta dentro de una concavidad y se poda en seis ramas radiales próximas al suelo. La forma reduce exposición al viento, recoge humedad y permite que la planta soporte sequía y radiación intensa. Todo el ciclo se realiza manualmente y el conocimiento continúa dentro de la comunidad isleña.',
       fuentes: [
         { label: 'UNESCO Intangible Cultural Heritage — Vite ad alberello of Pantelleria', url: 'https://ich.unesco.org/en/RL/traditional-agricultural-practice-of-cultivating-the-vite-ad-alberello-head-trained-bush-vines-of-the-community-of-pantelleria-00720?RL=00720&lang=en' },
+      ],
+    },
+    {
+      practica: 'Etnofarmacobotánica de la subregión histórica de Marmilla (Cerdeña)',
+      periodo: 'Conocimiento transmitido oralmente durante siglos; entrevistas contemporáneas',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En la subregión de Marmilla (centro-sur de Cerdeña), 145 entrevistas semiestructuradas documentaron 137 plantas medicinales de 62 familias; el 57,3 % son taxones exclusivos de la cuenca mediterránea. Las partes más usadas son las hojas (49 %) y la preparación más frecuente es la decocción (50 %). Es el mayor número de taxones medicinales documentado en Cerdeña con esa metodología. El aislamiento prolongado y la longevidad extrema de los habitantes de Marmilla convirtieron la subregión en un sitio clave para documentar el conocimiento botánico tradicional transmitido oralmente, que está en rápido declive por cambios socioeconómicos recientes.',
+      fuentes: [
+        { label: 'Cocco, Maccioni, Sanjust, Falconieri, Farris, Maxia (2022) — Ethnopharmacobotany and Diversity of Mediterranean Endemic Plants in Marmilla Subregion, Sardinia, Plants', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9695302/' },
       ],
     },
   ],
@@ -4257,6 +4279,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO Intangible Cultural Heritage — Know-how of cultivating mastic on Chios', url: 'https://ich.unesco.org/en/RL/know-how-of-cultivating-mastic-on-the-island-of-chios-00993' },
       ],
     },
+    {
+      practica: 'Recolección de hierbas silvestres comestibles (chórta) en la isla de Karpathos',
+      periodo: 'Documentado en primavera de 2023 en la comunidad de Olimpos (norte de Karpathos)',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En Olimpos, comunidad matrifocal del norte de Karpathos (Dodecaneso, Grecia), 42 entrevistas semiestructuradas documentaron 69 taxones de hierbas silvestres comestibles con usos culinarios. La mitad tienen sabor amargo (principalmente Asteraceae y Brassicaceae), y el 70 % de las más citadas son amargas; casi todas se consumen cocidas. Uno de cada cuatro fitónimos folk de Olimpos no coincide con los del resto de Grecia, rasgo que pudo originarse en la cultura dórica local. Casi la mitad de los taxones de Olimpos no se superpone con los de Creta central, revelando especificidad cultural local a pesar de la proximidad geográfica.',
+      fuentes: [
+        { label: 'Pieroni, Sulaiman, Prakofjewa, Haq et al. (2024) — Isolated Mediterranean foraging: wild greens in the matrifocal community of Olympos, Karpathos Island, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11558844/' },
+      ],
+    },
   ],
   creta_mediterranea: [
     {
@@ -4268,6 +4301,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La evidencia de Creta oriental indica manejo de olivos a gran escala desde el Neolítico Final. Los restos botánicos y faunísticos muestran una economía donde olivar, cultivos intensivos y pastoreo extensivo de ovejas y cabras se relacionaban. Se registra como sistema histórico porque la fuente reconstruye usos prehistóricos y no demuestra continuidad predial directa hasta hoy.',
       fuentes: [
         { label: 'Livarda y otros (2021) — Mediterranean polyculture revisited: olive, grape and subsistence strategies at Palaikastro, East Crete, between the Late Neolithic and Late Bronze Age, Journal of Anthropological Archaeology 61 (copia abierta en el Dipòsit Digital de la UB)', url: 'https://diposit.ub.edu/items/4696aff1-05d2-431e-bc51-0eca13562ad8' },
+      ],
+    },
+    {
+      practica: 'Recolección de hierbas silvestres amargas (chórta) en la meseta de Lasithi (Creta oriental)',
+      periodo: 'Práctica documentada en campo; meseta con continuidad genética hipotética desde el período minoico',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la meseta de Lasithi (Creta oriental), 31 participantes nombraron 59 taxones folk de hierbas silvestres comestibles con preparaciones culinarias; predominan las de sabor amargo. Estudios genéticos previos habían identificado patrones genéticos peculiares en la población local, con la hipótesis de que la civilización minoica se refugió en esta meseta antes de desaparecer. El estudio registró el índice de citación de cada taxon y aplicó regresión logística para relacionar la clasificación sensorial (amargo, ácido, astringente) con los métodos de cocción. La meseta de Lasithi es uno de los pocos refugios donde la tradición de recolección de hierbas sigue activa en Creta.',
+      fuentes: [
+        { label: 'Alrhmoun, Sulaiman, Krigas, Pieroni, Sõukand et al. (2024) — Is Boiling Bitter Greens a Legacy of Ancient Crete? Contemporary Foraging in the Minoan Refugium of the Lasithi Plateau, Foods', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11593907/' },
       ],
     },
   ],
@@ -4283,6 +4327,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Wine Village Terraces, Cyprus', url: 'https://whc.unesco.org/document/5301' },
       ],
     },
+    {
+      practica: 'Farmacia vegetal popular en el recetario de Juan el Médico (Chipre, siglo XIII)',
+      periodo: 'Finales del siglo XIII; fuente principal: Terapéutica de Juan el Médico',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El Terapéutica de Juan el Médico (siglo XIII, Chipre) documenta el uso popular de plantas, minerales y materiales quemados en fórmulas farmacéuticas de la isla. Un equipo multidisciplinar identificó los ingredientes mediante comparación con De Materia Medica de Dioscórides y con los minerales disponibles en Chipre, y reconstruyó experimentos con sustancias quemadas. Los resultados muestran que al menos algunas de las recetas tenían valor medicinal práctico. El análisis revela una tradición farmacéutica popular activa en la isla en el período bizantino tardío, independiente de la medicina académica y basándose en recursos vegetales y minerales locales.',
+      fuentes: [
+        { label: 'Scott, Lazarou, Allkin, Nesbitt (2026) — The use of minerals, plants and burnt materials in ancient medicine: Approaches to working recipes in John the Physician’s Therapeutics from late 13th century Cyprus, Proc Geologists’ Assoc', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13005745/' },
+      ],
+    },
   ],
   balcanes_mixto: [
     {
@@ -4294,6 +4349,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El análisis antracológico de 18 yacimientos neolíticos entre la llanura del bajo Danubio y la costa egea muestra que la vegetación buscada eran los robledales caducifolios mixtos termófilos, con un sotobosque rico en árboles, arbustos y hierbas que dan frutos y necesitan luz: de ahí salían la leña, el pasto forestal, el forraje y los frutos recolectados. Los datos indican estabilidad y sostenibilidad en la obtención de leña durante todo el período considerado, y sugieren que el uso del territorio favorecía ese sotobosque. El artículo es de acceso pago: esta entrada se apoya en su resumen público, que sostiene lo anterior.',
       fuentes: [
         { label: 'Marinova y Ntinou (2018) — Neolithic woodland management and land-use in south-eastern Europe: The anthracological evidence from Northern Greece and Bulgaria, Quaternary International 496 (resumen público; el texto completo es de pago)', url: 'https://doi.org/10.1016/j.quaint.2017.04.004' },
+      ],
+    },
+    {
+      practica: 'Uso tradicional de tomillos silvestres (Thymus spp.) en medicina y gastronomía balcánica',
+      periodo: 'Documentado entre 1900 y 2022 en doce países balcánicos',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Una revisión sistemática de literatura etnobotánica y etnofarmacológica entre 1900 y 2022 cubrió Albania, Bosnia y Herzegovina, Bulgaria, Croacia, Grecia, Kosovo, Montenegro, Macedonia del Norte, Rumanía, Serbia, Eslovenia y la parte europea de Turquía. Se documentaron 553 registros de uso de especies de Thymus: el tratamiento de afecciones respiratorias y gastrointestinales fue el más frecuente, seguido de usos culinarios (especias, infusiones, bebidas y conservantes). La consistencia de los usos en todos los países balcánicos refuerza la relevancia farmacológica transcultural de los tomillos. El trabajo identifica además importantes inconsistencias taxonómicas en la literatura (uso frecuente de T. serpyllum y T. vulgaris para espécies distintas), lo que dificulta la comparación de registros entre países.',
+      fuentes: [
+        { label: 'Aneva, Markovic, Malovec, Naychov et al. (2026) — Traditional Uses of Thymus Species in the Balkans: Ethnopharmacology, Food, and Cultural Heritage, Life (Basel)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13028209/' },
       ],
     },
   ],
