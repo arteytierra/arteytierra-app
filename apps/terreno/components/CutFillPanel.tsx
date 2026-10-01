@@ -351,9 +351,15 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   const yaRestauro = useRef(false);
   useEffect(() => {
     if (yaRestauro.current || !inicial?.poligonoId || !sel || res || cargando) return;
+    // Un proyecto guardado antes del 01/10/2026 puede no traer lado de muro.
+    // Sin esta guarda el panel se abriría solo con el error del paso 3 puesto,
+    // que es decirle "te falta algo" a alguien que no hizo nada. Se espera a que
+    // elija: `analizar` está en las dependencias y depende de `muroIdx`, así que
+    // el cálculo arranca solo en cuanto lo haga.
+    if (muroIdx === null) return;
     yaRestauro.current = true;
     void analizar();
-  }, [inicial, sel, res, cargando, analizar]);
+  }, [inicial, sel, res, cargando, analizar, muroIdx]);
 
   // ── Persistencia de los campos ─────────────────────────────────────────────
   // Sube al contenedor todo lo que el usuario eligió, para que viaje con el
