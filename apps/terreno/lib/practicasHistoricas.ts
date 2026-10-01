@@ -433,6 +433,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO SIPAM — Metepantle Ancestral Agricultural System in the Mountainous Zones of Tlaxcala', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-meteplante/en' },
       ],
     },
+    {
+      practica: 'Manejo y domesticación de Agave americana para pulque y alimento',
+      periodo: 'Desde el período prehispánico; diversificación morfológica documentada en entrevistas contemporáneas',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El Agave americana es manejado en México para extraer savia y producir pulque, y sus tallos han sido alimento desde tiempos prehistóricos. Entrevistas a manejadores a lo largo del rango de distribución revelan que los patrones de uso y selección humana influyen en la variación morfológica y la diversificación en subespecies y variedades. El cultivo combina tolerancia a la sequía con un sistema de aprovechamiento que se adapta a gradientes ecológicos y culturales distintos.',
+      fuentes: [
+        { label: 'Casas et al. (2025) — Use, management and domestication of Agave americana in Mexico, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13625399/' },
+      ],
+    },
   ],
   altiplano_mexicano_matorral: [
     {
@@ -3558,6 +3569,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO GIAHS — Ancient Traditional Gardens of Qazvin Bāghestān, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-qazvin-ancient-gardens/en' },
       ],
     },
+    {
+      practica: 'Recolección de plantas silvestres comestibles en las montañas de Semnan (norte de Irán)',
+      periodo: 'Documentado en entrevistas de campo de 2021–2022; práctica con raíces históricas',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la región de Shahrood, provincia de Semnan, se documentaron 67 taxones silvestres comestibles de 24 familias mediante 44 entrevistas en 12 aldeas. Las familias más representadas son Rosaceae (9), Apiaceae (8) y Lamiaceae (8), y el género Allium concentra la mayor diversidad específica. Las hojas jóvenes y las partes aéreas tiernas son los órganos más consumidos, recolectados principalmente en abril–mayo en áreas cercanas a las aldeas y en pastizales. Los indicadores de valor de uso revelan el estado frágil del conocimiento ante el cambio climático y la presión antrópica sobre los pastizales de montaña.',
+      fuentes: [
+        { label: 'Asadi et al. (2024) — Ethnobotanical study of wild edible plants in the mountainous regions of Semnan Province, Iran, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11451187/' },
+      ],
+    },
   ],
   sistan_registan: [
     {
@@ -3636,6 +3658,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Ait Souab-Ait Mansour, el argán se integra con cultivos anuales y perennes, pastoreo y terrazas de piedra seca. Los muros crean suelo cultivable, retienen agua y reducen erosión; depósitos subterráneos matifyia guardan lluvia para atravesar períodos secos. La diversidad de estratos reparte producción entre aceite, forraje, cereal, carne y leña en suelos pobres.',
       fuentes: [
         { label: 'FAO GIAHS — Argan-based agro-sylvo-pastoral system within Ait Souab-Ait Mansour, Morocco', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-argan-based-system/en' },
+      ],
+    },
+    {
+      practica: 'Farmacopea herbal amazigh con continuidad documentada desde el siglo XIII',
+      periodo: 'Documentada por Ibn al-Baytar a comienzos del siglo XIII; continuidad verificada en estudios recientes',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Ibn al-Baytar registró nombres populares bereberes para decenas de plantas en su compendio medieval de sustancias medicinales (siglo XIII). Un estudio comparó esas referencias históricas con publicaciones etnomedícas recientes de zonas de población amazigh del norte de África y estimó que el 60,9 % de las plantas históricamente registradas siguen en uso, con un 78,6 % de nombres comunes homólogos. La transmisión oral amazigh, con escaso acceso a los textos medievales, reduce la posibilidad de que la continuidad sea el resultado de la lectura de fuentes escritas en lugar del conocimiento propio.',
+      fuentes: [
+        { label: 'Leto, Touwaide & Pieroni (2025) — Persistence of Use Among Amazigh People of Medicinal Plants Documented by Ibn al-Baytar, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11821241/' },
       ],
     },
   ],
@@ -3997,6 +4030,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En South Downs, las ovejas pastaban el césped calcáreo y luego se encerraban de noche sobre campos arables. El estiércol transfería fertilidad desde la pastura hacia el cereal y el pastoreo mantenía una cubierta corta y diversa. La separación moderna entre ganadería y agricultura debilitó el ciclo, aunque el pastoreo ovino sigue siendo central para conservar el paisaje.',
       fuentes: [
         { label: 'South Downs National Park — Sustainable meat production and sheep-and-corn husbandry', url: 'https://www.southdowns.gov.uk/providing-a-local-solution-to-sustainable-meat-production-in-the-south-downs/' },
+      ],
+    },
+    {
+      practica: 'Ocupación mesolítica de claros en el bosque calcáreo del entorno de Stonehenge',
+      periodo: 'Durante aproximadamente 4.000 años antes del período neolítico; evidencia sedaDNA y polínica',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El yacimiento de Blick Mead, en la confluencia de la llanura calcárea de Salisbury y el río Avon, muestra que cazadores-recolectores ocuparon un claro en el bosque caducifolio durante unos 4.000 años antes de la construcción de Stonehenge. El análisis de sedaDNA, palinología y geoarqueología documenta la presencia de aurochs, ciervos y humanos en un entorno semiabierto. Los resultados apoyan la continuidad entre las comunidades mesolíticas y los constructores neolíticos, y muestran que el paisaje calcáreo ya era un espacio de uso antes de la llegada de la agricultura.',
+      fuentes: [
+        { label: 'Jacques et al. (2022) — Life before Stonehenge: The hunter-gatherer occupation of Blick Mead, PLOS ONE', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9045597/' },
       ],
     },
   ],
@@ -4630,6 +4674,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Hortobágy National Park, the Puszta', url: 'https://whc.unesco.org/en/list/474/' },
       ],
     },
+    {
+      practica: 'Manejo agrosilvopastoril de larga duración en estepas y bosques-estepas del este de Europa',
+      periodo: 'Desde tiempos prehistóricos; evidencia paleoecológica y arqueológica de un proceso de larga duración',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Una revisión de evidencias paleoecológicas, bioarqueológicas y geoarqueológicas documenta que los paisajes abiertos de bosque-estepa y de garriga en el este de Europa son el resultado de milenios de pastoreo y labranza. El ganado doméstico ha modelado la apertura del bosque y la diversidad vegetal desde la prehistoria. La desaparición de las prácticas tradicionales de pastoreo y agricultura se identifica como la principal amenaza para estos paisajes de herencia cultural y sus valores de biodiversidad.',
+      fuentes: [
+        { label: 'Nieto-Lugilde et al. (2025) — Plant–animal interactions in the long-term development of heritage landscapes in Europe, Philos Trans R Soc Lond B', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12079136/' },
+      ],
+    },
   ],
 
   // ── Caucaso y el Caspio ───────────────────────────────────────────────────────
@@ -4706,6 +4761,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Battir, muros secos forman terrazas irrigadas para hortalizas y terrazas secas para olivos y vides. Manantiales alimentan canales y estanques, y las familias distribuyen el agua mediante turnos temporales heredados. El mantenimiento colectivo de muros y conducciones conserva suelo fértil y permite cultivar una ladera abrupta.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Palestine: Land of Olives and Vines, Battir', url: 'https://whc.unesco.org/en/list/1492' },
+      ],
+    },
+    {
+      practica: 'Medicina herbal tradicional en la Reserva de Biosfera del Shouf (Líbano)',
+      periodo: 'Documentado en entrevistas de 2019–2022; transmisión ancestral de generación en generación',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la Reserva de Biosfera del Shouf, en las montañas del Líbano, 133 informantes de 22 aldeas documentaron 184 especies vegetales medicinales de 57 familias. Asteraceae (31 taxones), Lamiaceae (14) y Rosaceae (14) son las familias más representadas. La decoción es el método de preparación predominante (45 %) y las enfermedades gastrointestinales la categoría más tratada. La principal fuente de transmisión del conocimiento es ancestral, lo que sugiere una tradición oral continua a pesar de las transformaciones recientes del paisaje forestal.',
+      fuentes: [
+        { label: 'Saleh et al. (2023) — Ethnobotanical survey of medicinal wild plants in the Shouf Biosphere Reserve, Lebanon, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9791969/' },
       ],
     },
   ],
