@@ -74,6 +74,10 @@ export default async function InformeTokenPage({ params }: PageProps) {
     zonas:    meta['zonas'] as Zona[] | undefined,
     conMarca: planDueno === 'semilla',
     sinRumbos: !can(planDueno, 'catastro.rumbos'),
+    // El plan que manda es el del dueño del proyecto, no el de quien abre el
+    // link. Si no fuera así, el informe de un Semilla se bajaría desde su
+    // propio link compartido y el candado de la app no serviría para nada.
+    sinDescarga: !can(planDueno, 'informe.descarga'),
   };
 
   return <InformeView datos={informeData} compartido />;

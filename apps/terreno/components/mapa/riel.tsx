@@ -72,7 +72,12 @@ export const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const))
  *  cambian: entitlements, snapshots y la paleta (Ctrl+K) siguen intactos. */
 export const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] }> = [
   { id: 'ubicacion', label: 'Tu terreno',                            corto: 'Lugar',     icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
-  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'contexto', 'entorno', 'cal', 'solar'],                       esenciales: ['clima', 'contexto'] },
+  // Entorno va arriba de Contexto por decisión de Jonatan (01/10/2026): lo
+  // primero que alguien quiere saber del vecindario es qué hay alrededor —qué
+  // especies, qué industria, qué ductos—, y recién después en qué ecorregión
+  // cae. Los tres quedan a la vista: dejar Contexto detrás de "Más…" habría
+  // escondido el panel más cargado del peldaño para ganar un renglón.
+  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'entorno', 'contexto', 'cal', 'solar'],                       esenciales: ['clima', 'entorno', 'contexto'] },
   { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud'],               esenciales: ['topo', 'analisis'] },
   { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
   { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra', 'sombras', 'visibilidad'], esenciales: ['masterplan', 'zonas'] },

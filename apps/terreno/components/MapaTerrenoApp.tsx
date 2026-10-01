@@ -2460,6 +2460,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       profesional: leerPerfil() ?? undefined,
       conMarca: plan === 'semilla',
       sinRumbos: !can(plan, 'catastro.rumbos'),
+      // Semilla puede ABRIR el informe y compartirlo por link; lo que no puede
+      // es bajarlo. Por eso el candado no corta acá: cortar la apertura dejaría
+      // a Semilla publicando un informe que nunca pudo mirar.
+      sinDescarga: !can(plan, 'informe.descarga'),
     });
     window.open('/informe/borrador', '_blank');
   }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
@@ -2471,6 +2475,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     capturaTitulo,
     (mensaje) => setModal({ type: 'alert', message: mensaje }),
   );
+
+  /** El PNG de la barra superior, que se puede apretar sin entrar al modo
+   *  captura. Mismo candado que `iniciarCaptura`. */
+  const handleGuardarPngConPlan = useCallback(() => {
+    if (pedirPlan('export.imagen')) return;
+    void handleGuardarPng();
+  }, [pedirPlan, handleGuardarPng]);
 
   const handleCapturaMap = useCallback(() => {
     const style = document.createElement('style');
@@ -2597,12 +2608,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [capas, mojones.length, datosShader, paletaShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, aguadasFiltradas, pinesFiltrados, dibujosFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
 
   // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
+  // El candado va acá y no en cada botón: es la única puerta al modo captura, y
+  // los dos botones de adentro (PNG e Imprimir) sólo existen una vez que se
+  // entró. El PNG directo de la barra superior es la otra puerta, y la tapa
+  // `handleGuardarPngConPlan`.
   const iniciarCaptura = useCallback(() => {
+    if (pedirPlan('export.imagen')) return;
     setPanelDerecho(null);
     setCapturaActiva(true);
     if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
     setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
-  }, [capturaTitulo, proyectoActual, leyendaItems]);
+  }, [capturaTitulo, proyectoActual, leyendaItems, pedirPlan]);
 
   // ─── Comandos para la paleta (Ctrl+K) ─────────────────────────────────────────
   const comandos = useMemo<Comando[]>(() => {
@@ -2688,7 +2704,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           on3D: () => { if (topoBloqueada) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
         }}
         guardado={{ estado: estadoGuardado, guardando: guardandoNube, onGuardar: () => void handleGuardarNube() }}
-        captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPng, guardandoPng }}
+        captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPngConPlan, guardandoPng, bloqueada: !can(plan, 'export.imagen') }}
         historial={{ onUndo: undo, onRedo: redo, puedeUndo: canUndo, puedeRedo: canRedo }}
       />
 

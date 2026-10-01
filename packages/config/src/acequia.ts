@@ -139,8 +139,10 @@ export type AcequiaFeature =
   | 'diseno.keyline'
   | 'diseno.economia'
   | 'sugerencias'
+  | 'informe.descarga'
   | 'informe.sin_marca'
   | 'informe.white_label'
+  | 'export.imagen'
   | 'export.gis'
   | 'export.dxf'
   | 'colaboracion';
@@ -182,8 +184,25 @@ export const ACEQUIA_FEATURES: Record<AcequiaFeature, AcequiaPlanId> = {
   'diseno.economia':     'personal',
   'sugerencias':         'personal',
   // Entrega.
+  //
+  // Decisión de Jonatan, 01/10/2026: Semilla deja de LLEVARSE el trabajo.
+  // Hasta hoy la muestra gratis incluía bajar el informe entero en PDF y
+  // exportar el plano en PNG, que es el entregable — con marca de agua, pero
+  // el entregable. Con eso una persona resolvía su predio sin pagar nunca, y
+  // la marca de agua no cambiaba nada porque el plano se recorta.
+  //
+  // Lo que Semilla conserva es ver y compartir: el informe sigue publicándose
+  // con link (`informe_publico`) y ahí la marca de agua sí trabaja a favor,
+  // porque el que lo recibe ve de dónde salió. Lo que pasa a Personal es
+  // sacarlo de la app en un archivo.
+  'informe.descarga':    'personal',
   'informe.sin_marca':   'personal',
   'informe.white_label': 'profesional',
+  // Capturar el plano: el PNG y el editor de plano con rótulo y leyenda. Es la
+  // única exportación que además CUESTA: compone la imagen pidiendo teselas
+  // satelitales de Esri, así que cada captura es tráfico contra un servicio de
+  // terceros que no es nuestro.
+  'export.imagen':       'personal',
   'export.gis':          'personal',
   'export.dxf':          'estudio',
   'colaboracion':        'estudio',

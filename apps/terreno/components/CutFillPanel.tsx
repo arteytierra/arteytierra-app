@@ -121,25 +121,62 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
    */
   const inicialRef = useRef(inicial);
 
-  // Sugerir el lado más bajo del polígono como muro (donde iría la presa).
-  // Si el proyecto ya traía un lado elegido, se respeta: no tiene sentido
-  // pisarle al usuario una decisión que ya tomó y guardó.
+  // El lado del muro lo ELIGE el usuario, antes de calcular (paso 3).
+  //
+  // Hasta el 01/10/2026 lo elegía este efecto: tomaba el lado más bajo y lo
+  // dejaba puesto en silencio. El problema no era el criterio —el lado más bajo
+  // suele ser el bueno— sino que de ese lado dependen el largo del
+  // coronamiento, el perfil del terreno bajo el eje, el volumen de terraplén y
+  // la cuenca de aporte. O sea: la mitad de los números de la pestaña salían de
+  // una decisión que la app había tomado sola y que el usuario descubría
+  // después, en un renglón chico de la sección "Cuenca de aporte", con un
+  // enlace que la rotaba de a uno. En un predio con dos vaguadas el lado más
+  // bajo del polígono puede ser el que NO se va a cerrar.
+  //
+  // Ahora: el lado más bajo se sugiere (`muroSugerido`) y se marca, pero no se
+  // selecciona. Lo único que se restaura solo es lo que el proyecto ya traía
+  // guardado, que es una decisión que el usuario ya tomó.
   useEffect(() => {
-    if (!sel || sel.vertices.length < 3 || !grilla) { setMuroIdx(null); return; }
+    if (!sel || sel.vertices.length < 3) { setMuroIdx(null); return; }
     const guardado = inicialRef.current;
     if (guardado && guardado.poligonoId === sel.id && guardado.muroIdx !== null) {
       setMuroIdx(guardado.muroIdx);
       return;
     }
-    const vs = sel.vertices;
-    let best = -1, bestE = Infinity;
-    for (let i = 0; i < vs.length; i++) {
-      const p = puntoMasBajoEnArista(grilla, vs[i]!, vs[(i + 1) % vs.length]!);
-      if (p && p.elev < bestE) { bestE = p.elev; best = i; }
-    }
-    setMuroIdx(best >= 0 ? best : null);
+    setMuroIdx(null);
     setCuencaMuro(null); setCuencaMuroAviso(null);
+  }, [sel]);
+
+  /**
+   * Los lados del polígono, con lo que hace falta para elegir uno: cuánto mide
+   * y cuál es la cota más baja que toca.
+   *
+   * La cota sale `null` mientras no haya grilla de elevación. No es un error:
+   * la grilla se trae al calcular, o ya está si se pasó por Topografía. Sin
+   * ella el usuario elige por largo y por lo que ve en el mapa, que es
+   * exactamente lo que hace en el campo.
+   */
+  const lados = useMemo(() => {
+    if (!sel || sel.vertices.length < 3) return [];
+    const vs = sel.vertices;
+    return vs.map((a, i) => {
+      const b = vs[(i + 1) % vs.length]!;
+      const latMid = (a.lat + b.lat) / 2 * Math.PI / 180;
+      const largo_m = Math.round(Math.hypot(
+        (b.lng - a.lng) * 111_320 * Math.cos(latMid),
+        (b.lat - a.lat) * 111_320,
+      ));
+      const bajo = grilla ? puntoMasBajoEnArista(grilla, a, b) : null;
+      return { i, largo_m, cotaMin: bajo ? Math.round(bajo.elev * 10) / 10 : null };
+    });
   }, [sel, grilla]);
+
+  /** El lado más bajo: la sugerencia, no la elección. */
+  const muroSugerido = useMemo(() => {
+    const conCota = lados.filter(l => l.cotaMin !== null);
+    if (conCota.length === 0) return null;
+    return conCota.reduce((a, b) => (b.cotaMin! < a.cotaMin! ? b : a)).i;
+  }, [lados]);
 
   // Dibujar el lado-muro elegido en el mapa.
   useEffect(() => {
@@ -277,6 +314,11 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
   const analizar = useCallback(async () => {
     if (!sel || sel.vertices.length < 3) { setError('Elegí un polígono cerrado.'); return; }
+    // Sin lado de muro no se calcula. De él salen el largo del coronamiento y el
+    // perfil del terreno bajo el eje; sin eso `dimensionarMuro` cae al prisma de
+    // altura constante, que sobredimensiona el terraplén entre 2,5 y 3 veces —y
+    // lo informa en una nota que es fácil pasar de largo.
+    if (muroIdx === null) { setError('Elegí de qué lado va el muro (paso 3).'); return; }
     setCargando(true); setError(null);
     try {
       let g = grilla;
@@ -296,7 +338,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     } finally {
       setCargando(false);
     }
-  }, [sel, grilla, mojones, datosShader, nivel]);
+  }, [sel, grilla, mojones, datosShader, nivel, muroIdx]);
 
   // Recalcular al mover el nivel (si ya hay grilla y polígono)
   const onNivel = useCallback((v: number) => {
@@ -343,7 +385,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
       {/* La herramienta estaba escondida detrás de sus propios requisitos: el
           botón "Calcular embalse" no existía hasta tener el polígono elegido,
           así que había que dibujar y seleccionar A CIEGAS para descubrir que
-          existía. Ahora los tres pasos están numerados y a la vista desde el
+          existía. Ahora los cuatro pasos están numerados y a la vista desde el
           primer momento, y el botón final se ve siempre —deshabilitado y con
           el motivo escrito— para que el destino sea visible desde el arranque. */}
       <div className="flex items-center gap-1.5">
@@ -384,19 +426,74 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
         )}
       </Paso>
 
-      <Paso n={3} hecho={!!res} titulo="Calculá">
+      {/* Paso 3: el lado del muro. Va ANTES de calcular porque de él dependen el
+          largo del coronamiento, el perfil del terreno bajo el eje, el volumen
+          de terraplén y la cuenca de aporte. Antes lo elegía la app sola. */}
+      <Paso n={3} hecho={muroIdx !== null} titulo="Elegí de qué lado va el muro">
+        {!sel ? (
+          <p className="text-[10px] text-ink-700/50 bg-bone-100 rounded-lg px-2.5 py-1.5 leading-relaxed">
+            Primero elegí el polígono del espejo (paso 2).
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-1">
+              {lados.map(l => {
+                const elegido = muroIdx === l.i;
+                const sugerido = muroSugerido === l.i;
+                return (
+                  <button
+                    key={l.i}
+                    onClick={() => { setMuroIdx(l.i); setCuencaMuro(null); setCuencaMuroAviso(null); }}
+                    onMouseEnter={() => onMuroLinea?.([sel.vertices[l.i]!, sel.vertices[(l.i + 1) % sel.vertices.length]!])}
+                    // Al salir se repone lo elegido: el efecto que dibuja el
+                    // muro depende de `muroIdx`, que el hover no cambia, así que
+                    // sin esto la línea se quedaba sobre el último lado mirado.
+                    onMouseLeave={() => onMuroLinea?.(muroIdx !== null
+                      ? [sel.vertices[muroIdx]!, sel.vertices[(muroIdx + 1) % sel.vertices.length]!]
+                      : null)}
+                    title={`Lado ${l.i + 1} · ${l.largo_m} m${l.cotaMin !== null ? ` · cota mínima ${l.cotaMin} m` : ''}`}
+                    className={`px-2 py-1 rounded-lg border text-[9px] font-medium leading-tight transition-colors ${
+                      elegido
+                        ? 'border-moss-700 bg-moss-700 text-bone-50'
+                        : 'border-bone-300 text-ink-700/70 hover:border-moss-500 hover:text-moss-700'
+                    }`}
+                  >
+                    <span className="font-bold">Lado {l.i + 1}</span>
+                    <span className={elegido ? 'text-bone-50/75' : 'text-ink-700/45'}> · {l.largo_m} m</span>
+                    {l.cotaMin !== null && (
+                      <span className={elegido ? 'text-bone-50/75' : 'text-ink-700/45'}> · {l.cotaMin} m</span>
+                    )}
+                    {sugerido && !elegido && <span className="block text-water-700">el más bajo</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[9px] text-ink-700/50 leading-relaxed">
+              Es el lado que vas a cerrar: el cuello de botella entre las laderas. Pasá
+              el mouse por encima para verlo en el mapa.
+              {muroSugerido === null && ' Las cotas aparecen después de calcular, o si ya pasaste por Topografía.'}
+            </p>
+          </>
+        )}
+      </Paso>
+
+      <Paso n={4} hecho={!!res} titulo="Calculá">
         <button
           onClick={analizar}
-          disabled={cargando || !sel}
-          title={!sel ? 'Primero elegí el polígono del espejo (paso 2)' : undefined}
+          disabled={cargando || !sel || muroIdx === null}
+          title={!sel ? 'Primero elegí el polígono del espejo (paso 2)' : muroIdx === null ? 'Primero elegí el lado del muro (paso 3)' : undefined}
           className="w-full flex items-center justify-center gap-1.5 py-2 bg-moss-700 hover:bg-moss-900 disabled:opacity-40 disabled:cursor-not-allowed text-bone-50 rounded-xl text-xs font-medium transition-colors"
         >
           {cargando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Waves className="w-3.5 h-3.5" />}
           {cargando ? 'Calculando…' : 'Calcular embalse'}
         </button>
-        {!sel && (
+        {(!sel || muroIdx === null) && (
           <p className="text-[9px] text-ink-700/45 text-center">
-            {poligonos.length === 0 ? 'Falta el espejo (paso 1).' : 'Falta elegir el polígono (paso 2).'}
+            {poligonos.length === 0
+              ? 'Falta el espejo (paso 1).'
+              : !sel
+                ? 'Falta elegir el polígono (paso 2).'
+                : 'Falta elegir el lado del muro (paso 3).'}
           </p>
         )}
       </Paso>
@@ -646,19 +743,15 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
             <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide">Cuenca de aporte</p>
             {muroIdx === null ? (
-              <p className="text-[10px] text-ink-700/55 leading-relaxed">Calculá el embalse para detectar el muro y su cuenca de aporte.</p>
+              <p className="text-[10px] text-ink-700/55 leading-relaxed">Elegí el lado del muro (paso 3) para delinear su cuenca de aporte.</p>
             ) : (
               <>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] text-ink-700/70">
-                    Muro: <b>lado {muroIdx + 1}</b>/{sel?.vertices.length} <span className="text-ink-700/45">(el más bajo)</span>
+                    Muro: <b>lado {muroIdx + 1}</b>/{sel?.vertices.length}
+                    {muroSugerido === muroIdx && <span className="text-ink-700/45"> (el más bajo)</span>}
                   </span>
-                  <button
-                    onClick={() => { setMuroIdx(i => (sel && i !== null) ? (i + 1) % sel.vertices.length : i); setCuencaMuro(null); }}
-                    className="text-[10px] text-moss-700 hover:text-moss-900 underline"
-                  >
-                    cambiar lado
-                  </button>
+                  <span className="text-[10px] text-ink-700/45">se cambia en el paso 3</span>
                 </div>
                 <button
                   onClick={calcularCuencaMuro}

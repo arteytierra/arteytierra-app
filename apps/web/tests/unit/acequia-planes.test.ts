@@ -158,14 +158,19 @@ describe('la vidriera promete lo que el candado habilita', () => {
     'Muestra gratis del análisis: clima, cuenca y sectores': 'analisis.clima',
     'Calendario del lugar (heladas, lluvias y ventanas de siembra)': 'analisis.clima',
     '1 proyecto activo': null,
-    'Informe compartible (con marca de agua de acequia)': null,
+    // Compartir por link no es una feature con candado: es `informe_publico`,
+    // que cualquier plan puede prender. Lo que sí tiene candado es bajarlo.
+    'Informe compartible por link (con marca de agua de acequia)': null,
     // Personal
     'El análisis completo: agua, suelo, biodiversidad, solar, aptitud y más': 'analisis.aptitud',
     'Curvas de nivel, relieve y vista 3D, sin límite de tamaño': 'analisis.topo_sin_limite',
     'Diseño Keyline, agroforestal, riego y pastoreo': 'diseno.keyline',
     'Sugerencias automáticas de diseño': 'sugerencias',
     'Rumbos y replanteo de mojones': 'catastro.rumbos',
-    'Informe sin marca de agua': 'informe.sin_marca',
+    // Un renglón, dos candados (`informe.descarga` y `informe.sin_marca`), los
+    // dos en Personal. Se declara el que decide si el botón existe.
+    'Descarga del informe en PDF, sin marca de agua': 'informe.descarga',
+    'Plano en PNG con rótulo, leyenda, norte y escala': 'export.imagen',
     'Exportación a GeoJSON, KML y GPX': 'export.gis',
     // Profesional
     'Informe con tu marca: tu logo y tu matrícula': 'informe.white_label',

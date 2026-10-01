@@ -62,7 +62,11 @@ export const PLANES: Plan[] = [
       `Curvas de nivel, relieve y vista 3D en predios de hasta ${ACEQUIA_TOPO_SEMILLA_HA} ha`,
       'Calendario del lugar (heladas, lluvias y ventanas de siembra)',
       '1 proyecto activo',
-      'Informe compartible (con marca de agua de acequia)',
+      // Decía "Informe compartible" a secas, y Semilla además lo bajaba en PDF
+      // y exportaba el plano en PNG. Desde el 01/10/2026 la muestra se mira y
+      // se comparte por link; llevárselo en un archivo es Personal. El renglón
+      // tiene que decir cuál de las dos cosas es.
+      'Informe compartible por link (con marca de agua de acequia)',
     ],
   },
   {
@@ -81,7 +85,8 @@ export const PLANES: Plan[] = [
       'Diseño Keyline, agroforestal, riego y pastoreo',
       'Sugerencias automáticas de diseño',
       'Rumbos y replanteo de mojones',
-      'Informe sin marca de agua',
+      'Descarga del informe en PDF, sin marca de agua',
+      'Plano en PNG con rótulo, leyenda, norte y escala',
       'Exportación a GeoJSON, KML y GPX',
       `Hasta ${ACEQUIA_PLANS.personal.projects} proyectos activos`,
     ],

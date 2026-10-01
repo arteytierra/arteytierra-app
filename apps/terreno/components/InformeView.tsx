@@ -1,7 +1,8 @@
 'use client';
 
-import { FileDown, ArrowLeft } from 'lucide-react';
+import { FileDown, ArrowLeft, Lock } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
+import { ACEQUIA_APP_HOST } from '@/lib/sitio';
 import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
 import { MESES, centroide } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
@@ -157,6 +158,20 @@ export function InformeView({ datos, compartido = false }: Props) {
           .page-break-before { page-break-before: always; }
         }
       `}</style>
+      {/* Sin `informe.descarga` el informe se mira, no se baja. Esconder el
+          botón solo sería decorativo —Ctrl+P sigue ahí—, así que al imprimir se
+          reemplaza el cuerpo por el aviso. No es una barrera criptográfica y no
+          pretende serlo: es que la acción diga la verdad en vez de entregar el
+          archivo por una puerta lateral. */}
+      {datos.sinDescarga && (
+        <style>{`
+          #informe-sin-descarga { display: none; }
+          @media print {
+            .informe-cuerpo, .informe-marca { display: none !important; }
+            #informe-sin-descarga { display: flex !important; }
+          }
+        `}</style>
+      )}
 
       {/* ── Barra de acciones (no impresa) ──────────────────────────────────── */}
       <div className="no-print sticky top-0 z-10 bg-white border-b border-bone-200 px-6 py-3 flex items-center gap-3 shadow-sm">
@@ -170,18 +185,43 @@ export function InformeView({ datos, compartido = false }: Props) {
           </a>
         )}
         <div className="flex-1" />
-        <button
-          onClick={() => window.print()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-sm font-medium transition-colors"
-        >
-          <FileDown className="w-4 h-4" />
-          Descargar PDF
-        </button>
+        {datos.sinDescarga ? (
+          <p className="flex items-center gap-1.5 text-xs text-ink-700/55">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              Bajar el informe es del plan Personal.{' '}
+              {!compartido && <a href="/suscribir?plan=personal&periodo=anual" className="text-moss-700 hover:text-moss-900 underline">Ver planes</a>}
+            </span>
+          </p>
+        ) : (
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-sm font-medium transition-colors"
+          >
+            <FileDown className="w-4 h-4" />
+            Descargar PDF
+          </button>
+        )}
       </div>
+
+      {/* Lo que sale si alguien imprime un informe que no se puede bajar. En
+          pantalla no se ve: lo muestra la regla @media print de más arriba. */}
+      {datos.sinDescarga && (
+        <div id="informe-sin-descarga" className="fixed inset-0 items-center justify-center p-16 text-center">
+          <div className="space-y-3">
+            <p className="text-lg font-semibold text-ink-900">Este informe no se puede descargar.</p>
+            <p className="text-sm text-ink-700/70 max-w-sm mx-auto leading-relaxed">
+              El análisis se mira en pantalla y se comparte por link. Bajarlo en PDF
+              forma parte del plan Personal de acequia.
+            </p>
+            <p className="text-xs text-ink-700/50">{ACEQUIA_APP_HOST}</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Cuerpo del informe ───────────────────────────────────────────────── */}
       {datos.conMarca && <MarcaAgua />}
-      <div className="max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
+      <div className="informe-cuerpo max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
 
         {/* Portada + resumen ejecutivo */}
         <Portada datos={datos} metricas={metricas} fechaLarga={fechaLarga} />
@@ -1856,12 +1896,15 @@ function Table({
 // página al imprimir a PDF. print-color-adjust para que salga en el PDF.
 function MarcaAgua() {
   const filas = Array.from({ length: 9 });
-  const host = process.env.NEXT_PUBLIC_ACEQUIA_APP_HOST ?? 'terreno.arteytierra.org';
-  const texto = `acequia · ${host}`;
+  // El host sale de `lib/sitio.ts` y no de la env var a secas: el valor por
+  // defecto que había acá era `terreno.arteytierra.org`, el dominio anterior a
+  // la mudanza, así que cualquier entorno sin la variable estampaba la marca de
+  // agua con una dirección vieja.
+  const texto = `acequia · ${ACEQUIA_APP_HOST}`;
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[5] overflow-hidden select-none"
+      className="informe-marca pointer-events-none fixed inset-0 z-[5] overflow-hidden select-none"
       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
     >
       <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[28deg]">
