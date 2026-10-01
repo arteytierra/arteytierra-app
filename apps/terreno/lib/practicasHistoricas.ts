@@ -137,6 +137,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Ladefoged, T. et al. (2013) — The distribution of rock gardens on Rapa Nui as determined from satellite imagery, Journal of Archaeological Science', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0305440312004049' },
       ],
     },
+    {
+      practica: 'Traslado de cultivos fundacionales durante la colonización inicial de Rapa Nui',
+      periodo: 'Aprox. 1000–1300 d.C.; gránulos de almidón en herramientas de obsidiana del sitio Anakena',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'El análisis de gránulos de almidón en 20 herramientas de obsidiana del nivel más antiguo del sitio Anakena (1000–1300 d.C.) identificó cultivos de origen americano e indopacífico: árboles del pan (Artocarpus altilis), jengibre, taro, ñame y batata (el registro más temprano de Ipomoea batatas en el Pacífico), junto a yuca, achira y Xanthosoma de origen sudamericano. Los resultados demuestran el traslado intencional de cultivos fundacionales durante la colonización inicial de la isla y documentan un contacto transpacífico entre Polinesia y Sudamérica en el registro botánico de Rapa Nui.',
+      fuentes: [
+        { label: 'Berenguer & Clavero (2024) — Identification of breadfruit and South American crops introduced during early settlement of Rapa Nui, PLOS ONE', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10954183/' },
+      ],
+    },
   ],
 
   // ── Montañas de Omán ────────────────────────────────────────────────────────
@@ -187,6 +198,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La misma idea que el falaj, en la escala de una meseta entera: un túnel con pendiente mínima que saca a la superficie, por gravedad, el agua dulce del abanico aluvial en la salida de la montaña, sin tocar la freática salada del fondo de cuenca. Sostuvo ciudades durante tres mil años en un lugar donde el agua entra y no sale. Está en retroceso por una razón concreta y no por abandono cultural: la perforación masiva de pozos profundos desde los años sesenta bajó el nivel del acuífero, secó miles de qanats y produjo hundimientos del terreno de decenas de centímetros por año en Teherán y Kermán.',
       fuentes: [
         { label: 'UNESCO — The Persian Qanat (2016)', url: 'https://whc.unesco.org/en/list/1506/' },
+      ],
+    },
+    {
+      practica: 'Herbolaria medicinal de las comunidades rurales de la provincia de Kerman (SE de Irán)',
+      periodo: 'Documentado en entrevistas de campo; práctica con raíces históricas en la región',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la provincia de Kerman (Irán suroriental), 217 curanderos tradicionales (hakims) aportaron datos sobre 402 taxones de plantas medicinales de 73 familias. Lamiaceae, Asteraceae y Apiaceae concentran la mayor diversidad. La decocción acuosa es la forma de preparación predominante. El estudio es el primer relevamiento integral de la farmacopea popular de una región de transición entre los desiertos centrales de Irán y el altiplano del Zagros, y destaca el conocimiento botánico de comunidades semi-áridas con escasa documentación previa.',
+      fuentes: [
+        { label: 'Hosseini & Bibak (2021) — Ethnobotany of the medicinal plants used by the ethnic communities of Kerman province, SE Iran, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8082778/' },
       ],
     },
   ],
@@ -355,6 +377,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los materiales arqueológicos y la síntesis histórica documentan el uso prolongado de los pinares-enebrales y el fuerte valor alimentario de sus piñones. Concentrar la cosecha otoñal y procesar una semilla densa en energía permitía guardar alimento para el invierno en una cuenca árida con productividad muy variable entre años.',
       fuentes: [
         { label: 'National Park Service — Pinyon-Juniper Woodlands: Anthropogenic Use and Post-settlement Stressors', url: 'https://www.nps.gov/articles/pinyon-juniper-woodlands-anthropogenic-use.htm' },
+      ],
+    },
+    {
+      practica: 'Transporte y procesado de la papa nativa (Solanum jamesii) en el suroeste de Norteamérica',
+      periodo: 'Períodos Basketmaker III a Pueblo III; sitios en Colorado, Arizona y Nuevo México',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'El análisis de 6.600 gránulos de almidón en 401 molinos de piedra de 14 sitios arqueológicos del suroeste de Norteamérica —North Creek Shelter, Long House (Mesa Verde), Pueblo Bonito (Chaco Canyon) y Point of Pines— confirma que Solanum jamesii fue procesado fuera de su rango natural de distribución. Los resultados demuestran un transporte de larga distancia intencional y el manejo agronómico de esta especie, antes documentado únicamente por tradición oral de pueblos tribales del suroeste, y sugieren que la papa nativa fue una planta cultivada de importancia antes del contacto europeo.',
+      fuentes: [
+        { label: 'Louderback & Wilson (2026) — Ancient use and long-distance transport of the Four Corners Potato (Solanum jamesii), PLOS ONE', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12822961/' },
       ],
     },
   ],
@@ -1062,6 +1095,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Biblioteca Nacional de Chile, Memoria Chilena — Sistemas de regadío de la cultura Aconcagua', url: 'https://www.memoriachilena.gob.cl/602/w3-article-93145.html' },
       ],
     },
+    {
+      practica: 'Recolección de plantas silvestres comestibles nativas de Chile central',
+      periodo: 'Práctica con raíces en comunidades rurales e indígenas; documentada en revisión bibliográfica 2022',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Una revisión sistemática documenta 330 especies nativas de Chile usadas como alimento silvestre, el 7,8 % de la flora nativa total del país, en 196 géneros y 84 familias. Las más representadas son Asteraceae (34 spp.), Cactaceae (21), Fabaceae (21) y Solanaceae (20). Los géneros con mayor número de comestibles son Solanum, Ribes, Berberis, Hypochaeris y Oxalis. El estudio distingue usos tradicionales de comunidades rurales e indígenas de usos modernos en gastronomía y mercados, y señala el potencial de estas especies como cultivos del futuro.',
+      fuentes: [
+        { label: 'León-Lobos & Díaz-Forestier (2022) — Patterns of Traditional and Modern Uses of Wild Edible Native Plants of Chile, Plants', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8953413/' },
+      ],
+    },
   ],
   desierto_costero: [
     {
@@ -1073,6 +1117,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En el margen alto oriental del desierto de Atacama se compartimentaron terrazas para distribuir el agua escasa procedente principalmente de vertientes. La construcción incluyó despedrado y probable fertilización, creó horizontes antrópicos y conservó o mejoró la productividad del suelo durante siglos.',
       fuentes: [
         { label: 'Universidad de Chile — Soils in ancient irrigated agricultural terraces in the Atacama desert', url: 'https://repositorio.uchile.cl/handle/2250/183892' },
+      ],
+    },
+    {
+      practica: 'Modo de vida marítimo sostenido durante 10.000 años en la costa del desierto de Atacama',
+      periodo: 'Desde aprox. 10.000 a.P. hasta 1450 d.C.; 288 individuos adultos en sitios del norte de Chile',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Un estudio bioarqueológico de 288 individuos adultos en sitios de la costa del desierto de Atacama norte documenta un modo de vida basado en pesca, caza de mamíferos marinos y recolección marítima mantenido durante 10.000 años. El análisis de lesiones por violencia interpersonal, isótopos de estroncio, arte rupestre, armamento y patrones de asentamiento muestra una sociedad con baja movilidad y fuerte vínculo territorial con el litoral árido. La persistencia de este sistema en un ambiente extremo evidencia una adaptación especializada y eficiente al ecosistema costero.',
+      fuentes: [
+        { label: 'Standen & Santoro (2023) — Violence in fishing, hunting, and gathering societies of the Atacama Desert coast, PLOS ONE', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10511140/' },
       ],
     },
   ],
@@ -3411,6 +3466,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El sistema hima separa cíclicamente áreas de pastoreo, bosque o floración para que la vegetación se regenere antes de volver a usarse. En Asir, cada aldea gobernaba una o más reservas mediante normas consuetudinarias, ajustando acceso, estación y tipo de aprovechamiento. Para el diseño predial, el principio transferible es dejar descansos espacialmente explícitos y ligados al ciclo de semillazón, no abrir toda la superficie a la vez.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — The Rural Cultural Landscapes of Sarawat Mountains', url: 'https://whc.unesco.org/en/tentativelists/6640/' },
+      ],
+    },
+    {
+      practica: 'Medicina tradicional con plantas del altiplano árido de Asir (Arabia Saudita)',
+      periodo: 'Documentado en entrevistas de campo en la provincia de Asir; práctica con transmisión oral generacional',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En la provincia de Asir (Arabia Saudita suroccidental), 150 informantes documentaron 80 especies de plantas medicinales de 38 familias angiospermas para tratar 9 categorías de afecciones. El estudio identificó 10 especies con usos medicinales no registrados previamente en la región. Syzygium aromaticum y Mentha spicata presentaron la mayor frecuencia relativa de cita. La transmisión del conocimiento es primariamente oral y generacional, y el estudio alerta sobre el riesgo de pérdida ante la urbanización acelerada de la provincia.',
+      fuentes: [
+        { label: 'Alshaqhaa et al. (2025) — Ethnobotanical study on medicinal plants used in the Aseer province, Southwestern Saudi Arabia, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12125768/' },
       ],
     },
   ],
