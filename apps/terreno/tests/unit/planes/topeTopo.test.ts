@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ACEQUIA_TOPO_SEMILLA_HA, acequiaTopoPermitida, tabBloqueadaConArea, tabBloqueada,
 } from '@/lib/entitlements';
-import { haDeBBox } from '@/lib/coordenadas';
+import { haDeBBox, haDePuntos } from '@/lib/coordenadas';
 
 describe('acequiaTopoPermitida', () => {
   it('Semilla ve la topografía de un predio chico', () => {
@@ -83,5 +83,50 @@ describe('haDeBBox', () => {
     const grados = 70.71 / 111_320;
     expect(haDeBBox(-64, -30, -64 + grados / Math.cos(30 * Math.PI / 180), -30 + grados))
       .toBeCloseTo(0.5, 2);
+  });
+});
+
+/**
+ * La envolvente de una lista de puntos, que es con lo que `/api/elevacion`
+ * aplica el tope desde el 01/10/2026.
+ *
+ * Antes ese endpoint sólo preguntaba por `analisis.topo`, que en Semilla siempre
+ * alcanza, así que el tope de superficie se esquivaba pidiendo la elevación de
+ * un predio entero como lista de puntos en vez de como bbox.
+ */
+describe('haDePuntos', () => {
+  it('toma la envolvente y no el recorrido', () => {
+    // Cuatro puntos en las esquinas de 0,01° a 30° de latitud: la misma ventana
+    // que el primer caso de haDeBBox, 107,3 ha.
+    const esquinas = [
+      { lat: -30.00, lng: -64.00 }, { lat: -30.01, lng: -64.00 },
+      { lat: -30.01, lng: -64.01 }, { lat: -30.00, lng: -64.01 },
+    ];
+    expect(haDePuntos(esquinas)).toBeCloseTo(107.3, 0);
+    // El orden no cambia nada: es una envolvente, no un polígono.
+    expect(haDePuntos([...esquinas].reverse())).toBeCloseTo(107.3, 0);
+  });
+
+  it('dos puntos lejanos ya delatan la ventana grande', () => {
+    // El caso que cierra el agujero: pedir dos cotas separadas 10 km es pedir
+    // relieve sobre una ventana que supera por mucho el tope de la muestra.
+    const ha = haDePuntos([{ lat: -30.0, lng: -64.0 }, { lat: -30.09, lng: -64.1 }]);
+    expect(ha).toBeGreaterThan(ACEQUIA_TOPO_SEMILLA_HA);
+    expect(acequiaTopoPermitida('semilla', ha)).toBe(false);
+    expect(acequiaTopoPermitida('personal', ha)).toBe(true);
+  });
+
+  it('un punto solo no es una ventana: 0 ha, y la muestra lo deja pasar', () => {
+    expect(haDePuntos([{ lat: -30, lng: -64 }])).toBe(0);
+    expect(haDePuntos([])).toBe(0);
+    expect(acequiaTopoPermitida('semilla', 0)).toBe(true);
+  });
+
+  it('puntos muy juntos caen dentro de la muestra gratis', () => {
+    // Un predio chico de verdad: 50 m de lado. Semilla tiene que poder.
+    const d = 50 / 111_320;
+    const ha = haDePuntos([{ lat: -30, lng: -64 }, { lat: -30 + d, lng: -64 + d }]);
+    expect(ha).toBeLessThan(ACEQUIA_TOPO_SEMILLA_HA);
+    expect(acequiaTopoPermitida('semilla', ha)).toBe(true);
   });
 });

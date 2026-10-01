@@ -142,3 +142,24 @@ export function haDeBBox(w: number, s: number, e: number, n: number): number {
   const altoM  = (n - s) * 111_320;
   return Math.abs(anchoM * altoM) / 10_000;
 }
+
+/**
+ * Hectáreas de la envolvente de una lista de puntos.
+ *
+ * Es lo que `/api/elevacion` necesita para aplicar el mismo tope de superficie
+ * que `/api/dem`: ese endpoint recibe puntos sueltos y no un bbox, pero la
+ * extensión de terreno sobre la que se está sacando relieve es la de su
+ * envolvente, y eso es lo que el tope acota.
+ *
+ * Existe como función con nombre, y no inline en la ruta, por una razón
+ * concreta: `haDeBBox` toma `(w, s, e, n)` —longitudes y latitudes alternadas— y
+ * equivocar el orden de los cuatro argumentos devuelve un número de hectáreas
+ * perfectamente creíble y mal. Acá se arma una vez y se prueba.
+ *
+ * Menos de dos puntos devuelve 0: la cota de un punto no es una ventana.
+ */
+export function haDePuntos(puntos: Array<{ lat: number; lng: number }>): number {
+  if (puntos.length < 2) return 0;
+  const lats = puntos.map(p => p.lat), lngs = puntos.map(p => p.lng);
+  return haDeBBox(Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats));
+}

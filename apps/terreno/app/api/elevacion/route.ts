@@ -1,7 +1,7 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
 import { requiereTopoDe } from '@/lib/auth/apiGuard';
-import { haDeBBox } from '@/lib/coordenadas';
+import { haDePuntos } from '@/lib/coordenadas';
 import { obtenerElevacionPuntos } from '@/lib/elevacion';
 import { atribucionDe } from '@/lib/elevacion/atribucion';
 import type { LatLng } from '@/lib/elevacion';
@@ -71,9 +71,7 @@ async function responder(coords: LatLng[]): Promise<Response> {
  */
 async function guardDe(coords: LatLng[]): Promise<Response | null> {
   if (coords.length === 0) return null;   // lo rechaza `responder` con un 400
-  const lats = coords.map(c => c.lat), lngs = coords.map(c => c.lng);
-  const ha = haDeBBox(Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats));
-  return requiereTopoDe(ha);
+  return requiereTopoDe(haDePuntos(coords));
 }
 
 export async function GET(req: Request) {
