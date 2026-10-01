@@ -40,18 +40,12 @@ que se cuenta un rodeo de verdad y las que tienen EV distinto. Y en `rodeo.ts`
 el predio tiene **un solo** `animalId` con **un solo** número de cabezas: un
 campo con 40 vacas, 12 vaquillonas y 2 toros no se puede cargar.
 
-**b) El consumo de materia seca es una constante escondida.**
-
-```ts
-const consumo_ev_año = 8 * 365; // kg MS/año para 1 EV
-```
-
-8 kg MS/día para un equivalente vaca. El EV de INTA es una vaca de 400 kg que
-gesta y cría un ternero hasta los 6 meses; al 2,5–3 % del peso vivo eso da
-**10–12 kg MS/día**, no 8. Si el 8 está mal, la receptividad sale **entre 25 % y
-50 % alta** en todos los predios del mundo, y la app lleva meses diciéndolo con
-aplomo. **Esto hay que verificarlo antes que nada**, y es lo más urgente de todo
-este plan: no es una función nueva, es un número que ya está en producción.
+**b) El consumo de materia seca era una constante escondida.** ✅ **AUDITADO Y
+CORREGIDO el 01/10/2026** — ver la Etapa 1 más abajo. El hallazgo no fue el que
+este plan anticipaba: el `8` no era un error de tipeo sino el valor de una
+pastura de calidad aplicado a todo el planeta, porque **el consumo de un EV en
+kilos no es una constante**: el requerimiento está definido en energía y los
+kilos dependen de la densidad energética del forraje.
 
 **c) Las aves no entran en este modelo, y meterlas sería peor que no tenerlas.**
 Esto es lo importante del pedido 1 y conviene decirlo antes de escribir código.
@@ -125,18 +119,52 @@ no se escribe. Hay relevamientos previos en `_research/fuentes-suelo-clima/`.
 
 Cada etapa deja la app funcionando y se puede deployar sola.
 
-### Etapa 1 — Auditar el `consumo_ev_año` (sin funciones nuevas)
+### Etapa 1 — Auditar el `consumo_ev_año` ✅ HECHA (01/10/2026)
 
-Lo más barato y lo más valioso. Buscar la definición de EV de INTA, verificar
-los 8 kg MS/día, corregirlos si corresponde, y dejar la fuente escrita arriba
-con su rango de validez. Un test con un caso resuelto: una superficie y una
-lluvia conocidas que dan una carga publicada.
+Resultado, para que no haya que reconstruirlo:
 
-Si el número cambia, **cambia la receptividad de todos los predios**. Eso se
-avisa en pantalla, no se corrige en silencio: el que tenía un proyecto guardado
-merece saber por qué el campo ahora aguanta menos vacas. Y el `origen: 'manual'`
-de `rodeo.ts` ya existe justamente para que quien conoce su campo no quede a
-merced de nuestro coeficiente.
+**1 EV = 18,54 Mcal de energía metabolizable por día**, del promedio anual de una
+vaca de 400 kg que gesta y cría un ternero hasta el destete a los 6 meses con
+160 kg, incluido el forraje del ternero. Fuente: Cocimano, M., Lange, A. y
+Menvielle, E. (1975), «Equivalencias ganaderas para vacunos de carne y ovinos»,
+AACREA.
+
+El requerimiento está en **energía**, no en kilos. Los kilos salen de dividir por
+la densidad energética del forraje, y de ahí los tres números que circulan:
+
+| Mcal EM/kg MS | kg MS/día | kg MS/año | Qué forraje |
+|---|---|---|---|
+| 2,32 | 8,0 | 2.920 | Pastura de calidad ← **lo que la app usaba para todo** |
+| 1,87 | 9,9 | 3.620 | Pastizal natural (≈52 % digestibilidad) ← el nuevo default |
+| 1,55 | 12,0 | 4.380 | Forraje grosero, maduro o diferido |
+
+Los 3.650 y los 4.380 kg MS/año que la bibliografía cita como «el» consumo de un
+EV no se contradicen entre sí ni con el 8: son el mismo requerimiento de energía
+sobre forrajes distintos.
+
+**Entonces el error no era un número mal puesto: era usar el extremo optimista
+como si fuera el valor central.** La receptividad salía ~24 % alta para un
+pastizal natural promedio y hasta ~50 % alta para un pastizal grosero —más
+grande justo donde el margen es más fino, el campo semiárido de 700 kg
+MS/ha/año—.
+
+Cómo quedó: `EV_MCAL_EM_DIA`, `EM_FORRAJE` y `consumoEV_kgMS_dia()` en
+`lib/produccion.ts`, con fuente, unidades y rango de validez.
+`calcularReceptividad` devuelve el valor central **y el rango**
+(`carga_ev_min` / `carga_ev_max`), porque la app no sabe qué calidad tiene el
+pasto de este predio y no lo inventa. La pantalla de Ganadería dice el supuesto
+y el rango en una línea. Diez tests nuevos, con dos casos resueltos: los 3.650
+kg MS/año y los 9.350 Mcal EM/ha de un pastizal de 5.000 kg MS/ha.
+
+Y un test viejo que había que corregir: esperaba `carga_ev ≈ 85,6`, o sea
+**fijaba el error en lugar de encontrarlo**. Un test que sólo comprueba que la
+función devuelve lo mismo que ayer no protege de nada.
+
+Lo que esto cambió para el usuario: un campo de 100 ha con 800 mm pasa de
+«aguanta 85 animales» a «aguanta 69, entre 57 y 88 según la calidad del pasto».
+No se corrigió en silencio: el `origen: 'manual'` de `rodeo.ts` ya existía para
+que quien conoce su campo no quede a merced de nuestro coeficiente, y ahora la
+pantalla además explica de dónde sale el número.
 
 ### Etapa 2 — Categorías de verdad, y rodeo con varias categorías
 
@@ -253,9 +281,14 @@ la carne a `economia.ts`.
 
 ## 6 · Orden recomendado
 
-1. **Etapa 1** ya, sola, en su propio commit. Es un número en producción que
-   puede estar 25–50 % alto.
+1. ~~**Etapa 1**~~ ✅ hecha el 01/10/2026.
 2. **Etapa 2**, que es la que pidió Jonatan para pastoreo y la que más cambia la
-   experiencia de cargar un campo.
+   experiencia de cargar un campo. **Es la próxima.**
 3. **Etapa 3**, las aves, que es trabajo nuevo y no corrige nada roto.
 4. **Etapa 4** al final.
+
+Nota para la Etapa 2: ahora que el EV sale de la energía, la tabla de categorías
+puede declarar su requerimiento en **Mcal EM/día** y dejar que el coeficiente EV
+se derive solo (`mcal / 18,54`), en vez de escribir los dos y que se
+desincronicen. Eso también deja a las aves fuera por construcción: su
+requerimiento no se cubre con forraje, así que no tienen `ev`.

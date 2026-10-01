@@ -61,12 +61,120 @@ export function calcularBalanceProductivo(
   return { cultivo, area_ha, meses: resultMeses, deficit_anual_mm, reservorio_m3, meses_deficit, meses_exceso };
 }
 
-// ─── 7.3 Receptividad ganadera ────────────────────────────────────────────────
+/* ─── 7.3 Receptividad ganadera ───────────────────────────────────────────────
+ *
+ * AUDITORÍA DEL EQUIVALENTE VACA — 01/10/2026
+ *
+ * Esta función venía con `consumo_ev_año = 8 * 365` y ningún respaldo. El
+ * hallazgo de la auditoría no es que el 8 sea un error de tipeo: es que **el
+ * consumo de un EV en kilos de materia seca no es una constante**, y escribirlo
+ * como constante es la falla.
+ *
+ * El requerimiento de 1 EV está definido en ENERGÍA, no en kilos: son
+ * 18,54 Mcal de energía metabolizable por día. Cuántos kilos de pasto hacen
+ * falta para juntar esas Mcal depende de la densidad energética del forraje, y
+ * eso cambia con el tipo de pastizal:
+ *
+ *     18,54 / 2,32 Mcal/kg = 8,0 kg MS/día   ← pastura de calidad
+ *     18,54 / 1,87 Mcal/kg = 9,9 kg MS/día   ← pastizal natural (≈52% digest.)
+ *     18,54 / 1,55 Mcal/kg = 12,0 kg MS/día  ← forraje grosero, maduro, diferido
+ *
+ * Los tres números circulan en la bibliografía como «el» consumo de un EV
+ * (3.650 y 4.380 kg MS/año son los dos últimos), y no se contradicen: son el
+ * mismo requerimiento de energía dividido por forrajes distintos.
+ *
+ * O sea que la app venía usando el valor de una pastura de calidad y
+ * aplicándolo a todo el planeta, incluido el pastizal semiárido de 700 kg
+ * MS/ha/año, donde el forraje es grosero y el número correcto es 12. El error
+ * era más grande justo donde el margen es más fino: la receptividad salía ~24%
+ * alta para un pastizal natural promedio y hasta ~50% alta para un pastizal
+ * grosero. Dicho de otro modo: lo que la app mostraba como «el» número era en
+ * realidad el techo del rango.
+ *
+ * Como la app no sabe qué calidad tiene el forraje de este predio, no lo
+ * inventa: usa el valor del pastizal natural y además devuelve el rango
+ * completo. Rige la regla de la casa — cuando la ciencia da un rango, se
+ * muestra el rango.
+ *
+ * Lo que NO se auditó acá y sigue pendiente: los coeficientes EV por categoría
+ * de `TIPOS_ANIMAL` y la falta de categorías de verdad (vaca de cría,
+ * vaquillona, toro, novillo). Eso es la Etapa 2 de
+ * `PLAN-animales-y-consumo.md`.
+ */
+
+/**
+ * Requerimiento de 1 Equivalente Vaca, en Mcal de energía metabolizable por día.
+ *
+ * Fuente: Cocimano, M., Lange, A. y Menvielle, E. (1975), «Equivalencias
+ * ganaderas para vacunos de carne y ovinos», AACREA. El EV es el promedio anual
+ * de los requerimientos de una vaca de 400 kg que gesta y cría un ternero hasta
+ * el destete a los 6 meses con 160 kg, **incluido el forraje que come el
+ * ternero**.
+ *
+ * Rango de validez: es la unidad de referencia de la ganadería pastoril del Cono
+ * Sur. Para un rodeo lechero en producción no alcanza —una vaca en lactancia
+ * pide mucho más— y la app no tiene todavía esa categoría.
+ *
+ * Quién lo lee: `consumoEV_kgMS_dia`, y por esa vía toda la receptividad y el
+ * agua de bebida del rodeo. Cambiarlo cambia cuántos animales dice la app que
+ * entran en el campo.
+ */
+export const EV_MCAL_EM_DIA = 18.54;
+
+/**
+ * Densidad energética del forraje, en Mcal de EM por kg de materia seca.
+ *
+ * `natural` es el valor con cita directa: un pastizal natural de 5.000 kg
+ * MS/ha/año tiene una concentración media de 1,87 Mcal/kg (≈52% de
+ * digestibilidad), lo que da 9.350 Mcal EM/ha —el caso resuelto del test—.
+ * `grosero` y `calidad` son los extremos del rango que reporta la bibliografía
+ * de composición de forrajes (gramíneas de porte medio y bajo, 1,9–2,7 Mcal/kg
+ * según estado fenológico; pasturas naturales hasta 2,4; forraje maduro o
+ * diferido por debajo de 1,6).
+ */
+export const EM_FORRAJE = {
+  /** Maduro, diferido, fibroso: hace falta más kilo para la misma energía. */
+  grosero: 1.55,
+  /** Pastizal natural, el valor por defecto. */
+  natural: 1.87,
+  /** Pastura implantada en estado vegetativo. */
+  calidad: 2.40,
+} as const;
+
+/**
+ * Cuántos kilos de materia seca por día necesita 1 EV, dado un forraje.
+ *
+ * Es la división que faltaba: `EV_MCAL_EM_DIA / em_mcal_kg`. Con el valor del
+ * pastizal natural da 9,9 kg/día ≈ 3.620 kg/año, que es la cifra de 3.650 que
+ * cita la bibliografía.
+ */
+export function consumoEV_kgMS_dia(em_mcal_kg: number): number {
+  if (!(em_mcal_kg > 0)) return NaN;
+  return EV_MCAL_EM_DIA / em_mcal_kg;
+}
+
+/**
+ * Fracción del forraje producido que termina dentro del animal.
+ *
+ * El 0,50 viene de la regla de manejo de pastizales más difundida —«take half,
+ * leave half», USDA NRCS—: se deja la mitad del área foliar en pie para que la
+ * planta rebrote. Es un valor conservador para un pastoreo rotativo bien
+ * manejado, donde la cosecha puede llegar a 0,60–0,70, y OPTIMISTA para un
+ * pastoreo continuo: ahí parte de ese 50% removido no se come, se pisa, se
+ * ensucia o se la llevan los insectos.
+ *
+ * Se deja en 0,50 porque acequia diseña pastoreo rotativo, y porque la
+ * receptividad se calcula antes de que exista el diseño de potreros. Si algún
+ * día la pestaña de Pastoreo le pasa su sistema a esta función, éste es el
+ * número que se mueve.
+ */
+export const EFICIENCIA_UTILIZACION = 0.50;
 
 export interface TipoAnimal {
   id:          string;
   nombre:      string;
-  ev:          number;   // equivalentes vaca
+  /** Equivalentes vaca. Ver la deuda de categorías en PLAN-animales-y-consumo. */
+  ev:          number;
   agua_l_dia:  number;
 }
 
@@ -89,25 +197,61 @@ function prodForrajera(precip_mm: number): number {
 }
 
 export interface ResultadoReceptividad {
-  ef_kg_ha:         number;   // equivalente forrajero por hectárea
-  carga_ev:         number;   // carga total en equivalentes vaca
-  carga_animales:   number;   // animales del tipo seleccionado
+  ef_kg_ha:         number;   // forraje producido, kg MS/ha/año
+  carga_ev:         number;   // carga en equivalentes vaca, con forraje natural
+  /** El piso del rango: forraje grosero, que pide más kilos por EV. */
+  carga_ev_min:     number;
+  /** El techo: pastura de calidad. Es lo que la app mostraba antes, sola. */
+  carga_ev_max:     number;
+  carga_animales:   number;   // animales del tipo seleccionado (con carga_ev)
+  carga_animales_min: number;
+  carga_animales_max: number;
+  /** Kilos de MS por día que necesita 1 EV con el forraje supuesto. */
+  consumo_ev_kg_dia: number;
+  /** La densidad energética supuesta, para poder decirla en pantalla. */
+  em_mcal_kg:       number;
   agua_l_dia:       number;   // demanda hídrica total L/día
   potreros_voisin:  number;   // N potreros sugeridos para rotación Voisin
   dias_ocupacion:   number;   // días de ocupación por potrero
   area_potrero_ha:  number;   // área sugerida por potrero
 }
 
+/**
+ * Receptividad del campo: cuántos animales aguanta el pasto.
+ *
+ * Cadena de unidades, explícita porque es donde se cuelan los errores:
+ *
+ *   kg MS/ha/año × ha × (adimensional) ÷ (kg MS/día × 365 día/año) = EV
+ *
+ * Rango de validez: `prodForrajera` es una escalera por precipitación, pensada
+ * para pastizal natural sin fertilización ni riego. En una pastura implantada y
+ * fertilizada subestima la oferta; en un pastizal degradado la sobreestima. Y no
+ * mira la estacionalidad: un campo con la misma lluvia anual repartida en cuatro
+ * meses no aguanta la misma carga todo el año.
+ */
 export function calcularReceptividad(
   area_ha: number,
   precip_anual_mm: number,
   tipo: TipoAnimal,
+  em_mcal_kg: number = EM_FORRAJE.natural,
 ): ResultadoReceptividad {
-  const ef_kg_ha       = prodForrajera(precip_anual_mm);
-  const eficiencia     = 0.50; // 50% de utilización del forraje disponible
-  const consumo_ev_año = 8 * 365; // kg MS/año para 1 EV
-  const carga_ev       = Math.round((ef_kg_ha * area_ha * eficiencia / consumo_ev_año) * 10) / 10;
-  const carga_animales = Math.max(0, Math.floor(carga_ev / tipo.ev));
+  const ef_kg_ha = prodForrajera(precip_anual_mm);
+  const ofertaUtil_kg = ef_kg_ha * area_ha * EFICIENCIA_UTILIZACION;
+
+  /** EV que sostiene la oferta con un forraje de densidad `em`. */
+  const evCon = (em: number) => {
+    const consumoAnual = consumoEV_kgMS_dia(em) * 365;
+    return consumoAnual > 0 ? Math.round((ofertaUtil_kg / consumoAnual) * 10) / 10 : 0;
+  };
+
+  const carga_ev     = evCon(em_mcal_kg);
+  // Menos energía por kilo → más kilos por EV → menos animales. Por eso
+  // `grosero` da el mínimo y `calidad` el máximo, y no al revés.
+  const carga_ev_min = evCon(EM_FORRAJE.grosero);
+  const carga_ev_max = evCon(EM_FORRAJE.calidad);
+
+  const animalesDe = (ev: number) => Math.max(0, Math.floor(ev / tipo.ev));
+  const carga_animales = animalesDe(carga_ev);
 
   // Voisin: 30 días reposo + 3 días ocupación → 11 potreros como mínimo, ajuste por área
   const dias_reposo    = 30;
@@ -118,7 +262,13 @@ export function calcularReceptividad(
   return {
     ef_kg_ha,
     carga_ev,
+    carga_ev_min,
+    carga_ev_max,
     carga_animales,
+    carga_animales_min: animalesDe(carga_ev_min),
+    carga_animales_max: animalesDe(carga_ev_max),
+    consumo_ev_kg_dia: Math.round(consumoEV_kgMS_dia(em_mcal_kg) * 10) / 10,
+    em_mcal_kg,
     agua_l_dia: Math.round(carga_animales * tipo.agua_l_dia),
     potreros_voisin,
     dias_ocupacion,

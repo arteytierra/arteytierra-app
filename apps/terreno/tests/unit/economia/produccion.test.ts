@@ -7,7 +7,10 @@ import { describe, it, expect } from 'vitest';
 import {
   calcularBalanceProductivo,
   calcularReceptividad,
+  consumoEV_kgMS_dia,
   nivelErosion,
+  EM_FORRAJE,
+  EV_MCAL_EM_DIA,
   TIPOS_ANIMAL,
   CULTIVOS_KC,
 } from '@/lib/produccion';
@@ -42,17 +45,102 @@ describe('calcularBalanceProductivo', () => {
   });
 });
 
+/**
+ * El equivalente vaca, contra la fuente.
+ *
+ * Auditoría del 01/10/2026. Hasta acá el módulo tenía `consumo_ev_año = 8 * 365`
+ * sin respaldo, y este archivo tenía un test que esperaba `carga_ev ≈ 85,6`: o
+ * sea que fijaba el error en lugar de encontrarlo. Un test que sólo comprueba
+ * que la función sigue devolviendo lo mismo que ayer no protege de nada.
+ *
+ * Ahora el requerimiento sale de la energía —18,54 Mcal EM/día, Cocimano, Lange
+ * y Menvielle (1975), AACREA— y los kilos salen de dividir por la densidad
+ * energética del forraje.
+ */
+describe('el equivalente vaca sale de la energía, no de una constante', () => {
+  it('el requerimiento del EV es el publicado', () => {
+    expect(EV_MCAL_EM_DIA).toBe(18.54);
+  });
+
+  it('reproduce los 3.650 kg MS/año que cita la bibliografía', () => {
+    // La cifra más difundida para 1 EV es 3.650 kg MS/año = 10 kg/día. Eso
+    // corresponde exactamente a un forraje de 18,54 / 10 = 1,854 Mcal EM/kg MS.
+    expect(consumoEV_kgMS_dia(1.854)).toBeCloseTo(10.0, 2);
+    expect(consumoEV_kgMS_dia(1.854) * 365).toBeCloseTo(3650, 0);
+  });
+
+  it('reproduce los 4.380 kg MS/año del forraje grosero', () => {
+    // El otro número que circula: 12 kg MS/día. Es el mismo requerimiento sobre
+    // un forraje de 1,545 Mcal/kg. Los dos valores publicados no se contradicen.
+    expect(consumoEV_kgMS_dia(1.545) * 365).toBeCloseTo(4380, 0);
+  });
+
+  it('el forraje con menos energía pide más kilos', () => {
+    expect(consumoEV_kgMS_dia(EM_FORRAJE.grosero))
+      .toBeGreaterThan(consumoEV_kgMS_dia(EM_FORRAJE.natural));
+    expect(consumoEV_kgMS_dia(EM_FORRAJE.natural))
+      .toBeGreaterThan(consumoEV_kgMS_dia(EM_FORRAJE.calidad));
+  });
+
+  it('el 8 kg/día que había puesto era el de una pastura de calidad', () => {
+    // No era un disparate: era el valor del techo del rango, aplicado a todo el
+    // planeta. Este test deja escrito de dónde venía.
+    expect(consumoEV_kgMS_dia(2.32)).toBeCloseTo(8.0, 1);
+  });
+
+  it('caso resuelto: pastizal natural de 5.000 kg MS/ha → 9.350 Mcal EM/ha', () => {
+    // El dato publicado que ancla `EM_FORRAJE.natural`: un pastizal natural que
+    // produce 5.000 kg MS/ha/año con 1,87 Mcal/kg (≈52% de digestibilidad)
+    // ofrece 9.350 Mcal EM/ha.
+    expect(5000 * EM_FORRAJE.natural).toBeCloseTo(9350, 0);
+  });
+
+  it('rechaza una densidad energética imposible en vez de devolver un número', () => {
+    expect(consumoEV_kgMS_dia(0)).toBeNaN();
+    expect(consumoEV_kgMS_dia(-1)).toBeNaN();
+  });
+});
+
 describe('calcularReceptividad', () => {
   const bovino = TIPOS_ANIMAL.find(t => t.id === 'bovino')!; // ev 1, agua 50 L/día
 
   it('carga y agua coherentes con la producción forrajera', () => {
     const r = calcularReceptividad(100, 800, bovino); // 800 mm → 5000 kg MS/ha
     expect(r.ef_kg_ha).toBe(5000);
-    expect(r.carga_ev).toBeCloseTo(85.6, 1);
-    expect(r.carga_animales).toBe(85);
-    expect(r.agua_l_dia).toBe(85 * 50);
+    // 5.000 × 100 ha × 0,50 = 250.000 kg MS cosechables.
+    // 1 EV con pastizal natural = 18,54/1,87 × 365 = 3.619 kg MS/año.
+    // 250.000 / 3.619 = 69,1 EV.
+    expect(r.carga_ev).toBeCloseTo(69.1, 1);
+    expect(r.carga_animales).toBe(69);
+    expect(r.agua_l_dia).toBe(69 * 50);
     expect(r.potreros_voisin).toBe(11);      // 30/3 + 1
     expect(r.area_potrero_ha).toBeCloseTo(9.09, 2);
+  });
+
+  it('el número viejo queda dentro del rango, cerca del techo', () => {
+    // Lo que importa del cambio: 85,6 EV no era una invención, era el extremo
+    // optimista presentado como si fuera el valor central.
+    const r = calcularReceptividad(100, 800, bovino);
+    expect(r.carga_ev_min).toBeCloseTo(57.3, 1);
+    expect(r.carga_ev_max).toBeCloseTo(88.7, 1);
+    expect(85.6).toBeGreaterThan(r.carga_ev);
+    expect(85.6).toBeLessThan(r.carga_ev_max);
+  });
+
+  it('el rango está ordenado y el central adentro', () => {
+    const r = calcularReceptividad(250, 650, bovino);
+    expect(r.carga_ev_min).toBeLessThan(r.carga_ev);
+    expect(r.carga_ev).toBeLessThan(r.carga_ev_max);
+    expect(r.carga_animales_min).toBeLessThanOrEqual(r.carga_animales);
+    expect(r.carga_animales).toBeLessThanOrEqual(r.carga_animales_max);
+  });
+
+  it('se puede pasar la densidad energética del forraje', () => {
+    const natural = calcularReceptividad(100, 800, bovino);
+    const bueno   = calcularReceptividad(100, 800, bovino, EM_FORRAJE.calidad);
+    expect(bueno.carga_ev).toBeCloseTo(natural.carga_ev_max, 1);
+    expect(bueno.em_mcal_kg).toBe(EM_FORRAJE.calidad);
+    expect(bueno.consumo_ev_kg_dia).toBeCloseTo(7.7, 1);
   });
 
   it('más lluvia no reduce la receptividad', () => {

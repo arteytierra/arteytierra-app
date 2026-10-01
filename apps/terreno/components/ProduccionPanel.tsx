@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Cloud, Wheat } from 'lucide-react';
 import {
   CULTIVOS_KC, calcularBalanceProductivo,
-  TIPOS_ANIMAL, calcularReceptividad,
+  TIPOS_ANIMAL, calcularReceptividad, EV_MCAL_EM_DIA,
 } from '@/lib/produccion';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
@@ -167,10 +167,28 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
 
           <div className="grid grid-cols-2 gap-2">
             <Chip label="Prod. forrajera" value={`${ganaderia.ef_kg_ha.toLocaleString('es-AR')} kg/ha`} sub="kg MS/ha/año estimado" color="neutro" />
-            <Chip label="Aguanta el pasto" value={`${ganaderia.carga_animales} animales`} sub={`${ganaderia.carga_ev} EV — receptividad estimada`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
+            <Chip label="Aguanta el pasto" value={`${ganaderia.carga_animales} animales`} sub={`${ganaderia.carga_animales_min}–${ganaderia.carga_animales_max} según la calidad del forraje`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
             <Chip label="Rodeo del predio" value={`${rodeo.cabezas} animales`} sub={rodeo.origen === 'receptividad' ? 'tomado de la receptividad' : 'cargado a mano'} color="neutro" />
             <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo).toLocaleString('es-AR')} L/día`} sub={`${rodeo.litros_animal_dia} L por cabeza y día`} color="neutro" />
           </div>
+
+          {/* De dónde sale la receptividad, dicho de frente.
+              Hasta el 01/10/2026 esta pantalla mostraba un solo número —el del
+              forraje de mejor calidad— como si fuera EL número, y la cuenta de
+              atrás no estaba escrita en ninguna parte. Ahora se dice el
+              supuesto, porque es el supuesto el que mueve el resultado: el
+              requerimiento del animal está bien medido, lo que no se sabe es
+              cuánta energía tiene el pasto de ESTE campo. */}
+          <p className="text-[9px] text-ink-700/55 leading-relaxed bg-bone-100 rounded-lg px-2.5 py-1.5">
+            Un equivalente vaca pide <b>{EV_MCAL_EM_DIA} Mcal</b> de energía por día
+            (vaca de 400 kg criando un ternero hasta el destete; Cocimano, Lange y
+            Menvielle, 1975). Con un pastizal natural de {ganaderia.em_mcal_kg} Mcal/kg
+            eso son <b>{ganaderia.consumo_ev_kg_dia} kg de materia seca por día</b>, y se
+            supone que el animal cosecha la mitad de lo que crece. Si tu pasto es mejor o
+            más grosero, el campo aguanta entre {ganaderia.carga_animales_min} y{' '}
+            {ganaderia.carga_animales_max} animales: por eso el número de arriba es una
+            referencia y no un permiso.
+          </p>
 
           {/* El rodeo es uno solo para toda la app: acá se declara y Represa lo usa. */}
           <div className="bg-white rounded-xl border border-bone-200 p-2.5 space-y-1.5">
