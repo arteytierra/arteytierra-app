@@ -4194,6 +4194,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Committee — Stari Grad Plain decision', url: 'https://whc.unesco.org/en/decisions/1490' },
       ],
     },
+    {
+      practica: 'Recolección de verduras silvestres en la costa dálmata de Croacia',
+      periodo: 'Documentado entre 2012 y 2023 en 502 entrevistas',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Dos especies de verduras de hoja con historia de recolección silvestre y cultivo en la costa adriática croata: Soda inermis (barrilla) registrada en 20 entrevistas de 11 localidades de Dalmacia septentrional e islas cercanas a Zadar, y Bunias erucago documentada en 78 entrevistas de 40 localidades en Dalmacia central y meridional. Soda inermis representa una tradición de cultivo en declive vinculada a nichos ecológicos específicos; Bunias erucago muestra posible proceso de incipiente domesticación. 502 entrevistas de trabajo de campo entre 2012 y 2023 en la costa adriática croata.',
+      fuentes: [
+        { label: 'Vitasović-Kosić et al. (2026) — On the Use of the Neglected Edible Plants Soda inermis and Bunias erucago on the Adriatic Coast of Croatia, Plants', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13415321/' },
+      ],
+    },
   ],
   dinaricos_karst: [
     {
@@ -4205,6 +4216,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La síntesis histórica del karst dinárico croata documenta siglos de pastoralismo y el uso deliberado del fuego para mantener el saltus —el matorral de pastoreo— e impedir que volviera a cerrarse como bosque, promoviendo la regeneración del pastizal: el rebrote posterior al fuego es mucho más rico en minerales y proteína, y junto con las sales de la ceniza mejoraba la calidad del forraje. La fuente distingue esos fuegos deliberados de los incendios no controlados, y atribuye la degradación del karst —deforestación y uso insostenible del pastizal— al sobrepastoreo, no a la quema. El abandono rural reciente acumuló combustible y elevó el riesgo de incendio.',
       fuentes: [
         { label: 'Tekić, Fuerst-Bjeliš y Cvitanović (2024) — Landscape Change and Fire Risk in the Croatian Dinaric Karst: Looking Back and Moving Forward, en Environmental Histories of the Dinaric Karst, Environmental History 17 (acceso abierto)', url: 'https://link.springer.com/chapter/10.1007/978-3-031-56089-7_5' },
+      ],
+    },
+    {
+      practica: 'Arte del suhozida: muros de piedra seca en el karst dinárico croata',
+      periodo: 'Práctica milenaria; inscrita en la lista UNESCO ICH en 2018',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'Los muros de piedra seca —suhozid en croata— articulan terrazas agrícolas, separan parcelas y conforman refugios y cabañas (bunje) en el karst dinárico. Al construir sin mortero, los albañiles ajustan cada piedra para equilibrar la estructura; el muro retiene suelo en pendientes pedregosas, redistribuye la humedad y crea microclimas para cultivos en una zona con escasa tierra arable. La inscripción multinacional de 2018 reconoce el saber técnico compartido; para Croacia abarca las zonas de Dalmacia e Istria, donde la técnica organiza el paisaje agropastoril karst desde hace miles de años.',
+      fuentes: [
+        { label: 'UNESCO ICH (2018) — Art of dry stone walling, knowledge and techniques (inscripción multinacional con Croacia)', url: 'https://ich.unesco.org/en/RL/art-of-dry-stone-walling-knowledge-and-techniques-01393' },
       ],
     },
   ],
@@ -4337,6 +4359,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Vegaøyan, The Vega Archipelago', url: 'https://whc.unesco.org/en/list/1143/' },
       ],
     },
+    {
+      practica: 'Recolección de rizomas de helecho (moldfôr) como forraje de emergencia en el norte de Noruega',
+      periodo: 'Documentado históricamente; práctica residual en el norte hasta los años 1940–1950',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El núcleo de la tradición noruega de recolección de rizomas de helecho (moldfôr) se ubica en los condados de Nordland y Troms, donde los inviernos más prolongados producían recurrente escasez de forraje en primavera temprana. Más de 200 registros individuales documentan la práctica. Las especies preferidas fueron Matteuccia struthiopteris y Dryopteris filix-mas; Athyrium filix-femina era evitada por considerarse tóxica. Los rizomas se recogian en otoño tardío y primavera temprana; la tradición se extendía a Finnmark y fue adoptada también por minorías finesas y sámi. Localmente continuó hasta los años 1940–1950.',
+      fuentes: [
+        { label: 'Alm (2016) — Fern rhizomes as fodder in Norway, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5013593/' },
+      ],
+    },
   ],
   abedular_montano_escandinavo: [
     {
@@ -4387,6 +4420,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Norstedt, Maher Hasselquist y Laudon (2021) — From Haymaking to Wood Production: Past Use of Mires in Northern Sweden Affect Current Ecosystem Services and Function, Rural Landscapes 8(1): 2', url: 'https://www.diva-portal.org/smash/get/diva2%3A1528964/FULLTEXT01.pdf' },
       ],
     },
+    {
+      practica: 'Uso de plantas medicinales silvestres en la Carelia del Norte (Finlandia)',
+      periodo: 'Documentado en entrevistas de los años 2010 (práctica con raíces históricas)',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En la Carelia del Norte finlandesa se documentaron 43 taxones de plantas medicinales de 25 familias en 67 entrevistas semiestructuradas con fineses locales y refugiados carelios de guerra; 31 taxones siguen en uso. Menos del 25 % de las especies históricamente utilizadas permanecen en práctica activa, lo que refleja el estado frágil del conocimiento. El desplazamiento forzado, la pérdida de tierras tradicionales y la adaptación a nuevos entornos tras la Segunda Guerra Mundial contribuyeron al declive, junto con el reemplazo por medicamentos industriales.',
+      fuentes: [
+        { label: 'Sõukand, Kuznetsova, Svanberg et al. (2025) — Medicinal Plant Use in North Karelia, Finland, in the 2010s, Plants', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11769276/' },
+      ],
+    },
   ],
 
   // ── Carpatos y las estepas del este ───────────────────────────────────────────
@@ -4424,6 +4468,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Filas de árboles se establecieron entre campos de la estepa para disminuir velocidad del viento, atrapar nieve y reducir erosión y evaporación. El diseño protege el chernozem y distribuye mejor la humedad sobre grandes superficies cerealistas. La comisión rusa de 1891 convirtió experiencias previas en un programa sistemático de protección forestal agrícola.',
       fuentes: [
         { label: 'FAO — Shelterbelts in the Russian steppe', url: 'https://www.fao.org/4/x5349e/x5349e02.htm' },
+      ],
+    },
+    {
+      practica: 'Apiterapia tradicional de los apicultores en el suroeste de Ucrania',
+      periodo: 'Documentado en entrevistas de 2020 a 2024 (continuación de práctica histórica)',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'Diecisiete apicultores del suroeste de Ucrania fueron entrevistados entre 2020 y 2024; el apicultor promedio tenía 55 años, 45 colmenas y 22 años de experiencia a tiempo parcial. Los productos principales son miel, polen, propóleo y jalea real. A diferencia de Italia, los apicultores ucranianos producen y utilizan tinturas de abeja muerta, tinturas de larva de polilla de la cera y homogenatos de cría de zánganos, productos sin equivalente en la tradición italiana. El turismo de apiterapia emerge como nueva rama económica, aunque la regulación estricta prohíbe el etiquetado terapéutico.',
+      fuentes: [
+        { label: 'Kalle, Stryamets, Svanberg et al. (2025) — Beekeepers as guardians of apitherapeutic knowledge in Estonia, SW Ukraine, and NE Italy, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11895261/' },
       ],
     },
   ],
@@ -4515,6 +4570,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Tabakoni, en las tierras bajas de Colchis occidental, el registro arqueológico recuperó mijo cultivado (Panicum miliaceum) y hojas de hoz dentro de un asentamiento levantado sucesivamente con rellenos y nivelaciones sobre suelos aluviales anegados. La acumulación de granos de mijo, del siglo XVIII a. C., es uno de los registros más antiguos de mijo cultivado en la región. Los autores asocian la aparición de un paisaje pantanoso abierto con cultivos que incluirían al mijo, resistente a las inundaciones, y explican que el ambiente anegado exigía una base sólida y elevar el terreno para poder habitarlo. La evidencia prueba esa combinación en Tabakoni y sitios comparables de Colchis; no autoriza a atribuirla a toda la ecorregión ni a una población cuyo nombre la fuente no establece.',
       fuentes: [
         { label: 'Mörtz y otros (2026) — Dating Tabakoni: the chronology of a Bronze Age settlement mound in Colchis, Antiquity 100(409): 56-74 (acceso abierto)', url: 'https://www.cambridge.org/core/journals/antiquity/article/dating-tabakoni-the-chronology-of-a-bronze-age-settlement-mound-in-colchis/3B9DDCD0C7D931EF4D2BA7EF88F423EA' },
+      ],
+    },
+    {
+      practica: 'Recolección de plantas medicinales silvestres en Taşköprü (Kastamonu, Turquía)',
+      periodo: 'Documentado en campo entre mayo de 2016 y julio de 2018',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En el distrito de Taşköprü de Kastamonu, en el norte de Anatolia (costa del mar Negro), se documentaron 101 taxones de plantas de 31 familias usados en medicina popular; 89 silvestres y 12 cultivados. Se registraron 499 usos medicinales. Los taxa con mayor índice de importancia cultural fueron Pinus nigra subsp. pallasiana (CI 0,78), P. sylvestris var. hamata (0,75) y Plantago lanceolata/major (0,58). Las familias más representadas: Asteraceae, Rosaceae y Pinaceae. La decocción fue la preparación más frecuente (38,4 %). Se documentaron 20 taxones nuevos como plantas medicinales y 303 usos terapéuticos nuevos.',
+      fuentes: [
+        { label: 'Senkardes, Dogan et al. (2022) — An Ethnobotanical study of medicinal plants in Taşköprü (Kastamonu–Turkey), Front Pharmacol', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9630845/' },
       ],
     },
   ],
