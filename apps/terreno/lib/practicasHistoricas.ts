@@ -4050,6 +4050,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Historic England (2018) — Water Meadows: Introductions to Heritage Assets', url: 'https://historicengland.org.uk/images-books/publications/iha-water-meadows/' },
       ],
     },
+    {
+      practica: 'Herbolaria medicinal céltica conservada en el manuscrito galés Meddygon Myddfai',
+      periodo: 'Registrado en el manuscrito medieval galés; compilado hacia el siglo XIII',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El manuscrito médico medieval galés Meddygon Myddfai (recetas 1-188) preservó preparaciones herbales de tradición céltica distintas de las continentales y anglosajonas: mayor uso de suero de leche y cenizas como vehículos. El análisis identifica hasta seis plantas hipotéticamente atribuibles a la tradición herbal galesa, incluidas Digitalis purpurea, Prunella vulgaris y Rumex conglomeratus. La fuente no confirma que estas plantas se cultivaran; su presencia puede reflejar recolección silvestre o influencia múltiple.',
+      fuentes: [
+        { label: 'Wagner (2020) — Celtic Provenance in Traditional Herbal Medicine of Medieval Wales, Front Pharmacol', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7058801/' },
+      ],
+    },
   ],
 
   // ── Francia atlantica ─────────────────────────────────────────────────────────
@@ -4127,6 +4138,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Cojáyar, la captación y conducción por gravedad distribuyó agua escasa entre bancales de una montaña semiárida. La red enlaza fuente, acequias, depósitos y parcelas, y su funcionamiento depende tanto de la topografía como de turnos y mantenimiento colectivo. El estudio histórico muestra cinco siglos de ajustes, además de abandono parcial y pérdida de continuidad en tramos recientes.',
       fuentes: [
         { label: 'Estudios Geográficos-CSIC — Paisaje histórico del regadío de Cojáyar', url: 'https://estudiosgeograficos.revistas.csic.es/index.php/estudiosgeograficos/article/download/1117/1623?inline=1' },
+      ],
+    },
+    {
+      practica: 'Cestera vegetal de cazadores-recolectores y primeros agricultores en Cueva de los Murciélagos',
+      periodo: 'Entre c. 7500 y 4200 cal a.C.; materiales hallados en contexto funerario',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El yacimiento funerario de Cueva de los Murciélagos (Albuñol, Iberia meridional), descubierto en el siglo XIX, contenía los objetos de cestera mejor conservados del sur de Europa, junto a sandalias y un mazo de madera. Setenta y seis dataciones 14C sitúan el conjunto entre c. 7500 y 4200 cal a.C. y abarcan comunidades cazadoras-recolectoras y las primeras agricultoras de la región. El trabajo vegetal para cestera no era práctico exclusivo de ningún modo de vida particular, sino un saber compartido en la transición hacia la producción de alimentos.',
+      fuentes: [
+        { label: 'Francisco et al. (2023) — The earliest basketry in southern Europe, Sci Adv', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10530072/' },
       ],
     },
   ],
@@ -4264,6 +4286,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Pastores, entre ellos comunidades valacas, trasladaban ovejas desde invernadas de llanura hacia pastos montanos del Pindos en primavera y regresaban en otoño. El calendario seguía las festividades de San Jorge y San Demetrio y coordinaba ruta, disponibilidad de pasto y trabajo familiar. FAO registra continuidad, pero también el reemplazo parcial por transporte motorizado y asentamiento permanente.',
       fuentes: [
         { label: 'FAO — Transhumant sheep and goat production in Greece', url: 'https://www.fao.org/4/X6508E/X6508E04.htm' },
+      ],
+    },
+    {
+      practica: 'Uso medicinal de plantas silvestres en la sierra de Stara Planina (Serbia)',
+      periodo: 'Documentado en entrevistas de campo (décadas de 2010-2020); práctica con raíces históricas',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En la sierra de Stara Planina (sudeste de Serbia) se documentaron 136 taxones de plantas medicinales vasculares y un líquen de 53 familias mediante entrevistas a 51 habitantes de la región. Lamiaceae (19 taxones), Rosaceae (18) y Asteraceae (17) concentran mayor diversidad. Los usos se analizaron con frecuencia de cita, valor de uso (UV) y factor de consenso informante (ICF). La transmisión oral y el conocimiento local se reconocen como frágiles ante el éxodo rural y el reemplazo por medicamentos industriales.',
+      fuentes: [
+        { label: 'Jarić et al. (2024) — Ethnobotanical research into medicinal plants in Mt Stara Planina, Serbia, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10782642/' },
       ],
     },
   ],
@@ -4473,6 +4506,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Riddell et al. (2022), Vegetation History and Archaeobotany — Land-use histories of two Icelandic farms', url: 'https://steinunn.hi.is/files/2022-09/Rid_2021.pdf' },
       ],
     },
+    {
+      practica: 'Uso de plantas en la era vikinga inferido por triangulación de evidencias',
+      periodo: 'Período vikingo (siglos VIII-XI); inferencia a partir de datos etnobótanicos, arqueológicos y lingüísticos',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'En los países nórdicos, los registros sistemáticos de uso de plantas no comienzan antes del siglo XVIII, lo que dificulta reconstruir el conocimiento vegetal de la era vikinga. Un estudio propone un método de triangulación que combina inferencias filogenetícas sobre datos etnobótanicos con evidencia arqueobótanica e histórico-lingüística. Los resultados sugieren continuidades en el uso de ciertas plantas, pero también la fragilidad de deducir prácticas antiguas solo a partir de registros tardíos.',
+      fuentes: [
+        { label: 'Sõukand et al. (2021) — Historical, archaeological and linguistic evidence test the phylogenetic inference of Viking-Age plant use, Philos Trans R Soc Lond B', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8126462/' },
+      ],
+    },
   ],
   boreal_nordico_turberas: [
     {
@@ -4677,6 +4721,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Sheep and goats in Turkey', url: 'https://www.fao.org/4/ah224e/AH224E03.htm' },
       ],
     },
+    {
+      practica: 'Uso etnobótanico de plantas medicinales y alimentarias en Afyonkarahisar',
+      periodo: 'Documentado en entrevistas de campo a informantes de la región; práctica con raíces históricas',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'En Afyonkarahisar, situada en la intersección de las regiones fitogeográficas mediterránea, irano-turaniana y eurosiberiana, se documentaron 130 taxones de plantas de 39 familias a partir de 46 informantes de 31 localidades. Los usos registrados son 178: medicinales (84), alimentarios (68), forraje (16) y uso doméstico (3). La migración juvenil hacia las ciudades acelera la pérdida del conocimiento tradicional.',
+      fuentes: [
+        { label: 'Arı & Temel (2015) — Ethnobotanical survey of plants used in Afyonkarahisar-Turkey, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4690277/' },
+      ],
+    },
   ],
   meseta_anatolia_estepa: [
     {
@@ -4688,6 +4743,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En el secano de Turquía central, una campaña de cereal alterna con un año sin cultivo. El barbecho permite preparar el suelo para la siguiente siembra y sus rastrojos y malezas son aprovechados por ovejas y cabras. La fuente documenta el sistema a gran escala, pero no demuestra que sea óptimo bajo las condiciones climáticas actuales.',
       fuentes: [
         { label: 'FAO — Sheep and goats in Turkey', url: 'https://www.fao.org/4/ah224e/AH224E03.htm' },
+      ],
+    },
+    {
+      practica: 'Plantas medicinales y alimentarias tradicionales de Kırşehir (Anatolia central)',
+      periodo: 'Documentado en campo en la provincia de Kırşehir; práctica con continuidad histórica',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En Kırşehir, en la región de Anatolia central, se relevaron 79 taxones vegetales de 33 familias con usos en medicina popular: 67 silvestres y 12 cultivados. Los más representados son Asteraceae, Lamiaceae y Rosaceae. Los 77 taxones con usos etnobótanicos registrados se dividen en medicina popular (45), alimentación (46) y otros propósitos (34), con superposición entre categorías. El estudio confirma que las plantas siguen siendo utilizadas de forma tradicional en la región.',
+      fuentes: [
+        { label: 'Emre et al. (2024) — An Ethnobotanical Study in Kırşehir, Türkiye, Plants', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11511375/' },
       ],
     },
   ],
