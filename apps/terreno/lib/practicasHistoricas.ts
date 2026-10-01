@@ -3829,6 +3829,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Copes-Gerbitz, Daniels y Hagerman (2022) — The contribution of Indigenous stewardship to an historical mixed-severity fire regime in British Columbia, Canada, Ecological Applications 33(3) (copia abierta en PubMed Central)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10078449/' },
       ],
     },
+    {
+      practica: 'Cosecha selectiva de bulbos de camas con reimplante de los menores',
+      periodo: 'Más de 4.000 años de evidencia arqueológica en la Meseta Columbia; vigente',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Las comunidades de la Meseta Columbia recogían bulbos maduros de camas (Camassia quamash) y devolvían al suelo los que no alcanzaban el tamaño mínimo y las cápsulas de semilla. Quemar el campo después de la cosecha aireaba el suelo y eliminaba competidoras. El análisis arqueobotánico de Pend Oreille Valley —con el pueblo Kalispel— muestra que la cosecha selectiva quedó firmemente establecida hace 1.000 años y que el patrón de bulbos recuperados distingue recolección de manejo deliberado.',
+      fuentes: [
+        { label: 'Carney et al. (2021) — Harvesting strategies as evidence for 4000 years of camas (Camassia quamash) management in the North American Columbia Plateau, Royal Society Open Science 8: 202213', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8059633/' },
+      ],
+    },
   ],
   okanagan_bosque_seco: [
     {
@@ -3871,6 +3882,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Gobierno de Manitoba — Wild Rice Harvesting / Manomin', url: 'https://www.manitoba.ca/chc/hrb/plaques/plaq1307.html' },
       ],
     },
+    {
+      practica: 'Sistema ojibwa de cinco principios para la cosecha sustentable',
+      periodo: 'Sistema transmitido generacionalmente; documentado en comunidad de Ontario',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'El estudio de caso de una comunidad ojibwa en Ontario identificó cinco principios que estructuran la relación con los recursos silvestres: estaciones (respetar los ciclos estacionales de cada especie), necesidades (cosechar sólo lo necesario), agradecimiento (protocolos de reconocimiento), no desperdicio y compartir. Los principios funcionan juntos como sistema de gestión que limita la extracción y distribuye el producto dentro de la comunidad. Los autores señalan que esos principios permiten construir procesos de consulta intercultural más robustos que los modelos de uso sustentable basados sólo en ciencia occidental.',
+      fuentes: [
+        { label: 'LaRiviere y Crawford (2013) — Indigenous Principles of Wild Harvest and Management: An Ojibway Community as a Case Study, Human Ecology 41(4): 535-548', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3859892/' },
+      ],
+    },
   ],
   taiga_canadiense_permafrost: [
     {
@@ -3895,6 +3917,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Many Caches, estructuras circulares de piedra protegían carne de caribú del sol y de carroñeros hasta que pudiera transportarse o consumirse. La investigación de Parques Canadá incorporó conocimiento Inuvialuit para interpretar y documentar el sitio. Dos fragmentos óseos fechados por radiocarbono sitúan el uso al menos entre hace unos 250 y 400 años.',
       fuentes: [
         { label: 'Parques Canadá — Many Caches: archaeology and Inuvialuit knowledge', url: 'https://www.parks.canada.ca/nature/science/autochtones-indigenous/caches' },
+      ],
+    },
+    {
+      practica: 'Conocimiento inuit sobre migración y salud del caribú',
+      periodo: 'Saber transmitido generacionalmente; relevado entre 2020 y 2022',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'El estudio de la manada de caribúes Dolphin and Union incorporó entrevistas con cazadores inuit de Nunavut y los Territorios del Noroeste. Los participantes describieron la declinación de la manada, el desplazamiento hacia el este del área de uso y la aparición de organismos parásitos inusuales, todas señales que antecedieron a los relevamientos científicos. El artículo concluye que el conocimiento de los cosechadores ofrece datos de distribución, salud animal y comportamiento no alcanzables por los métodos convencionales de monitoreo, y que su incorporación es parte de la soberanía alimentaria inuit.',
+      fuentes: [
+        { label: 'Hanke et al. (2023) — Supporting Inuit food sovereignty through collaborative research of an at-risk caribou herd, Frontiers in Sustainable Food Systems 7: 1306521', url: 'https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2023.1306521/full' },
       ],
     },
   ],
@@ -4037,6 +4070,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Revista Pirineos-CSIC — Terrazas agrícolas y conservación del suelo y el agua', url: 'https://pirineos.revistas.csic.es/index.php/pirineos/article/view/302' },
       ],
     },
+    {
+      practica: 'Pastoreo trashumante de ovejas en las sierras cantábricas',
+      periodo: 'Sistema estacional con siglos de historia; vigente durante el estudio',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En las montañas cantábricas del noroeste de España, rebaños de ovejas extensivas se desplazan estacionalmente entre regiones con productividad complementaria de pastos. El estudio compara parcelas con pastoreo trashumante activo y parcelas donde el sistema fue abandonado, y encuentra que la trashumancia mantiene al mismo tiempo biodiversidad, producción forrajera, captura de carbono y fertilidad del suelo. El abandono del sistema reduce todas esas funciones ecosistémicas simultáneamente.',
+      fuentes: [
+        { label: 'Fernández-Guisuraga et al. (2022) — Transhumant Sheep Grazing Enhances Ecosystem Multifunctionality in Productive Mountain Grasslands, Frontiers in Ecology and Evolution 10: 861611', url: 'https://www.frontiersin.org/journals/ecology-and-evolution/articles/10.3389/fevo.2022.861611/full' },
+      ],
+    },
   ],
   montano_iberico: [
     {
@@ -4048,6 +4092,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Sierra Nevada, acequias sin revestir desvían agua de deshielo y arroyos hacia laderas permeables durante la estación húmeda. El agua se infiltra y reaparece semanas o meses después en manantiales y cursos más bajos, ampliando la disponibilidad estival. Las comunidades de regantes limpian canales y abren o cierran derivaciones según nieve, suelo y demanda.',
       fuentes: [
         { label: 'Universidad de Granada — El sistema de recarga de las acequias de careo', url: 'https://canal.ugr.es/noticia/sierra-nevada-sistema-recarga-agua-subterranea-mas-antiguo-europa/' },
+      ],
+    },
+    {
+      practica: 'Trashumancia estacional de ganado en rutas ibéricas',
+      periodo: 'Documentada desde la Edad Media; inscrita por UNESCO en 2019 y ampliada en 2023',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'En la península ibérica, cañadas y cordeles conectan pastos de invierno en llanuras y costa con dehesas y pastizales de verano en sierras. Los rebaños se desplazan a pie dos veces al año, y el conocimiento de rutas, aguadas, condiciones del suelo y calendarios climáticos se transmite entre generaciones. España figura como uno de los países fundadores del elemento multinacional inscrito por UNESCO, que abarca hoy nueve países europeos.',
+      fuentes: [
+        { label: 'UNESCO Patrimonio Cultural Inmaterial — Transhumance, the seasonal droving of livestock (RL/01964, 2019/2023)', url: 'https://ich.unesco.org/en/RL/transhumance-the-seasonal-droving-of-livestock-01964' },
       ],
     },
   ],
@@ -4089,6 +4144,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los pastores trasladaban rebaños por una red de amplias vías pecuarias entre pasturas altas estivales y llanuras de invierno. La movilidad seguía la estacionalidad del forraje y evitaba sostener el ganado todo el año en un único piso ecológico. UNESCO documenta origen prerromano y ampliación romana de la red, hoy conservada de manera fragmentaria.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — The Transhumance Routes', url: 'https://whc.unesco.org/en/tentativelists/5005/' },
+      ],
+    },
+    {
+      practica: 'Monte bajo de castaño con ciclos cortos de tala',
+      periodo: 'Con siglos de continuidad en los Apeninos; activo hasta la Segunda Guerra Mundial; en recuperación reciente',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El monte bajo de castaño (ceduo) implica cortar los tallos hasta la cepa y dejar que rebroten desde la raíz, produciendo varas en ciclos de ocho a diez años. La práctica sostuvo comunidades rurales de los Apeninos durante siglos mediante madera para herramientas, estacas, carbón y tanino. El artículo italiano describe el abandono de casi todos los cedui después de 1945 por desplazamiento de mano de obra, el consecuente sobreenvejecimiento de las masas y la recuperación reciente de interés en algunos predios.',
+      fuentes: [
+        { label: 'Mairota et al. (2016) — Opportunities for coppice management at the landscape level: the Italian experience, iForest — Biogeosciences and Forestry 9: 775-782', url: 'https://iforest.sisef.org/contents/?id=ifor1865-009' },
       ],
     },
   ],
@@ -4359,6 +4425,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO — Sheep and goat breeds of Georgia: Tushin sheep', url: 'https://www.fao.org/4/ah759e/AH759E12.htm' },
       ],
     },
+    {
+      practica: 'Vinificación en qvevri enterrado bajo tierra',
+      periodo: 'Más de 8.000 años; inscrita por UNESCO en 2013',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'La técnica georgiana consiste en fermentar y conservar vino dentro de grandes tinajas de arcilla cocida, enterradas hasta el cuello para mantener la temperatura estable. Las uvas —incluyendo pieles, semillas y tallos en la versión ámbar— fermentan sin temperatura ni levaduras agregadas. Cada qvevri se sella con cera de abeja después de la vendimia y se abre meses después. UNESCO inscribió el método en 2013 como Patrimonio Cultural Inmaterial de la Humanidad.',
+      fuentes: [
+        { label: 'UNESCO Patrimonio Cultural Inmaterial — Georgian traditional qvevri wine-making method (RL/00870, 2013)', url: 'https://ich.unesco.org/en/RL/georgian-traditional-qvevri-wine-making-method-00870' },
+      ],
+    },
   ],
   kura_semidesierto: [
     {
@@ -4464,6 +4541,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       fuentes: [
         { label: 'Bak, Karadeniz, Şenyurt y Celap (2018) — Ülkemiz Fındık Yetiştiriciliğinin Dünü ve Bugünü, Bahçe 47', url: 'https://dergipark.org.tr/en/pub/bahce/article/1809063' },
         { label: 'İslam (2018) — Hazelnut culture in Turkey, Akademik Ziraat Dergisi 7(2)', url: 'https://dergipark.org.tr/en/pub/azd/article/476665' },
+      ],
+    },
+    {
+      practica: 'Recolección y uso de plantas medicinales silvestres del Ponto',
+      periodo: 'Saber tradicional vigente; documentado en Güce, Giresun, entre 2019 y 2020',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'El distrito de Güce, en la provincia de Giresun sobre la costa del mar Negro, conserva un conocimiento etnobotánico activo. El relevamiento identificó 128 taxa vasculares medicinales con sus modos de preparación, partes usadas y afecciones tratadas. Las plantas se recogen frescas o secas de bosques mixtos y zonas húmedas y se procesan como té, cataplasma, jugo o extracto; el saber se transmite oralmente entre mujeres mayores de la comunidad.',
+      fuentes: [
+        { label: 'Karakoöse (2022) — An ethnobotanical study of medicinal plants in Güce district, north-eastern Turkey, Plant Diversity 44(6): 487-503', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9751085/' },
       ],
     },
   ],
