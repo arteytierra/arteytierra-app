@@ -4012,6 +4012,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'NatureScot — Scottish machair management', url: 'https://presscentre.nature.scot/news/snh-puts-scottish-machair-on-the-map' },
       ],
     },
+    {
+      practica: 'Quema rotacional de brezal y turbera (muirburn) en Escocia y norte de Inglaterra',
+      periodo: 'Siglos XVIII hasta el presente',
+      tipo: 'fuego',
+      vigencia: 'en_uso',
+      detalle:
+        'La quema controlada en parches de brezal en rotaciones de diez a veinticinco años rejuvenece la vegetación, mejora el pasto y crea mosaicos de edades para la fauna. El fuego ha sido empleado durante siglos como herramienta de gestión en tierras altas británicas; el trabajo analizó su papel sobre turberas de cobertura, señalando efectos sobre el balance de carbono y la diversidad de musgos, y propone marcos de gestión adaptativa.',
+      fuentes: [
+        { label: 'Davies et al. (2016) — The role of fire in UK peatland and moorland management, Phil Trans R Soc B', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4874417/' },
+      ],
+    },
   ],
   pinar_caledonio: [
     {
@@ -4278,6 +4289,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'UNESCO World Heritage Centre — Estonian wooded meadows', url: 'https://whc.unesco.org/en/tentativelists/1854/' },
       ],
     },
+    {
+      practica: 'Recolección de plantas medicinales silvestres en el sureste de Estonia',
+      periodo: 'Siglos XIX-XX (1888-1996)',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        '119 taxones de plantas medicinales documentados en las parroquias de Setomaa, Räpina y Vastseliina a partir de archivos HERBA 1888-1996; Pinus sylvestris, Matricaria discoidea y Valeriana officinalis resultaron los más citados. El conocimiento se transmitía en comunidades rurales del sureste de Estonia; la ocupación soviética aceleró el declive del uso de especies locales a medida que los medicamentos industriales los desplazaron.',
+      fuentes: [
+        { label: 'Sõukand et al. (2022) — Medicinal Plant Use in Setomaa, Räpina and Vastseliina, Estonia, Plants 11(20): 2698', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9611039/' },
+      ],
+    },
   ],
   sarmatico_boreonemoral: [
     {
@@ -4289,6 +4311,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Finlandia oriental se talaban y quemaban parcelas de coníferas para sembrar centeno sobre la ceniza. Tras pocas cosechas, el sitio quedaba en barbecho forestal prolongado y el cultivo se desplazaba, por lo que el sistema dependía de mucha superficie y baja frecuencia. Hoy sobrevive principalmente como práctica demostrativa y patrimonio vivo en pocos establecimientos.',
       fuentes: [
         { label: 'Metsähallitus — Management plan for Telkkämäki slash-and-burn heritage farm', url: 'https://julkaisut.metsa.fi/assets/pdf/lp/Asarja/a170-2.pdf' },
+      ],
+    },
+    {
+      practica: 'Bartnichestvo: apicultura en árboles vivos del bosque de Białowieża',
+      periodo: 'Siglos XVI-XVIII',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Los bartnicy tallaban colmenas en troncos de pino vivos a siete metros de altura promedio, protegiendo las colonias de osos y martas. El sistema fue documentado en el bosque de Białowieża con 936 colmenas en 1792 y estaba organizado en un estamento hereditario con derechos exclusivos reconocidos legalmente. El análisis dendrológico identificó colmenas en pinos vivos de más de 150 años de edad.',
+      fuentes: [
+        { label: 'Samojlik, Fedotova, Niechoda (2019) — Culturally modified trees in Białowieża Forest, PLoS ONE', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6343906/' },
       ],
     },
   ],
@@ -4315,6 +4348,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las comunidades sámi desplazan rebaños entre bosques invernales y pasturas montanas de verano siguiendo nieve, líquenes y alivio de insectos. La ruta reparte la presión sobre ambientes que no ofrecen alimento equivalente todo el año. UNESCO sitúa la consolidación completa del ciclo anual migratorio en los siglos XVI y XVII.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Laponian Area', url: 'https://whc.unesco.org/en/list/774' },
+      ],
+    },
+    {
+      practica: 'Recolección y conserva de camemoro en el norte de Suecia',
+      periodo: 'Siglos XVII-XX',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'El camemoro (Rubus chamaemorus), llamado lapplands guld (oro de Laponia), era la tercera baya silvestre más importante en Suecia; se almacenaba en cajas de corteza de abedul y luego en barriles. La baya proporcionaba vitamina C en regiones sin acceso a cítricos y constituía una fuente de ingresos lateral para campesinos del norte. La práctica se integraba en la economía campesina escandinava junto con la caza, la pesca y el pastoreo.',
+      fuentes: [
+        { label: 'Svanberg et al. (2025) — Rubus chamaemorus in Swedish gastronomy and economy, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12859927/' },
       ],
     },
   ],
@@ -4356,6 +4400,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Comunidades rurales de Transilvania siegan praderas floridas para guardar forraje invernal y luego permiten pastoreo controlado. El corte tardío deja completar ciclos de floración y evita que arbustos y bosque cierren el ambiente. FAO destaca que estos paisajes sobrevivieron alrededor de mil años, pero enfrentan abandono e intensificación.',
       fuentes: [
         { label: 'Knowles, B. (2011) — Mountain Hay Meadows: the Romanian Context and the Effects of Policy on High Nature Value Farming, Pogány-havas Microregion Association (ficha de la Plataforma de Agricultura Familiar de la FAO)', url: 'https://www.fao.org/family-farming/detail/en/c/308472/' },
+      ],
+    },
+    {
+      practica: 'Medicina veterinaria etnobotánica de los huzules en los Cárpatos ucranianos',
+      periodo: 'Siglos XIX-XX (vigente en zonas de montaña)',
+      tipo: 'ganaderia',
+      vigencia: 'en_retroceso',
+      detalle:
+        '476 entrevistas en la Bucovina montañosa documentaron 94 taxones vegetales usados para el tratamiento de animales domésticos; el ganado bovino era el objetivo terapéutico principal con el 70 % de los registros. El conocimiento persiste en zonas de montaña carpatiana como reservorio vivo gracias a la continuidad del pastoreo extensivo, mientras en las zonas bajas el acceso a la veterinaria convencional lo ha desplazado.',
+      fuentes: [
+        { label: 'Pieroni et al. (2021) — Ethnoveterinary knowledge in Eastern Europe, Front Vet Sci', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8551763/' },
       ],
     },
   ],
@@ -4567,6 +4622,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Las comunidades de la cuenca de Třeboň mantienen una red de 460 estanques y lagos artificiales conectada con la llanura de inundación del Lužnice, hoy la mayor producción de pescado de agua dulce de Europa: unas 3.000 toneladas por año, 95% carpas. Los estudios confirmaron que esos estanques y los humedales del río son los que mitigan las crecidas, de modo que la infraestructura productiva funciona además como reducción del riesgo de inundación.',
       fuentes: [
         { label: 'UNESCO (2018, actualizado en 2023) — Addressing climate-related risks and economic development go hand in hand in Třeboň', url: 'https://www.unesco.org/en/articles/addressing-climate-related-risks-and-economic-development-go-hand-hand-trebon' },
+      ],
+    },
+    {
+      practica: 'Monte bajo (tala y rebrote) como fuente principal de leña en la llanura de Moravia',
+      periodo: 'Siglos XIII-XIX',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'El análisis de fuentes escritas a escala de parroquia muestra que la tala periódica y el aprovechamiento del rebrote de tocón fue el sistema dominante de producción de leña en la llanura de Moravia durante la Baja Edad Media; el monte bajo predominaba en las llanuras y aparecía también en zonas de mayor altitud. La gestión intensiva del bosque con ciclos cortos de corta fue la forma de manejo forestal más importante en los valles bajos de Europa Central en ese período.',
+      fuentes: [
+        { label: 'Szabó (2015) — Intensive woodland management in the Middle Ages: Moravia, J Hist Geogr', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5424077/' },
       ],
     },
   ],
