@@ -446,6 +446,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO (2025) — Metepantle: Sistema agrícola ancestral en las zonas montañosas de Tlaxcala, SIPAM', url: 'https://www.fao.org/giahs/around-the-world/detail/mexico-tlaxcala-system/es' },
       ],
     },
+    {
+      practica: 'Recolección de escamoles (huevos de Liometopum apiculatum) por los Hñähñu del Valle del Mezquital',
+      periodo: 'Práctica documentada en el Valle del Mezquital de Hidalgo; artículo publicado en 2018',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Los Hñähñu del Valle del Mezquital (Hidalgo) recolectan escamoles —larvas y pupas de la hormiga Liometopum apiculatum— en nidos subterráneos cerca de raíces de maguey y mezquite durante los meses de marzo a mayo. Ramos-Elorduy y colaboradores (2018) documentaron en la Revista Mexicana de Biodiversidad las épocas, los instrumentos y el conocimiento de qué nidos explotar y cuáles respetar para no agotar la colonia. La fuente registra el calendario y los criterios de selección; no establece una cuota de extracción sostenible por nido ni por hectárea para otros pisos altitudinales.',
+      fuentes: [
+        { label: 'Ramos-Elorduy et al. (2018) — Conocimiento local sobre Liometopum apiculatum (Hym.: Formicidae) en Hidalgo, Revista Mexicana de Biodiversidad 89', url: 'https://www.redalyc.org/journal/339/33957918005/html/' },
+      ],
+    },
   ],
 
   // ── Caribe ────────────────────────────────────────────────────────────────────
