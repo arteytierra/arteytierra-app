@@ -1,5 +1,22 @@
 # Plan: lo que el curso de Planificación de Tierras le agrega a acequia
 
+> **Reemplazado el 02/10/2026 por [`PLAN-fase-diseno-de-predio.md`](./PLAN-fase-diseno-de-predio.md).**
+>
+> Este documento queda como registro de cómo se llegó a la lista de trabajo, pero
+> **el plan que se ejecuta es el otro**, y hay dos diferencias que importan:
+>
+> 1. **Ninguna cita ni pedido de permiso a terceros.** La sección 4 de acá dejaba
+>    abierta la decisión de citar al autor o pedirle autorización. Esa decisión ya
+>    se tomó: no se cita a nadie y no se pide nada. Cada número entra a la app
+>    desde su **fuente técnica primaria publicada**, abierta y leída por nosotros,
+>    y esa es la fuente que se escribe en el código.
+> 2. **Los tres criterios sin respaldo publicado no se usan.** Acá quedaban como
+>    una decisión pendiente; en el plan nuevo están descartados, y dos de los tres
+>    resultaron ser atajos que la app puede calcular mejor que la regla de pulgar.
+>
+> Si los dos documentos se contradicen, manda el nuevo.
+
+
 Leí las 20 presentaciones del curso. El relevamiento clase por clase, con los números y
 las fórmulas, está en `_research/curso-planificacion-tierras/`.
 
