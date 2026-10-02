@@ -83,6 +83,7 @@ import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@
 import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
 import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
+import { crearRepresaGuardada, migrarRepresasGuardadas, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
 import { perdidaSuelo, type PerdidaSuelo } from '@/lib/usle';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel, type CuencaInputs } from './CuencaPanel';
@@ -846,6 +847,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // él). Antes cada pestaña tenía el suyo y nada garantizaba que fueran el mismo.
   const [rodeo, setRodeo] = useState<Rodeo>(RODEO_INICIAL);
   const [represaInputs, setRepresaInputs] = useState<RepresaInputs | null>(null);
+  /** Represas archivadas del proyecto: ver `lib/represasGuardadas.ts`. */
+  const [represasGuardadas, setRepresasGuardadas] = useState<RepresaGuardada[]>([]);
   const handleColocarSwales = useCallback(() => {
     if (!swales) return;
     const nuevos = swales.swales.map((sw, i) => {
@@ -963,6 +966,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (riegoInputs)     m['riego_inputs']    = riegoInputs;
     if (redAguaInputs)   m['red_agua_inputs'] = redAguaInputs;
     if (represaInputs)   m['represa_inputs']  = represaInputs;
+    if (represasGuardadas.length) m['represas_guardadas'] = represasGuardadas;
     if (Object.keys(panelInputs).length) m['panel_inputs'] = panelInputs;
     m['rodeo'] = rodeo;
     if (economiaResumen) m['economia'] = economiaResumen;
@@ -997,7 +1001,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -2081,6 +2085,25 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, nombre } : g));
   }, []);
 
+  // ─── Represas archivadas ──────────────────────────────────────────────────
+  // El panel calcula una represa por vez y recalcula arriba de la anterior.
+  // Archivarlas es lo que permite comparar emplazamientos, que es la decisión
+  // real: no si un cuello «da», sino cuál da más agua por tierra movida.
+  const handleGuardarRepresa = useCallback((inputs: RepresaInputs, ficha: FichaRepresa, poligonoNombre: string) => {
+    setRepresasGuardadas(prev => [...prev, crearRepresaGuardada(inputs, ficha, poligonoNombre, prev)]);
+  }, []);
+
+  // Abrir repone los parámetros y el panel recalcula: el resultado no se guarda
+  // porque la grilla de elevación pesa megas. Acá sólo hay que aceptar los
+  // inputs que el panel acaba de restaurar, para que viajen con el proyecto.
+  const handleAbrirRepresaGuardada = useCallback((g: RepresaGuardada) => {
+    setRepresaInputs(g.inputs);
+  }, []);
+
+  const handleEliminarRepresaGuardada = useCallback((id: string) => {
+    setRepresasGuardadas(prev => prev.filter(g => g.id !== id));
+  }, []);
+
   const handleMoverElementoACapa = useCallback((tipo: TipoElementoCapa, id: string, capaId: string) => {
     switch (tipo) {
       case 'cuenca': setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, capaId } : g)); break;
@@ -2364,6 +2387,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
     setRedAguaInputs((meta['red_agua_inputs'] as RedAguaInputs) ?? null);
     setRepresaInputs((meta['represa_inputs'] as RepresaInputs) ?? null);
+    setRepresasGuardadas(migrarRepresasGuardadas(meta['represas_guardadas']));
     setPanelInputs((meta['panel_inputs'] as Record<string, unknown>) ?? {});
     // Por `migrarRodeo` y no por un cast: los proyectos guardados antes del
     // 02/10/2026 traen un rodeo de un solo animal y hay que leerlo como un lote.
@@ -3281,6 +3305,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
                   texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}
                   inicial={represaInputs} onInputs={setRepresaInputs}
+                  guardadas={represasGuardadas}
+                  onGuardar={handleGuardarRepresa}
+                  onAbrir={handleAbrirRepresaGuardada}
+                  onEliminar={handleEliminarRepresaGuardada}
                   rodeo={rodeo} onRodeo={setRodeo}
                   onResumenRepresa={setRepresaResumen}
                   onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }}

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets, Check } from 'lucide-react';
+import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets, Check, Archive } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilTerreno, balanceTierra, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, MESES_NOMBRE, type RepresaResumen, type RepresaInputs } from '@/lib/represa';
+import { yaArchivada, resumenRepresa, porEficiencia, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
 import { anchoCorona, taludesSugeridos, claseSueloSugerida, evaluar, type Recomendacion } from '@/lib/criterios';
 import { demandaMensual_m3, procedencia, type Rodeo } from '@/lib/rodeo';
 import { RodeoEditor } from './mapa/RodeoEditor';
@@ -69,6 +70,15 @@ interface Props {
   /** Parámetros guardados con el proyecto, para no perder el trabajo al cambiar de pestaña. */
   inicial?:   RepresaInputs | null;
   onInputs?:  (i: RepresaInputs) => void;
+  /**
+   * Archivo de represas del proyecto. La pestaña calcula una sola y recalcula
+   * arriba de la anterior; archivarlas es lo que permite comparar dos
+   * emplazamientos sin anotar los números en un papel.
+   */
+  guardadas?:  RepresaGuardada[];
+  onGuardar?:  (inputs: RepresaInputs, ficha: FichaRepresa, poligonoNombre: string) => void;
+  onAbrir?:    (g: RepresaGuardada) => void;
+  onEliminar?: (id: string) => void;
   /** Rodeo compartido con Producción: se lee y se escribe desde las dos pestañas. */
   rodeo:      Rodeo;
   onRodeo:    (r: Rodeo) => void;
@@ -86,7 +96,7 @@ interface Props {
   composicionPredio?: Array<{ nombre: string; pct: number }>;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, coefAnualPredio = null, composicionPredio = [] }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, coefAnualPredio = null, composicionPredio = [] }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -307,8 +317,18 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // restaurar y el usuario vuelve a la pestaña para encontrarla en blanco, que
   // es justamente el problema que esta persistencia viene a resolver.
   const primeraPasada = useRef(true);
+  /**
+   * Polígono cuyo cambio viene de abrir una represa archivada, no de que el
+   * usuario eligiera otro espejo. Sin esto, restaurar una archivada seteaba el
+   * polígono y este efecto borraba el nivel y los parámetros un instante
+   * después: el archivo no servía para nada.
+   */
+  const restaurado = useRef<string | null>(null);
   useEffect(() => {
+    const vieneDelArchivo = restaurado.current === selId;
+    restaurado.current = null;
     if (primeraPasada.current) { primeraPasada.current = false; if (inicialRef.current) return; }
+    if (vieneDelArchivo) return;
     setRango(null); setNivel(null); setRes(null); setError(null); setLongMuro(null);
   }, [selId]);
 
@@ -375,15 +395,86 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // del castellano la lectura se vuelve ambigua.
   const [unidadVol,       setUnidadVol]       = useState<UnidadVolumen>((inicial?.unidadVol as UnidadVolumen) ?? 'm3');
 
+  /** Todo lo que el usuario eligió. Lo usan la persistencia y el archivo. */
+  const inputsActuales = useMemo<RepresaInputs>(() => ({
+    poligonoId: selId, nivel, muroIdx, tipoMuro,
+    anchoCorona: muroP.anchoCorona, taludInterno: muroP.taludInterno,
+    taludExterno: muroP.taludExterno, revancha: muroP.revancha,
+    longMuro, cobertura: coberturaCuenca, coef: coefCuenca, ha: haCuenca, seep, unidadVol,
+  }), [selId, nivel, muroIdx, tipoMuro, muroP, longMuro, coberturaCuenca, coefCuenca, haCuenca, seep, unidadVol]);
+
   useEffect(() => {
     if (!selId || !onInputs) return;
-    onInputs({
-      poligonoId: selId, nivel, muroIdx, tipoMuro,
-      anchoCorona: muroP.anchoCorona, taludInterno: muroP.taludInterno,
-      taludExterno: muroP.taludExterno, revancha: muroP.revancha,
-      longMuro, cobertura: coberturaCuenca, coef: coefCuenca, ha: haCuenca, seep, unidadVol,
-    });
-  }, [selId, nivel, muroIdx, tipoMuro, muroP, longMuro, coberturaCuenca, coefCuenca, haCuenca, seep, unidadVol, onInputs]);
+    onInputs(inputsActuales);
+  }, [selId, inputsActuales, onInputs]);
+
+  // ── Archivo de represas ────────────────────────────────────────────────────
+
+  /**
+   * El resumen de la simulación anual, que lo calcula la sección de abajo.
+   * Se queda con una copia acá además de subirlo al contenedor porque la ficha
+   * que se archiva lo incluye: una represa que aguanta el año al 91 % y otra al
+   * 60 % no se comparan sólo por capacidad.
+   */
+  const [resumenSim, setResumenSim] = useState<RepresaResumen | null>(null);
+  const recibirResumen = useCallback((r: RepresaResumen | null) => {
+    setResumenSim(r);
+    onResumenRepresa?.(r);
+  }, [onResumenRepresa]);
+
+  /**
+   * Los resultados que se archivan. `null` mientras no haya un cálculo completo:
+   * sin muro ni balance no hay nada que comparar contra otro emplazamiento.
+   */
+  const ficha = useMemo<FichaRepresa | null>(() => {
+    if (!res || !muro || !balance || nivel === null) return null;
+    return {
+      nivel_m:        nivel,
+      capacidad_m3:   Math.round(balance.volumenAgua_m3),
+      area_espejo_m2: Math.round(res.area_inundada_m2),
+      prof_max_m:     res.prof_max_m,
+      alturaMuro_m:   muro.alto_m,
+      largoMuro_m:    muro.longitud_m,
+      compactado_m3:  Math.round(balance.compactado_m3),
+      banco_m3:       Math.round(balance.banco_m3),
+      eficiencia:     balance.eficiencia,
+      viable:         balance.viable,
+      perfilUsado:    muro.perfilUsado,
+      ...(resumenSim ? { confiabilidad_pct: resumenSim.confiabilidad_pct, cuenca_ha: resumenSim.cuenca_ha } : {}),
+    };
+  }, [res, muro, balance, nivel, resumenSim]);
+
+  const yaEsta = ficha ? yaArchivada(inputsActuales, guardadas) : null;
+
+  /**
+   * Abrir una archivada repone sus parámetros y la deja recalculando.
+   *
+   * No se guarda el resultado del cálculo —la grilla de elevación pesa megas—,
+   * así que lo que vuelve son los inputs: el efecto de restauración de más
+   * arriba se encarga de volver a integrar el embalse con ellos. De ahí el
+   * `yaRestauro.current = false`, que es lo que le da permiso a correr de nuevo.
+   */
+  const abrirGuardada = useCallback((g: RepresaGuardada) => {
+    const i = g.inputs;
+    restaurado.current = i.poligonoId;
+    setSelId(i.poligonoId);
+    setNivel(i.nivel);
+    setMuroIdx(i.muroIdx);
+    setTipoMuro(i.tipoMuro);
+    setMuroP({ anchoCorona: i.anchoCorona, taludInterno: i.taludInterno, taludExterno: i.taludExterno, revancha: i.revancha });
+    // Lo archivado son valores fijos: dejar el automático prendido los pisaría
+    // con los que sugiere el criterio hoy y la ficha dejaría de coincidir.
+    setMuroAuto(false);
+    setLongMuro(i.longMuro);
+    setCoberturaCuenca(i.cobertura);
+    setCoefCuenca(i.coef);
+    setHaCuenca(i.ha);
+    setSeep(i.seep);
+    if (i.unidadVol) setUnidadVol(i.unidadVol as UnidadVolumen);
+    setRes(null); setRango(null); setError(null);
+    yaRestauro.current = false;
+    onAbrir?.(g);
+  }, [onAbrir]);
 
   return (
     <div className="space-y-3">
@@ -505,6 +596,58 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
       </Paso>
 
       {error && <p className="text-[10px] text-clay-600 leading-tight">{error}</p>}
+
+      {/* Archivo de represas. Va arriba de los resultados a propósito: se
+          puede volver a una calculada sin tener ninguna activa, que es lo que
+          pasa al abrir el proyecto al día siguiente. */}
+      {guardadas.length > 0 && (
+        <div className="bg-white rounded-xl border border-bone-200 p-3 space-y-2">
+          <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide flex items-center gap-1">
+            <Archive className="w-3 h-3" /> Represas calculadas ({guardadas.length})
+          </p>
+          {porEficiencia(guardadas).map((g, i) => {
+            // El espejo de agua se puede haber borrado del mapa después de
+            // archivar: la ficha sigue valiendo para comparar, pero sin
+            // polígono no hay nada que recalcular.
+            const existe = poligonos.some(pg => pg.id === g.inputs.poligonoId);
+            return (
+              <div key={g.id} className="flex items-start gap-2 border-t border-bone-100 pt-2 first:border-0 first:pt-0">
+                <span className={`shrink-0 mt-0.5 w-3.5 text-center text-[9px] font-mono font-bold ${i === 0 && g.ficha.viable ? 'text-moss-700' : 'text-ink-700/35'}`}>
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-ink-900 truncate leading-tight">
+                    {g.nombre}
+                    {!g.ficha.viable && <span className="text-clay-700 font-normal"> · el balance no cierra</span>}
+                  </p>
+                  <p className="text-[9px] text-ink-700/55 leading-tight">{resumenRepresa(g)}</p>
+                  <p className="text-[9px] text-ink-700/40 leading-tight">
+                    {g.poligonoNombre} · nivel {g.ficha.nivel_m.toLocaleString('es-AR', { maximumFractionDigits: 1 })} m
+                    {g.ficha.confiabilidad_pct !== undefined && ` · aguanta el ${g.ficha.confiabilidad_pct} % de los meses`}
+                    {!g.ficha.perfilUsado && ' · muro sin perfil del eje'}
+                  </p>
+                  {!existe && (
+                    <p className="text-[9px] text-clay-700/80 leading-tight">
+                      El espejo de agua ya no está en el mapa: la ficha queda, pero no se puede volver a abrir.
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-0.5 shrink-0">
+                  {existe && (
+                    <button onClick={() => abrirGuardada(g)} className="text-[9px] text-moss-700 hover:text-moss-900 font-medium">Abrir</button>
+                  )}
+                  {onEliminar && (
+                    <button onClick={() => onEliminar(g.id)} className="text-[9px] text-clay-700/70 hover:text-clay-900">Borrar</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          <p className="text-[9px] text-ink-700/40 leading-relaxed">
+            Ordenadas por agua embalsada sobre tierra movida: la primera es la que mejor paga el movimiento de suelo, que no siempre es la más grande. Abrir una repone sus parámetros y la vuelve a calcular.
+          </p>
+        </div>
+      )}
 
       {rango && nivel !== null && res && (
         <div className="space-y-2 bg-white rounded-xl border border-bone-200 p-3">
@@ -781,6 +924,35 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
             )}
           </div>
 
+          {/* Archivar. Mover el nivel o cambiar de espejo recalcula arriba de lo
+              anterior, así que comparar dos emplazamientos obligaba a anotar los
+              números en un papel antes de tocar nada. Y comparar es el trabajo:
+              un predio tiene tres o cuatro cuellos donde se podría cerrar un
+              muro, y lo que decide no es si cada uno da, es cuál da más agua por
+              metro cúbico de tierra movida. */}
+          {onGuardar && ficha && (
+            <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-1">
+              <button
+                onClick={() => onGuardar(inputsActuales, ficha, sel?.nombre ?? 'Espejo de agua')}
+                disabled={!!yaEsta}
+                className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium border transition-colors ${
+                  yaEsta
+                    ? 'bg-moss-50 text-moss-700 border-moss-200 cursor-default'
+                    : 'bg-moss-700 hover:bg-moss-900 text-bone-50 border-transparent'
+                }`}
+              >
+                {yaEsta
+                  ? <><Check className="w-3.5 h-3.5" /> Guardada como «{yaEsta.nombre}»</>
+                  : <><Archive className="w-3.5 h-3.5" /> Guardar esta represa</>}
+              </button>
+              {!yaEsta && (
+                <p className="text-[9px] text-ink-700/45 leading-relaxed text-center">
+                  Queda en la lista con sus parámetros y sus números. Después podés mover el nivel o probar otro espejo sin perder ésta.
+                </p>
+              )}
+            </div>
+          )}
+
         </div>
       )}
       </div>
@@ -794,7 +966,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
         <RepresaSimSection
           seccion={seccion}
           res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa}
-          grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null} onResumen={onResumenRepresa}
+          grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null} onResumen={recibirResumen}
           rodeo={rodeo} onRodeo={onRodeo}
           cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
           coef={coefCuenca} onCoef={setCoefCuenca}
