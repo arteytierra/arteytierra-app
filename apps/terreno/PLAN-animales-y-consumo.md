@@ -166,7 +166,54 @@ No se corrigió en silencio: el `origen: 'manual'` de `rodeo.ts` ya existía par
 que quien conoce su campo no quede a merced de nuestro coeficiente, y ahora la
 pantalla además explica de dónde sale el número.
 
-### Etapa 2 — Categorías de verdad, y rodeo con varias categorías
+### Etapa 2 — Categorías de verdad, y rodeo con varias categorías ✅ 02/10/2026
+
+**Hecha.** Salió distinta —y mejor— de como estaba planteada acá, porque entre
+medio apareció la fuente: el curso de Planificación de Tierras usa la tabla de
+equivalencias de AACREA, y la tabla completa está publicada (Cocimano, Lange y
+Menvielle 1975, recopilada por Bavera 2006). Así que los coeficientes por
+categoría no hubo que estimarlos.
+
+Lo que quedó en el código:
+
+- **`lib/categorias.ts`** nuevo: 18 categorías con su EV, su peso vivo, su agua y
+  **su fuente por fila**. Las de bovinos salen de la tabla simplificada por
+  categoría: vaca promedio 1,00 · vaca con cría al pie 1,40 · vaca seca 0,60 ·
+  vaquillona de 1 a 2 años 0,70 · de 2 a 3 o preñada 0,80 · ternero de destete a
+  1 año 0,60 · novillito 0,70 · novillo 0,80 · novillo en engorde 1,00 · toro 1,30.
+  Ovinos por la relación publicada 1 EO = 0,16 EV, y equinos por el valor general
+  del yeguarizo (1,20).
+- **Las Mcal se derivan del EV**, no se declaran: `mcalEM_dia()` es `ev × 18,54`.
+  Era la nota al pie de este plan y se cumplió, aunque al revés de como estaba
+  escrita: la fuente publica el EV, no las Mcal, así que el dato primario es el
+  EV y las Mcal son lo derivado. Igual se cumple el objetivo, que era que no
+  hubiera dos números capaces de desincronizarse.
+- **`Rodeo` pasa a `lotes`**, con `migrarRodeo()` para los proyectos guardados. La
+  migración **conserva el consumo de agua que el usuario tenía escrito** y sólo
+  mueve el coeficiente de pasto, que es lo que no tenía fuente.
+- **`calcularReceptividad` ya no recibe un «tipo de animal»** sino el perfil del
+  rodeo real (`ev_por_cabeza` + `agua_l_dia`), así que la capacidad en cabezas
+  respeta la composición que el productor cargó.
+- **`TIPOS_ANIMAL` se borró.** Era la tabla de seis filas sin fuente.
+- **`components/mapa/RodeoEditor.tsx`**: un solo editor para Producción y Represa,
+  que muestra el EV de cada lote y las cautelas de las categorías elegidas.
+- **El porcino salió de la carga del campo** (`ev: null`): el cerdo casi no
+  pastorea, así que un coeficiente EV decía que competía por el pasto. Sigue
+  sumando en el agua. El caprino quedó con el valor heredado pero **diciendo en
+  pantalla que no tiene fuente**.
+- **El test que vale**: el caso resuelto de la fuente. Un rodeo de cría de 100
+  vientres —77 vacas, 23 vaquillonas de 2-3, 24 de 1-2, 24 terneras, 4 toros y 20
+  vacas de refugo— da **1,28 EV por vientre**, que es exactamente lo que publica
+  el paper. 22 tests en `rodeo.test.ts`, de 6 que había.
+
+Lo que sigue abierto de esta etapa: la **modulación** (cuántos módulos, con qué
+carga objetivo cada uno y dónde se ubican) está planificada en
+`PLAN-curso-planificacion-tierras.md`, etapa A, y necesita este rodeo por
+categorías para existir. Y el agua, que hoy sigue siendo litros fijos por
+categoría cuando debería salir de la temperatura: es la etapa B de ese mismo plan.
+
+El diseño original de esta sección queda abajo, como registro de lo que se pensó
+antes de tener la fuente.
 
 `TipoAnimal` pasa a tener especie + categoría, con el EV y el consumo por
 categoría y la fuente de cada fila:
@@ -282,8 +329,9 @@ la carne a `economia.ts`.
 ## 6 · Orden recomendado
 
 1. ~~**Etapa 1**~~ ✅ hecha el 01/10/2026.
-2. **Etapa 2**, que es la que pidió Jonatan para pastoreo y la que más cambia la
-   experiencia de cargar un campo. **Es la próxima.**
+2. ~~**Etapa 2**~~ ✅ hecha el 02/10/2026, con la tabla de AACREA como fuente.
+   Lo que falta de ganadería ya no es «categorías»: es el agua por temperatura y
+   la modulación, y las dos viven en `PLAN-curso-planificacion-tierras.md`.
 3. **Etapa 3**, las aves, que es trabajo nuevo y no corrige nada roto.
 4. **Etapa 4** al final.
 

@@ -89,7 +89,7 @@ import { CuencaPanel, type CuencaInputs } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import { colorServicio, type TipoServicio } from '@/lib/servicios';
 import type { RepresaResumen, RepresaInputs } from '@/lib/represa';
-import { RODEO_INICIAL, type Rodeo } from '@/lib/rodeo';
+import { RODEO_INICIAL, migrarRodeo, type Rodeo } from '@/lib/rodeo';
 import type { RiegoResumen, RiegoInputs } from '@/lib/riego';
 import type { PastoreoInputs } from '@/lib/pastoreo';
 import type { PotrerosLayout } from '@/lib/potreros';
@@ -2365,7 +2365,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setRedAguaInputs((meta['red_agua_inputs'] as RedAguaInputs) ?? null);
     setRepresaInputs((meta['represa_inputs'] as RepresaInputs) ?? null);
     setPanelInputs((meta['panel_inputs'] as Record<string, unknown>) ?? {});
-    setRodeo((meta['rodeo'] as Rodeo) ?? RODEO_INICIAL);
+    // Por `migrarRodeo` y no por un cast: los proyectos guardados antes del
+    // 02/10/2026 traen un rodeo de un solo animal y hay que leerlo como un lote.
+    setRodeo(migrarRodeo(meta['rodeo']));
     setPastoreoInputs((meta['pastoreo_inputs'] as PastoreoInputs) ?? null);
     setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
     setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);

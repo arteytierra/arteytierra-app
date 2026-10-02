@@ -96,10 +96,10 @@ export function calcularBalanceProductivo(
  * completo. Rige la regla de la casa — cuando la ciencia da un rango, se
  * muestra el rango.
  *
- * Lo que NO se auditó acá y sigue pendiente: los coeficientes EV por categoría
- * de `TIPOS_ANIMAL` y la falta de categorías de verdad (vaca de cría,
- * vaquillona, toro, novillo). Eso es la Etapa 2 de
- * `PLAN-animales-y-consumo.md`.
+ * Los coeficientes EV por categoría, que al cerrar esa auditoría quedaron como
+ * deuda, ya están: viven en `categorias.ts` con la tabla de AACREA y su fuente.
+ * Esta función ya no recibe un «tipo de animal» con un coeficiente inventado,
+ * recibe el perfil del rodeo real.
  */
 
 /**
@@ -170,22 +170,21 @@ export function consumoEV_kgMS_dia(em_mcal_kg: number): number {
  */
 export const EFICIENCIA_UTILIZACION = 0.50;
 
-export interface TipoAnimal {
-  id:          string;
-  nombre:      string;
-  /** Equivalentes vaca. Ver la deuda de categorías en PLAN-animales-y-consumo. */
-  ev:          number;
-  agua_l_dia:  number;
+/**
+ * El rodeo visto desde la receptividad: cuánto pesa en EV una cabeza promedio y
+ * cuánta agua toma.
+ *
+ * Son los dos únicos números que este cálculo necesita saber de la hacienda, y
+ * los dos salen de sumar los lotes reales (`rodeo.ts`). Antes esto era una fila
+ * de una tabla de seis tipos sin fuente; el coeficiente por categoría ahora vive
+ * en `categorias.ts`.
+ */
+export interface PerfilRodeo {
+  /** EV por cabeza, promediado sobre las cabezas que pastorean. */
+  ev_por_cabeza: number;
+  /** Litros por cabeza y día, promediado sobre todo el rodeo. */
+  agua_l_dia:    number;
 }
-
-export const TIPOS_ANIMAL: TipoAnimal[] = [
-  { id: 'bovino',    nombre: 'Bovinos adultos',     ev: 1.00, agua_l_dia: 50  },
-  { id: 'bovino_j',  nombre: 'Bovinos jóvenes',     ev: 0.50, agua_l_dia: 30  },
-  { id: 'equino',    nombre: 'Equinos',              ev: 1.25, agua_l_dia: 50  },
-  { id: 'ovino',     nombre: 'Ovinos',               ev: 0.15, agua_l_dia: 6   },
-  { id: 'caprino',   nombre: 'Caprinos',             ev: 0.12, agua_l_dia: 5   },
-  { id: 'porcino',   nombre: 'Porcinos',             ev: 0.30, agua_l_dia: 20  },
-];
 
 // Producción forrajera natural estimada por precipitación (kg MS/ha/año)
 function prodForrajera(precip_mm: number): number {
@@ -203,7 +202,8 @@ export interface ResultadoReceptividad {
   carga_ev_min:     number;
   /** El techo: pastura de calidad. Es lo que la app mostraba antes, sola. */
   carga_ev_max:     number;
-  carga_animales:   number;   // animales del tipo seleccionado (con carga_ev)
+  /** Cabezas que entran manteniendo la composición del rodeo cargado. */
+  carga_animales:   number;
   carga_animales_min: number;
   carga_animales_max: number;
   /** Kilos de MS por día que necesita 1 EV con el forraje supuesto. */
@@ -232,7 +232,7 @@ export interface ResultadoReceptividad {
 export function calcularReceptividad(
   area_ha: number,
   precip_anual_mm: number,
-  tipo: TipoAnimal,
+  perfil: PerfilRodeo,
   em_mcal_kg: number = EM_FORRAJE.natural,
 ): ResultadoReceptividad {
   const ef_kg_ha = prodForrajera(precip_anual_mm);
@@ -250,7 +250,10 @@ export function calcularReceptividad(
   const carga_ev_min = evCon(EM_FORRAJE.grosero);
   const carga_ev_max = evCon(EM_FORRAJE.calidad);
 
-  const animalesDe = (ev: number) => Math.max(0, Math.floor(ev / tipo.ev));
+  // Un rodeo sin cabezas que pastoreen no puede dividir: ahí `evPorCabeza`
+  // devuelve 1 y la capacidad queda expresada en EV, que es la unidad.
+  const evCabeza = perfil.ev_por_cabeza > 0 ? perfil.ev_por_cabeza : 1;
+  const animalesDe = (ev: number) => Math.max(0, Math.floor(ev / evCabeza));
   const carga_animales = animalesDe(carga_ev);
 
   // Voisin: 30 días reposo + 3 días ocupación → 11 potreros como mínimo, ajuste por área
@@ -269,7 +272,7 @@ export function calcularReceptividad(
     carga_animales_max: animalesDe(carga_ev_max),
     consumo_ev_kg_dia: Math.round(consumoEV_kgMS_dia(em_mcal_kg) * 10) / 10,
     em_mcal_kg,
-    agua_l_dia: Math.round(carga_animales * tipo.agua_l_dia),
+    agua_l_dia: Math.round(carga_animales * perfil.agua_l_dia),
     potreros_voisin,
     dias_ocupacion,
     area_potrero_ha,

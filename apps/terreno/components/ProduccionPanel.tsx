@@ -4,12 +4,16 @@ import { useState, useMemo } from 'react';
 import { Cloud, Wheat } from 'lucide-react';
 import {
   CULTIVOS_KC, calcularBalanceProductivo,
-  TIPOS_ANIMAL, calcularReceptividad, EV_MCAL_EM_DIA,
+  calcularReceptividad, EV_MCAL_EM_DIA,
 } from '@/lib/produccion';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
-import { animalDe, cambiarAnimal, aguaHacienda_l_dia, demandaMensual_m3, type Rodeo } from '@/lib/rodeo';
+import {
+  perfilRodeo, aguaHacienda_l_dia, demandaMensual_m3, cabezasTotal, evTotal,
+  evPorCabeza, nuevoLote, type Rodeo,
+} from '@/lib/rodeo';
+import { RodeoEditor } from './mapa/RodeoEditor';
 
 interface Props {
   datosClima:  DatosClima | null;
@@ -27,7 +31,9 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
   const [areaCult,  setAreaCult]  = useState(areaHa > 0 ? Math.round(areaHa * 10) / 10 : 1);
 
   const cultivo  = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
-  const animal   = animalDe(rodeo);
+  // Memoizado porque `perfilRodeo` devuelve un objeto nuevo cada vez y la
+  // receptividad no tiene por qué recalcularse en cada render.
+  const perfil = useMemo(() => perfilRodeo(rodeo), [rodeo]);
 
   const balance = useMemo(
     () => datosClima ? calcularBalanceProductivo(datosClima.meses, cultivo, areaCult) : null,
@@ -35,8 +41,8 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
   );
 
   const ganaderia = useMemo(
-    () => datosClima ? calcularReceptividad(areaHa || areaCult, datosClima.precip_anual_mm, animal) : null,
-    [datosClima, areaHa, areaCult, animal],
+    () => datosClima ? calcularReceptividad(areaHa || areaCult, datosClima.precip_anual_mm, perfil) : null,
+    [datosClima, areaHa, areaCult, perfil],
   );
 
   if (!datosClima) {
@@ -155,21 +161,11 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
       {/* ── 7.3 Receptividad ganadera ── */}
       {tab === 'ganaderia' && ganaderia && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <select
-              value={rodeo.animalId}
-              onChange={e => onRodeo(cambiarAnimal(rodeo, e.target.value))}
-              className="flex-1 text-[10px] border border-bone-200 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-moss-500"
-            >
-              {TIPOS_ANIMAL.map(a => <option key={a.id} value={a.id}>{a.nombre} ({a.ev} EV)</option>)}
-            </select>
-          </div>
-
           <div className="grid grid-cols-2 gap-2">
             <Chip label="Prod. forrajera" value={`${ganaderia.ef_kg_ha.toLocaleString('es-AR')} kg/ha`} sub="kg MS/ha/año estimado" color="neutro" />
-            <Chip label="Aguanta el pasto" value={`${ganaderia.carga_animales} animales`} sub={`${ganaderia.carga_animales_min}–${ganaderia.carga_animales_max} según la calidad del forraje`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
-            <Chip label="Rodeo del predio" value={`${rodeo.cabezas} animales`} sub={rodeo.origen === 'receptividad' ? 'tomado de la receptividad' : 'cargado a mano'} color="neutro" />
-            <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo).toLocaleString('es-AR')} L/día`} sub={`${rodeo.litros_animal_dia} L por cabeza y día`} color="neutro" />
+            <Chip label="Aguanta el pasto" value={`${ganaderia.carga_ev.toLocaleString('es-AR')} EV`} sub={`${ganaderia.carga_ev_min}–${ganaderia.carga_ev_max} según la calidad del forraje`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
+            <Chip label="Rodeo del predio" value={`${evTotal(rodeo).toLocaleString('es-AR')} EV`} sub={`${cabezasTotal(rodeo)} cabezas · ${rodeo.origen === 'receptividad' ? 'de la receptividad' : 'cargado a mano'}`} color="neutro" />
+            <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo).toLocaleString('es-AR')} L/día`} sub={`${perfil.agua_l_dia.toLocaleString('es-AR', { maximumFractionDigits: 0 })} L por cabeza en promedio`} color="neutro" />
           </div>
 
           {/* De dónde sale la receptividad, dicho de frente.
@@ -185,38 +181,47 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
             Menvielle, 1975). Con un pastizal natural de {ganaderia.em_mcal_kg} Mcal/kg
             eso son <b>{ganaderia.consumo_ev_kg_dia} kg de materia seca por día</b>, y se
             supone que el animal cosecha la mitad de lo que crece. Si tu pasto es mejor o
-            más grosero, el campo aguanta entre {ganaderia.carga_animales_min} y{' '}
-            {ganaderia.carga_animales_max} animales: por eso el número de arriba es una
+            más grosero, el campo aguanta entre {ganaderia.carga_ev_min} y{' '}
+            {ganaderia.carga_ev_max} EV: por eso el número de arriba es una
             referencia y no un permiso.
           </p>
 
-          {/* El rodeo es uno solo para toda la app: acá se declara y Represa lo usa. */}
-          <div className="bg-white rounded-xl border border-bone-200 p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-ink-700/60">Cabezas del rodeo</span>
-              <input
-                type="number" min={0} step={1} value={rodeo.cabezas}
-                onChange={e => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) onRodeo({ ...rodeo, cabezas: v, origen: 'manual' }); }}
-                className="w-20 text-[10px] font-mono text-right bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500"
-              />
-            </div>
-            {rodeo.cabezas !== ganaderia.carga_animales && (
+          {/* El rodeo es uno solo para toda la app: acá se declara y Represa lo usa.
+              Se carga por lotes porque un campo no se carga con «bovinos adultos»:
+              se carga con 40 vacas con cría, 12 vaquillonas y 2 toros, y cada
+              categoría come distinto (`categorias.ts`, tabla de AACREA). */}
+          <div className="bg-white rounded-xl border border-bone-200 p-2.5 space-y-2">
+            <p className="text-[10px] font-semibold text-ink-700">El rodeo del predio</p>
+            <RodeoEditor rodeo={rodeo} onRodeo={onRodeo} />
+
+            {ganaderia.carga_animales > 0 && cabezasTotal(rodeo) !== ganaderia.carga_animales && (
               <button
-                onClick={() => onRodeo({ ...rodeo, cabezas: ganaderia.carga_animales, origen: 'receptividad' })}
+                onClick={() => {
+                  // Se respeta la composición cargada: la sugerencia reparte las
+                  // cabezas entre los lotes que ya existen, en la misma
+                  // proporción. Si no hay ninguno, arranca con un lote de vacas.
+                  const total = cabezasTotal(rodeo);
+                  const lotes = total > 0
+                    ? rodeo.lotes.map(l => ({ ...l, cabezas: Math.round(l.cabezas / total * ganaderia.carga_animales) }))
+                    : [{ ...nuevoLote('bovino_vaca_prom', ganaderia.carga_animales) }];
+                  onRodeo({ ...rodeo, lotes, origen: 'receptividad' });
+                }}
                 className="w-full text-[10px] font-medium text-moss-700 border border-moss-300 rounded-lg py-1 hover:bg-moss-50 transition-colors"
               >
-                Usar los {ganaderia.carga_animales} que aguanta el pasto
+                Llevarlo a las {ganaderia.carga_animales} cabezas que aguanta el pasto
               </button>
             )}
-            {rodeo.cabezas > ganaderia.carga_animales && ganaderia.carga_animales > 0 && (
+            {evTotal(rodeo) > ganaderia.carga_ev && ganaderia.carga_ev > 0 && (
               <p className="text-[9px] text-clay-700 leading-relaxed">
-                El rodeo declarado supera la receptividad estimada en {rodeo.cabezas - ganaderia.carga_animales} animales.
-                O el campo produce más forraje del que estima el modelo, o hace falta suplementar.
+                El rodeo declarado pide {(evTotal(rodeo) - ganaderia.carga_ev).toLocaleString('es-AR', { maximumFractionDigits: 1 })} EV
+                más que la receptividad estimada. O el campo produce más forraje del que estima el
+                modelo, o hace falta suplementar.
               </p>
             )}
             <p className="text-[9px] text-ink-700/50 leading-relaxed">
-              Este número también dimensiona el agua de la represa: {demandaMensual_m3(rodeo).toLocaleString('es-AR')} m³ por mes
-              entre bebida y riego.
+              Este rodeo también dimensiona el agua de la represa: {demandaMensual_m3(rodeo).toLocaleString('es-AR')} m³ por mes
+              entre bebida y riego. Una cabeza promedio de este rodeo pesa{' '}
+              {evPorCabeza(rodeo).toLocaleString('es-AR', { maximumFractionDigits: 2 })} EV.
             </p>
           </div>
 

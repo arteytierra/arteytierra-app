@@ -6,8 +6,8 @@ import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/l
 import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilTerreno, balanceTierra, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, MESES_NOMBRE, type RepresaResumen, type RepresaInputs } from '@/lib/represa';
 import { anchoCorona, taludesSugeridos, claseSueloSugerida, evaluar, type Recomendacion } from '@/lib/criterios';
-import { animalDe, cambiarAnimal, demandaMensual_m3, procedencia, type Rodeo } from '@/lib/rodeo';
-import { TIPOS_ANIMAL } from '@/lib/produccion';
+import { demandaMensual_m3, procedencia, type Rodeo } from '@/lib/rodeo';
+import { RodeoEditor } from './mapa/RodeoEditor';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
 
@@ -943,21 +943,8 @@ function RepresaSimSection({
 
           {/* ── El consumo: es el mismo rodeo que Producción ── */}
           <div className="bg-bone-50 rounded-lg p-2 space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-ink-700/60 shrink-0">Hacienda</span>
-              <select
-                value={rodeo.animalId}
-                onChange={e => onRodeo(cambiarAnimal(rodeo, e.target.value))}
-                className="text-[10px] bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500"
-              >
-                {TIPOS_ANIMAL.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              <ParamRow label="Cabezas" value={rodeo.cabezas} onChange={v => onRodeo({ ...rodeo, cabezas: v, origen: 'manual' })} step={5} />
-              <ParamRow label="Litros/cab./día" value={rodeo.litros_animal_dia} onChange={v => onRodeo({ ...rodeo, litros_animal_dia: v })} step={5} />
-              <ParamRow label="Riego (m³/mes)" value={rodeo.riego_m3_mes} onChange={v => onRodeo({ ...rodeo, riego_m3_mes: v })} step={10} />
-            </div>
+            <span className="text-[10px] text-ink-700/60">Hacienda que bebe de acá</span>
+            <RodeoEditor rodeo={rodeo} onRodeo={onRodeo} conRiego />
             <p className="text-[9px] text-ink-700/50 leading-relaxed">
               {procedencia(rodeo)} Es el mismo rodeo que usa Producción: lo que cambies acá se ve allá, y al revés.
             </p>

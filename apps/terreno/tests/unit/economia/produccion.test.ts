@@ -11,7 +11,6 @@ import {
   nivelErosion,
   EM_FORRAJE,
   EV_MCAL_EM_DIA,
-  TIPOS_ANIMAL,
   CULTIVOS_KC,
 } from '@/lib/produccion';
 import type { MesDato } from '@/lib/clima';
@@ -102,7 +101,9 @@ describe('el equivalente vaca sale de la energía, no de una constante', () => {
 });
 
 describe('calcularReceptividad', () => {
-  const bovino = TIPOS_ANIMAL.find(t => t.id === 'bovino')!; // ev 1, agua 50 L/día
+  // Una vaca de cria: 1,00 EV y 50 L por dia. Es la unidad, asi que la
+  // capacidad en EV y la capacidad en cabezas coinciden.
+  const bovino = { ev_por_cabeza: 1, agua_l_dia: 50 };
 
   it('carga y agua coherentes con la producción forrajera', () => {
     const r = calcularReceptividad(100, 800, bovino); // 800 mm → 5000 kg MS/ha
