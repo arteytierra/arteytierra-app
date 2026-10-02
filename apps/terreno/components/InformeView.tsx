@@ -1523,7 +1523,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               <StatBlock label="Confiabilidad" value={`${datos.represa.confiabilidad_pct}%`} sub={datos.represa.aguanta ? 'aguanta el año' : 'con déficit'} />
               <StatBlock label="Capacidad" value={volumenM3(datos.represa.capacidad_m3)} sub={volumenEnLitros(datos.represa.capacidad_m3)} />
               <StatBlock label="Cuenca de aporte" value={`${datos.represa.cuenca_ha} ha`} sub="escurrimiento" />
-              <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="por mes" />
+              <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="promedio por mes" />
             </div>
             <Table
               head={['Parámetro', 'Valor']}
@@ -1531,6 +1531,13 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ['Aporte anual estimado', `${datos.represa.aporte_anual_m3.toLocaleString('es-AR')} m³`],
                 ['Volumen mínimo (mes crítico)', `${datos.represa.volumen_min_m3.toLocaleString('es-AR')} m³`],
                 ['Demanda anual', `${(datos.represa.demanda_m3_mes * 12).toLocaleString('es-AR')} m³`],
+                // El consumo del rodeo sale de la temperatura de cada mes, así que
+                // el mes de más calor pide bastante más que el promedio. Mostrar
+                // sólo el promedio escondía justo el mes que dimensiona la obra.
+                ...(datos.represa.demanda_m3_mes_max !== undefined && datos.represa.mes_demanda_max !== undefined
+                  ? [[`Demanda del mes de más calor (${MESES[datos.represa.mes_demanda_max] ?? ''})`,
+                      `${datos.represa.demanda_m3_mes_max.toLocaleString('es-AR')} m³`]] as Array<[string, string]>
+                  : []),
               ]}
               colAlign={['left', 'right']}
             />

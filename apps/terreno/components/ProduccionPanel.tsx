@@ -33,7 +33,20 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
   const cultivo  = CULTIVOS_KC.find(c => c.id === cultivoId) ?? CULTIVOS_KC[0]!;
   // Memoizado porque `perfilRodeo` devuelve un objeto nuevo cada vez y la
   // receptividad no tiene por qué recalcularse en cada render.
-  const perfil = useMemo(() => perfilRodeo(rodeo), [rodeo]);
+  /**
+   * El mes de más calor, que es el que manda el agua. Tiene que ser el mismo
+   * criterio que usa Represa: si una pestaña muestra el agua con la temperatura
+   * y la otra con el valor declarado, el mismo rodeo tiene dos consumos distintos
+   * según dónde lo mires, y eso es exactamente lo que esta capa vino a evitar.
+   */
+  const mesCaluroso = useMemo(() => {
+    if (!datosClima) return null;
+    let i = 0;
+    for (let m = 1; m < 12; m++) if (datosClima.meses[m]!.tmean_c > datosClima.meses[i]!.tmean_c) i = m;
+    return { mes: i, t: datosClima.meses[i]!.tmean_c };
+  }, [datosClima]);
+
+  const perfil = useMemo(() => perfilRodeo(rodeo, mesCaluroso?.t), [rodeo, mesCaluroso]);
 
   const balance = useMemo(
     () => datosClima ? calcularBalanceProductivo(datosClima.meses, cultivo, areaCult) : null,
@@ -165,7 +178,11 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
             <Chip label="Prod. forrajera" value={`${ganaderia.ef_kg_ha.toLocaleString('es-AR')} kg/ha`} sub="kg MS/ha/año estimado" color="neutro" />
             <Chip label="Aguanta el pasto" value={`${ganaderia.carga_ev.toLocaleString('es-AR')} EV`} sub={`${ganaderia.carga_ev_min}–${ganaderia.carga_ev_max} según la calidad del forraje`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
             <Chip label="Rodeo del predio" value={`${evTotal(rodeo).toLocaleString('es-AR')} EV`} sub={`${cabezasTotal(rodeo)} cabezas · ${rodeo.origen === 'receptividad' ? 'de la receptividad' : 'cargado a mano'}`} color="neutro" />
-            <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo).toLocaleString('es-AR')} L/día`} sub={`${perfil.agua_l_dia.toLocaleString('es-AR', { maximumFractionDigits: 0 })} L por cabeza en promedio`} color="neutro" />
+            <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo, mesCaluroso?.t).toLocaleString('es-AR')} L/día`}
+              sub={mesCaluroso
+                ? `en ${MESES[mesCaluroso.mes]}, el mes de más calor · ${perfil.agua_l_dia.toLocaleString('es-AR', { maximumFractionDigits: 0 })} L por cabeza`
+                : `${perfil.agua_l_dia.toLocaleString('es-AR', { maximumFractionDigits: 0 })} L por cabeza en promedio`}
+              color="neutro" />
           </div>
 
           {/* De dónde sale la receptividad, dicho de frente.
@@ -219,7 +236,7 @@ export function ProduccionPanel({ datosClima, areaHa, onIrAClima, rodeo, onRodeo
               </p>
             )}
             <p className="text-[9px] text-ink-700/50 leading-relaxed">
-              Este rodeo también dimensiona el agua de la represa: {demandaMensual_m3(rodeo).toLocaleString('es-AR')} m³ por mes
+              Este rodeo también dimensiona el agua de la represa: {demandaMensual_m3(rodeo, mesCaluroso?.t).toLocaleString('es-AR')} m³ en el mes de más calor
               entre bebida y riego. Una cabeza promedio de este rodeo pesa{' '}
               {evPorCabeza(rodeo).toLocaleString('es-AR', { maximumFractionDigits: 2 })} EV.
             </p>

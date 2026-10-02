@@ -35,10 +35,26 @@ export interface ResultadoRepresa {
 }
 
 /** Resumen para el informe / snapshot. */
+/**
+ * La demanda del mes `m`. Un arreglo corto o con huecos cae al primer valor
+ * finito que encuentre antes que devolver `NaN`: un `NaN` acá sale como volumen
+ * de embalse en el informe y nadie lo ve venir.
+ */
+export function demandaDelMes(demanda: number | number[], m: number): number {
+  if (typeof demanda === 'number') return Number.isFinite(demanda) ? demanda : 0;
+  const v = demanda[m];
+  if (Number.isFinite(v)) return v as number;
+  return demanda.find(x => Number.isFinite(x)) ?? 0;
+}
+
 export interface RepresaResumen {
   capacidad_m3:      number;
-  cuenca_ha:         number;
+  /** Promedio de los doce meses. Por doce da la demanda anual exacta. */
   demanda_m3_mes:    number;
+  /** La del mes que más pide, y cuál es. Faltan si la demanda es constante. */
+  demanda_m3_mes_max?: number;
+  mes_demanda_max?:    number;
+  cuenca_ha:         number;
   confiabilidad_pct: number;
   aguanta:           boolean;
   volumen_min_m3:    number;
@@ -87,7 +103,14 @@ export interface ParamsRepresa {
   cuencaArea_m2:     number;
   coefEscorrentia:   number;   // fracción de la lluvia que escurre (0–1)
   meses:             Array<{ precip_mm: number; etp_mm: number }>;  // 12
-  demanda_m3_mes:    number;   // demanda mensual constante
+  /**
+   * Demanda mensual. Un número es la misma demanda los doce meses; un arreglo de
+   * doce es la demanda mes a mes, que es lo que corresponde desde que el consumo
+   * del rodeo sale de la temperatura (ver `demandaMensualPorTemperatura_m3` en
+   * `rodeo.ts`). Entre julio y enero hay más de un 50 % de diferencia, y el error
+   * caía del lado peligroso: enero es cuando la represa está más baja.
+   */
+  demanda_m3_mes:    number | number[];
   infiltracion_mm_dia: number;
   factorEvap?:       number;   // espejo de agua vs ETP de referencia (~1.05)
 }
@@ -117,7 +140,7 @@ export function simularRepresaAnual(p: ParamsRepresa): ResultadoRepresa | null {
       const aporte  = p.cuencaArea_m2 * (md.precip_mm / 1000) * p.coefEscorrentia;
       const evap    = areaEf * (md.etp_mm / 1000) * fEvap;
       const infiltr = areaEf * (p.infiltracion_mm_dia * dias / 1000);
-      const demanda = p.demanda_m3_mes;
+      const demanda = demandaDelMes(p.demanda_m3_mes, m);
 
       let v = vol + aporte - evap - infiltr - demanda;
       let derrame = 0, deficit = 0;

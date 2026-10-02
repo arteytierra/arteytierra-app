@@ -7,7 +7,8 @@ import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilTerreno
 import { simularRepresaAnual, MESES_NOMBRE, type RepresaResumen, type RepresaInputs } from '@/lib/represa';
 import { yaArchivada, resumenRepresa, porEficiencia, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
 import { anchoCorona, taludesSugeridos, claseSueloSugerida, evaluar, type Recomendacion } from '@/lib/criterios';
-import { demandaMensual_m3, procedencia, type Rodeo } from '@/lib/rodeo';
+import { demandaMensual_m3, demandaMensualPorTemperatura_m3, aguaRodeo, cabezasTotal, procedencia, type Rodeo } from '@/lib/rodeo';
+import { caudalPico_l_h, factorContraPromedio, espaciosBebida, UMBRAL_DISTANCIA_M, FUENTE_CAUDAL, type LlegadaAlAgua } from '@/lib/abrevadero';
 import { RodeoEditor } from './mapa/RodeoEditor';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
@@ -1007,6 +1008,13 @@ function RepresaSimSection({
   composicionPredio: Array<{ nombre: string; pct: number }>;
   coefGuardado: string | null;
 }) {
+  /**
+   * Cómo llega el rodeo al bebedero. Arranca en «todo junto», que es el criterio
+   * conservador: pide el doble de espacios de bebida y por lo tanto el doble de
+   * caudal. Entre quedarse corto y sobrar en un caño, sobra el caño.
+   */
+  const [llegada, setLlegada] = useState<LlegadaAlAgua>('rodeo');
+
   // Autocompleta el área de cuenca (desde el muro o B2).
   useEffect(() => { if (cuencaHa) onHa(String(cuencaHa)); }, [cuencaHa, onHa]);
 
@@ -1026,8 +1034,33 @@ function RepresaSimSection({
       : coefEscorrentiaAnual(grupoHidro ?? 'B', cobertura)));
   }, [grupoHidro, cobertura, coefAnualPredio, onCoef]);
 
-  // La demanda sale del rodeo del predio, que es el mismo que usa Producción.
-  const demanda = demandaMensual_m3(rodeo);
+  /**
+   * La demanda sale del rodeo del predio —el mismo que usa Producción— y ahora
+   * **mes a mes según la temperatura media de cada mes**. Antes era un número
+   * repetido doce veces, que decía que el rodeo toma lo mismo en julio que en
+   * enero: entre esos dos meses hay más de un 50 % de diferencia, y el error caía
+   * del lado peligroso, porque enero es cuando la represa está más baja.
+   *
+   * Sin clima cargado no hay temperaturas, así que queda la demanda constante con
+   * los valores declarados: es lo que había y no empeora nada.
+   */
+  const demandaMeses = useMemo(
+    () => datosClima ? demandaMensualPorTemperatura_m3(rodeo, datosClima.meses.map(m => m.tmean_c)) : null,
+    [rodeo, datosClima]);
+
+  const demandaConstante = demandaMensual_m3(rodeo);
+
+  /** Promedio de los doce. Por doce da la demanda anual exacta. */
+  const demanda = demandaMeses
+    ? Math.round((demandaMeses.reduce((a, b) => a + b, 0) / 12) * 10) / 10
+    : demandaConstante;
+
+  const mesPico = useMemo(() => {
+    if (!demandaMeses) return null;
+    let i = 0;
+    for (let m = 1; m < 12; m++) if (demandaMeses[m]! > demandaMeses[i]!) i = m;
+    return { mes: i, m3: demandaMeses[i]! };
+  }, [demandaMeses]);
 
   const sim = useMemo(() => {
     if (!datosClima) return null;
@@ -1037,22 +1070,23 @@ function RepresaSimSection({
       cuencaArea_m2:       (parseFloat(ha) || 0) * 10000,
       coefEscorrentia:     parseFloat(coef) || 0,
       meses:               datosClima.meses.map(m => ({ precip_mm: m.precip_mm, etp_mm: m.etp_mm })),
-      demanda_m3_mes:      demanda,
+      demanda_m3_mes:      demandaMeses ?? demandaConstante,
       infiltracion_mm_dia: parseFloat(seep) || 0,
     });
-  }, [res, datosClima, ha, coef, demanda, seep]);
+  }, [res, datosClima, ha, coef, demandaMeses, demandaConstante, seep]);
 
   // Emite el resumen hacia arriba (para informe/snapshot); limpia al desmontar.
   const resumen: RepresaResumen | null = useMemo(() => sim ? {
     capacidad_m3:      res.volumen_m3,
     cuenca_ha:         parseFloat(ha) || 0,
     demanda_m3_mes:    demanda,
+    ...(mesPico ? { demanda_m3_mes_max: mesPico.m3, mes_demanda_max: mesPico.mes } : {}),
     confiabilidad_pct: sim.confiabilidad_pct,
     aguanta:           sim.aguanta,
     volumen_min_m3:    sim.volumen_min_m3,
     mes_critico:       sim.mes_critico,
     aporte_anual_m3:   sim.aporte_anual_m3,
-  } : null, [sim, res.volumen_m3, ha, demanda]);
+  } : null, [sim, res.volumen_m3, ha, demanda, mesPico]);
   useEffect(() => { onResumen?.(resumen); }, [resumen, onResumen]);
   useEffect(() => () => { onResumen?.(null); }, [onResumen]);
 
@@ -1121,6 +1155,11 @@ function RepresaSimSection({
               {procedencia(rodeo)} Es el mismo rodeo que usa Producción: lo que cambies acá se ve allá, y al revés.
             </p>
           </div>
+
+          <AguaDelRodeo
+            rodeo={rodeo} datosClima={datosClima} demandaMeses={demandaMeses} mesPico={mesPico}
+            llegada={llegada} onLlegada={setLlegada}
+          />
 
           {sim && (
             <>
@@ -1333,5 +1372,151 @@ function TaludExplicado({ interno, externo, alto }: { interno: number; externo: 
         </p>
       </div>
     </details>
+  );
+}
+
+
+// ─── El agua del rodeo: por mes y por caudal de pico ──────────────────────────
+
+/**
+ * Dos cosas que la app calculaba mal y ahora salen de tablas publicadas.
+ *
+ * 1. **El consumo no es un litraje fijo por cabeza**: depende de la temperatura.
+ *    Sale de `lib/aguaGanado.ts`, que reproduce la tabla del NASEM (2016).
+ * 2. **El caudal de pico no es el consumo diario dividido 24.** El ganado va al
+ *    agua dos veces por día y bebe unos cinco minutos; lo que elige el diámetro
+ *    del caño es cuántos beben a la vez por el caudal al que bebe cada uno. Sale
+ *    de `lib/abrevadero.ts`, que implementa dos normas de diseño del NRCS.
+ */
+function AguaDelRodeo({
+  rodeo, datosClima, demandaMeses, mesPico, llegada, onLlegada,
+}: {
+  rodeo: Rodeo;
+  datosClima: DatosClima | null;
+  demandaMeses: number[] | null;
+  mesPico: { mes: number; m3: number } | null;
+  llegada: LlegadaAlAgua;
+  onLlegada: (l: LlegadaAlAgua) => void;
+}) {
+  const cabezas = cabezasTotal(rodeo);
+
+  // El mes más caluroso es el que manda el consumo, y casi nunca es el mismo que
+  // el de menor lluvia: por eso se muestran los dos números y no uno.
+  const tPico = useMemo(() => {
+    if (!datosClima) return null;
+    let i = 0;
+    for (let m = 1; m < 12; m++) if (datosClima.meses[m]!.tmean_c > datosClima.meses[i]!.tmean_c) i = m;
+    return { mes: i, t: datosClima.meses[i]!.tmean_c };
+  }, [datosClima]);
+
+  const detalle = useMemo(() => (tPico ? aguaRodeo(rodeo, tPico.t) : null), [rodeo, tPico]);
+
+  const minMes = demandaMeses ? Math.min(...demandaMeses) : null;
+  const caudal = cabezas > 0 ? caudalPico_l_h(cabezas, llegada) : 0;
+  const factor = detalle ? factorContraPromedio(detalle.l_dia, cabezas, llegada) : null;
+  const otrasSinCurva = detalle ? detalle.sinCurva.filter(n => !detalle.sinFuente.includes(n)) : [];
+
+  if (cabezas === 0) return null;
+
+  return (
+    <div className="bg-white rounded-lg border border-bone-200 p-2 space-y-1.5">
+      <p className="text-[10px] font-semibold text-ink-700">El agua de esta hacienda</p>
+
+      {demandaMeses && mesPico && minMes !== null && tPico ? (
+        <>
+          <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+            <Stat label={`Mes de más calor (${MESES_NOMBRE[tPico.mes]})`} valor={`${mesPico.m3.toLocaleString('es-AR')} m³`} />
+            <Stat label="Mes de menos" valor={`${minMes.toLocaleString('es-AR')} m³`} />
+          </div>
+          <p className="text-[9px] text-ink-700/55 leading-relaxed">
+            El consumo sale de la <b>temperatura media de cada mes</b> y no de un litraje fijo por
+            cabeza: entre el mes más fresco y el más caluroso hay{' '}
+            <b>{minMes > 0 ? `${Math.round((mesPico.m3 / minMes - 1) * 100)} %` : '—'}</b> de
+            diferencia. A {tPico.t.toLocaleString('es-AR', { maximumFractionDigits: 1 })} °C este
+            rodeo toma {detalle ? detalle.l_dia.toLocaleString('es-AR') : '—'} L por día.
+          </p>
+        </>
+      ) : (
+        <p className="text-[9px] text-clay-700/80 leading-relaxed">
+          Sin clima cargado el consumo queda en el valor declarado de cada categoría, igual todo el
+          año. Calculá el clima del predio y pasa a salir de la temperatura de cada mes.
+        </p>
+      )}
+
+      {/* ── Caudal de pico: lo que elige el caño y el bebedero ── */}
+      <div className="border-t border-bone-100 pt-1.5 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] text-ink-700/60">Llegan al agua</span>
+          <div className="flex rounded-md overflow-hidden border border-bone-200">
+            {([['rodeo', 'todo junto'], ['individual', 'de a poco']] as const).map(([v, rotulo]) => (
+              <button
+                key={v}
+                onClick={() => onLlegada(v)}
+                className={`px-1.5 py-0.5 text-[9px] font-medium transition-colors ${
+                  llegada === v ? 'bg-moss-700 text-bone-50' : 'bg-white text-ink-700/60 hover:bg-bone-50'
+                }`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+          <Stat label="Beben a la vez" valor={`${espaciosBebida(cabezas, llegada)} de ${cabezas}`} />
+          <Stat label="Caudal de pico" valor={`${caudal.toLocaleString('es-AR')} L/h`} />
+        </div>
+        <p className="text-[9px] text-ink-700/55 leading-relaxed">
+          Es el caudal que elige el diámetro del caño y el tamaño del bebedero, y{' '}
+          <b>no es el consumo diario dividido 24</b>: así daría{' '}
+          {factor ? `${factor.toLocaleString('es-AR', { maximumFractionDigits: 0 })} veces menos` : 'mucho menos'}.
+          «De a poco» vale cuando hay agua en cada potrero y ningún animal camina más de{' '}
+          {UMBRAL_DISTANCIA_M} m hasta ella; si el bebedero es uno solo y lejos, llegan juntos y se
+          pelean el acceso.
+        </p>
+      </div>
+
+      {detalle && (detalle.sinFuente.length > 0 || otrasSinCurva.length > 0 || detalle.aMano.length > 0 || detalle.extrapolado) && (
+        <div className="border-t border-bone-100 pt-1.5 space-y-0.5">
+          {detalle.sinFuente.length > 0 && (
+            <p className="text-[9px] text-clay-700/80 leading-relaxed flex gap-1">
+              <Info className="w-2.5 h-2.5 mt-[2px] shrink-0" />
+              <span><b>{detalle.sinFuente.join(', ')}</b>: el consumo es el valor declarado, sin fuente publicada, y no se mueve con la temperatura.</span>
+            </p>
+          )}
+          {otrasSinCurva.length > 0 && (
+            <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
+              <Info className="w-2.5 h-2.5 mt-[2px] shrink-0" />
+              <span><b>{otrasSinCurva.join(', ')}</b>: la fuente publica un rango y no una curva, así que se toma el extremo alto y queda igual todo el año.</span>
+            </p>
+          )}
+          {detalle.aMano.length > 0 && (
+            <p className="text-[9px] text-ink-700/50 leading-relaxed flex gap-1">
+              <Info className="w-2.5 h-2.5 mt-[2px] shrink-0" />
+              <span><b>{detalle.aMano.join(', ')}</b>: los litros los escribiste vos, así que mandan sobre la tabla.</span>
+            </p>
+          )}
+          {detalle.extrapolado && (
+            <p className="text-[9px] text-clay-700/80 leading-relaxed flex gap-1">
+              <Info className="w-2.5 h-2.5 mt-[2px] shrink-0" />
+              <span>El mes más caluroso pasa los 32 °C, que es donde termina la tabla: arriba de ahí el valor queda acotado y puede quedar corto.</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <details className="text-[9px]">
+        <summary className="cursor-pointer select-none text-ink-700/45 hover:text-ink-700/70">de dónde salen estos números</summary>
+        <div className="pt-1 space-y-1 text-ink-700/55 leading-relaxed">
+          <p>
+            <b>Consumo:</b> NASEM (2016), <i>Nutrient Requirements of Beef Cattle</i>, 8.ª edición
+            revisada; tabla reproducida por NDSU Extension AS1763. Las guías del NRC vienen de las
+            mediciones de Winchester y Morris (1956). Es consumo <b>total</b>: incluye el agua del
+            alimento, así que con pasto verde el animal toma menos de la canilla. Se usa el total a
+            propósito, que es el lado seguro para dimensionar una represa.
+          </p>
+          <p><b>Caudal y bebedero:</b> {FUENTE_CAUDAL}</p>
+        </div>
+      </details>
+    </div>
   );
 }

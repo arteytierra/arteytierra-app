@@ -51,7 +51,7 @@ que la regla de pulgar**:
 
 | El atajo sin respaldo | Qué hace acequia en su lugar |
 |---|---|
-| Las horas en que se concentra la bebida según la distancia al bebedero | **Hace falta buscar la fuente.** Hay literatura publicada de comportamiento de bebida y de caudal de bebederos; hasta tenerla abierta, la app pide el dato y muestra el rango, no lo afirma. Ver etapa B. |
+| Las horas en que se concentra la bebida según la distancia al bebedero | **Resuelto con dos normas de diseño del NRCS**, y mejor que el atajo: lo que manda no es una cantidad de horas, es **cuántos animales beben a la vez** por el caudal al que bebe cada uno. La distancia sí entra, pero decidiendo si el rodeo llega junto o de a poco —el umbral publicado son 604 m—, que duplica los espacios de bebida. Hecho: `lib/abrevadero.ts`. |
 | «El evento extremo es la lluvia diaria máxima caída en 90 minutos» | La app ya tiene motor de tormenta de diseño con recurrencias (`lib/tormenta.ts`). La duración sale de la curva, no de un número fijo. **Esto ya está resuelto adentro.** |
 | Topes de tamaño de cuenca en hectáreas para un embalse | Un tope en hectáreas es el atajo de «el vertedero se vuelve carísimo». acequia delinea la cuenca real, calcula el aporte y dimensiona el vertedero: puede decir **el costo**, que es la pregunta de abajo. Ver etapa E. |
 
@@ -174,15 +174,39 @@ El criterio de diseño que vale la pena escribir en el código: **holgados en la
 carga objetivo, estrictos en todo lo demás.** La carga tiene un rango real de
 incertidumbre —la app ya lo publica— y apretarla es donde se pierde el campo.
 
-### Etapa B — El agua del ganado, bien calculada
+### Etapa B — El agua del ganado, bien calculada ✅ *02/10/2026*
 
-La corrección 1.1 y 1.2 convertidas en módulo: consumo por categoría y
-temperatura, mes a mes, con el factor de concentración explícito y el caudal de
-pico separado del consumo diario. Es cálculo puro, sale de una tabla publicada, y
-hace que tres módulos que ya existen se hablen: clima, rodeo y represa.
+Hecha. Las correcciones 1.1 y 1.2 convertidas en dos módulos, y los dos con su
+fuente abierta y leída antes de escribir una línea de código.
 
-**Es la que recomiendo primero.** Corrige un error real, no toca geometría
-guardada, y es la continuación natural de la auditoría del equivalente vaca.
+**`lib/aguaGanado.ts`** — consumo por categoría y temperatura, de la tabla del
+**NASEM (2016)**, reproducida celda por celda. Diez categorías bovinas con curva
+de temperatura; ovinos y porcinos con los rangos publicados; equinos y caprinos
+conservan el valor declarado **diciendo que es declarado**. Una vaca seca se
+multiplica por 2,4 entre los dos extremos de la tabla. La vaca con cría al pie
+sube menos, y por algo que estaba publicado y no sabíamos: **entre 80 y 90 °F su
+consumo baja**, porque con estrés calórico severo cae la producción de leche. Así
+que la que manda el pico del verano es la vaca seca, no la que está criando.
+
+**`lib/abrevadero.ts`** — caudal de pico, espacios de bebida y reserva del
+bebedero, de dos normas de diseño del **USDA-NRCS**. El reparto parejo en 24 horas
+subdimensionaba más de treinta veces.
+
+**La represa ya consume la demanda mes a mes** y no un número repetido doce
+veces, con los días reales de cada mes. El informe muestra el promedio y el mes
+de más calor.
+
+Y **Producción muestra el mismo número que Represa**: las dos leen el agua del mes
+más caluroso. Si una pestaña mostrara el consumo con temperatura y la otra el
+valor declarado, el mismo rodeo tendría dos consumos según dónde se lo mire, que es
+el defecto que esta capa compartida vino a resolver.
+
+Lo que quedó sin hacer de esta etapa, y es deliberado: **el descuento por humedad
+del forraje**. La tabla publica consumo *total*, que incluye el agua del alimento,
+y un pasto en estado vegetativo tiene 65 a 80 % de agua. Descontarlo bajaría mucho
+el número, así que se deja el total —que es el lado seguro para una represa— y el
+descuento va a entrar como un ajuste explícito que el usuario prende, con su
+propia fuente. Está anotado en la sección 4.
 
 ### Etapa C — Pastoreo: el menú de manejos
 
@@ -305,9 +329,8 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
 
 ## 3. En qué orden
 
-1. **Etapa B** —el agua del ganado— primero. Corrige un error real, es cálculo
-   puro, no toca nada guardado, y cierra la auditoría del equivalente vaca.
-2. **Etapa A** —modulación— segundo: es la que desbloquea pastoreo y agua.
+1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**
+2. **Etapa A** —modulación— es la que sigue: desbloquea pastoreo y agua.
 3. **Etapa C** —menú de manejos— tercero, porque es aritmética más criterio y
    depende de A.
 4. **Etapa F** —las cuatro piezas chicas— en cualquier momento: son
@@ -322,17 +345,34 @@ Las etapas D, G, H, I y J después, en ese orden.
 
 ## 4. Lo que queda sin fuente, anotado para no olvidarlo
 
-**El único hueco real de esta fase** es el patrón horario de bebida: cuántas horas
-del día concentra el consumo un rodeo, y cómo cambia eso con la distancia al
-bebedero. Es el dato que necesita la corrección 1.2, y es el que elige el diámetro
-del caño.
+**El hueco que esta sección anunciaba se cerró el 02/10/2026**, y vale contar cómo,
+porque es el patrón a repetir. El atajo sin respaldo era «la bebida se concentra
+en 4 a 6 horas según la distancia al bebedero». Buscando la fuente aparecieron dos
+**normas de diseño publicadas** del servicio de conservación de suelos de Estados
+Unidos que no dan una cantidad de horas: dan el mecanismo. Lo que elige el caño es
+cuántos animales beben a la vez —5 % del rodeo si hay agua en cada potrero, 10 % si
+el bebedero es uno solo— por el caudal al que bebe cada uno, 2 GPM. La distancia
+entra decidiendo cuál de los dos casos es, con un umbral publicado de 604 m.
 
-Mientras no esté: la app pide el factor de concentración, muestra el rango, y dice
-con todas las letras que el promedio diario subdimensiona la red. Eso es honesto y
-es útil. Lo que no se hace es poner un número con cara de dato.
+El mecanismo es mejor que el atajo porque se puede discutir: alguien puede decir
+«en mi campo llegan de a poco aunque el bebedero esté lejos» y mover ese
+parámetro. Con «4 a 6 horas» no hay nada que mover.
 
-**Dónde buscarlo:** literatura de comportamiento de bebida en bovinos, guías de
-diseño de sistemas de abrevado de los servicios de conservación de suelos, y
-manuales de diseño de bebederos para pastoreo rotativo. Antes de codificar, se
-abre y se lee el rango de validez: la mayoría de esos trabajos son de clima
-templado y pueden no valer para un verano subtropical.
+**Lo que queda abierto ahora es otra cosa, y más chica:**
+
+1. **El descuento por humedad del forraje.** La tabla de consumo es de agua
+   **total**: incluye la que viene en el pasto, y un pasto vegetativo tiene 65 a
+   80 % de agua. Hoy la app usa el total, que sobredimensiona la represa, y es la
+   decisión correcta por defecto. Para que el descuento entre hace falta la fuente
+   de materia seca del forraje por estado fenológico —hay una tabla publicada en
+   la misma publicación de Kansas— y, sobre todo, que la app sepa en qué estado
+   está el pasto de ese predio en cada mes. Lo segundo es más difícil que lo
+   primero.
+2. **El equino y el caprino no tienen fuente de consumo.** La publicación de NDSU
+   trae una tabla de equinos del NRC de caballos (2007), pero es de nueve filas
+   con niveles de actividad y temperaturas sueltas, no una curva, y acequia no
+   tiene el concepto de nivel de actividad. Para el caprino no encontré tabla de
+   consumo. Los dos conservan lo declarado y lo dicen en pantalla.
+3. **El carnero declara 8 L/día y el rango publicado llega a 7,6.** Está apenas
+   afuera. No lo cambié porque un litro no mueve ninguna decisión, pero queda
+   anotado: es el tipo de cosa que aparece sólo cuando uno va a la fuente.

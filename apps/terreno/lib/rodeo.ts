@@ -35,6 +35,7 @@
  */
 
 import { categoriaPorId, type CategoriaAnimal } from './categorias';
+import { aguaAnimal } from './aguaGanado';
 import type { PerfilRodeo } from './produccion';
 
 /** Un lote es un grupo de animales de la misma categoría. */
@@ -76,10 +77,22 @@ export function categoriaDe(lote: LoteRodeo): CategoriaAnimal | null {
   return categoriaPorId(lote.categoriaId);
 }
 
-/** Litros por cabeza y día que corresponden a un lote. */
-export function litrosDe(lote: LoteRodeo): number {
+/**
+ * Litros por cabeza y día que corresponden a un lote.
+ *
+ * Con `tempC` el consumo sale de la tabla publicada por temperatura
+ * (`aguaGanado.ts`); sin `tempC` queda el valor declarado de la categoría, que es
+ * lo que se muestra cuando el proyecto todavía no tiene clima cargado.
+ *
+ * **Lo que el usuario escribió a mano gana siempre**, con clima o sin clima: si
+ * alguien midió el consumo de su rodeo, ese dato vale más que cualquier tabla.
+ */
+export function litrosDe(lote: LoteRodeo, tempC?: number): number {
   if (lote.litros_animal_dia !== null) return lote.litros_animal_dia;
-  return categoriaDe(lote)?.agua_l_dia ?? 0;
+  const cat = categoriaDe(lote);
+  if (!cat) return 0;
+  if (tempC === undefined || !Number.isFinite(tempC)) return cat.agua_l_dia;
+  return aguaAnimal(cat, tempC).total_l_dia;
 }
 
 export function cabezasTotal(rodeo: Rodeo): number {
@@ -124,18 +137,94 @@ export function evPorCabeza(rodeo: Rodeo): number {
 }
 
 /** Sólo la hacienda, en litros por día — como lo dice Producción. */
-export function aguaHacienda_l_dia(rodeo: Rodeo): number {
-  return Math.round(rodeo.lotes.reduce((s, l) => s + Math.max(0, l.cabezas) * litrosDe(l), 0));
+export function aguaHacienda_l_dia(rodeo: Rodeo, tempC?: number): number {
+  return Math.round(rodeo.lotes.reduce((s, l) => s + Math.max(0, l.cabezas) * litrosDe(l, tempC), 0));
+}
+
+/**
+ * El agua del rodeo a una temperatura dada, **con el detalle de qué parte del
+ * número es publicada y qué parte no**. La UI necesita poder decirlo: un total
+ * donde la mitad sale de una tabla y la otra mitad de un valor declarado sin
+ * fuente no es lo mismo que uno donde todo sale de la tabla.
+ */
+export interface AguaRodeo {
+  l_dia: number;
+  /** Categorías cuyo consumo NO se mueve con la temperatura, por nombre. */
+  sinCurva:    string[];
+  /** Categorías sin ninguna fuente de consumo: conservan lo declarado. */
+  sinFuente:   string[];
+  /** Categorías con litros pisados a mano por el usuario. */
+  aMano:       string[];
+  /** `true` si alguna categoría quedó arriba del tope de la tabla (32,2 °C). */
+  extrapolado: boolean;
+}
+
+export function aguaRodeo(rodeo: Rodeo, tempC: number): AguaRodeo {
+  const sinCurva = new Set<string>();
+  const sinFuente = new Set<string>();
+  const aMano = new Set<string>();
+  let extrapolado = false;
+  let l_dia = 0;
+
+  for (const lote of rodeo.lotes) {
+    const cabezas = Math.max(0, lote.cabezas);
+    const cat = categoriaDe(lote);
+    if (!cat || cabezas === 0) continue;
+
+    if (lote.litros_animal_dia !== null) {
+      aMano.add(cat.nombre);
+      l_dia += cabezas * lote.litros_animal_dia;
+      continue;
+    }
+
+    const a = aguaAnimal(cat, tempC);
+    l_dia += cabezas * a.total_l_dia;
+    if (a.origen.tipo === 'tabla') {
+      if (a.origen.extrapoladoPorCalor) extrapolado = true;
+    } else {
+      sinCurva.add(cat.nombre);
+      if (a.origen.tipo === 'declarado') sinFuente.add(cat.nombre);
+    }
+  }
+
+  return {
+    l_dia: Math.round(l_dia),
+    sinCurva: [...sinCurva], sinFuente: [...sinFuente], aMano: [...aMano],
+    extrapolado,
+  };
 }
 
 /**
  * Demanda mensual total de agua, en m³: hacienda más riego.
  * Es la unidad con la que trabaja el balance de la represa (`demandaMensual`).
  */
-export function demandaMensual_m3(rodeo: Rodeo): number {
-  const bebida = (aguaHacienda_l_dia(rodeo) * 30) / 1000;
+export function demandaMensual_m3(rodeo: Rodeo, tempC?: number): number {
+  const bebida = (aguaHacienda_l_dia(rodeo, tempC) * 30) / 1000;
   return Math.round((bebida + rodeo.riego_m3_mes) * 10) / 10;
 }
+
+/**
+ * La demanda de los doce meses, en m³, usando la temperatura media de cada uno.
+ *
+ * Es lo que la represa necesita y lo que no tenía: un solo número mensual
+ * repetido doce veces decía que el rodeo toma lo mismo en julio que en enero,
+ * cuando entre esos dos meses hay más de un 50 % de diferencia en el consumo. Y
+ * el error caía justo del lado peligroso: enero es el mes en que la represa está
+ * más baja y el rodeo toma más.
+ *
+ * Los días de cada mes son los reales, no 30: en febrero se consume un 10 % menos
+ * que en enero sólo por el calendario, y eso se nota en el mes crítico.
+ */
+export function demandaMensualPorTemperatura_m3(rodeo: Rodeo, tmean_c: number[]): number[] {
+  return DIAS_MES.map((dias, m) => {
+    const t = tmean_c[m];
+    const bebida = (aguaHacienda_l_dia(rodeo, Number.isFinite(t) ? t : undefined) * dias) / 1000;
+    return Math.round((bebida + rodeo.riego_m3_mes) * 10) / 10;
+  });
+}
+
+/** Días de cada mes, para que la demanda del mes corto no se infle. */
+const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
 /**
  * El rodeo visto desde la receptividad: los dos únicos números que
@@ -145,11 +234,11 @@ export function demandaMensual_m3(rodeo: Rodeo): number {
  * pastorean, porque el cerdo toma agua igual. El EV es el promedio sobre las que
  * sí pastorean, porque es lo que divide la capacidad de pasto.
  */
-export function perfilRodeo(rodeo: Rodeo): PerfilRodeo {
+export function perfilRodeo(rodeo: Rodeo, tempC?: number): PerfilRodeo {
   const n = cabezasTotal(rodeo);
   return {
     ev_por_cabeza: evPorCabeza(rodeo),
-    agua_l_dia: n > 0 ? aguaHacienda_l_dia(rodeo) / n : 0,
+    agua_l_dia: n > 0 ? aguaHacienda_l_dia(rodeo, tempC) / n : 0,
   };
 }
 
