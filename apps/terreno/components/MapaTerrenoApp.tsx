@@ -3207,7 +3207,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </div>
           )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
-          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} /></div>}
+          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} grilla={grillaActiva} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">

@@ -8,10 +8,9 @@
 import type { MesDato } from './clima';
 import { MESES } from './clima';
 import { CULTIVOS_KC, type CultivoKc } from './calendario';
+import { bandaUso } from './modulacion';
 
 export { CULTIVOS_KC, type CultivoKc };
-
-const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
 // ─── 7.1 Balance hídrico productivo ──────────────────────────────────────────
 
@@ -156,17 +155,27 @@ export function consumoEV_kgMS_dia(em_mcal_kg: number): number {
 /**
  * Fracción del forraje producido que termina dentro del animal.
  *
- * El 0,50 viene de la regla de manejo de pastizales más difundida —«take half,
- * leave half», USDA NRCS—: se deja la mitad del área foliar en pie para que la
- * planta rebrote. Es un valor conservador para un pastoreo rotativo bien
- * manejado, donde la cosecha puede llegar a 0,60–0,70, y OPTIMISTA para un
- * pastoreo continuo: ahí parte de ese 50% removido no se come, se pisa, se
- * ensucia o se la llevan los insectos.
+ * ## ⚠ Corregido el 02/10/2026 — este número ya no se usa para calcular
  *
- * Se deja en 0,50 porque acequia diseña pastoreo rotativo, y porque la
- * receptividad se calcula antes de que exista el diseño de potreros. Si algún
- * día la pestaña de Pastoreo le pasa su sistema a esta función, éste es el
- * número que se mueve.
+ * El 0,50 venía de la regla de manejo de pastizales más difundida —«take half,
+ * leave half»— y se aplicaba a todo predio por igual. **La fuente que acuñó esa
+ * regla dice explícitamente dónde vale, y no es en todas partes.** Holechek
+ * (1988), después de revisar los estudios de intensidad de pastoreo de quince
+ * tipos de pastizal de Estados Unidos: *«The general guideline of take half and
+ * leave half of the current season's growth recommended by early range managers
+ * appears applicable only to humid and annual grassland ranges.»*
+ *
+ * En un arbustal de menos de 300 mm el uso admisible es 30 %, no 50 %: la
+ * receptividad que mostraba acequia era 1,67 veces la que corresponde, y el
+ * error era más grande justo donde el margen es más fino. Es el mismo error que
+ * ya había aparecido dos veces en esta cadena —el equivalente vaca y el agua de
+ * bebida—: el valor de una situación buena aplicado a todo el planeta.
+ *
+ * El uso admisible ahora sale de la banda de precipitación del predio, en
+ * `modulacion.ts`. Esta constante queda sólo porque es el número viejo y haber
+ * escrito acá por qué se fue vale más que borrarla.
+ *
+ * @deprecated Usá `bandaUso(precip_anual_mm).inicial` de `modulacion.ts`.
  */
 export const EFICIENCIA_UTILIZACION = 0.50;
 
@@ -195,6 +204,26 @@ function prodForrajera(precip_mm: number): number {
   return 7000;
 }
 
+/**
+ * Los ajustes de paisaje que el predio le pone a la receptividad.
+ *
+ * Los dos son opcionales y los dos vienen de `modulacion.ts`. Si no se pasan, la
+ * receptividad se calcula sobre la superficie bruta y sin ajuste por
+ * distribución, que es lo que la app hacía antes: sobreestima, y por eso el
+ * resultado dice `ajustada: false` para que la pantalla pueda avisarlo.
+ */
+export interface AjustesPaisaje {
+  /** Hectáreas que son tierra de pastoreo, ya descontadas las exclusiones. */
+  ha_pastoreables?: number;
+  /**
+   * Factor de distribución: el MENOR de pendiente y distancia al agua, nunca el
+   * producto. La regla es de la fuente, no una elección de acequia.
+   */
+  factor_distribucion?: number;
+  /** El pastizal es de especies anuales: admite más uso que un perenne. */
+  deAnuales?: boolean;
+}
+
 export interface ResultadoReceptividad {
   ef_kg_ha:         number;   // forraje producido, kg MS/ha/año
   carga_ev:         number;   // carga en equivalentes vaca, con forraje natural
@@ -214,6 +243,16 @@ export interface ResultadoReceptividad {
   potreros_voisin:  number;   // N potreros sugeridos para rotación Voisin
   dias_ocupacion:   number;   // días de ocupación por potrero
   area_potrero_ha:  number;   // área sugerida por potrero
+  /** Fracción del forraje que se le asigna al animal, por banda de lluvia. */
+  uso_admisible:    number;
+  /** Nombre de la banda, para poder decirlo en pantalla. */
+  banda_uso:        string;
+  /** Hectáreas de pastoreo efectivamente usadas en la cuenta. */
+  ha_usadas:        number;
+  /** El factor de distribución aplicado. 1 cuando no se pasó ninguno. */
+  factor_distribucion: number;
+  /** `false` cuando se calculó sobre la superficie bruta y sin ajuste. */
+  ajustada:         boolean;
 }
 
 /**
@@ -228,15 +267,34 @@ export interface ResultadoReceptividad {
  * fertilizada subestima la oferta; en un pastizal degradado la sobreestima. Y no
  * mira la estacionalidad: un campo con la misma lluvia anual repartida en cuatro
  * meses no aguanta la misma carga todo el año.
+ *
+ * El **uso admisible** sale de la banda de precipitación (`modulacion.ts`) y no
+ * de un 0,50 fijo; los **ajustes de paisaje** son opcionales y, cuando no vienen,
+ * la cuenta queda sobre la superficie bruta, que es el lado optimista. El
+ * resultado dice `ajustada: false` para que la pantalla no lo presente como si
+ * tuviera el terreno en cuenta.
  */
 export function calcularReceptividad(
   area_ha: number,
   precip_anual_mm: number,
   perfil: PerfilRodeo,
   em_mcal_kg: number = EM_FORRAJE.natural,
+  paisaje?: AjustesPaisaje,
 ): ResultadoReceptividad {
   const ef_kg_ha = prodForrajera(precip_anual_mm);
-  const ofertaUtil_kg = ef_kg_ha * area_ha * EFICIENCIA_UTILIZACION;
+  const banda = bandaUso(precip_anual_mm, paisaje?.deAnuales ?? false);
+
+  // Las dos cosas que el paisaje le hace a la cuenta, y son distintas: una resta
+  // hectáreas (lo que no es tierra de pastoreo) y la otra multiplica la
+  // capacidad (lo que el animal no camina). Ver `modulacion.ts`.
+  const ha_usadas = paisaje?.ha_pastoreables !== undefined && paisaje.ha_pastoreables >= 0
+    ? paisaje.ha_pastoreables
+    : area_ha;
+  const fDist = paisaje?.factor_distribucion !== undefined && paisaje.factor_distribucion >= 0
+    ? Math.min(1, paisaje.factor_distribucion)
+    : 1;
+
+  const ofertaUtil_kg = ef_kg_ha * ha_usadas * banda.inicial * fDist;
 
   /** EV que sostiene la oferta con un forraje de densidad `em`. */
   const evCon = (em: number) => {
@@ -260,7 +318,7 @@ export function calcularReceptividad(
   const dias_reposo    = 30;
   const dias_ocupacion = 3;
   const potreros_voisin = Math.max(6, Math.round((dias_reposo / dias_ocupacion) + 1));
-  const area_potrero_ha = Math.round((area_ha / potreros_voisin) * 100) / 100;
+  const area_potrero_ha = Math.round((ha_usadas / potreros_voisin) * 100) / 100;
 
   return {
     ef_kg_ha,
@@ -276,6 +334,11 @@ export function calcularReceptividad(
     potreros_voisin,
     dias_ocupacion,
     area_potrero_ha,
+    uso_admisible: banda.inicial,
+    banda_uso: banda.nombre,
+    ha_usadas: Math.round(ha_usadas * 100) / 100,
+    factor_distribucion: fDist,
+    ajustada: paisaje !== undefined && (paisaje.ha_pastoreables !== undefined || paisaje.factor_distribucion !== undefined),
   };
 }
 

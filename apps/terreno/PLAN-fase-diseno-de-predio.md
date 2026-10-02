@@ -151,28 +151,97 @@ hay variantes según el país y el tipo de consumo.
 
 ## 2. Las etapas
 
-### Etapa A — Modulación ganadera *(la que destraba todo lo demás)*
+### Etapa A — Modulación ganadera ✅ *02/10/2026*
 
-El rodeo ya se carga por categorías con su equivalente vaca y su fuente
-(`lib/categorias.ts`, cerrado el 02/10/2026). Lo que falta es lo que se hace con
-eso: **partir el campo en módulos de pastoreo**.
+Hecha. `lib/modulacion.ts`, y la receptividad de `produccion.ts` corregida con
+la fuente abierta y leída antes de escribir una línea de código.
 
-Lo que entra:
+**Lo que apareció yendo a la fuente, y no estaba previsto: un tercer número sin
+respaldo, del mismo tipo que los dos anteriores.** El coeficiente de cosecha
+estaba fijo en 0,50 con el argumento de «take half, leave half». La publicación
+que sistematiza esa regla —Holechek (1988), después de revisar los estudios de
+intensidad de pastoreo de quince tipos de pastizal— dice textualmente dónde
+vale: *«appears applicable only to humid and annual grassland ranges»*. En un
+arbustal de menos de 300 mm el uso admisible publicado es **30 %, no 50 %**: la
+receptividad que mostraba acequia era **1,67 veces** la que corresponde, y el
+error era más grande justo donde el margen es más fino. Es el mismo error del
+equivalente vaca y del agua de bebida, por tercera vez: el valor de una
+situación buena aplicado a todo el planeta. Ahora el uso sale de la banda de
+precipitación del predio —30 / 40 / 50 %, y 55 % si el pastizal es de anuales—,
+que son los valores que la fuente recomienda **justo para el caso de acequia**:
+cuando no hay información local de intensidad de pastoreo.
 
-- **Superficie efectiva**, no total: se descuentan los caminos, las cañadas, los
-  afloramientos y lo inundable. La app ya conoce buena parte de eso por cobertura
-  y relieve.
-- **Carga objetivo por ambiente**, no una sola para todo el predio: un bajo dulce
-  y una loma arenosa no sostienen lo mismo, y la app ya distingue ambientes.
-- **Rodeo máximo manejable**, de donde sale el número de módulos: el tamaño de
-  rodeo lo limita el manejo —el agua, el encierre, la mano de obra—, no el pasto.
-- Los **criterios de emplazamiento** de cada módulo: acceso, agua, forma, y que la
-  cantidad de módulos sea **la menor posible** que cumpla el manejo. Cada
-  subdivisión es alambre, es portón y es recorrido.
+**Superficie efectiva: son dos cosas distintas y mezclarlas es el error clásico.**
 
-El criterio de diseño que vale la pena escribir en el código: **holgados en la
-carga objetivo, estrictos en todo lo demás.** La carga tiene un rango real de
-incertidumbre —la app ya lo publica— y apretarla es donde se pierde el campo.
+- Lo que **no es tierra de pastoreo** —espejo de agua, humedal, construido,
+  hielo— se resta en hectáreas, leído de la cobertura. El suelo desnudo **no** se
+  resta: un pastizal ralo sigue siendo campo, y lo que corresponde es que
+  produzca poco forraje, no que desaparezca del plano.
+- Lo que el ganado **no usa igual** —el terreno quebrado, la distancia a la
+  aguada— es un **factor sobre la capacidad**, no hectáreas que desaparecen. Esas
+  hectáreas siguen existiendo y siguen produciendo pasto.
+
+Las dos reducciones salen de las tablas 3 y 4 de Holechek: pendiente (sin
+reducción hasta 10 %, 30 % entre 11 y 30, 60 % entre 31 y 60, no pastoreable
+arriba de 60) y distancia al agua (sin reducción hasta la milla, 50 % hasta las
+dos millas, no pastoreable más lejos). La pendiente la calcula acequia **celda
+por celda sobre el DEM**, con la pendiente máxima local contra las ocho vecinas:
+lo que decide si una vaca sube una loma es la parte más empinada del camino, no
+el promedio.
+
+**Y el hallazgo contraintuitivo: los dos factores no se multiplican.** La guía
+B-829 de NMSU, que reproduce las dos tablas, da la regla: *«these should be
+calculated separately with the greatest reduction percent used. They should not
+be combined for a cumulative reduction.»* Multiplicar es lo que uno haría por
+sentido común —una ladera lejana parece doblemente castigada— y descontaría dos
+veces al mismo animal que no camina. Hay un test que fija que acequia **no**
+multiplica.
+
+**Una inconsistencia de las fuentes, resuelta y documentada.** Las dos
+publicaciones traen la tabla de pendiente y traen además la cuenta escrita como
+ecuación, y **no coinciden entre sí**: las dos tablas dicen factores
+1,00 / 0,70 / 0,40 / 0, el ejemplo resuelto de Holechek usa 0,30 en la tercera
+banda y la ecuación de B-829 usa además 0,60 en la segunda. Manda la tabla —es
+la que las dos escriben igual y la que cada una presenta como resultado de la
+literatura que cita—, así que acequia **no reproduce el resultado impreso** del
+ejemplo: da 159 novillos donde el artículo imprime 152. Está en un test, para
+que la diferencia esté explicada y no parezca un error nuestro.
+
+**El rodeo máximo manejable sale del agua**, que es lo que el plan sospechaba: el
+tamaño del rodeo lo limita el agua y no el pasto. Dando vuelta la ventana de dos
+horas del CPS 614, una aguada de caudal conocido abreva una cantidad concreta de
+cabezas. Y la distancia pone el otro tope: con la aguada en el centro de un
+módulo cuadrado, hasta **518 ha** nadie camina más de la milla; con la aguada en
+una esquina el mismo criterio baja el tope a **130 ha**. Un factor cuatro que se
+decide con un portón, antes de comprar un rollo de alambre.
+
+**Los módulos son el menor número que cumple todas las restricciones** —caudal,
+distancia y el tope de cabezas que declare el productor— y la pantalla **dice
+cuál es la que obliga**, porque es la única que vale la pena discutir: aflojar
+cualquier otra no cambia nada. Eso es «holgados en la carga objetivo y estrictos
+en todo lo demás» escrito en código.
+
+**Y una cosa que el cálculo deja ver y que no se veía antes:** el descuento por
+distancia al agua **no es un destino del campo, es una consecuencia de cuánta
+agua hay**. La pantalla dice con cuántas aguadas desaparece.
+
+**El rango de validez, que acá es media historia.** Los dos factores son guías
+para una carga inicial, no mediciones, y su propio autor lo escribe. En 2020,
+con collares GPS en seis campos de Nuevo México y Holechek entre los autores
+(Millward et al., *Rangelands* 42(3):63-71), se midió cuánto valen: **la
+pendiente se sostuvo** —donde falló fue por conservadora, 14 puntos
+porcentuales— pero **el descuento por distancia no se sostuvo donde el agua es
+escasa**: con una sola aguada el ganado caminó bastante más de la milla, hasta
+39 puntos porcentuales más de superficie usada. Con varias aguadas la tabla
+acertó. Por eso acequia reporta los dos factores por separado, dice cuál manda y
+avisa cuando hay una sola aguada.
+
+**Lo que quedó sin hacer de esta etapa, y es deliberado:** la *carga objetivo por
+ambiente* en el sentido de un bajo dulce contra una loma arenosa. Lo que acequia
+diferencia hoy es por **banda de pendiente y de distancia**, que es lo que tiene
+fuente; para diferenciar por ambiente hace falta producción de forraje por
+ambiente, y ese número —`prodForrajera`, una escalera por precipitación— es el
+que sigue sin respaldo. Anotado en la sección 4.
 
 ### Etapa B — El agua del ganado, bien calculada ✅ *02/10/2026*
 
@@ -330,9 +399,9 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
 ## 3. En qué orden
 
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**
-2. **Etapa A** —modulación— es la que sigue: desbloquea pastoreo y agua.
-3. **Etapa C** —menú de manejos— tercero, porque es aritmética más criterio y
-   depende de A.
+2. ~~**Etapa A** —modulación—~~ **hecha el 02/10/2026.**
+3. **Etapa C** —menú de manejos— es la que sigue: es aritmética más criterio y
+   ya tiene la superficie efectiva y los módulos de A para apoyarse.
 4. **Etapa F** —las cuatro piezas chicas— en cualquier momento: son
    independientes y cada una es media jornada.
 5. **Etapa E** junto con `PLAN-embalse-vaso-real.md`.
@@ -358,9 +427,22 @@ El mecanismo es mejor que el atajo porque se puede discutir: alguien puede decir
 «en mi campo llegan de a poco aunque el bebedero esté lejos» y mover ese
 parámetro. Con «4 a 6 horas» no hay nada que mover.
 
-**Lo que queda abierto ahora es otra cosa, y más chica:**
+**Lo que queda abierto ahora, en orden de cuánto mueve:**
 
-1. **El descuento por humedad del forraje.** La tabla de consumo es de agua
+1. **`prodForrajera` no tiene fuente, y es el número más grande de la cadena.**
+   Es una escalera de cinco escalones por precipitación anual —700, 1.500, 3.000,
+   5.000, 7.000 kg MS/ha/año— y multiplica absolutamente todo: la receptividad,
+   la carga objetivo, el rodeo y el agua de la represa. Lo mismo vale para
+   `forrajePorLluvia` de `pastoreo.ts`, que es una copia, y para el
+   `forraje_sugerido` de `cobertura.ts`, que pondera kg/ha por clase de
+   WorldCover sin fuente. **Es la deuda más grande que queda en toda la cadena
+   ganadera**, y además es lo que bloquea la carga objetivo por ambiente de la
+   etapa A: sin producción de forraje por ambiente no hay carga por ambiente. La
+   fuente a abrir son los mapas de productividad primaria neta de pastizales y
+   las series de producción de materia seca de los organismos de investigación
+   agropecuaria regionales; es un relevamiento, no una fórmula, y es del tamaño
+   de una etapa propia.
+2. **El descuento por humedad del forraje.** La tabla de consumo es de agua
    **total**: incluye la que viene en el pasto, y un pasto vegetativo tiene 65 a
    80 % de agua. Hoy la app usa el total, que sobredimensiona la represa, y es la
    decisión correcta por defecto. Para que el descuento entre hace falta la fuente
@@ -368,11 +450,11 @@ parámetro. Con «4 a 6 horas» no hay nada que mover.
    la misma publicación de Kansas— y, sobre todo, que la app sepa en qué estado
    está el pasto de ese predio en cada mes. Lo segundo es más difícil que lo
    primero.
-2. **El equino y el caprino no tienen fuente de consumo.** La publicación de NDSU
+3. **El equino y el caprino no tienen fuente de consumo.** La publicación de NDSU
    trae una tabla de equinos del NRC de caballos (2007), pero es de nueve filas
    con niveles de actividad y temperaturas sueltas, no una curva, y acequia no
    tiene el concepto de nivel de actividad. Para el caprino no encontré tabla de
    consumo. Los dos conservan lo declarado y lo dicen en pantalla.
-3. **El carnero declara 8 L/día y el rango publicado llega a 7,6.** Está apenas
+4. **El carnero declara 8 L/día y el rango publicado llega a 7,6.** Está apenas
    afuera. No lo cambié porque un litro no mueve ninguna decisión, pero queda
    anotado: es el tipo de cosa que aparece sólo cuando uno va a la fuente.

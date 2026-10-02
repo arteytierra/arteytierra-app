@@ -166,3 +166,56 @@ describe('nivelErosion', () => {
     expect(['bajo', 'moderado', 'alto', 'muy_alto']).toContain(fuerte.nivel);
   });
 });
+
+describe('el uso admisible ya no es 0,50 para todo el planeta', () => {
+  const bovino = { ev_por_cabeza: 1, agua_l_dia: 50 };
+
+  it('el predio húmedo no se movió: ahí es donde la regla vieja valía', () => {
+    // Es la comprobación de que la corrección no es un cambio a ciegas: donde la
+    // fuente dice que el 0,50 corresponde, el número sigue siendo el mismo.
+    const r = calcularReceptividad(100, 800, bovino);
+    expect(r.uso_admisible).toBe(0.50);
+    expect(r.carga_ev).toBeCloseTo(69.1, 1);
+  });
+
+  it('el predio semiárido bajó un 40 %, que era el error', () => {
+    const r = calcularReceptividad(100, 250, bovino);
+    expect(r.uso_admisible).toBe(0.30);
+    expect(r.banda_uso).toContain('desértico');
+    // 700 kg/ha × 100 ha × 0,30 = 21.000 kg contra los 35.000 de antes.
+    expect(r.carga_ev).toBeCloseTo(5.8, 1);
+    expect(r.carga_ev / (35_000 / (consumoEV_kgMS_dia(EM_FORRAJE.natural) * 365))).toBeCloseTo(0.6, 2);
+  });
+
+  it('sin ajustes de paisaje lo dice, para que la pantalla no lo presente como completo', () => {
+    const r = calcularReceptividad(100, 800, bovino);
+    expect(r.ajustada).toBe(false);
+    expect(r.ha_usadas).toBe(100);
+    expect(r.factor_distribucion).toBe(1);
+  });
+
+  it('con superficie pastoreable y factor de distribución la carga baja y lo marca', () => {
+    const bruto = calcularReceptividad(100, 800, bovino);
+    const real  = calcularReceptividad(100, 800, bovino, EM_FORRAJE.natural, {
+      ha_pastoreables: 78, factor_distribucion: 0.66,
+    });
+    expect(real.ajustada).toBe(true);
+    expect(real.ha_usadas).toBe(78);
+    expect(real.carga_ev).toBeCloseTo(bruto.carga_ev * 0.78 * 0.66, 1);
+    // Y los potreros de Voisin se reparten la superficie pastoreable, no la bruta.
+    expect(real.area_potrero_ha).toBeLessThan(bruto.area_potrero_ha);
+  });
+
+  it('un factor de distribución imposible se acota en 1 en vez de inflar la carga', () => {
+    const r = calcularReceptividad(100, 800, bovino, EM_FORRAJE.natural, { factor_distribucion: 3 });
+    expect(r.factor_distribucion).toBe(1);
+  });
+
+  it('un pastizal de anuales admite más uso que el perenne de la misma lluvia', () => {
+    const perenne = calcularReceptividad(100, 500, bovino);
+    const anuales = calcularReceptividad(100, 500, bovino, EM_FORRAJE.natural, { deAnuales: true });
+    expect(perenne.uso_admisible).toBe(0.40);
+    expect(anuales.uso_admisible).toBe(0.55);
+    expect(anuales.carga_ev).toBeGreaterThan(perenne.carga_ev);
+  });
+});
