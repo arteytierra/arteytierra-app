@@ -1,0 +1,134 @@
+[
+  {
+    "fichaId": "centro_mexico_volcanes_bajio",
+    "practica": "Extracción del aguamiel y producción de pulque (tlachiquero)",
+    "periodo": "Práctica documentada en Puebla y Tlaxcala en 2015-2016; en retroceso desde mediados del siglo XX",
+    "tipo": "cultivo",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Álvarez-Duarte et al. (2018) — Conocimiento tradicional, cultivo y aprovechamiento del maguey pulquero en los municipios de Puebla y Tlaxcala, Polibotánica 45: 205-229",
+      "url": "https://www.scielo.org.mx/scielo.php?pid=S1405-27682018000100205&script=sci_arttext_plus&tlng=es"
+    },
+    "verificacion": "Una tarea primordial del tlachiquero es conocer la etapa de madurez adecuada del maguey para la extracción de aguamiel que, varía entre los 10 y 14 años."
+  },
+  {
+    "fichaId": "tehuacan_cuicatlan_matorral",
+    "practica": "Milpa con cactáceas columnares en el Valle de Tehuacán",
+    "periodo": "Sistema documentado como vigente al momento de la publicación en 2013",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Moreno-Calles, Toledo y Casas (2013) — Los sistemas agroforestales tradicionales de México: una aproximación biocultural, Botanical Sciences 91(4)",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982013000400001"
+    },
+    "verificacion": "En un estudio realizado en la comunidad de San Luis Atolotitlán, Puebla, los autores encontraron que en el SAF de milpa-chichipera existían 122 especies de plantas"
+  },
+  {
+    "fichaId": "oaxaca_sierras_bosques_comunales",
+    "practica": "Manejo forestal comunitario zapoteco en Capulálpam",
+    "periodo": "Desde 1981; cambio de método silvícola en 1993 y continuidad documentada",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Ramírez Santiago et al. (2019) — Efectos del aprovechamiento forestal en la estructura y diversidad de rodales mixtos en la Sierra Juárez de Oaxaca, Madera y Bosques 25(3)",
+      "url": "https://www.scielo.org.mx/scielo.php?pid=S1405-04712019000300203&script=sci_arttext"
+    },
+    "verificacion": "En 1981, año en que terminó la concesión a Fapatux, se estableció el manejo forestal comunitario. En un inicio, la comunidad adoptó el Método Mexicano de Ordenación de Montes Irregulares (MMOBI)"
+  },
+  {
+    "fichaId": "oaxaca_sierras_bosques_comunales",
+    "practica": "Sistemas agroforestales zapotecos: solar, cafetal y milpa en Las Delicias",
+    "periodo": "Documentados como vigentes en 2020 en comunidad zapoteca de la Sierra Juárez",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Pascual-Mendoza et al. (2020) — Sistemas agroforestales de una comunidad zapoteca de la Sierra Norte de Oaxaca, Botanical Sciences 98(1)",
+      "url": "https://scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-42982020000100128"
+    },
+    "verificacion": "los sistemas agroforestales estudiados conservan 211 especies vegetales útiles; los huertos familiares y los cafetales tienen una mayor similitud florística; la disimilitud del sistema milpa se relaciona con su temporalidad."
+  },
+  {
+    "fichaId": "oaxaca_sierras_bosques_comunales",
+    "practica": "Conservación de diversidad de maíz criollo en Los Loxicha",
+    "periodo": "Práctica en uso al momento del estudio; las variedades llevan generaciones de selección local",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Rendón-Aguilar et al. (2015) — Diversidad de maíz en la sierra sur de Oaxaca, México: conocimiento y manejo tradicional, Polibotánica 39",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S1405-27682015000100009"
+    },
+    "verificacion": "Los agricultores practican algunas formas de manejo ancestral para la selección de mazorcas y semillas, manteniendo, así, ciertos niveles de diferenciación entre las variedades"
+  },
+  {
+    "fichaId": "selva_maya_yucatan",
+    "practica": "Meliponicultura maya (ko'olel kaab)",
+    "periodo": "Actividad ancestral; documentada en vías de desaparición en Campeche (2018)",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "fuente": {
+      "label": "Pat Fernández et al. (2018) — Condición y perspectivas de la meliponicultura en comunidades mayas de la reserva de la biósfera Los Petenes, Estudios de Cultura Maya 52",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0185-25742018000200227"
+    },
+    "verificacion": "La cría de la abeja sin aguijón ko'olel kaab (Melipona beecheii) es una actividad ancestral en vías de desaparición"
+  },
+  {
+    "fichaId": "selva_maya_yucatan",
+    "practica": "Solar maya como agroecosistema de soberanía alimentaria",
+    "periodo": "Sistema prehispánico; documentado como vigente en Yucatán en 2022",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Cabrera-Pacheco (2022) — La (re)producción de las tradiciones agroalimentarias en los solares mayas de la Península de Yucatán, Estudios Sociales 32(60)",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692022000200120"
+    },
+    "verificacion": "El solar es el sitio donde se reproducen las formas de vida mayas por medio de 'prácticas cotidianas y de autoconsumo'"
+  },
+  {
+    "fichaId": "chiapas_bosques_montanos",
+    "practica": "Milpa tzeltal articulada con el ch'ulel del maíz",
+    "periodo": "Documentada mediante trabajo etnográfico entre marzo y julio de 2013; vigente al momento del estudio",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "D'Alessandro y González (2017) — La práctica de la milpa, el ch'ulel y el maíz como elementos articuladores de la cosmovisión sobre la naturaleza entre los tzeltales de Tenejapa, Estudios de Cultura Maya 50",
+      "url": "https://www.scielo.org.mx/scielo.php?lng=es&nrm=iso&pid=S0185-25742017000200271&script=sci_arttext_plus&tlng=es"
+    },
+    "verificacion": "la milpa se representa en el altar maya no sólo como el jardín de cultivo de plantas 'originales o verdaderas', sino como una forma de génesis de la vida"
+  },
+  {
+    "fichaId": "chiapas_bosques_montanos",
+    "practica": "Cafetales de sombra con diversidad arbórea en Chiapas",
+    "periodo": "Documentados en 2025 en fincas de la región cafetalera de Chiapas",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Verdugo Morales et al. (2025) — Riqueza de especies y diversidad arbórea en un gradiente altitudinal en cafetales de Chiapas, Revista Mexicana de Ciencias Forestales 16(88)",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext_plus&pid=S2007-11322025000200148&lng=es&tlng=es&nrm=iso"
+    },
+    "verificacion": "Los cafetales que se traslapan con bosque mesófilo y selva mediana mantienen gran diversidad de árboles como sombra."
+  },
+  {
+    "fichaId": "veracruz_tabasco_selvas_humedales",
+    "practica": "Campos elevados con gestión hidráulica comunitaria",
+    "periodo": "Período Clásico mesoamericano",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "fuente": {
+      "label": "Stoner, Stark, VanDerwarker y Urquhart (2021) — Between land and water: Hydraulic engineering in the Tlalixcoyan basin, Veracruz, Mexico, Journal of Anthropological Archaeology 61: 101264",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0278416520302373"
+    },
+    "verificacion": "PENDIENTE — artículo detrás de paywall. El resumen público confirma la identificación de campos elevados en la cuenca de Tlalixcoyan mediante LiDAR, pero la frase textual que sostiene la hipótesis de cooperación comunitaria está en el texto completo no accesible."
+  },
+  {
+    "fichaId": "veracruz_tabasco_selvas_humedales",
+    "practica": "Procesamiento artesanal chontal del cacao en la Chontalpa",
+    "periodo": "Documentado como vigente en Jalpa de Méndez y Centro, Tabasco",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "fuente": {
+      "label": "Córdova Lázaro et al. (2018) — Chocolate casero tradicional en la región de la Chontalpa Tabasco, México: actores y saberes locales, Estudios Sociales 28(52)",
+      "url": "https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2395-91692018000100005"
+    },
+    "verificacion": "El chocolate casero artesanal está presente en la dieta de los habitantes de la Chontalpa e incorpora saberes locales transmitidos de forma oral por generaciones."
+  }
+]
