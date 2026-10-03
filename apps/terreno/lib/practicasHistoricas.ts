@@ -2556,6 +2556,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Sociedad y Ambiente — La agricultura fundacional de los oasis de Baja California', url: 'https://revistas.ecosur.mx/sociedadyambiente/index.php/sya/article/download/2933/1978/6560' },
       ],
     },
+    {
+      practica: 'Conocimiento medicinal de hongos y líquenes en los pueblos yumanos del norte de Baja California',
+      periodo: 'Conocimiento tradicional de transmisión oral; documentado en entrevistas contemporáneas con hablantes en situación de extinción inminente',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Los pueblos yumanos del norte de México documentaron el uso medicinal de 20 espécies de hongos y líquenes: 6 líquenes (principalmente Xanthoparmelia) y 14 hongos no liquenizados. El conocimiento corresponde a lenguas con hablantes en extinción inminente y a tierras ancestrales despojadas. El estudio destaca la urgencia de documentar este saber antes de su pérdida definitiva, y subraya el vínculo entre extinción lingüística y extinción del conocimiento ecológico local.',
+      fuentes: [
+        { label: 'Bautista-González et al. (2022) — Traditional knowledge of medicinal mushrooms and lichens of Yuman peoples in Northern Mexico, Philos Trans R Soc Lond B', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9339201/' },
+      ],
+    },
   ],
   tehuacan_cuicatlan_matorral: [
     {
@@ -2806,6 +2817,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Cuiteco, Sierra Tarahumara, campesinos rarámuri participaron en recorridos, reuniones y entrevistas sobre plantas de bosque de pino, pino-encino, vegetación secundaria, ribera, barbechos, parcelas y huertos. El estudio registró una división de tareas: las mujeres reunían principalmente plantas medicinales y comestibles, y los hombres materiales para bienes domésticos, leña y construcción, sin diferencia general de conocimiento entre ambos. La ficha debe conservar esa autoría comunitaria y la diversidad interna; no reducir el saber rarámuri a una lista botánica indiferenciada.',
       fuentes: [
         { label: 'Camou-Guerrero, Reyes-García, Martínez-Ramos y Casas (2008) — Knowledge and Use Value of Plant Species in a Rarámuri Community: A Gender Perspective for Conservation, Human Ecology 36(2): 259-272 (copia íntegra reproducida en la tesis doctoral del primer autor, UNAM)', url: 'https://tesiunamdocumentos.dgb.unam.mx/ptd2008/octubre/0634436/0634436_A1.pdf' },
+      ],
+    },
+    {
+      practica: 'Etnobotanica de Rayones, Nuevo León: uso medicinal y alimentario de plantas de la Sierra Madre Oriental',
+      periodo: 'Documentado en 110 entrevistas a residentes de Rayones; práctica con continuidad cultural',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En Rayones, municipio de la Sierra Madre Oriental en Nuevo León, 110 entrevistas documentaron 252 especies vegetales de 228 géneros y 91 familias. El uso más frecuente es medicinal (136 especies), seguido de alimentario. Asteraceae y Fabaceae concentran mayor diversidad. Agave y Opuntia son los géneros de mayor utilidad. Las mujeres conocen más plantas medicinales; los hombres, más especies leñosas y de construcción.',
+      fuentes: [
+        { label: 'Estrada-Castillón et al. (2014) — Ethnobotany in Rayones, Nuevo León, México, J Ethnobiol Ethnomed', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4237796/' },
       ],
     },
   ],
@@ -3750,6 +3772,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO GIAHS — The ksour of Figuig: oasis and pastoral culture around social management of water and land', url: 'https://www.fao.org/giahs/giahs-around-the-world/morocco-ksour-figuig-oasis/en' },
       ],
     },
+    {
+      practica: 'Herbolaria hepática tradicional en las comunidades rurales del noreste de Marruecos',
+      periodo: 'Documentada en entrevistas de campo entre octubre de 2020 y enero de 2022',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En comunidades rurales del noreste de Marruecos, 189 informantes documentaron 45 especies de plantas de 26 familias utilizadas para tratar enfermedades hepáticas. Las familias más representadas son Asteraceae, Lamiaceae y Apiaceae. El estudio realizó una validación bibliométrica de los usos hepatoprotectores documentados y registró el saber de comunidades con acceso limitado a servicios de salud modernos.',
+      fuentes: [
+        { label: 'Bencheikh, Elbouzidi & Baraich (2024) — Ethnobotanical survey and scientific validation of liver-healing plants in northeastern Morocco, Front Pharmacol', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11420034/' },
+      ],
+    },
   ],
   atlas_conifera_montana: [
     {
@@ -3843,6 +3876,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO (2018) — Pastoralism in Africa’s Drylands: Reducing Risks, Addressing Vulnerability and Enhancing Resilience, Roma (repositorio abierto de la FAO)', url: 'https://openknowledge.fao.org/handle/20.500.14283/ca1312en' },
       ],
     },
+    {
+      practica: 'Plantas medicinales tradicionales de Mauritania en la encrucijada sahariana',
+      periodo: 'Revisión de literatura 1950–2025; conocimiento en la encrucijada de culturas subsahariana y árabo-bereber',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'Una revisión de la literatura entre 1950 y 2025 documenta el conocimiento tradicional de plantas medicinales en Mauritania, país en la encrucijada de culturas subsahariana y árabo-bereber. A pesar de poseer una de las floras más reducidas del áfrica subsahariana, Mauritania presenta un conocimiento medicinal especialmente rico. El estudio confirma que la región es severamente subdocumentada y aporta el análisis intercultural más detallado sobre el uso medicinal de plantas en el país.',
+      fuentes: [
+        { label: 'Yebouk, Redouan & Benítez (2025) — Review and cross-cultural analysis of medicinal plants traditionally used in Mauritania, Front Pharmacol', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12849380/' },
+      ],
+    },
   ],
   sahara_costa_atlantica: [
     {
@@ -3896,6 +3940,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Tassili n’Ajjer, miles de pinturas, grabados, habitaciones, túmulos y recintos registran el pasaje de fauna silvestre a escenas de vida pastoril y, más tarde, caballos y camellos. El registro muestra que la producción animal se adaptó a cambios prolongados de clima y disponibilidad de agua. No permite reconstruir un calendario exacto de pastoreo, por lo que la entrada conserva sólo lo que la evidencia visual y arqueológica sostiene.',
       fuentes: [
         { label: 'UNESCO World Heritage Centre — Tassili n\'Ajjer', url: 'https://whc.unesco.org/en/list/179' },
+      ],
+    },
+    {
+      practica: 'Recolección de plantas silvestres y cereales en el Sáhara verde del Holoceno',
+      periodo: 'Holoceno temprano y medio (aprox. 9000–5000 a.P.); evidencia arqueobotanica del Sáhara verde',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Una revisión arqueobotanica del Sáhara verde del Holoceno documenta que las plantas silvestres dominaron la explotación vegetal humana en ese período, incluidos cereales silvestres. El análisis integra datos de pólenes, semillas, madera, moléculas orgánicas y malas hierbas. Los resultados describen trayectorias complejas de adaptación antes y después de la desertificación, con cambios en el tipo y la intensidad de la explotación vegetal. El estudio ilustra la resiliencia de los grupos humanos frente al cambio ambiental en el Sahara.',
+      fuentes: [
+        { label: 'Florenzano, Zappa & Mercuri (2025) — Complex pathways in plant–human relationships in changing environments in the Early–Mid Holocene Sahara, Philos Trans R Soc Lond B', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12079128/' },
       ],
     },
   ],
@@ -4912,6 +4967,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'En Jowzan, las vides se conducen próximas al suelo y reciben riegos espaciados desde una red de qanats. Las familias ajustan el calendario mediante observación de hojas y estación, mientras el ganado consume malezas y restos de poda y devuelve estiércol. La integración limita insumos externos y mantiene un cultivo perenne bajo condiciones secas y frías.',
       fuentes: [
         { label: 'FAO GIAHS — Jowzan Valley Grape Production System, Iran', url: 'https://www.fao.org/giahs/giahs-around-the-world/iran-grape-production-system/en' },
+      ],
+    },
+    {
+      practica: 'Plantas medicinales de comunidades rurales del sur de la provincia de Fars (Irán)',
+      periodo: 'Documentado en entrevistas de campo entre 2020 y 2022; práctica con continuidad histórica',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'En 27 comunidades del sur de la provincia de Fars, Irán, 200 informantes de tres grupos étnicos documentaron 171 especies de plantas medicinales de 53 familias. Lamiaceae y Fabaceae son las familias más representadas. El estudio registró 70 nuevas aplicaciones medicinales no documentadas previamente en la región. La administración oral es la vía más común y las enfermedades gastrointestinales presentan el mayoríndice de consenso entre informantes.',
+      fuentes: [
+        { label: 'Mottaghipisheh et al. (2025) — Medicinal plants used by local communities in southern Fars Province, Iran, Sci Rep', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11832781/' },
       ],
     },
   ],
