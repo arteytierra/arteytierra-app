@@ -107,7 +107,8 @@ libremente; tocar sólo con intención explícita y validación:
 |---|---|
 | `masterplan.ts` | Master Plan: programa declarado del predio → zonas + relaciones + optimización (el motor grande de esta familia). |
 | `produccion.ts` | Sistemas productivos agropecuarios. |
-| `pastoreo.ts` | Pastoreo rotativo (PRV / Voisin). |
+| `manejos.ts` | El menú de manejos de pastoreo: parcelas, ocupación, descanso, forma y el fusible del año seco. |
+| `pastoreo.ts` | Balance forrajero de un manejo elegido y lo que cuesta armarlo. |
 | `potreros.ts` | Subdivisión geométrica de potreros. |
 | `silvopastura.ts` | Líneas de árboles/forraje leñoso a nivel. |
 | `cortinas.ts` | Cortinas rompevientos como franja multiestrato. |

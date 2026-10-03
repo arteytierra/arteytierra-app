@@ -83,12 +83,22 @@ function anillo(feat: Poly): Array<{ lat: number; lng: number }> | null {
 /**
  * Subdivide el predio en ~nObjetivo potreros de área similar y ubica nBebederos
  * repartidos, cada uno con `radioBebedero` metros de cobertura.
+ *
+ * El radio por defecto son los 800 pies —244 m— de la guía de Illinois del NRCS:
+ * *«Keep travel distance to water less than 800 ft. for beef cattle»*. Antes eran
+ * 300 m, que no venían de ninguna parte. Ver `AGUA_INTENSIVA_M` en `manejos.ts`.
+ *
+ * Reparte por **superficie igual**, que es lo que se puede hacer con geometría.
+ * Lo que convendría igualar es la comida —A3529: *«It is more important that the
+ * paddocks yield roughly equal amounts of forage than that they have equal
+ * areas»*— y para eso falta producción de forraje por ambiente, que es la deuda
+ * abierta de toda la cadena ganadera.
  */
 export function subdividirPotreros(
   mojones: Vertice[],
   nObjetivo: number,
   nBebederos = 1,
-  radioBebedero = 300,
+  radioBebedero = 244,
 ): PotrerosLayout | null {
   if (mojones.length < 3 || nObjetivo < 1) return null;
 

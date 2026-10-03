@@ -277,26 +277,122 @@ el número, así que se deja el total —que es el lado seguro para una represa�
 descuento va a entrar como un ajuste explícito que el usuario prende, con su
 propia fuente. Está anotado en la sección 4.
 
-### Etapa C — Pastoreo: el menú de manejos
+### Etapa C — Pastoreo: el menú de manejos ✅ *02/10/2026*
 
-La relación que gobierna el pastoreo rotativo es aritmética y se puede derivar sin
-tabla ajena:
+Hecha. `lib/manejos.ts` nuevo, `lib/pastoreo.ts` corregido y la pestaña Pastoreo
+rehecha, con las fuentes abiertas y leídas antes de escribir código.
 
-```
-descanso = ocupación × (parcelas / parcelas_por_cambio − 1)
-```
+**Lo primero que apareció yendo a la fuente es una advertencia contra esta misma
+etapa, y viene del autor que ya citamos en la A.** Holechek, Gomez, Molinar y
+Galt (1999), repasando los estudios de pastizal de larga duración: *«Rotation
+grazing systems have been widely recommended by various government agencies
+concerned with range management. However research shows stocking rate reductions
+from heavy to conservative, have much higher probability of increasing grazing
+capacity, reducing risk, increasing financial returns, and reducing erosion.»*
+O sea: **acertarle a la carga rinde más que rotar.** La etapa A vale más que
+esta, y eso ahora está escrito arriba del panel de Pastoreo, antes de cualquier
+número. Un diseñador de potreros que no lo diga está vendiendo alambre.
 
-Con eso la app puede ofrecer un **menú de manejos** para la misma cantidad de
-parcelas: cuántos días de ocupación, cuántos de descanso, y qué exigencia le pone
-al animal. Lo que agrega criterio por encima de la aritmética:
+**El hallazgo contraintuitivo, que da vuelta lo que todos suponen:** el tope de
+días en una parcela es **más corto cuando el pasto crece más rápido**. A3529, con
+número: *«Regrowth occurs after about four days during May and June and 10 days
+during August and September, so the maximum grazing period should never be longer
+than these averages.»* En plena temporada de crecimiento la planta vuelve a tener
+hoja a los cuatro días, y si el rodeo todavía está ahí se la come por segunda vez
+antes de que haya rearmado nada —que es lo único que la fuente llama *«a sure way
+to kill desirable species»*—. Todo el mundo razona al revés: hay mucho pasto,
+dejo el ganado más tiempo.
 
-- se diseña para el **descanso promedio**, no para el mejor mes;
-- una **reserva del 5 al 10 %** de la superficie como fusible del año seco;
-- **etapas de intensificación**: no se subdivide todo de una, se subdivide en
-  etapas que el productor pueda pagar y manejar;
-- las parcelas se igualan **por comida**, no por superficie: la parcela mejor
-  lleva alrededor de un 10 % menos de hectáreas, y la forma importa —una parcela
-  muy alargada se pastorea desparejo—.
+Y hay un **segundo tope, por conducta y no por planta**, de otra fuente: Gerrish
+mide que el rodeo arma su querencia dentro de la parcela **a los tres días**, y
+que **la repite en las vueltas siguientes**. Pasar de tres días no mata la
+pastura: deja el potrero pastoreado desparejo para siempre. Los dos topes se
+reportan por separado porque lo que se daña es distinto.
+
+**El tipo de pastura es la decisión que más mueve de la etapa, y nadie la pide.**
+Las gramíneas templadas y las tropicales piden descansos **opuestos**: la
+templada necesita más descanso con calor —se frena— y la tropical menos, porque
+el calor es cuando crece. El descanso estacional que tenía acequia era una
+escalera fija de 30/35/45/80 días igual para toda la Tierra, así que **estaba
+exactamente al revés en medio mundo**. Ahora sale de los rangos publicados por
+tipo, y el tipo lo **sugiere el clima del punto** con el criterio de Collatz,
+Berry y Clark (1998): un mes favorece a las C4 cuando su media llega a 22 °C y
+llueven 25 mm o más. Es algo que acequia puede hacer y nadie más, porque ya tiene
+las doce medias mensuales del punto; el usuario puede cambiarlo, y si la pastura
+es implantada manda él.
+
+**La aritmética tenía un término olvidado.** La fórmula es `parcelas = descanso ÷
+ocupación + grupos de animales`, y el término de grupos son las parcelas ocupadas
+al mismo tiempo: con dos rodeos pasando uno detrás del otro hacen falta dos
+parcelas más, no una. acequia tenía el 1 cableado. Los dos ejemplos resueltos de
+A3529 —30 ÷ 3 + 1 = 11 y 32 ÷ 2 + 1 = 17— cierran exactos y están en tests.
+
+**El resultado de geometría que nadie cree hasta verlo:** Gerrish compara dos
+trazados del mismo campo y encuentra que *«the total linear footage of fence
+required for the 16 paddock system is actually less than for the 12 paddock
+system»*, porque un cuadrado tiene menos perímetro que un rectángulo de la misma
+superficie. **Más parcelas con menos alambre.** acequia ahora elige la grilla que
+menos alambre gasta en vez de suponer una, y hay un test que reproduce la
+comparación: 12 parcelas en tiras piden 11 hilos de largo del bloque, 16 en
+grilla de 4 × 4 piden 6.
+
+**Dos distancias al agua publicadas que parecen contradecirse y no.** La etapa A
+usa 1,6 km y esta usa 240 m. Contestan preguntas distintas: la milla decide *si
+la hectárea cuenta para la capacidad de carga*, y los 800 pies de la guía de
+Illinois deciden *si la parcela se va a comer pareja*. Está explicado en pantalla
+porque un lector atento lo iba a notar. El radio de 300 m que usaba el dibujo de
+potreros no venía de ninguna parte; ahora son los 244 m publicados.
+
+**La pieza más útil de la etapa es la más barata: las alturas.** La tabla 7 de
+A3529, pasada a centímetros. **El descanso en días es una estimación; la altura es
+una medición**, y la fuente lo pide en una frase: *«It is crucial that you move
+your animals according to the forage, not the calendar.»* Con cuatro renglones de
+alturas de entrada y salida, un productor con una regla no necesita el
+calendario. La altura de salida es el fusible de verdad: comerla más abajo no
+ahorra superficie, **alarga el descanso**.
+
+**El fusible del año seco no se inventó: salió de aplicar la misma fórmula dos
+veces.** El plan decía «una reserva del 5 al 10 % de la superficie», y **no
+encontré fuente para ese número**. Lo que sí está publicado es mejor: las
+parcelas se dimensionan con el descanso de la temporada más lenta, así que en la
+temporada rápida el mismo campo necesita muchas menos, y **las que sobran son el
+heno** —A3529: *«Reduce the number of paddocks grazed in the spring by using them
+to make hay. Put those paddocks back into the rotation in the middle of the
+summer»*—. Es un número que acequia calcula y que no hay que adivinar: con 16
+parcelas para 30 días de descanso, en la temporada de 14 sobran 8, la mitad del
+campo. La otra mitad del fusible es carga y tiene números de Holechek y otros
+(1999): el uso conservador resigna del 10 al 25 % de la ganancia en años normales
+y devuelve del 30 al 60 % más en una sequía severa. Se paga poco todos los años y
+se cobra mucho el año que importa.
+
+**Cuatro números inventados que se fueron de `pastoreo.ts`:**
+
+- el descanso estacional cableado, ya contado;
+- el `+ 1` de los grupos, ya contado;
+- **la carga instantánea en EV, que se calculaba como `peso / 400`.** Era el mismo
+  error del equivalente vaca sobreviviendo en otro archivo: el EV está definido en
+  **energía** —18,54 Mcal EM/día— y no en kilos de animal. Lo peor no es la
+  magnitud: es que la fórmula vieja **no podía ver el forraje**, daba el mismo
+  número comiendo paja o alfalfa. Ahora pasa por `consumoEV_kgMS_dia`, y hay un
+  test que cruza los dos módulos y muestra cuánto se corrió: para un rodeo de
+  400 kg al 2,8 %, la carga correcta es **0,94 veces** la vieja sobre forraje
+  diferido, **1,13** sobre pastizal natural y **1,45** sobre pastura de calidad.
+  No era que estuviera alta o baja: no tenía con qué saberlo;
+- **los postes y el agua de bebida.** «1 poste cada 8 m» no tiene fuente y se
+  fue: no hay con qué reponerlo y un número plausible es peor que ninguno. El agua
+  se estimaba como el 10 % del peso vivo, cuando acequia **ya** la calcula desde
+  la temperatura con tabla publicada: tener dos respuestas distintas a la misma
+  pregunta es peor que tener una, así que se fue y el panel manda a la otra
+  pestaña.
+
+**Lo que no entró y es deliberado:** el reparto de parcelas **por comida y no por
+superficie**, que es la regla que A3529 escribe explícitamente —*«It is more
+important that the paddocks yield roughly equal amounts of forage than that they
+have equal areas»*— y que casi todos los diseños rompen. La función existe
+(`haEquivalente`) y el panel dice por qué no se aplica sola: para repartir por
+comida hace falta **producción de forraje por ambiente**, y ése es
+`prodForrajera`, el número que sigue sin fuente. Es la tercera etapa seguida que
+choca contra el mismo faltante.
 
 ### Etapa D — Sombra para el ganado
 
@@ -400,10 +496,10 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
 
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**
 2. ~~**Etapa A** —modulación—~~ **hecha el 02/10/2026.**
-3. **Etapa C** —menú de manejos— es la que sigue: es aritmética más criterio y
-   ya tiene la superficie efectiva y los módulos de A para apoyarse.
-4. **Etapa F** —las cuatro piezas chicas— en cualquier momento: son
-   independientes y cada una es media jornada.
+3. ~~**Etapa C** —menú de manejos—~~ **hecha el 02/10/2026.**
+4. **Etapa F** —las cuatro piezas chicas— es la que sigue: son independientes
+   entre sí y cada una es media jornada, así que es la etapa que más entrega por
+   hora y no depende de nada de lo anterior.
 5. **Etapa E** junto con `PLAN-embalse-vaso-real.md`.
 6. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
    aviso. Es la única que puede romperle el dibujo a un proyecto guardado.
@@ -436,8 +532,12 @@ parámetro. Con «4 a 6 horas» no hay nada que mover.
    `forrajePorLluvia` de `pastoreo.ts`, que es una copia, y para el
    `forraje_sugerido` de `cobertura.ts`, que pondera kg/ha por clase de
    WorldCover sin fuente. **Es la deuda más grande que queda en toda la cadena
-   ganadera**, y además es lo que bloquea la carga objetivo por ambiente de la
-   etapa A: sin producción de forraje por ambiente no hay carga por ambiente. La
+   ganadera**, y ya van **tres etapas seguidas** que chocan contra
+   ella: bloquea la carga objetivo por ambiente de la etapa A, bloquea el reparto
+   de parcelas por comida y no por superficie de la etapa C —que es una regla
+   textual de la fuente y no un refinamiento— y le pone el techo de precisión al
+   balance forrajero entero. Sin producción de forraje por ambiente no hay carga
+   por ambiente ni parcelas igualadas por comida. La
    fuente a abrir son los mapas de productividad primaria neta de pastizales y
    las series de producción de materia seca de los organismos de investigación
    agropecuaria regionales; es un relevamiento, no una fórmula, y es del tamaño
