@@ -431,23 +431,148 @@ comparar obligaba a anotar en un papel. Ver `lib/represasGuardadas.ts`.
 
 Esta etapa va junto con `PLAN-embalse-vaso-real.md`.
 
-### Etapa F — Cuatro piezas chicas que se usan siempre
+### Etapa F — Cuatro piezas chicas que se usan siempre ✅ *03/10/2026*
 
-Son chicas, son independientes entre sí, y ningún competidor las tiene juntas:
+Hecha. Cuatro módulos nuevos —`lib/alcantarilla.ts`, `lib/electrificador.ts`,
+`lib/manguera.ts`, `lib/ventosas.ts`—, tres bloques de interfaz colgados de
+paneles que ya existían, y **una corrección a `hidraulica.ts` que apareció
+leyendo la norma**.
 
-1. **Alcantarillado de un cruce de camino.** La sección necesaria sale de una
-   fórmula publicada en función de la cuenca de aporte y de la lluvia, y la app ya
-   delinea esa cuenca. De la sección sale el diámetro del caño.
-2. **Electrificador.** No se elige por un solo criterio: hay que satisfacer a la
-   vez la longitud de alambre, la cantidad de hilos y la vegetación que lo toca.
-   Tres criterios simultáneos, y el que manda es el peor de los tres.
-3. **Manguera móvil.** Dimensionarla con la pérdida de carga real —la app ya tiene
-   el motor hidráulico— en lugar de la tabla de pulgar. El coeficiente de rugosidad
-   que reproduce las tablas de uso agropecuario es más conservador que el del caño
-   nuevo de catálogo, y eso hay que decirlo.
-4. **Trampas de aire.** Un perfil de cañería con un punto alto intermedio junta
-   aire y se tapa. La app ya dibuja perfiles de terreno: puede **detectar** el
-   punto alto y avisar que ahí va una ventosa.
+**1 · Alcantarillado de un cruce de camino.** La fuente es el manual estándar
+del mundo entero para esto: FHWA (2012), *Hydraulic Design of Highway Culverts*,
+HDS-5, 3.ª edición, con las regresiones del National Bureau of Standards. Lo que
+hay que entender antes del número es que una alcantarilla tiene **dos formas de
+ahogarse y hay que calcular las dos**: que la boca no deje entrar el agua
+—control de entrada, donde el largo y la rugosidad del caño **no cambian nada**—
+o que el caño no la pueda sacar —control de salida, donde sí pesan—. Manda la
+peor, y es la razón por la que un caño que «da bien» por una cuenta rebalsa el
+camino. acequia informa cuál ganó, porque la decisión de obra cambia: si manda la
+entrada se mejora la boca, y si manda la salida se agranda el caño.
+
+El ejemplo resuelto de la guía de diseño 1 del manual quedó como test, y cierra:
+para Q = 5,663 m³/s en un caño de 60,96 m al 1 %, el de 54″ con campana da 7,92
+pies de carga contra los 7,9 que publica el propio programa HY-8 de la FHWA, y el
+de 60″ da 6,70 contra 6,8. La alternativa métrica aceptable que publica el manual
+—1.500 mm de hormigón con campana— es la que elige acequia, con el control de
+entrada gobernando, igual que el manual.
+
+Dos cosas que salieron de paso y valen por separado:
+
+- **La boca vale más que el diámetro.** El coeficiente de pérdida de entrada va
+  de 0,2 en una campana a 0,9 en un caño de chapa asomando del terraplén: un
+  factor 4,5 por una obra de cabecero. Está en pantalla como una lista de bocas y
+  no como un parámetro escondido.
+- **La velocidad de salida no es la de sección llena.** Cuando manda el control
+  de entrada el caño va parcialmente lleno, y la velocidad con la que el agua
+  sale es la del tirante normal. En el ejemplo publicado son 4,8 m/s contra 3,2
+  de sección llena: usar la de sección llena **subestima un tercio** justo el
+  número con el que se decide si hay que proteger la salida contra socavación.
+  acequia resuelve el tirante normal por Manning y reporta las dos.
+
+**2 · Electrificador.** Cuatro fuentes: la especificación de obra del NRCS
+(Fence, código 382), «Electric Fencing for Serious Graziers» del NRCS de Missouri
+(Kurtz y Frey, 2005), la hoja de extensión de Virginia Tech (Booher, 2025) y la
+del Ontario Forage Council (2018). **Y dos de ellas se contradicen justo en lo
+que más plata mueve.** Virginia dice que los hilos no suman joules —*«multiple
+connected wires reduces resistance and improves energizer function»*— y Ontario
+dice que cinco hilos en cinco millas son veinticinco millas de alambre. No es que
+una esté equivocada: Virginia habla de la **resistencia del conductor** (hilos en
+paralelo, cuatro hilos es un cuarto de resistencia) y Ontario de la **fuga**
+(cuatro hilos son cuatro veces más aisladores y cuatro veces más pasto tocando).
+Cuál manda depende de la vegetación. acequia no elige: muestra las dos cotas,
+dice de quién es cada una y recomienda la mayor.
+
+Cruzar las dos reglas da un resultado que ninguna de las dos publica y que
+ordena la decisión: **cuántos hilos hacen falta para que los hilos empiecen a
+gobernar depende sólo de la vegetación** — con el alambre limpio hacen falta
+siete, con algo de pasto cuatro, y con el alambre cargado dos. Está en un test.
+
+Lo que de verdad arruina alambrados eléctricos no es el equipo, y por eso se
+reportan tres criterios separados —se arreglan con tres compras distintas—:
+
+- **La puesta a tierra, que nadie calcula.** El circuito se cierra por el suelo:
+  si el suelo no conduce, el animal no siente nada aunque el voltímetro en el
+  alambre marque bien. El piso son tres varillas de 6 pies separadas 10, y la
+  regla que escala es 3 pies de varilla por joule de salida. Un equipo de 14 J
+  pide 12,8 m de varilla, o sea **siete varillas y no tres**.
+- **El alambre, que pesa más que el equipo en una tirada larga.** De la tabla de
+  resistencias de Kurtz y Frey: el polihilo de seis conductores tiene **172 veces
+  la resistencia** del calibre 12,5 recomendado, y el de tres conductores casi
+  284. Por eso la fuente dice textualmente que no hay que depender del polihilo
+  en tramos largos. La transcripción de esa tabla se verificó contra la frase de
+  control de la propia fuente —*«16-gauge wire is 2.5 times as resistant… as
+  12.5-gauge»*, y 136,9/56,4 = 2,43—, que es un test.
+- **El voltaje en la punta, que se mide y no se calcula.** Ninguna de las cuatro
+  fuentes publica la conductancia de fuga de un aislador ni de un metro de pasto
+  mojado, así que **nadie puede predecir** el voltaje en el extremo del
+  alambrado. Lo que sí está publicado es cuánto tiene que haber: 1.600 V para
+  vacunos, 2.000 para ovinos y caprinos de pelo, 1.200 para equinos. Es la misma
+  asimetría que las alturas de pastoreo de la etapa C: la cuenta orienta la
+  compra, la medición decide si sirve. Y el ensayo de la tierra —cortocircuitar a
+  300 pies y medir la última varilla, que tiene que dar 0 y se tolera hasta
+  300 V— es la única verificación publicada que existe.
+
+**3 · Manguera móvil.** El coeficiente correcto para una manguera no es el del
+caño: Tajrishy y Hills (1992), en *Applied Engineering in Agriculture*, midieron
+en laboratorio C = 135 y 140 para manguera de 76 y 102 mm. acequia usaba 150 —el
+catálogo del caño nuevo— y Hazen-Williams va a la potencia 1,852, así que pasar
+de 150 a 135 es un **21,5 % más de pérdida** sobre la misma manguera. Está del
+lado peligroso: el número de catálogo hace parecer suficiente una manguera que no
+alcanza, y en una tirada de 200 m eso es la diferencia entre que llegue agua al
+bebedero y que llegue un chorrito. El panel avisa cuando el C de catálogo habría
+alcanzado con una medida menos, que es el momento exacto en que se compra mal.
+
+El ensayo midió **dos** diámetros, y la mayoría de las mangueras de un predio
+quedan por debajo. acequia interpola entre los dos y afuera usa el más
+desfavorable de los dos medidos, en lugar de extrapolar la tendencia: un valor
+extrapolado sería plausible y nadie lo midió. Las pérdidas de los acoples entran
+como largo equivalente, que es exactamente la forma en que la fuente las publica.
+
+**4 · Trampas de aire.** Una cañería que sube y baja junta aire en los puntos
+altos, y la burbuja estrangula la sección: la línea pierde caudal sin que se rompa
+nada y sin que haya nada que ver. La norma de cañerías de riego del NRCS (CPS 430)
+da **tres criterios geométricos** que se pueden aplicar sobre un perfil, y la app
+ya dibuja perfiles: ventosa en todos los puntos altos, una cada 762 m (2.500 pies)
+en tramos parejos aunque no haya nada que detectar, y de doble efecto en los
+quiebres hacia abajo de más de 10°. Más la precisión que ahorra plata: si en el
+punto alto ya hay un bebedero o un hidrante, la salida ventea y no hace falta
+ventosa.
+
+El único número de este módulo que es de acequia y no de la norma es la
+**prominencia mínima** para que una ondulación cuente como punto alto. La norma
+dice «todos los puntos altos» y no la define, porque quien la escribió tenía un
+plano de obra y no un modelo de elevación con ruido. Sobre un DEM de 30 m,
+marcar quince ventosas falsas es peor que no marcar ninguna —una lista de quince
+no la cree nadie—, así que está declarado como criterio propio, es un parámetro
+visible, y con un DEM de dron se baja.
+
+**5 · Lo que apareció sin buscarlo: dos números sin fuente en `hidraulica.ts`.**
+Leyendo la norma 430 para la manguera aparecieron dos límites que acequia venía
+poniendo de pulgar, los dos del lado optimista:
+
+- la **velocidad máxima** estaba en 2,0 m/s y la norma la pone en **1,52 m/s**
+  (5 pies/s) a sección llena *«in pipelines with valves or some other flow
+  control appurtenance… at the downstream end»*. No es por fricción: es por el
+  golpe de ariete al cerrar. Toda línea que termina en una canilla o en un
+  bebedero con flotante cae en esa condición, o sea casi todas;
+- la **presión de trabajo admisible** era el 91 % de la nominal del caño (margen
+  1,1) y la norma deja usar el **72 %** *«as a safety factor against surge»*, o
+  sea un margen de 1,39.
+
+Los dos quedaron corregidos con la cita al lado. Cambia lo que la pestaña Red de
+servicios recomienda —30 m.c.a. pasaron de pedir PN4 a pedir PN6— y es más caro:
+es lo que dice la norma. El test que fijaba el valor viejo se actualizó
+explicando qué cambió y por qué, y quedó un segundo test que comprueba que
+pasando el margen viejo a mano se obtiene lo de antes, así que el cambio es sólo
+del valor por defecto.
+
+**Un error propio que vale anotar**, porque es de la familia que este repositorio
+caza con tests: la primera versión de `diametroAlcantarilla` llamaba a
+`tiranteNormal(caudal, diámetro, …)` cuando la firma era `(diámetro, caudal, …)`.
+Dos números, las dos del mismo tipo, y el resultado era una velocidad de salida de
+11,4 m/s en lugar de 5,1 — alta, alarmante y perfectamente plausible. Lo cazó el
+test del caso resuelto. La función pasó a recibir un objeto con los campos
+nombrados para que no pueda volver a pasar.
 
 ### Etapa G — Clima: el balance hídrico mensual y la variabilidad
 
@@ -497,10 +622,14 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**
 2. ~~**Etapa A** —modulación—~~ **hecha el 02/10/2026.**
 3. ~~**Etapa C** —menú de manejos—~~ **hecha el 02/10/2026.**
-4. **Etapa F** —las cuatro piezas chicas— es la que sigue: son independientes
-   entre sí y cada una es media jornada, así que es la etapa que más entrega por
-   hora y no depende de nada de lo anterior.
-5. **Etapa E** junto con `PLAN-embalse-vaso-real.md`.
+4. ~~**Etapa F** —las cuatro piezas chicas—~~ **hecha el 03/10/2026**, y de paso
+   corrigió dos números sin fuente de `hidraulica.ts` que ninguna etapa había
+   mirado.
+
+5. **Etapa E** —la represa— es la que sigue, junto con `PLAN-embalse-vaso-real.md`.
+   Es la más grande de las que quedan y la que más pide fuente primaria: tablas de
+   diseño de pequeñas represas, criterios de cuenca de aporte y comparación por
+   cota.
 6. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
    aviso. Es la única que puede romperle el dibujo a un proyecto guardado.
 

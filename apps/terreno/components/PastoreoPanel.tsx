@@ -26,6 +26,7 @@ import { bandaUso, noPastoreable } from '@/lib/modulacion';
 import { subdividirPotreros, type PotrerosLayout } from '@/lib/potreros';
 import type { DatosClima } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
+import { ElectrificadorBloque } from './ElectrificadorBloque';
 
 interface AreaSubdividible { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -387,6 +388,10 @@ export function PastoreoPanel({
             la pestaña Producción contestan otra pregunta —si la hectárea cuenta para la carga— y por eso
             no se contradicen. Un bebedero en un cruce de alambres sirve a las cuatro parcelas que se tocan.
           </p>
+
+          {/* El equipo que sostiene ese alambre: ver
+              `components/ElectrificadorBloque.tsx`. */}
+          <ElectrificadorBloque alambrado_m={res.alambrado_m} />
 
           {/* Dibujar sobre el mapa */}
           {onDibujar && mojones.length >= 3 && (

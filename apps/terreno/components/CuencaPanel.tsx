@@ -20,6 +20,7 @@ import { PERIODOS_RETORNO, type HidrologiaPredio } from '@/lib/hidrologiaPredio'
 import { volumenM3, volumenEnLitros, caudalM3s, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
+import { AlcantarillaBloque } from './AlcantarillaBloque';
 
 interface PoligonoOpcion { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -429,6 +430,10 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
                     <Stat label="Ancho de vertedero" value={`${resultado.vertedero_m} m`}
                       sub={`para pasar el pico con ${resultado.head_vertedero_m} m de carga`} color="agua" />
                   </div>
+
+                  {/* La alcantarilla cuelga del pico y no de la hidrología:
+                      ver `components/AlcantarillaBloque.tsx`. */}
+                  <AlcantarillaBloque caudal_pico_m3s={resultado.caudal_pico_m3s} />
 
                   {/* ── Qué es el CN ─────────────────────────────────────────
                       "Curva número 69" no le dice nada a nadie que no venga de

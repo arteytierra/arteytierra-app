@@ -72,6 +72,9 @@ libremente; tocar sólo con intención explícita y validación:
 | `escorrentias.ts` | Escorrentías superficiales por algoritmo D8. |
 | `captacion.ts` | Captación pluvial + dimensionamiento de tanque. |
 | `hidraulica.ts` | Hidráulica de redes de agua por tubería. |
+| `manguera.ts` | Manguera móvil: el coeficiente medido en manguera, no el del caño de catálogo. |
+| `ventosas.ts` | Trampas de aire: dónde va una ventosa sobre el perfil de una cañería. |
+| `alcantarilla.ts` | Alcantarilla de un cruce de camino: del caudal de la cuenca al diámetro del caño. |
 | `riego.ts` | Riego por sector desde la evapotranspiración. |
 | `erosion.ts` | Riesgo de erosión hídrica (pendiente + cobertura). |
 
@@ -109,6 +112,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `produccion.ts` | Sistemas productivos agropecuarios. |
 | `manejos.ts` | El menú de manejos de pastoreo: parcelas, ocupación, descanso, forma y el fusible del año seco. |
 | `pastoreo.ts` | Balance forrajero de un manejo elegido y lo que cuesta armarlo. |
+| `electrificador.ts` | El equipo del alambrado eléctrico, la puesta a tierra y la resistencia del alambre. |
 | `potreros.ts` | Subdivisión geométrica de potreros. |
 | `silvopastura.ts` | Líneas de árboles/forraje leñoso a nivel. |
 | `cortinas.ts` | Cortinas rompevientos como franja multiestrato. |

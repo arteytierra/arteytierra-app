@@ -24,6 +24,7 @@ import {
   type ResultadoLinea, type RedAguaResumen, type RedAguaInputs,
 } from '@/lib/hidraulica';
 import { SERVICIOS, servicioPorId, type TipoServicio } from '@/lib/servicios';
+import { MangueraVentosasBloque } from './MangueraVentosasBloque';
 import {
   ARTEFACTOS_DOMESTICOS, ARTEFACTOS_PRODUCCION, ARTEFACTOS_RIEGO,
   artefactoPorId, demandaRed, type ItemArtefacto, type Artefacto,
@@ -452,6 +453,16 @@ export function RedServiciosPanel({
                         η bomba 60% × motor 90%. Referencia para bomba centrífuga / solar; para ariete o sifón el criterio cambia.
                       </p>
                     </div>
+                  )}
+
+                  {/* Las dos piezas chicas que cuelgan de la misma traza:
+                      ver `components/MangueraVentosasBloque.tsx`. */}
+                  {perfilOrientado && (
+                    <MangueraVentosasBloque
+                      perfil={perfilOrientado}
+                      caudal_m3s={Q_m3s}
+                      carga_origen_m={parseFloat(cargaOrigen) || 0}
+                    />
                   )}
 
                   <p className="text-[9px] text-ink-700/40 italic">
