@@ -407,29 +407,182 @@ El tercer dato lo tiene la app y nadie más: **en qué meses hace falta**, que s
 del gráfico climático del predio, y **dónde cae la sombra**, que sale del relieve
 y de la orientación. La app ya corrigió el hemisferio sur en esos cálculos.
 
-### Etapa E — Represa: las tablas de diseño y la comparación de candidatos
+### Etapa E — Represa: las tablas de diseño y la comparación de candidatos ✅ *03/10/2026*
 
-El cálculo de embalse y de muro ya existe y es bueno. Lo que falta:
+Hecha. Un módulo nuevo —`lib/represaDiseno.ts`—, dos bloques de interfaz en la
+pestaña Represa, y **seis números del muro que estaban por debajo del mínimo
+publicado**, todos del lado barato.
 
-- las **tablas de diseño publicadas** de pequeñas represas de tierra —ancho de
-  coronamiento, taludes y revancha según la altura del muro y la clase de suelo—
-  en `lib/criterios.ts`, que hoy tiene parte de eso. **Fuente a abrir:** el manual
-  clásico de diseño y construcción de pequeñas represas de tierra.
-- el rango razonable de **profundidad útil** del vaso, que es lo que decide si el
-  agua llega a fin de verano sin calentarse ni evaporarse de más;
-- la **evaporación del espejo**, que no es la ETP de referencia: hay factores
-  publicados para pasar de tanque a espejo libre, y hay un truco de diseño real
-  —subir la cota y reducir la superficie para el mismo volumen— que la app puede
-  cuantificar sola;
-- y la pieza que **ningún competidor tiene**: comparar candidatos de embalse por
-  cota, con el costo por metro cúbico de agua almacenada.
+La fuente es el manual clásico del rubro, que además es gratuito y de agencia
+pública, así que cualquiera puede ir a verificar cada número: **USDA SCS (1997),
+*Ponds — Planning, Design, Construction*, Agriculture Handbook 590**. Para la
+evaporación del espejo, **FAO-56 (Allen y otros, 1998), cuadro 12, apartado «p.
+Special» y nota 25**.
 
-**Lo primero de esta etapa ya está hecho** (02/10/2026): la pestaña Represa ahora
-**archiva** cada represa calculada con sus parámetros y sus números, y las ordena
-por agua embalsada sobre tierra movida. Antes recalculaba arriba de la anterior y
-comparar obligaba a anotar en un papel. Ver `lib/represasGuardadas.ts`.
+**1 · La cota del coronamiento estaba corta, y es el número con el que se
+construye.** Es el hallazgo de la etapa y no estaba en el plan. AH-590 define la
+revancha como *«the vertical distance between the elevation of the water surface
+in the pond **when the spillway is discharging at designed depth** and the
+elevation of the top of the dam **after all settlement**»*. O sea que entre el
+nivel normal del embalse y la corona hay **tres** cosas apiladas:
 
-Esta etapa va junto con `PLAN-embalse-vaso-real.md`.
+```
+cresta del vertedero  +  carga de la crecida sobre el vertedero (Hp)
+                      +  revancha
+                      +  sobrealto por asentamiento
+```
+
+acequia sumaba sólo la del medio. Y el manual deja el orden de magnitud escrito
+en un ejemplo de una línea: con `Hp` = 1,3 pies y una revancha de 1 pie, *«the
+top of the dam should be constructed 2.3 feet higher than the spillway crest»*
+— **la carga sobre el vertedero es más grande que la revancha**. Faltaba más de
+la mitad de lo que hay que subir, antes de contar el asentamiento.
+
+Lo irónico es que acequia **ya calculaba** la carga sobre el vertedero: está en
+la pestaña Cuenca, en `head_vertedero_m`, junto con el ancho de vertedero que
+hace falta para el caudal de pico. Los dos números existían en la app y no se
+tocaban nunca. Ahora el bloque de criterios los apila con cada término a la
+vista, y sin carga de vertedero avisa en vez de devolver una cota plausible.
+
+Es la falla que no avisa: un muro angosto se nota al transitarlo, un muro corto
+se nota una sola vez, con la crecida encima, y el modo de rotura de un terraplén
+desbordado es la brecha.
+
+**2 · El sobrealto por asentamiento no existía.** *«Most foundations are
+yielding, and settlement may range from 1 to 6 percent of the height of the dam
+[…] The settlement allowance for a rolled-fill dam should be about 5 percent of
+the designed dam height […] Most pond dams less than 20 feet high, however, are
+not rolled fill. For these dams the total settlement allowance should be about
+10 percent.»* El 10 % es el caso corriente de un predio: un muro de menos de
+6 m hecho con topadora, no compactado en capas con rodillo. Y el ejemplo de
+cómputo del propio manual lo aplica al volumen: 7.029 yd³ + 10 % = 7.732 yd³.
+
+No es lo mismo que el factor de contracción, que acequia ya tenía: ése dice
+cuánto banco hay que mover para dejar un metro cúbico compactado. Éste dice que
+el muro terminado es más grande que el dibujado. **acequia tenía uno y no el
+otro, y el que faltaba abarata.** Es una casilla en pantalla, porque quien decide
+si va rodillo es el que contrata la máquina.
+
+**3 · Las tablas del muro quedaban todas por debajo del mínimo.** Las que había
+eran de criterio corriente, sin tabla y sin fuente, y el error crecía con la
+altura:
+
+| | acequia tenía | AH-590 pide | |
+|---|---|---|---|
+| Corona, muro de 2 m | 1,5 m (mínimo 1,0) | **1,83 m** | «a conservative minimum top width is 6 feet» |
+| Corona, muro de 5 m | 2,5 m | **3,05 m** | fila de 15 a 19 pies → 10 pies |
+| Corona, muro de 8 m | 3,0 m | **4,27 m** | fila de 25 a 34 pies → 14 pies |
+| Corona transitable | 3,0 m | **4,88 m** | 16 pies: la huella **más las dos banquinas** |
+| Talud interno, muro < 5 m | 2,5:1 | **3:1** | cuadro 16: las dos filas tienen 3:1 aguas arriba |
+| Zanja de anclaje, fondo | 2,0 m y rectangular | **2,44 m y 1,5:1** | 8 pies o el ancho de hoja de topadora |
+
+El de los taludes es el que más cambia la obra. El cuadro 16 tiene **dos filas y
+nada más**, y el texto que las acompaña las vuelve un mínimo y no una sugerencia:
+*«For stability, the slopes should not be steeper than those shown in table 16,
+but they can be flatter as long as they provide surface drainage»*. Las dos
+tienen 3:1 aguas arriba, porque ese lado está saturado, lo golpea el oleaje y
+sobre todo sufre el vaciado rápido, que es la condición que lo hace deslizar.
+Los 2,5:1 que daba acequia no eran una variante admisible: estaban por debajo
+del mínimo, en el lado que desliza, y **justo en el rango de altura más común de
+un predio**.
+
+Como la base del muro es `corona + alto × (talud interno + talud externo)`, los
+seis errores iban al mismo lugar: al volumen de terraplén, o sea al
+presupuesto, siempre del lado barato. Ahora los mínimos salen de
+`represaDiseno.ts` y lo único de acequia es el **techo** del rango, que se
+declara como tal.
+
+**Y lo que la tabla NO cubre quedó declarado.** El cuadro 16 no tiene fila para
+arena limpia ni para arcilla muy plástica: para esos materiales el manual no da
+taludes, manda a investigar la fundación y consultar a un ingeniero. acequia no
+inventa la fila faltante; devuelve la más tendida de las dos como piso y marca
+`fueraDeTabla`. Lo mismo arriba de los 34 pies de altura, donde la tabla de
+corona se termina.
+
+**4 · La revancha la fija el largo del vaso, no la altura del muro.** Es
+contraintuitivo y tiene sentido físico: la revancha está para que no la pase la
+ola, y la altura de la ola la da el *fetch* —cuánta agua libre tiene el viento
+para empujar— no cuánta agua hay abajo. *«If your pond is less than 660 feet
+long, provide a freeboard of no less than 1 foot. The minimum freeboard is 1.5
+feet for ponds between 660 and 1,320 feet long, and is 2 feet for ponds up to a
+half mile long. For longer ponds an engineer should determine the freeboard.»*
+acequia la tenía como un preset por tipo de obra —0,30 para una aguada, 0,50
+para una represa de ladera— sin mirar el espejo. Ahora el preset es un piso de
+uso y si el vaso es largo manda la tabla, con el dato que la app ya tenía: el
+span máximo del espejo dibujado.
+
+**5 · La profundidad útil del vaso, de la figura 12.** El mapa es de Estados
+Unidos pero **la leyenda no es geográfica: es climática**, son las seis bandas
+de humedad de «wet» a «arid», así que la tabla se puede aplicar afuera. De 5
+pies de agua permanente en clima húmedo a 14 en clima árido. No es la
+profundidad del vaso: es la lámina que tiene que seguir habiendo cuando la
+represa está en su mínimo, para que la evaporación y la infiltración no se la
+lleven. Y el manual pone el límite de su propia validez: vale *«if seepage and
+evaporation losses are normal»*, y *«deeper ponds are needed […] where seepage
+losses exceed 3 inches per month»*.
+
+La correspondencia entre las bandas del manual y las clases de aridez P/ETP que
+acequia ya calcula **es de acequia y está declarada**: los nombres coinciden casi
+palabra por palabra pero las dos clasificaciones no se definen igual, así que
+donde hay duda se toma el extremo profundo —un vaso de más sobra una vez y uno
+de menos se seca cada verano—. Los dos extremos quedan dichos: el hiperárido se
+sale de la figura, y la clase Húmedo de acequia junta «Humid» y «Wet».
+
+**6 · La evaporación del espejo: el 1,05 tenía razón y no tenía condición.** La
+simulación anual multiplicaba la ETP de referencia por un 1,05 fijo, sin fuente.
+El número está bien, y está publicado: es la primera fila de agua libre del
+cuadro 12 de FAO-56, *«Open Water, < 2 m depth or in subhumid climates or
+tropics»*, Kc = 1,05. Lo que faltaba era la condición, y con ella la segunda
+fila: *«Open Water, > 5 m depth, clear of turbidity, temperate climate»*, que
+tiene **dos** valores, Kc mid 0,65 y Kc end 1,25. La nota 25 explica por qué:
+*«initial and peak period evaporation is low as radiation energy is absorbed
+into the deep water body. During fall and winter periods (Kc end), heat is
+released from the water body that increases the evaporation above that for
+grass.»*
+
+Un embalse hondo en clima templado evapora **menos** que el pasto mientras se
+calienta y **más** cuando devuelve el calor. Un factor constante borra justo esa
+diferencia, y el mes que importa es el de la punta seca. El promedio anual de los
+dos es 0,95 y no es lo que se usa; hay un test que se cae si alguien lo
+«simplifica» así.
+
+Y como la nota habla de estaciones, **hace falta el hemisferio**: la mitad que se
+calienta en Córdoba es la que se enfría en Kansas. Cuando el predio tiene clima
+cargado la mitad sale de la propia serie de temperatura del lugar, mes contra
+mes, y no del calendario. Es la tercera vez que una fuente del norte entra a
+acequia con las estaciones al revés y la app las corrige.
+
+Entre 2 y 5 m la fuente no dice nada. acequia usa la fila somera y lo declara:
+no se interpola entre las dos filas, porque nadie midió el medio, y 1,05 es el
+valor más alto en la mitad cálida del año, que es la mitad en la que una represa
+se queda sin agua.
+
+**7 · Comparar candidatos por cota.** El archivo de represas ya existía
+(02/10/2026) y los ordenaba por agua embalsada sobre tierra movida. Lo que
+agrega esta etapa es la otra mitad de la decisión: **cuánta de esa agua se va por
+evaporación en el año**, que depende del espejo y no del volumen. Para el mismo
+volumen conviene el vaso concentrado, porque la evaporación se cobra por metro
+cuadrado y el almacenamiento se paga por metro cúbico — y en un semiárido con
+1.400 mm de ETP, un vaso de un metro de profundidad media evapora en el año más
+que todo lo que guarda. Ése es el truco de diseño que el plan pedía cuantificar,
+y ahora está con número al lado de cada candidato.
+
+El mejor por evaporación y el mejor por tierra movida **casi nunca son el mismo
+candidato**, y cuando no coinciden la app lo dice en vez de elegir: ahí la
+decisión deja de ser técnica y depende de si en ese predio lo escaso es el agua
+o la plata. El costo en plata necesita un precio por metro cúbico movido, que lo
+pone el usuario y sale del catálogo del presupuesto: cuánto cuesta mover un
+metro cúbico depende de la máquina, la distancia y el país, y eso no hay fuente
+que lo publique. Lo que sí es transferible —y es el número que compara dos
+emplazamientos sin pasar por la moneda— son los **metros cúbicos de tierra por
+metro cúbico de agua**.
+
+**Lo que queda de represa** es `PLAN-embalse-vaso-real.md`, que es otra cosa y
+más grande: el vaso tiene que salir del muro y del terreno (Priority-Flood) en
+vez del polígono dibujado, con la cota de derrame como límite. Ese plan tiene su
+propio orden de cinco pasos y uno de ellos es mostrar los dos resultados en
+paralelo para validar con predios reales antes de cambiar el número que ve el
+usuario, así que no se cierra de un empujón.
 
 ### Etapa F — Cuatro piezas chicas que se usan siempre ✅ *03/10/2026*
 
@@ -626,11 +779,19 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    corrigió dos números sin fuente de `hidraulica.ts` que ninguna etapa había
    mirado.
 
-5. **Etapa E** —la represa— es la que sigue, junto con `PLAN-embalse-vaso-real.md`.
-   Es la más grande de las que quedan y la que más pide fuente primaria: tablas de
-   diseño de pequeñas represas, criterios de cuenca de aporte y comparación por
-   cota.
-6. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
+5. ~~**Etapa E** —la represa—~~ **hecha el 03/10/2026.** Abrió el manual de
+   pequeñas represas del USDA y encontró **seis números del muro por debajo del
+   mínimo publicado**, todos del lado barato, más uno que no era de cantidad sino
+   de criterio: la cota del coronamiento le faltaba la carga de la crecida sobre
+   el vertedero, que acequia ya calculaba en otra pestaña.
+
+6. **`PLAN-embalse-vaso-real.md`** es lo que queda de represa, y es otra cosa: el
+   vaso tiene que salir del muro y del terreno —Priority-Flood— en vez del
+   polígono dibujado, con la cota de derrame como límite del nivel. Tiene su
+   propio orden de cinco pasos, y uno de ellos es mostrar los dos resultados en
+   paralelo para validar con predios reales antes de cambiar el número que ve el
+   usuario, así que no se cierra de un empujón.
+7. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
    aviso. Es la única que puede romperle el dibujo a un proyecto guardado.
 
 Las etapas D, G, H, I y J después, en ese orden.

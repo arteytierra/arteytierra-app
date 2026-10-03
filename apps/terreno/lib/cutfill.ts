@@ -5,6 +5,7 @@
  * Aproximación desde SRTM ~30 m — orientativa para predimensionar.
  */
 import type { GrillaElevacion } from './grillaElevacion';
+import { asentamientoPct, zanjaAnclaje, ZANJA_ANCHO_FONDO_MIN_M } from './represaDiseno';
 
 export interface ResultadoEmbalse {
   nivelAgua_m:      number;
@@ -22,6 +23,27 @@ export interface ResultadoEmbalse {
 export interface ParamsMuro {
   profMax_m:     number;   // profundidad máxima del agua (del embalse)
   revancha_m:    number;   // borde libre sobre el nivel de agua
+  /**
+   * Carga sobre el vertedero cuando pasa la crecida de diseño (m).
+   *
+   * Es el término que faltaba. AH-590 define la revancha como la distancia
+   * entre el pelo de agua **con el vertedero descargando a su carga de diseño**
+   * y la corona después de todo el asentamiento, así que entre el nivel normal
+   * y la corona hay tres cosas apiladas y no una. acequia sumaba sólo la
+   * revancha, y en el ejemplo del propio manual la carga sobre el vertedero
+   * (1,3 pies) es mayor que la revancha (1 pie).
+   *
+   * El número lo calcula la pestaña Cuenca (`head_vertedero_m`). Sin él el
+   * cálculo sigue andando, pero `advertencias` lo dice: la cota sale corta y no
+   * hay forma de notarlo mirando la pantalla.
+   */
+  cargaVertedero_m?: number;
+  /**
+   * true si el terraplén se compacta en capas delgadas con rodillo y control de
+   * humedad. Decide el sobrealto por asentamiento: 5 % con rodillo, 10 % sin
+   * él, que es lo que AH-590 asume para casi toda represa de predio.
+   */
+  compactadoEnCapas?: boolean;
   anchoCorona_m: number;   // ancho de la coronación
   taludInterno:  number;   // talud aguas arriba (H:1V), ej. 3
   taludExterno:  number;   // talud aguas abajo (H:1V), ej. 2
@@ -87,6 +109,22 @@ export interface ResultadoMuro {
   perfilUsado:      boolean;
   /** true cuando el terreno ya contiene el agua y no hace falta muro. */
   sinMuro:          boolean;
+
+  // ── Lo que agregó la etapa E (AH-590) ────────────────────────────────────
+  /** Carga sobre el vertedero que se usó para la cota de corona (m). */
+  cargaVertedero_m: number;
+  /** Sobrealto por asentamiento, en % de la altura de proyecto. */
+  asentamiento_pct: number;
+  /** Ese sobrealto en metros, sobre la sección más honda. */
+  sobrealto_m:      number;
+  /** Cota a la que hay que construir la corona. null sin perfil del eje. */
+  cotaCoronaConstruida_m: number | null;
+  /** Terraplén de proyecto, sin el sobrealto por asentamiento. */
+  volumenTierraDisenado_m3: number;
+  /** Geometría de la zanja de anclaje, con sus mínimos publicados. */
+  zanja: { anchoFondo_m: number; anchoBoca_m: number; talud: number; prof_m: number; capas: number };
+  /** Lo que el usuario tiene que saber y la pantalla no muestra sola. */
+  advertencias:     string[];
 }
 
 function puntoEnPoligono(lat: number, lng: number, poly: Array<{ lat: number; lng: number }>): boolean {
@@ -251,7 +289,21 @@ export function calcularEmbalse(
 export function dimensionarMuro(p: ParamsMuro): ResultadoMuro {
   const ti = p.taludInterno, te = p.taludExterno;
   const corona = p.anchoCorona_m;
-  const altoMax = Math.max(0.1, p.profMax_m + p.revancha_m);
+  const advertencias: string[] = [];
+
+  // La pila de AH-590: sobre el nivel normal va la carga de la crecida pasando
+  // por el vertedero, y recién sobre eso la revancha.
+  const Hp = p.cargaVertedero_m != null && Number.isFinite(p.cargaVertedero_m) && p.cargaVertedero_m > 0
+    ? p.cargaVertedero_m : 0;
+  if (Hp === 0) {
+    advertencias.push(
+      'Falta la carga sobre el vertedero. La revancha se mide desde el pelo de agua ' +
+      'CON la crecida de diseño pasando, no desde el nivel normal, así que la cota de ' +
+      'corona que sale de acá es un mínimo: en el ejemplo de AH-590 la carga sobre el ' +
+      'vertedero (1,3 pies) es mayor que la propia revancha (1 pie). El número lo ' +
+      'calcula la pestaña Cuenca.');
+  }
+  const altoMax = Math.max(0.1, p.profMax_m + Hp + p.revancha_m);
 
   // Secciones por altura. Todas devuelven m² por metro corrido de eje.
   const base    = (h: number) => corona + h * (ti + te);
@@ -266,19 +318,34 @@ export function dimensionarMuro(p: ParamsMuro): ResultadoMuro {
   const secRev  = (h: number) => h <= 0 ? 0 : Math.min(Math.max(0, secTot(h) - secNuc(h)), espRev * h * Math.sqrt(1 + te * te));
   const espDest = p.destape_m ?? 0.3;
   const secDest = (h: number) => h <= 0 ? 0 : espDest * base(h);
+
+  // Zanja de anclaje con la geometría mínima de AH-590: fondo de 8 pies —ancho
+  // de hoja de topadora, porque más angosto no se compacta el fondo— y paredes
+  // no más paradas que 1,5:1. Antes el default era `max(2, alto/4)` y se
+  // modelaba como rectángulo: las dos cosas subestimaban la excavación.
   const zProf   = p.zanjaProf_m ?? 0.8;
-  const zAncho  = p.zanjaAncho_m ?? Math.max(2, altoMax / 4);
-  const secZan  = (h: number) => h <= 0 ? 0 : zProf * zAncho;
+  const zGeom   = zanjaAnclaje({
+    prof_m: zProf,
+    largo_m: p.longitud_m,
+    anchoFondo_m: Math.max(p.zanjaAncho_m ?? 0, ZANJA_ANCHO_FONDO_MIN_M, altoMax / 4),
+  });
+  if (p.zanjaAncho_m != null && p.zanjaAncho_m < ZANJA_ANCHO_FONDO_MIN_M) {
+    advertencias.push(...zanjaAnclaje({ prof_m: zProf, largo_m: p.longitud_m, anchoFondo_m: p.zanjaAncho_m }).advertencias);
+  }
+  const secZan  = (h: number) => h <= 0 ? 0 : zGeom.seccion_m2;
 
   // ── Alturas del muro a lo largo del eje ──────────────────────────────────
   let alturas: number[];
   let perfilUsado = false;
+  let cotaCoronaAsentada: number | null = p.cotaCorona_m ?? null;
   const perfil = p.perfilTerreno_m;
   if (perfil && perfil.length >= 3) {
-    // La corona va a la cota que el muro tiene que alcanzar: el nivel de agua
-    // más la revancha. Si no viene explícita, se deduce del punto más bajo del
-    // eje —el fondo del cuello de botella— más el alto.
+    // La corona va a la cota que el muro tiene que alcanzar DESPUÉS de asentar:
+    // el nivel de agua, más la carga de la crecida sobre el vertedero, más la
+    // revancha. Si no viene explícita, se deduce del punto más bajo del eje
+    // —el fondo del cuello de botella— más el alto.
     const cotaCorona = p.cotaCorona_m ?? (Math.min(...perfil) + altoMax);
+    cotaCoronaAsentada = cotaCorona;
     alturas = perfil.map(e => Math.max(0, cotaCorona - e));
     perfilUsado = true;
   } else {
@@ -298,12 +365,24 @@ export function dimensionarMuro(p: ParamsMuro): ResultadoMuro {
   const hMax   = Math.max(...alturas);
   const hMedia = alturas.reduce((a, b) => a + b, 0) / alturas.length;
 
-  const volTot  = integrar(secTot);
-  const volNuc  = integrar(secNuc);
-  const volRev  = integrar(secRev);
-  const volEsp  = Math.max(0, volTot - volNuc - volRev);
-  const volDest = integrar(secDest);
-  const volZan  = integrar(secZan);
+  const volTotDis = integrar(secTot);
+  const volNucDis = integrar(secNuc);
+  const volRev    = integrar(secRev);
+  const volEspDis = Math.max(0, volTotDis - volNucDis - volRev);
+  const volDest   = integrar(secDest);
+  const volZan    = integrar(secZan);
+
+  // Sobrealto por asentamiento. AH-590 lo aplica al VOLUMEN del terraplén —su
+  // ejemplo de cómputo cierra «7.029 yd³ + 10 % = 7.732 yd³»— y a la cota a la
+  // que se construye la corona, no a la geometría de proyecto. El revestimiento
+  // queda afuera: es el suelo vegetal del destape devuelto sobre el talud, no
+  // cuerpo de terraplén.
+  const asent = asentamientoPct(hMax, p.compactadoEnCapas ?? false);
+  const fAsent = 1 + asent.pct / 100;
+  const volNuc = volNucDis * fAsent;
+  const volEsp = volEspDis * fAsent;
+  const volTot = volNuc + volEsp + volRev;
+  const sobrealto = hMax * (asent.pct / 100);
 
   const seccionMedia = p.longitud_m > 0 ? volTot / p.longitud_m : 0;
   const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -332,6 +411,21 @@ export function dimensionarMuro(p: ParamsMuro): ResultadoMuro {
     factorContraccion: p.factorContraccion ?? 1.15,
     perfilUsado,
     sinMuro: hMax < 0.15,
+
+    cargaVertedero_m: +Hp.toFixed(2),
+    asentamiento_pct: asent.pct,
+    sobrealto_m:      +sobrealto.toFixed(2),
+    cotaCoronaConstruida_m: cotaCoronaAsentada !== null
+      ? +(cotaCoronaAsentada + sobrealto).toFixed(2) : null,
+    volumenTierraDisenado_m3: Math.round(volTotDis),
+    zanja: {
+      anchoFondo_m: zGeom.anchoFondo_m,
+      anchoBoca_m:  zGeom.anchoBoca_m,
+      talud:        zGeom.talud,
+      prof_m:       zGeom.prof_m,
+      capas:        zGeom.capas,
+    },
+    advertencias,
   };
 }
 

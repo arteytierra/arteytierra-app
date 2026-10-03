@@ -11,6 +11,26 @@ Pedido de Jonatan, 01/10/2026:
 La primera parte **ya está hecha** (paso 3 del panel, commit del 01/10/2026).
 Este documento es la segunda, que es más de fondo.
 
+> **Lo que cambió el 03/10/2026, en la etapa E del plan de diseño de predio**, y
+> que hay que tener en cuenta antes de retomar esto:
+>
+> - `dimensionarMuro` ya **no** deduce la cota de corona del nivel de agua más la
+>   revancha. Ahora apila nivel + carga de la crecida sobre el vertedero +
+>   revancha, y además devuelve la cota a la que hay que **construirla** con el
+>   sobrealto por asentamiento. Cuando el vaso pase a salir del muro, la cota de
+>   derrame tiene que compararse contra `cotaAsentada_m`, no contra el nivel.
+> - El ancho de corona, los taludes, la revancha, el asentamiento y la zanja de
+>   anclaje salen de `lib/represaDiseno.ts` (AH-590). Los números del punto 2 de
+>   este plan no los toca eso: lo que cambia es el muro, no el vaso.
+> - El punto 4 del orden de abajo —que `dimensionarMuro` tome `profEnMuro_m` en
+>   vez de `profMax_m`— **sigue abierto y sigue siendo correcto**.
+> - El punto 5 —engancharse a la curva área-capacidad para la evaporación—
+>   **sigue abierto**, pero ahora el factor del espejo ya no es el 1,05 fijo: es
+>   `factorEvaporacionEspejo`, que distingue el vaso somero del embalse hondo en
+>   clima templado y devuelve doce valores. Lo que falta es el **área**, no el
+>   factor: hoy la simulación usa `area_espejo × llenado`, una recta, y con la
+>   curva saldría del dato.
+
 ---
 
 ## 1 · Qué hace hoy el cálculo

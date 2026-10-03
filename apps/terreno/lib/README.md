@@ -67,6 +67,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `swales.ts` | Zanjas de infiltración (swales) a nivel, siguiendo la curva. |
 | `cortafuegos.ts` | Cortafuegos sobre líneas de cresta (divisorias). |
 | `represa.ts` | Simulación mensual de represa/embalse. |
+| `represaDiseno.ts` | Criterios publicados del muro de tierra (corona, taludes, revancha, asentamiento, zanja), la profundidad de agua que pide el clima y la evaporación del espejo. |
 | `cuenca.ts` | Cuenca de aporte por clic. |
 | `cuencaHidro.ts` | Delineación de cuenca sobre DEM propio de hidrología (el motor grande). |
 | `escorrentias.ts` | Escorrentías superficiales por algoritmo D8. |

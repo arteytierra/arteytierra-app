@@ -12,6 +12,9 @@ import { caudalPico_l_h, factorContraPromedio, espaciosBebida, UMBRAL_DISTANCIA_
 import { RodeoEditor } from './mapa/RodeoEditor';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
+import { revanchaMinima, factorEvaporacionEspejo, TALUD_INTERNO_MIN_AH590, coronaMinima } from '@/lib/represaDiseno';
+import { RepresaCriteriosBloque, ComparacionCandidatos } from './RepresaCriteriosBloque';
+import { CONCEPTOS_SUGERIDOS } from '@/lib/economia';
 
 /** Valor del desplegable de cobertura que significa "usá el motor compartido". */
 const COBERTURA_PREDIO = 'predio';
@@ -110,7 +113,27 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   const [tipoMuro, setTipoMuro] = useState<TipoMuro>(inicial?.tipoMuro ?? 'aguada');
   const [muroP,    setMuroP]    = useState<ParamsMuroUI>(inicial
     ? { anchoCorona: inicial.anchoCorona, taludInterno: inicial.taludInterno, taludExterno: inicial.taludExterno, revancha: inicial.revancha }
-    : { anchoCorona: 1.5, taludInterno: 2.5, taludExterno: 2, revancha: REVANCHA.aguada });
+    // Los defaults del primer render también tienen que estar en norma: antes
+    // eran 1,5 m de corona y 2,5:1 de talud interno, los dos por debajo del
+    // mínimo de AH-590, y se veían un instante antes de que el criterio los
+    // corrigiera. Un número fuera de norma en pantalla, aunque dure un frame,
+    // es un número que alguien puede anotar.
+    : { anchoCorona: coronaMinima(1.5).minimo_m, taludInterno: TALUD_INTERNO_MIN_AH590, taludExterno: 2, revancha: REVANCHA.aguada });
+  /**
+   * Carga sobre el vertedero cuando pasa la crecida de diseño (m).
+   *
+   * El término que faltaba en la cota del muro. AH-590 mide la revancha desde
+   * el pelo de agua CON el vertedero descargando a su carga de diseño, así que
+   * entre el nivel normal y la corona hay tres cosas apiladas. El default son
+   * los 0,30 m que usa `analizarCuenca` en la pestaña Cuenca, para que los dos
+   * paneles hablen del mismo vertedero.
+   */
+  const [cargaVertedero, setCargaVertedero] = useState<number>(inicial?.cargaVertedero ?? 0.3);
+  /** Rolled fill: decide si el sobrealto por asentamiento es 5 % o 10 %. */
+  const [compactadoEnCapas, setCompactadoEnCapas] = useState<boolean>(inicial?.compactadoEnCapas ?? false);
+  /** Precio del m³ de tierra movida, del catálogo del presupuesto. */
+  const [precioTierra, setPrecioTierra] = useState<number>(
+    CONCEPTOS_SUGERIDOS.find(c => c.concepto === 'Movimiento de suelo (represa)')?.precioDefault ?? 4);
   const [longMuro, setLongMuro] = useState<number | null>(inicial?.longMuro ?? null);
   /** true mientras la corona y los taludes sigan siendo los que sugiere el criterio. */
   const [muroAuto, setMuroAuto] = useState(!inicial);
@@ -237,7 +260,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   // El alto del muro no depende de la corona, así que se puede calcular primero
   // y de ahí sale todo lo demás. `transitable` para una represa de ladera: un
   // muro de ese porte se recorre con vehículo, y eso lleva el mínimo a 3 m.
-  const altoMuro = res ? +(res.prof_max_m + muroP.revancha).toFixed(2) : 0;
+  const altoMuro = res ? +(res.prof_max_m + cargaVertedero + muroP.revancha).toFixed(2) : 0;
 
   const claseSuelo = useMemo(
     () => texturaSuelo ? claseSueloSugerida(texturaSuelo.arcilla_pct, texturaSuelo.arena_pct) : null,
@@ -254,6 +277,16 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     [claseSuelo, altoMuro],
   );
 
+  /**
+   * Revancha mínima publicada, que la fija **el largo del vaso** y no la altura
+   * del muro: lo que la revancha frena es la ola, y la ola la arma el viento
+   * sobre el agua libre. Los presets por tipo de obra (0,30 para una aguada,
+   * 0,50 para una represa de ladera) se conservan como piso de uso, pero si el
+   * espejo es largo manda la tabla de AH-590 — 1, 1,5 o 2 pies según el vaso
+   * mida menos de 200 m, menos de 400 o hasta media milla.
+   */
+  const revMin = useMemo(() => revanchaMinima(res?.ancho_max_m ?? null), [res?.ancho_max_m]);
+
   // Mientras el usuario no toque nada, la geometría del muro sigue al criterio:
   // si sube el nivel de agua, el muro crece y la corona lo acompaña sola.
   useEffect(() => {
@@ -264,13 +297,15 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
         anchoCorona:  recCorona.valor,
         taludInterno: recTaludes.interno,
         taludExterno: recTaludes.externo,
+        revancha:     Math.max(REVANCHA[tipoMuro], +revMin.minimo_m.toFixed(2)),
       };
       const igual = p.anchoCorona === siguiente.anchoCorona
         && p.taludInterno === siguiente.taludInterno
-        && p.taludExterno === siguiente.taludExterno;
+        && p.taludExterno === siguiente.taludExterno
+        && p.revancha === siguiente.revancha;
       return igual ? p : siguiente;
     });
-  }, [muroAuto, recCorona.aplica, recCorona.valor, recTaludes.interno, recTaludes.externo]);
+  }, [muroAuto, recCorona.aplica, recCorona.valor, recTaludes.interno, recTaludes.externo, revMin.minimo_m, tipoMuro]);
 
   const evalCorona = useMemo(() => evaluar(muroP.anchoCorona, recCorona), [muroP.anchoCorona, recCorona]);
 
@@ -297,9 +332,14 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     profMax_m: res.prof_max_m, revancha_m: muroP.revancha, anchoCorona_m: muroP.anchoCorona,
     taludInterno: muroP.taludInterno, taludExterno: muroP.taludExterno, longitud_m: longitud,
     perfilTerreno_m: perfilMuro ?? undefined,
-    cotaCorona_m: nivel != null ? nivel + muroP.revancha : undefined,
+    // La corona va al nivel normal MÁS la carga de la crecida sobre el
+    // vertedero MÁS la revancha: es la definición de AH-590 y es lo que le
+    // faltaba al cálculo. Ver `cargaVertedero`.
+    cotaCorona_m: nivel != null ? nivel + cargaVertedero + muroP.revancha : undefined,
+    cargaVertedero_m: cargaVertedero,
+    compactadoEnCapas,
     factorContraccion,
-  }) : null, [res, muroP, longitud, perfilMuro, nivel, factorContraccion]);
+  }) : null, [res, muroP, longitud, perfilMuro, nivel, cargaVertedero, compactadoEnCapas, factorContraccion]);
 
   /**
    * Balance de tierra. La tierra del terraplén sale de adentro del vaso, del
@@ -402,7 +442,8 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     anchoCorona: muroP.anchoCorona, taludInterno: muroP.taludInterno,
     taludExterno: muroP.taludExterno, revancha: muroP.revancha,
     longMuro, cobertura: coberturaCuenca, coef: coefCuenca, ha: haCuenca, seep, unidadVol,
-  }), [selId, nivel, muroIdx, tipoMuro, muroP, longMuro, coberturaCuenca, coefCuenca, haCuenca, seep, unidadVol]);
+    cargaVertedero, compactadoEnCapas,
+  }), [selId, nivel, muroIdx, tipoMuro, muroP, longMuro, coberturaCuenca, coefCuenca, haCuenca, seep, unidadVol, cargaVertedero, compactadoEnCapas]);
 
   useEffect(() => {
     if (!selId || !onInputs) return;
@@ -472,6 +513,11 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     setHaCuenca(i.ha);
     setSeep(i.seep);
     if (i.unidadVol) setUnidadVol(i.unidadVol as UnidadVolumen);
+    // Las represas archivadas antes del 03/10/2026 no tienen carga de
+    // vertedero: se repone el default y el bloque de criterios avisa que la
+    // cota de corona de esa ficha salió sin ese término.
+    setCargaVertedero(i.cargaVertedero ?? 0.3);
+    setCompactadoEnCapas(i.compactadoEnCapas ?? false);
     setRes(null); setRango(null); setError(null);
     yaRestauro.current = false;
     onAbrir?.(g);
@@ -649,6 +695,14 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           </p>
         </div>
       )}
+
+      {/* La otra mitad de la comparación: cuánta de esa agua se evapora. */}
+      <ComparacionCandidatos
+        guardadas={guardadas}
+        datosClima={datosClima}
+        precio_m3_tierra={precioTierra}
+        onPrecio={setPrecioTierra}
+      />
 
       {rango && nivel !== null && res && (
         <div className="space-y-2 bg-white rounded-xl border border-bone-200 p-3">
@@ -849,6 +903,23 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 >
                   Volver a la geometría que sugiere el criterio
                 </button>
+              )}
+
+              {/* Los criterios publicados: la cota de corona con sus cuatro
+                  términos, la profundidad de agua que pide el clima y el factor
+                  de evaporación del espejo. Ver `RepresaCriteriosBloque`. */}
+              {nivel !== null && (
+                <RepresaCriteriosBloque
+                  res={res}
+                  muro={muro}
+                  nivel={nivel}
+                  datosClima={datosClima}
+                  cargaVertedero={cargaVertedero}
+                  onCargaVertedero={setCargaVertedero}
+                  compactadoEnCapas={compactadoEnCapas}
+                  onCompactado={setCompactadoEnCapas}
+                  infiltracion_mm_dia={parseFloat(seep) || null}
+                />
               )}
 
               {/* Eficiencia del sitio: agua embalsada / muro (terraplén) */}
@@ -1062,6 +1133,23 @@ function RepresaSimSection({
     return { mes: i, m3: demandaMeses[i]! };
   }, [demandaMeses]);
 
+  /**
+   * El factor de evaporación del espejo, mes a mes.
+   *
+   * Antes la simulación multiplicaba la ETP por un 1,05 fijo y sin fuente. El
+   * 1,05 es correcto, pero es la PRIMERA fila de agua libre del cuadro 12 de
+   * FAO-56 y vale para un vaso somero o para clima subhúmedo o tropical; un
+   * embalse de más de 5 m en clima templado tiene dos valores, 0,65 mientras se
+   * calienta y 1,25 cuando devuelve el calor. Acá sale del vaso y del clima de
+   * este predio, hemisferio incluido.
+   */
+  const factorEspejo = useMemo(() => factorEvaporacionEspejo({
+    profMedia_m:    res.prof_media_m,
+    lat:            datosClima?.lat ?? null,
+    claseAridez:    datosClima?.aridez?.clase ?? null,
+    temp_mensual_c: datosClima ? datosClima.meses.map(m => m.tmean_c) : null,
+  }), [res.prof_media_m, datosClima]);
+
   const sim = useMemo(() => {
     if (!datosClima) return null;
     return simularRepresaAnual({
@@ -1072,8 +1160,9 @@ function RepresaSimSection({
       meses:               datosClima.meses.map(m => ({ precip_mm: m.precip_mm, etp_mm: m.etp_mm })),
       demanda_m3_mes:      demandaMeses ?? demandaConstante,
       infiltracion_mm_dia: parseFloat(seep) || 0,
+      factorEvap_mensual:  factorEspejo.factor_mensual,
     });
-  }, [res, datosClima, ha, coef, demandaMeses, demandaConstante, seep]);
+  }, [res, datosClima, ha, coef, demandaMeses, demandaConstante, seep, factorEspejo]);
 
   // Emite el resumen hacia arriba (para informe/snapshot); limpia al desmontar.
   const resumen: RepresaResumen | null = useMemo(() => sim ? {
@@ -1237,6 +1326,10 @@ function RepresaSimSection({
 
               <p className="text-[9px] text-ink-700/45 italic leading-relaxed">
                 Balance mensual: escorrentía − evaporación (ETP×espejo) − infiltración − demanda, convergido a ciclo estable. Clima NASA POWER · orientativo.
+                {' '}El factor del espejo sobre la ETP sale del cuadro 12 de FAO-56 según la profundidad del vaso y el clima:{' '}
+                {factorEspejo.regimen === 'profundo_templado'
+                  ? <>varía entre <b>0,65</b> mientras el agua se calienta y <b>1,25</b> cuando devuelve el calor, porque un embalse hondo en clima templado guarda la radiación de una estación para la otra.</>
+                  : <>acá es <b>{factorEspejo.factor_mensual[0]!.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</b> todo el año.</>}
               </p>
             </>
           )}
