@@ -149,7 +149,18 @@ se volvieron irrelevantes para crear la geometría Keyline"* gracias al software
 importando sólo para **ubicar cuerpos de agua**. El keypoint que `analizarKeyline` calcula
 (la rodilla del perfil) está bien y sirve — para la represa, no para el patrón.
 
-### 1.4 El lado del muro: la app ya pregunta, pero puede recomendar
+### 1.4 El lado del muro: la app ya pregunta, pero puede recomendar ✅ *04/10/2026*
+
+> Hecha. `lib/ladoDeObra.ts` + sección 11 de `lib/represaDiseno.ts`, 42 tests. Y con una
+> corrección a este apartado: **los dos criterios que anoté acá son los del vertedero, no los
+> del muro.** En las notas de la clase 9 están bajo «Vertedero · De qué lado», y el método en
+> 6 pasos los ubica en el paso 3. Para el cierre la misma clase da otros, que ahora también
+> entraron: la relación de almacenamiento (m³ de agua por m³ de tierra movida), la relación
+> entre el largo del muro y el del espejo, y la ventana de profundidad natural de 2,5 a 5,5 m.
+> Lo que apareció leyendo AH-590 es que «menor pendiente» tiene **piso**: el cuadro de
+> vertederos naturales arranca en 0,5 % y el canal de entrada pide 2 %, así que el estribo más
+> plano puede ser el que no drena. El detalle completo está en
+> `PLAN-fase-diseno-de-predio.md`, §1.4.
 
 Ayer agregué el paso que obliga a elegir de qué lado va el muro antes de calcular. La clase 9
 da los dos criterios con los que esa elección se toma, y los dos son calculables desde el DEM:

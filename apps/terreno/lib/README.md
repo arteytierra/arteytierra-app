@@ -58,6 +58,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `geotiffImport.ts` | Importar GeoTIFF (ortofoto de dron o MDE IGN). |
 | `keyline.ts` | Análisis Keyline (P.A. Yeomans) orientativo desde grilla densa. |
 | `keylineGeometria.ts` | Los criterios publicados del patrón Keyline: la banda de deriva del surco, el giro del tractor, el headland, la aptitud de la pendiente y la simplificación de la directriz. |
+| `ladoDeObra.ts` | Las dos decisiones de lado de una represa, con sus criterios publicados: de qué lado del espejo va el muro —por la relación de almacenamiento, m³ de agua por m³ de tierra movida— y de qué lado va el vertedero —por la pendiente del terreno natural y el recorrido de vuelta al cauce—. |
 | `cutfill.ts` | Cut & fill de represas/embalses: volumen almacenable + movimiento de tierra. |
 | `vaso.ts` | El vaso del embalse deducido del muro y del terreno (Priority-Flood): volumen, espejo, cota de derrame y por dónde se derrama. |
 

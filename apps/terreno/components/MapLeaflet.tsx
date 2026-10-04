@@ -153,6 +153,8 @@ interface Props {
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
   /** por dónde se derrama el vaso del embalse: ahí va el vertedero */
   puntoDerrame?:      { lat: number; lng: number } | null;
+  /** recorrido del vertido desde la punta del muro elegida hasta el cauce */
+  salidaVertedero?:   Array<{ lat: number; lng: number }> | null;
   potrerosLayer?:     PotrerosLayout | null;
   capas?:             CapasVisibles;
   // ── Dibujo libre ──
@@ -260,6 +262,7 @@ function MapLeaflet({
   cuencasGuardadas = [],
   muroLinea = null,
   puntoDerrame = null,
+  salidaVertedero = null,
   potrerosLayer = null,
   capas = CAPAS_DEFAULT,
   onGetNavegacion,
@@ -587,6 +590,16 @@ function MapLeaflet({
             center={[puntoDerrame.lat, puntoDerrame.lng]}
             radius={6}
             pathOptions={{ color: '#fff', weight: 2, fillColor: '#C62828', fillOpacity: 1, interactive: false }}
+          />
+        )}
+        {/* Por dónde se iría el agua del vertedero hasta el cauce, siguiendo el
+            relieve. Punteada y del mismo rojo que el punto de derrame: las dos
+            cosas son el mismo asunto, y es lo único de este cálculo que el
+            usuario puede validar mirando su propio terreno. */}
+        {salidaVertedero && salidaVertedero.length > 1 && (
+          <Polyline
+            positions={salidaVertedero.map(p => [p.lat, p.lng] as LatLngTuple)}
+            pathOptions={{ color: '#C62828', weight: 2.5, opacity: 0.85, dashArray: '5 4', interactive: false }}
           />
         )}
 

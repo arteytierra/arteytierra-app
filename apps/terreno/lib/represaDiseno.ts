@@ -1044,3 +1044,194 @@ export function compararCotas(p: {
     nota: partes.join(' '),
   };
 }
+
+
+// ─── 11 · El vertedero: de qué lado, y con qué pendiente ─────────────────────
+
+/**
+ * El curso de Planificación de Tierras resume el libro de Nelson en dos
+ * criterios para elegir de qué lado va el vertedero —el lado de **menor
+ * pendiente** y el de **menor recorrido para volver al cauce**— y los dos se
+ * pueden medir sobre el DEM que la app ya tiene. El relevamiento está en
+ * `_research/curso-planificacion-tierras/notas-por-clase.md`, clase 9; la
+ * fuente que el curso declara es Nelson (1985), que acá no se leyó de primera
+ * mano, así que la cita va con esa cadena a la vista.
+ *
+ * AH-590 dice lo mismo con sus palabras y, lo que importa, **le pone los
+ * números**: *«Earth spillways have limitations. Use them only where the soils
+ * and topography allow the peak flow to discharge safely at a point well
+ * downstream and at a velocity that does not cause appreciable erosion either
+ * within the spillway or beyond its outlet.»* Ahí están los dos criterios en
+ * una sola oración: *at a point well downstream* es el recorrido, y *a velocity
+ * that does not cause appreciable erosion* es la pendiente, porque la velocidad
+ * del vertido la fija la pendiente del canal de salida.
+ *
+ * Y aparece lo que el enunciado de dos criterios deja afuera: **menos pendiente
+ * no es siempre mejor, hay un piso publicado.** El canal de entrada *«should
+ * have a slope toward the reservoir of not less than 2.0 percent to ensure
+ * drainage and low water loss at the inlet»*, y el cuadro 10 —el que da la
+ * carga sobre el vertedero de un vertedero natural, sin excavar— empieza en
+ * 0,5 % de pendiente de terreno natural y no tiene fila más plana. Un estribo
+ * casi horizontal no es el mejor candidato: es uno que no drena.
+ *
+ * Las tres cosas que esto habilita y que acequia no tenía:
+ *
+ *   1. **Si hay que excavar o no.** *«Excavation of the inlet channel or the
+ *      exit channel, or both, can be omitted where the natural slopes meet the
+ *      minimum slope requirements»*, y *«the natural slope of the exit channel
+ *      should be altered as little as possible»*. Entre los dos estribos, el
+ *      que ya tiene la pendiente adecuada ahorra la obra entera del canal.
+ *   2. **Que el vertido no vaya contra el muro.** *«The direction of slope of
+ *      the exit channel must be such that discharge does not flow against any
+ *      part of the dam.»* No es una preferencia: es la falla que rompe el
+ *      talud de aguas abajo, y se puede verificar siguiendo el agua sobre el
+ *      DEM desde el estribo.
+ *   3. **Que la pendiente del terreno natural es un INSUMO de la carga sobre
+ *      el vertedero,** no un dato suelto: *«With the required discharge
+ *      capacity (Q), the end slope of the embankment (Z1), and the slope of the
+ *      natural ground (Z2) known, the maximum depth of water above the level
+ *      portion (Hp) can be obtained from table 10.»* O sea que elegir el lado
+ *      del vertedero mueve la carga, y la carga mueve la cota de corona, que es
+ *      el hallazgo de la etapa E. Las dos decisiones estaban desconectadas.
+ */
+
+/**
+ * La cadena de la fuente, completa y a la vista: lo que se leyó es el
+ * relevamiento del curso, y el curso declara el libro.
+ */
+export const FUENTE_NELSON_CURSO =
+  'K.D. Nelson (1985), «Design and Construction of Small Earth Dams» — vía el relevamiento de la clase 9 del curso de Planificación de Tierras (_research/curso-planificacion-tierras/notas-por-clase.md)';
+
+/**
+ * Largo mínimo del tramo a nivel del vertedero: 25 pies (figura 21 de AH-590,
+ * «L = length of level portion min. 25 ft»). Es el tramo de control, el que
+ * hace que el vertedero trabaje en lámina y no concentrando.
+ */
+export const VERTEDERO_NIVEL_MIN_M = 25 * PIE_M;
+
+/** Pendiente mínima del canal de entrada, hacia el vaso, para que drene (%). */
+export const VERTEDERO_ENTRADA_MIN_PCT = 2.0;
+
+/**
+ * El canal de entrada se ensancha a la boca: *«The entrance to the inlet
+ * channel should be widened so it is at least 50 percent greater than the
+ * bottom width of the level part.»*
+ */
+export const VERTEDERO_ENTRADA_ENSANCHE = 1.5;
+
+/**
+ * Pendientes de terreno natural que cubre el cuadro 10 de AH-590, el de los
+ * vertederos naturales sin excavar: las filas son 0,5 · 1 · 2 · 3 · 4 y 5 %.
+ * Fuera de ese rango el cuadro no responde.
+ */
+export const VERTEDERO_NATURAL_PCT_MIN = 0.5;
+export const VERTEDERO_NATURAL_PCT_MAX = 5;
+
+/**
+ * El cuadro 8 —velocidad admisible por cobertura y suelo— está partido en dos
+ * bandas de pendiente del canal de salida, 0–5 % y 5–10 %, y la velocidad
+ * admisible baja en la banda empinada para **todas** las combinaciones de
+ * cobertura y suelo. Arriba de 10 % el cuadro no tiene fila.
+ */
+export const VERTEDERO_SALIDA_BANDA_PCT = 5;
+export const VERTEDERO_SALIDA_MAX_TABULADO_PCT = 10;
+
+export type AptitudVertedero =
+  /** Dentro del cuadro 10: sirve como vertedero natural, sin excavar el canal. */
+  | 'natural'
+  /** Pasa el cuadro 10 pero entra en el cuadro 8: vertedero excavado. */
+  | 'excavado'
+  /** Más empinado que la última fila del cuadro 8: no hay velocidad publicada. */
+  | 'fuera_de_tabla'
+  /** Tan plano que no drena: por debajo de la fila más plana del cuadro 10. */
+  | 'sin_drenaje';
+
+/** Preferencia entre aptitudes, de mejor a peor. Menor es mejor. */
+export const ORDEN_APTITUD_VERTEDERO: Record<AptitudVertedero, number> = {
+  natural: 0, excavado: 1, fuera_de_tabla: 2, sin_drenaje: 3,
+};
+
+export interface PendienteVertedero {
+  pendiente_pct:  number;
+  aptitud:        AptitudVertedero;
+  /** Banda del cuadro 8 que manda la velocidad admisible. */
+  bandaVelocidad: '0-5' | '5-10' | null;
+  fuente:         string;
+  nota:           string;
+  advertencias:   string[];
+}
+
+/**
+ * Qué dice AH-590 de una pendiente de canal de salida.
+ *
+ * No devuelve «bueno» o «malo»: devuelve en qué cuadro del manual cae, que es
+ * lo que decide si hay que excavar, qué cobertura hace falta y si el manual
+ * todavía responde. Las cuatro aptitudes son las cuatro situaciones del manual
+ * y no una escala inventada.
+ */
+export function clasificarPendienteVertedero(pendiente_pct: number): PendienteVertedero {
+  const advertencias: string[] = [];
+  if (!Number.isFinite(pendiente_pct) || pendiente_pct < 0) {
+    return {
+      pendiente_pct: 0, aptitud: 'sin_drenaje', bandaVelocidad: null, fuente: FUENTE_AH590,
+      advertencias: ['No se pudo medir la pendiente del canal de salida sobre el relieve.'],
+      nota: 'Sin pendiente medida no hay cuadro que consultar.',
+    };
+  }
+  const p = pendiente_pct;
+  const banda: '0-5' | '5-10' | null =
+    p <= VERTEDERO_SALIDA_BANDA_PCT ? '0-5'
+    : p <= VERTEDERO_SALIDA_MAX_TABULADO_PCT ? '5-10'
+    : null;
+
+  if (p < VERTEDERO_NATURAL_PCT_MIN) {
+    advertencias.push(
+      `${p.toFixed(2)} % es más plano que la fila más plana del cuadro 10 de AH-590 ` +
+      `(${VERTEDERO_NATURAL_PCT_MIN} %): a esa pendiente el canal no evacúa.`);
+    return {
+      pendiente_pct: p, aptitud: 'sin_drenaje', bandaVelocidad: banda, fuente: FUENTE_AH590, advertencias,
+      nota:
+        `El terreno cae ${p.toFixed(2)} % de este lado, casi nada. No es el mejor candidato por ser el más ` +
+        `plano: es uno que no drena. El manual pide ${VERTEDERO_ENTRADA_MIN_PCT} % hacia el vaso sólo para que ` +
+        'el canal de entrada se vacíe, y su cuadro de vertederos naturales no tiene fila por debajo de ' +
+        `${VERTEDERO_NATURAL_PCT_MIN} %. Acá el vertedero hay que excavarlo con pendiente de proyecto.`,
+    };
+  }
+
+  if (p <= VERTEDERO_NATURAL_PCT_MAX) {
+    return {
+      pendiente_pct: p, aptitud: 'natural', bandaVelocidad: banda, fuente: FUENTE_AH590, advertencias,
+      nota:
+        `El terreno cae ${p.toFixed(1)} % de este lado, dentro de las filas del cuadro 10 de AH-590 ` +
+        `(${VERTEDERO_NATURAL_PCT_MIN} a ${VERTEDERO_NATURAL_PCT_MAX} %): puede funcionar como vertedero ` +
+        'natural, y ahí el manual se ahorra la obra entera del canal —«excavation of the inlet channel or ' +
+        'the exit channel, or both, can be omitted where the natural slopes meet the minimum slope ' +
+        'requirements»—. La consigna es tocarlo lo menos posible.',
+    };
+  }
+
+  if (p <= VERTEDERO_SALIDA_MAX_TABULADO_PCT) {
+    advertencias.push(
+      `Con ${p.toFixed(1)} % el canal queda en la banda empinada del cuadro 8 (5 a 10 %), donde la ` +
+      'velocidad admisible baja un escalón para toda cobertura y todo suelo.');
+    return {
+      pendiente_pct: p, aptitud: 'excavado', bandaVelocidad: banda, fuente: FUENTE_AH590, advertencias,
+      nota:
+        `El terreno cae ${p.toFixed(1)} % de este lado: pasa las filas del cuadro 10, así que el vertedero ` +
+        'deja de poder ser natural y hay que excavarlo. Sigue estando en tabla, pero en la banda empinada: ' +
+        'la cobertura se elige por la velocidad admisible más baja, y el pie del canal pide protección.',
+    };
+  }
+
+  advertencias.push(
+    `${p.toFixed(1)} % pasa el ${VERTEDERO_SALIDA_MAX_TABULADO_PCT} % que cubre el cuadro 8 de AH-590: ` +
+    'ahí no hay velocidad admisible publicada para ninguna cobertura.');
+  return {
+    pendiente_pct: p, aptitud: 'fuera_de_tabla', bandaVelocidad: null, fuente: FUENTE_AH590, advertencias,
+    nota:
+      `El terreno cae ${p.toFixed(1)} % de este lado, más empinado que la última banda del cuadro 8 ` +
+      `(${VERTEDERO_SALIDA_MAX_TABULADO_PCT} %). El manual deja de dar velocidad admisible: un vertedero de ` +
+      'tierra con pasto acá se encárcava, y lo que corresponde es revestirlo o buscar el otro estribo. ' +
+      'acequia no interpola más allá de la tabla.',
+  };
+}

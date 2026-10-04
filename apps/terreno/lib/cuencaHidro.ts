@@ -80,6 +80,47 @@ export function dimsCelda(g: GrillaElevacion) {
   return { dx, dy, ddiag, dist, areaCelda: dx * dy };
 }
 
+// ─── D8 sobre el terreno tal cual, sin rellenar ──────────────────────────────
+/**
+ * Dirección de flujo D8 y acumulación **sin rellenar las depresiones**.
+ *
+ * Es deliberadamente distinta de la pareja `direccionFlujo` + `acumular` de más
+ * abajo: aquéllas corren sobre el DEM ya rellenado, porque para cerrar una
+ * divisoria toda celda tiene que drenar hasta el borde. Acá las hoyas se dejan
+ * donde están, y `down[i] === -1` significa exactamente lo que parece: **ahí el
+ * agua se queda**. Eso es un dato y no un defecto para los tres usos que tiene
+ * —el keypoint, el patrón de cultivo, que necesita saber hacia dónde escurre de
+ * verdad cada surco, y el lado del vertedero, donde una hoya en el camino de
+ * salida es la diferencia entre devolverle el agua al cauce y encharcarla al
+ * pie del muro—.
+ *
+ * Devuelve `null` si la grilla tiene menos de 20 celdas con dato: por debajo de
+ * eso la acumulación no describe un relieve, describe el recorte.
+ */
+export function flujoD8(g: GrillaElevacion): { down: Int32Array; acc: Float64Array; celdas: number[]; orden: number[] } | null {
+  const { rows, cols, elev } = g;
+  const idx = (r: number, c: number) => r * cols + c;
+  const valido = (r: number, c: number) => r >= 0 && r < rows && c >= 0 && c < cols && !isNaN(elev[idx(r, c)]!);
+  const down = new Int32Array(rows * cols).fill(-1);
+  const celdas: number[] = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    if (!valido(r, c)) continue;
+    celdas.push(idx(r, c));
+    let best = elev[idx(r, c)]!, bi = -1;
+    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const rr = r + dr, cc = c + dc;
+      if (valido(rr, cc) && elev[idx(rr, cc)]! < best) { best = elev[idx(rr, cc)]!; bi = idx(rr, cc); }
+    }
+    down[idx(r, c)] = bi;
+  }
+  if (celdas.length < 20) return null;
+  const acc = new Float64Array(rows * cols).fill(1);
+  const orden = [...celdas].sort((a, b) => elev[b]! - elev[a]!);
+  for (const i of orden) { const d = down[i]!; if (d >= 0) acc[d]! += acc[i]!; }
+  return { down, acc, celdas, orden };
+}
+
 // ─── 1. Relleno de depresiones (Priority-Flood + ε, Barnes 2014) ──────────────
 function rellenarDepresiones(g: GrillaElevacion): Float64Array {
   const { rows, cols, elev } = g;

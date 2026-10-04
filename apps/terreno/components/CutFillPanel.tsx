@@ -15,7 +15,9 @@ import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
 import { revanchaMinima, factorEvaporacionEspejo, TALUD_INTERNO_MIN_AH590, coronaMinima } from '@/lib/represaDiseno';
 import { RepresaCriteriosBloque, ComparacionCandidatos } from './RepresaCriteriosBloque';
 import { VasoRealBloque } from './VasoRealBloque';
+import { VertederoBloque } from './VertederoBloque';
 import { vasoDesdeMuro, nivelVaso } from '@/lib/vaso';
+import { compararLadosDelMuro, ladoDelVertedero, RELACION_LADERA } from '@/lib/ladoDeObra';
 import { CONCEPTOS_SUGERIDOS } from '@/lib/economia';
 
 /** Valor del desplegable de cobertura que significa "usá el motor compartido". */
@@ -73,6 +75,12 @@ interface Props {
   onMuroLinea?: (linea: [{ lat: number; lng: number }, { lat: number; lng: number }] | null) => void;
   /** Punto por donde el vaso se derrama: se marca en el mapa porque ahí va el vertedero. */
   onPuntoDerrame?: (p: { lat: number; lng: number } | null) => void;
+  /**
+   * Por dónde se iría el agua del vertedero, desde la punta del muro recomendada
+   * hasta el cauce. Va al mapa porque es lo único que el usuario puede validar
+   * mirando el terreno: si el recorrido va para donde él sabe que va.
+   */
+  onSalidaVertedero?: (puntos: Array<{ lat: number; lng: number }> | null) => void;
   /** Textura del suelo (% arcilla / % arena) para sugerir los taludes del muro. */
   texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   /** Parámetros guardados con el proyecto, para no perder el trabajo al cambiar de pestaña. */
@@ -104,7 +112,7 @@ interface Props {
   composicionPredio?: Array<{ nombre: string; pct: number }>;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, onPuntoDerrame, coefAnualPredio = null, composicionPredio = [] }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, onPuntoDerrame, onSalidaVertedero, coefAnualPredio = null, composicionPredio = [] }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -343,8 +351,15 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
    * al mover el nivel de agua. Recorrer el terreno es lo caro y se hace una vez;
    * cada nivel después es una búsqueda binaria sobre la curva ya construida.
    */
-  const vaso = useMemo(() => {
-    if (!grilla || !sel || muroIdx === null || sel.vertices.length < 3) return null;
+  /**
+   * El eje del muro elegido y un punto que está seguro del lado del agua.
+   *
+   * Lo usan dos cálculos —el vaso y el lado del vertedero— y los dos tienen que
+   * ver el mismo lado: si uno dedujera aguas arriba distinto, la app marcaría
+   * el vertedero adentro del embalse.
+   */
+  const ejeMuro = useMemo(() => {
+    if (!sel || muroIdx === null || sel.vertices.length < 3) return null;
     const vs = sel.vertices;
     const a = vs[muroIdx]!, b = vs[(muroIdx + 1) % vs.length]!;
     const lejanos = vs.filter((_, i) => i !== muroIdx && i !== (muroIdx + 1) % vs.length);
@@ -353,9 +368,30 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           lat: lejanos.reduce((t, v) => t + v.lat, 0) / lejanos.length,
           lng: lejanos.reduce((t, v) => t + v.lng, 0) / lejanos.length,
         }
-      : undefined;
+      : null;
+    return { a, b, ref };
+  }, [sel, muroIdx]);
+
+  const vaso = useMemo(() => {
+    if (!grilla || !ejeMuro) return null;
+    const { a, b, ref } = ejeMuro;
     return vasoDesdeMuro(grilla, { a, b }, ref ? { referenciaAguasArriba: ref } : undefined);
-  }, [grilla, sel, muroIdx]);
+  }, [grilla, ejeMuro]);
+
+  /**
+   * De qué lado del muro va el vertedero: los dos criterios publicados de la
+   * clase 9 medidos sobre el relieve —la pendiente del terreno natural y el
+   * recorrido de vuelta al cauce—, con los cuadros de AH-590 para leerlos.
+   * Ver `lib/ladoDeObra.ts`.
+   */
+  const vertedero = useMemo(() => {
+    if (!grilla || !ejeMuro) return null;
+    const { a, b, ref } = ejeMuro;
+    return ladoDelVertedero(grilla, { a, b }, {
+      ...(ref ? { referenciaAguasArriba: ref } : {}),
+      vaso,
+    });
+  }, [grilla, ejeMuro, vaso]);
 
   const nivelDelVaso = useMemo(
     () => (vaso && nivel !== null ? nivelVaso(vaso, nivel) : null),
@@ -368,9 +404,38 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     onPuntoDerrame?.(vaso?.tipoTope === 'derrame' ? vaso.puntoDerrame : null);
   }, [vaso, onPuntoDerrame]);
 
+  // Y el recorrido del vertido desde la punta recomendada. Sin esto el usuario
+  // tiene que creerle a un porcentaje; con esto puede mirar si el agua va para
+  // donde él sabe que va, que es la única validación que vale.
+  useEffect(() => {
+    const elegido = vertedero?.recomendado
+      ? vertedero.candidatos.find(c => c.extremo === vertedero.recomendado)
+      : null;
+    onSalidaVertedero?.(elegido && elegido.camino.puntos.length > 1 ? elegido.camino.puntos : null);
+  }, [vertedero, onSalidaVertedero]);
+
   // Cuánto banco hace falta por m³ compactado. Los arcillosos contraen más.
   const factorContraccion = claseSuelo?.clase === 'arenoso_superficial' ? 1.10
     : claseSuelo?.clase === 'areno_arcilloso' ? 1.15 : 1.25;
+
+  /**
+   * Los lados del polígono comparados por la **relación de almacenamiento** —m³
+   * de agua por m³ de tierra movida—, que es el criterio con el que la fuente
+   * elige el cierre. Es el mismo número que la pestaña ya mostraba como
+   * «Eficiencia del sitio» DESPUÉS de elegir; lo que faltaba era tenerlo
+   * ANTES, para los lados que el usuario todavía no eligió.
+   *
+   * Depende del polígono y de la grilla, no del lado elegido: cambiar de lado
+   * no lo recalcula.
+   */
+  const comparacionLados = useMemo(() => {
+    if (!grilla || !sel || sel.vertices.length < 3) return null;
+    return compararLadosDelMuro(grilla, sel.vertices, {
+      material: claseSuelo?.clase ?? null,
+      transitable: tipoMuro === 'ladera',
+      factorContraccion,
+    });
+  }, [grilla, sel, claseSuelo, tipoMuro, factorContraccion]);
 
   const muro = useMemo(() => res ? dimensionarMuro({
     profMax_m: res.prof_max_m, revancha_m: muroP.revancha, anchoCorona_m: muroP.anchoCorona,
@@ -616,7 +681,10 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
       {/* Paso 3: el lado del muro. Va ANTES de calcular porque de él dependen el
           largo del coronamiento, el perfil del terreno bajo el eje, el volumen
-          de terraplén y la cuenca de aporte. Antes lo elegía la app sola. */}
+          de terraplén, la cuenca de aporte y —desde que el vaso lo encuentra el
+          terreno— el vaso entero. Antes lo elegía la app sola; después se
+          preguntaba a ciegas con una sugerencia sin fuente, «el más bajo».
+          Ahora cada lado trae su relación de almacenamiento. */}
       <Paso n={3} hecho={muroIdx !== null} titulo="Elegí de qué lado va el muro">
         {!sel ? (
           <p className="text-[10px] text-ink-700/50 bg-bone-100 rounded-lg px-2.5 py-1.5 leading-relaxed">
@@ -628,6 +696,8 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
               {lados.map(l => {
                 const elegido = muroIdx === l.i;
                 const sugerido = muroSugerido === l.i;
+                const cmp = comparacionLados?.candidatos.find(x => x.i === l.i) ?? null;
+                const reco = comparacionLados?.recomendado === l.i;
                 return (
                   <button
                     key={l.i}
@@ -651,7 +721,16 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                     {l.cotaMin !== null && (
                       <span className={elegido ? 'text-bone-50/75' : 'text-ink-700/45'}> · {l.cotaMin} m</span>
                     )}
-                    {sugerido && !elegido && <span className="block text-water-700">el más bajo</span>}
+                    {cmp?.relacion != null && (
+                      <span className={`block font-mono ${elegido ? 'text-bone-50/90' : 'text-ink-900'}`}>
+                        {cmp.relacion.toLocaleString('es-AR', { maximumFractionDigits: 1 })} m³/m³
+                      </span>
+                    )}
+                    {cmp?.descartado && (
+                      <span className={`block ${elegido ? 'text-bone-50/75' : 'text-clay-700'}`}>no cierra nada</span>
+                    )}
+                    {reco && !elegido && <span className="block text-moss-700 font-semibold">el que más agua deja</span>}
+                    {sugerido && !elegido && !reco && <span className="block text-water-700">el más bajo</span>}
                   </button>
                 );
               })}
@@ -661,6 +740,35 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
               el mouse por encima para verlo en el mapa.
               {muroSugerido === null && ' Las cotas aparecen después de calcular, o si ya pasaste por Topografía.'}
             </p>
+            {/* La recomendación con su porqué. El criterio no es la cota más baja
+                —eso no está publicado en ninguna parte— sino cuántos m³ de agua
+                deja cada cierre por m³ de tierra movida. */}
+            {comparacionLados?.lectura && (
+              <div className="rounded-lg border border-moss-200 bg-moss-50/60 px-2.5 py-1.5 space-y-1">
+                <p className="text-[9px] text-ink-700/75 leading-relaxed">{comparacionLados.lectura}</p>
+                <p className="text-[9px] text-ink-700/45 leading-relaxed">
+                  <b>m³/m³</b> es la relación de almacenamiento: agua embalsada sobre tierra movida, con el muro en
+                  los mínimos publicados y el vaso que encuentra el terreno. Es el mismo número que más abajo figura
+                  como «eficiencia del sitio», calculado antes de elegir. Por debajo de {RELACION_LADERA} el cierre se
+                  porta como una presa de ladera, que es la posición menos eficiente del paisaje.
+                </p>
+              </div>
+            )}
+            {comparacionLados?.advertencias.map((a, i) => (
+              <p key={i} className="text-[9px] text-clay-700/90 leading-relaxed">{a}</p>
+            ))}
+            {comparacionLados && comparacionLados.candidatos.some(c => c.descartado) && (
+              <details className="text-[9px] text-ink-700/55">
+                <summary className="cursor-pointer select-none hover:text-ink-700">
+                  Por qué algunos lados no sirven
+                </summary>
+                <ul className="mt-1 space-y-1 pl-3 list-disc">
+                  {comparacionLados.candidatos.filter(c => c.descartado).map(c => (
+                    <li key={c.i}><b>Lado {c.i + 1}:</b> {c.motivo}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </>
         )}
       </Paso>
@@ -801,6 +909,17 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
           {vaso && nivelDelVaso && (
             <div className="-mx-1">
               <VasoRealBloque vaso={vaso} nivelVaso={nivelDelVaso} res={res} nivel={nivel} />
+            </div>
+          )}
+
+          {/* ── De qué lado va el vertedero: el paso 3 del método de la fuente ── */}
+          {vertedero && muroIdx !== null && (
+            <div className="-mx-1">
+              <VertederoBloque
+                vertedero={vertedero}
+                rotuloA={`Lado ${muroIdx + 1}, vértice ${muroIdx + 1}`}
+                rotuloB={`Lado ${muroIdx + 1}, vértice ${((muroIdx + 1) % (sel?.vertices.length ?? 1)) + 1}`}
+              />
             </div>
           )}
 
@@ -973,13 +1092,22 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 />
               )}
 
-              {/* Eficiencia del sitio: agua embalsada / muro (terraplén) */}
+              {/* Eficiencia del sitio: agua embalsada / muro (terraplén).
+                  Es la «relación de almacenamiento» de la fuente, y ahora tiene
+                  contra qué leerse: una presa de ladera queda en 1 o menos. */}
               <div className="rounded-lg border border-moss-200 bg-moss-50 px-2.5 py-1.5 flex items-center justify-between">
                 <span className="text-[10px] text-ink-700/70">
                   Eficiencia del sitio (agua ÷ muro)
                 </span>
                 <span className="font-mono text-sm font-bold text-moss-700">{eficiencia.toFixed(1)} : 1</span>
               </div>
+              {eficiencia > 0 && eficiencia <= RELACION_LADERA && (
+                <p className="text-[9px] text-clay-700/90 leading-relaxed">
+                  {eficiencia.toFixed(1)} m³ de agua por m³ de tierra movida es la eficiencia de una presa de
+                  ladera, que es la posición menos eficiente del paisaje. Vale la pena probar otro emplazamiento
+                  antes que afinar este muro.
+                </p>
+              )}
               {balance && (
                 <p className="text-[9px] text-ink-700/50 leading-relaxed">
                   {balance.volumenAgua_m3.toLocaleString('es-AR')} m³ de agua ÷ {balance.banco_m3.toLocaleString('es-AR')} m³ de tierra movida (en banco, con factor de contracción {muro.factorContraccion}).

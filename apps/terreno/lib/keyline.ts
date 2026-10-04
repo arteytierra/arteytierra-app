@@ -16,6 +16,7 @@
  * Aproximación didáctica desde SRTM ~30 m, no un relevamiento de precisión.
  */
 import { elevEnGrilla, type GrillaElevacion } from './grillaElevacion';
+import { flujoD8 } from './cuencaHidro';
 import {
   bandaDeriva, aptitudKeyline, headland, simplificarDirectriz, redondearVertices,
   verticesCerrados, resumirPatron, leerVeredicto, DERIVA_POR_ANGULO_PAVLOV,
@@ -139,40 +140,6 @@ function contornoNivel(g: GrillaElevacion, z: number): Array<Array<{ lat: number
   for (const [k, v] of ady) { if (!usado.has(k) && v.length === 1) { const cad = caminar(k); if (cad.length >= 2) lineas.push(cad.map(x => puntosArista.get(x)!)); } }
   for (const k of ady.keys()) { if (!usado.has(k)) { const cad = caminar(k); if (cad.length >= 3) lineas.push(cad.map(x => puntosArista.get(x)!)); } }
   return lineas;
-}
-
-// ─── Flujo D8 + acumulación (compartido) ──────────────────────────────────────
-/**
- * Vecino de descenso máximo por celda y acumulación de flujo.
- *
- * Lo usan las dos funciones del módulo, y por razones distintas: `analizarKeyline`
- * para encontrar el valle principal, y `generarPatronCultivo` para saber **hacia
- * dónde deriva** cada surco, porque el eje del valle es donde la acumulación es
- * alta y el lomo donde es baja. Una sola definición, para que las dos vean el
- * mismo drenaje.
- */
-function flujoD8(g: GrillaElevacion): { down: Int32Array; acc: Float64Array; celdas: number[]; orden: number[] } | null {
-  const { rows, cols, elev } = g;
-  const idx = (r: number, c: number) => r * cols + c;
-  const valido = (r: number, c: number) => r >= 0 && r < rows && c >= 0 && c < cols && !isNaN(elev[idx(r, c)]!);
-  const down = new Int32Array(rows * cols).fill(-1);
-  const celdas: number[] = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    if (!valido(r, c)) continue;
-    celdas.push(idx(r, c));
-    let best = elev[idx(r, c)]!, bi = -1;
-    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const rr = r + dr, cc = c + dc;
-      if (valido(rr, cc) && elev[idx(rr, cc)]! < best) { best = elev[idx(rr, cc)]!; bi = idx(rr, cc); }
-    }
-    down[idx(r, c)] = bi;
-  }
-  if (celdas.length < 20) return null;
-  const acc = new Float64Array(rows * cols).fill(1);
-  const orden = [...celdas].sort((a, b) => elev[b]! - elev[a]!);
-  for (const i of orden) { const d = down[i]!; if (d >= 0) acc[d]! += acc[i]!; }
-  return { down, acc, celdas, orden };
 }
 
 // ─── Keypoint + curva clave (valle por acumulación de flujo) ───────────────────

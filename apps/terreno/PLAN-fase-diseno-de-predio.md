@@ -192,12 +192,114 @@ Yeomans, con el eje del valle como línea divisoria): hoy se avisa cuando el
 patrón da la vuelta por el vértice, que es cuando hace falta, pero el patrón no
 se parte solo.
 
-### 1.4 El lado del muro: la app pregunta y podría recomendar
+### 1.4 El lado del muro: la app pregunta y podría recomendar ✅ *04/10/2026*
 
-El paso que elige de qué lado del espejo va el muro hoy se pregunta a ciegas. Los
-dos criterios que deciden son **menor pendiente del eje** y **menor recorrido
-hasta el cauce**, y los dos salen del DEM que la app ya tiene cargado. Puede
-sugerir el lado y explicar por qué, dejando que el usuario lo cambie.
+El paso que elige de qué lado del espejo va el muro se preguntaba a ciegas, con
+una sugerencia sin fuente: «el lado más bajo». Suele acertar, pero no es un
+criterio publicado, y en un predio con dos vaguadas el lado más bajo del
+polígono puede ser el que no se va a cerrar.
+
+**Hecha el 04/10/2026.** Módulo nuevo `lib/ladoDeObra.ts`, sección 11 de
+`lib/represaDiseno.ts`, componente `VertederoBloque.tsx`, 42 tests en
+`tests/unit/aguas/ladoDeObra.test.ts`.
+
+**Lo primero que apareció es que este apartado pedía la función correcta con los
+criterios del otro lado.** El plan tomaba «menor pendiente» y «menor recorrido
+hasta el cauce» como los criterios del muro; en el relevamiento de la clase 9
+esos dos están bajo el título «Vertedero · De qué lado», y el método de diseño
+en 6 pasos de esa misma clase los ubica en el **paso 3, «elegir el lado del
+vertedero»**, que es un paso distinto del de elegir el cierre. Así que entraron
+las dos decisiones, cada una con los criterios que le corresponden.
+
+**El lado del muro: la relación de almacenamiento.** Para el cierre la misma
+clase da otros criterios: la **relación de almacenamiento** —«m³ de agua por m³
+de tierra movida»—, la **relación entre el largo del muro y el largo del
+espejo**, y la ventana de **profundidad natural de 2,5 a 5,5 m**. Los tres se
+pueden calcular **hoy** y no se podían antes: hacen falta el vaso real del
+terreno (`lib/vaso.ts`) y la sección del muro integrada sobre el eje
+(`dimensionarMuro`). Ahora cada arista del polígono trae su relación antes de
+elegir, y es **el mismo número** que la pestaña ya mostraba como «eficiencia del
+sitio» después de elegir: sale de `balanceTierra`, de manera que los dos no se
+pueden separar. Y tiene contra qué leerse, que es lo que faltaba: la clase 9
+ubica a las presas de ladera en «eficiencia ~1 o menor», así que por debajo de 1
+el cierre elegido se está portando como la posición menos eficiente del paisaje.
+
+**El orden del cociente estaba en duda y lo decidió el ejemplo resuelto de la
+propia fuente.** El relevamiento trae la relación de las dos maneras: el
+vocabulario dice «m³ de agua por m³ de tierra movida» y la columna de la
+planilla quedó anotada como «Eficiencia VTM/VTA», que es el recíproco. El
+ejemplo del curso cierra la discusión y cierra fino: subir la cota de 92,7 a
+93,7 pasa de 10,3 a 23,9 ML con 1.990 → 3.700 m³ de tierra, y el costo baja de
+1,51 a 1,21 US$ por m³ de agua. Ese costo es `tierra/agua × precio del m³ de
+tierra`, así que el cociente de los dos costos publicados tiene que ser el de
+las dos relaciones invertidas: **1,51/1,21 = 1,2479 contra 1,2480**. Cierra a la
+cuarta cifra, y de paso deja ver el precio implícito del movimiento de tierra de
+ese ejemplo, 7,82 US$/m³. Es el caso resuelto del test.
+
+**Y un número plausible y equivocado que el test encontró.** La primera versión
+le calculaba la relación a todos los lados, y en una hoya con una sola salida
+los tres lados que no cierran nada daban **la mejor relación de las cuatro**:
+145.000 m³ de agua sobre un muro de altura cero. El agua estaba, pero la
+sostenía el terreno y se iba por otro lado; el muro sobraba. Ahora, cuando la
+cota de derrame no llega al punto más bajo del eje, el lado queda afuera del
+ranking con el motivo escrito.
+
+**El lado del vertedero, y el piso que el enunciado no tiene.** Los dos
+criterios de la clase 9 se miden sobre el relieve: la pendiente del terreno
+natural desde cada estribo y el recorrido de vuelta al cauce. El cauce no se
+define con un umbral de acumulación inventado: se define siguiendo el agua desde
+el punto más bajo del eje del muro hacia aguas abajo, y ese recorrido **es** el
+curso que la represa interrumpe. El camino del estribo elegido se dibuja en el
+mapa.
+
+AH-590 dice lo mismo que el curso con sus palabras —*«use them only where the
+soils and topography allow the peak flow to discharge safely at a point well
+downstream and at a velocity that does not cause appreciable erosion»*, que son
+los dos criterios en una oración— y agrega lo que el enunciado de dos criterios
+deja afuera: **más plano no es mejor**. El canal de entrada *«should have a
+slope toward the reservoir of not less than 2.0 percent to ensure drainage»*, y
+el cuadro 10 —el de los vertederos naturales, sin excavar— empieza en 0,5 % de
+pendiente de terreno natural y no tiene fila más plana. Un estribo casi
+horizontal no es el mejor candidato: es uno que no drena. Ése es el test que
+vale del apartado, y la pantalla lo dice con las dos pendientes al lado.
+
+Lo demás que apareció en el manual y entró:
+
+- **Si hay que excavar o no.** *«Excavation of the inlet channel or the exit
+  channel, or both, can be omitted where the natural slopes meet the minimum
+  slope requirements»*, y *«the natural slope of the exit channel should be
+  altered as little as possible»*. El estribo que ya tiene la pendiente adecuada
+  ahorra la obra entera del canal, y eso es lo que la app informa ahora en vez
+  de un número suelto.
+- **Que el vertido no vaya contra el muro.** *«The direction of slope of the
+  exit channel must be such that discharge does not flow against any part of the
+  dam.»* No es una preferencia: es la falla que rompe el talud de aguas abajo.
+  Se verifica siguiendo el agua sobre el DEM, y el estribo que la lleva contra
+  el terraplén queda descartado antes de compararlo con el otro.
+- **Que el derrame natural le gana a los dos estribos.** *«A natural spillway
+  does not require excavation to provide enough capacity to conduct the pond
+  outflow to a safe point of release.»* Si el vaso ya tiene una silla de montar
+  por donde derramar —la que `lib/vaso.ts` encuentra y marca en el mapa— el
+  bloque lo dice antes de recomendar un estribo.
+- **El tramo a nivel: 25 pies** (figura 21). Es lo que hace que el vertedero
+  trabaje en lámina y no concentrando, que es la falla típica que describe el
+  curso.
+- **Que la pendiente del terreno natural es un insumo de la carga sobre el
+  vertedero** y no un dato suelto: *«with the required discharge capacity (Q),
+  the end slope of the embankment (Z1), and the slope of the natural ground (Z2)
+  known, the maximum depth of water above the level portion (Hp) can be obtained
+  from table 10»*. O sea que elegir el lado del vertedero mueve la carga, y la
+  carga mueve la cota de corona, que es el hallazgo de la etapa E. Las dos
+  decisiones estaban desconectadas.
+
+**Lo que queda abierto, y no lo puede cerrar el cálculo:** que la carga sobre el
+vertedero se lea del cuadro 10 con la pendiente del estribo elegido en vez de
+escribirse a mano —es el cierre natural de esto y de la etapa E—, y validar
+contra un predio real que el recorrido del vertido vaya para donde el dueño sabe
+que va. Y queda sin implementar el paso 4 del método de la clase 9: que la
+corona se dibuje hasta el pelo de agua del lado del vertedero y hasta la altura
+del libre bordo del lado opuesto, que cambia el largo del coronamiento según de
+qué lado quedó el vertedero.
 
 ### 1.5 Falta el coeficiente de simultaneidad de un conjunto de viviendas
 
@@ -866,6 +968,16 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    dos defectos que el plan no preveía —la métrica medía lo contrario de lo que
    el método busca, y el suavizado daba vuelta la deriva— y los dos los encontró
    un test. Queda abierto el trabajo en dos mitades de una vertiente angosta.
+
+8. ~~**La corrección 1.4** —el lado del muro y el del vertedero—.~~
+   **✅ 04/10/2026.** El plan pedía la función correcta con los criterios del
+   otro lado: los dos que citaba son los del vertedero, no los del cierre.
+   Entraron las dos decisiones con sus criterios, y apareció un piso publicado
+   que el enunciado no tiene —**más plano no es mejor**, un estribo casi
+   horizontal no drena— y un número plausible y equivocado que el test encontró:
+   los lados que no embalsan nada daban la mejor relación de todas. Queda
+   abierto leer la carga sobre el vertedero del cuadro 10 con la pendiente del
+   estribo elegido, que cierra esto con la etapa E.
 
 Las etapas D, G, H, I y J después, en ese orden.
 

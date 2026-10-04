@@ -556,14 +556,47 @@ function rasterizarEje(g: GrillaElevacion, muro: Muro, paso_m: number): number[]
   return out;
 }
 
+// ─── De qué lado del muro está el agua ───────────────────────────────────────
+
 /**
- * El vaso que cierra un muro, y hasta dónde se puede llenar.
+ * Qué lado del eje del muro es aguas arriba, y qué celdas ocupa ese eje.
  *
- * El polígono dibujado deja de definir el volumen: pasa a ser lo que siempre
- * debió ser, una ayuda visual y —por su centroide— la forma de saber de qué
- * lado del muro está el agua.
+ * Está afuera de `vasoDesdeMuro` porque hay dos cálculos que necesitan la misma
+ * respuesta y no pueden discrepar: el vaso —que siembra la cola del lado del
+ * agua— y el lado del vertedero, que tiene que salir del muro hacia aguas
+ * **abajo** y seguir el agua hasta el cauce. Dos definiciones de «aguas arriba»
+ * sobre el mismo muro se separan en cuanto una de las dos cambie, y el síntoma
+ * sería que la app marca el vertedero adentro del embalse. Es el mismo motivo
+ * por el que `N8` y `dimsCelda` se importan de `cuencaHidro` en vez de
+ * redefinirse acá.
  */
-export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: OpcionesVaso): Vaso | null {
+export interface LadoDelMuro {
+  /** +1 o −1. Un punto está aguas arriba cuando `ladoDe(p)` tiene este signo. */
+  signo:            number;
+  /**
+   * Producto escalar del punto con la perpendicular al eje, en metros. El signo
+   * dice el lado y no depende de en qué punto del eje se mire; el valor
+   * absoluto es la distancia al eje prolongado.
+   */
+  ladoDe:           (lat: number, lng: number) => number;
+  /** Cómo se decidió el lado. Ver `OpcionesVaso.referenciaAguasArriba`. */
+  modo:             'referencia' | 'elevacion';
+  /** Todas las celdas que el eje atraviesa, con dato o sin él. */
+  eje:              readonly number[];
+  /** Las que tienen elevación: las únicas que se pueden sembrar o medir. */
+  ejeConDato:       readonly number[];
+  /** Terreno natural más bajo bajo el eje. */
+  cotaEjeMin_m:     number;
+  /** Largo del eje en metros. */
+  largoEje_m:       number;
+  advertencias:     string[];
+}
+
+export function ladoAguasArribaDeMuro(
+  g: GrillaElevacion,
+  muro: Muro,
+  opciones?: OpcionesVaso,
+): LadoDelMuro | null {
   const { rows, cols, elev } = g;
   if (rows < 3 || cols < 3) return null;
   const { dx, dy } = dimsCelda(g);
@@ -581,13 +614,9 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
     );
   }
 
-  const obra = new Uint8Array(rows * cols);
-  for (const i of eje) obra[i] = 1;
-
   let cotaEjeMin = Infinity;
   for (const i of ejeConDato) { const e = elev[i]!; if (e < cotaEjeMin) cotaEjeMin = e; }
 
-  // ── De qué lado está el agua ──────────────────────────────────────────────
   // Perpendicular al eje, en metros y después en pasos de grilla. El signo del
   // producto escalar dice el lado, sin depender de en qué punto del eje se mire.
   const latMid = (g.latMin + g.latMax) / 2 * Math.PI / 180;
@@ -604,7 +633,7 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
   };
 
   let signo = 0;
-  let ladoAguasArriba: 'referencia' | 'elevacion' = 'referencia';
+  let modo: 'referencia' | 'elevacion' = 'referencia';
   const ref = opciones?.referenciaAguasArriba;
   if (ref) {
     const s = ladoDe(ref.lat, ref.lng);
@@ -615,7 +644,7 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
     // Sin referencia: aguas arriba es el lado que SUBE. Un muro cruza el valle,
     // así que perpendicular al eje está la dirección del valle: aguas arriba el
     // fondo remonta hacia la cabecera, aguas abajo cae.
-    ladoAguasArriba = 'elevacion';
+    modo = 'elevacion';
     const dRow = perpY / Math.abs(dy || 1), dCol = perpX / Math.abs(dx || 1);
     const norma = Math.max(Math.abs(dRow), Math.abs(dCol)) || 1;
     const pr = dRow / norma, pc = dCol / norma;
@@ -652,6 +681,27 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
     }
   }
 
+  return { signo, ladoDe, modo, eje, ejeConDato, cotaEjeMin_m: cotaEjeMin, largoEje_m: largoEje, advertencias };
+}
+
+/**
+ * El vaso que cierra un muro, y hasta dónde se puede llenar.
+ *
+ * El polígono dibujado deja de definir el volumen: pasa a ser lo que siempre
+ * debió ser, una ayuda visual y —por su centroide— la forma de saber de qué
+ * lado del muro está el agua.
+ */
+export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: OpcionesVaso): Vaso | null {
+  const { rows, cols, elev } = g;
+  if (rows < 3 || cols < 3) return null;
+
+  const lado = ladoAguasArribaDeMuro(g, muro, opciones);
+  if (!lado) return null;
+  const { signo, ladoDe, eje, ejeConDato, cotaEjeMin_m: cotaEjeMin, advertencias } = lado;
+
+  const obra = new Uint8Array(rows * cols);
+  for (const i of eje) obra[i] = 1;
+
   // ── Semillas: las celdas pegadas al muro, del lado del agua ───────────────
   const semillas: number[] = [];
   const yaSemilla = new Set<number>();
@@ -674,7 +724,7 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
   const salida = inundar(g, semillas, obra);
   if (!salida) return null;
 
-  return armarVaso(g, salida, cotaEjeMin, ejeConDato, ladoAguasArriba, advertencias);
+  return armarVaso(g, salida, cotaEjeMin, ejeConDato, lado.modo, advertencias);
 }
 
 // ─── Comparación con el cálculo por polígono ─────────────────────────────────
