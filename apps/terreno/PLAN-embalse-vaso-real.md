@@ -31,6 +31,46 @@ Este documento es la segunda, que es más de fondo.
 >   factor: hoy la simulación usa `area_espejo × llenado`, una recta, y con la
 >   curva saldría del dato.
 
+> **Pasos 1 y 2 hechos el 03/10/2026.** `lib/vaso.ts` + `components/VasoRealBloque.tsx`,
+> con 27 tests en `tests/unit/topografia/vaso.test.ts`. El panel muestra los dos
+> cálculos juntos y escribe la diferencia; el principal sigue siendo el del
+> polígono hasta validar con predios medidos. Lo que salió distinto de este
+> boceto, y por qué:
+>
+> - **No hay curva discretizada.** El boceto devolvía `VasoPorMuro[]` a un paso
+>   de nivel. Como las celdas salen de la cola **ya ordenadas por cota de
+>   llegada**, con una suma acumulada de elevaciones cualquier nivel se resuelve
+>   exacto con una búsqueda binaria (`nivelVaso`). Es más barato que la curva y
+>   no interpola: el slider consulta sin recalcular el terreno.
+> - **El tipo de techo lo decide el camino, no la celda.** `cotaDerrame_m` viene
+>   siempre acompañado de `tipoTope`: `'derrame'` si el agua trepó una silla de
+>   montar y bajó hacia afuera, `'borde_del_dem'` si el pelo de agua llegó al
+>   límite de la ventana de relieve subiendo. Distinguirlos comparando sólo la
+>   elevación de la celda de fuga contra la cota **está mal** y se cayó en el
+>   test del muro corto: hay que buscar la silla remontando el camino.
+> - **Apareció `derramePorEstribo`**, que no estaba en el plan y vale la pena: si
+>   el agua se va por la punta del muro, eso no se arregla con un vertedero, se
+>   arregla alargando el muro. Son dos decisiones de obra distintas y el cálculo
+>   las sabe separar.
+> - **El punto de derrame ya se marca en el mapa** (`puntoDerrame` en
+>   `MapLeaflet`, en rojo para no confundirlo con la salida de la cuenca, que es
+>   azul y marca por dónde **entra** el agua). El espejo real celda por celda
+>   todavía no se dibuja: eso es del paso 3.
+> - **`N8` y `dimsCelda` se exportaron de `cuencaHidro.ts`** en vez de
+>   duplicarse. Dos definiciones de «vecino» sobre el mismo DEM se
+>   desincronizan.
+>
+> Y una cosa que encontramos de paso y **no está arreglada**:
+> `buscarSitiosRepresa`, el que sugiere emplazamientos, arma el pool con
+> adyacencia inversa de flujo sobre el DEM rellenado y celdas bajo el nivel. Eso
+> tiene el mismo punto ciego que el cálculo por polígono: **nunca calcula una
+> cota de derrame**, así que puede rankear primero un sitio cuyo embalse se
+> derramaría por una silla de montar antes de llegar a esa altura. Engancharlo a
+> `vasoDesdeMuro` no es directo —recorre hasta 400 candidatos × 3 alturas y un
+> Priority-Flood por candidato es demasiado—, pero el sesgo está y conviene al
+> menos filtrar los candidatos cuya silla más baja esté por debajo del nivel
+> probado.
+
 ---
 
 ## 1 · Qué hace hoy el cálculo
@@ -235,21 +275,28 @@ Rige `project_terreno_ux_numeros`, y además:
 `calcularEmbalse` **se conserva**, porque hay proyectos guardados con
 `RepresaInputs` que incluyen `poligonoId` y `nivel`. El plan es:
 
-1. `vasoDesdeMuro` en `lib/cutfill.ts` (o `lib/vaso.ts` si el archivo queda
-   grande) con sus tests. Sin tocar la interfaz.
-2. El panel muestra **los dos** resultados un tiempo: el del polígono y el del
-   muro, con la diferencia escrita. Así se valida con predios reales antes de
-   cambiar el número que ve el usuario — y si discrepan mucho, eso mismo es
-   información.
+1. ~~`vasoDesdeMuro` con sus tests, sin tocar la interfaz.~~ **✅ 03/10/2026**,
+   en `lib/vaso.ts` (quedó grande: 500 líneas con el algoritmo documentado).
+2. ~~El panel muestra **los dos** resultados un tiempo, con la diferencia
+   escrita.~~ **✅ 03/10/2026**, en el bloque «El vaso que encuentra el
+   terreno». Acá se para: el paso 3 necesita predios reales validados y eso lo
+   hace Jonatan, no el cálculo.
 3. Cuando el del muro esté validado, pasa a ser el principal. El del polígono
    queda como «lo que entra en el polígono que dibujaste», que sigue siendo útil
-   como control.
+   como control. Entra también acá el **espejo real dibujado celda por celda**,
+   que es la verificación visual: si el agua se escapa por donde no debe, se ve.
+   Y el slider de nivel pasa a ir del fondo a la cota de derrame, con el extremo
+   derecho rotulado «derrame» en vez de «borde».
 4. `dimensionarMuro` toma `profEnMuro_m` en vez de `profMax_m`, y el `altoMax`
-   deja de tener dos orígenes.
+   deja de tener dos orígenes. **El número ya está calculado** —`nivelVaso`
+   devuelve `profEnMuro_m`— y el bloque nuevo lo muestra al lado de la
+   profundidad máxima para que la diferencia se vea; falta pasarlo.
 5. La simulación anual (`represa.ts`) y el balance de tierra se enganchan a la
    curva área-capacidad: la superficie del espejo deja de ser
    `area_espejo_m2 * llenado` —una aproximación lineal— y pasa a leerse de la
-   curva, que es el área real a ese volumen.
+   curva, que es el área real a ese volumen. Con `nivelVaso` eso es una consulta,
+   pero hace falta el camino inverso (área al volumen embalsado) y la simulación
+   trabaja en volumen, no en cota.
 
 El punto 5 es un arreglo de regalo: hoy `simularRepresaAnual` estima la
 evaporación con un espejo proporcional al llenado, y en un vaso con forma de

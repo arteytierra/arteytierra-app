@@ -14,6 +14,8 @@ import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cue
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
 import { revanchaMinima, factorEvaporacionEspejo, TALUD_INTERNO_MIN_AH590, coronaMinima } from '@/lib/represaDiseno';
 import { RepresaCriteriosBloque, ComparacionCandidatos } from './RepresaCriteriosBloque';
+import { VasoRealBloque } from './VasoRealBloque';
+import { vasoDesdeMuro, nivelVaso } from '@/lib/vaso';
 import { CONCEPTOS_SUGERIDOS } from '@/lib/economia';
 
 /** Valor del desplegable de cobertura que significa "usá el motor compartido". */
@@ -69,6 +71,8 @@ interface Props {
   onResumenRepresa?: (r: RepresaResumen | null) => void;
   onCuencaCalculada?: (c: Cuenca | null) => void;   // empuja la cuenca del muro al mapa/pestaña Cuenca
   onMuroLinea?: (linea: [{ lat: number; lng: number }, { lat: number; lng: number }] | null) => void;
+  /** Punto por donde el vaso se derrama: se marca en el mapa porque ahí va el vertedero. */
+  onPuntoDerrame?: (p: { lat: number; lng: number } | null) => void;
   /** Textura del suelo (% arcilla / % arena) para sugerir los taludes del muro. */
   texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   /** Parámetros guardados con el proyecto, para no perder el trabajo al cambiar de pestaña. */
@@ -100,7 +104,7 @@ interface Props {
   composicionPredio?: Array<{ nombre: string; pct: number }>;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, coefAnualPredio = null, composicionPredio = [] }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, onPuntoDerrame, coefAnualPredio = null, composicionPredio = [] }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -323,6 +327,46 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     const vs = sel.vertices;
     return perfilTerreno(grilla, vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!);
   }, [grilla, sel, muroIdx]);
+
+  /**
+   * El vaso real: el que encuentra el terreno a partir del muro, en vez del que
+   * entra en el polígono dibujado.
+   *
+   * El polígono deja de definir el volumen y pasa a hacer una sola cosa, que es
+   * la que sabe hacer bien: decir **de qué lado del muro está el agua**. Como
+   * referencia se usa el promedio de los vértices que NO son del lado elegido
+   * como muro —el centroide completo queda pegado al eje y en un espejo
+   * alargado puede caer del lado equivocado—, y si eso tampoco alcanza,
+   * `vasoDesdeMuro` decide por elevación y lo declara.
+   *
+   * Se recalcula sólo al cambiar el polígono, el lado del muro o la grilla: NO
+   * al mover el nivel de agua. Recorrer el terreno es lo caro y se hace una vez;
+   * cada nivel después es una búsqueda binaria sobre la curva ya construida.
+   */
+  const vaso = useMemo(() => {
+    if (!grilla || !sel || muroIdx === null || sel.vertices.length < 3) return null;
+    const vs = sel.vertices;
+    const a = vs[muroIdx]!, b = vs[(muroIdx + 1) % vs.length]!;
+    const lejanos = vs.filter((_, i) => i !== muroIdx && i !== (muroIdx + 1) % vs.length);
+    const ref = lejanos.length > 0
+      ? {
+          lat: lejanos.reduce((t, v) => t + v.lat, 0) / lejanos.length,
+          lng: lejanos.reduce((t, v) => t + v.lng, 0) / lejanos.length,
+        }
+      : undefined;
+    return vasoDesdeMuro(grilla, { a, b }, ref ? { referenciaAguasArriba: ref } : undefined);
+  }, [grilla, sel, muroIdx]);
+
+  const nivelDelVaso = useMemo(
+    () => (vaso && nivel !== null ? nivelVaso(vaso, nivel) : null),
+    [vaso, nivel],
+  );
+
+  // El punto de derrame al mapa. Es donde va el vertedero, así que no alcanza
+  // con informar la cota: hay que poder verlo en el terreno.
+  useEffect(() => {
+    onPuntoDerrame?.(vaso?.tipoTope === 'derrame' ? vaso.puntoDerrame : null);
+  }, [vaso, onPuntoDerrame]);
 
   // Cuánto banco hace falta por m³ compactado. Los arcillosos contraen más.
   const factorContraccion = claseSuelo?.clase === 'arenoso_superficial' ? 1.10
@@ -752,6 +796,13 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
             <Info className="w-3 h-3 shrink-0 mt-0.5 text-water-500" />
             Volumen embalsado integrando la elevación de {relieve} bajo el nivel de agua (orientativo). El movimiento de tierra y la eficiencia del sitio están más abajo, según el tipo de obra.
           </p>
+
+          {/* ── El vaso real, al lado del dibujado (paso 2 del plan del vaso) ── */}
+          {vaso && nivelDelVaso && (
+            <div className="-mx-1">
+              <VasoRealBloque vaso={vaso} nivelVaso={nivelDelVaso} res={res} nivel={nivel} />
+            </div>
+          )}
 
           {/* ── Muro de la represa (trapecio) ── */}
           {muro && (

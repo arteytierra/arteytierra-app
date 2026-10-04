@@ -58,6 +58,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `geotiffImport.ts` | Importar GeoTIFF (ortofoto de dron o MDE IGN). |
 | `keyline.ts` | Análisis Keyline (P.A. Yeomans) orientativo desde grilla densa. |
 | `cutfill.ts` | Cut & fill de represas/embalses: volumen almacenable + movimiento de tierra. |
+| `vaso.ts` | El vaso del embalse deducido del muro y del terreno (Priority-Flood): volumen, espejo, cota de derrame y por dónde se derrama. |
 
 ## Agua e hidrología
 

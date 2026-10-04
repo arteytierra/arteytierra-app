@@ -46,3 +46,38 @@ export function poligonoQueEnvuelve(bbox: BBoxLL = BBOX_DEFECTO, eps = 0.001) {
     { lat: bbox.latMin - eps, lng: bbox.lngMax + eps },
   ];
 }
+
+/**
+ * Grilla sintética con **celda cuadrada de lado conocido en metros**, y la
+ * función de elevación expresada en metros y no en índices.
+ *
+ * Es lo que hace falta para medir un volumen contra un caso resuelto: si la
+ * celda no es cuadrada o su lado no se conoce, la tolerancia del test ya no
+ * mide la discretización de la grilla sino la proyección. Por eso el bbox se
+ * arma en el ecuador: ahí `cos(lat) = 1` y un paso en longitud mide los mismos
+ * metros que uno en latitud, exactamente.
+ *
+ * `f` recibe metros desde el nodo (0, 0), con x hacia el este (columnas) e y
+ * hacia el norte (filas).
+ */
+export function grillaMetrica(
+  rows: number,
+  cols: number,
+  paso_m: number,
+  f: (x_m: number, y_m: number) => number,
+): GrillaElevacion {
+  const d = paso_m / 111_320;
+  const bbox: BBoxLL = {
+    latMin: 0, latMax: d * (rows - 1),
+    lngMin: 0, lngMax: d * (cols - 1),
+  };
+  return grillaDesdeFn(rows, cols, (r, c) => f(c * paso_m, r * paso_m), bbox);
+}
+
+/** Coordenadas geográficas del punto (x, y) en metros de una `grillaMetrica`. */
+export function puntoMetrico(g: GrillaElevacion, x_m: number, y_m: number) {
+  const dLat = (g.latMax - g.latMin) / (g.rows - 1);
+  const paso_m = dLat * 111_320;
+  const dLng = (g.lngMax - g.lngMin) / (g.cols - 1);
+  return { lat: g.latMin + (y_m / paso_m) * dLat, lng: g.lngMin + (x_m / paso_m) * dLng };
+}

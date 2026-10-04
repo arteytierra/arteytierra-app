@@ -367,6 +367,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // persisten con el proyecto.
   const [cuencasGuardadas, setCuencasGuardadas] = useState<CuencaGuardada[]>([]);
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
+  const [puntoDerrame, setPuntoDerrame] = useState<{ lat: number; lng: number } | null>(null);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
@@ -3313,6 +3314,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   onResumenRepresa={setRepresaResumen}
                   onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }}
                   onMuroLinea={setMuroLinea}
+                  onPuntoDerrame={setPuntoDerrame}
                 />
               </div>
             </div>
@@ -3636,6 +3638,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           cuencaOutlet={cuenca?.outlet ?? null}
           cuencasGuardadas={cuencasVisibles}
           muroLinea={muroLinea}
+          puntoDerrame={puntoDerrame}
           potrerosLayer={potrerosLayer}
           capas={capas}
           dibujos={dibujosFiltrados}

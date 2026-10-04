@@ -785,12 +785,15 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    de criterio: la cota del coronamiento le faltaba la carga de la crecida sobre
    el vertedero, que acequia ya calculaba en otra pestaña.
 
-6. **`PLAN-embalse-vaso-real.md`** es lo que queda de represa, y es otra cosa: el
-   vaso tiene que salir del muro y del terreno —Priority-Flood— en vez del
-   polígono dibujado, con la cota de derrame como límite del nivel. Tiene su
-   propio orden de cinco pasos, y uno de ellos es mostrar los dos resultados en
-   paralelo para validar con predios reales antes de cambiar el número que ve el
-   usuario, así que no se cierra de un empujón.
+6. **`PLAN-embalse-vaso-real.md`** — **pasos 1 y 2 hechos el 03/10/2026**: el
+   vaso ya sale del muro y del terreno (Priority-Flood, `lib/vaso.ts`), con la
+   cota de derrame, el punto por donde se derrama marcado en el mapa y la
+   profundidad contra el muro. El panel muestra los dos cálculos juntos y
+   escribe la diferencia, que es el paso que **no puede cerrar el cálculo**: el
+   paso 3 —que el vaso real pase a ser el número principal— necesita que Jonatan
+   lo valide contra predios que conozca. Quedan abiertos también el paso 4
+   (`dimensionarMuro` con `profEnMuro_m`) y el 5 (la simulación anual leyendo el
+   área del espejo de la curva), los dos a la espera del 3.
 7. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
    aviso. Es la única que puede romperle el dibujo a un proyecto guardado.
 

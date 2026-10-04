@@ -21,8 +21,10 @@
 import { obtenerGrillaHidro, elevEnGrilla, type GrillaElevacion, type BBox } from './grillaElevacion';
 import type { Cuenca } from './cuenca';
 
-// Vecindad de 8 (orden fijo, compartido por D8 y distancias).
-const N8: ReadonlyArray<readonly [number, number]> = [
+// Vecindad de 8 (orden fijo, compartido por D8 y distancias). Exportada porque
+// `vaso.ts` recorre la misma grilla con la misma vecindad: dos definiciones de
+// "vecino" sobre el mismo DEM se desincronizan en cuanto alguien toque una.
+export const N8: ReadonlyArray<readonly [number, number]> = [
   [-1, -1], [-1, 0], [-1, 1],
   [ 0, -1],          [ 0, 1],
   [ 1, -1], [ 1, 0], [ 1, 1],
@@ -67,7 +69,8 @@ class MinHeap {
 }
 
 // ─── Dimensiones de celda en metros ───────────────────────────────────────────
-function dimsCelda(g: GrillaElevacion) {
+/** Lados y área de una celda, en metros a la latitud media de la grilla. */
+export function dimsCelda(g: GrillaElevacion) {
   const latMid = (g.latMin + g.latMax) / 2;
   const dy = ((g.latMax - g.latMin) / (g.rows - 1)) * 111_320;
   const dx = ((g.lngMax - g.lngMin) / (g.cols - 1)) * 111_320 * Math.cos(latMid * Math.PI / 180);

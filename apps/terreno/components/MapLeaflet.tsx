@@ -151,6 +151,8 @@ interface Props {
   /** cuencas archivadas visibles (contorno lleno, cada una con su color) */
   cuencasGuardadas?:  Array<{ id: string; nombre: string; color: string; poligono: Array<{ lat: number; lng: number }>; outlet: { lat: number; lng: number } }>;
   muroLinea?:         Array<{ lat: number; lng: number }> | null;
+  /** por dónde se derrama el vaso del embalse: ahí va el vertedero */
+  puntoDerrame?:      { lat: number; lng: number } | null;
   potrerosLayer?:     PotrerosLayout | null;
   capas?:             CapasVisibles;
   // ── Dibujo libre ──
@@ -257,6 +259,7 @@ function MapLeaflet({
   cuencaOutlet = null,
   cuencasGuardadas = [],
   muroLinea = null,
+  puntoDerrame = null,
   potrerosLayer = null,
   capas = CAPAS_DEFAULT,
   onGetNavegacion,
@@ -574,6 +577,16 @@ function MapLeaflet({
           <Polyline
             positions={muroLinea.map(p => [p.lat, p.lng] as LatLngTuple)}
             pathOptions={{ color: '#6D4C41', weight: 5, opacity: 0.9, interactive: false }}
+          />
+        )}
+        {/* Por dónde se derrama el vaso. Distinto color que la salida de la
+            cuenca —que es azul y marca dónde entra el agua— porque éste marca
+            dónde se va, y es una decisión de obra: ahí va el vertedero. */}
+        {puntoDerrame && (
+          <CircleMarker
+            center={[puntoDerrame.lat, puntoDerrame.lng]}
+            radius={6}
+            pathOptions={{ color: '#fff', weight: 2, fillColor: '#C62828', fillOpacity: 1, interactive: false }}
           />
         )}
 
