@@ -96,7 +96,7 @@ Esta corrección depende de la fuente que falta (ver arriba). Hasta tenerla, lo
 honesto es: la app calcula con un factor de concentración **que el usuario
 elige**, muestra el rango, y dice que el promedio diario subdimensiona.
 
-### 1.3 El patrón keyline hace el offset desde donde la fuente dice que no
+### 1.3 El patrón keyline hace el offset desde donde la fuente dice que no ✅ *04/10/2026*
 
 `lib/keyline.ts` genera el patrón de cultivo paralelando las **curvas de nivel**.
 La literatura de geometría keyline dice explícitamente que no se haga eso: el
@@ -121,10 +121,76 @@ distintos del mismo relieve.
 patrones generados por el código actual. Cambiar la geometría les cambia el
 dibujo. Tiene que entrar con migración y con aviso, como el rodeo.
 
-**Fuente a abrir:** la literatura de geometría de patrones keyline, y la tabla
-comparativa de métodos de trazado del manual de agricultura regenerativa que la
-sistematiza —la que reporta qué fracción de la superficie queda efectivamente
-drenada con línea guía contra contorno puro, y la diferencia es grande—.
+**Hecha el 04/10/2026.** Módulo nuevo `lib/keylineGeometria.ts` con los criterios
+publicados y las citas; `lib/keyline.ts` reescrito en su parte del patrón; 62
+tests. Cuatro fuentes: **Yeomans, «Water for Every Farm»** (el método de P.A.
+Yeomans, 1954), **Georgi Pavlov (HUMA)** con prólogo de Darren J. Doherty, y los
+estándares **NRCS 330 «Contour Farming»** (octubre 2017) y **386 «Field Border»**
+(enero 2024).
+
+Lo que apareció y no estaba previsto, que es más grave que lo que sí:
+
+1. **La métrica estaba al revés.** `generarPatronCultivo` medía la «pendiente
+   residual a lo largo de las líneas» y daba **«excelente» cuando tendía a
+   cero**. Esa pendiente que aparece sola al parear una curva *es el mecanismo
+   del método*: es la que saca el agua del eje del valle y la reparte en el
+   lomo. acequia puntuaba la herramienta por el criterio opuesto al del método
+   que le da el nombre, y Yeomans tiene la frase exacta para eso: *«Although any
+   cultivation parallel to a contour guide line is "contour cultivation", it is
+   not necessarily Keyline pattern cultivation.»* Ahora el veredicto es qué
+   fracción del patrón deriva **hacia la ladera** y cuánta de esa deriva cae
+   dentro de la banda publicada.
+2. **La deriva tiene techo y piso publicados, y acequia no tenía ninguno.** El
+   estándar 330 los fija: el techo es *«one-half of the up-and-down-hill slope
+   percent […] with a maximum 4-percent row grade»*, y el piso es *«not less than
+   0.2 percent on slopes where ponding is a concern […] soil hydrologic groups C
+   or D»*. O sea que **el 0,5 % que la app llamaba «excelente» puede estar por
+   debajo del mínimo publicado** en un suelo C o D: ahí el surco encharca. Y el
+   grupo hidrológico ya estaba en la app, en la pestaña de suelo. Es el mismo
+   patrón de la etapa E: no faltaba el dato, faltaba que dos paneles se hablen.
+3. **El suavizado destruía la directriz.** Esto lo encontró un test. Simplificar
+   la directriz a las formas principales —lo que la fuente pide— y después
+   suavizarla con un corte de esquina proporcional al tramo deja el vértice
+   reemplazado por una cuerda a la mitad de cada arma. Sobre una curva cruda de
+   187 vértices no se nota; sobre una directriz de 3 **da vuelta la deriva**: en
+   una vertiente, cortar el ángulo hace que las líneas bajen hacia el eje del
+   valle. El redondeo pasó a ser un **radio acotado** —por defecto el ancho del
+   implemento, que es lo que la máquina puede girar—, que es además la lectura de
+   Pavlov: entre líneas paralelas la distancia en los ángulos es mayor que entre
+   sus rayos, así que redondear no rompe la equidistancia.
+4. **El orden del veredicto también estaba mal, y lo encontró el mismo test.**
+   Mirar la dirección de la deriva antes que su magnitud hace que un patrón que
+   corre exactamente a nivel salga rotulado «deriva invertida», que es una alarma
+   falsa: no hay deriva ninguna. Primero la magnitud, después el lado.
+
+Y las tres cosas de máquina que faltaban, cada una con su número: el **headland**
+de 2 a 4 veces el ancho del implemento (y 30 pies si esa franja además hace de
+borde de lote, por el estándar 386), el **giro máximo del tractor** de 50 a 55°
+—así que un vértice de 30° es indibujable— y los límites de aptitud: **2 a 10 %
+de pendiente**, **100 a 400 pies de largo de ladera**, otro patrón arriba de
+**20°**, y menos efectividad con una tormenta de 10 años y 24 h de más de
+**6,5 pulgadas (165 mm)** —que acequia también calculaba ya, en la pestaña de
+tormenta—.
+
+La corrección conceptual que el plan pedía quedó escrita donde se lee: la nota
+del keypoint ahora dice que sirve para **ubicar agua** —es la cota más alta a la
+que un muro embalsa en ese valle, los *Keypoint dams* de Yeomans— y que el patrón
+de cultivo no se dibuja desde ahí.
+
+**La migración y el aviso.** `ResultadoPatron` lleva `version: 2`. Un patrón
+guardado antes no la trae, y la pantalla lo reconoce: **no se redibuja solo**
+—las líneas que están en el plano son del usuario— pero tampoco se le muestra un
+veredicto que nunca se midió así. Dice qué cambió y ofrece recalcular. No hizo
+falta migración de base: esto vive en el JSON del proyecto.
+
+**Lo que queda, y no lo puede cerrar el cálculo:** validar la deriva contra un
+predio real. En los dos terrenos sintéticos del test las dos reglas opuestas de
+Yeomans salen reproducidas —en la vertiente conviene parear hacia abajo, en el
+lomo hacia arriba— pero eso es geometría, no campo. Y queda sin implementar el
+**trabajo en dos mitades** de una vertiente angosta (el *herring-bone* de
+Yeomans, con el eje del valle como línea divisoria): hoy se avisa cuando el
+patrón da la vuelta por el vértice, que es cuando hace falta, pero el patrón no
+se parte solo.
 
 ### 1.4 El lado del muro: la app pregunta y podría recomendar
 
@@ -794,8 +860,12 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    lo valide contra predios que conozca. Quedan abiertos también el paso 4
    (`dimensionarMuro` con `profEnMuro_m`) y el 5 (la simulación anual leyendo el
    área del espejo de la curva), los dos a la espera del 3.
-7. **La corrección 1.3** —keyline— cuando haya tiempo de hacerla con migración y
-   aviso. Es la única que puede romperle el dibujo a un proyecto guardado.
+7. ~~**La corrección 1.3** —keyline—.~~ **✅ 04/10/2026.** Entró con migración por
+   versión y con aviso: un patrón guardado con los criterios viejos no se
+   redibuja solo y la pantalla explica por qué no le muestra veredicto. Aparecieron
+   dos defectos que el plan no preveía —la métrica medía lo contrario de lo que
+   el método busca, y el suavizado daba vuelta la deriva— y los dos los encontró
+   un test. Queda abierto el trabajo en dos mitades de una vertiente angosta.
 
 Las etapas D, G, H, I y J después, en ese orden.
 

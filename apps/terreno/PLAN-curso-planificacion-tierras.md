@@ -110,7 +110,14 @@ El curso agrega también un piso de contraste (7 l/hora por UG de 380 kg, biblio
 uruguaya) que usan "para tener una noción de cuánto nos estamos desviando". Eso es
 exactamente lo que hace `saludCalculo.ts`: dos métodos, y si no coinciden se avisa.
 
-### 1.3 El keyline: estamos haciendo el offset desde donde la fuente dice que no
+### 1.3 El keyline: estamos haciendo el offset desde donde la fuente dice que no ✅ *04/10/2026*
+
+> Hecha. `lib/keylineGeometria.ts` + `lib/keyline.ts`, 62 tests. Las cuatro cosas de este
+> apartado entraron —directriz simplificada en vez de la curva cruda, headland, giro máximo,
+> límite de pendiente— y además aparecieron dos defectos más de fondo: la métrica premiaba la
+> deriva cerca de cero, que es el mecanismo del método medido al revés, y el suavizado por
+> corte de esquina daba vuelta la deriva en cuanto la directriz quedaba simplificada. El
+> detalle completo está en `PLAN-fase-diseno-de-predio.md`, §1.3.
 
 `lib/keyline.ts` genera el patrón con *"líneas paralelas a la curva por el keypoint"* y, en
 `generarPatronCultivo`, *"líneas paralelas a espaciado fijo"*. El folleto de Georgi Pavlov
