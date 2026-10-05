@@ -76,6 +76,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `escorrentias.ts` | Escorrentías superficiales por algoritmo D8. |
 | `captacion.ts` | Captación pluvial + dimensionamiento de tanque. |
 | `hidraulica.ts` | Hidráulica de redes de agua por tubería. |
+| `artefactos.ts` | Qué agua pide una instalación, con los **dos** niveles de simultaneidad: cuántos artefactos de una vivienda se abren juntos (Hunter, y K = 1/√(n−1) de contraste) y cuántas viviendas iguales de una red tienen el pico a la misma hora (`simultaneidadConjunto`, con su piso publicado de 0,25). |
 | `manguera.ts` | Manguera móvil: el coeficiente medido en manguera, no el del caño de catálogo. |
 | `ventosas.ts` | Trampas de aire: dónde va una ventosa sobre el perfil de una cañería. |
 | `alcantarilla.ts` | Alcantarilla de un cruce de camino: del caudal de la cuenca al diámetro del caño. |

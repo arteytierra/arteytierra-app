@@ -301,19 +301,78 @@ corona se dibuje hasta el pelo de agua del lado del vertedero y hasta la altura
 del libre bordo del lado opuesto, que cambia el largo del coronamiento según de
 qué lado quedó el vertedero.
 
-### 1.5 Falta el coeficiente de simultaneidad de un conjunto de viviendas
+### 1.5 Falta el coeficiente de simultaneidad de un conjunto de viviendas ✅ *04/10/2026*
 
-El dimensionamiento de la red de agua usa el coeficiente de una vivienda. Para un
-conjunto de `N` viviendas el coeficiente es otro y es el que hace que una red de
-diez casas no se dimensione como diez redes de una. La expresión clásica de la
-hidráulica sanitaria es:
+El dimensionamiento de la red de agua usaba el coeficiente de una vivienda. Para
+un conjunto de `N` viviendas el coeficiente es otro y es el que hace que una red
+de diez casas no se dimensione como diez redes de una.
 
-```
-KE = (19 + N) / (10 · (N + 1))
-```
+**Hecha el 04/10/2026.** `lib/artefactos.ts` (`simultaneidadConjunto`,
+`demandaConjunto`), el campo «¿a cuántas viviendas iguales sirve esta red?» en
+`RedServiciosPanel`, y 41 tests en `tests/unit/aguas/artefactos.test.ts` (eran
+24).
 
-Hay que abrir la norma o el manual de hidráulica sanitaria que la publica, porque
-hay variantes según el país y el tipo de consumo.
+**Fuente leída:** Vázquez Arenas, G., «Instalaciones I», tema 1, 3ª parte
+(Universidad Politécnica de Cartagena, OpenCourseWare), apartado «Coeficiente de
+simultaneidad en viviendas de igual tipo», contrastada con el material de
+formación del **Govern de les Illes Balears**, que publica la misma expresión y
+la misma distinción entre los dos coeficientes. **Y acá va una respuesta
+negativa que el apartado pedía:** ninguna de las dos nombra una norma para esta
+expresión. Lo que hay es la fórmula publicada con sus condiciones, y eso es lo
+que acequia cita; no se le pone un número de norma que no se vio.
+
+De paso, el nombre. Las dos fuentes llaman **Kv** al coeficiente entre viviendas
+y **Ke** al de los artefactos de una vivienda; este apartado lo tenía al revés.
+
+**Las cuatro cosas que apareció yendo a la fuente, y la primera es la que
+importa:**
+
+1. **Hay un piso publicado, `Kv ≥ 0,25`, y la fórmula sola se le va por
+   abajo.** La expresión tiende a 0,10 cuando `N` crece, así que **por abajo se
+   escapa del rango en el que la publicaron**, y se escapa enseguida: el cruce
+   es exacto en `N = 11`, donde `Kv = 30/120 = 0,25` justo. Desde 12 viviendas
+   la fórmula cruda queda por debajo del piso, y con 50 da 0,135 contra 0,25:
+   **un 46 % menos de caudal de diseño**, o sea un caño calculado para la mitad
+   del agua. Es exactamente la falla que este repositorio vigila —un número
+   plausible y equivocado, del lado barato— y era lo que este apartado llamaba
+   «una línea de código». La línea sola, en un loteo, dimensiona mal.
+2. **El coeficiente es para un conjunto de viviendas IGUALES.** *«Este
+   coeficiente se aplicará al número de viviendas iguales, es decir no habrá 15
+   viviendas iguales sino que se considerará que habrá 15·Kv viviendas.»* Ocho
+   cabañas más la casa principal no son un conjunto de nueve: son dos conjuntos,
+   cada uno con su `N` y su `Kv`. `demandaConjunto` toma grupos por eso. Y lo
+   que la fuente **no** dice es cómo combinar grupos distintos, así que acequia
+   suma los aportes —el lado conservador: dos grupos de 8 y 2 piden más caño que
+   uno solo de 10— y lo escribe en las advertencias en vez de inventar una
+   regla.
+3. **Hay un umbral, y el ejemplo del curso cae justo en el borde.** *«Este
+   coeficiente de simultaneidad se aplicará cuando el número de viviendas en un
+   edificio sea superior a 10»*, y *«se omitirá su cálculo […] en las
+   instalaciones interiores cuando el número de viviendas sea menor de 10»*. Las
+   dos oraciones acotan el umbral a **edificios e instalaciones interiores**, y
+   la misma fuente dice que el coeficiente *«resulta principalmente práctico en
+   el cálculo de las redes urbanas»*, que es el caso de un loteo. Así que para
+   una red acequia lo aplica, pero avisa: las diez cabañas del ejemplo, con su
+   0,26, están exactamente en el borde de lo que la fuente discute.
+4. **Y el de artefactos, el que ya estaba, le falta un 20 % según una de las dos
+   fuentes.** La de Cartagena lo pide explícitamente —*«este valor de Kp […] se
+   debe aumentar en un 20 % del resultado para constituir así un factor de
+   seguridad frente a posible uso de la instalación en horas punta»*— y la
+   balear publica la misma expresión sin mayoración ninguna. La discrepancia se
+   deja a la vista en vez de resolverla por decreto: el panel informa los dos
+   números y dice que las fuentes no coinciden. El caudal de diseño no cambia
+   —lo manda Hunter— porque éste es el método de contraste.
+
+**Y una deuda que el apartado no mencionaba:** el piso de 0,2 del coeficiente de
+artefactos es de acequia y no está publicado. Con la mayoración recién muerde
+arriba de 37 artefactos en el mismo tramo, que en una vivienda rural no pasa,
+pero ahora cuando muerde se avisa y se dice de quién es el número.
+
+**Lo que queda abierto:** el panel toma **un** tipo de vivienda a la vez, que es
+el caso del plan —un loteo, las cabañas, las casas del personal—; los grupos
+múltiples están en el motor y calculados, pero sin pantalla. Y valen las mismas
+condiciones de la fuente que acequia no puede verificar sola: que las viviendas
+sean realmente iguales y que el consumo sea doméstico.
 
 ---
 
@@ -978,6 +1037,13 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    los lados que no embalsan nada daban la mejor relación de todas. Queda
    abierto leer la carga sobre el vertedero del cuadro 10 con la pendiente del
    estribo elegido, que cierra esto con la etapa E.
+
+9. ~~**La corrección 1.5** —la simultaneidad entre viviendas—.~~
+   **✅ 04/10/2026.** Con las cinco correcciones del material del curso cerradas
+   quedan sólo la 1.1 y la 1.2, bloqueadas en la tabla de agua por temperatura.
+   Lo que apareció acá es lo mismo de siempre: la fórmula que el apartado daba
+   por «una línea de código» tiene un **piso publicado** del que se escapa a
+   partir de 12 viviendas, y con 50 dimensiona el caño para la mitad del agua.
 
 Las etapas D, G, H, I y J después, en ese orden.
 

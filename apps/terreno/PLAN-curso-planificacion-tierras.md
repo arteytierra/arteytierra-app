@@ -173,7 +173,16 @@ Así que el paso 3 de `CutFillPanel` puede dejar de ser una pregunta a ciegas y 
 cauce", dejando que el usuario elija el otro igual. Es el patrón que ya usa toda la app:
 recomendar con el porqué, no imponer.
 
-### 1.5 Falta el coeficiente de simultaneidad entre viviendas
+### 1.5 Falta el coeficiente de simultaneidad entre viviendas ✅ *04/10/2026*
+
+> Hecha. `lib/artefactos.ts` + el campo de viviendas en `RedServiciosPanel`, 41 tests. **No
+> era una línea de código:** la fórmula tiene un piso publicado, `Kv ≥ 0,25`, y la expresión
+> sola se le va por abajo a partir de 12 viviendas —con 50 da 0,135 contra 0,25, un caño para
+> la mitad del agua—. También apareció que el coeficiente es para viviendas **iguales** (ocho
+> cabañas más la casa principal son dos conjuntos, no uno de nueve), que el umbral de la
+> fuente está en 10 y las diez cabañas del ejemplo caen justo en el borde, y que el `Kv`/`Ke`
+> de este apartado estaba con los nombres invertidos: Kv es el de entre viviendas. El detalle
+> completo está en `PLAN-fase-diseno-de-predio.md`, §1.5.
 
 `lib/artefactos.ts` tiene bien el de una vivienda: `Kv = 1/√(n−1)` (NF P 41-201), el mismo que
 usa el curso. Lo que no está es el de **un conjunto** —un loteo, cabañas, las casas del

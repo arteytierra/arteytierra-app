@@ -48,6 +48,12 @@ export interface RedAguaInputs {
   artefactos?:   Array<{ artefactoId: string; cantidad: number }>;
   /** Sumar el caudal continuo del sector de riego ya calculado. */
   sumarRiego?:   boolean;
+  /**
+   * Cuántas viviendas IGUALES alimenta esta red. Con más de una entra el
+   * coeficiente de simultaneidad entre viviendas (`simultaneidadConjunto`), que
+   * es el que hace que la red de un loteo no se dimensione como N redes de una.
+   */
+  viviendas?:    number;
 }
 
 // ─── Materiales (coeficiente C de Hazen-Williams) ─────────────────────────────

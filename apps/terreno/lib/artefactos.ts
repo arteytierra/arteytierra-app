@@ -26,6 +26,14 @@
  * entran en ninguna simultaneidad: cuando están abiertos, están, y se suman
  * aparte.
  *
+ * ── Y un segundo nivel de simultaneidad, que faltaba ────────────────────────
+ *
+ * Todo lo de arriba responde «¿cuánta agua pide UNA vivienda?». Una red que
+ * alimenta diez cabañas no se dimensiona como diez redes de una: las diez no
+ * tienen el pico a la misma hora, igual que los artefactos de una casa no se
+ * abren todos juntos. Es el mismo razonamiento aplicado un nivel más arriba, y
+ * tiene su propio coeficiente publicado. Ver `simultaneidadConjunto`.
+ *
  * Valores orientativos de diseño preliminar.
  */
 
@@ -136,10 +144,173 @@ export function caudalHunter_ls(ug: number): number {
   return ult[1] * GPM_A_LS;
 }
 
-/** Coeficiente de simultaneidad K = 1/√(n−1) (NF P 41-201). */
+/**
+ * Piso del coeficiente de artefactos. **No es publicado: es de acequia.** Con
+ * la mayoración de hora punta recién muerde arriba de 37 artefactos en el mismo
+ * tramo, que en una vivienda rural no pasa; está para que un número grande de
+ * artefactos no haga tender el caudal de diseño a cero. Si alguna vez muerde,
+ * `demandaRed` lo avisa.
+ */
+export const COEF_SIMULTANEIDAD_PISO = 0.2;
+
+/**
+ * Mayoración por hora punta del coeficiente de artefactos: **+20 %**.
+ *
+ * Acá las dos fuentes que publican la misma fórmula no coinciden, y la
+ * discrepancia se deja a la vista en vez de resolverla por decreto. El material
+ * de la Universidad Politécnica de Cartagena lo pide explícitamente —*«este
+ * valor de Kp calculado mediante la fórmula se debe aumentar en un 20 % del
+ * resultado para constituir así un factor de seguridad frente a posible uso de
+ * la instalación en horas punta»*— y el material del Govern de les Illes
+ * Balears publica la misma expresión sin mayoración ninguna.
+ *
+ * Por eso `demandaRed` informa los dos números. El caudal de diseño no cambia:
+ * lo manda Hunter, y éste es el método de contraste.
+ */
+export const MAYORACION_HORA_PUNTA = 1.20;
+
+/** Coeficiente de simultaneidad de artefactos, K = 1/√(n−1) (NF P 41-201). */
 export function coefSimultaneidad(n: number): number {
   if (n <= 1) return 1;
-  return Math.min(1, Math.max(0.2, 1 / Math.sqrt(n - 1)));
+  return Math.min(1, Math.max(COEF_SIMULTANEIDAD_PISO, 1 / Math.sqrt(n - 1)));
+}
+
+/** El mismo coeficiente con la mayoración de hora punta. Ver `MAYORACION_HORA_PUNTA`. */
+export function coefSimultaneidadMayorado(n: number): number {
+  if (n <= 1) return 1;
+  return Math.min(1, coefSimultaneidad(n) * MAYORACION_HORA_PUNTA);
+}
+
+// ─── Simultaneidad entre viviendas de un conjunto ─────────────────────────────
+
+/**
+ * El coeficiente que faltaba: la simultaneidad **entre viviendas** de una red.
+ *
+ * El de arriba responde cuántos artefactos de una casa se abren juntos. Éste
+ * responde cuántas casas del conjunto tienen su pico al mismo tiempo, y es el
+ * que hace que la red de un loteo, de las cabañas o de las casas del personal
+ * no se dimensione como N redes de una. La hidráulica sanitaria lo llama **Kv**
+ * —el de artefactos es Ke— y se calcula así:
+ *
+ *     Kv = (19 + N) / (10 · (N + 1))
+ *
+ * **Fuente leída:** Vázquez Arenas, G., «Instalaciones I», tema 1, 3ª parte
+ * (Universidad Politécnica de Cartagena, OpenCourseWare), apartado
+ * «Coeficiente de simultaneidad en viviendas de igual tipo», contrastada con el
+ * material de formación del Govern de les Illes Balears, que publica la misma
+ * expresión y la misma distinción entre Kv y Ke. Ninguno de los dos nombra una
+ * norma para Kv, y eso queda escrito acá: lo que hay es la expresión publicada
+ * con sus condiciones, no un número de norma.
+ *
+ * ── Las cuatro cosas que el plan de esta corrección no decía ────────────────
+ *
+ * **1. Hay un piso publicado: `Kv ≥ 0,25`.** La fórmula sola tiende a 0,10
+ * cuando N crece, así que **por abajo se escapa del rango en el que la
+ * publicaron**. Y se escapa enseguida: el cruce es exacto en N = 11, donde
+ * `Kv = 30/120 = 0,25` justo. Desde N = 12 la fórmula cruda queda por debajo
+ * del piso, y a 50 viviendas da 0,135 contra 0,25, o sea **un 46 % menos de
+ * caudal de diseño**: un caño calculado para la mitad del agua. Es la falla
+ * típica de acequia —un número plausible y equivocado, del lado barato— y es
+ * lo que el apartado llamaba «una línea de código».
+ *
+ * **2. La fórmula es para un CONJUNTO de viviendas IGUALES.** *«Este
+ * coeficiente se aplicará al número de viviendas iguales, es decir no habrá 15
+ * viviendas iguales sino que se considerará que habrá 15·Kv viviendas.»* Ocho
+ * cabañas más la casa principal no son un conjunto de nueve: son dos conjuntos,
+ * cada uno con su N y su Kv. Ver `demandaConjunto`.
+ *
+ * **3. Hay un umbral, y el ejemplo del curso cae justo en el borde.** *«Este
+ * coeficiente de simultaneidad se aplicará cuando el número de viviendas en un
+ * edificio sea superior a 10»*, y *«se omitirá su cálculo […] en las
+ * instalaciones interiores cuando el número de viviendas sea menor de 10»*. Las
+ * dos oraciones acotan el umbral a **edificios e instalaciones interiores**, y
+ * la misma fuente dice que el coeficiente *«resulta principalmente práctico en
+ * el cálculo de las redes urbanas»*, que es el caso de un loteo. Así que para
+ * una red acequia lo aplica, pero avisa: el ejemplo de las diez cabañas del
+ * curso, con su 0,26, está exactamente en el borde de lo que la fuente discute.
+ *
+ * **4. Y es para redes, no para la cañería de adentro de una casa.** No
+ * reemplaza al de artefactos: se aplica **encima**, sobre el caudal ya
+ * simultáneo de cada vivienda.
+ */
+export const FUENTE_SIMULTANEIDAD_CONJUNTO =
+  'Vázquez Arenas, G., «Instalaciones I», tema 1, 3ª parte (UPCT OpenCourseWare), «Coeficiente de simultaneidad en viviendas de igual tipo»; contrastada con el material de formación del Govern de les Illes Balears';
+
+/** Piso publicado del coeficiente de conjunto. */
+export const KV_MINIMO = 0.25;
+
+/** N a partir del cual la fuente lo da por aplicable en un edificio. */
+export const VIVIENDAS_UMBRAL_EDIFICIO = 10;
+
+/** N en el que la fórmula cruda toca el piso publicado. Desde 12 queda abajo. */
+export const VIVIENDAS_PISO_EXACTO = 11;
+
+export interface SimultaneidadConjunto {
+  viviendas:    number;
+  /** El coeficiente que se usa: la fórmula, acotada al piso publicado. */
+  kv:           number;
+  /** La fórmula sola, sin acotar. Se informa para que la diferencia se vea. */
+  kvCrudo:      number;
+  /** true si el piso de 0,25 tuvo que corregir la fórmula hacia arriba. */
+  pisoAplicado: boolean;
+  /**
+   * Viviendas equivalentes, `N · Kv`. Es la forma en que la fuente lo plantea:
+   * «no habrá 15 viviendas iguales sino que se considerará que habrá 15·Kv».
+   */
+  equivalentes: number;
+  fuente:       string;
+  nota:         string;
+  advertencias: string[];
+}
+
+/**
+ * Kv para un conjunto de `viviendas` iguales colgadas de la misma red.
+ *
+ * Devuelve `kv = 1` para una vivienda o menos: ahí no hay conjunto, y el
+ * coeficiente que corresponde es el de los artefactos.
+ */
+export function simultaneidadConjunto(viviendas: number): SimultaneidadConjunto {
+  const N = Math.max(0, Math.round(viviendas));
+  const advertencias: string[] = [];
+  const r3 = (v: number) => Math.round(v * 1000) / 1000;
+
+  if (N <= 1) {
+    return {
+      viviendas: N, kv: 1, kvCrudo: 1, pisoAplicado: false, equivalentes: N,
+      fuente: FUENTE_SIMULTANEIDAD_CONJUNTO,
+      nota: 'Una sola vivienda: no hay conjunto. La simultaneidad que corresponde acá es la de los artefactos.',
+      advertencias,
+    };
+  }
+
+  const crudo = (19 + N) / (10 * (N + 1));
+  const kv = Math.min(1, Math.max(KV_MINIMO, crudo));
+  const piso = crudo < KV_MINIMO;
+
+  if (piso) {
+    const menos = Math.round((1 - crudo / KV_MINIMO) * 100);
+    advertencias.push(
+      `Con ${N} viviendas la fórmula sola da ${r3(crudo)}, por debajo del piso publicado de ${KV_MINIMO}: ` +
+      `se usa el piso. Sin él el caño saldría dimensionado para un ${menos} % menos de caudal.`);
+  }
+  if (N <= VIVIENDAS_UMBRAL_EDIFICIO) {
+    advertencias.push(
+      `La fuente da este coeficiente por aplicable en un edificio cuando las viviendas pasan de ` +
+      `${VIVIENDAS_UMBRAL_EDIFICIO}, y acá son ${N}. En una red —un loteo, cabañas— dice que es donde más ` +
+      'sirve, así que acequia lo aplica, pero con este tamaño de conjunto estás en el borde de lo que ' +
+      'la fuente discute: si la red es corta y las casas se usan a la misma hora, conviene no descontar nada.');
+  }
+
+  const nota =
+    `${N} viviendas iguales en la misma red valen ${r3(N * kv)} viviendas a la hora de dimensionar el caño: ` +
+    `el coeficiente es ${r3(kv)}${piso ? ' (el piso publicado, porque la fórmula se le va por abajo)' : ''}. ` +
+    'Se aplica ENCIMA de la simultaneidad de los artefactos de cada vivienda, no en su lugar.';
+
+  return {
+    viviendas: N, kv: r3(kv), kvCrudo: r3(crudo), pisoAplicado: piso,
+    equivalentes: r3(N * kv),
+    fuente: FUENTE_SIMULTANEIDAD_CONJUNTO, nota, advertencias,
+  };
 }
 
 // ─── Demanda de la red ────────────────────────────────────────────────────────
@@ -157,6 +328,8 @@ export interface DemandaRed {
   /** Los dos métodos, para poder compararlos. */
   hunter_ls:       number;
   raiz_ls:         number;
+  /** El de la raíz con la mayoración de hora punta. Ver `MAYORACION_HORA_PUNTA`. */
+  raizMayorada_ls: number;
   /** Consumos de uso continuo (riego, llenado), sumados sin simultaneidad. */
   continuo_ls:     number;
   ug_total:        number;
@@ -168,6 +341,8 @@ export interface DemandaRed {
   presion_manda:   string | null;
   metodo:          string;
   nota:            string;
+  /** Lo que el usuario tiene que saber y la pantalla no muestra sola. */
+  advertencias:    string[];
 }
 
 /**
@@ -204,9 +379,19 @@ export function demandaRed(items: ItemArtefacto[]): DemandaRed {
 
   const hunter = caudalHunter_ls(ug);
   const raiz = sumaInter * coefSimultaneidad(nInter);
+  const raizMayorada = sumaInter * coefSimultaneidadMayorado(nInter);
   const diseno = Math.max(hunter, mayorIntermitente) + continuo;
 
   const r3 = (v: number) => Math.round(v * 1000) / 1000;
+
+  const advertencias: string[] = [];
+  if (nInter > 1 && 1 / Math.sqrt(nInter - 1) < COEF_SIMULTANEIDAD_PISO) {
+    advertencias.push(
+      `Con ${nInter} artefactos intermitentes en el mismo tramo, el coeficiente de simultaneidad de la ` +
+      `norma daría menos de ${COEF_SIMULTANEIDAD_PISO} y acá se usa ese piso, que es de acequia y no está ` +
+      'publicado. Es una instalación grande para este método: a esa escala corresponde Hunter, que es el ' +
+      'que manda el caudal de diseño igual.');
+  }
 
   let nota: string;
   if (nTotal === 0) {
@@ -224,6 +409,7 @@ export function demandaRed(items: ItemArtefacto[]): DemandaRed {
     diseno_ls:       r3(diseno),
     hunter_ls:       r3(hunter),
     raiz_ls:         r3(raiz),
+    raizMayorada_ls: r3(raizMayorada),
     continuo_ls:     r3(continuo),
     ug_total:        ug,
     n_intermitentes: nInter,
@@ -232,5 +418,150 @@ export function demandaRed(items: ItemArtefacto[]): DemandaRed {
     presion_manda:   presionManda,
     metodo:          'Unidades de gasto de Hunter, con los consumos continuos sumados aparte',
     nota,
+    advertencias,
+  };
+}
+
+// ─── Demanda de una red que alimenta varias viviendas ─────────────────────────
+
+export interface GrupoViviendas {
+  /** Rótulo para la pantalla: «cabañas», «casas del personal»… */
+  nombre:    string;
+  /** Artefactos de UNA vivienda de este tipo. */
+  items:     ItemArtefacto[];
+  /** Cuántas viviendas IGUALES de este tipo cuelgan de la misma red. */
+  viviendas: number;
+}
+
+export interface GrupoEvaluado {
+  nombre:       string;
+  viviendas:    number;
+  /** La demanda de una sola vivienda del tipo. */
+  porVivienda:  DemandaRed;
+  kv:           SimultaneidadConjunto;
+  /** Caudal intermitente de una vivienda, ya con la simultaneidad de artefactos. */
+  intermitentePorVivienda_ls: number;
+  /** Lo que el grupo le pide a la red (L/s), con Kv y con sus continuos. */
+  aporte_ls:    number;
+  /** Lo mismo sin Kv: N veces una vivienda. Para ver cuánto descuenta. */
+  sinKv_ls:     number;
+}
+
+export interface DemandaConjunto {
+  grupos:          GrupoEvaluado[];
+  /** Caudal de diseño de la red del conjunto (L/s). */
+  diseno_ls:       number;
+  /** El mismo cálculo sin simultaneidad entre viviendas. */
+  sinCoeficiente_ls: number;
+  /** Consumos compartidos de la red (riego, llenado, incendio). */
+  extras:          DemandaRed | null;
+  viviendas_total: number;
+  /** La presión de servicio más exigente de todo el conjunto (m.c.a.). */
+  presion_min_mca: number;
+  presion_manda:   string | null;
+  metodo:          string;
+  nota:            string;
+  advertencias:    string[];
+  fuentes:         string[];
+}
+
+/**
+ * Lo que una red le tiene que llevar a un conjunto de viviendas.
+ *
+ * Son dos niveles de simultaneidad, uno encima del otro, y ése es el punto:
+ * primero cuántos artefactos de una casa se abren juntos (Hunter), después
+ * cuántas casas tienen el pico a la misma hora (`simultaneidadConjunto`).
+ * Aplicar uno solo de los dos es lo que estaba mal; aplicar el de artefactos
+ * dos veces también.
+ *
+ * **Grupos, no un total.** La fuente aplica Kv a un conjunto de viviendas
+ * *iguales*, así que ocho cabañas y la casa principal son dos grupos con su N
+ * cada uno. Lo que la fuente **no** dice es cómo combinar grupos distintos, y
+ * acá no se inventa una regla: se suman los aportes, que es el lado
+ * conservador —dos grupos de 8 y 2 piden más que uno de 10—. Queda escrito en
+ * `advertencias` cuando hay más de un grupo.
+ *
+ * Los consumos continuos no entran en ninguna de las dos simultaneidades: se
+ * suman enteros, por vivienda y por el `extras` compartido de la red.
+ */
+export function demandaConjunto(
+  grupos: readonly GrupoViviendas[],
+  extras: ItemArtefacto[] = [],
+): DemandaConjunto {
+  const r3 = (v: number) => Math.round(v * 1000) / 1000;
+  const advertencias: string[] = [];
+
+  const evaluados: GrupoEvaluado[] = [];
+  let diseno = 0, sinCoef = 0, viviendasTotal = 0;
+  let presionMin = 0, presionManda: string | null = null;
+
+  for (const g of grupos) {
+    const N = Math.max(0, Math.round(g.viviendas));
+    if (N === 0 || g.items.length === 0) continue;
+    const d = demandaRed(g.items);
+    if (d.n_total === 0) continue;
+    viviendasTotal += N;
+    if (d.presion_min_mca > presionMin) { presionMin = d.presion_min_mca; presionManda = d.presion_manda; }
+
+    // El caudal intermitente de UNA vivienda, ya simultáneo por Hunter. Sale de
+    // restar los continuos del caudal de diseño: no hace falta otra cuenta.
+    const inter = Math.max(0, d.diseno_ls - d.continuo_ls);
+    const kv = simultaneidadConjunto(N);
+    const aporte = inter * N * kv.kv + d.continuo_ls * N;
+    const sin = (inter + d.continuo_ls) * N;
+
+    diseno += aporte;
+    sinCoef += sin;
+    advertencias.push(...kv.advertencias.map(a => `${g.nombre}: ${a}`));
+    evaluados.push({
+      nombre: g.nombre, viviendas: N, porVivienda: d, kv,
+      intermitentePorVivienda_ls: r3(inter),
+      aporte_ls: r3(aporte), sinKv_ls: r3(sin),
+    });
+  }
+
+  const dExtras = extras.length > 0 ? demandaRed(extras) : null;
+  if (dExtras && dExtras.n_total > 0) {
+    diseno += dExtras.diseno_ls;
+    sinCoef += dExtras.diseno_ls;
+    if (dExtras.presion_min_mca > presionMin) {
+      presionMin = dExtras.presion_min_mca; presionManda = dExtras.presion_manda;
+    }
+    advertencias.push(...dExtras.advertencias);
+  }
+
+  if (evaluados.length > 1) {
+    advertencias.push(
+      'Hay más de un tipo de vivienda. La fuente aplica el coeficiente a un conjunto de viviendas IGUALES y ' +
+      'no dice cómo combinar tipos distintos, así que acequia suma los aportes de cada grupo, que es el lado ' +
+      'conservador: dos grupos de 8 y 2 piden más caño que un solo grupo de 10.');
+  }
+
+  let nota: string;
+  if (evaluados.length === 0) {
+    nota = 'Cargá los artefactos de una vivienda y cuántas iguales alimenta la red.';
+  } else {
+    const ahorro = sinCoef > 0 ? Math.round((1 - diseno / sinCoef) * 100) : 0;
+    nota = viviendasTotal <= 1
+      ? 'Con una sola vivienda no hay nada que descontar entre casas: el caudal es el de sus artefactos.'
+      : `${viviendasTotal} viviendas en la red piden ${r3(diseno)} L/s, un ${ahorro} % menos que dimensionar ` +
+        `${viviendasTotal} veces una vivienda (${r3(sinCoef)} L/s). No es un ahorro inventado: es que las casas ` +
+        'no tienen el pico a la misma hora, el mismo argumento que ya se usa adentro de cada una.';
+  }
+
+  return {
+    grupos: evaluados,
+    diseno_ls: r3(diseno),
+    sinCoeficiente_ls: r3(sinCoef),
+    extras: dExtras,
+    viviendas_total: viviendasTotal,
+    presion_min_mca: presionMin,
+    presion_manda: presionManda,
+    metodo: 'Hunter adentro de cada vivienda, y el coeficiente de simultaneidad entre viviendas iguales por encima',
+    nota, advertencias,
+    fuentes: [
+      'Hunter, R.B. (1940), «Methods for Estimating Loads in Plumbing Systems», NBS Report BMS65',
+      FUENTE_SIMULTANEIDAD_CONJUNTO,
+    ],
   };
 }

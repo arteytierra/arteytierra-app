@@ -27,7 +27,9 @@ import { SERVICIOS, servicioPorId, type TipoServicio } from '@/lib/servicios';
 import { MangueraVentosasBloque } from './MangueraVentosasBloque';
 import {
   ARTEFACTOS_DOMESTICOS, ARTEFACTOS_PRODUCCION, ARTEFACTOS_RIEGO,
-  artefactoPorId, demandaRed, type ItemArtefacto, type Artefacto,
+  demandaRed, demandaConjunto, simultaneidadConjunto,
+  KV_MINIMO, MAYORACION_HORA_PUNTA,
+  type ItemArtefacto, type Artefacto, type DemandaConjunto,
 } from '@/lib/artefactos';
 
 interface Props {
@@ -58,6 +60,12 @@ export function RedServiciosPanel({
   const [modoCaudal, setModoCaudal] = useState<'artefactos' | 'manual'>(inicial?.modoCaudal ?? 'artefactos');
   const [items, setItems]           = useState<ItemArtefacto[]>(inicial?.artefactos ?? []);
   const [sumarRiego, setSumarRiego] = useState(inicial?.sumarRiego ?? false);
+  /**
+   * Cuántas viviendas iguales cuelga esta red. 1 = la de siempre, y entonces el
+   * cálculo es el que ya había. Con más de una entra el segundo nivel de
+   * simultaneidad, que es lo que abre el caso del loteo.
+   */
+  const [viviendas, setViviendas] = useState(Math.max(1, Math.round(inicial?.viviendas ?? 1)));
 
   // Parámetros hidráulicos
   const [caudal, setCaudal]       = useState(inicial?.caudal ?? '1');
@@ -71,9 +79,18 @@ export function RedServiciosPanel({
   const ficha = servicioPorId(servicio)!;
 
   // ── Demanda desde los artefactos ────────────────────────────────────────────
+  // `demanda` es siempre la de UNA vivienda: es la que alimenta la lista de
+  // artefactos. `conjunto` aparece sólo cuando la red sirve a varias iguales, y
+  // entonces es el que manda el caudal de diseño.
   const demanda = useMemo(() => demandaRed(items), [items]);
+  const conjunto = useMemo(
+    () => (viviendas > 1 && items.length > 0
+      ? demandaConjunto([{ nombre: 'Viviendas iguales', items, viviendas }])
+      : null),
+    [items, viviendas],
+  );
   const riegoLs = sumarRiego && riego ? riego.caudal_ls : 0;
-  const disenoLs = Math.round((demanda.diseno_ls + riegoLs) * 1000) / 1000;
+  const disenoLs = Math.round(((conjunto?.diseno_ls ?? demanda.diseno_ls) + riegoLs) * 1000) / 1000;
 
   // Presión requerida: la del artefacto más exigente, salvo que se pise a mano.
   const presionMin = modoCaudal === 'artefactos' && demanda.presion_min_mca > 0
@@ -84,9 +101,10 @@ export function RedServiciosPanel({
     onInputs?.({
       caminoId, invertir, caudal, unidad, materialId, dn, cargaOrigen, perdidasLocal,
       presionMin: presionMinManual, servicio, modoCaudal, artefactos: items, sumarRiego,
+      viviendas,
     });
   }, [caminoId, invertir, caudal, unidad, materialId, dn, cargaOrigen, perdidasLocal,
-      presionMinManual, servicio, modoCaudal, items, sumarRiego, onInputs]);
+      presionMinManual, servicio, modoCaudal, items, sumarRiego, viviendas, onInputs]);
 
   const camino = caminos.find(c => c.id === caminoId) ?? null;
   const material = MATERIALES.find(m => m.id === materialId)!;
@@ -139,8 +157,11 @@ export function RedServiciosPanel({
 
   // Emite el resumen hacia arriba (para informe/snapshot).
   const necesitaBomba = !!resultado && resultado.presion_min_mca < (parseFloat(presionMin) || 0);
+  // El rótulo que va al informe tiene que decir SOBRE QUÉ se calculó: "0,5 L/s
+  // (6 artefactos)" y "1,3 L/s (6 artefactos x 10 viviendas)" son dos obras
+  // distintas, y la segunda no se puede leer sin el "x 10".
   const caudalTexto = modoCaudal === 'artefactos'
-    ? `${disenoLs} L/s (${demanda.n_total} artefactos)`
+    ? `${disenoLs} L/s (${demanda.n_total} artefactos${viviendas > 1 ? ` x ${viviendas} viviendas` : ''})`
     : `${caudal} ${unidadCaudal.label}`;
   const resumen: RedAguaResumen | null = useMemo(() =>
     camino && resultado && Q_m3s > 0 ? {
@@ -334,7 +355,35 @@ export function RedServiciosPanel({
                       </label>
                     )}
 
-                    <ResumenDemanda demanda={demanda} riegoLs={riegoLs} disenoLs={disenoLs} />
+                    {/* ── Cuántas viviendas iguales cuelgan de esta red ──
+                        Es el caso del loteo, las cabañas o las casas del
+                        personal, que acequia no resolvía: la lista de arriba es
+                        de UNA vivienda, y multiplicarla por N sin el
+                        coeficiente de conjunto dimensiona N redes de una. */}
+                    {demanda.n_total > 0 && (
+                      <div className="bg-bone-50 rounded-lg border border-bone-200 px-2.5 py-2 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-ink-700/70 mr-auto">
+                            ¿A cuántas viviendas <b>iguales</b> sirve esta red?
+                          </span>
+                          <input type="number" min={1} step={1} value={viviendas}
+                            onChange={e => {
+                              const v = Math.round(parseFloat(e.target.value));
+                              setViviendas(Number.isFinite(v) && v >= 1 ? v : 1);
+                            }}
+                            className="w-16 text-[11px] font-mono text-right bg-white border border-bone-200 rounded px-1.5 py-0.5 text-ink-900 focus:outline-none focus:border-moss-500" />
+                        </div>
+                        <p className="text-[9px] text-ink-700/50 leading-relaxed">
+                          La lista de arriba es la de <b>una</b> vivienda. Si la red alimenta un loteo, cabañas o
+                          las casas del personal, acá va cuántas hay: diez casas no piden diez veces una, porque
+                          no tienen el pico a la misma hora. Es el mismo argumento que adentro de cada casa, un
+                          nivel más arriba.
+                        </p>
+                        {viviendas > 1 && conjunto && <BloqueConjunto conjunto={conjunto} />}
+                      </div>
+                    )}
+
+                    <ResumenDemanda demanda={demanda} riegoLs={riegoLs} disenoLs={disenoLs} conjunto={conjunto} />
 
                     {demanda.n_total === 0 && (
                       <p className="text-[10px] text-ink-700/50 italic">
@@ -531,14 +580,71 @@ function ListaArtefactos({ titulo, artefactos, items, onCambiar }: {
   );
 }
 
-function ResumenDemanda({ demanda, riegoLs, disenoLs }: {
+/**
+ * El coeficiente de simultaneidad entre viviendas, con su piso publicado.
+ *
+ * Lo que hay que poder leer acá es por qué el número no es N veces una
+ * vivienda, y —cuando el piso muerde— por qué no es el que da la fórmula.
+ */
+function BloqueConjunto({ conjunto }: { conjunto: DemandaConjunto }) {
+  const g = conjunto.grupos[0];
+  if (!g) return null;
+  const kv = g.kv;
+  const n3 = (v: number) => v.toLocaleString('es-AR', { maximumFractionDigits: 3 });
+
+  return (
+    <div className="space-y-1 border-t border-bone-200 pt-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] text-ink-700/70">
+          Coeficiente entre viviendas <span className="text-ink-700/45">(Kv)</span>
+        </span>
+        <span className="font-mono text-[11px] font-bold text-ink-900">
+          {n3(kv.kv)}
+          <span className="ml-1 font-normal text-ink-700/45">
+            → {n3(kv.equivalentes)} viviendas equivalentes
+          </span>
+        </span>
+      </div>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] text-ink-700/70">Caudal de la red del conjunto</span>
+        <span className="font-mono text-[11px] font-bold text-moss-800">
+          {n3(conjunto.diseno_ls)} L/s
+          <span className="ml-1 font-normal text-ink-700/45">
+            (sin descontar: {n3(conjunto.sinCoeficiente_ls)})
+          </span>
+        </span>
+      </div>
+      {kv.pisoAplicado && (
+        <p className="text-[9px] text-clay-700/90 leading-relaxed">
+          La fórmula sola da {n3(kv.kvCrudo)} y el piso publicado es {KV_MINIMO}: se usa el piso. La fórmula
+          tiende a 0,10 cuando el conjunto crece, así que por abajo se escapa del rango en el que la
+          publicaron, y el error va para el lado del caño chico.
+        </p>
+      )}
+      <p className="text-[9px] text-ink-700/55 leading-relaxed">{kv.nota}</p>
+      {kv.advertencias.map((a, i) => (
+        <p key={i} className="text-[9px] text-clay-700/90 leading-relaxed">{a}</p>
+      ))}
+      <p className="text-[9px] text-ink-700/40 leading-relaxed">
+        Kv = (19 + N) / (10·(N + 1)), acotado a {KV_MINIMO}. Se aplica <b>encima</b> de la simultaneidad de los
+        artefactos de cada vivienda, no en su lugar. Las viviendas tienen que ser del mismo tipo: ocho cabañas
+        más la casa principal son dos conjuntos y no uno de nueve. Fuente: {kv.fuente}.
+      </p>
+    </div>
+  );
+}
+
+function ResumenDemanda({ demanda, riegoLs, disenoLs, conjunto = null }: {
   demanda: ReturnType<typeof demandaRed>;
   riegoLs: number;
   disenoLs: number;
+  conjunto?: DemandaConjunto | null;
 }) {
   const [porQue, setPorQue] = useState(false);
   if (demanda.n_total === 0 && riegoLs === 0) return null;
-  const maximo = Math.round((demanda.maximo_ls + riegoLs) * 100) / 100;
+  const maximo = Math.round(((conjunto
+    ? demanda.maximo_ls * conjunto.viviendas_total
+    : demanda.maximo_ls) + riegoLs) * 100) / 100;
 
   return (
     <div className="bg-moss-50 border border-moss-200 rounded-lg p-2.5 space-y-1.5">
@@ -554,7 +660,9 @@ function ResumenDemanda({ demanda, riegoLs, disenoLs }: {
           <p className="text-[9px] text-ink-700/50">{Math.round(disenoLs * 60 * 10) / 10} L/min</p>
         </div>
       </div>
-      <p className="text-[10px] text-ink-700/65 leading-relaxed">{demanda.nota}</p>
+      <p className="text-[10px] text-ink-700/65 leading-relaxed">
+        {conjunto ? conjunto.nota : demanda.nota}
+      </p>
       <button onClick={() => setPorQue(v => !v)} className="text-[10px] text-moss-700 underline">
         {porQue ? 'ocultar' : 'por qué no se suma todo'}
       </button>
@@ -570,9 +678,21 @@ function ResumenDemanda({ demanda, riegoLs, disenoLs }: {
             intermitentes → <span className="font-mono">{demanda.hunter_ls} L/s</span>.
           </p>
           <p>
-            <strong>K = 1/√(n−1)</strong> sobre los caudales instantáneos → <span className="font-mono">{demanda.raiz_ls} L/s</span>.
-            Se muestra para contrastar; el diseño toma el de Hunter.
+            <strong>K = 1/√(n−1)</strong> sobre los caudales instantáneos → <span className="font-mono">{demanda.raiz_ls} L/s</span>,
+            y <span className="font-mono">{demanda.raizMayorada_ls} L/s</span> con la mayoración de hora punta.
+            Se muestran para contrastar; el diseño toma el de Hunter. Los dos números están porque las dos
+            fuentes que publican esta fórmula no coinciden: una pide aumentar el resultado un{' '}
+            {Math.round((MAYORACION_HORA_PUNTA - 1) * 100)} % como factor de seguridad para las horas punta y la
+            otra publica la misma expresión sin mayoración ninguna.
           </p>
+          {conjunto && conjunto.grupos[0] && (
+            <p>
+              <strong>Kv entre viviendas</strong>: {conjunto.viviendas_total} viviendas iguales valen{' '}
+              <span className="font-mono">{conjunto.grupos[0].kv.equivalentes}</span> a la hora de dimensionar.
+              Es una segunda simultaneidad, arriba de la de los artefactos: la de abajo dice que no se abren
+              todas las canillas de una casa, ésta dice que no todas las casas tienen el pico a la misma hora.
+            </p>
+          )}
           {demanda.continuo_ls > 0 && (
             <p>
               <strong>Consumo continuo</strong> (riego, llenado de tanque):{' '}
@@ -580,9 +700,13 @@ function ResumenDemanda({ demanda, riegoLs, disenoLs }: {
               entero — mientras corre, corre.
             </p>
           )}
+          {demanda.advertencias.map((a, i) => (
+            <p key={i} className="text-clay-700/90">{a}</p>
+          ))}
           <p className="text-ink-700/50">
             Fuente: Hunter, «Methods for Estimating Loads in Plumbing Systems», NBS BMS65 (1940), base de los
-            códigos de instalaciones sanitarias. El coeficiente de simultaneidad es NF P 41-201.
+            códigos de instalaciones sanitarias. El coeficiente de simultaneidad de artefactos es NF P 41-201;
+            el de entre viviendas, {simultaneidadConjunto(2).fuente}.
           </p>
         </div>
       )}
