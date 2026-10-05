@@ -120,6 +120,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `electrificador.ts` | El equipo del alambrado eléctrico, la puesta a tierra y la resistencia del alambre. |
 | `potreros.ts` | Subdivisión geométrica de potreros. |
 | `silvopastura.ts` | Líneas de árboles/forraje leñoso a nivel. |
+| `sombraGanado.ts` | Cuánta sombra pide el rodeo (tres tablas publicadas que **no coinciden**, con el óptimo al lado), en qué meses la pide (índice temperatura-humedad con la humedad de la hora de calor, no la media del día), con qué se hace y dónde va. |
 | `cortinas.ts` | Cortinas rompevientos como franja multiestrato. |
 | `caminos.ts` | Trazado de caminos con perfil de elevación. |
 | `economia.ts` | Presupuesto de obras + análisis económico simple. |

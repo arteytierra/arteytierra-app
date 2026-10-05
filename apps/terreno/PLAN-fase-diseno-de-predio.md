@@ -621,18 +621,148 @@ comida hace falta **producción de forraje por ambiente**, y ése es
 `prodForrajera`, el número que sigue sin fuente. Es la tercera etapa seguida que
 choca contra el mismo faltante.
 
-### Etapa D — Sombra para el ganado
+### Etapa D — Sombra para el ganado ✅ *05/10/2026*
 
-Hoy la app calcula sombra de objetos para construcciones. Para el animal la
-pregunta es otra: **cuántos metros cuadrados de sombra por unidad de ganado**, y
-**a qué distancia** tiene que estar para que el rodeo la use. Los dos números
-tienen literatura publicada —de bienestar animal y de sistemas silvopastoriles— y
-hay que abrirla: varían con la categoría, con el clima y con el tipo de sombra
-(árbol aislado, monte, media sombra).
+Hecha. Un módulo nuevo —`lib/sombraGanado.ts`—, un bloque de interfaz en la
+pestaña Ganadería (`components/SombraGanadoBloque.tsx`) y **56 tests** en
+`tests/unit/economia/sombraGanado.test.ts`.
 
-El tercer dato lo tiene la app y nadie más: **en qué meses hace falta**, que sale
-del gráfico climático del predio, y **dónde cae la sombra**, que sale del relieve
-y de la orientación. La app ya corrigió el hemisferio sur en esos cálculos.
+El enunciado pedía dos números publicados y daba por hecho que los dos existían.
+**Uno existe y resultó ser el problema; el otro no existe, y eso también es un
+resultado.**
+
+**Las fuentes leídas, todas gratuitas y verificables:**
+
+- **Higgins, Agouridis y Wightman, «Shade Options for Grazing Cattle», AEN-99,
+  University of Kentucky Cooperative Extension** (rev. 04-2024). Es el origen:
+  la norma de la NRCS de Virginia referencia explícitamente el trabajo de Larry
+  W. Turner en Kentucky, a cuya memoria está dedicada esta publicación.
+- **USDA-NRCS, *Virginia Conservation Practice Standard: Livestock Shade
+  Structure, Code 717*** (nov. 2006), con la hoja de campo gemela de Alabama
+  (*Job Sheet No. AL717*, 3/09).
+- **University of Arizona Cooperative Extension, «Shelter Needs for Small
+  Livestock», az2125** (2025).
+- **USDA Southeast Regional Climate Hub, «Cattle Heat Stress Alert»** (umbrales
+  de St-Pierre et al. 2003), para el índice temperatura-humedad por categoría.
+- **NRC (1971)** para el índice, en la transcripción de Harithalekshmi y Kumar,
+  «Intercomparison of seven Temperature-Humidity Index (THI) equations», MAUSAM
+  (Indian Meteorological Department), que además lo encuentra el más apto de los
+  siete. Y **FAO-56** (ecuaciones 10, 11 y 14) para pasar del punto de rocío a la
+  humedad relativa.
+- De contraste, **K-State Research and Extension, «Livestock Water and Shade
+  Requirements»** (2021), que reproduce la tabla de Kentucky y confirma su
+  origen.
+
+**Lo que apareció, en orden de cuánto mueve:**
+
+1. **Tres documentos publican la tabla, los tres la llaman mínimo o estándar, y
+   no coinciden.** Para la misma vaca de carne: **30** pies²/cabeza (Arizona),
+   **30–40** (Kentucky) y **40** (Virginia). Y la misma publicación que da 30–40
+   dice que **el óptimo son 40–70**: *«The optimum recommendation is
+   approximately 40-70 square feet/head of shade for mature cows on pasture.»*
+   Del piso más bajo que alguien llama mínimo al techo del óptimo hay un factor
+   **2,3**. Elegir uno y presentarlo como «el requerimiento» es elegir un punto
+   en un rango de 2,3× sin decirlo. acequia devuelve la banda con cada número
+   atribuido, y de paso: la banda de Kentucky es **exactamente** el tramo entre
+   los otros dos mínimos.
+2. **El techo de la tabla práctica es el piso del óptimo.** El 75 % que la
+   fuente declara —*«A practical compromise is to provide 75% of this
+   requirement»*— cierra exacto en el extremo de abajo (40 × 0,75 = 30) y no en
+   el de arriba, donde daría 52,5 y la tabla dice 40. O sea que quien llega al
+   número más alto de la tabla está recién empezando lo que la misma publicación
+   llama óptimo. No es una crítica a la fuente, que es explícita en que su tabla
+   es un compromiso: es lo que hay que mostrar para que nadie lea el 40 como un
+   techo.
+3. **Hay dos 75 % distintos y se parecen demasiado.** Uno es el de la superficie
+   por cabeza. El otro es *«shade should be provided for at least 75% of the herd
+   in controlled grazing systems»*, que es cuántos animales tienen sombra.
+   Multiplicarlos —que es lo que sale de leer rápido— deja el **56 %** del óptimo.
+   Los dos están en el código con nombres distintos y la pantalla los muestra
+   separados.
+4. **No hay radio de uso de la sombra publicado.** Ésta es la respuesta negativa
+   a la segunda mitad del enunciado: ninguna de las cuatro fuentes dice a qué
+   distancia tiene que estar la sombra para que el rodeo la use. Lo que publican
+   es (a) una distancia **al agua** —*«If cattle have to travel more than 800 ft
+   for water, grazing distribution will be less even»*, que además es otro
+   criterio que los 1.980 pies de `abrevadero.ts`: ése decide si el rodeo llega
+   junto al bebedero y éste si el potrero se pastorea parejo— y (b) una **regla
+   de ubicación que va al revés de la intuición**: la sombra *no* va al lado del
+   agua ni del bloque de sal, *«so as to create a desired livestock-grazing
+   pattern»*, y se pone lejos del arroyo justamente para correr al rodeo de la
+   ribera. acequia escribe la regla y no la convierte en un radio que nadie
+   publicó.
+5. **La humedad media del día pegada a la máxima infla el índice.** El umbral de
+   estrés calórico se compara contra el momento más caluroso, y la app tiene la
+   máxima media del mes. Lo que no tiene es la humedad de **esa hora**: `rh_pct`
+   es la media de las 24 horas, y la humedad relativa es mínima justo cuando la
+   temperatura es máxima. El punto de rocío, en cambio, casi no se mueve en el
+   día, así que el apareo físicamente correcto es **máxima media + rocío medio**.
+   En el caso de los tests la diferencia es de **3,8 puntos de índice** —79,2
+   contra 83,0—, que es media banda de severidad. Acá el error va para el lado
+   caro (sobra sombra), pero sigue siendo un número equivocado y la pantalla
+   muestra los dos.
+6. **Los umbrales no siguen al tamaño ni a la edad.** La vaca de tambo en
+   producción es la **más** sensible de todas (70) y la vaquillona de tambo de
+   menos de un año la **más** resistente (77); el bovino de carne está en 75 y el
+   de terminación en 72. El umbral sigue al calor metabólico que el animal ya
+   está produciendo por dentro. Por eso en un rodeo manda la categoría más
+   sensible y no el promedio, que es la misma regla de «manda el peor» de la
+   etapa A.
+7. **Dos fuentes que no se citan entre sí dan el mismo punto.** AEN-99 dice que
+   *«when temperatures are over 77° F, cattle may begin to experience heat
+   stress»*. 77 °F son 25 °C, y el índice NRC (1971) a 25 °C con 50 % de humedad
+   da **72,0 justo**, que es el umbral publicado del bovino en terminación. Es el
+   caso resuelto del test del índice.
+8. **El ovino no tiene fila publicada.** Ninguna de las tres tablas la trae. Las
+   fuentes coinciden en que la oveja tolera el calor mejor que el bovino, pero
+   eso no es un número: los ovinos se cuentan aparte y la pantalla lo dice. La
+   cabra sí aparece, una sola vez, agrupada con el cerdo en 10 pies² (Arizona),
+   donde Virginia da 20 para el cerdo: **otro factor 2 en la misma fila**.
+9. **El toro se sale de la tabla.** La tabla se termina en la vaca adulta y el
+   toro pesa 700 kg, y AEN-99 avisa que *«heavy cattle are more susceptible to
+   heat stress than lighter cattle»*. Se usa la fila de la vaca y se dice que es
+   un piso, no el requerimiento.
+10. **Los dos topes de unidad portátil difieren 5,25 veces.** Virginia limita la
+    unidad a 25 × 42 pies (lo que resiste el marco de caño) y Kentucky a 10 × 20
+    (lo que una persona puede mover entre potreros). No es contradicción, son dos
+    criterios, y el número de sombras es el presupuesto: acequia da los dos.
+11. **Un defecto que apareció escribiendo el test.** El caso resuelto de AEN-99
+    —30 vacas, 1.200 pies², seis sombras— es un múltiplo exacto de la unidad.
+    Redondeando el área a un decimal para pantalla, 111,4836 m² se vuelven 111,5,
+    el cociente pasa a 6,0009 y el `ceil` devuelve **siete** sombras: una entera
+    de presupuesto por un decimal, y del lado caro. Por eso este módulo no
+    redondea las superficies y el redondeo vive en la pantalla. Hay un test que
+    fija las dos cosas.
+
+**Y lo que la app calcula y nadie más.** La sombra de un techo plano sobre suelo
+horizontal es la misma figura **trasladada**: tiene exactamente el área del techo
+cualquiera sea la altura del sol, y eso es lo que hace legítima una tabla en
+pies² de techo. Lo que cambia es **dónde** cae: se corre `altura / tan(elevación)`.
+En el mes de pico a 30° de latitud sur, un techo de 3 m tiene la sombra a **0,5 m**
+al mediodía solar y a **2,7 m** tres horas después —cinco veces más—, y la máxima
+de temperatura del aire llega después del mediodía. Si el techo es angosto, a la
+hora en que el animal la necesita la sombra no está debajo de la estructura. Eso
+no está en ninguna tabla y sale del cálculo solar que la app ya tenía, reusado y
+no reescrito.
+
+**Lo que queda abierto, a propósito:**
+
+- **Sin escalera de severidad.** Las bandas de alerta/peligro/emergencia circulan
+  con cortes distintos en cada publicación y ninguna de las fuentes leídas las da
+  con números limpios, así que lo que se informa es cuántos puntos pasa del
+  umbral publicado y nada más. Una escalera inventada se lee igual que una
+  publicada, y es el error que este repositorio ya tiene en `prodForrajera`.
+- **El umbral está calibrado sobre razas británicas y continentales.** Un rodeo
+  cebú o cruza índica tolera más, y ninguna de las fuentes publica un umbral
+  corregido por raza. Se dice en pantalla.
+- **Son medias mensuales.** Los días de ola de calor, que son los que matan
+  animales, no están acá: están en los extremos de la serie diaria
+  (`climaExtremos.ts`), y conectarlos es trabajo aparte.
+- **acequia no tiene categoría de tambo**, así que el umbral más sensible de
+  todos —el 70 de la vaca en producción— está declarado y sin usar.
+- **Dónde poner la sombra en el mapa.** El módulo da la regla y los retiros, pero
+  no propone puntos sobre el terreno. Eso es de la familia de `sugerencias.ts` y
+  necesita el relieve y el agua juntos.
 
 ### Etapa E — Represa: las tablas de diseño y la comparación de candidatos ✅ *03/10/2026*
 
@@ -1045,7 +1175,18 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
    por «una línea de código» tiene un **piso publicado** del que se escapa a
    partir de 12 viviendas, y con 50 dimensiona el caño para la mitad del agua.
 
-Las etapas D, G, H, I y J después, en ese orden.
+10. ~~**Etapa D** —sombra para el ganado—.~~ **✅ 05/10/2026.** El enunciado
+    pedía dos números publicados: uno existe **tres veces y las tres no
+    coinciden** —30, 30–40 y 40 pies² por vaca, los tres rotulados mínimo, con un
+    óptimo publicado de 40–70 que deja un factor 2,3 entre los extremos— y el
+    otro **no existe**: ninguna fuente publica a qué distancia tiene que estar la
+    sombra para que el rodeo la use, y lo que publican es una regla de ubicación
+    que va al revés (lejos del agua, no al lado). De paso apareció que pegarle la
+    humedad media del día a la máxima diaria infla el índice de estrés calórico
+    casi cuatro puntos, y que redondear el área antes de contar estructuras paga
+    una sombra de más.
+
+Las etapas G, H, I y J después, en ese orden.
 
 ---
 

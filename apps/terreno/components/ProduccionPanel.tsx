@@ -21,6 +21,7 @@ import {
 } from '@/lib/modulacion';
 import type { GrillaElevacion } from '@/lib/grillaElevacion';
 import { RodeoEditor } from './mapa/RodeoEditor';
+import { SombraGanadoBloque } from './SombraGanadoBloque';
 
 interface Props {
   datosClima:  DatosClima | null;
@@ -315,6 +316,12 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
             usoPct={Math.round(ganaderia.uso_admisible * 100)}
             bandaUso={ganaderia.banda_uso}
           />
+
+          {/* Etapa D — sombra. Va acá porque se dimensiona con el rodeo ya
+              declarado y porque la decisión de dónde ponerla es del mismo orden
+              que la del agua: las dos reparten el pastoreo, y juntarlas en un
+              punto concentra el pisoteo y el estiércol en ese punto. */}
+          <SombraGanadoBloque rodeo={rodeo} meses={datosClima.meses} lat={datosClima.lat} />
 
           <div className="grid grid-cols-1 gap-2">
             <Chip label="Potreros Voisin" value={`${ganaderia.potreros_voisin} potreros`} sub={`~${ganaderia.area_potrero_ha} ha c/u · ${ganaderia.dias_ocupacion} días ocup.`} color="neutro" />
