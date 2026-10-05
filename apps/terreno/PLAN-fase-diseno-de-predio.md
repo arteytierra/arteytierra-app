@@ -1246,7 +1246,90 @@ coinciden.
   Köppen. La app ya clasifica el clima del predio y ya muestra su deriva. La
   elección de técnica tiene bibliografía regional publicada por clima y es un
   relevamiento, no un cálculo.
-- **Aleros**, que salen de la latitud y de la altura solar que la app ya calcula.
+- ~~**Aleros**, que salen de la latitud y de la altura solar que la app ya
+  calcula.~~ **✅ *05/10/2026*** — `lib/alero.ts`, `components/AleroBloque.tsx`
+  (dentro del panel solar), 64 tests en `tests/unit/clima/alero.test.ts`.
+
+#### H-aleros — lo que apareció
+
+**Fuentes.** Stephenson, D.G., «Principles of Solar Shading», **Canadian
+Building Digest CBD-59**, National Research Council Canada, 1964 (los dos
+ángulos de sombra y la ecuación) · **UN-Habitat**, «Sun shading catalogue —
+Adequate shading: Sizing overhangs and fins», 2018 (el procedimiento de cuatro
+pasos y las tablas de seis localidades que el módulo reproduce) · **Brager &
+de Dear**, «Climate, Comfort & Natural Ventilation: A new adaptive comfort
+standard for ASHRAE Standard 55», Windsor, 2001, ASHRAE RP-884 (el umbral del
+período sobrecalentado) · **Jacobson & Jadhav**, Solar Energy 169 (2018) 55-66
+(la inclinación de panel) · **Duffie & Beckman** (hora solar y ecuación del
+tiempo de Spencer, 1971) · **Cooper (1969)** vía `arco_solar.ts`.
+
+1. **La premisa del enunciado era falsa en dos de sus tres términos.** Lo que
+   tapa un alero no es la altura del sol sino el **ángulo de sombra vertical**,
+   que es la altura proyectada sobre el plano perpendicular a la pared, y que
+   depende del rumbo de la pared. En las seis localidades publicadas la pared
+   que mira al ecuador pide un alero de 0,70 a 1,09 veces el alto de la abertura
+   y la pared al oeste de 1,25 a 1,67: **el doble, en el mismo predio**. Y el
+   peor rumbo nunca es el que mira al ecuador, que es el único que la receta
+   mira.
+2. **El período a sombrear sale del clima, no del solsticio, y el factor es 7.**
+   En Buenos Aires, dimensionar la pared al norte para los doce meses pide un
+   alero **7,3 veces más profundo** que dimensionarla para los meses que
+   realmente se calientan, porque el año entero incluye el sol rasante de junio
+   —justo el que se quiere dejar entrar—. El criterio del período es el de la
+   fuente: el modelo adaptativo da el techo de confort a partir de la media
+   mensual, y el mes pide sombra cuando su **máxima media** lo pasa. Comparar la
+   media en vez de la máxima daría un umbral de 30,9 °C de media mensual, que ni
+   Garissa alcanza: el mismo error de escala que ya apareció con el índice de
+   calor del ganado.
+3. **El alero fijo no puede distinguir febrero de fines de octubre.** La
+   geometría del sol es simétrica alrededor del solsticio y el clima no: dos días
+   espejados tienen el mismo recorrido solar dentro de dos décimas de grado. No
+   se arregla con más profundidad. Y el gemelo **no es el mes de enfrente del
+   calendario**: el de febrero es el 25 de octubre, porque lo que se espeja es la
+   declinación.
+4. **La hora del corte es hora solar y las tablas publicadas no lo dicen.** Los
+   números de UN-Habitat sólo se reproducen leyendo «9 AM to 4 PM» como hora de
+   **reloj** y corrigiendo por la longitud dentro del huso: error medio **0,61°**
+   sobre 24 valores. Mbeya lo demuestra desde la fuente misma —33,45° E, 46
+   minutos de desfase— y pide un alero al este **28 % más profundo** que Mtwara,
+   que está a la misma latitud. Verificado al revés: **agregar la ecuación del
+   tiempo empeora** la coincidencia (1,29°), lo que prueba que la carta está en
+   hora media y no en hora verdadera. En la Argentina el desfase es mucho mayor:
+   el huso legal es el de 45° O y el país llega a 73° O, así que en Mendoza el
+   mediodía solar cae a las **13:35**.
+5. **Donde el enunciado tenía razón, y dónde no.** El crítico de la pared que
+   mira al ecuador cae en el **mediodía solar** en latitudes medias —Buenos
+   Aires, 12:55— y ahí «la latitud y la altura del mediodía» alcanzan. En
+   latitudes bajas no: en Mtwara lo decide el sol de las 16 a 57° del eje, porque
+   el sol sube casi vertical y a media tarde sigue alto con el azimut ya lejos.
+   El módulo publica `decidido_al_mediodia` para que se vea cuál de los dos casos
+   es.
+6. **En los trópicos las dos paredes piden alero, no una.** En Garissa la pared
+   al norte pide 0,70 y la del sur 0,67: prácticamente el mismo alero. **En
+   Bogotá la pared del sur pide MÁS que la del norte**, y el sol del mediodía
+   está al sur 206 días del año. La receta templada deja descubierta justo la
+   peor de las dos, y acequia trabaja ahí.
+7. **La inclinación de panel que la app publicaba como «óptima» era una regla
+   sin fuente.** Era `|lat| + 12`, de la familia que optimiza el **invierno**; el
+   óptimo anual queda por **debajo** de la latitud. En Buenos Aires la regla daba
+   47° contra los **30°** que publica PVWatts. Entró el ajuste de Jacobson &
+   Jadhav, que acierta a menos de 8° en las cinco ciudades probadas y le gana a
+   la regla vieja en todas, con el piso de **10°** para que la lluvia lave el
+   panel en los trópicos. Y una salvedad que la fuente hace explícita: **Calgary
+   y Beek están a la misma latitud y tienen óptimos separados por once grados**
+   por nubosidad, así que ninguna función de la latitud puede ser un óptimo y el
+   rótulo dice «estimada».
+8. **El último tramo de alero es el que menos rinde.** Con la mitad de la
+   profundidad pedida se tapa más del 80 % del sol del período: el módulo publica
+   el desempeño **pesado por la intensidad con que llega el sol**, que es el
+   número que decide, y el sin pesar al lado.
+
+**Abierto de H-aleros:** sombra geométrica del sol directo, sin difusa, sin
+reflejo del piso ni de una pared vecina y sin obstrucción del horizonte (eso lo
+ve el viewshed y no está conectado); el ancho de la aleta se calcula pero no se
+muestra; el huso horario se asume el nominal de la longitud y hay que corregirlo
+a mano donde el legal es otro; y **nada de esto entró al informe ni a
+bioconstrucción**, que es la parte de la etapa que sigue.
 
 ### Etapa I — Validar los patrones de cultivo solos
 
@@ -1339,7 +1422,26 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     ciclo regala la capacidad entera del suelo, y que el criterio de FAO para el
     período de crecimiento cambió de variable y de número entre 1983 y 2021.
 
-Las etapas H, I y J después, en ese orden.
+12. **Etapa H** —zonificación, estructuras, bioconstrucción y aleros—.
+    **Los aleros, hechos el 05/10/2026.** El enunciado decía que «salen de la
+    latitud y de la altura solar que la app ya calcula», y de los tres términos
+    dos eran falsos: lo que tapa un alero es el **ángulo de sombra vertical**,
+    que depende del rumbo de la pared —el peor rumbo pide el doble que el que
+    mira al ecuador, y nunca es ese—, y el período a sombrear sale del **clima**
+    y no del solsticio: en Buenos Aires dimensionar para el año entero pide un
+    alero **7,3 veces más profundo**. Apareció además que la hora del corte es
+    hora solar y las tablas publicadas no lo dicen —Mbeya pide 28 % más alero que
+    Mtwara a la misma latitud, por la longitud dentro del huso—, que el alero
+    fijo **no puede distinguir febrero de fines de octubre**, que en Bogotá la
+    pared del sur pide más que la del norte, y que la inclinación de panel que la
+    app llamaba «óptima» era `|lat| + 12` sin fuente, 17° por encima del valor
+    publicado para Buenos Aires.
+
+    **Lo que falta de la etapa H:** la zonificación guiada, el emplazamiento de
+    estructuras con tabla de puntaje y zonas de exclusión, y la bioconstrucción
+    por clima de Köppen.
+
+Las etapas I y J después, en ese orden.
 
 ---
 

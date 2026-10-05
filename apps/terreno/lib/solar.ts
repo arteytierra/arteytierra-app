@@ -8,6 +8,7 @@
 import type { DatosClima } from './clima';
 import { MESES } from './clima';
 import { estacionDelMes } from './estaciones';
+import { inclinacionPanel } from './alero';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,25 @@ export interface MesSolar {
 export interface DatosSolar {
   lat:                  number;
   lng:                  number;
-  angulo_optimo_panel:  number;   // ° desde horizontal (= |lat| + 10–15° por pérdidas)
+  /**
+   * Inclinación estimada para el máximo ANUAL, en grados desde la horizontal.
+   *
+   * Sale de `lib/alero.ts`, que implementa el ajuste publicado por Jacobson &
+   * Jadhav (2018) sobre los datos de PVWatts. Antes acá había `|lat| + 12`,
+   * declarado «regla general» y sin cita: esa familia de reglas optimiza el
+   * INVIERNO, y para el año el óptimo queda por debajo de la latitud, no por
+   * encima. En Buenos Aires la regla vieja daba 47° contra 30° publicados.
+   *
+   * Es una estimación por latitud y no un óptimo: dos ciudades a la misma
+   * latitud pueden tener óptimos separados por once grados según la nubosidad.
+   * Por eso el panel la rotula «estimada» y el bloque de alero muestra la
+   * salvedad entera.
+   */
+  angulo_optimo_panel:  number;
+  /** Lo que la app publicaba antes de tener fuente, para poder contrastar. */
+  angulo_regla_vieja:   number;
+  /** `true` si se levantó al piso de 10° para que la lluvia lave el panel. */
+  angulo_piso_lluvia:   boolean;
   orientacion_optima:   string;   // "Norte" en hemisferio sur
   meses:                MesSolar[];
   mes_max_radiacion:    number;   // índice 0-11
@@ -44,7 +63,6 @@ export interface InterpSolar {
 // ─── Días del año medianos para cada mes ─────────────────────────────────────
 
 const DOY_MID = [17, 47, 75, 105, 135, 162, 198, 228, 259, 289, 319, 345] as const;
-const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
 // ─── Cálculo astronómico ──────────────────────────────────────────────────────
 
@@ -115,8 +133,11 @@ export function calcularSolar(lat: number, lng: number, _clima?: DatosClima): Da
   const horas_max   = Math.max(...hlValues);
   const horas_min   = Math.min(...hlValues);
 
-  // Ángulo óptimo de panel solar (regla general: |lat| + 10–15° para máximo anual)
-  const angulo_optimo_panel = Math.round(Math.abs(lat) + 12);
+  // Inclinación de panel con fuente. Ver `lib/alero.ts`.
+  const panel = inclinacionPanel(lat);
+  const angulo_optimo_panel = Math.round(panel?.grados ?? Math.abs(lat));
+  const angulo_regla_vieja = Math.round(Math.abs(lat) + 12);
+  const angulo_piso_lluvia = panel?.piso_de_lluvia ?? false;
 
   // En hemisferio sur, paneles apuntan al NORTE
   const orientacion_optima = lat < 0 ? 'Norte' : 'Sur';
@@ -128,6 +149,8 @@ export function calcularSolar(lat: number, lng: number, _clima?: DatosClima): Da
   return {
     lat, lng,
     angulo_optimo_panel,
+    angulo_regla_vieja,
+    angulo_piso_lluvia,
     orientacion_optima,
     meses,
     mes_max_radiacion: mes_max,

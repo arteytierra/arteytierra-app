@@ -90,7 +90,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `clima.ts` | Clima histórico vía NASA POWER (climatología 1981–2023). |
 | `climaExtremos.ts` | Extremos y clima de riesgo sobre la serie diaria. |
 | `calendario.ts` | Calendario agroclimático: ventanas de siembra, GDD, balance por cultivo. |
-| `solar.ts` | Trayectoria del sol, radiación, horas de luz. |
+| `solar.ts` | Trayectoria del sol, radiación, horas de luz. La inclinación de panel sale de `alero.ts` desde el 05/10/2026: el `|lat| + 12` que había era una regla sin fuente que optimiza el invierno. |
 | `arco_solar.ts` | Trayectoria del sol proyectada sobre el mapa. |
 | `insolacion.ts` | Horas de sol acumuladas por punto en un día. |
 | `sombras.ts` | Sombras del relieve por fecha/hora. |
@@ -121,6 +121,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `potreros.ts` | Subdivisión geométrica de potreros. |
 | `silvopastura.ts` | Líneas de árboles/forraje leñoso a nivel. |
 | `sombraGanado.ts` | Cuánta sombra pide el rodeo (tres tablas publicadas que **no coinciden**, con el óptimo al lado), en qué meses la pide (índice temperatura-humedad con la humedad de la hora de calor, no la media del día), con qué se hace y dónde va. |
+| `alero.ts` | El control solar de una abertura: cuánto alero pide **cada rumbo de pared** (el peor pide el doble que el que mira al ecuador), en qué meses hay que dar sombra según la serie del predio y no según el solsticio, qué hace el alero ya construido, y el límite duro del alero fijo —**da la misma sombra en dos fechas espejadas respecto del solsticio, y el clima no es simétrico**—. Reproduce las seis tablas publicadas de UN-Habitat, y de paso corrige la inclinación de panel de `solar.ts`. |
 | `balanceHidrico.ts` | El balance hídrico del suelo mes a mes —excedente, déficit y evapotranspiración real, que **no** son `lluvia − ETP`—, con las **dos reglas publicadas** de agotamiento del suelo (difieren por un factor 5 en suelo profundo), el período de crecimiento con los dos criterios de FAO, y la variabilidad entre años: **el balance del año promedio no es el promedio de los balances** y esconde el déficit y el excedente a la vez. |
 | `cortinas.ts` | Cortinas rompevientos como franja multiestrato. |
 | `caminos.ts` | Trazado de caminos con perfil de elevación. |
