@@ -3124,6 +3124,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             precipCruda={datosClimaRaw?.precip_anual_mm ?? null}
             pendientePct={datosTopografia?.pendiente_pct ?? null}
             buscandoCHIRPS={buscandoCHIRPS}
+            aguaUtil_mm={datosSuelo?.agua_util.total_mm_100 ?? null}
           /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} ubicacion={datosEntorno?.ubicacion ?? null} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}

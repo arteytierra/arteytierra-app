@@ -5,6 +5,7 @@ import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowfla
 import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
+import { BalanceHidricoBloque } from './BalanceHidricoBloque';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -22,9 +23,16 @@ interface Props {
   pendientePct:  number | null;
   /** La app está buscando la lluvia de CHIRPS (~5 km) para este punto. */
   buscandoCHIRPS: boolean;
+  /**
+   * Agua útil del suelo, 0–100 cm, del panel de suelo. `null` si todavía no
+   * corrió: el balance usa entonces el valor por defecto publicado y lo dice.
+   * Es el número que más mueve el déficit, así que vale pedirlo prestado al
+   * panel de al lado en vez de inventarlo.
+   */
+  aguaUtil_mm:    number | null;
 }
 
-export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct, buscandoCHIRPS }: Props) {
+export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct, buscandoCHIRPS, aguaUtil_mm }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -312,6 +320,18 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
           <ExtremosBloque
             extremos={extremos} cargando={cargandoExt} error={errorExt}
             onCargar={handleCargarExtremos}
+          />
+
+          {/* Etapa G — el balance hídrico de verdad y la variabilidad entre años.
+              Va después de Extremos y no antes porque se corre sobre la misma
+              serie diaria: sin ella no hay años, y sin años el balance sería el
+              del año promedio, que es justamente lo que este bloque desmiente. */}
+          <BalanceHidricoBloque
+            extremos={extremos}
+            etpHargreaves_mm={datos.etp_anual_mm}
+            viento_ms={datos.viento_medio_ms ?? null}
+            rh_pct={datos.rh_anual_pct ?? null}
+            aguaUtil_mm={aguaUtil_mm}
           />
 
           <CalibracionPrecipBloque
@@ -618,7 +638,7 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
       <div className="px-3 py-2 border-b border-bone-200">
-        <p className="text-xs font-medium text-ink-700">Balance hídrico mensual (P − ETP)</p>
+        <p className="text-xs font-medium text-ink-700">Lluvia menos demanda mensual (P − ETP)</p>
       </div>
       <div className="px-2 pt-2 pb-1">
         <div className="relative" style={{ height: H * 2 }}>
@@ -643,9 +663,13 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
         <div className="flex mt-0.5">
           {meses.map((m, i) => <div key={i} className="flex-1 text-center"><span className="text-[9px] text-ink-700/50">{m.mes.slice(0,1)}</span></div>)}
         </div>
+        {/* Estas barras NO son el excedente ni el déficit, y así se llamaban.
+            Son lluvia menos demanda: el primer paso del procedimiento, antes de
+            que el suelo entre en el medio. El excedente y el déficit están en el
+            bloque de balance hídrico, y pueden ser muy distintos de esto. */}
         <div className="flex justify-between text-xs text-ink-700/50 mt-0.5 px-0.5">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-moss-500 inline-block opacity-80" />Superávit</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-clay-500 inline-block opacity-80" />Déficit</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-moss-500 inline-block opacity-80" />Llueve más que la demanda</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-clay-500 inline-block opacity-80" />La demanda supera la lluvia</span>
         </div>
       </div>
       <div className="border-t border-bone-200 overflow-x-auto">

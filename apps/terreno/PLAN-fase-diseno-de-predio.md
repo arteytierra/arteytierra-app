@@ -1084,14 +1084,156 @@ Dos números, las dos del mismo tipo, y el resultado era una velocidad de salida
 test del caso resuelto. La función pasó a recibir un objeto con los campos
 nombrados para que no pueda volver a pasar.
 
-### Etapa G — Clima: el balance hídrico mensual y la variabilidad
+### Etapa G — Clima: el balance hídrico mensual y la variabilidad ✅ *05/10/2026*
 
-La app tiene precipitación y ETP mensuales. Falta el **balance hídrico mes a mes**
-—el excedente y el déficit, que es lo que dice cuándo se puede sembrar y cuándo
-hay que tener agua guardada— y la **variabilidad entre años**, que es más
-importante que el promedio: un predio con 800 mm de promedio y una desviación
-grande se diseña distinto de uno con 800 mm parejos. El dato de serie larga ya
-está cargado.
+Hecha. Un módulo nuevo —`lib/balanceHidrico.ts`—, un bloque de interfaz en la
+pestaña Clima (`components/BalanceHidricoBloque.tsx`), la serie **dekadal año por
+año** agregada al payload de `lib/climaExtremos.ts`, y **60 tests** en
+`tests/unit/clima/balanceHidrico.test.ts`.
+
+El enunciado decía «la app tiene precipitación y ETP mensuales, falta el balance».
+Lo que apareció es que la app ya mostraba una columna llamada *balance* que no es
+el balance, y que el método que el enunciado trataba como uno son dos que no
+coinciden.
+
+#### Las fuentes
+
+1. **Thornthwaite y Mather, «The Water Balance»** (1955) e **«Instructions and
+   Tables for Computing Potential Evapotranspiration and the Water Balance»**
+   (1957), Publications in Climatology, Drexel Institute of Technology. El
+   procedimiento. Se lee por las dos de abajo, que lo publican como ecuación.
+2. **McCabe y Markstrom, «A Monthly Water-Balance Model Driven by a Graphical
+   User Interface», USGS Open-File Report 2007-1088.** La ecuación 9 (extracción
+   del suelo), la regla del excedente y el valor por defecto de capacidad:
+   *«An STC of 150 mm works for most locations»*.
+3. **Westenbroek y otros, «SWB — A Modified Thornthwaite-Mather
+   Soil-Water-Balance Code», USGS Techniques and Methods 6-A31** (2010). Define
+   los términos, y avisa que la capacidad del suelo y el método de ETP son un
+   par: *«use of the table 10 water-holding capacities with other
+   evapotranspiration methods may result in overestimation of the amount of
+   evapotranspiration and underestimation of recharge»*.
+4. **Dourado-Neto y otros, «General procedure to initialize the cyclic soil water
+   balance by the Thornthwaite and Mather method», Scientia Agricola 67(1):87-95**
+   (2010). El caso resuelto (Petrolina-PE, 125 mm de agua útil) y el aviso de que
+   *«To close the water balance, several iterations might be necessary»*.
+5. **FAO-56** (1998), capítulos 4 y 8: la segunda regla de agotamiento (ec. 82 a
+   84, con `p`), y la ecuación 52 de Hargreaves con la instrucción de verificarla
+   contra Penman-Monteith.
+6. **FAO Soils Bulletin 52, «Guidelines: land evaluation for rainfed
+   agriculture»** (1983), §A.1.1. El período de crecimiento en décadas.
+7. **IIASA/FAO, «Global Agro-Ecological Zones v4 — Model Documentation»** (2021),
+   §3.4. La versión vigente del mismo criterio, la definición del déficit
+   (*«WDe = ETm-ETa»*), el suelo de referencia de los mapas globales (100 mm) y
+   la tabla 3-5 de regímenes de humedad.
+8. **Dastane, «Effective rainfall in irrigated agriculture», FAO Irrigation and
+   Drainage Paper 25** (1974), cap. III. La frase que ordena la mitad de
+   variabilidad de la etapa, y la posición de graficado de Hazen.
+
+#### Lo que apareció
+
+1. **La columna que la app llamaba «balance» no es el balance.**
+   `MesDato.balance_mm` es `P − ETP`: el primer paso del procedimiento, antes de
+   que el suelo entre en el medio. El gráfico de clima además rotulaba sus barras
+   **«Superávit»** y **«Déficit»**, que es exactamente lo que no son. GAEZ v4
+   publica la definición sin ambigüedad: el déficit es `WDe = ETm − ETa`. Medido:
+   un mes con `P − ETP = −80` sobre 300 mm de agua útil tiene **9,8 mm** de
+   déficit con una regla y **cero** con la otra, no 80. Los rótulos se
+   corrigieron.
+
+2. **EL BALANCE DEL AÑO PROMEDIO NO ES EL PROMEDIO DE LOS BALANCES, y falla para
+   los dos lados a la vez.** El excedente sólo existe arriba de un umbral (el
+   suelo lleno) y el déficit sólo abajo de otro (el suelo vacío), así que
+   promediar la lluvia antes de correr el balance recorta las dos colas. Con la
+   **misma** lluvia media anual, el año promedio da 51 mm de déficit donde el
+   promedio de los años da 140 —casi el triple— y da **cero** excedente donde los
+   años dan 88 mm/año, con 287 mm en el año de cada diez. Una represa
+   dimensionada sobre el año promedio no vería agua para cosechar donde hay.
+   FAO Soils Bulletin 52 manda hacerlo año por año: *«each year provides one
+   number»*.
+
+3. **Dos reglas publicadas para vaciar el suelo, y la diferencia es un factor 5.**
+   Thornthwaite-Mather baja la extracción desde el primer milímetro de
+   agotamiento; FAO-56 no baja nada hasta que el agotamiento pasa `p·TAW`. Sobre
+   el mismo clima templado húmedo: con 60 mm de agua útil dan 157 y 155 mm de
+   déficit anual —indistinguibles—, con 150 mm dan 101 y 77, y con 300 mm dan
+   **61 y 12**. El mecanismo está medido: donde el suelo se vacía igual las dos
+   coinciden porque toda el agua sale de todos modos, y donde no se vacía se
+   abren. El déficit es lo que decide si acequia dice que hace falta riego, así
+   que van las dos.
+
+4. **No iterar el ciclo regala la capacidad entera del suelo.** El balance cíclico
+   necesita un almacenaje inicial y la costumbre es arrancar en capacidad de
+   campo. En el caso resuelto de Petrolina eso inventa **124,9 mm de
+   evapotranspiración por año** sobre una capacidad de 125 —el suelo entero,
+   gastado una vez de arriba— y subestima el déficit anual un **13 %**. El
+   almacenaje convergido de enero en Petrolina es de **0,003 mm**, no 125.
+
+5. **El criterio de FAO para «cuándo se puede sembrar» cambió de variable y de
+   número, y las dos versiones circulan.** Bulletin 52 (1983) arranca el período
+   cuando `P ≥ 0,5 ETP`; GAEZ v4 (2021) cuenta los días con `ETa ≥ 0,4 ETm`. No
+   es un ajuste de coeficiente: el de 1983 mira el cielo y el de 2021 mira la
+   planta. Una década sin lluvia justo después de las lluvias tiene el suelo lleno
+   y la planta sin problemas, y el criterio viejo ya dio el período por terminado.
+   La extensión de «hasta 100 mm de reserva» que FAO le agregaba en 1978 era el
+   parche de ese error; v4 reemplazó el parche por la pregunta correcta. acequia
+   corre el vigente y muestra al lado la fecha del otro.
+
+6. **Los mapas globales de LGP están calculados con un suelo de 100 mm**
+   (*«a soil water holding capacity Smax of 100 mm»* sobre un metro de
+   profundidad), y acequia tiene el suelo real del predio. Así que puede dar el
+   largo del período con los dos y mostrar cuánto mueve el suelo verdadero: es la
+   diferencia que el mapa, por construcción, no puede tener.
+
+7. **El 80 % de chance es un número chico, y es fácil darlo vuelta.** La lluvia
+   «con 80 % de chance» se iguala o supera en cuatro años de cada cinco, o sea
+   que es el percentil 20. Confundirlo dimensiona el tanque para el año bueno.
+   Y la media no sirve: *«Nor can it be based on the average amount of effective
+   rainfall since this would provide an adequate and assured water supply for
+   approximately only half the time»*. La posición de graficado que la fuente
+   prescribe es la de **Hazen** —`Fa = 100(2n−1)/2y`, atribuida a USDA-SCS
+   1967—, que no es la de Weibull ni la interpolación lineal que la app usa para
+   sus otros percentiles; con 35 años el nivel de «nueve de cada diez» cae en un
+   orden exacto, el 32º más grande.
+
+8. **El año no arranca en enero.** El año calendario parte en dos la temporada
+   seca del hemisferio sur, así que el total anual de déficit mezcla dos
+   episodios. La contabilidad arranca en el mes siguiente al que el suelo está
+   más lleno. Es la misma clase de error que la app ya corrigió en
+   `lib/estaciones.ts`.
+
+9. **La app tiene dos ETP para el mismo punto y nunca las había comparado.** El
+   panel de clima usa Hargreaves (FAO-56 ec. 52, sólo temperaturas) y la serie
+   diaria trae Penman-Monteith (con viento, humedad y radiación). FAO-56 presenta
+   la 52 como alternativa cuando faltan datos, **no** como equivalente, y pide
+   *«verified in each new region by comparing with estimates by the FAO
+   Penman-Monteith equation»*. acequia ahora hace esa verificación para el punto,
+   y como tiene viento y humedad puede además decir en qué sentido la fuente
+   anticipa el sesgo: *«a tendency to underpredict under high wind conditions
+   (u2 > 3 m/s) and to overpredict under conditions of high relative humidity»*.
+
+10. **El excedente no es recarga ni escorrentía**, y eso está escrito en el
+    módulo. Es agua que el suelo ya no retiene; el reparto entre lo que percola y
+    lo que escurre lo deciden la infiltración y la pendiente, que son otros
+    motores de la app y trabajan con paso de tormenta y no mensual.
+
+#### Lo que queda abierto
+
+- **El balance es de una sola capa y sin nieve.** No tiene ascenso capilar, no
+  tiene napa y no separa escorrentía de percolación. Para un predio con nieve
+  estacional el excedente de primavera sale en el mes equivocado. El modelo del
+  USGS tiene módulo de nieve y acá no se implementó.
+- **El Kc del período de crecimiento es 1 y declarado.** La tabla 3-4 de GAEZ v4
+  da una escalera de Kc según la condición térmica (0 con nieve, 0,1 en deshielo,
+  0,2 antes del arranque, 0,5 el primer mes); acequia usa el caso de área con
+  período todo el año.
+- **El período sale en décadas y GAEZ v4 trabaja en días**, así que las fechas
+  tienen la incertidumbre de una década.
+- **La `p` de FAO-56 es la del perfil y no la de un cultivo.** La fuente la da por
+  cultivo y por tasa de ETc; acá se usa 0,5 sobre el perfil entero, editable
+  dentro del rango publicado 0,30–0,70.
+- **Nada de esto entró al informe todavía.** El bloque vive en el panel de clima;
+  llevar el déficit a riego, a especies y a represa es trabajo aparte, y es el que
+  convierte el hallazgo en un número que cambia decisiones.
 
 ### Etapa H — Zonificación, estructuras y bioconstrucción
 
@@ -1186,7 +1328,18 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     casi cuatro puntos, y que redondear el área antes de contar estructuras paga
     una sombra de más.
 
-Las etapas G, H, I y J después, en ese orden.
+11. ~~**Etapa G** —el balance hídrico mensual y la variabilidad—.~~
+    **✅ 05/10/2026.** La app ya mostraba una columna llamada «balance» que no es
+    el balance, con las barras rotuladas «Superávit» y «Déficit», que es
+    exactamente lo que no son. Y el hallazgo grande: **el balance del año
+    promedio no es el promedio de los balances, y falla para los dos lados a la
+    vez** —con la misma lluvia media esconde dos tercios del déficit y el
+    excedente entero—. De paso aparecieron dos reglas publicadas de agotamiento
+    del suelo que difieren por un factor 5 con suelo profundo, que no iterar el
+    ciclo regala la capacidad entera del suelo, y que el criterio de FAO para el
+    período de crecimiento cambió de variable y de número entre 1983 y 2021.
+
+Las etapas H, I y J después, en ese orden.
 
 ---
 

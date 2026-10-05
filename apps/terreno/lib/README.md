@@ -121,6 +121,7 @@ libremente; tocar sólo con intención explícita y validación:
 | `potreros.ts` | Subdivisión geométrica de potreros. |
 | `silvopastura.ts` | Líneas de árboles/forraje leñoso a nivel. |
 | `sombraGanado.ts` | Cuánta sombra pide el rodeo (tres tablas publicadas que **no coinciden**, con el óptimo al lado), en qué meses la pide (índice temperatura-humedad con la humedad de la hora de calor, no la media del día), con qué se hace y dónde va. |
+| `balanceHidrico.ts` | El balance hídrico del suelo mes a mes —excedente, déficit y evapotranspiración real, que **no** son `lluvia − ETP`—, con las **dos reglas publicadas** de agotamiento del suelo (difieren por un factor 5 en suelo profundo), el período de crecimiento con los dos criterios de FAO, y la variabilidad entre años: **el balance del año promedio no es el promedio de los balances** y esconde el déficit y el excedente a la vez. |
 | `cortinas.ts` | Cortinas rompevientos como franja multiestrato. |
 | `caminos.ts` | Trazado de caminos con perfil de elevación. |
 | `economia.ts` | Presupuesto de obras + análisis económico simple. |

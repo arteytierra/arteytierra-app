@@ -11,7 +11,7 @@ const START = '1991-01-01';
 const END   = '2025-12-31';
 
 async function openCache(): Promise<Cache | null> {
-  try { return await caches.open('terreno-clima-diario-v1'); } catch { return null; }
+  try { return await caches.open('terreno-clima-diario-v2'); } catch { return null; }
 }
 
 export async function GET(req: Request) {
@@ -27,8 +27,12 @@ export async function GET(req: Request) {
   const latR = parseFloat(lat).toFixed(2);
   const lngR = parseFloat(lng).toFixed(2);
 
-  const cacheKey = `https://terreno-cache/clima-diario?lat=${latR}&lng=${lngR}`;
-  const dbKey    = `clima-diario:${latR},${lngR}`;
+  // v2 desde el 05/10/2026: el payload agrega la serie dekadal año por año que
+  // usa el balance hídrico. Subir la versión y no reusar la clave es a propósito:
+  // un payload viejo sin ese campo se vería como «este punto no tiene serie» en
+  // vez de «hay que volver a pedirla».
+  const cacheKey = `https://terreno-cache/clima-diario-v2?lat=${latR}&lng=${lngR}`;
+  const dbKey    = `clima-diario-v2:${latR},${lngR}`;
   const cache    = await openCache();
 
   if (cache) {
