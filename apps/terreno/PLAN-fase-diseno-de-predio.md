@@ -1245,10 +1245,13 @@ coinciden.
   `components/EmplazamientoBloque.tsx` (dentro del panel de Master Plan), 75 tests
   en `tests/unit/diseno/emplazamiento.test.ts`. De paso corrige el hemisferio en
   `masterplan.ts`, `aptitud.ts` y `sugerencias.ts`.
-- **Bioconstrucción según el clima**: qué técnica es razonable en cada clima de
+- ~~**Bioconstrucción según el clima**: qué técnica es razonable en cada clima de
   Köppen. La app ya clasifica el clima del predio y ya muestra su deriva. La
   elección de técnica tiene bibliografía regional publicada por clima y es un
-  relevamiento, no un cálculo.
+  relevamiento, no un cálculo.~~ **✅ *06/10/2026*** — `lib/bioconstruccion.ts`,
+  `components/BioconstruccionBloque.tsx` (dentro del panel de Clima), 41 tests en
+  `tests/unit/clima/bioconstruccion.test.ts`. El enunciado estaba corrido:
+  **ninguno de los códigos que regulan estas técnicas se ata a Köppen**.
 - ~~**Aleros**, que salen de la latitud y de la altura solar que la app ya
   calcula.~~ **✅ *05/10/2026*** — `lib/alero.ts`, `components/AleroBloque.tsx`
   (dentro del panel solar), 64 tests en `tests/unit/clima/alero.test.ts`.
@@ -1477,8 +1480,141 @@ al informe.
 reflejo del piso ni de una pared vecina y sin obstrucción del horizonte (eso lo
 ve el viewshed y no está conectado); el ancho de la aleta se calcula pero no se
 muestra; el huso horario se asume el nominal de la longitud y hay que corregirlo
-a mano donde el legal es otro; y **nada de esto entró al informe ni a
-bioconstrucción**, que es la parte de la etapa que sigue.
+a mano donde el legal es otro; y **nada de esto entró al informe**. El alero sí
+llegó a bioconstrucción: es la pieza que los códigos de tierra nombran para
+proteger el muro del agua, y el bloque de bioconstrucción remite al panel Solar
+para dimensionarlo.
+
+#### H-bioconstrucción — lo que apareció
+
+**Fuentes.** **14.7.4 NMAC, «New Mexico Earthen Building Materials Code»**, NM
+Regulation and Licensing Department, texto integrado enmendado 14/07/2023 (el
+código de materiales de tierra con más recorrido y de acceso libre, con su tabla
+1 de alturas por espesor y `Sds`) · **IRC, Appendix S/AS «Strawbale
+Construction»** (texto del IRC 2015, AS en el IRC 2021) · **IRC 2021, Appendix
+AU «Cob Construction (Monolithic Adobe)»** · **International Energy Conservation
+Code**, definición de zonas climáticas internacionales, equivalente a **ASHRAE
+169** · **Lacy, R.E.**, índice de lluvia batiente, vía **Met Éireann,
+Climatological Note No. 13** · **Peel, M.C., Finlayson, B.L. & McMahon, T.A.
+(2007)**, *Hydrol. Earth Syst. Sci.* **11**, 1633-1644 (las reglas de Köppen).
+
+**1 · NINGUNO DE ESTOS CÓDIGOS CONDICIONA NADA A UNA CLASE DE KÖPPEN.** El
+enunciado pedía «qué técnica es razonable en cada clima de Köppen». Se leyeron
+los códigos que de verdad regulan estas técnicas y las cláusulas condicionales
+se atan a otras **cinco** variables: la **categoría de diseño sísmico** (el cob,
+sólo A, B y C; la tierra, una tabla de espesor × `Sds`), la **zona climática del
+IECC** (el fardo de paja pide barrera de vapor clase III del lado interior en 5,
+6, 7, 8 y Marina 4), los **ciclos de hielo y deshielo** (el adobe quemado se
+desaconseja «in climate zones with daily freeze-thaw cycles»), la **zona
+inundable** (prohibido por debajo de la cota de diseño) y la **exposición a la
+lluvia batiente**. Köppen no es ninguna de las cinco.
+
+**2 · Y DE LAS CINCO, ACEQUIA PUEDE CALCULAR TRES.** La zona del IECC, los
+ciclos de hielo-deshielo y la lluvia batiente salen de la serie que el panel de
+clima ya tiene. La categoría sísmica sale de un mapa nacional de amenaza que la
+app no tiene, y la mancha de inundación no viene en el modelo de elevación. El
+veredicto tiene por eso un cuarto valor, **`no_evaluable`**, que es lo que le
+corresponde al cob: su gate es sísmico, y una luz verde optimista ahí sería
+peor que no decir nada.
+
+**3 · LA ZONA DEL IECC Y LA CLASE DE KÖPPEN NO SON FUNCIÓN UNA DE LA OTRA, Y SE
+DEMUESTRA CON ARITMÉTICA.** El código define seca como `P_cm < 2,0·(T_C + 7)`, o
+sea **P < 20·T + 140 mm**. Köppen define árido como `P < 10·Pth`, con
+`Pth = 2T + 28` si el 70 % o más de la lluvia cae en la mitad de sol alto, `2T`
+si cae en la de sol bajo y `2T + 14` si está repartida: o sea **20T + 280**,
+**20T** o **20T + 140**. Entonces:
+
+- con **lluvia repartida las dos líneas son exactamente la misma línea** —la
+  coincidencia no es aproximada, es algebraica—;
+- con lluvia **estacional se separan exactamente 140 mm**, para cualquier
+  temperatura, y **el signo lo da la estación**: con lluvia de verano la línea de
+  Köppen queda arriba y hay una franja donde **Köppen dice árido y el código dice
+  húmedo**; con lluvia de invierno queda abajo y la franja es donde **el código
+  dice seco y Köppen dice templado húmedo**.
+
+En un monzón, acequia puede estar mostrando «BSh» mientras el código que decide
+el revoque y la barrera de vapor trata al lugar como zona húmeda. El bloque
+muestra las dos líneas una al lado de la otra y dice de qué lado cae el predio.
+
+**4 · EL NÚMERO DE ZONA ES PURAMENTE TÉRMICO Y LA LETRA SE LE AGREGA.** Primera
+versión del módulo: le había puesto a las zonas marinas un techo de CDD propio
+(3C ≤ 2.500, 4C ≤ 1.500, 5C ≤ 1.000). **Eso no existe en la fuente** —salió de un
+fragmento ambiguo de búsqueda— y se verificó contra la tabla del código. El
+esquema real es un solo árbol de grados-día (CDD10 > 6.000 → 0; > 5.000 → 1;
+> 3.500 → 2; después HDD18 ≤ 2.000 → 3, ≤ 3.000 → 4, ≤ 4.000 → 5, ≤ 5.000 → 6,
+≤ 7.000 → 7, si no 8) y la letra de humedad se agrega aparte, en un orden que la
+fuente escribe: marina primero, porque seca se define literalmente como «not
+marine» y húmeda como «not Marine (C) or Dry (B)».
+
+**5 · CON LO CUAL PUEDE SALIR UNA ZONA QUE EL CLIMA ADMITE Y LA TABLA NO LISTA.**
+La definición de clima marino son cuatro condiciones climáticas y no trae tope de
+zona, así que un clima marino lo bastante frío cae en una zona 6 —o más— y el
+código sólo tabula **3C, 4C y 5C**. Para «6C» no hay prescripciones escritas. El
+módulo lo avisa en vez de presentar una combinación que ninguna tabla contempla.
+
+**6 · LA ZONA MARINA NO ES ESTAR CERCA DEL MAR: LA CUARTA CONDICIÓN ES VERANO
+SECO.** Las cuatro son mes más frío > −3 °C, mes más cálido < 22 °C, al menos
+cuatro meses sobre 10 °C y **estación seca en verano**, definida como que el mes
+más lluvioso de la estación fría tenga **tres veces o más** que el mes más seco
+del resto. La estación fría es octubre-marzo en el norte y abril-septiembre en el
+sur: **el mismo patrón de lluvia es marino en un hemisferio y no en el otro**.
+Cuando un predio cumple las tres térmicas y no la cuarta, el bloque lo dice.
+
+**7 · LOS CORTES EN SI SON EXACTAMENTE CINCO NOVENOS DE LOS PUBLICADOS.** Las
+zonas se publican en °F·día y acá se usan en K·día: 5.400 °F·d = 3.000 K·d,
+10.800 = 6.000, 6.300 = 3.500. No hay redondeo de por medio, y las bases
+tampoco son redondas: 65 °F son **18,333 °C** y no 18, y 50 °F son 10 exactos.
+
+**8 · EL MÉTODO DE LAS MEDIAS MENSUALES SUBESTIMA LOS GRADOS-DÍA, Y JUSTO DONDE
+SE CONSTRUYE CON TIERRA.** Un mes con media de 18,5 °C aporta **cero** grados-día
+de calefacción por este camino, y en la realidad tiene noches de 11,5 °C. La
+subestimación crece con la amplitud térmica, que es máxima en el desierto, que es
+donde la tierra cruda es la técnica obvia. Por eso el bloque publica el **margen
+al corte más cercano** en grados-día: cerca del límite, la zona es una conjetura.
+
+**9 · EL ÚNICO GATE EXPLÍCITAMENTE CLIMÁTICO DE ESTOS CÓDIGOS ES EL
+HIELO-DESHIELO, Y UN MES CONGELADO NO CICLA.** Un ciclo necesita las dos cosas:
+que el agua de los poros se congele y que vuelva a derretirse. Un mes con
+`tmin ≤ 0 < tmax` cicla; un mes cuya **máxima** media tampoco pasa de cero queda
+congelado y **no cicla**, que es menos destructivo que alternar. El módulo los
+cuenta por separado. Y los días de helada de la serie diaria son una **cota
+superior** de los ciclos, no los ciclos: un día de helada es un ciclo sólo si
+además deshiela.
+
+**10 · LA LLUVIA BATIENTE ES UN PRODUCTO, ASÍ QUE «ACÁ LLUEVE POCO» NO ALCANZA.**
+El índice de Lacy es lluvia anual en metros por viento medio anual en m/s:
+**1.200 mm con 2 m/s da lo mismo que 600 mm con 4 m/s**. La Patagonia —poca
+lluvia, mucho viento— puede ser más hostil para una pared de tierra que un lugar
+con el doble de lluvia y aire quieto. Cortes de exposición en 3 · 7 · 11. Y el
+índice usa el viento **medio anual** y no el que acompaña a la lluvia: Lacy lo
+plantea así a propósito, para comparar lugares y no para calcular una carga. Sin
+viento en la serie, el bloque **no devuelve índice** en vez de rellenar.
+
+**11 · LA ESTABILIZACIÓN ES LO QUE LEVANTA LA EXIGENCIA DE RECUBRIMIENTO, Y ESO
+ES TEXTUAL DE LA FUENTE.** La prueba es concreta —un cubo seco de 4 pulgadas no
+puede ganar más del 2,5 % de su peso en siete días sobre una superficie porosa
+saturada— y pasada esa prueba el muro exterior «requiere no additional
+protection». El tapial plenamente estabilizado «may be left unprotected from the
+elements». Es la única rama del relevamiento donde una exposición severa **no**
+agrega condiciones.
+
+**12 · EL ESPESOR COMPRA TOLERANCIA SÍSMICA, Y LA TABLA DICE CUÁNTA.** Entre
+`Sds` 0,25 y 0,50, un muro de **10 pulgadas pierde el 20 %** de altura admisible
+(de 120″ a 96″), uno de 12 pierde 12,5 %, uno de 14 pierde 5,6 % y los de 16, 18
+y 24 **no pierden nada**. El muro grueso no es prolijidad: es lo que mantiene la
+altura cuando el sismo aprieta. Y la tabla **no se extrapola**: `Sds` 0,6 no está
+publicado, y fuera de los seis espesores y los seis valores el módulo devuelve
+vacío.
+
+**Abierto de H-bioconstrucción:** son códigos de los Estados Unidos, que son los
+que publican estas técnicas con el método a la vista, y **la norma local manda**
+—la tierra cruda está prohibida lisa y llanamente en más de un código
+municipal—. Faltan las dos variables que acequia no puede calcular: la categoría
+de diseño sísmico y la cota de inundación de diseño. El relevamiento es de ocho
+técnicas de tierra y paja y no incluye madera, piedra ni bambú. No mira la
+disponibilidad del material en el predio, que es dato de `suelos.ts` y sería el
+paso siguiente. No propone espesores ni alturas: lee la tabla. Y nada de esto
+entró al informe.
 
 ### Etapa I — Validar los patrones de cultivo solos
 
@@ -1603,8 +1739,19 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     hemisferio sur**, mandando la huerta a la ladera sombría en todo el
     hemisferio norte.
 
-    **Lo que falta de la etapa H:** la zonificación guiada y la bioconstrucción
-    por clima de Köppen.
+    La **bioconstrucción** cerró el 06/10/2026 con el enunciado corrido otra
+    vez: **ninguno de los códigos que regulan la tierra cruda y el fardo de paja
+    condiciona nada a una clase de Köppen**. Se atan a cinco variables —categoría
+    sísmica, zona del IECC, ciclos de hielo-deshielo, zona inundable y lluvia
+    batiente— de las que acequia puede calcular tres, y nombra las otras dos. De
+    paso quedó demostrado con álgebra que la línea de aridez del código y la de
+    Köppen **son la misma con lluvia repartida y se separan exactamente 140 mm
+    cuando la lluvia es estacional**, con el signo dado por la estación: en un
+    monzón la app puede mostrar «BSh» donde el código trata al lugar como zona
+    húmeda. Y se corrigió un techo de CDD para las zonas marinas que **no existe
+    en la fuente** y que yo había sintetizado de un fragmento ambiguo.
+
+    **Lo que falta de la etapa H:** la zonificación guiada.
 
 Las etapas I y J después, en ese orden.
 
