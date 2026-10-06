@@ -4,6 +4,7 @@
  * Resultados orientativos — no reemplazan relevamiento agronómico/edafológico.
  */
 import * as turf from '@turf/turf';
+import { exposicionSolar } from './emplazamiento';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 import type { ModificadorAptitud } from './biomaTipos';
@@ -57,13 +58,25 @@ export interface ResultadoAptitud {
   ajustes: ModificadorAptitud[];
 }
 
-// ─── Orientación de la celda (HemSur: N = más sol = mejor) ───────────────────
+// ─── Exposición solar de la celda (0 = sombría, 1 = al sol) ──────────────────
 
-function orientacionNorte(c: CeldaShader, byPos: Map<string, CeldaShader>): number {
+/**
+ * Cuánto mira al sol del mediodía una celda, de 0 a 1, con 0,5 como ladera
+ * neutra.
+ *
+ * Hasta el 05/10/2026 esta función se llamaba `orientacionNorte` y devolvía
+ * `elev_sur − elev_norte` sin mirar la latitud: la ladera que baja al norte era
+ * la asoleada **en todo el planeta**. En el hemisferio norte el sol del mediodía
+ * está al sur, así que el mapa de aptitud venía mandando la huerta y los
+ * frutales a la ladera sombría y la forestación a la asoleada en Bogotá, en
+ * Puerto Rico y en España. El signo lo pone `exposicionSolar` en
+ * `lib/emplazamiento.ts`, que es el único lugar donde vive esa decisión.
+ */
+function exposicionAlSol(c: CeldaShader, byPos: Map<string, CeldaShader>, lat: number): number {
   const sur   = byPos.get(`${c.row - 1},${c.col}`);
   const norte = byPos.get(`${c.row + 1},${c.col}`);
   if (!sur || !norte) return 0.5;
-  const dif = sur.elevation - norte.elevation;  // positivo = ladera norte (HemSur)
+  const dif = exposicionSolar(sur.elevation - norte.elevation, lat);
   return Math.max(0, Math.min(1, 0.5 + dif / 10));
 }
 
@@ -98,7 +111,7 @@ function scorePasturas(pend: number, acumRel: number): number {
 function scoreForestal(pend: number, orient: number): number {
   let s = 0;
   s += pend > 20 ? 40 : pend > 12 ? 30 : pend > 6 ? 15 : 5;
-  s += orient < 0.45 ? 30 : orient < 0.55 ? 20 : 10; // orientación sur = forestal
+  s += orient < 0.45 ? 30 : orient < 0.55 ? 20 : 10; // la ladera sombría es la forestal
   s += 30;
   return Math.max(0, Math.min(100, s));
 }
@@ -144,9 +157,9 @@ export function calcularAptitud(
     const elevRel  = elev_max > elev_min ? (c.elevation - elev_min) / (elev_max - elev_min) : 0.5;
     const acum     = acumPorPos.get(`${c.row},${c.col}`) ?? 0;
     const acumRel  = acum / acumMax;
-    const orient   = orientacionNorte(c, byPos);
     const pend     = c.pendiente_pct;
     const lat      = (c.latMin + c.latMax) / 2;
+    const orient   = exposicionAlSol(c, byPos, lat);
     const lng      = (c.lngMin + c.lngMax) / 2;
 
     const scores: Record<TipoAptitud, number> = {

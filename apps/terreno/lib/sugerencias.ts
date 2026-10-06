@@ -1,10 +1,11 @@
 /**
  * Sugerencias de ubicación basadas en principios de permacultura.
  * Analiza cada celda de la grilla de elevación y genera candidatos para:
- *   - Vivienda: orientación norte (HemSur), pendiente constructiva, lejos de escorrentías
+ *   - Vivienda: ladera asoleada, pendiente constructiva, lejos de escorrentías
  *   - Reservorio: alta acumulación hídrica, pendiente retenedora, posición baja
  *   - Camino de acceso: divisoria de aguas (ridgeline), bajo costo de pendiente
  */
+import { exposicionSolar, ladoAsoleado } from './emplazamiento';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 
@@ -30,6 +31,7 @@ function scoreVivienda(
   byPos: Map<string, CeldaShader>,
   acum: number, acum_max: number,
   elev_min: number, elev_max: number,
+  lat: number,
 ): { score: number; motivos: string[] } {
   let s = 0;
   const motivos: string[] = [];
@@ -42,14 +44,17 @@ function scoreVivienda(
   else if (c.pendiente_pct < 18) { s += 10; motivos.push('pendiente moderada'); }
   else                            { s -= 15; motivos.push('pendiente alta (>18%)'); }
 
-  // Orientación norte (HemSur): el sur debe estar más alto que el norte
+  // Exposición al sol del mediodía, con el signo del hemisferio puesto: hasta el
+  // 05/10/2026 esto premiaba la ladera que baja al norte en todo el planeta, que
+  // en el hemisferio norte es exactamente la sombría. Ver `lib/emplazamiento.ts`.
+  const ladoSol = ladoAsoleado(lat);
   const sur   = byPos.get(`${c.row - 1},${c.col}`);   // row menor = más al sur
   const norte = byPos.get(`${c.row + 1},${c.col}`);
   if (sur && norte) {
-    const dif = sur.elevation - norte.elevation;
-    if      (dif >  2) { s += 22; motivos.push('ladera con orientación norte'); }
-    else if (dif >  0) { s += 12; motivos.push('orientación levemente norte'); }
-    else if (dif < -2) { s -= 10; motivos.push('orientación sur (menos sol)'); }
+    const dif = exposicionSolar(sur.elevation - norte.elevation, lat);
+    if      (dif >  2) { s += 22; motivos.push(`ladera al ${ladoSol.lado}, al sol`); }
+    else if (dif >  0) { s += 12; motivos.push(`levemente al ${ladoSol.lado}`); }
+    else if (dif < -2) { s -= 10; motivos.push('ladera sombría (menos sol)'); }
     else               { s +=  8; }
   } else {
     s += 8;  // borde del polígono — beneficio moderado
@@ -212,7 +217,7 @@ export function calcularSugerencias(
     const lat  = (c.latMin + c.latMax) / 2;
     const lng  = (c.lngMin + c.lngMax) / 2;
 
-    const sv = scoreVivienda(c, byPos, acum, acum_max, elev_min, elev_max);
+    const sv = scoreVivienda(c, byPos, acum, acum_max, elev_min, elev_max, lat);
     vivCandidatos.push({ lat, lng, score: sv.score, label: `Vivienda (${sv.score}%)`, motivos: sv.motivos });
 
     const sr = scoreReservorio(c, byPos, acum, acum_max, elev_min, elev_max);

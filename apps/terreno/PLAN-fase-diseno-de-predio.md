@@ -1239,9 +1239,12 @@ coinciden.
 
 - La **zonificación** como ejercicio guiado, no como un dibujo libre: la app ya
   tiene zonas y el motor de master plan.
-- **Emplazamiento de estructuras** con tabla de puntaje y zonas de exclusión:
+- ~~**Emplazamiento de estructuras** con tabla de puntaje y zonas de exclusión:
   pendiente, orientación, acceso, distancia al agua, y el buffer que corresponde a
-  cada cosa.
+  cada cosa.~~ **✅ *05/10/2026*** — `lib/emplazamiento.ts`,
+  `components/EmplazamientoBloque.tsx` (dentro del panel de Master Plan), 75 tests
+  en `tests/unit/diseno/emplazamiento.test.ts`. De paso corrige el hemisferio en
+  `masterplan.ts`, `aptitud.ts` y `sugerencias.ts`.
 - **Bioconstrucción según el clima**: qué técnica es razonable en cada clima de
   Köppen. La app ya clasifica el clima del predio y ya muestra su deriva. La
   elección de técnica tiene bibliografía regional publicada por clima y es un
@@ -1323,6 +1326,152 @@ tiempo de Spencer, 1971) · **Cooper (1969)** vía `arco_solar.ts`.
    profundidad pedida se tapa más del 80 % del sol del período: el módulo publica
    el desempeño **pesado por la intensidad con que llega el sol**, que es el
    número que decide, y el sin pesar al lado.
+
+#### H-emplazamiento — lo que apareció
+
+**Fuentes.** **NRCS CPS 391** «Riparian Forest Buffer», USDA NRCS, NHCP,
+octubre 2020 (el retiro y su escalera de anchos) · **NRCS CPS 560** «Access
+Road», septiembre 2020 (pendiente, ancho, taludes y recurrencia del cruce) ·
+**US EPA**, «Onsite Wastewater Treatment Systems Manual», **EPA/625/R-00/008**,
+2002 (la posición en el paisaje, el área de reserva y los dos factores de
+seguridad) · **15A NCAC 18A .1949 y .1955**, North Carolina Administrative Code
+(la tabla II de LTAR por clase textural y el caudal de diseño) · **29 CFR 1926
+Subpart P, Appendix B**, OSHA (los taludes de corte) · **Montgomery, D.R. &
+Dietrich, W.E.**, Science 255 (1992) 826-830 (dónde empieza un cauce) ·
+**Copernicus DEM Product Handbook**, GEO.2018-1988-2, v2.1, 2020 (el piso de
+ruido del relieve).
+
+1. **El problema era de forma antes que de número: un retiro no es una
+   penalización.** La tabla de puntaje de `masterplan.ts` suma y resta y **nunca
+   descarta nada** —la pendiente alta resta 5,6 puntos, estar en un drenaje resta
+   6,4—, así que un lugar que acumula bonos en los otros términos se queda con la
+   casa aunque esté dentro del retiro de un arroyo. Son dos estructuras distintas
+   de regla y la app tenía una sola. Ahora hay tres listas separadas:
+   **exclusiones** (sí o no), **requisitos** (lo que cuesta, con su magnitud) y
+   **advertencias** (lo que el método no puede resolver).
+2. **Y lo decidía con una regla cuarenta veces más gruesa que lo que medía.** El
+   shader del master plan es una grilla de **10 × 10 celdas**: en un predio de
+   40 ha cada celda mide 63 m y 4.000 m², treinta y tres huellas de casa. El
+   retiro más chico que pide la norma son **10,7 m**, seis veces más fino que esa
+   celda. El módulo corre sobre la grilla densa que la app ya baja para las curvas
+   de nivel, y avisa cuando sólo tiene la gruesa.
+3. **El retiro no es un número: es una función de para qué sirve.** CPS 391
+   publica una escalera —35 pies para frenar sedimento, 50 para patógenos y
+   nutrientes, 50 / 100 / 165 según la fauna que se quiera— y entre el primer
+   escalón y el último hay un **factor 4,7 en el mismo arroyo**. Y «Width of
+   buffer refers to one side of the watercourse»: el corredor completo mide el
+   doble de lo que dice la tabla.
+4. **El cauce empieza donde el área por la pendiente al cuadrado pasa un umbral,
+   y el que la app usaba era relativo.** `cuencaHidro.analizarRelieve` marca cauce
+   con `acum ≥ max(8, acumMax · 0,03)`: **relativo a la celda más cargada de la
+   ventana**, así que el mismo arroyo deja de ser arroyo cuando se agranda el
+   recorte, porque cambió el denominador y no el terreno. El criterio de Montgomery
+   y Dietrich es absoluto y tiene unidades de metros, y el área que abre un cauce
+   baja con el **cuadrado** de la pendiente: un umbral fijo pone la cabecera
+   demasiado arriba en terreno suave y demasiado abajo en terreno empinado.
+5. **Y ese criterio, aplicado honestamente, no encuentra cauces en un predio chico
+   y suave.** Con una pendiente del 5 % hacen falta **40 ha** de cuenca para que se
+   abra un cauce, y con el 2 %, **250**. El umbral se calibró en laderas empinadas
+   del norte de California y describe dónde el flujo concentra lo suficiente para
+   incidir, no dónde hay agua. Cuando no encuentra nada el bloque lo dice, publica
+   las hectáreas que harían falta y pide marcar el curso a mano. La fuente misma
+   declara un **orden de magnitud** de dispersión en el área de aporte.
+6. **La pendiente no distingue una ladera cóncava de una convexa, y la fuente pide
+   justamente eso.** La EPA pide evitar «swales, depressions, or floodplains» y
+   preferir «convex slopes, flat areas with deep, permeable soils»: dos laderas con
+   **la misma pendiente** se comportan al revés según la curvatura, porque la
+   cóncava junta el flujo subsuperficial de toda la ladera de arriba. Una tabla que
+   sólo mira pendiente no puede ver eso. El umbral de clase es la desviación típica
+   del propio índice en el predio y no un número fijo.
+7. **El límite de pendiente de una regla de pulgar es un costo disfrazado, y
+   depende del tamaño del edificio.** Con corte y relleno compensados el corte más
+   profundo es `ancho · pendiente / 2` y el volumen va con el **cuadrado del
+   ancho**: los mismos 120 m² de huella en una ladera del 30 % mueven **27 m³**
+   puestos angostos y largos sobre la curva de nivel y **90 m³** girados noventa
+   grados, con un corte de 0,90 m contra 3 m. «No construyas arriba del 15 %» es
+   la respuesta a una pregunta que no se hizo.
+8. **Lo que se toca no es la huella.** CPS 560 exige todo corte y relleno
+   permanente a **2H:1V como mínimo**, y ese talud se extiende dos metros por cada
+   metro de corte. En una ladera del 40 % el talud de corte de una plataforma de
+   10 m de ancho se come **20 m hacia arriba**, el doble del ancho del propio
+   edificio, y lo tocado es **3,2 veces la huella**. El talud deja de cerrar
+   exactamente en el 50 %, que es el propio 2H:1V, y de ahí para arriba hace falta
+   muro. Y el talud **permanente** es más del doble de tendido que el que OSHA
+   admite en obra (1½:1 en el suelo más flojo): el que corta «porque OSHA lo
+   permite» deja un talud que aguanta la obra y no el invierno.
+9. **Una casa a la que no se puede llegar no está emplazada.** El módulo busca si
+   existe algún recorrido —zigzagueando incluido— desde el acceso que no se pase
+   del 10 % que pide la norma, con 15 % para tramos cortos. Una meseta plana
+   rodeada de un escarpe es el mejor lugar del predio por puntaje y no se llega.
+   Apareció de paso una propiedad linda: sobre un plano uniforme la diagonal es la
+   contravuelta, y la pendiente del camino es la del terreno **dividida por √2**,
+   así que un predio del 14 % es totalmente accesible con el límite del 10 % y uno
+   del 15 % ya no.
+10. **Y el ancho de camino de la norma son 14 pies —4,27 m— para una mano de
+    circulación**, con 20 pies para dos. No tres metros.
+11. **La superficie que la casa no declara: el campo de infiltración.** El caudal
+    de diseño sale de los **dormitorios** y no de la gente (120 gal/día por
+    dormitorio en la regla de Carolina del Norte, 150 en el supuesto que la EPA
+    declara habitual: las dos convenciones publicadas difieren un 25 %). Lo que
+    ocupa **no es el fondo de la zanja**: la regla pide las zanjas separadas tres
+    anchos entre ejes y la EPA pide reservar el 200 % del área, así que son **seis
+    veces** el fondo de zanja. Para una casa de tres dormitorios eso va de 167 m²
+    sobre arena a **2.007 m² sobre una arcilla mal estructurada** —un factor
+    doce—, y los 800 m² que `masterplan.ts` reserva hoy para la casa entera no
+    alcanzan ni para el desagüe en la mitad de los suelos.
+12. **Y hay dos factores de seguridad que se cancelan sólo si el edificio es una
+    casa.** La EPA lo escribe: el caudal de diseño lleva un factor implícito de
+    **2,3 a 3,6** sobre el consumo medido, y las tasas de absorción publicadas se
+    calibraron con ese caudal inflado, así que están sobreestimadas en el mismo
+    factor. «Fortunately, these two assumptions largely cancel each other out in
+    residential applications» — pero en un salón, una escuela o un conjunto de
+    cabañas, donde el caudal de diseño se parece al real, dejan de cancelarse, y la
+    fuente le atribuye a eso fallas de sistemas grandes. `masterplan.ts` tiene
+    `sum`, `cabana` y `quincho`: son exactamente los casos donde la receta falla.
+13. **La tabla de LTAR devuelve un rango porque la fuente la condiciona a algo que
+    no se lee de un mapa.** Cada grupo está calificado con «S or PS structure and
+    clay mineralogy» —estructura y mineralogía de arcilla, que se ven en un pozo—,
+    y dentro del grupo IV el rango va de 0,4 a 0,1: **un factor cuatro**. Los
+    rangos además **se superponen** (IV de 0,4 a 0,1, III de 0,6 a 0,3): el orden
+    de los grupos no es un orden de calidad. Y la regla manda tomar la textura del
+    **horizonte más limitante de los primeros 90 cm**, no la de superficie.
+14. **CUATRO MOTORES ESTABAN ATADOS AL HEMISFERIO SUR, Y UNO YA ESTABA ARREGLADO.**
+    `masterplan.ts`, `aptitud.ts` y `sugerencias.ts` premiaban la ladera que baja al
+    norte **en todo el planeta**, sin mirar la latitud. En el hemisferio norte el
+    sol del mediodía está al sur, así que en Bogotá, en Puerto Rico y en España la
+    app venía mandando la casa, la huerta y los frutales a la ladera **sombría** y
+    la forestación a la asoleada. `cuencaHidro.ts` ya lo tenía bien
+    (`haciaEcuadorEsNorte`), lo que prueba que alguien lo encontró una vez y no
+    barrió el resto. Ahora el signo vive en un solo lugar y las tres lo importan.
+    En la franja intertropical la función además declara que el signo **no decide
+    solo**, que es lo mismo que apareció con los aleros.
+15. **El retiro y la pendiente de camino piden resoluciones opuestas y el mismo
+    modelo no puede dar las dos.** El handbook de Copernicus publica un error
+    relativo punto a punto de **menos de 2 m** al 90 % en pendientes de hasta 20 %
+    y de **menos de 4 m** arriba de eso. Con los 30 m de la fuente eso equivale a
+    **6,7 %** de pendiente, dos tercios del límite de camino de 10 %, y en terreno
+    empinado lo **supera**. Y el error está en metros, fijo: muestrear la misma
+    fuente más fino **empeora** la pendiente en vez de mejorarla —a 5 m de paso
+    daría 40 %, el número absurdo que avisa que ahí hay interpolación y no dato—,
+    así que lo que vale es el paso **efectivo**, que es la lección que
+    `pasoEfectivoM` ya aplicaba para las curvas de nivel. Del otro lado, el borde
+    de la banda de retiro hereda la resolución de la fuente: **±15 m**, más que el
+    propio retiro mínimo de 10,7 m. La banda se dibuja; no se replantea con una
+    cinta. Donde hay DEM nacional —3DEP, IGN, HRDEM, AHN, swisstopo— el problema
+    desaparece.
+
+**Abierto de H-emplazamiento:** los retiros y los límites de camino son normas de
+los Estados Unidos, que son las publicadas con el método a la vista, y **la norma
+local manda siempre** (código de edificación, retiro municipal, ley de bosques);
+acequia no conoce la norma local de ningún lugar. El retiro se mide desde el eje
+del valle que ve el relieve y no desde el borde del cauce, que está medio ancho de
+cauce más afuera. No mira napa freática, mancha de inundación de un río, amenaza
+sísmica, estabilidad de ladera, servidumbres, líneas de alta tensión ni límites
+catastrales. El corte y el relleno se calculan compensados sobre un plano, sin
+roca, sin napa y sin esponjamiento. Las exclusiones **no alimentan todavía al
+motor de `masterplan.ts`**: se calculan y se muestran, pero el motor sigue
+ubicando con su puntaje —conectarlas es el paso que sigue—. Y nada de esto entró
+al informe.
 
 **Abierto de H-aleros:** sombra geométrica del sol directo, sin difusa, sin
 reflejo del piso ni de una pared vecina y sin obstrucción del horizonte (eso lo
@@ -1437,8 +1586,24 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     app llamaba «óptima» era `|lat| + 12` sin fuente, 17° por encima del valor
     publicado para Buenos Aires.
 
-    **Lo que falta de la etapa H:** la zonificación guiada, el emplazamiento de
-    estructuras con tabla de puntaje y zonas de exclusión, y la bioconstrucción
+    **El emplazamiento, hecho el 05/10/2026.** El problema era de forma: la tabla
+    de puntaje del master plan suma y resta y **nunca descarta nada**, así que un
+    lugar con buenos bonos se queda con la casa aunque esté dentro del retiro de
+    un arroyo. Y decidía sobre una grilla de 10 × 10 celdas —63 m en un predio de
+    40 ha— para aplicar retiros de 10,7 m. Apareció además que el retiro no es un
+    número sino una escalera con **factor 4,7** según para qué sirve; que el
+    umbral de cauce que la app usaba es **relativo a la ventana**, así que el
+    mismo arroyo deja de serlo al agrandar el recorte; que el límite de pendiente
+    de las reglas de pulgar es un costo disfrazado que depende del **ancho** del
+    edificio (los mismos 120 m² mueven 27 o 90 m³ según cómo se apoyen); que el
+    desagüe de una casa de tres dormitorios pide de 167 a **2.007 m²** de terreno
+    según el suelo, contra los 800 que el master plan reserva para la casa
+    entera; que la EPA declara **dos factores de seguridad que se cancelan sólo
+    si el edificio es una vivienda**; y que **cuatro motores estaban atados al
+    hemisferio sur**, mandando la huerta a la ladera sombría en todo el
+    hemisferio norte.
+
+    **Lo que falta de la etapa H:** la zonificación guiada y la bioconstrucción
     por clima de Köppen.
 
 Las etapas I y J después, en ese orden.

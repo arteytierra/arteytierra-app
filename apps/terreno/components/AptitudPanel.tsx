@@ -169,8 +169,8 @@ export function AptitudPanel({ datosShader, datosEscorrentia, datosClima, onIrAT
 }
 
 const DESCRIPCION_APTITUD: Record<TipoAptitud, string> = {
-  huerta:   'Zonas planas con buena orientación norte y acceso al agua. Aptas para horticultura intensiva, jardines productivos y cultivos de ciclo corto.',
-  frutales: 'Laderas suaves con orientación norte-noroeste. Buenas condiciones de temperatura y drenaje para árboles frutales y viña.',
+  huerta:   'Zonas planas en la ladera asoleada y con acceso al agua. Aptas para horticultura intensiva, jardines productivos y cultivos de ciclo corto.',
+  frutales: 'Laderas suaves que miran al sol del mediodía. Buenas condiciones de temperatura y drenaje para árboles frutales y viña.',
   pasturas: 'Áreas moderadamente planas a inclinadas. Adecuadas para pasturas naturales o implantadas, silvopastoril y cultivos extensivos.',
   forestal: 'Pendientes pronunciadas y laderas con menos insolación. Conservación de monte nativo, forestación productiva o cortafuegos.',
   reserva:  'Zonas con limitaciones severas: pendiente muy alta, fondos de valle inundables o posición expuesta. Reserva ecológica o sin uso.',

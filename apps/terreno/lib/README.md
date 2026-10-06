@@ -102,18 +102,19 @@ libremente; tocar sólo con intención explícita y validación:
 | Archivo | Qué es |
 |---|---|
 | `suelos.ts` | Análisis de suelo vía SoilGrids (ISRIC). |
-| `aptitud.ts` | Aptitud de uso del suelo por celda de la grilla. |
+| `aptitud.ts` | Aptitud de uso del suelo por celda de la grilla. La exposición al sol sale de `emplazamiento.ts` desde el 05/10/2026: antes premiaba la ladera que baja al norte en todo el planeta, que en el hemisferio norte es la sombría. |
 | `cobertura.ts` | Cobertura del suelo — ESA WorldCover 10 m. |
 | `carbono.ts` | Estimador orientativo de carbono (stock + potencial). |
 | `contexto.ts` | Contexto ecológico y cultural del predio. |
 | `entorno.ts` | Contexto vivo (datos abiertos: GBIF, OSM/Nominatim, Overpass). |
-| `sugerencias.ts` | Sugerencias de ubicación por principios de permacultura. |
+| `sugerencias.ts` | Sugerencias de ubicación por principios de permacultura. Mismo arreglo de hemisferio que `aptitud.ts`. |
 
 ## Producción agropecuaria y diseño del predio
 
 | Archivo | Qué es |
 |---|---|
-| `masterplan.ts` | Master Plan: programa declarado del predio → zonas + relaciones + optimización (el motor grande de esta familia). |
+| `masterplan.ts` | Master Plan: programa declarado del predio → zonas + relaciones + optimización (el motor grande de esta familia). Su tabla de puntaje **no descarta nada**: las prohibiciones viven en `emplazamiento.ts`. |
+| `emplazamiento.ts` | Dónde **no** puede ir una construcción, y qué cuesta ponerla donde se la quiere poner. Las exclusiones —retiro de curso de agua, cauce, posición cóncava, sin camino posible— son reglas de sí o no y no penalizaciones de puntaje, que es la estructura que a `masterplan.ts` le faltaba. Y para lo que sí es cuestión de grado, da la magnitud física en vez de un puntaje: corte, volumen de tierra, cuánto más grande que el edificio es el movimiento de suelo, largo de camino, y la superficie de terreno que el desagüe de la casa necesita (que en el peor suelo pasa los 800 m² que el master plan reserva para la casa entera). Corre sobre la **grilla densa**: con las celdas de 63 m del shader no se puede aplicar un retiro de 10,7 m. |
 | `produccion.ts` | Sistemas productivos agropecuarios. |
 | `manejos.ts` | El menú de manejos de pastoreo: parcelas, ocupación, descanso, forma y el fusible del año seco. |
 | `pastoreo.ts` | Balance forrajero de un manejo elegido y lo que cuesta armarlo. |

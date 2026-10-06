@@ -97,6 +97,7 @@ import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { MasterPlanPanel } from './MasterPlanPanel';
+import { EmplazamientoBloque } from './EmplazamientoBloque';
 import { PerfilProfesionalModal } from './PerfilProfesionalModal';
 import { leerPerfil } from '@/lib/profesional';
 import { EconomiaPanel } from './EconomiaPanel';
@@ -3256,6 +3257,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onIrATopo={() => setTab('topo')}
                 onIrAHerramienta={(t) => setTab(t as Tab)}
               />
+              {/* ── Etapa H — las exclusiones del emplazamiento ─────────────────
+                  Va después del programa y antes de mirar el resultado: la
+                  pregunta que contesta es previa a «dónde pongo la casa». Y
+                  corre sobre `grillaActiva`, que es el relieve fino cuando está
+                  bajado; el bloque avisa cuando sólo tiene el grueso. */}
+              <div className="mt-3">
+                <EmplazamientoBloque
+                  grilla={grillaActiva}
+                  acceso={acceso}
+                  zona0={zona0}
+                  datosSuelo={datosSuelo}
+                />
+              </div>
             </div>
           )}
           {tab === 'sectores' && (

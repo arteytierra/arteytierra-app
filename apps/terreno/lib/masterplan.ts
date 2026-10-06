@@ -11,6 +11,7 @@ import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 import type { CategoriaZona } from './zonificacion';
 import { trazarCaminoRelieve, type AnalisisRelieve } from './cuencaHidro';
+import { exposicionSolar, ladoAsoleado } from './emplazamiento';
 
 // ─── Programa ─────────────────────────────────────────────────────────────────
 
@@ -172,7 +173,20 @@ interface ContextoCelda {
   elevRel:  number;
   distEntradaRel: number;   // 0 = junto a la entrada, 1 = lo más lejos
   distZona0Rel:   number;   // 0 = sobre zona 0, 1 = lo más lejos (si hay zona 0)
-  orientacionNorte: number; // >0 ladera norte (HemSur)
+  /**
+   * Exposición solar con el signo del hemisferio ya aplicado: >0 es la ladera
+   * que mira al sol del mediodía, en los dos hemisferios.
+   *
+   * Antes esto se llamaba `orientacionNorte` y valía `elev_sur − elev_norte` sin
+   * mirar la latitud, es decir: la ladera que baja al norte era la buena **en
+   * todo el planeta**. En el hemisferio norte el sol del mediodía está al sur,
+   * así que en Bogotá, en Puerto Rico o en España el motor venía poniendo la
+   * casa y la huerta en la ladera sombría y penalizando la asoleada. Ver
+   * `lib/emplazamiento.ts`.
+   */
+  exposicionSol: number;
+  /** Hacia dónde mira la ladera asoleada acá, para poder nombrarla bien. */
+  ladoSol: 'norte' | 'sur';
 }
 
 /** Elemento ya ubicado, para el término de afinidad (grafo de vecindad). */
@@ -184,7 +198,7 @@ interface Colocado { tipo: TipoItemPrograma; lat: number; lng: number }
  * respecto de la casa, junto a qué) la aportan la banda y la afinidad aparte.
  */
 function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; motivos: string[] } {
-  const { c, acumRel, elevRel, orientacionNorte, distEntradaRel } = ctx;
+  const { c, acumRel, elevRel, exposicionSol, distEntradaRel } = ctx;
   const pend = c.pendiente_pct;
   let s = 0;
   const m: string[] = [];
@@ -201,10 +215,10 @@ function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; m
     else if (acumRel < 0.22) { s += hi * 0.4; }
     else                     { s -= hi * 0.8; m.push('zona de escorrentía'); }
   };
-  const norte = (hi: number) => {
-    if      (orientacionNorte >  2) { s += hi;       m.push('orientación norte'); }
-    else if (orientacionNorte >  0) { s += hi * 0.5; }
-    else if (orientacionNorte < -2) { s -= hi * 0.4; m.push('orientación sur'); }
+  const alSol = (hi: number) => {
+    if      (exposicionSol >  2) { s += hi;       m.push(`ladera al ${ctx.ladoSol}, al sol`); }
+    else if (exposicionSol >  0) { s += hi * 0.5; }
+    else if (exposicionSol < -2) { s -= hi * 0.4; m.push('ladera sombría'); }
   };
   const cercaAcceso = (hi: number) => {
     if      (distEntradaRel < 0.25) { s += hi;       m.push('cerca del acceso'); }
@@ -213,7 +227,7 @@ function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; m
 
   switch (perfil) {
     case 'vivienda':
-      plano(14); seco(8); norte(8);
+      plano(14); seco(8); alSol(8);
       if (elevRel >= 0.35 && elevRel <= 0.82) { s += 6; m.push('posición elevada protegida'); }
       else if (elevRel < 0.18) { s -= 3; m.push('posición baja (humedad)'); }
       break;
@@ -221,21 +235,21 @@ function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; m
       plano(13); seco(6); cercaAcceso(10);
       break;
     case 'social':
-      plano(11); seco(6); norte(6);
+      plano(11); seco(6); alSol(6);
       if (elevRel >= 0.40 && elevRel <= 0.85) { s += 6; m.push('con vistas'); }
       break;
     case 'granja':
-      plano(11); seco(10); norte(6);
+      plano(11); seco(10); alSol(6);
       break;
     case 'huerta':
-      plano(12); norte(10); seco(6);
+      plano(12); alSol(10); seco(6);
       if (acumRel > 0.04 && acumRel < 0.20) { s += 6; m.push('agua cercana sin riesgo'); }
       break;
     case 'corral':
       plano(12); seco(10); cercaAcceso(8);
       break;
     case 'apiario':
-      norte(10); seco(6);
+      alSol(10); seco(6);
       if (pend < 15) s += 5;
       if (elevRel > 0.20 && elevRel < 0.70) { s += 5; m.push('reparo del viento'); }
       break;
@@ -262,7 +276,7 @@ function terrenoScore(perfil: PerfilAptitud, ctx: ContextoCelda): { s: number; m
       break;
     case 'frutal':
       if (pend < 12) s += 14; else s += 4;
-      norte(10); seco(6);
+      alSol(10); seco(6);
       if (elevRel >= 0.30 && elevRel <= 0.75) { s += 6; m.push('a media ladera, sin heladas de fondo'); }
       break;
     case 'generico':
@@ -426,6 +440,9 @@ export function calcularMasterPlan(
     if (c.lngMin < lngMinP) lngMinP = c.lngMin; if (c.lngMax > lngMaxP) lngMaxP = c.lngMax;
   }
   const latRef = (latMinP + latMaxP) / 2;
+  // De qué lado está el sol del mediodía acá. Hasta el 05/10/2026 esto se
+  // suponía: siempre al norte, como si el predio estuviera siempre en el sur.
+  const ladoDelSol = ladoAsoleado(latRef);
   const kx = 111_320 * Math.cos(latRef * Math.PI / 180);
   const ky = 111_320;
   const cellLatM = (c0.latMax - c0.latMin) * ky;
@@ -471,12 +488,16 @@ export function calcularMasterPlan(
     const elevRel = elev_max > elev_min ? (c.elevation - elev_min) / (elev_max - elev_min) : 0.5;
     const sur   = byPos.get(`${c.row - 1},${c.col}`);
     const norte = byPos.get(`${c.row + 1},${c.col}`);
-    const orientacionNorte = sur && norte ? sur.elevation - norte.elevation : 0;
+    // `exposicionSolar` le pone el signo del hemisferio: positivo = al sol.
+    const exposicionSol = sur && norte
+      ? exposicionSolar(sur.elevation - norte.elevation, latRef)
+      : 0;
     const distEntradaRel = Math.hypot(c.row - entrada.row, c.col - entrada.col) / maxDist;
     const distZona0Rel   = Math.hypot(c.row - anclaZ.row, c.col - anclaZ.col) / maxDistZ;
     return {
       c, lat: (c.latMin + c.latMax) / 2, lng: (c.lngMin + c.lngMax) / 2,
-      acumRel, elevRel, distEntradaRel, distZona0Rel, orientacionNorte,
+      acumRel, elevRel, distEntradaRel, distZona0Rel, exposicionSol,
+      ladoSol: ladoDelSol.lado,
     };
   }
 
