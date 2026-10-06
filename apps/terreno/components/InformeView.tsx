@@ -43,6 +43,7 @@ import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
 import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
 import { CENSO_GT_PAIS } from '@/lib/censoIndigena2018Gt';
+import { ModeloDeclaradoAnexo } from './ModeloDeclaradoAnexo';
 
 interface Props {
   datos: InformeData;
@@ -1677,6 +1678,16 @@ export function InformeView({ datos, compartido = false }: Props) {
             Verificar en campo antes de ejecutar obras.
           </p>
         </Section>
+
+        {/* ── Anexo B: el modelo declarado ──
+            Va DESPUES del anexo A y no adentro, porque contesta otra pregunta:
+            el A dice de donde salio cada dato y el B dice cuanto puede valer
+            cada numero. Se monta siempre que haya predio dibujado; si el modelo
+            de elevacion del lugar no publica una exactitud vertical, el anexo lo
+            dice en vez de declarar una incertidumbre inventada. */}
+        {datos.mojones.length >= 3 && (
+          <ModeloDeclaradoAnexo mojones={datos.mojones} topo={datos.topo ?? null} numero="B" />
+        )}
 
         {/* Pie de página */}
         <footer className="border-t-2 border-bone-200 pt-6 text-xs text-ink-700/50 leading-relaxed">

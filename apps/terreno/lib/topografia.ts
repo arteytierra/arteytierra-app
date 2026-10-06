@@ -31,6 +31,16 @@ export interface DatosTopografia {
   escurrimiento:    { desde: PuntoElevacion; hacia: PuntoElevacion }; // alto → bajo
   resolucion:       string;
   fuente:           string;
+  /**
+   * La fuente sin traducir a texto de credito.
+   *
+   * `fuente` y `resolucion` son frases para la pantalla. Esto es el identificador,
+   * que es lo que necesita `modeloDeclarado` para buscar la exactitud vertical
+   * publicada del modelo: de un credito no se puede sacar un numero. Opcional
+   * porque un proyecto guardado antes del 06/10/2026 no lo trae, y ahi el modelo
+   * declarado dice que no puede declararse en vez de suponer una fuente.
+   */
+  fuenteRelieve?:   FuenteRelieve;
 }
 
 // ─── OpenTopoData API ─────────────────────────────────────────────────────────
@@ -193,6 +203,7 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     // datos de 2000' sobre un predio suizo servido por swissALTI3D era falso.
     resolucion: fuenteRelieve ? `~${PASO_RELIEVE[fuenteRelieve]} m/píxel` : '~30 m/píxel',
     fuente: fuenteRelieve ? CREDITO_RELIEVE[fuenteRelieve] : 'Copernicus GLO-30 / SRTM',
+    ...(fuenteRelieve ? { fuenteRelieve } : {}),
   };
 }
 

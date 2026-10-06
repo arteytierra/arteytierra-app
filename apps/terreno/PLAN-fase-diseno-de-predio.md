@@ -1818,13 +1818,134 @@ informe.
 
 Lo que el productor se lleva. La app ya emite informe y plano; falta:
 
-- el **modelo declarado**: qué se asumió, con qué datos y con qué incertidumbre;
+- ~~el **modelo declarado**: qué se asumió, con qué datos y con qué
+  incertidumbre;~~ **✅ 06/10/2026.**
 - la **planilla junto al plano**, que es como se trabaja en el campo;
 - la **lista de materiales** con estado por renglón: Necesario / Repuesto /
   Pedido;
-- el **pedido de relevamiento**: qué tiene que ir a medir el productor para que el
-  siguiente cálculo sea mejor. Es lo que convierte una entrega en un ciclo.
+- ~~el **pedido de relevamiento**: qué tiene que ir a medir el productor para que
+  el siguiente cálculo sea mejor. Es lo que convierte una entrega en un
+  ciclo.~~ **✅ 06/10/2026**, y sale de la cuenta y no de una lista.
 - el **master plan por etapas**, que ya existe parcialmente.
+
+Módulo nuevo `lib/modeloDeclarado.ts`, anexo B del informe en
+`components/ModeloDeclaradoAnexo.tsx`, 43 tests en
+`tests/unit/diseno/modeloDeclarado.test.ts`. **Fuentes:** JCGM 100:2008, la
+*Guide to the expression of uncertainty in measurement* del BIPM —el GUM—,
+cláusula por cláusula; el *Copernicus DEM Product Handbook* v5.0 §2.1 y §2.2; y
+Farr et al. (2007), «The Shuttle Radar Topography Mission», *Reviews of
+Geophysics* 45, RG2004, §1.2.
+
+#### H-declaración — lo que apareció
+
+**1 · «MEDIA» NO ES UN NÚMERO.** Lo que había era bueno y no era esto: el objeto
+`Confianza` de `hidrologiaPredio` y `saludCalculo` ordena tres cajones —alta,
+media, baja— y lista lo que faltó. Eso es trazabilidad. Pero un nivel no se
+suma, no se propaga y no se compara con el espesor de la obra que se va a
+construir: dos represas con confianza «media» pueden tener una el 4 % y la otra
+el 60 % de incertidumbre, y la pantalla las muestra igual.
+
+**2 · EL ESTÁNDAR QUE DICE CÓMO SE DECLARA UN NÚMERO EXISTE, Y ES EL MISMO QUE
+USA UN LABORATORIO DE CALIBRACIÓN.** No hubo que inventar una convención: el GUM
+da las seis operaciones que faltaban, cada una con su cláusula. De una cota
+publicada «±a» a incertidumbre típica, a/√3 (4.3.7, ec. 7). De un intervalo
+publicado al 90 % a incertidumbre típica, ÷1,64 (4.3.4). La ley de propagación,
+que compone las derivadas del modelo y no los números sueltos (5.1.2, ec. 10).
+El aporte de cada entrada, que es lo que permite ordenarlas (5.1.3, ec. 11b). La
+expansión por k = 2 para un intervalo del 95 % (6.3.3). Y el redondeo (7.2.6).
+De paso, el estándar autoriza evaluar las derivadas **numéricamente** (nota 2 de
+5.1.3), que para acequia es decisivo: media cadena de cálculo pasa por tablas
+con escalones —el CN del SCS, el grupo hidrológico, la textura USDA— y no hay
+derivada que escribir.
+
+**3 · LA REGLA QUE ESTA APP ROMPÍA EN TODAS LAS PANTALLAS ES LA DE 7.2.6.** Dice
+dos cosas: la incertidumbre se imprime con **a lo sumo dos cifras
+significativas**, y el valor se redondea **al mismo lugar** que ella. Su propio
+ejemplo: «if y = 10,057 62 Ω with u_c(y) = 27 mΩ, y should be rounded to
+10,058 Ω». Imprimir «1.247,38 m³» cuando la incertidumbre es de 600 m³ no es
+más preciso: las cuatro cifras de la derecha son ruido con aspecto de dato. Es
+exactamente el modo en que esta app falla —no se estrella, imprime un número
+plausible— aplicado a los decimales.
+
+**4 · Y APARECIÓ QUE EL MODELO DE ELEVACIÓN PUBLICA DOS EXACTITUDES, NO UNA, Y
+QUE LA DIFERENCIA DECIDE TODO.** Copernicus las distingue con precisión
+quirúrgica: la **absoluta** «describes all random or systematic uncertainties of
+a pixel […] with respect to the vertical datum used», < 4 m al 90 %; la
+**relativa** está «specified as uncertainty between two DEM pixels caused by
+random errors», < 2 m en pendiente ≤ 20 %, y —esto es lo que la vuelve
+usable— con su base declarada: «90 % linear point-to-point error within an area
+of 1° × 1°». La parte sistemática es un **sesgo compartido** por todas las
+celdas de la zona, y entonces:
+
+- **se cancela entero en una resta.** Un desnivel, una pendiente, una
+  profundidad, una deriva de surco. Propagar la absoluta ahí **duplica** la
+  incertidumbre: el desnivel del predio sale con 1,72 m y no con 3,45 m.
+- **no se cancela en una suma**, y ahí hay algo peor.
+
+**5 · LA INCERTIDUMBRE DEL VOLUMEN DE UN VASO ES LA SUPERFICIE DEL ESPEJO POR EL
+ERROR PUNTO A PUNTO DEL MODELO.** El vaso se calcula celda por celda,
+V = A_celda · Σ (z_agua − z_i), y el detalle que decide todo es que **z_agua es
+una sola celda y aparece en los N términos de la suma**: su error no se
+promedia, se multiplica por N. Hecha la cuenta, u(V) = A_celda · u · √(N² + N),
+que para cualquier vaso con más de una celda es la superficie del espejo por la
+incertidumbre punto a punto. **No baja afinando la grilla ni contando más
+celdas.** Y la cuenta ingenua —darle a cada término su propia cota de agua— da
+√((N+1)/2) veces menos: con 50 celdas, **5 veces menos**; con 500, 16. Es la
+nota 1 de GUM 5.2.2 con otra ropa —los diez resistores calibrados contra el
+mismo patrón, donde el estándar dice que 0,32 Ω «is incorrect because it does
+not take into account that all of the calibrated values of the ten resistors
+are correlated» y el número bueno es 1 Ω— y los dos números son un test.
+
+**6 · CON ESO DECLARADO, UN VASO SATELITAL DE 10.000 m³ TIENE UN INTERVALO MÁS
+ANCHO QUE SU PROPIO VOLUMEN.** 2 m de profundidad media contra 1,22 m de
+incertidumbre punto a punto: la profundidad vale 1,6 veces el error. No es un
+error de cálculo —la cuenta es la que es— y no es un hallazgo nuevo: es el
+mismo de la etapa I, los 45 cm de variación en 280 m de surco, visto desde el
+volumen en lugar del surco. Cuando el intervalo se come el valor, acequia lo
+dice: el número sirve para el orden de magnitud y para decidir qué medir, no
+para dimensionar una obra.
+
+**7 · Y POR ESO EL PEDIDO DE RELEVAMIENTO NO ES UNA LISTA: ES UN ORDEN
+CALCULADO.** También está en el GUM, en la nota al pie de 4.3.7: «When a
+component of uncertainty determined in this manner contributes significantly to
+the uncertainty of a measurement result, it is prudent to obtain additional data
+for its further evaluation». Para cada medición posible se vuelve a propagar
+**todo el modelo** con la incertidumbre que quedaría después de medirla, y lo que
+se informa es cuánto baja el intervalo. En el vaso de arriba: medir las cotas
+del fondo no entra en la lista —ponen el 2 % de la varianza— y medir la cota del
+vertedero con un nivel **baja el intervalo un 86 %** en medio día de trabajo.
+Eso es lo que convierte una entrega en un ciclo: con eso medido, el cálculo
+siguiente no es el mismo con más decimales, es otro cálculo.
+
+**8 · Y DONDE NO HAY EXACTITUD PUBLICADA, NO SE DECLARA NADA.** SRTM publica los
+dos números —16 m absoluto y 10 m relativo, los dos al 90 %— pero **no dice
+sobre qué distancia** vale el relativo, y el error entre dos celdas vecinas no es
+el mismo que entre dos celdas a 100 km: ese número no se puede propagar. Y de
+los siete modelos nacionales no se leyó ninguna especificación. En los dos casos
+acequia dice que no puede declarar la incertidumbre, en vez de usar su propio
+`INTERVALO_CONFIABLE_M`, que es un criterio de **dibujo** —cada cuánto tiene
+sentido trazar una curva— y no una exactitud. Era la tentación obvia y habría
+sido fabricar un número.
+
+**9 · LO QUE NO SE PUDO VERIFICAR Y QUEDÓ AFUERA.** La tormenta de diseño de
+Gumbel tiene un error estándar publicado —la fórmula de Kite para el cuantil de
+una EV1 por momentos— y no entró: no se consiguió verificar sus coeficientes
+contra la fuente primaria, así que la lluvia de diseño sigue sin incertidumbre
+declarada. El GUM da la mitad del camino —la ec. (5) de 4.2.3 para el desvío de
+la media, que es una **cota inferior** del error del cuantil— pero una cota
+inferior rotulada como la incertidumbre sería peor que nada. Queda anotado.
+
+**Abierto de la etapa J:** faltan las tres entregas de papel —la **planilla**
+junto al plano, la **lista de materiales** con estado por renglón y el **master
+plan por etapas**—. El modelo declarado cubre dos magnitudes —superficie y
+desnivel— y no las demás: la represa, el escurrimiento, la receptividad y el
+presupuesto todavía se imprimen sin intervalo, y las funciones para declararlos
+ya están. El corrimiento de cada mojón es un **supuesto declarado** (2 m) y no un
+dato: nadie publica la exactitud de un clic sobre una imagen satelital. Falta
+leer la exactitud vertical publicada de los siete modelos nacionales y del
+relevamiento propio del usuario. Y el anexo B vive en el informe y no en los
+paneles, así que las pantallas de /mapa siguen imprimiendo sus números con las
+cifras que tenían.
 
 ---
 
@@ -1974,7 +2095,22 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     resolución vertical—, así que ahora, cuando no se puede medir, acequia no
     imprime el número.
 
-La etapa J después.
+14. **Etapa J** —los entregables—. **El modelo declarado y el pedido de
+    relevamiento, hechos el 06/10/2026.** Lo que había —el objeto `Confianza`—
+    ordena tres cajones y no se puede propagar, así que el enunciado se cumplió
+    con el estándar que ya existe para esto: el **GUM**, cláusula por cláusula.
+    Y apareció que el modelo de elevación publica **dos** exactitudes verticales
+    y que la diferencia decide todo: el sesgo contra el nivel del mar se cancela
+    entero en una resta —propagar la absoluta en un desnivel lo **duplica**— y
+    no se cancela en una suma. De ahí sale el número de la etapa: la
+    incertidumbre del volumen de un vaso es la **superficie del espejo por el
+    error punto a punto**, porque la cota del agua es una sola celda que pesa N
+    veces; la cuenta ingenua da **5 veces menos** con 50 celdas. Y entonces un
+    vaso satelital de 10.000 m³ tiene un intervalo más ancho que su propio
+    volumen, que es el hallazgo de la etapa I visto desde el volumen. El pedido
+    de relevamiento sale de la cuenta: medir el fondo no entra en la lista y
+    medir la cota del vertedero con un nivel baja el intervalo un **86 %**.
+    Faltan la planilla, la lista de materiales y el master plan por etapas.
 
 ---
 
