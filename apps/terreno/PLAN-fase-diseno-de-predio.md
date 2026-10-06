@@ -1722,12 +1722,97 @@ centro de masa de una zona en forma de C cae en el hueco, y entonces el chequeo
 de emplazamiento no corre: se avisa. No mira napa, servidumbres, catastro,
 caminos existentes ni la norma local. Y nada de esto entró al informe.
 
-### Etapa I — Validar los patrones de cultivo solos
+### Etapa I — Validar los patrones de cultivo solos ✅ *06/10/2026*
 
-Una vez corregida la geometría (1.3), la app puede **auto-validarse**: verificar
+~~Una vez corregida la geometría (1.3), la app puede **auto-validarse**: verificar
 por triángulos que las guías realmente drenan hacia donde dicen, y reportar la
 pendiente fila por fila en lugar de un promedio. Es la clase de verificación que
-convierte una herramienta de dibujo en una de diseño.
+convierte una herramienta de dibujo en una de diseño.~~
+
+**Hecha el 06/10/2026.** Módulo nuevo `lib/validacionPatron.ts`, bloque
+`components/ValidacionPatronBloque.tsx` al final del panel de Keyline, 27 tests
+en `tests/unit/diseno/validacionPatron.test.ts`. Fuente del método de triángulos:
+**Tarboton, D. G. (1997)**, «A new method for the determination of flow
+directions and upslope areas in grid digital elevation models», *Water Resources
+Research* 33(2), 309-319 — las ecuaciones (1) a (6) y la Tabla 1, leídas del
+paper.
+
+#### H-validación — lo que apareció
+
+**1 · LOS TRIÁNGULOS NO SON UN REFINAMIENTO: SON EL REEMPLAZO DE LO QUE DECIDÍA
+EL LADO.** El «hacia qué lado deriva el surco» que el patrón afirma sale de la
+derivada lateral de la acumulación de flujo, y esa acumulación se calcula con
+D8: cada celda manda toda su agua a uno de ocho vecinos. Tarboton lo enuncia
+como la objeción central —«the discretization of flow into only one of eight
+possible directions, separated by 45°»— y propone ocho **facetas triangulares**
+por celda, cada una un plano exacto por tres puntos. Sobre un plano el método de
+facetas devuelve el rumbo **exacto**; D8 en el mismo plano se equivoca hasta
+**22,5°**, que es la mitad de la separación. En el valle parabólico de los tests
+las dos direcciones se separan **10,5° de promedio y 20,6° en el peor caso**.
+
+**2 · Y SOBRE EL CONO DE LA FIGURA 4 DEL PAPER LA DIFERENCIA ES DE CUATRO
+VECES.** Reproducido con sus números —«200 minus the radius from the center on a
+16 × 16 grid with grid spacing 10 units»—, donde la dirección verdadera es la
+radial en cada celda: las facetas se equivocan **2,4° de media** y D8 **10,6°**.
+Y no son el mismo error: el de D8 es sesgo de grilla y no baja aunque la grilla
+sea más fina; el que les queda a las facetas es la curvatura del cono
+discretizada, concentrada en las celdas pegadas al vértice.
+
+**3 · EL VEREDICTO DEL PATRÓN PROMEDIA LARGOS Y EL ESTÁNDAR LIMITA CADA SURCO.**
+`resumirPatron` calcula la fracción excedida como largo excedido sobre largo
+total. El estándar 330 no dice eso: dice «The maximum row grade must not exceed
+one-half of the up-and-down-hill slope percent […] with a maximum 4-percent row
+grade», y es una propiedad de cada surco. Un surco entero fuera de grado pesa
+**1/N** del patrón, así que con 40 líneas **diez pueden estar enteras fuera de
+grado y el conjunto se sigue leyendo «patrón Keyline»**: 10/40 = 0,25 y el
+umbral del veredicto es *mayor* que 0,25. Hay un test con esa cuenta exacta.
+
+**4 · UN SURCO PUEDE TENER TODA SU DERIVA DENTRO DE LA BANDA Y NO DESAGUAR.** La
+deriva se medía en valor absoluto, tramo por tramo. Un surco que baja hacia un
+punto de su propio recorrido —el caso típico es el que cruza una vaguada— tiene
+cada tramo en regla y **el agua se le junta en el medio**. El estándar pide lo
+contrario con todas las letras —«Design the row grades with positive row
+drainage»— y ese punto bajo, cuando cae en el eje de una vertiente, es
+exactamente el lugar donde el método de Yeomans no quiere el agua. Ahora el
+perfil de cada surco se parte en ramas y cada rama dice por dónde entrega el
+agua; si entrega adentro, se informa cuántos metros hay que llenar para que
+rebalse.
+
+**5 · Y DESPUÉS DE SALIR DEL SURCO, EL AGUA SE SIGUE.** Desde cada extremo se
+suelta una gota y se la camina pendiente abajo por facetas hasta que se mete en
+un cauce, se va del terreno o se acaban los pasos. Eso es la parte «verificar»
+de la etapa: el patrón afirmaba que el surco entrega el agua hacia la ladera, y
+ahora hay un número que dice adónde fue.
+
+**6 · EL HALLAZGO QUE NO ESTABA EN EL ENUNCIADO: LA BANDA PUBLICADA ARRANCA POR
+DEBAJO DE LO QUE EL MODELO VE.** El piso del estándar es **0,2 %**. Sobre un
+surco de 300 m eso son 60 cm de desnivel, y la app ya se impone **2 m** como
+intervalo de curva confiable con el modelo satelital porque abajo de eso dibuja
+ruido de sensor. Con 2 m de resolución vertical, para que un 0,2 % se despegue
+de cero hace falta **un kilómetro de surco**. Al revés: medir la deriva tramo
+por tramo —tramos de 4 a 10 m— sobre un modelo de 30 m de paso es medir
+interpolación. **La unidad más chica de la que este dato puede hablar es el
+surco entero**, así que informar fila por fila no es sólo lo que pide el
+estándar: es lo único que el dato aguanta. Cada fila trae su propia
+`resolucion_pct` y cuando la deriva no llega, acequia **no imprime el número**.
+
+**7 · Y ESO LE PASA AL PROPIO TERRENO DE PRUEBA DE LA ETAPA ANTERIOR.** El valle
+parabólico con el que se validó la geometría el 04/10/2026 da un veredicto
+«patrón Keyline» sobre surcos con **45 cm de variación en 280 m**: menos de lo
+que el modelo resuelve. El veredicto no está mal calculado —la cuenta es la que
+es— pero descansa sobre centímetros que el dato no tiene, y eso hasta hoy no se
+decía en ninguna parte.
+
+**Abierto de la etapa I:** el eje del valle se sigue identificando con la
+acumulación **D8** —el umbral de cauce es el mismo que usa `cuencaHidro` para
+rutear caminos, convención de la app y no número publicado—, así que la
+dirección se corrigió y la red todavía no; falta la **acumulación D∞** del mismo
+paper, que es la segunda mitad del método. La validación **no corrige** el
+patrón: no mueve una línea ni parte la vertiente en dos mitades cuando encuentra
+el sumidero, que es lo que el *herring-bone* de Yeomans haría. La resolución
+vertical sale del criterio que la app ya usa para las curvas de nivel, no de una
+exactitud publicada por el proveedor del modelo. Y nada de esto entró al
+informe.
 
 ### Etapa J — Los entregables
 
@@ -1873,7 +1958,23 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     **La etapa H está cerrada.** Sus cuatro partes —aleros, emplazamiento,
     bioconstrucción y zonificación— están en producción.
 
-Las etapas I y J después, en ese orden.
+13. ~~**Etapa I** —validar los patrones de cultivo solos—.~~ **✅ 06/10/2026.**
+    Los triángulos del enunciado resultaron ser el **reemplazo** de lo que
+    decidía el lado: el «hacia dónde deriva» salía de una acumulación D8, que
+    sólo tiene ocho direcciones separadas por 45°, y las ocho facetas
+    triangulares de Tarboton devuelven el rumbo exacto sobre un plano —ahí D8 se
+    equivoca hasta **22,5°**— y se separan **10,5° de media** en el valle de los
+    tests. La otra mitad del enunciado destapó que el veredicto del patrón
+    **promedia largos** mientras el estándar limita cada surco: con 40 líneas,
+    **diez enteras fuera de grado no mueven el veredicto**. Y apareció lo que no
+    estaba pedido: un surco puede tener toda su deriva dentro de la banda y **no
+    desaguar** si baja hacia un punto de su propio recorrido, y la banda
+    publicada **arranca por debajo de lo que el modelo ve** —el piso de 0,2 %
+    necesita un kilómetro de surco para distinguirse de cero con 2 m de
+    resolución vertical—, así que ahora, cuando no se puede medir, acequia no
+    imprime el número.
+
+La etapa J después.
 
 ---
 

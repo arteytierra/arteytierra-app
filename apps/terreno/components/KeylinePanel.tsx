@@ -9,6 +9,7 @@ import type { DatosShader } from '@/lib/shaders';
 import type { PoligonoCutFill } from './CutFillPanel';
 import type { GrupoHidro } from '@/lib/cuenca';
 import type { VeredictoPatron } from '@/lib/keylineGeometria';
+import { ValidacionPatronBloque } from './ValidacionPatronBloque';
 
 /**
  * Detectar el keypoint descarga relieve y tarda: se guarda el resultado, no
@@ -323,6 +324,18 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
                 </div>
                 <p className="text-[10px] text-ink-700/70 leading-relaxed">{patron.lectura}</p>
                 <p className="text-[9px] text-ink-700/55 leading-relaxed border-t border-bone-200 pt-2">{patron.banda.nota}</p>
+
+                {/* Etapa I — el patrón validado contra el terreno, surco por surco.
+                    Va DESPUÉS del veredicto del conjunto a propósito: lo primero
+                    que hace es poner al lado de ese promedio el conteo por fila,
+                    que es lo que el estándar limita. `undefined` es un patrón
+                    guardado antes del 06/10/2026, que no se validó nunca: ahí no
+                    se muestra nada en vez de inventarle un resultado. */}
+                {patron.validacion !== undefined && (
+                  <ValidacionPatronBloque
+                    validacion={patron.validacion} banda={patron.banda} resumen={patron.resumen}
+                  />
+                )}
                 {patron.verticesCerrados.length > 0 && (
                   <p className="text-[9px] text-clay-700/90 leading-relaxed flex gap-1">
                     <TriangleAlert className="w-2.5 h-2.5 mt-[2px] shrink-0" />

@@ -24,6 +24,7 @@ import {
   type BandaDeriva, type AptitudKeyline, type ResumenPatron, type VerticeCerrado,
   type TramoPatron,
 } from './keylineGeometria';
+import { validarPatron, type ValidacionPatron } from './validacionPatron';
 import type { GrupoHidro } from './cuenca';
 
 export interface PuntoKL { lat: number; lng: number; elevation: number }
@@ -70,6 +71,14 @@ export interface ResultadoPatron {
   lectura:      string;
   /** Si el patrón corresponde en este terreno, y con qué reservas. */
   aptitud:      AptitudKeyline;
+  /**
+   * El patrón verificado contra el terreno, surco por surco.
+   *
+   * Es opcional porque un patrón guardado antes del 06/10/2026 no la trae: ahí
+   * la pantalla ofrece recalcular en vez de inventarle una validación. `null`
+   * quiere decir que se intentó y no se pudo medir ninguna fila.
+   */
+  validacion?:  ValidacionPatron | null;
   nota:         string;
   fuentes:      string[];
 }
@@ -659,6 +668,22 @@ export function generarPatronCultivo(
   const resumen = resumirPatron(tramos, banda);
   const lectura = leerVeredicto(resumen, banda);
 
+  // ── Y ahora ir a mirar, en vez de afirmar ─────────────────────────────────
+  // Todo lo de arriba describe lo que el patrón hace; esto lo verifica surco
+  // por surco contra el terreno, con el método de las facetas triangulares —que
+  // no redondea la dirección a ocho rumbos como la acumulación D8 de la que
+  // sale el «hacia qué lado» de más arriba—. Y lo informa fila por fila, porque
+  // el estándar limita CADA surco y no un promedio: con 40 líneas, diez enteras
+  // fuera de grado no llegan a mover el veredicto del conjunto.
+  let accMax = 0;
+  for (const i of flujo.celdas) if (acc[i]! > accMax) accMax = acc[i]!;
+  // El mismo umbral de cauce que usa `cuencaHidro` para rutear caminos: es
+  // convención de la app, no un número publicado, y por eso vive en un solo lado.
+  const umbralCauce = Math.max(8, accMax * 0.03);
+  const validacion = validarPatron({ lineas, banda }, g, {
+    esEjeDeValle: (la, lo) => { const a = accEn(la, lo); return Number.isFinite(a) && a >= umbralCauce; },
+  });
+
   // Largo de ladera dentro de la parcela: la proyección del polígono sobre la
   // dirección de máxima pendiente. Es el dato con el que el estándar juzga si la
   // práctica alcanza para contener el escurrimiento.
@@ -701,6 +726,7 @@ export function generarPatronCultivo(
     resumen,
     lectura,
     aptitud,
+    validacion,
     nota: `${lineas.length} líneas a ${espaciadoM} m, paralelas a una directriz de ${simplificada.length} vértices `
       + `(simplificada con ${tol.toFixed(0)} m de tolerancia y redondeada con ${radio.toFixed(1)} m de radio), con `
       + `${headland_m.toFixed(0)} m de maniobra libres en el borde. La deriva media del surco es `
