@@ -1237,8 +1237,13 @@ coinciden.
 
 ### Etapa H — Zonificación, estructuras y bioconstrucción
 
-- La **zonificación** como ejercicio guiado, no como un dibujo libre: la app ya
-  tiene zonas y el motor de master plan.
+- ~~La **zonificación** como ejercicio guiado, no como un dibujo libre: la app ya
+  tiene zonas y el motor de master plan.~~ **✅ *06/10/2026*** —
+  `lib/zonificacionGuiada.ts`, `components/ZonificacionGuiadaBloque.tsx` (dentro
+  del panel de Zonificación), 43 tests en
+  `tests/unit/diseno/zonificacionGuiada.test.ts`. Lo que faltaba no era una guía:
+  era que **nada miraba el dibujo**, y que el resumen sumaba superficies que se
+  pisan.
 - ~~**Emplazamiento de estructuras** con tabla de puntaje y zonas de exclusión:
   pendiente, orientación, acceso, distancia al agua, y el buffer que corresponde a
   cada cosa.~~ **✅ *05/10/2026*** — `lib/emplazamiento.ts`,
@@ -1616,6 +1621,107 @@ disponibilidad del material en el predio, que es dato de `suelos.ts` y sería el
 paso siguiente. No propone espesores ni alturas: lee la tabla. Y nada de esto
 entró al informe.
 
+#### H-zonificación — lo que apareció
+
+**Fuentes.** **Piner, A., «Appendix G. Permaculture Design»**, *North Carolina
+Extension Gardener Handbook*, NC State Extension Publications, 1/02/2022 (la
+descripción institucional y libre de las zonas de Mollison) · **Tobler, W.
+(1993), «Three Presentations on Geographical Analysis and Modeling», NCGIA
+Technical Report 93-1**, UC Santa Barbara · **Imhof, E. (1950)**, *Gelaende und
+Karte*, Rentsch, Zúrich, pp. 217-220 (los datos sobre los que Tobler ajustó la
+función) · y, delegadas, las de `usle.ts` y `emplazamiento.ts`.
+
+**1 · LO QUE FALTABA NO ERA UNA GUÍA: ERA QUE NADA MIRABA EL DIBUJO.** El
+enunciado pedía «la zonificación como ejercicio guiado». Leyendo
+`zonificacion.ts` apareció otra cosa: hoy se dibuja un polígono, se le elige una
+categoría y se muestra su superficie, y **ninguno de los quince motores de la app
+vuelve a mirar ese polígono**. No hace falta una guía: hace falta apuntarle los
+motores que ya existen.
+
+**2 · Y HABÍA UN NÚMERO MAL, QUE ES PEOR QUE UNA AUSENCIA.**
+`calcularResumenZonificacion` **suma** las áreas de las zonas. Entonces dos zonas
+que se pisan cuentan dos veces la superficie pisada; los porcentajes por
+categoría se calculan sobre esa suma inflada, así que son **porcentajes de un
+total que no existe**; y una zona dibujada **afuera del predio** entra al resumen
+como si estuviera adentro. Es exactamente el modo de fallar de esta app: no se
+estrella, imprime un número plausible. Ahora van las tres superficies juntas
+—suma, unión y recorte al perímetro de los mojones— y cuando coinciden el bloque
+lo dice en una línea.
+
+**3 · LA ZONA DE MOLLISON ES UNA FRECUENCIA, NO UN RADIO, Y LA FUENTE LO DICE EN
+LOS DOS SENTIDOS.** Las seis primeras categorías que la app ofrece son las zonas
+0 a 5, y la fuente las define por frecuencia de visita: zona 1 «multiple times
+each day», zona 2 «about once a day», zona 3 «several times a week», zona 4
+«monthly or seasonally», zona 5 «not managed at all». Y aclara explícitamente que
+el dibujo de anillos es una convención: «zones often are shown as concentric
+circles. This may not always be the case, depending on the site.»
+
+**4 · ASÍ QUE EL NÚMERO DE ZONA DECLARA UN PRESUPUESTO DE VIAJES POR AÑO, Y LA
+DISTANCIA NO ORDENA EL COSTO.** Convertidas las palabras de la fuente a bandas
+—la conversión se declara zona por zona y el resultado se publica como rango—:
+zona 1, **730 a 1.461** viajes/año; zona 2, **365** (el único número exacto que la
+fuente da); zona 3, **104 a 208**; zona 4, **4 a 12**. Entonces **una zona 1 a
+150 m del centro camina más kilómetros por año (219) que una zona 3 a 500 m
+(208)**, que es lo contrario de lo que dicen los anillos concéntricos. A igual
+distancia, el factor entre la zona 1 y la zona 4 va de **61 a 365 veces**.
+
+**5 · LA IDA Y VUELTA NO ES EL DOBLE DE LA IDA.** La función de caminata de
+Tobler —`W = 6·e^(−3,5·|S + 0,05|)` km/h— tiene su máximo en una **bajada del
+5 %**, donde da **6 km/h exactos**, y en el llano da 5,04. No es simétrica
+respecto del cero, así que subir y bajar la misma ladera cuestan distinto: en una
+pendiente del 20 % son **2,50 km/h subiendo contra 3,55 bajando**, y el factor es
+exactamente `e^0,35`. El viaje redondo sobre esa ladera se desvía un **29,5 %**
+del doble de la ida.
+
+**6 · Y UNA PENDIENTE MEDIA NO SE CAMINA COMO SUS TRAMOS, PORQUE LA FUNCIÓN ES
+CONVEXA.** El mismo desnivel y la misma distancia repartidos como 500 m al 10 % +
+500 m al 10 % cuestan **menos** que 500 m llanos + 500 m al 20 %: el tramo
+empinado cuesta más de lo que el llano compensa. Por eso el tiempo se calcula
+sobre el perfil celda por celda y no sobre la pendiente media.
+
+**7 · LA LONGITUD DE LADERA DE LA USLE ES UNA PROPIEDAD DE LA ZONA, NO DEL
+PREDIO, Y DEPENDE DE CÓMO ESTÉ GIRADA.** `λ` es la dimensión medida **pendiente
+abajo**, y `LS ∝ λ^m` con `m = 0,5` arriba del 5 % de pendiente. Así que la misma
+hectárea de cultivo girada 90° cambia su pérdida de suelo por la **raíz de la
+relación de lados**: una franja de 200 × 50 m pierde el **doble** cruzada a la
+pendiente que tendida sobre la curva de nivel. Abajo del 5 % el exponente baja a
+0,3 y el mismo giro pesa 1,52 en vez de 2. El mapa de erosión de la app nunca lo
+supo porque nunca miró la zona: calculaba por clase de ladera, no por polígono.
+El bloque lo publica como **requisito** —lo que cuesta— y no como exclusión.
+
+**8 · LAS TRES LISTAS DE `emplazamiento.ts` SE REPITEN ACÁ A PROPÓSITO.**
+Exclusiones (sí o no), requisitos (lo que cuesta, con su magnitud) y advertencias
+(lo que el método no resuelve). Repetir la estructura quiere decir que una zona
+dibujada dentro del retiro de un arroyo **no se compensa con nada**, que es el
+hallazgo de H-emplazamiento aplicado al dibujo. Y las categorías que no son de
+construcción sólo heredan las exclusiones de cauce y de retiro: a una huerta no
+la descalifica no tener camino de vehículo.
+
+**9 · LO QUE NO SE INVENTÓ, Y ES LA MITAD DEL TRABAJO.** No hay una pendiente
+máxima publicada para una huerta ni una superficie mínima publicada para un
+bosque de alimento. Esas cifras circulan sin fuente primaria y acá **no están**:
+`CHEQUEOS_POR_CATEGORIA` deja trece categorías sin chequeo y el bloque lo dice en
+la propia fila —«no hay ninguna cifra publicada que condicione una zona de
+apiario al terreno, así que acequia no le pone ninguna»—. Lo mismo con la
+caminata: la función se ajustó sobre excursionismo **a pie y sin carga**, y
+cuánto más lento es empujar una carretilla no está publicado, así que los tiempos
+se declaran como piso y no se corrigen con un factor inventado.
+
+**10 · EL 3/5 FUERA DE SENDERO ES LA CUENTA QUE JUSTIFICA ABRIR EL CAMINO.** El
+factor es de la fuente, y su inverso es un **+67 % de tiempo**. Con el
+presupuesto de viajes de una zona 2 —365 por año— eso es la diferencia entre
+mover la zona y hacerle un camino, y ahora es un número y no una intuición.
+
+**Abierto de H-zonificación:** las exclusiones por zona **tampoco alimentan al
+motor de `masterplan.ts`**, igual que las de H-emplazamiento. Las operaciones de
+polígono se hacen en lat/lng y se tratan como planas (a escala de predio el error
+es despreciable frente al del dibujo a mano alzada). La caminata se mide en línea
+recta entre centros de masa y no por el camino que el terreno permite —`caminos.ts`
+y la Dijkstra de `emplazamiento.ts` podrían darlo, y es el paso siguiente—. El
+centro de masa de una zona en forma de C cae en el hueco, y entonces el chequeo
+de emplazamiento no corre: se avisa. No mira napa, servidumbres, catastro,
+caminos existentes ni la norma local. Y nada de esto entró al informe.
+
 ### Etapa I — Validar los patrones de cultivo solos
 
 Una vez corregida la geometría (1.3), la app puede **auto-validarse**: verificar
@@ -1751,7 +1857,21 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
     húmeda. Y se corrigió un techo de CDD para las zonas marinas que **no existe
     en la fuente** y que yo había sintetizado de un fragmento ambiguo.
 
-    **Lo que falta de la etapa H:** la zonificación guiada.
+    La **zonificación guiada** cerró el 06/10/2026, y lo que faltaba no era una
+    guía: era que **nada miraba el dibujo**, y que `calcularResumenZonificacion`
+    **sumaba** las superficies, así que dos zonas que se pisan contaban dos veces
+    y los porcentajes salían de un total inexistente. Ahora van la suma, la unión
+    y el recorte al predio juntas. Y apareció que las zonas 0 a 5 de la
+    permacultura están definidas por **frecuencia de visita y no por distancia**,
+    con lo cual el número de zona declara un presupuesto de viajes por año y
+    **una zona 1 a 150 m camina más que una zona 3 a 500 m**. Con la función de
+    Tobler, cuyo máximo está en una bajada del 5 % y no en el llano, así que **la
+    ida y vuelta no es el doble de la ida**. Y la USLE apuntada a cada polígono
+    destapó que **λ es la dimensión de la zona medida pendiente abajo**: la misma
+    hectárea girada 90° pierde el doble de suelo.
+
+    **La etapa H está cerrada.** Sus cuatro partes —aleros, emplazamiento,
+    bioconstrucción y zonificación— están en producción.
 
 Las etapas I y J después, en ese orden.
 

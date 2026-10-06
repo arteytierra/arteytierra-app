@@ -84,7 +84,7 @@ import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
 import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
 import { crearRepresaGuardada, migrarRepresasGuardadas, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
-import { perdidaSuelo, type PerdidaSuelo } from '@/lib/usle';
+import { perdidaSuelo, type EntradaUSLE, type PerdidaSuelo } from '@/lib/usle';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel, type CuencaInputs } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
@@ -808,21 +808,30 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
    * dice CUÁNTO. Sin esos dos, queda en null y la leyenda muestra sólo el
    * índice relativo, como antes.
    */
-  const perdidaErosion = useMemo<Record<number, PerdidaSuelo> | null>(() => {
+  /**
+   * Lo que la USLE necesita, en un solo lugar: lo usa el mapa de erosión por
+   * clase de ladera y también el bloque de zonificación guiada, que lo aplica a
+   * la pendiente y la longitud de ladera de cada zona dibujada.
+   */
+  const entradaUSLE = useMemo<EntradaUSLE | null>(() => {
     const precipAnual = datosClima?.precip_anual_mm;
     if (!datosErosion || datosErosion.usle_c === null || !precipAnual || !datosSuelo) return null;
-    const entrada = {
+    return {
       precipAnual_mm:  precipAnual,
       clase_textura:   datosSuelo.clase_textura,
       carbonoOrg_g_kg: datosSuelo.carbono_org,
       usle_c:          datosErosion.usle_c,
     };
+  }, [datosErosion, datosClima, datosSuelo]);
+
+  const perdidaErosion = useMemo<Record<number, PerdidaSuelo> | null>(() => {
+    if (!datosErosion || !entradaUSLE) return null;
     const out: Record<number, PerdidaSuelo> = {};
     datosErosion.resumen.forEach(r => {
-      if (r.pct > 0) out[r.clase] = perdidaSuelo(entrada, r.pendiente_media_pct, r.lambda_m);
+      if (r.pct > 0) out[r.clase] = perdidaSuelo(entradaUSLE, r.pendiente_media_pct, r.lambda_m);
     });
     return out;
-  }, [datosErosion, datosClima, datosSuelo]);
+  }, [datosErosion, entradaUSLE]);
 
   const saludErosion = useMemo<Confianza | null>(
     () => datosErosion ? confianzaErosion({
@@ -3232,6 +3241,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <ZonificacionPanel
                 zonas={zonas} onZonas={setZonas} modoZona={modoZona}
                 onIniciarDibujo={handleIniciarZona} onFinalizarZona={handleFinalizarZona} onCancelarZona={handleCancelarZona}
+                mojones={mojones} grilla={grillaActiva} zona0={zona0} usle={entradaUSLE}
               />
             </div>
           )}
