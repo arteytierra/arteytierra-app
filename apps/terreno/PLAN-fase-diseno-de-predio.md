@@ -1820,13 +1820,17 @@ Lo que el productor se lleva. La app ya emite informe y plano; falta:
 
 - ~~el **modelo declarado**: qué se asumió, con qué datos y con qué
   incertidumbre;~~ **✅ 06/10/2026.**
-- la **planilla junto al plano**, que es como se trabaja en el campo;
-- la **lista de materiales** con estado por renglón: Necesario / Repuesto /
-  Pedido;
+- ~~la **planilla junto al plano**, que es como se trabaja en el campo;~~
+  **✅ 07/10/2026.**
+- ~~la **lista de materiales** con estado por renglón: Necesario / Repuesto /
+  Pedido;~~ **✅ 07/10/2026**, con base de medición y calidad requerida, que es
+  lo que la vuelve una lista y no una longitud.
 - ~~el **pedido de relevamiento**: qué tiene que ir a medir el productor para que
   el siguiente cálculo sea mejor. Es lo que convierte una entrega en un
   ciclo.~~ **✅ 06/10/2026**, y sale de la cuenta y no de una lista.
-- el **master plan por etapas**, que ya existe parcialmente.
+- ~~el **master plan por etapas**, que ya existe parcialmente.~~
+  **✅ 07/10/2026.** Existía la mitad de arriba —el emplazamiento— y ninguna de
+  las dos cosas que lo vuelven un plan: el orden y los meses.
 
 Módulo nuevo `lib/modeloDeclarado.ts`, anexo B del informe en
 `components/ModeloDeclaradoAnexo.tsx`, 43 tests en
@@ -1935,17 +1939,193 @@ declarada. El GUM da la mitad del camino —la ec. (5) de 4.2.3 para el desvío 
 la media, que es una **cota inferior** del error del cuantil— pero una cota
 inferior rotulada como la incertidumbre sería peor que nada. Queda anotado.
 
-**Abierto de la etapa J:** faltan las tres entregas de papel —la **planilla**
-junto al plano, la **lista de materiales** con estado por renglón y el **master
-plan por etapas**—. El modelo declarado cubre dos magnitudes —superficie y
-desnivel— y no las demás: la represa, el escurrimiento, la receptividad y el
+#### H-papel — las tres entregas, y lo que aparecio al hacerlas
+
+Módulos nuevos `lib/planilla.ts`, `lib/materiales.ts` y `lib/etapas.ts`, con las
+tres secciones nuevas del informe en `components/EntregasDePapel.tsx` y 85 tests.
+**Fuentes:** TR-62 del SCS, «Engineering Layout, Notes, Staking and
+Calculations» (1979); el *Engineering Field Handbook* del NRCS, cap. 1
+«Engineering Surveys» —edición métrica— y cap. 5 «Preparation of Engineering
+Plans»; AH-590 otra vez, ahora sus capítulos de replanteo, construcción,
+cantidades y vegetación; las normas de práctica 378 «Pond» y 412 «Grassed
+Waterway»; y la especificación de construcción «Earthfill».
+
+**1 · UNA PLANILLA NO ES EL PLANO EN FORMA DE TABLA.** AH-590 lo define en una
+frase: «Each job must be adequately and clearly staked before construction is
+started. **Staking transmits the information on the drawings to the job site.**»
+Replantear es el acto de pasar el plano al suelo, y hay cuatro números
+publicados que hacen falta para eso y que la app no tenía: la estaca cada
+**100 pies o menos** (AH-590, 30,48 m), la progresiva escrita en **estaciones de
+100 m** —el ejemplo resuelto del EFH es inequívoco: 3+05 más 94,24 m da
+3+99,24—, el mojón de referencia **cada 150 m o menos**, y la precisión de
+anotación, que tiene dos niveles: **0,1 pie** para una cota de movimiento de
+suelo y **0,01 pie** para una rasante de estructura.
+
+**2 · Y ESE ÚLTIMO NÚMERO ES EL QUE CIERRA LA ETAPA, PORQUE ES CON EL QUE SE
+PUEDE COMPARAR.** La norma de campo pide anotar una cota de tierra al
+centímetro o al tercio de decímetro. El modelo de elevación global la trae con
+**1,22 m** de incertidumbre punto a punto. Son **cuarenta veces**. Hasta acá la
+primera mitad de la etapa J decía que el número tenía un intervalo; esto dice
+qué hacer con eso: la planilla **imprime la geometría** —progresivas, mojones,
+rasante de diseño, que no tienen el error del DEM— y deja la columna de cota
+para que la llene el nivel. Es una planilla para ir a medir, no el resultado de
+haber medido, y lo dice en su encabezado.
+
+**3 · LA COLUMNA QUE SE USA EN EL CAMPO NO ES LA COTA: ES LA ALTURA SOBRE EL
+MOJÓN.** TR-62, en las notas de un dique chico de predio, enumera lo que se le
+entrega al dueño: «Total fill height (design height plus allowance for
+settlement) at each station **as measured from the reference hub**», el vertedero
+y su cota respecto del mismo mojón, el ancho de coronamiento y los taludes. Todo
+relativo. Y eso no es comodidad: una altura sobre un mojón es una **resta**, y en
+una resta el sesgo compartido del modelo de elevación se cancela entero, que es
+exactamente el hallazgo del anexo B. La convención de campo y el análisis de
+incertidumbre coinciden por caminos distintos.
+
+De paso sale la cuenta completa: la varilla de rasante de TR-62 es
+`H.I. − cota de diseño`, y si el nivel se cala en cualquier parte y se lee la
+mira sobre el mojón, la cota del mojón se cancela y la varilla queda en
+`lectura sobre el mojón − altura sobre el mojón`. **La cuadrilla no necesita
+ningún datum ni ninguna cota absoluta**: los dos números los tiene.
+
+**4 · «SIGNIFICANT BREAKS IN TOPOGRAPHY» NO ESTÁ DEFINIDO, ASÍ QUE SE DERIVA DEL
+ÚNICO NÚMERO QUE HAY.** TR-62 pide estacas en los quiebres significativos del
+terreno y no dice cuánto es significativo. El criterio de acequia: un quiebre es
+significativo cuando saltearlo falsea el terreno **en más que la precisión con la
+que la norma pide anotarlo**. Abajo de eso no cambia ningún número que se vaya a
+escribir. Y tiene un corolario incómodo que la planilla dice en voz alta: con el
+error del DEM en la mano **ningún quiebre llegaría al umbral**, porque el umbral
+son 3 cm y el error 1,22 m.
+
+**5 · UNA LISTA DE MATERIALES NO ES UNA LISTA DE CANTIDADES.** Tres fuentes lo
+dicen igual. El cap. 5 del EFH separa los pasos 5, 6 y 7 del diseño —«Estimate of
+material quantities», «Specifications for materials and construction», «Estimate
+of construction costs»— en **tres cosas distintas**. CPS 378 pide en el plano un
+renglón llamado «**Quantities – bill of materials**». Y AH-590 dice qué tiene
+adentro: «a list of the estimated **quantity and kind** of building materials
+required», más especificaciones que establecen «**material quality**». De ahí las
+dos columnas que el presupuesto no tenía: la **calidad requerida** y la **base de
+medición**, que AH-590 pide con nombre propio —«define the method of measurement
+and the unit of payment»—.
+
+**6 · EL PRESUPUESTO VENÍA COBRANDO EL AGUA COMO SI FUERA TIERRA.** El renglón
+«Movimiento de suelo (represa)» de `economia.ts` tomaba su cantidad de
+`represa.capacidad_m3`. El volumen de tierra de un muro no guarda ninguna
+relación fija con el volumen embalsado: en un vaso eficiente el agua es varias
+veces la tierra y en un sitio malo es al revés. Era el modo exacto en que esta
+app falla —imprime un número plausible— aplicado al renglón más caro del
+presupuesto, y `cutfill.ts` ya calculaba el volumen bueno sin que nadie lo
+leyera. Corregido: sin el dimensionamiento del muro **no se emite el renglón**,
+porque el agua no es una estimación mala de la tierra, es otra magnitud.
+
+**7 · Y LOS TRES VOLÚMENES DE TIERRA SON TRES, NO UNO.** Compactado en obra,
+banco excavado, y **disponible en el préstamo**. AH-590 publica la relación entre
+el primero y el tercero con los dos números impresos: «This 8,099 cubic yards
+represents the required compacted volume. To account for shrinkage resulting
+from compaction, **a minimum of 1.5 times this amount** is generally necessary to
+have available […] you need a minimum of **12,148 cubic yards**». Lo importante
+es que **ese 1,5 no es un factor de contracción**: es cuánto tiene que *haber* a
+la vista, e incluye la contracción más el material que al abrir el préstamo
+resulta inservible más el desperdicio. El factor de contracción de acequia vale
+1,15 y mide otra cosa, y está bien. Con lo cual un plan que prevé 1,15 veces el
+volumen compactado cumple con la contracción y queda **23 % abajo del mínimo
+disponible publicado**: es así como una obra se queda sin tierra con el cálculo
+bien hecho.
+
+**8 · LOS POSTES NO VAN CADA OCHO METROS.** `economia.ts` ponía «~1 poste cada
+8 m como referencia» para todo el planeta. La separación máxima de postes de
+línea está publicada y depende de tres cosas: de la **especie** —20 pies para
+bovinos, 15 para caprinos—, de si el cierre es **eléctrico** —100 pies en liso de
+alta resistencia, cinco veces más que el mismo cierre con púa— y de si lleva
+**varillas**, que suben el máximo a 30 o 150 pies con dos varillas por claro. Los
+8 m estaban **por encima del máximo** de un cierre de púa para bovinos (6,10 m) y
+muy por debajo del de un eléctrico (30,48 m): faltaba un 24 % de los postes en el
+primer caso y sobraban casi cuatro de cada cinco en el segundo. Y faltaba el
+renglón más caro de un alambrado, **los conjuntos de esquina**, uno por mojón: el
+presupuesto tenía cero.
+
+**9 · EL ORDEN DE LAS ETAPAS NO ES UNA OPINIÓN: ES UN GRAFO.** La escala de
+permanencia ya estaba en la app como bitácora de ocho tildes que nadie leía, y da
+el orden por defecto. Encima van las precedencias publicadas, cada una con su
+fuente: el replanteo antes de que entre la máquina; el destape acopiado y
+devuelto —«The topsoil should be stockpiled temporarily for later use on the
+site»—; la cama de siembra «as soon after construction as practicable».
+
+**10 · UNA OBRA DE TIERRA NO TERMINA CUANDO SE TERMINA DE MOVER LA TIERRA.** Tres
+fuentes distintas dicen lo mismo desde tres lados: CPS 412 pide la vegetación
+establecida **antes** de conducir agua por el cauce; AH-590 pide la cama de
+siembra apenas después de construir; y AH-590 otra vez, que conviene leer
+entero: «**Construction of the pond is not complete until you have provided
+protection against erosion, wave action, trampling by livestock**». Con lo cual
+el cierre que saca la hacienda del muro y la cubierta del talud **son parte de la
+represa**, no una etapa posterior: un plan que construye la represa en la etapa 1
+y pone el alambrado en la etapa 4 no terminó la represa, la dejó tres etapas
+expuesta.
+
+**11 · LOS DOS MODOS DE EQUIVOCARSE CON EL MES NO CUESTAN LO MISMO, Y ESO CAMBIA
+EL CALENDARIO.** La especificación de terraplén: el material demasiado **seco**
+«shall either be removed or **scarified and wetted by sprinkling**»; el demasiado
+**mojado** «shall be either removed or **allowed to dry** […] before compaction».
+AH-590 lo repite dos veces más, al sellar un vaso y al sembrar: si está muy seco
+se moja, si está muy mojado **se posterga**. La intuición dice que hay una buena
+época con los costados simétricamente peores; las fuentes dicen que un lado se
+arregla con un camión de agua —una partida de la lista de materiales— y el otro
+con un mes perdido. Por eso el calendario de una etapa no es una banda: es un
+conjunto de meses **bloqueados**, que no se discuten, y un resto en el que
+algunos **piden agua**.
+
+Y acequia los puede nombrar, porque el balance hídrico de la etapa G ya los
+calcula: un mes con **excedente** pasó capacidad de campo, que está muy arriba de
+la humedad óptima de compactación, así que está bloqueado; un mes que cierra por
+debajo del **agua fácilmente aprovechable** de FAO-56 está demasiado seco y pide
+agua; el resto está entre los dos extremos. No son umbrales de compactación —esos
+se miden con la mano, y la prueba publicada va en la planilla— sino estados del
+balance de agua del suelo, que es el dato que hay.
+
+**12 · Y DE 10 Y 11 JUNTOS SALE EL RESULTADO QUE NO SE VE VENIR: LA VENTANA DE
+ESAS OBRAS ES MÁS CORTA, Y A VECES VACÍA.** Si la obra incluye su cobertura, no
+alcanza un mes en que la tierra se pueda compactar: hace falta un mes en que la
+tierra se pueda compactar **y que esté seguido por un mes en que el pasto
+prenda**. Las dos ventanas no son la misma y en muchos climas apuntan a
+estaciones opuestas —la tierra se compacta en la seca, la semilla germina en la
+lluvia—. En el clima de prueba monzónico hay cuatro meses buenos para mover
+tierra y **junio no entra en la ventana de cierre**, porque ni junio ni julio
+sirven para que prenda la cobertura. Y en un clima árido la intersección sale
+**vacía**: ahí el cronograma no tiene solución, y la fuente ya la traía —es
+exactamente para eso que CPS 412 lista el mulch, el cultivo niñera y el desvío
+del escurrimiento—. La composición de las dos ventanas encuentra el problema; la
+norma ya tenía la respuesta.
+
+**13 · Y LA ENTREGA VIENE CON EL CRITERIO PUBLICADO PARA JUZGARLA.** El cap. 5
+del EFH cierra con ocho preguntas: «The following list may be useful in checking
+the adequacy of the drawings and specifications». Las ocho van impresas en la
+lista de materiales, con quién puede contestar cada una: acequia contesta dos
+enteras, cinco a medias, y la séptima —la carátula con la fecha y quién diseñó,
+dibujó y aprobó— no la puede contestar ningún programa. La fuente agrega por qué:
+«a review of the design and construction plans should be made by a technician
+other than the one preparing the design».
+
+**Abierto de la etapa J:** el modelo declarado cubre dos magnitudes —superficie
+y desnivel— y no las demás: la represa, el escurrimiento, la receptividad y el
 presupuesto todavía se imprimen sin intervalo, y las funciones para declararlos
 ya están. El corrimiento de cada mojón es un **supuesto declarado** (2 m) y no un
 dato: nadie publica la exactitud de un clic sobre una imagen satelital. Falta
 leer la exactitud vertical publicada de los siete modelos nacionales y del
-relevamiento propio del usuario. Y el anexo B vive en el informe y no en los
-paneles, así que las pantallas de /mapa siguen imprimiendo sus números con las
-cifras que tenían.
+relevamiento propio del usuario. El error estándar del cuantil de Gumbel sigue
+sin verificar. La planilla del informe es la del **cierre perimetral** y no la
+del muro, del swale ni del surco keyline: `armarPlanilla` es genérica sobre un
+eje con su rasante y las funciones están, pero los paneles que tienen esa
+geometría todavía no la llaman. La lista de materiales **supone** un cierre de
+púa para bovinos porque el informe no sabe la especie, y lo imprime. La cantidad
+mínima de hilos de cada tipo de cierre está publicada en la misma tabla y no se
+pudo leer sin ambigüedad en el documento consultado, así que acequia la pide en
+vez de suponerla. El plan por etapas no sabe de cosechas, de maquinaria ni de
+plata, que son las tres cosas que de verdad mueven un cronograma de predio, y no
+calcula la hidrología transitoria de la obra: la fuente avisa que una superficie
+en construcción escurre distinto y pide medidas temporarias, y acequia lo dice
+sin ponerle número porque no leyó la tabla de números de curva de construcción.
+Y el anexo B y las tres entregas viven en el informe y no en los paneles, así que
+las pantallas de /mapa siguen imprimiendo sus números con las cifras que
+tenían.
 
 ---
 
@@ -2110,7 +2290,21 @@ cifras que tenían.
     volumen, que es el hallazgo de la etapa I visto desde el volumen. El pedido
     de relevamiento sale de la cuenta: medir el fondo no entra en la lista y
     medir la cota del vertedero con un nivel baja el intervalo un **86 %**.
-    Faltan la planilla, la lista de materiales y el master plan por etapas.
+    **Las tres entregas de papel, hechas el 07/10/2026.** La planilla trajo los
+    cuatro números publicados del replanteo —estaca cada 30,48 m, progresiva en
+    estaciones de 100 m, mojón cada 150 m, cota al décimo de pie— y con el
+    último se puede comparar: el DEM global es **40 veces más grueso** que la
+    precisión que pide la norma, así que la planilla imprime la geometría y deja
+    la cota para el nivel. La columna que se usa es la altura sobre el mojón,
+    que es una resta y no arrastra el sesgo. La lista de materiales destapó que
+    el presupuesto cobraba **el agua como si fuera tierra** y que los postes
+    iban cada 8 m cuando el máximo publicado para púa de bovinos son 6,10 m; y
+    que los volúmenes de tierra son tres, con un mínimo disponible de **1,5
+    veces** el compactado que no es el factor de contracción. Y el plan por
+    etapas destapó la asimetría del calendario —al mes seco se le contesta
+    mojar, al mojado esperar— y, de ahí, que una obra que incluye su cobertura
+    tiene una **ventana más corta que la de mover tierra**, que a veces sale
+    vacía.
 
 ---
 

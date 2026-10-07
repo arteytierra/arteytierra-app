@@ -44,6 +44,7 @@ import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
 import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
 import { CENSO_GT_PAIS } from '@/lib/censoIndigena2018Gt';
 import { ModeloDeclaradoAnexo } from './ModeloDeclaradoAnexo';
+import { PlanillaDeReplanteo, ListaDeMaterialesSeccion, PlanDeEtapas } from './EntregasDePapel';
 
 interface Props {
   datos: InformeData;
@@ -1659,6 +1660,37 @@ export function InformeView({ datos, compartido = false }: Props) {
             <p className="text-xs text-ink-700/50 mt-2">Precios orientativos; validar con proveedores de la zona.</p>
           </Section>
         )}
+
+        {/* ── Las tres entregas de papel ──
+            Van DESPUES de todo el analisis y ANTES de los anexos, porque no son
+            anexos: son lo que el productor se lleva al campo. La planilla se
+            llena con un nivel, la lista se lleva a la ferreteria con el estado
+            de cada renglon marcado a lapiz, y el plan por etapas contesta la
+            pregunta del lunes. Cada una arranca en pagina nueva al imprimir.
+            La cuenta esta en lib/planilla.ts, lib/materiales.ts y lib/etapas.ts. */}
+        {datos.mojones.length >= 3 && (
+          <PlanillaDeReplanteo mojones={datos.mojones} topo={datos.topo ?? null} numero="P" />
+        )}
+        <ListaDeMaterialesSeccion
+          metricas={datos.metricas ?? null}
+          mojones={datos.mojones}
+          red={datos.redAgua ?? null}
+          capacidadRepresa_m3={datos.represa?.capacidad_m3 ?? null}
+          numero="M"
+        />
+        <PlanDeEtapas
+          clima={datos.clima ?? null}
+          suelo={datos.suelo ?? null}
+          hay={{
+            represa:          !!datos.represa,
+            redAgua:          !!datos.redAgua,
+            riego:            !!datos.riego,
+            cierrePerimetral: datos.mojones.length >= 3,
+            estructuras:      !!(datos.zonas && datos.zonas.length),
+            pasturas:         !!datos.cobertura,
+          }}
+          numero="E"
+        />
 
         {/* ── Anexo: fuentes y metodología ── */}
         <Section numero="A" titulo="Anexo — fuentes y metodología">

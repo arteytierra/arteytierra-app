@@ -12,6 +12,7 @@ import {
   type RubroPresupuesto,
 } from '@/lib/economia';
 import type { MetricasPoligono } from '@/lib/geometria';
+import type { RepresaResumen }   from '@/lib/represa';
 
 describe('nuevoRubro', () => {
   it('completa valores por defecto', () => {
@@ -66,13 +67,36 @@ describe('formatearMoneda', () => {
 });
 
 describe('rubrosDesdeProyecto', () => {
-  it('desde las métricas sugiere alambrado perimetral y postes', () => {
-    const metricas = { perimetro_m: 800 } as MetricasPoligono;
+  it('los postes salen de la separación publicada y no de los 8 m que había', () => {
+    // Púa para bovinos sin varillas: 20 pies, 6,096 m (NRCS 382, Tabla 1).
+    // Con 8 m el presupuesto pedía 100 postes para 800 m de cierre; el máximo
+    // publicado pide 132 claros. Ver `materiales.ts`.
+    const metricas = { perimetro_m: 800, linderos: [] } as unknown as MetricasPoligono;
     const rs = rubrosDesdeProyecto({ metricas });
-    const perim = rs.find(r => r.concepto === 'Alambrado perimetral');
-    const postes = rs.find(r => r.concepto === 'Postes');
-    expect(perim?.cantidad).toBe(800);
-    expect(postes?.cantidad).toBe(100); // ~1 poste cada 8 m
+    expect(rs.find(r => r.concepto === 'Alambrado perimetral')?.cantidad).toBe(800);
+    const postes = rs.find(r => r.concepto.startsWith('Postes de línea'))!;
+    expect(postes.cantidad).toBe(Math.ceil(800 / (20 * 0.3048)) + 1);
+    expect(postes.cantidad).toBeGreaterThan(100);
+  });
+
+  it('y cada mojón suma un conjunto de esquina, que antes no existía', () => {
+    const metricas = {
+      perimetro_m: 800,
+      linderos: Array.from({ length: 6 }, () => ({})),
+    } as unknown as MetricasPoligono;
+    const rs = rubrosDesdeProyecto({ metricas });
+    expect(rs.find(r => r.concepto === 'Conjuntos de esquina')?.cantidad).toBe(6);
+  });
+
+  it('LA CAPACIDAD DE LA REPRESA YA NO SE COBRA COMO MOVIMIENTO DE SUELO', () => {
+    // Era el agua cobrada como tierra. Sin el volumen calculado, el renglón no
+    // sale: una cantidad equivocada en el renglón más caro es peor que faltar.
+    const represa = { capacidad_m3: 12000 } as RepresaResumen;
+    expect(rubrosDesdeProyecto({ represa })).toEqual([]);
+    const conTierra = rubrosDesdeProyecto({ represa, movimientoTierra_m3: 2070 });
+    expect(conTierra).toHaveLength(1);
+    expect(conTierra[0]!.cantidad).toBe(2070);
+    expect(conTierra[0]!.concepto).toMatch(/banco excavado/);
   });
 
   it('sin datos no sugiere nada', () => {

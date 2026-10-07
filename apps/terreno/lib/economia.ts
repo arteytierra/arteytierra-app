@@ -10,6 +10,10 @@ import type { MetricasPoligono } from './geometria';
 import type { RedAguaResumen }   from './hidraulica';
 import type { RepresaResumen }   from './represa';
 import type { RiegoResumen }     from './riego';
+import {
+  separacionDePostes,
+  type EspecieCierre, type TipoDeCierre,
+} from './materiales';
 
 export type Moneda = 'ARS' | 'USD';
 
@@ -40,6 +44,7 @@ export const CONCEPTOS_SUGERIDOS: Array<{ categoria: string; concepto: string; u
   { categoria: 'Cierres',    concepto: 'Alambrado perimetral',     unidad: 'm',   precioDefault: 3 },
   { categoria: 'Cierres',    concepto: 'Alambrado interno',        unidad: 'm',   precioDefault: 2.5 },
   { categoria: 'Cierres',    concepto: 'Postes',                   unidad: 'u',   precioDefault: 8 },
+  { categoria: 'Cierres',    concepto: 'Conjuntos de esquina',     unidad: 'u',   precioDefault: 60 },
   { categoria: 'Agua',       concepto: 'Cañería',                  unidad: 'm',   precioDefault: 6 },
   { categoria: 'Agua',       concepto: 'Bomba',                    unidad: 'u',   precioDefault: 400 },
   { categoria: 'Agua',       concepto: 'Tanque de reserva',        unidad: 'm³',  precioDefault: 150 },
@@ -64,12 +69,33 @@ export function nuevoRubro(base: Partial<RubroPresupuesto> = {}): RubroPresupues
   };
 }
 
-/** Sugiere rubros con cantidades tomadas de los datos ya calculados del proyecto. */
+/**
+ * Sugiere rubros con cantidades tomadas de los datos ya calculados del proyecto.
+ *
+ * Dos renglones de acá estaban mal y los arregló `materiales.ts`, que es donde
+ * ahora vive la cuenta con su fuente:
+ *
+ * - **El movimiento de suelo de la represa** tomaba su cantidad de
+ *   `represa.capacidad_m3`, que es **el agua**. El volumen de tierra de un muro
+ *   no guarda ninguna relación fija con el volumen embalsado. Ahora el renglón
+ *   sale sólo si se pasa el volumen calculado (`movimientoTierra_m3`, de
+ *   `balanceTierra` en `cutfill.ts`); sin eso **no sale**, porque una cantidad
+ *   equivocada en el renglón más caro es peor que un renglón faltante.
+ * - **Los postes** iban «~1 poste cada 8 m como referencia» para todo el
+ *   planeta. La separación máxima está publicada por especie y tipo de cierre, y
+ *   para el caso más común —púa para bovinos sin varillas— son 6,10 m, con lo
+ *   cual los 8 m dejaban afuera un 24 % de los postes. Y faltaba el renglón de
+ *   los conjuntos de esquina, uno por mojón, que es el más caro del alambrado.
+ */
 export function rubrosDesdeProyecto(d: {
   metricas?: MetricasPoligono | null;
   redAgua?:  RedAguaResumen | null;
   represa?:  RepresaResumen | null;
   riego?:    RiegoResumen | null;
+  /** Volumen de tierra del muro medido en banco (`balanceTierra.banco_m3`). */
+  movimientoTierra_m3?: number | null;
+  /** Especie y tipo del cierre perimetral. Por defecto, púa para bovinos. */
+  cierre?: { especie: EspecieCierre; tipo: TipoDeCierre; conVarillas?: boolean } | null;
 }): RubroPresupuesto[] {
   const out: RubroPresupuesto[] = [];
   const p = (concepto: string) => CONCEPTOS_SUGERIDOS.find(c => c.concepto === concepto);
@@ -77,18 +103,36 @@ export function rubrosDesdeProyecto(d: {
   if (d.metricas) {
     const s = p('Alambrado perimetral')!;
     out.push(nuevoRubro({ ...s, cantidad: Math.round(d.metricas.perimetro_m) }));
-    // ~1 poste cada 8 m como referencia.
-    const po = p('Postes')!;
-    out.push(nuevoRubro({ ...po, cantidad: Math.round(d.metricas.perimetro_m / 8) }));
+
+    const c   = d.cierre ?? { especie: 'bovino' as EspecieCierre, tipo: 'pua' as TipoDeCierre };
+    const sep = separacionDePostes(c.especie, c.tipo, c.conVarillas ?? false);
+    // Los linderos pueden faltar en un proyecto viejo deserializado: sin ellos
+    // no hay cuenta de esquinas, y cero es la respuesta honesta.
+    const esquinas = d.metricas.linderos?.length ?? 0;
+    if (sep) {
+      const claros = Math.ceil(d.metricas.perimetro_m / sep.maximo_m);
+      out.push(nuevoRubro({
+        ...p('Postes')!,
+        concepto: `Postes de línea (cada ${sep.maximo_m.toFixed(2)} m)`,
+        cantidad: Math.max(0, claros - esquinas + 1),
+      }));
+      if (sep.varillasPorClaro > 0) {
+        out.push(nuevoRubro({
+          categoria: 'Cierres', concepto: 'Varillas', unidad: 'u', precioUnit: 2,
+          cantidad: claros * sep.varillasPorClaro,
+        }));
+      }
+    }
+    if (esquinas > 0) out.push(nuevoRubro({ ...p('Conjuntos de esquina')!, cantidad: esquinas }));
   }
   if (d.redAgua) {
     const s = p('Cañería')!;
-    out.push(nuevoRubro({ ...s, concepto: `Cañería ${d.redAgua.diametro}`, cantidad: Math.round(d.redAgua.longitud_m) }));
+    out.push(nuevoRubro({ ...s, concepto: `Cañería ${d.redAgua.diametro} PN ${d.redAgua.pn_recomendado}`, cantidad: Math.round(d.redAgua.longitud_m) }));
     if (d.redAgua.bomba_kw) out.push(nuevoRubro({ ...p('Bomba')!, cantidad: 1 }));
   }
-  if (d.represa) {
+  if (d.movimientoTierra_m3 != null && d.movimientoTierra_m3 > 0) {
     const s = p('Movimiento de suelo (represa)')!;
-    out.push(nuevoRubro({ ...s, cantidad: Math.round(d.represa.capacidad_m3) }));
+    out.push(nuevoRubro({ ...s, concepto: 'Movimiento de suelo (banco excavado)', cantidad: Math.round(d.movimientoTierra_m3) }));
   }
   if (d.riego) {
     const s = p('Instalación de riego')!;
