@@ -95,6 +95,39 @@ export const getPlan = cache(async (userId: string): Promise<Plan> => {
   return planEfectivo(data);
 });
 
+/**
+ * Cuenta interna de Arte y Tierra: plan sin vencimiento y sin tope de proyectos.
+ *
+ * Es `suscripciones.fundador`, que existe desde la 0041 y hasta la 0063 no la leía
+ * nadie. Sirve como permiso porque la RLS de la tabla sólo deja SELECT de la fila
+ * propia y reserva la escritura a service_role: nadie se la puede poner a sí
+ * mismo. Se exige además `provider = 'manual'` para que un alta venida de un
+ * webhook de pago no quede sin tope ni por un error de mapeo.
+ *
+ * Espejo de `terreno.limite_proyectos()` (migración 0063), que es la que enforcea
+ * de verdad; esto sólo evita que el cliente corte antes con un cartel de tope.
+ */
+export const esCuentaInterna = cache(async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await (supabase as unknown as {
+    schema: (s: string) => { from: (t: string) => { select: (c: string) => {
+      eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> };
+    } } };
+  })
+    .schema('terreno').from('suscripciones')
+    .select('fundador, provider, estado, vigente_hasta')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!data) return false;
+  if (data['fundador'] !== true) return false;
+  if (data['provider'] !== 'manual') return false;
+  if (data['estado'] !== 'activa') return false;
+  const hasta = data['vigente_hasta'];
+  return !hasta || new Date(hasta as string).getTime() > Date.now();
+});
+
 export type { SuscripcionActual } from '@/lib/suscripcionEstado';
 
 /**

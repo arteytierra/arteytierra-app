@@ -44,6 +44,8 @@ interface Props {
   metadatos?: Record<string, unknown>;
   onConfirm?: (message: string, onConfirm: () => void) => void;
   plan?: Plan;
+  /** Cuenta interna del estudio: sin tope de proyectos (ver migración 0063). */
+  sinTope?: boolean;
 }
 
 export function ProyectosPanel({
@@ -54,6 +56,7 @@ export function ProyectosPanel({
   metadatos,
   onConfirm,
   plan = 'estudio',
+  sinTope = false,
 }: Props) {
   const [proyectos, setProyectos]     = useState<Proyecto[]>([]);
   const [cargando, setCargando]       = useState(true);
@@ -103,7 +106,7 @@ export function ProyectosPanel({
         await actualizarProyecto(proyectoActual.id, nombre.trim(), descripcion, mojones, metadatos);
         onProyectoActualChange({ ...proyectoActual, nombre: nombre.trim(), descripcion, mojones, metadatos: metadatos ?? null });
       } else {
-        const p = await guardarProyecto(nombre.trim(), descripcion, mojones, metadatos, plan);
+        const p = await guardarProyecto(nombre.trim(), descripcion, mojones, metadatos, plan, sinTope);
         onProyectoActualChange(p);
       }
       await recargar();

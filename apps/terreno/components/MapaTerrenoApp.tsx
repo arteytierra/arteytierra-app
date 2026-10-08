@@ -196,7 +196,7 @@ interface DocDisenoSnapshot {
 }
 interface Escenario { id: string; nombre: string; creado: string; doc: DocDisenoSnapshot }
 
-interface Props { userName: string | null; plan: Plan }
+interface Props { userName: string | null; plan: Plan; sinTope?: boolean }
 
 function errMsgApp(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -230,7 +230,7 @@ function zoomParaBbox(bbox?: [number, number, number, number]): number {
   return 16;
 }
 
-export function MapaTerrenoApp({ userName, plan }: Props) {
+export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
   const router = useRouter();
 
   // ─── Modo del mapa ────────────────────────────────────────────────────────
@@ -3567,6 +3567,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 metadatos={metadatos}
                 onConfirm={(msg, fn) => setModal({ type: 'confirm', message: msg, onConfirm: fn })}
                 plan={plan}
+                sinTope={sinTope}
               />
               <div className="border-t border-bone-200 pt-4">
                 <EscenariosPanel

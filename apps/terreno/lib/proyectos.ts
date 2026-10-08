@@ -50,6 +50,7 @@ export async function guardarProyecto(
   mojones: Mojon[],
   metadatos?: Record<string, unknown>,
   plan: Plan = 'estudio',
+  sinTope = false,
 ): Promise<Proyecto> {
   const supabase = getSupabaseBrowserClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -58,8 +59,10 @@ export async function guardarProyecto(
   // Tope de proyectos por plan (feedback inmediato; el trigger en DB es el que
   // enforcea de verdad). Los números viven en LIMITE_PROYECTOS, y la migración
   // 0053 los repite del lado de la base: si cambia uno, tiene que cambiar el otro.
+  // Las cuentas internas del estudio no tienen tope: el trigger de la 0063 las
+  // exime del lado de la base y acá se evita el cartel que cortaría antes.
   const limite = LIMITE_PROYECTOS[plan];
-  if (Number.isFinite(limite)) {
+  if (!sinTope && Number.isFinite(limite)) {
     const { count } = await tabla()
       .select('id', { count: 'exact', head: true });
     if ((count ?? 0) >= limite) {
