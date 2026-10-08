@@ -18,9 +18,10 @@
  * La cuenta de cada una vive en `lib/planilla.ts`, `lib/materiales.ts` y
  * `lib/etapas.ts`, cada una con sus fuentes en el encabezado.
  */
-import { ClipboardList, PackageCheck, CalendarRange, Ruler, AlertTriangle } from 'lucide-react';
+import { ClipboardList, PackageCheck, CalendarRange, AlertTriangle } from 'lucide-react';
 
 import { planillaDeCierre, type Planilla } from '../lib/planilla';
+import { PlanillaBloque } from './PlanillaBloque';
 import {
   armarLista, separacionDePostes, BASE_TEXTO, ESTADO_TEXTO, ESTADO_QUE_SIGNIFICA,
   type ListaDeMateriales, type EspecieCierre, type TipoDeCierre,
@@ -106,7 +107,6 @@ export function PlanillaDeReplanteo({
   if (!planilla) return null;
 
   const p = planilla.precision;
-  const recortada = Math.max(0, planilla.renglones.length - MAX_RENGLONES);
 
   return (
     <section className="space-y-3 page-break-before">
@@ -117,142 +117,42 @@ export function PlanillaDeReplanteo({
         al suelo: lo que la planilla hace es decir dónde va cada estaca, qué mojón de referencia la
         gobierna y cuánto hay que subir o bajar desde ese mojón. El replanteo que trae el informe es el
         del <strong>cierre perimetral</strong>, que es el único que se puede armar con los mojones del
-        predio y además es el primero que se hace en el campo.
+        predio y además es el primero que se hace en el campo. Los del muro de la represa, de cada swale
+        y de la directriz keyline salen de las pestañas que tienen esa geometría, con la misma tabla.
       </p>
 
-      {/* Lo que se asumió */}
-      <div className="bg-bone-50 border border-bone-200 rounded-xl p-3 space-y-1.5">
-        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 font-semibold">Lo que se asumió</p>
-        <ul className="text-[11px] text-ink-800 space-y-1 leading-relaxed">
-          <li>
-            <strong>Cierre de púa para bovinos sin varillas</strong>, que da postes cada{' '}
-            {fmt(sep.maximo_m, 2)} m. Es un supuesto: {sep.porque} Un cierre de caprinos o uno
-            eléctrico cambian la cantidad de postes y por lo tanto las progresivas de esta planilla.
-          </li>
-          <li>
-            Las estacas van cada <strong>{fmt(planilla.intervalo_m, 2)} m</strong> y los mojones de
-            referencia cada <strong>150 m o menos</strong>: los dos son máximos publicados.
-          </li>
-          <li>
-            Relieve: <strong>{p.disponible_m != null ? `± ${fmt(p.disponible_m, 2)} m punto a punto` : 'sin exactitud publicada'}</strong>.
-          </li>
-        </ul>
-      </div>
-
-      {/* La precisión: lo que importa de verdad */}
-      <div className="border border-sun-500/30 bg-sun-500/10 rounded-xl p-3 space-y-1.5">
-        <p className="text-[10px] uppercase tracking-wide text-ink-900/60 font-semibold flex items-center gap-1">
-          <Ruler className="w-3 h-3" /> Qué manda: el dato o la norma
-        </p>
-        <div className="grid grid-cols-3 gap-2 text-[11px]">
-          <div>
-            <p className="text-ink-700/60">Pide la norma</p>
-            <p className="font-mono font-semibold text-ink-950">{fmt(p.pedida_m * 100, 1)} cm</p>
-          </div>
-          <div>
-            <p className="text-ink-700/60">Trae el dato</p>
-            <p className="font-mono font-semibold text-ink-950">
-              {p.disponible_m != null ? `${fmt(p.disponible_m * 100, 0)} cm` : '—'}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-700/60">Razón</p>
-            <p className="font-mono font-semibold text-ink-950">
-              {p.razon != null ? `${fmt(p.razon, 0)} ×` : '—'}
-            </p>
-          </div>
+      {/* El mismo renderizador que usan los paneles: una planilla se lee igual
+          siempre, así que la tabla, el orden de las columnas y el lugar de las
+          dos celdas vacías son parte del contrato y no del estilo. Ver
+          `PlanillaBloque`. */}
+      <PlanillaBloque planilla={planilla} max={MAX_RENGLONES} descargable={false}>
+        <div className="bg-bone-50 border border-bone-200 rounded-xl p-3 space-y-1.5">
+          <p className="text-[10px] uppercase tracking-wide text-ink-700/50 font-semibold">Lo que se asumió</p>
+          <ul className="text-[11px] text-ink-800 space-y-1 leading-relaxed">
+            <li>
+              <strong>Cierre de púa para bovinos sin varillas</strong>, que da postes cada{' '}
+              {fmt(sep.maximo_m, 2)} m. Es un supuesto: {sep.porque} Un cierre de caprinos o uno
+              eléctrico cambian la cantidad de postes y por lo tanto las progresivas de esta planilla.
+            </li>
+            <li>
+              Las estacas van cada <strong>{fmt(planilla.intervalo_m, 2)} m</strong> y los mojones de
+              referencia cada <strong>150 m o menos</strong>: los dos son máximos publicados.
+            </li>
+            <li>
+              Relieve: <strong>{p.disponible_m != null ? `± ${fmt(p.disponible_m, 2)} m punto a punto` : 'sin exactitud publicada'}</strong>.
+            </li>
+          </ul>
         </div>
-        <p className="text-[11px] text-ink-800 leading-relaxed">{p.motivo}</p>
-      </div>
+      </PlanillaBloque>
 
-      {/* Mojones de referencia */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 font-semibold mb-1">
-          Mojones de referencia ({planilla.mojones.length})
+      {planilla.renglones.length > MAX_RENGLONES && (
+        <p className="text-[10px] text-ink-700/70 leading-relaxed">
+          Un cierre de {fmt(planilla.largo_m)} m lleva {planilla.renglones.length} estaciones, que son más
+          páginas de las que se llevan a un alambrado. El informe imprime las primeras {MAX_RENGLONES} y el
+          resto se replantea por tramos, reponiendo el mojón de referencia: la planilla de un tramo se lee
+          igual que la del primero.
         </p>
-        <p className="text-[11px] text-ink-700 leading-relaxed mb-1.5">
-          Se clavan a ras de suelo antes de empezar. Toda la planilla se lee contra ellos, y por eso no
-          hace falta ninguna cota absoluta: una altura sobre un mojón es una resta, y en una resta el
-          error común del modelo de elevación se cancela entero.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {planilla.mojones.map(m => (
-            <span key={m.id} className="text-[10px] font-mono bg-moss-50 border border-moss-200 rounded px-1.5 py-0.5">
-              {m.rotulo}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* La tabla */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 font-semibold mb-1">
-          {planilla.renglones.length} estaciones · {fmt(planilla.largo_m)} m de cierre
-          {recortada > 0 && <> · se imprimen las primeras {MAX_RENGLONES}</>}
-        </p>
-        {recortada > 0 && (
-          <p className="text-[10px] text-ink-700/70 leading-relaxed mb-1">
-            Un cierre de {fmt(planilla.largo_m)} m lleva {planilla.renglones.length} estaciones, que
-            son más páginas de las que se llevan a un alambrado. Se imprimen las primeras{' '}
-            {MAX_RENGLONES} —hasta la progresiva {planilla.renglones[MAX_RENGLONES - 1]!.rotulo}— y
-            quedan {recortada} más. El resto se replantea por tramos, reponiendo el mojón de
-            referencia: la planilla de un tramo se lee igual que la del primero.
-          </p>
-        )}
-        <div className="overflow-x-auto">
-          <table className="w-full text-[10px] border-collapse">
-            <thead>
-              <tr className="bg-ink-950 text-bone-100">
-                <th className="text-left px-1.5 py-1 font-semibold">Progresiva</th>
-                <th className="text-left px-1.5 py-1 font-semibold">Qué hay</th>
-                <th className="text-right px-1.5 py-1 font-semibold">Mojón</th>
-                <th className="text-right px-1.5 py-1 font-semibold">Cota de gabinete</th>
-                <th className="text-right px-1.5 py-1 font-semibold">Lectura de mira</th>
-                <th className="text-right px-1.5 py-1 font-semibold">Corte / relleno</th>
-              </tr>
-            </thead>
-            <tbody>
-              {planilla.renglones.slice(0, MAX_RENGLONES).map((r, i) => (
-                <tr key={r.rotulo + i} className={r.tipo === 'cruce' ? 'bg-sun-500/10 font-semibold' : i % 2 ? 'bg-bone-50' : ''}>
-                  <td className="px-1.5 py-1 font-mono border-b border-bone-200">{r.rotulo}</td>
-                  <td className="px-1.5 py-1 border-b border-bone-200">
-                    {r.nota ?? (r.tipo === 'estacion' ? 'Poste de línea' : '—')}
-                  </td>
-                  <td className="px-1.5 py-1 text-right font-mono border-b border-bone-200">{r.mojon ?? '—'}</td>
-                  <td className="px-1.5 py-1 text-right font-mono border-b border-bone-200 text-ink-700/60">
-                    {r.cota_terreno_m != null ? fmt(r.cota_terreno_m, p.decimales) : '—'}
-                  </td>
-                  <td className="px-1.5 py-1 border-b border-l border-bone-300" />
-                  <td className="px-1.5 py-1 border-b border-l border-bone-300" />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[10px] text-ink-700/60 mt-1 leading-relaxed">
-          Las dos últimas columnas van vacías a propósito: se llenan en el campo con el nivel. La cota
-          de gabinete es la del modelo de elevación y está para ubicarse, no para replantear.
-        </p>
-      </div>
-
-      {/* Instrucciones de campo */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wide text-ink-700/50 font-semibold mb-1">
-          Cómo se llena, según la norma
-        </p>
-        <ol className="text-[11px] text-ink-800 space-y-1 leading-relaxed list-decimal pl-4">
-          {planilla.notas.map((n, i) => <li key={i}>{n}</li>)}
-        </ol>
-      </div>
-
-      {planilla.advertencias.map((a, i) => <Aviso key={i}>{a}</Aviso>)}
-
-      <div className="border-t border-bone-200 pt-2">
-        <p className="text-[9px] uppercase tracking-wide text-ink-700/40 font-semibold mb-1">Fuentes</p>
-        <ul className="text-[9px] text-ink-700/60 space-y-0.5 leading-relaxed">
-          {planilla.fuentes.map((f, i) => <li key={i}>{f}</li>)}
-        </ul>
-      </div>
+      )}
     </section>
   );
 }

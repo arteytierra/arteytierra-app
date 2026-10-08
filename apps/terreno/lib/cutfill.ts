@@ -177,23 +177,81 @@ export function elevacionEn(g: GrillaElevacion, lat: number, lng: number): numbe
  *
  * Es el dato que faltaba para dimensionar bien: con él se sabe cuánto muro hay
  * que levantar en cada punto, en vez de suponer la altura máxima en todo el
- * largo. Los puntos sin dato se saltean; si no queda casi nada, devuelve null y
- * el cálculo avisa que está usando la aproximación gruesa.
+ * largo.
+ *
+ * **Y el perfil tiene que quedar alineado con el eje, no sólo tener valores.**
+ * Hasta el 07/10/2026 las muestras sin dato se salteaban y el arreglo salía más
+ * corto, mientras que los dos consumidores —`dimensionarMuro` y la planilla de
+ * replanteo— lo leen como si cubriera el eje entero a paso regular: la muestra
+ * `i` es la fracción `i/(n-1)` del eje. Con un hueco en el medio —una celda sin
+ * dato del modelo, que es justo lo que aparece sobre un espejo de agua o un
+ * vacío del DEM, o sea arriba de un sitio de represa— las muestras que quedaban
+ * se corrían de lugar y el paso de integración `longitud/(n-1)` crecía, así que
+ * el volumen del terraplén se calculaba sobre un perfil estirado y mal ubicado.
+ * No se notaba: salía un número plausible.
+ *
+ * Ahora el arreglo siempre mide `n`: los huecos interiores se interpolan entre
+ * los vecinos con dato y los de los extremos se extienden con el valor válido
+ * más cercano. Devuelve `null` si no hay al menos tres muestras con dato, que
+ * es cuando el perfil ya no describe nada y el cálculo avisa que cayó al prisma
+ * de altura constante.
  */
+export interface PerfilDeEje {
+  /** Cotas del terreno, `muestras` valores alineados con el eje. */
+  cotas: number[];
+  muestras: number;
+  /** Cuántas muestras no tenían dato y se rellenaron. */
+  huecos: number;
+  /** true si hubo que extender uno de los extremos: ahí el estribo es supuesto. */
+  bordesExtendidos: boolean;
+}
+
+export function perfilDeEje(
+  g: GrillaElevacion,
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+  muestras = 41,
+): PerfilDeEje | null {
+  const n = Math.max(3, Math.floor(muestras));
+  const crudo: Array<number | null> = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    crudo.push(elevacionEn(g, a.lat + (b.lat - a.lat) * t, a.lng + (b.lng - a.lng) * t));
+  }
+  const conDato = crudo.filter((v): v is number => v != null).length;
+  if (conDato < 3) return null;
+
+  const cotas: number[] = new Array<number>(n);
+  const indices = crudo.map((v, i) => (v != null ? i : -1)).filter(i => i >= 0);
+  const primero = indices[0]!, ultimo = indices[indices.length - 1]!;
+  for (let i = 0; i < n; i++) {
+    const v = crudo[i];
+    if (v != null) { cotas[i] = v; continue; }
+    if (i < primero) { cotas[i] = crudo[primero]!; continue; }
+    if (i > ultimo)  { cotas[i] = crudo[ultimo]!;  continue; }
+    // Hueco interior: recta entre los dos vecinos con dato.
+    let izq = i - 1; while (izq >= 0 && crudo[izq] == null) izq--;
+    let der = i + 1; while (der < n && crudo[der] == null) der++;
+    const za = crudo[izq]!, zb = crudo[der]!;
+    cotas[i] = za + ((i - izq) / (der - izq)) * (zb - za);
+  }
+
+  return {
+    cotas,
+    muestras: n,
+    huecos: n - conDato,
+    bordesExtendidos: primero > 0 || ultimo < n - 1,
+  };
+}
+
+/** El perfil a secas, para quien no necesita saber si hubo huecos. */
 export function perfilTerreno(
   g: GrillaElevacion,
   a: { lat: number; lng: number },
   b: { lat: number; lng: number },
   muestras = 41,
 ): number[] | null {
-  const n = Math.max(3, Math.floor(muestras));
-  const out: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
-    const v = elevacionEn(g, a.lat + (b.lat - a.lat) * t, a.lng + (b.lng - a.lng) * t);
-    if (v != null) out.push(v);
-  }
-  return out.length >= 3 ? out : null;
+  return perfilDeEje(g, a, b, muestras)?.cotas ?? null;
 }
 
 /** Área de una celda de la grilla en m² (a la latitud media). */

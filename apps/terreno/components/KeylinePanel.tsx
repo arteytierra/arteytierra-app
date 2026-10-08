@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Waypoints, Loader2, MapPin, Info, Grid3x3, TriangleAlert } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { analizarKeyline, generarPatronCultivo, type ResultadoKeyline, type ResultadoPatron } from '@/lib/keyline';
@@ -9,7 +9,10 @@ import type { DatosShader } from '@/lib/shaders';
 import type { PoligonoCutFill } from './CutFillPanel';
 import type { GrupoHidro } from '@/lib/cuenca';
 import type { VeredictoPatron } from '@/lib/keylineGeometria';
+import { elevacionEn } from '@/lib/cutfill';
+import { planillaDeDirectriz } from '@/lib/planilla';
 import { ValidacionPatronBloque } from './ValidacionPatronBloque';
+import { PlanillaBloque } from './PlanillaBloque';
 
 /**
  * Detectar el keypoint descarga relieve y tarda: se guarda el resultado, no
@@ -160,6 +163,36 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
       setCargandoPat(false);
     }
   }, [parcelas, parcelaId, espaciado, tolerancia, radio, implemento, lado, grupoHidro, lluvia10a24h_mm, obtenerGrilla]);
+
+  /**
+   * La planilla de replanteo de la directriz.
+   *
+   * Es la única de las planillas de acequia que NO lleva cota de diseño, y no por
+   * falta de dato: un surco del patrón sigue el terreno con la deriva que el
+   * método busca, así que no hay rasante que replantear. Lo que se replantea es la
+   * traza de la directriz, y con eso alcanza porque todas las demás líneas salen
+   * de ella por paralelismo: un error en la directriz se copia en todo el lote.
+   *
+   * Las cotas se leen de la grilla si está en memoria. Un patrón restaurado de un
+   * proyecto guardado no la trae —la grilla no se guarda, pesa demasiado— y ahí
+   * la columna de cota sale vacía, que es lo que corresponde: se llena con el
+   * nivel igual.
+   */
+  const planillaDirectriz = useMemo(() => {
+    if (!patron || !patronAlDia || patron.master.length < 2) return null;
+    const cotas = grilla ? patron.master.map(q => elevacionEn(grilla, q.lat, q.lng)) : null;
+    return planillaDeDirectriz({
+      master: patron.master,
+      cotas_m: cotas,
+      espaciado_m: patron.espaciado_m,
+      headland_m: patron.headland_m,
+      orientacion_deg: patron.orientacion_deg,
+      deriva_media_pct: patron.resumen.deriva_media_pct,
+      verticesCerrados: patron.verticesCerrados.length,
+      pendienteTerreno_pct: patron.pendiente_media_pct,
+      fuenteRelieve: grilla?.fuente ?? null,
+    });
+  }, [patron, patronAlDia, grilla]);
 
   return (
     <div className="space-y-4">
@@ -358,6 +391,25 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
                   className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${patronAplic ? 'bg-moss-100 text-moss-700' : 'bg-ink-900 hover:bg-ink-700 text-bone-50'}`}>
                   {patronAplic ? 'Patrón aplicado al plano ✓' : 'Aplicar patrón al plano'}
                 </button>
+
+                {/* ── El replanteo de la directriz ──
+                    El patrón se dibuja solo una vez que la directriz está marcada
+                    en el terreno: la máquina copia la directriz con su propio
+                    ancho. Por eso la única línea que hay que replantear es esta. */}
+                {planillaDirectriz && (
+                  <div className="border-t border-bone-200 pt-2 space-y-2">
+                    <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide">
+                      Replanteo de la directriz
+                    </p>
+                    <PlanillaBloque planilla={planillaDirectriz} nombreArchivo="directriz_keyline">
+                      <p className="text-[10px] text-ink-700/70 leading-relaxed">
+                        La directriz es la única línea que se mide: las otras {patron.lineas.length - 1} salen de
+                        ella por paralelismo con el ancho del implemento. Conviene marcarla con algo que sobreviva
+                        a la labor, porque se vuelve a usar cada temporada.
+                      </p>
+                    </PlanillaBloque>
+                  </div>
+                )}
               </div>
             )}
           </div>

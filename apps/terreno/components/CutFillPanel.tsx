@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Loader2, Waves, Info, PenLine, CalendarClock, Droplets, Check, Archive } from 'lucide-react';
 import { obtenerGrillaDensa, grillaDesdeShader, type GrillaElevacion } from '@/lib/grillaElevacion';
-import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilTerreno, balanceTierra, type ResultadoEmbalse } from '@/lib/cutfill';
+import { calcularEmbalse, rangoElevacionPoligono, dimensionarMuro, perfilDeEje, balanceTierra, type ResultadoEmbalse } from '@/lib/cutfill';
 import { simularRepresaAnual, MESES_NOMBRE, type RepresaResumen, type RepresaInputs } from '@/lib/represa';
 import { yaArchivada, resumenRepresa, porEficiencia, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
 import { anchoCorona, taludesSugeridos, claseSueloSugerida, evaluar, type Recomendacion } from '@/lib/criterios';
@@ -18,6 +18,9 @@ import { VasoRealBloque } from './VasoRealBloque';
 import { VertederoBloque } from './VertederoBloque';
 import { vasoDesdeMuro, nivelVaso } from '@/lib/vaso';
 import { compararLadosDelMuro, ladoDelVertedero, RELACION_LADERA } from '@/lib/ladoDeObra';
+import { planillaDeMuro } from '@/lib/planilla';
+import { pendienteMediaPct } from '@/lib/swales';
+import { PlanillaBloque } from './PlanillaBloque';
 import { CONCEPTOS_SUGERIDOS } from '@/lib/economia';
 
 /** Valor del desplegable de cobertura que significa "usá el motor compartido". */
@@ -333,7 +336,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
   const perfilMuro = useMemo(() => {
     if (!grilla || !sel || muroIdx === null || sel.vertices.length < 3) return null;
     const vs = sel.vertices;
-    return perfilTerreno(grilla, vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!);
+    return perfilDeEje(grilla, vs[muroIdx]!, vs[(muroIdx + 1) % vs.length]!);
   }, [grilla, sel, muroIdx]);
 
   /**
@@ -437,10 +440,23 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
     });
   }, [grilla, sel, claseSuelo, tipoMuro, factorContraccion]);
 
+  /**
+   * Pendiente media del terreno en el espejo (%).
+   *
+   * No decide nada del muro: decide cuál de las dos exactitudes verticales
+   * publicadas del modelo de elevación corresponde, que tienen un umbral de
+   * pendiente. Es el mismo cálculo que usa el trazado de swales, así que las dos
+   * pantallas leen la misma pendiente del mismo terreno.
+   */
+  const pendienteSitio = useMemo(
+    () => (grilla && sel && sel.vertices.length >= 3 ? pendienteMediaPct(grilla, sel.vertices) : null),
+    [grilla, sel],
+  );
+
   const muro = useMemo(() => res ? dimensionarMuro({
     profMax_m: res.prof_max_m, revancha_m: muroP.revancha, anchoCorona_m: muroP.anchoCorona,
     taludInterno: muroP.taludInterno, taludExterno: muroP.taludExterno, longitud_m: longitud,
-    perfilTerreno_m: perfilMuro ?? undefined,
+    perfilTerreno_m: perfilMuro?.cotas ?? undefined,
     // La corona va al nivel normal MÁS la carga de la crecida sobre el
     // vertedero MÁS la revancha: es la definición de AH-590 y es lo que le
     // faltaba al cálculo. Ver `cargaVertedero`.
@@ -456,6 +472,43 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
    * capacidad: cada m³ excavado bajo el nivel de agua es un m³ más de agua.
    */
   const balance = useMemo(() => muro && res ? balanceTierra(muro, res) : null, [muro, res]);
+
+  /**
+   * La planilla de replanteo del muro.
+   *
+   * La geometría ya estaba toda: el eje elegido, el perfil del terreno bajo él, la
+   * cota a la que hay que construir la corona y el estribo donde va el
+   * vertedero. Lo que faltaba era el papel con el que se pasa al suelo, que es
+   * una cosa distinta del plano —AH-590: «Staking transmits the information on
+   * the drawings to the job site»— y que la norma de práctica pide por su
+   * nombre: «Stationing along centerline of fill» (CPS 378).
+   *
+   * La rasante es la corona CONSTRUIDA, con el sobrealto por asentamiento
+   * incluido, porque es lo que la figura 2-1 de TR-62 pone en el primer renglón
+   * de lo que se le entrega al dueño: «design height plus allowance for
+   * settlement».
+   */
+  const planillaMuro = useMemo(() => {
+    if (!ejeMuro || !muro || muro.sinMuro) return null;
+    return planillaDeMuro({
+      a: ejeMuro.a,
+      b: ejeMuro.b,
+      perfil_m: perfilMuro?.cotas ?? null,
+      longitudDimensionada_m: longitud,
+      cotaCoronaConstruida_m: muro.cotaCoronaConstruida_m,
+      cotaCoronaDiseno_m: nivel != null ? nivel + cargaVertedero + muroP.revancha : null,
+      sobrealto_m: muro.sobrealto_m,
+      cotaVertedero_m: nivel,
+      estriboVertedero: vertedero?.recomendado ?? null,
+      anchoCorona_m: muro.anchoCorona_m,
+      taludInterno: muroP.taludInterno,
+      taludExterno: muroP.taludExterno,
+      zanja: { prof_m: muro.zanja.prof_m, anchoFondo_m: muro.zanja.anchoFondo_m },
+      fuenteRelieve: grilla?.fuente ?? null,
+      pendienteTerreno_pct: pendienteSitio,
+    });
+  }, [ejeMuro, muro, perfilMuro, longitud, nivel, cargaVertedero, muroP.revancha,
+      muroP.taludInterno, muroP.taludExterno, vertedero, grilla, pendienteSitio]);
 
   // Eficiencia del sitio = agua total ÷ tierra movida en banco. Cuanto más agua
   // se embalsa con menos movimiento —un buen cuello de botella entre laderas—
@@ -1137,6 +1190,36 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
                 m³ de agua embalsada ÷ m³ del muro (terraplén). Cuanto más agua se embalsa con menos muro —un buen cuello de botella entre laderas— mayor la eficiencia y mejor el sitio elegido.
               </p>
             </div>
+          )}
+
+          {/* ── La planilla de replanteo del muro ──
+              Va acá y no en el informe porque es acá donde está la geometría: el
+              eje elegido, su perfil y la cota de corona. El informe imprime la
+              del cierre perimetral, que es la única que sale con los mojones del
+              predio y sin diseñar nada. */}
+          {planillaMuro && (
+            <div className="border-t border-bone-200 pt-2.5 mt-1 space-y-2">
+              <p className="text-[10px] font-semibold text-ink-700 uppercase tracking-wide">Replanteo del muro</p>
+              <PlanillaBloque
+                planilla={planillaMuro}
+                nombreArchivo={`muro_${sel?.nombre ?? 'represa'}`}
+              >
+                <p className="text-[10px] text-ink-700/70 leading-relaxed">
+                  Esto no es el plano en forma de tabla: es el papel con el que se pasa el plano al suelo. Trae
+                  dónde va cada estaca del eje del coronamiento, qué mojón de referencia la gobierna y cuánto
+                  relleno hay que levantar en cada una, medido desde ese mojón. Las estacas de talud no están:
+                  salen de la sección y de la altura de cada estación, no de la progresiva.
+                </p>
+              </PlanillaBloque>
+            </div>
+          )}
+          {perfilMuro && (perfilMuro.huecos > 0 || perfilMuro.bordesExtendidos) && (
+            <p className="text-[9px] text-clay-700/90 leading-relaxed">
+              El perfil del terreno bajo el eje tenía {perfilMuro.huecos} de {perfilMuro.muestras} muestras sin
+              dato en el modelo de elevación{perfilMuro.bordesExtendidos ? ', y alguna en un extremo del eje' : ''}.
+              Se rellenaron por interpolación para que el perfil siga alineado con el eje
+              {perfilMuro.bordesExtendidos ? ', pero donde el hueco toca un estribo la cota de ese estribo es supuesta' : ''}.
+            </p>
           )}
 
           {/* ── Cuenca de aporte desde el muro (C) ── */}

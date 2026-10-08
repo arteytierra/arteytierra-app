@@ -108,6 +108,7 @@
 import { distanciaMetros } from './dibujos';
 import { PIE_M }           from './represaDiseno';
 import { incertidumbreDeCota, redondearGUM } from './modeloDeclarado';
+import { GIRO_MAX_TRACTOR_DEG } from './keylineGeometria';
 import type { FuenteRelieve } from './grillaElevacion';
 
 // ─── 0 · Fuentes ──────────────────────────────────────────────────────────────
@@ -326,6 +327,21 @@ export interface PrecisionDeclarada {
   motivo:       string;
 }
 
+/**
+ * Un renglón de lo que se entrega además de la tabla.
+ *
+ * No es un resumen que acequia inventó: la figura 2-1 de TR-62 —un dique chico
+ * de predio, diseñado y replanteado en una sola salida al campo— enumera qué se
+ * le deja al dueño, y la tabla de progresivas es sólo una parte. Lo demás son el
+ * ancho de coronamiento, los taludes, las dimensiones del vertedero y su cota
+ * **respecto del mismo mojón**, y las especificaciones de preparación del sitio.
+ * Sin eso la planilla dice dónde ir pero no qué construir.
+ */
+export interface ItemDeEntrega {
+  que:   string;
+  valor: string;
+}
+
 export interface Planilla {
   practica:   string;
   proposito:  Proposito;
@@ -340,6 +356,8 @@ export interface Planilla {
   mojones:    MojonReferencia[];
   renglones:  RenglonPlanilla[];
   precision:  PrecisionDeclarada;
+  /** Lo que se entrega además de la tabla. Vacío cuando la obra no lo define. */
+  entrega:    ItemDeEntrega[];
   /** Instrucciones de campo, todas con fuente. */
   notas:      string[];
   fuentes:    string[];
@@ -624,6 +642,7 @@ export function armarPlanilla(e: EntradaPlanilla): Planilla | null {
     mojones,
     renglones,
     precision,
+    entrega: [],
     notas: notasDeCampo(obra),
     fuentes: [FUENTE_TR62, FUENTE_EFH1, FUENTE_AH590_REPLANTEO, FUENTE_CPS378, FUENTE_CS_TERRAPLEN],
     advertencias,
@@ -704,4 +723,622 @@ export function planillaDeCierre(params: {
     ...planilla.notas,
   ];
   return planilla;
+}
+
+// ─── 8 · El corrimiento horizontal de una traza de nivel ──────────────────────
+
+/**
+ * Cuánto se puede correr horizontalmente una traza de nivel por el error
+ * vertical del modelo de elevación.
+ *
+ * Es la pregunta que aparece recién cuando la planilla llega al swale, y no es
+ * la de la columna de cota. Un swale se traza siguiendo una curva de nivel leída
+ * del modelo. Si la cota de esa curva puede estar corrida `u` metros, entonces
+ * la curva está **dibujada en otro lugar**, y el error no es vertical: es
+ * horizontal. Sobre un plano de pendiente `S` la curva de cota `z` y la de cota
+ * `z + u` están separadas por
+ *
+ *     corrimiento = u / S
+ *
+ * y nada más. Es geometría elemental, no un método empírico: no tiene
+ * calibración ni región de validez más allá de que el terreno se parezca a un
+ * plano entre las dos curvas.
+ *
+ * El número sale grande y conviene no suavizarlo. Con el modelo global —1,22 m
+ * punto a punto— y una ladera del 5 %, la traza impresa puede estar a **24 m**
+ * de la curva de nivel real; al 2 %, a 61 m. Eso **no** invalida el trazado: la
+ * separación entre swales, la cantidad, el volumen interceptado y la sección
+ * salen todos de la pendiente media del área, que es un promedio y aguanta. Lo
+ * que invalida es ir con el plano a la traza impresa y empezar a excavar. La
+ * traza dice **por dónde va** el swale; el nivel dice **dónde**.
+ *
+ * Ojo con la pendiente, que entra dos veces por razones distintas: una vez para
+ * elegir cuál de las dos exactitudes publicadas corresponde —el modelo global
+ * declara una para pendiente suave y otra para pendiente fuerte, con su umbral—
+ * y otra acá, como gradiente que convierte metros de error vertical en metros de
+ * error horizontal. No es doble conteo: son dos usos del mismo dato.
+ *
+ * Rango de validez: pendiente positiva. En terreno plano el corrimiento no
+ * tiende a un número grande, **no existe**: una curva de nivel sobre un plano
+ * horizontal no tiene posición definida. Ahí devuelve `null` y lo dice, que es
+ * la respuesta correcta y además la que explica por qué un swale en terreno
+ * llano se replantea con nivel y no con mapa.
+ */
+export interface CorrimientoDeTraza {
+  /** Incertidumbre vertical punto a punto que se usó (m). */
+  u_vertical_m:  number;
+  pendiente_pct: number;
+  /** Corrimiento horizontal posible de la traza (m). `null` en terreno plano. */
+  corrimiento_m: number | null;
+  lectura:       string;
+}
+
+export function corrimientoDeTraza(
+  u_vertical_m: number | null | undefined,
+  pendiente_pct: number | null | undefined,
+): CorrimientoDeTraza | null {
+  if (u_vertical_m == null || !Number.isFinite(u_vertical_m) || u_vertical_m <= 0) return null;
+  const p = pendiente_pct != null && Number.isFinite(pendiente_pct) ? pendiente_pct : null;
+  if (p == null || p <= 0) {
+    return {
+      u_vertical_m, pendiente_pct: 0, corrimiento_m: null,
+      lectura:
+        'Sin pendiente del terreno no se puede decir cuánto se corre la traza, y no porque falte el dato: '
+        + 'sobre un plano horizontal una curva de nivel no tiene posición definida. Es el caso en el que la '
+        + 'traza del plano no sirve para ubicar la zanja y el replanteo se hace enteramente con el nivel.',
+    };
+  }
+  const corr = u_vertical_m / (p / 100);
+  return {
+    u_vertical_m, pendiente_pct: p,
+    corrimiento_m: Math.round(corr * 10) / 10,
+    lectura:
+      `Con ${(u_vertical_m * 100).toFixed(0)} cm de incertidumbre vertical punto a punto y una pendiente del `
+      + `${p.toFixed(1)} %, la curva de nivel sobre la que se trazó esta zanja puede estar hasta `
+      + `${corr.toFixed(corr < 10 ? 1 : 0)} m corrida ladera arriba o ladera abajo respecto de donde la imprime el `
+      + 'plano. No es un error de la traza: es la pendiente convirtiendo el error vertical del modelo en error '
+      + 'horizontal. La traza dice por dónde va la zanja; el nivel dice dónde.',
+  };
+}
+
+// ─── 9 · Las tres geometrías que acequia diseña ───────────────────────────────
+
+/**
+ * Las tres obras del predio que tienen un eje con rasante, y el motivo por el
+ * que cada una necesita su propia función en vez de un `armarPlanilla` suelto.
+ *
+ * `armarPlanilla` es genérico: recibe un eje con cotas y una recta de rasante.
+ * Lo que no es genérico es **qué recta**, **qué va en la columna de entrega** y
+ * **qué se le avisa al que va a replantear**, y eso es casi todo lo que hace que
+ * la planilla sirva:
+ *
+ *  · El **muro** lleva una rasante horizontal, pero no la de proyecto: la figura
+ *    2-1 de TR-62 enumera lo que se le entrega al dueño de un dique chico de
+ *    predio y el primer renglón es «Total fill height (**design height plus
+ *    allowance for settlement**) at each station as measured from the reference
+ *    hub». La corona se construye más alta de lo que va a quedar, y la planilla
+ *    de replanteo es la de la corona construida. Además CPS 378 pide una
+ *    progresiva con nombre propio: «show stations of intersections of principal
+ *    and auxiliary spillway centerlines».
+ *
+ *  · El **swale** lleva una rasante horizontal a la profundidad de proyecto por
+ *    debajo del terreno, y es el caso donde el sesgo del modelo se cancela del
+ *    todo: la zanja se define entera respecto del mojón, sin ninguna cota
+ *    absoluta. Pero trae el problema inverso —ver `corrimientoDeTraza`—, que es
+ *    que la traza misma puede estar corrida decenas de metros.
+ *
+ *  · La **directriz keyline** no lleva rasante y eso no es una carencia: el
+ *    surco sigue el terreno con la deriva deliberada del método, así que no hay
+ *    cota de diseño que replantear. Lo que se replantea es su **posición
+ *    horizontal**, porque de ella salen por paralelismo todas las demás líneas.
+ */
+
+export interface EntradaPlanillaMuro {
+  /** Los dos estribos del eje del muro. La progresiva crece de `a` a `b`. */
+  a: { lat: number; lng: number };
+  b: { lat: number; lng: number };
+  /**
+   * Cotas del terreno natural bajo el eje, a paso regular de `a` a `b`.
+   * Es la salida de `perfilDeEje` y tiene que estar alineada: el renglón `i`
+   * corresponde a la fracción `i/(n−1)` del eje.
+   */
+  perfil_m?: readonly number[] | null;
+  /**
+   * Largo del coronamiento con el que se dimensionó el muro (m). Si no coincide
+   * con el eje dibujado, la planilla lo dice: el replanteo es del eje.
+   */
+  longitudDimensionada_m?: number | null;
+  /** Cota a la que se CONSTRUYE la corona, con el sobrealto por asentamiento. */
+  cotaCoronaConstruida_m?: number | null;
+  /** Cota de proyecto de la corona, sin el sobrealto. */
+  cotaCoronaDiseno_m?: number | null;
+  /** Sobrealto por asentamiento sobre la sección más honda (m). */
+  sobrealto_m?: number | null;
+  /** Cota del pelo de agua normal, que es la cresta del vertedero. */
+  cotaVertedero_m?: number | null;
+  /** En qué estribo va el vertedero. CPS 378 pide su progresiva. */
+  estriboVertedero?: 'a' | 'b' | null;
+  anchoCorona_m?: number | null;
+  taludInterno?:  number | null;
+  taludExterno?:  number | null;
+  zanja?: { prof_m: number; anchoFondo_m: number } | null;
+  fuenteRelieve?: FuenteRelieve | null;
+  pendienteTerreno_pct?: number | null;
+  fecha?: string;
+  responsable?: string | null;
+}
+
+/** Construye el eje de la planilla desde dos puntos y un perfil alineado. */
+function ejeDesdePerfil(
+  a: { lat: number; lng: number }, b: { lat: number; lng: number },
+  perfil?: readonly number[] | null,
+): PuntoEje[] {
+  const n = perfil && perfil.length >= 2 ? perfil.length : 2;
+  const eje: PuntoEje[] = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const z = perfil?.[i];
+    eje.push({
+      lat: a.lat + (b.lat - a.lat) * t,
+      lng: a.lng + (b.lng - a.lng) * t,
+      cota_m: z != null && Number.isFinite(z) ? z : null,
+    });
+  }
+  return eje;
+}
+
+/**
+ * La planilla de replanteo del muro de la represa.
+ *
+ * La rasante es la corona **construida**, horizontal: una sola cota para todo el
+ * eje, y la columna de altura sobre el mojón es entonces la altura de relleno de
+ * cada estación, que es exactamente el renglón que TR-62 pone primero en la
+ * lista de lo que se le entrega al dueño.
+ */
+export function planillaDeMuro(e: EntradaPlanillaMuro): Planilla | null {
+  const eje = ejeDesdePerfil(e.a, e.b, e.perfil_m);
+  const cotaCorona = e.cotaCoronaConstruida_m;
+  const diseno: DisenoDeRasante | null =
+    cotaCorona != null && Number.isFinite(cotaCorona)
+      ? { cota_inicial_m: cotaCorona, pendiente_pct: 0 }
+      : null;
+
+  const largo = medirEje(eje).largo_m;
+  const cruces: Array<{ progresiva_m: number; que: string }> = [];
+  if (e.estriboVertedero === 'a' || e.estriboVertedero === 'b') {
+    const enElFin = e.estriboVertedero === 'b';
+    cruces.push({
+      progresiva_m: enElFin ? largo : 0,
+      que: `Eje del vertedero principal — estribo ${e.estriboVertedero.toUpperCase()}`
+        + (enElFin ? ' · fin del eje del muro' : ' · arranque del eje del muro'),
+    });
+  }
+
+  const planilla = armarPlanilla({
+    practica: 'Muro de represa — eje del coronamiento',
+    proposito: 'replanteo',
+    eje,
+    obra: 'tierra',
+    cruces,
+    diseno,
+    fecha: e.fecha,
+    ...(e.responsable != null ? { responsable: e.responsable } : {}),
+    ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
+  });
+  if (!planilla) return null;
+
+  // ── Lo que se entrega además de la tabla (TR-62, fig. 2-1) ──
+  const m1 = planilla.mojones[0] ?? null;
+  const num = (v: number | null | undefined, d = 2) =>
+    v != null && Number.isFinite(v) ? v.toFixed(d) : null;
+
+  const entrega: ItemDeEntrega[] = [];
+  entrega.push({
+    que: 'Altura de relleno en cada estación',
+    valor: cotaCorona != null
+      // Es la columna Δ MENOS la lectura de mira, y vale la pena escribirlo así:
+      // Δ es la corona respecto del mojón —geometría, la trae la planilla— y la
+      // lectura es el terreno respecto del mismo mojón, que se mide. Las dos
+      // están referidas al mismo punto, y por eso la cota del mojón se cancela.
+      ? 'columna Δ menos la lectura de mira en esa estación, las dos respecto del mismo mojón'
+        + (e.sobrealto_m != null && e.sobrealto_m > 0
+          ? `; el Δ ya trae el sobrealto por asentamiento de ${num(e.sobrealto_m)} m`
+          : '')
+      : 'sin cota de coronamiento no se puede imprimir',
+  });
+  if (e.cotaCoronaDiseno_m != null && cotaCorona != null) {
+    entrega.push({
+      que: 'Corona de proyecto contra corona construida',
+      valor: `${num(e.cotaCoronaDiseno_m)} m de proyecto · se construye a ${num(cotaCorona)} m`,
+    });
+  }
+  if (e.anchoCorona_m != null) {
+    entrega.push({ que: 'Ancho de coronamiento', valor: `${num(e.anchoCorona_m)} m` });
+  }
+  if (e.taludInterno != null && e.taludExterno != null) {
+    entrega.push({
+      que: 'Taludes (H:1V)',
+      valor: `${num(e.taludInterno, 1)}:1 aguas arriba · ${num(e.taludExterno, 1)}:1 aguas abajo`,
+    });
+  }
+  if (e.cotaVertedero_m != null && m1?.cota_m != null) {
+    entrega.push({
+      que: 'Cresta del vertedero respecto del mojón M1',
+      valor: `${(e.cotaVertedero_m - m1.cota_m) >= 0 ? '+' : ''}${num(e.cotaVertedero_m - m1.cota_m)} m`,
+    });
+  } else if (e.cotaVertedero_m != null) {
+    entrega.push({
+      que: 'Cresta del vertedero',
+      valor: `cota ${num(e.cotaVertedero_m)} m — falta la cota del mojón M1 para darla relativa`,
+    });
+  }
+  if (e.zanja) {
+    entrega.push({
+      que: 'Zanja de anclaje, bajo todo el eje',
+      valor: `${num(e.zanja.prof_m)} m de profundidad por ${num(e.zanja.anchoFondo_m)} m de fondo`,
+    });
+  }
+  entrega.push({
+    que: 'Preparación del sitio',
+    valor: 'se retiran pasto, piedras y suelo vegetal de toda la huella del terraplén, y el suelo vegetal '
+      + 'se acopia en el sitio para devolverlo después sobre el talud externo (AH-590)',
+  });
+  planilla.entrega = entrega;
+
+  // ── Avisos propios del muro ──
+  if (cotaCorona == null) {
+    planilla.advertencias.unshift(
+      'Sin cota de coronamiento no hay altura de relleno por estación, que es el primer renglón de lo que la '
+      + 'norma pide entregar. Elegí el lado del muro y el nivel de agua para que el cálculo la devuelva.',
+    );
+  }
+  const dim = e.longitudDimensionada_m;
+  if (dim != null && Number.isFinite(dim) && dim > 0 && Math.abs(dim - largo) > Math.max(1, largo * 0.02)) {
+    planilla.advertencias.push(
+      `El muro se dimensionó con ${dim.toFixed(0)} m de coronamiento y el eje dibujado mide ${largo.toFixed(0)} m. `
+      + 'Esta planilla replantea el eje dibujado, que es el que existe en el terreno: si el largo de proyecto es '
+      + 'el otro, el volumen y el replanteo están hablando de dos muros distintos.',
+    );
+  }
+  if (!e.perfil_m || e.perfil_m.length < 3) {
+    planilla.advertencias.push(
+      'Sin perfil del terreno bajo el eje la planilla sale con las progresivas y los mojones, y la altura de '
+      + 'relleno queda sin número: la altura de cada estación es la corona menos el terreno, y el terreno falta.',
+    );
+  }
+
+  planilla.notas = [
+    'La corona se replantea a la cota CONSTRUIDA, que es más alta que la de proyecto: el terraplén asienta. '
+      + 'TR-62 lo pone en la primera línea de lo que se entrega —«design height plus allowance for settlement»— '
+      + 'y AH-590 aplica el mismo sobrealto al cómputo del volumen.',
+    'Esta planilla trae el eje del coronamiento y nada más. Las estacas de talud —el pie del terraplén de cada '
+      + 'lado— salen de la sección y no de la progresiva: TR-62 las enumera aparte («slope (toe of slope or edge '
+      + 'of cut) and offset reference stakes»), y su posición depende del talud y de la altura de esa estación.',
+    'La progresiva del eje del vertedero va marcada en el terreno antes de mover tierra: CPS 378 pide «show '
+      + 'stations of intersections of principal and auxiliary spillway centerlines» y «establish stationing '
+      + 'ground control» en el mismo renglón.',
+    ...planilla.notas,
+  ];
+  return planilla;
+}
+
+// ─── 9.2 · El swale ──────────────────────────────────────────────────────────
+
+/**
+ * Por qué el fondo de un swale se anota con la precisión de una rasante de
+ * estructura y no con la de un movimiento de suelo.
+ *
+ * Es un criterio **derivado**, y conviene que se vea la cuenta porque mezcla dos
+ * prácticas distintas. TR-62 da dos precisiones de anotación —0,1 pie para una
+ * cota de movimiento de suelo, 0,01 pie para una rasante de estructura— y AH-590
+ * da el intervalo de estaca, 100 pies. Dividir una por el otro da **la pendiente
+ * que el redondeo de la anotación por sí solo puede meter entre dos estacas**, y
+ * como las dos cifras están en pies el resultado es exacto:
+ *
+ *     movimiento de suelo:  0,1 pie / 100 pies = 0,10 %
+ *     rasante de estructura: 0,01 pie / 100 pies = 0,01 %
+ *
+ * Un swale no tiene pendiente: su trabajo es retener agua hasta que infiltre. La
+ * única pendiente publicada que acequia tiene a mano para decir cuándo una zanja
+ * deja de retener y empieza a drenar es el piso de drenaje de la banda de deriva
+ * del surco keyline, **0,2 %** (`DERIVA_MIN_DRENAJE_PCT`), que es de otra
+ * práctica y hay que decirlo. Contra ese número:
+ *
+ *  · anotando como movimiento de suelo, el redondeo solo se come **la mitad** del
+ *    margen (0,10 contra 0,20 %);
+ *  · anotando como rasante de estructura, se come **la vigésima parte**.
+ *
+ * Así que acequia anota el fondo del swale con la precisión fina y lo explica, en
+ * vez de usar la gruesa porque la zanja se cava con una máquina. No es una
+ * reclasificación de la obra —un swale no es una estructura— es una decisión
+ * sobre con cuántos decimales se escribe un número, tomada contra el único grado
+ * publicado que distingue retener de drenar. Lo que la cerraría de verdad es una
+ * tolerancia de rasante publicada para una zanja de infiltración a nivel, que no
+ * se leyó.
+ */
+export const DERIVA_POR_REDONDEO_TIERRA_PCT     = 0.1;
+export const DERIVA_POR_REDONDEO_ESTRUCTURA_PCT = 0.01;
+
+export interface EntradaPlanillaSwale {
+  /** La traza del swale, como la devuelve el trazado sobre la curva de nivel. */
+  puntos: ReadonlyArray<{ lat: number; lng: number }>;
+  /** Cota de la curva de nivel sobre la que se trazó (m). */
+  cota_m: number;
+  /** Profundidad de proyecto de la zanja (m). */
+  prof_m?: number | null;
+  /** Sección de proyecto, para la lista de entrega. */
+  seccion?: { base_m: number; talud_z: number; ancho_sup_m: number } | null;
+  /** Cómo se lo nombra en el plano. */
+  rotulo?: string;
+  /** Pendiente media del área. Decide el corrimiento horizontal de la traza. */
+  pendienteTerreno_pct?: number | null;
+  fuenteRelieve?: FuenteRelieve | null;
+  cruces?: ReadonlyArray<{ progresiva_m: number; que: string }>;
+  fecha?: string;
+}
+
+export interface PlanillaDeSwale extends Planilla {
+  /** Cuánto se puede haber corrido la traza respecto de la curva real. */
+  corrimiento: CorrimientoDeTraza | null;
+}
+
+/**
+ * La planilla de replanteo de un swale.
+ *
+ * La rasante es el fondo de la zanja: horizontal, a la profundidad de proyecto
+ * por debajo de la curva de nivel sobre la que se trazó. Como el mojón de
+ * referencia está sobre la misma curva, la columna de altura sobre el mojón da
+ * la profundidad y nada más —una resta en la que la cota del modelo se cancela
+ * entera—, y eso es lo que hace que un swale se pueda replantear con un nivel de
+ * manguera y sin ningún datum.
+ *
+ * Lo que la planilla no puede arreglar es dónde está la traza: ver
+ * `corrimientoDeTraza`.
+ */
+export function planillaDeSwale(e: EntradaPlanillaSwale): PlanillaDeSwale | null {
+  if (e.puntos.length < 2) return null;
+  const cota = e.cota_m;
+  if (!Number.isFinite(cota)) return null;
+
+  // Por construcción el eje está a una sola cota: es una curva de nivel. No es
+  // un relevamiento del terreno y la planilla lo dice.
+  const eje: PuntoEje[] = e.puntos.map(p => ({ lat: p.lat, lng: p.lng, cota_m: cota }));
+  const prof = e.prof_m != null && Number.isFinite(e.prof_m) && e.prof_m > 0 ? e.prof_m : null;
+
+  const planilla = armarPlanilla({
+    practica: e.rotulo ?? `Swale en la cota ${cota.toFixed(2)} m`,
+    proposito: 'replanteo',
+    eje,
+    // Ver el comentario de arriba: la precisión fina no es una reclasificación
+    // de la obra, es con cuántos decimales se escribe la cota del fondo.
+    obra: 'estructura',
+    ...(prof != null ? { diseno: { cota_inicial_m: cota - prof, pendiente_pct: 0 } } : {}),
+    ...(e.cruces ? { cruces: e.cruces } : {}),
+    fecha: e.fecha,
+    ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
+  });
+  if (!planilla) return null;
+
+  const corrimiento = corrimientoDeTraza(
+    planilla.precision.disponible_m, e.pendienteTerreno_pct ?? null,
+  );
+
+  const entrega: ItemDeEntrega[] = [];
+  if (prof != null) {
+    entrega.push({
+      que: 'Fondo de la zanja respecto del mojón',
+      valor: `−${prof.toFixed(2)} m, igual en toda la traza (zanja a nivel)`,
+    });
+  }
+  if (e.seccion) {
+    entrega.push({ que: 'Ancho de fondo', valor: `${e.seccion.base_m.toFixed(2)} m` });
+    entrega.push({ que: 'Talud de las paredes (H:1V)', valor: `${e.seccion.talud_z.toFixed(1)}:1` });
+    entrega.push({ que: 'Ancho de boca', valor: `${e.seccion.ancho_sup_m.toFixed(2)} m` });
+  }
+  entrega.push({
+    que: 'Pendiente admitida a lo largo de la zanja',
+    valor: `0 %. El redondeo de la anotación ya puede meter ${DERIVA_POR_REDONDEO_ESTRUCTURA_PCT.toFixed(2)} % `
+      + `entre estacas; con la precisión de movimiento de suelo serían ${DERIVA_POR_REDONDEO_TIERRA_PCT.toFixed(2)} %.`,
+  });
+  planilla.entrega = entrega;
+
+  // La planilla del swale no es «el relevamiento»: la rasante existe y es el
+  // fondo de la zanja. Lo que no existe es un relevamiento del terreno.
+  planilla.advertencias = planilla.advertencias.filter(a => !a.startsWith('Sin rasante de diseño'));
+  if (prof == null) {
+    planilla.advertencias.unshift(
+      'Sin profundidad de proyecto la planilla sale con las progresivas y los mojones y sin cota de fondo: '
+      + 'dimensioná la sección para que la zanja tenga rasante.',
+    );
+  }
+  planilla.advertencias.unshift(
+    `Las cotas de esta planilla son la cota de la curva de nivel sobre la que se trazó el swale `
+    + `(${cota.toFixed(2)} m), no una medición: por construcción el eje entero está a una sola cota. Los quiebres `
+    + 'del terreno no pueden aparecer acá, los va a encontrar el que camine la traza con el nivel.',
+  );
+  if (corrimiento) {
+    planilla.advertencias.push(corrimiento.lectura);
+  }
+
+  planilla.notas = [
+    'La zanja va A NIVEL en toda su traza, y eso es lo que se controla: la altura sobre el mojón es la misma en '
+      + 'todas las estaciones. Si una estación da distinto, lo que está corrido es la traza, no la profundidad.',
+    'El nivel de manguera alcanza y es lo que conviene: toda la planilla se lee contra el mojón de referencia, '
+      + 'así que no hace falta ninguna cota absoluta ni ningún instrumento calado.',
+    'Si la traza cruza un camino, una alcantarilla, un alambrado o una zanja existente, esa progresiva se mide y '
+      + 'se anota aunque no caiga en una estación: «Stations should always be measured and recorded at all '
+      + 'important points along the profile line» (EFH cap. 1).',
+    ...planilla.notas,
+  ];
+
+  return { ...planilla, corrimiento };
+}
+
+// ─── 9.3 · La directriz del patrón keyline ───────────────────────────────────
+
+export interface EntradaPlanillaDirectriz {
+  /** La directriz del patrón, que es de donde salen por paralelismo las demás. */
+  master: ReadonlyArray<{ lat: number; lng: number }>;
+  /** Cotas del terreno en cada punto de la directriz, si se pudieron leer. */
+  cotas_m?: ReadonlyArray<number | null> | null;
+  espaciado_m?: number | null;
+  headland_m?: number | null;
+  orientacion_deg?: number | null;
+  deriva_media_pct?: number | null;
+  /** Cuántos vértices de la directriz piden un giro mayor al del tractor. */
+  verticesCerrados?: number | null;
+  pendienteTerreno_pct?: number | null;
+  fuenteRelieve?: FuenteRelieve | null;
+  cruces?: ReadonlyArray<{ progresiva_m: number; que: string }>;
+  fecha?: string;
+}
+
+/**
+ * La planilla de replanteo de la directriz del patrón keyline.
+ *
+ * Es la única de las cuatro que **no lleva rasante**, y no por falta de dato: el
+ * surco sigue el terreno con la deriva deliberada del método, así que no hay cota
+ * de diseño que replantear. Lo que se replantea es la posición horizontal de la
+ * directriz, y eso alcanza porque todas las demás líneas salen de ella por
+ * paralelismo: marcada la directriz, el resto lo hace la máquina con su propio
+ * ancho.
+ *
+ * Por eso acá la columna que importa no es la altura sobre el mojón sino la
+ * progresiva: es una planilla de traza, y el mojón está para poder volver a
+ * encontrarla la temporada que viene.
+ */
+export function planillaDeDirectriz(e: EntradaPlanillaDirectriz): Planilla | null {
+  if (e.master.length < 2) return null;
+  const eje: PuntoEje[] = e.master.map((p, i) => ({
+    lat: p.lat, lng: p.lng,
+    cota_m: e.cotas_m?.[i] ?? null,
+  }));
+
+  const planilla = armarPlanilla({
+    practica: 'Directriz del patrón keyline',
+    proposito: 'replanteo',
+    eje,
+    obra: 'tierra',
+    ...(e.cruces ? { cruces: e.cruces } : {}),
+    fecha: e.fecha,
+    ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
+  });
+  if (!planilla) return null;
+
+  const entrega: ItemDeEntrega[] = [];
+  if (e.espaciado_m != null) {
+    entrega.push({
+      que: 'Separación entre líneas',
+      valor: `${e.espaciado_m.toFixed(1)} m, paralelas a esta directriz`,
+    });
+  }
+  if (e.headland_m != null) {
+    entrega.push({
+      que: 'Franja de maniobra libre en el borde',
+      valor: `${e.headland_m.toFixed(1)} m`,
+    });
+  }
+  if (e.orientacion_deg != null) {
+    entrega.push({ que: 'Orientación general de la directriz', valor: `${Math.round(e.orientacion_deg)}°` });
+  }
+  if (e.deriva_media_pct != null) {
+    entrega.push({
+      que: 'Deriva media del surco',
+      valor: `${e.deriva_media_pct.toFixed(2)} % a lo largo de la línea`,
+    });
+  }
+  entrega.push({
+    que: 'Giro máximo en un vértice',
+    valor: `${GIRO_MAX_TRACTOR_DEG}°`
+      + (e.verticesCerrados != null && e.verticesCerrados > 0
+        ? ` · ${e.verticesCerrados} vértice(s) de la directriz lo pasan y hay que redondearlos en el terreno`
+        : ' · ningún vértice de la directriz lo pasa'),
+  });
+  planilla.entrega = entrega;
+
+  planilla.advertencias = planilla.advertencias.filter(a => !a.startsWith('Sin rasante de diseño'));
+  planilla.advertencias.unshift(
+    'Esta planilla no lleva cota de diseño y no le falta nada: un surco del patrón sigue el terreno con la deriva '
+    + 'que el método busca, así que no hay rasante que replantear. Lo que se replantea es la traza, y de la '
+    + 'directriz salen todas las demás líneas por paralelismo.',
+  );
+  if (e.verticesCerrados != null && e.verticesCerrados > 0) {
+    planilla.advertencias.push(
+      `${e.verticesCerrados} vértice(s) de la directriz piden un giro mayor a ${GIRO_MAX_TRACTOR_DEG}°, que es `
+      + 'más de lo que la mayoría de los tractores puede trazar. En el terreno hay que redondearlos, y redondear '
+      + 'un vértice cambia la pendiente de las líneas que salen de él: conviene revisar el patrón antes de '
+      + 'marcar la directriz, no después.',
+    );
+  }
+
+  planilla.notas = [
+    'La directriz es la única línea que se replantea. Las demás salen de ella por paralelismo con el ancho del '
+      + 'implemento, y por eso un error en la directriz se copia en todo el lote: vale la pena medirla dos veces.',
+    'Las progresivas de esta planilla se marcan con algo que sobreviva a la labor —estaca, mojón a ras de suelo o '
+      + 'par de referencias fuera del lote—, porque la directriz se vuelve a usar cada temporada.',
+    ...planilla.notas,
+  ];
+  return planilla;
+}
+
+// ─── 10 · La planilla en papel y en planilla de cálculo ──────────────────────
+
+/**
+ * La planilla como CSV.
+ *
+ * Es lo que la vuelve usable desde un panel: en el informe la planilla se
+ * imprime, pero en la pantalla de diseño no hay página, y una tabla que hay que
+ * copiar a mano es una tabla que se copia mal. El archivo sale con la cabecera
+ * que TR-62 exige —práctica, propósito, fecha, responsable— y con las dos
+ * columnas de campo **vacías**, que es como tiene que salir: se llenan midiendo.
+ *
+ * Separador coma y punto decimal, igual que el resto de las exportaciones de la
+ * app, para que el archivo abra igual en cualquier planilla de cálculo.
+ */
+export function planillaCSV(p: Planilla): string {
+  const q = (s: string) => `"${s.replace(/"/g, '""')}"`;
+  const n = (v: number | null | undefined, d: number) =>
+    v == null || !Number.isFinite(v) ? '' : v.toFixed(d);
+  const dec = p.precision.decimales;
+
+  const L: string[] = [];
+  L.push(q('Práctica') + ',' + q(p.practica));
+  L.push(q('Propósito') + ',' + q(p.propositoTexto));
+  L.push(q('Fecha') + ',' + q(p.fecha));
+  L.push(q('Responsable') + ',' + q(p.responsable ?? ''));
+  L.push(q('Largo del eje (m)') + ',' + n(p.largo_m, 2));
+  L.push(q('Intervalo entre estacas (m)') + ',' + n(p.intervalo_m, 2));
+  L.push(q('Precisión que pide la norma (m)') + ',' + n(p.precision.pedida_m, 4));
+  L.push(q('Incertidumbre del modelo de elevación (m)') + ',' + n(p.precision.disponible_m, 2));
+  for (const it of p.entrega) L.push(q(it.que) + ',' + q(it.valor));
+  L.push('');
+
+  L.push([
+    'Progresiva', 'Progresiva (m)', 'Qué hay', 'Mojón', 'Altura sobre el mojón (m)',
+    'Cota de gabinete (m)', 'Lectura de mira (m)', 'Corte (+) / relleno (-) (m)',
+    'Latitud', 'Longitud',
+  ].map(q).join(','));
+  for (const r of p.renglones) {
+    L.push([
+      q(r.rotulo), n(r.progresiva_m, 2), q(r.nota ?? ''), q(r.mojon ?? ''),
+      n(r.altura_sobre_mojon_m, 3), n(r.cota_terreno_m, dec), '', '',
+      r.lat.toFixed(6), r.lng.toFixed(6),
+    ].join(','));
+  }
+
+  L.push('');
+  L.push(q('Cómo se llena'));
+  for (const nota of p.notas) L.push(q(nota));
+  if (p.advertencias.length > 0) {
+    L.push('');
+    L.push(q('Avisos'));
+    for (const a of p.advertencias) L.push(q(a));
+  }
+  L.push('');
+  L.push(q('Fuentes'));
+  for (const f of p.fuentes) L.push(q(f));
+  return L.join('\n');
 }

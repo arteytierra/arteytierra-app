@@ -2104,6 +2104,87 @@ dibujó y aprobó— no la puede contestar ningún programa. La fuente agrega po
 «a review of the design and construction plans should be made by a technician
 other than the one preparing the design».
 
+#### H-papel-2 — la planilla en los paneles, y el error que no era vertical
+
+`lib/planilla.ts` ya era genérica sobre un eje con su rasante, pero la única
+planilla que salía era la del cierre perimetral, que es la única que se arma con
+los mojones del predio y sin diseñar nada. Ahora la planilla llega a las tres
+obras que acequia sí diseña —el muro de la represa, el swale y la directriz del
+patrón keyline— con `planillaDeMuro`, `planillaDeSwale` y `planillaDeDirectriz`,
+un solo renderizador compartido (`components/PlanillaBloque.tsx`) y descarga en
+CSV, porque en un panel no hay página. 27 tests nuevos.
+
+**1 · LO QUE CADA OBRA AGREGA ES LA RASANTE, Y NO ES LA MISMA.** El motor es
+común; lo que no es común es qué recta se replantea:
+
+- El **muro** lleva una rasante horizontal, pero **no la de proyecto**. La figura
+  2-1 de TR-62 enumera lo que se le entrega al dueño de un dique chico de predio
+  y el primer renglón es «Total fill height (**design height plus allowance for
+  settlement**) at each station as measured from the reference hub»: la corona se
+  construye más alta de lo que va a quedar, y el replanteo es el de la corona
+  construida. El sobrealto ya lo calculaba `dimensionarMuro` y nadie lo llevaba
+  al papel. Y CPS 378 pide una progresiva con nombre propio —«show stations of
+  intersections of principal and auxiliary spillway centerlines»—, que ahora
+  entra como renglón de cruce en el estribo que `ladoDelVertedero` recomienda.
+- El **swale** lleva una rasante horizontal a la profundidad de proyecto por
+  debajo de la curva. Es el caso donde la cancelación del sesgo es total: el
+  mojón está sobre la misma curva, así que la columna Δ da la profundidad y nada
+  más, igual en todas las estaciones. Un swale se replantea con un nivel de
+  manguera y **sin ningún datum**, y el test lo prueba de la forma más directa
+  que hay: la misma zanja a 320 y a 1.320 m de cota devuelve la misma planilla.
+- La **directriz keyline** no lleva rasante, y eso no es una carencia. El surco
+  sigue el terreno con la deriva deliberada del método, así que no hay cota de
+  diseño que replantear: lo que se replantea es la traza, y alcanza porque las
+  demás líneas salen de ella por paralelismo. Un error en la directriz se copia
+  en todo el lote, que es la única razón por la que vale la pena medirla.
+
+**2 · Y ACÁ APARECIÓ EL ERROR QUE NO ES VERTICAL.** Toda la etapa J vino hablando
+de la incertidumbre de la **cota**. Un swale se traza siguiendo una curva de
+nivel leída del modelo, y si la cota de esa curva puede estar corrida `u` metros,
+entonces la curva está **dibujada en otro lugar**. Sobre un plano de pendiente
+`S` el corrimiento es `u / S`, que es geometría elemental y no un método
+empírico. Con el modelo global —1,22 m punto a punto— y una ladera del 5 % son
+**24 m**; al 2 %, **61 m**. No invalida el trazado —la separación, la cantidad, el
+volumen interceptado y la sección salen de la pendiente media, que es un promedio
+y aguanta— pero sí invalida ir al plano y empezar a excavar. La traza dice por
+dónde va la zanja; el nivel dice dónde.
+
+La pendiente entra dos veces y conviene no confundirlo con doble conteo: una vez
+para elegir cuál de las dos exactitudes publicadas del modelo corresponde —tienen
+umbral de pendiente— y otra como gradiente que convierte error vertical en error
+horizontal. En terreno plano la función devuelve `null` y lo dice, que es la
+respuesta correcta: una curva de nivel sobre un plano horizontal **no tiene
+posición definida**, así que un «corrimiento muy grande» sería una respuesta falsa.
+
+**3 · CON CUÁNTOS DECIMALES SE ESCRIBE EL FONDO DE UN SWALE.** TR-62 da dos
+precisiones de anotación y AH-590 da el intervalo de estaca. Dividir una por el
+otro da la pendiente que el redondeo por sí solo puede meter entre dos estacas, y
+como las tres cifras están en pies el cociente es **exacto**: 0,1 pie / 100 pies =
+**0,10 %** anotando como movimiento de suelo, 0,01/100 = **0,01 %** anotando como
+rasante de estructura. El único grado publicado que acequia tiene para decir
+cuándo una zanja deja de retener y empieza a drenar es el piso de la banda de
+deriva del surco, **0,2 %** —que es de otra práctica y va dicho—. Contra ese
+número, la precisión de movimiento de suelo se come **la mitad** del margen y la
+fina **la vigesima parte**, así que el fondo del swale se anota con la fina y la
+cuenta va impresa. No es reclasificar la obra —un swale no es una estructura— es
+elegir decimales contra el único número que hay. Lo que lo cerraría de verdad es
+una tolerancia de rasante publicada para una zanja de infiltración a nivel, que
+no se leyó.
+
+**4 · Y DE PASO: EL PERFIL DEL EJE SE SALTEABA LOS HUECOS Y SE CORRÍA DE LUGAR.**
+`perfilTerreno` muestreaba el terreno bajo el eje del muro y **descartaba** las
+muestras sin dato, devolviendo un arreglo más corto. Pero sus dos consumidores
+—`dimensionarMuro` y ahora la planilla— lo leen como si cubriera el eje entero a
+paso regular: la muestra `i` es la fracción `i/(n−1)`. Con un hueco en el medio
+—una celda sin dato del modelo, que es exactamente lo que hay sobre un espejo de
+agua o un vacío del DEM, o sea arriba de un sitio de represa— las muestras que
+quedaban se corrían y el paso de integración `longitud/(n−1)` crecía, así que el
+volumen del terraplén se calculaba sobre un perfil estirado y mal ubicado. No se
+notaba: salía un número plausible. Ahora `perfilDeEje` devuelve siempre `n`
+valores —huecos interiores interpolados entre vecinos con dato, extremos
+extendidos— y además informa cuántos rellenó y si tuvo que suponer la cota de un
+estribo, que es el caso en el que el aviso importa.
+
 **Abierto de la etapa J:** el modelo declarado cubre dos magnitudes —superficie
 y desnivel— y no las demás: la represa, el escurrimiento, la receptividad y el
 presupuesto todavía se imprimen sin intervalo, y las funciones para declararlos
@@ -2111,10 +2192,18 @@ ya están. El corrimiento de cada mojón es un **supuesto declarado** (2 m) y no
 dato: nadie publica la exactitud de un clic sobre una imagen satelital. Falta
 leer la exactitud vertical publicada de los siete modelos nacionales y del
 relevamiento propio del usuario. El error estándar del cuantil de Gumbel sigue
-sin verificar. La planilla del informe es la del **cierre perimetral** y no la
-del muro, del swale ni del surco keyline: `armarPlanilla` es genérica sobre un
-eje con su rasante y las funciones están, pero los paneles que tienen esa
-geometría todavía no la llaman. La lista de materiales **supone** un cierre de
+sin verificar. ~~La planilla del informe es la del cierre perimetral y no la del
+muro, del swale ni del surco keyline~~ **hecho el 07/10/2026**: las tres salen de
+sus paneles con el mismo renderizador. Lo que queda abierto de eso es que el
+**camino** sigue sin planilla, y es la cuarta obra con eje —`lib/caminos.ts` no
+declara rasante de proyecto, así que primero hay que leer la pendiente máxima
+publicada de un camino de predio—; que la planilla del muro trae el eje del
+coronamiento y **no las estacas de talud**, que TR-62 enumera aparte y salen de
+la sección; que las planillas de los paneles **no viajan al informe**, porque
+`InformeData` no lleva la geometría del muro, de los swales ni del patrón; y que
+el corrimiento horizontal de la traza se imprime en el swale y **no** en las
+curvas de nivel del plano, que tienen el mismo problema. La lista de materiales
+**supone** un cierre de
 púa para bovinos porque el informe no sabe la especie, y lo imprime. La cantidad
 mínima de hilos de cada tipo de cierre está publicada en la misma tabla y no se
 pudo leer sin ambigüedad en el documento consultado, así que acequia la pide en

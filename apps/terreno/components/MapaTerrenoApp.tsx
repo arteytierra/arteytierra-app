@@ -3394,6 +3394,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 multi={swalesMulti}
                 analisis={analisisSwales}
                 hidro={hidroPredio}
+                fuenteRelieve={grillaActiva?.fuente ?? null}
                 onPeriodoRetorno={setPeriodoRetorno}
                 onIrAClima={() => setTab('clima')}
                 onIrASuelo={() => setTab('suelo')}
