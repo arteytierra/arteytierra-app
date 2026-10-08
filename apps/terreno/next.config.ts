@@ -25,6 +25,17 @@ const config: NextConfig = {
   poweredByHeader: false,
   images: {
     formats: ['image/avif', 'image/webp'],
+    // El default de minimumCacheTTL son 60 segundos: una imagen que se mira
+    // seguido se vuelve a transformar cada minuto, y cada transformacion se
+    // cuenta contra el tope del plan. Las imagenes de esta app no cambian sin
+    // un deploy, y un deploy invalida la cache igual, asi que 31 dias no
+    // muestra nada viejo y baja el conteo a una transformacion por variante.
+    minimumCacheTTL: 60 * 60 * 24 * 31,
+    // Cinco anchos en vez de los ocho del default. Cada ancho es una variante
+    // mas por imagen y por formato; con dos formatos, ocho anchos son 16
+    // transformaciones por imagen. Estos cinco cubren telefono, tablet,
+    // notebook y pantalla grande, y el navegador elige el mas chico que sirva.
+    deviceSizes: [480, 640, 828, 1200, 1920],
     remotePatterns: [
       { protocol: 'https', hostname: '**.supabase.co' },
     ],
