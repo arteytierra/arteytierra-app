@@ -71,6 +71,16 @@ describe('el corrimiento horizontal de una traza de nivel', () => {
     expect(corrimientoDeTraza(U_GLO30, 21)!.corrimiento_m!)
       .toBeLessThan(corrimientoDeTraza(U_GLO30, 20)!.corrimiento_m!);
   });
+
+  it('LA LECTURA HABLA DE LA CURVA Y NO DE LA ZANJA, PORQUE EL PROBLEMA ES DE LA CURVA', () => {
+    // Nació en el swale, pero la cuenta no sabe para qué se trazó la curva: la
+    // misma lectura la imprime la capa de curvas de nivel del plano. Si vuelve a
+    // nombrar la obra, deja de servir ahí.
+    const c = corrimientoDeTraza(U_GLO30, 5)!;
+    expect(c.lectura).not.toMatch(/zanja|swale/i);
+    expect(c.lectura).toMatch(/curva de nivel/);
+    expect(corrimientoDeTraza(U_GLO30, 0)!.lectura).not.toMatch(/zanja|swale/i);
+  });
 });
 
 function corrimienoEnPendiente(p: number): number | null {
@@ -265,6 +275,8 @@ describe('la planilla del swale', () => {
     const p = planillaDeSwale(base)!;
     expect(p.corrimiento!.corrimiento_m).toBeCloseTo(24.4, 1);
     expect(p.advertencias.some(a => /corrida ladera arriba/.test(a))).toBe(true);
+    // Y la frase de la obra la agrega la obra: la lectura genérica no la trae.
+    expect(p.advertencias.some(a => /Para esta zanja/.test(a))).toBe(true);
   });
 
   it('y avisa que las cotas son la de la curva y no una medición', () => {

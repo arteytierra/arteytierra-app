@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { BrickWall, ChevronDown, Info, Ruler, Snowflake, Umbrella } from 'lucide-react';
 import type { DatosClima } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
+import { Cautela } from './Cautela';
 import {
   ESPESORES_TABLA1_PULG, FUENTE_IECC, FUENTE_IRC_AS, FUENTE_IRC_AU, FUENTE_LACY,
   FUENTE_NM1474, FUENTE_PEEL, LA_NORMA_LOCAL_PROHIBE, SDS_TABLA1,
@@ -99,6 +100,13 @@ export function BioconstruccionBloque({ datos, extremos }: Props) {
   const { zona, aridez, hielo, lluvia, tecnicas } = bio;
   const marinaSinTabla = zona.humedad === 'C' && !ZONAS_MARINAS_TABULADAS.includes(zona.zona);
 
+  // El conteo por veredicto: es el renglon que abre el bloque. Se arma aca y no
+  // con cuatro `filter` en el JSX para recorrer la lista una sola vez.
+  const cuenta = tecnicas.reduce(
+    (a, ev) => ({ ...a, [ev.veredicto]: a[ev.veredicto] + 1 }),
+    { apta: 0, con_condiciones: 0, desaconsejada: 0, no_evaluable: 0 } as Record<Veredicto, number>,
+  );
+
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
       <div className="px-3 py-2 bg-clay-800 flex items-center justify-between">
@@ -110,31 +118,134 @@ export function BioconstruccionBloque({ datos, extremos }: Props) {
       </div>
 
       <div className="p-3 space-y-3">
-        {/* ── La premisa corrida: Köppen no es la variable ── */}
+        {/* ── La respuesta, primero ── */}
+        {/* Este bloque vivía en el panel de Clima y abría con un argumento de
+            método —«la técnica no se decide por Köppen»— seguido de cuatro
+            secciones de aritmética del código. El veredicto, que es lo único que
+            alguien viene a buscar, quedaba quinto. Ahora el conteo abre el
+            bloque, las ocho técnicas van abajo del conteo, y las cuatro
+            secciones que las alimentan quedan detrás de «De dónde sale esto».
+            Ningún dato se fue: cambió el orden de lectura. */}
         <div>
           <p className="text-[11px] font-semibold text-ink-700 mb-1">
-            La técnica no se decide por el clima de Köppen
+            Con este clima, de las ocho técnicas publicadas:
           </p>
-          <p className="text-[10px] text-ink-700/75 leading-snug mb-1.5">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-lg p-2 bg-moss-500/8 border border-moss-500/20">
+              <p className="font-mono text-base font-bold text-moss-800">{cuenta.apta}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">admitidas sin condición climática</p>
+            </div>
+            <div className="rounded-lg p-2 bg-sun-500/8 border border-sun-500/20">
+              <p className="font-mono text-base font-bold text-sun-700">{cuenta.con_condiciones}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">sólo con condiciones</p>
+            </div>
+            <div className="rounded-lg p-2 bg-clay-500/8 border border-clay-500/20">
+              <p className="font-mono text-base font-bold text-clay-800">{cuenta.desaconsejada}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">desaconsejadas acá</p>
+            </div>
+          </div>
+          {cuenta.no_evaluable > 0 && (
+            <p className="text-[9px] text-ink-700/55 mt-1 leading-tight">
+              Y {cuenta.no_evaluable} {cuenta.no_evaluable === 1 ? 'queda' : 'quedan'} sin evaluar: su
+              cláusula se ata a una variable que acequia no calcula, no a este clima.
+            </p>
+          )}
+          <Cautela claim="Dos de las cinco variables que mandan acá no las calcula acequia.">
             Se leyeron los códigos que de verdad regulan estas técnicas y ninguno condiciona nada a
-            una clase de Köppen{datos.koppen && <> —la de este predio es <b className="font-mono">{datos.koppen.codigo}</b></>}.
-            Condicionan a estas cinco cosas, y acequia puede calcular tres:
-          </p>
-          <ul className="space-y-0.5">
-            {LAS_CINCO.map(v => (
-              <li key={v.que} className="flex items-start gap-1.5 text-[10px] leading-snug">
-                <span className={v.puede ? 'text-moss-700 font-bold' : 'text-clay-700 font-bold'}>
-                  {v.puede ? '✓' : '✗'}
-                </span>
-                <span className="text-ink-700/85">
-                  <b className="font-semibold">{v.que}</b>
-                  <span className="text-ink-700/55"> — {v.porque}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+            una clase de Köppen{datos.koppen && <> —la de este predio es <b className="font-mono">{datos.koppen.codigo}</b>—</>}.
+            Condicionan a estas cinco cosas:
+            <ul className="mt-1 space-y-0.5">
+              {LAS_CINCO.map(v => (
+                <li key={v.que} className="flex items-start gap-1.5 leading-snug">
+                  <span className={v.puede ? 'text-moss-700 font-bold' : 'text-clay-700 font-bold'}>
+                    {v.puede ? '✓' : '✗'}
+                  </span>
+                  <span>
+                    <b className="font-semibold">{v.que}</b>
+                    <span className="text-ink-700/55"> — {v.porque}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Cautela>
         </div>
 
+        {/* ── Las ocho técnicas ── */}
+        <div className="border-t border-bone-200 pt-2">
+          <p className="text-[11px] font-semibold text-ink-700 mb-1.5">
+            Una por una
+          </p>
+          <div className="space-y-1">
+            {tecnicas.map(ev => {
+              const chip = CHIP_VEREDICTO[ev.veredicto];
+              const open = abierta === ev.tecnica.id;
+              return (
+                <div key={ev.tecnica.id} className="rounded-lg border border-bone-200 overflow-hidden">
+                  <button
+                    onClick={() => setAbierta(open ? null : ev.tecnica.id)}
+                    className="w-full px-2 py-1.5 flex items-center justify-between gap-2 hover:bg-bone-50 text-left"
+                  >
+                    <span className="text-[10px] font-semibold text-ink-700">{ev.tecnica.nombre}</span>
+                    <span className="flex items-center gap-1 shrink-0">
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${chip.clase}`}>
+                        {chip.rotulo}
+                      </span>
+                      <ChevronDown className={`w-3 h-3 text-ink-700/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+                    </span>
+                  </button>
+                  {open && (
+                    <div className="px-2 pb-2 space-y-1.5 text-[9px] leading-relaxed">
+                      {ev.decide && (
+                        <p className="text-ink-700/85">
+                          <b className="font-semibold">Lo que decide:</b> {ev.decide}
+                        </p>
+                      )}
+                      {ev.condiciones.length > 0 && (
+                        <div>
+                          <p className="font-semibold text-ink-700/80">Condiciones que se activan acá</p>
+                          {ev.condiciones.map((c, i) => (
+                            <p key={i} className="text-ink-700/70">· {c}</p>
+                          ))}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-ink-700/80">Lo que el código fija, llueva o no</p>
+                        {ev.tecnica.limites.map((l, i) => (
+                          <p key={i} className="text-ink-700/70">· {l}</p>
+                        ))}
+                      </div>
+                      {ev.pendientes.length > 0 && (
+                        <div>
+                          <p className="font-semibold text-clay-800">Lo que acequia no puede verificar</p>
+                          {ev.pendientes.map((p, i) => (
+                            <p key={i} className="text-ink-700/70">· {p}</p>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-ink-700/45 pt-0.5">{ev.tecnica.fuente}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── De dónde sale: las cuatro entradas del veredicto ── */}
+        <details className="group border-t border-bone-200 pt-2">
+          <summary className="list-none cursor-pointer text-[10px] text-ink-700/70 marker:content-none [&::-webkit-details-marker]:hidden">
+            <span className="font-semibold text-ink-700/80">
+              De dónde sale esto: zona {zona.codigo}, aridez, hielo y lluvia batiente.
+            </span>{' '}
+            <span className="text-water-500 group-open:hidden">ver</span>
+            <span className="text-water-500 hidden group-open:inline">cerrar</span>
+          </summary>
+          <p className="text-[9px] text-ink-700/55 leading-snug mt-1">
+            Las cuatro cosas de acá abajo no son el resultado: son las entradas con las que las
+            tablas del código habilitan o condicionan cada técnica. La zona <b className="font-mono">{zona.codigo}</b>{' '}
+            sola no dice si se puede construir de tierra; dice en qué fila de la tabla hay que mirar.
+          </p>
+          <div className="space-y-3 mt-1">
         {/* ── La zona del IECC ── */}
         <div className="border-t border-bone-200 pt-2">
           <div className="flex items-baseline justify-between gap-2">
@@ -260,66 +371,8 @@ export function BioconstruccionBloque({ datos, extremos }: Props) {
           )}
         </div>
 
-        {/* ── Las ocho técnicas ── */}
-        <div className="border-t border-bone-200 pt-2">
-          <p className="text-[11px] font-semibold text-ink-700 mb-1.5">
-            Las ocho técnicas publicadas, contra este clima
-          </p>
-          <div className="space-y-1">
-            {tecnicas.map(ev => {
-              const chip = CHIP_VEREDICTO[ev.veredicto];
-              const open = abierta === ev.tecnica.id;
-              return (
-                <div key={ev.tecnica.id} className="rounded-lg border border-bone-200 overflow-hidden">
-                  <button
-                    onClick={() => setAbierta(open ? null : ev.tecnica.id)}
-                    className="w-full px-2 py-1.5 flex items-center justify-between gap-2 hover:bg-bone-50 text-left"
-                  >
-                    <span className="text-[10px] font-semibold text-ink-700">{ev.tecnica.nombre}</span>
-                    <span className="flex items-center gap-1 shrink-0">
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${chip.clase}`}>
-                        {chip.rotulo}
-                      </span>
-                      <ChevronDown className={`w-3 h-3 text-ink-700/40 transition-transform ${open ? 'rotate-180' : ''}`} />
-                    </span>
-                  </button>
-                  {open && (
-                    <div className="px-2 pb-2 space-y-1.5 text-[9px] leading-relaxed">
-                      {ev.decide && (
-                        <p className="text-ink-700/85">
-                          <b className="font-semibold">Lo que decide:</b> {ev.decide}
-                        </p>
-                      )}
-                      {ev.condiciones.length > 0 && (
-                        <div>
-                          <p className="font-semibold text-ink-700/80">Condiciones que se activan acá</p>
-                          {ev.condiciones.map((c, i) => (
-                            <p key={i} className="text-ink-700/70">· {c}</p>
-                          ))}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-semibold text-ink-700/80">Lo que el código fija, llueva o no</p>
-                        {ev.tecnica.limites.map((l, i) => (
-                          <p key={i} className="text-ink-700/70">· {l}</p>
-                        ))}
-                      </div>
-                      {ev.pendientes.length > 0 && (
-                        <div>
-                          <p className="font-semibold text-clay-800">Lo que acequia no puede verificar</p>
-                          {ev.pendientes.map((p, i) => (
-                            <p key={i} className="text-ink-700/70">· {p}</p>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-ink-700/45 pt-0.5">{ev.tecnica.fuente}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
-        </div>
+        </details>
 
         {/* ── El espesor contra el sismo ── */}
         <div className="border-t border-bone-200 pt-2">

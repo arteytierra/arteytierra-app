@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Cloud, FolderOpen, Mountain, Droplets, CalendarDays, Layers, Sun, LayoutGrid, Compass, Waves, Route, Eye, Wheat, Leaf, ChevronDown, Waypoints, Boxes, Spline, Sprout, Trees, Bird, SunDim, DollarSign, Wind, Lock, Ruler, Flame, Fence, CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList } from 'lucide-react';
+import { MapPin, Cloud, FolderOpen, Mountain, Droplets, CalendarDays, Layers, Sun, LayoutGrid, Compass, Waves, Route, Eye, Wheat, Leaf, ChevronDown, Waypoints, Boxes, Spline, Sprout, Trees, Bird, SunDim, DollarSign, Wind, Lock, Ruler, Flame, Fence, CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList, Scale } from 'lucide-react';
 import { type SeccionRepresa } from '../CutFillPanel';
 
 /**
@@ -18,7 +18,8 @@ export type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'swales' | 'keyline'
-  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortinas' | 'cortafuegos' | 'silvopastura';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortinas' | 'cortafuegos' | 'silvopastura'
+  | 'reserva';
 
 // ─── Riel de navegación: definición de tabs y clústeres ─────────────────────
 /** Definición visual de cada tab. El `id` es la clave estable que usan
@@ -39,6 +40,7 @@ export const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> 
   { id: 'riego',       label: 'Riego',       icon: <Sprout       className="w-3.5 h-3.5" /> },
   { id: 'swales',      label: 'Swales',      icon: <Ruler        className="w-3.5 h-3.5" /> },
   { id: 'agua',        label: 'Captación',   icon: <Droplets     className="w-3.5 h-3.5" /> },
+  { id: 'reserva',     label: 'Balance de agua', icon: <Scale    className="w-3.5 h-3.5" /> },
   { id: 'solar',       label: 'Solar',       icon: <Sun          className="w-3.5 h-3.5" /> },
   { id: 'sombras',     label: 'Sombras',     icon: <SunDim       className="w-3.5 h-3.5" /> },
   { id: 'visibilidad', label: 'Visibilidad', icon: <Eye          className="w-3.5 h-3.5" /> },
@@ -79,7 +81,7 @@ export const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon
   // escondido el panel más cargado del peldaño para ganar un renglón.
   { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'entorno', 'contexto', 'cal', 'solar'],                       esenciales: ['clima', 'entorno', 'contexto'] },
   { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud'],               esenciales: ['topo', 'analisis'] },
-  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
+  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua', 'reserva'], esenciales: ['cuenca', 'aguadas', 'reserva'] },
   { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra', 'sombras', 'visibilidad'], esenciales: ['masterplan', 'zonas'] },
   { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
 ];

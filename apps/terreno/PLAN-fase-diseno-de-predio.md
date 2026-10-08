@@ -2201,8 +2201,14 @@ publicada de un camino de predio—; que la planilla del muro trae el eje del
 coronamiento y **no las estacas de talud**, que TR-62 enumera aparte y salen de
 la sección; que las planillas de los paneles **no viajan al informe**, porque
 `InformeData` no lleva la geometría del muro, de los swales ni del patrón; y que
-el corrimiento horizontal de la traza se imprime en el swale y **no** en las
-curvas de nivel del plano, que tienen el mismo problema. La lista de materiales
+~~el corrimiento horizontal de la traza se imprime en el swale y no en las curvas
+de nivel del plano~~ **hecho el 07/10/2026**: la capa de curvas de nivel imprime
+cuánto puede estar corrida su posición, con el mismo `corrimientoDeTraza`, cuya
+lectura se volvió genérica —habla de la curva, no de la zanja— y la frase de la
+obra la agrega cada obra. El aviso sólo sale con la pendiente MEDIDA: un
+`pendienteMedia` nulo significa «todavía no se corrió la topografía» y no «el
+terreno es plano», que es otra lectura. Queda abierto que el corrimiento **no
+viaja al plano exportado ni a la vista 3D**, que dibujan las mismas curvas. La lista de materiales
 **supone** un cierre de
 púa para bovinos porque el informe no sabe la especie, y lo imprime. La cantidad
 mínima de hilos de cada tipo de cierre está publicada en la misma tabla y no se
@@ -2217,6 +2223,93 @@ las pantallas de /mapa siguen imprimiendo sus números con las cifras que
 tenían.
 
 ---
+
+### Etapa K — ¿Alcanza el agua? ✅ *07/10/2026*
+
+Lo pidió Jonatan así: un panel de resumen que cruce todas las fuentes de
+captación que se fueron diseñando —represas, aguadas, techos, pavimentos, todo lo
+declarado como almacenaje, más nacientes, vertientes y pozos con su caudal
+cargado a mano— contra las necesidades de viviendas, animales, frutales y huerta;
+ingresos y egresos repartidos en cuatro trimestres; y un estimado de si la
+reserva aguanta una racha seca.
+
+Lo primero que apareció al mirar el código es que acequia **ya sabía casi todo**,
+repartido en pestañas que no se hablan: la captación y el consumo por categoría
+estaban en `captacion.ts` —con balance trimestral y todo—, el consumo del rodeo
+por temperatura en `aguaGanado.ts`, el vaso en `vaso.ts`, el año de una represa en
+`represa.ts`, y la racha seca medida de la serie diaria en `climaExtremos.ts`,
+cuyo encabezado dice **desde el primer día** que las rachas están ahí para la
+«autonomía de tanques/represas». Nunca se sumaron. Cada pestaña contestaba su
+pregunta y ninguna contestaba la del dueño del predio.
+
+**1 · LA AUTONOMÍA NO ES VOLUMEN SOBRE CONSUMO, Y LA DIFERENCIA NO ES CHICA.**
+Dividir el volumen guardado por el consumo diario deja afuera los dos egresos que
+no consume nadie: la **evaporación del espejo** y la **infiltración del vaso**.
+Los dos son superficie por lámina y no les importa cuánta agua haya debajo. El
+caso del test: 100 m³ útiles bajo 500 m² de espejo, 2 m³/día de demanda, ETP de
+verano de 8 mm/día. La división da **50 días**. La realidad son **26**, porque el
+primer día se van 4,2 m³ de evaporación —500 m² × 8 mm × el 1,05 del cuadro 12
+de FAO-56— más 0,5 de infiltración: **4,7 m³ que se pierden contra 2 que se
+consumen**. En una represa somera de verano el espejo bebe más que todo el predio,
+y ahí la autonomía no se arregla gastando menos: se arregla tapando la reserva o
+haciéndola más honda. Los mismos 100 m³ en una cisterna dan los 50 días exactos.
+Por eso la cuenta va **día por día** y con el espejo proporcional al llenado, que
+es la misma aproximación de `simularRepresaAnual`.
+
+**2 · EL ORDEN DE USO CAMBIA EL RESULTADO CON LA MISMA AGUA.** Consecuencia directa
+de lo anterior, y es de manejo: el litro que queda en una represa abierta se
+evapora en parte y el que queda en una cisterna no, así que **gastar primero el
+espejo abierto rinde más días que guardarlo**. No es una opinión ni una
+optimización escondida: el módulo simula los dos órdenes y el panel imprime la
+diferencia, para que sea una decisión y no un supuesto.
+
+**3 · EL CAUDAL DE UNA NACIENTE NO ES FIRME HASTA QUE SE MIDE EN LA SECA.** Es la
+fuente que más se sobreestima y el error va del lado caro. Una vertiente que da
+10 L/min en septiembre puede dar cero en febrero, y febrero es cuando se la
+necesita. Un caudal declarado sin decir cuándo se midió entra como aporte **no
+firme**: se muestra aparte y la cuenta de autonomía se hace sin él. Y de paso
+apareció el tamaño de una naciente chica, que no es intuitivo: **1 L/min son 130
+m³ por trimestre**, más que todo lo que junta un techo de 50 m² en el año. No es
+un término de ajuste, es el que manda.
+
+**4 · EL PERÍODO DE DISEÑO SALE DEL DATO Y NO DE UN SUPUESTO.** Jonatan propuso
+«3 semanas sin lluvias ni aportes» como ejemplo, y no hace falta suponerlo: la
+serie diaria del predio ya trae la racha seca más larga de cada año, en tres
+valores que son **tres decisiones de diseño distintas** —la mediana de los máximos
+anuales (el año típico), el p90 (el año seco) y el máximo observado (el peor de
+la serie)—. El default es el año seco, que es el criterio de la app en todo lo
+demás, y los tres se eligen con un botón. **No se leyó ninguna norma que publique
+cuántos días de reserva debe tener un predio** y no se inventó una.
+
+**5 · Y EL VOLUMEN ÚTIL NO ES EL VOLUMEN.** AH-590 pone el criterio antes de dar
+cualquier número: *«To ensure a permanent water supply, the water must be deep
+enough to meet the intended use requirements and to offset probable seepage and
+evaporation losses»*, y la figura 12 vale *«if seepage and evaporation losses are
+normal»*. Esa lámina permanente no es reserva disponible: es lo que tiene que
+seguir habiendo. `profundidadUtilMinima` ya calculaba cuánta pide el clima del
+predio y nadie la descontaba de la reserva.
+
+Y además, la ETP que se usa es la del **mes de ETP máxima** y no la del mes de
+balance hídrico más negativo: en una racha seca no llueve por definición, así que
+el término de lluvia no participa y lo único que queda es cuánto tira la
+atmósfera.
+
+`lib/reservaPredio.ts` (`simularRacha`, `resumenReserva`, `rachaDeDiseno`,
+`etpCritica`, `volumenUtil_m3`, `aporteFirme_m3_dia`),
+`components/ReservaPredioPanel.tsx`, y una pestaña nueva —**Balance de agua**— que
+cierra el grupo 3 · Agua como esencial. 25 tests.
+
+**Abierto de la etapa K:** las represas que se diseñan en la pestaña Represas y las
+aguadas del mapa **no se cargan solas** en el inventario —hay que copiar el volumen
+y el espejo a mano, a propósito por ahora: un vaso calculado y un vaso construido
+no son lo mismo, pero el día que la app sepa distinguirlos debería ofrecer el
+traspaso—; no se modela la **pérdida en la conducción** entre la fuente y el punto
+de uso; no se modela la **napa** que puede alimentar o vaciar un vaso; no se mira
+la **calidad** del agua, así que dos represas del mismo volumen pueden no servir
+para lo mismo; la demanda es la de `captacion.ts`, que para la huerta usa un
+promedio anual grueso de 2 mm/día mientras el balance hídrico de la app calcula la
+ETc mes a mes —la demanda del período seco debería salir de ahí y no del
+promedio—; y nada de esto viaja al informe.
 
 ## 3. En qué orden
 

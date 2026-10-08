@@ -7,6 +7,7 @@ import type { Mojon } from '@/lib/types';
 import type { Zona } from '@/lib/zonificacion';
 import type { EntradaUSLE } from '@/lib/usle';
 import { prepararEmplazamiento } from '@/lib/emplazamiento';
+import { Cautela } from './Cautela';
 import { BUFFERS_CAUCE, type PropositoBuffer } from '@/lib/emplazamiento';
 import {
   EL_ANILLO_NO_ES_LA_ZONA, FRECUENCIA_ZONA, FUENTE_IMHOF, FUENTE_NCSU_PERMA,
@@ -79,6 +80,14 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
   const { balance } = rev;
   const hayDiferencia = balance.doble_conteo_ha > 0 || balance.afuera_ha > 0;
 
+  // El conteo que abre el bloque. Una exclusión gana sobre un requisito: si la
+  // zona no va ahí, lo que cuesta ponerla ahí es una pregunta posterior.
+  const cuenta = {
+    noVan:        rev.zonas.filter(v => v.exclusiones.length > 0).length,
+    conRequisito: rev.zonas.filter(v => v.exclusiones.length === 0 && v.requisitos.length > 0).length,
+    sinObjecion:  rev.zonas.filter(v => v.exclusiones.length === 0 && v.requisitos.length === 0).length,
+  };
+
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
       <div className="px-3 py-2 bg-moss-800 flex items-center justify-between">
@@ -92,70 +101,34 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
       </div>
 
       <div className="p-3 space-y-3">
-        {/* ── Suma, unión y recorte ── */}
+        {/* ── El veredicto, primero ── */}
+        {/* Hasta el 07/10/2026 este bloque abría con «Tres superficies que no son
+            la misma», que es una auditoría del dibujo —¿se pisan tus polígonos?—
+            y no una lectura del terreno. El veredicto de cada zona quedaba
+            tercero y plegado. Ahora abre el conteo, la auditoría baja a una
+            cautela y cada zona dice en palabras si va o no va. */}
         <div>
           <p className="text-[11px] font-semibold text-ink-700 mb-1.5">
-            Tres superficies que no son la misma
+            {rev.zonas.length === 1 ? 'La zona que dibujaste' : `Las ${rev.zonas.length} zonas que dibujaste`}
           </p>
           <div className="grid grid-cols-3 gap-2">
-            {/* Las clases van escritas enteras: Tailwind lee el código fuente y
-                una clase interpolada no genera CSS. */}
-            <div className="rounded-lg p-2 bg-bone-100 border border-bone-300">
-              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Suma</p>
-              <p className="font-mono text-sm font-bold text-ink-700">{n2(balance.suma_ha)}</p>
-              <p className="text-[9px] text-ink-700/50">ha, una por una</p>
+            <div className="rounded-lg p-2 bg-clay-500/8 border border-clay-500/20">
+              <p className="font-mono text-base font-bold text-clay-800">{cuenta.noVan}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">no van donde están</p>
+            </div>
+            <div className="rounded-lg p-2 bg-sun-500/8 border border-sun-500/20">
+              <p className="font-mono text-base font-bold text-sun-700">{cuenta.conRequisito}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">van, pero cuestan algo</p>
             </div>
             <div className="rounded-lg p-2 bg-moss-500/8 border border-moss-500/20">
-              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Unión</p>
-              <p className="font-mono text-sm font-bold text-moss-800">{n2(balance.union_ha)}</p>
-              <p className="text-[9px] text-ink-700/50">ha ocupadas</p>
-            </div>
-            <div className="rounded-lg p-2 bg-water-500/8 border border-water-500/20">
-              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">En el predio</p>
-              <p className="font-mono text-sm font-bold text-water-800">{n2(balance.dentro_ha)}</p>
-              <p className="text-[9px] text-ink-700/50">
-                {balance.predio_ha > 0 ? `${Math.round(balance.frac_zonificada * 100)} % de ${n1(balance.predio_ha)} ha` : 'sin perímetro'}
-              </p>
+              <p className="font-mono text-base font-bold text-moss-800">{cuenta.sinObjecion}</p>
+              <p className="text-[9px] text-ink-700/60 leading-tight">sin objeción</p>
             </div>
           </div>
-          {hayDiferencia ? (
-            <div className="mt-1.5 rounded-lg p-2 bg-clay-500/8 border border-clay-500/20">
-              <div className="flex items-center gap-1 mb-0.5 text-clay-800">
-                <TriangleAlert className="w-3 h-3" />
-                <p className="text-[10px] font-semibold">El resumen de arriba suma, y la suma no es la superficie</p>
-              </div>
-              <p className="text-[9px] text-ink-700/75 leading-snug">
-                {balance.doble_conteo_ha > 0 && (
-                  <>Hay <b className="font-mono">{n2(balance.doble_conteo_ha)} ha</b> contadas dos veces
-                  porque {balance.solapes.length} {balance.solapes.length === 1 ? 'par de zonas se pisa' : 'pares de zonas se pisan'},
-                  y los porcentajes por categoría se dividen por ese total inflado. </>
-                )}
-                {balance.afuera_ha > 0 && (
-                  <>Y <b className="font-mono">{n2(balance.afuera_ha)} ha</b> de lo dibujado caen afuera
-                  del perímetro de los mojones.</>
-                )}
-              </p>
-            </div>
-          ) : (
-            <p className="text-[9px] text-ink-700/55 mt-1 leading-tight">
-              Las tres coinciden: no hay zonas que se pisen ni nada dibujado afuera del predio, así
-              que el resumen por categoría de arriba está bien calculado.
-            </p>
-          )}
-          {balance.solapes.length > 0 && (
-            <ul className="mt-1 space-y-0.5">
-              {balance.solapes.slice(0, 4).map(s => (
-                <li key={`${s.id_a}-${s.id_b}`} className="text-[9px] text-ink-700/65">
-                  · «{s.nombre_a}» y «{s.nombre_b}» comparten{' '}
-                  <span className="font-mono">{n0(s.area_m2)} m²</span>
-                  {' '}({Math.round(s.frac_de_la_menor * 100)} % de la más chica)
-                </li>
-              ))}
-              {balance.solapes.length > 4 && (
-                <li className="text-[9px] text-ink-700/45">· y {balance.solapes.length - 4} más</li>
-              )}
-            </ul>
-          )}
+          <p className="text-[9px] text-ink-700/55 mt-1 leading-tight">
+            «Sin objeción» es lo que el relieve, el suelo y la lluvia tienen para decir, que no es
+            todo: no se mira napa, servidumbres, catastro ni la norma local.
+          </p>
         </div>
 
         {/* ── Los dos controles ── */}
@@ -189,7 +162,7 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
 
         {/* ── Zona por zona ── */}
         <div className="border-t border-bone-200 pt-2">
-          <p className="text-[11px] font-semibold text-ink-700 mb-1.5">Zona por zona</p>
+          <p className="text-[11px] font-semibold text-ink-700 mb-1.5">Una por una</p>
           <div className="space-y-1">
             {rev.zonas.map(v => {
               const open = abierta === v.id;
@@ -201,23 +174,24 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
                   >
                     <span className="min-w-0">
                       <span className="text-[10px] font-semibold text-ink-700 block truncate">{v.nombre}</span>
-                      <span className="text-[9px] text-ink-700/55 font-mono">
-                        {n1(v.geometria.pend_mediana_pct)} % · λ {n0(v.geometria.lambda_m)} m
-                        {v.erosion && <> · {n1(v.erosion.t_ha_anio)} t/ha/año</>}
-                        {v.caminata && <> · {n0(v.caminata.km_anio[0])}–{n0(v.caminata.km_anio[1])} km/año</>}
+                      {/* La fila plegada decía «12,4 % · λ 180 m · 4,2 t/ha/año»,
+                          que es exacto y no se lee: λ no significa nada para quien
+                          dibujó un polígono. Acá va el veredicto en una frase y los
+                          números quedan al abrir. */}
+                      <span className="text-[9px] leading-snug block">
+                        {v.exclusiones.length > 0
+                          ? <span className="text-clay-800">No va ahí: {v.exclusiones[0]?.titulo.toLocaleLowerCase('es-AR')}{v.exclusiones.length > 1 && <> y {v.exclusiones.length - 1} más</>}.</span>
+                          : v.requisitos.length > 0
+                            ? <span className="text-sun-700">Va, pero pide {v.requisitos[0]?.titulo.toLocaleLowerCase('es-AR')}{v.requisitos.length > 1 && <> y {v.requisitos.length - 1} cosa{v.requisitos.length > 2 ? 's' : ''} más</>}.</span>
+                            : <span className="text-moss-800">Nada la objeta.</span>}
+                        <span className="text-ink-700/50">
+                          {' '}Pendiente {n1(v.geometria.pend_mediana_pct)} %, {n0(v.geometria.lambda_m)} m de
+                          ladera{v.erosion && <>, pierde {n1(v.erosion.t_ha_anio)} t de suelo por ha al año</>}
+                          {v.caminata && <>, {n0(v.caminata.km_anio[0])}–{n0(v.caminata.km_anio[1])} km de caminata al año</>}.
+                        </span>
                       </span>
                     </span>
                     <span className="flex items-center gap-1 shrink-0">
-                      {v.exclusiones.length > 0 && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-medium bg-clay-500/12 text-clay-800 border-clay-500/30">
-                          no va ahí
-                        </span>
-                      )}
-                      {v.exclusiones.length === 0 && v.requisitos.length > 0 && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-medium bg-sun-500/12 text-sun-700 border-sun-500/30">
-                          {v.requisitos.length} {v.requisitos.length === 1 ? 'requisito' : 'requisitos'}
-                        </span>
-                      )}
                       <ChevronDown className={`w-3 h-3 text-ink-700/40 transition-transform ${open ? 'rotate-180' : ''}`} />
                     </span>
                   </button>
@@ -334,6 +308,82 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
             </p>
           </div>
         )}
+
+        {/* ── La auditoría del dibujo, al final y plegada ── */}
+        <div className="border-t border-bone-200 pt-2">
+          <Cautela claim={hayDiferencia
+            ? 'El resumen por categoría de arriba suma superficies, y la suma no es la superficie.'
+            : 'Las zonas no se pisan ni caen afuera, así que los porcentajes por categoría están bien.'}>
+            <div className="space-y-1.5">
+        {/* ── Suma, unión y recorte ── */}
+        <div>
+          <p className="text-[11px] font-semibold text-ink-700 mb-1.5">
+            Tres superficies que no son la misma
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {/* Las clases van escritas enteras: Tailwind lee el código fuente y
+                una clase interpolada no genera CSS. */}
+            <div className="rounded-lg p-2 bg-bone-100 border border-bone-300">
+              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Suma</p>
+              <p className="font-mono text-sm font-bold text-ink-700">{n2(balance.suma_ha)}</p>
+              <p className="text-[9px] text-ink-700/50">ha, una por una</p>
+            </div>
+            <div className="rounded-lg p-2 bg-moss-500/8 border border-moss-500/20">
+              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Unión</p>
+              <p className="font-mono text-sm font-bold text-moss-800">{n2(balance.union_ha)}</p>
+              <p className="text-[9px] text-ink-700/50">ha ocupadas</p>
+            </div>
+            <div className="rounded-lg p-2 bg-water-500/8 border border-water-500/20">
+              <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">En el predio</p>
+              <p className="font-mono text-sm font-bold text-water-800">{n2(balance.dentro_ha)}</p>
+              <p className="text-[9px] text-ink-700/50">
+                {balance.predio_ha > 0 ? `${Math.round(balance.frac_zonificada * 100)} % de ${n1(balance.predio_ha)} ha` : 'sin perímetro'}
+              </p>
+            </div>
+          </div>
+          {hayDiferencia ? (
+            <div className="mt-1.5 rounded-lg p-2 bg-clay-500/8 border border-clay-500/20">
+              <div className="flex items-center gap-1 mb-0.5 text-clay-800">
+                <TriangleAlert className="w-3 h-3" />
+                <p className="text-[10px] font-semibold">El resumen de arriba suma, y la suma no es la superficie</p>
+              </div>
+              <p className="text-[9px] text-ink-700/75 leading-snug">
+                {balance.doble_conteo_ha > 0 && (
+                  <>Hay <b className="font-mono">{n2(balance.doble_conteo_ha)} ha</b> contadas dos veces
+                  porque {balance.solapes.length} {balance.solapes.length === 1 ? 'par de zonas se pisa' : 'pares de zonas se pisan'},
+                  y los porcentajes por categoría se dividen por ese total inflado. </>
+                )}
+                {balance.afuera_ha > 0 && (
+                  <>Y <b className="font-mono">{n2(balance.afuera_ha)} ha</b> de lo dibujado caen afuera
+                  del perímetro de los mojones.</>
+                )}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[9px] text-ink-700/55 mt-1 leading-tight">
+              Las tres coinciden: no hay zonas que se pisen ni nada dibujado afuera del predio, así
+              que el resumen por categoría de arriba está bien calculado.
+            </p>
+          )}
+          {balance.solapes.length > 0 && (
+            <ul className="mt-1 space-y-0.5">
+              {balance.solapes.slice(0, 4).map(s => (
+                <li key={`${s.id_a}-${s.id_b}`} className="text-[9px] text-ink-700/65">
+                  · «{s.nombre_a}» y «{s.nombre_b}» comparten{' '}
+                  <span className="font-mono">{n0(s.area_m2)} m²</span>
+                  {' '}({Math.round(s.frac_de_la_menor * 100)} % de la más chica)
+                </li>
+              ))}
+              {balance.solapes.length > 4 && (
+                <li className="text-[9px] text-ink-700/45">· y {balance.solapes.length - 4} más</li>
+              )}
+            </ul>
+          )}
+        </div>
+
+            </div>
+          </Cautela>
+        </div>
 
         {/* ── Por qué ── */}
         <button

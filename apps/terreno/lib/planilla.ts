@@ -763,6 +763,15 @@ export function planillaDeCierre(params: {
  * horizontal no tiene posición definida. Ahí devuelve `null` y lo dice, que es
  * la respuesta correcta y además la que explica por qué un swale en terreno
  * llano se replantea con nivel y no con mapa.
+ *
+ * **Y no es un problema del swale, es un problema de la curva.** La cuenta no
+ * sabe para qué se trazó la curva: vale para cualquier línea que la app dibuje
+ * siguiendo una cota leída del modelo, y la primera de todas es la capa de
+ * curvas de nivel del plano. Un plano con curvas cada 1 m sobre una ladera del
+ * 5 % se ve preciso y tiene las curvas potencialmente corridas 24 m: el
+ * intervalo de dibujo y la exactitud de la posición son dos cosas distintas y la
+ * app las tenía confundidas. Por eso la `lectura` habla de la curva y no de la
+ * obra; la frase de cada obra la agrega quien la conoce.
  */
 export interface CorrimientoDeTraza {
   /** Incertidumbre vertical punto a punto que se usó (m). */
@@ -783,9 +792,9 @@ export function corrimientoDeTraza(
     return {
       u_vertical_m, pendiente_pct: 0, corrimiento_m: null,
       lectura:
-        'Sin pendiente del terreno no se puede decir cuánto se corre la traza, y no porque falte el dato: '
-        + 'sobre un plano horizontal una curva de nivel no tiene posición definida. Es el caso en el que la '
-        + 'traza del plano no sirve para ubicar la zanja y el replanteo se hace enteramente con el nivel.',
+        'Sin pendiente del terreno no se puede decir cuánto se corre una traza de nivel, y no porque falte el '
+        + 'dato: sobre un plano horizontal una curva de nivel no tiene posición definida. Es el caso en el que '
+        + 'el plano no sirve para ubicar nada a una cota y lo que ubica es el nivel.',
     };
   }
   const corr = u_vertical_m / (p / 100);
@@ -794,10 +803,10 @@ export function corrimientoDeTraza(
     corrimiento_m: Math.round(corr * 10) / 10,
     lectura:
       `Con ${(u_vertical_m * 100).toFixed(0)} cm de incertidumbre vertical punto a punto y una pendiente del `
-      + `${p.toFixed(1)} %, la curva de nivel sobre la que se trazó esta zanja puede estar hasta `
+      + `${p.toFixed(1)} %, una curva de nivel leída de este modelo puede estar hasta `
       + `${corr.toFixed(corr < 10 ? 1 : 0)} m corrida ladera arriba o ladera abajo respecto de donde la imprime el `
-      + 'plano. No es un error de la traza: es la pendiente convirtiendo el error vertical del modelo en error '
-      + 'horizontal. La traza dice por dónde va la zanja; el nivel dice dónde.',
+      + 'plano. No es un error del dibujo: es la pendiente convirtiendo el error vertical del modelo en error '
+      + 'horizontal. El plano dice por dónde pasa la curva; el nivel dice dónde.',
   };
 }
 
@@ -1159,7 +1168,15 @@ export function planillaDeSwale(e: EntradaPlanillaSwale): PlanillaDeSwale | null
     + 'del terreno no pueden aparecer acá, los va a encontrar el que camine la traza con el nivel.',
   );
   if (corrimiento) {
-    planilla.advertencias.push(corrimiento.lectura);
+    // La lectura es la de la curva, que es de donde sale el número. La frase de
+    // la obra la agrega la obra: lo que el corrimiento significa para una zanja
+    // de infiltración no es lo que significa para una curva del plano.
+    planilla.advertencias.push(
+      corrimiento.lectura
+      + (corrimiento.corrimiento_m != null
+        ? ' Para esta zanja: la traza dice por dónde va, y el nivel dice dónde.'
+        : ' Para esta zanja: la ubica el nivel, no el plano.'),
+    );
   }
 
   planilla.notas = [

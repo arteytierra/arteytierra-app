@@ -223,6 +223,7 @@ export interface Herramienta {
  * test compara los textos contra el riel.
  */
 export const ROTULO_HERRAMIENTA: Record<Tab, string> = {
+  reserva:      'Balance de agua',
   mojones:      'Mojones',
   topo:         'Topografía',
   suelo:        'Suelo',
@@ -392,6 +393,13 @@ export const HERRAMIENTAS: Herramienta[] = [
     que: 'Cuánta agua de lluvia podés cosechar de techos y superficies duras, mes a mes. La base para dimensionar tanques y cisternas.',
     necesita: 'clima',
     produce: 'agua cosechable por mes',
+  },
+  {
+    id: 'reserva',
+    peldano: 'agua',
+    que: 'La pregunta que las demás herramientas de agua contestan por partes: ¿alcanza? Cargás todo lo que guarda agua en el predio —las represas que diseñaste, las cisternas, los tanques— y todo lo que la entrega —nacientes, vertientes, pozos, con su caudal—, y lo cruza contra el consumo de Captación: ingresos y egresos por trimestre, y cuántos días aguanta la reserva en la racha seca medida de este predio. Descuenta la evaporación del espejo y la infiltración del vaso, que en una represa somera de verano pueden superar el consumo de todo el predio.',
+    necesita: 'clima con extremos · Captación',
+    produce: 'balance trimestral · días de autonomía',
   },
   {
     id: 'masterplan',

@@ -6,7 +6,6 @@ import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato
 import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
 import { BalanceHidricoBloque } from './BalanceHidricoBloque';
-import { BioconstruccionBloque } from './BioconstruccionBloque';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -335,13 +334,16 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             aguaUtil_mm={aguaUtil_mm}
           />
 
-          {/* Etapa H — la técnica de tierra o de paja que admite este clima.
-              Va acá y no en un panel propio porque las tres variables que los
-              códigos usan de verdad —zona del IECC, ciclos de hielo-deshielo y
-              lluvia batiente— salen todas de esta misma serie. Los extremos son
-              opcionales: aportan los días de helada, que son la cota superior
-              de los ciclos y no los ciclos. */}
-          <BioconstruccionBloque datos={datos} extremos={extremos} />
+          {/* La bioconstrucción se mudó a Infraestructuras (grupo 4 · Zonas) el
+              07/10/2026. Estaba acá porque las tres variables que los códigos
+              usan de verdad —zona del IECC, hielo-deshielo y lluvia batiente—
+              salen de esta misma serie, pero eso es de dónde sale el dato y no
+              dónde se toma la decisión: nadie entra a Clima a elegir con qué
+              levanta una pared. Sigue alimentándose de esta serie, desde allá. */}
+          <p className="text-[10px] text-ink-700/50 leading-snug">
+            Con qué técnica de tierra o de paja se puede construir con este clima se ve en{' '}
+            <b className="text-ink-700/70">Zonas · Infraestructuras</b>, que es donde se decide.
+          </p>
 
           <CalibracionPrecipBloque
             calibracion={calibracion}

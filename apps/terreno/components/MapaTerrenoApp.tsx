@@ -20,6 +20,8 @@ import { PoligonoPanel } from './PoligonoPanel';
 import { ProyectosPanel } from './ProyectosPanel';
 import { BuscadorLugar, type ResultadoBusqueda } from './BuscadorLugar';
 import { ClimaPanel } from './ClimaPanel';
+import { BioconstruccionBloque } from './BioconstruccionBloque';
+import { ReservaPredioPanel } from './ReservaPredioPanel';
 import { TopografiaPanel } from './TopografiaPanel';
 import { CaptacionPanel } from './CaptacionPanel';
 import { CalendarioPanel, type CalendarioInputs } from './CalendarioPanel';
@@ -64,6 +66,8 @@ import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader } from '@/lib/shaders';
 import { calcularCurvasProgresivo, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, NIVELES_MUCHOS, type CurvaNivel } from '@/lib/curvasNivel';
+import { incertidumbreDeCota } from '@/lib/modeloDeclarado';
+import { corrimientoDeTraza } from '@/lib/planilla';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { obtenerShader } from '@/lib/relieve/obtenerShader';
@@ -136,6 +140,7 @@ import type { DatosClima, CalibracionPrecip } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
+import type { ReservaSnapshot } from '@/lib/reservaPredio';
 import type { DatosSuelo } from '@/lib/suelos';
 import type { Zona, CategoriaZona } from '@/lib/zonificacion';
 import type { Sector, TipoSector } from '@/lib/sectores';
@@ -274,6 +279,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     topoError, setTopoError,
   } = useCapaTopografia();
   const [captacionSnap,   setCaptacionSnap]   = useState<CaptacionSnapshot | null>(null);
+  // Las fuentes de agua del predio (represas construidas, cisternas, nacientes).
+  // Se guardan; la autonomía se recalcula al abrir, porque depende del clima.
+  const [reservaSnap,     setReservaSnap]     = useState<ReservaSnapshot | null>(null);
 
   // ─── Capa de suelo (hook useCapaSuelo) ─────────────────────────────────────
   // Dato de suelo + carga/error; el fetch vive en SuelosPanel.
@@ -780,6 +788,28 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return s / datosShader.celdas.length;
   }, [datosShader]);
 
+  /**
+   * Cuánto puede estar corrida en HORIZONTAL la posición de las curvas de nivel
+   * del plano, que es una pregunta distinta de cada cuántos metros se dibujan.
+   *
+   * La capa de curvas ya avisaba del intervalo —«por debajo de 2 m esto es la
+   * interpolación y no el terreno»—, pero eso habla de la resolución vertical.
+   * La posición de la curva tiene su propio error y es mucho más grande: sobre
+   * una ladera del 5 % el error vertical punto a punto del modelo global —1,22 m—
+   * desplaza la curva 24 m ladera arriba o abajo. Ver `corrimientoDeTraza`.
+   *
+   * Se calcula sólo con la pendiente MEDIDA: `pendienteMedia` en `null` significa
+   * «todavía no se corrió la topografía», no «el terreno es plano», y pasarle
+   * ese null a la función imprimiría la lectura del terreno llano, que es otra
+   * cosa. Sin exactitud vertical publicada del modelo tampoco sale nada, que es
+   * el caso del MDE propio y de las fuentes nacionales todavía sin relevar.
+   */
+  const corrimientoCurvas = useMemo(() => {
+    if (pendienteMedia == null) return null;
+    const u = incertidumbreDeCota(grillaActiva?.fuente ?? null, pendienteMedia).u_relativa;
+    return corrimientoDeTraza(u, pendienteMedia);
+  }, [grillaActiva, pendienteMedia]);
+
   const hidroPredio = useMemo<HidrologiaPredio>(() => hidrologiaPredio({
     suelo: datosSuelo?.grupo_hidro
       ? { grupo: datosSuelo.grupo_hidro.grupo, ksat_mm_h: datosSuelo.grupo_hidro.ksat_min, capa_limitante: datosSuelo.grupo_hidro.capa_limitante }
@@ -968,6 +998,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (calibracionPrecip) m['calibracion_precip'] = calibracionPrecip;
     if (datosTopografia) m['topo']     = datosTopografia;
     if (captacionSnap)   m['captacion']= captacionSnap;
+    if (reservaSnap)     m['reserva']  = reservaSnap;
     if (datosSuelo)      m['suelo']    = datosSuelo;
     if (datosExtremos)   m['extremos'] = datosExtremos;
     if (cuenca)          m['cuenca']   = cuenca;
@@ -1013,7 +1044,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosClima, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -2389,6 +2420,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCalibracionPrecip((meta['calibracion_precip'] as CalibracionPrecip) ?? null);
     setDatosTopografia((meta['topo'] as DatosTopografia)   ?? null);
     setCaptacionSnap((meta['captacion'] as CaptacionSnapshot) ?? null);
+    setReservaSnap((meta['reserva'] as ReservaSnapshot) ?? null);
     setDatosSuelo((meta['suelo']     as DatosSuelo)        ?? null);
     setDatosExtremos((meta['extremos'] as Extremos)        ?? null);
     setCuenca((meta['cuenca']        as Cuenca)            ?? null);
@@ -3067,6 +3099,23 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               ) : (
                 <p className="text-[10px] text-ink-700/50 leading-tight">Ningún símbolo seleccionado.</p>
               )}
+              {/* Con qué se construye, al lado de qué se construye. Vivió en el
+                  panel de Clima hasta el 07/10/2026 porque de ahí salen sus tres
+                  variables, que es un argumento de dónde está el dato y no de
+                  dónde se decide. Sigue leyendo la misma serie mensual. */}
+              {datosClima ? (
+                <div className="pt-1">
+                  <BioconstruccionBloque datos={datosClima} extremos={datosExtremos} />
+                </div>
+              ) : (
+                <p className="text-[10px] text-ink-700/50 leading-snug pt-1">
+                  Con qué técnica de tierra o de paja se puede construir acá sale de la serie
+                  climática mensual.{' '}
+                  <button onClick={() => setTab('clima')} className="text-water-600 hover:underline font-semibold">
+                    Traela desde Clima
+                  </button>{' '}y vuelve.
+                </p>
+              )}
               {GRUPOS_BLOQUE.map(grupo => (
                 <div key={grupo}>
                   <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
@@ -3220,6 +3269,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             </div>
           )}
           {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
+          {tab === 'reserva' && (
+            <div className="px-4 py-4">
+              <ReservaPredioPanel
+                clima={datosClima}
+                extremos={datosExtremos}
+                captacion={captacionSnap}
+                snapshotInicial={reservaSnap}
+                onSnapshot={setReservaSnap}
+                onIrAClima={() => setTab('clima')}
+                onIrACaptacion={() => setTab('agua')}
+              />
+            </div>
+          )}
           {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} grilla={grillaActiva} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
@@ -4055,6 +4117,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             pasoRelieveM={pasoRelieveM}
             fuenteRelieveNombre={fuenteRelieveNombre}
             pisoIntervalo={pisoIntervalo}
+            corrimientoCurvas={corrimientoCurvas}
             curvasMuchas={curvasMuchas}
             progresoCurvas={progresoCurvas}
             curvasLoading={curvasLoading}

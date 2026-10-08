@@ -13,6 +13,8 @@ import type { DEMImportado } from '@/lib/demImport';
 import { fmtPaso } from '@/lib/contextoRelieve';
 import { CLASES_EROSION, type DatosErosion } from '@/lib/erosion';
 import { type Confianza } from '@/lib/hidrologiaPredio';
+import { type CorrimientoDeTraza } from '@/lib/planilla';
+import { Cautela } from '../Cautela';
 import { SaludCalculo } from '../SaludCalculo';
 import { type CuencaGuardada } from '@/lib/cuencasGuardadas';
 import { TOLERANCIA_T_HA, type PerdidaSuelo } from '@/lib/usle';
@@ -78,6 +80,13 @@ interface PanelCapasProps {
   /** Nombre de la fuente de relieve en uso ("swissALTI3D", "Copernicus GLO-30"…). */
   fuenteRelieveNombre: string | null;
   pisoIntervalo:       number;
+  /**
+   * Cuánto puede estar corrida en HORIZONTAL la posición de estas curvas, que
+   * no es lo mismo que cada cuántos metros se dibujan. `null` cuando no se
+   * puede declarar —sin exactitud publicada del modelo, o sin pendiente
+   * calculada—, y entonces no se dice nada.
+   */
+  corrimientoCurvas:   CorrimientoDeTraza | null;
   curvasMuchas:        number | null;
   /** Fracción calculada (0 a 1) mientras se dibujan las curvas, o null si no
    *  hay nada en curso. Ver `calcularCurvasProgresivo`. */
@@ -171,6 +180,7 @@ export function PanelCapas({
   onCerrar, escalaAbierta, onEscala,
   terrariumElevMin, terrariumElevMax,
   intervaloContorno, setIntervaloContorno, demPropio, pasoRelieveM, fuenteRelieveNombre, pisoIntervalo, curvasMuchas, progresoCurvas,
+  corrimientoCurvas,
   intervaloCurvas, curvasLoading,
   colorCurvas, onColorCurvas,
   opacidadShader, onOpacidadShader,
@@ -499,6 +509,15 @@ export function PanelCapas({
                         {demPropio ? null : <> Cargá un relevamiento propio desde <strong>Exportar → Modelo de elevación</strong>.</>}
                       </span>
                     </p>
+                  )}
+                  {corrimientoCurvas && (
+                    <Cautela claim={corrimientoCurvas.corrimiento_m != null
+                      ? `Estas curvas pueden estar corridas hasta ${fmtPaso(corrimientoCurvas.corrimiento_m)} en horizontal.`
+                      : 'En terreno plano estas curvas no tienen una posición definida.'}>
+                      {corrimientoCurvas.lectura}
+                      {' '}El intervalo dice cada cuántos metros de altura se dibuja una curva; esto dice cuánto
+                      puede estar corrida de lugar. Son dos cosas distintas, y bajar el intervalo no mejora esto.
+                    </Cautela>
                   )}
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] text-ink-700/60 w-14">Normal:</span>
