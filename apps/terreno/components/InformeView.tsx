@@ -1820,7 +1820,9 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
   }
   if (datos.topo) {
     const p = datos.topo.pendiente_pct;
-    ind.push({ label: 'Pendiente media', value: `${p.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d', tono: p > 15 ? 'alert' : p > 8 ? 'warn' : 'ok' });
+    // «General»: desnivel entre las dos puntas sobre su distancia. Ver el
+    // comentario de `pendiente_pct` en `lib/topografia.ts`.
+    ind.push({ label: 'Pendiente general', value: `${p.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d', tono: p > 15 ? 'alert' : p > 8 ? 'warn' : 'ok' });
   }
   if (datos.suelo) {
     const aw = datos.suelo.agua_util.total_mm_100;
@@ -1839,8 +1841,8 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
   if (mh && mh.length) notas.push(`Riesgo de heladas (${mh.join(', ')}): elegir especies y fechas de siembra acordes.`);
   if (datos.topo) {
     const p = datos.topo.pendiente_pct;
-    if (p > 15) notas.push(`Pendiente media pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
-    else if (p > 8) notas.push(`Pendiente media moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
+    if (p > 15) notas.push(`Pendiente general pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
+    else if (p > 8) notas.push(`Pendiente general moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
   }
   if (datos.suelo) {
     if (datos.suelo.agua_util.total_mm_100 < 100) notas.push(`Baja capacidad de agua útil (${Math.round(datos.suelo.agua_util.total_mm_100)} mm): suelos de poca retención; aportar materia orgánica.`);

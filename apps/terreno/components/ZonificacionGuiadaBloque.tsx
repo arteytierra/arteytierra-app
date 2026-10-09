@@ -96,7 +96,8 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
           <p className="text-[11px] font-bold text-bone-50 uppercase tracking-wide">Lo que el terreno dice de estas zonas</p>
         </div>
         <p className="text-[9px] font-mono text-bone-300">
-          {rev.zonas.length} medidas{rev.con_exclusion > 0 && ` · ${rev.con_exclusion} con exclusión`}
+          {rev.zonas.length} {rev.zonas.length === 1 ? 'medida' : 'medidas'}
+          {rev.con_exclusion > 0 && ` · ${rev.con_exclusion} con exclusión`}
         </p>
       </div>
 

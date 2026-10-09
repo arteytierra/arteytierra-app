@@ -717,16 +717,20 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
    * por terreno; redondeamos las coordenadas para que el CDN reutilice la respuesta.
    */
   const [zoomSatelital, setZoomSatelital] = useState(18);
+  // Depende de la CELDA redondeada y no del centroide, que cambia en la quinta
+  // decimal con cada mojón: así eran cuatro pedidos idénticos por predio.
+  const celdaZoomSat = latCentro == null || lngCentro == null
+    ? null : `${latCentro.toFixed(2)},${lngCentro.toFixed(2)}`;
   useEffect(() => {
-    if (latCentro == null || lngCentro == null) return;
-    const lat = latCentro.toFixed(2), lng = lngCentro.toFixed(2);
+    if (!celdaZoomSat) return;
+    const [lat, lng] = celdaZoomSat.split(',');
     let vivo = true;
     fetch(`/api/zoom-satelital?lat=${lat}&lng=${lng}`)
       .then(r => r.ok ? r.json() : null)
       .then(j => { if (vivo && j?.zoom) setZoomSatelital(j.zoom); })
       .catch(() => { /* nos quedamos con 18 */ });
     return () => { vivo = false; };
-  }, [latCentro, lngCentro]);
+  }, [celdaZoomSat]);
   // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
   const {
     sombrasActivo, setSombrasActivo,

@@ -18,6 +18,15 @@ export {
   type CorreccionAltura, type ConfianzaAltura,
 } from './climaAltura';
 
+/**
+ * Megajoule por kilovatio-hora. Un kWh son 3,6 MJ por definición (1 kW × 3.600 s),
+ * así que esto no es una constante empírica y no se ajusta: es el factor que
+ * convierte la radiación como la publica POWER —MJ/m²/día— a la unidad con la
+ * que se dimensiona un panel —kWh/m²/día—. Mezclarlas pasa desapercibido porque
+ * las dos dan números de dos cifras en latitudes medias.
+ */
+export const MJ_POR_KWH = 3.6;
+
 export const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const;
 export type MesIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
@@ -97,6 +106,18 @@ export interface DatosClima {
    * dice por qué, y el calculado sí sabe qué mes seco o qué isoterma la decidió.
    */
   koppen_calculado?: Koppen;
+  /**
+   * La clase que dio el mapa de 1 km, guardada SIEMPRE que el mapa contestó —
+   * también cuando después la pisó el cálculo local porque se calibró la lluvia.
+   *
+   * No es redundante con `koppen`: la hace falta la deriva. Los tres períodos de
+   * `koppen_deriva` son tres lecturas del MISMO mapa, y sólo son comparables
+   * entre sí. Si el presente de esa tira se reemplaza por una clase calculada
+   * con otro método, la tira deja de medir cómo se mueve el clima y pasa a medir
+   * la diferencia entre dos métodos: el panel llegó a mostrar «Cwa → BSk → Cwa»
+   * con la leyenda «la clase es la misma en los tres períodos» debajo.
+   */
+  koppen_mapa?:     Koppen;
   /**
    * Cómo se mueve la clase del predio en el tiempo: dónde estaba (1961-1990),
    * dónde está (1991-2020) y a dónde va (2071-2099, SSP2-4.5). Sale de leer el
@@ -306,7 +327,12 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       rh_pct:    rh[key]     !== undefined ? Math.round(rh[key]!) : undefined,
       rocio_c:   rocio[key]  !== undefined ? Math.round(rocio[key]!  * 10) / 10 : undefined,
       t_range_c: trange[key] !== undefined ? Math.round(trange[key]! * 10) / 10 : undefined,
-      rad_kwh:   rad[key]    !== undefined ? Math.round(rad[key]!    * 100) / 100 : undefined,
+      // POWER entrega ALLSKY_SFC_SW_DWN en MJ/m²/día —lo declara el propio
+      // `parameters.units` de la respuesta— y el campo de acá es kWh/m²/día, que
+      // es la unidad con la que se dimensiona un panel. Sin el 3,6 el panel
+      // imprimía 19,4 kWh/m²/día donde el lugar recibe 5,4: un número plausible,
+      // 3,6 veces alto y del lado caro. `/api/clima/daymet` ya convertía.
+      rad_kwh:   rad[key]    !== undefined ? Math.round((rad[key]! / MJ_POR_KWH) * 100) / 100 : undefined,
       helada_riesgo: tmin_c <= 3,
     };
   });
@@ -535,6 +561,7 @@ function ensamblar(
     koppen_fuente: koppenMapa ? 'mapa' : 'calculado',
     koppen_calculado:
       koppenMapa && koppenMapa.codigo !== calculado.codigo ? calculado : undefined,
+    koppen_mapa: koppenMapa ?? undefined,
     koppen_deriva: koppenDeriva ?? undefined,
     koppen_mapa_falla: koppenMapa ? undefined : koppenFalla,
     aridez, gdd_anual, heladas,
@@ -666,6 +693,11 @@ export function aplicarCorreccionAltura(
     ...armado,
     // `ensamblar` no los conoce: se reponen para no perderlos en el camino.
     calibracion:    d.calibracion,
+    // La clase del mapa se repone a mano porque a `ensamblar` se le pasa null
+    // cuando el dato ya venía calibrado —ahí manda el cálculo local, y está
+    // bien—, pero la tira de deriva la sigue necesitando para comparar tres
+    // lecturas del mismo mapa.
+    koppen_mapa:    d.koppen_mapa,
     altura_celda_m: d.altura_celda_m,
     correccion_altura: correccion,
     fuente: `${d.fuente} · temperatura corregida por altura (${delta > 0 ? '+' : ''}${delta.toLocaleString('es-AR')} °C)`,

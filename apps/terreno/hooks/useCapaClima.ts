@@ -5,7 +5,13 @@ import {
   aplicarCalibracionPrecip, aplicarCorreccionAltura, obtenerPrecipCHIRPS, centroide,
   type DatosClima, type CalibracionPrecip,
 } from '@/lib/clima';
-import { obtenerElevacionPuntos } from '@/lib/elevacion';
+// `lib/elevacion` NO se importa acá: lee los COG de Copernicus directo del
+// bucket de AWS, y ese bucket no manda cabecera CORS, así que desde el navegador
+// la lectura falla SIEMPRE y cae al respaldo. La app seguía andando —por eso no
+// se notaba— pero la altura con la que se corrige la temperatura venía de GLO-90
+// y no de GLO-30, con un error de red y un round trip de regalo en cada predio.
+// Del lado del servidor no hay CORS: `/api/elevacion` hace exactamente esto,
+// con caché de 30 días.
 import type { Extremos } from '@/lib/climaExtremos';
 
 /**
@@ -100,9 +106,12 @@ export function useCapaClima(
     if (!necesitaAltura || !celdaClima) return;
     let vivo = true;
     const c = centroide(mojones);
-    obtenerElevacionPuntos([{ lat: c.lat, lng: c.lng }])
-      .then(r => {
-        const z = r.elevaciones[0];
+    fetch(`/api/elevacion?locations=${c.lat.toFixed(5)},${c.lng.toFixed(5)}`, {
+      signal: AbortSignal.timeout(20_000),
+    })
+      .then(r => (r.ok ? r.json() as Promise<{ results?: Array<{ elevation: number | null }> }> : null))
+      .then(j => {
+        const z = j?.results?.[0]?.elevation;
         if (vivo && typeof z === 'number' && Number.isFinite(z)) setAlturaPunto(z);
       })
       .catch(() => { /* sin altura no se corrige; no es un error que mostrar */ });

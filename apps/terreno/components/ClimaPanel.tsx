@@ -126,6 +126,14 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       : 'Calculado con las medias mensuales del predio'}
                     {datos.koppen_calculado &&
                       ` · con las medias daría ${datos.koppen_calculado.codigo}: estás sobre un límite`}
+                    {/* El caso simétrico: la lluvia se calibró, el cálculo local
+                        pisó al mapa y los dos no coinciden. Decirlo importa más
+                        que al revés, porque acá la clase que se muestra cambió
+                        de método a mitad de camino y la tira de deriva —que son
+                        tres lecturas del mapa— sigue hablando del mapa. */}
+                    {datos.koppen_fuente === 'calculado' && datos.koppen_mapa
+                      && datos.koppen_mapa.codigo !== datos.koppen.codigo &&
+                      ` · el mapa de 1 km dice ${datos.koppen_mapa.codigo}: estás sobre un límite y tu lluvia lo cruza`}
                   </p>
                   {/* El mapa falló y por eso no hay proyección a futuro. Sin
                       esta línea la sección simplemente no aparece y el predio
@@ -173,7 +181,28 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                   una respuesta —y es la que le interesa a quien está por
                   plantar un monte—: sin la línea, el predio estable y el predio
                   que nadie miró se veían exactamente igual. */}
-              {datos.koppen_deriva && (
+              {datos.koppen_deriva && (() => {
+                /* El «hoy» de la tira es el del MAPA, no el de arriba.
+                   Los tres períodos son tres lecturas del mismo mapa de Beck y
+                   por eso son comparables; `yaCambio`, `vaACambiar` y `queCambia`
+                   se calculan con ese presente. Cuando se calibra la lluvia, la
+                   clase de arriba pasa a salir de las medias del predio, y
+                   meterla acá rompía la tira: llegó a mostrar «Cwa → BSk → Cwa»
+                   con «la clase es la misma en los tres períodos» debajo. La
+                   diferencia entre la clase local y la del mapa se dice arriba,
+                   que es donde significa algo. */
+                const hoy = datos.koppen_mapa ?? datos.koppen;
+                /* Y los dos veredictos se vuelven a sacar de los tres códigos que
+                   esta tira muestra, en vez de confiar en los del motor. No es
+                   desconfianza: un proyecto guardado antes de que existiera
+                   `koppen_mapa` no lo trae, y ahí `hoy` cae en la clase local.
+                   Recalculando acá, la tira no puede contradecirse a sí misma
+                   venga de donde venga el dato. */
+                const codPasado = datos.koppen_deriva.pasado?.codigo;
+                const codFuturo = datos.koppen_deriva.futuro?.codigo;
+                const yaCambio   = !!codPasado && codPasado !== hoy.codigo;
+                const vaACambiar = !!codFuturo && codFuturo !== hoy.codigo;
+                return (
                 <div className="mt-2.5 pt-2.5 border-t border-bone-50/20">
                   <p className="text-[10px] uppercase tracking-wide text-bone-50/70 mb-1">
                     Cómo se mueve este clima
@@ -185,7 +214,7 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       apagado
                     />
                     <span className="text-bone-50/40">→</span>
-                    <Deriva codigo={datos.koppen.codigo} periodo="hoy" />
+                    <Deriva codigo={hoy.codigo} periodo="hoy" />
                     <span className="text-bone-50/40">→</span>
                     <Deriva
                       codigo={datos.koppen_deriva.futuro?.codigo}
@@ -193,10 +222,10 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       apagado
                     />
                   </div>
-                  {datos.koppen_deriva.queCambia && (
+                  {datos.koppen_deriva.queCambia && (yaCambio || vaACambiar) && (
                     <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
                       Lo que se mueve es {datos.koppen_deriva.queCambia}.
-                      {datos.koppen_deriva.vaACambiar
+                      {vaACambiar
                         ? ' Un monte tarda treinta años en ser monte: la especie conviene elegirla para ese clima, no para el de hoy.'
                         : ' El salto ya ocurrió: lo que anduvo históricamente acá puede no ser lo que ande ahora.'}
                     </p>
@@ -204,7 +233,7 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
 
                   {/* La clase no se mueve. Se dice, en vez de callarlo: es un
                       resultado, y el que más tranquiliza a quien planta. */}
-                  {!datos.koppen_deriva.yaCambio && !datos.koppen_deriva.vaACambiar && (
+                  {!yaCambio && !vaACambiar && (
                     <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
                       La clase es la misma en los tres períodos: el tipo de clima del predio no
                       cambia. Adentro de una clase igual se mueven los números —una clase abarca
@@ -216,14 +245,14 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       períodos cuya clase es distinta de la de hoy: repetir el
                       mismo párrafo tres veces no informa nada. */}
                   {datos.koppen_deriva.pasado
-                    && datos.koppen_deriva.pasado.codigo !== datos.koppen.codigo && (
+                    && datos.koppen_deriva.pasado.codigo !== hoy.codigo && (
                     <ClaseDeOtroPeriodo
                       rotulo={`Era ${datos.koppen_deriva.etiquetas.pasado}`}
                       codigo={datos.koppen_deriva.pasado.codigo}
                     />
                   )}
                   {datos.koppen_deriva.futuro
-                    && datos.koppen_deriva.futuro.codigo !== datos.koppen.codigo && (
+                    && datos.koppen_deriva.futuro.codigo !== hoy.codigo && (
                     <ClaseDeOtroPeriodo
                       rotulo={`Va a ser ${datos.koppen_deriva.etiquetas.futuro}`}
                       codigo={datos.koppen_deriva.futuro.codigo}
@@ -235,7 +264,8 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                     para planificar. Es una proyección, no un pronóstico.
                   </p>
                 </div>
-              )}
+                );
+              })()}
             </div>
           )}
 

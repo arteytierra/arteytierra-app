@@ -2311,6 +2311,92 @@ promedio anual grueso de 2 mm/día mientras el balance hídrico de la app calcul
 ETc mes a mes —la demanda del período seco debería salir de ahí y no del
 promedio—; y nada de esto viaja al informe.
 
+### Etapa L — Usar la app y buscarle los errores ✅ *09/10/2026*
+
+Jonatan armó un acceso de desarrollo (`node _scripts/acceso-dev.mjs`) para que la
+sesión pudiera entrar a `/mapa`, que hasta ahora sólo validaba él, y pidió una
+cosa concreta: **usar la app y buscarle errores**. Lo que sigue es lo que apareció
+en una sesión de una hora sobre un predio real de 84,08 ha cerca de Nono,
+Córdoba, cargado por coordenadas y corrido entero: clima, extremos, balance
+hídrico, relieve, master plan, zonas, bioconstrucción, captación y balance de
+agua, con guardado y recarga del proyecto.
+
+Los ocho hallazgos no son de los que tiran una excepción. Son **números
+plausibles**, que es como falla este software.
+
+**1 · LA RADIACIÓN SALÍA 3,6 VECES ALTA.** El panel decía *19,42 kWh/m²/día*. El
+endpoint de climatología de POWER publica `ALLSKY_SFC_SW_DWN` en **MJ/m²/día** —lo
+declara su propio bloque `parameters.units`— y el campo de `DatosClima` es
+kWh/m²/día. `/api/clima/daymet` convertía desde el día uno; el camino de POWER,
+no. Lo que recibe ese punto son 5,4 kWh/m²/día, así que quien dimensionara un
+panel solar con el número de la pantalla lo haría casi cuatro veces chico. El
+test no compara contra un valor elegido a mano sino contra el **techo físico**: la
+radiación que llega al suelo no puede superar la extraterrestre del mismo mes,
+que la propia app calcula en `lib/solar.ts`. Con el error, diciembre daba 28,04
+contra un tope de 11,7 — no era alto, era imposible.
+
+**2 · EL HALO DE LA GRILLA NO ES EL PREDIO, Y SE INFORMABA COMO SI LO FUERA.**
+`obtenerGrillaDensa` enmascara a **1,15×** el polígono, y tiene razón: la
+pendiente por diferencias centradas necesita vecinos en el borde y el D8 necesita
+ver de dónde baja el agua. Pero 1,15² es un **32 % de superficie de más**, y todo
+lo que contaba celdas para informar estaba contando tierra del vecino. En el
+predio de prueba, el master plan decía «**97,7 de 111,4 ha** · el 88 % del predio»
+sobre 84,08 ha reales, y las cuatro clases de riesgo de erosión sumaban 111 ha. La
+grilla ahora lleva una máscara `dentro` —el polígono real, no el escalado— que
+viaja por el remuestreo y por las celdas del shader; **cambia qué se cuenta, no
+qué se mira**: las exclusiones y la clasificación siguen usando todo el contexto.
+Ahora dice 72,9 de 84,2 ha y la erosión suma 84,7.
+
+**3 · DOS «PENDIENTE MEDIA» DISTINTAS EN LA MISMA PANTALLA.** Topografía mostraba
+3,2 % y el aviso de corrimiento de las curvas hablaba de 6,9 %. Las dos eran
+correctas y medían cosas distintas: `topografia.ts` calcula el desnivel entre la
+punta más alta y la más baja sobre la distancia entre ellas —la pendiente
+**general**— y el motor de hidrología promedia la pendiente celda a celda, que es
+más grande porque las ondas del terreno no se cancelan. Se renombró la primera a
+«pendiente general» en el panel y en el informe, y la cautela de las curvas dice
+cuál usa.
+
+**4 · EL KÖPPEN SE CONTRADECÍA SOLO DESPUÉS DE CALIBRAR LA LLUVIA.** La tira de
+deriva mostraba «**Cwa → BSk → Cwa**» con la leyenda «la clase es la misma en los
+tres períodos» abajo. Los tres períodos son tres lecturas del **mismo** mapa de
+Beck y sólo son comparables entre sí; al calibrar la precipitación con CHIRPS la
+clase de hoy pasa a calcularse con las medias del predio —y está bien que pase—,
+pero esa clase se metía en el medio de la tira mientras los veredictos seguían
+saliendo del mapa. Ahora el mapa guarda su clase (`koppen_mapa`), la tira muestra
+las tres del mapa, los veredictos se recalculan contra lo que se ve, y la
+diferencia entre la clase local y la del mapa se dice donde significa algo: «el
+mapa de 1 km dice Cwa: estás sobre un límite y tu lluvia lo cruza».
+
+**5 · LA ALTURA DEL PREDIO VENÍA DE UN RESPALDO, SIEMPRE.** `useCapaClima` pedía
+la cota del centroide con `lib/elevacion`, que lee los COG de Copernicus directo
+del bucket de AWS. Ese bucket no manda cabecera CORS, así que **desde el navegador
+falla siempre**: un error de red y un round trip en cada predio, y la altura con
+la que se corrige la temperatura —1,7 °C acá— terminaba saliendo de GLO-90 en vez
+de GLO-30. Del lado del servidor no hay CORS y `/api/elevacion` ya hacía
+exactamente esto, con caché de 30 días.
+
+**6 · «Y DA PARA 312».** El veredicto del balance de agua se comía la palabra
+«días». De las cosas chicas, la más visible.
+
+**7 · «1 MEDIDAS»** en el encabezado de zonas, y **8 ·** el corrimiento de las
+curvas impreso con dos redondeos distintos en la misma cautela («hasta 17,7 m» en
+el título, «hasta 18 m» dos renglones abajo, con el mismo número adentro).
+
+Y una cosa que no es un error sino una lectura que faltaba: con una naciente de
+12 L/min los cuatro trimestres se pintan en verde con saldos de más de mil metros
+cúbicos sobre un predio que guarda 570. **Un caudal que pasa no es agua
+almacenada**, y el verde se lee como «alcanza». La tabla ahora lo dice cuando el
+saldo de un trimestre supera todo lo que el predio puede guardar.
+
+**Abierto de la etapa L:** el umbral del índice de erosión (el percentil 90 del
+SPI) se sigue calculando sobre toda la ventana y no sobre el predio, así que la
+clasificación de una celda depende un poco de cuánto halo entró; cambiarlo mueve
+el mapa y hay que decidirlo aparte. El panel de clima muestra dos lluvias anuales
+que difieren un 60 % —595 mm de CHIRPS arriba y 943 mm de ERA5 en los extremos—
+sin que nada diga que son dos fuentes distintas. Y las superficies se siguen
+imprimiendo con cuatro decimales de hectárea (`6.9102 ha`), que es un metro
+cuadrado de precisión en un dato que no la tiene.
+
 ## 3. En qué orden
 
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**

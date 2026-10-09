@@ -804,7 +804,10 @@ export function corrimientoDeTraza(
     lectura:
       `Con ${(u_vertical_m * 100).toFixed(0)} cm de incertidumbre vertical punto a punto y una pendiente del `
       + `${p.toFixed(1)} %, una curva de nivel leída de este modelo puede estar hasta `
-      + `${corr.toFixed(corr < 10 ? 1 : 0)} m corrida ladera arriba o ladera abajo respecto de donde la imprime el `
+      // Un decimal siempre, que es el mismo redondeo de `corrimiento_m`. Con dos
+      // reglas distintas el mapa imprimía «hasta 17,7 m» en el título y «hasta
+      // 18 m» dos renglones abajo, con el mismo número adentro.
+      + `${(Math.round(corr * 10) / 10).toFixed(1)} m corrida ladera arriba o ladera abajo respecto de donde la imprime el `
       + 'plano. No es un error del dibujo: es la pendiente convirtiendo el error vertical del modelo en error '
       + 'horizontal. El plano dice por dónde pasa la curva; el nivel dice dónde.',
   };

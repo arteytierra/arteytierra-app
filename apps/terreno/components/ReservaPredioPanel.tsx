@@ -127,7 +127,7 @@ export function ReservaPredioPanel({
                 : 'rounded-lg p-2.5 bg-clay-500/8 border border-clay-500/25'}>
                 <p className="text-[11px] font-semibold text-ink-700 leading-snug">
                   {v.aguanta
-                    ? <>La reserva aguanta los <b className="font-mono">{racha.dias} días</b> de racha seca{v.llegoAlTope ? ' y bastante más' : <> y da para <b className="font-mono">{v.dias}</b></>}.</>
+                    ? <>La reserva aguanta los <b className="font-mono">{racha.dias} días</b> de racha seca{v.llegoAlTope ? ' y bastante más' : <> y da para <b className="font-mono">{v.dias} días</b></>}.</>
                     : <>La reserva aguanta <b className="font-mono">{v.dias} {v.dias === 1 ? 'día' : 'días'}</b> y la racha seca de este predio es de <b className="font-mono">{racha.dias}</b>.</>}
                 </p>
                 {!v.aguanta && (
@@ -448,6 +448,20 @@ export function ReservaPredioPanel({
                 tiene que cubrir, y es exactamente para eso que existe. El problema aparece cuando la
                 suma del año no cierra, o cuando el déficit de un trimestre supera lo guardado.
               </p>
+              {/* Un saldo positivo grande es casi siempre un caudal, y un caudal
+                  que pasa no es agua guardada: lo que no entra en la reserva se
+                  va igual. Sin esta línea, una naciente de 4 L/min pintaba los
+                  cuatro trimestres en verde con +500 m³ sobre un predio que
+                  guarda 570 en total, y el verde se lee como «alcanza». */}
+              {r.trimestres.some(t => t.balance_m3 > r.util_m3 && r.util_m3 > 0) && (
+                <p className="text-[9px] text-ink-700/55 mt-1 leading-snug">
+                  Hay trimestres cuyo saldo positivo supera todo lo que el predio puede guardar
+                  ({n1(r.util_m3)} m³). Un caudal que pasa no es agua almacenada: lo que no
+                  entra en la reserva sigue de largo, así que ese sobrante no se acumula para el
+                  trimestre siguiente. Para aprovecharlo hay que agrandar el almacenaje o usarlo
+                  cuando pasa.
+                </p>
+              )}
               {r.caudal_declarado_m3_dia > r.caudal_firme_m3_dia && (
                 <p className="text-[9px] text-clay-800 mt-1 leading-snug">
                   La columna de caudal cuenta sólo lo medido en la seca. Declarado hay{' '}

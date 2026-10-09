@@ -1544,15 +1544,24 @@ export interface ResumenEmplazamiento {
  *
  * Es el número que cambia una conversación: «el predio tiene 40 ha» y «el predio
  * tiene 40 ha, de las que 9 admiten una construcción» son dos predios distintos.
+ *
+ * Se cuentan SÓLO las celdas de adentro del predio (`g.dentro`). La grilla llega
+ * hasta 1,15× el polígono porque la pendiente y el D8 necesitan vecinos afuera,
+ * y contar esas celdas acá hacía que un predio de 84 ha informara 111 —y que las
+ * «97,7 ha que admiten construir» incluyeran tierra que no es de quien decide—.
+ * Las exclusiones se siguen evaluando con todo el contexto: lo que cambia es qué
+ * se cuenta, no qué se mira.
  */
 export function resumenEmplazamiento(ctx: ContextoEmplazamiento): ResumenEmplazamiento {
   const n = ctx.g.rows * ctx.g.cols;
   const cuenta = new Map<ReglaExclusion, number>();
+  const dentro = ctx.g.dentro;
   let libres = 0;
   let conDato = 0;
 
   for (let i = 0; i < n; i++) {
     if (Number.isNaN(ctx.g.elev[i]!)) continue;
+    if (dentro && dentro[i] !== 1) continue;
     conDato++;
     const ex = exclusionesDe(ctx, i);
     if (ex.length === 0) { libres++; continue; }

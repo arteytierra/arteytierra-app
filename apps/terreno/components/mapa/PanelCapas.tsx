@@ -517,6 +517,15 @@ export function PanelCapas({
                       {corrimientoCurvas.lectura}
                       {' '}El intervalo dice cada cuántos metros de altura se dibuja una curva; esto dice cuánto
                       puede estar corrida de lugar. Son dos cosas distintas, y bajar el intervalo no mejora esto.
+                      {/* De qué pendiente habla. Sin esta frase la pantalla mostraba
+                          dos pendientes distintas del mismo predio sin decir que
+                          miden cosas distintas: acá la media celda a celda, en
+                          Topografía el desnivel entre las dos puntas. */}
+                      {corrimientoCurvas.corrimiento_m != null && (
+                        <> La pendiente de esa cuenta es la media de las celdas del modelo, y es más
+                        grande que la «pendiente general» de Topografía: ésa mide el desnivel entre
+                        las dos puntas del predio, y las ondas del terreno se le cancelan.</>
+                      )}
                     </Cautela>
                   )}
                   <div className="flex items-center gap-2">
