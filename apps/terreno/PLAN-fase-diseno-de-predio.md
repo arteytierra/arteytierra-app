@@ -2549,12 +2549,93 @@ de darse cuenta de que uno le erró a la fila. Ahora la pregunta trae el nombre,
 y el botón tiene `title` y `aria-label` (antes un lector de pantalla anunciaba
 sólo «botón»).
 
-**Abierto de la etapa N:** la discrepancia se declara pero no se resuelve, y
-resolverla pide un dato local —el registro de una estación cercana—. El panel ya
-acepta una calibración manual de la precipitación; lo que falta es que esa misma
-calibración **llegue a la serie diaria**, o que quede explícito que no llega.
-Antes de tocar eso hay que decidir qué pasa con las tormentas de diseño, que
-salen de la serie sin calibrar.
+**Abierto de la etapa N:** cerrado en la etapa O —la calibración llega a la
+serie—. Lo que sigue abierto es el dato: sin el registro de una estación cercana
+no hay con qué calibrar, y lo que la app hace mientras tanto es escalar a CHIRPS,
+que es un producto de satélite con estaciones y no una estación del predio.
+
+### Etapa O — El pluviómetro llega a la serie, y el agua se cuenta una sola vez ✅ *10/10/2026*
+
+Commit `f9673d6`. Tres cosas que Jonatan pidió el mismo día.
+
+**1 · La calibración de lluvia alcanza la serie diaria.** Era el abierto de la
+etapa N. `lib/climaCalibracionSerie.ts`, con dos decisiones que son el nudo:
+
+- **El factor no es el mismo que el de la climatología.** El pluviómetro dice
+  700 mm; la climatología dice 595 y la serie 943. El objetivo es uno solo y los
+  factores son dos: 700/595 = 1,18 y 700/943 = 0,74. Usar el de la climatología
+  sobre la serie la dejaría en 1.113 mm, **más lejos** del pluviómetro que antes
+  de calibrar. `calibrarExtremos` saca el suyo contra la media de su propia serie.
+- **Se escalan las acumulaciones, no los extremos.** El escalado lineal corrige
+  la media por construcción y no corrige la distribución (Teutschbein & Seibert,
+  2012, *Journal of Hydrology* 456-457, 12-29). Multiplicar el cuantil de Gumbel
+  por el mismo factor sería afirmar que el sesgo del reanálisis es proporcional
+  en toda la distribución; para eso hace falta mapeo de cuantiles, que pide la
+  serie diaria de la estación y no un total. La tormenta de diseño queda **cruda**
+  y las tres pantallas lo dicen. La racha seca tampoco se mueve, y no por una
+  decisión: multiplicar los milímetros de cada día no vuelve húmedo ningún día
+  seco —si el sesgo está en la *frecuencia* de días con lluvia, el escalado no lo
+  ve—.
+
+Cuando el dato local llueve **más** que el reanálisis, esa tormenta sin calibrar
+queda del lado corto. El aviso entra en `hidrologiaPredio`, el motor compartido,
+así que alcanza de una vez a todo lo que dimensiona con la tormenta.
+
+Verificado en la app sobre Salsipuedes: la serie pasó de **998 a 642 mm/año**,
+que es exactamente lo que da la climatología. Las dos lluvias coinciden.
+
+**Y de paso: el informe público nunca aplicaba ninguna corrección.**
+`metadatos.clima` guarda el crudo a propósito y el mapa le repone las dos
+correcciones al abrir. `/informe/<token>` no lo hacía: el único artefacto que se
+le entrega a un tercero imprimía la lluvia de la grilla de ~50 km aunque el
+predio tuviera pluviómetro, y la temperatura de la altura media de la celda
+aunque el predio estuviera 400 m más abajo. Misma familia que el bug de la
+radiación del 09/10: **un arreglo en el motor no llega a lo ya guardado.**
+
+**2 · Master plan y Zonas: se va lo que no decide nada.** Jonatan no podía decir
+qué función cumplían cuatro cajas de «Dónde no va». El diagnóstico era correcto y
+la causa es que **dos movían el número de arriba y dos no**, sin que nada en la
+pantalla las distinguiera. Quedan el retiro del cauce y el límite de pendiente
+del camino, como dos controles en dos renglones debajo del número que mueven. Se
+van la plataforma del edificio (producía un requisito que Zonas ya calcula con el
+tamaño por defecto) y el campo de infiltración (no entraba al contexto:
+`campoDeInfiltracion` sigue en la lib con sus fuentes). Los cinco párrafos pasan
+a «por qué». En Zonas sale de la fila plegada la pérdida de suelo en toneladas.
+
+**3 · El balance de agua junta los cinco paneles.** `lib/balanceAgua.ts`. Era el
+único panel que pedía cargar a mano lo que la app ya sabía, y peor que el trabajo
+repetido es lo que pasa cuando alguien lo hace bien: Captación con «bovinos: 40»
+más un rodeo de 40 cabezas dimensionaba la reserva para **ochenta vacas**, con un
+número perfectamente plausible. Ahora reconcilia, y cuando dos pestañas describen
+la misma agua gana la que mide más fino: la hacienda la manda el rodeo (lotes por
+categoría, agua por temperatura) y el riego lo manda Riego (ETc mes a mes). El
+descartado **no desaparece**: queda tachado con el motivo.
+
+Además, la racha seca se simula con el **pico** y no con el promedio del año: una
+racha seca cae en la seca, que es cuando el riego está al máximo. La red de
+servicios no suma —su caudal es de diseño del caño— pero aporta un cruce que
+ninguna pestaña podía hacer sola: si el caño abierto 24 h no mueve el día pico,
+la reserva puede estar llena y el agua no llegar. Las represas dimensionadas
+entran con un botón; las aguadas del plano se **cuentan y no se convierten**,
+porque un marcador no tiene volumen.
+
+**Abierto de la etapa O:**
+
+- **Riego arranca con el área del predio entero.** Ahora que su demanda llega al
+  balance, un proyecto donde alguien abrió Riego una vez trae una demanda enorme
+  —en Salsipuedes, 9,56 ha de huerta: 278.000 L/día—. El balance lo muestra con
+  el área en el rótulo, así que se ve y se corrige, pero el default debería ser
+  más chico o no existir.
+- **Los picos se suman como si cayeran juntos.** En verano es casi cierto y es el
+  lado correcto para dimensionar, pero está declarado y no medido.
+- **La pérdida de conducción sigue sin estar.** El cruce con la red dice si el
+  caño alcanza, no cuánta agua se pierde en el camino.
+- **El manual.** Jonatan pidió «armar un manual con data mejor desplegada» con lo
+  que salió de Master plan. Hoy esa prosa vive en «por qué» y en los doc comments
+  de `lib/emplazamiento.ts`; `/guia` todavía no tiene un capítulo de emplazamiento
+  ni de desagüe cloacal.
+- Sigue en pie lo que la etapa N dejó: sin estación cercana, lo que la app usa
+  para calibrar es CHIRPS.
 
 ## 3. En qué orden
 
