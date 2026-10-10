@@ -143,6 +143,39 @@ describe('el tanque cubre la seca aunque cruce el año', () => {
     expect(r.tanque_recomendado_m3).toBeCloseTo(secaCompleta * 1.2, 1);
   });
 
+  /*
+   * Y además deja de llamarlo tanque.
+   *
+   * Rippl dimensiona sobre la curva de masa del EXCEDENTE: la reserva es el
+   * mayor vacío entre dos llenados, y eso supone que en el ciclo entra al menos
+   * tanta agua como sale. Cuando no entra, lo que devuelve la cuenta es el
+   * faltante del año, no un volumen de almacenaje. En el predio de prueba salía
+   * impreso «tanque recomendado 107,9 m³» sobre un techo que junta 26,8 m³ en
+   * todo el año: una cisterna cuatro veces más grande que toda el agua que ese
+   * techo puede darle, que no se llena nunca.
+   *
+   * Rippl, W. (1883), «The capacity of storage reservoirs for water supply»,
+   * Minutes of the Proceedings of the Institution of Civil Engineers 71, 270-278.
+   */
+  it('y avisa que eso no es un tanque: más grande que la captación del año no se llena', () => {
+    const seco = calcularCaptacion(superficie, lluvia({ 2: 10, 3: 10 }), consumos, -34);
+    expect(seco.tanque_cierra).toBe(false);
+    expect(seco.tanque_recomendado_m3).toBeGreaterThan(seco.captacion_anual_m3);
+
+    // Lo que sí se puede dimensionar: cuánto techo cierra el año. Es una regla
+    // de tres sobre el rendimiento de las superficies ya cargadas.
+    expect(seco.techo_necesario_m2).not.toBeNull();
+    expect(seco.techo_necesario_m2!).toBeGreaterThan(100);
+    expect(seco.techo_necesario_m2!).toBeCloseTo(
+      100 * (seco.consumo_anual_m3 / seco.captacion_anual_m3), 0,
+    );
+  });
+
+  it('cuando el año cierra, sí es un tanque y no hace falta más techo', () => {
+    expect(r.tanque_cierra).toBe(true);
+    expect(r.techo_necesario_m2).toBeNull();
+  });
+
   it('con déficit anual no duplica la cuenta: un tanque no arregla eso', () => {
     // Misma seca pero sin lluvia suficiente en el resto del año. Acá la curva de
     // masa no cierra, y recorrer el año dos veces daría una reserva del doble

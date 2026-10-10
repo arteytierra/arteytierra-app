@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { InformeView } from '@/components/InformeView';
 import type { InformeData } from '@/lib/informe';
 import type { DatosClima } from '@/lib/clima';
+import { migrarRadiacionClima } from '@/lib/climaMigracion';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
@@ -53,7 +54,9 @@ export default async function InformeTokenPage({ params }: PageProps) {
     fecha:    String(data.updated_at ?? new Date().toISOString()),
     mojones,
     metricas: calcularMetricas(mojones) ?? undefined,
-    clima:    meta['clima'] as DatosClima | undefined,
+    // Mismo motivo que en el mapa: el clima guardado antes del 09/10/2026 trae
+    // la radiación en MJ y este informe es el que se comparte por link.
+    clima:    migrarRadiacionClima(meta['clima'] as DatosClima | undefined),
     extremos: meta['extremos'] as Extremos | undefined,
     topo:     meta['topo'] as DatosTopografia | undefined,
     captacion: meta['captacion'] as CaptacionSnapshot | undefined,

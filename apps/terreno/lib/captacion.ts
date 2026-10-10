@@ -356,6 +356,20 @@ export interface ResultadoCaptacion {
   tanque_recomendado_m3: number;
   cobertura_minima_dias: number;
   meses_deficit:         number;
+  /**
+   * `false` cuando el año no cierra: entra menos agua de la que sale y la curva
+   * de masa nunca vuelve a llenarse. Ahí `tanque_recomendado_m3` NO es un
+   * tanque —es el faltante del año con su margen— y quien lo imprima tiene que
+   * decirlo, porque un tanque más grande que lo que el techo junta en un año no
+   * se llena nunca y además no arregla el problema.
+   */
+  tanque_cierra:         boolean;
+  /**
+   * Superficie captante que haría falta, con la misma mezcla de techos y
+   * coeficientes que ya está cargada, para que el año cierre. `null` cuando ya
+   * cierra o cuando no hay captación con la que hacer la regla de tres.
+   */
+  techo_necesario_m2:    number | null;
 
   // Desglose
   consumo_total_litros_dia: number;
@@ -460,6 +474,27 @@ export function calcularCaptacion(
     ) * 10,
   ) / 10;
 
+  // Rippl dimensiona sobre la curva de masa del EXCEDENTE: la reserva es el
+  // mayor vacío entre dos llenados, y eso supone que en el ciclo entra al menos
+  // tanta agua como sale. Cuando no entra, la curva nunca vuelve a cero y lo que
+  // devuelve la cuenta no es un tanque sino el faltante del año. El panel lo
+  // imprimía igual: «tanque recomendado 107,9 m³» sobre un techo que junta
+  // 26,8 m³ en todo el año — una cisterna cuatro veces más grande que toda el
+  // agua que ese techo puede darle, que no se llena nunca. El número se
+  // conserva porque es una cantidad real, pero deja de salir como recomendación.
+  //
+  // Rippl, W. (1883), «The capacity of storage reservoirs for water supply»,
+  // Minutes of the Proceedings of the Institution of Civil Engineers 71, 270-278.
+  const tanque_cierra = balance_anual_m3 >= 0;
+  // Lo que sí se puede dimensionar cuando no cierra: cuánto techo hace falta.
+  // Regla de tres con la mezcla de superficies ya cargada —el rendimiento por m²
+  // ya lleva adentro el coeficiente de cada una y la lluvia de cada mes—, así
+  // que no entra ninguna constante nueva.
+  const area_captante_m2 = superficies.reduce((acc, sup) => acc + (sup.area_m2 || 0), 0);
+  const techo_necesario_m2 = !tanque_cierra && captacion_anual_m3 > 0 && area_captante_m2 > 0
+    ? Math.round(area_captante_m2 * (consumo_anual_m3 / captacion_anual_m3))
+    : null;
+
   const captMinMes              = Math.max(Math.min(...captacion_mensual_m3), 0);
   const consumoDiario_m3        = consumo_total_litros_dia / 1000;
   const cobertura_minima_dias   = consumoDiario_m3 > 0 ? Math.round(captMinMes / consumoDiario_m3) : 0;
@@ -489,6 +524,8 @@ export function calcularCaptacion(
     tanque_recomendado_m3,
     cobertura_minima_dias,
     meses_deficit,
+    tanque_cierra,
+    techo_necesario_m2,
     consumo_total_litros_dia,
     captacion_por_superficie,
     consumo_por_categoria,

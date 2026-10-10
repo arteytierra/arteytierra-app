@@ -345,6 +345,9 @@ export function CaptacionPanel({ datosClima, onIrAClima, texturaSuelo = null, gr
             volumen={resultado.tanque_recomendado_m3}
             diasCobertura={resultado.cobertura_minima_dias}
             mesesDeficit={resultado.meses_deficit}
+            cierra={resultado.tanque_cierra}
+            captacionAnual={resultado.captacion_anual_m3}
+            techoNecesario={resultado.techo_necesario_m2}
           />
 
           {/* Gráfico mensual */}
@@ -568,11 +571,14 @@ function ConsumoRow({
 // ─── Recomendación de tanque ──────────────────────────────────────────────────
 
 function TanqueCard({
-  volumen, diasCobertura, mesesDeficit,
+  volumen, diasCobertura, mesesDeficit, cierra, captacionAnual, techoNecesario,
 }: {
   volumen: number;
   diasCobertura: number;
   mesesDeficit: number;
+  cierra: boolean;
+  captacionAnual: number;
+  techoNecesario: number | null;
 }) {
   const color = mesesDeficit === 0 ? 'moss' : mesesDeficit <= 3 ? 'sun' : 'clay';
   const bgMap  = { moss: 'bg-moss-50 border-moss-200', sun: 'bg-sun-300/20 border-sun-300', clay: 'bg-clay-100 border-clay-200' };
@@ -580,17 +586,31 @@ function TanqueCard({
 
   return (
     <div className={`rounded-xl border p-3 ${bgMap[color]}`}>
-      <p className="text-xs font-semibold text-ink-700 mb-2">🪣 Tanque / cisterna recomendado</p>
+      <p className="text-xs font-semibold text-ink-700 mb-2">
+        {cierra ? 'Tanque / cisterna recomendado' : 'Lo que falta en el año'}
+      </p>
       <p className={`font-mono text-xl font-bold ${txtMap[color]}`}>{volumen.toFixed(1)} m³</p>
       <p className="text-xs text-ink-700/60 mt-0.5">= {Math.round(volumen * 1000).toLocaleString('es-AR')} litros</p>
       {diasCobertura > 0 && (
         <p className="text-xs text-ink-700/70 mt-2">
           En el mes más seco, la captación cubre aprox.{' '}
-          <span className="font-semibold">{diasCobertura} días</span> de consumo.
+          <span className="font-semibold">{diasCobertura} {diasCobertura === 1 ? 'día' : 'días'}</span> de consumo.
         </p>
       )}
       {mesesDeficit === 0 && (
         <p className="text-xs text-moss-700 mt-1">✓ La captación supera el consumo todos los meses.</p>
+      )}
+      {!cierra && (
+        <p className="text-xs text-ink-700/70 mt-2 leading-snug">
+          Esto <b>no es un tanque</b>: sale de la misma cuenta, pero el año no cierra.
+          Con {captacionAnual.toFixed(1)} m³ de captación anual, una cisterna más
+          grande que eso no se llena nunca, y el problema no es dónde guardar el
+          agua sino que no llega.
+          {techoNecesario != null && <> Para que cierre con lo que hoy se consume
+          hacen falta unos <b className="font-mono">{techoNecesario.toLocaleString('es-AR')} m²</b> de
+          superficie captante —la que hay rinde eso—, o bajar el consumo, o traer
+          agua de otro lado.</>}
+        </p>
       )}
     </div>
   );

@@ -461,22 +461,48 @@ export function declarar(params: {
   const U = expandir(propagacion.uc, k);
   const relevamiento: RenglonRelevamiento[] = [];
 
+  // Una medición, un renglón —y no uno por entrada—, porque dos entradas pueden
+  // compartir la MISMA medición: las dos cotas de un desnivel se levantan con el
+  // mismo nivel en la misma mañana, y la cota del agua y la del fondo de un vaso
+  // también. Un renglón por entrada decía dos veces lo mismo y, peor, calculaba
+  // la ganancia mejorando UNA SOLA de las dos: el informe ofrecía «−29 %» dos
+  // veces donde ir una mañana con un nivel baja el intervalo un 98 %. Así un
+  // relevamiento que vale el viaje parecía que no, que es justo lo contrario de
+  // para lo que existe esta tabla.
+  const grupos = new Map<string, Entrada[]>();
   for (const e of entradas) {
     if (!e.medicion) continue;
-    const contrib = propagacion.contribuciones.find(c => c.id === e.id);
-    if (!contrib || contrib.fraccion < FRACCION_SIGNIFICATIVA) continue;
-    if (e.medicion.u_esperada >= e.u) continue;   // medirlo no mejoraría nada
+    const clave = `${e.medicion.que}\u0000${e.medicion.como}`;
+    const g = grupos.get(clave);
+    if (g) g.push(e); else grupos.set(clave, [e]);
+  }
 
+  for (const grupo of grupos.values()) {
+    // Las del grupo que la medición realmente mejora, con su aporte a la varianza.
+    const utiles = grupo
+      .map(e => ({ e, contrib: propagacion.contribuciones.find(c => c.id === e.id) }))
+      .filter(x => x.contrib !== undefined && x.e.medicion!.u_esperada < x.e.u);
+    if (utiles.length === 0) continue;
+
+    // El umbral se mide sobre el aporte del GRUPO: dos entradas del 3 % que se
+    // arreglan con el mismo viaje son un 6 %, y ese viaje sí vale.
+    const fraccion = utiles.reduce((acc, x) => acc + (x.contrib?.fraccion ?? 0), 0);
+    if (fraccion < FRACCION_SIGNIFICATIVA) continue;
+
+    const ids = new Set(utiles.map(x => x.e.id));
     const despues = propagar(f, entradas.map(x =>
-      x.id === e.id ? { ...x, u: e.medicion!.u_esperada } : x,
+      ids.has(x.id) ? { ...x, u: x.medicion!.u_esperada } : x,
     ));
     if (!despues) continue;
 
+    const cabeza = utiles[0]!.e;
     relevamiento.push({
-      id: e.id, rotulo: e.rotulo, medicion: e.medicion,
+      id:       utiles.map(x => x.e.id).join('+'),
+      rotulo:   utiles.map(x => x.e.rotulo).join(' y '),
+      medicion: cabeza.medicion!,
       uc_despues: despues.uc,
       ganancia:   propagacion.uc > 0 ? 1 - despues.uc / propagacion.uc : 0,
-      fraccion:   contrib.fraccion,
+      fraccion,
     });
   }
   relevamiento.sort((a, b) => b.ganancia - a.ganancia);

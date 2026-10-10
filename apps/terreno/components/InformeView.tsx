@@ -3,7 +3,7 @@
 import { FileDown, ArrowLeft, Lock } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
 import { ACEQUIA_APP_HOST } from '@/lib/sitio';
-import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
+import { calcularMetricas, formatearDistancia, formatearMetros, formatearHa, numeroAR, type MetricasPoligono } from '@/lib/geometria';
 import { MESES, centroide } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
@@ -277,8 +277,8 @@ export function InformeView({ datos, compartido = false }: Props) {
             <>
               {metricas && (
                 <div className="grid grid-cols-3 gap-4 mb-4">
-                  <StatBlock label="Área" value={`${metricas.area_ha.toFixed(4)} ha`} sub={`${Math.round(metricas.area_m2).toLocaleString('es-AR')} m²`} />
-                  <StatBlock label="Perímetro" value={formatearDistancia(metricas.perimetro_m)} sub={`${metricas.perimetro_m.toFixed(1)} m`} />
+                  <StatBlock label="Área" value={formatearHa(metricas.area_ha)} sub={`${Math.round(metricas.area_m2).toLocaleString('es-AR')} m²`} />
+                  <StatBlock label="Perímetro" value={formatearDistancia(metricas.perimetro_m)} sub={formatearMetros(metricas.perimetro_m)} />
                   <StatBlock label="Mojones" value={`${datos.mojones.length}`} sub="vértices" />
                 </div>
               )}
@@ -302,10 +302,10 @@ export function InformeView({ datos, compartido = false }: Props) {
                       ? ['Tramo', 'Longitud']
                       : ['Tramo', 'Longitud', 'Azimut', 'Rumbo cuadrantal']}
                     rows={metricas.linderos.map(l => datos.sinRumbos
-                      ? [`M${l.desde} → M${l.hasta}`, formatearDistancia(l.longitud)]
+                      ? [`M${l.desde} → M${l.hasta}`, formatearMetros(l.longitud)]
                       : [
                           `M${l.desde} → M${l.hasta}`,
-                          formatearDistancia(l.longitud),
+                          formatearMetros(l.longitud),
                           `${l.azimut.toFixed(1)}°`,
                           l.rumbo,
                         ])}
@@ -405,7 +405,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               {datos.clima.amplitud_anual_c !== undefined && <StatBlock label="Amplitud térmica" value={`${datos.clima.amplitud_anual_c}°C`} sub="media diaria" />}
             </div>
             <Table
-              head={['Mes', 'Precip.', 'ETP', 'Balance', 'T med.', 'HR', 'Viento']}
+              head={['Mes', 'Precip.', 'ETP', 'P − ETP', 'T med.', 'HR', 'Viento']}
               rows={datos.clima.meses.map(m => [
                 m.mes,
                 String(m.precip_mm),
@@ -1123,7 +1123,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               <StatBlock label="Elev. mínima" value={`${datos.topo.elev_min.toFixed(0)} m`} sub="s.n.m." />
               <StatBlock label="Elev. máxima" value={`${datos.topo.elev_max.toFixed(0)} m`} sub="s.n.m." />
               <StatBlock label="Desnivel" value={`${datos.topo.desnivel.toFixed(1)} m`} sub="máx − mín" />
-              <StatBlock label="Pendiente" value={`${datos.topo.pendiente_pct.toFixed(1)}%`} sub={`${datos.topo.pendiente_grados.toFixed(1)}°`} />
+              <StatBlock label="Pendiente general" value={`${datos.topo.pendiente_pct.toFixed(1)}%`} sub={`${datos.topo.pendiente_grados.toFixed(1)}° · de la punta más alta a la más baja`} />
             </div>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <StatBlock label="Elev. media" value={`${datos.topo.elev_media.toFixed(0)} m`} sub="centroide del terreno" />
@@ -1195,9 +1195,29 @@ export function InformeView({ datos, compartido = false }: Props) {
             <div className="grid grid-cols-4 gap-3 mt-4 mb-4">
               <StatBlock label="Captación anual" value={`${datos.captacion.resultado.captacion_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.captacion_anual_litros.toLocaleString('es-AR')} L`} />
               <StatBlock label="Consumo anual" value={`${datos.captacion.resultado.consumo_anual_m3.toFixed(1)} m³`} sub="estimado" />
-              <StatBlock label="Balance anual" value={`${datos.captacion.resultado.balance_anual_m3 > 0 ? '+' : ''}${datos.captacion.resultado.balance_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.meses_deficit} mes/es c/ déficit`} />
-              <StatBlock label="Tanque recomendado" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub={`${Math.round(datos.captacion.resultado.tanque_recomendado_m3 * 1000).toLocaleString('es-AR')} L`} />
+              <StatBlock label="Balance anual" value={`${datos.captacion.resultado.balance_anual_m3 > 0 ? '+' : ''}${datos.captacion.resultado.balance_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.meses_deficit} ${datos.captacion.resultado.meses_deficit === 1 ? 'mes' : 'meses'} con déficit`} />
+              {/* Con el año cerrado esto es un tanque. Sin cerrar es el faltante
+                  del año, y sale con otro rótulo: un proyecto guardado antes del
+                  09/10/2026 no trae `tanque_cierra`, así que se deduce del balance. */}
+              {(datos.captacion.resultado.tanque_cierra ?? datos.captacion.resultado.balance_anual_m3 >= 0)
+                ? <StatBlock label="Tanque recomendado" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub={`${Math.round(datos.captacion.resultado.tanque_recomendado_m3 * 1000).toLocaleString('es-AR')} L`} />
+                : <StatBlock label="Lo que falta en el año" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub="no es un tanque" />}
             </div>
+
+            {!(datos.captacion.resultado.tanque_cierra ?? datos.captacion.resultado.balance_anual_m3 >= 0) && (
+              <p className="text-xs text-ink-700/70 leading-relaxed mb-4">
+                El año no cierra: entra menos agua de la que sale, así que la curva
+                de masa con la que se dimensiona una cisterna nunca vuelve a
+                llenarse y lo de arriba no es un tanque sino el faltante del año.
+                Con {datos.captacion.resultado.captacion_anual_m3.toFixed(1)} m³ de
+                captación anual, un depósito más grande que eso no se llena nunca.
+                {datos.captacion.resultado.techo_necesario_m2 != null && <> Para que
+                cierre con el consumo declarado harían falta unos{' '}
+                <b>{datos.captacion.resultado.techo_necesario_m2.toLocaleString('es-AR')} m²</b>{' '}
+                de superficie captante con los mismos coeficientes; si no, hay que
+                bajar el consumo o traer agua de otra fuente.</>}
+              </p>
+            )}
 
             {/* Balance estacional */}
             <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2">Balance estacional</p>
@@ -1586,7 +1606,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               rows={datos.zonas.map(z => [
                 z.nombre,
                 CATEGORIAS_ZONA[z.categoria].label,
-                z.area_ha.toFixed(4),
+                numeroAR(z.area_ha, 2),
                 Math.round(z.area_m2).toLocaleString('es-AR'),
                 z.notas || '—',
               ])}
@@ -1605,7 +1625,7 @@ export function InformeView({ datos, compartido = false }: Props) {
                     head={['Categoría', 'Área (ha)', '% del total']}
                     rows={Object.entries(porCategoria).map(([cat, area]) => [
                       CATEGORIAS_ZONA[cat as keyof typeof CATEGORIAS_ZONA]?.label ?? cat,
-                      (area / 10000).toFixed(4),
+                      numeroAR(area / 10000, 2),
                       total > 0 ? `${((area / total) * 100).toFixed(1)}%` : '—',
                     ])}
                     colAlign={['left', 'right', 'right']}

@@ -2397,6 +2397,100 @@ sin que nada diga que son dos fuentes distintas. Y las superficies se siguen
 imprimiendo con cuatro decimales de hectárea (`6.9102 ha`), que es un metro
 cuadrado de precisión en un dato que no la tiene.
 
+### Etapa M — El resto de la app, y el informe leído renglón por renglón ✅ *09/10/2026*
+
+La etapa L revisó `/mapa`. Ésta revisó lo que queda: el informe entero —que es
+lo que se le entrega a alguien—, la planilla de replanteo, la lista de
+materiales, el anexo del modelo declarado, y las pantallas de cuenta,
+invitación y bienvenida. Mismo predio de prueba, leído renglón por renglón.
+
+**1 · EL VIAJE AL CAMPO QUE PARECÍA NO VALER LA PENA.** El anexo del modelo
+declarado tiene una tabla que contesta la pregunta más cara de todo el informe:
+qué conviene ir a medir. Decía esto:
+
+| Qué medir | Baja el intervalo |
+|---|---|
+| el desnivel entre los dos puntos, en el terreno | −29 % |
+| el desnivel entre los dos puntos, en el terreno | −29 % |
+
+El mismo renglón dos veces. `declarar` emitía un renglón **por entrada**, y las
+dos cotas del desnivel comparten la MISMA medición: el que sube con el nivel las
+levanta a las dos en la misma mañana. Y lo peor no era la repetición: cada
+renglón calculaba la ganancia mejorando **una sola** de las dos cotas. Midiendo
+las dos —que es lo que pasa en el campo— el intervalo no baja un 29 %: baja un
+**98 %**. La tabla que existe para decidir si vale la pena el viaje estaba
+diciendo que casi no. Ahora el pedido se agrupa por medición: un renglón por
+viaje, con la ganancia del viaje entero, y el umbral del 10 % se mide sobre el
+aporte del grupo.
+
+**2 · UNA CISTERNA CUATRO VECES MÁS GRANDE QUE TODA EL AGUA QUE PUEDE ENTRARLE.**
+El panel decía «🪣 Tanque / cisterna recomendado: **107,9 m³**» sobre un techo
+que junta **26,8 m³ en todo el año**. Rippl dimensiona sobre la curva de masa
+del excedente —la reserva es el mayor vacío entre dos llenados— y eso supone que
+en el ciclo entra al menos tanta agua como sale. Cuando no entra, la curva nunca
+vuelve a cero y lo que devuelve la cuenta es **el faltante del año**, no un
+volumen de almacenaje. El código ya lo sabía (el comentario decía «un tanque no
+arregla eso») pero el número salía igual, con el rótulo de recomendación. Ahora
+el resultado trae `tanque_cierra`, el rótulo cambia a «lo que falta en el año», y
+se calcula lo único que sí se puede dimensionar en ese caso: **cuánto techo hace
+falta** —218 m² acá, contra los 50 que hay—, por regla de tres sobre el
+rendimiento de las superficies ya cargadas, sin ninguna constante nueva.
+
+**3 · LA CORRECCIÓN DE LA RADIACIÓN NO LLEGABA A LO YA GUARDADO.** El informe
+del predio de prueba seguía imprimiendo **19,42 kWh/m²/día** después del arreglo
+de la etapa L. El clima viaja dentro de `metadatos` del proyecto y **no se
+vuelve a pedir nunca**: arreglar el camino de entrada no toca los diez proyectos
+que ya están guardados. `migrarRadiacionClima` lo corrige al leerlo, en los dos
+lugares donde un clima guardado se muestra —el mapa y el informe público—, y el
+criterio no es un umbral a ojo sino el mismo techo físico con el que se testea la
+conversión: al suelo no le puede llegar más radiación que la que hay arriba de la
+atmósfera.
+
+**4 · EL PUNTO QUERÍA DECIR DOS COSAS EN LA MISMA PÁGINA.** El informe imprimía
+«Perímetro **3.669 km**» a unos renglones de «**840.800 m²**». En es-AR el punto
+es el separador de miles, así que el primero se lee *tres mil seiscientos sesenta
+y nueve kilómetros* y el segundo está bien. Lo mismo en la tabla de zonas:
+«6.9102 ha» al lado de «69.102 m²», el mismo carácter como decimal y como miles
+en celdas contiguas. `formatearDistancia`, `formatearMetros`, `formatearHa` y
+`numeroAR` dejan la coma para los decimales y el punto para los miles.
+
+Y de paso se cerró el decimal de más que quedó abierto en la etapa L: la
+superficie se imprimía con **cuatro decimales de hectárea** —un metro cuadrado de
+precisión— mientras el anexo del mismo informe la declara como 84,08 ± 0,52 ha y
+llama a esas cifras, textual, «ruido con aspecto de dato».
+
+**5 · EL PERÍMETRO LLEVABA UN POSTE QUE NO VA A NINGUNA PARTE.** Una línea
+abierta de N claros lleva N+1 postes; una cerrada lleva N, porque el último poste
+es el primero. `renglonesDeCierre` usaba la fórmula de la abierta para el cierre
+perimetral. `EntradaCierre` tiene ahora `cerrado`.
+
+**6 · «BALANCE» ERAN TRES COSAS DISTINTAS EN EL MISMO DOCUMENTO.** La columna de
+la tabla de clima (P − ETP), el balance de captación (captación − consumo) y el
+balance de agua del suelo compartían la palabra sin aclarar nada. El panel sí lo
+aclara —su gráfico se titula «Lluvia menos demanda mensual (P − ETP)»— y el
+informe no. La columna pasó a llamarse `P − ETP`.
+
+**7 · EL SHADER SE GUARDABA DE REBOTE.** El `useMemo` de `metadatos` lee
+`datosShader`, `datosClimaRaw` y `calibracionPrecip` y no los tenía en las
+dependencias. Se salvaba porque al correr el análisis cambian también `capas` y
+`analisisHecho`; cambiando sólo el relieve —otra fuente, un MDE propio importado
+encima— el proyecto guardaba el shader anterior.
+
+**8 · Y LAS CHICAS:** «4 mojónes» en la barra de estado (el plural de «mojón»
+mueve el acento y lo pierde), «12 mes/es c/ déficit», «cubre aprox. 1 días», la
+superficie repetida dos veces en el panel de polígono y la pendiente de
+Topografía que en el informe había quedado sin renombrar a «pendiente general».
+
+**Abierto de la etapa M:** dentro de `InformeView` quedan `toFixed` sueltos
+—«3.2 %», «5.4», «107.9 m³»— que imprimen punto decimal; no son ambiguos porque
+no tienen miles, pero conviven con los que ya usan coma. El panel de clima sigue
+mostrando 595 mm (CHIRPS) arriba y 943 mm (ERA5) en extremos sin decir que son
+dos fuentes, y eso **llega al informe**: la sección 2 dice 595 y la 3 dice 943, a
+una página de distancia. La planilla replantea 606 estacas y la lista compra 602
+postes: son cantidades distintas a propósito —la planilla agrega una estación en
+cada vértice— pero el informe no lo dice. Y el umbral del índice de erosión sigue
+calculándose sobre toda la ventana de análisis y no sobre el predio.
+
 ## 3. En qué orden
 
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**

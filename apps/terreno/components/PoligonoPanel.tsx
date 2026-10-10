@@ -2,7 +2,7 @@
 
 import { Lock } from 'lucide-react';
 import type { MetricasPoligono } from '@/lib/geometria';
-import { formatearDistancia } from '@/lib/geometria';
+import { formatearDistancia, formatearMetros, formatearHa } from '@/lib/geometria';
 
 interface Props {
   metricas: MetricasPoligono;
@@ -29,12 +29,13 @@ export function PoligonoPanel({ metricas, rumbosBloqueados = false, onDesbloquea
         <div className="bg-white rounded-xl p-3 border border-bone-200">
           <p className="text-xs text-moss-700 mb-1">Superficie</p>
           <p className="font-mono text-sm font-bold text-ink-900">
-            {area_ha.toFixed(4)} ha
+            {formatearHa(area_ha)}
           </p>
+          {/* La segunda línea es la unidad chica, como en el perímetro: antes
+              repetía hectáreas con cuatro decimales y ahora eso es el renglón
+              de arriba, así que repetirlo no diría nada. */}
           <p className="font-mono text-xs text-ink-700/60">
-            {area_m2 >= 10_000
-              ? `${(area_m2 / 10_000).toFixed(4)} ha`
-              : `${area_m2.toFixed(1)} m²`}
+            {`${Math.round(area_m2).toLocaleString('es-AR')} m²`}
           </p>
         </div>
         <div className="bg-white rounded-xl p-3 border border-bone-200">
@@ -43,7 +44,7 @@ export function PoligonoPanel({ metricas, rumbosBloqueados = false, onDesbloquea
             {formatearDistancia(perimetro_m)}
           </p>
           <p className="font-mono text-xs text-ink-700/60">
-            {perimetro_m.toFixed(1)} m
+            {formatearMetros(perimetro_m)}
           </p>
         </div>
       </div>
@@ -75,7 +76,7 @@ export function PoligonoPanel({ metricas, rumbosBloqueados = false, onDesbloquea
                     {l.desde}→{l.hasta}
                   </td>
                   <td className="px-3 py-1.5 text-right font-mono text-ink-700">
-                    {l.longitud.toFixed(1)} m
+                    {formatearMetros(l.longitud)}
                   </td>
                   <td className="px-3 py-1.5 text-right font-mono text-ink-700">
                     {rumbosBloqueados

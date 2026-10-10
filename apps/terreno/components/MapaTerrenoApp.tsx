@@ -59,7 +59,7 @@ import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { useCapaTopografia } from '@/hooks/useCapaTopografia';
 import { useCapturaPng } from '@/hooks/useCapturaPng';
-import { crearZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
+import { crearZona, CATEGORIAS_ZONA, type Zona, type CategoriaZona } from '@/lib/zonificacion';
 import { crearPin, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
@@ -121,31 +121,27 @@ import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
 import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos';
 import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
-import type { ElementoDibujo, DibujoEnCurso } from '@/lib/dibujos';
 import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, NOMBRE_HERRAMIENTA, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
 import { cerrarDibujo, motivoNoCierra, faltanVertices, tipoBaseDe, cierraSola, rectanguloDesdeEsquinas, VERTICES_MINIMOS } from '@/lib/mapa/cerrarDibujo';
-import { COLORES_DIBUJO, medidasDibujo } from '@/lib/dibujos';
+import { COLORES_DIBUJO, medidasDibujo, type ElementoDibujo, type DibujoEnCurso } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
-import type { OverlayImagen } from './MapLeaflet';
 import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, carpetaEscalaPara, type CapaUsuario, type TipoElementoCapa } from '@/lib/capasUsuario';
 import { calcularMasterPlan, conectarMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan, type CaminoMasterPlan } from '@/lib/masterplan';
 import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
-import { actualizarProyecto } from '@/lib/proyectos';
-import type { Proyecto } from '@/lib/proyectos';
+import { actualizarProyecto, type Proyecto } from '@/lib/proyectos';
 import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
 import type { DatosClima, CalibracionPrecip } from '@/lib/clima';
+import { migrarRadiacionClima } from '@/lib/climaMigracion';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
 import type { ReservaSnapshot } from '@/lib/reservaPredio';
 import type { DatosSuelo } from '@/lib/suelos';
-import type { Zona, CategoriaZona } from '@/lib/zonificacion';
-import type { Sector, TipoSector } from '@/lib/sectores';
-import { TIPOS_SECTOR } from '@/lib/sectores';
-import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
+import { TIPOS_SECTOR, type Sector, type TipoSector } from '@/lib/sectores';
+import type { CapasVisibles, NavegacionMapa, OverlayImagen } from './MapLeaflet';
 import { ControlesPaneles, type CapaFondo } from './ControlesMapa';
 import { BarraSuperior } from './BarraSuperior';
 import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
@@ -1048,7 +1044,9 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  // Shader, clima crudo y calibración se leen arriba y faltaban acá: el shader
+  // se guardaba de rebote, y cambiarlo solo dejaba guardado el relieve anterior.
+  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -2420,7 +2418,9 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     setAcceso((meta['acceso'] as { lat: number; lng: number }) ?? null);
     setProyectoActual(p.id ? p : null);
     setSeleccionado(null);
-    setDatosClimaRaw((meta['clima']  as DatosClima)        ?? null);
+    // `migrarRadiacionClima` y no un cast: lo guardado antes del 09/10/2026 trae
+    // la radiación en MJ y el clima no se vuelve a pedir nunca.
+    setDatosClimaRaw(migrarRadiacionClima((meta['clima'] as DatosClima) ?? null));
     setCalibracionPrecip((meta['calibracion_precip'] as CalibracionPrecip) ?? null);
     setDatosTopografia((meta['topo'] as DatosTopografia)   ?? null);
     setCaptacionSnap((meta['captacion'] as CaptacionSnapshot) ?? null);

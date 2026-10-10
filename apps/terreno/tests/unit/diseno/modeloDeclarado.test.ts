@@ -297,6 +297,32 @@ describe('el desnivel, donde el sesgo se cancela', () => {
     expect(d.advertencias.some(a => a.includes('se cancela entero'))).toBe(true);
   });
 
+  /*
+   * Un viaje, un renglón —y la ganancia del viaje entero.
+   *
+   * Las dos cotas del desnivel comparten la MISMA medición: el que sube con el
+   * nivel levanta las dos en la misma mañana. Un renglón por entrada imprimía
+   * dos veces «el desnivel entre los dos puntos · −29 %», porque cada uno
+   * calculaba la ganancia mejorando una sola de las dos. Con las dos mejoradas
+   * —que es lo que pasa en el campo— el intervalo no baja un 29 %: baja un 98 %.
+   * El error no era de forma: al productor se le ofrecía un viaje que parecía no
+   * valer la pena.
+   */
+  it('EL PEDIDO DE RELEVAMIENTO ES UNO SOLO, Y VALE LO QUE VALE EL VIAJE ENTERO', () => {
+    expect(d.relevamiento).toHaveLength(1);
+    const r = d.relevamiento[0]!;
+    expect(r.medicion.que).toContain('desnivel entre los dos puntos');
+    // Las dos cotas aportan el 100 % de la varianza (el sesgo aporta cero).
+    expect(r.fraccion).toBeCloseTo(1, 6);
+    // uc pasa de √2·1,22 = 1,725 m a √2·0,02 = 0,028 m.
+    expect(r.uc_despues).toBeCloseTo(Math.sqrt(2) * 0.02, 6);
+    expect(r.ganancia).toBeGreaterThan(0.95);
+    // Mejorar UNA sola cota —lo que hacía antes— daba esto, y no es lo que se
+    // consigue yendo al campo con un nivel.
+    const unaSola = 1 - Math.sqrt(0.02 ** 2 + 1.22 ** 2) / d.propagacion.uc;
+    expect(unaSola).toBeCloseTo(0.29, 2);
+  });
+
   it('Y SI LOS DOS PUNTOS ESTÁN MÁS CERCA QUE UNA CELDA, AVISA QUE AHÍ NO HAY DOS MEDICIONES', () => {
     const corto = declararDesnivel({
       cota_alta_m: 220, cota_baja_m: 219, distancia_m: 12, fuente: 'glo30',
@@ -370,11 +396,18 @@ describe('el pedido de relevamiento, que sale de la cuenta y no de la intuición
     pendiente_pct: 8,
   })!;
 
-  it('PIDE MEDIR LA COTA DEL VERTEDERO Y NO LAS DEL FONDO, PORQUE EL FONDO NO MUEVE EL RESULTADO', () => {
-    // El fondo pone 1/51 = 2 % de la varianza, por debajo del umbral: ir a
-    // medirlo es un viaje al campo que no cambia nada.
-    expect(d.relevamiento.map(r => r.id)).toEqual(['z_agua']);
+  it('UN SOLO RENGLÓN, PORQUE ES UN SOLO VIAJE: LA MISMA JORNADA LEVANTA VERTEDERO Y FONDO', () => {
+    // El fondo pone 1/51 = 2 % de la varianza: por su cuenta no justificaría el
+    // viaje, y antes quedaba afuera del pedido. Pero la medición declarada es
+    // una sola —«la cota del vertedero y tres o cuatro cotas del fondo,
+    // referidas entre sí»— y se hace de una: el renglón es uno y arregla las
+    // dos entradas a la vez.
+    expect(d.relevamiento).toHaveLength(1);
+    expect(d.relevamiento[0]!.id).toBe('z_agua+z_fondo');
     expect(1 / (N + 1)).toBeLessThan(FRACCION_SIGNIFICATIVA);
+    // Y lo que manda sigue siendo la cota del agua: aporta el 98 % de la varianza.
+    const agua = d.propagacion.contribuciones.find(c => c.id === 'z_agua')!;
+    expect(agua.fraccion).toBeGreaterThan(0.95);
   });
 
   it('Y DICE CUÁNTO SE GANA: 86 % MENOS DE INCERTIDUMBRE POR MEDIO DÍA CON UN NIVEL', () => {

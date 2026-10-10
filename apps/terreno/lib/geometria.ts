@@ -71,7 +71,48 @@ function azimutARumbo(az: number): string {
   return `N ${f(360 - az)}° O`;
 }
 
+/** Un número con coma decimal y punto de miles, sin unidad. */
+export function numeroAR(n: number, decimales: number): string {
+  return esAR(n, decimales);
+}
+
+function esAR(n: number, decimales: number): string {
+  return n.toLocaleString('es-AR', {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  });
+}
+
+/**
+ * Una distancia como se escribe en castellano: coma decimal y punto para los
+ * miles.
+ *
+ * No es una preferencia de estilo. Con `toFixed` el perímetro salía
+ * «3.669 km», y en es-AR el punto es el separador de MILES: eso se lee tres mil
+ * seiscientos sesenta y nueve kilómetros. En el mismo informe, unos renglones
+ * más abajo, «840.800 m²» usa el punto con su significado de miles. El mismo
+ * carácter queriendo decir dos cosas distintas en la misma página es una
+ * trampa, y la unidad grande es justo la que se lee mal por mil.
+ */
 export function formatearDistancia(metros: number): string {
-  if (metros >= 1000) return `${(metros / 1000).toFixed(3)} km`;
-  return `${metros.toFixed(1)} m`;
+  if (metros >= 1000) return `${esAR(metros / 1000, 3)} km`;
+  return `${esAR(metros, 1)} m`;
+}
+
+/** Siempre en metros, para las tablas donde todas las filas tienen que medir igual. */
+export function formatearMetros(metros: number): string {
+  return `${esAR(metros, 1)} m`;
+}
+
+/**
+ * Una superficie en hectáreas, con dos decimales: 100 m².
+ *
+ * Los cuatro decimales que había —«84,0769 ha»— son un metro cuadrado de
+ * precisión, y el propio anexo del informe declara esa misma superficie como
+ * 84,08 ± 0,52 ha. Imprimir cuatro decimales al lado de un intervalo de media
+ * hectárea es exactamente lo que ese anexo llama, textual, cifras que son
+ * «ruido con aspecto de dato».
+ */
+export function formatearHa(hectareas: number): string {
+  return `${esAR(hectareas, 2)} ha`;
 }

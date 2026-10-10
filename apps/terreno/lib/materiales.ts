@@ -330,7 +330,15 @@ export interface EntradaCierre {
   /** Cantidad de hilos. La fuente la publica por tipo de cierre; acequia la pide. */
   hilos?:    number | null;
   /** Postes de madera tratada, madera sin tratar o acero: cambia la calidad. */
-  material?: 'acero_t' | 'madera_tratada' | 'madera_sin_tratar' | 'cano_acero';
+  material?: 'acero_t' | 'madera_tratada' | 'madera_sin_tratar' | 'cano_acero';  /**
+   * `true` cuando el cierre vuelve sobre sí mismo —el perímetro de un predio o
+   * un potrero— y `false` cuando tiene dos puntas.
+   *
+   * Cambia la cuenta en uno: una línea abierta de N claros lleva N+1 postes, y
+   * una cerrada lleva N, porque el último poste es el primero. El perímetro se
+   * calculaba con la fórmula de la abierta.
+   */
+  cerrado?: boolean;
 }
 
 const CALIDAD_POSTE: Record<NonNullable<EntradaCierre['material']>, string> = {
@@ -358,8 +366,10 @@ export function renglonesDeCierre(e: EntradaCierre): RenglonMaterial[] {
   const esquinas = Math.max(0, Math.round(e.esquinas));
   const claros   = Math.ceil(e.largo_m / sep.maximo_m);
   // Los postes de línea no incluyen los de esquina: esos van en el conjunto
-  // arriostrado, que es otro renglón y otro precio.
-  const postes   = Math.max(0, claros - esquinas + 1);
+  // arriostrado, que es otro renglón y otro precio. Y el «+1» de la punta sólo
+  // existe si el cierre TIENE puntas: en un perímetro el último poste es el
+  // primero, así que ahí son `claros` y no `claros + 1`.
+  const postes   = Math.max(0, claros - esquinas + (e.cerrado ? 0 : 1));
   const out: RenglonMaterial[] = [];
 
   out.push({
@@ -370,7 +380,7 @@ export function renglonesDeCierre(e: EntradaCierre): RenglonMaterial[] {
     unidad: 'u',
     base: 'unidad',
     calidad: CALIDAD_POSTE[e.material ?? 'madera_tratada'],
-    deDonde: `${Math.round(e.largo_m)} m de cierre / ${sep.maximo_m.toFixed(2)} m de separación máxima publicada, menos las ${esquinas} esquinas, que llevan conjunto arriostrado.`,
+    deDonde: `${Math.round(e.largo_m)} m de cierre / ${sep.maximo_m.toFixed(2)} m de separación máxima publicada = ${claros} claros${e.cerrado ? ' (y el cierre vuelve sobre sí mismo, así que son tantos postes como claros)' : ', más el poste de la punta'}, menos las ${esquinas} esquinas, que llevan conjunto arriostrado.`,
     fuente: FUENTE_382,
     margen: null,
     estado: 'necesario',
@@ -706,6 +716,7 @@ export function armarLista(e: EntradaLista): ListaDeMateriales {
       ...e.cierre,
       largo_m:  e.metricas.perimetro_m,
       esquinas: Math.max(0, e.mojones ?? 0),
+      cerrado:  true,
     });
     if (rs.length === 0) {
       advertencias.push(

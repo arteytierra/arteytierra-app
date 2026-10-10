@@ -211,6 +211,24 @@ describe('los renglones del cierre', () => {
     expect(linea.cantidad).toBe(claros - 12 + 1);
   });
 
+  /*
+   * En un perímetro el último poste es el primero.
+   *
+   * Una línea abierta de N claros lleva N+1 postes; una cerrada lleva N. El
+   * cierre perimetral se calculaba con la fórmula de la abierta, así que la
+   * lista de materiales pedía un poste que no va a ninguna parte.
+   */
+  it('EL CIERRE QUE VUELVE SOBRE SÍ MISMO LLEVA UN POSTE MENOS QUE LA LÍNEA ABIERTA', () => {
+    const base = { largo_m: 2600, esquinas: 12, especie: 'bovino', tipo: 'pua' } as const;
+    const abierto = renglonesDeCierre({ ...base });
+    const cerrado = renglonesDeCierre({ ...base, cerrado: true });
+    const postes = (rs: ReturnType<typeof renglonesDeCierre>) =>
+      rs.find(r => r.concepto.startsWith('Postes'))!.cantidad;
+    const claros = Math.ceil(2600 / (20 * PIE));
+    expect(postes(abierto)).toBe(claros - 12 + 1);
+    expect(postes(cerrado)).toBe(claros - 12);
+  });
+
   it('CON VARILLAS APARECE EL RENGLÓN DE VARILLAS, DOS POR CLARO', () => {
     const rs = renglonesDeCierre({ largo_m: 1000, esquinas: 0, especie: 'bovino', tipo: 'pua', conVarillas: true });
     const v = rs.find(r => r.concepto.startsWith('Varillas'))!;
