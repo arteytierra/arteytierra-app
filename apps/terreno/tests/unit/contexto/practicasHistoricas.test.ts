@@ -9,7 +9,7 @@ import { BIOMAS_REGIONALES } from '@/lib/biomasRegionales';
 /*
  * El contrato de las prácticas documentadas.
  *
- * Esta capa existe porque 200 de las 222 fichas regionales tienen `saberes: []`
+ * Esta capa existe porque 220 de las 242 fichas regionales tienen `saberes: []`
  * a propósito —a escala de ecorregión atribuirle una práctica a un pueblo sería
  * inventar— y la sección quedaba vacía, que se leía como "acá no hay nada".
  * Decir qué se hizo y cuándo sí se puede: es lo que el registro fecha.
