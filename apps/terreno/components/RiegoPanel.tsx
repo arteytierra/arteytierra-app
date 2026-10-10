@@ -5,7 +5,7 @@
  * ETc = ETo·Kc → necesidad neta/bruta → caudal (nodo de consumo de la red B1),
  * diseño de goteo y calendario de riego según el agua útil del suelo.
  */
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Droplets, TriangleAlert, Gauge, CalendarClock } from 'lucide-react';
 import {
   calcularRiego, seriesClima, aguaUtilPorMetro, CULTIVOS, SISTEMAS,
@@ -16,8 +16,19 @@ import type { DatosSuelo } from '@/lib/suelos';
 
 interface ParcelaRiego { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
+/**
+ * Con qué área abre el panel: mil metros cuadrados, una huerta familiar.
+ *
+ * Antes abría con la superficie del predio ENTERO, y eso era inocuo mientras el
+ * riego no salía de esta pestaña. Desde que su demanda entra al balance de agua
+ * (lib/balanceAgua.ts), un predio de 9,56 ha donde alguien abrió Riego una vez
+ * y no tocó nada quedaba pidiendo 278.000 L/día — un número enorme, plausible y
+ * que nadie escribió. El área de riego la decide quien riega: se tipea, o se
+ * elige un polígono dibujado en el mapa.
+ */
+const AREA_INICIAL_HA = 0.1;
+
 interface Props {
-  areaHa:     number;
   datosClima: DatosClima | null;
   datosSuelo: DatosSuelo | null;
   onIrAClima: () => void;
@@ -40,17 +51,12 @@ function areaHaDe(v: Array<{ lat: number; lng: number }>): number {
   return Math.abs(a / 2) / 10000;
 }
 
-export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResumen, parcelas = [], inicial, onInputs }: Props) {
-  const [area,      setArea]      = useState(inicial?.area ?? (areaHa > 0 ? Math.round(areaHa * 100) / 100 : 0.5));
+export function RiegoPanel({ datosClima, datosSuelo, onIrAClima, onResumen, parcelas = [], inicial, onInputs }: Props) {
+  const [area,      setArea]      = useState(inicial?.area ?? AREA_INICIAL_HA);
   const [cultivoId, setCultivoId] = useState(inicial?.cultivoId ?? CULTIVOS[0]!.id);
   const [sistemaId, setSistemaId] = useState(inicial?.sistemaId ?? SISTEMAS[0]!.id);
   const [horas,     setHoras]     = useState(inicial?.horas ?? 8);
   const [zonaSel,   setZonaSel]   = useState('manual');   // 'manual' o id de parcela dibujada
-
-  // El autocompletado del área desde el predio sólo corre en un panel nuevo;
-  // si hay datos guardados, mandan ellos y no se pisan al volver a la pestaña.
-  const autoArea = useRef(inicial == null);
-  useEffect(() => { if (autoArea.current && areaHa > 0) setArea(Math.round(areaHa * 100) / 100); }, [areaHa]);
 
   useEffect(() => { onInputs?.({ area, cultivoId, sistemaId, horas }); }, [area, cultivoId, sistemaId, horas, onInputs]);
 
@@ -106,7 +112,7 @@ export function RiegoPanel({ areaHa, datosClima, datosSuelo, onIrAClima, onResum
                 setZonaSel(val);
                 if (val !== 'manual') {
                   const p = parcelas.find(x => x.id === val);
-                  if (p) { autoArea.current = false; setArea(Math.round(areaHaDe(p.vertices) * 100) / 100); }
+                  if (p) setArea(Math.round(areaHaDe(p.vertices) * 100) / 100);
                 }
               }}
               className="w-full text-xs rounded-lg border border-bone-200 px-2 py-1.5 bg-white">

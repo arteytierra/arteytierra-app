@@ -3448,7 +3448,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
           )}
           {tab === 'riego' && (
             <div className="px-4 py-4">
-              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
+              <RiegoPanel datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
             </div>
           )}
           {tab === 'swales' && (
