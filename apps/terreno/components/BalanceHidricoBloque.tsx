@@ -5,7 +5,8 @@ import { Droplets, Sprout, Scale, Info, ChevronDown, Gauge } from 'lucide-react'
 import type { Extremos } from '@/lib/climaExtremos';
 import {
   balanceCiclico, balanceDeLosAnios, compararReglas, costoDeNoIterar,
-  periodoDeCrecimiento, lluviasDependientes, contrastarEtp, fechaDeDekada,
+  periodoDeCrecimiento, lluviasDependientes, contrastarEtp, contrastarPrecip, fechaDeDekada,
+  DIF_PRECIP_SIGNIFICATIVA_PCT,
   AWC_POR_DEFECTO_MM, AWC_REFERENCIA_GAEZ_MM, FRAC_AGOTAMIENTO_FAO56,
   FUENTE_TM, FUENTE_USGS_WB, FUENTE_SWB, FUENTE_DOURADO, FUENTE_FAO56,
   FUENTE_FAO52, FUENTE_GAEZ4, FUENTE_FAO25, EXCEDENTE_NO_ES_RECARGA, MESES_CORTOS,
@@ -21,6 +22,14 @@ interface Props {
   rh_pct:           number | null;
   /** Agua útil 0–100 cm del panel de suelo. `null` si el panel no corrió. */
   aguaUtil_mm:      number | null;
+  /**
+   * La lluvia anual que muestra el panel de clima, para poder contrastarla con
+   * la de la serie que corre este balance. Son dos fuentes distintas y pueden
+   * diferir mucho; sin este dato el bloque no puede avisarlo.
+   */
+  precipClimatologia_mm: number | null;
+  /** La climatología está anclada a pluviómetros (CHIRPS o una estación). */
+  precipCalibrada:       boolean;
 }
 
 const n0 = (x: number) => Math.round(x).toLocaleString('es-AR');
@@ -31,7 +40,10 @@ function mensualizar(dek: readonly number[]): number[] {
   return Array.from({ length: 12 }, (_, m) => (dek[m * 3] ?? 0) + (dek[m * 3 + 1] ?? 0) + (dek[m * 3 + 2] ?? 0));
 }
 
-export function BalanceHidricoBloque({ extremos, etpHargreaves_mm, viento_ms, rh_pct, aguaUtil_mm }: Props) {
+export function BalanceHidricoBloque({
+  extremos, etpHargreaves_mm, viento_ms, rh_pct, aguaUtil_mm,
+  precipClimatologia_mm, precipCalibrada,
+}: Props) {
   const [awcManual, setAwcManual] = useState<number | null>(null);
   const [regla, setRegla]         = useState<ReglaAgotamiento>('thornthwaite');
   const [porQue, setPorQue]       = useState(false);
@@ -84,6 +96,17 @@ export function BalanceHidricoBloque({ extremos, etpHargreaves_mm, viento_ms, rh
     () => (etpHargreaves_mm !== null && extremos ? contrastarEtp(etpHargreaves_mm, extremos.et0_anual_mm, viento_ms, rh_pct) : null),
     [etpHargreaves_mm, extremos, viento_ms, rh_pct],
   );
+  // La misma verificación que la de la ETP, sobre la lluvia. Hace más falta
+  // todavía: la de la ETP compara dos números que se muestran, y esta compara
+  // dos que además se CALCULAN con, cada uno en la mitad de la app.
+  const contPrecip = useMemo(
+    () => (precipClimatologia_mm !== null && extremos
+      ? contrastarPrecip(precipClimatologia_mm, extremos.precip_anual.media_mm, precipCalibrada)
+      : null),
+    [precipClimatologia_mm, extremos, precipCalibrada],
+  );
+  const lluviasDiscrepan = contPrecip !== null
+    && Math.abs(contPrecip.dif_pct) > DIF_PRECIP_SIGNIFICATIVA_PCT;
 
   if (!extremos) {
     return (
@@ -128,6 +151,24 @@ export function BalanceHidricoBloque({ extremos, etpHargreaves_mm, viento_ms, rh
       </div>
 
       <div className="p-3 space-y-3">
+        {/* La discrepancia va ANTES de los números y a la vista, no detrás de
+            «por qué»: lo que sigue está calculado con una lluvia distinta de la
+            que el panel de arriba imprime como la del predio. El desarrollo
+            completo —cuál conviene para qué— sí va en «por qué». */}
+        {lluviasDiscrepan && contPrecip && (
+          <div className="rounded-lg bg-sun-300/15 border border-sun-300/60 p-2">
+            <p className="text-[10px] text-ink-800 leading-snug">
+              <b>Esto corre sobre otra lluvia que el panel de arriba.</b> La climatología del
+              predio da <span className="font-mono">{n0(contPrecip.climatologia_mm)} mm/año</span> y la
+              serie diaria de este balance,{' '}
+              <span className="font-mono">{n0(contPrecip.serie_mm)} mm/año</span>:{' '}
+              <b>{n0(Math.abs(contPrecip.dif_pct))} % de diferencia</b>. Son dos fuentes para el mismo
+              punto. La aridez, la receptividad y la captación usan la primera; el período de
+              crecimiento y las lluvias dependientes de acá, la segunda.
+            </p>
+          </div>
+        )}
+
         {/* ── El año que no es el promedio ── */}
         <div>
           <p className="text-[11px] font-semibold text-ink-700 mb-1.5">
@@ -368,7 +409,8 @@ export function BalanceHidricoBloque({ extremos, etpHargreaves_mm, viento_ms, rh
             </p>
             <p>{EXCEDENTE_NO_ES_RECARGA}</p>
             {[...porAnios.advertencias, ...periodo.advertencias, ...balance.advertencias,
-              ...(reglas?.advertencias ?? []), ...(contraste?.advertencias ?? [])].map((a, i) => (
+              ...(reglas?.advertencias ?? []), ...(contraste?.advertencias ?? []),
+              ...(contPrecip?.advertencias ?? [])].map((a, i) => (
               <p key={i}>{a}</p>
             ))}
             <div className="pt-1 border-t border-bone-200 space-y-0.5">

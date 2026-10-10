@@ -157,7 +157,16 @@ export function ProyectosPanel({
     onProyectoActualChange(null);
   }
 
-  async function handleEliminar(id: string, e: React.MouseEvent) {
+  /**
+   * El nombre va en la pregunta, y no es un detalle de redacción.
+   *
+   * El tacho es un ícono de 14 px repetido en cada fila de una lista que puede
+   * tener diez proyectos, y lo que sigue es irreversible. Preguntar «¿eliminar
+   * este proyecto?» no le da a nadie forma de darse cuenta de que le erró a la
+   * fila: la última pantalla antes de perder el trabajo era la única que podía
+   * avisarlo y no decía nada.
+   */
+  async function handleEliminar(id: string, nombreProyecto: string, e: React.MouseEvent) {
     e.stopPropagation();
     const doEliminar = async () => {
       try {
@@ -174,9 +183,9 @@ export function ProyectosPanel({
       }
     };
     if (onConfirm) {
-      onConfirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.', doEliminar);
+      onConfirm(`¿Eliminar «${nombreProyecto}»? Esta acción no se puede deshacer.`, doEliminar);
     } else {
-      if (!confirm('¿Eliminar este proyecto?')) return;
+      if (!confirm(`¿Eliminar «${nombreProyecto}»? Esta acción no se puede deshacer.`)) return;
       await doEliminar();
     }
   }
@@ -464,7 +473,9 @@ export function ProyectosPanel({
                   </p>
                 </div>
                 <button
-                  onClick={e => handleEliminar(p.id, e)}
+                  onClick={e => handleEliminar(p.id, p.nombre, e)}
+                  title={`Eliminar «${p.nombre}»`}
+                  aria-label={`Eliminar «${p.nombre}»`}
                   className="shrink-0 text-ink-700/25 hover:text-danger-500 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

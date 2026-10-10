@@ -1101,6 +1101,111 @@ export function contrastarEtp(
   return { hargreaves_mm, penman_mm, dif_mm, dif_pct, cociente: hargreaves_mm / penman_mm, sesgo_esperado, coincide, advertencias };
 }
 
+// ─── Las dos lluvias del mismo predio ───────────────────────────────
+
+export interface ContrastePrecip {
+  /** La del panel de clima: climatología mensual, calibrada con CHIRPS si hubo. */
+  climatologia_mm: number;
+  /** La media interanual de la serie diaria, que es la que corre este balance. */
+  serie_mm:        number;
+  dif_mm:          number;
+  /** La diferencia respecto de la climatología, en por ciento. */
+  dif_pct:         number;
+  /** Serie sobre climatología. 1 sería coincidencia perfecta. */
+  cociente:        number;
+  /** La climatología está anclada a pluviómetros (CHIRPS o una estación cargada). */
+  calibrada:       boolean;
+  advertencias:    string[];
+}
+
+/** Arriba de esto las dos lluvias dejan de ser «la misma con ruido». */
+export const DIF_PRECIP_SIGNIFICATIVA_PCT = 15;
+
+/**
+ * Compara las dos precipitaciones anuales que la app ya tiene para el mismo
+ * punto, por la misma razón por la que `contrastarEtp` compara las dos ETP.
+ *
+ * Y hace más falta todavía, porque acá las dos no sólo se muestran: **se
+ * calculan con**. La aridez, la receptividad, el escurrimiento, la captación y
+ * los umbrales de bioconstrucción salen de `DatosClima.precip_anual_mm`; el
+ * balance de esta pantalla —el período de crecimiento, las lluvias dependientes,
+ * el ciclo del agua del suelo— sale de la serie diaria. En un predio de
+ * Traslasierra eso eran 595 mm arriba y 943 mm abajo, un 59 % de diferencia, con
+ * el panel diciendo «semiárido» al lado de un balance armado sobre otra lluvia.
+ * Nada en la pantalla decía que eran dos fuentes.
+ *
+ * ## De dónde sale cada una, que es lo que explica la diferencia
+ *
+ * **La serie diaria es ERA5**, y ERA5 **no asimila observaciones de lluvia**: la
+ * precipitación es un campo de pronóstico del modelo, no un dato analizado
+ * contra pluviómetros (Hersbach et al., 2020, «The ERA5 global reanalysis»,
+ * *Q. J. R. Meteorol. Soc.* 146(730), 1999-2049).
+ *
+ * **CHIRPS, en cambio, mezcla la estimación satelital con las estaciones** que
+ * haya en la zona —es lo que significa la «S» de su nombre— (Funk et al., 2015,
+ * «The climate hazards infrared precipitation with stations—a new environmental
+ * record for monitoring extremes», *Scientific Data* 2, 150066).
+ *
+ * Esa asimetría vale **sólo si la climatología está calibrada**. Sin calibrar,
+ * las dos son productos de modelo y la diferencia no tiene un lado preferido:
+ * ahí lo único honesto es decir que hay dos números y que los decide un
+ * pluviómetro local.
+ *
+ * ## Por qué no se corrige sola
+ *
+ * Re-escalar la serie diaria para que cierre con la climatología sería inventar
+ * un dato: cambiaría el total sin saber si el sesgo está en los días de lluvia,
+ * en la intensidad o en ambos, y se llevaría puestas las tormentas de diseño.
+ * La app mide la discrepancia y la dice; el que la cierra es un dato local.
+ */
+export function contrastarPrecip(
+  climatologia_mm: number, serie_mm: number, calibrada: boolean,
+): ContrastePrecip | null {
+  if (!Number.isFinite(climatologia_mm) || !Number.isFinite(serie_mm)) return null;
+  if (climatologia_mm <= 0 || serie_mm <= 0) return null;
+
+  const dif_mm  = serie_mm - climatologia_mm;
+  const dif_pct = (dif_mm / climatologia_mm) * 100;
+
+  const advertencias: string[] = [
+    'El panel de clima trae la lluvia de una climatología mensual' +
+    (calibrada ? ' calibrada con pluviómetros' : ' sin calibrar') +
+    ', y este balance corre sobre la serie diaria del reanálisis. Son dos fuentes ' +
+    'distintas para el mismo punto: que no coincidan es lo esperable; cuánto y para ' +
+    'qué lado es el dato.',
+  ];
+
+  if (Math.abs(dif_pct) > DIF_PRECIP_SIGNIFICATIVA_PCT) {
+    advertencias.push(
+      `Las dos lluvias difieren ${Math.abs(Math.round(dif_pct))} % (${Math.round(climatologia_mm)} mm ` +
+      `contra ${Math.round(serie_mm)} mm). No es un redondeo: la aridez, la receptividad, el ` +
+      'escurrimiento y la captación se calculan con la primera, y el período de crecimiento y ' +
+      'las lluvias dependientes de esta pantalla, con la segunda.',
+    );
+    advertencias.push(
+      calibrada
+        ? 'Para el total anual pesa más la climatología: está anclada a pluviómetros, y el ' +
+          'reanálisis no asimila observaciones de lluvia —su precipitación sale del pronóstico ' +
+          'del modelo—. La serie diaria sigue siendo la que vale para lo que la climatología no ' +
+          'tiene: la variabilidad entre años, las rachas secas y las tormentas de diseño.'
+        : 'Ninguna de las dos está anclada a pluviómetros acá, así que la diferencia no tiene un ' +
+          'lado preferido. Cargá el total de una estación cercana y la app recalibra la ' +
+          'climatología con ese número.',
+    );
+    advertencias.push(
+      'Mientras tanto, de qué lado conviene equivocarse depende de qué se esté dimensionando: ' +
+      'para saber si el agua ALCANZA —reserva, receptividad, riego— la hipótesis prudente es la ' +
+      'lluvia menor; para dimensionar lo que tiene que AGUANTAR el agua —vertedero, alcantarilla, ' +
+      'desagües— es la mayor.',
+    );
+  }
+
+  return {
+    climatologia_mm, serie_mm, dif_mm, dif_pct,
+    cociente: serie_mm / climatologia_mm, calibrada, advertencias,
+  };
+}
+
 // ─── Lo que no se calcula, y por qué ─────────────────────────────────────────
 
 /**

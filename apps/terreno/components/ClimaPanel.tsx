@@ -362,6 +362,8 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             viento_ms={datos.viento_medio_ms ?? null}
             rh_pct={datos.rh_anual_pct ?? null}
             aguaUtil_mm={aguaUtil_mm}
+            precipClimatologia_mm={datos.precip_anual_mm}
+            precipCalibrada={datos.calibracion !== undefined}
           />
 
           {/* La bioconstrucción se mudó a Infraestructuras (grupo 4 · Zonas) el
@@ -532,8 +534,12 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
         </div>
 
         <p className="text-[9px] text-ink-700/45 italic leading-tight border-t border-bone-200 pt-2">
-          {extremos.fuente}. Tormenta: {tormenta.metodo}. Precip. media {precip_anual.media_mm} mm/año,
-          ET0 {extremos.et0_anual_mm} mm/año. Orientativo — verificar con estaciones locales.
+          {/* «de esta serie» y no «del predio»: estos dos números salen del reanálisis y
+              no de la climatología que imprime el panel unos centímetros más arriba.
+              Sin esa aclaración se leían como el mismo dato, y acá diferían un 59 %. */}
+          {extremos.fuente}. Tormenta: {tormenta.metodo}. Precip. media de esta serie{' '}
+          {precip_anual.media_mm} mm/año, ET0 {extremos.et0_anual_mm} mm/año.
+          Orientativo — verificar con estaciones locales.
         </p>
       </div>
     </div>

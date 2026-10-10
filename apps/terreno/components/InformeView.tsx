@@ -4,6 +4,7 @@ import { FileDown, ArrowLeft, Lock } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
 import { ACEQUIA_APP_HOST } from '@/lib/sitio';
 import { calcularMetricas, formatearDistancia, formatearMetros, formatearHa, numeroAR, type MetricasPoligono } from '@/lib/geometria';
+import { contrastarPrecip, DIF_PRECIP_SIGNIFICATIVA_PCT } from '@/lib/balanceHidrico';
 import { MESES, centroide } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
@@ -460,9 +461,41 @@ export function InformeView({ datos, compartido = false }: Props) {
               )}
 
               <p className="text-sm text-ink-700/80 mt-1">
-                <span className="font-semibold">Precipitación interanual:</span> media {ex.precip_anual.media_mm} mm
+                <span className="font-semibold">Precipitación interanual de esta serie:</span> media {ex.precip_anual.media_mm} mm
                 (mín {ex.precip_anual.min_mm} · máx {ex.precip_anual.max_mm} · variabilidad CV {ex.precip_anual.cv_pct} %).
               </p>
+
+              {/* Las dos lluvias del informe, dichas donde aparece la segunda.
+                  La sección 2 imprime la climatología del predio y ésta la media del
+                  reanálisis: en Traslasierra eran 595 y 943 mm a una página de
+                  distancia, sin que nada dijera que eran dos fuentes distintas. */}
+              {(() => {
+                const cp = datos.clima
+                  ? contrastarPrecip(datos.clima.precip_anual_mm, ex.precip_anual.media_mm, datos.clima.calibracion !== undefined)
+                  : null;
+                if (!cp || Math.abs(cp.dif_pct) <= DIF_PRECIP_SIGNIFICATIVA_PCT) return null;
+                return (
+                  <div className="mt-2 rounded-lg border border-ink-700/15 bg-bone-50 p-2.5">
+                    <p className="text-xs text-ink-700/80 leading-relaxed">
+                      <span className="font-semibold">Las dos lluvias de este informe no coinciden.</span>{' '}
+                      El capítulo de clima da <b>{Math.round(cp.climatologia_mm)} mm/año</b> y esta serie,{' '}
+                      <b>{Math.round(cp.serie_mm)} mm/año</b>: {Math.abs(Math.round(cp.dif_pct))} % de
+                      diferencia. Son dos fuentes para el mismo punto, y cada mitad del análisis usa
+                      una: la aridez, la receptividad, el escurrimiento y la captación salen de la
+                      primera; la variabilidad entre años, las rachas secas y las tormentas de diseño,
+                      de la segunda.
+                      {cp.calibrada
+                        ? <> Para el total anual pesa más la del capítulo de clima, que está anclada a
+                          pluviómetros; el reanálisis no asimila observaciones de lluvia.</>
+                        : <> Ninguna de las dos está anclada a pluviómetros acá, así que la diferencia
+                          no tiene un lado preferido.</>}{' '}
+                      Lo decide el registro de una estación cercana. Mientras no esté, de qué lado
+                      conviene equivocarse depende de qué se dimensione: para saber si el agua alcanza,
+                      la lluvia menor; para dimensionar lo que tiene que aguantarla, la mayor.
+                    </p>
+                  </div>
+                );
+              })()}
 
               <p className="text-xs text-ink-700/50 mt-2 italic">
                 Fuente: {ex.fuente} ({ex.periodo}, {ex.anios} años). Tormenta de diseño por {ex.tormenta.metodo}.

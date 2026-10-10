@@ -2491,6 +2491,71 @@ postes: son cantidades distintas a propósito —la planilla agrega una estació
 cada vértice— pero el informe no lo dice. Y el umbral del índice de erosión sigue
 calculándose sobre toda la ventana de análisis y no sobre el predio.
 
+### Etapa N — Las dos lluvias del mismo predio ✅ *10/10/2026*
+
+Quedaba anotado de la etapa M como un problema de rótulo: el informe decía
+595 mm en el capítulo de clima y 943 mm en el de extremos, a una página de
+distancia, sin aclarar que eran dos fuentes. Al ir a arreglarlo apareció que no
+era un rótulo.
+
+**LAS DOS LLUVIAS NO SE MUESTRAN NADA MÁS: SE CALCULA CON LAS DOS.**
+`DatosClima.precip_anual_mm` —la climatología mensual, calibrada con CHIRPS—
+alimenta la aridez, la receptividad, el escurrimiento, la captación, los
+módulos de pastoreo y los umbrales de bioconstrucción. La serie diaria de ERA5
+alimenta `BalanceHidricoBloque`: el período de crecimiento, las lluvias
+dependientes y el ciclo del agua del suelo. En el predio de prueba eso es
+**595 mm arriba y 943 mm abajo, un 58 % de diferencia**, con el panel
+imprimiendo «semiárido» al lado de un balance armado sobre otra lluvia. La
+mitad del análisis corría sobre un clima y la otra mitad sobre otro.
+
+**LA APP YA TENÍA EL PATRÓN Y NO LO HABÍA APLICADO ACÁ.** `contrastarEtp`
+compara las dos ETP que la app tiene del mismo punto —es lo que FAO-56 manda
+hacer con su ecuación 52— y avisa cuánto difieren y cuál usa cada pantalla.
+`contrastarPrecip` es la misma función para la lluvia, y hacía más falta: la de
+la ETP compara dos números que se muestran, ésta compara dos que además se
+calculan con.
+
+**POR QUÉ NO SE CORRIGE SOLA.** Re-escalar la serie diaria para que cierre con
+la climatología sería inventar un dato: cambiaría el total sin saber si el sesgo
+está en los días de lluvia, en la intensidad o en ambos, y se llevaría puestas
+las tormentas de diseño. La app mide la discrepancia y la dice.
+
+**Y CUÁL PESA MÁS, CUANDO SE PUEDE DECIR.** El argumento no es «CHIRPS es
+mejor» sino cómo está construido cada uno: ERA5 **no asimila observaciones de
+lluvia** —su precipitación es un campo de pronóstico del modelo (Hersbach et
+al., 2020)— y CHIRPS **mezcla la estimación satelital con las estaciones** que
+haya en la zona, que es lo que significa la «S» de su nombre (Funk et al.,
+2015). Esa asimetría vale **sólo si la climatología está calibrada**: sin
+calibrar las dos son productos de modelo y la diferencia no tiene lado
+preferido, y el bloque lo dice así.
+
+Lo último que agrega, y que es lo accionable mientras no haya un pluviómetro:
+**de qué lado conviene equivocarse depende de qué se esté dimensionando.** Para
+saber si el agua *alcanza* —reserva, receptividad, riego— la hipótesis prudente
+es la lluvia menor; para dimensionar lo que tiene que *aguantarla* —vertedero,
+alcantarilla, desagües— es la mayor.
+
+Aparece en tres lugares: una línea a la vista arriba del balance hídrico (no
+detrás de «por qué»: lo que sigue está calculado con la otra lluvia), el
+desarrollo completo dentro de «por qué», y un recuadro en el capítulo 3 del
+informe, donde aparece el segundo número. Además el pie de Extremos dice ahora
+«precip. media **de esta serie**», que era la media palabra que faltaba.
+
+**Y EL DIÁLOGO DE BORRAR NO DECÍA QUÉ SE BORRABA.** Al ir a eliminar el proyecto
+de prueba: el tacho es un ícono de 14 px repetido en cada fila de una lista que
+puede tener diez proyectos, lo que sigue es irreversible, y la última pantalla
+antes de perder el trabajo preguntaba «¿eliminar este proyecto?». No había forma
+de darse cuenta de que uno le erró a la fila. Ahora la pregunta trae el nombre,
+y el botón tiene `title` y `aria-label` (antes un lector de pantalla anunciaba
+sólo «botón»).
+
+**Abierto de la etapa N:** la discrepancia se declara pero no se resuelve, y
+resolverla pide un dato local —el registro de una estación cercana—. El panel ya
+acepta una calibración manual de la precipitación; lo que falta es que esa misma
+calibración **llegue a la serie diaria**, o que quede explícito que no llega.
+Antes de tocar eso hay que decidir qué pasa con las tormentas de diseño, que
+salen de la serie sin calibrar.
+
 ## 3. En qué orden
 
 1. ~~**Etapa B** —el agua del ganado—~~ **hecha el 02/10/2026.**

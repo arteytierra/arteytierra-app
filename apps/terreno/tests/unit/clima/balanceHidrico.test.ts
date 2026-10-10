@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   balanceCiclico, costoDeNoIterar, compararReglas, mesInicioAnioHidrologico,
   balanceDeLosAnios, posicionHazen, lluviaConChance, lluviasDependientes,
-  periodoDeCrecimiento, regimenDeHumedad, contrastarEtp, fechaDeDekada,
+  periodoDeCrecimiento, regimenDeHumedad, contrastarEtp, contrastarPrecip,
+  DIF_PRECIP_SIGNIFICATIVA_PCT, fechaDeDekada,
   AWC_POR_DEFECTO_MM, AWC_REFERENCIA_GAEZ_MM, FRAC_AGOTAMIENTO_FAO56, FRAC_AGOTAMIENTO_RANGO,
   FRAC_INICIO_FAO52, FRAC_LGP_GAEZ4, T_MIN_CRECIMIENTO_C, DEKADAS_ANIO, DIAS_DEKADA,
   type AnioMensual, type SerieDekadal,
@@ -480,6 +481,69 @@ describe('periodoDeCrecimiento — los dos criterios publicados de FAO', () => {
 
   it('una serie que no tiene 36 décadas no se calcula a medias', () => {
     expect(periodoDeCrecimiento({ precip: plano(10), etp: plano(10), tmean: plano(10).slice(0, 35) }, 100)).toBeNull();
+  });
+});
+
+/*
+ * Las dos lluvias del mismo predio.
+ *
+ * No es el gemelo cosmético del contraste de ETP: acá los dos números no sólo
+ * se muestran, se CALCULAN con, cada uno en una mitad distinta de la app. En un
+ * predio de Traslasierra el panel de clima decía 595 mm —y con eso salían la
+ * aridez, la receptividad, el escurrimiento y la captación— mientras el balance
+ * hídrico corría sobre una serie de 943 mm, un 59 % más. Nada en la pantalla ni
+ * en el informe decía que eran dos fuentes.
+ */
+describe('contrastarPrecip — las dos lluvias que la app tiene del mismo punto', () => {
+  it('MIDE LA DIFERENCIA Y LA DECLARA RESPECTO DE LA CLIMATOLOGÍA', () => {
+    const c = contrastarPrecip(595, 943, true)!;
+    expect(c.dif_mm).toBe(348);
+    expect(c.dif_pct).toBeCloseTo(58.5, 1);
+    expect(c.cociente).toBeCloseTo(943 / 595, 6);
+    expect(c.calibrada).toBe(true);
+  });
+
+  it('CON LA CLIMATOLOGÍA CALIBRADA DICE CUÁL PESA MÁS PARA EL TOTAL, Y POR QUÉ', () => {
+    const c = contrastarPrecip(595, 943, true)!;
+    const texto = c.advertencias.join(' ');
+    // El argumento no es «CHIRPS es mejor» sino cómo está construido cada uno.
+    expect(texto).toContain('anclada a pluviómetros');
+    expect(texto).toContain('no asimila observaciones de lluvia');
+    // Y dice qué se calcula con cada una, que es lo que nadie puede adivinar.
+    expect(texto).toContain('receptividad');
+    expect(texto).toContain('período de crecimiento');
+  });
+
+  it('SIN CALIBRAR NO ELIGE GANADOR: LAS DOS SON PRODUCTOS DE MODELO', () => {
+    const c = contrastarPrecip(595, 943, false)!;
+    const texto = c.advertencias.join(' ');
+    expect(texto).toContain('no tiene un lado preferido');
+    expect(texto).not.toContain('pesa más la climatología');
+  });
+
+  it('DE QUÉ LADO CONVIENE EQUIVOCARSE DEPENDE DE QUÉ SE DIMENSIONE', () => {
+    const texto = contrastarPrecip(595, 943, true)!.advertencias.join(' ');
+    expect(texto).toContain('ALCANZA');
+    expect(texto).toContain('AGUANTAR');
+  });
+
+  it('UNA DIFERENCIA CHICA NO DISPARA NINGUNA DE ESAS TRES ADVERTENCIAS', () => {
+    const c = contrastarPrecip(600, 660, true)!;   // 10 %, debajo del umbral
+    expect(Math.abs(c.dif_pct)).toBeLessThan(DIF_PRECIP_SIGNIFICATIVA_PCT);
+    expect(c.advertencias).toHaveLength(1);
+    expect(c.advertencias[0]).toContain('dos fuentes');
+  });
+
+  it('EL UMBRAL SE MIDE EN VALOR ABSOLUTO: LA SERIE TAMBIÉN PUEDE QUEDARSE CORTA', () => {
+    const c = contrastarPrecip(943, 595, true)!;
+    expect(c.dif_pct).toBeLessThan(0);
+    expect(c.advertencias.length).toBeGreaterThan(1);
+  });
+
+  it('una lluvia cero o no finita no produce contraste', () => {
+    expect(contrastarPrecip(0, 900, true)).toBeNull();
+    expect(contrastarPrecip(900, 0, true)).toBeNull();
+    expect(contrastarPrecip(Number.NaN, 900, true)).toBeNull();
   });
 });
 
