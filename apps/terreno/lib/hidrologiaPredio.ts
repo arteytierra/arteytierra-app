@@ -154,7 +154,19 @@ export interface EntradaHidro {
   suelo?:     { grupo: GrupoHidro; ksat_mm_h: number; capa_limitante: string } | null;
   /** composición de cobertura: valor WorldCover + % del predio */
   cobertura?: Array<{ wc: number; pct: number }> | null;
-  tormenta?:  { recurrencias: Array<{ periodo_retorno: number; mm: number }>; anios: number } | null;
+  tormenta?:  {
+    recurrencias: Array<{ periodo_retorno: number; mm: number }>;
+    anios: number;
+    /**
+     * Factor con el que la serie diaria fue escalada a un dato local, si lo
+     * fue. La tormenta de Gumbel que viene en `recurrencias` NO lo tiene
+     * aplicado y es correcto que no lo tenga —el escalado lineal corrige la
+     * media y no la distribución—, pero el que dimensiona con ella necesita
+     * saber que el pluviómetro del predio dice otra cosa que el reanálisis.
+     * Ver `lib/climaCalibracionSerie.ts`.
+     */
+    factor_calibracion?: number | null;
+  } | null;
   /** período de retorno elegido (años). Por defecto T10. */
   periodoRetorno?: number;
   contexto?:  ContextoHidro;
@@ -313,6 +325,24 @@ export function hidrologiaPredio(entrada: EntradaHidro): HidrologiaPredio {
         detalle: 'Gumbel se banca series cortas pero pierde precisión en las recurrencias altas. Tomá el número como orden de magnitud.',
       });
     }
+  }
+
+  // La serie se calibró con un dato local y la tormenta no: es la decisión
+  // correcta del método, pero cambia de qué lado queda el dimensionamiento y eso
+  // no se puede dejar callado en el panel que dimensiona.
+  const fc = entrada.tormenta?.factor_calibracion;
+  if (hayCl && typeof fc === 'number' && Number.isFinite(fc) && fc > 1.05) {
+    avisos.push({
+      id: 'tormenta_sin_calibrar', nivel: 'aviso',
+      titulo: `La tormenta no está calibrada y el dato local llueve un ${Math.round((fc - 1) * 100)} % más`,
+      detalle:
+        'El total anual de esta serie se escaló a un pluviómetro, pero la tormenta de ' +
+        'diseño sigue saliendo de la serie cruda: el escalado lineal corrige la media y ' +
+        'no la distribución, así que multiplicar el cuantil de Gumbel por el mismo factor ' +
+        'no tendría respaldo. El efecto práctico es que esta lluvia de diseño queda del ' +
+        'lado corto. Mientras no haya una serie diaria de estación, subir un escalón el ' +
+        'período de retorno es la forma barata de cubrirlo.',
+    });
   }
 
   // ── Escurrimiento y coeficiente, por SCS-CN ──

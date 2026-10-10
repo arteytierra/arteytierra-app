@@ -342,7 +342,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
   const {
     datosClima, datosClimaRaw, setDatosClimaRaw,
     calibracionPrecip, setCalibracionPrecip,
-    datosExtremos, setDatosExtremos,
+    datosExtremos, datosExtremosRaw, setDatosExtremos,
     buscandoCHIRPS,
   } = useCapaClima(mojones, datosTopografia?.elev_media);
 
@@ -815,7 +815,10 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
       ? { grupo: datosSuelo.grupo_hidro.grupo, ksat_mm_h: datosSuelo.grupo_hidro.ksat_min, capa_limitante: datosSuelo.grupo_hidro.capa_limitante }
       : null,
     cobertura: datosCobertura?.items.map(it => ({ wc: it.clase.valor, pct: it.pct })) ?? null,
-    tormenta: datosExtremos ? { recurrencias: datosExtremos.tormenta.recurrencias, anios: datosExtremos.anios } : null,
+    tormenta: datosExtremos ? {
+      recurrencias: datosExtremos.tormenta.recurrencias, anios: datosExtremos.anios,
+      factor_calibracion: datosExtremos.calibracion_serie?.factor_anual ?? null,
+    } : null,
     periodoRetorno,
     contexto: {
       fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null,
@@ -1000,7 +1003,8 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     if (captacionSnap)   m['captacion']= captacionSnap;
     if (reservaSnap)     m['reserva']  = reservaSnap;
     if (datosSuelo)      m['suelo']    = datosSuelo;
-    if (datosExtremos)   m['extremos'] = datosExtremos;
+    // Crudos, como el clima: guardar el calibrado escalaría la serie otra vez.
+    if (datosExtremosRaw) m['extremos'] = datosExtremosRaw;
     if (cuenca)          m['cuenca']   = cuenca;
     if (cuencasGuardadas.length) m['cuencas_guardadas'] = cuencasGuardadas;
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
@@ -1046,7 +1050,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     return m;
   // Shader, clima crudo y calibración se leen arriba y faltaban acá: el shader
   // se guardaba de rebote, y cambiarlo solo dejaba guardado el relieve anterior.
-  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremosRaw, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -3279,6 +3283,8 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 clima={datosClima}
                 extremos={datosExtremos}
                 captacion={captacionSnap}
+                rodeo={rodeo} riego={riegoResumen} red={redAguaResumen}
+                represas={represasGuardadas} aguadas={aguadasLayer}
                 snapshotInicial={reservaSnap}
                 onSnapshot={setReservaSnap}
                 onIrAClima={() => setTab('clima')}
@@ -3286,7 +3292,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
               />
             </div>
           )}
-          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} grilla={grillaActiva} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} /></div>}
+          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} grilla={grillaActiva} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} onIrABalance={() => setTab('reserva')} /></div>}
           {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">
@@ -3333,18 +3339,10 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 onIrATopo={() => setTab('topo')}
                 onIrAHerramienta={(t) => setTab(t as Tab)}
               />
-              {/* ── Etapa H — las exclusiones del emplazamiento ─────────────────
-                  Va después del programa y antes de mirar el resultado: la
-                  pregunta que contesta es previa a «dónde pongo la casa». Y
-                  corre sobre `grillaActiva`, que es el relieve fino cuando está
-                  bajado; el bloque avisa cuando sólo tiene el grueso. */}
+              {/* Etapa H: va antes del resultado porque la pregunta es previa a
+                  «dónde pongo la casa». Corre sobre el relieve fino. */}
               <div className="mt-3">
-                <EmplazamientoBloque
-                  grilla={grillaActiva}
-                  acceso={acceso}
-                  zona0={zona0}
-                  datosSuelo={datosSuelo}
-                />
+                <EmplazamientoBloque grilla={grillaActiva} acceso={acceso} />
               </div>
             </div>
           )}

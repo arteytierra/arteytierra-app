@@ -81,7 +81,11 @@ export const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon
   // escondido el panel más cargado del peldaño para ganar un renglón.
   { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'entorno', 'contexto', 'cal', 'solar'],                       esenciales: ['clima', 'entorno', 'contexto'] },
   { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud'],               esenciales: ['topo', 'analisis'] },
-  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua', 'reserva'], esenciales: ['cuenca', 'aguadas', 'reserva'] },
+  // El balance de agua va ÚLTIMO y es a propósito: es el único panel que no
+  // calcula nada propio —cruza lo que calcularon los otros—, así que abrirlo
+  // primero muestra una pantalla vacía. Estaba tercero en las esenciales y se
+  // leía como si fuera del medio, con Captación y Riego apareciendo después.
+  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua', 'reserva'], esenciales: ['cuenca', 'aguadas', 'agua', 'reserva'] },
   { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra', 'sombras', 'visibilidad'], esenciales: ['masterplan', 'zonas'] },
   { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
 ];
@@ -226,7 +230,10 @@ export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bl
       </button>
       {abierto && (
         <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1 ay-stagger">
-          {(mostrarResto ? [...esenciales, ...resto] : esenciales).map(id => {
+          {/* El orden es siempre el de `grupo.tabs`: desplegar «Más…» revela
+              herramientas, no las reordena. Concatenando esenciales y resto, una
+              herramienta declarada al final del peldaño se dibujaba tercera. */}
+          {(mostrarResto ? grupo.tabs : grupo.tabs.filter(t => esenciales.includes(t))).map(id => {
             const def = TAB_DEF.get(id);
             if (!def) return null;
             return (

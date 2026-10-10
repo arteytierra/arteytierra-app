@@ -545,6 +545,17 @@ export interface EntradaResumen {
   trimestresCaptacion?: ReadonlyArray<{
     nombre: string; meses_label: string; captacion_m3: number; consumo_m3: number;
   }> | null;
+  /**
+   * Egreso de cada trimestre (m³) cuando el predio tiene la demanda reunida de
+   * todas las pestañas, y no sólo la lista de Captación.
+   *
+   * Pisa al `consumo_m3` de los trimestres por un motivo de consistencia y no
+   * de precisión: si la autonomía de arriba se calcula con el rodeo y el riego
+   * reales, la tabla de abajo no puede seguir mostrando el consumo de otra
+   * lista. Dos egresos distintos en la misma pantalla es cómo se pierde la
+   * confianza en las dos. Ver `lib/balanceAgua.ts`.
+   */
+  egresoTrimestral_m3?: readonly number[] | null;
 }
 
 /** Días de cada trimestre en un año no bisiesto, en el orden que arma captación. */
@@ -581,6 +592,7 @@ export function resumenReserva(e: EntradaResumen): ResumenReserva {
     const caudales = caudalDecl * d;
     const firmes   = caudalFirme * d;
     const ingreso  = t.captacion_m3 + firmes;
+    const egreso   = e.egresoTrimestral_m3?.[i] ?? t.consumo_m3;
     return {
       nombre: t.nombre,
       meses_label: t.meses_label,
@@ -588,8 +600,8 @@ export function resumenReserva(e: EntradaResumen): ResumenReserva {
       caudales_m3: Math.round(caudales * 10) / 10,
       caudales_firmes_m3: Math.round(firmes * 10) / 10,
       ingreso_m3: Math.round(ingreso * 10) / 10,
-      egreso_m3: Math.round(t.consumo_m3 * 10) / 10,
-      balance_m3: Math.round((ingreso - t.consumo_m3) * 10) / 10,
+      egreso_m3: Math.round(egreso * 10) / 10,
+      balance_m3: Math.round((ingreso - egreso) * 10) / 10,
     };
   });
 

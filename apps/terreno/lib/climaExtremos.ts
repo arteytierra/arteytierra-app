@@ -88,6 +88,39 @@ export interface Extremos {
    * como si fuera un balance sin déficit.
    */
   dekadal?:      SerieDekadalPorAnio;
+  /**
+   * Presente cuando la lluvia de esta serie fue escalada a un dato local. Su
+   * ausencia significa que estos números son los del reanálisis tal cual.
+   *
+   * Es también el seguro contra calibrar dos veces: `calibrarExtremos` devuelve
+   * intacto todo lo que ya lo traiga. Ver `lib/climaCalibracionSerie.ts`.
+   */
+  calibracion_serie?: CalibracionSerie;
+}
+
+/**
+ * El rastro de una calibración aplicada a la serie: con qué factor, contra qué
+ * total, y —sobre todo— qué partes de estos extremos NO se tocaron.
+ *
+ * Vive acá, pegada a `Extremos`, y no en el archivo que la produce: es parte de
+ * lo que un `Extremos` es, y ponerla allá obligaría a los dos archivos a
+ * importarse en círculo.
+ */
+export interface CalibracionSerie {
+  /** Cociente entre el total objetivo y el de la serie cruda. */
+  factor_anual: number;
+  /** Doce factores, uno por mes. Con calibración anual los doce son iguales. */
+  factor_mes:   number[];
+  /** mm/año de la serie cruda — el número que la app imprimía antes. */
+  antes_mm:     number;
+  /** mm/año después de escalar. */
+  despues_mm:   number;
+  /** El total que se quiso alcanzar, tal como lo cargó quien calibró. */
+  objetivo_mm:  number;
+  modo:         'anual' | 'mensual';
+  fuente?:      string;
+  /** Lo que el escalado lineal no corrige, en palabras. Nunca viene vacío. */
+  advertencias: string[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

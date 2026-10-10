@@ -5,7 +5,9 @@ import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowfla
 import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
+import { FUENTE_ESCALADO_LINEAL } from '@/lib/climaCalibracionSerie';
 import { BalanceHidricoBloque } from './BalanceHidricoBloque';
+import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -461,7 +463,7 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
     );
   }
 
-  const { heladas, tormenta, sequia, precip_anual, calor } = extremos;
+  const { heladas, tormenta, sequia, precip_anual, calor, calibracion_serie: cs } = extremos;
 
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
@@ -474,11 +476,36 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
       </div>
 
       <div className="p-3 space-y-3">
+        {/* La calibración llegó hasta acá —y hasta dónde no—.
+            Va arriba de todo y a la vista: lo que sigue está mitad escalado al
+            dato local y mitad no, y cuál es cuál decide con qué número se
+            dimensiona un vertedero. Ver lib/climaCalibracionSerie.ts. */}
+        {cs && (
+          <div className="rounded-lg bg-moss-50 border border-moss-200 px-2.5 py-2">
+            <p className="text-[10px] text-ink-800 leading-snug">
+              <b>Esta serie está escalada al dato local.</b> De{' '}
+              <span className="font-mono">{cs.antes_mm.toLocaleString('es-AR')}</span> a{' '}
+              <span className="font-mono">{cs.despues_mm.toLocaleString('es-AR')} mm/año</span>
+              {cs.fuente ? <> con {cs.fuente}</> : null} (×
+              {cs.factor_anual.toLocaleString('es-AR', { maximumFractionDigits: 2 })}
+              {cs.modo === 'mensual' ? ', mes por mes' : ''}). Lo escalado son las
+              acumulaciones: el balance hídrico y los totales del año.{' '}
+              <b>La tormenta de diseño de acá abajo no.</b>
+            </p>
+            <Cautela claim="Por qué la tormenta queda sin calibrar.">
+              {cs.advertencias.map((a, i) => <p key={i} className="mb-1">{a}</p>)}
+              <p className="text-[9px] text-ink-700/45 mt-1">{FUENTE_ESCALADO_LINEAL}</p>
+            </Cautela>
+          </div>
+        )}
+
         {/* Tormenta de diseño */}
         <div>
           <div className="flex items-center gap-1 mb-1 text-water-700">
             <CloudRain className="w-3 h-3" />
-            <p className="text-[11px] font-semibold">Tormenta de diseño (P24h)</p>
+            <p className="text-[11px] font-semibold">
+              Tormenta de diseño (P24h){cs ? <span className="font-normal text-ink-700/50"> · sin calibrar</span> : null}
+            </p>
           </div>
           <div className="grid grid-cols-3 gap-1">
             {tormenta.recurrencias.map(r => (

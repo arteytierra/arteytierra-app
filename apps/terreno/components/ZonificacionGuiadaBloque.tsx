@@ -187,8 +187,7 @@ export function ZonificacionGuiadaBloque({ zonas, mojones, grilla, zona0, usle }
                             : <span className="text-moss-800">Nada la objeta.</span>}
                         <span className="text-ink-700/50">
                           {' '}Pendiente {n1(v.geometria.pend_mediana_pct)} %, {n0(v.geometria.lambda_m)} m de
-                          ladera{v.erosion && <>, pierde {n1(v.erosion.t_ha_anio)} t de suelo por ha al año</>}
-                          {v.caminata && <>, {n0(v.caminata.km_anio[0])}–{n0(v.caminata.km_anio[1])} km de caminata al año</>}.
+                          ladera{v.caminata && <>, {n0(v.caminata.km_anio[0])}–{n0(v.caminata.km_anio[1])} km de caminata al año</>}.
                         </span>
                       </span>
                     </span>

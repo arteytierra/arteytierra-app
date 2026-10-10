@@ -24,6 +24,15 @@ import {
 import type { DatosClima } from '@/lib/clima';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { CaptacionSnapshot } from '@/lib/captacion';
+import { MESES_POR_TRIMESTRE } from '@/lib/estaciones';
+import {
+  ROTULO_ORIGEN, contrastarRed, mesAbr, reunirDemandas, reunirFuentes,
+} from '@/lib/balanceAgua';
+import type { Rodeo } from '@/lib/rodeo';
+import type { RiegoResumen } from '@/lib/riego';
+import type { RedAguaResumen } from '@/lib/hidraulica';
+import type { RepresaGuardada } from '@/lib/represasGuardadas';
+import type { ElementoAguada } from '@/lib/aguadas';
 import {
   ESCENARIOS_RACHA, FUENTE_AH590_RESERVA, FUENTE_FAO56_ESPEJO, FUENTE_RACHA,
   TIPOS_FUENTE, etpCritica, nuevaFuenteDefault, rachaDeDiseno, resumenReserva,
@@ -36,6 +45,16 @@ interface Props {
   clima:     DatosClima | null;
   extremos:  Extremos | null;
   captacion: CaptacionSnapshot | null;
+  /** El rodeo del predio, que es quien manda en el agua de la hacienda. */
+  rodeo?:    Rodeo | null;
+  /** El riego calculado mes a mes, que manda sobre la fila «huerta». */
+  riego?:    RiegoResumen | null;
+  /** La traza de agua, para cruzar el caño contra el día pico. */
+  red?:      RedAguaResumen | null;
+  /** Las represas ya dimensionadas, para traerlas al inventario. */
+  represas?: readonly RepresaGuardada[] | null;
+  /** Los marcadores del plano: se cuentan, no se convierten. */
+  aguadas?:  readonly ElementoAguada[] | null;
   snapshotInicial?: ReservaSnapshot | null;
   onSnapshot?: (s: ReservaSnapshot | null) => void;
   /** Para mandar al usuario a traer lo que falta. */
@@ -75,7 +94,8 @@ function NumeroCampo({ label, valor, sufijo, onCambio, paso = 1 }: {
 }
 
 export function ReservaPredioPanel({
-  clima, extremos, captacion, snapshotInicial, onSnapshot, onIrAClima, onIrACaptacion,
+  clima, extremos, captacion, rodeo, riego, red, represas, aguadas,
+  snapshotInicial, onSnapshot, onIrAClima, onIrACaptacion,
 }: Props) {
   const [fuentes, setFuentes] = useState<FuenteAgua[]>(() => snapshotInicial?.fuentes ?? []);
   const [escenario, setEscenario] = useState<EscenarioRacha>(() => snapshotInicial?.escenario ?? 'seco');
@@ -93,15 +113,42 @@ export function ReservaPredioPanel({
   const etp = useMemo(() => etpCritica(clima?.meses ?? null), [clima]);
   const racha = useMemo(() => rachaDeDiseno(extremos?.sequia ?? null, escenario), [extremos, escenario]);
 
-  const demanda_l_dia = captacion?.resultado?.consumo_total_litros_dia ?? 0;
+  // La demanda ya no sale de una sola pestaña: se reúne de todas y se
+  // reconcilia, para que las mismas vacas no se cuenten dos veces. Ver
+  // `lib/balanceAgua.ts`.
+  const demanda = useMemo(() => reunirDemandas({
+    captacion,
+    rodeo,
+    tmean_c: clima?.meses.map(m => m.tmean_c) ?? null,
+    riego,
+  }), [captacion, rodeo, clima, riego]);
+
+  const egresoTrimestral_m3 = useMemo(
+    () => MESES_POR_TRIMESTRE.map(meses =>
+      meses.reduce((s, mi) => s + (demanda.mensual_m3[mi] ?? 0), 0)),
+    [demanda],
+  );
+
+  const contRed = useMemo(
+    () => contrastarRed(red, demanda.pico_l_dia),
+    [red, demanda.pico_l_dia],
+  );
+
+  const delPredio = useMemo(
+    () => reunirFuentes({ represas, aguadas, yaCargadas: fuentes }),
+    [represas, aguadas, fuentes],
+  );
 
   const r = useMemo(() => resumenReserva({
     fuentes,
-    demanda_l_dia,
+    // El PICO y no el promedio: una racha seca cae en la seca, que es cuando
+    // el riego está al máximo y la hacienda toma más.
+    demanda_l_dia: demanda.pico_l_dia,
     etp_mm_dia: etp?.mm_dia ?? 0,
     racha,
     trimestresCaptacion: captacion?.resultado?.balance_trimestral ?? null,
-  }), [fuentes, demanda_l_dia, etp, racha, captacion]);
+    egresoTrimestral_m3,
+  }), [fuentes, demanda.pico_l_dia, etp, racha, captacion, egresoTrimestral_m3]);
 
   const v = r.gastandoEspejo;
 
@@ -150,7 +197,7 @@ export function ReservaPredioPanel({
                   <div className="rounded-lg p-2 bg-bone-100 border border-bone-300">
                     <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Se consume</p>
                     <p className="font-mono text-sm font-bold text-ink-700">{n1(r.demanda_m3_dia)}</p>
-                    <p className="text-[9px] text-ink-700/50">m³ por día</p>
+                    <p className="text-[9px] text-ink-700/50">m³ el día pico</p>
                   </div>
                   <div className="rounded-lg p-2 bg-clay-500/8 border border-clay-500/20">
                     <p className="text-[9px] uppercase text-ink-700/55 tracking-wide">Se pierde</p>
@@ -270,6 +317,113 @@ export function ReservaPredioPanel({
               <p className="text-[9px] text-ink-700/55 mt-1 leading-snug">{racha.lectura}</p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* ── Lo que ya está cargado en otros paneles ──
+          Jonatan, 10/10/2026: «cuando la abre debería tener toda la data de los
+          paneles anteriores precargada y ahí ver la unificación de todos los
+          sistemas de captación de agua y todas las necesidades de
+          abastecimiento». Esto es eso, y la parte que no se ve es la que más
+          importa: los aportes que NO suman porque otra pestaña ya los cuenta
+          mejor quedan listados igual, con el motivo. */}
+      <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
+        <div className="px-3 py-2 bg-bone-100 border-b border-bone-200 flex items-center justify-between">
+          <p className="text-[11px] font-semibold text-ink-700">Lo que el predio consume</p>
+          <p className="text-[9px] font-mono text-ink-700/55">
+            {n0(demanda.total_l_dia)} L/día · pico {n0(demanda.pico_l_dia)}
+          </p>
+        </div>
+
+        <div className="p-3 space-y-2">
+          {demanda.aportes.length === 0 ? (
+            <p className="text-[10px] text-ink-700/65 leading-snug">
+              Todavía no hay ningún consumo declarado. Sale solo de tres lados: los consumos de{' '}
+              <b>Captación</b>, el rodeo de <b>Producción</b> y la lámina de <b>Riego</b>. Lo que
+              cargues allá aparece acá sin volver a escribirlo.
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {demanda.aportes.map(ap => (
+                <div key={ap.id}
+                  className={`rounded-lg border px-2 py-1.5 ${ap.descartado
+                    ? 'border-bone-200 bg-bone-50'
+                    : 'border-bone-200 bg-white'}`}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className={`text-[10px] min-w-0 truncate ${ap.descartado
+                      ? 'text-ink-700/40 line-through'
+                      : 'font-semibold text-ink-700'}`}>
+                      {ap.rotulo}
+                    </span>
+                    <span className={`font-mono text-[10px] shrink-0 ${ap.descartado
+                      ? 'text-ink-700/35 line-through'
+                      : 'text-ink-900'}`}>
+                      {n0(ap.l_dia)} L/día
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-ink-700/45">
+                    {ROTULO_ORIGEN[ap.origen]}
+                    {!ap.descartado && ap.pico_l_dia > ap.l_dia * 1.05 && (
+                      <> · pico {n0(ap.pico_l_dia)} L/día{ap.mes_pico !== null && <> en {mesAbr(ap.mes_pico)}</>}</>
+                    )}
+                  </p>
+                  {ap.descartado && (
+                    <p className="text-[9px] text-clay-800 leading-snug mt-0.5">{ap.descartado}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {demanda.advertencias.map((t, i) => (
+            <p key={i} className="text-[9px] text-ink-700/60 leading-snug flex gap-1">
+              <Info className="w-3 h-3 shrink-0 mt-px text-ink-700/40" />
+              <span>{t}</span>
+            </p>
+          ))}
+
+          {/* El caño, que no es un consumo pero puede ser el cuello. */}
+          {contRed && (
+            <p className={`text-[9px] leading-snug flex gap-1 ${contRed.estrangula
+              ? 'text-clay-800' : 'text-ink-700/60'}`}>
+              {contRed.estrangula
+                ? <TriangleAlert className="w-3 h-3 shrink-0 mt-px" />
+                : <Waves className="w-3 h-3 shrink-0 mt-px text-ink-700/40" />}
+              <span>
+                <b>La red de servicios.</b> {contRed.lectura} El caudal de una traza es un caudal de
+                diseño del caño y no un consumo: no se suma a lo de arriba.
+              </span>
+            </p>
+          )}
+
+          {/* Las represas ya diseñadas, a un clic. */}
+          {delPredio.sugeridas.length > 0 && (
+            <div className="rounded-lg border border-water-500/30 bg-water-500/5 px-2 py-1.5">
+              <p className="text-[10px] text-ink-800 leading-snug">
+                Hay {delPredio.sugeridas.length}{' '}
+                {delPredio.sugeridas.length === 1 ? 'represa dimensionada' : 'represas dimensionadas'}{' '}
+                que todavía no {delPredio.sugeridas.length === 1 ? 'está' : 'están'} en el inventario
+                de abajo.
+              </p>
+              <button
+                onClick={() => aplicar([...fuentes, ...delPredio.sugeridas.map(x => x.fuente)])}
+                className="mt-1 text-[10px] px-2 py-1 rounded-lg bg-water-700 hover:bg-water-800 text-bone-50 font-medium transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Traer {delPredio.sugeridas.map(x => x.fuente.nombre).join(', ')}
+              </button>
+              <p className="text-[9px] text-ink-700/50 leading-snug mt-1">
+                Entra el volumen y el espejo que calculó Represas. El <b>volumen muerto</b> hay que
+                ponerlo a mano: es la lámina que no se puede usar y sale de la misma pestaña.
+              </p>
+            </div>
+          )}
+          {delPredio.advertencias.map((t, i) => (
+            <p key={i} className="text-[9px] text-ink-700/60 leading-snug flex gap-1">
+              <Info className="w-3 h-3 shrink-0 mt-px text-ink-700/40" />
+              <span>{t}</span>
+            </p>
+          ))}
         </div>
       </div>
 

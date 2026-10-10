@@ -497,6 +497,30 @@ export function InformeView({ datos, compartido = false }: Props) {
                 );
               })()}
 
+              {/* Cuando la serie se escaló a un pluviómetro, el recuadro de arriba
+                  desaparece solo —las dos lluvias ya coinciden— y entonces hay que
+                  decir la otra mitad: qué quedó escalado y qué no. La tormenta de
+                  diseño de este mismo capítulo es lo que no. */}
+              {ex.calibracion_serie && (
+                <div className="mt-2 rounded-lg border border-moss-200 bg-moss-50 p-2.5">
+                  <p className="text-xs text-ink-700/80 leading-relaxed">
+                    <span className="font-semibold">Esta serie está escalada al dato local.</span>{' '}
+                    De {ex.calibracion_serie.antes_mm} a {ex.calibracion_serie.despues_mm} mm/año
+                    {ex.calibracion_serie.fuente ? ` con ${ex.calibracion_serie.fuente}` : ''}, que es
+                    lo que hace que este capítulo y el de clima hablen de la misma lluvia. Se
+                    escalaron las acumulaciones —el balance hídrico y los totales del año—{' '}
+                    <b>y no la tormenta de diseño</b>, que sigue saliendo de la serie cruda: el
+                    escalado lineal corrige la media y no la distribución, así que multiplicar el
+                    cuantil de Gumbel por el mismo factor no tendría respaldo.
+                    {ex.calibracion_serie.factor_anual > 1
+                      ? <> Como el dato local llueve más que el reanálisis, esa tormenta queda del
+                        lado corto: para vertederos y alcantarillas conviene subir un escalón el
+                        período de retorno.</>
+                      : null}
+                  </p>
+                </div>
+              )}
+
               <p className="text-xs text-ink-700/50 mt-2 italic">
                 Fuente: {ex.fuente} ({ex.periodo}, {ex.anios} años). Tormenta de diseño por {ex.tormenta.metodo}.
                 ERA5 (~10 km) puede subestimar heladas en valles — orientativo.

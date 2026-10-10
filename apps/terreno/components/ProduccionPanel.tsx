@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Cloud, Wheat } from 'lucide-react';
+import { Cloud, Droplets, Wheat } from 'lucide-react';
 import {
   CULTIVOS_KC, calcularBalanceProductivo,
   calcularReceptividad, EV_MCAL_EM_DIA,
@@ -35,9 +35,11 @@ interface Props {
   grilla?:     GrillaElevacion | null;
   /** Cobertura por clase: de acá sale lo que no es tierra de pastoreo. */
   cobertura?:  Array<{ valor: number; nombre: string; pct: number }> | null;
+  /** Al balance de agua, que es donde esta demanda se cruza con la reserva. */
+  onIrABalance?: () => void;
 }
 
-export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo, onRodeo, grilla, cobertura }: Props) {
+export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo, onRodeo, grilla, cobertura, onIrABalance }: Props) {
   const [tab,       setTab]       = useState<'balance' | 'ganaderia'>('balance');
   const [cultivoId, setCultivoId] = useState('huerta');
   const [areaCult,  setAreaCult]  = useState(areaHa > 0 ? Math.round(areaHa * 10) / 10 : 1);
@@ -338,6 +340,29 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
         </div>
       )}
 
+      {/* ── Al balance de agua ──
+          Jonatan propuso repetir acá la herramienta entera. No se duplica la
+          pestaña y el motivo es estructural: `GRUPO_DE_TAB` mapea cada tab a UN
+          grupo del riel, así que la misma tab en dos peldaños dejaría el
+          acordeón marcando el grupo equivocado al abrirla desde Agua. Lo que sí
+          corresponde es el puntero: el rodeo se carga acá y el agua que pide se
+          cruza allá, sin volver a escribirla. Es el mismo idioma que usa Clima
+          para mandar a Bioconstrucción. */}
+      <button
+        onClick={onIrABalance}
+        disabled={!onIrABalance}
+        className="w-full text-left rounded-xl border border-water-500/30 bg-water-500/5 px-3 py-2 hover:bg-water-500/10 transition-colors disabled:opacity-60 disabled:hover:bg-water-500/5"
+      >
+        <p className="text-[10px] font-semibold text-ink-700 flex items-center gap-1.5">
+          <Droplets className="w-3 h-3 text-water-700" /> ¿Alcanza el agua para todo esto?
+        </p>
+        <p className="text-[9px] text-ink-700/60 leading-relaxed mt-0.5">
+          Lo que este rodeo toma por día ya viaja solo a <b>Agua · Balance de agua</b>, junto con
+          el riego, los consumos de Captación y las represas dimensionadas. Ahí se compara contra
+          la racha seca de este predio, que es la única pregunta que ninguna de estas pestañas
+          puede contestar sola.
+        </p>
+      </button>
     </div>
   );
 }

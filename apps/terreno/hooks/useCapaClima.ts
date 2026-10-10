@@ -12,6 +12,7 @@ import {
 // y no de GLO-30, con un error de red y un round trip de regalo en cada predio.
 // Del lado del servidor no hay CORS: `/api/elevacion` hace exactamente esto,
 // con caché de 30 días.
+import { calibrarExtremos } from '@/lib/climaCalibracionSerie';
 import type { Extremos } from '@/lib/climaExtremos';
 
 /**
@@ -32,6 +33,20 @@ import type { Extremos } from '@/lib/climaExtremos';
  * calibrada para recomputar el balance bien. Al revés, la calibración pisaría la
  * ETP corregida con la vieja.
  *
+ * La **serie diaria** sigue el mismo patrón y por el mismo motivo. Hasta el
+ * 10/10/2026 la calibración llegaba sólo a la climatología, así que cargar el
+ * pluviómetro del predio arreglaba la aridez, la receptividad y la captación y
+ * dejaba el balance hídrico corriendo sobre la lluvia del reanálisis: media app
+ * calibrada y la otra mitad no. Ahora `datosExtremosRaw` es lo que se guarda y
+ * lo que el servidor devuelve, y `datosExtremos` —lo que consume la app— es el
+ * derivado.
+ *
+ * El factor NO es el mismo que el de la climatología aunque el objetivo sea el
+ * mismo: son dos fuentes con dos totales distintos sobre el mismo punto, así que
+ * `calibrarExtremos` se saca el suyo contra la media de su propia serie. Y
+ * escala las acumulaciones, no los extremos: la tormenta de diseño queda cruda a
+ * propósito. El porqué está en `lib/climaCalibracionSerie.ts`.
+ *
  * Apenas hay clima crudo, el hook busca CHIRPS (~5 km) y lo aplica como
  * calibración automática, **sin pisar nunca** una calibración cargada a mano. Se
  * intenta una sola vez por celda (~5 km): si el usuario la quita, no vuelve sola.
@@ -50,7 +65,7 @@ export function useCapaClima(
 ) {
   const [datosClimaRaw, setDatosClimaRaw] = useState<DatosClima | null>(null);
   const [calibracionPrecip, setCalibracionPrecip] = useState<CalibracionPrecip | null>(null);
-  const [datosExtremos, setDatosExtremos] = useState<Extremos | null>(null);
+  const [datosExtremosRaw, setDatosExtremosRaw] = useState<Extremos | null>(null);
   const [buscandoCHIRPS, setBuscandoCHIRPS] = useState(false);
   const [alturaPunto, setAlturaPunto] = useState<number | null>(null);
 
@@ -73,6 +88,11 @@ export function useCapaClima(
       );
     },
     [datosClimaRaw, calibracionPrecip, alturaPredioM],
+  );
+
+  const datosExtremos = useMemo(
+    () => calibrarExtremos(datosExtremosRaw, calibracionPrecip),
+    [datosExtremosRaw, calibracionPrecip],
   );
 
   const hayClimaCrudo = !!datosClimaRaw;
@@ -123,7 +143,7 @@ export function useCapaClima(
   return {
     datosClima, datosClimaRaw, setDatosClimaRaw,
     calibracionPrecip, setCalibracionPrecip,
-    datosExtremos, setDatosExtremos,
+    datosExtremos, datosExtremosRaw, setDatosExtremos: setDatosExtremosRaw,
     buscandoCHIRPS,
   };
 }
