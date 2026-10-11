@@ -10,7 +10,15 @@ export const metadata: Metadata = {
   alternates: { canonical: '/en/cursos/inmersion-viva' },
 };
 
-const AREAS = [
+/**
+ * Las mismas aclaraciones que estan en castellano, traducidas: las areas se
+ * recorren segun lo que el espacio necesita esa semana, y por eso una estadia
+ * de dos semanas no alcanza para todas. Ver `lib/courses/data.ts`.
+ */
+const COMO_SE_RECORRE =
+  "The areas are not a fixed schedule: each week we work on whatever the place needs at that moment — a building site in progress, the garden in season, a workshop about to start. That's why a short stay of two weeks goes deep into one or two areas rather than all of them. To go through all of them, we recommend staying three months.";
+
+const AREAS: { icon: string; title: string; nota?: string; items: string[] }[] = [
   {
     icon: '🏗',
     title: 'Biobuilding',
@@ -34,6 +42,7 @@ const AREAS = [
   {
     icon: '🎓',
     title: 'Workshop participation',
+    nota: 'If a workshop is held at the ecoschool while you are here, you can sit in on the classes. It works as an exchange: you take part as a student and in return you lend a hand with the logistics of the course — materials, cooking, setting up and tidying the spaces.',
     items: ['Free access to workshops held at the ecoschool during your stay', 'Participation as part of the workshops\' logistics team', 'Learning from inside the pedagogical organization'],
   },
   {
@@ -105,14 +114,20 @@ export default function InmersionVivaEnPage() {
             <div className="text-center mb-12">
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Applied training</p>
               <h2 className="font-display text-4xl md:text-5xl text-bone-50">
-                What will you <em>learn?</em>
+                The <em>areas of study.</em>
               </h2>
+              <p className="mt-6 font-sans text-base text-bone-200 leading-relaxed max-w-2xl mx-auto text-left">
+                {COMO_SE_RECORRE}
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {AREAS.map(a => (
                 <div key={a.title} className="bg-ink-800 p-8">
                   <div className="text-3xl mb-4">{a.icon}</div>
                   <h3 className="font-display text-2xl text-bone-50 mb-4">{a.title}</h3>
+                  {a.nota && (
+                    <p className="font-sans text-sm text-clay-200 italic leading-relaxed mb-4">{a.nota}</p>
+                  )}
                   <ul className="flex flex-col gap-2">
                     {a.items.map(item => (
                       <li key={item} className="flex items-start gap-3 font-sans text-sm text-bone-200">
@@ -159,7 +174,7 @@ export default function InmersionVivaEnPage() {
             </div>
             <div className="bg-clay-700/10 border border-clay-700/30 p-6 max-w-2xl mb-8">
               <p className="font-sans text-sm font-bold text-clay-700 mb-2">📅 Arrivals on Mondays only.</p>
-              <p className="font-sans text-sm text-ink-700">Minimum 2 weeks. Possible to extend to a month or more depending on availability.</p>
+              <p className="font-sans text-sm text-ink-700">Minimum 2 weeks. We recommend three months to practise in every area; you can extend depending on availability.</p>
             </div>
             <a
               href="https://wa.me/5493549431594?text=Hello%2C%20I%27d%20like%20information%20about%20the%20Living%20Immersion"
