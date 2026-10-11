@@ -214,9 +214,15 @@ Lo que falta, en el orden que corresponde:
    Esto **no activa ningún saber nuevo** —siguen siendo dos—, porque lo que falta
    es geometría con licencia admitida. Lo que cambia es que ahora el que falta es
    el polígono, y se ve cuál.
-3. **Los sitios SIPAM/GIAHS de América** — Xochimilco, Metepantle, chakra de Napo,
-   Viñales. La FAO publica el polígono; hay que ver bajo qué licencia. Viñales ya se
-   descartó: OSM no lo tiene y UNESCO no publica licencia reutilizable.
+3. ~~**Los sitios SIPAM/GIAHS de América**~~ — **cerrado el 10/10/2026, y no por
+   la licencia: la FAO no publica la geometría.** Ninguna ficha de sitio ofrece
+   polígono, shapefile, GeoJSON ni WMS; el mapa interactivo es una visualización
+   sin descarga. Y si la publicara tampoco serviría: el contenido web de la FAO
+   es explícitamente no comercial, y la CC BY 4.0 de sus bases estadísticas
+   viene con una cláusula que prohíbe usar los datasets «in conjunction with the
+   promotion of a commercial enterprise». Viñales, además, nunca fue GIAHS —Cuba
+   no está entre los 5 países con sitios designados; es UNESCO—. Detalle en
+   `_encargos/RESPUESTAS_LICENCIAS.md`.
 4. **Todo lo demás, con acuerdo antes que con polígono.** Los saberes de pueblos
    originarios no se activan por tener el mapa. El polígono es la mitad del permiso.
 5. **África, Asia y Oceanía** — sin relevar, ni en fase 1 ni en fase 2.

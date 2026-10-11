@@ -53,7 +53,12 @@ entregarla así, con la URL de la página donde debería estar y no está.
 Una por lote, y el lote 01 son las cuatro de la FAO juntas porque es el mismo
 portal.
 
-### 1. Los polígonos de los sitios SIPAM/GIAHS de la FAO
+### 1. Los polígonos de los sitios SIPAM/GIAHS de la FAO — ✅ CONTESTADA 10/10/2026
+
+**No pedir este lote de nuevo.** La respuesta está en
+`RESPUESTAS_LICENCIAS.md`: la FAO no publica la geometría de los sitios, su
+contenido web es no comercial, y Viñales no es un sitio GIAHS. Lo que sigue se
+deja escrito nada más que para que se entienda qué se preguntó.
 
 ¿La FAO publica la **geometría** (polígono, shapefile, GeoJSON, WMS) de los
 sitios reconocidos, y bajo qué licencia? Interesan cuatro:

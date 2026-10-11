@@ -129,10 +129,12 @@ texto: es **permiso**, y de dos clases distintas.
 
 - **Los que necesitan una licencia.** España está bloqueado dos veces —la
   cartografía de las cañadas es de **líneas**, y un punto no cae dentro de una
-  línea— y el Reino Unido no tiene geometría abierta. Quedan los **sitios
-  SIPAM/GIAHS de América** (chinampas de Xochimilco, metepantle de Tlaxcala,
-  chakra amazónica de Napo, Viñales): la FAO publica el polígono y **nadie
-  verificó bajo qué licencia**. Eso sí es un encargo, y es de una tarde.
+  línea— y el Reino Unido no tiene geometría abierta. Los **sitios SIPAM/GIAHS
+  de América** se cerraron el 10/10/2026 con el primer lote del encargo, y la
+  respuesta fue anterior a la licencia: **la FAO no publica la geometría.**
+  Tampoco habría servido —su contenido web es no comercial y hasta la CC BY 4.0
+  de sus bases estadísticas trae una cláusula no-promocional—, y Viñales nunca
+  fue un sitio GIAHS. Ver `_encargos/RESPUESTAS_LICENCIAS.md`.
 - **Los que necesitan un acuerdo.** Los saberes de pueblos originarios de
   Sudamérica, Mesoamérica y Estados Unidos no se activan por conseguir el mapa.
   El polígono es la mitad del permiso; la otra mitad es el acuerdo de quien

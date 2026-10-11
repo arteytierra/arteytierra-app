@@ -52,6 +52,30 @@ export const LICENCIAS_ADMITIDAS: readonly string[] = [
   'comunitaria_con_permiso',
 ];
 
+/*
+ * Estar en esta lista es necesario y no es suficiente: el rótulo lo pone quien
+ * publica, y a veces no describe lo que firmó.
+ *
+ * Dos veces ya el rótulo no coincidió con los términos. En PDOK la política del
+ * portal declaraba CC BY 4.0 mientras el registro del dataset declaraba
+ * CC BY-NC-ND 4.0, y manda el del dato concreto. En la FAO —verificado el
+ * 10/10/2026— las bases estadísticas corporativas dicen CC BY 4.0 y le
+ * atornillan unos «Additional terms of use» que prohíben usar los datasets
+ * «in conjunction with the promotion of a commercial enterprise and/or its
+ * product(s) or service(s)» y acotan el propósito a investigación y estadística.
+ * Una CC BY con una cláusula no-promocional encima no es una CC BY: acequia
+ * cobra, así que no entra. El resto del contenido web de la FAO es
+ * explícitamente no comercial.
+ *
+ * Entonces el paso 2 de la receta de abajo no es leer la sigla: es abrir los
+ * términos del dataset y leerlos. Y en licencias la duda se resuelve del lado
+ * de no usar el dato. El detalle está en
+ * `_research/_encargos/RESPUESTAS_LICENCIAS.md`.
+ *
+ * Nada de esto toca las citas: nombrar una fuente con su rótulo y su URL para
+ * respaldar una afirmación es una referencia, no una redistribución de dato.
+ */
+
 /**
  * Registro de geometrías aprobadas, indexado por `saberId`. Los polígonos viven
  * en `geometriasSaberes.ts` para que acá se pueda leer la regla sin scrollear
