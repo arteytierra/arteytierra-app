@@ -1,5 +1,46 @@
 # Encargo — prácticas documentadas de las 32 ecorregiones de Indomalaya
 
+
+## Corregido el 10/10/2026, después del lote 01
+
+**El lote 01 cubrió las cuatro fichas de los Ghats y vuelve a medias.** Leer
+`RESPUESTAS_MUESTREOS.md` antes de seguir: seis entradas están bien y cuatro hay
+que rehacerles la fuente. No hay que reescribir el lote, sólo esas cuatro.
+
+Lo que faltaba decir, y que vale para todos los lotes que siguen:
+
+### Qué fuente se acepta
+
+`practicasHistoricas.ts` tiene hoy **416 URLs sobre 123 dominios** y así se
+reparten las más usadas: PubMed Central (85), FAO (47), UNESCO (30), el National
+Park Service de EE.UU. (27), SciELO en sus tres sedes (41), Frontiers, Ecology &
+Society, MDPI, SciELO Brasil, Redalyc, Parks Canada, organismos nacionales.
+**Ninguna es de periodismo.** Ese es el piso, y lo fijó el archivo con la
+práctica.
+
+Entonces, una fuente entra si cumple las tres:
+
+1. **Abre hoy.** Si no se puede abrir, no se puede desmentir, y una afirmación
+   que no se puede desmentir no entra. Probarla antes de escribirla.
+2. **Es la publicación, no un intermediario.** ResearchGate, Academia.edu,
+   Scribd y los agregadores de acceso abierto son *hosts*: hay que llegar al
+   artículo en la revista, el repositorio institucional o el organismo. Si sólo
+   existe en el agregador, decirlo en `nota`.
+3. **Es un trabajo publicado, no una nota periodística.** Un diario o un sitio de
+   divulgación puede servir para *encontrar* el dato; la cita es el trabajo que
+   está detrás. Si no hay ninguno detrás, la entrada va a `vacias`.
+
+**Y una advertencia sobre el tamaño:** una nota de dos páginas en el número 2 del
+volumen 1 de una revista sin presencia indexada no alcanza para fechar una
+práctica en el territorio de alguien. No es esnobismo: es que no hay con qué
+contrastarla.
+
+### Mejor tres entradas sólidas que cuatro con una floja
+
+Si de una ficha salen dos prácticas bien sostenidas y la tercera obliga a estirar
+la fuente, **se entregan dos**. Una ficha con dos prácticas que aguantan vale más
+que una con tres donde una no se puede chequear, porque la que no aguanta
+contamina la confianza en las otras dos.
 *Pegar primero `GPT_LOCAL_REGLAS.md` y después esto. Entregas en
 `C:\Arte y Tierra\encargos-gpt\entregas\practicas-indomalaya\NN.json`.*
 
