@@ -93,7 +93,21 @@ export async function obtenerCobertura(mojones: Mojon[]): Promise<DatosCobertura
   const suelo_pct      = pctDe(c => c.valor === 60);
   const dominante      = items[0]?.clase.nombre ?? '—';
 
-  // Forraje orientativo por composición (kg MS/ha·año) — mezcla ponderada.
+  /*
+   * Forraje orientativo por composición (kg MS/ha·año) — mezcla ponderada.
+   *
+   * ESTOS CUATRO PESOS NO TIENEN FUENTE. Son del mismo tipo de número que
+   * `forrajePorLluvia` en `pastoreo.ts`, y la app muestra los dos al lado: para
+   * un predio todo arbolado con 2.000 mm, este da 800 y aquel 7.000. La única
+   * medición de campo que conseguimos —NPP herbácea aérea de un bosque húmedo
+   * tropical con 1.998,6 mm, 1.300 a 1.700 kg MS/ha/año, Gautam & Mandal,
+   * Forest Ecosystems 2016 — cae de este lado, pero eso valida el orden de
+   * magnitud y no los pesos.
+   *
+   * Lo que este número sí tiene y el otro no es que mira la cobertura. Lo que
+   * ninguno de los dos tiene es una fuente, y el panel lo dice en vez de
+   * invitar a compararlos. Ver `_research/_encargos/RESPUESTAS_FORRAJE.md`.
+   */
   const forraje_sugerido = veg_pct > 0
     ? Math.round((pastizal_pct * 3500 + arbustal_pct * 1800 + cultivo_pct * 4500 + arbolado_pct * 800) / Math.max(1, pastizal_pct + arbustal_pct + cultivo_pct + arbolado_pct))
     : null;

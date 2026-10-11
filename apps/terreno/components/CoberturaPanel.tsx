@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { Trees, TriangleAlert, Loader2, Sprout } from 'lucide-react';
 import { obtenerCobertura, resumirCobertura, type DatosCobertura, type CoberturaResumen } from '@/lib/cobertura';
+import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -92,9 +93,28 @@ export function CoberturaPanel({ mojones, datos, onDatos, onResumen }: Props) {
           {datos.forraje_sugerido !== null && (
             <div className="bg-moss-50 border border-moss-200 rounded-xl p-3 flex items-start gap-2">
               <Sprout className="w-4 h-4 shrink-0 text-moss-600 mt-0.5" />
-              <p className="text-[11px] text-moss-700 leading-relaxed">
-                Forraje orientativo por composición: <span className="font-semibold">{datos.forraje_sugerido.toLocaleString('es-AR')} kg MS/ha·año</span>. Usalo en Pastoreo como referencia junto al valor por lluvia.
-              </p>
+              <div className="text-[11px] text-moss-700 leading-relaxed">
+                <p>
+                  Forraje orientativo por composición: <span className="font-semibold">{datos.forraje_sugerido.toLocaleString('es-AR')} kg MS/ha·año</span>.
+                </p>
+                {/* Antes acá decía «usalo en Pastoreo como referencia junto al valor
+                    por lluvia», que invitaba a comparar dos números que no miden lo
+                    mismo y pueden diferir nueve veces. Ver el comentario de
+                    `forrajePorLluvia` en `lib/pastoreo.ts`. */}
+                <Cautela claim="Pastoreo muestra otro número y no mide lo mismo que este.">
+                  Este sale de la cobertura: pondera cuánto del predio es pastizal,
+                  arbustal, cultivo o monte. El de Pastoreo sale de la lluvia anual y
+                  no mira qué crece. Cuando difieren mucho es porque el predio tiene
+                  árboles o suelo desnudo, y el de la lluvia no lo sabe: en un predio
+                  todo arbolado con 2.000 mm, uno da 800 y el otro 7.000.
+                  <br /><br />
+                  No elijas por el más alto. Ninguno de los dos tiene todavía una
+                  fuente publicada —ni los pesos por cobertura de acá ni la escalera
+                  por lluvia de allá— y los dos van a cambiar cuando la tengan. La
+                  única medición de campo que conseguimos para un bosque húmedo
+                  tropical con esa lluvia queda del lado de los 800.
+                </Cautela>
+              </div>
             </div>
           )}
 
