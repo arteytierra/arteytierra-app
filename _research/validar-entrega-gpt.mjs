@@ -50,9 +50,31 @@ function idsDeFichas() {
 }
 
 const OBLIGATORIOS = ['id', 'fuentes', 'verificacion'];
+
+/* Los cuatro valores que admite `tipo_de_cifra` en el encargo de forraje, de
+ * mas util a menos. Ver `_encargos/ENCARGO_FORRAJE_LOTE_02.md`. */
+const TIPOS_DE_CIFRA = ['oferta_aprovechable', 'receptividad', 'ms_herbacea_total', 'npp_herbacea'];
 const errores = [];
 const avisos = [];
-const vistos = new Map();        // id → archivo donde apareció primero
+/*
+ * id → archivo donde apareció primero. Lo que cuenta como repetido depende del
+ * encargo, y la primera versión de esto se equivocó:
+ *
+ * En `licencias`, `forraje` y `fuentes-propias` el id identifica la entrada, así
+ * que repetirlo es un error. En `practicas` **no**: el id es la ficha y la
+ * entrada es una práctica, porque `PRACTICAS_POR_FICHA` es un
+ * `Record<fichaId, PracticaHistorica[]>` y el encargo pide justamente varias por
+ * ficha. El lote 01 de Indomalaya entregó 10 prácticas sobre 4 fichas —la forma
+ * correcta— y el validador lo rechazó con seis errores. Casi devolvió un lote
+ * bien hecho, que es el peor error que puede cometer un validador: no deja pasar
+ * algo malo, tira algo bueno.
+ *
+ * Entonces la clave de unicidad es el id, salvo en prácticas, donde es el par
+ * (id, práctica): dos veces la misma práctica en la misma ficha sí es un error,
+ * y es el mismo chequeo que hace el test de `practicasHistoricas`.
+ */
+const vistos = new Map();
+let encargoDeclarado = null;
 const entradas = [];
 let vacias = 0;
 
@@ -67,6 +89,7 @@ for (const arch of archivos) {
     errores.push(`${arch}: no parsea como JSON — ${e.message}`);
     continue;
   }
+  if (typeof lote.encargo === 'string' && !encargoDeclarado) encargoDeclarado = lote.encargo;
   for (const campo of ['encargo', 'lote', 'fecha']) {
     if (lote[campo] === undefined) avisos.push(`${arch}: sin \`${campo}\` en la cabecera del lote`);
   }
@@ -94,9 +117,34 @@ for (const arch of archivos) {
     }
     if (typeof e.verificacion === 'string' && e.verificacion.length < 40)
       avisos.push(`${arch} · ${id}: \`verificacion\` de ${e.verificacion.length} caracteres — tiene que decir qué afirma la fuente`);
+    /*
+     * En forraje la cifra no significa nada sin saber QUE cuenta. El lote 01
+     * volvio con NPP de sotobosque donde haciamos falta oferta aprovechable
+     * —entre las dos hay un factor de varias veces, no un porcentaje— y no se
+     * pudo montar nada. Desde el lote 02 el tipo viene declarado y acotado, asi
+     * que si falta o no es uno de los cuatro, el lote no pasa.
+     */
+    if (/forraje/i.test(encargoDeclarado ?? '') && e.tipo_de_cifra !== undefined) {
+      if (!TIPOS_DE_CIFRA.includes(e.tipo_de_cifra))
+        errores.push(`${arch} · ${id}: \`tipo_de_cifra\` ${JSON.stringify(e.tipo_de_cifra)} no es uno de ${TIPOS_DE_CIFRA.join(', ')}`);
+      else if (e.tipo_de_cifra === 'receptividad' && e.receptividad_valor == null)
+        errores.push(`${arch} · ${id}: dice \`receptividad\` pero no trae \`receptividad_valor\``);
+      else if (e.tipo_de_cifra !== 'receptividad' && e.kg_ms_ha_anio_min == null && e.kg_ms_ha_anio_max == null)
+        errores.push(`${arch} · ${id}: ${e.tipo_de_cifra} sin ningún kg MS/ha·año`);
+    }
+
     if (e.id) {
-      if (vistos.has(e.id)) errores.push(`${arch} · ${e.id}: id repetido, ya venía en ${vistos.get(e.id)}`);
-      else vistos.set(e.id, arch);
+      const porFicha = /practica/i.test(encargoDeclarado ?? '');
+      const clave = porFicha ? `${e.id}\u0000${(e.practica ?? '').trim().toLowerCase()}` : e.id;
+      if (vistos.has(clave)) {
+        errores.push(porFicha
+          ? `${arch} · ${e.id}: la práctica "${e.practica}" ya venía en ${vistos.get(clave)}`
+          : `${arch} · ${e.id}: id repetido, ya venía en ${vistos.get(clave)}`);
+      } else {
+        vistos.set(clave, arch);
+      }
+      if (porFicha && !e.practica)
+        errores.push(`${arch} · ${e.id}: sin \`practica\`, y es lo que distingue una entrada de otra en la misma ficha`);
     }
     entradas.push({ ...e, _arch: arch });
   }
@@ -105,8 +153,11 @@ for (const arch of archivos) {
 // Contraste contra el catálogo, sólo si los ids parecen de ficha.
 const fichas = idsDeFichas();
 if (fichas) {
-  const desconocidos = [...vistos.keys()].filter(id => !fichas.has(id));
-  if (desconocidos.length && desconocidos.length < vistos.size) {
+  // Sobre los ids reales, no sobre las claves de unicidad, que en prácticas
+  // llevan la práctica pegada atrás.
+  const idsReales = [...new Set(entradas.map(e => e.id).filter(Boolean))];
+  const desconocidos = idsReales.filter(id => !fichas.has(id));
+  if (desconocidos.length && desconocidos.length < idsReales.length) {
     for (const id of desconocidos) avisos.push(`\`${id}\` no es un id de ficha del catálogo — puede estar bien si el encargo no apunta a fichas`);
   }
 }
