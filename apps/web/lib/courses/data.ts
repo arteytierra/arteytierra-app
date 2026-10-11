@@ -46,6 +46,8 @@ export interface CourseData {
   paraQuien?: string[];
   vasASalir?: string[];
   modulos: CourseModule[];
+  /** Párrafo debajo del título de "El programa", para aclarar cómo se recorren los módulos (por ejemplo, que no son un cronograma cerrado). */
+  programaNota?: string;
   trabajoFinal?: { icon: string; title: string; items: string[] }[];
   facilitadores: Facilitador[];
   opciones: CourseOption[];
@@ -588,7 +590,7 @@ export const COURSES: Record<string, CourseData> = {
       'Un proyecto que no paró desde noviembre de 2020, heredero de una tradición de voluntariado itinerante que Arte y Tierra sostiene desde 2014 entre Argentina, Colombia, Ecuador, Francia, Italia y Perú.',
     ],
     datos: [
-      { label: 'Duración', val: 'Mínimo 2 semanas · se puede extender a un mes o más' },
+      { label: 'Duración', val: 'Mínimo 2 semanas · recomendamos 3 meses para practicar en todas las áreas' },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
       { label: 'Práctica diaria', val: '4–6 hs en obra, huerta y sistemas productivos' },
       { label: 'Ingreso', val: 'Todos los lunes · todo el año' },
@@ -598,15 +600,16 @@ export const COURSES: Record<string, CourseData> = {
       { num: '🌱', title: 'Agroecología', items: ['Manejo de huerta y sistemas vivos', 'Suelo, compost y bioinsumos', 'Integración vegetal–animal', 'Bosque comestible y zona 1'] },
       { num: '🌿', title: 'Biocosmética', items: ['Cosecha y secado de plantas medicinales', 'Macerados en aceite y alcohol', 'Tinturas madre artesanales', 'Ungüentos, cremas y elaboraciones naturales', 'Soberanía del cuerpo y el hogar'] },
       { num: '💧', title: 'Diseño Hidrológico', items: ['Lectura del paisaje', 'Agua, clima y topografía', 'Introducción al diseño hidrológico', 'Observación de cuencas'] },
-      { num: '🎓', title: 'Participación en formaciones', items: ['Acceso libre a los talleres que se dicten en la ecoescuela durante tu estadía', 'Participación como parte del equipo logístico de las formaciones', 'Aprendizaje desde adentro de la organización pedagógica', 'Experiencia real de co-facilitación y sostenimiento'] },
+      { num: '🎓', title: 'Participación en formaciones', nota: 'Si mientras estás acá se dicta un taller en la ecoescuela, podés entrar a las clases. Funciona como intercambio: participás como estudiante y a cambio das una mano con la logística del curso —materiales, cocina, armado y orden de los espacios.', items: ['Acceso libre a los talleres que se dicten en la ecoescuela durante tu estadía', 'Participación como parte del equipo logístico de las formaciones', 'Aprendizaje desde adentro de la organización pedagógica', 'Experiencia real de co-facilitación y sostenimiento'] },
       { num: '🤝', title: 'Organización comunitaria', items: ['Círculos de la palabra', 'Asambleas y toma de decisiones', 'Gestión del habitar colectivo', 'Vida cotidiana en ecoescuela'] },
     ],
+    programaNota: 'Las áreas no son un cronograma cerrado: cada semana se trabaja en lo que el espacio necesita en ese momento —una obra que avanza, la huerta en su temporada, una formación que se está armando. Por eso en una estadía corta, de dos semanas, se entra a fondo en una o dos áreas y no en todas. Para recorrerlas todas recomendamos quedarse tres meses.',
     facilitadores: [JONATAN],
     opciones: [
       { id: 'camping', label: 'En zona de camping', precio: '$40.000 / semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
       { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000 / semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
-    opcionesNota: 'Podés extenderte a un mes o más según disponibilidad — consultanos por WhatsApp.',
+    opcionesNota: 'Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp.',
     formCurso: 'Inmersión Viva · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva',
     opcionesLabel: 'Modalidad de participación',

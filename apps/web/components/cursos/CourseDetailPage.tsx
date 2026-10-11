@@ -87,7 +87,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
               href="#programa"
               className="inline-flex border border-bone-50/40 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-7 py-4 hover:border-bone-50 transition-colors"
             >
-              Ver programa
+              {isInmersion ? 'Ver áreas de estudio' : 'Ver programa'}
             </a>
           </div>
         </div>
@@ -188,10 +188,17 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       <section id="programa" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-12">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Contenidos</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">
+              {isInmersion ? 'La práctica' : 'Contenidos'}
+            </p>
             <h2 className="font-display text-4xl md:text-5xl text-bone-50">
-              El <em>programa.</em>
+              {isInmersion ? <>Las <em>áreas de estudio.</em></> : <>El <em>programa.</em></>}
             </h2>
+            {course.programaNota && (
+              <p className="mt-6 font-sans text-base text-bone-200 leading-relaxed max-w-2xl">
+                {course.programaNota}
+              </p>
+            )}
           </div>
 
           {course.modulos[0]?.date ? (
@@ -251,6 +258,9 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                       <div key={i} className="p-5 bg-clay-700/10 border-l-[3px] border-clay-700">
                         <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-2">{m.num}</p>
                         <h3 className="font-display text-base text-bone-100 mb-3 leading-snug">{m.title}</h3>
+                        {m.nota && (
+                          <p className="font-sans text-sm text-clay-200 italic leading-relaxed mb-3">{m.nota}</p>
+                        )}
                         <ul className="flex flex-col gap-1.5">
                           {m.items.map(item => (
                             <li key={item} className="font-sans text-sm text-bone-200 leading-relaxed">· {item}</li>
@@ -435,7 +445,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
           <div className="max-w-2xl mx-auto text-center">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">¿Tenés un oficio para aportar?</p>
             <h2 className="font-display text-3xl md:text-4xl text-ink-950 mb-4">
-              Electricistas, plomeros, herreros, carpinteros, <em>comunicadores…</em>
+              Electricistas, plomeros, herreros, carpinteros, <em>mecánicos…</em>
             </h2>
             <p className="font-sans text-sm text-ink-700 leading-relaxed max-w-lg mx-auto mb-6">
               Si tenés un oficio y querés ponerlo al servicio de la construcción de la ecoescuela, podés acceder a una <strong>beca completa</strong> para vivir la Inmersión Viva. Postulación por formulario y entrevista previa por videollamada.
