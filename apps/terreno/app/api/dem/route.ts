@@ -1,6 +1,7 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
-import { requierePlan } from '@/lib/auth/apiGuard';
+import { requiereTopoDe } from '@/lib/auth/apiGuard';
+import { haDeBBox } from '@/lib/coordenadas';
 import { obtenerGrillaDEM } from '@/lib/elevacion/grilla';
 import { atribucionDe } from '@/lib/elevacion/atribucion';
 import type { BBox } from '@/lib/elevacion';
@@ -19,9 +20,10 @@ const MAX_NODOS = 90_000;            // tope de tamaño de grilla (cols × rows)
  * la usa y, si falla, cae a los tiles Terrarium.
  */
 export async function GET(req: Request) {
-  const bloqueo = await requierePlan('analisis.topo');
-  if (bloqueo) return bloqueo;
-
+  // El bbox se parsea ANTES del guard: la muestra gratis de topografía está
+  // acotada por superficie, así que para saber si este pedido pasa hay que
+  // saber cuánto terreno abarca. Se valida primero para no dejar que un bbox
+  // roto llegue al cálculo de hectáreas.
   const q = new URL(req.url).searchParams;
   const w = parseFloat(q.get('w') ?? ''), s = parseFloat(q.get('s') ?? '');
   const e = parseFloat(q.get('e') ?? ''), n = parseFloat(q.get('n') ?? '');
@@ -30,6 +32,9 @@ export async function GET(req: Request) {
 
   if (![w, s, e, n].every(Number.isFinite) || !(e > w) || !(n > s))
     return new Response(JSON.stringify({ ok: false, error: 'bbox inválido' }), { status: 400, headers: HDRS });
+
+  const bloqueo = await requiereTopoDe(haDeBBox(w, s, e, n));
+  if (bloqueo) return bloqueo;
   if (!Number.isFinite(cols) || !Number.isFinite(rows) || cols < 2 || rows < 2 || cols * rows > MAX_NODOS)
     return new Response(JSON.stringify({ ok: false, error: 'grilla inválida' }), { status: 400, headers: HDRS });
 

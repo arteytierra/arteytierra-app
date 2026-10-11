@@ -15,7 +15,24 @@ describe('calcularSolar', () => {
   it('en el hemisferio sur los paneles apuntan al Norte', () => {
     const s = calcularSolar(-31.4, -64.2);
     expect(s.orientacion_optima).toBe('Norte');
-    expect(s.angulo_optimo_panel).toBe(43); // round(|−31.4| + 12)
+  });
+
+  it('LA INCLINACIÓN DEL PANEL YA NO ES |lat| + 12, Y QUEDA POR DEBAJO', () => {
+    // El 43° que este test fijaba era `round(31,4 + 12)`, una regla sin fuente
+    // que optimiza el invierno. El valor publicado para esta latitud está en
+    // los 20 y pocos. Ver lib/alero.ts y tests/unit/clima/alero.test.ts.
+    const s = calcularSolar(-31.4, -64.2);
+    expect(s.angulo_regla_vieja).toBe(43);
+    expect(s.angulo_optimo_panel).toBeLessThan(s.angulo_regla_vieja);
+    expect(s.angulo_optimo_panel).toBeGreaterThan(20);
+    expect(s.angulo_optimo_panel).toBeLessThan(32);
+    expect(s.angulo_piso_lluvia).toBe(false);
+  });
+
+  it('y en los trópicos se levanta al piso de 10° para que la lave la lluvia', () => {
+    const s = calcularSolar(4.7, -74.1);
+    expect(s.angulo_optimo_panel).toBe(10);
+    expect(s.angulo_piso_lluvia).toBe(true);
   });
 
   it('en el hemisferio norte apuntan al Sur', () => {

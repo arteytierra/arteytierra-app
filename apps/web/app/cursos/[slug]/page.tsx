@@ -18,7 +18,14 @@ import { buildSocial } from '@/lib/seo/og';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getReviewAggregate } from '@/lib/reviews';
 
-export const revalidate = 60;
+// Cada vez que vence esta ventana y alguien entra, la pagina se vuelve a
+// renderizar entera en el servidor: es CPU facturado, y con visitas sostenidas
+// —justo la pagina que recibe una pauta— se pagaba ese render todo el dia sin
+// que el contenido hubiera cambiado. Un dia es la ventana correcta porque ya no
+// es la unica forma de ver un cambio: guardar desde el panel marca vencida esta
+// pagina al instante (revalidarProducto en lib/cache/rutas-publicas.ts). Esto
+// es solo la red de seguridad para lo que se edite fuera del panel.
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

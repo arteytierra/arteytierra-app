@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { enabledLocales, DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config';
+import { RUTA_POR_TIPO } from '@/lib/cache/rutas-publicas';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
 
@@ -33,15 +34,6 @@ const STATIC_ROUTES: Array<{ path: string; freq: MetadataRoute.Sitemap[number]['
   { path: 'arrepentimiento', freq: 'yearly', priority: 0.3 },
 ];
 
-const TYPE_TO_PATH: Record<string, string> = {
-  course: 'cursos',
-  ebook: 'ebooks',
-  biocosmetic: 'biocosmetica',
-  lodging: 'hospedaje',
-  consult: 'asesorias',
-  immersion: 'inmersion-viva',
-};
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const locales = enabledLocales();
   const entries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => {
@@ -63,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .schema('shop').from('products')
         .select('slug, type, updated_at')
         .eq('is_active', true)
-        .in('type', Object.keys(TYPE_TO_PATH) as never),
+        .in('type', Object.keys(RUTA_POR_TIPO) as never),
       admin
         .schema('cms').from('posts')
         .select('slug, updated_at, published_at')
@@ -73,7 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     for (const p of products ?? []) {
-      const base = TYPE_TO_PATH[p.type];
+      const base = RUTA_POR_TIPO[p.type];
       if (!base) continue;
       const path = `/${base}/${p.slug}`;
       entries.push({

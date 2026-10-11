@@ -36,9 +36,9 @@ function resultado(celdas: CeldaAptitud[]): ResultadoAptitud {
   const tipos: TipoAptitud[] = ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'];
   const resumen = Object.fromEntries(tipos.map(t => {
     const n = celdas.filter(c => c.dominante === t).length;
-    return [t, { celdas: n, pct: celdas.length ? (n / celdas.length) * 100 : 0 }];
+    return [t, { celdas: n, area_m2: 0, pct: celdas.length ? (n / celdas.length) * 100 : 0 }];
   })) as ResultadoAptitud['resumen'];
-  return { celdas, resumen, ajustes: [] };
+  return { celdas, area_celda_m2: 0, area_total_m2: 0, resumen, ajustes: [] };
 }
 
 describe('agruparAptitud', () => {
@@ -132,6 +132,46 @@ function shaderLlano(n = 5): DatosShader {
   }
   return { celdas, elev_min: 100, elev_max: 100 + (n - 1) * 0.2, pend_max: 2 };
 }
+
+// ─── Superficie: la pantalla cuenta metros cuadrados, no celdas ─────────────
+//
+// "5.031 celdas" no es una cantidad de tierra: es una cantidad de píxeles del
+// DEM, y su tamaño cambia con la latitud y con la fuente del relieve. El panel
+// habla en m², así que la conversión tiene que estar bien proyectada.
+
+describe('calcularAptitud: superficie por categoría', () => {
+  const shader = shaderLlano();   // 25 celdas de 0.001° a −34°
+
+  /**
+   * Caso resuelto a mano. Un grado de latitud son 111.320 m; uno de longitud,
+   * eso por cos(lat). A −34°: 0.001° × 111.320 = 111,32 m de alto y
+   * 111,32 × cos(34°) = 111,32 × 0,82904 = 92,29 m de ancho → 10.274 m².
+   *
+   * Sin el coseno daría 12.392 m², un 21 % de más. La tolerancia de 30 m² deja
+   * pasar el redondeo pero no ese error.
+   */
+  it('proyecta la celda a metros con el coseno de la latitud', () => {
+    const r = calcularAptitud(shader, null);
+    expect(r.area_celda_m2).toBeGreaterThan(10_244);
+    expect(r.area_celda_m2).toBeLessThan(10_304);   // 12.392 (sin coseno) no entra
+  });
+
+  it('el total es la suma de las categorías y coincide con celdas × área', () => {
+    const r = calcularAptitud(shader, null);
+    const tipos: TipoAptitud[] = ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'];
+    const suma = tipos.reduce((a, t) => a + r.resumen[t].area_m2, 0);
+    expect(r.area_total_m2).toBeCloseTo(25 * r.area_celda_m2, 3);
+    expect(suma).toBeCloseTo(r.area_total_m2, -1);
+  });
+
+  it('la superficie de cada categoría guarda la misma proporción que su %', () => {
+    const r = calcularAptitud(shader, null);
+    for (const t of ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'] as TipoAptitud[]) {
+      const pctDeArea = (r.resumen[t].area_m2 / r.area_total_m2) * 100;
+      expect(pctDeArea).toBeCloseTo(r.resumen[t].pct, 1);
+    }
+  });
+});
 
 describe('calcularAptitud con modificadores del ecosistema', () => {
   const shader = shaderLlano();

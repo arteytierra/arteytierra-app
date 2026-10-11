@@ -92,11 +92,19 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
               <div>
-                <span className="text-ink-700/60">Pendiente media</span>
+                {/* «General» y no «media»: es el desnivel entre la punta más
+                    alta y la más baja sobre la distancia entre ellas. La media
+                    de las pendientes celda a celda es otro número —más grande,
+                    porque las ondas del terreno no se cancelan— y se usa en el
+                    aviso de corrimiento de las curvas. Llamarlas igual hacía que
+                    la pantalla mostrara 3,2 % y 6,9 % con el mismo nombre. */}
+                <span className="text-ink-700/60">Pendiente general</span>
                 <p className="font-mono font-bold text-sm text-ink-900">
                   {datos.pendiente_pct.toFixed(1)}%
                 </p>
-                <p className="text-ink-700/50">{datos.pendiente_grados.toFixed(1)}°</p>
+                <p className="text-ink-700/50">
+                  {datos.pendiente_grados.toFixed(1)}° · de la punta más alta a la más baja
+                </p>
               </div>
               <div>
                 <span className="text-ink-700/60">Dirección escurrimiento</span>

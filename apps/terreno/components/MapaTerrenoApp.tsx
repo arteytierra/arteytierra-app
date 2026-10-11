@@ -20,7 +20,8 @@ import { PoligonoPanel } from './PoligonoPanel';
 import { ProyectosPanel } from './ProyectosPanel';
 import { BuscadorLugar, type ResultadoBusqueda } from './BuscadorLugar';
 import { ClimaPanel } from './ClimaPanel';
-import { ContextoPanel } from './ContextoPanel';
+import { BioconstruccionBloque } from './BioconstruccionBloque';
+import { ReservaPredioPanel } from './ReservaPredioPanel';
 import { TopografiaPanel } from './TopografiaPanel';
 import { CaptacionPanel } from './CaptacionPanel';
 import { CalendarioPanel, type CalendarioInputs } from './CalendarioPanel';
@@ -58,13 +59,15 @@ import { useCapaClima } from '@/hooks/useCapaClima';
 import { useCapaSuelo } from '@/hooks/useCapaSuelo';
 import { useCapaTopografia } from '@/hooks/useCapaTopografia';
 import { useCapturaPng } from '@/hooks/useCapturaPng';
-import { crearZona, CATEGORIAS_ZONA } from '@/lib/zonificacion';
+import { crearZona, CATEGORIAS_ZONA, type Zona, type CategoriaZona } from '@/lib/zonificacion';
 import { crearPin, type Pin } from '@/lib/pines';
 import { crearCamino, type Camino } from '@/lib/caminos';
 import { PerfilPanel } from './PerfilPanel';
 import { calcularArcoSolar, calcularRadioArco, type DatosArcoSolar } from '@/lib/arco_solar';
 import { shaderDesdeDEM, gradienteCss, PALETAS_ELEV, PALETAS_PEND, type DatosShader } from '@/lib/shaders';
-import { calcularCurvas, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, MAX_NIVELES, type CurvaNivel } from '@/lib/curvasNivel';
+import { calcularCurvasProgresivo, intervaloAutomatico, intervaloConfiablePara, intervaloConfiableRemoto, nivelesEstimados, NIVELES_MUCHOS, type CurvaNivel } from '@/lib/curvasNivel';
+import { incertidumbreDeCota } from '@/lib/modeloDeclarado';
+import { corrimientoDeTraza } from '@/lib/planilla';
 import type { DEMImportado } from '@/lib/demImport';
 import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { obtenerShader } from '@/lib/relieve/obtenerShader';
@@ -84,19 +87,21 @@ import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@
 import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
 import { crearCuencaGuardada, type CuencaGuardada, type ParamsCuenca } from '@/lib/cuencasGuardadas';
-import { perdidaSuelo, type PerdidaSuelo } from '@/lib/usle';
+import { crearRepresaGuardada, migrarRepresasGuardadas, type RepresaGuardada, type FichaRepresa } from '@/lib/represasGuardadas';
+import { perdidaSuelo, type EntradaUSLE, type PerdidaSuelo } from '@/lib/usle';
 import { simplificarAnillo, sugerirCaminoRelieve, sugerirCaminosAcceso, analizarRelieve, type AnalisisTopoIntegral, type ZonaVivienda, type SitioRepresa } from '@/lib/cuencaHidro';
 import { CuencaPanel, type CuencaInputs } from './CuencaPanel';
 import type { RedAguaResumen, RedAguaInputs } from '@/lib/hidraulica';
 import { colorServicio, type TipoServicio } from '@/lib/servicios';
 import type { RepresaResumen, RepresaInputs } from '@/lib/represa';
-import { RODEO_INICIAL, type Rodeo } from '@/lib/rodeo';
+import { RODEO_INICIAL, migrarRodeo, type Rodeo } from '@/lib/rodeo';
 import type { RiegoResumen, RiegoInputs } from '@/lib/riego';
 import type { PastoreoInputs } from '@/lib/pastoreo';
 import type { PotrerosLayout } from '@/lib/potreros';
 import type { DatosCobertura, CoberturaResumen } from '@/lib/cobertura';
 import type { DatosEntorno, EntornoResumen } from '@/lib/entorno';
 import { MasterPlanPanel } from './MasterPlanPanel';
+import { EmplazamientoBloque } from './EmplazamientoBloque';
 import { PerfilProfesionalModal } from './PerfilProfesionalModal';
 import { leerPerfil } from '@/lib/profesional';
 import { EconomiaPanel } from './EconomiaPanel';
@@ -116,36 +121,33 @@ import { BLOQUES, GRUPOS_BLOQUE, type BloqueDef } from '@/lib/bloques';
 import { ELEMENTOS, GRUPOS_ELEMENTO, type ElementoPreset } from '@/lib/elementos';
 import type { ResultadoKeyline } from '@/lib/keyline';
 import { Modal, type ModalState } from './Modal';
-import type { ElementoDibujo, DibujoEnCurso } from '@/lib/dibujos';
 import { estaDibujando, agregarVertice, quitarUltimoVertice, tieneVertices, etiquetaModo, NOMBRE_HERRAMIENTA, type ModoMapa, type HerramientaDibujo } from '@/lib/mapa/modoMapa';
 import { cerrarDibujo, motivoNoCierra, faltanVertices, tipoBaseDe, cierraSola, rectanguloDesdeEsquinas, VERTICES_MINIMOS } from '@/lib/mapa/cerrarDibujo';
-import { COLORES_DIBUJO, medidasDibujo } from '@/lib/dibujos';
+import { COLORES_DIBUJO, medidasDibujo, type ElementoDibujo, type DibujoEnCurso } from '@/lib/dibujos';
 import { centroideDibujo, aplicarTransformacion, type TransformarOp } from '@/lib/transformaciones';
 import { exportarDXF, parsearDXF } from '@/lib/dxf';
-import type { OverlayImagen } from './MapLeaflet';
 import { CAPA_DEFAULT_ID, CAPAS_USUARIO_INICIAL, crearCapaUsuario, capaDeElemento, crearCapasKeyline, carpetaEscalaPara, type CapaUsuario, type TipoElementoCapa } from '@/lib/capasUsuario';
 import { calcularMasterPlan, conectarMasterPlan, TIPOS_ITEM, type ItemPrograma, type ElementoMasterPlan, type CaminoMasterPlan } from '@/lib/masterplan';
 import type { ElementoAguada } from '@/lib/aguadas';
 import { useRouter } from 'next/navigation';
 import type { Mojon } from '@/lib/types';
-import { actualizarProyecto } from '@/lib/proyectos';
-import type { Proyecto } from '@/lib/proyectos';
+import { actualizarProyecto, type Proyecto } from '@/lib/proyectos';
 import { exportarGeoJSON, exportarKML, exportarGPX } from '@/lib/exportar';
 import type { DatosClima, CalibracionPrecip } from '@/lib/clima';
+import { migrarRadiacionClima } from '@/lib/climaMigracion';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
+import type { ReservaSnapshot } from '@/lib/reservaPredio';
 import type { DatosSuelo } from '@/lib/suelos';
-import type { Zona, CategoriaZona } from '@/lib/zonificacion';
-import type { Sector, TipoSector } from '@/lib/sectores';
-import { TIPOS_SECTOR } from '@/lib/sectores';
-import type { CapasVisibles, NavegacionMapa } from './MapLeaflet';
+import { TIPOS_SECTOR, type Sector, type TipoSector } from '@/lib/sectores';
+import type { CapasVisibles, NavegacionMapa, OverlayImagen } from './MapLeaflet';
 import { ControlesPaneles, type CapaFondo } from './ControlesMapa';
 import { BarraSuperior } from './BarraSuperior';
 import { descargarGeoTIFF, descargarMDE } from '@/lib/demExport';
 import { useHistory } from '@/lib/useHistory';
 import { FeatureLock } from './FeatureLock';
-import { can, featureDeTab, tabBloqueada, planMinimo, NOMBRE_PLAN, BENEFICIO_FEATURE, type Feature, type Plan } from '@/lib/entitlements';
+import { can, featureDeTab, tabBloqueada, tabBloqueadaConArea, planMinimo, NOMBRE_PLAN, BENEFICIO_FEATURE, type Feature, type Plan } from '@/lib/entitlements';
 import { registrarCandado } from '@/lib/telemetria';
 
 const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
@@ -158,6 +160,20 @@ const MapLeaflet = dynamic(() => import('./MapLeaflet'), {
       </div>
     </div>
   ),
+});
+
+/*
+ * El panel de contexto entra por separado porque arrastra las cuatro tablas de
+ * censo indígena —Argentina, Chile, Paraguay y Perú— que suman 263 kB de
+ * fuente. Estáticas quedaban en el bundle de /mapa aunque el usuario no abriera
+ * nunca la pestaña, y cada país nuevo de la capa las hacía crecer.
+ *
+ * Se carga al abrir la pestaña, que es también la primera vez que hace falta:
+ * el panel ya se renderiza solo con `tab === 'contexto'`.
+ */
+const ContextoPanel = dynamic(() => import('./ContextoPanel').then(m => m.ContextoPanel), {
+  ssr: false,
+  loading: () => <p className="text-sm text-ink-700/60">Cargando el contexto del predio…</p>,
 });
 
 const Vista3D = dynamic(() => import('./Vista3D').then(m => m.Vista3D), { ssr: false });
@@ -176,7 +192,7 @@ interface DocDisenoSnapshot {
 }
 interface Escenario { id: string; nombre: string; creado: string; doc: DocDisenoSnapshot }
 
-interface Props { userName: string | null; plan: Plan }
+interface Props { userName: string | null; plan: Plan; sinTope?: boolean }
 
 function errMsgApp(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -210,7 +226,7 @@ function zoomParaBbox(bbox?: [number, number, number, number]): number {
   return 16;
 }
 
-export function MapaTerrenoApp({ userName, plan }: Props) {
+export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
   const router = useRouter();
 
   // ─── Modo del mapa ────────────────────────────────────────────────────────
@@ -259,6 +275,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     topoError, setTopoError,
   } = useCapaTopografia();
   const [captacionSnap,   setCaptacionSnap]   = useState<CaptacionSnapshot | null>(null);
+  // Las fuentes de agua del predio (represas construidas, cisternas, nacientes).
+  // Se guardan; la autonomía se recalcula al abrir, porque depende del clima.
+  const [reservaSnap,     setReservaSnap]     = useState<ReservaSnapshot | null>(null);
 
   // ─── Capa de suelo (hook useCapaSuelo) ─────────────────────────────────────
   // Dato de suelo + carga/error; el fetch vive en SuelosPanel.
@@ -313,13 +332,19 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   const capasUsuario = doc.capasUsuario ?? CAPAS_USUARIO_INICIAL;
 
   // ─── Capa de clima (hook useCapaClima) ────────────────────────────────────
-  // Clima crudo (POWER) + calibración de lluvia (manual/CHIRPS) + extremos.
+  // Clima crudo (POWER) + calibración de lluvia (manual/CHIRPS) + corrección de
+  // temperatura por altura + extremos.
+  //
+  // La altura media del relieve entra acá porque la celda de POWER es de ~50 km
+  // y devuelve la temperatura de su altura media, no la del predio: en montaña
+  // eso son varios grados. Si el relieve todavía no corrió, el hook se consigue
+  // la altura del centroide por su cuenta. Ver lib/climaAltura.ts.
   const {
     datosClima, datosClimaRaw, setDatosClimaRaw,
     calibracionPrecip, setCalibracionPrecip,
-    datosExtremos, setDatosExtremos,
+    datosExtremos, datosExtremosRaw, setDatosExtremos,
     buscandoCHIRPS,
-  } = useCapaClima(mojones);
+  } = useCapaClima(mojones, datosTopografia?.elev_media);
 
   // Shims drop-in: misma firma que los useState anteriores, ruteado por historial
   const setMojones      = useCallback((v: Mojon[]           | ((p: Mojon[])           => Mojon[]))           => commit(d => ({ ...d, mojones:      typeof v === 'function' ? v(d.mojones)      : v })), [commit]);
@@ -347,6 +372,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // persisten con el proyecto.
   const [cuencasGuardadas, setCuencasGuardadas] = useState<CuencaGuardada[]>([]);
   const [muroLinea, setMuroLinea] = useState<[{ lat: number; lng: number }, { lat: number; lng: number }] | null>(null);
+  const [puntoDerrame, setPuntoDerrame] = useState<{ lat: number; lng: number } | null>(null);
+  const [salidaVertedero, setSalidaVertedero] = useState<Array<{ lat: number; lng: number }> | null>(null);
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
@@ -510,11 +537,48 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return f ? ETIQUETA_RELIEVE[f] : null;
   }, [demPropio, grillaActiva]);
 
-  const curvasNivel = useMemo<CurvaNivel[]>(() => {
-    if (!grillaActiva) return [];
+  /** El candado de topografía, que además del plan mira el tamaño del predio:
+   *  la muestra gratis de Semilla está acotada por superficie. Se calcula una
+   *  vez porque lo consultan el riel, la vista 3D y el histórico. */
+  const topoBloqueada = useMemo(
+    () => tabBloqueadaConArea(plan, 'topo', metricas?.area_ha ?? null),
+    [plan, metricas],
+  );
+
+  /**
+   * Las curvas se calculan por tandas, cediendo el hilo entre una y otra.
+   *
+   * Era un `useMemo` de una sola pasada, y alcanzaba mientras el motor no
+   * dejaba pasar de sesenta niveles. Sin ese tope, un intervalo de 10 cm son
+   * 674 curvas y 3,4 s: en una pasada eso traba la pestaña entera y hasta la
+   * barra de progreso quedaría congelada, porque el hilo que la repinta es el
+   * mismo que calcula.
+   *
+   * Las curvas viejas se quedan en pantalla mientras se calculan las nuevas.
+   * Vaciarlas primero haría parpadear el mapa en cada movimiento del intervalo,
+   * que es justo cuando el usuario está comparando.
+   */
+  const [curvasNivel, setCurvasNivel] = useState<CurvaNivel[]>([]);
+  const [progresoCurvas, setProgresoCurvas] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!grillaActiva) { setCurvasNivel([]); setProgresoCurvas(null); return; }
     const intervalo = intervaloContorno
       ?? intervaloAutomatico(grillaActiva.elev_max - grillaActiva.elev_min, metricas?.area_ha, pisoIntervalo);
-    return calcularCurvas(grillaActiva, intervalo);
+
+    const ac = new AbortController();
+    setProgresoCurvas(0);
+    void calcularCurvasProgresivo(grillaActiva, intervalo, {
+      signal: ac.signal,
+      onProgreso: setProgresoCurvas,
+    }).then(cs => {
+      // Sin esta guarda, un cálculo abandonado pisaría el resultado del que lo
+      // reemplazó: el usuario movería el intervalo y vería el anterior.
+      if (ac.signal.aborted) return;
+      setCurvasNivel(cs);
+      setProgresoCurvas(null);
+    });
+    return () => ac.abort();
   }, [grillaActiva, intervaloContorno, metricas, pisoIntervalo]);
 
   const intervaloCurvasEfectivo = useMemo(() => {
@@ -524,11 +588,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       : null;
   }, [intervaloContorno, grillaActiva, metricas, pisoIntervalo]);
 
-  /** Cuántas curvas pidió el intervalo elegido: si se pasa del tope no se dibuja ninguna. */
-  const curvasDemasiadas = useMemo(() => {
+  /** Cuántas curvas pidió el intervalo elegido, cuando son muchas. No bloquea
+   *  nada: es para que el usuario sepa por qué va a tardar antes de que tarde. */
+  const curvasMuchas = useMemo(() => {
     if (!grillaActiva || intervaloCurvasEfectivo == null) return null;
     const n = nivelesEstimados(grillaActiva.elev_max - grillaActiva.elev_min, intervaloCurvasEfectivo);
-    return n > MAX_NIVELES ? n : null;
+    return n > NIVELES_MUCHOS ? n : null;
   }, [grillaActiva, intervaloCurvasEfectivo]);
 
   const handleCargarDEM = useCallback(async (file: File) => {
@@ -648,16 +713,20 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
    * por terreno; redondeamos las coordenadas para que el CDN reutilice la respuesta.
    */
   const [zoomSatelital, setZoomSatelital] = useState(18);
+  // Depende de la CELDA redondeada y no del centroide, que cambia en la quinta
+  // decimal con cada mojón: así eran cuatro pedidos idénticos por predio.
+  const celdaZoomSat = latCentro == null || lngCentro == null
+    ? null : `${latCentro.toFixed(2)},${lngCentro.toFixed(2)}`;
   useEffect(() => {
-    if (latCentro == null || lngCentro == null) return;
-    const lat = latCentro.toFixed(2), lng = lngCentro.toFixed(2);
+    if (!celdaZoomSat) return;
+    const [lat, lng] = celdaZoomSat.split(',');
     let vivo = true;
     fetch(`/api/zoom-satelital?lat=${lat}&lng=${lng}`)
       .then(r => r.ok ? r.json() : null)
       .then(j => { if (vivo && j?.zoom) setZoomSatelital(j.zoom); })
       .catch(() => { /* nos quedamos con 18 */ });
     return () => { vivo = false; };
-  }, [latCentro, lngCentro]);
+  }, [celdaZoomSat]);
   // ─── Sombras + insolación (hook useSombras) ───────────────────────────────
   const {
     sombrasActivo, setSombrasActivo,
@@ -719,12 +788,37 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     return s / datosShader.celdas.length;
   }, [datosShader]);
 
+  /**
+   * Cuánto puede estar corrida en HORIZONTAL la posición de las curvas de nivel
+   * del plano, que es una pregunta distinta de cada cuántos metros se dibujan.
+   *
+   * La capa de curvas ya avisaba del intervalo —«por debajo de 2 m esto es la
+   * interpolación y no el terreno»—, pero eso habla de la resolución vertical.
+   * La posición de la curva tiene su propio error y es mucho más grande: sobre
+   * una ladera del 5 % el error vertical punto a punto del modelo global —1,22 m—
+   * desplaza la curva 24 m ladera arriba o abajo. Ver `corrimientoDeTraza`.
+   *
+   * Se calcula sólo con la pendiente MEDIDA: `pendienteMedia` en `null` significa
+   * «todavía no se corrió la topografía», no «el terreno es plano», y pasarle
+   * ese null a la función imprimiría la lectura del terreno llano, que es otra
+   * cosa. Sin exactitud vertical publicada del modelo tampoco sale nada, que es
+   * el caso del MDE propio y de las fuentes nacionales todavía sin relevar.
+   */
+  const corrimientoCurvas = useMemo(() => {
+    if (pendienteMedia == null) return null;
+    const u = incertidumbreDeCota(grillaActiva?.fuente ?? null, pendienteMedia).u_relativa;
+    return corrimientoDeTraza(u, pendienteMedia);
+  }, [grillaActiva, pendienteMedia]);
+
   const hidroPredio = useMemo<HidrologiaPredio>(() => hidrologiaPredio({
     suelo: datosSuelo?.grupo_hidro
       ? { grupo: datosSuelo.grupo_hidro.grupo, ksat_mm_h: datosSuelo.grupo_hidro.ksat_min, capa_limitante: datosSuelo.grupo_hidro.capa_limitante }
       : null,
     cobertura: datosCobertura?.items.map(it => ({ wc: it.clase.valor, pct: it.pct })) ?? null,
-    tormenta: datosExtremos ? { recurrencias: datosExtremos.tormenta.recurrencias, anios: datosExtremos.anios } : null,
+    tormenta: datosExtremos ? {
+      recurrencias: datosExtremos.tormenta.recurrencias, anios: datosExtremos.anios,
+      factor_calibracion: datosExtremos.calibracion_serie?.factor_anual ?? null,
+    } : null,
     periodoRetorno,
     contexto: {
       fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null,
@@ -747,21 +841,30 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
    * dice CUÁNTO. Sin esos dos, queda en null y la leyenda muestra sólo el
    * índice relativo, como antes.
    */
-  const perdidaErosion = useMemo<Record<number, PerdidaSuelo> | null>(() => {
+  /**
+   * Lo que la USLE necesita, en un solo lugar: lo usa el mapa de erosión por
+   * clase de ladera y también el bloque de zonificación guiada, que lo aplica a
+   * la pendiente y la longitud de ladera de cada zona dibujada.
+   */
+  const entradaUSLE = useMemo<EntradaUSLE | null>(() => {
     const precipAnual = datosClima?.precip_anual_mm;
     if (!datosErosion || datosErosion.usle_c === null || !precipAnual || !datosSuelo) return null;
-    const entrada = {
+    return {
       precipAnual_mm:  precipAnual,
       clase_textura:   datosSuelo.clase_textura,
       carbonoOrg_g_kg: datosSuelo.carbono_org,
       usle_c:          datosErosion.usle_c,
     };
+  }, [datosErosion, datosClima, datosSuelo]);
+
+  const perdidaErosion = useMemo<Record<number, PerdidaSuelo> | null>(() => {
+    if (!datosErosion || !entradaUSLE) return null;
     const out: Record<number, PerdidaSuelo> = {};
     datosErosion.resumen.forEach(r => {
-      if (r.pct > 0) out[r.clase] = perdidaSuelo(entrada, r.pendiente_media_pct, r.lambda_m);
+      if (r.pct > 0) out[r.clase] = perdidaSuelo(entradaUSLE, r.pendiente_media_pct, r.lambda_m);
     });
     return out;
-  }, [datosErosion, datosClima, datosSuelo]);
+  }, [datosErosion, entradaUSLE]);
 
   const saludErosion = useMemo<Confianza | null>(
     () => datosErosion ? confianzaErosion({
@@ -789,6 +892,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // él). Antes cada pestaña tenía el suyo y nada garantizaba que fueran el mismo.
   const [rodeo, setRodeo] = useState<Rodeo>(RODEO_INICIAL);
   const [represaInputs, setRepresaInputs] = useState<RepresaInputs | null>(null);
+  /** Represas archivadas del proyecto: ver `lib/represasGuardadas.ts`. */
+  const [represasGuardadas, setRepresasGuardadas] = useState<RepresaGuardada[]>([]);
   const handleColocarSwales = useCallback(() => {
     if (!swales) return;
     const nuevos = swales.swales.map((sw, i) => {
@@ -871,7 +976,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   // este memo es el que alimenta las zonas que se vuelcan al plano. Si el panel
   // corrigiera los puntajes y esto no, el mapa terminaría pintando un uso
   // distinto del que la pantalla acaba de recomendar.
-  const fichaBioma = useFichaBioma(datosClima, datosTopografia?.elev_media);
+  const { ficha: fichaBioma } = useFichaBioma(datosClima, datosTopografia?.elev_media);
 
   const aptitud = useMemo<ResultadoAptitud | null>(
     () => datosShader ? calcularAptitud(datosShader, datosEscorrentia, fichaBioma?.aptitud) : null,
@@ -896,8 +1001,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (calibracionPrecip) m['calibracion_precip'] = calibracionPrecip;
     if (datosTopografia) m['topo']     = datosTopografia;
     if (captacionSnap)   m['captacion']= captacionSnap;
+    if (reservaSnap)     m['reserva']  = reservaSnap;
     if (datosSuelo)      m['suelo']    = datosSuelo;
-    if (datosExtremos)   m['extremos'] = datosExtremos;
+    // Crudos, como el clima: guardar el calibrado escalaría la serie otra vez.
+    if (datosExtremosRaw) m['extremos'] = datosExtremosRaw;
     if (cuenca)          m['cuenca']   = cuenca;
     if (cuencasGuardadas.length) m['cuencas_guardadas'] = cuencasGuardadas;
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
@@ -906,6 +1013,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (riegoInputs)     m['riego_inputs']    = riegoInputs;
     if (redAguaInputs)   m['red_agua_inputs'] = redAguaInputs;
     if (represaInputs)   m['represa_inputs']  = represaInputs;
+    if (represasGuardadas.length) m['represas_guardadas'] = represasGuardadas;
     if (Object.keys(panelInputs).length) m['panel_inputs'] = panelInputs;
     m['rodeo'] = rodeo;
     if (economiaResumen) m['economia'] = economiaResumen;
@@ -940,7 +1048,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     if (zona0)                m['zona0'] = zona0;
     if (acceso)               m['acceso'] = acceso;
     return m;
-  }, [datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  // Shader, clima crudo y calibración se leen arriba y faltaban acá: el shader
+  // se guardaba de rebote, y cambiarlo solo dejaba guardado el relieve anterior.
+  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremosRaw, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -2024,6 +2134,25 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, nombre } : g));
   }, []);
 
+  // ─── Represas archivadas ──────────────────────────────────────────────────
+  // El panel calcula una represa por vez y recalcula arriba de la anterior.
+  // Archivarlas es lo que permite comparar emplazamientos, que es la decisión
+  // real: no si un cuello «da», sino cuál da más agua por tierra movida.
+  const handleGuardarRepresa = useCallback((inputs: RepresaInputs, ficha: FichaRepresa, poligonoNombre: string) => {
+    setRepresasGuardadas(prev => [...prev, crearRepresaGuardada(inputs, ficha, poligonoNombre, prev)]);
+  }, []);
+
+  // Abrir repone los parámetros y el panel recalcula: el resultado no se guarda
+  // porque la grilla de elevación pesa megas. Acá sólo hay que aceptar los
+  // inputs que el panel acaba de restaurar, para que viajen con el proyecto.
+  const handleAbrirRepresaGuardada = useCallback((g: RepresaGuardada) => {
+    setRepresaInputs(g.inputs);
+  }, []);
+
+  const handleEliminarRepresaGuardada = useCallback((id: string) => {
+    setRepresasGuardadas(prev => prev.filter(g => g.id !== id));
+  }, []);
+
   const handleMoverElementoACapa = useCallback((tipo: TipoElementoCapa, id: string, capaId: string) => {
     switch (tipo) {
       case 'cuenca': setCuencasGuardadas(prev => prev.map(g => g.id === id ? { ...g, capaId } : g)); break;
@@ -2268,11 +2397,6 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [programaMP, zona0, acceso]);
 
-  const handleAplicarZonasAptitud = useCallback((zonasNuevas: import('@/lib/zonificacion').Zona[]) => {
-    setZonas(prev => [...prev, ...zonasNuevas]);
-    setTab('zonas');
-  }, []);
-
   // ─── Proyectos ────────────────────────────────────────────────────────────
   const handleCargarProyecto = useCallback((p: Proyecto) => {
     const meta = (p.metadatos ?? {}) as Record<string, unknown>;
@@ -2298,10 +2422,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setAcceso((meta['acceso'] as { lat: number; lng: number }) ?? null);
     setProyectoActual(p.id ? p : null);
     setSeleccionado(null);
-    setDatosClimaRaw((meta['clima']  as DatosClima)        ?? null);
+    // `migrarRadiacionClima` y no un cast: lo guardado antes del 09/10/2026 trae
+    // la radiación en MJ y el clima no se vuelve a pedir nunca.
+    setDatosClimaRaw(migrarRadiacionClima((meta['clima'] as DatosClima) ?? null));
     setCalibracionPrecip((meta['calibracion_precip'] as CalibracionPrecip) ?? null);
     setDatosTopografia((meta['topo'] as DatosTopografia)   ?? null);
     setCaptacionSnap((meta['captacion'] as CaptacionSnapshot) ?? null);
+    setReservaSnap((meta['reserva'] as ReservaSnapshot) ?? null);
     setDatosSuelo((meta['suelo']     as DatosSuelo)        ?? null);
     setDatosExtremos((meta['extremos'] as Extremos)        ?? null);
     setCuenca((meta['cuenca']        as Cuenca)            ?? null);
@@ -2312,8 +2439,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
     setRedAguaInputs((meta['red_agua_inputs'] as RedAguaInputs) ?? null);
     setRepresaInputs((meta['represa_inputs'] as RepresaInputs) ?? null);
+    setRepresasGuardadas(migrarRepresasGuardadas(meta['represas_guardadas']));
     setPanelInputs((meta['panel_inputs'] as Record<string, unknown>) ?? {});
-    setRodeo((meta['rodeo'] as Rodeo) ?? RODEO_INICIAL);
+    // Por `migrarRodeo` y no por un cast: los proyectos guardados antes del
+    // 02/10/2026 traen un rodeo de un solo animal y hay que leerlo como un lote.
+    setRodeo(migrarRodeo(meta['rodeo']));
     setPastoreoInputs((meta['pastoreo_inputs'] as PastoreoInputs) ?? null);
     setEconomiaResumen((meta['economia'] as EconomiaResumen) ?? null);
     setCarbonoResumen((meta['carbono']  as CarbonoResumen)  ?? null);
@@ -2408,6 +2538,10 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
       profesional: leerPerfil() ?? undefined,
       conMarca: plan === 'semilla',
       sinRumbos: !can(plan, 'catastro.rumbos'),
+      // Semilla puede ABRIR el informe y compartirlo por link; lo que no puede
+      // es bajarlo. Por eso el candado no corta acá: cortar la apertura dejaría
+      // a Semilla publicando un informe que nunca pudo mirar.
+      sinDescarga: !can(plan, 'informe.descarga'),
     });
     window.open('/informe/borrador', '_blank');
   }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
@@ -2419,6 +2553,13 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     capturaTitulo,
     (mensaje) => setModal({ type: 'alert', message: mensaje }),
   );
+
+  /** El PNG de la barra superior, que se puede apretar sin entrar al modo
+   *  captura. Mismo candado que `iniciarCaptura`. */
+  const handleGuardarPngConPlan = useCallback(() => {
+    if (pedirPlan('export.imagen')) return;
+    void handleGuardarPng();
+  }, [pedirPlan, handleGuardarPng]);
 
   const handleCapturaMap = useCallback(() => {
     const style = document.createElement('style');
@@ -2455,6 +2596,34 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
     setTab(id);
     setPanelAbierto(true);
   }, [tab, panelAbierto]);
+
+  /**
+   * Clic en el encabezado de un clúster del riel (1 Clima, 2 Relieve, 3 Agua…).
+   *
+   * Abre el grupo **y** su primera herramienta: el peldaño promete una lectura
+   * del terreno —2 Relieve es «contame el relieve»— y antes contestaba con una
+   * lista de íconos y un segundo clic. Ahora Relieve abre Topografía, Agua abre
+   * Cuenca, Clima abre Clima.
+   *
+   * La primera es la primera que se ve, no la primera de `tabs`: el grupo
+   * muestra `esenciales` arriba y el resto detrás de «Más…». Hoy coinciden, y
+   * si alguna vez dejan de coincidir manda lo que el riel muestra.
+   *
+   * Segundo clic sobre el grupo ya abierto y ya parado en esa pestaña: se
+   * pliega, igual que un ícono de tab. Es la única forma de cerrar el acordeón.
+   */
+  const handleElegirGrupo = useCallback((g: (typeof GRUPOS_RIEL)[number]) => {
+    const primero = g.esenciales?.[0] ?? g.tabs[0];
+    if (!primero) return;
+    if (grupoRiel === g.id && tab === primero && panelAbierto) {
+      setGrupoRiel('');
+      setPanelAbierto(false);
+      return;
+    }
+    setGrupoRiel(g.id);
+    setTab(primero);
+    setPanelAbierto(true);
+  }, [grupoRiel, tab, panelAbierto]);
 
   // Cuando el tab activo cambia (clic en el riel, Ctrl+K, flujo interno),
   // abrimos su clúster para que quede visible en el acordeón.
@@ -2517,12 +2686,17 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
   }, [capas, mojones.length, datosShader, paletaShader, zonasFiltradas, sectoresFiltrados, caminosFiltrados, aguadasFiltradas, pinesFiltrados, dibujosFiltrados, terrariumElevMin, terrariumElevMax, curvasNivel, colorCurvas, intervaloCurvasEfectivo]);
 
   // ─── Iniciar captura de PNG (reutilizado por menú Exportar y paleta) ──────────
+  // El candado va acá y no en cada botón: es la única puerta al modo captura, y
+  // los dos botones de adentro (PNG e Imprimir) sólo existen una vez que se
+  // entró. El PNG directo de la barra superior es la otra puerta, y la tapa
+  // `handleGuardarPngConPlan`.
   const iniciarCaptura = useCallback(() => {
+    if (pedirPlan('export.imagen')) return;
     setPanelDerecho(null);
     setCapturaActiva(true);
     if (!capturaTitulo) setCapturaTitulo(proyectoActual?.nombre ?? 'Mapa del terreno');
     setLeyendaEditada(leyendaItems.map((it, i) => ({ ...it, id: String(i) })));
-  }, [capturaTitulo, proyectoActual, leyendaItems]);
+  }, [capturaTitulo, proyectoActual, leyendaItems, pedirPlan]);
 
   // ─── Comandos para la paleta (Ctrl+K) ─────────────────────────────────────────
   const comandos = useMemo<Comando[]>(() => {
@@ -2604,11 +2778,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           capaFondo,
           onCapaFondo: setCapaFondo,
           habilitarVistas: mojones.length >= 3,
-          onHistorico: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); },
-          on3D: () => { if (tabBloqueada(plan, 'topo')) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
+          onHistorico: () => { if (topoBloqueada) { setTab('topo'); setPanelAbierto(true); } else setShowHistorico(true); },
+          on3D: () => { if (topoBloqueada) { setTab('topo'); setPanelAbierto(true); } else setShow3D(true); },
         }}
         guardado={{ estado: estadoGuardado, guardando: guardandoNube, onGuardar: () => void handleGuardarNube() }}
-        captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPng, guardandoPng }}
+        captura={{ onEditor: iniciarCaptura, onPng: handleGuardarPngConPlan, guardandoPng, bloqueada: !can(plan, 'export.imagen') }}
         historial={{ onUndo: undo, onRedo: redo, puedeUndo: canUndo, puedeRedo: canRedo }}
       />
 
@@ -2625,9 +2799,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               grupo={g}
               abierto={grupoRiel === g.id}
               tabActivo={tab}
-              onToggle={() => setGrupoRiel(prev => (prev === g.id ? '' : g.id))}
+              onToggle={() => handleElegirGrupo(g)}
               onElegir={handleElegirTab}
-              bloqueada={(id) => tabBloqueada(plan, id)}
+              bloqueada={(id) => tabBloqueadaConArea(plan, id, metricas?.area_ha ?? null)}
             />
           ))}
 
@@ -2933,6 +3107,23 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               ) : (
                 <p className="text-[10px] text-ink-700/50 leading-tight">Ningún símbolo seleccionado.</p>
               )}
+              {/* Con qué se construye, al lado de qué se construye. Vivió en el
+                  panel de Clima hasta el 07/10/2026 porque de ahí salen sus tres
+                  variables, que es un argumento de dónde está el dato y no de
+                  dónde se decide. Sigue leyendo la misma serie mensual. */}
+              {datosClima ? (
+                <div className="pt-1">
+                  <BioconstruccionBloque datos={datosClima} extremos={datosExtremos} />
+                </div>
+              ) : (
+                <p className="text-[10px] text-ink-700/50 leading-snug pt-1">
+                  Con qué técnica de tierra o de paja se puede construir acá sale de la serie
+                  climática mensual.{' '}
+                  <button onClick={() => setTab('clima')} className="text-water-600 hover:underline font-semibold">
+                    Traela desde Clima
+                  </button>{' '}y vuelve.
+                </p>
+              )}
               {GRUPOS_BLOQUE.map(grupo => (
                 <div key={grupo}>
                   <p className="text-[9px] uppercase tracking-wide text-ink-700/45 mb-1">{grupo}</p>
@@ -3000,10 +3191,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             precipCruda={datosClimaRaw?.precip_anual_mm ?? null}
             pendientePct={datosTopografia?.pendiente_pct ?? null}
             buscandoCHIRPS={buscandoCHIRPS}
+            aguaUtil_mm={datosSuelo?.agua_util.total_mm_100 ?? null}
           /></div>}
-          {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} onIrAClima={() => setTab('clima')} /></div>}
+          {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} ubicacion={datosEntorno?.ubicacion ?? null} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
-          {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} /></div>}
+          {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
           {tab === 'cal'   && <div className="px-4 py-4"><CalendarioPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} inicial={panelInputs['calendario'] as CalendarioInputs ?? null} onInputs={usarInputs('calendario')} /></div>}
@@ -3084,9 +3276,24 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               )}
             </div>
           )}
-          {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
-          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} /></div>}
-          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onAplicarZonas={handleAplicarZonasAptitud} onIrATopo={() => { setTab('topo'); }} /></div>}
+          {tab === 'agua'  && <div className="px-4 py-4"><CaptacionPanel datosClima={datosClima} onIrAClima={() => setTab('clima')} texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} onSnapshot={setCaptacionSnap} snapshotInicial={captacionSnap} /></div>}
+          {tab === 'reserva' && (
+            <div className="px-4 py-4">
+              <ReservaPredioPanel
+                clima={datosClima}
+                extremos={datosExtremos}
+                captacion={captacionSnap}
+                rodeo={rodeo} riego={riegoResumen} red={redAguaResumen}
+                represas={represasGuardadas} aguadas={aguadasLayer}
+                snapshotInicial={reservaSnap}
+                onSnapshot={setReservaSnap}
+                onIrAClima={() => setTab('clima')}
+                onIrACaptacion={() => setTab('agua')}
+              />
+            </div>
+          )}
+          {tab === 'prod'  && <div className="px-4 py-4"><ProduccionPanel datosClima={datosClima} mojones={mojones} areaHa={metricas?.area_ha ?? 0} onIrAClima={() => setTab('clima')} rodeo={rodeo} onRodeo={setRodeo} grilla={grillaActiva} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} onIrABalance={() => setTab('reserva')} /></div>}
+          {tab === 'aptitud' && <div className="px-4 py-4"><AptitudPanel datosShader={datosShader} datosEscorrentia={datosEscorrentia} datosClima={datosClima} onIrATopo={() => { setTab('topo'); }} /></div>}
           {tab === 'analisis' && (
             <div className="px-4 py-4">
               <AnalisisRelievePanel
@@ -3106,6 +3313,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
               <ZonificacionPanel
                 zonas={zonas} onZonas={setZonas} modoZona={modoZona}
                 onIniciarDibujo={handleIniciarZona} onFinalizarZona={handleFinalizarZona} onCancelarZona={handleCancelarZona}
+                mojones={mojones} grilla={grillaActiva} zona0={zona0} usle={entradaUSLE}
               />
             </div>
           )}
@@ -3131,6 +3339,11 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 onIrATopo={() => setTab('topo')}
                 onIrAHerramienta={(t) => setTab(t as Tab)}
               />
+              {/* Etapa H: va antes del resultado porque la pregunta es previa a
+                  «dónde pongo la casa». Corre sobre el relieve fino. */}
+              <div className="mt-3">
+                <EmplazamientoBloque grilla={grillaActiva} acceso={acceso} />
+              </div>
             </div>
           )}
           {tab === 'sectores' && (
@@ -3183,17 +3396,23 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                   grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
                   texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}
                   inicial={represaInputs} onInputs={setRepresaInputs}
+                  guardadas={represasGuardadas}
+                  onGuardar={handleGuardarRepresa}
+                  onAbrir={handleAbrirRepresaGuardada}
+                  onEliminar={handleEliminarRepresaGuardada}
                   rodeo={rodeo} onRodeo={setRodeo}
                   onResumenRepresa={setRepresaResumen}
                   onCuencaCalculada={(c) => { setCuenca(c); setCuencaExpandida(false); }}
                   onMuroLinea={setMuroLinea}
+                  onPuntoDerrame={setPuntoDerrame}
+                  onSalidaVertedero={setSalidaVertedero}
                 />
               </div>
             </div>
           )}
           {tab === 'keyline' && (
             <div className="px-4 py-4">
-              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} lluvia10a24h_mm={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -3224,12 +3443,12 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           )}
           {tab === 'pastoreo' && (
             <div className="px-4 py-4">
-              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} parcelas={poligonosCutFill} onCaminosAcceso={handleCaminosAccesoPotreros} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
+              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} parcelas={poligonosCutFill} onCaminosAcceso={handleCaminosAccesoPotreros} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
             </div>
           )}
           {tab === 'riego' && (
             <div className="px-4 py-4">
-              <RiegoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
+              <RiegoPanel datosClima={datosClima} datosSuelo={datosSuelo} onIrAClima={() => setTab('clima')} onResumen={setRiegoResumen} parcelas={poligonosCutFill} inicial={riegoInputs} onInputs={setRiegoInputs} />
             </div>
           )}
           {tab === 'swales' && (
@@ -3239,6 +3458,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 multi={swalesMulti}
                 analisis={analisisSwales}
                 hidro={hidroPredio}
+                fuenteRelieve={grillaActiva?.fuente ?? null}
                 onPeriodoRetorno={setPeriodoRetorno}
                 onIrAClima={() => setTab('clima')}
                 onIrASuelo={() => setTab('suelo')}
@@ -3349,6 +3569,7 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
                 metadatos={metadatos}
                 onConfirm={(msg, fn) => setModal({ type: 'confirm', message: msg, onConfirm: fn })}
                 plan={plan}
+                sinTope={sinTope}
               />
               <div className="border-t border-bone-200 pt-4">
                 <EscenariosPanel
@@ -3510,6 +3731,8 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
           cuencaOutlet={cuenca?.outlet ?? null}
           cuencasGuardadas={cuencasVisibles}
           muroLinea={muroLinea}
+          puntoDerrame={puntoDerrame}
+          salidaVertedero={salidaVertedero}
           potrerosLayer={potrerosLayer}
           capas={capas}
           dibujos={dibujosFiltrados}
@@ -3897,7 +4120,9 @@ export function MapaTerrenoApp({ userName, plan }: Props) {
             pasoRelieveM={pasoRelieveM}
             fuenteRelieveNombre={fuenteRelieveNombre}
             pisoIntervalo={pisoIntervalo}
-            curvasDemasiadas={curvasDemasiadas}
+            corrimientoCurvas={corrimientoCurvas}
+            curvasMuchas={curvasMuchas}
+            progresoCurvas={progresoCurvas}
             curvasLoading={curvasLoading}
             colorCurvas={colorCurvas}
             onColorCurvas={setColorCurvas}

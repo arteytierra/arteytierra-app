@@ -1,0 +1,182 @@
+[
+  {
+    "fichaId": "selva_paranaense",
+    "practica": "Extracción de yerba mate de yerbales naturales",
+    "periodo": "Hasta fines del siglo XIX; luego retrocedió frente a la explotación comercial y el cultivo",
+    "tipo": "recoleccion",
+    "vigencia": "en_retroceso",
+    "detalle": "El estudio histórico de Misiones documenta la cosecha extractiva en yerbales naturales bajo la cobertura de la selva hasta fines del siglo XIX, antes del pasaje a plantaciones. Para el diseño predial, el antecedente útil es mantener el estrato arbóreo y aprovechar la yerba dentro del rodal, porque la fuente contrasta los menores efectos de esa modalidad con la transformación causada por el cultivo intensivo posterior.",
+    "fuentes": [
+      {
+        "label": "Gallero (2019) — Cambios y permanencias en la producción de yerba mate, HALAC / CONICET-UNaM",
+        "url": "https://www.halacsolcha.org/index.php/halac/article/download/341/353/822"
+      }
+    ],
+    "verificacion": "Por largo tiempo extraída de los yerbales naturales, fue explotada sin mayores efectos en la selva que la cobijaba hasta fines del siglo XIX."
+  },
+  {
+    "fichaId": "chaco_seco",
+    "practica": "Ganadería de monte en bosque nativo",
+    "periodo": "Durante décadas; documentada por INTA en 2015",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "INTA define esta modalidad como el pastoreo y ramoneo de animales dentro del bosque nativo del Parque Chaqueño, simultáneo al uso de abras y cañadas. En el diseño del predio, conservar un mosaico de monte y claros aporta ramoneo, frutos, sombra y refugio; la carga debe ajustarse al forraje disponible y a la categoría legal del bosque para que el aprovechamiento no se convierta en degradación.",
+    "fuentes": [
+      {
+        "label": "INTA (2015) — Problemáticas de la innovación en la ganadería bovina de la provincia de Chaco",
+        "url": "https://repositorio.inta.gob.ar/bitstream/handle/20.500.12123/1874/INTA_CICPES_InstdeEconomia_Ondo_Misi_S_Problematicas_innovacion_ganaderia_bovina_Chaco.pdf?isAllowed=y&sequence=2"
+      }
+    ],
+    "verificacion": "hacer pastar o ramonear los animales en el bosque nativo, práctica que se repite durante décadas en el Parque Chaqueño."
+  },
+  {
+    "fichaId": "monte",
+    "practica": "Ramblones y represas para captar lluvias torrenciales",
+    "periodo": "Práctica histórica de los pobladores locales; la guía no fija una fecha inicial",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "La guía registra que los pobladores locales construyen reservorios de tierra en bajos arcillosos o limosos y conducen hacia ellos el escurrimiento mediante zanjas o bordos. El sistema concentra tormentas breves para disponer de agua de abrevadero durante la estación seca; requiere separar el ganado del borde, controlar la contaminación y retirar sedimentos para prolongar su vida útil.",
+    "fuentes": [
+      {
+        "label": "Secretaría de Ambiente y Desarrollo Sustentable / WOCAT — Guía de buenas prácticas, Región Nuevo Cuyo",
+        "url": "https://wocat.net/documents/939/NUEVO_CUYO_Gu%C3%ADas_buenas_pr%C3%A1cticas.pdf"
+      }
+    ],
+    "verificacion": "esta práctica históricamente ha sido realizada por los pobladores locales con el objeto de captar y almacenar agua de lluvia torrencial"
+  },
+  {
+    "fichaId": "espinal",
+    "practica": "Quema controlada con descanso y ajuste de carga",
+    "periodo": "En uso como estrategia contemporánea de recuperación; la fuente no fija una fecha inicial",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "El estudio sobre pastizales semiáridos con caldén propone quemas controladas combinadas con cargas animales conservadoras y control del pastoreo, sólo cuando las precipitaciones permiten la recuperación. La secuencia busca revertir fachinales, pajonales o peladales y recuperar forraje sin volver a sobreexplotar la vegetación ni dejar el suelo expuesto.",
+    "fuentes": [
+      {
+        "label": "CERZOS-CONICET — Estrategias para la recuperación y el manejo de pastizales naturales degradados de la región central argentina",
+        "url": "https://bahiablanca.conicet.gov.ar/boletin/boletin29/indexd279.html?Itemid=154&id=101&option=com_content&view=article"
+      }
+    ],
+    "verificacion": "El resultado del análisis sugiere quemas controladas, en combinación con ajustes en la carga animal a valores conservadores"
+  },
+  {
+    "fichaId": "pampa",
+    "practica": "Descanso agrícola temporal con pastoreo vacuno",
+    "periodo": "Usada hasta aproximadamente 1975; luego retrocedió ante la agricultura continua",
+    "tipo": "suelo",
+    "vigencia": "en_retroceso",
+    "detalle": "CONICET registra que, después de varios años consecutivos de cultivo, se dejaba temporalmente la tierra para pastoreo vacuno con el fin de recuperar productividad. Para un predio, el antecedente propone interrumpir la agricultura continua con una fase pastoril; la fuente señala que esta rotación perdió terreno desde la década de 1970 por el uso creciente de fertilizantes.",
+    "fuentes": [
+      {
+        "label": "CONICET (2015) — Fertilidad y productividad en el suelo pampeano: pasado, presente y futuro",
+        "url": "https://www.conicet.gov.ar/fertilidad-y-productividad-en-el-suelo-pampeano-pasado-presente-y-futuro/"
+      }
+    ],
+    "verificacion": "para poder recuperar la productividad, degradada tras varios años consecutivos de cultivo, se usaba dejar la tierra temporalmente para el pastoreo vacuno."
+  },
+  {
+    "fichaId": "yungas",
+    "practica": "Huertos pircados y molinos de agua",
+    "periodo": "Desde finales del siglo XVIII",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Parques Nacionales registra en Los Toldos vestigios de huertos delimitados por pircas, corrales y molinos de agua surgidos con la expansión agrícola-ganadera de fines del siglo XVIII. En un predio de montaña, la pirca permite ordenar y proteger el espacio cultivado, mientras el molino aprovecha el desnivel y el caudal local para transformar la cosecha sin trasladarla fuera del valle.",
+    "fuentes": [
+      {
+        "label": "Administración de Parques Nacionales — Patrimonio cultural de la Reserva Nacional El Nogalar de Los Toldos",
+        "url": "https://www.argentina.gob.ar/parquesnacionales/region-noroeste/reserva-nacional-el-nogalar-de-los-toldos/patrimonio-cultural"
+      }
+    ],
+    "verificacion": "Este tipo de construcciones surgen a finales del siglo XVIII cuando el imperio español expande la producción ganadera"
+  },
+  {
+    "fichaId": "puna_altoandino",
+    "practica": "Veranada y pastoreo concentrado en vegas",
+    "periodo": "Siglos XIX y XX; la práctica todavía se desarrolla en la provincia de San Juan",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "Parques Nacionales registra que San Guillermo funcionó como lugar de veranada y corredor de ganado hacia Chile durante los siglos XIX y XX, y señala que la práctica continúa en San Juan. La movilidad estacional concentra el pastoreo en vegas con agua y pastizales durante el viaje, evitando depender de la matriz altoandina mucho más seca; el trazado predial debe proteger esos humedales de altura frente a cargas excesivas.",
+    "fuentes": [
+      {
+        "label": "Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional San Guillermo",
+        "url": "https://www.argentina.gob.ar/node/439347"
+      }
+    ],
+    "verificacion": "En los siglos XIX y XX, San Guillermo constituyó un campo estratégico como lugar de veranada y corredor de ganado a Chile."
+  },
+  {
+    "fichaId": "estepa_patagonica",
+    "practica": "Puestos de veranada en mesetas",
+    "periodo": "A lo largo del siglo XX",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "Parques Nacionales documenta puestos ganaderos de veranada instalados sobre la Meseta del Lago Buenos Aires a lo largo del siglo XX, mientras los cascos de estancia quedaban al pie o en sus estribaciones. La separación espacial permite llevar la hacienda a los pastos estivales de altura y reservar otros sectores para el resto del año, una lógica útil para distribuir la presión de pastoreo en ambientes de oferta muy estacional.",
+    "fuentes": [
+      {
+        "label": "Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Patagonia",
+        "url": "https://www.argentina.gob.ar/parquesnacionales/patagonia-austral/parque-nacional-patagonia/patrimonio-cultural"
+      }
+    ],
+    "verificacion": "cuya instalación en el noroeste de la provincia de Santa Cruz se produjo a lo largo del siglo XX."
+  },
+  {
+    "fichaId": "bosque_andino_patagonico",
+    "practica": "Piñoneo y recolección de plantas comestibles y medicinales",
+    "periodo": "En uso al momento del registro de Parques Nacionales; sin fecha inicial determinada",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Parques Nacionales incluye el piñoneo y la recolección de plantas comestibles y medicinales entre las prácticas que pobladores del Parque Nacional Lanín mantienen y transmiten; también sitúa la cosmovisión del Pueblo Mapuche dentro de ese patrimonio vivo. Para el diseño predial, esto orienta a conservar araucarias y parches de vegetación útil como áreas permanentes de recolección, con acceso estacional y regeneración protegida en lugar de reemplazarlos por una sola producción.",
+    "fuentes": [
+      {
+        "label": "Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Lanín",
+        "url": "https://www.argentina.gob.ar/parquesnacionales/regionpatagonia/parque-nacional-lanin/patrimonio-cultural"
+      }
+    ],
+    "verificacion": "En el Parque aún residen pobladores protagonistas de la historia que mantienen y tratan de transmitir las prácticas y creencias"
+  },
+  {
+    "fichaId": "campos_uruguayos",
+    "practica": "Ganadería sobre campo natural con carga ajustada",
+    "periodo": "Desde hace más de 400 años; vigente",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "El MGAP documenta más de cuatro siglos de producción animal sustentada en pasturas naturales y presenta como variable central ajustar la carga a la producción de forraje del campo. A escala predial, calcular la dotación, dejar remanente y mover racionalmente el ganado permite acompañar la variación estacional del pasto, conservar diversidad y evitar que el uso continuo derive en sobrepastoreo.",
+    "fuentes": [
+      {
+        "label": "MGAP, Udelar, INIA e Instituto Plan Agropecuario — Producción animal sostenible en pastoreo sobre campo natural",
+        "url": "https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/sites/ministerio-ganaderia-agricultura-pesca/files/documentos/publicaciones/Producci%C3%B3n%20animal%20sostenible%20en%20pastoreo%20sobre%20campo%20natural.pdf"
+      }
+    ],
+    "verificacion": "Ha estado, durante más de 400 años, sustentada en el equilibrio entre la población de especies animales y nuestra riqueza en pasturas naturales."
+  },
+  {
+    "fichaId": "chaco_humedo",
+    "practica": "Quema prescripta de pastizales en agosto y septiembre",
+    "periodo": "En uso; recomendada para agosto y septiembre, sin fecha inicial documentada",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "El manual de INTA para Formosa y Chaco recomienda realizar la quema en agosto o septiembre y restringirla a años con lluvias normales o buenas, cuando la humedad del suelo reduce la severidad y favorece el rebrote. La práctica remueve material envejecido y recupera accesibilidad y calidad del forraje, pero debe planificarse con cortafuegos, descanso posterior y exclusión durante sequías.",
+    "fuentes": [
+      {
+        "label": "INTA EEA El Colorado (2024) — Manual de pastizales para la producción ganadera de Formosa y Chaco",
+        "url": "https://repositorio.inta.gob.ar/bitstream/handle/20.500.12123/17406/INTA_CRChaco-Formosa_EEAElColorado_Miranda_FW_Manual_de_pastizales_para_la_producci%C3%B3n_ganadera.pdf?isAllowed=y&sequence=1"
+      }
+    ],
+    "verificacion": "En el este de Formosa y Chaco se recomienda quemar en los meses de agosto y septiembre."
+  },
+  {
+    "fichaId": "humedales_parana_mesopotamia",
+    "practica": "Pesca con arpones y redes, ahumado y conservación de pescado",
+    "periodo": "Desde hace al menos 1.700 años",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "Parques Nacionales atribuye a comunidades indígenas que habitaron el Paraná inferior desde hace al menos 1.700 años la pesca con arpones y redes, y señala que habrían ahumado y conservado pescado para el invierno. El conjunto vincula captura y almacenamiento: aprovechar la abundancia estacional del humedal y conservarla reduce la dependencia de pesca diaria cuando baja la disponibilidad.",
+    "fuentes": [
+      {
+        "label": "Administración de Parques Nacionales — Patrimonio cultural del Parque Nacional Ciervo de los Pantanos",
+        "url": "https://www.argentina.gob.ar/parquesnacionales/centro/parque-nacional-ciervo-de-los-pantanos/patrimonio-cultural"
+      }
+    ],
+    "verificacion": "Las comunidades indígenas habitaron esta zona desde al menos 1.700 años."
+  }
+]

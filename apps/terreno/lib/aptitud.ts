@@ -4,6 +4,7 @@
  * Resultados orientativos — no reemplazan relevamiento agronómico/edafológico.
  */
 import * as turf from '@turf/turf';
+import { exposicionSolar } from './emplazamiento';
 import type { DatosShader, CeldaShader } from './shaders';
 import type { DatosEscorrentia } from './escorrentias';
 import type { ModificadorAptitud } from './biomaTipos';
@@ -42,20 +43,40 @@ export interface CeldaAptitud {
 
 export interface ResultadoAptitud {
   celdas:  CeldaAptitud[];
-  resumen: Record<TipoAptitud, { celdas: number; pct: number }>;
+  /** Superficie de UNA celda de la grilla (m²). Es el paso del DEM proyectado
+   *  a la latitud del predio: a −32° una celda de Copernicus GLO-30 mide unos
+   *  30 × 25 m. Viaja para que la pantalla pueda hablar en metros cuadrados en
+   *  vez de en celdas, que es una unidad de la implementación y no del campo. */
+  area_celda_m2: number;
+  /** Suma de todas las celdas analizadas (m²). No es el área del predio: es la
+   *  parte del predio que quedó cubierta por la grilla del relieve. */
+  area_total_m2: number;
+  resumen: Record<TipoAptitud, { celdas: number; area_m2: number; pct: number }>;
   /** Los ajustes del ecosistema que efectivamente se aplicaron, con su razón.
    *  Van hasta la pantalla: un puntaje corregido sin decir por qué no se puede
    *  discutir, y acá el usuario sabe más del lugar que la app. */
   ajustes: ModificadorAptitud[];
 }
 
-// ─── Orientación de la celda (HemSur: N = más sol = mejor) ───────────────────
+// ─── Exposición solar de la celda (0 = sombría, 1 = al sol) ──────────────────
 
-function orientacionNorte(c: CeldaShader, byPos: Map<string, CeldaShader>): number {
+/**
+ * Cuánto mira al sol del mediodía una celda, de 0 a 1, con 0,5 como ladera
+ * neutra.
+ *
+ * Hasta el 05/10/2026 esta función se llamaba `orientacionNorte` y devolvía
+ * `elev_sur − elev_norte` sin mirar la latitud: la ladera que baja al norte era
+ * la asoleada **en todo el planeta**. En el hemisferio norte el sol del mediodía
+ * está al sur, así que el mapa de aptitud venía mandando la huerta y los
+ * frutales a la ladera sombría y la forestación a la asoleada en Bogotá, en
+ * Puerto Rico y en España. El signo lo pone `exposicionSolar` en
+ * `lib/emplazamiento.ts`, que es el único lugar donde vive esa decisión.
+ */
+function exposicionAlSol(c: CeldaShader, byPos: Map<string, CeldaShader>, lat: number): number {
   const sur   = byPos.get(`${c.row - 1},${c.col}`);
   const norte = byPos.get(`${c.row + 1},${c.col}`);
   if (!sur || !norte) return 0.5;
-  const dif = sur.elevation - norte.elevation;  // positivo = ladera norte (HemSur)
+  const dif = exposicionSolar(sur.elevation - norte.elevation, lat);
   return Math.max(0, Math.min(1, 0.5 + dif / 10));
 }
 
@@ -90,7 +111,7 @@ function scorePasturas(pend: number, acumRel: number): number {
 function scoreForestal(pend: number, orient: number): number {
   let s = 0;
   s += pend > 20 ? 40 : pend > 12 ? 30 : pend > 6 ? 15 : 5;
-  s += orient < 0.45 ? 30 : orient < 0.55 ? 20 : 10; // orientación sur = forestal
+  s += orient < 0.45 ? 30 : orient < 0.55 ? 20 : 10; // la ladera sombría es la forestal
   s += 30;
   return Math.max(0, Math.min(100, s));
 }
@@ -136,9 +157,9 @@ export function calcularAptitud(
     const elevRel  = elev_max > elev_min ? (c.elevation - elev_min) / (elev_max - elev_min) : 0.5;
     const acum     = acumPorPos.get(`${c.row},${c.col}`) ?? 0;
     const acumRel  = acum / acumMax;
-    const orient   = orientacionNorte(c, byPos);
     const pend     = c.pendiente_pct;
     const lat      = (c.latMin + c.latMax) / 2;
+    const orient   = exposicionAlSol(c, byPos, lat);
     const lng      = (c.lngMin + c.lngMax) / 2;
 
     const scores: Record<TipoAptitud, number> = {
@@ -164,14 +185,41 @@ export function calcularAptitud(
     };
   });
 
-  // Resumen por tipo
+  // Resumen por tipo, en metros cuadrados.
+  const area_celda_m2 = areaCelda(celdas);
+  const area_total_m2 = resultCeldas.length * area_celda_m2;
   const tiposAptitud: TipoAptitud[] = ['huerta', 'frutales', 'pasturas', 'forestal', 'reserva'];
   const resumen = Object.fromEntries(tiposAptitud.map(t => {
     const n = resultCeldas.filter(c => c.dominante === t).length;
-    return [t, { celdas: n, pct: Math.round((n / resultCeldas.length) * 1000) / 10 }];
-  })) as Record<TipoAptitud, { celdas: number; pct: number }>;
+    return [t, {
+      celdas:  n,
+      area_m2: Math.round(n * area_celda_m2),
+      pct:     resultCeldas.length ? Math.round((n / resultCeldas.length) * 1000) / 10 : 0,
+    }];
+  })) as ResultadoAptitud['resumen'];
 
-  return { celdas: resultCeldas, resumen, ajustes: modificadores ?? [] };
+  return { celdas: resultCeldas, area_celda_m2, area_total_m2, resumen, ajustes: modificadores ?? [] };
+}
+
+/**
+ * Superficie de una celda de la grilla, en m².
+ *
+ * Las celdas vienen en grados: hay que proyectarlas. Un grado de latitud son
+ * 111.320 m en cualquier parte; uno de longitud, eso mismo por el coseno de la
+ * latitud —a −32° son 94.300 m, un 15 % menos—. Ignorar el coseno inflaría
+ * todas las superficies un 15 % en la Argentina central y un 50 % en Ushuaia.
+ *
+ * Se mide sobre la primera celda porque la grilla es regular en grados: todas
+ * miden lo mismo salvo una diferencia de milésimas entre el borde norte y el
+ * sur del predio, que a escala de un campo no llega al metro cuadrado.
+ */
+function areaCelda(celdas: CeldaShader[]): number {
+  const c = celdas[0];
+  if (!c) return 0;
+  const lat0   = (c.latMin + c.latMax) / 2;
+  const dLat_m = (c.latMax - c.latMin) * 111_320;
+  const dLng_m = (c.lngMax - c.lngMin) * 111_320 * Math.cos(lat0 * Math.PI / 180);
+  return dLat_m * dLng_m;
 }
 
 // ─── Agrupar celdas en polígonos contiguos ───────────────────────────────────

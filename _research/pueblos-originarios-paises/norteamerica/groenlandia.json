@@ -1,0 +1,55 @@
+{
+  "pais": "Groenlandia",
+  "iso3": "GRL",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-27: no busqué; existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": false,
+    "organismo": "Statistics Greenland (Naatsorsueqqissaartarfik)",
+    "anio": 2026,
+    "fecha_relevamiento": "2026-01-01",
+    "pregunta": null,
+    "universo": "Población residente al 1 de enero según el Registro de Población (no es un censo).",
+    "total_declarado": null,
+    "poblacion_base": 56740,
+    "url_cuadros": "https://bank.stat.gl/api/v1/en/Greenland/BE/BE01/BE0125/BEXST8.px",
+    "urls_archivos": [],
+    "niveles": [
+      "nacional",
+      "municipio"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": false,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: consulté la API PxWeb del banco estadístico (tabla BEEST8, «Population by Place of Birth»). Al 1 de enero de 2026: total 56.740; nacidos en Groenlandia 49.721; nacidos en Dinamarca 3.904. La nota de la tabla dice que la fuente es el Registro de Población (CPR), que no pregunta etnicidad. No encontré términos de uso en stat.gl."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "Groenlandia no tiene pregunta étnica ni censo: las estadísticas salen de un registro administrativo.",
+    "No encontré licencia publicada."
+  ],
+  "trampas": [
+    "«Nacido en Groenlandia» (49.721) no es población Kalaallit o inuit: es lugar de nacimiento. Usarlo como población indígena sería un error, aunque en la práctica se aproximen.",
+    "existe: false en censo significa que no hay pregunta étnica, no que no haya estadística de población."
+  ],
+  "notas": "Groenlandia no publica población indígena. Solo hay lugar de nacimiento, que no se usa como proxy."
+}

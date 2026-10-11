@@ -77,6 +77,28 @@ export function caudalEnLitros(m3s: number): string {
   return `${miles(m3s * 1000)} litros por segundo`;
 }
 
+/**
+ * Superficie en metros cuadrados.
+ *
+ * El metro cuadrado es la unidad con la que se piensa un lote de huerta, una
+ * platabanda o un galpón, y es la única que permite comparar dos categorías de
+ * aptitud sin traducir nada. La hectárea va al lado, no en su lugar: arriba de
+ * una hectárea el número en m² deja de ser agarrable y conviene tener las dos.
+ */
+export function superficie(m2: number): string {
+  if (!Number.isFinite(m2) || m2 < 0) return '—';
+  if (m2 < 100) return `${Math.round(m2 * 10) / 10} m²`;
+  return `${miles(m2)} m²`;
+}
+
+/** La misma superficie en hectáreas (vacío abajo de media hectárea, donde la
+ *  hectárea ya no dice nada: "0,08 ha" es menos claro que "800 m²"). */
+export function superficieEnHa(m2: number): string {
+  if (!Number.isFinite(m2) || m2 < 5_000) return '';
+  const ha = m2 / 10_000;
+  return `${(Math.round(ha * 100) / 100).toLocaleString(AR)} ha`;
+}
+
 /** Duración en minutos escrita como la diría una persona. */
 export function duracionMin(min: number): string {
   if (!Number.isFinite(min) || min <= 0) return '—';

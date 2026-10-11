@@ -1,0 +1,347 @@
+codigo	comuna	provincia	region	poblacion_censada	indigena	otro_pueblo	sin_declarar
+15101	Arica	Arica	Arica y Parinacota	241653	85439	983	46
+15102	Camarones	Arica	Arica y Parinacota	861	687	11	0
+15201	Putre	Parinacota	Arica y Parinacota	1547	1216	10	0
+15202	General Lagos	Parinacota	Arica y Parinacota	508	474	0	0
+1101	Iquique	Iquique	Tarapacá	199587	33246	582	44
+1107	Alto Hospicio	Iquique	Tarapacá	142086	41377	520	46
+1401	Pozo Almonte	Del Tamarugal	Tarapacá	16878	7876	116	3
+1402	Camiña	Del Tamarugal	Tarapacá	1335	1164	3	0
+1403	Colchane	Del Tamarugal	Tarapacá	790	631	6	0
+1404	Huara	Del Tamarugal	Tarapacá	2858	1886	13	1
+1405	Pica	Del Tamarugal	Tarapacá	6272	3807	16	1
+2101	Antofagasta	Antofagasta	Antofagasta	401096	31955	822	76
+2102	Mejillones	Antofagasta	Antofagasta	14084	1517	69	7
+2103	Sierra Gorda	Antofagasta	Antofagasta	1472	216	1	0
+2104	Taltal	Antofagasta	Antofagasta	12097	3098	20	1
+2201	Calama	El Loa	Antofagasta	166334	45461	389	53
+2202	Ollagüe	El Loa	Antofagasta	256	201	0	0
+2203	San Pedro de Atacama	El Loa	Antofagasta	9843	6090	46	0
+2301	Tocopilla	Tocopilla	Antofagasta	25400	2103	41	7
+2302	María Elena	Tocopilla	Antofagasta	4834	639	24	3
+3101	Copiapó	Copiapó	Atacama	168831	40091	350	40
+3102	Caldera	Copiapó	Atacama	18805	5403	24	4
+3103	Tierra Amarilla	Copiapó	Atacama	11846	3744	8	1
+3201	Chañaral	Chañaral	Atacama	12345	1964	15	3
+3202	Diego de Almagro	Chañaral	Atacama	11397	1739	8	1
+3301	Vallenar	Huasco	Atacama	54222	16678	107	14
+3302	Alto del Carmen	Huasco	Atacama	4788	2895	7	2
+3303	Freirina	Huasco	Atacama	7577	2082	11	1
+3304	Huasco	Huasco	Atacama	9369	2020	9	2
+4101	La Serena	Elqui	Coquimbo	250141	26384	329	29
+4102	Coquimbo	Elqui	Coquimbo	263719	23981	261	32
+4103	Andacollo	Elqui	Coquimbo	11566	1281	12	1
+4104	La Higuera	Elqui	Coquimbo	4335	795	10	0
+4105	Paihuano	Elqui	Coquimbo	4649	539	10	2
+4106	Vicuña	Elqui	Coquimbo	28047	3802	79	8
+4201	Illapel	Choapa	Coquimbo	32009	2685	33	1
+4202	Canela	Choapa	Coquimbo	9639	669	5	0
+4203	Los Vilos	Choapa	Coquimbo	22879	2707	47	6
+4204	Salamanca	Choapa	Coquimbo	27823	2679	58	0
+4301	Ovalle	Limarí	Coquimbo	118696	18102	141	25
+4302	Combarbalá	Limarí	Coquimbo	12954	2262	22	0
+4303	Monte Patria	Limarí	Coquimbo	29997	4001	36	3
+4304	Punitaqui	Limarí	Coquimbo	12076	2311	18	5
+4305	Río Hurtado	Limarí	Coquimbo	4334	555	2	0
+5101	Valparaíso	Valparaíso	Valparaíso	284938	14914	227	48
+5102	Casablanca	Valparaíso	Valparaíso	29876	1582	34	6
+5103	Concón	Valparaíso	Valparaíso	48294	1724	43	9
+5104	Juan Fernández	Valparaíso	Valparaíso	904	110	46	0
+5105	Puchuncaví	Valparaíso	Valparaíso	22539	1319	28	9
+5107	Quintero	Valparaíso	Valparaíso	35754	2241	35	6
+5109	Viña del Mar	Valparaíso	Valparaíso	334871	16080	301	59
+5201	Isla de Pascua	Isla de Pascua	Valparaíso	4800	2740	4	7
+5301	Los Andes	Los Andes	Valparaíso	63440	3134	50	3
+5302	Calle Larga	Los Andes	Valparaíso	16597	985	15	1
+5303	Rinconada	Los Andes	Valparaíso	11855	671	3	0
+5304	San Esteban	Los Andes	Valparaíso	20112	1074	12	4
+5401	La Ligua	Petorca	Valparaíso	39270	2823	44	3
+5402	Cabildo	Petorca	Valparaíso	20015	1004	5	2
+5403	Papudo	Petorca	Valparaíso	7561	562	8	0
+5404	Petorca	Petorca	Valparaíso	10206	813	15	0
+5405	Zapallar	Petorca	Valparaíso	7980	461	6	3
+5501	Quillota	Quillota	Valparaíso	96753	4591	96	8
+5502	Calera	Quillota	Valparaíso	50631	2414	47	2
+5503	Hijuelas	Quillota	Valparaíso	19286	936	16	3
+5504	La Cruz	Quillota	Valparaíso	24939	1209	56	2
+5506	Nogales	Quillota	Valparaíso	22136	1039	8	2
+5601	San Antonio	San Antonio	Valparaíso	96770	7982	106	14
+5602	Algarrobo	San Antonio	Valparaíso	16076	1191	14	3
+5603	Cartagena	San Antonio	Valparaíso	24599	1829	18	2
+5604	El Quisco	San Antonio	Valparaíso	18971	1587	15	1
+5605	El Tabo	San Antonio	Valparaíso	16260	1185	14	8
+5606	Santo Domingo	San Antonio	Valparaíso	13171	793	8	2
+5701	San Felipe	San Felipe de Aconcagua	Valparaíso	80413	4106	102	12
+5702	Catemu	San Felipe de Aconcagua	Valparaíso	13760	640	7	1
+5703	Llaillay	San Felipe de Aconcagua	Valparaíso	25484	1333	30	2
+5704	Panquehue	San Felipe de Aconcagua	Valparaíso	7269	268	2	0
+5705	Putaendo	San Felipe de Aconcagua	Valparaíso	17336	1106	24	3
+5706	Santa María	San Felipe de Aconcagua	Valparaíso	15134	823	9	1
+5801	Quilpué	Marga Marga	Valparaíso	162559	7940	142	20
+5802	Limache	Marga Marga	Valparaíso	56145	2412	27	5
+5803	Olmué	Marga Marga	Valparaíso	19778	781	23	7
+5804	Villa Alemana	Marga Marga	Valparaíso	139571	7314	121	17
+13101	Santiago	Santiago	Metropolitana de Santiago	438856	23972	1754	143
+13102	Cerrillos	Santiago	Metropolitana de Santiago	85041	7463	548	42
+13103	Cerro Navia	Santiago	Metropolitana de Santiago	127250	16541	72	18
+13104	Conchalí	Santiago	Metropolitana de Santiago	121587	8273	144	18
+13105	El Bosque	Santiago	Metropolitana de Santiago	155257	14969	155	19
+13106	Estación Central	Santiago	Metropolitana de Santiago	181049	10100	419	34
+13107	Huechuraba	Santiago	Metropolitana de Santiago	101808	7808	72	2
+13108	Independencia	Santiago	Metropolitana de Santiago	116943	4895	344	25
+13109	La Cisterna	Santiago	Metropolitana de Santiago	103157	6704	241	17
+13110	La Florida	Santiago	Metropolitana de Santiago	374836	29115	329	43
+13111	La Granja	Santiago	Metropolitana de Santiago	112022	11260	90	8
+13112	La Pintana	Santiago	Metropolitana de Santiago	175421	24367	106	12
+13113	La Reina	Santiago	Metropolitana de Santiago	89870	4034	65	11
+13114	Las Condes	Santiago	Metropolitana de Santiago	296134	5329	191	54
+13115	Lo Barnechea	Santiago	Metropolitana de Santiago	112620	3108	78	16
+13116	Lo Espejo	Santiago	Metropolitana de Santiago	87295	7746	71	7
+13117	Lo Prado	Santiago	Metropolitana de Santiago	91290	9647	120	11
+13118	Macul	Santiago	Metropolitana de Santiago	123800	8477	119	15
+13119	Maipú	Santiago	Metropolitana de Santiago	503635	39002	356	64
+13120	Ñuñoa	Santiago	Metropolitana de Santiago	241467	9927	238	40
+13121	Pedro Aguirre Cerda	Santiago	Metropolitana de Santiago	96062	8280	116	8
+13122	Peñalolén	Santiago	Metropolitana de Santiago	236478	24628	181	34
+13123	Providencia	Santiago	Metropolitana de Santiago	143974	4578	166	24
+13124	Pudahuel	Santiago	Metropolitana de Santiago	227820	21550	161	28
+13125	Quilicura	Santiago	Metropolitana de Santiago	205624	17266	135	18
+13126	Quinta Normal	Santiago	Metropolitana de Santiago	129351	7870	238	28
+13127	Recoleta	Santiago	Metropolitana de Santiago	154615	12104	383	36
+13128	Renca	Santiago	Metropolitana de Santiago	143622	16446	149	7
+13129	San Joaquín	Santiago	Metropolitana de Santiago	95602	7054	129	17
+13130	San Miguel	Santiago	Metropolitana de Santiago	150829	7099	245	22
+13131	San Ramón	Santiago	Metropolitana de Santiago	76002	8366	59	3
+13132	Vitacura	Santiago	Metropolitana de Santiago	86420	860	50	15
+13201	Puente Alto	Cordillera	Metropolitana de Santiago	568086	51909	401	53
+13202	Pirque	Cordillera	Metropolitana de Santiago	29060	1575	7	4
+13203	San José de Maipo	Cordillera	Metropolitana de Santiago	17441	1097	22	0
+13301	Colina	Chacabuco	Metropolitana de Santiago	173293	9937	171	31
+13302	Lampa	Chacabuco	Metropolitana de Santiago	145160	11757	126	12
+13303	Tiltil	Chacabuco	Metropolitana de Santiago	19742	1307	19	2
+13401	San Bernardo	Maipo	Metropolitana de Santiago	306371	29080	176	25
+13402	Buin	Maipo	Metropolitana de Santiago	116969	7628	54	9
+13403	Calera de Tango	Maipo	Metropolitana de Santiago	25491	1141	13	0
+13404	Paine	Maipo	Metropolitana de Santiago	78828	5271	85	3
+13501	Melipilla	Melipilla	Metropolitana de Santiago	136325	8178	134	12
+13502	Alhué	Melipilla	Metropolitana de Santiago	7768	413	14	0
+13503	Curacaví	Melipilla	Metropolitana de Santiago	35165	2117	32	2
+13504	María Pinto	Melipilla	Metropolitana de Santiago	15352	1042	7	1
+13505	San Pedro	Melipilla	Metropolitana de Santiago	11108	893	11	2
+13601	Talagante	Talagante	Metropolitana de Santiago	76429	4686	93	9
+13602	El Monte	Talagante	Metropolitana de Santiago	37497	3017	23	1
+13603	Isla de Maipo	Talagante	Metropolitana de Santiago	39274	2452	14	5
+13604	Padre Hurtado	Talagante	Metropolitana de Santiago	81243	7078	76	9
+13605	Peñaflor	Talagante	Metropolitana de Santiago	94402	6284	41	10
+6101	Rancagua	Cachapoal	Libertador General Bernardo O'Higgins	257744	14833	214	33
+6102	Codegua	Cachapoal	Libertador General Bernardo O'Higgins	13955	695	12	0
+6103	Coinco	Cachapoal	Libertador General Bernardo O'Higgins	7916	408	5	2
+6104	Coltauco	Cachapoal	Libertador General Bernardo O'Higgins	21373	920	4	1
+6105	Doñihue	Cachapoal	Libertador General Bernardo O'Higgins	21925	1024	5	3
+6106	Graneros	Cachapoal	Libertador General Bernardo O'Higgins	35938	2657	11	3
+6107	Las Cabras	Cachapoal	Libertador General Bernardo O'Higgins	27554	1670	31	2
+6108	Machalí	Cachapoal	Libertador General Bernardo O'Higgins	60875	2631	32	5
+6109	Malloa	Cachapoal	Libertador General Bernardo O'Higgins	13882	762	11	1
+6110	Mostazal	Cachapoal	Libertador General Bernardo O'Higgins	27394	1628	14	3
+6111	Olivar	Cachapoal	Libertador General Bernardo O'Higgins	13901	844	5	1
+6112	Peumo	Cachapoal	Libertador General Bernardo O'Higgins	14243	719	3	0
+6113	Pichidegua	Cachapoal	Libertador General Bernardo O'Higgins	20363	647	4	0
+6114	Quinta de Tilcoco	Cachapoal	Libertador General Bernardo O'Higgins	13558	806	11	2
+6115	Rengo	Cachapoal	Libertador General Bernardo O'Higgins	63620	3813	56	5
+6116	Requínoa	Cachapoal	Libertador General Bernardo O'Higgins	29508	2073	12	6
+6117	San Vicente	Cachapoal	Libertador General Bernardo O'Higgins	49559	2112	26	5
+6201	Pichilemu	Cardenal Caro	Libertador General Bernardo O'Higgins	19847	1160	51	4
+6202	La Estrella	Cardenal Caro	Libertador General Bernardo O'Higgins	4609	196	3	0
+6203	Litueche	Cardenal Caro	Libertador General Bernardo O'Higgins	8852	395	9	1
+6204	Marchihue	Cardenal Caro	Libertador General Bernardo O'Higgins	8715	314	0	0
+6205	Navidad	Cardenal Caro	Libertador General Bernardo O'Higgins	8885	512	5	1
+6206	Paredones	Cardenal Caro	Libertador General Bernardo O'Higgins	7228	239	1	1
+6301	San Fernando	Colchagua	Libertador General Bernardo O'Higgins	75585	3883	54	6
+6302	Chépica	Colchagua	Libertador General Bernardo O'Higgins	15668	295	3	0
+6303	Chimbarongo	Colchagua	Libertador General Bernardo O'Higgins	37258	1575	19	5
+6304	Lolol	Colchagua	Libertador General Bernardo O'Higgins	7791	200	0	0
+6305	Nancagua	Colchagua	Libertador General Bernardo O'Higgins	18723	674	15	1
+6306	Palmilla	Colchagua	Libertador General Bernardo O'Higgins	13060	638	4	0
+6307	Peralillo	Colchagua	Libertador General Bernardo O'Higgins	12493	458	5	1
+6308	Placilla	Colchagua	Libertador General Bernardo O'Higgins	9438	500	6	1
+6309	Pumanque	Colchagua	Libertador General Bernardo O'Higgins	4559	177	1	3
+6310	Santa Cruz	Colchagua	Libertador General Bernardo O'Higgins	41209	1223	11	1
+7101	Talca	Talca	Maule	232131	8012	141	15
+7102	Constitución	Talca	Maule	47004	1960	18	1
+7103	Curepto	Talca	Maule	9519	589	1	0
+7104	Empedrado	Talca	Maule	3990	129	0	0
+7105	Maule	Talca	Maule	61081	2258	26	3
+7106	Pelarco	Talca	Maule	9229	319	2	0
+7107	Pencahue	Talca	Maule	9181	239	3	0
+7108	Río Claro	Talca	Maule	14276	490	1	1
+7109	San Clemente	Talca	Maule	47380	1862	15	4
+7110	San Rafael	Talca	Maule	11230	533	1	0
+7201	Cauquenes	Cauquenes	Maule	42798	1282	16	2
+7202	Chanco	Cauquenes	Maule	9446	332	5	0
+7203	Pelluhue	Cauquenes	Maule	8578	393	14	0
+7301	Curicó	Curicó	Maule	159968	8708	93	9
+7302	Hualañé	Curicó	Maule	10775	684	12	2
+7303	Licantén	Curicó	Maule	6892	1104	5	0
+7304	Molina	Curicó	Maule	48949	2823	24	5
+7305	Rauco	Curicó	Maule	11266	488	2	1
+7306	Romeral	Curicó	Maule	17233	1289	8	2
+7307	Sagrada Familia	Curicó	Maule	19427	788	6	2
+7308	Teno	Curicó	Maule	30113	1295	12	1
+7309	Vichuquén	Curicó	Maule	4716	622	1	0
+7401	Linares	Linares	Maule	96744	3725	43	8
+7402	Colbún	Linares	Maule	22637	1225	7	6
+7403	Longaví	Linares	Maule	33299	1607	6	3
+7404	Parral	Linares	Maule	45323	1261	16	1
+7405	Retiro	Linares	Maule	22310	675	3	1
+7406	San Javier	Linares	Maule	49559	1709	31	5
+7407	Villa Alegre	Linares	Maule	17919	661	10	2
+7408	Yerbas Buenas	Linares	Maule	20035	749	6	1
+16101	Chillán	Diguillín	Ñuble	190382	7723	105	6
+16102	Bulnes	Diguillín	Ñuble	23863	974	6	0
+16103	Chillán Viejo	Diguillín	Ñuble	32688	1623	30	0
+16104	El Carmen	Diguillín	Ñuble	13186	354	0	1
+16105	Pemuco	Diguillín	Ñuble	8930	313	3	0
+16106	Pinto	Diguillín	Ñuble	12502	467	5	1
+16107	Quillón	Diguillín	Ñuble	19165	829	2	2
+16108	San Ignacio	Diguillín	Ñuble	17405	526	2	0
+16109	Yungay	Diguillín	Ñuble	18680	793	4	0
+16201	Quirihue	Itata	Ñuble	11746	457	4	0
+16202	Cobquecura	Itata	Ñuble	5495	294	2	0
+16203	Coelemu	Itata	Ñuble	15895	625	5	0
+16204	Ninhue	Itata	Ñuble	5763	147	0	0
+16205	Portezuelo	Itata	Ñuble	5203	159	1	0
+16206	Ránquil	Itata	Ñuble	6508	332	0	2
+16207	Trehuaco	Itata	Ñuble	6124	215	0	0
+16301	San Carlos	Punilla	Ñuble	55847	1653	15	4
+16302	Coihueco	Punilla	Ñuble	29766	1318	11	2
+16303	Ñiquén	Punilla	Ñuble	12797	386	2	0
+16304	San Fabián	Punilla	Ñuble	5245	229	8	0
+16305	San Nicolás	Punilla	Ñuble	15099	728	2	1
+8101	Concepción	Concepción	Biobío	230375	15271	182	22
+8102	Coronel	Concepción	Biobío	123648	11160	99	6
+8103	Chiguayante	Concepción	Biobío	85822	6378	34	4
+8104	Florida	Concepción	Biobío	12958	652	5	0
+8105	Hualqui	Concepción	Biobío	25795	1853	6	3
+8106	Lota	Concepción	Biobío	39980	4593	18	5
+8107	Penco	Concepción	Biobío	48971	3510	13	1
+8108	San Pedro de La paz	Concepción	Biobío	150992	12197	72	4
+8109	Santa Juana	Concepción	Biobío	14947	1285	10	1
+8110	Talcahuano	Concepción	Biobío	147322	9293	61	5
+8111	Tomé	Concepción	Biobío	56907	3042	22	3
+8112	Hualpén	Concepción	Biobío	87731	6013	31	9
+8201	Lebu	Arauco	Biobío	25246	6990	4	1
+8202	Arauco	Arauco	Biobío	37163	6221	13	1
+8203	Cañete	Arauco	Biobío	34640	12851	17	7
+8204	Contulmo	Arauco	Biobío	5905	1813	0	0
+8205	Curanilahue	Arauco	Biobío	31119	3972	5	0
+8206	Los Álamos	Arauco	Biobío	21950	5882	1	3
+8207	Tirúa	Arauco	Biobío	10208	6955	1	2
+8301	Los Ángeles	Biobío	Biobío	219441	11768	95	14
+8302	Antuco	Biobío	Biobío	4373	282	0	0
+8303	Cabrero	Biobío	Biobío	31256	1575	10	2
+8304	Laja	Biobío	Biobío	23706	1576	22	0
+8305	Mulchén	Biobío	Biobío	29036	3235	1	0
+8306	Nacimiento	Biobío	Biobío	26140	1613	6	0
+8307	Negrete	Biobío	Biobío	10723	913	0	0
+8308	Quilaco	Biobío	Biobío	4440	491	5	0
+8309	Quilleco	Biobío	Biobío	9700	396	1	1
+8310	San Rosendo	Biobío	Biobío	3575	158	0	0
+8311	Santa Bárbara	Biobío	Biobío	14075	2059	9	2
+8312	Tucapel	Biobío	Biobío	15729	655	4	0
+8313	Yumbel	Biobío	Biobío	23170	1021	2	0
+8314	Alto Biobío	Biobío	Biobío	6016	5244	8	1
+9101	Temuco	Cautín	La Araucanía	292518	71483	146	49
+9102	Carahue	Cautín	La Araucanía	24957	10783	7	1
+9103	Cunco	Cautín	La Araucanía	19177	6057	5	0
+9104	Curarrehue	Cautín	La Araucanía	7733	5011	5	9
+9105	Freire	Cautín	La Araucanía	26164	14307	4	5
+9106	Galvarino	Cautín	La Araucanía	12710	9089	1	0
+9107	Gorbea	Cautín	La Araucanía	14148	2699	3	2
+9108	Lautaro	Cautín	La Araucanía	41936	16826	2	6
+9109	Loncoche	Cautín	La Araucanía	25158	8392	12	2
+9110	Melipeuco	Cautín	La Araucanía	6796	3539	2	1
+9111	Nueva Imperial	Cautín	La Araucanía	33988	19789	8	3
+9112	Padre Las Casas	Cautín	La Araucanía	80656	41270	11	9
+9113	Perquenco	Cautín	La Araucanía	7438	3802	1	4
+9114	Pitrufquén	Cautín	La Araucanía	27041	9205	10	5
+9115	Pucón	Cautín	La Araucanía	32321	8318	24	10
+9116	Saavedra	Cautín	La Araucanía	12877	10359	6	1
+9117	Teodoro Schmidt	Cautín	La Araucanía	15639	8511	2	3
+9118	Toltén	Cautín	La Araucanía	10041	4538	2	2
+9119	Vilcún	Cautín	La Araucanía	31575	11575	11	1
+9120	Villarrica	Cautín	La Araucanía	67737	17789	31	9
+9121	Cholchol	Cautín	La Araucanía	13167	10041	5	5
+9201	Angol	Malleco	La Araucanía	53022	6633	13	4
+9202	Collipulli	Malleco	La Araucanía	24303	6833	6	4
+9203	Curacautín	Malleco	La Araucanía	18536	2796	5	0
+9204	Ercilla	Malleco	La Araucanía	7730	4318	0	0
+9205	Lonquimay	Malleco	La Araucanía	10247	5827	11	0
+9206	Los Sauces	Malleco	La Araucanía	7348	2332	0	0
+9207	Lumaco	Malleco	La Araucanía	9253	4652	2	1
+9208	Purén	Malleco	La Araucanía	12184	3627	4	0
+9209	Renaico	Malleco	La Araucanía	10686	1074	2	0
+9210	Traiguén	Malleco	La Araucanía	18873	6113	7	2
+9211	Victoria	Malleco	La Araucanía	34464	9697	9	2
+14101	Valdivia	Valdivia	Los Ríos	170043	27488	125	21
+14102	Corral	Valdivia	Los Ríos	5501	1547	1	0
+14103	Lanco	Valdivia	Los Ríos	16876	5613	2	1
+14104	Los Lagos	Valdivia	Los Ríos	21431	3081	9	2
+14105	Máfil	Valdivia	Los Ríos	8074	1435	1	1
+14106	Mariquina	Valdivia	Los Ríos	22973	9069	1	2
+14107	Paillaco	Valdivia	Los Ríos	19802	3479	8	0
+14108	Panguipulli	Valdivia	Los Ríos	35098	14622	8	3
+14201	La Unión	Ranco	Los Ríos	38907	10091	6	2
+14202	Futrono	Ranco	Los Ríos	15635	5142	7	1
+14203	Lago Ranco	Ranco	Los Ríos	10527	5436	1	2
+14204	Río Bueno	Ranco	Los Ríos	33363	9379	10	1
+10101	Puerto Montt	Llanquihue	Los Lagos	277040	55795	357	34
+10102	Calbuco	Llanquihue	Los Lagos	36474	11723	38	3
+10103	Cochamó	Llanquihue	Los Lagos	4199	764	1	1
+10104	Fresia	Llanquihue	Los Lagos	12320	2904	13	1
+10105	Frutillar	Llanquihue	Los Lagos	22554	5530	13	2
+10106	Los Muermos	Llanquihue	Los Lagos	17162	2698	15	0
+10107	Llanquihue	Llanquihue	Los Lagos	18088	5452	17	2
+10108	Maullín	Llanquihue	Los Lagos	15063	3264	9	0
+10109	Puerto Varas	Llanquihue	Los Lagos	52942	8374	46	5
+10201	Castro	Chiloé	Los Lagos	46997	12571	112	9
+10202	Ancud	Chiloé	Los Lagos	40949	11461	133	7
+10203	Chonchi	Chiloé	Los Lagos	16078	5898	36	5
+10204	Curaco de Vélez	Chiloé	Los Lagos	3662	1071	4	1
+10205	Dalcahue	Chiloé	Los Lagos	14894	4026	16	2
+10206	Puqueldón	Chiloé	Los Lagos	4048	1248	14	0
+10207	Queilén	Chiloé	Los Lagos	5690	2896	22	0
+10208	Quellón	Chiloé	Los Lagos	28460	12619	167	5
+10209	Quemchi	Chiloé	Los Lagos	8409	3300	57	0
+10210	Quinchao	Chiloé	Los Lagos	7678	3630	4	1
+10301	Osorno	Osorno	Los Lagos	166455	48184	86	23
+10302	Puerto Octay	Osorno	Los Lagos	8865	3134	11	2
+10303	Purranque	Osorno	Los Lagos	19542	5713	11	4
+10304	Puyehue	Osorno	Los Lagos	11712	3816	2	2
+10305	Río Negro	Osorno	Los Lagos	13874	5234	15	1
+10306	San Juan de la Costa	Osorno	Los Lagos	7776	5878	8	0
+10307	San Pablo	Osorno	Los Lagos	10883	4363	4	1
+10401	Chaitén	Palena	Los Lagos	4025	1138	13	1
+10402	Futaleufú	Palena	Los Lagos	3062	470	3	0
+10403	Hualaihué	Palena	Los Lagos	9480	3398	25	0
+10404	Palena	Palena	Los Lagos	1903	334	4	0
+11101	Coyhaique	Coyhaique	Aysén del General Carlos Ibáñez del Campo	57823	14853	131	17
+11102	Lago Verde	Coyhaique	Aysén del General Carlos Ibáñez del Campo	779	220	1	0
+11201	Aysén	Aysén	Aysén del General Carlos Ibáñez del Campo	23170	8047	113	5
+11202	Cisnes	Aysén	Aysén del General Carlos Ibáñez del Campo	5137	1794	22	0
+11203	Guaitecas	Aysén	Aysén del General Carlos Ibáñez del Campo	1598	926	1	1
+11301	Cochrane	Capitán Prat	Aysén del General Carlos Ibáñez del Campo	3458	847	24	0
+11302	O'Higgins	Capitán Prat	Aysén del General Carlos Ibáñez del Campo	647	184	1	0
+11303	Tortel	Capitán Prat	Aysén del General Carlos Ibáñez del Campo	505	203	1	0
+11401	Chile Chico	General Carrera	Aysén del General Carlos Ibáñez del Campo	4905	1274	18	2
+11402	Río Ibáñez	General Carrera	Aysén del General Carlos Ibáñez del Campo	2723	882	22	0
+12101	Punta Arenas	Magallanes	Magallanes y de la Antártica Chilena	132363	29419	205	16
+12102	Laguna Blanca	Magallanes	Magallanes y de la Antártica Chilena	269	60	2	1
+12103	Río Verde	Magallanes	Magallanes y de la Antártica Chilena	102	19	0	0
+12104	San Gregorio	Magallanes	Magallanes y de la Antártica Chilena	241	53	0	0
+12201	Cabo de Hornos	Antártica Chilena	Magallanes y de la Antártica Chilena	1750	359	4	0
+12202	Antártica	Antártica Chilena	Magallanes y de la Antártica Chilena	60	4	0	0
+12301	Porvenir	Tierra del Fuego	Magallanes y de la Antártica Chilena	6809	1793	39	0
+12302	Primavera	Tierra del Fuego	Magallanes y de la Antártica Chilena	431	116	0	0
+12303	Timaukel	Tierra del Fuego	Magallanes y de la Antártica Chilena	157	33	0	0
+12401	Natales	Última Esperanza	Magallanes y de la Antártica Chilena	24152	6774	41	5
+12402	Torres del Paine	Última Esperanza	Magallanes y de la Antártica Chilena	203	28	1	0

@@ -9,6 +9,10 @@ import {
   type Zona,
   type CategoriaZona,
 } from '@/lib/zonificacion';
+import { ZonificacionGuiadaBloque } from './ZonificacionGuiadaBloque';
+import type { GrillaElevacion } from '@/lib/grillaElevacion';
+import type { EntradaUSLE } from '@/lib/usle';
+import type { Mojon } from '@/lib/types';
 
 interface ModoZona {
   categoria: CategoriaZona;
@@ -22,11 +26,20 @@ interface Props {
   onIniciarDibujo:   (cat: CategoriaZona) => void;
   onFinalizarZona:   (color?: string) => void;
   onCancelarZona:    () => void;
+  /** Para el bloque de zonificación guiada: el perímetro del predio. */
+  mojones:           Mojon[];
+  /** La grilla densa del relieve. Sin ella no se puede medir una zona. */
+  grilla:            GrillaElevacion | null;
+  /** La vivienda marcada en el Master Plan: el centro desde el que se camina. */
+  zona0:             { lat: number; lng: number } | null;
+  /** Lo que la USLE necesita, ya armado por el panel de erosión. */
+  usle:              EntradaUSLE | null;
 }
 
 export function ZonificacionPanel({
   zonas, onZonas, modoZona,
   onIniciarDibujo, onFinalizarZona, onCancelarZona,
+  mojones, grilla, zona0, usle,
 }: Props) {
   const [editandoId,   setEditandoId]   = useState<string | null>(null);
   const [categoriaNew, setCategoriaNew] = useState<CategoriaZona>('zona_0');
@@ -208,6 +221,16 @@ export function ZonificacionPanel({
           </table>
         </div>
       )}
+
+      {/* Etapa H — la zonificación como ejercicio guiado. Va DESPUÉS de la tabla
+          de resumen a propósito: lo primero que hace es poner al lado de esa
+          suma la unión y el recorte al predio, que no son la misma superficie
+          cuando hay zonas que se pisan. */}
+      <div className="mt-3">
+        <ZonificacionGuiadaBloque
+          zonas={zonas} mojones={mojones} grilla={grilla} zona0={zona0} usle={usle}
+        />
+      </div>
     </div>
   );
 }

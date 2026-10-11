@@ -37,10 +37,13 @@ describe('el pastizal templado tampoco es la Pampa en las High Plains', () => {
 
 describe('el bosque tropical húmedo habla por medio planeta y tiene que decir de qué habla', () => {
   it('la razón de huerta no afirma como universal lo que vale para el oxisol', () => {
-    // 216 ecorregiones heredan este modificador sin pisarlo, y 145 de ellas
-    // —Indomalaya, África tropical, Australasia, Oceanía— no tienen ninguna
-    // ficha regional. Media Indomalaya se sostiene sobre andisoles volcánicos,
-    // que son lo contrario de un suelo lixiviado.
+    // Este modificador lo hereda casi todo el trópico húmedo sin ficha
+    // regional: África tropical, Australasia y Oceanía enteras. La razón
+    // nombraba «Java, Bali, Luzón» como excepción volcánica, y el lote de
+    // Indomalaya mostró que eso era falso a escala de isla: el andisol está
+    // sobre el cono, no repartido, y en las tierras bajas de Java y de Luzón
+    // los suelos lixiviados son minoría pero los andosoles tampoco dominan.
+    // La frase ahora dice cono y no isla.
     const r = razon(BIOMAS_GLOBALES['resolve_bosque_tropical_humedo']!.aptitud!, 'huerta');
     expect(r).toMatch(/volcánico/);
     expect(r).toMatch(/lixiviados/);

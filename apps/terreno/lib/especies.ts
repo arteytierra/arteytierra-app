@@ -925,7 +925,36 @@ export interface BloqueEcorregion {
   porRol: Array<{ rol: RolEspecie; especies: EvaluacionEspecie[] }>;
   viables: number;
   aviso: string | null;
+  /**
+   * Especies que la ficha **no** nombra y que el clima del predio sí banca.
+   *
+   * Existe porque la lista de la ficha era una lista cerrada, y eso tiene una
+   * falla que no se ve: el borde de una ecorregión de RESOLVE no es el borde de
+   * un sistema productivo. Un cafetal del Quindío puede caer en el polígono del
+   * valle seco de al lado, y entonces la respuesta correcta —café— quedaba
+   * imposible de alcanzar, no porque el clima no diera sino porque la lista no
+   * lo tenía.
+   *
+   * Va aparte y no mezclado a propósito, porque son dos afirmaciones distintas:
+   * la de la ficha es «acá se cultiva esto», documentado para esta ecorregión; y
+   * ésta es «el clima de acá lo permite», que es más flojo y más ancho. Fundirlas
+   * convertiría nueve cultivos curados en cuarenta genéricos.
+   *
+   * Vacío cuando la lista salió del clima (ahí ya está todo) y cuando ninguna
+   * especie de más da viable.
+   */
+  tambienPorClima: EvaluacionEspecie[];
 }
+
+/**
+ * Tope de especies en `tambienPorClima`.
+ *
+ * Es una lista secundaria: si se muestra entera, en un clima tropical son
+ * cuarenta filas debajo de nueve y el bloque curado se pierde de vista. Doce
+ * alcanzan para tapar el agujero del polígono mal asignado sin dar vuelta la
+ * jerarquía de la pantalla.
+ */
+export const TOPE_TAMBIEN_POR_CLIMA = 12;
 
 /**
  * Qué se planta en este predio y con qué se acompaña.
@@ -934,6 +963,11 @@ export interface BloqueEcorregion {
  * los tiene, cae al catálogo por clase Köppen. Esa caída importa: sin ella, un
  * predio de una ecorregión todavía sin curar se quedaría con la sección vacía,
  * cuando el clima ya alcanza para decir algo cierto.
+ *
+ * Cuando la ficha sí tiene lista, además se devuelve en `tambienPorClima` lo que
+ * el clima banca y la ficha no nombra. La lista de la ficha dejó de ser una
+ * lista cerrada, porque el borde de un polígono de RESOLVE no es el borde de un
+ * sistema productivo: ver el comentario de ese campo.
  */
 export function bloqueEcorregion(
   meses: MesDato[],
@@ -944,11 +978,12 @@ export function bloqueEcorregion(
   const lista = deFicha.length ? deFicha : especiesDeKoppen(koppenCodigo);
   if (lista.length === 0) return null;
 
-  const evaluadas = lista.map(e => evaluarEspecie(e, meses));
   const rango = (e: EvaluacionEspecie) => ORDEN_ROL.indexOf(e.especie.rol);
-  evaluadas.sort((a, b) =>
+  const ordenar = (xs: EvaluacionEspecie[]) => xs.sort((a, b) =>
     Number(b.viable) - Number(a.viable) || rango(a) - rango(b) ||
     a.especie.nombre.localeCompare(b.especie.nombre, 'es'));
+
+  const evaluadas = ordenar(lista.map(e => evaluarEspecie(e, meses)));
 
   const porRol = ORDEN_ROL
     .map(rol => ({ rol, especies: evaluadas.filter(e => e.especie.rol === rol) }))
@@ -956,9 +991,22 @@ export function bloqueEcorregion(
 
   const viables = evaluadas.filter(e => e.viable).length;
 
+  // Sólo tiene sentido cuando mandó la ficha: si la lista salió del clima, esto
+  // sería la misma lista otra vez. Y sólo entran las viables: una especie que el
+  // clima no banca y la ficha no nombra no tiene ningún motivo para estar.
+  const enFicha = new Set(lista.map(e => e.id));
+  const tambienPorClima = deFicha.length
+    ? ordenar(
+        especiesDeKoppen(koppenCodigo)
+          .filter(e => !enFicha.has(e.id))
+          .map(e => evaluarEspecie(e, meses))
+          .filter(e => e.viable),
+      ).slice(0, TOPE_TAMBIEN_POR_CLIMA)
+    : [];
+
   return {
     origen: deFicha.length ? 'ficha' : 'koppen',
-    evaluadas, porRol, viables,
+    evaluadas, porRol, viables, tambienPorClima,
     aviso: deFicha.length
       ? null
       : 'La ecorregión todavía no tiene su lista de cultivos curada: estas especies salen del catálogo por clase climática, que es más grueso. Verificá con quien cultive en tu zona.',

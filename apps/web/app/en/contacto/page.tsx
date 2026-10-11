@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
-import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
+import { CONTACTO_ENDPOINT } from '@/lib/forms/contacto';
 
 const INTERESES = [
   'Bioarchitecture project',
@@ -26,7 +26,7 @@ export default function ContactoEnPage() {
     const form = e.currentTarget;
     const data = new FormData(form);
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const res = await fetch(CONTACTO_ENDPOINT, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },
@@ -74,6 +74,9 @@ export default function ContactoEnPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  <input type="hidden" name="_fuente" value="contacto-en" />
+                  <input type="hidden" name="_subject" value="New contact message (EN) · arteytierra.org" />
+                  <input type="hidden" name="idioma" value="en" />
                   <div>
                     <label className="block font-sans text-xs font-bold uppercase tracking-widest text-ink-700 mb-2">
                       Name *

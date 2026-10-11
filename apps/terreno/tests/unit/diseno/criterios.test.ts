@@ -236,10 +236,32 @@ describe('anchoCorona', () => {
     expect(largo.ajustes).toHaveLength(1);
   });
 
-  it('transitable por vehículo lleva el mínimo a 3 m', () => {
+  it('transitable por vehículo lleva el mínimo a 16 pies, no a 3 m', () => {
+    // Cambió el 03/10/2026. Este test fijaba los 3 m del criterio propio que
+    // acequia usaba antes de abrir la fuente. AH-590 dice textualmente: «If the
+    // top of the embankment is to be used for a roadway, provide for a shoulder
+    // on each side of the roadway to prevent raveling. The top width should be
+    // at least 16 feet». No son 3 m de huella: son 4,88 m, huella más las dos
+    // banquinas que evitan que el borde se desmorone bajo la rueda.
     const r = anchoCorona({ alto_m: 1.5, transitable: true });
-    expect(r.min).toBe(3);
-    expect(r.valor).toBeGreaterThanOrEqual(3);
+    expect(r.min).toBeCloseTo(16 * 0.3048, 2);
+    expect(r.min).toBeGreaterThan(3);
+    expect(r.valor).toBeGreaterThanOrEqual(r.min);
+    expect(r.ajustes.join(' ')).toMatch(/banquinas/);
+  });
+
+  it('ningún ancho de corona queda por debajo del mínimo publicado', () => {
+    // Es la razón del cambio: la tabla anterior quedaba por debajo de AH-590 en
+    // todas sus filas, y la diferencia crecía con la altura —para un muro de
+    // 8 m sugería 3,0 m contra los 4,27 del manual—. Como la base del muro es
+    // corona + alto × (ti + te), ese error se iba derecho al volumen de
+    // terraplén, o sea al presupuesto, siempre del lado barato.
+    const minimos: Array<[number, number]> = [
+      [2, 6], [3, 6], [4, 8], [5, 10], [6, 12], [8, 14], [10, 14],
+    ];
+    for (const [alto_m, pies] of minimos) {
+      expect(anchoCorona({ alto_m }).min).toBeCloseTo(pies * 0.3048, 2);
+    }
   });
 
   it('sin altura no recomienda nada', () => {
@@ -267,8 +289,38 @@ describe('taludesSugeridos', () => {
     }
   });
 
-  it('un muro alto pide taludes más tendidos que uno bajo', () => {
+  it('ningún talud interno baja de 3:1, que es el mínimo de las dos filas del cuadro 16', () => {
+    // Cambió el 03/10/2026, y es la corrección que más cambia la obra. Esta
+    // función daba 2,5:1 aguas arriba para arcilla no expansiva y para la
+    // mezcla areno-arcillosa cuando el muro medía menos de 5 m —o sea en el
+    // rango de altura más común de un predio—. El cuadro 16 de AH-590 tiene
+    // 3:1 aguas arriba en sus dos filas, y el texto dice «the slopes should not
+    // be steeper than those shown in table 16, but they can be flatter». 2,5:1
+    // no era una variante admisible: estaba por debajo del mínimo, y en el lado
+    // del muro que desliza con el vaciado rápido.
+    for (const suelo of ['arenoso_superficial', 'areno_arcilloso', 'arcilloso_elastico', 'arcilloso_inelastico', null] as const) {
+      for (const alto of [1, 2, 3, 5, 8, 12]) {
+        expect(taludesSugeridos(suelo, alto).interno).toBeGreaterThanOrEqual(3);
+        expect(taludesSugeridos(suelo, alto).externo).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
+  it('el ajuste por altura sobrevive donde suma, no donde restaba', () => {
+    // Un muro alto con material flojo sigue recibiendo medio punto más que el
+    // mínimo: ese ajuste es de acequia y va siempre hacia el lado tendido.
+    expect(taludesSugeridos('arenoso_superficial', 8).interno)
+      .toBeGreaterThan(taludesSugeridos('arenoso_superficial', 2).interno);
+    // Con material bueno los dos quedan en el piso publicado, y está bien: el
+    // manual no gradúa por altura, gradúa por material.
     expect(taludesSugeridos('areno_arcilloso', 8).interno)
-      .toBeGreaterThan(taludesSugeridos('areno_arcilloso', 2).interno);
+      .toBe(taludesSugeridos('areno_arcilloso', 2).interno);
+  });
+
+  it('los materiales que el cuadro 16 no cubre quedan marcados', () => {
+    expect(taludesSugeridos('arenoso_superficial', 3).fueraDeTabla).toBe(true);
+    expect(taludesSugeridos('arcilloso_elastico', 3).fueraDeTabla).toBe(true);
+    expect(taludesSugeridos('areno_arcilloso', 3).fueraDeTabla).toBe(false);
+    expect(taludesSugeridos('arcilloso_inelastico', 3).fueraDeTabla).toBe(false);
   });
 });

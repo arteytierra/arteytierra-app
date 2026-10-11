@@ -1,16 +1,51 @@
 'use client';
 
-import { FileDown, ArrowLeft } from 'lucide-react';
+import { FileDown, ArrowLeft, Lock } from 'lucide-react';
 import type { InformeData } from '@/lib/informe';
-import { calcularMetricas, formatearDistancia, type MetricasPoligono } from '@/lib/geometria';
+import { ACEQUIA_APP_HOST } from '@/lib/sitio';
+import { calcularMetricas, formatearDistancia, formatearMetros, formatearHa, numeroAR, type MetricasPoligono } from '@/lib/geometria';
+import { contrastarPrecip, DIF_PRECIP_SIGNIFICATIVA_PCT } from '@/lib/balanceHidrico';
 import { MESES, centroide } from '@/lib/clima';
+import { textoKoppen } from '@/lib/koppenTexto';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
 import { useEcorregion } from '@/lib/useEcorregion';
 import { useSaberes } from '@/lib/useSaberes';
+import {
+  porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
+} from '@/lib/sueloPorQue';
+import {
+  CONSECUENCIA, confianzaDelMapa, ladoEquivalenteKm,
+  ROTULO_CONFIANZA, ROCA_NO_ES_MATERIAL_PARENTAL, FUENTE_MACROSTRAT,
+} from '@/lib/rocaMadre';
 import { formatearMoneda } from '@/lib/economia';
 import { volumenM3, volumenEnLitros } from '@/lib/unidades';
+import { ROTULO_CLASE, titulo, ubicacionTexto, cantidadTexto, RADIO_CULTIVO_KM, RADIO_INFRAESTRUCTURA_KM } from '@/lib/contextoActual';
+import {
+  registroDelPunto, censoDelPunto, censoChilenoDelPunto, censoParaguayoDelPunto,
+  censoPeruanoDelPunto, censoBrasilenoDelPunto, censoMexicanoDelPunto,
+  porcentaje, pueblosDestacados, pueblosDelDepartamentoPy, pueblosDeLocalidadPy,
+  localidadesDestacadas, lenguasDelDepartamentoPe,
+  FECHA_REGISTRO_AR, FUENTE_REGISTRO_AR, FUENTE_CENSO_2022,
+  FUENTE_CENSO_2024_CL, REGISTRO_CL_FALTANTE, PORCENTAJE_PAIS_CL,
+  FUENTE_CENSO_2022_PY, REGISTRO_PY_FALTANTE, PORCENTAJE_PAIS_PY,
+  FUENTE_CENSO_2017_PE, REGISTRO_PE_FALTANTE, PORCENTAJE_PAIS_PE,
+  FUENTE_CENSO_2022_BR, REGISTRO_BR_FALTANTE, PORCENTAJE_PAIS_BR,
+  FUENTE_CENSO_2020_MX, REGISTRO_MX_FALTANTE, PORCENTAJE_PAIS_MX,
+  FUENTE_CENSO_2018_GT, REGISTRO_GT_FALTANTE, PORCENTAJES_PAIS_GT, ROTULO_PUEBLO_GT,
+  censoGuatemaltecoDelPunto, comunidadesDestacadasGt, puebloMayorGt, municipiosDestacadosGt,
+} from '@/lib/pueblosOriginarios';
+import { paisNacionalDelPunto, porcentajeNacional } from '@/lib/pueblosOriginariosNacional';
+import { CENSO_PAIS } from '@/lib/censoIndigena2022Ar';
+import { CENSO_CL_PAIS } from '@/lib/censoIndigena2024Cl';
+import { CENSO_PY_PAIS } from '@/lib/censoIndigena2022Py';
+import { CENSO_PE_PAIS } from '@/lib/censoIndigena2017Pe';
+import { CENSO_BR_PAIS } from '@/lib/censoIndigena2022Br';
+import { CENSO_MX_PAIS, AUTOADSCRIPCION_MX } from '@/lib/censoIndigena2020Mx';
+import { CENSO_GT_PAIS } from '@/lib/censoIndigena2018Gt';
+import { ModeloDeclaradoAnexo } from './ModeloDeclaradoAnexo';
+import { PlanillaDeReplanteo, ListaDeMaterialesSeccion, PlanDeEtapas } from './EntregasDePapel';
 
 interface Props {
   datos: InformeData;
@@ -22,9 +57,57 @@ export function InformeView({ datos, compartido = false }: Props) {
 
   // La ecorregión es un hook: va acá arriba, no dentro de la sección Contexto.
   const centroPredio = datos.mojones.length >= 3 ? centroide(datos.mojones) : null;
-  const eco = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
+  const { eco, resolviendo: resolviendoEco } = useEcorregion(centroPredio?.lat ?? null, centroPredio?.lng ?? null);
   // Los saberes territoriales también son un hook y por la misma razón van acá.
-  const saberesTerritorio = useSaberes(centroPredio?.lat ?? null, centroPredio?.lng ?? null, eco?.eco_id);
+  // Esperan a la ecorregión: la compuerta del saber evalúa el ECO_ID.
+  const saberesTerritorio = useSaberes(centroPredio?.lat ?? null, centroPredio?.lng ?? null, {
+    ecoId: eco?.eco_id,
+    listo: !resolviendoEco,
+  });
+  // Los pueblos con comunidades registradas no salen de la ecorregión: salen de
+  // la provincia y el departamento que resolvió el análisis de Entorno. Un
+  // proyecto guardado antes de esta capa no trae `admin` y la sección no sale.
+  const registroPueblos = registroDelPunto(datos.entorno?.admin ?? null);
+  // El censo contesta la otra mitad: cuánta gente se reconoce indígena acá. Va
+  // aunque el registro no tenga comunidades, porque son dos cosas distintas.
+  const censoPueblos = censoDelPunto(datos.entorno?.admin ?? null);
+  const censoLista = censoPueblos.estado === 'con_censo'
+    ? pueblosDestacados(censoPueblos.provincia.pueblos, 8)
+    : null;
+  // Chile tiene el censo del INE y no el registro de CONADI, y el informe dice
+  // las dos cosas. Es su propia tabla: nada se promedia entre países.
+  const censoCl = censoChilenoDelPunto(datos.entorno?.admin ?? null);
+  const censoClLista = censoCl.estado === 'con_censo'
+    ? pueblosDestacados(censoCl.region.pueblos, 8)
+    : null;
+  // Paraguay tiene el censo del INE y no el registro del INDI, que existe por
+  // ley y no está publicado. Y su censo indígena es un operativo aparte del
+  // nacional, así que el informe habla de personas y no de porcentajes.
+  const censoPy = censoParaguayoDelPunto(datos.entorno?.admin ?? null);
+  const censoPyLista = censoPy.estado === 'con_censo'
+    ? pueblosDestacados(pueblosDelDepartamentoPy(censoPy.departamento), 8)
+    : null;
+  const censoPyLocalidades = censoPy.estado === 'con_censo' && censoPy.distrito
+    ? localidadesDestacadas(censoPy.distrito, 5)
+    : null;
+  // Perú tiene el censo del INEI y no la BDPI del Ministerio de Cultura, que se
+  // baja entera y no declara licencia. Y contesta por departamento y nada más:
+  // los anexos no bajan a provincia ni a distrito.
+  const censoPe = censoPeruanoDelPunto(datos.entorno?.admin ?? null);
+  const censoBr = censoBrasilenoDelPunto(datos.entorno?.admin ?? null);
+  const censoMx = censoMexicanoDelPunto(datos.entorno?.admin ?? null);
+  const censoGt = censoGuatemaltecoDelPunto(datos.entorno?.admin ?? null);
+  // Doce paises entran solo con la cifra nacional: cuatro sudamericanos, Canada
+  // y Estados Unidos, y seis de Centroamerica y el Caribe.
+  // Ver lib/pueblosOriginariosNacional.ts.
+  const paisNac = paisNacionalDelPunto(datos.entorno?.admin ?? null);
+  const lenguasPe = censoPe.estado === 'con_censo'
+    ? lenguasDelDepartamentoPe(censoPe.departamento)
+    : null;
+
+  // Por qué el suelo del predio es como es. Necesita el clima y el suelo:
+  // sin los dos devuelve null y la subsección no se imprime.
+  const porQue = porQueEsteSuelo(datos.suelo ?? null, datos.clima ?? null);
 
   // Numeración dinámica de secciones según las presentes
   const presente = {
@@ -78,6 +161,20 @@ export function InformeView({ datos, compartido = false }: Props) {
           .page-break-before { page-break-before: always; }
         }
       `}</style>
+      {/* Sin `informe.descarga` el informe se mira, no se baja. Esconder el
+          botón solo sería decorativo —Ctrl+P sigue ahí—, así que al imprimir se
+          reemplaza el cuerpo por el aviso. No es una barrera criptográfica y no
+          pretende serlo: es que la acción diga la verdad en vez de entregar el
+          archivo por una puerta lateral. */}
+      {datos.sinDescarga && (
+        <style>{`
+          #informe-sin-descarga { display: none; }
+          @media print {
+            .informe-cuerpo, .informe-marca { display: none !important; }
+            #informe-sin-descarga { display: flex !important; }
+          }
+        `}</style>
+      )}
 
       {/* ── Barra de acciones (no impresa) ──────────────────────────────────── */}
       <div className="no-print sticky top-0 z-10 bg-white border-b border-bone-200 px-6 py-3 flex items-center gap-3 shadow-sm">
@@ -91,18 +188,43 @@ export function InformeView({ datos, compartido = false }: Props) {
           </a>
         )}
         <div className="flex-1" />
-        <button
-          onClick={() => window.print()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-sm font-medium transition-colors"
-        >
-          <FileDown className="w-4 h-4" />
-          Descargar PDF
-        </button>
+        {datos.sinDescarga ? (
+          <p className="flex items-center gap-1.5 text-xs text-ink-700/55">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              Bajar el informe es del plan Personal.{' '}
+              {!compartido && <a href="/suscribir?plan=personal&periodo=anual" className="text-moss-700 hover:text-moss-900 underline">Ver planes</a>}
+            </span>
+          </p>
+        ) : (
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-moss-700 hover:bg-moss-900 text-bone-50 rounded-lg text-sm font-medium transition-colors"
+          >
+            <FileDown className="w-4 h-4" />
+            Descargar PDF
+          </button>
+        )}
       </div>
+
+      {/* Lo que sale si alguien imprime un informe que no se puede bajar. En
+          pantalla no se ve: lo muestra la regla @media print de más arriba. */}
+      {datos.sinDescarga && (
+        <div id="informe-sin-descarga" className="fixed inset-0 items-center justify-center p-16 text-center">
+          <div className="space-y-3">
+            <p className="text-lg font-semibold text-ink-900">Este informe no se puede descargar.</p>
+            <p className="text-sm text-ink-700/70 max-w-sm mx-auto leading-relaxed">
+              El análisis se mira en pantalla y se comparte por link. Bajarlo en PDF
+              forma parte del plan Personal de acequia.
+            </p>
+            <p className="text-xs text-ink-700/50">{ACEQUIA_APP_HOST}</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Cuerpo del informe ───────────────────────────────────────────────── */}
       {datos.conMarca && <MarcaAgua />}
-      <div className="max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
+      <div className="informe-cuerpo max-w-3xl mx-auto px-8 py-10 space-y-8 text-ink-900">
 
         {/* Portada + resumen ejecutivo */}
         <Portada datos={datos} metricas={metricas} fechaLarga={fechaLarga} />
@@ -156,8 +278,8 @@ export function InformeView({ datos, compartido = false }: Props) {
             <>
               {metricas && (
                 <div className="grid grid-cols-3 gap-4 mb-4">
-                  <StatBlock label="Área" value={`${metricas.area_ha.toFixed(4)} ha`} sub={`${Math.round(metricas.area_m2).toLocaleString('es-AR')} m²`} />
-                  <StatBlock label="Perímetro" value={formatearDistancia(metricas.perimetro_m)} sub={`${metricas.perimetro_m.toFixed(1)} m`} />
+                  <StatBlock label="Área" value={formatearHa(metricas.area_ha)} sub={`${Math.round(metricas.area_m2).toLocaleString('es-AR')} m²`} />
+                  <StatBlock label="Perímetro" value={formatearDistancia(metricas.perimetro_m)} sub={formatearMetros(metricas.perimetro_m)} />
                   <StatBlock label="Mojones" value={`${datos.mojones.length}`} sub="vértices" />
                 </div>
               )}
@@ -181,10 +303,10 @@ export function InformeView({ datos, compartido = false }: Props) {
                       ? ['Tramo', 'Longitud']
                       : ['Tramo', 'Longitud', 'Azimut', 'Rumbo cuadrantal']}
                     rows={metricas.linderos.map(l => datos.sinRumbos
-                      ? [`M${l.desde} → M${l.hasta}`, formatearDistancia(l.longitud)]
+                      ? [`M${l.desde} → M${l.hasta}`, formatearMetros(l.longitud)]
                       : [
                           `M${l.desde} → M${l.hasta}`,
-                          formatearDistancia(l.longitud),
+                          formatearMetros(l.longitud),
                           `${l.azimut.toFixed(1)}°`,
                           l.rumbo,
                         ])}
@@ -220,6 +342,15 @@ export function InformeView({ datos, compartido = false }: Props) {
                 )}
               </div>
             )}
+            {/* Qué quiere decir la clase, en palabras. En un informe impreso
+                pesa más que en el panel: el lector no tiene a quién
+                preguntarle qué es un «Cwa». Ver lib/koppenTexto.ts. */}
+            {datos.clima.koppen && (() => {
+              const t = textoKoppen(datos.clima.koppen.codigo);
+              return t && (
+                <p className="mb-4 text-xs text-ink-700/80 leading-relaxed">{t.prosa}</p>
+              );
+            })()}
             {/* Deriva climática. En el informe pesa más que en el panel: quien lo
                 lee está por decidir qué plantar, y un monte se elige para el
                 clima que va a haber. Se omite donde la clase no se mueve. */}
@@ -245,6 +376,17 @@ export function InformeView({ datos, compartido = false }: Props) {
                       : ' El salto ya ocurrió: lo que anduvo históricamente en este lugar puede no ser lo que ande hoy.'}
                   </p>
                 )}
+                {/* Y qué clima es ése, dicho igual que el de hoy. */}
+                {datos.clima.koppen_deriva.futuro
+                  && datos.clima.koppen_deriva.futuro.codigo !== datos.clima.koppen.codigo
+                  && (() => {
+                    const t = textoKoppen(datos.clima.koppen_deriva.futuro.codigo);
+                    return t && (
+                      <p className="text-xs text-ink-700/80 mt-1.5 leading-relaxed">
+                        <span className="font-semibold">{t.codigo}, {t.titulo}:</span> {t.prosa}
+                      </p>
+                    );
+                  })()}
                 <p className="text-[10px] text-ink-700/50 mt-1 leading-relaxed">
                   Beck et al. (2023), mismo mapa de 1 km leído en tres períodos. El futuro es el
                   escenario intermedio SSP2-4.5: es una proyección climática, no un pronóstico.
@@ -264,7 +406,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               {datos.clima.amplitud_anual_c !== undefined && <StatBlock label="Amplitud térmica" value={`${datos.clima.amplitud_anual_c}°C`} sub="media diaria" />}
             </div>
             <Table
-              head={['Mes', 'Precip.', 'ETP', 'Balance', 'T med.', 'HR', 'Viento']}
+              head={['Mes', 'Precip.', 'ETP', 'P − ETP', 'T med.', 'HR', 'Viento']}
               rows={datos.clima.meses.map(m => [
                 m.mes,
                 String(m.precip_mm),
@@ -319,9 +461,65 @@ export function InformeView({ datos, compartido = false }: Props) {
               )}
 
               <p className="text-sm text-ink-700/80 mt-1">
-                <span className="font-semibold">Precipitación interanual:</span> media {ex.precip_anual.media_mm} mm
+                <span className="font-semibold">Precipitación interanual de esta serie:</span> media {ex.precip_anual.media_mm} mm
                 (mín {ex.precip_anual.min_mm} · máx {ex.precip_anual.max_mm} · variabilidad CV {ex.precip_anual.cv_pct} %).
               </p>
+
+              {/* Las dos lluvias del informe, dichas donde aparece la segunda.
+                  La sección 2 imprime la climatología del predio y ésta la media del
+                  reanálisis: en Traslasierra eran 595 y 943 mm a una página de
+                  distancia, sin que nada dijera que eran dos fuentes distintas. */}
+              {(() => {
+                const cp = datos.clima
+                  ? contrastarPrecip(datos.clima.precip_anual_mm, ex.precip_anual.media_mm, datos.clima.calibracion !== undefined)
+                  : null;
+                if (!cp || Math.abs(cp.dif_pct) <= DIF_PRECIP_SIGNIFICATIVA_PCT) return null;
+                return (
+                  <div className="mt-2 rounded-lg border border-ink-700/15 bg-bone-50 p-2.5">
+                    <p className="text-xs text-ink-700/80 leading-relaxed">
+                      <span className="font-semibold">Las dos lluvias de este informe no coinciden.</span>{' '}
+                      El capítulo de clima da <b>{Math.round(cp.climatologia_mm)} mm/año</b> y esta serie,{' '}
+                      <b>{Math.round(cp.serie_mm)} mm/año</b>: {Math.abs(Math.round(cp.dif_pct))} % de
+                      diferencia. Son dos fuentes para el mismo punto, y cada mitad del análisis usa
+                      una: la aridez, la receptividad, el escurrimiento y la captación salen de la
+                      primera; la variabilidad entre años, las rachas secas y las tormentas de diseño,
+                      de la segunda.
+                      {cp.calibrada
+                        ? <> Para el total anual pesa más la del capítulo de clima, que está anclada a
+                          pluviómetros; el reanálisis no asimila observaciones de lluvia.</>
+                        : <> Ninguna de las dos está anclada a pluviómetros acá, así que la diferencia
+                          no tiene un lado preferido.</>}{' '}
+                      Lo decide el registro de una estación cercana. Mientras no esté, de qué lado
+                      conviene equivocarse depende de qué se dimensione: para saber si el agua alcanza,
+                      la lluvia menor; para dimensionar lo que tiene que aguantarla, la mayor.
+                    </p>
+                  </div>
+                );
+              })()}
+
+              {/* Cuando la serie se escaló a un pluviómetro, el recuadro de arriba
+                  desaparece solo —las dos lluvias ya coinciden— y entonces hay que
+                  decir la otra mitad: qué quedó escalado y qué no. La tormenta de
+                  diseño de este mismo capítulo es lo que no. */}
+              {ex.calibracion_serie && (
+                <div className="mt-2 rounded-lg border border-moss-200 bg-moss-50 p-2.5">
+                  <p className="text-xs text-ink-700/80 leading-relaxed">
+                    <span className="font-semibold">Esta serie está escalada al dato local.</span>{' '}
+                    De {ex.calibracion_serie.antes_mm} a {ex.calibracion_serie.despues_mm} mm/año
+                    {ex.calibracion_serie.fuente ? ` con ${ex.calibracion_serie.fuente}` : ''}, que es
+                    lo que hace que este capítulo y el de clima hablen de la misma lluvia. Se
+                    escalaron las acumulaciones —el balance hídrico y los totales del año—{' '}
+                    <b>y no la tormenta de diseño</b>, que sigue saliendo de la serie cruda: el
+                    escalado lineal corrige la media y no la distribución, así que multiplicar el
+                    cuantil de Gumbel por el mismo factor no tendría respaldo.
+                    {ex.calibracion_serie.factor_anual > 1
+                      ? <> Como el dato local llueve más que el reanálisis, esa tormenta queda del
+                        lado corto: para vertederos y alcantarillas conviene subir un escalón el
+                        período de retorno.</>
+                      : null}
+                  </p>
+                </div>
+              )}
 
               <p className="text-xs text-ink-700/50 mt-2 italic">
                 Fuente: {ex.fuente} ({ex.periodo}, {ex.anios} años). Tormenta de diseño por {ex.tormenta.metodo}.
@@ -359,6 +557,495 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ]}
                 colAlign={['left', 'left']}
               />}
+              {/* Prácticas documentadas: fechadas y sin atribuir. Van antes de los
+                  saberes porque son la capa que sí existe en casi cualquier predio.
+                  El informe se lee en voz alta delante de gente, así que el período y
+                  la fuente viajan con cada una. Ver lib/practicasHistoricas.ts. */}
+              {bioma?.practicas?.length ? <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Prácticas documentadas en el territorio</p>
+              <div className="space-y-2">
+                {bioma.practicas.map((pr, i) => (
+                  <div key={i} className="text-sm">
+                    <span className="font-semibold text-moss-700">{pr.practica}</span>
+                    <span className="text-ink-700/60"> · {pr.periodo}</span>
+                    <p className="text-ink-700/80">{pr.detalle}</p>
+                    <p className="text-[10px] text-ink-700/50 mt-0.5">Fuente: {pr.fuentes.map(f => f.label).join(" · ")}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">Fechadas y sin atribución de autoría: el registro data la obra, no quién la hizo.</p>
+              </> : null}
+              {/* Pueblos originarios con comunidades registradas. Va acá, pegado a
+                  las prácticas, pero no sale de la ficha del bioma: sale del
+                  registro del INAI por provincia y departamento. Es el dato del
+                  presente —quiénes están hoy, y si su territorio está relevado—
+                  mientras las prácticas de arriba son el del pasado.
+
+                  El informe se lee en voz alta, así que la advertencia sobre lo que
+                  el registro no dice viaja siempre con los números. Ver
+                  lib/pueblosOriginarios.ts. */}
+              {registroPueblos.estado === 'con_registro' && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Pueblos originarios con comunidades registradas</p>
+              {registroPueblos.departamento && (
+                <p className="text-sm text-ink-700/80">
+                  En {registroPueblos.departamento.departamento}, {registroPueblos.provincia.provincia}:{' '}
+                  {registroPueblos.departamento.comunidades === 1
+                    ? 'una comunidad registrada'
+                    : `${registroPueblos.departamento.comunidades} comunidades registradas`}
+                  {', de '}
+                  {registroPueblos.departamento.pueblos.map(p => p.pueblo).join(', ')}.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la provincia de {registroPueblos.provincia.provincia}:{' '}
+                {registroPueblos.provincia.comunidades} comunidades registradas de{' '}
+                {registroPueblos.provincia.pueblos.length} pueblos, con el relevamiento territorial
+                de la Ley 26.160 culminado en {registroPueblos.provincia.relevamiento.culminado} y
+                sin iniciar en {registroPueblos.provincia.relevamiento.sin_relevar}.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos: {registroPueblos.provincia.pueblos.map(p => p.pueblo).join(', ')}.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_REGISTRO_AR.label} · {FUENTE_REGISTRO_AR.licencia}. Foto del
+                registro al {FECHA_REGISTRO_AR}. Que un departamento no figure no significa que no
+                haya pueblos originarios: significa que no hay comunidades registradas, y el
+                registro depende de un trámite ante el Estado.
+              </p>
+              </>}
+
+              {/* La misma sección, la otra fuente. El registro cuenta trámites y
+                  el censo cuenta gente, y en el informe conviene que se lean
+                  juntas: en la Ciudad de Buenos Aires el registro no tiene
+                  ninguna comunidad y el censo cuenta 74.724 personas. */}
+              {censoPueblos.estado === 'con_censo' && censoLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Personas que se reconocen indígenas (Censo 2022)</p>
+              {censoPueblos.departamento && (
+                <p className="text-sm text-ink-700/80">
+                  En {censoPueblos.departamento.departamento}, {censoPueblos.provincia.provincia}:{' '}
+                  {censoPueblos.departamento.indigena.toLocaleString('es-AR')} personas se reconocen
+                  indígenas o descendientes de pueblos originarios, el{' '}
+                  {porcentaje(censoPueblos.departamento.indigena, censoPueblos.departamento.poblacion)}% de
+                  la población en viviendas particulares.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la provincia de {censoPueblos.provincia.provincia}:{' '}
+                {censoPueblos.provincia.indigena.toLocaleString('es-AR')} personas, el{' '}
+                {porcentaje(censoPueblos.provincia.indigena, censoPueblos.provincia.poblacion)}% de
+                la población en viviendas particulares, contra{' '}
+                {porcentaje(CENSO_PAIS.indigena, CENSO_PAIS.poblacion)}% en todo el país.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población declarada:{' '}
+                {censoLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}
+                {censoLista.resto.pueblos > 0 && `, y ${censoLista.resto.pueblos} pueblos más`}.{' '}
+                {censoPueblos.provincia.sinInformacion > 0 && (
+                  <>Otras {censoPueblos.provincia.sinInformacion.toLocaleString('es-AR')} personas no
+                  declararon a qué pueblo pertenecen.</>
+                )}
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022.label}. El censo cuenta autorreconocimiento donde la
+                persona vive, no territorio: no dice de quién es la tierra ni quién estuvo antes.
+              </p>
+              </>}
+
+              {/* Chile, con una sola de las dos fuentes. El informe lo dice: el
+                  registro de CONADI no está, y por qué. Callarlo dejaría creer
+                  que el censo es todo lo que hay. */}
+              {censoCl.estado === 'con_censo' && censoClLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Pertenencia a un pueblo indígena u originario (Censo 2024, Chile)</p>
+              {censoCl.comuna ? (
+                <p className="text-sm text-ink-700/80">
+                  En la comuna de {censoCl.comuna.comuna}, {censoCl.region.region}:{' '}
+                  {censoCl.comuna.indigena.toLocaleString('es-AR')} personas son o se consideran
+                  pertenecientes a un pueblo indígena u originario, el{' '}
+                  {porcentaje(censoCl.comuna.indigena, censoCl.comuna.poblacion)}% de
+                  las {censoCl.comuna.poblacion.toLocaleString('es-AR')} censadas ahí.
+                </p>
+              ) : censoCl.provincia && (
+                <p className="text-sm text-ink-700/80">
+                  En la provincia de {censoCl.provincia.provincia}, {censoCl.region.region}:{' '}
+                  {censoCl.provincia.indigena.toLocaleString('es-AR')} personas, el{' '}
+                  {porcentaje(censoCl.provincia.indigena, censoCl.provincia.poblacion)}% de la
+                  población censada en sus {censoCl.provincia.comunas} comunas. La comuna exacta no
+                  se pudo determinar.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En toda la región {censoCl.region.region}:{' '}
+                {censoCl.region.indigena.toLocaleString('es-AR')} personas, el{' '}
+                {porcentaje(censoCl.region.indigena, censoCl.region.poblacion)}% de la población
+                censada, contra {PORCENTAJE_PAIS_CL}% en todo Chile.
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población declarada:{' '}
+                {censoClLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}.{' '}
+                {censoCl.region.otroPueblo > 0 && (
+                  <>Otras {censoCl.region.otroPueblo.toLocaleString('es-AR')} personas marcaron «otro
+                  pueblo»: la lista del censo chileno es cerrada, son las {CENSO_CL_PAIS.pueblos}{' '}
+                  alternativas reconocidas por la ley 19.253 y sus modificaciones.</>
+                )}
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2024_CL.label} · {FUENTE_CENSO_2024_CL.licencia}. El
+                porcentaje se calcula sobre la población censada; el INE publica{' '}
+                {CENSO_CL_PAIS.porcentajeIne}% para el país porque divide por quienes respondieron
+                la pregunta, y ese denominador no está publicado por comuna. El censo cuenta
+                personas donde viven, no territorio. La segunda fuente —el{' '}
+                {REGISTRO_CL_FALTANTE.organismo}— no está incluida: {REGISTRO_CL_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Paraguay. También con una sola fuente, y con un censo que es
+                  un operativo aparte del nacional: el informe dice las personas
+                  y no inventa un porcentaje que mezclaría dos relevamientos. */}
+              {censoPy.estado === 'sin_comunidades' && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena (IV Censo Indígena 2022, Paraguay)</p>
+              <p className="text-sm text-ink-700/80">
+                El operativo del IV Censo Indígena 2022 no relevó comunidades
+                en {censoPy.departamento}: salió a censar catorce de los diecisiete departamentos
+                del país, más Asunción. Eso dice adónde fue el operativo, no que no haya gente. Las{' '}
+                {CENSO_PY_PAIS.porCarnet.toLocaleString('es-AR')} personas que el Censo Nacional
+                contó aparte, por declarar que tienen carnet indígena, no están abiertas por
+                departamento en ningún cuadro.
+              </p>
+              </>}
+
+              {censoPy.estado === 'con_censo' && censoPyLista && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena (IV Censo Indígena 2022, Paraguay)</p>
+              {censoPy.distrito && censoPyLocalidades ? (
+                <>
+                  <p className="text-sm text-ink-700/80">
+                    En el distrito de {censoPy.distrito.distrito}, {censoPy.departamento.departamento}:{' '}
+                    {censoPy.distrito.censadas.toLocaleString('es-AR')} personas censadas
+                    en {censoPy.distrito.localidades.length === 1
+                      ? 'una comunidad, aldea, barrio o núcleo de familias'
+                      : `${censoPy.distrito.localidades.length} comunidades, aldeas, barrios o núcleos de familias`}.
+                  </p>
+                  <p className="text-sm text-ink-700/80 mt-1">
+                    {censoPyLocalidades.visibles.map(l => {
+                      const { pueblos } = pueblosDeLocalidadPy(l);
+                      return `${l.nombre} (${l.censadas.toLocaleString('es-AR')} personas: ${pueblos.join(', ')})`;
+                    }).join('; ')}
+                    {censoPyLocalidades.resto.localidades > 0
+                      && `; y ${censoPyLocalidades.resto.localidades} más, con ${censoPyLocalidades.resto.personas.toLocaleString('es-AR')} personas entre todas`}.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  El distrito exacto no se pudo determinar, así que la respuesta es departamental.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1">
+                En todo {censoPy.departamento.departamento}:{' '}
+                {censoPy.departamento.indigena.toLocaleString('es-AR')} personas indígenas
+                en {censoPy.departamento.distritos.length} distritos.
+                {censoPy.departamento.noIndigena > 0 && (
+                  <> Otras {censoPy.departamento.noIndigena.toLocaleString('es-AR')} personas viven
+                  en esas mismas comunidades y el censo las cuenta como no indígenas.</>
+                )}
+              </p>
+              <p className="text-sm text-ink-700/80 mt-1">
+                Pueblos con más población censada:{' '}
+                {censoPyLista.visibles.map(p => `${p.pueblo} (${p.personas.toLocaleString('es-AR')})`).join(', ')}
+                {censoPyLista.resto.pueblos > 0 && `, y ${censoPyLista.resto.pueblos} pueblos más`}. Los
+                nombres con barra son un pueblo y no dos: el INE conserva las dos formas porque el
+                pueblo se cambió el nombre y no quiere perder la comparación con los censos
+                anteriores.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022_PY.label} · {FUENTE_CENSO_2022_PY.licencia}. Relevado
+                desde el 9 de noviembre de 2022, durante quince días. No se publica porcentaje por
+                departamento a propósito: este censo es un operativo aparte del censo nacional, así
+                que el único denominador disponible mediría otra cosa que el numerador. El total
+                oficial del país es {CENSO_PY_PAIS.total.toLocaleString('es-AR')} personas
+                —el {PORCENTAJE_PAIS_PY}% de {CENSO_PY_PAIS.poblacionPais.toLocaleString('es-AR')}—,
+                que suma {CENSO_PY_PAIS.operativo.toLocaleString('es-AR')} del operativo indígena
+                y {CENSO_PY_PAIS.porCarnet.toLocaleString('es-AR')} captadas por el Censo Nacional
+                por tenencia de carnet, que ningún cuadro abre por departamento. El censo cuenta
+                personas donde viven, no territorio. La segunda fuente —el{' '}
+                {REGISTRO_PY_FALTANTE.organismo}— no está incluida: {REGISTRO_PY_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Perú. Una sola fuente otra vez, y una sola escala: el INEI no
+                  baja del departamento. El informe lo dice en vez de sugerir
+                  una precisión que no tiene. */}
+              {censoPe.estado === 'con_censo' && lenguasPe && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Población indígena u originaria (Censo 2017, Perú)</p>
+              <p className="text-sm text-ink-700/80">
+                En {censoPe.departamento.departamento}:{' '}
+                {censoPe.departamento.indigena.toLocaleString('es-AR')} personas se declararon
+                indígenas u originarias, el{' '}
+                {porcentaje(censoPe.departamento.indigena, censoPe.departamento.censada12)}% de
+                las {censoPe.departamento.censada12.toLocaleString('es-AR')} censadas de 12 y más
+                años, contra {PORCENTAJE_PAIS_PE}% en todo el Perú. De los Andes{' '}
+                {censoPe.departamento.andes.toLocaleString('es-AR')} y de la Amazonía{' '}
+                {censoPe.departamento.amazonia.toLocaleString('es-AR')}; el INEI las publica
+                separadas y el total es esa suma.
+              </p>
+              {lenguasPe.originarias.length > 0 && (
+                <p className="text-sm text-ink-700/80 mt-1">
+                  Lengua materna de esa población:{' '}
+                  {lenguasPe.originarias.map(l => `${l.lengua} (${l.personas.toLocaleString('es-AR')})`).join(', ')}
+                  {lenguasPe.castellano > 0
+                    && `, y castellano ${lenguasPe.castellano.toLocaleString('es-AR')}`}. La lengua
+                  materna no es el pueblo: es la que se aprendió en la niñez.
+                </p>
+              )}
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2017_PE.label} · {FUENTE_CENSO_2017_PE.licencia}. Momento
+                censal del 22 de octubre de 2017. El universo son las personas de 12 y más años,
+                que es a quienes se les hizo la pregunta: en todo el país{' '}
+                {CENSO_PE_PAIS.indigena.toLocaleString('es-AR')} de{' '}
+                {CENSO_PE_PAIS.censada12.toLocaleString('es-AR')}. La respuesta es departamental
+                porque los anexos del INEI no bajan a provincia ni a distrito, y el censo no
+                publica un conteo comparable para cada uno de los 55 pueblos que reconoce el
+                Ministerio de Cultura. La segunda fuente —la {REGISTRO_PE_FALTANTE.organismo}— no
+                está incluida: {REGISTRO_PE_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Brasil. La primera respuesta a escala de municipio, y la
+                  primera que puede ser de dos niveles: si el municipio no se
+                  resuelve, el informe da el estado y dice que es mas grueso.
+                  Un informe que promete precision que no tiene es peor que uno
+                  que admite la que tiene. */}
+              {(censoBr.estado === 'con_censo' || censoBr.estado === 'con_estado') && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">População indígena (Censo 2022, Brasil)</p>
+              {censoBr.estado === 'con_censo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoBr.municipio.municipio} ({censoBr.uf.sigla}):{' '}
+                  {censoBr.municipio.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                  {censoBr.municipio.poblacion.toLocaleString('es-AR')} habitantes, el{' '}
+                  {porcentaje(censoBr.municipio.indigena, censoBr.municipio.poblacion)}%. En todo{' '}
+                  {censoBr.uf.estado} son {censoBr.uf.indigena.toLocaleString('es-AR')} sobre{' '}
+                  {censoBr.uf.poblacion.toLocaleString('es-AR')} —el{' '}
+                  {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%—, contra{' '}
+                  {PORCENTAJE_PAIS_BR}% en todo Brasil. El municipio brasileño incluye la ciudad y
+                  toda su zona rural, así que es la escala que le corresponde a un campo.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  En {censoBr.uf.estado} ({censoBr.uf.sigla}):{' '}
+                  {censoBr.uf.indigena.toLocaleString('es-AR')} personas indígenas sobre{' '}
+                  {censoBr.uf.poblacion.toLocaleString('es-AR')} habitantes, el{' '}
+                  {porcentaje(censoBr.uf.indigena, censoBr.uf.poblacion)}%, contra{' '}
+                  {PORCENTAJE_PAIS_BR}% en todo Brasil. <strong>Este dato es del estado entero y
+                  no del municipio</strong>
+                  {censoBr.municipioBuscado
+                    ? <>: el geocodificador devolvió «{censoBr.municipioBuscado}», que no es
+                        ninguno de los {censoBr.uf.municipios.length} municipios de{' '}
+                        {censoBr.uf.estado}</>
+                    : <>: no se pudo determinar la localidad del punto</>}
+                  . A escala de estado el número dice poco, porque la población indígena de Brasil
+                  está muy concentrada.
+                </p>
+              )}
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {FUENTE_CENSO_2022_BR.label} · {FUENTE_CENSO_2022_BR.licencia}. En todo el
+                país son {CENSO_BR_PAIS.indigena.toLocaleString('es-AR')} personas sobre{' '}
+                {CENSO_BR_PAIS.poblacion.toLocaleString('es-AR')} habitantes, en{' '}
+                {CENSO_BR_PAIS.municipios.toLocaleString('es-AR')} municipios —
+                {CENSO_BR_PAIS.municipiosSinIndigenas.toLocaleString('es-AR')} de ellos sin ninguna
+                persona indígena censada—. El total combina dos preguntas:{' '}
+                {CENSO_BR_PAIS.corRaca.toLocaleString('es-AR')} declararon «cor ou raça indígena» y{' '}
+                {CENSO_BR_PAIS.seConsidera.toLocaleString('es-AR')} no la declararon pero dijeron
+                considerarse indígenas, pregunta que sólo se hizo dentro de tierras y localidades
+                indígenas. Las tierras indígenas no están incluidas: las publica la{' '}
+                {REGISTRO_BR_FALTANTE.organismo} y {REGISTRO_BR_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Mexico. El informe se imprime y se discute sin nosotros, asi
+                  que la aclaracion de que esto cuenta lengua y no identidad va
+                  en la misma oracion que el numero: son 7,4 millones de
+                  hablantes contra unos 23,2 millones que se consideran
+                  indigenas, y un informe que muestre el primero sin el segundo
+                  esta subestimando por tres a quien tiene enfrente. */}
+              {(censoMx.estado === 'con_censo' || censoMx.estado === 'con_entidad'
+                || censoMx.estado === 'municipio_ambiguo') && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Hablantes de lengua indígena (Censo 2020, México)</p>
+              {censoMx.estado === 'con_censo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.municipio.municipio} ({censoMx.entidad.entidad}):{' '}
+                  {censoMx.municipio.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, sobre{' '}
+                  {censoMx.municipio.tresYMas.toLocaleString('es-AR')} de esa edad en el municipio,
+                  el {porcentaje(censoMx.municipio.hablantes, censoMx.municipio.tresYMas)}%
+                  {censoMx.municipio.monolingues > 0
+                    ? <>, y de ésas{' '}
+                        {censoMx.municipio.monolingues.toLocaleString('es-AR')} no hablan español</>
+                    : null}
+                  . En todo {censoMx.entidad.entidad} son{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} —el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%—, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México.
+                </p>
+              ) : censoMx.estado === 'municipio_ambiguo' ? (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.entidad.entidad}:{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México. <strong>Este dato es de la entidad entera y
+                  no del municipio</strong>: hay {censoMx.cuantos} municipios llamados
+                  «{censoMx.nombre}» —el censo escribe el nombre sin el distrito que los
+                  distingue— y entre ellos la proporción de hablantes va del 4 % al 95 %, así que
+                  elegir uno sería arriesgar un número muy equivocado.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-700/80">
+                  En {censoMx.entidad.entidad}:{' '}
+                  {censoMx.entidad.hablantes.toLocaleString('es-AR')} personas de 3 años y más
+                  hablan una lengua indígena, sobre{' '}
+                  {censoMx.entidad.tresYMas.toLocaleString('es-AR')} de esa edad, el{' '}
+                  {porcentaje(censoMx.entidad.hablantes, censoMx.entidad.tresYMas)}%, contra{' '}
+                  {PORCENTAJE_PAIS_MX}% en todo México. <strong>Este dato es de la entidad entera y
+                  no del municipio</strong>
+                  {censoMx.municipioBuscado
+                    ? <>: el geocodificador devolvió «{censoMx.municipioBuscado}», que no es
+                        ninguno de los {censoMx.entidad.municipios.length} municipios de{' '}
+                        {censoMx.entidad.entidad}</>
+                    : <>: no se pudo determinar el municipio del punto</>}
+                  . A escala de entidad el número dice poco: en Oaxaca hay municipios del 4 % y
+                  municipios del 99 %.
+                </p>
+              )}
+              <p className="text-sm text-ink-700/80 mt-1.5">
+                <strong>Esto cuenta lengua, no identidad, y la diferencia es grande.</strong> El
+                censo le preguntó a toda la población si habla una lengua indígena:{' '}
+                {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} personas en el país. La pregunta
+                por considerarse indígena se hizo en el cuestionario ampliado, que es una muestra, y
+                da alrededor de {AUTOADSCRIPCION_MX.aproximado}, cerca de tres veces más. Esa cifra
+                no se puede repartir por municipio porque el INEGI la publica redondeada, así que el
+                número de arriba deja afuera a la mayoría de las personas indígenas de México.
+              </p>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                {FUENTE_CENSO_2020_MX.atribucion} · {FUENTE_CENSO_2020_MX.licencia}. En todo el país
+                son {CENSO_MX_PAIS.hablantes.toLocaleString('es-AR')} personas sobre{' '}
+                {CENSO_MX_PAIS.tresYMas.toLocaleString('es-AR')} de 3 años y más, en{' '}
+                {CENSO_MX_PAIS.municipios.toLocaleString('es-AR')} municipios —
+                {CENSO_MX_PAIS.municipiosSinHablantes} de ellos sin ningún hablante—.{' '}
+                {FUENTE_CENSO_2020_MX.transformacion}. Aparte, y sin sumarse,{' '}
+                {CENSO_MX_PAIS.afro.toLocaleString('es-AR')} personas del país se consideran
+                afromexicanas. El censo no desagrega por pueblo: la lista de los 71 pueblos la
+                publica el {REGISTRO_MX_FALTANTE.organismo} y {REGISTRO_MX_FALTANTE.motivo}.
+              </p>
+              </>}
+
+              {/* Guatemala. Lo que el informe tiene que hacer bien aca es no
+                  sumar: el INE cuenta Maya, Garifuna y Xinka por separado y no
+                  publica el total. Un informe impreso se discute despues sin
+                  nosotros, asi que la frase va pegada al numero y no al pie. */}
+              {(censoGt.estado === 'con_censo' || censoGt.estado === 'con_departamento') && (() => {
+                const depto = censoGt.departamento;
+                const t = censoGt.estado === 'con_censo' ? censoGt.municipio : depto;
+                const donde = censoGt.estado === 'con_censo'
+                  ? `${censoGt.municipio.municipio} (${depto.departamento})`
+                  : depto.departamento;
+                const mayor = puebloMayorGt(depto);
+                const top = comunidadesDestacadasGt(t.comunidades, 4);
+                return <>
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">
+                  Pueblo de pertenencia (Censo 2018, Guatemala)
+                </p>
+                <p className="text-sm text-ink-700/80">
+                  En {donde}, sobre {t.poblacion.toLocaleString('es-AR')} personas censadas:{' '}
+                  {t.maya.toLocaleString('es-AR')} del pueblo Maya —el{' '}
+                  {porcentaje(t.maya, t.poblacion)}%, contra {PORCENTAJES_PAIS_GT.maya}% en todo
+                  el país—, {t.xinka.toLocaleString('es-AR')} Xinka y{' '}
+                  {t.garifuna.toLocaleString('es-AR')} Garífuna.
+                  {censoGt.estado === 'con_departamento' && <>
+                    {' '}<strong>Este dato es del departamento entero y no del municipio</strong>
+                    {censoGt.municipioBuscado
+                      ? <>: el geocodificador devolvió «{censoGt.municipioBuscado}», que no es
+                          ninguno de los {depto.municipios.length} municipios de{' '}
+                          {depto.departamento}</>
+                      : <>: no se pudo determinar el municipio del punto</>}.
+                  </>}
+                </p>
+                <p className="text-sm text-ink-700/80 mt-1.5">
+                  <strong>Los tres no se suman acá, y no es un olvido.</strong> El INE publica cada
+                  pueblo por su cuenta y no publica un total «indígena»; sumarlos daría un número
+                  que se vería igual de oficial que los otros y que ningún cuadro del censo avala.
+                  {top.length > 0 && <>
+                    {' '}Dentro del pueblo Maya, las comunidades lingüísticas más numerosas de{' '}
+                    {censoGt.estado === 'con_censo' ? censoGt.municipio.municipio : depto.departamento}{' '}
+                    son {top.map(([n, p]) => `${n} (${p.toLocaleString('es-AR')})`).join(', ')}.
+                    Son una subdivisión de esos {t.maya.toLocaleString('es-AR')} mayas y suman
+                    exactamente ese número: no se agregan.
+                  </>}
+                </p>
+                {censoGt.estado === 'con_censo' && (() => {
+                  const otros = municipiosDestacadosGt(depto, mayor, 4)
+                    .filter(m => m.codigo !== censoGt.municipio.codigo);
+                  return otros.length > 0 ? (
+                    <p className="text-sm text-ink-700/80 mt-1.5">
+                      Los municipios con más población {ROTULO_PUEBLO_GT[mayor]} de{' '}
+                      {depto.departamento} son{' '}
+                      {otros.map(m => `${m.municipio} (${m[mayor].toLocaleString('es-AR')})`).join(', ')}.
+                    </p>
+                  ) : null;
+                })()}
+                <p className="text-[10px] text-ink-700/50 mt-1.5">
+                  {FUENTE_CENSO_2018_GT.atribucion} · {FUENTE_CENSO_2018_GT.licencia}. La pregunta
+                  por pueblo de pertenencia se le hizo a toda la población censada
+                  —{CENSO_GT_PAIS.poblacion.toLocaleString('es-AR')} personas en{' '}
+                  {CENSO_GT_PAIS.municipios} municipios— y las categorías del cuadro suman
+                  exactamente ese total: no hay «no declarado», así que el porcentaje es directo.
+                  El censo baja hasta lugar poblado y trae el centroide de cada uno; eso no se usa,
+                  porque un centroide censal no dibuja dónde vive un pueblo. No se encontró{' '}
+                  {REGISTRO_GT_FALTANTE.organismo}: {REGISTRO_GT_FALTANTE.motivo}.
+                </p>
+                </>;
+              })()}
+
+              {/* Los paises que entran solo con la cifra nacional. En el informe
+                  importa mas que en el panel que no se lea como un dato del
+                  predio, porque el informe se imprime y despues se discute sin
+                  nosotros: de ahi que la advertencia vaya en la misma oracion
+                  que el numero y no en una nota al pie. */}
+              {paisNac && <>
+              <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">
+                Pueblos originarios en {paisNac.pais} ({paisNac.operativo})
+              </p>
+              <p className="text-sm text-ink-700/80">
+                {paisNac.total !== null ? <>
+                  En todo {paisNac.pais} son {paisNac.total.toLocaleString('es-AR')} personas
+                  {(() => {
+                    const pct = porcentajeNacional(paisNac);
+                    if (!pct) return '';
+                    return paisNac.base !== null
+                      ? `, el ${pct}% de ${paisNac.base.toLocaleString('es-AR')} ${paisNac.baseDice}`
+                      : `, el ${pct}% segun ${paisNac.organismoSigla}`;
+                  })()}
+                  , en respuesta a «{paisNac.pregunta}».
+                </> : <>
+                  En todo {paisNac.pais}, el {paisNac.porcentajePublicado}% de las{' '}
+                  {paisNac.base?.toLocaleString('es-AR')} {paisNac.baseDice} contestó que sí a
+                  «{paisNac.pregunta}». {paisNac.organismoSigla} no publica un total de personas y
+                  acá no se calcula uno.
+                </>}{' '}
+                <strong>Este número es de todo el país y no del lugar del predio</strong>:{' '}
+                {paisNac.porQueNoHayDatoLocal}.
+              </p>
+              <ul className="mt-1.5 space-y-0.5">
+                {paisNac.loQueNoDice.map((t, i) => (
+                  <li key={i} className="text-[10px] text-ink-700/55 leading-relaxed">· {t}</li>
+                ))}
+              </ul>
+              <p className="text-[10px] text-ink-700/50 mt-1.5">
+                Fuente: {paisNac.fuente.label} · {paisNac.organismo} ({paisNac.organismoSigla}).{' '}
+                {paisNac.licencia}.
+                {paisNac.desglose.length > 0 && <> Desglose que publica la fuente:{' '}
+                  {paisNac.desglose.map(d => `${d.etiqueta} ${d.personas.toLocaleString('es-AR')}`).join(' · ')}.</>}
+                {paisNac.atribucionExigida && <> {paisNac.atribucionExigida}</>}
+              </p>
+              </>}
+
               {bioma && bioma.saberes.length > 0 && <>
               <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2 mt-4">Saberes ancestrales y tradicionales</p>
               <div className="space-y-2">
@@ -438,6 +1125,48 @@ export function InformeView({ datos, compartido = false }: Props) {
             {datos.entorno.areas_protegidas.length > 0 && (
               <p className="text-xs text-ink-700/70 mt-2">Áreas protegidas cercanas: {datos.entorno.areas_protegidas.slice(0, 4).join(', ')}.</p>
             )}
+
+            {/* Contexto actual: la actividad, nunca quién la realiza. Ver lib/contextoActual.ts. */}
+            {datos.entorno.contexto_actual?.consultado && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-ink-900 mb-2">
+                  Contexto actual: actividad industrial, agroindustria e infraestructura
+                  en {datos.entorno.contexto_actual.radio_km} km, y qué se cultiva en {RADIO_CULTIVO_KM} km
+                </p>
+                {datos.entorno.contexto_actual.presencias.length > 0 ? (
+                  <>
+                    <Table
+                      head={['Actividad', 'Cuántos', 'Distancia y rumbo']}
+                      rows={datos.entorno.contexto_actual.presencias.map(p => [
+                        `${ROTULO_CLASE[p.clase]} — ${titulo(p)}`,
+                        cantidadTexto(p),
+                        ubicacionTexto(p),
+                      ])}
+                      colAlign={['left', 'right', 'right']}
+                    />
+                    <p className="text-xs text-ink-700/70 mt-2">
+                      Distancia al borde del rasgo mapeado y rumbo hacia su centro; en ductos y
+                      líneas de alta tensión, al punto más cercano de la traza.
+                      La infraestructura eléctrica y los ductos se buscan en un radio de{' '}
+                      {RADIO_INFRAESTRUCTURA_KM} km y no en el del resto: no contaminan, restringen,
+                      y una restricción lejos no restringe.
+                      Los cultivos se buscan en un radio menor, de {RADIO_CULTIVO_KM} km, y sólo
+                      figuran los campos que declaran qué se siembra en ellos, que son una minoría:
+                      es un radio de vecindad y no un modelo de deriva de agroquímicos.
+                      Se nombra la actividad y no a quien la realiza.
+                      {datos.entorno.contexto_actual.truncado && ' Las cantidades son un piso: hay más de los que entran en una consulta.'}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-ink-700/70">
+                    No hay actividad industrial, agroindustria ni infraestructura de paso mapeada en OpenStreetMap dentro del radio,
+                    ni campos que declaren qué se siembra en ellos. La cobertura
+                    del mapa es despareja y se releva a mano: que no figure no significa que no exista.
+                  </p>
+                )}
+              </div>
+            )}
+
             <p className="text-xs text-ink-700/50 mt-2 italic">
               GBIF (biodiversidad) + OpenStreetMap — datos abiertos de ciencia ciudadana, orientativos.
             </p>
@@ -451,7 +1180,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               <StatBlock label="Elev. mínima" value={`${datos.topo.elev_min.toFixed(0)} m`} sub="s.n.m." />
               <StatBlock label="Elev. máxima" value={`${datos.topo.elev_max.toFixed(0)} m`} sub="s.n.m." />
               <StatBlock label="Desnivel" value={`${datos.topo.desnivel.toFixed(1)} m`} sub="máx − mín" />
-              <StatBlock label="Pendiente" value={`${datos.topo.pendiente_pct.toFixed(1)}%`} sub={`${datos.topo.pendiente_grados.toFixed(1)}°`} />
+              <StatBlock label="Pendiente general" value={`${datos.topo.pendiente_pct.toFixed(1)}%`} sub={`${datos.topo.pendiente_grados.toFixed(1)}° · de la punta más alta a la más baja`} />
             </div>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <StatBlock label="Elev. media" value={`${datos.topo.elev_media.toFixed(0)} m`} sub="centroide del terreno" />
@@ -523,9 +1252,29 @@ export function InformeView({ datos, compartido = false }: Props) {
             <div className="grid grid-cols-4 gap-3 mt-4 mb-4">
               <StatBlock label="Captación anual" value={`${datos.captacion.resultado.captacion_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.captacion_anual_litros.toLocaleString('es-AR')} L`} />
               <StatBlock label="Consumo anual" value={`${datos.captacion.resultado.consumo_anual_m3.toFixed(1)} m³`} sub="estimado" />
-              <StatBlock label="Balance anual" value={`${datos.captacion.resultado.balance_anual_m3 > 0 ? '+' : ''}${datos.captacion.resultado.balance_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.meses_deficit} mes/es c/ déficit`} />
-              <StatBlock label="Tanque recomendado" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub={`${Math.round(datos.captacion.resultado.tanque_recomendado_m3 * 1000).toLocaleString('es-AR')} L`} />
+              <StatBlock label="Balance anual" value={`${datos.captacion.resultado.balance_anual_m3 > 0 ? '+' : ''}${datos.captacion.resultado.balance_anual_m3.toFixed(1)} m³`} sub={`${datos.captacion.resultado.meses_deficit} ${datos.captacion.resultado.meses_deficit === 1 ? 'mes' : 'meses'} con déficit`} />
+              {/* Con el año cerrado esto es un tanque. Sin cerrar es el faltante
+                  del año, y sale con otro rótulo: un proyecto guardado antes del
+                  09/10/2026 no trae `tanque_cierra`, así que se deduce del balance. */}
+              {(datos.captacion.resultado.tanque_cierra ?? datos.captacion.resultado.balance_anual_m3 >= 0)
+                ? <StatBlock label="Tanque recomendado" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub={`${Math.round(datos.captacion.resultado.tanque_recomendado_m3 * 1000).toLocaleString('es-AR')} L`} />
+                : <StatBlock label="Lo que falta en el año" value={`${datos.captacion.resultado.tanque_recomendado_m3.toFixed(1)} m³`} sub="no es un tanque" />}
             </div>
+
+            {!(datos.captacion.resultado.tanque_cierra ?? datos.captacion.resultado.balance_anual_m3 >= 0) && (
+              <p className="text-xs text-ink-700/70 leading-relaxed mb-4">
+                El año no cierra: entra menos agua de la que sale, así que la curva
+                de masa con la que se dimensiona una cisterna nunca vuelve a
+                llenarse y lo de arriba no es un tanque sino el faltante del año.
+                Con {datos.captacion.resultado.captacion_anual_m3.toFixed(1)} m³ de
+                captación anual, un depósito más grande que eso no se llena nunca.
+                {datos.captacion.resultado.techo_necesario_m2 != null && <> Para que
+                cierre con el consumo declarado harían falta unos{' '}
+                <b>{datos.captacion.resultado.techo_necesario_m2.toLocaleString('es-AR')} m²</b>{' '}
+                de superficie captante con los mismos coeficientes; si no, hay que
+                bajar el consumo o traer agua de otra fuente.</>}
+              </p>
+            )}
 
             {/* Balance estacional */}
             <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2">Balance estacional</p>
@@ -565,6 +1314,18 @@ export function InformeView({ datos, compartido = false }: Props) {
             numero={sec.suelo!}
             titulo="Análisis de suelo"
           >
+            {/* El aviso de turba va antes de cualquier número: el informe se
+                imprime y se discute sin nosotros al lado, y "no drenar" no puede
+                quedar debajo de una tabla de texturas. */}
+            {datos.suelo.organico && (
+              <div className="mb-4 border-l-4 border-clay-700 bg-clay-100 px-3 py-2">
+                <p className="text-[11px] font-semibold text-clay-700 uppercase tracking-wide">
+                  {datos.suelo.organico.nivel === 'turba' ? 'Turba: no drenar' : 'Suelo orgánico'}
+                </p>
+                <p className="text-xs text-ink-900 leading-relaxed mt-0.5">{datos.suelo.organico.cautela}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed mt-1">{datos.suelo.organico.detalle}</p>
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="pH (0–5 cm)" value={String(datos.suelo.ph)} sub={datos.suelo.interp.ph.clase} />
               <StatBlock label="C. orgánico" value={`${datos.suelo.carbono_org} g/kg`} sub={datos.suelo.interp.carbono.clase} />
@@ -608,6 +1369,166 @@ export function InformeView({ datos, compartido = false }: Props) {
                   />
                 )}
               </>
+            )}
+
+            {/* La roca de abajo. Antes del «por qué», que la usa: cuando el
+                suelo no sigue al clima, el material parental suele ser la
+                explicación. */}
+            {datos.suelo.roca && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">La roca de abajo</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <StatBlock
+                    label="Unidad geológica"
+                    value={datos.suelo.roca.unidad}
+                    sub={datos.suelo.roca.edad.periodo ?? 'período no declarado'}
+                  />
+                  <StatBlock
+                    label="Edad"
+                    value={datos.suelo.roca.edad.desde_ma != null && datos.suelo.roca.edad.hasta_ma != null
+                      ? `${Math.round(datos.suelo.roca.edad.desde_ma)}–${Math.round(datos.suelo.roca.edad.hasta_ma)} Ma`
+                      : 's/d'}
+                    sub="millones de años"
+                  />
+                  <StatBlock
+                    label="Detalle del mapa"
+                    value={datos.suelo.roca.mapa.poligono_km2 != null
+                      ? `~${ladoEquivalenteKm(datos.suelo.roca.mapa.poligono_km2)} km`
+                      : 's/d'}
+                    sub="lado del polígono medio"
+                  />
+                </div>
+                {datos.suelo.roca.litologias.length > 0 && (
+                  <p className="text-xs text-ink-700/70">
+                    Litologías declaradas: {datos.suelo.roca.litologias.join(', ')}.
+                  </p>
+                )}
+                {datos.suelo.roca.familia && (
+                  <>
+                    <p className="text-xs font-semibold text-ink-800">
+                      {CONSECUENCIA[datos.suelo.roca.familia].titulo}
+                    </p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed">
+                      {CONSECUENCIA[datos.suelo.roca.familia].hereda}
+                    </p>
+                    <p className="text-xs text-clay-700 leading-relaxed">
+                      → {CONSECUENCIA[datos.suelo.roca.familia].cuidado}
+                    </p>
+                  </>
+                )}
+                <p className="text-xs text-ink-700/70 leading-relaxed">
+                  {ROTULO_CONFIANZA[confianzaDelMapa(datos.suelo.roca.mapa.poligono_km2)]}
+                  {datos.suelo.roca.mapa.poligono_km2 != null &&
+                    ` En este mapa el polígono promedio cubre ${datos.suelo.roca.mapa.poligono_km2.toLocaleString('es-AR')} km².`}
+                </p>
+                <p className="text-xs text-ink-700/70 leading-relaxed">
+                  {ROCA_NO_ES_MATERIAL_PARENTAL}
+                </p>
+                <p className="text-[10px] text-ink-700/50 leading-relaxed italic">
+                  {datos.suelo.roca.mapa.nombre} · {datos.suelo.roca.mapa.cita} — vía{' '}
+                  {FUENTE_MACROSTRAT.label}, {FUENTE_MACROSTRAT.licencia}.
+                </p>
+              </div>
+            )}
+
+            {/* Por qué el suelo es así. En el informe no hay «desplegar»: esto
+                se imprime y se discute sin nosotros, así que cada cautela va
+                entera y a la vista. */}
+            {porQue && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide">
+                  Por qué este suelo es así
+                </p>
+                <p className="text-xs text-ink-700/80 leading-relaxed">
+                  Un suelo es el resultado de cinco factores: clima, organismos, relieve, material
+                  parental y tiempo (Jenny, 1941). De los cinco, este informe conoce bien uno —el
+                  clima del punto, medido mes por mes—, así que lo que sigue no explica: predice
+                  qué suelo haría este clima y lo compara con el medido. Donde no coinciden, manda
+                  el material parental, la edad de la superficie o la posición en la ladera, y eso
+                  se dice en vez de inventar una causa.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <StatBlock label="Balance P/ETP" value={porQue.aridez.valor.toFixed(2).replace('.', ',')} sub={ROTULO_HUMEDAD[porQue.humedad]} />
+                  <StatBlock label="Media anual" value={`${porQue.tmedia_c.toFixed(1).replace('.', ',')} °C`} sub={ROTULO_TERMICO[porQue.termico]} />
+                  <StatBlock label="Meteorización" value={ROTULO_INTENSIDAD[porQue.intensidad].replace('Meteorización ', '')} sub={porQue.koppen ? `Köppen ${porQue.koppen}` : 'del clima del punto'} />
+                </div>
+
+                {porQue.lecturas.map((l, i) => (
+                  <div key={i} className="border-l-2 border-bone-200 pl-2.5">
+                    <p className="text-xs font-semibold text-ink-800">{l.titulo}</p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed mt-0.5">{l.porque}</p>
+                    <p className="text-xs text-ink-700/70 leading-relaxed mt-1">
+                      <span className="font-medium text-ink-700">Este clima haría:</span> {l.esperado}{' '}
+                      <span className="font-medium text-ink-700">El predio mide:</span> {l.medido}
+                    </p>
+                    {l.acuerdo === 'discrepa' && l.quienManda && (
+                      <p className="text-xs text-clay-700 leading-relaxed mt-1">
+                        No coinciden, y ahí está lo interesante: {l.quienManda}
+                      </p>
+                    )}
+                    {l.acuerdo === 'sin_prediccion' && (
+                      <p className="text-xs text-ink-700/60 mt-1">
+                        En este régimen el clima no permite predecir esta propiedad, así que no se predice.
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                {porQue.bt && (
+                  <p className="text-xs text-ink-700/80 leading-relaxed">
+                    <span className="font-semibold text-ink-800">La arcilla bajó.</span> La capa{' '}
+                    {porQue.bt.capa} tiene {porQue.bt.razon.toFixed(1).replace('.', ',')} veces la
+                    arcilla de la superficie: agua arrastrando arcilla hacia abajo durante mucho
+                    tiempo, que donde se deposita arma una capa más pesada y frena el agua y las
+                    raíces. Es una sospecha y no un diagnóstico — el criterio del horizonte
+                    argílico (USDA) pide 1,2× dentro de 30 cm verticales, sobre horizontes
+                    descriptos a campo, y acá se compara entre profundidades fijas y suavizadas.
+                  </p>
+                )}
+
+                <div className="border-l-2 border-moss-200 pl-2.5">
+                  <p className="text-xs font-semibold text-ink-800">
+                    La vida del suelo: {porQue.biologia.regimen.toLowerCase()}
+                  </p>
+                  {porQue.biologia.velocidad && (
+                    <p className="text-xs text-ink-700/80 mt-0.5">
+                      A esta temperatura la materia orgánica se descompone{' '}
+                      {porQue.biologia.velocidad.min.toFixed(2).replace('.', ',')}× a{' '}
+                      {porQue.biologia.velocidad.max.toFixed(2).replace('.', ',')}× respecto de un
+                      sitio de 10 °C. La banda es ancha a propósito: el factor Q10 está entre 1,5 y
+                      2,5 según el sustrato y el sitio, y un solo número sería precisión falsa.
+                    </p>
+                  )}
+                  <p className="text-xs text-ink-700/80 leading-relaxed mt-1">{porQue.biologia.detalle}</p>
+                  <p className="text-xs text-moss-700 leading-relaxed mt-1">→ {porQue.biologia.manejo}</p>
+                </div>
+
+                {porQue.huella && (
+                  <div className="border-l-2 border-moss-200 pl-2.5">
+                    <p className="text-xs font-semibold text-ink-800">
+                      Este suelo lo construyó {porQue.huella.parecido === 'bosque' ? 'el monte'
+                        : porQue.huella.parecido === 'pastizal' ? 'el pasto'
+                        : porQue.huella.parecido === 'matorral' ? 'un matorral de raíz profunda'
+                        : 'algo que no es la vegetación de arriba'}
+                    </p>
+                    <p className="text-xs text-ink-700/80 leading-relaxed mt-0.5">
+                      El {porQue.huella.fraccion_0_20_pct} % del carbono del primer metro está en los
+                      primeros 20 cm, sobre un stock de {porQue.huella.stock_t_ha_100} t/ha.{' '}
+                      {porQue.huella.lectura}
+                    </p>
+                    <p className="text-xs text-ink-700/60 leading-relaxed mt-1">
+                      La referencia son 2.700 perfiles y no este predio: Jobbágy y Jackson (2000)
+                      midieron cerca del 50 % en bosques, 42 % en pastizales y 33 % en matorrales.
+                      La distribución dice quién puso el carbono, no qué especie había; un suelo
+                      arado durante décadas puede haber perdido la firma original.
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-ink-700/50 leading-relaxed">
+                  Fuentes de esta sección: {FUENTES_POR_QUE.map(f => f.cita).join(' · ')}
+                </p>
+              </div>
             )}
 
             {datos.suelo.interp.recomendaciones.length > 0 && (
@@ -681,7 +1602,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               <StatBlock label="Confiabilidad" value={`${datos.represa.confiabilidad_pct}%`} sub={datos.represa.aguanta ? 'aguanta el año' : 'con déficit'} />
               <StatBlock label="Capacidad" value={volumenM3(datos.represa.capacidad_m3)} sub={volumenEnLitros(datos.represa.capacidad_m3)} />
               <StatBlock label="Cuenca de aporte" value={`${datos.represa.cuenca_ha} ha`} sub="escurrimiento" />
-              <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="por mes" />
+              <StatBlock label="Demanda" value={`${datos.represa.demanda_m3_mes} m³`} sub="promedio por mes" />
             </div>
             <Table
               head={['Parámetro', 'Valor']}
@@ -689,6 +1610,13 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ['Aporte anual estimado', `${datos.represa.aporte_anual_m3.toLocaleString('es-AR')} m³`],
                 ['Volumen mínimo (mes crítico)', `${datos.represa.volumen_min_m3.toLocaleString('es-AR')} m³`],
                 ['Demanda anual', `${(datos.represa.demanda_m3_mes * 12).toLocaleString('es-AR')} m³`],
+                // El consumo del rodeo sale de la temperatura de cada mes, así que
+                // el mes de más calor pide bastante más que el promedio. Mostrar
+                // sólo el promedio escondía justo el mes que dimensiona la obra.
+                ...(datos.represa.demanda_m3_mes_max !== undefined && datos.represa.mes_demanda_max !== undefined
+                  ? [[`Demanda del mes de más calor (${MESES[datos.represa.mes_demanda_max] ?? ''})`,
+                      `${datos.represa.demanda_m3_mes_max.toLocaleString('es-AR')} m³`]] as Array<[string, string]>
+                  : []),
               ]}
               colAlign={['left', 'right']}
             />
@@ -735,7 +1663,7 @@ export function InformeView({ datos, compartido = false }: Props) {
               rows={datos.zonas.map(z => [
                 z.nombre,
                 CATEGORIAS_ZONA[z.categoria].label,
-                z.area_ha.toFixed(4),
+                numeroAR(z.area_ha, 2),
                 Math.round(z.area_m2).toLocaleString('es-AR'),
                 z.notas || '—',
               ])}
@@ -754,7 +1682,7 @@ export function InformeView({ datos, compartido = false }: Props) {
                     head={['Categoría', 'Área (ha)', '% del total']}
                     rows={Object.entries(porCategoria).map(([cat, area]) => [
                       CATEGORIAS_ZONA[cat as keyof typeof CATEGORIAS_ZONA]?.label ?? cat,
-                      (area / 10000).toFixed(4),
+                      numeroAR(area / 10000, 2),
                       total > 0 ? `${((area / total) * 100).toFixed(1)}%` : '—',
                     ])}
                     colAlign={['left', 'right', 'right']}
@@ -810,6 +1738,37 @@ export function InformeView({ datos, compartido = false }: Props) {
           </Section>
         )}
 
+        {/* ── Las tres entregas de papel ──
+            Van DESPUES de todo el analisis y ANTES de los anexos, porque no son
+            anexos: son lo que el productor se lleva al campo. La planilla se
+            llena con un nivel, la lista se lleva a la ferreteria con el estado
+            de cada renglon marcado a lapiz, y el plan por etapas contesta la
+            pregunta del lunes. Cada una arranca en pagina nueva al imprimir.
+            La cuenta esta en lib/planilla.ts, lib/materiales.ts y lib/etapas.ts. */}
+        {datos.mojones.length >= 3 && (
+          <PlanillaDeReplanteo mojones={datos.mojones} topo={datos.topo ?? null} numero="P" />
+        )}
+        <ListaDeMaterialesSeccion
+          metricas={datos.metricas ?? null}
+          mojones={datos.mojones}
+          red={datos.redAgua ?? null}
+          capacidadRepresa_m3={datos.represa?.capacidad_m3 ?? null}
+          numero="M"
+        />
+        <PlanDeEtapas
+          clima={datos.clima ?? null}
+          suelo={datos.suelo ?? null}
+          hay={{
+            represa:          !!datos.represa,
+            redAgua:          !!datos.redAgua,
+            riego:            !!datos.riego,
+            cierrePerimetral: datos.mojones.length >= 3,
+            estructuras:      !!(datos.zonas && datos.zonas.length),
+            pasturas:         !!datos.cobertura,
+          }}
+          numero="E"
+        />
+
         {/* ── Anexo: fuentes y metodología ── */}
         <Section numero="A" titulo="Anexo — fuentes y metodología">
           <ul className="text-xs text-ink-700/70 space-y-1 leading-relaxed list-disc pl-4">
@@ -818,6 +1777,7 @@ export function InformeView({ datos, compartido = false }: Props) {
             {datos.clima && <li><span className="font-medium">Clima:</span> {datos.clima.fuente ?? 'NASA POWER / Open-Meteo'}.</li>}
             {datos.extremos && <li><span className="font-medium">Extremos:</span> {datos.extremos.fuente} ({datos.extremos.periodo}).</li>}
             {datos.suelo && <li><span className="font-medium">Suelo:</span> SoilGrids (ISRIC); agua útil por pedotransferencia Saxton-Rawls (2006).</li>}
+            {datos.suelo?.roca && <li><span className="font-medium">Geología:</span> {FUENTE_MACROSTRAT.atribucion}. {datos.suelo.roca.mapa.cita}</li>}
             {datos.cobertura && <li><span className="font-medium">Cobertura:</span> ESA WorldCover 10 m ({datos.cobertura.anio}).</li>}
             {datos.entorno && <li><span className="font-medium">Biodiversidad:</span> GBIF; entorno OpenStreetMap.</li>}
             {datos.carbono && <li><span className="font-medium">Carbono:</span> coeficientes medios de literatura (orientativo).</li>}
@@ -827,6 +1787,16 @@ export function InformeView({ datos, compartido = false }: Props) {
             Verificar en campo antes de ejecutar obras.
           </p>
         </Section>
+
+        {/* ── Anexo B: el modelo declarado ──
+            Va DESPUES del anexo A y no adentro, porque contesta otra pregunta:
+            el A dice de donde salio cada dato y el B dice cuanto puede valer
+            cada numero. Se monta siempre que haya predio dibujado; si el modelo
+            de elevacion del lugar no publica una exactitud vertical, el anexo lo
+            dice en vez de declarar una incertidumbre inventada. */}
+        {datos.mojones.length >= 3 && (
+          <ModeloDeclaradoAnexo mojones={datos.mojones} topo={datos.topo ?? null} numero="B" />
+        )}
 
         {/* Pie de página */}
         <footer className="border-t-2 border-bone-200 pt-6 text-xs text-ink-700/50 leading-relaxed">
@@ -927,7 +1897,9 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
   }
   if (datos.topo) {
     const p = datos.topo.pendiente_pct;
-    ind.push({ label: 'Pendiente media', value: `${p.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d', tono: p > 15 ? 'alert' : p > 8 ? 'warn' : 'ok' });
+    // «General»: desnivel entre las dos puntas sobre su distancia. Ver el
+    // comentario de `pendiente_pct` en `lib/topografia.ts`.
+    ind.push({ label: 'Pendiente general', value: `${p.toFixed(1)} %`, sub: datos.topo.orientacion ?? 'orientación s/d', tono: p > 15 ? 'alert' : p > 8 ? 'warn' : 'ok' });
   }
   if (datos.suelo) {
     const aw = datos.suelo.agua_util.total_mm_100;
@@ -946,8 +1918,8 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
   if (mh && mh.length) notas.push(`Riesgo de heladas (${mh.join(', ')}): elegir especies y fechas de siembra acordes.`);
   if (datos.topo) {
     const p = datos.topo.pendiente_pct;
-    if (p > 15) notas.push(`Pendiente media pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
-    else if (p > 8) notas.push(`Pendiente media moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
+    if (p > 15) notas.push(`Pendiente general pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
+    else if (p > 8) notas.push(`Pendiente general moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
   }
   if (datos.suelo) {
     if (datos.suelo.agua_util.total_mm_100 < 100) notas.push(`Baja capacidad de agua útil (${Math.round(datos.suelo.agua_util.total_mm_100)} mm): suelos de poca retención; aportar materia orgánica.`);
@@ -1053,12 +2025,15 @@ function Table({
 // página al imprimir a PDF. print-color-adjust para que salga en el PDF.
 function MarcaAgua() {
   const filas = Array.from({ length: 9 });
-  const host = process.env.NEXT_PUBLIC_ACEQUIA_APP_HOST ?? 'terreno.arteytierra.org';
-  const texto = `acequia · ${host}`;
+  // El host sale de `lib/sitio.ts` y no de la env var a secas: el valor por
+  // defecto que había acá era `terreno.arteytierra.org`, el dominio anterior a
+  // la mudanza, así que cualquier entorno sin la variable estampaba la marca de
+  // agua con una dirección vieja.
+  const texto = `acequia · ${ACEQUIA_APP_HOST}`;
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[5] overflow-hidden select-none"
+      className="informe-marca pointer-events-none fixed inset-0 z-[5] overflow-hidden select-none"
       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
     >
       <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[28deg]">

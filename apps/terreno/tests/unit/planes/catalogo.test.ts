@@ -105,6 +105,29 @@ describe('catálogo de planes', () => {
     expect(sql).not.toContain('ELSE NULL');
   });
 
+  it('la cuenta interna se saltea el tope, y sólo si la escribió service_role', () => {
+    // La 0063 convirtió `suscripciones.fundador` —una etiqueta que no leía nadie—
+    // en el permiso de las cuentas internas del estudio. Sirve como permiso
+    // porque la RLS reserva la escritura de esa tabla a service_role; si alguien
+    // le aflojara la condición de `provider`, un alta mal mapeada desde un
+    // webhook de pago quedaría sin tope. Queda fijado acá.
+    const raiz = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..');
+    const dir = join(raiz, 'supabase/migrations');
+    const archivo = readdirSync(dir)
+      .filter((n) => n.endsWith('.sql'))
+      .sort()
+      .reverse()
+      .find((n) => readFileSync(join(dir, n), 'utf8').includes('lim := CASE plan_usuario'));
+    const sql = readFileSync(join(dir, archivo!), 'utf8')
+      .split("\n")
+      .filter((linea) => !linea.trimStart().startsWith('--'))
+      .join("\n")
+      .replace(/[ 	]+/g, ' ');
+    expect(sql).toContain("s.fundador AND s.provider = 'manual'");
+    // El salteo va ANTES de calcular el tope; si quedara después no serviría.
+    expect(sql.indexOf('RETURN NEW;')).toBeLessThan(sql.indexOf('lim := CASE plan_usuario'));
+  });
+
   it('el informe con marca propia arranca en Profesional', () => {
     expect(can('personal', 'informe.white_label')).toBe(false);
     expect(can('profesional', 'informe.white_label')).toBe(true);

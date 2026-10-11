@@ -48,6 +48,12 @@ export interface RedAguaInputs {
   artefactos?:   Array<{ artefactoId: string; cantidad: number }>;
   /** Sumar el caudal continuo del sector de riego ya calculado. */
   sumarRiego?:   boolean;
+  /**
+   * Cuántas viviendas IGUALES alimenta esta red. Con más de una entra el
+   * coeficiente de simultaneidad entre viviendas (`simultaneidadConjunto`), que
+   * es el que hace que la red de un loteo no se dimensione como N redes de una.
+   */
+  viviendas?:    number;
 }
 
 // ─── Materiales (coeficiente C de Hazen-Williams) ─────────────────────────────
@@ -105,8 +111,56 @@ export function velocidad(Q: number, D: number): number {
   return Q / (Math.PI * D * D / 4);
 }
 
-/** Clase PN mínima que soporta una presión estática dada (m.c.a.), con margen. */
-export function claseNecesaria(presionMax_mca: number, margen = 1.1): number {
+// ─── Los dos límites de diseño, que ahora tienen fuente ───────────────────────
+
+/**
+ * Velocidad máxima a sección llena (m/s) = 5 pies/s.
+ *
+ * USDA NRCS (2021), «Conservation Practice Standard — Irrigation Pipeline
+ * (Code 430)», sección de caño plástico: *«When operating at design capacity, do
+ * not exceed 5-feet-per-second velocity in the full-pipe flow in pipelines with
+ * valves or some other flow control appurtenance placed within the pipeline or
+ * at the downstream end.»*
+ *
+ * **Esto corrige un número sin fuente.** acequia usaba 2,0 m/s por defecto, que
+ * es el valor de pulgar que circula para redes de agua potable. La norma de
+ * cañerías de riego —que es el caso de este módulo— pone el techo en 1,52 m/s, y
+ * no por fricción: por el golpe de ariete que produce cerrar la válvula del
+ * final. Toda línea que termina en una canilla o en un bebedero con flotante cae
+ * en esa condición.
+ */
+export const VEL_MAX_NRCS_MS = 5 * 0.3048;
+
+/**
+ * Fracción de la presión nominal que se puede usar como presión de trabajo.
+ *
+ * Misma norma: *«As a safety factor against surge, keep the working pressure at
+ * any point at or below 72 percent of the pressure rating of the pipe.»*
+ *
+ * **Esto corrige otro número sin fuente.** El margen de `claseNecesaria` era
+ * 1,1 —o sea que admitía usar el 91 % de la nominal— cuando la norma deja usar
+ * el 72 %. El margen correcto es 1 / 0,72 = 1,39, y en algunos casos sube una
+ * clase de caño. Es más caro y es lo que dice la norma.
+ */
+export const FRACCION_PRESION_TRABAJO_NRCS = 0.72;
+export const MARGEN_PRESION_NRCS = 1 / FRACCION_PRESION_TRABAJO_NRCS;
+
+/**
+ * Carga máxima admisible en un caño sin clase de presión declarada (m.c.a.).
+ *
+ * Misma norma: *«If the pipe is not pressure rated, the maximum allowable
+ * pressure shall be 25 feet of head or the maximum pressure as specified by the
+ * manufacturer for the pipe and connecting joints used.»* Son 7,6 m.c.a., y es
+ * el caso de casi toda manguera de ferretería.
+ */
+export const CARGA_MAX_SIN_CLASE_MCA = 25 * 0.3048;
+
+/**
+ * Clase PN mínima que soporta una presión estática dada (m.c.a.).
+ *
+ * El margen por defecto sale de la norma: ver `MARGEN_PRESION_NRCS`.
+ */
+export function claseNecesaria(presionMax_mca: number, margen = MARGEN_PRESION_NRCS): number {
   const objetivo = presionMax_mca * margen;
   const c = CLASES_PN.find(x => x.mca >= objetivo);
   return c ? c.pn : CLASES_PN[CLASES_PN.length - 1]!.pn;
@@ -185,7 +239,7 @@ export function analizarLinea(p: ParamsLinea): ResultadoLinea | null {
   for (const e of estaciones) if (e.presion_mca < min.presion_mca) min = e;
   const estaticaMax = estaciones.reduce((m, e) => Math.max(m, e.presion_estatica_mca), 0);
 
-  const velMax = p.velMax_ms ?? 2.0;
+  const velMax = p.velMax_ms ?? VEL_MAX_NRCS_MS;
   const presionMin = p.presionMin_mca ?? 0;
   const advertencias: string[] = [];
   if (vel > velMax)   advertencias.push(`Velocidad alta (${vel.toFixed(2)} m/s > ${velMax} m/s): riesgo de golpe de ariete y erosión. Subí el diámetro.`);
@@ -223,7 +277,7 @@ export interface SugerenciaDiametro {
 export function diametroMinimo(
   base: Omit<ParamsLinea, 'D_interior_m'>,
   presionRequerida_mca: number,
-  velMax_ms = 2.0,
+  velMax_ms = VEL_MAX_NRCS_MS,
 ): SugerenciaDiametro | null {
   for (const d of DIAMETROS) {
     const r = analizarLinea({ ...base, D_interior_m: d.interior_mm / 1000, presionMin_mca: presionRequerida_mca, velMax_ms });

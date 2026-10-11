@@ -1,0 +1,48 @@
+{
+  "pais": "Haití",
+  "iso3": "HTI",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué; existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": null,
+    "organismo": "Institut Haïtien de Statistique et d'Informatique (IHSI)",
+    "anio": null,
+    "fecha_relevamiento": null,
+    "pregunta": null,
+    "universo": null,
+    "total_declarado": null,
+    "poblacion_base": null,
+    "url_cuadros": null,
+    "urls_archivos": [],
+    "niveles": [],
+    "hay_desagregado_por_pueblo": null,
+    "hay_desagregado_por_territorio": null,
+    "sin_declarar_pueblo": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: ihsi.gouv.ht responde, pero no busqué en él una pregunta étnica. No escribo nada sobre el censo."
+  },
+  "pueblos": [],
+  "lo_que_no_dice": [
+    "No revisado."
+  ],
+  "trampas": [],
+  "notas": "Pendiente."
+}

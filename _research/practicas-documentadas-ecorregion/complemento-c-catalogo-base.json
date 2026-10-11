@@ -1,0 +1,81 @@
+[
+  {
+    "fichaId": "bosque_tropical_seco_mesoamericano",
+    "practica": "Milpa maya peninsular como mosaico agroforestal",
+    "periodo": "Más de 3.500 años hasta la actualidad",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Agricultores mayas peninsulares asocian maíz, frijol, calabaza y otras especies, y alternan parcelas cultivadas con vegetación secundaria en recuperación. El barbecho forestal devuelve biomasa y nutrientes a suelos kársticos someros y pobres, mientras la diversidad de parcelas distribuye el riesgo frente a huracanes, incendios y variabilidad de lluvias.",
+    "fuentes": [
+      {
+        "label": "FAO GIAHS — Ich Kool: Mayan milpa of the Yucatan peninsula",
+        "url": "https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en"
+      }
+    ],
+    "verificacion": "The Peninsular Mayan milpa has sustained the population of the Yucatan Peninsula for more than 3,500 years until today"
+  },
+  {
+    "fichaId": "atlantico_templado_oceanico",
+    "practica": "Praderas de agua para producir heno y pasto",
+    "periodo": "Desde la Edad Media hasta fines del siglo XIX; supervivencias posteriores puntuales",
+    "tipo": "agua",
+    "vigencia": "en_retroceso",
+    "detalle": "Agricultores ingleses desviaban agua de ríos y arroyos por canales regulables para hacerla correr sobre la pradera y devolverla luego al cauce. El flujo controlado depositaba limo fértil y adelantaba el crecimiento del pasto sin mantener el terreno anegado, elevando la producción de heno y el valor del pastoreo posterior al corte.",
+    "fuentes": [
+      {
+        "label": "English Heritage — History of Meadows",
+        "url": "https://www.english-heritage.org.uk/learn/histories/history-of-meadows/"
+      },
+      {
+        "label": "Historic England — Water Meadows: Introductions to Heritage Assets",
+        "url": "https://historicengland.org.uk/images-books/publications/iha-water-meadows/"
+      }
+    ],
+    "verificacion": "Water meadows were first developed by medieval farmers, and the practice continued until the late Victorian period."
+  },
+  {
+    "fichaId": "templado_continental_europeo",
+    "practica": "Red de estanques de peces para producción y amortiguación de crecidas",
+    "periodo": "Siglos XV y XVI hasta la actualidad",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "Las comunidades de la cuenca de Třeboň mantienen una red de 460 estanques y lagos artificiales conectada con la llanura de inundación del Lužnice. El sistema produce principalmente carpas y retiene agua durante crecidas, de modo que la infraestructura productiva también reduce el riesgo de inundación y conserva humedales.",
+    "fuentes": [
+      {
+        "label": "UNESCO — Addressing climate-related risks and economic development in Třeboň",
+        "url": "https://www.unesco.org/en/articles/addressing-climate-related-risks-and-economic-development-go-hand-hand-trebon"
+      }
+    ],
+    "verificacion": "network of 460 artificial fishponds and lakes that were constructed in the 15th and 16th century"
+  },
+  {
+    "fichaId": "estepa_pontica_panonica",
+    "practica": "Pastoreo extensivo de razas rústicas en la puszta",
+    "periodo": "Más de dos milenios hasta la actualidad",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "La sociedad pastoril de Hortobágy conduce razas ganaderas rústicas adaptadas al mosaico de pastizales alcalinos, estepas, praderas y humedales de la gran llanura húngara. El uso extensivo y estacional, hoy concentrado entre abril y octubre, conserva el carácter abierto del paisaje y evita sustituirlo por agricultura intensiva.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Hortobágy National Park, the Puszta",
+        "url": "https://whc.unesco.org/en/list/474/"
+      }
+    ],
+    "verificacion": "Traditional forms of land use, such as the grazing of domestic animals, have been present in this pastoral society for more than two millennia."
+  },
+  {
+    "fichaId": "boreal_nordico_turberas",
+    "practica": "Siega de heno en turberas para la alimentación invernal",
+    "periodo": "Desde comienzos de la Edad Media; abandono general durante el siglo XX",
+    "tipo": "ganaderia",
+    "vigencia": "historica",
+    "detalle": "En el norte costero de Suecia se segaban prácticamente todas las turberas aptas para obtener heno destinado al ganado durante el invierno. Muchos sitios se cortaban en años alternos para permitir la reposición de nutrientes y algunos se inundaban artificialmente; la práctica declinó cuando fertilizantes, forrajes cultivados y maquinaria cambiaron la economía rural.",
+    "fuentes": [
+      {
+        "label": "Norstedt et al. — From Haymaking to Wood Production: Past Use of Mires in Northern Sweden",
+        "url": "https://www.diva-portal.org/smash/get/diva2%3A1528964/FULLTEXT01.pdf"
+      }
+    ],
+    "verificacion": "practically all mires suitable for hay production were in use already in the beginning of the Middle Ages"
+  }
+]

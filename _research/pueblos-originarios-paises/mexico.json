@@ -1,0 +1,86 @@
+{
+  "pais": "México",
+  "iso3": "MEX",
+  "montado": "censo, con dato local por municipio (27/09/2026)",
+  "registro": {
+    "existe": true,
+    "organismo": "INPI — Instituto Nacional de los Pueblos Indígenas",
+    "nombre": "Catálogo Nacional de Pueblos y Comunidades Indígenas y Afromexicanas",
+    "que_cuenta": "Una fila es una comunidad indígena o afromexicana identificada, con su pueblo y su municipio. Es declarativo y no constitutivo: no crea ni extingue derechos, y no estar en el catálogo no le quita a una comunidad su carácter de sujeto de derecho público.",
+    "url_pagina": "https://catalogo.inpi.gob.mx/",
+    "url_archivo": "https://catalogo.inpi.gob.mx/wp-content/uploads/2024/08/2025_02_21_MAT_inpi.pdf",
+    "formato": "sitio web consultable + PDF del Diario Oficial de la Federación",
+    "fecha_distribucion": "2025-02-21",
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": "no_dice",
+    "niveles": ["nacional", "pueblo", "municipio", "comunidad"],
+    "tiene_coordenadas": false,
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: catalogo.inpi.gob.mx **sí abre desde acá**, al contrario de lo que decía el relevamiento que llegó por chat (que reportaba un error de certificado TLS). Devuelve 200 y 56 KB. Es un WordPress con API REST (`/wp-json/`, con el namespace `wpda` del plugin WP Data Access), tres accesos —«consulta catálogo por pueblo», «consulta información por comunidad», «validación de constancias»—, una página /cedulas/ y el PDF del DOF del 21/02/2025 colgado en wp-content. O sea: el dato es accesible. Lo que falta es el permiso, no el acceso, y son dos cosas distintas.",
+    "por_que_no_se_monta": "Ninguna página del catálogo declara qué se puede hacer con la información. Es un registro de identidades de comunidades concretas, no una estadística agregada, así que la asimetría pesa más que en otros casos: publicarlo sin autorización expresa no es un riesgo legal nuestro, es usar el nombre de una comunidad sin haber preguntado. Queda afuera hasta que el INPI conteste."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "INEGI — Instituto Nacional de Estadística y Geografía",
+    "anio": 2020,
+    "fecha_relevamiento": "2020-03-15",
+    "pregunta": "«¿(NOMBRE) habla algún dialecto o lengua indígena?», en el cuestionario básico, a las personas de 3 años y más.",
+    "universo": "Población de 3 años y más: 119.976.584 personas, de una población total de 126.014.024.",
+    "total_declarado": 7364645,
+    "poblacion_base": 119976584,
+    "url_cuadros": "https://www.inegi.org.mx/programas/ccpv/2020/",
+    "urls_archivos": [
+      "https://www.inegi.org.mx/contenidos/programas/ccpv/2020/datosabiertos/iter/iter_01_cpv2020_csv.zip",
+      "https://www.inegi.org.mx/inegi/terminos.html"
+    ],
+    "niveles": ["nacional", "entidad federativa", "municipio", "localidad"],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": true,
+    "licencia": "Términos de Libre Uso de la Información del INEGI",
+    "licencia_url": "https://www.inegi.org.mx/inegi/terminos.html",
+    "uso_comercial": "si",
+    "verificado": true,
+    "como_se_verifico": "2026-09-27: bajé los 32 archivos ITER («Principales resultados por localidad») del portal de datos abiertos del Censo 2020 y extraje las filas de total. La suma de los 2.469 municipios y la suma de las 32 entidades dan, por separado y exacto, los mismos cinco números: 7.364.645 hablantes de lengua indígena de 3 años y más, 865.972 de ellos sin hablar español, 119.976.584 personas de 3 años y más, 126.014.024 habitantes y 2.576.213 personas que se consideran afromexicanas. El total de hablantes coincide con la cifra que trajo el relevamiento por chat, que llegó por otro camino. Leí además los términos de uso en inegi.org.mx: dicen textual «Puede explotar comercialmente la información, utilizándola como insumo para generar otros productos o servicios», y el archivo de metadatos de cada entidad del ITER declara esa misma URL como su licencia."
+  },
+  "pueblos": [],
+  "pueblos_no_montados": {
+    "de_donde_saldrian": "Los rótulos del Catálogo Nacional del INPI, que es la única lista oficial de pueblos de México. El censo no desagrega por pueblo.",
+    "leidos_del_sitio_el_27_09_2026": [
+      "Afromexicano", "Akateko", "Amuzgo", "Ayapaneco", "Caxcan", "Ch'ol", "Chatino",
+      "Chichimeca", "Chinanteco", "Chocholteco", "Chontal de Oaxaca", "Chontal de Tabasco",
+      "Chuj", "Coca", "Cochimí", "Comcaac / Seri", "Cora", "Cucapá", "Cuicateco",
+      "Guarijío", "Ikoots o Huave", "Ixcateco", "Ixil", "Jakalteko", "K'iche'", "Kaqchikel",
+      "Kickapoo", "Kiliwa", "Kumiai", "Lacandón", "Mam", "Matlatzinca o Pirinda", "Maya",
+      "Mayo", "Mazahua", "Mazateco", "Me'phaa o Tlapaneco", "Meshikan", "Mixe", "Mixteco",
+      "Mocho o Qato'k", "N'dee o N'nee o Ndé", "N'guiva o Popoloca", "Nahua / Náhuatl",
+      "O'dam / Au'dam / Tepehuano del sur", "Otomí", "P'urhépecha", "Pai pai", "Pima",
+      "Popoluca", "Q'anjob'al", "Q'eqchi'", "Rarámuri o Ralámuli", "Tacuate", "Teének o Huasteco",
+      "Tepehua", "Texistepequeño", "Tlahuica", "Tohono O'otham o Pápago", "Tojolabal",
+      "Triqui", "Tseltal", "Tsotsil", "Tutunakuj o Totonaca", "Wixárika", "Xi'iuy o Pame",
+      "Yoeme / Yaqui", "Yoreme / Mayo", "Zapoteco", "Zoque", "Ódami / Tepehuano del norte"
+    ],
+    "advertencia_sobre_esta_lista": "Se leyó del filtro «consulta catálogo por pueblo» del sitio, no del texto del DOF, y algunos rótulos aparecen dos veces en el HTML con formas distintas —«Seri» además de «Comcaac / Seri», «Pirinda» además de «Matlatzinca o Pirinda», «Nahua» además de «Nahua / Náhuatl»—, así que el conteo exacto no se afirma. La lista está acá para saber de qué estamos hablando, no para montarla.",
+    "correccion_al_relevamiento": "El relevamiento que llegó por chat decía que siete rótulos del catálogo son denominaciones que los propios pueblos rechazan —Apache, Chontal de Tabasco, Huave, Huichol, Pápago, Tarasco, Tlapaneco— y que habría que arrastrar la nota del INPI. Leído el sitio hoy, **el INPI ya escribe la mayoría con el endónimo adelante**: «N'dee o N'nee o Ndé» y no Apache, «Wixárika» y no Huichol, «P'urhépecha» y no Tarasco, «Ikoots o Huave», «Me'phaa o Tlapaneco», «Tohono O'otham o Pápago». El único de los siete que sigue apareciendo sólo con el exónimo en este listado es «Chontal de Tabasco». Si algún día se monta, la regla de acequia —si la fuente nombra al pueblo, se lo nombra como lo nombra la fuente— hoy nos haría escribir los endónimos."
+  },
+  "lo_que_no_dice": [
+    "El censo mexicano mide dos cosas distintas y esta capa monta una. El cuestionario básico, que se le aplica a toda la población, pregunta por **lengua**: 7.364.645 hablantes. La **autoadscripción** —si la persona se considera indígena— se pregunta en el cuestionario ampliado, que es muestra, y da alrededor de 23,2 millones: cerca de tres veces más gente.",
+    "La autoadscripción no se monta porque el INEGI la publica redondeada («23,2 millones») al ser una estimación muestral, y repartir un número redondeado entre 2.469 municipios sería inventarlo. Tampoco se le resta nada: restarle 7.364.645 a un número redondeado daría una precisión que no existe.",
+    "No hay desagregado por pueblo: el censo pregunta si se habla una lengua indígena, no cuál pueblo. La lista de pueblos es del INPI y no está montada.",
+    "Las 2.576.213 personas que se consideran afromexicanas o afrodescendientes son otra pregunta y otra población. Se muestran aparte, rotuladas, y no se suman con los hablantes."
+  ],
+  "trampas": [
+    "El INEGI publica también un indicador de «población en hogares indígenas» de 11.800.247 personas, construido con el criterio del INPI, y en su propia presentación lo rotula «población indígena». No es ni hablantes ni autoadscripción: es un conteo de personas que viven en cierto tipo de hogar. Es la confusión más fácil de cometer al montar esto y por eso queda escrita.",
+    "El denominador de los hablantes NO es la población total. La pregunta se le hizo a las personas de 3 años y más, así que el porcentaje va sobre 119.976.584 y da 6,1 %. Sobre los 126.014.024 daría 5,8 %, que contesta otra pregunta.",
+    "Oaxaca tiene dos municipios llamados «San Juan Mixtepec» y dos llamados «San Pedro Mixtepec»: el ITER escribe el nombre sin el distrito que los distingue. Los dos San Pedro Mixtepec son 1.849 hablantes sobre 47.023 personas (3,9 %) y 884 sobre 935 (94,5 %). Elegir el equivocado es errarle por veinticuatro veces, así que el módulo no elige: baja la respuesta a la entidad y dice por qué.",
+    "Hay 90 nombres de municipio que se repiten entre entidades —Guadalupe, Hidalgo, Juárez—, así que el municipio se busca sólo entre los de su entidad.",
+    "Los nombres oficiales de entidad no son los de uso: el INEGI escribe «Coahuila de Zaragoza», «Michoacán de Ocampo», «Veracruz de Ignacio de la Llave» y «México» para el Estado de México.",
+    "El relevamiento por chat reportó que la suma de las filas del catálogo del INPI de 2025 da 16.045 comunidades mientras su «Total general» dice 16.044, y que el de 2024 sí cierra en 12.683. No lo verificamos: el catálogo no está montado. Si alguna vez se monta, esa diferencia de uno se muestra, no se arregla."
+  ],
+  "obligaciones_de_la_licencia": [
+    "Acreditar al INEGI con la fórmula que los términos piden: «Fuente: INEGI, nombre del producto de donde se extrae la información».",
+    "Avisarle al usuario final de cualquier análisis o transformación que se le haga a la información, y no presentarla de manera que sugiera que la hizo el INEGI. La única transformación acá es sumar de municipio a entidad y a país, y el panel y el informe lo dicen.",
+    "No aparentar que el uso representa una postura oficial del INEGI ni que el INEGI lo avala."
+  ],
+  "notas": "México entra con dato local por municipio y sin carta de nadie: es el tercer país de la capa en esa condición, con Canadá y Guatemala, y el más grande con diferencia. Lo que queda pendiente es el catálogo del INPI, que necesita autorización escrita; el borrador del pedido está en `cartas/06-inpi-mexico.md`."
+}

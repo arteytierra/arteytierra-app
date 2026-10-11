@@ -66,12 +66,19 @@ function fechasMeta(lat: number): Record<FechaArco, { doy: number; label: string
 
 // ─── Astronomía ───────────────────────────────────────────────────────────────
 
-function declinacion(doy: number): number {
+/**
+ * Declinación solar en radianes. Exportada porque `alero.ts` necesita la MISMA
+ * efemérides que el arco que se dibuja en el mapa: si el alero y el arco usaran
+ * dos aproximaciones distintas, la sombra calculada no coincidiría con la
+ * trayectoria que el usuario ve, y nadie podría decidir cuál de las dos miente.
+ */
+export function declinacion(doy: number): number {
   // Cooper (1969): error < 0.5°
   return 23.45 * DEG * Math.sin(2 * Math.PI * (284 + doy) / 365);
 }
 
-function posicionSolar(
+/** Elevación y azimut del sol, o `null` si está bajo el horizonte. */
+export function posicionSolar(
   lat_deg: number,
   doy: number,
   hora_solar: number,

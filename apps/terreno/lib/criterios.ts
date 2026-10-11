@@ -24,7 +24,14 @@
  * Las tablas de este archivo son material aportado por Jonatan (curso "Diseño de
  * hidrología regenerativa"). Están transcriptas tal cual; los ajustes por suelo y
  * cobertura son extensión nuestra y se declaran como tal en `ajustes`.
+ *
+ * Excepción, desde el 03/10/2026: las tablas del muro de represa —ancho de
+ * corona y taludes— ya no son criterio propio. Están en `represaDiseno.ts`,
+ * transcriptas del manual de pequeñas represas del USDA, y las funciones de
+ * acá las usan como piso. Las que había eran de criterio corriente y quedaban
+ * por debajo del mínimo publicado, con el error creciendo con la altura.
  */
+import { coronaMinima, taludesMinimos, FUENTE_AH590, PIE_M } from './represaDiseno';
 
 // ─── El contrato ──────────────────────────────────────────────────────────────
 
@@ -520,27 +527,32 @@ export function claseSueloSugerida(
  * 6 m recibían la misma corona, y como `base = corona + alto × (talud interno +
  * talud externo)`, el error se propagaba al volumen de terraplén.
  *
- * Los cortes siguen la práctica corriente de pequeñas presas de tierra: la
- * corona nunca baja de 1 m porque menos que eso no se compacta ni se transita a
- * pie, y crece con la altura porque el muro necesita masa arriba para resistir
- * el oleaje y el paso. El mínimo salta a 3 m cuando tiene que pasar un vehículo,
- * que es el ancho de una huella con banquina.
+ * La corrección del 03/10/2026. La tabla que reemplazó a esos presets era de
+ * criterio corriente y **quedaba por debajo del mínimo publicado en todas sus
+ * filas**, con la diferencia creciendo con la altura: para un muro de 5 m
+ * sugería 2,5 m de corona cuando AH-590 pide 3,05 como mínimo, y para uno de
+ * 8 m sugería 3,0 contra 4,27. Un muro más angosto sale más barato en la
+ * pantalla y tiene menos masa arriba para aguantar el oleaje y el paso.
+ *
+ * Ahora el mínimo y el valor sugerido salen de `coronaMinima` —cuadro de «Top
+ * width and alignment» de AH-590— y lo único de acequia es el **techo** del
+ * rango, que es hasta dónde tiene sentido ensanchar antes de que la corona sólo
+ * agregue movimiento de suelo. Eso se declara en `fuente`.
  */
 export interface RangoCorona {
   /** Altura del muro, en metros (incluida la revancha). */
   alto_max_m: number;
-  sugerido_m: number;
-  min_m:      number;
+  /** Techo del rango útil. Es criterio de acequia, no de AH-590. */
   max_m:      number;
 }
 
 export const TABLA_CORONA: RangoCorona[] = [
-  { alto_max_m: 2,        sugerido_m: 1.5, min_m: 1.0, max_m: 3.0 },
-  { alto_max_m: 3,        sugerido_m: 2.0, min_m: 1.5, max_m: 3.5 },
-  { alto_max_m: 5,        sugerido_m: 2.5, min_m: 2.0, max_m: 4.0 },
-  { alto_max_m: 8,        sugerido_m: 3.0, min_m: 2.5, max_m: 5.0 },
-  { alto_max_m: 12,       sugerido_m: 4.0, min_m: 3.0, max_m: 6.0 },
-  { alto_max_m: Infinity, sugerido_m: 5.0, min_m: 4.0, max_m: 8.0 },
+  { alto_max_m: 2,        max_m: 3.0 },
+  { alto_max_m: 3,        max_m: 3.5 },
+  { alto_max_m: 5,        max_m: 4.5 },
+  { alto_max_m: 8,        max_m: 6.0 },
+  { alto_max_m: 12,       max_m: 7.0 },
+  { alto_max_m: Infinity, max_m: 9.0 },
 ];
 
 export interface EntradaCorona {
@@ -553,31 +565,39 @@ export interface EntradaCorona {
 
 /** Ancho de corona recomendado, con el rango en el que se puede jugar. */
 export function anchoCorona(e: EntradaCorona): Recomendacion {
-  const FUENTE = 'Criterio de pequeñas presas de tierra: la corona crece con la altura del muro; 3 m es el mínimo transitable por vehículo.';
+  const FUENTE = `${FUENTE_AH590} — mínimos del cuadro de «Top width and alignment». El techo del rango es criterio de acequia.`;
   const h = e.alto_m;
   if (!(h > 0)) {
     return sinRecomendacion('m', FUENTE, 'Falta la altura del muro: se calcula desde la profundidad del vaso más la revancha.');
   }
 
+  const publicado = coronaMinima(h, e.transitable ?? false);
   const fila = TABLA_CORONA.find(f => h <= f.alto_max_m) ?? TABLA_CORONA[TABLA_CORONA.length - 1]!;
-  let { sugerido_m: valor, min_m: min, max_m: max } = fila;
   const ajustes: string[] = [];
 
+  // El mínimo y el valor sugerido son el mínimo publicado: AH-590 lo llama
+  // «a conservative minimum top width», así que es lo que corresponde ofrecer
+  // por defecto. De ahí para arriba decide el proyectista.
+  const min = publicado.minimo_m;
+  let valor = publicado.minimo_m;
+  let max   = Math.max(fila.max_m, publicado.minimo_m * 1.5);
+
   // Un muro largo trabaja peor: más frente expuesto al oleaje y más asentamiento
-  // diferencial. Se le da algo más de corona a partir de los 100 m de eje.
+  // diferencial. Se le da algo más de corona a partir de los 100 m de eje. Esto
+  // es extensión de acequia sobre el mínimo del manual, y se declara.
   const L = e.largo_m ?? null;
   if (L !== null && L >= 100) {
     const extra = L >= 300 ? 1.0 : 0.5;
     valor += extra;
     max   += extra;
-    ajustes.push(`Coronamiento de ${Math.round(L)} m de largo: +${extra} m, porque un muro largo tiene más frente expuesto al oleaje y más asentamiento diferencial.`);
+    ajustes.push(`Coronamiento de ${Math.round(L)} m de largo: +${extra} m sobre el mínimo del manual, porque un muro largo tiene más frente expuesto al oleaje y más asentamiento diferencial. El ajuste es de acequia.`);
   }
 
   if (e.transitable) {
-    if (min < 3) min = 3;
-    if (valor < 3) valor = 3;
-    if (max < 4) max = 4;
-    ajustes.push('Coronamiento transitable por vehículo: el mínimo pasa a 3 m, que es el ancho de una huella con banquina.');
+    ajustes.push(`Coronamiento transitable por vehículo: AH-590 pide al menos 16 pies (${(16 * PIE_M).toFixed(2)} m), que es la huella más las dos banquinas que evitan que el borde se desmorone.`);
+  }
+  if (publicado.fueraDeTabla) {
+    ajustes.push(publicado.nota);
   }
 
   return {
@@ -585,7 +605,7 @@ export function anchoCorona(e: EntradaCorona): Recomendacion {
     min:   +min.toFixed(2),
     max:   +max.toFixed(2),
     unidad: 'm',
-    criterio: `Para un muro de ${h.toFixed(1)} m de alto la corona va entre ${min} y ${max} m: menos no se compacta ni se transita, y de más sólo agrega movimiento de suelo sin aportar seguridad.`,
+    criterio: `${publicado.nota} De ahí para arriba se puede ensanchar hasta unos ${max.toFixed(1)} m; más que eso sólo agrega movimiento de suelo sin aportar seguridad.`,
     fuente: FUENTE,
     ajustes,
     aplica: true,
@@ -599,28 +619,43 @@ export function anchoCorona(e: EntradaCorona): Recomendacion {
  * talud de aguas arriba va siempre más tendido que el de aguas abajo: está
  * saturado, sufre el oleaje y, sobre todo, el vaciado rápido es la condición
  * crítica que hace deslizar ese lado.
+ *
+ * La corrección del 03/10/2026. Esta función daba **2,5:1 aguas arriba** para
+ * arcilla no expansiva y para la mezcla areno-arcillosa cuando el muro medía
+ * menos de 5 m. El cuadro 16 de AH-590 no admite nada más parado que 3:1 aguas
+ * arriba en ninguna de sus dos filas, y el texto que lo acompaña lo deja claro:
+ * *«For stability, the slopes should not be steeper than those shown in table
+ * 16, but they can be flatter»*. O sea que 2,5:1 no era una variante admisible,
+ * era un talud por debajo del mínimo, en el lado del muro que desliza con el
+ * vaciado rápido y justo en el rango de altura más común de un predio.
+ *
+ * Ahora los mínimos salen de `taludesMinimos` y los ajustes por altura y por
+ * material quedan como lo que son: extensión de acequia **por encima** del
+ * mínimo publicado, nunca por debajo.
  */
 export interface Taludes {
   interno: number;   // aguas arriba
   externo: number;   // aguas abajo
   criterio: string;
+  /** true cuando el material no tiene fila en el cuadro 16 de AH-590. */
+  fueraDeTabla?: boolean;
 }
 
 export function taludesSugeridos(suelo: SueloEscurrimiento | null, alto_m: number): Taludes {
+  const base = taludesMinimos(suelo);
   const alto = alto_m >= 5;
-  switch (suelo) {
-    case 'arenoso_superficial':
-      return { interno: alto ? 3.5 : 3, externo: alto ? 2.5 : 2,
-        criterio: 'Suelo arenoso: poca cohesión, taludes más tendidos y hay que prever un núcleo o pantalla impermeable.' };
-    case 'arcilloso_elastico':
-      return { interno: alto ? 3.5 : 3, externo: alto ? 2.5 : 2,
-        criterio: 'Arcilla expansiva: impermeabiliza bien pero se agrieta al secarse, así que conviene tender los taludes y proteger la superficie de la desecación.' };
-    case 'arcilloso_inelastico':
-      return { interno: alto ? 3 : 2.5, externo: alto ? 2.5 : 2,
-        criterio: 'Arcilla no expansiva: buen material de terraplén, admite taludes algo más parados.' };
-    case 'areno_arcilloso':
-    default:
-      return { interno: alto ? 3 : 2.5, externo: alto ? 2 : 2,
-        criterio: 'Mezcla areno-arcillosa: es el material corriente de terraplén; el talud interno va más tendido porque el vaciado rápido es la condición crítica.' };
-  }
+
+  // Único ajuste de acequia, y siempre hacia el lado tendido: un muro alto con
+  // material flojo pide medio punto más. El mínimo del manual es el piso.
+  const flojo = suelo === 'arenoso_superficial' || suelo === 'arcilloso_elastico';
+  const extra = alto && flojo ? 0.5 : 0;
+
+  const interno = base.interno + extra;
+  const externo = base.externo + extra;
+
+  const ajuste = extra > 0
+    ? ` Muro de ${alto_m.toFixed(1)} m con material flojo: acequia tiende medio punto más que el mínimo del manual.`
+    : '';
+
+  return { interno, externo, criterio: base.nota + ajuste, fueraDeTabla: base.fueraDeTabla };
 }

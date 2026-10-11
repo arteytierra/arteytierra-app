@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Cloud, FolderOpen, Mountain, Droplets, CalendarDays, Layers, Sun, LayoutGrid, Compass, Waves, Route, Eye, Wheat, Leaf, ChevronDown, Waypoints, Boxes, Spline, Sprout, Trees, Bird, SunDim, DollarSign, Wind, Lock, Ruler, Flame, Fence, CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList } from 'lucide-react';
+import { MapPin, Cloud, FolderOpen, Mountain, Droplets, CalendarDays, Layers, Sun, LayoutGrid, Compass, Waves, Route, Eye, Wheat, Leaf, ChevronDown, Waypoints, Boxes, Spline, Sprout, Trees, Bird, SunDim, DollarSign, Wind, Lock, Ruler, Flame, Fence, CloudRain, Shapes, Target, Container, Sparkles, TreeDeciduous, ClipboardList, Scale } from 'lucide-react';
 import { type SeccionRepresa } from '../CutFillPanel';
 
 /**
@@ -18,7 +18,8 @@ export type Tab =
   | 'mojones' | 'clima'  | 'contexto' | 'entorno' | 'topo'    | 'suelo'   | 'cobertura'
   | 'agua'    | 'cal'    | 'solar'   | 'sombras' | 'visibilidad' | 'prod'   | 'aptitud' | 'analisis'
   | 'zonas'   | 'sectores' | 'aguadas' | 'caminos' | 'red' | 'cuenca' | 'pastoreo' | 'riego' | 'swales' | 'keyline'
-  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortinas' | 'cortafuegos' | 'silvopastura';
+  | 'infra'   | 'elementos' | 'carbono' | 'economia' | 'proyectos' | 'masterplan' | 'cortinas' | 'cortafuegos' | 'silvopastura'
+  | 'reserva';
 
 // ─── Riel de navegación: definición de tabs y clústeres ─────────────────────
 /** Definición visual de cada tab. El `id` es la clave estable que usan
@@ -39,6 +40,7 @@ export const TAB_DEFS: Array<{ id: Tab; label: string; icon: React.ReactNode }> 
   { id: 'riego',       label: 'Riego',       icon: <Sprout       className="w-3.5 h-3.5" /> },
   { id: 'swales',      label: 'Swales',      icon: <Ruler        className="w-3.5 h-3.5" /> },
   { id: 'agua',        label: 'Captación',   icon: <Droplets     className="w-3.5 h-3.5" /> },
+  { id: 'reserva',     label: 'Balance de agua', icon: <Scale    className="w-3.5 h-3.5" /> },
   { id: 'solar',       label: 'Solar',       icon: <Sun          className="w-3.5 h-3.5" /> },
   { id: 'sombras',     label: 'Sombras',     icon: <SunDim       className="w-3.5 h-3.5" /> },
   { id: 'visibilidad', label: 'Visibilidad', icon: <Eye          className="w-3.5 h-3.5" /> },
@@ -72,14 +74,29 @@ export const TAB_DEF = new globalThis.Map(TAB_DEFS.map(t => [t.id, t] as const))
  *  cambian: entitlements, snapshots y la paleta (Ctrl+K) siguen intactos. */
 export const GRUPOS_RIEL: Array<{ id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] }> = [
   { id: 'ubicacion', label: 'Tu terreno',                            corto: 'Lugar',     icon: <MapPin    className="w-4 h-4" />, tabs: ['mojones'] },
-  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'contexto', 'entorno', 'cal', 'solar', 'sombras'],           esenciales: ['clima', 'contexto'] },
-  { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud', 'visibilidad'], esenciales: ['topo', 'analisis'] },
-  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua'], esenciales: ['cuenca', 'aguadas'] },
-  { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra'],             esenciales: ['masterplan', 'zonas'] },
+  // Entorno va arriba de Contexto por decisión de Jonatan (01/10/2026): lo
+  // primero que alguien quiere saber del vecindario es qué hay alrededor —qué
+  // especies, qué industria, qué ductos—, y recién después en qué ecorregión
+  // cae. Los tres quedan a la vista: dejar Contexto detrás de "Más…" habría
+  // escondido el panel más cargado del peldaño para ganar un renglón.
+  { id: 'clima',     label: '1 · Clima y contexto',                  corto: '1 Clima',   icon: <CloudRain className="w-4 h-4" />, tabs: ['clima', 'entorno', 'contexto', 'cal', 'solar'],                       esenciales: ['clima', 'entorno', 'contexto'] },
+  { id: 'relieve',   label: '2 · Relieve y suelo',                   corto: '2 Relieve', icon: <Mountain  className="w-4 h-4" />, tabs: ['topo', 'analisis', 'suelo', 'cobertura', 'aptitud'],               esenciales: ['topo', 'analisis'] },
+  // El balance de agua va ÚLTIMO y es a propósito: es el único panel que no
+  // calcula nada propio —cruza lo que calcularon los otros—, así que abrirlo
+  // primero muestra una pantalla vacía. Estaba tercero en las esenciales y se
+  // leía como si fuera del medio, con Captación y Riego apareciendo después.
+  { id: 'agua',      label: '3 · Agua',                              corto: '3 Agua',    icon: <Droplets  className="w-4 h-4" />, tabs: ['cuenca', 'aguadas', 'caminos', 'keyline', 'swales', 'red', 'riego', 'agua', 'reserva'], esenciales: ['cuenca', 'aguadas', 'agua', 'reserva'] },
+  { id: 'zonas',     label: '4 · Zonas, sectores e infraestructuras', corto: '4 Zonas',  icon: <Shapes    className="w-4 h-4" />, tabs: ['masterplan', 'zonas', 'sectores', 'elementos', 'infra', 'sombras', 'visibilidad'], esenciales: ['masterplan', 'zonas'] },
   { id: 'prod',      label: '5 · Sistemas productivos',              corto: '5 Prod.',   icon: <Wheat     className="w-4 h-4" />, tabs: ['pastoreo', 'prod', 'silvopastura', 'cortinas', 'cortafuegos', 'carbono'], esenciales: ['pastoreo', 'prod'] },
 ];
 // `economia` (Entrega) y `proyectos` no están en el riel: se alcanzan desde la
 // barra superior. El riel es, exactamente, la Escala de Permanencia.
+//
+// `sombras` y `visibilidad` viven en el peldaño 4 y no en Clima ni en Relieve.
+// No son lecturas del sitio: son las dos preguntas que se hacen una vez que hay
+// algo puesto en el plano —dónde da la sombra de este árbol, qué se ve desde
+// esta loma— y se contestan moviendo lo que está dibujado. Pertenecen al
+// peldaño donde se decide la ubicación, no al que describe el lugar.
 export const GRUPO_DE_TAB: Record<string, string> = Object.fromEntries(
   GRUPOS_RIEL.flatMap(g => g.tabs.map(t => [t, g.id] as const)),
 );
@@ -111,6 +128,14 @@ export const SUBS_REPRESA: Array<{ id: SubRepresa; label: string }> = [
  * vertical, y en CSS basta con que un eje no sea `visible` para que el otro pase
  * a `auto`, así que cualquier cosa que asome por la izquierda queda recortada.
  */
+/** El tooltip del encabezado dice a qué herramienta abre, que es lo que el clic
+ *  hace: sin eso el usuario no tiene cómo saber que el grupo lleva a algún lado
+ *  y no sólo despliega. */
+function tituloEncabezado(label: string, primero: Tab | undefined): string {
+  const def = primero ? TAB_DEF.get(primero) : undefined;
+  return def ? `${label} — abre ${def.label}` : label;
+}
+
 /** Un botón de tab en el riel (ícono cuadrado con candado si está bloqueado). */
 function RielTab({ def, activo, lock, onElegir }: {
   def: { id: Tab; label: string; icon: React.ReactNode };
@@ -138,7 +163,12 @@ function RielTab({ def, activo, lock, onElegir }: {
 }
 
 /** Un clúster colapsable del riel: encabezado con ícono + label corto, y —si
- *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto. */
+ *  está abierto— la lista de tabs del grupo. Acordeón: sólo un grupo abierto.
+ *
+ *  `onToggle` no es sólo desplegar: quien lo pasa abre además la primera
+ *  herramienta del grupo, porque el número del riel promete una lectura del
+ *  terreno y no una lista de íconos. Ver `handleElegirGrupo` en
+ *  MapaTerrenoApp. */
 export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bloqueada }: {
   grupo: { id: string; label: string; corto: string; icon: React.ReactNode; tabs: Tab[]; esenciales?: Tab[] };
   abierto: boolean;
@@ -188,7 +218,7 @@ export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bl
 
   return (
     <div className="w-full flex flex-col items-center">
-      <button onClick={onToggle} title={grupo.label} aria-expanded={abierto}
+      <button onClick={onToggle} title={tituloEncabezado(grupo.label, esenciales[0] ?? grupo.tabs[0])} aria-expanded={abierto}
         className={`relative w-11 rounded-lg flex flex-col items-center gap-0.5 py-1 transition-colors ${
           contieneActivo && !abierto
             ? 'text-moss-700 bg-moss-50'
@@ -200,7 +230,10 @@ export function RielAcordeon({ grupo, abierto, tabActivo, onToggle, onElegir, bl
       </button>
       {abierto && (
         <div className="w-full flex flex-col items-center gap-0.5 pb-1.5 pt-1 ay-stagger">
-          {(mostrarResto ? [...esenciales, ...resto] : esenciales).map(id => {
+          {/* El orden es siempre el de `grupo.tabs`: desplegar «Más…» revela
+              herramientas, no las reordena. Concatenando esenciales y resto, una
+              herramienta declarada al final del peldaño se dibujaba tercera. */}
+          {(mostrarResto ? grupo.tabs : grupo.tabs.filter(t => esenciales.includes(t))).map(id => {
             const def = TAB_DEF.get(id);
             if (!def) return null;
             return (

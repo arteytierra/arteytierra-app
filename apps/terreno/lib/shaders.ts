@@ -15,6 +15,15 @@ export interface CeldaShader {
   lngMax: number;
   elevation: number;
   pendiente_pct: number;   // pendiente estimada en %
+  /**
+   * El centro de la celda cae dentro del polígono del predio. `undefined`
+   * cuando no hay predio con qué decidirlo, y entonces todas cuentan.
+   *
+   * La grilla llega hasta 1,15× el polígono a propósito —la pendiente necesita
+   * vecinos y el escurrimiento necesita ver de dónde baja el agua—, así que
+   * todo lo que REPORTE superficie o porcentaje tiene que filtrar por esto.
+   */
+  dentro?: boolean;
 }
 
 export interface DatosShader {
@@ -388,6 +397,7 @@ export function shaderDesdeGrilla(grilla: {
   rows: number; cols: number;
   latMin: number; latMax: number; lngMin: number; lngMax: number;
   elev: Float64Array; elev_min: number; elev_max: number;
+  dentro?: Uint8Array;
   fuente?: FuenteRelieve;
 }, mojones?: Array<{ lat: number; lng: number }>): DatosShader | null {
   const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
@@ -434,6 +444,9 @@ export function shaderDesdeGrilla(grilla: {
         lngMin: lngCc - dLngDeg / 2, lngMax: lngCc + dLngDeg / 2,
         elevation: e,
         pendiente_pct,
+        // La máscara de la grilla si vino; si no, la decide el polígono más
+        // abajo, que es el mismo trabajo que ya se hacía para el rango de color.
+        ...(grilla.dentro ? { dentro: grilla.dentro[r * cols + c] === 1 } : {}),
       });
     }
   }
@@ -449,6 +462,13 @@ export function shaderDesdeGrilla(grilla: {
   // relativa en la ladera' de aptitud y del master plan, así que el arreglo no
   // es sólo estético.
   const dentro = recorteAlPredio(celdas, mojones);
+  // Y de paso queda marcada en cada celda, para todo lo que después reporte
+  // superficies: sin esto, el riesgo de erosión informaba las hectáreas del
+  // halo —111 sobre un predio de 84— como si fueran las del predio.
+  if (!grilla.dentro && mojones && mojones.length >= 3) {
+    const adentro = new Set(dentro);
+    for (const c of celdas) c.dentro = adentro.has(c);
+  }
   if (dentro.length >= 4) {
     const es = dentro.map(c => c.elevation);
     return {

@@ -101,6 +101,34 @@ describe('hidrologiaPredio · tormenta y coeficiente', () => {
     const h = hidrologiaPredio({ ...COMPLETO, tormenta: { ...TORMENTA, anios: 15 }, periodoRetorno: 100 });
     expect(h.confianza.avisos.map(a => a.id)).toContain('T_extrapolado');
   });
+
+  // Desde el 10/10/2026 la serie diaria se escala al pluviómetro del predio,
+  // pero la tormenta de Gumbel no —el escalado lineal corrige la media y no la
+  // distribución—. Cuando el dato local llueve MÁS que el reanálisis, esta
+  // lluvia de diseño queda corta y todo lo que se dimensione con ella también.
+  it('avisa cuando la serie se calibró para arriba y la tormenta quedó cruda', () => {
+    const h = hidrologiaPredio({
+      ...COMPLETO,
+      tormenta: { ...TORMENTA, factor_calibracion: 1.3 },
+    });
+    const aviso = h.confianza.avisos.find(a => a.id === 'tormenta_sin_calibrar');
+    expect(aviso).toBeDefined();
+    expect(aviso!.titulo).toContain('30 %');
+    expect(aviso!.detalle).toContain('lado corto');
+  });
+
+  it('no avisa cuando la calibración fue para abajo: ahí la tormenta es prudente', () => {
+    const h = hidrologiaPredio({
+      ...COMPLETO,
+      tormenta: { ...TORMENTA, factor_calibracion: 0.74 },
+    });
+    expect(h.confianza.avisos.map(a => a.id)).not.toContain('tormenta_sin_calibrar');
+  });
+
+  it('sin calibración no hay aviso: es el caso normal y no hay nada que decir', () => {
+    expect(hidrologiaPredio(COMPLETO).confianza.avisos.map(a => a.id))
+      .not.toContain('tormenta_sin_calibrar');
+  });
 });
 
 describe('hidrologiaPredio · confianza', () => {

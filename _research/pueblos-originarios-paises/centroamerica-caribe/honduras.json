@@ -1,0 +1,60 @@
+{
+  "pais": "Honduras",
+  "iso3": "HND",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué un registro de comunidades; queda pendiente. existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadística (INE) de Honduras",
+    "anio": 2013,
+    "fecha_relevamiento": null,
+    "pregunta": null,
+    "universo": null,
+    "total_declarado": null,
+    "poblacion_base": null,
+    "url_cuadros": "https://ine.gob.hn/censo-de-poblacion-y-vivienda-2013/",
+    "urls_archivos": [],
+    "niveles": [],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": null,
+    "sin_declarar_pueblo": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: abrí la página del censo 2013 del INE. Enlaza fichas por pueblo 2001-2013 (Garífuna, Lenca, Maya-Chortí, «Negro de habla inglesa», Pech, Tawahka, Tolupanes), pero los PDF están en temp.ine.gob.hn, que no resuelve desde acá (conexión rechazada). El portal REDATAM (181.115.7.199) devolvió error 500. No abrí ninguna cifra, así que no escribo ninguna. La página del INE también anuncia un censo de población y vivienda 2025; sólo encontré un contrato de apoyo, no resultados."
+  },
+  "pueblos": [
+    "Garífuna",
+    "Lenca",
+    "Maya-Chortí",
+    "Pech",
+    "Tawahka",
+    "Tolupanes"
+  ],
+  "lo_que_no_dice": [
+    "No pude abrir ninguna cifra del censo 2013.",
+    "«Negro de habla inglesa» figura en la misma lista del INE: se vio y se dejó afuera de pueblos a propósito.",
+    "La lista de pueblos sale de los títulos de las fichas del INE, no de un cuadro; puede estar incompleta (no aparece, por ejemplo, un rótulo misquito en esas fichas)."
+  ],
+  "trampas": [
+    "Hay un censo 2025 anunciado: cuando publique, reemplaza al 2013 y cambia el denominador.",
+    "Los enlaces del sitio oficial apuntan a un subdominio temporal (temp.ine.gob.hn); verificar que las URL finales sean las oficiales antes de montar."
+  ],
+  "notas": "Honduras queda sin verificar: el sitio oficial existe pero sus archivos no abren desde acá. Falta: abrir las fichas por pueblo 2013 o esperar el censo 2025, y licencia."
+}

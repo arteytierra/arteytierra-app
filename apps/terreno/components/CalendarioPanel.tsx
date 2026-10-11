@@ -36,7 +36,7 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
   // La ficha del ecosistema es la que aporta los cultivos de la ecorregión. Es
   // opcional: sin ella el calendario se arma igual y la lista sale del catálogo
   // por clase climática.
-  const ficha = useFichaBioma(datosClima);
+  const { ficha, resolviendo } = useFichaBioma(datosClima);
 
   const cal = useMemo(
     () => datosClima ? calcularCalendario(datosClima, ficha) : null,
@@ -70,6 +70,21 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
     return vivas.length > 0 ? vivas : FAMILIAS;
   }, [cal]);
   const familiasOcultas = FAMILIAS.length - familias.length;
+
+  // La ficha decide qué cultivos se listan y con qué Kc se arma el balance.
+  // Mientras la ecorregión está en vuelo, esa lista sale de la heurística
+  // Köppen y después la reemplaza otra: el cultivo elegido se perdía solo y el
+  // balance cambiaba sin que nadie tocara nada.
+  if (datosClima && resolviendo) {
+    return (
+      <div className="text-center py-8 px-4 space-y-3">
+        <Cloud className="w-8 h-8 text-moss-700/40 mx-auto animate-pulse" />
+        <p className="text-xs text-ink-700/60 leading-relaxed">
+          Identificando la ecorregión: de ahí sale la lista de cultivos del lugar.
+        </p>
+      </div>
+    );
+  }
 
   if (!datosClima || !cal) {
     return (
@@ -340,6 +355,29 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
                 </div>
               </div>
             ))}
+
+            {/* Lo que el clima banca y la ficha no nombra.
+                Va aparte y rotulado distinto porque es otra afirmación: arriba
+                dice "acá se cultiva esto", documentado para la ecorregión; acá
+                dice "el clima lo permite", que es más ancho y más flojo. Existe
+                porque el borde de un polígono de RESOLVE no es el borde de un
+                sistema productivo, y con la lista cerrada un cafetal que caía en
+                el valle de al lado no tenía forma de recuperar el café. */}
+            {cal.ecorregion.tambienPorClima.length > 0 && (
+              <div className="border-t border-bone-200 pt-2.5">
+                <p className="text-[10px] uppercase tracking-wide text-ink-700/50 mb-1">
+                  El clima también permite
+                </p>
+                <p className="text-[10px] text-ink-700/55 leading-relaxed mb-1.5">
+                  Estas no figuran en la ficha de la ecorregión y el clima del predio las
+                  banca. Son una pista, no una recomendación: preguntá en la zona antes de
+                  plantar cualquiera de éstas.
+                </p>
+                <div className="space-y-1.5">
+                  {cal.ecorregion.tambienPorClima.map(e => <Cultivo key={e.especie.id} e={e} />)}
+                </div>
+              </div>
+            )}
 
             {cal.ecorregion.aviso && (
               <p className="text-[9px] text-clay-700/80 leading-relaxed border-t border-bone-200 pt-2">

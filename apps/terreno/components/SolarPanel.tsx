@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Sun, MapPin, Map } from 'lucide-react';
 import { calcularSolar, type DatosSolar } from '@/lib/solar';
+import { AleroBloque } from './AleroBloque';
 import { centroide } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
@@ -60,10 +61,15 @@ export function SolarPanel({ mojones, datosClima, arcSolarVisible, onMostrarEnMa
 
       {/* ── Parámetros clave ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-white rounded-xl border border-bone-200 p-2.5">
-          <p className="text-[10px] text-ink-700/60 mb-0.5">Ángulo óptimo de panel</p>
+<div className="bg-white rounded-xl border border-bone-200 p-2.5">
+          {/* Decía «óptimo» de un número sin fuente que era |lat| + 12. Ahora sale
+              del ajuste publicado sobre PVWatts, y sigue siendo una estimación:
+              dos ciudades a la misma latitud pueden diferir once grados. */}
+          <p className="text-[10px] text-ink-700/60 mb-0.5">Inclinación de panel estimada</p>
           <p className="font-mono text-base font-bold text-ink-900">{solar.angulo_optimo_panel}°</p>
-          <p className="text-[9px] text-ink-700/50">desde la horizontal</p>
+          <p className="text-[9px] text-ink-700/50">
+            desde la horizontal, para el año{solar.angulo_piso_lluvia ? ' · piso de 10° para que la lave la lluvia' : ''}
+          </p>
         </div>
         <div className="bg-white rounded-xl border border-bone-200 p-2.5">
           <p className="text-[10px] text-ink-700/60 mb-0.5">Orientación óptima</p>
@@ -84,6 +90,13 @@ export function SolarPanel({ mojones, datosClima, arcSolarVisible, onMostrarEnMa
 
       {/* ── Gráfico de horas de luz ──────────────────────────────────────────── */}
       <GraficoSolar meses={solar.meses} />
+
+      {/* ── Etapa H — el control solar de las aberturas ────────────────────────
+          Va después del recurso y no antes: primero el panel dice cuánto sol
+          hay, y después cómo se lo deja entrar o no. Y necesita la serie de
+          temperaturas, porque el período a sombrear sale del clima del predio
+          y no del solsticio. */}
+      <AleroBloque lat={centro.lat} lng={centro.lng} datosClima={datosClima} />
 
       {/* ── Tabla mensual ────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">

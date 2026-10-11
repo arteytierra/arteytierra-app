@@ -6,12 +6,25 @@
  * eBird…) agregadas por GBIF.
  */
 import type { Mojon } from './types';
+import { titulo, ubicacionTexto, type ContextoActual } from './contextoActual';
 
 export interface Ubicacion {
   localidad:    string | null;
   departamento: string | null;
   provincia:    string | null;
   pais:         string | null;
+  /**
+   * La división que Nominatim pone en `suburb` dentro de una conurbación.
+   *
+   * En Chile es la **comuna**, que es la unidad del censo: un punto en Ñuñoa
+   * devuelve `city: "Santiago"` y `suburb: "Ñuñoa"`, así que sin este campo la
+   * capa de pueblos originarios habría contestado con la comuna de Santiago.
+   * En otros países acá viene un barrio y ninguna capa lo mira.
+   *
+   * Opcional porque los payloads de `/api/entorno` cacheados desde antes no lo
+   * traen: quien lo use tiene que poder contestar sin él.
+   */
+  comuna?:      string | null;
 }
 
 export interface Biodiversidad {
@@ -32,6 +45,8 @@ export interface DatosEntorno {
   ubicacion:     Ubicacion | null;
   biodiversidad: Biodiversidad | null;
   osm:           EntornoOSM | null;
+  /** Qué actividad e infraestructura hay alrededor. `null` si el payload es de antes. */
+  contexto_actual: ContextoActual | null;
   radio_km:      number;
   // Derivados
   fauna:         number;
@@ -108,14 +123,21 @@ export async function obtenerEntorno(mojones: Mojon[]): Promise<DatosEntorno> {
     if (osm.cursos_agua.length) resumen_texto.push(`Cursos de agua próximos: ${osm.cursos_agua.slice(0, 4).join(', ')}.`);
   }
 
+  const ctx = json.contexto_actual ?? null;
+  if (ctx?.consultado && ctx.presencias.length) {
+    const tres = ctx.presencias.slice(0, 3).map(p => `${titulo(p).toLowerCase()} ${ubicacionTexto(p)}`);
+    resumen_texto.push(`Actividad e infraestructura mapeadas en ${ctx.radio_km} km: ${tres.join('; ')}.`);
+  }
+
   return {
     ubicacion: u ?? null,
     biodiversidad: bio,
     osm: osm ?? null,
+    contexto_actual: ctx,
     radio_km,
     fauna, flora, hongos, amenazadas, especies_top,
     resumen_texto,
-    fuente: 'GBIF (biodiversidad) · OpenStreetMap/Nominatim + Overpass (ubicación y entorno) — datos abiertos, orientativos',
+    fuente: 'GBIF (biodiversidad) · OpenStreetMap/Nominatim + Overpass (ubicación, entorno y contexto actual) — datos abiertos, orientativos',
   };
 }
 
@@ -125,6 +147,13 @@ export function etiquetaIUCN(cat: string): string { return IUCN_LABEL[cat] ?? ca
 // ─── Resumen para el informe ────────────────────────────────────────────────────
 export interface EntornoResumen {
   ubicacion:  string | null;
+  /**
+   * La ubicación sin armar, campo por campo. `ubicacion` ya es una frase y no
+   * se puede volver a partir, y el registro de comunidades indígenas del INAI
+   * se resuelve por provincia y departamento. `null` en un proyecto guardado
+   * antes de que existiera esta capa.
+   */
+  admin:      Ubicacion | null;
   total_bio:  number;
   fauna:      number;
   flora:      number;
@@ -132,6 +161,7 @@ export interface EntornoResumen {
   especies_top: Array<{ nombre: string; obs: number }>;
   areas_protegidas: string[];
   radio_km:   number;
+  contexto_actual: ContextoActual | null;
 }
 
 export function resumirEntorno(d: DatosEntorno): EntornoResumen {
@@ -139,10 +169,13 @@ export function resumirEntorno(d: DatosEntorno): EntornoResumen {
   const ubic = u ? [u.localidad, u.departamento, u.provincia, u.pais].filter(Boolean).join(', ') : null;
   return {
     ubicacion: ubic || null,
+    admin: u ?? null,
     total_bio: d.biodiversidad?.total ?? 0,
     fauna: d.fauna, flora: d.flora, amenazadas: d.amenazadas,
     especies_top: d.especies_top.slice(0, 6),
     areas_protegidas: d.osm?.areas_protegidas ?? [],
     radio_km: d.radio_km,
+    // Un proyecto guardado antes de que existiera esta capa no lo trae.
+    contexto_actual: d.contexto_actual ?? null,
   };
 }

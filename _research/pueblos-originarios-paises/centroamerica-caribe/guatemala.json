@@ -1,0 +1,93 @@
+{
+  "pais": "Guatemala",
+  "iso3": "GTM",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no encontré en el INE ni en el portal de datos un registro nacional de comunidades indígenas con altas y bajas comparable al del INAI. No revisé el Registro de Información Catastral (RIC), que registra tierras comunales: queda pendiente y puede cambiar esta respuesta. existe: false significa «no encontrado», no «comprobado que no existe»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadística (INE) de Guatemala",
+    "anio": 2018,
+    "fecha_relevamiento": null,
+    "pregunta": "No encontré la boleta censal 2018 publicada por el INE; no transcribo la pregunta de memoria. Los cuadros la rotulan «Pueblo de pertenencia» y el INE describe el criterio como autoidentificación (Compendio estadístico de pueblos 2018).",
+    "universo": "Población total censada (los cuadros A5 cubren a toda la población, 14.901.286 personas).",
+    "total_declarado": null,
+    "poblacion_base": 14901286,
+    "url_cuadros": "https://datos.ine.gob.gt/dataset/censo-2018-lugares-poblados",
+    "urls_archivos": [
+      "https://datos.ine.gob.gt/dataset/78019333-d80b-45e8-b694-fb3b8d65e19e/resource/7585a69c-7c15-4b6d-92e9-ecdd3223d221/download/cuadro-a5-poblacion-total-censada-por-pueblos.xlsx",
+      "https://datos.ine.gob.gt/dataset/78019333-d80b-45e8-b694-fb3b8d65e19e/resource/66705bdd-479f-4a90-aa69-dbb4830471cc/download/cuadro-a6-poblacion-maya-censada-por-comunidad-linguistica.xlsx",
+      "https://datos.ine.gob.gt/dataset/78019333-d80b-45e8-b694-fb3b8d65e19e/resource/053dfa99-b3f9-4b1f-a99f-fc933ef00da4/download/centroides-de-lugares-poblados-de-la-republica-de-guatemala.-censo-2018.xlsx"
+    ],
+    "niveles": [
+      "nacional",
+      "departamento",
+      "municipio",
+      "lugar poblado"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: consulté la API CKAN de datos.ine.gob.gt (dataset censo-2018-lugares-poblados, licencia declarada «Creative Commons Attribution», opendefinition cc-by). Bajé y abrí el cuadro A5: hoja A5_1 (nacional y 22 departamentos), A5_2 (340 filas de municipio) y A5_3 (20.036 lugares poblados; 313 sin longitud/latitud). Total nacional: 14.901.286 = Maya 6.207.503 + Garífuna 19.529 + Xinka 264.167 + Afrodescendiente/Creole/Afromestizo 27.647 + Ladina(o) 8.346.120 + Extranjera(o) 36.320; la suma de columnas da exactamente el total, así que el cuadro no trae categoría «no declarado». Bajé el A6: las 22 comunidades lingüísticas mayas suman 6.207.503, igual al total Maya. total_declarado queda en null: el INE no publica un total «indígena» en estos cuadros y sumar Maya + Garífuna + Xinka sería un cálculo nuestro."
+  },
+  "pueblos": [
+    "Maya",
+    "Garífuna",
+    "Xinka",
+    "Achi",
+    "Akateka",
+    "Awakateka",
+    "Ch'orti'",
+    "Chalchiteka",
+    "Chuj",
+    "Itza'",
+    "Ixil",
+    "Jakalteko /Popti'",
+    "K'iche'",
+    "Kaqchikel",
+    "Mam",
+    "Mopan",
+    "Poqomam",
+    "Poqomchi'",
+    "Q'anjob'al",
+    "Q'eqchi'",
+    "Sakapulteka",
+    "Sipakapense",
+    "Tektiteka",
+    "Tz'utujil",
+    "Uspanteka"
+  ],
+  "lo_que_no_dice": [
+    "No hay un total de población indígena publicado en los cuadros A5: sólo pueblos por separado.",
+    "La categoría «Afrodescendiente / Creole / Afromestizo» (27.647) se vio y se dejó afuera a propósito: no es población indígena y va en otra sección si alguna vez se muestra.",
+    "Ladina(o) y Extranjera(o) no son pueblos originarios.",
+    "La lista de 22 comunidades lingüísticas es la del cuadro A6 del INE, subdivisión del pueblo Maya; no es una lista de pueblos adicionales.",
+    "No encontré la boleta ni el diccionario de variables del censo 2018 (las bases de personas están en un SharePoint del INE que no abrí)."
+  ],
+  "trampas": [
+    "Las 22 comunidades lingüísticas son subconjuntos de «Maya»: sumarlas a Maya duplica 6.207.503 personas.",
+    "El cuadro A5_3 trae longitud y latitud del centroide de cada lugar poblado: son centroides censales, no territorios, y dibujar con ellos «comunidades indígenas» es justo lo que la regla prohíbe (coordenadas de comunidades).",
+    "313 lugares poblados del A5_3 no tienen coordenada (incluye filas «Otros Lugares Poblados» por municipio).",
+    "La licencia CC BY está declarada en el dataset del portal CKAN; el portal censo2018.ine.gob.gt no la repite. Citar el dataset, no el visor.",
+    "Algunas grafías del cuadro difieren de otras fuentes (p. ej. «Jakalteko /Popti'», con espacio antes de la barra): se copian tal cual."
+  ],
+  "notas": "Guatemala entra con su propio denominador: el censo 2018 pregunta pueblo de pertenencia para toda la población y publica por pueblo hasta lugar poblado, con licencia CC BY declarada. Es el caso más montable de la región. Falta: la boleta literal y confirmar si existe un registro de comunidades o de tierras comunales (RIC)."
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "fichaId": "bosque_humedo_occidente_ecuador",
+    "practica": "Agroforestería precolombina de anuales, frutales y especies forestales",
+    "periodo": "Cultura Jama-Coaque II, aproximadamente 400–1430 d. C.",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Las comunidades Jama-Coaque II del valle del Jama manejaron un mosaico productivo que combinaba cultivos anuales domesticados, árboles perennes y taxones útiles del bosque. La asociación mantenía producción diversa dentro del bosque húmedo costero fragmentado y reducía la dependencia de un único cultivo ante perturbaciones ambientales.",
+    "fuentes": [
+      {
+        "label": "Quaternary International — Late pre-Columbian agroforestry in the tropical lowlands of western Ecuador",
+        "url": "https://www.sciencedirect.com/science/article/abs/pii/S1040618211002540"
+      }
+    ],
+    "verificacion": "Jama-Coaque II archaeological culture that inhabited the western coastal lowlands of Ecuador between approximately AD 400 and AD 1430"
+  },
+  {
+    "fichaId": "guayanas_bosques_inundables_delta",
+    "practica": "Campos elevados y drenajes en sabanas costeras inundables",
+    "periodo": "650–1650 d. C.; expansión principal entre 1000 y 1450 d. C.",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "Poblaciones arauquinoides de Guyana, Surinam y Guayana Francesa elevaron superficies de cultivo y excavaron canales y zanjas en sabanas inundadas o estacionalmente inundables. La altura y la forma de los montículos respondían a la profundidad del agua, permitiendo uso agrícola intensivo donde el anegamiento impedía cultivar directamente sobre el terreno.",
+    "fuentes": [
+      {
+        "label": "Diversity — Pre-Columbian Earthworks in Coastal Amazonia",
+        "url": "https://www.mdpi.com/1424-2818/2/3/331"
+      }
+    ],
+    "verificacion": "Between 650 and 1650 AD, Arauquinoid people occupied a territory that was approximately 600 km long and used the raised field technique intensively"
+  },
+  {
+    "fichaId": "humedales_orinoco",
+    "practica": "Conucos elevados construidos con palas de madera",
+    "periodo": "Documentada en 1745",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "El misionero Joseph Gumilla registró en 1745 que los otomacos construían campos elevados con palas de madera en los Llanos venezolanos, entre los ríos Orinoco y Apure. Los conucos levantaban el horizonte de cultivo sobre humedales y sabanas anegables, evitando que el exceso estacional de agua asfixiara raíces o arrastrara semillas.",
+    "fuentes": [
+      {
+        "label": "Diversity — Pre-Columbian Earthworks in Coastal Amazonia",
+        "url": "https://www.mdpi.com/1424-2818/2/3/331"
+      }
+    ],
+    "verificacion": "In 1745, Father Gumilla met Otomac Indians who built raised fields with wooden shovels in the Venezuelan Llanos."
+  }
+]

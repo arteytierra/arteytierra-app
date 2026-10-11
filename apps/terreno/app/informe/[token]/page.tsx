@@ -2,7 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import { InformeView } from '@/components/InformeView';
 import type { InformeData } from '@/lib/informe';
-import type { DatosClima } from '@/lib/clima';
+import {
+  aplicarCalibracionPrecip, aplicarCorreccionAltura,
+  type CalibracionPrecip, type DatosClima,
+} from '@/lib/clima';
+import { migrarRadiacionClima } from '@/lib/climaMigracion';
+import { calibrarExtremos } from '@/lib/climaCalibracionSerie';
 import type { Extremos } from '@/lib/climaExtremos';
 import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
@@ -48,14 +53,42 @@ export default async function InformeTokenPage({ params }: PageProps) {
   // Marca de agua según el plan del dueño del proyecto (Semilla → con marca).
   const planDueno = data.user_id ? await getPlanServiceRole(String(data.user_id)) : 'semilla';
 
+  // ── El clima guardado es el CRUDO, y acá había que reponerle las dos
+  //    correcciones. No se reponían.
+  //
+  //    `metadatos.clima` es el dato tal como vino de POWER, a propósito: la
+  //    calibración de lluvia y la corrección de temperatura por altura viajan
+  //    aparte y el mapa se las vuelve a aplicar al abrir el proyecto. Esta
+  //    página no lo hacía, así que el informe compartido —el único artefacto que
+  //    se le entrega a un tercero— imprimía la lluvia de la grilla de ~50 km
+  //    aunque el predio tuviera un pluviómetro cargado, y la temperatura de la
+  //    altura media de la celda aunque el predio estuviera 400 m más abajo. En
+  //    el predio de prueba eso es la diferencia entre semiárido y subhúmedo.
+  //
+  //    El orden es el mismo que el de `useCapaClima` y no es intercambiable: el
+  //    balance mensual es precip − ETP y cada corrección mueve un término, así
+  //    que la altura tiene que ver la lluvia ya calibrada.
+  const calibracion = meta['calibracion_precip'] as CalibracionPrecip | undefined;
+  const topo = meta['topo'] as DatosTopografia | undefined;
+  const climaCrudo = migrarRadiacionClima(meta['clima'] as DatosClima | undefined);
+  const clima = climaCrudo
+    ? aplicarCorreccionAltura(
+        aplicarCalibracionPrecip(climaCrudo, calibracion),
+        topo?.elev_media ?? null,
+      )
+    : undefined;
+
   const informeData: InformeData = {
     nombre:   String(data.nombre ?? 'Terreno sin nombre'),
     fecha:    String(data.updated_at ?? new Date().toISOString()),
     mojones,
     metricas: calcularMetricas(mojones) ?? undefined,
-    clima:    meta['clima'] as DatosClima | undefined,
-    extremos: meta['extremos'] as Extremos | undefined,
-    topo:     meta['topo'] as DatosTopografia | undefined,
+    clima,
+    // Y la serie diaria se escala al mismo dato local, que es lo que hace que
+    // el capítulo de clima y el del balance hídrico hablen de la misma lluvia.
+    // Es idempotente: un snapshot que ya la traiga vuelve intacto.
+    extremos: calibrarExtremos(meta['extremos'] as Extremos | undefined ?? null, calibracion) ?? undefined,
+    topo,
     captacion: meta['captacion'] as CaptacionSnapshot | undefined,
     suelo:    meta['suelo'] as DatosSuelo | undefined,
     redAgua:  meta['red_agua'] as RedAguaResumen | undefined,
@@ -74,6 +107,10 @@ export default async function InformeTokenPage({ params }: PageProps) {
     zonas:    meta['zonas'] as Zona[] | undefined,
     conMarca: planDueno === 'semilla',
     sinRumbos: !can(planDueno, 'catastro.rumbos'),
+    // El plan que manda es el del dueño del proyecto, no el de quien abre el
+    // link. Si no fuera así, el informe de un Semilla se bajaría desde su
+    // propio link compartido y el candado de la app no serviría para nada.
+    sinDescarga: !can(planDueno, 'informe.descarga'),
   };
 
   return <InformeView datos={informeData} compartido />;

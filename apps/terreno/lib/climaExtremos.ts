@@ -9,6 +9,11 @@
  *     para vertederos de represas, alcantarillas y separación de swales.
  *   • Rachas secas (percentiles) → autonomía de tanques/represas.
  *   • Variabilidad interanual de la precipitación (CV%).
+ *   • La serie **dekadal año por año** (36 décadas de diez días por año), que es
+ *     lo que el balance hídrico de `lib/balanceHidrico.ts` necesita para correrse
+ *     año por año en vez de sobre el año promedio. Va acá y no en otro endpoint
+ *     porque sale de la misma serie diaria que ya se descargó, y bajarla dos
+ *     veces sería pedirle a Open-Meteo lo mismo dos veces.
  *
  * Todas las funciones son puras. Resultados orientativos — verificar con series
  * de estaciones locales antes de un proyecto ejecutivo.
@@ -42,6 +47,29 @@ export interface TormentaDiseno {
   recurrencias:         Array<{ periodo_retorno: number; mm: number }>;
 }
 
+/**
+ * Serie dekadal año por año: tres décadas por mes, 36 por año, enero primero.
+ *
+ * La década es la unidad en la que FAO publica el período de crecimiento
+ * («10-day periods», FAO Soils Bulletin 52), y tres décadas tilean exactamente
+ * un mes —1 al 10, 11 al 20, 21 al fin—, así que de acá sale también la serie
+ * mensual por año sumando de tres en tres. Una sola estructura para los dos usos.
+ *
+ * La ETP es la de Penman-Monteith de FAO-56 que trae Open-Meteo, **no** la de
+ * Hargreaves del panel de clima. Son dos métodos distintos sobre dos grillas
+ * distintas y no coinciden; `contrastarEtp` mide cuánto.
+ */
+export interface SerieDekadalPorAnio {
+  /** Años con las 36 décadas completas. Mismo orden que los arreglos de abajo. */
+  anios:  number[];
+  /** `[indiceDeAnio][dekada]` — lluvia acumulada de la década, en mm. */
+  precip: number[][];
+  /** `[indiceDeAnio][dekada]` — ETP acumulada de la década, en mm. */
+  etp:    number[][];
+  /** `[indiceDeAnio][dekada]` — temperatura media de la década, en °C. */
+  tmean:  number[][];
+}
+
 export interface Extremos {
   fuente:        string;
   periodo:       string;           // "1991–2025"
@@ -53,6 +81,46 @@ export interface Extremos {
   precip_anual:  { media_mm: number; min_mm: number; max_mm: number; cv_pct: number };
   et0_anual_mm:  number;
   calor:         { dias_ge_35: number; dias_ge_40: number };  // media/año
+  /**
+   * Opcional a propósito: un proyecto guardado antes del 05/10/2026 trae un
+   * `Extremos` sin este campo, y la pantalla tiene que poder decir «volvé a
+   * cargar los extremos» en vez de romperse o, peor, mostrar un balance vacío
+   * como si fuera un balance sin déficit.
+   */
+  dekadal?:      SerieDekadalPorAnio;
+  /**
+   * Presente cuando la lluvia de esta serie fue escalada a un dato local. Su
+   * ausencia significa que estos números son los del reanálisis tal cual.
+   *
+   * Es también el seguro contra calibrar dos veces: `calibrarExtremos` devuelve
+   * intacto todo lo que ya lo traiga. Ver `lib/climaCalibracionSerie.ts`.
+   */
+  calibracion_serie?: CalibracionSerie;
+}
+
+/**
+ * El rastro de una calibración aplicada a la serie: con qué factor, contra qué
+ * total, y —sobre todo— qué partes de estos extremos NO se tocaron.
+ *
+ * Vive acá, pegada a `Extremos`, y no en el archivo que la produce: es parte de
+ * lo que un `Extremos` es, y ponerla allá obligaría a los dos archivos a
+ * importarse en círculo.
+ */
+export interface CalibracionSerie {
+  /** Cociente entre el total objetivo y el de la serie cruda. */
+  factor_anual: number;
+  /** Doce factores, uno por mes. Con calibración anual los doce son iguales. */
+  factor_mes:   number[];
+  /** mm/año de la serie cruda — el número que la app imprimía antes. */
+  antes_mm:     number;
+  /** mm/año después de escalar. */
+  despues_mm:   number;
+  /** El total que se quiso alcanzar, tal como lo cargó quien calibró. */
+  objetivo_mm:  number;
+  modo:         'anual' | 'mensual';
+  fuente?:      string;
+  /** Lo que el escalado lineal no corrige, en palabras. Nunca viene vacío. */
+  advertencias: string[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -236,6 +304,52 @@ export function calcularExtremos(
   const mTot = media(totales);
   const cv   = mTot > 0 ? (desvio(totales) / mTot) * 100 : 0;
 
+  // ── Serie dekadal año por año ──
+  // Sólo años con las 36 décadas pobladas: una década vacía en el medio de la
+  // temporada de lluvias no es una década sin lluvia, es un agujero del dato, y
+  // el balance la contaría como sequía.
+  const DEK = 36;
+  const idxDekada = (mes: number, dia: number) => (mes - 1) * 3 + (dia <= 10 ? 0 : dia <= 20 ? 1 : 2);
+  interface AcumDek { p: number; e: number; t: number; n: number; nT: number }
+  const porAnio = new Map<number, AcumDek[]>();
+  for (let i = 0; i < n; i++) {
+    const t = serie.time[i];
+    if (!t) continue;
+    const y = parseInt(t.slice(0, 4), 10);
+    const m = parseInt(t.slice(5, 7), 10);
+    const d = parseInt(t.slice(8, 10), 10);
+    if (!y || !m || !d) continue;
+    let filas = porAnio.get(y);
+    if (!filas) {
+      filas = Array.from({ length: DEK }, () => ({ p: 0, e: 0, t: 0, n: 0, nT: 0 }));
+      porAnio.set(y, filas);
+    }
+    const acum = filas[idxDekada(m, d)];
+    if (!acum) continue;
+    const pr = num(serie.precip[i]);
+    const e0 = num(serie.et0[i]);
+    const tx = num(serie.tmax[i]);
+    const tn = num(serie.tmin[i]);
+    if (!Number.isNaN(pr)) acum.p += pr;
+    if (!Number.isNaN(e0)) acum.e += e0;
+    if (!Number.isNaN(tx) && !Number.isNaN(tn)) { acum.t += (tx + tn) / 2; acum.nT++; }
+    acum.n++;
+  }
+
+  const dekAnios: number[] = [];
+  const dekP: number[][] = [], dekE: number[][] = [], dekT: number[][] = [];
+  for (const y of [...porAnio.keys()].sort((a, b) => a - b)) {
+    const filas = porAnio.get(y);
+    if (!filas || filas.some(f => f.n < 7 || f.nT === 0)) continue;
+    dekAnios.push(y);
+    dekP.push(filas.map(f => Math.round(f.p * 10) / 10));
+    dekE.push(filas.map(f => Math.round(f.e * 10) / 10));
+    dekT.push(filas.map(f => Math.round((f.t / f.nT) * 10) / 10));
+  }
+  const dekadal: SerieDekadalPorAnio | undefined = dekAnios.length >= 3
+    ? { anios: dekAnios, precip: dekP, etp: dekE, tmean: dekT }
+    : undefined;
+
   // ── Calor ──
   let d35 = 0, d40 = 0;
   for (const r of regs) {
@@ -267,6 +381,7 @@ export function calcularExtremos(
       dias_ge_35: Math.round((d35 / anios) * 10) / 10,
       dias_ge_40: Math.round((d40 / anios) * 10) / 10,
     },
+    dekadal,
   };
 }
 

@@ -239,13 +239,55 @@ describe('resumen', () => {
   it('cuenta lo que hay y lo que falta', () => {
     expect(resumenSaberes()).toEqual({
       documentados: 85,
-      // 60 y no 59: el waterschap neerlandés estrenó las fuentes por saber de
-      // Europa, que el relevamiento había citado por región.
-      conFuente: 60,
+      // 85 de 85 desde el 23/09/2026. Los 26 europeos nacieron con
+      // `fuentes: []` porque el relevamiento citó por región y no por saber;
+      // el waterschap neerlandés estrenó la atribución una a una al activarse,
+      // y los 25 restantes la recibieron después. Deja de haber saberes
+      // bloqueados por la condición 1 de la compuerta.
+      conFuente: 85,
       conEcorregiones: 45,
       conGeometria: 2,
       aprobados: 2,
     });
+  });
+
+  it('ningún saber queda bloqueado por falta de fuente', () => {
+    // `sin_fuente` es la PRIMERA condición de la compuerta, así que un saber
+    // sin cita no sólo no se activa: tampoco se puede auditar por qué no se
+    // activa, porque el motivo tapa a los que vienen después. Mientras los 26
+    // europeos estuvieron en `fuentes: []` estaban doblemente bloqueados.
+    const sinFuente = SABERES_TERRITORIALES.filter(s => s.fuentes.length === 0);
+    expect(sinFuente.map(s => s.id)).toEqual([]);
+  });
+
+  it('cada fuente tiene etiqueta, URL http y fecha de revisión', () => {
+    // El informe imprime estas tres cosas. Una URL vacía o una fecha ausente
+    // se ven recién en la pantalla del usuario si nadie las mira acá.
+    const malas: string[] = [];
+    for (const saber of SABERES_TERRITORIALES) {
+      for (const fuente of saber.fuentes) {
+        if (!fuente.label?.trim()) malas.push(saber.id + ': etiqueta vacía');
+        if (!/^https?:\/\//.test(fuente.url ?? '')) malas.push(saber.id + ': URL no http — ' + fuente.url);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fuente.revisada ?? '')) malas.push(saber.id + ': fecha ' + fuente.revisada);
+      }
+    }
+    expect(malas, malas.join('\n')).toEqual([]);
+  });
+
+  it('los 26 europeos citan algo propio y no sólo la cartografía general', () => {
+    // La trampa que ya mordió con las fichas de Canadá: repetir las mismas tres
+    // cartografías generales en todas las fichas las hace trazables pero no
+    // verificables, porque no hay dónde ir a chequear lo que la ficha concreta
+    // afirma. Acá se exige que ninguna URL se repita en más de tres saberes.
+    const porUrl = new Map<string, string[]>();
+    for (const saber of SABERES_TERRITORIALES) {
+      if (saber.region !== 'europa-occidental') continue;
+      for (const fuente of saber.fuentes) {
+        porUrl.set(fuente.url, [...(porUrl.get(fuente.url) ?? []), saber.id]);
+      }
+    }
+    const repetidas = [...porUrl.entries()].filter(([, ids]) => ids.length > 3);
+    expect(repetidas.map(([url, ids]) => url + ' en ' + ids.length)).toEqual([]);
   });
 });
 

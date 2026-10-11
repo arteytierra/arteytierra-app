@@ -17,7 +17,7 @@
 import * as turf from '@turf/turf';
 import type { GrillaElevacion } from './grillaElevacion';
 import { recortarGrillaA } from './grillaElevacion';
-import { calcularCurvas, MAX_NIVELES, nivelesEstimados } from './curvasNivel';
+import { calcularCurvas, NIVELES_MUCHOS, nivelesEstimados } from './curvasNivel';
 import {
   separacionVerticalZanjas, acotar,
   type Recomendacion, type InfiltracionSuelo, type CoberturaLadera,
@@ -119,20 +119,27 @@ export interface DiagnosticoSwales {
  *
  * El caso real que se veía en predios de miles de hectáreas: el desnivel total
  * es de cientos de metros, así que una separación de 1,5 m pide cientos de
- * curvas y `calcularCurvas` corta en seco al pasarse de `MAX_NIVELES`. El
- * mensaje viejo culpaba a "poco desnivel o intervalo muy grande" — justo al
- * revés de lo que pasaba.
+ * swales. El mensaje viejo culpaba a "poco desnivel o intervalo muy grande" —
+ * justo al revés de lo que pasaba.
+ *
+ * Ojo con el motivo: hasta el 24/09/2026 el límite era del motor —
+ * `calcularCurvas` devolvía vacío al pasarse de sesenta niveles— y acá se
+ * heredaba. Ese tope ya no existe; las curvas se dibujan todas las que se
+ * pidan. Lo que queda es un criterio de DISEÑO, que es distinto y propio de
+ * esta herramienta: quinientos swales en un predio no se construyen, por más
+ * que el relieve los admita y la máquina los dibuje. Por eso el umbral sigue
+ * acá y no volvió al motor.
  */
 export function diagnosticarSwales(grilla: GrillaElevacion, intervaloV: number): DiagnosticoSwales {
   const desnivel = grilla.elev_max - grilla.elev_min;
   const niveles  = nivelesEstimados(desnivel, intervaloV);
-  const sugerido = ESCALONES_V.find(v => nivelesEstimados(desnivel, v) <= MAX_NIVELES) ?? null;
+  const sugerido = ESCALONES_V.find(v => nivelesEstimados(desnivel, v) <= NIVELES_MUCHOS) ?? null;
 
-  const base = { desnivel_m: +desnivel.toFixed(1), niveles, max_niveles: MAX_NIVELES, intervalo_sugerido: sugerido };
+  const base = { desnivel_m: +desnivel.toFixed(1), niveles, max_niveles: NIVELES_MUCHOS, intervalo_sugerido: sugerido };
   if (!(intervaloV > 0) || desnivel < intervaloV) {
     return { ...base, puede: false, motivo: 'sin_relieve' };
   }
-  if (niveles > MAX_NIVELES) {
+  if (niveles > NIVELES_MUCHOS) {
     return { ...base, puede: false, motivo: 'demasiados_swales' };
   }
   return { ...base, puede: true, motivo: null };
@@ -227,6 +234,20 @@ export function calcularSwales(
   const anchoFranja = Math.min(150, Math.max(4, intervaloV / pendMedia));
 
   const poly = polígonoDe(mojones);
+
+  // El tope de swales es de esta herramienta y se aplica acá, explícito.
+  //
+  // Hasta el 24/09/2026 no hacía falta escribirlo: `calcularCurvas` devolvía
+  // vacío al pasarse de sesenta niveles y el trazado moría solo. Ese tope se
+  // sacó del motor —las curvas de nivel ahora se dibujan todas las que se
+  // pidan— y sin esta línea el predio de 300 m de desnivel con separación de
+  // 1,5 m pasaría de no trazar nada a trazar doscientos swales. Ninguna de las
+  // dos cosas sirve, pero la segunda además se ve razonable en pantalla.
+  //
+  // El criterio no es de cálculo sino de obra: doscientos swales no se
+  // construyen. `diagnosticarSwales` usa el mismo umbral y explica por qué,
+  // con una separación alternativa que sí entra.
+  if (nivelesEstimados(grilla.elev_max - grilla.elev_min, intervaloV) > NIVELES_MUCHOS) return null;
 
   const curvas = calcularCurvas(grilla, intervaloV);
   if (curvas.length === 0) return null;

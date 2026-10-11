@@ -1,0 +1,62 @@
+{
+  "pais": "Belice",
+  "iso3": "BLZ",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué un registro de comunidades o de tierras mayas; queda pendiente. existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Statistical Institute of Belize (SIB)",
+    "anio": 2022,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita: la presentación de resultados no trae la pregunta y no encontré el cuestionario.",
+    "universo": "Household population (397.483 personas).",
+    "total_declarado": null,
+    "poblacion_base": 397483,
+    "url_cuadros": "https://sib.org.bz/press-release_census-launch/",
+    "urls_archivos": [
+      "https://sib.org.bz/wp-content/uploads/CensusLaunch2022.pdf"
+    ],
+    "niveles": [
+      "nacional"
+    ],
+    "hay_desagregado_por_pueblo": false,
+    "hay_desagregado_por_territorio": false,
+    "sin_declarar_pueblo": null,
+    "verificado": true,
+    "como_se_verifico": "2026-09-26: bajé y abrí la presentación «Census Key Findings Launch, April 8, 2024» (48 páginas). La diapositiva «Population by Ethnic Group 2010-2022» publica sólo porcentajes: Mestizo/Hispanic/Latino 51.7 %, Creole 25.2 %, Maya 9.8 %, Garifuna 4.0 %, East Indian 1.5 %, Other 5.6 %, Don't Know/Not Stated 0.8 %. La población de hogares es 397.483. No hay cifra absoluta de Maya ni de Garifuna: total_declarado queda en null (multiplicar 9.8 % por 397.483 sería una estimación nuestra). La nota de prensa del SIB, leída con un lector web, da «Other ethnicities: 7.8 percent», distinto del 5.6 % de la diapositiva."
+  },
+  "pueblos": [
+    "Maya",
+    "Garifuna"
+  ],
+  "lo_que_no_dice": [
+    "Sólo porcentajes nacionales; no encontré tablas por distrito ni cifras absolutas por grupo étnico.",
+    "La presentación no separa Mopan, Q'eqchi' y Yucatec como grupos étnicos; sí aparecen como lenguas habladas («Speaks Maya Ketchi» 6.3 %, «Speaks Maya Mopan» 3.9 %, «Speaks Maya Yucatec» 0.5 %).",
+    "Creole, East Indian y Mestizo/Hispanic/Latino no son pueblos originarios.",
+    "No encontré licencia publicada del SIB."
+  ],
+  "trampas": [
+    "Las lenguas habladas no son pueblos: «Speaks Maya Ketchi» no es población Q'eqchi' y las personas pueden hablar varias lenguas (los porcentajes no suman 100).",
+    "«Other» figura 5.6 % en la diapositiva y 7.8 % en la nota de prensa: una de las dos incluye otra cosa; no se usan sin aclarar.",
+    "El denominador es población en hogares, no población total."
+  ],
+  "notas": "Belice publica etnicidad como porcentaje. Sin cifras absolutas ni licencia, no se monta. Falta: tablas del informe principal 2022 y licencia del SIB."
+}

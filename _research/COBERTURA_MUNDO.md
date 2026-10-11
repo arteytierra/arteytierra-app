@@ -108,3 +108,22 @@ Encargo, en orden:
   eso heredan `huerta -35`, `forestal -35`, `reserva +25`. La dirección es
   correcta aunque la clase sea discutible, y reclasificar RESOLVE no es tarea de
   esta app.
+
+## Lo que apareció al escribir el encargo de Indomalaya (25/09/2026)
+
+El diagnóstico de arriba nombraba un solo error del bioma tropical húmedo: los
+suelos volcánicos jóvenes. Hay un segundo, de la misma forma y probablemente
+más grande por población afectada: **las llanuras y deltas aluviales de Asia**.
+
+Trece ECO_ID indomalayos que RESOLVE clasifica como bosque húmedo de hoja ancha
+son en realidad aluvión joven recargado por la creciente, con arrozales
+continuos desde hace dos mil años: el valle del Brahmaputra (222), el Chao
+Phraya (224, 225), el Irrawaddy (234, 235), la llanura gangética baja y alta
+(238, 287), el río Rojo (266), el sudoeste de Borneo (273), Sumatra (277), los
+Sundarbans (282) y el Tonle Sap (285). Todos heredan el `huerta -25` cuya razón
+dice que la fertilidad está en la biomasa viva y no en el suelo, que es
+exactamente lo contrario de lo que pasa ahí.
+
+Como en el caso volcánico, esto no se arregla tocando el delta global: se
+arregla con ficha regional. Queda encargado en
+`_research/_encargos/PROMPT_GPT_INDOMALAYA.md`.

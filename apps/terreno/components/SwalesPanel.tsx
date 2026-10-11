@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Ruler, Droplets, ArrowRight, AlertTriangle, Sparkles, SlidersHorizontal, Timer, Shovel, TriangleAlert, BookOpen } from 'lucide-react';
 import type {
   ResultadoSwalesMulti, BloqueSwales, OpcionesSwales, SeccionSwale, InfiltracionSwale,
@@ -9,7 +9,10 @@ import type {
 import type { Recomendacion } from '@/lib/criterios';
 import type { HidrologiaPredio } from '@/lib/hidrologiaPredio';
 import { PERIODOS_RETORNO } from '@/lib/hidrologiaPredio';
+import { planillaDeSwale } from '@/lib/planilla';
+import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
+import { PlanillaBloque } from './PlanillaBloque';
 
 type OpcionesGlobales = Omit<OpcionesSwales, 'intervaloV' | 'pendiente_pct'>;
 
@@ -24,6 +27,12 @@ interface Props {
    * parcela dibujada). Lo calcula el contenedor, que es quien tiene la grilla.
    */
   analisis:    AnalisisArea[];
+  /**
+   * Fuente del relieve en uso. No cambia el trazado: decide con qué
+   * incertidumbre vertical se declara la planilla de replanteo, y de ahí sale
+   * cuánto puede estar corrida la traza de la zanja.
+   */
+  fuenteRelieve?: FuenteRelieve | null;
   onPeriodoRetorno: (T: number) => void;
   onGenerar:   (areas: AreaSwales[], intervalos: Record<string, number>, opts: OpcionesGlobales) => void;
   onColocar:   () => void;
@@ -45,7 +54,7 @@ export interface SwalesInputs {
 }
 
 export function SwalesPanel({
-  grillaLista, multi, hidro, analisis,
+  grillaLista, multi, hidro, analisis, fuenteRelieve = null,
   onPeriodoRetorno, onGenerar, onColocar, onIrATopo, onIrAClima, onIrASuelo,
   inicial, onInputs,
 }: Props) {
@@ -252,7 +261,7 @@ export function SwalesPanel({
         </p>
       )}
 
-      {multi && <Resultados multi={multi} onColocar={onColocar} />}
+      {multi && <Resultados multi={multi} onColocar={onColocar} fuenteRelieve={fuenteRelieve} />}
     </div>
   );
 }
@@ -354,7 +363,9 @@ function AreaFila({ a, elegida, valor, onAlternar, onValor }: {
 
 // ─── Resultados ──────────────────────────────────────────────────────────────
 
-function Resultados({ multi, onColocar }: { multi: ResultadoSwalesMulti; onColocar: () => void }) {
+function Resultados({ multi, onColocar, fuenteRelieve }: {
+  multi: ResultadoSwalesMulti; onColocar: () => void; fuenteRelieve: FuenteRelieve | null;
+}) {
   const salieron = multi.bloques.filter(b => b.resultado);
   if (salieron.length === 0) {
     return (
@@ -381,7 +392,7 @@ function Resultados({ multi, onColocar }: { multi: ResultadoSwalesMulti; onColoc
       </p>
 
       {multi.bloques.map(b => b.resultado
-        ? <BloqueDetalle key={b.id} b={b} solo={multi.bloques.length === 1} />
+        ? <BloqueDetalle key={b.id} b={b} solo={multi.bloques.length === 1} fuenteRelieve={fuenteRelieve} />
         : <Fallo key={b.id} b={b} />)}
 
       <button
@@ -394,7 +405,9 @@ function Resultados({ multi, onColocar }: { multi: ResultadoSwalesMulti; onColoc
   );
 }
 
-function BloqueDetalle({ b, solo }: { b: BloqueSwales; solo: boolean }) {
+function BloqueDetalle({ b, solo, fuenteRelieve }: {
+  b: BloqueSwales; solo: boolean; fuenteRelieve: FuenteRelieve | null;
+}) {
   const r = b.resultado!;
   return (
     <div className="rounded-md bg-white/70 p-2.5 space-y-1.5">
@@ -410,6 +423,80 @@ function BloqueDetalle({ b, solo }: { b: BloqueSwales; solo: boolean }) {
       </p>
       {r.seccion && <Seccion s={r.seccion} rec={b.recomendacion} />}
       {r.infiltracion && <Infiltracion i={r.infiltracion} />}
+      <ReplanteoSwales b={b} fuenteRelieve={fuenteRelieve} />
+    </div>
+  );
+}
+
+/**
+ * El replanteo de las zanjas de un bloque.
+ *
+ * Una planilla por swale, porque cada zanja es un eje con su propia progresiva y
+ * su propio mojón de referencia: no hay forma de replantear veinte zanjas con
+ * una tabla. El selector arranca en la más larga, que es la que más trabajo
+ * lleva, y el CSV baja la que está a la vista.
+ *
+ * Lo que esta pantalla destapó —y no se veía mientras el swale era una línea en
+ * el mapa— es el corrimiento horizontal de la traza: la zanja se traza sobre una
+ * curva de nivel leída del modelo de elevación, y si la cota de esa curva puede
+ * estar corrida, la curva está dibujada en otro lugar. En una ladera suave eso
+ * son decenas de metros. Va impreso en la planilla.
+ */
+function ReplanteoSwales({ b, fuenteRelieve }: { b: BloqueSwales; fuenteRelieve: FuenteRelieve | null }) {
+  const r = b.resultado!;
+  const orden = useMemo(
+    () => r.swales
+      .map((s, i) => ({ s, i }))
+      .sort((x, y) => y.s.longitud_m - x.s.longitud_m),
+    [r.swales],
+  );
+  const [elegido, setElegido] = useState(0);
+  // Si el trazado cambió y quedó con menos zanjas, el índice viejo no existe.
+  const idx = elegido < orden.length ? elegido : 0;
+  const sw = orden[idx]?.s;
+
+  const planilla = useMemo(() => {
+    if (!sw) return null;
+    return planillaDeSwale({
+      puntos: sw.puntos,
+      cota_m: sw.cota,
+      prof_m: r.seccion?.prof_m ?? null,
+      seccion: r.seccion
+        ? { base_m: r.seccion.base_m, talud_z: r.seccion.talud_z, ancho_sup_m: r.seccion.ancho_sup_m }
+        : null,
+      rotulo: `Swale en la cota ${sw.cota.toFixed(2)} m · ${Math.round(sw.longitud_m)} m`,
+      pendienteTerreno_pct: b.pendiente_pct,
+      fuenteRelieve,
+    });
+  }, [sw, r.seccion, b.pendiente_pct, fuenteRelieve]);
+
+  if (!sw || !planilla) return null;
+
+  return (
+    <div className="border-t border-teal-700/15 pt-2 mt-1 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-semibold text-ink-900">Replanteo de la zanja</p>
+        {orden.length > 1 && (
+          <select
+            value={idx}
+            onChange={e => setElegido(Number(e.target.value))}
+            className="text-[10px] border border-bone-200 rounded px-1 py-0.5 bg-white max-w-[9.5rem]"
+          >
+            {orden.map((o, k) => (
+              <option key={o.i} value={k}>
+                Cota {o.s.cota.toFixed(2)} m · {Math.round(o.s.longitud_m)} m
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <PlanillaBloque planilla={planilla} nombreArchivo={`swale_${sw.cota.toFixed(2)}`}>
+        <p className="text-[10px] text-ink-700/70 leading-relaxed">
+          La zanja va a nivel, así que toda la planilla se lee contra el mojón de referencia y no hace falta
+          ninguna cota absoluta: la altura sobre el mojón es la profundidad, igual en todas las estaciones.
+          {orden.length > 1 && ` Hay ${orden.length} zanjas en ${b.nombre.toLowerCase()} y cada una lleva su planilla.`}
+        </p>
+      </PlanillaBloque>
     </div>
   );
 }

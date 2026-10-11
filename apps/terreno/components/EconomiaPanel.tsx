@@ -8,7 +8,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { DollarSign, Plus, Trash2, Wand2 } from 'lucide-react';
 import {
   calcularEconomia, rubrosDesdeProyecto, nuevoRubro, formatearMoneda,
-  CONCEPTOS_SUGERIDOS, type RubroPresupuesto, type Moneda, type EconomiaResumen,
+  type RubroPresupuesto, type Moneda, type EconomiaResumen,
 } from '@/lib/economia';
 import type { MetricasPoligono } from '@/lib/geometria';
 import type { RedAguaResumen } from '@/lib/hidraulica';
@@ -67,6 +67,17 @@ export function EconomiaPanel({ metricas, redAgua, represa, riego, resumenInicia
           <Plus className="w-3.5 h-3.5" /> Fila
         </button>
       </div>
+
+      {/* El renglón de movimiento de suelo tomaba su cantidad de la capacidad
+          embalsada, que es el AGUA. Ahora no sale sin el volumen calculado del
+          muro, y el aviso reemplaza al número equivocado. Ver `materiales.ts`. */}
+      {represa && (
+        <p className="text-[11px] text-clay-800 bg-clay-500/5 border border-clay-500/20 rounded-lg px-2.5 py-2 leading-relaxed">
+          El movimiento de suelo de la represa no entra acá: el volumen de tierra del muro no se puede
+          deducir de la capacidad embalsada. Dimensioná el muro en la pestaña Represa y traé el volumen
+          medido en banco desde ahí.
+        </p>
+      )}
 
       {rubros.length === 0 ? (
         <p className="text-xs text-ink-700/50">Traé las cantidades del proyecto (perímetro, cañerías, represa, riego) o agregá filas manualmente. Los precios son editables.</p>

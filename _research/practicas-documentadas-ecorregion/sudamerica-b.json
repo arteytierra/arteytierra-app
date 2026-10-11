@@ -1,0 +1,182 @@
+[
+  {
+    "fichaId": "llanos_orinoquia",
+    "practica": "Campos agrícolas elevados de Caño Ventosidad",
+    "periodo": "Expansión arauquinoide, entre 1000 y 1400 d.C.",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "En los Llanos de Barinas se construyeron campos de cultivo prehispánicos asociados por la investigación arqueológica con grupos de selva tropical de la expansión arauquinoide. La elevación y modelado del terreno permitió habilitar superficies agrícolas dentro de una sabana con marcada estacionalidad hídrica.",
+    "fuentes": [
+      {
+        "label": "INDIANA — Campos agrícolas prehispánicos en los Llanos de Barinas, Venezuela",
+        "url": "https://journals.iai.spk-berlin.de/index.php/indiana/article/view/1599"
+      }
+    ],
+    "verificacion": "la gran expansión Arauquinoide, que desde el Orinoco Medio y Alto, se dirigió a otros sectores del territorio venezolano entre los 1000 y 1400 D.C."
+  },
+  {
+    "fichaId": "sabanas_beni",
+    "practica": "Campos elevados precolombinos de los Llanos de Moxos",
+    "periodo": "Precolombino; cartografía integral publicada en 2010 y registrada en 2023",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "En el norte de Santa Ana de Yacuma se concentraron plataformas elevadas de tierra para intensificar el cultivo en una llanura estacionalmente inundable. La cartografía de alta resolución sobre 416 km² muestra que la extensión de estas obras fue mucho mayor de lo supuesto, pero la fuente advierte que sus modalidades concretas de uso siguen siendo inciertas.",
+    "fuentes": [
+      {
+        "label": "Deutsches Archäologisches Institut — Raised Fields of Northwestern Bolivia: a GIS based analysis",
+        "url": "https://publications.dainst.org/journals/zaak/article/view/4198"
+      }
+    ],
+    "verificacion": "Pre-Columbian raised fields are elevated earth platforms which are found in several regions of Central and South America."
+  },
+  {
+    "fichaId": "sabanas_guayanesas",
+    "practica": "Manejo Pemón del fuego en la Gran Sabana",
+    "periodo": "Practicado durante siglos; observado por UNESCO e IUCN en 1999",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "Las comunidades Pemón de Canaima aplican procedimientos tradicionales de encendido y control en la Gran Sabana, donde el fuego participa de la dinámica ecológica. La fuente documenta quemas pequeñas y controladas, pero cualquier traducción a manejo predial debe reconocer la autoridad y el conocimiento Pemón y someterse al plan de fuego y la legislación vigentes.",
+    "fuentes": [
+      {
+        "label": "UNESCO–IUCN — Mission report to Canaima National Park",
+        "url": "https://whc.unesco.org/document/134048"
+      }
+    ],
+    "verificacion": "the indigenous Pemón communities have been managing fires for centuries in this area and have their own traditional procedures for control"
+  },
+  {
+    "fichaId": "valles_secos_interandinos",
+    "practica": "Riego por kanis siguiendo curvas de nivel",
+    "periodo": "Técnica ancestral andina aún practicada y documentada en 2016",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "En la comunidad de Jatichulaya, Charazani, se abren kanis o surcos de conducción adaptados a pendientes fuertes y alineados con las curvas de nivel. El reparto está a cargo de un Agente de Aguas y el trazado evita erosión, aunque la fuente destaca su elevada demanda de mano de obra.",
+    "fuentes": [
+      {
+        "label": "FAO AGRIS — La práctica de riegos ancestrales andinos: el riego por Kanis",
+        "url": "https://agris.fao.org/search/en/providers/125077/records/67653b7bfccf879925c0e927"
+      }
+    ],
+    "verificacion": "La práctica de riego tuvo que ser adaptada a las grandes pendientes dando lugar a técnicas muy particulares que aún hoy día se practican."
+  },
+  {
+    "fichaId": "paramos_andinos",
+    "practica": "Control comunitario del agua ligado al desarrollo agrícola",
+    "periodo": "Al menos cuatro siglos hasta el registro de 2005",
+    "tipo": "agua",
+    "vigencia": "en_uso",
+    "detalle": "En Santa Rosa de Pilahuín, Ecuador, el desarrollo agrícola de páramo se organizó durante cuatro siglos junto con el control del agua. La referencia es útil para tratar captación, conducción, reparto y reglas colectivas como un solo sistema; no autoriza por sí sola nuevas obras en humedales de páramo protegidos.",
+    "fuentes": [
+      {
+        "label": "FAO AGRIS — Historical evolution of water control in an Andean community of Ecuador",
+        "url": "https://agris.fao.org/search/en/providers/122439/records/6851663faab9439e79fca265"
+      }
+    ],
+    "verificacion": "The history of water control has been closely linked to the agricultural development in the studied area for the last four centuries."
+  },
+  {
+    "fichaId": "puna_seca_central",
+    "practica": "Ganadería camélida sobre bofedales",
+    "periodo": "Más de 3000 años, desde tiempos prehispánicos hasta la actualidad",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "Comunidades altoandinas crían llamas y alpacas y mantienen la cultura de la tama o rebaño, vinculando pastoreo, reproducción y cuidado de humedales. El diseño territorial debe proteger bofedales, distribuir la presión de pastoreo y conservar diversidad de razas, combinando saber tradicional con sanidad y monitoreo actuales.",
+    "fuentes": [
+      {
+        "label": "FAO y Ministerio de Agricultura de Chile — Ganadería camélida sostenible en el territorio altoandino",
+        "url": "https://www.fao.org/americas/publications/enfoques/ganaderia-camelida/"
+      }
+    ],
+    "verificacion": "La ganadería camélida, una práctica ancestral en el territorio Altoandino, tiene sus raíces en tiempos prehispánicos, con más de 3 mil años de antigüedad."
+  },
+  {
+    "fichaId": "caatinga",
+    "practica": "Fundo de Pasto y pastoreo comunitario de la Caatinga",
+    "periodo": "Desde el período colonial y vigente en 2022",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "Las Comunidades Tradicionales Fundo de Pasto del Sertão do São Francisco gestionan en común áreas de Caatinga para la cría extensiva, junto con espacios familiares de cultivo. El uso colectivo y las reglas sociales permiten distribuir el acceso a forraje nativo en el semiárido y deben considerarse inseparables de cualquier propuesta física de potreros o cierres.",
+    "fuentes": [
+      {
+        "label": "Embrapa — Comunidades tradicionais Fundo de Pasto y agrobiodiversidad de la Caatinga",
+        "url": "https://www.infoteca.cnptia.embrapa.br/infoteca/bitstream/doc/1140187/1/Fundo-de-pasto.-Bianchini.2022.pdf"
+      }
+    ],
+    "verificacion": "A origem da forma de organização social que constitui o modo de vida das Comunidades Tradicionais Fundo de Pasto remonta ao período colonial"
+  },
+  {
+    "fichaId": "caatinga_enclaves_humedos",
+    "practica": "Café sombreado bajo dosel nativo en Baturité",
+    "periodo": "Desde 1862 y consolidado a fines del siglo XIX; vigente",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Pequeños productores de la sierra de Baturité trasladaron el café desde pleno sol hacia el dosel del bosque al observar mayor resistencia a radiación, lluvias e intemperie. El sistema lavoura-floresta conserva sombra y cobertura, aunque la propia historia regional registra envejecimiento de cafetales y desgaste de suelo que un diseño actual debe corregir.",
+    "fuentes": [
+      {
+        "label": "Turismo: Visão e Ação / SciELO — O café sombreado da serra de Baturité",
+        "url": "https://www.scielo.br/j/tva/a/xzXYnDmrkxt4C89fFvv5t3f/?format=html"
+      }
+    ],
+    "verificacion": "Diante dessa nova realidade, surgem os cafés sombreados, no fim do século XIX."
+  },
+  {
+    "fichaId": "bosque_seco_chiquitano",
+    "practica": "Roza, tala y quema controlada de baja intensidad",
+    "periodo": "Práctica chiquitana premisional transmitida hasta la actualidad",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "Los Chiquitanos preparan pequeñas áreas para maíz, yuca, frijol y zapallo mediante tala, roza y quema adaptadas a los ciclos climáticos. La fuente describe conocimiento transmitido entre generaciones para controlar desmontes y chaqueos sin afectar otros sembradíos; no convierte la quema en una recomendación general fuera de su gobernanza y marco legal.",
+    "fuentes": [
+      {
+        "label": "Ciencia y Cultura / SciELO Bolivia — De la espada y la cruz a los tractores y la constitución en la conquista de Chiquitos",
+        "url": "https://www.scielo.org.bo/scielo.php?pid=S2077-33232025000100221&script=sci_arttext"
+      }
+    ],
+    "verificacion": "ellos mantienen la tradición de talar, rozar y quemar el suelo para preparar las áreas de cultivo de maíz, yuca, frijol, zapallo"
+  },
+  {
+    "fichaId": "bosques_babacu_maranhao",
+    "practica": "Recolección y quiebra manual del coco babaçu",
+    "periodo": "Transmitida por generaciones y vigente en 2019",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Las quebradeiras de coco babaçu, reconocidas como comunidad tradicional, aprenden desde niñas con sus madres a recolectar, transportar y quebrar el fruto para extraer la almendra. Las leyes de Babaçu Livre protegen en varios municipios el acceso de las mujeres a las palmeras incluso en propiedades privadas, por lo que el diseño predial debe mantener pies productivos y corredores de acceso.",
+    "fuentes": [
+      {
+        "label": "Agência de Notícias IBGE — Quebradeiras de coco babaçu preservam tradição no interior do Maranhão",
+        "url": "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/23624-quebradeiras-de-coco-babacu-preservam-tradicao-no-interior-do-maranhao"
+      }
+    ],
+    "verificacion": "O conhecimento é passado de geração em geração e a questão de gênero é central."
+  },
+  {
+    "fichaId": "campos_rupestres",
+    "practica": "Recolección estacional de flores siempre-vivas",
+    "periodo": "Práctica secular y vigente; reconocida por FAO en 2020",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Familias campesinas y quilombolas del Espinhaço suben entre abril y octubre para recolectar flores siempre-vivas y permanecer semanas en la sierra. El manejo regula momento e intensidad según el ciclo natural para permitir renovación, y se articula con custodia e intercambio de semillas y plantas alimentarias y medicinales.",
+    "fuentes": [
+      {
+        "label": "FAO Brasil — Apanhadoras e apanhadores de flores sempre-vivas",
+        "url": "https://www.fao.org/brasil/noticias/detail-events/fr/c/1265788/"
+      }
+    ],
+    "verificacion": "O manejo é baseado no conhecimento tradicional, estritamente relacionado aos ciclos naturais das espécies e à intensidade de coleta"
+  },
+  {
+    "fichaId": "pantanal",
+    "practica": "Pastoreo extensivo ajustado al pulso de inundación",
+    "periodo": "Desde el ciclo minero colonial; documentado en el plan de manejo contemporáneo",
+    "tipo": "ganaderia",
+    "vigencia": "en_uso",
+    "detalle": "La ganadería extensiva pantaneira se desarrolló para abastecer minas y ciudades y acomodó el rodeo al pulso anual de inundación. Durante las crecientes los animales se concentran en cordilheiras y capões altos y, con aguas bajas, amplían el pastoreo; esta movilidad exige proteger refugios, rutas y capacidad de carga.",
+    "fuentes": [
+      {
+        "label": "ICMBio — Plano de manejo RPPN Estância Ecológica SESC Pantanal",
+        "url": "https://www.gov.br/icmbio/pt-br/assuntos/biodiversidade/unidade-de-conservacao/unidades-de-biomas/cerrado/lista-de-ucs/rppn-estancia-ecologica-sesc-pantanal/arquivos/rppn_sesc_pantanalplanodemanejo.pdf/%40%40download/file/rppn_sesc_pantanalPLANODEMANEJO.pdf"
+      }
+    ],
+    "verificacion": "A pecuária extensiva no Pantanal decorreu principalmente da necessidade de abastecer as minas e as cidades surgidas à sua volta"
+  }
+]

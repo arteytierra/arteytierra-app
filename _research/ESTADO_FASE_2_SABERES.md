@@ -175,9 +175,14 @@ no para crofting.
 2. Si la capa va a admitir alguna vez saberes de geometría lineal. Hoy no, y no
    parece que deba: media capa son sistemas de territorio, no de camino.
 
-**2. Los sitios SIPAM/GIAHS de América.** Chinampas de Xochimilco, Metepantle
-de Tlaxcala, chakra amazónica de Napo, Viñales. La FAO publica el polígono del
-sitio; hay que ver bajo qué licencia.
+**2. Los sitios SIPAM/GIAHS de América — cerrado el 10/10/2026.** La FAO **no**
+publica la geometría de los sitios: la ficha es descriptiva y no hay polígono,
+shapefile, GeoJSON ni WMS en ninguna. La licencia ni llegó a importar, y de
+todas formas no habría alcanzado —el contenido web de la FAO es no comercial, y
+la CC BY 4.0 de sus bases estadísticas prohíbe el uso «in conjunction with the
+promotion of a commercial enterprise»—. Viñales no era un sitio GIAHS: es
+UNESCO. Ver `_encargos/RESPUESTAS_LICENCIAS.md`. Si algún día hace falta el
+polígono de Xochimilco o Tlaxcala, la vía es el INEGI, no la FAO.
 
 **3. Todo lo demás — con acuerdo antes que con polígono.** Los saberes de
 pueblos originarios de Sudamérica, Mesoamérica y Estados Unidos no se activan

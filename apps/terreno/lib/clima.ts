@@ -9,6 +9,23 @@
  * Resultados son valores promedio históricos — orientativos, no de precisión agronómica.
  */
 import { fuentesRegionalesClima } from './climaFuentes';
+import { diagnosticarAltura, type CorreccionAltura } from './climaAltura';
+import { rotuloKoppen } from './koppenTexto';
+
+export {
+  GRADIENTE_TERMICO_C_KM, UMBRAL_IGNORAR_M, UMBRAL_AVISO_M,
+  deltaTemperaturaC, diagnosticarAltura,
+  type CorreccionAltura, type ConfianzaAltura,
+} from './climaAltura';
+
+/**
+ * Megajoule por kilovatio-hora. Un kWh son 3,6 MJ por definición (1 kW × 3.600 s),
+ * así que esto no es una constante empírica y no se ajusta: es el factor que
+ * convierte la radiación como la publica POWER —MJ/m²/día— a la unidad con la
+ * que se dimensiona un panel —kWh/m²/día—. Mezclarlas pasa desapercibido porque
+ * las dos dan números de dos cifras en latitudes medias.
+ */
+export const MJ_POR_KWH = 3.6;
 
 export const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const;
 export type MesIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -90,6 +107,18 @@ export interface DatosClima {
    */
   koppen_calculado?: Koppen;
   /**
+   * La clase que dio el mapa de 1 km, guardada SIEMPRE que el mapa contestó —
+   * también cuando después la pisó el cálculo local porque se calibró la lluvia.
+   *
+   * No es redundante con `koppen`: la hace falta la deriva. Los tres períodos de
+   * `koppen_deriva` son tres lecturas del MISMO mapa, y sólo son comparables
+   * entre sí. Si el presente de esa tira se reemplaza por una clase calculada
+   * con otro método, la tira deja de medir cómo se mueve el clima y pasa a medir
+   * la diferencia entre dos métodos: el panel llegó a mostrar «Cwa → BSk → Cwa»
+   * con la leyenda «la clase es la misma en los tres períodos» debajo.
+   */
+  koppen_mapa?:     Koppen;
+  /**
    * Cómo se mueve la clase del predio en el tiempo: dónde estaba (1961-1990),
    * dónde está (1991-2020) y a dónde va (2071-2099, SSP2-4.5). Sale de leer el
    * mismo punto en tres mapas de Beck. Está sólo si el mapa respondió.
@@ -114,6 +143,23 @@ export interface DatosClima {
   mes_mas_humedo?:  string;
   /** Presente si la precipitación fue calibrada con un dato local. */
   calibracion?:     CalibracionPrecip;
+  /**
+   * Altura, en metros, que la fuente climática le asigna a la celda de la que
+   * salieron estos números. La informa NASA POWER en `geometry.coordinates[2]`.
+   *
+   * No es un dato de color: es el denominador de la corrección por altura. En
+   * montaña la celda de ~50 km promedia el valle con la cumbre, y sin esta
+   * altura no hay forma de saber en qué punto de ese promedio está el predio.
+   */
+  altura_celda_m?:  number;
+  /**
+   * Presente cuando la temperatura fue corregida por la diferencia de altura
+   * entre el predio y la celda. Ausente significa que el dato se usa tal cual,
+   * ya sea porque el desnivel es despreciable o porque todavía no se conoce la
+   * altura del predio — y son dos cosas distintas que la pantalla distingue.
+   * Ver `lib/climaAltura.ts`.
+   */
+  correccion_altura?: CorreccionAltura;
 }
 
 /**
@@ -196,6 +242,12 @@ interface PowerResponse {
   properties: {
     parameter: Record<string, Record<string, number>>;
   };
+  /**
+   * `[lng, lat, altura_m]`. El tercer valor es la altura que POWER le asigna a
+   * la celda, y es la pieza que faltaba para corregir la temperatura en montaña.
+   * Ver `lib/climaAltura.ts`.
+   */
+  geometry?: { coordinates?: number[] };
 }
 
 const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31] as const;
@@ -220,6 +272,11 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
   if (json.error) throw new Error(json.error);
   if (!res.ok) throw new Error(`NASA POWER respondió con error ${res.status}.`);
   const param = json.properties.parameter;
+
+  // La altura de la celda, que POWER manda y hasta ahora se tiraba. Con ella se
+  // corrige la temperatura en montaña; sin ella no se corrige nada.
+  const alturaCelda = json.geometry?.coordinates?.[2];
+  const altura_celda_m = Number.isFinite(alturaCelda) ? alturaCelda : undefined;
 
   const precip  = param['PRECTOTCORR'] ?? {};
   const tmean   = param['T2M'] ?? {};
@@ -270,7 +327,12 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       rh_pct:    rh[key]     !== undefined ? Math.round(rh[key]!) : undefined,
       rocio_c:   rocio[key]  !== undefined ? Math.round(rocio[key]!  * 10) / 10 : undefined,
       t_range_c: trange[key] !== undefined ? Math.round(trange[key]! * 10) / 10 : undefined,
-      rad_kwh:   rad[key]    !== undefined ? Math.round(rad[key]!    * 100) / 100 : undefined,
+      // POWER entrega ALLSKY_SFC_SW_DWN en MJ/m²/día —lo declara el propio
+      // `parameters.units` de la respuesta— y el campo de acá es kWh/m²/día, que
+      // es la unidad con la que se dimensiona un panel. Sin el 3,6 el panel
+      // imprimía 19,4 kWh/m²/día donde el lugar recibe 5,4: un número plausible,
+      // 3,6 veces alto y del lado caro. `/api/clima/daymet` ya convertía.
+      rad_kwh:   rad[key]    !== undefined ? Math.round((rad[key]! / MJ_POR_KWH) * 100) / 100 : undefined,
       helada_riesgo: tmin_c <= 3,
     };
   });
@@ -290,6 +352,9 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     if (f !== 'daymet') continue;
     const d = await obtenerDaymet(lat, lng);
     if (!d) continue;
+    // Daymet es de 1 km y ya resuelve la altura: su temperatura NO se corrige, y
+    // por eso este camino no arrastra `altura_celda_m`. Marcar la celda de POWER
+    // acá haría que se corrigiera un dato que no lo necesita.
     return ensamblar(
       lat, lng,
       fusionarDaymet(lat, meses, d.meses),
@@ -301,13 +366,16 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     );
   }
 
-  return ensamblar(
-    lat, lng, meses, viento_dir_ppal,
-    'NASA POWER Climatology (promedio 1981–2023)',
-    koppenMapa,
-    koppenDeriva,
-    koppenFalla,
-  );
+  return {
+    ...ensamblar(
+      lat, lng, meses, viento_dir_ppal,
+      'NASA POWER Climatology (promedio 1981–2023)',
+      koppenMapa,
+      koppenDeriva,
+      koppenFalla,
+    ),
+    altura_celda_m,
+  };
 }
 
 // ─── Köppen de 1 km (global) ──────────────────────────────────────────────────
@@ -493,6 +561,7 @@ function ensamblar(
     koppen_fuente: koppenMapa ? 'mapa' : 'calculado',
     koppen_calculado:
       koppenMapa && koppenMapa.codigo !== calculado.codigo ? calculado : undefined,
+    koppen_mapa: koppenMapa ?? undefined,
     koppen_deriva: koppenDeriva ?? undefined,
     koppen_mapa_falla: koppenMapa ? undefined : koppenFalla,
     aridez, gdd_anual, heladas,
@@ -555,6 +624,86 @@ export function aplicarCalibracionPrecip(
   };
 }
 
+/**
+ * Devuelve una copia de los datos con la temperatura corregida por la diferencia
+ * de altura entre el predio y la celda de la fuente, y **todo lo derivado
+ * recomputado**: la ETP de Hargreaves, el balance mensual, el total anual de
+ * ETP, la aridez, los grados-día, los meses con riesgo de helada y el Köppen
+ * calculado. Todos dependen de la temperatura.
+ *
+ * El método y su rango de validez están en `lib/climaAltura.ts`. Acá sólo se
+ * aplica.
+ *
+ * Devuelve los datos **sin tocar** en tres casos, y los tres son correctos:
+ * cuando la fuente no informó la altura de su celda, cuando no se conoce todavía
+ * la altura del predio, y cuando el desnivel es menor que el umbral. Un dato sin
+ * `correccion_altura` es un dato que se usa tal cual y la pantalla lo dice.
+ *
+ * Aplicar SIEMPRE sobre los datos crudos y **después** de la calibración de
+ * precipitación, porque el balance mensual depende de las dos cosas. Si ya
+ * traen corrección, se devuelven intactos: corregir dos veces duplicaría el
+ * delta y el resultado seguiría pareciendo razonable, que es justo el error que
+ * este archivo existe para no cometer.
+ *
+ * Lo que la corrección NO hace: cambiar la amplitud térmica diaria. Se le suma
+ * el mismo delta a la máxima y a la mínima, así que `t_range_c` queda igual. La
+ * amplitud sí crece con la altura, pero no con un gradiente universal, y
+ * moverla a ojo cambiaría la ETP —Hargreaves usa √(tmax−tmin)— sin ninguna
+ * fuente atrás.
+ */
+export function aplicarCorreccionAltura(
+  d: DatosClima,
+  alturaPredioM: number | null | undefined,
+): DatosClima {
+  if (d.correccion_altura) return d;
+
+  const correccion = diagnosticarAltura(d.altura_celda_m, alturaPredioM);
+  if (!correccion || correccion.delta_c === 0) return d;
+
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+  const delta = correccion.delta_c;
+
+  const meses: MesDato[] = d.meses.map((m, i) => {
+    const tmax_c  = m.tmax_c  + delta;
+    const tmin_c  = m.tmin_c  + delta;
+    const tmean_c = m.tmean_c + delta;
+    const etp_mm  = calcularETPHargreaves(d.lat, i as MesIndex, tmax_c, tmin_c, tmean_c);
+    return {
+      ...m,
+      tmax_c:  r1(tmax_c),
+      tmin_c:  r1(tmin_c),
+      tmean_c: r1(tmean_c),
+      etp_mm:  r1(etp_mm),
+      balance_mm: r1(m.precip_mm - etp_mm),
+      helada_riesgo: tmin_c <= 3,
+    };
+  });
+
+  // Se rearma con `ensamblar` para no repetir acá los ocho agregados que
+  // dependen de la temperatura. El Köppen del mapa de Beck se le devuelve tal
+  // como estaba: es de 1 km y ya resuelve la altura, así que no se recalcula.
+  const armado = ensamblar(
+    d.lat, d.lng, meses, d.viento_dir_ppal, d.fuente,
+    d.koppen_fuente === 'mapa' ? d.koppen ?? null : null,
+    d.koppen_deriva ?? null,
+    d.koppen_mapa_falla,
+  );
+
+  return {
+    ...armado,
+    // `ensamblar` no los conoce: se reponen para no perderlos en el camino.
+    calibracion:    d.calibracion,
+    // La clase del mapa se repone a mano porque a `ensamblar` se le pasa null
+    // cuando el dato ya venía calibrado —ahí manda el cálculo local, y está
+    // bien—, pero la tira de deriva la sigue necesitando para comparar tres
+    // lecturas del mismo mapa.
+    koppen_mapa:    d.koppen_mapa,
+    altura_celda_m: d.altura_celda_m,
+    correccion_altura: correccion,
+    fuente: `${d.fuente} · temperatura corregida por altura (${delta > 0 ? '+' : ''}${delta.toLocaleString('es-AR')} °C)`,
+  };
+}
+
 function redondear(v: number | undefined, dec: number): number | undefined {
   if (v === undefined || !Number.isFinite(v)) return undefined;
   const f = 10 ** dec;
@@ -611,35 +760,6 @@ function radiacionExtraterrestre(lat_deg: number, mes: MesIndex): number {
 
 // ─── Köppen-Geiger (Peel et al. 2007) ─────────────────────────────────────────
 
-const KOPPEN_DESC: Record<string, { grupo: string; desc: string }> = {
-  Af:  { grupo: 'Tropical',    desc: 'Selva tropical lluviosa' },
-  Am:  { grupo: 'Tropical',    desc: 'Monzónico tropical' },
-  Aw:  { grupo: 'Tropical',    desc: 'Sabana tropical (invierno seco)' },
-  As:  { grupo: 'Tropical',    desc: 'Sabana tropical (verano seco)' },
-  BWh: { grupo: 'Árido',       desc: 'Desierto cálido' },
-  BWk: { grupo: 'Árido',       desc: 'Desierto frío' },
-  BSh: { grupo: 'Árido',       desc: 'Estepa cálida (semiárido cálido)' },
-  BSk: { grupo: 'Árido',       desc: 'Estepa fría (semiárido frío)' },
-  Csa: { grupo: 'Templado',    desc: 'Mediterráneo de verano cálido' },
-  Csb: { grupo: 'Templado',    desc: 'Mediterráneo de verano templado' },
-  Csc: { grupo: 'Templado',    desc: 'Mediterráneo de verano fresco' },
-  Cwa: { grupo: 'Templado',    desc: 'Subtropical húmedo de invierno seco' },
-  Cwb: { grupo: 'Templado',    desc: 'Subtropical de altura, invierno seco' },
-  Cwc: { grupo: 'Templado',    desc: 'Templado frío de invierno seco' },
-  Cfa: { grupo: 'Templado',    desc: 'Subtropical húmedo sin estación seca' },
-  Cfb: { grupo: 'Templado',    desc: 'Oceánico templado' },
-  Cfc: { grupo: 'Templado',    desc: 'Oceánico subpolar' },
-  Dsa: { grupo: 'Continental', desc: 'Continental, verano seco y cálido' },
-  Dsb: { grupo: 'Continental', desc: 'Continental, verano seco templado' },
-  Dwa: { grupo: 'Continental', desc: 'Continental, invierno seco y cálido' },
-  Dwb: { grupo: 'Continental', desc: 'Continental, invierno seco templado' },
-  Dfa: { grupo: 'Continental', desc: 'Continental húmedo, verano cálido' },
-  Dfb: { grupo: 'Continental', desc: 'Continental húmedo, verano templado' },
-  Dfc: { grupo: 'Continental', desc: 'Subártico (taiga)' },
-  ET:  { grupo: 'Polar',       desc: 'Tundra / altoandino' },
-  EF:  { grupo: 'Polar',       desc: 'Hielo permanente' },
-};
-
 /** Clasifica el clima según Köppen-Geiger a partir de las medias mensuales. */
 export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
   const T = meses.map(m => m.tmean_c);
@@ -687,7 +807,11 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     let p = 'f';
     if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
     else if (PwinDry < PsumWet / 10) p = 'w';
-    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : 'c';
+    // 22 °C, no 21: es el umbral de la tabla 1 de Peel et al. (2007), que es la
+    // fuente citada arriba y la que usa el mapa de Beck que manda cuando hay
+    // dato. Con 21 un lugar de verano templado salía «a», y el rótulo decía
+    // «verano cálido» de un verano que no llega.
+    const t = Thot >= 22 ? 'a' : mesesCalidos >= 4 ? 'b' : 'c';
     codigo = `C${p}${t}`;
   }
   // D — Continental
@@ -695,7 +819,7 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     let p = 'f';
     if (PsumDry < 40 && PsumDry < PwinWet / 3) p = 's';
     else if (PwinDry < PsumWet / 10) p = 'w';
-    const t = Thot >= 21 ? 'a' : mesesCalidos >= 4 ? 'b' : Tcold < -38 ? 'd' : 'c';
+    const t = Thot >= 22 ? 'a' : mesesCalidos >= 4 ? 'b' : Tcold < -38 ? 'd' : 'c';
     codigo = `D${p}${t}`;
   }
   // E — Polar / altoandino
@@ -703,8 +827,12 @@ export function clasificarKoppen(lat: number, meses: MesDato[]): Koppen {
     codigo = Thot > 0 ? 'ET' : 'EF';
   }
 
-  const info = KOPPEN_DESC[codigo] ?? { grupo: '—', desc: codigo };
-  return { codigo, grupo: info.grupo, descripcion: info.desc };
+  // El rótulo sale de lib/koppenTexto.ts, que es la única tabla de las 31
+  // clases: acá vivía una copia a la que le faltaban las cinco de invierno
+  // riguroso (Dsc, Dsd, Dwc, Dwd, Dfd), que este mismo clasificador devuelve y
+  // que se mostraban como un guión.
+  const info = rotuloKoppen(codigo);
+  return { codigo, grupo: info.grupo, descripcion: info.titulo };
 }
 
 // ─── Índice de aridez (UNEP) ──────────────────────────────────────────────────

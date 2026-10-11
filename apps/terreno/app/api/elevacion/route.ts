@@ -1,6 +1,7 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet, claveHash } from '@/lib/db/cache';
-import { requierePlan } from '@/lib/auth/apiGuard';
+import { requiereTopoDe } from '@/lib/auth/apiGuard';
+import { haDePuntos } from '@/lib/coordenadas';
 import { obtenerElevacionPuntos } from '@/lib/elevacion';
 import { atribucionDe } from '@/lib/elevacion/atribucion';
 import type { LatLng } from '@/lib/elevacion';
@@ -52,18 +53,36 @@ async function responder(coords: LatLng[]): Promise<Response> {
   return new Response(payload, { status: 200, headers: HDRS });
 }
 
+/**
+ * El guard, con la superficie que abarca el pedido.
+ *
+ * Antes era `requierePlan('analisis.topo')` a secas, y ahí estaba el agujero:
+ * `analisis.topo` es muestra gratis en Semilla, así que el plan solo siempre
+ * alcanzaba. El tope de superficie de la muestra lo aplica `requiereTopoDe`, y
+ * eso estaba únicamente en `/api/dem`. Resultado: `/api/dem` respetaba las 0,5
+ * ha y por `/api/elevacion` se pedía la elevación de un predio de cualquier
+ * tamaño, que es el mismo dato con otra forma.
+ *
+ * La superficie se deduce de la envolvente de los puntos pedidos. No es la
+ * superficie del predio —son puntos sueltos, no un polígono— pero es la
+ * extensión de terreno sobre la que se está sacando relieve, que es justamente
+ * lo que el tope quiere acotar. Un solo punto da 0 ha y pasa siempre: pedir la
+ * cota de un punto no es hacer topografía.
+ */
+async function guardDe(coords: LatLng[]): Promise<Response | null> {
+  if (coords.length === 0) return null;   // lo rechaza `responder` con un 400
+  return requiereTopoDe(haDePuntos(coords));
+}
+
 export async function GET(req: Request) {
-  const bloqueo = await requierePlan('analisis.topo');
+  const coords = parseLocs(new URL(req.url).searchParams.get('locations') ?? '');
+  const bloqueo = await guardDe(coords);
   if (bloqueo) return bloqueo;
 
-  const locations = new URL(req.url).searchParams.get('locations') ?? '';
-  return responder(parseLocs(locations));
+  return responder(coords);
 }
 
 export async function POST(req: Request) {
-  const bloqueo = await requierePlan('analisis.topo');
-  if (bloqueo) return bloqueo;
-
   const body = await req.json() as { locations: unknown };
 
   let coords: LatLng[];
@@ -75,6 +94,9 @@ export async function POST(req: Request) {
   } else {
     coords = parseLocs(String(body.locations));
   }
+
+  const bloqueo = await guardDe(coords);
+  if (bloqueo) return bloqueo;
 
   return responder(coords);
 }

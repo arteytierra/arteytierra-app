@@ -7,6 +7,7 @@ import type { Zona } from './zonificacion';
 import type { Pin } from './pines';
 import type { Camino } from './caminos';
 import type { Sector } from './sectores';
+import { planillaCSV, type Planilla } from './planilla';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -165,4 +166,22 @@ export function importarGPX(text: string): Array<{ lat: number; lng: number }> {
   }
 
   return puntos;
+}
+
+// ─── La planilla de replanteo ──────────────────────────────────────
+
+/**
+ * Baja la planilla de replanteo como CSV.
+ *
+ * En el informe la planilla se imprime; en un panel de diseño no hay página, y
+ * una tabla de doscientas progresivas que hay que copiar a mano es una tabla que
+ * se copia mal. El archivo sale con las dos columnas de campo vacías, que es
+ * como tiene que salir: se llenan midiendo.
+ *
+ * El armado del texto vive en `lib/planilla.ts`, que es una función pura y
+ * tiene test; acá queda sólo la descarga.
+ */
+export function exportarPlanillaCSV(planilla: Planilla, nombre = 'planilla'): void {
+  const limpio = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '_');
+  descargar(planillaCSV(planilla), `${limpio || 'planilla'}_replanteo.csv`, 'text/csv;charset=utf-8');
 }

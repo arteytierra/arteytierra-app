@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock } from 'lucide-react';
+import { Cloud, Loader2, ExternalLink, Wind, Thermometer, Droplets, Sun, Snowflake, Gauge, Navigation, CloudRain, TriangleAlert, CalendarClock, Mountain } from 'lucide-react';
 import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato, type CalibracionPrecip } from '@/lib/clima';
+import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
+import { FUENTE_ESCALADO_LINEAL } from '@/lib/climaCalibracionSerie';
+import { BalanceHidricoBloque } from './BalanceHidricoBloque';
+import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -21,9 +25,16 @@ interface Props {
   pendientePct:  number | null;
   /** La app está buscando la lluvia de CHIRPS (~5 km) para este punto. */
   buscandoCHIRPS: boolean;
+  /**
+   * Agua útil del suelo, 0–100 cm, del panel de suelo. `null` si todavía no
+   * corrió: el balance usa entonces el valor por defecto publicado y lo dice.
+   * Es el número que más mueve el déficit, así que vale pedirlo prestado al
+   * panel de al lado en vez de inventarlo.
+   */
+  aguaUtil_mm:    number | null;
 }
 
-export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct, buscandoCHIRPS }: Props) {
+export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, calibracion, onCalibracion, precipCruda, pendientePct, buscandoCHIRPS, aguaUtil_mm }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -117,6 +128,14 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       : 'Calculado con las medias mensuales del predio'}
                     {datos.koppen_calculado &&
                       ` · con las medias daría ${datos.koppen_calculado.codigo}: estás sobre un límite`}
+                    {/* El caso simétrico: la lluvia se calibró, el cálculo local
+                        pisó al mapa y los dos no coinciden. Decirlo importa más
+                        que al revés, porque acá la clase que se muestra cambió
+                        de método a mitad de camino y la tira de deriva —que son
+                        tres lecturas del mapa— sigue hablando del mapa. */}
+                    {datos.koppen_fuente === 'calculado' && datos.koppen_mapa
+                      && datos.koppen_mapa.codigo !== datos.koppen.codigo &&
+                      ` · el mapa de 1 km dice ${datos.koppen_mapa.codigo}: estás sobre un límite y tu lluvia lo cruza`}
                   </p>
                   {/* El mapa falló y por eso no hay proyección a futuro. Sin
                       esta línea la sección simplemente no aparece y el predio
@@ -138,12 +157,54 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                 )}
               </div>
 
+              {/* Qué quiere decir la clase.
+                  Hasta acá la pantalla decía «Cwa · Subtropical de invierno
+                  seco» y se terminaba: para quien no tiene la tabla de Köppen
+                  en la cabeza eso es una sigla. Cada letra es una regla con un
+                  número —el mes más cálido pasa de 22 °C, el mes más seco del
+                  invierno recibe menos de un décimo del mes más lluvioso del
+                  verano— y eso es lo que se escribe. Describe la CLASE, no este
+                  predio: los grados y los milímetros de acá están abajo. */}
+              {(() => {
+                const t = textoKoppen(datos.koppen.codigo);
+                return t && (
+                  <p className="text-[11px] text-bone-50/85 leading-relaxed mt-2.5 pt-2.5 border-t border-bone-50/20">
+                    {t.prosa}
+                  </p>
+                );
+              })()}
+
               {/* Deriva climática: dónde estaba, dónde está, a dónde va.
-                  Sólo aparece si en algún tramo la clase se mueve — en un lugar
-                  climáticamente estable no hay nada que contar y la línea sería
-                  ruido. Los tres valores salen del mismo mapa leído en tres
-                  períodos, así que son comparables entre sí. */}
-              {datos.koppen_deriva && (datos.koppen_deriva.yaCambio || datos.koppen_deriva.vaACambiar) && (
+                  Los tres valores salen del mismo mapa leído en tres períodos,
+                  así que son comparables entre sí.
+
+                  Aparecía sólo cuando la clase se movía en algún tramo. Ahora
+                  aparece siempre que el mapa contestó, porque «no se mueve» es
+                  una respuesta —y es la que le interesa a quien está por
+                  plantar un monte—: sin la línea, el predio estable y el predio
+                  que nadie miró se veían exactamente igual. */}
+              {datos.koppen_deriva && (() => {
+                /* El «hoy» de la tira es el del MAPA, no el de arriba.
+                   Los tres períodos son tres lecturas del mismo mapa de Beck y
+                   por eso son comparables; `yaCambio`, `vaACambiar` y `queCambia`
+                   se calculan con ese presente. Cuando se calibra la lluvia, la
+                   clase de arriba pasa a salir de las medias del predio, y
+                   meterla acá rompía la tira: llegó a mostrar «Cwa → BSk → Cwa»
+                   con «la clase es la misma en los tres períodos» debajo. La
+                   diferencia entre la clase local y la del mapa se dice arriba,
+                   que es donde significa algo. */
+                const hoy = datos.koppen_mapa ?? datos.koppen;
+                /* Y los dos veredictos se vuelven a sacar de los tres códigos que
+                   esta tira muestra, en vez de confiar en los del motor. No es
+                   desconfianza: un proyecto guardado antes de que existiera
+                   `koppen_mapa` no lo trae, y ahí `hoy` cae en la clase local.
+                   Recalculando acá, la tira no puede contradecirse a sí misma
+                   venga de donde venga el dato. */
+                const codPasado = datos.koppen_deriva.pasado?.codigo;
+                const codFuturo = datos.koppen_deriva.futuro?.codigo;
+                const yaCambio   = !!codPasado && codPasado !== hoy.codigo;
+                const vaACambiar = !!codFuturo && codFuturo !== hoy.codigo;
+                return (
                 <div className="mt-2.5 pt-2.5 border-t border-bone-50/20">
                   <p className="text-[10px] uppercase tracking-wide text-bone-50/70 mb-1">
                     Cómo se mueve este clima
@@ -155,7 +216,7 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       apagado
                     />
                     <span className="text-bone-50/40">→</span>
-                    <Deriva codigo={datos.koppen.codigo} periodo="hoy" />
+                    <Deriva codigo={hoy.codigo} periodo="hoy" />
                     <span className="text-bone-50/40">→</span>
                     <Deriva
                       codigo={datos.koppen_deriva.futuro?.codigo}
@@ -163,26 +224,67 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
                       apagado
                     />
                   </div>
-                  {datos.koppen_deriva.queCambia && (
+                  {datos.koppen_deriva.queCambia && (yaCambio || vaACambiar) && (
                     <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
                       Lo que se mueve es {datos.koppen_deriva.queCambia}.
-                      {datos.koppen_deriva.vaACambiar
+                      {vaACambiar
                         ? ' Un monte tarda treinta años en ser monte: la especie conviene elegirla para ese clima, no para el de hoy.'
                         : ' El salto ya ocurrió: lo que anduvo históricamente acá puede no ser lo que ande ahora.'}
                     </p>
                   )}
-                  <p className="text-[9px] text-bone-50/50 mt-1 leading-snug">
+
+                  {/* La clase no se mueve. Se dice, en vez de callarlo: es un
+                      resultado, y el que más tranquiliza a quien planta. */}
+                  {!yaCambio && !vaACambiar && (
+                    <p className="text-[10px] text-bone-50/70 mt-1.5 leading-snug">
+                      La clase es la misma en los tres períodos: el tipo de clima del predio no
+                      cambia. Adentro de una clase igual se mueven los números —una clase abarca
+                      un rango ancho—, pero el régimen de fondo se mantiene.
+                    </p>
+                  )}
+
+                  {/* Y qué era, y qué va a ser, en palabras. Sólo de los
+                      períodos cuya clase es distinta de la de hoy: repetir el
+                      mismo párrafo tres veces no informa nada. */}
+                  {datos.koppen_deriva.pasado
+                    && datos.koppen_deriva.pasado.codigo !== hoy.codigo && (
+                    <ClaseDeOtroPeriodo
+                      rotulo={`Era ${datos.koppen_deriva.etiquetas.pasado}`}
+                      codigo={datos.koppen_deriva.pasado.codigo}
+                    />
+                  )}
+                  {datos.koppen_deriva.futuro
+                    && datos.koppen_deriva.futuro.codigo !== hoy.codigo && (
+                    <ClaseDeOtroPeriodo
+                      rotulo={`Va a ser ${datos.koppen_deriva.etiquetas.futuro}`}
+                      codigo={datos.koppen_deriva.futuro.codigo}
+                    />
+                  )}
+
+                  <p className="text-[9px] text-bone-50/50 mt-1.5 leading-snug">
                     Escenario intermedio (SSP2-4.5), el que se usa de referencia
                     para planificar. Es una proyección, no un pronóstico.
                   </p>
                 </div>
-              )}
+                );
+              })()}
             </div>
           )}
 
           {/* Resumen anual */}
           <div className="grid grid-cols-2 gap-2">
-            <StatCard icon={<Droplets className="w-3.5 h-3.5" />} label="Precipitación" value={`${datos.precip_anual_mm} mm`}  sub="anual" color="water" />
+            {/* La lluvia es el único de estos números que todavía se puede mover:
+                mientras CHIRPS está en vuelo, el valor que se muestra es el de la
+                grilla de ~50 km de POWER y al llegar el satelital de ~5 km cambia.
+                Decirlo acá y no sólo abajo en el bloque de calibración, que queda
+                fuera de pantalla: el número que se lee es el de arriba. */}
+            <StatCard
+              icon={<Droplets className="w-3.5 h-3.5" />}
+              label="Precipitación"
+              value={`${datos.precip_anual_mm} mm`}
+              sub={buscandoCHIRPS && !calibracion ? "anual · afinando…" : "anual"}
+              color="water"
+            />
             <StatCard icon={<Thermometer className="w-3.5 h-3.5" />} label="Temperatura" value={`${datos.tmean_anual_c}°C`}    sub="media anual" color="sun" />
             {datos.rh_anual_pct !== undefined && (
               <StatCard icon={<Droplets className="w-3.5 h-3.5" />} label="Humedad rel." value={`${datos.rh_anual_pct}%`}    sub="media anual" color="water" />
@@ -193,6 +295,40 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             )}
             <StatCard icon={<Wind className="w-3.5 h-3.5" />}    label="Viento ppal."   value={datos.viento_dir_ppal}          sub={datos.viento_medio_ms !== undefined ? `${datos.viento_medio_ms} m/s medio` : 'dirección'} color="moss" />
           </div>
+
+          {/* Corrección de temperatura por altura.
+              Va acá, pegada a los números que modifica, y no en una nota al pie:
+              la temperatura, la ETP, el GDD y las heladas que se están leyendo
+              arriba son las corregidas. Aparece sólo cuando hubo corrección —si
+              el desnivel contra la celda es despreciable no hay nada que contar—.
+              Ver lib/climaAltura.ts. */}
+          {datos.correccion_altura && (
+            <div className={`rounded-lg p-2.5 border ${
+              datos.correccion_altura.confianza === 'gruesa'
+                ? 'bg-clay-50 border-clay-200'
+                : 'bg-bone-50 border-bone-200'
+            }`}>
+              <div className="flex items-start gap-2">
+                <Mountain className="w-3.5 h-3.5 mt-0.5 shrink-0 text-ink-700/60" />
+                <div>
+                  <p className="text-xs font-semibold text-ink-900">
+                    Temperatura corregida por altura
+                    <span className="ml-1.5 font-mono font-normal text-ink-700/70">
+                      {datos.correccion_altura.delta_c > 0 ? '+' : ''}
+                      {datos.correccion_altura.delta_c.toLocaleString('es-AR')} °C
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-ink-700/70 leading-relaxed mt-0.5">
+                    {datos.correccion_altura.leyenda}
+                  </p>
+                  <p className="text-[10px] text-ink-700/50 leading-relaxed mt-1">
+                    La lluvia no se corrige así: cambia con la altura pero no con un
+                    gradiente, y eso lo resuelve la calibración de abajo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Indicadores agronómicos */}
           <div className="grid grid-cols-3 gap-2">
@@ -217,6 +353,31 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             extremos={extremos} cargando={cargandoExt} error={errorExt}
             onCargar={handleCargarExtremos}
           />
+
+          {/* Etapa G — el balance hídrico de verdad y la variabilidad entre años.
+              Va después de Extremos y no antes porque se corre sobre la misma
+              serie diaria: sin ella no hay años, y sin años el balance sería el
+              del año promedio, que es justamente lo que este bloque desmiente. */}
+          <BalanceHidricoBloque
+            extremos={extremos}
+            etpHargreaves_mm={datos.etp_anual_mm}
+            viento_ms={datos.viento_medio_ms ?? null}
+            rh_pct={datos.rh_anual_pct ?? null}
+            aguaUtil_mm={aguaUtil_mm}
+            precipClimatologia_mm={datos.precip_anual_mm}
+            precipCalibrada={datos.calibracion !== undefined}
+          />
+
+          {/* La bioconstrucción se mudó a Infraestructuras (grupo 4 · Zonas) el
+              07/10/2026. Estaba acá porque las tres variables que los códigos
+              usan de verdad —zona del IECC, hielo-deshielo y lluvia batiente—
+              salen de esta misma serie, pero eso es de dónde sale el dato y no
+              dónde se toma la decisión: nadie entra a Clima a elegir con qué
+              levanta una pared. Sigue alimentándose de esta serie, desde allá. */}
+          <p className="text-[10px] text-ink-700/50 leading-snug">
+            Con qué técnica de tierra o de paja se puede construir con este clima se ve en{' '}
+            <b className="text-ink-700/70">Zonas · Infraestructuras</b>, que es donde se decide.
+          </p>
 
           <CalibracionPrecipBloque
             calibracion={calibracion}
@@ -302,7 +463,7 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
     );
   }
 
-  const { heladas, tormenta, sequia, precip_anual, calor } = extremos;
+  const { heladas, tormenta, sequia, precip_anual, calor, calibracion_serie: cs } = extremos;
 
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
@@ -315,11 +476,36 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
       </div>
 
       <div className="p-3 space-y-3">
+        {/* La calibración llegó hasta acá —y hasta dónde no—.
+            Va arriba de todo y a la vista: lo que sigue está mitad escalado al
+            dato local y mitad no, y cuál es cuál decide con qué número se
+            dimensiona un vertedero. Ver lib/climaCalibracionSerie.ts. */}
+        {cs && (
+          <div className="rounded-lg bg-moss-50 border border-moss-200 px-2.5 py-2">
+            <p className="text-[10px] text-ink-800 leading-snug">
+              <b>Esta serie está escalada al dato local.</b> De{' '}
+              <span className="font-mono">{cs.antes_mm.toLocaleString('es-AR')}</span> a{' '}
+              <span className="font-mono">{cs.despues_mm.toLocaleString('es-AR')} mm/año</span>
+              {cs.fuente ? <> con {cs.fuente}</> : null} (×
+              {cs.factor_anual.toLocaleString('es-AR', { maximumFractionDigits: 2 })}
+              {cs.modo === 'mensual' ? ', mes por mes' : ''}). Lo escalado son las
+              acumulaciones: el balance hídrico y los totales del año.{' '}
+              <b>La tormenta de diseño de acá abajo no.</b>
+            </p>
+            <Cautela claim="Por qué la tormenta queda sin calibrar.">
+              {cs.advertencias.map((a, i) => <p key={i} className="mb-1">{a}</p>)}
+              <p className="text-[9px] text-ink-700/45 mt-1">{FUENTE_ESCALADO_LINEAL}</p>
+            </Cautela>
+          </div>
+        )}
+
         {/* Tormenta de diseño */}
         <div>
           <div className="flex items-center gap-1 mb-1 text-water-700">
             <CloudRain className="w-3 h-3" />
-            <p className="text-[11px] font-semibold">Tormenta de diseño (P24h)</p>
+            <p className="text-[11px] font-semibold">
+              Tormenta de diseño (P24h){cs ? <span className="font-normal text-ink-700/50"> · sin calibrar</span> : null}
+            </p>
           </div>
           <div className="grid grid-cols-3 gap-1">
             {tormenta.recurrencias.map(r => (
@@ -375,8 +561,12 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
         </div>
 
         <p className="text-[9px] text-ink-700/45 italic leading-tight border-t border-bone-200 pt-2">
-          {extremos.fuente}. Tormenta: {tormenta.metodo}. Precip. media {precip_anual.media_mm} mm/año,
-          ET0 {extremos.et0_anual_mm} mm/año. Orientativo — verificar con estaciones locales.
+          {/* «de esta serie» y no «del predio»: estos dos números salen del reanálisis y
+              no de la climatología que imprime el panel unos centímetros más arriba.
+              Sin esa aclaración se leían como el mismo dato, y acá diferían un 59 %. */}
+          {extremos.fuente}. Tormenta: {tormenta.metodo}. Precip. media de esta serie{' '}
+          {precip_anual.media_mm} mm/año, ET0 {extremos.et0_anual_mm} mm/año.
+          Orientativo — verificar con estaciones locales.
         </p>
       </div>
     </div>
@@ -390,6 +580,23 @@ function ExtremosBloque({ extremos, cargando, error, onCargar }: {
  * va destacado y los otros dos apagados, para que se lea de un vistazo dónde
  * está parado el predio hoy dentro de la trayectoria.
  */
+/**
+ * Qué clima era, o qué clima va a ser, dicho en palabras. Va debajo de la
+ * cadena de códigos: el `Dfb → Cfb` de arriba es exacto y no se entiende solo.
+ */
+function ClaseDeOtroPeriodo({ rotulo, codigo }: { rotulo: string; codigo: string }) {
+  const t = textoKoppen(codigo);
+  if (!t) return null;
+  return (
+    <div className="mt-2 pt-2 border-t border-bone-50/15">
+      <p className="text-[10px] font-semibold text-bone-50/85 leading-snug">
+        {rotulo} · <span className="font-mono">{t.codigo}</span>, {t.titulo}
+      </p>
+      <p className="text-[10px] text-bone-50/65 leading-relaxed mt-0.5">{t.prosa}</p>
+    </div>
+  );
+}
+
 function Deriva({ codigo, periodo, apagado }: { codigo?: string; periodo: string; apagado?: boolean }) {
   return (
     <div className={`text-center px-1.5 py-1 rounded ${apagado ? 'bg-bone-50/10' : 'bg-bone-50/25'}`}>
@@ -505,7 +712,7 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
   return (
     <div className="bg-white rounded-xl border border-bone-200 overflow-hidden">
       <div className="px-3 py-2 border-b border-bone-200">
-        <p className="text-xs font-medium text-ink-700">Balance hídrico mensual (P − ETP)</p>
+        <p className="text-xs font-medium text-ink-700">Lluvia menos demanda mensual (P − ETP)</p>
       </div>
       <div className="px-2 pt-2 pb-1">
         <div className="relative" style={{ height: H * 2 }}>
@@ -530,9 +737,13 @@ function BalanceHidrico({ meses }: { meses: MesDato[] }) {
         <div className="flex mt-0.5">
           {meses.map((m, i) => <div key={i} className="flex-1 text-center"><span className="text-[9px] text-ink-700/50">{m.mes.slice(0,1)}</span></div>)}
         </div>
+        {/* Estas barras NO son el excedente ni el déficit, y así se llamaban.
+            Son lluvia menos demanda: el primer paso del procedimiento, antes de
+            que el suelo entre en el medio. El excedente y el déficit están en el
+            bloque de balance hídrico, y pueden ser muy distintos de esto. */}
         <div className="flex justify-between text-xs text-ink-700/50 mt-0.5 px-0.5">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-moss-500 inline-block opacity-80" />Superávit</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-clay-500 inline-block opacity-80" />Déficit</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-moss-500 inline-block opacity-80" />Llueve más que la demanda</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-clay-500 inline-block opacity-80" />La demanda supera la lluvia</span>
         </div>
       </div>
       <div className="border-t border-bone-200 overflow-x-auto">

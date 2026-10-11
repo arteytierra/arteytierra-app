@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
-import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
+import { CONTACTO_ENDPOINT } from '@/lib/forms/contacto';
 
 const INTERESES = [
   { name: 'interes_bioarq', label: 'Proyecto de bioarquitectura' },
@@ -26,7 +26,7 @@ export function ContactForm() {
     try {
       const form = e.currentTarget;
       const data = new FormData(form);
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const res = await fetch(CONTACTO_ENDPOINT, {
         method: 'POST',
         body: data,
         headers: { Accept: 'application/json' },
@@ -75,6 +75,7 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <input type="hidden" name="_fuente" value="contacto" />
       <input type="hidden" name="_subject" value="Nuevo mensaje de contacto · arteytierra.org" />
       <input type="hidden" name="form-name" value="contacto" />
 

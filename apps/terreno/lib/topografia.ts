@@ -25,12 +25,34 @@ export interface DatosTopografia {
   elev_max:         number;
   elev_media:       number;
   desnivel:         number;              // max − min (m)
-  pendiente_pct:    number;              // pendiente media estimada (%)
+  /**
+   * Pendiente GENERAL del predio: el desnivel entre el punto muestreado más
+   * alto y el más bajo, dividido por la distancia entre esos dos puntos.
+   *
+   * No es la media de las pendientes del terreno y suele dar bastante más
+   * chica: una ladera ondulada de 6,9 % de pendiente media celda a celda puede
+   * tener 3,2 % de pendiente general, porque las ondas se cancelan entre las
+   * dos puntas. Las dos son correctas y contestan preguntas distintas —ésta,
+   * «cómo cae el predio en conjunto»; aquélla, «cómo está parado el suelo donde
+   * uno pisa»—, así que no se pueden llamar las dos «pendiente media» en la
+   * misma pantalla, que es lo que pasaba.
+   */
+  pendiente_pct:    number;              // pendiente general del predio (%)
   pendiente_grados: number;
   orientacion:      string;              // dirección del escurrimiento (N, NE...)
   escurrimiento:    { desde: PuntoElevacion; hacia: PuntoElevacion }; // alto → bajo
   resolucion:       string;
   fuente:           string;
+  /**
+   * La fuente sin traducir a texto de credito.
+   *
+   * `fuente` y `resolucion` son frases para la pantalla. Esto es el identificador,
+   * que es lo que necesita `modeloDeclarado` para buscar la exactitud vertical
+   * publicada del modelo: de un credito no se puede sacar un numero. Opcional
+   * porque un proyecto guardado antes del 06/10/2026 no lo trae, y ahi el modelo
+   * declarado dice que no puede declararse en vez de suponer una fuente.
+   */
+  fuenteRelieve?:   FuenteRelieve;
 }
 
 // ─── OpenTopoData API ─────────────────────────────────────────────────────────
@@ -104,7 +126,7 @@ function pendienteOrientacion(
     return { pendiente_pct: 0, pendiente_grados: 0, orientacion: '—', escurrimiento: { desde: p, hacia: p } };
   }
 
-  // Punto más alto y más bajo
+  // Punto más alto y más bajo. De acá sale la pendiente GENERAL, no la media.
   const alto = puntos.reduce((best, p) => p.elevation > best.elevation ? p : best);
   const bajo = puntos.reduce((best, p) => p.elevation < best.elevation ? p : best);
 
@@ -193,6 +215,7 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     // datos de 2000' sobre un predio suizo servido por swissALTI3D era falso.
     resolucion: fuenteRelieve ? `~${PASO_RELIEVE[fuenteRelieve]} m/píxel` : '~30 m/píxel',
     fuente: fuenteRelieve ? CREDITO_RELIEVE[fuenteRelieve] : 'Copernicus GLO-30 / SRTM',
+    ...(fuenteRelieve ? { fuenteRelieve } : {}),
   };
 }
 

@@ -41,6 +41,17 @@ export interface InformeData {
   profesional?: PerfilProfesional; // white-label: marca del consultor que firma
   conMarca?: boolean;           // plan Semilla → marca de agua no removible
   sinRumbos?: boolean;          // sin `catastro.rumbos` → tabla de linderos sin azimut/rumbo
+  /**
+   * Sin `informe.descarga` → el informe se mira en pantalla y se comparte por
+   * link, pero no se baja como archivo.
+   *
+   * Va en los datos y no se resuelve dentro de la vista por la misma razón que
+   * `sinRumbos`: el informe se abre en dos lugares —el borrador que viaja por
+   * localStorage y el link público, que lo arma el servidor— y en el segundo el
+   * plan que manda es el del DUEÑO del proyecto, no el de quien está mirando.
+   * Decidirlo en la vista obligaría a leer una sesión que ahí no existe.
+   */
+  sinDescarga?: boolean;
 }
 
 const LS_KEY = 'terreno_informe_borrador';

@@ -15,7 +15,10 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
-import { ACEQUIA_PLANS, acequiaSelfCheckout, type AcequiaPlanId } from '@arteytierra/config/acequia';
+import {
+  ACEQUIA_PLANS, ACEQUIA_FEATURES, ACEQUIA_PLAN_ORDER, acequiaSelfCheckout,
+  acequiaPlanHabilita, type AcequiaFeature, type AcequiaPlanId,
+} from '@arteytierra/config/acequia';
 import { PLANES } from '@/lib/terreno/planes';
 
 const IDS: AcequiaPlanId[] = ['semilla', 'personal', 'profesional', 'estudio'];
@@ -123,6 +126,131 @@ describe('la cotización que se muestra es la que se cobra', () => {
         .filter((linea) => !linea.trimStart().startsWith('//'))
         .join('\n');
       expect(codigo, archivo).not.toMatch(/ARS_POR_USD\s*=\s*\d/);
+    }
+  });
+});
+
+/*
+ * La vidriera y el candado, comparados.
+ *
+ * Los precios, los topes y los asientos ya salian de `ACEQUIA_PLANS`, pero QUE
+ * incluye cada plan se escribia dos veces: en prosa en `lib/terreno/planes.ts`,
+ * y como matriz aplicada en `apps/terreno/lib/entitlements.ts`. Dos fuentes sin
+ * ningun punto de contacto, que es como se desincronizan.
+ *
+ * Desde el 23/09/2026 la matriz vive en `@arteytierra/config/acequia` y los dos
+ * lados la leen. Estos tests atan cada afirmacion de la vidriera a la feature
+ * que la respalda, para que una promesa no pueda quedar sin candado detras ni un
+ * candado sin promesa adelante.
+ */
+describe('la vidriera promete lo que el candado habilita', () => {
+  /**
+   * Que feature respalda cada renglon de la vidriera. Un renglon puede no tener
+   * ninguna —"Soporte prioritario" no es una feature del producto— y eso se
+   * declara con `null` en vez de omitirlo, para que agregar un renglon nuevo
+   * obligue a decidir.
+   */
+  const RESPALDO: Record<string, AcequiaFeature | null> = {
+    // Semilla
+    'Todas las herramientas de dibujo sobre el mapa': null,
+    'Medición: superficie y perímetro': null,
+    'Mapa satelital y navegación completa': null,
+    'Muestra gratis del análisis: clima, cuenca y sectores': 'analisis.clima',
+    'Calendario del lugar (heladas, lluvias y ventanas de siembra)': 'analisis.clima',
+    '1 proyecto activo': null,
+    // Compartir por link no es una feature con candado: es `informe_publico`,
+    // que cualquier plan puede prender. Lo que sí tiene candado es bajarlo.
+    'Informe compartible por link (con marca de agua de acequia)': null,
+    // Personal
+    'El análisis completo: agua, suelo, biodiversidad, solar, aptitud y más': 'analisis.aptitud',
+    'Curvas de nivel, relieve y vista 3D, sin límite de tamaño': 'analisis.topo_sin_limite',
+    'Diseño Keyline, agroforestal, riego y pastoreo': 'diseno.keyline',
+    'Sugerencias automáticas de diseño': 'sugerencias',
+    'Rumbos y replanteo de mojones': 'catastro.rumbos',
+    // Un renglón, dos candados (`informe.descarga` y `informe.sin_marca`), los
+    // dos en Personal. Se declara el que decide si el botón existe.
+    'Descarga del informe en PDF, sin marca de agua': 'informe.descarga',
+    'Plano en PNG con rótulo, leyenda, norte y escala': 'export.imagen',
+    'Exportación a GeoJSON, KML y GPX': 'export.gis',
+    // Profesional
+    'Informe con tu marca: tu logo y tu matrícula': 'informe.white_label',
+    'Ideal si trabajás varios terrenos a la vez': null,
+    // Estudio
+    'Exportación DXF / CAD por capas': 'export.dxf',
+    'Soporte prioritario': null,
+  };
+
+  /**
+   * Vacío, y que siga así.
+   *
+   * Tuvo una entrada entre el 23 y el 24/09/2026: la vidriera vendia "Curvas de
+   * nivel, relieve y vista 3D" como beneficio de Personal mientras
+   * `analisis.topo` era muestra gratis en Semilla, o sea que el sitio cobraba
+   * algo que la app ya regalaba. Se cerró acotando la muestra por TAMAÑO
+   * (`ACEQUIA_TOPO_SEMILLA_HA`) y separando la feature que Personal vende de
+   * verdad, `analisis.topo_sin_limite`. Ahora los dos renglones son ciertos.
+   *
+   * Agregar algo acá es declarar que se cobra por algo que ya se regala, o al
+   * revés. Se puede, pero se escribe por qué y quién lo decidió.
+   */
+  const DIVERGENCIAS_CONOCIDAS = new Set<string>();
+
+  it('cada renglón de la vidriera declara si tiene feature detrás o no', () => {
+    const sinDeclarar: string[] = [];
+    for (const plan of PLANES) {
+      for (const renglon of plan.incluye) {
+        // Los renglones con número adentro se arman con plantilla desde
+        // ACEQUIA_PLANS, así que no son texto fijo y ya los cubre otro test.
+        if (/\d/.test(renglon)) continue;
+        if (!(renglon in RESPALDO)) sinDeclarar.push(plan.id + ': ' + renglon);
+      }
+    }
+    expect(sinDeclarar, 'renglones nuevos sin decidir si tienen feature:\n' + sinDeclarar.join('\n')).toEqual([]);
+  });
+
+  it('ninguna promesa pide un plan más caro del que la vidriera anuncia', () => {
+    // Si la vidriera pone bajo Personal algo que el candado exige a Estudio, el
+    // que paga Personal se encuentra con un candado que no esperaba. Es el
+    // error caro de los dos.
+    const mentiras: string[] = [];
+    for (const plan of PLANES) {
+      for (const renglon of plan.incluye) {
+        const feature = RESPALDO[renglon];
+        if (!feature) continue;
+        if (!acequiaPlanHabilita(plan.id, feature)) {
+          mentiras.push(plan.id + ' promete "' + renglon + '" pero ' + feature + ' pide ' + ACEQUIA_FEATURES[feature]);
+        }
+      }
+    }
+    expect(mentiras, mentiras.join('\n')).toEqual([]);
+  });
+
+  it('las divergencias al revés están declaradas, no escondidas', () => {
+    // El otro lado del mismo problema: la vidriera cobra por algo que el plan
+    // de abajo ya incluye. No es una mentira al que paga, pero sí al que no:
+    // Semilla se ve más pobre de lo que es.
+    const regaladas: string[] = [];
+    for (const plan of PLANES) {
+      for (const renglon of plan.incluye) {
+        const feature = RESPALDO[renglon];
+        if (!feature) continue;
+        const pideMenos = ACEQUIA_PLAN_ORDER[ACEQUIA_FEATURES[feature]] < ACEQUIA_PLAN_ORDER[plan.id];
+        if (pideMenos) regaladas.push(renglon);
+      }
+    }
+    // Sólo puede haber divergencias que alguien haya mirado y anotado.
+    expect(regaladas.filter((r) => !DIVERGENCIAS_CONOCIDAS.has(r))).toEqual([]);
+    // Y ninguna excepción muerta: si se arregla una divergencia y nadie la saca
+    // de la lista, la excepción queda tapando la siguiente.
+    for (const d of DIVERGENCIAS_CONOCIDAS) expect(regaladas, 'excepción muerta: ' + d).toContain(d);
+  });
+
+  it('toda feature de la matriz es alcanzable por algún plan que se vende', () => {
+    // Una feature cuyo plan mínimo no exista, o que exija un plan que nadie
+    // puede contratar, es un candado que no se abre nunca.
+    const ids = PLANES.map((p) => p.id);
+    for (const [feature, plan] of Object.entries(ACEQUIA_FEATURES)) {
+      expect(ids, feature).toContain(plan);
     }
   });
 });

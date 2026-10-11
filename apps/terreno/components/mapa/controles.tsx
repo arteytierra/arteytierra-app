@@ -254,7 +254,10 @@ export function BarraEstado({
       {/* Resumen del predio */}
       {nMojones > 0 && (
         <span className="hidden sm:inline text-bone-50/55 whitespace-nowrap">
-          {nMojones} mojón{nMojones !== 1 ? 'es' : ''}{areaHa ? ` · ${areaHa.toFixed(2)} ha` : ''}
+          {/* La palabra entera y no un sufijo: el plural de «mojón» mueve el
+              acento y lo pierde, así que pegarle «es» imprimía «4 mojónes».
+              Y la superficie con coma, que es el separador decimal de acá. */}
+          {nMojones} {nMojones === 1 ? 'mojón' : 'mojones'}{areaHa ? ` · ${areaHa.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha` : ''}
         </span>
       )}
       <span className="w-px h-3.5 bg-ink-700 hidden sm:inline-block" />

@@ -79,3 +79,21 @@ export const spacing = {
 } as const;
 
 export const tokens = { colors, fontFamily, fontSize, radius, shadow, spacing } as const;
+
+/**
+ * Marca acequia. Es una paleta aparte de "Tierra Viva": acequia es el producto,
+ * Arte y Tierra es el estudio, y no comparten colores.
+ *
+ * Fuente: `Acequia_Manual_de_Marca_v3.0.docx` y `apps/terreno/public/marca/LEEME.md`.
+ * Estos tres valores están además escritos a mano en ~20 archivos de `apps/web` y
+ * `apps/terreno`; los nuevos consumidores —las placas de video entre ellos— los
+ * leen de acá.
+ */
+export const marcaAcequia = {
+  /** Azul agua. El color de acento: botones, acentos, `theme_color` del manifest. */
+  agua: '#2E6B8A',
+  /** Negro profundo. Fondos oscuros y texto sobre claro. No es negro puro. */
+  tinta: '#1A1210',
+  /** Blanco cálido. Fondos claros y texto sobre oscuro. No es blanco puro. */
+  crema: '#F5F0E8',
+} as const;

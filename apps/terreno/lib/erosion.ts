@@ -124,22 +124,30 @@ export function calcularErosion(
   const bandaRel = (rel: number): ClaseErosion =>
     rel < b1 ? 0 : rel < b2 ? 1 : rel < b3 ? 2 : 3;
 
+  // El conteo es del PREDIO; la clasificación, de toda la ventana. La grilla
+  // llega hasta 1,15× el polígono porque el flujo acumulado necesita ver la
+  // ladera de arriba, pero las hectáreas que se imprimen son las de adentro: las
+  // cuatro clases llegaron a sumar 111 ha en un predio de 84.
   const conteo: [number, number, number, number] = [0, 0, 0, 0];
   const sumaPend:   [number, number, number, number] = [0, 0, 0, 0];
   const sumaLambda: [number, number, number, number] = [0, 0, 0, 0];
+  let total = 0;
   const out: CeldaErosion[] = celdas.map((c, i) => {
     let clase = bandaRel(spi[i]! / ref);
     // Techo por pendiente absoluta: los llanos no llegan a alto/severo.
     if      (pend[i]! < p1) clase = 0;
     else if (pend[i]! < p2) clase = Math.min(clase, 1) as ClaseErosion;
     else if (pend[i]! < p3) clase = Math.min(clase, 2) as ClaseErosion;
-    conteo[clase] += 1;
-    sumaPend[clase]   += pend[i]!;
-    sumaLambda[clase] += lambda[i]!;
+    if (c.dentro !== false) {
+      total += 1;
+      conteo[clase] += 1;
+      sumaPend[clase]   += pend[i]!;
+      sumaLambda[clase] += lambda[i]!;
+    }
     return { row: c.row, col: c.col, latMin: c.latMin, latMax: c.latMax, lngMin: c.lngMin, lngMax: c.lngMax, clase };
   });
 
-  const total = out.length;
+  if (total === 0) total = out.length;
   const resumen: ResumenErosion[] = CLASES_EROSION.map(cl => {
     const n = conteo[cl.clase]!;
     return {

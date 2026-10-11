@@ -20,7 +20,7 @@
 
 export { ACEQUIA_REGISTRO_URL as REGISTRO_URL } from './app-url';
 
-import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
+import { ACEQUIA_PLANS, ACEQUIA_TOPO_SEMILLA_HA } from '@arteytierra/config/acequia';
 
 export interface Plan {
   id: 'semilla' | 'personal' | 'profesional' | 'estudio';
@@ -55,10 +55,18 @@ export const PLANES: Plan[] = [
       'Todas las herramientas de dibujo sobre el mapa',
       'Medición: superficie y perímetro',
       'Mapa satelital y navegación completa',
-      'Muestra gratis del análisis: clima, topografía, cuenca y sectores',
+      'Muestra gratis del análisis: clima, cuenca y sectores',
+      // El tope sale de la config, no de acá: si algún día se mueve, este
+      // renglón se mueve con él. Lleva número, así que el test de respaldos lo
+      // saltea igual que a "Hasta N proyectos activos".
+      `Curvas de nivel, relieve y vista 3D en predios de hasta ${ACEQUIA_TOPO_SEMILLA_HA} ha`,
       'Calendario del lugar (heladas, lluvias y ventanas de siembra)',
       '1 proyecto activo',
-      'Informe compartible (con marca de agua de acequia)',
+      // Decía "Informe compartible" a secas, y Semilla además lo bajaba en PDF
+      // y exportaba el plano en PNG. Desde el 01/10/2026 la muestra se mira y
+      // se comparte por link; llevárselo en un archivo es Personal. El renglón
+      // tiene que decir cuál de las dos cosas es.
+      'Informe compartible por link (con marca de agua de acequia)',
     ],
   },
   {
@@ -73,11 +81,12 @@ export const PLANES: Plan[] = [
     hereda: 'Todo lo de Semilla, y además:',
     incluye: [
       'El análisis completo: agua, suelo, biodiversidad, solar, aptitud y más',
-      'Curvas de nivel, relieve y vista 3D',
+      'Curvas de nivel, relieve y vista 3D, sin límite de tamaño',
       'Diseño Keyline, agroforestal, riego y pastoreo',
       'Sugerencias automáticas de diseño',
       'Rumbos y replanteo de mojones',
-      'Informe sin marca de agua',
+      'Descarga del informe en PDF, sin marca de agua',
+      'Plano en PNG con rótulo, leyenda, norte y escala',
       'Exportación a GeoJSON, KML y GPX',
       `Hasta ${ACEQUIA_PLANS.personal.projects} proyectos activos`,
     ],

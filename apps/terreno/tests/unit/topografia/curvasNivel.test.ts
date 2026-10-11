@@ -11,7 +11,8 @@ import {
   intervaloAutomatico,
   nivelesEstimados,
   calcularCurvas,
-  MAX_NIVELES,
+  NIVELES_MUCHOS,
+  TECHO_NIVELES,
 } from '@/lib/curvasNivel';
 import { grillaDesdeFn } from './_grilla';
 
@@ -76,11 +77,32 @@ describe('calcularCurvas', () => {
     }
   });
 
-  it('un intervalo demasiado fino para el desnivel supera MAX_NIVELES y no dibuja', () => {
+  it('un intervalo fino dibuja TODAS las curvas que pida, aunque sean muchas', () => {
+    // Hasta el 24/09/2026 esto devolvía [] y el mapa salía en blanco. El caso
+    // no era raro: 200 m de desnivel con 1 m de intervalo es un predio de
+    // sierra cualquiera, y el que subía un relevamiento propio para pedir
+    // curvas finas era el primero en chocarse.
     const g = grillaDesdeFn(11, 11, (r) => r * 20); // desnivel 200
-    // 200 / 1 = 200 niveles > MAX_NIVELES → []
-    expect(calcularCurvas(g, 1)).toEqual([]);
-    expect(MAX_NIVELES).toBeLessThan(200);
+    const curvas = calcularCurvas(g, 1);
+    expect(curvas.length).toBeGreaterThan(NIVELES_MUCHOS);
+    expect(curvas.every(c => c.lineas.length > 0)).toBe(true);
+  });
+
+  it('NIVELES_MUCHOS avisa, no corta', () => {
+    // Si alguien lo vuelve a usar como tope, este test lo agarra: el umbral de
+    // aviso tiene que quedar MUY por debajo de lo que el motor acepta dibujar.
+    expect(NIVELES_MUCHOS).toBeLessThan(TECHO_NIVELES);
+    const g = grillaDesdeFn(11, 11, (r) => r * 20);
+    expect(nivelesEstimados(200, 1)).toBeGreaterThan(NIVELES_MUCHOS);
+    expect(calcularCurvas(g, 1)).not.toEqual([]);
+  });
+
+  it('el techo absoluto corta el pedido absurdo', () => {
+    // 200 m de desnivel a 1 mm son 200.000 niveles: ninguna máquina lo termina
+    // y no hay usuario que lo quiera. Es la red contra un valor mal tipeado.
+    const g = grillaDesdeFn(11, 11, (r) => r * 20);
+    expect(nivelesEstimados(200, 0.001)).toBeGreaterThan(TECHO_NIVELES);
+    expect(calcularCurvas(g, 0.001)).toEqual([]);
   });
 });
 

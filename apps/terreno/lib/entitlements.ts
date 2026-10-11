@@ -5,21 +5,29 @@
  * marca de agua) como el cliente (candados en la UI). El plan del usuario se lee
  * server-side en `lib/auth/plan.ts` y se pasa al cliente como prop.
  *
- * Matriz de referencia: PROMPT-terreno-planes-0-matriz.md (raíz del repo).
- * Regla de costo (2026-07-26): por defecto, todo lo que llama a una API externa
- * está bloqueado en Semilla. Excepción (2026-08-15): clima, topografía, cuenca y
- * sectores se abren en Semilla como MUESTRA gratis del producto, aunque usen API.
- * Agregar un plan futuro = editar estas tablas, nada más.
+ * La tabla de qué habilita cada plan ya no está acá: vive en
+ * `@arteytierra/config/acequia`, junto a los precios y los topes, para que la
+ * vidriera del sitio público lea lo mismo que este módulo aplica. Acá quedan el
+ * mapa tab → feature, los textos del candado y los límites derivados.
  */
 
-import { ACEQUIA_PLANS, type AcequiaPlanId } from '@arteytierra/config/acequia';
+import {
+  ACEQUIA_PLANS, ACEQUIA_FEATURES, ACEQUIA_PLAN_ORDER,
+  ACEQUIA_TOPO_SEMILLA_HA, acequiaTopoPermitida,
+  type AcequiaPlanId, type AcequiaFeature,
+} from '@arteytierra/config/acequia';
+
+/** El tope de superficie de la muestra de topografía, y la pregunta que lo
+ *  aplica. Se re-exportan para que la app no importe dos paquetes distintos
+ *  según si pregunta por una feature o por el tope. */
+export { ACEQUIA_TOPO_SEMILLA_HA, acequiaTopoPermitida };
 
 export type Plan = AcequiaPlanId;
 
 /** Orden de los planes: un plan habilita todo lo de los planes inferiores.
  *  Personal y Profesional comparten la capa de análisis y diseño; se
  *  diferencian en LIMITE_PROYECTOS y en el informe con marca propia. */
-const ORDEN: Record<Plan, number> = { semilla: 0, personal: 1, profesional: 2, estudio: 3 };
+const ORDEN = ACEQUIA_PLAN_ORDER;
 
 export const PLANES: Plan[] = ['semilla', 'personal', 'profesional', 'estudio'];
 
@@ -34,82 +42,12 @@ export const NOMBRE_PLAN: Record<Plan, string> = {
  * Cada feature declara el plan MÍNIMO que la habilita. Las keys son jerárquicas
  * para que la telemetría sea legible. Lo que no está acá se considera libre.
  */
-export type Feature =
-  | 'catastro.rumbos'
-  | 'analisis.topo'
-  | 'analisis.clima'
-  | 'analisis.contexto'
-  | 'analisis.entorno'
-  | 'analisis.suelo'
-  | 'analisis.cobertura'
-  | 'analisis.hidrico'
-  | 'analisis.solar'
-  | 'analisis.sombras'
-  | 'analisis.visibilidad'
-  | 'analisis.produccion'
-  | 'analisis.aptitud'
-  | 'analisis.carbono'
-  | 'diseno.agua'
-  | 'diseno.zonas'
-  | 'diseno.sectores'
-  | 'diseno.aguadas'
-  | 'diseno.caminos'
-  | 'diseno.red'
-  | 'diseno.cuenca'
-  | 'diseno.pastoreo'
-  | 'diseno.riego'
-  | 'diseno.keyline'
-  | 'diseno.economia'
-  | 'sugerencias'
-  | 'informe.sin_marca'
-  | 'informe.white_label'
-  | 'export.gis'
-  | 'export.dxf'
-  | 'colaboracion';
+export type Feature = AcequiaFeature;
 
-// El plan pago MÍNIMO es 'personal' (desbloquea todo el análisis y diseño).
-// Profesional hereda lo mismo y suma más proyectos y el informe con marca
-// propia. Las de 'estudio' quedan reservadas al tier superior.
-//
-// MUESTRA GRATIS (semilla, 2026-08-15): aunque usen API externa, se abren como
-// vitrina del producto — clima, topografía, cuenca (usa el DEM) y sectores.
-// El resto del análisis/diseño sigue pago.
-const FEATURES: Record<Feature, Plan> = {
-  'catastro.rumbos':     'personal',
-  // Análisis.
-  'analisis.topo':       'semilla',   // muestra gratis (DEM)
-  'analisis.clima':      'semilla',   // muestra gratis (Open-Meteo)
-  'analisis.contexto':   'personal',
-  'analisis.entorno':    'personal',
-  'analisis.suelo':      'personal',
-  'analisis.cobertura':  'personal',
-  'analisis.hidrico':    'personal',
-  'analisis.solar':      'personal',
-  'analisis.sombras':    'personal',
-  'analisis.visibilidad':'personal',
-  'analisis.produccion': 'personal',
-  'analisis.aptitud':    'personal',
-  'analisis.carbono':    'personal',
-  // Diseño.
-  'diseno.agua':         'personal',
-  'diseno.zonas':        'personal',
-  'diseno.sectores':     'semilla',   // muestra gratis
-  'diseno.aguadas':      'personal',
-  'diseno.caminos':      'personal',
-  'diseno.red':          'personal',
-  'diseno.cuenca':       'semilla',   // muestra gratis (usa el DEM)
-  'diseno.pastoreo':     'personal',
-  'diseno.riego':        'personal',
-  'diseno.keyline':      'personal',
-  'diseno.economia':     'personal',
-  'sugerencias':         'personal',
-  // Entrega.
-  'informe.sin_marca':   'personal',
-  'informe.white_label': 'profesional',
-  'export.gis':          'personal',
-  'export.dxf':          'estudio',
-  'colaboracion':        'estudio',
-};
+// La matriz y el porqué de cada asignación viven en
+// `packages/config/src/acequia.ts` desde el 23/09/2026, para que la vidriera
+// de arteytierra.org pueda leer la misma tabla que este candado aplica.
+const FEATURES = ACEQUIA_FEATURES;
 
 /** ¿El plan habilita esta feature al 100%? */
 export function can(plan: Plan, feature: Feature): boolean {
@@ -171,6 +109,7 @@ export const TAB_FEATURE: Record<string, Feature> = {
   pastoreo:    'diseno.pastoreo',
   riego:       'diseno.riego',
   swales:       'diseno.agua',
+  reserva:      'diseno.agua',
   cortinas:     'diseno.caminos',
   cortafuegos:  'diseno.caminos',
   silvopastura: 'analisis.produccion',
@@ -187,6 +126,7 @@ export function featureDeTab(tab: string): Feature | null {
 export const BENEFICIO_FEATURE: Record<Feature, string> = {
   'catastro.rumbos':      'Rumbos y replanteo de mojones, con precisión de campo profesional.',
   'analisis.topo':        'Pendientes, orientaciones, curvas de nivel y relieve de tu predio.',
+  'analisis.topo_sin_limite': 'La topografía de un predio de cualquier tamaño, sin el tope de la muestra.',
   'analisis.clima':       'Lluvia, temperatura, heladas y extremos climáticos del lugar.',
   'analisis.contexto':    'El bioma, los saberes locales y análogos climáticos de tu territorio.',
   'analisis.entorno':     'Biodiversidad observada alrededor y el contexto vivo del predio.',
@@ -211,8 +151,10 @@ export const BENEFICIO_FEATURE: Record<Feature, string> = {
   'diseno.keyline':       'El diseño Keyline de líneas maestras según Yeomans.',
   'diseno.economia':      'La economía del proyecto: costos, ingresos y retorno.',
   'sugerencias':          'Recomendaciones de diseño generadas del análisis del terreno.',
-  'informe.sin_marca':    'Descargá el informe sin la marca de agua de Terreno.',
+  'informe.descarga':     'Descargá el informe completo en PDF para imprimirlo o mandarlo.',
+  'informe.sin_marca':    'Descargá el informe sin la marca de agua de acequia.',
   'informe.white_label':  'El informe con tu propia marca, logo y matrícula.',
+  'export.imagen':        'Exportá el plano en PNG, con rótulo, leyenda, norte y escala.',
   'export.gis':           'Exportá tu predio a GeoJSON, KML y GPX.',
   'export.dxf':           'Exportá a DXF/CAD por capas para tu estudio.',
   'colaboracion':         'Hasta 5 cuentas para tu equipo, cada una con sus proyectos.',
@@ -222,4 +164,18 @@ export const BENEFICIO_FEATURE: Record<Feature, string> = {
 export function tabBloqueada(plan: Plan, tab: string): boolean {
   const f = featureDeTab(tab);
   return f != null && !can(plan, f);
+}
+
+/**
+ * Lo mismo, pero contemplando el tope de superficie de la muestra de
+ * topografía. Es la que tiene que usar la UI.
+ *
+ * Existe separada de `tabBloqueada` porque hay lugares que preguntan por el tab
+ * sin tener a mano la superficie del predio, y forzarlos a inventar un valor
+ * sería peor. Acá la regla queda en un solo lugar y es la misma que aplica
+ * `requiereTopoDe` en el servidor: si se cambia una, el test las compara.
+ */
+export function tabBloqueadaConArea(plan: Plan, tab: string, ha: number | null): boolean {
+  if (tabBloqueada(plan, tab)) return true;
+  return featureDeTab(tab) === 'analisis.topo' && !acequiaTopoPermitida(plan, ha);
 }

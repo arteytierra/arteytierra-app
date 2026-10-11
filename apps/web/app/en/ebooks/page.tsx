@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Downloadable manuals on bioarchitecture, water and traditional crafts.',
   alternates: { canonical: '/en/ebooks' },
 };
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function EbooksEnPage() {
   const products = await listProducts({ type: 'ebook' });

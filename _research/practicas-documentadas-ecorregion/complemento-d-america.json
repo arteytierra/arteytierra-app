@@ -1,0 +1,141 @@
+[
+  {
+    "fichaId": "bahamas_pinares_manglares",
+    "practica": "Quema del paisaje para agricultura y aprovechamiento de madera",
+    "periodo": "Desde aproximadamente 830 d. C.; transformación forestal marcada hacia 970–1200 d. C.",
+    "tipo": "fuego",
+    "vigencia": "historica",
+    "detalle": "Los lucayos aumentaron las quemas en Gran Ábaco para abrir espacios agrícolas y obtener madera, con yuca como cultivo principal documentado. La perturbación redujo palmas y latifoliadas y favoreció la expansión de pinares pirógenos, mostrando cómo el manejo del fuego resolvía el desmonte pero alteraba la resiliencia del bosque insular.",
+    "fuentes": [
+      {
+        "label": "PNAS — Human arrival and landscape dynamics in the northern Bahamas",
+        "url": "https://doi.org/10.1073/pnas.2015764118"
+      }
+    ],
+    "verificacion": "The arrival of Lucayans by about 830 CE (2σ range: 720 to 920 CE) is demarcated by increased burning"
+  },
+  {
+    "fichaId": "balsas_jalisco_bosques_secos",
+    "practica": "Cultivo y transformación integral del agave",
+    "periodo": "Al menos dos mil años; destilación de tequila desde el siglo XVI",
+    "tipo": "cultivo",
+    "vigencia": "en_uso",
+    "detalle": "En los valles y laderas del volcán de Tequila se cultiva agave, una perenne resistente a la sequía cuya piña se fermenta y cuyas fibras se destinaban a textiles. La cultura de Teuchitlán también construyó terrazas agrícolas entre 200 y 900 d. C.; el paisaje productivo continuó luego con bebidas fermentadas y, desde el siglo XVI, tequila destilado.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Agave Landscape and Ancient Industrial Facilities of Tequila",
+        "url": "https://whc.unesco.org/en/list/1209"
+      }
+    ],
+    "verificacion": "used since the 16th century to produce tequila spirit and for at least 2,000 years to make fermented drinks and cloth"
+  },
+  {
+    "fichaId": "gran_cuenca_meseta_colorado",
+    "practica": "Riego de plantas silvestres alimenticias en Owens Valley",
+    "periodo": "Documentada a comienzos del período histórico; origen anterior no fechado",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Los paiute de Owens Valley construyeron y mantuvieron acequias para regar gramíneas de semilla y otras plantas alimenticias sin depender de cultivos domesticados. La derivación de arroyos expandía y estabilizaba la producción vegetal en el piso árido del valle, y constituye un sistema indígena de vegecultura desarrollado localmente.",
+    "fuentes": [
+      {
+        "label": "University of California eScholarship — Agriculture Among the Paiute of Owens Valley",
+        "url": "https://escholarship.org/uc/item/0595h88m"
+      }
+    ],
+    "verificacion": "The Paiute of Owens Valley had by early historic time progressed to a substantial extent along the path toward large-scale food production."
+  },
+  {
+    "fichaId": "hawaii_matorrales_altos_bajos",
+    "practica": "Sistema de campos de secano de Kohala",
+    "periodo": "Primera expansión desde el siglo XIV; segunda expansión después de mediados del siglo XVII",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Agricultores hawaianos organizaron en la vertiente de sotavento de Kohala una red de campos de secano delimitada por alineamientos, senderos y parcelas. La expansión e intensificación aprovecharon bandas de lluvia y suelos volcánicos aptos para cultivos como batata, y avanzaron más tarde hacia zonas marginales de mayor costo y riesgo.",
+    "fuentes": [
+      {
+        "label": "Current Anthropology — Variable Development of Dryland Agriculture in Hawaiʻi",
+        "url": "https://www.journals.uchicago.edu/doi/10.1086/591424"
+      }
+    ],
+    "verificacion": "the first beginning as early as the fourteenth century and the second after the mid-seventeenth century"
+  },
+  {
+    "fichaId": "hispaniola_bosque_humedo",
+    "practica": "Conucos elevados para raíces y policultivos taínos",
+    "periodo": "Tradición ostionoide desde aproximadamente 600 d. C.; intensificación taína después de 1100 d. C.",
+    "tipo": "suelo",
+    "vigencia": "historica",
+    "detalle": "Poblaciones ostionoides y luego taínas de La Española cultivaban yuca, batata, frijoles, maní y ajíes en conucos o montículos elevados. Los camellones concentraban suelo laborable, mejoraban el drenaje en ambientes húmedos y permitían una horticultura intensiva complementada con pesca y recolección costera.",
+    "fuentes": [
+      {
+        "label": "Florida Museum of Natural History — Taíno Culture History",
+        "url": "https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-culture/"
+      },
+      {
+        "label": "Florida Museum of Natural History — Taíno Society",
+        "url": "https://www.floridamuseum.ufl.edu/histarch/research/haiti/en-bas-saline/taino-society/"
+      }
+    ],
+    "verificacion": "by about AD 600 appear to have developed instead a new style of cultural expression in response to local conditions and populations."
+  },
+  {
+    "fichaId": "jamaica_bosque_humedo_karstico",
+    "practica": "Uso multifuncional del bosque kárstico por comunidades cimarronas",
+    "periodo": "Desde el período cimarrón anterior al tratado de 1739, con continuidad actual",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Los cimarrones de Sotavento utilizaron el Cockpit Country como fuente de alimentos, refugio, agua y medicina, además de aprovechar cuevas, sumideros y senderos para sostener comunidades autónomas. La lectura fina del karst permitió localizar recursos y desplazarse por un relieve difícil, y la relación medicinal, espiritual y de subsistencia con el bosque continúa en su cultura.",
+    "fuentes": [
+      {
+        "label": "UNESCO World Heritage Centre — Cockpit Country Protected Area",
+        "url": "https://whc.unesco.org/en/tentativelists/6822"
+      }
+    ],
+    "verificacion": "This remote environment fostered the development of a traditional culture which continues today."
+  },
+  {
+    "fichaId": "jamaica_bosque_seco",
+    "practica": "Agroforestería y quema para cultivar yuca en White Marl",
+    "periodo": "Aproximadamente 1050–450 años calibrados antes del presente",
+    "tipo": "fuego",
+    "vigencia": "historica",
+    "detalle": "La comunidad precolonial de White Marl manejó la vegetación mediante agroforestería y fuego, con fitolitos de yuca presentes durante toda la ocupación. Las quemas abrieron áreas de cultivo y condujeron una transición desde vegetación arbórea hacia palmares y, más tarde, un paisaje más abierto, sin que el cambio se explique por el paleoclima.",
+    "fuentes": [
+      {
+        "label": "Liverpool John Moores University Repository — The legacy of 1300 years of land use in Jamaica",
+        "url": "https://researchonline.ljmu.ac.uk/id/eprint/18124/"
+      }
+    ],
+    "verificacion": "White Marl was a continuously inhabited village settlement (ca. 1050–450 cal yrs BP)"
+  },
+  {
+    "fichaId": "manglares_mexico",
+    "practica": "Corrales móviles de ramas de mangle para pesca estuarina",
+    "periodo": "Documentada entre 1602 y 1605",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "Pescadores nativos de Marismas Nacionales trenzaban ramas de mangle para formar corrales móviles que atravesaban canales estuarinos y concentraban peces, camarones y otros animales con el movimiento de la marea. El arte de pesca usaba material disponible en el humedal y evitaba embarcaciones o redes complejas, aunque capturas grandes podían romper la estructura.",
+    "fuentes": [
+      {
+        "label": "Tropical Conservation Science — Coastal Exploitation Throughout Marismas Nacionales Wetlands in Northwest Mexico",
+        "url": "https://journals.sagepub.com/doi/10.1177/1940082917697261"
+      }
+    ],
+    "verificacion": "La Mota y Escobar’s (1602–1605) writings, where the author meticulously illustrates native fishing practices using movable weirs of braided mangrove branches"
+  },
+  {
+    "fichaId": "sonora_sinaloa_bosque_seco_desierto",
+    "practica": "Canales y riego de escorrentía en el desierto de Sonora",
+    "periodo": "Agricultura regional desde hace unos 3.000 años; canales hohokam abandonados hacia el siglo XV",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Los hohokam construyeron grandes redes de canales en valles fluviales como el Gila, mientras otros agricultores tempranos sembraban junto a cauces para captar la escorrentía estival mediante riego Ak-Chin. Ambos sistemas concentraban agua breve y espacialmente dispersa para sostener cultivos en un ambiente desértico de lluvias variables.",
+    "fuentes": [
+      {
+        "label": "U.S. National Park Service — Sonoran Desert Network Ecosystems",
+        "url": "https://www.nps.gov/im/sodn/ecosystems.htm"
+      }
+    ],
+    "verificacion": "The Hohokam constructed massive systems of irrigation canals along major river valleys, such as the Gila, before abandoning them by around the 15th century."
+  }
+]

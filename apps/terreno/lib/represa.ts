@@ -8,7 +8,13 @@
  *
  * Se itera el ciclo de 12 meses hasta converger (3 años) para eliminar el sesgo
  * de la condición inicial. Valores orientativos de diseño preliminar.
+ *
+ * La evaporación del espejo no es la ETP de referencia y desde el 03/10/2026
+ * tampoco es un factor constante: sale de `factorEvaporacionEspejo`, que lee el
+ * cuadro 12 de FAO-56 y distingue el vaso somero del embalse hondo en clima
+ * templado. Ver el comentario de `factorEvap_mensual`.
  */
+import { KC_ESPEJO_SOMERO } from './represaDiseno';
 
 export interface MesRepresa {
   mes:          number;   // 0=Ene … 11=Dic
@@ -16,6 +22,8 @@ export interface MesRepresa {
   llenado_pct:  number;   // % de la capacidad
   aporte_m3:    number;   // escorrentía entrante
   evap_m3:      number;
+  /** Factor del espejo sobre la ETP de ese mes. Ver `factorEvap_mensual`. */
+  factor_evap:  number;
   infiltr_m3:   number;
   demanda_m3:   number;
   deficit_m3:   number;   // demanda no cubierta
@@ -35,10 +43,26 @@ export interface ResultadoRepresa {
 }
 
 /** Resumen para el informe / snapshot. */
+/**
+ * La demanda del mes `m`. Un arreglo corto o con huecos cae al primer valor
+ * finito que encuentre antes que devolver `NaN`: un `NaN` acá sale como volumen
+ * de embalse en el informe y nadie lo ve venir.
+ */
+export function demandaDelMes(demanda: number | number[], m: number): number {
+  if (typeof demanda === 'number') return Number.isFinite(demanda) ? demanda : 0;
+  const v = demanda[m];
+  if (Number.isFinite(v)) return v as number;
+  return demanda.find(x => Number.isFinite(x)) ?? 0;
+}
+
 export interface RepresaResumen {
   capacidad_m3:      number;
-  cuenca_ha:         number;
+  /** Promedio de los doce meses. Por doce da la demanda anual exacta. */
   demanda_m3_mes:    number;
+  /** La del mes que más pide, y cuál es. Faltan si la demanda es constante. */
+  demanda_m3_mes_max?: number;
+  mes_demanda_max?:    number;
+  cuenca_ha:         number;
   confiabilidad_pct: number;
   aguanta:           boolean;
   volumen_min_m3:    number;
@@ -79,6 +103,14 @@ export interface RepresaInputs {
   seep:         string;
   /** Unidad elegida para leer el volumen de agua: 'm3' o 'litros'. */
   unidadVol?:   string;
+  /**
+   * Carga sobre el vertedero cuando pasa la crecida de diseño (m). Opcional
+   * para no invalidar los proyectos guardados antes del 03/10/2026, que no la
+   * tenían: al abrirlos el panel la repone en su default y avisa.
+   */
+  cargaVertedero?: number;
+  /** Terraplén compactado en capas con rodillo. Decide el 5 % o el 10 %. */
+  compactadoEnCapas?: boolean;
 }
 
 export interface ParamsRepresa {
@@ -87,9 +119,39 @@ export interface ParamsRepresa {
   cuencaArea_m2:     number;
   coefEscorrentia:   number;   // fracción de la lluvia que escurre (0–1)
   meses:             Array<{ precip_mm: number; etp_mm: number }>;  // 12
-  demanda_m3_mes:    number;   // demanda mensual constante
+  /**
+   * Demanda mensual. Un número es la misma demanda los doce meses; un arreglo de
+   * doce es la demanda mes a mes, que es lo que corresponde desde que el consumo
+   * del rodeo sale de la temperatura (ver `demandaMensualPorTemperatura_m3` en
+   * `rodeo.ts`). Entre julio y enero hay más de un 50 % de diferencia, y el error
+   * caía del lado peligroso: enero es cuando la represa está más baja.
+   */
+  demanda_m3_mes:    number | number[];
   infiltracion_mm_dia: number;
-  factorEvap?:       number;   // espejo de agua vs ETP de referencia (~1.05)
+  /**
+   * Factor del espejo de agua sobre la ETP de referencia, **mes a mes** (12
+   * valores, enero primero).
+   *
+   * Por qué es mensual. Hasta el 03/10/2026 esto era un solo número, 1,05, sin
+   * fuente ni condición. El 1,05 está bien y sale del cuadro 12 de FAO-56, pero
+   * sólo para su primera fila de agua libre: *«Open Water, < 2 m depth or in
+   * subhumid climates or tropics»*. Para un embalse de más de 5 m en clima
+   * templado la misma fuente da **dos** valores —0,65 mientras el agua se
+   * calienta y 1,25 cuando devuelve el calor—, porque una masa de agua honda
+   * guarda la radiación de una estación para la otra. Un factor constante borra
+   * justo esa diferencia, y el mes que importa es el de la punta seca.
+   *
+   * Lo calcula `factorEvaporacionEspejo` en `represaDiseno.ts`, que además pide
+   * el hemisferio: la mitad que se calienta en Córdoba es la que se enfría en
+   * Kansas.
+   */
+  factorEvap_mensual?: readonly number[];
+  /**
+   * @deprecated Factor único. Se conserva para no romper llamadas viejas; si
+   * viene `factorEvap_mensual` manda ése. Sin ninguno de los dos se usa 1,05,
+   * que es la fila somera de FAO-56.
+   */
+  factorEvap?:       number;
 }
 
 const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -97,7 +159,14 @@ const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export function simularRepresaAnual(p: ParamsRepresa): ResultadoRepresa | null {
   if (p.capacidad_m3 <= 0 || p.meses.length !== 12) return null;
 
-  const fEvap = p.factorEvap ?? 1.05;
+  const mensual = p.factorEvap_mensual;
+  const fEvapMes = (m: number): number => {
+    if (mensual && mensual.length === 12) {
+      const v = mensual[m];
+      if (Number.isFinite(v)) return v as number;
+    }
+    return p.factorEvap ?? KC_ESPEJO_SOMERO;
+  };
   const cap = p.capacidad_m3;
 
   // Itera 3 ciclos anuales para converger; guarda el último.
@@ -115,9 +184,10 @@ export function simularRepresaAnual(p: ParamsRepresa): ResultadoRepresa | null {
       const areaEf = p.area_espejo_m2 * llenado;
 
       const aporte  = p.cuencaArea_m2 * (md.precip_mm / 1000) * p.coefEscorrentia;
+      const fEvap   = fEvapMes(m);
       const evap    = areaEf * (md.etp_mm / 1000) * fEvap;
       const infiltr = areaEf * (p.infiltracion_mm_dia * dias / 1000);
-      const demanda = p.demanda_m3_mes;
+      const demanda = demandaDelMes(p.demanda_m3_mes, m);
 
       let v = vol + aporte - evap - infiltr - demanda;
       let derrame = 0, deficit = 0;
@@ -131,6 +201,7 @@ export function simularRepresaAnual(p: ParamsRepresa): ResultadoRepresa | null {
         llenado_pct: Math.round((v / cap) * 100),
         aporte_m3:   Math.round(aporte),
         evap_m3:     Math.round(evap),
+        factor_evap: fEvap,
         infiltr_m3:  Math.round(infiltr),
         demanda_m3:  Math.round(demanda),
         deficit_m3:  Math.round(deficit),

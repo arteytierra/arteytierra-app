@@ -18,7 +18,7 @@
  */
 
 import type { ComponentProps, ReactNode } from 'react';
-import { ChevronRight, Camera, Image as ImageIcon, Undo2, Redo2 } from 'lucide-react';
+import { ChevronRight, Camera, Image as ImageIcon, Undo2, Redo2, Lock } from 'lucide-react';
 import { DibujoToolbar } from './DibujoToolbar';
 import { ControlesNavegacion } from './ControlesMapa';
 
@@ -50,6 +50,10 @@ interface Props {
     onEditor:     () => void;
     onPng:        () => void;
     guardandoPng: boolean;
+    /** Sin `export.imagen` (plan Semilla). Los botones siguen ahí y con
+     *  candado: el que los aprieta recibe el CTA al plan. Esconderlos haría que
+     *  la función pareciera no existir, que es peor que decir que se paga. */
+    bloqueada:    boolean;
   };
   historial: {
     onUndo:     () => void;
@@ -106,11 +110,23 @@ export function BarraSuperior({
           <span className="hidden lg:inline">{guardado.estado.label}</span>
         </button>
         {/* Captura del plano: abrir el editor de plano o guardar PNG directo. */}
-        <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
-          <button onClick={captura.onEditor} title="Capturar mapa — editor de plano (rótulo + leyenda)" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 transition-colors border-r border-bone-200"><Camera className="w-4 h-4" /><span className="hidden xl:inline text-[11px] font-medium">Capturar</span></button>
-          <button onClick={captura.onPng} disabled={captura.guardandoPng} title="Guardar PNG del mapa" className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            {captura.guardandoPng ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-4 h-4" />}<span className="hidden xl:inline text-[11px] font-medium">PNG</span>
-          </button>
+        {/* El candado va en un envoltorio `relative` SIN `overflow-hidden`: el
+            grupo de botones necesita recortar para que el borde redondeado
+            quede limpio, y cualquier cosa que asome por afuera —como esta
+            insignia en la esquina— la cortaría. Es el mismo detalle que ya
+            documenta `mapa/riel.tsx` para el indicador de pestaña activa. */}
+        <div className={`relative ${captura.bloqueada ? 'opacity-60' : ''}`}>
+          <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">
+            <button onClick={captura.onEditor} title={captura.bloqueada ? 'Capturar mapa · plan pago' : 'Capturar mapa — editor de plano (rótulo + leyenda)'} className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 transition-colors border-r border-bone-200"><Camera className="w-4 h-4" /><span className="hidden xl:inline text-[11px] font-medium">Capturar</span></button>
+            <button onClick={captura.onPng} disabled={captura.guardandoPng} title={captura.bloqueada ? 'Guardar PNG del mapa · plan pago' : 'Guardar PNG del mapa'} className="h-8 px-2 flex items-center gap-1 text-ink-700/55 hover:text-moss-700 hover:bg-bone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {captura.guardandoPng ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-4 h-4" />}<span className="hidden xl:inline text-[11px] font-medium">PNG</span>
+            </button>
+          </div>
+          {captura.bloqueada && (
+            <span className="absolute -right-1 -top-1 w-3 h-3 rounded-full bg-bone-50 border border-bone-200 flex items-center justify-center">
+              <Lock className="w-2 h-2 text-ink-700/70" />
+            </span>
+          )}
         </div>
         {/* Deshacer / rehacer agrupados. */}
         <div className="flex items-stretch rounded-lg border border-bone-200 overflow-hidden">

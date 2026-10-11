@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PostSignupNewsletter } from '@/components/newsletter/PostSignupNewsletter';
-import { FORMSPREE_ENDPOINT } from '@/lib/forms/formspree';
+import { CONTACTO_ENDPOINT } from '@/lib/forms/contacto';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
@@ -16,7 +16,7 @@ export function AsesoriaForm() {
     const form = e.currentTarget;
     const data = new FormData(form);
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const res = await fetch(CONTACTO_ENDPOINT, {
         method: 'POST',
         headers: { Accept: 'application/json' },
         body: data,
@@ -58,6 +58,8 @@ export function AsesoriaForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <input type="hidden" name="_fuente" value="asesorias" />
+      <input type="hidden" name="_subject" value="Nueva consulta de asesoría · arteytierra.org" />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="nombre" className="font-sans text-sm font-semibold text-ink-800">Nombre *</label>

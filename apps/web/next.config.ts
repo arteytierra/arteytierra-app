@@ -29,8 +29,16 @@ const config: NextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24,
-    deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1440, 1920, 2048],
+    // 24 horas significaba que una imagen que se mira seguido se volvia a
+    // transformar todos los dias, y cada transformacion se cuenta contra el
+    // tope del plan. Nada de public/img cambia sin un deploy, y el deploy
+    // invalida la cache igual.
+    minimumCacheTTL: 60 * 60 * 24 * 31,
+    // Eran diez anchos. Con dos formatos eso es hasta veinte transformaciones
+    // por imagen, y hay 236 imagenes en public. Estos cinco cubren telefono,
+    // tablet, notebook y pantalla grande; el navegador elige el mas chico que
+    // le sirva, asi que sacar los intermedios no cambia lo que se ve.
+    deviceSizes: [480, 640, 828, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       { protocol: 'https', hostname: '**.supabase.co' },

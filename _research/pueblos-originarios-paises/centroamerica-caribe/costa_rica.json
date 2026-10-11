@@ -1,0 +1,69 @@
+{
+  "pais": "Costa Rica",
+  "iso3": "CRI",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: los 24 territorios indígenas son una unidad geográfica del censo; el registro de territorios queda para la fase de cartografía. existe: false significa «no encontrado» como padrón de comunidades."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Instituto Nacional de Estadística y Censos (INEC) de Costa Rica",
+    "anio": 2011,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita. La publicación define «Población indígena total: Es el total de personas que se autoidentificaron como indígenas», con y sin pueblo.",
+    "universo": "Población total (4.301.712).",
+    "total_declarado": 104143,
+    "poblacion_base": 4301712,
+    "url_cuadros": null,
+    "urls_archivos": [
+      "https://inie.ucr.ac.cr/descarga/KOHA-PDF/Territorios_Indigenas.pdf"
+    ],
+    "niveles": [
+      "nacional",
+      "territorio indígena"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": true,
+    "sin_declarar_pueblo": 26070,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: inec.cr devuelve 403 desde acá (con curl y con lector web). Abrí la publicación del INEC «X Censo Nacional de Población y VI de Vivienda 2011. Territorios Indígenas» desde un espejo de la Universidad de Costa Rica (inie.ucr.ac.cr), no desde el INEC; por eso verificado: false. Fila «Costa Rica»: población 4.301.712; indígena total 104.143, con pueblo 78.073, sin pueblo 26.070. Del Censo 2022 abrí «Estimación de Población y Vivienda 2022. Resultados generales» (admin.inec.cr): el censo tuvo cobertura parcial y el INEC publicó una estimación general; no encontré ahí resultados de población indígena."
+  },
+  "pueblos": [
+    "Bribri",
+    "Brunca o Boruca",
+    "Cabécar",
+    "Chorotega",
+    "Huetar",
+    "Maleku o Guatuso",
+    "Ngöbe o Guaymí",
+    "Teribe o Térraba"
+  ],
+  "lo_que_no_dice": [
+    "El dato es de 2011: el Censo 2022 tuvo cobertura parcial y no encontré resultados étnicos.",
+    "La lista de pueblos sale de la definición «población indígena con pueblo» de la publicación 2011, copiada tal cual (ocho rótulos, algunos con doble nombre: «Brunca o Boruca», «Maleku o Guatuso», «Ngöbe o Guaymí», «Teribe o Térraba»).",
+    "La autoidentificación afrodescendiente existe en el censo 2011 y no se usa acá."
+  ],
+  "trampas": [
+    "«Sin pueblo» (26.070) son personas que se autoidentificaron indígenas sin pertenecer a un pueblo del país o del extranjero: están dentro de los 104.143.",
+    "La población en territorios indígenas no es población indígena: la publicación informa población no indígena dentro de los territorios.",
+    "El archivo que abrí es un espejo universitario, no el sitio del INEC.",
+    "«Con pueblo» (78.073) incluye a personas de pueblos indígenas de otro país residentes en Costa Rica: no es sólo la suma de los ocho pueblos nacionales."
+  ],
+  "notas": "Costa Rica tiene buen dato 2011 por territorio indígena, pero lo abrí desde un espejo y el censo 2022 no publica etnicidad. Falta: acceso al sitio del INEC y su licencia."
+}

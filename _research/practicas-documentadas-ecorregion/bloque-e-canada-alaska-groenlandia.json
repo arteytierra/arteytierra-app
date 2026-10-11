@@ -1,0 +1,141 @@
+[
+  {
+    "fichaId": "san_lorenzo_tierras_bajas",
+    "practica": "Milpa iroquesa de maíz, poroto y calabaza",
+    "periodo": "Desde al menos el siglo XIII; práctica histórica documentada en la época de Jacques Cartier",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Los iroqueses del San Lorenzo cultivaban maíz, porotos y calabazas en aldeas semipermanentes y sembraban al comienzo del verano. La combinación aprovechaba verticalmente el espacio: el maíz servía de soporte, el poroto trepaba y la calabaza cubría el suelo. Los restos de maíz más antiguos hallados en el valle y citados por Parques Canadá datan del siglo XIII.",
+    "fuentes": [
+      {
+        "label": "Parques Canadá — La agricultura de los iroqueses del San Lorenzo",
+        "url": "https://parks.canada.ca/lhn-nhs/qc/cartierbrebeuf/culture/autochtone-indigenous/natcul6"
+      }
+    ],
+    "verificacion": "Both finds date to the 13th century."
+  },
+  {
+    "fichaId": "columbia_britanica_interior",
+    "practica": "Quemas culturales de baja severidad en Ne Sextsine",
+    "periodo": "Documentadas entre 1550 y 1982; fuertemente reducidas desde la colonización",
+    "tipo": "fuego",
+    "vigencia": "en_retroceso",
+    "detalle": "El pueblo T'exelc, hoy Williams Lake First Nation, aplicó fuego frecuente alrededor de la aldea, campamentos y corredores de tránsito de Ne Sextsine. Las quemas de baja severidad mantenían un mosaico abierto y productivo, con intervalos medianos de dieciocho años a escala de parcela. El estudio combina dendrocronología, carbón del suelo y conocimiento ecológico T'exelc, y registra el quiebre asociado a la colonización.",
+    "fuentes": [
+      {
+        "label": "Copes-Gerbitz et al. (2023), Ecological Applications — Indigenous stewardship and the historical fire regime at Ne Sextsine",
+        "url": "https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.2736"
+      }
+    ],
+    "verificacion": "Between 1550 and 1982 CE, we found median fire intervals of 18 years at the plot level"
+  },
+  {
+    "fichaId": "okanagan_bosque_seco",
+    "practica": "Quema cultural syilx de baja intensidad",
+    "periodo": "Anterior a la colonización; actualmente en recuperación mediante quemas culturales y prescritas",
+    "tipo": "fuego",
+    "vigencia": "en_uso",
+    "detalle": "El pueblo syilx Okanagan realizaba quemas controladas y regulares de baja intensidad en sus territorios secos. El fuego renovaba plantas alimenticias y medicinales, reducía combustibles y conservaba claros dentro del bosque. Tras décadas de supresión colonial, las comunidades están recuperando la práctica en colaboración con equipos técnicos y autoridades provinciales.",
+    "fuentes": [
+      {
+        "label": "Forest Enhancement Society of British Columbia (2025) — Indigenous-led cultural and prescribed fire",
+        "url": "https://fesbc.ca/wp-content/uploads/2025/09/2025-Special-Report.pdf"
+      },
+      {
+        "label": "Okanagan Nation Alliance — Munro prescribed burns",
+        "url": "https://syilx.org/projects/munro-prescribed-burns/"
+      }
+    ],
+    "verificacion": "Long before settler colonialism, syilx Okanagan people would regularly conduct low-intensity controlled burns"
+  },
+  {
+    "fichaId": "haida_gwaii_hipermaritimo",
+    "practica": "Jardines haida de trébol de raíz",
+    "periodo": "Documentados etnográficamente a fines del siglo XIX; sin confirmación arqueológica de cultivo anterior",
+    "tipo": "cultivo",
+    "vigencia": "historica",
+    "detalle": "Los haida despejaban piedras de parcelas costeras destinadas al trébol de raíz y cercaban los jardines para protegerlos. La práctica muestra una modificación deliberada y mantenida del suelo para una planta alimenticia perenne. Parques Canadá aclara que la descripción procede de Charles Newcombe a fines del siglo XIX y que las excavaciones citadas no hallaron prueba arqueológica de cultivo, por lo que no se proyecta hacia una antigüedad mayor.",
+    "fuentes": [
+      {
+        "label": "Parques Canadá — Arqueología en Gwaii Haanas y jardines de trébol haida",
+        "url": "https://parks.canada.ca/pn-np/bc/gwaiihaanas/nature/conservation/culturelles-cultural/archeologie-archaeology/subaquatique-underwater"
+      }
+    ],
+    "verificacion": "Charles Newcombe in the late 1800s, who described how the Haida cleared stones off their clover gardens"
+  },
+  {
+    "fichaId": "escudo_canadiense_boreal",
+    "practica": "Cosecha ojibwa de manomin desde canoa",
+    "periodo": "Durante más de mil años; vigente en comunidades de la región",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "Las comunidades ojibwa cosechan manomin o arroz silvestre en aguas someras y tranquilas del Escudo Canadiense. Una persona impulsa la canoa y otra inclina las panojas sobre la borda y las golpea suavemente, de modo que parte de la semilla cae al agua y regenera el rodal. La placa patrimonial de Manitoba documenta más de mil años de uso alimentario local.",
+    "fuentes": [
+      {
+        "label": "Gobierno de Manitoba — Wild Rice Harvesting / Manomin",
+        "url": "https://www.manitoba.ca/chc/hrb/plaques/plaq1307.html"
+      }
+    ],
+    "verificacion": "has been a staple food of local Native people for more than a thousand years"
+  },
+  {
+    "fichaId": "taiga_canadiense_permafrost",
+    "practica": "Cercos gwich'in para conducir caribúes",
+    "periodo": "Usados hasta aproximadamente 1920; hoy conservados como patrimonio arqueológico y cultural",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "Los gwich'in construían largas alas de madera que guiaban a los caribúes hacia un corral y luego a un paso estrecho de captura. El sistema concentraba el movimiento de una manada migratoria mediante conocimiento de rutas, relieve y comportamiento animal. Parques Canadá registra cuarenta y seis sitios entre Alaska, Yukón y Territorios del Noroeste, incluidos siete en Vuntut.",
+    "fuentes": [
+      {
+        "label": "Parques Canadá — Caribou fences, Vuntut National Park",
+        "url": "https://parks.canada.ca/pn-np/yt/vuntut/culture/cloture-fence?wbdisable=true"
+      }
+    ],
+    "verificacion": "Until about 1920, the Gwitchin used caribou fences to harvest caribou."
+  },
+  {
+    "fichaId": "tundra_artica_canadiense",
+    "practica": "Caches de piedra para conservar carne de caribú",
+    "periodo": "Confirmadas por restos de caribú de aproximadamente 250 y 400 años",
+    "tipo": "recoleccion",
+    "vigencia": "historica",
+    "detalle": "En Many Caches, estructuras circulares de piedra protegían carne de caribú del sol y de carroñeros hasta que pudiera transportarse o consumirse. La investigación de Parques Canadá incorporó conocimiento Inuvialuit para interpretar y documentar el sitio. Dos fragmentos óseos fechados por radiocarbono sitúan el uso al menos entre hace unos 250 y 400 años.",
+    "fuentes": [
+      {
+        "label": "Parques Canadá — Many Caches: archaeology and Inuvialuit knowledge",
+        "url": "https://www.parks.canada.ca/nature/science/autochtones-indigenous/caches"
+      }
+    ],
+    "verificacion": "Two fragments of caribou bone found there were radiocarbon dated at 250 years old and 400 years old."
+  },
+  {
+    "fichaId": "montana_artica_baffin_torngat",
+    "practica": "Inuksuit para orientar desplazamientos y caza",
+    "periodo": "Anteriores a la llegada neo-inuit al Ártico oriental hacia fines del siglo XII; con continuidad inuit",
+    "tipo": "recoleccion",
+    "vigencia": "en_uso",
+    "detalle": "En la isla de Baffin, los inuksuit y otras estructuras de piedra señalan direcciones, fuentes de alimento, peligros y lugares de espera. Algunas alineaciones también canalizan animales hacia cazadores, convirtiendo el relieve abierto en infraestructura de captura. Parques Canadá documenta su presencia antes de la migración neo-inuit al Ártico oriental y su continuidad dentro de la cultura inuit.",
+    "fuentes": [
+      {
+        "label": "Parques Canadá — Inuksuit on southern Baffin Island",
+        "url": "https://parks.canada.ca/culture/cseh-twih/202343"
+      }
+    ],
+    "verificacion": "Stone structures have been an integral part of arctic cultures since before the arrival of Neo-Inuit"
+  },
+  {
+    "fichaId": "groenlandia_kalaallit_nunaat",
+    "practica": "Riego y abonado de praderas de heno nórdicas",
+    "periodo": "Desde fines del siglo X hasta el siglo XV",
+    "tipo": "agua",
+    "vigencia": "historica",
+    "detalle": "Los colonos nórdicos del sudoeste de Groenlandia regaban y abonaban campos próximos a las granjas para producir heno. Zanjas y pequeños canales distribuían el deshielo durante los déficits estivales, mientras el estiércol devolvía nutrientes al suelo. El forraje conservado hacía posible mantener ganado estabulado durante el invierno y fue abandonado con la desaparición de los asentamientos medievales.",
+    "fuentes": [
+      {
+        "label": "University of Edinburgh Research Explorer — Insect fossils and irrigation in medieval Greenland",
+        "url": "https://www.research.ed.ac.uk/en/publications/insect-fossils-and-irrigation-in-medieval-greenland/"
+      }
+    ],
+    "verificacion": "Initial European, Norse, settlement in south-west Greenland lasted from the late tenth to the fifteenth century"
+  }
+]

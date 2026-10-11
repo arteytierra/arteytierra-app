@@ -15,6 +15,8 @@
  * Todo esto es orientativo y no reemplaza un análisis de laboratorio.
  */
 import { fuentesNacionalesSuelo } from './sueloFuentes';
+import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
+import { obtenerRocaMadre, type RocaMadre } from './rocaMadre';
 
 /** Una capa del perfil, con propiedades e hidráulica derivada. */
 export interface CapaSuelo {
@@ -74,6 +76,20 @@ export interface DatosSuelo {
   perfil:        CapaSuelo[];       // 6 capas 0–200 cm
   agua_util:     AguaUtilPerfil;
   grupo_hidro:   GrupoHidrologico;
+  /**
+   * Turba o suelo orgánico en el punto, o `null` si el perfil no llega al
+   * umbral. `null` no afirma que no haya turba: a 1 km la celda promedia y
+   * diluye las turberas chicas. Ver `lib/sueloOrganico.ts`.
+   */
+  organico:      SueloOrganico | null;
+  /**
+   * Roca de base del punto, o `null` si ningún mapa geológico lo cubre o el
+   * servicio no respondió. Nunca hace fallar el análisis de suelo: es una capa
+   * que agrega contexto sobre lo que el suelo pudo haber heredado.
+   *
+   * Ojo con leerla como el material parental: ver `lib/rocaMadre.ts`.
+   */
+  roca:          RocaMadre | null;
   fuente:        string;
 }
 
@@ -104,6 +120,36 @@ interface SoilGridsLayer {
 
 interface SoilGridsResponse {
   properties: { layers: SoilGridsLayer[] };
+  /**
+   * Lo agrega nuestro proxy cuando el perfil salió de leer los rásters en vez de
+   * la API de consulta de ISRIC (ver `app/api/suelo/route.ts`). Es opcional a
+   * propósito: las respuestas guardadas antes de ese cambio son de la API a
+   * 250 m y no lo traen, así que la ausencia significa «250 m, API de consulta».
+   */
+  _acequia?: {
+    fuente: 'cog-1000m';
+    resolucion_m: number;
+    /** Km que hubo que alejarse del punto para encontrar un píxel con dato. */
+    desplazamiento_km: number | null;
+  };
+}
+
+/**
+ * Texto de la fuente, con la resolución que el dato realmente tiene.
+ *
+ * Importa más de lo que parece. La app decía «~250 m» para todo, y desde que el
+ * piso global se lee de los rásters agregados eso sería falso en la mayoría de
+ * los puntos. Ya nos pasó con el relieve, que anunciaba «SRTM 30 m» mientras
+ * usaba un DEM nacional. Si el número salió de una grilla de 1 km, la pantalla
+ * dice 1 km.
+ */
+function fuenteSoilGrids(meta: SoilGridsResponse['_acequia']): string {
+  const paso = meta ? `~${meta.resolucion_m >= 1000 ? `${meta.resolucion_m / 1000} km` : `${meta.resolucion_m} m`}` : '~250 m';
+  const corrido = meta?.desplazamiento_km
+    ? ` · el píxel del punto no tiene dato: el valor es del más cercano con dato, a ${meta.desplazamiento_km} km`
+    : '';
+  return `ISRIC SoilGrids v2.0 (0–200 cm, ${paso}) · agua útil y grupo hidrológico por `
+       + `pedotransferencia Saxton-Rawls (2006) — orientativo${corrido}`;
 }
 
 /** Profundidades estándar SoilGrids con su rango top/bottom en cm. */
@@ -129,6 +175,19 @@ const DEPTHS: Array<{ label: string; top: number; bot: number }> = [
  * La fuente efectiva viaja en `fuente` y se imprime en el informe.
  */
 export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo> {
+  // La roca va en paralelo: es otra fuente, no depende del perfil y no tiene
+  // por qué esperarlo ni hacerlo esperar. Si falla devuelve null por su cuenta.
+  const [datos, roca] = await Promise.all([
+    sinOrganico(lat, lng),
+    obtenerRocaMadre(lat, lng),
+  ]);
+  // El orgánico se calcula acá y no en cada builder porque depende sólo del
+  // perfil, y el perfil lo arman igual SoilGrids y SSURGO. Un solo lugar, un
+  // solo criterio.
+  return { ...datos, organico: detectarSueloOrganico(datos.perfil), roca };
+}
+
+async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
   for (const f of fuentesNacionalesSuelo(lat, lng)) {
     if (f === 'ssurgo') {
       const d = await desdeSsurgo(lat, lng).catch(() => null);
@@ -138,16 +197,22 @@ export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo
   return desdeSoilGrids(lat, lng);
 }
 
-async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
+async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
+  // 45 s y no 35: el proxy reintenta hasta tres veces contra ISRIC, que limita
+  // por IP y cuelga los pedidos que exceden el cupo (ver app/api/suelo/route.ts).
+  // Si el cliente corta antes que el proxy, se pierde el reintento que iba a
+  // entrar y el usuario ve un error que ya estaba resuelto del otro lado.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 35_000);
+  const timer = setTimeout(() => controller.abort(), 45_000);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    const json = await res.json() as SoilGridsResponse & { error?: string };
-    if (json.error) throw new Error(json.error);
-    if (!res.ok) throw new Error(`SoilGrids respondió ${res.status}`);
+    // Si el proxy se cayó entero la respuesta no es JSON: un SyntaxError crudo
+    // en pantalla no le sirve a nadie.
+    const json = await res.json().catch(() => null) as (SoilGridsResponse & { error?: string }) | null;
+    if (json?.error) throw new Error(json.error);
+    if (!res.ok || !json) throw new Error(`El servicio de suelo no respondió (${res.status}). Probá de nuevo en un minuto.`);
 
     const layers = json.properties.layers;
 
@@ -199,7 +264,7 @@ async function desdeSoilGrids(lat: number, lng: number): Promise<DatosSuelo> {
       arcilla: sup.arcilla, arena: sup.arena, limo: sup.limo,
       densidad_ap: sup.densidad_ap, nitrogeno: sup.nitrogeno,
       clase_textura, interp, perfil, agua_util, grupo_hidro,
-      fuente: 'ISRIC SoilGrids v2.0 (0–200 cm, ~250 m) · agua útil y grupo hidrológico por pedotransferencia Saxton-Rawls (2006) — orientativo',
+      fuente: fuenteSoilGrids(json._acequia),
     };
   } finally {
     clearTimeout(timer);
@@ -231,7 +296,7 @@ export interface HorizonteSsurgo {
  * ya está escrito contra esas seis capas. El valor de cada capa es el promedio
  * de los horizontes que la cruzan, ponderado por cuánto la cruzan.
  */
-async function desdeSsurgo(lat: number, lng: number): Promise<DatosSuelo | null> {
+async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'> | null> {
   const res = await fetch(`/api/suelo/ssurgo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`, {
     signal: AbortSignal.timeout(35_000),
   });

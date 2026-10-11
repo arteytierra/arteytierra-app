@@ -1,0 +1,66 @@
+{
+  "pais": "El Salvador",
+  "iso3": "SLV",
+  "registro": {
+    "existe": false,
+    "organismo": null,
+    "nombre": null,
+    "que_cuenta": null,
+    "url_pagina": null,
+    "url_archivo": null,
+    "formato": null,
+    "fecha_distribucion": null,
+    "licencia": null,
+    "licencia_url": null,
+    "uso_comercial": null,
+    "niveles": [],
+    "columnas": [],
+    "filas": null,
+    "tiene_coordenadas": null,
+    "filas_sin_coordenada": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: no busqué un registro de comunidades indígenas; queda pendiente. existe: false significa «no encontrado»."
+  },
+  "censo": {
+    "existe": true,
+    "organismo": "Banco Central de Reserva de El Salvador (BCR), VII Censo de Población y VI de Vivienda",
+    "anio": 2024,
+    "fecha_relevamiento": null,
+    "pregunta": "No transcrita: la página de resultados dice que las personas «se consideran pertenecientes a algún pueblo indígena», pero no encontré el cuestionario.",
+    "universo": "No declarado en la página consultada.",
+    "total_declarado": 68148,
+    "poblacion_base": null,
+    "url_cuadros": "https://poblacion.bcr.gob.sv/pages/teg-etnia",
+    "urls_archivos": [],
+    "niveles": [
+      "nacional"
+    ],
+    "hay_desagregado_por_pueblo": true,
+    "hay_desagregado_por_territorio": false,
+    "sin_declarar_pueblo": null,
+    "verificado": false,
+    "como_se_verifico": "2026-09-26: abrí la página «Etnia» del portal geoestadístico del BCR. Dice textualmente: «un total de 68,148 personas se consideran pertenecientes a algún pueblo indígena. Esto representa un 1.1% de la población total». El desglose por pueblo se publica sólo en porcentajes sobre esos 68.148: Nahua Pipil 43.2 %, Lenca 20.4 %, «No sabe cuál es su pueblo indígena» 12.6 %, Kakawira (Cacaopera) 9.2 %, Maya Chortí 5.9 %, «otra clasificación» 5.0 %, Maya Pocomames 3.2 %, Xinca 0.3 %, Mangue 0.2 %, Mixe o Alagüilac 0.1 %. No bajé ningún archivo: el portal es un ArcGIS Hub y las páginas de descarga de la base no mostraron enlaces en el HTML. El ítem del sitio tiene licenseInfo: null."
+  },
+  "pueblos": [
+    "Nahua Pipil",
+    "Lenca",
+    "Kakawira (Cacaopera)",
+    "Maya Chortí",
+    "Maya Pocomames",
+    "Xinca",
+    "Mangue",
+    "Mixe o Alagüilac"
+  ],
+  "lo_que_no_dice": [
+    "No hay cifras absolutas por pueblo, sólo porcentajes.",
+    "No encontré la población total del censo en la página «Etnia»; poblacion_base queda en null.",
+    "La página también presenta población afrodescendiente: se vio y se dejó afuera a propósito.",
+    "No hay licencia declarada (licenseInfo: null)."
+  ],
+  "trampas": [
+    "El 12.6 % «No sabe cuál es su pueblo indígena» está adentro de los 68.148: no es población no indígena.",
+    "Los rótulos se copian como los escribe el BCR, con «Se considera» quitado; no se unifica «Kakawira (Cacaopera)» con otras grafías.",
+    "El portal es un ArcGIS Hub: la URL de la página no es un archivo descargable."
+  ],
+  "notas": "El Salvador tiene censo reciente (2024) con pregunta por pueblo, pero sólo encontré porcentajes y una página web sin licencia. Falta: tabulados absolutos, cuestionario y autorización del BCR."
+}

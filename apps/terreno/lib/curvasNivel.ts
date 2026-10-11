@@ -94,11 +94,35 @@ export function intervaloAutomatico(desnivel: number, areaHa?: number, pisoM?: n
 }
 
 /**
- * Tope de curvas a dibujar. Cada nivel recorre la grilla entera, así que un
- * intervalo muy chico para el desnivel del predio congela el navegador.
- * `calcularCurvas` devuelve vacío al pasarse; la UI avisa por qué.
+ * A partir de acá son MUCHAS curvas: la app avisa, pero no se niega.
+ *
+ * Hasta el 24/09/2026 esto era un tope duro y `calcularCurvas` devolvía vacío
+ * al pasarse. El efecto real no era limitar: era apagar. Con 67 m de desnivel
+ * —un predio de sierra cualquiera— el intervalo de 1 m ya pedía 67 niveles y el
+ * mapa salía sin una sola curva. El que subía un relevamiento propio de dron o
+ * RTK, que es justamente quien tiene derecho a pedir curvas finas, era el
+ * primero en chocarse.
+ *
+ * El criterio ahora es el del resto de la app: informar el límite del dato y
+ * dejar decidir. Quien voló su terreno sabe con qué lo voló, y cualquier
+ * trazado se verifica in situ de todos modos.
+ *
+ * Que se haya podido sacar es consecuencia de haber arreglado el costo: ver la
+ * medición en `clasificarAnillo`. Clasificar los anillos se llevaba el 70% del
+ * tiempo y ahora no se mide.
  */
-export const MAX_NIVELES = 60;
+export const NIVELES_MUCHOS = 60;
+
+/**
+ * Techo absoluto, contra el pedido absurdo: un intervalo de 1 mm sobre 200 m de
+ * desnivel son 200.000 niveles y ninguna máquina lo termina.
+ *
+ * No es el umbral de aviso —ese es `NIVELES_MUCHOS`, y está 60 veces más
+ * abajo—: es la red para que un valor mal tipeado no cuelgue la pestaña. En uso
+ * legítimo no se toca: 4.000 curvas son 400 m de desnivel a 10 cm, más de lo
+ * que cualquier predio real combina con esa precisión.
+ */
+export const TECHO_NIVELES = 4_000;
 
 /** Cuántas curvas saldrían — para avisar antes de que no se dibuje ninguna. */
 export function nivelesEstimados(desnivel: number, intervalo: number): number {
@@ -107,8 +131,80 @@ export function nivelesEstimados(desnivel: number, intervalo: number): number {
 }
 
 /**
- * Clasifica un anillo cerrado como cima o depresión mirando el terreno de
- * adentro.
+ * Clasifica un anillo cerrado como cima o depresión SONDEANDO sus extremos.
+ *
+ * Es la versión rápida, y la que corre casi siempre. La idea: en el vértice más
+ * al sur de un anillo simple, el interior queda necesariamente hacia el norte;
+ * en el más al norte, hacia el sur; y lo mismo al este y al oeste. Con cuatro
+ * sondeos a medio paso de grilla hacia adentro alcanza para decidir, y los
+ * cuatro salen de UNA pasada sobre los vértices — sin recorrer la grilla.
+ *
+ * Por qué importa: el método exhaustivo mira todos los nodos del bbox del
+ * anillo y por cada uno hace punto-en-polígono contra todos sus vértices, o sea
+ * O(nodos × vértices). Medido el 24/09/2026 sobre una grilla de 300×300 con 67 m
+ * de desnivel, eso costaba 14 ms POR ANILLO y se llevaba el 70% del tiempo
+ * total de calcular las curvas (564 ms contra 168 ms del mismo relieve sin
+ * anillos cerrados). Era lo que obligaba a tener un tope de niveles.
+ *
+ * Cuando los cuatro sondeos no coinciden —un anillo con forma de U, de herradura
+ * o de riñón, donde un extremo puede caer sobre un entrante— no se adivina: se
+ * cae al método exhaustivo, que sigue siendo exacto. Son pocos y el costo se
+ * paga sólo ahí.
+ */
+function clasificarAnillo(
+  puntos: Punto[],
+  z: number,
+  g: GrillaElevacion,
+): TipoCerrada | null {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = g;
+  if (puntos.length < 3) return null;
+
+  const fila = (lat: number) => ((lat - latMin) / (latMax - latMin)) * (rows - 1);
+  const col  = (lng: number) => ((lng - lngMin) / (lngMax - lngMin)) * (cols - 1);
+
+  // Una sola pasada: los cuatro vértices extremos en coordenadas de grilla.
+  let rMin = Infinity, rMax = -Infinity, cMin = Infinity, cMax = -Infinity;
+  let pRMin = 0, pRMax = 0, pCMin = 0, pCMax = 0;
+  for (let i = 0; i < puntos.length; i++) {
+    const p = puntos[i]!;
+    const r = fila(p.lat), c = col(p.lng);
+    if (r < rMin) { rMin = r; pRMin = i; }
+    if (r > rMax) { rMax = r; pRMax = i; }
+    if (c < cMin) { cMin = c; pCMin = i; }
+    if (c > cMax) { cMax = c; pCMax = i; }
+  }
+  // Anillo más chico que una celda: no hay "adentro" que sondear.
+  if (rMax - rMin < 1 && cMax - cMin < 1) return clasificarAnilloExhaustivo(puntos, z, g);
+
+  // Cada extremo se sondea medio paso hacia el interior del anillo.
+  const sondeos: Array<[number, number]> = [
+    [fila(puntos[pRMin]!.lat) + 0.5, col(puntos[pRMin]!.lng)],
+    [fila(puntos[pRMax]!.lat) - 0.5, col(puntos[pRMax]!.lng)],
+    [fila(puntos[pCMin]!.lat),       col(puntos[pCMin]!.lng) + 0.5],
+    [fila(puntos[pCMax]!.lat),       col(puntos[pCMax]!.lng) - 0.5],
+  ];
+
+  let arriba = 0, abajo = 0, iguales = 0;
+  for (const [r, c] of sondeos) {
+    const rr = Math.round(r), cc = Math.round(c);
+    if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) continue;
+    const v = elev[rr * cols + cc]!;
+    if (isNaN(v)) continue;
+    if (v > z) arriba++;
+    else if (v < z) abajo++;
+    else iguales++;
+  }
+
+  // Consenso limpio: todos los sondeos válidos apuntan al mismo lado.
+  if (arriba > 0 && abajo === 0 && iguales === 0) return 'cima';
+  if (abajo > 0 && arriba === 0 && iguales === 0) return 'depresion';
+  // Sin consenso (anillo cóncavo, o interior justo en la cota): el exhaustivo.
+  return clasificarAnilloExhaustivo(puntos, z, g);
+}
+
+/**
+ * El clasificador exacto, por fuerza bruta. Hoy es el respaldo de
+ * `clasificarAnillo`, no el camino principal.
  *
  * El criterio es directo: se recorren los nodos de la grilla que caen dentro
  * del anillo y se compara su elevación media contra la cota de la curva. Si el
@@ -120,7 +216,7 @@ export function nivelesEstimados(desnivel: number, intervalo: number): number {
  * importan— pueden no contener ningún nodo. Para esos se cae al centroide del
  * anillo, muestreado por vecino más cercano.
  */
-function clasificarAnillo(
+export function clasificarAnilloExhaustivo(
   puntos: Punto[],
   z: number,
   g: GrillaElevacion,
@@ -185,139 +281,229 @@ function clasificarAnillo(
 
 // ─── Marching squares con encadenado ─────────────────────────────────────────
 
-export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): CurvaNivel[] {
-  const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
+/**
+ * Las cotas que toca dibujar para este intervalo, o null si el pedido es
+ * absurdo. Separado de `calcularCurvas` porque lo necesitan las dos versiones
+ * —la de una sola pasada y la progresiva— y porque saber CUANTAS son antes de
+ * empezar es lo que permite mostrar una barra que signifique algo.
+ */
+export function nivelesDe(grilla: GrillaElevacion, intervalo: number): number[] | null {
+  const { rows, cols, elev_min, elev_max } = grilla;
   if (rows < 2 || cols < 2 || elev_max - elev_min < 0.5) return [];
+  if (!(intervalo > 0)) return [];
 
+  const start = Math.ceil(elev_min / intervalo) * intervalo;
+  const niveles: number[] = [];
+  for (let z = start; z <= elev_max; z += intervalo) {
+    niveles.push(z);
+    // Sólo el absurdo se corta. Lo "mucho" se avisa arriba, en la UI, que es
+    // donde se puede decir por qué; acá abajo no hay forma de explicar un
+    // vacío. Se corta DENTRO del bucle para que un intervalo microscópico no
+    // llene la memoria antes de que nadie mire la cuenta.
+    if (niveles.length > TECHO_NIVELES) return null;
+  }
+  return niveles;
+}
+
+/** Las líneas de UNA cota. Es el trabajo que se reparte en tandas. */
+export function curvaDeNivel(grilla: GrillaElevacion, z: number): CurvaNivel | null {
+  const { rows, cols, latMin, latMax, lngMin, lngMax, elev } = grilla;
   const lat = (r: number) => latMin + (r / (rows - 1)) * (latMax - latMin);
   const lng = (c: number) => lngMin + (c / (cols - 1)) * (lngMax - lngMin);
   const e   = (r: number, c: number) => elev[r * cols + c]!;
 
-  const start = Math.ceil(elev_min / intervalo) * intervalo;
-  const niveles: number[] = [];
-  for (let z = start; z <= elev_max; z += intervalo) niveles.push(z);
-  // Guardia de rendimiento: cada nivel recorre toda la grilla.
-  if (niveles.length > MAX_NIVELES) return [];
+  // Punto de cruce por arista (clave canónica de arista → punto interpolado)
+  const puntosArista = new Map<string, Punto>();
 
-  const curvas: CurvaNivel[] = [];
+  function cruce(
+    key: string,
+    r1: number, c1: number, r2: number, c2: number,
+  ): Punto {
+    let p = puntosArista.get(key);
+    if (p) return p;
+    const e1 = e(r1, c1), e2 = e(r2, c2);
+    const t = (z - e1) / (e2 - e1);
+    p = {
+      lat: lat(r1) + t * (lat(r2) - lat(r1)),
+      lng: lng(c1) + t * (lng(c2) - lng(c1)),
+    };
+    puntosArista.set(key, p);
+    return p;
+  }
 
-  for (const z of niveles) {
-    // Punto de cruce por arista (clave canónica de arista → punto interpolado)
-    const puntosArista = new Map<string, Punto>();
+  // Segmentos como pares de claves de arista
+  const segmentos: Array<[string, string]> = [];
 
-    function cruce(
-      key: string,
-      r1: number, c1: number, r2: number, c2: number,
-    ): Punto {
-      let p = puntosArista.get(key);
-      if (p) return p;
-      const e1 = e(r1, c1), e2 = e(r2, c2);
-      const t = (z - e1) / (e2 - e1);
-      p = {
-        lat: lat(r1) + t * (lat(r2) - lat(r1)),
-        lng: lng(c1) + t * (lng(c2) - lng(c1)),
-      };
-      puntosArista.set(key, p);
-      return p;
-    }
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const e00 = e(r, c), e10 = e(r, c + 1);
+      const e01 = e(r + 1, c), e11 = e(r + 1, c + 1);
+      if (isNaN(e00) || isNaN(e10) || isNaN(e01) || isNaN(e11)) continue;
 
-    // Segmentos como pares de claves de arista
-    const segmentos: Array<[string, string]> = [];
+      const b00 = e00 >= z, b10 = e10 >= z, b01 = e01 >= z, b11 = e11 >= z;
+      const code = (b00 ? 1 : 0) | (b10 ? 2 : 0) | (b11 ? 4 : 0) | (b01 ? 8 : 0);
+      if (code === 0 || code === 15) continue;
 
-    for (let r = 0; r < rows - 1; r++) {
-      for (let c = 0; c < cols - 1; c++) {
-        const e00 = e(r, c), e10 = e(r, c + 1);
-        const e01 = e(r + 1, c), e11 = e(r + 1, c + 1);
-        if (isNaN(e00) || isNaN(e10) || isNaN(e01) || isNaN(e11)) continue;
+      // Claves de arista (compartidas entre celdas vecinas → encadenado exacto)
+      const abajo  = `H${r},${c}`;       // n00–n10
+      const arriba = `H${r + 1},${c}`;   // n01–n11
+      const izq    = `V${r},${c}`;       // n00–n01
+      const der    = `V${r},${c + 1}`;   // n10–n11
 
-        const b00 = e00 >= z, b10 = e10 >= z, b01 = e01 >= z, b11 = e11 >= z;
-        const code = (b00 ? 1 : 0) | (b10 ? 2 : 0) | (b11 ? 4 : 0) | (b01 ? 8 : 0);
-        if (code === 0 || code === 15) continue;
+      const pAbajo  = () => { cruce(abajo,  r, c,     r, c + 1);     return abajo;  };
+      const pArriba = () => { cruce(arriba, r + 1, c, r + 1, c + 1); return arriba; };
+      const pIzq    = () => { cruce(izq,    r, c,     r + 1, c);     return izq;    };
+      const pDer    = () => { cruce(der,    r, c + 1, r + 1, c + 1); return der;    };
 
-        // Claves de arista (compartidas entre celdas vecinas → encadenado exacto)
-        const abajo  = `H${r},${c}`;       // n00–n10
-        const arriba = `H${r + 1},${c}`;   // n01–n11
-        const izq    = `V${r},${c}`;       // n00–n01
-        const der    = `V${r},${c + 1}`;   // n10–n11
-
-        const pAbajo  = () => { cruce(abajo,  r, c,     r, c + 1);     return abajo;  };
-        const pArriba = () => { cruce(arriba, r + 1, c, r + 1, c + 1); return arriba; };
-        const pIzq    = () => { cruce(izq,    r, c,     r + 1, c);     return izq;    };
-        const pDer    = () => { cruce(der,    r, c + 1, r + 1, c + 1); return der;    };
-
-        switch (code) {
-          case 1:  case 14: segmentos.push([pIzq(),   pAbajo()]);  break;
-          case 2:  case 13: segmentos.push([pAbajo(), pDer()]);    break;
-          case 3:  case 12: segmentos.push([pIzq(),   pDer()]);    break;
-          case 4:  case 11: segmentos.push([pDer(),   pArriba()]); break;
-          case 6:  case 9:  segmentos.push([pAbajo(), pArriba()]); break;
-          case 7:  case 8:  segmentos.push([pIzq(),   pArriba()]); break;
-          case 5: {
-            // Silla: decidir por el promedio del centro
-            const centro = (e00 + e10 + e01 + e11) / 4;
-            if (centro >= z) { segmentos.push([pIzq(), pArriba()]); segmentos.push([pAbajo(), pDer()]); }
-            else             { segmentos.push([pIzq(), pAbajo()]);  segmentos.push([pDer(), pArriba()]); }
-            break;
-          }
-          case 10: {
-            const centro = (e00 + e10 + e01 + e11) / 4;
-            if (centro >= z) { segmentos.push([pIzq(), pAbajo()]);  segmentos.push([pDer(), pArriba()]); }
-            else             { segmentos.push([pIzq(), pArriba()]); segmentos.push([pAbajo(), pDer()]); }
-            break;
-          }
+      switch (code) {
+        case 1:  case 14: segmentos.push([pIzq(),   pAbajo()]);  break;
+        case 2:  case 13: segmentos.push([pAbajo(), pDer()]);    break;
+        case 3:  case 12: segmentos.push([pIzq(),   pDer()]);    break;
+        case 4:  case 11: segmentos.push([pDer(),   pArriba()]); break;
+        case 6:  case 9:  segmentos.push([pAbajo(), pArriba()]); break;
+        case 7:  case 8:  segmentos.push([pIzq(),   pArriba()]); break;
+        case 5: {
+          // Silla: decidir por el promedio del centro
+          const centro = (e00 + e10 + e01 + e11) / 4;
+          if (centro >= z) { segmentos.push([pIzq(), pArriba()]); segmentos.push([pAbajo(), pDer()]); }
+          else             { segmentos.push([pIzq(), pAbajo()]);  segmentos.push([pDer(), pArriba()]); }
+          break;
+        }
+        case 10: {
+          const centro = (e00 + e10 + e01 + e11) / 4;
+          if (centro >= z) { segmentos.push([pIzq(), pAbajo()]);  segmentos.push([pDer(), pArriba()]); }
+          else             { segmentos.push([pIzq(), pArriba()]); segmentos.push([pAbajo(), pDer()]); }
+          break;
         }
       }
     }
-
-    if (segmentos.length === 0) continue;
-
-    // ── Encadenar segmentos en polilíneas ────────────────────────────────────
-    const adyacencia = new Map<string, string[]>();
-    for (const [a, b] of segmentos) {
-      if (!adyacencia.has(a)) adyacencia.set(a, []);
-      if (!adyacencia.has(b)) adyacencia.set(b, []);
-      adyacencia.get(a)!.push(b);
-      adyacencia.get(b)!.push(a);
-    }
-
-    const usado = new Set<string>();
-    const lineas: LineaNivel[] = [];
-
-    function caminar(inicio: string): string[] {
-      const cadena = [inicio];
-      usado.add(inicio);
-      let actual = inicio;
-      for (;;) {
-        const vecinos = adyacencia.get(actual) ?? [];
-        const siguiente = vecinos.find(v => !usado.has(v));
-        if (!siguiente) break;
-        usado.add(siguiente);
-        cadena.push(siguiente);
-        actual = siguiente;
-      }
-      return cadena;
-    }
-
-    // Primero líneas abiertas (extremos con grado 1)
-    for (const [key, vecinos] of adyacencia) {
-      if (usado.has(key) || vecinos.length !== 1) continue;
-      const cadena = caminar(key);
-      if (cadena.length >= 2) {
-        lineas.push({ puntos: cadena.map(k => puntosArista.get(k)!), cerrada: false, tipo: null });
-      }
-    }
-    // Luego loops cerrados (todo lo que quedó)
-    for (const key of adyacencia.keys()) {
-      if (usado.has(key)) continue;
-      const cadena = caminar(key);
-      if (cadena.length >= 3) {
-        const puntos = cadena.map(k => puntosArista.get(k)!);
-        lineas.push({ puntos, cerrada: true, tipo: clasificarAnillo(puntos, z, grilla) });
-      }
-    }
-
-    if (lineas.length > 0) curvas.push({ cota: z, lineas });
   }
 
+  // Sin cruces en esta cota no hay curva. Antes era un `continue` al nivel
+  // siguiente; ahora cada cota es su propia función y se sale devolviendo null.
+  if (segmentos.length === 0) return null;
+
+  // ── Encadenar segmentos en polilíneas ────────────────────────────────────
+  const adyacencia = new Map<string, string[]>();
+  for (const [a, b] of segmentos) {
+    if (!adyacencia.has(a)) adyacencia.set(a, []);
+    if (!adyacencia.has(b)) adyacencia.set(b, []);
+    adyacencia.get(a)!.push(b);
+    adyacencia.get(b)!.push(a);
+  }
+
+  const usado = new Set<string>();
+  const lineas: LineaNivel[] = [];
+
+  function caminar(inicio: string): string[] {
+    const cadena = [inicio];
+    usado.add(inicio);
+    let actual = inicio;
+    for (;;) {
+      const vecinos = adyacencia.get(actual) ?? [];
+      const siguiente = vecinos.find(v => !usado.has(v));
+      if (!siguiente) break;
+      usado.add(siguiente);
+      cadena.push(siguiente);
+      actual = siguiente;
+    }
+    return cadena;
+  }
+
+  // Primero líneas abiertas (extremos con grado 1)
+  for (const [key, vecinos] of adyacencia) {
+    if (usado.has(key) || vecinos.length !== 1) continue;
+    const cadena = caminar(key);
+    if (cadena.length >= 2) {
+      lineas.push({ puntos: cadena.map(k => puntosArista.get(k)!), cerrada: false, tipo: null });
+    }
+  }
+  // Luego loops cerrados (todo lo que quedó)
+  for (const key of adyacencia.keys()) {
+    if (usado.has(key)) continue;
+    const cadena = caminar(key);
+    if (cadena.length >= 3) {
+      const puntos = cadena.map(k => puntosArista.get(k)!);
+      lineas.push({ puntos, cerrada: true, tipo: clasificarAnillo(puntos, z, grilla) });
+    }
+  }
+
+
+  return lineas.length > 0 ? { cota: z, lineas } : null;
+}
+
+export function calcularCurvas(grilla: GrillaElevacion, intervalo: number): CurvaNivel[] {
+  const niveles = nivelesDe(grilla, intervalo);
+  if (niveles === null) return [];
+
+  const curvas: CurvaNivel[] = [];
+  for (const z of niveles) {
+    const cv = curvaDeNivel(grilla, z);
+    if (cv) curvas.push(cv);
+  }
+  return curvas;
+}
+
+/** Cada cuánto el cálculo le devuelve el hilo al navegador, en milisegundos.
+ *
+ *  Es el compromiso entre fluidez y velocidad: cortar más seguido repinta más
+ *  veces pero agrega el costo del salto; cortar menos hace que la barra se
+ *  mueva a los tirones. 80 ms es holgadamente menos que los ~100 ms en que una
+ *  interfaz empieza a sentirse trabada, y sobre el peor caso medido —674 curvas
+ *  en 3,4 s— son unas cuarenta pausas. */
+const MS_ENTRE_RESPIROS = 80;
+
+export interface OpcionesProgreso {
+  /** Fracción hecha, de 0 a 1. Se llama en cada respiro, no en cada nivel. */
+  onProgreso?: (fraccion: number) => void;
+  /** Para abandonar un cálculo que ya no interesa: el usuario movió el
+   *  intervalo otra vez y lo que se está calculando quedó viejo. */
+  signal?: AbortSignal;
+}
+
+/**
+ * Lo mismo que `calcularCurvas`, pero devolviendo el hilo cada tanto.
+ *
+ * Por qué existe. El cálculo es del navegador del usuario, no del servidor, y
+ * al sacarse el tope de niveles puede ser largo: medido el 24/09/2026, un
+ * intervalo de 10 cm sobre un predio de 67 m de desnivel son 674 curvas y
+ * 3,4 s. En una sola pasada eso es una pestaña trabada — y una barra de
+ * progreso que no se mueve, porque el hilo que la repinta es el mismo que está
+ * calculando. De ahí las pausas: sin ellas la barra sería decorativa.
+ *
+ * No usa Web Worker a propósito: la grilla es un Float64Array que habría que
+ * transferir o copiar, y el beneficio sobre ceder el hilo no justifica el
+ * aparato. Si algún día el cálculo crece un orden de magnitud, ese es el
+ * camino.
+ *
+ * Abandonar es parte del contrato: quien mueve el intervalo tres veces seguidas
+ * no quiere tres cálculos peleándose, así que el `signal` corta y devuelve
+ * vacío sin avisar nada. Quien llama ya sabe que lo cancela.
+ */
+export async function calcularCurvasProgresivo(
+  grilla: GrillaElevacion,
+  intervalo: number,
+  opts: OpcionesProgreso = {},
+): Promise<CurvaNivel[]> {
+  const niveles = nivelesDe(grilla, intervalo);
+  if (niveles === null) return [];
+
+  const curvas: CurvaNivel[] = [];
+  let ultimoRespiro = performance.now();
+
+  for (let i = 0; i < niveles.length; i++) {
+    if (opts.signal?.aborted) return [];
+    const cv = curvaDeNivel(grilla, niveles[i]!);
+    if (cv) curvas.push(cv);
+
+    if (performance.now() - ultimoRespiro >= MS_ENTRE_RESPIROS) {
+      opts.onProgreso?.((i + 1) / niveles.length);
+      await new Promise(r => setTimeout(r, 0));
+      if (opts.signal?.aborted) return [];
+      ultimoRespiro = performance.now();
+    }
+  }
+
+  opts.onProgreso?.(1);
   return curvas;
 }

@@ -193,12 +193,36 @@ Lo que falta, en el orden que corresponde:
    el open data de la Crofting Commission es tabular, y los límites viven en un
    producto pago de Registers of Scotland derivado de Ordnance Survey. El detalle
    está en `ESTADO_FASE_2_SABERES.md`.
-2. **Los 26 saberes europeos tienen `fuentes: []`** porque el relevamiento citó por
-   región y no por saber. La condición 1 exige fuente, así que están doblemente
-   bloqueados. Atribuir una URL a cada uno es trabajo de escritorio.
-3. **Los sitios SIPAM/GIAHS de América** — Xochimilco, Metepantle, chakra de Napo,
-   Viñales. La FAO publica el polígono; hay que ver bajo qué licencia. Viñales ya se
-   descartó: OSM no lo tiene y UNESCO no publica licencia reutilizable.
+2. ~~**Los 26 saberes europeos tienen `fuentes: []`**~~ **Cerrado el 23/09/2026:
+   los 85 de 85 citan fuente.** Los 25 que faltaban se atribuyeron uno a uno y se
+   verificaron con petición HTTP; todas devuelven 200. UNESCO para el Tribunal de
+   las Aguas, la trashumancia, la piedra seca y el Alto Duero; la Directiva
+   Hábitats para la dehesa (6310) y las landas (4030); JNCC para machair, downland
+   y hedgerow; la Crofting Commission para el crofting; el Rijksdienst voor het
+   Cultureel Erfgoed para los elzensingels; ISRIC para los plaggenboden; MEMOLA
+   para los careos; la Prefectura del Somme para los hortillonnages; la ficha LIFE
+   de la Comisión Europea para el winterage del Burren; el CSIC para las brañas;
+   la Xunta para los soutos; FAO GIAHS para el montado; y el OFB y la DREAL
+   Normandie para los bocages.
+
+   Tres dominios NO se pudieron verificar y por eso no se citaron, con el
+   sustituto anotado en el inventario: el Inventario Nacional de Patrimonio
+   Inmaterial de Irlanda sirve una cadena de certificados incompleta,
+   `aboutswitzerland.eda.admin.ch` devuelve 403 e `inpn.mnhn.fr` también. Mismo
+   criterio que ya se había usado con `nature.scot`.
+
+   Esto **no activa ningún saber nuevo** —siguen siendo dos—, porque lo que falta
+   es geometría con licencia admitida. Lo que cambia es que ahora el que falta es
+   el polígono, y se ve cuál.
+3. ~~**Los sitios SIPAM/GIAHS de América**~~ — **cerrado el 10/10/2026, y no por
+   la licencia: la FAO no publica la geometría.** Ninguna ficha de sitio ofrece
+   polígono, shapefile, GeoJSON ni WMS; el mapa interactivo es una visualización
+   sin descarga. Y si la publicara tampoco serviría: el contenido web de la FAO
+   es explícitamente no comercial, y la CC BY 4.0 de sus bases estadísticas
+   viene con una cláusula que prohíbe usar los datasets «in conjunction with the
+   promotion of a commercial enterprise». Viñales, además, nunca fue GIAHS —Cuba
+   no está entre los 5 países con sitios designados; es UNESCO—. Detalle en
+   `_encargos/RESPUESTAS_LICENCIAS.md`.
 4. **Todo lo demás, con acuerdo antes que con polígono.** Los saberes de pueblos
    originarios no se activan por tener el mapa. El polígono es la mitad del permiso.
 5. **África, Asia y Oceanía** — sin relevar, ni en fase 1 ni en fase 2.
@@ -360,18 +384,126 @@ Nada de esto es código todavía. Son consultas.
   393 identificadores. La barra superior ya salió (`415db9c`). Sigue siendo el God
   component de la app.
 - **Reducers pendientes** — `useReliefShader` y el grupo de dibujo libre.
+- ~~**Partir las tablas de censo por país**~~ **Resuelto de otra forma el
+  23/09/2026, y rinde más.** `ContextoPanel` entraba con import estático, así que
+  las cuatro tablas —263 kB de fuente— viajaban en `/mapa` aunque nadie abriera la
+  pestaña. Pasó a `next/dynamic`: **752 kB → 696 kB** de first load, y cada país
+  nuevo cae en el chunk bajo demanda en vez del camino crítico. Partirlas por país
+  habría obligado a volver asincrónico un resolutor que hoy es una función pura,
+  para ahorrar unos kB por país.
+- ~~**Matriz de entitlements a `packages/config`**~~ **Hecho el 23/09/2026**, con
+  cuatro tests que atan cada renglón de la vidriera a la feature que lo respalda.
 - **Master Plan v2** — en producción, sin calibrar contra predios reales.
 - **Cierre automático de trazado** — el camino ignora `elementoPoli` y
   `espejoPendiente`.
 - **Swales dentro de un polígono** para terrenos grandes — última herramienta abierta
   del lote C (erosión ✅, cortafuegos ✅, silvopastura ✅).
-- **El ECO_ID 0 de RESOLVE** (*Rock and Ice*) quedó afuera del montaje sudamericano a
-  propósito. Es una deuda global abierta.
+- ~~**El ECO_ID 0 de RESOLVE**~~ **No era deuda: estaba cerrado y este informe
+  quedó viejo.** `resolverBioma` fuerza el bioma 98 cuando el ECO_ID es 0
+  —RESOLVE etiqueta la roca y el hielo con `BIOME_NUM 11`, tundra, que no es lo
+  que son—, está comentado en `contexto.ts` y hay un test que lo prueba sobre
+  cuatro glaciares de cuatro continentes: Ventisquero Negro, Aletsch, Groenlandia
+  y Denali. Verificado el 23/09/2026.
 - **Commit `b5f85ed` malformado** — su subject quedó en `@` por un here-string de
-  PowerShell dentro de Bash. Necesita amend + force-push, que no se hizo por no
-  reescribir historia publicada sin decirlo.
+  PowerShell dentro de Bash. **Sigue sin tocarse, y conviene que siga así.**
+  Arreglarlo es `rebase` + `force-push`: `b5f85ed` es de principios de
+  septiembre, así que reescribe todos los commits posteriores, les cambia el SHA,
+  rompe cualquier worktree o sesión que esté sobre esta historia y dispara un
+  redeploy de los dos proyectos. Todo eso para corregir una línea de asunto que
+  no afecta al código ni a nadie que lea el repo. El costo esperado es varios
+  órdenes de magnitud mayor que el daño. Si algún día hay que dejar constancia,
+  `git notes` anota el commit sin reescribir nada.
+### Lo que apareció el 23/09/2026 al barrer esta sección
+
+- **`captacion.ts` no era una falta de cita: era un bug.** El módulo avisaba en
+  su encabezado que los consumos "no son un dato" mientras no tuvieran fuente, y
+  eso se cerró: FAO «Rural structures in the tropics» (2011), tablas 19.1 y 19.2
+  para uso doméstico, bovinos y caprinos/ovinos; NDSU AS1763 para porcinos y
+  equinos; NSW Department of Education para aves. Pero abajo había otra cosa: las
+  tres superficies de suelo traían un coeficiente de escorrentía **plano** para
+  cualquier predio del planeta, mientras `hidrologiaPredio.ts` ya lo deriva del
+  grupo hidrológico de SoilGrids. Captación era la única herramienta de diseño
+  que había quedado afuera de esa migración. **Medido: sobre suelo del grupo A la
+  tabla sobreestimaba la captación de una ladera de pastizal 3,1 veces, la de
+  monte 2,5 y la de cultivo 3,9.** Sobre el grupo D acertaba — estaba calibrada
+  para suelo pesado y fallaba callada en el liviano, que es la dirección cara.
+
+- **Diecinueve clases de Tailwind apuntaban a tonos que no existen**, y Tailwind
+  las descarta sin avisar. La única visible desde afuera estaba en el cartel de
+  «recuperar acceso», que salía sin fondo y con el color heredado. Ahora hay un
+  test que recorre los mismos archivos que `content` y falla con archivo y línea.
+  Contarlas a mano es lo que falla: la primera medición se comió seis de las diez
+  de `water` porque el patrón matcheaba `water-50` adentro de `water-500`.
+
+- ~~**La vidriera cobra por algo que la app ya regala.**~~ **Resuelto el
+  24/09/2026, y por una tercera salida.** Las dos que yo había planteado eran
+  bajar el renglón a Semilla o sacarle a `analisis.topo` la condición de muestra
+  gratis. Jonatan eligió otra: **acotar la muestra por tamaño**.
+  `ACEQUIA_TOPO_SEMILLA_HA = 0.5` — en Semilla la topografía sale gratis hasta
+  media hectárea, y de ahí para arriba la pide `analisis.topo_sin_limite`
+  (Personal), que es lo que la vidriera vende de verdad. Los dos renglones pasan
+  a ser ciertos y `DIVERGENCIAS_CONOCIDAS` queda vacío.
+
+  Queda dicho lo que el número implica: media hectárea es un cuadrado de 70 m de
+  lado y el modelo global tiene 30 m de paso, o sea 2,4 celdas por lado. Con el
+  intervalo confiable de 2 m hace falta más de 3% de pendiente para que aparezca
+  UNA curva, así que en terreno plano la muestra sale vacía. Si se siente pobre,
+  el número a mover es el tope y no el candado.
+
+### Lo que apareció el 24/09/2026
+
+- **El tope de curvas de nivel no limitaba: apagaba.** `calcularCurvas` devolvía
+  vacío al pasar de sesenta niveles, y ese umbral se cruzaba con 67 m de
+  desnivel y 1 m de intervalo — un predio de sierra cualquiera. El que sube un
+  relevamiento propio de dron o RTK, que es quien tiene derecho a pedir curvas
+  finas, era el primero en chocarse. **Y el tope no estaba donde parecía el
+  costo**: midiendo, el 70% del tiempo no dibujaba curvas sino que decidía si
+  cada anillo era cima o hoya, a 14 ms por anillo. Arreglado eso —sondeo de
+  cuatro extremos en vez de recorrer la grilla—, el tope pudo salir. De paso el
+  método nuevo resultó **más correcto** en relieve anidado: el viejo marcaba
+  como depresión el borde de una loma con una hoya adentro, que es justo la
+  forma donde se evalúa una represa.
+
+- **Los swales conservan su tope, ahora explícito y por otro motivo.** Lo
+  heredaban del motor. Sin esa línea pasarían de no trazar nada a trazar
+  doscientos swales: se ve razonable en pantalla y no se construye. El límite es
+  de obra, no de cálculo, y por eso quedó en la herramienta.
+
+- **Agujero conocido del tope por superficie**, anotado para que nadie lo
+  descubra creyendo que es nuevo: `grillaElevacion.ts` cae a las teselas
+  Terrarium cuando `/api/dem` no responde, y ese proxy no está guardado porque
+  sirve teselas públicas. No es una regresión —ese camino ya existía para toda
+  feature bloqueada— pero cerrarlo es un trabajo propio: hay que guardar el
+  proxy sin romper el mapa base.
+
+- **`/api/elevacion` quedó sin tope a propósito.** Devuelve puntos sueltos, no
+  relieve; capar ahí rompería mediciones sin proteger nada, porque reconstruir
+  un relieve por esa vía pide cientos de requests de 500 puntos.
+
+- **El heredoc de bash se come las barras invertidas en este entorno.** Un `\\d`
+  llega como `d`. Ya produjo un test que pasaba sin mirar un solo archivo —el
+  peor resultado posible, porque da verde—. Los archivos con expresiones
+  regulares se escriben con la herramienta de escritura, no con `cat <<'FIN'`.
+
 - **`/mapa` e `/informe/*` son auth-gated** y no se pueden verificar en preview. La
   validación en producción la hace Jonatan.
+  Lo que hay para probar de la capa de pueblos originarios, país por país:
+  **Temuco o Putre** para Chile y un punto en **Ñuñoa** para confirmar que la comuna
+  resuelve a Ñuñoa y no a Santiago; **Salta, Jujuy y CABA** para la Argentina; y para
+  Paraguay **Filadelfia (Boquerón)** o **Yby Yau (Concepción)**, que traen comunidades
+  nombradas, **Asunción** —la única jurisdicción sin departamento en Nominatim— y
+  **Pilar (Ñeembucú)**, que tiene que decir que el operativo no fue para allá y no que
+  no conocemos el departamento.
+  Para Perú, donde la respuesta es departamental y no baja: **Huaraz (Áncash)**, que
+  es el caso de la tilde —Nominatim contesta «Ancash» pelado y el INEI escribe
+  «Áncash»—; **Iquitos (Loreto)** o **Pucallpa (Ucayali)**, donde el grupo grande
+  tiene que ser el amazónico y las lenguas de arriba Shipibo/Konibo o Kukama;
+  **Puno** o **Cusco**, donde tiene que ser el andino y el quechua o el aimara;
+  **Callao**, que el censo escribe «Provincia Constitucional del Callao» y el
+  geocodificador «Callao» a secas; y **Lima**, que tiene que contestar por el
+  departamento entero y no por «Lima Metropolitana». En los cinco, el porcentaje
+  tiene que decir **«de 12 y más años»**: sin eso el número se lee contra los de
+  Chile y la Argentina, que son sobre toda la población.
 
 ---
 

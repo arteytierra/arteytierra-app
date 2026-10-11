@@ -88,6 +88,20 @@ export interface GrillaElevacion {
   lngMax:   number;
   /** elevaciones row-major (row 0 = latMin). NaN = fuera del predio o sin dato */
   elev:     Float64Array;
+  /**
+   * 1 cuando el nodo cae dentro del polígono REAL del predio, 0 cuando está en
+   * el halo. Ausente cuando no hay polígono con qué decidirlo —un DEM propio
+   * importado suelto—, y entonces cuenta todo.
+   *
+   * Existe porque la grilla se calcula a propósito más grande que el predio:
+   * `obtenerGrillaDensa` enmascara a 1,15× el polígono para que la pendiente
+   * tenga vecinos en el borde y el D8 vea de dónde baja el agua. Eso está bien
+   * para CALCULAR y está mal para INFORMAR: 1,15² es un 32 % de superficie de
+   * más, así que un predio de 84 ha contaba 111 y las hectáreas impresas
+   * incluían tierra del vecino. Quien reporta una superficie o un porcentaje
+   * «del predio» mira acá; quien calcula una pendiente, no.
+   */
+  dentro?:  Uint8Array;
   elev_min: number;
   elev_max: number;
   /** fuente del relieve efectivamente usada (para atribución) */
@@ -106,6 +120,9 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
   const rows = Math.max(2, Math.round(g.rows * esc));
   const cols = Math.max(2, Math.round(g.cols * esc));
   const elev = new Float64Array(rows * cols);
+  // La máscara se remuestrea con el mismo vecino que la cota: si no viajara, una
+  // grilla remuestreada volvería a informar el halo como si fuera el predio.
+  const dentro = g.dentro ? new Uint8Array(rows * cols) : undefined;
   let min = Infinity, max = -Infinity;
   for (let r = 0; r < rows; r++) {
     const sr = Math.min(g.rows - 1, Math.round((r / (rows - 1)) * (g.rows - 1)));
@@ -113,6 +130,7 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
       const sc = Math.min(g.cols - 1, Math.round((c / (cols - 1)) * (g.cols - 1)));
       const v  = g.elev[sr * g.cols + sc]!;
       elev[r * cols + c] = v;
+      if (dentro && g.dentro) dentro[r * cols + c] = g.dentro[sr * g.cols + sc]!;
       if (!Number.isNaN(v)) { if (v < min) min = v; if (v > max) max = v; }
     }
   }
@@ -120,6 +138,7 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
     rows, cols,
     latMin: g.latMin, latMax: g.latMax, lngMin: g.lngMin, lngMax: g.lngMax,
     elev,
+    dentro,
     elev_min: Number.isFinite(min) ? min : g.elev_min,
     elev_max: Number.isFinite(max) ? max : g.elev_max,
     fuente: g.fuente,
@@ -134,9 +153,12 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
  * El recálculo del rango es el punto de la función. Todo lo que se apoya en
  * curvas de nivel (swales, keyline) fija sus niveles a partir del desnivel
  * total de la grilla: en un predio de miles de hectáreas ese desnivel es tan
- * grande que un intervalo fino pide cientos de curvas y `calcularCurvas` se
- * corta por `MAX_NIVELES` sin dibujar ninguna. Acotado a una parcela, el
- * desnivel es el de la parcela y el trazado vuelve a ser posible.
+ * grande que un intervalo fino pide cientos de curvas. Acotado a una parcela,
+ * el desnivel es el de la parcela y el trazado vuelve a ser posible.
+ *
+ * Al 24/09/2026 eso ya no afecta a las curvas de nivel en sí —el tope del motor
+ * se sacó y se dibujan todas las que se pidan—, pero sigue valiendo para las
+ * herramientas de diseño que tienen su propio límite de obra, como los swales.
  *
  * Las cotas de la ventana se conservan tal cual (no se enmascaran a NaN): el
  * marching squares necesita las 4 esquinas de cada celda, y el recorte fino al
@@ -300,9 +322,16 @@ export async function obtenerGrillaDensa(
   if (dem) {
     const coordsMask = mojones.map(m => [m.lng, m.lat] as [number, number]);
     coordsMask.push(coordsMask[0]!);
+    // Dos polígonos y no uno: el del predio decide qué se INFORMA, el escalado
+    // 1,15 decide hasta dónde hay dato para CALCULAR.
+    let predio:  ReturnType<typeof turf.polygon> | null = null;
     let mascara: ReturnType<typeof turf.polygon> | null = null;
-    try { mascara = turf.transformScale(turf.polygon([coordsMask]), 1.15) as ReturnType<typeof turf.polygon>; } catch { mascara = null; }
+    try {
+      predio  = turf.polygon([coordsMask]);
+      mascara = turf.transformScale(predio, 1.15) as ReturnType<typeof turf.polygon>;
+    } catch { predio = null; mascara = null; }
     const elev = dem.elev;
+    const dentro = predio ? new Uint8Array(rows * cols) : undefined;
     let elev_min = Infinity, elev_max = -Infinity;
     for (let r = 0; r < rows; r++) {
       const lat = latMin + (r / (rows - 1)) * (latMax - latMin);
@@ -310,14 +339,16 @@ export async function obtenerGrillaDensa(
         const idx = r * cols + c;
         if (Number.isNaN(elev[idx]!)) continue;
         const lng = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
-        if (mascara && !turf.booleanPointInPolygon(turf.point([lng, lat]), mascara)) { elev[idx] = NaN; continue; }
+        const punto = turf.point([lng, lat]);
+        if (mascara && !turf.booleanPointInPolygon(punto, mascara)) { elev[idx] = NaN; continue; }
+        if (dentro && predio && turf.booleanPointInPolygon(punto, predio)) dentro[idx] = 1;
         const e = elev[idx]!;
         if (e < elev_min) elev_min = e;
         if (e > elev_max) elev_max = e;
       }
     }
     if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
-      return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max, fuente: dem.fuente };
+      return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min, elev_max, fuente: dem.fuente };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
@@ -351,11 +382,12 @@ export async function obtenerGrillaDensa(
   // Máscara: polígono escalado 1.15 (curvas con un poco de contexto alrededor)
   const coords = mojones.map(m => [m.lng, m.lat] as [number, number]);
   coords.push(coords[0]!);
+  let poligonoPredio:  ReturnType<typeof turf.polygon> | null = null;
   let poligonoMascara: ReturnType<typeof turf.polygon> | null = null;
   try {
-    const poly = turf.polygon([coords]);
-    poligonoMascara = turf.transformScale(poly, 1.15) as ReturnType<typeof turf.polygon>;
-  } catch { poligonoMascara = null; }
+    poligonoPredio  = turf.polygon([coords]);
+    poligonoMascara = turf.transformScale(poligonoPredio, 1.15) as ReturnType<typeof turf.polygon>;
+  } catch { poligonoPredio = null; poligonoMascara = null; }
 
   // Muestrear con bilineal sobre el espacio de píxeles global
   function muestrear(lat: number, lng: number): number {
@@ -384,16 +416,19 @@ export async function obtenerGrillaDensa(
   }
 
   const elev = new Float64Array(rows * cols).fill(NaN);
+  const dentro = poligonoPredio ? new Uint8Array(rows * cols) : undefined;
   let elev_min = Infinity, elev_max = -Infinity;
 
   for (let r = 0; r < rows; r++) {
     const lat = latMin + (r / (rows - 1)) * (latMax - latMin);
     for (let c = 0; c < cols; c++) {
       const lng = lngMin + (c / (cols - 1)) * (lngMax - lngMin);
-      if (poligonoMascara && !turf.booleanPointInPolygon(turf.point([lng, lat]), poligonoMascara)) continue;
+      const punto = turf.point([lng, lat]);
+      if (poligonoMascara && !turf.booleanPointInPolygon(punto, poligonoMascara)) continue;
       const e = muestrear(lat, lng);
       if (isNaN(e)) continue;
       elev[r * cols + c] = e;
+      if (dentro && poligonoPredio && turf.booleanPointInPolygon(punto, poligonoPredio)) dentro[r * cols + c] = 1;
       if (e < elev_min) elev_min = e;
       if (e > elev_max) elev_max = e;
     }
@@ -401,7 +436,7 @@ export async function obtenerGrillaDensa(
 
   if (!isFinite(elev_min) || elev_max - elev_min < 0.5) return null;
 
-  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max, fuente: 'terrarium' };
+  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min, elev_max, fuente: 'terrarium' };
 }
 
 // ─── Grilla de hidrología (sin recorte al predio) ────────────────────────────
@@ -532,7 +567,7 @@ export function elevEnGrilla(g: GrillaElevacion, lat: number, lng: number): numb
 
 /** Grilla 10×10 a partir del shader existente (fallback offline). */
 export function grillaDesdeShader(shader: {
-  celdas: Array<{ row: number; col: number; latMin: number; latMax: number; lngMin: number; lngMax: number; elevation: number }>;
+  celdas: Array<{ row: number; col: number; latMin: number; latMax: number; lngMin: number; lngMax: number; elevation: number; dentro?: boolean }>;
   elev_min: number; elev_max: number;
 }): GrillaElevacion | null {
   const { celdas } = shader;
@@ -558,9 +593,16 @@ export function grillaDesdeShader(shader: {
   if (rows < 2 || cols < 2) return null;
 
   const elev = new Float64Array(rows * cols).fill(NaN);
+  // La marca de «esto es predio y no halo» viaja de vuelta. Si ninguna celda la
+  // trae, no se arma la máscara: ausente significa «contá todo», que es lo que
+  // corresponde cuando no hay con qué distinguir.
+  const hayMascara = celdas.some(c => c.dentro !== undefined);
+  const dentro = hayMascara ? new Uint8Array(rows * cols) : undefined;
   for (const c of celdas) {
-    elev[(c.row - minRow) * cols + (c.col - minCol)] = c.elevation;
+    const i = (c.row - minRow) * cols + (c.col - minCol);
+    elev[i] = c.elevation;
+    if (dentro && c.dentro) dentro[i] = 1;
   }
 
-  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min: shader.elev_min, elev_max: shader.elev_max };
+  return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min: shader.elev_min, elev_max: shader.elev_max };
 }

@@ -46,10 +46,28 @@ describe('velocidad', () => {
 });
 
 describe('claseNecesaria (selección de PN)', () => {
-  it('elige la primera clase que soporta la presión × margen', () => {
-    expect(claseNecesaria(30)).toBe(4);   // 30×1.1=33 → PN4 (40.8)
-    expect(claseNecesaria(50)).toBe(6);   // 55   → PN6 (61.2)
-    expect(claseNecesaria(100)).toBe(16); // 110  → PN16 (163.1)
+  /**
+   * El margen por defecto cambió el 03/10/2026 y estos números cambiaron con él.
+   *
+   * Venía con un margen de 1,1 sin fuente —admitía usar el 91 % de la presión
+   * nominal del caño— y ahora sale de la norma de cañerías de riego del NRCS
+   * (CPS 430): *«As a safety factor against surge, keep the working pressure at
+   * any point at or below 72 percent of the pressure rating of the pipe»*, o sea
+   * un margen de 1/0,72 = 1,39.
+   *
+   * El test viejo fijaba el valor sin respaldo: 30 m.c.a. daban PN4 y ahora dan
+   * PN6. Es más caro y es lo que dice la norma. Si alguien vuelve a bajar el
+   * margen, este comentario explica qué se está perdiendo.
+   */
+  it('elige la primera clase que soporta la presión × el margen de la norma', () => {
+    expect(claseNecesaria(30)).toBe(6);   // 30×1.389=41.7 → PN6 (61.2), antes PN4
+    expect(claseNecesaria(50)).toBe(10);  // 69.4          → PN10 (101.9), antes PN6
+    expect(claseNecesaria(100)).toBe(16); // 138.9         → PN16 (163.1), sin cambio
+  });
+
+  it('con el margen viejo explícito devuelve lo de antes, así que el cambio es sólo del default', () => {
+    expect(claseNecesaria(30, 1.1)).toBe(4);
+    expect(claseNecesaria(50, 1.1)).toBe(6);
   });
 
   it('si ninguna alcanza, devuelve la clase más alta disponible', () => {

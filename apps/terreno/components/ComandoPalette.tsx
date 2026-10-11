@@ -157,7 +157,7 @@ export function AtajosAyuda({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <a
-          href="/guia.html" target="_blank" rel="noopener"
+          href="/guia" target="_blank" rel="noopener"
           className="flex items-center gap-2.5 px-5 h-12 border-t border-bone-200 text-sm font-medium text-moss-700 hover:bg-bone-50 transition-colors"
         >
           <BookOpen className="w-4 h-4 shrink-0" />

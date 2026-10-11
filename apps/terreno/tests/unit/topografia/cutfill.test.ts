@@ -62,9 +62,80 @@ describe('dimensionarMuro', () => {
     expect(m.alto_m).toBeCloseTo(3.5, 5);          // prof + revancha
     expect(m.anchoBase_m).toBeCloseTo(20.5, 1);    // 3 + 3.5·(3+2)
     expect(m.seccion_m2).toBeCloseTo(41.1, 1);     // (3+20.5)/2 · 3.5
-    expect(m.volumenTierra_m3).toBe(2056);         // round(41.125 · 50)
+    expect(m.volumenTierraDisenado_m3).toBe(2056); // round(41.125 · 50)
     expect(m.anguloInterno_deg).toBe(18);          // atan2(1,3)
     expect(m.anguloExterno_deg).toBe(27);          // atan2(1,2)
+  });
+
+  it('el terraplén incluye el sobrealto por asentamiento, que antes faltaba', () => {
+    // Cambió el 03/10/2026. Hasta acá `volumenTierra_m3` eran los 2.056 m³ de
+    // la geometría de proyecto, y punto. AH-590 dice que el muro se construye
+    // más alto que el de proyecto porque la fundación cede —«settlement may
+    // range from 1 to 6 percent of the height of the dam»— y que la previsión
+    // es del 5 % con terraplén compactado en capas con rodillo y del 10 % sin
+    // él: «Most pond dams less than 20 feet high, however, are not rolled fill.
+    // For these dams the total settlement allowance should be about 10
+    // percent». El ejemplo de cómputo del propio manual lo aplica al volumen:
+    // 7.029 yd³ + 10 % = 7.732 yd³.
+    //
+    // No es lo mismo que el factor de contracción, que ya estaba: ése dice
+    // cuánto banco hay que mover para dejar un m³ compactado. Éste dice que el
+    // muro terminado es más grande que el dibujado. acequia tenía uno y no el
+    // otro, y el que faltaba abarata.
+    const p = {
+      profMax_m: 3, revancha_m: 0.5, anchoCorona_m: 3,
+      taludInterno: 3, taludExterno: 2, longitud_m: 50,
+    };
+    const sinRodillo = dimensionarMuro(p);
+    expect(sinRodillo.asentamiento_pct).toBe(10);
+    expect(sinRodillo.volumenTierra_m3).toBeGreaterThan(sinRodillo.volumenTierraDisenado_m3);
+    expect(sinRodillo.sobrealto_m).toBeCloseTo(0.35, 2);   // 10 % de 3,5 m
+
+    const conRodillo = dimensionarMuro({ ...p, compactadoEnCapas: true });
+    expect(conRodillo.asentamiento_pct).toBe(5);
+    expect(conRodillo.volumenTierra_m3).toBeLessThan(sinRodillo.volumenTierra_m3);
+    // El volumen de proyecto es el mismo: lo que cambia es el sobrealto.
+    expect(conRodillo.volumenTierraDisenado_m3).toBe(sinRodillo.volumenTierraDisenado_m3);
+  });
+
+  it('la carga sobre el vertedero sube la cota de corona, y sin ella se avisa', () => {
+    // El hallazgo de la etapa E. La revancha de AH-590 se mide desde el pelo de
+    // agua CON la crecida de diseño pasando por el vertedero, no desde el nivel
+    // normal: «the vertical distance between the elevation of the water surface
+    // in the pond when the spillway is discharging at designed depth and the
+    // elevation of the top of the dam after all settlement». acequia sumaba
+    // sólo la revancha, así que el muro salía corto justo en la dimensión que
+    // decide si lo pasa la crecida.
+    const p = {
+      profMax_m: 3, revancha_m: 0.5, anchoCorona_m: 3,
+      taludInterno: 3, taludExterno: 2, longitud_m: 50,
+    };
+    const sin = dimensionarMuro(p);
+    const con = dimensionarMuro({ ...p, cargaVertedero_m: 0.4 });
+
+    expect(sin.cargaVertedero_m).toBe(0);
+    expect(sin.advertencias.join(' ')).toMatch(/carga sobre el vertedero/);
+    expect(sin.advertencias.join(' ')).toMatch(/Cuenca/);
+
+    expect(con.alto_m).toBeCloseTo(sin.alto_m + 0.4, 5);
+    expect(con.advertencias).toHaveLength(0);
+    // Y la sección crece con el cuadrado de la altura: 11 % más de alto son
+    // más de 11 % más de terraplén.
+    expect(con.volumenTierra_m3 / sin.volumenTierra_m3).toBeGreaterThan(1.11);
+  });
+
+  it('la zanja de anclaje respeta los mínimos publicados y es trapecio', () => {
+    const m = dimensionarMuro({
+      profMax_m: 3, revancha_m: 0.5, anchoCorona_m: 3,
+      taludInterno: 3, taludExterno: 2, longitud_m: 50,
+      zanjaProf_m: 1, zanjaAncho_m: 1.5,   // más angosta que los 8 pies
+    });
+    // 8 pies es ancho de hoja de topadora: más angosto no se compacta el fondo.
+    expect(m.zanja.anchoFondo_m).toBeGreaterThanOrEqual(2.43);
+    expect(m.zanja.talud).toBe(1.5);
+    expect(m.zanja.anchoBoca_m).toBeCloseTo(m.zanja.anchoFondo_m + 3, 2);
+    expect(m.zanja.capas).toBe(5);         // 1 m en capas de 9 pulgadas
+    expect(m.advertencias.join(' ')).toMatch(/topadora/);
   });
 
   it('con perfil, el muro se afina hacia los estribos y el terraplén baja a ~1/3', () => {

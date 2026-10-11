@@ -8,11 +8,14 @@ export async function sendEmail({
   subject,
   html,
   from = FROM_DEFAULT,
+  replyTo,
 }: {
   to: string | string[];
   subject: string;
   html: string;
   from?: string;
+  /** A donde va la respuesta. En los avisos de formulario, a quien escribio. */
+  replyTo?: string;
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -32,6 +35,7 @@ export async function sendEmail({
         to: Array.isArray(to) ? to : [to],
         subject,
         html,
+        ...(replyTo ? { reply_to: replyTo } : {}),
       }),
     });
 
