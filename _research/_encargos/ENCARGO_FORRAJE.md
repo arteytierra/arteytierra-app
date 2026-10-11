@@ -32,10 +32,34 @@ pastizal de montaña a 3.000 m con 800 mm tampoco produce como una pampa con 800
 
 ## La entrega, en dos etapas
 
-### Etapa 1 — los 14 biomas de RESOLVE (lotes 01 a 05, 3 biomas por lote)
+### Corregido el 10/10/2026, después del lote 01
 
-Una entrada por bioma, con el rango publicado de producción de materia seca de
-su vegetación herbácea. Los 14, con el `id` que hay que usar:
+**El lote 01 ya volvió** —bosque tropical húmedo, seco y conífera tropical— y
+está contestado en `RESPUESTAS_FORRAJE.md`. **No pedirlo de nuevo**, y leer eso
+antes de seguir, porque cambió dos cosas de este encargo:
+
+- **El orden.** Los biomas estaban listados como los lista RESOLVE, así que el
+  primer lote se gastó en los tres bosques cerrados, que es donde «producción
+  forrajera» casi no significa nada y casi no está publicada. **El lote 02 son
+  `sabana_tropical`, `pastizal_templado` y `pastizal_montano`**, y el 03
+  `desierto_xerofilo`, `mediterraneo` y `pastizal_inundable`. Ahí es donde la
+  escalera hace daño y donde hay bibliografía.
+- **Qué se pide.** Pedir «producción de materia seca de la vegetación herbácea»
+  devuelve, en un bosque, NPP de sotobosque: una medición ecológica legítima y un
+  dato forrajero inútil, porque no descuenta palatabilidad, accesibilidad ni
+  pisoteo. **Lo primero que se pide es oferta aprovechable o receptividad
+  publicada**; la NPP entra sólo como referencia, rotulada como tal en
+  `que_cuenta`.
+
+Los tres biomas forestales vuelven al final y con otra pregunta: no cuánto
+produce el sotobosque, sino **si algún organismo publica carga animal admisible
+para sistemas silvopastoriles** de ese bioma.
+
+### Etapa 1 — los 14 biomas de RESOLVE (3 biomas por lote)
+
+Una entrada por bioma, con lo publicado sobre la oferta forrajera aprovechable
+de su vegetación herbácea —y la NPP sólo si no hay otra cosa, dicho en
+`que_cuenta`—. Los 14, con el `id` que hay que usar:
 
 | `id` | Bioma (nombre de RESOLVE) |
 |---|---|

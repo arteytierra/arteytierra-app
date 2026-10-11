@@ -114,6 +114,41 @@ export interface ResultadoPastoreo {
  *
  * Se deja como **sugerencia editable** en la interfaz, nunca como un dato.
  */
+/*
+ * Medido el 10/10/2026, y es peor de lo que dice el parrafo de arriba.
+ *
+ * El primer lote del encargo de forraje trajo una medicion publicada de NPP
+ * herbacea aerea en un bosque humedo tropical de Sunsari, Nepal, que recibe
+ * 1.998,6 mm/anio: **1,3 a 1,7 Mg/ha/anio**, o sea 1.300 a 1.700 kg MS/ha/anio
+ * (Gautam & Mandal, «Effect of disturbance on biomass, production and carbon
+ * dynamics in moist tropical forest of eastern Nepal», Forest Ecosystems, 2016,
+ * https://doi.org/10.1186/s40663-016-0070-y).
+ *
+ * Para esa misma lluvia, lo que calcula la app:
+ *
+ *   esta escalera, en Pastoreo ............ 7.000
+ *   forraje_sugerido 100 % arbolado ....... 800   (cobertura.ts, SI pondera)
+ *   medido (NPP herbacea, que es un techo)  1.300-1.700
+ *
+ * Las dos rutas difieren por un factor de 8,8 para el mismo predio, el panel de
+ * Cobertura le dice al usuario que use la suya «como referencia junto al valor
+ * por lluvia» como si fueran comparables, y la medicion cae del lado de los 800.
+ * Esta escalera se escribio para pastizal natural y nada impide aplicarla a un
+ * bosque: ahi sobreestima la oferta por un factor de cuatro o mas, y eso antes
+ * de descontar el uso admisible.
+ *
+ * Dos cosas que la fuente aclara y que empeoran la comparacion, no la mejoran:
+ * los herbaceos son el 6 % de la NPP del rodal no intervenido y el 9 % del
+ * intervenido —el sotobosque es una fraccion chica de lo que produce un bosque
+ * cerrado—, y la produccion se estimo como maximo menos minimo sobre dos
+ * cosechas (mayo y septiembre), que no ve el recambio entre cortes. Es un techo
+ * de NPP, no una oferta: a la NPP herbacea todavia hay que descontarle
+ * palatabilidad, accesibilidad y pisoteo, y ese factor estas fuentes no lo miden.
+ *
+ * No se corrige con un numero inventado aca. La correccion espera los biomas
+ * pastoriles del encargo, que es donde esta la literatura; el detalle esta en
+ * `_research/_encargos/RESPUESTAS_FORRAJE.md`.
+ */
 export function forrajePorLluvia(precip_mm: number): number {
   if (precip_mm < 300) return 700;
   if (precip_mm < 500) return 1500;
