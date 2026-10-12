@@ -9,12 +9,12 @@ abrirlas, lote por lote.
 |---|---|---|---|---|
 | licencias | 01 | limpia | `giahs_chakra_napo` ✅ | **cerrado**, ver `RESPUESTAS_LICENCIAS.md` |
 | forraje | 01 | limpia | `bosque_tropical_seco` ✅ | **no se monta**, ver `RESPUESTAS_FORRAJE.md` |
-| fuentes-propias | 01 | limpia | `iliria_adriatico` ✅ | **se monta** |
+| fuentes-propias | 01 | limpia | `iliria_adriatico` ✅ | **montado** el 11/10/2026 |
 | practicas-indomalaya | 01 | limpia | `ghats_norte_montano` ⛔ | **vuelve** |
 
 ---
 
-## fuentes-propias, lote 01 — pasa
+## fuentes-propias, lote 01 — pasa, y ya está montado
 
 Seis fichas de los Apeninos a los Cárpatos, una fuente local cada una y seis
 dominios distintos: el repositorio de Bolonia, la revista de la facultad de
@@ -47,6 +47,33 @@ Las seis URL abren, salvo la de Bolonia, que devuelve 403 a `curl` y una
 verificación anti-bot de Cloudflare en el navegador. El enlace está bien —es un
 handle institucional, un identificador estable— pero **esa hay que abrirla a
 mano**: acá no se resuelven verificaciones de bots.
+
+### Montado el 11/10/2026
+
+Las seis entraron a `biomasRegionalesEuropaUE.ts` como constantes con nombre, al
+lado de las del paquete, y **la cuenta de fichas sin fuente propia bajó de 62 a
+56** —medido con `medir-espesor-fichas.mjs`, con el mismo criterio que la
+estableció: una fuente es del paquete cuando la comparten cinco fichas o más—.
+
+Dos cosas que se corrigieron al montar, y las dos son de forma de cita:
+
+- **Rhodopi apuntaba al PDF en `mdpi-res.com`**, el host de archivos. Quedó en su
+  DOI, `10.3390/f13030377`, que es la forma estable: verifiqué en el navegador
+  que resuelve al artículo con ese título exacto, *Forests* 2022, 13(3), 377.
+- **Stara Planina llegaba como un *bitstream* sin cita.** Abrí el PDF y la
+  portada da la referencia completa: *Ecologia Balkanica* 2025, 17(1), 141-150,
+  Kirova, Stoeva y Stoyanov, del Instituto de Investigación Forestal de la
+  Academia Búlgara de Ciencias. El rótulo ahora la lleva.
+
+El alcance de cada fuente —«un sitio de los Apeninos, no toda la cadena»— quedó
+en el comentario de su constante y no en la interfaz: es información para quien
+escriba el párrafo de la ficha, no una advertencia para quien mira el mapa.
+
+Lo que **no** se hizo: las `verificacion` de la entrega traen material que podría
+engordar el texto de las fichas —el hayedo dacio de Piatra Craiului entre 500 y
+1200 m con más de 3.300 ha, las 22.000 ha de hábitat abierto que Rhodopi perdió
+hacia el bosque entre 1984 y 2019—. Eso es reescribir fichas y es otro trabajo;
+el encargo era la fuente.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 

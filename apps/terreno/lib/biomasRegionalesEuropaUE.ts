@@ -32,6 +32,38 @@ const SOILGRIDS = { label: 'ISRIC — SoilGrids', url: 'https://soilgrids.org/' 
 const LANDGRAEDSLAN = { label: 'Landgræðslan — Servicio islandés de conservación de suelos', url: 'https://land.is/' };
 const TARIM = { label: 'Türkiye — Ministerio de Agricultura y Bosques', url: 'https://www.tarimorman.gov.tr/' };
 
+/*
+ * Fuentes del lugar, una por ficha — lote 01 del encargo de fuentes propias,
+ * verificado el 11/10/2026.
+ *
+ * Las seis fichas que las reciben tenían exactamente `[ATLAS_SUELOS, EEA_BIO,
+ * RESOLVE]` y nada más, que es el caso de libro de **trazable y no
+ * verificable**: un atlas continental y una capa global respaldan que la ficha
+ * existe, no lo que la ficha afirma de ESTE lugar. Quien quiera chequear que el
+ * suelo de los Apeninos se comporta como dice el párrafo no tenía dónde ir.
+ *
+ * Cada una se abrió y se leyó antes de entrar, y el comentario dice su alcance
+ * real. **Ninguna cubre su ecorregión entera, y eso es lo normal**: una fuente
+ * del lugar es de un lugar, y vale justamente por eso. El detalle del muestreo
+ * está en `_research/_encargos/RESPUESTAS_MUESTREOS.md`.
+ *
+ * Tres devuelven 403 a un cliente de línea de comandos —Bolonia, MDPI— por
+ * verificación anti-bot, no porque el enlace esté roto: abren en un navegador.
+ */
+
+/** Monte Cucco, Umbría, 500–1000 m. Un sitio de los Apeninos, no toda la cadena. */
+const MONTE_CUCCO = { label: 'Univ. de Bolonia — Altitude and vegetation affect soil organic carbon, basal respiration and microbial biomass in apennine forest soils', url: 'https://cris.unibo.it/handle/11585/776095' };
+/** Cuenca del Neretva y el Trebišnjica, de la costa a más de 2.000 m. No todo el karst dinárico. */
+const NERETVA_TREBISNJICA = { label: 'Radovi Šumarskog fakulteta Sarajevo — Specific roles of soil in agroecosystems of Neretva and Trebišnjica river basin', url: 'https://radovi.sfsa.unsa.ba/ojs/index.php/rsf/article/view/284' };
+/** Plan territorial del parque: registra ahí los hábitats 91K0 y 91L0. Es el parque, no la ecorregión. */
+const PLITVICE = { label: 'NP Plitvička jezera — Prostorni plan područja posebnih obilježja', url: 'https://dokumenti.plitvicka-jezera.hr/staging/download/prostorni-planovi/pp-np-plitvicka-jezera-2014/20140404_00-PPNPPJ_K2_ObrazlozenjeNKP.pdf' };
+/** Seis distritos forestales del tramo central de Stara Planina, hayedo sobre Cambisoles. */
+const STARA_PLANINA = { label: 'Ecologia Balkanica 17(1) — Soil carbon and nitrogen stocks under anthropogenic influence: European beech forests of Central Balkan Mountains (Stara Planina), Bulgaria', url: 'https://doi.uni-plovdiv.bg/bitstreams/321ad0ca-c8ef-4874-9ee8-8be56c11a63d/download' };
+/** Rhodopi griego, serie Landsat 1984–2019. No cubre el Pindo ni el resto del bloque balcánico. */
+const RHODOPI = { label: 'Forests 13(3):377 — Long-Term Monitoring of Vegetation Dynamics in the Rhodopi Mountain Range National Park, Greece', url: 'https://doi.org/10.3390/f13030377' };
+/** Piatra Craiului, Rumania: hayedo dacio 500–1200 m y picea acidófila 1350–1800 m. Un parque del arco. */
+const PIATRA_CRAIULUI = { label: 'PN Piatra Craiului — Plan de manejo del parque nacional', url: 'https://www.pcrai.ro/files/pdf/Management_Plan.pdf' };
+
 export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
   // IT · ECO_ID 675 · la llanura más productiva del sur de Europa
   po_llanura_aluvial: {
@@ -77,7 +109,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Abeto blanco (Abies alba)',
     ],
     cultivos: ['castano', 'trigo', 'olivo', 'vid', 'papa', 'lenteja', 'nogal', 'raigras'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, MONTE_CUCCO],
   },
 
   // IT, MT, FR · ECO_ID 795, 806
@@ -125,7 +157,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       { uso: 'huerta', delta: -15, razon: 'Sobre caliza el suelo está en los huecos, no en las laderas: la tierra de labor son las dolinas y los poljes, y en el polje el riesgo pasa a ser la inundación estacional.' },
       { uso: 'reserva', delta: 15, razon: 'Lo que se aplica arriba llega al acuífero en horas y sale en el manantial del que bebe el pueblo de abajo. Acá la protección del agua manda sobre la elección de uso.' },
     ],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, NERETVA_TREBISNJICA],
   },
 
   // HR, BA, ME, AL, SI · ECO_ID 794
@@ -147,7 +179,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Cerezo silvestre (Prunus avium)',
     ],
     cultivos: ['maiz_tropical', 'trigo', 'vid', 'castano', 'manzano', 'nogal', 'durazno', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, PLITVICE],
   },
 
   // RS, BG, RO, MK, GR · ECO_ID 646
@@ -169,7 +201,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Endrino (Prunus spinosa)',
     ],
     cultivos: ['trigo', 'maiz_tropical', 'girasol', 'vid', 'durazno', 'castano', 'nogal', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, STARA_PLANINA],
   },
 
   // BG, GR, MK, AL, RS · ECO_ID 678, 801
@@ -191,7 +223,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino silvestre (Pinus sylvestris)',
     ],
     cultivos: ['papa', 'centeno', 'cebada', 'castano', 'nogal', 'manzano', 'lavanda', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, RHODOPI],
   },
 
   // DK, DE, PL, SE, LT · ECO_ID 647
@@ -257,7 +289,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino enano (Pinus mugo)',
     ],
     cultivos: ['papa', 'centeno', 'avena', 'cebada', 'manzano', 'nogal', 'raigras', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, PIATRA_CRAIULUI],
   },
 
   // UA, MD, RO, HU · ECO_ID 735 · el mejor suelo agrícola de Europa

@@ -67,13 +67,18 @@ Tres carencias medidas, y la tercera es la que más importa:
 | | Fichas | Dónde |
 |---|---|---|
 | Con 5 especies nativas o menos | **164** | Indomalaya 31 · EuropaUE 28 · MedioOriente 28 · América 23 · base 22 · NorteÁfrica 14 · Canadá 10 · Europa 8 |
-| **Sin ninguna fuente propia del lugar** | **62** | EuropaUE 23 · MedioOriente 23 · NorteÁfrica 13 · Canadá 3 |
+| **Sin ninguna fuente propia del lugar** | **56** | MedioOriente 23 · EuropaUE 17 · NorteÁfrica 13 · Canadá 3 |
 | Con `suelos` en menos de 250 caracteres | **45** | América 23 · base 22 |
 
 Las 5 especies no son un olvido: son la plantilla con la que se relevó. Pero una
 ficha con cinco plantas no alcanza para elegir qué plantar.
 
-**Las 62 sin fuente propia son el problema serio**, y es distinto de no tener
+**Eran 62 y son 56** desde el 11/10/2026: el lote 01 del encargo cerró seis
+fichas de los Apeninos a los Cárpatos, y con eso EuropaUE bajó de 23 a 17. El
+grueso quedó en **Medio Oriente (23) y Norte de África (13)**, que juntos son 36
+de las 56, así que ahí van los lotes que siguen.
+
+**Las 56 sin fuente propia son el problema serio**, y es distinto de no tener
 fuente: tienen tres o cuatro, pero son las mismas tres o cuatro de todo el
 paquete —RESOLVE en 111 fichas, HWSD en 68, SoilGrids en 50—. La ficha queda
 *trazable y no verificable*: no hay dónde ir a chequear lo que esa ficha
@@ -219,7 +224,9 @@ de una sesión de chat. Queda anotado y sin encargo.
    es un encargo chico. `_encargos/ENCARGO_LICENCIAS.md`.
 3. **El forraje.** La deuda número uno del cálculo. `ENCARGO_FORRAJE.md`.
 4. **Las prácticas de Indomalaya**, 32 fichas. `ENCARGO_PRACTICAS_INDOMALAYA.md`.
-5. **Las fuentes propias de las 62 fichas.** `ENCARGO_FUENTES_PROPIAS.md`.
+5. **Las fuentes propias de las 56 fichas que quedan.** `ENCARGO_FUENTES_PROPIAS.md`;
+   el lote 01 ya se montó y arrancó por EuropaUE, siguen Arabia-Mesopotamia-Irán
+   (23) y el norte de África (13).
 6. **Las especies de las 164 fichas**, por tandas, de fondo.
 7. **Australasia, el Afrotrópico y el Asia paleártica.** No antes de que uno de
    los chicos vuelva limpio: es el único encargo donde equivocarse cuesta un mes.

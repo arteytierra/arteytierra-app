@@ -48,7 +48,25 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
-## Las 62, por paquete. Un lote de 6 por respuesta
+## Estado al 11/10/2026: el lote 01 está montado
+
+**Las primeras seis ya entraron al código** —Apeninos, karst dinárico, Adriático
+ilirio, Stara Planina, Rhodopi y Piatra Craiului— y la cuenta bajó de **62 a 56**,
+medida con `medir-espesor-fichas.mjs`. **No volver a pedir esas seis.**
+
+El lote salió bien y conviene decir por qué, porque es el molde: una fuente por
+ficha, seis dominios distintos, todas instituciones del lugar —la universidad, la
+facultad de forestales, el parque nacional, la revista regional— y **cada una con
+su alcance declarado en `nota`**: «fuente local del parque, no un inventario de
+toda la ecorregión». Eso último es lo que la hace montable. Una fuente del lugar
+es de un lugar; pretender que cubre la ecorregión entera es volver al problema que
+el encargo viene a resolver.
+
+**El orden cambia:** con EuropaUE en 17, el grueso pasa a ser **Arabia,
+Mesopotamia e Irán (23)** y el **norte de África y Sahara (13)** —juntos 36 de las
+56—. Los lotes que siguen salen de ahí.
+
+## Las 62 originales, por paquete. Un lote de 6 por respuesta
 
 ### Mediterráneo oriental, Balcanes, Cáucaso y Escandinavia — 23
 
