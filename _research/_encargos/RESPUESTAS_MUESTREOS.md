@@ -121,3 +121,48 @@ es un host y no una fuente.
 hay que reescribir el lote: hay que reemplazar la fuente de esas cuatro, o
 dejarlas en `vacias` con el motivo. Una ficha con dos prácticas sostenidas vale
 más que una con tres donde una no se puede chequear.
+
+### Engordar las fichas con las `verificacion` encontró un error que el muestreo no (12/10/2026)
+
+Las `verificacion` de la entrega traían material bueno y el paso siguiente era
+escribirlo en el texto de las fichas, que es lo que lee el usuario. **Antes de
+escribir un número en pantalla hay que abrir la fuente**, y el muestreo sólo
+había cubierto una de las seis. Abrí las otras cinco:
+
+| ficha | lo que afirmaba | veredicto |
+|---|---|---|
+| `iliria_adriatico` | 91K0 y 91L0 en Plitvice | ✅ exacto (ya en el muestreo) |
+| `montana_balcanica_sur` | ~22.000 ha de abierto perdidas 1984–2019 | ✅ exacto, y hay más |
+| `dinaricos_karst` | suelos hasta >2.000 m, agro en valles y poljes, drenaje en primavera y riego en seca | ✅ exacto |
+| `balcanes_mixto` | 2022, seis empresas forestales, 950–1.150 m, Cambisoles | ✅ exacto |
+| `carpatos_montano` | hayedo dacio >3.300 ha 500–1.200 m; picea ~3.600 ha 1.350–1.800 m | ❌ **no está en el documento** |
+| `apeninos_montano` | Monte Cucco 500–1.000 m, carbono sube con la altitud bajo pinar | ⚠️ no verificable |
+
+**Lo de Piatra Craiului no se sostiene.** Busqué las dos superficies y las dos
+bandas altitudinales en las 7.619 líneas del plan de manejo y no aparecen: no hay
+ninguna cifra de 3.300 ni de 3.600 ha en todo el documento, y de las bandas sólo
+está «reaches 1800 m in altitude». La fuente es buena y pertinente —el plan
+clasifica el hayedo dacio 41.1D y la picea subalpina carpática 42.21—, pero esos
+números no son de ahí.
+
+Lo que el plan **sí** deja medido es mejor para una app de diseño: el límite del
+bosque no está a la misma altura en las dos laderas del macizo. En la occidental
+el bosque compacto llega a 1.550 m y los últimos rodales de picea a 1.650; en la
+oriental el bosque llega a 1.800 y hay piceas aisladas a 1.870 —unos 200 m de
+diferencia por exposición, mismo cordón y mismo clima regional, según un transecto
+de S. Mihăilescu (2001) citado en el plan—. **Eso** es lo que entró a la ficha.
+
+**`apeninos_montano` no recibió nada.** Su fuente está detrás de una verificación
+anti-bot y no se pudo leer; la cita queda, porque el handle institucional es
+válido y abre en un navegador, pero lo que afirma no se escribió. Anotado arriba
+de su constante.
+
+**La lección del circuito:** el muestreo de una de cada diez alcanza para decidir
+si un lote se monta. **No alcanza cuando el contenido va a pasar a texto que lee
+el usuario** — ahí se abren todas. Una de seis tenía números inventados y era la
+que el sorteo no había tocado.
+
+Y una propia: escribí los dos agregados con negritas de Markdown (`**así**`), y
+`DatoLinea` en `ContextoPanel` renderiza texto plano, así que se habrían visto los
+asteriscos. Los saqué. De paso: **`biomasRegionalesIndomalaya.ts` tiene 12 campos
+de ficha con asteriscos literales** que hoy se le muestran así al usuario.
