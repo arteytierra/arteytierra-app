@@ -69,6 +69,32 @@ const PLITVICE = { label: 'NP Plitvička jezera — Prostorni plan područja pos
 const STARA_PLANINA = { label: 'Ecologia Balkanica 17(1) — Soil carbon and nitrogen stocks under anthropogenic influence: European beech forests of Central Balkan Mountains (Stara Planina), Bulgaria', url: 'https://doi.uni-plovdiv.bg/bitstreams/321ad0ca-c8ef-4874-9ee8-8be56c11a63d/download' };
 /** Rhodopi griego, serie Landsat 1984–2019. No cubre el Pindo ni el resto del bloque balcánico. */
 const RHODOPI = { label: 'Forests 13(3):377 — Long-Term Monitoring of Vegetation Dynamics in the Rhodopi Mountain Range National Park, Greece', url: 'https://doi.org/10.3390/f13030377' };
+
+/** Bosque costero de pícea en Noruega central, 31 sitios. No cubre la franja sueca ni el interior. Articulo cerrado: se leyó por el resumen, que es público. */
+const LIQUEN_NORUEGA = { label: 'Ecological Applications 11(2):421-436 — Epiphytic lichens in Norwegian coastal spruce forest: historic logging and present forest structure', url: 'https://doi.org/10.1890/1051-0761(2001)011[0421:ELINCS]2.0.CO;2' };
+
+/** Kautokeino y Karasjok, en la Finnmarksvidda noruega, serie de más de 40 años. No cubre el abedular sueco ni el finlandés. Articulo cerrado: se leyó por el resumen. */
+const ABEDUL_FINNMARK = { label: 'Arctic, Antarctic, and Alpine Research 36(3):323-332 — Vegetation Changes in the Nordic Mountain Birch Forest: the Influence of Grazing and Climate Change', url: 'https://doi.org/10.1657/1523-0430(2004)036[0323:VCITNM]2.0.CO;2' };
+
+/** Islotes de Enousses, al este de Quíos. Un archipiélago chico del Egeo oriental, no el Egeo ni Anatolia occidental. */
+const ENOUSSES = { label: 'Flora 189:69-78 — Contribution to the study of the Greek flora: Flora and vegetation of the Enousses (Oinousses) islands (E. Aegean area)', url: 'https://doi.org/10.1016/S0367-2530(17)30570-4' };
+
+/**
+ * Creta central, 82 parcelas de 4 m2 entre 11 y 1.400 m. No cubre la isla
+ * entera.
+ *
+ * La entrega decía que el muestreo era de la Asterusia y las laderas del
+ * Psiloritis. Puede ser cierto —los dos macizos son de Creta central— pero eso
+ * está en los métodos y el texto completo no se pudo abrir desde acá, así que
+ * la ficha no lo afirma: dice «Creta central», que es lo que dice el resumen.
+ */
+const CRETA_ANUALES = { label: 'Journal of Vegetation Science 34(6):e13214 — How gradients of climate and soil determine Mediterranean annual-rich dryland vegetation', url: 'https://doi.org/10.1111/jvs.13214' };
+
+/** Troodos, 826 puntos de muestreo sobre 2.374 km2, más 24 viñedos aterrazados en pares. No cubre la Mesaoria ni el resto de Chipre. */
+const TROODOS_CARBONO = { label: 'CATENA 195:104741 — The effect of agricultural abandonment and mountain terrace degradation on soil organic carbon in a Mediterranean landscape', url: 'https://doi.org/10.1016/j.catena.2020.104741' };
+
+/** Pinares de Pinus brutia del Troodos chipriota, seis bosques muestreados. Una isla del Mediterráneo oriental, no la conífera de Anatolia ni del Levante. */
+const PINUS_BRUTIA = { label: 'Forests 9(9):514 — Mediterranean Islands Hosting Marginal and Peripheral Forest Tree Populations: The Case of Pinus brutia Ten. in Cyprus', url: 'https://doi.org/10.3390/f9090514' };
 /** Piatra Craiului, Rumania: hayedo dacio 500–1200 m y picea acidófila 1350–1800 m. Un parque del arco. */
 const PIATRA_CRAIULUI = { label: 'PN Piatra Craiului — Plan de manejo del parque nacional', url: 'https://www.pcrai.ro/files/pdf/Management_Plan.pdf' };
 
@@ -439,7 +465,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#3D6357',
     resumen: 'La franja oceánica de Noruega entre los fiordos y la montaña: lluvia todo el año, hasta 3000 mm en las bocas de valle, e inviernos suavizados por la corriente del Atlántico norte a una latitud donde debería haber tundra. Es el bosque de coníferas más oceánico de Europa.',
-    vegetacion: 'Picea común y pino silvestre con abedul pubescente, aliso gris y serbal; sotobosque denso de arándano, musgos y hepáticas oceánicas, y en los enclaves más templados, restos de bosque costero de tilo, olmo y avellano.',
+    vegetacion: 'Picea común y pino silvestre con abedul pubescente, aliso gris y serbal; sotobosque denso de arándano, musgos y hepáticas oceánicas, y en los enclaves más templados, restos de bosque costero de tilo, olmo y avellano. Un relevamiento de 31 rodales viejos de pícea en la costa de Noruega central deja medido dónde está la riqueza de este bosque, y no es donde uno miraría: los macrolíquenes epífitos se concentran en las cárcavas de arroyo, y dos de ellos —Fuscopannaria ahlneri y Pseudocyphellaria crocata— aparecen diez veces más en el fondo de la cárcava que en la ladera o la meseta de al lado. El sustrato principal es la pícea, pero Lobaria y Nephroma prefieren los caducifolios dispersos, así que ese abedul o ese serbal suelto no es relleno. Y hay un resultado que sirve para decidir manejo: los 31 sitios habían sido cortados selectivamente dos veces o más en los últimos cien años, por un volumen total de entre el 31 y el 124 % del que tienen hoy en pie, y una vez descontada la estructura del rodal, ninguna variable de historia de corta explicó la abundancia actual de líquenes. Los autores concluyen que la corta selectiva moderada puede ser una opción de manejo compatible. Lo que no da lo mismo es dónde: en el fondo de la cárcava los líquenes aumentan con la densidad de árboles, y en la ladera y la meseta disminuyen.',
     fauna: 'Alce, nutria, castor europeo, águila de cola blanca —la mayor población de Europa—, y ríos con salmón atlántico y trucha de mar que son el eje ecológico y económico de cada valle.',
     suelos: 'Podzoles húmicos y Leptosoles sobre roca cristalina, delgados, muy ácidos y con un horizonte orgánico grueso porque el frío y el agua frenan la descomposición; Histosoles en las repisas mal drenadas. La tierra cultivable es poca y está en los fondos de fiordo, sobre depósitos marinos levantados, y ahí el problema es la arcilla marina sensible, que puede licuarse y provocar deslizamientos. Todo el manejo pasa por no romper la cobertura en pendiente, mantener el bosque de ribera y trabajar con pradera permanente y ganadería más que con cultivo anual.',
     saberes: [],
@@ -451,7 +477,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Serbal de cazadores (Sorbus aucuparia)',
     ],
     cultivos: ['cebada', 'avena', 'centeno', 'papa', 'arandano', 'raigras', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, LIQUEN_NORUEGA],
   },
 
   // NO, SE, FI · ECO_ID 780
@@ -461,7 +487,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌿',
     color: '#7C8C6E',
     resumen: 'La cinta de abedul retorcido que corona los Escandes y cubre buena parte de la Laponia noruega, sueca y finlandesa: el último bosque antes del pastizal alpino y de la tundra. Temporada de crecimiento de tres meses escasos y suelo helado buena parte del año.',
-    vegetacion: 'Abedular abierto de abedul pubescente montano sobre una alfombra de arándano, camarina, brezo y liquen; sauces de altura en las vaguadas húmedas y pastizal alpino con hierbas y juncáceas por encima del límite arbóreo.',
+    vegetacion: 'Abedular abierto de abedul pubescente montano sobre una alfombra de arándano, camarina, brezo y liquen; sauces de altura en las vaguadas húmedas y pastizal alpino con hierbas y juncáceas por encima del límite arbóreo. Lo que le pasó a este paisaje en cuarenta años está medido, y es el espejo exacto de lo que pasa en los pastizales de montaña del sur de Europa. En Kautokeino y Karasjok, en la Finnmarksvidda noruega, los tipos dominados por arándano, Deschampsia flexuosa, Cornus suecica y musgos triplicaron su extensión, mientras los brezales y bosques dominados por liquen —justamente los que usa el reno— cayeron alrededor del 80 %, y el abedular se expandió, con un 90 % más de superficie en Kautokeino. La causa principal que identifican los autores es el pastoreo intensivo del rodeo de renos creciente entre 1961 y 1987, con el clima —más precipitación—, los ataques de oruga y el nitrógeno de transporte largo acentuándolo. La lectura práctica: acá la carga animal no ajusta un rendimiento, cambia el tipo de vegetación, y la alfombra de liquen que tarda décadas en volver es la que aísla el suelo del frío.',
     fauna: 'Reno —semidomesticado en casi toda su extensión—, glotón, lemming, zorro ártico, lagópodo alpino y una comunidad de limícolas que cría acá y migra a medio mundo.',
     suelos: 'Podzoles delgados y Leptosoles sobre till, con Histosoles y suelos crioturbados en los llanos: ácidos, pobres en bases y con la actividad biológica limitada por el frío más que por la química. La capa de liquen y musgo es la que aísla y la que retiene, y una vez rota por vehículos o por sobrepastoreo tarda décadas en recuperarse. No es tierra de cultivo: lo que se maneja acá es carga de pastoreo, rutas y calendario, y esa es una decisión que le corresponde a los pueblos que la habitan, no a un mapa.',
     saberes: [],
@@ -477,7 +503,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       { uso: 'forestal', delta: -15, razon: 'No es que no crezca bosque: el abedular es el bosque, y es el último antes del pastizal alpino. Lo que no va es sustituirlo por plantación de conífera, que arriba del límite térmico ni prospera ni deja volver al abedul.' },
       { uso: 'reserva', delta: 20, razon: 'La alfombra de liquen y musgo es la que aísla el suelo y la que come el reno; rota por vehículo o por sobrepastoreo tarda décadas en rehacerse.' },
     ],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, ABEDUL_FINNMARK],
   },
 
   // IS · ECO_ID 711
@@ -513,7 +539,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🏛️',
     color: '#8B8A55',
     resumen: 'Las dos orillas del Egeo y sus islas, más el occidente turco: el Mediterráneo clásico, con verano seco largo y lluvia de invierno. Es un paisaje agrícola de cinco mil años, y buena parte de lo que hoy parece natural son terrazas, olivares y pastizales de pastoreo antiguo.',
-    vegetacion: 'Encinar y coscojar, maquis alto de lentisco, madroño y brezo, garriga de tomillo, jara y salvia en los suelos más pobres, y pinares de pino carrasco y pino de Calabria; olivo, viña, higuera y algarrobo como cultivo estructural.',
+    vegetacion: 'Encinar y coscojar, maquis alto de lentisco, madroño y brezo, garriga de tomillo, jara y salvia en los suelos más pobres, y pinares de pino carrasco y pino de Calabria; olivo, viña, higuera y algarrobo como cultivo estructural. Hay un inventario florístico de los islotes de Enousses, al este de Quíos, que sirve de patrón de medida para toda la franja: 270 taxones de 204 géneros y 51 familias, con predominio de elementos mediterráneos y de terófitos, y la vegetación de todos los islotes dominada por comunidades de frígana, descriptas en tres franjas —litoral, sublitoral e interior—. El dato que más sirve no es la lista sino el contraste: en los islotes grandes, los que se usan para agricultura y pastoreo, el porcentaje de terófitos y de leguminosas es alto y los autores lo leen como índice de disturbio, mientras en los chicos sin uso —Vatopoula— esos índices se apartan. O sea que la proporción de anuales y leguminosas en un matorral de esta zona es legible como presión de uso, no sólo como clima.',
     fauna: 'Chacal dorado, tejón, garduña, cabra montés en las islas, tortuga mora, camaleón común en el sur y una densidad alta de reptiles y aves de matorral.',
     suelos: 'Luvisoles crómicos, terra rossa y Leptosoles sobre caliza y esquisto, con Fluvisoles fértiles en los valles del Meandro y el Gediz. Poco profundos, alcalinos, con carencia frecuente de hierro y zinc por el pH alto. El agua es todo el problema: la lluvia cae cuando el cultivo no la usa y falta cuando la necesita, así que la reserva del suelo y la sombra del árbol deciden el año. Las terrazas, el olivar de secano con cobertura y la cisterna son el sistema histórico; en los valles regados el techo actual es el descenso del acuífero y la intrusión salina en la franja costera.',
     saberes: [],
@@ -525,7 +551,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Madroño griego (Arbutus andrachne)',
     ],
     cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'trigo', 'garbanzo', 'sesamo', 'algarrobo_es'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, ENOUSSES],
   },
 
   // GR · ECO_ID 789
@@ -535,7 +561,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🐐',
     color: '#95884E',
     resumen: 'Creta y las islas del Egeo meridional: montaña caliza que llega a 2400 m a pocos kilómetros del mar, con una cara norte que recibe lluvia y una cara sur casi árida. La isla concentra una flora endémica excepcional y una historia de pastoreo caprino igual de larga.',
-    vegetacion: 'Ciprés mediterráneo silvestre y pino de Calabria en la montaña, encinar y quejigar en las umbrías, maquis y frigana —el matorral espinoso en almohadilla— dominando las laderas pastoreadas; palmeral de Theophrastus en algunos arenales del sur.',
+    vegetacion: 'Ciprés mediterráneo silvestre y pino de Calabria en la montaña, encinar y quejigar en las umbrías, maquis y frigana —el matorral espinoso en almohadilla— dominando las laderas pastoreadas; palmeral de Theophrastus en algunos arenales del sur. La vegetación anual de estas laderas se midió en Creta central con 82 parcelas de 4 m² entre 11 y 1.400 m, y el resultado cambia dónde hay que mirar: aparecieron 347 taxones de 43 familias, con un promedio de 47,2 ± 12,5 especies por parcela de 4 m², que es de las vegetaciones más ricas del Mediterráneo a esa escala. La riqueza total casi no cambia a lo largo del gradiente, pero sí cambia quién la compone, y los dos factores que más explican la composición son el pH del suelo y la altitud, que juntos dan el 21 % de la variación. Los autores identifican 22 especies indicadoras de roca calcárea y 24 de rocas pobres en cal: el sustrato se puede leer en la planta, y conviene, porque en esta isla el pH decide más que la lluvia.',
     fauna: 'Kri-kri, la cabra montés cretense, en Samariá y los islotes; tejón, garduña, quebrantahuesos en poblaciones mínimas, y una fauna de invertebrados y reptiles con altísimo endemismo.',
     suelos: 'Leptosoles y Cambisoles cálcicos sobre caliza karstificada, con terra rossa en las dolinas y llanuras interiores —Lasithi, Mesará— que son la tierra de labor real. La profundidad efectiva es de pocos decímetros en la mayor parte de la isla, y el karst se lleva el agua hacia abajo sin dejarla en el perfil. La sobrecarga de cabras es el factor histórico de degradación: sin regeneración del matorral la ladera queda con la roca a la vista. El olivar en terraza, la cisterna y las galerías de captación son la respuesta local, y en las llanuras regadas el límite hoy es la salinización del acuífero costero.',
     saberes: [],
@@ -547,7 +573,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Aulaga cretense (Sarcopoterium spinosum)',
     ],
     cultivos: ['olivo', 'vid', 'naranjo', 'algarrobo_es', 'higuera', 'almendro', 'garbanzo', 'lenteja'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, CRETA_ANUALES],
   },
 
   // CY · ECO_ID 790
@@ -559,7 +585,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'Chipre, con dos geologías que no se parecen en nada: la ofiolita del Troodos —un fragmento de corteza oceánica levantado, con serpentinita y peridotita— y la caliza del Pentadáctilos y la llanura sedimentaria de la Mesaoria entre las dos. Es la isla más seca del Mediterráneo europeo.',
     vegetacion: 'Pino de Calabria en casi toda la montaña, cedro de Chipre en el rodal relicto del Tripylos, encinar de encina de Chipre y enebrales altos; maquis y garriga en la costa, y la Mesaoria enteramente agrícola, con cereal y olivo.',
     fauna: 'Muflón de Chipre, zorro, erizo de orejas largas, y una lista de endemismos vegetales y de reptiles muy larga para la superficie; las salinas de Larnaca y Akrotiri sostienen la invernada de flamencos.',
-    suelos: 'Sobre la ofiolita, suelos serpentínicos con relación calcio-magnesio invertida y niveles altos de níquel y cromo: fértiles en apariencia y hostiles en la práctica, con una flora adaptada que no conviene reemplazar. En la Mesaoria, Vertisoles y Calcisoles profundos, agrietables, buenos para cereal de secano pero con muy poca ventana de laboreo. El techo es hídrico y estructural a la vez: menos de 500 mm en el llano, embalses que dependen de un año bueno, y desalinización cubriendo la diferencia. Terrazas en la montaña, secano bien elegido en el llano y control estricto del riego son lo que hay.',
+    suelos: 'Sobre la ofiolita, suelos serpentínicos con relación calcio-magnesio invertida y niveles altos de níquel y cromo: fértiles en apariencia y hostiles en la práctica, con una flora adaptada que no conviene reemplazar. En la Mesaoria, Vertisoles y Calcisoles profundos, agrietables, buenos para cereal de secano pero con muy poca ventana de laboreo. El techo es hídrico y estructural a la vez: menos de 500 mm en el llano, embalses que dependen de un año bueno, y desalinización cubriendo la diferencia. Terrazas en la montaña, secano bien elegido en el llano y control estricto del riego son lo que hay. Hay una medición del Troodos que conviene leer entera, porque la mitad de ella dice lo contrario de lo que uno espera. La concentración de carbono orgánico en los primeros 25 cm, sobre 826 puntos de muestreo en 2.374 km², va de 1,7 % en bosque estatal a 1,0 % en tierra agrícola productiva, con 1,3 % en los campos abandonados, y en pares de viñedos aterrazados el abandonado tiene más carbono que el productivo (1,4 contra 0,9 % en los primeros 10 cm), con la diferencia creciendo con los años de abandono. Hasta ahí la conclusión fácil sería que abandonar acumula carbono. Pero cuando los mismos autores calculan el stock hasta la roca, corrigiendo por fragmentos gruesos, el resultado se da vuelta: 22 Mg/ha en los productivos contra 21 en los abandonados, sin ninguna tendencia con el tiempo de abandono. La corrección por pedregosidad bajó los stocks entre un 17 y un 78 %. La concentración y el stock no son lo mismo, y en una terraza de montaña que pierde suelo manda el segundo.',
     saberes: [],
     especies: [
       'Cedro de Chipre (Cedrus brevifolia)',
@@ -569,7 +595,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Algarrobo (Ceratonia siliqua)',
     ],
     cultivos: ['olivo', 'vid', 'algarrobo_es', 'almendro', 'naranjo', 'higuera', 'papa', 'garbanzo'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, TROODOS_CARBONO],
   },
 
   // TR · ECO_ID 791
@@ -579,7 +605,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#6C7C52',
     resumen: 'La franja del extremo oriental del Mediterráneo que entra en Turquía por Hatay y los montes Amanos: donde el Mediterráneo se encuentra con la influencia continental y la del Próximo Oriente. Es un corredor biogeográfico estrecho y con una diversidad desproporcionada para su tamaño.',
-    vegetacion: 'Pino de Calabria y cedro del Líbano en la montaña, abetos y cipreses en los enclaves húmedos, encinar y quejigar en la franja media, y maquis de lentisco, laurel y algarrobo abajo; olivo, cítrico y pistacho como cultivos permanentes.',
+    vegetacion: 'Pino de Calabria y cedro del Líbano en la montaña, abetos y cipreses en los enclaves húmedos, encinar y quejigar en la franja media, y maquis de lentisco, laurel y algarrobo abajo; olivo, cítrico y pistacho como cultivos permanentes. Del lado chipriota hay un relevamiento genético que deja medida la amplitud real de este pinar: el Pinus brutia cubre el 66 % de la tierra forestal de la isla —unas 88.790 ha— entre 0 y 1.400 m, y su mejor desarrollo está en el bosque de Pafos, 60.159 ha que van de casi el nivel del mar al pico del Tripylos, a 1.352 m. Ese rango de 1.350 m en una sola masa continua es el dato útil: la misma especie sirve de casi la costa a la cumbre, y los autores separan dentro de Pafos tres subpoblaciones por altitud y dos por exposición —noreste y suroeste— porque la adaptación difiere. Al elegir semilla, de dónde viene importa tanto como la especie.',
     fauna: 'Oso pardo sirio en poblaciones muy reducidas, lobo, chacal, caracal, y el cuello de botella migratorio de Belén, por donde pasa buena parte de las rapaces que cruzan de Eurasia a África.',
     suelos: 'Luvisoles crómicos y terra rossa sobre caliza, Leptosoles en la ladera fuerte y Fluvisoles profundos en la llanura del Amik. Alcalinos, con clorosis férrica frecuente en frutales sobre caliza activa. El régimen es de lluvia invernal fuerte y verano seco absoluto, con episodios que en una tarde mueven el suelo de una ladera desnuda entera. Terrazas, olivar con cobertura y control de cárcavas sostienen la parte alta; en la llanura, el drenaje de los antiguos humedales dejó suelos con riesgo de salinización y hundimiento.',
     saberes: [],
@@ -591,7 +617,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pistacho terebinto (Pistacia terebinthus)',
     ],
     cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'pistacho', 'trigo', 'garbanzo', 'algarrobo_es'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, PINUS_BRUTIA],
   },
 
   // TR · ECO_ID 786, 804
