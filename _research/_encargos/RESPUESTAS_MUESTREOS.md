@@ -183,12 +183,35 @@ no está en el documento, así que en la ficha quedó como lo dice el documento.
 
 Llegó sin pedirlo, junto con el 02: seis fichas de EuropaUE —la conífera costera
 escandinava, el abedular montano, el Egeo, Creta, el Troodos y la conífera del
-Mediterráneo oriental—. Forma limpia y los seis ids existen. **No se abrió
-ninguna fuente todavía, así que no se monta.** Dos cosas que ya se ven desde
-afuera y habrá que chequear al abrirlo: `chipre_troodos` afirma tres porcentajes
-de carbono orgánico (1,0 · 1,3 · 1,7 % en los primeros 25 cm) y
-`mediterraneo_oriental_conifera` una cota de 1.352 m, y los números exactos son
-justo lo que el lote 01 inventó.
+Mediterráneo oriental—. Forma limpia y los seis ids existen. **Todavía no se
+monta**, porque faltan cuatro fuentes por abrir.
+
+Sí se abrieron las dos entradas que traen números exactos, que es la clase de dato
+que el lote 01 inventó, y **las dos verifican literal**:
+
+- `mediterraneo_oriental_conifera`: el artículo de *Forests* dice que el pinar de
+  Pafos cubre «from near-sea-level up to the peak of Tripylos at 1352 m». Y trae
+  más de lo que la entrega copió: el bosque de Pafos mide 60.159 ha y es el mejor
+  conservado y menos fragmentado de *Pinus brutia* de la isla, que a su vez cubre
+  el 66 % de la tierra forestal chipriota (unas 88.790 ha) entre 0 y 1.400 m.
+- `chipre_troodos`: el artículo de *Catena* dice que la concentración media de
+  carbono orgánico en los primeros 25 cm va de 1,7 % en bosque estatal a 1,0 % en
+  tierra agrícola productiva, con 1,3 % en los campos abandonados, sobre **826
+  puntos de muestreo en 2.374 km²** del Troodos.
+
+Y acá hay un hallazgo que la entrega no vio y que vale más que la cifra que sí
+copió. El mismo artículo mide después el **stock** y da vuelta la conclusión
+fácil: con corrección por fragmentos gruesos, el stock medio es levemente **más
+alto en los viñedos productivos (22 Mg/ha) que en los abandonados (21 Mg/ha)**, y
+no muestra ninguna tendencia con el tiempo de abandono. La corrección por
+pedregosidad bajó los stocks entre un 17 y un 78 %. O sea: la concentración sube
+al abandonar, el stock no. Son dos magnitudes distintas y la que importa para
+secuestro de carbono es la segunda. Si esa ficha se escribe con el 1,3 % contra
+el 1,0 % y nada más, acequia va a decir que abandonar la terraza acumula carbono,
+y el artículo que estaría citando dice lo contrario.
+
+Queda por abrir la conífera costera escandinava, el abedular montano, el Egeo y
+Creta.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 
