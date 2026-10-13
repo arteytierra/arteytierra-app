@@ -34,6 +34,44 @@ const GIAHS = { label: 'FAO — SIPAM, Sistemas Importantes del Patrimonio Agrí
 const AFLAJ = { label: 'UNESCO — Sistemas de riego aflaj de Omán', url: 'https://whc.unesco.org/es/list/1207/' };
 const HIRCANIA = { label: 'UNESCO — Bosques hircanos', url: 'https://whc.unesco.org/es/list/1584/' };
 
+/* ── Fuentes propias del lugar ────────────────────────────────────────────────
+ *
+ * Una por ficha, y ninguna cubre su ecorregion entera: son Harrat Khaybar y no
+ * los harrat, el Wadi Al-Jufair y no el desierto arabigo. El alcance de cada
+ * una va en su comentario, que es informacion para quien escriba el parrafo de
+ * la ficha y no una advertencia para quien mira el mapa.
+ */
+
+/** Expediente del bien de UNESCO: los cuatro componentes de humedal con su regimen de agua. No es una medicion hidrologica de cada sector. */
+const AHWAR = { label: 'UNESCO — The Ahwar of Southern Iraq: Refuge of Biodiversity and the Relict Landscape of the Mesopotamian Cities', url: 'https://whc.unesco.org/en/list/1481/' };
+
+/** Ocho perfiles del Harrat Khaybar, Arabia Saudita. Un campo de lava del Hiyaz, no los harrat de Siria ni el resto de los arabigos. */
+const HARRAT_KHAYBAR = { label: 'Geoderma 383:114743 — Early indicators of pedogenesis at Harrat Khaybar volcano, Saudi Arabia', url: 'https://doi.org/10.1016/j.geoderma.2020.114743' };
+
+/**
+ * Un uadi de unos 15 km2 en el centro de Arabia, afluente del Wadi Nisah. No es
+ * un inventario del desierto arabigo.
+ *
+ * OJO con la cita: este articulo existe DOS veces. La version de 2012 en
+ * 19(1):43-54, DOI 10.1016/j.sjbs.2011.09.004, esta RETRACTADA, y es la que
+ * aparece primero buscando por titulo. La que va aca es la republicacion en
+ * 19(3):357-368, DOI 10.1016/j.sjbs.2012.04.003, que no tiene retractacion.
+ * Por eso la URL es el DOI y no un buscador: el DOI fija cual de las dos es.
+ */
+const WADI_AL_JUFAIR = { label: 'Saudi Journal of Biological Sciences 19(3):357-368 — Vegetation analysis of Wadi Al-Jufair, a hyper-arid region in Najd, Saudi Arabia', url: 'https://doi.org/10.1016/j.sjbs.2012.04.003' };
+
+/** Reserva del Nafud Al-Urayq, centro de Arabia, 23 censos. Cubre el Nefud; no dice nada del Rub al-Jali. */
+const NAFUD_AL_URAYQ = { label: 'Saudi Journal of Biological Sciences 28(3):1503-1513 — Ecology of inland sand dunes "nafuds" as a hyper-arid habitat, Saudi Arabia: Floristic and plant associations diversity', url: 'https://doi.org/10.1016/j.sjbs.2020.12.002' };
+
+/** Flora del Rub al-Jali sobre 500.000 km2, Mandaville. Cubre el arenal del sur; no es un inventario del Nefud. */
+const RUB_AL_KHALI = { label: 'Proceedings of the Royal Society of Edinburgh B 89:147-157 — Plant life in the Rub\' al-Khali (the Empty Quarter), south-central Arabia', url: 'https://doi.org/10.1017/S0269727000008988' };
+
+/** Intermareal de la costa de Kuwait, el extremo norte del Golfo. No describe la orilla saudi, qatari ni emirati. */
+const COSTA_KUWAIT = { label: 'Geologische Rundschau 83:448-463 — Geomorphology and sedimentary/biosedimentary structures of the intertidal environment along the coast of Kuwait, north-western Arabian Gulf', url: 'https://doi.org/10.1007/BF00210557' };
+
+/** Revision regional del Avicennia marina del Golfo. Resume literatura; no es un relevamiento de campo de cada manglar. */
+const GOLFO_MANGLE = { label: 'Wetlands 45:16 — Significance of Avicennia Marina in the Arabian Gulf Environment: A Review', url: 'https://doi.org/10.1007/s13157-025-01899-8' };
+
 export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
   // SY JO IQ · ECO_ID 739 · la badia, estepa de pastoreo milenaria
   estepa_siria_badia: {
@@ -94,7 +132,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'Los Ahwar del sur de Irak, el humedal más grande de Asia occidental: donde los dos ríos se desparraman antes del Shatt al-Arab. Fueron desecados deliberadamente en los años noventa hasta quedar en una fracción de su superficie, y reinundados parcialmente desde 2003.',
     vegetacion: 'Cañaveral denso de Phragmites australis y Typha, con praderas sumergidas y matorral de tamarisco en las orillas altas. La caña es material de construcción, forraje y sustrato productivo, no maleza.',
     fauna: 'Búfalo de agua doméstico como especie clave del sistema, nutria de Maxwell y aves endémicas como el papamoscas de Basora y la cerceta pardilla; escala mayor de invernada para aves del Paleártico occidental.',
-    suelos: 'Gleysoles e Histosoles turbosos bajo agua permanente, con Solonchaks fuertes en las áreas que se secaron. La desecación oxidó la turba y dejó costras salinas duras que no se recuperan sólo con volver a inundar: el agua vuelve, pero el suelo quedó otro. El limitante actual es de caudal y calidad, no de tierra: las represas aguas arriba en Turquía, Siria e Irán bajaron el aporte y subieron la salinidad, y la cuña salina del Golfo avanza.',
+    suelos: 'Gleysoles e Histosoles turbosos bajo agua permanente, con Solonchaks fuertes en las áreas que se secaron. La desecación oxidó la turba y dejó costras salinas duras que no se recuperan sólo con volver a inundar: el agua vuelve, pero el suelo quedó otro. El limitante actual es de caudal y calidad, no de tierra: las represas aguas arriba en Turquía, Siria e Irán bajaron el aporte y subieron la salinidad, y la cuña salina del Golfo avanza. El expediente del bien de UNESCO separa los cuatro componentes de humedal por su régimen de agua, y la distinción decide dónde se puede hacer qué: Huwaizah, el Hammar oriental y el occidental y las marismas centrales se alimentan sobre todo del Tigris y el Éufrates, pero Huwaizah es el único sistema de agua dulce —recibe las crecidas y la poca lluvia estacional que baja de las alturas del norte y el noreste— y el único componente natural que no fue desecado a fondo en los años ochenta y noventa, así que de ahí volvieron las aves cuando se reinundó el resto a partir de 2003. En el Hammar pasa lo contrario: el agua salada del mar entra tierra adentro empujada por la marea y avanza hacia el desierto del sudeste. El Centro para la Restauración de las Marismas y Humedales de Irak modeló la hidrología del sur del país para fijar el caudal mensual mínimo que cada componente necesita, y el propio expediente admite que todavía falta entender esos regímenes.',
     saberes: [],
     especies: [
       'Caña común (Phragmites australis)',
@@ -108,7 +146,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       { uso: 'reserva', delta: 25, razon: 'Lo que queda de marisma quedó después de una desecación deliberada. El limitante hoy es caudal y salinidad aguas arriba: lo que se recupera se recupera con agua, no con obra en la parcela.' },
       { uso: 'huerta', delta: -20, razon: 'Donde se secó, la turba se oxidó y dejó costra salina dura. Volver a inundar trae el agua, pero el suelo ya quedó otro.' },
     ],
-    fuentes: [WRB, HWSD, RESOLVE],
+    fuentes: [WRB, HWSD, RESOLVE, AHWAR],
   },
 
   // SA IQ JO · ECO_ID 831 · el desierto del norte y el acuífero fósil
@@ -142,7 +180,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'Los harrat: campos de lava cuaternaria que cubren el oeste de la península y el sur de Siria, del Yebel Druso al Harrat Khaybar. Roca negra fracturada, algo más de lluvia que el llano vecino por altura, y un régimen hídrico completamente distinto al del desierto de arena.',
     vegetacion: 'Estepa arbustiva sobre bolsones de suelo entre bloques, con enebro en las cotas altas del Hiyaz y pastizal denso en las depresiones donde se acumula el fino.',
     fauna: 'Cabra montés nubia, hiena rayada, caracal, buitre leonado y una densidad de reptiles alta por el refugio térmico de la roca fracturada.',
-    suelos: 'Leptosoles y Vertisoles arcillosos oscuros en las depresiones, derivados de basalto. Muy fértiles en potasio y micronutrientes, pero pedregosos hasta lo impracticable salvo donde el fino se acumuló. La clave hidrológica es que el basalto fracturado infiltra en vez de escurrir: el agua desaparece de la superficie y reaparece en manantiales al pie del campo de lava. Eso explica el patrón histórico de asentamiento —el pueblo abajo, en el manantial; el pastoreo arriba, en la roca— y también que contaminar arriba se pague abajo.',
+    suelos: 'Leptosoles y Vertisoles arcillosos oscuros en las depresiones, derivados de basalto. Muy fértiles en potasio y micronutrientes, pero pedregosos hasta lo impracticable salvo donde el fino se acumuló. La clave hidrológica es que el basalto fracturado infiltra en vez de escurrir: el agua desaparece de la superficie y reaparece en manantiales al pie del campo de lava. Eso explica el patrón histórico de asentamiento —el pueblo abajo, en el manantial; el pastoreo arriba, en la roca— y también que contaminar arriba se pague abajo. Hay un estudio de ocho perfiles del Harrat Khaybar —en la llanura aluvial, los abanicos, las laderas activas y el campo de lava— que cambia el pronóstico de este suelo: cerca del 63 % clasifican como Andosoles vítricos y el 37 % restante como Solonchaks. Son suelos poligenéticos, y eso quiere decir dos climas: la andisolización implica un paleoclima subhúmedo en la primera etapa, y los horizontes sálicos y cálcicos son del clima árido de hoy. Los ocho perfiles mostraron el efecto del movimiento de ladera, así que son heterogéneos de arriba abajo y de un lado al otro. Que las propiedades ándicas aguanten en un ambiente seco y caliente es la noticia útil, porque un suelo ándico retiene agua y fija fósforo mucho más de lo que su textura aparente sugiere; el horizonte sálico avisa de lo otro, que acá la sal puede estar dentro del perfil y no sólo en la costra.',
     saberes: [],
     especies: [
       'Enebro fenicio (Juniperus phoenicea)',
@@ -152,7 +190,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Cebada silvestre (Hordeum spontaneum)',
     ],
     cultivos: ['cebada', 'trigo', 'vid', 'higuera', 'olivo', 'granado', 'alfalfa'],
-    fuentes: [HWSD, WRB, RESOLVE],
+    fuentes: [HWSD, WRB, RESOLVE, HARRAT_KHAYBAR],
   },
 
   // SA OM YE · ECO_ID 809 · el desierto arábigo propiamente dicho
@@ -162,7 +200,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🐪',
     color: '#C0AE77',
     resumen: 'La matriz que ocupa el centro de la península: llanuras de grava, mesetas calcáreas y uadis, entre el Nefud al norte y el Rub al-Jali al sur. Es el desierto de trabajo, el que se atraviesa y se pastorea, más que el de arena pura.',
-    vegetacion: 'Matorral ralo de Haloxylon, Zygophyllum y Rhanterium, con acacias y Ziziphus concentradas en el uadi. Después de un año lluvioso la llanura se cubre de efímeras durante seis semanas.',
+    vegetacion: 'Matorral ralo de Haloxylon, Zygophyllum y Rhanterium, con acacias y Ziziphus concentradas en el uadi. Después de un año lluvioso la llanura se cubre de efímeras durante seis semanas. Un relevamiento del Wadi Al-Jufair, afluente del Wadi Nisah en el centro de Arabia, le pone forma a esa concentración en el uadi: sobre unos 15 km² la vegetación es fundamentalmente de caméfitos con algunos fanerófitos, repartida en cuatro asociaciones —Lycium shawii; Acacia oerfota; Acacia raddiana con Rhazya stricta; y Artemisia monosperma— que se diferencian de verdad en textura, humedad, materia orgánica, pH, conductividad eléctrica y minerales del suelo. O sea que dentro de un mismo uadi el suelo cambia lo suficiente para decidir qué va dónde, y conviene mirarlo por tramo y no por promedio. Ahí sobreviven además Maerua crassifolia, un árbol en peligro a escala regional, y Acacia oerfota, un arbusto raro de distribución restringida.',
     fauna: 'Órix, gacela de arena, gato de las arenas, zorro de Rüppell, víbora cornuda, y el camello dromedario como el organismo que ordena todo el sistema de uso.',
     suelos: 'Calcisoles y Regosoles de grava, con pavimento desértico superficial que protege el fino de abajo. Romper ese pavimento con vehículos o arado es la degradación más común y la menos visible: debajo hay material erodible que el viento se lleva en una temporada. La agricultura viable es la del uadi —donde la escorrentía de una cuenca grande se concentra en una superficie chica—, no la del interfluvio.',
     saberes: [],
@@ -174,7 +212,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Calotropis (Calotropis procera)',
     ],
     cultivos: ['datilera', 'cebolla', 'granado', 'moringa', 'berseem', 'alfalfa'],
-    fuentes: [HWSD, SOILGRIDS, RESOLVE],
+    fuentes: [HWSD, SOILGRIDS, RESOLVE, WADI_AL_JUFAIR],
   },
 
   // SA OM AE YE · ECO_ID 810 · los grandes ergs
@@ -184,7 +222,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🏜️',
     color: '#CDB77E',
     resumen: 'Los dos mares de arena de la península: el Gran Nefud al norte y el Rub al-Jali al sur, el arenal continuo más grande del mundo. Dunas de cien metros y corredores interdunares donde ocurre todo lo que ocurre.',
-    vegetacion: 'Vegetación casi ausente sobre la duna móvil; en el corredor interdunar, matas de Calligonum, Haloxylon y Cyperus conglomeratus que fijan arena y marcan dónde hay algo de humedad retenida.',
+    vegetacion: 'Vegetación casi ausente sobre la duna móvil; en el corredor interdunar, matas de Calligonum, Haloxylon y Cyperus conglomeratus que fijan arena y marcan dónde hay algo de humedad retenida. Los dos arenales se relevaron por separado y no dan la misma respuesta. En la reserva del Nafud Al-Urayq, con 23 censos después de veinte años de protección, se registraron 135 especies de 108 géneros y 37 familias en cuatro asociaciones, con anuales y perennes representadas por igual; la diversidad más alta no está en la duna sino en el uadi y en la arena somera, y la más baja en el hábitat hiperárido salinizado. El Rub al-Jali es otra cosa: sobre 500.000 km² se registraron unas 37 especies, de las que apenas diez pesan en la vegetación, las anuales están prácticamente ausentes —al revés que en el norte de Arabia, donde más de la mitad de las especies del desierto son terófitas— y no hay porte arbóreo salvo individuos aislados en los bordes. Las comunidades son matorrales muy difusos encabezados por una subespecie endémica de Calligonum crinitum, por el endémico Cornulaca arabica y, localmente, por Haloxylon persicum, con Cyperus conglomeratus, Dipterygium glaucum, Limeum arabicum y Zygophyllum mandavillei como acompañantes extendidos; los pisos de grava sin arena y las costras salinas son casi estériles. La media anual puede quedar por debajo de 25 mm y hay partes donde no llueve durante años.',
     fauna: 'Órix reintroducido en el Uruq Bani Maarid, gacela de arena, zorro fennec, lagarto Uromastyx; densidades bajísimas y movimientos enormes.',
     suelos: 'Arenosoles profundos, prácticamente sin horizonte ni materia orgánica, con infiltración total y cero escorrentía. La paradoja útil es que la arena gruesa conserva humedad en profundidad mejor que el limo: lo poco que llueve baja rápido, se escapa de la evaporación y queda a uno o dos metros. Eso es lo que sostiene las raíces profundas del arbusto perenne y lo que hace que plantar acá dependa de alcanzar esa lámina, no de regar arriba.',
     saberes: [],
@@ -199,7 +237,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       { uso: 'huerta', delta: -40, razon: 'No es un desierto con poca agua: es arena móvil sin freática accesible ni asentamiento permanente. Lo que hay se hace en el corredor interdunar y de paso, no en un predio.' },
       { uso: 'forestal', delta: -35, razon: 'Sobre duna viva no se planta: se fija. Calligonum y Haloxylon son sujeción de arena, y eso es obra, no producción.' },
     ],
-    fuentes: [HWSD, SOILGRIDS, RESOLVE],
+    fuentes: [HWSD, SOILGRIDS, RESOLVE, NAFUD_AL_URAYQ, RUB_AL_KHALI],
   },
 
   // KW BH QA AE SA IR · ECO_ID 811 · la llanura del Golfo y la sabkha
@@ -211,7 +249,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La franja plana entre el mar y el desierto interior, de Kuwait a los Emiratos y la orilla iraní: llanura de marea, sabkha salina y el palmeral histórico que aprovechó la lente de agua dulce flotando sobre la salada.',
     vegetacion: 'Halófitas de Halocnemum y Salicornia sobre la sabkha, matorral de Zygophyllum en la arena, y el oasis costero de dátil con su triple estrato de palmera, frutal y hortaliza.',
     fauna: 'Flamenco, ostrero, charrán y limícolas migratorias en la marisma; jerbo y zorro árabe en el interior; el litoral del Golfo es escala crítica de una de las grandes rutas migratorias de Asia.',
-    suelos: 'Solonchaks y Gypsisoles sobre la sabkha, Arenosoles calcáreos tierra adentro, con freática salina a poca profundidad y ascenso capilar permanente. Todo el manejo gira en torno a no dejar que esa freática suba: mantillo grueso, riego frecuente y de lámina chica para lavar sin cargar el perfil, y palmera datilera como especie tolerante que da sombra a lo demás. La lente de agua dulce, que es lo que hizo posible el poblamiento, se contamina con agua salada apenas se bombea de más.',
+    suelos: 'Solonchaks y Gypsisoles sobre la sabkha, Arenosoles calcáreos tierra adentro, con freática salina a poca profundidad y ascenso capilar permanente. Todo el manejo gira en torno a no dejar que esa freática suba: mantillo grueso, riego frecuente y de lámina chica para lavar sin cargar el perfil, y palmera datilera como especie tolerante que da sombra a lo demás. La lente de agua dulce, que es lo que hizo posible el poblamiento, se contamina con agua salada apenas se bombea de más. Para el extremo norte de la llanura hay un relevamiento que divide la costa de Kuwait en nueve subunidades intermareales: cuatro en la orilla fangosa del norte y cinco en la arenosa del sur. En el norte son planicies de marea anchas, limitadas tierra adentro por una sabkha costera extensa cubierta en parte por arena volada, cortadas por canales de marea someros, y con energía de oleaje baja: lo único que mueve sedimento ahí son la marea y la corriente de viento. En el sur, playas de arena relativamente empinadas sobre plataformas rocosas intermareales, con barras cerca de la línea de bajante y energía de moderada a alta. La diferencia no es cosmética: en una orilla el borde del predio es material que la marea vuelve a trabajar todos los días, y en la otra es arena que el oleaje acomoda.',
     saberes: [],
     especies: [
       'Palmera datilera (Phoenix dactylifera)',
@@ -221,7 +259,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Mangle gris (Avicennia marina)',
     ],
     cultivos: ['datilera', 'cebolla', 'granado', 'sesamo', 'moringa', 'berseem', 'alfalfa'],
-    fuentes: [WRB, HWSD, RESOLVE],
+    fuentes: [WRB, HWSD, RESOLVE, COSTA_KUWAIT],
   },
 
   // IR AE QA BH OM · ECO_ID 320 · el manglar de hara
@@ -231,9 +269,9 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌿',
     color: '#4E7A63',
     resumen: 'Los manglares de hara del Golfo Pérsico y la costa arábiga, de Qeshm y Bandar Abbás a Abu Dabi y la costa omaní. RESOLVE los agrupa con los del delta del Indo, pero son parches finos y aislados, no un cinturón: cada uno depende de un aporte local de agua dulce o de un canal de marea concreto.',
-    vegetacion: 'Casi monoespecífico de Avicennia marina, la única especie que aguanta la salinidad extrema y los 45 °C del verano del Golfo; algo de Rhizophora mucronata en la costa omaní.',
+    vegetacion: 'Casi monoespecífico de Avicennia marina, la única especie que aguanta la salinidad extrema y los 45 °C del verano del Golfo; algo de Rhizophora mucronata en la costa omaní. Una revisión regional de 2025 confirma el cuadro y le pone el borde: el Avicennia marina es la única especie de mangle de toda la costa del Golfo y marca el límite norte de los manglares en el Indo-Pacífico. Tolera variaciones extremas de temperatura y de salinidad, y aguantó el derrame de petróleo de la guerra del Golfo. Las amenazas de las últimas dos décadas son de obra más que de clima —desarrollo costero, marinas y puertos que modifican la línea de ribera—, con el ascenso del mar y el cambio del régimen de lluvias encima. Y hay restauraciones recientes que funcionaron, con expansión del manglar y más biodiversidad: acá replantar no es una apuesta, está documentado.',
     fauna: 'Alevines de pargo y camarón que usan el manglar como cría —de ahí depende buena parte de la pesca artesanal—, garza, garceta dimorfa, cangrejo violinista y la tortuga verde en las playas vecinas.',
-    suelos: 'Fluvisoles y Gleysoles tiónicos: limos y arcillas de marea con sulfuros. Ese es el punto de manejo: mientras están sumergidos son inertes, pero drenarlos o excavarlos oxida los sulfuros y produce un suelo ácido sulfatado con pH por debajo de 3, que libera aluminio y hierro y mata lo que quede aguas abajo. Un relleno costero mal hecho acá no daña sólo el manglar: acidifica el estuario.',
+    suelos: 'Fluvisoles y Gleysoles tiónicos: limos y arcillas de marea con sulfuros. Ese es el punto de manejo: mientras están sumergidos son inertes, pero drenarlos o excavarlos oxida los sulfuros y produce un suelo ácido sulfatado con pH por debajo de 3, que libera aluminio y hierro y mata lo que quede aguas abajo. Un relleno costero mal hecho acá no daña sólo el manglar: acidifica el estuario. Ese párrafo conviene leerlo contra lo que mide la literatura del propio Golfo: la revisión regional describe el sustrato predominante del Avicennia marina de acá como arenoso y de bajo contenido orgánico, no como el fango profundo de un manglar deltaico. Donde el sustrato es arena con poca materia orgánica hay menos sulfuro acumulado y el riesgo de acidificación es más bajo; donde sí hay limo de marea, el riesgo es el que describe el párrafo de arriba. Son dos casos distintos en la misma ecorregión y hay que mirar el sitio antes de suponer cuál tocó.',
     saberes: [],
     especies: [
       'Mangle gris (Avicennia marina)',
@@ -242,7 +280,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Halopeplis perfoliata',
       'Suaeda vermiculata',
     ],
-    fuentes: [WRB, RESOLVE],
+    fuentes: [WRB, RESOLVE, GOLFO_MANGLE],
   },
 
   // OM AE YE · ECO_ID 821 · niebla del este arábigo
