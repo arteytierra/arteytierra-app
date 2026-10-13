@@ -13,7 +13,7 @@ abrirlas, lote por lote.
 | practicas-indomalaya | 01 | limpia | `ghats_norte_montano` ⛔ | **vuelve** |
 | fuentes-propias | 02 | limpia | `golfo_persico_mangle` ✅ | **montado** el 12/10/2026 |
 | fuentes-propias | 03 | limpia | `abedular_montano_escandinavo` ✅ | **montado** el 13/10/2026 |
-| fuentes-propias | 04 | limpia | `magreb_bosque_mediterraneo` · `alto_atlas_enebro` | **recibido**, sin abrir |
+| fuentes-propias | 04 | limpia | `magreb_bosque_mediterraneo` · `alto_atlas_enebro` ✅ | **montado** el 13/10/2026 |
 
 ---
 
@@ -251,18 +251,113 @@ tiene que saber hasta dónde se pudo chequear.
 **La cuenta bajó de 50 a 44** y EuropaUE de 17 a 11, con el `vegetacion` promedio
 del paquete subiendo de 610 a 646 caracteres.
 
-## fuentes-propias, lote 04 — recibido, 13 de 13
+## fuentes-propias, lote 04 — las trece aguantan, y el norte de África cierra
 
-Cierra el norte de África: trece fichas, trece entradas, ninguna vacía. Forma
-limpia y los trece ids existen. El muestreo cayó en `magreb_bosque_mediterraneo`
-y `alto_atlas_enebro`; no se abrió ninguna todavía, así que **no se monta**.
+Trece fichas, trece entradas, ninguna vacía. **Se abrieron las trece y se montó
+el 13/10/2026.** No se usó el muestreo de una de cada diez: el texto de estas
+fichas va a pantalla, así que rige la regla del lote 01 y se abren todas.
 
-Dos cosas que se ven desde afuera. La entrada del Magreb copió dentro de su
-`nota` la advertencia de Piatra Craiului que trae el encargo —se la dejó al
-montar o no, pero es señal de que la leyó—. Y `sahara_norte_estepa` llega con una
-aclaración explícita de que el registro institucional de Lieja la identifica como
-revisada por pares: eso es justo lo que hay que chequear al abrirla, porque el
-*handle* de un repositorio es el host y no la publicación.
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `magreb_bosque_mediterraneo` | 358 taxones en pastizales forestales del norte marroquí | ✅ literal |
+| `atlas_conifera_montana` | muestra de 32 árboles | ✅ literal (texto completo) |
+| `alto_atlas_enebro` | relevamientos de campo 2020–2022, cuatro zonas, 1.600–3.400 m | ⚠ las zonas y la banda ✅; los relevamientos de campo, no |
+| `nilo_delta` | 34 perfiles, dos zonas de manejo | ✅ literal |
+| `chotts_sebkhas` | nueve imágenes Landsat 8–9 de 2014–2022 | ✅ literal |
+| `sahara_occidental_erg` | el registro entre imágenes impidió medir la migración | ✅ literal |
+| `sahara_oriental` | 55 perfiles y 211 muestras | ✅ literal (texto completo) |
+| `sahara_sur` | Landsat sirve para el patrón regional, no para las dunas menores | ✅ literal |
+| `sahara_costa_atlantica` | promedios anuales de 1,6 a 6 L/m²/día | ✅ literal —y son tres años distintos, no una banda |
+| `ahaggar_tassili` | comunidades de los uadis de Tamanrasset | ✅ literal |
+| `uweinat_tibesti` | 121 registros del Tibesti de la expedición de Corti | ✅ literal (texto completo en PMC) |
+| `mar_rojo_costa_desierto` | 5 expediciones 1998–2004, 179 especies, 51 familias, seis uadis | ✅ literal |
+| `sahara_norte_estepa` | 188 familias, suplementación, acuíferos, camiones cisterna | ✅ literal —pero la cita estaba en el host |
+
+**Ninguna de las trece está retractada.** Las doce con DOI tienen el campo
+`updated-by` de Crossref vacío; la restante —la del Gebel Elba, de 2006, sin
+DOI— se chequeó contra OpenAlex y contra la propia página de la revista. Es la
+cuarta condición que entró al encargo después del gemelo retractado del lote 02,
+y es la primera vez que se aplica a un lote entero de una sola pasada.
+
+### Cuatro extras que dan vuelta la lectura fácil
+
+- **Sidi Ifni y el promedio de un año.** La ficha decía «rendimientos de varios
+  litros por metro cuadrado y día» y no tenía con qué respaldarlo. El sistema de
+  captación de niebla más grande del mundo está justo ahí y tiene cuatro años de
+  registro: promedios anuales de **1,6 L/m²/día en 2020, 6,0 en 2021 y 3,9 en
+  2022**, con picos mensuales de 8,5 en marzo y abril, 7,6 en junio y un máximo
+  de **21 en abril de 2021**. Y acá está lo que esta app tiene que aprender de
+  memoria: la estimación con la que se dimensionó el proyecto fue de **7
+  L/m²/día, de un solo año de medición en 2007**, y quedó por encima de los tres
+  años medidos después. Un promedio anual de un año de datos no es un promedio
+  anual. Los autores lo dicen con todas las letras: la variabilidad entre años no
+  se había evaluado en la fase experimental.
+  Y hay un segundo vuelco, geográfico: la malla **no está en la costa**. Está en
+  el monte Boutemzguida, a 1.225 m y a 35 km del mar, mientras la ciudad de Ifni
+  está a 60 m. La niebla se cosecha donde el relieve la intercepta.
+- **El Gran Erg Oriental, donde el método falla.** El artículo mide avance de
+  duna con correlación de imágenes sobre el archivo Landsat, y el número que
+  logra medir —15,83 m/año— es de la depresión de Bodelé, **en Chad**, que no es
+  de esta ficha. En el Gran Erg Oriental, que sí lo es, los resultados salieron
+  tan variables que no se pudo determinar la migración, porque los puntos de
+  control del procesamiento caen sobre crestas de duna, que se mueven, y eso
+  deforma la escena. Si la ficha hubiera copiado el único número del artículo le
+  habría atribuido al erg argelino una velocidad que nadie determinó. La entrega
+  no lo hizo —citó el fracaso, que es lo correcto— y el comentario de la
+  constante lo deja escrito para el que venga.
+- **Dajla y la media que no describe.** Con 55 perfiles y 211 muestras, la
+  conductividad eléctrica va de **2,3 a 165,8 dS/m con una media de 27,1**. Con
+  ese rango la media no es una descripción de nada. Y lo que separa la tierra
+  buena de la mala en el análisis multivariado no son las variables de sal sino
+  **la profundidad, la grava y la fracción arena**, que es contraintuitivo en un
+  oasis salino. Un detalle que explica el resto: en este clima no hay
+  meteorización que forme arcilla, así que el carbonato aparece en tamaño arena.
+- **El Gebel Elba y la ladera media.** De 179 especies en seis uadis, **92 —el
+  51,4 %— aparecieron en un solo uadi o grupo de uadis**: relevar uno no
+  describe el de al lado. Y a lo largo del gradiente de altitud del uadi
+  Yahameib, la mayor diversidad **no está arriba, en la franja de niebla, sino a
+  media ladera**, que es lo que los autores señalan como típico de montaña árida.
+
+Y uno más, que no invierte nada pero afina el diagnóstico: en el cedral del
+Atlas Medio, entre las variables de estructura del rodal la que mejor se asocia
+al declive del cedro es **el área basal de la encina**, y la competencia más
+fuerte se midió en los rodales de cedro más densos, cerca de 1.100 árboles por
+hectárea. El cedral no se muere hacia pelado: se muere hacia otro bosque.
+
+### Las dos correcciones
+
+- **La cita de `sahara_norte_estepa` estaba en el host.** La entrega daba el
+  handle de ORBi, el repositorio de la Universidad de Lieja, y aclaraba que ese
+  registro la identifica como revisada por pares. La aclaración era cierta y el
+  repositorio sirvió —de ahí salió el DOI y de ahí se pudo leer el postprint del
+  editor—, pero el handle de un repositorio no es la publicación: el artículo
+  salió en **Cybergeo, número 863, revista del CNRS**, y la ficha cita su DOI.
+  Es la condición 2 del encargo aplicada tal cual está escrita.
+  (El sitio de la revista responde con una verificación anti-bot de prueba de
+  trabajo, que no se resuelve desde acá. El PDF del editor en ORBi hizo el
+  trabajo sin tocar la verificación.)
+- **El enebro pierde las fechas de campo.** La entrada afirmaba «relevamientos
+  de campo de 2020–2022». El resumen —chequeado en tres índices independientes,
+  Crossref, OpenAlex y DOAJ, para no citarlo de oídas— describe una cartografía
+  hecha con imagen Landsat 8, modelo de elevación de 30 m, WorldClim y mapa
+  geológico digitalizado, y no fecha ninguna campaña. El texto completo sólo
+  existe en el editor, detrás de una verificación anti-bot. Puede estar en los
+  métodos; la ficha no lo dice. Las cuatro zonas biogeográficas y la banda de
+  1.600 a 3.400 m sí se montaron, porque están en el resumen. Es exactamente lo
+  de Creta en el lote 03: no estaba mal, estaba sin verificar.
+
+### Lo que esto desbloquea y lo que no
+
+**La cuenta baja de 44 a 31 y NorteÁfrica cierra en 0.** Quedan Medio Oriente 17,
+EuropaUE 11 y Canadá 3, que son los lotes 05 y 06 ya pedidos.
+
+Y aparece de paso el primer **rendimiento forrajero medido** del catálogo para un
+pastizal bajo monte mediterráneo: 3.143 kg de materia seca por hectárea en
+primavera, en el norte de Marruecos, con 95 taxones evaluados por palatabilidad.
+Está en el texto de la ficha y **no se conectó a ningún cálculo**: `prodForrajera`
+sigue sin fuente y un solo dato de una región no la arregla. Pero es la primera
+pista buena que entra por este camino, y conviene que el encargo de forraje la
+tenga a mano.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 

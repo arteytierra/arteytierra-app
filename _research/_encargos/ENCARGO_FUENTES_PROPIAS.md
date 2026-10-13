@@ -48,6 +48,19 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 13/10/2026 (tarde): montados los lotes 01 al 04
+
+**Treinta y una fichas cerradas** y el norte de África terminado. A los
+dieciocho de los lotes 01 a 03 se suman las trece del lote 04: Magreb,
+conífera del Atlas, enebral del Alto Atlas, delta del Nilo, chotts, erg
+occidental, Sahara oriental, Sahara sur, costa atlántica, Ahaggar, Tibesti,
+costa del mar Rojo y estepa del norte sahariano. La cuenta bajó de **62 a 31**.
+**No volver a pedir ninguna de las treinta y una.**
+
+**Lo que falta:** Medio Oriente 17, EuropaUE 11 y Canadá 3, que son los lotes
+05 y 06 ya encargados en `ENCARGO_FUENTES_PROPIAS_LOTES_05_06.md`. Con eso el
+trabajo se cierra.
+
 ## Estado al 13/10/2026: montados los lotes 01, 02 y 03
 
 **Dieciocho fichas cerradas.** Seis de EuropaUE en el lote 01 (Apeninos, karst
