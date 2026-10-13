@@ -48,6 +48,21 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 13/10/2026: montados los lotes 01, 02 y 03
+
+**Dieciocho fichas cerradas.** Seis de EuropaUE en el lote 01 (Apeninos, karst
+dinárico, Adriático ilirio, Stara Planina, Rhodopi, Piatra Craiului), seis de
+Medio Oriente en el 02 (marismas de Mesopotamia, harrat, desierto arábigo, Nefud
+y Rub al-Jali, llanura del Golfo, manglar del Golfo) y seis más de EuropaUE en el
+03 (conífera costera escandinava, abedular montano, Egeo, Creta, Troodos,
+conífera del Mediterráneo oriental). La cuenta bajó de **62 a 44**. **No volver a
+pedir ninguna de las dieciocho.**
+
+El lote 04 está entregado y sin montar: las 13 del norte de África, todas con
+fuente. Si pasa, ese paquete queda cerrado y la cuenta baja a 31.
+
+**Lo que falta después del 04:** Medio Oriente 17, EuropaUE 11 y Canadá 3.
+
 ## Estado al 12/10/2026: los lotes 01 y 02 están montados
 
 **Doce fichas ya cerradas.** El lote 01 fueron seis de EuropaUE —Apeninos, karst

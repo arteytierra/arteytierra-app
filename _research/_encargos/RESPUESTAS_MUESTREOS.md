@@ -12,7 +12,8 @@ abrirlas, lote por lote.
 | fuentes-propias | 01 | limpia | `iliria_adriatico` ✅ | **montado** el 11/10/2026 |
 | practicas-indomalaya | 01 | limpia | `ghats_norte_montano` ⛔ | **vuelve** |
 | fuentes-propias | 02 | limpia | `golfo_persico_mangle` ✅ | **montado** el 12/10/2026 |
-| fuentes-propias | 03 | limpia | — | **recibido**, sin abrir todavía |
+| fuentes-propias | 03 | limpia | `abedular_montano_escandinavo` ✅ | **montado** el 13/10/2026 |
+| fuentes-propias | 04 | limpia | `magreb_bosque_mediterraneo` · `alto_atlas_enebro` | **recibido**, sin abrir |
 
 ---
 
@@ -179,39 +180,89 @@ subsp. *arabicum*, y el resumen de Mandaville dice «una subespecie endémica de
 *Calligonum crinitum*» sin nombrarla. El nombre de la subespecie es correcto, pero
 no está en el documento, así que en la ficha quedó como lo dice el documento.
 
-## fuentes-propias, lote 03 — recibido, no abierto
+## fuentes-propias, lote 03 — las seis aguantan, y dos dicen lo contrario de lo que parecía
 
-Llegó sin pedirlo, junto con el 02: seis fichas de EuropaUE —la conífera costera
-escandinava, el abedular montano, el Egeo, Creta, el Troodos y la conífera del
-Mediterráneo oriental—. Forma limpia y los seis ids existen. **Todavía no se
-monta**, porque faltan cuatro fuentes por abrir.
+Llegó sin pedirlo, junto con el 02: seis fichas de EuropaUE, forma limpia, los
+seis ids existen. **Se abrieron las seis y se montó el 13/10/2026.**
 
-Sí se abrieron las dos entradas que traen números exactos, que es la clase de dato
-que el lote 01 inventó, y **las dos verifican literal**:
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `mediterraneo_oriental_conifera` | el pinar de Pafos llega a 1.352 m | ✅ literal |
+| `chipre_troodos` | 1,0 · 1,3 · 1,7 % de carbono en los primeros 25 cm | ✅ literal |
+| `costa_conifera_escandinava` | 31 sitios de pícea costera en Noruega central | ✅ literal |
+| `abedular_montano_escandinavo` | más de 40 años en Kautokeino y Karasjok | ✅ literal (muestreo) |
+| `egeo_esclerofilo` | 270 taxones en Enousses, frígana en tres franjas | ✅ literal |
+| `creta_mediterranea` | muestreo en Asterusia y Psiloritis, del mar a más de 1.000 m | ⚠ el núcleo sí, los dos macizos no se pudieron abrir |
 
-- `mediterraneo_oriental_conifera`: el artículo de *Forests* dice que el pinar de
-  Pafos cubre «from near-sea-level up to the peak of Tripylos at 1352 m». Y trae
-  más de lo que la entrega copió: el bosque de Pafos mide 60.159 ha y es el mejor
-  conservado y menos fragmentado de *Pinus brutia* de la isla, que a su vez cubre
-  el 66 % de la tierra forestal chipriota (unas 88.790 ha) entre 0 y 1.400 m.
-- `chipre_troodos`: el artículo de *Catena* dice que la concentración media de
-  carbono orgánico en los primeros 25 cm va de 1,7 % en bosque estatal a 1,0 % en
-  tierra agrícola productiva, con 1,3 % en los campos abandonados, sobre **826
-  puntos de muestreo en 2.374 km²** del Troodos.
+Seis de seis verifican lo que afirman, y **cinco dicen bastante más de lo que la
+entrega copió**. Dos de esos extras dan vuelta la conclusión fácil, que es
+exactamente lo que esta app necesita de una fuente propia:
 
-Y acá hay un hallazgo que la entrega no vio y que vale más que la cifra que sí
-copió. El mismo artículo mide después el **stock** y da vuelta la conclusión
-fácil: con corrección por fragmentos gruesos, el stock medio es levemente **más
-alto en los viñedos productivos (22 Mg/ha) que en los abandonados (21 Mg/ha)**, y
-no muestra ninguna tendencia con el tiempo de abandono. La corrección por
-pedregosidad bajó los stocks entre un 17 y un 78 %. O sea: la concentración sube
-al abandonar, el stock no. Son dos magnitudes distintas y la que importa para
-secuestro de carbono es la segunda. Si esa ficha se escribe con el 1,3 % contra
-el 1,0 % y nada más, acequia va a decir que abandonar la terraza acumula carbono,
-y el artículo que estaría citando dice lo contrario.
+- **El Troodos.** La concentración de carbono orgánico sube al abandonar el
+  cultivo: 1,0 % en productivo, 1,3 % en abandonado, 1,7 % en bosque estatal, y
+  en pares de viñedos aterrazados 0,9 contra 1,4 % en los primeros 10 cm, con la
+  diferencia creciendo con los años de abandono. Pero cuando los mismos autores
+  calculan el **stock** hasta la roca, corrigiendo por fragmentos gruesos, el
+  resultado se invierte: **22 Mg/ha en los productivos contra 21 en los
+  abandonados**, sin ninguna tendencia con el tiempo de abandono. La corrección
+  por pedregosidad bajó los stocks entre 17 y 78 %. Concentración y stock no son
+  lo mismo, y en una terraza de montaña manda el segundo. Si la ficha se escribe
+  con los tres porcentajes y nada más, acequia afirma que abandonar acumula
+  carbono y el artículo que estaría citando dice lo contrario. Están los dos
+  números en la ficha.
+- **El bosque costero noruego.** Los macrolíquenes epífitos no se reparten por el
+  rodal: se concentran en las cárcavas de arroyo, y dos de ellos aparecen **diez
+  veces más** en el fondo de la cárcava que en la ladera de al lado. Y los 31
+  sitios habían sido cortados selectivamente dos veces o más en cien años —entre
+  el 31 y el 124 % del volumen que hoy tienen en pie— sin que ninguna variable
+  de historia de corta explique la abundancia actual una vez descontada la
+  estructura del rodal. O sea: lo que hay que no tocar es la cárcava, no el
+  rodal entero. Es el mismo hallazgo que el raleo moderado de Stara Planina en el
+  lote 01, por otro camino.
+- **La Finnmarksvidda** es el espejo exacto del Rhodopi. Acá el pastoreo
+  intensivo de renos entre 1961 y 1987 hizo caer los brezales de liquen alrededor
+  del 80 % y expandir el abedular (+90 % en Kautokeino), con los tipos de arándano
+  y musgo triplicados. En el Rhodopi fue el **abandono** del pastoreo el que cerró
+  el hábitat abierto. Las dos fichas dicen ahora que la carga animal no ajusta un
+  rendimiento: cambia el tipo de vegetación.
+- **Enousses** aporta una medida de presión de uso: el porcentaje de terófitos y
+  leguminosas es alto en los islotes que se usan para agricultura y pastoreo, y se
+  aparta en los chicos sin uso. La proporción de anuales en un matorral del Egeo
+  es legible como disturbio, no sólo como clima.
+- **Creta** da 347 taxones de 43 familias con un promedio de **47,2 ± 12,5
+  especies por parcela de 4 m²**, y los dos factores que más explican la
+  composición son el **pH del suelo** y la altitud —21 % de la variación—, con 22
+  especies indicadoras de roca calcárea y 24 de rocas pobres en cal.
 
-Queda por abrir la conífera costera escandinava, el abedular montano, el Egeo y
-Creta.
+### Lo único que no se montó, y por qué
+
+La entrada de Creta decía que el muestreo era de la Asterusia y las laderas del
+Psiloritis. Puede ser cierto —los dos macizos son de Creta central— pero eso
+está en los métodos, no en el resumen, y el texto completo no se pudo abrir: la
+editorial tiene una verificación anti-bot y acá no se resuelven. La ficha dice
+«Creta central», que es lo que dice el resumen, y la banda quedó en 11 a 1.400 m,
+que es la publicada, no en «más de 1.000 m». Es la regla de Piatra Craiului
+aplicada a una entrada que no estaba mal: estaba sin verificar.
+
+Dos de las seis fuentes están cerradas en el editor y se leyeron por el resumen,
+que es público. Eso quedó escrito en el comentario de su constante: quien la abra
+tiene que saber hasta dónde se pudo chequear.
+
+**La cuenta bajó de 50 a 44** y EuropaUE de 17 a 11, con el `vegetacion` promedio
+del paquete subiendo de 610 a 646 caracteres.
+
+## fuentes-propias, lote 04 — recibido, 13 de 13
+
+Cierra el norte de África: trece fichas, trece entradas, ninguna vacía. Forma
+limpia y los trece ids existen. El muestreo cayó en `magreb_bosque_mediterraneo`
+y `alto_atlas_enebro`; no se abrió ninguna todavía, así que **no se monta**.
+
+Dos cosas que se ven desde afuera. La entrada del Magreb copió dentro de su
+`nota` la advertencia de Piatra Craiului que trae el encargo —se la dejó al
+montar o no, pero es señal de que la leyó—. Y `sahara_norte_estepa` llega con una
+aclaración explícita de que el registro institucional de Lieja la identifica como
+revisada por pares: eso es justo lo que hay que chequear al abrirla, porque el
+*handle* de un repositorio es el host y no la publicación.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 
