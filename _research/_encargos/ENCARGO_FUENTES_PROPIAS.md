@@ -48,6 +48,28 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 12/10/2026: los lotes 01 y 02 están montados
+
+**Doce fichas ya cerradas.** El lote 01 fueron seis de EuropaUE —Apeninos, karst
+dinárico, Adriático ilirio, Stara Planina, Rhodopi y Piatra Craiului— y el lote 02
+seis de Medio Oriente —marismas de Mesopotamia, harrat, desierto arábigo, Nefud y
+Rub al-Jali, llanura del Golfo y manglar del Golfo—. La cuenta bajó de **62 a 50**.
+**No volver a pedir ninguna de las doce.**
+
+Queda un lote 03 entregado y sin montar, con seis de EuropaUE: conífera costera
+escandinava, abedular montano escandinavo, Egeo, Creta, Troodos y conífera del
+Mediterráneo oriental. Tampoco pedir esas.
+
+**Una cuarta condición para la fuente, que salió del lote 02:** que no esté
+retractada. El artículo del Wadi Al-Jufair existe dos veces, y la versión que
+aparece primero buscando por título es la retractada. Las tres condiciones
+originales —abre, es la publicación, es un trabajo publicado— las cumple una
+retractación igual que un artículo vivo.
+
+**El orden que sigue:** Norte de África y Sahara (13), que cierra el paquete
+entero; después lo que queda de EuropaUE (11 tras montar el lote 03), Medio Oriente
+(17) y las tres de Canadá.
+
 ## Estado al 11/10/2026: el lote 01 está montado
 
 **Las primeras seis ya entraron al código** —Apeninos, karst dinárico, Adriático

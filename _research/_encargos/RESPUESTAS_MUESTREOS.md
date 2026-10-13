@@ -11,6 +11,8 @@ abrirlas, lote por lote.
 | forraje | 01 | limpia | `bosque_tropical_seco` ✅ | **no se monta**, ver `RESPUESTAS_FORRAJE.md` |
 | fuentes-propias | 01 | limpia | `iliria_adriatico` ✅ | **montado** el 11/10/2026 |
 | practicas-indomalaya | 01 | limpia | `ghats_norte_montano` ⛔ | **vuelve** |
+| fuentes-propias | 02 | limpia | `golfo_persico_mangle` ✅ | **montado** el 12/10/2026 |
+| fuentes-propias | 03 | limpia | — | **recibido**, sin abrir todavía |
 
 ---
 
@@ -74,6 +76,119 @@ engordar el texto de las fichas —el hayedo dacio de Piatra Craiului entre 500 
 1200 m con más de 3.300 ha, las 22.000 ha de hábitat abierto que Rhodopi perdió
 hacia el bosque entre 1984 y 2019—. Eso es reescribir fichas y es otro trabajo;
 el encargo era la fuente.
+
+## fuentes-propias, lote 02 — las seis aguantan, y una casi arrastra una retractación
+
+Seis fichas de Medio Oriente, seis instituciones del lugar, siete fuentes. Forma
+limpia y los seis `id` existen en el catálogo —cosa que importa, porque en el
+borrador del encargo yo mismo había inventado seis ids que no existían y un id
+inexistente hace que la entrada no se muestre nunca—.
+
+**El muestreo cayó en `golfo_persico_mangle` y aguantó**: la revisión de *Wetlands*
+dice literalmente que *Avicennia marina* es la única especie de mangle del Golfo,
+que su sustrato predominante es arenoso y de bajo contenido orgánico, y que
+tolera variaciones extremas de temperatura y salinidad. Las tres afirmaciones, en
+el resumen, con esas palabras.
+
+Pero el muestreo no decidió nada acá, porque **se abrieron las seis**. Esa es la
+regla que dejó el lote 01: una de cada diez alcanza para decidir si un lote se
+monta, no alcanza cuando lo que la entrada afirma va a pasar al texto que lee el
+usuario. Las seis verificaron exacto, y cinco de las seis dicen bastante más de
+lo que la entrega había copiado.
+
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `mesopotamia_marismas` | Huwaizah, Hammar y centrales se alimentan del Tigris y el Éufrates | ✅ literal |
+| `harrat_basalto` | ocho perfiles de Harrat Khaybar en cuatro geoformas | ✅ literal |
+| `desierto_arabigo` | cuatro grupos vegetales en el Wadi Al-Jufair | ✅ literal |
+| `nefud_rub_al_khali` | 135 especies, 108 géneros, 37 familias en el Nafud Al-Urayq | ✅ literal |
+| `golfo_llanura_costera` | nueve subunidades intermareales en la costa de Kuwait | ✅ literal |
+| `golfo_persico_mangle` | única especie, sustrato arenoso y bajo en orgánico | ✅ literal (muestreo) |
+
+### La trampa de la retractación
+
+El artículo del Wadi Al-Jufair **existe dos veces**. La versión de enero de 2012,
+*Saudi Journal of Biological Sciences* 19(1):43-54, DOI
+`10.1016/j.sjbs.2011.09.004`, está **RETRACTADA**, con su nota de retractación
+publicada en 19(3):393. Y hay una republicación en 19(3):357-368, DOI
+`10.1016/j.sjbs.2012.04.003`, sin retractación.
+
+La entrega apuntó a la republicación —el PII `S1319562X12000319` resuelve al DOI
+de abril, lo verifiqué en Crossref—, o sea que eligió bien. Pero buscando por
+título aparece primero la retractada: PMC tiene las tres fichas y la retractada
+sale arriba. **Por eso la URL montada es el DOI y no un buscador: el DOI fija cuál
+de las dos versiones es**, y queda anotado arriba de la constante para que nadie
+la «corrija» al enlace equivocado.
+
+Es un modo de fallar que no estaba previsto en el encargo. Las tres condiciones de
+una fuente —que abra, que sea la publicación y no un intermediario, que sea un
+trabajo publicado— las cumple una retractación igual de bien que un artículo
+vivo. Hay que agregar la cuarta: **que no esté retractada**, y se chequea en
+Crossref, que lo trae en `updated-by`.
+
+### Una contradicción con la ficha, que se escribió en vez de taparse
+
+La revisión del Golfo describe el sustrato del mangle de acá como **arenoso y de
+bajo contenido orgánico**, y la ficha venía diciendo «limos y arcillas de marea
+con sulfuros», con toda una advertencia de manejo colgada de eso: drenarlos oxida
+los sulfuros y da un suelo ácido sulfatado con pH por debajo de 3. Las dos cosas
+pueden ser ciertas en sitios distintos de la misma ecorregión, pero no en el
+mismo. Se agregó el párrafo que lo dice: donde el sustrato es arena con poca
+materia orgánica hay menos sulfuro acumulado y el riesgo es más bajo, y hay que
+mirar el sitio antes de suponer cuál de los dos tocó. Borrar la advertencia
+hubiera sido peor que dejarla sola.
+
+### Montado el 12/10/2026
+
+Las siete fuentes entraron a `biomasRegionalesMedioOriente.ts` como constantes con
+nombre y alcance declarado en su comentario, y **la cuenta de fichas sin fuente
+propia bajó de 56 a 50** —MedioOriente de 23 a 17, medido con
+`medir-espesor-fichas.mjs`—. El `suelos` promedio del paquete subió de 453 a 567
+caracteres, porque las seis fichas también recibieron texto.
+
+Lo que entró al texto, en una línea cada uno:
+
+- **Ahwar**: el expediente separa los cuatro humedales por régimen de agua, y la
+  distinción decide qué se puede hacer. Huwaizah es el único de agua dulce y el
+  único que no fue desecado a fondo, así que de ahí volvieron las aves al
+  reinundarse el resto; en el Hammar, al revés, el mar entra empujado por la
+  marea. El CRIMW modeló la hidrología para fijar el caudal mensual mínimo de cada
+  componente.
+- **Harrat Khaybar**: cerca del 63 % de los perfiles son Andosoles vítricos y el
+  37 % Solonchaks, y son poligenéticos —andisolización de un paleoclima subhúmedo,
+  horizontes sálicos y cálcicos del clima árido de hoy—. Que las propiedades
+  ándicas aguanten en seco y caliente cambia el pronóstico de agua del suelo.
+- **Wadi Al-Jufair**: cuatro asociaciones en 15 km² que se diferencian en textura,
+  humedad, materia orgánica, pH, conductividad y minerales. Dentro de un mismo
+  uadi el suelo cambia lo suficiente para decidir qué va dónde.
+- **Nafud Al-Urayq y Rub al-Jali**: los dos arenales dan respuestas opuestas. En el
+  Nafud, 135 especies y anuales y perennes por igual, con la diversidad alta en el
+  uadi y la arena somera y la baja en el hábitat salinizado. En el Rub al-Jali,
+  unas 37 especies sobre 500.000 km², apenas diez que pesen, anuales
+  prácticamente ausentes y nada de porte arbóreo.
+- **Costa de Kuwait**: nueve subunidades, cuatro fangosas al norte con sabkha
+  extensa detrás y energía de oleaje baja, cinco arenosas al sur con energía de
+  moderada a alta.
+- **Mangle del Golfo**: límite norte de los manglares del Indo-Pacífico, y las
+  amenazas de las últimas dos décadas son de obra más que de clima. Hay
+  restauraciones documentadas que funcionaron, así que replantar acá no es una
+  apuesta.
+
+Una corrección de precisión al escribir: la entrega decía *Calligonum crinitum*
+subsp. *arabicum*, y el resumen de Mandaville dice «una subespecie endémica de
+*Calligonum crinitum*» sin nombrarla. El nombre de la subespecie es correcto, pero
+no está en el documento, así que en la ficha quedó como lo dice el documento.
+
+## fuentes-propias, lote 03 — recibido, no abierto
+
+Llegó sin pedirlo, junto con el 02: seis fichas de EuropaUE —la conífera costera
+escandinava, el abedular montano, el Egeo, Creta, el Troodos y la conífera del
+Mediterráneo oriental—. Forma limpia y los seis ids existen. **No se abrió
+ninguna fuente todavía, así que no se monta.** Dos cosas que ya se ven desde
+afuera y habrá que chequear al abrirlo: `chipre_troodos` afirma tres porcentajes
+de carbono orgánico (1,0 · 1,3 · 1,7 % en los primeros 25 cm) y
+`mediterraneo_oriental_conifera` una cota de 1.352 m, y los números exactos son
+justo lo que el lote 01 inventó.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 
