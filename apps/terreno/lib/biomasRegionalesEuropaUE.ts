@@ -95,6 +95,37 @@ const TROODOS_CARBONO = { label: 'CATENA 195:104741 — The effect of agricultur
 
 /** Pinares de Pinus brutia del Troodos chipriota, seis bosques muestreados. Una isla del Mediterráneo oriental, no la conífera de Anatolia ni del Levante. */
 const PINUS_BRUTIA = { label: 'Forests 9(9):514 — Mediterranean Islands Hosting Marginal and Peripheral Forest Tree Populations: The Case of Pinus brutia Ten. in Cyprus', url: 'https://doi.org/10.3390/f9090514' };
+
+/* ── Lote 06: Anatolia, la estepa pontica y la estepa forestal ─────────── */
+
+/** Pastizales de la aldea de Pasali, provincia de Nevsehir, relevados en
+ *  2004. Es un piloto de 733 ha: no representa toda la estepa de Anatolia
+ *  central. */
+const ANATOLIA_PASTIZAL = { label: 'Turkish Journal of Agriculture and Forestry 32(5):401-414 — Pilot Study for an Assessment of Vegetation Structure for Steppe Rangelands of Central Anatolia', url: 'https://journals.tubitak.gov.tr/agriculture/vol32/iss5/6/' };
+
+/**
+ * Cronosecuencia de casi cien anos de campos abandonados contra estepa virgen
+ * en Askania-Nova y su zona de amortiguamiento, sur de Ucrania. Un sitio: no
+ * se extrapola a toda la estepa pontica ni a todos los chernozem.
+ *
+ * La entrega resumio el hallazgo como «la composicion se acerco a la estepa
+ * virgen alrededor de los 50 anos». Es cierto y es la mitad: los especialistas
+ * de habitat de estepa solo igualaron a la virgen en el campo de unos 97 anos,
+ * y la riqueza de vasculares fue menor en todos los campos viejos. Van las
+ * dos, porque con la primera sola la ficha afirmaria que medio siglo alcanza.
+ */
+const ASKANIA_NOVA = { label: 'Applied Vegetation Science 26(4):e12756 — Rapid functional but slow species diversity recovery of steppe vegetation on former arable fields in southern Ukraine', url: 'https://doi.org/10.1111/avsc.12756' };
+
+/** Sesenta muestras de polen actual en las cuencas del Dnieper y el Don, en
+ *  las provincias de Kursk (Rusia) y Jarkov (Ucrania). Es un conjunto de
+ *  calibracion sobre chernozem en loess, no un inventario de vegetacion. */
+const POLEN_ESTEPA_FORESTAL = { label: 'Vegetation History and Archaeobotany 34(6):799-812 — Modern pollen spectra from the east European forest steppe reflect land use patterns rather than a climatic gradient', url: 'https://doi.org/10.1007/s00334-025-01048-5' };
+
+/** Nueve manchones de roble en la provincia de Kurdistan, IRAN —no el sector
+ *  turco que describe esta ficha, aunque sea el mismo tipo de robledal del
+ *  Zagros—, todos en ladera norte, a 1.550 m, con 658 mm y 13,8 °C de media
+ *  anual, sobre Entisol en sustrato calcareo. */
+const ZAGROS_PERTURBACION = { label: 'Journal of Forest Science 64(8):358-370 — Effects of anthropogenic disturbance on plant composition, plant diversity and soil properties in oak forests, Iran', url: 'https://doi.org/10.17221/13/2018-JFS' };
 /** Piatra Craiului, Rumania: hayedo dacio 500–1200 m y picea acidófila 1350–1800 m. Un parque del arco. */
 const PIATRA_CRAIULUI = { label: 'PN Piatra Craiului — Plan de manejo del parque nacional', url: 'https://www.pcrai.ro/files/pdf/Management_Plan.pdf' };
 
@@ -335,7 +366,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'La estepa que va del bajo Danubio al mar de Azov, casi toda arada: es donde está el chernozem, el suelo negro más profundo del mundo y la razón por la que Ucrania y Moldavia pesan lo que pesan en el mercado mundial de granos. Poca lluvia, muy mal repartida, y un viento seco de verano que puede arruinar la cosecha en una semana.',
     vegetacion: 'De la estepa de plumeros y festucas quedan retazos en barrancos y márgenes; el resto es trigo, girasol, maíz, cebada y colza. En las quebradas y las riberas sobreviven bosquecillos de roble, olmo y arce tártaro.',
     fauna: 'Marmota bobak, sisón y avutarda en los pocos pastizales grandes que quedan, águila esteparia, y una comunidad de roedores y sus depredadores que colapsó con la agricultura continua.',
-    suelos: 'Chernozems con horizonte húmico de 60 a 120 cm, estructura granular estable y una reserva de nutrientes que permitió sembrar sin fertilizar durante generaciones. Nada de eso es indestructible: bajo laboreo continuo la materia orgánica cayó a la mitad en el siglo XX, el horizonte se compacta y el suelo desnudo entre cosechas se vuela con el viento seco. Acá el agua es siempre el límite —de 350 a 500 mm y evapotranspiración alta—, así que todo el manejo apunta a captarla y guardarla: barbecho con rastrojo en pie, siembra directa, cortinas rompeviento en faja, y cultivo en contorno en las lomas suaves, que es de donde se va el suelo.',
+    suelos: 'Chernozems con horizonte húmico de 60 a 120 cm, estructura granular estable y una reserva de nutrientes que permitió sembrar sin fertilizar durante generaciones. Nada de eso es indestructible: bajo laboreo continuo la materia orgánica cayó a la mitad en el siglo XX, el horizonte se compacta y el suelo desnudo entre cosechas se vuela con el viento seco. Acá el agua es siempre el límite —de 350 a 500 mm y evapotranspiración alta—, así que todo el manejo apunta a captarla y guardarla: barbecho con rastrojo en pie, siembra directa, cortinas rompeviento en faja, y cultivo en contorno en las lomas suaves, que es de donde se va el suelo. Cuánto tarda en volver está medido, y la respuesta tiene dos velocidades. En Askania-Nova se compararon campos abandonados hacía 6, 15, 31, 50 y unos 97 años contra estepa virgen: el carbono orgánico y el nitrógeno total fueron más bajos que en la virgen en todos los campos de 50 años o menos, y sólo el de 97 no se diferenció. En la vegetación, las características funcionales se recuperaron rápido —sólo el campo más reciente se apartaba de la virgen— y la composición dejó de diferenciarse alrededor de los 50 años; pero la proporción de especialistas de hábitat de estepa igualó a la virgen únicamente en el campo de unos 97 años, y la riqueza de vasculares siguió siendo menor en todos los campos viejos. La conclusión de los autores es que la función vuelve mucho antes que la biodiversidad, y que cien años pueden alcanzar para que la estepa se rearme sola. La unidad de tiempo de este suelo es el siglo, no la década.',
     saberes: [],
     especies: [
       'Plumero (Stipa capillata)',
@@ -345,7 +376,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Almendro enano (Prunus tenella)',
     ],
     cultivos: ['trigo', 'girasol', 'maiz_tropical', 'cebada', 'colza', 'soja', 'damasco', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, ASKANIA_NOVA],
   },
 
   // UA, MD, RO · ECO_ID 661
@@ -355,7 +386,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌳',
     color: '#7F8547',
     resumen: 'La franja de transición al norte de la estepa: mosaico de robledales en las cabeceras de barranco y pastizal en los interfluvios, sobre el mismo loess. Llueve algo más que en la estepa —de 450 a 600 mm— y eso alcanza para que el árbol se sostenga sin riego.',
-    vegetacion: 'Robledales de carballo con fresno, tilo, arce y olmo en las quebradas húmedas, pastizal de plumeros en las lomas, y hoy campos de trigo, remolacha, girasol y maíz ocupando casi todo lo llano.',
+    vegetacion: 'Robledales de carballo con fresno, tilo, arce y olmo en las quebradas húmedas, pastizal de plumeros en las lomas, y hoy campos de trigo, remolacha, girasol y maíz ocupando casi todo lo llano. Un conjunto de 60 muestras de polen actual en las cuencas del Dnieper y el Don, en Kursk y Járkov, agrupadas en seis clases de uso —cultivo y estepa usada, humedal y pinar seco, pastura y vegetación ruderal, turbera, pastizal sin pastoreo, y robledal o bosque mixto— deja tres cosas para esta ficha. La primera: lo que explica la variación es el uso de la tierra y después las condiciones locales del sitio, no la posición en el gradiente norte-sur; cada variable climática explica entre el 1,4 y el 2,6 % de la varianza. La segunda: en los sitios de vegetación casi natural del ecotono el polen arbóreo nunca baja del 33 %, así que un mosaico sano de esta franja no es nunca un pastizal pelado. La tercera es una advertencia sobre el registro mismo: la mayoría de los archivos palinológicos de la zona muestran dominancia de pinar porque están en humedales de meandros abandonados y de río, donde el pino y la vegetación azonal dominan, no porque el pinar domine el paisaje. En el terreno el reparto lo hace la exposición: el bosque ocupa los valles, las quebradas, las hondonadas y las laderas de cara al norte, que son las húmedas, y el pastizal las mesetas secas y las laderas al sur. Y la reserva de estepa virgen de esta zona —seis sectores, 5.287 hectáreas, protegida desde 1935— se mantiene abierta a fuerza de siega y pastoreo moderado: librada por completo a sí misma pasaría a pradera y después a árboles y arbustos.',
     fauna: 'Corzo, jabalí, tejón, hámster común, águila moteada y milano negro; las poblaciones de aves esteparias sobreviven sobre todo en las quebradas que nunca se pudieron arar.',
     suelos: 'Chernozems lixiviados y Phaeozems bajo el pastizal, y Luvisoles grises bajo el bosque, todos sobre loess profundo. Fertilidad muy alta pero con más acidez y menos carbonato que la estepa pura, así que responden mejor al aporte de materia orgánica y peor al laboreo agresivo. La forma característica de la degradación acá es la cárcava: el loess es cohesivo en seco y se desmorona saturado, y una vía de agua mal ubicada abre en pocos años un barranco que no se cierra más. Las fajas forestales de protección plantadas a mediados del siglo XX siguen siendo la pieza que ordena esta cuenca.',
     saberes: [],
@@ -367,7 +398,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Olmo campestre (Ulmus minor)',
     ],
     cultivos: ['trigo', 'girasol', 'maiz_tropical', 'remolacha_azucarera', 'soja', 'cebada', 'manzano', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, POLEN_ESTEPA_FORESTAL],
   },
 
   // UA · ECO_ID 658
@@ -671,7 +702,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌾',
     color: '#9E9257',
     resumen: 'La meseta interior, encerrada entre el Tauro y la cadena póntica, que le cortan la humedad de los dos mares: de 250 a 400 mm al año, invierno frío y verano seco y caluroso. Es el granero de Turquía y, a la vez, el caso más serio de sobreextracción de acuífero de la región.',
-    vegetacion: 'Estepa de ajenjo, festuca y plumeros, con bosquetes abiertos de quejigo y enebro en las lomas y almendro y pistacho silvestres en las quebradas; cereal de secano, remolacha, girasol y regadío intensivo en las cuencas cerradas.',
+    vegetacion: 'Estepa de ajenjo, festuca y plumeros, con bosquetes abiertos de quejigo y enebro en las lomas y almendro y pistacho silvestres en las quebradas; cereal de secano, remolacha, girasol y regadío intensivo en las cuencas cerradas. Un relevamiento de pastizal cerca de Paşalı, en Nevşehir, midió 37 sitios sobre 733 hectáreas en 2004 y encontró 78 especies: 60 hierbas de hoja ancha, 11 gramíneas y 7 arbustos. Dos resultados importan. El primero es que la especie más abundante no es un pasto sino un arbusto enano, Thymus sipyleus, con el 7,2 % de la cobertura, seguido de Festuca valesiaca con 6,9 % y Bromus tomentellus con 6,4 %: en una estepa de festucas, la que domina es la mata de tomillo, que es la firma del deterioro y no del pastizal sano. El segundo es que el puntaje de condición de los 37 sitios cayó entre 1,20 y 3,40, o sea entre muy pobre y pobre: ninguno de los 37 llegó a regular. Lo que acompaña la mejor condición es la cobertura de Bromus tomentellus, una perenne, que es el indicador a seguir si se maneja carga.',
     fauna: 'Gacela subgutural en el sur, lobo, zorro, gato de las estepas, avutarda, alondras y aláudidos de estepa; los lagos salinos —el Tuz Gölü— sostienen la mayor colonia de flamenco de la región.',
     suelos: 'Kastanozems y Calcisoles sobre loess y sedimentos lacustres, con Solonchaks y Solonetz alrededor de los lagos salinos y Vertisoles en las cuencas. Fértiles en química, muy limitados en agua, con carbonato y a veces yeso a poca profundidad. Dos degradaciones dominan: la salinización del regadío sin drenaje y la subsidencia por bombeo, que en la cuenca de Konya abrió cientos de dolinas de colapso. El barbecho tradicional con rastrojo, la siembra directa, las cortinas rompeviento y el cambio a cultivos de menor demanda hídrica son las palancas reales; el riego eficiente por sí solo aumentó la superficie regada y empeoró el balance.',
     saberes: [],
@@ -686,7 +717,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     aptitud: [
       { uso: 'huerta', delta: -10, razon: 'El suelo da: lo que no da es el agua. La cuenca de Konya lleva décadas de bombeo por encima de la recarga, con subsidencia y dolinas de colapso, y el regadío sin drenaje saliniza. Huerta acá se decide por el agua disponible, no por la fertilidad.' },
     ],
-    fuentes: [TARIM, WRB, RESOLVE],
+    fuentes: [TARIM, WRB, RESOLVE, ANATOLIA_PASTIZAL],
   },
 
   // TR · ECO_ID 662, 727
@@ -718,7 +749,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌳',
     color: '#8A8250',
     resumen: 'El extremo noroccidental del Zagros, en el sudeste de Turquía —Hakkari, Şırnak, el sur de Van—: bosque abierto de roble sobre montaña plegada, con lluvia de invierno y primavera y un verano seco de cinco meses. Es el bosque de secano más extenso de Asia occidental y la cuna de la agricultura de cereal.',
-    vegetacion: 'Robledal abierto de roble de Líbano, roble brant y quejigo, con almendro, pistacho, arce montpellier, espino y peral silvestre; pastizal y estepa de gramíneas entre los árboles, y bosques de galería de álamo y plátano oriental en los ríos.',
+    vegetacion: 'Robledal abierto de roble de Líbano, roble brant y quejigo, con almendro, pistacho, arce montpellier, espino y peral silvestre; pastizal y estepa de gramíneas entre los árboles, y bosques de galería de álamo y plátano oriental en los ríos. Cuánto cuesta abrir ese dosel está medido, aunque del lado iraní: en nueve manchones de roble brant del Kurdistán de Irán, todos en ladera norte a 1.550 metros con 658 mm de lluvia, se compararon tres grados de perturbación definidos por cobertura de copa —más del 50 %, entre 10 y 50 %, y menos del 10 %, con pastoreo permanente y corta extensiva en el último— sobre 195 taxones relevados, de los cuales 16 leñosos. Las especies exclusivas de cada grado fueron 47, 25 y 15, y las indicadoras 21, 5 y 7. En el suelo, el carbono orgánico, el nitrógeno total y la arcilla se diferencian del resto sólo en el grado menos perturbado, y el fósforo asimilable es significativamente el más bajo en el más perturbado. Pero el detalle que cambia la decisión de manejo es la curva de rarefacción: la del sitio moderadamente perturbado se parece a la del menos perturbado. La pérdida no es proporcional a la apertura; el escalón está entre el uso moderado y el severo.',
     fauna: 'Cabra bezoar, oveja armenia, oso pardo, leopardo persa en registros esporádicos, lobo, hiena rayada, buitre leonado y quebrantahuesos.',
     suelos: 'Leptosoles y Cambisoles cálcicos sobre caliza y roca metamórfica, delgados en la ladera y algo más profundos en los coluvios y los fondos de valle, donde está toda la agricultura. Alcalinos, con carbonato libre y hierro poco disponible. La cobertura arbórea abierta es lo que mantiene el suelo en pendiente: el corte para leña, el pastoreo de cabras y los incendios abren claros que la lluvia de invierno vacía en pocas temporadas. El sistema histórico combina cereal de secano en el valle, frutal de secano y pastoreo estacional en el monte, y funciona mientras el roble se mantenga en rebrote.',
     saberes: [],
@@ -730,6 +761,6 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Plátano oriental (Platanus orientalis)',
     ],
     cultivos: ['trigo', 'cebada', 'garbanzo', 'lenteja', 'nogal', 'vid', 'pistacho', 'damasco'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, ZAGROS_PERTURBACION],
   },
 };

@@ -72,6 +72,76 @@ const COSTA_KUWAIT = { label: 'Geologische Rundschau 83:448-463 — Geomorpholog
 /** Revision regional del Avicennia marina del Golfo. Resume literatura; no es un relevamiento de campo de cada manglar. */
 const GOLFO_MANGLE = { label: 'Wetlands 45:16 — Significance of Avicennia Marina in the Arabian Gulf Environment: A Review', url: 'https://doi.org/10.1007/s13157-025-01899-8' };
 
+/* ── Lote 05: Arabia del sur, el mar Rojo e Iran ───────────────────────── */
+
+/**
+ * Micorrizas de la palmera datilera y de los habitats de alrededor, sur de
+ * Arabia. Lo que aporta a esta ficha es un solo sitio: una duna a 50 km al
+ * suroeste de los otros tres habitats, en el fondo de un lago holoceno
+ * extinto dentro del arenal, con Heliotropium kotschyi. No describe la costa
+ * omani ni el resto de la franja de niebla.
+ */
+const MICORRIZAS_WAHIBA = { label: 'Mycorrhiza 21(3):195-209 — Unique arbuscular mycorrhizal fungal communities uncovered in date palm plantations and surrounding desert habitats of Southern Arabia', url: 'https://doi.org/10.1007/s00572-010-0323-5' };
+
+/**
+ * Revision regional del manglar de Egipto y Oriente Medio.
+ *
+ * OJO con un numero de este trabajo: dice que la superficie de manglar
+ * registrada en Arabia Saudita fue de 158.000 ha entre 1990 y 2020 y que
+ * contra 2022 eso implica una perdida del 87 %. No se monta. La tabla de
+ * sitios del mismo articulo da 20.400 ha, que es el orden de magnitud del
+ * resto de la literatura, y las dos cifras no pueden ser las dos ciertas.
+ * Se monta la que el articulo sostiene con su propia tabla.
+ */
+const MANGLE_ORIENTE_MEDIO = { label: 'International Journal of Environmental Science and Technology 22(2):1225-1262 — Mangroves in Egypt and the Middle East: current status, threats, and opportunities', url: 'https://doi.org/10.1007/s13762-024-05788-1' };
+
+/** Llanura de Tihama, en la entonces Republica Arabe del Yemen (1981). No
+ *  describe el resto de la costa del mar Rojo. */
+const TIHAMA_GEOLOGIA = { label: 'Journal of Geography (Chigaku Zasshi) 90(3):157-177 — Environmental Geology of Yemen Arab Republic (2): The Tihamah Plain', url: 'https://doi.org/10.5026/jgeography.90.157' };
+
+/**
+ * Experimento de campo en una parcela de bosque estacional de niebla del
+ * Dofar. La entrega nombraba el sitio —Gogub, Jebel al Qara—; eso no esta en
+ * el resumen y el texto completo no se pudo abrir desde aca, asi que la ficha
+ * dice «Dofar». Los tres numeros que la ficha afirma si estan en el resumen.
+ */
+const DOFAR_ECOHIDRO = { label: 'Water Resources Research 43(10):2006WR005261 — Ecohydrology of a seasonal cloud forest in Dhofar: 1. Field experiment', url: 'https://doi.org/10.1029/2006WR005261' };
+
+/** Cuatro fuentes que abastecen Mukalla y Gail Ba Wazeer, gobernacion de
+ *  Hadramaut, analizadas entre noviembre de 2001 y marzo de 2002. No es un
+ *  analisis de todas las mesetas y uadis del Hadramaut. */
+const HADRAMAUT_AGUA = { label: 'Rafidain Journal of Science 16(6):115-131 — Geomorphology and Hydrogeology of Hadramout Area South of Yemen Using Remote Sensing and Field Data', url: 'https://doi.org/10.33899/rjs.2005.41855' };
+
+/**
+ * Ensayo de vivero con propagulos de Avicennia marina de cuatro sitios de
+ * Hormozgan. Es un experimento, no un relevamiento de campo de la costa
+ * nubo-sindica, y de Makran no habla.
+ *
+ * Tiene un corrigendum (DOI 10.3389/ffgc.2025.1610978, 29/04/2025). Se leyo:
+ * corrige la figura 1 —el mapa de ubicacion, reusado de una publicacion
+ * anterior de uno de los autores— y no toca ningun dato ni conclusion. Es la
+ * primera vez que la cuarta condicion pesca un `updated-by` no vacio, y el
+ * resultado honesto es que no afecta lo que se cita.
+ */
+const MANGLE_HORMOZGAN = { label: 'Frontiers in Forests and Global Change 8:1523229 — Halophyte adaptations in gray mangrove seedlings to salinity on the Persian Gulf coastline', url: 'https://doi.org/10.3389/ffgc.2025.1523229' };
+
+/** Provincia floristica Khorassan-Kopet Dagh, noreste de Iran y sur de
+ *  Turkmenistan. Es una sintesis de todos los registros floristicos del area,
+ *  no un muestreo nuevo. */
+const KOPET_DAG_FLORA = { label: 'Phytotaxa 249(1) — A review of plant diversity, vegetation, and phytogeography of the Khorassan-Kopet Dagh floristic province in the Irano-Turanian region (northeastern Iran-southern Turkmenistan)', url: 'https://doi.org/10.11646/phytotaxa.249.1.4' };
+
+/**
+ * Corredor de Niatak, este de Sistan irani. No cubre el Registan afgano.
+ *
+ * La entrega citaba una URL de descarga directa en oiccpress.com, que no es
+ * la publicacion y encima responde con una verificacion anti-bot. El trabajo
+ * salio en la Iranian Journal of Earth Sciences, de la Universidad Azad de
+ * Mashhad, y tiene DOI: va el DOI. Segunda vez que pasa lo mismo —la primera
+ * fue el handle de Lieja en el lote 04—, asi que la condicion 2 del encargo
+ * quedo reescrita con este caso adentro.
+ */
+const SISTAN_DUNAS = { label: 'Iranian Journal of Earth Sciences 11(3):183-195 — Identification of sand dune sources in the east Sistan, Iran by using mineralogical and morphoscopic characterization of sediments', url: 'https://doi.org/10.30495/ijes.2019.667378' };
+
 export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
   // SY JO IQ · ECO_ID 739 · la badia, estepa de pastoreo milenaria
   estepa_siria_badia: {
@@ -292,7 +362,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La franja del Wahiba y la costa omaní donde la niebla marina entra tierra adentro casi todas las noches del verano y aporta más humedad que la lluvia anual. Es un desierto que se moja por arriba.',
     vegetacion: 'Prosopis cineraria y acacia sobre los corredores interdunares, con líquenes y matas que capturan la niebla directamente en el follaje. La cara de la duna orientada al mar tiene mucha más cobertura que la opuesta.',
     fauna: 'Gacela árabe, gato de las arenas, camaleón árabe, y una fauna de invertebrados de niebla —tenebriónidos que beben del rocío condensado— que es la base de la cadena.',
-    suelos: 'Arenosoles con un horizonte superficial ligeramente cohesivo por el humedecimiento nocturno. La lección de diseño es directa: acá el agua se cosecha del aire, no del suelo, y el árbol que da sombra no compite por lluvia sino que aumenta la captura de niebla debajo suyo. Talar el ghaf no libera agua para el pasto: la quita.',
+    suelos: 'Arenosoles con un horizonte superficial ligeramente cohesivo por el humedecimiento nocturno. La lección de diseño es directa: acá el agua se cosecha del aire, no del suelo, y el árbol que da sombra no compite por lluvia sino que aumenta la captura de niebla debajo suyo. Talar el ghaf no libera agua para el pasto: la quita. Hay un dato de abajo del suelo que conviene saber antes de plantar: un muestreo de hongos micorrícicos en el sur de Arabia —agosto de 2006, cuatro hábitats, cuatro parcelas de unos 200 m² en cada uno, 32 muestras compuestas sacadas de 128 originales— incluyó una duna a 50 kilómetros al suroeste de los otros tres sitios, en el fondo de un lago holoceno extinto dentro del arenal, bajo Heliotropium kotschyi. Ahí aparecieron apenas dos morfoespecies de hongo, y sólo después de cultivarlas en trampa, contra 25 en el conjunto de los hábitats. La abundancia y la riqueza más altas no estaban en el desierto natural sino bajo las palmeras de los dos palmerales, y la especie más frecuente ahí —Glomus sinuosum— es de las que se asocian a hábitats sin disturbio. Las dos más comunes del mundo no se detectaron en ninguna parte. Para el diseño: en la arena viva no hay inóculo que colonice una plántula, y el palmeral viejo sí lo tiene, así que es reservorio y no sólo cultivo.',
     saberes: [],
     especies: [
       'Ghaf (Prosopis cineraria)',
@@ -302,7 +372,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Zygophyllum qatarense',
     ],
     cultivos: ['datilera', 'sesamo', 'moringa', 'alfalfa'],
-    fuentes: [HWSD, RESOLVE],
+    fuentes: [HWSD, RESOLVE, MICORRIZAS_WAHIBA],
   },
 
   // SA EG SD YE · ECO_ID 837 · el escarpe del mar Rojo
@@ -334,7 +404,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌱',
     color: '#4F7B6C',
     resumen: 'Parches de manglar en las dos orillas del mar Rojo, del Sinaí a Eritrea y de Yanbu a Yibuti. Crecen sin ningún aporte de río, en uno de los mares más salinos del planeta: el sistema más extremo donde el manglar todavía funciona.',
-    vegetacion: 'Avicennia marina casi en exclusiva, con Rhizophora mucronata en el extremo sur. Porte bajo —tres a cinco metros— por el estrés salino.',
+    vegetacion: 'Avicennia marina casi en exclusiva, con Rhizophora mucronata en el extremo sur. Porte bajo —tres a cinco metros— por el estrés salino. Una revisión del manglar de Oriente Medio corrige el porte y le pone gradiente: en la costa saudita del mar Rojo los árboles altos están junto al borde del agua y promedian 2,46 metros —hasta 4—, mientras que hacia tierra el porte enano promedia 0,63 metros, así que lo que hay no es un manglar de tres a cinco metros sino una cuña que baja de dos y medio a medio metro en pocas decenas de metros. De las dos especies, Rhizophora mucronata está registrada únicamente en el archipiélago de Farasan, y Avicennia marina es la dominante en el continente. La misma revisión da 20.400 hectáreas para Arabia Saudita, la mayor superficie de la región, y atribuye el crecimiento a dos cosas que no son el río: el aporte de nutrientes de la entrada de agua menos salina desde el golfo de Adén y un rango de marea chico. Entre las amenazas, la que encabeza la lista no es la industria: es el pastoreo de camello sin control.',
     fauna: 'Zona de cría de la pesca artesanal costera, garza de arrecife, águila pescadora, dugongo en las praderas vecinas y tortuga carey; el camello pastorea directamente el follaje del mangle en la costa sudanesa y saudí.',
     suelos: 'Fluvisoles salinos y arenas carbonatadas de origen coralino, no limos de río. Retienen poco y aportan poco nutriente: el manglar vive de reciclar su propia hojarasca, así que sacarle biomasa —leña, forraje— descapitaliza el sistema mucho más rápido que en un manglar de delta.',
     saberes: [],
@@ -345,7 +415,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Suaeda monoica',
       'Limonium axillare',
     ],
-    fuentes: [WRB, RESOLVE],
+    fuentes: [WRB, RESOLVE, MANGLE_ORIENTE_MEDIO],
   },
 
   // YE SA · ECO_ID 107 · la Tihama
@@ -357,7 +427,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La llanura aluvial entre la montaña yemení y el mar Rojo, ancha de treinta a sesenta kilómetros. Llueve casi nada, pero recibe toda el agua de la montaña: es la agricultura de crecida más extensa que queda en el mundo.',
     vegetacion: 'Sabana abierta de Acacia y Ziziphus, dunas costeras con Panicum, y el mosaico agrícola de sorgo, mijo, sésamo y algodón sobre las parcelas de avenida.',
     fauna: 'Gacela, zorro, hiena rayada, y una avifauna afrotropical que acá alcanza su límite norte —abejaruco, tejedor, tórtola—, marca de que biogeográficamente esto ya es África.',
-    suelos: 'Fluvisoles limosos profundos, depositados capa sobre capa por cada crecida: el suelo se construye con el mismo evento que lo riega. Fértiles mientras el aporte siga; el limitante es la competencia por la crecida. Cuando se construyen presas o se cementan los desvíos aguas arriba, las parcelas de abajo pierden agua y limo a la vez y el suelo deja de renovarse. El reparto tradicional del agua de avenida —de aguas arriba a aguas abajo, por turno y no por volumen— es el que sostiene esa cadena.',
+    suelos: 'Fluvisoles limosos profundos, depositados capa sobre capa por cada crecida: el suelo se construye con el mismo evento que lo riega. Fértiles mientras el aporte siga; el limitante es la competencia por la crecida. Cuando se construyen presas o se cementan los desvíos aguas arriba, las parcelas de abajo pierden agua y limo a la vez y el suelo deja de renovarse. El reparto tradicional del agua de avenida —de aguas arriba a aguas abajo, por turno y no por volumen— es el que sostiene esa cadena. Y hay un piso de ese sistema que no se ve: el relevamiento geológico de la llanura midió un aluvión de limo, arena y grava de unos 50 metros de espesor en la parte central y de más de 100 en la franja costera, inclinado hacia el oeste con una pendiente del orden de 1 en 300, y el acuífero principal está adentro de ese aluvión. El análisis de tritio dice lo incomodo: el tiempo de residencia del agua subterránea es extremadamente largo salvo en las zonas de riego y a lo largo de los cauces de uadi, y fuera de ahi esa agua se recarga solamente con una crecida grande, que ocurre una vez cada varios años. O sea que bombear en la llanura es minar un stock, y lo único que recarga es justamente donde pasa la avenida. Los autores proponen por eso lo contrario de embalsar: infiltrar el agua del uadi a propósito cuando baja de la montaña, antes de que se evapore, y extraerla en la parte baja de la llanura.',
     saberes: [],
     especies: [
       'Sorgo (Sorghum bicolor)',
@@ -367,7 +437,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Panicum turgidum',
     ],
     cultivos: ['mijo', 'sorgo', 'sesamo', 'algodon', 'datilera', 'sisal', 'moringa'],
-    fuentes: [GIAHS, HWSD, RESOLVE],
+    fuentes: [GIAHS, HWSD, RESOLVE, TIHAMA_GEOLOGIA],
   },
 
   // YE SA · ECO_ID 59, 108 · la montaña aterrazada
@@ -426,7 +496,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'El escarpe del Dofar omaní y el este del Yemen: la única parte de la península donde el monzón del suroeste toca tierra. Tres meses de jareef —niebla densa, llovizna y 25 °C— y nueve meses secos. Verde en agosto, ocre en enero.',
     vegetacion: 'Bosque bajo de Anogeissus dhofarica y Boswellia sacra —el árbol del incienso—, con pradera densa bajo la niebla y arbolado de Acacia en el llano. La condensación en la copa aporta más agua al suelo que la llovizna directa.',
     fauna: 'Leopardo de Arabia, la población viable más importante que queda; hiena rayada, caracal, tahr árabe, camaleón; endemismo alto en reptiles e invertebrados.',
-    suelos: 'Cambisoles y Leptosoles arcillosos sobre caliza kárstica, con materia orgánica alta bajo el bosque y decreciendo rápido en la pradera pastoreada. Todo el sistema depende de la copa: el árbol peina la niebla y la deriva al suelo, así que la pérdida de arbolado no reduce la lluvia pero sí el agua que llega. La sobrecarga de camellos, que impide el reemplazo de Anogeissus, es la causa documentada del retroceso, y el efecto es hidrológico antes que forestal.',
+    suelos: 'Cambisoles y Leptosoles arcillosos sobre caliza kárstica, con materia orgánica alta bajo el bosque y decreciendo rápido en la pradera pastoreada. Todo el sistema depende de la copa: el árbol peina la niebla y la deriva al suelo, así que la pérdida de arbolado no reduce la lluvia pero sí el agua que llega. La sobrecarga de camellos, que impide el reemplazo de Anogeissus, es la causa documentada del retroceso, y el efecto es hidrológico antes que forestal. Un experimento de campo en una parcela de este bosque puso números a eso y encontró un segundo mecanismo. Lo medido: bajo el dosel llegó al suelo alrededor del doble de agua que la lluvia registrada por encima del dosel, y el escurrimiento por el tronco fue cerca del 30 % de esa precipitación neta, así que el agua entra concentrada al pie del árbol y no repartida. Lo que no estaba a la vista: durante el jareef la transpiración queda suprimida, el árbol guarda lo que cosechó y lo gasta recien después de que termina la temporada húmeda, por unos tres meses más, lo que aproximadamente duplica el largo de la estación de crecimiento. El bosque gana dos veces, una por cosechar y otra por no gastar, y las dos dependen de la copa.',
     saberes: [],
     especies: [
       'Incienso (Boswellia sacra)',
@@ -436,7 +506,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Euphorbia balsamifera',
     ],
     cultivos: ['coco', 'platano', 'cafe', 'sorgo', 'sesamo', 'moringa'],
-    fuentes: [HWSD, WRB, RESOLVE],
+    fuentes: [HWSD, WRB, RESOLVE, DOFAR_ECOHIDRO],
   },
 
   // YE OM · ECO_ID 840 · la meseta del Hadramaut
@@ -448,7 +518,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La meseta calcárea del sur de la península, cortada por uadis profundos —el Hadramaut, el Masila— que son el único lugar habitable y cultivable en cientos de kilómetros. Arriba, nada; abajo, palmerales y ciudades de barro.',
     vegetacion: 'Meseta desnuda con matorral ralo; en el fondo del uadi, palmeral de dátil, sorgo, alfalfa y arbolado de Ziziphus y Tamarix.',
     fauna: 'Gacela árabe, zorro de Blanford, hiena rayada, y una avifauna concentrada en el uadi que contrasta con la meseta vacía.',
-    suelos: 'Leptosoles calcáreos en la meseta y Fluvisoles profundos en el uadi, construidos por crecidas sucesivas. Fertilidad buena en el fondo y salinización creciente donde el riego pasó de la avenida al pozo. El sistema histórico combina desvío de crecida y pozo somero de tracción animal; la bomba diésel rompió el equilibrio porque permite regar todo el año sin la lámina de lavado que traía la crecida.',
+    suelos: 'Leptosoles calcáreos en la meseta y Fluvisoles profundos en el uadi, construidos por crecidas sucesivas. Fertilidad buena en el fondo y salinización creciente donde el riego pasó de la avenida al pozo. El sistema histórico combina desvío de crecida y pozo somero de tracción animal; la bomba diésel rompió el equilibrio porque permite regar todo el año sin la lámina de lavado que traía la crecida. El diagnóstico publicado de la gobernación es más duro que «salinización creciente». La sobreextracción de los sistemas acuíferos de Shihr, Tawilah y los depósitos cuaternarios hizo caer los niveles, y la caída abrió paso a la intrusión de agua de mar, con pérdida del recurso dulce. El análisis de las cuatro fuentes que abastecen Mukalla y Gail Ba Wazeer, hecho entre el 17 de noviembre de 2001 y el 27 de marzo de 2002, dio concentraciones altas en casi todos los componentes, por encima de las guías de la Organización Mundial de la Salud y de las yemeníes para agua de bebida: sólidos disueltos totales, alcalinidad total, dureza total, sulfatos, manganeso y flúor. La recomendación de ese trabajo no es perforar mejor sino al revés: cosechar la crecida en las cuencas de drenaje principales para mejorar la calidad del agua de la zona. Bombear más fuerte no trajo más agua, trajo agua peor.',
     saberes: [],
     especies: [
       'Palmera datilera (Phoenix dactylifera)',
@@ -458,7 +528,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Acacia (Vachellia tortilis)',
     ],
     cultivos: ['datilera', 'sorgo', 'mijo', 'sesamo', 'moringa', 'alfalfa'],
-    fuentes: [HWSD, RESOLVE],
+    fuentes: [HWSD, RESOLVE, HADRAMAUT_AGUA],
   },
 
   // YE · ECO_ID 105 · Socotra
@@ -522,7 +592,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La franja entre el Zagros y el Golfo, de Juzestán a Baluchistán: calor extremo, humedad alta en la costa y una vegetación que ya no es paleártica sino tropical seca, emparentada con el Sahel y el Sind.',
     vegetacion: 'Sabana abierta de Prosopis cineraria y Vachellia, palmeral de dátil en los oasis y uadis, y matorral de Salvadora y Calotropis en las llanuras salinas.',
     fauna: 'Gacela india, onagro persa en el interior, hiena rayada, caracal, y la avifauna del Golfo en el litoral.',
-    suelos: 'Calcisoles y Solonchaks sobre aluviones, con salinidad de origen alta en Juzestán por evaporitas y freática somera. Es la zona datilera histórica de Irán, y el manejo es de sales: lámina de lavado, drenaje y elección varietal, más que fertilización. La expansión de la caña de azúcar regada en Juzestán volcó drenajes salinos al Karún y agravó el problema aguas abajo, hasta el Shatt al-Arab.',
+    suelos: 'Calcisoles y Solonchaks sobre aluviones, con salinidad de origen alta en Juzestán por evaporitas y freática somera. Es la zona datilera histórica de Irán, y el manejo es de sales: lámina de lavado, drenaje y elección varietal, más que fertilización. La expansión de la caña de azúcar regada en Juzestán volcó drenajes salinos al Karún y agravó el problema aguas abajo, hasta el Shatt al-Arab. Una advertencia sobre el reflejo de lavar sal, que viene de un ensayo de vivero con plántulas de Avicennia marina de cuatro sitios de Hormozgán —Khore-Azini, puerto de Sirik, isla de Gheshm y puerto de Kamir, treinta árboles en cada uno—: el crecimiento óptimo se dio con salinidad intermedia, al 50 % de agua de mar, y el tratamiento con agua dulce dio menos vigor —1,96 contra 2,86 %— y más caída de hoja, 17,96 %. La salinidad alta sí subió el cloruro y el sodio. Los autores concluyen que esta población es halófita facultativa: aguanta las dos cosas, y la sal la favorece. Es un experimento con una especie de manglar y no autoriza a extrapolarlo al datíl ni al cultivo de la llanura, pero sí marca el límite del criterio: en la vegetación adaptada a la sal de esta costa, sacarle la sal no es neutro. Los manglares de la costa de Hormozgán viven con unos 160 mm de lluvia al año y una máxima media de 35 a 41 °C en el mes más caluroso, con un récord absoluto de 50 °C.',
     saberes: [],
     especies: [
       'Palmera datilera (Phoenix dactylifera)',
@@ -532,7 +602,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Tamarisco (Tamarix aphylla)',
     ],
     cultivos: ['datilera', 'sesamo', 'sorgo', 'algodon', 'granado', 'cebolla', 'moringa'],
-    fuentes: [HWSD, WRB, RESOLVE],
+    fuentes: [HWSD, WRB, RESOLVE, MANGLE_HORMOZGAN],
   },
 
   // IR · ECO_ID 820 · las cuencas endorreicas del Kavir
@@ -630,7 +700,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌿',
     color: '#8A8B5A',
     resumen: 'La cordillera que forma la frontera entre Irán y Turkmenistán, con su piedemonte semidesértico al norte. RESOLVE la parte en dos —bosque estepario arriba, semidesierto abajo—, pero funciona como una sola unidad hidrológica: la montaña recoge, el piedemonte usa.',
-    vegetacion: 'Bosque abierto de enebro, arce y pistacho en la montaña, con pastizal de altura; abajo, estepa de Artemisia y efímeras primaverales sobre loess.',
+    vegetacion: 'Bosque abierto de enebro, arce y pistacho en la montaña, con pastizal de altura; abajo, estepa de Artemisia y efímeras primaverales sobre loess. La síntesis florística de la provincia Khorassan-Kopet Dagh —noreste de Irán y sur de Turkmenistán— compila 2.576 especies y taxones infraespecíficos de 702 géneros y 112 familias, de los cuales 2.498 aparecen del lado iraní, y cuenta 356 endémicos del área: el 13,8 %. Los tipos de vegetación que enumera confirman el enebro y el pistacho de la ficha —bosque abierto de Juniperus y bosque de Pistacia vera— y agregan algo que explica por qué esta cordillera es un corredor y no un borde: hay enclaves aislados de bosque y matorral hircanos metidos entre la estepa de montaña, la estepa semidesértica, la vegetación de loess y marga, la halófita y la de farallón. El trabajo cierra con una advertencia de conservación que vale leer: las áreas protegidas existentes no cubren todos esos tipos de vegetación, así que muchas especies amenazadas quedan afuera.',
     fauna: 'Leopardo persa, muflón, cabra bezoar, hiena rayada, gato de Pallas; es uno de los corredores de leopardo mejor conservados de Asia occidental.',
     suelos: 'Calcisoles y Cambisoles sobre caliza en la montaña, Calcisoles de loess en el piedemonte, con horizonte cálcico neto. Fertilidad razonable y estructura frágil. La agricultura del piedemonte —trigo de secano, uva, granada, pistacho— vive de la escorrentía de la montaña captada en el abanico; el pastoreo de la ladera alta define cuánta de esa agua llega y con cuánto sedimento. Es el caso de manual donde la cuenca alta y la parcela baja pertenecen a manos distintas.',
     saberes: [],
@@ -642,7 +712,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Almendro (Amygdalus spinosissima)',
     ],
     cultivos: ['trigo', 'cebada', 'pistacho', 'vid', 'damasco', 'nogal', 'alfalfa'],
-    fuentes: [SOILGRIDS, HWSD, RESOLVE],
+    fuentes: [SOILGRIDS, HWSD, RESOLVE, KOPET_DAG_FLORA],
   },
 
   // IR TM AF · ECO_ID 813 · el pistachar de Badgyz
@@ -698,7 +768,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La cuenca de Sistán, entre Irán y Afganistán, y el arenal del Registán al sur. Un delta interior alimentado por el río Helmand que termina en los lagos Hamún, y encima el bad-e sad-o-bist-ruz, el viento de los ciento veinte días, que sopla del norte todo el verano.',
     vegetacion: 'Cañaveral y tamarisco en los Hamún cuando tienen agua, matorral de Haloxylon y Calligonum en la arena, y agricultura de crecida en el delta.',
     fauna: 'Cuando los lagos se llenan, decenas de miles de aves acuáticas invernantes; en seco, gacela bocinegra, zorro de Blanford, lagarto de arena. El ciclo lleno-seco es la característica ecológica central, y el problema es que el seco se volvió la norma.',
-    suelos: 'Fluvisoles limosos de delta interior y Arenosoles en el arenal. Cuando los Hamún se secan, el limo del fondo queda expuesto al viento de los 120 días y se convierte en tormentas de polvo que sepultan pueblos y canales enteros: la degradación acá es literalmente aérea. El limitante es el reparto del Helmand entre Afganistán e Irán; sin caudal, ni el suelo del delta ni el cortaviento de tamarisco se sostienen.',
+    suelos: 'Fluvisoles limosos de delta interior y Arenosoles en el arenal. Cuando los Hamún se secan, el limo del fondo queda expuesto al viento de los 120 días y se convierte en tormentas de polvo que sepultan pueblos y canales enteros: la degradación acá es literalmente aérea. El limitante es el reparto del Helmand entre Afganistán e Irán; sin caudal, ni el suelo del delta ni el cortaviento de tamarisco se sostienen. Conviene separar dos materiales que no vienen del mismo lado. Un estudio mineralógico y morfoscópico de 48 muestras superficiales y subsuperficiales del corredor de Niatak, al este de Sistán, encontró que las partículas de arriba y de abajo no se distinguen —ni en selección, ni en redondez, ni en esfericidad, ni en mineralogía, y todas con cuarzo, feldespato, calcita, yeso y fragmentos de roca—, y concluyó que la arena de estas dunas es local, de capas de arena enterradas ahí nomas, y que el lago Hamún muy probablemente no es la fuente de la arena regional; la presencia de yardangs en la zona apoya eso. No contradice el párrafo de arriba: el polvo fino que sale del fondo del lago seco y las dunas de arena son dos cosas distintas, con dos orígenes distintos, y el cortaviento que sirve para una no es el que sirve para la otra. Las dunas del área son sobre todo barjanes y nebkhas, alimentadas por el sedimento fino que el Helmand deposita aguas abajo, y se mueven porque la partícula tiene poca adhesión y poca humedad y el viento Levar no para.',
     saberes: [],
     especies: [
       'Tamarisco (Tamarix ramosissima)',
@@ -708,6 +778,6 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Alhagi maurorum',
     ],
     cultivos: ['trigo', 'cebada', 'datilera', 'sesamo', 'alfalfa'],
-    fuentes: [HWSD, WRB, RESOLVE],
+    fuentes: [HWSD, WRB, RESOLVE, SISTAN_DUNAS],
   },
 };
