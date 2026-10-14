@@ -6,6 +6,13 @@ Dos entregas separadas, en
 
 Este archivo se lee solo: no hace falta el encargo general ni nada del proyecto.
 
+> **El lote 05 se reemitió aparte el 13/10/2026**, en
+> `ENCARGO_FUENTES_PROPIAS_LOTE_05.md`, porque el lote 04 dejó tres lecciones
+> que convenía poner antes de empezar: un promedio de un solo año no es un
+> promedio anual, hay que fijarse de qué lugar es cada número, y un promedio
+> sobre un rango enorme no describe nada. Para el lote 05 usar ese archivo.
+> Este sigue valiendo para el **lote 06**.
+
 **Son las últimas.** Con el lote 04 ya entregado, lo que queda son estas 31
 fichas y después el trabajo se cierra. Van en dos lotes porque cada lote se
 verifica abriendo sus fuentes una por una, y 31 de una vez no se puede revisar
