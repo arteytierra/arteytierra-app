@@ -142,6 +142,68 @@ const KOPET_DAG_FLORA = { label: 'Phytotaxa 249(1) — A review of plant diversi
  */
 const SISTAN_DUNAS = { label: 'Iranian Journal of Earth Sciences 11(3):183-195 — Identification of sand dune sources in the east Sistan, Iran by using mineralogical and morphoscopic characterization of sediments', url: 'https://doi.org/10.30495/ijes.2019.667378' };
 
+/* ── Lote 07: las que habian vuelto vacias ─────────────────────────────── */
+
+/** Dos transectas en el piedemonte del Hiyaz, una costera y una interior,
+ *  relevadas en la primavera de 2015. No incluye Eritrea. */
+const HIJAZ_PIEDEMONTE = { label: 'Rendiconti Lincei. Scienze Fisiche e Naturali 35(2):437-449 — The vegetation around the foothills of the Hijaz Mountains, Saudi Arabia', url: 'https://doi.org/10.1007/s12210-024-01239-8' };
+
+/**
+ * Aptitud de sitio para cuatro sistemas tradicionales de cosecha de lluvia en
+ * la cuenca de Sana. Es un mapa modelado por analisis multicriterio, no una
+ * medicion de rendimiento de terrazas en uso —la entrega lo aclaro y esta
+ * bien aclararlo—, pero el modelo se contrasto contra imagen: de trece sitios
+ * sorteados en la zona apta, siete ya tenian terrazas.
+ *
+ * Un detalle de traduccion que importa en esta app: el articulo dice «loamy
+ * sand», que es ARENA FRANCA. La entrega lo paso como «franco arenoso», que es
+ * «sandy loam» y es otra clase textural, mas fina. Va arena franca.
+ */
+const SANA_CAPTACION = { label: 'Environment, Development and Sustainability 25(8):8319-8342 — Site suitability analysis of indigenous rainwater harvesting systems in arid and data-poor environments: a case study of Sana\'a Basin, Yemen', url: 'https://doi.org/10.1007/s10668-022-02402-7' };
+
+/** Gradiente altitudinal de 12.000 km2 en la Tihama y las escarpas del Asir
+ *  central, 74 parcelas relevadas entre 2010 y 2013. Esta revista no asigna
+ *  DOI: la URL es el PDF en el sitio de la Sociedad Botanica de Pakistan, que
+ *  es el editor. */
+const ASIR_GRADIENTE = { label: 'Pakistan Journal of Botany 47(4):1377-1389 — Vegetation patterns and plant communities distribution along an altitudinal gradient at Asir Mountain, southwest Saudi Arabia', url: 'https://www.pakbs.org/pjbot/PDFs/47%284%29/23.pdf' };
+
+/** Expediente de Patrimonio Mundial del archipielago. Son totales del bien
+ *  inscripto: no desglosan por isla ni dan estado de conservacion por
+ *  especie. */
+const SOCOTRA_UNESCO = { label: 'UNESCO — Socotra Archipelago, Patrimonio Mundial', url: 'https://whc.unesco.org/en/list/1263' };
+
+/**
+ * Decision de inscripcion del desierto de Lut, con la declaracion de valor
+ * universal excepcional.
+ *
+ * OJO con el alcance: esta ficha cubre Dasht-e Kavir Y Dasht-e Lut, y esta
+ * fuente es solo del Lut. Del Kavir no dice nada, y eso quedo escrito en el
+ * texto de la ficha.
+ */
+const LUT_UNESCO = { label: 'UNESCO — Decision 40 COM 8B.8: Lut Desert', url: 'https://whc.unesco.org/en/decisions/6787' };
+
+/** Gradiente de 3.000 m en la ladera sur del Alborz central, del semidesierto
+ *  a la cumbre del Tochal, con 1.069 relevés. No cubre los bosques hircanos
+ *  de la vertiente norte. */
+const ALBORZ_GRADIENTE = { label: 'Folia Geobotanica 48(1):7-22 — Species Diversity and Life-Form Patterns in Steppe Vegetation along a 3000 m Altitudinal Gradient in the Alborz Mountains, Iran', url: 'https://doi.org/10.1007/s12224-012-9133-1' };
+
+/**
+ * Ficha informativa Ramsar de la laguna de Gomishan, en el borde oeste de la
+ * llanura esteparia turcomana.
+ *
+ * Describe el extremo HÚMEDO y salino de esta ecorregion —431 mm de lluvia
+ * anual, suelos Solonchak de laguna costera—, que no es el loess del que
+ * habla el parrafo de arriba. Las dos cosas son de la ficha; no son el mismo
+ * lugar.
+ */
+const GOMISHAN_RAMSAR = { label: 'Ramsar — Information Sheet on Ramsar Wetlands: Gomishan Lagoon, Iran (IR1109)', url: 'https://rsis.ramsar.org/RISapp/files/RISrep/IR1109RIS.pdf' };
+
+/** Rodales y encuestas en ocho distritos del cinturon de pistacho del norte y
+ *  noroeste de Afganistan, con 507 hogares. Badghis cae dentro de esa franja,
+ *  pero el trabajo no desglosa por distrito: es una fuente de la region y no
+ *  del punto. */
+const PISTACHO_AFGANO = { label: 'Journal of Sustainable Forestry 42(2):170-188 — Stand Characteristics and Perceptions of Local Communities on the Management of Pistachio (Pistacia vera L.) Forests in an Unstable Region of Afghanistan', url: 'https://doi.org/10.1080/10549811.2021.1978097' };
+
 export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
   // SY JO IQ · ECO_ID 739 · la badia, estepa de pastoreo milenaria
   estepa_siria_badia: {
@@ -382,7 +444,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '⛰️',
     color: '#9A8C6B',
     resumen: 'La banda entre el mar Rojo y la cresta del Hiyaz: llanura costera estrecha, abanicos aluviales y un escarpe abrupto que intercepta lo poco que llueve. Toda la agricultura está en los uadis que bajan del escarpe.',
-    vegetacion: 'Acacia y Balanites en el uadi, matorral de Euphorbia y Aloe sobre la ladera rocosa, halófitas en la costa. Densidad muy dependiente del uadi: entre uno y otro no hay casi nada.',
+    vegetacion: 'Acacia y Balanites en el uadi, matorral de Euphorbia y Aloe sobre la ladera rocosa, halófitas en la costa. Densidad muy dependiente del uadi: entre uno y otro no hay casi nada. Un relevamiento de la primavera de 2015 sobre 36.812 km² del piedemonte del Hiyaz, con dos transectas —una costera, de 15.581 km², y otra interior—, separó siete comunidades, cada una dominada por una especie distinta: Haloxylon salicornicum, Lycium shawii, Senegalia hamulosa, Vachellia tortilis, Zygophyllum coccineum, Vachellia flava y Stipagrostis plumosa, agrupables en tres conjuntos mayores. Las dos variables ambientales que más separan unas comunidades de otras son la latitud y la altitud, no el sustrato, y en cada parcela se midió además textura, pH, conductividad eléctrica, materia orgánica, carbonato de calcio y nitrógeno, sodio, potasio, calcio, magnesio, hierro y manganeso. Sirve para saber qué esperar según dónde se esté en la franja: la comunidad cambia a lo largo de la costa antes que ladera arriba.',
     fauna: 'Babuino hamadríade en el escarpe, cabra montés nubia, hiena rayada, águila perdicera, y la avifauna de paso del corredor del mar Rojo, uno de los cuellos de botella migratorios más importantes del mundo.',
     suelos: 'Leptosoles en la ladera y Fluvisoles gruesos en el abanico, mezcla de grava y arena con buena infiltración y nula retención. El sistema productivo clásico es el riego por avenida: se desvía la crecida del uadi con diques de tierra hacia parcelas con bordos, se la deja infiltrar y se siembra sobre la humedad almacenada. Depende de mantener los diques todos los años y de que aguas arriba no se intercepte la crecida.',
     saberes: [],
@@ -394,7 +456,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Salvadora persica',
     ],
     cultivos: ['cafe', 'sorgo', 'mijo', 'datilera', 'granado', 'higuera', 'sesamo', 'moringa'],
-    fuentes: [HWSD, RESOLVE],
+    fuentes: [HWSD, RESOLVE, HIJAZ_PIEDEMONTE],
   },
 
   // EG SA SD ER · ECO_ID 115 · manglares del mar Rojo
@@ -449,7 +511,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'El altiplano y el escarpe occidental del Yemen, entre 1.500 y 3.600 metros, donde el monzón deja de 400 a 1.000 mm. Es una de las mayores obras agrícolas del mundo: montañas enteras aterrazadas con muro de piedra seca a lo largo de más de dos milenios.',
     vegetacion: 'Restos de bosque de enebro y Olea en las cotas altas, matorral de Euphorbia y Dodonaea en el escarpe, y sobre las terrazas el policultivo de café, qat, sorgo, cebada, legumbre y frutal.',
     fauna: 'Babuino hamadríade, leopardo de Arabia casi extinto, y un endemismo aviar altísimo —serín del Yemen, tordo árabe, camachuelo de Arabia— que hace del altiplano un área de aves endémicas propia.',
-    suelos: 'Cambisoles y Leptosoles someros sobre basalto y granito, con perfiles profundos sólo donde el muro los retuvo. Ese es el punto: acá el suelo es una construcción, no un dato del terreno. El muro de piedra seca frena la escorrentía, deja precipitar el sedimento y hace terraza; cuando el muro se cae —por emigración, por conflicto, porque nadie mantiene— la terraza revienta con la primera tormenta fuerte y arrastra la de abajo en cascada. La reparación es mucho más cara que el mantenimiento, y esa asimetría es el problema central del Yemen agrícola.',
+    suelos: 'Cambisoles y Leptosoles someros sobre basalto y granito, con perfiles profundos sólo donde el muro los retuvo. Ese es el punto: acá el suelo es una construcción, no un dato del terreno. El muro de piedra seca frena la escorrentía, deja precipitar el sedimento y hace terraza; cuando el muro se cae —por emigración, por conflicto, porque nadie mantiene— la terraza revienta con la primera tormenta fuerte y arrastra la de abajo en cascada. La reparación es mucho más cara que el mantenimiento, y esa asimetría es el problema central del Yemen agrícola. Hay una medida de cuánta de esta montaña admite terraza, y viene con una prueba. Un análisis multicriterio de la cuenca de Saná encontró que el 33 % del área es apta para terrazas de cosecha de lluvia —sobre todo al este y al suroeste, donde hay lluvia suficiente y laderas de montaña de más de 5 grados con suelo de arena franca— y que el 17 % es directamente no apta, casi toda en las zonas de pendiente muy suave: en el llano la terraza no tiene sentido. Lo que vuelve creíble al mapa es el contraste que hicieron después: de trece sitios sorteados dentro de la zona apta, siete ya tenían terrazas tradicionales construidas, y cuatro resultaron aptos sin ningún sistema encima. O sea que el modelo encuentra donde la gente ya construyó, y además señala dónde faltaría. Para comparar: las represas de contención dan 35 % de superficie apta, los estanques 33 % también, y el riego por avenida es el que menos.',
     saberes: [],
     especies: [
       'Café arábigo (Coffea arabica)',
@@ -462,7 +524,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     aptitud: [
       { uso: 'huerta', delta: 0, razon: 'Acá el suelo es una construcción, no un dato del terreno: el muro de piedra seca frena la escorrentía y precipita el sedimento. Sobre terraza mantenida la huerta va; la variable no es la aptitud sino el mantenimiento, porque reparar cuesta mucho más que sostener.' },
     ],
-    fuentes: [GIAHS, HWSD, WRB, RESOLVE],
+    fuentes: [GIAHS, HWSD, WRB, RESOLVE, SANA_CAPTACION],
   },
 
   // SA YE · ECO_ID 109 · el Asir seco de altura
@@ -472,7 +534,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌾',
     color: '#8E9161',
     resumen: 'La cara interior del macizo del Asir y del Hiyaz, a sotavento de la cresta: la altura del bosque de niebla pero con la lluvia cortada, entre 100 y 300 mm. Estepa de altura, no bosque.',
-    vegetacion: 'Enebro disperso en las cotas más altas, acacia de montaña en retroceso por sequía, y un pastizal de altura con Artemisia y gramíneas perennes.',
+    vegetacion: 'Enebro disperso en las cotas más altas, acacia de montaña en retroceso por sequía, y un pastizal de altura con Artemisia y gramíneas perennes. Un gradiente de 12.000 km² que va del nivel del mar a más de 2.350 metros, relevado entre 2010 y 2013 con 74 parcelas de 20 por 20 metros, dio 224 especies de 124 géneros y 62 familias, ordenadas en cuatro zonas altitudinales de vegetación y quince grupos. El espectro de formas de vida explica el resto: las terófitas son 66 especies, el 29 % del total, seguidas de nanofanerófitas, camefitas y fanerófitas con 49, 44 y 34, y hemicriptófitas con 32. La cobertura total varía del 39 al 83 % entre grupos y el número de especies por parcela entre 17 y 27. Y un dato del suelo que ordena la lectura: en los cinco grupos muestreados hasta 30 centímetros la textura es arena franca o franco arenosa en todos, con el pH entre 7,5 y 8,1, pero el carbono orgánico va de 0,10 a 1,42 % y la conductividad eléctrica de 0,28 a 1,83 mS/cm. La textura no cambia; lo que cambia catorce veces es la materia orgánica.',
     fauna: 'Cabra montés nubia, babuino, lobo árabe, buitre leonado; el enebral del Asir en retroceso está bien documentado y arrastra consigo la avifauna asociada.',
     suelos: 'Leptosoles y Cambisoles pedregosos sobre roca cristalina, someros y de baja retención pero con materia orgánica algo mayor que el llano por la menor temperatura. La agricultura tradicional es de terraza y de cosecha de escorrentía en cuenca chica; el trigo y la cebada de altura se siembran sobre la humedad de una tormenta concreta. La expansión reciente de pozos profundos para alfalfa cambió la escala del problema: se pasó de administrar la lluvia a vaciar el acuífero.',
     saberes: [],
@@ -484,7 +546,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Cebada (Hordeum vulgare)',
     ],
     cultivos: ['cafe', 'sorgo', 'mijo', 'trigo', 'granado', 'higuera', 'damasco', 'alfalfa'],
-    fuentes: [HWSD, RESOLVE],
+    fuentes: [HWSD, RESOLVE, ASIR_GRADIENTE],
   },
 
   // OM YE · ECO_ID 56 · el bosque de niebla del Dofar
@@ -538,7 +600,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🩸',
     color: '#8A7E5E',
     resumen: 'La isla yemení del mar Arábigo, aislada del continente desde hace millones de años: más de un tercio de sus plantas no existen en ningún otro lado. Clima árido con monzón de niebla en las montañas del Haghier.',
-    vegetacion: 'Bosque de sangre de dragón (Dracaena cinnabari) en la meseta alta, matorral de Croton y Jatropha en el llano, y el árbol del pepino (Dendrosicyos socotranus), el único árbol de la familia de las cucurbitáceas.',
+    vegetacion: 'Bosque de sangre de dragón (Dracaena cinnabari) en la meseta alta, matorral de Croton y Jatropha en el llano, y el árbol del pepino (Dendrosicyos socotranus), el único árbol de la familia de las cucurbitáceas. El expediente de Patrimonio Mundial pone la escala: el archipiélago —cuatro islas y dos islotes rocosos a 250 kilómetros de la costa africana— tiene 825 especies de plantas, de las cuales 307, el 37 %, son endémicas. El endemismo es aún más extremo en otros grupos: 34 especies de reptiles con 90 % de endemismo y 96 de caracoles terrestres con 95 %. Hay 22 áreas importantes para aves identificadas y, en el mar, 253 especies de corales formadores de arrecife, 730 de peces costeros y 300 de cangrejos, langostas y camarones. Una de cada tres plantas de esta isla no existe en ningún otro lado, y eso es lo que vuelve irreversible cualquier pérdida.',
     fauna: 'Endemismo casi total en reptiles e invertebrados terrestres, sin mamíferos nativos salvo murciélagos; buitre egipcio abundante, estornino y camachuelo endémicos.',
     suelos: 'Leptosoles y Regosoles someros sobre granito y caliza, muy erosionables una vez perdida la cubierta. El sistema tradicional de pastoreo rotativo con cierres estacionales es lo que mantuvo el equilibrio; el reemplazo por pastoreo continuo de cabras está bloqueando la regeneración del dragón, cuyas poblaciones son hoy casi todas de individuos viejos. Es un caso donde el problema no es el suelo sino la ausencia de una cohorte joven.',
     saberes: [],
@@ -554,7 +616,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       { uso: 'reserva', delta: 25, razon: 'Endemismo extremo y una sola cohorte vieja de dragos: el problema no es el suelo, es que no hay regeneración.' },
       { uso: 'pasturas', delta: -20, razon: 'El pastoreo continuo de cabras reemplazó al rotativo con cierres estacionales, y es justamente lo que bloquea esa regeneración.' },
     ],
-    fuentes: [WRB, RESOLVE],
+    fuentes: [WRB, RESOLVE, SOCOTRA_UNESCO],
   },
 
   // OM AE · ECO_ID 722, 723 · el Hajar y sus aflaj
@@ -614,7 +676,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'El corazón de la meseta iraní: el Dasht-e Kavir y el Dasht-e Lut, cuencas cerradas rodeadas de montaña donde el agua entra y no sale. Es la región donde se inventó el qanat, y donde la civilización urbana dependió de él durante tres mil años.',
     vegetacion: 'Costra salina desnuda en el centro de la cuenca, halófitas de Halocnemum y Seidlitzia en el borde, y matorral de Artemisia y Zygophyllum en el abanico aluvial, que es donde está toda la agricultura.',
     fauna: 'Onagro persa, guepardo asiático —reducido a unas pocas decenas de individuos, todos acá—, gacela bocinegra, gato de las arenas, zorro de Blanford.',
-    suelos: 'Solonchaks y Gypsisoles en el fondo de cuenca, Calcisoles de abanico en el borde. La regla del paisaje es simple y ordena todo: el abanico aluvial en la salida de la montaña tiene material grueso, buen drenaje y agua subterránea dulce; el fondo de cuenca tiene fino, sal y freática salada. El qanat existe justamente para llevar el agua del abanico a la superficie por gravedad sin bombear y sin subir la freática. La perforación masiva de pozos profundos desde los años sesenta secó miles de qanats y produjo hundimientos del terreno de decenas de centímetros por año en Teherán y Kermán.',
+    suelos: 'Solonchaks y Gypsisoles en el fondo de cuenca, Calcisoles de abanico en el borde. La regla del paisaje es simple y ordena todo: el abanico aluvial en la salida de la montaña tiene material grueso, buen drenaje y agua subterránea dulce; el fondo de cuenca tiene fino, sal y freática salada. El qanat existe justamente para llevar el agua del abanico a la superficie por gravedad sin bombear y sin subir la freática. La perforación masiva de pozos profundos desde los años sesenta secó miles de qanats y produjo hundimientos del terreno de decenas de centímetros por año en Teherán y Kermán. El sector del Lut tiene además una forma de relieve que conviene no confundir con una playa blanda. Los yardangs —las acanaladuras que el viento talla y cuyas crestas se llaman kaluts— cubren alrededor de un tercio del área y están labrados en sedimentos lacustres consolidados, arenas, limos, margas y evaporitas de edad principalmente plio-pleistocénica, acumulados en el piso de la cuenca; algunos llegan a 155 metros de alto y sus crestas se siguen por más de 40 kilómetros. No los labra sólo el viento: el escurrimiento de lluvia los acarcava y el movimiento en masa también los erosiona. Donde el viento pela la roca queda pavimento pétreo —la hamada— con cantos facetados por la arena. El río que más aporta, el Rud-e Shur, es perenne pero llega tan salino al núcleo que sus orillas no tienen vegetación ribereña y el cauce está forrado de cristales de sal: un río permanente no garantiza una vega. En esta zona se registró una temperatura de superficie de 70,7 °C, de las más altas medidas en tierra firme en el planeta. Todo este párrafo es del Lut; del Dasht-e Kavir, la otra mitad de la ficha, esta fuente no habla.',
     saberes: [],
     especies: [
       'Haloxylon (Haloxylon ammodendron)',
@@ -624,7 +686,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Zygophyllum eurypterum',
     ],
     cultivos: ['pistacho', 'azafran', 'datilera', 'granado', 'trigo', 'cebada', 'alfalfa'],
-    fuentes: [GIAHS, HWSD, WRB, RESOLVE],
+    fuentes: [GIAHS, HWSD, WRB, RESOLVE, LUT_UNESCO],
   },
 
   // IR AZ · ECO_ID 649 · el bosque hircano
@@ -656,7 +718,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌰',
     color: '#7A8459',
     resumen: 'La cara sur del Elburz, a sotavento del bosque hircano: la misma montaña, la mitad de la lluvia. Estepa arbolada de enebro y almendro entre 1.500 y 3.000 metros, con el Damavand por encima de todo.',
-    vegetacion: 'Enebro disperso, almendro y agracejo silvestres, y pastizal de altura con Astragalus almohadillado. Los valles llevan huerta de nogal y frutal bajo riego de deshielo.',
+    vegetacion: 'Enebro disperso, almendro y agracejo silvestres, y pastizal de altura con Astragalus almohadillado. Los valles llevan huerta de nogal y frutal bajo riego de deshielo. El reparto por altura está medido con 1.069 relevés a lo largo de un gradiente de 3.000 metros en la ladera sur del Alborz central, del semidesierto a la cumbre del Tochal, y el resultado contradice la intuición forestal: la riqueza de especies no sube hasta el límite del bosque sino que hace pico entre 1.800 y 1.900 metros y de ahí cae hasta una diversidad muy baja en el alpino alto. El pico queda entre 700 y 1.200 metros por debajo del límite potencial del árbol, que acá está entre 2.500 y 3.000. Los autores lo atribuyen a que el piedemonte tiene más heterogeneidad de hábitat, más tiempo con clima favorable y disturbios más variados, mientras los dos extremos —desierto abajo, alpino arriba— recortan la lista. Las formas de vida acompañan: las anuales bajan con la altura y las hemicriptófitas y camefitas suben. Los factores que explican el efecto de la altura son temperatura, humedad del suelo y nutrientes.',
     fauna: 'Cabra bezoar, muflón del Elburz, leopardo persa, oso pardo, quebrantahuesos; la conexión con la ladera húmeda hace que muchas especies usen las dos vertientes estacionalmente.',
     suelos: 'Cambisoles y Leptosoles calcáreos someros, con Kastanozems en los pastizales de altura mejor conservados. El recurso crítico es el deshielo: la agricultura del valle depende del volumen y de la fecha en que baja la nieve, no de la lluvia. Un invierno con nieve escasa o con deshielo temprano deja los canales sin agua en el momento del llenado del grano, y eso ya no es excepcional.',
     saberes: [],
@@ -668,7 +730,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Astragalus gossypinus',
     ],
     cultivos: ['trigo', 'cebada', 'papa', 'nogal', 'vid', 'damasco', 'azafran', 'alfalfa'],
-    fuentes: [SOILGRIDS, HWSD, RESOLVE],
+    fuentes: [SOILGRIDS, HWSD, RESOLVE, ALBORZ_GRADIENTE],
   },
 
   // IR TM · ECO_ID 815 · la llanura desértica caspia
@@ -680,7 +742,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     resumen: 'La llanura baja al este y sudeste del Caspio, buena parte por debajo del nivel del mar. En Irán es el Turkmen Sahra de Golestán: estepa de loess que fue pastizal turcomano y hoy es una de las cuencas trigueras del país.',
     vegetacion: 'Estepa de Artemisia y gramíneas en el sector seco, con Haloxylon en las arenas y halófitas en las depresiones; casi todo el sector iraní está convertido a trigo y algodón.',
     fauna: 'Onagro, gacela bocinegra, gato de Pallas, y las depresiones salinas del Caspio como sitio de invernada de aves acuáticas.',
-    suelos: 'Calcisoles y Kastanozems sobre loess, con Solonchaks en las depresiones cerradas. El loess es el punto: tiene estructura débil, se disgrega con el impacto de la gota y forma cárcavas profundas y verticales con una sola tormenta sobre suelo desnudo. En Golestán las inundaciones y las cárcavas posteriores al desmonte del pastizal están bien documentadas. Es un suelo que rinde mucho y perdona poco: cobertura permanente o pérdida rápida.',
+    suelos: 'Calcisoles y Kastanozems sobre loess, con Solonchaks en las depresiones cerradas. El loess es el punto: tiene estructura débil, se disgrega con el impacto de la gota y forma cárcavas profundas y verticales con una sola tormenta sobre suelo desnudo. En Golestán las inundaciones y las cárcavas posteriores al desmonte del pastizal están bien documentadas. Es un suelo que rinde mucho y perdona poco: cobertura permanente o pérdida rápida. El otro extremo de esta ecorregión es húmedo y salado, y conviene tenerlo presente para no dimensionar todo con el loess. La ficha Ramsar de la laguna de Gomishan, en el borde oeste de la llanura esteparia turcomana, describe una laguna costera de unas 17.700 hectáreas del lado iraní, separada del mar sólo por una barrera arenosa angosta y en partes demasiado baja para contener; la unidad oriental tiene agua de 0 a 0,5 metros de profundidad sobre suelo salino, y la llanura costera baja tiene pendiente menor al 1 % con sedimentos limosos y arenosos traídos del Caspio, sobre caliza, arena y esquisto. Los suelos de esa unidad son Solonchaks, de penetración de agua media a lenta, estructura pesada y salinidad alta. Y llueven 431 mm al año, con el máximo en diciembre: no es el régimen desértico del resto de la ficha. El dato de diseño es otro: el nivel de la laguna es exactamente el del mar Caspio, así que la línea de costa se mueve con él y nada de acá es hidrológicamente independiente.',
     saberes: [],
     especies: [
       'Haloxylon (Haloxylon aphyllum)',
@@ -690,7 +752,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Calligonum caput-medusae',
     ],
     cultivos: ['algodon', 'trigo', 'cebada', 'granado', 'vid', 'alfalfa'],
-    fuentes: [SOILGRIDS, HWSD, RESOLVE],
+    fuentes: [SOILGRIDS, HWSD, RESOLVE, GOMISHAN_RAMSAR],
   },
 
   // IR TM · ECO_ID 756, 829 · el Kopet Dag
@@ -722,7 +784,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '🌰',
     color: '#97975E',
     resumen: 'La sabana de pistacho silvestre entre Turkmenistán, Afganistán y el norte de Jorasán iraní: el bosque abierto de Pistacia vera más grande del mundo, sobre colinas de loess. Es el origen genético del pistacho cultivado.',
-    vegetacion: 'Pistachar abierto de porte bajo, con decenas de árboles por hectárea, sobre un tapiz de efímeras primaverales que se seca en junio. Sin sotobosque leñoso: es sabana, no bosque.',
+    vegetacion: 'Pistachar abierto de porte bajo, con decenas de árboles por hectárea, sobre un tapiz de efímeras primaverales que se seca en junio. Sin sotobosque leñoso: es sabana, no bosque. Un trabajo que combina datos de rodal con encuestas a 507 representantes de hogares en ocho distritos del cinturón de pistacho del norte y noroeste de Afganistán encontró que la densidad de los rodales y la forma de los árboles varían mucho de un sitio a otro y con la altura, y que la recolección parcial de leña está correlacionada positivamente con la densidad del rodal —se corta donde hay madera, que es obvio visto así y es lo contrario de lo que sugeriría un mapa de densidad leído como mapa de conservación—. Lo que más importa para el manejo es lo que dicen los propios usuarios: reconocen la condición degradada del pistachar y el efecto del pastoreo y de la leña sobre la densidad y sobre la regeneración. El problema no es que no sepan. Lo que el trabajo encuentra generalizado es la recolección del fruto fuera de tiempo y con métodos que dañan el árbol, con poco esfuerzo por dejar regenerar, y concluye que la variación entre comunidades es tan grande que el plan tiene que ser de cada lugar.',
     fauna: 'Onagro turcomano, urial, gacela bocinegra, leopardo; Badgyz sostuvo la mayor población de onagro salvaje del mundo.',
     suelos: 'Calcisoles de loess profundos, sueltos, con reserva de humedad importante en profundidad y estructura muy débil en superficie. El pistacho vive de esa reserva profunda y por eso resiste veranos de cero lluvia. El daño típico es doble: pastoreo que impide el reemplazo y corte de leña que abre el dosel; en cuanto se pierde la cobertura, el loess se acarcava. La regeneración natural existe pero es lenta y depende de años húmedos consecutivos.',
     saberes: [],
@@ -734,7 +796,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Carex pachystylis',
     ],
     cultivos: ['pistacho', 'trigo', 'cebada', 'damasco', 'alfalfa'],
-    fuentes: [SOILGRIDS, HWSD, RESOLVE],
+    fuentes: [SOILGRIDS, HWSD, RESOLVE, PISTACHO_AFGANO],
   },
 
   // IR · ECO_ID 757 · Kuh Rud y las sierras del este
