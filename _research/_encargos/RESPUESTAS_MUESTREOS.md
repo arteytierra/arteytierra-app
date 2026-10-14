@@ -14,6 +14,8 @@ abrirlas, lote por lote.
 | fuentes-propias | 02 | limpia | `golfo_persico_mangle` ✅ | **montado** el 12/10/2026 |
 | fuentes-propias | 03 | limpia | `abedular_montano_escandinavo` ✅ | **montado** el 13/10/2026 |
 | fuentes-propias | 04 | limpia | `magreb_bosque_mediterraneo` · `alto_atlas_enebro` ✅ | **montado** el 13/10/2026 |
+| fuentes-propias | 05 | limpia | — | **montado** el 14/10/2026, 8 de 17 |
+| fuentes-propias | 06 | limpia | `tundra_artica_canadiense` ⚠ | **montado** el 14/10/2026, 7 de 14 |
 
 ---
 
@@ -358,6 +360,166 @@ Está en el texto de la ficha y **no se conectó a ningún cálculo**: `prodForr
 sigue sin fuente y un solo dato de una región no la arregla. Pero es la primera
 pista buena que entra por este camino, y conviene que el encargo de forraje la
 tenga a mano.
+
+## fuentes-propias, lotes 05 y 06 — las quince aguantan, las dieciseis vacias no
+
+Los dos lotes llegaron juntos, el 13/10/2026. Entre los dos cubren las 31 fichas
+que faltaban y traen **15 entradas y 16 `vacias`**. La forma es limpia y los 31
+ids existen.
+
+**Las 15 entradas se abrieron una por una y se montaron el 14/10/2026.** El
+muestreo obligatorio cayó en `tundra_artica_canadiense`; igual se abrieron todas,
+porque el texto va a pantalla.
+
+### Lote 05 — Medio Oriente, 8 de 17
+
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `arabia_este_niebla` | agosto 2006, 4 hábitats, 32 muestras compuestas, duna a 50 km al SO | ✅ literal (texto completo en PMC) |
+| `mar_rojo_mangle` | dos especies, *R. mucronata* sólo en Farasan | ✅ literal (texto completo) |
+| `tihama_costa_arida` | aluvión de 50 m y más de 100 m, tritio | ✅ literal (resumen del editor) |
+| `arabia_sur_bosque_niebla` | el doble bajo el dosel, 30 % por tronco, transpiración baja | ✅ literal (resumen) |
+| `hadramaut_meseta` | cuatro fuentes, 17/11/2001 al 27/3/2002, seis parámetros sobre OMS | ✅ literal (resumen del editor) |
+| `iran_sur_nubo_sindico` | cuatro sitios de Hormozgán, óptimo con salinidad media | ✅ literal (texto completo) |
+| `kopet_dag` | 2.576 taxones, 702 géneros, 112 familias, 356 endémicos = 13,8 % | ✅ literal (resumen) |
+| `sistan_registan` | 48 muestras del corredor de Niatak, el Hamún no es la fuente | ✅ el contenido; ❌ la cita |
+
+### Lote 06 — EuropaUE y Canadá, 7 de 14
+
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `meseta_anatolia_estepa` | 2004, 37 sitios, 733 ha, 78 especies, condición 1,20 a 3,40 | ✅ literal |
+| `estepa_pontica_chernozem` | cronosecuencia 6/15/31/50/97 años contra estepa virgen | ✅ literal, pero ablandado |
+| `estepa_forestal_este` | 60 muestras de polen, Kursk y Járkov, seis clases de uso | ✅ literal (texto completo) |
+| `zagros_estepa_forestal` | 47, 25 y 15 especies exclusivas por grado de perturbación | ✅ literal (texto completo) |
+| `escudo_canadiense_boreal` | 147 parcelas permanentes en el límite del bosque de Quebec | ✅ literal (resumen) |
+| `tundra_artica_canadiense` | 12 deslizamientos, tres áreas de Fosheim, 54 vasculares | ⚠ el núcleo ✅; las 54 plantas no |
+| `alto_artico_desierto_polar` | julio-agosto 2013, Alexandra Fjord, dolomita y granito, 650 y 500 m | ⚠ el núcleo ✅; las cotas y el clima no |
+
+**Ninguna de las quince está retractada.** Y por primera vez la cuarta condición
+pescó un `updated-by` **no vacío**: el artículo del mangle de Hormozgán tiene un
+corrigendum (10.3389/ffgc.2025.1610978, 29/04/2025). Se leyó. Corrige la figura 1
+—el mapa de ubicación, reusado sin querer de una publicación anterior de uno de
+los autores— y no toca ningún dato ni conclusión. El resultado honesto de mirar
+ese campo es, esta vez, que no cambia nada; pero había que mirarlo.
+
+### Cinco extras, y uno es una lección nueva
+
+- **El Dofar gana dos veces.** La ficha ya decía que la condensación en la copa
+  aporta más agua que la llovizna. El experimento de campo lo mide —bajo el dosel
+  llega **el doble** de agua que la lluvia de arriba, y el **30 %** de esa
+  precipitación neta baja por el tronco, así que entra concentrada al pie— y
+  encuentra el mecanismo que faltaba: durante el jareef **la transpiración queda
+  suprimida**, el árbol guarda lo que cosechó y lo gasta recien después, por tres
+  meses más, lo que **aproximadamente duplica la estación de crecimiento**. Gana
+  por cosechar y por no gastar, y las dos dependen de la copa.
+- **Ellesmere repite el Troodos en otro bioma.** Los montículos de crioturbación
+  con diapiro tienen **18 % más carbono orgánico** en el desierto dolomítico y
+  9 % más en el granítico, y **29 % más nitrógeno disuelto total** en el
+  dolomítico — y la **tasa bruta de mineralización de nitrógeno 30 % más baja en
+  uno y 48 % más baja en el otro**. Más carbono no es más nitrógeno disponible:
+  el carbono del diapiro es más recalcitrante. El stock y la tasa se mueven para
+  lados distintos, igual que en la terraza chipriota.
+- **Lo que vuelve rápido no es lo que importa.** Esta es la lección nueva, y
+  apareció **dos veces en biomas opuestos, en los dos lotes**. En Askania-Nova las
+  características funcionales de la estepa se recuperan en pocos años y la
+  composición a los 50, pero **la proporción de especialistas de hábitat de estepa
+  iguala a la virgen sólo en el campo de unos 97 años**, y la riqueza de
+  vasculares sigue siendo menor en todos los campos viejos. En los
+  deslizamientos de Fosheim hacen falta **50 años** para una composición
+  florística parecida a la del terreno sin disturbar, **y todavía con menos
+  riqueza, cobertura discontinua y sin estratificación**. Las dos entregas
+  copiaron el número corto y dejaron el largo afuera. Para una app que le va a
+  decir a alguien cuánto tarda en recuperarse un potrero, el número que vale es
+  el de lo más lento.
+- **El escalón del robledal.** En el Kurdistán iraní, las especies exclusivas
+  caen 47, 25 y 15 con el grado de perturbación, pero **la curva de rarefacción
+  del sitio moderadamente perturbado se parece a la del menos perturbado**. La
+  pérdida no es proporcional a la apertura del dosel: el escalón está entre
+  moderado y severo. Es el raleo moderado de Stara Planina por cuarta vez, y ya
+  son suficientes veces como para que valga de criterio general.
+- **La duna no tiene inóculo.** Bajo *Heliotropium kotschyi* en el arenal del
+  Wahiba aparecieron **dos morfoespecies** de hongo micorrícico, y sólo después
+  de cultivarlas en trampa, contra 25 en el conjunto de los hábitats; la
+  abundancia y la riqueza más altas estaban **bajo las palmeras del palmeral**, y
+  la especie más frecuente ahí es de las que se asocian a hábitats sin disturbio.
+  El palmeral viejo es reservorio y no sólo cultivo, y plantar en arena viva es
+  plantar donde no hay con qué colonizar la raíz.
+
+Y una **corrección de dato en una ficha**: el porte del manglar del mar Rojo no
+es de tres a cinco metros uniformes, como decía. Lo medido es una cuña: **2,46 m
+de promedio junto al borde del agua —hasta 4— y 0,63 m hacia tierra**.
+
+### Un número que no se montó porque el artículo se contradice
+
+La revisión del manglar de Oriente Medio dice que la superficie registrada en
+Arabia Saudita fue de **158.000 ha** entre 1990 y 2020 y que contra 2022 eso
+implica una pérdida del **87 %**. La tabla de sitios **del mismo artículo** da
+**20.400 ha**, que es el orden de magnitud del resto de la literatura. Las dos no
+pueden ser ciertas. Se montó la que el artículo sostiene con su propia tabla y el
+87 % quedó afuera, con el motivo escrito arriba de la constante. Una revisión que
+cumple las cuatro condiciones igual puede traer un número mal copiado de su
+propia fuente.
+
+### Lo que no se montó, y por qué
+
+Cuatro datos, todos por la regla de Creta —no estaban mal, estaban sin verificar—:
+
+- Las **cotas de 650 y 500 m** y la media de estación de crecimiento de **3 a
+  8 °C con menos de 50 mm** del artículo de los diapiros de Ellesmere. Ese
+  artículo es de **acceso cerrado y sin copia en ningún repositorio**; su resumen
+  es metadato publicado del editor y no trae esos números.
+- Las **54 plantas vasculares** del artículo de Fosheim. Es de acceso abierto
+  «bronce» en el editor, pero el editor y el repositorio de Insubria responden los
+  dos con verificación anti-bot, que acá no se resuelve.
+- El nombre del sitio del experimento del Dofar (**Gogub, Jebel al Qara**), por
+  lo mismo: el resumen no lo trae y Wiley no abre.
+
+### La cita en el host, segunda vez seguida
+
+La fuente de `sistan_registan` venía como **un enlace de descarga directa en
+`oiccpress.com`**, sin DOI y detrás de una verificación anti-bot. Buscando el
+título en los índices aparece que el trabajo salió en la **Iranian Journal of
+Earth Sciences 11(3):183-195**, de la Universidad Azad de Mashhad, **con DOI**, y
+con copia abierta en el sitio de la revista y en el repositorio de la Universidad
+de Pretoria. El contenido verifica literal; la cita estaba mal.
+
+Es exactamente lo del lote 04 con el handle de Lieja, un lote después. Por eso la
+condición 2 del encargo quedó reescrita con una instrucción operativa: **buscar
+el título antes de dar por buena una URL que no sea un DOI.**
+
+### Las 16 vacías: el problema de método
+
+De 31 fichas, **16 volvieron vacías**, y los motivos son casi todos la misma
+frase: «la página de la publicación candidata no se pudo abrir», «no quedó
+abierta una publicación editorial o institucional con datos verificables».
+
+**Eso no es «no hay fuente»: es «no la pude abrir».** Una `vacia` cierra una
+ficha cuando no existe nada publicado que cumpla las cuatro condiciones, no
+cuando la primera página no cargó. Y para varias se puede mostrar que la fuente
+existe, porque están en editores que la misma entrega usó bien:
+
+- `mar_rojo_escarpe` y `asir_altiplano_seco`: la **Saudi Journal of Biological
+  Sciences** aportó dos fuentes buenas al lote 02.
+- `tauro_conifera_montana`, `ponto_anatolia_norte` y `anatolia_oriental_montana`:
+  **TUBITAK** es de donde salió la fuente de `meseta_anatolia_estepa` **de este
+  mismo lote 06**, y abre sin problema.
+- `badghyz_pistacho`: la tenía en la mano. La revisión de Khorassan-Kopet Dagh
+  que entregó para `kopet_dag` **nombra el bosque de *Pistacia vera*** como uno
+  de los tipos de vegetación principales del área.
+- `socotra`, `elburz_estepa_forestal`, `euxino_colquico` y
+  `kavir_cuencas_endorreicas`: los cuatro están en o junto a sitios de
+  **Patrimonio Mundial**, y ese camino ya funcionó con las marismas de
+  Mesopotamia en el lote 02.
+
+Se pidieron de nuevo en `ENCARGO_FUENTES_PROPIAS_LOTE_07.md`, con el camino
+señalado para cada una y con dos reglas nuevas: que si una página no abre hay que
+probar las otras vías antes de declarar la ficha vacía —en estos dos lotes tres
+fuentes se leyeron sólo porque se probó una segunda vía—, y que **el motivo de una
+`vacia` tiene que ser chequeable por otro**: qué se buscó, el título de al menos
+una publicación candidata, y por qué no sirve.
+
+**La cuenta baja de 31 a 16.** Medio Oriente 9, EuropaUE 7, Canadá 0.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 

@@ -67,7 +67,7 @@ Tres carencias medidas, y la tercera es la que más importa:
 | | Fichas | Dónde |
 |---|---|---|
 | Con 5 especies nativas o menos | **164** | Indomalaya 31 · EuropaUE 28 · MedioOriente 28 · América 23 · base 22 · NorteÁfrica 14 · Canadá 10 · Europa 8 |
-| **Sin ninguna fuente propia del lugar** | **31** | MedioOriente 17 · EuropaUE 11 · Canadá 3 |
+| **Sin ninguna fuente propia del lugar** | **16** | MedioOriente 9 · EuropaUE 7 |
 | Con `suelos` en menos de 250 caracteres | **45** | América 23 · base 22 |
 
 Las 5 especies no son un olvido: son la plantilla con la que se relevó. Pero una
@@ -83,12 +83,14 @@ y Mesopotamia, con lo que MedioOriente también bajó de 23 a 17. Lo que queda s
 tres bloques parejos —EuropaUE 17, MedioOriente 17, Norte de África 13— más tres
 fichas de Canadá.
 
-Y son **31** desde el 13/10/2026, con los lotes 03 y 04 montados: seis fichas
-más de EuropaUE, que baja de 17 a 11, y las trece del norte de África, que
-cierra. Los dos paquetes que quedan son Medio Oriente y lo que sobra de
-EuropaUE, más tres de Canadá.
+Y son **16** desde el 14/10/2026, con los lotes 03 al 06 montados: seis fichas
+más de EuropaUE, las trece del norte de África —que cierra— y quince de los
+lotes 05 y 06, con lo que **Canadá también cierra**. Quedan Medio Oriente 9 y
+EuropaUE 7, que son las que volvieron vacías y se pidieron de nuevo: el motivo
+declarado no fue que no haya fuente sino que no se pudo abrir la página, y para
+varias la fuente está en editores que la misma entrega usó bien.
 
-**Las 31 sin fuente propia son el problema serio**, y es distinto de no tener
+**Las 16 sin fuente propia son el problema serio**, y es distinto de no tener
 fuente: tienen tres o cuatro, pero son las mismas tres o cuatro de todo el
 paquete —RESOLVE en 111 fichas, HWSD en 68, SoilGrids en 50—. La ficha queda
 *trazable y no verificable*: no hay dónde ir a chequear lo que esa ficha
@@ -234,7 +236,7 @@ de una sesión de chat. Queda anotado y sin encargo.
    es un encargo chico. `_encargos/ENCARGO_LICENCIAS.md`.
 3. **El forraje.** La deuda número uno del cálculo. `ENCARGO_FORRAJE.md`.
 4. **Las prácticas de Indomalaya**, 32 fichas. `ENCARGO_PRACTICAS_INDOMALAYA.md`.
-5. **Las fuentes propias de las 31 fichas que quedan.** `ENCARGO_FUENTES_PROPIAS.md`;
+5. **Las fuentes propias de las 16 fichas que quedan.** `ENCARGO_FUENTES_PROPIAS.md`;
    el lote 01 ya se montó y arrancó por EuropaUE, siguen Arabia-Mesopotamia-Irán
    (23) y el norte de África (13).
 6. **Las especies de las 164 fichas**, por tandas, de fondo.

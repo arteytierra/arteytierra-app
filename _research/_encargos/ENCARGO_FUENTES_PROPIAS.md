@@ -48,6 +48,21 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 14/10/2026: montados los lotes 01 al 06
+
+**Cuarenta y seis fichas cerradas.** A las 31 de los lotes 01 al 04 se suman las
+15 de los lotes 05 y 06: ocho de Medio Oriente (Wahiba, manglar del mar Rojo,
+Tihama, Dofar, Hadramaut, sur de Irán, Kopet Dag, Sistán), cuatro de EuropaUE
+(estepa de Anatolia, estepa póntica, estepa forestal del este, Zagros) y las tres
+de Canadá (boreal del escudo, tundra ártica, desierto polar). **Norte de África y
+Canadá están cerrados.** La cuenta bajó de **62 a 16**. **No volver a pedir
+ninguna de las cuarenta y seis.**
+
+**Lo que falta son las 16 que volvieron vacías** en los lotes 05 y 06 —Medio
+Oriente 9, EuropaUE 7—, pedidas de nuevo en
+`ENCARGO_FUENTES_PROPIAS_LOTE_07.md`. No volvieron por falta de fuente: el motivo
+declarado fue que la página no se pudo abrir, que es otra cosa.
+
 ## Estado al 13/10/2026 (tarde): montados los lotes 01 al 04
 
 **Treinta y una fichas cerradas** y el norte de África terminado. A los
