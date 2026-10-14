@@ -16,6 +16,7 @@ abrirlas, lote por lote.
 | fuentes-propias | 04 | limpia | `magreb_bosque_mediterraneo` · `alto_atlas_enebro` ✅ | **montado** el 13/10/2026 |
 | fuentes-propias | 05 | limpia | — | **montado** el 14/10/2026, 8 de 17 |
 | fuentes-propias | 06 | limpia | `tundra_artica_canadiense` ⚠ | **montado** el 14/10/2026, 7 de 14 |
+| fuentes-propias | 07 | limpia | — | **montado** el 14/10/2026, 14 de 16 |
 
 ---
 
@@ -520,6 +521,132 @@ fuentes se leyeron sólo porque se probó una segunda vía—, y que **el motivo
 una publicación candidata, y por qué no sirve.
 
 **La cuenta baja de 31 a 16.** Medio Oriente 9, EuropaUE 7, Canadá 0.
+
+## fuentes-propias, lote 07 — catorce de dieciseis, y el encargo se cierra
+
+El lote que volvió a pedir las 16 vacías trajo **15 entradas y una sola
+`vacia`**, y esa vacía está bien declarada. **Se abrieron las quince y se
+montaron catorce el 14/10/2026.** Forma limpia, los 16 ids existen, ninguna de
+las quince está retractada.
+
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `mar_rojo_escarpe` | primavera de 2015, 36.812 km², dos transectas, siete comunidades | ✅ literal (texto completo) |
+| `yemen_montana_aterrazada` | 33 % apto para terrazas, laderas de más de 5° | ✅ literal (texto completo); ⚠ la clase textural |
+| `asir_altiplano_seco` | 74 parcelas de 20×20 m, 12.000 km², 224 especies | ✅ literal (texto completo) |
+| `socotra` | 825 plantas, 307 endémicas, 34 reptiles, 96 caracoles | ✅ literal |
+| `kavir_cuencas_endorreicas` | yardangs en un tercio del Lut, hasta 155 m, crestas de 40 km | ✅ literal |
+| `elburz_estepa_forestal` | 1.069 relevés, pico de riqueza en 1.800–1.900 m | ✅ literal |
+| `caspio_llanura_desertica` | Gomishan, agua de 0 a 0,5 m, pendiente menor al 1 % | ✅ literal |
+| `badghyz_pistacho` | 507 hogares, ocho distritos del cinturón de pistacho | ✅ literal (resumen) |
+| `tauro_conifera_montana` | 201 relevés, cinco grupos de cedro | ❌ **no se pudo abrir por ningún lado** |
+| `ponto_anatolia_norte` | 600 ha en Sinop, cinco tipos de sitio, 73,3 % y 90,7 % | ✅ literal |
+| `anatolia_oriental_montana` | efecto del fuego medido en 2012 y 2013 | ✅ literal |
+| `euxino_colquico` | 23 asociaciones en 200 km², 1.100 especies, 149 restringidas | ✅ literal |
+| `caucaso_mixto` | unas 6.500 vasculares, probablemente más de 7.000 | ✅ literal, y dice mucho más |
+| `kura_semidesierto` | Kurdamir, 153 especies, 119 géneros, 39 familias | ✅ literal (resumen en azerí) |
+| `crimea_submediterraneo` | 78 plantas no nativas en la reserva de Yalta | ✅ literal |
+
+### El cambio de método funcionó
+
+Las 16 habían vuelto vacías con el motivo «no se pudo abrir la página». Al
+pedirlas de nuevo con el camino señalado por ficha, **quince trajeron fuente**.
+Y los caminos que se habían sugerido son los que se usaron: la *Saudi Journal
+of Biological Sciences* no, pero sí otra revista saudita y la *Pakistan Journal
+of Botany* para el Asir; TUBITAK para Anatolia oriental; Patrimonio Mundial para
+Socotra, el Lut y el Cólquida; Ramsar para el Caspio. La conclusión para el
+circuito es sencilla: **una vacía cuyo motivo es de acceso no es una vacía, es
+un reintento pendiente.**
+
+Y la única `vacia` del lote —`kuh_rud_montano`— es la primera que cumple las
+tres condiciones nuevas: dice qué se buscó, nombra una publicación candidata con
+su año, y explica por qué no sirve (modelos de distribución de una cuenca, sin
+sitios de muestreo en Kuh Rud). Así se declara una vacía.
+
+### Tres extras que dan vuelta la lectura fácil
+
+- **El pico de diversidad no está en el límite del bosque.** En la ladera sur
+  del Alborz central, 1.069 relevés a lo largo de 3.000 metros de gradiente dan
+  el máximo de riqueza de especies entre **1.800 y 1.900 m**, y de ahí cae hasta
+  una diversidad muy baja en el alpino alto. Ese pico queda **entre 700 y 1.200
+  metros por debajo del límite potencial del árbol**, que ahí está en 2.500 a
+  3.000. Los autores lo explican por heterogeneidad de hábitat, más tiempo con
+  clima favorable y disturbios más variados en el piedemonte. Es la **cuarta
+  vez** que aparece un máximo de diversidad a media altura en este catálogo
+  —antes el Gebel Elba y el gradiente del Asir— y ya alcanza para tratarlo como
+  patrón y no como anecdota.
+- **La imagen gruesa no reproduce la clase de sitio.** En una unidad de 600
+  hectáreas de hayedo oriental puro en Sinop, la clasificación supervisada con
+  QuickBird dio **90,7 % de exactitud y kappa 0,88**, y coincidió
+  significativamente con el método directo de campo (chi-cuadrado, p = 0,002);
+  con **Landsat 7 ETM** dio 73,3 % y kappa 0,67, y la coincidencia con el campo
+  **no fue significativa** (p = 0,134). Esta app se apoya en imágenes de esa
+  resolución, así que el aviso es para casa.
+- **La ausencia en una lista roja puede ser ausencia de evaluación.** Antes del
+  relevamiento regional de plantas amenazadas del Cáucaso, la Lista Roja de la
+  UICN contenía **una sola** especie amenazada de toda la región (Sambucus
+  tigranii). Hoy tiene **385 evaluadas, 276 globalmente amenazadas** —98 en
+  peligro crítico, 100 en peligro, 78 vulnerables— y más de 200 todavía en
+  evaluación, sobre 2.791 endémicas identificadas. Para cualquier pantalla que
+  muestre estado de conservación, la lección es que «sin registro» no es «sin
+  problema».
+
+Y dos más que ordenan decisiones concretas: el **fuego** en la estepa de altura
+de Anatolia oriental bajó la biomasa aérea y la hojarasca el año siguiente, no
+tuvo efecto consistente sobre ninguna de las quince propiedades de suelo
+medidas, y subió la proporción de gramíneas perennes a costa de las hierbas de
+hoja ancha —los autores concluyen que es indeseable si se busca pasto y
+utilizable si se busca cambiar la composición, con lo cual no es una práctica
+buena ni mala sino según para qué—; y en **Kurdamir** el 86,3 % de la flora es
+herbácea y 73 de las 153 especies son anuales y terófitas, así que lo que se ve
+en pie en una recorrida de verano no es la vegetación de ese lugar.
+
+### Dos correcciones de dato
+
+- **La clase textural de las terrazas del Yemen.** La entrega decía que los
+  sitios aptos tienen suelo «franco arenoso». El artículo dice **loamy sand**,
+  que es **arena franca**: otra clase, más gruesa. Se montó arena franca. En una
+  app que clasifica textura, confundir las dos no es un detalle de traducción.
+  Y el modelo tiene una validación que la entrega no copió y que es lo que lo
+  vuelve creíble: de **trece sitios sorteados** dentro de la zona apta, **siete
+  ya tenían terrazas tradicionales construidas** y cuatro resultaron aptos sin
+  ningún sistema encima.
+- **Un porcentaje mal impreso en la fuente azerbaiyana.** El resumen dice
+  «mezəfitlər (77 növ, 5,3 %)», y 77 de 153 es el 50,3 %. Es una errata de la
+  publicación. Se montó el conteo y no el porcentaje. Tercera vez que este
+  proceso encuentra un número que no cierra dentro de su propia fuente —antes
+  las 158.000 ha de manglar saudita contra las 20.400 de su propia tabla, y la
+  temperatura nocturna de Farasan—.
+
+### Por qué el Tauro no se montó
+
+La fuente es buena: Kavgacı, Başaran y Başaran, *Cedar forest communities in
+Western Antalya*, Plant Biosystems 144(2):271-287, 2010, diecisiete páginas, de
+autores del instituto forestal turco, en una revista indexada. El problema es
+de acceso y es **total**: no hay resumen público en Crossref, ni en OpenAlex, ni
+en Semantic Scholar —donde el editor lo tiene explícitamente suprimido—,
+Unpaywall la da cerrada y sin copia en ningún repositorio, y el sitio del editor
+responde con una verificación anti-bot. Los 201 relevés y los cinco grupos de
+cedro **no se pueden contrastar contra nada**.
+
+Es distinto del caso de Creta o de los diapiros de Ellesmere, donde el resumen
+público alcanzaba para montar parte. Acá no hay ni resumen. Se aplica la regla
+de la práctica de Indomalaya que cuelga de `oaji.net`: lo que no se puede abrir
+no se puede desmentir, y lo que no se puede desmentir no se monta.
+
+De paso deja una condición operativa nueva para el encargo: **antes de elegir
+una fuente, mirar si su resumen es público**, consultando el DOI en Crossref o
+en OpenAlex. Una fuente excelente sin resumen accesible es inutilizable para
+este circuito.
+
+### La cuenta
+
+**De 16 a 2.** Quedan `tauro_conifera_montana` —que necesita otra fuente, no la
+misma— y `kuh_rud_montano`. Las dos se pidieron en
+`ENCARGO_FUENTES_PROPIAS_LOTE_08.md`, que es el último de esta serie.
+
+**El encargo de fuentes propias empezó con 62 fichas sin fuente del lugar y va
+por 60 cerradas.**
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 

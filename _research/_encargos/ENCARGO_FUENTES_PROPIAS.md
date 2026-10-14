@@ -48,6 +48,23 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 14/10/2026 (tarde): montados los lotes 01 al 07
+
+**Sesenta fichas cerradas de sesenta y dos.** A las 46 de los lotes 01 al 06 se
+suman las 14 del lote 07, que recuperó casi todas las que habían vuelto vacías:
+Hiyaz, terrazas del Yemen, Asir, Socotra, Lut, Alborz, Gomishan, pistacho
+afgano, Sinop, Anatolia oriental, Cólquida, Cáucaso, Kurdamir y Yalta.
+**No volver a pedir ninguna de las sesenta.**
+
+**Lo que falta son dos**, pedidas en `ENCARGO_FUENTES_PROPIAS_LOTE_08.md`:
+
+- `tauro_conifera_montana`, que necesita **otra** fuente. La que se eligió es
+  buena pero no tiene resumen público en ningún índice y el editor bloquea, así
+  que nada de lo que afirma se puede chequear.
+- `kuh_rud_montano`, con una vacía bien declarada y un intento más por delante.
+
+Con eso el encargo se cierra.
+
 ## Estado al 14/10/2026: montados los lotes 01 al 06
 
 **Cuarenta y seis fichas cerradas.** A las 31 de los lotes 01 al 04 se suman las

@@ -96,6 +96,34 @@ Notas sobre tres campos:
 - **`kg_ms_ha_anio_tipico`** sólo si la fuente publica un valor central. Si lo que
   hay es un rango, `null`. No se calcula el punto medio.
 
+## Una pista que apareció sola, y lo que muestra
+
+Buscando fuentes para otra cosa —las fichas ecorregionales del norte de África—
+apareció un inventario de pastizales forestales del norte de Marruecos que mide
+justamente lo que acá falta:
+
+> Land 12(1):215, *Floristic Composition, Diversity, Palatability, and Forage
+> Availability of Forest Rangelands in the Southern Mediterranean Region of
+> Northern Morocco*. https://doi.org/10.3390/land12010215
+
+Informa **3.143 kg de materia seca por hectárea en primavera**, estimados por el
+método del cuadrante, sobre 358 taxones relevados, con la palatabilidad
+evaluada para 95 de ellos —los que los pastores conocían— y 32 en el grupo muy
+apetecido.
+
+Sirve de ejemplo de dos cosas y de advertencia de una tercera:
+
+1. **Es del tipo de cifra que hace falta**, o casi: tiene disponibilidad de
+   forraje medida y palatabilidad evaluada aparte, que es la materia prima de
+   una «oferta aprovechable».
+2. **Declara la estación.** Dice «en primavera», no «al año». Un máximo
+   estacional no es una producción anual, y la escalera que hay que reemplazar
+   está en kg/ha/**año**. Si una fuente da un pico de primavera, eso va en
+   `estacionalidad` y no en `kg_ms_ha_anio_max`.
+3. **Es de un pastizal bajo monte mediterráneo**, que no es ninguno de los tres
+   biomas de este lote. No sirve para ninguno de los tres `id`. Se cita acá
+   sólo para mostrar qué forma tiene una fuente útil.
+
 ## Varias entradas por bioma, y eso está bien
 
 Un bioma tan grande no tiene un número. **Se pueden entregar varias entradas con
