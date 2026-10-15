@@ -710,3 +710,77 @@ describe('lo que la consulta se abstiene de pedir', () => {
     expect(texto).toContain('no un modelo de deriva de agroquímicos');
   });
 });
+
+/*
+ * El presupuesto de tiempo de la ruta y la vida del caché.
+ *
+ * Esto es lo que se rompió el 15/10/2026, y no por un error de cálculo sino por
+ * tres descuidos que solos no se notan:
+ *
+ * 1. La ruta no declaraba `maxDuration`, así que corría con el techo que da la
+ *    plataforma por defecto —más corto que sus propios timeouts internos—.
+ *    Mientras el primer espejo contestaba en un segundo no se notaba.
+ * 2. El cliente abortaba Overpass a los 22 s cuando la consulta le declara al
+ *    servidor `[timeout:25]`: esperar MENOS que el techo que uno mismo pidió es
+ *    tirar trabajo terminado.
+ * 3. Y el payload se cacheaba catorce días pasara lo que pasara, con lo cual un
+ *    espejo caído dejaba congelado «no se pudo consultar» por dos semanas, y el
+ *    reintento que el panel sugiere leía el caché en vez de preguntar.
+ *
+ * Los tres se defienden midiendo los números del código y no leyendo un
+ * comentario: si alguien agrega un espejo o estira un timeout, el que no cierra
+ * es este test.
+ */
+describe('el presupuesto de tiempo de /api/entorno', () => {
+  const ruta = leer('app/api/entorno/route.ts');
+
+  /** El timeout del cliente de Overpass, anclado a SU fetch y no al de GBIF. */
+  const timeoutOverpassMs = () => {
+    const m = /body: 'data=' \+ encodeURIComponent\(q\),[\s\S]*?AbortSignal\.timeout\((\d[\d_]*)\)/.exec(ruta);
+    expect(m, 'el timeout del fetch de Overpass').not.toBeNull();
+    return Number(m![1]!.replace(/_/g, ''));
+  };
+
+  /** `60 * 60 * 24 * 14` es un producto, no un número: hay que resolverlo. */
+  const producto = (expr: string) =>
+    expr.split('*').reduce((a, t) => a * Number(t.trim()), 1);
+
+  it('declara su techo, porque el default de la plataforma es más corto que sus timeouts', () => {
+    expect(ruta).toMatch(/export const maxDuration = \d+/);
+  });
+
+  it('el techo alcanza para probar TODOS los espejos, no sólo el primero', () => {
+    const lista = /const ESPEJOS_OVERPASS = \[([^\]]*)\]/.exec(ruta);
+    expect(lista, 'la lista de espejos').not.toBeNull();
+    const espejos = (lista![1]!.match(/https?:\/\//g) ?? []).length;
+    expect(espejos).toBeGreaterThanOrEqual(2);
+
+    const techo = Number(/export const maxDuration = (\d+)/.exec(ruta)![1]);
+    // Si no, el último espejo se prueba contra una función que ya murió.
+    expect(espejos * timeoutOverpassMs()).toBeLessThanOrEqual(techo * 1000);
+  });
+
+  it('el cliente espera más que el techo que le declara al servidor', () => {
+    const declarado = /\[timeout:(\d+)\]/.exec(leer('lib/contextoActual.ts'));
+    expect(declarado, 'el [timeout:N] de la consulta').not.toBeNull();
+    expect(timeoutOverpassMs()).toBeGreaterThan(Number(declarado![1]) * 1000);
+  });
+
+  it('un fracaso no se guarda catorce días', () => {
+    // La condición mira los cuatro servicios: si uno solo se cae, el payload que
+    // se arma no es el que hay que congelar.
+    expect(ruta).toContain('const completo = !!ubicacion && !!bio && !!osm && contexto_actual.consultado');
+    expect(ruta).toMatch(/cacheSet\(dbKey, \{ raw: payload \}, completo \? CACHE_TTL : CACHE_TTL_PARCIAL\)/);
+
+    const largo = producto(/const CACHE_TTL = ([^;/]+);/.exec(ruta)![1]!);
+    const corto = producto(/const CACHE_TTL_PARCIAL = ([^;/]+);/.exec(ruta)![1]!);
+    expect(largo).toBeGreaterThan(60 * 60 * 24);
+    expect(corto).toBeLessThan(largo);
+    expect(corto).toBeLessThanOrEqual(60 * 60);
+  });
+
+  it('y la versión de la clave sube cuando cambia lo que se guarda', () => {
+    // Los payloads envenenados de la v3 no se borran: se dejan de leer.
+    expect(ruta).toMatch(/entorno:v[4-9]\d*:/);
+  });
+});

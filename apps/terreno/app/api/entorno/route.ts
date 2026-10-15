@@ -19,8 +19,22 @@ import {
  * lenta y no la suma.
  */
 
+/**
+ * Un minuto de techo, declarado.
+ *
+ * Las cuatro consultas salen en paralelo, así que el techo real es la más
+ * lenta, y la más lenta es Overpass: 28 s por espejo, y hay dos. Sin esta línea
+ * la función corría con el techo que da la plataforma por defecto, que es más
+ * corto que el presupuesto interno de esta ruta — o sea que el dato llegaba de
+ * río arriba a una función que ya estaba muerta. Las otras rutas pesadas
+ * —clima, dem, suelo, elevación— lo declaran desde siempre; esta se quedó sin
+ * declararlo y se notó cuando Overpass se puso lento.
+ */
+export const maxDuration = 60;
+
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
-const CACHE_TTL = 60 * 60 * 24 * 14; // 14 días
+const CACHE_TTL = 60 * 60 * 24 * 14; // 14 días, y sólo si la respuesta vino completa
+const CACHE_TTL_PARCIAL = 60 * 30;   // media hora, si algún servicio no contestó
 const UA        = `ArteyTierra-acequia/1.0 (${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://terreno.arteytierra.org'})`;
 
 interface Body { lat?: number; lng?: number; radio_km?: number; }
@@ -38,7 +52,12 @@ export async function POST(req: Request) {
   // La versión va en la clave a propósito: el caché guarda el JSON ya armado, así
   // que un payload viejo no tiene los campos nuevos y los devolvería faltando
   // durante catorce días. Subirla es la forma de que el campo nuevo se vea hoy.
-  const dbKey = `entorno:v3:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
+  //
+  // De v3 a v4 el 15/10/2026, y no por un campo nuevo: hasta hoy un fracaso de
+  // Overpass se guardaba igual que un éxito, con lo cual cada punto que se miró
+  // mientras el espejo estaba caído quedó con «no se pudo consultar» congelado
+  // por dos semanas. Subir la versión es lo que vacía esos payloads envenenados.
+  const dbKey = `entorno:v4:${lat.toFixed(3)},${lng.toFixed(3)}:${radio}`;
   const dbHit = await cacheGet<{ raw: string }>(dbKey);
   if (dbHit?.raw) return new Response(dbHit.raw, { status: 200, headers: HDRS });
 
@@ -52,7 +71,15 @@ export async function POST(req: Request) {
   if (!bio && !ubicacion) return err('No se pudo obtener el contexto (servicios no disponibles).', 503);
 
   const payload = JSON.stringify({ ubicacion, biodiversidad: bio, osm, contexto_actual, radio_km: radio });
-  await cacheSet(dbKey, { raw: payload }, CACHE_TTL);
+
+  // **Un fracaso no se guarda catorce días.** Esto se cacheaba siempre, y el
+  // efecto era peor que la falla que lo originaba: un Overpass caído dejaba
+  // congelado «no se pudo consultar» para ese punto durante dos semanas, y el
+  // mensaje del panel invita justamente a reintentar, pero el reintento leía el
+  // caché y no volvía a preguntar nunca. Si alguno de los cuatro servicios no
+  // contestó, el payload vive media hora y el siguiente intento sí pregunta.
+  const completo = !!ubicacion && !!bio && !!osm && contexto_actual.consultado;
+  await cacheSet(dbKey, { raw: payload }, completo ? CACHE_TTL : CACHE_TTL_PARCIAL);
   return new Response(payload, { status: 200, headers: HDRS });
 }
 
@@ -99,9 +126,30 @@ async function gbif(lat: number, lng: number, radioKm: number) {
 
 // ─── Overpass ────────────────────────────────────────────────────────────────
 
+/**
+ * Espejos de Overpass, en el orden en que se prueban.
+ *
+ * El orden cambió el 15/10/2026. `kumi.systems` estaba primero y hoy devuelve
+ * **HTTP 500 a todo**, hasta a `node(1);out;` —ocho de ocho intentos, en un
+ * segundo y con una página de error de Apache—, así que cada consulta pagaba
+ * ese fallo antes de llegar al que sí contesta. Queda en la lista porque es un
+ * espejo bueno cuando está sano y porque no cuesta nada tenerlo de segundo.
+ *
+ * El que contesta, `overpass-api.de`, tarda de 10 a 18 s con la consulta de
+ * contexto, y es el motivo por el que esta ruta necesita `maxDuration`.
+ *
+ * **Lo que no se agrega, y por qué:** hay más espejos públicos, y dos clases de
+ * problema que no se ven en un ping. Los regionales —`overpass.osm.ch`, por
+ * ejemplo— contestan HTTP 200 en 1,4 s con `elements: []` a una consulta de
+ * Argentina, porque sólo tienen su país: eso convierte un «no se pudo
+ * preguntar» en un «no hay nada», que es la única cosa que esta ruta no se
+ * puede permitir decir mal. Y los que sí tienen el planeta y andan rápido los
+ * operan terceros a los que habría que mandarles la coordenada del predio, que
+ * no es una decisión técnica.
+ */
 const ESPEJOS_OVERPASS = [
-  'https://overpass.kumi.systems/api/interpreter',
   'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
 ];
 
 /**
@@ -117,7 +165,11 @@ async function pedirOverpass(q: string): Promise<RasgoCrudo[] | null> {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
         body: 'data=' + encodeURIComponent(q),
-        signal: AbortSignal.timeout(22_000),
+        // 28 s y no 22: la consulta le declara al servidor `[timeout:25]`, o sea
+        // que le damos permiso de tardar 25, y abortar a los 22 era tirar a la
+        // basura trabajo que el servidor estaba terminando. El cliente tiene que
+        // esperar un poco MÁS que el techo que él mismo pidió, no menos.
+        signal: AbortSignal.timeout(28_000),
       });
       const ct = res.headers.get('content-type') ?? '';
       if (!res.ok || !ct.includes('json')) continue;
