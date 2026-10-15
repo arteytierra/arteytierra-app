@@ -48,7 +48,129 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
-## Las 62, por paquete. Un lote de 6 por respuesta
+## Estado al 15/10/2026: CERRADO, las 62 tienen fuente del lugar
+
+**Sesenta y dos de sesenta y dos.** El lote 08 trajo las dos que faltaban y las
+dos se montaron: `tauro_conifera_montana`, con una segunda fuente —la primera
+no tenía resumen público en ningún índice—, y `kuh_rud_montano`, que al segundo
+intento apareció buscando por el topónimo del macizo (Karkas) en vez de por el
+nombre de la cadena.
+
+**Este encargo no se vuelve a pedir.** Si aparece una ficha nueva sin fuente
+propia —porque se agregó una ecorregión— se escribe un encargo nuevo, corto,
+con esta misma forma. El detalle lote por lote está en `RESPUESTAS_MUESTREOS.md`.
+
+Las dos lecciones que este encargo le deja al circuito, y que conviene copiar al
+siguiente:
+
+1. **Una vacía cuyo motivo es de acceso no es una vacía, es un reintento
+   pendiente.** De 16 vacías pedidas de nuevo con el camino señalado por ficha,
+   15 trajeron fuente.
+2. **Antes de elegir una fuente, mirar si su resumen es público**, consultando
+   el DOI en Crossref o en OpenAlex. Una fuente excelente sin resumen accesible
+   es inutilizable acá: no se puede contrastar nada de lo que afirma.
+
+## Estado al 14/10/2026 (tarde): montados los lotes 01 al 07
+
+**Sesenta fichas cerradas de sesenta y dos.** A las 46 de los lotes 01 al 06 se
+suman las 14 del lote 07, que recuperó casi todas las que habían vuelto vacías:
+Hiyaz, terrazas del Yemen, Asir, Socotra, Lut, Alborz, Gomishan, pistacho
+afgano, Sinop, Anatolia oriental, Cólquida, Cáucaso, Kurdamir y Yalta.
+**No volver a pedir ninguna de las sesenta.**
+
+**Lo que falta son dos**, pedidas en `ENCARGO_FUENTES_PROPIAS_LOTE_08.md`:
+
+- `tauro_conifera_montana`, que necesita **otra** fuente. La que se eligió es
+  buena pero no tiene resumen público en ningún índice y el editor bloquea, así
+  que nada de lo que afirma se puede chequear.
+- `kuh_rud_montano`, con una vacía bien declarada y un intento más por delante.
+
+Con eso el encargo se cierra.
+
+## Estado al 14/10/2026: montados los lotes 01 al 06
+
+**Cuarenta y seis fichas cerradas.** A las 31 de los lotes 01 al 04 se suman las
+15 de los lotes 05 y 06: ocho de Medio Oriente (Wahiba, manglar del mar Rojo,
+Tihama, Dofar, Hadramaut, sur de Irán, Kopet Dag, Sistán), cuatro de EuropaUE
+(estepa de Anatolia, estepa póntica, estepa forestal del este, Zagros) y las tres
+de Canadá (boreal del escudo, tundra ártica, desierto polar). **Norte de África y
+Canadá están cerrados.** La cuenta bajó de **62 a 16**. **No volver a pedir
+ninguna de las cuarenta y seis.**
+
+**Lo que falta son las 16 que volvieron vacías** en los lotes 05 y 06 —Medio
+Oriente 9, EuropaUE 7—, pedidas de nuevo en
+`ENCARGO_FUENTES_PROPIAS_LOTE_07.md`. No volvieron por falta de fuente: el motivo
+declarado fue que la página no se pudo abrir, que es otra cosa.
+
+## Estado al 13/10/2026 (tarde): montados los lotes 01 al 04
+
+**Treinta y una fichas cerradas** y el norte de África terminado. A los
+dieciocho de los lotes 01 a 03 se suman las trece del lote 04: Magreb,
+conífera del Atlas, enebral del Alto Atlas, delta del Nilo, chotts, erg
+occidental, Sahara oriental, Sahara sur, costa atlántica, Ahaggar, Tibesti,
+costa del mar Rojo y estepa del norte sahariano. La cuenta bajó de **62 a 31**.
+**No volver a pedir ninguna de las treinta y una.**
+
+**Lo que falta:** Medio Oriente 17, EuropaUE 11 y Canadá 3, que son los lotes
+05 y 06 ya encargados en `ENCARGO_FUENTES_PROPIAS_LOTES_05_06.md`. Con eso el
+trabajo se cierra.
+
+## Estado al 13/10/2026: montados los lotes 01, 02 y 03
+
+**Dieciocho fichas cerradas.** Seis de EuropaUE en el lote 01 (Apeninos, karst
+dinárico, Adriático ilirio, Stara Planina, Rhodopi, Piatra Craiului), seis de
+Medio Oriente en el 02 (marismas de Mesopotamia, harrat, desierto arábigo, Nefud
+y Rub al-Jali, llanura del Golfo, manglar del Golfo) y seis más de EuropaUE en el
+03 (conífera costera escandinava, abedular montano, Egeo, Creta, Troodos,
+conífera del Mediterráneo oriental). La cuenta bajó de **62 a 44**. **No volver a
+pedir ninguna de las dieciocho.**
+
+El lote 04 está entregado y sin montar: las 13 del norte de África, todas con
+fuente. Si pasa, ese paquete queda cerrado y la cuenta baja a 31.
+
+**Lo que falta después del 04:** Medio Oriente 17, EuropaUE 11 y Canadá 3.
+
+## Estado al 12/10/2026: los lotes 01 y 02 están montados
+
+**Doce fichas ya cerradas.** El lote 01 fueron seis de EuropaUE —Apeninos, karst
+dinárico, Adriático ilirio, Stara Planina, Rhodopi y Piatra Craiului— y el lote 02
+seis de Medio Oriente —marismas de Mesopotamia, harrat, desierto arábigo, Nefud y
+Rub al-Jali, llanura del Golfo y manglar del Golfo—. La cuenta bajó de **62 a 50**.
+**No volver a pedir ninguna de las doce.**
+
+Queda un lote 03 entregado y sin montar, con seis de EuropaUE: conífera costera
+escandinava, abedular montano escandinavo, Egeo, Creta, Troodos y conífera del
+Mediterráneo oriental. Tampoco pedir esas.
+
+**Una cuarta condición para la fuente, que salió del lote 02:** que no esté
+retractada. El artículo del Wadi Al-Jufair existe dos veces, y la versión que
+aparece primero buscando por título es la retractada. Las tres condiciones
+originales —abre, es la publicación, es un trabajo publicado— las cumple una
+retractación igual que un artículo vivo.
+
+**El orden que sigue:** Norte de África y Sahara (13), que cierra el paquete
+entero; después lo que queda de EuropaUE (11 tras montar el lote 03), Medio Oriente
+(17) y las tres de Canadá.
+
+## Estado al 11/10/2026: el lote 01 está montado
+
+**Las primeras seis ya entraron al código** —Apeninos, karst dinárico, Adriático
+ilirio, Stara Planina, Rhodopi y Piatra Craiului— y la cuenta bajó de **62 a 56**,
+medida con `medir-espesor-fichas.mjs`. **No volver a pedir esas seis.**
+
+El lote salió bien y conviene decir por qué, porque es el molde: una fuente por
+ficha, seis dominios distintos, todas instituciones del lugar —la universidad, la
+facultad de forestales, el parque nacional, la revista regional— y **cada una con
+su alcance declarado en `nota`**: «fuente local del parque, no un inventario de
+toda la ecorregión». Eso último es lo que la hace montable. Una fuente del lugar
+es de un lugar; pretender que cubre la ecorregión entera es volver al problema que
+el encargo viene a resolver.
+
+**El orden cambia:** con EuropaUE en 17, el grueso pasa a ser **Arabia,
+Mesopotamia e Irán (23)** y el **norte de África y Sahara (13)** —juntos 36 de las
+56—. Los lotes que siguen salen de ahí.
+
+## Las 62 originales, por paquete. Un lote de 6 por respuesta
 
 ### Mediterráneo oriental, Balcanes, Cáucaso y Escandinavia — 23
 

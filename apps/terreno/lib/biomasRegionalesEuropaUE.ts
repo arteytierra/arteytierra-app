@@ -32,6 +32,165 @@ const SOILGRIDS = { label: 'ISRIC — SoilGrids', url: 'https://soilgrids.org/' 
 const LANDGRAEDSLAN = { label: 'Landgræðslan — Servicio islandés de conservación de suelos', url: 'https://land.is/' };
 const TARIM = { label: 'Türkiye — Ministerio de Agricultura y Bosques', url: 'https://www.tarimorman.gov.tr/' };
 
+/*
+ * Fuentes del lugar, una por ficha — lote 01 del encargo de fuentes propias,
+ * verificado el 11/10/2026.
+ *
+ * Las seis fichas que las reciben tenían exactamente `[ATLAS_SUELOS, EEA_BIO,
+ * RESOLVE]` y nada más, que es el caso de libro de **trazable y no
+ * verificable**: un atlas continental y una capa global respaldan que la ficha
+ * existe, no lo que la ficha afirma de ESTE lugar. Quien quiera chequear que el
+ * suelo de los Apeninos se comporta como dice el párrafo no tenía dónde ir.
+ *
+ * Cada una se abrió y se leyó antes de entrar, y el comentario dice su alcance
+ * real. **Ninguna cubre su ecorregión entera, y eso es lo normal**: una fuente
+ * del lugar es de un lugar, y vale justamente por eso. El detalle del muestreo
+ * está en `_research/_encargos/RESPUESTAS_MUESTREOS.md`.
+ *
+ * Tres devuelven 403 a un cliente de línea de comandos —Bolonia, MDPI— por
+ * verificación anti-bot, no porque el enlace esté roto: abren en un navegador.
+ */
+
+/**
+ * Monte Cucco, Umbría, 500–1000 m. Un sitio de los Apeninos, no toda la cadena.
+ *
+ * La ficha NO incorporó nada de esta fuente al texto, a diferencia de las otras cinco:
+ * el registro está detrás de una verificación anti-bot de Cloudflare y no se pudo leer
+ * desde acá. La cita queda —es un handle institucional, y abre en un navegador— pero
+ * lo que afirma sobre el carbono orgánico y la altitud no se escribió en `suelos`
+ * porque no se verificó. Si alguien la abre y la lee, hay material para engordarla.
+ */
+const MONTE_CUCCO = { label: 'Univ. de Bolonia — Altitude and vegetation affect soil organic carbon, basal respiration and microbial biomass in apennine forest soils', url: 'https://cris.unibo.it/handle/11585/776095' };
+/** Cuenca del Neretva y el Trebišnjica, de la costa a más de 2.000 m. No todo el karst dinárico. */
+const NERETVA_TREBISNJICA = { label: 'Radovi Šumarskog fakulteta Sarajevo — Specific roles of soil in agroecosystems of Neretva and Trebišnjica river basin', url: 'https://radovi.sfsa.unsa.ba/ojs/index.php/rsf/article/view/284' };
+/** Plan territorial del parque: registra ahí los hábitats 91K0 y 91L0. Es el parque, no la ecorregión. */
+const PLITVICE = { label: 'NP Plitvička jezera — Prostorni plan područja posebnih obilježja', url: 'https://dokumenti.plitvicka-jezera.hr/staging/download/prostorni-planovi/pp-np-plitvicka-jezera-2014/20140404_00-PPNPPJ_K2_ObrazlozenjeNKP.pdf' };
+/** Seis distritos forestales del tramo central de Stara Planina, hayedo sobre Cambisoles. */
+const STARA_PLANINA = { label: 'Ecologia Balkanica 17(1) — Soil carbon and nitrogen stocks under anthropogenic influence: European beech forests of Central Balkan Mountains (Stara Planina), Bulgaria', url: 'https://doi.uni-plovdiv.bg/bitstreams/321ad0ca-c8ef-4874-9ee8-8be56c11a63d/download' };
+/** Rhodopi griego, serie Landsat 1984–2019. No cubre el Pindo ni el resto del bloque balcánico. */
+const RHODOPI = { label: 'Forests 13(3):377 — Long-Term Monitoring of Vegetation Dynamics in the Rhodopi Mountain Range National Park, Greece', url: 'https://doi.org/10.3390/f13030377' };
+
+/** Bosque costero de pícea en Noruega central, 31 sitios. No cubre la franja sueca ni el interior. Articulo cerrado: se leyó por el resumen, que es público. */
+const LIQUEN_NORUEGA = { label: 'Ecological Applications 11(2):421-436 — Epiphytic lichens in Norwegian coastal spruce forest: historic logging and present forest structure', url: 'https://doi.org/10.1890/1051-0761(2001)011[0421:ELINCS]2.0.CO;2' };
+
+/** Kautokeino y Karasjok, en la Finnmarksvidda noruega, serie de más de 40 años. No cubre el abedular sueco ni el finlandés. Articulo cerrado: se leyó por el resumen. */
+const ABEDUL_FINNMARK = { label: 'Arctic, Antarctic, and Alpine Research 36(3):323-332 — Vegetation Changes in the Nordic Mountain Birch Forest: the Influence of Grazing and Climate Change', url: 'https://doi.org/10.1657/1523-0430(2004)036[0323:VCITNM]2.0.CO;2' };
+
+/** Islotes de Enousses, al este de Quíos. Un archipiélago chico del Egeo oriental, no el Egeo ni Anatolia occidental. */
+const ENOUSSES = { label: 'Flora 189:69-78 — Contribution to the study of the Greek flora: Flora and vegetation of the Enousses (Oinousses) islands (E. Aegean area)', url: 'https://doi.org/10.1016/S0367-2530(17)30570-4' };
+
+/**
+ * Creta central, 82 parcelas de 4 m2 entre 11 y 1.400 m. No cubre la isla
+ * entera.
+ *
+ * La entrega decía que el muestreo era de la Asterusia y las laderas del
+ * Psiloritis. Puede ser cierto —los dos macizos son de Creta central— pero eso
+ * está en los métodos y el texto completo no se pudo abrir desde acá, así que
+ * la ficha no lo afirma: dice «Creta central», que es lo que dice el resumen.
+ */
+const CRETA_ANUALES = { label: 'Journal of Vegetation Science 34(6):e13214 — How gradients of climate and soil determine Mediterranean annual-rich dryland vegetation', url: 'https://doi.org/10.1111/jvs.13214' };
+
+/** Troodos, 826 puntos de muestreo sobre 2.374 km2, más 24 viñedos aterrazados en pares. No cubre la Mesaoria ni el resto de Chipre. */
+const TROODOS_CARBONO = { label: 'CATENA 195:104741 — The effect of agricultural abandonment and mountain terrace degradation on soil organic carbon in a Mediterranean landscape', url: 'https://doi.org/10.1016/j.catena.2020.104741' };
+
+/** Pinares de Pinus brutia del Troodos chipriota, seis bosques muestreados. Una isla del Mediterráneo oriental, no la conífera de Anatolia ni del Levante. */
+const PINUS_BRUTIA = { label: 'Forests 9(9):514 — Mediterranean Islands Hosting Marginal and Peripheral Forest Tree Populations: The Case of Pinus brutia Ten. in Cyprus', url: 'https://doi.org/10.3390/f9090514' };
+
+/* ── Lote 06: Anatolia, la estepa pontica y la estepa forestal ─────────── */
+
+/** Pastizales de la aldea de Pasali, provincia de Nevsehir, relevados en
+ *  2004. Es un piloto de 733 ha: no representa toda la estepa de Anatolia
+ *  central. */
+const ANATOLIA_PASTIZAL = { label: 'Turkish Journal of Agriculture and Forestry 32(5):401-414 — Pilot Study for an Assessment of Vegetation Structure for Steppe Rangelands of Central Anatolia', url: 'https://journals.tubitak.gov.tr/agriculture/vol32/iss5/6/' };
+
+/**
+ * Cronosecuencia de casi cien anos de campos abandonados contra estepa virgen
+ * en Askania-Nova y su zona de amortiguamiento, sur de Ucrania. Un sitio: no
+ * se extrapola a toda la estepa pontica ni a todos los chernozem.
+ *
+ * La entrega resumio el hallazgo como «la composicion se acerco a la estepa
+ * virgen alrededor de los 50 anos». Es cierto y es la mitad: los especialistas
+ * de habitat de estepa solo igualaron a la virgen en el campo de unos 97 anos,
+ * y la riqueza de vasculares fue menor en todos los campos viejos. Van las
+ * dos, porque con la primera sola la ficha afirmaria que medio siglo alcanza.
+ */
+const ASKANIA_NOVA = { label: 'Applied Vegetation Science 26(4):e12756 — Rapid functional but slow species diversity recovery of steppe vegetation on former arable fields in southern Ukraine', url: 'https://doi.org/10.1111/avsc.12756' };
+
+/** Sesenta muestras de polen actual en las cuencas del Dnieper y el Don, en
+ *  las provincias de Kursk (Rusia) y Jarkov (Ucrania). Es un conjunto de
+ *  calibracion sobre chernozem en loess, no un inventario de vegetacion. */
+const POLEN_ESTEPA_FORESTAL = { label: 'Vegetation History and Archaeobotany 34(6):799-812 — Modern pollen spectra from the east European forest steppe reflect land use patterns rather than a climatic gradient', url: 'https://doi.org/10.1007/s00334-025-01048-5' };
+
+/** Nueve manchones de roble en la provincia de Kurdistan, IRAN —no el sector
+ *  turco que describe esta ficha, aunque sea el mismo tipo de robledal del
+ *  Zagros—, todos en ladera norte, a 1.550 m, con 658 mm y 13,8 °C de media
+ *  anual, sobre Entisol en sustrato calcareo. */
+const ZAGROS_PERTURBACION = { label: 'Journal of Forest Science 64(8):358-370 — Effects of anthropogenic disturbance on plant composition, plant diversity and soil properties in oak forests, Iran', url: 'https://doi.org/10.17221/13/2018-JFS' };
+
+/* ── Lote 07: las que habian vuelto vacias ─────────────────────────────── */
+
+/** Unidad forestal de 600 ha en Goldag, Sinop, con hayedo oriental puro entre
+ *  500 y 970 m. Es un caso de estudio de clasificacion de sitio, no un
+ *  inventario del norte de Anatolia. */
+const HAYEDO_SINOP = { label: 'Sensors 8(4):2526-2540 — Classifying Oriental Beech (Fagus orientalis Lipsky.) Forest Sites Using Direct, Indirect and Remote Sensing Methods: A Case Study from Turkey', url: 'https://doi.org/10.3390/s8042526' };
+
+/** Efecto del fuego en pastizal estepario de altura no pastoreado de Anatolia
+ *  oriental, medido en 2012 y 2013 en varias localidades. */
+const FUEGO_ANATOLIA = { label: 'Turkish Journal of Agriculture and Forestry 40:290-299 — The effect of fire on the vegetation and soil properties of ungrazed shortgrass steppe rangeland of the Eastern Anatolia region of Turkey', url: 'https://doi.org/10.3906/tar-1508-121' };
+
+/** Expediente de Patrimonio Mundial del bien serial georgiano. No cubre los
+ *  sectores ruso y turco de la costa oriental del mar Negro. */
+const COLQUIDA_UNESCO = { label: 'UNESCO — Colchic Rainforests and Wetlands, Patrimonio Mundial', url: 'https://whc.unesco.org/en/list/1616' };
+
+/**
+ * Plan de conservacion ecorregional del Caucaso, edicion 2020, capitulo de
+ * flora y vegetacion.
+ *
+ * Es de TODA la ecorregion y no del bosque mixto en particular: eso esta
+ * dicho en el texto de la ficha. Se monta porque el dato que trae no es un
+ * conteo decorativo sino una leccion sobre como leer una lista roja.
+ */
+const CAUCASO_ECP = { label: 'WWF — Ecoregional Conservation Plan for the Caucasus, 2020 edition, Supplementary Reports: Flora and Vegetation of the Caucasus', url: 'https://wwfeu.awsassets.panda.org/downloads/ecp_2020_part_2_2.pdf' };
+
+/**
+ * Analisis floristico del distrito de Kurdamir, en la parte central de la
+ * llanura Kura-Araz. Publicado en azeri en la revista de la Sociedad de
+ * Botanicos de Azerbaiyan, que no asigna DOI: la URL es la pagina del
+ * articulo en el sitio del editor.
+ *
+ * OJO con un porcentaje del resumen: dice «mezofitlar (77 nov, 5,3 %)», y 77
+ * de 153 es el 50,3 %. Es una errata de la publicacion. Se monta el conteo y
+ * no el porcentaje.
+ */
+const KURDAMIR_FLORA = { label: 'Azərbaycan Botanika Jurnalı №1, 2021 — Kür-Araz ovalığının mərkəzi hissəsinin florasının tipoloji təhlili (Análisis tipológico de la flora de la parte central de la llanura Kura-Araz)', url: 'https://botanysociety.az/az/journals/30' };
+
+/** Lista verificada de plantas no nativas de la reserva de Yalta, sur de
+ *  Crimea. Es la fraccion adventicia: no es un inventario de la flora nativa
+ *  del complejo submediterraneo. */
+const YALTA_ALOCTONAS = { label: 'Russian Journal of Biological Invasions 7(1):1-7 — Alien plants of Yalta Mountain-Forest Nature Reserve: State of knowledge and prospects of investigations', url: 'https://doi.org/10.1134/S2075111716010021' };
+/* ── Lote 08: las dos ultimas ─────────────────────────── */
+
+/**
+ * Clasificacion de la vegetacion de bosque y matorral del Mediterraneo turco:
+ * 4.717 relevés del sur y el oeste de Turquia, agrupados sin supervision y
+ * ordenados con analisis canonico de correspondencias.
+ *
+ * El alcance es regional y no del Tauro. De los tres pisos que describe, a
+ * esta ficha le corresponden el supramediterraneo y el oromediterraneo; el
+ * termo y mesomediterraneo —pino de Calabria, pino pinonero, esclerofilo,
+ * maquia, garriga y frigana— es el del esclerofilo egeo, que en acequia es
+ * otra ficha.
+ *
+ * Es la SEGUNDA fuente que se busco para esta ficha. La del lote 07 era buena
+ * —Plant Biosystems 144(2), instituto forestal turco— y no tenia resumen
+ * publico en Crossref, ni en OpenAlex, ni en Semantic Scholar, con lo cual
+ * nada de lo que afirma se podia chequear y no se monto.
+ */
+const ANATOLIA_CLASIFICACION = { label: 'Applied Vegetation Science 24(2):e12589 — Classification of forest and shrubland vegetation in Mediterranean Turkey', url: 'https://doi.org/10.1111/avsc.12589' };
+
+/** Piatra Craiului, Rumania: hayedo dacio 500–1200 m y picea acidófila 1350–1800 m. Un parque del arco. */
+const PIATRA_CRAIULUI = { label: 'PN Piatra Craiului — Plan de manejo del parque nacional', url: 'https://www.pcrai.ro/files/pdf/Management_Plan.pdf' };
+
 export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
   // IT · ECO_ID 675 · la llanura más productiva del sur de Europa
   po_llanura_aluvial: {
@@ -77,7 +236,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Abeto blanco (Abies alba)',
     ],
     cultivos: ['castano', 'trigo', 'olivo', 'vid', 'papa', 'lenteja', 'nogal', 'raigras'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, MONTE_CUCCO],
   },
 
   // IT, MT, FR · ECO_ID 795, 806
@@ -111,7 +270,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'La cadena que corre de Eslovenia a Albania paralela al Adriático, y el karst más estudiado del mundo —la palabra viene de acá—. Llueve muchísimo, hasta 3000 mm al año en Montenegro, y aun así la superficie está seca: el agua se va por las fisuras y reaparece kilómetros más lejos.',
     vegetacion: 'Hayedo-abetal en las alturas, carpe negro y roble en las laderas bajas, y pastizales y matorral de enebro en las mesetas deforestadas por siglos de pastoreo y de tala para la marina veneciana.',
     fauna: 'Oso pardo, lobo y lince —la población dinárica es de las mayores de Europa—, rebeco balcánico, y una fauna subterránea única, con el proteo de las cuevas como especie insignia.',
-    suelos: 'Leptosoles y Cambisoles cálcicos en bolsones sobre caliza y dolomía, con acumulaciones profundas de terra rossa sólo en las dolinas y los poljes. La superficie útil es discontinua: el suelo está en los huecos, no en las laderas. La regla del karst manda todo el manejo: no hay escurrimiento superficial que captar, y lo que se aplica arriba —purines, fertilizante, combustible— llega al acuífero en horas y sale en el manantial del que bebe el pueblo de abajo. Los poljes, que se inundan estacionalmente, son la única tierra de labor seria y a la vez la más expuesta.',
+    suelos: 'Leptosoles y Cambisoles cálcicos en bolsones sobre caliza y dolomía, con acumulaciones profundas de terra rossa sólo en las dolinas y los poljes. La superficie útil es discontinua: el suelo está en los huecos, no en las laderas. La regla del karst manda todo el manejo: no hay escurrimiento superficial que captar, y lo que se aplica arriba —purines, fertilizante, combustible— llega al acuífero en horas y sale en el manantial del que bebe el pueblo de abajo. Los poljes, que se inundan estacionalmente, son la única tierra de labor seria y a la vez la más expuesta. Un relevamiento de la cuenca del Neretva y el Trebišnjica —donde la tierra agrícola real está en los valles fluviales y los poljes, no en el karst de arriba— describe el problema de agua que define la zona: los sistemas de mejora quedaron casi todos fuera de servicio, y hoy la misma parcela necesita drenaje rápido en primavera y riego en el período vegetativo seco. Los autores ya no distinguen años secos de años lluviosos, porque los dos pasan en el mismo año; su propuesta es acumulación multipropósito, juntar el excedente de otoño e invierno para regar en verano.',
     saberes: [],
     especies: [
       'Haya (Fagus sylvatica)',
@@ -125,7 +284,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       { uso: 'huerta', delta: -15, razon: 'Sobre caliza el suelo está en los huecos, no en las laderas: la tierra de labor son las dolinas y los poljes, y en el polje el riesgo pasa a ser la inundación estacional.' },
       { uso: 'reserva', delta: 15, razon: 'Lo que se aplica arriba llega al acuífero en horas y sale en el manantial del que bebe el pueblo de abajo. Acá la protección del agua manda sobre la elección de uso.' },
     ],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, NERETVA_TREBISNJICA],
   },
 
   // HR, BA, ME, AL, SI · ECO_ID 794
@@ -135,7 +294,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌳',
     color: '#6E8455',
     resumen: 'La banda de transición entre la costa dálmata y el interior dinárico —Istria, la Lika, la Bosnia occidental, el norte de Albania—, donde el clima mediterráneo se va volviendo continental a medida que se sube. Es de las zonas de Europa con mayor diversidad de árboles caducifolios, porque acá sobrevivieron especies que la glaciación borró más al norte.',
-    vegetacion: 'Robledales de quejigo y roble albar, carpe blanco y negro, fresno de flor, tilo y arce; castañares en los suelos ácidos y hayedo en la parte alta, con manchas de bosque relicto de sorbos y cerezos silvestres.',
+    vegetacion: 'Robledales de quejigo y roble albar, carpe blanco y negro, fresno de flor, tilo y arce; castañares en los suelos ácidos y hayedo en la parte alta, con manchas de bosque relicto de sorbos y cerezos silvestres. El plan territorial del Parque Nacional de Plitvice registra ahí, como hábitats objetivo, el hayedo ilirio (Natura 2000 91K0, Aremonio-Fagion) y el robledal-carpinal ilirio (91L0, Erythronio-Carpinion): los dos tipos que le dan nombre a la ecorregión, cartografiados en un lugar concreto y no deducidos del mapa.',
     fauna: 'Corzo, jabalí, gato montés, chacal dorado en expansión, lobo y oso en el contacto con los Dináricos; quirópteros cavernícolas en las dolinas y una entomofauna de bosque maduro poco común en Europa.',
     suelos: 'Cambisoles eútricos y Luvisoles sobre marga, arenisca y caliza fisurada, más profundos y de mejor retención que los del karst puro. Es el suelo agrícola real de la región: los valles de Istria y la Posavina bosnia sostienen viña, olivo, frutales y forraje. La erosión aparece cuando se labra la ladera; el manejo que funciona es el mismo de siempre acá, parcela pequeña con seto vivo, frutal de secano y pradera permanente en la pendiente fuerte.',
     saberes: [],
@@ -147,7 +306,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Cerezo silvestre (Prunus avium)',
     ],
     cultivos: ['maiz_tropical', 'trigo', 'vid', 'castano', 'manzano', 'nogal', 'durazno', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, PLITVICE],
   },
 
   // RS, BG, RO, MK, GR · ECO_ID 646
@@ -159,7 +318,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'El interior de la península balcánica: Serbia, el norte de Macedonia, buena parte de Bulgaria y el sur de Rumanía. Continental de verdad —invierno frío, verano caluroso y seco—, con la lluvia repartida pero con un déficit de julio y agosto que decide el rendimiento de todo lo que se siembra en secano.',
     vegetacion: 'Robledales de cerro, roble húngaro y quejigo en las lomas, carpe y tilo en las umbrías, hayedo por encima de los 800 m; matorral de espino, endrino y lilo silvestre en los bordes y pastizal seco en las solanas.',
     fauna: 'Corzo, jabalí, chacal dorado, lobo en las sierras, tortuga mediterránea y una comunidad de rapaces de campo abierto —aguilucho cenizo, cernícalo primilla— que depende del mosaico agrícola tradicional.',
-    suelos: 'Cambisoles eútricos y Luvisoles sobre loess y sedimentos terciarios, con Vertisoles arcillosos —los smonitza— en las cuencas y Chernozems degradados en el borde con la llanura panónica. Son suelos buenos y profundos; el problema es el agua de verano y la erosión de las lomas cuando se labra en la pendiente. Los Vertisoles se agrietan al secarse y se vuelven intrabajables al mojarse, y la ventana de laboreo puede ser de días: en esas tierras la siembra directa y la cobertura permanente valen más que cualquier fertilización.',
+    suelos: 'Cambisoles eútricos y Luvisoles sobre loess y sedimentos terciarios, con Vertisoles arcillosos —los smonitza— en las cuencas y Chernozems degradados en el borde con la llanura panónica. Son suelos buenos y profundos; el problema es el agua de verano y la erosión de las lomas cuando se labra en la pendiente. Los Vertisoles se agrietan al secarse y se vuelven intrabajables al mojarse, y la ventana de laboreo puede ser de días: en esas tierras la siembra directa y la cobertura permanente valen más que cualquier fertilización. Hay una medición del tramo central de Stara Planina que vale para decidir el manejo: en seis empresas forestales estatales, entre 950 y 1.150 m y sobre laderas norte del 21 al 31 %, el hayedo natural crece sobre Cambisoles, y una comparación de 2022 entre parcelas sin manejo y parcelas raleadas al 10-15 % y al 20-25 % no encontró diferencia significativa en el carbono ni el nitrógeno del suelo hasta los 30 cm. Lo que importa es por qué: el raleo moderado conserva el dosel, mueve poco el suelo y deja los restos de corta en el lugar. Sacar el árbol entero y limpiar el piso es otra cosa.',
     saberes: [],
     especies: [
       'Roble cerro (Quercus cerris)',
@@ -169,7 +328,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Endrino (Prunus spinosa)',
     ],
     cultivos: ['trigo', 'maiz_tropical', 'girasol', 'vid', 'durazno', 'castano', 'nogal', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, STARA_PLANINA],
   },
 
   // BG, GR, MK, AL, RS · ECO_ID 678, 801
@@ -179,7 +338,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🐑',
     color: '#5E6E4A',
     resumen: 'Los macizos del sur de la península —Ródope, Rila y Pirin del lado búlgaro, Pindo del griego y albanés—, donde el Mediterráneo se cruza con lo continental y la altura define todo. Es el territorio de la trashumancia balcánica: siglos de rebaños subiendo en primavera y bajando en otoño construyeron el paisaje que hoy se ve.',
-    vegetacion: 'Hayedo y abetal de abeto griego y de Bulgaria en la franja media, pinares de pino negro y pino silvestre en el piso superior, con pino bosnio en las crestas calcáreas del Pindo; pastizal alpino y subalpino arriba, y robledal y castañar en los fondos de valle.',
+    vegetacion: 'Hayedo y abetal de abeto griego y de Bulgaria en la franja media, pinares de pino negro y pino silvestre en el piso superior, con pino bosnio en las crestas calcáreas del Pindo; pastizal alpino y subalpino arriba, y robledal y castañar en los fondos de valle. Lo que le está pasando a este paisaje se midió: en el Parque Nacional del Rhodopi griego, una serie Landsat de 1984 a 2019 registra cerca de 22.000 ha de hábitat abierto perdidas hacia el bosque —sobre todo de frondosas— contra unas 2.500 ha recuperadas en sentido inverso, y las frondosas además le ganaron unas 12.000 ha a las coníferas. No es forestación: es abandono del pastoreo. El resultado es un paisaje más boscoso y más parejo —el índice de diversidad de Shannon bajó de 0,895 a 0,792 y el de equidad de 0,814 a 0,571— y con más riesgo de incendio. Si el predio tiene pastizal de altura, mantenerlo abierto es trabajo activo y no inercia.',
     fauna: 'Oso pardo, lobo, rebeco balcánico, cabra montés de Creta en poblaciones introducidas, y el buitre negro y el quebrantahuesos, que dependen directamente de que siga habiendo ganadería extensiva.',
     suelos: 'Cambisoles dístricos y Podzoles sobre granito, gneis y esquisto en el Ródope, y Leptosoles rendzínicos sobre caliza en el Pindo: dos comportamientos distintos bajo el mismo clima. Los ácidos retienen agua y materia orgánica pero fijan el fósforo; los calcáreos drenan de inmediato y no perdonan una tormenta con el suelo desnudo. El agua llega del deshielo y baja rápido: en las dos mitades lo que sostiene la ladera es el pastizal con carga ajustada y el bosque de ribera, y el abandono del pastoreo está cerrando los claros y aumentando el riesgo de incendio de copa.',
     saberes: [],
@@ -191,7 +350,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino silvestre (Pinus sylvestris)',
     ],
     cultivos: ['papa', 'centeno', 'cebada', 'castano', 'nogal', 'manzano', 'lavanda', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, RHODOPI],
   },
 
   // DK, DE, PL, SE, LT · ECO_ID 647
@@ -245,7 +404,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#456B4B',
     resumen: 'El arco de los Cárpatos, de la Moravia checa a las Puertas de Hierro pasando por Eslovaquia, el sur de Polonia, Ucrania occidental y Rumanía. Guarda los mayores restos de bosque primario templado de Europa y las poblaciones más grandes de grandes carnívoros del continente fuera de Rusia.',
-    vegetacion: 'Hayedo puro en la franja media, hayedo-abetal con picea arriba, y picea pura en el piso subalpino; pino enano y pastizal alpino en las crestas, con robledales y prados de siega de alta diversidad en los valles.',
+    vegetacion: 'Hayedo puro en la franja media, hayedo-abetal con picea arriba, y picea pura en el piso subalpino; pino enano y pastizal alpino en las crestas, con robledales y prados de siega de alta diversidad en los valles. El plan de manejo de Piatra Craiului deja medido algo que sirve para emplazar: el límite del bosque no está a la misma altura en las dos laderas del macizo. En la occidental el bosque compacto llega a 1.550 m y los últimos rodales de picea a 1.650; en la oriental el bosque llega a 1.800 y hay piceas aisladas a 1.870. Son unos 200 m de diferencia por exposición, en el mismo cordón y con el mismo clima regional.',
     fauna: 'Oso pardo, lobo, lince, bisonte europeo reintroducido en varios sectores, ciervo, gato montés; salamandra alpina y una fauna saproxílica que existe donde nunca se sacó la madera caída.',
     suelos: 'Cambisoles dístricos y Podzoles sobre flysch y esquisto, con Rendzinas en las franjas calcáreas y Leptosoles en las crestas. Poco profundos y ácidos, sostenidos por el bosque: la tala rasa en pendiente fuerte, que en varias partes del arco pasó a gran escala, dispara erosión, arrastre de materia orgánica y crecidas súbitas aguas abajo. El sistema tradicional de prados de siega y pastoreo estival de altura mantuvo esa ladera durante siglos y su abandono es hoy un problema tan concreto como la tala.',
     saberes: [],
@@ -257,7 +416,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pino enano (Pinus mugo)',
     ],
     cultivos: ['papa', 'centeno', 'avena', 'cebada', 'manzano', 'nogal', 'raigras', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, PIATRA_CRAIULUI],
   },
 
   // UA, MD, RO, HU · ECO_ID 735 · el mejor suelo agrícola de Europa
@@ -269,7 +428,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'La estepa que va del bajo Danubio al mar de Azov, casi toda arada: es donde está el chernozem, el suelo negro más profundo del mundo y la razón por la que Ucrania y Moldavia pesan lo que pesan en el mercado mundial de granos. Poca lluvia, muy mal repartida, y un viento seco de verano que puede arruinar la cosecha en una semana.',
     vegetacion: 'De la estepa de plumeros y festucas quedan retazos en barrancos y márgenes; el resto es trigo, girasol, maíz, cebada y colza. En las quebradas y las riberas sobreviven bosquecillos de roble, olmo y arce tártaro.',
     fauna: 'Marmota bobak, sisón y avutarda en los pocos pastizales grandes que quedan, águila esteparia, y una comunidad de roedores y sus depredadores que colapsó con la agricultura continua.',
-    suelos: 'Chernozems con horizonte húmico de 60 a 120 cm, estructura granular estable y una reserva de nutrientes que permitió sembrar sin fertilizar durante generaciones. Nada de eso es indestructible: bajo laboreo continuo la materia orgánica cayó a la mitad en el siglo XX, el horizonte se compacta y el suelo desnudo entre cosechas se vuela con el viento seco. Acá el agua es siempre el límite —de 350 a 500 mm y evapotranspiración alta—, así que todo el manejo apunta a captarla y guardarla: barbecho con rastrojo en pie, siembra directa, cortinas rompeviento en faja, y cultivo en contorno en las lomas suaves, que es de donde se va el suelo.',
+    suelos: 'Chernozems con horizonte húmico de 60 a 120 cm, estructura granular estable y una reserva de nutrientes que permitió sembrar sin fertilizar durante generaciones. Nada de eso es indestructible: bajo laboreo continuo la materia orgánica cayó a la mitad en el siglo XX, el horizonte se compacta y el suelo desnudo entre cosechas se vuela con el viento seco. Acá el agua es siempre el límite —de 350 a 500 mm y evapotranspiración alta—, así que todo el manejo apunta a captarla y guardarla: barbecho con rastrojo en pie, siembra directa, cortinas rompeviento en faja, y cultivo en contorno en las lomas suaves, que es de donde se va el suelo. Cuánto tarda en volver está medido, y la respuesta tiene dos velocidades. En Askania-Nova se compararon campos abandonados hacía 6, 15, 31, 50 y unos 97 años contra estepa virgen: el carbono orgánico y el nitrógeno total fueron más bajos que en la virgen en todos los campos de 50 años o menos, y sólo el de 97 no se diferenció. En la vegetación, las características funcionales se recuperaron rápido —sólo el campo más reciente se apartaba de la virgen— y la composición dejó de diferenciarse alrededor de los 50 años; pero la proporción de especialistas de hábitat de estepa igualó a la virgen únicamente en el campo de unos 97 años, y la riqueza de vasculares siguió siendo menor en todos los campos viejos. La conclusión de los autores es que la función vuelve mucho antes que la biodiversidad, y que cien años pueden alcanzar para que la estepa se rearme sola. La unidad de tiempo de este suelo es el siglo, no la década.',
     saberes: [],
     especies: [
       'Plumero (Stipa capillata)',
@@ -279,7 +438,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Almendro enano (Prunus tenella)',
     ],
     cultivos: ['trigo', 'girasol', 'maiz_tropical', 'cebada', 'colza', 'soja', 'damasco', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, ASKANIA_NOVA],
   },
 
   // UA, MD, RO · ECO_ID 661
@@ -289,7 +448,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌳',
     color: '#7F8547',
     resumen: 'La franja de transición al norte de la estepa: mosaico de robledales en las cabeceras de barranco y pastizal en los interfluvios, sobre el mismo loess. Llueve algo más que en la estepa —de 450 a 600 mm— y eso alcanza para que el árbol se sostenga sin riego.',
-    vegetacion: 'Robledales de carballo con fresno, tilo, arce y olmo en las quebradas húmedas, pastizal de plumeros en las lomas, y hoy campos de trigo, remolacha, girasol y maíz ocupando casi todo lo llano.',
+    vegetacion: 'Robledales de carballo con fresno, tilo, arce y olmo en las quebradas húmedas, pastizal de plumeros en las lomas, y hoy campos de trigo, remolacha, girasol y maíz ocupando casi todo lo llano. Un conjunto de 60 muestras de polen actual en las cuencas del Dnieper y el Don, en Kursk y Járkov, agrupadas en seis clases de uso —cultivo y estepa usada, humedal y pinar seco, pastura y vegetación ruderal, turbera, pastizal sin pastoreo, y robledal o bosque mixto— deja tres cosas para esta ficha. La primera: lo que explica la variación es el uso de la tierra y después las condiciones locales del sitio, no la posición en el gradiente norte-sur; cada variable climática explica entre el 1,4 y el 2,6 % de la varianza. La segunda: en los sitios de vegetación casi natural del ecotono el polen arbóreo nunca baja del 33 %, así que un mosaico sano de esta franja no es nunca un pastizal pelado. La tercera es una advertencia sobre el registro mismo: la mayoría de los archivos palinológicos de la zona muestran dominancia de pinar porque están en humedales de meandros abandonados y de río, donde el pino y la vegetación azonal dominan, no porque el pinar domine el paisaje. En el terreno el reparto lo hace la exposición: el bosque ocupa los valles, las quebradas, las hondonadas y las laderas de cara al norte, que son las húmedas, y el pastizal las mesetas secas y las laderas al sur. Y la reserva de estepa virgen de esta zona —seis sectores, 5.287 hectáreas, protegida desde 1935— se mantiene abierta a fuerza de siega y pastoreo moderado: librada por completo a sí misma pasaría a pradera y después a árboles y arbustos.',
     fauna: 'Corzo, jabalí, tejón, hámster común, águila moteada y milano negro; las poblaciones de aves esteparias sobreviven sobre todo en las quebradas que nunca se pudieron arar.',
     suelos: 'Chernozems lixiviados y Phaeozems bajo el pastizal, y Luvisoles grises bajo el bosque, todos sobre loess profundo. Fertilidad muy alta pero con más acidez y menos carbonato que la estepa pura, así que responden mejor al aporte de materia orgánica y peor al laboreo agresivo. La forma característica de la degradación acá es la cárcava: el loess es cohesivo en seco y se desmorona saturado, y una vía de agua mal ubicada abre en pocos años un barranco que no se cierra más. Las fajas forestales de protección plantadas a mediados del siglo XX siguen siendo la pieza que ordena esta cuenca.',
     saberes: [],
@@ -301,7 +460,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Olmo campestre (Ulmus minor)',
     ],
     cultivos: ['trigo', 'girasol', 'maiz_tropical', 'remolacha_azucarera', 'soja', 'cebada', 'manzano', 'alfalfa'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, POLEN_ESTEPA_FORESTAL],
   },
 
   // UA · ECO_ID 658
@@ -311,7 +470,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🍇',
     color: '#87874F',
     resumen: 'La cornisa sur de Crimea, entre las mesetas calcáreas de la Yaila y el mar Negro: una isla de clima submediterráneo metida en plena zona esteparia, protegida del norte por la propia montaña. Es tierra de viña, frutal y bosque esclerófilo, en muy poca superficie.',
-    vegetacion: 'Encinar de coscoja y quejigo, pinares de pino de Crimea y pino de Pallas, enebrales altos y matorral de pistacho; hayedo y carpinal en la vertiente alta, y pastizal de meseta —la yaila— en la cumbre plana.',
+    vegetacion: 'Encinar de coscoja y quejigo, pinares de pino de Crimea y pino de Pallas, enebrales altos y matorral de pistacho; hayedo y carpinal en la vertiente alta, y pastizal de meseta —la yaila— en la cumbre plana. Hay una medida de la presión de invasión en el área mejor protegida de esta costa: en la Reserva Natural de Montaña y Bosque de Yalta se reunió una lista verificada de 78 especies de plantas vasculares no nativas, a partir de publicaciones y de datos propios, y se evaluó la transformación de la vegetación a través de la estructura y la dinámica de esa fracción adventícia, agrupando las especies por época de introducción, grado de naturalización y área de origen. Setenta y ocho alóctonas adentro de una reserva es el número a tener en cuenta antes de plantar ornamental mediterránea en esta ladera.',
     fauna: 'Ciervo de Crimea, muflón introducido, jabalí, murciélagos cavernícolas en el karst de la Yaila y una flora endémica de las más ricas de la cuenca del mar Negro.',
     suelos: 'Cambisoles cálcicos, terra rossa y Leptosoles sobre caliza jurásica, delgados y pedregosos en la ladera y algo más profundos en los conos de deyección donde se instaló siempre la viña. El agua es el límite absoluto: la meseta karstificada de arriba no retiene nada y alimenta manantiales al pie, y toda la agricultura de la costa depende de esas surgencias y de embalses pequeños. Terrazas, cobertura viva entre hileras y control del escurrimiento de las cárcavas son lo que evita que la ladera se descalce.',
     saberes: [],
@@ -323,7 +482,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Coscoja (Quercus coccifera)',
     ],
     cultivos: ['vid', 'durazno', 'damasco', 'almendro', 'nogal', 'trigo', 'olivo', 'lavanda'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, YALTA_ALOCTONAS],
   },
 
   // GE, TR · ECO_ID 665 · lo más lluvioso de la región
@@ -333,7 +492,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌧️',
     color: '#3F6B4F',
     resumen: 'La costa sudeste del mar Negro —Cólquida georgiana y la costa póntica turca—, donde el aire cargado del mar choca contra la montaña y descarga: de 2000 a más de 4000 mm al año, sin estación seca. Es bosque templado lluvioso, un refugio glaciar donde sobrevivieron especies terciarias que Europa perdió.',
-    vegetacion: 'Bosque denso de haya oriental, castaño, aliso del Cáucaso, tilo y carpe, con un sotobosque siempreverde de rododendro póntico, laurel y acebo que hace la masa casi impenetrable; en los claros y las vegas, té, avellano, cítricos y kiwi como cultivos de la región.',
+    vegetacion: 'Bosque denso de haya oriental, castaño, aliso del Cáucaso, tilo y carpe, con un sotobosque siempreverde de rododendro póntico, laurel y acebo que hace la masa casi impenetrable; en los claros y las vegas, té, avellano, cítricos y kiwi como cultivos de la región. El expediente de Patrimonio Mundial del bien cólquico pone una cifra de densidad que explica por qué este bosque no se parece a otro templado: en un área de apenas unos 200 km² conviven 23 asociaciones forestales. El bien alberga alrededor de 1.100 especies de plantas vasculares y no vasculares, incluidas 149 de distribución restringida y 44 vasculares amenazadas, más casi 500 especies de vertebrados; cerca de un tercio de los mamíferos, anfibios y reptiles son endémicos. Junto con los bosques hircanos son los relictos más importantes del bosque ártico-terciario que quedan en Eurasia occidental, y sobrevivieron los ciclos glaciares del Pleistoceno. Veintitrés asociaciones en doscientos kilómetros cuadrados significa que acá el mosaico cambia en decenas de metros, no en kilómetros.',
     fauna: 'Oso pardo, lince, corzo, chacal, nutria; y sobre todo el embudo migratorio de Batumi, por donde pasan cada otoño cientos de miles de rapaces y cigüeñas.',
     suelos: 'Acrisoles y Alisoles fuertemente lixiviados, ácidos, ricos en hierro y aluminio y pobres en bases: la lluvia constante se lleva todo lo soluble. La fertilidad vive en los primeros centímetros de hojarasca, y el suelo desnudo en pendiente se pierde en una temporada. En las llanuras de Cólquida el problema es el opuesto —turberas y humedales drenados que se hunden y se acidifican—. Para producir acá manda la cobertura permanente, el drenaje bien pensado en el llano y el encalado; el té y el avellano funcionan justamente porque toleran el pH bajo.',
     saberes: [],
@@ -345,7 +504,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Abeto del Cáucaso (Abies nordmanniana)',
     ],
     cultivos: ['avellano', 'naranjo', 'castano', 'nogal', 'arandano', 'maiz_tropical', 'vid', 'raigras'],
-    fuentes: [SOILGRIDS, WRB, RESOLVE],
+    fuentes: [SOILGRIDS, WRB, RESOLVE, COLQUIDA_UNESCO],
   },
 
   // GE, TR · ECO_ID 650
@@ -355,7 +514,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🏔️',
     color: '#4E7059',
     resumen: 'Las laderas del Gran y del Pequeño Cáucaso en territorio georgiano: un gradiente brutal, de vega subtropical a nieve permanente en menos de cien kilómetros. Uno de los focos de diversidad vegetal más densos de la zona templada y el lugar donde se domesticó la vid.',
-    vegetacion: 'Robledal y carpinal abajo, hayedo oriental y abetal de abeto de Nordmann con picea oriental en la franja media, abedular retorcido y matorral de rododendro caucásico en el límite del bosque, y pastizal alpino arriba.',
+    vegetacion: 'Robledal y carpinal abajo, hayedo oriental y abetal de abeto de Nordmann con picea oriental en la franja media, abedular retorcido y matorral de rododendro caucásico en el límite del bosque, y pastizal alpino arriba. Una cosa que conviene saber antes de leer cualquier lista roja de esta región. El plan de conservación ecorregional del Cáucaso —que es de toda la ecorregión y no sólo de este bosque— cuenta unas 6.500 especies de plantas vasculares según la literatura botánica, y aclara que esa cifra no incluye el noreste de Turquía ni el noroeste de Irán, que también son parte de la ecorregión, por lo que el total casi seguro pasa de 7.000. El relevamiento regional de especies amenazadas identificó 2.791 especies endémicas y 21 géneros endémicos, casi todos monotípicos. Y acá está el punto: antes de ese trabajo la Lista Roja de la UICN contenía una sola planta amenazada del Cáucaso; hoy tiene 385 especies evaluadas, de las cuales 276 son globalmente amenazadas —98 en peligro crítico, 100 en peligro y 78 vulnerables— y más de 200 siguen en evaluación. La ausencia de especies amenazadas en una lista puede ser ausencia de evaluación, no de amenaza.',
     fauna: 'Tur del Cáucaso occidental y oriental, rebeco, oso pardo, lobo, lince, urogallo del Cáucaso y quebrantahuesos; el leopardo persa sobrevive en poblaciones mínimas del sur.',
     suelos: 'Cambisoles y Phaeozems de montaña sobre esquisto, caliza y volcánicas, profundos y bien estructurados bajo bosque, con Leptosoles en las crestas. La herencia agrícola son las terrazas de viña y frutal de las laderas de Kajetia y Racha, sostenidas por muros de piedra seca. El riesgo dominante es geomorfológico antes que químico: deslizamientos y flujos de detritos en las cuencas deforestadas, y crecidas repentinas de deshielo. El pastoreo estival de altura, con su calendario de subida y bajada, es lo que mantuvo el pastizal en pie, y la sobrecarga concentrada en los pocos valles accesibles es hoy el problema.',
     saberes: [],
@@ -367,7 +526,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Vid silvestre (Vitis vinifera subsp. sylvestris)',
     ],
     cultivos: ['nogal', 'castano', 'vid', 'manzano', 'durazno', 'trigo', 'cebada', 'papa'],
-    fuentes: [SOILGRIDS, WRB, RESOLVE],
+    fuentes: [SOILGRIDS, WRB, RESOLVE, CAUCASO_ECP],
   },
 
   // GE · ECO_ID 812
@@ -377,7 +536,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🏜️',
     color: '#9A8B5C',
     resumen: 'El extremo seco de Georgia, en la Kajetia baja y el valle del Kura: 200 a 400 mm al año, verano largo y caluroso, y una estepa arbustiva que en Europa no se parece a casi nada. Vashlovani y las badlands de arcilla son el emblema.',
-    vegetacion: 'Estepa de ajenjo y salsoláceas, matorral de pistacho y enebro disperso, y bosques de galería de álamo, tamarisco y sauce sobre los ríos, que son la única franja verde permanente.',
+    vegetacion: 'Estepa de ajenjo y salsoláceas, matorral de pistacho y enebro disperso, y bosques de galería de álamo, tamarisco y sauce sobre los ríos, que son la única franja verde permanente. Un relevamiento florístico del distrito de Kurdamir, en la parte central de la llanura, registró 153 especies silvestres de 119 géneros y 39 familias, con Poaceae a la cabeza con 29 especies, Asteraceae con 23 —las dos descritas como bien adaptadas a lo árido—, Amaranthaceae con 17 y Fabaceae con 13. Lo que ordena la lectura es el reparto por forma de vida: las herbáceas son 132 especies, el 86,3 % del total, y de ellas 73 son anuales y 73 terófitas, o sea que casi la mitad de la flora del distrito aparece y se cumple con la humedad que dejan las lluvias. Por régimen de agua predominan las mesófitas, con 77 especies, y las xeromesófitas, con 45. La consecuencia práctica es que lo que se ve en pie en una recorrida de verano no es la vegetación de este lugar: falta la mitad.',
     fauna: 'Gacela subgutural en poblaciones reintroducidas, lobo, hiena rayada, oso en el borde montano, tortuga mediterránea, y una comunidad de rapaces —buitre leonado, alimoche— que nidifica en los cortados de arcilla.',
     suelos: 'Calcisoles, Solonchaks y Solonetz en las depresiones, y Kastanozems en la franja de transición a la estepa. Alcalinos, con carbonato y a menudo yeso a poca profundidad, y con sales que suben por capilaridad apenas se riega sin drenaje. Ese es exactamente el modo de arruinar esta tierra: riego por gravedad sin salida de sales, que en pocas campañas deja el perfil salinizado. Lo que funciona es riego medido con drenaje, cobertura para cortar la evaporación, especies tolerantes —viña, pistacho, almendro, cereal de ciclo corto— y bosque de ribera intacto, que acá es infraestructura y no adorno.',
     saberes: [],
@@ -389,7 +548,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Álamo del Éufrates (Populus euphratica)',
     ],
     cultivos: ['algodon', 'trigo', 'cebada', 'granado', 'vid', 'damasco', 'pistacho', 'alfalfa'],
-    fuentes: [SOILGRIDS, WRB, RESOLVE],
+    fuentes: [SOILGRIDS, WRB, RESOLVE, KURDAMIR_FLORA],
   },
 
   // NO · ECO_ID 708
@@ -399,7 +558,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#3D6357',
     resumen: 'La franja oceánica de Noruega entre los fiordos y la montaña: lluvia todo el año, hasta 3000 mm en las bocas de valle, e inviernos suavizados por la corriente del Atlántico norte a una latitud donde debería haber tundra. Es el bosque de coníferas más oceánico de Europa.',
-    vegetacion: 'Picea común y pino silvestre con abedul pubescente, aliso gris y serbal; sotobosque denso de arándano, musgos y hepáticas oceánicas, y en los enclaves más templados, restos de bosque costero de tilo, olmo y avellano.',
+    vegetacion: 'Picea común y pino silvestre con abedul pubescente, aliso gris y serbal; sotobosque denso de arándano, musgos y hepáticas oceánicas, y en los enclaves más templados, restos de bosque costero de tilo, olmo y avellano. Un relevamiento de 31 rodales viejos de pícea en la costa de Noruega central deja medido dónde está la riqueza de este bosque, y no es donde uno miraría: los macrolíquenes epífitos se concentran en las cárcavas de arroyo, y dos de ellos —Fuscopannaria ahlneri y Pseudocyphellaria crocata— aparecen diez veces más en el fondo de la cárcava que en la ladera o la meseta de al lado. El sustrato principal es la pícea, pero Lobaria y Nephroma prefieren los caducifolios dispersos, así que ese abedul o ese serbal suelto no es relleno. Y hay un resultado que sirve para decidir manejo: los 31 sitios habían sido cortados selectivamente dos veces o más en los últimos cien años, por un volumen total de entre el 31 y el 124 % del que tienen hoy en pie, y una vez descontada la estructura del rodal, ninguna variable de historia de corta explicó la abundancia actual de líquenes. Los autores concluyen que la corta selectiva moderada puede ser una opción de manejo compatible. Lo que no da lo mismo es dónde: en el fondo de la cárcava los líquenes aumentan con la densidad de árboles, y en la ladera y la meseta disminuyen.',
     fauna: 'Alce, nutria, castor europeo, águila de cola blanca —la mayor población de Europa—, y ríos con salmón atlántico y trucha de mar que son el eje ecológico y económico de cada valle.',
     suelos: 'Podzoles húmicos y Leptosoles sobre roca cristalina, delgados, muy ácidos y con un horizonte orgánico grueso porque el frío y el agua frenan la descomposición; Histosoles en las repisas mal drenadas. La tierra cultivable es poca y está en los fondos de fiordo, sobre depósitos marinos levantados, y ahí el problema es la arcilla marina sensible, que puede licuarse y provocar deslizamientos. Todo el manejo pasa por no romper la cobertura en pendiente, mantener el bosque de ribera y trabajar con pradera permanente y ganadería más que con cultivo anual.',
     saberes: [],
@@ -411,7 +570,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Serbal de cazadores (Sorbus aucuparia)',
     ],
     cultivos: ['cebada', 'avena', 'centeno', 'papa', 'arandano', 'raigras', 'trebol_blanco'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, LIQUEN_NORUEGA],
   },
 
   // NO, SE, FI · ECO_ID 780
@@ -421,7 +580,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌿',
     color: '#7C8C6E',
     resumen: 'La cinta de abedul retorcido que corona los Escandes y cubre buena parte de la Laponia noruega, sueca y finlandesa: el último bosque antes del pastizal alpino y de la tundra. Temporada de crecimiento de tres meses escasos y suelo helado buena parte del año.',
-    vegetacion: 'Abedular abierto de abedul pubescente montano sobre una alfombra de arándano, camarina, brezo y liquen; sauces de altura en las vaguadas húmedas y pastizal alpino con hierbas y juncáceas por encima del límite arbóreo.',
+    vegetacion: 'Abedular abierto de abedul pubescente montano sobre una alfombra de arándano, camarina, brezo y liquen; sauces de altura en las vaguadas húmedas y pastizal alpino con hierbas y juncáceas por encima del límite arbóreo. Lo que le pasó a este paisaje en cuarenta años está medido, y es el espejo exacto de lo que pasa en los pastizales de montaña del sur de Europa. En Kautokeino y Karasjok, en la Finnmarksvidda noruega, los tipos dominados por arándano, Deschampsia flexuosa, Cornus suecica y musgos triplicaron su extensión, mientras los brezales y bosques dominados por liquen —justamente los que usa el reno— cayeron alrededor del 80 %, y el abedular se expandió, con un 90 % más de superficie en Kautokeino. La causa principal que identifican los autores es el pastoreo intensivo del rodeo de renos creciente entre 1961 y 1987, con el clima —más precipitación—, los ataques de oruga y el nitrógeno de transporte largo acentuándolo. La lectura práctica: acá la carga animal no ajusta un rendimiento, cambia el tipo de vegetación, y la alfombra de liquen que tarda décadas en volver es la que aísla el suelo del frío.',
     fauna: 'Reno —semidomesticado en casi toda su extensión—, glotón, lemming, zorro ártico, lagópodo alpino y una comunidad de limícolas que cría acá y migra a medio mundo.',
     suelos: 'Podzoles delgados y Leptosoles sobre till, con Histosoles y suelos crioturbados en los llanos: ácidos, pobres en bases y con la actividad biológica limitada por el frío más que por la química. La capa de liquen y musgo es la que aísla y la que retiene, y una vez rota por vehículos o por sobrepastoreo tarda décadas en recuperarse. No es tierra de cultivo: lo que se maneja acá es carga de pastoreo, rutas y calendario, y esa es una decisión que le corresponde a los pueblos que la habitan, no a un mapa.',
     saberes: [],
@@ -437,7 +596,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       { uso: 'forestal', delta: -15, razon: 'No es que no crezca bosque: el abedular es el bosque, y es el último antes del pastizal alpino. Lo que no va es sustituirlo por plantación de conífera, que arriba del límite térmico ni prospera ni deja volver al abedul.' },
       { uso: 'reserva', delta: 20, razon: 'La alfombra de liquen y musgo es la que aísla el suelo y la que come el reno; rota por vehículo o por sobrepastoreo tarda décadas en rehacerse.' },
     ],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, ABEDUL_FINNMARK],
   },
 
   // IS · ECO_ID 711
@@ -473,7 +632,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🏛️',
     color: '#8B8A55',
     resumen: 'Las dos orillas del Egeo y sus islas, más el occidente turco: el Mediterráneo clásico, con verano seco largo y lluvia de invierno. Es un paisaje agrícola de cinco mil años, y buena parte de lo que hoy parece natural son terrazas, olivares y pastizales de pastoreo antiguo.',
-    vegetacion: 'Encinar y coscojar, maquis alto de lentisco, madroño y brezo, garriga de tomillo, jara y salvia en los suelos más pobres, y pinares de pino carrasco y pino de Calabria; olivo, viña, higuera y algarrobo como cultivo estructural.',
+    vegetacion: 'Encinar y coscojar, maquis alto de lentisco, madroño y brezo, garriga de tomillo, jara y salvia en los suelos más pobres, y pinares de pino carrasco y pino de Calabria; olivo, viña, higuera y algarrobo como cultivo estructural. Hay un inventario florístico de los islotes de Enousses, al este de Quíos, que sirve de patrón de medida para toda la franja: 270 taxones de 204 géneros y 51 familias, con predominio de elementos mediterráneos y de terófitos, y la vegetación de todos los islotes dominada por comunidades de frígana, descriptas en tres franjas —litoral, sublitoral e interior—. El dato que más sirve no es la lista sino el contraste: en los islotes grandes, los que se usan para agricultura y pastoreo, el porcentaje de terófitos y de leguminosas es alto y los autores lo leen como índice de disturbio, mientras en los chicos sin uso —Vatopoula— esos índices se apartan. O sea que la proporción de anuales y leguminosas en un matorral de esta zona es legible como presión de uso, no sólo como clima.',
     fauna: 'Chacal dorado, tejón, garduña, cabra montés en las islas, tortuga mora, camaleón común en el sur y una densidad alta de reptiles y aves de matorral.',
     suelos: 'Luvisoles crómicos, terra rossa y Leptosoles sobre caliza y esquisto, con Fluvisoles fértiles en los valles del Meandro y el Gediz. Poco profundos, alcalinos, con carencia frecuente de hierro y zinc por el pH alto. El agua es todo el problema: la lluvia cae cuando el cultivo no la usa y falta cuando la necesita, así que la reserva del suelo y la sombra del árbol deciden el año. Las terrazas, el olivar de secano con cobertura y la cisterna son el sistema histórico; en los valles regados el techo actual es el descenso del acuífero y la intrusión salina en la franja costera.',
     saberes: [],
@@ -485,7 +644,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Madroño griego (Arbutus andrachne)',
     ],
     cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'trigo', 'garbanzo', 'sesamo', 'algarrobo_es'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, ENOUSSES],
   },
 
   // GR · ECO_ID 789
@@ -495,7 +654,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🐐',
     color: '#95884E',
     resumen: 'Creta y las islas del Egeo meridional: montaña caliza que llega a 2400 m a pocos kilómetros del mar, con una cara norte que recibe lluvia y una cara sur casi árida. La isla concentra una flora endémica excepcional y una historia de pastoreo caprino igual de larga.',
-    vegetacion: 'Ciprés mediterráneo silvestre y pino de Calabria en la montaña, encinar y quejigar en las umbrías, maquis y frigana —el matorral espinoso en almohadilla— dominando las laderas pastoreadas; palmeral de Theophrastus en algunos arenales del sur.',
+    vegetacion: 'Ciprés mediterráneo silvestre y pino de Calabria en la montaña, encinar y quejigar en las umbrías, maquis y frigana —el matorral espinoso en almohadilla— dominando las laderas pastoreadas; palmeral de Theophrastus en algunos arenales del sur. La vegetación anual de estas laderas se midió en Creta central con 82 parcelas de 4 m² entre 11 y 1.400 m, y el resultado cambia dónde hay que mirar: aparecieron 347 taxones de 43 familias, con un promedio de 47,2 ± 12,5 especies por parcela de 4 m², que es de las vegetaciones más ricas del Mediterráneo a esa escala. La riqueza total casi no cambia a lo largo del gradiente, pero sí cambia quién la compone, y los dos factores que más explican la composición son el pH del suelo y la altitud, que juntos dan el 21 % de la variación. Los autores identifican 22 especies indicadoras de roca calcárea y 24 de rocas pobres en cal: el sustrato se puede leer en la planta, y conviene, porque en esta isla el pH decide más que la lluvia.',
     fauna: 'Kri-kri, la cabra montés cretense, en Samariá y los islotes; tejón, garduña, quebrantahuesos en poblaciones mínimas, y una fauna de invertebrados y reptiles con altísimo endemismo.',
     suelos: 'Leptosoles y Cambisoles cálcicos sobre caliza karstificada, con terra rossa en las dolinas y llanuras interiores —Lasithi, Mesará— que son la tierra de labor real. La profundidad efectiva es de pocos decímetros en la mayor parte de la isla, y el karst se lleva el agua hacia abajo sin dejarla en el perfil. La sobrecarga de cabras es el factor histórico de degradación: sin regeneración del matorral la ladera queda con la roca a la vista. El olivar en terraza, la cisterna y las galerías de captación son la respuesta local, y en las llanuras regadas el límite hoy es la salinización del acuífero costero.',
     saberes: [],
@@ -507,7 +666,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Aulaga cretense (Sarcopoterium spinosum)',
     ],
     cultivos: ['olivo', 'vid', 'naranjo', 'algarrobo_es', 'higuera', 'almendro', 'garbanzo', 'lenteja'],
-    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE],
+    fuentes: [ATLAS_SUELOS, EEA_BIO, RESOLVE, CRETA_ANUALES],
   },
 
   // CY · ECO_ID 790
@@ -519,7 +678,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'Chipre, con dos geologías que no se parecen en nada: la ofiolita del Troodos —un fragmento de corteza oceánica levantado, con serpentinita y peridotita— y la caliza del Pentadáctilos y la llanura sedimentaria de la Mesaoria entre las dos. Es la isla más seca del Mediterráneo europeo.',
     vegetacion: 'Pino de Calabria en casi toda la montaña, cedro de Chipre en el rodal relicto del Tripylos, encinar de encina de Chipre y enebrales altos; maquis y garriga en la costa, y la Mesaoria enteramente agrícola, con cereal y olivo.',
     fauna: 'Muflón de Chipre, zorro, erizo de orejas largas, y una lista de endemismos vegetales y de reptiles muy larga para la superficie; las salinas de Larnaca y Akrotiri sostienen la invernada de flamencos.',
-    suelos: 'Sobre la ofiolita, suelos serpentínicos con relación calcio-magnesio invertida y niveles altos de níquel y cromo: fértiles en apariencia y hostiles en la práctica, con una flora adaptada que no conviene reemplazar. En la Mesaoria, Vertisoles y Calcisoles profundos, agrietables, buenos para cereal de secano pero con muy poca ventana de laboreo. El techo es hídrico y estructural a la vez: menos de 500 mm en el llano, embalses que dependen de un año bueno, y desalinización cubriendo la diferencia. Terrazas en la montaña, secano bien elegido en el llano y control estricto del riego son lo que hay.',
+    suelos: 'Sobre la ofiolita, suelos serpentínicos con relación calcio-magnesio invertida y niveles altos de níquel y cromo: fértiles en apariencia y hostiles en la práctica, con una flora adaptada que no conviene reemplazar. En la Mesaoria, Vertisoles y Calcisoles profundos, agrietables, buenos para cereal de secano pero con muy poca ventana de laboreo. El techo es hídrico y estructural a la vez: menos de 500 mm en el llano, embalses que dependen de un año bueno, y desalinización cubriendo la diferencia. Terrazas en la montaña, secano bien elegido en el llano y control estricto del riego son lo que hay. Hay una medición del Troodos que conviene leer entera, porque la mitad de ella dice lo contrario de lo que uno espera. La concentración de carbono orgánico en los primeros 25 cm, sobre 826 puntos de muestreo en 2.374 km², va de 1,7 % en bosque estatal a 1,0 % en tierra agrícola productiva, con 1,3 % en los campos abandonados, y en pares de viñedos aterrazados el abandonado tiene más carbono que el productivo (1,4 contra 0,9 % en los primeros 10 cm), con la diferencia creciendo con los años de abandono. Hasta ahí la conclusión fácil sería que abandonar acumula carbono. Pero cuando los mismos autores calculan el stock hasta la roca, corrigiendo por fragmentos gruesos, el resultado se da vuelta: 22 Mg/ha en los productivos contra 21 en los abandonados, sin ninguna tendencia con el tiempo de abandono. La corrección por pedregosidad bajó los stocks entre un 17 y un 78 %. La concentración y el stock no son lo mismo, y en una terraza de montaña que pierde suelo manda el segundo.',
     saberes: [],
     especies: [
       'Cedro de Chipre (Cedrus brevifolia)',
@@ -529,7 +688,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Algarrobo (Ceratonia siliqua)',
     ],
     cultivos: ['olivo', 'vid', 'algarrobo_es', 'almendro', 'naranjo', 'higuera', 'papa', 'garbanzo'],
-    fuentes: [ATLAS_SUELOS, WRB, RESOLVE],
+    fuentes: [ATLAS_SUELOS, WRB, RESOLVE, TROODOS_CARBONO],
   },
 
   // TR · ECO_ID 791
@@ -539,7 +698,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#6C7C52',
     resumen: 'La franja del extremo oriental del Mediterráneo que entra en Turquía por Hatay y los montes Amanos: donde el Mediterráneo se encuentra con la influencia continental y la del Próximo Oriente. Es un corredor biogeográfico estrecho y con una diversidad desproporcionada para su tamaño.',
-    vegetacion: 'Pino de Calabria y cedro del Líbano en la montaña, abetos y cipreses en los enclaves húmedos, encinar y quejigar en la franja media, y maquis de lentisco, laurel y algarrobo abajo; olivo, cítrico y pistacho como cultivos permanentes.',
+    vegetacion: 'Pino de Calabria y cedro del Líbano en la montaña, abetos y cipreses en los enclaves húmedos, encinar y quejigar en la franja media, y maquis de lentisco, laurel y algarrobo abajo; olivo, cítrico y pistacho como cultivos permanentes. Del lado chipriota hay un relevamiento genético que deja medida la amplitud real de este pinar: el Pinus brutia cubre el 66 % de la tierra forestal de la isla —unas 88.790 ha— entre 0 y 1.400 m, y su mejor desarrollo está en el bosque de Pafos, 60.159 ha que van de casi el nivel del mar al pico del Tripylos, a 1.352 m. Ese rango de 1.350 m en una sola masa continua es el dato útil: la misma especie sirve de casi la costa a la cumbre, y los autores separan dentro de Pafos tres subpoblaciones por altitud y dos por exposición —noreste y suroeste— porque la adaptación difiere. Al elegir semilla, de dónde viene importa tanto como la especie.',
     fauna: 'Oso pardo sirio en poblaciones muy reducidas, lobo, chacal, caracal, y el cuello de botella migratorio de Belén, por donde pasa buena parte de las rapaces que cruzan de Eurasia a África.',
     suelos: 'Luvisoles crómicos y terra rossa sobre caliza, Leptosoles en la ladera fuerte y Fluvisoles profundos en la llanura del Amik. Alcalinos, con clorosis férrica frecuente en frutales sobre caliza activa. El régimen es de lluvia invernal fuerte y verano seco absoluto, con episodios que en una tarde mueven el suelo de una ladera desnuda entera. Terrazas, olivar con cobertura y control de cárcavas sostienen la parte alta; en la llanura, el drenaje de los antiguos humedales dejó suelos con riesgo de salinización y hundimiento.',
     saberes: [],
@@ -551,7 +710,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Pistacho terebinto (Pistacia terebinthus)',
     ],
     cultivos: ['olivo', 'vid', 'higuera', 'almendro', 'pistacho', 'trigo', 'garbanzo', 'algarrobo_es'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, PINUS_BRUTIA],
   },
 
   // TR · ECO_ID 786, 804
@@ -561,7 +720,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#5A7350',
     resumen: 'La cadena del Tauro y la montaña anatolia mediterránea, que separa la costa de la meseta interior. Acá está el agua de Anatolia: la nieve que se acumula en invierno alimenta los karsts y sale por manantiales enormes que sostienen los regadíos de abajo.',
-    vegetacion: 'Cedro del Líbano y abeto del Tauro en la franja alta, pino negro y pino de Calabria en la media, enebrales altos de enebro fenicio y poligamo en las solanas secas, y encinar y quejigar en los fondos; pastizal de montaña arriba, pastoreado desde siempre.',
+    vegetacion: 'Cedro del Líbano y abeto del Tauro en la franja alta, pino negro y pino de Calabria en la media, enebrales altos de enebro fenicio y poligamo en las solanas secas, y encinar y quejigar en los fondos; pastizal de montaña arriba, pastoreado desde siempre. La clasificación publicada de 4.717 relevés del sur y el oeste de Turquía ordena todo esto en tres pisos, y el de arriba junta más de lo que parece: el oromediterráneo es el del cedro del Líbano, el abeto del Tauro y los dos enebros —el polígamo y el rastrero, Juniperus communis subsp. nana— en la misma franja, así que el enebral de altura no es la versión seca y pobre del cedral sino su vecino de cota. Debajo, el supramediterráneo es el del pino negro de Anatolia, los robledales termófilos con Ostrya carpinifolia y, donde entra aire templado, rodales de haya oriental. Lo que más ordena el conjunto es la altitud, y después la distancia al mar; de las variables climáticas pesan las temperaturas medias —la anual y las de los trimestres más seco, más frío y más cálido—, la mínima del invierno, la lluvia del trimestre más cálido y la del más seco, y la estacionalidad de la lluvia. O sea que lo que separa un piso del siguiente no es cuánta lluvia cae, sino cuándo cae y qué frío hace.',
     fauna: 'Cabra bezoar, corzo, lobo, oso pardo, lince caracal en el piedemonte, buitre leonado y águila real; una de las áreas de mayor riqueza de plantas bulbosas del mundo.',
     suelos: 'Leptosoles rendzínicos y Cambisoles cálcicos sobre caliza masiva, con terra rossa profunda sólo en las dolinas y los poljes de altura, que son las únicas parcelas de labor. Es karst puro: no hay escurrimiento, el agua baja por las fisuras, y lo que se hace arriba se bebe abajo. La sobrecarga de pastoreo y los incendios de pino en la ladera baja son los dos motores de pérdida de suelo, y una vez que se va, sobre la caliza no vuelve. La recuperación pasa por regular carga, mantener el enebral —que es el que fija la ladera seca— y no tocar las zonas de recarga.',
     saberes: [],
@@ -573,7 +732,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Quejigo de Anatolia (Quercus infectoria)',
     ],
     cultivos: ['manzano', 'nogal', 'damasco', 'cebada', 'trigo', 'lenteja', 'pistacho', 'papa'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, ANATOLIA_CLASIFICACION],
   },
 
   // TR · ECO_ID 703
@@ -585,7 +744,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     resumen: 'La cadena póntica que corre paralela al mar Negro, en su vertiente menos lluviosa y en la interior: bosque húmedo pero sin el exceso de la Cólquida, con nieve en invierno y sin sequía marcada. Es la zona de avellana, castaño y apicultura de Turquía.',
     vegetacion: 'Abeto de Nordmann y picea oriental en la franja alta, hayedo oriental y castañar en la media, robledal y carpinal abajo, con pino silvestre en las solanas interiores; avellano, tanto silvestre como cultivado, en toda la vertiente norte.',
     fauna: 'Oso pardo, lobo, lince, corzo, gato montés, urogallo caucásico en el extremo oriental; el paso migratorio de rapaces por la costa es de los mayores de Eurasia.',
-    suelos: 'Cambisoles y Luvisoles dístricos sobre andesita, esquisto y flysch, ácidos y de buena profundidad bajo bosque, con Leptosoles en las crestas. La lluvia bien repartida y las pendientes fuertes hacen que la erosión aparezca apenas se abre el dosel: el avellanar en terraza, que es el sistema tradicional, sostiene la ladera cuando se mantiene la cobertura entre plantas y la pierde cuando se limpia el suelo con herbicida. La materia orgánica es alta y el pH bajo, así que el encalado y el aporte de bases pesan más que el nitrógeno.',
+    suelos: 'Cambisoles y Luvisoles dístricos sobre andesita, esquisto y flysch, ácidos y de buena profundidad bajo bosque, con Leptosoles en las crestas. La lluvia bien repartida y las pendientes fuertes hacen que la erosión aparezca apenas se abre el dosel: el avellanar en terraza, que es el sistema tradicional, sostiene la ladera cuando se mantiene la cobertura entre plantas y la pierde cuando se limpia el suelo con herbicida. La materia orgánica es alta y el pH bajo, así que el encalado y el aporte de bases pesan más que el nitrógeno. Y una advertencia sobre con qué se puede mapear eso. En una unidad forestal de 600 hectáreas en Goldag, Sinop, con hayedo oriental puro entre 500 y 970 metros, se clasificó la calidad de sitio por tres caminos: el directo, combinando propiedades de suelo, precipitación y temperatura y topografía —altitud, pendiente, orientación y forma del terreno—, que dio cinco clases nombradas por humedad, de seca a muy húmeda; el indirecto por índice de sitio, que dio tres; y el de teledetección. Acá está el resultado que conviene saber: la clasificación supervisada con QuickBird alcanzó 90,7 % de exactitud y kappa 0,88 y coincidió significativamente con el método directo de campo, mientras que con Landsat 7 ETM quedó en 73,3 % y kappa 0,67 y la coincidencia con el campo no fue estadísticamente significativa. O sea: en una ladera así, una imagen de 30 metros no reproduce la clase de sitio que se mide con pala.',
     saberes: [],
     especies: [
       'Abeto de Nordmann (Abies nordmanniana)',
@@ -595,7 +754,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Picea oriental (Picea orientalis)',
     ],
     cultivos: ['avellano', 'maiz_tropical', 'castano', 'nogal', 'cerezo', 'arandano', 'papa', 'raigras'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, HAYEDO_SINOP],
   },
 
   // TR · ECO_ID 652, 725
@@ -605,7 +764,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌾',
     color: '#9E9257',
     resumen: 'La meseta interior, encerrada entre el Tauro y la cadena póntica, que le cortan la humedad de los dos mares: de 250 a 400 mm al año, invierno frío y verano seco y caluroso. Es el granero de Turquía y, a la vez, el caso más serio de sobreextracción de acuífero de la región.',
-    vegetacion: 'Estepa de ajenjo, festuca y plumeros, con bosquetes abiertos de quejigo y enebro en las lomas y almendro y pistacho silvestres en las quebradas; cereal de secano, remolacha, girasol y regadío intensivo en las cuencas cerradas.',
+    vegetacion: 'Estepa de ajenjo, festuca y plumeros, con bosquetes abiertos de quejigo y enebro en las lomas y almendro y pistacho silvestres en las quebradas; cereal de secano, remolacha, girasol y regadío intensivo en las cuencas cerradas. Un relevamiento de pastizal cerca de Paşalı, en Nevşehir, midió 37 sitios sobre 733 hectáreas en 2004 y encontró 78 especies: 60 hierbas de hoja ancha, 11 gramíneas y 7 arbustos. Dos resultados importan. El primero es que la especie más abundante no es un pasto sino un arbusto enano, Thymus sipyleus, con el 7,2 % de la cobertura, seguido de Festuca valesiaca con 6,9 % y Bromus tomentellus con 6,4 %: en una estepa de festucas, la que domina es la mata de tomillo, que es la firma del deterioro y no del pastizal sano. El segundo es que el puntaje de condición de los 37 sitios cayó entre 1,20 y 3,40, o sea entre muy pobre y pobre: ninguno de los 37 llegó a regular. Lo que acompaña la mejor condición es la cobertura de Bromus tomentellus, una perenne, que es el indicador a seguir si se maneja carga.',
     fauna: 'Gacela subgutural en el sur, lobo, zorro, gato de las estepas, avutarda, alondras y aláudidos de estepa; los lagos salinos —el Tuz Gölü— sostienen la mayor colonia de flamenco de la región.',
     suelos: 'Kastanozems y Calcisoles sobre loess y sedimentos lacustres, con Solonchaks y Solonetz alrededor de los lagos salinos y Vertisoles en las cuencas. Fértiles en química, muy limitados en agua, con carbonato y a veces yeso a poca profundidad. Dos degradaciones dominan: la salinización del regadío sin drenaje y la subsidencia por bombeo, que en la cuenca de Konya abrió cientos de dolinas de colapso. El barbecho tradicional con rastrojo, la siembra directa, las cortinas rompeviento y el cambio a cultivos de menor demanda hídrica son las palancas reales; el riego eficiente por sí solo aumentó la superficie regada y empeoró el balance.',
     saberes: [],
@@ -620,7 +779,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     aptitud: [
       { uso: 'huerta', delta: -10, razon: 'El suelo da: lo que no da es el agua. La cuenca de Konya lleva décadas de bombeo por encima de la recarga, con subsidencia y dolinas de colapso, y el regadío sin drenaje saliniza. Huerta acá se decide por el agua disponible, no por la fertilidad.' },
     ],
-    fuentes: [TARIM, WRB, RESOLVE],
+    fuentes: [TARIM, WRB, RESOLVE, ANATOLIA_PASTIZAL],
   },
 
   // TR · ECO_ID 662, 727
@@ -630,7 +789,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '❄️',
     color: '#7E8266',
     resumen: 'El altiplano del este turco, entre 1500 y 2500 m, con volcanes como el Ararat y el Nemrut y el lago Van en el centro. Invierno largo y muy frío —seis meses con nieve—, verano corto y seco. Es la cabecera del Éufrates, el Tigris y el Aras: el agua de media región nace acá.',
-    vegetacion: 'Robledales abiertos de quejigo y roble de Líbano en las laderas más húmedas, estepa de ajenjo y astrágalos en almohadilla en el altiplano, pastizal subalpino en las cumbres y bosques de galería de álamo y sauce en los ríos.',
+    vegetacion: 'Robledales abiertos de quejigo y roble de Líbano en las laderas más húmedas, estepa de ajenjo y astrágalos en almohadilla en el altiplano, pastizal subalpino en las cumbres y bosques de galería de álamo y sauce en los ríos. Sobre quemar, que es la otra práctica de este pastizal, hay una medición de 2012 y 2013 en estepa de altura no pastoreada de la región, y el veredicto tiene dos caras. La biomasa aérea y la hojarasca cayeron el año siguiente al fuego y tendieron a subir el segundo; en las parcelas quemadas la proporción de gramíneas perennes aumentó y las hierbas de hoja ancha bajaron. Sobre el suelo —y se midieron pH, materia orgánica, nitratos, amonio, nitrógeno, fósforo, calcio, potasio, magnesio, sodio, capacidad de intercambio, carbonato, humedad y hasta recuentos de bacterias y hongos— el fuego no tuvo efecto, porque la variación entre tratamientos no fue consistente entre localidades. La conclusión de los autores es la que hay que retener: el fuego es indeseable si lo que se busca es producción de pasto, pero puede considerarse una herramienta si lo que se busca es cambiar la composición botánica. No es una práctica buena o mala: depende de para qué.',
     fauna: 'Cabra bezoar, oveja armenia, lobo, oso pardo, lince, y una avifauna de humedal de altura —flamenco, malvasía, zampullines— en Van, Erçek y los lagos volcánicos.',
     suelos: 'Cambisoles y Leptosoles sobre volcánicas y calizas, con Kastanozems en las cuencas planas y suelos con crioturbación en las cotas altas. Profundidad escasa, pedregosidad alta y un ciclo de hielo-deshielo que desmenuza la superficie y la deja lista para irse con el primer deshielo. La ganadería extensiva con pastoreo estival es el uso que la región soporta, y la degradación característica es el sobrepastoreo del pastizal de altura seguido de erosión laminar y en surcos. El bosque de galería y los prados de siega de los valles son las dos piezas que conviene no perder.',
     saberes: [],
@@ -642,7 +801,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Espino cerval (Rhamnus pallasii)',
     ],
     cultivos: ['trigo', 'cebada', 'papa', 'lenteja', 'nogal', 'damasco', 'alfalfa', 'trebol_blanco'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, FUEGO_ANATOLIA],
   },
 
   // TR · ECO_ID 688
@@ -652,7 +811,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌳',
     color: '#8A8250',
     resumen: 'El extremo noroccidental del Zagros, en el sudeste de Turquía —Hakkari, Şırnak, el sur de Van—: bosque abierto de roble sobre montaña plegada, con lluvia de invierno y primavera y un verano seco de cinco meses. Es el bosque de secano más extenso de Asia occidental y la cuna de la agricultura de cereal.',
-    vegetacion: 'Robledal abierto de roble de Líbano, roble brant y quejigo, con almendro, pistacho, arce montpellier, espino y peral silvestre; pastizal y estepa de gramíneas entre los árboles, y bosques de galería de álamo y plátano oriental en los ríos.',
+    vegetacion: 'Robledal abierto de roble de Líbano, roble brant y quejigo, con almendro, pistacho, arce montpellier, espino y peral silvestre; pastizal y estepa de gramíneas entre los árboles, y bosques de galería de álamo y plátano oriental en los ríos. Cuánto cuesta abrir ese dosel está medido, aunque del lado iraní: en nueve manchones de roble brant del Kurdistán de Irán, todos en ladera norte a 1.550 metros con 658 mm de lluvia, se compararon tres grados de perturbación definidos por cobertura de copa —más del 50 %, entre 10 y 50 %, y menos del 10 %, con pastoreo permanente y corta extensiva en el último— sobre 195 taxones relevados, de los cuales 16 leñosos. Las especies exclusivas de cada grado fueron 47, 25 y 15, y las indicadoras 21, 5 y 7. En el suelo, el carbono orgánico, el nitrógeno total y la arcilla se diferencian del resto sólo en el grado menos perturbado, y el fósforo asimilable es significativamente el más bajo en el más perturbado. Pero el detalle que cambia la decisión de manejo es la curva de rarefacción: la del sitio moderadamente perturbado se parece a la del menos perturbado. La pérdida no es proporcional a la apertura; el escalón está entre el uso moderado y el severo.',
     fauna: 'Cabra bezoar, oveja armenia, oso pardo, leopardo persa en registros esporádicos, lobo, hiena rayada, buitre leonado y quebrantahuesos.',
     suelos: 'Leptosoles y Cambisoles cálcicos sobre caliza y roca metamórfica, delgados en la ladera y algo más profundos en los coluvios y los fondos de valle, donde está toda la agricultura. Alcalinos, con carbonato libre y hierro poco disponible. La cobertura arbórea abierta es lo que mantiene el suelo en pendiente: el corte para leña, el pastoreo de cabras y los incendios abren claros que la lluvia de invierno vacía en pocas temporadas. El sistema histórico combina cereal de secano en el valle, frutal de secano y pastoreo estacional en el monte, y funciona mientras el roble se mantenga en rebrote.',
     saberes: [],
@@ -664,6 +823,6 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Plátano oriental (Platanus orientalis)',
     ],
     cultivos: ['trigo', 'cebada', 'garbanzo', 'lenteja', 'nogal', 'vid', 'pistacho', 'damasco'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, ZAGROS_PERTURBACION],
   },
 };

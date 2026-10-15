@@ -7,6 +7,8 @@ y después de abrir el muestreo. La entrega cruda vive en
 | Lote | Biomas | Estado |
 |---|---|---|
 | 01 | `bosque_tropical_humedo`, `bosque_tropical_seco`, `conifera_tropical` | **entregado, no se monta** (10/10/2026) |
+| 02 | `sabana_tropical`, `pastizal_templado` ×2, `pastizal_montano` | **montado 3 de 4** el 15/10/2026 |
+| 03 | `pastizal_inundable`, `tundra`, `mediterraneo` | entregado el 12/10/2026, **sin abrir todavía** |
 
 ---
 
@@ -86,3 +88,112 @@ Los tres biomas forestales vuelven al final, y con otra pregunta: no cuánto
 produce el sotobosque, sino **si algún organismo publica carga animal admisible
 para sistemas silvopastoriles** de ese bioma. Es la pregunta que un predio
 forestado realmente tiene.
+
+---
+
+## Lote 02 — tres de cuatro, y las tres primeras mediciones entran al código
+
+Se abrieron **las cuatro**, no la muestra: lo que vuelve de este encargo no es
+texto de una ficha, es un número que multiplica la carga animal y el agua a
+almacenar. Tres verifican y se montan en `lib/forrajeMedido.ts` (`f56b572`); una
+no entra.
+
+| entrada | lo que afirmaba | |
+|---|---|---|
+| `pastizal_templado` · MLRA 53B | 2.733 y 2.358 lb/ac/año, Loamy Upland | ✅ literal |
+| `pastizal_templado` · MLRA 81B | 680–2.125 gramíneas + 56–175 hierbas lb/ac | ✅ literal, y la ficha dice más |
+| `pastizal_montano` · Altiplano | 626 · 1.238 · 1.341 · 1.958 kg MS/ha | ✅ literal, confirmado contra la Tabla 3 |
+| `sabana_tropical` · Caatinga | 400 kg/ha/año de forraje disponible | ❌ **bioma equivocado y no abre** |
+
+### Lo que el lote demuestra, que vale más que las tres cifras
+
+**La escalera de `prodForrajera` se equivoca en las dos direcciones.**
+
+| sitio | lluvia anual | la escalera dice | medido |
+|---|---|---|---|
+| Dakota del N. y del S., Loamy Upland | 381–508 mm | 1.500–3.000 | **2.643–3.063** |
+| Edwards Plateau, Very Shallow | 508–762 mm | 3.000–5.000 | **825–2.578** |
+| Altiplano de Puno, 3.900–4.300 m | 410–1.119 mm | 1.500–7.000 | **626–1.958** |
+
+Con **menos** lluvia que el altiplano peruano, la pradera de Dakota produce
+**más**. Una función de una sola variable no puede dar las dos cosas bien, se
+la calibre como se la calibre: lo que falta es el frío, el largo de la estación
+de crecimiento y la profundidad del suelo. Hasta hoy el argumento para
+reemplazarla era que no tenía fuente; ahora hay tres mediciones publicadas que
+muestran el tamaño y la **forma** del error.
+
+### El dato del Altiplano casi se monta mal
+
+El resumen informa 626 / 1.238 / 1.341 / 1.958 kg MS/ha y parecen biomasa en
+pie —que en un pajonal perenne de *Festuca* y *Calamagrostis* sería un stock
+acumulado de varios años y no una producción anual—. Con eso montado, la app
+habría dicho que el pajonal produce el doble de lo que produce.
+
+No lo son, y lo prueba la Tabla 3 del mismo trabajo, que publica la biomasa
+**total** acumulada y la fracción que corresponde al crecimiento del año:
+
+| pastizal | total en pie | anual | permanente |
+|---|---|---|---|
+| *Festuca dolichophylla* «Chilliguar» | 2.554,1 | 48,46 % | 51,54 % |
+| *Calamagrostis antoniana* «Phorke» | 3.185,2 | 61,46 % | 38,54 % |
+| *Festuca dichoclada* «Yurac ichu» | 3.972,2 | 33,75 % | 66,25 % |
+| *Calamagrostis amoena* «Kheña» | 1.483,7 | 42,20 % | 57,78 % |
+
+3.185,2 × 0,6146 = 1.958, que es el número del resumen: **los cuatro ya son la
+fracción anual**. La entrega estaba bien y la verificación sirvió igual, porque
+sin abrir la tabla no había forma de saberlo.
+
+De paso queda el dato que esto destapa, y es de los que sirven en pantalla: en
+un pajonal altoandino **entre un tercio y dos tercios de lo que se ve parado no
+creció este año**. Los autores dicen que determinar esas dos fracciones es
+probablemente la contribución más importante del trabajo, y que en *Festuca
+dolichophylla* la biomasa se mantiene constante en 5 de las 6 cosechas: «sólo
+existe un reverdecimiento del pastizal pero no un incremento real de materia
+seca».
+
+### Por qué la Caatinga no entra
+
+Dos motivos independientes, y cualquiera de los dos alcanza:
+
+1. **Es otro bioma.** Venía como `sabana_tropical`, que es `BIOME_NUM` 7, y la
+   Caatinga es `BIOME_NUM` **2** —bosque tropical y subtropical seco—.
+   Verificado contra el FeatureServer de RESOLVE: `ECO_ID` 525, biome 2.
+   Montarla ahí habría metido una cifra de bosque seco en la ficha de sabana,
+   que es justo donde pastorea la mayoría.
+2. **No abre.** La URL del MMA brasileño redirige hoy a `require_login`, no hay
+   copia en archive.org y el path sin `@@download` devuelve la plantilla del
+   sitio. La primera condición del circuito es que abra.
+
+No es una entrega mal hecha: es una ficha mal asignada. La cifra —400 kg/ha/año
+de forraje disponible y 10 ha por cabeza al año en caatinga arbórea— sería
+pertinente para `bosque_tropical_seco`, que sigue vacío desde el lote 01, si
+aparece con una fuente que se pueda abrir.
+
+**Con lo cual la sabana tropical sigue sin ninguna medición**, y es el bioma
+donde más falta: es donde cae la mayoría de los predios ganaderos. Hay un test
+que lo dice en voz alta y que habrá que cambiar cuando entre una.
+
+### Lo que NO se hizo, a propósito
+
+**No se reemplazó `prodForrajera`.** Tres puntos de dos biomas no reemplazan una
+función global, y el bioma que más importa no tiene ninguno. Además la función
+recibe la lluvia y nada más —no sabe en qué bioma está el predio— así que
+usarla con esto pide cambiarle la firma en las tres copias: `produccion.ts`,
+`pastoreo.ts` y el panel de Cobertura. Cambiar un número sin fuente por otro sin
+cobertura no es un arreglo.
+
+Lo que sí quedó: las mediciones con su método, su rango de validez y su
+estacionalidad; doce tests que las defienden contra la fuente —incluidas las
+cuatro multiplicaciones de la Tabla 3 y la conversión exacta de lb/acre, que es
+0,45359237 ÷ 0,40468564224—; y el tamaño del error escrito arriba de la
+escalera, para que quien la toque sepa contra qué la está comparando.
+
+### Una cosa más que la entrega no copió y el código sí
+
+- La ficha de Texas publica la **curva de crecimiento mensual**:
+  2-3-5-13-23-15-4-5-15-7-5-3 % de enero a diciembre. Mayo es el 23 % y julio y
+  agosto juntos son el 9 %. Con eso la estacionalidad deja de ser una frase.
+- Y el trabajo del Altiplano publica **receptividad por condición**: 2 unidades
+  ovino por hectárea y año en los dos pastizales de planicie y 1 en los dos de
+  áreas colinosas. Quedó anotada en `donde_deja_de_valer`, sin convertir a
+  equivalente vaca: la conversión se hace acá, no en la entrega.

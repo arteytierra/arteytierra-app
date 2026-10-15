@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@arteytierra/web", "dev", "--port", "3111"],
       "port": 3111
+    },
+    {
+      "name": "terreno",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@arteytierra/terreno", "dev", "--port", "3001"],
+      "port": 3001
     }
   ]
 }

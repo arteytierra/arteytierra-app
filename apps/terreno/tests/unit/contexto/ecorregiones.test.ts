@@ -68,6 +68,24 @@ describe('catálogos de fichas', () => {
     }
   });
 
+  it('ningún texto de ficha lleva Markdown', () => {
+    // `DatoLinea` en ContextoPanel y la tabla de InformeView renderizan el
+    // texto plano, así que un `**así**` se le muestra al usuario con los
+    // asteriscos puestos, en pantalla y en el informe impreso. Pasó: doce
+    // fichas de Indomalaya lo tuvieron en producción, y se escribieron así
+    // porque el que las redactó estaba escribiendo prosa, no Markdown, y el
+    // énfasis salió solo. Para énfasis no hay recurso; para un término en otro
+    // idioma, las comillas angulares que el catálogo ya usa.
+    //
+    // El guión bajo no entra en la lista a propósito: aparece en `ECO_ID`, que
+    // es el nombre real del identificador de RESOLVE y se muestra así.
+    for (const f of Object.values({ ...BIOMAS, ...BIOMAS_REGIONALES, ...BIOMAS_GLOBALES })) {
+      const textos = [f.nombre, f.resumen, f.vegetacion, f.fauna, f.suelos,
+        ...(f.aptitud ?? []).map(a => a.razon)];
+      for (const t of textos) expect(t, f.id).not.toMatch(/[*`]/);
+    }
+  });
+
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de

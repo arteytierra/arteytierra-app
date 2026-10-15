@@ -31,6 +31,39 @@ const RESOLVE = { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.goo
 const BEC_BC = { label: 'BC — Biogeoclimatic Ecosystem Classification', url: 'https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/ecosystems/biogeoclimatic-ecosystem-classification' };
 const CAFF = { label: 'CAFF — Conservation of Arctic Flora and Fauna', url: 'https://www.caff.is/' };
 
+/* ── Lote 06: el boreal de Quebec y dos sitios de Ellesmere ────────────── */
+
+/** 147 parcelas permanentes en el limite del bosque continuo de Quebec. No
+ *  representan todo el boreal cerrado del escudo. */
+const QUEBEC_BOREAL = { label: 'International Journal of Forestry Research 2009:398389, 1-13 — Relationships between Structure, Composition, and Dynamics of the Pristine Northern Boreal Forest and Air Temperature, Precipitation, and Soil Texture in Quebec (Canada)', url: 'https://doi.org/10.1155/2009/398389' };
+
+/**
+ * Doce deslizamientos de capa activa de distintas edades en tres areas de la
+ * peninsula de Fosheim, isla de Ellesmere, a 80 °N. No caracteriza toda la
+ * tundra artica canadiense.
+ *
+ * La entrega afirmaba 54 plantas vasculares registradas y comunidades «desde
+ * semidesierto polar hasta tundra de arbustos enanos postrados». Eso no esta
+ * en el resumen publicado y el texto completo no se pudo abrir desde aca
+ * —editor y repositorio, los dos con verificacion anti-bot—, asi que la ficha
+ * no lo dice. Lo que si dice el resumen es el numero que importa: cincuenta
+ * anos para volver a una composicion parecida, y todavia no igual.
+ */
+const FOSHEIM_DESLIZAMIENTOS = { label: 'Journal of Geophysical Research: Biogeosciences 115(G4) — Vegetation colonization of permafrost-related landslides, Ellesmere Island, Canadian High Arctic', url: 'https://doi.org/10.1029/2010JG001384' };
+
+/**
+ * Suelos de dos desiertos polares —uno dolomitico y uno granitico— cerca del
+ * fiordo Alexandra, Ellesmere, en julio y agosto de 2013. Es una localidad:
+ * no describe todos los desiertos polares del Alto Artico.
+ *
+ * La entrega agregaba que los sitios estan a 650 y 500 m y que la media de la
+ * estacion de crecimiento es de 3 a 8 °C con menos de 50 mm al ano. Nada de
+ * eso esta en el resumen y este articulo es de acceso cerrado —sin copia en
+ * repositorio—, asi que no se monta. El resumen, que es metadato publicado del
+ * editor, alcanza para todo lo demas.
+ */
+const DIAPIROS_ELLESMERE = { label: 'Journal of Geophysical Research: Biogeosciences 125(3) — Could Cryoturbic Diapirs Be Key for Understanding Ecological Feedbacks to Climate Change in High Arctic Polar Deserts?', url: 'https://doi.org/10.1029/2019JG005263' };
+
 /**
  * Y las específicas de cada región, que son las que dicen algo que las tres de
  * arriba no pueden decir. Las tres compartidas describen el marco: dónde
@@ -147,7 +180,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#3B5F44',
     resumen: 'La faja de bosque boreal continuo sobre roca precámbrica: Abitibi, Lac-Saint-Jean, Saguenay, el norte de Ontario y Manitoba, el este de Quebec y Terranova insular. Bosque cerrado, decenas de miles de lagos, y un ciclo de fuego de un siglo o siglo y medio que es el que arma el mosaico.',
-    vegetacion: 'Abeto negro, abeto balsámico, pino banksiano, álamo temblón y abedul papelero, sobre un colchón continuo de musgos plumosos y esfagno en los bajos.',
+    vegetacion: 'Abeto negro, abeto balsámico, pino banksiano, álamo temblón y abedul papelero, sobre un colchón continuo de musgos plumosos y esfagno en los bajos. Un análisis de 147 parcelas permanentes en el límite del bosque continuo de Quebec encontró que la composición de especies de cada rodal se asocia a la edad del rodal, la textura del suelo, la temperatura del aire y el régimen de lluvia, y que la dinámica posterior al establecimiento de la cohorte pionera difiere según el régimen térmico y de precipitación, probablemente por su efecto sobre el crecimiento. De ahí sale un resultado que invierte la intuición: los cambios de composición y la fase de senescencia del bosque maduro ocurren más temprano y avanzan más rápido en los sitios más fértiles, porque el árbol crece antes y la especie pionera también muere antes. El sitio bueno no es el estable: es el que rota más rápido. Los autores proyectan que el calentamiento debería acelerar esa sucesión por la misma vía.',
     fauna: 'Alce, oso negro, lobo, marta, castor y el caribú forestal, en declive por la fragmentación; somorgujos, patos y paseriformes boreales usan la red de lagos y turberas para nidificar.',
     suelos: 'Podzoles delgados sobre till y roca desnuda, ácidos y con poca reserva de bases. La excepción es el Cinturón de Arcilla de Abitibi y Cochrane, con arcillas lacustres profundas, donde sí hay forraje y ganadería: ahí el problema se invierte —drenaje lento, riesgo de compactación en húmedo y una temporada de 90 a 110 días que obliga a ciclos cortos.',
     saberes: [],
@@ -162,7 +195,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     aptitud: [
       { uso: 'pasturas', delta: 10, razon: 'El Cinturón de Arcilla de Abitibi y Cochrane rompe la regla del Escudo: arcilla lacustre profunda, con forraje y ganadería reales. Ahí el problema se invierte y pasa a ser drenaje lento y compactación en húmedo, no falta de suelo.' },
     ],
-    fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE],
+    fuentes: [CANSIS_ECO, CANSIS_SUELOS, RESOLVE, QUEBEC_BOREAL],
   },
 
   // CA · ECO_ID 374, 378, 379, 381, 382, 383
@@ -194,7 +227,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     emoji: '❄️',
     color: '#8AA0A6',
     resumen: 'La tundra continental y de las islas del sur del archipiélago, del Bajo y el Medio Ártico: sin árboles, con permafrost continuo, suelo estructurado en polígonos y una temporada de crecimiento de seis a diez semanas en que todo ocurre a la vez.',
-    vegetacion: 'Tundra arbustiva de abedul enano y sauces bajos al sur, que se abre hacia el norte en tapiz de cárices, algodonera, Dryas, musgos y líquenes; los arbustos vienen avanzando hacia el norte con el calentamiento.',
+    vegetacion: 'Tundra arbustiva de abedul enano y sauces bajos al sur, que se abre hacia el norte en tapiz de cárices, algodonera, Dryas, musgos y líquenes; los arbustos vienen avanzando hacia el norte con el calentamiento. Cuánto tarda en cerrarse una herida acá está medido: en doce deslizamientos de capa activa de distintas edades, repartidos en tres áreas de la península de Fosheim, en Ellesmere, a 80 grados de latitud norte, hacen falta cincuenta años para que el parche recupere una composición florística parecida a la del terreno sin disturbar —y todavía con menos riqueza, cobertura discontinua y sin estratificación bien formada. A escala de paisaje la edad del deslizamiento predice el desarrollo de la vegetación, pero a escala regional importa tanto o más en qué área está, por el mesoclima: donde el verano es más cálido la recuperación es más corta, lo que mide hasta qué punto esta vegetación responde a diferencias chicas de temperatura del aire.',
     fauna: 'Grandes manadas de caribú de la tundra, buey almizclero, oso grizzly de la barren ground, zorro ártico, lemming —cuyos ciclos gobiernan a los depredadores— y millones de aves acuáticas y limícolas que nidifican en verano.',
     suelos: 'Criosoles túrbicos y estáticos sobre permafrost continuo, con crioturbación que da suelo poligonal, círculos de piedras y montículos de escarcha. La capa activa rara vez pasa los 80 cm, el agua no percola y el drenaje es lateral sobre el hielo. Cualquier perturbación de la cubierta vegetal profundiza el deshielo y es difícil de revertir.',
     saberes: [],
@@ -205,7 +238,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       'Dryas (Dryas integrifolia)',
       'Liquen de reno (Cladonia rangiferina)',
     ],
-    fuentes: [CAFF, CANSIS_SUELOS, RESOLVE],
+    fuentes: [CAFF, CANSIS_SUELOS, RESOLVE, FOSHEIM_DESLIZAMIENTOS],
   },
 
   // CA · ECO_ID 412
@@ -217,7 +250,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
     resumen: 'Las islas del norte del archipiélago —Ellesmere, Devon, Axel Heiberg, Melville—: desierto polar con menos de 150 mm de precipitación al año, cobertura vegetal por debajo del 20 % en buena parte y meses enteros sin sol. Los oasis térmicos de fondo de fiordo concentran casi toda la vida.',
     vegetacion: 'Plantas en cojín y rastreras sobre suelo desnudo: sajifraga púrpura, Dryas, sauce ártico postrado, amapola ártica, musgos y costras de líquenes en las lajas.',
     fauna: 'Buey almizclero, caribú de Peary —en situación crítica—, liebre y zorro árticos, lobo blanco y búho nival; la costa y las polinias sostienen morsas, focas y aves marinas.',
-    suelos: 'Criosoles estáticos y regosólicos de desierto polar, casi sin horizonte orgánico, con crioturbación, suelo poligonal de cuña de hielo y sales en superficie por evaporación. La formación de suelo es tan lenta que la huella de un vehículo puede quedar marcada durante décadas.',
+    suelos: 'Criosoles estáticos y regosólicos de desierto polar, casi sin horizonte orgánico, con crioturbación, suelo poligonal de cuña de hielo y sales en superficie por evaporación. La formación de suelo es tan lenta que la huella de un vehículo puede quedar marcada durante décadas. Y hay una trampa en leer el carbono de estos suelos. En dos desiertos polares cerca del fiordo Alexandra, en Ellesmere —uno sobre dolomita y otro sobre granito—, los montículos de crioturbación que tienen diapiro, o sea una lengua de horizonte rico en carbono empujada hacia arriba, mostraron 18 % más carbono orgánico en el dolomítico y 9 % más en el granítico, y 29 % más nitrógeno disuelto total en el dolomítico. Pero la tasa bruta de mineralización de nitrógeno en esos mismos montículos fue 30 % más baja en el dolomítico y 48 % más baja en el granítico. Más carbono y más nitrógeno disuelto no es más nitrógeno disponible: el carbono de los diapiros es más recalcitrante y con más polisacáridos —lo que probablemente alimenta el propio diapirismo, porque sube la viscosidad del suelo— y la actividad microbiana baja. Igual son la fuente de nutrientes de la que depende Salix arctica. Es el mismo aviso que el stock de carbono de una terraza de montaña: el porcentaje y la tasa se mueven para lados distintos, y hay que mirar los dos. Estos desiertos polares cubren el 26 % del Ártico.',
     saberes: [],
     especies: [
       'Sajifraga púrpura (Saxifraga oppositifolia)',
@@ -231,7 +264,7 @@ export const BIOMAS_REGIONALES_CANADA: Record<string, BiomaFicha> = {
       { uso: 'forestal', delta: -35, razon: 'Está a miles de kilómetros del límite del bosque.' },
       { uso: 'reserva', delta: 30, razon: 'La formación de suelo es tan lenta que la huella de un vehículo dura décadas, y los oasis de fondo de fiordo concentran casi toda la vida del archipiélago en muy poca superficie.' },
     ],
-    fuentes: [CAFF, CANSIS_ECO, RESOLVE],
+    fuentes: [CAFF, CANSIS_ECO, RESOLVE, DIAPIROS_ELLESMERE],
   },
 
   // CA · ECO_ID 415, 421
