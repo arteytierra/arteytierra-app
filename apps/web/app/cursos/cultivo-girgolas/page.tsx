@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CarouselGirgolas } from '@/components/cursos/CarouselGirgolas';
 import { CourseEnrollForm } from '@/components/cursos/CourseEnrollForm';
+import { getCourse } from '@/lib/courses/data';
+import { courseCatalogJsonLd } from '@/lib/courses/jsonld';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -11,6 +13,12 @@ export const metadata: Metadata = {
   description: 'Tres encuentros presenciales en Tay Pichín para aprender todo el proceso del cultivo de hongos: micelio, sustrato e incubación, cosecha y escalado. FUNGO × Arte y Tierra.',
   alternates: { canonical: '/cursos/cultivo-girgolas' },
 };
+
+/** Datos estructurados: esta ficha no usa `CourseDetailPage`, asi que los emite ella. */
+const JSONLD = courseCatalogJsonLd(getCourse('cultivo-girgolas')!, {
+  locale: 'es',
+  path: '/cursos/cultivo-girgolas',
+});
 
 const MODULOS = [
   {
@@ -64,6 +72,10 @@ export default function CultivoGirgolesPage() {
   return (
     <>
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
+      />
       <main>
 
       {/* HERO */}

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getCourse } from '@/lib/courses/data';
+import { cantidadDeDias, rangoFechas, rangoPrecios } from '@/lib/courses/formato';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -21,15 +23,21 @@ const CALENDARIO = [
   { color: 'bg-clay-900',  text: 'text-bone-50',  tag: 'Prochainement',                     title: 'Atelier d\'Enduits',                              href: '/fr/cursos' },
 ];
 
+/* Fechas y precios del intensivo: derivados del catálogo, no tipeados. */
+const BIOARQ = getCourse('bioarquitectura')!;
+const BIOARQ_FECHAS = BIOARQ.fechas ? rangoFechas(BIOARQ.fechas, 'fr') : '';
+const BIOARQ_DIAS = BIOARQ.fechas ? cantidadDeDias(BIOARQ.fechas) : 0;
+const BIOARQ_PRECIOS = rangoPrecios(BIOARQ.opciones) ?? '';
+
 const DESTACADOS = [
   {
     href: '/fr/cursos/bioarquitectura',
     tag: 'Atelier intensif · Décembre 2026',
     badge: 'PLACES DISPONIBLES',
     title: 'Bioarchitecture, Construction et Territoire',
-    meta: '5 au 8 décembre 2026 · 4 jours · Jonatan Palma',
+    meta: `${BIOARQ_FECHAS} · ${BIOARQ_DIAS} jours · Jonatan Palma`,
     desc: 'Immersion condensée en bioconstruction. Nous travaillons avec des techniques traditionnelles et contemporaines adaptées au territoire local — en combinant théorie, pratique constructive et processus communautaires.',
-    prix: '$130.000 ARS — à partir de USD 100',
+    prix: `${BIOARQ_PRECIOS} ARS`,
     img: '/img/cursos/vueltatierra/1.jpg',
   },
   {

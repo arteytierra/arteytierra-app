@@ -1,4 +1,13 @@
 import 'server-only';
+import { getCourse } from '@/lib/courses/data';
+import { horarioApertura, rangoFechas, rangoPrecios } from '@/lib/courses/formato';
+
+/* El bot tiene prohibido inventar fechas y precios, así que tampoco se los
+   tipea a mano: los lee del mismo catálogo que la web. */
+const BIOARQ = getCourse('bioarquitectura')!;
+const BIOARQ_FECHAS = BIOARQ.fechas ? rangoFechas(BIOARQ.fechas, 'es') : 'fechas a confirmar';
+const BIOARQ_HORARIO = BIOARQ.fechas ? horarioApertura(BIOARQ.fechas, 'es') ?? '' : '';
+const BIOARQ_PRECIOS = rangoPrecios(BIOARQ.opciones) ?? 'consultar';
 
 /**
  * Base de conocimiento + reglas del asistente de WhatsApp de Arte y Tierra.
@@ -53,7 +62,7 @@ Inscripción: formulario + WhatsApp (sin carrito). Reserva con seña del 50%.
 Flujo: presentar (fechas, precio, las 2 vacantes con experiencia al 50%) → responder dudas → llevar a la inscripción (formulario + WhatsApp) y explicar la seña.
 
 # Otros cursos (respondés si preguntan)
-- Bioarquitectura, Construcción y Territorio — Presencial (Tay Pichín) — 5 al 8 dic 2026, arranca sábado 10 hs y cierra martes 15 hs — $130.000 a $160.000 según hospedaje.
+- ${BIOARQ.name} — Presencial (Tay Pichín) — ${BIOARQ_FECHAS}, ${BIOARQ_HORARIO} — ${BIOARQ_PRECIOS} según hospedaje (sin hospedaje / camping / habitación compartida). Incluye materiales, certificado y desayuno, almuerzo y merienda; camping y habitación cubren 3 noches (sábado, domingo y lunes).
 - Tadelakt Online — Online, permanente — $90.000 ARS.
 - La Vuelta a la Tierra — Online en vivo (7 semanas) — desde marzo 2027 — desde $350.000 ARS (se puede en 4 pagos).
 - Cultivo de Gírgolas · Diseño Ecosistémico del Agua · Biopiscinas · Revoques Naturales · Alquimia Natural y Limpieza Consciente — Presencial — en pausa / fechas a confirmar.

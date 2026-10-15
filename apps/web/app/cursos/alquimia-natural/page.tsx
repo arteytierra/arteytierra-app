@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getCourse } from '@/lib/courses/data';
+import { courseCatalogJsonLd } from '@/lib/courses/jsonld';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -9,6 +11,12 @@ export const metadata: Metadata = {
   description: 'Ciclo de 8 encuentros presenciales en Tay Pichín. Jabonería, cosmética natural y limpieza ecológica del hogar. Recuperá la soberanía sobre lo que entra a tu cuerpo y tu casa.',
   alternates: { canonical: '/cursos/alquimia-natural' },
 };
+
+/** Datos estructurados: esta ficha no usa `CourseDetailPage`, asi que los emite ella. */
+const JSONLD = courseCatalogJsonLd(getCourse('alquimia-natural')!, {
+  locale: 'es',
+  path: '/cursos/alquimia-natural',
+});
 
 const MODULOS = [
   {
@@ -82,6 +90,10 @@ export default function AlquimiaNaturalPage() {
   return (
     <>
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
+      />
       <main>
 
       {/* HERO */}

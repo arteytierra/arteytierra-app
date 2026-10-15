@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getCourse } from '@/lib/courses/data';
+import { cantidadDeDias, rangoFechas } from '@/lib/courses/formato';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -17,11 +19,16 @@ const CALENDARIO = [
   { fecha: 'Year-round', titulo: 'Living Immersion (weekly stays)', tipo: 'Immersion', color: 'bg-ink-800' },
 ];
 
+/* Fechas del intensivo: derivadas del catálogo, no tipeadas. */
+const BIOARQ = getCourse('bioarquitectura')!;
+const BIOARQ_FECHAS = BIOARQ.fechas ? rangoFechas(BIOARQ.fechas, 'en') : '';
+const BIOARQ_DIAS = BIOARQ.fechas ? cantidadDeDias(BIOARQ.fechas) : 0;
+
 const DESTACADOS = [
   {
     title: 'Bioarchitecture & Territory',
-    subtitle: 'Dec 5–8, 2026 · Tay Pichín',
-    desc: '4-day intensive on natural construction techniques: raw earth, cob, quincha, earth and lime plasters.',
+    subtitle: `${BIOARQ_FECHAS} · Tay Pichín`,
+    desc: `${BIOARQ_DIAS}-day intensive on natural construction techniques: raw earth, adobe, quincha and cob, earth and lime plasters.`,
     href: '/en/cursos/bioarquitectura',
     img: '/img/cursos/vueltatierra/1.jpg',
   },

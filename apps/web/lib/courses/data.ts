@@ -1,3 +1,5 @@
+import { horarioApertura, modalidadTeoriaPractica, rangoFechas } from './formato';
+
 export type CourseKind = 'presencial' | 'online-live' | 'online-async' | 'inmersion';
 
 export interface CourseModule {
@@ -25,6 +27,22 @@ export interface CourseOption {
   senaHref?: string;
 }
 
+/**
+ * Las fechas del encuentro como dato y no como prosa, para que la ficha, el
+ * listado, las versiones traducidas y los datos estructurados las deriven de
+ * un solo lugar. El día de la semana se calcula: ver `formato.ts`.
+ */
+export interface CourseFechas {
+  /** Primer día, ISO `YYYY-MM-DD`. */
+  desde: string;
+  /** Último día, ISO `YYYY-MM-DD`. Igual a `desde` si dura un solo día. */
+  hasta: string;
+  /** Hora de apertura del primer día, `HH:MM` en 24 h. */
+  horaInicio?: string;
+  /** Hora de cierre del último día, `HH:MM` en 24 h. */
+  horaFin?: string;
+}
+
 export interface Facilitador {
   name: string;
   role: string;
@@ -43,6 +61,10 @@ export interface CourseData {
   tag: string;
   intro: string[];
   datos: { label: string; val: string }[];
+  /** Fechas y horario del encuentro. Si está, manda sobre cualquier fecha escrita a mano. */
+  fechas?: CourseFechas;
+  /** Reparto entre teoría y práctica, en porcentaje. Tiene que sumar 100. */
+  teoriaPractica?: { teoria: number; practica: number };
   paraQuien?: string[];
   vasASalir?: string[];
   modulos: CourseModule[];
@@ -73,6 +95,42 @@ export interface CourseData {
   /** Muestra en el formulario los campos de fecha de llegada / salida estimada (estadías de duración variable, como Inmersión Viva). */
   pedirFechasEstadia?: boolean;
 }
+
+/* ── Precios ──────────────────────────────────────────
+ * El precio se escribe una vez, en pesos, y las dos formas en que aparece en
+ * pantalla salen de ahí. El equivalente en dólares es orientativo, para quien
+ * consulta desde afuera: se calcula con una sola cotización y no se tipea
+ * número por número, que es como la ficha terminó anunciando tres dólares que
+ * no guardaban relación entre sí.
+ */
+
+/** Cotización de referencia para mostrar el equivalente en dólares. Revisar cada tanto: al 15/10/2026, 1.300 ARS por dólar. */
+const ARS_POR_USD = 1_300;
+
+function precioArs(monto: number): string {
+  return `$${monto.toLocaleString('es-AR')} ARS`;
+}
+
+/** Equivalente orientativo en dólares, redondeado a múltiplos de 5. */
+function precioUsd(montoArs: number): string {
+  return `USD ${Math.round(montoArs / ARS_POR_USD / 5) * 5}`;
+}
+
+/* ── Bioarquitectura · intensivo de diciembre ─────────
+ * Los datos que las versiones en inglés y francés, el listado y los datos
+ * estructurados también necesitan. Viven acá arriba para que ninguna de esas
+ * páginas los vuelva a tipear.
+ */
+const BIOARQ_FECHAS: CourseFechas = {
+  desde: '2026-12-05',
+  hasta: '2026-12-08',
+  horaInicio: '10:00',
+  horaFin: '15:00',
+};
+const BIOARQ_TEORIA_PRACTICA = { teoria: 30, practica: 70 } as const;
+/** Las noches que cubren las opciones con hospedaje: todas menos la del último día, que cierra a las 15 hs. */
+const BIOARQ_NOCHES = '3 noches (sábado, domingo y lunes)';
+const BIOARQ_BASE = ['Materiales', 'Certificado de participación', 'Desayuno, almuerzo y merienda'] as const;
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
 const JONATAN: Facilitador = {
@@ -337,15 +395,17 @@ export const COURSES: Record<string, CourseData> = {
       '/img/cursos/bioarquitectura/12.jpeg',
       '/img/cursos/bioarquitectura/13.jpeg',
     ],
-    tag: 'Intensivo · 5 al 8 de diciembre 2026 · Tay Pichín',
+    tag: `Intensivo · ${rangoFechas(BIOARQ_FECHAS, 'es')} · Tay Pichín`,
     intro: [
       'Cuatro días de experiencia intensiva donde aprenderemos integrando técnicas ancestrales de bioconstrucción con principios contemporáneos de diseño ecológico y arquitectura bioclimática.',
       'Durante el encuentro trabajaremos colectivamente en distintas etapas constructivas utilizando tierra, piedra, fibras vegetales y materiales naturales, comprendiendo la vivienda como un organismo vivo en relación directa con el paisaje, el clima y las personas que la habitan.',
     ],
+    fechas: BIOARQ_FECHAS,
+    teoriaPractica: BIOARQ_TEORIA_PRACTICA,
     datos: [
-      { label: '¿Cuándo?', val: '5 al 8 de diciembre 2026 · arranca sábado 10 hs, cierra martes 15 hs' },
+      { label: '¿Cuándo?', val: `${rangoFechas(BIOARQ_FECHAS, 'es')} · ${horarioApertura(BIOARQ_FECHAS, 'es')}` },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
-      { label: 'Modalidad', val: '30% teoría · 70% práctica en obra real' },
+      { label: 'Modalidad', val: `${modalidadTeoriaPractica(BIOARQ_TEORIA_PRACTICA, 'es')} real` },
       { label: 'Facilita', val: 'Jonatan Palma · Cupos limitados' },
     ],
     modulos: [
@@ -359,11 +419,11 @@ export const COURSES: Record<string, CourseData> = {
     ],
     facilitadores: [JONATAN],
     opciones: [
-      { id: 'sin-hospedaje', label: 'Sin hospedaje', precio: '$130.000 ARS', precioAlt: 'USD 100', includes: ['Materiales', 'Certificado de participación', 'Alimentación completa'] },
-      { id: 'camping', label: 'Con camping', precio: '$145.000 ARS', precioAlt: 'USD 112', includes: ['Materiales', 'Certificado de participación', 'Alimentación completa', 'Lugar de camping en Tay Pichín'] },
-      { id: 'habitacion', label: 'Habitación compartida', precio: '$160.000 ARS', precioAlt: 'USD 123', includes: ['Materiales', 'Certificado de participación', 'Alimentación completa', 'Habitación compartida en Tay Pichín'], highlighted: true },
+      { id: 'sin-hospedaje', label: 'Sin hospedaje', precio: precioArs(110_000), precioAlt: precioUsd(110_000), includes: [...BIOARQ_BASE] },
+      { id: 'camping', label: 'Con camping', precio: precioArs(130_000), precioAlt: precioUsd(130_000), includes: [...BIOARQ_BASE, `Lugar de camping en Tay Pichín · ${BIOARQ_NOCHES}`] },
+      { id: 'habitacion', label: 'Habitación compartida', precio: precioArs(150_000), precioAlt: precioUsd(150_000), includes: [...BIOARQ_BASE, `Habitación compartida en Tay Pichín · ${BIOARQ_NOCHES}`], highlighted: true },
     ],
-    opcionesNota: 'Todas las opciones incluyen materiales, certificado de participación y alimentación completa durante el intensivo. El encuentro arranca el sábado a las 10 hs y cierra el martes a las 15 hs — tenelo en cuenta para organizar el viaje.',
+    opcionesNota: `Todas las opciones incluyen materiales, certificado de participación y desayuno, almuerzo y merienda durante el intensivo. El encuentro ${horarioApertura(BIOARQ_FECHAS, 'es')} — tenelo en cuenta para organizar el viaje.`,
     formCurso: 'Bioarquitectura, Construcción y Territorio · 5 al 8 diciembre 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20inscribirme%20al%20Curso%20de%20Bioarquitectura%20(5%20al%208%20de%20diciembre)',
     mercadopago: 'https://link.mercadopago.com.ar/arteytierra',

@@ -9,8 +9,19 @@ import { coursesItemListJsonLd } from '@/lib/seo/jsonld';
 import { buildSocial } from '@/lib/seo/og';
 import { YouTubeFacade } from '@/components/media/YouTubeFacade';
 import { getCoursesForLanding, getProductCover } from '@/lib/commerce/products';
+import { getCourse } from '@/lib/courses/data';
+import { horarioApertura, modalidadTeoriaPractica, rangoFechas, rangoPrecios } from '@/lib/courses/formato';
 
 export const revalidate = 86400;
+
+/* El intensivo de bioarquitectura tenía su fecha, su precio y su lista de
+   contenidos tipeados acá además de en el catálogo, y se desfasaron. Ahora la
+   tarjeta los deriva: lo único propio del listado es la foto y la bajada. */
+const BIOARQ = getCourse('bioarquitectura')!;
+const BIOARQ_FECHAS = BIOARQ.fechas ? rangoFechas(BIOARQ.fechas, 'es') : '';
+const BIOARQ_HORARIO = BIOARQ.fechas ? horarioApertura(BIOARQ.fechas, 'es') ?? '' : '';
+const BIOARQ_MODALIDAD = BIOARQ.teoriaPractica ? modalidadTeoriaPractica(BIOARQ.teoriaPractica, 'es') : '';
+const BIOARQ_PRECIOS = rangoPrecios(BIOARQ.opciones);
 
 const META_TITLE = 'Ecoescuela';
 const META_DESC =
@@ -111,14 +122,14 @@ const FALLBACK_CURSOS: Curso[] = [
     href: '/cursos/formacion-integral-intensivo', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Intensivo de Formación Integral (10 de octubre)'),
   },
   {
-    slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
-    tag: '5 al 8 de diciembre 2026 · Tay Pichín',
-    desc: 'Cuatro días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 30% teoría, 70% práctica.',
+    slug: 'bioarquitectura', badge: BIOARQ.badge, name: BIOARQ.name,
+    tag: `${BIOARQ_FECHAS} · Tay Pichín`,
+    desc: BIOARQ.subtitle,
     img: '/img/proyectos/alihuen/5.jpg',
-    datos: [{ label: 'Fechas', val: '5 al 8 de diciembre 2026 · de sábado 10 hs a martes 15 hs' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '30% teoría · 70% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
-    contenidos: ['Construcción con tierra', 'Diseño ecosistémico del territorio', 'Adobes, quincha y cob', 'Revoques de tierra y cal', 'Techos secos y techos vivos', 'Construcción colectiva'],
-    precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
-    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (5 al 8 de diciembre)'),
+    datos: [{ label: 'Fechas', val: `${BIOARQ_FECHAS} · ${BIOARQ_HORARIO}` }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: BIOARQ_MODALIDAD }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    contenidos: BIOARQ.modulos.map(m => m.title),
+    precio: BIOARQ_PRECIOS ?? 'Consultanos', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales, desayuno, almuerzo y merienda.',
+    href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, `Hola, quiero inscribirme al Curso de Bioarquitectura (${BIOARQ_FECHAS})`),
   },
   {
     slug: 'mi-tierra-mi-casa', badge: 'Online · Acceso ilimitado', name: 'Mi Tierra, Mi Casa',

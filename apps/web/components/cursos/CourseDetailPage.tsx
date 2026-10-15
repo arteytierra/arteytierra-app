@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
+import { courseCatalogJsonLd } from '@/lib/courses/jsonld';
 import { CourseEnrollForm } from './CourseEnrollForm';
 import { CourseGallery } from './CourseGallery';
 import { CourseCountdown } from './CourseCountdown';
@@ -31,6 +32,18 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
 
   return (
     <main>
+      {/* Datos estructurados del curso: fecha, lugar y precio en el formato que
+          leen los buscadores. Va acá y no en cada pagina para que ninguna ficha
+          se quede sin ellos — que es como estuvieron las nueve hasta ahora. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            courseCatalogJsonLd(course, { locale: 'es', path: `/cursos/${course.slug}` }),
+          ),
+        }}
+      />
+
       {/* HERO */}
       {/* La altura es un minimo, no una medida fija. Con `h-[65vh]` el bloque
           —breadcrumb, titulo, bajada, fecha y tres botones— no entraba en un
