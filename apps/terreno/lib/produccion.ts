@@ -195,7 +195,23 @@ export interface PerfilRodeo {
   agua_l_dia:    number;
 }
 
-// Producción forrajera natural estimada por precipitación (kg MS/ha/año)
+/**
+ * Producción forrajera natural estimada por precipitación (kg MS/ha/año).
+ *
+ * **Sigue sin fuente, y ahora se sabe cuánto se equivoca.** Las primeras tres
+ * mediciones publicadas están en `forrajeMedido.ts`, con su método, su rango de
+ * validez y su estacionalidad, y dicen que esta escalera falla en las DOS
+ * direcciones: acierta en la pradera de Dakota, se pasa entre dos y cuatro
+ * veces en el Edwards Plateau y hasta once veces en el altiplano de Puno, donde
+ * con más lluvia se produce bastante menos. El problema no es el nivel de los
+ * escalones: es que una función de una sola variable no puede dar las dos cosas
+ * bien, porque faltan el frío, el largo de la estación de crecimiento y la
+ * profundidad del suelo.
+ *
+ * Para reemplazarla hace falta pasarle el bioma —acá y en las dos copias, la de
+ * `pastoreo.ts` y la del panel de Cobertura— y tener medido el bioma donde más
+ * se pastorea, la sabana tropical, que todavía no tiene ninguna.
+ */
 function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;
   if (precip_mm < 500) return 1500;
