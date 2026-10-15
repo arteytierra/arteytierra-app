@@ -124,6 +124,25 @@ Sirve de ejemplo de dos cosas y de advertencia de una tercera:
    biomas de este lote. No sirve para ninguno de los tres `id`. Se cita acá
    sólo para mostrar qué forma tiene una fuente útil.
 
+**Y una segunda pista, del cierre del encargo de fuentes propias.** En el macizo
+del Karkas, en Irán, el único relevamiento publicado de esa sierra mide una
+estepa donde los dos ajenjos dominantes cubren cerca del **58 % del área** y
+**los herbívoros no los tocan hasta que la lluvia de otoño les lava los aceites
+aromáticos**:
+
+> Plant, Soil and Environment 54(8):347-358, *Plant communities of the Karkas
+> Hunting-Prohibited Region, Isfahan-Iran*. https://doi.org/10.17221/413-PSE
+
+O sea que más de la mitad de la biomasa en pie de ese lugar **no es forraje
+disponible** durante buena parte del año. Tampoco sirve para ninguno de los tres
+`id` —es estepa irano-turania—, pero muestra para qué está el campo
+`que_cuenta`: entre «materia seca herbácea total» y «oferta aprovechable» puede
+haber un factor que no es un ajuste, y la diferencia puede ser **estacional**
+además de botánica. El mismo trabajo, de paso, anota la otra cara: el
+*Eryngium*, que las espinas protegen del diente, se corta entero a fin del
+verano, se seca, se pica y alimenta la hacienda en el invierno. Forraje que no
+se pastorea en pie y aparece igual en el balance del año.
+
 ## Varias entradas por bioma, y eso está bien
 
 Un bioma tan grande no tiene un número. **Se pueden entregar varias entradas con
@@ -168,6 +187,27 @@ un paper suelto:
 - Si de un bioma no se consigue nada que cumpla, va en `vacias` con el motivo. Un
   hueco explicado sirve; un número inventado hace daño.
 
+## Cómo se declara un hueco, y qué hacer si una página no abre
+
+Esto es nuevo, y sale del encargo de fuentes propias, que cerró con 62 fichas en
+ocho lotes. Las tres reglas valen para este encargo igual:
+
+1. **Una vacía cuyo motivo es de acceso no es una vacía: es un reintento
+   pendiente.** En ese encargo, 16 fichas volvieron vacías con el motivo «no se
+   pudo abrir la página»; pedidas de nuevo con un camino señalado, **quince
+   trajeron fuente**. Antes de declarar una vacía, probar las otras vías: el
+   DOI, el sitio del organismo, el repositorio de la universidad de un autor, el
+   PDF del informe suelto, PubMed Central, el portal de revistas del país.
+2. **El motivo de una vacía tiene que ser chequeable por otro.** Tres cosas: qué
+   se buscó, el título y el año de al menos una publicación candidata, y por qué
+   no sirve. «No encontré nada» no es un motivo.
+3. **Antes de elegir una fuente, mirar si su texto o su resumen es público.** Una
+   fuente excelente que no se puede leer no se puede contrastar, así que no se
+   puede usar. Si tiene DOI, consultarlo en Crossref o en OpenAlex y ver si trae
+   `abstract`. Acá importa el doble que en el otro encargo, porque lo que hace
+   falta son números de una tabla: si la tabla está detrás del editor, el
+   resumen solo rara vez alcanza.
+
 ## La entrega
 
 Un solo bloque JSON, sin prosa alrededor:
@@ -176,7 +216,7 @@ Un solo bloque JSON, sin prosa alrededor:
 {
   "encargo": "forraje",
   "lote": 2,
-  "fecha": "2026-10-11",
+  "fecha": "2026-10-15",
   "entradas": [ … ],
   "vacias": [ { "id": "…", "motivo": "…" } ]
 }
