@@ -17,6 +17,7 @@ abrirlas, lote por lote.
 | fuentes-propias | 05 | limpia | — | **montado** el 14/10/2026, 8 de 17 |
 | fuentes-propias | 06 | limpia | `tundra_artica_canadiense` ⚠ | **montado** el 14/10/2026, 7 de 14 |
 | fuentes-propias | 07 | limpia | — | **montado** el 14/10/2026, 14 de 16 |
+| fuentes-propias | 08 | limpia | — | **montado** el 15/10/2026, 2 de 2 |
 
 ---
 
@@ -646,7 +647,133 @@ misma— y `kuh_rud_montano`. Las dos se pidieron en
 `ENCARGO_FUENTES_PROPIAS_LOTE_08.md`, que es el último de esta serie.
 
 **El encargo de fuentes propias empezó con 62 fichas sin fuente del lugar y va
-por 60 cerradas.**
+por 60 cerradas.** Las dos últimas entraron con el lote 08, abajo.
+
+## fuentes-propias, lote 08 — las dos últimas, y el encargo queda cerrado
+
+El lote que pedía las dos que faltaban trajo **las dos, sin vacías**. Se abrieron
+las dos y **se montaron las dos el 15/10/2026**. Forma limpia, los dos ids
+existen, ninguna retractada.
+
+| ficha | lo que afirmaba | |
+|---|---|---|
+| `tauro_conifera_montana` | 4.717 parcelas, 21 tipos en tres pisos, la elevación como factor principal | ✅ literal (resumen), y dice más |
+| `kuh_rud_montano` | muestreo aleatorio estratificado, cuadrantes de 10×10 m, 15 comunidades, Shannon 2,26 a 0,39 | ✅ literal (texto completo), y dice mucho más |
+
+### El reintento del Tauro era el camino
+
+La fuente del lote 07 era buena y **no se podía chequear nada de lo que decía**:
+sin resumen público en ningún índice y con el editor bloqueado. La de este lote
+—Applied Vegetation Science 24(2):e12589, siete autores, entre ellos los del
+EuroVegChecklist— tiene el resumen completo en Crossref y en OpenAlex, y trae
+más de lo que la entrega copó: los 4.717 relevés del sur y el oeste de Turquía
+se reparten en tres pisos, y **el de arriba junta más de lo que la ficha
+suponía**. El oromediterráneo es el del cedro del Líbano, el abeto del Tauro
+*y* los dos enebros —el polígamo y el rastrero, *Juniperus communis* subsp.
+*nana*— en la misma franja; la ficha tenía los enebrales abajo, en las solanas
+secas. El enebral de altura no es la versión pobre del cedral: es su vecino de
+cota.
+
+Y una precisión que vale para cualquier modelo de aptitud: de las variables
+climáticas, las que ordenan los pisos son las **temperaturas medias por
+trimestre** (anual, más seco, más frío, más cálido), la **mínima del
+invierno**, la **lluvia del trimestre más cálido y del más seco** y la
+**estacionalidad de la lluvia**. No el total anual. Lo que separa un piso del
+siguiente no es cuánta lluvia cae sino cuándo cae y qué frío hace.
+
+El alcance quedó escrito: el trabajo cubre todo el Mediterráneo turco, así que
+su piso termo y mesomediterráneo —pino de Calabria, pino piñonero, maquia,
+garriga, frigana— es el del esclerofílo egeo, que en acequia es **otra ficha**.
+A esta le corresponden el supra y el oromediterráneo.
+
+### El Karkas desmiente a su propia ficha, y se escribió así
+
+La ficha de Kuh Rud abre con «bosque abierto de enebro y almendro en las cotas
+altas». El único relevamiento publicado de esa cadena —92.100 ha del macizo del
+Karkas, con caza prohibida desde 1980, 63 series de cuadrantes de la primavera
+al otoño de 2006, cada serie diez cuadrantes de 100 m² sumados en un relevé de
+1.000 m²— mide otra cosa: **estepa de arbustos enanos**, con una cobertura
+vegetal total de entre el **7 y el 30 %** según la comunidad y entre el 26 % y
+más del 90 % de piedra y grava en la superficie. **El enebro no aparece en
+ninguna de las quince asociaciones** ni en la lista de rodales sueltos.
+
+Y el trabajo dice por qué: de los leñosos —pistacho khinjuk, madreselva,
+agracejo, rosal, tamarisco— quedan rodales aislados, y **los tocones que siguen
+en pie prueban que antes eran más** y que los bajó la recolección de leña. Las
+dos cosas quedaron en el texto de la ficha, como en el lote 02: cuando la fuente
+contradice a la ficha, se escribe la contradicción en vez de taparla. Con el
+alcance al lado, porque es **un** macizo y la ficha abarca hasta Kermán y
+Baluchistán.
+
+### Dos inversiones más, y las dos son la misma trampa
+
+- **La mayor diversidad del macizo está en los sitios degradados.** El Shannon
+  más alto, **2,26**, es de una comunidad de *Eryngium billardieri* con alfalfa;
+  las de *Eryngium* y de *Scariola orientalis* —las dos de pastizal
+  sobrepastoreado— son las de más especies, y las de menos, 0,39 y 0,83, son las
+  de *Centaurea gaubae* y *Pteropyrum aucheri*. Los autores lo dicen y agregan el
+  pronóstico: esas comunidades ricas **van a perder** especies a medida que el
+  sobrepastoreo se lleve las palatables. Contar especies ahí no mide salud.
+- **La diversidad es más baja donde hay más agua.** En los fondos de cañadón y
+  los lechos que conservan agua en la seca la cobertura la ocupa *Perovskia
+  abrotanoides* casi sola, y el número de especies **sube hacia los bordes**, a
+  medida que el agua escasea.
+
+Las dos dicen lo mismo para una app de diseño: un conteo de especies alto no es
+por sí mismo una buena noticia, y el panel no puede presentarlo como si lo
+fuera.
+
+### Un número que no se montó: la media anual de temperatura
+
+El trabajo publica **2,1 °C** como media anual de la región, y resulta ser
+exactamente el valor de la fila más extensa de su propia tabla —*Artemisietum
+aucheri*, 41,5 % del área, de 1.800 a 3.100 m—. La misma tabla reparte de
+**−1,4 °C a 13 °C** según la cota, sobre un desnivel que va de **1.389 a 3.880
+m**. Se montó el rango y no la media sola.
+
+Es la misma lección que la altura de la celda de POWER, y acá aparece en una
+publicación revisada: **sobre un gradiente de 2.491 metros, una media anual sola
+no describe el predio, describe la altura del dato.** Cuarta vez que este
+proceso encuentra un número que no cierra con el resto de su propia fuente, y la
+primera en que el problema no es una errata sino un promedio mal leído.
+
+Lo mismo pasa con la lluvia, y por eso se montaron las dos cifras separadas: la
+media son 240 mm con años de 153 y de 328 —variación **entre años**— y por
+comunidad va de 172 a 263 mm —variación **entre laderas**—. No son lo mismo y se
+parecen bastante.
+
+### Dos datos que le sirven al encargo de forraje
+
+El de al lado, que es la deuda número uno del cálculo:
+
+- **Los dos ajenjos que cubren cerca del 58 % del área son aromáticos y los
+  herbívoros no los tocan hasta que la lluvia de otoño les lava los aceites.**
+  O sea que buena parte de la biomasa en pie **no es forraje disponible** antes
+  de esa lluvia. Una receptividad calculada sobre biomasa total ahí está
+  sobreestimada, y no por un margen chico.
+- **El *Eryngium* se corta entero a fin del verano o principio del otoño, se
+  seca, se pica y alimenta la hacienda en el invierno.** Es una práctica fechada
+  y sin autor atribuible, que es exactamente la forma que admite
+  `practicasHistoricas`: candidata para el encargo de prácticas, no para este.
+
+### El validador y los reintentos
+
+El validador marcó `ERROR 08.json · tauro_conifera_montana: id repetido, ya
+venía en 07.json`, y **estaba equivocado**: ese id volvió porque la entrada
+anterior se abrió, no aguantó y la ficha se pidió de nuevo. Desde que el circuito
+tiene reintentos como regla, un id que vuelve es un caso normal. Ahora es un
+aviso que dice las dos posibilidades y lo decide quien monta; como error frenaba
+el lote entero.
+
+### La cuenta, final
+
+**De 62 a 0.** Las 62 fichas que sólo tenían marco general tienen hoy una fuente
+del lugar, abierta, leída y con su alcance escrito arriba de la constante. Ocho
+lotes del 10 al 15 de octubre, 63 entradas entregadas y 62 montadas.
+
+Lo que **no** cierra con esto: las 164 fichas con cinco especies nativas o
+menos, las 45 con `suelos` de menos de 250 caracteres, y los tres encargos
+abiertos —forraje, prácticas de Indomalaya y licencias—.
 
 ## practicas-indomalaya, lote 01 — vuelve, y no por mentir
 

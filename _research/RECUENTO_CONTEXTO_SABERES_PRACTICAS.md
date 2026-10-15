@@ -67,7 +67,7 @@ Tres carencias medidas, y la tercera es la que más importa:
 | | Fichas | Dónde |
 |---|---|---|
 | Con 5 especies nativas o menos | **164** | Indomalaya 31 · EuropaUE 28 · MedioOriente 28 · América 23 · base 22 · NorteÁfrica 14 · Canadá 10 · Europa 8 |
-| **Sin ninguna fuente propia del lugar** | **2** | MedioOriente 1 · EuropaUE 1 |
+| **Sin ninguna fuente propia del lugar** | **0** | cerrado el 15/10/2026 |
 | Con `suelos` en menos de 250 caracteres | **45** | América 23 · base 22 |
 
 Las 5 especies no son un olvido: son la plantilla con la que se relevó. Pero una
@@ -87,17 +87,20 @@ Y son **2** desde el 14/10/2026, con los lotes 03 al 07 montados. El último cer
 el problema: las 16 que habían vuelto vacías por «no se pudo abrir la página» se
 pidieron de nuevo con el camino señalado por ficha y quince trajeron fuente.
 
-Quedan dos: `tauro_conifera_montana`, cuya fuente es buena y no tiene resumen
-público en ningún índice —así que no se puede chequear nada de lo que dice—, y
-`kuh_rud_montano`, con una vacía bien declarada. Son el lote 08 y el final de la
-serie.
+Y son **0** desde el 15/10/2026, con el lote 08 montado: el Tauro con una
+segunda fuente —la primera no tenía resumen público en ningún índice y no se
+podía chequear nada— y Kuh Rud por el topónimo del macizo, Karkas, en vez del
+nombre de la cadena. **El encargo está cerrado: 62 de 62.**
 
-**Las 2 sin fuente propia son el problema serio**, y es distinto de no tener
-fuente: tienen tres o cuatro, pero son las mismas tres o cuatro de todo el
-paquete —RESOLVE en 111 fichas, HWSD en 68, SoilGrids en 50—. La ficha queda
-*trazable y no verificable*: no hay dónde ir a chequear lo que esa ficha
-concreta afirma de ese lugar concreto. Es el bloque donde una afirmación
-equivocada puede vivir años.
+Vale dejar escrito qué era el problema, porque va a volver a aparecer en otro
+bloque. Una ficha sin fuente propia **no es una ficha sin fuentes**: tiene tres
+o cuatro, pero son las mismas tres o cuatro de todo el paquete —RESOLVE en 111
+fichas, HWSD en 68, SoilGrids en 50—. Queda *trazable y no verificable*: no hay
+dónde ir a chequear lo que esa ficha concreta afirma de ese lugar concreto. Es
+la clase de hueco donde una afirmación equivocada vive años sin que nadie la
+encuentre, y de hecho este proceso encontró cuatro números que no cerraban
+dentro de su propia fuente y una docena de afirmaciones que la fuente no
+sostenía.
 
 El primer criterio que usé para medirlo daba **79** y estaba mal: contaba como
 genérica toda constante en mayúsculas, y `PEI_ROTACION` es la ley de rotación de
@@ -238,9 +241,9 @@ de una sesión de chat. Queda anotado y sin encargo.
    es un encargo chico. `_encargos/ENCARGO_LICENCIAS.md`.
 3. **El forraje.** La deuda número uno del cálculo. `ENCARGO_FORRAJE.md`.
 4. **Las prácticas de Indomalaya**, 32 fichas. `ENCARGO_PRACTICAS_INDOMALAYA.md`.
-5. **Las fuentes propias de las 2 fichas que quedan.** `ENCARGO_FUENTES_PROPIAS.md`;
-   el lote 01 ya se montó y arrancó por EuropaUE, siguen Arabia-Mesopotamia-Irán
-   (23) y el norte de África (13).
+5. ~~**Las fuentes propias.**~~ **Cerrado el 15/10/2026**, 62 de 62, en ocho
+   lotes. `ENCARGO_FUENTES_PROPIAS.md` guarda el estado y
+   `RESPUESTAS_MUESTREOS.md` el veredicto de cada lote.
 6. **Las especies de las 164 fichas**, por tandas, de fondo.
 7. **Australasia, el Afrotrópico y el Asia paleártica.** No antes de que uno de
    los chicos vuelva limpio: es el único encargo donde equivocarse cuesta un mes.

@@ -10,8 +10,8 @@
  * ── Qué puede y qué no puede chequear un script ─────────────────────────────
  *
  * Puede: que el JSON parsee, que no falte un campo obligatorio, que ninguna
- * entrada venga sin fuente, que las URLs tengan forma de URL, que no haya ids
- * repetidos entre lotes, y —cuando el encargo apunta a fichas— que el id exista
+ * entrada venga sin fuente, que las URLs tengan forma de URL, avisar si un id
+ * vuelve en otro lote, y —cuando el encargo apunta a fichas— que el id exista
  * en el catálogo. Eso último es lo que más errores encuentra: un id inventado o
  * mal tipeado pasa cualquier revisión de lectura y no entra en ningún lado.
  *
@@ -137,9 +137,16 @@ for (const arch of archivos) {
       const porFicha = /practica/i.test(encargoDeclarado ?? '');
       const clave = porFicha ? `${e.id}\u0000${(e.practica ?? '').trim().toLowerCase()}` : e.id;
       if (vistos.has(clave)) {
-        errores.push(porFicha
-          ? `${arch} · ${e.id}: la práctica "${e.practica}" ya venía en ${vistos.get(clave)}`
-          : `${arch} · ${e.id}: id repetido, ya venía en ${vistos.get(clave)}`);
+        if (porFicha) {
+          errores.push(`${arch} · ${e.id}: la práctica "${e.practica}" ya venía en ${vistos.get(clave)}`);
+        } else {
+          /* Un id que vuelve puede ser un REINTENTO legítimo: la entrada
+           * anterior se abrió, no aguantó y la ficha se volvió a pedir. Pasó
+           * con `tauro_conifera_montana` entre los lotes 07 y 08 de
+           * fuentes-propias. El script no sabe cuál de las dos se rechazó, así
+           * que avisa y lo decide quien monta; como error frenaba el lote. */
+          avisos.push(`${arch} · ${e.id}: ya venía en ${vistos.get(clave)}. Si es un reintento está bien; si no, una de las dos sobra`);
+        }
       } else {
         vistos.set(clave, arch);
       }

@@ -48,6 +48,28 @@ Dos fuentes si salen fáciles. Una buena vale más que tres genéricas.
 intentó. Trece de estas fichas son desierto profundo o manglar: es esperable que
 algunas no tengan bibliografía propia, y decirlo es parte del trabajo.
 
+## Estado al 15/10/2026: CERRADO, las 62 tienen fuente del lugar
+
+**Sesenta y dos de sesenta y dos.** El lote 08 trajo las dos que faltaban y las
+dos se montaron: `tauro_conifera_montana`, con una segunda fuente —la primera
+no tenía resumen público en ningún índice—, y `kuh_rud_montano`, que al segundo
+intento apareció buscando por el topónimo del macizo (Karkas) en vez de por el
+nombre de la cadena.
+
+**Este encargo no se vuelve a pedir.** Si aparece una ficha nueva sin fuente
+propia —porque se agregó una ecorregión— se escribe un encargo nuevo, corto,
+con esta misma forma. El detalle lote por lote está en `RESPUESTAS_MUESTREOS.md`.
+
+Las dos lecciones que este encargo le deja al circuito, y que conviene copiar al
+siguiente:
+
+1. **Una vacía cuyo motivo es de acceso no es una vacía, es un reintento
+   pendiente.** De 16 vacías pedidas de nuevo con el camino señalado por ficha,
+   15 trajeron fuente.
+2. **Antes de elegir una fuente, mirar si su resumen es público**, consultando
+   el DOI en Crossref o en OpenAlex. Una fuente excelente sin resumen accesible
+   es inutilizable acá: no se puede contrastar nada de lo que afirma.
+
 ## Estado al 14/10/2026 (tarde): montados los lotes 01 al 07
 
 **Sesenta fichas cerradas de sesenta y dos.** A las 46 de los lotes 01 al 06 se

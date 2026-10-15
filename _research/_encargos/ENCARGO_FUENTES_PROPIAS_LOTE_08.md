@@ -4,6 +4,11 @@
 La entrega va en
 `C:\Arte y Tierra\encargos-gpt\entregas\fuentes-propias\08.json`.*
 
+> **Entregado y montado el 15/10/2026.** Las dos vinieron con fuente y las
+> dos se montaron, así que el encargo de fuentes propias queda cerrado en
+> 62 de 62. El veredicto está en `RESPUESTAS_MUESTREOS.md`. Este archivo
+> queda como registro de cómo se pidió.
+
 Este archivo se lee solo: no hace falta el encargo general ni nada del proyecto.
 
 ---
