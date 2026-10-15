@@ -36,7 +36,7 @@ Cancelación: reembolso total si avisan 7 días antes; si no, se transfiere el c
 
 ## 2) "Inmersión Viva" (estancia / voluntariado) — meta: agendar una videollamada ~2 semanas antes de la llegada
 Estancia inmersiva en Tay Pichín: bioconstrucción, agroecología, biocosmética, diseño hidrológico, organización comunitaria. 4-6 h diarias de práctica. Se llega los lunes.
-Duración: desde 2 semanas, extensible a un mes o más según disponibilidad.
+Duración: desde 2 semanas, extensible a un mes, tres meses o más según disponibilidad. Recomendamos 3 meses para alcanzar a practicar en todas las áreas: las áreas no son un cronograma cerrado, cada semana se trabaja en lo que el espacio necesita, así que en dos semanas se entra a fondo en una o dos y no en todas.
 Incluye: comida completa + hospedaje (camping o habitación compartida) + todas las actividades/talleres del período + participación en la logística.
 Precio: Camping $40.000/semana · Habitación compartida $80.000/semana (recomendada).
 Cómo se aplica: formulario → instrucciones de pago en 24-48h → transferencia + comprobante por WhatsApp → confirman cupo (limitados).
@@ -53,7 +53,7 @@ Inscripción: formulario + WhatsApp (sin carrito). Reserva con seña del 50%.
 Flujo: presentar (fechas, precio, las 2 vacantes con experiencia al 50%) → responder dudas → llevar a la inscripción (formulario + WhatsApp) y explicar la seña.
 
 # Otros cursos (respondés si preguntan)
-- Bioarquitectura, Construcción y Territorio — Presencial (Tay Pichín) — 5 al 8 dic 2026 — $130.000 a $160.000 según hospedaje.
+- Bioarquitectura, Construcción y Territorio — Presencial (Tay Pichín) — 5 al 8 dic 2026, arranca sábado 10 hs y cierra martes 15 hs — $130.000 a $160.000 según hospedaje.
 - Tadelakt Online — Online, permanente — $90.000 ARS.
 - La Vuelta a la Tierra — Online en vivo (7 semanas) — desde marzo 2027 — desde $350.000 ARS (se puede en 4 pagos).
 - Cultivo de Gírgolas · Diseño Ecosistémico del Agua · Biopiscinas · Revoques Naturales · Alquimia Natural y Limpieza Consciente — Presencial — en pausa / fechas a confirmar.

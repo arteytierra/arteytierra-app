@@ -113,10 +113,10 @@ const FALLBACK_CURSOS: Curso[] = [
   {
     slug: 'bioarquitectura', badge: 'Intensivo presencial', name: 'Bioarquitectura, Construcción y Territorio',
     tag: '5 al 8 de diciembre 2026 · Tay Pichín',
-    desc: 'Cuatro días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 40% teoría, 60% práctica.',
+    desc: 'Cuatro días de obra real para aprender técnicas ancestrales de bioconstrucción integradas con diseño bioclimático y ecológico. 30% teoría, 70% práctica.',
     img: '/img/proyectos/alihuen/5.jpg',
-    datos: [{ label: 'Fechas', val: '5 al 8 de diciembre · 2026' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '40% teoría · 60% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
-    contenidos: ['Construcción con tierra', 'Diseño bioclimático', 'Quincha, cob y pirca', 'Revoques de tierra y cal', 'Techos vivos', 'Pigmentos naturales', 'Construcción colectiva'],
+    datos: [{ label: 'Fechas', val: '5 al 8 de diciembre 2026 · de sábado 10 hs a martes 15 hs' }, { label: 'Lugar', val: 'Ecoescuela Tay Pichín, San Marcos Sierras' }, { label: 'Modalidad', val: '30% teoría · 70% práctica en obra' }, { label: 'Facilita', val: 'Jonatan Palma' }],
+    contenidos: ['Construcción con tierra', 'Diseño ecosistémico del territorio', 'Adobes, quincha y cob', 'Revoques de tierra y cal', 'Techos secos y techos vivos', 'Construcción colectiva'],
     precio: '$130.000 – $160.000', precioNote: 'Sin hospedaje / camping / habitación compartida. Incluye materiales + alimentación.',
     href: '/cursos/bioarquitectura', whatsapp: waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero inscribirme al Curso de Bioarquitectura (5 al 8 de diciembre)'),
   },

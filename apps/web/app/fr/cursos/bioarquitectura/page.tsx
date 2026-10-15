@@ -6,27 +6,41 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Bioarchitecture, Construction et Territoire — Stage Intensif à Tay Pichín',
-  description: 'Stage intensif de 2 jours à Tay Pichín : bioconstruction sur chantier réel avec techniques traditionnelles adaptées aux territoires semi-arides. 5 et 6 décembre 2026.',
+  description: 'Stage intensif de 4 jours à Tay Pichín : bioconstruction sur chantier réel avec techniques ancestrales et design écologique. 5 au 8 décembre 2026.',
   alternates: { canonical: '/fr/cursos/bioarquitectura' },
 };
 
-const CONTENIDOS = [
-  'Terre crue · matériaux',
-  'Pisé et cob',
-  'Quincha (torchis)',
-  'Enduits en terre',
-  'Enduits à la chaux',
-  'Conception bioclimatique',
-];
+const RECORRIDO =
+  "Le stage commence le samedi à 10 h et se termine le mardi à 15 h. Les domaines ne sont pas répartis jour par jour : on les parcourt sur le chantier au fil de l'avancement du travail.";
 
+/**
+ * Las mismas areas que `lib/courses/data.ts`, traducidas. No se reparten por dia:
+ * el intensivo las recorre en obra segun como avanza el trabajo.
+ */
 const PROGRAMA = [
   {
-    dia: 'Samedi 5 décembre',
-    actividades: 'Accueil · laboratoire de terre · techniques de murs · enduit gros',
+    dia: 'Construction en terre',
+    actividades: 'Propriétés de la terre · mélanges et comportement du matériau · lecture des matériaux locaux',
   },
   {
-    dia: 'Dimanche 6 décembre',
-    actividades: 'Bioclimatique · enduit à la chaux · finitions fines · cercle de clôture',
+    dia: 'Conception écosystémique du territoire',
+    actividades: 'Architecture bioclimatique et symbiotique · la maison comme système vivant',
+  },
+  {
+    dia: 'Techniques de murs',
+    actividades: 'Adobe, quincha et cob sur chantier réel · critères structurels de base',
+  },
+  {
+    dia: 'Enduits en terre et à la chaux',
+    actividades: 'Couches grosses et fines · terre stabilisée · chaux pour zones humides',
+  },
+  {
+    dia: 'Toitures',
+    actividades: 'Toitures sèches et toitures végétalisées · critères de conception (théorie seulement)',
+  },
+  {
+    dia: 'Construction collective',
+    actividades: 'Construire ensemble comme façon d\'apprendre · organisation du travail en minga',
   },
 ];
 
@@ -51,13 +65,13 @@ export default function BioarquitecturaFrPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/40 to-transparent" />
           <div className="relative z-10 max-w-editorial mx-auto w-full px-6 pb-16">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">
-              Stage intensif · 5 et 6 décembre 2026 · Tay Pichín
+              Stage intensif · 5 au 8 décembre 2026 · Tay Pichín
             </p>
             <h1 className="font-display text-5xl md:text-6xl text-bone-50 leading-tight max-w-3xl">
               Bioarchitecture,<br />construction et <em>territoire.</em>
             </h1>
             <p className="mt-5 font-sans text-base text-bone-200 max-w-2xl leading-relaxed">
-              Comment concevoir et construire des <em>habitats vivants</em> en lien avec le territoire. Deux jours de chantier réel, techniques ancestrales et design écologique appliqué aux terres semi-arides.
+              Comment concevoir et construire des <em>habitats vivants</em> en lien avec le territoire. Quatre jours de chantier réel, techniques ancestrales et design écologique.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="https://wa.me/5493549431594?text=Bonjour%2C%20je%20souhaite%20m%27inscrire%20%C3%A0%20le%20stage%20de%20Bioarchitecture%20de%20D%C3%A9cembre" target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
@@ -78,7 +92,7 @@ export default function BioarquitecturaFrPage() {
               Apprendre en construisant<br />sur un <em>chantier réel.</em>
             </h2>
             <p className="font-sans text-base text-ink-700 leading-relaxed mb-6">
-              Deux jours d'expérience intensive où nous apprendrons en intégrant les techniques ancestrales de bioconstruction avec les principes contemporains de design écologique et d'architecture bioclimatique adaptée aux territoires semi-arides.
+              Quatre jours d'expérience intensive où nous apprendrons en intégrant les techniques ancestrales de bioconstruction avec les principes contemporains de design écologique et d'architecture bioclimatique.
             </p>
             <p className="font-sans text-base text-ink-700 leading-relaxed mb-6">
               Pendant la rencontre nous travaillerons collectivement sur différentes étapes constructives en utilisant la terre, la pierre, les fibres végétales et les matériaux naturels, en comprenant l'habitat comme <em>un organisme vivant</em> en relation directe avec le paysage, le climat et les personnes qui l'habitent.
@@ -93,9 +107,9 @@ export default function BioarquitecturaFrPage() {
         <section className="bg-bone-100 py-12 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Quand ?', value: '5 et 6 décembre', sub: 'Samedi et dimanche · 2026' },
+              { label: 'Quand ?', value: '5 au 8 décembre 2026', sub: 'Du samedi 10 h au mardi 15 h' },
               { label: 'Où ?', value: 'EcoÉcole Tay Pichín', sub: 'San Marcos Sierras, Córdoba' },
-              { label: 'Format', value: 'Intensif participatif', sub: '40 % théorie · 60 % pratique sur chantier' },
+              { label: 'Format', value: 'Intensif participatif', sub: '30 % théorie · 70 % pratique sur chantier' },
               { label: 'Animé par', value: 'Jonatan Palma', sub: 'Places limitées' },
             ].map(d => (
               <div key={d.label} className="bg-bone-50 p-5 border-l-4 border-clay-700">
@@ -107,30 +121,23 @@ export default function BioarquitecturaFrPage() {
           </div>
         </section>
 
-        {/* CONTENUS + PROGRAMME */}
+        {/* DOMAINES DE TRAVAIL */}
         <section className="bg-ink-950 py-20 px-6">
-          <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-6">Contenus</p>
-              <ul className="flex flex-col gap-3">
-                {CONTENIDOS.map(c => (
-                  <li key={c} className="flex items-center gap-3 font-sans text-sm text-bone-200">
-                    <div className="w-1.5 h-1.5 rounded-full bg-clay-700 flex-shrink-0" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
+          <div className="max-w-editorial mx-auto">
+            <div className="mb-10">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Ce que nous travaillons</p>
+              <h2 className="font-display text-4xl md:text-5xl text-bone-50">Les <em>domaines de travail.</em></h2>
+              <p className="mt-5 font-sans text-base text-bone-200 leading-relaxed max-w-2xl">
+                {RECORRIDO}
+              </p>
             </div>
-            <div>
-              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-6">Programme</p>
-              <div className="flex flex-col gap-5">
-                {PROGRAMA.map(p => (
-                  <div key={p.dia} className="border-l-2 border-clay-700 pl-5">
-                    <p className="font-sans font-bold text-sm text-bone-100 mb-1">{p.dia}</p>
-                    <p className="font-sans text-sm text-bone-200 leading-relaxed">{p.actividades}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+              {PROGRAMA.map(p => (
+                <div key={p.dia} className="border-l-2 border-clay-700 pl-5">
+                  <p className="font-sans font-bold text-sm text-bone-100 mb-1">{p.dia}</p>
+                  <p className="font-sans text-sm text-bone-200 leading-relaxed">{p.actividades}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
