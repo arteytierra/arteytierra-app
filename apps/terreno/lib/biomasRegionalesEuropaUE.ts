@@ -168,6 +168,26 @@ const KURDAMIR_FLORA = { label: 'Azərbaycan Botanika Jurnalı №1, 2021 — K�
  *  Crimea. Es la fraccion adventicia: no es un inventario de la flora nativa
  *  del complejo submediterraneo. */
 const YALTA_ALOCTONAS = { label: 'Russian Journal of Biological Invasions 7(1):1-7 — Alien plants of Yalta Mountain-Forest Nature Reserve: State of knowledge and prospects of investigations', url: 'https://doi.org/10.1134/S2075111716010021' };
+/* ── Lote 08: las dos ultimas ─────────────────────────── */
+
+/**
+ * Clasificacion de la vegetacion de bosque y matorral del Mediterraneo turco:
+ * 4.717 relevés del sur y el oeste de Turquia, agrupados sin supervision y
+ * ordenados con analisis canonico de correspondencias.
+ *
+ * El alcance es regional y no del Tauro. De los tres pisos que describe, a
+ * esta ficha le corresponden el supramediterraneo y el oromediterraneo; el
+ * termo y mesomediterraneo —pino de Calabria, pino pinonero, esclerofilo,
+ * maquia, garriga y frigana— es el del esclerofilo egeo, que en acequia es
+ * otra ficha.
+ *
+ * Es la SEGUNDA fuente que se busco para esta ficha. La del lote 07 era buena
+ * —Plant Biosystems 144(2), instituto forestal turco— y no tenia resumen
+ * publico en Crossref, ni en OpenAlex, ni en Semantic Scholar, con lo cual
+ * nada de lo que afirma se podia chequear y no se monto.
+ */
+const ANATOLIA_CLASIFICACION = { label: 'Applied Vegetation Science 24(2):e12589 — Classification of forest and shrubland vegetation in Mediterranean Turkey', url: 'https://doi.org/10.1111/avsc.12589' };
+
 /** Piatra Craiului, Rumania: hayedo dacio 500–1200 m y picea acidófila 1350–1800 m. Un parque del arco. */
 const PIATRA_CRAIULUI = { label: 'PN Piatra Craiului — Plan de manejo del parque nacional', url: 'https://www.pcrai.ro/files/pdf/Management_Plan.pdf' };
 
@@ -700,7 +720,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
     emoji: '🌲',
     color: '#5A7350',
     resumen: 'La cadena del Tauro y la montaña anatolia mediterránea, que separa la costa de la meseta interior. Acá está el agua de Anatolia: la nieve que se acumula en invierno alimenta los karsts y sale por manantiales enormes que sostienen los regadíos de abajo.',
-    vegetacion: 'Cedro del Líbano y abeto del Tauro en la franja alta, pino negro y pino de Calabria en la media, enebrales altos de enebro fenicio y poligamo en las solanas secas, y encinar y quejigar en los fondos; pastizal de montaña arriba, pastoreado desde siempre.',
+    vegetacion: 'Cedro del Líbano y abeto del Tauro en la franja alta, pino negro y pino de Calabria en la media, enebrales altos de enebro fenicio y poligamo en las solanas secas, y encinar y quejigar en los fondos; pastizal de montaña arriba, pastoreado desde siempre. La clasificación publicada de 4.717 relevés del sur y el oeste de Turquía ordena todo esto en tres pisos, y el de arriba junta más de lo que parece: el oromediterráneo es el del cedro del Líbano, el abeto del Tauro y los dos enebros —el polígamo y el rastrero, Juniperus communis subsp. nana— en la misma franja, así que el enebral de altura no es la versión seca y pobre del cedral sino su vecino de cota. Debajo, el supramediterráneo es el del pino negro de Anatolia, los robledales termófilos con Ostrya carpinifolia y, donde entra aire templado, rodales de haya oriental. Lo que más ordena el conjunto es la altitud, y después la distancia al mar; de las variables climáticas pesan las temperaturas medias —la anual y las de los trimestres más seco, más frío y más cálido—, la mínima del invierno, la lluvia del trimestre más cálido y la del más seco, y la estacionalidad de la lluvia. O sea que lo que separa un piso del siguiente no es cuánta lluvia cae, sino cuándo cae y qué frío hace.',
     fauna: 'Cabra bezoar, corzo, lobo, oso pardo, lince caracal en el piedemonte, buitre leonado y águila real; una de las áreas de mayor riqueza de plantas bulbosas del mundo.',
     suelos: 'Leptosoles rendzínicos y Cambisoles cálcicos sobre caliza masiva, con terra rossa profunda sólo en las dolinas y los poljes de altura, que son las únicas parcelas de labor. Es karst puro: no hay escurrimiento, el agua baja por las fisuras, y lo que se hace arriba se bebe abajo. La sobrecarga de pastoreo y los incendios de pino en la ladera baja son los dos motores de pérdida de suelo, y una vez que se va, sobre la caliza no vuelve. La recuperación pasa por regular carga, mantener el enebral —que es el que fija la ladera seca— y no tocar las zonas de recarga.',
     saberes: [],
@@ -712,7 +732,7 @@ export const BIOMAS_REGIONALES_EUROPA_UE: Record<string, BiomaFicha> = {
       'Quejigo de Anatolia (Quercus infectoria)',
     ],
     cultivos: ['manzano', 'nogal', 'damasco', 'cebada', 'trigo', 'lenteja', 'pistacho', 'papa'],
-    fuentes: [TARIM, SOILGRIDS, RESOLVE],
+    fuentes: [TARIM, SOILGRIDS, RESOLVE, ANATOLIA_CLASIFICACION],
   },
 
   // TR · ECO_ID 703

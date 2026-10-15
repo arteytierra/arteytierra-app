@@ -198,6 +198,27 @@ const ALBORZ_GRADIENTE = { label: 'Folia Geobotanica 48(1):7-22 — Species Dive
  */
 const GOMISHAN_RAMSAR = { label: 'Ramsar — Information Sheet on Ramsar Wetlands: Gomishan Lagoon, Iran (IR1109)', url: 'https://rsis.ramsar.org/RISapp/files/RISrep/IR1109RIS.pdf' };
 
+/* ── Lote 08: las dos ultimas ─────────────────────────── */
+
+/**
+ * Macizo del Karkas, 92.100 ha en la provincia de Isfahan, con caza prohibida
+ * desde 1980. Relevado de la primavera al otono de 2006 en 63 series de
+ * cuadrantes; cada serie son diez cuadrantes de 100 m2 sumados en un relevé
+ * de 1.000 m2. Quince asociaciones, diez de las cuales se separan al 30 % de
+ * similitud y las otras cinco solo al 50 %.
+ *
+ * Es el extremo noroeste de la cadena del Kuh Rud, cerca de Natanz. No cubre
+ * Shirkuh, ni Dena, ni las sierras de Kerman y Baluchistan que esta ficha
+ * tambien abarca.
+ *
+ * OJO con la temperatura media: el trabajo publica 2,1 °C para toda la region,
+ * y resulta ser el valor de la fila mas extensa de su propia tabla
+ * —Artemisietum aucheri, 41,5 % del area, de 1.800 a 3.100 m—. La misma tabla
+ * reparte de −1,4 a 13 °C segun la cota, sobre un desnivel de 1.389 a 3.880 m.
+ * Se monta el rango, no la media sola.
+ */
+const KARKAS_COMUNIDADES = { label: 'Plant, Soil and Environment 54(8):347-358 — Plant communities of the Karkas Hunting-Prohibited Region, Isfahan-Iran', url: 'https://doi.org/10.17221/413-PSE' };
+
 /** Rodales y encuestas en ocho distritos del cinturon de pistacho del norte y
  *  noroeste de Afganistan, con 507 hogares. Badghis cae dentro de esa franja,
  *  pero el trabajo no desglosa por distrito: es una fuente de la region y no
@@ -806,9 +827,9 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
     emoji: '⛰️',
     color: '#8E8A63',
     resumen: 'Las cadenas interiores que cruzan la meseta iraní en diagonal, del Kuh Rud a las sierras de Kermán y Baluchistán. Islas de montaña entre desiertos: reciben algo más de lluvia y son la fuente de agua de todos los oasis de alrededor.',
-    vegetacion: 'Bosque abierto de enebro y almendro en las cotas altas, matorral espinoso de Astragalus y Amygdalus en la ladera media, estepa de Artemisia abajo.',
+    vegetacion: 'Bosque abierto de enebro y almendro en las cotas altas, matorral espinoso de Astragalus y Amygdalus en la ladera media, estepa de Artemisia abajo. En el macizo del Karkas, 92.100 hectáreas con caza prohibida desde 1980 y la única parte de esta cadena con un relevamiento publicado, lo que está medido no es bosque: es estepa de arbustos enanos con una cobertura vegetal total de entre el 7 y el 30 % según la comunidad, y de entre el 26 % y más del 90 % de piedra y grava en la superficie. El ajenjo Artemisia aucheri domina el 41,5 % del área —38.190 ha, de 1.800 a 3.100 m, con hasta 101 matas cada 100 m²— y A. sieberi otro 16,2 % en las mesetas y las terrazas viejas de abajo; arriba de los 3.400 m quedan el ajenjo y los cojines espinosos de Astragalus y Acantholimon. Del estrato leñoso queda poco, y el trabajo dice por qué: el pistacho khinjuk, el agracejo y el tamarisco, entre otros, aparecen como rodales sueltos, y los tocones en pie prueban que antes eran más y que los bajó la recolección de leña. Hay un almendral de Amygdalus scoparia sobre roca y pedregal, de 2 a 4 m de alto y copas de 5 m, y bajo su copa no se registró ninguna especie: los autores lo atribuyen a alelopatía. En ninguna de las quince asociaciones, ni en la lista de rodales sueltos, aparece el enebro. Y hay dos resultados que dan vuelta la lectura fácil. La mayor diversidad de especies del macizo está en los sitios degradados: el Shannon más alto, 2,26, es de una comunidad de Eryngium billardieri con alfalfa, y las de Eryngium y de Scariola orientalis —las dos de pastizal sobrepastoreado— son las de más especies, mientras que las de menos, 0,39 y 0,83, son las de Centaurea gaubae y Pteropyrum aucheri. y los autores pronostican que esas comunidades ricas van a perder especies a medida que el sobrepastoreo se lleve las palatables: contar especies acá no mide salud. Y la diversidad es más baja donde hay más agua: en los fondos de cañadón y los lechos que conservan agua en la seca la cobertura la ocupa Perovskia abrotanoides casi sola, y el número de especies sube hacia los bordes, a medida que el agua escasea. Para calcular pasto importan dos cosas más: los dos ajenjos, que juntos cubren cerca del 58 % del área, son aromáticos y los herbívoros no los tocan hasta que la lluvia de otoño les lava los aceites, así que buena parte de la biomasa en pie no es forraje antes de esa lluvia; y el Eryngium, que las espinas protegen del diente, se corta entero a fin del verano, se seca, se pica y alimenta la hacienda en el invierno.',
     fauna: 'Cabra bezoar, muflón, leopardo persa, oso pardo en el norte del rango, buitre leonado; núcleos de fauna de montaña aislados unos de otros por el desierto.',
-    suelos: 'Leptosoles y Calcisoles pedregosos sobre caliza y roca volcánica, someros y de baja retención. La montaña no se cultiva: se administra como cuenca de captación. El agua que infiltra acá es la que alimenta el acuífero del abanico donde arranca cada qanat, y esa cadena es lo que sostiene los oasis de Yazd, Kermán y Nain. Sobrepastorear la ladera es reducir la recarga de un pueblo que está a treinta kilómetros y no lo va a atribuir a eso.',
+    suelos: 'Leptosoles y Calcisoles pedregosos sobre caliza y roca volcánica, someros y de baja retención. La montaña no se cultiva: se administra como cuenca de captación. El agua que infiltra acá es la que alimenta el acuífero del abanico donde arranca cada qanat, y esa cadena es lo que sostiene los oasis de Yazd, Kermán y Nain. Sobrepastorear la ladera es reducir la recarga de un pueblo que está a treinta kilómetros y no lo va a atribuir a eso. El relevamiento del Karkas le pone números a esa cuenca de captación: de las 92.100 ha, el 70,0 % es pastizal (64.487 ha) y el 25,4 % roca expuesta (23.401 ha); el regadío son 431 ha y los frutales 2.598. Los suelos que describe son Aridisoles y Entisoles, de textura franco arenosa a arena franca sobre las lomas calcáreas y los esquistos de arriba —someros y pedregosos— y franco limosa a franco arcillo arenosa, profunda y calcárea, en los abanicos y las terrazas de abajo. La lluvia media son 240 mm, con años de 153 y de 328; medida por comunidad va de 172 a 263 mm, que no es lo mismo: lo primero es cuánto varía de un año al otro y lo segundo cuánto varía de una ladera a la otra. Y la media anual de temperatura que publica —2,1 °C— es la de la comunidad más extensa, que está entre 1.800 y 3.100 m: su propia tabla reparte de −1,4 °C a 13 °C según la cota, sobre un desnivel que va de 1.389 a 3.880 m. Sobre un gradiente así, una media anual sola no describe el predio: describe la altura del dato.',
     saberes: [],
     especies: [
       'Enebro (Juniperus excelsa subsp. polycarpos)',
@@ -818,7 +839,7 @@ export const BIOMAS_REGIONALES_MEDIO_ORIENTE: Record<string, BiomaFicha> = {
       'Pistacho del Atlas (Pistacia atlantica)',
     ],
     cultivos: ['trigo', 'cebada', 'nogal', 'vid', 'damasco', 'azafran', 'pistacho', 'alfalfa'],
-    fuentes: [SOILGRIDS, HWSD, RESOLVE],
+    fuentes: [SOILGRIDS, HWSD, RESOLVE, KARKAS_COMUNIDADES],
   },
 
   // IR AF PK · ECO_ID 838 · Sistán y el viento de los 120 días
