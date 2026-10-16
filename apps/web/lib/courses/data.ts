@@ -18,7 +18,14 @@ export interface CourseModule {
 export interface CourseOption {
   id: string;
   label: string;
+  /** El importe y su moneda. La unidad de tiempo no va acá: va en `precioPor`. */
   precio: string;
+  /**
+   * Si el precio es por unidad de tiempo y no un total. Va aparte porque
+   * «/ semana» hay que decirlo en cada idioma, y pegado al importe se coló
+   * en castellano en las fichas en inglés y francés.
+   */
+  precioPor?: 'semana';
   precioAlt?: string;
   includes: string[];
   highlighted?: boolean;
@@ -665,8 +672,8 @@ export const COURSES: Record<string, CourseData> = {
     programaNota: 'Las áreas no son un cronograma cerrado: cada semana se trabaja en lo que el espacio necesita en ese momento —una obra que avanza, la huerta en su temporada, una formación que se está armando. Por eso en una estadía corta, de dos semanas, se entra a fondo en una o dos áreas y no en todas. Para recorrerlas todas recomendamos quedarse tres meses.',
     facilitadores: [JONATAN],
     opciones: [
-      { id: 'camping', label: 'En zona de camping', precio: '$40.000 / semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
-      { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000 / semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
+      { id: 'camping', label: 'En zona de camping', precio: '$40.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
+      { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000', precioPor: 'semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
     opcionesNota: 'Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp.',
     formCurso: 'Inmersión Viva · Tay Pichín',

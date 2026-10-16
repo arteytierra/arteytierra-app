@@ -20,7 +20,7 @@ import type { Locale } from '@/lib/i18n/config';
 import {
   horarioApertura,
   modalidadTeoriaPractica,
-  precioLocalizado,
+  precioParaMostrar,
   rangoFechas,
 } from '@/lib/courses/formato';
 
@@ -98,13 +98,14 @@ export function CourseDetailTranslated({ course, t, locale, base, whatsapp }: Pr
       </section>
 
       {/* DATOS CLAVE */}
+      {t.datos && (
       <section className="bg-bone-100 py-12 px-6">
         <div className="max-w-editorial mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: t.datos.cuando, value: fechas, sub: horario },
-            { label: t.datos.donde, value: t.donde, sub: null },
-            { label: t.datos.formato, value: t.formato, sub: modalidad },
-            { label: t.datos.facilita, value: course.facilitadores[0]?.name ?? '', sub: t.facilitaNota },
+            { label: t.datos.donde, value: t.donde ?? null, sub: null },
+            { label: t.datos.formato, value: t.formato ?? null, sub: modalidad },
+            { label: t.datos.facilita, value: course.facilitadores[0]?.name ?? '', sub: t.facilitaNota ?? null },
           ]
             .filter(d => d.value)
             .map(d => (
@@ -118,6 +119,7 @@ export function CourseDetailTranslated({ course, t, locale, base, whatsapp }: Pr
             ))}
         </div>
       </section>
+      )}
 
       {/* ÁREAS */}
       <section className="bg-ink-950 py-20 px-6">
@@ -179,7 +181,7 @@ export function CourseDetailTranslated({ course, t, locale, base, whatsapp }: Pr
                     {to.label}
                   </p>
                   <p className={`font-display text-3xl ${op.highlighted ? 'text-bone-50' : 'text-clay-700'}`}>
-                    {precioLocalizado(op.precio, locale)}
+                    {precioParaMostrar(op, locale)}
                   </p>
                   {op.precioAlt && (
                     <p className={`font-sans text-xs ${op.highlighted ? 'text-bone-200/70' : 'text-ink-700/70'}`}>

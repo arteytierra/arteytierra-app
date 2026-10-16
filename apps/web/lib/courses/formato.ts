@@ -133,6 +133,23 @@ export function precioLocalizado(precio: string, locale: Locale): string {
   return precio.replace(/[\d.,]*\d/, monto.toLocaleString(TAGS[locale]));
 }
 
+const POR_SEMANA: Record<Locale, string> = {
+  es: '/ semana',
+  en: '/ week',
+  fr: '/ semaine',
+  pt: '/ semana',
+};
+
+/**
+ * El precio listo para mostrar: el importe con los separadores del idioma y,
+ * si corresponde, la unidad de tiempo traducida. Es la única forma en que un
+ * precio debería llegar a pantalla.
+ */
+export function precioParaMostrar(op: CourseOption, locale: Locale): string {
+  const importe = precioLocalizado(op.precio, locale);
+  return op.precioPor === 'semana' ? `${importe} ${POR_SEMANA[locale]}` : importe;
+}
+
 /** "30% teoría · 70% práctica", en el idioma pedido. */
 export function modalidadTeoriaPractica(
   tp: { teoria: number; practica: number },

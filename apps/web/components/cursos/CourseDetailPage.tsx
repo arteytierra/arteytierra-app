@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { CourseData } from '@/lib/courses/data';
 import { courseCatalogJsonLd } from '@/lib/courses/jsonld';
+import { precioParaMostrar } from '@/lib/courses/formato';
 import { CourseEnrollForm } from './CourseEnrollForm';
 import { CourseGallery } from './CourseGallery';
 import { CourseCountdown } from './CourseCountdown';
@@ -399,7 +400,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                 )}
                 <h3 className={`font-display text-xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.label}</h3>
                 <div>
-                  <div className={`font-display text-3xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{op.precio}</div>
+                  <div className={`font-display text-3xl ${op.highlighted ? 'text-bone-50' : 'text-ink-950'}`}>{precioParaMostrar(op, 'es')}</div>
                   {/* Mostrar precio alternativo solo en cursos online */}
                   {op.precioAlt && (course.kind === 'online-live' || course.kind === 'online-async') && (
                     <p className={`text-xs font-sans mt-1 ${op.highlighted ? 'text-clay-200' : 'text-clay-700'}`}>{op.precioAlt}</p>
@@ -420,7 +421,7 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
                       name: course.name,
                       optionId: op.id,
                       optionLabel: op.label,
-                      precio: op.precio,
+                      precio: precioParaMostrar(op, 'es'),
                     }}
                     className={`mt-2 w-full py-3 text-xs font-sans font-bold uppercase tracking-widest transition-colors ${
                       op.highlighted

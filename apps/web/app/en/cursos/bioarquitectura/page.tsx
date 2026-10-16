@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCourse } from '@/lib/courses/data';
-import { getCourseTraduccion } from '@/lib/courses/traducciones';
+import { getCourseTraduccion, nombreTraducido } from '@/lib/courses/traducciones';
 import { courseCatalogJsonLd } from '@/lib/courses/jsonld';
 import { CourseDetailTranslated } from '@/components/cursos/CourseDetailTranslated';
 import { SiteHeader } from '@/components/site/SiteHeader';
@@ -25,6 +25,7 @@ export default function BioarquitecturaEnPage() {
     locale: 'en',
     path: PATH,
     description: t.metaDescription,
+    name: nombreTraducido(t),
   });
 
   return (

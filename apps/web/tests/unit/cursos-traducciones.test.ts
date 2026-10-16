@@ -18,6 +18,7 @@ import {
   diaDeLaSemana,
   horarioApertura,
   montoDePrecio,
+  precioParaMostrar,
   rangoFechas,
   rangoPrecios,
 } from '@/lib/courses/formato';
@@ -58,8 +59,14 @@ describe('traducciones de cursos', () => {
     expect(prosa).not.toMatch(/\d{2}[.,]\d{3}/);
   });
 
-  it.each(pares)('$slug · $locale no escribe la fecha por su cuenta', ({ t }) => {
-    const prosa = [t!.subtitle, ...t!.intro, t!.metaDescription, t!.areasNota].join(' ');
+  it.each(pares)('$slug · $locale no escribe la fecha del curso por su cuenta', ({ slug, t }) => {
+    // Sólo donde iría la fecha del curso: la bajada del hero y la descripción
+    // que ve el buscador, que son los dos lugares donde se desfasó. La
+    // introducción queda afuera a propósito: ahí los años son historia del
+    // proyecto ("desde noviembre de 2020"), no la fecha de esta edición.
+    const course = COURSES[slug]!;
+    if (!course.fechas) return;
+    const prosa = [t!.subtitle, t!.metaDescription, t!.areasNota].join(' ');
     expect(prosa).not.toMatch(/\b20\d{2}\b/);
   });
 });
@@ -111,6 +118,29 @@ describe('formato de fechas y precios', () => {
 
   it('el rango de precios sale de las opciones', () => {
     expect(rangoPrecios(bioarq.opciones)).toBe('$110.000 – $150.000');
+  });
+
+  it('la unidad de tiempo del precio se traduce', () => {
+    // Estaba pegada al importe («$40.000 / semana») y se colaba en castellano
+    // dentro de las fichas en inglés y francés.
+    const semanal = COURSES['inmersion-viva']!.opciones[0]!;
+    expect(precioParaMostrar(semanal, 'es')).toBe('$40.000 / semana');
+    expect(precioParaMostrar(semanal, 'en')).toBe('$40,000 / week');
+    expect(precioParaMostrar(semanal, 'fr')).toContain('/ semaine');
+  });
+
+  it('un precio sin unidad de tiempo no inventa una', () => {
+    expect(precioParaMostrar(bioarq.opciones[0]!, 'en')).toBe('$110,000 ARS');
+  });
+});
+
+describe('ningún precio lleva la unidad pegada al importe', () => {
+  it('la unidad va en precioPor, no dentro del texto del precio', () => {
+    for (const [slug, c] of Object.entries(COURSES)) {
+      for (const op of c.opciones) {
+        expect(op.precio, `${slug} · ${op.id}`).not.toMatch(/\/\s*(semana|sem\.|mes|día|dia)/i);
+      }
+    }
   });
 });
 
