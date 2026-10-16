@@ -1,5 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS, type AcequiaPlanId } from '@arteytierra/config/acequia';
+import {
+  ACEQUIA_FEATURES,
+  ACEQUIA_FEATURES_VITRINA,
+  ACEQUIA_LIBRE,
+  ACEQUIA_PLANS,
+  ACEQUIA_TOPO_SEMILLA_HA,
+  ACEQUIA_TRIAL_DAYS,
+  type AcequiaFeature,
+  type AcequiaPlanId,
+} from '@arteytierra/config/acequia';
 import { corsAcequia } from '@/lib/terreno/cors';
 import { tasaArsPorUsdParaMostrar } from '@/lib/terreno/cotizacion';
 import {
@@ -59,6 +68,36 @@ export interface EstadoPagos {
    * archivo que también podría haber quedado viejo.
    */
   planes: Record<AcequiaPlanId, PlanPublicado>;
+  /**
+   * Cada feature con candado: desde qué plan va, cómo se dice y qué salvedad
+   * no se puede omitir al anunciarla.
+   *
+   * Publicar los precios no alcanzó. El 15/10/2026 la vidriera de `acequia.app`
+   * seguía ofreciéndole a Semilla «Informe con marca de agua» dos semanas
+   * después de que `informe.descarga` pasara a Personal, y ningún número estaba
+   * mal: la FRASE estaba mal. Así que acá van también las frases, al lado del
+   * candado que las hace verdaderas.
+   */
+  features: FeaturePublicada[];
+  /**
+   * Lo que no pide ningún plan, que es de lo que está hecha la tarjeta de
+   * Semilla. Sin esto una vidriera no tiene con qué armarla y la inventa.
+   */
+  libre: Array<{ id: string; etiqueta: string; salvedad: string | null }>;
+  /** El tope de superficie de la muestra de topografía, en hectáreas. */
+  topoSemillaHa: number;
+}
+
+/** Una feature con candado, tal como se puede anunciar. */
+export interface FeaturePublicada {
+  id: AcequiaFeature;
+  /** El plan MÍNIMO que la habilita. Uno superior la habilita también. */
+  desde: AcequiaPlanId;
+  etiqueta: string;
+  /** Lo que hay que decir junto con la etiqueta. Omitirlo es prometer de más. */
+  salvedad: string | null;
+  /** Si va en la tarjeta corta; el resto es para la tabla comparativa. */
+  tarjeta: boolean;
 }
 
 function publicarPlanes(): Record<AcequiaPlanId, PlanPublicado> {
@@ -73,6 +112,14 @@ function publicarPlanes(): Record<AcequiaPlanId, PlanPublicado> {
     };
   }
   return salida;
+}
+
+function publicarFeatures(): FeaturePublicada[] {
+  return (Object.keys(ACEQUIA_FEATURES) as AcequiaFeature[]).map(id => ({
+    id,
+    desde: ACEQUIA_FEATURES[id],
+    ...ACEQUIA_FEATURES_VITRINA[id],
+  }));
 }
 
 export function OPTIONS(req: NextRequest) {
@@ -93,6 +140,9 @@ export function GET(req: NextRequest) {
     // degradar avisando antes que rellenar con un número plausible.
     arsPorUsd: tasaArsPorUsdParaMostrar(),
     planes: publicarPlanes(),
+    features: publicarFeatures(),
+    libre: ACEQUIA_LIBRE.map(l => ({ ...l })),
+    topoSemillaHa: ACEQUIA_TOPO_SEMILLA_HA,
   };
   return NextResponse.json(cuerpo, { headers });
 }

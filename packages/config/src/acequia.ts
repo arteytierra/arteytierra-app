@@ -252,3 +252,112 @@ export function acequiaTopoPermitida(plan: AcequiaPlanId, ha: number | null): bo
   if (!acequiaPlanHabilita(plan, 'analisis.topo')) return false;
   return ha == null || ha <= ACEQUIA_TOPO_SEMILLA_HA;
 }
+
+/* ─── Cómo se dice cada cosa en una vidriera ──────────────────────────────────
+ *
+ * Esto existe por una falla concreta y repetida: la vidriera de `acequia.app`
+ * vive en otro repositorio, escribe sus renglones a mano y ya mintió tres
+ * veces. Anunció USD 12 mientras el cobro salía 15, «proyectos ilimitados» con
+ * un tope de 10, y el 15/10/2026 seguía ofreciéndole a Semilla «Informe con
+ * marca de agua» —que un visitante lee como «me llevo el informe»— dos semanas
+ * después de que `informe.descarga` pasara a Personal.
+ *
+ * Publicar los precios no alcanzó para evitarlo, porque el renglón equivocado
+ * no era un número: era una FRASE. Así que las frases también viven acá, al
+ * lado del candado que las hace verdaderas, y salen por
+ * `/api/terreno/estado-pagos`.
+ *
+ * La `salvedad` es la parte que no se puede omitir al anunciar la feature. No
+ * es letra chica: es lo que separa un renglón verdadero de uno que promete de
+ * más. Si una feature tiene salvedad y la vidriera la muestra sin ella, el
+ * renglón está mal aunque la feature sea correcta.
+ */
+
+export interface AcequiaFeatureVitrina {
+  /** Cómo se nombra en una lista de plan. En infinitivo o sustantivo, corto. */
+  etiqueta: string;
+  /** Lo que hay que decir junto con la etiqueta, o null si no hace falta. */
+  salvedad: string | null;
+  /** Si va en la tarjeta corta del plan; el resto vive en la tabla comparativa. */
+  tarjeta: boolean;
+}
+
+export const ACEQUIA_FEATURES_VITRINA: Record<AcequiaFeature, AcequiaFeatureVitrina> = {
+  'catastro.rumbos':    { etiqueta: 'Rumbos y distancias de cada lado del perímetro', salvedad: null, tarjeta: false },
+  // Análisis.
+  'analisis.topo':      {
+    etiqueta: 'Muestra de topografía: curvas de nivel y relieve',
+    // Sin esto el renglón promete la herramienta y entrega media hectárea.
+    salvedad: 'La muestra gratis se limita a predios de hasta 0,5 ha, que es un cuadrado de 70 m de lado.',
+    tarjeta: true,
+  },
+  'analisis.topo_sin_limite': { etiqueta: 'Topografía en un predio de cualquier tamaño', salvedad: null, tarjeta: true },
+  'analisis.clima':     { etiqueta: 'Muestra de clima: temperatura, lluvia y calendario local', salvedad: null, tarjeta: true },
+  'analisis.contexto':  { etiqueta: 'Ecorregión, bioma y ficha del lugar', salvedad: null, tarjeta: false },
+  'analisis.entorno':   { etiqueta: 'Qué hay alrededor del predio y a qué distancia', salvedad: 'Sale de OpenStreetMap: vacío significa «no mapeado», no «no hay».', tarjeta: false },
+  'analisis.suelo':     { etiqueta: 'Suelo: textura, carbono, pH y agua útil por horizonte', salvedad: null, tarjeta: false },
+  'analisis.cobertura': { etiqueta: 'Cobertura del suelo y usos actuales', salvedad: null, tarjeta: false },
+  'analisis.hidrico':   { etiqueta: 'Balance hídrico mes por mes', salvedad: null, tarjeta: false },
+  'analisis.solar':     { etiqueta: 'Recorrido solar y radiación', salvedad: null, tarjeta: false },
+  'analisis.sombras':   { etiqueta: 'Sombras propias y del relieve', salvedad: null, tarjeta: false },
+  'analisis.visibilidad': { etiqueta: 'Cuencas visuales: qué se ve desde dónde', salvedad: null, tarjeta: false },
+  'analisis.produccion':{ etiqueta: 'Producción, carga animal y agua de la hacienda', salvedad: null, tarjeta: false },
+  'analisis.aptitud':   { etiqueta: 'Aptitud por especie y por uso', salvedad: null, tarjeta: false },
+  'analisis.carbono':   { etiqueta: 'Carbono del suelo y de la biomasa', salvedad: null, tarjeta: false },
+  // Diseño.
+  'diseno.agua':        { etiqueta: 'Obras de agua: swales, zanjas y represas', salvedad: null, tarjeta: false },
+  'diseno.zonas':       { etiqueta: 'Zonificación por frecuencia de visita', salvedad: null, tarjeta: false },
+  'diseno.sectores':    { etiqueta: 'Muestra de sectores: vientos, sol y heladas', salvedad: null, tarjeta: true },
+  'diseno.aguadas':     { etiqueta: 'Aguadas y bebederos', salvedad: null, tarjeta: false },
+  'diseno.caminos':     { etiqueta: 'Trazado de caminos', salvedad: null, tarjeta: false },
+  'diseno.red':         { etiqueta: 'Red de conducción y riego por gravedad', salvedad: null, tarjeta: false },
+  'diseno.cuenca':      { etiqueta: 'Muestra de cuenca: hacia dónde va el agua', salvedad: null, tarjeta: true },
+  'diseno.pastoreo':    { etiqueta: 'Parcelas de pastoreo y rotación', salvedad: null, tarjeta: false },
+  'diseno.riego':       { etiqueta: 'Dimensionado del riego', salvedad: null, tarjeta: false },
+  'diseno.keyline':     { etiqueta: 'Patrón keyline y líneas guía', salvedad: null, tarjeta: false },
+  'diseno.economia':    { etiqueta: 'Presupuesto de obra y movimiento de suelo', salvedad: null, tarjeta: false },
+  'sugerencias':        { etiqueta: 'Plan maestro sugerido para el predio', salvedad: null, tarjeta: false },
+  // Entrega.
+  'informe.descarga':   {
+    etiqueta: 'Descargar el informe en PDF',
+    // La frase que faltaba. Semilla NO se lleva el archivo, y decir «informe
+    // con marca de agua» en su tarjeta hace creer que sí.
+    salvedad: 'Semilla no descarga el informe: lo publica por link, con marca de agua, y se comparte así.',
+    tarjeta: true,
+  },
+  'informe.sin_marca':  { etiqueta: 'Informe sin marca de agua', salvedad: null, tarjeta: true },
+  'informe.white_label':{ etiqueta: 'Informe con tu logo, tu marca y tu matrícula', salvedad: null, tarjeta: true },
+  'export.imagen':      {
+    etiqueta: 'Capturar el plano en PNG, con rótulo y leyenda',
+    salvedad: 'Es la única exportación que compone la imagen pidiendo teselas satelitales a un tercero.',
+    tarjeta: true,
+  },
+  'export.gis':         { etiqueta: 'Exportar a GeoJSON, KML y GPX', salvedad: null, tarjeta: true },
+  'export.dxf':         { etiqueta: 'Exportar a DXF/CAD por capas', salvedad: null, tarjeta: true },
+  'colaboracion':       { etiqueta: 'Varias cuentas sobre la misma cartera', salvedad: 'Las cinco cuentas de Estudio se dan de alta a mano: todavía no hay autoservicio.', tarjeta: true },
+};
+
+/**
+ * Lo que no pide ningún plan, y por eso no está en `ACEQUIA_FEATURES`.
+ *
+ * Hace falta publicarlo porque es **de lo que está hecha la tarjeta de
+ * Semilla**, y una vidriera que sólo conoce las features con candado no tiene
+ * con qué armarla: termina inventando renglones, que es exactamente lo que
+ * pasó. Lo que no tiene candado no es un detalle: es la oferta gratis entera.
+ */
+export const ACEQUIA_LIBRE: readonly { id: string; etiqueta: string; salvedad: string | null }[] = [
+  { id: 'dibujo',            etiqueta: 'Herramientas de dibujo del predio', salvedad: null },
+  { id: 'superficie',        etiqueta: 'Superficie y perímetro mientras trazás', salvedad: null },
+  { id: 'satelital',         etiqueta: 'Mapa satelital', salvedad: null },
+  { id: 'informe_publico',   etiqueta: 'Informe publicado por link, con marca de agua', salvedad: 'Se ve y se comparte; bajarlo en archivo pide Personal.' },
+  { id: 'guia',              etiqueta: 'La guía de uso completa, sin cuenta', salvedad: null },
+] as const;
+
+/** Las features que un plan habilita, con la frase y la salvedad de cada una. */
+export function acequiaVitrinaDePlan(plan: AcequiaPlanId): Array<
+  { feature: AcequiaFeature } & AcequiaFeatureVitrina
+> {
+  return (Object.keys(ACEQUIA_FEATURES) as AcequiaFeature[])
+    .filter(f => acequiaPlanHabilita(plan, f))
+    .map(f => ({ feature: f, ...ACEQUIA_FEATURES_VITRINA[f] }));
+}
