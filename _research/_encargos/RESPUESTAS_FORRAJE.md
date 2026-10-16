@@ -296,7 +296,7 @@ que comete depende del bioma.
 
 ### Por qué el delta del Tana no entra
 
-Tres motivos independientes, y cualquiera de los tres alcanza:
+Cuatro motivos independientes, y cualquiera de los cuatro alcanza:
 
 1. **Es un modelo, no una medición.** El trabajo presenta un modelo acoplado
    vegetación-suelo y lo aplica al delta del Tana. Un valor simulado no es un
@@ -305,7 +305,16 @@ Tres motivos independientes, y cualquiera de los tres alcanza:
    compartimentos de fitomasa: *«leaves, stems, roots, aerial dead matter»*. Las
    **raíces** y el material muerto no los come nadie. Treinta toneladas por
    hectárea de eso no son treinta toneladas de pasto.
-3. **La cifra no está en el resumen público.** El trabajo es de acceso cerrado
+3. **Está en otro bioma, otra vez.** Igual que la Caatinga del lote 02. Venía
+   como `pastizal_inundable` —`BIOME_NUM` 9— y el delta del Tana es
+   **`BIOME_NUM` 1**, bosque húmedo de la costa swahili, `ECO_ID` 25.
+   Comprobado con cuatro puntos distintos del delta: los cuatro dan bioma 1, y
+   recén bastante aguas arriba aparece el 7. En ningún punto del delta hay
+   bioma 9. Los dos rechazos del circuito tenían el bioma mal, y las dos veces
+   por lo mismo: se eligió por cómo se ve la vegetación en el texto y no por el
+   polígono que la clasifica. De ahí sale el campo `bioma_verificado` del lote
+   04.
+4. **La cifra no está en el resumen público.** El trabajo es de acceso cerrado
    (OpenAlex: `closed`, sin copia en ningún repositorio). Se buscó la cifra en
    el resumen completo que publica Semantic Scholar —2.404 caracteres— y **no
    aparecen ni «30», ni «t/ha», ni «kg», ni «tonne»**. El resumen habla de una
