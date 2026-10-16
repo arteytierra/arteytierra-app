@@ -15,6 +15,20 @@ const CONFIG    = 'https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com
 
 interface ReleaseCfg { itemTitle?: string; itemURL?: string }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Un pedido al índice de releases de ESRI, con 25 s de timeout.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 30;
+
 export async function GET(req: Request) {
   if (!limitar(`wayback:${ipDe(req)}`, 20, 60_000)) return err('Demasiadas solicitudes. Probá de nuevo en un momento.', 429);
 

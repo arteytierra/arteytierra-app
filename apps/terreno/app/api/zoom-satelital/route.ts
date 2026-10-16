@@ -37,6 +37,20 @@ async function tieneImagen(lat: number, lng: number, z: number): Promise<boolean
   return createHash('md5').update(buf).digest('hex').slice(0, 10) !== PLACEHOLDER;
 }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Un HEAD a ArcGIS, con 8 s de timeout.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 15;
+
 export async function GET(req: Request) {
   // Sonda cara (hasta 8 fetches salientes por llamada). Se llama al elegir un
   // punto, no en ráfaga, así que 30/min por IP no molesta a un usuario real.

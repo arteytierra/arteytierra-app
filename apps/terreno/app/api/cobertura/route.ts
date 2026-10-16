@@ -14,6 +14,22 @@ const MPC       = 'https://planetarycomputer.microsoft.com/api/';
 
 interface Body { mojones?: Array<{ lat: number; lng: number }>; }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Dos pedidos SECUENCIALES al Planetary Computer: buscar el
+ * ítem (25 s) y después calcular el histograma del polígono (30 s).
+ * Sumaban 70 s y el techo del plan son 60, asi que se recortaron.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const bloqueo = await requierePlan('analisis.cobertura');
   if (bloqueo) return bloqueo;
@@ -38,7 +54,8 @@ export async function POST(req: Request) {
     const r = await fetch(`${MPC}stac/v1/search`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ collections: ['esa-worldcover'], intersects: { type: 'Point', coordinates: [cLng, cLat] }, limit: 5 }),
-      signal: AbortSignal.timeout(30_000),
+      // 25 s: con el histograma de abajo suman 55 y el techo del plan es 60.
+      signal: AbortSignal.timeout(25_000),
     });
     if (!r.ok) return err(`Planetary Computer respondió ${r.status}.`, 502);
     const js = await r.json() as { features?: Array<{ id: string; properties?: Record<string, unknown> }> };
@@ -62,7 +79,7 @@ export async function POST(req: Request) {
   try {
     const r = await fetch(statsUrl, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(feature), signal: AbortSignal.timeout(40_000),
+      body: JSON.stringify(feature), signal: AbortSignal.timeout(30_000),
     });
     if (!r.ok) return err(`No se pudo calcular la cobertura (${r.status}).`, 502);
     stats = await r.json();

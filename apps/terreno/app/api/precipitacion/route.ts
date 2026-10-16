@@ -100,6 +100,21 @@ function climatologia(datos: RegistroCS[]): PrecipCHIRPS | null {
   };
 }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Encolar el pedido a ClimateSERV son 25 s; consultar el
+ * avance y bajar el resultado son 20 + 30 = 50 s.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 60;
+
 export async function GET(req: Request) {
   const bloqueo = await requierePlan('analisis.clima');
   if (bloqueo) return bloqueo;

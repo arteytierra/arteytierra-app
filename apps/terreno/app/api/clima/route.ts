@@ -4,9 +4,15 @@ import { requierePlan } from '@/lib/auth/apiGuard';
 
 // NASA POWER puede tardar 10-25 s en un punto sin caché. Sin esto Vercel corta
 // la función a los 10 s (default) y devuelve un body vacío → el cliente explota
-// con "Unexpected end of JSON input". Alineado con el timeout de fetch (30 s).
+// con "Unexpected end of JSON input".
+//
+// Y NO va alineado con el timeout del fetch, que es lo que estaba: con 30 y 30
+// los dos relojes vencen en el mismo instante, así que si POWER se cuelga la
+// carrera la gana la plataforma, el `catch` de abajo no corre y el usuario
+// recibe un 504 pelado en vez del aviso que esta ruta sabe dar. El techo tiene
+// que dejarle lugar al mensaje.
 export const runtime = 'nodejs';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 90; // 90 días — climatología histórica NASA POWER 1981–2023

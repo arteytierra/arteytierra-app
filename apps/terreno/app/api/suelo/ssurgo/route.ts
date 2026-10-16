@@ -44,6 +44,21 @@ function consulta(lng: string, lat: string): string {
   `.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Una consulta SQL a Soil Data Access, que tarda y tiene 30 s
+ * de timeout propio.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 60;
+
 export async function GET(req: Request) {
   const bloqueo = await requierePlan('analisis.suelo');
   if (bloqueo) return bloqueo;

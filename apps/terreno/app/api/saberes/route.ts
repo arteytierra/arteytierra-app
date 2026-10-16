@@ -31,6 +31,20 @@ export interface SaberActivo {
   geometria: { fuente: string; url: string; licencia: string };
 }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Un pedido a Overpass, con 12 s de timeout.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 30;
+
 export async function POST(req: Request) {
   const bloqueo = await requierePlan('analisis.contexto');
   if (bloqueo) return bloqueo;

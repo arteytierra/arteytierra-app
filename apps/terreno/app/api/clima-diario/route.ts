@@ -14,6 +14,21 @@ async function openCache(): Promise<Cache | null> {
   try { return await caches.open('terreno-clima-diario-v2'); } catch { return null; }
 }
 
+/**
+ * Cuánto puede durar esta ruta antes de que Vercel la corte.
+ *
+ * Un solo pedido a Open-Meteo con 35 años diarios, que
+ * tiene 40 s de timeout propio.
+ *
+ * Sin esta línea rige el default de la plataforma, que es más corto que el
+ * timeout interno: entonces la función muere antes de que nuestro propio
+ * `AbortSignal` alcance a devolver un mensaje, y el usuario recibe un 504 de
+ * Vercel sin explicación en vez del aviso que la ruta sabe dar.
+ *
+ * El plan Hobby no admite más de 60.
+ */
+export const maxDuration = 60;
+
 export async function GET(req: Request) {
   const bloqueo = await requierePlan('analisis.clima');
   if (bloqueo) return bloqueo;
