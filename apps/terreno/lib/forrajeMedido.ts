@@ -17,22 +17,54 @@
  * Este archivo es el primer paso para reemplazarla: **las mediciones primero, el
  * reemplazo después**, que es el orden que pide `skills/motor-de-calculo`.
  *
- * ## Lo que estas tres mediciones ya demuestran
+ * ## Lo que estas mediciones ya demuestran
  *
  * La escalera no está «un poco alta» ni «un poco baja»: se equivoca **en las dos
  * direcciones**, y por eso el problema no es calibrarla sino que mira una sola
- * variable. Con la lluvia media de cada sitio:
+ * variable. Con la lluvia de cada sitio:
  *
  * | Sitio | Lluvia | Escalera | Medido | |
  * |---|---|---|---|---|
- * | Dakota, pradera de altura | 508 mm | 3.000 | 2.643–3.063 | va bien |
+ * | Dakota, pradera de altura | 381–508 mm | 1.500–3.000 | 2.643–3.063 | va bien |
  * | Texas, Edwards Plateau | 508–762 mm | 3.000–5.000 | 825–2.578 | alta 2–4× |
  * | Altiplano de Puno, 3.900 m | 410–1.119 mm | 1.500–7.000 | 626–1.958 | alta hasta 11× |
+ * | Lesbos, fryganas | 354–797 mm | 1.500–5.000 | 300–5.800 | el rango medido es más ancho que la escalera entera |
+ * | Tundra de Alaska y Yukón | no publicada | — | 350–960 | fuera de todo escalón |
  *
  * En el norte de las Grandes Llanuras, con 381–508 mm, se miden casi 3.000
  * kg/ha/año; en el altiplano peruano, con MÁS lluvia, se miden 626. La
  * diferencia la explican el frío, el largo de la estación de crecimiento y la
  * profundidad del suelo, que la escalera no mira.
+ *
+ * ## El trabajo de Lesbos midió el experimento que la escalera necesitaba
+ *
+ * Sin proponérselo: midió **los mismos potreros en dos años que difieren 2,25
+ * veces en lluvia**, 797,3 mm contra 353,6 mm. Si la producción saliera de la
+ * lluvia anual, el año húmedo tendría que haber rendido mucho más. Pasó lo
+ * contrario en el tramo que importa: la producción diaria de la última época fue
+ * de 12,1 kg/ha/día en el año húmedo y de **21,6 en el seco**. La razón la da el
+ * propio trabajo: el 45 % de la lluvia del año húmedo cayó entre fines de
+ * diciembre y fines de febrero, fuera de la ventana de crecimiento.
+ *
+ * Y en el mismo clima, el mismo año y la misma isla, los potreros «mejorados»
+ * —terrazas mantenidas, piedras sacadas, chacra en el pasado— produjeron 15,9
+ * kg MS/ha/día contra 5,5 de los sin tocar: un factor de **2,9 que no es clima
+ * sino historia de uso**. La escalera no puede ver ninguna de las dos cosas.
+ *
+ * ## La trampa del pastizal perenne, y cómo empeora con el frío
+ *
+ * En un pastizal perenne, lo que está parado no es lo que creció este año, y la
+ * distancia entre las dos cosas crece con el frío:
+ *
+ * - **Altiplano de Puno:** la biomasa en pie es de 1,5 a 3 veces la anual (del
+ *   38,5 % al 66,3 % no creció este año).
+ * - **Tundra de Alaska:** la fitomasa total es de 74 a 76 toneladas por
+ *   hectárea y la producción aérea anual de 0,35 a 0,96. Entre **77 y 211
+ *   veces**. Sólo la fracción aérea ya es unas 7 veces la anual.
+ *
+ * Cualquier cifra tomada de una foto de campo —o de un índice satelital de
+ * biomasa— está midiendo el stock y no el flujo. En tundra el error es de dos
+ * órdenes de magnitud.
  *
  * ## Qué NO hace este archivo todavía
  *
@@ -40,7 +72,7 @@
  * más —no sabe en qué bioma está el predio— así que usarlo pide cambiarle la
  * firma a las tres copias. Y falta el bioma que más importa: **la sabana
  * tropical, que es donde cae la mayoría de los predios ganaderos, no tiene
- * ninguna medición acá**. Reemplazar la escalera global con tres puntos sería
+ * ninguna medición acá**. Reemplazar la escalera global con cinco puntos sería
  * cambiar un número sin fuente por otro número sin cobertura.
  *
  * Mientras tanto esto sirve para lo que sí se puede hacer hoy: contrastar, y
@@ -69,19 +101,41 @@ export function lbAcreAKgHa(lb_acre: number): number {
 }
 
 /**
+ * 1 g/m² = 10 kg/ha. Exacto: 10.000 m² por hectárea ÷ 1.000 g por kilo.
+ *
+ * La bibliografía de ecología publica en g/m² y la de producción ganadera en
+ * kg/ha, así que este factor aparece cada vez que se cruzan las dos.
+ */
+export function gM2AKgHa(g_m2: number): number {
+  return Math.round(g_m2 * 10);
+}
+
+/**
  * Qué clase de cifra es, que es lo que decide si se puede usar y cómo.
  *
  * Entre la primera y la última hay un factor de varias veces, no un porcentaje.
  * `oferta_aprovechable` ya trae descontada la fracción que el animal no come;
- * `ms_herbacea_total` no descuenta nada. **El uso admisible lo aplica después
- * `bandaUso` en `modulacion.ts`**, así que meter una `oferta_aprovechable` donde
- * el cálculo espera un total descuenta dos veces.
+ * `ms_herbacea_total` y `npp_herbacea` no descuentan nada. **El uso admisible lo
+ * aplica después `bandaUso` en `modulacion.ts`**, así que meter una
+ * `oferta_aprovechable` donde el cálculo espera un total descuenta dos veces.
  */
 export type TipoDeCifra =
   | 'oferta_aprovechable'
   | 'receptividad'
   | 'ms_herbacea_total'
   | 'npp_herbacea';
+
+/**
+ * Las clases de cifra que NO traen descontado el uso admisible.
+ *
+ * Son las únicas que pueden entrar acá mientras río abajo `bandaUso` descuente
+ * por su cuenta. La diferencia entre `ms_herbacea_total` y `npp_herbacea` es de
+ * método —cosecha contra producción primaria estimada— y no de si descuenta.
+ */
+export const TIPOS_SIN_DESCONTAR: readonly TipoDeCifra[] = [
+  'ms_herbacea_total',
+  'npp_herbacea',
+] as const;
 
 export interface MedicionForraje {
   /** Bioma global de RESOLVE al que pertenece el sitio medido. */
@@ -93,9 +147,16 @@ export interface MedicionForraje {
   kg_ms_ha_anio_max: number;
   /** Sólo si la fuente publica un valor central. Nunca el punto medio calculado. */
   kg_ms_ha_anio_tipico: number | null;
-  /** Lluvia anual del sitio, que es el rango donde la cifra vale. */
-  lluvia_mm_min: number;
-  lluvia_mm_max: number;
+  /**
+   * Lluvia anual del sitio, que es el rango donde la cifra vale.
+   *
+   * **`null` cuando la fuente no la publica**, y se queda en `null`: no se
+   * rellena con la climatología de otro servicio, porque entonces la cifra
+   * quedaría atada a un número que su propio trabajo nunca midió. Pasa en
+   * tundra, donde además el agua no es lo que limita.
+   */
+  lluvia_mm_min: number | null;
+  lluvia_mm_max: number | null;
   /** Cómo se midió. */
   metodo: string;
   /** Qué incluye y qué no. */
@@ -112,7 +173,7 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente el 15/10/2026.
  *
- * Son tres sitios y dos biomas. No son un modelo: son los puntos que hay.
+ * Son cinco sitios y cuatro biomas. No son un modelo: son los puntos que hay.
  */
 export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
@@ -188,6 +249,56 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     fuente: {
       label: 'Revista de Ciencias Agrarias (UNA Puno) 7(1):73-83 — Relaciones suelo-comunidad vegetal en pastizales del Altiplano sur peruano',
       url: 'https://revistas.unap.edu.pe/agr/index.php/agr/article/view/465',
+    },
+  },
+  {
+    bioma: 'resolve_mediterraneo',
+    sitio: 'Agra, oeste de Lesbos, Grecia — 14 potreros de cuatro majadas',
+    tipo: 'ms_herbacea_total',
+    // «ranging from very small values close to 300 kg/ha to those of about 5800
+    // kg/ha at a flat pasture plot, which in the past was used for annual
+    // crops». El techo es ese potrero plano y ex-chacra, no la frygana: el
+    // propio trabajo dice que los potreros por debajo de 500 kg/ha están en
+    // suelos desfavorables y los de arriba, en el rango de las praderas
+    // mejoradas de la bibliografía.
+    kg_ms_ha_anio_min: 300,
+    kg_ms_ha_anio_max: 5800,
+    kg_ms_ha_anio_tipico: null,
+    // Las dos temporadas medidas, que es de donde sale la cifra: 353,6 y 797,3
+    // mm. La normal del lugar es mucho más angosta y va en `donde_deja_de_valer`.
+    lluvia_mm_min: 354,
+    lluvia_mm_max: 797,
+    metodo: 'Jaulas de exclusión de malla 1 × 1,2 cm sobre 0,25 m2 y 0,7 m de alto, puestas en octubre, diciembre y marzo y cosechadas a ras entre fines de mayo y principios de junio; secado a 60 °C por 24 h. La productividad del potrero es la biomasa de la jaula multiplicada por el porcentaje de cobertura herbácea de ese potrero, promediada entre estaciones de muestreo.',
+    que_cuenta: 'Herbáceas solamente, y por construcción: las estaciones de muestreo se eligieron sin suelo desnudo, sin piedras y sin vegetación perenne. NO cuenta el Sarcopoterium spinosum ni el Asphodelus ramosus, que cubren buena parte de estos potreros y que la majada sí ramonea en parte. No descuenta uso.',
+    estacionalidad: 'Crecimiento moderado los primeros 5 o 6 meses y mucho más rápido en los 2 o 3 que siguen. Por época y por año: 5,8 · 5,2 · 12,1 kg MS/ha/día en el primero y 9,8 · 4,4 · 21,6 en el segundo. La jaula cosechada temprano y después dejada descansar fue la de mayor tasa en las dos temporadas: pastorear temprano y largar puede rendir más al final.',
+    donde_deja_de_valer: 'Fryganas y ex-chacras del oeste de Lesbos, sobre roca volcánica ácida, con suelos de 15 a 30 cm o de 30 a 60 cm y pendientes de 6 a 12 % o más; sólo tres ex-chacras pasan los 60 cm y son casi planas. La normal del lugar es 415 mm y 17 °C de media, con 464,6 mm de media histórica en la estación de Sigri. Y el dato que no se puede ignorar: la proteína bruta de lo cosechado va de 5,4 a 7,3 %, que el propio trabajo califica de tan baja como la paja de cereal, así que estos kilos de materia seca no son kilos de alimento.',
+    medido_en: 'dos temporadas de crecimiento consecutivas, de septiembre a junio',
+    fuente: {
+      label: 'Sustainability 14(8):4623 — Grazing Land Productivity, Floral Diversity, and Management in a Semi-Arid Mediterranean Landscape',
+      url: 'https://doi.org/10.3390/su14084623',
+    },
+  },
+  {
+    bioma: 'resolve_tundra',
+    sitio: 'Cuatro comunidades de pajonal de Eriophorum vaginatum, Alaska y Yukón',
+    tipo: 'npp_herbacea',
+    // «Yearly primary production was estimated to be between 35 and 96 g m-2
+    // for aboveground vascular plants», o sea 350 a 960 kg/ha/año.
+    kg_ms_ha_anio_min: 350,
+    kg_ms_ha_anio_max: 960,
+    kg_ms_ha_anio_tipico: null,
+    // La fuente no publica lluvia para sus sitios y no se inventa. En tundra el
+    // agua tampoco es lo que limita: limitan el frío y el largo del verano.
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    metodo: 'Componentes de fitomasa y tasas de producción primaria en cuatro comunidades de pajonal de algodoncillo; recambio aéreo medido con bolsas de hojarasca. De este trabajo sólo se pudo leer el resumen del editor: el texto completo está detrás de una verificación anti-bot, así que el método primario no se verificó más allá de lo que el resumen declara.',
+    que_cuenta: 'Producción primaria anual de las plantas vasculares AÉREAS. Excluye musgos y líquenes, que el mismo resumen cuantifica aparte —28 a 116 g/m2/año de musgo y 1 a 5 de liquen— y que en tundra son parte del forraje real del reno y del caribú, sobre todo en invierno. Para pastoreo de renos esta cifra es un piso y no el total.',
+    estacionalidad: 'La comunidad de algodoncillo produce buena parte de su crecimiento nuevo temprano en el verano, en gran medida porque el Eriophorum vaginatum arranca temprano.',
+    donde_deja_de_valer: 'Cuatro comunidades de Alaska y del Yukón, no todo el bioma. Y el dato que explica por qué acá no se puede mirar una foto de campo: la fitomasa total de los dos sitios estudiados a fondo era de 7.401 y 7.567 g/m2 —74 y 76 toneladas por hectárea— con un recambio aéreo de unos 7 años y subterráneo de 45 a 150. Lo que está parado es entre 77 y 211 veces la producción del año. El mismo trabajo agrega que después de un disturbio la capa activa se profundiza, hay más nutrientes disponibles y el algodoncillo responde creciendo más.',
+    medido_en: 'publicado en 1974, Arctic and Alpine Research 6(3)',
+    fuente: {
+      label: 'Arctic and Alpine Research 6(3) — Primary Production in Arctic Cottongrass Tussock Tundra Communities',
+      url: 'https://doi.org/10.1080/00040851.1974.12003782',
     },
   },
 ] as const;

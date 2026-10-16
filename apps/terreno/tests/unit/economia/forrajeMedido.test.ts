@@ -14,7 +14,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  FORRAJE_MEDIDO, LB_ACRE_A_KG_HA, lbAcreAKgHa, medicionesDeBioma,
+  FORRAJE_MEDIDO, LB_ACRE_A_KG_HA, lbAcreAKgHa, gM2AKgHa, medicionesDeBioma,
+  TIPOS_SIN_DESCONTAR,
 } from '@/lib/forrajeMedido';
 import { calcularReceptividad } from '@/lib/produccion';
 import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
@@ -23,8 +24,8 @@ import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
 const escalera = (lluvia_mm: number) =>
   calcularReceptividad(1, lluvia_mm, { ev_por_cabeza: 1, agua_l_dia: 50 }).ef_kg_ha;
 
-describe('la conversión de lb/acre', () => {
-  it('es la exacta, no la redondeada', () => {
+describe('las conversiones de unidad', () => {
+  it('lb/acre es la exacta, no la redondeada', () => {
     // 0,45359237 kg / 0,40468564224 ha. El 1,12 de memoria se equivoca en 8 kg
     // cada 1.000, que sobre 3.000 kg/ha son 24 kg: poco. El 1,2 que a veces se
     // ve por ahí se equivoca en 240.
@@ -38,6 +39,15 @@ describe('la conversión de lb/acre', () => {
     expect(lbAcreAKgHa(2125 + 175)).toBe(2578);   // gramíneas + hierbas, techo
     expect(lbAcreAKgHa(1700 + 140)).toBe(2062);   // el valor representativo
   });
+
+  it('g/m2 es un factor 10 exacto y así sale la tundra', () => {
+    // 10.000 m2/ha ÷ 1.000 g/kg. Sin redondeo de por medio.
+    expect(gM2AKgHa(35)).toBe(350);
+    expect(gM2AKgHa(96)).toBe(960);
+    // Y la fitomasa total de los dos sitios de Alaska, para tenerla a mano:
+    expect(gM2AKgHa(7401)).toBe(74010);
+    expect(gM2AKgHa(7567)).toBe(75670);
+  });
 });
 
 describe('cada medición cierra contra su fuente', () => {
@@ -49,7 +59,9 @@ describe('cada medición cierra contra su fuente', () => {
   it('el rango nunca está dado vuelta y el típico cae adentro', () => {
     for (const m of FORRAJE_MEDIDO) {
       expect(m.kg_ms_ha_anio_min, m.sitio).toBeLessThanOrEqual(m.kg_ms_ha_anio_max);
-      expect(m.lluvia_mm_min, m.sitio).toBeLessThanOrEqual(m.lluvia_mm_max);
+      if (m.lluvia_mm_min !== null && m.lluvia_mm_max !== null) {
+        expect(m.lluvia_mm_min, m.sitio).toBeLessThanOrEqual(m.lluvia_mm_max);
+      }
       if (m.kg_ms_ha_anio_tipico !== null) {
         expect(m.kg_ms_ha_anio_tipico, m.sitio).toBeGreaterThanOrEqual(m.kg_ms_ha_anio_min);
         expect(m.kg_ms_ha_anio_tipico, m.sitio).toBeLessThanOrEqual(m.kg_ms_ha_anio_max);
@@ -57,11 +69,24 @@ describe('cada medición cierra contra su fuente', () => {
     }
   });
 
-  it('ninguna dice ser lo que no es', () => {
-    // `oferta_aprovechable` ya trae descontado el uso admisible y `bandaUso` lo
-    // volvería a descontar. Mientras no exista esa distinción río abajo, acá no
-    // entra ninguna: las tres que hay son materia seca sin descontar.
-    for (const m of FORRAJE_MEDIDO) expect(m.tipo, m.sitio).toBe('ms_herbacea_total');
+  it('ninguna trae descontado el uso admisible, que se descuenta río abajo', () => {
+    // `oferta_aprovechable` y `receptividad` ya lo traen descontado y `bandaUso`
+    // lo volvería a descontar. Mientras no exista esa distinción río abajo, acá
+    // no entra ninguna de las dos. Por eso la Caatinga del lote 02 —que venía
+    // como `oferta_aprovechable`— no habría entrado ni con el bioma correcto.
+    for (const m of FORRAJE_MEDIDO) expect(TIPOS_SIN_DESCONTAR, m.sitio).toContain(m.tipo);
+  });
+
+  it('la lluvia va con la cifra, o se declara que la fuente no la publica', () => {
+    for (const m of FORRAJE_MEDIDO) {
+      // Las dos juntas o ninguna: media lluvia no es un rango de validez.
+      expect(m.lluvia_mm_min === null, m.sitio).toBe(m.lluvia_mm_max === null);
+      if (m.lluvia_mm_min !== null) expect(m.lluvia_mm_min, m.sitio).toBeGreaterThan(0);
+      expect(m.donde_deja_de_valer.length, m.sitio).toBeGreaterThan(40);
+      expect(m.estacionalidad.length, m.sitio).toBeGreaterThan(40);
+      expect(m.que_cuenta.length, m.sitio).toBeGreaterThan(40);
+      expect(m.fuente.url, m.sitio).toMatch(/^https:\/\//);
+    }
   });
 
   it('el altiplano de Puno: biomasa anual, no la que está parada', () => {
@@ -80,13 +105,37 @@ describe('cada medición cierra contra su fuente', () => {
     expect(Math.round(1483.70 * 0.4220)).toBe(626);   // Calamagrostis amoena
   });
 
-  it('el rango de lluvia va con la cifra, porque es donde vale', () => {
-    for (const m of FORRAJE_MEDIDO) {
-      expect(m.lluvia_mm_min, m.sitio).toBeGreaterThan(0);
-      expect(m.donde_deja_de_valer.length, m.sitio).toBeGreaterThan(40);
-      expect(m.estacionalidad.length, m.sitio).toBeGreaterThan(40);
-      expect(m.fuente.url, m.sitio).toMatch(/^https:\/\//);
-    }
+  it('Lesbos: el rango va de 300 a 5.800 y el techo es una ex-chacra', () => {
+    const [lesbos] = medicionesDeBioma('resolve_mediterraneo');
+    expect(lesbos).toBeDefined();
+    expect(lesbos!.kg_ms_ha_anio_min).toBe(300);
+    expect(lesbos!.kg_ms_ha_anio_max).toBe(5800);
+    // La lluvia es la de las dos temporadas MEDIDAS (353,6 y 797,3 mm) y no la
+    // normal del lugar (415 mm, o 464,6 en la estación de Sigri), porque es
+    // donde la cifra se tomó.
+    expect(lesbos!.lluvia_mm_min).toBe(354);
+    expect(lesbos!.lluvia_mm_max).toBe(797);
+    expect(lesbos!.donde_deja_de_valer).toMatch(/415 mm/);
+    // Y el techo no se puede usar como «el mediterráneo rinde 5.800»: hay que
+    // poder leer en el propio dato que eso es una ex-chacra plana.
+    expect(lesbos!.que_cuenta + lesbos!.donde_deja_de_valer).toMatch(/chacra/i);
+  });
+
+  it('la tundra: producción aérea vascular, con la lluvia sin publicar', () => {
+    const [tundra] = medicionesDeBioma('resolve_tundra');
+    expect(tundra).toBeDefined();
+    // 35 a 96 g/m2/año de plantas vasculares aéreas.
+    expect(tundra!.kg_ms_ha_anio_min).toBe(gM2AKgHa(35));
+    expect(tundra!.kg_ms_ha_anio_max).toBe(gM2AKgHa(96));
+    // La fuente no publica lluvia y se queda en null: rellenarla con la
+    // climatología de otro servicio ataría la cifra a un número que su propio
+    // trabajo nunca midió.
+    expect(tundra!.lluvia_mm_min).toBeNull();
+    expect(tundra!.lluvia_mm_max).toBeNull();
+    // Y la cifra EXCLUYE musgos y líquenes, que en tundra son forraje de
+    // invierno: 28 a 116 g/m2 de musgo es más que las vasculares en el extremo.
+    expect(gM2AKgHa(116)).toBeGreaterThan(tundra!.kg_ms_ha_anio_max);
+    expect(tundra!.que_cuenta).toMatch(/musgo/i);
   });
 });
 
@@ -112,6 +161,32 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     expect(escalera(1100) / 1958).toBeGreaterThan(3.5);
   });
 
+  it('en Lesbos el rango medido es más ancho que la escalera entera', () => {
+    const lesbos = medicionesDeBioma('resolve_mediterraneo')[0]!;
+    // Con la lluvia de las dos temporadas, la escalera se mueve de 1.500 a
+    // 5.000: todo su recorrido útil. Lo medido en la misma localidad, el mismo
+    // año y a pocos kilómetros va de 300 a 5.800, o sea que la variación DENTRO
+    // de un paraje es mayor que la que la escalera reparte en todo el planeta.
+    expect(escalera(lesbos.lluvia_mm_min!)).toBe(1500);
+    expect(escalera(lesbos.lluvia_mm_max!)).toBe(5000);
+    const anchoEscalera = 5000 - 1500;
+    const anchoMedido = lesbos.kg_ms_ha_anio_max - lesbos.kg_ms_ha_anio_min;
+    expect(anchoMedido).toBeGreaterThan(anchoEscalera);
+    // Y el piso medido está 5 veces por debajo del escalón que le toca.
+    expect(escalera(lesbos.lluvia_mm_min!) / lesbos.kg_ms_ha_anio_min).toBe(5);
+  });
+
+  it('para la tundra la escalera no tiene ningún escalón lo bastante bajo', () => {
+    const tundra = medicionesDeBioma('resolve_tundra')[0]!;
+    // El escalón más bajo de todos, el de menos de 300 mm, es 700 kg/ha/año.
+    const piso = escalera(100);
+    expect(piso).toBe(700);
+    // Y el piso medido en tundra es la mitad de eso. Con lo cual no existe
+    // lluvia alguna que haga que la escalera devuelva lo que se mide en tundra:
+    // el problema no es el valor de la lluvia, es que la lluvia no alcanza.
+    expect(tundra.kg_ms_ha_anio_min).toBeLessThan(piso);
+  });
+
   it('y por eso el problema no es el nivel sino la forma', () => {
     // Con MENOS lluvia que el altiplano, Dakota produce MÁS: 381-508 mm contra
     // 410-1.119, y 2.643-3.063 contra 626-1.958. Una función de una sola
@@ -119,13 +194,18 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // calibre. Lo que falta es el frío, el largo de la estación y el suelo.
     const dakota = medicionesDeBioma('resolve_pastizal_templado')[0]!;
     const puna = medicionesDeBioma('resolve_montano')[0]!;
-    expect(dakota.lluvia_mm_max).toBeLessThan(puna.lluvia_mm_max);
+    expect(dakota.lluvia_mm_max!).toBeLessThan(puna.lluvia_mm_max!);
     expect(dakota.kg_ms_ha_anio_min).toBeGreaterThan(puna.kg_ms_ha_anio_max);
   });
 
-  it('la sabana tropical, que es donde pastorea casi todo el mundo, sigue sin medición', () => {
-    // El lote 02 trajo una de la Caatinga, que es BIOME_NUM 2 y no 7, y además
-    // su URL pide login. Cuando entre una de sabana, este test cambia.
+  it('los biomas donde más pastorea gente siguen sin medición', () => {
+    // La sabana tropical: el lote 02 trajo una de la Caatinga, que es
+    // BIOME_NUM 2 y no 7, y además su URL pide login.
     expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(0);
+    // El pastizal inundable: el lote 03 trajo un valor MODELADO del delta del
+    // Tana que incluye raíces y material muerto, con el texto detrás de un
+    // muro y sin la cifra en el resumen público. Cuando entre una medición de
+    // cualquiera de los dos, este test cambia.
+    expect(medicionesDeBioma('resolve_pastizal_inundable')).toHaveLength(0);
   });
 });
