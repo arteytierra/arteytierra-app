@@ -11,6 +11,9 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 03 | `pastizal_inundable`, `tundra`, `mediterraneo` | **montado 2 de 3** el 15/10/2026 |
 | 04 | `sabana_tropical` ×2, `pastizal_inundable` ×2 | **montado 1 de 4** el 16/10/2026, y en otro bioma |
 | 05 | `sabana_tropical` ×2, `pastizal_inundable` | **ninguna de 3** el 16/10/2026 — y es el lote más útil |
+| 06 | biomas 7 ×3, 13, + el modelo | **montadas 1 de 4** el 17/10/2026, y el modelo entró |
+| 07 | biomas 1 ×2, 2 ×2 | **ninguna de 4** el 17/10/2026 |
+| 08 | biomas 4, 5, 6 | **montadas 3 de 4** el 17/10/2026 |
 
 ---
 
@@ -678,3 +681,239 @@ Pero deja dos cosas que ninguna cifra anual puede llevar:
   da un valor por sitio **sin decir de qué tratamiento** —y advierte que muchos
   sitios tenían parcelas fertilizadas o irrigadas—, y porque las dos cifras son
   llamativamente altas para su lluvia. Van como pistas verificadas al encargo.
+
+---
+
+## Lotes 06, 07 y 08 — el encargo ómnibus, y el modelo que sí entró
+
+Los tres llegaron juntos el 17/10/2026, doce entradas en total. Entraron
+cuatro, y una de ellas no es una medición sino la formulación del **Miami
+Model**, que es lo que estaba trabando el reemplazo de `prodForrajera`.
+
+Primero lo administrativo, que esta vez tiene una causa única y declarada:
+**las doce entradas vinieron con `bioma_verificado` en `null`**, con la nota «la
+consulta al servicio ArcGIS Resolve_Ecoregions no fue accesible». Verifiqué las
+nueve coordenadas publicadas por mi cuenta y **siete dieron lo que la entrega
+suponía. Dos no.**
+
+| sitio | coordenada publicada | bioma que supuso la entrega | bioma real |
+|---|---|---|---|
+| Parque Nacional de Nairobi | 1,33 S / 36,83 E | 7 | **7** ✓ (ECO_ID 57) |
+| Nylsvley | 24,65 S / 28,70 E | 7 | **7** ✓ (ECO_ID 38) |
+| Towoomba | 24,90 S / 28,35 E | 7 | **7** ✓ (ECO_ID 38, la misma que Nylsvley) |
+| Montecillo | 19,46 N / 98,91 O | 13 | **13** ✓ (Central Mexican matorral) |
+| Lamto | 6,22 N / 5,03 O | 1 | **1** ✓ (Eastern Guinean forests) |
+| Olokemeji | 7,42 N / 3,55 E | 1 | **1** ✓ (Nigerian lowland forests) |
+| Różańsko | 52°52′30″ N / 14°45′22″ E | 4 | **4** ✓ (Baltic mixed forests) |
+| Cascade Head 1A | 45,05 N / 123,96 O | 4 | **5** ✗ Central Pacific NW coastal forests |
+| Waring's Woods | 44,60 N / 123,27 O | 5 | **8** ✗ Willamette Valley oak savanna |
+
+Los dos errores son el mismo error y es el que el encargo 05 ya había nombrado:
+**se clasificó por lo que el sitio parece y no por lo que el polígono dice.** Un
+rodal de Pseudotsuga de 47.120 g/m² de biomasa arbórea parece bosque de
+coníferas; la coordenada que su propia ficha publica cae en una sabana de robles,
+bioma 8. Las dos entradas se montaron en el bioma verificado, no en el supuesto,
+y la de Waring's Woods vale justamente por eso.
+
+### Lo que entró
+
+| entrada | bioma | cifra montada | |
+|---|---|---|---|
+| Montecillo, pastizal salino de Texcoco | **13** | 6.090–10.630, típico 6.692 kg MS/ha/año | primera del bioma |
+| Różańsko, sotobosque de robledal-carpinal | **4** | 378–940 kg MS/ha/año | primera del bioma, primer sotobosque |
+| Cascade Head 1A, sotobosque de aliso | **5** | 410 kg MS/ha/año | primera del bioma |
+| Waring's Woods, sotobosque de Pseudotsuga | **8** | 60 kg MS/ha/año | el piso del dosel |
+| Miami Model de Lieth | — | `lib/miamiModel.ts` | el modelo, con sus dos fuentes |
+
+De seis mediciones en cuatro biomas se pasó a **diez en siete**, de quince.
+
+### El hallazgo del lote 06: los algoritmos no discuten cuánto, discuten dónde
+
+Es la explicación de todo lo que el lote 05 había descrito sin poder explicar. La
+ficha del ORNL de Montecillo tabula las tres fuentes publicadas para la **misma**
+serie de cosechas:
+
+| fuente | NPP aérea | NPP subterránea | NPP total |
+|---|---|---|---|
+| García-Moya y Montañez Castro (1992) | 669 | 1.007 | 1.676 |
+| Scurlock et al. (2002) | 609 | 1.174 | 1.783 |
+| Scurlock y Olson (2013) | 1.063 | 678 | 1.741 |
+
+**El total coincide dentro de un 6 %. La parte aérea se mueve un 75 %, y la
+subterránea un 73 % en sentido contrario.** Los tres algoritmos están de acuerdo
+en cuánta materia seca produce ese pastizal y en desacuerdo sobre cuánta quedó
+arriba y cuánta abajo. Y lo que acequia necesita para dimensionar un rodeo es
+exactamente la columna frágil.
+
+Eso resuelve dos cosas de un golpe: por qué la sabana tenía un factor 7,6, y por
+qué el 1.063 de Montecillo que el lote 05 había anotado como «llamativamente
+alto» no era un error de nadie —es la cifra de Scurlock y Olson 2013 para el
+mismo sitio, con otro reparto.
+
+### El lote 08 lo midió de frente: seis algoritmos, las mismas cosechas
+
+Rawlik y Jagodziński (*Ecosystems* 24, 2021, acceso abierto) cosecharon el
+sotobosque de un robledal-carpinal polaco semanalmente en abril y mayo y cada
+quince días el resto, dos temporadas, y calcularon la producción anual con seis
+algoritmos sobre esas mismas cosechas:
+
+| método | 2010 | 2011 |
+|---|---|---|
+| 1 · máximo de biomasa en pie del año | 37,8 | 41,0 |
+| 2 · suma de diferencias positivas entre cosechas | 50,2 | 58,3 |
+| 3 · suma de los máximos de cada especie | 59,8 | 72,6 |
+| 4 · biomasa × densidad, al máximo de biomasa | 52,7 | 72,7 |
+| 5 · biomasa × densidad, al máximo de densidad | 52,1 | 68,6 |
+| 6 · biomasa × densidad, al máximo del producto | 74,3 | 94,0 |
+
+**El algoritmo mueve el resultado 1,96× y el año 1,38× como máximo.** Cambiar de
+método importa más que cambiar de año. La entrega reportó cuatro de los seis
+métodos; los seis están en el artículo y los seis están en el test.
+
+Y el método 1 —máximo de biomasa en pie, el más usado porque es el más barato—
+subestima alrededor de la mitad. Es el mismo método con el que el lote 04 había
+traído Serengeti y Kruger.
+
+### Towoomba: el reintento más valioso del lote 05, resuelto y negativo
+
+El lote 05 había dejado marcada una anomalía: Towoomba y Nylsvley, a 60 km, en la
+misma ecorregión, con 6 mm de diferencia de lluvia, y un factor 2,6 de producción.
+La ficha primaria del ORNL lo explica en su segunda línea: Towoomba era un
+**ensayo de fertilización** de varias hectáreas, cinco niveles de nitrógeno por
+tres de fósforo en bloques aleatorizados, **sobre un área de la que se removieron
+todos los árboles**, con una sola medición de biomasa por año. El 198 g/m²/año
+sale de la fila `P0N3`, un tratamiento fertilizado.
+
+Nunca fueron comparables. Y la advertencia estaba en la compilación: *«18 sites
+have data for more than one "treatment" (fertilized or irrigated plots…)»*, con
+un valor por sitio y sin decir de cuál. **Coordenada verificada, bioma verificado
+y fuente abierta, y sigue siendo un ensayo agronómico.**
+
+### Lo que hace el dosel, medido contra su propio rodal
+
+El transecto OTTER de Oregón publica las dos cosas en la misma tabla, y es la
+comparación que faltaba:
+
+| sitio | cobertura herbácea | NPP del rodal | capa herbácea | la herbácea es |
+|---|---|---|---|---|
+| Cascade Head 1A, aliso rojo | 35,2 % | 1.630 | 41 | 2,5 % |
+| Waring's Woods, Pseudotsuga | 4,9 % | 1.540 | 6 | **0,4 %** |
+
+En g MS/m²/año. Los dos rodales producen casi lo mismo y su sotobosque difiere
+6,8 veces; la cobertura herbácea difiere 7,2. Lo que decide el forraje de un
+bosque es la luz que llega al piso.
+
+Dos consecuencias:
+
+1. **Waring's Woods está en el bioma 8, el de la pradera de Dakota.** Dentro de un
+   mismo bioma hay 2.643–3.063 kg MS/ha/año a cielo abierto y **60** bajo dosel
+   cerrado: un factor 44 que ninguna función del clima puede dar.
+2. **El `arbolado: 800` de `cobertura.ts` resultó ser el número mejor respaldado
+   de toda la cadena, y por accidente.** Lo medido: 60 en conífera densa, 410 en
+   aliso, 378–940 en robledal-carpinal y 1.300–1.700 en bosque húmedo tropical de
+   Nepal. El 800 cae adentro para hoja ancha y queda unas 13 veces alto para
+   conífera cerrada. No se tocó: ahora tiene cuatro mediciones al lado.
+
+### El Miami Model entró, y no es el reemplazo
+
+Esto es lo más importante del lote 06 y conviene decirlo sin adornos, porque
+contradice lo que yo mismo escribí el 16/10.
+
+La formulación llegó completa y la verifiqué en **dos fuentes independientes**,
+porque la constante de la exponencial de la lluvia es el tipo de número que una
+digitalización arruina sin que se note: Lieth, «Vegetation and CO₂ Changes»
+(IIASA, 1978), pp. 103-104, y el documento del GPPDI del ORNL, p. 14. Las dos
+imprimen lo mismo:
+
+```
+NPP_T = 3000 / (1 + e^(1,315 − 0,119·T))
+NPP_P = 3000 · (1 − e^(−0,000664·P))
+NPP   = min(NPP_T, NPP_P)          en g de materia seca/m²/año
+```
+
+Difieren en cuántos puntos lo calibraron: 52 el ORNL, «about 65 data pairs»
+Lieth. Se cita el rango.
+
+**Lo que no se puede hacer con esto es calcular forraje**, y hay dos mediciones
+que lo prueban, las dos verificadas en su fuente primaria esta vez:
+
+- **No es un techo.** En Montecillo, con las dos medias anuales que su propia
+  ficha publica (580 mm y 15,1 °C), el modelo da 959 g/m²/año de NPP total y la
+  NPP total **medida** ahí es de 1.676. El modelo lee **1,75 veces bajo**. Peor:
+  la NPP aérea sola, medida, es 669, o sea el 70 % de todo lo que el modelo le
+  atribuye al ecosistema entero. El sesgo tiene nombre y está publicado: el
+  modelo se calibró con datos de la era del IBP, y la compilación que lo valida
+  avisa que sus propias medias de NPP total de pastizal son *«more than twice as
+  high»* que los rangos de Lieth.
+- **No es forraje.** En Waring's Woods la capa herbácea es el 0,4 % de la NPP del
+  rodal, y en Cascade Head el 2,5 %. En un bosque, el número que devuelve el
+  modelo es entre diez y doscientas cincuenta veces el pasto que hay para comer.
+
+**Entonces se montó como contraste y no como cálculo.** `lib/miamiModel.ts`
+devuelve la NPP, cuál de las dos ramas limita, y un veredicto de una sola
+dirección sobre una cifra de forraje: `plausible`, `alto` o `imposible`. Está
+enchufado en `calcularReceptividad` y aparece en el panel de Receptividad cuando
+el clima del predio trae la temperatura media anual.
+
+Sirve para una cosa concreta, que es exactamente el punto ciego de la escalera:
+**con 900 mm la escalera dice 7.000 kg MS/ha/año tanto a 20 °C como a −10 °C, y a
+−10 °C el modelo dice que todo el ecosistema produce 2.265.** Ese predio ahora
+recibe un aviso. Lo que no puede hacer es confirmar nada, y la frase que imprime
+lo dice con esas palabras.
+
+Cuánto le creyó la literatura, para que quede escrito: r² = 0,30 contra 30 sitios
+intensivos, 0,44 contra 189 puntos de Osnabrück, 0,36 contra 48 de IBP Woodlands,
+y *«the overall fit […] is remarkably good […] suggesting that this simple
+statistical model is quite robust»*. Entre el 30 % y el 44 % de la variación.
+
+### Lo que no entró, y por qué
+
+- **Nairobi, Nylsvley y Towoomba (bioma 7).** Las tres verifican el bioma y las
+  tres se cayeron por motivos ya escritos: Nairobi tiene siete cifras publicadas
+  con un factor 7,6, Nylsvley viene con la advertencia de su propio proveedor, y
+  Towoomba es un ensayo fertilizado sin árboles. **El bioma 7 sigue vacío después
+  de tres lotes dedicados**, y ahora el motivo está entendido y no sólo descrito.
+- **Lamto y Olokemeji (bioma 1).** Lamto trae ANPP 830, BNPP 1.320 y TNPP 2.150
+  g/m²/año de Menaut y César (1979), con serie mensual y coordenada verificada: es
+  la mejor candidata de las ocho que no entraron. No entró por la misma razón que
+  Nairobi —su ficha tabula cuatro fuentes y la del GPPDI da 192 **gC**/m²/año, un
+  factor cercano a 2 cuando se pasa a materia seca— y por una segunda que es del
+  sitio: *«normally 50-90 % of above-ground grass biomass is burned annually»*, o
+  sea que más de la mitad de esa producción se la lleva el fuego todos los años.
+  Olokemeji publica 680 g/m²/año para **un solo año (1957)** estimado como el
+  máximo de materia total cortada, que es el método 1 de la tabla polaca.
+- **Vindhyan y Rajasthan (bioma 2).** Vindhyan da 377–664 g/m²/año en tres sitios
+  no pastoreados con método descrito (*trough-peak*), y es un buen dato. No entra
+  porque **la entrega no pudo publicar una coordenada puntual** y sin coordenada
+  no hay bioma verificado, que es la regla que el lote 04 pagó caro. Rajasthan
+  llegó sin coordenada, sin fechas y sin algoritmo.
+- **Los líquenes de Finlandia (bioma 6).** Una revisión regional, sin sitio ni
+  coordenada ni años. Pero deja la **cuarta confirmación de la inversión del
+  stock, y la más extrema**: el crecimiento anual de los pastizales de líquenes
+  más productivos de Escandinavia y Finlandia es de 60 a 160 kg/ha mientras la
+  biomasa en pie es de 500 a 1.500, y los rodales viejos de *Cladonia stellaris*
+  pasan los 3.000 kg/ha con crecimiento anual bajo. **Hasta 50 veces más stock
+  que flujo**, con recuperación de 3 a 5 años tras un pastoreo intenso.
+- **El bioma 3 (coníferas tropicales) volvió vacío**, con el motivo correcto: no
+  se encontró fuente primaria abierta con flujo anual de sotobosque en pinares de
+  *Pinus caribaea*.
+
+### Lo que NO se hizo, a propósito
+
+- **No se convirtió ningún gC a materia seca para montarlo.** El factor ~2 es
+  conocido y es justamente por donde se cuela el error; las cifras en carbono
+  quedan citadas en la prosa y ninguna entró como kg MS.
+- **No se le puso a Cascade Head la lluvia del transecto.** La ficha publica «de
+  2.510 mm en la costa a 220 mm en el extremo este» y Cascade Head es el sitio
+  costero, así que el 2.510 le correspondería. Queda en `null`: un extremo de
+  transecto no es la lluvia medida del punto.
+- **No se promedió un máximo con un mínimo para sacar una media anual.** Varias
+  fichas del ORNL publican «mean monthly minimum 10,7 °C (enero)» y «mean monthly
+  maximum 29,5 °C (marzo)», que son el mes más frío y el más cálido. Promediarlos
+  es el error que acequia ya cometió con las máximas de POWER. Por eso Nairobi,
+  que tiene lluvia publicada, igual no se puede contrastar con el modelo.
+- **No se tocó el `arbolado: 800` de `cobertura.ts`** aunque ahora hay cuatro
+  mediciones de sotobosque alrededor. Cambiar ese número cambia la oferta de
+  forraje de todo predio con bosque y merece su propia decisión.
+- **No se reclasificó la entrada de Nepal del lote 01** a `ms_sotobosque`. El tipo
+  dice cómo se midió, no dónde, y reclasificarla pide volver a la fuente.
