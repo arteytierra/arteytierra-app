@@ -9,6 +9,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 01 | `bosque_tropical_humedo`, `bosque_tropical_seco`, `conifera_tropical` | **entregado, no se monta** (10/10/2026) |
 | 02 | `sabana_tropical`, `pastizal_templado` ×2, `pastizal_montano` | **montado 3 de 4** el 15/10/2026 |
 | 03 | `pastizal_inundable`, `tundra`, `mediterraneo` | **montado 2 de 3** el 15/10/2026 |
+| 04 | `sabana_tropical` ×2, `pastizal_inundable` ×2 | **montado 1 de 4** el 16/10/2026, y en otro bioma |
 
 ---
 
@@ -348,3 +349,180 @@ inventar:
   de verdad importa: que no traiga descontado el uso admisible, porque
   `bandaUso` lo descuenta río abajo. La tundra es `npp_herbacea` y tampoco
   descuenta nada.
+
+---
+
+## Lote 04 — una de cuatro, montada en un bioma al que no apuntaba
+
+Pedía las dos cosas que faltan: sabana tropical (bioma 7) y pastizal inundable
+(bioma 9). **Las dos siguen vacías.** Entró una sola entrada y entró en el
+pastizal templado, que ya tenía dos.
+
+| entrada | bioma pedido | bioma real | |
+|---|---|---|---|
+| Serengeti, Tanzania | 7 | **7** ✓ | no entra: biomasa en pie |
+| Kruger, Sudáfrica | 7 | **7** ✓ (ecorregión 48, no 65) | no entra: un cuadrante suelto |
+| Delta Medio del Paraná | 9 | **8** ✗ | **entra**, en `pastizal_templado` |
+| Pantanal, Nhecolândia | 9 | **9** ✓ | no entra: disponibilidad por fecha |
+
+Es el primer lote que trajo el campo `bioma_verificado` completo —coordenada,
+`ECO_ID` y `BIOME_NUM`, que es lo que el encargo agregó justamente porque las
+dos entradas rechazadas antes tenían el bioma mal— y es el primero en el que
+**tres de los cuatro biomas verifican**. El campo funcionó.
+
+### El bioma estaba verificado y seguía estando mal
+
+La falla que queda es más fina que las anteriores y hay que escribirla porque va
+a volver: **la coordenada verificada no era la del sitio medido.** Era un punto
+de referencia regional elegido para representarlo, y la entrega lo declaraba sin
+alarma, con la frase «el punto RESOLVE consignado es el ancla regional
+prevalidada en el encargo».
+
+La tesis del Delta publica su sitio exacto, 33° 49′ S y 59° 27′ O. El punto
+consultado estaba unos 65 km al este.
+
+| punto | ECO_ID | bioma | |
+|---|---|---|---|
+| el ancla regional, −33,9 / −58,8 | 585 | 9 | Paraná flooded savanna |
+| **el sitio de la tesis, −33,8167 / −59,45** | **576** | **8** | **Pampa Húmeda** |
+| cinco puntos más alrededor del sitio | 576 | 8 | Pampa Húmeda |
+
+Lo mismo pasó en Kruger, más chico: el ancla da mopane (65) y el sitio publicado
+da Limpopo lowveld (48). Ahí los dos caen en el bioma 7, así que la entrada no
+cambiaba de lugar, pero la ecorregión informada no era la del estudio. Y la
+entrega lo admitió sola: «el servicio REST de RESOLVE no fue accesible durante
+esta comprobación».
+
+De ahí sale el renglón que va al encargo siguiente: **el bioma se consulta sobre
+la coordenada que la fuente publica, no sobre una que la represente.** A esta
+escala un ancla regional puede caer en otro bioma sin dejar de parecer el mismo
+paisaje.
+
+### Y por eso la isla de Baradero queda archivada en el pastizal templado
+
+Es un pastizal de albardón que se inunda —al final del invierno de 2013 estuvo
+40 días bajo agua— y aun así la medición no va al bioma 9. El motivo no es
+terminológico: cuando alguien marque ese predio en acequia, la app va a resolver
+`resolve_pastizal_templado`, porque resuelve por polígono. Una medición guardada
+en el bioma que el paisaje parece, en vez de en el que el mapa dice, no se usa
+nunca o se usa en el lugar equivocado.
+
+### Lo que la entrega dejó en null y la tesis sí tenía
+
+Las cuatro entradas vinieron con **todos** los campos de kg MS/ha·año vacíos, y
+el validador las rechazó a las cuatro por eso. En tres casos estaba bien: miden
+lo que está parado, no lo que creció.
+
+En el Delta no. La tesis no sólo midió biomasa en pie: **midió tasas de
+crecimiento neto por diferencia entre cortes**, que es como se mide producción,
+y publica el acumulado en su propia conclusión:
+
+> En el período de primavera a otoño, descansos bimestrales o más prolongados
+> del pastoreo permiten obtener producciones forrajeras desde los 8200 kg
+> MS\*ha-1.
+
+La entrega informó el pico de biomasa en pie (10.533 kg/ha de MS viva total en
+verano) y dejó el acumulado afuera. Lo que entró al código:
+
+| | kg MS/ha, primavera a otoño |
+|---|---|
+| MS **total** del pastizal | 11.200–11.400 |
+| MS **forrajera** | 6.700–8.250 |
+| de eso, cosecha de verano del tratamiento sin cortes | 6.733 |
+| de eso, cosecha acumulada del de cortes bimestrales | 7.417 → 8.250 |
+
+### Las dos lecturas de la misma cosecha, que es el hallazgo del lote
+
+La escalera, con los 1.056 mm del sitio, da **7.000 kg MS/ha/año**.
+
+- contra la fracción **forrajera** (6.700–8.250): cae adentro. Es la primera vez
+  en seis sitios que no se pasa ni se queda corta.
+- contra la herbácea **total** (11.200–11.400): se queda **1,6 veces corta**.
+
+El mismo sitio, el mismo año, la misma cosecha, y el veredicto se da vuelta
+según cuál de las dos se compare. La escalera nunca dijo cuál de las dos es, y
+eso no se arregla calibrándola. Por eso el código ahora tiene un tipo de cifra
+nuevo, `ms_forrajera`, separado de `ms_herbacea_total`: en este sitio la total es
+de 1,36 a 1,70 veces la forrajera, así que confundirlas sobreestima la carga
+animal hasta un 70 %.
+
+### El pastizal más grande entregó menos forraje
+
+La tercera forma de la trampa del stock, y la más incómoda, porque acá el stock
+no sólo no es el flujo: lo contradice.
+
+| tratamiento | MS viva parada en verano | forraje cosechado |
+|---|---|---|
+| clausurado, sin cortes | **10.533 kg/ha** | 6.733 en una sola cosecha |
+| cortes bimestrales | 2.237 kg/ha | **7.417 acumulados** |
+
+Una diferencia de 8.296 kg a favor del que nadie tocó, y de 684 kg de forraje a
+favor del que se cortó tres veces. El mecanismo lo da la tesis: al dejar crecer
+el canopeo sin interrupción las propias forrajeras se dan sombra, la tasa de
+crecimiento neto se vuelve **negativa** en otoño —muere más material del que se
+genera— y lo que se ve parado es en buena parte material viejo. Con cortes, la
+tasa se mantuvo arriba de 40 kg MS/ha/día casi cuatro meses, el doble de tiempo.
+
+La propia tesis aclara que el 23 % de diferencia **no dio significativo** con
+tres clausuras de 4 × 4 m y un año de datos, y que la comparación es empírica.
+Va escrito en `donde_deja_de_valer`.
+
+### Por qué las otras tres no entran
+
+**Serengeti** (bioma 7 verificado, CC-BY). Publica 0,14 ± 0,10 kg/m² de biomasa
+herbácea en pie fuera de copas, promedio de lecturas mensuales entre mayo de
+2016 y mayo de 2018 con disco de pastura calibrado para el ecosistema. Son 1.400
+± 1.000 kg/ha: el desvío es el 71 % de la media. Biomasa en pie promediada sobre
+dos años no es producción anual y no hay serie de crecimiento para derivarla.
+
+**Kruger** (bioma 7 verificado en los dos puntos). La cifra que trae —12.006
+kg/ha— es **el mayor cuadrante cosechado de 50 × 50 cm**, en un trabajo cuyo
+tema es comparar LiDAR contra campo. Son 300 g de materia seca en un marco de
+un cuarto de metro cuadrado: posible en una mata densa, y sin significado como
+cifra de sitio. El propio resumen dice que para biomasa absoluta hace falta
+parametrizar con cosecha destructiva en cada sitio. La entrega, para su crédito,
+la dejó en prosa y no en el campo numérico.
+
+**Pantanal** (bioma 9 verificado en el sitio publicado, −19,0667 / −56,60). Esta
+es la que más duele, porque es la única medición que existe del bioma 9 y está
+abierta. Verifica literal: 523 kg/ha en febrero de 2010 y 1.698 en noviembre de
+2008, marcos de 0,5 × 0,5 m, estufa a 65 °C por 48 h, normal de 1.182,5 mm con
+el 72 % entre noviembre y marzo. Pero es disponibilidad por fecha, no
+producción, y no hay tasas de crecimiento.
+
+Lo que sí dejó, y queda escrito en el módulo, es la razón de fondo por la que un
+número por bioma no va a alcanzar en el pastizal inundable. El propio documento
+compara su cifra con otras dos del mismo Pantanal y la misma especie dominante:
+
+| | kg MS/ha |
+|---|---|
+| Nhecolândia, Fazenda Nhumirim (este trabajo) | 523–1.698 |
+| Nhecolândia, campos húmedos (Santos et al. 2013) | ~3.000 |
+| Barão de Melgaço, baixada (Crispim et al. 2008) | 5.971 |
+
+**Factor 11 dentro de un solo bioma**, y en dos de los tres casos dentro de una
+sola subregión. Lo que manda es la fase hidrológica. Y el régimen regional —30 a
+40 cm de agua, 3 a 4 meses, 30 % de la superficie inundada— ni siquiera describe
+el predio: el otro documento de Embrapa dice que **en plena creciente el 73 % de
+la hacienda estaba seca**.
+
+### Lo que NO se hizo, a propósito
+
+- **No se abrió el texto completo de las dos de Wiley.** Las dos son de acceso
+  abierto (CC-BY y CC-BY-NC-ND) y las dos están detrás de una verificación
+  anti-bot de Cloudflare, en los dos hosts del editor. No se resolvió. Se
+  probaron tres repositorios: el noruego exige autenticación para el archivo, el
+  de Brighton no publica el PDF y el de la NSF no responde desde esta máquina.
+  De Kruger se leyó el resumen completo; de Serengeti, sólo los metadatos.
+  Ninguna de las dos entraba igual, por el tipo de cifra.
+- **No se convirtió ninguna biomasa en pie a producción anual.** Hay factores
+  medidos para hacerlo —1,5 a 3 veces en el altiplano, 77 a 211 en la tundra—
+  pero son de otros sitios y otros climas. Aplicarlos acá sería exactamente el
+  relleno con promedio ajeno que el contrato prohíbe.
+- **No se usó la producción anual que cita el documento del Pantanal** (1.578 a
+  8.329 kg/ha para *Hymenachne amplexicaulis*, de Camarão et al. 2006). Es una
+  cita de segunda mano, de llanuras de inundación amazónicas y no del Pantanal.
+  Va al encargo siguiente como fuente a buscar de primera mano.
+- **No se recalculó la conversión a kg/ha del Delta.** El área del aro de
+  muestreo no está indicada en ninguna parte del texto de la tesis —la entrega
+  decía que sí— así que la escala se toma como viene. Queda escrito en `metodo`.
