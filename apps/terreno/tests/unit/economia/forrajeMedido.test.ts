@@ -19,6 +19,7 @@ import {
 } from '@/lib/forrajeMedido';
 import { calcularReceptividad } from '@/lib/produccion';
 import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
+import { nppMiami } from '@/lib/miamiModel';
 
 /** La escalera sin tocarla: `prodForrajera` es privada, pero sale por acá. */
 const escalera = (lluvia_mm: number) =>
@@ -315,5 +316,175 @@ describe('el Delta del Paraná: la misma cosecha, dos cifras', () => {
     // Y la limitación que nadie puede recalcular: el área del aro no está en
     // la tesis, así que la conversión a kg/ha se toma como viene.
     expect(d.metodo).toMatch(/área del aro/);
+  });
+});
+
+describe('Montecillo: el desierto entra, y el rango es el del algoritmo', () => {
+  const m = sitio('Montecillo');
+
+  it('es la primera medición del bioma 13', () => {
+    const b13 = medicionesDeBioma('resolve_desierto_matorral_xerofilo');
+    expect(b13).toHaveLength(1);
+    expect(b13[0]?.sitio).toBe(m.sitio);
+  });
+
+  it('es materia seca aérea sin descontar, y tiene las dos medias publicadas', () => {
+    expect(m.tipo).toBe('ms_herbacea_total');
+    expect(TIPOS_SIN_DESCONTAR).toContain(m.tipo);
+    expect(m.lluvia_mm_min).toBe(580);
+    expect(m.lluvia_mm_max).toBe(580);
+    expect(m.temp_media_c_anual).toBe(15.1);
+  });
+
+  it('el rango son las tres cifras publicadas: 609, 669 y 1.063 g/m²/año', () => {
+    expect(m.kg_ms_ha_anio_min).toBe(gM2AKgHa(609));
+    expect(m.kg_ms_ha_anio_max).toBe(gM2AKgHa(1063));
+    // El típico es el del trabajo primario, 669,2, y NO el punto medio.
+    expect(m.kg_ms_ha_anio_tipico).toBe(Math.round(gM2AKgHa(669.2)));
+    expect(m.kg_ms_ha_anio_max / m.kg_ms_ha_anio_min).toBeCloseTo(1.75, 2);
+  });
+
+  it('la dispersión de algoritmo es del dato aéreo y NO del total', () => {
+    // Las tres fuentes de la ficha: ANPP 669/609/1.063 y TNPP 1.676/1.783/1.741.
+    // El total coincide dentro de un 6 % mientras la parte aérea se mueve un
+    // 75 %. Los algoritmos no discuten cuánto se produce: discuten DÓNDE, y lo
+    // que acequia necesita —la parte de arriba— es justo la que no se sostiene.
+    const anpp = [669, 609, 1063];
+    const tnpp = [1676, 1783, 1741];
+    const span = (xs: number[]) => Math.max(...xs) / Math.min(...xs);
+    expect(span(anpp)).toBeCloseTo(1.75, 2);
+    expect(span(tnpp)).toBeLessThan(1.07);
+    expect(span(anpp)).toBeGreaterThan(span(tnpp) * 1.5);
+  });
+
+  it('el Miami Model lee 1,75 veces bajo en ese pastizal, y acá queda fijado', () => {
+    const r = nppMiami(m.lluvia_mm_min ?? 0, m.temp_media_c_anual ?? 0);
+    expect(r?.npp_ms_g_m2_anio).toBeCloseTo(958.9, 1);
+    expect(1676 / (r?.npp_ms_g_m2_anio ?? 1)).toBeCloseTo(1.75, 2);
+  });
+
+  it('declara el incendio y el fuego intencional del régimen', () => {
+    expect(m.donde_deja_de_valer).toMatch(/incendio accidental de febrero de 1986/);
+    expect(m.donde_deja_de_valer).toMatch(/INTENCIONAL/);
+    expect(m.que_cuenta).toMatch(/subterránea es de 1\.007/);
+  });
+});
+
+describe('Różańsko: seis algoritmos sobre las mismas cosechas', () => {
+  const m = sitio('Różańsko');
+
+  it('es la primera medición del bioma 4 y el primer sotobosque', () => {
+    expect(medicionesDeBioma('resolve_bosque_templado_caducifolio_mixto')).toHaveLength(1);
+    expect(m.tipo).toBe('ms_sotobosque');
+    expect(TIPOS_SIN_DESCONTAR).toContain('ms_sotobosque');
+  });
+
+  it('el rango va del método 1 en 2010 al método 6 en 2011', () => {
+    expect(m.kg_ms_ha_anio_min).toBe(Math.round(gM2AKgHa(37.835)));
+    expect(m.kg_ms_ha_anio_max).toBe(Math.round(gM2AKgHa(93.958)));
+    // La fuente compara los seis y no elige: no hay típico.
+    expect(m.kg_ms_ha_anio_tipico).toBeNull();
+  });
+
+  it('el algoritmo mueve el resultado más que el año', () => {
+    // Tabla 3 del artículo, g/m²/año: los seis métodos para 2010 y 2011.
+    const metodos: ReadonlyArray<readonly [number, number]> = [
+      [37.835, 41.027], [50.249, 58.261], [59.783, 72.594],
+      [52.680, 72.654], [52.105, 68.611], [74.307, 93.958],
+    ];
+    const porAnio2010 = metodos.map(x => x[0]);
+    const porAlgoritmo = Math.max(...porAnio2010) / Math.min(...porAnio2010);
+    const porAnio = Math.max(...metodos.map(x => x[1] / x[0]));
+    expect(porAlgoritmo).toBeCloseTo(1.96, 2);
+    expect(porAnio).toBeCloseTo(1.38, 2);
+    expect(porAlgoritmo).toBeGreaterThan(porAnio);
+  });
+
+  it('el método del máximo de biomasa en pie subestima la mitad', () => {
+    // 1 − 37,835/74,307 = 49 % en 2010 y 1 − 41,027/93,958 = 56 % en 2011: la
+    // fuente lo resume como «50 % a 52 %» y el orden es el que importa.
+    expect(1 - 37.835 / 74.307).toBeGreaterThan(0.45);
+    expect(1 - 41.027 / 93.958).toBeGreaterThan(0.45);
+    expect(m.donde_deja_de_valer).toMatch(/SUBESTIMA/);
+  });
+
+  it('declara que la mitad del año lo aporta una efímera de primavera', () => {
+    expect(m.estacionalidad).toMatch(/Anemone nemorosa/);
+    expect(m.estacionalidad).toMatch(/mitad del pasto del año pasa en abril/);
+  });
+});
+
+describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () => {
+  const cascade = sitio('Cascade Head');
+  const warings = sitio('Waring');
+
+  it('abren los biomas 5 y 8 con sotobosque, no con pastizal', () => {
+    expect(medicionesDeBioma('resolve_bosque_coniferas_templado')).toHaveLength(1);
+    expect(cascade.tipo).toBe('ms_sotobosque');
+    expect(warings.tipo).toBe('ms_sotobosque');
+    // Waring's Woods cae en el bioma 8 por la coordenada que la ficha publica:
+    // la sabana de robles del valle Willamette, ECO_ID 403.
+    expect(warings.bioma).toBe('resolve_pastizal_templado');
+  });
+
+  it('la capa herbácea es el 0,4 % y el 2,5 % de la NPP del rodal', () => {
+    // Las cuatro cifras salen de la misma tabla de la ficha OTTER.
+    expect(warings.kg_ms_ha_anio_tipico).toBe(gM2AKgHa(6));
+    expect(cascade.kg_ms_ha_anio_tipico).toBe(gM2AKgHa(41));
+    expect(6 / 1540).toBeCloseTo(0.0039, 4);
+    expect(41 / 1630).toBeCloseTo(0.0252, 4);
+  });
+
+  it('lo que explica el salto es la cobertura herbácea, no el clima', () => {
+    // 35,2 % contra 4,9 % de cobertura dan 41 contra 6 g/m²/año: las dos
+    // razones son casi la misma, y los dos sitios están en el mismo transecto.
+    expect((41 / 6) / (35.2 / 4.9)).toBeCloseTo(0.95, 2);
+    expect(warings.que_cuenta).toMatch(/4,9 % contra 35,2 %/);
+  });
+
+  it('en el mismo bioma que la pradera de Dakota, y 44 veces menos', () => {
+    const dakota = sitio('Dakota');
+    expect(dakota.bioma).toBe(warings.bioma);
+    const factor = (dakota.kg_ms_ha_anio_min + dakota.kg_ms_ha_anio_max) / 2 / warings.kg_ms_ha_anio_max;
+    expect(factor).toBeGreaterThan(40);
+    expect(warings.donde_deja_de_valer).toMatch(/NO se puede usar como la producción del bioma 8/);
+  });
+
+  it('no inventa la lluvia que la ficha no publica por sitio', () => {
+    for (const x of [cascade, warings]) {
+      expect(x.lluvia_mm_min).toBeNull();
+      expect(x.lluvia_mm_max).toBeNull();
+    }
+    // La única media anual que la ficha da por punto es la temperatura, que
+    // varía con la altura: 11,2 °C en el valle interior.
+    expect(warings.temp_media_c_anual).toBe(11.2);
+    expect(cascade.temp_media_c_anual).toBeNull();
+  });
+});
+
+describe('el inventario, después de los lotes 06, 07 y 08', () => {
+  it('son diez sitios en siete de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(10);
+    const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
+    expect(biomas.size).toBe(7);
+    expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
+  });
+
+  it('tres de los diez son sotobosque, y hay que poder contarlos', () => {
+    // Son tres mediciones de abajo de un dosel cerrado, y no se pueden leer
+    // como la producción de su bioma: dos de ellas abren un bioma nuevo y la
+    // tercera cae en el bioma de la pradera de Dakota produciendo 44× menos.
+    const sotobosque = FORRAJE_MEDIDO.filter(m => m.tipo === 'ms_sotobosque');
+    expect(sotobosque).toHaveLength(3);
+    expect(sotobosque.every(m => TIPOS_SIN_DESCONTAR.includes(m.tipo))).toBe(true);
+  });
+
+  it('toda medición con temperatura publicada se puede contrastar', () => {
+    const conTemp = FORRAJE_MEDIDO.filter(m => m.temp_media_c_anual !== null);
+    expect(conTemp.length).toBeGreaterThanOrEqual(2);
+    for (const m of conTemp) {
+      if (m.lluvia_mm_min === null) continue;
+      expect(nppMiami(m.lluvia_mm_min, m.temp_media_c_anual ?? 0)).not.toBeNull();
+    }
   });
 });

@@ -195,14 +195,136 @@
  * POWER y de Daymet. **Ese es el reemplazo de `prodForrajera`, y no una tabla
  * por bioma.**
  *
+ * ## Los algoritmos no discuten cuánto se produce: discuten DÓNDE
+ *
+ * Esto salió del lote 06 y es la explicación del desorden que el lote 05 había
+ * descrito sin poder explicar. En el pastizal salino de Montecillo, México, la
+ * ficha del ORNL tabula las tres fuentes publicadas para la MISMA serie de
+ * cosechas mensuales:
+ *
+ * | fuente | NPP aérea | NPP subterránea | NPP total |
+ * |---|---|---|---|
+ * | García-Moya y Montañez Castro (1992) | 669 | 1.007 | 1.676 |
+ * | Scurlock et al. (2002) | 609 | 1.174 | 1.783 |
+ * | Scurlock y Olson (2013) | 1.063 | 678 | 1.741 |
+ *
+ * Mirá las dos últimas columnas y después la primera. **El total coincide dentro
+ * de un 6 %. La parte aérea se mueve un 75 %, y la subterránea un 73 % en
+ * sentido contrario.** Los tres algoritmos miden lo mismo y están de acuerdo en
+ * cuánta materia seca produce ese pastizal; lo que no deciden igual es **cuánta
+ * quedó arriba y cuánta abajo**.
+ *
+ * Y lo que acequia necesita para dimensionar un rodeo es exactamente la columna
+ * que no se sostiene. Por eso en la sabana la dispersión llegaba a 7,6× y por eso
+ * no hay cómo arreglarlo eligiendo mejor la fuente: no es que una esté mal, es
+ * que el reparto arriba/abajo es la parte frágil de todos los métodos.
+ *
+ * ## El experimento que faltaba: seis algoritmos, las mismas cosechas
+ *
+ * Todo lo anterior era inferencia sobre tablas de terceros. El lote 08 trajo el
+ * trabajo que lo mide de frente: Rawlik y Jagodziński cosecharon el sotobosque
+ * de un robledal-carpinal de Polonia, semanalmente en abril y mayo y cada quince
+ * días el resto, durante dos temporadas, y después calcularon la producción anual
+ * **con seis algoritmos sobre esas mismas cosechas**:
+ *
+ * | método | 2010 | 2011 |
+ * |---|---|---|
+ * | 1 · máximo de biomasa en pie del año | 37,8 | 41,0 |
+ * | 2 · suma de las diferencias positivas entre cosechas | 50,2 | 58,3 |
+ * | 3 · suma de los máximos de cada especie | 59,8 | 72,6 |
+ * | 4 · biomasa × densidad de brotes, al máximo de biomasa | 52,7 | 72,7 |
+ * | 5 · biomasa × densidad, al máximo de densidad | 52,1 | 68,6 |
+ * | 6 · biomasa × densidad, al máximo del producto | 74,3 | 94,0 |
+ *
+ * En g MS/m²/año. **El algoritmo mueve el resultado casi el doble (1,96×) y el
+ * año lo mueve 1,38× como máximo.** Dicho de otro modo: cambiar de método
+ * importa más que cambiar de año, y el método 1 —el máximo de biomasa en pie,
+ * que es el más usado porque es el más barato— subestima alrededor de la mitad.
+ *
+ * Es el mismo método con el que el lote 04 había traído Serengeti y Kruger, y la
+ * razón por la que esas dos no entraron.
+ *
+ * ## Towoomba contra Nylsvley: no era ecología, era fertilizante
+ *
+ * El lote 05 había dejado una pregunta marcada como «el reintento más valioso»:
+ * Towoomba y Nylsvley están a 60 km, en la MISMA ecorregión (ECO_ID 38, bioma
+ * 7), con 6 mm de diferencia de lluvia anual, y la compilación le da a Towoomba
+ * 2,6 veces la producción. Si eso fuera real, el bioma no explicaría nada.
+ *
+ * No es real. La ficha primaria del ORNL dice que el sitio de Towoomba era un
+ * **ensayo de fertilización** de varias hectáreas, con cinco niveles de nitrógeno
+ * y tres de fósforo en bloques aleatorizados, **sobre un área de la que se
+ * removieron todos los árboles**, y con una medición de biomasa por año. El valor
+ * de 198 g/m²/año sale de la fila `P0N3`: un tratamiento fertilizado.
+ *
+ * Los dos sitios nunca fueron comparables, y la advertencia estaba escrita en la
+ * compilación: *«18 sites have data for more than one "treatment" (fertilized or
+ * irrigated plots, different soil types, stand ages, etc.)»* y la tabla publica
+ * un valor por sitio sin decir de cuál. **Una cifra con coordenada verificada,
+ * bioma verificado y fuente abierta puede seguir siendo un ensayo agronómico.**
+ *
+ * ## Lo que hace el dosel, medido contra su propio rodal
+ *
+ * Los lotes 07 y 08 abrieron los biomas de bosque, y ahí la pregunta no es
+ * cuánto produce el ecosistema sino cuánto de eso puede comer un animal. El
+ * transecto OTTER de Oregón lo publica junto, en la misma tabla:
+ *
+ * | sitio | cobertura herbácea | NPP del rodal | capa herbácea | la herbácea es |
+ * |---|---|---|---|---|
+ * | Cascade Head 1A, aliso rojo | 35,2 % | 1.630 | 41 | 2,5 % |
+ * | Waring's Woods, Pseudotsuga | 4,9 % | 1.540 | 6 | **0,4 %** |
+ *
+ * En g MS/m²/año. Los dos rodales producen casi lo mismo y su sotobosque difiere
+ * 6,8 veces; la cobertura herbácea difiere 7,2. **Lo que decide el forraje de un
+ * bosque es la luz que llega al piso, y la NPP del rodal no la ve.**
+ *
+ * Dos consecuencias que valen más que las cifras:
+ *
+ * 1. **Waring's Woods cae en el bioma 8**, el de la pradera de Dakota: la
+ *    coordenada que la ficha publica (44,60 N / −123,27 O) da la sabana de robles
+ *    del valle Willamette. Dentro de un mismo bioma hay entonces 2.643-3.063
+ *    kg MS/ha/año a cielo abierto y **60** bajo un dosel cerrado. Un factor 44
+ *    que ninguna función del clima puede dar, porque no es clima.
+ * 2. **El 800 de `cobertura.ts` resultó ser el número mejor respaldado de la
+ *    cadena, y por accidente.** Esa ruta pondera kg/ha por clase de cobertura y
+ *    le asigna 800 kg MS/ha/año al arbolado. Lo medido: 60 en conífera densa, 410
+ *    en aliso, 378-940 en robledal-carpinal, 1.300-1.700 en bosque húmedo
+ *    tropical de Nepal. El 800 cae adentro para bosque de hoja ancha y queda
+ *    unas 13 veces alto para un dosel de conífera cerrado. No se corrige acá:
+ *    queda anotado con sus cuatro mediciones, que es más de lo que tenía.
+ *
+ * ## La inversión del stock, cuarta confirmación y la más extrema
+ *
+ * Viene del lote 08 y no montó porque es una revisión regional sin sitio ni
+ * coordenada: en los pastizales de líquenes más productivos de Escandinavia y
+ * Finlandia el **crecimiento anual** es de 60 a 160 kg/ha mientras la **biomasa
+ * en pie** es de 500 a 1.500, y los rodales viejos de *Cladonia stellaris* pasan
+ * los 3.000 kg/ha con crecimiento anual bajo. Hasta 50 veces más stock que flujo,
+ * y una recuperación de 3 a 5 años después de un pastoreo intenso.
+ *
+ * Es el mismo error que Puno, el Delta y el Pantanal, en un cuarto bioma: contar
+ * lo que está parado como si fuera lo que creció. Acá llevaría a cargar cincuenta
+ * veces de más.
+ *
  * ## Qué NO hace este archivo todavía
  *
- * No se enchufa al cálculo. `prodForrajera(precip_mm)` recibe la lluvia y nada
- * más —no sabe en qué bioma está el predio— así que usarlo pide cambiarle la
- * firma a las tres copias. Y falta el bioma que más importa: **la sabana
- * tropical, que es donde cae la mayoría de los predios ganaderos, no tiene
- * ninguna medición acá**. Reemplazar la escalera global con seis puntos sería
- * cambiar un número sin fuente por otro número sin cobertura.
+ * **Estas mediciones siguen sin entrar en la cuenta, y el motivo cambió.** Antes
+ * era que faltaban puntos; ahora es que los puntos que hay dicen que una tabla
+ * por bioma no puede funcionar: en el bioma 8 conviven 3.063 y 60 kg/ha según el
+ * dosel, en el bioma 7 un solo pastizal tiene siete cifras publicadas con un
+ * factor 7,6, y el reparto arriba/abajo —que es justo el que acequia necesita—
+ * es la parte frágil de todos los algoritmos. `prodForrajera(precip_mm)` sigue
+ * recibiendo sólo la lluvia, y la sabana tropical, donde cae la mayoría de los
+ * predios ganaderos, **sigue sin ninguna medición acá**.
+ *
+ * Lo que sí se enchufó, el 17/10/2026, es otra cosa y más chica: el Miami Model
+ * de Lieth (`miamiModel.ts`) como **contraste**. No reemplaza la escalera —da NPP
+ * total del ecosistema, que en un bosque es hasta 250 veces el pasto comible—,
+ * pero nombra la limitante y puede desmentir un número imposible, que es el punto
+ * ciego exacto de una función de la lluvia sola. La escalera dice 7.000 kg/ha con
+ * 900 mm tanto a 20 °C como a −10 °C; a −10 °C el modelo dice que todo el
+ * ecosistema produce 2.265. Es un test de una sola dirección y está escrito como
+ * tal: puede decir que una cifra está mal, nunca que esté bien.
  *
  * La sabana (bioma 7) y el pastizal inundable (bioma 9) siguen en cero después
  * de DOS lotes dedicados a los dos —el 04 y el 05—, por dos motivos distintos:
@@ -311,7 +433,8 @@ export type TipoDeCifra =
   | 'receptividad'
   | 'ms_herbacea_total'
   | 'ms_forrajera'
-  | 'npp_herbacea';
+  | 'npp_herbacea'
+  | 'ms_sotobosque';
 
 /**
  * Las clases de cifra que NO traen descontado el uso admisible.
@@ -319,11 +442,18 @@ export type TipoDeCifra =
  * Son las únicas que pueden entrar acá mientras río abajo `bandaUso` descuente
  * por su cuenta. La diferencia entre `ms_herbacea_total` y `npp_herbacea` es de
  * método —cosecha contra producción primaria estimada— y no de si descuenta.
+ *
+ * `ms_sotobosque` se agregó con el lote 08 y no es un matiz: es la capa herbácea
+ * de abajo de un dosel cerrado, que **no es comparable con el pastizal abierto
+ * del mismo bioma**. En el bioma 8 convive la pradera de Dakota, con 2.643 a
+ * 3.063 kg MS/ha/año, y el sotobosque de un rodal de Pseudotsuga del valle
+ * Willamette, con 60: un factor 44 que no lo hace el clima sino la sombra.
  */
 export const TIPOS_SIN_DESCONTAR: readonly TipoDeCifra[] = [
   'ms_herbacea_total',
   'ms_forrajera',
   'npp_herbacea',
+  'ms_sotobosque',
 ] as const;
 
 export interface MedicionForraje {
@@ -346,6 +476,19 @@ export interface MedicionForraje {
    */
   lluvia_mm_min: number | null;
   lluvia_mm_max: number | null;
+  /**
+   * Temperatura media anual del sitio, °C, **sólo si la fuente la publica como
+   * media anual.**
+   *
+   * Se agregó con el lote 06 porque sin ella no se puede correr `miamiModel.ts`
+   * sobre un sitio medido, que es la única forma de medirle el sesgo al modelo.
+   * Y queda en `null` más veces de las que uno querría, por un motivo que vale
+   * escribir: varias fichas del ORNL publican «mean monthly minimum 10,7 °C
+   * (enero)» y «mean monthly maximum 29,5 °C (marzo)», que son el mes más frío y
+   * el más cálido y **no promedian a la media anual**. Promediarlos es el mismo
+   * error que acequia ya cometió con las máximas de POWER.
+   */
+  temp_media_c_anual: number | null;
   /** Cómo se midió. */
   metodo: string;
   /** Qué incluye y qué no. */
@@ -360,9 +503,13 @@ export interface MedicionForraje {
 }
 
 /**
- * Las mediciones, verificadas una por una abriendo la fuente el 15/10/2026.
+ * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son cinco sitios y cuatro biomas. No son un modelo: son los puntos que hay.
+ * Son **diez sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
+ * No son un modelo: son los puntos que hay. Tres de los diez son sotobosque de
+ * bosque cerrado y no pastizal, y eso cambia cómo se leen: ver `ms_sotobosque`.
+ * El bioma que más se pastorea —la sabana tropical— sigue sin ninguno, y el
+ * motivo está en la sección «La sabana no está sin medir».
  */
 export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
@@ -379,6 +526,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 381,
     lluvia_mm_max: 508,
+    temp_media_c_anual: null,
     metodo: 'Producción anual de las comunidades de referencia de las fichas de sitio ecológico correlacionadas con la clase, en el informe CEAP de pastizales del NRCS.',
     que_cuenta: 'Producción anual aérea en peso seco de la comunidad herbácea. No descuenta palatabilidad, acceso ni pisoteo.',
     estacionalidad: 'Las especies nativas de estación fría crecen de fines de marzo a principios o mediados de julio; las de estación cálida, de mediados de mayo a fines de agosto. El rebrote de otoño depende de que haya humedad en el suelo.',
@@ -403,6 +551,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: 2062,
     lluvia_mm_min: 508,
     lluvia_mm_max: 762,
+    temp_media_c_anual: null,
     metodo: 'Tabla de producción anual por tipo de planta de la ficha de sitio ecológico, comunidad de referencia 1.1 (pradera de gramíneas medias).',
     que_cuenta: 'Gramíneas, graminoides y hierbas. Excluye arbustos y árboles, que la ficha cuenta aparte. No descuenta palatabilidad ni acceso.',
     estacionalidad: 'La curva publicada reparte la producción por mes: 2-3-5-13-23-15-4-5-15-7-5-3 % de enero a diciembre. Mayo solo es el 23 % y julio y agosto juntos son el 9 %.',
@@ -430,6 +579,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 410,
     lluvia_mm_max: 1119,
+    temp_media_c_anual: null,
     metodo: 'Seis cosechas mensuales (diciembre a mayo) dentro de una clausura sin pastoreo de 2.500 m2, en dos bloques de 361 m2, con 30 unidades de muestreo por época, marco de 0,5 m2, corte a 2 cm y secado en estufa a 65 °C hasta peso constante.',
     que_cuenta: 'Materia seca aérea ANUAL del espectro total de especies del pastizal, separada de la biomasa permanente. Al estar dentro de clausura no descuenta consumo ni pisoteo.',
     estacionalidad: 'El mínimo cae en diciembre en los cuatro pastizales y el máximo entre febrero y mayo según la comunidad. En Calamagrostis antoniana va de 828 a 2.983 kg/ha entre diciembre y mayo: la misma pradera rinde 3,6 veces más al final de las lluvias que al principio.',
@@ -457,6 +607,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // mm. La normal del lugar es mucho más angosta y va en `donde_deja_de_valer`.
     lluvia_mm_min: 354,
     lluvia_mm_max: 797,
+    temp_media_c_anual: null,
     metodo: 'Jaulas de exclusión de malla 1 × 1,2 cm sobre 0,25 m2 y 0,7 m de alto, puestas en octubre, diciembre y marzo y cosechadas a ras entre fines de mayo y principios de junio; secado a 60 °C por 24 h. La productividad del potrero es la biomasa de la jaula multiplicada por el porcentaje de cobertura herbácea de ese potrero, promediada entre estaciones de muestreo.',
     que_cuenta: 'Herbáceas solamente, y por construcción: las estaciones de muestreo se eligieron sin suelo desnudo, sin piedras y sin vegetación perenne. NO cuenta el Sarcopoterium spinosum ni el Asphodelus ramosus, que cubren buena parte de estos potreros y que la majada sí ramonea en parte. No descuenta uso.',
     estacionalidad: 'Crecimiento moderado los primeros 5 o 6 meses y mucho más rápido en los 2 o 3 que siguen. Por época y por año: 5,8 · 5,2 · 12,1 kg MS/ha/día en el primero y 9,8 · 4,4 · 21,6 en el segundo. La jaula cosechada temprano y después dejada descansar fue la de mayor tasa en las dos temporadas: pastorear temprano y largar puede rendir más al final.',
@@ -480,6 +631,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // agua tampoco es lo que limita: limitan el frío y el largo del verano.
     lluvia_mm_min: null,
     lluvia_mm_max: null,
+    temp_media_c_anual: null,
     metodo: 'Componentes de fitomasa y tasas de producción primaria en cuatro comunidades de pajonal de algodoncillo; recambio aéreo medido con bolsas de hojarasca. De este trabajo sólo se pudo leer el resumen del editor: el texto completo está detrás de una verificación anti-bot, así que el método primario no se verificó más allá de lo que el resumen declara.',
     que_cuenta: 'Producción primaria anual de las plantas vasculares AÉREAS. Excluye musgos y líquenes, que el mismo resumen cuantifica aparte —28 a 116 g/m2/año de musgo y 1 a 5 de liquen— y que en tundra son parte del forraje real del reno y del caribú, sobre todo en invierno. Para pastoreo de renos esta cifra es un piso y no el total.',
     estacionalidad: 'La comunidad de algodoncillo produce buena parte de su crecimiento nuevo temprano en el verano, en gran medida porque el Eriophorum vaginatum arranca temprano.',
@@ -515,6 +667,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // la primavera, y un invierno de 2013 con apenas 50 mm.
     lluvia_mm_min: 1056,
     lluvia_mm_max: 1056,
+    temp_media_c_anual: null,
     metodo: 'Tres clausuras de 4 × 4 m separadas unos 20 m, con boyero a 30 y 70 cm, cada una dividida en dos tratamientos: cortes bimestrales de la vegetación a 7 cm de altura y sin cortes. Afuera, pastoreo continuo con alta carga. Se muestreó por estación agronómica cortando con tijera de podar el material arraigado dentro de un aro, dejando 7 cm de remanente; secado en estufa a 65 °C hasta peso constante y pesado con precisión de ±1 g. La tasa de crecimiento se calculó por diferencia de forraje disponible entre corte y corte. El área del aro de muestreo NO está indicada en el texto de la tesis, así que la conversión a kg/ha no se puede recalcular desde acá.',
     que_cuenta: 'Materia seca VIVA de las especies forrajeras, cosechada por encima de los 7 cm. No incluye las no forrajeras —en este pastizal degradado el abrojo grande, Xanthium cavallinesii, es el que más crece en verano—, ni la materia seca muerta, ni nada por debajo de la altura de corte, ni raíces. No descuenta uso admisible. La MS total del mismo muestreo, que sí suma las no forrajeras, da 11.200 a 11.400 kg/ha.',
     estacionalidad: 'El pico de crecimiento va de fines de primavera a verano: las forrajeras marcan 60 a 70 kg MS/ha/día entre noviembre y enero en los dos tratamientos. Con cortes bimestrales la tasa se mantiene arriba de 40 kg/ha/día casi cuatro meses; sin cortes dura la mitad del tiempo y en otoño pasa a ser NEGATIVA, porque dentro del canopeo muere más material del que se genera. En invierno falta materia seca en el campo.',
@@ -523,6 +676,109 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     fuente: {
       label: 'Universidad Nacional de Rosario — Uso sustentable de un Pastizal Natural del delta Medio del Paraná, para la Producción Ganadera (tesis de maestría)',
       url: 'https://rephip.unr.edu.ar/bitstreams/8ecbddb4-5c07-43f2-87a3-ac4b11df3c0a/download',
+    },
+  },
+  {
+    // Primera medición del bioma 13, y la primera donde acequia tiene las dos
+    // medias anuales publicadas por la propia ficha: 580 mm y 15,1 °C. Por eso
+    // es el sitio contra el que se le mide el sesgo al Miami Model, que para ese
+    // clima da 959 g/m²/año de NPP total contra 1.676 medidos. Ver `miamiModel.ts`.
+    bioma: 'resolve_desierto_matorral_xerofilo',
+    sitio: 'Pastizal salino de Montecillo (MNT1), borde del lecho del lago de Texcoco, México',
+    tipo: 'ms_herbacea_total',
+    // El rango NO es la variación entre años ni entre potreros: es la que hay
+    // entre los TRES algoritmos publicados para esta misma serie de cosechas.
+    // García-Moya y Montañez Castro (1992) dan 669, Scurlock et al. (2002) dan
+    // 609 y Scurlock y Olson (2013) dan 1.063. El típico es el del trabajo
+    // primario, que es el único cuyo método la ficha describe.
+    kg_ms_ha_anio_min: 6090,
+    kg_ms_ha_anio_max: 10630,
+    kg_ms_ha_anio_tipico: 6692,
+    lluvia_mm_min: 580,
+    lluvia_mm_max: 580,
+    temp_media_c_anual: 15.1,
+    metodo: 'Clausura de 1 ha en bloques aleatorizados. El día 15 de cada mes se cortaron 20 cuadrantes de 0,25 × 1,0 m a nivel del suelo, separando material vivo de material muerto, y se muestreó también la biomasa subterránea. La NPP anual se calculó con el «método #5» de la publicación asociada. Serie mensual de junio de 1984 a diciembre de 1994, con dos huecos declarados: febrero y marzo de 1986, cuando el incendio se llevó los datos, y de enero a septiembre de 1991, sin explicación.',
+    que_cuenta: 'Materia seca AÉREA de un pastizal casi puro de Distichlis spicata var. mexicana, vivo más muerto, sin separar especies forrajeras de las que no lo son. La ficha publica además las otras dos piezas, y las dos importan: la NPP subterránea es de 1.007 g/m²/año, MAYOR que la aérea, y la NPP total de 1.676 g/m²/año, que la propia ficha califica de «high relative to many previous studies in semi-arid tropical grasslands».',
+    estacionalidad: 'Unimodal. Los máximos de biomasa aérea caen durante la estación lluviosa de mayo a octubre o inmediatamente después, y los mínimos en la época más seca y fría. La ficha publica la serie mes por mes.',
+    donde_deja_de_valer: 'Es una clausura SIN pastoreo, y el promedio de tres años contiene un incendio accidental de febrero de 1986: la NPP total fue de 1.994 g/m²/año en 1985, cayó a 1.422 en 1986 y volvió a 1.611 en 1987. No es un accidente del sitio sino su régimen: la ficha dice que el fuego cada 4-5 años es la práctica histórica y que es INTENCIONAL, «to improve forage quality during the dry season». El clima publicado es de la estación de Chapingo, a 5 km. Y el rango de arriba es dispersión de algoritmo, así que no se puede leer como la variación interanual del sitio.',
+    medido_en: 'la cifra anual es el promedio de 1985 a 1987; la serie mensual va de junio de 1984 a diciembre de 1994',
+    fuente: {
+      label: 'ORNL DAAC — NPP Grassland: Montecillo, Mexico, 1984-1994, R1 (ficha de sitio)',
+      url: 'https://daac.ornl.gov/NPP/guides/NPP_MNT.html',
+    },
+  },
+  {
+    // Primera medición del bioma 4, primer `ms_sotobosque`, y el experimento que
+    // el módulo venía necesitando: SEIS algoritmos sobre las MISMAS cosechas.
+    bioma: 'resolve_bosque_templado_caducifolio_mixto',
+    sitio: 'Sotobosque de un robledal-carpinal dominado por haya, Różańsko, noroeste de Polonia',
+    tipo: 'ms_sotobosque',
+    // El mínimo es el método 1 en 2010 (37,835 g/m²) y el máximo el método 6 en
+    // 2011 (93,958). Sin típico: la fuente no elige uno, compara los seis.
+    kg_ms_ha_anio_min: 378,
+    kg_ms_ha_anio_max: 940,
+    kg_ms_ha_anio_tipico: null,
+    lluvia_mm_min: 541,
+    lluvia_mm_max: 615,
+    temp_media_c_anual: 8.8,
+    metodo: 'Sitio de 12 ha, dos temporadas de crecimiento (2010 y 2011). Se cosechó la capa herbácea de 7 a 10 marcos cuadrados de 0,6 × 0,6 m, todas las semanas en abril y mayo y cada dos semanas el resto de la temporada. Sobre ESAS cosechas se calcularon seis estimaciones de producción anual con seis algoritmos distintos: 1) el máximo de biomasa en pie del año, 2) la suma de las diferencias positivas entre cosechas sucesivas, 3) la suma de los máximos de cada especie, 4) y 5) biomasa de brote por densidad de brotes, al máximo de biomasa y al máximo de densidad, y 6) al máximo del producto.',
+    que_cuenta: 'Toda la biomasa aérea de las plantas herbáceas del sotobosque, cortada al nivel del suelo. No incluye árboles, ni arbustos, ni raíces, y la fuente NO la define como forraje: es la capa herbácea de un bosque cerrado, que es lo máximo que podría comer un animal ahí adentro.',
+    estacionalidad: 'Dos picos, uno en primavera y otro en septiembre-octubre. Y un dato que ninguna cifra anual puede llevar: la mitad de la producción anual la aporta UNA especie efímera de primavera, Anemone nemorosa, que para el verano ya no está; las dos siguientes, Galeobdolon luteum y Galium odoratum, aportan un 10 % cada una. En un bosque templado, la mitad del pasto del año pasa en abril.',
+    donde_deja_de_valer: 'Un área homogénea de sotobosque dentro de un sitio forestal de 12 ha, con dosel de roble, carpe y haya de unos 100 años, y sólo dos temporadas. Pero lo que de verdad limita la cifra no es el sitio: es el algoritmo. El método 1 —el máximo de biomasa en pie, que es el más usado y el más barato— SUBESTIMA entre un 50 % y un 52 % respecto del método 6, y la diferencia entre métodos (hasta 2,0× dentro del mismo año) es mayor que la diferencia entre los dos años con el mismo método (1,08 a 1,38×).',
+    medido_en: '2010 y 2011',
+    fuente: {
+      label: 'Rawlik y Jagodziński, «Herbaceous Layer Net Primary Production of Oak-Hornbeam Forest: Comparing Six Methods of Assessment Based on the Seasonal Dynamics of Biomass Increments», Ecosystems 24 (2021) 337-349',
+      url: 'https://doi.org/10.1007/s10021-021-00658-0',
+    },
+  },
+  {
+    // Primera medición del bioma 5. Entra por el sotobosque, no por el rodal.
+    bioma: 'resolve_bosque_coniferas_templado',
+    sitio: 'Sotobosque de un rodal de aliso rojo, Cascade Head 1A, transecto OTTER, Oregón',
+    tipo: 'ms_sotobosque',
+    kg_ms_ha_anio_min: 410,
+    kg_ms_ha_anio_max: 410,
+    kg_ms_ha_anio_tipico: 410,
+    // La ficha publica el rango de lluvia del transecto entero —de 2.510 mm en
+    // la costa a 220 mm en el extremo este— y no una tabla por sitio. Este es el
+    // sitio costero, así que el 2.510 le correspondería; no se escribe igual,
+    // porque un extremo de transecto no es la lluvia medida del punto.
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    temp_media_c_anual: null,
+    metodo: 'Proyecto OTTER (Oregon Transect Ecosystem Research), campañas de 1989 a 1991. La ficha define la columna `ANPP_herb` como «above-ground net primary production of dominant herb species» y la publica en g/m²/año junto con la cobertura herbácea del rodal; arbustos y hierbas se cosecharon al final de la estación de crecimiento, antes de la caída de hojarasca. El método primario está en Law y Waring (1994) y no se detalla en la ficha.',
+    que_cuenta: 'Producción aérea de las especies herbáceas DOMINANTES del sotobosque, con 35,2 % de cobertura herbácea, bajo un rodal de Alnus rubra con índice de área foliar 4,3. La misma ficha publica la NPP total del rodal, 1.630 g/m²/año, y ésa es la comparación que importa: la capa herbácea es el 2,5 % de lo que produce el rodal.',
+    estacionalidad: 'Una cosecha al final de la temporada: la ficha no publica curva mensual.',
+    donde_deja_de_valer: 'Un punto del transecto a 200 m de altura, y un rodal de aliso rojo FIJADOR DE NITRÓGENO, que no es un dosel cualquiera: la parcela vecina de bosque viejo de Picea-Tsuga (Cascade Head #1, con 71.080 g/m² de biomasa arbórea) viene sin medición herbácea, así que no hay con qué comparar el efecto del dosel en el mismo sitio. Son las especies dominantes y no toda la capa herbácea.',
+    medido_en: '1989 a 1991',
+    fuente: {
+      label: 'ORNL DAAC — NPP Temperate Forest: OTTER Project Sites, Oregon, USA, 1989-1991, R1 (ficha de sitio)',
+      url: 'https://daac.ornl.gov/NPP/guides/NPP_OTTER.html',
+    },
+  },
+  {
+    // Esta entrada está acá por lo que mide, no por lo que vale: es el bioma 8,
+    // el MISMO que la pradera de Dakota, y produce 44 veces menos. La coordenada
+    // publicada (44,60 N / −123,27 O) cae en la sabana de robles del valle
+    // Willamette, ECO_ID 403, bioma 8. El rodal es de Pseudotsuga: lo que separa
+    // los dos números es el dosel, no el clima.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Sotobosque de un rodal de Pseudotsuga, Waring’s Woods, transecto OTTER, Oregón',
+    tipo: 'ms_sotobosque',
+    kg_ms_ha_anio_min: 60,
+    kg_ms_ha_anio_max: 60,
+    kg_ms_ha_anio_tipico: 60,
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    temp_media_c_anual: 11.2,
+    metodo: 'Proyecto OTTER, campañas de 1989 a 1991; misma definición y mismo método que Cascade Head, con la cosecha al final de la estación de crecimiento. `ANPP_herb` = 6 g/m²/año, con 4,9 % de cobertura herbácea.',
+    que_cuenta: 'Producción aérea de las especies herbáceas dominantes bajo un rodal de Pseudotsuga menziesii de 47.120 g/m² de biomasa arbórea. La NPP total del rodal, publicada en la misma tabla, es de 1.540 g/m²/año: la capa herbácea es el 0,4 % de eso. Y la cobertura herbácea explica el salto contra Cascade Head mejor que cualquier otra variable: 4,9 % contra 35,2 % de cobertura dan 6 contra 41 g/m²/año, o sea que las dos razones son casi la misma.',
+    estacionalidad: 'Una cosecha al final de la temporada: la ficha no publica curva mensual.',
+    donde_deja_de_valer: 'No es una cifra de pastizal y NO se puede usar como la producción del bioma 8: es el piso que deja un dosel cerrado dentro de ese bioma. La ficha agrega que la sequía es extrema en este sitio del valle interior. La media anual de 11,2 °C sí es media anual —la ficha la da por sitio, variando con la altura— pero la lluvia no está publicada por punto.',
+    medido_en: '1989 a 1991',
+    fuente: {
+      label: 'ORNL DAAC — NPP Temperate Forest: OTTER Project Sites, Oregon, USA, 1989-1991, R1 (ficha de sitio)',
+      url: 'https://daac.ornl.gov/NPP/guides/NPP_OTTER.html',
     },
   },
 ] as const;
