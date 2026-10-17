@@ -10,6 +10,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 02 | `sabana_tropical`, `pastizal_templado` ×2, `pastizal_montano` | **montado 3 de 4** el 15/10/2026 |
 | 03 | `pastizal_inundable`, `tundra`, `mediterraneo` | **montado 2 de 3** el 15/10/2026 |
 | 04 | `sabana_tropical` ×2, `pastizal_inundable` ×2 | **montado 1 de 4** el 16/10/2026, y en otro bioma |
+| 05 | `sabana_tropical` ×2, `pastizal_inundable` | **ninguna de 3** el 16/10/2026 — y es el lote más útil |
 
 ---
 
@@ -526,3 +527,154 @@ la hacienda estaba seca**.
 - **No se recalculó la conversión a kg/ha del Delta.** El área del aro de
   muestreo no está indicada en ninguna parte del texto de la tesis —la entrega
   decía que sí— así que la escala se toma como viene. Queda escrito en `metodo`.
+
+---
+
+## Lote 05 — ninguna de tres, y es el lote que más cambió el plan
+
+Tres entradas, las tres de producción anual y no de biomasa en pie, que era lo
+que el encargo había pedido. **Los tres biomas verifican.** Y no se montó
+ninguna. El motivo es el hallazgo.
+
+| entrada | bioma pedido | bioma real | |
+|---|---|---|---|
+| Nylsvley, Sudáfrica | 7 | **7** ✓ (ECO_ID 38) | no entra: la fuente avisa que puede estar subestimada |
+| Parque Nacional de Nairobi | 7 | **7** ✓ (ECO_ID 57) | no entra: hay cinco cifras publicadas para el mismo sitio |
+| Pantanal norte, Mato Grosso | 9 | **9** ✓ (ECO_ID 584) | no entra: tasas diarias, y año atípico |
+
+Primero lo administrativo: **las tres vinieron con `bioma_verificado` en null**,
+que es el campo que el encargo 05 había vuelto obligatorio. Los verifiqué yo y
+los tres dan bien, así que no cambió ningún veredicto, pero el campo volvió sin
+llenar.
+
+### La savana no está sin medir: está medida y no se ponen de acuerdo
+
+La hipótesis con la que se venían pidiendo lotes era que el bioma 7 estaba vacío
+por falta de mediciones. **Es falsa.** Nylsvley y el Parque Nacional de Nairobi
+son dos de las savanas mejor documentadas del planeta, con series de monitoreo
+mensual de años, publicadas y abiertas en la base de productividad primaria del
+ORNL. El problema es que para el mismo sitio hay varias cifras y no se parecen.
+
+La ficha del ORNL de Nairobi lo tabula ella misma, para la savana **sin tratar**:
+
+| fuente | unidades | ANPP | BNPP | TNPP |
+|---|---|---|---|---|
+| Kinyamario e Imbamba (1992) | g/m²/año | 1.004 | 875 | 1.880 |
+| Scurlock y Olson (2013) | g/m²/año | 811 | 431 | 1.242 |
+| GPPDI clase A, sitio 31 | **gC**/m²/año | 104 | 58 | 162 |
+| GPPDI clase B, sitio 62 (MI 108) | gC/m²/año | 60 | 40 | 100 |
+| GPPDI clase B, sitio 62 (MI 109) | gC/m²/año | 100 | 60 | 160 |
+| GPPDI clase B, sitio 62 (MI 110) | gC/m²/año | 370 | 190 | 560 |
+| EMDI clase B, sitio 62 | gC/m²/año | 235 | 125 | 360 |
+
+Con una nota al pie que lo explica: *«NPP values for this site reported in other
+published accounts differ due to different measurement and calculation
+methods»*. Pasando el carbono a materia seca —aproximadamente el doble, y es la
+otra trampa de esa tabla— el rango publicado para **un solo pastizal** va de
+unos 1.300 a 10.040 kg MS/ha/año. **Factor 7,6 para el mismo pasto.**
+
+En Nylsvley es más explícito todavía. La cifra que acequia querría es la que la
+ficha describe como *«the grazeable above-ground plant material of the grass
+layer (grasses + forbs) in open areas between trees»*: 76 g/m²/año, o sea 760
+kg/ha, de los cuales el pasto aporta 60. Pero la misma ficha agrega:
+
+> The Grunow et al. (1980) smooth function calculation of ANPP **may have
+> substantially underestimated** productivity at Nylsvley. […] The three
+> estimates do not agree because different calculation methods were used.
+
+Y da una «mejor estimación» de 482 g/m²/año para el total herbáceo con raíces.
+
+**Por eso no se montó ninguna.** Poner 760 kg/ha como la producción medida de la
+savana —el bioma donde cae la mayoría de los predios ganaderos— con el proveedor
+del dato avisando que puede estar sustancialmente subestimada, es exactamente el
+número plausible y equivocado que `forrajeMedido.ts` existe para evitar. Y poner
+10.040 es el mismo error del otro lado.
+
+### Una corrección: el 10.040 de la entrega no estaba mal
+
+Lo iba a reportar como error. La compilación de Scurlock y Olson, que la propia
+entrega citaba, da **811** g/m²/año para Nairobi, y el 10.040 no aparece en
+ninguna parte de ese PDF. Pero sí está en la base primaria del ORNL: *«Between
+October 1984 and September 1986, ANPP averaged 1,004 g/m²/yr»*. La entrega sacó
+el número de la fuente correcta; las dos cifras son reales y describen el mismo
+sitio con algoritmos distintos. **El que estaba por equivocarse era yo.**
+
+### Lo que esto hace con el plan de reemplazar la escalera
+
+Es la consecuencia importante y conviene que quede escrita sin vueltas:
+**reemplazar `prodForrajera` por un número medido por bioma no va a funcionar en
+la savana.** La dispersión de la literatura en un solo sitio (7,6×) es mayor que
+el error que se le reprocha a la escalera.
+
+Y la misma compilación midió, de paso, exactamente cuánto vale una escalera de
+lluvia. Sobre los 53 sitios con control de calidad y menos de 3.000 mm encontró
+*«a good straight-line fit between ANPP and annual precipitation»*, **r² = 0,56**
+en 50 de 53. Sobre las compilaciones grandes y menos curadas —720 registros de
+Osnabrück, 117 de IBP Woodlands— *«the correlation between ANPP and precipitation
+was poor in each case»*.
+
+Leído de frente: en el mejor de los casos la lluvia anual explica algo más de la
+mitad de la variación. La escalera no está rota por mala calibración; está
+incompleta por construcción.
+
+Lo que sigue de ahí es un camino concreto, y es lo mejor que trajo el lote. El
+modelo clásico con el que esa compilación se compara es el **«Miami Model» de
+Lieth (1975)**, y su forma es el dato: **NPP es el MÍNIMO de una función de la
+lluvia y una función de la temperatura**, con el supuesto de que uno de los dos
+siempre limita. Contra ese modelo el ajuste mejora, y en los sitios boscosos la
+temperatura resulta la limitante en **41 de 48**.
+
+Que es, palabra por palabra, el diagnóstico que el módulo ya tenía escrito
+mirando Dakota contra Puno: con menos lluvia y más calor, Dakota produce más. La
+diferencia es que ahora hay una fuente publicada que lo dice, una forma funcional
+para escribirlo, y acequia ya tiene la temperatura del predio. **Ese es el
+reemplazo, y no una tabla por bioma.**
+
+### El Pantanal norte: no monta, y explica el bioma 9 mejor que nadie
+
+Pozer y Nogueira (2004, *Braz. J. Biol.* 64(4), SciELO, abierto) midieron
+productividad primaria neta mes por mes durante un año en pasturas nativas
+inundables, con parcelas permanentemente protegidas, temporalmente protegidas y
+expuestas al ganado. Marcos de 0,25 m², separación en biomasa viva y muerta, NPP
+por diferencia mensual. Doce cosechas.
+
+No monta por dos razones: publica **tasas diarias** —3,8 g MS/m²/día en mayo y
+5,1 en noviembre— y no un total anual, y los autores declaran que el año fue
+**atípico**, con una inundación que impidió el crecimiento de las macrófitas
+acuáticas grandes.
+
+Pero deja dos cosas que ninguna cifra anual puede llevar:
+
+1. **Cerca del 70 % de la producción anual ocurre durante la inundación**, no
+   durante las lluvias (Penha et al. 1999, citado ahí), porque son las macrófitas
+   acuáticas grandes las que encuentran entonces sus mejores condiciones. En el
+   bioma 9 el calendario del forraje lo marca el pulso del agua y no el del
+   cielo: una función de la lluvia anual no se equivoca en el nivel, se equivoca
+   en el mes.
+2. **La inversión del stock, por tercera vez y en un bioma nuevo:** *«the
+   greatest total biomass values were for the protected pasture due to
+   accumulated dead biomass»*. El potrero sin ganado tiene más pasto parado
+   porque acumula material muerto. El mismo trabajo señala que por eso el ganado
+   cumple una función de manejo: evita el exceso de biomasa muerta que sube el
+   riesgo de incendio.
+
+### Lo que NO se hizo, a propósito
+
+- **No se montó una cifra con un rango de 7,6×.** Sería honesta y sería inútil:
+  con ese ancho no se dimensiona un rodeo. Lo correcto es que el bioma siga
+  declarado vacío y que el módulo explique por qué.
+- **No se derivó un anual de las tasas diarias del Pantanal.** 5,1 g/m²/día es el
+  pico, no la media, y el año fue atípico por declaración de sus autores.
+- **No se montó Towoomba** (Sudáfrica, −24,90 / 28,35, bioma 7 verificado, 198
+  g/m²/año en la compilación), que encontré leyendo la misma tabla y que es el
+  punto más informativo del bioma: está a 60 km de Nylsvley, en la **misma
+  ecorregión**, con 6 mm de diferencia de lluvia anual, y la compilación le da
+  **2,6 veces** su producción. Tiene ficha propia en el ORNL (1949-1990) que no
+  alcancé a leer. Es el reintento más valioso y va primero en el encargo nuevo.
+- **No se montaron dos filas que llenarían otros dos biomas.** Vindhyan (India,
+  bioma 2 verificado, 538 g/m²/año con 298 mm) y Montecillo (México, bioma 13
+  verificado, 1.063 g/m²/año con 590 mm) salen de la misma tabla con control de
+  calidad y tienen coordenada publicada. No entran todavía porque la compilación
+  da un valor por sitio **sin decir de qué tratamiento** —y advierte que muchos
+  sitios tenían parcelas fertilizadas o irrigadas—, y porque las dos cifras son
+  llamativamente altas para su lluvia. Van como pistas verificadas al encargo.

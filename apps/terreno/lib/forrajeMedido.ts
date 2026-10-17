@@ -115,6 +115,86 @@
  * medición guardada en el bioma que el paisaje parece —en vez de en el que el
  * mapa dice— no se usa nunca, o se usa en el lugar equivocado.
  *
+ * ## La sabana no está sin medir: está medida y no se ponen de acuerdo
+ *
+ * Esto salió del lote 05 y cambia el plan, así que va antes de lo demás.
+ *
+ * La hipótesis con la que se venía trabajando era que el bioma 7 estaba vacío
+ * por falta de mediciones. Es falso. Hay dos sitios de savana entre los mejor
+ * documentados del planeta —Nylsvley en Sudáfrica y el Parque Nacional de
+ * Nairobi— con series de monitoreo mensual de años, publicadas y abiertas en la
+ * base de productividad primaria del ORNL. El problema es otro: **para el mismo
+ * sitio hay varias cifras publicadas de producción aérea y no se parecen.**
+ *
+ * La propia ficha del ORNL de Nairobi lo tabula, para la savana sin tratar:
+ *
+ * | fuente | unidades | ANPP |
+ * |---|---|---|
+ * | Kinyamario e Imbamba (1992) | g/m²/año | 1.004 |
+ * | Scurlock y Olson (2013) | g/m²/año | 811 |
+ * | GPPDI clase A, sitio 31 | gC/m²/año ← carbono | 104 |
+ * | GPPDI clase B, sitio 62 (MI 108 / 109 / 110) | gC/m²/año | 60 / 100 / 370 |
+ * | EMDI clase B, sitio 62 | gC/m²/año | 235 |
+ *
+ * Y lo explica en una línea: *«NPP values for this site reported in other
+ * published accounts differ due to different measurement and calculation
+ * methods»*. Pasando el carbono a materia seca —que es aproximadamente el doble,
+ * y es la otra trampa de esa tabla— el rango publicado para **un solo pastizal**
+ * va de unos 1.300 a 10.040 kg MS/ha/año. **Un factor 7,6 para el mismo pasto.**
+ *
+ * En Nylsvley es igual de incómodo y más explícito. La cifra que acequia querría
+ * —*«the grazeable above-ground plant material of the grass layer (grasses +
+ * forbs) in open areas between trees»*— es de 76 g/m²/año, o sea 760 kg/ha, y de
+ * eso el pasto aporta 60. Pero la misma ficha agrega que *«the Grunow et al.
+ * (1980) smooth function calculation of ANPP **may have substantially
+ * underestimated** productivity at Nylsvley»*, da una «mejor estimación» de 482
+ * g/m²/año para el total herbáceo con raíces, y cierra con *«the three estimates
+ * do not agree because different calculation methods were used»*.
+ *
+ * Por eso **no se montó ninguna de las dos**. Poner 760 kg/ha como la
+ * producción medida de la savana —el bioma donde cae la mayoría de los predios
+ * ganaderos— con el proveedor del dato avisando que puede estar sustancialmente
+ * subestimada, es exactamente el número plausible y equivocado que este archivo
+ * existe para evitar. Y poner 10.040 es lo mismo del otro lado.
+ *
+ * La consecuencia para el plan es grande: **reemplazar la escalera por un número
+ * medido por bioma no va a funcionar en la savana**, porque la dispersión de la
+ * literatura en un solo sitio es mayor que el error que se le reprocha a la
+ * escalera. Para este bioma las salidas honestas son dos, y ninguna es una
+ * tabla: o un modelo con algoritmo nombrado, o decir que no hay dato y no
+ * imprimir un número de forraje.
+ *
+ * ## El modelo que la literatura sí propone, y que no es la lluvia sola
+ *
+ * La compilación de Scurlock y Olson (2002, *Environmental Reviews* 10) es la
+ * referencia de esa base y midió, de paso, exactamente lo que acequia necesita
+ * saber sobre su propia escalera. Sobre los 53 sitios con control de calidad y
+ * menos de 3.000 mm de lluvia encontró *«a good straight-line fit between ANPP
+ * and annual precipitation»* con **r² = 0,56** en 50 de 53. Y sobre las
+ * compilaciones grandes y menos curadas —720 registros de Osnabrück, 117 de IBP
+ * Woodlands— *«the correlation between ANPP and precipitation was poor in each
+ * case»*.
+ *
+ * Leído de frente: en el mejor de los casos, con los datos más limpios del
+ * mundo, la lluvia anual explica algo más de la mitad de la variación y deja el
+ * resto. La escalera no está rota por estar mal calibrada; está incompleta por
+ * construcción.
+ *
+ * Lo que sigue de ahí es el camino concreto. El modelo clásico con el que esa
+ * compilación se compara es el **«Miami Model» de Lieth (1975)**, y su forma es
+ * el dato importante: **NPP es el MÍNIMO de una función de la lluvia y una
+ * función de la temperatura**, con el supuesto de que uno de los dos factores
+ * siempre limita. Contra ese modelo el ajuste mejora (r² = 0,30 contra 0,24 de
+ * la lluvia sola, en los 30 sitios con NPP total), y en los sitios boscosos el
+ * modelo predice que **la temperatura es la limitante en 41 de 48**.
+ *
+ * Que es, palabra por palabra, el diagnóstico que este archivo ya había escrito
+ * mirando Dakota contra Puno: con menos lluvia y más calor, Dakota produce más.
+ * La diferencia es que ahora hay una fuente publicada que lo dice y una forma
+ * funcional para escribirlo — y acequia ya tiene la temperatura del predio, de
+ * POWER y de Daymet. **Ese es el reemplazo de `prodForrajera`, y no una tabla
+ * por bioma.**
+ *
  * ## Qué NO hace este archivo todavía
  *
  * No se enchufa al cálculo. `prodForrajera(precip_mm)` recibe la lluvia y nada
@@ -125,8 +205,9 @@
  * cambiar un número sin fuente por otro número sin cobertura.
  *
  * La sabana (bioma 7) y el pastizal inundable (bioma 9) siguen en cero después
- * de un lote dedicado a los dos, y el motivo fue el mismo en las tres entradas
- * que no entraron: **miden lo que está parado, no lo que creció**. Serengeti
+ * de DOS lotes dedicados a los dos —el 04 y el 05—, por dos motivos distintos:
+ * el del 05 está arriba, y en el 04 el motivo fue que las tres entradas que no
+ * entraron **miden lo que está parado, no lo que creció**. Serengeti
  * publica 0,14 ± 0,10 kg/m² de biomasa herbácea en pie promediada sobre dos
  * años de lecturas mensuales con disco de pastura; Kruger publica el mayor
  * cuadrante cosechado de 50 × 50 cm, 12.006 kg/ha, que es una muestra suelta y
@@ -146,6 +227,25 @@
  * que manda es la fase hidrológica, y ahí el régimen regional —30 a 40 cm de
  * agua, 3 a 4 meses, 30 % de la superficie— ni siquiera describe el predio: en
  * plena creciente, el 73 % de la hacienda medida estaba seca.
+ *
+ * El lote 05 le puso número a eso, con un trabajo del Pantanal norte que midió
+ * productividad neta mes por mes durante un año (Pozer y Nogueira, 2004). Dos
+ * cosas que ninguna cifra anual puede llevar. Una: **cerca del 70 % de la
+ * producción anual ocurre durante la inundación**, no durante las lluvias,
+ * porque son las macrófitas acuáticas grandes las que encuentran entonces sus
+ * mejores condiciones. En este bioma el calendario del forraje lo marca el pulso
+ * del agua y no el del cielo, así que una función de la lluvia anual no se
+ * equivoca en el nivel: se equivoca en el mes. Dos: ese trabajo tampoco se montó
+ * porque publica tasas diarias —3,8 y 5,1 g MS/m²/día en los picos— y no un
+ * total anual, y porque sus autores declaran que **el año medido fue atípico** y
+ * que justamente las macrófitas que aportan ese 70 % no crecieron.
+ *
+ * Y de paso confirma la inversión del stock por tercera vez y en un bioma nuevo:
+ * *«the greatest total biomass values were for the protected pasture due to
+ * accumulated dead biomass»*. El potrero sin ganado tiene más pasto parado
+ * porque acumula material muerto; el mismo trabajo señala que por eso el ganado
+ * cumple una función de manejo, evitando el exceso de biomasa muerta que sube el
+ * riesgo de incendio.
  *
  * Mientras tanto esto sirve para lo que sí se puede hacer hoy: contrastar, y
  * tener escrito con qué.

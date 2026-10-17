@@ -125,6 +125,11 @@ clásicos que la midieron a propósito:
   medición de producción primaria de la capa herbácea a lo largo de años y con
   régimen de fuego controlado. Publicado por ORSTOM/IRD y en la serie
   *Ecosystems of the World*. Es probablemente la savana mejor medida del mundo.
+  **Corrección del 16/10/2026: Lamto NO es bioma 7.** Verifiqué su coordenada
+  publicada (6,22 N / 5,03 O) y da `ECO_ID` 11, Eastern Guinean forests, **bioma
+  1**. Lo mismo Olokemeji, en Nigeria: bioma 1. Son mosaicos bosque-savana y para
+  acequia valen como bosque tropical húmedo, porque es lo que RESOLVE devuelve
+  ahí. Siguen siendo buenas fuentes, pero para otro bioma.
 - **Nylsvley, Sudáfrica.** El otro sitio del IBP, savana de *Burkea africana*,
   con PPNA herbácea medida y separada por estrato (Scholes y Walker).
 - **Land types del Territorio del Norte y de Queensland, Australia.** Los

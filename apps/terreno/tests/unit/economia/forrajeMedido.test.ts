@@ -217,14 +217,26 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // Serengeti y Kruger, las dos con el bioma 7 bien verificado y las dos de
     // biomasa EN PIE: un promedio de lecturas mensuales con disco de pastura y
     // el mayor cuadrante cosechado de 50 × 50 cm de un trabajo de método.
+    //
+    // Y el lote 05 cerró el tema por un motivo mejor: la savana NO está sin
+    // medir. Nylsvley y el Parque Nacional de Nairobi tienen series mensuales
+    // de años en la base del ORNL, y para el MISMO sitio hay varias cifras
+    // publicadas de producción aérea que difieren por un factor 7,6 según el
+    // algoritmo. La ficha de Nylsvley avisa que su propio 76 g/m²/año «may have
+    // substantially underestimated productivity». Montar cualquiera de las dos
+    // sería imprimir un número plausible y equivocado en el bioma donde cae la
+    // mayoría de los predios ganaderos. El módulo lo explica entero.
     expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(0);
     // El pastizal inundable: el lote 03 trajo un valor MODELADO del delta del
     // Tana que incluye raíces y material muerto, con el texto detrás de un
     // muro y sin la cifra en el resumen público. El lote 04 trajo el Pantanal
     // de la Nhecolândia, que es bioma 9 de verdad y está abierto, pero publica
     // disponibilidad por fecha —523 kg/ha en febrero de 2010, 1.698 en
-    // noviembre de 2008— y no una producción. Cuando entre una medición de
-    // cualquiera de los dos, este test cambia.
+    // noviembre de 2008— y no una producción. El lote 05 trajo el Pantanal
+    // norte, que SÍ mide productividad neta mes por mes, pero publica tasas
+    // diarias y no un total anual, y sus autores declaran que el año medido fue
+    // atípico. Cuando entre una medición de cualquiera de los dos, este test
+    // cambia.
     expect(medicionesDeBioma('resolve_pastizal_inundable')).toHaveLength(0);
   });
 });
