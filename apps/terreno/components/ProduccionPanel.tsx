@@ -103,6 +103,7 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
       ? calcularReceptividad(areaHa || areaCult, datosClima.precip_anual_mm, perfil, undefined, {
           ha_pastoreables: superficie.ha_pastoreables,
           factor_distribucion: superficie.factor,
+          temp_media_c: datosClima.tmean_anual_c,
         })
       : null,
     [datosClima, areaHa, areaCult, perfil, superficie],
@@ -265,6 +266,34 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
             eso el número de arriba es una referencia y no un permiso.
           </p>
 
+          {/* El contraste climático, desde el 17/10/2026.
+              La producción forrajera sale de una escalera por lluvia que no mira
+              la temperatura, y ese es su punto ciego: con 900 mm dice 7.000
+              kg/ha tanto a 20 °C como a −10. El Miami Model pone al lado toda la
+              materia seca que ese clima produce y nombra la limitante. Es un
+              test de una sola dirección —puede desmentir, no confirmar—, así que
+              cuando el número entra, el aviso lo dice con esas palabras y no se
+              presenta como un visto bueno. Ver `lib/miamiModel.ts`. */}
+          {ganaderia.contraste && (
+            <div className={`text-[9px] leading-relaxed rounded-lg px-2.5 py-1.5 ${
+              ganaderia.contraste.veredicto === 'imposible' ? 'bg-clay-100 text-clay-800'
+              : ganaderia.contraste.veredicto === 'alto'    ? 'bg-sun-200 text-clay-800'
+              :                                               'bg-bone-100 text-ink-700/55'}`}>
+              <b>
+                {ganaderia.contraste.veredicto === 'imposible' ? 'El clima desmiente esta cifra. '
+                 : ganaderia.contraste.veredicto === 'alto'    ? 'Esta cifra queda arriba de lo que el clima explica. '
+                 :                                               'Contraste con el clima: '}
+              </b>
+              {ganaderia.contraste.frase}{' '}
+              <span className="opacity-70">
+                Miami Model (Lieth, 1975) sobre {datosClima.precip_anual_mm} mm y{' '}
+                {datosClima.tmean_anual_c.toLocaleString('es-AR', { maximumFractionDigits: 1 })} °C
+                de medias anuales. Es NPP total del ecosistema, no forraje: en un bosque la capa
+                herbácea medida es del 0,4 % al 10 % de ese número.
+              </span>
+            </div>
+          )}
+
           {/* El rodeo es uno solo para toda la app: acá se declara y Represa lo usa.
               Se carga por lotes porque un campo no se carga con «bovinos adultos»:
               se carga con 40 vacas con cría, 12 vaquillonas y 2 toros, y cada
@@ -343,7 +372,7 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
       {/* ── Al balance de agua ──
           Jonatan propuso repetir acá la herramienta entera. No se duplica la
           pestaña y el motivo es estructural: `GRUPO_DE_TAB` mapea cada tab a UN
-          grupo del riel, así que la misma tab en dos peldaños dejaría el
+          grupo del riel, así que la misma tab en dos peldaños dejaría el
           acordeón marcando el grupo equivocado al abrirla desde Agua. Lo que sí
           corresponde es el puntero: el rodeo se carga acá y el agua que pide se
           cruza allá, sin volver a escribirla. Es el mismo idioma que usa Clima

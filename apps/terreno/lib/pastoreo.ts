@@ -38,7 +38,7 @@ import {
   topeRebrote, TOPE_CONDUCTA_D, RANGO_CHO_D, RELACION_MAX, AGUA_INTENSIVA_M,
   type Grilla,
 } from './manejos';
-import { consumoEV_kgMS_dia, EM_FORRAJE } from './produccion';
+import { consumoEV_kgMS_dia, EM_FORRAJE, prodForrajera } from './produccion';
 
 export interface ParamsPastoreo {
   area_ha:            number;
@@ -103,8 +103,10 @@ export interface ResultadoPastoreo {
  *
  * Es una escalera de cinco escalones por lluvia anual y **multiplica todo lo que
  * viene después**: la oferta, el balance, la carga, el rodeo y el agua de la
- * represa. Es una copia de `prodForrajera` de `produccion.ts` y hay una tercera
- * copia en el `forraje_sugerido` de `cobertura.ts`.
+ * represa. Ya no es una copia: desde el 17/10/2026 esta función delega en
+ * `prodForrajera` de `produccion.ts`, que es la única. La otra ruta que calcula
+ * forraje —el `forraje_sugerido` de `cobertura.ts`— no es esta escalera sino
+ * kg/ha ponderados por clase de cobertura, y sigue siendo otra cosa.
  *
  * Mientras siga así, el balance forrajero de este módulo tiene la precisión de
  * esta escalera y no más, por bien calculado que esté el resto. Reponerlo es un
@@ -149,12 +151,15 @@ export interface ResultadoPastoreo {
  * pastoriles del encargo, que es donde esta la literatura; el detalle esta en
  * `_research/_encargos/RESPUESTAS_FORRAJE.md`.
  */
+/*
+ * Desde el 17/10/2026 ya no es una copia: delega en `prodForrajera` de
+ * `produccion.ts`, que es la unica escalera del repositorio. El comentario de
+ * arriba se conserva porque lo que describe —el factor 8,8 contra la ruta de
+ * Cobertura, y la medicion de Nepal que cae del lado de los 800— sigue siendo
+ * cierto y es de este modulo.
+ */
 export function forrajePorLluvia(precip_mm: number): number {
-  if (precip_mm < 300) return 700;
-  if (precip_mm < 500) return 1500;
-  if (precip_mm < 700) return 3000;
-  if (precip_mm < 900) return 5000;
-  return 7000;
+  return prodForrajera(precip_mm);
 }
 
 export function calcularPastoreo(p: ParamsPastoreo): ResultadoPastoreo | null {

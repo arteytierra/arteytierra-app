@@ -9,6 +9,7 @@ import type { MesDato } from './clima';
 import { MESES } from './clima';
 import { CULTIVOS_KC, type CultivoKc } from './calendario';
 import { bandaUso } from './modulacion';
+import { contrastarForraje, type ContrasteForraje } from './miamiModel';
 
 export { CULTIVOS_KC, type CultivoKc };
 
@@ -208,11 +209,23 @@ export interface PerfilRodeo {
  * bien, porque faltan el frío, el largo de la estación de crecimiento y la
  * profundidad del suelo.
  *
- * Para reemplazarla hace falta pasarle el bioma —acá y en las dos copias, la de
- * `pastoreo.ts` y la del panel de Cobertura— y tener medido el bioma donde más
- * se pastorea, la sabana tropical, que todavía no tiene ninguna.
+ * **Ya no hay tres copias: hay una, y es esta.** `forrajePorLluvia` de
+ * `pastoreo.ts` delega acá desde el 17/10/2026. Lo que había en el panel de
+ * Cobertura nunca fue esta escalera sino otra cosa —kg/ha ponderados por clase
+ * de cobertura— y sigue en `cobertura.ts`, que es donde corresponde.
+ *
+ * ## Lo que sí cambió: ahora el clima puede desmentirla
+ *
+ * El reemplazo por una tabla medida por bioma no es posible —la dispersión de la
+ * literatura en un solo sitio de sabana llega a 7,6×, ver `forrajeMedido.ts`— y
+ * el Miami Model tampoco la reemplaza, porque devuelve NPP total y no forraje.
+ * Pero sirve para una cosa que la escalera no puede hacer sola: **decir cuándo
+ * el número es imposible.** Si `calcularReceptividad` recibe la temperatura
+ * media anual, el resultado trae un `contraste` de `miamiModel.ts` que compara
+ * esta cifra contra toda la materia seca que ese clima produce, y nombra la
+ * limitante. Con 900 mm la escalera dice 7.000 sin mirar si hace 20 °C o −10.
  */
-function prodForrajera(precip_mm: number): number {
+export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;
   if (precip_mm < 500) return 1500;
   if (precip_mm < 700) return 3000;
@@ -238,6 +251,12 @@ export interface AjustesPaisaje {
   factor_distribucion?: number;
   /** El pastizal es de especies anuales: admite más uso que un perenne. */
   deAnuales?: boolean;
+  /**
+   * Temperatura media anual del predio, °C. No entra en la cuenta de la
+   * receptividad: habilita el contraste climático del resultado. Si no viene,
+   * `contraste` sale `null` y la pantalla no puede avisar nada.
+   */
+  temp_media_c?: number;
 }
 
 export interface ResultadoReceptividad {
@@ -269,6 +288,13 @@ export interface ResultadoReceptividad {
   factor_distribucion: number;
   /** `false` cuando se calculó sobre la superficie bruta y sin ajuste. */
   ajustada:         boolean;
+  /**
+   * El contraste de la cifra de forraje contra el clima, por el Miami Model.
+   * `null` cuando no se pasó la temperatura media anual, o cuando el clima cae
+   * fuera del dominio del modelo. Es un test de una sola dirección: puede decir
+   * que el número es imposible, no que sea correcto.
+   */
+  contraste:        ContrasteForraje | null;
 }
 
 /**
@@ -355,6 +381,12 @@ export function calcularReceptividad(
     ha_usadas: Math.round(ha_usadas * 100) / 100,
     factor_distribucion: fDist,
     ajustada: paisaje !== undefined && (paisaje.ha_pastoreables !== undefined || paisaje.factor_distribucion !== undefined),
+    // El contraste no corrige la cifra: la pone al lado de lo que el clima puede
+    // producir. Sale `null` sin temperatura, que es lo que pasa cuando el clima
+    // del predio todavia no llego.
+    contraste: paisaje?.temp_media_c !== undefined
+      ? contrastarForraje(ef_kg_ha, precip_anual_mm, paisaje.temp_media_c)
+      : null,
   };
 }
 
