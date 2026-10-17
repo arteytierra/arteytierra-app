@@ -24,6 +24,19 @@ import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
 const escalera = (lluvia_mm: number) =>
   calcularReceptividad(1, lluvia_mm, { ev_por_cabeza: 1, agua_l_dia: 50 }).ef_kg_ha;
 
+/**
+ * Buscar por sitio y no por índice.
+ *
+ * `medicionesDeBioma(x)[0]` funcionaba mientras cada bioma tenía una sola
+ * medición. El pastizal templado ya tiene tres, así que un lote nuevo podía
+ * cambiar en silencio de cuál habla un test que creía hablar de Dakota.
+ */
+const sitio = (parte: string) => {
+  const m = FORRAJE_MEDIDO.find(x => x.sitio.includes(parte));
+  if (!m) throw new Error(`no hay medición cuyo sitio diga «${parte}»`);
+  return m;
+};
+
 describe('las conversiones de unidad', () => {
   it('lb/acre es la exacta, no la redondeada', () => {
     // 0,45359237 kg / 0,40468564224 ha. El 1,12 de memoria se equivoca en 8 kg
@@ -192,20 +205,103 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // 410-1.119, y 2.643-3.063 contra 626-1.958. Una función de una sola
     // variable no puede dar las dos cosas bien, se la calibre como se la
     // calibre. Lo que falta es el frío, el largo de la estación y el suelo.
-    const dakota = medicionesDeBioma('resolve_pastizal_templado')[0]!;
-    const puna = medicionesDeBioma('resolve_montano')[0]!;
+    const dakota = sitio('MLRA 53B');
+    const puna = sitio('Puno');
     expect(dakota.lluvia_mm_max!).toBeLessThan(puna.lluvia_mm_max!);
     expect(dakota.kg_ms_ha_anio_min).toBeGreaterThan(puna.kg_ms_ha_anio_max);
   });
 
   it('los biomas donde más pastorea gente siguen sin medición', () => {
     // La sabana tropical: el lote 02 trajo una de la Caatinga, que es
-    // BIOME_NUM 2 y no 7, y además su URL pide login.
+    // BIOME_NUM 2 y no 7, y además su URL pide login. El lote 04 trajo dos más,
+    // Serengeti y Kruger, las dos con el bioma 7 bien verificado y las dos de
+    // biomasa EN PIE: un promedio de lecturas mensuales con disco de pastura y
+    // el mayor cuadrante cosechado de 50 × 50 cm de un trabajo de método.
     expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(0);
     // El pastizal inundable: el lote 03 trajo un valor MODELADO del delta del
     // Tana que incluye raíces y material muerto, con el texto detrás de un
-    // muro y sin la cifra en el resumen público. Cuando entre una medición de
+    // muro y sin la cifra en el resumen público. El lote 04 trajo el Pantanal
+    // de la Nhecolândia, que es bioma 9 de verdad y está abierto, pero publica
+    // disponibilidad por fecha —523 kg/ha en febrero de 2010, 1.698 en
+    // noviembre de 2008— y no una producción. Cuando entre una medición de
     // cualquiera de los dos, este test cambia.
     expect(medicionesDeBioma('resolve_pastizal_inundable')).toHaveLength(0);
+  });
+});
+
+/**
+ * El Delta del Paraná, que es la entrada que más le discute a la escalera.
+ *
+ * No por el tamaño del error: por el hecho de que **la misma cosecha admite dos
+ * lecturas legítimas y la escalera acierta con una y falla con la otra**, sin
+ * que nada diga cuál es. Eso no se arregla calibrando.
+ */
+describe('el Delta del Paraná: la misma cosecha, dos cifras', () => {
+  const delta = () => sitio('Baradero');
+
+  it('monta como MS forrajera, que no es la MS herbácea total', () => {
+    const d = delta();
+    expect(d.tipo).toBe('ms_forrajera');
+    // Y aun así entra, porque no trae descontado el uso admisible: lo que la
+    // excluye de `oferta_aprovechable` es que nadie le aplicó un porcentaje.
+    expect(TIPOS_SIN_DESCONTAR).toContain(d.tipo);
+    // «producciones forrajeras desde los 8200 kg MS*ha-1» en la conclusión;
+    // 6.700 es la cosecha de verano del tratamiento sin cortes y 8.250 la
+    // acumulada del de cortes bimestrales.
+    expect(d.kg_ms_ha_anio_min).toBe(6700);
+    expect(d.kg_ms_ha_anio_max).toBe(8250);
+    // La tesis publica una sola media anual, así que el rango de lluvia no se
+    // ensancha de prepo: 1.055,6 mm redondeado.
+    expect(d.lluvia_mm_min).toBe(1056);
+    expect(d.lluvia_mm_max).toBe(1056);
+  });
+
+  it('la total es de 1,36 a 1,70 veces la forrajera en el mismo muestreo', () => {
+    // 11.200 a 11.400 kg/ha de MS total contra 6.700 a 8.250 de forrajera. El
+    // resto son las no forrajeras —el abrojo grande, sobre todo— y la MS
+    // muerta. Si alguien toma la total por forraje, sobreestima hasta un 70 %.
+    const TOTAL_MIN = 11200, TOTAL_MAX = 11400;
+    const d = delta();
+    expect(TOTAL_MIN / d.kg_ms_ha_anio_max).toBeCloseTo(1.36, 2);
+    expect(TOTAL_MAX / d.kg_ms_ha_anio_min).toBeCloseTo(1.70, 2);
+    // Y el texto de la entrada tiene que decir la total, porque es el número
+    // con el que alguien se va a cruzar al abrir la tesis.
+    expect(d.que_cuenta).toMatch(/11\.200 a 11\.400/);
+  });
+
+  it('la escalera acierta contra la forrajera y se queda 1,6× corta contra la total', () => {
+    const d = delta();
+    const e = escalera(d.lluvia_mm_min!);
+    expect(e).toBe(7000);                      // el escalón de ≥ 900 mm
+    // Contra la fracción forrajera cae adentro del rango medido: es la primera
+    // vez que la escalera no se pasa ni se queda corta.
+    expect(e).toBeGreaterThanOrEqual(d.kg_ms_ha_anio_min);
+    expect(e).toBeLessThanOrEqual(d.kg_ms_ha_anio_max);
+    // Contra la herbácea total, el mismo 7.000 se queda corto 1,6 veces.
+    expect(11200 / e).toBeGreaterThan(1.5);
+  });
+
+  it('dentro de un mismo bioma la escalera tendría que dar dos números distintos', () => {
+    // Dakota y el Delta son los dos `resolve_pastizal_templado`. Con 2,8 veces
+    // la lluvia, el Delta produce de 2,2 a 3,1 veces más. La escalera, que sólo
+    // mira la lluvia, acá va bien; el problema es que en Texas y en el
+    // altiplano la misma pendiente la hace fallar 2 a 11 veces. Un número por
+    // bioma tampoco alcanza: el bioma 8 ya tiene dos sitios que no se parecen.
+    const dakota = sitio('MLRA 53B'), d = delta();
+    expect(medicionesDeBioma('resolve_pastizal_templado').length).toBeGreaterThanOrEqual(3);
+    expect(d.lluvia_mm_min! / dakota.lluvia_mm_max!).toBeGreaterThan(2);
+    expect(d.kg_ms_ha_anio_min / dakota.kg_ms_ha_anio_max).toBeGreaterThan(2);
+  });
+
+  it('es una cifra de primavera a otoño, y lo dice donde deja de valer', () => {
+    // Doce meses no son: el invierno queda afuera y al final del de 2013 el
+    // albardón estuvo 40 días bajo agua. Si esto se usa como anual, se usa de
+    // más, y la advertencia tiene que estar en el campo que se lee.
+    const d = delta();
+    expect(d.donde_deja_de_valer).toMatch(/primavera a otoño/);
+    expect(d.donde_deja_de_valer).toMatch(/40 días/);
+    // Y la limitación que nadie puede recalcular: el área del aro no está en
+    // la tesis, así que la conversión a kg/ha se toma como viene.
+    expect(d.metodo).toMatch(/área del aro/);
   });
 });

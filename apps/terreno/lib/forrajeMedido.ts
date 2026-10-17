@@ -30,6 +30,7 @@
  * | Altiplano de Puno, 3.900 m | 410–1.119 mm | 1.500–7.000 | 626–1.958 | alta hasta 11× |
  * | Lesbos, fryganas | 354–797 mm | 1.500–5.000 | 300–5.800 | el rango medido es más ancho que la escalera entera |
  * | Tundra de Alaska y Yukón | no publicada | — | 350–960 | fuera de todo escalón |
+ * | Delta del Paraná, albardón | 1.056 mm | 7.000 | 6.700–8.250 forrajera, 11.200–11.400 total | acierta o se queda 1,6× corta, según cuál se compare |
  *
  * En el norte de las Grandes Llanuras, con 381–508 mm, se miden casi 3.000
  * kg/ha/año; en el altiplano peruano, con MÁS lluvia, se miden 626. La
@@ -66,14 +67,85 @@
  * biomasa— está midiendo el stock y no el flujo. En tundra el error es de dos
  * órdenes de magnitud.
  *
+ * Y el Delta del Paraná la midió de una tercera forma, la más incómoda, porque
+ * ahí el stock no sólo no es el flujo: **lo contradice**. En el mismo potrero y
+ * el mismo verano, la parcela clausurada sin cortar llegó a 10.533 kg/ha de
+ * materia seca viva parada contra 2.237 de la parcela cortada cada dos meses,
+ * una diferencia de 8.296 kg a favor de la que nadie tocó. Pero lo cosechado en
+ * forraje fue 6.733 kg en una sola cosecha de la clausurada contra **7.417
+ * acumulados** en la cortada, y hacia el final del ciclo 6.700 contra 8.250. El
+ * pastizal con la pila más grande entregó menos.
+ *
+ * El trabajo explica por qué y el mecanismo importa: al dejar crecer el canopeo
+ * sin interrupción, las propias forrajeras se dan sombra, la tasa de crecimiento
+ * neto se vuelve **negativa** en otoño —muere más material del que se genera— y
+ * la biomasa que se ve parada es en buena parte material viejo en camino a
+ * muerto. Con cortes bimestrales la tasa se mantuvo arriba de 40 kg/ha/día casi
+ * cuatro meses, el doble de tiempo. La tesis aclara que la diferencia de 23 % no
+ * dio significativa con tres clausuras de 4 × 4 m y un año de datos, así que es
+ * una comparación empírica; pero el signo es el de siempre, y es el contrario
+ * del que sugiere mirar el pasto.
+ *
+ * ## El bioma verificado puede estar verificado y estar mal
+ *
+ * El lote 04 fue el primero que vino con el campo `bioma_verificado` que pedía
+ * el encargo, justamente porque las dos entradas rechazadas antes tenían el
+ * bioma equivocado. Vino completo, con coordenada, `ECO_ID` y `BIOME_NUM`. Y
+ * una de las cuatro seguía estando mal, por un motivo nuevo: **la coordenada
+ * verificada no era la del sitio medido**, sino un punto de referencia regional
+ * elegido para representarlo, y la entrega lo declaraba sin alarma.
+ *
+ * La tesis del Delta publica su sitio exacto —33° 49′ S, 59° 27′ O— y el punto
+ * consultado estaba unos 65 km al este. Sobre el punto regional, RESOLVE
+ * devuelve `ECO_ID` 585, Paraná flooded savanna, `BIOME_NUM` 9. Sobre el punto
+ * de la tesis, y sobre otros cinco a su alrededor, devuelve `ECO_ID` 576,
+ * **Pampa Húmeda, `BIOME_NUM` 8**. Lo mismo, más chico, en Kruger: el ancla da
+ * mopane (`ECO_ID` 65) y el sitio publicado da Limpopo lowveld (48), aunque ahí
+ * los dos caen en el bioma 7 y la entrada no cambiaba de lugar.
+ *
+ * De ahí sale la regla que vale para cualquier medición que entre acá: **el
+ * bioma se consulta sobre la coordenada que la fuente publica, no sobre una que
+ * la represente.** El polígono es lo que decide, y a esa escala un ancla
+ * regional puede estar en otro bioma sin dejar de parecer el mismo paisaje.
+ *
+ * La consecuencia práctica es la que manda en el archivo: la isla de Baradero
+ * es físicamente un pastizal de albardón que se inunda, y aun así la medición
+ * queda archivada en el pastizal templado. Porque cuando alguien marque ese
+ * predio en acequia, la app va a resolver `resolve_pastizal_templado`, y una
+ * medición guardada en el bioma que el paisaje parece —en vez de en el que el
+ * mapa dice— no se usa nunca, o se usa en el lugar equivocado.
+ *
  * ## Qué NO hace este archivo todavía
  *
  * No se enchufa al cálculo. `prodForrajera(precip_mm)` recibe la lluvia y nada
  * más —no sabe en qué bioma está el predio— así que usarlo pide cambiarle la
  * firma a las tres copias. Y falta el bioma que más importa: **la sabana
  * tropical, que es donde cae la mayoría de los predios ganaderos, no tiene
- * ninguna medición acá**. Reemplazar la escalera global con cinco puntos sería
+ * ninguna medición acá**. Reemplazar la escalera global con seis puntos sería
  * cambiar un número sin fuente por otro número sin cobertura.
+ *
+ * La sabana (bioma 7) y el pastizal inundable (bioma 9) siguen en cero después
+ * de un lote dedicado a los dos, y el motivo fue el mismo en las tres entradas
+ * que no entraron: **miden lo que está parado, no lo que creció**. Serengeti
+ * publica 0,14 ± 0,10 kg/m² de biomasa herbácea en pie promediada sobre dos
+ * años de lecturas mensuales con disco de pastura; Kruger publica el mayor
+ * cuadrante cosechado de 50 × 50 cm, 12.006 kg/ha, que es una muestra suelta y
+ * no una cifra de sitio en un trabajo cuyo tema es comparar LiDAR contra campo;
+ * y el Pantanal de la Nhecolândia publica disponibilidad por fecha, 523 kg/ha en
+ * febrero de 2010 y 1.698 en noviembre de 2008. Ninguna de las tres se puede
+ * convertir a producción anual sin una serie de tasas de crecimiento que ninguno
+ * de los tres trabajos midió.
+ *
+ * Lo del Pantanal igual conviene tenerlo escrito, porque es la única medición
+ * que existe hoy del bioma 9 y porque su propio documento la compara con otras
+ * dos del mismo Pantanal, y con la misma especie dominante: unos 3.000 kg/ha en
+ * campos húmedos de la Nhecolândia y 5.971 en un ambiente de baixada de Barão
+ * de Melgaço. Entre 523 y 5.971 hay un **factor 11 dentro de un solo bioma**, y
+ * en dos de los tres casos dentro de una sola subregión. Es la razón de fondo
+ * por la que un número por bioma no va a alcanzar en el pastizal inundable: lo
+ * que manda es la fase hidrológica, y ahí el régimen regional —30 a 40 cm de
+ * agua, 3 a 4 meses, 30 % de la superficie— ni siquiera describe el predio: en
+ * plena creciente, el 73 % de la hacienda medida estaba seca.
  *
  * Mientras tanto esto sirve para lo que sí se puede hacer hoy: contrastar, y
  * tener escrito con qué.
@@ -113,6 +185,21 @@ export function gM2AKgHa(g_m2: number): number {
 /**
  * Qué clase de cifra es, que es lo que decide si se puede usar y cómo.
  *
+ * `ms_herbacea_total` y `ms_forrajera` **no son la misma cifra y la diferencia
+ * no es un detalle**: la primera cuenta todo lo herbáceo y la segunda sólo las
+ * especies que el animal come. En el Delta del Paraná, el único sitio donde las
+ * dos están medidas en la misma cosecha, la total es de 1,36 a 1,70 veces la
+ * forrajera —11.200 a 11.400 kg/ha contra 6.700 a 8.250—, porque el abrojo
+ * grande y las demás no forrajeras se llevan una parte grande del pastizal
+ * degradado. Pasar una total a un cálculo de carga animal como si fuera forraje
+ * sobreestima hasta un 70 %.
+ *
+ * Y es exactamente el error que la escalera de `prodForrajera` deja pasar sin
+ * que se note, porque **nunca dijo cuál de las dos es**. Con la lluvia de ese
+ * sitio la escalera da 7.000: cae adentro del rango forrajero y se queda 1,6
+ * veces corta contra el total. El mismo sitio, el mismo año, la misma cosecha,
+ * y el veredicto se da vuelta según qué se esté comparando.
+ *
  * Entre la primera y la última hay un factor de varias veces, no un porcentaje.
  * `oferta_aprovechable` ya trae descontada la fracción que el animal no come;
  * `ms_herbacea_total` y `npp_herbacea` no descuentan nada. **El uso admisible lo
@@ -123,6 +210,7 @@ export type TipoDeCifra =
   | 'oferta_aprovechable'
   | 'receptividad'
   | 'ms_herbacea_total'
+  | 'ms_forrajera'
   | 'npp_herbacea';
 
 /**
@@ -134,6 +222,7 @@ export type TipoDeCifra =
  */
 export const TIPOS_SIN_DESCONTAR: readonly TipoDeCifra[] = [
   'ms_herbacea_total',
+  'ms_forrajera',
   'npp_herbacea',
 ] as const;
 
@@ -299,6 +388,41 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     fuente: {
       label: 'Arctic and Alpine Research 6(3) — Primary Production in Arctic Cottongrass Tussock Tundra Communities',
       url: 'https://doi.org/10.1080/00040851.1974.12003782',
+    },
+  },
+  {
+    // El sitio físico es una isla de río, con albardón, bañado y 40 días de
+    // agua encima al final del invierno. Pero va en el pastizal templado y no
+    // en el inundable, y el motivo está en la sección de arriba: el polígono de
+    // RESOLVE sobre la coordenada que la tesis publica dice Pampa Húmeda. Donde
+    // acequia va a buscar esta medición es donde acequia clasifica el predio.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Pastizal de albardón, isla de Baradero, Delta Medio del Paraná',
+    tipo: 'ms_forrajera',
+    // «En el período de primavera a otoño, descansos bimestrales o más
+    // prolongados del pastoreo permiten obtener producciones forrajeras desde
+    // los 8200 kg MS*ha-1», dice la conclusión. El rango sale del cuerpo:
+    // 6.700 kg es la cosecha de verano del tratamiento SIN cortes y 8.250 la
+    // cosecha ACUMULADA del de cortes bimestrales. Son las dos puntas de lo
+    // medido, y la de arriba es la que el manejo alcanza.
+    kg_ms_ha_anio_min: 6700,
+    kg_ms_ha_anio_max: 8250,
+    kg_ms_ha_anio_tipico: null,
+    // La tesis publica una sola media anual para el sitio —1.055,6 mm de la
+    // estación— y no un rango de totales anuales, porque midió un año. Van las
+    // dos iguales en vez de inventar un ancho. El año medido NO fue el
+    // promedio: unos 850 mm entre agosto y el 31 de diciembre de 2012, 450 en
+    // la primavera, y un invierno de 2013 con apenas 50 mm.
+    lluvia_mm_min: 1056,
+    lluvia_mm_max: 1056,
+    metodo: 'Tres clausuras de 4 × 4 m separadas unos 20 m, con boyero a 30 y 70 cm, cada una dividida en dos tratamientos: cortes bimestrales de la vegetación a 7 cm de altura y sin cortes. Afuera, pastoreo continuo con alta carga. Se muestreó por estación agronómica cortando con tijera de podar el material arraigado dentro de un aro, dejando 7 cm de remanente; secado en estufa a 65 °C hasta peso constante y pesado con precisión de ±1 g. La tasa de crecimiento se calculó por diferencia de forraje disponible entre corte y corte. El área del aro de muestreo NO está indicada en el texto de la tesis, así que la conversión a kg/ha no se puede recalcular desde acá.',
+    que_cuenta: 'Materia seca VIVA de las especies forrajeras, cosechada por encima de los 7 cm. No incluye las no forrajeras —en este pastizal degradado el abrojo grande, Xanthium cavallinesii, es el que más crece en verano—, ni la materia seca muerta, ni nada por debajo de la altura de corte, ni raíces. No descuenta uso admisible. La MS total del mismo muestreo, que sí suma las no forrajeras, da 11.200 a 11.400 kg/ha.',
+    estacionalidad: 'El pico de crecimiento va de fines de primavera a verano: las forrajeras marcan 60 a 70 kg MS/ha/día entre noviembre y enero en los dos tratamientos. Con cortes bimestrales la tasa se mantiene arriba de 40 kg/ha/día casi cuatro meses; sin cortes dura la mitad del tiempo y en otoño pasa a ser NEGATIVA, porque dentro del canopeo muere más material del que se genera. En invierno falta materia seca en el campo.',
+    donde_deja_de_valer: 'Un pastizal degradado de albardón y caída de albardón en una isla del Delta Medio, con pastoreo previo intenso. Tres clausuras de 4 × 4 m en un solo año: el propio test de Wilcoxon no encontró evidencia estadística de diferencia entre los tratamientos por la variabilidad en pocos datos, así que el 23 % a favor de los cortes está comparado de forma empírica y la tesis lo dice. La cifra es de primavera a otoño y no de los doce meses: el invierno queda afuera, y al final del de 2013 el albardón estuvo anegado unos 40 días. Tampoco vale para el interior del bañado, que se inunda distinto.',
+    medido_en: 'agosto de 2012 a septiembre de 2013',
+    fuente: {
+      label: 'Universidad Nacional de Rosario — Uso sustentable de un Pastizal Natural del delta Medio del Paraná, para la Producción Ganadera (tesis de maestría)',
+      url: 'https://rephip.unr.edu.ar/bitstreams/8ecbddb4-5c07-43f2-87a3-ac4b11df3c0a/download',
     },
   },
 ] as const;
