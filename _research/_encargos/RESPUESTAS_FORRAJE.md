@@ -14,6 +14,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 06 | biomas 7 ×3, 13, + el modelo | **montadas 1 de 4** el 17/10/2026, y el modelo entró |
 | 07 | biomas 1 ×2, 2 ×2 | **ninguna de 4** el 17/10/2026 |
 | 08 | biomas 4, 5, 6 | **montadas 3 de 4** el 17/10/2026 |
+| 09 | la fracción aérea de la NPP | **cerrado en contra** el 17/10/2026 — y destapó la segunda fracción |
 
 ---
 
@@ -917,3 +918,166 @@ statistical model is quite robust»*. Entre el 30 % y el 44 % de la variación.
   forraje de todo predio con bosque y merece su propia decisión.
 - **No se reclasificó la entrada de Nepal del lote 01** a `ms_sotobosque`. El tipo
   dice cómo se midió, no dónde, y reclasificarla pide volver a la fuente.
+
+## Lote 09 — la primera fracción quedó cerrada, y en contra
+
+El encargo de las tres fracciones pedía bajar de la NPP total al forraje por
+`NPP total × fracción aérea × fracción herbácea del piso × fracción comible`, y
+el frente 1 era la fracción aérea. Volvió con **tres rechazos y un cálculo
+derivado**, y las cuatro cosas son correctas.
+
+### Los tres rechazos están bien argumentados y hay que respetarlos
+
+| fuente propuesta | por qué no entra |
+|---|---|
+| Mokany, Raison y Prokushkin (2006), *Critical analysis of root:shoot ratios* | Es razón de **biomasa en pie**, no reparto de producción. Compiló 786 observaciones de 266 fuentes y descartó el 62 % por muestreo de raíces no verificable. Su relación publicada con lluvia y temperatura media anual es de la razón de biomasa: usarla como función climática de producción es cambiar la magnitud sin avisar. |
+| Poorter et al. (2012), *Biomass allocation to leaves, stems and roots* | El propio artículo define su objeto como *biomass allocation*. Fracciones de masa en pie y curvas de respuesta experimental; ninguna fracción ANPP/TNPP por bioma. |
+| Jackson et al. (1996), *Global analysis of root distributions* | Distribución y biomasa de raíces. No es una partición de producción anual. |
+
+Las tres son las fuentes obvias si uno busca «cuánto de la planta está arriba», y
+las tres miden **lo que está parado**. Es el mismo error que ya apareció cuatro
+veces en este encargo —Puno, el Delta, el Pantanal, los líquenes finlandeses— y
+esta vez apareció del lado de las síntesis globales, que son las que más invitan
+a usarlas como constante.
+
+### El único cálculo que trajo es el que cierra la puerta
+
+Montecillo, el sitio del bioma 13 que entró con el lote 06, es el único donde
+cuatro publicaciones distintas repartieron **la misma serie de cosechas** en sus
+dos mitades. Verifiqué las cuatro filas abriendo la ficha del ORNL:
+
+| fuente | ANPP | BNPP | TNPP | aérea/total |
+|---|---|---|---|---|
+| García-Moya y Montañez Castro (1992) | 669 | 1.007 | 1.676 | 0,399 |
+| Scurlock y Olson (2013) | 1.063 | 678 | 1.741 | **0,611** |
+| Scurlock et al. (2002), método #5 | 609 | 1.174 | 1.783 | **0,342** |
+| GPPDI Class A #67, Olson et al. (2013a) | 130 | 97 | 227 | 0,573 |
+
+Las tres primeras en g MS/m²/año, la cuarta en g C/m²/año. Las cuatro cierran por
+dentro (ANPP + BNPP = TNPP), así que no hay error de transcripción en ninguna. Y
+la entrega acertó en algo que es exactamente donde se arruinan estas cadenas: el
+cociente de la fila en carbono **sí** se puede usar, porque es carbono sobre
+carbono, aunque su magnitud no se pueda convertir.
+
+**La fracción aérea va de 0,342 a 0,611 —un factor 1,79— y cruza el 0,5 por el
+medio: dos de las cuatro dicen que abajo hay más y dos dicen que arriba.** Ni el
+signo del reparto está determinado.
+
+Puesto contra lo que la misma ficha publica año por año, el reparto de culpas
+queda claro:
+
+| qué varía | cuánto mueve |
+|---|---|
+| el año, con el mismo método (1.994 / 1.422 / 1.611 g MS/m²/año) | **1,40×** el total |
+| el algoritmo, en materia seca (1.676 / 1.741 / 1.783) | **1,06×** el total |
+| el algoritmo, sobre el reparto arriba/abajo | **1,79×** la fracción |
+
+El total es robusto. Lo frágil es dónde quedó, y eso es lo que acequia necesita.
+**Conclusión: la cadena de tres fracciones no se puede construir con fracciones
+publicadas.** La primera ya entra con un factor 1,79 y no hay ninguna síntesis
+global que la dé.
+
+De paso, dos correcciones a lo que estaba montado:
+
+- La ficha de Montecillo tiene **cuatro** filas publicadas, no tres. La cuarta no
+  entra en el rango de kg MS porque está en carbono, pero existe y ahora está
+  anotada.
+- La entrega etiquetó las cuatro filas con `tratamiento: "quemado"`, y eso es
+  media verdad. El sitio es una **clausura sin pastoreo**; el incendio de febrero
+  de 1986 fue accidental y cayó adentro de la ventana de tres años que la ficha
+  promedia. Que el fuego cada 4-5 años sea el régimen histórico del lugar —y
+  además intencional, «to improve forage quality during the dry season»— no lo
+  convierte en el tratamiento del ensayo.
+
+### Lo que el lote destapó sin buscarlo: la segunda fracción ya estaba en casa
+
+Si la primera fracción no se puede fijar, la pregunta es cuál de las tres mueve
+de verdad el número. Y la respuesta estaba en `forrajeMedido.ts` desde el lote
+02, sin que nadie la mirara como fracción: **tres sitios montados publican el
+numerador y el denominador en la misma tabla y en la misma unidad.**
+
+| sitio | capa herbácea | aéreo total del sitio | herbácea/total | dosel |
+|---|---|---|---|---|
+| Waring's Woods, Pseudotsuga | 6 | 1.540 g MS/m²/año | **0,0039** | cerrado, 4,9 % herbáceo |
+| Cascade Head 1A, aliso rojo | 41 | 1.630 g MS/m²/año | 0,0252 | 35,2 % herbáceo |
+| Very Shallow 23-31 PZ, Edwards Plateau | 1.840 | 2.000 lb/acre/año | **0,92** | pradera con leñosas dispersas |
+
+**De 0,0039 a 0,92: un factor 236.** Y no lo mueve el clima: los dos sitios de
+Oregón están a 200 km, producen casi lo mismo de rodal y su sotobosque difiere
+6,5 veces. El Edwards Plateau es el hallazgo más barato de todo el encargo: la
+ficha del NRCS publica desde el lote 02 la producción de gramíneas y hierbas
+(1.840 lb/acre) al lado del total del sitio incluyendo arbustos y árboles (2.000
+lb/acre), y ese 0,92 es una fracción herbácea publicada que estaba en el repo
+hace cinco días.
+
+Eso cambia a qué apuntar: **la fracción que decide es la segunda, y la variable
+que la mueve es cuánta luz llega al piso.** Que es, justamente, lo único de las
+tres que acequia ya mide en cada predio.
+
+## La revisión de los kg/ha por cobertura de `cobertura.ts`
+
+Pedida aparte y hecha el 17/10/2026. Los cuatro pesos que esa ruta usaba para
+ponderar forraje por clase de cobertura —**pastizal 3.500, arbustal 1.800,
+cultivo 4.500, arbolado 800** kg MS/ha·año— no tenían fuente, igual que la
+escalera de `prodForrajera`. Lo que cambió es que ahora hay diez mediciones para
+contrastarlos.
+
+### Qué dicen las mediciones de cada peso
+
+| peso | lo medido | veredicto |
+|---|---|---|
+| pastizal 3.500 | 350 a 10.630 en seis sitios (tundra 350-960, Puno 626-1.958, Edwards 825-2.578, Dakota 2.643-3.063, Montecillo 6.090-10.630, Delta 6.700-8.250) | cae adentro, y adentro de un **factor 30**. Queda por encima de cuatro de los seis sitios. |
+| arbustal 1.800 | un solo sitio: la frygana de Lesbos, 300-5.800 | cae adentro de una banda de un único sitio, con un factor 19 |
+| cultivo 4.500 | **nada** | sin una sola medición, antes y después |
+| arbolado 800 | 60 bajo conífera cerrada, 410 bajo aliso, 378-940 en robledal-carpinal (+ 1.300-1.700 en Nepal, sin montar) | cae adentro para hoja ancha y queda **13 veces alto** para conífera densa |
+
+### Dos errores de cálculo, además de los pesos
+
+Mirando la fórmula aparecieron dos cosas que no eran los coeficientes:
+
+1. **Un predio todo manglar imprimía «0 kg MS/ha·año».** El guard era `veg_pct >
+   0`, y el manglar y el musgo/liquen cuentan como vegetación; el numerador
+   quedaba en cero con el denominador protegido en 1. Cero es un número, y salía
+   en pantalla con el mismo formato que una medición.
+2. **El protector de la división escalaba el resultado.** El denominador era
+   `Math.max(1, suma_de_los_pct)`, así que cualquier predio con menos de 1 % de
+   clases pastoreables salía multiplicado por ese porcentaje: con 0,5 % de
+   pastizal devolvía la mitad del peso del pastizal.
+
+### Qué quedó
+
+Los cuatro pesos se fueron. `forrajePorCobertura` ahora devuelve una **banda**
+—mínimo y máximo— derivada de `FORRAJE_MEDIDO`: cada medición declara su
+`clase_wc`, la clase de WorldCover que un satélite vería en ese sitio, y la banda
+de una clase es el mínimo de los mínimos y el máximo de los máximos de sus
+sitios. Hay un test que la vuelve a derivar por otro camino, así que las dos no
+pueden separarse.
+
+La salida dice además **sobre qué parte del predio se calculó** y qué clases
+quedaron afuera por no tener medición, que es el cultivo. Y no se guarda con el
+resto del análisis: se calcula al mostrarlo, así que un proyecto guardado antes
+de hoy también recibe la banda en vez del número que tiene adentro.
+
+Un detalle del campo nuevo que vale por sí solo: **Waring's Woods es bioma 8 y
+clase 10 a la vez** —pradera templada por RESOLVE, dosel cerrado de conífera por
+WorldCover—, y esa discordancia no es ruido del dato, es el dato. El bioma dice
+qué clima hay; la clase dice qué hay encima; y lo que decide el forraje es lo
+segundo.
+
+### Lo que NO se hizo, a propósito
+
+- **No se montó Nepal** (1.300-1.700 kg MS/ha/año de NPP herbácea en bosque
+  húmedo tropical, Gautam & Mandal 2016), que está citado en dos archivos desde
+  el lote 01. Le falta la coordenada publicada, y sin eso no entra: es la regla D
+  del encargo anterior. Consecuencia declarada: **el techo de la banda del
+  arbolado, 940, está sesgado bajo.**
+- **No se estrechó la banda con la lluvia.** Se podría cruzar con el clima del
+  predio para descartar los sitios de lluvia muy distinta, y sería otro cálculo
+  sin fuente encima de uno que sí la tiene. La lluvia la usa `prodForrajera`, y
+  los dos números siguen al lado a propósito.
+- **No se le puso `temp_media_c_anual` a Lesbos** aunque su fuente publica 17 °C
+  de media. La lluvia que acompaña esa media es la normal de 415 mm, y los campos
+  de lluvia de la entrada son las dos temporadas medidas (354 y 797 mm):
+  emparejar una normal con una temporada es mezclar dos cosas, que es la regla E.
+- **No se tocó `prodForrajera`.** Sigue sin fuente, y después de este lote es la
+  única de las dos rutas de forraje que no tiene ninguna.
