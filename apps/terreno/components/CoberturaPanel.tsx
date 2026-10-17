@@ -3,11 +3,11 @@
 /**
  * Cobertura del suelo (C3) — ESA WorldCover 10 m (2021).
  * Muestra la composición de clases de uso/cobertura del predio y deriva el % de
- * vegetación, una sugerencia de forraje y una nota de escorrentía (CN).
+ * vegetación, la banda de forraje medido de esas clases y una nota de CN.
  */
 import { useState, useEffect } from 'react';
 import { Trees, TriangleAlert, Loader2, Sprout } from 'lucide-react';
-import { obtenerCobertura, resumirCobertura, type DatosCobertura, type CoberturaResumen } from '@/lib/cobertura';
+import { forrajePorCobertura, obtenerCobertura, resumirCobertura, type DatosCobertura, type CoberturaResumen } from '@/lib/cobertura';
 import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
 
@@ -23,6 +23,10 @@ export function CoberturaPanel({ mojones, datos, onDatos, onResumen }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { onResumen?.(datos ? resumirCobertura(datos) : null); }, [datos, onResumen]);
+
+  // Se calcula al mostrarlo y no se guarda: un proyecto guardado antes del
+  // 17/10/2026 tiene adentro el número viejo y lo que se ve igual es la banda.
+  const forraje = datos ? forrajePorCobertura(datos.items) : null;
 
   const analizar = async () => {
     if (mojones.length < 3) { setError('Marcá al menos 3 mojones para delimitar el predio.'); return; }
@@ -90,29 +94,34 @@ export function CoberturaPanel({ mojones, datos, onDatos, onResumen }: Props) {
             <Stat label="Suelo desnudo" value={`${datos.suelo_pct}%`} />
           </div>
 
-          {datos.forraje_sugerido !== null && (
+          {forraje && (
             <div className="bg-moss-50 border border-moss-200 rounded-xl p-3 flex items-start gap-2">
               <Sprout className="w-4 h-4 shrink-0 text-moss-600 mt-0.5" />
-              <div className="text-[11px] text-moss-700 leading-relaxed">
+              <div className="text-[11px] text-moss-700 leading-relaxed space-y-1.5">
                 <p>
-                  Forraje orientativo por composición: <span className="font-semibold">{datos.forraje_sugerido.toLocaleString('es-AR')} kg MS/ha·año</span>.
+                  Forraje medido en clases de cobertura como las de este predio:{' '}
+                  <span className="font-semibold">
+                    {forraje.kg_ms_ha_anio_min.toLocaleString('es-AR')} a {forraje.kg_ms_ha_anio_max.toLocaleString('es-AR')} kg MS/ha·año
+                  </span>.
                 </p>
-                {/* Antes acá decía «usalo en Pastoreo como referencia junto al valor
-                    por lluvia», que invitaba a comparar dos números que no miden lo
-                    mismo y pueden diferir nueve veces. Ver el comentario de
-                    `forrajePorLluvia` en `lib/pastoreo.ts`. */}
+                <p className="text-moss-700/75">
+                  Es una banda y no un número: sale de {forraje.sitios} sitios medidos en el mundo,
+                  y se calculó sobre el {forraje.pct_con_fuente} % del predio.
+                </p>
+                {forraje.advertencias.map((a, i) => (
+                  <p key={i} className="text-moss-700/75">{a}</p>
+                ))}
                 <Cautela claim="Pastoreo muestra otro número y no mide lo mismo que este.">
-                  Este sale de la cobertura: pondera cuánto del predio es pastizal,
-                  arbustal, cultivo o monte. El de Pastoreo sale de la lluvia anual y
-                  no mira qué crece. Cuando difieren mucho es porque el predio tiene
-                  árboles o suelo desnudo, y el de la lluvia no lo sabe: en un predio
-                  todo arbolado con 2.000 mm, uno da 800 y el otro 7.000.
+                  Esta banda sale de mediciones de campo en sitios cuya cobertura satelital es
+                  como la de acá: diez sitios, cuatro continentes. El de Pastoreo sale de la
+                  lluvia anual y no mira qué crece encima. Cuando difieren mucho es porque el
+                  predio tiene monte o suelo desnudo, y el de la lluvia no lo sabe.
                   <br /><br />
-                  No elijas por el más alto. Ninguno de los dos tiene todavía una
-                  fuente publicada —ni los pesos por cobertura de acá ni la escalera
-                  por lluvia de allá— y los dos van a cambiar cuando la tengan. La
-                  única medición de campo que conseguimos para un bosque húmedo
-                  tropical con esa lluvia queda del lado de los 800.
+                  Lo que la banda no puede estrechar es justo lo que más mueve el número: cuánta
+                  luz llega al piso. Medido contra su propio rodal, la capa herbácea de un bosque
+                  va del 0,4 % bajo conífera cerrada al 92 % en una pradera con leñosas dispersas
+                  —un factor 236— y la clase de cobertura no distingue entre esos dos. Por eso
+                  hay una banda ancha en vez de un número cómodo.
                 </Cautela>
               </div>
             </div>

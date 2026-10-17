@@ -105,8 +105,10 @@ export interface ResultadoPastoreo {
  * viene después**: la oferta, el balance, la carga, el rodeo y el agua de la
  * represa. Ya no es una copia: desde el 17/10/2026 esta función delega en
  * `prodForrajera` de `produccion.ts`, que es la única. La otra ruta que calcula
- * forraje —el `forraje_sugerido` de `cobertura.ts`— no es esta escalera sino
- * kg/ha ponderados por clase de cobertura, y sigue siendo otra cosa.
+ * forraje —`forrajePorCobertura` de `cobertura.ts`— no es esta escalera sino una
+ * banda ponderada por clase de cobertura, y sigue siendo otra cosa. Desde el
+ * 17/10/2026 esa banda sale de los sitios medidos y no de pesos inventados, así
+ * que **de las dos rutas, la que no tiene fuente es esta**.
  *
  * Mientras siga así, el balance forrajero de este módulo tiene la precisión de
  * esta escalera y no más, por bien calculado que esté el resto. Reponerlo es un
@@ -129,12 +131,15 @@ export interface ResultadoPastoreo {
  * Para esa misma lluvia, lo que calcula la app:
  *
  *   esta escalera, en Pastoreo ............ 7.000
- *   forraje_sugerido 100 % arbolado ....... 800   (cobertura.ts, SI pondera)
+ *   banda medida, 100 % arbolado .......... 60-940   (cobertura.ts)
  *   medido (NPP herbacea, que es un techo)  1.300-1.700
  *
- * Las dos rutas difieren por un factor de 8,8 para el mismo predio, el panel de
- * Cobertura le dice al usuario que use la suya «como referencia junto al valor
- * por lluvia» como si fueran comparables, y la medicion cae del lado de los 800.
+ * Las dos rutas difieren por un factor grande para el mismo predio y la medicion
+ * de Nepal cae del lado de la banda de cobertura, no del lado de esta escalera.
+ * Queda una advertencia dentro de la advertencia: 1.300-1.700 esta ARRIBA de los
+ * 940 en que termina la banda del arbolado, porque Nepal todavia no esta montado
+ * en `forrajeMedido.ts` —le falta la coordenada publicada— y por eso el techo de
+ * esa banda esta sesgado bajo.
  * Esta escalera se escribio para pastizal natural y nada impide aplicarla a un
  * bosque: ahi sobreestima la oferta por un factor de cuatro o mas, y eso antes
  * de descontar el uso admisible.

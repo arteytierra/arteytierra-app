@@ -2,9 +2,14 @@
  * Cobertura del suelo (C3) — ESA WorldCover 10 m (2021).
  * Composición de clases de uso/cobertura del predio a partir del histograma
  * calculado en el servidor (Microsoft Planetary Computer). Deriva el % de
- * vegetación y sugerencias para ajustar forraje (pastoreo) y CN (escorrentía).
- * Orientativo — resolución 10 m, clasificación satelital global.
+ * vegetación, la banda de forraje medido de esas clases y una nota de CN
+ * (escorrentía). Orientativo — resolución 10 m, clasificación satelital global.
+ *
+ * `forrajePorCobertura` no se guarda con el resto: se calcula al mostrarlo,
+ * desde `items`. Así un proyecto guardado antes del 17/10/2026 también recibe la
+ * banda medida en vez del número inventado que tenía adentro.
  */
+import { FORRAJE_MEDIDO } from './forrajeMedido';
 import type { Mojon } from './types';
 
 export interface ClaseCobertura {
@@ -42,7 +47,6 @@ export interface DatosCobertura {
   artificial_pct: number;
   suelo_pct:    number;            // suelo desnudo
   dominante:    string;            // clase dominante
-  forraje_sugerido: number | null; // kg MS/ha·año orientativo por composición
   cn_hint:      string;            // nota sobre escorrentía/CN
   interpretacion: string[];
   anio:         number;
@@ -54,6 +58,157 @@ interface RespCobertura {
   clases?: number[];
   year?:   number;
   error?:  string;
+}
+
+/**
+ * Las clases de WorldCover que un animal puede pastorear.
+ *
+ * Quedan afuera el manglar (95) y el musgo/liquen (100) aunque la clasificación
+ * los cuente como vegetación. El liquen por un motivo medido: su biomasa en pie
+ * puede ser cincuenta veces su crecimiento anual, así que tratarlo como forraje
+ * es el error de contar el stock como si fuera el flujo. Ver `forrajeMedido.ts`.
+ */
+export const CLASES_PASTOREABLES = [10, 20, 30, 40] as const;
+
+export interface BandaDeClase {
+  clase_wc: number;
+  kg_ms_ha_anio_min: number;
+  kg_ms_ha_anio_max: number;
+  /** Cuántos sitios medidos sostienen la banda. */
+  sitios: number;
+}
+
+/**
+ * La banda medida de una clase de cobertura, o `null` si no hay ni un sitio.
+ *
+ * Se deriva de `FORRAJE_MEDIDO` y no de una tabla: el mínimo de los mínimos y el
+ * máximo de los máximos de los sitios que declararon esa `clase_wc`. Por eso se
+ * corrige sola cuando entra una medición nueva, y hay un test que la compara
+ * contra el arreglo para que las dos no puedan separarse.
+ */
+export function bandaDeClase(clase_wc: number): BandaDeClase | null {
+  const sitios = FORRAJE_MEDIDO.filter(m => m.clase_wc === clase_wc);
+  if (sitios.length === 0) return null;
+  return {
+    clase_wc,
+    kg_ms_ha_anio_min: Math.min(...sitios.map(m => m.kg_ms_ha_anio_min)),
+    kg_ms_ha_anio_max: Math.max(...sitios.map(m => m.kg_ms_ha_anio_max)),
+    sitios: sitios.length,
+  };
+}
+
+export interface ForrajeDeCobertura {
+  kg_ms_ha_anio_min: number;
+  kg_ms_ha_anio_max: number;
+  /** % del predio sobre el que se calculó la banda. Es el denominador real. */
+  pct_con_fuente: number;
+  /** % del predio pastoreable que quedó afuera porque su clase no tiene medición. */
+  pct_sin_fuente: number;
+  /** Los nombres de esas clases, para poder decirlas en pantalla. */
+  clases_sin_fuente: string[];
+  /** Cuántos sitios medidos hay detrás de la banda. */
+  sitios: number;
+  advertencias: string[];
+}
+
+/**
+ * Forraje por composición de cobertura, kg MS/ha·año — una banda, no un número.
+ *
+ * **Fuente: `forrajeMedido.ts`.** Acá no hay ningún coeficiente. Cada clase
+ * aporta la banda de los sitios medidos que declararon esa `clase_wc`, y la
+ * banda del predio es el promedio ponderado por el % de cada clase: el de los
+ * mínimos y el de los máximos.
+ *
+ * **Lo que había acá hasta el 17/10/2026, y por qué se fue.** Cuatro pesos
+ * —pastizal 3.500, arbustal 1.800, cultivo 4.500, arbolado 800— sin ninguna
+ * fuente, promediados igual que ahora, y el resultado impreso como un entero con
+ * separador de miles. Dos de los cuatro no tenían ni una medición detrás
+ * (arbustal y cultivo, y el cultivo sigue sin tenerla) y los otros dos quedaron
+ * contradichos por las mediciones que aparecieron entre el 10 y el 17 de
+ * octubre: el arbolado va de 60 a 940 kg MS/ha·año según cuánta luz pase el
+ * dosel y el pastizal de 350 a 10.630 según el sitio. Un entero en el medio de
+ * eso no era una estimación, era una decoración.
+ *
+ * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
+ * por hectárea y por año. Es producción anual, no lo que está parado.
+ *
+ * **Rango de validez.** Diez sitios en cuatro continentes es poco, y la clase de
+ * cobertura por sí sola no determina el forraje: adentro de cada banda queda un
+ * factor sin resolver, 16 en el arbolado y 30 en el pastizal. Lo que lo
+ * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
+ * factor 236 entre sus dos puntas— y la lluvia para el pastizal, que es lo que
+ * calcula `prodForrajera` en `produccion.ts`. Mientras eso no esté, una banda
+ * ancha es la respuesta correcta y un número no lo es.
+ *
+ * **Qué NO es.** No es por hectárea de predio: es por hectárea de las clases
+ * pastoreables que tienen medición. Un predio mitad pastizal y mitad suelo
+ * desnudo devuelve la banda del pastizal, y `pct_con_fuente` dice sobre qué parte
+ * se calculó. Multiplicar la banda por las hectáreas del predio sin mirar ese
+ * porcentaje sobreestima, y por eso el porcentaje sale en pantalla al lado.
+ *
+ * **Qué se rompe si cambia.** Lo muestra `CoberturaPanel` y nada más. No entra en
+ * el cálculo de receptividad, que sale de la lluvia y se contrasta con el Miami
+ * Model. Los dos números viven al lado a propósito, y el panel explica por qué
+ * difieren.
+ */
+export function forrajePorCobertura(items: readonly ItemCobertura[]): ForrajeDeCobertura | null {
+  let acumMin = 0;
+  let acumMax = 0;
+  let pctConFuente = 0;
+  let pctSinFuente = 0;
+  let sitios = 0;
+  const clasesSinFuente: string[] = [];
+
+  for (const clase of CLASES_PASTOREABLES) {
+    const pct = items.filter(it => it.clase.valor === clase).reduce((acc, it) => acc + it.pct, 0);
+    if (pct <= 0) continue;
+    const banda = bandaDeClase(clase);
+    if (banda === null) {
+      pctSinFuente += pct;
+      clasesSinFuente.push(CLASES_WC[clase]?.nombre ?? `Clase ${clase}`);
+      continue;
+    }
+    acumMin += pct * banda.kg_ms_ha_anio_min;
+    acumMax += pct * banda.kg_ms_ha_anio_max;
+    pctConFuente += pct;
+    sitios += banda.sitios;
+  }
+
+  // Sin una sola clase pastoreable medida no hay banda, y decirlo es la
+  // respuesta. La versión anterior dividía por `Math.max(1, …)`, así que un
+  // predio todo manglar imprimía «0 kg MS/ha·año» con toda confianza, y un
+  // predio con menos de 1 % de clases pastoreables salía escalado hacia abajo
+  // por el propio protector de la división.
+  if (pctConFuente <= 0) return null;
+
+  const redondearPct = (x: number) => Math.round(x * 10) / 10;
+  const min = Math.round(acumMin / pctConFuente);
+  const max = Math.round(acumMax / pctConFuente);
+  const advertencias: string[] = [];
+
+  if (pctSinFuente > 0) {
+    advertencias.push(
+      `${redondearPct(pctSinFuente)} % del predio es ${clasesSinFuente.join(' y ').toLowerCase()} y no hay ninguna medición de campo para esas clases: queda afuera de la banda.`,
+    );
+  }
+  if (pctConFuente < 20) {
+    advertencias.push(`La banda se calculó sobre el ${redondearPct(pctConFuente)} % del predio, así que dice poco del resto.`);
+  }
+  if (min > 0 && max / min >= 5) {
+    advertencias.push(
+      `La clase de cobertura sola no define el forraje: entre los sitios medidos de estas clases hay un factor ${Math.round(max / min)}. Lo que estrecha la banda es la lluvia, y el dosel cuando hay monte.`,
+    );
+  }
+
+  return {
+    kg_ms_ha_anio_min: min,
+    kg_ms_ha_anio_max: max,
+    pct_con_fuente: redondearPct(pctConFuente),
+    pct_sin_fuente: redondearPct(pctSinFuente),
+    clases_sin_fuente: clasesSinFuente,
+    sitios,
+    advertencias,
+  };
 }
 
 export async function obtenerCobertura(mojones: Mojon[]): Promise<DatosCobertura> {
@@ -85,32 +240,11 @@ export async function obtenerCobertura(mojones: Mojon[]): Promise<DatosCobertura
 
   const veg_pct        = pctDe(c => c.grupo === 'vegetacion');
   const arbolado_pct   = pctDe(c => c.valor === 10);
-  const arbustal_pct   = pctDe(c => c.valor === 20);
-  const pastizal_pct   = pctDe(c => c.valor === 30);
   const cultivo_pct    = pctDe(c => c.valor === 40);
   const agua_pct       = pctDe(c => c.grupo === 'agua');
   const artificial_pct = pctDe(c => c.grupo === 'artificial');
   const suelo_pct      = pctDe(c => c.valor === 60);
   const dominante      = items[0]?.clase.nombre ?? '—';
-
-  /*
-   * Forraje orientativo por composición (kg MS/ha·año) — mezcla ponderada.
-   *
-   * ESTOS CUATRO PESOS NO TIENEN FUENTE. Son del mismo tipo de número que
-   * `forrajePorLluvia` en `pastoreo.ts`, y la app muestra los dos al lado: para
-   * un predio todo arbolado con 2.000 mm, este da 800 y aquel 7.000. La única
-   * medición de campo que conseguimos —NPP herbácea aérea de un bosque húmedo
-   * tropical con 1.998,6 mm, 1.300 a 1.700 kg MS/ha/año, Gautam & Mandal,
-   * Forest Ecosystems 2016 — cae de este lado, pero eso valida el orden de
-   * magnitud y no los pesos.
-   *
-   * Lo que este número sí tiene y el otro no es que mira la cobertura. Lo que
-   * ninguno de los dos tiene es una fuente, y el panel lo dice en vez de
-   * invitar a compararlos. Ver `_research/_encargos/RESPUESTAS_FORRAJE.md`.
-   */
-  const forraje_sugerido = veg_pct > 0
-    ? Math.round((pastizal_pct * 3500 + arbustal_pct * 1800 + cultivo_pct * 4500 + arbolado_pct * 800) / Math.max(1, pastizal_pct + arbustal_pct + cultivo_pct + arbolado_pct))
-    : null;
 
   // Nota de escorrentía/CN según impermeabilización y suelo desnudo.
   const cn_hint =
@@ -128,7 +262,7 @@ export async function obtenerCobertura(mojones: Mojon[]): Promise<DatosCobertura
 
   return {
     items, veg_pct, arbolado_pct, agua_pct, artificial_pct, suelo_pct, dominante,
-    forraje_sugerido, cn_hint, interpretacion,
+    cn_hint, interpretacion,
     anio: json.year ?? 2021,
     fuente: 'ESA WorldCover 10 m (2021) vía Microsoft Planetary Computer — orientativo',
   };

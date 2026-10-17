@@ -290,8 +290,12 @@
  *    le asigna 800 kg MS/ha/año al arbolado. Lo medido: 60 en conífera densa, 410
  *    en aliso, 378-940 en robledal-carpinal, 1.300-1.700 en bosque húmedo
  *    tropical de Nepal. El 800 cae adentro para bosque de hoja ancha y queda
- *    unas 13 veces alto para un dosel de conífera cerrado. No se corrige acá:
- *    queda anotado con sus cuatro mediciones, que es más de lo que tenía.
+ *    unas 13 veces alto para un dosel de conífera cerrado. **Desde el 17/10/2026
+ *    ya no existe:** la clase arbolado de `cobertura.ts` toma la banda de los
+ *    sitios de sotobosque montados acá, y las otras tres clases también. El
+ *    1.300-1.700 de Nepal sigue sin montar —falta su coordenada publicada— y por
+ *    eso la banda del arbolado llega hasta 940 y no hasta 1.700: el techo está
+ *    sesgado bajo, y queda dicho.
  *
  * ## La inversión del stock, cuarta confirmación y la más extrema
  *
@@ -305,6 +309,66 @@
  * Es el mismo error que Puno, el Delta y el Pantanal, en un cuarto bioma: contar
  * lo que está parado como si fuera lo que creció. Acá llevaría a cargar cincuenta
  * veces de más.
+ *
+ * ## El lote 09 cerró la primera fracción, y la cerró en contra
+ *
+ * El plan del 17/10 era bajar de la NPP total al forraje por tres fracciones:
+ * aérea, herbácea del piso y comible. El lote 09 fue a buscar la primera y
+ * volvió con tres rechazos bien argumentados —Mokany 2006, Jackson 1996 y
+ * Poorter 2012 miden razón raíz:tallo o reparto de BIOMASA EN PIE, que no se
+ * convierte en reparto de producción— y con una sola cosa: el cociente
+ * ANPP/TNPP de Montecillo, sobre las cuatro filas que la ficha del ORNL tabula
+ * para la MISMA serie de cosechas.
+ *
+ * | fuente | ANPP | BNPP | TNPP | aérea/total |
+ * |---|---|---|---|---|
+ * | García-Moya y Montañez Castro (1992) | 669 | 1.007 | 1.676 | 0,399 |
+ * | Scurlock y Olson (2013) | 1.063 | 678 | 1.741 | **0,611** |
+ * | Scurlock et al. (2002), método #5 | 609 | 1.174 | 1.783 | **0,342** |
+ * | GPPDI #67, Olson et al. (2013a) | 130 | 97 | 227 | 0,573 |
+ *
+ * Las tres primeras en g MS/m²/año y la cuarta en g C/m²/año, que es la fila que
+ * no se puede convertir y cuyo cociente igual sirve: es carbono sobre carbono.
+ * Las cuatro cierran por dentro —669 + 1.007 = 1.676, y así las cuatro—, así que
+ * no hay error de transcripción en ninguna.
+ *
+ * **Y no se ponen de acuerdo ni en cuál mitad es la grande.** Dos dicen que
+ * abajo hay más (669 contra 1.007; 609 contra 1.174) y dos dicen que arriba
+ * (1.063 contra 678; 130 contra 97). La fracción aérea va de 0,342 a 0,611, un
+ * factor 1,79, y cruza el 0,5 por el medio.
+ *
+ * Puesto contra lo que la misma ficha publica año por año, el reparto de culpas
+ * queda claro: la NPP TOTAL varía **1,40×** entre años con el mismo método
+ * (1.994 en 1985, 1.422 en 1986 con el incendio, 1.611 en 1987) y sólo **1,06×**
+ * entre los tres algoritmos en materia seca. El total es robusto; lo que el
+ * algoritmo discute es el reparto. Es el mismo veredicto que Rawlik sacó de un
+ * bosque polaco, con datos que no se tocan y en otro continente.
+ *
+ * **Consecuencia: la cadena de tres fracciones no se puede armar con fracciones
+ * publicadas.** La primera ya trae un factor 1,79 y no hay ninguna síntesis
+ * global que la dé: las tres que existen miden biomasa en pie.
+ *
+ * ## La segunda fracción ya estaba en este archivo, sin que nadie la mirara
+ *
+ * La que mueve el número no es la primera: es la segunda. Y está medida en tres
+ * sitios que ya estaban acá, los tres publicando numerador y denominador en la
+ * misma unidad y en la misma tabla:
+ *
+ * | sitio | capa herbácea | aéreo total | herbácea/total | dosel |
+ * |---|---|---|---|---|
+ * | Waring's Woods, Pseudotsuga | 6 | 1.540 g MS/m²/año | **0,0039** | cerrado |
+ * | Cascade Head 1A, aliso rojo | 41 | 1.630 g MS/m²/año | 0,0252 | 35,2 % herbáceo |
+ * | Very Shallow 23-31 PZ, Edwards | 1.840 | 2.000 lb/acre/año | **0,92** | leñosas dispersas |
+ *
+ * De 0,0039 a 0,92 hay un factor **236**, y lo que lo mueve no es el clima ni el
+ * bioma: es cuánta luz llega al piso. Las dos puntas de Oregón están a 200 km
+ * una de otra, producen casi lo mismo de rodal y tienen el mismo clima.
+ *
+ * Eso convierte el problema en otro, y en uno que acequia sí puede medir: el
+ * dosel sale de `cobertura.ts`, que lee ESA WorldCover a 10 m en cada predio.
+ * Por eso ahora cada medición declara su `clase_wc` y la banda de forraje por
+ * clase de cobertura se deriva de acá, en vez de los cuatro pesos inventados que
+ * esa ruta tenía.
  *
  * ## Qué NO hace este archivo todavía
  *
@@ -461,6 +525,19 @@ export interface MedicionForraje {
   bioma: string;
   /** Rótulo corto del sitio, para poder nombrarlo en pantalla. */
   sitio: string;
+  /**
+   * Clase de ESA WorldCover que un satélite vería en este sitio, o `null` si es
+   * ambigua.
+   *
+   * **No es el bioma y no se deduce de él: es lo que hay ENCIMA.** Waring's
+   * Woods está en el bioma 8, el de la pradera templada, y es un rodal cerrado
+   * de Pseudotsuga: bioma 8 y clase 10 a la vez. Esa discordancia no es un
+   * problema del dato, es el dato.
+   *
+   * Lo usa `cobertura.ts` para armar la banda de kg MS/ha/año de cada clase. Sin
+   * este campo tenía que inventarlos, y los inventaba.
+   */
+  clase_wc: number | null;
   tipo: TipoDeCifra;
   kg_ms_ha_anio_min: number;
   kg_ms_ha_anio_max: number;
@@ -508,6 +585,9 @@ export interface MedicionForraje {
  * Son **diez sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
  * No son un modelo: son los puntos que hay. Tres de los diez son sotobosque de
  * bosque cerrado y no pastizal, y eso cambia cómo se leen: ver `ms_sotobosque`.
+ * Cada uno declara además su `clase_wc`, que es de donde `cobertura.ts` saca la
+ * banda de cada clase de cobertura: seis en la 30, uno en la 20, tres en la 10 y
+ * **ninguno en la 40**, el cultivo.
  * El bioma que más se pastorea —la sabana tropical— sigue sin ninguno, y el
  * motivo está en la sección «La sabana no está sin medir».
  */
@@ -515,6 +595,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_pastizal_templado',
     sitio: 'Loamy Upland, MLRA 53B, Dakota del Norte y del Sur',
+    clase_wc: 30,
     tipo: 'ms_herbacea_total',
     // 2.733 y 2.358 lb/acre. El de abajo NO es un año malo: es el estado al que
     // el sitio transiciona con pastoreo continuo intenso o continuo de
@@ -540,6 +621,10 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_pastizal_templado',
     sitio: 'Very Shallow 23-31 PZ, MLRA 81B, Edwards Plateau, Texas',
+    // Clase 30 por la comunidad de referencia 1.1, que es pradera de gramíneas
+    // medias; las leñosas están y la ficha las cuenta aparte, y de ahí sale la
+    // fracción herbácea de 0,92 de `FRACCION_HERBACEA_DEL_SITIO`.
+    clase_wc: 30,
     tipo: 'ms_herbacea_total',
     // Gramíneas 680–2.125 lb/acre y hierbas 56–175, o sea 736–2.300 en conjunto,
     // con valor representativo 1.840. La ficha publica además el total del sitio
@@ -567,6 +652,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // el encargo le había puesto el nombre corto y no existe con ese nombre.
     bioma: 'resolve_montano',
     sitio: 'Chuquibambilla (3.910 m) y La Raya (4.300 m), Puno, Altiplano peruano',
+    clase_wc: 30,
     tipo: 'ms_herbacea_total',
     // 626,4 · 1.237,0 · 1.340,8 · 1.957,7 kg MS/ha para los cuatro pastizales.
     // Son la biomasa ANUAL, ya separada de la permanente: la biomasa total en
@@ -593,6 +679,11 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_mediterraneo',
     sitio: 'Agra, oeste de Lesbos, Grecia — 14 potreros de cuatro majadas',
+    // Frygana: arbustal, y es la ÚNICA medición de la clase 20. La cifra está
+    // escalada a la hectárea del potrero —la jaula por el porcentaje de
+    // cobertura herbácea de ese potrero—, así que es producción herbácea por
+    // hectárea de arbustal y no de los claros entre arbustos.
+    clase_wc: 20,
     tipo: 'ms_herbacea_total',
     // «ranging from very small values close to 300 kg/ha to those of about 5800
     // kg/ha at a flat pasture plot, which in the past was used for annual
@@ -621,6 +712,11 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_tundra',
     sitio: 'Cuatro comunidades de pajonal de Eriophorum vaginatum, Alaska y Yukón',
+    // Pajonal de ciperáceas. WorldCover podría verlo como 100 (musgo/liquen) en
+    // vez de 30; va 30 porque lo medido es la producción del Eriophorum y no la
+    // del liquen, que es exactamente el error que documenta la sección de la
+    // inversión del stock.
+    clase_wc: 30,
     tipo: 'npp_herbacea',
     // «Yearly primary production was estimated to be between 35 and 96 g m-2
     // for aboveground vascular plants», o sea 350 a 960 kg/ha/año.
@@ -650,6 +746,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // acequia va a buscar esta medición es donde acequia clasifica el predio.
     bioma: 'resolve_pastizal_templado',
     sitio: 'Pastizal de albardón, isla de Baradero, Delta Medio del Paraná',
+    clase_wc: 30,
     tipo: 'ms_forrajera',
     // «En el período de primavera a otoño, descansos bimestrales o más
     // prolongados del pastoreo permiten obtener producciones forrajeras desde
@@ -685,12 +782,16 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // clima da 959 g/m²/año de NPP total contra 1.676 medidos. Ver `miamiModel.ts`.
     bioma: 'resolve_desierto_matorral_xerofilo',
     sitio: 'Pastizal salino de Montecillo (MNT1), borde del lecho del lago de Texcoco, México',
+    clase_wc: 30,
     tipo: 'ms_herbacea_total',
     // El rango NO es la variación entre años ni entre potreros: es la que hay
-    // entre los TRES algoritmos publicados para esta misma serie de cosechas.
+    // entre los algoritmos publicados para esta misma serie de cosechas.
     // García-Moya y Montañez Castro (1992) dan 669, Scurlock et al. (2002) dan
     // 609 y Scurlock y Olson (2013) dan 1.063. El típico es el del trabajo
-    // primario, que es el único cuyo método la ficha describe.
+    // primario, que es el único cuyo método la ficha describe. Hay una CUARTA
+    // fila, la del GPPDI, que no entra en el rango porque está en carbono
+    // (130 g C/m²/año) y no se convierte; su cociente aérea/total sí sirve y
+    // está en `FRACCION_AEREA_MONTECILLO`.
     kg_ms_ha_anio_min: 6090,
     kg_ms_ha_anio_max: 10630,
     kg_ms_ha_anio_tipico: 6692,
@@ -712,6 +813,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // el módulo venía necesitando: SEIS algoritmos sobre las MISMAS cosechas.
     bioma: 'resolve_bosque_templado_caducifolio_mixto',
     sitio: 'Sotobosque de un robledal-carpinal dominado por haya, Różańsko, noroeste de Polonia',
+    clase_wc: 10,
     tipo: 'ms_sotobosque',
     // El mínimo es el método 1 en 2010 (37,835 g/m²) y el máximo el método 6 en
     // 2011 (93,958). Sin típico: la fuente no elige uno, compara los seis.
@@ -735,6 +837,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // Primera medición del bioma 5. Entra por el sotobosque, no por el rodal.
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Sotobosque de un rodal de aliso rojo, Cascade Head 1A, transecto OTTER, Oregón',
+    clase_wc: 10,
     tipo: 'ms_sotobosque',
     kg_ms_ha_anio_min: 410,
     kg_ms_ha_anio_max: 410,
@@ -764,6 +867,9 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // los dos números es el dosel, no el clima.
     bioma: 'resolve_pastizal_templado',
     sitio: 'Sotobosque de un rodal de Pseudotsuga, Waring’s Woods, transecto OTTER, Oregón',
+    // Bioma 8 y clase 10: el bioma dice pradera templada y arriba hay un dosel
+    // cerrado de conífera. La discordancia es el dato.
+    clase_wc: 10,
     tipo: 'ms_sotobosque',
     kg_ms_ha_anio_min: 60,
     kg_ms_ha_anio_max: 60,
@@ -782,6 +888,132 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     },
   },
 ] as const;
+
+
+/**
+ * La fracción aérea de la NPP, medida donde cuatro algoritmos publicaron las dos
+ * mitades sobre la MISMA serie de cosechas.
+ *
+ * Fuente: ficha de sitio del ORNL DAAC, «NPP Grassland: Montecillo, Mexico,
+ * 1984-1994, R1», Tabla 1 (https://daac.ornl.gov/NPP/guides/NPP_MNT.html). Las
+ * cuatro filas son las cuatro publicaciones que la ficha compila, con su propia
+ * advertencia al lado: «NPP values for MNT1 reported in other published accounts
+ * differ due to different measurement and calculation methods».
+ *
+ * **Unidades.** Las tres primeras filas están en g de materia seca/m²/año y la
+ * cuarta en g de carbono/m²/año. La cuarta NO se convierte a materia seca —no
+ * hay factor publicado para este sitio— pero su COCIENTE se puede usar igual,
+ * porque es carbono sobre carbono.
+ *
+ * **Rango de validez: ninguno más allá de este sitio.** Es un pastizal salino
+ * casi puro de Distichlis spicata, en clausura sin pastoreo, con un incendio
+ * accidental de febrero de 1986 adentro de la ventana promediada. No es una
+ * constante de bioma y menos una constante global: es la única medida que hay de
+ * cuánto discrepan los algoritmos cuando se los deja repartir la misma cosecha.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto todavía, a propósito. Está
+ * acá porque es la razón por la que la cadena «NPP total × fracción aérea ×
+ * fracción herbácea × fracción comible» no se puede construir con fracciones
+ * publicadas, y eso hay que poder mostrarlo con números.
+ */
+export const FRACCION_AEREA_MONTECILLO = [
+  { fuente: 'García-Moya y Montañez Castro (1992)', anpp: 669, bnpp: 1007, tnpp: 1676, carbono: false },
+  { fuente: 'Scurlock y Olson (2013)', anpp: 1063, bnpp: 678, tnpp: 1741, carbono: false },
+  { fuente: 'Scurlock et al. (2002), método de cálculo #5', anpp: 609, bnpp: 1174, tnpp: 1783, carbono: false },
+  { fuente: 'GPPDI Class A Site #67, Olson et al. (2013a)', anpp: 130, bnpp: 97, tnpp: 227, carbono: true },
+] as const;
+
+/**
+ * NPP total de Montecillo año por año, g MS/m²/año, con el mismo método.
+ *
+ * De la misma ficha: «1985 being the most productive (1,994 g/m2/yr). NPP fell to
+ * 1,422 in 1986 after the fire and then rose to 1,611 g/m2/yr in 1987 during the
+ * recovery phase». El promedio publicado de 1.676 es el de estos tres años, así
+ * que **viene con un incendio adentro** y no es una media de régimen estable.
+ *
+ * Sirve para separar dos dispersiones que se confunden: el año mueve el total
+ * 1,40× y el algoritmo lo mueve 1,06×, mientras el algoritmo mueve el reparto
+ * arriba/abajo 1,79×. Lo frágil no es cuánto, es dónde.
+ */
+export const TNPP_MONTECILLO_POR_ANIO = [
+  { anio: 1985, tnpp_g_ms_m2_anio: 1994, nota: 'el más productivo de los tres' },
+  { anio: 1986, tnpp_g_ms_m2_anio: 1422, nota: 'incendio accidental en febrero' },
+  { anio: 1987, tnpp_g_ms_m2_anio: 1611, nota: 'recuperación' },
+] as const;
+
+/** Cuánto de la producción aérea de un sitio es capa herbácea. */
+export interface FraccionHerbacea {
+  sitio: string;
+  /** Producción anual de la capa herbácea, en la unidad publicada. */
+  herbacea: number;
+  /** Producción anual de TODO lo aéreo del rodal o del sitio, en LA MISMA unidad. */
+  aerea_total: number;
+  unidad: 'g_ms_m2_anio' | 'lb_acre_anio';
+  /** Lo que la fuente publica del dosel, con sus palabras. */
+  dosel: string;
+  fuente: string;
+}
+
+/**
+ * La segunda fracción de la cadena, y la que de verdad mueve el número.
+ *
+ * Tres sitios, los tres con numerador y denominador en la misma tabla y en la
+ * misma unidad, así que el cociente no arrastra ninguna conversión:
+ *
+ * - el transecto OTTER de Oregón, por las fichas de sitio del ORNL DAAC: capa
+ *   herbácea contra NPP del rodal, en g MS/m²/año;
+ * - la ficha de sitio ecológico R081BY354TX del NRCS: gramíneas y hierbas contra
+ *   el total del sitio, que incluye arbustos y árboles, en lb/acre/año.
+ *
+ * **De 0,0039 a 0,92: un factor 236.** Y no lo mueve el clima. Los dos sitios de
+ * Oregón están a 200 km, producen casi lo mismo de rodal —1.540 y 1.630— y su
+ * sotobosque difiere 6,8 veces, con la cobertura herbácea difiriendo 7,2.
+ *
+ * **Rango de validez.** Son tres puntos y dos de ellos del mismo transecto; no
+ * hay una curva, hay dos puntas y un sitio en el medio. No interpolar: lo que la
+ * bibliografía forestal publica son curvas de forraje contra cobertura de dosel
+ * por tipo de bosque, y mientras no estén montadas esto sólo acota.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto. Es la justificación de por
+ * qué `cobertura.ts` separa la clase 10 de la clase 30 con bandas en vez de dos
+ * números, y de por qué el dosel es la variable que falta.
+ */
+export const FRACCION_HERBACEA_DEL_SITIO: readonly FraccionHerbacea[] = [
+  {
+    sitio: 'Waring’s Woods, rodal de Pseudotsuga, transecto OTTER',
+    herbacea: 6,
+    aerea_total: 1540,
+    unidad: 'g_ms_m2_anio',
+    dosel: 'dosel cerrado de conífera; 4,9 % de cobertura herbácea',
+    fuente: 'ORNL DAAC — transecto OTTER, ficha de sitio',
+  },
+  {
+    sitio: 'Cascade Head 1A, rodal de aliso rojo, transecto OTTER',
+    herbacea: 41,
+    aerea_total: 1630,
+    unidad: 'g_ms_m2_anio',
+    dosel: 'aliso rojo; 35,2 % de cobertura herbácea',
+    fuente: 'ORNL DAAC — transecto OTTER, ficha de sitio',
+  },
+  {
+    sitio: 'Very Shallow 23-31 PZ, MLRA 81B, Edwards Plateau',
+    herbacea: 1840,
+    aerea_total: 2000,
+    unidad: 'lb_acre_anio',
+    dosel: 'pradera de gramíneas medias con leñosas dispersas, comunidad de referencia 1.1',
+    fuente: 'USDA NRCS — Ecological site R081BY354TX',
+  },
+] as const;
+
+/** El cociente de una fila, sin conversiones: las dos cifras vienen en la misma unidad. */
+export function fraccionHerbacea(f: FraccionHerbacea): number {
+  return f.herbacea / f.aerea_total;
+}
+
+/** La fracción aérea de una fila de Montecillo. Vale también para la fila en carbono. */
+export function fraccionAerea(f: { anpp: number; tnpp: number }): number {
+  return f.anpp / f.tnpp;
+}
 
 /** Las mediciones que hay para un bioma global. Vacío es «no hay», y es común. */
 export function medicionesDeBioma(bioma: string): MedicionForraje[] {
