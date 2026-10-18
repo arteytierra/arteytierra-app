@@ -16,6 +16,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 08 | biomas 4, 5, 6 | **montadas 3 de 4** el 17/10/2026 |
 | 09 | la fracción aérea de la NPP | **cerrado en contra** el 17/10/2026 — y destapó la segunda fracción |
 | 10 | la curva de forraje contra dosel | **vacío** el 17/10/2026 — un rechazo bueno y dos de más |
+| 11 | el dosel, de nuevo | **montado** el 17/10/2026 — dos entradas y la primera curva |
 
 ---
 
@@ -1168,3 +1169,118 @@ excepción escrita, abre la regla D a las coordenadas de estación experimental,
 agrega la regla I, y pide el mismo frente con los tres pedidos concretos: Metz con
 sus pares parcela por parcela, Bojórquez-Tapia con sus ecuaciones, y Moore y
 Deiter (1992) sobre el Kaibab Plateau, que apareció buscando los otros dos.
+
+## Lote 11 — el mejor de los doce: la primera curva de dosel
+
+Una entrada, y es la que el encargo venía buscando desde que se entendió que la
+variable que falta es el dosel: **Metz (1974), catorce parcelas permanentes sobre
+un gradiente natural de densidad de ponderosa en el Manitou Experimental Forest
+de Colorado, con cuatro ecuaciones de regresión publicadas.**
+
+### Verificado por ajuste, que es la única forma que había
+
+El PDF de la tesis está en `fs.usda.gov`, que desde esta máquina devuelve 403
+—probé `curl` con y sin user-agent, y el navegador del agente también—. Así que no
+pude leer las tablas. Lo que sí pude hacer es **reajustar la regresión sobre los
+catorce pares que trajo la entrega** y comparar con la ecuación publicada:
+
+| | intercepto | pendiente | r² |
+|---|---|---|---|
+| mi cuadrado mínimo sobre los 14 pares | **529,43** | **−6,105** | 0,804 |
+| publicado (Tabla 6, agosto de 1972) | **529,4** | **−6,1** | 0,792 |
+
+Coincide al decimal. Eso no se puede falsificar por casualidad: los pares y la
+ecuación son la misma cosa, y están bien transcriptos.
+
+De paso apareció algo que hay que escribir porque puede engañar a cualquiera: **el
+«SE = 22,5 lb/acre» que publica la tesis no es el desvío de los residuos.** Sobre
+los catorce pares el residuo tiene un desvío de **80,2** lb/acre, y 22,5 coincide
+con el error estándar de la media (21,4). Leer ese SE como dispersión de la
+predicción subestima el ruido 3,6 veces.
+
+### El hallazgo: la forma de la curva es estable, el nivel no
+
+La tesis publica cuatro rectas, tres de 1972 y una de 1973, y advierte textual que
+«the understory herbage produced in 1973 was nearly twice as much as that produced
+in 1972». Puestas una al lado de la otra:
+
+| año | ecuación | pendiente / intercepto | dosel donde llega a 0 |
+|---|---|---|---|
+| agosto 1972 | Y = 529,4 − 6,1 X | 0,011522 | 86,8 % |
+| agosto 1973 | Y = 1.113,5 − 12,8 X | 0,011495 | 87,0 % |
+
+Con Y en lb/acre de peso seco y X en **densidad de copa (%)** —no cobertura de
+copa, no área basal, no densidad de árboles; la tesis usa ésta y la entrega tuvo
+el cuidado de no traducirla—.
+
+**Las dos pendientes relativas difieren un 0,24 % y los dos puntos de extinción un
+0,2 %, con un nivel absoluto que se mueve 2,10×.** O sea: el año decide cuánto
+pasto hay, y el dosel decide qué fracción de eso queda, y esa fracción es la misma
+en un año bueno y en uno malo.
+
+Eso es **exactamente al revés** de lo que pasa con los algoritmos de NPP, donde lo
+robusto es el total y lo frágil es el reparto. Y es la razón por la que una
+fracción de dosel tiene chance de transferirse a otro predio y una fracción de NPP
+no: `1 − 0,0115·X` es una forma, no una medición de Colorado.
+
+### Lo que entró al código
+
+**El mismo sitio entra dos veces, y ahí está todo el argumento.** Once parcelas
+bajo dosel y tres aberturas naturales del mismo bosque, el mismo suelo, la misma
+lluvia, el mismo día de agosto de 1972 y el mismo doble muestreo:
+
+| | clase de WorldCover | kg MS/ha |
+|---|---|---|
+| once parcelas bajo dosel (29-78 % de copa) | 10, bosque | **39 a 503** |
+| tres aberturas (0 % de copa) | 30, pastizal | **521 a 658** |
+
+**Un factor 13 entre las medianas y 17 entre las puntas, adentro de un bosque de
+6.758 ha.** El clima no explica nada de eso, y es el argumento más limpio que
+acequia tiene de que separar las clases de cobertura era lo correcto.
+
+Verificaciones del lado de acequia:
+
+- **Bioma:** consulté RESOLVE en la coordenada institucional (39°04′ N,
+  105°04′ O) y en dos puntos que abarcan la estación. Los tres dan *Colorado
+  Rockies forests*, ECO_ID 353, **bioma 5**. Uniforme, así que la regla I se
+  cumple: es un área, pero da un solo bioma. El bioma 5 pasa de una medición a
+  tres.
+- **Lluvia:** la entrega mantuvo las 15,6 pulgadas sin convertir, como pide la
+  regla A. Son 396 mm, y busqué qué más se publica del mismo sitio: el Servicio
+  Forestal da **398 mm** como media de 65 años, el NCAR **432**, y AmeriFlux
+  **368** —pero AmeriFlux mide 12 km² alrededor de su torre y no la estación—. Un
+  17 % entre puntas; va 396 y la dispersión queda escrita.
+- **Temperatura:** los 5 °C no salen de la tesis sino de otra publicación del
+  Servicio Forestal sobre la misma estación, y dicen «aproximadamente». Entra
+  igual, porque el contraste no es sensible: con 396 mm el Miami Model queda
+  limitado por lluvia para cualquier temperatura por encima de 1 °C.
+- **El contraste, que da la cuarta confirmación del dosel y la primera
+  continua:** con 396 mm y 5 °C el modelo da 6.933 kg MS/ha/año de NPP total del
+  ecosistema. La capa herbácea de la abertura es el **9,5 %** de eso y la de la
+  parcela con 78 % de copa el **0,56 %**. Mismo clima, misma NPP modelada, un
+  factor 17 que lo hace nada más que la sombra.
+
+### Las dos entregas que quedaron pendientes, y por qué importan
+
+- **Bojórquez-Tapia, Ffolliott y Guertin (1990)**, las dieciocho ecuaciones de
+  Arizona: la entrega confirmó el registro institucional pero no consiguió el
+  texto completo y **no transcribió nada de un resumen**, que es lo correcto. Yo
+  tampoco pude: el archivo de JRM se mudó de dominio, `repository.arizona.edu`
+  devuelve 403 y el visor de digitalcommons no resuelve.
+- **Moore y Deiter (1992)**, Kaibab Plateau: la entrega sí abrió la copia
+  digitalizada y confirmó el índice de densidad de rodal como predictor, con r²
+  de 0,76 lineal y 0,72 no lineal, pero no pudo sacar las formas ni los
+  coeficientes.
+
+Las dos siguen pedidas, y el motivo es concreto: **si la pendiente relativa de
+Arizona se parece a la de Colorado, la forma es transferible y acequia tiene una
+función; si no se parece, lo de Metz es una anécdota de un bosque.** Es la
+diferencia entre poder usar el `arbolado_pct` de WorldCover y no poder.
+
+### Y Nepal queda cerrado del todo
+
+La entrega revisó el trabajo de 2016, el de 2018, buscó tesis, suplemento y nombre
+de bosque comunitario, y no encontró coordenada de parcela. Confirmó además, con
+las consultas de RESOLVE que le pasé, que el rectángulo publicado cruza los biomas
+1, 3 y 7. **Búsqueda cerrada sin inferir un punto**, que es como tenía que
+cerrarse.
