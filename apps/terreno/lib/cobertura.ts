@@ -85,9 +85,18 @@ export interface BandaDeClase {
  * máximo de los máximos de los sitios que declararon esa `clase_wc`. Por eso se
  * corrige sola cuando entra una medición nueva, y hay un test que la compara
  * contra el arreglo para que las dos no puedan separarse.
+ *
+ * **Sólo entran las mediciones de secano**, y eso no es un detalle del filtro: un
+ * píxel de WorldCover dice que hay un cultivo y **no dice si está fertilizado ni
+ * si está regado**. Las dos únicas mediciones que acequia tiene de la clase 40
+ * son una avena con 115 kg N/ha y una alfalfa con 1.300 mm de riego, que difieren
+ * 3,04 veces entre sí por eso mismo; la segunda recibió más agua de riego que la
+ * lluvia anual de cualquiera de los sitios de secano del archivo, cuyo techo es
+ * el 1.119 mm del altiplano de Puno. Si entraran, cualquier
+ * predio con un lote sembrado recibiría la oferta de una alfalfa bajo riego.
  */
 export function bandaDeClase(clase_wc: number): BandaDeClase | null {
-  const sitios = FORRAJE_MEDIDO.filter(m => m.clase_wc === clase_wc);
+  const sitios = FORRAJE_MEDIDO.filter(m => m.clase_wc === clase_wc && m.insumos === 'secano');
   if (sitios.length === 0) return null;
   return {
     clase_wc,
@@ -123,7 +132,8 @@ export interface ForrajeDeCobertura {
  * —pastizal 3.500, arbustal 1.800, cultivo 4.500, arbolado 800— sin ninguna
  * fuente, promediados igual que ahora, y el resultado impreso como un entero con
  * separador de miles. Dos de los cuatro no tenían ni una medición detrás
- * (arbustal y cultivo, y el cultivo sigue sin tenerla) y los otros dos quedaron
+ * (arbustal y cultivo; el cultivo tiene dos desde el lote 12 y ninguna sirve
+ * para la banda, porque una está fertilizada y la otra regada) y los otros dos quedaron
  * contradichos por las mediciones que aparecieron entre el 10 y el 17 de
  * octubre: el arbolado va de 39 a 940 kg MS/ha·año según cuánta luz pase el
  * dosel y el pastizal de 350 a 10.630 según el sitio. Un entero en el medio de
@@ -138,8 +148,9 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Doce sitios en cuatro continentes es poco, y la clase de
- * cobertura por sí sola no determina el forraje: adentro de cada banda queda un
+ * **Rango de validez.** Catorce sitios en cuatro continentes es poco —y doce de
+ * los catorce son los que la banda puede usar—, y la clase de cobertura por sí
+ * sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
  * factor 236 entre sus dos puntas— y la lluvia para el pastizal, que es lo que

@@ -466,14 +466,14 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son doce sitios en siete de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(12);
+  it('son catorce sitios en siete de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(14);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(7);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
   });
 
-  it('cuatro de los doce son sotobosque, y hay que poder contarlos', () => {
+  it('cuatro de los catorce son sotobosque, y hay que poder contarlos', () => {
     // Son tres mediciones de abajo de un dosel cerrado, y no se pueden leer
     // como la producción de su bioma: dos de ellas abren un bioma nuevo y la
     // tercera cae en el bioma de la pradera de Dakota produciendo 44× menos.

@@ -23,7 +23,7 @@ import {
 } from '@/lib/cobertura';
 import {
   FORRAJE_MEDIDO, FRACCION_AEREA_MONTECILLO, FRACCION_HERBACEA_DEL_SITIO,
-  TNPP_MONTECILLO_POR_ANIO, fraccionAerea, fraccionHerbacea,
+  TNPP_MONTECILLO_POR_ANIO, TIPOS_SIN_DESCONTAR, fraccionAerea, fraccionHerbacea,
 } from '@/lib/forrajeMedido';
 
 /** Un predio de prueba: pares de clase y porcentaje. */
@@ -37,7 +37,8 @@ function predio(...partes: Array<[number, number]>): ItemCobertura[] {
 describe('la banda de cada clase sale de las mediciones y de ningún otro lado', () => {
   it('se puede derivar por otro camino y da lo mismo', () => {
     for (const clase of CLASES_PASTOREABLES) {
-      const sitios = FORRAJE_MEDIDO.filter(m => m.clase_wc === clase);
+      // La misma regla, derivada a mano: la clase, y sólo secano.
+      const sitios = FORRAJE_MEDIDO.filter(m => m.clase_wc === clase && m.insumos === 'secano');
       const banda = bandaDeClase(clase);
       if (sitios.length === 0) {
         expect(banda).toBeNull();
@@ -76,11 +77,40 @@ describe('la banda de cada clase sale de las mediciones y de ningún otro lado',
     expect((b?.kg_ms_ha_anio_max ?? 0) / (b?.kg_ms_ha_anio_min ?? 1)).toBeGreaterThan(30);
   });
 
-  it('el cultivo no tiene ninguna medición, y eso es la respuesta', () => {
+  it('el cultivo tiene dos mediciones y ninguna sirve para la banda', () => {
     // Los 4.500 kg MS/ha/año que la app le asignaba al cultivo nunca tuvieron
-    // fuente, y sigue sin tenerla. La diferencia es que ahora se dice.
+    // fuente. El lote 12 trajo dos mediciones de INTA, las dos buenas, y la
+    // banda sigue vacía: una está fertilizada con 115 kg N/ha y la otra recibió
+    // 1.300 mm de riego. Un píxel de WorldCover no sabe nada de eso.
     expect(bandaDeClase(40)).toBeNull();
-    expect(FORRAJE_MEDIDO.filter(m => m.clase_wc === 40)).toHaveLength(0);
+    expect(FORRAJE_MEDIDO.filter(m => m.clase_wc === 40)).toHaveLength(2);
+    expect(FORRAJE_MEDIDO.filter(m => m.clase_wc === 40 && m.insumos === 'secano')).toHaveLength(0);
+  });
+
+  it('la banda sólo usa secano, y es lo único que la protege', () => {
+    // Si el filtro se cae, un predio con un lote sembrado recibe la oferta de
+    // una alfalfa bajo riego en el Monte: 21.035 kg MS/ha/año.
+    for (const clase of CLASES_PASTOREABLES) {
+      const banda = bandaDeClase(clase);
+      if (banda === null) continue;
+      const conInsumos = FORRAJE_MEDIDO.filter(
+        m => m.clase_wc === clase && m.insumos !== 'secano',
+      );
+      for (const m of conInsumos) {
+        expect(banda.kg_ms_ha_anio_max).toBeLessThan(m.kg_ms_ha_anio_max);
+      }
+    }
+    const regada = FORRAJE_MEDIDO.find(m => m.insumos === 'riego');
+    expect(regada?.kg_ms_ha_anio_max).toBe(21035);
+    // Y es más agua de riego que la lluvia del sitio de secano más húmedo.
+    const lluviaMaxSecano = Math.max(
+      ...FORRAJE_MEDIDO.filter(m => m.insumos === 'secano' && m.lluvia_mm_max !== null)
+        .map(m => m.lluvia_mm_max ?? 0),
+    );
+    // Es Puno, con 1.119 mm en La Raya, y no el Delta con 1.056: el techo de la
+    // lluvia de secano está en la puna y no en el pastizal más húmedo.
+    expect(lluviaMaxSecano).toBe(1119);
+    expect(regada?.lluvia_mm_max).toBeGreaterThan(lluviaMaxSecano);
   });
 
   it('toda medición declara una clase pastoreable o declara que no sabe', () => {
@@ -274,5 +304,71 @@ describe('la segunda fracción: la capa herbácea contra su propio sitio', () =>
     expect(edwards.herbacea).toBe(1840);
     expect(edwards.aerea_total).toBe(2000);
     expect(fraccionHerbacea(edwards)).toBeCloseTo(0.92, 6);
+  });
+});
+
+describe('lote 12 — el cultivo, medido y afuera de la banda', () => {
+  const avena = FORRAJE_MEDIDO.find(m => m.sitio.includes('Avena'))!;
+  const alfalfa = FORRAJE_MEDIDO.find(m => m.sitio.includes('Alfalfa'))!;
+
+  it('las dos son clase 40, tipo cultivo sembrado, y declaran sus insumos', () => {
+    expect(avena.clase_wc).toBe(40);
+    expect(alfalfa.clase_wc).toBe(40);
+    expect(avena.tipo).toBe('ms_cultivo_sembrado');
+    expect(alfalfa.tipo).toBe('ms_cultivo_sembrado');
+    expect(avena.insumos).toBe('fertilizado');
+    expect(alfalfa.insumos).toBe('riego');
+    // El tipo no descuenta uso admisible, como los otros cuatro.
+    expect(TIPOS_SIN_DESCONTAR).toContain('ms_cultivo_sembrado');
+  });
+
+  it('entre las dos hay un factor 3, y lo explica el insumo', () => {
+    // 19.880 contra 6.539 kg MS/ha/año. Las dos en el bioma 8, las dos en
+    // Argentina, las dos de INTA: lo que cambia es el agua y el nitrógeno.
+    expect(avena.kg_ms_ha_anio_tipico).toBe(6539);
+    expect(alfalfa.kg_ms_ha_anio_tipico).toBe(19880);
+    expect((alfalfa.kg_ms_ha_anio_tipico ?? 0) / (avena.kg_ms_ha_anio_tipico ?? 1)).toBeCloseTo(3.04, 2);
+    expect(avena.bioma).toBe(alfalfa.bioma);
+  });
+
+  it('la alfalfa regada casi duplica la medición de secano más alta', () => {
+    const maxSecano = Math.max(
+      ...FORRAJE_MEDIDO.filter(m => m.insumos === 'secano').map(m => m.kg_ms_ha_anio_max),
+    );
+    expect(maxSecano).toBe(10630);
+    expect((alfalfa.kg_ms_ha_anio_tipico ?? 0) / maxSecano).toBeCloseTo(1.87, 2);
+  });
+
+  it('la lluvia de la avena es la del año medido, no la normal', () => {
+    // 984 mm es la suma de la serie mensual de 2024 que publica la fuente, en un
+    // año con cero milímetros en junio, julio y septiembre y una helada de
+    // −9,4 °C en agosto. La media de 19,3 °C es el promedio de las doce medias
+    // mensuales, que sí es una media anual legítima.
+    expect(avena.lluvia_mm_min).toBe(984);
+    expect(avena.temp_media_c_anual).toBeCloseTo(19.3, 1);
+    expect(avena.donde_deja_de_valer).toContain('−9,4');
+  });
+
+  it('el riego no se disfraza de lluvia: la alfalfa no trae temperatura', () => {
+    // Los 1.300 mm están en el campo de lluvia porque es el agua que recibió el
+    // cultivo, y el texto lo dice en todos lados. Sin temperatura publicada, el
+    // contraste del Miami Model no se puede correr sobre este sitio, y eso es
+    // preferible a inventarle una media.
+    expect(alfalfa.lluvia_mm_min).toBe(1300);
+    expect(alfalfa.temp_media_c_anual).toBeNull();
+    expect(alfalfa.donde_deja_de_valer).toContain('RIEGO');
+  });
+
+  it('un predio todo cultivo sigue sin banda, y lo dice', () => {
+    const f = forrajePorCobertura(predio([40, 100]));
+    expect(f).toBeNull();
+  });
+
+  it('un predio mitad pastizal mitad cultivo declara el 50 % sin fuente', () => {
+    const f = forrajePorCobertura(predio([30, 50], [40, 50]));
+    expect(f?.kg_ms_ha_anio_min).toBe(350);
+    expect(f?.kg_ms_ha_anio_max).toBe(10630);
+    expect(f?.pct_sin_fuente).toBe(50);
+    expect(f?.clases_sin_fuente).toEqual(['Cultivo']);
   });
 });

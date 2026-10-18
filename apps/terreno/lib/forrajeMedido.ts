@@ -314,6 +314,50 @@
  * lo que está parado como si fuera lo que creció. Acá llevaría a cargar cincuenta
  * veces de más.
  *
+ * ## El cultivo está medido y no se puede usar como el cultivo de un predio
+ *
+ * El lote 12 fue a buscar la clase 40 de WorldCover, la única de las cuatro
+ * pastoreables que no tenía ninguna medición, y trajo dos, las dos de INTA, las
+ * dos con coordenada publicada y las dos verificadas en bioma 8:
+ *
+ * | sitio | insumos | kg MS/ha/año | cortes |
+ * |---|---|---|---|
+ * | Avena, 14 cultivares, Marcos Juárez, 2024 | 115 kg N/ha | 5.460 - **6.539** - 7.862 | 4 |
+ * | Alfalfa, 10 cultivares, Curacó, 2013-14 | **1.300 mm de riego** | 18.674 - **19.880** - 21.035 | 5 |
+ *
+ * **Y ninguna de las dos puede alimentar la banda de la clase 40.** El motivo no
+ * es la calidad del dato, que es mejor que la de varias que sí están montadas:
+ * es que un píxel de ESA WorldCover dice que hay un cultivo y **no dice si está
+ * fertilizado ni si está regado**, y entre esas dos mediciones hay un factor
+ * 3,04 que lo explica casi todo.
+ *
+ * El riego de Curacó son **1.300 mm en una temporada**, más que la lluvia anual
+ * de cualquiera de los doce sitios de secano de este archivo: el techo de todos
+ * es el 1.119 mm del altiplano de Puno. Y los 19.880 kg MS/ha son
+ * **1,87 veces la medición de secano más alta que acequia tiene** (los 10.630 de
+ * la NPP aérea de Montecillo). Meter eso en la banda del cultivo haría que
+ * cualquier predio con un lote sembrado recibiera la oferta de forraje de una
+ * alfalfa bajo riego en el Monte.
+ *
+ * Por eso cada medición ahora declara sus `insumos` y **la banda usa sólo las de
+ * `secano`**. La clase 40 sigue sin banda, y el motivo pasó de «no hay datos» a
+ * «los datos que hay miden otra cosa», que es una respuesta distinta y mejor.
+ *
+ * Dos cosas de la avena que valen por sí solas. Es un verdeo **fertilizado en un
+ * año malo**: la fuente publica 11 mm en mayo, cero en junio, julio y septiembre,
+ * y una helada de −9,4 °C el 9 de agosto que «se registraron daños en la biomasa
+ * aérea en la mayoría de los genotipos». Insumos para arriba y clima para abajo,
+ * en la misma cifra, sin forma de separarlos. Y el reparto entre cortes importa
+ * más que el total para cualquiera que planifique un invierno: el primer corte y
+ * el cuarto aportan el 60 % del año, y los dos del medio —los del invierno
+ * pleno— el 40 %.
+ *
+ * Lo que el lote NO encontró, y es la parte que faltaba: **rastrojo**. Dos
+ * búsquedas vacías con el motivo escrito. Es el dato que de verdad haría falta,
+ * porque un rastrojo de maíz es lo que un predio mixto realmente pastorea en
+ * otoño, y porque es la única familia de las tres donde el número no depende de
+ * lo que el productor le puso al cultivo sino de lo que la cosecha dejó.
+ *
  * ## El lote 09 cerró la primera fracción, y la cerró en contra
  *
  * El plan del 17/10 era bajar de la NPP total al forraje por tres fracciones:
@@ -502,7 +546,8 @@ export type TipoDeCifra =
   | 'ms_herbacea_total'
   | 'ms_forrajera'
   | 'npp_herbacea'
-  | 'ms_sotobosque';
+  | 'ms_sotobosque'
+  | 'ms_cultivo_sembrado';
 
 /**
  * Las clases de cifra que NO traen descontado el uso admisible.
@@ -522,7 +567,24 @@ export const TIPOS_SIN_DESCONTAR: readonly TipoDeCifra[] = [
   'ms_forrajera',
   'npp_herbacea',
   'ms_sotobosque',
+  'ms_cultivo_sembrado',
 ] as const;
+
+/**
+ * De dónde sale la producción, además del clima.
+ *
+ * Se agregó con el lote 12 y no es un adorno: es lo que separa una medición que
+ * dice qué puede dar un lugar de una que dice qué puede dar un lugar **más los
+ * insumos que alguien le puso**. `bandaDeClase` en `cobertura.ts` usa sólo las de
+ * `secano`, porque un píxel de ESA WorldCover dice que hay un cultivo y no dice
+ * si está fertilizado ni si está regado.
+ *
+ * La alfalfa de Curacó recibió **1.300 mm de riego en una temporada**, que es más
+ * agua que la lluvia anual de cualquiera de los doce sitios de secano que había
+ * antes: el techo de todos es el 1.119 mm del altiplano de Puno, y el sitio más
+ * húmedo de tierras bajas, el Delta del Paraná, recibe 1.056.
+ */
+export type Insumos = 'secano' | 'fertilizado' | 'riego' | 'riego_y_fertilizado';
 
 export interface MedicionForraje {
   /** Bioma global de RESOLVE al que pertenece el sitio medido. */
@@ -542,6 +604,13 @@ export interface MedicionForraje {
    * este campo tenía que inventarlos, y los inventaba.
    */
   clase_wc: number | null;
+  /**
+   * Si la cifra se logró con insumos, y cuáles.
+   *
+   * **Sólo las de `secano` entran en la banda de forraje por clase de cobertura.**
+   * Las otras son mediciones buenas que contestan otra pregunta.
+   */
+  insumos: Insumos;
   tipo: TipoDeCifra;
   kg_ms_ha_anio_min: number;
   kg_ms_ha_anio_max: number;
@@ -586,12 +655,13 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son **doce sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
- * No son un modelo: son los puntos que hay. Cuatro de los doce son sotobosque de
- * bosque cerrado y no pastizal, y eso cambia cómo se leen: ver `ms_sotobosque`.
- * Cada uno declara además su `clase_wc`, que es de donde `cobertura.ts` saca la
- * banda de cada clase de cobertura: siete en la 30, uno en la 20, cuatro en la 10
- * y **ninguno en la 40**, el cultivo.
+ * Son **catorce sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
+ * No son un modelo: son los puntos que hay. Cuatro de los catorce son sotobosque
+ * de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
+ * `ms_sotobosque`. Cada uno declara además su `clase_wc` y sus `insumos`, que es
+ * de donde `cobertura.ts` saca la banda de cada clase de cobertura: siete en la
+ * 30, uno en la 20, cuatro en la 10 y dos en la 40 que **no entran en ninguna
+ * banda** porque una está fertilizada y la otra regada.
  *
  * Los dos últimos son el mismo lugar contado dos veces, y es deliberado: en
  * Manitou las parcelas bajo dosel y las aberturas del mismo bosque, el mismo día
@@ -604,6 +674,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_pastizal_templado',
     sitio: 'Loamy Upland, MLRA 53B, Dakota del Norte y del Sur',
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // 2.733 y 2.358 lb/acre. El de abajo NO es un año malo: es el estado al que
     // el sitio transiciona con pastoreo continuo intenso o continuo de
@@ -633,6 +704,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // medias; las leñosas están y la ficha las cuenta aparte, y de ahí sale la
     // fracción herbácea de 0,92 de `FRACCION_HERBACEA_DEL_SITIO`.
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // Gramíneas 680–2.125 lb/acre y hierbas 56–175, o sea 736–2.300 en conjunto,
     // con valor representativo 1.840. La ficha publica además el total del sitio
@@ -661,6 +733,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_montano',
     sitio: 'Chuquibambilla (3.910 m) y La Raya (4.300 m), Puno, Altiplano peruano',
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // 626,4 · 1.237,0 · 1.340,8 · 1.957,7 kg MS/ha para los cuatro pastizales.
     // Son la biomasa ANUAL, ya separada de la permanente: la biomasa total en
@@ -692,6 +765,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // cobertura herbácea de ese potrero—, así que es producción herbácea por
     // hectárea de arbustal y no de los claros entre arbustos.
     clase_wc: 20,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // «ranging from very small values close to 300 kg/ha to those of about 5800
     // kg/ha at a flat pasture plot, which in the past was used for annual
@@ -725,6 +799,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // del liquen, que es exactamente el error que documenta la sección de la
     // inversión del stock.
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'npp_herbacea',
     // «Yearly primary production was estimated to be between 35 and 96 g m-2
     // for aboveground vascular plants», o sea 350 a 960 kg/ha/año.
@@ -755,6 +830,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_pastizal_templado',
     sitio: 'Pastizal de albardón, isla de Baradero, Delta Medio del Paraná',
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_forrajera',
     // «En el período de primavera a otoño, descansos bimestrales o más
     // prolongados del pastoreo permiten obtener producciones forrajeras desde
@@ -791,6 +867,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_desierto_matorral_xerofilo',
     sitio: 'Pastizal salino de Montecillo (MNT1), borde del lecho del lago de Texcoco, México',
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // El rango NO es la variación entre años ni entre potreros: es la que hay
     // entre los algoritmos publicados para esta misma serie de cosechas.
@@ -822,6 +899,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_bosque_templado_caducifolio_mixto',
     sitio: 'Sotobosque de un robledal-carpinal dominado por haya, Różańsko, noroeste de Polonia',
     clase_wc: 10,
+    insumos: 'secano',
     tipo: 'ms_sotobosque',
     // El mínimo es el método 1 en 2010 (37,835 g/m²) y el máximo el método 6 en
     // 2011 (93,958). Sin típico: la fuente no elige uno, compara los seis.
@@ -846,6 +924,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Sotobosque de un rodal de aliso rojo, Cascade Head 1A, transecto OTTER, Oregón',
     clase_wc: 10,
+    insumos: 'secano',
     tipo: 'ms_sotobosque',
     kg_ms_ha_anio_min: 410,
     kg_ms_ha_anio_max: 410,
@@ -878,6 +957,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // Bioma 8 y clase 10: el bioma dice pradera templada y arriba hay un dosel
     // cerrado de conífera. La discordancia es el dato.
     clase_wc: 10,
+    insumos: 'secano',
     tipo: 'ms_sotobosque',
     kg_ms_ha_anio_min: 60,
     kg_ms_ha_anio_max: 60,
@@ -905,6 +985,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Once parcelas bajo dosel de ponderosa, Manitou Experimental Forest, Colorado',
     clase_wc: 10,
+    insumos: 'secano',
     tipo: 'ms_sotobosque',
     // 35 lb/acre con 78 % de densidad de copa y 449 con 29 %. En lb/acre, que es
     // lo que publica la tesis; la conversión exacta es LB_ACRE_A_KG_HA.
@@ -938,6 +1019,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Tres aberturas naturales sin dosel, Manitou Experimental Forest, Colorado',
     clase_wc: 30,
+    insumos: 'secano',
     tipo: 'ms_herbacea_total',
     // 465, 474 y 587 lb/acre. Sin típico: la tesis no elige uno.
     kg_ms_ha_anio_min: 521,
@@ -954,6 +1036,73 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     fuente: {
       label: 'Metz, Harley E. (1974), «Relationship between ponderosa pine and understory herbage production», tesis de maestría, Colorado State University, 90 p. — Tablas 1 y 2',
       url: 'https://www.fs.usda.gov/rm/pubs_exp_forests/manitou/rmrs_1974_metz_h001.pdf',
+    },
+  },
+  {
+    // Lote 12. Las dos primeras mediciones de tierra de cultivo, y las dos
+    // quedan AFUERA de la banda de la clase 40 por su `insumos`. No es un
+    // descarte: es lo que las dos miden. Ver la sección «El cultivo está medido
+    // y no se puede usar como el cultivo de un predio cualquiera».
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Avena de catorce cultivares, EEA INTA Marcos Juárez, Córdoba',
+    clase_wc: 40,
+    insumos: 'fertilizado',
+    tipo: 'ms_cultivo_sembrado',
+    // Suma de cuatro cortes. El mínimo es MARIA INTA y el máximo MANUELA INTA;
+    // el típico es el promedio de los catorce que publica el propio informe, no
+    // un punto medio calculado.
+    kg_ms_ha_anio_min: 5460,
+    kg_ms_ha_anio_max: 7862,
+    kg_ms_ha_anio_tipico: 6539,
+    // Los 984 mm son la suma de la serie mensual de 2024 que publica el Cuadro 3,
+    // o sea la lluvia DEL AÑO MEDIDO y no la normal del lugar. Se declara así
+    // porque la diferencia importa: 2024 tuvo cero milímetros en junio, julio y
+    // septiembre.
+    lluvia_mm_min: 984,
+    lluvia_mm_max: 984,
+    // Promedio de las doce medias mensuales del mismo cuadro. Es una media anual
+    // legítima —no un máximo promediado con un mínimo, que es lo que prohíbe la
+    // regla— pero es la del año medido y no la normal.
+    temp_media_c_anual: 19.3,
+    metodo: 'Ensayo de catorce cultivares en parcelas de 7,2 m² con tres repeticiones, siembra directa el 27/03/2024. Cosecha mecanizada cada vez que el 50 % de las variedades alcanzaba EC 3.1 de Zadoks o 20 cm de altura, lo que pasara primero: cuatro cortes, el 13/06, 16/08, 18/09 y 29/10. La cifra anual es la SUMA de los cuatro. CV del 8,8 % y LSD de Fisher al 5 % de 294 kg MS/ha.',
+    que_cuenta: 'Materia seca aérea de los cuatro cortes de un verdeo de invierno sembrado. No es consumo, no es fracción comible y no es rastrojo: el último rebrote se secó para sembrar soja de primera. Y no es lo que da el lote sin insumos: el ensayo recibió 69 kg N/ha de urea en presiembra, 100 kg/ha de MicroEssentials a la siembra y 46 kg N/ha más en la primera semana de agosto, o sea 115 kg N/ha en total.',
+    estacionalidad: 'Verdeo anual de invierno, con el ciclo completo entre marzo y octubre. El reparto entre cortes no es parejo y el promedio de los catorce cultivares lo muestra: 1.994, 1.329, 1.254 y 1.964 kg MS/ha. El primer corte y el último aportan el 60 % del año.',
+    donde_deja_de_valer: 'Un sitio y una campaña, y una campaña mala: la fuente informa 11 mm en mayo, cero en junio, julio y septiembre, y heladas en agosto con un mínimo de −9,4 °C que dañaron la biomasa aérea de la mayoría de los genotipos. Así que estos 6.539 kg MS/ha son de un verdeo fertilizado en un año seco y con heladas, lo cual tira para los dos lados y no se puede corregir. La coordenada es la de la estación meteorológica de la EEA, que tiene 1.451 ha, y no la del lote.',
+    medido_en: 'campaña agrícola 2024',
+    fuente: {
+      label: 'Donaire, G. et al. — «Evaluación de cultivares de avena para producción de forraje en INTA EEA Marcos Juárez. Campaña agrícola 2024» (Cuadros 2, 3 y 4)',
+      url: 'https://www.argentina.gob.ar/sites/default/files/2025/02/inta_crcordoba_eeamarcosjuarez_donaire_g_evaluacion_ave.pdf',
+    },
+  },
+  {
+    // La otra punta de lo que puede dar un cultivo: 19.880 kg MS/ha/año, que es
+    // 1,87 veces la medición de secano más alta que tiene acequia y 3,04 veces
+    // la avena fertilizada de arriba. La diferencia es el agua que alguien puso.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Alfalfa de diez cultivares bajo riego, establecimiento Curacó, 25 de Mayo, La Pampa',
+    clase_wc: 40,
+    insumos: 'riego',
+    tipo: 'ms_cultivo_sembrado',
+    // Suma de cinco cortes. Mínimo CW660, máximo Sofía, y el típico es el
+    // promedio de los diez que publica el Cuadro 1. La conclusión de la fuente
+    // dice «un rango máximo entre 19-21 t MS/ha/año».
+    kg_ms_ha_anio_min: 18674,
+    kg_ms_ha_anio_max: 21035,
+    kg_ms_ha_anio_tipico: 19880,
+    // NO es lluvia: es riego, 1.300 mm por melgas cada quince días. Va acá
+    // porque es el agua que recibió el cultivo, y queda dicho en todos lados que
+    // la puso el hombre. La lluvia del lugar no la publica la fuente.
+    lluvia_mm_min: 1300,
+    lluvia_mm_max: 1300,
+    temp_media_c_anual: null,
+    metodo: 'Diez cultivares de distinto grado de reposo invernal en bloques aleatorizados con cuatro repeticiones, parcelas de 6 m² (1 × 6 m) con cinco surcos a 0,20 m, implantadas el 11/04/2013. Cortes al 10 % de floración o cuando los rebrotes de corona llegaban a unos 5 cm: cinco cortes, el 06/11/2013, 29/11/2013, 04/02/2014, 25/03/2014 y 05/05/2014. La cifra anual es la suma de los cinco. Diferencias por LSD de Fisher p<0,05; no publica error estándar.',
+    que_cuenta: 'Materia seca aérea cosechada de una alfalfa implantada, que es un cultivo puro de una especie forrajera: a diferencia de un pastizal natural, acá no hay fracción no forrajera que descontar. No es consumo y no es campo natural.',
+    estacionalidad: 'Cinco cortes de noviembre a mayo, y el reparto es muy desigual: el promedio de los diez cultivares da 3.561, 3.149, 3.162, 3.983 y 6.027 kg MS/ha. El último corte, el de mayo, aporta el 30 % del año.',
+    donde_deja_de_valer: 'Un sitio y una temporada, bajo RIEGO GRAVITACIONAL: la fuente informa unos 1.300 mm aplicados por melgas cada quince días desde el 30 de agosto. Eso es más agua que la lluvia anual de cualquiera de los doce sitios de secano de este archivo —el techo de todos es el 1.119 mm de la puna de Puno—, en una zona del Monte donde la lluvia natural no llega a la mitad. La propia fuente dice que las diferencias de producción fueron independientes del grado de reposo invernal. No estima el potencial de secano, y por eso `insumos` es `riego`.',
+    medido_en: 'temporada 2013-2014',
+    fuente: {
+      label: 'Zamora, C. D. et al. — «Evaluación de la producción de materia seca en variedades de alfalfa (Medicago sativa) de diferentes grados de reposo invernal, en el área bajo riego de 25 de Mayo, La Pampa» (p. 332 y Cuadro 1)',
+      url: 'https://repositorio.inta.gob.ar/xmlui/bitstream/handle/20.500.12123/674/CR%20La%20Pampa-San%20Luis_EEA%20Anguil_Zamora_CD_Evaluaci%C3%B3n%20de%20la%20producci%C3%B3n%20de%20materia%20seca.pdf?isAllowed=y&sequence=1',
     },
   },
 ] as const;
