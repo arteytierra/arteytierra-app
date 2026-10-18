@@ -19,6 +19,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 11 | el dosel, de nuevo | **montado** el 17/10/2026 — dos entradas y la primera curva |
 | 12 | el cultivo (clase 40) | **montado y afuera del cálculo** el 17/10/2026 |
 | 13 | la fracción comible | **montada con un solo par** el 18/10/2026 |
+| 14 | el arbustal (clase 20) | **el arbustal no entró; entró el bioma 7** el 18/10/2026 |
 
 ---
 
@@ -1516,3 +1517,193 @@ una estación; Glencoe aporta desaparición aparente e ingestión por animal y d
 pero no total herbáceo ni masa ingerida por hectárea— y **no infirió que la
 desaparición fuera consumo ni dividió la oferta de una fuente por el consumo de
 otra**. Es exactamente lo que la regla pedía.
+
+## Lote 14 — el arbustal no entró, entró el bioma que faltaba, y las dos coordenadas eran de un pueblo
+
+Dos entradas y seis vacías. El frente que el encargo marcó como prioridad —la
+clase 20— **no avanzó**, y el motivo por el que no avanzó vale más que si hubiera
+avanzado. De paso se cerró el agujero más viejo de la cadena.
+
+### El bioma 7 entra, al quinto intento
+
+La sabana de *Trachypogon* de la Estación Biológica de Los Llanos, en Calabozo,
+Venezuela: **375 g MS/m²/año de producción aérea**, o 3.750 kg/ha/año. `ECO_ID`
+572, Llanos, **bioma 7 verificado contra RESOLVE**, y verificado también 10 km
+más allá, así que la asignación no depende de dónde cayó el punto.
+
+Es el bioma donde cae la mayoría de los predios ganaderos del mundo y el que este
+encargo persigue desde el lote 04. Los intentos anteriores fueron: Serengeti y
+Nylsvley (siete cifras publicadas del mismo sitio con factor 7,6 entre ellas),
+los dos Pantanales (bioma 9 y disponibilidad por fecha, no producción), Towoomba
+(fertilizada) y Glencoe (masa en pie, no producción). Calabozo entra porque es un
+**flujo anual** y no un stock, y porque no es un ensayo agronómico.
+
+Las tres cifras están textuales en la ficha: 375 aéreos, 307 subterráneos, 682 de
+total. **El 682 es el número que anda citado por ahí**, y confundirlo con el
+aéreo infla el forraje 1,82 veces.
+
+Lo que la cifra no dice, y hay que leerlo antes de usarla: el sitio es una reserva
+protegida del pastoreo y del fuego desde 1960, y el dato crudo de enero de 1969
+—que la entrega no miró— dice **100 g/m² de biomasa viva contra 1.025 de materia
+muerta en pie**. La producción de la comunidad es ésa; lo que un animal
+encontraría ahí, no. Y la parcela quemada del mismo año produce 755 de NPP total
+contra 682: el fuego la subió un 11 %.
+
+### Hizo falta agregar dos campos, y los dos nacieron de un silencio
+
+**`insumos: 'desconocido'`.** La ficha dice que en ese trabajo se midieron
+parcelas quemadas, sin quemar *y el efecto del riego en la estación seca*, y no
+dice qué le pasó a la parcela cuyo número se publica. El tipo tenía cuatro valores
+y **los cuatro afirmaban algo**. La regla J del encargo —nunca asumir secano por
+omisión— no se podía cumplir con el tipo que había. `bandaDeClase` filtra por
+`secano`, así que esto queda afuera de las bandas sin tocar una línea de cálculo.
+
+**`coordenada`.** Nace de un defecto de mi propio archivo: `clase_wc` decide la
+banda de cada clase de cobertura y **no se guardaba de dónde había salido**, así
+que ninguna asignación de clase se podía volver a revisar. El único sitio de la
+clase 20 llevaba un comentario que decía «frygana: arbustal» y nada más.
+
+Fui a ver de dónde salía ese 20, y sale de mejor lugar que el nombre de la
+vegetación: el trabajo de Lesbos publica que *«Land cover is dominated by
+shrublands and phrygana vegetation amounting to 76% of the area»*. Es una cifra de
+cobertura, no una etiqueta. Eso quedó escrito, y también que ese trabajo **no
+publica coordenada**, así que su píxel no se puede consultar y el 76 % es lo mejor
+que hay. Dato que apareció en el camino: nueve de los catorce potreros son
+«improved» por terrazas, despiedre y cultivo previo, y ninguna de esas mejoras es
+fertilizante ni riego, así que `secano` se sostiene.
+
+### Las dos coordenadas eran de un pueblo
+
+Y es el hallazgo que más lejos llega, porque no es sobre estos dos sitios.
+
+| | lo que publica la fuente | lo que hay ahí |
+|---|---|---|
+| Calabozo, «study site» | 8,93 N / 67,42 W | **93 % construido**: la ciudad |
+| Calabozo, estación meteorológica | 8,88 N / 67,32 W | 76 / 85 / 72 % pastizal a 500 m, 2 km, 5 km |
+| Río Mayo | 45°41′ S / 70°16′ W, al minuto | 74 / 53 / 40 % pastizal; a 5 km lo pasa el desnudo |
+
+La ficha de Calabozo publica dos coordenadas separadas 12,3 km y, cuatro párrafos
+más abajo de la primera, dice que el sitio está *«about 10-km south-southeast of
+Calabozo»*. **La fuente se desmiente sola y ninguna de las dos entregas lo
+notó** —ni la de GPT ni la mía, que acepté la primera como «estación
+experimental»—. La que sirve es la segunda, que está en la Estación Biológica, que
+es donde la ficha dice que está el sitio.
+
+La de Río Mayo está dada **al minuto de arco**, que a 45° S son ±1,5 km. No es una
+coordenada de parcela, y la entrega la declaró como `parcela`.
+
+**La lección no es «verificar la coordenada».** Las dos tenían grados, minutos y
+hemisferio bien puestos: son coordenadas bien formadas y de lugares equivocados.
+Lo que las delató fue preguntarle al píxel qué hay ahí. El criterio que quedó
+escrito en el código es la **estabilidad**: una clase que no cambia entre 500 m,
+2 km y 5 km se puede escribir, y una que cambia es `null`.
+
+### El arbustal no avanzó, y ése es el resultado
+
+El encargo fue a buscar la clase 20 porque es la banda más floja de las cuatro
+—un solo sitio, factor 19— y la única que el usuario ya ve en pantalla. Trajo
+exactamente lo que había pedido: una estepa **arbustiva** de Patagonia, con 12 %
+de cobertura de arbustos, 25 % de gramíneas en mata, y tres especies leñosas
+medidas una por una por doble muestreo.
+
+No alimenta la clase 20. El arbustal es el **9,4 %, el 6,5 % y el 3,1 %** de los
+píxeles en las tres ventanas, y **baja al ampliar**.
+
+**Lo que un agrónomo llama estepa arbustiva, el satélite lo llama pastizal.** Ahí
+está el error de método de los cinco lotes anteriores: la banda de la clase 20 no
+se llena buscando trabajos que describan arbustos, porque la clase 20 es una
+propiedad del mapa y no de la vegetación. Se llena buscando sitios cuyo píxel sea
+20 — y eso se puede comprobar antes de leer el trabajo.
+
+### Río Mayo entra por otra puerta, y la puerta era importante
+
+Con **191 mm** es el sitio más seco del archivo por lejos —el anterior era Lesbos
+con 354— y el primero que cae en el primer escalón de `prodForrajera`, el de menos
+de 300 mm, que devuelve 700 kg MS/ha/año y **nunca había tenido una medición que
+lo contradijera**.
+
+Contra la capa de gramíneas, 530 kg/ha, la escalera se pasa 1,32 veces. Es el
+mejor resultado que saca en todo este archivo, donde en el altiplano de Puno se
+pasa once veces.
+
+**Y aun así el escalón está mal, por la forma y no por la altura.** El mismo
+trabajo mide cuatro años más, con el método de pico, y da **21 a 75 g/m²/año con
+lluvias de 55 a 167 mm**: un factor 3,6 adentro de un tramo que devuelve una
+constante. Los cinco años caen en el mismo escalón y la función les da 700 a
+todos.
+
+Los autores agregan la forma de la respuesta, y es lo que ninguna escalera
+creciente puede tener: *«There was a large reduction in ANPP during a year of
+extreme drought; however, there were no increases in ANPP during years with
+above-average precipitation. This suggests that the carrying capacity for the
+Patagonian steppe may not be linearly related to precipitation»*. **La sequía baja
+la producción; la lluvia de más no la sube.** El reemplazo de `prodForrajera`
+tiene que ser asimétrico. Antes el diagnóstico era «una variable no alcanza»;
+ahora se sabe algo sobre la forma.
+
+### El cuarto punto de la fracción herbácea, y el primero sin dosel
+
+53 contra 79 g/m²/año: **0,671**. Mismo trabajo, misma campaña, misma unidad, y el
+trabajo lo publica además en palabras —*«two thirds of production were accounted
+for by perennial grasses and one third by shrubs»*—, así que el cociente no sale
+de juntar dos cifras: sale de la frase del autor y las cifras la confirman.
+
+Es el primer punto que **no** es un rodal ni una ficha del NRCS: una comunidad
+abierta, donde el dosel no intercepta nada. Cae adentro del factor 236 y confirma
+la lectura por el extremo que faltaba.
+
+### Una corrección mía, y la corrección de una corrección
+
+El lote 13 encontró que el par 11.200–11.400 contra 6.700–8.250 del Delta no es
+una fracción, y lo arregló **en la ficha**. Dejó sin tocar tres lugares más del
+mismo archivo: la tabla del encabezado del módulo, el párrafo de `TipoDeCifra`, y
+el título de un test que decía «en el mismo muestreo» y **pasaba igual**, que es
+la peor combinación posible.
+
+Arreglado buscando todas las apariciones en vez de la que tenía a la vista. El par
+del mismo muestreo es 10.533 contra 6.733: **1,56 veces**, no 1,36 a 1,70.
+
+La lección de método es corta: cuando se corrige un número, se busca el número, no
+el lugar donde se lo encontró.
+
+### Un test viejo atrapó algo real
+
+«La banda sólo usa secano» recorría todo lo que no era `secano` y exigía que
+estuviera **por encima** del techo de la banda, dando por hecho que un insumo sube
+la producción. Es cierto para `fertilizado` y `riego`. Con `desconocido` se cae:
+Calabozo entró con 3.750, bastante **por debajo** del techo de 10.630 de su propia
+clase, y la prueba falló por tener razón.
+
+Quedó partida en dos, y la mitad nueva es más fuerte que la que había: la
+exclusión no se verifica comparando magnitudes, se verifica comprobando que la
+banda no la contó.
+
+### El filo del lote 12, por tercera vez
+
+Calabozo llueve **1.257 mm**, más que el 1.119 de Puno, que es el techo de secano
+del archivo. La afirmación del lote 12 —el riego de Curacó supera la lluvia de
+cualquier sitio de secano— sobrevive porque Calabozo es `desconocido`, igual que
+sobrevivió al lote 13 porque Glencoe es `fertilizado`.
+
+**Dos lotes seguidos salvada por un tecnicismo del filtro es una afirmación mal
+escrita.** Quedó reescrita en la versión que no depende de nada: el riego supera la
+lluvia de cualquier sitio que **entre a una banda**. Esa es además la que le
+importa a `bandaDeClase`, y el test la verifica así.
+
+### Las vacías, y una que no lo está tanto
+
+Seis vacías, las seis bien declaradas. Dos observaciones:
+
+- La **curva de producción contra cobertura leñosa** se declaró vacía porque el
+  trabajo patagónico no ajusta la regresión. Correcto. Pero el de Lesbos, que ya
+  está montado, calcula la productividad de cada potrero como la jaula por el
+  porcentaje de cobertura herbácea **de ese potrero**: hay catorce pares de
+  cobertura y producción en una fuente que ya está en el archivo. No los pedí
+  nunca. Va al encargo 15.
+- Las dos vacías de arrastre —Bojórquez-Tapia 1990 y Moore & Deiter 1992— siguen
+  igual, y por una razón que ahora conozco de primera mano: el archivo del
+  *Journal of Range Management* está detrás de **Anubis**, una prueba de trabajo
+  anti-bot, y el repositorio de Arizona devuelve 403 a todo lo que no sea un
+  navegador. No es que la entrega no haya buscado bien. Para el trabajo de Río
+  Mayo resolví con el resumen publicado, que trae las cifras agregadas textuales;
+  las ecuaciones de esos dos no están en ningún resumen.
