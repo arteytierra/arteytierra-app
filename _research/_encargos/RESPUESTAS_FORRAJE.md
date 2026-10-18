@@ -17,6 +17,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 09 | la fracción aérea de la NPP | **cerrado en contra** el 17/10/2026 — y destapó la segunda fracción |
 | 10 | la curva de forraje contra dosel | **vacío** el 17/10/2026 — un rechazo bueno y dos de más |
 | 11 | el dosel, de nuevo | **montado** el 17/10/2026 — dos entradas y la primera curva |
+| 12 | el cultivo (clase 40) | **montado y afuera del cálculo** el 17/10/2026 |
 
 ---
 
@@ -1284,3 +1285,85 @@ de bosque comunitario, y no encontró coordenada de parcela. Confirmó además, 
 las consultas de RESOLVE que le pasé, que el rectángulo publicado cruza los biomas
 1, 3 y 7. **Búsqueda cerrada sin inferir un punto**, que es como tenía que
 cerrarse.
+
+## Lote 12 — el cultivo quedó medido, y quedó afuera del cálculo
+
+Dos entradas, las dos de INTA, las dos con coordenada publicada, las dos bien
+hechas. Y **ninguna de las dos puede alimentar la banda de forraje de la clase 40
+de WorldCover**, que era exactamente lo que el encargo pedía llenar.
+
+| sitio | insumos declarados | kg MS/ha/año | cortes |
+|---|---|---|---|
+| Avena, 14 cultivares, EEA INTA Marcos Juárez, 2024 | 115 kg N/ha | 5.460 - **6.539** - 7.862 | 4 |
+| Alfalfa, 10 cultivares, Curacó, 25 de Mayo, La Pampa, 2013-14 | **1.300 mm de riego** | 18.674 - **19.880** - 21.035 | 5 |
+
+Verifiqué las dos coordenadas con RESOLVE: Marcos Juárez da *Humid Pampas*
+(ECO_ID 576) y Curacó da *Low Monte* (577), las dos **bioma 8**. Los dos típicos
+son promedios que publican las propias fuentes, no puntos medios calculados.
+
+### Por qué no entran, y qué se hizo con eso
+
+**Entre las dos mediciones hay un factor 3,04**, y no lo explica el clima ni el
+bioma —son el mismo bioma, el mismo país y el mismo organismo—: lo explica lo que
+alguien le puso al cultivo. El riego de Curacó son **1.300 mm en una temporada**,
+más agua que la lluvia anual de cualquiera de los doce sitios de secano del
+archivo, cuyo techo es el 1.119 mm del altiplano de Puno. Y son **1,87 veces la
+medición de secano más alta que acequia tiene**, los 10.630 kg MS/ha de la NPP
+aérea de Montecillo.
+
+Un píxel de ESA WorldCover dice que hay un cultivo. **No dice si está fertilizado
+ni si está regado.** Si esas cifras entraran en la banda, cualquier predio con un
+lote sembrado recibiría la oferta de forraje de una alfalfa bajo riego en el
+Monte, que es el error más caro que acequia podría cometer en esta cadena.
+
+Así que entró un campo nuevo, `insumos`, con cuatro valores —`secano`,
+`fertilizado`, `riego`, `riego_y_fertilizado`—, las doce mediciones anteriores
+quedaron declaradas `secano` (lo son todas, verificado una por una) y
+**`bandaDeClase` usa sólo las de secano**. También entró un tipo de cifra nuevo,
+`ms_cultivo_sembrado`, porque un cultivo sembrado no es un pastizal natural ni
+aunque un satélite los confunda.
+
+**La clase 40 sigue sin banda, y el motivo cambió de «no hay datos» a «los datos
+que hay miden otra cosa».** Es una respuesta distinta, y mejor: ahora está
+documentada con números en vez de con una ausencia.
+
+### Dos cosas de la avena que valen por sí solas
+
+**Es un verdeo fertilizado en un año malo.** La fuente publica la serie mensual de
+2024: 11 mm en mayo, cero en junio, julio y septiembre, y una helada de **−9,4 °C
+el 9 de agosto** con la advertencia textual de que «se registraron daños en la
+biomasa aérea en la mayoría de los genotipos». Insumos empujando para arriba y
+clima para abajo, en la misma cifra, sin forma de separarlos.
+
+Y el reparto entre cortes importa más que el total para quien planifica un
+invierno: el promedio de los catorce cultivares da **1.994, 1.329, 1.254 y 1.964**
+kg MS/ha en los cuatro cortes. El primero y el último aportan el 60 % del año, y
+los dos del invierno pleno el 40 %.
+
+De paso, la entrega manejó bien dos cosas que la regla E vigila: dejó la serie
+mensual sin promediar y avisó que lo era. Pude usarla igual: los **984 mm** son la
+suma de los doce meses de 2024 —la lluvia del año medido, no la normal— y los
+**19,3 °C** son el promedio de las doce medias mensuales, que sí es una media anual
+legítima. Las dos van declaradas como del año medido.
+
+### Lo que no encontró, y es la parte que importaba
+
+**Rastrojo: dos búsquedas vacías con el motivo escrito.** Localizó un artículo
+primario sobre valor nutritivo de residuos de maíz Bt con rendimientos, y buscó en
+INTA, Embrapa, INIA, el NRCS, extensiones universitarias y la FAO sin encontrar
+una serie que junte residuo post-cosecha, fracción consumible y desaparición en el
+tiempo.
+
+Es el dato que de verdad haría falta para esa clase, y el motivo es el mismo que
+dejó afuera a las otras dos: **de las tres familias del cultivo, el rastrojo es la
+única cuyo número no depende de lo que el productor le puso al lote sino de lo que
+la cosecha dejó.** Queda arrastrado al encargo siguiente.
+
+### Un error mío, corregido en el mismo movimiento
+
+Escribí en tres lugares que el sitio de secano más húmedo del archivo era el Delta
+del Paraná con 1.056 mm. No es: es el altiplano de Puno, cuyo rango llega a
+**1.119 mm** en La Raya. El test que compara el riego contra la lluvia de secano lo
+detectó solo. La afirmación que importaba —que los 1.300 mm de riego superan la
+lluvia de todos los sitios de secano— se sostiene igual, pero el sitio estaba mal
+nombrado.
