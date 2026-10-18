@@ -16,8 +16,10 @@ import { describe, it, expect } from 'vitest';
 import {
   FORRAJE_MEDIDO, LB_ACRE_A_KG_HA, lbAcreAKgHa, gM2AKgHa, medicionesDeBioma,
   TIPOS_SIN_DESCONTAR, CURVA_DOSEL_MANITOU, forrajeManitouLbAcre,
-  fraccionPorDoselManitou,
+  fraccionPorDoselManitou, FRACCION_COMIBLE, fraccionComible, paresComibles,
+  UTILIZACION_GLENCOE, utilizacionAparente, fraccionDelOfrecido,
 } from '@/lib/forrajeMedido';
+import { bandaUso } from '@/lib/modulacion';
 import { calcularReceptividad } from '@/lib/produccion';
 import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
 import { nppMiami } from '@/lib/miamiModel';
@@ -228,7 +230,17 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // substantially underestimated productivity». Montar cualquiera de las dos
     // sería imprimir un número plausible y equivocado en el bioma donde cae la
     // mayoría de los predios ganaderos. El módulo lo explica entero.
+    // El lote 13 agrego un tercer motivo y una segunda confirmacion del
+    // patron: Glencoe (INIA Uruguay) es bioma 7 verificado, abierto, con
+    // coordenada de estacion y consumo individual medido con TiO2, y tampoco
+    // entra, porque publica stock en pie antes y despues de un pastoreo de
+    // cinco dias y no produccion anual, y porque el fosforo del suelo se
+    // mantuvo en 10 ppm por fertilizacion. Con Towoomba van dos de dos: toda
+    // medicion de sabana que llego hasta aca resulto ser un ensayo agronomico.
     expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(0);
+    // Y lo que Glencoe deja, que no es una produccion, esta montado aparte.
+    expect(UTILIZACION_GLENCOE.BIOMA).toBe('resolve_sabana_tropical');
+    expect(FORRAJE_MEDIDO.some(m => m.sitio.includes('Glencoe'))).toBe(false);
     // El pastizal inundable: el lote 03 trajo un valor MODELADO del delta del
     // Tana que incluye raíces y material muerto, con el texto detrás de un
     // muro y sin la cifra en el resumen público. El lote 04 trajo el Pantanal
@@ -615,5 +627,124 @@ describe('lote 11 — la curva de dosel de Manitou, verificada por ajuste', () =
     // Un factor 17 entre las dos puntas del mismo bosque, con el mismo clima
     // adentro del modelo: el dosel mueve más que cualquier variable climática.
     expect(abiertas.kg_ms_ha_anio_max / dosel.kg_ms_ha_anio_min).toBeGreaterThan(16);
+  });
+});
+
+describe('lote 13 — la fraccion comible, y los dos denominadores del mismo sitio', () => {
+  it('el unico par del mismo muestreo da 0,639, y los dos textuales del articulo', () => {
+    const buenos = paresComibles();
+    expect(buenos).toHaveLength(1);
+    const p = buenos[0]!;
+    // Las dos cifras estan textuales en el cuerpo del articulo: «MS viva total
+    // en verano entre S (10533 kg ha-1) y C (2237 kg ha-1)» y «una sola cosecha
+    // efectuada en verano (6733 kg ha-1)».
+    expect(p.forrajera).toBe(6733);
+    expect(p.total).toBe(10533);
+    expect(fraccionComible(p)).toBeCloseTo(0.6392, 4);
+  });
+
+  it('los pares que mezclan unidades temporales abren un abanico de 0,588 a 0,737', () => {
+    const malos = FRACCION_COMIBLE.filter(p => !p.mismo_muestreo);
+    expect(malos).toHaveLength(2);
+    const cocientes = malos.map(fraccionComible).sort((a, b) => a - b);
+    expect(cocientes[0]).toBeCloseTo(0.5877, 4);   // 6700 / 11400
+    expect(cocientes[1]).toBeCloseTo(0.7366, 4);   // 8250 / 11200
+    // El ancho del abanico no es variabilidad ecologica: es un flujo dividido
+    // por un stock y una cosecha de verano dividida por un total de tres
+    // estaciones. Y lo peor del caso: el par bueno cae ADENTRO, asi que el
+    // error no se nota mirando el resultado.
+    const bueno = fraccionComible(paresComibles()[0]!);
+    expect(bueno).toBeGreaterThan(cocientes[0]!);
+    expect(bueno).toBeLessThan(cocientes[1]!);
+    // Un 25 % de ancho relativo entre las dos puntas del mismo sitio y el
+    // mismo anio, por aritmetica y no por campo.
+    expect(cocientes[1]! / cocientes[0]!).toBeCloseTo(1.253, 3);
+  });
+
+  it('el denominador del mismo muestreo es menor que el del periodo, porque no tiene lo muerto', () => {
+    const bueno = paresComibles()[0]!;
+    const delPeriodo = FRACCION_COMIBLE.filter(p => !p.mismo_muestreo).map(p => p.total);
+    for (const t of delPeriodo) expect(t).toBeGreaterThan(bueno.total);
+    // La ficha del Delta en forrajeMedido.ts decia 11.200 «del mismo
+    // muestreo». No lo era. La diferencia con 10.533 son unos 700 a 900 kg/ha
+    // de materia seca muerta mas el resto del periodo.
+    expect(Math.min(...delPeriodo) - bueno.total).toBeGreaterThan(600);
+  });
+});
+
+describe('lote 13 — Glencoe: la fraccion que se saca la decide el animal, no el pasto', () => {
+  const ng   = UTILIZACION_GLENCOE.TRATAMIENTOS[0];
+  const ngl  = UTILIZACION_GLENCOE.TRATAMIENTOS[1];
+
+  it('las dos utilizaciones aparentes salen de la Tabla 2 y dan 30,0 y 21,3 %', () => {
+    expect(ng.masa_pre_kg_ha - ng.masa_pos_kg_ha).toBe(416);
+    expect(ngl.masa_pre_kg_ha - ngl.masa_pos_kg_ha).toBe(506);
+    expect(utilizacionAparente(ng)).toBeCloseTo(0.2999, 4);
+    expect(utilizacionAparente(ngl)).toBeCloseTo(0.2133, 4);
+  });
+
+  it('1,71 veces mas pasto parado da 0,71 veces la fraccion removida', () => {
+    const masa = ngl.masa_pre_kg_ha / ng.masa_pre_kg_ha;
+    expect(masa).toBeCloseTo(1.710, 3);
+    const frac = utilizacionAparente(ngl) / utilizacionAparente(ng);
+    expect(frac).toBeCloseTo(0.711, 3);
+    // El producto de los dos es la razon de las desapariciones absolutas, y
+    // esta mucho mas cerca de 1 que cualquiera de los dos factores: el animal
+    // se llevo casi lo mismo de los dos potreros.
+    expect(masa * frac).toBeCloseTo(1.216, 3);
+  });
+
+  it('las dos desapariciones son indistinguibles con el error de la propia fuente', () => {
+    // SEM publicado de cada masa: 112 kg/ha. El de una diferencia de dos
+    // medias independientes es ese por raiz de dos.
+    const inc = UTILIZACION_GLENCOE.SEM_MASA_KG_HA * Math.SQRT2;
+    expect(inc).toBeCloseTo(158.4, 1);
+    const a = ng.masa_pre_kg_ha - ng.masa_pos_kg_ha;
+    const b = ngl.masa_pre_kg_ha - ngl.masa_pos_kg_ha;
+    // Los intervalos se superponen por completo: 258-574 contra 348-664.
+    expect(a + inc).toBeGreaterThan(b - inc);
+    expect(b - inc).toBeLessThan(a);
+    // Y el consumo medido con marcador dice lo mismo por otro camino: 6,35
+    // contra 6,67 kg MS/animal/dia, que la fuente publica con p = 0,314.
+    expect(ngl.consumo_kg_animal_dia / ng.consumo_kg_animal_dia).toBeCloseTo(1.050, 3);
+  });
+
+  it('lo comido sobre lo ofrecido da 0,508 en los dos, con 1,71 veces de diferencia de pasto', () => {
+    expect(fraccionDelOfrecido(ng)).toBeCloseTo(0.508, 3);
+    expect(fraccionDelOfrecido(ngl)).toBeCloseTo(0.508, 3);
+    // Tres decimales iguales en dos pastizales que difieren 1,71 veces en masa.
+    const brecha = Math.abs(fraccionDelOfrecido(ng) - fraccionDelOfrecido(ngl));
+    expect(brecha).toBeLessThan(0.001);
+  });
+
+  it('la utilizacion de Glencoe NO se parece a la banda de uso, y es a proposito', () => {
+    // Guardia de una sola direccion, como el Miami Model. Las dos cifras de
+    // Glencoe quedan por DEBAJO del piso de la banda humeda de Holechek, y eso
+    // no la refuta: son fracciones de stock en pie en cinco dias contra una
+    // fraccion del crecimiento de la temporada. Si alguien baja BANDAS_USO
+    // apoyandose en esto, este test es el que tiene que leer primero.
+    const humeda = bandaUso(1350);
+    expect(humeda.id).toBe('humedo');
+    expect(humeda.inicial).toBe(0.50);
+    expect(utilizacionAparente(ng)).toBeLessThan(humeda.min);
+    expect(utilizacionAparente(ngl)).toBeLessThan(humeda.min);
+    // Lo que si cae sobre el 0,50: el cociente adimensional comparable. No
+    // es igual, es 0,508, y la distancia relativa al coeficiente de Holechek
+    // es del 1,6 %. Se afirma asi y no con toBeCloseTo, que a dos decimales
+    // pediria 0,005 y a uno dejaria pasar cualquier cosa entre 0,45 y 0,55.
+    const brechaHolechek = Math.abs(fraccionDelOfrecido(ng) - humeda.inicial) / humeda.inicial;
+    expect(brechaHolechek).toBeLessThan(0.02);
+  });
+
+  it('la lluvia de Glencoe deja condicionada la afirmacion del lote 12', () => {
+    // 1.300 a 1.400 mm de lluvia MEDIA: mas que el 1.119 del sitio de secano
+    // mas humedo del archivo, y tanto como el riego de la alfalfa de Curaco.
+    // La afirmacion del lote 12 sobrevive solo porque Glencoe es fertilizado.
+    expect(UTILIZACION_GLENCOE.LLUVIA_MM_MIN).toBe(1300);
+    const lluviaMaxSecano = Math.max(
+      ...FORRAJE_MEDIDO.filter(m => m.insumos === 'secano').map(m => m.lluvia_mm_max ?? 0),
+    );
+    expect(lluviaMaxSecano).toBe(1119);
+    expect(lluviaMaxSecano).toBeLessThan(UTILIZACION_GLENCOE.LLUVIA_MM_MIN);
   });
 });

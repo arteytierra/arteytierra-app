@@ -141,6 +141,21 @@ export const FUENTE_GPS =
  * de acequia: 30 % para el arbustal desértico, 40 % para el pastizal árido, 50 %
  * para el húmedo y 55 % para el de anuales.
  *
+ * **Y lo que NO corrige esta tabla, aunque lo parezca.** El lote 13 trajo la
+ * primera medición de pastoreo con consumo individual que llega a este repo
+ * (`UTILIZACION_GLENCOE` en `forrajeMedido.ts`): en un campo natural uruguayo de
+ * 1.300 a 1.400 mm, con el animal comiendo a voluntad, se fue el **30,0 %** del
+ * pasto parado en un tratamiento y el **21,3 %** en el otro. Los dos están debajo
+ * del 45 % que es el piso de la banda húmeda, y la tentación de bajar la tabla con
+ * eso sería un error de denominador: Holechek habla de una fracción del
+ * *crecimiento de la temporada* y Glencoe mide una fracción del *stock en pie en
+ * un momento*, sacada en cinco días. Una temporada apila varios eventos como ése
+ * sobre un pasto que rebrota en el medio. La tabla se queda como está.
+ *
+ * Lo que sí es comparable de ese trabajo —y es el único cociente adimensional con
+ * el mismo sentido— es lo comido sobre lo ofrecido: 0,508 en los dos tratamientos,
+ * con 1,71 veces de diferencia en el pasto disponible entre uno y otro.
+ *
  * Qué se rompe si esto cambia: la receptividad del campo, y por esa vía la carga
  * objetivo, el número de módulos y el agua de bebida que lee la represa.
  */

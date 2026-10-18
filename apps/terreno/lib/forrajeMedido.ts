@@ -418,6 +418,70 @@
  * clase de cobertura se deriva de acá, en vez de los cuatro pesos inventados que
  * esa ruta tenía.
  *
+ * ## El lote 13 trajo la fracción comible, y la trajo con dos denominadores
+ *
+ * La tercera fracción de la cadena —cuánto de la capa herbácea es comible— tiene
+ * su primer valor verificado, y sale de un sitio que ya estaba en este archivo:
+ * el pastizal de albardón de la isla de Baradero. El artículo publica, **en la
+ * misma cosecha y en el mismo tratamiento**, 10.533 kg MS/ha de materia seca viva
+ * total y 6.733 de materia seca viva forrajera. El cociente es **0,639**, y las
+ * dos cifras están textuales en el cuerpo del artículo, no leídas de una figura.
+ *
+ * Lo que importa es lo que pasó al buscar ese mismo cociente en la tesis del
+ * mismo trabajo. Su conclusión dice que la MS total del período primavera-verano-
+ * otoño estuvo *«en el rango de 11200 y 11400 kg ha-1, de los cuales
+ * aproximadamente entre 6700 kg (cosecha de verano del tratamiento S) y 8250 kg
+ * (cosecha acumulada del tratamiento C) correspondieron a MS forrajera»*. De ahí
+ * salen cuatro cocientes posibles, de 0,588 a 0,737, y **ninguno de los cuatro es
+ * una fracción**: el 6.700 es una cosecha de verano y el 11.200 un total de tres
+ * estaciones, así que numerador y denominador no cubren el mismo tiempo. El 8.250
+ * es peor, porque es una suma de cosechas sucesivas: un flujo dividido por un
+ * stock. Y el 11.200 incluye la materia seca MUERTA, que el método separa antes
+ * de separar forrajera de no forrajera.
+ *
+ * El encargo del lote 13 había pedido un campo nuevo, `de_la_misma_tabla_que`,
+ * justamente para poder auditar esto. Lo encontró en su primer uso, y lo encontró
+ * acá adentro: la ficha del Delta decía «la MS total del mismo muestreo, que sí
+ * suma las no forrajeras, da 11.200 a 11.400 kg/ha». No es del mismo muestreo y
+ * no es sólo las no forrajeras. La cifra del mismo muestreo es 10.533. Corregido
+ * abajo, y la diferencia entre 0,639 y el rango 0,588-0,737 es exactamente lo que
+ * cuesta no mirar de qué tabla sale cada término.
+ *
+ * ## El bioma 7 llega medido por tercera vez, y por tercera vez no entra
+ *
+ * La sabana y el pastizal tropical es el bioma donde cae la mayoría de los predios
+ * ganaderos del mundo, y el que este archivo persigue desde el lote 04. El lote 13
+ * trajo las dos primeras mediciones uruguayas: la Unidad Experimental Glencoe del
+ * INIA, campo natural sobre basalto, 32°00′24″ S 57°08′01″ W, `ECO_ID` 574,
+ * Uruguayan savanna, **bioma 7 verificado contra RESOLVE**. Dos tratamientos —con
+ * y sin Lotus— y un ensayo de consumo individual con TiO₂.
+ *
+ * No entran a `FORRAJE_MEDIDO`, y el motivo es el del lote 04 y no el del 12:
+ * **miden lo que está parado, no lo que creció**. Lo publicado es masa en pie por
+ * encima de 5 cm antes y después de un pastoreo de cinco días de primavera —1.387
+ * y 2.372 kg MS/ha pre-pastoreo en los dos tratamientos—, no producción anual, y
+ * el trabajo no publica la tasa de acumulación que haría falta para anualizarlas.
+ * Un campo llamado `kg_ms_ha_anio_min` que recibiera 1.387 mentiría en la unidad,
+ * que es el error que este archivo existe para no cometer.
+ *
+ * Además son fertilizadas: el fósforo del suelo se mantuvo en 10 ppm por
+ * fertilización en los dos tratamientos, para estandarizar los potreros. Con
+ * Towoomba son **dos de dos** en el bioma 7: toda medición de sabana que llegó
+ * hasta acá con coordenada verificada, bioma verificado y fuente abierta resultó
+ * ser un ensayo agronómico. No es casualidad y conviene escribirlo como criterio
+ * de búsqueda: es el bioma donde está la ganadería, así que es el bioma donde
+ * están los ensayos, y hay que ir a buscar el pastizal sin tratar.
+ *
+ * Tienen un segundo filo, más fino. Glencoe llueve **1.300 a 1.400 mm al año**, y
+ * el lote 12 dejó escrita una afirmación que depende de que ningún sitio de secano
+ * pase de 1.119: que los 1.300 mm de riego de la alfalfa de Curacó son más agua
+ * que la lluvia de cualquier sitio de secano del archivo. La afirmación sobrevive
+ * sólo porque Glencoe es `fertilizado` y no entra al conjunto de secano. El test
+ * la dejó condicionada en vez de afirmada.
+ *
+ * Lo que las dos entradas sí dejan, y vale por sí solo, está en
+ * `UTILIZACION_GLENCOE`.
+ *
  * ## Qué NO hace este archivo todavía
  *
  * **Estas mediciones siguen sin entrar en la cuenta, y el motivo cambió.** Antes
@@ -850,7 +914,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     lluvia_mm_max: 1056,
     temp_media_c_anual: null,
     metodo: 'Tres clausuras de 4 × 4 m separadas unos 20 m, con boyero a 30 y 70 cm, cada una dividida en dos tratamientos: cortes bimestrales de la vegetación a 7 cm de altura y sin cortes. Afuera, pastoreo continuo con alta carga. Se muestreó por estación agronómica cortando con tijera de podar el material arraigado dentro de un aro, dejando 7 cm de remanente; secado en estufa a 65 °C hasta peso constante y pesado con precisión de ±1 g. La tasa de crecimiento se calculó por diferencia de forraje disponible entre corte y corte. El área del aro de muestreo NO está indicada en el texto de la tesis, así que la conversión a kg/ha no se puede recalcular desde acá.',
-    que_cuenta: 'Materia seca VIVA de las especies forrajeras, cosechada por encima de los 7 cm. No incluye las no forrajeras —en este pastizal degradado el abrojo grande, Xanthium cavallinesii, es el que más crece en verano—, ni la materia seca muerta, ni nada por debajo de la altura de corte, ni raíces. No descuenta uso admisible. La MS total del mismo muestreo, que sí suma las no forrajeras, da 11.200 a 11.400 kg/ha.',
+    que_cuenta: 'Materia seca VIVA de las especies forrajeras, cosechada por encima de los 7 cm. No incluye las no forrajeras —en este pastizal degradado el abrojo grande, Xanthium cavallinesii, es el que más crece en verano—, ni la materia seca muerta, ni nada por debajo de la altura de corte, ni raíces. No descuenta uso admisible. La MS viva total del MISMO muestreo —la que sí suma las no forrajeras— da 10.533 kg/ha, así que la fracción forrajera de esa cosecha es 0,639; ver `FRACCION_COMIBLE`. El rango de 11.200 a 11.400 kg/ha que publica la conclusión de la tesis es otra cosa y por partida doble: es el total del período primavera-verano-otoño, no de una cosecha, e incluye la materia seca muerta.',
     estacionalidad: 'El pico de crecimiento va de fines de primavera a verano: las forrajeras marcan 60 a 70 kg MS/ha/día entre noviembre y enero en los dos tratamientos. Con cortes bimestrales la tasa se mantiene arriba de 40 kg/ha/día casi cuatro meses; sin cortes dura la mitad del tiempo y en otoño pasa a ser NEGATIVA, porque dentro del canopeo muere más material del que se genera. En invierno falta materia seca en el campo.',
     donde_deja_de_valer: 'Un pastizal degradado de albardón y caída de albardón en una isla del Delta Medio, con pastoreo previo intenso. Tres clausuras de 4 × 4 m en un solo año: el propio test de Wilcoxon no encontró evidencia estadística de diferencia entre los tratamientos por la variabilidad en pocos datos, así que el 23 % a favor de los cortes está comparado de forma empírica y la tesis lo dice. La cifra es de primavera a otoño y no de los doce meses: el invierno queda afuera, y al final del de 2013 el albardón estuvo anegado unos 40 días. Tampoco vale para el interior del bañado, que se inunda distinto.',
     medido_en: 'agosto de 2012 a septiembre de 2013',
@@ -1319,6 +1383,225 @@ export function fraccionHerbacea(f: FraccionHerbacea): number {
 /** La fracción aérea de una fila de Montecillo. Vale también para la fila en carbono. */
 export function fraccionAerea(f: { anpp: number; tnpp: number }): number {
   return f.anpp / f.tnpp;
+}
+
+/**
+ * Un par publicado del que se puede intentar sacar una fracción comible.
+ *
+ * `mismo_muestreo` es el campo que decide si el cociente significa algo. Si es
+ * `false`, el numerador y el denominador no cubren el mismo tiempo, el mismo
+ * tratamiento o la misma cosecha, y entonces el cociente NO es una fracción: está
+ * en la tabla para mostrar cuánto se mueve el número cuando nadie mira de dónde
+ * sale cada término.
+ */
+export interface ParComible {
+  sitio: string;
+  /** Lo que la fuente clasifica como forrajero, en kg MS/ha. */
+  forrajera: number;
+  /** El denominador, en LA MISMA unidad. */
+  total: number;
+  /** Qué incluye el denominador, con las palabras de la fuente. */
+  que_incluye_el_total: string;
+  /** Misma fecha, mismo tratamiento, misma unidad temporal. */
+  mismo_muestreo: boolean;
+  fuente: string;
+}
+
+/**
+ * La tercera fracción de la cadena: cuánto de la capa herbácea es comible.
+ *
+ * Un solo sitio, y un solo par válido. El pastizal de albardón de la isla de
+ * Baradero publica en el cuerpo del artículo, para la misma cosecha de verano y
+ * el mismo tratamiento sin cortes, 10.533 kg MS/ha de materia seca VIVA total y
+ * 6.733 de materia seca viva FORRAJERA. **0,639.**
+ *
+ * Las otras dos filas son el mismo sitio contado mal, y están para que se vea el
+ * costo: la conclusión de la tesis pone «entre 11200 y 11400 kg ha-1» de MS total
+ * del período de tres estaciones al lado de «entre 6700 y 8250 kg» de MS forrajera,
+ * donde el 6.700 es una cosecha de verano y el 8.250 una suma de tres cosechas. El
+ * abanico de cocientes va de **0,588 a 0,737**, y el ancho es un artefacto de
+ * mezclar unidades temporales: no hay variabilidad ecológica ahí, hay aritmética
+ * descuidada. El par bueno cae adentro de ese abanico, lo cual es lo peor que
+ * podía pasar, porque significa que el error no se nota.
+ *
+ * **Qué cuenta como forrajero.** La clasificación es botánica y es del autor: las
+ * forrajeras del sitio son casi todas gramíneas y predomina *Cynodon dactylon*; la
+ * no forrajera que más pesa es *Xanthium cavallinesii*, el abrojo grande, que
+ * crece fuerte en verano. **No es dieta observada ni palatabilidad medida**: es
+ * aptitud forrajera asignada por especie. Un bovino podría comer menos que eso, o
+ * elegir distinto.
+ *
+ * **Rango de validez.** Un sitio, un año, una cosecha de verano, una clausura de
+ * 4 × 4 m en un pastizal que el propio trabajo declara degradado por sobrepastoreo
+ * previo —y lo declara con esta frase, que es la que limita el número: *«La
+ * recuperación inicial de la cobertura a partir del grupo de especies no
+ * forrajeras, revela la degradación del pastizal a causa de la alta presión de
+ * pastoreo previa»*. En un pastizal sano la fracción sería más alta. No hay una
+ * segunda medición con la que acotar eso.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto todavía. Es el primer valor de
+ * la tercera fracción y queda como piso documentado, al lado de la segunda
+ * fracción de `FRACCION_HERBACEA_DEL_SITIO`.
+ */
+export const FRACCION_COMIBLE: readonly ParComible[] = [
+  {
+    sitio: 'Pastizal de albardón, isla de Baradero, Delta Medio del Paraná — cosecha de verano, tratamiento S',
+    forrajera: 6733,
+    total: 10533,
+    que_incluye_el_total: 'MS VIVA total sobre 7 cm: forrajeras más no forrajeras, sin la materia seca muerta',
+    mismo_muestreo: true,
+    fuente: 'Marino, G. D. — Efectos del pastoreo en riqueza florística, biomasa y cobertura de un pastizal de albardón, Argentina (Revista Politécnica), cuerpo de resultados',
+  },
+  {
+    sitio: 'El mismo sitio, la cosecha de verano de S contra el total del PERÍODO (cota baja)',
+    forrajera: 6700,
+    total: 11400,
+    que_incluye_el_total: 'MS total de primavera-verano-otoño, que incluye la materia seca muerta',
+    mismo_muestreo: false,
+    fuente: 'Universidad Nacional de Rosario — tesis de maestría, conclusiones',
+  },
+  {
+    sitio: 'El mismo sitio, la cosecha ACUMULADA de C contra el total del período (cota alta)',
+    forrajera: 8250,
+    total: 11200,
+    que_incluye_el_total: 'MS total de primavera-verano-otoño; el numerador es la suma de tres cosechas sucesivas',
+    mismo_muestreo: false,
+    fuente: 'Universidad Nacional de Rosario — tesis de maestría, conclusiones',
+  },
+] as const;
+
+/** El cociente de una fila. Sin conversiones: las dos cifras vienen en kg MS/ha. */
+export function fraccionComible(p: ParComible): number {
+  return p.forrajera / p.total;
+}
+
+/** Sólo los pares que de verdad son una fracción. Hoy devuelve uno. */
+export function paresComibles(): readonly ParComible[] {
+  return FRACCION_COMIBLE.filter(p => p.mismo_muestreo);
+}
+
+/**
+ * El pastoreo de Glencoe, que mide lo que la cadena del forraje nunca había
+ * medido: cuánto se saca de un pastizal cuando el animal come a voluntad.
+ *
+ * Unidad Experimental Glencoe del INIA, campo natural sobre basalto en Paysandú,
+ * Uruguay. 32°00′24″ S, 57°08′01″ W → `ECO_ID` 574, Uruguayan savanna, bioma 7
+ * verificado contra RESOLVE. 1.300 a 1.400 mm de lluvia media anual. Veintidós
+ * vaquillonas Hereford de unos 198 kg en dos grupos de once, diseño cruzado, dos
+ * períodos de quince días de octubre a noviembre de 2022. El consumo individual se
+ * estimó con producción fecal y digestibilidad, con TiO₂ como marcador externo.
+ *
+ * **Por qué no entra en `FORRAJE_MEDIDO`:** las masas son stock en pie sobre 5 cm
+ * antes y después de un pastoreo de cinco días, no producción anual, y el trabajo
+ * no publica la tasa de acumulación que haría falta para anualizarlas. Además el
+ * fósforo del suelo se mantuvo en 10 ppm por fertilización en los dos tratamientos.
+ *
+ * ## Lo que mide, y es lo que faltaba
+ *
+ * | tratamiento | en pie pre | en pie post | se fue | % de lo que había |
+ * |---|---|---|---|---|
+ * | campo natural | 1.387 | 971 | 416 | **30,0 %** |
+ * | con Lotus | 2.372 | 1.866 | 506 | **21,3 %** |
+ *
+ * Los dos tratamientos recibieron la misma oferta objetivo —6 kg MS por 100 kg de
+ * peso vivo por día, y la oferta lograda fue 6,1 y 6,5 %, sin diferencia
+ * estadística— y el animal comió prácticamente lo mismo en los dos: 6,35 y 6,67 kg
+ * MS por día, con `p = 0,314`. Pero el pastizal con Lotus tenía **1,71 veces** más
+ * pasto parado. La consecuencia es aritmética y es la que importa: **la fracción
+ * que se saca no es una propiedad del pasto, es la demanda del animal dividida por
+ * lo que hay.** Con más pasto, la misma boca saca una fracción menor: 0,71 veces.
+ *
+ * Y las dos desapariciones absolutas, 416 y 506 kg/ha, son indistinguibles: el
+ * error estándar publicado de cada masa es 112 kg/ha, así que el de cada diferencia
+ * es unos 158, y los intervalos 258-574 y 348-664 se superponen por completo. Eso
+ * cierra el argumento con la dispersión de la propia fuente y sin suponer nada: el
+ * animal se llevó la misma cantidad de los dos potreros, como su consumo medido
+ * indica, y la diferencia de porcentaje la hizo el denominador.
+ *
+ * ## El número que NO hay que comparar con `BANDAS_USO`
+ *
+ * Estos 21 a 30 % **no refutan** el 45 a 60 % de Holechek que `modulacion.ts` usa
+ * para el pastizal húmedo, y la tentación de «corregir» esa tabla con esta
+ * medición es el error que este bloque existe para bloquear. Son denominadores
+ * distintos: el coeficiente de cosecha de Holechek es una fracción del
+ * **crecimiento de la temporada** y estos 21 a 30 % son una fracción del **stock
+ * en pie en un momento**, sacada en cinco días. Un pastizal que se pastorea toda
+ * la temporada acumula varios eventos como éste sobre un pasto que rebrota entre
+ * uno y otro.
+ *
+ * Lo que sí se puede poner al lado, porque las dos son adimensionales y las dos
+ * preguntan qué proporción de lo disponible termina en el animal, es el cociente
+ * entre lo comido y lo ofrecido, los dos publicados como porcentaje del peso vivo:
+ * 3,1 sobre 6,1 y 3,3 sobre 6,5. Da **0,508 en los dos tratamientos**, con tres
+ * decimales iguales, a pesar de las 1,71 veces de diferencia en el pasto parado.
+ * Que caiga sobre el 0,50 de Holechek para el pastizal húmedo es una coincidencia
+ * de la que no se puede derivar nada —la oferta es un objetivo de manejo elegido
+ * por el investigador, no una propiedad del campo—, pero es la primera medición de
+ * esta cadena que toca el orden de magnitud de ese coeficiente desde abajo.
+ *
+ * **Qué se rompe si cambia:** nada. Es contraste y es guardia, como el Miami Model.
+ *
+ * Fuente: Beretta et al. (2024), *Addition of Tannin-Containing Legumes to Native
+ * Grasslands: Effects on Enteric Methane Emissions, Nitrogen Losses and Animal
+ * Performance of Beef Cattle*, Sustainability 16(21):9135, CC-BY. Tabla 2 para las
+ * masas y la oferta, Tabla 3 para el consumo.
+ */
+export const UTILIZACION_GLENCOE = {
+  SITIO: 'Unidad Experimental Glencoe, INIA, Paysandú, Uruguay',
+  COORDENADA: '32°00′24″ S, 57°08′01″ W',
+  BIOMA: 'resolve_sabana_tropical',
+  ECO_ID: 574,
+  LLUVIA_MM_MIN: 1300,
+  LLUVIA_MM_MAX: 1400,
+  /** Error estándar publicado de cada masa en pie, en kg MS/ha. */
+  SEM_MASA_KG_HA: 112,
+  /** Error estándar publicado del consumo, en kg MS/animal/día. */
+  SEM_CONSUMO_KG_DIA: 0.47,
+  /** Días del pastoreo que separan el muestreo pre del post. */
+  DIAS_DE_PASTOREO: 5,
+  TRATAMIENTOS: [
+    {
+      id: 'NG',
+      nombre: 'campo natural',
+      masa_pre_kg_ha: 1387,
+      masa_pos_kg_ha: 971,
+      ofrecido_pct_pv: 6.1,
+      consumo_kg_animal_dia: 6.35,
+      consumo_pct_pv: 3.1,
+    },
+    {
+      id: 'NG+L',
+      nombre: 'campo natural con Lotus',
+      masa_pre_kg_ha: 2372,
+      masa_pos_kg_ha: 1866,
+      ofrecido_pct_pv: 6.5,
+      consumo_kg_animal_dia: 6.67,
+      consumo_pct_pv: 3.3,
+    },
+  ],
+} as const;
+
+/**
+ * La fracción del stock en pie que desapareció en el pastoreo.
+ *
+ * **No es consumo.** La desaparición aparente incluye pisoteo, caída y cualquier
+ * pérdida entre los dos muestreos, y por eso el trabajo publica el consumo por
+ * separado y con marcador. Y **no es un coeficiente de cosecha**: el denominador
+ * es stock, no crecimiento de la temporada. Ver la advertencia de arriba.
+ */
+export function utilizacionAparente(t: { masa_pre_kg_ha: number; masa_pos_kg_ha: number }): number {
+  return (t.masa_pre_kg_ha - t.masa_pos_kg_ha) / t.masa_pre_kg_ha;
+}
+
+/**
+ * Lo comido sobre lo ofrecido, con las dos cifras en porcentaje del peso vivo.
+ *
+ * Es el único cociente de este bloque que se puede mirar al lado de un
+ * coeficiente de uso, porque los dos son adimensionales y preguntan lo mismo. Da
+ * 0,508 en los dos tratamientos de Glencoe.
+ */
+export function fraccionDelOfrecido(t: { consumo_pct_pv: number; ofrecido_pct_pv: number }): number {
+  return t.consumo_pct_pv / t.ofrecido_pct_pv;
 }
 
 /** Las mediciones que hay para un bioma global. Vacío es «no hay», y es común. */
