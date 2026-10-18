@@ -139,6 +139,19 @@ const BIOARQ_TEORIA_PRACTICA = { teoria: 30, practica: 70 } as const;
 const BIOARQ_NOCHES = '3 noches (sábado, domingo y lunes)';
 const BIOARQ_BASE = ['Materiales', 'Certificado de participación', 'Desayuno, almuerzo y merienda'] as const;
 
+/* ── Voluntariado · ventana de noviembre–diciembre ────
+ * La ventana y el cupo viven acá arriba porque los necesitan dos fichas: la
+ * del voluntariado y la de Inmersión Viva, que queda pausada mientras corre.
+ * Escritos una sola vez, no se puede pausar una y anunciar la otra con fechas
+ * distintas, que es exactamente como alguien se presenta un lunes equivocado.
+ */
+const VOLUNTARIADO_FECHAS: CourseFechas = {
+  desde: '2026-11-15',
+  hasta: '2026-12-09',
+};
+const VOLUNTARIADO_RANGO = rangoFechas(VOLUNTARIADO_FECHAS, 'es');
+const VOLUNTARIADO_CUPOS = 5;
+
 /* ── Jonatan bio (shared) ─────────────────────────── */
 const JONATAN: Facilitador = {
   name: 'Jonatan Gabriel Palma',
@@ -659,7 +672,7 @@ export const COURSES: Record<string, CourseData> = {
       { label: 'Duración', val: 'Mínimo 2 semanas · recomendamos 3 meses para practicar en todas las áreas' },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
       { label: 'Práctica diaria', val: '4–6 hs en obra, huerta y sistemas productivos' },
-      { label: 'Ingreso', val: 'Todos los lunes · todo el año' },
+      { label: 'Ingreso', val: `Todos los lunes · todo el año, salvo del ${VOLUNTARIADO_RANGO}` },
     ],
     modulos: [
       { num: '🏗', title: 'Bioconstrucción', items: ['Técnicas con tierra cruda', 'Uso y lectura de materiales locales', 'Criterios constructivos en obra real', 'Revoques y terminaciones naturales'] },
@@ -675,12 +688,88 @@ export const COURSES: Record<string, CourseData> = {
       { id: 'camping', label: 'En zona de camping', precio: '$40.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
       { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000', precioPor: 'semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
-    opcionesNota: 'Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp.',
+    opcionesNota: `Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp. Del ${VOLUNTARIADO_RANGO} la Inmersión Viva está pausada: en esa ventana la única entrada a la ecoescuela es la convocatoria de voluntariado, que no tiene costo y tiene ${VOLUNTARIADO_CUPOS} cupos.`,
     formCurso: 'Inmersión Viva · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva',
     opcionesLabel: 'Modalidad de participación',
     pedirFechasEstadia: true,
     ocultarCupos: true,
+    crossLink: { href: '/cursos/voluntariado', label: 'Nov–dic: voluntariado sin costo →' },
+  },
+
+  /*
+   * No es una versión barata de la Inmersión Viva: es otra cosa y por eso tiene
+   * ficha propia. Ventana fija en vez de entrada todos los lunes, dos áreas en
+   * vez de seis, siete horas de intercambio en vez de cuatro a seis, y cinco
+   * cupos que se eligen. Mientras corre, la Inmersión Viva está pausada —ver
+   * el `opcionesNota` de arriba—, así que nadie termina pagando por semana algo
+   * que al lado se ofrece sin costo.
+   */
+  'voluntariado': {
+    slug: 'voluntariado',
+    kind: 'inmersion',
+    badge: `Voluntariado sin costo · ${VOLUNTARIADO_CUPOS} cupos`,
+    name: 'Voluntariado de Bioconstrucción',
+    subtitle: 'Cuatro semanas de obra real en Tay Pichín, sin costo de participación. Cinco personas, dos áreas y un curso de bioarquitectura que se sostiene entre todos.',
+    heroImg: '/img/cursos/bioarquitectura/3.jpg',
+    galeria: ['/img/cursos/bioarquitectura/7.jpg', '/img/taypichin/carousel/7.jpg', '/img/cursos/bioarquitectura/11.jpg', '/img/taypichin/carousel/9.jpg'],
+    tag: `${VOLUNTARIADO_RANGO} · ${VOLUNTARIADO_CUPOS} cupos · Sin costo de participación`,
+    fechas: VOLUNTARIADO_FECHAS,
+    intro: [
+      `Del ${VOLUNTARIADO_RANGO} hay una obra que avanzar y un curso que sostener. Para eso abrimos ${VOLUNTARIADO_CUPOS} lugares de voluntariado sin costo: vos ponés el tiempo y las manos, nosotros la comida, el lugar donde dormir y el oficio de quienes construyen todos los días.`,
+      'No es la Inmersión Viva. Esta es una convocatoria puntual, con día de principio y de fin, dos áreas en vez de seis y siete horas diarias de intercambio. Se entra de a cinco y se trabaja sobre lo mismo: la obra que está abierta y el espacio que la sostiene.',
+    ],
+    datos: [
+      { label: 'Cuándo', val: VOLUNTARIADO_RANGO },
+      { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
+      { label: 'Intercambio diario', val: '7 hs en obra y mantenimiento' },
+      { label: 'Cupos', val: `${VOLUNTARIADO_CUPOS} personas` },
+      { label: 'Estadía mínima', val: '2 semanas · prioridad para quien cubra el período completo' },
+      { label: 'Costo', val: 'Sin costo de participación' },
+    ],
+    paraQuien: [
+      'Querés aprender bioconstrucción haciéndola en una obra real, no en un taller de muestra',
+      'Podés sostener siete horas diarias de trabajo físico al aire libre',
+      'Te interesa ver cómo se arma un curso desde adentro, no desde la silla',
+      'Venís con tu carpa, tu bolsa de dormir y ropa de trabajo',
+    ],
+    vasASalir: [
+      'Con técnicas de tierra cruda practicadas sobre una construcción que queda en pie',
+      'Sabiendo qué pide un espacio que recibe gente, que es la mitad del oficio y casi nunca se enseña',
+      `Habiendo cursado Bioarquitectura del ${rangoFechas(BIOARQ_FECHAS, 'es')} desde el equipo que lo hace posible`,
+    ],
+    modulos: [
+      { num: '🏗', title: 'Bioconstrucción', items: ['Técnicas con tierra cruda sobre obra abierta', 'Preparación de barro, mezclas y pruebas de campo', 'Revoques y terminaciones naturales', 'Uso y cuidado de la herramienta'] },
+      { num: '🧰', title: 'Mantenimiento del espacio', items: ['Reparaciones y puesta a punto de lo construido', 'Acopio, orden y cuidado de materiales', 'Agua, leña y los sistemas que sostienen la ecoescuela', 'Preparación de los espacios que reciben a los grupos'] },
+      {
+        num: '🎓',
+        title: 'Curso de Bioarquitectura · equipo logístico',
+        nota: `Del ${rangoFechas(BIOARQ_FECHAS, 'es')} se dicta el intensivo de Bioarquitectura, Construcción y Territorio y entrás como estudiante. El intercambio es ese: cursás, y a cambio sostenés la logística junto al equipo —materiales, cocina, armado y orden de los espacios—.`,
+        items: ['Participación completa en el intensivo, sin costo', 'Trabajo con el equipo que arma y sostiene la formación', 'Ver desde adentro cómo se prepara una clase en obra', 'Contacto directo con quienes vienen a formarse'],
+      },
+    ],
+    programaNota: `Las dos áreas no son un cronograma cerrado: se trabaja en lo que la obra necesita esa semana. La estadía mínima es de dos semanas, pero los ${VOLUNTARIADO_CUPOS} lugares se asignan primero a quienes puedan cubrir el período entero — entre otras cosas porque la participación en el curso de diciembre sólo alcanza a quien esté acá esos días.`,
+    facilitadores: [JONATAN],
+    opciones: [
+      {
+        id: 'camping',
+        label: 'Hospedaje en zona de camping',
+        precio: 'Sin costo',
+        includes: [
+          'Alimentación completa durante toda la estadía',
+          'Lugar en la zona de camping de Tay Pichín',
+          `Curso de Bioarquitectura del ${rangoFechas(BIOARQ_FECHAS, 'es')}`,
+          'Acompañamiento de los instructores en obra',
+        ],
+        highlighted: true,
+      },
+    ],
+    opcionesNota: 'Sin costo de participación quiere decir que no se paga nada por estar, por comer ni por participar del curso. El traslado hasta San Marcos Sierras y el equipo personal —carpa, bolsa de dormir, ropa y calzado de trabajo— corren por tu cuenta.',
+    formCurso: 'Voluntariado de Bioconstrucción · Tay Pichín',
+    whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20al%20voluntariado%20de%20bioconstrucci%C3%B3n',
+    opcionesLabel: 'Modalidad de participación',
+    pedirFechasEstadia: true,
+    crossLink: { href: '/cursos/inmersion-viva', label: '¿Otras fechas? Inmersión Viva →' },
   },
 };
 

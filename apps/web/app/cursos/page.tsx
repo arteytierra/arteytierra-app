@@ -23,6 +23,9 @@ const BIOARQ_HORARIO = BIOARQ.fechas ? horarioApertura(BIOARQ.fechas, 'es') ?? '
 const BIOARQ_MODALIDAD = BIOARQ.teoriaPractica ? modalidadTeoriaPractica(BIOARQ.teoriaPractica, 'es') : '';
 const BIOARQ_PRECIOS = rangoPrecios(BIOARQ.opciones);
 
+/* El voluntariado tiene ventana y cupo: nada de eso se vuelve a tipear acá. */
+const VOLUNTARIADO = getCourse('voluntariado')!;
+
 const META_TITLE = 'Ecoescuela';
 const META_DESC =
   'Cursos y formaciones de bioarquitectura, diseño hidrológico, permacultura y biocosmética. Presenciales en Tay Pichín y online desde cualquier parte del mundo.';
@@ -90,7 +93,9 @@ const FALLBACK_TODOS: TodoItem[] = [
   { slug: 'mi-tierra-mi-casa',           name: 'Mi Tierra, Mi Casa',           tag: 'Disponible ahora',         img: '/img/cursos/mitierramicasa/1.jpg',      badge: 'Online',         tentativo: false, online: true  },
   { slug: 'tadelakt',                     name: 'Tadelakt Online',               tag: 'Disponible ahora',         img: '/img/cursos/tadelakt/0.jpg',            badge: 'Online',         tentativo: false, online: true  },
   { slug: 'vuelta-a-la-tierra',           name: 'La Vuelta a la Tierra',         tag: 'Marzo 2027 · Online',      img: '/img/cursos/vueltatierra/7.jpg',        badge: 'Online en vivo', tentativo: false, online: true  },
-  // ── Abajo: Inmersión Viva, a todo el ancho ────────────
+  // ── Abajo: las dos de voluntariado, a todo el ancho ───
+  // La convocatoria con fecha va primero porque vence; la abierta, debajo.
+  { slug: 'voluntariado',                 name: VOLUNTARIADO.name,               tag: VOLUNTARIADO.tag,           img: VOLUNTARIADO.heroImg,                    badge: VOLUNTARIADO.badge, tentativo: false, online: false },
   { slug: 'inmersion-viva',               name: 'Inmersión Viva',                tag: 'Mínimo 2 semanas',         img: '/img/taypichin/carousel/5.jpg',         badge: 'Inmersión',      tentativo: false, online: false },
   // ── Próximamente (sin fecha confirmada) ───────────────
   { slug: 'cultivo-girgolas',             name: 'Cultivo de Gírgolas',           tag: 'Próximamente',             img: '/img/cursos/cultivo-girgolas/1.jpg',    badge: 'Sin fecha',      tentativo: true,  online: false },
@@ -336,12 +341,19 @@ export default async function CursosPage() {
     console.error('[CursosPage] DB fallback activado:', e);
   }
 
-  // Vigentes: 2 filas de 3 (las 3 presenciales insignia + las 3 online) y, abajo, Inmersión Viva a todo el ancho.
-  // Las sin fecha confirmada van en su propia fila aparte, apagadas.
+  // Vigentes: 2 filas de 3 (las 3 presenciales insignia + las 3 online) y, abajo,
+  // las dos propuestas de voluntariado a todo el ancho. Las sin fecha confirmada
+  // van en su propia fila aparte, apagadas.
+  //
+  // El orden de ANCHO es el orden en que se muestran, y no es casual: la
+  // convocatoria con fecha va antes que la abierta todo el año porque vence.
+  const ANCHO = ['voluntariado', 'inmersion-viva'];
   const todosVigentes = todos.filter(c => !c.tentativo);
   const todosProximos = todos.filter(c => c.tentativo);
-  const inmersionCard = todosVigentes.find(c => c.slug === 'inmersion-viva');
-  const gridVigentes = todosVigentes.filter(c => c.slug !== 'inmersion-viva');
+  const anchoCards = ANCHO
+    .map(slug => todosVigentes.find(c => c.slug === slug))
+    .filter((c): c is TodoItem => Boolean(c));
+  const gridVigentes = todosVigentes.filter(c => !ANCHO.includes(c.slug));
 
   return (
     <>
@@ -369,11 +381,11 @@ export default async function CursosPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {gridVigentes.map((c, idx) => <GridCardLarge key={c.slug} c={c} idx={idx} />)}
           </div>
-          {inmersionCard && (
-            <div className="mt-3">
-              <GridCardWide c={inmersionCard} />
+          {anchoCards.map(c => (
+            <div key={c.slug} className="mt-3">
+              <GridCardWide c={c} />
             </div>
-          )}
+          ))}
           {todosProximos.length > 0 && (
             <div className="mt-8">
               <p className="text-[11px] font-sans font-semibold uppercase tracking-widest text-bone-200 mb-3 text-center">Sin fecha confirmada — próximamente</p>
