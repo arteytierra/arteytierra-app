@@ -49,15 +49,16 @@ describe('la banda de cada clase sale de las mediciones y de ningún otro lado',
     }
   });
 
-  it('el arbolado va de 60 a 940 y son tres sotobosques', () => {
-    // Waring's Woods 60 bajo Pseudotsuga cerrado, Cascade Head 410 bajo aliso,
-    // Różańsko 378-940 en robledal-carpinal. El techo está sesgado bajo: Nepal
-    // mide 1.300-1.700 y todavía no está montado.
+  it('el arbolado va de 39 a 940 y son cuatro sotobosques', () => {
+    // Manitou 39 bajo 78 % de densidad de copa, Waring's Woods 60 bajo
+    // Pseudotsuga cerrado, Cascade Head 410 bajo aliso, Różańsko 378-940 en
+    // robledal-carpinal. El techo está sesgado bajo: Nepal mide 1.300-1.700 y no
+    // monta porque su área publicada cruza tres biomas.
     const b = bandaDeClase(10);
     expect(b).not.toBeNull();
-    expect(b?.kg_ms_ha_anio_min).toBe(60);
+    expect(b?.kg_ms_ha_anio_min).toBe(39);
     expect(b?.kg_ms_ha_anio_max).toBe(940);
-    expect(b?.sitios).toBe(3);
+    expect(b?.sitios).toBe(4);
   });
 
   it('el arbustal tiene un solo sitio, y es la frygana de Lesbos', () => {
@@ -67,11 +68,11 @@ describe('la banda de cada clase sale de las mediciones y de ningún otro lado',
     expect(b?.sitios).toBe(1);
   });
 
-  it('el pastizal va de 350 a 10.630 en seis sitios: un factor 30', () => {
+  it('el pastizal va de 350 a 10.630 en siete sitios: un factor 30', () => {
     const b = bandaDeClase(30);
     expect(b?.kg_ms_ha_anio_min).toBe(350);
     expect(b?.kg_ms_ha_anio_max).toBe(10630);
-    expect(b?.sitios).toBe(6);
+    expect(b?.sitios).toBe(7);
     expect((b?.kg_ms_ha_anio_max ?? 0) / (b?.kg_ms_ha_anio_min ?? 1)).toBeGreaterThan(30);
   });
 
@@ -102,22 +103,22 @@ describe('la banda del predio', () => {
     expect(f?.clases_sin_fuente).toEqual([]);
   });
 
-  it('un predio todo arbolado recibe 60 a 940, no los 800 de antes', () => {
+  it('un predio todo arbolado recibe 39 a 940, no los 800 de antes', () => {
     // El 800 cayó adentro de la banda por accidente y era el mejor respaldado de
-    // los cuatro pesos. Igual se fue: lo que hay no es un número, es un factor 16.
+    // los cuatro pesos. Igual se fue: lo que hay no es un número, es un factor 24.
     const f = forrajePorCobertura(predio([10, 100]));
-    expect(f?.kg_ms_ha_anio_min).toBe(60);
+    expect(f?.kg_ms_ha_anio_min).toBe(39);
     expect(f?.kg_ms_ha_anio_max).toBe(940);
     expect(800).toBeGreaterThan(f?.kg_ms_ha_anio_min ?? 0);
     expect(800).toBeLessThan(f?.kg_ms_ha_anio_max ?? 0);
   });
 
   it('pondera por el porcentaje de cada clase, en los mínimos y en los máximos', () => {
-    // Mitad monte, mitad pastizal: (60+350)/2 y (940+10.630)/2.
+    // Mitad monte, mitad pastizal: (39+350)/2 y (940+10.630)/2.
     const f = forrajePorCobertura(predio([10, 50], [30, 50]));
-    expect(f?.kg_ms_ha_anio_min).toBe(205);
+    expect(f?.kg_ms_ha_anio_min).toBe(195);
     expect(f?.kg_ms_ha_anio_max).toBe(5785);
-    expect(f?.sitios).toBe(9);
+    expect(f?.sitios).toBe(11);
   });
 
   it('el suelo desnudo no entra en el promedio, y el porcentaje lo dice', () => {

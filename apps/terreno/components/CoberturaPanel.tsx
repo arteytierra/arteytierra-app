@@ -113,7 +113,7 @@ export function CoberturaPanel({ mojones, datos, onDatos, onResumen }: Props) {
                 ))}
                 <Cautela claim="Pastoreo muestra otro número y no mide lo mismo que este.">
                   Esta banda sale de mediciones de campo en sitios cuya cobertura satelital es
-                  como la de acá: diez sitios, cuatro continentes. El de Pastoreo sale de la
+                  como la de acá: doce sitios, cuatro continentes. El de Pastoreo sale de la
                   lluvia anual y no mira qué crece encima. Cuando difieren mucho es porque el
                   predio tiene monte o suelo desnudo, y el de la lluvia no lo sabe.
                   <br /><br />
@@ -122,6 +122,10 @@ export function CoberturaPanel({ mojones, datos, onDatos, onResumen }: Props) {
                   va del 0,4 % bajo conífera cerrada al 92 % en una pradera con leñosas dispersas
                   —un factor 236— y la clase de cobertura no distingue entre esos dos. Por eso
                   hay una banda ancha en vez de un número cómodo.
+                  <br /><br />
+                  Hay una medición que lo muestra adentro de un solo bosque: en Colorado, las
+                  parcelas bajo dosel de pino y las aberturas del mismo rodal, cosechadas el mismo
+                  día, dan 39 y 658 kg MS/ha·año. El clima de las dos es idéntico.
                 </Cautela>
               </div>
             </div>

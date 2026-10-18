@@ -15,7 +15,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   FORRAJE_MEDIDO, LB_ACRE_A_KG_HA, lbAcreAKgHa, gM2AKgHa, medicionesDeBioma,
-  TIPOS_SIN_DESCONTAR,
+  TIPOS_SIN_DESCONTAR, CURVA_DOSEL_MANITOU, forrajeManitouLbAcre,
+  fraccionPorDoselManitou,
 } from '@/lib/forrajeMedido';
 import { calcularReceptividad } from '@/lib/produccion';
 import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
@@ -419,7 +420,9 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
   const warings = sitio('Waring');
 
   it('abren los biomas 5 y 8 con sotobosque, no con pastizal', () => {
-    expect(medicionesDeBioma('resolve_bosque_coniferas_templado')).toHaveLength(1);
+    // Tres en el bioma 5 desde el lote 11: Cascade Head y las dos mitades de
+    // Manitou, que son el mismo bosque contado bajo dosel y en las aberturas.
+    expect(medicionesDeBioma('resolve_bosque_coniferas_templado')).toHaveLength(3);
     expect(cascade.tipo).toBe('ms_sotobosque');
     expect(warings.tipo).toBe('ms_sotobosque');
     // Waring's Woods cae en el bioma 8 por la coordenada que la ficha publica:
@@ -463,19 +466,19 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son diez sitios en siete de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(10);
+  it('son doce sitios en siete de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(12);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(7);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
   });
 
-  it('tres de los diez son sotobosque, y hay que poder contarlos', () => {
+  it('cuatro de los doce son sotobosque, y hay que poder contarlos', () => {
     // Son tres mediciones de abajo de un dosel cerrado, y no se pueden leer
     // como la producción de su bioma: dos de ellas abren un bioma nuevo y la
     // tercera cae en el bioma de la pradera de Dakota produciendo 44× menos.
     const sotobosque = FORRAJE_MEDIDO.filter(m => m.tipo === 'ms_sotobosque');
-    expect(sotobosque).toHaveLength(3);
+    expect(sotobosque).toHaveLength(4);
     expect(sotobosque.every(m => TIPOS_SIN_DESCONTAR.includes(m.tipo))).toBe(true);
   });
 
@@ -486,5 +489,131 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
       if (m.lluvia_mm_min === null) continue;
       expect(nppMiami(m.lluvia_mm_min, m.temp_media_c_anual ?? 0)).not.toBeNull();
     }
+  });
+});
+
+describe('lote 11 — la curva de dosel de Manitou, verificada por ajuste', () => {
+  /** Cuadrados mínimos sobre los pares, para no creerle a la transcripción. */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const mx = pares.reduce((s, [x]) => s + x, 0) / n;
+    const my = pares.reduce((s, [, y]) => s + y, 0) / n;
+    const sxy = pares.reduce((s, [x, y]) => s + (x - mx) * (y - my), 0);
+    const sxx = pares.reduce((s, [x]) => s + (x - mx) ** 2, 0);
+    const b = sxy / sxx;
+    const a = my - b * mx;
+    const syy = pares.reduce((s, [, y]) => s + (y - my) ** 2, 0);
+    const ssr = pares.reduce((s, [x, y]) => s + (y - (a + b * x)) ** 2, 0);
+    return { a, b, r2: 1 - ssr / syy, sd_resid: Math.sqrt(ssr / (n - 2)), se_media: Math.sqrt(ssr / (n - 2) / n) };
+  }
+
+  const pares = CURVA_DOSEL_MANITOU.PARES_AGOSTO_1972;
+  const ago72 = CURVA_DOSEL_MANITOU.ECUACIONES[2]!;
+  const ago73 = CURVA_DOSEL_MANITOU.ECUACIONES[3]!;
+
+  it('los catorce pares devuelven la ecuación publicada', () => {
+    // Esto es el caso resuelto de la literatura, y además la única forma de
+    // verificar los pares: el PDF de la tesis no se puede abrir desde acá, así
+    // que lo que se comprueba es que los pares y la ecuación sean la misma cosa.
+    expect(pares).toHaveLength(14);
+    const f = recta(pares);
+    expect(f.a).toBeCloseTo(529.4, 1);
+    expect(f.b).toBeCloseTo(-6.1, 1);
+    expect(ago72.fecha).toBe('agosto 1972');
+    expect(ago72.a).toBe(529.4);
+    expect(ago72.b).toBe(-6.1);
+    expect(f.r2).toBeCloseTo(0.80, 2);
+  });
+
+  it('el «SE» publicado no es la dispersión de los residuos', () => {
+    // 22,5 lb/acre publicado contra 80,2 de desvío residual. El 22,5 coincide
+    // con el error estándar de la media, 21,4. Leerlo como ruido de la
+    // predicción lo subestima 3,6 veces.
+    const f = recta(pares);
+    expect(f.sd_resid).toBeCloseTo(80.2, 0);
+    expect(f.se_media).toBeCloseTo(21.4, 0);
+    expect(ago72.se_publicado).toBe(22.5);
+    expect(f.sd_resid / ago72.se_publicado).toBeGreaterThan(3.5);
+  });
+
+  it('la pendiente relativa es la misma en los dos años, y el nivel no', () => {
+    // El hallazgo que hace la curva usable: 1973 produjo 2,10 veces lo de 1972
+    // —la tesis lo advierte— y la forma de la relación no se movió.
+    const rel72 = Math.abs(ago72.b) / ago72.a;
+    const rel73 = Math.abs(ago73.b) / ago73.a;
+    expect(Math.abs(rel72 - rel73) / rel72).toBeLessThan(0.005);
+    expect(ago73.a / ago72.a).toBeCloseTo(2.10, 2);
+    // Y el dosel al que la recta llega a cero: 86,8 % contra 87,0 %.
+    expect(ago72.a / Math.abs(ago72.b)).toBeCloseTo(86.8, 1);
+    expect(ago73.a / Math.abs(ago73.b)).toBeCloseTo(87.0, 1);
+  });
+
+  it('las tres cosechas de 1972 son una meseta, no un día', () => {
+    // Junio, julio y agosto dan casi la misma recta: el pico de este sitio dura
+    // tres meses, lo cual es lo que permite llamarle peak standing crop.
+    const [jun, jul] = CURVA_DOSEL_MANITOU.ECUACIONES;
+    expect(jun?.fecha).toBe('junio 1972');
+    expect(jul?.fecha).toBe('julio 1972');
+    for (const e of [jun, jul]) {
+      expect(Math.abs((e?.a ?? 0) - ago72.a) / ago72.a).toBeLessThan(0.02);
+    }
+  });
+
+  it('la fracción por dosel devuelve null fuera del gradiente medido', () => {
+    // 0 a 78 % es lo que midió; más allá la recta sólo extrapola.
+    expect(fraccionPorDoselManitou(-1)).toBeNull();
+    expect(fraccionPorDoselManitou(79)).toBeNull();
+    expect(fraccionPorDoselManitou(0)).toBe(1);
+    expect(fraccionPorDoselManitou(50)).toBeCloseTo(0.424, 3);
+    // A 78 %, el extremo medido, queda un 10 % de lo de la abertura.
+    expect(fraccionPorDoselManitou(78)).toBeCloseTo(0.101, 3);
+  });
+
+  it('evalúa la recta en lb/acre y reproduce las parcelas sin dosel', () => {
+    expect(forrajeManitouLbAcre(ago72, 0)).toBeCloseTo(529.4, 1);
+    // Las tres aberturas medidas: 465, 474 y 587, con media 508,7.
+    const aberturas = pares.filter(([x]) => x === 0).map(([, y]) => y);
+    expect(aberturas).toHaveLength(3);
+    const media = aberturas.reduce((s, y) => s + y, 0) / 3;
+    expect(Math.abs(media - forrajeManitouLbAcre(ago72, 0)) / media).toBeLessThan(0.05);
+  });
+
+  it('el mismo bosque, el mismo día: las aberturas dan 13 veces el dosel', () => {
+    // Es el argumento más limpio que tiene acequia de que la clase de cobertura
+    // importa y el clima no lo explica: mismo suelo, misma lluvia, mismo método.
+    const dosel = sitio('bajo dosel de ponderosa');
+    const abiertas = sitio('aberturas naturales');
+    expect(dosel.clase_wc).toBe(10);
+    expect(abiertas.clase_wc).toBe(30);
+    expect(dosel.bioma).toBe(abiertas.bioma);
+    expect(dosel.lluvia_mm_min).toBe(abiertas.lluvia_mm_min);
+    expect(dosel.temp_media_c_anual).toBe(abiertas.temp_media_c_anual);
+    expect(abiertas.kg_ms_ha_anio_min / dosel.kg_ms_ha_anio_min).toBeCloseTo(13.4, 1);
+    expect(abiertas.kg_ms_ha_anio_max / dosel.kg_ms_ha_anio_min).toBeCloseTo(16.9, 1);
+  });
+
+  it('la conversión de lb/acre a kg/ha es la de las dos entradas', () => {
+    // 35 y 449 lb/acre bajo dosel; 465 y 587 en las aberturas.
+    expect(lbAcreAKgHa(35)).toBe(39);
+    expect(lbAcreAKgHa(449)).toBe(503);
+    expect(lbAcreAKgHa(465)).toBe(521);
+    expect(lbAcreAKgHa(587)).toBe(658);
+  });
+
+  it('con la lluvia publicada, el dosel mueve el forraje del 0,6 % al 9 % de la NPP', () => {
+    // 396 mm y 5 °C: la lluvia limita, y por eso el contraste no es sensible a
+    // la temperatura aproximada que trae de otra publicación.
+    const m = nppMiami(396, 5);
+    expect(m).not.toBeNull();
+    expect(m?.limitante).toBe('lluvia');
+    const total = m?.npp_ms_kg_ha_anio ?? 0;
+    expect(total).toBeCloseTo(6933, -2);
+    const dosel = sitio('bajo dosel de ponderosa');
+    const abiertas = sitio('aberturas naturales');
+    expect((dosel.kg_ms_ha_anio_min / total) * 100).toBeCloseTo(0.56, 2);
+    expect((abiertas.kg_ms_ha_anio_max / total) * 100).toBeCloseTo(9.49, 1);
+    // Un factor 17 entre las dos puntas del mismo bosque, con el mismo clima
+    // adentro del modelo: el dosel mueve más que cualquier variable climática.
+    expect(abiertas.kg_ms_ha_anio_max / dosel.kg_ms_ha_anio_min).toBeGreaterThan(16);
   });
 });

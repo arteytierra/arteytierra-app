@@ -125,16 +125,22 @@ export interface ForrajeDeCobertura {
  * separador de miles. Dos de los cuatro no tenían ni una medición detrás
  * (arbustal y cultivo, y el cultivo sigue sin tenerla) y los otros dos quedaron
  * contradichos por las mediciones que aparecieron entre el 10 y el 17 de
- * octubre: el arbolado va de 60 a 940 kg MS/ha·año según cuánta luz pase el
+ * octubre: el arbolado va de 39 a 940 kg MS/ha·año según cuánta luz pase el
  * dosel y el pastizal de 350 a 10.630 según el sitio. Un entero en el medio de
  * eso no era una estimación, era una decoración.
+ *
+ * Y el 17/10 a la noche quedó medido adentro de un solo bosque: en el Manitou
+ * Experimental Forest de Colorado, las once parcelas bajo dosel de ponderosa y
+ * las tres aberturas del mismo bosque, cosechadas el mismo día con el mismo
+ * método, dan 39-503 contra 521-658 kg MS/ha·año. Mismo suelo, misma lluvia,
+ * mismo año: **un factor 13 que la clase de cobertura ve y el clima no.**
  *
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Diez sitios en cuatro continentes es poco, y la clase de
+ * **Rango de validez.** Doce sitios en cuatro continentes es poco, y la clase de
  * cobertura por sí sola no determina el forraje: adentro de cada banda queda un
- * factor sin resolver, 16 en el arbolado y 30 en el pastizal. Lo que lo
+ * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
  * factor 236 entre sus dos puntas— y la lluvia para el pastizal, que es lo que
  * calcula `prodForrajera` en `produccion.ts`. Mientras eso no esté, una banda

@@ -586,12 +586,16 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son **diez sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
- * No son un modelo: son los puntos que hay. Tres de los diez son sotobosque de
+ * Son **doce sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
+ * No son un modelo: son los puntos que hay. Cuatro de los doce son sotobosque de
  * bosque cerrado y no pastizal, y eso cambia cómo se leen: ver `ms_sotobosque`.
  * Cada uno declara además su `clase_wc`, que es de donde `cobertura.ts` saca la
- * banda de cada clase de cobertura: seis en la 30, uno en la 20, tres en la 10 y
- * **ninguno en la 40**, el cultivo.
+ * banda de cada clase de cobertura: siete en la 30, uno en la 20, cuatro en la 10
+ * y **ninguno en la 40**, el cultivo.
+ *
+ * Los dos últimos son el mismo lugar contado dos veces, y es deliberado: en
+ * Manitou las parcelas bajo dosel y las aberturas del mismo bosque, el mismo día
+ * y con el mismo método, difieren 13 veces. El clima no explica nada de eso.
  * El bioma que más se pastorea —la sabana tropical— sigue sin ninguno, y el
  * motivo está en la sección «La sabana no está sin medir».
  */
@@ -891,8 +895,157 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
       url: 'https://daac.ornl.gov/NPP/guides/NPP_OTTER.html',
     },
   },
+  {
+    // Lote 11. El MISMO sitio entra dos veces, y ahí está todo el punto: once
+    // parcelas bajo dosel de ponderosa y tres aberturas naturales, el mismo
+    // suelo, el mismo clima, la misma cosecha de agosto de 1972 y el mismo
+    // método. Bajo dosel 39-503 kg MS/ha, en las aberturas 521-658: un factor
+    // 13 adentro de un bosque de 6.758 ha. Esta es la entrada del dosel; la
+    // abertura es la que sigue.
+    bioma: 'resolve_bosque_coniferas_templado',
+    sitio: 'Once parcelas bajo dosel de ponderosa, Manitou Experimental Forest, Colorado',
+    clase_wc: 10,
+    tipo: 'ms_sotobosque',
+    // 35 lb/acre con 78 % de densidad de copa y 449 con 29 %. En lb/acre, que es
+    // lo que publica la tesis; la conversión exacta es LB_ACRE_A_KG_HA.
+    kg_ms_ha_anio_min: 39,
+    kg_ms_ha_anio_max: 503,
+    kg_ms_ha_anio_tipico: null,
+    // 15,6 pulgadas publicadas para la estación. El Servicio Forestal publica
+    // 398 mm como media de 65 años, que es lo mismo. Ver `donde_deja_de_valer`:
+    // otras publicaciones del sitio dan 368 y 432.
+    lluvia_mm_min: 396,
+    lluvia_mm_max: 396,
+    // «Aproximadamente 5 °C», y no lo publica la tesis sino otra publicación del
+    // Servicio Forestal sobre la misma estación (Massman et al. 2004). Entra
+    // porque el contraste no es sensible: con 396 mm la lluvia limita el Miami
+    // Model para cualquier temperatura por encima de 1 °C.
+    temp_media_c_anual: 5,
+    metodo: 'Catorce parcelas permanentes de 0,25 a 0,98 acres sobre un gradiente NATURAL de densidad de ponderosa, en tres pastizales de la estación; once bajo dosel y tres aberturas. En cada parcela, 250 subparcelas de 1 × 2 pies medidas con herbage meter y doble muestreo: cada quinta subparcela se cortó a 0,5 pulgadas y se pesó seca en horno. Cosechas de junio, julio y agosto de 1972 y agosto de 1973; estas cifras son las de agosto de 1972. El algoritmo es peak standing crop —el método 1 de los seis de Rawlik—, que subestima: ver `CURVA_DOSEL_MANITOU`.',
+    que_cuenta: 'Sotobosque por especie: Arizona fescue, blue grama, mountain muhly, ciperáceas, Artemisia frigida, Arctostaphylos y otras gramíneas y hierbas. Incluye arbustos BAJOS además de las herbáceas, así que no es estrictamente la capa herbácea. No descuenta palatabilidad ni acceso, y no es ingestión animal.',
+    estacionalidad: 'El crecimiento y la lluvia se concentran de abril a agosto: la estación publica que el 70 % de las 15,6 pulgadas cae en esos cinco meses. Las cosechas de junio, julio y agosto de 1972 dan prácticamente el mismo nivel —las tres ecuaciones difieren en el tercer decimal de la pendiente—, así que para este sitio el pico es una meseta de tres meses y no un día.',
+    donde_deja_de_valer: 'Parcelas alrededor de 2.440 m sobre suelos de granito de Pikes Peak; la estación entera va de 2.286 a 2.835 m e incluye bosque, pastizal y propiedad privada, así que su coordenada institucional no asigna por sí sola el bioma de cada parcela —verifiqué tres puntos que la abarcan y los tres dan bioma 5—. Y la lluvia del sitio tiene dispersión entre publicaciones: 396 mm en la tesis y en la ficha de la estación, 398 mm como media de 65 años en un paper del Servicio Forestal, 432 mm en la descripción del NCAR y 368 mm en la ficha de AmeriFlux, que mide 12 km² alrededor de su torre y no la estación entera. Un 17 % entre puntas, y el contraste del modelo no cambia de limitante en ese rango.',
+    medido_en: 'agosto de 1972 (la serie completa es junio, julio y agosto de 1972 y agosto de 1973)',
+    fuente: {
+      label: 'Metz, Harley E. (1974), «Relationship between ponderosa pine and understory herbage production», tesis de maestría, Colorado State University, 90 p. — Tablas 1, 2 y 6',
+      url: 'https://www.fs.usda.gov/rm/pubs_exp_forests/manitou/rmrs_1974_metz_h001.pdf',
+    },
+  },
+  {
+    // La otra mitad del mismo sitio: las tres aberturas naturales, con 0 % de
+    // densidad de copa. Un satélite las vería como pastizal, no como bosque, y
+    // por eso van en la clase 30 aunque estén adentro de un bosque experimental.
+    bioma: 'resolve_bosque_coniferas_templado',
+    sitio: 'Tres aberturas naturales sin dosel, Manitou Experimental Forest, Colorado',
+    clase_wc: 30,
+    tipo: 'ms_herbacea_total',
+    // 465, 474 y 587 lb/acre. Sin típico: la tesis no elige uno.
+    kg_ms_ha_anio_min: 521,
+    kg_ms_ha_anio_max: 658,
+    kg_ms_ha_anio_tipico: null,
+    lluvia_mm_min: 396,
+    lluvia_mm_max: 396,
+    temp_media_c_anual: 5,
+    metodo: 'Las mismas parcelas, el mismo día y el mismo doble muestreo que la entrada anterior: lo único que cambia es que acá la densidad de copa es 0 %. Peak standing crop de agosto de 1972.',
+    que_cuenta: 'Igual que bajo dosel: gramíneas, hierbas y arbustos bajos, sin separar forrajeras de no forrajeras y sin descontar uso.',
+    estacionalidad: 'La misma: 70 % de la lluvia entre abril y agosto.',
+    donde_deja_de_valer: 'Son tres parcelas de 0,25 a 0,98 acres, o sea claros de 0,1 a 0,4 ha adentro de un bosque de conífera. No son una pradera abierta: tienen el borde del rodal al lado, y la tesis no mide cuánto de eso las afecta. Para la banda de la clase 30 son el extremo bajo de lo que puede dar un pastizal de montaña con 396 mm.',
+    medido_en: 'agosto de 1972',
+    fuente: {
+      label: 'Metz, Harley E. (1974), «Relationship between ponderosa pine and understory herbage production», tesis de maestría, Colorado State University, 90 p. — Tablas 1 y 2',
+      url: 'https://www.fs.usda.gov/rm/pubs_exp_forests/manitou/rmrs_1974_metz_h001.pdf',
+    },
+  },
 ] as const;
 
+/**
+ * La primera curva de forraje contra dosel que entra a acequia, con sus cuatro
+ * ecuaciones publicadas y los catorce pares de los que salieron.
+ *
+ * Fuente: Metz (1974), Tabla 6, para el Manitou Experimental Forest. `Y` es el
+ * rendimiento herbáceo en **lb/acre de peso seco en horno** y `X` la **densidad
+ * de copa en %** (crown canopy density). No es cobertura de copa, ni área basal,
+ * ni densidad de árboles, y **no son intercambiables**: la tesis usa esta y sólo
+ * esta.
+ *
+ * **Verificado por ajuste, no por lectura.** Los catorce pares de agosto de 1972
+ * están en el arreglo `PARES_AGOSTO_1972`, y el cuadrado mínimo sobre esos
+ * catorce puntos devuelve `Y = 529,4 − 6,1 X`, que es exactamente la ecuación
+ * publicada. Eso prueba que los pares y la ecuación son la misma cosa, lo cual
+ * importa porque el PDF de la tesis no se puede abrir desde esta máquina.
+ *
+ * **El hallazgo está en comparar los dos años, y es el que hace la curva
+ * usable.** 1973 produjo casi el doble que 1972, cosa que la propia tesis
+ * advierte. Pero la pendiente RELATIVA es la misma:
+ *
+ * | año | ecuación | pendiente / intercepto | dosel donde el forraje llega a 0 |
+ * |---|---|---|---|
+ * | agosto 1972 | Y = 529,4 − 6,1 X | 0,011522 | 86,8 % |
+ * | agosto 1973 | Y = 1.113,5 − 12,8 X | 0,011495 | 87,0 % |
+ *
+ * Las dos pendientes relativas difieren un **0,24 %** y los dos puntos de
+ * extinción un **0,2 %**, con un nivel absoluto que se mueve **2,10×**. O sea:
+ * **la forma de la relación es estable y lo que cambia con el año es la escala.**
+ * Eso es lo contrario de lo que pasa con los algoritmos de NPP, donde lo estable
+ * es el total y lo frágil es el reparto, y es la razón por la que una fracción de
+ * dosel tiene chance de transferirse y una fracción de NPP no.
+ *
+ * **Cuidado con el «SE» publicado.** La tesis imprime SE = 22,5 lb/acre para la
+ * ecuación de agosto de 1972. Ése **no es el desvío de los residuos**: sobre los
+ * catorce pares el residuo tiene un desvío de 80,2 lb/acre, y 22,5 coincide con
+ * el error estándar de la media (21,4). Leerlo como dispersión de la predicción
+ * subestima el ruido 3,6 veces.
+ *
+ * **Rango de validez.** Un sitio, un tipo de bosque (Pinus ponderosa sobre
+ * granito, a 2.440 m, con 396 mm), dos temporadas, y un gradiente natural de
+ * densidad —no un ensayo de raleo—. `X` va de 0 a 78 % en los datos; el 86,8 %
+ * donde la recta cruza el cero es **extrapolación de dos parcelas**, no una
+ * medición. Y la recta es la forma que la tesis eligió: con catorce puntos y un
+ * r² de 0,79 no se puede distinguir de una exponencial o una hiperbólica, que es
+ * justamente lo que Bojórquez-Tapia, Ffolliott y Guertin ajustaron en Arizona y
+ * lo que todavía falta montar.
+ *
+ * **Qué se rompe si cambia: nada todavía, a propósito.** No la consume ningún
+ * cálculo. Con un sitio no se le puede poner una curva de dosel a cualquier
+ * predio del planeta; lo que hace es fijar la forma que hay que buscar en los
+ * demás sitios, y dar el primer número a la pregunta de cuánto forraje tapa un
+ * dosel.
+ */
+export const CURVA_DOSEL_MANITOU = {
+  /** `Y = a + b·X`, con Y en lb/acre de peso seco y X en % de densidad de copa. */
+  ECUACIONES: [
+    { fecha: 'junio 1972', a: 524.1, b: -5.9, r2: 0.755, se_publicado: 24.8 },
+    { fecha: 'julio 1972', a: 523.7, b: -5.8, r2: 0.752, se_publicado: 24.7 },
+    { fecha: 'agosto 1972', a: 529.4, b: -6.1, r2: 0.792, se_publicado: 22.5 },
+    { fecha: 'agosto 1973', a: 1113.5, b: -12.8, r2: 0.794, se_publicado: 46.4 },
+  ],
+  /** `[densidad_de_copa_pct, lb_acre]` de las catorce parcelas, agosto de 1972. */
+  PARES_AGOSTO_1972: [
+    [78, 35], [73, 69], [40, 348], [0, 465], [0, 474], [46, 362], [42, 204],
+    [35, 206], [0, 587], [29, 449], [41, 403], [51, 143], [66, 125], [53, 160],
+  ],
+} as const;
+
+/** Evalúa una de las rectas de Manitou. Devuelve lb/acre, no kg/ha. */
+export function forrajeManitouLbAcre(ecuacion: { a: number; b: number }, densidad_copa_pct: number): number {
+  return ecuacion.a + ecuacion.b * densidad_copa_pct;
+}
+
+/**
+ * La fracción del forraje a cielo abierto que queda bajo un dosel, según la
+ * recta de Manitou: `1 − (|b|/a)·X`.
+ *
+ * Es la forma de la relación, sin su escala, y es lo único de esta curva que los
+ * dos años medidos sostienen por igual: 0,011522 contra 0,011495 por punto de
+ * densidad de copa. Devuelve `null` fuera de 0-78 %, que es el gradiente medido,
+ * porque más allá la recta sólo extrapola.
+ */
+export function fraccionPorDoselManitou(densidad_copa_pct: number): number | null {
+  if (densidad_copa_pct < 0 || densidad_copa_pct > 78) return null;
+  const ago72 = CURVA_DOSEL_MANITOU.ECUACIONES[2];
+  if (ago72 === undefined) return null;
+  return Math.max(0, 1 - (Math.abs(ago72.b) / ago72.a) * densidad_copa_pct);
+}
 
 /**
  * La fracción aérea de la NPP, medida donde cuatro algoritmos publicaron las dos
