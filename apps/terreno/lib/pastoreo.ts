@@ -138,8 +138,8 @@ export interface ResultadoPastoreo {
  * de Nepal cae del lado de la banda de cobertura, no del lado de esta escalera.
  * Queda una advertencia dentro de la advertencia: 1.300-1.700 esta ARRIBA de los
  * 940 en que termina la banda del arbolado, porque Nepal todavia no esta montado
- * en `forrajeMedido.ts` —le falta la coordenada publicada— y por eso el techo de
- * esa banda esta sesgado bajo.
+ * en `forrajeMedido.ts` —el unico area que su grupo publica cruza tres biomas— y
+ * por eso el techo de esa banda esta sesgado bajo.
  * Esta escalera se escribio para pastizal natural y nada impide aplicarla a un
  * bosque: ahi sobreestima la oferta por un factor de cuatro o mas, y eso antes
  * de descontar el uso admisible.

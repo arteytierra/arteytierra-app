@@ -293,9 +293,13 @@
  *    unas 13 veces alto para un dosel de conífera cerrado. **Desde el 17/10/2026
  *    ya no existe:** la clase arbolado de `cobertura.ts` toma la banda de los
  *    sitios de sotobosque montados acá, y las otras tres clases también. El
- *    1.300-1.700 de Nepal sigue sin montar —falta su coordenada publicada— y por
- *    eso la banda del arbolado llega hasta 940 y no hasta 1.700: el techo está
- *    sesgado bajo, y queda dicho.
+ *    1.300-1.700 de Nepal sigue sin montar, y el 17/10 a la noche se supo por qué
+ *    con un número: la única ubicación que su grupo publica es un rectángulo de
+ *    26°41'-26°50' N por 87°09'-87°21' E, y **ese rectángulo de 17 × 20 km cruza
+ *    tres biomas** —7 en las dos esquinas del sur y en el centro, 1 en la esquina
+ *    noroeste y 3 en la noreste—. Un área publicada no es una coordenada hasta
+ *    que da un solo bioma. Así que la banda del arbolado llega hasta 940 y no
+ *    hasta 1.700: el techo está sesgado bajo, y queda dicho.
  *
  * ## La inversión del stock, cuarta confirmación y la más extrema
  *

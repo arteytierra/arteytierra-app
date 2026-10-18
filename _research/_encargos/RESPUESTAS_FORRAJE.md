@@ -15,6 +15,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 07 | biomas 1 ×2, 2 ×2 | **ninguna de 4** el 17/10/2026 |
 | 08 | biomas 4, 5, 6 | **montadas 3 de 4** el 17/10/2026 |
 | 09 | la fracción aérea de la NPP | **cerrado en contra** el 17/10/2026 — y destapó la segunda fracción |
+| 10 | la curva de forraje contra dosel | **vacío** el 17/10/2026 — un rechazo bueno y dos de más |
 
 ---
 
@@ -1081,3 +1082,89 @@ segundo.
   emparejar una normal con una temporada es mezclar dos cosas, que es la regla E.
 - **No se tocó `prodForrajera`.** Sigue sin fuente, y después de este lote es la
   única de las dos rutas de forraje que no tiene ninguna.
+
+## Lote 10 — vacío: un rechazo correcto, dos de más, y una regla nueva
+
+Tres `vacias` y ninguna entrada. Vale la pena separarlas porque dos de los tres
+rechazos salieron de reglas mal escritas, y eso es un problema del encargo y no de
+la entrega.
+
+### El rechazo correcto: Nepal queda cerrado, y ahora con un número
+
+El pedido auxiliar era la coordenada de las parcelas de Gautam y Mandal (2016) en
+Sunsari, la medición de 1.300-1.700 kg MS/ha/año de NPP herbácea de bosque húmedo
+tropical que acequia cita desde el lote 01 y no puede montar. La entrega encontró
+que una publicación posterior del mismo grupo (Gautam y Mandal, 2018, *Our
+Nature* 16(1), sección «Study area») describe el bosque con un rectángulo —26°41′
+a 26°50′ N, 87°09′ a 87°21′ E, 220-370 m— y se negó a convertirlo en un punto.
+
+Consulté RESOLVE en las cuatro esquinas y el centro:
+
+| punto | ecorregión | bioma |
+|---|---|---|
+| 26°41′ N, 87°09′ E | Terai-Duar savanna and grasslands | **7** |
+| 26°41′ N, 87°21′ E | Terai-Duar savanna and grasslands | **7** |
+| centro | Terai-Duar savanna and grasslands | **7** |
+| 26°50′ N, 87°09′ E | Himalayan subtropical broadleaf forests | **1** |
+| 26°50′ N, 87°21′ E | Himalayan subtropical pine forests | **3** |
+
+**Un rectángulo de 17 × 20 km cruza tres biomas.** El rechazo se sostiene y pasó
+de ser formal a ser medido. De ahí sale la **regla I** del encargo siguiente: un
+área publicada no es una coordenada hasta que da un solo bioma.
+
+Y hay un vuelto: tres de los cinco puntos dan **bioma 7, la sabana tropical**, que
+acequia persigue desde cuatro lotes sin una sola entrada. Si las parcelas están en
+el Terai —a 220-370 m es lo más probable—, esa coordenada no sólo arreglaría el
+techo de la banda del arbolado: abriría el bioma que más se pastorea del planeta.
+Pasó de ser un pedido auxiliar a ser el más valioso del encargo.
+
+### Los dos rechazos de más, y por qué son culpa del encargo
+
+**Metz (1974), Manitou Experimental Forest.** Catorce parcelas permanentes sobre
+un gradiente natural de densidad de ponderosa, cosechas de junio, julio y agosto
+de 1972 y agosto de 1973, con la relación contra el dosel armada sobre las de
+agosto. Se rechazó por la regla F, flujo contra stock.
+
+Fue de más. La regla F existe por los líquenes finlandeses —donde el stock llega a
+50 veces el flujo— y por Serengeti, Kruger y el Pantanal, que publican
+disponibilidad a una fecha. Pero **una cosecha a ras de la capa herbácea del año
+en el pico de la estación es un método de producción publicado**: es el «peak
+standing crop», el método 1 de los seis que Rawlik y Jagodziński compararon, y
+acequia **ya tiene montada esa medición con el sesgo declarado** (subestima 50 a
+52 % contra el método 6). Lo que la regla tiene que atajar es la biomasa que se
+acumula de un año al otro, no una cosecha anual con sesgo conocido.
+
+Es la segunda vez en este encargo que una regla escrita para atajar un error real
+también rechaza una cifra legítima. La primera fue la regla D con los límites de
+sitio del ORNL.
+
+**La coordenada de un bosque experimental.** Metz ubica el sitio «a unas 28 millas
+al noroeste de Colorado Springs» y no imprime coordenadas, así que con la regla
+vieja correspondía rechazarlo. Pero el Manitou Experimental Forest es una estación
+con nombre propio y el Servicio Forestal **publica la ubicación de sus bosques
+experimentales**: eso es una coordenada publicada por el organismo que administra
+el sitio, no una búsqueda en un mapa. Vale lo mismo para los sitios LTER y las
+estaciones del INTA, Embrapa, INIA y CSIRO, con dos condiciones: declarar que es
+de la estación y no de la parcela, y decir la superficie de la estación, porque
+de eso depende cuánta incertidumbre tiene el bioma verificado.
+
+**Bojórquez-Tapia, Ffolliott y Guertin (1990)** quedó pendiente por una razón sin
+discusión: la entrega localizó el artículo —*Journal of Range Management* 43(1):
+25-28, dieciocho ecuaciones de regresión entre producción herbácea y variables del
+dosel, ajustadas sobre mediciones repetidas de 1959 a 1980 en dos bosques de
+ponderosa— y no consiguió el texto completo, así que no transcribió nada de un
+resumen. Eso está bien hecho. Desde acá tampoco: `fs.usda.gov` devuelve 403 y el
+archivo de JRM de la Universidad de Arizona se mudó de dominio.
+
+### Qué se hizo con esto
+
+Nada en el cálculo, porque no entró ninguna cifra. Se corrigió una afirmación que
+yo había escrito el mismo día: el motivo por el que Nepal no monta no es que falte
+su coordenada, es que su área publicada cruza tres biomas. Está en
+`forrajeMedido.ts` y en `pastoreo.ts`.
+
+Y se reescribió el encargo. `ENCARGO_FORRAJE_LOTE_11.md` arregla la regla F con su
+excepción escrita, abre la regla D a las coordenadas de estación experimental,
+agrega la regla I, y pide el mismo frente con los tres pedidos concretos: Metz con
+sus pares parcela por parcela, Bojórquez-Tapia con sus ecuaciones, y Moore y
+Deiter (1992) sobre el Kaibab Plateau, que apareció buscando los otros dos.
