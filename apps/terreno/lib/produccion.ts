@@ -224,6 +224,30 @@ export interface PerfilRodeo {
  * media anual, el resultado trae un `contraste` de `miamiModel.ts` que compara
  * esta cifra contra toda la materia seca que ese clima produce, y nombra la
  * limitante. Con 900 mm la escalera dice 7.000 sin mirar si hace 20 °C o −10.
+ *
+ * ## El primer escalón ya tiene una medición, y el problema no es su altura
+ *
+ * El escalón de menos de 300 mm devolvió 700 kg MS/ha/año durante todo este
+ * tiempo sin que ninguna medición lo tocara. El lote 14 trajo la primera: la
+ * estepa de Río Mayo, en Chubut, con **191 mm** de lluvia en el año medido y
+ * **530 kg MS/ha/año** de producción aérea de la capa de gramíneas. La escalera
+ * se pasa 1,32 veces, que para este archivo es un acierto: en el altiplano de
+ * Puno se pasa once.
+ *
+ * **Y aun así el escalón está mal, por un motivo que no se arregla cambiando el
+ * número.** El mismo trabajo mide cuatro años más en el mismo sitio, con lluvias
+ * de 55 a 167 mm, y la producción va de 21 a 75 g MS/m²/año: **un factor 3,6
+ * adentro de un escalón que devuelve una constante**. Los cinco años caen en el
+ * mismo tramo de la función y la función les da 700 a todos.
+ *
+ * Los autores agregan la forma de la respuesta, que es lo que ninguna escalera
+ * creciente puede tener: «There was a large reduction in ANPP during a year of
+ * extreme drought; however, there were no increases in ANPP during years with
+ * above-average precipitation. This suggests that the carrying capacity for the
+ * Patagonian steppe may not be linearly related to precipitation». La sequía baja
+ * la producción; la lluvia de más no la sube. **El reemplazo de esta función
+ * tiene que ser asimétrico, y eso es más de lo que se sabía antes del lote 14**,
+ * donde el diagnóstico era sólo «una variable no alcanza».
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;

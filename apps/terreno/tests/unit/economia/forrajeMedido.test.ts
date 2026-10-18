@@ -18,7 +18,9 @@ import {
   TIPOS_SIN_DESCONTAR, CURVA_DOSEL_MANITOU, forrajeManitouLbAcre,
   fraccionPorDoselManitou, FRACCION_COMIBLE, fraccionComible, paresComibles,
   UTILIZACION_GLENCOE, utilizacionAparente, fraccionDelOfrecido,
+  FRACCION_HERBACEA_DEL_SITIO, fraccionHerbacea,
 } from '@/lib/forrajeMedido';
+import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
 import { calcularReceptividad } from '@/lib/produccion';
 import { BIOMAS_RESOLVE } from '@/lib/ecorregiones';
@@ -230,15 +232,21 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // substantially underestimated productivity». Montar cualquiera de las dos
     // sería imprimir un número plausible y equivocado en el bioma donde cae la
     // mayoría de los predios ganaderos. El módulo lo explica entero.
-    // El lote 13 agrego un tercer motivo y una segunda confirmacion del
-    // patron: Glencoe (INIA Uruguay) es bioma 7 verificado, abierto, con
-    // coordenada de estacion y consumo individual medido con TiO2, y tampoco
-    // entra, porque publica stock en pie antes y despues de un pastoreo de
-    // cinco dias y no produccion anual, y porque el fosforo del suelo se
-    // mantuvo en 10 ppm por fertilizacion. Con Towoomba van dos de dos: toda
-    // medicion de sabana que llego hasta aca resulto ser un ensayo agronomico.
-    expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(0);
-    // Y lo que Glencoe deja, que no es una produccion, esta montado aparte.
+    // El lote 13 agrego un tercer motivo: Glencoe (INIA Uruguay) es bioma 7
+    // verificado, abierto, con coordenada de estacion y consumo individual
+    // medido con TiO2, y tampoco entro, porque publica stock en pie antes y
+    // despues de un pastoreo de cinco dias y no produccion anual, y porque el
+    // fosforo del suelo se mantuvo en 10 ppm por fertilizacion.
+    //
+    // EL LOTE 14 CERRO ESTE AGUJERO, al quinto intento: la sabana de
+    // Trachypogon de Calabozo, bioma 7 (`ECO_ID` 572, Llanos), entra con 3.750
+    // kg MS/ha/anio de produccion AEREA. Entro donde las otras no porque es un
+    // flujo anual y no una masa en pie. Lo que sigue vacio es el bioma 9.
+    expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(1);
+    expect(medicionesDeBioma('resolve_sabana_tropical')[0]!.sitio)
+      .toMatch(/Calabozo/);
+    // Y lo que Glencoe deja, que no es una produccion, sigue montado aparte y
+    // sigue sin entrar al archivo: una cosa no reemplazo a la otra.
     expect(UTILIZACION_GLENCOE.BIOMA).toBe('resolve_sabana_tropical');
     expect(FORRAJE_MEDIDO.some(m => m.sitio.includes('Glencoe'))).toBe(false);
     // El pastizal inundable: el lote 03 trajo un valor MODELADO del delta del
@@ -282,20 +290,35 @@ describe('el Delta del Paraná: la misma cosecha, dos cifras', () => {
     expect(d.lluvia_mm_max).toBe(1056);
   });
 
-  it('la total es de 1,36 a 1,70 veces la forrajera en el mismo muestreo', () => {
-    // 11.200 a 11.400 kg/ha de MS total contra 6.700 a 8.250 de forrajera. El
-    // resto son las no forrajeras —el abrojo grande, sobre todo— y la MS
-    // muerta. Si alguien toma la total por forraje, sobreestima hasta un 70 %.
-    const TOTAL_MIN = 11200, TOTAL_MAX = 11400;
+  it('la total del MISMO muestreo es 1,56 veces la forrajera, y no 1,36 a 1,70', () => {
+    // Esta prueba estaba mal y pasaba, que es la peor combinación. El lote 13
+    // encontró que el 11.200-11.400 es el total del PERÍODO de tres estaciones
+    // e incluye materia seca muerta; lo corrigió en la ficha del Delta y dejó
+    // sin tocar el título de este test, su comentario y la tabla del
+    // encabezado del módulo. Lo arregló el lote 14 buscando todas las
+    // apariciones en vez de la que tenía a la vista.
+    //
+    // El par del mismo muestreo es 10.533 de MS viva total contra 6.733 de MS
+    // viva forrajera, los dos textuales en el cuerpo del artículo: 1,564 veces,
+    // que es 1 / 0,639.
+    const par = paresComibles()[0]!;
+    expect(par.total / par.forrajera).toBeCloseTo(1.564, 3);
+    expect(1 / fraccionComible(par)).toBeCloseTo(par.total / par.forrajera, 6);
+    // El cociente contra el total del período da 1,36 a 1,70 y NO significa
+    // nada: numerador y denominador no cubren el mismo tiempo.
+    const DEL_PERIODO_MIN = 11200, DEL_PERIODO_MAX = 11400;
     const d = delta();
-    expect(TOTAL_MIN / d.kg_ms_ha_anio_max).toBeCloseTo(1.36, 2);
-    expect(TOTAL_MAX / d.kg_ms_ha_anio_min).toBeCloseTo(1.70, 2);
-    // Y el texto de la entrada tiene que decir la total, porque es el número
-    // con el que alguien se va a cruzar al abrir la tesis.
+    expect(DEL_PERIODO_MIN / d.kg_ms_ha_anio_max).toBeCloseTo(1.36, 2);
+    expect(DEL_PERIODO_MAX / d.kg_ms_ha_anio_min).toBeCloseTo(1.70, 2);
+    // Y la ficha tiene que nombrar las dos cosas: la del mismo muestreo, porque
+    // es la que vale, y la del período, porque es la que alguien se va a cruzar
+    // al abrir la tesis.
+    expect(d.que_cuenta).toMatch(/10\.533/);
     expect(d.que_cuenta).toMatch(/11\.200 a 11\.400/);
+    expect(d.que_cuenta).toMatch(/período/);
   });
 
-  it('la escalera acierta contra la forrajera y se queda 1,6× corta contra la total', () => {
+  it('la escalera acierta contra la forrajera y se queda 1,5× corta contra la total', () => {
     const d = delta();
     const e = escalera(d.lluvia_mm_min!);
     expect(e).toBe(7000);                      // el escalón de ≥ 900 mm
@@ -303,8 +326,13 @@ describe('el Delta del Paraná: la misma cosecha, dos cifras', () => {
     // vez que la escalera no se pasa ni se queda corta.
     expect(e).toBeGreaterThanOrEqual(d.kg_ms_ha_anio_min);
     expect(e).toBeLessThanOrEqual(d.kg_ms_ha_anio_max);
-    // Contra la herbácea total, el mismo 7.000 se queda corto 1,6 veces.
-    expect(11200 / e).toBeGreaterThan(1.5);
+    // Contra la herbácea viva total del MISMO muestreo —10.533 y no 11.200—, el
+    // mismo 7.000 se queda corto 1,5 veces. La corrección es chica en el número
+    // y grande en el significado: 10.533 es comparable con 6.733 y 11.200 no.
+    const total = paresComibles()[0]!.total;
+    expect(total).toBe(10533);
+    expect(total / e).toBeCloseTo(1.505, 3);
+    expect(total / e).toBeGreaterThan(1.5);
   });
 
   it('dentro de un mismo bioma la escalera tendría que dar dos números distintos', () => {
@@ -478,14 +506,35 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son catorce sitios en siete de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(14);
+  it('son dieciséis sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(16);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
-    expect(biomas.size).toBe(7);
+    expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
+    // El octavo es el bioma 7, que lo abrió el lote 14 después de cuatro lotes
+    // de intentos. Siguen vacíos siete, entre ellos el pastizal inundable.
+    expect(biomas.has('resolve_sabana_tropical')).toBe(true);
   });
 
-  it('cuatro de los catorce son sotobosque, y hay que poder contarlos', () => {
+  it('toda medición declara su coordenada o declara que no la tiene', () => {
+    // El campo lo agregó el lote 14 porque `clase_wc` decide una banda y no se
+    // guardaba de dónde había salido. Las catorce anteriores quedan en `null`:
+    // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
+    // fuente. Lo que no se admite es inventar una.
+    const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
+    expect(conCoord).toHaveLength(2);
+    for (const m of conCoord) {
+      // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
+      // y el signo es exactamente lo que se equivoca al consultar un servicio.
+      expect(m.coordenada).toMatch(/[NS],/);
+      expect(m.coordenada).toMatch(/[EW]/);
+    }
+    // Y las dos que lo declaran son las dos del lote 14, las dos con el píxel
+    // consultado: una quedó en clase 30 por estable y la otra en `null`.
+    expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(1);
+  });
+
+  it('cuatro de los dieciséis son sotobosque, y hay que poder contarlos', () => {
     // Son tres mediciones de abajo de un dosel cerrado, y no se pueden leer
     // como la producción de su bioma: dos de ellas abren un bioma nuevo y la
     // tercera cae en el bioma de la pradera de Dakota produciendo 44× menos.
@@ -746,5 +795,144 @@ describe('lote 13 — Glencoe: la fraccion que se saca la decide el animal, no e
     );
     expect(lluviaMaxSecano).toBe(1119);
     expect(lluviaMaxSecano).toBeLessThan(UTILIZACION_GLENCOE.LLUVIA_MM_MIN);
+  });
+});
+
+describe('lote 14 — el bioma 7 entra, y las dos coordenadas eran de un pueblo', () => {
+  const calabozo = () => sitio('Calabozo');
+  const rioMayo  = () => sitio('Río Mayo');
+
+  it('Calabozo monta la producción AÉREA y no el total con raíces', () => {
+    const c = calabozo();
+    // 375 g MS/m²/año aéreos. La ficha publica también 307 bajo tierra y 682 de
+    // total, y el 682 es el número que anda citado por ahí: confundirlos infla
+    // el forraje 1,82 veces.
+    expect(c.kg_ms_ha_anio_min).toBe(gM2AKgHa(375));
+    expect(c.kg_ms_ha_anio_max).toBe(3750);
+    expect(gM2AKgHa(375) + gM2AKgHa(307)).toBe(gM2AKgHa(682));
+    expect(gM2AKgHa(682) / c.kg_ms_ha_anio_min).toBeCloseTo(1.819, 3);
+    expect(c.tipo).toBe('npp_herbacea');
+    expect(TIPOS_SIN_DESCONTAR).toContain(c.tipo);
+  });
+
+  it('Calabozo entra como `desconocido` y por eso no toca ninguna banda', () => {
+    const c = calabozo();
+    // La ficha dice que en ese trabajo se midió el efecto del riego en la
+    // estación seca y no dice qué le pasó a esta parcela. `secano` sería una
+    // afirmación que la fuente no hace.
+    expect(c.insumos).toBe('desconocido');
+    // Su clase es la 30, declarada, y aun así la banda de la 30 no la cuenta.
+    expect(c.clase_wc).toBe(30);
+    const b = bandaDeClase(30);
+    expect(b?.sitios).toBe(7);
+    expect(b?.kg_ms_ha_anio_min).toBe(350);
+    expect(b?.kg_ms_ha_anio_max).toBe(10630);
+  });
+
+  it('la lluvia de Calabozo deja la afirmación del lote 12 en un hilo', () => {
+    const c = calabozo();
+    // 1.257 mm de media 1968-1986. Es MÁS que el 1.119 del sitio de secano más
+    // húmedo del archivo, así que si algún día se confirma que esta parcela no
+    // se regó, la afirmación del lote 12 —el riego de Curacó supera la lluvia de
+    // todo sitio de secano— se cae, porque el riego son 1.300 y el margen 43 mm.
+    expect(c.lluvia_mm_min).toBe(1257);
+    const lluviaMaxSecano = Math.max(
+      ...FORRAJE_MEDIDO.filter(m => m.insumos === 'secano' && m.lluvia_mm_max !== null)
+        .map(m => m.lluvia_mm_max ?? 0),
+    );
+    expect(lluviaMaxSecano).toBe(1119);
+    expect(c.lluvia_mm_min!).toBeGreaterThan(lluviaMaxSecano);
+    expect(1300 - c.lluvia_mm_min!).toBe(43);
+    // La versión que no depende de ningún tecnicismo, y la que le importa al
+    // cálculo: el riego supera la lluvia de todo sitio que ENTRE a una banda.
+    const enBandas = FORRAJE_MEDIDO.filter(
+      m => m.insumos === 'secano' && m.clase_wc !== null && m.lluvia_mm_max !== null,
+    );
+    for (const m of enBandas) expect(m.lluvia_mm_max!).toBeLessThan(1300);
+  });
+
+  it('Calabozo no trae temperatura, y es la trampa de las fichas del ORNL', () => {
+    // «mean annual minimum-maximum temperatures of 22.0-36.0 C»: son la mínima
+    // y la máxima, no la media anual. Promediarlas daría 29 °C y sería el mismo
+    // error que acequia ya cometió con las máximas de POWER.
+    expect(calabozo().temp_media_c_anual).toBeNull();
+  });
+
+  it('Río Mayo NO alimenta la banda del arbustal, y ése era el objetivo', () => {
+    const r = rioMayo();
+    // 12 % de cobertura de arbustos en el campo; 9,4 / 6,5 / 3,1 % de píxeles de
+    // clase 20 a 500 m, 2 km y 5 km. Lo que un agrónomo llama estepa arbustiva,
+    // el satélite lo llama pastizal. La clase queda en `null` porque tampoco es
+    // estable: 74 % pastizal a 500 m y 40 % a 5 km, donde lo pasa el desnudo.
+    expect(r.clase_wc).toBeNull();
+    const b = bandaDeClase(20);
+    expect(b?.sitios).toBe(1);
+    expect(b?.kg_ms_ha_anio_min).toBe(300);
+    expect(b?.kg_ms_ha_anio_max).toBe(5800);
+    // Y el único sitio de esa banda sigue siendo Lesbos, que no tiene coordenada
+    // publicada: su clase sale del 76 % de cobertura que declara el trabajo.
+    expect(sitio('Lesbos').clase_wc).toBe(20);
+    expect(sitio('Lesbos').coordenada).toBeNull();
+  });
+
+  it('Río Mayo es el primer sitio debajo de 300 mm, y por lejos', () => {
+    const r = rioMayo();
+    expect(r.lluvia_mm_min).toBe(191);
+    const otros = FORRAJE_MEDIDO
+      .filter(m => m !== r && m.lluvia_mm_min !== null)
+      .map(m => m.lluvia_mm_min ?? 0);
+    // El anterior más seco era Lesbos con 354: casi el doble.
+    expect(Math.min(...otros)).toBe(354);
+    expect(Math.min(...otros) / r.lluvia_mm_min!).toBeGreaterThan(1.8);
+  });
+
+  it('el primer escalón de la escalera recibe su primera medición', () => {
+    const r = rioMayo();
+    const e = escalera(r.lluvia_mm_min!);
+    expect(e).toBe(700);                       // el escalón de < 300 mm
+    // Se pasa 1,32 veces contra la capa de gramíneas. Es el mejor resultado de
+    // la escalera en todo el archivo: en el altiplano se pasa once veces.
+    expect(e / r.kg_ms_ha_anio_min).toBeCloseTo(1.321, 3);
+    expect(e).toBeGreaterThan(r.kg_ms_ha_anio_max);
+    // Contra todo lo aéreo, arbustos incluidos, se queda corta: 790.
+    const aereoTotal = gM2AKgHa(79);
+    expect(aereoTotal).toBe(790);
+    expect(e / aereoTotal).toBeCloseTo(0.886, 3);
+  });
+
+  it('y aun así el escalón está mal, por la forma y no por la altura', () => {
+    // Cuatro años más del mismo sitio, con el método de pico: 21 a 75 g/m²/año
+    // con lluvias de 55 a 167 mm. Los cinco años caen en el MISMO escalón.
+    const OTROS_ANIOS = [21, 75] as const;     // g MS/m²/año, ANPP total
+    const LLUVIAS     = [55, 167] as const;    // mm
+    for (const ll of LLUVIAS) expect(escalera(ll)).toBe(700);
+    expect(escalera(191)).toBe(700);
+    // Un factor 3,6 de producción adentro de un tramo que devuelve una constante.
+    expect(OTROS_ANIOS[1] / OTROS_ANIOS[0]).toBeCloseTo(3.571, 3);
+    // Y la escalera no puede ser asimétrica: es monótona creciente, así que no
+    // puede bajar con la sequía sin subir con la lluvia de más, que es lo que
+    // los autores observaron. Eso no se arregla moviendo un escalón.
+    const tramo = [0, 100, 191, 299].map(escalera);
+    expect(new Set(tramo).size).toBe(1);
+  });
+
+  it('Río Mayo da el cuarto punto de la fracción herbácea, y el primero abierto', () => {
+    const rm = FRACCION_HERBACEA_DEL_SITIO.find(f => f.sitio.includes('Río Mayo'))!;
+    expect(FRACCION_HERBACEA_DEL_SITIO).toHaveLength(4);
+    expect(rm.herbacea).toBe(53);
+    expect(rm.aerea_total).toBe(79);
+    expect(rm.unidad).toBe('g_ms_m2_anio');
+    // 0,671, y el trabajo lo publica además en palabras: «two thirds of
+    // production were accounted for by perennial grasses and one third by
+    // shrubs». El cociente coincide con la frase a dos decimales.
+    expect(fraccionHerbacea(rm)).toBeCloseTo(0.671, 3);
+    expect(Math.abs(fraccionHerbacea(rm) - 2 / 3)).toBeLessThan(0.005);
+    // Las dos cifras del par cierran con la medición montada y con el arbusto.
+    expect(gM2AKgHa(rm.herbacea)).toBe(rioMayo().kg_ms_ha_anio_min);
+    expect(rm.aerea_total - rm.herbacea).toBe(26);
+    // Y no mueve las puntas del factor 236: cae adentro.
+    const todas = FRACCION_HERBACEA_DEL_SITIO.map(fraccionHerbacea);
+    expect(fraccionHerbacea(rm)).toBeGreaterThan(Math.min(...todas));
+    expect(fraccionHerbacea(rm)).toBeLessThan(Math.max(...todas));
   });
 });

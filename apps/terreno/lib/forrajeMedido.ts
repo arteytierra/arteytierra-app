@@ -30,7 +30,7 @@
  * | Altiplano de Puno, 3.900 m | 410–1.119 mm | 1.500–7.000 | 626–1.958 | alta hasta 11× |
  * | Lesbos, fryganas | 354–797 mm | 1.500–5.000 | 300–5.800 | el rango medido es más ancho que la escalera entera |
  * | Tundra de Alaska y Yukón | no publicada | — | 350–960 | fuera de todo escalón |
- * | Delta del Paraná, albardón | 1.056 mm | 7.000 | 6.700–8.250 forrajera, 11.200–11.400 total | acierta o se queda 1,6× corta, según cuál se compare |
+ * | Delta del Paraná, albardón | 1.056 mm | 7.000 | 6.700–8.250 forrajera, 10.533 viva total del mismo muestreo | acierta contra la forrajera, 1,5× corta contra la total |
  *
  * En el norte de las Grandes Llanuras, con 381–508 mm, se miden casi 3.000
  * kg/ha/año; en el altiplano peruano, con MÁS lluvia, se miden 626. La
@@ -482,6 +482,99 @@
  * Lo que las dos entradas sí dejan, y vale por sí solo, está en
  * `UTILIZACION_GLENCOE`.
  *
+ * ## El bioma 7 entra, y lo que hubo que agregar para que entrara
+ *
+ * Al quinto lote. La sabana y el pastizal tropical —el bioma donde cae la mayoría
+ * de los predios ganaderos del mundo— tiene por fin una medición montada: la
+ * sabana de *Trachypogon* de la Estación Biológica de Los Llanos, en Calabozo,
+ * Venezuela, con **375 g MS/m²/año de producción aérea**, o 3.750 kg/ha/año.
+ * `ECO_ID` 572, Llanos, bioma 7 verificado contra RESOLVE.
+ *
+ * Entra donde Towoomba y Glencoe no entraron, y el motivo es simétrico a los de
+ * ellas: **es un flujo anual y no una masa en pie**, y no es un ensayo
+ * agronómico. Pero hizo falta agregar dos cosas al archivo para poder decir la
+ * verdad sobre ella, y las dos son interesantes.
+ *
+ * **Primero, un valor de `insumos` que no afirma nada.** La ficha dice que en ese
+ * trabajo se midieron parcelas quemadas, sin quemar *y el efecto del riego en la
+ * estación seca*, y no dice qué le pasó a la parcela cuyo número se publica. El
+ * tipo tenía cuatro valores y los cuatro afirmaban algo. Ahora hay
+ * `desconocido`, que es lo que corresponde ante el silencio de la fuente;
+ * `bandaDeClase` filtra por `secano`, así que esto queda afuera de las bandas sin
+ * tocar una línea de cálculo.
+ *
+ * **Segundo, el campo `coordenada`.** Ver su propia documentación: `clase_wc`
+ * decide la banda de cada clase de cobertura y el archivo no guardaba de dónde
+ * había salido, así que ninguna asignación de clase se podía volver a revisar.
+ *
+ * Lo que la cifra NO dice, y hay que leerlo antes de usarla: el sitio es una
+ * reserva protegida del pastoreo y del fuego desde 1960, y en enero de 1969 tenía
+ * **100 g/m² de biomasa viva contra 1.025 de materia muerta en pie**. La
+ * producción de la comunidad es ésa; lo que un animal encontraría ahí, no.
+ *
+ * ## Las dos coordenadas del lote 14 eran de un pueblo
+ *
+ * Y es el hallazgo que más lejos llega, porque no es sobre estos dos sitios.
+ *
+ * - La ficha del ORNL de Calabozo publica 8,93 N / 67,42 W como «study site». El
+ *   píxel de ESA WorldCover ahí da **93 % construido**: es la ciudad. La propia
+ *   ficha, cuatro párrafos más abajo, dice que el sitio está «about 10-km
+ *   south-southeast of Calabozo». La coordenada que sirve es la otra que la misma
+ *   ficha publica, la de la estación meteorológica, que está en la Estación
+ *   Biológica: a 12,3 km de la primera, y ahí el pastizal es el 76, el 85 y el
+ *   72 % de los píxeles a 500 m, 2 km y 5 km.
+ * - El trabajo de Río Mayo publica 45°41′ S / 70°16′ W, **al minuto de arco**,
+ *   que a esa latitud son ±1,5 km. Alrededor de ese punto hay 13 % de construido
+ *   a 2 km —el pueblo— y la clase dominante se da vuelta según la ventana: 74 %
+ *   pastizal a 500 m, 53 % a 2 km, y a 5 km lo pasa el suelo desnudo con 49 %.
+ *
+ * **La lección no es «verificar la coordenada»: es que una coordenada con formato
+ * correcto no es una coordenada verificada.** Las dos tenían grados, minutos y
+ * hemisferio bien puestos. Lo que las delató fue preguntarle al píxel qué hay
+ * ahí. El criterio que quedó es la estabilidad: una clase que no cambia entre
+ * 500 m, 2 km y 5 km se puede escribir, y una que cambia es `null`.
+ *
+ * ## El arbustal no avanzó, y el motivo es el que había que descubrir
+ *
+ * El lote 14 fue a buscar la clase 20, que es la banda más floja de las cuatro
+ * —un solo sitio, factor 19— y la única que el usuario ya ve en pantalla. Trajo
+ * una estepa **arbustiva**: 12 % de cobertura de arbustos, 25 % de gramíneas en
+ * mata, tres especies leñosas medidas una por una.
+ *
+ * No alimenta la clase 20. El arbustal es el 9,4 %, el 6,5 % y el 3,1 % de los
+ * píxeles en las tres ventanas, y **baja al ampliar**. Es decir: lo que un
+ * agrónomo llama estepa arbustiva, el satélite lo llama pastizal.
+ *
+ * Eso cierra una puerta y abre otra. La banda de la clase 20 no se puede llenar
+ * buscando trabajos que describan arbustos: hay que buscar sitios cuyo píxel sea
+ * 20, que es una propiedad del mapa y no de la vegetación. Para el encargo
+ * siguiente eso significa partir del producto —matorral mediterráneo cerrado,
+ * chaparral, karoo, fynbos, *Artemisia* del Gran Cuenca— y no de la palabra
+ * «arbustal» en un título.
+ *
+ * ## La primera medición debajo de 300 mm, y lo que le hace al primer escalón
+ *
+ * Río Mayo entra igual, y por otra puerta: con **191 mm**, es el sitio más seco
+ * del archivo por lejos —el anterior era Lesbos con 354— y el primero que cae en
+ * el primer escalón de `prodForrajera`, el de menos de 300 mm, que devuelve 700
+ * kg MS/ha/año y nunca había tenido una medición que lo contradijera.
+ *
+ * Contra la capa de gramíneas, 530 kg/ha, la escalera se pasa 1,32 veces. Es el
+ * mejor resultado que la escalera saca en todo este archivo, donde en el
+ * altiplano se pasa once veces. Pero la medición trae algo que no se arregla
+ * subiendo o bajando un escalón: **el mismo trabajo mide cuatro años más, con
+ * lluvias de 55 a 167 mm, y la producción va de 21 a 75 g/m²/año.** Un factor
+ * **3,6 adentro de un escalón que devuelve una constante**. Los cuatro años caen
+ * en el mismo escalón que el año de 191 mm, y la escalera les da 700 a todos.
+ *
+ * Y los autores sacan la conclusión que le corresponde: «There was a large
+ * reduction in ANPP during a year of extreme drought; however, there were no
+ * increases in ANPP during years with above-average precipitation. This suggests
+ * that the carrying capacity for the Patagonian steppe may not be linearly
+ * related to precipitation». La respuesta a la lluvia es asimétrica: la sequía
+ * baja la producción, la lluvia de más no la sube. Una escalera creciente no
+ * puede representar eso, y una recta tampoco.
+ *
  * ## Qué NO hace este archivo todavía
  *
  * **Estas mediciones siguen sin entrar en la cuenta, y el motivo cambió.** Antes
@@ -586,11 +679,17 @@ export function gM2AKgHa(g_m2: number): number {
  * `ms_herbacea_total` y `ms_forrajera` **no son la misma cifra y la diferencia
  * no es un detalle**: la primera cuenta todo lo herbáceo y la segunda sólo las
  * especies que el animal come. En el Delta del Paraná, el único sitio donde las
- * dos están medidas en la misma cosecha, la total es de 1,36 a 1,70 veces la
- * forrajera —11.200 a 11.400 kg/ha contra 6.700 a 8.250—, porque el abrojo
- * grande y las demás no forrajeras se llevan una parte grande del pastizal
- * degradado. Pasar una total a un cálculo de carga animal como si fuera forraje
- * sobreestima hasta un 70 %.
+ * dos están medidas en la MISMA cosecha, la total es **1,56 veces** la forrajera
+ * —10.533 contra 6.733 kg/ha—, porque el abrojo grande y las demás no forrajeras
+ * se llevan una parte grande del pastizal degradado. Pasar una total a un cálculo
+ * de carga animal como si fuera forraje sobreestima un 56 %.
+ *
+ * **El 11.200 a 11.400 que anduvo dando vueltas por este archivo no es ese
+ * número.** Es el total del período primavera-verano-otoño e incluye la materia
+ * seca muerta; dividir por él da 1,36 a 1,70 y no significa nada. El lote 13 lo
+ * corrigió en la ficha del Delta y **lo dejó escrito acá y en la tabla de arriba**,
+ * que es como se propaga un error entre comentarios del mismo archivo: lo arregló
+ * el lote 14 buscando TODAS las apariciones y no la que tenía a la vista.
  *
  * Y es exactamente el error que la escalera de `prodForrajera` deja pasar sin
  * que se note, porque **nunca dijo cuál de las dos es**. Con la lluvia de ese
@@ -648,13 +747,52 @@ export const TIPOS_SIN_DESCONTAR: readonly TipoDeCifra[] = [
  * antes: el techo de todos es el 1.119 mm del altiplano de Puno, y el sitio más
  * húmedo de tierras bajas, el Delta del Paraná, recibe 1.056.
  */
-export type Insumos = 'secano' | 'fertilizado' | 'riego' | 'riego_y_fertilizado';
+export type Insumos =
+  | 'secano'
+  | 'fertilizado'
+  | 'riego'
+  | 'riego_y_fertilizado'
+  /**
+   * La fuente no lo dice, y por eso no se asume.
+   *
+   * Lo agregó el lote 14 y lo pedía un caso concreto: la ficha del ORNL de
+   * Calabozo informa que en ese trabajo se midieron parcelas quemadas, sin
+   * quemar **y el efecto del riego en la estación seca**, y no dice cuál de las
+   * tres cosas le pasó a la parcela cuyo número se publica. El archivo tenía
+   * cuatro valores y los cuatro afirmaban algo; faltaba el que no afirma nada.
+   *
+   * `bandaDeClase` filtra por `=== 'secano'`, así que esto queda afuera de las
+   * bandas por construcción y no hace falta tocar nada más. **Es el valor que
+   * hay que usar ante el silencio de la fuente**, nunca `secano`: un sitio sin
+   * insumos declarados y un sitio declarado sin insumos no son lo mismo.
+   */
+  | 'desconocido';
 
 export interface MedicionForraje {
   /** Bioma global de RESOLVE al que pertenece el sitio medido. */
   bioma: string;
   /** Rótulo corto del sitio, para poder nombrarlo en pantalla. */
   sitio: string;
+  /**
+   * La coordenada que **publica la fuente**, textual, o `null` si no publica
+   * ninguna.
+   *
+   * Lo agregó el lote 14 por un defecto de este archivo: `clase_wc` decide la
+   * banda de cada clase de cobertura y **no se guardaba de dónde había salido**,
+   * así que ninguna asignación de clase se podía volver a revisar. El único sitio
+   * de la clase 20 llevaba un comentario que decía «frygana: arbustal» y nada más.
+   *
+   * Las catorce entradas anteriores al lote 14 quedan en `null` porque sus
+   * coordenadas están en los veredictos de `_research` y no acá; eso no las
+   * invalida, pero sí marca cuáles no se pueden auditar sin volver a la fuente.
+   *
+   * **Tener coordenada no alcanza, y el lote 14 lo mostró dos veces.** Las dos
+   * que llegaron eran de un pueblo y no del sitio: la de Calabozo cae con un
+   * 93 % de píxeles construidos porque es la ciudad, y la propia ficha dice que
+   * el sitio está «unos 10 km al sur-sudeste». Una coordenada se verifica
+   * preguntándole al píxel qué hay ahí, no mirando si tiene el formato correcto.
+   */
+  coordenada: string | null;
   /**
    * Clase de ESA WorldCover que un satélite vería en este sitio, o `null` si es
    * ambigua.
@@ -719,24 +857,32 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son **catorce sitios en siete de los quince biomas** de RESOLVE, al 17/10/2026.
- * No son un modelo: son los puntos que hay. Cuatro de los catorce son sotobosque
- * de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
- * `ms_sotobosque`. Cada uno declara además su `clase_wc` y sus `insumos`, que es
- * de donde `cobertura.ts` saca la banda de cada clase de cobertura: siete en la
- * 30, uno en la 20, cuatro en la 10 y dos en la 40 que **no entran en ninguna
- * banda** porque una está fertilizada y la otra regada.
+ * Son **dieciséis sitios en ocho de los quince biomas** de RESOLVE, al 18/10/2026.
+ * No son un modelo: son los puntos que hay. Cuatro de los dieciséis son
+ * sotobosque de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
+ * `ms_sotobosque`. Cada uno declara además su `clase_wc`, su `coordenada` y sus
+ * `insumos`, que es de donde `cobertura.ts` saca la banda de cada clase de
+ * cobertura.
  *
- * Los dos últimos son el mismo lugar contado dos veces, y es deliberado: en
- * Manitou las parcelas bajo dosel y las aberturas del mismo bosque, el mismo día
- * y con el mismo método, difieren 13 veces. El clima no explica nada de eso.
- * El bioma que más se pastorea —la sabana tropical— sigue sin ninguno, y el
- * motivo está en la sección «La sabana no está sin medir».
+ * **Doce de los dieciséis alimentan una banda, y los cuatro que no lo hacen son
+ * más interesantes que los doce.** Siete están en la clase 30, uno en la 20,
+ * cuatro en la 10. Afuera quedan: dos cultivos, porque uno está fertilizado y el
+ * otro regado; la sabana de Calabozo, porque sus `insumos` son `desconocido`; y
+ * la estepa de Río Mayo, porque su `clase_wc` es `null`. Las cuatro exclusiones
+ * las hace un filtro y no un juicio, que es la única forma de que sigan
+ * valiendo cuando nadie se acuerde de por qué están.
+ *
+ * Manitou aparece dos veces y es deliberado: las parcelas bajo dosel y las
+ * aberturas del mismo bosque, el mismo día y con el mismo método, difieren 13
+ * veces. El clima no explica nada de eso. **El bioma que más se pastorea —la
+ * sabana tropical— ya tiene uno**, desde el lote 14, y cómo llegó está en la
+ * sección «El bioma 7 entra».
  */
 export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_pastizal_templado',
     sitio: 'Loamy Upland, MLRA 53B, Dakota del Norte y del Sur',
+    coordenada: null,
     clase_wc: 30,
     insumos: 'secano',
     tipo: 'ms_herbacea_total',
@@ -764,6 +910,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_pastizal_templado',
     sitio: 'Very Shallow 23-31 PZ, MLRA 81B, Edwards Plateau, Texas',
+    coordenada: null,
     // Clase 30 por la comunidad de referencia 1.1, que es pradera de gramíneas
     // medias; las leñosas están y la ficha las cuenta aparte, y de ahí sale la
     // fracción herbácea de 0,92 de `FRACCION_HERBACEA_DEL_SITIO`.
@@ -796,6 +943,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // el encargo le había puesto el nombre corto y no existe con ese nombre.
     bioma: 'resolve_montano',
     sitio: 'Chuquibambilla (3.910 m) y La Raya (4.300 m), Puno, Altiplano peruano',
+    coordenada: null,
     clase_wc: 30,
     insumos: 'secano',
     tipo: 'ms_herbacea_total',
@@ -824,10 +972,22 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_mediterraneo',
     sitio: 'Agra, oeste de Lesbos, Grecia — 14 potreros de cuatro majadas',
+    coordenada: null,
     // Frygana: arbustal, y es la ÚNICA medición de la clase 20. La cifra está
     // escalada a la hectárea del potrero —la jaula por el porcentaje de
     // cobertura herbácea de ese potrero—, así que es producción herbácea por
     // hectárea de arbustal y no de los claros entre arbustos.
+    //
+    // El lote 14 fue a ver de dónde salía ese 20, porque el comentario sólo
+    // decía «frygana». Sale de mejor lugar que eso: el propio trabajo publica el
+    // reparto de cobertura del área de estudio —«Land cover is dominated by
+    // shrublands and phrygana vegetation amounting to 76% of the area, while the
+    // rest comprises 17% olives and oak trees plots and 6.7% alluvial plains
+    // cultivated with annual crops»—, que es una cifra de cobertura y no un
+    // nombre de vegetación. NO publica coordenada, así que el píxel no se puede
+    // consultar y el 76 % es lo mejor que hay. Nueve de los catorce potreros son
+    // «improved» por terrazas, despiedre y cultivo previo, y ninguna de esas
+    // mejoras es fertilizante ni riego: de ahí que `insumos` siga en `secano`.
     clase_wc: 20,
     insumos: 'secano',
     tipo: 'ms_herbacea_total',
@@ -858,6 +1018,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
   {
     bioma: 'resolve_tundra',
     sitio: 'Cuatro comunidades de pajonal de Eriophorum vaginatum, Alaska y Yukón',
+    coordenada: null,
     // Pajonal de ciperáceas. WorldCover podría verlo como 100 (musgo/liquen) en
     // vez de 30; va 30 porque lo medido es la producción del Eriophorum y no la
     // del liquen, que es exactamente el error que documenta la sección de la
@@ -893,6 +1054,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // acequia va a buscar esta medición es donde acequia clasifica el predio.
     bioma: 'resolve_pastizal_templado',
     sitio: 'Pastizal de albardón, isla de Baradero, Delta Medio del Paraná',
+    coordenada: null,
     clase_wc: 30,
     insumos: 'secano',
     tipo: 'ms_forrajera',
@@ -930,6 +1092,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // clima da 959 g/m²/año de NPP total contra 1.676 medidos. Ver `miamiModel.ts`.
     bioma: 'resolve_desierto_matorral_xerofilo',
     sitio: 'Pastizal salino de Montecillo (MNT1), borde del lecho del lago de Texcoco, México',
+    coordenada: null,
     clase_wc: 30,
     insumos: 'secano',
     tipo: 'ms_herbacea_total',
@@ -962,6 +1125,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // el módulo venía necesitando: SEIS algoritmos sobre las MISMAS cosechas.
     bioma: 'resolve_bosque_templado_caducifolio_mixto',
     sitio: 'Sotobosque de un robledal-carpinal dominado por haya, Różańsko, noroeste de Polonia',
+    coordenada: null,
     clase_wc: 10,
     insumos: 'secano',
     tipo: 'ms_sotobosque',
@@ -987,6 +1151,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // Primera medición del bioma 5. Entra por el sotobosque, no por el rodal.
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Sotobosque de un rodal de aliso rojo, Cascade Head 1A, transecto OTTER, Oregón',
+    coordenada: null,
     clase_wc: 10,
     insumos: 'secano',
     tipo: 'ms_sotobosque',
@@ -1018,6 +1183,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // los dos números es el dosel, no el clima.
     bioma: 'resolve_pastizal_templado',
     sitio: 'Sotobosque de un rodal de Pseudotsuga, Waring’s Woods, transecto OTTER, Oregón',
+    coordenada: null,
     // Bioma 8 y clase 10: el bioma dice pradera templada y arriba hay un dosel
     // cerrado de conífera. La discordancia es el dato.
     clase_wc: 10,
@@ -1048,6 +1214,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // abertura es la que sigue.
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Once parcelas bajo dosel de ponderosa, Manitou Experimental Forest, Colorado',
+    coordenada: null,
     clase_wc: 10,
     insumos: 'secano',
     tipo: 'ms_sotobosque',
@@ -1082,6 +1249,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // por eso van en la clase 30 aunque estén adentro de un bosque experimental.
     bioma: 'resolve_bosque_coniferas_templado',
     sitio: 'Tres aberturas naturales sin dosel, Manitou Experimental Forest, Colorado',
+    coordenada: null,
     clase_wc: 30,
     insumos: 'secano',
     tipo: 'ms_herbacea_total',
@@ -1109,6 +1277,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // y no se puede usar como el cultivo de un predio cualquiera».
     bioma: 'resolve_pastizal_templado',
     sitio: 'Avena de catorce cultivares, EEA INTA Marcos Juárez, Córdoba',
+    coordenada: null,
     clase_wc: 40,
     insumos: 'fertilizado',
     tipo: 'ms_cultivo_sembrado',
@@ -1144,6 +1313,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // la avena fertilizada de arriba. La diferencia es el agua que alguien puso.
     bioma: 'resolve_pastizal_templado',
     sitio: 'Alfalfa de diez cultivares bajo riego, establecimiento Curacó, 25 de Mayo, La Pampa',
+    coordenada: null,
     clase_wc: 40,
     insumos: 'riego',
     tipo: 'ms_cultivo_sembrado',
@@ -1162,11 +1332,111 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     metodo: 'Diez cultivares de distinto grado de reposo invernal en bloques aleatorizados con cuatro repeticiones, parcelas de 6 m² (1 × 6 m) con cinco surcos a 0,20 m, implantadas el 11/04/2013. Cortes al 10 % de floración o cuando los rebrotes de corona llegaban a unos 5 cm: cinco cortes, el 06/11/2013, 29/11/2013, 04/02/2014, 25/03/2014 y 05/05/2014. La cifra anual es la suma de los cinco. Diferencias por LSD de Fisher p<0,05; no publica error estándar.',
     que_cuenta: 'Materia seca aérea cosechada de una alfalfa implantada, que es un cultivo puro de una especie forrajera: a diferencia de un pastizal natural, acá no hay fracción no forrajera que descontar. No es consumo y no es campo natural.',
     estacionalidad: 'Cinco cortes de noviembre a mayo, y el reparto es muy desigual: el promedio de los diez cultivares da 3.561, 3.149, 3.162, 3.983 y 6.027 kg MS/ha. El último corte, el de mayo, aporta el 30 % del año.',
-    donde_deja_de_valer: 'Un sitio y una temporada, bajo RIEGO GRAVITACIONAL: la fuente informa unos 1.300 mm aplicados por melgas cada quince días desde el 30 de agosto. Eso es más agua que la lluvia anual de cualquiera de los doce sitios de secano de este archivo —el techo de todos es el 1.119 mm de la puna de Puno—, en una zona del Monte donde la lluvia natural no llega a la mitad. La propia fuente dice que las diferencias de producción fueron independientes del grado de reposo invernal. No estima el potencial de secano, y por eso `insumos` es `riego`.',
+    donde_deja_de_valer: 'Un sitio y una temporada, bajo RIEGO GRAVITACIONAL: la fuente informa unos 1.300 mm aplicados por melgas cada quince días desde el 30 de agosto. Eso es más agua que la lluvia anual de cualquiera de los doce sitios de SECANO de este archivo —el techo de todos es el 1.119 mm de la puna de Puno—, en una zona del Monte donde la lluvia natural no llega a la mitad. Dicho con cuidado, porque la afirmación ya zafó dos veces por un tecnicismo del filtro y no por el clima: Glencoe llueve 1.300 a 1.400 mm y queda afuera por fertilizada, y Calabozo llueve 1.257 y queda afuera porque sus insumos son `desconocido`. Lo que se sostiene sin asteriscos es la versión que le importa a `bandaDeClase`: es más agua que la lluvia de cualquier sitio que ENTRE a una banda. La propia fuente dice que las diferencias de producción fueron independientes del grado de reposo invernal. No estima el potencial de secano, y por eso `insumos` es `riego`.',
     medido_en: 'temporada 2013-2014',
     fuente: {
       label: 'Zamora, C. D. et al. — «Evaluación de la producción de materia seca en variedades de alfalfa (Medicago sativa) de diferentes grados de reposo invernal, en el área bajo riego de 25 de Mayo, La Pampa» (p. 332 y Cuadro 1)',
       url: 'https://repositorio.inta.gob.ar/xmlui/bitstream/handle/20.500.12123/674/CR%20La%20Pampa-San%20Luis_EEA%20Anguil_Zamora_CD_Evaluaci%C3%B3n%20de%20la%20producci%C3%B3n%20de%20materia%20seca.pdf?isAllowed=y&sequence=1',
+    },
+  },
+  {
+    // El bioma 7 entra al archivo después de cuatro lotes, y entra porque esta
+    // vez la cifra es un flujo anual y no una masa en pie. Ver la sección «El
+    // bioma 7 entra, y lo que hubo que agregar para que entrara».
+    bioma: 'resolve_sabana_tropical',
+    sitio: 'Sabana de Trachypogon, Estación Biológica de Los Llanos, Calabozo, Venezuela',
+    // La ficha publica DOS coordenadas y hay que elegir con cuidado. La del
+    // «study site», 8,93 N / 67,42 W, **es la ciudad de Calabozo**: el píxel de
+    // WorldCover ahí da 93 % construido, y la propia ficha dice que el sitio
+    // está «about 10-km south-southeast of Calabozo». La que va acá es la otra,
+    // la de la estación meteorológica, que la ficha ubica EN la Estación
+    // Biológica de Los Llanos, que es donde dice que está el sitio. Están a
+    // 12,3 km una de la otra, con rumbo 117°.
+    coordenada: '8,88 N, 67,32 W (estación meteorológica de la Estación Biológica; la ficha publica además 8,93 N / 67,42 W para el «study site», que es la ciudad)',
+    // Clase 30 y es una asignación estable, que es el criterio: alrededor de la
+    // coordenada de la estación biológica el pastizal es el 75,7 % a 500 m,
+    // el 84,5 % a 2 km y el 71,6 % a 5 km, con el arbustal entre 0,6 y 9,7 %.
+    // No cambia de clase según la ventana, a diferencia de Río Mayo.
+    clase_wc: 30,
+    // `desconocido` y no `secano`, y la diferencia la hace una sola frase de la
+    // ficha: «Burned and unburned plots were measured, **as well as the effect
+    // of irrigation during the dry season**». El archivo de la parcela sin
+    // quemar trae `Treatmt = none`, pero ese campo distingue el fuego —el otro
+    // archivo dice `burned`— y no dice nada del riego. Si alguien abre San José
+    // y Medina (1976) y confirma que la parcela sin quemar no se regó, esto pasa
+    // a `secano` **y entonces hay que reescribir la afirmación del lote 12**,
+    // porque 1.257 mm es más que el 1.119 de Puno.
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // 375 g MS/m²/año de producción AÉREA. La ficha publica también 307 bajo
+    // tierra y 682 de total, y ésos no son esto: el 682 es el número que se
+    // encuentra citado por ahí, y confundirlos infla el forraje 1,8 veces.
+    kg_ms_ha_anio_min: 3750,
+    kg_ms_ha_anio_max: 3750,
+    kg_ms_ha_anio_tipico: 3750,
+    // «mean annual precipitation of 1,257 mm», serie 1968-1986 de la estación de
+    // la propia Estación Biológica.
+    lluvia_mm_min: 1257,
+    lluvia_mm_max: 1257,
+    // La ficha publica «mean annual minimum-maximum temperatures of 22.0-36.0 C»,
+    // que son la mínima y la máxima y NO promedian a la media anual. Es el mismo
+    // caso que documenta `temp_media_c_anual`, y van tres fichas del ORNL así.
+    temp_media_c_anual: null,
+    metodo: 'Cosechas mensuales de biomasa aérea viva y materia muerta total del 15 de enero al 15 de octubre de 1969, más una estimación única de biomasa subterránea, en la parcela SIN QUEMAR (`clb1_npp.txt`). La producción primaria neta aérea anual que publica la ficha —375 g MS/m²/año— es un recálculo sobre esas cosechas atribuido a Scurlock y Olson (2012) sobre los datos de San José y Medina (1976). La propia ficha avisa que los datos se leyeron de gráficos publicados, así que el último dígito puede estar errado.',
+    que_cuenta: 'Producción primaria neta AÉREA de la sabana de Trachypogon vestitus, con árboles dispersos de Curatella americana, Bowdichia virgilioides y Byrsonima crassifolia. No incluye la producción subterránea, que la misma ficha estima en 307 g/m²/año. No descuenta uso admisible, palatabilidad ni acceso, y no es consumo.',
+    estacionalidad: 'Serie mensual de enero a octubre de 1969; acá va la estimación anual publicada. El dato de enero dice lo que la cifra anual esconde: 100 g/m² de biomasa viva contra 1.025 de materia muerta en pie.',
+    donde_deja_de_valer: 'Un año y una parcela de reserva: el sitio de 260 ha «has been protected from grazing and burning since 1960, although occasional natural fires ignite during the dry season». Nueve años sin fuego en una sabana de Trachypogon dejan la hojarasca parada, y por eso la cifra describe lo que la comunidad produce y NO lo que un animal encontraría: en enero de 1969 había diez veces más materia muerta que viva. La parcela quemada del mismo año da 755 g/m²/año de NPP total contra 682 de la sin quemar, así que el fuego subió el total un 11 %; la ficha no publica el reparto aéreo/subterráneo de la quemada, así que no se puede decir cuánto de eso fue aéreo. Y para 1986/87 la misma parcela sin quemar da NPP total de 823 a 1.310, de 1,2 a 1,9 veces la de 1969. La propia ficha avisa que Esser (2013) y Olson et al. (2013) publican valores distintos del mismo sitio por usar otros métodos de cálculo.',
+    medido_en: '15 de enero al 15 de octubre de 1969',
+    fuente: {
+      label: 'ORNL DAAC — NPP Grassland: Calabozo, Venezuela, 1969-1987, R1 (ficha de sitio), sobre datos de San José y Medina (1976)',
+      url: 'https://daac.ornl.gov/NPP/guides/NPP_CLB.html',
+    },
+  },
+  {
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Estepa arbustiva de Río Mayo, distrito Occidental, Chubut',
+    // Al MINUTO de arco, que a 45° S son ±1,85 km en latitud y ±1,29 km en
+    // longitud. Por eso `clase_wc` queda en `null`: ver el comentario de abajo.
+    coordenada: '45°41′ S, 70°16′ W (al minuto de arco: ±1,5 km)',
+    // `null`, y el motivo es que la clase NO es estable en la escala de la
+    // incertidumbre de la coordenada: alrededor del punto publicado el pastizal
+    // es el 74,4 % a 500 m, el 52,7 % a 2 km y el 40,0 % a 5 km, donde lo pasa
+    // el suelo desnudo con el 48,8 %. Además aparece un 13,2 % de construido a
+    // 2 km, que es el pueblo de Río Mayo.
+    //
+    // **Lo que sí quedó firme es el negativo, y era el objetivo del encargo:**
+    // el arbustal es el 9,4 %, el 6,5 % y el 3,1 % en las tres ventanas, y BAJA
+    // al ampliar. Una estepa que la fuente describe con 12 % de cobertura de
+    // arbustos no es un píxel de clase 20, así que esta medición no alimenta la
+    // banda del arbustal, que sigue con un solo sitio.
+    clase_wc: null,
+    // El trabajo dice que los grandes herbívoros están excluidos desde 1983 y
+    // **no reporta fertilización ni riego**. Por la regla del lote 14, el
+    // silencio no se traduce a `secano`.
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // 53 g MS/m²/año de la capa de gramíneas. El resumen publicado dice que «two
+    // thirds of production were accounted for by perennial grasses and one third
+    // by shrubs» sobre un total de 79, y 53/79 = 0,671: la cifra y la fracción
+    // publicada en palabras coinciden. Los arbustos aportan 26 y NO van acá:
+    // son elongación anual de Mulinum spinosum, Senecio filaginoides y Adesmia
+    // campestris, que no es forraje de un bovino.
+    kg_ms_ha_anio_min: 530,
+    kg_ms_ha_anio_max: 530,
+    kg_ms_ha_anio_tipico: 530,
+    // 191 mm en el año detallado, textual en el resumen. La media de 37 años es
+    // bastante menor y va en `donde_deja_de_valer`.
+    lluvia_mm_min: 191,
+    lluvia_mm_max: 191,
+    temp_media_c_anual: null,
+    metodo: 'Cinco cosechas entre mayo de 1984 y mayo de 1985 para la capa de gramíneas, sumando los incrementos positivos de biomasa viva más el material muerto reciente (método 7a de Singh et al. 1975), sobre veinte parcelas de 0,2 × 5,0 m por fecha. Los arbustos, por doble muestreo: cosecha del crecimiento anual, dimensiones de la planta y densidad, con la copa aproximada a una semiesfera, sobre cuatro transectos de unos 100 individuos.',
+    que_cuenta: 'Producción primaria neta aérea ANUAL de la capa de gramíneas, agrupadas. No incluye los arbustos, que el mismo trabajo publica aparte —26 g/m²/año, de donde sale la fracción herbácea de 0,671 en `FRACCION_HERBACEA_DEL_SITIO`—, ni las hierbas de hoja ancha, que cubren menos del 1 % y quedaron excluidas. No descuenta uso admisible.',
+    estacionalidad: 'La biomasa verde de gramíneas ronda los 10 g/m² de mayo a septiembre, se multiplica por cinco entre septiembre y enero y vuelve al nivel inicial en mayo después de la sequía estival. El crecimiento de los arbustos se mide al final de la estación.',
+    donde_deja_de_valer: 'Es el sitio más seco del archivo por lejos: 191 mm, menos de la mitad de los 354 de Lesbos, que era el anterior. Y el año medido fue húmedo para el lugar: la media de 37 años es 136 mm, con un rango de 47 a 230. El trabajo mide cuatro años más con un método menos detallado —sólo biomasa de pico— y da 21 a 75 g MS/m²/año de ANPP total con lluvias de 55 a 167 mm; son otro método y no se mezclan con el 79, pero dicen que en un solo sitio la producción se mueve 3,6 veces adentro del primer escalón de `prodForrajera`. La conclusión de los autores es la que importa: «There was a large reduction in ANPP during a year of extreme drought; however, there were no increases in ANPP during years with above-average precipitation. This suggests that the carrying capacity for the Patagonian steppe may not be linearly related to precipitation». La producción arbustiva está sesgada baja por decisión del método: «We did not consider diameter increases of branches but only their elongation; thus, our data may have a bias towards underestimation».',
+    medido_en: '1984-1985 el año detallado; 1983/84, 1985/86, 1986/87 y 1988/89 con el método de pico',
+    fuente: {
+      label: 'Fernández-A., R. J., Sala, O. E. y Golluscio, R. A. (1991) — «Woody and herbaceous aboveground production of a Patagonian steppe», Journal of Range Management 44(5):434-437, DOI 10.2307/4002739',
+      url: 'https://hdl.handle.net/10150/644811',
     },
   },
 ] as const;
@@ -1327,20 +1597,33 @@ export interface FraccionHerbacea {
 /**
  * La segunda fracción de la cadena, y la que de verdad mueve el número.
  *
- * Tres sitios, los tres con numerador y denominador en la misma tabla y en la
- * misma unidad, así que el cociente no arrastra ninguna conversión:
+ * Cuatro sitios, los cuatro con numerador y denominador en la misma tabla y en
+ * la misma unidad, así que el cociente no arrastra ninguna conversión:
  *
  * - el transecto OTTER de Oregón, por las fichas de sitio del ORNL DAAC: capa
  *   herbácea contra NPP del rodal, en g MS/m²/año;
  * - la ficha de sitio ecológico R081BY354TX del NRCS: gramíneas y hierbas contra
  *   el total del sitio, que incluye arbustos y árboles, en lb/acre/año.
  *
+ * - la estepa de Río Mayo, en Chubut, por el trabajo de Fernández-A., Sala y
+ *   Golluscio (1991): gramíneas contra el total aéreo del sitio, en g MS/m²/año.
+ *   Es el primero que NO es un rodal ni una ficha de sitio ecológico: es una
+ *   comunidad abierta donde la luz no es lo que falta.
+ *
  * **De 0,0039 a 0,92: un factor 236.** Y no lo mueve el clima. Los dos sitios de
  * Oregón están a 200 km, producen casi lo mismo de rodal —1.540 y 1.630— y su
  * sotobosque difiere 6,8 veces, con la cobertura herbácea difiriendo 7,2.
  *
- * **Rango de validez.** Son tres puntos y dos de ellos del mismo transecto; no
- * hay una curva, hay dos puntas y un sitio en el medio. No interpolar: lo que la
+ * **El cuarto punto confirma la lectura por el otro extremo.** Río Mayo da 0,671
+ * con 12 % de cobertura de arbustos: en una comunidad abierta, donde el dosel no
+ * intercepta casi nada, dos tercios de lo que se produce arriba del suelo es
+ * capa herbácea. El trabajo lo publica además en palabras —«two thirds of
+ * production were accounted for by perennial grasses and one third by shrubs»—,
+ * así que el cociente no sale de dividir dos cifras que alguien juntó: sale de la
+ * frase del autor, y las cifras lo confirman.
+ *
+ * **Rango de validez.** Son cuatro puntos y dos de ellos del mismo transecto; no
+ * hay una curva, hay dos puntas y dos sitios en el medio. No interpolar: lo que la
  * bibliografía forestal publica son curvas de forraje contra cobertura de dosel
  * por tipo de bosque, y mientras no estén montadas esto sólo acota.
  *
@@ -1372,6 +1655,17 @@ export const FRACCION_HERBACEA_DEL_SITIO: readonly FraccionHerbacea[] = [
     unidad: 'lb_acre_anio',
     dosel: 'pradera de gramíneas medias con leñosas dispersas, comunidad de referencia 1.1',
     fuente: 'USDA NRCS — Ecological site R081BY354TX',
+  },
+  {
+    sitio: 'Estepa arbustiva de Río Mayo, distrito Occidental, Chubut',
+    // 53 de gramíneas contra 79 de ANPP total del sitio. El total excluye las
+    // hierbas de hoja ancha, que cubren menos del 1 %: es una omisión declarada
+    // y acotada, no un denominador incompleto a ciegas.
+    herbacea: 53,
+    aerea_total: 79,
+    unidad: 'g_ms_m2_anio',
+    dosel: 'estepa abierta sin dosel: 12 % de cobertura de arbustos y 25 % de gramíneas en mata',
+    fuente: 'Fernández-A., Sala y Golluscio (1991), J. Range Manage. 44(5):434-437',
   },
 ] as const;
 

@@ -90,16 +90,44 @@ describe('la banda de cada clase sale de las mediciones y de ningún otro lado',
   it('la banda sólo usa secano, y es lo único que la protege', () => {
     // Si el filtro se cae, un predio con un lote sembrado recibe la oferta de
     // una alfalfa bajo riego en el Monte: 21.035 kg MS/ha/año.
+    //
+    // El lote 14 tuvo que partir esta prueba en dos, y el motivo vale escribirlo
+    // porque es un supuesto que se cayó. La versión anterior recorría todo lo
+    // que NO era secano y exigía que estuviera por ENCIMA del techo de la banda:
+    // daba por hecho que un insumo sube la producción, lo cual es cierto para
+    // `fertilizado` y `riego`. Pero ahora existe `desconocido`, que no dice que
+    // le hayan puesto nada: dice que la fuente no lo dice. La sabana de Calabozo
+    // entró así con 3.750 kg MS/ha/año, bastante POR DEBAJO del techo de 10.630
+    // de su propia clase, y la prueba falló por tener razón.
     for (const clase of CLASES_PASTOREABLES) {
       const banda = bandaDeClase(clase);
       if (banda === null) continue;
+      // a) Con insumos declarados: el techo de la banda queda abajo, siempre.
       const conInsumos = FORRAJE_MEDIDO.filter(
-        m => m.clase_wc === clase && m.insumos !== 'secano',
+        m => m.clase_wc === clase
+          && (m.insumos === 'fertilizado' || m.insumos === 'riego'
+            || m.insumos === 'riego_y_fertilizado'),
       );
       for (const m of conInsumos) {
         expect(banda.kg_ms_ha_anio_max).toBeLessThan(m.kg_ms_ha_anio_max);
       }
+      // b) Con insumos desconocidos: la exclusión no depende de si la cifra es
+      // alta o baja, y eso es más fuerte que compararla. Lo único que se exige
+      // es que la banda no la haya contado.
+      const sinSaber = FORRAJE_MEDIDO.filter(
+        m => m.clase_wc === clase && m.insumos === 'desconocido',
+      );
+      const secano = FORRAJE_MEDIDO.filter(
+        m => m.clase_wc === clase && m.insumos === 'secano',
+      );
+      expect(banda.sitios).toBe(secano.length);
+      for (const m of sinSaber) {
+        expect(secano).not.toContain(m);
+      }
     }
+    // Y la de Calabozo existe, para que esto no quede verde por vacío.
+    const calabozo = FORRAJE_MEDIDO.filter(m => m.insumos === 'desconocido');
+    expect(calabozo.length).toBeGreaterThanOrEqual(2);
     const regada = FORRAJE_MEDIDO.find(m => m.insumos === 'riego');
     expect(regada?.kg_ms_ha_anio_max).toBe(21035);
     // Y es más agua de riego que la lluvia del sitio de secano más húmedo.

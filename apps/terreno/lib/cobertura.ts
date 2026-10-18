@@ -148,14 +148,24 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Catorce sitios en cuatro continentes es poco —y doce de
- * los catorce son los que la banda puede usar—, y la clase de cobertura por sí
+ * **Rango de validez.** Dieciséis sitios en cinco continentes es poco —y doce de
+ * los dieciséis son los que la banda puede usar—, y la clase de cobertura por sí
  * sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
- * factor 236 entre sus dos puntas— y la lluvia para el pastizal, que es lo que
+ * factor 236 entre sus cuatro puntos— y la lluvia para el pastizal, que es lo que
  * calcula `prodForrajera` en `produccion.ts`. Mientras eso no esté, una banda
  * ancha es la respuesta correcta y un número no lo es.
+ *
+ * **El arbustal sigue con un solo sitio, y el lote 14 encontró por qué cuesta
+ * tanto.** Fue a buscar la clase 20 y trajo una estepa que la fuente describe
+ * como arbustiva, con 12 % de cobertura de arbustos. El píxel de WorldCover ahí
+ * dice pastizal: el arbustal es el 9,4 % a 500 m, el 6,5 % a 2 km y el 3,1 % a
+ * 5 km. **Lo que un agrónomo llama estepa arbustiva, este mapa lo llama
+ * pastizal**, así que la banda de la clase 20 no se llena buscando trabajos sobre
+ * arbustos: se llena buscando sitios cuyo píxel sea 20. Es una propiedad del
+ * mapa, no de la vegetación, y confundirlas es lo que mantuvo esta banda en un
+ * solo sitio durante cinco lotes.
  *
  * **Qué NO es.** No es por hectárea de predio: es por hectárea de las clases
  * pastoreables que tienen medición. Un predio mitad pastizal y mitad suelo
