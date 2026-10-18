@@ -18,6 +18,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 10 | la curva de forraje contra dosel | **vacío** el 17/10/2026 — un rechazo bueno y dos de más |
 | 11 | el dosel, de nuevo | **montado** el 17/10/2026 — dos entradas y la primera curva |
 | 12 | el cultivo (clase 40) | **montado y afuera del cálculo** el 17/10/2026 |
+| 13 | la fracción comible | **montada con un solo par** el 18/10/2026 |
 
 ---
 
@@ -1367,3 +1368,151 @@ del Paraná con 1.056 mm. No es: es el altiplano de Puno, cuyo rango llega a
 detectó solo. La afirmación que importaba —que los 1.300 mm de riego superan la
 lluvia de todos los sitios de secano— se sostiene igual, pero el sitio estaba mal
 nombrado.
+
+## Lote 13 — la fracción comible entró, y el campo nuevo encontró un error mío
+
+Tres entradas y una vacía. La fracción que el encargo buscaba existe, sale de un
+sitio que **ya estaba en este archivo**, y el campo que el encargo había inventado
+para auditarla encontró un error en mi propia ficha en su primer uso.
+
+### El par válido, y los cuatro que no lo son
+
+El pastizal de albardón de la isla de Baradero —el mismo sitio que entró en el
+lote 04— publica en el cuerpo del artículo, **en la misma cosecha y el mismo
+tratamiento**:
+
+| | kg MS/ha |
+|---|---|
+| MS viva **total** sobre 7 cm, verano, tratamiento S | 10.533 |
+| MS viva **forrajera**, misma cosecha | 6.733 |
+| **cociente** | **0,639** |
+
+Bajé el PDF y las dos cifras están textuales: *«La diferencia entre los valores de
+MS viva total en verano entre S (10533 kg ha-1) y C (2237 kg ha-1)»* y *«una sola
+cosecha efectuada en verano (6733 kg ha-1)»*. No son leídas de una figura, que es
+lo que la entrega declaraba con prudencia.
+
+Y después está la tesis del mismo trabajo, cuya conclusión dice que la MS total
+del período primavera-verano-otoño *«estuvo en el rango de 11200 y 11400 kg ha-1,
+de los cuales aproximadamente entre 6700 kg (cosecha de verano del tratamiento S)
+y 8250 kg (cosecha acumulada del tratamiento C) correspondieron a MS forrajera»*.
+De esa frase salen cuatro cocientes, de **0,588 a 0,737**, y ninguno de los cuatro
+es una fracción:
+
+- el 6.700 es **una cosecha de verano** y el 11.200 un **total de tres estaciones**:
+  numerador y denominador no cubren el mismo tiempo;
+- el 8.250 es una **suma de tres cosechas sucesivas**: un flujo dividido por un
+  stock;
+- y el 11.200 incluye la **materia seca muerta**, que el método separa *antes* de
+  separar forrajera de no forrajera.
+
+**El ancho de ese abanico —un 25 % entre las dos puntas— no es variabilidad
+ecológica: es aritmética descuidada en un solo sitio y un solo año.** Y el par
+bueno cae adentro del abanico, que es lo peor que podía pasar, porque significa
+que el error no se nota mirando el resultado.
+
+### El campo nuevo funcionó, y funcionó contra mí
+
+El encargo del lote 13 había agregado `de_la_misma_tabla_que` para poder auditar
+exactamente esto. Lo encontró en su primer uso, y el error estaba **en mi ficha**:
+el `que_cuenta` del Delta decía «la MS total del mismo muestreo, que sí suma las no
+forrajeras, da 11.200 a 11.400 kg/ha». No es del mismo muestreo —es el rango del
+período— y no es sólo las no forrajeras —incluye la muerta—. La cifra del mismo
+muestreo es 10.533. Corregida, con la fracción 0,639 escrita al lado.
+
+Es la segunda vez en dos lotes que una regla que escribí para vigilar a la entrega
+termina encontrando algo mío. Vale como argumento para seguir escribiéndolas así.
+
+### Qué cuenta como comible, y por qué este número es un piso
+
+La clasificación es **botánica y del autor**: las forrajeras del sitio son casi
+todas gramíneas, predomina *Cynodon dactylon*, y la no forrajera que más pesa es el
+abrojo grande (*Xanthium cavallinesii*). **No es dieta observada ni palatabilidad
+medida.** Y el propio trabajo limita el número con su advertencia: *«La recuperación
+inicial de la cobertura a partir del grupo de especies no forrajeras, revela la
+degradación del pastizal a causa de la alta presión de pastoreo previa»*. Es la
+fracción comible de un pastizal **degradado**; en uno sano sería más alta, y no hay
+una segunda medición con la que acotar eso.
+
+### El bioma 7 llegó entero, y no entró
+
+Las otras dos entradas son la Unidad Experimental Glencoe del INIA, campo natural
+sobre basalto en Paysandú: 32°00′24″ S 57°08′01″ W → `ECO_ID` 574, **Uruguayan
+savanna, bioma 7**, verificado contra RESOLVE. Es el bioma que este encargo
+persigue desde el lote 04, el que concentra la ganadería del mundo. Llegó con
+coordenada de estación, fuente abierta CC-BY, 1.300 a 1.400 mm de lluvia publicada
+y consumo individual medido con TiO₂.
+
+**No entra a `FORRAJE_MEDIDO`, y el motivo es el del lote 04 y no el del 12: mide
+lo que está parado, no lo que creció.** Lo publicado es stock en pie sobre 5 cm
+antes y después de un pastoreo de cinco días de primavera, y el trabajo no publica
+la tasa de acumulación que haría falta para anualizarlo. Un campo llamado
+`kg_ms_ha_anio_min` que recibiera 1.387 mentiría en la unidad.
+
+Y además son fertilizadas: el fósforo del suelo se mantuvo en 10 ppm por
+fertilización en los dos tratamientos, para estandarizar los potreros. **Con
+Towoomba van dos de dos**: toda medición de sabana que llegó hasta acá con
+coordenada verificada, bioma verificado y fuente abierta resultó ser un ensayo
+agronómico. No es casualidad, y conviene usarlo como criterio de búsqueda: es el
+bioma donde está la ganadería, así que es el bioma donde están los ensayos. Hay que
+ir a buscar explícitamente el pastizal **sin tratar**.
+
+### Lo que Glencoe deja, y es lo que esta cadena nunca había medido
+
+Cuánto se saca de un pastizal cuando el animal come a voluntad:
+
+| tratamiento | en pie pre | en pie post | se fue | % de lo que había |
+|---|---|---|---|---|
+| campo natural | 1.387 | 971 | 416 | **30,0 %** |
+| con Lotus | 2.372 | 1.866 | 506 | **21,3 %** |
+
+Los dos tratamientos recibieron la misma oferta —6,1 y 6,5 % del peso vivo, sin
+diferencia estadística— y el animal comió prácticamente lo mismo: 6,35 y 6,67 kg
+MS/día, con `p = 0,314`. Pero el potrero con Lotus tenía **1,71 veces** más pasto
+parado.
+
+**La fracción que se saca no es una propiedad del pasto: es la demanda del animal
+dividida por lo que hay.** Con más pasto, la misma boca saca 0,71 veces la
+fracción. Y las dos desapariciones absolutas son indistinguibles con el error de la
+propia fuente: el SEM publicado de cada masa es 112 kg/ha, el de cada diferencia
+unos 158, y los intervalos 258-574 y 348-664 se superponen por completo. El animal
+se llevó la misma cantidad de los dos potreros —como su consumo medido indica— y la
+diferencia de porcentaje la hizo el denominador.
+
+### El número que NO corrige la tabla que ya está en la app
+
+Estos 21 a 30 % quedan **por debajo del 45 %** que es el piso de la banda húmeda de
+Holechek que `modulacion.ts` usa para la receptividad. La tentación de bajar esa
+tabla con esto sería un error de denominador: Holechek habla de una fracción del
+**crecimiento de la temporada** y Glencoe mide una fracción del **stock en pie**,
+sacada en cinco días; una temporada apila varios eventos como ése sobre un pasto
+que rebrota en el medio. La tabla se queda como está, y hay un test y un párrafo en
+`modulacion.ts` que lo dicen, para que el próximo que mire estas dos cifras juntas
+no las «arregle».
+
+Lo que sí es comparable, porque las dos son adimensionales y preguntan lo mismo, es
+**lo comido sobre lo ofrecido**: 3,1 sobre 6,1 y 3,3 sobre 6,5 dan **0,508 en los
+dos tratamientos**, con tres decimales iguales a pesar de las 1,71 veces de
+diferencia en el pasto disponible. Que caiga sobre el 0,50 de Holechek no permite
+derivar nada —la oferta es un objetivo de manejo elegido por el investigador—, pero
+es la primera medición de esta cadena que toca ese orden de magnitud desde abajo.
+
+### Un filo que hay que mirar
+
+Glencoe llueve 1.300 a 1.400 mm. El lote 12 dejó escrita una afirmación que depende
+de que ningún sitio de secano pase de 1.119 mm: que los 1.300 mm de riego de la
+alfalfa de Curacó son más agua que la lluvia de cualquier sitio de secano del
+archivo. **La afirmación sobrevive sólo porque Glencoe es `fertilizado` y queda
+afuera del conjunto de secano.** El test quedó escrito como condición y no como
+afirmación: el próximo sitio de secano arriba de 1.119 mm obliga a reescribir ese
+párrafo.
+
+### La vacía, bien declarada
+
+La entrega buscó una segunda fracción que combinara en la misma cosecha biomasa
+herbácea total, masa comible y consumo observado en kg MS/ha, y no la encontró.
+Explicó por qué con precisión —el Delta aporta un cociente botánico de clausura y
+una estación; Glencoe aporta desaparición aparente e ingestión por animal y día,
+pero no total herbáceo ni masa ingerida por hectárea— y **no infirió que la
+desaparición fuera consumo ni dividió la oferta de una fuente por el consumo de
+otra**. Es exactamente lo que la regla pedía.
