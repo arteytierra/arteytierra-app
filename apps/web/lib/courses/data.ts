@@ -101,6 +101,30 @@ export interface CourseData {
   opcionesLabel?: string;
   /** Muestra en el formulario los campos de fecha de llegada / salida estimada (estadías de duración variable, como Inmersión Viva). */
   pedirFechasEstadia?: boolean;
+  /**
+   * Reemplaza el encabezado de la sección de precios. Existe porque el texto por
+   * defecto de las inmersiones —«Tu aporte · Nos impulsa a continuar con nuestra
+   * labor»— habla de un aporte económico, y en una convocatoria sin costo no hay
+   * ninguno: quedaba pidiendo plata en la página que dice que no se paga.
+   */
+  aporte?: { eyebrow: string; antes: string; enfasis: string; nota?: string };
+  /**
+   * Muestra el bloque de beca completa a cambio de un oficio. Es opt-in y no
+   * automático para toda inmersión, porque el bloque ofrece una beca para
+   * Inmersión Viva en particular y enlaza a su formulario.
+   */
+  becaOficio?: boolean;
+  /**
+   * Lo práctico: un día típico, qué traer, qué hay en el lugar, qué no está
+   * incluido. Son las preguntas que llegan por WhatsApp cuando la página no las
+   * contesta, y las que toda convocatoria comparable publica.
+   */
+  practico?: {
+    eyebrow: string;
+    antes: string;
+    enfasis: string;
+    bloques: { icon: string; title: string; items: string[] }[];
+  };
 }
 
 /* ── Precios ──────────────────────────────────────────
@@ -151,6 +175,8 @@ const VOLUNTARIADO_FECHAS: CourseFechas = {
 };
 const VOLUNTARIADO_RANGO = rangoFechas(VOLUNTARIADO_FECHAS, 'es');
 const VOLUNTARIADO_CUPOS = 5;
+/** Cierre de postulaciones: diez días antes de la entrada, para alcanzar a entrevistar. */
+const VOLUNTARIADO_CIERRE = '5 de noviembre';
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
 const JONATAN: Facilitador = {
@@ -694,6 +720,7 @@ export const COURSES: Record<string, CourseData> = {
     opcionesLabel: 'Modalidad de participación',
     pedirFechasEstadia: true,
     ocultarCupos: true,
+    becaOficio: true,
     crossLink: { href: '/cursos/voluntariado', label: 'Nov–dic: voluntariado sin costo →' },
   },
 
@@ -716,27 +743,31 @@ export const COURSES: Record<string, CourseData> = {
     tag: `${VOLUNTARIADO_RANGO} · ${VOLUNTARIADO_CUPOS} cupos · Sin costo de participación`,
     fechas: VOLUNTARIADO_FECHAS,
     intro: [
-      `Del ${VOLUNTARIADO_RANGO} hay una obra que avanzar y un curso que sostener. Para eso abrimos ${VOLUNTARIADO_CUPOS} lugares de voluntariado sin costo: vos ponés el tiempo y las manos, nosotros la comida, el lugar donde dormir y el oficio de quienes construyen todos los días.`,
-      'No es la Inmersión Viva. Esta es una convocatoria puntual, con día de principio y de fin, dos áreas en vez de seis y siete horas diarias de intercambio. Se entra de a cinco y se trabaja sobre lo mismo: la obra que está abierta y el espacio que la sostiene.',
+      `Del ${VOLUNTARIADO_RANGO} hay una obra que avanzar en Tay Pichín y el intensivo de Bioarquitectura que sostener. Para eso abrimos ${VOLUNTARIADO_CUPOS} lugares de voluntariado sin costo de participación: vos ponés el tiempo y las manos, nosotros la comida, el lugar donde dormir y el oficio de quienes construyen todos los días.`,
+      'Se trabaja de lunes a viernes, siete horas repartidas entre la mañana y la tarde, con la siesta y los fines de semana libres. No hace falta experiencia previa ni haber tocado el barro antes: hace falta ganas de aprender con el cuerpo y de sostener un espacio entre varios.',
     ],
     datos: [
       { label: 'Cuándo', val: VOLUNTARIADO_RANGO },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
-      { label: 'Intercambio diario', val: '7 hs en obra y mantenimiento' },
+      { label: 'Intercambio', val: '7 hs por día, de lunes a viernes · siesta y fines de semana libres' },
       { label: 'Cupos', val: `${VOLUNTARIADO_CUPOS} personas` },
       { label: 'Estadía mínima', val: '2 semanas · prioridad para quien cubra el período completo' },
-      { label: 'Costo', val: 'Sin costo de participación' },
+      { label: 'Costo', val: 'Sin costo de participación · tres comidas vegetarianas por día' },
+      { label: 'Postulación', val: `Formulario y entrevista · hasta el ${VOLUNTARIADO_CIERRE}` },
     ],
     paraQuien: [
       'Querés aprender bioconstrucción haciéndola en una obra real, no en un taller de muestra',
-      'Podés sostener siete horas diarias de trabajo físico al aire libre',
-      'Te interesa ver cómo se arma un curso desde adentro, no desde la silla',
+      'Podés sostener siete horas de intercambio físico al aire libre',
+      'No tenés experiencia previa, pero sí ganas de aprender con las manos',
+      'Te interesa ver cómo se arma una formación desde adentro, no desde la silla',
       'Venís con tu carpa, tu bolsa de dormir y ropa de trabajo',
     ],
     vasASalir: [
-      'Con técnicas de tierra cruda practicadas sobre una construcción que queda en pie',
-      'Sabiendo qué pide un espacio que recibe gente, que es la mitad del oficio y casi nunca se enseña',
-      `Habiendo cursado Bioarquitectura del ${rangoFechas(BIOARQ_FECHAS, 'es')} desde el equipo que lo hace posible`,
+      'Preparar una mezcla de barro, probarla en el terreno y corregirla hasta que sirva',
+      'Levantar y revocar con tierra cruda sobre una construcción que queda en pie',
+      'Reconocer qué le pide un edificio de tierra para seguir sano, y hacerle el mantenimiento',
+      'Usar y cuidar la herramienta de obra sin que te la expliquen dos veces',
+      'Sostener la logística de una formación: materiales, espacios y tiempos',
     ],
     modulos: [
       { num: '🏗', title: 'Bioconstrucción', items: ['Técnicas con tierra cruda sobre obra abierta', 'Preparación de barro, mezclas y pruebas de campo', 'Revoques y terminaciones naturales', 'Uso y cuidado de la herramienta'] },
@@ -749,22 +780,77 @@ export const COURSES: Record<string, CourseData> = {
       },
     ],
     programaNota: `Las dos áreas no son un cronograma cerrado: se trabaja en lo que la obra necesita esa semana. La estadía mínima es de dos semanas, pero los ${VOLUNTARIADO_CUPOS} lugares se asignan primero a quienes puedan cubrir el período entero — entre otras cosas porque la participación en el curso de diciembre sólo alcanza a quien esté acá esos días.`,
+    practico: {
+      eyebrow: 'Antes de postularte',
+      antes: 'Lo que conviene',
+      enfasis: 'saber de antemano.',
+      bloques: [
+        {
+          icon: '🌅',
+          title: 'Un día acá',
+          items: [
+            'Desayuno temprano y arranque en obra',
+            'Primer tramo de la mañana, el más largo',
+            'Almuerzo y siesta libre, que en noviembre no se discute',
+            'Segundo tramo a media tarde, con el sol más bajo',
+            'Sábados y domingos libres para conocer la zona',
+          ],
+        },
+        {
+          icon: '🎒',
+          title: 'Qué traer',
+          items: [
+            'Carpa y bolsa de dormir',
+            'Ropa de trabajo que puedas ensuciar de barro',
+            'Calzado cerrado y resistente',
+            'Gorro, protector solar y botella de agua',
+            'Linterna o frontal',
+          ],
+        },
+        {
+          icon: '🚿',
+          title: 'Qué hay en el lugar',
+          items: [
+            'Baños y duchas con agua caliente',
+            'Cocina y comedor de uso común',
+            'Señal de celular e internet',
+            'En la zona de camping no hay electricidad',
+          ],
+        },
+        {
+          icon: '✋',
+          title: 'Lo que no está incluido',
+          items: [
+            'El traslado hasta San Marcos Sierras',
+            'El equipo personal de acampe',
+            'Cobertura médica o seguro de viaje',
+            'Gastos personales y salidas',
+          ],
+        },
+      ],
+    },
     facilitadores: [JONATAN],
+    aporte: {
+      eyebrow: 'Qué incluye',
+      antes: 'Sin costo de',
+      enfasis: 'participación.',
+      nota: 'No se paga nada por estar, por comer ni por el curso de diciembre. Lo que ponés es el tiempo; el traslado hasta San Marcos Sierras y tu equipo de acampe corren por tu cuenta.',
+    },
     opciones: [
       {
         id: 'camping',
         label: 'Hospedaje en zona de camping',
         precio: 'Sin costo',
         includes: [
-          'Alimentación completa durante toda la estadía',
+          'Tres comidas vegetarianas por día',
           'Lugar en la zona de camping de Tay Pichín',
+          'Baños y duchas con agua caliente',
           `Curso de Bioarquitectura del ${rangoFechas(BIOARQ_FECHAS, 'es')}`,
           'Acompañamiento de los instructores en obra',
         ],
-        highlighted: true,
       },
     ],
-    opcionesNota: 'Sin costo de participación quiere decir que no se paga nada por estar, por comer ni por participar del curso. El traslado hasta San Marcos Sierras y el equipo personal —carpa, bolsa de dormir, ropa y calzado de trabajo— corren por tu cuenta.',
+    opcionesNota: `Son ${VOLUNTARIADO_CUPOS} lugares y se eligen: completá el formulario de acá abajo y seguimos con una entrevista por videollamada. Recibimos postulaciones hasta el ${VOLUNTARIADO_CIERRE}. Si tenés una restricción alimentaria, avisanos ahí y la contemplamos.`,
     formCurso: 'Voluntariado de Bioconstrucción · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20al%20voluntariado%20de%20bioconstrucci%C3%B3n',
     opcionesLabel: 'Modalidad de participación',

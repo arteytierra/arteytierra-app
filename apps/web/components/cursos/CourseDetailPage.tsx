@@ -16,6 +16,8 @@ import { track } from '@/lib/analytics/track';
 export function CourseDetailPage({ course }: { course: CourseData }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
   const isInmersion = course.kind === 'inmersion';
+  const APORTE_INMERSION =
+    'No es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.';
   const testimonios = course.testimonios ?? TESTIMONIOS;
 
   // Dispara ViewContent al entrar a la página del curso (navegación SPA incluida,
@@ -373,17 +375,56 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         </div>
       </section>
 
+      {/* PRÁCTICO — un día típico, qué traer, qué hay, qué no está incluido.
+          Son las preguntas que llegan por WhatsApp cuando la página no las
+          contesta. Van antes de los precios: decidir si podés venir es anterior
+          a decidir si querés. */}
+      {course.practico && (
+        <section className="bg-bone-100 py-20 px-6">
+          <div className="max-w-editorial mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">{course.practico.eyebrow}</p>
+              <h2 className="font-display text-4xl text-ink-950">
+                {course.practico.antes} <em>{course.practico.enfasis}</em>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {course.practico.bloques.map(b => (
+                <div key={b.title} className="bg-bone-50 p-7 border-t-4 border-clay-500 flex flex-col">
+                  <div className="text-3xl mb-4" aria-hidden="true">{b.icon}</div>
+                  <h3 className="font-display text-xl text-ink-950 mb-4">{b.title}</h3>
+                  <ul className="flex flex-col gap-2.5">
+                    {b.items.map(item => (
+                      <li key={item} className="flex gap-2.5 items-start font-sans text-sm text-ink-700 leading-relaxed">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-clay-500 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* PRECIOS */}
       <section className="bg-bone-50 py-20 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-12 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">{isInmersion ? 'Tu aporte' : 'Inversión'}</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">
+              {course.aporte?.eyebrow ?? (isInmersion ? 'Tu aporte' : 'Inversión')}
+            </p>
             <h2 className="font-display text-4xl text-ink-950">
-              {isInmersion ? <>Nos impulsa a <em>continuar con nuestra labor.</em></> : <>Cómo <em>sumarte.</em></>}
+              {course.aporte
+                ? <>{course.aporte.antes} <em>{course.aporte.enfasis}</em></>
+                : isInmersion ? <>Nos impulsa a <em>continuar con nuestra labor.</em></> : <>Cómo <em>sumarte.</em></>}
             </h2>
-            {isInmersion && (
+            {/* La nota del dato manda sobre la de la inmersión: una convocatoria
+                sin costo no tiene ningún aporte económico que explicar. */}
+            {(course.aporte?.nota ?? (isInmersion ? APORTE_INMERSION : null)) && (
               <p className="mt-4 font-sans text-sm text-ink-700 max-w-lg mx-auto leading-relaxed">
-                No es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.
+                {course.aporte?.nota ?? APORTE_INMERSION}
               </p>
             )}
           </div>
@@ -453,8 +494,11 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
         </div>
       </section>
 
-      {/* OFICIO — beca completa a cambio de un servicio */}
-      {isInmersion && (
+      {/* OFICIO — beca completa a cambio de un servicio.
+          Opt-in y no automático para toda inmersión: la beca es para Inmersión
+          Viva y enlaza a su formulario, así que en otra convocatoria ofrecía
+          una beca de un programa distinto del que se estaba leyendo. */}
+      {course.becaOficio && (
         <section className="bg-clay-700/10 border-y border-clay-700/30 py-16 px-6">
           <div className="max-w-2xl mx-auto text-center">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">¿Tenés un oficio para aportar?</p>
