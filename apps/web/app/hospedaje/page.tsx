@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
+import { UBICACION } from '@/lib/ubicacion';
 
 export const metadata: Metadata = {
   title: 'Ecohostel Tay Pichín — Hospedaje en San Marcos Sierras',
@@ -387,11 +388,13 @@ export default function HospedajePage() {
             <h2 className="font-display text-4xl text-bone-50 mb-5 leading-tight">
               San Marcos Sierras,<br /><em>Córdoba.</em>
             </h2>
+            {/* Los datos salen de lib/ubicacion.ts: las fichas de las estadías
+                largas dicen lo mismo, y repetirlo acá los separaba. */}
             <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
-              Estamos en el Barrio La Loma, a 4 cuadras de la plaza principal de San Marcos Sierras. A 150 km de la ciudad de Córdoba, en plena sierra chica.
+              Estamos en el {UBICACION.barrio}. {UBICACION.distancia}.
             </p>
             <p className="font-sans text-sm text-bone-200 leading-relaxed mb-6">
-              El acceso final tiene una subida de algunos metros. No hay transporte público hasta la puerta — lo más fácil es llegar en auto, remis o coordinar traslado con nosotros.
+              {UBICACION.acceso}. {UBICACION.transporte}.
             </p>
             <a
               href={WA_URL}

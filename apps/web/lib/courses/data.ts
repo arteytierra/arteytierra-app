@@ -1,4 +1,5 @@
 import { horarioApertura, modalidadTeoriaPractica, rangoFechas } from './formato';
+import { COMO_LLEGAR } from '../ubicacion';
 
 export type CourseKind = 'presencial' | 'online-live' | 'online-async' | 'inmersion';
 
@@ -733,6 +734,45 @@ export const COURSES: Record<string, CourseData> = {
       { num: '🤝', title: 'Organización comunitaria', items: ['Círculos de la palabra', 'Asambleas y toma de decisiones', 'Gestión del habitar colectivo', 'Vida cotidiana en ecoescuela'] },
     ],
     programaNota: 'Las áreas no son un cronograma cerrado: cada semana se trabaja en lo que el espacio necesita en ese momento —una obra que avanza, la huerta en su temporada, una formación que se está armando. Por eso en una estadía corta, de dos semanas, se entra a fondo en una o dos áreas y no en todas. Para recorrerlas todas recomendamos quedarse tres meses.',
+    practico: {
+      eyebrow: 'Antes de venir',
+      antes: 'Lo que conviene',
+      enfasis: 'saber de antemano.',
+      bloques: [
+        {
+          icon: '🌅',
+          title: 'Cómo es la semana',
+          items: [
+            'Cinco días de práctica y dos de descanso',
+            '4 a 6 hs diarias, repartidas entre la mañana y la tarde',
+            'Desayuno, almuerzo y merienda, todo vegetariano',
+            'El ingreso es siempre un lunes',
+          ],
+        },
+        {
+          icon: '🎒',
+          title: 'Qué traer',
+          items: [
+            'En habitación compartida la cama viene hecha: sábanas, almohada y frazadas las ponemos nosotros',
+            'En camping, carpa, aislante térmico y bolsa de dormir',
+            'Ropa de trabajo que puedas ensuciar de barro y calzado cerrado',
+            'Gorro, protector solar, botella y linterna',
+            'De mayo a agosto, abrigo de verdad: el invierno en la sierra es frío',
+          ],
+        },
+        {
+          icon: '🚿',
+          title: 'Qué hay en el lugar',
+          items: [
+            'Baños y duchas con agua caliente',
+            'Cocina y comedor de uso común',
+            'Señal de celular e internet',
+            'En la zona de camping no hay electricidad',
+          ],
+        },
+        { icon: '🚌', title: 'Cómo llegar', items: [...COMO_LLEGAR] },
+      ],
+    },
     facilitadores: [JONATAN],
     opciones: [
       { id: 'camping', label: 'En zona de camping', precio: '$40.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
