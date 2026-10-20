@@ -782,15 +782,16 @@ export const COURSES: Record<string, CourseData> = {
     paraQuien: [
       'Querés aprender bioconstrucción haciéndola en una obra real, no en un taller de muestra',
       'Podés sostener siete horas de intercambio físico al aire libre',
-      'No tenés experiencia previa, pero sí ganas de aprender con las manos',
+      'Tenés ganas de aprender de bioconstrucción y del mantenimiento de un espacio vivo',
       'Te interesa ver cómo se arma una formación desde adentro, no desde la silla',
       'Venís con tu carpa, aislante térmico, bolsa de dormir y ropa de trabajo',
     ],
     vasASalir: [
       'Preparar una mezcla de barro, probarla en el terreno y corregirla hasta que sirva',
       'Levantar y revocar con tierra cruda sobre una construcción que queda en pie',
-      'Reconocer qué le pide un edificio de tierra para seguir sano, y hacerle el mantenimiento',
-      'Usar y cuidar la herramienta de obra sin que te la expliquen dos veces',
+      'Reconocer qué tipo de revoque usar en cada momento y en cada lugar',
+      'Usar y cuidar las herramientas de obra',
+      'Generar ciclos simbióticos en el diseño de un territorio',
       'Sostener la logística de una formación: materiales, espacios y tiempos',
     ],
     modulos: [
@@ -815,7 +816,7 @@ export const COURSES: Record<string, CourseData> = {
           items: [
             'Desayuno temprano y arranque en obra',
             'Primer tramo de la mañana, el más largo',
-            'Almuerzo y siesta libre, que en noviembre no se discute',
+            'Almuerzo y break',
             'Segundo tramo a media tarde, con el sol más bajo',
             'Sábados y domingos libres para conocer la zona',
           ],
