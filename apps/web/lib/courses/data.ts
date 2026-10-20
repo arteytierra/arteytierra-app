@@ -125,6 +125,12 @@ export interface CourseData {
     enfasis: string;
     bloques: { icon: string; title: string; items: string[] }[];
   };
+  /**
+   * Reemplaza el encabezado de la sección de inscripción. Para una convocatoria
+   * con cupos que se eligen, «Reservá tu lugar» promete algo que no pasa: no se
+   * reserva nada, se postula y se espera.
+   */
+  inscripcion?: { eyebrow?: string; antes: string; enfasis: string; nota: string };
 }
 
 /* ── Precios ──────────────────────────────────────────
@@ -177,6 +183,24 @@ const VOLUNTARIADO_RANGO = rangoFechas(VOLUNTARIADO_FECHAS, 'es');
 const VOLUNTARIADO_CUPOS = 5;
 /** Cierre de postulaciones: diez días antes de la entrada, para alcanzar a entrevistar. */
 const VOLUNTARIADO_CIERRE = '5 de noviembre';
+
+/**
+ * Las reglas de la convocatoria, para el formulario de postulación.
+ *
+ * Se exportan desde acá y no se repiten en la acción de servidor por un motivo
+ * concreto: si la ventana se escribiera dos veces, el formulario podría aceptar
+ * una fecha que la página declara imposible, o rechazar una que anuncia. El
+ * texto que se lee y la validación que corre salen del mismo lugar.
+ */
+export const CONVOCATORIA_VOLUNTARIADO = {
+  fechas: VOLUNTARIADO_FECHAS,
+  rango: VOLUNTARIADO_RANGO,
+  cupos: VOLUNTARIADO_CUPOS,
+  cierre: VOLUNTARIADO_CIERRE,
+  /** Estadía mínima, en días. La ficha dice «2 semanas». */
+  diasMinimos: 14,
+  edadMinima: 18,
+} as const;
 
 /* ── Jonatan bio (shared) ─────────────────────────── */
 const JONATAN: Facilitador = {
@@ -760,7 +784,7 @@ export const COURSES: Record<string, CourseData> = {
       'Podés sostener siete horas de intercambio físico al aire libre',
       'No tenés experiencia previa, pero sí ganas de aprender con las manos',
       'Te interesa ver cómo se arma una formación desde adentro, no desde la silla',
-      'Venís con tu carpa, tu bolsa de dormir y ropa de trabajo',
+      'Venís con tu carpa, aislante térmico, bolsa de dormir y ropa de trabajo',
     ],
     vasASalir: [
       'Preparar una mezcla de barro, probarla en el terreno y corregirla hasta que sirva',
@@ -798,9 +822,9 @@ export const COURSES: Record<string, CourseData> = {
         },
         {
           icon: '🎒',
-          title: 'Qué traer',
+          title: 'Qué traer sí o sí',
           items: [
-            'Carpa y bolsa de dormir',
+            'Carpa, aislante térmico y bolsa de dormir',
             'Ropa de trabajo que puedas ensuciar de barro',
             'Calzado cerrado y resistente',
             'Gorro, protector solar y botella de agua',
@@ -850,11 +874,17 @@ export const COURSES: Record<string, CourseData> = {
         ],
       },
     ],
-    opcionesNota: `Son ${VOLUNTARIADO_CUPOS} lugares y se eligen: completá el formulario de acá abajo y seguimos con una entrevista por videollamada. Recibimos postulaciones hasta el ${VOLUNTARIADO_CIERRE}. Si tenés una restricción alimentaria, avisanos ahí y la contemplamos.`,
+    opcionesNota: `Son ${VOLUNTARIADO_CUPOS} lugares y se eligen: completá la postulación de acá abajo y seguimos con una entrevista por videollamada. Recibimos postulaciones hasta el ${VOLUNTARIADO_CIERRE}.`,
+    inscripcion: {
+      eyebrow: 'Postulación',
+      antes: 'Contanos quién',
+      enfasis: 'sos.',
+      nota: `No es una reserva: son ${VOLUNTARIADO_CUPOS} lugares y se eligen. Leemos todas las postulaciones y seguimos con una entrevista por videollamada. Recibimos hasta el ${VOLUNTARIADO_CIERRE}.`,
+    },
+    // `opcionesLabel` y `pedirFechasEstadia` no van: los lee el formulario
+    // genérico, y acá lo reemplaza el de postulación, que pide sus propias cosas.
     formCurso: 'Voluntariado de Bioconstrucción · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20al%20voluntariado%20de%20bioconstrucci%C3%B3n',
-    opcionesLabel: 'Modalidad de participación',
-    pedirFechasEstadia: true,
     crossLink: { href: '/cursos/inmersion-viva', label: '¿Otras fechas? Inmersión Viva →' },
   },
 };

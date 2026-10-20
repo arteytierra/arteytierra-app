@@ -13,7 +13,13 @@ import { TESTIMONIOS } from '@/lib/testimonios';
 import { AddCourseToCartButton } from '@/components/shop/AddCourseToCartButton';
 import { track } from '@/lib/analytics/track';
 
-export function CourseDetailPage({ course }: { course: CourseData }) {
+/**
+ * `formulario` reemplaza el de inscripción genérico. Lo pasa la ruta y no el
+ * catálogo, para que esta plantilla no tenga que conocer ningún curso en
+ * particular: el voluntariado postula con preguntas propias, y ese formulario
+ * no tiene por qué existir dentro del componente que dibuja a todos.
+ */
+export function CourseDetailPage({ course, formulario }: { course: CourseData; formulario?: React.ReactNode }) {
   const isPresencial = course.kind === 'presencial' || course.kind === 'inmersion';
   const isInmersion = course.kind === 'inmersion';
   const APORTE_INMERSION =
@@ -543,27 +549,33 @@ export function CourseDetailPage({ course }: { course: CourseData }) {
       <section id="inscribirme" className="bg-ink-950 py-20 md:py-28 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-10 text-center">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">Inscripción</p>
+            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-3">
+              {course.inscripcion?.eyebrow ?? 'Inscripción'}
+            </p>
             <h2 className="font-display text-4xl text-bone-50">
-              {course.ocultarCupos ? <>Reservá tu <em>lugar.</em></> : <>Reservá tu <em>cupo.</em></>}
+              {course.inscripcion
+                ? <>{course.inscripcion.antes} <em>{course.inscripcion.enfasis}</em></>
+                : course.ocultarCupos ? <>Reservá tu <em>lugar.</em></> : <>Reservá tu <em>cupo.</em></>}
             </h2>
             <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
-              {isInmersion
+              {course.inscripcion?.nota ?? (isInmersion
                 ? 'Contanos tus fechas y te respondemos en 24–48 hs con los próximos pasos.'
-                : <>Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.{!course.ocultarCupos && ' Cupos limitados.'}</>}
+                : <>Completá el formulario y te respondemos con instrucciones de pago en 24–48 hs.{!course.ocultarCupos && ' Cupos limitados.'}</>)}
             </p>
             {course.ocultarCupos && course.startDate && <CourseCountdown startDate={course.startDate} />}
           </div>
-          <CourseEnrollForm
-            curso={course.formCurso}
-            whatsapp={course.whatsapp}
-            mercadopago={course.mercadopago}
-            opciones={course.opciones}
-            senaPercent={course.senaPercent}
-            ocultarCupos={course.ocultarCupos}
-            opcionesLabel={course.opcionesLabel}
-            pedirFechas={course.pedirFechasEstadia}
-          />
+          {formulario ?? (
+            <CourseEnrollForm
+              curso={course.formCurso}
+              whatsapp={course.whatsapp}
+              mercadopago={course.mercadopago}
+              opciones={course.opciones}
+              senaPercent={course.senaPercent}
+              ocultarCupos={course.ocultarCupos}
+              opcionesLabel={course.opcionesLabel}
+              pedirFechas={course.pedirFechasEstadia}
+            />
+          )}
 
           {/* Políticas — info de confianza antes de pagar */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

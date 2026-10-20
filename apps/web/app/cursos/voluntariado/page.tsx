@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCourse } from '@/lib/courses/data';
 import { CourseDetailPage } from '@/components/cursos/CourseDetailPage';
+import { VoluntariadoApplyForm } from '@/components/cursos/VoluntariadoApplyForm';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 
@@ -18,7 +19,7 @@ export default function Page() {
   return (
     <>
       <SiteHeader />
-      <CourseDetailPage course={course} />
+      <CourseDetailPage course={course} formulario={<VoluntariadoApplyForm />} />
       <SiteFooter />
     </>
   );
