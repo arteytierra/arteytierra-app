@@ -882,6 +882,7 @@ export const COURSES: Record<string, CourseData> = {
             'En la zona de camping no hay electricidad',
           ],
         },
+        { icon: '🚌', title: 'Cómo llegar', items: [...COMO_LLEGAR] },
         {
           icon: '✋',
           title: 'Lo que no está incluido',

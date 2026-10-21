@@ -26,6 +26,20 @@ export function CourseDetailPage({ course, formulario }: { course: CourseData; f
     'No es un pago por trabajar: es lo que sostiene un proyecto educativo con las puertas abiertas los 365 días del año — cubre tu alimentación y los gastos de funcionamiento mientras estás con nosotros.';
   const testimonios = course.testimonios ?? TESTIMONIOS;
 
+  // La grilla del práctico se arma según cuántos bloques trae la ficha. Con
+  // cuatro entran justos en una fila. Con cinco, cuatro columnas dejarían al
+  // quinto solo al principio de una fila vacía, así que se reparte 3 + 2 sobre
+  // una grilla de seis — y lo mismo en tablet, donde el último ocupa las dos
+  // columnas. Las clases van escritas enteras a propósito: Tailwind no genera
+  // las que se arman concatenando.
+  const bloquesPractico = course.practico?.bloques ?? [];
+  const practicoCols = bloquesPractico.length === 5 ? 'lg:grid-cols-6' : 'lg:grid-cols-4';
+  const practicoSpan = (i: number) => {
+    if (bloquesPractico.length !== 5) return '';
+    if (i < 3) return 'lg:col-span-2';
+    return i === 4 ? 'sm:col-span-2 lg:col-span-3' : 'lg:col-span-3';
+  };
+
   // Dispara ViewContent al entrar a la página del curso (navegación SPA incluida,
   // que no recarga el documento y por lo tanto no dispara el PageView del pixel).
   // Alimenta los públicos tibios de retargeting por curso.
@@ -394,9 +408,9 @@ export function CourseDetailPage({ course, formulario }: { course: CourseData; f
                 {course.practico.antes} <em>{course.practico.enfasis}</em>
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {course.practico.bloques.map(b => (
-                <div key={b.title} className="bg-bone-50 p-7 border-t-4 border-clay-500 flex flex-col">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${practicoCols} gap-6`}>
+              {course.practico.bloques.map((b, i) => (
+                <div key={b.title} className={`bg-bone-50 p-7 border-t-4 border-clay-500 flex flex-col ${practicoSpan(i)}`}>
                   <div className="text-3xl mb-4" aria-hidden="true">{b.icon}</div>
                   <h3 className="font-display text-xl text-ink-950 mb-4">{b.title}</h3>
                   <ul className="flex flex-col gap-2.5">
