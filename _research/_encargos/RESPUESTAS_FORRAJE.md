@@ -20,6 +20,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 12 | el cultivo (clase 40) | **montado y afuera del cálculo** el 17/10/2026 |
 | 13 | la fracción comible | **montada con un solo par** el 18/10/2026 |
 | 14 | el arbustal (clase 20) | **el arbustal no entró; entró el bioma 7** el 18/10/2026 |
+| 15 | las series de años | **cincuenta años montados** el 20/10/2026 |
 
 ---
 
@@ -1707,3 +1708,205 @@ Seis vacías, las seis bien declaradas. Dos observaciones:
   navegador. No es que la entrega no haya buscado bien. Para el trabajo de Río
   Mayo resolví con el resumen publicado, que trae las cifras agregadas textuales;
   las ecuaciones de esos dos no están en ningún resumen.
+
+## Lote 15 — cincuenta años del mismo campo, y la escalera resultó ser el modelo que el paper midió como demasiado alto
+
+Una sola entrada y nueve vacías. La entrada es la que esta cadena necesitaba
+desde el lote 01, y las nueve vacías están bien declaradas: ocho son frentes que
+no dieron y una es la que yo mismo había dejado sin pedir.
+
+### Lo que llegó
+
+La serie de **Lauenroth y Sala (1992)** en el Central Plains Experimental Range,
+estepa de pasto corto del norte de Colorado: **1939 a 1990, cincuenta años** con
+lluvia y producción medidas en el mismo campo con el mismo método.
+
+Todo lo demás en `forrajeMedido.ts` es un punto: un sitio, un año o dos, una
+cifra. Con puntos de sitios distintos **no se puede evaluar una función de la
+lluvia**, porque cada sitio cambia a la vez la lluvia y todo lo demás —el suelo,
+el frío, el largo de la estación, la estructura de la vegetación—. Esta serie
+cambia la lluvia y deja casi todo lo demás quieto. Es el experimento que faltaba.
+
+### Cómo se verificó, porque el método importa más que de costumbre
+
+Transcribí la Tabla 1 entera —cien cifras, cincuenta de lluvia y cincuenta de
+producción— y después las **ajusté por cuadrados mínimos**:
+
+| | ordenada | pendiente | r² |
+|---|---|---|---|
+| mi ajuste sobre las cien cifras | 13,1 | 0,1722 | 0,391 |
+| lo que publica el artículo (ec. 2) | 13 | 0,172 | 0,39 |
+
+Si una sola de las cien estuviera mal transcripta, los coeficientes no caerían
+ahí. El test del módulo repite el ajuste, así que **tocar un año de la serie
+rompe la compuerta**. Es el caso resuelto de la literatura que pide la skill
+`motor-de-calculo`, con cien números defendidos por dos.
+
+### El único error de la entrega, y era el que importaba
+
+**1943 tiene 490 mm y la entrega puso 790.** Fue la cifra que me hizo desconfiar
+antes de bajar el PDF, porque 790 mm en un campo de 321 de media no cierra.
+
+99 de 100 bien. Pero la que estaba mal era la más influyente de la serie: habría
+sido el año más húmedo por lejos —el verdadero máximo son los 588 mm de 1967— y
+con producción alta, 123 g/m². Un punto húmedo y productivo inventado en la punta
+derecha es exactamente lo que hace parecer **más fuerte y más empinada** la
+relación lluvia-producción, que es la relación que este lote vino a medir.
+
+### El hallazgo, y es una cita
+
+La Figura 2 del artículo publica dos rectas de ANPP contra lluvia anual, las dos
+en g/m²/año:
+
+| modelo | ecuación | qué cambia entre sus puntos |
+|---|---|---|
+| regional, Sala et al. (1988) | `ANPP = −34 + 0,60 × P` | el sitio entero |
+| largo plazo, CPER, 50 años | `ANPP = 56 + 0,13 × P` | sólo el año |
+
+**La pendiente del modelo espacial es 4,6 veces la del campo real.** Y el artículo
+dice qué consecuencia tiene: *«These vegetation structure constraints on ANPP
+explain why, under dry conditions, the regional model underestimates ANPP and
+under wet conditions, overestimates ANPP»*.
+
+`prodForrajera` es un modelo espacial: sus escalones salen de comparar lugares. Y
+con los **588 mm** del año más húmedo del CPER devuelve **3.000 kg MS/ha, que son
+300 g/m²**, que es exactamente el número que el artículo publica como la
+predicción regional **significativamente demasiado alta** para ese campo, contra
+130 del modelo de largo plazo.
+
+No es casualidad ni mérito del cálculo: es lo que le pasa a cualquier función que
+intercambie espacio por tiempo, y el propio artículo lo llama *«a weakness of
+exchanging space for time in predicting production patterns»*.
+
+Sobre los cincuenta años la escalera **se pasa en 35 de 50**, con mediana de 1,27
+veces y peor año de 2,62. **Lo que está mal no es la altura de los escalones: es
+la pendiente de la familia a la que pertenecen.** Eso es nuevo: hasta ahora el
+diagnóstico era «una variable no alcanza», que es cierto y es más vago.
+
+### Lo que le falta no es otra variable, es memoria
+
+La lluvia anual explica el **39 %** de la variación, en un solo sitio, con un solo
+método, durante medio siglo. El otro 61 % lo reparten dos cosas que el trabajo
+nombra:
+
+- **el tamaño de los eventos de lluvia.** Un modelo con los cuatro rangos de
+  tamaño llega a r² = 0,45, y los eventos de 15 a 30 mm **solos** ya dan 0,33,
+  porque son los que mojan las capas de suelo que mandan en la producción. Un
+  total anual no sabe nada de eso.
+- **el retardo.** Después de las sequías extremas de 1954 y 1964 llovió normal
+  —328 y 371 mm— y la producción siguió en 32 y 48 g/m² contra una media de 68.
+  La vegetación tarda años en recuperar la estructura que le permite responder.
+
+**La producción de un año depende del estado en que la dejó el anterior**, y una
+función de la lluvia de este año no tiene dónde guardar eso. El reemplazo de
+`prodForrajera` no es una escalera mejor ni una recta: es algo con estado.
+
+### Y el lote 15 corrige al lote 14
+
+Hace dos días dejé escrito en `produccion.ts` que «el reemplazo de esta función
+tiene que ser asimétrico», por lo que sugería Río Mayo: la sequía baja la
+producción y la lluvia de más no la sube.
+
+**Con cincuenta años no se replica.** Agrupando por años secos, normales y
+húmedos, los secos caen un 30 % y los húmedos suben un 30 %: simétrico a menos de
+dos puntos. La observación de Río Mayo sale de **cinco años medidos con dos
+métodos distintos** y no se podía generalizar.
+
+Estaba bien traerla y estaba mal escribirla como una propiedad de la producción.
+Corregido, con un test que lo cierra para que no se reescriba. La asimetría que sí
+está publicada es la del **error del modelo espacial**, que es otra cosa y es
+peor.
+
+### Una trampa de unidades que casi entró
+
+La Tabla 1 publica **dos** columnas de producción: forraje en **aire-seco** y ANPP
+en **estufa-seco**. La conversión que da el trabajo no es un factor:
+
+```
+ANPP = 46 + 0,76 × forraje
+```
+
+Con ordenada al origen de 46 g/m², el cociente entre las dos columnas va de
+**2,85 en el año más flaco a 1,12 en el más gordo**. Elegir la columna equivocada
+no escala la serie: **le cambia la forma**, que es justamente lo que se está
+midiendo. La entrada montada usa la de estufa y lo dice.
+
+Y esa recta es lo más flojo del trabajo, que lo declara: **r² = 0,28 sobre catorce
+años**, y la llama *«the most important assumption for this analysis»*. Así que la
+columna de ANPP de 36 de los 50 años es modelada, no medida.
+
+### Tres tests míos se contradijeron entre sí
+
+Al entrar una serie, `lluvia_mm_min/max` se volvió ambiguo, y los tests lo
+encontraron solos. El campo guardaba **cinco cosas distintas** sin que nada las
+separara:
+
+| | qué era | ejemplo |
+|---|---|---|
+| `anio_medido` | la lluvia del año cosechado | Río Mayo, 191 mm |
+| `rango_de_anios` | las puntas de una serie en el mismo punto | CPER, 107 a 588 |
+| `rango_de_sitios` | el ancho entre sub-sitios | Puno: dos estaciones a 400 m de diferencia de altura |
+| `normal_publicada` | una media de largo plazo | Calabozo, 1.257 mm de 1968-1986 |
+| `agua_de_riego` | **no es lluvia** | la alfalfa de Curacó, 1.300 mm por melgas |
+
+Lo último estaba dicho en un comentario de la entrada, que es invisible para
+cualquier cálculo. Ahora está en un campo, con un test que prohíbe que agua de
+riego llegue a un modelo de precipitación.
+
+De paso cayeron dos afirmaciones mías que eran **falsas**:
+
+- «Río Mayo es el primer sitio debajo de 300 mm» — el CPER tiene un mínimo de 107,
+  que es un año seco de una serie y **no un sitio seco**, en un campo de 321 de
+  media.
+- «el rango de lluvia más ancho del archivo» — es Puno con 709 mm, pero son dos
+  estaciones y no el mismo punto.
+
+Las dos reescritas diciendo de qué hablan. Es el mismo patrón que el `coordenada`
+del lote 14: un campo que decide algo y no guarda de dónde salió.
+
+### La entrada, y el contraste con Río Mayo
+
+El CPER entra con **clase 30**, y es la asignación más limpia del archivo:
+**100 % de píxeles de pastizal** en las tres ventanas y con las dos coordenadas
+publicadas. Es el contraste exacto de Río Mayo, donde la clase se daba vuelta con
+la escala y quedó en `null`. **El criterio de estabilidad del lote 14 funciona en
+las dos direcciones**, que es lo que se le pide a un criterio.
+
+Bioma 8 verificado, `ECO_ID` 402, Western shortgrass prairie. `insumos` queda en
+`desconocido` porque la fuente no dice nada, y acá ser estricto no cuesta: 620 a
+1.430 cae adentro de la banda de la clase 30, así que no cambia ningún número,
+sólo el recuento de sitios. Por eso es fácil ser estricto, y conviene decirlo.
+
+Trae además **temperatura media anual de verdad** —8,6 °C publicados como media de
+los 52 años—, así que se le puede correr el Miami Model encima. Es el contraste
+que Calabozo no permitía, porque ahí la ficha publica la mínima y la máxima.
+
+### La advertencia del propio trabajo, que es más grave que los insumos
+
+**Las ubicaciones muestreadas cambian de año en año y tienen historias de pastoreo
+distintas**, y el número de ubicaciones va de 3 en 1967 a 35 en 1977. Cada cifra
+anual es un promedio sobre las parcelas de ESE año. El trabajo lo declara: *«While
+the lack of identical sampling locations and number of locations from year to year
+limits the utility of the data set for some purposes, it nevertheless is valuable
+for an analysis of the relationship between precipitation and forage production»*.
+
+O sea: sirve para la relación lluvia-producción y **no** para comparar un año
+contra otro como si fuera la misma parcela. Está en `donde_deja_de_valer` y el
+número de ubicaciones está en la estructura, no en un comentario.
+
+### Las vacías
+
+Nueve, las nueve bien declaradas, y dos observaciones.
+
+El **arbustal** volvió vacío, y con el motivo correcto: hace falta una fuente que
+publique porcentaje y método de cobertura leñosa y una coordenada comprobable. La
+regla N del encargo 15 funcionó como filtro antes de que yo tuviera que rechazar
+nada.
+
+Los **catorce pares de Lesbos** no se consiguieron: la entrega dice que las tablas
+accesibles informan resultados agregados por tipo de jaula y no por potrero. Puede
+estar en un apéndice; queda como atraso con una instrucción más precisa.
+
+Los dos del *Journal of Range Management* siguen vacíos por la barrera que ya
+había documentado yo mismo —Anubis y el 403 del repositorio de Arizona—, y la
+entrega no perdió tiempo con ellos, que era el objetivo de habérselo avisado.
