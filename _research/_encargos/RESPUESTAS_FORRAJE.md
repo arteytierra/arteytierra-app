@@ -22,6 +22,9 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 14 | el arbustal (clase 20) | **el arbustal no entró; entró el bioma 7** el 18/10/2026 |
 | 15 | las series de años | **cincuenta años montados** el 20/10/2026 |
 | 16 | más series y el retardo | **la segunda serie y la memoria con coeficiente** el 21/10/2026 |
+| 17 | la capa herbácea aparte | **vacío de sitios nuevos, y su objeción se resolvió contra él** el 21/10/2026 |
+| 18 | pares de manejo con carga animal | **el mejor lote desde el 11: diecisiete años y cinco cargas** el 21/10/2026 |
+| 19 | lo que falta ubicar | **vacío entero: quince rechazos, tres de ellos útiles** el 21/10/2026 |
 
 ---
 
@@ -2214,3 +2217,301 @@ La décima es la del retardo, que no es una vacía sino una verificación que se
 declaró imposible y era posible. Queda como regla nueva para el encargo 17: **si
 una ecuación usa una variable que este archivo no guarda, hay que probar si alguna
 ecuación ya montada la deriva antes de declararlo imposible.**
+
+
+## Lote 17 — vacío de sitios nuevos, y la objeción que trajo se resolvió contra él
+
+**Lo que pedía el encargo:** tres o cuatro sitios más con la capa herbácea medida
+aparte de la leñosa, el mismo año y con la lluvia del sitio. Es la pregunta que
+el lote 16 dejó abierta y la más importante de las tres: con un solo sitio no se
+puede decidir si la lluvia anual sirve para predecir forraje.
+
+**Lo que trajo:** cero sitios nuevos. Una sola entrada, que es **el mismo Río
+Mayo que ya estaba montado**, y un `vacias` que dice que no se encontró ninguna
+tabla descargable que empareje capas herbácea y leñosa con lluvia del mismo sitio
+y año; buscó estepas, sabanas, chaparral, Jornada, Sevilleta y LTER.
+
+Eso es un lote vacío, y la pregunta sigue abierta. **Pero la entrega hizo lo
+correcto con lo único que tenía:** marcó una discrepancia y se negó a presentarla
+como verificada. Textual: «En el lote 17 dejé señalada una discrepancia entre el
+orden de columnas atribuido a la Tabla 2 y los campos del archivo ORNL; el
+reajuste tampoco reproduce los coeficientes del encargo. No lo presenté como
+verificación resuelta».
+
+### La objeción, y por qué se resuelve en contra
+
+La objeción es buena y el dato en el que se apoya es correcto: la ficha del ORNL
+DAAC lista los campos del archivo anual **`ANPP_shrub` antes que `ANPP_grass`**,
+al revés del orden de la Tabla 2 del artículo. Si eso fuera lo único disponible,
+el reparto gramíneas/arbustos quedaría indecidible y las trece filas que el lote
+16 corrigió habría que volver a mirarlas.
+
+Queda resuelto, y por dos evidencias independientes:
+
+**Una. La propia ficha nombra las columnas sobre valores.** Su sección de
+revisiones publica, año por año, los valores viejos y los nuevos bajo los
+encabezados `ANPP_shrub` y `ANPP_grass`, y dice que los corrigió «to agree with
+the values reported on page 544 of Jobbagy and Sala (2000)». Para 1983 pone 10,8
+en `ANPP_shrub` y 10,6 en `ANPP_grass`; para 1997, 45,8 y 17,9. Es exactamente lo
+que tiene el repo. El orden de los *campos* del archivo de datos no dice cuál
+número es cuál en una *tabla del artículo*, y la ficha trae las dos cosas.
+
+**Dos. Sólo esta asignación reproduce las tres regresiones publicadas.**
+
+| | ordenada | pendiente | r² | n |
+|---|---|---|---|---|
+| publicado, gramíneas | 24,6 | 0,024 | 0,015 | 15 |
+| **el repo** | **24,582** | **0,02405** | **0,0146** | 15 |
+| publicado, arbustos | 10,0 | 0,125 | 0,728 | 10 |
+| **el repo** | **10,042** | **0,12484** | **0,7278** | 10 |
+| publicado, total | 34,4 | 0,141 | 0,346 | 10 |
+| **el repo** | **34,432** | **0,14122** | **0,3459** | 10 |
+| el lote 17, «herbácea» | 11,253 | 0,12016 | 0,454 | 15 |
+| el lote 17, «leñosa» | 24,361 | 0,01650 | 0,0094 | 10 |
+
+Las dos últimas filas son las que la propia entrega calculó, y las reproduje para
+estar seguro de estar discutiendo lo mismo. No son ninguna de las tres
+publicadas.
+
+**Y el segundo número delata el mecanismo**, que es lo que vale guardar: 24,361 +
+0,0165·P es **la regresión de las gramíneas calculada sobre diez años en vez de
+quince**. O sea que la inversión no mezcla dos capas al azar: manda la columna de
+gramíneas a la casilla de la leñosa, y deja la columna de quince valores siendo
+una quimera de cinco años de gramíneas —los años que tienen un solo valor, donde
+la entrega y el repo coinciden— más diez de arbustos. De ahí el r² de 0,454, que
+no es ni el 0,015 de una capa ni el 0,728 de la otra.
+
+**Lo que la objeción deja es un método**, y por eso está escrito en el doc de
+`SERIE_RIO_MAYO` y hay tres tests nuevos: cuando el orden de dos columnas está en
+duda, **la regresión publicada es el árbitro**, y no hay que salir a buscar otra
+fuente para usarla. Es la regla T del encargo aplicada a la regla S.
+
+### Lo que sí se ganó, que no era el objetivo
+
+Abrir la ficha del ORNL para resolver la discusión trajo tres cosas que no
+estaban:
+
+1. **La normal publicada del sitio: 153,0 mm, con desvío de 52,3 y catorce años
+   de dato anual** (1968-1990). Con eso hay **tres cifras correctas y distintas**
+   para «la lluvia de Río Mayo»: 153 de la ficha, 136 de media de 37 años del
+   trabajo de 1991 y 155,5 de promedio de los quince años de la serie. Un 14 % de
+   separación entre la primera y la segunda. Está escrito, con un test.
+2. La cobertura: 25 % basal de gramíneas, 12 % de arbustos, menos del 1 % de
+   hierbas, el resto suelo desnudo. La de gramíneas la fuente la llama basal
+   explícitamente; la de arbustos no lo aclara.
+3. El sitio: 500 m de altura, pedregullo que es el 47 % de la masa del suelo,
+   caliche a 60 cm.
+
+**Veredicto del 17: vacío.** La pregunta del lote 16 sigue abierta y hay que
+volver a pedirla, con más caminos.
+
+## Lote 18 — el mejor lote desde el 11: diecisiete años y cinco cargas en el mismo campo
+
+**Lo que pedía el encargo:** pares de manejo del mismo sitio con la **carga
+animal** como variable, con la carga en unidades. El lote 16 había medido el
+manejo por fertilización y por estado del pastizal —un factor 12— y eso describe
+prácticas que la mayoría de los predios de acequia no aplica; faltaba la variable
+que el usuario de la app sí decide.
+
+**Lo que trajo:** Patton, Dong, Nyren y Nyren (2007), *Rangeland Ecology &
+Management* 60(6):656-665, «Effects of Grazing Intensity, Precipitation, and
+Temperature on Forage Production». Dos entradas, que son los dos sitios
+ecológicos de la misma estación. **Diecisiete años, cinco intensidades de
+pastoreo, tres momentos de la temporada, carga en AUM/ha y la lluvia y la
+temperatura del suelo como covariables.** Es exactamente lo que pedía el encargo.
+
+### Dónde está la fuente, que costó
+
+El único PDF de acceso abierto está en el repositorio de la Universidad de
+Arizona (`repository.arizona.edu`, handle 10150/643205), que **devuelve 403 a
+`curl` con cualquier combinación de encabezados** y también a una navegación
+directa al bitstream. Lo que sí funciona: abrir la página del ítem en el
+navegador y pedir el archivo con un `fetch` del mismo origen. Ahí devuelve 200.
+El repositorio además publica el **texto extraído** como un bitstream aparte
+—54 KB—, que es mejor que el PDF para esto. La receta queda en
+`reference_leer_pdf`.
+
+### Lo que la entrega hizo bien, y el error que tuvo
+
+Bien: los veinte valores de las Tablas 4, 5, 6 y 7 están exactos, los nulos de la
+Tabla 7 están en los lugares correctos —que es lo difícil—, la carga viene con
+unidad y desvío, declaró la advertencia de la fuente sobre que los grupos no suman
+al total, y separó las dos ventanas temporales (producción 1989-2005, cargas
+1991-2005), que es un detalle real: los dos primeros años el campo se cargó
+demasiado liviano porque todavía no se conocía el potencial del sitio.
+
+Mal, y es un error de la clase que la regla S fue escrita para atajar: **la Tabla
+2 está corrida una columna**. Esa tabla tiene **columnas de umbral intercaladas
+entre las de producción** —gramíneas, umbral de T2B, hierbas, arbustos, total,
+umbral, umbral— y la entrega leyó el encabezado resumido y contó de izquierda a
+derecha. Resultado: los umbrales de temperatura (379, 401, 446, 392) entraron
+como producción de hierbas, las hierbas reales (115, 136, 180, 227, 282) como
+arbustos, y los arbustos reales (124, 64, 77, 106, 41) se perdieron.
+
+La entrega incluso declaró el orden: «Tables 2–7: treatment, Grass, Forb, Shrub if
+applicable, Total, pooled SE». Verificó contra el encabezado, y el encabezado de
+esa tabla es de dos niveles.
+
+**La segunda evidencia que lo atrapa estaba en la misma tabla**, y no requiere
+abrir nada: **el error estándar agrupado tiene un valor por columna de producción
+y ninguno por columna de umbral**. La Tabla 2 trae cuatro (47, 16, 12, 46) y la
+Tabla 3, tres (48, 11, 48). Una lectura que produce cinco columnas de producción
+en una tabla con cuatro errores estándar está corrida. Está escrito en el doc de
+`CARGA_CGREC` y hay un test que lo cuenta tabla por tabla. Es la regla S con un
+procedimiento concreto en vez de una recomendación.
+
+### Lo que mide, y qué le hace a acequia
+
+Producción total al final de la temporada, kg/ha, medias ajustadas por covarianza
+de diecisiete años:
+
+| manejo | deja en pie | cosecha | carga | lomada (silty) | bajo (overflow) |
+|---|---|---|---|---|---|
+| sin pastoreo | 100 % | 0 % | 0 | 2.865 | sin media publicada |
+| **liviano** | 65 % | **35 %** | 1,3 AUM/ha | **3.410** | 4.131 |
+| moderado | 50 % | 50 % | 2,7 | 3.156 | 4.360 |
+| fuerte | 35 % | 65 % | 4,4 | 2.637 | **4.362** |
+| extremo | 20 % | 80 % | 6,9 | 2.501 | 3.087 |
+
+**1. El coeficiente de cosecha de acequia cae en el máximo medido.** Con 454 mm
+—17,9 pulgadas— `bandaUso` devuelve la banda árida: cosechar el 40 %, con piso de
+35 %. Los tratamientos de este ensayo **están definidos por el forraje que dejan
+en pie**, que es el complemento exacto de ese coeficiente, y el que deja el 65 %
+—o sea, cosecha el 35 %— es el que más produjo de los cinco. Es la primera vez en
+toda esta cadena que la tabla de Holechek se contrasta contra producción medida y
+no contra otra recomendación. Y es falsable: con el 65 % de cosecha la producción
+cae un 23 % y con el 80 %, un 27 %.
+
+Lo que **no** autoriza: bajar el `inicial` de 40 a 35 %. El coeficiente no existe
+para maximizar pasto, existe para que el animal coma sin degradar el campo. Que
+además caiga cerca del máximo es una confirmación, no un argumento para moverlo.
+
+**2. La pendiente contra la lluvia es una función del manejo.** En las lomadas, al
+inicio de la temporada, el no pastoreado sube **46,31** kg/ha por cm de lluvia del
+año agrícola y el liviano **32,48**, pero moderado, fuerte y extremo **no se
+distinguen de cero**. En los bajos, al final de la temporada, pasa lo contrario:
+el no pastoreado **no responde** y los cuatro pastoreados suben 46,85 kg/ha por
+cm. En el mismo campo y los mismos años, «cuánto sube la producción por
+milímetro» tiene cinco respuestas por sitio ecológico, dos de ellas cero, y quién
+responde a la lluvia se da vuelta entre una lomada y un bajo.
+
+Es lo más fuerte que apareció contra `prodForrajera` desde el lote 16: **una
+función de la lluvia sola no describe un campo pastoreado, describe uno en
+descanso**, y ni eso en los bajos.
+
+**3. El signo del efecto del pastoreo lo decide la lluvia del año, y está
+publicado como números.** En los bajos, el pastoreo supera al descanso si la
+lluvia del año agrícola pasa de 26,70 cm (liviano), 24,84 (moderado), 26,24
+(fuerte) o 53,15 (extremo); y el extremo produce **menos** que el descanso si no
+llega a 31,52 cm. Entre 31,52 y 53,15 los dos no se distinguen, que es una
+respuesta y no una falta de dato. Está en `UMBRAL_P2E_OVERFLOW` y la función
+`pastoreoSuperaAlDescanso` devuelve `true`, `false` o `null` por eso.
+
+**4. La escalera se queda corta justo donde parecía andar bien.** Esto corrige una
+afirmación de este archivo. La tabla del encabezado de `forrajeMedido.ts` tenía
+una sola fila con el veredicto «va bien»: la de Dakota, con la ficha del NRCS del
+sitio ecológico Loamy Upland de la MLRA 53B, 381-508 mm y 2.643-3.063 kg/ha. Ese
+acierto era **del ancho del rango de entrada**: 381 a 508 cruza el escalón de los
+500 mm, así que la escalera devolvía «1.500 a 3.000» y el medido caía adentro.
+
+El CGREC está en esa misma MLRA y en ese mismo sitio ecológico —el mapa de suelos
+del punto publicado lo correlaciona con `R053BY011ND` «Loamy» de la MLRA `053B`—
+y publica **una** normal: 454 mm. Con un número en vez de un rango la escalera da
+1.500, y lo medido es 2.501 a 3.410 en las lomadas y 3.087 a 4.362 en los bajos:
+**se queda corta de 1,7 a 2,9 veces**. Después de este lote la tabla del
+encabezado ya no tiene ningún «va bien».
+
+**5. Y la corroboración independiente más fuerte del archivo.** Los dos métodos,
+sobre el mismo sitio ecológico:
+
+| | producción | razón entre extremos |
+|---|---|---|
+| NRCS, tabla de comunidad de referencia | 2.643–3.063 | 0,86 |
+| CGREC, diecisiete años de corte | 2.501–3.410 | 0,73 |
+
+Los rangos se superponen casi del todo y los dos tienen el mismo signo: abajo el
+pastoreo intenso, arriba el leve. Que 2.643 y 2.637 queden a seis kilos es una
+coincidencia y no una validación al 0,2 % —«pastoreo continuo intenso» de la
+ficha y «fuerte» del ensayo no son la misma definición—, pero que dos métodos sin
+nada en común den el mismo rango sí es una validación.
+
+**6. El techo del método de buscar por píxel, medido con dos mediciones del mismo
+día.** Las parcelas silty y overflow están intercaladas adentro de los mismos
+doce potreros: **la misma coordenada, la misma clase 30 y la misma estabilidad**
+—91 %, 85 % y 85 % de pastizal en las tres ventanas, que es el píxel mejor
+verificado del archivo— y producen 2.501-3.410 contra 3.087-4.362. Un factor 1,3
+que un satélite de 10 m no puede ver. Y peor que un factor: **responden al manejo
+con el signo al revés**. Lo que separa los dos sitios es a dónde va el agua de
+escurrimiento, que es justamente lo que acequia **sí** calcula con el DEM: la
+mejora no entra por más clases de cobertura, entra por cruzar la clase con la
+posición en el relieve.
+
+### Y la joroba, que no se codifica
+
+El descanso total produjo menos que el pastoreo liviano: 2.865 contra 3.410, un
+19 % menos. Los autores lo atribuyen a la acumulación de broza y lo presentan como
+evidencia de la hipótesis de optimización por pastoreo. **No se escribe un factor
+de 1,19**, y las cuatro razones están en la propia fuente:
+
+1. En el CPER, el otro sitio de serie larga de este archivo, el mismo tipo de
+   experimento dio lo contrario: el no pastoreado fue el más productivo (Milchunas,
+   Lauenroth y Burke 1994).
+2. Las revisiones de Belsky (1986) y Painter y Belsky (1993) no encontraron
+   evidencia de que la herbivoría beneficie a la planta pastoreada.
+3. **El informe anterior de este mismo ensayo no vio la joroba** (Biondini, Patton
+   y Nyren 1998): apareció al estirar la serie. Los autores lo marcan.
+4. En el otro sitio ecológico del mismo campo no hay joroba contra el descanso en
+   la media.
+
+Lo que sí se escribe es el rango: **el manejo del pastoreo mueve la producción
+1,36 veces en el mismo sitio con el mismo clima**, y la dirección no es monótona.
+
+### Por qué no alimentan la banda, y duele
+
+Son las dos entradas **mejor ubicadas del archivo** —coordenada que cae donde
+dice, altura que cierra contra el mapa de suelos, clase estable al 91/85/85 %— y
+quedan afuera de la banda de la clase 30. El trabajo **no menciona fertilización
+ni riego ni una sola vez** en todo el texto, y por la regla del lote 14 el
+silencio no se traduce a `secano`.
+
+Lo que sí se pudo derivar, por la regla T: **una parcela regada no puede responder
+a la lluvia del año agrícola con pendiente significativa**, y la de ellas es 28,63
+kg/ha por cm. Eso descarta el riego. Falta la fertilización, y por eso siguen en
+`desconocido`. Es el mismo estado del CPER.
+
+## Lote 19 — vacío entero, y tres de los quince rechazos valen
+
+**Lo que pedía:** el arbustal con las dos condiciones a la vez, los biomas 1, 2,
+3, 6 y 9, Konza por el portal EDI, tres preguntas de sí o no y los atrasos.
+
+**Lo que trajo:** cero entradas y quince `vacias`. No es un lote fallido: es un
+lote que no encontró nada y lo dice campo por campo, lo cual es el comportamiento
+correcto. Pero la cuenta es cero.
+
+Tres de los quince rechazos **contestan preguntas que estaban abiertas**, y las
+contestan en el sentido que deja el código como está:
+
+1. **El CPER sigue en `desconocido`.** «SGS-LTER describe CPER, pero no confirma
+   los insumos de las parcelas concretas de Lauenroth y Sala». Era la duda más
+   vieja del archivo y queda confirmada como duda.
+2. **Calabozo sigue en `desconocido`.** No se confirmó si la parcela sin quemar de
+   San José y Medina (1976) recibió riego. Eso mantiene la decisión del lote 14 y
+   **evita tener que reescribir la afirmación del techo de secano**, que era el
+   riesgo si la respuesta hubiera sido «no, no se regó».
+3. **La ambigüedad de Ukulinga se mantiene declarada.** Swemmer et al. informan
+   cortes de diciembre y febrero y la conversión a masa seca, pero no si se suman
+   o se promedian. El factor 2 declarado en la entrada se queda.
+
+De los otros doce, el que más se acercó es **el arbustal de clase 20**: la ficha
+NRCS/EDIT `R086AY011TX` informa 50-80 % de dosel leñoso y producción de arbustos,
+pero no publica el método de la cobertura ni un punto inequívoco de parcela. El
+rechazo cita la regla N y agrega una frase que vale: «el silencio sobre disturbios
+no prueba que la parcela esté intacta». Después de Towoomba, eso es exactamente la
+lección correcta.
+
+Konza quedó identificado —`knb-lter-knz.55.18`, La Pierre et al. (2011),
+1984-2008— pero la descarga directa no entregó filas numéricas. Vale volver por
+ahí con la ruta del paquete de datos y no con la del catálogo.
+
+**Los biomas 1, 2, 3, 6 y 9 siguen vacíos**, la clase 20 sigue con un solo sitio y
+la clase 40 sigue sin ninguna de secano.
