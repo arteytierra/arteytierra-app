@@ -575,6 +575,80 @@
  * baja la producción, la lluvia de más no la sube. Una escalera creciente no
  * puede representar eso, y una recta tampoco.
  *
+ * ## Cincuenta años de un solo sitio, que es el experimento que faltaba
+ *
+ * Todo lo que hay más arriba en este archivo es un punto: un sitio, un año o dos,
+ * una cifra. Con puntos de sitios distintos no se puede evaluar una función de la
+ * lluvia, porque cada sitio cambia a la vez la lluvia y todo lo demás. El lote 15
+ * trajo lo otro: **el mismo campo, cincuenta años**, en `SERIE_CPER`.
+ *
+ * Central Plains Experimental Range, estepa de pasto corto del norte de Colorado,
+ * 1939 a 1990. Cien cifras —cincuenta de lluvia y cincuenta de producción— que
+ * verifiqué de una forma que vale contar: **las ajusté por cuadrados mínimos y me
+ * dieron la ecuación publicada**, `Forraje = 13 + 0,172 × lluvia` con r² = 0,39,
+ * contra el 13,1 + 0,1722 y r² = 0,391 de mi ajuste. Si una sola de las cien
+ * estuviera mal transcripta, los coeficientes no caerían ahí. El test lo repite.
+ *
+ * **Primer resultado: la lluvia anual explica el 39 %.** En un solo sitio, con el
+ * mismo método, durante medio siglo. El otro 61 % lo reparten dos cosas que el
+ * trabajo nombra: el tamaño de los eventos de lluvia —los de 15 a 30 mm solos dan
+ * r² = 0,33, porque son los que mojan las capas que mandan— y el retardo, que es
+ * lo que más duele acá: tras las sequías extremas de 1954 y 1964 llovió normal
+ * —328 y 371 mm— y la producción siguió en 32 y 48 g/m² contra una media de 68.
+ * **La producción de un año depende del estado en que la dejó el anterior**, y una
+ * función de la lluvia del año no tiene dónde guardar eso.
+ *
+ * ## El lote 15 corrige al lote 14: la asimetría no era de la producción
+ *
+ * El lote 14 dejó escrito, por Río Mayo, que la respuesta a la lluvia es
+ * asimétrica: la sequía baja la producción y la lluvia de más no la sube. **Con
+ * cincuenta años no se replica.** Agrupando por años secos, normales y húmedos,
+ * los secos caen un 30 % y los húmedos suben un 30 %: simétrico. La observación de
+ * Río Mayo sale de cinco años medidos con dos métodos distintos y no se podía
+ * generalizar; estaba bien traerla y estaba mal escribirla como una propiedad.
+ *
+ * La asimetría que sí está publicada es otra cosa, y es peor para esta app: **es
+ * la del error de un modelo espacial.**
+ *
+ * ## La lápida de `prodForrajera`, y es una cita
+ *
+ * La Figura 2 del mismo trabajo publica dos rectas de ANPP contra lluvia anual:
+ *
+ * | modelo | ecuación | qué cambia entre sus puntos |
+ * |---|---|---|
+ * | regional, Sala et al. (1988) | `ANPP = −34 + 0,60 × P` | el sitio entero |
+ * | largo plazo, CPER, 50 años | `ANPP = 56 + 0,13 × P` | sólo el año |
+ *
+ * **La pendiente del modelo espacial es 4,6 veces la del mismo sitio seguido medio
+ * siglo.** Y el trabajo dice qué consecuencia tiene: «These vegetation structure
+ * constraints on ANPP explain why, under dry conditions, the regional model
+ * underestimates ANPP and under wet conditions, overestimates ANPP». A la lluvia
+ * máxima observada en el CPER el regional predice **300 g/m² y el de largo plazo
+ * 130**, una diferencia que el artículo reporta como significativa.
+ *
+ * `prodForrajera` es un modelo espacial: sus escalones salen de comparar lugares.
+ * Y con esos mismos 588 mm **devuelve 3.000 kg MS/ha, que son 300 g/m²**: cae
+ * sobre la predicción regional, que es la que este trabajo midió como demasiado
+ * alta para ese campo. No es mérito ni casualidad del cálculo, es lo que le pasa a
+ * cualquier función que intercambie espacio por tiempo, y el artículo lo llama
+ * «a weakness of exchanging space for time in predicting production patterns».
+ *
+ * Sobre los cincuenta años, la escalera **se pasa en 35 de 50**, con una mediana
+ * de 1,27 veces y un peor año de 2,62. Lo que está mal no es dónde están los
+ * escalones: es que la pendiente de la familia a la que pertenece es cuatro veces
+ * y media la que mide un campo real.
+ *
+ * ## Y una trampa de unidades que casi me come
+ *
+ * La Tabla 1 publica dos columnas de producción: forraje en **aire-seco** y ANPP
+ * en **estufa-seco**. La conversión que da el trabajo no es un factor: es
+ * `ANPP = 46 + 0,76 × forraje`, con ordenada al origen de 46 g/m². El cociente
+ * entre las dos columnas va de **2,85 en el año más flaco a 1,12 en el más
+ * gordo**, así que elegir la columna equivocada no escala la serie: **le cambia la
+ * forma**, que es justamente lo que se está midiendo. La entrada montada usa la de
+ * estufa. Y esa recta es lo más flojo del trabajo, que lo declara: r² = 0,28 sobre
+ * catorce años, «the most important assumption for this analysis».
+ *
  * ## Qué NO hace este archivo todavía
  *
  * **Estas mediciones siguen sin entrar en la cuenta, y el motivo cambió.** Antes
@@ -768,6 +842,38 @@ export type Insumos =
    */
   | 'desconocido';
 
+/**
+ * Qué es, exactamente, el número que hay en `lluvia_mm_min` y `lluvia_mm_max`.
+ *
+ * Lo agregó el lote 15 y lo pidieron tres tests de este módulo que se
+ * contradijeron entre sí en cuanto entró una serie de cincuenta años. El campo de
+ * lluvia guardaba **cinco cosas distintas** y nada en el código las separaba:
+ *
+ * - `anio_medido` — la lluvia del año o los años en que se cosechó. Es la que
+ *   explica la cifra de producción que está al lado.
+ * - `rango_de_anios` — las puntas observadas en una serie larga del mismo lugar.
+ *   **No es un sitio seco y un sitio húmedo: es el mismo sitio en años distintos.**
+ * - `rango_de_sitios` — el ancho entre los sub-sitios que la cifra promedia. En
+ *   Puno son dos estaciones separadas por 400 m de altura.
+ * - `normal_publicada` — una media de largo plazo o el rango climático que publica
+ *   la ficha de la región. No es lo que llovió cuando se midió.
+ * - `agua_de_riego` — **no es lluvia.** La alfalfa de Curacó recibió 1.300 mm por
+ *   melgas y ese número vive en el campo de lluvia porque es el agua que recibió
+ *   el cultivo. Estaba dicho en un comentario y era invisible para cualquier test.
+ *
+ * Y es `null` exactamente cuando la lluvia es `null`.
+ *
+ * **Qué se rompe si esto se ignora:** comparar sitios por lluvia sin mirar este
+ * campo compara un año seco de una serie contra la normal de otro lugar, o le pasa
+ * agua de riego a un modelo de precipitación.
+ */
+export type QueEsLaLluvia =
+  | 'anio_medido'
+  | 'rango_de_anios'
+  | 'rango_de_sitios'
+  | 'normal_publicada'
+  | 'agua_de_riego';
+
 export interface MedicionForraje {
   /** Bioma global de RESOLVE al que pertenece el sitio medido. */
   bioma: string;
@@ -828,6 +934,8 @@ export interface MedicionForraje {
    */
   lluvia_mm_min: number | null;
   lluvia_mm_max: number | null;
+  /** Qué clase de número es ese par. `null` sólo si la lluvia es `null`. */
+  lluvia_que_es: QueEsLaLluvia | null;
   /**
    * Temperatura media anual del sitio, °C, **sólo si la fuente la publica como
    * media anual.**
@@ -857,20 +965,24 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son **dieciséis sitios en ocho de los quince biomas** de RESOLVE, al 18/10/2026.
- * No son un modelo: son los puntos que hay. Cuatro de los dieciséis son
- * sotobosque de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
+ * Son **diecisiete sitios en ocho de los quince biomas** de RESOLVE, al
+ * 20/10/2026. No son un modelo: son los puntos que hay. Cuatro de los diecisiete
+ * son sotobosque de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
  * `ms_sotobosque`. Cada uno declara además su `clase_wc`, su `coordenada` y sus
  * `insumos`, que es de donde `cobertura.ts` saca la banda de cada clase de
  * cobertura.
  *
- * **Doce de los dieciséis alimentan una banda, y los cuatro que no lo hacen son
+ * **Doce de los diecisiete alimentan una banda, y los cinco que no lo hacen son
  * más interesantes que los doce.** Siete están en la clase 30, uno en la 20,
  * cuatro en la 10. Afuera quedan: dos cultivos, porque uno está fertilizado y el
- * otro regado; la sabana de Calabozo, porque sus `insumos` son `desconocido`; y
- * la estepa de Río Mayo, porque su `clase_wc` es `null`. Las cuatro exclusiones
- * las hace un filtro y no un juicio, que es la única forma de que sigan
- * valiendo cuando nadie se acuerde de por qué están.
+ * otro regado; la sabana de Calabozo y la estepa de pasto corto del CPER, porque
+ * sus `insumos` son `desconocido`; y la estepa de Río Mayo, porque su `clase_wc`
+ * es `null`. Las cinco exclusiones las hace un filtro y no un juicio, que es la
+ * única forma de que sigan valiendo cuando nadie se acuerde de por qué están.
+ *
+ * El diecisiete trae algo que los otros dieciséis no: **cincuenta años del mismo
+ * campo**, en `SERIE_CPER`. Es lo único de este archivo con lo que se puede
+ * evaluar una función de la lluvia sin cambiar de sitio en cada punto.
  *
  * Manitou aparece dos veces y es deliberado: las parcelas bajo dosel y las
  * aberturas del mismo bosque, el mismo día y con el mismo método, difieren 13
@@ -896,6 +1008,9 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 381,
     lluvia_mm_max: 508,
+    // 15 a 20 pulgadas: es el rango climático que publica la MLRA, no lo que
+    // llovió en el año de la medición.
+    lluvia_que_es: 'normal_publicada',
     temp_media_c_anual: null,
     metodo: 'Producción anual de las comunidades de referencia de las fichas de sitio ecológico correlacionadas con la clase, en el informe CEAP de pastizales del NRCS.',
     que_cuenta: 'Producción anual aérea en peso seco de la comunidad herbácea. No descuenta palatabilidad, acceso ni pisoteo.',
@@ -927,6 +1042,9 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: 2062,
     lluvia_mm_min: 508,
     lluvia_mm_max: 762,
+    // La tabla climática de la ficha, que además se contradice con el nombre
+    // del sitio. No es la lluvia de un año medido.
+    lluvia_que_es: 'normal_publicada',
     temp_media_c_anual: null,
     metodo: 'Tabla de producción anual por tipo de planta de la ficha de sitio ecológico, comunidad de referencia 1.1 (pradera de gramíneas medias).',
     que_cuenta: 'Gramíneas, graminoides y hierbas. Excluye arbustos y árboles, que la ficha cuenta aparte. No descuenta palatabilidad ni acceso.',
@@ -958,6 +1076,9 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 410,
     lluvia_mm_max: 1119,
+    // No es un rango de años: son las dos estaciones, separadas por 400 m de
+    // altura. El 1.119 es de La Raya y el 410 de Chuquibambilla.
+    lluvia_que_es: 'rango_de_sitios',
     temp_media_c_anual: null,
     metodo: 'Seis cosechas mensuales (diciembre a mayo) dentro de una clausura sin pastoreo de 2.500 m2, en dos bloques de 361 m2, con 30 unidades de muestreo por época, marco de 0,5 m2, corte a 2 cm y secado en estufa a 65 °C hasta peso constante.',
     que_cuenta: 'Materia seca aérea ANUAL del espectro total de especies del pastizal, separada de la biomasa permanente. Al estar dentro de clausura no descuenta consumo ni pisoteo.',
@@ -1004,6 +1125,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // mm. La normal del lugar es mucho más angosta y va en `donde_deja_de_valer`.
     lluvia_mm_min: 354,
     lluvia_mm_max: 797,
+    lluvia_que_es: 'anio_medido',
     temp_media_c_anual: null,
     metodo: 'Jaulas de exclusión de malla 1 × 1,2 cm sobre 0,25 m2 y 0,7 m de alto, puestas en octubre, diciembre y marzo y cosechadas a ras entre fines de mayo y principios de junio; secado a 60 °C por 24 h. La productividad del potrero es la biomasa de la jaula multiplicada por el porcentaje de cobertura herbácea de ese potrero, promediada entre estaciones de muestreo.',
     que_cuenta: 'Herbáceas solamente, y por construcción: las estaciones de muestreo se eligieron sin suelo desnudo, sin piedras y sin vegetación perenne. NO cuenta el Sarcopoterium spinosum ni el Asphodelus ramosus, que cubren buena parte de estos potreros y que la majada sí ramonea en parte. No descuenta uso.',
@@ -1035,6 +1157,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // agua tampoco es lo que limita: limitan el frío y el largo del verano.
     lluvia_mm_min: null,
     lluvia_mm_max: null,
+    lluvia_que_es: null,
     temp_media_c_anual: null,
     metodo: 'Componentes de fitomasa y tasas de producción primaria en cuatro comunidades de pajonal de algodoncillo; recambio aéreo medido con bolsas de hojarasca. De este trabajo sólo se pudo leer el resumen del editor: el texto completo está detrás de una verificación anti-bot, así que el método primario no se verificó más allá de lo que el resumen declara.',
     que_cuenta: 'Producción primaria anual de las plantas vasculares AÉREAS. Excluye musgos y líquenes, que el mismo resumen cuantifica aparte —28 a 116 g/m2/año de musgo y 1 a 5 de liquen— y que en tundra son parte del forraje real del reno y del caribú, sobre todo en invierno. Para pastoreo de renos esta cifra es un piso y no el total.',
@@ -1074,6 +1197,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // la primavera, y un invierno de 2013 con apenas 50 mm.
     lluvia_mm_min: 1056,
     lluvia_mm_max: 1056,
+    lluvia_que_es: 'normal_publicada',
     temp_media_c_anual: null,
     metodo: 'Tres clausuras de 4 × 4 m separadas unos 20 m, con boyero a 30 y 70 cm, cada una dividida en dos tratamientos: cortes bimestrales de la vegetación a 7 cm de altura y sin cortes. Afuera, pastoreo continuo con alta carga. Se muestreó por estación agronómica cortando con tijera de podar el material arraigado dentro de un aro, dejando 7 cm de remanente; secado en estufa a 65 °C hasta peso constante y pesado con precisión de ±1 g. La tasa de crecimiento se calculó por diferencia de forraje disponible entre corte y corte. El área del aro de muestreo NO está indicada en el texto de la tesis, así que la conversión a kg/ha no se puede recalcular desde acá.',
     que_cuenta: 'Materia seca VIVA de las especies forrajeras, cosechada por encima de los 7 cm. No incluye las no forrajeras —en este pastizal degradado el abrojo grande, Xanthium cavallinesii, es el que más crece en verano—, ni la materia seca muerta, ni nada por debajo de la altura de corte, ni raíces. No descuenta uso admisible. La MS viva total del MISMO muestreo —la que sí suma las no forrajeras— da 10.533 kg/ha, así que la fracción forrajera de esa cosecha es 0,639; ver `FRACCION_COMIBLE`. El rango de 11.200 a 11.400 kg/ha que publica la conclusión de la tesis es otra cosa y por partida doble: es el total del período primavera-verano-otoño, no de una cosecha, e incluye la materia seca muerta.',
@@ -1109,6 +1233,8 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: 6692,
     lluvia_mm_min: 580,
     lluvia_mm_max: 580,
+    // Media anual publicada por la ficha, no el total del año cosechado.
+    lluvia_que_es: 'normal_publicada',
     temp_media_c_anual: 15.1,
     metodo: 'Clausura de 1 ha en bloques aleatorizados. El día 15 de cada mes se cortaron 20 cuadrantes de 0,25 × 1,0 m a nivel del suelo, separando material vivo de material muerto, y se muestreó también la biomasa subterránea. La NPP anual se calculó con el «método #5» de la publicación asociada. Serie mensual de junio de 1984 a diciembre de 1994, con dos huecos declarados: febrero y marzo de 1986, cuando el incendio se llevó los datos, y de enero a septiembre de 1991, sin explicación.',
     que_cuenta: 'Materia seca AÉREA de un pastizal casi puro de Distichlis spicata var. mexicana, vivo más muerto, sin separar especies forrajeras de las que no lo son. La ficha publica además las otras dos piezas, y las dos importan: la NPP subterránea es de 1.007 g/m²/año, MAYOR que la aérea, y la NPP total de 1.676 g/m²/año, que la propia ficha califica de «high relative to many previous studies in semi-arid tropical grasslands».',
@@ -1136,6 +1262,9 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 541,
     lluvia_mm_max: 615,
+    // Las dos temporadas medidas, 2010 y 2011. Es lo que se deduce del propio
+    // alcance de la entrada; no volví a la fuente a confirmar cuál es cuál.
+    lluvia_que_es: 'anio_medido',
     temp_media_c_anual: 8.8,
     metodo: 'Sitio de 12 ha, dos temporadas de crecimiento (2010 y 2011). Se cosechó la capa herbácea de 7 a 10 marcos cuadrados de 0,6 × 0,6 m, todas las semanas en abril y mayo y cada dos semanas el resto de la temporada. Sobre ESAS cosechas se calcularon seis estimaciones de producción anual con seis algoritmos distintos: 1) el máximo de biomasa en pie del año, 2) la suma de las diferencias positivas entre cosechas sucesivas, 3) la suma de los máximos de cada especie, 4) y 5) biomasa de brote por densidad de brotes, al máximo de biomasa y al máximo de densidad, y 6) al máximo del producto.',
     que_cuenta: 'Toda la biomasa aérea de las plantas herbáceas del sotobosque, cortada al nivel del suelo. No incluye árboles, ni arbustos, ni raíces, y la fuente NO la define como forraje: es la capa herbácea de un bosque cerrado, que es lo máximo que podría comer un animal ahí adentro.',
@@ -1164,6 +1293,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // porque un extremo de transecto no es la lluvia medida del punto.
     lluvia_mm_min: null,
     lluvia_mm_max: null,
+    lluvia_que_es: null,
     temp_media_c_anual: null,
     metodo: 'Proyecto OTTER (Oregon Transect Ecosystem Research), campañas de 1989 a 1991. La ficha define la columna `ANPP_herb` como «above-ground net primary production of dominant herb species» y la publica en g/m²/año junto con la cobertura herbácea del rodal; arbustos y hierbas se cosecharon al final de la estación de crecimiento, antes de la caída de hojarasca. El método primario está en Law y Waring (1994) y no se detalla en la ficha.',
     que_cuenta: 'Producción aérea de las especies herbáceas DOMINANTES del sotobosque, con 35,2 % de cobertura herbácea, bajo un rodal de Alnus rubra con índice de área foliar 4,3. La misma ficha publica la NPP total del rodal, 1.630 g/m²/año, y ésa es la comparación que importa: la capa herbácea es el 2,5 % de lo que produce el rodal.',
@@ -1194,6 +1324,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: 60,
     lluvia_mm_min: null,
     lluvia_mm_max: null,
+    lluvia_que_es: null,
     temp_media_c_anual: 11.2,
     metodo: 'Proyecto OTTER, campañas de 1989 a 1991; misma definición y mismo método que Cascade Head, con la cosecha al final de la estación de crecimiento. `ANPP_herb` = 6 g/m²/año, con 4,9 % de cobertura herbácea.',
     que_cuenta: 'Producción aérea de las especies herbáceas dominantes bajo un rodal de Pseudotsuga menziesii de 47.120 g/m² de biomasa arbórea. La NPP total del rodal, publicada en la misma tabla, es de 1.540 g/m²/año: la capa herbácea es el 0,4 % de eso. Y la cobertura herbácea explica el salto contra Cascade Head mejor que cualquier otra variable: 4,9 % contra 35,2 % de cobertura dan 6 contra 41 g/m²/año, o sea que las dos razones son casi la misma.',
@@ -1228,6 +1359,8 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // otras publicaciones del sitio dan 368 y 432.
     lluvia_mm_min: 396,
     lluvia_mm_max: 396,
+    // Media de 65 años de la estación, no el año de la cosecha.
+    lluvia_que_es: 'normal_publicada',
     // «Aproximadamente 5 °C», y no lo publica la tesis sino otra publicación del
     // Servicio Forestal sobre la misma estación (Massman et al. 2004). Entra
     // porque el contraste no es sensible: con 396 mm la lluvia limita el Miami
@@ -1259,6 +1392,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     kg_ms_ha_anio_tipico: null,
     lluvia_mm_min: 396,
     lluvia_mm_max: 396,
+    lluvia_que_es: 'normal_publicada',
     temp_media_c_anual: 5,
     metodo: 'Las mismas parcelas, el mismo día y el mismo doble muestreo que la entrada anterior: lo único que cambia es que acá la densidad de copa es 0 %. Peak standing crop de agosto de 1972.',
     que_cuenta: 'Igual que bajo dosel: gramíneas, hierbas y arbustos bajos, sin separar forrajeras de no forrajeras y sin descontar uso.',
@@ -1293,6 +1427,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // septiembre.
     lluvia_mm_min: 984,
     lluvia_mm_max: 984,
+    lluvia_que_es: 'anio_medido',
     // Promedio de las doce medias mensuales del mismo cuadro. Es una media anual
     // legítima —no un máximo promediado con un mínimo, que es lo que prohíbe la
     // regla— pero es la del año medido y no la normal.
@@ -1328,6 +1463,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // la puso el hombre. La lluvia del lugar no la publica la fuente.
     lluvia_mm_min: 1300,
     lluvia_mm_max: 1300,
+    lluvia_que_es: 'agua_de_riego',
     temp_media_c_anual: null,
     metodo: 'Diez cultivares de distinto grado de reposo invernal en bloques aleatorizados con cuatro repeticiones, parcelas de 6 m² (1 × 6 m) con cinco surcos a 0,20 m, implantadas el 11/04/2013. Cortes al 10 % de floración o cuando los rebrotes de corona llegaban a unos 5 cm: cinco cortes, el 06/11/2013, 29/11/2013, 04/02/2014, 25/03/2014 y 05/05/2014. La cifra anual es la suma de los cinco. Diferencias por LSD de Fisher p<0,05; no publica error estándar.',
     que_cuenta: 'Materia seca aérea cosechada de una alfalfa implantada, que es un cultivo puro de una especie forrajera: a diferencia de un pastizal natural, acá no hay fracción no forrajera que descontar. No es consumo y no es campo natural.',
@@ -1378,6 +1514,8 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // la propia Estación Biológica.
     lluvia_mm_min: 1257,
     lluvia_mm_max: 1257,
+    // Media 1968-1986, no el total de 1969, que es el año de la cifra.
+    lluvia_que_es: 'normal_publicada',
     // La ficha publica «mean annual minimum-maximum temperatures of 22.0-36.0 C»,
     // que son la mínima y la máxima y NO promedian a la media anual. Es el mismo
     // caso que documenta `temp_media_c_anual`, y van tres fichas del ORNL así.
@@ -1428,6 +1566,7 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     // bastante menor y va en `donde_deja_de_valer`.
     lluvia_mm_min: 191,
     lluvia_mm_max: 191,
+    lluvia_que_es: 'anio_medido',
     temp_media_c_anual: null,
     metodo: 'Cinco cosechas entre mayo de 1984 y mayo de 1985 para la capa de gramíneas, sumando los incrementos positivos de biomasa viva más el material muerto reciente (método 7a de Singh et al. 1975), sobre veinte parcelas de 0,2 × 5,0 m por fecha. Los arbustos, por doble muestreo: cosecha del crecimiento anual, dimensiones de la planta y densidad, con la copa aproximada a una semiesfera, sobre cuatro transectos de unos 100 individuos.',
     que_cuenta: 'Producción primaria neta aérea ANUAL de la capa de gramíneas, agrupadas. No incluye los arbustos, que el mismo trabajo publica aparte —26 g/m²/año, de donde sale la fracción herbácea de 0,671 en `FRACCION_HERBACEA_DEL_SITIO`—, ni las hierbas de hoja ancha, que cubren menos del 1 % y quedaron excluidas. No descuenta uso admisible.',
@@ -1437,6 +1576,52 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
     fuente: {
       label: 'Fernández-A., R. J., Sala, O. E. y Golluscio, R. A. (1991) — «Woody and herbaceous aboveground production of a Patagonian steppe», Journal of Range Management 44(5):434-437, DOI 10.2307/4002739',
       url: 'https://hdl.handle.net/10150/644811',
+    },
+  },
+  {
+    // Cincuenta años de un solo sitio, que es lo que esta cadena nunca había
+    // tenido. Lo que la serie le hace a `prodForrajera` está en `SERIE_CPER` y
+    // en la sección «Cincuenta años de un solo sitio» del encabezado.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Central Plains Experimental Range, estepa de pasto corto, Colorado',
+    // Al minuto de arco, como Río Mayo. La guía del ORNL del mismo sitio publica
+    // además 40,82 / −104,77, que es el mismo punto en centésimas.
+    coordenada: '40°49′ N, 104°46′ W (al minuto; la guía del ORNL da 40,82 N / 104,77 W)',
+    // Clase 30, y es la asignación más limpia del archivo: **100 % de píxeles de
+    // pastizal** en las tres ventanas y con las dos coordenadas publicadas. Es el
+    // contraste exacto de Río Mayo, donde la clase se daba vuelta con la escala;
+    // el criterio de estabilidad del lote 14 funciona en las dos direcciones.
+    clase_wc: 30,
+    // El trabajo no dice nada de fertilización ni de riego, y por la regla del
+    // lote 14 el silencio no se traduce a `secano`. Acá además no cuesta nada:
+    // 620 a 1.430 cae adentro de la banda de la clase 30, así que ser estricto
+    // no cambia ningún número, sólo el recuento de sitios. Lo que sí dice el
+    // trabajo, y es más grave que los insumos, está en `donde_deja_de_valer`.
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // Columna ANPP_OD de la Tabla 1, en estufa-seco: 62 el año más flaco (1954),
+    // 143 el más gordo (1981), 97 de media de los 50 años. **No es la columna de
+    // forraje**, que está en aire-seco y da 22, 128 y 66: mezclarlas sería montar
+    // masa con humedad como si fuera materia seca. Ver `ECUACION_FORRAJE_A_ANPP`.
+    kg_ms_ha_anio_min: 620,
+    kg_ms_ha_anio_max: 1430,
+    kg_ms_ha_anio_tipico: 970,
+    // El rango OBSERVADO en los 52 años, no una normal: 107 mm en 1964 y 588 en
+    // 1967. Es el rango de lluvia más ancho del archivo, y es de un solo sitio.
+    lluvia_mm_min: 107,
+    lluvia_mm_max: 588,
+    lluvia_que_es: 'rango_de_anios',
+    // «Annual temperature averaged 8.6 ± 0.6 °C over the same time period».
+    // Media anual de verdad, así que se puede contrastar con el Miami Model.
+    temp_media_c_anual: 8.6,
+    metodo: 'Cosecha de biomasa aérea viva y muerta adherida de gramíneas, ciperáceas y hierbas en cuadrantes de 0,19 m² (2 pie²) al final de la estación de crecimiento, todos los años de 1939 a 1990 salvo 1940 y 1980. Opuntia polyacantha NO se cosechó. Los años 1969 a 1972 se estimaron visualmente sin cosechar. Las masas se publican en AIRE-SECO y la columna de ANPP en estufa-seco se obtiene con la ecuación 1 del trabajo, ANPP = 46 + 0,76 × forraje, ajustada sobre los 14 años en que había las dos estimaciones.',
+    que_cuenta: 'Estimación de producción primaria neta aérea de la capa herbácea, derivada del pico de materia seca al final de la estación. El propio trabajo justifica el método: «This method has been shown to provide good estimates of aboveground net primary production (ANPP) for ecosystems such as the shortgrass steppe in which the species that account for the majority of production have similar phenologies». Bouteloua gracilis es el 90 % de la cobertura basal y de la producción. No cuenta el cactus, no cuenta raíces y no descuenta uso admisible.',
+    estacionalidad: 'Una cosecha al final de la estación de crecimiento, así que la serie no publica curva mensual. Los máximos de lluvia y de temperatura son junio, julio y agosto; los mínimos, diciembre, enero y febrero.',
+    donde_deja_de_valer: 'La advertencia más importante no es el clima: **las ubicaciones muestreadas cambian de año en año y tienen historias de pastoreo distintas**, y el número de ubicaciones va de 3 en 1967 a 35 en 1977, con 11 de promedio. Cada cifra anual es un promedio sobre las parcelas que se muestrearon ESE año. El trabajo lo declara: «While the lack of identical sampling locations and number of locations from year to year limits the utility of the data set for some purposes, it nevertheless is valuable for an analysis of the relationship between precipitation and forage production». Por eso la serie sirve para la relación lluvia-producción y NO para comparar un año contra otro como si fuera la misma parcela. Segunda advertencia, del propio trabajo: «The most important assumption for this analysis is that the estimates of forage production (air-dry basis) for each year are proportional to ANPP (oven-dry basis)», y esa proporcionalidad se ajustó con r² = 0,28 sobre 14 años. La media de lluvia de los 52 años es 321 ± 98 mm; el rango de este campo es el observado y no una normal.',
+    medido_en: '1939 a 1990, todos los años salvo 1940 y 1980',
+    fuente: {
+      label: 'Lauenroth, W. K. y Sala, O. E. (1992) — «Long-term forage production of North American shortgrass steppe», Ecological Applications 2(4):397-403, Tabla 1 y Figura 2',
+      url: 'https://api.mountainscholar.org/server/api/core/bitstreams/8949c8af-f20c-47b4-a9e6-57ba814210c1/content',
     },
   },
 ] as const;
@@ -1899,6 +2084,226 @@ export function fraccionDelOfrecido(t: { consumo_pct_pv: number; ofrecido_pct_pv
 }
 
 /** Las mediciones que hay para un bioma global. Vacío es «no hay», y es común. */
+/**
+ * Un año de la serie más larga que tiene este archivo.
+ *
+ * `forraje_aire_seco` está en g/m²/año y **en aire-seco**, que es como lo publica
+ * la fuente; para pasarlo a materia seca de estufa hay que usar
+ * `ECUACION_FORRAJE_A_ANPP`, que no es un factor sino una recta con ordenada.
+ *
+ * `ubicaciones` es cuántos lugares del campo se muestrearon ese año, y no es un
+ * detalle: **no son los mismos todos los años, y tienen historias de pastoreo
+ * distintas**. Va en la estructura para que nadie lea un año contra otro como si
+ * fuera la misma parcela.
+ */
+export interface AnioCPER {
+  anio: number;
+  /** Precipitación anual medida ese año, mm. */
+  lluvia_mm: number;
+  /** Producción forrajera, g/m²/año, AIRE-SECO. */
+  forraje_aire_seco: number;
+  /** Desvío estándar entre las ubicaciones muestreadas ese año. */
+  sd: number;
+  /** Cuántas ubicaciones se muestrearon ese año: de 3 a 35. */
+  ubicaciones: number;
+}
+
+/**
+ * Cincuenta años de lluvia y producción en el mismo campo.
+ *
+ * Central Plains Experimental Range, estepa de pasto corto del norte de Colorado,
+ * 1939 a 1990 salvo 1940 y 1980, de Lauenroth y Sala (1992), Tabla 1.
+ *
+ * **Para qué está acá.** Todo lo demás en este archivo es un punto: un sitio, un
+ * año o dos, una cifra. `prodForrajera` es una función de la lluvia, y con puntos
+ * de sitios distintos no se la puede evaluar, porque cada sitio cambia a la vez la
+ * lluvia y todo lo demás. Cincuenta años del mismo campo cambian la lluvia y dejan
+ * casi todo lo demás quieto, que es el experimento que hacía falta.
+ *
+ * **Qué dice.** La lluvia anual explica el **39 %** de la variación de la
+ * producción en este sitio, y la ecuación publicada es
+ * `Forraje = 13 + 0,172 × lluvia` (F = 30,83; gl = 1,48; P < 0,001; r² = 0,39).
+ * El test de este módulo la vuelve a ajustar desde estas cincuenta filas por
+ * cuadrados mínimos: si alguien toca un año, los coeficientes dejan de dar.
+ *
+ * **Lo que NO dice, y lo aclaro porque el lote 14 dejó escrito lo contrario.** La
+ * estepa de Río Mayo sugería que la respuesta a la lluvia es asimétrica —la sequía
+ * baja la producción y la lluvia de más no la sube—. Con cincuenta años eso **no
+ * se replica**: agrupando por años secos, normales y húmedos, los secos caen un
+ * 30 % y los húmedos suben un 30 %. La asimetría de Río Mayo sale de cinco años
+ * con dos métodos distintos y no se puede generalizar. La asimetría que sí está
+ * publicada es otra, y es la del ERROR de un modelo espacial: ver
+ * `MODELO_REGIONAL_SALA_1988`.
+ *
+ * **Lo que explica el otro 61 %.** Dos cosas que el trabajo nombra. La primera es
+ * el tamaño de los eventos de lluvia: un modelo con los cuatro rangos de tamaño
+ * llega a r² = 0,45, y los eventos de 15 a 30 mm solos ya dan 0,33, porque son los
+ * que mojan las capas de suelo que mandan en la producción. La segunda es el
+ * retardo: 1954 y 1964 fueron sequías extremas, y los años siguientes llovió
+ * normal —328 y 371 mm— y la producción siguió baja, 32 y 48 g/m². **La
+ * producción de un año depende del estado en que la dejó el anterior**, y una
+ * función de la lluvia del año no tiene dónde guardar eso.
+ *
+ * **Rango de validez.** Un sitio, dominado al 90 % por *Bouteloua gracilis*, con
+ * 321 ± 98 mm de lluvia media. Las ubicaciones cambian año a año: sirve para la
+ * relación lluvia-producción y no para comparar un año contra otro.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto. Es la evidencia de por qué
+ * `prodForrajera` tiene que cambiar y de en qué dirección.
+ */
+export const SERIE_CPER: readonly AnioCPER[] = [
+  { anio: 1939, lluvia_mm: 117, forraje_aire_seco:  50, sd:  12.1, ubicaciones: 11 },
+  { anio: 1941, lluvia_mm: 325, forraje_aire_seco:  74, sd:  11.3, ubicaciones: 10 },
+  { anio: 1942, lluvia_mm: 371, forraje_aire_seco: 123, sd:  33.3, ubicaciones:  7 },
+  { anio: 1943, lluvia_mm: 490, forraje_aire_seco: 123, sd:  32.6, ubicaciones: 13 },
+  { anio: 1944, lluvia_mm: 205, forraje_aire_seco:  75, sd:  24.2, ubicaciones:  7 },
+  { anio: 1945, lluvia_mm: 288, forraje_aire_seco:  66, sd:  19.5, ubicaciones:  7 },
+  { anio: 1946, lluvia_mm: 296, forraje_aire_seco:  67, sd:  15.2, ubicaciones:  9 },
+  { anio: 1947, lluvia_mm: 338, forraje_aire_seco:  96, sd:  25.9, ubicaciones:  9 },
+  { anio: 1948, lluvia_mm: 193, forraje_aire_seco:  50, sd:  14.5, ubicaciones: 10 },
+  { anio: 1949, lluvia_mm: 341, forraje_aire_seco:  82, sd:  13.4, ubicaciones:  8 },
+  { anio: 1950, lluvia_mm: 299, forraje_aire_seco:  54, sd:  20.7, ubicaciones: 18 },
+  { anio: 1951, lluvia_mm: 330, forraje_aire_seco:  70, sd:  16.9, ubicaciones: 13 },
+  { anio: 1952, lluvia_mm: 353, forraje_aire_seco:  95, sd:  24.8, ubicaciones:  5 },
+  { anio: 1953, lluvia_mm: 301, forraje_aire_seco:  73, sd:  13.6, ubicaciones:  8 },
+  { anio: 1954, lluvia_mm: 122, forraje_aire_seco:  22, sd:   4.3, ubicaciones:  6 },
+  { anio: 1955, lluvia_mm: 328, forraje_aire_seco:  32, sd:   4.8, ubicaciones:  4 },
+  { anio: 1956, lluvia_mm: 244, forraje_aire_seco:  50, sd:  13.0, ubicaciones:  4 },
+  { anio: 1957, lluvia_mm: 415, forraje_aire_seco:  64, sd:  23.7, ubicaciones: 19 },
+  { anio: 1958, lluvia_mm: 331, forraje_aire_seco:  77, sd:  20.7, ubicaciones: 19 },
+  { anio: 1959, lluvia_mm: 307, forraje_aire_seco:  83, sd:  13.5, ubicaciones: 10 },
+  { anio: 1960, lluvia_mm: 175, forraje_aire_seco:  57, sd:   8.1, ubicaciones: 14 },
+  { anio: 1961, lluvia_mm: 404, forraje_aire_seco:  76, sd:  16.5, ubicaciones: 10 },
+  { anio: 1962, lluvia_mm: 399, forraje_aire_seco:  81, sd:  16.3, ubicaciones: 10 },
+  { anio: 1963, lluvia_mm: 338, forraje_aire_seco:  80, sd:  12.3, ubicaciones:  6 },
+  { anio: 1964, lluvia_mm: 107, forraje_aire_seco:  25, sd:   4.4, ubicaciones:  6 },
+  { anio: 1965, lluvia_mm: 371, forraje_aire_seco:  48, sd:  12.2, ubicaciones:  6 },
+  { anio: 1966, lluvia_mm: 292, forraje_aire_seco:  49, sd:  11.9, ubicaciones:  6 },
+  { anio: 1967, lluvia_mm: 588, forraje_aire_seco:  90, sd:  12.4, ubicaciones:  3 },
+  { anio: 1968, lluvia_mm: 333, forraje_aire_seco:  77, sd:  26.0, ubicaciones:  6 },
+  { anio: 1969, lluvia_mm: 417, forraje_aire_seco:  86, sd:  25.1, ubicaciones:  5 },
+  { anio: 1970, lluvia_mm: 242, forraje_aire_seco:  72, sd:  18.7, ubicaciones:  6 },
+  { anio: 1971, lluvia_mm: 262, forraje_aire_seco:  73, sd:   8.4, ubicaciones:  6 },
+  { anio: 1972, lluvia_mm: 374, forraje_aire_seco:  24, sd:   4.4, ubicaciones:  7 },
+  { anio: 1973, lluvia_mm: 275, forraje_aire_seco:  68, sd:  14.8, ubicaciones: 16 },
+  { anio: 1974, lluvia_mm: 268, forraje_aire_seco:  22, sd:   5.7, ubicaciones: 13 },
+  { anio: 1975, lluvia_mm: 324, forraje_aire_seco:  63, sd:  20.7, ubicaciones: 31 },
+  { anio: 1976, lluvia_mm: 261, forraje_aire_seco:  44, sd:  12.0, ubicaciones: 28 },
+  { anio: 1977, lluvia_mm: 248, forraje_aire_seco:  27, sd:   9.1, ubicaciones: 35 },
+  { anio: 1978, lluvia_mm: 292, forraje_aire_seco:  37, sd:  16.2, ubicaciones: 30 },
+  { anio: 1979, lluvia_mm: 494, forraje_aire_seco:  88, sd:  28.6, ubicaciones: 22 },
+  { anio: 1981, lluvia_mm: 397, forraje_aire_seco: 128, sd:  50.4, ubicaciones: 16 },
+  { anio: 1982, lluvia_mm: 475, forraje_aire_seco: 117, sd:  17.7, ubicaciones: 12 },
+  { anio: 1983, lluvia_mm: 428, forraje_aire_seco:  91, sd:  29.5, ubicaciones: 16 },
+  { anio: 1984, lluvia_mm: 407, forraje_aire_seco: 103, sd:  37.4, ubicaciones:  8 },
+  { anio: 1985, lluvia_mm: 321, forraje_aire_seco:  84, sd:  10.7, ubicaciones:  8 },
+  { anio: 1986, lluvia_mm: 265, forraje_aire_seco:  55, sd:   5.1, ubicaciones:  3 },
+  { anio: 1987, lluvia_mm: 332, forraje_aire_seco:  63, sd:   4.8, ubicaciones:  8 },
+  { anio: 1988, lluvia_mm: 335, forraje_aire_seco:  57, sd:   6.8, ubicaciones:  8 },
+  { anio: 1989, lluvia_mm: 300, forraje_aire_seco:  55, sd:   5.7, ubicaciones:  6 },
+  { anio: 1990, lluvia_mm: 357, forraje_aire_seco:  58, sd:   4.7, ubicaciones:  6 },
+] as const;
+
+/**
+ * Cómo se pasa del forraje aire-seco de la serie a ANPP de estufa.
+ *
+ * Ecuación 1 de Lauenroth y Sala (1992): `ANPP = 46 + 0,76 × forraje`.
+ *
+ * **No es un factor, es una recta con ordenada al origen de 46 g/m².** La
+ * consecuencia importa: el cociente ANPP/forraje va de **2,85** en el año más
+ * flaco de la serie a **1,12** en el más gordo. Elegir la columna equivocada no
+ * escala la serie, le cambia la forma, y por eso la entrada montada usa la de
+ * estufa y lo dice.
+ *
+ * Y la recta es lo más débil del trabajo, que lo declara: se ajustó sobre los 14
+ * años en que había las dos estimaciones, con **r² = 0,28**. El propio artículo la
+ * llama «the most important assumption for this analysis».
+ */
+export const ECUACION_FORRAJE_A_ANPP = {
+  ORDENADA: 46,
+  PENDIENTE: 0.76,
+  R2: 0.28,
+  ANIOS_DEL_AJUSTE: 14,
+  FUENTE: 'Lauenroth y Sala (1992), ecuación 1',
+} as const;
+
+/** Forraje aire-seco (g/m²/año) → ANPP de estufa (g/m²/año). */
+export function anppDeForraje(forraje_aire_seco: number): number {
+  return ECUACION_FORRAJE_A_ANPP.ORDENADA
+    + ECUACION_FORRAJE_A_ANPP.PENDIENTE * forraje_aire_seco;
+}
+
+/**
+ * Un modelo lineal de ANPP contra lluvia anual, en g/m²/año.
+ *
+ * Los dos que publica la Figura 2 de Lauenroth y Sala (1992), con sus palabras:
+ * «Regional model ANPP = −34 + 0.60(Ann. Precipitation). Long-term model
+ * ANPP = 56 + 0.13(Ann. Precipitation)».
+ */
+export interface ModeloANPP {
+  id: string;
+  ordenada: number;
+  pendiente: number;
+  que_cambia_entre_puntos: string;
+}
+
+/**
+ * El modelo que cambia de sitio en cada punto, y por eso se equivoca en un sitio.
+ *
+ * Sala, Parton, Joyce y Lauenroth (1988) ajustaron ANPP contra lluvia anual sobre
+ * la región de pastizales centrales de Estados Unidos: cada punto es un lugar
+ * distinto, con su suelo, su temperatura y **su estructura de vegetación**.
+ *
+ * **Su pendiente es 4,6 veces la del mismo sitio medido durante cincuenta años.**
+ * Y el trabajo del CPER dice exactamente qué consecuencia tiene eso: «These
+ * vegetation structure constraints on ANPP explain why, under dry conditions, the
+ * regional model underestimates ANPP and under wet conditions, overestimates
+ * ANPP». A la lluvia máxima observada en el CPER el modelo regional predice
+ * **300 g/m² y el de largo plazo 130**, una diferencia significativa.
+ *
+ * ## Por qué esto es la lápida de `prodForrajera`
+ *
+ * `prodForrajera` es un modelo espacial: sus escalones salen de comparar lugares,
+ * no de seguir uno. Y cae **sobre la curva regional**: con los 588 mm del año más
+ * húmedo del CPER devuelve 3.000 kg MS/ha, que son 300 g/m², que es el número que
+ * este trabajo midió como significativamente demasiado alto para ese campo.
+ *
+ * No es casualidad ni es mérito del cálculo: es lo que le pasa a cualquier función
+ * que intercambie espacio por tiempo. El propio artículo lo llama «a weakness of
+ * exchanging space for time in predicting production patterns».
+ */
+export const MODELO_REGIONAL_SALA_1988: ModeloANPP = {
+  id: 'regional_sala_1988',
+  ordenada: -34,
+  pendiente: 0.60,
+  que_cambia_entre_puntos: 'el sitio: suelo, temperatura y estructura de vegetación distintos en cada punto',
+} as const;
+
+/** El mismo campo, cincuenta años, con la estructura de vegetación quieta. */
+export const MODELO_LARGO_PLAZO_CPER: ModeloANPP = {
+  id: 'largo_plazo_cper',
+  ordenada: 56,
+  pendiente: 0.13,
+  que_cambia_entre_puntos: 'sólo el año: un solo sitio y una sola estructura de vegetación',
+} as const;
+
+/** ANPP en g/m²/año que predice un modelo para una lluvia anual en mm. */
+export function anppDelModelo(m: ModeloANPP, lluvia_mm: number): number {
+  return m.ordenada + m.pendiente * lluvia_mm;
+}
+
+/**
+ * La lluvia donde los dos modelos se cruzan, en mm.
+ *
+ * Debajo de ese valor el modelo espacial lee bajo y arriba lee alto, que es la
+ * asimetría que el trabajo describe. Da unos 192 mm, y conviene saberlo porque
+ * **casi todos los sitios de este archivo están arriba de esa cota**: de los
+ * diecisiete, el único que queda abajo es la estepa de Río Mayo con 191 mm.
+ */
+export function cruceDeModelos(a: ModeloANPP, b: ModeloANPP): number {
+  return (b.ordenada - a.ordenada) / (a.pendiente - b.pendiente);
+}
+
 export function medicionesDeBioma(bioma: string): MedicionForraje[] {
   return FORRAJE_MEDIDO.filter(m => m.bioma === bioma);
 }

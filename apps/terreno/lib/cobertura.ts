@@ -148,8 +148,8 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Dieciséis sitios en cinco continentes es poco —y doce de
- * los dieciséis son los que la banda puede usar—, y la clase de cobertura por sí
+ * **Rango de validez.** Diecisiete sitios en cinco continentes es poco —y doce de
+ * los diecisiete son los que la banda puede usar—, y la clase de cobertura por sí
  * sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un

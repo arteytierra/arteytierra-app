@@ -19,6 +19,8 @@ import {
   fraccionPorDoselManitou, FRACCION_COMIBLE, fraccionComible, paresComibles,
   UTILIZACION_GLENCOE, utilizacionAparente, fraccionDelOfrecido,
   FRACCION_HERBACEA_DEL_SITIO, fraccionHerbacea,
+  SERIE_CPER, ECUACION_FORRAJE_A_ANPP, anppDeForraje,
+  MODELO_REGIONAL_SALA_1988, MODELO_LARGO_PLAZO_CPER, anppDelModelo, cruceDeModelos,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -506,8 +508,8 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son dieciséis sitios en ocho de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(16);
+  it('son diecisiete sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(17);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
@@ -522,19 +524,21 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
     // fuente. Lo que no se admite es inventar una.
     const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
-    expect(conCoord).toHaveLength(2);
+    expect(conCoord).toHaveLength(3);
     for (const m of conCoord) {
       // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
       // y el signo es exactamente lo que se equivoca al consultar un servicio.
       expect(m.coordenada).toMatch(/[NS],/);
       expect(m.coordenada).toMatch(/[EW]/);
     }
-    // Y las dos que lo declaran son las dos del lote 14, las dos con el píxel
-    // consultado: una quedó en clase 30 por estable y la otra en `null`.
+    // Las tres tienen el píxel consultado, y el criterio de estabilidad del
+    // lote 14 reparte: dos quedaron en clase 30 porque la clase no cambia entre
+    // 500 m, 2 km y 5 km, y Río Mayo en `null` porque sí cambia.
     expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(1);
+    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(2);
   });
 
-  it('cuatro de los dieciséis son sotobosque, y hay que poder contarlos', () => {
+  it('cuatro de los diecisiete son sotobosque, y hay que poder contarlos', () => {
     // Son tres mediciones de abajo de un dosel cerrado, y no se pueden leer
     // como la producción de su bioma: dos de ellas abren un bioma nuevo y la
     // tercera cae en el bioma de la pradera de Dakota produciendo 44× menos.
@@ -875,15 +879,41 @@ describe('lote 14 — el bioma 7 entra, y las dos coordenadas eran de un pueblo'
     expect(sitio('Lesbos').coordenada).toBeNull();
   });
 
-  it('Río Mayo es el primer sitio debajo de 300 mm, y por lejos', () => {
+  it('Río Mayo es el sitio más seco, y el lote 15 obligó a decir «sitio»', () => {
     const r = rioMayo();
     expect(r.lluvia_mm_min).toBe(191);
-    const otros = FORRAJE_MEDIDO
-      .filter(m => m !== r && m.lluvia_mm_min !== null)
-      .map(m => m.lluvia_mm_min ?? 0);
-    // El anterior más seco era Lesbos con 354: casi el doble.
-    expect(Math.min(...otros)).toBe(354);
-    expect(Math.min(...otros) / r.lluvia_mm_min!).toBeGreaterThan(1.8);
+    expect(r.lluvia_que_es).toBe('anio_medido');
+    // Este test decía «el primer sitio debajo de 300 mm» y se cayó en cuanto
+    // entró el CPER, que tiene un mínimo de 107 mm. No se cayó por un error de
+    // dato: el 107 es UN AÑO SECO de una serie de cincuenta en un campo cuya
+    // media es 321 mm, que no es un sitio seco. De ahí salió `lluvia_que_es`.
+    const deSitio = FORRAJE_MEDIDO.filter(
+      m => m !== r && m.lluvia_mm_min !== null
+        && (m.lluvia_que_es === 'anio_medido' || m.lluvia_que_es === 'normal_publicada'),
+    );
+    expect(Math.min(...deSitio.map(m => m.lluvia_mm_min ?? 0))).toBe(354);
+    expect(354 / r.lluvia_mm_min!).toBeGreaterThan(1.8);
+    // Y el CPER queda afuera de esa comparación por lo que es, no por la cifra.
+    expect(sitio('Central Plains').lluvia_que_es).toBe('rango_de_anios');
+  });
+
+  it('ninguna entrada mezcla agua de riego con lluvia sin decirlo', () => {
+    // La alfalfa de Curacó tiene 1.300 mm en el campo de lluvia y NO es lluvia:
+    // es el riego por melgas. Estaba dicho en un comentario, que es invisible
+    // para cualquier cálculo. Ahora está en un campo.
+    const riego = FORRAJE_MEDIDO.filter(m => m.lluvia_que_es === 'agua_de_riego');
+    expect(riego).toHaveLength(1);
+    expect(riego[0]!.lluvia_mm_min).toBe(1300);
+    expect(riego[0]!.insumos).toBe('riego');
+    // Y el campo es `null` exactamente cuando la lluvia es `null`.
+    for (const m of FORRAJE_MEDIDO) {
+      expect(m.lluvia_que_es === null).toBe(m.lluvia_mm_min === null);
+    }
+    // Nada de lo que sea agua de riego puede entrar a un modelo de lluvia.
+    for (const m of FORRAJE_MEDIDO) {
+      if (m.lluvia_que_es !== 'agua_de_riego') continue;
+      expect(m.temp_media_c_anual).toBeNull();   // así no lo toma el contraste
+    }
   });
 
   it('el primer escalón de la escalera recibe su primera medición', () => {
@@ -934,5 +964,228 @@ describe('lote 14 — el bioma 7 entra, y las dos coordenadas eran de un pueblo'
     const todas = FRACCION_HERBACEA_DEL_SITIO.map(fraccionHerbacea);
     expect(fraccionHerbacea(rm)).toBeGreaterThan(Math.min(...todas));
     expect(fraccionHerbacea(rm)).toBeLessThan(Math.max(...todas));
+  });
+});
+
+describe('lote 15 — cincuenta años del mismo campo, y lo que le hacen a la escalera', () => {
+  const cper = () => sitio('Central Plains');
+
+  /** Cuadrados mínimos, para no creerle a la transcripción de cien cifras. */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx  = pares.reduce((a, p) => a + p[0], 0);
+    const sy  = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  it('la serie tiene los cincuenta años que se midieron, sin 1940 ni 1980', () => {
+    expect(SERIE_CPER).toHaveLength(50);
+    const anios = SERIE_CPER.map(f => f.anio);
+    expect(Math.min(...anios)).toBe(1939);
+    expect(Math.max(...anios)).toBe(1990);
+    expect(anios).not.toContain(1940);
+    expect(anios).not.toContain(1980);
+    // 52 años de calendario menos los dos sin muestreo.
+    expect(Math.max(...anios) - Math.min(...anios) + 1 - 2).toBe(SERIE_CPER.length);
+    // Y el número de ubicaciones, que es la advertencia del trabajo hecha dato.
+    expect(Math.min(...SERIE_CPER.map(f => f.ubicaciones))).toBe(3);
+    expect(Math.max(...SERIE_CPER.map(f => f.ubicaciones))).toBe(35);
+  });
+
+  it('las cien cifras reproducen la ecuación 2 publicada, y ésa es la verificación', () => {
+    // «Forage Production = 13 + 0.172(Annual Precipitation)», F = 30,83;
+    // gl = 1,48; P < 0,001; r² = 0,39. Si alguien toca un año de la serie, los
+    // coeficientes dejan de caer acá: es el caso resuelto de la literatura que
+    // pide `skills/motor-de-calculo`, con cien números defendidos por dos.
+    const aj = recta(SERIE_CPER.map(f => [f.lluvia_mm, f.forraje_aire_seco] as const));
+    expect(aj.a).toBeCloseTo(13, 0);
+    expect(aj.b).toBeCloseTo(0.172, 3);
+    expect(aj.r2).toBeCloseTo(0.39, 2);
+    // Los grados de libertad publicados confirman el n: gl = 1,48 son 50 años.
+    expect(SERIE_CPER.length - 2).toBe(48);
+  });
+
+  it('la lluvia anual explica el 39 %, que es el resultado incómodo', () => {
+    const aj = recta(SERIE_CPER.map(f => [f.lluvia_mm, f.forraje_aire_seco] as const));
+    // Un solo sitio, un solo método, medio siglo: el 61 % no lo explica la lluvia
+    // del año. El trabajo nombra dos culpables, el tamaño de los eventos y el
+    // retardo, y el segundo está probado abajo.
+    expect(aj.r2).toBeLessThan(0.45);
+    expect(aj.r2).toBeGreaterThan(0.35);
+  });
+
+  it('el retardo está en los datos: después de la sequía, llover normal no alcanza', () => {
+    const anio = (a: number) => SERIE_CPER.find(f => f.anio === a)!;
+    const mediaProd = SERIE_CPER.reduce((s, f) => s + f.forraje_aire_seco, 0) / 50;
+    const mediaLluvia = SERIE_CPER.reduce((s, f) => s + f.lluvia_mm, 0) / 50;
+    expect(mediaProd).toBeCloseTo(68.5, 1);
+    for (const [seco, siguiente] of [[1954, 1955], [1964, 1965]] as const) {
+      // El año seco fue seco de verdad: menos del 60 % de la media.
+      expect(anio(seco).lluvia_mm).toBeLessThan(mediaLluvia * 0.6);
+      // Y al siguiente llovió normal o más…
+      expect(anio(siguiente).lluvia_mm).toBeGreaterThan(mediaLluvia);
+      // …y la producción siguió bien abajo de la media. Eso no lo puede dar una
+      // función de la lluvia de este año: le falta el estado del anterior.
+      expect(anio(siguiente).forraje_aire_seco).toBeLessThan(mediaProd * 0.75);
+    }
+  });
+
+  it('la asimetría que el lote 14 dejó escrita NO se replica, y el test la cierra', () => {
+    // Guardia contra mi propio texto. Río Mayo sugería que la sequía baja la
+    // producción y la lluvia de más no la sube. Con cincuenta años la respuesta
+    // es simétrica, así que la asimetría no es una propiedad de la producción.
+    const m = SERIE_CPER.reduce((s, f) => s + f.lluvia_mm, 0) / 50;
+    const prodMedia = SERIE_CPER.reduce((s, f) => s + f.forraje_aire_seco, 0) / 50;
+    const prom = (g: readonly { forraje_aire_seco: number }[]) =>
+      g.reduce((s, f) => s + f.forraje_aire_seco, 0) / g.length;
+    const secos   = SERIE_CPER.filter(f => f.lluvia_mm < m * 0.85);
+    const humedos = SERIE_CPER.filter(f => f.lluvia_mm > m * 1.15);
+    const caida = (prodMedia - prom(secos)) / prodMedia;
+    const suba  = (prom(humedos) - prodMedia) / prodMedia;
+    expect(caida).toBeCloseTo(0.30, 2);
+    expect(suba).toBeCloseTo(0.30, 2);
+    // Simétrico a menos de dos puntos porcentuales: no hay techo en los húmedos.
+    expect(Math.abs(caida - suba)).toBeLessThan(0.02);
+  });
+
+  it('las dos rectas publicadas difieren 4,6 veces en pendiente', () => {
+    // Figura 2: «Regional model ANPP = -34 + 0.60(Ann. Precipitation). Long-term
+    // model ANPP = 56 + 0.13(Ann. Precipitation)».
+    expect(MODELO_REGIONAL_SALA_1988.pendiente).toBe(0.60);
+    expect(MODELO_LARGO_PLAZO_CPER.pendiente).toBe(0.13);
+    expect(MODELO_REGIONAL_SALA_1988.pendiente / MODELO_LARGO_PLAZO_CPER.pendiente)
+      .toBeCloseTo(4.615, 3);
+    // Y se cruzan a unos 192 mm: abajo el espacial lee bajo, arriba lee alto.
+    const cruce = cruceDeModelos(MODELO_REGIONAL_SALA_1988, MODELO_LARGO_PLAZO_CPER);
+    expect(cruce).toBeCloseTo(191.5, 1);
+    expect(anppDelModelo(MODELO_REGIONAL_SALA_1988, cruce))
+      .toBeCloseTo(anppDelModelo(MODELO_LARGO_PLAZO_CPER, cruce), 6);
+    // De los diecisiete sitios, el único debajo de esa cota es Río Mayo.
+    const debajo = FORRAJE_MEDIDO.filter(
+      m2 => m2.lluvia_mm_min !== null && m2.lluvia_mm_min < cruce,
+    );
+    expect(debajo).toHaveLength(2);        // Río Mayo (191) y el CPER (107 de mínimo)
+    expect(debajo.some(m2 => m2.sitio.includes('Río Mayo'))).toBe(true);
+  });
+
+  it('a la lluvia máxima del sitio el modelo regional se pasa 2,3 veces', () => {
+    const PMAX = 588;                      // 1967, el año más húmedo de la serie
+    expect(Math.max(...SERIE_CPER.map(f => f.lluvia_mm))).toBe(PMAX);
+    const reg = anppDelModelo(MODELO_REGIONAL_SALA_1988, PMAX);
+    const lar = anppDelModelo(MODELO_LARGO_PLAZO_CPER, PMAX);
+    // El artículo lo reporta como «300 vs. 130 g/m²», leído de la figura.
+    expect(reg).toBeCloseTo(319, 0);
+    expect(lar).toBeCloseTo(132, 0);
+    expect(reg / lar).toBeCloseTo(2.41, 2);
+    // Y por el otro camino, desde la ecuación 2 más la ecuación 1, da el 130
+    // publicado: dos derivaciones independientes del mismo número.
+    const porEc2 = anppDeForraje(13 + 0.172 * PMAX);
+    expect(porEc2).toBeCloseTo(133, 0);
+    expect(Math.abs(porEc2 - lar)).toBeLessThan(2);
+  });
+
+  it('la escalera ES el modelo regional, con los mismos 588 mm', () => {
+    const PMAX = 588;
+    // 3.000 kg MS/ha son 300 g/m², que es el número que el artículo publica como
+    // la predicción regional significativamente demasiado alta para este campo.
+    expect(escalera(PMAX)).toBe(3000);
+    expect(escalera(PMAX) / 10).toBe(300);
+    const reg = anppDelModelo(MODELO_REGIONAL_SALA_1988, PMAX);
+    expect(Math.abs(escalera(PMAX) / 10 - reg) / reg).toBeLessThan(0.07);
+    // Contra el campo real, la escalera se pasa más del doble.
+    const lar = anppDelModelo(MODELO_LARGO_PLAZO_CPER, PMAX);
+    expect(escalera(PMAX) / 10 / lar).toBeGreaterThan(2.2);
+  });
+
+  it('sobre los cincuenta años la escalera se pasa en 35, con mediana 1,27', () => {
+    const razones = SERIE_CPER
+      .map(f => escalera(f.lluvia_mm) / (anppDeForraje(f.forraje_aire_seco) * 10))
+      .sort((x, y) => x - y);
+    expect(razones.filter(r => r > 1)).toHaveLength(35);
+    expect(razones[Math.floor(razones.length / 2)]).toBeCloseTo(1.27, 2);
+    expect(razones[razones.length - 1]).toBeCloseTo(2.62, 2);
+    expect(razones[0]).toBeCloseTo(0.68, 2);
+  });
+
+  it('la conversión aire-seco a estufa no es un factor, y por eso cambia la forma', () => {
+    expect(ECUACION_FORRAJE_A_ANPP.ORDENADA).toBe(46);
+    expect(ECUACION_FORRAJE_A_ANPP.PENDIENTE).toBe(0.76);
+    // El trabajo la declara como su supuesto principal, y la ajustó flojo.
+    expect(ECUACION_FORRAJE_A_ANPP.R2).toBe(0.28);
+    expect(ECUACION_FORRAJE_A_ANPP.ANIOS_DEL_AJUSTE).toBe(14);
+    const flaco = Math.min(...SERIE_CPER.map(f => f.forraje_aire_seco));
+    const gordo = Math.max(...SERIE_CPER.map(f => f.forraje_aire_seco));
+    expect(flaco).toBe(22);                // 1954
+    expect(gordo).toBe(128);               // 1981
+    // El cociente entre las dos columnas se mueve 2,5 veces de punta a punta: no
+    // es un cambio de escala, es un cambio de forma de la propia serie.
+    expect(anppDeForraje(flaco) / flaco).toBeCloseTo(2.85, 2);
+    expect(anppDeForraje(gordo) / gordo).toBeCloseTo(1.12, 2);
+    expect((anppDeForraje(flaco) / flaco) / (anppDeForraje(gordo) / gordo))
+      .toBeGreaterThan(2.5);
+  });
+
+  it('la entrada montada usa la columna de estufa y declara su clase estable', () => {
+    const c = cper();
+    // 62 y 143 g/m² son las puntas de la columna ANPP_OD de la Tabla 1, y 97 su
+    // media publicada. La columna de forraje daría 220, 1.280 y 660: aire-seco.
+    expect(c.kg_ms_ha_anio_min).toBe(620);
+    expect(c.kg_ms_ha_anio_max).toBe(1430);
+    expect(c.kg_ms_ha_anio_tipico).toBe(970);
+    // La derivación no cierra al kilo, y el motivo está en la fuente: la columna
+    // de ANPP se calculó sobre las medias de forraje SIN redondear, así que 1954
+    // sale 62 donde la ecuación sobre el 22 redondeado da 62,7, y 1943 sale 140
+    // donde da 139,5. Montamos lo publicado y toleramos el gramo.
+    expect(Math.abs(anppDeForraje(22) * 10 - c.kg_ms_ha_anio_min)).toBeLessThan(10);
+    expect(Math.abs(anppDeForraje(128) * 10 - c.kg_ms_ha_anio_max)).toBeLessThan(10);
+    // Clase 30 con el píxel al 100 % en las tres ventanas, y bioma 8 verificado
+    // contra RESOLVE (`ECO_ID` 402, Western shortgrass prairie).
+    expect(c.clase_wc).toBe(30);
+    expect(c.bioma).toBe('resolve_pastizal_templado');
+    // Y afuera de la banda, porque la fuente no dice nada de insumos. Acá ser
+    // estricto no cuesta: 620-1.430 cae adentro de la banda de la clase 30.
+    expect(c.insumos).toBe('desconocido');
+    const b = bandaDeClase(30);
+    expect(b?.sitios).toBe(7);
+    expect(c.kg_ms_ha_anio_min).toBeGreaterThan(b!.kg_ms_ha_anio_min);
+    expect(c.kg_ms_ha_anio_max).toBeLessThan(b!.kg_ms_ha_anio_max);
+  });
+
+  it('el CPER trae temperatura media anual de verdad, y eso habilita el contraste', () => {
+    const c = cper();
+    // «Annual temperature averaged 8.6 ± 0.6 °C»: es una media anual, no la
+    // mínima y la máxima de Calabozo.
+    expect(c.temp_media_c_anual).toBe(8.6);
+    expect(nppMiami(c.lluvia_mm_min!, c.temp_media_c_anual!)).not.toBeNull();
+  });
+
+  it('el único rango de lluvia que es del mismo punto en años distintos', () => {
+    const c = cper();
+    expect(c.lluvia_mm_min).toBe(107);
+    expect(c.lluvia_mm_max).toBe(588);
+    expect(Math.min(...SERIE_CPER.map(f => f.lluvia_mm))).toBe(c.lluvia_mm_min);
+    expect(Math.max(...SERIE_CPER.map(f => f.lluvia_mm))).toBe(c.lluvia_mm_max);
+    // Escribí «el rango más ancho del archivo» y era falso: Puno tiene 709 mm de
+    // ancho contra los 481 del CPER. Pero el de Puno son DOS ESTACIONES separadas
+    // por 400 m de altura, y éste es el mismo punto en cincuenta años. Eso es lo
+    // que importa y es lo que el test afirma ahora.
+    const ancho = (m2: { lluvia_mm_max: number | null; lluvia_mm_min: number | null }) =>
+      (m2.lluvia_mm_max ?? 0) - (m2.lluvia_mm_min ?? 0);
+    expect(ancho(c)).toBe(481);
+    expect(ancho(sitio('Chuquibambilla'))).toBe(709);
+    expect(sitio('Chuquibambilla').lluvia_que_es).toBe('rango_de_sitios');
+    const deAnios = FORRAJE_MEDIDO.filter(m2 => m2.lluvia_que_es === 'rango_de_anios');
+    expect(deAnios).toHaveLength(1);
+    expect(deAnios[0]!.sitio).toMatch(/Central Plains/);
+    // Y la escalera cruza tres de sus cinco escalones adentro de un solo sitio.
+    const escalones = new Set(SERIE_CPER.map(f => escalera(f.lluvia_mm)));
+    expect(escalones.size).toBe(3);
   });
 });

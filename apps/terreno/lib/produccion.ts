@@ -240,14 +240,41 @@ export interface PerfilRodeo {
  * adentro de un escalón que devuelve una constante**. Los cinco años caen en el
  * mismo tramo de la función y la función les da 700 a todos.
  *
- * Los autores agregan la forma de la respuesta, que es lo que ninguna escalera
- * creciente puede tener: «There was a large reduction in ANPP during a year of
- * extreme drought; however, there were no increases in ANPP during years with
- * above-average precipitation. This suggests that the carrying capacity for the
- * Patagonian steppe may not be linearly related to precipitation». La sequía baja
- * la producción; la lluvia de más no la sube. **El reemplazo de esta función
- * tiene que ser asimétrico, y eso es más de lo que se sabía antes del lote 14**,
- * donde el diagnóstico era sólo «una variable no alcanza».
+ * Los autores de Río Mayo agregaban una forma: «There was a large reduction in
+ * ANPP during a year of extreme drought; however, there were no increases in ANPP
+ * during years with above-average precipitation». Con cinco años eso parecía una
+ * asimetría de la producción. **El lote 15 lo midió con cincuenta años y no se
+ * replica**: en el CPER los años secos caen un 30 % y los húmedos suben un 30 %.
+ * Queda escrito acá porque este comentario afirmaba lo contrario.
+ *
+ * ## Lo que sí está medido, y es peor: la pendiente
+ *
+ * El lote 15 trajo cincuenta años del mismo campo —`SERIE_CPER` en
+ * `forrajeMedido.ts`— y con ellos las dos rectas que publica Lauenroth y Sala
+ * (1992), Figura 2, de ANPP contra lluvia anual en g/m²/año:
+ *
+ * - regional, comparando sitios: `ANPP = −34 + 0,60 × P`
+ * - el mismo sitio, cincuenta años: `ANPP = 56 + 0,13 × P`
+ *
+ * **La pendiente del modelo espacial es 4,6 veces la del campo real.** Y esta
+ * función es un modelo espacial: sus escalones salen de comparar lugares. Con los
+ * 588 mm del año más húmedo del CPER devuelve 3.000 kg MS/ha, que son 300 g/m²,
+ * que es **exactamente** lo que el artículo publica como la predicción regional
+ * que midió como significativamente demasiado alta para ese campo, contra 130 del
+ * modelo de largo plazo.
+ *
+ * Sobre los cincuenta años esta función se pasa en **35 de 50**, con mediana de
+ * 1,27 veces y un peor año de 2,62. Lo que está mal no es la altura de los
+ * escalones: es la pendiente de la familia a la que pertenecen.
+ *
+ * ## Y lo que le falta no es otra variable: es memoria
+ *
+ * Tras las sequías extremas de 1954 y 1964 llovió normal —328 y 371 mm— y la
+ * producción siguió en 32 y 48 g/m² contra una media de 68. El trabajo lo
+ * explica por la estructura de la vegetación, que tarda años en recuperarse.
+ * **La producción de un año depende del estado en que la dejó el anterior**, y
+ * una función de la lluvia de este año no tiene dónde guardar eso. El reemplazo
+ * no es una escalera mejor ni una recta: es algo con estado.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;
