@@ -21,6 +21,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 13 | la fracción comible | **montada con un solo par** el 18/10/2026 |
 | 14 | el arbustal (clase 20) | **el arbustal no entró; entró el bioma 7** el 18/10/2026 |
 | 15 | las series de años | **cincuenta años montados** el 20/10/2026 |
+| 16 | más series y el retardo | **la segunda serie y la memoria con coeficiente** el 21/10/2026 |
 
 ---
 
@@ -1910,3 +1911,306 @@ estar en un apéndice; queda como atraso con una instrucción más precisa.
 Los dos del *Journal of Range Management* siguen vacíos por la barrera que ya
 había documentado yo mismo —Anubis y el 403 del repositorio de Arizona—, y la
 entrega no perdió tiempo con ellos, que era el objetivo de habérselo avisado.
+
+## Lote 16 — la capa que la app predice no responde a la lluvia, y la memoria ya tiene número
+
+Cuatro entradas y diez vacías. Las cuatro traen algo; dos de ellas traen más de
+lo que decían traer, y una declaró imposible una verificación que sí se podía
+hacer. Se montaron **cuatro sitios** —uno es un tercer sitio de la misma fuente
+que la entrega no incluyó— más dos estructuras nuevas.
+
+### Lo que el encargo pedía y lo que llegó
+
+El frente **a** pedía dos a cuatro series largas de biomas distintos, para ver si
+la pendiente temporal siempre queda muy por debajo de la espacial. Llegó **una**,
+y no es de un bioma distinto: Río Mayo es bioma 8, igual que el CPER. Lo que sí
+es distinto es todo lo demás —otro continente, otro hemisferio, la mitad de la
+lluvia y, sobre todo, otra estructura de vegetación— y por eso igual sirvió.
+
+El frente **b** pedía el retardo con coeficiente publicado. Llegó, y es la pieza
+que el lote 15 declaró faltante.
+
+### La segunda serie, y el hallazgo que no estaba pedido
+
+`SERIE_RIO_MAYO`: quince años de la Tabla 2 de **Jobbágy y Sala (2000)**, p. 544.
+Y la fila que importa no es la del total, es que **las capas vienen separadas
+todos los años**:
+
+| lo que se ajusta contra la lluvia anual | ordenada | pendiente | r² | n |
+|---|---|---|---|---|
+| **gramíneas** | 24,6 | **0,024** | **0,015** | 15 |
+| arbustos | 10,0 | 0,125 | 0,728 | 10 |
+| total | 34,4 | 0,141 | 0,346 | 10 |
+
+`prodForrajera` predice **forraje**. En el único sitio del archivo donde el
+forraje está medido aparte todos los años, la lluvia anual explica el **1,5 %** de
+su variación; lo que responde a la lluvia es la leñosa, con el 73 %. Y la
+correlación del total —la que se vería sin separar— sale enteramente de los
+arbustos, que es la parte que una vaca no come. El trabajo lo dice: *«The
+differential effect of precipitation on grass and shrub ANPP masked the
+association when these functional groups were pooled»*.
+
+Eso reordena el problema. Hasta el lote 15 la pregunta era qué pendiente poner.
+Ahora es si la lluvia anual sirve para la capa herbácea: en el CPER sí, r² = 0,39;
+en Río Mayo no. La diferencia entre los dos es que uno tiene leñosas compitiendo
+por el agua profunda.
+
+**Y hay un corolario que un predio nota:** en un año lluvioso, donde hay leñosas,
+el agua de más no va al forraje. La fracción herbácea de Río Mayo cae de 0,60 a
+0,28 entre el año más seco y el más húmedo.
+
+### Cómo se verificó la serie
+
+Transcribí la tabla entera y recalculé lo que el propio pie publica:
+
+| columna | mi cálculo | publicado |
+|---|---|---|
+| gramíneas | 28,3 · SD 10,4 · CV 36,8 % | 28,3 · 10,4 · 36,8 |
+| arbustos | 29,3 · 9,0 · 30,8 | 29,3 · 9,0 · 30,7 |
+| total | 56,2 · 14,8 · 26,3 | 56,2 · 14,8 · 26,3 |
+| temperatura | 8,5 · 0,4 | 8,5 · 0,4 |
+| lluvia | 155 · 52 · 33,6 | 155 · 52 · 33,6 |
+
+Más los **diez** valores de la columna de eficiencia de uso de la lluvia, a dos
+decimales. Y una verificación interna que no depende de ningún estadístico:
+gramíneas más arbustos da el total, al decimal, en nueve de las diez filas.
+
+### El error de la entrega, y era en la columna que esta app necesita
+
+**La entrega invirtió gramíneas y arbustos en las trece filas.** La Tabla 2
+publica *Grass ANPP* en la primera columna y *Shrub ANPP* en la segunda, y la
+entrega asignó el primer valor a los arbustos. Lo confirman las dos fuentes: el
+artículo y el archivo de datos del ORNL DAAC, que publica la tabla con las
+columnas rotuladas.
+
+Los trece totales y las trece lluvias estaban bien. El reparto, al revés.
+
+Y no es un detalle de presentación: **el reparto ES la columna que acequia
+necesita.** Con el orden invertido, la capa comible y la leñosa quedan cambiadas,
+la fracción herbácea sale al revés y el hallazgo de este lote —que las gramíneas
+no responden a la lluvia— sale exactamente invertido: parecería que el forraje
+responde con r² = 0,73 y la leñosa no.
+
+Peor: los años **1990, 1991 y 1992**, que la entrega describe como «solo ANPP de
+arbustos disponible», son lo contrario: sólo gramíneas. Son los tres años de
+forraje puro medido de la serie, y leídos como arbustos se tiran.
+
+La entrega además dejó afuera dos filas que la tabla tiene, **1972 y 1975**, con
+gramíneas y lluvia. La serie montada tiene quince años y no trece.
+
+### La memoria, con coeficiente, y la verificación que la entrega dio por imposible
+
+`ANPP(t) = 14,8 + 0,13 × pp(t) + 0,41 × ANPP(t−1)`, de **Oesterheld, Loreti,
+Semmartin y Sala (2001)**, Tabla 1, sobre la misma serie del CPER del lote 15.
+
+La entrega escribió que esto no se podía re-ajustar con lo que hay en el archivo,
+porque `SERIE_CPER` guarda forraje aire-seco y no la columna de ANPP. **Sí se
+podía**: pasando la columna por la ecuación 1 del mismo trabajo del que sale la
+serie, que ya estaba montada como `anppDeForraje`.
+
+| | ordenada | pp(t) | ANPP(t−1) | r² | F | gl | n |
+|---|---|---|---|---|---|---|---|
+| mi ajuste | 14,92 | 0,1303 | 0,4085 | 0,581 | 30,5 | 44 | 47 |
+| publicado | 14,8 | 0,13 | 0,41 | 0,58 | 30,4 | 44 | 47 |
+
+Los siete números. Y el n sale solo: la serie tiene cincuenta filas y le faltan
+1940 y 1980, así que los pares de años consecutivos son 47 — los mismos años que
+el trabajo nombra como perdidos, 1941 y 1981.
+
+Que los coeficientes caigan ahí prueba dos cosas de una. Que la serie del lote 15
+está bien transcripta, que ya se sabía; y que **la columna de ANPP de Oesterheld
+es la de Lauenroth y Sala pasada por esa ecuación**, que era una suposición.
+
+De paso salieron tres cosas más de la misma tabla. El modelo sin memoria publica
+ordenada **55,8** y mi ajuste da 56,0 con F(1,48) = 30,8 contra 31,0, así que el
+«56» que el lote 15 tomó de la Figura 2 era este número redondeado. La lluvia de
+un año y la del anterior **no están asociadas** —r² = 0,01 publicado, 0,000 en mi
+ajuste—, lo que descarta que la memoria sea autocorrelación de lluvia disfrazada.
+Y el modelo de tres lluvias **no** reproduce, por un motivo que el propio trabajo
+explica: *«The series was continuous for precipitation data, but it had two gaps
+for production»*. A él le faltaba producción en 1940 y 1980, a mí me falta
+también la lluvia, así que su n es 49 y el mío 45.
+
+### Lo que la memoria se lleva es la ordenada, y eso corrige un número mío
+
+La pendiente de la lluvia **no cambia**: 0,13 con memoria y sin memoria. Lo que
+cambia es la ordenada, de 55,8 a 14,8. Y la cuenta cierra: a la lluvia media del
+sitio el modelo sin memoria da 97,7 g/m², y 14,8 + 0,41 × 97,7 = 54,9 ≈ 55,8.
+**El término de memoria ocupa exactamente el lugar del nivel.**
+
+De ahí sale la corrección. El lote 15 escribió que la pendiente espacial es **4,6
+veces** la temporal, comparando 0,60 contra 0,13. El 0,13 es la respuesta de un
+año a un mm de más; el 0,60 compara sitios que llevan siglos con su lluvia. La
+comparación justa es contra el equilibrio del mismo modelo:
+
+```
+ANPP* = (14,8 + 0,13 × P) / (1 − 0,41) = 25,1 + 0,2203 × P
+```
+
+**La razón real es 2,7, no 4,6.** Sigue siendo casi el triple y sigue siendo el
+problema, pero más de un tercio del 4,6 que escribí era comparar un año contra un
+siglo. Y el cruce de los dos modelos baja de 192 a 156 mm, con lo cual ya no queda
+ningún sitio del archivo por debajo de la cota donde el modelo espacial lee bajo.
+
+Lo operativo: **con la misma lluvia, el resultado cambia 1,24 veces según lo que
+vino antes.** Un año de 222 mm en ese campo produce 73,9 g/m² tras una racha seca
+y 92,0 tras una húmeda. La escalera devuelve 700 kg/ha en los dos casos, y no por
+estar mal calibrada: por no tener dónde mirar.
+
+### La asimetría, corregida por segunda vez, y ahora en el medio
+
+El lote 14 escribió que la respuesta a la lluvia es asimétrica, por Río Mayo. El
+lote 15 lo declaró artefacto de cinco años con dos métodos, porque en el CPER no
+se replica. **Con los quince años de Río Mayo y un solo método, la asimetría sigue
+ahí**: los años secos caen un 35 % y los húmedos quedan un 4 % **abajo** de los
+normales. Y con la capa de gramíneas aparece algo peor que una asimetría: los dos
+extremos producen menos que el medio.
+
+Así que la cadena termina en el medio. No se puede escribir como propiedad general
+de la producción, que es lo que hizo el 14; y no se puede declarar artefacto, que
+es lo que hice en el 15. **Dos sitios, dos respuestas, y eso es el dato** — con la
+cautela de que son cuatro a seis años por grupo.
+
+### Lo que el manejo vale, que es más que el clima
+
+`CONTRASTE_DE_MANEJO` es la estructura nueva, y mide lo que este archivo nunca
+había medido: no la forma de la curva de la lluvia, sino **cuánto vale la variable
+sobre la que el usuario de acequia realmente decide**.
+
+| sitio | qué cambia | control | tratado | factor |
+|---|---|---|---|---|
+| Bloemfontein | el estado del pastizal | 138 | 43 | **0,31** |
+| Towoomba | nitrógeno y fósforo | 137 | 519 | **3,79** |
+| Ukulinga | nitrógeno y fósforo | 323 | 562 | **1,74** |
+
+Parcelas vecinas, mismo clima, 27 a 30 años. **El rango del manejo es un factor
+12.** En el CPER, cincuenta años de lluvia de 107 a 588 mm mueven la producción un
+factor 5,8. **El manejo pesa más que toda la variación climática de medio siglo en
+un sitio**, y `prodForrajera` no tiene dónde ponerlo.
+
+El par que más importa es el de Bloemfontein, porque no es fertilización: las
+parcelas en mal estado se armaron **sacando especies a mano** para representar
+*«grazing regimes of increasing intensity»*. Es un modelo experimental del
+sobrepastoreo sostenido 29 años, y la producción cae a un tercio con la misma
+lluvia. La fuente atribuye la caída a la cobertura y no a las especies.
+
+La misma tabla trae **cobertura basal con método y año**, que la entrega dio por
+no publicada. Y no ordena nada: 9,0 % → 138, 12,6 % → 137, 15,8 % → 323, y Río
+Mayo con 25 % produce 28. **La cobertura basal no predice la producción entre
+sitios**, aunque adentro de un sitio sí la explique. Vale escribirlo porque la
+cobertura es lo que un satélite ve.
+
+### Tres sitios de pastizal, 86 temporadas medidas, y ninguno alimenta una banda
+
+Las dos entradas sudafricanas de la entrega salen de **Swemmer, Knapp y Snyman
+(2007)**, y todos sus números están bien: lluvia, ANPP, CV, los r² y las betas
+estandarizadas de los seis modelos. Fue la parte más limpia de la entrega.
+
+Lo que faltaba es el **tercer sitio de la misma tabla**: Towoomba, 27 temporadas,
+1949-1981. Y resulta ser el más interesante de los tres por dos motivos.
+
+**El primero: su píxel es clase 20, estable** —66 / 53 / 44 % de arbustal en las
+tres ventanas—. Es el segundo píxel de arbustal del archivo después de la frigana
+de Lesbos, y apareció exactamente donde el lote 14 dijo que había que buscarlo: en
+el producto, no en la palabra «arbustal» de un título. En un trabajo sobre lluvia
+en **pastizales**.
+
+**Y no sirve, por el motivo inverso al de Río Mayo.** La fuente dice: *«The site
+was cleared of all woody species at the start of the experiment»*, en 1949. El
+píxel describe el bushveld de alrededor; la parcela medida tiene 58 m², menos que
+un píxel de WorldCover. Así que la pinza queda cerrada por los dos lados: lo que
+un agrónomo llama estepa arbustiva el mapa lo llama pastizal, y lo que el mapa
+llama arbustal el experimento puede haberlo desmontado. **Partir del píxel sigue
+siendo la estrategia correcta y ahora tiene su primera trampa documentada.**
+
+**El segundo: cierra una pregunta del lote 05.** Ese Towoomba es el de la sección
+«Towoomba contra Nylsvley», donde el lote 05 había marcado como «el reintento más
+valioso» que produjera 2,6 veces lo de Nylsvley estando a 60 km en la misma
+ecorregión. El lote 05 lo resolvió mostrando que la cifra de la compilación —198
+g/m²— era de la fila `P0N3`, un tratamiento fertilizado. Lo que no tenía era el
+control. Ahora están las tres y se ordenan como deben: **control 137, sólo
+nitrógeno 198, nitrógeno más fósforo 519.** Y eso matiza la conclusión: contra los
+76 de Nylsvley, el control produce **1,8 veces y no 2,6**. El fertilizante
+explicaba parte y no todo; el resto lo tienen que explicar el desmonte de 1949 y
+la advertencia de la propia ficha de Nylsvley, que dice que su cifra *«may have
+substantially underestimated»* la productividad.
+
+**Y los tres quedan afuera de las bandas, por tres motivos distintos.** Son 29, 27
+y 30 temporadas, más dato que casi cualquier otra entrada del archivo:
+
+- **Bloemfontein**, `clase_wc` nula porque **no hay un punto**: la serie junta dos
+  lugares a 5 km y los trata como un conjunto, y la única coordenada publicada no
+  cae en ninguno de los dos —queda 31 km al norte del campus que la propia fuente
+  nombra—. Es un motivo nuevo en este archivo: no es que la clase sea inestable
+  (sería 30 en las tres ventanas), es que esa estabilidad no habla del sitio.
+- **Ukulinga**, `clase_wc` nula porque la coordenada publicada tiene **los dos
+  números permutados**: 29°24′ E / 30°24′ S cae en el Cabo Oriental, a 250 km de
+  la granja que la fuente nombra en KwaZulu-Natal. Y la permutación correcta da
+  **100 % de arbolado** a 500 m, así que ni corrigiendo el error se puede escribir
+  una clase. El error es de la fuente y no de la entrega: Towoomba usa el mismo
+  formato —longitud primero— y cae bien.
+- **Towoomba**, por el desmonte, vía `insumos: 'desconocido'` y con un test que lo
+  mantiene fuera de la banda de la clase 20.
+
+**El cuello de botella de este archivo ya no es encontrar mediciones: es poder
+ubicarlas.** Tres series largas de pastizal y cero números en pantalla.
+
+### Lo que la Tabla 2 le arregló a la entrada del lote 14
+
+La entrada de Río Mayo del lote 14 sale de Fernández-A. et al. (1991), y el pie de
+la Tabla 2 declara que las filas 1983-1988 vienen de ese mismo trabajo. Entonces
+son el mismo sitio y los mismos años, y eso permitió tres cosas.
+
+**La coordenada quedó confirmada por una segunda fuente.** El ORNL publica 45,68 S
+/ 70,27 W en decimales, que es el mismo punto que los 45°41′ / 70°16′ del lote 14.
+Sobre esa versión el píxel da 66 / 62 / 42 % de pastizal y el suelo desnudo lo pasa
+a 5 km, igual que con la otra: **400 metros de diferencia cambian los porcentajes y
+no cambian el veredicto**, que es lo que se le pide a un criterio.
+
+**Apareció la temperatura media anual: 8,5 °C**, media de verdad y no la mínima y
+la máxima, así que la entrada pasó de `null` a tener Miami Model.
+
+**Y se midió cuánto depende la cifra del método.** La entrada montada dice 53 de
+gramíneas, 26 de arbustos, 79 de total; la Tabla 2 publica el mismo año 1984 con
+el método de pico: 39,0 / 25,7 / 64,7.
+
+| capa | suma de incrementos (7a) | pico | factor |
+|---|---|---|---|
+| herbácea | 53 | 39,0 | **1,36** |
+| leñosa | 26 | 25,7 | 1,01 |
+| total | 79 | 64,7 | 1,22 |
+
+**La diferencia es toda de la capa que crece y senesce adentro del año.** Un pico
+de biomasa subestima la producción herbácea de ese sitio un 26 % y no toca la de
+los arbustos. Eso vale para toda entrada marcada como pico de stock, y es el mismo
+tipo de trampa que el aire-seco contra el estufa-seco del lote 15: dos columnas de
+la misma magnitud que no difieren por un factor parejo.
+
+Y le pone un límite a `FRACCION_HERBACEA_DEL_SITIO`, que presenta el 0,671 de Río
+Mayo como **el** valor del sitio. El mismo sitio medido diez años con el método de
+pico da de **0,281 a 0,604** —factor 2,15— y el 0,671 queda arriba de los diez.
+**La fracción herbácea de un sitio no es un número**, y el factor 236 de esa tabla
+mezcla sitio, año y método.
+
+### Un error mío que atajó un test del lote 15
+
+Monté las tres lluvias sudafricanas como `rango_de_anios`, y ese valor significa
+el mínimo y el máximo del mismo punto en años distintos. Lo que publica la fuente
+es una **media** de largo plazo: un solo número. El test del lote 15 que afirma que
+hay exactamente una entrada con `rango_de_anios` falló, y tenía razón.
+
+Es la cuarta vez consecutiva que una regla escrita para vigilar la entrega agarra
+algo propio. Las tres pasaron a `normal_publicada`.
+
+### Las vacías
+
+Diez, y nueve están bien declaradas. La que vale señalar es la de Konza: la
+entrega la identifica como candidata real —La Pierre et al. (2011), 25 años, con
+los códigos de los paquetes de datos— y declara que el portal devolvió 403 y que
+no transcribe valores de un gráfico. Eso es lo correcto y queda como atraso con la
+pista concreta.
+
+La décima es la del retardo, que no es una vacía sino una verificación que se
+declaró imposible y era posible. Queda como regla nueva para el encargo 17: **si
+una ecuación usa una variable que este archivo no guarda, hay que probar si alguna
+ecuación ya montada la deriva antes de declararlo imposible.**
