@@ -148,8 +148,8 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Diecisiete sitios en cinco continentes es poco —y doce de
- * los diecisiete son los que la banda puede usar—, y la clase de cobertura por sí
+ * **Rango de validez.** Veinte sitios en cinco continentes es poco —y doce de
+ * los veinte son los que la banda puede usar—, y la clase de cobertura por sí
  * sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
@@ -166,6 +166,16 @@ export interface ForrajeDeCobertura {
  * arbustos: se llena buscando sitios cuyo píxel sea 20. Es una propiedad del
  * mapa, no de la vegetación, y confundirlas es lo que mantuvo esta banda en un
  * solo sitio durante cinco lotes.
+ *
+ * **El lote 16 le agregó la trampa inversa.** Si la clase es una propiedad del
+ * mapa, lo coherente es buscar sitios cuyo píxel sea 20, y el lote 16 encontró
+ * uno: la Estación Towoomba, con 66, 53 y 44 % de arbustal en las tres ventanas.
+ * **Tampoco alimenta la banda**, porque la fuente dice que el ensayo desmontó
+ * todas las leñosas en 1949 y la parcela medida tiene 58 m², menos que un píxel
+ * de WorldCover. El píxel describe el bushveld de alrededor y no la parcela.
+ *
+ * Buscar por píxel sigue siendo la estrategia correcta, y ahora se sabe que hay
+ * que preguntarle a la fuente qué le hicieron a la parcela antes de aceptarla.
  *
  * **Qué NO es.** No es por hectárea de predio: es por hectárea de las clases
  * pastoreables que tienen medición. Un predio mitad pastizal y mitad suelo

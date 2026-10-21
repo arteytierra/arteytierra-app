@@ -21,6 +21,9 @@ import {
   FRACCION_HERBACEA_DEL_SITIO, fraccionHerbacea,
   SERIE_CPER, ECUACION_FORRAJE_A_ANPP, anppDeForraje,
   MODELO_REGIONAL_SALA_1988, MODELO_LARGO_PLAZO_CPER, anppDelModelo, cruceDeModelos,
+  SERIE_RIO_MAYO, fraccionHerbaceaRioMayo,
+  MODELO_CON_MEMORIA_CPER, anppConMemoria, MODELO_EQUILIBRIO_CPER,
+  CONTRASTE_DE_MANEJO, factorDeManejo, coberturaBasalContraProduccion,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -244,9 +247,15 @@ describe('la escalera de prodForrajera, medida contra lo que hay publicado', () 
     // Trachypogon de Calabozo, bioma 7 (`ECO_ID` 572, Llanos), entra con 3.750
     // kg MS/ha/anio de produccion AEREA. Entro donde las otras no porque es un
     // flujo anual y no una masa en pie. Lo que sigue vacio es el bioma 9.
-    expect(medicionesDeBioma('resolve_sabana_tropical')).toHaveLength(1);
-    expect(medicionesDeBioma('resolve_sabana_tropical')[0]!.sitio)
-      .toMatch(/Calabozo/);
+    // El lote 16 le sumó dos: los pastizales de Towoomba y Ukulinga, de la misma
+    // fuente sudafricana. Ninguno de los tres alimenta una banda —Calabozo y
+    // Towoomba por `insumos`, Ukulinga por `clase_wc`— así que el bioma donde
+    // cae la mayoría de los predios ganaderos tiene tres mediciones montadas y
+    // cero que lleguen a un número en pantalla.
+    const sabana = medicionesDeBioma('resolve_sabana_tropical');
+    expect(sabana).toHaveLength(3);
+    expect(sabana.map(m => m.sitio).join(' ')).toMatch(/Calabozo/);
+    expect(sabana.filter(m => m.clase_wc !== null && m.insumos === 'secano')).toHaveLength(0);
     // Y lo que Glencoe deja, que no es una produccion, sigue montado aparte y
     // sigue sin entrar al archivo: una cosa no reemplazo a la otra.
     expect(UTILIZACION_GLENCOE.BIOMA).toBe('resolve_sabana_tropical');
@@ -508,8 +517,8 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son diecisiete sitios en ocho de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(17);
+  it('son veinte sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(20);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
@@ -524,17 +533,21 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
     // fuente. Lo que no se admite es inventar una.
     const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
-    expect(conCoord).toHaveLength(3);
+    expect(conCoord).toHaveLength(6);
     for (const m of conCoord) {
       // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
       // y el signo es exactamente lo que se equivoca al consultar un servicio.
       expect(m.coordenada).toMatch(/[NS],/);
       expect(m.coordenada).toMatch(/[EW]/);
     }
-    // Las tres tienen el píxel consultado, y el criterio de estabilidad del
-    // lote 14 reparte: dos quedaron en clase 30 porque la clase no cambia entre
-    // 500 m, 2 km y 5 km, y Río Mayo en `null` porque sí cambia.
-    expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(1);
+    // Las seis tienen el píxel consultado, y el reparto dice algo: **la mitad
+    // quedó sin clase**. Calabozo y el CPER en 30 porque el píxel no cambia entre
+    // 500 m, 2 km y 5 km; Towoomba en 20 por lo mismo; y tres en `null` por tres
+    // motivos distintos: Río Mayo porque la clase se da vuelta con la ventana,
+    // Bloemfontein porque la serie junta dos lugares y la coordenada no cae en
+    // ninguno, y Ukulinga porque la coordenada publicada tiene los dos números
+    // permutados. Encontrar la medición ya no es el problema: ubicarla sí.
+    expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(3);
     expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(2);
   });
 
@@ -1188,4 +1201,489 @@ describe('lote 15 — cincuenta años del mismo campo, y lo que le hacen a la es
     const escalones = new Set(SERIE_CPER.map(f => escalera(f.lluvia_mm)));
     expect(escalones.size).toBe(3);
   });
+});
+
+/**
+ * Los quince años de Río Mayo, y la capa que esta app tiene que predecir.
+ *
+ * El test fuerte es el primero: recalcula los cinco estadísticos de columna y los
+ * diez valores de eficiencia de uso de la lluvia que el propio pie de tabla
+ * publica. Si alguien toca una fila, dejan de dar.
+ */
+describe('la segunda serie larga, con las capas separadas', () => {
+  /** Cuadrados mínimos sobre pares (x, y). */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx = pares.reduce((a, p) => a + p[0], 0);
+    const sy = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  /** Media, desvío muestral y CV en % de una columna, salteando los `null`. */
+  function col(vals: ReadonlyArray<number | null>) {
+    const v = vals.filter((x): x is number => x !== null);
+    const n = v.length;
+    const m = v.reduce((a, x) => a + x, 0) / n;
+    const sd = Math.sqrt(v.reduce((a, x) => a + (x - m) ** 2, 0) / (n - 1));
+    return { m, sd, cv: (100 * sd) / m, n };
+  }
+
+  const completos = SERIE_RIO_MAYO.filter(f => f.total !== null);
+
+  it('los cinco estadísticos del pie de tabla salen de las quince filas', () => {
+    // Esto es el caso resuelto de la literatura, igual que el ajuste del CPER:
+    // la tabla publica media, desvío y CV de cada columna, y con eso una
+    // transcripción equivocada no pasa.
+    const g = col(SERIE_RIO_MAYO.map(f => f.gramineas));
+    expect(g.m).toBeCloseTo(28.3, 1);
+    expect(g.sd).toBeCloseTo(10.4, 1);
+    expect(g.cv).toBeCloseTo(36.8, 1);
+    expect(g.n).toBe(15);
+
+    const a = col(SERIE_RIO_MAYO.map(f => f.arbustos));
+    expect(a.m).toBeCloseTo(29.3, 1);
+    expect(a.sd).toBeCloseTo(9.0, 1);
+    expect(a.cv).toBeCloseTo(30.7, 0);
+    expect(a.n).toBe(10);
+
+    const t = col(SERIE_RIO_MAYO.map(f => f.total));
+    // La media exacta de los diez es 56,25 y la tabla imprime 56,2: truncó en vez
+    // de redondear, y el resumen del trabajo dice «56 g·m−2·yr−1». Se tolera el
+    // último dígito y no se toca la fila para que cierre.
+    expect(Math.abs(t.m - 56.2)).toBeLessThan(0.06);
+    expect(t.sd).toBeCloseTo(14.8, 1);
+    expect(t.cv).toBeCloseTo(26.3, 1);
+
+    const tc = col(SERIE_RIO_MAYO.map(f => f.temp_c));
+    expect(tc.m).toBeCloseTo(8.5, 1);
+    expect(tc.sd).toBeCloseTo(0.4, 1);
+
+    const ll = col(SERIE_RIO_MAYO.map(f => f.lluvia_mm));
+    expect(Math.round(ll.m)).toBe(155);   // la tabla publica 155; el exacto es 155,47
+    expect(ll.sd).toBeCloseTo(52, 0);
+    expect(ll.cv).toBeCloseTo(33.6, 1);
+
+    // Y el paréntesis de la tabla —sólo los diez años completos— para gramíneas.
+    expect(col(completos.map(f => f.gramineas)).m).toBeCloseTo(26.9, 1);
+  });
+
+  it('las tres columnas de producción son consistentes entre sí', () => {
+    // Gramíneas + arbustos tiene que dar el total, y es una verificación interna
+    // que no depende de ningún estadístico: nueve de las diez filas cierran al
+    // decimal. La excepción es 1996, donde 14,7 + 27,8 = 42,5 y la tabla imprime
+    // 42,6, y está así en las DOS fuentes —el artículo y el archivo de datos del
+    // ORNL—, así que es redondeo de los componentes y no un error de
+    // transcripción. Es el mismo caso que el 620 del CPER en el lote 15.
+    const desvios = SERIE_RIO_MAYO
+      .filter(f => f.total !== null)
+      .map(f => Math.abs(f.gramineas + f.arbustos! - f.total!));
+    expect(desvios).toHaveLength(10);
+    expect(desvios.filter(d => d < 0.001)).toHaveLength(9);
+    expect(Math.max(...desvios)).toBeLessThan(0.11);
+
+    // Y la regla estructural: si falta el componente arbustivo, falta el total.
+    for (const f of SERIE_RIO_MAYO) {
+      expect(f.arbustos === null).toBe(f.total === null);
+    }
+    expect(SERIE_RIO_MAYO).toHaveLength(15);
+  });
+
+  it('los diez valores de eficiencia de uso de la lluvia son los publicados', () => {
+    const pub = [0.39, 0.34, 0.53, 0.38, 0.57, 0.45, 0.26, 0.36, 0.38, 0.23];
+    expect(completos).toHaveLength(10);
+    completos.forEach((f, i) => {
+      expect(f.total! / f.lluvia_mm).toBeCloseTo(pub[i]!, 2);
+    });
+  });
+
+  it('las gramíneas no responden a la lluvia anual y los arbustos sí', () => {
+    // Es el hallazgo del trabajo, y el más grave de este archivo para
+    // `prodForrajera`: la capa que la app predice es la que no responde.
+    const g = recta(SERIE_RIO_MAYO.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(g.b).toBeCloseTo(0.024, 3);
+    expect(g.r2).toBeLessThan(0.02);
+
+    const a = recta(SERIE_RIO_MAYO
+      .filter(f => f.arbustos !== null)
+      .map(f => [f.lluvia_mm, f.arbustos!] as const));
+    expect(a.b).toBeCloseTo(0.125, 3);
+    expect(a.r2).toBeGreaterThan(0.70);
+
+    // La pendiente de la leñosa es cinco veces la de la herbácea, y el r² es
+    // cuarenta y ocho veces. Por eso juntarlas enmascara la relación.
+    expect(a.b / g.b).toBeGreaterThan(5);
+
+    // Y el total, que es lo que se vería sin separar, queda en el medio.
+    const t = recta(completos.map(f => [f.lluvia_mm, f.total!] as const));
+    expect(t.a).toBeCloseTo(34.43, 1);
+    expect(t.b).toBeCloseTo(0.1412, 3);
+    expect(t.r2).toBeCloseTo(0.346, 2);
+  });
+
+  it('la pendiente del forraje acá es 25 veces menor que la del modelo espacial', () => {
+    const g = recta(SERIE_RIO_MAYO.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(MODELO_REGIONAL_SALA_1988.pendiente / g.b).toBeGreaterThan(24);
+  });
+
+  it('la escalera se pasa en los quince años, y la mediana es más del doble', () => {
+    // En el CPER se pasaba en 35 de 50 con mediana 1,27. Acá siempre.
+    const razones = SERIE_RIO_MAYO
+      .map(f => escalera(f.lluvia_mm) / gM2AKgHa(f.gramineas))
+      .sort((x, y) => x - y);
+    expect(razones.every(r => r > 1)).toBe(true);
+    expect(razones[Math.floor(razones.length / 2)]).toBeCloseTo(2.37, 1);
+    expect(razones[razones.length - 1]).toBeCloseTo(6.60, 1);
+    // Y los quince caen en el MISMO escalón, el de menos de 300 mm.
+    expect(new Set(SERIE_RIO_MAYO.map(f => escalera(f.lluvia_mm))).size).toBe(1);
+    expect(escalera(SERIE_RIO_MAYO[0]!.lluvia_mm)).toBe(700);
+  });
+
+  it('la asimetría de Río Mayo se replica con quince años, y el lote 15 se pasó', () => {
+    // El lote 14 la trajo, el lote 15 la declaró artefacto de cinco años con dos
+    // métodos, y acá está con quince años y un solo método. Lo que el lote 15
+    // acertó es que no es universal: en el CPER no pasa.
+    function grupos(pares: ReadonlyArray<readonly [number, number]>) {
+      const m = pares.reduce((a, p) => a + p[0], 0) / pares.length;
+      const sd = Math.sqrt(
+        pares.reduce((a, p) => a + (p[0] - m) ** 2, 0) / (pares.length - 1));
+      const prom = (v: readonly number[]) => v.reduce((a, x) => a + x, 0) / v.length;
+      const sec = prom(pares.filter(p => p[0] < m - 0.5 * sd).map(p => p[1]));
+      const nor = prom(pares.filter(p => Math.abs(p[0] - m) <= 0.5 * sd).map(p => p[1]));
+      const hum = prom(pares.filter(p => p[0] > m + 0.5 * sd).map(p => p[1]));
+      return { caida: sec / nor - 1, suba: hum / nor - 1 };
+    }
+
+    const rm = grupos(completos.map(f => [f.lluvia_mm, f.total!] as const));
+    expect(rm.caida).toBeLessThan(-0.30);          // los secos caen un 35 %
+    expect(rm.suba).toBeLessThan(0);               // y los húmedos NO suben
+    expect(Math.abs(rm.caida) - Math.abs(rm.suba)).toBeGreaterThan(0.25);
+
+    // El mismo cálculo en el CPER da simétrico, que es lo que vio el lote 15.
+    const cper = grupos(SERIE_CPER.map(f => [f.lluvia_mm, f.forraje_aire_seco] as const));
+    expect(cper.suba).toBeGreaterThan(0.25);
+    expect(Math.abs(Math.abs(cper.caida) - Math.abs(cper.suba))).toBeLessThan(0.02);
+  });
+
+  it('la fracción herbácea del mismo sitio varía 2,15 veces entre años', () => {
+    const fr = SERIE_RIO_MAYO
+      .map(fraccionHerbaceaRioMayo)
+      .filter((x): x is number => x !== null);
+    expect(fr).toHaveLength(10);
+    expect(Math.min(...fr)).toBeCloseTo(0.281, 3);
+    expect(Math.max(...fr)).toBeCloseTo(0.604, 3);
+    expect(Math.max(...fr) / Math.min(...fr)).toBeCloseTo(2.15, 2);
+
+    // El 0,671 que está montado en FRACCION_HERBACEA_DEL_SITIO queda ARRIBA de
+    // los diez años, porque es otro método de integración.
+    const rm = FRACCION_HERBACEA_DEL_SITIO.find(f => /Río Mayo/.test(f.sitio))!;
+    expect(fraccionHerbacea(rm)).toBeGreaterThan(Math.max(...fr));
+
+    // Y baja cuando llueve más: el agua de más se la lleva la leñosa.
+    const pares = SERIE_RIO_MAYO
+      .filter(f => f.total !== null)
+      .map(f => [f.lluvia_mm, f.gramineas / f.total!] as const);
+    expect(recta(pares).b).toBeLessThan(0);
+  });
+
+  it('el pico de biomasa subestima la capa herbácea y no toca la leñosa', () => {
+    // El mismo sitio y el mismo año, 1984, con dos métodos de integración: acá el
+    // pico, en FRACCION_HERBACEA_DEL_SITIO la suma de incrementos de Fernández-A.
+    const f84 = SERIE_RIO_MAYO.find(f => f.anio === 1984)!;
+    const rm = FRACCION_HERBACEA_DEL_SITIO.find(f => /Río Mayo/.test(f.sitio))!;
+    const arbustos7a = rm.aerea_total - rm.herbacea;
+
+    expect(rm.herbacea / f84.gramineas).toBeCloseTo(1.36, 2);
+    expect(arbustos7a / f84.arbustos!).toBeCloseTo(1.01, 2);
+    expect(rm.aerea_total / f84.total!).toBeCloseTo(1.22, 2);
+  });
+
+  it('Río Mayo ya tiene temperatura media anual, y era de esta tabla', () => {
+    const rm = sitio('Río Mayo');
+    expect(rm.temp_media_c_anual).toBe(8.5);
+    expect(SERIE_RIO_MAYO.find(f => f.anio === 1984)!.temp_c).toBe(rm.temp_media_c_anual);
+    // Y con una media anual de verdad se le puede correr el Miami Model, que es
+    // justo lo que el lote 14 no pudo hacer con esta entrada.
+    const miami = nppMiami(rm.lluvia_mm_min!, rm.temp_media_c_anual!);
+    expect(miami).not.toBeNull();
+  });
+});
+
+/**
+ * El modelo con memoria: lo que el lote 15 declaró faltante.
+ *
+ * El test que importa es el primero, porque reproduce los siete números de la
+ * tabla publicada desde las cincuenta filas que ya estaban montadas.
+ */
+describe('la memoria, con coeficiente publicado y re-ajustada', () => {
+  /** Mínimos cuadrados múltiples por ecuaciones normales con Gauss-Jordan. */
+  function ols(ys: readonly number[], xs: ReadonlyArray<readonly number[]>) {
+    const k = xs[0]!.length;
+    const n = ys.length;
+    const m = k + 1;
+    const X = xs.map(x => [1, ...x]);
+    const A = Array.from({ length: m }, (_, r) =>
+      Array.from({ length: m }, (_, c) =>
+        X.reduce((a, _row, i) => a + X[i]![r]! * X[i]![c]!, 0)));
+    const b = Array.from({ length: m }, (_, r) =>
+      X.reduce((a, _row, i) => a + X[i]![r]! * ys[i]!, 0));
+    for (let col = 0; col < m; col++) {
+      let piv = col;
+      for (let r = col; r < m; r++) if (Math.abs(A[r]![col]!) > Math.abs(A[piv]![col]!)) piv = r;
+      [A[col], A[piv]] = [A[piv]!, A[col]!];
+      [b[col], b[piv]] = [b[piv]!, b[col]!];
+      const d = A[col]![col]!;
+      A[col] = A[col]!.map(v => v / d);
+      b[col] = b[col]! / d;
+      for (let r = 0; r < m; r++) {
+        if (r === col) continue;
+        const f = A[r]![col]!;
+        A[r] = A[r]!.map((v, c) => v - f * A[col]![c]!);
+        b[r] = b[r]! - f * b[col]!;
+      }
+    }
+    const pred = X.map(row => row.reduce((a, v, j) => a + v * b[j]!, 0));
+    const my = ys.reduce((a, y) => a + y, 0) / n;
+    const sst = ys.reduce((a, y) => a + (y - my) ** 2, 0);
+    const sse = ys.reduce((a, y, i) => a + (y - pred[i]!) ** 2, 0);
+    const r2 = 1 - sse / sst;
+    const F = ((sst - sse) / k) / (sse / (n - m));
+    return { coef: b, r2, F, gl: n - m, n };
+  }
+
+  /** La columna de ANPP: forraje aire-seco pasado por la ecuación 1 publicada. */
+  const anpp = new Map(SERIE_CPER.map(f => [f.anio, anppDeForraje(f.forraje_aire_seco)]));
+  const lluvia = new Map(SERIE_CPER.map(f => [f.anio, f.lluvia_mm]));
+  const pares = SERIE_CPER
+    .filter(f => anpp.has(f.anio - 1))
+    .map(f => ({ pp: f.lluvia_mm, prev: anpp.get(f.anio - 1)!, y: anpp.get(f.anio)! }));
+
+  it('los siete números del modelo publicado salen de las cincuenta filas', () => {
+    // La entrega del lote 16 dio esta verificación por imposible, porque la serie
+    // guarda forraje y no ANPP. Se podía: la ecuación 1 del mismo trabajo pasa de
+    // una columna a la otra, y entonces el ajuste reproduce la tabla. Que caiga
+    // ahí prueba además que la columna de Oesterheld es ésa.
+    const aj = ols(pares.map(p => p.y), pares.map(p => [p.pp, p.prev] as const));
+    expect(aj.coef[0]).toBeCloseTo(MODELO_CON_MEMORIA_CPER.ORDENADA, 0);
+    expect(aj.coef[1]).toBeCloseTo(MODELO_CON_MEMORIA_CPER.PENDIENTE_LLUVIA, 2);
+    expect(aj.coef[2]).toBeCloseTo(MODELO_CON_MEMORIA_CPER.PESO_DEL_ANIO_ANTERIOR, 2);
+    expect(aj.r2).toBeCloseTo(MODELO_CON_MEMORIA_CPER.R2, 2);
+    expect(aj.F).toBeCloseTo(30.4, 0);
+    expect(aj.gl).toBe(44);
+    expect(aj.n).toBe(MODELO_CON_MEMORIA_CPER.N);
+  });
+
+  it('el n = 47 sale de los dos huecos de la serie, y son los que nombra la fuente', () => {
+    // «we added previous year production with the subsequent loss of two data
+    // points: 1941 and 1981, which lacked data from their previous year (N = 47)».
+    expect(SERIE_CPER).toHaveLength(50);
+    const sinPrevio = SERIE_CPER.filter(f => !anpp.has(f.anio - 1)).map(f => f.anio);
+    expect(sinPrevio).toEqual([1939, 1941, 1981]);
+    expect(50 - sinPrevio.length).toBe(47);
+  });
+
+  it('el modelo sin memoria también sale, y su ordenada es 55,8', () => {
+    const aj = ols(SERIE_CPER.map(f => anppDeForraje(f.forraje_aire_seco)),
+                   SERIE_CPER.map(f => [f.lluvia_mm] as const));
+    expect(aj.coef[0]).toBeCloseTo(55.8, 0);
+    expect(aj.coef[1]).toBeCloseTo(0.13, 2);
+    expect(aj.r2).toBeCloseTo(0.39, 2);
+    expect(aj.gl).toBe(48);
+    // Y es el mismo que está montado desde el lote 15, redondeado a 56.
+    expect(MODELO_LARGO_PLAZO_CPER.ordenada).toBe(56);
+    expect(MODELO_LARGO_PLAZO_CPER.pendiente).toBe(MODELO_CON_MEMORIA_CPER.PENDIENTE_LLUVIA);
+  });
+
+  it('la lluvia de un año y la del anterior no están asociadas', () => {
+    // El trabajo lo publica (r² = 0,01), y es lo que descarta que la memoria sea
+    // autocorrelación de la lluvia disfrazada.
+    const ll = SERIE_CPER
+      .filter(f => lluvia.has(f.anio - 1))
+      .map(f => [lluvia.get(f.anio - 1)!, f.lluvia_mm] as const);
+    const aj = ols(ll.map(p => p[1]), ll.map(p => [p[0]] as const));
+    expect(aj.r2).toBeLessThan(0.02);
+  });
+
+  it('la memoria no le saca nada a la lluvia: le saca la ordenada', () => {
+    const media = SERIE_CPER.reduce((a, f) => a + f.lluvia_mm, 0) / SERIE_CPER.length;
+    const sinMemoria = anppDelModelo(MODELO_LARGO_PLAZO_CPER, media);
+
+    // La identidad: a la lluvia media del sitio, el término de memoria más la
+    // ordenada del modelo con memoria reconstruyen la ORDENADA del modelo sin
+    // memoria. 14,8 + 0,41 × 97,7 = 54,9, contra 56.
+    const reconstruido = MODELO_CON_MEMORIA_CPER.ORDENADA
+      + MODELO_CON_MEMORIA_CPER.PESO_DEL_ANIO_ANTERIOR * sinMemoria;
+    expect(Math.abs(reconstruido - MODELO_LARGO_PLAZO_CPER.ordenada)).toBeLessThan(1.5);
+
+    // Y los dos modelos predicen lo mismo a la lluvia media, que es el otro lado
+    // de la misma identidad: el de equilibrio no es un modelo distinto, es el
+    // mismo visto después de que la producción se acomodó.
+    expect(anppDelModelo(MODELO_EQUILIBRIO_CPER, media)).toBeCloseTo(sinMemoria, -1);
+  });
+
+  it('la pendiente de equilibrio es 0,22 y corrige el 4,6 del lote 15', () => {
+    expect(MODELO_EQUILIBRIO_CPER.pendiente).toBeCloseTo(0.2203, 4);
+    expect(MODELO_EQUILIBRIO_CPER.ordenada).toBeCloseTo(25.08, 2);
+
+    // Un año suelto contra el modelo espacial: 4,6. En equilibrio: 2,7.
+    expect(MODELO_REGIONAL_SALA_1988.pendiente / MODELO_LARGO_PLAZO_CPER.pendiente)
+      .toBeCloseTo(4.62, 2);
+    expect(MODELO_REGIONAL_SALA_1988.pendiente / MODELO_EQUILIBRIO_CPER.pendiente)
+      .toBeCloseTo(2.72, 2);
+
+    // Y el cruce con el regional baja de 192 a 156 mm, con lo cual no queda
+    // ningún sitio del archivo debajo de la cota.
+    expect(cruceDeModelos(MODELO_REGIONAL_SALA_1988, MODELO_EQUILIBRIO_CPER))
+      .toBeCloseTo(156, 0);
+    // Y hay que comparar cifras DE SITIO, no el año seco de una serie: el mínimo
+    // de 107 mm del CPER es un año y no un lugar. Es la misma distinción que el
+    // lote 15 tuvo que agregar, y acá vuelve a hacer falta.
+    const deSitio = FORRAJE_MEDIDO.filter(
+      m => m.lluvia_mm_min !== null
+        && (m.lluvia_que_es === 'anio_medido' || m.lluvia_que_es === 'normal_publicada'));
+    expect(Math.min(...deSitio.map(m => m.lluvia_mm_min!))).toBe(191);
+    expect(Math.min(...deSitio.map(m => m.lluvia_mm_min!))).toBeGreaterThan(156);
+  });
+
+  it('con la misma lluvia, la historia cambia el resultado 1,24 veces', () => {
+    // Es lo que una función de la lluvia del año no puede representar, y no por
+    // estar mal calibrada: por no tener dónde mirar.
+    const eq = (P: number) => anppDelModelo(MODELO_EQUILIBRIO_CPER, P);
+    const media = SERIE_CPER.reduce((a, f) => a + f.lluvia_mm, 0) / SERIE_CPER.length;
+    const seco = media - 100;
+    const trasSeco = anppConMemoria(seco, eq(media - 100));
+    const trasHumedo = anppConMemoria(seco, eq(media + 100));
+    expect(trasHumedo / trasSeco).toBeCloseTo(1.24, 2);
+    // Y la escalera devuelve lo mismo en los dos casos, por construcción.
+    expect(escalera(seco)).toBe(escalera(seco));
+  });
+});
+
+/**
+ * Lo que el manejo vale, con el clima quieto.
+ */
+describe('el contraste de manejo', () => {
+  const porSitio = (frag: string) =>
+    CONTRASTE_DE_MANEJO.find(c => c.sitio.includes(frag))!;
+
+  it('el estado del pastizal lleva la producción a un tercio, con la misma lluvia', () => {
+    const b = porSitio('Bloemfontein');
+    expect(factorDeManejo(b)).toBeCloseTo(0.31, 2);
+    expect(b.cobertura_basal_control_pct).toBe(9.0);
+    expect(b.cobertura_basal_tratado_pct).toBe(3.4);
+    // La eficiencia de uso de la lluvia cae en la misma proporción, porque la
+    // lluvia es la misma: 138/538 = 0,257 contra 43/538 = 0,080.
+    const rueControl = b.control_g_ms_m2_anio / b.lluvia_mm;
+    const rueTratado = b.tratado_g_ms_m2_anio / b.lluvia_mm;
+    expect(rueControl).toBeCloseTo(0.26, 2);
+    expect(rueTratado).toBeCloseTo(0.08, 2);
+  });
+
+  it('el manejo pesa más que cincuenta años de clima en un sitio', () => {
+    const factores = CONTRASTE_DE_MANEJO.map(factorDeManejo);
+    expect(Math.min(...factores)).toBeCloseTo(0.31, 2);
+    expect(Math.max(...factores)).toBeCloseTo(3.79, 2);
+    const rangoManejo = Math.max(...factores) / Math.min(...factores);
+    expect(rangoManejo).toBeGreaterThan(11);
+
+    // Contra toda la variación climática del CPER: de 22 a 128 g/m² en 50 años.
+    const prod = SERIE_CPER.map(f => f.forraje_aire_seco);
+    const rangoClima = Math.max(...prod) / Math.min(...prod);
+    expect(rangoClima).toBeCloseTo(5.8, 1);
+    expect(rangoManejo).toBeGreaterThan(rangoClima);
+  });
+
+  it('la cobertura basal no ordena la producción entre sitios', () => {
+    // Vale escribirlo porque la cobertura es lo que un satélite ve.
+    const pts = coberturaBasalContraProduccion();
+    expect(pts).toHaveLength(3);
+    const ordenadoPorCobertura = [...pts].sort((a, b) => a.cobertura_pct - b.cobertura_pct);
+    const prods = ordenadoPorCobertura.map(p => p.produccion_g_ms_m2_anio);
+    // 9,0 % -> 138 ; 12,6 % -> 137 ; 15,8 % -> 323. No es monótono.
+    expect(prods[0]).toBeGreaterThan(prods[1]!);
+  });
+});
+
+/**
+ * Los tres sitios del lote 16, y por qué ninguno alimenta una banda.
+ */
+describe('los tres pastizales sudafricanos', () => {
+  const bloem = () => sitio('Bloemfontein');
+  const towoomba = () => sitio('Towoomba');
+  const ukulinga = () => sitio('Ukulinga');
+
+  it('los tres entraron con muchos años medidos y los tres quedan afuera', () => {
+    // 29, 27 y 30 temporadas: más dato que casi cualquier otra entrada. El cuello
+    // de botella de este archivo ya no es medir, es poder ubicar lo medido.
+    for (const m of [bloem(), towoomba(), ukulinga()]) {
+      expect(m.insumos).toBe('desconocido');
+      // Es una media de largo plazo y no las puntas de una serie: escribí
+      // `rango_de_anios` en las tres y un test del lote 15 lo atajó.
+      expect(m.lluvia_que_es).toBe('normal_publicada');
+      expect(m.tipo).toBe('npp_herbacea');
+    }
+    // Y por tres motivos distintos: dos por `clase_wc` nula y uno por insumos.
+    expect(bloem().clase_wc).toBeNull();
+    expect(ukulinga().clase_wc).toBeNull();
+    expect(towoomba().clase_wc).toBe(20);
+  });
+
+  it('Towoomba es clase 20 y NO entra en la banda del arbustal', () => {
+    // Es el segundo píxel de arbustal del archivo y está excluido a propósito:
+    // la fuente dice que el ensayo desmontó todas las leñosas en 1949.
+    const banda = bandaDeClase(20);
+    expect(banda).not.toBeNull();
+    expect(banda!.sitios).toBe(1);
+    const enLaBanda = FORRAJE_MEDIDO.filter(m => m.clase_wc === 20 && m.insumos === 'secano');
+    expect(enLaBanda).toHaveLength(1);
+    expect(enLaBanda).not.toContain(towoomba());
+    expect(towoomba().donde_deja_de_valer).toMatch(/DESMONTADO/);
+  });
+
+  it('las cifras son las tres de la Tabla 2.1 de la fuente', () => {
+    expect(bloem().kg_ms_ha_anio_tipico).toBe(gM2AKgHa(138));
+    expect(towoomba().kg_ms_ha_anio_tipico).toBe(gM2AKgHa(137));
+    expect(ukulinga().kg_ms_ha_anio_tipico).toBe(gM2AKgHa(323));
+    expect(bloem().lluvia_mm_min).toBe(538);
+    expect(towoomba().lluvia_mm_min).toBe(645);
+    expect(ukulinga().lluvia_mm_min).toBe(798);
+    // Y cada control es el `control_g_ms_m2_anio` de su par en CONTRASTE_DE_MANEJO.
+    for (const c of CONTRASTE_DE_MANEJO) {
+      const m = FORRAJE_MEDIDO.find(x => x.sitio === c.sitio)!;
+      expect(m.kg_ms_ha_anio_tipico).toBe(gM2AKgHa(c.control_g_ms_m2_anio));
+      expect(m.lluvia_mm_min).toBe(c.lluvia_mm);
+    }
+  });
+
+  it('las dos coordenadas que la fuente publica mal quedan marcadas', () => {
+    // Ukulinga tiene los dos números permutados y Bloemfontein cae 31 km al
+    // norte del campus que la misma fuente nombra. El error es de la fuente, no
+    // de la entrega: Towoomba usa el mismo formato y cae bien.
+    expect(ukulinga().coordenada).toMatch(/permutados/);
+    expect(bloem().coordenada).toMatch(/31 km/);
+    expect(towoomba().coordenada).toBe('28°21′ E, 24°54′ S, 1.134 m');
+  });
+
+  it('Towoomba cierra la pregunta del lote 05 sobre Nylsvley', () => {
+    // El lote 05 comparó los 198 g/m² de la fila P0N3 contra los 76 de Nylsvley y
+    // encontró que era un tratamiento fertilizado. Ahora está el control: 137, que
+    // son 1,8 veces y no 2,6. El fertilizante explicaba parte y no todo.
+    const control = towoomba().kg_ms_ha_anio_tipico! / 10;
+    expect(control).toBe(137);
+    expect(198 / 76).toBeCloseTo(2.6, 1);
+    expect(control / 76).toBeCloseTo(1.8, 1);
+    expect(control).toBeLessThan(198);
+    const p2n3 = porPar('Towoomba').tratado_g_ms_m2_anio;
+    expect(p2n3).toBeGreaterThan(198);   // control < sólo N < N+P
+  });
+
+  function porPar(frag: string) {
+    return CONTRASTE_DE_MANEJO.find(c => c.sitio.includes(frag))!;
+  }
 });

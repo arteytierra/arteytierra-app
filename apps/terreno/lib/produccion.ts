@@ -275,6 +275,61 @@ export interface PerfilRodeo {
  * **La producción de un año depende del estado en que la dejó el anterior**, y
  * una función de la lluvia de este año no tiene dónde guardar eso. El reemplazo
  * no es una escalera mejor ni una recta: es algo con estado.
+ *
+ * El lote 16 trajo ese «algo con estado» publicado y sobre el mismo campo, en
+ * `MODELO_CON_MEMORIA_CPER`:
+ *
+ * ```
+ * ANPP(t) = 14,8 + 0,13 × lluvia(t) + 0,41 × ANPP(t−1)
+ * ```
+ *
+ * Tres cosas de ahí le hablan directo a esta función.
+ *
+ * **Primera: la memoria no le compite a la lluvia, le compite a la constante.** La
+ * pendiente de la lluvia es 0,13 con memoria y sin memoria; lo que se mueve es la
+ * ordenada, de 55,8 a 14,8. Esta función no tiene pendiente —devuelve una
+ * constante por tramo— así que lo que le falta no es un escalón más fino: es el
+ * término que la memoria ocupa.
+ *
+ * **Segunda: con la misma lluvia, el resultado cambia 1,24 veces según lo que
+ * vino antes.** Un año de 222 mm en ese campo produce 73,9 g/m² si viene después
+ * de una racha seca y 92,0 si viene después de una húmeda. Esta función devuelve
+ * 700 kg/ha en los dos casos, y no por estar mal calibrada: por no tener dónde
+ * mirar.
+ *
+ * **Tercera, y corrige un número de más arriba.** La pendiente de ese modelo
+ * llevada a equilibrio es 0,22 y no 0,13, así que la razón contra el modelo
+ * espacial es 2,7 y no 4,6. El 4,6 queda escrito porque es la razón que hace el
+ * propio trabajo del CPER, pero la comparación justa contra un modelo que compara
+ * sitios ya acomodados a su lluvia es la de equilibrio.
+ *
+ * ## Y hay algo peor, que es de qué capa hablamos
+ *
+ * Todo lo anterior discute la forma de una función de la lluvia. El lote 16 trajo
+ * una segunda serie larga, `SERIE_RIO_MAYO`, con las capas separadas todos los
+ * años, y ahí la pregunta cambia:
+ *
+ * | lo que se ajusta contra la lluvia anual | pendiente | r² |
+ * |---|---|---|
+ * | **gramíneas**, 15 años | **0,024** | **0,015** |
+ * | arbustos, 10 años | 0,125 | 0,728 |
+ *
+ * Esta función devuelve **forraje**. En ese sitio la lluvia anual explica el 1,5 %
+ * de la variación del forraje y el 73 % de la de la leñosa, y los autores
+ * concluyen que juntar las capas enmascara la relación. En el CPER —donde la
+ * columna medida sí es forraje— la lluvia explica el 39 %, así que no es que la
+ * lluvia nunca sirva: **deja de servir donde hay leñosas compitiendo por el agua
+ * profunda**, que es buena parte de los predios que esta app analiza.
+ *
+ * ## Y lo que esta función ignora es más grande que todo lo anterior
+ *
+ * `CONTRASTE_DE_MANEJO` mide tres pares de parcelas vecinas del mismo sitio, con
+ * el mismo clima, sobre 27 a 30 años: el estado del pastizal lleva la producción a
+ * **0,31** y la fertilización alta a **3,79**. En el CPER, cincuenta años de
+ * lluvia de 107 a 588 mm la mueven un factor 5,8.
+ *
+ * **El manejo pesa más que medio siglo de clima en un sitio.** Mientras esta
+ * función sea sólo de la lluvia, afinarla es trabajar sobre la variable chica.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;
