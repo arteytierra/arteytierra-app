@@ -148,8 +148,8 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Veinte sitios en cinco continentes es poco —y doce de
- * los veinte son los que la banda puede usar—, y la clase de cobertura por sí
+ * **Rango de validez.** Veintidós sitios en cinco continentes es poco —y doce de
+ * los veintidós son los que la banda puede usar—, y la clase de cobertura por sí
  * sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
@@ -166,6 +166,22 @@ export interface ForrajeDeCobertura {
  * arbustos: se llena buscando sitios cuyo píxel sea 20. Es una propiedad del
  * mapa, no de la vegetación, y confundirlas es lo que mantuvo esta banda en un
  * solo sitio durante cinco lotes.
+ *
+ * **Y el lote 18 midió el techo de este método, con dos mediciones del mismo
+ * día.** Los sitios ecológicos silty y overflow del CGREC están intercalados
+ * adentro de los mismos doce potreros: **la misma coordenada, la misma clase 30 y
+ * la misma estabilidad** —91 %, 85 % y 85 % de pastizal en las tres ventanas—, y
+ * producen 2.501-3.410 contra 3.087-4.362 kg MS/ha·año. Un factor 1,3 que un
+ * satélite de 10 m no puede ver porque los dos sitios son el mismo píxel.
+ *
+ * Y es peor que un factor: **responden al manejo con el signo al revés.** En las
+ * lomadas el pastoreo liviano produce más que el fuerte (3.410 contra 2.637); en
+ * los bajos, liviano, moderado y fuerte no se diferencian entre sí. La clase de
+ * cobertura no distingue una lomada de un bajo, y lo que los separa es a dónde va
+ * el agua de escurrimiento, que es justamente lo que acequia **sí** calcula con el
+ * DEM. Es la pista más concreta que hay de por dónde tiene que entrar la mejora:
+ * no por más clases de cobertura, sino por cruzar la clase con la posición en el
+ * relieve.
  *
  * **El lote 16 le agregó la trampa inversa.** Si la clase es una propiedad del
  * mapa, lo coherente es buscar sitios cuyo píxel sea 20, y el lote 16 encontró

@@ -24,6 +24,9 @@ import {
   SERIE_RIO_MAYO, fraccionHerbaceaRioMayo,
   MODELO_CON_MEMORIA_CPER, anppConMemoria, MODELO_EQUILIBRIO_CPER,
   CONTRASTE_DE_MANEJO, factorDeManejo, coberturaBasalContraProduccion,
+  CARGA_CGREC, SE_AGRUPADO_CGREC, PENDIENTES_CGREC_FIN, UMBRAL_P2E_OVERFLOW,
+  filasDeCarga, factorDeCarga, usoDelTratamiento, cargaQueMasProduce,
+  pastoreoSuperaAlDescanso,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -517,8 +520,8 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son veinte sitios en ocho de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(20);
+  it('son veintidós sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(22);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
@@ -533,7 +536,7 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
     // fuente. Lo que no se admite es inventar una.
     const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
-    expect(conCoord).toHaveLength(6);
+    expect(conCoord).toHaveLength(8);
     for (const m of conCoord) {
       // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
       // y el signo es exactamente lo que se equivoca al consultar un servicio.
@@ -548,7 +551,10 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // ninguno, y Ukulinga porque la coordenada publicada tiene los dos números
     // permutados. Encontrar la medición ya no es el problema: ubicarla sí.
     expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(3);
-    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(2);
+    // Los dos del CGREC entraron en 30 y son los dos mejor ubicados del archivo:
+    // el píxel da 91, 85 y 85 % de pastizal en las tres ventanas. Igual no
+    // alimentan la banda, porque sus `insumos` quedaron en `desconocido`.
+    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(4);
   });
 
   it('cuatro de los diecisiete son sotobosque, y hay que poder contarlos', () => {
@@ -1686,4 +1692,311 @@ describe('los tres pastizales sudafricanos', () => {
   function porPar(frag: string) {
     return CONTRASTE_DE_MANEJO.find(c => c.sitio.includes(frag))!;
   }
+});
+
+
+describe('lote 17 — el orden de las columnas de Río Mayo, cuestionado y resuelto', () => {
+  /** Cuadrados mínimos sobre pares (x, y). */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx = pares.reduce((a, p) => a + p[0], 0);
+    const sy = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  /**
+   * La tabla de revisiones de la ficha del ORNL DAAC, que la propia ficha dice
+   * corregida «to agree with the values reported on page 544 of Jobbagy and Sala
+   * (2000)». Año: [ANPP_shrub, ANPP_grass].
+   *
+   * Es la segunda evidencia de la regla S: el orden de los CAMPOS del archivo de
+   * datos pone `ANPP_shrub` antes que `ANPP_grass`, al revés de la tabla del
+   * artículo, y la objeción del lote 17 salió de ahí. Esta tabla las nombra sobre
+   * valores y resuelve la ambigüedad sin tener que confiar en ningún orden.
+   */
+  const ORNL_REVISION: Readonly<Record<number, readonly [number, number]>> = {
+    1983: [10.8, 10.6], 1984: [25.7, 39.0], 1985: [33.6, 41.8],
+    1986: [34.0, 29.5], 1988: [23.9, 36.4], 1993: [26.5, 30.5],
+    1994: [31.3, 23.8], 1995: [33.9, 24.9], 1996: [27.8, 14.7],
+    1997: [45.8, 17.9],
+  };
+
+  it('las diez filas pareadas coinciden con la tabla de revisión del ORNL', () => {
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    expect(pareadas).toHaveLength(10);
+    for (const f of pareadas) {
+      const par = ORNL_REVISION[f.anio];
+      expect(par, `falta el año ${f.anio}`).toBeDefined();
+      expect(f.arbustos).toBe(par![0]);
+      expect(f.gramineas).toBe(par![1]);
+    }
+  });
+
+  it('sólo esta asignación reproduce las tres regresiones publicadas', () => {
+    const g = recta(SERIE_RIO_MAYO.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(g.a).toBeCloseTo(24.6, 1);
+    expect(g.b).toBeCloseTo(0.024, 3);
+    expect(g.r2).toBeCloseTo(0.015, 2);
+
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    const a = recta(pareadas.map(f => [f.lluvia_mm, f.arbustos as number] as const));
+    expect(a.a).toBeCloseTo(10.0, 1);
+    expect(a.b).toBeCloseTo(0.125, 3);
+    expect(a.r2).toBeCloseTo(0.728, 2);
+
+    const t = recta(pareadas.map(f => [f.lluvia_mm, f.total as number] as const));
+    expect(t.a).toBeCloseTo(34.4, 1);
+    expect(t.b).toBeCloseTo(0.141, 3);
+    expect(t.r2).toBeCloseTo(0.346, 2);
+  });
+
+  it('la asignación invertida no reproduce ninguna de las tres, y delata el mecanismo', () => {
+    // Invertir el par deja la columna de quince valores siendo una quimera: cinco
+    // años de gramíneas —los que tienen un solo valor— más diez de arbustos.
+    const herbacea = SERIE_RIO_MAYO.map(f =>
+      [f.lluvia_mm, f.arbustos ?? f.gramineas] as const);
+    const h = recta(herbacea);
+    expect(h.a).toBeCloseTo(11.25, 1);
+    expect(h.b).toBeCloseTo(0.120, 3);
+    expect(h.r2).toBeCloseTo(0.454, 2);
+    // No es ni el 0,015 de una capa ni el 0,728 de la otra.
+    expect(Math.abs(h.r2 - 0.015)).toBeGreaterThan(0.3);
+    expect(Math.abs(h.r2 - 0.728)).toBeGreaterThan(0.2);
+
+    // Y la otra mitad de la inversión es la regresión de las GRAMÍNEAS calculada
+    // sobre diez años en vez de quince. Ése es el mecanismo, y por eso la
+    // pendiente queda chica y el r², casi nulo.
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    const l = recta(pareadas.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(l.a).toBeCloseTo(24.36, 1);
+    expect(l.b).toBeCloseTo(0.0165, 3);
+    expect(l.r2).toBeCloseTo(0.0094, 3);
+  });
+
+  it('la normal de la ficha y la media de la serie no son el mismo número', () => {
+    // Tres cifras correctas para «la lluvia de Río Mayo»: 153 mm de normal
+    // publicada (ORNL, 1968-1990, 14 años de dato anual), 136 mm de media de 37
+    // años (Fernández et al. 1991) y 155,5 mm de promedio de estas quince filas.
+    const media = SERIE_RIO_MAYO.reduce((a, f) => a + f.lluvia_mm, 0) / SERIE_RIO_MAYO.length;
+    expect(media).toBeCloseTo(155.5, 1);
+    expect(Math.abs(media - 153)).toBeLessThan(3);
+    expect(Math.abs(media - 136) / 136).toBeGreaterThan(0.13);
+  });
+});
+
+describe('lote 18 — la carga animal, medida diecisiete años en el mismo campo', () => {
+  const siltyFin = filasDeCarga('silty', 'fin');
+  const overflowFin = filasDeCarga('overflow', 'fin');
+
+  function fila(sitio: 'silty' | 'overflow', momento: 'inicio' | 'pico' | 'fin',
+                intensidad: string) {
+    return CARGA_CGREC.find(f => f.sitio_ecologico === sitio && f.momento === momento
+      && f.intensidad === intensidad)!;
+  }
+
+  it('son treinta filas: dos sitios ecológicos, tres momentos, cinco intensidades', () => {
+    expect(CARGA_CGREC).toHaveLength(30);
+    for (const sitio of ['silty', 'overflow'] as const) {
+      for (const momento of ['inicio', 'pico', 'fin'] as const) {
+        expect(filasDeCarga(sitio, momento)).toHaveLength(5);
+      }
+    }
+    // La carga de cada intensidad es la misma en los seis bloques: es el
+    // tratamiento, no una medición por tabla.
+    const cargas = new Map<string, number>();
+    for (const f of CARGA_CGREC) {
+      if (cargas.has(f.intensidad)) expect(cargas.get(f.intensidad)).toBe(f.carga_aum_ha);
+      else cargas.set(f.intensidad, f.carga_aum_ha);
+    }
+    expect([...cargas.values()].sort((a, b) => a - b)).toEqual([0, 1.3, 2.7, 4.4, 6.9]);
+  });
+
+  it('el error estándar agrupado cuenta las columnas de producción de cada tabla', () => {
+    // La verificación de la regla S, y la que atrapa el corrimiento de columnas:
+    // la Tabla 2 trae CUATRO errores estándar y la Tabla 3, TRES. Si una lectura
+    // produce más columnas de producción que errores estándar, está corrida.
+    for (const [tabla, se] of Object.entries(SE_AGRUPADO_CGREC)) {
+      const filas = CARGA_CGREC.filter(f => f.tabla === tabla);
+      expect(filas, tabla).toHaveLength(5);
+      const columnas = (['gramineas', 'hierbas', 'arbustos', 'total'] as const)
+        .filter(c => filas.some(f => f[c] !== null)).length;
+      const conSe = (['gramineas', 'hierbas', 'arbustos', 'total'] as const)
+        .filter(c => se[c] !== null).length;
+      expect(columnas, tabla).toBe(conSe);
+    }
+    // Los silty no tienen grupo de arbustos: están contados con las hierbas.
+    expect(SE_AGRUPADO_CGREC['Tabla 3'].arbustos).toBeNull();
+    expect(CARGA_CGREC.filter(f => f.sitio_ecologico === 'silty')
+      .every(f => f.arbustos === null)).toBe(true);
+  });
+
+  it('la aritmética del resumen del artículo cierra contra la Tabla 6', () => {
+    // «the light treatment produced the most herbage (3 410 kg ha−1)... 545 kg
+    // ha−1 less on the ungrazed treatment and 909 kg ha−1 less on the extreme».
+    const liviano = fila('silty', 'fin', 'liviano').total!;
+    expect(liviano).toBe(3410);
+    expect(liviano - fila('silty', 'fin', 'sin_pastoreo').total!).toBe(545);
+    expect(liviano - fila('silty', 'fin', 'extremo').total!).toBe(909);
+  });
+
+  it('la curva tiene joroba: el descanso produce menos que el pastoreo liviano', () => {
+    const mejor = cargaQueMasProduce('silty', 'fin')!;
+    expect(mejor.intensidad).toBe('liviano');
+    expect(factorDeCarga(fila('silty', 'fin', 'liviano'))).toBeCloseTo(1.19, 2);
+    // El rango completo del manejo en el mismo sitio con el mismo clima.
+    const totales = siltyFin.map(f => f.total!).filter(t => t !== null);
+    expect(Math.max(...totales) / Math.min(...totales)).toBeCloseTo(1.36, 2);
+    // Y a partir del moderado baja monótonamente con la carga.
+    const desdeModerado = ['moderado', 'fuerte', 'extremo']
+      .map(i => fila('silty', 'fin', i).total!);
+    expect(desdeModerado[0]!).toBeGreaterThan(desdeModerado[1]!);
+    expect(desdeModerado[1]!).toBeGreaterThan(desdeModerado[2]!);
+  });
+
+  it('el coeficiente de cosecha de acequia es el tratamiento que más produjo', () => {
+    // 454 mm son 17,9 pulgadas: banda árida, cosechar 40 % con piso de 35 %.
+    const banda = bandaUso(454);
+    expect(banda.id).toBe('arido');
+    expect(banda.inicial).toBe(0.40);
+    expect(banda.min).toBe(0.35);
+    // El tratamiento liviano deja el 65 %, o sea cosecha el 35 %: el piso exacto
+    // de la banda. Y es el que más produjo de los cinco.
+    const liviano = fila('silty', 'fin', 'liviano');
+    expect(usoDelTratamiento(liviano)).toBeCloseTo(banda.min, 10);
+    expect(cargaQueMasProduce('silty', 'fin')!.intensidad).toBe('liviano');
+    // Falsable en las dos direcciones: con el 65 % y el 80 % de cosecha cae.
+    expect(usoDelTratamiento(fila('silty', 'fin', 'fuerte'))).toBeCloseTo(0.65, 10);
+    expect(1 - fila('silty', 'fin', 'fuerte').total! / liviano.total!).toBeCloseTo(0.23, 2);
+    expect(1 - fila('silty', 'fin', 'extremo').total! / liviano.total!).toBeCloseTo(0.27, 2);
+  });
+
+  it('en los bajos no hay joroba: liviano, moderado y fuerte caen adentro del error', () => {
+    // La fuente dice que no se diferencian (P > 0,05). Acá se reconstruye con su
+    // propio error estándar agrupado: la dispersión de los tres es menor que dos
+    // errores estándar, y el extremo se va bien afuera.
+    const tres = ['liviano', 'moderado', 'fuerte'].map(i => fila('overflow', 'fin', i).total!);
+    const se = SE_AGRUPADO_CGREC['Tabla 7'].total;
+    expect(Math.max(...tres) - Math.min(...tres)).toBeLessThan(2 * se);
+    const extremo = fila('overflow', 'fin', 'extremo').total!;
+    expect(Math.min(...tres) - extremo).toBeGreaterThan(2 * se);
+    // Y el no pastoreado no tiene media publicada acá, porque su producción no
+    // responde a la lluvia y la de los pastoreados sí.
+    expect(fila('overflow', 'fin', 'sin_pastoreo').total).toBeNull();
+    expect(PENDIENTES_CGREC_FIN.overflow.interactua_con_la_carga).toBe(true);
+    expect(PENDIENTES_CGREC_FIN.silty.interactua_con_la_carga).toBe(false);
+  });
+
+  it('el signo del efecto del pastoreo lo decide la lluvia del año', () => {
+    // Umbrales publicados, en cm de lluvia del año agrícola hasta el fin del
+    // pastoreo. Por debajo del suyo, la fuente dice que no se distinguen: eso es
+    // `null` y no `false`.
+    expect(pastoreoSuperaAlDescanso('moderado', 30)).toBe(true);
+    expect(pastoreoSuperaAlDescanso('moderado', 20)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('liviano', 26.70)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('liviano', 26.71)).toBe(true);
+    // El extremo es el único que puede quedar POR DEBAJO del descanso.
+    expect(pastoreoSuperaAlDescanso('extremo', 30)).toBe(false);
+    expect(pastoreoSuperaAlDescanso('extremo', 40)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('extremo', 60)).toBe(true);
+    expect(UMBRAL_P2E_OVERFLOW.extremo_por_debajo_de).toBeLessThan(UMBRAL_P2E_OVERFLOW.extremo);
+    // El umbral del moderado es el más bajo de los cuatro: es el que menos
+    // lluvia necesita para superar al descanso.
+    const cuatro = [UMBRAL_P2E_OVERFLOW.liviano, UMBRAL_P2E_OVERFLOW.moderado,
+      UMBRAL_P2E_OVERFLOW.fuerte, UMBRAL_P2E_OVERFLOW.extremo];
+    expect(Math.min(...cuatro)).toBe(UMBRAL_P2E_OVERFLOW.moderado);
+  });
+
+  it('las hierbas suben con la carga y las gramíneas no', () => {
+    // Al inicio de la temporada en los bajos: el pastoreo ralea el tapiz y abre
+    // huecos para las hierbas de primavera. El total esconde el cambio.
+    const inicio = filasDeCarga('overflow', 'inicio');
+    const hierbas = inicio.map(f => f.hierbas!);
+    expect(hierbas).toEqual([115, 136, 180, 227, 282]);
+    for (let i = 1; i < hierbas.length; i += 1) {
+      expect(hierbas[i]!).toBeGreaterThan(hierbas[i - 1]!);
+    }
+    expect(hierbas[hierbas.length - 1]! / hierbas[0]!).toBeCloseTo(2.45, 1);
+    // Las gramíneas no: suben hasta el moderado y bajan después.
+    const gram = inicio.map(f => f.gramineas).filter((g): g is number => g !== null);
+    expect(gram.indexOf(Math.max(...gram))).toBe(2);
+  });
+
+  it('la escalera se queda corta en el sitio donde parecía andar bien', () => {
+    // 454 mm caen en el escalón de los 500: 1.500 kg MS/ha/año.
+    const esc = escalera(454)!;
+    expect(esc).toBe(1500);
+    const silty = siltyFin.map(f => f.total!).filter(t => t !== null);
+    expect(Math.min(...silty) / esc).toBeCloseTo(1.67, 2);
+    expect(Math.max(...silty) / esc).toBeCloseTo(2.27, 2);
+    const overflow = overflowFin.map(f => f.total).filter((t): t is number => t !== null);
+    expect(Math.min(...overflow) / esc).toBeCloseTo(2.06, 2);
+    expect(Math.max(...overflow) / esc).toBeCloseTo(2.91, 2);
+    // Y el «va bien» de la fila de Dakota era del ancho del rango de entrada: la
+    // ficha del NRCS publica 381 a 508 mm, que cruza el escalón.
+    const nrcs = FORRAJE_MEDIDO.find(m => m.sitio.includes('Loamy Upland'))!;
+    expect(escalera(nrcs.lluvia_mm_min!)).toBe(1500);
+    expect(escalera(nrcs.lluvia_mm_max!)).toBe(3000);
+  });
+
+  it('dos métodos que no se parecen dan el mismo rango en el mismo sitio ecológico', () => {
+    // La ficha del NRCS del sitio ecológico Loamy Upland de la MLRA 53B contra
+    // diecisiete años de cortar pasto en el CGREC, que está adentro de esa MLRA.
+    const nrcs = FORRAJE_MEDIDO.find(m => m.sitio.includes('Loamy Upland'))!;
+    const silty = FORRAJE_MEDIDO.find(m => m.sitio.includes('silty'))!;
+    // Los rangos se superponen.
+    expect(silty.kg_ms_ha_anio_min).toBeLessThan(nrcs.kg_ms_ha_anio_max);
+    expect(silty.kg_ms_ha_anio_max).toBeGreaterThan(nrcs.kg_ms_ha_anio_min);
+    // Y los dos tienen el mismo signo: abajo el pastoreo intenso, arriba el leve.
+    expect(nrcs.kg_ms_ha_anio_min / nrcs.kg_ms_ha_anio_max).toBeCloseTo(0.86, 2);
+    expect(silty.kg_ms_ha_anio_min / silty.kg_ms_ha_anio_max).toBeCloseTo(0.73, 2);
+  });
+
+  it('los dos sitios ecológicos son el mismo píxel y producen distinto', () => {
+    const silty = FORRAJE_MEDIDO.find(m => m.sitio.includes('silty'))!;
+    const overflow = FORRAJE_MEDIDO.find(m => m.sitio.includes('overflow'))!;
+    // Misma coordenada, misma clase, misma lluvia.
+    expect(silty.clase_wc).toBe(30);
+    expect(overflow.clase_wc).toBe(30);
+    expect(silty.coordenada).toMatch(/46°46′ N, 99°28′ W/);
+    expect(overflow.coordenada).toMatch(/46°46′ N, 99°28′ W/);
+    expect(silty.lluvia_mm_min).toBe(overflow.lluvia_mm_min);
+    // Y 1,3 veces de diferencia que el píxel no puede ver.
+    expect(overflow.kg_ms_ha_anio_max / silty.kg_ms_ha_anio_max).toBeCloseTo(1.28, 2);
+  });
+
+  it('ninguno de los dos alimenta la banda de la clase 30, y por el campo correcto', () => {
+    // `insumos` en `desconocido`: el trabajo no menciona fertilización ni riego.
+    const nuevos = FORRAJE_MEDIDO.filter(m => m.sitio.includes('Research Extension Center'));
+    expect(nuevos).toHaveLength(2);
+    expect(nuevos.every(m => m.insumos === 'desconocido')).toBe(true);
+    const banda = bandaDeClase(30)!;
+    // Siguen siendo siete sitios: los dos del CGREC no entran.
+    expect(banda.sitios).toBe(7);
+    // Y la prueba de que el filtro es el que corresponde: los dos declaran clase
+    // 30, así que si entraran por clase estarían adentro.
+    expect(nuevos.every(m => m.clase_wc === banda.clase_wc)).toBe(true);
+  });
+
+  it('las pendientes publicadas están en cm y una conversión al vuelo se nota', () => {
+    // La fuente publica kg/ha por CENTÍMETRO. 28,63 kg/ha/cm son 2,86 kg/ha/mm, o
+    // 0,286 g/m²/mm: por debajo del 0,60 entre sitios de Lauenroth y Sala y por
+    // encima del 0,13 de un año del CPER.
+    const totalSilty = PENDIENTES_CGREC_FIN.silty.total_kg_ha_cm;
+    expect(totalSilty).toBe(28.63);
+    expect(totalSilty / 10 / 10).toBeCloseTo(0.286, 3);
+    expect(totalSilty / 10 / 10).toBeLessThan(MODELO_REGIONAL_SALA_1988.pendiente);
+    expect(totalSilty / 10 / 10).toBeGreaterThan(MODELO_LARGO_PLAZO_CPER.pendiente);
+    // En los bajos los pastoreados responden más que el total de los silty, y el
+    // no pastoreado no responde: por eso hay rango y no una pendiente.
+    const ov = PENDIENTES_CGREC_FIN.overflow;
+    expect(ov.total_min_kg_ha_cm).toBeLessThan(ov.total_kg_ha_cm);
+    expect(ov.total_max_kg_ha_cm).toBeGreaterThan(ov.total_kg_ha_cm);
+  });
 });

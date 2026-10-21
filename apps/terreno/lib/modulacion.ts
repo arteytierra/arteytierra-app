@@ -156,6 +156,47 @@ export const FUENTE_GPS =
  * el mismo sentido— es lo comido sobre lo ofrecido: 0,508 en los dos tratamientos,
  * con 1,71 veces de diferencia en el pasto disponible entre uno y otro.
  *
+ * ## La primera verificación de esta tabla contra producción medida (lote 18)
+ *
+ * Todo lo que había hasta acá compara esta tabla contra **otras
+ * recomendaciones**. El lote 18 trajo lo otro: un ensayo de diecisiete años en el
+ * que los tratamientos **están definidos por el forraje que dejan en pie**, que es
+ * el complemento exacto de este coeficiente, y que midió la producción de cada
+ * uno. Es `CARGA_CGREC` en `forrajeMedido.ts`.
+ *
+ * El sitio tiene 454 mm de normal, o sea 17,9 pulgadas: cae en la banda
+ * `arido`, que manda cosechar el 40 % con un rango de 35 a 45. Lo medido en los
+ * sitios de lomada, producción total al final de la temporada:
+ *
+ * | tratamiento | deja en pie | cosecha | carga | producción |
+ * |---|---|---|---|---|
+ * | sin pastoreo | 100 % | 0 % | 0 | 2.865 |
+ * | **liviano** | 65 % | **35 %** | 1,3 AUM/ha | **3.410** |
+ * | moderado | 50 % | 50 % | 2,7 | 3.156 |
+ * | fuerte | 35 % | 65 % | 4,4 | 2.637 |
+ * | extremo | 20 % | 80 % | 6,9 | 2.501 |
+ *
+ * **El 35 % que es `min` de esta banda es exactamente el tratamiento que más
+ * produjo de los cinco**, y el 50 % —que es el «take half, leave half» que
+ * Holechek desaconseja para este clima— produce un 7 % menos. Cosechando el 65 %
+ * la producción cae un 23 % y con el 80 %, un 27 %. Hay un test que lo compara
+ * contra `BANDAS_USO`.
+ *
+ * Dos cosas que esto **no** autoriza, y conviene dejarlas escritas al lado:
+ *
+ * - **No autoriza bajar el `inicial` al 35 %.** El coeficiente de cosecha no
+ *   existe para maximizar la producción de pasto: existe para que el animal coma
+ *   sin degradar el campo, y el 40 % sin información local es el valor de la
+ *   fuente. Que además caiga cerca del máximo de producción es una confirmación,
+ *   no un argumento para moverlo.
+ * - **No autoriza premiar el pastoreo liviano contra el descanso.** En ese ensayo
+ *   el descanso total produjo menos que el liviano, pero en el CPER el mismo
+ *   experimento dio el orden inverso. El detalle está en `CONTRASTE_DE_CARGA`.
+ *
+ * Y una advertencia de rango: es un pastizal de gramíneas introducidas de estación
+ * fría en Dakota del Norte, con bovinos. Las tablas de ovino y caprino de más
+ * arriba no se tocan con esto.
+ *
  * Qué se rompe si esto cambia: la receptividad del campo, y por esa vía la carga
  * objetivo, el número de módulos y el agua de bebida que lee la represa.
  */

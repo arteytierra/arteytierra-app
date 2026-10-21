@@ -330,6 +330,53 @@ export interface PerfilRodeo {
  *
  * **El manejo pesa más que medio siglo de clima en un sitio.** Mientras esta
  * función sea sólo de la lluvia, afinarla es trabajar sobre la variable chica.
+ *
+ * ## Y la carga animal, que es el manejo que el usuario sí decide
+ *
+ * El párrafo de arriba mide el manejo por fertilización y estado del pastizal. El
+ * lote 18 lo midió por **carga animal**, que es lo que acequia le pregunta al
+ * usuario: diecisiete años, cinco intensidades, dos sitios ecológicos del mismo
+ * campo, en `CARGA_CGREC` de `forrajeMedido.ts`. Con 454 mm de normal, esta
+ * función devuelve **1.500**; la producción total medida al final de la temporada:
+ *
+ * | manejo | cosecha | carga | lomada (silty) | bajo (overflow) |
+ * |---|---|---|---|---|
+ * | sin pastoreo | 0 % | 0 | 2.865 | sin media publicada |
+ * | liviano | 35 % | 1,3 AUM/ha | **3.410** | 4.131 |
+ * | moderado | 50 % | 2,7 | 3.156 | 4.360 |
+ * | fuerte | 65 % | 4,4 | 2.637 | **4.362** |
+ * | extremo | 80 % | 6,9 | 2.501 | 3.087 |
+ *
+ * Tres cosas, en orden de lo que más le pega a esta función:
+ *
+ * **1. Acá se queda corta, de 1,7 a 2,9 veces.** Y es el sitio donde esta cadena
+ * creía que la escalera andaba bien: la fila de Dakota del encabezado de
+ * `forrajeMedido.ts` decía «va bien» porque la ficha del NRCS publica un rango de
+ * lluvia —381 a 508 mm— que cruza el escalón de los 500 y entonces la escalera
+ * devolvía «1.500 a 3.000». El CGREC está en la misma MLRA y en el mismo sitio
+ * ecológico, y publica un solo número. Con un número, falla también ahí.
+ *
+ * **2. La pendiente contra la lluvia es una función del manejo.** En los sitios de
+ * lomada, al inicio de la temporada, el no pastoreado sube 46,31 kg/ha por cm de
+ * lluvia del año agrícola y el liviano 32,48, pero **moderado, fuerte y extremo no
+ * se distinguen de cero**. En los bajos pasa lo contrario al final de la
+ * temporada: el no pastoreado no responde a la lluvia y los cuatro pastoreados
+ * suben 46,85 kg/ha por cm. O sea que en el mismo campo y los mismos años la
+ * pregunta «cuánto sube la producción por milímetro» tiene cinco respuestas por
+ * sitio ecológico, dos de ellas cero, y quién responde a la lluvia se da vuelta
+ * entre una lomada y un bajo. **Una función de la lluvia sola no describe un campo
+ * pastoreado: describe uno en descanso**, y ni eso en los bajos.
+ *
+ * **3. El signo del efecto del pastoreo depende de la lluvia del año, y está
+ * publicado.** En los bajos, el pastoreo supera al descanso si la lluvia del año
+ * agrícola pasa de 26,7 cm en el liviano, 24,8 en el moderado, 26,2 en el fuerte y
+ * 53,2 en el extremo; y el extremo produce MENOS que el descanso si no llega a
+ * 31,5 cm. Está en `UMBRAL_P2E_OVERFLOW`.
+ *
+ * Lo que **no** se puede escribir, aunque la tabla lo tiente: un factor por
+ * pastorear liviano. El mismo experimento en el CPER dio el orden inverso
+ * (Milchunas et al. 1994) y el informe anterior de este propio ensayo no veía la
+ * joroba (Biondini et al. 1998). El motivo está en `CONTRASTE_DE_CARGA`.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;
