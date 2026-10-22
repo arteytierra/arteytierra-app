@@ -135,17 +135,22 @@ pegar () { # pegar <salida> <segmento> ...
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# La madre: 1920×1080, 90,0 s, 2700 cuadros
+# La madre: 1920x1080, 93,8 s, 2814 cuadros
+#
+# Eran 90,0 s y 2700 cuadros hasta que entro la voz grabada. La presentacion
+# —quince anos de oficio, la bioarquitectura, las especialidades y la frase del
+# tiempo perdido— son diez segundos de habla y la apertura tenia doce en total.
+# Asi que el descenso y el perimetro se frenaron (de 2,985x a 2,35x y de 5,48x
+# a 3,65x, misma fuente, mas cuadros de salida) y el panel de potreros se
+# alargo para que entre «entre otras utilidades…». Ver VOZ-EN-OFF-montaje.md.
 # ─────────────────────────────────────────────────────────────────────────────
 printf 'Horizontal…\n'
 
 seg_negro  h01 12 1920x1080
 
-# 01 va a 2,985× y no a 3× redondo: son 600 cuadros de fuente en 201 de salida,
-# y el número que los divide es el que sale de esa cuenta, no de la intención.
-seg_h h02 01-descenso          0.0 201 2.9851 t01-terreno.mov@1.6
+seg_h h02 01-descenso          0.0 250 2.35   t01-terreno.mov@1.6
 seg_h h03 02-descenso-cola     0.3  72 1      t02-ya-sabe.mov@0
-seg_h h04 03-perimetro         0.0  93 5.4839 t03-no-cargas.mov@0
+seg_h h04 03-perimetro         0.0 137 3.65   t03-no-cargas.mov@0
 seg_h h05 04-relieve           0.4  84 1      pie-relieve.mov@0
 seg_h h06 05-clima             0.4  84 1      pie-clima.mov@0
 seg_h h07 06-suelo             0.5  84 1      pie-suelo.mov@0
@@ -161,7 +166,7 @@ seg_h h14 12-swales            0.7  90 1
 seg_h h15 13-represa           0.3 105 1
 seg_h h16 14-camino-perfil     0.4  90 1      t05-camino.mov@0
 seg_h h17 15-cortina           0.5  90 1      t06-arbol.mov@0
-seg_h h18 16a-potreros-panel   0.5 105 1      t07-animal.mov@0
+seg_h h18 16a-potreros-panel   0.2 126 1      t07-animal.mov@0
 seg_h h19 17-informe           0.0 105 1      t08-informe.mov@0
 seg_h h20 17b-resumen          0.5  90 1
 seg_h h21 18-anexo-fuentes     0.0 105 1
