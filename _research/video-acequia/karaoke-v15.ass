@@ -1,0 +1,58 @@
+[Script Info]
+; Subtitulos karaoke: la palabra que suena queda encendida y el resto de la
+; frase, al 61 %. Generado por tiempos.py — no se edita a mano.
+;
+; Va en ASS y no en SRT por dos razones. Una: el filtro `subtitles` de ffmpeg,
+; cuando le entra un SRT, arma el script con PlayRes 384x288 y ahi MarginV 110
+; no son 110 pixeles. Declarando PlayRes igual al video, Fontsize y MarginV
+; vuelven a ser pixeles de verdad. Dos: el SRT no tiene como encender una
+; palabra sola.
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.709
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: acequia,Inter,54,&H00E8F0F5,&H00E8F0F5,&H0010121A,&H0010121A,-1,0,0,0,100,100,0,0,1,2,0,2,70,70,110,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.40,0:00:00.50,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:00.50,0:00:00.72,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H00&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:00.72,0:00:00.98,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H00&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:00.98,0:00:01.28,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H00&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:01.28,0:00:01.45,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H00&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:01.45,0:00:01.67,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H00&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:01.67,0:00:01.78,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H00&}al {\1a&H64&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:01.78,0:00:02.07,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H00&}diseño {\1a&H64&}de
+Dialogue: 0,0:00:02.07,0:00:02.19,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Desde {\1a&H64&}hace {\1a&H64&}quince {\1a&H64&}años {\1a&H64&}me\N{\1a&H64&}dedico {\1a&H64&}al {\1a&H64&}diseño {\1a&H00&}de
+Dialogue: 0,0:00:02.19,0:00:02.68,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}proyectos {\1a&H64&}ecosistémicos {\1a&H64&}y\N{\1a&H64&}regenerativos.
+Dialogue: 0,0:00:02.68,0:00:03.36,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}proyectos {\1a&H00&}ecosistémicos {\1a&H64&}y\N{\1a&H64&}regenerativos.
+Dialogue: 0,0:00:03.36,0:00:03.50,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}proyectos {\1a&H64&}ecosistémicos {\1a&H00&}y\N{\1a&H64&}regenerativos.
+Dialogue: 0,0:00:03.50,0:00:04.33,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}proyectos {\1a&H64&}ecosistémicos {\1a&H64&}y\N{\1a&H00&}regenerativos.
+Dialogue: 0,0:00:05.40,0:00:05.95,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}lluvia, {\1a&H64&}suelo, {\1a&H64&}pendiente,\N{\1a&H64&}elevación,
+Dialogue: 0,0:00:05.95,0:00:06.53,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}lluvia, {\1a&H00&}suelo, {\1a&H64&}pendiente,\N{\1a&H64&}elevación,
+Dialogue: 0,0:00:06.53,0:00:07.00,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}lluvia, {\1a&H64&}suelo, {\1a&H00&}pendiente,\N{\1a&H64&}elevación,
+Dialogue: 0,0:00:07.00,0:00:07.56,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}lluvia, {\1a&H64&}suelo, {\1a&H64&}pendiente,\N{\1a&H00&}elevación,
+Dialogue: 0,0:00:07.75,0:00:08.46,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:08.46,0:00:08.73,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H00&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:08.73,0:00:09.15,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H00&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:09.15,0:00:09.42,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H00&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:09.42,0:00:09.80,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H00&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:09.80,0:00:10.09,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H00&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:10.09,0:00:10.22,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H00&}un {\1a&H64&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:10.22,0:00:10.39,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H00&}solo\N{\1a&H64&}lugar.
+Dialogue: 0,0:00:10.39,0:00:10.88,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}cobertura, {\1a&H64&}contexto {\1a&H64&}y\N{\1a&H64&}muchísimo {\1a&H64&}más {\1a&H64&}en {\1a&H64&}un {\1a&H64&}solo\N{\1a&H00&}lugar.
+Dialogue: 0,0:00:12.10,0:00:12.18,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:12.18,0:00:12.38,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H00&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:12.38,0:00:12.62,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H00&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:12.62,0:00:12.80,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H00&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:12.80,0:00:13.26,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H00&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:13.26,0:00:13.35,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H00&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:13.35,0:00:13.55,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H00&}invito {\1a&H64&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:13.55,0:00:13.66,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H00&}a {\1a&H64&}conocer
+Dialogue: 0,0:00:13.66,0:00:14.00,acequia,,0,0,0,,{\1a&H64&}{\1a&H64&}Mi {\1a&H64&}nombre {\1a&H64&}es {\1a&H64&}Jonatan {\1a&H64&}y {\1a&H64&}te\N{\1a&H64&}invito {\1a&H64&}a {\1a&H00&}conocer
+Dialogue: 0,0:00:14.00,0:00:15.00,acequia,,0,0,0,,{\1a&H64&}{\1a&H00&}acequia.app.

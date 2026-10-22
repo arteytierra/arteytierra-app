@@ -196,6 +196,7 @@ lo hace CapCut.
 | `09-cuenca-resolviendo` | 08 | 97,5 | 5,0 | "Calculando cuenca…" → 281,98 ha → la cuenca se dibuja sola |
 | `10-cuenca-numero` | 08 | 106,5 | 3,0 | El panel con CN 73 y los 179.787 m³ en pantalla |
 | `11-keyline` | 09 | 68,3 | 4,0 | Botón → "Analizando relieve…" → keypoint a 823 m, con las dos pendientes |
+| `11b-servicios` | 09 | 55,0 | 3,0 | El panel de **Red de servicios** abierto, con sus categorías: agua, riego, gas, electricidad, cloacas, datos. **Cortado en la segunda vuelta**: la frase «por dónde pasan las redes de servicios» estaba grabada y no tenía imagen |
 | `12-swales` | 15 | 42,0 | 5,0 | Los seis swales puestos sobre el hipsométrico, con el panel dimensionándolos |
 | `13-represa` | 11 | 95,5 | 4,0 | Los sitios sugeridos, cada uno con su volumen |
 | `14-camino-perfil` | 09 | 30,5 | 3,5 | "Consultando el relieve…" → el perfil de elevación se dibuja |
@@ -208,6 +209,7 @@ lo hace CapCut.
 | `20-salud-del-calculo` | 08 | 116,5 | 4,5 | Confianza media · fuera del rango de Kirpich |
 | `21-sectores-cierre` | 13 | 39,0 | 6,0 | Todo el diseño junto con los abanicos de sol y viento |
 | `22-shader-pendientes` | 06 | 39,0 | 4,0 | De reserva: el shader de pendientes a pantalla completa |
+| `22b-capas-shader` | 06 | 54,8 | 7,0 | El panel de **CAPAS** abierto, con alguien prendiendo y apagando el hipsométrico y la pendiente, y la fuente citada abajo. **Cortado en la segunda vuelta**: reemplaza a la placa del cruce |
 
 **El 16 va en la versión `a`**, decidido por Jonatan: el panel limpio con los
 veintiocho potreros, las 1,11 ha y el 533 % de balance, sin el cartel amarillo
@@ -435,8 +437,14 @@ placa lleva su propio texto, el subtítulo calla. Por eso el vertical de 30 s
 tiene siete líneas y el de 15 s tiene dos: el resto del tiempo ya hay texto en
 pantalla, y dos textos a la vez no se leen, se esquivan.
 
-Los archivos son [`subtitulos-30s.ass`](subtitulos-30s.ass) y
-[`subtitulos-15s.ass`](subtitulos-15s.ass).
+> **Esto cambió en la segunda vuelta.** Aquellos subtítulos estaban escritos
+> en registro de narrador, antes de que existiera la grabación. Ahora los tres
+> videos llevan la transcripción de lo que Jonatan dijo, con la palabra que
+> suena encendida, y los genera `tiempos.py` en `karaoke-h.ass`,
+> `karaoke-v30.ass` y `karaoke-v15.ass`. El criterio de arriba —donde hay
+> placa con texto, el subtítulo calla— ya no corre: ahora el subtítulo es la
+> voz, y los titulares salieron del horizontal justamente para no pisarse.
+> Ver [`VOZ-EN-OFF-montaje.md`](VOZ-EN-OFF-montaje.md).
 
 ---
 

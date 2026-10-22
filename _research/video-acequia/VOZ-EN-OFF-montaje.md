@@ -1,203 +1,201 @@
 # La voz grabada, pegada al montaje
 
-Qué se midió de la grabación, cómo entra en el video, qué cambió del montaje
-para que entre, y las dos cosas que faltan.
+Segunda vuelta. Qué estaba mal, qué se midió, qué cambió y qué queda.
 
 El guión definitivo —el que Jonatan grabó— es
-`C:\Arte y Tierra\Acequia\videoapp-1\audio en off\guion voz en off.docx`.
-La grabación, `voz en off app.acequia video-1.mpeg`. El armado está en
-[`voz.sh`](voz.sh) y los planos nuevos, en [`montaje.sh`](montaje.sh).
+`C:\Arte y Tierra\Acequia\videoapp-1\audio en off\guion voz en off.docx`. La
+grabación, `voz en off app.acequia video-1.mpeg`.
 
----
-
-## La grabación, medida
+Los tres archivos que hacen el trabajo:
 
 | | |
 |---|---|
-| Archivo | MP3 128 kbps, mono, 44,1 kHz |
-| Largo | 83,25 s |
-| Silencio de sala al principio | **6,03 s** |
-| Habla | de 6,03 a 80,65 s → **74,6 s** |
-| A 1,2× | **62,2 s** de habla con sus pausas, **56,2 s** de habla neta |
-| Nivel de voz | −26,5 dB medio, pico −5,2 dB |
-| Piso de ruido | **−82,5 dB** medio, pico −51,9 |
-
-Dos cosas que importan de esa tabla:
-
-**No hace falta reducción de ruido.** Cincuenta y seis decibeles entre la voz y
-el piso de sala es una grabación limpia de verdad. Los seis segundos de sala que
-dejaste al principio servirían para limpiarla, y justamente por eso se puede
-comprobar que no hay nada que limpiar. Me alegra, porque la reducción de ruido
-es lo que deja esas voces con sonido de pileta: acá no se toca nada.
-
-**Y no hay saturación.** Pico en −5,2 dB, que es exactamente donde conviene.
-
----
-
-## El problema de pegarla de corrido, y cómo se resolvió
-
-A 1,2× el habla son 56,2 s y el video dura 90. Pegada de corrido, la voz se le
-adelantaría al video desde el primer plano: para el minuto estaría hablando del
-cierre sobre el informe.
-
-Entonces se corta en **veintitrés frases** y cada una se ubica en el segundo
-donde entra su plano. Eso es lo que en una locución se hace con las pausas,
-hecho con números en vez de a oído. Los cortes caen en el medio de los silencios
-que midió `silencedetect`, así que ninguna frase queda partida y cada una lleva
-su propio fundido de 40 ms para que el corte no haga clic.
-
-**La velocidad se cambia con `atempo`, no con `asetrate`.** `atempo` acelera sin
-tocar el tono; `asetrate` te subiría la voz y sonarías a dibujito.
-
-### La tabla completa
-
-«Desde» es el segundo de la grabación cruda; «va a» es el segundo del video.
-
-| | Frase | Desde | Dur. 1,2× | Va a | Sobre qué plano |
-|---|---|---|---|---|---|
-| 1 | «Desde hace quince años me dedico al diseño de proyectos ecosistémicos y regenerativos.» | 5,90 | 3,85 | **0,40** | El descenso |
-| 2 | «Empecé por la bioarquitectura, después me interesé en entender al agua y el suelo, y así terminé especializándome en hidrología, agroecología y permacultura.» | 10,52 | 6,82 | **4,75** | El descenso y su cola |
-| 3 | «Para iniciar un diseño se me iba más tiempo juntando datos que diseñando.» | 18,95 | 3,21 | **12,10** | El perímetro clic por clic |
-| 4 | «La topografía la sacaba de un programa,» | 22,88 | 1,43 | **15,90** | Relieve |
-| 5 | «el clima, de dos o tres plataformas,» | 24,60 | 1,92 | **18,70** | Clima |
-| 6 | «el suelo, de donde encontrara,» | 26,90 | 1,42 | **21,50** | Suelo |
-| 7 | «la cobertura, a ojo en el satélite,» | 28,70 | 1,83 | **24,30** | Cobertura |
-| 8 | «el ecosistema y el contexto, googleando.» | 30,95 | 1,96 | **27,10** | Ecorregión |
-| 9 | «Y así sin parar.» | 33,50 | 0,79 | **30,00** | La cuenca resolviéndose |
-| 10 | «Por eso hice acequia, que recopila los datos y los cruza.» | 35,60 | 3,21 | **35,50** | La placa del cruce, +1,4 |
-| 11 | «Lluvia, suelo, pendiente, elevación, cobertura, contexto y muchísimo más, en un solo lugar.» | 39,80 | 5,13 | **39,10** | La placa del cruce, +5,0 |
-| 12 | «Con toda esa información ya puedo diseñar:» | 47,40 | 2,21 | **46,30** | El panel con el número |
-| 13 | «dónde va el agua,» | 50,05 | 1,14 | **49,30** | Keyline |
-| — | *«por dónde pasan las redes de servicios,»* | 51,70 | 1,42 | **—** | **no hay plano** |
-| 14 | «dónde conviene la represa y cuánto junta,» | 51,70 | 1,67 | **55,80** | Represa |
-| 15 | «por dónde voy a poner los caminos,» | 56,35 | 1,33 | **59,30** | Camino con perfil |
-| 16 | «dónde va la cortina rompevientos,» | 58,10 | 1,54 | **62,30** | Cortina |
-| 17 | «dónde entra el animal,» | 60,05 | 0,96 | **65,30** | Potreros |
-| 18 | «entre otras utilidades que me simplifican la toma de decisiones.» | 61,45 | 2,62 | **66,50** | Potreros |
-| 19 | «Además me entrega un informe completo del proyecto» | 65,00 | 2,17 | **69,50** | La tapa del informe |
-| 20 | «y hasta me avisa cuándo no confiar en la información.» | 67,60 | 2,25 | **79,60** | La salud del cálculo |
-| 21 | «Un proyecto entero en una fracción del tiempo que me llevaba antes.» | 71,10 | 3,17 | **84,00** | Los sectores, el diseño junto |
-| 22 | «Mi nombre es Jonatan y te invito a conocer acequia.app.» | 75,50 | 2,92 | **89,00** | El cierre de marca |
-| 23 | «Empezar no cuesta nada.» | 79,20 | 1,33 | **92,10** | El cierre de marca |
-
-El orden del video no es el orden de la grabación en un solo lugar: la frase 20
-—«y hasta me avisa cuándo no confiar»— se graba pegada al informe y en el video
-va nueve segundos después, sobre el plano de la salud del cálculo, que es el que
-la ilustra. Es el único salto.
-
----
-
-## El montaje creció de 90,0 a 93,8 s
-
-La presentación son diez segundos de habla: los quince años, la bioarquitectura,
-las especialidades y la frase del tiempo perdido. La apertura del video tenía
-doce segundos **en total** y necesita quince con setenta.
-
-No se resolvió apurando la voz, porque apurada deja de sonar a alguien
-contándote algo, que es el punto. Se resolvió **frenando la apertura**:
-
-| | Antes | Ahora | Por qué entra |
-|---|---|---|---|
-| El descenso | 201 cuadros a 2,985× | **250 a 2,35×** | El corte tiene 20 s; a 2,35× usa 19,6 |
-| El perímetro | 93 cuadros a 5,484× | **137 a 3,65×** | El corte tiene 17 s; a 3,65× usa 16,7 |
-| Potreros | 105 cuadros | **126** | Para que entre «entre otras utilidades…» |
-
-Misma fuente, nada nuevo que filmar, y de paso **el perímetro mejora**: 5,48×
-era muy rápido para ver qué estaba pasando; a 3,65× se entiende que son clics.
-
-El total queda en **2814 cuadros, 93,80 s**. Las placas no se re-renderizan: son
-MP4 de largo fijo y simplemente caen más tarde.
-
----
-
-## Lo que falta, que es poco y concreto
-
-### 1. Un plano para «por dónde pasan las redes de servicios»
-
-Esa frase está grabada y **no tiene imagen**. Revisé los veintitrés cortes: no
-hay ninguno del panel de contexto. Los dos que sobran —`16b-potreros-mapa` y
-`22-shader-pendientes`— son otra cosa y ponerla sobre cualquiera de ellos sería
-mostrar algo distinto de lo que la voz dice, que es exactamente lo que este
-video no puede hacer.
-
-acequia **sí tiene** ese panel: el de contexto, el que dice qué hay alrededor y
-por dónde pasan los ductos y las líneas, a cuántos kilómetros y en qué rumbo.
-Hace falta **una grabación de pantalla de unos cuatro segundos de ese panel**, y
-la frase entra entre la represa y el camino sin tocar nada más.
-
-Mientras no esté, la frase queda afuera. Está marcada así en `voz.sh`.
-
-### 2. Dos frases cortas más, del mismo micrófono y la misma sesión
-
-Quedaron dos huecos donde el video sigue y la voz no:
-
-- **0:50 a 0:56 — 5,4 s.** El plano de las zanjas de infiltración y el arranque
-  de la represa. La grabación va de «dónde va el agua» directo a «dónde conviene
-  la represa», y en el medio hay un plano de swales sin nada que lo nombre.
-  Entra: **«zanjas de infiltración sobre la curva,»** (unos 2 s).
-- **1:11 a 1:19 — 7,9 s.** El resumen ejecutivo y el anexo de fuentes. Son dos
-  planos que en el guión anterior tenían una línea cada uno y ahora quedaron
-  dentro de «un informe completo». Entra: **«con el resumen adelante, y cada
-  capa con su fuente y su fecha,»** (unos 3,5 s).
-
-Esa segunda es la que más recomiendo grabar, y no por el hueco: **la fuente
-citada en cada capa es el argumento más fuerte que tiene acequia** y ahora mismo
-el video lo muestra sin decirlo. Son cuatro segundos de grabación.
-
-Si no se graban, los dos huecos quedan y los tapa la música. Se nota más el de
-1:11, porque son ocho segundos.
-
-### 3. Un chequeo de una palabra
-
-La transcripción automática escuchó **«Además me entrego un informe»**. Si eso
-es lo que salió, es un pick-up de cuatro palabras. Si dijiste «me entrega», no
-hay nada que hacer: puede ser el reconocedor.
-
----
-
-## Dos cosas de la grabación que están mejor que el guión
-
-**No decís el número.** El guión viejo tenía «ciento ochenta millones de litros»
-y vos lo dejaste afuera: el número queda en pantalla, contándose solo, y nadie
-lo lee en voz alta. Es la mejor manera de usarlo, y además hace desaparecer el
-riesgo que veníamos cuidando —que pareciera que esos litros son del predio de 31
-hectáreas y no de la cuenca de 282—, porque la voz nunca los atribuye.
-
-**Y la lista del cruce es más larga que la placa, sin que eso sea un problema.**
-Vos decís seis entradas y «muchísimo más»; la placa muestra cuatro: lluvia,
-suelo, pendiente y cobertura. Son las cuatro que entran en la curva número,
-y agregarle *elevación* y *contexto* a esa placa diría que entran en el cálculo,
-que no es cierto. Así que no se toca: la frase está ubicada a +5,0 s, sobre el
-contador, y no sobre las fichas entrando. La voz habla de todo lo que acequia
-junta y la placa muestra lo que alimenta ese número. No se pisan.
-
----
-
-## Lo que arrastra
-
-- **Los subtítulos.** Los dos verticales llevan subtítulos quemados escritos en
-  el registro de narrador, y ahora la voz es otra persona. Hay que reescribir
-  `subtitulos-30s.ass` y `subtitulos-15s.ass` como transcripción de lo que
-  efectivamente se grabó. El de 90 s para YouTube está reescrito y con los
-  tiempos nuevos en `subtitulos-93s.srt`.
-- **El titular de los 8,7 s** —«Todo lo que acequia ya sabe de él.»— sigue
-  siendo el único texto del video escrito como folleto. Contra esta voz suena
-  prestado. Ahora cae sobre «Empecé por la bioarquitectura…», así que lo que
-  corresponde es algo del orden de **«Quince años de oficio.»** o sacarlo.
-- **La música.** Es lo único que queda después de esto, y ahora importa más que
-  antes: hay dos huecos de cinco y ocho segundos, y la voz pide una base que no
-  la tape.
-- **Los verticales** siguen mudos y con los tiempos viejos. La voz de 90 s no se
-  recorta para ellos: son otro texto, más corto.
-
-## Cómo se corre
+| [`tiempos.py`](tiempos.py) | **la línea de tiempo**: de acá salen los cuadros de cada plano, el segundo de cada frase y el milisegundo de cada palabra |
+| [`montaje.sh`](montaje.sh) | la imagen y los subtítulos quemados |
+| [`voz.sh`](voz.sh) | la voz ubicada, la cama de fondo y la mezcla |
 
 ```bash
-bash _research/video-acequia/montaje.sh   # el video, 93,8 s, mudo
-bash _research/video-acequia/voz.sh       # la voz ubicada + el video con voz
+py -3.12 _research/video-acequia/tiempos.py
+bash _research/video-acequia/montaje.sh
+bash _research/video-acequia/voz.sh
 ```
 
-Sale `acequia-93s-voz.mp4` en `$V/salida`. La voz queda normalizada a −16 LUFS,
-que es nivel de voz sola; cuando entre la música, la mezcla entera se vuelve a
-normalizar a −14 y la música baja 6 a 9 dB cada vez que entra la voz. Eso se
-hace en el montaje final, no acá.
+Sale `acequia-completo.mp4` en `$V/salida`, más los dos verticales, los tres
+con voz, cama y subtítulos.
+
+---
+
+## Lo que estaba mal recortado, medido
+
+No era impresión: eran **cuatro cortes hechos en el medio del habla**. El
+método de la primera vuelta cortaba donde decía la tabla de planos, no donde
+Jonatan respiraba. Corriendo `silencedetect=noise=-35dB:d=0.15` sobre la
+grabación aparecen los silencios de verdad, y cuatro de los veintitrés cortes
+no caían en ninguno:
+
+| Corte | Lo que partió al medio |
+|---|---|
+| 24,60 s | «La topografía la sacaba de un programa, **‖** el clima, de dos o tres plataformas» — es un solo grupo respiratorio y las dos mitades se mandaron a 2,8 s de distancia |
+| 50,05 s | «ya puedo diseñar **‖** dónde va el agua» — ídem |
+| 53,70 s | cortaba «…y cuánto junta» antes de que terminara |
+| 67,60 s | «un informe completo del proyecto **‖** y hasta me avisa cuándo no confiar» — las dos mitades quedaron a diez segundos |
+
+Ahora la regla es una sola y está escrita en `tiempos.py`: **sólo es límite un
+silencio de 0,35 s o más.** Las pausas más cortas —0,16 s después de
+«hidrología», 0,24 s después de «bioarquitectura»— son comas y quedan adentro
+de la frase. Con ese criterio la grabación da **veinte unidades** en vez de
+veintitrés, y ninguna se parte.
+
+Además cada corte se lleva 80 ms del silencio de antes y 100 ms del de después.
+Eso hace dos cosas: que no se coma el principio de una palabra, y que el
+fundido de 40 ms caiga sobre sala y no sobre un fonema.
+
+**Comprobado sobre el resultado**, no sobre la intención: `silencedetect` sobre
+la pista armada encuentra las veinte entradas de voz y la peor está **a 40 ms**
+del segundo donde tenía que entrar.
+
+---
+
+## Velocidad 1,1
+
+Como pediste. A 1,1× el habla neta son 55,2 s; a 1,2× eran 50,6. Se nota: a
+1,2 la presentación ya empujaba.
+
+La velocidad se cambia con `atempo`, que acelera sin tocar el tono. Con
+`asetrate` la voz subiría de tono y sonarías a dibujito.
+
+---
+
+## El video pasó de 90 a 72 segundos
+
+Esto es lo que arregla «que no quede tanto silencio», y no se arregla con la
+música: se arregla con la tijera. Antes había 56 s de habla contra 94 de
+video. Ahora hay **55,2 s de habla contra 72 de video: el 77 % del video tiene
+alguien hablando.** El resto son las pausas que hiciste al grabar, más tres
+respiros puestos a propósito.
+
+Se dio vuelta el método. Antes la tabla de planos era fija y la voz se
+acomodaba adentro; ahora **manda la voz**: las veinte frases se ponen una atrás
+de otra con tus propias pausas, y cada plano dura lo que dura la frase que lo
+acompaña. Dos consecuencias buenas que no estaban buscadas:
+
+- **Los cortes de imagen caen en las pausas de la voz.** Se corta en la
+  respiración, que es donde se corta.
+- **Cuando una frase nombra dos cosas, la imagen corta en el medio de la
+  frase.** «La topografía…» sobre el relieve y «…el clima» sobre el clima, con
+  la voz corrida. Eso antes no se podía hacer porque la frase estaba partida.
+
+La letanía de capas quedó en planos de 1,5 a 2,2 s —antes eran 2,8— y está
+bien así: la frase tampoco respira hasta el final.
+
+---
+
+## Afuera la placa de la curva número
+
+Te hago caso y estoy de acuerdo. **«Curva número 73» es jerga**: el que sabe
+qué es el método SCS lo lee y el resto ve un número sin escala. Y era el único
+momento en que el video dejaba de ser la app y se volvía una placa, que es
+justo lo que hay que evitar cuando lo que se vende es una herramienta de
+verdad. Se fue la placa (12 s) y con ella el panel de los 179.787 m³ (3 s).
+
+En su lugar quedan dos planos de la app trabajando, que cubren las dos frases
+que iban ahí:
+
+| Frase | Ahora va sobre |
+|---|---|
+| «Por eso hice acequia, que recopila los datos y los cruza» | la cuenca resolviéndose sola, 5,2 s |
+| «Lluvia, suelo, pendiente, elevación, cobertura, contexto y muchísimo más, en un solo lugar» | **el panel de capas**, con alguien prendiendo y apagando el hipsométrico y la pendiente, 6,2 s |
+
+El panel de capas es un corte nuevo —`22b-capas-shader`, del clip 06 entre 54,8
+y 61,8 s— y es mejor imagen que la placa para esa frase: es una lista de capas
+con la fuente citada abajo («Copernicus GLO-30, paso ≈ 30 m»), y se ve a alguien
+encendiéndolas. Dice lo mismo que decía la placa, pero mostrándolo.
+
+**En los verticales la placa se queda**, porque dijiste que te gustan como
+están. Si querés, sale de los tres con una línea.
+
+---
+
+## La frase de las redes de servicios se salvó
+
+«Por dónde pasan las redes de servicios» estaba grabada y no tenía imagen. No
+hizo falta que grabes nada: **el panel estaba filmado en el metraje crudo** —el
+clip 09 lo tiene entre 45 y 67 s— y nunca se había cortado. Se cortó ahora,
+`11b-servicios`, dos segundos, y la frase entra entre la represa y el camino.
+
+De las veinte unidades grabadas **entran las veinte**. No sobra ninguna.
+
+---
+
+## Los titulares salieron del horizontal
+
+Esto no lo pediste y es el cambio que más se ve, así que la razón: los
+titulares (`t04-agua`, «Dónde va el agua», y los otros ocho) se escribieron
+para un video mudo, cuando el texto era la única narración. Ahora **tu voz dice
+exactamente eso**, y encima caen abajo a la derecha, que es justo donde van los
+subtítulos nuevos. Eran dos capas de texto diciendo lo mismo, pisadas.
+
+Quedan los pies `pie-*.mov` —«RELIEVE | Copernicus GLO-30 · © DLR e.V.»— que
+citan la fuente de cada capa y viven adentro de la banda, abajo del subtítulo.
+Esos no narran: documentan, y son el argumento más fuerte que tiene acequia.
+
+En los verticales los titulares se quedan: ahí el subtítulo va adentro de la
+banda y no se tocan.
+
+---
+
+## Los subtítulos con la palabra encendida
+
+Van quemados en los tres videos. La palabra que está sonando queda en blanco
+cálido lleno y el resto de la frase, al 61 %.
+
+Un detalle técnico que vale la pena saber: **el karaoke nativo de ASS no sirve
+para esto.** La etiqueta `\k` va *pintando* la frase y deja encendido todo lo
+ya dicho, que es el efecto de karaoke de bar, no «se resalta la palabra que
+digo». Así que se genera **un evento por palabra** —204 en el horizontal— con
+la frase entera y sólo esa palabra encendida. Los tiempos salen de la
+transcripción palabra por palabra de tu propia voz, corridos a 1,1× y a su
+lugar en el video.
+
+La transcripción ya está corregida: **«entrega»** como dijiste, «acequia» en
+vez de «a Sequia», «Jonatan» en vez de «Jonathan», «quince» en vez de «15»,
+«rompevientos» de una palabra. Está en [`palabras.json`](palabras.json), que es
+dato, no código: si algo quedó mal escrito se arregla ahí y se vuelve a correr.
+
+---
+
+## La cama de fondo
+
+Hay. Es lo que pediste para que no quede el vacío, y hace exactamente eso: en
+los huecos largos se escucha y cuando entrás a hablar se baja sola
+(`sidechaincompress`, que es el ducking de radio). Medido: en el hueco de los
+swales la cama está a −26 dB y la voz a −14,5; mientras hablás la cama se va a
+−43.
+
+**Pero es sintetizada, no es un tema.** Son cuatro acordes largos en la menor,
+cada uno de veinte segundos, encadenados con cinco de cruce, con cada nota
+duplicada y desafinada 0,35 Hz para que suene a instrumento y no a tono de
+prueba, y una capa de ruido rosa filtrado haciendo de aire. Todo abajo de
+1,5 kHz para que no se pelee con tu voz.
+
+Lo hice así por dos razones: no bajo música de ningún lado sin licencia, y el
+video no podía esperar a esa decisión. **Si conseguís un tema, se cambia sin
+tocar nada**: lo dejás en
+
+    C:\Arte y Tierra\Acequia\videoapp-1\audio en off\musica.mp3
+
+y `voz.sh` lo usa en lugar de la cama sintetizada, lo recorta al largo, le pone
+las entradas y salidas y lo ducka igual. No hay que editar el script.
+
+---
+
+## Lo que queda
+
+- **Un tema de verdad.** Ver arriba: es cambiar un archivo de lugar.
+- **La intro nueva** que dijiste que te gustaría. Eso es filmar, no editar: con
+  tres o cuatro segundos de manos sobre el teclado o del cuaderno con un croquis
+  alcanza, y entra antes del descenso sin tocar nada de lo demás.
+- **La placa del cruce en los verticales**, si querés que salga también de ahí.
+- `17b-resumen` quedó afuera del horizontal: entre la tapa del informe y la
+  salud del cálculo hay dos segundos de voz y no entran tres planos. Si te
+  importa el resumen ejecutivo más que la tapa, se cambia uno por otro.

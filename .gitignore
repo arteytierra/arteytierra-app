@@ -51,3 +51,7 @@ apps/web/_seed/
 next-env.d.ts
 _gen.err
 _gen.out
+
+# La linea de tiempo del video se genera con tiempos.py: lo que esta ahi
+# adentro sale de un solo archivo y no se edita a mano.
+_research/video-acequia/generado/
