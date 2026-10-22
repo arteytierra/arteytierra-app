@@ -377,6 +377,48 @@ export interface PerfilRodeo {
  * pastorear liviano. El mismo experimento en el CPER dio el orden inverso
  * (Milchunas et al. 1994) y el informe anterior de este propio ensayo no veía la
  * joroba (Biondini et al. 1998). El motivo está en `CONTRASTE_DE_CARGA`.
+ *
+ * ## La ventana: la mejora que parecía más barata, y por qué todavía no se hace
+ *
+ * Esta función suma la lluvia del **año**. Hart y Samuel (1985) ajustaron la misma
+ * producción contra cuatro ventanas y el r² va de 0,03 a 0,95 según qué meses se
+ * sumen (`VENTANAS_HART`). acequia tiene lluvia diaria de tres fuentes, así que
+ * cambiar la ventana no cuesta un dato nuevo: parecía la mejora más barata que le
+ * quedaba a esta escalera.
+ *
+ * **El reajuste de esa tabla dice que el 0,95 es un año.** Marzo-abril de 1983
+ * llovió 250 mm contra 18 a 78 de los otros seis años de la serie, y la
+ * producción de ese año fue 1.430 kg/ha contra 850 a 980. Sacando 1983 el r² cae
+ * de 0,867 a **0,001**; sacando cualquier otro año se queda entre 0,86 y 0,96. La
+ * ventana se mueve, pero el coeficiente que se le pondría viene de una
+ * observación.
+ *
+ * Lo que sí queda, y es lo que esta función tiene que atender primero:
+ *
+ * **1. Que la lluvia prediga o no es una propiedad del SUELO, no del clima.** El
+ * mismo campo, los mismos siete años y las mismas cuatro ventanas: en los suelos
+ * de subsuelo arenoso la correlación llega a 0,86 y 0,95, y en el de subsuelo
+ * limoso **ninguna ventana da significativa** —0,32, 0,01, 0,17 y 0,32—. La
+ * explicación de los autores es el almacenaje: *«plants growing on such soils were
+ * dependent on current rainfall»* en el arenoso, y en el limoso *«a more complex
+ * water-balance model might be needed to predict herbage production»*. acequia
+ * tiene textura de SoilGrids: **puede saber de qué lado del aviso está el
+ * predio**, y hoy aplica la misma función de la lluvia a los dos.
+ *
+ * **2. La posición en el relieve, que es lo único de esta lista que la app ya
+ * calcula.** En el CPER, 36 años separados por posición (`RELIEVE_CPER`): el bajo
+ * con aporte produce **1,75 veces** la loma, y el factor publicado en cuatro
+ * pastizales va de **1,5 a 2,0**. Y el bajo es además 2,6 veces más sensible a la
+ * lluvia de la temporada, así que las posiciones convergen en los años secos y
+ * divergen en los húmedos. La acumulación de flujo sobre el DEM ya dice qué celda
+ * recibe el escurrimiento de las de arriba.
+ *
+ * **3. Y la escala de todo lo anterior.** En ese mismo sitio, la variabilidad
+ * entre años es **cuatro veces más grande** que la variabilidad entre posiciones:
+ * cada posición se mueve 13 a 16 veces entre años y el máximo entre posiciones
+ * dentro de un año fue 4. El año manda más que el lugar, y esta función **no
+ * tiene año**: recibe una normal. Es el mismo diagnóstico que dejó la memoria del
+ * CPER, por otro camino.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;

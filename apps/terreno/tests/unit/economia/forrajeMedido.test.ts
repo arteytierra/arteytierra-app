@@ -27,6 +27,9 @@ import {
   CARGA_CGREC, SE_AGRUPADO_CGREC, PENDIENTES_CGREC_FIN, UMBRAL_P2E_OVERFLOW,
   filasDeCarga, factorDeCarga, usoDelTratamiento, cargaQueMasProduce,
   pastoreoSuperaAlDescanso,
+  SERIE_HART, VENTANAS_HART, aniosDeHart, produccionHart,
+  RELIEVE_CPER, FACTOR_DEL_RELIEVE, factorDelRelieve, mediaPonderadaPorRelieve,
+  factorDeSensibilidad,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -520,8 +523,8 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son veintidós sitios en ocho de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(22);
+  it('son veintisiete sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(27);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
@@ -536,7 +539,7 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
     // fuente. Lo que no se admite es inventar una.
     const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
-    expect(conCoord).toHaveLength(8);
+    expect(conCoord).toHaveLength(11);
     for (const m of conCoord) {
       // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
       // y el signo es exactamente lo que se equivoca al consultar un servicio.
@@ -553,8 +556,9 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(3);
     // Los dos del CGREC entraron en 30 y son los dos mejor ubicados del archivo:
     // el píxel da 91, 85 y 85 % de pastizal en las tres ventanas. Igual no
-    // alimentan la banda, porque sus `insumos` quedaron en `desconocido`.
-    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(4);
+    // alimentan la banda, porque sus `insumos` quedaron en `desconocido`. El lote
+    // 20 sumó las tres posiciones del relieve del CPER, con 97, 99 y 99 %.
+    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(7);
   });
 
   it('cuatro de los diecisiete son sotobosque, y hay que poder contarlos', () => {
@@ -1998,5 +2002,327 @@ describe('lote 18 — la carga animal, medida diecisiete años en el mismo campo
     const ov = PENDIENTES_CGREC_FIN.overflow;
     expect(ov.total_min_kg_ha_cm).toBeLessThan(ov.total_kg_ha_cm);
     expect(ov.total_max_kg_ha_cm).toBeGreaterThan(ov.total_kg_ha_cm);
+  });
+});
+
+
+describe('lote 20 — la ventana de la lluvia, y el 0,95 que era un año', () => {
+  /** Cuadrados mínimos de una variable. */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx = pares.reduce((a, p) => a + p[0], 0);
+    const sy = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  /** Dos predictores, por ecuaciones normales y Gauss-Jordan. */
+  function plano(filas: ReadonlyArray<readonly [number, number, number]>) {
+    const X = filas.map(f => [1, f[0], f[1]]);
+    const ys = filas.map(f => f[2]);
+    const m = 3;
+    const A = Array.from({ length: m }, (_, r) =>
+      Array.from({ length: m }, (_, c) =>
+        X.reduce((acc, _row, i) => acc + X[i]![r]! * X[i]![c]!, 0)));
+    const b = Array.from({ length: m }, (_, r) =>
+      X.reduce((acc, _row, i) => acc + X[i]![r]! * ys[i]!, 0));
+    for (let i = 0; i < m; i += 1) {
+      let p = i;
+      for (let r = i; r < m; r += 1) if (Math.abs(A[r]![i]!) > Math.abs(A[p]![i]!)) p = r;
+      [A[i], A[p]] = [A[p]!, A[i]!];
+      [b[i], b[p]] = [b[p]!, b[i]!];
+      const d = A[i]![i]!;
+      A[i] = A[i]!.map(v => v / d);
+      b[i] = b[i]! / d;
+      for (let r = 0; r < m; r += 1) {
+        if (r === i) continue;
+        const f = A[r]![i]!;
+        A[r] = A[r]!.map((v, c) => v - f * A[i]![c]!);
+        b[r] = b[r]! - f * b[i]!;
+      }
+    }
+    const my = ys.reduce((a, y) => a + y, 0) / ys.length;
+    const sst = ys.reduce((a, y) => a + (y - my) ** 2, 0);
+    const sse = filas.reduce((a, f, i) =>
+      a + (ys[i]! - (b[0]! + b[1]! * f[0] + b[2]! * f[1])) ** 2, 0);
+    return { coef: b, r2: 1 - sse / sst };
+  }
+
+  const siete = aniosDeHart();
+
+  it('la serie tiene los nueve años de la tabla y los siete de las regresiones', () => {
+    expect(SERIE_HART).toHaveLength(9);
+    expect(siete).toHaveLength(7);
+    expect(siete.map(f => f.anio)).toEqual([1975, 1976, 1977, 1978, 1979, 1982, 1983]);
+    // 1980 no se midió y 1981 tiene lluvia pero no producción.
+    expect(SERIE_HART.find(f => f.anio === 1981)!.arenosos).toBeNull();
+    expect(SERIE_HART.find(f => f.anio === 1981)!.mar_sep_mm).toBe(376);
+  });
+
+  it('las medias de cinco años de la Tabla 1 salen de la Tabla 2', () => {
+    // El caso resuelto: la Tabla 1 publica 1.100 para Ascalon y 930, 890 y 840
+    // para los tres suelos arenosos, cuyo promedio es 887.
+    const cinco = SERIE_HART.filter(f => f.anio >= 1975 && f.anio <= 1979);
+    expect(cinco).toHaveLength(5);
+    const mAsc = cinco.reduce((a, f) => a + (f.ascalon as number), 0) / 5;
+    const mAre = cinco.reduce((a, f) => a + (f.arenosos as number), 0) / 5;
+    expect(mAsc).toBeCloseTo(1110, 0);
+    expect(Math.abs(mAsc - 1100)).toBeLessThan(11);
+    expect(mAre).toBeCloseTo(886, 0);
+    expect(Math.abs(mAre - (930 + 890 + 840) / 3)).toBeLessThan(2);
+    // Y Ascalon le gana a los arenosos todos los años 1975-1978, como dice el texto.
+    for (const f of cinco.filter(x => x.anio <= 1978)) {
+      expect(f.ascalon!).toBeGreaterThan(f.arenosos!);
+    }
+  });
+
+  it('las tres ecuaciones publicadas salen de las siete filas', () => {
+    // Ésta es la verificación que vale: si una celda de la Tabla 2 estuviera mal,
+    // ninguna de las tres cerraría.
+    const are = recta(siete.map(f => [f.mar_abr_mm as number, f.arenosos as number] as const));
+    expect(are.a).toBeCloseTo(772, -1);
+    expect(are.b).toBeCloseTo(2.49, 1);
+    // El reajuste da 0,8673 y la tabla imprime 0,86: dos decimales. Se tolera el
+    // tercer dígito y no se toca ninguna fila para que cierre, igual que con el
+    // 56,25 contra 56,2 de Río Mayo.
+    expect(Math.abs(are.r2 - 0.86)).toBeLessThan(0.01);
+
+    const asc = recta(siete.map(f => [f.mar_abr_mm as number, f.ascalon as number] as const));
+    expect(asc.a).toBeCloseTo(1083, -1);
+    expect(asc.b).toBeCloseTo(0.60, 1);
+    expect(asc.r2).toBeCloseTo(0.32, 2);
+
+    const mult = plano(siete.map(f =>
+      [f.mar_abr_mm as number, f.may_sep_mm as number, f.arenosos as number] as const));
+    expect(mult.coef[0]).toBeCloseTo(497, -2);
+    expect(mult.coef[1]).toBeCloseTo(2.61, 1);
+    expect(mult.coef[2]).toBeCloseTo(0.92, 1);
+    expect(mult.r2).toBeCloseTo(0.95, 2);
+  });
+
+  it('el r² de 0,86 lo pone 1983 entero, y sacar cualquier otro año no lo mueve', () => {
+    // Éste es el hallazgo del lote 20 y es la razón por la que no se codifica
+    // ninguna de las ocho ecuaciones.
+    const sinUno = (anio: number) => recta(
+      siete.filter(f => f.anio !== anio)
+        .map(f => [f.mar_abr_mm as number, f.arenosos as number] as const));
+
+    const sin1983 = sinUno(1983);
+    expect(sin1983.r2).toBeLessThan(0.01);
+    expect(sin1983.b).toBeLessThan(0);
+
+    for (const anio of [1975, 1976, 1977, 1978, 1979, 1982]) {
+      const s = sinUno(anio);
+      expect(s.r2, `sin ${anio}`).toBeGreaterThan(0.85);
+      expect(s.b, `sin ${anio}`).toBeGreaterThan(2.4);
+    }
+
+    // Y la palanca se ve en los datos: 250 mm contra 18 a 78 de los otros seis.
+    const p1983 = SERIE_HART.find(f => f.anio === 1983)!;
+    const otros = siete.filter(f => f.anio !== 1983).map(f => f.mar_abr_mm as number);
+    expect(p1983.mar_abr_mm).toBe(250);
+    expect(Math.max(...otros)).toBe(78);
+    expect(p1983.mar_abr_mm! / Math.max(...otros)).toBeGreaterThan(3);
+    // La producción de ese año también se sale de la banda de los otros seis.
+    const prodOtros = siete.filter(f => f.anio !== 1983).map(f => f.arenosos as number);
+    expect(p1983.arenosos! / Math.max(...prodOtros)).toBeGreaterThan(1.4);
+  });
+
+  it('la identidad de la tabla cierra en cinco de siete, y las dos que no se dejan', () => {
+    // marzo-septiembre debería ser marzo-abril más mayo-septiembre, y no lo es en
+    // 1975 ni en 1983. No se "arregla" ninguna fila: el reajuste de arriba
+    // demuestra que los valores son los que la tabla tiene, y los pies de la
+    // tabla explican por qué —las filas no vienen del mismo pluviómetro—.
+    const cierran = siete.filter(f =>
+      (f.mar_abr_mm as number) + (f.may_sep_mm as number) === f.mar_sep_mm);
+    expect(cierran.map(f => f.anio)).toEqual([1976, 1977, 1978, 1979, 1982]);
+    const no = siete.filter(f => !cierran.includes(f)).map(f => f.anio);
+    expect(no).toEqual([1975, 1983]);
+  });
+
+  it('las ocho ecuaciones de la Tabla 3 están, y el suelo decide si la lluvia sirve', () => {
+    expect(VENTANAS_HART).toHaveLength(8);
+    const are = VENTANAS_HART.filter(v => v.grupo === 'subsuelo_arenoso');
+    const asc = VENTANAS_HART.filter(v => v.grupo === 'subsuelo_limoso');
+    expect(are).toHaveLength(4);
+    expect(asc).toHaveLength(4);
+    // En el arenoso hay significativas; en el limoso, NINGUNA.
+    expect(are.filter(v => v.significativa)).toHaveLength(3);
+    expect(asc.filter(v => v.significativa)).toHaveLength(0);
+    // El máximo r² del arenoso es la múltiple, y le gana a sumar todo junto.
+    const mejor = are.reduce((a, b) => (b.r2 > a.r2 ? b : a));
+    expect(mejor.ventana).toBe('las dos juntas');
+    expect(mejor.r2).toBe(0.95);
+    expect(are.find(v => v.ventana === 'marzo-agosto')!.r2)
+      .toBeLessThan(are.find(v => v.ventana === 'marzo-abril')!.r2);
+    // Y el r² del limoso nunca pasa el del arenoso en la misma ventana.
+    for (const v of asc) {
+      const par = are.find(x => x.ventana === v.ventana)!;
+      expect(v.r2, v.ventana).toBeLessThan(par.r2);
+    }
+  });
+
+  it('la lluvia de primavera pesa cinco veces más por milímetro que la de verano', () => {
+    const primavera = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'marzo-abril')!;
+    const verano = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'mayo-agosto')!;
+    expect(primavera.pendiente_1 / verano.pendiente_1).toBeCloseTo(5.1, 1);
+    // Y marzo-abril es sólo una quinta parte de la lluvia de la temporada.
+    const total = siete.reduce((a, f) => a + (f.mar_abr_mm as number) + (f.may_sep_mm as number), 0);
+    const mar = siete.reduce((a, f) => a + (f.mar_abr_mm as number), 0);
+    expect(mar / total).toBeCloseTo(0.22, 2);
+  });
+
+  it('produccionHart evalúa las ecuaciones publicadas y la múltiple usa las dos', () => {
+    const mult = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'las dos juntas')!;
+    const f = SERIE_HART.find(x => x.anio === 1983)!;
+    // 497 + 2,61 × 250 + 0,92 × 286 = 1.412,62, contra 1.430 medidos.
+    const est = produccionHart(mult, f.mar_abr_mm as number, f.may_sep_mm as number);
+    expect(est).toBeCloseTo(1412.62, 2);
+    expect(Math.abs(est - (f.arenosos as number)) / (f.arenosos as number)).toBeLessThan(0.02);
+    // Una simple ignora la segunda lluvia.
+    const simple = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'marzo-abril')!;
+    expect(produccionHart(simple, 100, 999)).toBe(produccionHart(simple, 100));
+  });
+
+  it('las cinco entradas nuevas no publican lluvia anual, y es el punto', () => {
+    // La regla W del encargo salió de esto: los trabajos que se toman en serio la
+    // ventana dejan de publicar el año.
+    const nuevas = FORRAJE_MEDIDO.filter(m =>
+      m.sitio.includes('Cheyenne') || m.sitio.includes('de la catena'));
+    expect(nuevas).toHaveLength(5);
+    for (const m of nuevas) {
+      expect(m.lluvia_mm_min, m.sitio).toBeNull();
+      expect(m.lluvia_mm_max, m.sitio).toBeNull();
+      expect(m.lluvia_que_es, m.sitio).toBeNull();
+    }
+    // Y la invariante del tipo: `lluvia_que_es` en null sólo si la lluvia es null.
+    for (const m of FORRAJE_MEDIDO) {
+      if (m.lluvia_que_es === null) expect(m.lluvia_mm_min, m.sitio).toBeNull();
+      else expect(m.lluvia_mm_min, m.sitio).not.toBeNull();
+    }
+  });
+});
+
+describe('lote 20 — la posición en el relieve, que es lo único que el DEM ya sabe', () => {
+  const loma = RELIEVE_CPER.find(p => p.posicion === 'loma')!;
+  const ladera = RELIEVE_CPER.find(p => p.posicion === 'ladera')!;
+  const bajo = RELIEVE_CPER.find(p => p.posicion === 'bajo_con_aporte')!;
+
+  it('son las tres posiciones y el área cierra en cien', () => {
+    expect(RELIEVE_CPER).toHaveLength(3);
+    expect(RELIEVE_CPER.reduce((a, p) => a + p.area_pct, 0)).toBe(100);
+    expect(loma.area_pct).toBe(50);
+    // La producción sube cuesta abajo, que es el resultado central.
+    expect(ladera.anpp_media).toBeGreaterThan(loma.anpp_media);
+    expect(bajo.anpp_media).toBeGreaterThan(ladera.anpp_media);
+  });
+
+  it('el bajo produce 1,75 veces la loma, y el factor publicado va de 1,5 a 2,0', () => {
+    expect(factorDelRelieve(bajo)).toBeCloseTo(1.75, 2);
+    expect(factorDelRelieve(ladera)).toBeCloseTo(1.11, 2);
+    expect(factorDelRelieve(loma)).toBe(1);
+    // Lo que la fuente publica como comparación: 57 % más que la ladera y 75 %
+    // más que la loma.
+    expect(bajo.anpp_media / ladera.anpp_media - 1).toBeCloseTo(0.57, 2);
+    expect(bajo.anpp_media / loma.anpp_media - 1).toBeCloseTo(0.75, 2);
+    // Y los cuatro ecosistemas que le dan rango al factor.
+    expect(FACTOR_DEL_RELIEVE).toHaveLength(4);
+    const fs = FACTOR_DEL_RELIEVE.map(f => f.factor);
+    expect(Math.min(...fs)).toBe(1.5);
+    expect(Math.max(...fs)).toBe(2.0);
+    expect(FACTOR_DEL_RELIEVE[0]!.factor).toBeCloseTo(factorDelRelieve(bajo), 2);
+  });
+
+  it('el bajo es más del doble de sensible a la lluvia, y eso NO es el mismo factor', () => {
+    expect(factorDeSensibilidad(bajo)).toBeCloseTo(2.62, 2);
+    expect(factorDeSensibilidad(ladera)).toBeCloseTo(1.24, 2);
+    // «more than twice as sensitive», textual de la fuente.
+    expect(bajo.sens_lluvia).toBeGreaterThan(2 * ladera.sens_lluvia);
+    expect(bajo.sens_lluvia).toBeGreaterThan(2 * loma.sens_lluvia);
+    // Y el factor de sensibilidad es MÁS grande que el de nivel: 2,62 contra 1,75.
+    expect(factorDeSensibilidad(bajo)).toBeGreaterThan(factorDelRelieve(bajo));
+    // Los días secos pegan al revés y también más fuerte en el bajo.
+    expect(bajo.sens_dias_secos).toBeLessThan(0);
+    expect(bajo.sens_dias_secos / loma.sens_dias_secos).toBeCloseTo(2.88, 2);
+  });
+
+  it('las tres posiciones convergen en el año malo y divergen en el bueno', () => {
+    // Es la consecuencia de que la sensibilidad cambie con la posición, y la
+    // razón por la que un bajo no es un seguro contra la sequía.
+    const peor = bajo.anpp_min / loma.anpp_min;
+    const mejor = bajo.anpp_max / loma.anpp_max;
+    expect(peor).toBeCloseTo(1.51, 2);
+    expect(mejor).toBeCloseTo(1.82, 2);
+    expect(mejor).toBeGreaterThan(peor);
+    // En el peor año la loma y la ladera dieron exactamente lo mismo.
+    expect(loma.anpp_min).toBe(ladera.anpp_min);
+  });
+
+  it('entre años se mueve cuatro veces más que entre posiciones', () => {
+    // El dato que pone en escala todo este archivo.
+    for (const p of RELIEVE_CPER) {
+      expect(Math.round(p.anpp_max / p.anpp_min), p.posicion).toBe(p.veces_entre_anios);
+      expect(p.veces_entre_anios).toBeGreaterThanOrEqual(13);
+    }
+    const maxEntreAnios = Math.max(...RELIEVE_CPER.map(p => p.veces_entre_anios));
+    expect(maxEntreAnios).toBe(16);
+    // El máximo entre posiciones dentro de un año que publica la fuente es 1992:
+    // loma 46,5 contra bajo 177,8, que son 3,8 veces y la fuente llama «4-fold».
+    const espacial = 177.8 / 46.5;
+    expect(Math.round(espacial)).toBe(4);
+    expect(maxEntreAnios / espacial).toBeGreaterThan(4);
+  });
+
+  it('las dos series del CPER no cierran entre sí, y la diferencia es 1,42', () => {
+    // La media ponderada por área de las tres posiciones contra la columna de
+    // ANPP de la serie de cincuenta años. Mismo sitio, las dos en estufa-seco.
+    const ponderada = mediaPonderadaPorRelieve();
+    expect(ponderada).toBeCloseTo(68.4, 1);
+    const cincuenta = sitio('Central Plains Experimental Range, estepa de pasto corto');
+    expect(cincuenta.kg_ms_ha_anio_tipico).toBe(970);
+    expect((cincuenta.kg_ms_ha_anio_tipico as number) / 10 / ponderada).toBeCloseTo(1.42, 2);
+    // Y la serie nueva llega mucho más abajo que la vieja: 94 contra 620 kg/ha.
+    expect(gM2AKgHa(loma.anpp_min)).toBe(94);
+    expect((cincuenta.kg_ms_ha_anio_min) / gM2AKgHa(loma.anpp_min)).toBeCloseTo(6.6, 1);
+  });
+
+  it('las cuatro entradas del CPER son el mismo sitio y ninguna alimenta la banda', () => {
+    const cper = FORRAJE_MEDIDO.filter(m => m.sitio.includes('Central Plains Experimental Range'));
+    expect(cper).toHaveLength(4);
+    expect(cper.every(m => m.insumos === 'desconocido')).toBe(true);
+    expect(cper.every(m => m.clase_wc === 30)).toBe(true);
+    expect(cper.every(m => m.bioma === 'resolve_pastizal_templado')).toBe(true);
+    // Las tres del relieve comparten la coordenada publicada por Hoover et al.,
+    // que no es la misma que publica Lauenroth y Sala: 3 minutos de longitud.
+    const relieve = cper.filter(m => m.sitio.includes('de la catena'));
+    expect(relieve).toHaveLength(3);
+    expect(relieve.every(m => m.coordenada!.includes('40°50′ N, 104°43′ W'))).toBe(true);
+    expect(cper[0]!.coordenada).toContain('40°49′ N, 104°46′ W');
+    // Y la banda de la clase 30 NO se movió al entrar tres entradas más de 30.
+    const banda = bandaDeClase(30)!;
+    expect(banda.sitios).toBe(7);
+  });
+
+  it('las tres entradas montadas llevan los números de la fuente', () => {
+    const porNombre = (frag: string) => sitio(frag);
+    expect(porNombre('LOMA de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(loma.anpp_media));
+    expect(porNombre('LADERA de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(ladera.anpp_media));
+    expect(porNombre('BAJO CON APORTE de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(bajo.anpp_media));
+    expect(porNombre('LOMA de la catena').kg_ms_ha_anio_min).toBe(gM2AKgHa(loma.anpp_min));
+    expect(porNombre('BAJO CON APORTE de la catena').kg_ms_ha_anio_max).toBe(gM2AKgHa(bajo.anpp_max));
+    // Y las tres son npp_herbacea, que no descuenta uso admisible.
+    for (const frag of ['LOMA de la catena', 'LADERA de la catena', 'BAJO CON APORTE de la catena']) {
+      expect(TIPOS_SIN_DESCONTAR).toContain(porNombre(frag).tipo);
+    }
   });
 });

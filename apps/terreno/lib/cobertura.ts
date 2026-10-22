@@ -148,9 +148,9 @@ export interface ForrajeDeCobertura {
  * **Unidades.** `pct` en porcentaje del predio; la banda en kilos de materia seca
  * por hectárea y por año. Es producción anual, no lo que está parado.
  *
- * **Rango de validez.** Veintidós sitios en cinco continentes es poco —y doce de
- * los veintidós son los que la banda puede usar—, y la clase de cobertura por sí
- * sola no determina el forraje: adentro de cada banda queda un
+ * **Rango de validez.** Veintisiete sitios en cinco continentes es poco —y doce
+ * de los veintisiete son los que la banda puede usar—, y la clase de cobertura
+ * por sí sola no determina el forraje: adentro de cada banda queda un
  * factor sin resolver, 24 en el arbolado y 30 en el pastizal. Lo que lo
  * resolvería es el dosel para el monte —`FRACCION_HERBACEA_DEL_SITIO` mide un
  * factor 236 entre sus cuatro puntos— y la lluvia para el pastizal, que es lo que
@@ -182,6 +182,21 @@ export interface ForrajeDeCobertura {
  * DEM. Es la pista más concreta que hay de por dónde tiene que entrar la mejora:
  * no por más clases de cobertura, sino por cruzar la clase con la posición en el
  * relieve.
+ *
+ * **Y el lote 20 le puso número a eso.** En el CPER, 36 años separados en loma,
+ * ladera y bajo con aporte dan 572, 637 y 1.000 kg MS/ha·año: el bajo produce
+ * **1,75 veces** la loma, adentro de un solo sitio ecológico y con un píxel que es
+ * clase 30 al 97, 99 y 99 % en las tres ventanas. El mismo trabajo cita tres
+ * pastizales más con factores de 1,5, 2,0 y 2,0, así que **el rango publicado del
+ * factor topográfico es 1,5 a 2,0 en cuatro ecosistemas**: ver
+ * `FACTOR_DEL_RELIEVE` en `forrajeMedido.ts`.
+ *
+ * Dos cosas antes de usarlo, y las dos están medidas. Una: **el factor no es
+ * constante entre años.** Las tres posiciones convergen en los años secos y
+ * divergen en los húmedos, porque el bajo es 2,6 veces más sensible a la lluvia de
+ * la temporada; en el peor año de los 36 las tres dieron 94, 94 y 142 kg/ha. Dos:
+ * **el bajo es el 22 % del campo** en ese sitio, así que aplicar el 1,75 a la
+ * superficie entera multiplicaría por 1,75 lo que vale para un quinto.
  *
  * **El lote 16 le agregó la trampa inversa.** Si la clase es una propiedad del
  * mapa, lo coherente es buscar sitios cuyo píxel sea 20, y el lote 16 encontró
