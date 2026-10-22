@@ -25,6 +25,7 @@ y después de abrir el muestreo. La entrega cruda vive en
 | 17 | la capa herbácea aparte | **vacío de sitios nuevos, y su objeción se resolvió contra él** el 21/10/2026 |
 | 18 | pares de manejo con carga animal | **el mejor lote desde el 11: diecisiete años y cinco cargas** el 21/10/2026 |
 | 19 | lo que falta ubicar | **vacío entero: quince rechazos, tres de ellos útiles** el 21/10/2026 |
+| 20 | la ventana de la lluvia y el relieve | **las dos encontradas, y el r² de 0,95 era un año** el 22/10/2026 |
 
 ---
 
@@ -2515,3 +2516,183 @@ ahí con la ruta del paquete de datos y no con la del catálogo.
 
 **Los biomas 1, 2, 3, 6 y 9 siguen vacíos**, la clase 20 sigue con un solo sitio y
 la clase 40 sigue sin ninguna de secano.
+
+
+## Lote 20 — las dos preguntas contestadas, y el hallazgo es que un r² de 0,95 era un año
+
+**Lo que pedía:** tres frentes, con las rutas nombradas por primera vez. El A, la
+**ventana** sobre la que se suma la lluvia. El B, la **posición en el relieve**. El
+C, la capa herbácea aparte, tercer intento.
+
+**Lo que trajo:** cinco entradas de dos fuentes, y las dos son las que el encargo
+pedía. El frente C volvió vacío otra vez.
+
+### Frente A — Hart y Samuel (1985), y el reajuste que da vuelta el resultado
+
+*Journal of Range Management* 38(6):522-525, High Plains Grasslands Research
+Station, al noroeste de Cheyenne, Wyoming. Ajustaron **la misma producción contra
+cuatro ventanas de lluvia**, en dos grupos de suelo del mismo campo, los mismos
+siete años y el mismo método. Es exactamente el experimento que el frente A pedía,
+y no existía en el archivo.
+
+Las ocho ecuaciones, verificadas una por una contra la Tabla 3:
+
+| grupo de suelo | ventana | ecuación | r² |
+|---|---|---|---|
+| subsuelo arenoso | marzo-abril | 772 + 2,49·P | **0,86** |
+| subsuelo arenoso | mayo-agosto | 831 + 0,49·P | 0,03 |
+| subsuelo arenoso | marzo-agosto | 273 + 1,89·P | 0,76 |
+| subsuelo arenoso | las dos juntas | 497 + 2,61·P₁ + 0,92·P₂ | **0,95** |
+| subsuelo limoso | marzo-abril | 1.083 + 0,60·P | 0,32 |
+| subsuelo limoso | mayo-agosto | 1.155 − 0,086·P | 0,01 |
+| subsuelo limoso | marzo-agosto | 1.001 + 0,35·P | 0,17 |
+| subsuelo limoso | las dos juntas | 1.079 + 0,60·P₁ + 0,013·P₂ | 0,32 |
+
+Leído así es espectacular: **la misma producción pasa de r² = 0,03 a 0,95 según
+qué meses se sumen.** Si eso fuera robusto, cambiar la ventana sería la mejora más
+grande y más barata que le queda a `prodForrajera`, porque acequia tiene lluvia
+diaria de tres fuentes y puede sumar cualquier ventana.
+
+**Y no lo es.** La entrega declaró que no podía reajustar porque la Tabla 2 tenía
+celdas ambiguas; la reconstruí y se puede. Las tres ecuaciones salen casi exactas
+—773,9 + 2,483 con r² 0,8673; 1.085,2 + 0,595 con 0,3175; y la múltiple 502,9 +
+2,598 + 0,906 con R² 0,9541—, así que la serie está bien leída. Con la serie en la
+mano se hace lo que la tabla no muestra: sacar un año.
+
+| qué se saca | pendiente | r² |
+|---|---|---|
+| nada, los siete años | 2,483 | 0,867 |
+| sin 1975 | 2,453 | 0,863 |
+| sin 1976 | 2,457 | 0,867 |
+| sin 1977 | 2,475 | 0,924 |
+| sin 1978 | 2,474 | 0,859 |
+| sin 1979 | 2,484 | 0,868 |
+| sin 1982 | 2,781 | 0,956 |
+| **sin 1983** | **−0,074** | **0,001** |
+
+Marzo-abril de 1983 llovió **250 mm** y los otros seis años, entre 18 y 78. Ese año
+la producción fue 1.430 kg/ha contra 850 a 980 de los otros seis. **Sacar 1983
+lleva el r² de 0,867 a 0,001 y la pendiente a negativa; sacar cualquier otro año no
+mueve nada.**
+
+Con n = 7 y un punto de palanca a tres veces el máximo del resto, el 0,86 no es
+evidencia de que la lluvia de primavera prediga la producción: es evidencia de que
+una primavera extraordinaria dio un año extraordinario. Eso es verdad y es otra
+cosa.
+
+Y el propio trabajo tiene el resultado complementario, que es más robusto porque
+usa trece ubicaciones y cinco años: **adentro de un año, dónde llovió más no
+produjo más.** Textual: *«Within years and soil groups, herbage production was not
+significantly correlated with May-August precipitation; no r² exceeded 0.17.»* Con
+pluviómetros cada 0,8 km sobre 483 ha, lluvia variando hasta un 20 % entre puntos y
+producción hasta un 72 %.
+
+#### Lo que SÍ queda, que es bastante y es más útil
+
+1. **La dirección de la ventana sí.** Marzo-abril pesa 2,49 kg/ha por mm y
+   mayo-agosto 0,49 —factor cinco— y marzo-abril es sólo el 22 % de la lluvia de la
+   temporada. La bibliografía que el trabajo cita va igual: Rauzi (1964) y Murphy
+   (1970), que encontró que en el pastizal anual de California el mejor predictor es
+   la lluvia **del 1 al 20 de noviembre**.
+2. **Que la lluvia prediga o no es una propiedad del SUELO, no del clima.** Mismo
+   campo, mismos años, mismas ventanas: en subsuelo arenoso hay correlación
+   significativa y en subsuelo limoso **ninguna de las cuatro** lo es. La
+   explicación de los autores es el almacenaje de agua, y la frase que la cierra es
+   la que le da el objetivo al próximo lote: en un suelo con más almacenaje *«a more
+   complex water-balance model (Wight and Hanks 1981) might be needed to predict
+   herbage production»*. **acequia tiene textura de SoilGrids: puede saber de qué
+   lado está el predio.**
+3. **La clasificación de sitio por textura superficial agrupa mal.** Ascalon y
+   Altvan están los dos clasificados como sitio «Loamy» y difieren más en producción
+   y composición que Altvan y Cascajo, que son clases distintas. Textual: *«Site
+   classifications based only on surface texture must be interpreted cautiously.»*
+   **Es un aviso sobre dos entradas de este archivo**, que son fichas de sitio
+   ecológico del NRCS.
+4. **El trabajo que compara cuatro ventanas nunca publica la lluvia anual.** Ni
+   éste ni el del frente B. Los cinco sitios nuevos llevan `lluvia_mm` en `null`, y
+   es lo que hay que esperar: el que se toma en serio la ventana deja de publicar el
+   año. La regla W del encargo anterior nació antes de saber hasta qué punto hacía
+   falta.
+
+### Frente B — Hoover et al. (2021), 36 años del CPER separados por posición
+
+*Ecosphere* 12(2):e03376. **La entrega citó mal los autores** —«Hoover, Wilcox y
+Young»— y son Hoover, **Lauenroth**, **Milchunas**, Porensky, Augustine y Derner.
+El detalle no es cosmético: Lauenroth es el autor de la serie de cincuenta años del
+mismo sitio que ya está montada, y Milchunas es el del experimento de carga que
+contradice la joroba del lote 18. El CPER tiene dos series largas con un autor en
+común, y **no cierran entre sí**: ver más abajo.
+
+Tres posiciones de una catena —loma, ladera, bajo con aporte— en un potrero con
+carga moderada declarada (0,6 AUM/ha), quince jaulas temporarias por posición
+movidas al azar cada año, 1983 a 2018. **Dos factores distintos, y no son el
+mismo:**
+
+**El nivel.** 57,2 / 63,7 / 100,0 g/m² de media de 36 años: el bajo produce **1,75
+veces** la loma. Y el trabajo cita tres pastizales más: ~1,5 en pradera de
+arenales, ~2 en pradera de pasto alto y ~2 en pastizal boreal. **El factor
+topográfico publicado va de 1,5 a 2,0 en cuatro ecosistemas.**
+
+**La sensibilidad.** El bajo es **2,6 veces más sensible** a la lluvia de
+abril-agosto que la loma (0,76 ± 0,17 contra 0,29 ± 0,07) y 2,9 veces más sensible
+al promedio de días secos consecutivos. Son sensibilidades **normalizadas**, o sea
+adimensionales: no se pueden leer como kg/ha por mm.
+
+La consecuencia es la que el promedio esconde: **las tres posiciones convergen en
+los años malos y divergen en los buenos.** En 2002 dieron 94, 94 y 142 kg/ha; en
+2009, 1.229, 1.297 y 2.233. **Un bajo no es un seguro contra la sequía: es una
+palanca sobre el agua que llega.** Y el bajo es el 22 % de ese campo, así que
+aplicar el 1,75 a la superficie entera multiplicaría por 1,75 lo que vale para un
+quinto.
+
+**Y el dato que pone en escala todo este archivo:** la variabilidad entre años es
+**cuatro veces más grande** que la variabilidad entre posiciones. Cada posición se
+mueve 13, 14 y 16 veces entre años; el máximo entre posiciones dentro de un año fue
+4 veces. El año manda más que el lugar, y `prodForrajera` **no tiene año**: recibe
+una normal.
+
+#### Las dos series del CPER no cierran, y vale escribirlo
+
+| | media | qué es |
+|---|---|---|
+| Lauenroth y Sala (1992), 1939-1990 | **97 g/m²** | columna de ANPP en estufa-seco, **derivada** del forraje con una ecuación de r² = 0,28 |
+| Hoover et al. (2021), 1983-2018 | **68,4 g/m²** | medida directa, ponderada por área de cada posición (50/28/22 %) |
+
+**1,42 veces**, el mismo sitio, las dos como ANPP herbácea en estufa-seco. Tres
+explicaciones posibles y ninguna descartada: la columna vieja no se midió sino que
+se derivó; Lauenroth y Sala cosechan material muerto adherido y Hoover corta a
+nivel de corona sólo el crecimiento del año; y las ubicaciones de la serie vieja
+cambian cada año con historias de pastoreo distintas.
+
+Y una consecuencia: **Hoover llega 6,6 veces más abajo que el mínimo de la serie de
+cincuenta años.** El peor año de 1939-1990 da 620 kg/ha; la loma en 2002 dio 94. El
+rango conocido de este sitio, juntando las dos series, va de **94 a 2.233 kg/ha**.
+
+### Frente C — vacío por tercera vez, y ahora sé por qué
+
+Cero entradas con la capa herbácea medida aparte de la leñosa. La entrega intentó
+las 37 fichas del catálogo NPP del ORNL y recuperó 15; la de Río Mayo, la única que
+separa `grass` y `shrub`, ya estaba montada. Las otras rutas quedaron cerradas por
+una razón que verifiqué y que no es de la entrega:
+
+**El portal EDI de los LTER devuelve 403 a todo acceso público.** No es un problema
+de la herramienta ni de la ruta: probé `/package/eml/knb-lter-knz`,
+`/package/eml/knb-lter-knz/55`, `/package/data/eml/knb-lter-sgs/4/15` y
+`/package/eml/knb-lter-jrn/210011001`, y los cuatro contestan *«User 'EDI-… (Public
+Access)' is not authorized to execute service method»*. **Konza, Jornada y
+Sevilleta están cerrados por esa vía para las dos partes**, y crear una cuenta no
+es algo que yo haga. Si hace falta esa data, hay que entrar por el portal propio de
+cada sitio.
+
+### Veredicto
+
+**Frente A y frente B contestados, frente C vacío.** Y el saldo neto del lote es
+distinto de lo que parecía al abrir el JSON: lo que entró al código no fue un
+coeficiente nuevo para la escalera, fue **la razón por la que todavía no hay
+ninguno**, con una tabla de palanca que lo demuestra. Más dos factores que sí se
+pueden usar en cuanto haya un segundo sitio que los confirme: el 1,5-2,0 del
+relieve y el aviso del almacenaje de agua del suelo.
+
+Cinco entradas nuevas: 27 sitios. Ninguna de las cinco alimenta una banda, y por
+dos motivos distintos: las dos de Cheyenne no tienen coordenada publicada y las
+tres del CPER tienen `insumos` en `desconocido`.
