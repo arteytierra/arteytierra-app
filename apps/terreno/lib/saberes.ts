@@ -48,9 +48,86 @@ export const LICENCIAS_ADMITIDAS: readonly string[] = [
   'CC-BY-4.0',
   'CC-BY-SA-4.0',
   'ODbL-1.0',
+  'OGL-3.0',
   'dominio_publico',
   'comunitaria_con_permiso',
 ];
+
+/*
+ * `OGL-3.0` entró el 22/10/2026, verificada contra el texto de la licencia en
+ * `nationalarchives.gov.uk/doc/open-government-licence/version/3/`.
+ *
+ * La **Open Government Licence v3.0** del Reino Unido concede, con estas
+ * palabras: «You are free to: copy, publish, distribute and transmit the
+ * Information; adapt the Information; **exploit the Information commercially**
+ * and non-commercially». Es mundial, gratuita, perpetua y no exclusiva, y lo
+ * único que pide es atribución, con una fórmula por defecto cuando el proveedor
+ * no especifica una: «Contains public sector information licensed under the Open
+ * Government Licence v3.0.» O sea: para lo que esta app necesita —redistribuir
+ * un polígono adentro de un producto que se vende y derivar de él— es
+ * funcionalmente equivalente a una CC-BY.
+ *
+ * Importa porque desbloquea un reino entero del inventario: diez saberes
+ * británicos e irlandeses están en `documentado_sin_geometria` y el open data
+ * del Reino Unido se publica mayoritariamente bajo esta licencia. **Pero no
+ * activa nada todavía**: lo que falta de esos diez sigue siendo el polígono, y
+ * esto sólo saca de la lista de excusas a la licencia.
+ *
+ * Tres cosas de su texto que hay que respetar al montar un polígono OGL, y que
+ * no son decorativas:
+ *
+ * 1. **Las exenciones.** La licencia no cubre datos personales, logos, escudos
+ *    ni las Armas Reales, insignias militares, derechos de terceros que el
+ *    proveedor no está autorizado a licenciar, otras formas de propiedad
+ *    intelectual —patentes, marcas, derechos de diseño— ni documentos de
+ *    identidad. Un polígono es dato geográfico y entra; el logo del organismo
+ *    que lo publica, no.
+ * 2. **La cláusula de no-respaldo**, textual: la licencia «does not grant you
+ *    any right to use the Information in a way that suggests any official status
+ *    or that the Information Provider and/or Licensor endorse you or your use of
+ *    the Information». La atribución nombra la fuente; no puede insinuar que el
+ *    organismo avala el análisis de acequia.
+ * 3. **Los derechos terminan automáticamente** si no se cumplen las condiciones.
+ *    No hay período de gracia escrito.
+ *
+ * Y un caso particular ya verificado, para no volver a intentarlo: **esto no
+ * desbloquea los límites de crofting escoceses.** Viven en el Crofting Register
+ * y derivan de Ordnance Survey, que es un producto pago; que la Crofting
+ * Commission publique datos tabulares bajo OGL no hace OGL a la cartografía.
+ *
+ * Nota aparte sobre los Estados Unidos, de la misma tanda. Los shapefiles
+ * TIGER/Line del Census Bureau —que incluyen los límites AIANNH, las áreas de
+ * pueblos originarios— **son de dominio público**: «Copyright protection is not
+ * available for any work of the United States Government (Title 17 U.S.C.,
+ * Section 105). Thus, you are free to reproduce census materials as you see
+ * fit», con el pedido de citar al Census Bureau. Eso cae en `dominio_publico`,
+ * que ya estaba admitida, así que no hace falta una entrada nueva.
+ *
+ * Pero su documentación técnica trae dos cláusulas que sí cambian cómo se usa,
+ * las dos en la página 12 del `TGRSHP2026_TechDoc.pdf`. Una es de marca:
+ * «TIGER/Line cannot be used as or within the proprietary product names of any
+ * commercial product», y pide una declaración visible al redistribuir. La otra
+ * es la que importa de verdad, y pesa más que la licencia:
+ *
+ * > «the boundary information in the TIGER/Line Shapefiles is for statistical
+ * > data collection and tabulation purposes only. Their depiction and
+ * > designation for statistical purposes **does not constitute a determination
+ * > of jurisdictional authority or rights of ownership or entitlement** and are
+ * > not legal land descriptions.»
+ *
+ * La condición 8 de esta compuerta es que el punto caiga adentro del polígono, y
+ * eso equivale a afirmar que el saber es de ahí. Un límite que declara
+ * explícitamente no ser una determinación de autoridad jurisdiccional ni de
+ * derechos de propiedad **no es el instrumento para sostener esa afirmación**, y
+ * menos con territorios de pueblos originarios. La licencia habilita; esta
+ * cláusula aconseja lo contrario. Es el mismo patrón que la FAO, al revés: allá
+ * el rótulo decía CC-BY y los términos adicionales lo cerraban; acá el rótulo
+ * dice dominio público y lo que acota es para qué sirve el dato.
+ *
+ * Así que los trece saberes de Estados Unidos no se activan con TIGER/Line. Lo
+ * que corresponde ahí es el paso 3 de la receta de abajo, que ya estaba escrito:
+ * el acuerdo antes que el mapa.
+ */
 
 /*
  * Estar en esta lista es necesario y no es suficiente: el rótulo lo pone quien

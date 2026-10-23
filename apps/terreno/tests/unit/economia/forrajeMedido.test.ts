@@ -30,6 +30,10 @@ import {
   SERIE_HART, VENTANAS_HART, aniosDeHart, produccionHart,
   RELIEVE_CPER, FACTOR_DEL_RELIEVE, factorDelRelieve, mediaPonderadaPorRelieve,
   factorDeSensibilidad,
+  MODELO_WIGHT_HANKS, YP_WIGHT_HANKS, SERIE_WIGHT_HANKS, AJUSTE_WIGHT_HANKS,
+  FALTA_PARA_CORRER_WIGHT_HANKS, rendimientoWightHanks, transpiracionPotencialWH,
+  transpiracionRealWH, evaporacionPotencialWH, evaporacionRealWH, ypDesdeUnAnio,
+  aniosDeWightHanks, dentroDeTolerancia, dentroDelIc90,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -2324,5 +2328,321 @@ describe('lote 20 — la posición en el relieve, que es lo único que el DEM ya
     for (const frag of ['LOMA de la catena', 'LADERA de la catena', 'BAJO CON APORTE de la catena']) {
       expect(TIPOS_SIN_DESCONTAR).toContain(porNombre(frag).tipo);
     }
+  });
+});
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIGHT Y HANKS (1981): EL MODELO, VERIFICADO CONTRA SU PROPIA TABLA 1
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Wight y Hanks (1981), el modelo de balance hídrico', () => {
+  const sidney = aniosDeWightHanks('sidney');
+  const mandan = aniosDeWightHanks('mandan');
+
+  it('la serie son los quince años de prueba, doce en Sidney y tres en Mandan', () => {
+    expect(SERIE_WIGHT_HANKS).toHaveLength(15);
+    expect(sidney).toHaveLength(12);
+    expect(mandan).toHaveLength(3);
+    expect(AJUSTE_WIGHT_HANKS.anios_de_prueba).toBe(15);
+    // Sidney va de 1967 a 1978 sin saltos, aunque el título de la Tabla 1
+    // diga «for 1976-1978», que es una errata del trabajo.
+    expect(sidney.map(a => a.anio)).toEqual(
+      [1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975, 1976, 1977, 1978]);
+    expect(mandan.map(a => a.anio)).toEqual([1958, 1959, 1960]);
+  });
+
+  /**
+   * El caso resuelto de este módulo, y es fuerte: la Tabla 1 publica `Tp` y `T`
+   * además del rendimiento, así que la ecuación 1 se reproduce sin correr el
+   * balance. Si alguien toca `rendimientoWightHanks` o un número de la tabla,
+   * esto no cierra.
+   */
+  it('la ecuación 1 reproduce los doce rendimientos publicados de Sidney con menos de 0,5 % de desvío', () => {
+    let peor = 0;
+    for (const a of sidney) {
+      const y = rendimientoWightHanks(YP_WIGHT_HANKS.sidney, a.t_mm!, a.tp_mm!)!;
+      const desvio = Math.abs(y - a.rend_modelo_kg_ha) / a.rend_modelo_kg_ha;
+      expect(desvio, `${a.anio}`).toBeLessThan(0.005);
+      peor = Math.max(peor, desvio);
+    }
+    // El peor es 1978, con 0,44 %. El resto del desvío es el redondeo de T y Tp
+    // a milímetros enteros en la tabla.
+    expect(peor).toBeGreaterThan(0.004);
+    expect(peor).toBeLessThan(0.005);
+  });
+
+  it('un año concreto a mano, para que el cálculo quede a la vista', () => {
+    // 1977, el año más seco de la serie: Tp 97 mm, T 39 mm, Yp 1.300 kg/ha.
+    // 1300 × 39/97 = 522,68 → la tabla publica 522.
+    const y = rendimientoWightHanks(1300, 39, 97)!;
+    expect(y).toBeCloseTo(522.68, 1);
+    expect(Math.round(y)).toBe(523);
+    expect(sidney.find(a => a.anio === 1977)!.rend_modelo_kg_ha).toBe(522);
+  });
+
+  it('sin demanda no hay cociente: Tp en cero devuelve null y no Infinity', () => {
+    expect(rendimientoWightHanks(1300, 0, 0)).toBeNull();
+    expect(rendimientoWightHanks(1300, 10, 0)).toBeNull();
+    // Y con T en cero el rendimiento es cero, que sí es una respuesta.
+    expect(rendimientoWightHanks(1300, 0, 100)).toBe(0);
+  });
+
+  /**
+   * El hallazgo del lote. El resumen dice 12 de 15 y su propia tabla dice 11.
+   * Verificado por los dos denominadores posibles.
+   */
+  it('el resumen dice 12 de 15 dentro del 10 % y la tabla da 11', () => {
+    const r = dentroDeTolerancia(0.10);
+    expect(r.total).toBe(15);
+    expect(r.dentro).toBe(11);
+    expect(AJUSTE_WIGHT_HANKS.dentro_del_10_pct_segun_el_resumen).toBe(12);
+    expect(AJUSTE_WIGHT_HANKS.dentro_del_10_pct_contado).toBe(11);
+    // Los cuatro que quedan afuera, con nombre y año.
+    expect(r.fuera.map(a => a.anio).sort()).toEqual([1959, 1973, 1974, 1977]);
+    expect(r.fuera.filter(a => a.sitio === 'sidney')).toHaveLength(3);
+    expect(r.fuera.filter(a => a.sitio === 'mandan')).toHaveLength(1);
+  });
+
+  it('el recuento no cambia si el denominador es el predicho en vez del medido', () => {
+    const fueraSobrePredicho = SERIE_WIGHT_HANKS.filter(a =>
+      Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) / a.rend_modelo_kg_ha > 0.10);
+    expect(fueraSobrePredicho).toHaveLength(4);
+    expect(fueraSobrePredicho.map(a => a.anio).sort()).toEqual([1959, 1973, 1974, 1977]);
+  });
+
+  it('el otro criterio posible, el intervalo del 90 %, da todavía menos: 9 de 12', () => {
+    const r = dentroDelIc90();
+    expect(r.total).toBe(12);   // sólo Sidney publica el intervalo
+    expect(r.dentro).toBe(9);
+    expect(r.fuera.map(a => a.anio)).toEqual([1973, 1974, 1977]);
+  });
+
+  it('el año que se pasa por menos es 1977, por 4 kg/ha: la hipótesis del doceavo', () => {
+    const a = sidney.find(x => x.anio === 1977)!;
+    const techo = a.rend_campo_kg_ha + a.ic90_campo_kg_ha!;
+    expect(techo).toBe(518);
+    expect(a.rend_modelo_kg_ha).toBe(522);
+    expect(a.rend_modelo_kg_ha - techo).toBe(4);
+    // Y los otros dos se pasan por dos órdenes de magnitud más.
+    for (const anio of [1973, 1974]) {
+      const o = sidney.find(x => x.anio === anio)!;
+      expect(o.rend_modelo_kg_ha - (o.rend_campo_kg_ha + o.ic90_campo_kg_ha!))
+        .toBeGreaterThan(170);
+    }
+  });
+
+  /**
+   * La forma del error, que es lo que decide si este modelo se puede usar para
+   * dimensionar. En promedio no se equivoca; en los años de sequía temprana
+   * sobreestima, que es la dirección cara.
+   */
+  it('en promedio acierta —+5,2 %— y la tabla publica esa misma media', () => {
+    const mediaModelo = sidney.reduce((s, a) => s + a.rend_modelo_kg_ha, 0) / 12;
+    const mediaCampo = sidney.reduce((s, a) => s + a.rend_campo_kg_ha, 0) / 12;
+    // La fila «Mean» de la Tabla 1 publica 1065 y 1012.
+    expect(Math.round(mediaModelo)).toBe(1065);
+    expect(Math.round(mediaCampo)).toBe(1012);
+    expect((mediaModelo / mediaCampo - 1) * 100).toBeCloseTo(5.2, 1);
+    // Seis y seis: el sesgo promedio no viene de una deriva sistemática.
+    expect(sidney.filter(a => a.rend_modelo_kg_ha > a.rend_campo_kg_ha)).toHaveLength(6);
+    expect(sidney.filter(a => a.rend_modelo_kg_ha < a.rend_campo_kg_ha)).toHaveLength(6);
+  });
+
+  it('los dos años peores fallan los dos para arriba, y son los que el trabajo nombra', () => {
+    const e = (anio: number) => {
+      const a = sidney.find(x => x.anio === anio)!;
+      return (a.rend_modelo_kg_ha / a.rend_campo_kg_ha - 1) * 100;
+    };
+    expect(e(1973)).toBeCloseTo(43.5, 0);
+    expect(e(1974)).toBeCloseTo(26.5, 0);
+    // Y son los dos errores más grandes de los doce, en valor absoluto.
+    const ordenados = sidney
+      .map(a => ({ anio: a.anio, err: Math.abs(a.rend_modelo_kg_ha / a.rend_campo_kg_ha - 1) }))
+      .sort((x, y) => y.err - x.err);
+    expect(ordenados.slice(0, 2).map(x => x.anio).sort()).toEqual([1973, 1974]);
+  });
+
+  /**
+   * `Yp = Y·Tp/T` visto al revés: el año cuyo Yp se despega es el año donde el
+   * modelo falla. Es una prueba de la coherencia interna del trabajo.
+   */
+  it('el Yp despejado año por año delata los mismos dos años malos', () => {
+    const yps = sidney.map(a => ({
+      anio: a.anio,
+      yp: ypDesdeUnAnio(a.rend_campo_kg_ha, a.tp_mm!, a.t_mm!)!,
+    }));
+    const media = yps.reduce((s, x) => s + x.yp, 0) / yps.length;
+    expect(Math.round(media)).toBe(1230);
+    expect(Math.round(Math.max(...yps.map(x => x.yp)))).toBe(1372);
+    // Los dos más bajos son 1973 y 1974, los mismos del test anterior.
+    const dosMasBajos = [...yps].sort((a, b) => a.yp - b.yp).slice(0, 2);
+    expect(dosMasBajos.map(x => x.anio).sort()).toEqual([1973, 1974]);
+    expect(Math.round(dosMasBajos[0]!.yp)).toBe(908);
+    // Y el Yp publicado queda arriba de la media despejada, no en ella.
+    expect(YP_WIGHT_HANKS.sidney).toBeGreaterThan(media);
+  });
+
+  it('despejar Yp con T en cero devuelve null', () => {
+    expect(ypDesdeUnAnio(1000, 100, 0)).toBeNull();
+  });
+
+  it('las ecuaciones 2, 3, 4, 6 y 7 hacen lo que dicen', () => {
+    // Eq. 2: Tp = b · Kc · Eo
+    expect(transpiracionPotencialWH(0.5, 0.85, 8)).toBeCloseTo(3.4, 6);
+    // Eq. 3: con c = 1 la relación es lineal en SWS/AW.
+    expect(transpiracionRealWH(5, 30, 60)).toBeCloseTo(2.5, 6);
+    expect(transpiracionRealWH(5, 60, 60)).toBeCloseTo(5, 6);
+    // Eq. 4: con c = 1 nunca se activa, porque SWS no puede exceder AW.
+    expect(transpiracionRealWH(5, 90, 60)).toBeCloseTo(5, 6);
+    // Con un c menor, la ecuación 4 sí aparece: es el caso del trigo (0,5).
+    expect(transpiracionRealWH(5, 30, 60, 0.5)).toBeCloseTo(5, 6);
+    expect(transpiracionRealWH(5, 15, 60, 0.5)).toBeCloseTo(2.5, 6);
+    // Capa sin capacidad: null, no cero.
+    expect(transpiracionRealWH(5, 0, 0)).toBeNull();
+    // Eq. 7: Ep = Kc·Eo − Tp, y nunca negativo.
+    expect(evaporacionPotencialWH(0.85, 8, 3.4)).toBeCloseTo(3.4, 6);
+    expect(evaporacionPotencialWH(0.85, 8, 10)).toBe(0);
+    // Eq. 6: E = Ep · t^(−1/2), con el día de la lluvia en Ep entero.
+    expect(evaporacionRealWH(4, 1)).toBeCloseTo(4, 6);
+    expect(evaporacionRealWH(4, 0)).toBeCloseTo(4, 6);
+    expect(evaporacionRealWH(4, 4)).toBeCloseTo(2, 6);
+    expect(evaporacionRealWH(4, 9)).toBeCloseTo(4 / 3, 6);
+  });
+
+  it('el Kc de 0,85 es el promedio del rango estacional que el trabajo publica', () => {
+    const { primavera_otonio, plena_temporada } = MODELO_WIGHT_HANKS.kc_rango_estacional;
+    expect(primavera_otonio).toBe(0.7);
+    expect(plena_temporada).toBe(0.9);
+    expect(MODELO_WIGHT_HANKS.kc).toBeGreaterThan(primavera_otonio);
+    expect(MODELO_WIGHT_HANKS.kc).toBeLessThan(plena_temporada);
+    // No es el promedio aritmético de los extremos (0,80): es el promedio
+    // ponderado por la temporada, y el trabajo dice que dio tan bien como usar
+    // la curva completa.
+    expect(MODELO_WIGHT_HANKS.kc).not.toBe((primavera_otonio + plena_temporada) / 2);
+  });
+
+  it('el c de 1,0 es más alto que los dos valores que la literatura usó antes', () => {
+    expect(MODELO_WIGHT_HANKS.c).toBe(1.0);
+    expect(MODELO_WIGHT_HANKS.c_en_la_literatura.trigo).toBe(0.5);
+    expect(MODELO_WIGHT_HANKS.c_en_la_literatura.pastizal_nativo).toBe(0.7);
+    for (const v of Object.values(MODELO_WIGHT_HANKS.c_en_la_literatura)) {
+      expect(MODELO_WIGHT_HANKS.c).toBeGreaterThan(v);
+    }
+    // Y con c = 1 la ecuación 4 no se activa nunca, que es lo que el trabajo dice.
+    expect(MODELO_WIGHT_HANKS.c_es_sensible).toBe(false);
+  });
+
+  it('el perfil son tres capas de 30 cm, que es por qué se pudo comparar con el campo', () => {
+    expect(MODELO_WIGHT_HANKS.capas_cm).toEqual([30, 30, 30]);
+    // El agua de suelo del campo se midió con sonda de neutrones cada 30 cm:
+    // las capas del modelo se eligieron para que las dos series fueran
+    // comparables, no por una razón edafológica.
+    expect(MODELO_WIGHT_HANKS.capas_cm.reduce((s, c) => s + c, 0)).toBe(90);
+  });
+
+  it('la escorrentía es cero por supuesto declarado, y eso acota el modelo', () => {
+    expect(MODELO_WIGHT_HANKS.escorrentia).toBe(0);
+    expect(MODELO_WIGHT_HANKS.escorrentia_dicho_asi).toContain('no runoff');
+    // Es lo que lo vuelve incompatible con la catena de Hoover et al. sin
+    // modificarlo: ahí el bajo produce 1,75× la loma justamente porque recibe
+    // escorrentía de arriba.
+    const bajo = RELIEVE_CPER.find(p => p.posicion === 'bajo_con_aporte')!;
+    expect(factorDelRelieve(bajo)).toBeCloseTo(1.75, 2);
+  });
+
+  it('el r² de 0,74 es contra la recta 1:1, que es más exigente que la de regresión', () => {
+    expect(AJUSTE_WIGHT_HANKS.r2_rendimiento_sidney).toBe(0.74);
+    expect(AJUSTE_WIGHT_HANKS.r2_agua_de_suelo_sidney).toBe(0.91);
+    expect(AJUSTE_WIGHT_HANKS.r2_contra).toContain('1:1');
+    // El agua de suelo la predice mejor que el rendimiento, que es lo esperable:
+    // el rendimiento agrega el paso de T/Tp a Y, con el Yp de sitio adentro.
+    expect(AJUSTE_WIGHT_HANKS.r2_agua_de_suelo_sidney)
+      .toBeGreaterThan(AJUSTE_WIGHT_HANKS.r2_rendimiento_sidney);
+  });
+
+  it('Mandan no publica el balance: sólo el resultado, y todas sus columnas intermedias son null', () => {
+    for (const a of mandan) {
+      expect(a.kc_eo_mm).toBeNull();
+      expect(a.tp_mm).toBeNull();
+      expect(a.t_mm).toBeNull();
+      expect(a.pptn_periodo_mm).toBeNull();
+      expect(a.ic90_campo_kg_ha).toBeNull();
+      // Pero los dos rendimientos sí están: es lo que el texto da en prosa.
+      expect(a.rend_modelo_kg_ha).toBeGreaterThan(0);
+      expect(a.rend_campo_kg_ha).toBeGreaterThan(0);
+    }
+    // Y por eso la ecuación 1 no se puede verificar en Mandan.
+    expect(mandan.every(a => a.tp_mm === null)).toBe(true);
+  });
+
+  it('el Yp de Mandan es 2,1 veces el de Sidney, que es casi todo el rango de los quince años', () => {
+    const r = YP_WIGHT_HANKS.mandan / YP_WIGHT_HANKS.sidney;
+    expect(r).toBeCloseTo(2.12, 2);
+    // Y se ve en los rendimientos: el peor año de Mandan supera al mejor de Sidney.
+    const mejorSidney = Math.max(...sidney.map(a => a.rend_campo_kg_ha));
+    const peorMandan = Math.min(...mandan.map(a => a.rend_campo_kg_ha));
+    expect(peorMandan).toBeGreaterThan(mejorSidney);
+  });
+
+  /**
+   * Lo que falta para correr el modelo, testeado como contrato: si alguien
+   * «completa» una de estas cuatro con un número inventado, acá se nota.
+   */
+  it('las cuatro cosas que faltan están nombradas, y tres son figuras', () => {
+    expect(FALTA_PARA_CORRER_WIGHT_HANKS).toHaveLength(4);
+    const figuras = FALTA_PARA_CORRER_WIGHT_HANKS.filter(
+      f => f.por_que_no_se_puede.toLowerCase().includes('figura'));
+    expect(figuras).toHaveLength(3);
+    // La cuarta no es una figura: es el Yp, que es de sitio.
+    const cuarta = FALTA_PARA_CORRER_WIGHT_HANKS.find(f => f.que.startsWith('Yp'))!;
+    expect(cuarta.por_que_no_se_puede).toContain('escala');
+    expect(cuarta.y_ademas).toContain('circular');
+    // Y las cuatro dicen dónde está y qué más hay que saber.
+    for (const f of FALTA_PARA_CORRER_WIGHT_HANKS) {
+      expect(f.donde_esta.length).toBeGreaterThan(20);
+      expect(f.y_ademas.length).toBeGreaterThan(40);
+    }
+  });
+
+  it('la lluvia de la tabla es del período y no del año: la regla W, sostenida', () => {
+    // El pie de la Tabla 1 dice «Measured from April 15 to peak standing crop».
+    // Con 91 mm en 1977 y 338 en 1969, estos números NO son lluvia anual y no se
+    // pueden meter en una escalera por lluvia anual.
+    const lluvias = sidney.map(a => a.pptn_periodo_mm!);
+    expect(Math.min(...lluvias)).toBe(91);
+    expect(Math.max(...lluvias)).toBe(338);
+    // Los días del período lo confirman: ninguno llega a un año.
+    for (const a of sidney) {
+      expect(a.periodo_dias!).toBeGreaterThan(60);
+      expect(a.periodo_dias!).toBeLessThan(110);
+    }
+    // Y es el mismo patrón que dejaron las cinco entradas del lote 20: los
+    // trabajos que se toman en serio la ventana dejan de publicar el año.
+    expect(SERIE_HART.every(a => a.mar_sep_mm !== null)).toBe(true);
+  });
+
+  it('el drenaje aparece sólo en los tres años húmedos, y el modelo lo cuenta aparte', () => {
+    const conDrenaje = sidney.filter(a => a.drenaje_mm! > 0);
+    expect(conDrenaje.map(a => a.anio)).toEqual([1969, 1972, 1975]);
+    // 1969 es el año de más lluvia del período y el de más drenaje.
+    const h = sidney.find(a => a.anio === 1969)!;
+    expect(h.pptn_periodo_mm).toBe(338);
+    expect(h.drenaje_mm).toBe(117);
+    // Y aun así no es el año de más rendimiento: el agua que drena no produce.
+    const mejor = sidney.reduce((m, a) =>
+      a.rend_campo_kg_ha > m.rend_campo_kg_ha ? a : m, sidney[0]!);
+    expect(mejor.anio).toBe(1975);
+    expect(mejor.drenaje_mm).toBe(50);
+  });
+
+  it('la cita lleva los dos autores completos y en el orden del trabajo', () => {
+    expect(MODELO_WIGHT_HANKS.autores).toBe('Wight, J. Ross y Hanks, R.J.');
+    expect(MODELO_WIGHT_HANKS.anio).toBe(1981);
+    expect(MODELO_WIGHT_HANKS.publicacion).toContain('34(4):307-311');
+    expect(MODELO_WIGHT_HANKS.doi).toBe('10.2307/3897857');
+    // Y de dónde deriva, que es parte del argumento del propio trabajo.
+    expect(MODELO_WIGHT_HANKS.deriva_de).toContain('Hanks (1974)');
+    expect(MODELO_WIGHT_HANKS.sin).toEqual(['riego', 'fenología', 'rendimiento de grano']);
   });
 });

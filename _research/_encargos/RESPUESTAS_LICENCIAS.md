@@ -9,8 +9,8 @@ después de la validación y después del muestreo, no la entrega.
 | # | Pregunta | Estado | Lote |
 |---|---|---|---|
 | 1 | Polígonos de los sitios SIPAM/GIAHS de la FAO | **Cerrada: no hay polígono** | `01.json`, 10/10/2026 |
-| 2 | Licencia del censo de los Estados Unidos (AIANNH) | abierta | — |
-| 3 | Texto de la OGL v3.0 del Reino Unido | abierta | — |
+| 2 | Licencia del censo de los Estados Unidos (AIANNH) | **Cerrada: dominio público, y hay otra cosa que pesa más** | `02.json` 12/10/2026 y `04.json` 22/10/2026 |
+| 3 | Texto de la OGL v3.0 del Reino Unido | **Cerrada: admitida, y entró a la compuerta** | `03.json`, 12/10/2026 |
 | 4 | Vías pecuarias del MITECO: licencia y si alguien las tiene como polígono | abierta | — |
 | 5 | Si INE Bolivia / DANE / INEC Ecuador / INE Uruguay cambiaron términos | abierta | — |
 | 6 | Global Mangrove Watch y los institutos de suelos del Magreb | abierta | — |
@@ -99,3 +99,122 @@ uso comercial— o un acuerdo con quien administra el sitio.
 **Lo que esto desbloquea es tiempo:** era el pendiente nº 3 de los saberes y
 figuraba como «un encargo de una tarde». Ya está contestado y la respuesta es
 que no había nada que conseguir.
+
+
+---
+
+## 2. El censo de los Estados Unidos — cerrada, y el hallazgo no es la licencia
+
+**Respondida dos veces y las dos bien**: el lote `02.json` del 12/10/2026 y el
+`04.json` del 22/10/2026. El segundo llegó porque la tabla de arriba decía
+«abierta» cuando ya estaba contestada: **el lote 02 estuvo diez días sin
+procesar.** Vale anotarlo como falla del circuito y no de la entrega.
+
+### La licencia
+
+Los shapefiles TIGER/Line del Census Bureau —que incluyen los límites **AIANNH**,
+las áreas de pueblos originarios, nativos de Alaska y hawaianos nativos— son
+**de dominio público**. La frase está en la sección 1.2 de la documentación
+técnica, verificada el 22/10/2026 en la página 12 del
+`TGRSHP2026_TechDoc.pdf`, 173 páginas:
+
+> «Copyright protection is not available for any work of the United States
+> Government (Title 17 U.S.C., Section 105). Thus, you are free to reproduce
+> census materials as you see fit. We would ask, however, that you cite the
+> Census Bureau as the source.»
+
+Uso comercial, sí. Obra derivada, sí. Atribución, pedida y no exigida
+jurídicamente. Cae en `dominio_publico`, que ya estaba entre las admitidas, así
+que **no hizo falta agregar nada a la compuerta.**
+
+### Las dos cláusulas de la sección 1.1, que la entrega nombró
+
+La primera es de marca, y es operativa si algún día se monta el dato:
+
+> «TIGER/Line® is a registered trademark of the Census Bureau. TIGER/Line cannot
+> be used as or within the proprietary product names of any commercial product
+> including or otherwise relevant to Census Bureau data and may only be used to
+> refer to the nature of such a product.»
+
+Y pide que cualquier reempaquetado incluya «a conspicuously placed statement to
+this effect on the product's cover, the first page of the website, or elsewhere
+of comparable visibility». O sea: no se puede llamar al producto con
+«TIGER/Line» adentro, y hay que poner un cartel visible. Las dos cosas son
+cumplibles.
+
+### Lo que el muestreo agregó, y vale más que la respuesta
+
+La misma página trae una tercera cláusula que la entrega mencionó sin citar, y
+que para esta capa pesa **más que la licencia**:
+
+> «the boundary information in the TIGER/Line Shapefiles is for statistical data
+> collection and tabulation purposes only. Their depiction and designation for
+> statistical purposes **does not constitute a determination of jurisdictional
+> authority or rights of ownership or entitlement** and are not legal land
+> descriptions.»
+
+La condición 8 de la compuerta de saberes es que el punto del predio caiga
+adentro del polígono, y cuando eso se cumple la app afirma que **ese saber es de
+ese lugar**. Un límite que declara explícitamente no ser una determinación de
+autoridad jurisdiccional ni de derechos de propiedad no es el instrumento para
+sostener esa afirmación. Con un parque nacional sería una formalidad; con
+territorios de pueblos originarios no lo es.
+
+Es el patrón de la FAO al revés. Allá el rótulo decía CC-BY 4.0 y los *additional
+terms* lo cerraban. Acá el rótulo dice dominio público y lo que acota es **para
+qué sirve el dato**. La licencia habilita y la cláusula aconseja lo contrario.
+
+**Entonces los trece saberes de Estados Unidos no se activan con TIGER/Line**, y
+no por licencia. Lo que corresponde ahí es lo que el paso 3 de la receta de
+`saberes.ts` ya decía antes de esta consulta: el acuerdo antes que el mapa. La
+consulta sirvió para saber que la licencia no es el obstáculo, que también es
+información.
+
+---
+
+## 3. La OGL v3.0 del Reino Unido — cerrada, y es la primera licencia nueva de la compuerta
+
+El lote `03.json`, del 12/10/2026, también sin procesar hasta hoy. Verificada el
+22/10/2026 contra el texto de la licencia en
+`nationalarchives.gov.uk/doc/open-government-licence/version/3/`.
+
+La **Open Government Licence v3.0** concede, con estas palabras:
+
+> «You are free to: copy, publish, distribute and transmit the Information;
+> adapt the Information; **exploit the Information commercially** and
+> non-commercially for example, by combining it with other Information, or by
+> including it in your own product or application.»
+
+Es mundial, gratuita, perpetua y no exclusiva. Lo único que pide es atribución,
+con una fórmula por defecto cuando el proveedor no especifica una: «Contains
+public sector information licensed under the Open Government Licence v3.0.»
+
+**Para lo que esta app hace —redistribuir un polígono ajeno adentro de un
+producto que se vende, y derivar de él— es funcionalmente equivalente a una
+CC-BY.** Así que entró a `LICENCIAS_ADMITIDAS` como `OGL-3.0`, con tres
+condiciones de su propio texto escritas al lado:
+
+1. **Las exenciones**: no cubre datos personales, logos, escudos ni las Armas
+   Reales, insignias militares, derechos de terceros que el proveedor no está
+   autorizado a licenciar, otras formas de propiedad intelectual ni documentos
+   de identidad. Un polígono entra; el logo del organismo que lo publica, no.
+2. **La cláusula de no-respaldo**: la licencia «does not grant you any right to
+   use the Information in a way that suggests any official status or that the
+   Information Provider and/or Licensor endorse you or your use of the
+   Information». La atribución nombra la fuente, no puede insinuar aval.
+3. **Los derechos terminan automáticamente** si no se cumplen las condiciones,
+   sin período de gracia escrito.
+
+### Qué desbloquea, y qué no
+
+**No activó ningún saber**, y hay un test que lo prueba: las dos geometrías del
+registro siguen siendo las mismas dos, las dos por ODbL. Lo que esto hace es
+sacar a la licencia de la lista de excusas para los **diez saberes británicos e
+irlandeses** del inventario, porque el open data del Reino Unido se publica
+mayoritariamente bajo OGL. Lo que les falta sigue siendo el polígono, y ahora se
+ve cuál es el problema de cada uno.
+
+Y una ruta que sigue muerta, confirmada por la propia entrega: **esto no
+desbloquea los límites de crofting escoceses.** Viven en el Crofting Register y
+derivan de Ordnance Survey, que es un producto pago. Que la Crofting Commission
+publique datos tabulares bajo OGL no hace OGL a la cartografía.

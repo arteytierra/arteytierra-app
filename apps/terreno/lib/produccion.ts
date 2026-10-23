@@ -419,6 +419,58 @@ export interface PerfilRodeo {
  * dentro de un año fue 4. El año manda más que el lugar, y esta función **no
  * tiene año**: recibe una normal. Es el mismo diagnóstico que dejó la memoria del
  * CPER, por otro camino.
+ *
+ * ## El reemplazo ya tiene nombre, y está leído
+ *
+ * Veinte lotes midieron por qué esta escalera está mal. El 22/10/2026 se leyó la
+ * función que la reemplaza, y la nombró la propia fuente del punto 1 de arriba:
+ * **Wight y Hanks (1981), «A Water-Balance, Climate Model for Range Herbage
+ * Production», *Journal of Range Management* 34(4):307-311.** Está montada en
+ * `MODELO_WIGHT_HANKS` de `forrajeMedido.ts`, con sus siete ecuaciones, sus
+ * parámetros y los quince años de su validación.
+ *
+ * Lo que cambia es la pregunta. Esta función pregunta **cuánto llovió**; el
+ * modelo pregunta **qué fracción de la transpiración potencial ocurrió**:
+ *
+ *     Y = Yp · (T / Tp)
+ *
+ * Y eso no es una correlación ajustada a un sitio: es el supuesto físico de la
+ * familia de modelos de De Wit, que es por qué se transfiere. El trabajo lo
+ * demuestra transfiriendo un modelo escrito para trigo a una pradera mixta
+ * nativa sin cambiarle los algoritmos.
+ *
+ * **Verificado acá, y es el caso resuelto más fuerte de este módulo:** la Tabla 1
+ * publica `Tp` y `T` año por año además del rendimiento, así que la ecuación 1 se
+ * reproduce sin correr el balance. Con `Yp = 1.300 kg/ha` los doce años de Sidney
+ * salen con un desvío peor de **0,44 %**.
+ *
+ * **Y lo que falta, que es por qué todavía no se reemplaza:** tres de las
+ * entradas del modelo son **figuras y no tablas** —la curva estacional de LAI
+ * relativo, la actividad radical por temperatura de suelo, y las curvas de
+ * temperatura de suelo por capa— y la cuarta, `Yp`, es el rendimiento potencial
+ * **del sitio**, calibrado con producción medida del lugar. Está enumerado una
+ * por una en `FALTA_PARA_CORRER_WIGHT_HANKS`.
+ *
+ * O sea: el reemplazo pasó de cinco escalones sin fuente a **un parámetro de
+ * sitio y tres curvas**, y las tres curvas tienen fuente nombrada —Hanson (1973)
+ * y de Jong (1974)— que es otro relevamiento y no una invención. Es la primera
+ * vez que esta deuda tiene una lista finita.
+ *
+ * **La advertencia va con el modelo si se monta.** En los dos años en que el
+ * modelo falló más —1973 y 1974 en Sidney— falló **para arriba**, +43,5 % y
+ * +26,5 %, y los dos tienen la misma firma: sequía en abril o mayo seguida de
+ * buena humedad en junio y julio. Los autores explican por qué, y la frase es la
+ * limitación del método: *«In its current form, the model has no mechanism to
+ * account for the effects of drought during various growth periods on subsequent
+ * plant growth.»* Una sequía temprana en una pradera mixta no se recupera —la
+ * *Carex filifolia* semilla y termina, el *Agropyron smithii* entra en dormancia—
+ * y el balance de agua suma la transpiración de julio como si la planta estuviera
+ * entera.
+ *
+ * Para esta app la dirección importa: **sobreestimar el forraje en el año de
+ * sequía temprana es exactamente el año en que alguien decide la carga y el agua
+ * de la represa.** En promedio el modelo acierta (+5,2 % sobre doce años, seis
+ * arriba y seis abajo), y ese promedio esconde el error que cuesta.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;

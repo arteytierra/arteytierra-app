@@ -4270,3 +4270,483 @@ export function cruceDeModelos(a: ModeloANPP, b: ModeloANPP): number {
 export function medicionesDeBioma(bioma: string): MedicionForraje[] {
   return FORRAJE_MEDIDO.filter(m => m.bioma === bioma);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EL MODELO PUBLICADO: WIGHT Y HANKS (1981)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * El modelo de balance hídrico que debería reemplazar a `prodForrajera`.
+ *
+ * ## De dónde salió este trabajo
+ *
+ * Lo nombró la propia fuente del lote 20. Hart y Samuel, al explicar por qué la
+ * lluvia predice la producción en el subsuelo arenoso y no en el limoso,
+ * escriben que en un suelo con almacenaje hace falta «a more complex
+ * water-balance model (Wight and Hanks 1981)». Veinte lotes de este archivo
+ * midieron **por qué** la escalera por lluvia anual está mal; éste es el primero
+ * que trae la función que la reemplaza.
+ *
+ * **Wight, J. Ross y Hanks, R.J. (1981). «A Water-Balance, Climate Model for
+ * Range Herbage Production». *Journal of Range Management* 34(4):307-311.**
+ * DOI 10.2307/3897857. Wight era *range scientist* del USDA en el Northwest
+ * Watershed Research Center de Boise, antes en el Northern Plains Soil and Water
+ * Research Center de Sidney, Montana; Hanks, profesor de Ciencia del Suelo y
+ * Biometeorología en Utah State. Manuscrito recibido el 12/12/1979.
+ *
+ * El trabajo no es nuevo: es el modelo de cultivo de Hanks (1974) y Rasmussen y
+ * Hanks (1978) —escrito para trigo— **sin los componentes de riego, fenología y
+ * rendimiento de grano**, con la extracción de agua y el crecimiento de raíz
+ * modificados para vegetación perenne. Los autores lo dicen así, y es parte de
+ * su argumento: si un modelo de cultivo se transfiere a un pastizal nativo, eso
+ * «supports the integrity of its basic algorithms».
+ *
+ * ## Cómo se leyó
+ *
+ * El repositorio abierto de la Universidad de Arizona devuelve **403 de Apache
+ * en todos los caminos de descarga de archivo**, incluso navegando directo. El
+ * texto se leyó el 22/10/2026 con un `fetch` **del mismo origen** desde la
+ * página del ítem (`/items/7633e1ec-63d3-4d91-bbfc-1458ab601fa6`), pidiendo el
+ * *bundle* `TEXT` —`05b0db65-8d1f-4cde-af64-b4a3c3ede8b1`, 25.634 caracteres—,
+ * que es el OCR que el repositorio ya tiene hecho. La ruta está en
+ * `reference_leer_pdf`.
+ *
+ * La entrega del lote 21 había declarado el repositorio inaccesible, que es la
+ * **tercera vez de tres** que algo declarado imposible por una entrega sale por
+ * otro camino. Lo que sí trajo, y es la mitad del trabajo, fue la transcripción
+ * de la Tabla 1 y de las siete ecuaciones, que es lo que se verificó acá.
+ *
+ * ## Las ecuaciones, y la que importa
+ *
+ * El supuesto básico es la ecuación 1, y no es de este trabajo sino de la
+ * tradición de De Wit: **el rendimiento relativo iguala a la transpiración
+ * relativa.**
+ *
+ *     Y / Yp = T / Tp                                                  [1]
+ *     Tp = b · Kc · Eo                                                 [2]
+ *     T  = Tp · (SWS/AW) / c    si SWS/AW ≤ c                          [3]
+ *     T  = Tp                   si SWS/AW > c                          [4]
+ *     E  = Ep · t^(−1/2)                                               [6]
+ *     Ep = Kc · Eo − Tp                                               [7]
+ *
+ * Y el balance diario, que el trabajo describe en prosa y no numera: la lluvia
+ * entra por la capa de arriba, lo que pasa capacidad de campo baja a la
+ * siguiente, y lo que pasa la última es drenaje. La extracción también va capa
+ * por capa desde arriba: si la primera no cubre la `Tp` del día se pide a la
+ * segunda, y así, pero la extracción de la capa `i+1` no puede exceder la
+ * diferencia entre `Tp` y lo ya extraído. **Se asume escorrentía cero** —está
+ * dicho con esas palabras—, lo que acota el modelo a terreno plano o a una
+ * cuenca cerrada.
+ *
+ * ## La verificación que vale: la ecuación 1 sale de la propia Tabla 1
+ *
+ * La Tabla 1 publica, año por año, `Kc·Eo`, `Tp`, `T`, ET, drenaje, rendimiento
+ * del modelo, ET medida, lluvia, rendimiento de campo, el `sȳ` del campo y los
+ * días del período de crecimiento. Es decir: **publica las dos transpiraciones
+ * y el rendimiento que el modelo sacó de ellas.** Entonces la ecuación 1 se
+ * puede reproducir sin correr el balance.
+ *
+ * Con `Yp = 1.300 kg/ha`, los doce años de Sidney salen con un **desvío peor de
+ * 0,44 %**, y la mitad por debajo de 0,3 %. Eso prueba tres cosas de una: que la
+ * ecuación 1 es la que generó la columna publicada, que `Yp` es efectivamente
+ * 1.300 y no un número redondeado para el texto, y que la transcripción de la
+ * tabla está bien leída. Es el caso resuelto que el contrato de
+ * `motor-de-calculo` pide, y está en `SERIE_WIGHT_HANKS`.
+ *
+ * ## El hallazgo: el resumen dice 12 de 15 y su propia tabla dice 11
+ *
+ * El *abstract* afirma que las predicciones cayeron «within 10% of field
+ * measured yields for 12 of the 15 test years». Contando sobre la Tabla 1 más
+ * los tres pares de Mandan que el texto da en prosa, **son 11**: quedan afuera
+ * 1973 (+43,5 %), 1974 (+26,5 %), 1977 (+16,0 %) y Mandan 1959 (−19,7 %).
+ *
+ * No es un error de transcripción y se verificó por los dos denominadores: con
+ * el medido como base da 11, y con el predicho también. Y tampoco mejora con el
+ * otro criterio posible: el `sȳ` de la tabla es el intervalo de confianza del
+ * 90 % de la media medida, y por ese criterio Sidney da **9 de 12**.
+ *
+ * Lo más probable es que el doceavo sea 1977: el modelo dio 522 kg/ha y el
+ * intervalo del campo llega a 518, o sea **se pasa por 4 kg/ha**. Es una
+ * hipótesis, no un hallazgo, y queda dicha como hipótesis.
+ *
+ * Esto es de la misma familia que el r² de 0,95 del lote 20 que lo ponía un solo
+ * año: **el número del resumen no sobrevive al recuento de su propia tabla.** Y
+ * es la segunda vez en dos lotes, lo que dice algo sobre con qué cuidado hay que
+ * leer un titular.
+ *
+ * ## El sesgo, que es lo que importa para acequia
+ *
+ * En promedio el modelo no se equivoca: media del modelo 1.065 contra 1.012
+ * kg/ha de campo, **+5,2 %**, y seis años sobreestima y seis subestima. Pero el
+ * promedio esconde la forma del error.
+ *
+ * Los dos años peores son los que el trabajo nombra, 1973 y 1974, y los dos
+ * fallan **para arriba**: +43,5 % y +26,5 %. Los dos tienen la misma firma
+ * climática —demanda evaporativa alta y sequía en abril o mayo, seguidas de
+ * buena humedad en junio y julio— y los autores explican por qué, con una frase
+ * que es la advertencia del modelo:
+ *
+ * > «In its current form, the model has no mechanism to account for the effects
+ * > of drought during various growth periods on subsequent plant growth.»
+ *
+ * En una pradera mixta, una sequía temprana no se recupera: la *Carex filifolia*
+ * semilla y termina su crecimiento anual, mientras el *Agropyron smithii* entra
+ * en dormancia y rebrota cuando vuelve el agua. El balance de agua no sabe eso,
+ * así que suma la transpiración de julio como si la planta estuviera entera.
+ *
+ * **Para acequia la dirección del error es la cara.** Sobreestimar el forraje en
+ * el año de sequía temprana es exactamente el año en que alguien decide la carga
+ * y el agua de la represa. Si este modelo se monta, la advertencia va con él.
+ *
+ * ## Lo que este trabajo NO alcanza para correr, y hay que decirlo
+ *
+ * El modelo no se puede implementar de punta a punta con este paper, y el motivo
+ * no es la matemática: **tres de sus entradas son figuras y no tablas.**
+ *
+ * 1. **`b = 0,5 × LAI relativo`** sale de la Figura 2, una curva estacional de
+ *    abril a septiembre calculada de los datos de Hanson (1973). No hay tabla de
+ *    puntos ni ecuación. Y los autores avisan que **habría que construir una
+ *    curva propia de la región donde se aplique**, así que copiar la de Montana
+ *    sería justamente lo que la fuente pide no hacer.
+ * 2. **La actividad radical `R(Tsoil)`** sale de la Figura 1, aproximada de De
+ *    Jong (1974). Tampoco hay tabla.
+ * 3. **Las curvas estacionales de temperatura de suelo** para las capas de 30-60
+ *    y 60-90 cm salen de la Figura 3, de De Jong para Swift Current,
+ *    Saskatchewan. Tampoco.
+ *
+ * Y una cuarta cosa que no es una figura pero es igual de bloqueante: **`Yp` es
+ * de sitio.** 1.300 kg/ha en Sidney y 2.760 en Mandan, los dos «estimated from
+ * herbage yield data». O sea: el parámetro que fija la escala del resultado se
+ * calibra con la producción medida del lugar, que es justamente el dato que la
+ * app no tiene. El trabajo ofrece una salida —`Yp = Y·Tp/T` calculado para años
+ * representativos— y es circular para nuestro caso: necesita un `Y` medido.
+ *
+ * Verificado acá: ese cálculo sobre los doce años de Sidney da una media de
+ * 1.230 kg/ha y un máximo de 1.372, no 1.300, y **los dos valores más bajos son
+ * los de 1973 y 1974** (908 y 1.032). Es el mismo artefacto visto desde el otro
+ * lado: en los años de sequía temprana el `T/Tp` del modelo queda demasiado alto.
+ *
+ * ## Entonces qué se monta, y qué cambia
+ *
+ * Se monta lo que está completo y es testeable: **las siete ecuaciones, los
+ * parámetros con su origen, la serie de validación de los quince años y el
+ * recuento.** Lo que no se monta es un `prodForrajera` nuevo, porque todavía
+ * faltan tres curvas y un `Yp`.
+ *
+ * Lo que sí cambia, y es el aporte conceptual que la app puede usar ya: **la
+ * pregunta deja de ser cuánto llovió y pasa a ser qué fracción de la
+ * transpiración potencial ocurrió.** Eso acequia lo puede calcular: tiene lluvia
+ * diaria, tiene textura de SoilGrids para el agua útil por capa, y tiene ETP. La
+ * ecuación 1 convierte ese cociente en rendimiento con un solo parámetro de
+ * sitio, y ese parámetro **es el único que falta**, contra los cinco escalones
+ * sin fuente que hay hoy.
+ *
+ * Qué se rompe si cambia: nada todavía. Ninguna de estas constantes la lee
+ * ningún panel ni ningún informe; es el andamio del reemplazo, no el reemplazo.
+ */
+export const MODELO_WIGHT_HANKS = {
+  nombre: 'Modelo de balance hídrico y clima para producción de forraje de pastizal',
+  autores: 'Wight, J. Ross y Hanks, R.J.',
+  anio: 1981,
+  publicacion: 'Journal of Range Management 34(4):307-311',
+  doi: '10.2307/3897857',
+  handle: '10150/646128',
+  deriva_de: 'Hanks (1974), Agron. J. 66:660-665, y Rasmussen y Hanks (1978), Agron. J. 70:940-944',
+  /** Lo que se le quitó al modelo de cultivo original. */
+  sin: ['riego', 'fenología', 'rendimiento de grano'],
+  paso_de_tiempo: 'diario; la Eo admite promedios de hasta 10 días',
+  salida: 'rendimiento total anual de forraje, kg/ha, a la fecha de cosecha',
+  /** Coeficiente de cultivo, constante en toda la temporada. */
+  kc: 0.85,
+  /**
+   * El `Kc` no se calibró a ojo: sale de graficar ET/Eo con la ET de un
+   * lisímetro hidráulico semanal, en los períodos con agua no limitante, contra
+   * la Eo de Jensen-Haise. El cociente iba de 0,7 en primavera y otoño a 0,9 en
+   * plena temporada, y 0,85 es el promedio de temporada — que dio estimaciones
+   * tan buenas como usar la curva estacional completa.
+   */
+  kc_rango_estacional: { primavera_otonio: 0.7, plena_temporada: 0.9 },
+  /** El umbral de la ecuación 3. Con 1,0 la ecuación 4 nunca se activa. */
+  c: 1.0,
+  /** Los valores de `c` que la literatura usó antes, y que el trabajo cita. */
+  c_en_la_literatura: {
+    trigo: 0.5,            // Rasmussen y Hanks (1978)
+    pastizal_nativo: 0.7,  // de Jong y MacDonald (1975)
+  },
+  /** El modelo no es sensible a cambios chicos de `c`; lo dice el trabajo. */
+  c_es_sensible: false,
+  /** Capas del perfil usadas en la prueba, en cm. Se pueden cambiar. */
+  capas_cm: [30, 30, 30],
+  /** Método con el que se calculó la evaporación de superficie libre. */
+  eo_por: 'Jensen-Haise (1963)',
+  escorrentia: 0,
+  escorrentia_dicho_asi: 'In this study, we assumed there was no runoff.',
+} as const;
+
+/** El rendimiento potencial de cada sitio de la prueba, en kg/ha. */
+export const YP_WIGHT_HANKS = {
+  sidney: 1300,
+  mandan: 2760,
+} as const;
+
+/** Un año de la validación de Wight y Hanks. */
+export interface AnioWightHanks {
+  sitio: 'sidney' | 'mandan';
+  anio: number;
+  /** `Kc·Eo` acumulado del período, en mm. `null` en Mandan: no se publicó. */
+  kc_eo_mm: number | null;
+  /** Transpiración potencial acumulada, en mm. */
+  tp_mm: number | null;
+  /** Transpiración real acumulada, en mm. */
+  t_mm: number | null;
+  /** Evapotranspiración del modelo, en mm. */
+  et_modelo_mm: number | null;
+  /** Drenaje del modelo, en mm. */
+  drenaje_mm: number | null;
+  /** Rendimiento que predijo el modelo, en kg/ha. */
+  rend_modelo_kg_ha: number;
+  /** Evapotranspiración medida en el campo, en mm. */
+  et_campo_mm: number | null;
+  /**
+   * Lluvia del **período de crecimiento**, en mm — del 15 de abril a la cosecha,
+   * no del año. La distinción es la regla W y acá importa: con este número no se
+   * puede comparar contra una escalera por lluvia anual.
+   */
+  pptn_periodo_mm: number | null;
+  /** Rendimiento medido en el campo, en kg/ha. */
+  rend_campo_kg_ha: number;
+  /**
+   * El `sȳ` de la tabla: **más o menos este valor es el intervalo de confianza
+   * del 90 %** de la media medida, no un error estándar. Lo aclara el pie de la
+   * tabla.
+   */
+  ic90_campo_kg_ha: number | null;
+  /** Días del período de crecimiento, del 15 de abril al pico de materia en pie. */
+  periodo_dias: number | null;
+}
+
+/**
+ * Los quince años de la validación.
+ *
+ * Los doce de Sidney salen de la Tabla 1. **El título impreso de esa tabla dice
+ * «for 1976-1978» y las filas son 1967-1978**: es una errata del trabajo, no del
+ * OCR, y conviene saberlo porque una búsqueda por el título no encuentra los
+ * doce años.
+ *
+ * Los tres de Mandan **no están en tabla**: el texto los da en prosa, «the model
+ * predicted yields of 1,930, 1,128, and 2,245 kg/ha, respectively, as compared
+ * with field-measured yields of 1,767, 1,405, and 2,105 kg/ha». Por eso van con
+ * todas las columnas intermedias en `null`: de Mandan no se publicó el balance,
+ * sólo el resultado.
+ *
+ * Los años de Mandan salen del estudio de Lorenz (1970), con la capacidad de
+ * campo, el punto de marchitez y el contenido de aire seco estimados de Cole y
+ * Mathews (1939) — o sea, **el sitio de validación externo usó suelo estimado de
+ * una publicación de 1939**, que es parte de por qué su ajuste es peor.
+ */
+export const SERIE_WIGHT_HANKS: readonly AnioWightHanks[] = [
+  { sitio: 'sidney', anio: 1967, kc_eo_mm: 274, tp_mm: 123, t_mm: 110, et_modelo_mm: 190, drenaje_mm:   0, rend_modelo_kg_ha: 1166, et_campo_mm: 218, pptn_periodo_mm: 210, rend_campo_kg_ha: 1200, ic90_campo_kg_ha: 186, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1968, kc_eo_mm: 297, tp_mm: 126, t_mm:  71, et_modelo_mm: 159, drenaje_mm:   0, rend_modelo_kg_ha:  730, et_campo_mm: 177, pptn_periodo_mm: 158, rend_campo_kg_ha:  742, ic90_campo_kg_ha:  34, periodo_dias: 99 },
+  { sitio: 'sidney', anio: 1969, kc_eo_mm: 309, tp_mm: 130, t_mm: 118, et_modelo_mm: 209, drenaje_mm: 117, rend_modelo_kg_ha: 1178, et_campo_mm: 228, pptn_periodo_mm: 338, rend_campo_kg_ha: 1245, ic90_campo_kg_ha: 112, periodo_dias: 98 },
+  { sitio: 'sidney', anio: 1970, kc_eo_mm: 300, tp_mm: 134, t_mm: 124, et_modelo_mm: 209, drenaje_mm:   0, rend_modelo_kg_ha: 1199, et_campo_mm: 183, pptn_periodo_mm: 218, rend_campo_kg_ha: 1205, ic90_campo_kg_ha:  84, periodo_dias: 86 },
+  { sitio: 'sidney', anio: 1971, kc_eo_mm: 311, tp_mm: 137, t_mm:  79, et_modelo_mm: 174, drenaje_mm:   0, rend_modelo_kg_ha:  750, et_campo_mm: 174, pptn_periodo_mm: 141, rend_campo_kg_ha:  720, ic90_campo_kg_ha:  58, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1972, kc_eo_mm: 297, tp_mm: 132, t_mm: 130, et_modelo_mm: 226, drenaje_mm:  42, rend_modelo_kg_ha: 1275, et_campo_mm: 229, pptn_periodo_mm: 206, rend_campo_kg_ha: 1215, ic90_campo_kg_ha:  84, periodo_dias: 90 },
+  { sitio: 'sidney', anio: 1973, kc_eo_mm: 326, tp_mm: 144, t_mm: 121, et_modelo_mm: 209, drenaje_mm:   0, rend_modelo_kg_ha: 1095, et_campo_mm: 258, pptn_periodo_mm: 232, rend_campo_kg_ha:  763, ic90_campo_kg_ha:  73, periodo_dias: 92 },
+  { sitio: 'sidney', anio: 1974, kc_eo_mm: 317, tp_mm: 136, t_mm: 123, et_modelo_mm: 214, drenaje_mm:   0, rend_modelo_kg_ha: 1180, et_campo_mm: 230, pptn_periodo_mm: 179, rend_campo_kg_ha:  933, ic90_campo_kg_ha:  71, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1975, kc_eo_mm: 274, tp_mm: 122, t_mm: 120, et_modelo_mm: 201, drenaje_mm:  50, rend_modelo_kg_ha: 1282, et_campo_mm: 216, pptn_periodo_mm: 208, rend_campo_kg_ha: 1321, ic90_campo_kg_ha:  92, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1976, kc_eo_mm: 297, tp_mm: 131, t_mm: 118, et_modelo_mm: 207, drenaje_mm:   0, rend_modelo_kg_ha: 1175, et_campo_mm: 223, pptn_periodo_mm: 193, rend_campo_kg_ha: 1100, ic90_campo_kg_ha:  93, periodo_dias: 88 },
+  { sitio: 'sidney', anio: 1977, kc_eo_mm: 243, tp_mm:  97, t_mm:  39, et_modelo_mm:  98, drenaje_mm:   0, rend_modelo_kg_ha:  522, et_campo_mm: 122, pptn_periodo_mm:  91, rend_campo_kg_ha:  450, ic90_campo_kg_ha:  68, periodo_dias: 68 },
+  { sitio: 'sidney', anio: 1978, kc_eo_mm: 249, tp_mm: 109, t_mm: 103, et_modelo_mm: 186, drenaje_mm:   0, rend_modelo_kg_ha: 1223, et_campo_mm: 202, pptn_periodo_mm: 220, rend_campo_kg_ha: 1246, ic90_campo_kg_ha: 176, periodo_dias: 81 },
+  { sitio: 'mandan', anio: 1958, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 1930, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 1767, ic90_campo_kg_ha: null, periodo_dias: null },
+  { sitio: 'mandan', anio: 1959, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 1128, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 1405, ic90_campo_kg_ha: null, periodo_dias: null },
+  { sitio: 'mandan', anio: 1960, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 2245, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 2105, ic90_campo_kg_ha: null, periodo_dias: null },
+] as const;
+
+/**
+ * El ajuste que el trabajo publica, para no recalcularlo de memoria.
+ *
+ * El r² del rendimiento es «calculated from the least squares fit of the data
+ * points to the line of equal value», o sea **contra la recta 1:1 y no contra la
+ * recta de regresión**. Es una medida más exigente y conviene no confundirlas.
+ */
+export const AJUSTE_WIGHT_HANKS = {
+  r2_rendimiento_sidney: 0.74,
+  r2_agua_de_suelo_sidney: 0.91,
+  r2_contra: 'la recta de valor igual (1:1), no la de regresión',
+  /** Lo que dice el resumen. */
+  dentro_del_10_pct_segun_el_resumen: 12,
+  /** Lo que da contar la Tabla 1 más los tres pares de Mandan del texto. */
+  dentro_del_10_pct_contado: 11,
+  anios_de_prueba: 15,
+} as const;
+
+/** Lo que falta para poder correr el modelo, nombrado uno por uno. */
+export const FALTA_PARA_CORRER_WIGHT_HANKS = [
+  {
+    que: 'b = 0,5 × LAI relativo, curva estacional',
+    donde_esta: 'Figura 2, calculada de Hanson (1973)',
+    por_que_no_se_puede: 'Es una figura: no hay tabla de puntos ni ecuación.',
+    y_ademas: 'Los autores piden construir una curva propia de la región de aplicación, así que copiar la de Montana es lo contrario de lo que la fuente indica.',
+  },
+  {
+    que: 'actividad radical relativa en función de la temperatura del suelo',
+    donde_esta: 'Figura 1, aproximada de de Jong (1974)',
+    por_que_no_se_puede: 'Es una figura.',
+    y_ademas: 'Sólo restringe las capas de 30-60 y 60-90 cm; el trabajo asume que la temperatura no limita la capa superficial.',
+  },
+  {
+    que: 'curvas estacionales de temperatura del suelo por capa',
+    donde_esta: 'Figura 3, de de Jong para Swift Current, Saskatchewan',
+    por_que_no_se_puede: 'Es una figura, y es de un sitio canadiense aplicado a dos sitios de los Estados Unidos.',
+    y_ademas: 'El propio trabajo sugiere reemplazarlas por un submodelo de temperatura de suelo, y nombra el de Hanks, Austin y Ondrechen (1971).',
+  },
+  {
+    que: 'Yp, el rendimiento potencial del sitio',
+    donde_esta: 'Estimado de la producción medida de cada sitio: 1.300 kg/ha en Sidney, 2.760 en Mandan',
+    por_que_no_se_puede: 'Es el parámetro que fija la escala del resultado y se calibra con producción medida del lugar, que es justamente el dato que la app no tiene.',
+    y_ademas: 'La salida que ofrece el trabajo —Yp = Y·Tp/T para años representativos— es circular para nuestro caso: necesita un Y medido.',
+  },
+] as const;
+
+/**
+ * Ecuación 1: el rendimiento relativo iguala a la transpiración relativa.
+ *
+ *     Y = Yp · (T / Tp)
+ *
+ * Unidades: `yp_kg_ha` en kg/ha, `t_mm` y `tp_mm` en mm acumulados del período.
+ * Devuelve kg/ha. Con `tp_mm` en cero devuelve `null`: sin demanda no hay
+ * cociente, y un cero ahí es una división por cero disfrazada de sequía total.
+ *
+ * Reproduce los doce rendimientos publicados de Sidney con un desvío peor de
+ * 0,44 % usando `Yp = 1.300`, que es el test de esta función.
+ */
+export function rendimientoWightHanks(
+  yp_kg_ha: number, t_mm: number, tp_mm: number,
+): number | null {
+  if (tp_mm <= 0) return null;
+  return yp_kg_ha * (t_mm / tp_mm);
+}
+
+/**
+ * Ecuación 2: transpiración potencial del día.
+ *
+ *     Tp = b · Kc · Eo
+ *
+ * `b` es 0,5 × el LAI relativo de la fecha —una figura, ver
+ * `FALTA_PARA_CORRER_WIGHT_HANKS`—, `kc` el coeficiente de cultivo (0,85 en la
+ * prueba) y `eo_mm` la evaporación de superficie libre del día en mm.
+ */
+export function transpiracionPotencialWH(b: number, kc: number, eo_mm: number): number {
+  return b * kc * eo_mm;
+}
+
+/**
+ * Ecuaciones 3 y 4: transpiración real del día.
+ *
+ *     T = Tp · (SWS/AW) / c    si SWS/AW ≤ c
+ *     T = Tp                   si SWS/AW > c
+ *
+ * `sws_mm` es el agua útil existente en la capa y `aw_mm` su capacidad de
+ * almacenaje útil. Con `c = 1` —el valor que la prueba usó— la relación es
+ * lineal y la ecuación 4 nunca se activa; el trabajo lo dice así.
+ *
+ * Con `aw_mm` en cero devuelve `null`: una capa sin capacidad de almacenaje no
+ * tiene cociente, y devolver cero diría «no hay agua» cuando lo que no hay es
+ * capa.
+ */
+export function transpiracionRealWH(
+  tp_mm: number, sws_mm: number, aw_mm: number, c: number = MODELO_WIGHT_HANKS.c,
+): number | null {
+  if (aw_mm <= 0) return null;
+  const frac = sws_mm / aw_mm;
+  return frac > c ? tp_mm : tp_mm * (frac / c);
+}
+
+/**
+ * Ecuación 7: evaporación potencial del suelo.
+ *
+ *     Ep = Kc · Eo − Tp
+ *
+ * Es lo que queda de la demanda después de la transpiración. Puede dar negativo
+ * si `Tp` excede a `Kc·Eo`, y en ese caso se devuelve cero: el suelo no
+ * condensa.
+ */
+export function evaporacionPotencialWH(kc: number, eo_mm: number, tp_mm: number): number {
+  return Math.max(0, kc * eo_mm - tp_mm);
+}
+
+/**
+ * Ecuación 6: evaporación real del suelo.
+ *
+ *     E = Ep · t^(−1/2)
+ *
+ * `dias_desde_la_lluvia` es el tiempo en días desde que la superficie se mojó
+ * por última vez. **El trabajo no describe la convención para `t = 0`** —y el
+ * OCR del exponente está roto, así que la forma `t^(−1/2)` se toma del modelo de
+ * Hanks (1974) del que éste deriva—, por eso acá el día de la lluvia devuelve
+ * `Ep` entero: es el valor al que la curva tiende por la izquierda con `t = 1`.
+ * Queda dicho porque es una decisión nuestra y no de la fuente.
+ *
+ * Esta función devuelve la demanda, no lo que el suelo puede entregar: el
+ * trabajo acota la evaporación al agua de la capa superficial que exceda el
+ * contenido de aire seco, y eso lo hace el balance, no esta ecuación.
+ */
+export function evaporacionRealWH(ep_mm: number, dias_desde_la_lluvia: number): number {
+  const t = Math.max(1, dias_desde_la_lluvia);
+  return ep_mm / Math.sqrt(t);
+}
+
+/**
+ * `Yp = Y · Tp / T`, la vía alternativa que el trabajo ofrece para estimar el
+ * rendimiento potencial de un sitio a partir de un año medido.
+ *
+ * Es la ecuación 1 dada vuelta, y para acequia es circular: pide un `Y` medido.
+ * Sirve para dos cosas igual. Una, verificar que `Yp` de un sitio sea estable
+ * entre años. Dos, exactamente lo contrario: **cuando no es estable, el año que
+ * se despega es un año donde el modelo falla.** En Sidney los doce años dan una
+ * media de 1.230 kg/ha y los dos valores más bajos son 1973 y 1974, los mismos
+ * dos años que el trabajo nombra como los de peor predicción.
+ */
+export function ypDesdeUnAnio(
+  rend_campo_kg_ha: number, tp_mm: number, t_mm: number,
+): number | null {
+  if (t_mm <= 0) return null;
+  return rend_campo_kg_ha * (tp_mm / t_mm);
+}
+
+/** Los años de la validación de un sitio, o los quince si no se nombra sitio. */
+export function aniosDeWightHanks(sitio?: 'sidney' | 'mandan'): AnioWightHanks[] {
+  return sitio ? SERIE_WIGHT_HANKS.filter(a => a.sitio === sitio) : [...SERIE_WIGHT_HANKS];
+}
+
+/**
+ * Cuántos años de la validación caen dentro de una tolerancia relativa al
+ * rendimiento **medido**, y cuáles no.
+ *
+ * Con `tol = 0.10` devuelve 11 de 15, que es el recuento que no coincide con el
+ * 12 del resumen. El denominador importa y acá es el medido; con el predicho
+ * como base da lo mismo, y eso también está testeado.
+ */
+export function dentroDeTolerancia(tol = 0.10): {
+  dentro: number; fuera: AnioWightHanks[]; total: number;
+} {
+  const fuera = SERIE_WIGHT_HANKS.filter(a =>
+    Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) / a.rend_campo_kg_ha > tol);
+  return { dentro: SERIE_WIGHT_HANKS.length - fuera.length, fuera, total: SERIE_WIGHT_HANKS.length };
+}
+
+/**
+ * Los años en que el modelo cae dentro del intervalo de confianza del 90 % de la
+ * media medida. Sólo Sidney: Mandan no publica el intervalo.
+ *
+ * Da 9 de 12, o sea **peor** que el criterio del 10 %, y el que se pasa por menos
+ * es 1977, por 4 kg/ha. Es la hipótesis más probable de dónde sale el doceavo
+ * año del resumen.
+ */
+export function dentroDelIc90(): { dentro: number; fuera: AnioWightHanks[]; total: number } {
+  const conIc = SERIE_WIGHT_HANKS.filter(
+    (a): a is AnioWightHanks & { ic90_campo_kg_ha: number } => a.ic90_campo_kg_ha !== null);
+  const fuera = conIc.filter(a =>
+    Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) > a.ic90_campo_kg_ha);
+  return { dentro: conIc.length - fuera.length, fuera, total: conIc.length };
+}

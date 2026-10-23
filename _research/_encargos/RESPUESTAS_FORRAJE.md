@@ -2696,3 +2696,136 @@ relieve y el aviso del almacenaje de agua del suelo.
 Cinco entradas nuevas: 27 sitios. Ninguna de las cinco alimenta una banda, y por
 dos motivos distintos: las dos de Cheyenne no tienen coordenada publicada y las
 tres del CPER tienen `insumos` en `desconocido`.
+
+
+---
+
+## Lote 21 — el modelo publicado, leído con el navegador el 22/10/2026
+
+**El lote más importante del encargo de cierre, y volvió bien.** Conviene decir
+primero una cosa de procedimiento, porque me hizo equivocar a mí: el `21.json`
+no usa la clave `entradas` sino `modelos`, que es la forma que el propio encargo
+pidió. Un script de inspección que buscaba `entradas` lo reportó como vacío y yo
+lo informé así. **Estaba equivocado: el lote trae el modelo completo.**
+
+### Lo que trajo, y lo que le faltó
+
+Trajo las siete ecuaciones símbolo por símbolo, los seis parámetros con su
+origen y si están calibrados, las siete entradas que el modelo pide con la
+observación de cuáles tiene la app, el rango de validez, lo que el modelo no
+modela, la advertencia textual de los autores, y **la tabla de observado contra
+estimado de los quince años**, que es lo que el encargo declaró como el campo
+que decide.
+
+Lo que le faltó es la fuente abierta: declaró el repositorio de Arizona
+inaccesible. Y tenía razón en el diagnóstico —el repositorio devuelve **403 de
+Apache en todos los caminos de descarga de archivo**— y no en la conclusión,
+porque hay una vía que funciona y está en memoria desde el lote 20: el `fetch`
+**del mismo origen** desde la página del ítem. Pidiendo el *bundle* `TEXT`
+—25.634 caracteres de OCR que el repositorio ya tiene hecho— sale completo.
+
+**Es la tercera vez de tres que algo declarado imposible por una entrega sale por
+otro camino.** La regla T nació de la primera, el lote 20 la pagó, y ésta la
+confirma. Con un matiz nuevo que conviene anotar: acá la entrega no se equivocó
+al buscar, se equivocó al concluir. Encontró el trabajo, lo citó bien, y
+transcribió la tabla correcta de algún lado —probablemente una copia en caché—
+mientras declaraba la fuente inaccesible.
+
+### La verificación, que salió mejor de lo que se pedía
+
+**La Tabla 1 publica `Tp` y `T` año por año, además del rendimiento.** Es decir:
+publica las dos transpiraciones y el rendimiento que el modelo sacó de ellas. Así
+que la ecuación 1 —`Y = Yp · T/Tp`— se puede reproducir sin correr el balance.
+
+Con `Yp = 1.300 kg/ha`, los doce años de Sidney salen con un **desvío peor de
+0,44 %** y la mitad por debajo de 0,3 %. Eso prueba tres cosas de una: que la
+ecuación 1 generó la columna publicada, que `Yp` es 1.300 y no un número
+redondeado para el texto, y que la transcripción del lote está bien leída. Es el
+caso resuelto más fuerte de todo `forrajeMedido.ts`.
+
+Las quince filas de la entrega coinciden **exactamente** con el primario: las
+doce de la Tabla 1 y los tres pares de Mandan, que no están en tabla sino en
+prosa.
+
+### El hallazgo: el resumen dice 12 de 15 y su propia tabla dice 11
+
+El *abstract* afirma que las predicciones cayeron «within 10% of field measured
+yields for 12 of the 15 test years». Contando sobre la Tabla 1 más los tres
+pares de Mandan, **son 11**: quedan afuera 1973 (+43,5 %), 1974 (+26,5 %), 1977
+(+16,0 %) y Mandan 1959 (−19,7 %).
+
+La entrega lo había detectado y lo declaró sin forzar el 12, que es exactamente
+lo que hay que hacer. Acá se verificó por los dos denominadores posibles —con el
+medido da 11 y con el predicho también— y por el otro criterio que la tabla
+permite: el `sȳ` es el intervalo de confianza del 90 % de la media medida, y por
+ese criterio Sidney da **9 de 12**, peor.
+
+**La hipótesis más probable del doceavo es 1977**: el modelo dio 522 kg/ha y el
+intervalo del campo llega a 518, o sea se pasa por **4 kg/ha**. Queda escrita
+como hipótesis.
+
+Es de la misma familia que el r² de 0,95 del lote 20 que lo ponía un solo año:
+**el número del resumen no sobrevive al recuento de su propia tabla.** Segunda
+vez en dos lotes.
+
+### El sesgo, que es lo que decide si el modelo sirve para dimensionar
+
+En promedio el modelo no se equivoca: 1.065 contra 1.012 kg/ha, **+5,2 %**, y
+seis años sobreestima y seis subestima. El promedio esconde la forma del error.
+
+Los dos años peores son los que el trabajo nombra, 1973 y 1974, y los dos fallan
+**para arriba**. Los dos tienen la misma firma climática —demanda evaporativa
+alta y sequía en abril o mayo, seguidas de buena humedad en junio y julio— y los
+autores explican por qué:
+
+> «In its current form, the model has no mechanism to account for the effects of
+> drought during various growth periods on subsequent plant growth.»
+
+En una pradera mixta una sequía temprana no se recupera: la *Carex filifolia*
+semilla y termina su crecimiento anual, el *Agropyron smithii* entra en dormancia
+y rebrota cuando vuelve el agua. El balance de agua no sabe eso y suma la
+transpiración de julio como si la planta estuviera entera.
+
+**Para acequia la dirección es la cara.** Sobreestimar el forraje en el año de
+sequía temprana es exactamente el año en que alguien decide la carga y el agua de
+la represa.
+
+Y hay una confirmación interna elegante: despejando `Yp = Y·Tp/T` año por año,
+los doce años de Sidney dan una media de 1.230 kg/ha y **los dos valores más
+bajos son 1973 y 1974** (908 y 1.032). Es el mismo artefacto visto desde el otro
+lado.
+
+### Lo que falta para correr el modelo, y por qué igual es un avance
+
+No se puede implementar de punta a punta con este trabajo, y el motivo no es la
+matemática: **tres de sus entradas son figuras y no tablas.** La curva estacional
+de LAI relativo (Figura 2, de Hanson 1973), la actividad radical por temperatura
+de suelo (Figura 1, de De Jong 1974) y las curvas de temperatura de suelo por
+capa (Figura 3, de De Jong para Swift Current). Y la cuarta cosa no es una figura
+pero bloquea igual: **`Yp` es de sitio**, calibrado con la producción medida del
+lugar, que es justamente el dato que la app no tiene.
+
+Aun así es el mayor avance que tuvo esta deuda en veinticuatro lotes, porque
+**cambia la pregunta**: deja de ser cuánto llovió y pasa a ser qué fracción de la
+transpiración potencial ocurrió. Eso la app lo puede calcular —tiene lluvia
+diaria, textura de SoilGrids para el agua útil por capa, y ETP—, y la ecuación 1
+convierte ese cociente en rendimiento con **un solo parámetro de sitio**, contra
+los cinco escalones sin fuente que hay hoy.
+
+De cinco números inventados a una lista finita de cuatro cosas con fuente
+nombrada. Está en `FALTA_PARA_CORRER_WIGHT_HANKS`, una por una.
+
+### Los lotes 22, 23 y 24
+
+Volvieron casi vacíos y los motivos están bien escritos: 1 entrada y 4 rutas
+vacías en el 22, lo mismo en el 23, y 1 ruta vacía en el 24. Las dos entradas que
+trajeron están rotuladas `near_miss` por la propia entrega —Houston en Miles City
+y Fynn y O'Connor— y es la rotulación correcta: las dos son casi-encajes que no
+cumplen lo que el encargo pedía.
+
+El 24 cierra el inventario de las 37 guías del catálogo NPP del ORNL: **15
+devuelven contenido utilizable y 22 fallan en la recuperación**. La ficha de Río
+Mayo, que separa gramínea de arbustiva, ya estaba montada y sigue siendo la única
+abierta con esas dos columnas. **La capa herbácea medida aparte queda pedida
+cuatro veces y sin responder**, y después de este inventario conviene aceptarlo:
+no es un problema de cómo se pide.
