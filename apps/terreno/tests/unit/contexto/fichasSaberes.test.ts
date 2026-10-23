@@ -61,13 +61,13 @@ describe('los saberes de las fichas', () => {
     }
   });
 
-  it('en total, 22 de 244 fichas regionales tienen saberes', () => {
+  it('en total, 22 de 245 fichas regionales tienen saberes', () => {
     // El número importa porque explica lo que se ve: en casi cualquier predio
     // del mundo esa sección del panel no tiene contenido, y no es un error.
-    // BIOMAS_REGIONALES ya es la unión de los diez bloques: las 22 a mano más
-    // las 222 que no atribuyen saberes a nadie.
+    // BIOMAS_REGIONALES ya es la unión de los once bloques: las 22 a mano más
+    // las 223 que no atribuyen saberes a nadie.
     const todas = Object.values(BIOMAS_REGIONALES);
-    expect(todas.length).toBe(244);
+    expect(todas.length).toBe(245);
     expect(todas.filter((f) => f.saberes.length > 0).length).toBe(22);
   });
 });
