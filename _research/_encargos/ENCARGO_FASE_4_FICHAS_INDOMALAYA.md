@@ -300,6 +300,13 @@ De estas, **267 South China Sea Islands** son arrecifes sin uso agrícola: va a
 
 ## La forma del JSON
 
+**El ejemplo de abajo es una forma, no una respuesta.** Los nombres, los ids y
+los números que trae son de relleno: no son los del lote que viene y no hay que
+confirmarlos. Esto se escribe porque ya pasó dos veces —el lote 1 de Indomalaya
+y el lote 1 de África— que la entrega devolvió el ejemplo completado en vez de
+investigado. **Y los ids de cultivo del ejemplo no son válidos por ser del
+ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
+
 ```json
 {
   "encargo": "fichas-indomalaya",
@@ -320,7 +327,7 @@ De estas, **267 South China Sea Islands** son arrecifes sin uso agrícola: va a
       "especies": [
         { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "…" }
       ],
-      "cultivos": ["sorgo", "mijo_perla", "garbanzo", "algodon", "…"],
+      "cultivos": ["<ids del anexo, 8 a 15>"],
       "fuentes": [{ "label": "Título tal como lo muestra la página", "url": "https://…" }],
       "verificacion": "Qué dicen esas páginas, con sus palabras, sobre este lugar.",
       "_meta": {

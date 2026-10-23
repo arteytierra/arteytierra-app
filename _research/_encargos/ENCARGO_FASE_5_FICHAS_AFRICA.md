@@ -117,9 +117,38 @@ es correcto, y acá está la carga publicada que lo sostiene», eso es un result
 de pleno valor: convierte un delta heredado en un delta respaldado. **Confirmar
 vale igual que corregir.** No hay que forzar una corrección donde no la hay.
 
-**Si es un gradiente, no se propone delta.** La sabana sudaniana va de 400 a
-1.200 mm de norte a sur; el Sahel es una franja de transición por definición. En
-esos casos: `modificadores_propuestos: []` y la explicación en `notas`.
+### Si parece un gradiente, primero decí cuál es la variable
+
+**Corregido el 23/10/2026, después del lote 1 de Indomalaya.** La versión
+anterior de esta regla decía «si es un gradiente, no se propone delta», y estaba
+mal en la mitad que importa: lo que decide no es que haya gradiente, es si la
+variable del gradiente es algo que la app puede leer.
+
+La regla, en tres pasos:
+
+1. **Nombrá la variable del gradiente**, no el gradiente. No «va de 400 a 1.200
+   mm» sino «lo que cambia entre una mitad y la otra es *x*».
+2. **Preguntate si acequia mide esa variable.** La app mide lluvia anual,
+   estacionalidad, pendiente, orientación, textura, pH, carbono orgánico, reserva
+   de agua útil del perfil, grupo hidrológico y profundidad de capa limitante.
+3. Y entonces:
+   - **Si la app mide la variable**, se propone delta y la razón manda a mirar
+     ese campo. Un gradiente legible no es una excusa para abstenerse: es una
+     instrucción que se puede escribir. Ejemplo montado: el miombo húmedo deja
+     el delta de pasturas en 0 y su razón dice que antes de decidir hay que
+     mirar la lluvia del punto, porque en el borde sur, por debajo de 800 mm, la
+     relación entre lluvia y carga todavía no se dio vuelta.
+   - **Si la app no la mide** —una napa que nadie cartografió, una mineralogía
+     que no está en SoilGrids—, ahí sí: `modificadores_propuestos: []` y la
+     explicación en `notas`, con la variable nombrada.
+
+**Y un gradiente no es lo mismo que un mosaico.** Si las dos mitades empujan para
+el mismo lado por mecanismos distintos, un delta único no miente en ninguna: va
+el delta y el mosaico se cuenta en el texto. Eso ya pasó en el Pilbara.
+
+En este reino los dos casos cantados son la sabana sudaniana, que va de 400 a
+1.200 mm de norte a sur, y el Sahel, que es una franja de transición por
+definición. Para los dos, el paso 1 es nombrar la variable.
 
 ### Los modificadores globales que estos biomas heredan hoy
 
@@ -303,6 +332,13 @@ otra. Es la trashumancia africana y está documentada.
 
 ## La forma del JSON
 
+**El ejemplo de abajo es una forma, no una respuesta.** Los nombres, los ids y
+los números que trae son de relleno: no son los del lote que viene y no hay que
+confirmarlos. Esto se escribe porque ya pasó dos veces —el lote 1 de Indomalaya
+y el lote 1 de África— que la entrega devolvió el ejemplo completado en vez de
+investigado. **Y los ids de cultivo del ejemplo no son válidos por ser del
+ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
+
 ```json
 {
   "encargo": "fichas-africa",
@@ -311,25 +347,25 @@ otra. Es la trashumancia africana y está documentada.
   "continua": false,
   "entradas": [
     {
-      "id": "miombo_humedo_zambeziano",
-      "nombre": "Bosques de miombo húmedo zambeziano",
-      "emoji": "🌳",
-      "color": "#689F38",
+      "id": "<id_en_minúsculas_con_guion_bajo>",
+      "nombre": "<el nombre en castellano>",
+      "emoji": "<uno>",
+      "color": "#RRGGBB",
       "resumen": "…",
       "vegetacion": "…",
       "fauna": "…",
       "suelos": "…",
       "saberes": [],
       "especies": [
-        { "nombre": "Miombo", "cientifico": "Brachystegia spiciformis", "tipo": "nativa", "nota": "…" }
+        { "nombre": "<nombre común>", "cientifico": "<Binomial>", "tipo": "nativa", "nota": "…" }
       ],
-      "cultivos": ["maiz", "sorgo", "mijo_perla", "mandioca", "caupi", "…"],
+      "cultivos": ["<ids del anexo, 8 a 15>"],
       "fuentes": [{ "label": "Título tal como lo muestra la página", "url": "https://…" }],
       "verificacion": "Qué dicen esas páginas, con sus palabras, sobre este lugar.",
       "_meta": {
-        "ecorregiones_resolve": [39, 36],
-        "nombre_resolve": "Central Zambezian wet miombo woodlands; Angolan wet miombo woodlands",
-        "paises": ["Zambia", "Angola", "Tanzania", "República Democrática del Congo"],
+        "ecorregiones_resolve": [<ECO_ID>],
+        "nombre_resolve": "<el nombre de RESOLVE, en inglés>",
+        "paises": ["<país>"],
         "confianza": "alta",
         "base_de_suelos_usada": "Soil Atlas of Africa (JRC) + HWSD v2 + SoilGrids",
         "notas": "…",
@@ -370,6 +406,7 @@ un modificador confirmado y se monta como tal. Poner `delta` igual a
 7. **El modificador lleva el mecanismo, la fuente y la confianza.**
 8. **Confirmar el modificador global es un resultado de pleno valor.** No forzar
    una corrección donde no la hay.
-9. **Si es un gradiente, no se propone delta.**
+9. **Si parece un gradiente, nombrá la variable y fijate si la app la mide.**
+   Abstenerse sólo si no la mide.
 10. **Mejor una ficha que aguanta que tres con una floja.**
 11. Una ficha por lote. Un bloque JSON. Sin prosa antes ni después.

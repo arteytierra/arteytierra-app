@@ -124,14 +124,37 @@ repetir los que están bien. **Proponer sólo lo que hay que cambiar.**
 4. La **confianza**: `alta`, `media` o `baja`. Una propuesta con confianza baja
    se monta igual, declarada, y es mejor que ninguna.
 
-**Y la trampa que hay que declarar cuando aparece.** Hay fichas donde una mitad
-de la ecorregión es apta y la otra no —típicamente un gradiente de lluvia o de
-napa—. Ahí un modificador único **miente en una de las dos mitades**. Para esos
-casos ya se decidió que el arreglo es de texto y no de delta: **decir que es un
-gradiente, no proponer un número**. Pasó con la pradera mixta norteamericana y
-con las cuencas endorreicas de Irán, y en este reino va a pasar en las sabanas de
-Queensland y en el Murray-Darling. Si es un gradiente, poner
-`modificadores_propuestos: []` y explicarlo en `notas`.
+### Si parece un gradiente, primero decí cuál es la variable
+
+**Corregido el 23/10/2026, después del lote 1 de Indomalaya.** La versión
+anterior de esta regla decía «si es un gradiente, no se propone delta», y estaba
+mal en la mitad que importa: lo que decide no es que haya gradiente, es si la
+variable del gradiente es algo que la app puede leer.
+
+La regla, en tres pasos:
+
+1. **Nombrá la variable del gradiente**, no el gradiente. No «va de 400 a 1.200
+   mm» sino «lo que cambia entre una mitad y la otra es *x*».
+2. **Preguntate si acequia mide esa variable.** La app mide lluvia anual,
+   estacionalidad, pendiente, orientación, textura, pH, carbono orgánico, reserva
+   de agua útil del perfil, grupo hidrológico y profundidad de capa limitante.
+3. Y entonces:
+   - **Si la app mide la variable**, se propone delta y la razón manda a mirar
+     ese campo. Un gradiente legible no es una excusa para abstenerse: es una
+     instrucción que se puede escribir. Ejemplo montado: el miombo húmedo deja
+     el delta de pasturas en 0 y su razón dice que antes de decidir hay que
+     mirar la lluvia del punto, porque en el borde sur, por debajo de 800 mm, la
+     relación entre lluvia y carga todavía no se dio vuelta.
+   - **Si la app no la mide** —una napa que nadie cartografió, una mineralogía
+     que no está en SoilGrids—, ahí sí: `modificadores_propuestos: []` y la
+     explicación en `notas`, con la variable nombrada.
+
+**Y un gradiente no es lo mismo que un mosaico.** Si las dos mitades empujan para
+el mismo lado por mecanismos distintos, un delta único no miente en ninguna: va
+el delta y el mosaico se cuenta en el texto. Eso ya pasó en el Pilbara.
+
+En este reino los casos cantados son las sabanas de Queensland y el
+Murray-Darling. Para los dos, el paso 1 es nombrar la variable.
 
 ---
 
@@ -166,7 +189,7 @@ esconde un contraste. Los ids agrupados van en `_meta.ecorregiones_resolve`.
       "especies": [
         { "nombre": "Mulga", "cientifico": "Acacia aneura", "tipo": "nativa", "nota": "…" }
       ],
-      "cultivos": ["pasturas_nativas", "sorgo", "…"],
+      "cultivos": ["<ids del anexo, 8 a 15>"],
       "fuentes": [{ "label": "Título tal como lo muestra la página", "url": "https://…" }],
       "verificacion": "Qué dicen esas páginas, con sus palabras, sobre este lugar.",
       "_meta": {
@@ -383,7 +406,8 @@ catálogo de prácticas vacías exactamente por esta clase de razón y están bi
 6. **Siete especies con binomial**, que es como cita el resto del catálogo.
 7. **El modificador lleva el mecanismo, no la conclusión**, más la fuente y la
    confianza.
-8. **Si es un gradiente, no se propone delta: se dice que es un gradiente.**
+8. **Si parece un gradiente, nombrá la variable y fijate si la app la mide.**
+   Abstenerse sólo si no la mide.
 9. **Confirmar el modificador global vale igual que corregirlo.**
 10. **Mejor una ficha que aguanta que tres con una floja**: una ficha no puede
     ser más fuerte que su fuente más floja.
