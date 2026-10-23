@@ -79,8 +79,18 @@ los dos repartos, HWSD y SoilGrids, con sus porcentajes—. Eso es una ficha que
 puede auditar.
 
 **En este reino hay además mapas nacionales muy buenos**, y nombrarlos vale:
-- India: **NBSS&LUP** (National Bureau of Soil Survey and Land Use Planning) y
-  el *Soil Health Card* por distrito.
+- India: **NBSS&LUP** (National Bureau of Soil Survey and Land Use Planning).
+  **Ojo con la ruta, probada el 23/10/2026:** `nbsslup.in` es un dominio
+  estacionado en venta, `nbsslup.icar.gov.in` no resuelve y
+  `soilhealth.dac.gov.in` devuelve 403. Lo que sí abre son los espejos:
+  **EUDASM**, el archivo digital de suelos del JRC europeo, que tiene los mapas
+  del NBSS&LUP escaneados y descargables
+  (`https://esdac.jrc.ec.europa.eu/public_path/shared_folder/eudasm/asia/lists/cin.htm`,
+  con «Soils of India. (Suborder Associations)», NBSS&LUP Nagpur 1985, escala
+  1:7.000.000, y «India. Agro-Ecological Subregions»), y **Krishikosh**
+  (`krishikosh.egranth.ac.in`), que tiene boletines del NBSS digitalizados. En
+  EUDASM hay hojas estatales de Bengala Occidental, Gujarat, Haryana, Tamil Nadu
+  y Punjab, y **no** de Odisha ni de Chhattisgarh.
 - Indonesia: **BBSDLP** / Balai Besar Litbang Sumberdaya Lahan Pertanian.
 - Malasia: el *Soil Map of Peninsular Malaysia* del Departamento de Agricultura.
 - Tailandia: **LDD**, Land Development Department.
@@ -108,11 +118,37 @@ Lo que una propuesta necesita para montarse:
 4. La **confianza**: `alta`, `media` o `baja`. Una propuesta con confianza baja,
    declarada, es mejor que ninguna.
 
-**Y si es un gradiente, no se propone delta.** Hay ecorregiones donde una mitad
-es apta y la otra no —típicamente un gradiente de lluvia o de napa— y un
-modificador único mentiría en una de las dos. Ya se decidió que esos casos se
-arreglan con texto: `modificadores_propuestos: []` y la explicación en `notas`.
-En este reino va a pasar en el Decán, que va de 500 a 1.200 mm.
+### Si parece un gradiente, primero decí cuál es la variable
+
+**Corregido el 23/10/2026, después del lote 1.** La versión anterior de esta
+regla decía «si es un gradiente, no se propone delta» y agregaba que eso iba a
+pasar en el Decán, que va de 500 a 1.200 mm. El lote 1 hizo exactamente eso y la
+regla estaba mal en la mitad que importa: **en el Decán el gradiente de lluvia no
+es la variable que decide.** Lo que decide es la profundidad del perfil —230 mm
+de agua útil en el vertisol profundo contra 120 en el somero—, y eso la app lo
+mide: el panel de suelo calcula la reserva de agua útil y la clasifica.
+
+Entonces la regla es ésta, en tres pasos:
+
+1. **Nombrá la variable del gradiente**, no el gradiente. No «va de 500 a 1.200
+   mm» sino «lo que cambia entre una mitad y la otra es *x*».
+2. **Preguntate si acequia mide esa variable.** La app mide lluvia anual,
+   estacionalidad, pendiente, orientación, textura, pH, carbono orgánico, reserva
+   de agua útil del perfil, grupo hidrológico y profundidad de capa limitante.
+3. Y entonces:
+   - **Si la app mide la variable**, se propone delta y la razón manda a mirar
+     ese campo. Un gradiente legible no es una excusa para abstenerse: es una
+     instrucción que se puede escribir. Ejemplo montado: el Decán central
+     mantiene el `huerta −10` del bioma y su razón dice que antes que la lluvia
+     anual hay que mirar la reserva de agua útil, porque con reserva alta la
+     ventana se corre al post-monzón y con reserva baja el ciclo se corta.
+   - **Si la app no la mide** —una napa que nadie cartografió, una mineralogía
+     que no está en SoilGrids—, ahí sí: `modificadores_propuestos: []` y la
+     explicación en `notas`, con la variable nombrada.
+
+**Y un gradiente no es lo mismo que un mosaico.** Si las dos mitades empujan para
+el mismo lado por mecanismos distintos, un delta único no miente en ninguna: va
+el delta y el mosaico se cuenta en el texto. Eso ya pasó en el Pilbara.
 
 ### Los modificadores globales que estos biomas heredan hoy
 
@@ -146,6 +182,12 @@ una sola ficha. Los **vertisoles negros** —el *regur* o *black cotton soil*—
 uno de los suelos agrícolas más característicos del planeta y no están descriptos
 en ninguna parte de la app. La literatura es abundante: ICRISAT está justo ahí y
 publica abierto, y el NBSS&LUP tiene la cartografía.
+
+**Pero el regur no cubre las 16, y esta cabecera llevaba a error.** Verificado
+el 23/10/2026, antes de mandar el lote 2: el **297** está en el oeste de Odisha
+y en Chhattisgarh, en la cuenca media del Mahanadi, a sombra de lluvia de los
+Ghats orientales, **fuera de la traza basáltica del Decán**. El suelo de cada
+ecorregión de este bloque se averigua, no se hereda del encabezado.
 
 - 290 — Central Deccan Plateau dry deciduous forests
 - 297 — North Deccan dry deciduous forests
@@ -319,7 +361,9 @@ De estas, **267 South China Sea Islands** son arrecifes sin uso agrícola: va a
    cultivos del mundo son nativos.
 6. **Siete especies con binomial.**
 7. **El modificador lleva el mecanismo, la fuente y la confianza.**
-8. **Si es un gradiente, no se propone delta.**
+8. **Si parece un gradiente, nombrá la variable y fijate si la app la mide.**
+   Abstenerse sólo si no la mide. (Esta regla decía lo contrario hasta el
+   23/10/2026 y así quedó escrita arriba, en su propia sección.)
 9. **Confirmar el modificador global vale igual que corregirlo.**
 10. **Mejor una ficha que aguanta que tres con una floja.**
 11. Una ficha por lote. Un bloque JSON. Sin prosa antes ni después.
