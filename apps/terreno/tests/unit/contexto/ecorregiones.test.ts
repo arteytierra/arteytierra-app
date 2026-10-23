@@ -9,7 +9,7 @@ import { BIOMAS_REGIONALES, BIOMAS_REGIONALES_CURADAS } from '@/lib/biomasRegion
 import { BIOMAS_REGIONALES_AMERICA } from '@/lib/biomasRegionalesAmerica';
 import { BIOMAS_REGIONALES_CANADA } from '@/lib/biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from '@/lib/biomasRegionalesEuropa';
-import { BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA } from '@/lib/biomasRegionales';
+import { BIOMAS_REGIONALES_AUSTRALASIA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA } from '@/lib/biomasRegionales';
 import { BIOMAS_REGIONALES_SUDAMERICA } from '@/lib/biomasRegionalesSudamerica';
 import { BIOMAS_GLOBALES } from '@/lib/biomasGlobales';
 import type { Koppen } from '@/lib/clima';
@@ -89,8 +89,9 @@ describe('catálogos de fichas', () => {
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
-    // África mediterráneo + 32 de Indomalaya + 47 sudamericanas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(242);
+    // África mediterráneo + 32 de Indomalaya + 1 de Australasia
+    // + 47 sudamericanas.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(243);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería
@@ -110,15 +111,15 @@ describe('catálogos de fichas', () => {
     for (const f of Object.values(BIOMAS_REGIONALES_CURADAS)) {
       expect(f.saberes.length, f.id).toBeGreaterThan(0);
     }
-    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_INDOMALAYA, ...BIOMAS_REGIONALES_MEDIO_ORIENTE, ...BIOMAS_REGIONALES_NORTE_AFRICA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
+    for (const f of Object.values({ ...BIOMAS_REGIONALES_AMERICA, ...BIOMAS_REGIONALES_AUSTRALASIA, ...BIOMAS_REGIONALES_CANADA, ...BIOMAS_REGIONALES_EUROPA, ...BIOMAS_REGIONALES_EUROPA_UE, ...BIOMAS_REGIONALES_INDOMALAYA, ...BIOMAS_REGIONALES_MEDIO_ORIENTE, ...BIOMAS_REGIONALES_NORTE_AFRICA, ...BIOMAS_REGIONALES_SUDAMERICA })) {
       expect(f.saberes, f.id).toEqual([]);
     }
   });
 
-  it('los nueve bloques de fichas regionales son disjuntos', () => {
+  it('los diez bloques de fichas regionales son disjuntos', () => {
     // Se unen con spread: un id repetido ganaría en silencio y dejaría la otra
     // ficha muerta sin que falle nada.
-    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA, BIOMAS_REGIONALES_SUDAMERICA];
+    const bloques = [BIOMAS_REGIONALES_CURADAS, BIOMAS_REGIONALES_AMERICA, BIOMAS_REGIONALES_AUSTRALASIA, BIOMAS_REGIONALES_CANADA, BIOMAS_REGIONALES_EUROPA, BIOMAS_REGIONALES_EUROPA_UE, BIOMAS_REGIONALES_INDOMALAYA, BIOMAS_REGIONALES_MEDIO_ORIENTE, BIOMAS_REGIONALES_NORTE_AFRICA, BIOMAS_REGIONALES_SUDAMERICA];
     const ids = bloques.flatMap(b => Object.keys(b));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBe(Object.keys(BIOMAS_REGIONALES).length);
@@ -143,9 +144,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 320 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 321 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(320);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(321);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }

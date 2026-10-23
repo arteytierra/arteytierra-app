@@ -25,6 +25,7 @@
  */
 
 import { ECO_ID_AMERICA } from './ecorregionesAmerica';
+import { ECO_ID_AUSTRALASIA } from './ecorregionesAustralasia';
 import { ECO_ID_CANADA } from './ecorregionesCanada';
 import { ECO_ID_EUROPA } from './ecorregionesEuropa';
 import { ECO_ID_EUROPA_UE } from './ecorregionesEuropaUE';
@@ -177,8 +178,8 @@ const RESTO_CURADO_A_MANO: Record<number, string> = {
 };
 
 /**
- * La unión de los ocho bloques del resto del mundo. Los dos generados vienen de
- * los paquetes de investigación; los otros cinco se escribieron a mano, y de
+ * La unión de los nueve bloques del resto del mundo. Los dos generados vienen de
+ * los paquetes de investigación; los otros siete se escribieron a mano, y de
  * esos, cuatro salieron de enumerar contra RESOLVE en vez de heredar una lista.
  * Son disjuntos entre sí: un ECO_ID repetido se resolvería en silencio a favor
  * del último y el test lo rechaza.
@@ -186,6 +187,7 @@ const RESTO_CURADO_A_MANO: Record<number, string> = {
 const RESTO_DEL_MUNDO: Record<number, string> = {
   ...RESTO_CURADO_A_MANO,
   ...ECO_ID_AMERICA,
+  ...ECO_ID_AUSTRALASIA,
   ...ECO_ID_CANADA,
   ...ECO_ID_EUROPA,
   ...ECO_ID_EUROPA_UE,
