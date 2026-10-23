@@ -6,7 +6,7 @@
  *
  * ## Esta ficha confirma el modificador del bioma en vez de corregirlo
  *
- * Las 32 fichas de Indomalaya existen para corregir un número. Esta existe para
+ * Las 32 fichas húmedas de Indomalaya existen para corregir un número. Esta existe para
  * **confirmarlo**, y eso es un resultado, no un lote fallido: el bioma global de
  * desierto le pone `pasturas −15` al Pilbara con la razón «la carga que aguanta
  * es baja y el error se paga con desertificación», y el relevamiento oficial de

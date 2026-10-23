@@ -6,9 +6,11 @@ import { componerAptitud } from '../../../lib/contexto';
 import type { ModificadorAptitud } from '../../../lib/biomaTipos';
 
 /**
- * Las 32 fichas de Indomalaya existen para corregir **un número**: el −25 de
- * huerta que el bioma global `resolve_bosque_tropical_humedo` imponía a 216
- * ecorregiones con una razón que en media Indomalaya es falsa.
+ * Las 32 fichas húmedas de Indomalaya existen para corregir **un número**: el
+ * −25 de huerta que el bioma global `resolve_bosque_tropical_humedo` imponía a
+ * 216 ecorregiones con una razón que en media Indomalaya es falsa. La 33.ª del
+ * bloque, el Decán central, es de otro bioma y de otra historia: ver
+ * `FUERA_DE_LA_REGLA` más abajo y `aptitudDecan.test.ts`.
  *
  * Por eso lo que estos tests cuidan no es que las fichas tengan texto —eso ya
  * lo verifica `ecorregiones.test.ts`— sino las tres formas en que este lote
@@ -46,13 +48,47 @@ const SIN_MODIFICADOR = [
   'ghats_sur_montano', 'sri_lanka_zona_seca',
 ];
 
+/**
+ * La ficha del bloque que **no** salió de la regla del −25, y por eso queda
+ * afuera de sus cuatro invariantes.
+ *
+ * `decan_central_hardwickia` (ECO_ID 290) es de bioma 2 —bosque tropical seco—
+ * y no de bioma 1. La regla escala el −25 de huerta del bioma húmedo por una
+ * fracción de suelo lixiviado; ese −25 no existe en su bioma, y tampoco se
+ * extrajo reparto de HWSD ni de SoilGrids para su polígono. Así que rompe los
+ * cuatro invariantes a propósito: toca un uso que no es huerta, propone un
+ * positivo, su razón no dice «regla de acequia» porque no viene de una regla
+ * nuestra, y no cita las bases de suelo.
+ *
+ * Esta constante existe para que el día que alguien agregue otra ficha seca al
+ * bloque tenga que ponerla acá a mano y leer este comentario antes.
+ */
+const FUERA_DE_LA_REGLA = ['decan_central_hardwickia'];
+
+/** Las fichas que sí salieron de la regla: el cohorte sobre el que valen los
+ *  invariantes de abajo. */
+const DE_LA_REGLA = () =>
+  Object.entries(BIOMAS_REGIONALES_INDOMALAYA)
+    .filter(([id]) => !FUERA_DE_LA_REGLA.includes(id));
+
 describe('el lote entero', () => {
-  it('son 32 fichas y 22 corrigen el número', () => {
+  it('son 33 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
     const ids = Object.keys(BIOMAS_REGIONALES_INDOMALAYA);
-    expect(ids).toHaveLength(32);
-    const conAptitud = ids.filter((id) => BIOMAS_REGIONALES_INDOMALAYA[id]!.aptitud?.length);
+    expect(ids).toHaveLength(33);
+
+    const deLaRegla = DE_LA_REGLA().map(([id]) => id);
+    expect(deLaRegla).toHaveLength(32);
+
+    const conAptitud = deLaRegla.filter((id) => BIOMAS_REGIONALES_INDOMALAYA[id]!.aptitud?.length);
     expect(conAptitud).toHaveLength(22);
-    expect(ids.length - conAptitud.length).toBe(SIN_MODIFICADOR.length);
+    expect(deLaRegla.length - conAptitud.length).toBe(SIN_MODIFICADOR.length);
+
+    // Y la que está afuera existe y trae modificador: si no, no haría falta
+    // excluirla de nada.
+    for (const id of FUERA_DE_LA_REGLA) {
+      expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
+      expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.aptitud?.length, id).toBeGreaterThan(0);
+    }
   });
 
   it('las que se abstienen son exactamente las declaradas, y no traen aptitud', () => {
@@ -63,7 +99,7 @@ describe('el lote entero', () => {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
       expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.aptitud, id).toBeUndefined();
     }
-    for (const [id, f] of Object.entries(BIOMAS_REGIONALES_INDOMALAYA)) {
+    for (const [id, f] of DE_LA_REGLA()) {
       if (SIN_MODIFICADOR.includes(id)) continue;
       expect(f.aptitud?.length, id).toBeGreaterThan(0);
     }
@@ -73,7 +109,7 @@ describe('el lote entero', () => {
     // valor = −25 × fracción, con la fracción entre 0 y 1: el techo es 0. Un
     // positivo acá querría decir que alguien salió de la regla sin decirlo, y
     // eso hay que escribirlo aparte, con su propia fuente.
-    for (const [id, f] of Object.entries(BIOMAS_REGIONALES_INDOMALAYA)) {
+    for (const [id, f] of DE_LA_REGLA()) {
       for (const m of f.aptitud ?? []) {
         expect(m.delta, `${id}/${m.uso}`).toBeLessThanOrEqual(0);
         expect(m.delta, `${id}/${m.uso}`).toBeGreaterThanOrEqual(-25);
@@ -86,7 +122,7 @@ describe('el lote entero', () => {
     // El campo `fuente` del relevamiento decía «HWSD v2; SoilGrids» para el
     // delta, y esas bases son la fuente de las fracciones de suelo, no del
     // número. Bajo el contrato de motor-de-calculo eso va al revés.
-    for (const [id, f] of Object.entries(BIOMAS_REGIONALES_INDOMALAYA)) {
+    for (const [id, f] of DE_LA_REGLA()) {
       for (const m of f.aptitud ?? []) {
         expect(m.razon, `${id}/${m.uso}`).toMatch(/Regla de acequia|Se cancela/);
         expect(m.razon.length, `${id}/${m.uso}`).toBeGreaterThan(80);
@@ -94,8 +130,8 @@ describe('el lote entero', () => {
     }
   });
 
-  it('todas las correcciones son de huerta: es el único uso que el lote tocó', () => {
-    for (const [id, f] of Object.entries(BIOMAS_REGIONALES_INDOMALAYA)) {
+  it('todas las correcciones de la regla son de huerta: es el único uso que tocó', () => {
+    for (const [id, f] of DE_LA_REGLA()) {
       for (const m of f.aptitud ?? []) expect(m.uso, id).toBe('huerta');
     }
   });

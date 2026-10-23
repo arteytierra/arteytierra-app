@@ -6,6 +6,27 @@ El campo `cultivos` de una ficha de ecorregión **no lleva nombres: lleva ids de
 este catálogo**. Un id que no esté en esta lista, o que esté mal tipeado, hace
 que la entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
+## La trampa de la tabla, con los casos reales
+
+**Agregado el 23/10/2026.** La primera vez que este anexo se usó —lote 1 de la
+fase 4, el Decán— cinco de doce ids no servían, y **tres de los cinco salieron de
+copiar la columna del medio**, la del nombre, en vez de la primera. La tabla tiene
+tres columnas y la del medio es la que se lee más fácil; de ahí el error.
+
+| se propuso | el id de verdad | qué pasó |
+|---|---|---|
+| `mijo_perla` | `mijo` | «Mijo perla» es el **nombre** de `mijo` |
+| `maiz` | `maiz_tropical` | el id lleva sufijo y el nombre no |
+| `gandul` | `guandul` | el nombre es «Guandul / gandul» y se copió la segunda mitad |
+
+**La regla operativa: el id es siempre la primera columna, va entre comillas y
+nunca tiene mayúsculas, acentos ni espacios.** Si lo que ibas a escribir tiene un
+acento, una mayúscula, una barra o un espacio, es un nombre, no un id. Y si un
+nombre trae dos variantes separadas por barra, ninguna de las dos es el id.
+
+Los otros dos que fallaron no eran de formato: `cartamo` y `poroto_urad`
+simplemente **no están en el catálogo**. Eso lleva al punto 2 de abajo.
+
 Y si la ficha **no declara** `cultivos`, la app no deja la sección vacía: cae al
 catálogo por clase Köppen, que es más grueso pero nunca miente. Entonces, entre
 inventar una lista y no declarar nada, **no declarar nada es mejor**: el campo es
@@ -25,6 +46,13 @@ Dos cosas más, que son las que arruinan el campo:
    maní— y que los rangelands áridos y los atolones probablemente no. **Si no
    hay ids que digan la verdad, el campo se deja sin declarar y se explica en
    `notas`.** Agregar especies al catálogo es trabajo de código, no de ficha.
+
+   Y tiene huecos también en las regiones que sí cubre. Los conocidos, al
+   23/10/2026: **no hay cártamo** (*Carthamus tinctorius*), que es el oleaginoso
+   de post-monzón del vertisol del Decán, ni **poroto urad** (*Vigna mungo*). Si
+   un cultivo central de la ecorregión no está, **nombralo en `notas` con su
+   binomial** en vez de reemplazarlo por un pariente: `caupi` no es urad, y
+   ponerlo ahí convierte un hueco en un dato falso.
 
 ---
 

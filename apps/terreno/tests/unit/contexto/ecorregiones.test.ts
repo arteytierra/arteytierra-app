@@ -89,9 +89,9 @@ describe('catálogos de fichas', () => {
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
-    // África mediterráneo + 32 de Indomalaya + 1 de Australasia
+    // África mediterráneo + 33 de Indomalaya + 1 de Australasia
     // + 47 sudamericanas.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(243);
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(244);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería
@@ -144,9 +144,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 321 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 322 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(321);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(322);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -307,13 +307,19 @@ describe('lista blanca de ecorregiones', () => {
     for (const [eco, ficha] of na) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
   });
 
-  it('Indomalaya quedó cubierta: los 33 ECO_ID tienen ficha', () => {
+  it('Indomalaya quedó cubierta: los 34 ECO_ID tienen ficha', () => {
     // Esta lista no salió de enumerar una envolvente como Canadá, la UE o el
     // norte de África: salió de buscar dónde el bioma global estaba diciendo
-    // un número equivocado. Son 33 ECO_ID en 32 fichas —229 y 288 comparten
+    // un número equivocado. Son 34 ECO_ID en 33 fichas —229 y 288 comparten
     // java_bali_montano— y el resto de Indomalaya sigue cayendo al bioma
     // global a propósito. Ver ecorregionesIndomalaya.ts.
+    //
+    // El 290 es el único de bioma seco y entró un mes después que los otros 33,
+    // por otro motivo: no para corregir un número del bioma sino porque adentro
+    // de esa ecorregión hay escurrimiento medido que contradice el que calcula
+    // la app. Ver aptitudDecan.test.ts.
     const im: Array<[number, string]> = [
+      [290, 'decan_central_hardwickia'],
       [253, 'ghats_norte_deciduo'],
       [254, 'ghats_norte_montano'],
       [270, 'ghats_sur_deciduo'],
@@ -347,12 +353,13 @@ describe('lista blanca de ecorregiones', () => {
       [246, 'mindanao_montano'],
       [247, 'mindanao_visayas_oriental'],
     ];
-    expect(im).toHaveLength(33);
+    expect(im).toHaveLength(34);
     for (const [eco, ficha] of im) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
   });
 
   it('el resto de Indomalaya sigue cayendo al bioma global, y es a propósito', () => {
-    // El lote cubrió las 33 que corregían un número, no una región cerrada.
+    // El lote cubrió las 33 que corregían un número, más el Decán después, y
+    // no una región cerrada.
     // Estos tres son ECO_ID reales del rango indomalayo que quedaron sin
     // curar; no se ponen sus nombres porque no se verificaron contra el
     // FeatureServer. Si algún día se cierra Indomalaya dejan de ser null y
