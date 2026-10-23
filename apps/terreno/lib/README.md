@@ -105,6 +105,7 @@ libremente; tocar sólo con intención explícita y validación:
 | Archivo | Qué es |
 |---|---|
 | `suelos.ts` | Análisis de suelo vía SoilGrids (ISRIC). |
+| `textura.ts` | Las doce clases del triángulo textural USDA, del Soil Survey Manual 2017 (cap. 3, p. 124). **Único clasificador**: lo usan `suelos.ts` y `emplazamiento.ts`, y `usle.ts` indexa la erodabilidad por su nombre. |
 | `aptitud.ts` | Aptitud de uso del suelo por celda de la grilla. La exposición al sol sale de `emplazamiento.ts` desde el 05/10/2026: antes premiaba la ladera que baja al norte en todo el planeta, que en el hemisferio norte es la sombría. |
 | `cobertura.ts` | Cobertura del suelo — ESA WorldCover 10 m. |
 | `carbono.ts` | Estimador orientativo de carbono (stock + potencial). |

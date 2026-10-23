@@ -17,6 +17,7 @@
 import { fuentesNacionalesSuelo } from './sueloFuentes';
 import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
 import { obtenerRocaMadre, type RocaMadre } from './rocaMadre';
+import { claseTexturaUSDA, nombreTextura } from './textura';
 
 /** Una capa del perfil, con propiedades e hidráulica derivada. */
 export interface CapaSuelo {
@@ -520,19 +521,24 @@ function grupoHidrologico(perfil: CapaSuelo[]): GrupoHidrologico {
   return { ...def, ksat_min: k, capa_limitante: lim.label };
 }
 
-// ─── Clasificación textural USDA (simplificada) ───────────────────────────────
+// ─── Clasificación textural USDA ──────────────────────────────────────────────
 
+/**
+ * El nombre de la clase textural, de las doce del triángulo USDA.
+ *
+ * Esto era una escalera de diez salidas sin fuente citada —el comentario decía
+ * «(simplificada)»— y el 22/10/2026 se reemplazó por las doce definiciones del
+ * **Soil Survey Manual** (USDA Handbook No. 18, 2017), capítulo 3, página 124,
+ * leídas del primario. Barrido el triángulo entero en paso de 1 %, la escalera
+ * vieja se equivocaba en **1.699 de 5.151 celdas, el 33,0 %**, y dos de las
+ * doce clases no salían nunca.
+ *
+ * Importa más que un rótulo: `lib/usle.ts` indexa la erodabilidad K por este
+ * nombre, así que la clase equivocada entraba en el cálculo de erosión. El
+ * contrato completo, las definiciones y la verificación están en `textura.ts`.
+ */
 function clasificarTextura(arc: number, are: number, li: number): string {
-  if (arc >= 40)                   return 'Arcilloso';
-  if (arc >= 35 && are <= 45)      return 'Arcillo-limoso';
-  if (arc >= 28 && are > 45)       return 'Arcillo-arenoso';
-  if (arc >= 20 && arc < 35 && li >= 15 && are < 45) return 'Franco-arcilloso';
-  if (are >= 85 && arc < 10)       return 'Arenoso';
-  if (are >= 70 && arc < 15)       return 'Arenoso-franco';
-  if (li >= 80)                    return 'Limoso';
-  if (li >= 50 && arc < 27)        return 'Franco-limoso';
-  if (are >= 52 && arc < 20)       return 'Franco-arenoso';
-  return 'Franco';
+  return nombreTextura(claseTexturaUSDA(arc, are, li));
 }
 
 // ─── Interpretación agronómica ────────────────────────────────────────────────

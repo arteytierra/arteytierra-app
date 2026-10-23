@@ -432,13 +432,22 @@ describe('el campo de infiltración (15A NCAC 18A + EPA)', () => {
     expect(claseUSDA(55, 25, 20)).toBe('arcilloso');
   });
 
-  it('LAS DOS CLASES QUE EL CLASIFICADOR DE suelos.ts NO SABE DEVOLVER CAEN EN EL GRUPO III', () => {
-    // `clasificarTextura` de `lib/suelos.ts` tiene diez salidas, no doce: un
-    // franco arcillo arenoso le sale «Arcillo-arenoso» y se iría al grupo IV,
-    // con un tercio menos de tasa. Por eso este módulo parte de los porcentajes.
+  it('las dos clases que el clasificador viejo no sabía devolver caen en el grupo III', () => {
+    // Hasta el 22/10/2026 `clasificarTextura` de `lib/suelos.ts` tenía diez
+    // salidas, no doce: un franco arcillo arenoso le salía «Arcillo-arenoso» y
+    // se iba al grupo IV, con un tercio menos de tasa. Ya no: los dos módulos
+    // leen el mismo `lib/textura.ts`, que tiene las doce del Soil Survey Manual.
     expect(grupoLTAR(28, 55, 17)).toBe('III');
     expect(grupoLTAR(32, 12, 56)).toBe('III');
     expect(grupoLTAR(42, 50, 8)).toBe('IV');
+  });
+
+  it('y un dato de suelo roto no sale por el grupo del medio: sale sin grupo', () => {
+    // Antes `grupoLTAR` devolvía 'II' cuando no reconocía la clase, que es el
+    // número plausible y equivocado: dimensiona el campo con una tasa que nadie
+    // midió. Ahora el campo entero no se calcula.
+    expect(grupoLTAR(30, 30, 30)).toBeNull();
+    expect(campoDeInfiltracion(3, { arcilla_pct: 30, arena_pct: 30, limo_pct: 30 })).toBeNull();
   });
 
   it('el caudal de diseño son 120 galones por dormitorio, con piso de 240 por vivienda', () => {

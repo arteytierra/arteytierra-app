@@ -142,6 +142,7 @@
 
 import { dimsCelda } from './cuencaHidro';
 import { PASO_RELIEVE, pasoEfectivoM, type GrillaElevacion } from './grillaElevacion';
+import { claseTexturaUSDA, type ClaseUSDA } from './textura';
 
 // ─── Fuentes citables ─────────────────────────────────────────────────────────
 
@@ -584,44 +585,41 @@ export const GRUPOS_LTAR: readonly DefGrupoLTAR[] = [
   { grupo: 'IV',  nombre: 'Arcillas',        clases: ['arcillo-arenoso', 'arcillo-limoso', 'arcilloso'],                                                 gpd_ft2: [0.4, 0.1] },
 ] as const;
 
-export type ClaseUSDA =
-  | 'arenoso' | 'arenoso-franco' | 'franco-arenoso' | 'franco'
-  | 'franco-limoso' | 'limoso' | 'franco-arcillo-arenoso' | 'franco-arcilloso'
-  | 'franco-arcillo-limoso' | 'arcillo-arenoso' | 'arcillo-limoso' | 'arcilloso';
+export type { ClaseUSDA };
 
 /**
  * Las doce clases del triángulo textural USDA desde los porcentajes.
  *
- * Se decide acá y no leyendo `clase_textura` de `lib/suelos.ts` a propósito: ese
- * clasificador tiene diez salidas, no doce —el franco arcillo arenoso y el
- * franco arcillo limoso no salen nunca—, y las dos clases que le faltan caen
- * justo en el grupo III. Un franco arcillo arenoso etiquetado como arcillo
- * arenoso se va al grupo IV y pierde un tercio de la tasa. Queda anotado como
- * corrección aparte; acá se trabaja con los porcentajes, que son el dato crudo.
+ * Vivía acá, con las doce, porque `clasificarTextura` de `lib/suelos.ts` tenía
+ * diez. El 22/10/2026 se leyó el primario —**Soil Survey Manual**, USDA
+ * Handbook No. 18 (2017), cap. 3, p. 124— y el clasificador pasó a
+ * `lib/textura.ts`, que es el único que queda. Esto es un reexporte para no
+ * romper a quien lo importaba de acá.
+ *
+ * La versión que vivía acá no era igual al texto del manual: se apartaba en
+ * **43 de las 5.151 celdas** del triángulo, todas sobre las líneas de borde, y
+ * siempre para el mismo lado. Usaba `>=` donde el manual dice *more than*, así
+ * que el borde caía en la clase más gruesa, que es más permeable: en el campo
+ * de infiltración eso **sobreestima la tasa de absorción** y el campo sale
+ * chico. Las cuatro líneas afectadas eran el borde arenoso/arenoso-franco, el
+ * arenoso-franco/franco-arenoso y los dos bordes de arena 45 % con las
+ * arcillas. Está corregido en `textura.ts` y hay un test que lo fija.
  */
-export function claseUSDA(arcilla_pct: number, arena_pct: number, limo_pct: number): ClaseUSDA {
-  const a = arcilla_pct;
-  const s = arena_pct;
-  const l = limo_pct;
+export const claseUSDA = claseTexturaUSDA;
 
-  if (a >= 40 && l >= 40) return 'arcillo-limoso';
-  if (a >= 35 && s >= 45) return 'arcillo-arenoso';
-  if (a >= 40) return 'arcilloso';
-  if (a >= 27 && s <= 20) return 'franco-arcillo-limoso';
-  if (a >= 27 && s <= 45) return 'franco-arcilloso';
-  if (a >= 20 && l < 28 && s > 45) return 'franco-arcillo-arenoso';
-  if (l >= 80 && a < 12) return 'limoso';
-  if (l >= 50 && a < 27) return 'franco-limoso';
-  if (l >= 28 && a >= 7 && a < 27 && s <= 52) return 'franco';
-  if (s >= 85 && l + 1.5 * a <= 15) return 'arenoso';
-  if (s >= 70 && l + 2 * a <= 30) return 'arenoso-franco';
-  return 'franco-arenoso';
-}
-
-export function grupoLTAR(arcilla_pct: number, arena_pct: number, limo_pct: number): GrupoLTAR {
+/**
+ * El grupo de tasa de aplicación al que pertenece la textura, o `null` si los
+ * tres porcentajes no describen un suelo.
+ *
+ * Antes caía en el grupo II —el del medio— cuando no reconocía la clase. Un
+ * dato roto que devuelve «francos gruesos» es justamente el número plausible y
+ * equivocado: dimensiona un campo de infiltración con una tasa que nadie midió.
+ */
+export function grupoLTAR(arcilla_pct: number, arena_pct: number, limo_pct: number): GrupoLTAR | null {
   const clase = claseUSDA(arcilla_pct, arena_pct, limo_pct);
+  if (clase == null) return null;
   const def = GRUPOS_LTAR.find(g => g.clases.includes(clase));
-  return def ? def.grupo : 'II';
+  return def ? def.grupo : null;
 }
 
 export function defGrupoLTAR(g: GrupoLTAR): DefGrupoLTAR {
@@ -708,8 +706,13 @@ export function campoDeInfiltracion(
     );
   }
 
+  // Sin clase textural no hay tasa de absorción, y sin tasa no hay campo. Pasa
+  // cuando los tres porcentajes no suman 100 ni de cerca, o sea cuando el dato
+  // de suelo está roto: antes de esto salía por el grupo II, el del medio.
   const clase = claseUSDA(suelo.arcilla_pct, suelo.arena_pct, suelo.limo_pct);
+  if (clase == null) return null;
   const grupo = grupoLTAR(suelo.arcilla_pct, suelo.arena_pct, suelo.limo_pct);
+  if (grupo == null) return null;
   const def = defGrupoLTAR(grupo);
   const ltarAlta = gpdFt2ALDiaM2(def.gpd_ft2[0]);
   const ltarBaja = gpdFt2ALDiaM2(def.gpd_ft2[1]);
