@@ -5,6 +5,7 @@ import { AperturaAcequiaApp, esquemaAperturaApp } from './composiciones/Apertura
 import { BandaBase, Fuente, esquemaFuente } from './composiciones/BandaPie';
 import { LowerThird, esquemaLowerThird } from './composiciones/LowerThird';
 import { PlacaCruce, esquemaCruce } from './composiciones/PlacaCruce';
+import { CUADROS_PORTADA, PortadaAcequia, esquemaPortada } from './composiciones/PortadaAcequia';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
 import { Titular, esquemaTitular } from './composiciones/Titular';
 import {
@@ -280,6 +281,28 @@ export const Root: React.FC = () => {
         height={560}
         schema={esquemaGenLockup}
         defaultProps={{ colorIsotipo: COLORES_GEN.agua, colorTexto: COLORES_GEN.crema }}
+      />
+
+      {/*
+        La portada de acequia.app. No es una placa de marca: es la unica
+        composicion que dibuja datos de un predio real, y por eso se renderiza
+        aparte y con cuidado:
+
+          pnpm --filter @arteytierra/placas portada
+
+        El `--gl=angle` es porque MapLibre es WebGL y el Chrome de Remotion
+        arranca sin aceleracion. El `--concurrency=1`, porque varias pestanias
+        peleando por las mismas teselas devuelven cuadros en blanco.
+      */}
+      <Composition
+        id="PortadaAcequia"
+        component={PortadaAcequia}
+        durationInFrames={CUADROS_PORTADA}
+        fps={FPS}
+        width={FORMATOS.horizontal.width}
+        height={FORMATOS.horizontal.height}
+        schema={esquemaPortada}
+        defaultProps={{ exageracion: 1.4, atribucion: true }}
       />
 
       <Composition

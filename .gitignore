@@ -55,3 +55,7 @@ _gen.out
 # La linea de tiempo del video se genera con tiempos.py: lo que esta ahi
 # adentro sale de un solo archivo y no se edita a mano.
 _research/video-acequia/generado/
+
+# El dato de la animacion de portada se genera con scripts/datos-portada.ts
+# y pesa megabytes: es un intermedio, no codigo.
+packages/placas/generado/

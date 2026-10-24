@@ -9,11 +9,13 @@
     "render": "remotion render src/index.ts",
     "componer": "remotion compositions src/index.ts",
     "typecheck": "tsc --noEmit",
-    "render-video": "node scripts/render-video.mjs"
+    "render-video": "node scripts/render-video.mjs",
+    "portada": "node scripts/portada.mjs"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
     "@remotion/google-fonts": "4.0.524",
+    "maplibre-gl": "^4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "remotion": "4.0.524",
