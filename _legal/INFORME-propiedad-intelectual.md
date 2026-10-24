@@ -1,7 +1,7 @@
 # Cómo se protege acequia
 
 Informe y paso a paso. Titular: Jonatan Gabriel Palma, persona humana, 100 %.
-Fecha: 24 de octubre de 2026. Versión de la obra: `v1.0` (commit `d633340`).
+Fecha: 24 de octubre de 2026. Versión de la obra: `v1.0` (commit `0ede01d`).
 
 ---
 
@@ -62,13 +62,13 @@ En `_legal/deposito/` (fuera de git, no se commitea) hay cuatro archivos:
 
 | Archivo | Qué es |
 |---|---|
-| `acequia-fuente-v1.0.tar.gz` | 32 MB. 1.530 archivos de código fuente. |
+| `acequia-fuente-v1.0.tar.gz` | 32 MB. 1.535 archivos de código fuente. |
 | `MANIFIESTO-v1.0.txt` | SHA-256 de cada archivo, uno por uno, más el del tarball y las exclusiones declaradas. |
 | `DECLARACION-DE-AUTORIA.txt` | Declaración de autoría y titularidad. **Tiene cuatro campos por completar.** |
 | `LEEME-SOPORTE.txt` | Qué hay en el pendrive, para quien lo abra. |
 
 SHA-256 del tarball:
-`61c60487ba794ae8e003ac57988c1c18a4c67a80fc7589e5e5a1a060c6160e8b`
+`c871148ec245624941854af917198d5b993e946dbd6aab75f06ac1416a9a6bb8`
 
 **Qué dejé afuera del depósito, y por qué.** Dos cosas, ambas declaradas en
 el MANIFIESTO para que el depósito sea internamente honesto:
@@ -81,7 +81,7 @@ el MANIFIESTO para que el depósito sea internamente honesto:
   arteytierra.org. No son software y no son inéditos; meterlos en un depósito
   de «obra inédita» es contradecir la declaración.
 
-Lo que quedó son 1.530 archivos, 232.000 líneas de TypeScript, SQL y CSS, y
+Lo que quedó son 1.535 archivos, 232.000 líneas de TypeScript, SQL y CSS, y
 las 63 migraciones de la base.
 
 ### Paso a paso
@@ -145,7 +145,7 @@ recibas la constancia.
 
 Prueba **esa versión** en **esa fecha**. Es una foto de un código que cambia
 todas las semanas. Lo que te da es una fecha sellada por el Estado, que es
-difícil de discutir. La prueba continua y gratis ya la tenés y es fuerte: 652
+difícil de discutir. La prueba continua y gratis ya la tenés y es fuerte: 653
 commits desde el 17 de mayo de 2026 en un repositorio privado de GitHub, más
 el log de deployments de Vercel. El depósito no reemplaza eso: lo corona.
 
