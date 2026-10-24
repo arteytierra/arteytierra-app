@@ -19,15 +19,20 @@ no el terreno: no «los campesinos hacían camellones» sino «hay camellones
 documentados desde el año tal». Si la fuente nombra al pueblo, se lo nombra como
 lo nombra ella, dentro del detalle.
 
-**El estado, medido hoy:** 408 entradas sobre 200 fichas. El piso que se busca es
-**tres por ficha**, y el reparto es desigual:
+**El estado, medido después del lote 1:** 420 entradas sobre 203 fichas. El piso
+que se busca es **tres por ficha**, y el reparto es desigual:
 
 | Entradas por ficha | Cuántas fichas |
 |---|---|
-| 0 | **54** — 32 son de Indomalaya, nunca relevadas; las otras 22 son decisiones |
+| 0 | **54** — 30 de Indomalaya y 2 nuevas (el miombo y la Pilbara), nunca relevadas; las otras 22 son decisiones |
 | 1 | **60** |
 | 2 | **72** |
 | 3 | **68** ← el piso |
+| 4 | **3** — las tres que abrió el lote 1 |
+
+Que el cero siga diciendo 54 y no 51 es porque el catálogo creció mientras se
+relevaba: entraron el miombo húmedo zambeziano, el matorral de la Pilbara y el
+Decán central, y las tres nacieron sin prácticas.
 
 Las 22 fichas en cero que **no** son un pendiente son veintidós decisiones de no
 sostener una afirmación con una fuente que no alcanzaba: islas oceánicas sin
@@ -39,6 +44,38 @@ Lo que falta son **192 entradas**: las 32 fichas de Indomalaya desde cero, más 
 en cada una de las 60 y 1 en cada una de las 72.
 
 ---
+
+## Lo primero, porque es lo que se arregló después del lote 1: la ficha la decide el polígono
+
+El lote 1 trajo las terrazas de arroz de Ifugao, bien investigadas y con las dos
+fuentes abiertas, y las colgó de la ficha `luzon_montano`. El razonamiento era
+impecable en castellano: Ifugao es montaña y es Luzón. Pero las fichas de acequia
+son polígonos de RESOLVE, no descripciones, y el **ECO_ID 240 —Luzon montane rain
+forests— es la Sierra Madre y los montes de Zambales**, no la Cordillera Central.
+Los cinco conjuntos que inscribió la UNESCO caen entre el **241** (Luzon rain
+forests) y el **303** (Luzon tropical pine forests): Nagacadan y Batad en el
+primero, Bangaan, Hungduan y Mayoyao en el segundo. El límite entre los dos parte
+en dos al propio municipio de Banaue —el pueblo da 241 y el mirador de arriba da
+303—, así que la práctica terminó montada en **las dos fichas**.
+
+Es el cuarto error del mismo tipo en esta tanda de encargos: la MPKV del Decán,
+Gorongosa en Mozambique, Nyimba en el miombo seco y ahora Ifugao. Los tres
+primeros eran de escala de país; éste es adentro de una isla, que es más fino y es
+por eso que se arregla acá y no con un reto.
+
+**El arreglo no es que adivines mejor.** Vos no podés consultar el polígono; yo sí,
+y es una consulta de dos segundos. Así que el reparto de trabajo cambia:
+
+> **Decí dónde está la práctica, no en qué ficha va.** El campo `id` pasa a ser
+> una **propuesta** y se verifica al montar. Lo que no puede faltar es el campo
+> `lugar`: el sitio con el nombre que usa la fuente —municipio, distrito,
+> provincia, valle— y, si la fuente o el registro de patrimonio lo publica, las
+> coordenadas. Si la práctica está documentada en varios sitios, nombralos todos:
+> eso es lo que hizo que las terrazas entren en dos fichas en vez de una.
+
+Y de paso: si el `lugar` no se puede decir —porque la fuente habla de un país
+entero y no de un lugar—, eso **ya es el motivo para que la entrada no entre**.
+Es el mismo filtro que dejó veintidós fichas vacías a propósito.
 
 ## El piso de fuentes, que no lo pone el gusto: lo midió el catálogo
 
@@ -123,18 +160,31 @@ tres, porque acá la agricultura tradicional está documentada desde hace siglos
 hay patrimonio agrícola reconocido en casi todos estos países.
 
 **Tres por ficha, directo al piso.** Los ids son los que la app usa y hay que
-devolverlos tal cual:
+devolverlos tal cual. **Quedan 30**, porque el lote 1 cerró tres —la zona seca de
+Sri Lanka, `luzon_bajo` y `pinar_luzon`— y porque apareció una que la lista
+original no tenía:
 
 `ghats_norte_deciduo`, `ghats_norte_montano`, `ghats_sur_deciduo`,
 `ghats_sur_montano`, `sri_lanka_humedo_bajo`, `sri_lanka_montano`,
-`sri_lanka_zona_seca`, `valle_brahmaputra`, `gangetica_inferior`,
-`gangetica_superior`, `pantanos_sundarbans`, `pantanos_irrawaddy`,
-`irrawaddy_deciduo`, `pantanos_chao_phraya`, `chao_phraya_deciduo`,
-`pantanos_tonle_sap`, `pantanos_rio_rojo`, `sumatra_bajo`, `sumatra_montano`,
-`pantanos_sumatra`, `pinar_toba`, `java_occidental_bajo`,
-`java_oriental_bali_bajo`, `java_bali_montano`, `pantanos_borneo_suroeste`,
-`luzon_bajo`, `luzon_montano`, `pinar_luzon`, `mindoro`, `negros_panay`,
-`mindanao_montano`, `mindanao_visayas_oriental`.
+`valle_brahmaputra`, `gangetica_inferior`, `gangetica_superior`,
+`pantanos_sundarbans`, `pantanos_irrawaddy`, `irrawaddy_deciduo`,
+`pantanos_chao_phraya`, `chao_phraya_deciduo`, `pantanos_tonle_sap`,
+`pantanos_rio_rojo`, `sumatra_bajo`, `sumatra_montano`, `pantanos_sumatra`,
+`pinar_toba`, `java_occidental_bajo`, `java_oriental_bali_bajo`,
+`java_bali_montano`, `pantanos_borneo_suroeste`, `luzon_montano`, `mindoro`,
+`negros_panay`, `mindanao_montano`, `mindanao_visayas_oriental`,
+`decan_central_hardwickia`.
+
+**`decan_central_hardwickia`** es el Decán central —ECO_ID 290, bosque seco de
+*Hardwickia binata* sobre la traza basáltica, en Maharashtra, Telangana y
+Karnataka—, montada después de que se escribiera esta lista. Sus rutas son otras
+que las del resto: los *tanques* del Decán, el ICRISAT, y el sistema de
+*phad* del río Panjhra, que tiene su propia bibliografía.
+
+**Y `luzon_montano` sigue en cero, pero no se llena con Ifugao.** Esa ficha es la
+Sierra Madre y los montes de Zambales: lo que hay que buscar ahí es el manejo de
+monte y la caza y pesca documentados de la Sierra Madre y de Zambales, no las
+terrazas de la Cordillera.
 
 **Rutas nombradas para este bloque**, porque es lo que hace que un encargo rinda:
 
@@ -264,6 +314,7 @@ comunal con *fjallskil*.
   "entradas": [
     {
       "id": "sri_lanka_zona_seca",
+      "lugar": "Cascada de Palugaswewa, distrito de Anuradhapura, Sri Lanka (8,03 N / 80,77 E)",
       "practica": "Cascada de tanques (ellanga)",
       "periodo": "Desde el siglo III a.C.; red en uso y en rehabilitación",
       "tipo": "agua",
@@ -282,8 +333,11 @@ comunal con *fjallskil*.
 }
 ```
 
-`id` es el id de la **ficha** a la que la práctica se asocia, y una misma ficha
-puede aparecer varias veces en el mismo lote con prácticas distintas. Si de una
+`id` es la ficha que **propones**, y se verifica contra el polígono al montar: si
+el lugar cae en otra, se monta en la otra, y si cae en dos, se monta en las dos.
+Una misma ficha puede aparecer varias veces en el mismo lote con prácticas
+distintas. `lugar` es obligatorio y es el campo que decide: el sitio con el nombre
+que usa la fuente y, si está publicada, la coordenada. Si de una
 ficha no sale nada que aguante, va a `vacias` con el motivo: **veintidós fichas
 del catálogo están vacías justamente así y están bien.**
 
@@ -306,3 +360,7 @@ del catálogo están vacías justamente así y están bien.**
 8. **Mejor dos que aguantan que tres con una floja.**
 9. **Leer el documento, no la línea que matcheó.**
 10. Seis entradas por lote. Un bloque JSON. Sin prosa antes ni después.
+11. **`lugar` antes que `id`.** Decí dónde está la práctica con el nombre que usa
+    la fuente y con la coordenada si la hay. La ficha es una propuesta y la
+    verifico yo contra el polígono de RESOLVE. Si no podés decir el lugar, la
+    entrada no entra.
