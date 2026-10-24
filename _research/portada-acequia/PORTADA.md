@@ -38,14 +38,22 @@ Texto propuesto para el `alt`:
 > las curvas de nivel dibujadas sobre la imagen satelital. Relieve Copernicus
 > GLO-30 a ~30 m; imagen Esri World Imagery.
 
-## Los cuatro actos
+## Los actos
 
 | cuadros | segundos | qué pasa |
 |---|---|---|
-| 0 – 120 | 0,0 – 4,0 | **el relieve aparece.** Arranca casi plano y gris: la exageración del terreno sube de 0,08 a 1,4 mientras el color de la rampa de la app sube de la cota más baja a la más alta |
-| 120 – 240 | 4,0 – 8,0 | **el agua encuentra su camino.** Las cadenas de acumulación se encienden por orden de caudal: primero los filos, al final el cauce |
-| 240 – 330 | 8,0 – 11,0 | **el zoom.** La cámara baja y se inclina de 12° a 50°; entran la ortofoto y las curvas |
+| 0 – 110 | 0,0 – 3,7 | **el relieve aparece.** Arranca casi plano y gris: el sombreado sube de 0,06 a 1 mientras el color de la rampa de la app sube de la cota más baja a la más alta |
+| 108 – 168 | 3,6 – 5,6 | **las curvas de nivel se dibujan** sobre el relieve |
+| 156 – 252 | 5,2 – 8,4 | **el agua encuentra su camino.** Las cadenas de acumulación se encienden por orden de caudal: primero los filos, al final el cauce |
+| 252 – 330 | 8,4 – 11,0 | **el zoom.** La cámara baja y se inclina hasta 48°; el shader se retira y entra la ortofoto |
 | 330 – 420 | 11,0 – 14,0 | **el predio.** Vista 3D con la foto y las curvas sobre el paisaje. Se queda |
+
+El acto de las curvas lo pidió Jonatan viendo el primer corte —«entre el shader
+y las escorrentías pasa mucho tiempo»— y tiene un argumento mejor que el de
+rellenar un hueco: **el botón de Topografía de la app dice literalmente
+«enciende relieve + curvas»**. Las enciende juntas, así que ése es el orden en
+que la aplicación las muestra. Lo que había en el medio eran cuatro segundos en
+los que no pasaba nada.
 
 El zoom, la inclinación y el rumbo son **continuos de punta a punta**: los actos
 marcan qué aparece, no cortes de cámara. Un corte en catorce segundos se lee
@@ -96,6 +104,42 @@ hace daño.
    borde de arriba, y la mitad de abajo se llena con el suelo de adelante, que
    todavía no tiene imagen y es negro. Hasta el acto 03 la vista es casi
    cenital, que además es como se lee un plano.
+
+## Los criterios de aceptación, uno por uno
+
+Los pasó Jonatan el 24/10/2026. Los de forma y peso los comprueba el propio
+script de empaquetado con `ffprobe` sobre el archivo que acaba de escribir, y
+falla con código 1 si alguno no entra: un entregable que incumple y nadie mide
+es un entregable que incumple en producción.
+
+| | cómo se cumple |
+|---|---|
+| **A1** predio declarado | Cuetiepa, Chiapas, con el relieve de Copernicus GLO-30. Va en el `alt` (abajo) y en este documento |
+| **A2** nada modelado | todo sale de `obtenerGrillaDEM` + las funciones del repo, y la vista 3D es MapLibre con el estilo de `Vista3D.tsx` |
+| **A3** acumulación, no fluidos | son 37 polilíneas de `calcularEscorrentias` que suben de opacidad por orden de acumulación. No hay partículas, ni volumen, ni desplazamiento |
+| **A4** ningún número | la atribución quemada dice «Relieve Copernicus GLO-30 · imagen Esri World Imagery» y nada más. El `~30 m` que tenía salió por esto: es una escala numérica, y el paso del DEM vive en el `alt` y acá |
+| **A5** nada de interfaz inventada | no hay interfaz: ni botones, ni paneles, ni rótulos |
+| **A6** relieve continuo | la grilla es de 300 × 277 nodos interpolados de los COG, no el muestreo 10×10 de la pantalla |
+| **B1** 12 a 16 s | 14,00 s |
+| **B2** orden de los actos | ver la tabla de arriba |
+| **B3** fundidos, no cortes | todas las transiciones son interpolaciones de opacidad y de cámara; no hay un solo corte |
+| **B4** no hace loop | 420 cuadros y se queda en el último |
+| **B5** el último cuadro solo | es el póster, y por eso el póster es el último y no el primero |
+| **B6** lento, con inercia, sin rebote | una sola curva en toda la pieza, `bezier(0.33, 0, 0.2, 1)`, que no se pasa nunca de su destino |
+| **B7** sin pista de audio | se verifica con `ffprobe`: ningún stream con `codec_type=audio` |
+| **C1** webm y mp4 | VP9 de dos pasadas y H.264 `veryslow`, los dos sin audio |
+| **C2** ≤ 2,5 MB | se mide y se imprime el kbps al lado del tope |
+| **C3** póster ≤ 150 KB | el último cuadro, y la calidad del JPEG **se busca** hasta entrar: fijar una calidad y confiar es lo que hace que un día entre y otro no |
+| **C4** el cuadro final suelto | `portada-ultimo.png`, aparte del póster |
+| **C5** 1280×720 | la composición se registra en 720p, no se reduce al exportar |
+| **C6** legible a 375 px | los anchos de línea salen de esta cuenta: 375/1280 = 0,29, así que el filo más fino del agua va a 3,5 px para sobrevivir con un píxel entero. Con los 1,6 px que tenía, el acto 02 desaparecía en el celular |
+| **C7** primer cuadro legible | gris y plano sobre el negro de la marca, nunca negro puro |
+
+### El `alt` del video
+
+> Vista 3D del relieve de un predio de 417 hectáreas en Cuetiepa, Chiapas, con
+> las curvas de nivel dibujadas sobre la imagen satelital. Relieve Copernicus
+> GLO-30 a ~30 m; imagen Esri World Imagery.
 
 ## Lo que queda abierto
 

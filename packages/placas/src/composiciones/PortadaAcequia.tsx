@@ -4,6 +4,11 @@
  *
  *   01  el relieve aparece — el sombreado y el color por cota se revelan de la
  *       cota más baja a la más alta, en vista cenital, como se lee un plano
+ *   01b las curvas de nivel se dibujan sobre el relieve. No es relleno para
+ *       tapar un hueco: **el botón de Topografía de la app dice literalmente
+ *       «enciende relieve + curvas»**, así que ése es el orden en que la
+ *       aplicación las muestra, y entre el color y el agua había cuatro
+ *       segundos en los que no pasaba nada
  *   02  el agua encuentra su camino — las líneas de acumulación se encienden
  *       desde los filos hacia los cauces
  *   03  el zoom — la cámara baja y se inclina, entra la ortofoto y el relieve
@@ -79,9 +84,10 @@ export const esquemaPortada = z.object({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ACTO = {
-  relieve: { desde:   0, hasta: 120 },   // 0,0 – 4,0 s
-  agua:    { desde: 120, hasta: 240 },   // 4,0 – 8,0 s
-  zoom:    { desde: 240, hasta: 330 },   // 8,0 – 11,0 s
+  relieve: { desde:   0, hasta: 110 },   // 0,0 – 3,7 s
+  curvas:  { desde: 108, hasta: 168 },   // 3,6 – 5,6 s
+  agua:    { desde: 156, hasta: 252 },   // 5,2 – 8,4 s
+  zoom:    { desde: 252, hasta: 330 },   // 8,4 – 11,0 s
   predio:  { desde: 330, hasta: 420 },   // 11,0 – 14,0 s
 };
 export const CUADROS_PORTADA = ACTO.predio.hasta;
@@ -92,7 +98,7 @@ export const CUADROS_PORTADA = ACTO.predio.hasta;
  * única forma de que la pieza no mienta**, y la razón está abajo, en
  * `FUENTE_PLANA`.
  */
-const RELEVO = 274;
+const RELEVO = 284;
 
 /**
  * El movimiento es lento y continuo y nada rebota: la marca se llama acequia,
@@ -127,7 +133,8 @@ const FUENTE_PLANA = true;
 
 /** El rumbo más inclinado del recorrido. El encuadre se calcula con ése. */
 const RUMBO_MAX = 15;
-const PADDING = 70;
+/** El aire a los costados, proporcional: 70 px sobre 1920, 47 sobre 1280. */
+const AIRE = 0.0365;
 
 /**
  * El zoom que mete el predio entero en un cuadro de `ancho` × `alto`, con aire
@@ -150,8 +157,9 @@ function zoomQueEncuadra(ancho: number, alto: number): number {
   const altoDeg = (N - S) / Math.cos(latMedia);
   const cos = Math.abs(Math.cos(RUMBO_MAX * Math.PI / 180));
   const sen = Math.abs(Math.sin(RUMBO_MAX * Math.PI / 180));
-  const zx = Math.log2(((ancho - 2 * PADDING) * 360) / (512 * (anchoDeg * cos + altoDeg * sen)));
-  const zy = Math.log2(((alto - 2 * PADDING) * 360) / (512 * (altoDeg * cos + anchoDeg * sen)));
+  const padding = ancho * AIRE;
+  const zx = Math.log2(((ancho - 2 * padding) * 360) / (512 * (anchoDeg * cos + altoDeg * sen)));
+  const zy = Math.log2(((alto - 2 * padding) * 360) / (512 * (altoDeg * cos + anchoDeg * sen)));
   return Math.min(zx, zy);
 }
 
@@ -448,8 +456,14 @@ export const PortadaAcequia: React.FC<z.infer<typeof esquemaPortada>> = ({
               'line-opacity': 0,
               // El cauce principal más grueso que el filo: el ancho cuenta
               // cuánta agua junta, que es lo único que mide la acumulación.
-              'line-width': ['interpolate', ['linear'], ['get', 'orden'], 0, 1.6, 1, 6],
-              'line-blur': 0.6,
+              // Los anchos salen de un criterio de aceptación, no del gusto:
+              // la portada se tiene que ver a 375 px de ancho, que sobre un
+              // render de 1280 es escalar a 0,29. Una línea de 1,6 px queda en
+              // medio píxel y desaparece, y entonces el acto 02 no existe para
+              // la mitad de las visitas. El filo más fino va a 3,5 para que
+              // sobreviva a esa reducción con un píxel entero.
+              'line-width': ['interpolate', ['linear'], ['get', 'orden'], 0, 3.5, 1, 9],
+              'line-blur': 0.8,
             },
           },
           {
@@ -458,13 +472,13 @@ export const PortadaAcequia: React.FC<z.infer<typeof esquemaPortada>> = ({
             paint: {
               'line-color': COLORES.crema,
               'line-opacity': 0,
-              'line-width': ['case', ['get', 'maestra'], 1.5, 0.7],
+              'line-width': ['case', ['get', 'maestra'], 2, 1.1],
             },
           },
           {
             id: 'predio', type: 'line', source: 'predio',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': COLORES.crema, 'line-opacity': 0, 'line-width': 2.8 },
+            paint: { 'line-color': COLORES.crema, 'line-opacity': 0, 'line-width': 3.2 },
           },
         ],
         sky: {
@@ -567,12 +581,17 @@ export const PortadaAcequia: React.FC<z.infer<typeof esquemaPortada>> = ({
         frame, [ACTO.zoom.desde + 6, RELEVO + 26], [0, 1],
         { easing: AGUA_QUE_CORRE, extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
       ));
+      // Las curvas entran en el acto 01b, sobre el relieve coloreado, y se
+      // quedan hasta el final: cuando entra la ortofoto suben un poco, porque
+      // sobre la foto compiten con el verde del monte y sobre el shader no.
       map.setPaintProperty('curvas', 'line-opacity', interpolate(
-        frame, [RELEVO, ACTO.predio.desde + 30], [0, 0.72],
+        frame,
+        [ACTO.curvas.desde, ACTO.curvas.hasta, RELEVO, ACTO.predio.desde + 30],
+        [0, 0.6, 0.6, 0.78],
         { easing: AGUA_QUE_CORRE, extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
       ));
       map.setPaintProperty('predio', 'line-opacity', interpolate(
-        frame, [ACTO.zoom.desde - 30, ACTO.zoom.desde + 30], [0, 0.9],
+        frame, [ACTO.zoom.desde - 32, ACTO.zoom.desde + 28], [0, 0.9],
         { easing: AGUA_QUE_CORRE, extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
       ));
 
@@ -625,13 +644,20 @@ export const PortadaAcequia: React.FC<z.infer<typeof esquemaPortada>> = ({
         pointerEvents: 'none',
       }} />
 
+      {/*
+        La atribución no lleva la resolución. «~30 m» es una escala numérica y
+        el criterio A4 no admite ningún número en pantalla —ni hectáreas, ni
+        pendientes, ni cotas—; el paso del DEM va en el `alt` del video y en el
+        documento del encargo, que es donde A1 pide que se declare. «GLO-30» se
+        queda porque es el nombre del conjunto de datos, no una medición.
+      */}
       {atribucion && (
         <div style={{
           position: 'absolute', left: 24, bottom: 18,
           fontFamily: 'system-ui, sans-serif', fontSize: Math.round(height * 0.0155),
           color: `${COLORES.crema}88`, letterSpacing: '0.02em',
         }}>
-          Relieve Copernicus GLO-30 · ~{D.resolucion_m} m · imagen Esri World Imagery
+          Relieve Copernicus GLO-30 · imagen Esri World Imagery
         </div>
       )}
     </AbsoluteFill>

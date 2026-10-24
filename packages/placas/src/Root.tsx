@@ -299,8 +299,15 @@ export const Root: React.FC = () => {
         component={PortadaAcequia}
         durationInFrames={CUADROS_PORTADA}
         fps={FPS}
-        width={FORMATOS.horizontal.width}
-        height={FORMATOS.horizontal.height}
+        /*
+          720p y no 1080p, y es una decisión del contrato, no una comodidad: el
+          techo de peso de la portada son 2,5 MB para catorce segundos, o sea
+          ~1,4 Mbps. A ese caudal, 1080p obliga a un bitrate que bandea los
+          degradados del shader de elevación, que es justo lo que hay que ver.
+          Si el degradado bandea, baja la resolución antes que el bitrate.
+        */
+        width={1280}
+        height={720}
         schema={esquemaPortada}
         defaultProps={{ exageracion: 1.4, atribucion: true }}
       />
