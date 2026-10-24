@@ -1,7 +1,7 @@
 # Cómo se protege acequia
 
 Informe y paso a paso. Titular: Jonatan Gabriel Palma, persona humana, 100 %.
-Fecha: 24 de octubre de 2026. Versión de la obra: `v1.0` (commit `0ede01d`).
+Fecha: 24 de octubre de 2026. Versión de la obra: la etiqueta `v1.0` de git.
 
 ---
 
@@ -62,13 +62,17 @@ En `_legal/deposito/` (fuera de git, no se commitea) hay cuatro archivos:
 
 | Archivo | Qué es |
 |---|---|
-| `acequia-fuente-v1.0.tar.gz` | 32 MB. 1.535 archivos de código fuente. |
+| `acequia-fuente-v1.0.tar.gz` | ~32 MB. El código fuente completo de la obra. |
 | `MANIFIESTO-v1.0.txt` | SHA-256 de cada archivo, uno por uno, más el del tarball y las exclusiones declaradas. |
 | `DECLARACION-DE-AUTORIA.txt` | Declaración de autoría y titularidad. **Tiene cuatro campos por completar.** |
 | `LEEME-SOPORTE.txt` | Qué hay en el pendrive, para quien lo abra. |
 
-SHA-256 del tarball:
-`c871148ec245624941854af917198d5b993e946dbd6aab75f06ac1416a9a6bb8`
+El SHA-256 del tarball está escrito en tres lugares del soporte —el
+`MANIFIESTO`, el `LEEME-SOPORTE` y la `DECLARACION-DE-AUTORIA`— y los tres
+tienen que coincidir. Ese es el número que te deja probar, dentro de tres o
+de diez años, que el archivo que se abre es exactamente el que depositaste.
+No lo copio acá para que no queden dos versiones del dato: el que vale es el
+del soporte.
 
 **Qué dejé afuera del depósito, y por qué.** Dos cosas, ambas declaradas en
 el MANIFIESTO para que el depósito sea internamente honesto:
@@ -81,7 +85,7 @@ el MANIFIESTO para que el depósito sea internamente honesto:
   arteytierra.org. No son software y no son inéditos; meterlos en un depósito
   de «obra inédita» es contradecir la declaración.
 
-Lo que quedó son 1.535 archivos, 232.000 líneas de TypeScript, SQL y CSS, y
+Lo que queda son unos 1.500 archivos, 232.000 líneas de TypeScript, SQL y CSS, y
 las 63 migraciones de la base.
 
 ### Paso a paso
