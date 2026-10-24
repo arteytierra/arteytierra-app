@@ -37,7 +37,17 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 10/10/2026
+ * ESTADO, al 24/10/2026
+ *
+ * 420 entradas sobre 203 fichas. El reparto importa más que el total: 60 fichas
+ * tienen una sola entrada, 72 tienen dos, 68 llegaron a tres —que es el piso que
+ * se busca— y 3 tienen cuatro. Indomalaya, que es el único hueco real de
+ * cobertura, baja de las 32 fichas que el encargo listó a 29: abren la zona seca
+ * de Sri Lanka y las dos ecorregiones entre las que se reparten las terrazas de
+ * Ifugao. Son 30 en realidad, porque `decan_central_hardwickia` se montó después
+ * de escribirse esa lista y nació sin prácticas.
+ *
+ * ESTADO anterior, al 10/10/2026
  *
  * 408 entradas sobre 200 fichas. El catálogo tiene 254 —242 regionales más 12
  * escritas a mano en `contexto.ts`—, así que 54 siguen sin práctica, y no son
@@ -5038,6 +5048,180 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
+
+  // ── Zona seca de Sri Lanka ────────────────────────────────────────────────────
+  // El relevamiento de Indomalaya arranca acá y por una razón de la propia ficha:
+  // su campo `suelos` ya decía que los reservorios antiguos de la zona seca son
+  // "el antecedente de diseño más útil de la región". Esto es ese antecedente,
+  // fechado. Las cuatro entradas salen del sitio SIPAM de la FAO, que es la
+  // cascada de Palugaswewa, en el distrito de Anuradhapura: RESOLVE pone a
+  // Palugaswewa, a Habarana y a Anuradhapura dentro del ECO_ID 301, que es esta
+  // ficha.
+  sri_lanka_zona_seca: [
+    {
+      practica: 'Cascada de tanques de aldea (ellanga gammana)',
+      periodo: 'El primer gran reservorio que la fuente registra es Abayawewa, del siglo III a.C.; describe el sistema como evolucionado durante casi dos milenios y hoy en uso',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Serie de tanques encadenados sobre la línea de drenaje natural de una microcuenca: cada uno se forma con un dique de tierra atravesado en el valle, junta la lluvia, y el excedente del que está más arriba desborda al de abajo. Los arrozales van en el fondo del valle debajo de cada tanque, una compuerta les suelta el agua, y el drenaje de esos arrozales entra al tanque siguiente. Lo que hace el encadenado no es almacenar más: es usar la misma agua varias veces en la bajada y repartir el riesgo, y la fuente le atribuye absorber la crecida almacenándola y amortiguar la sequía porque el ecosistema que rodea al tanque le reduce la pérdida. El calendario tiene dos temporadas de cultivo sobre un solo régimen de lluvia, maha la mayor y yala la menor.',
+      fuentes: [
+        { label: 'FAO SIPAM — The Cascaded Tank-Village System in the Dry Zone of Sri Lanka', url: 'https://www.fao.org/giahs/giahs-around-the-world/sri-lanka-cascaded-tank-village-system/en' },
+      ],
+    },
+    {
+      practica: 'Franjas de uso alrededor del tanque (kattakaduwa y las otras cinco)',
+      periodo: 'Antigüedad no precisada por la fuente; registradas como los segmentos que sostienen el riego de un sistema hoy vigente',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'La fuente no le atribuye la sostenibilidad del riego al tanque sino a seis segmentos de uso del suelo asociados, y los nombra uno por uno: franja natural de árboles (gas gommana), prado de aguas arriba (perahana), lomo de tierra (potawetiya), interceptor de filtraciones (kattakaduwa), drenaje natural (kiul ela) y amortiguador del caserío (thisbambe). Los enumera y los traduce pero no explica el mecanismo de cada uno, así que lo que queda establecido es la figura y no el detalle: alrededor de cada tanque hay un anillo de superficie que no se cultiva y que la fuente cuenta como parte de la obra de riego, no como borde. Y no es superficie perdida: un estudio de la cascada de Palugaswewa encontró 226 especies de plantas sólo en el kattakaduwa, el terraplén del tanque y la franja arbolada, y del kattakaduwa salen plantas medicinales y material de junco y ratán.',
+      fuentes: [
+        { label: 'FAO SIPAM — The Cascaded Tank-Village System in the Dry Zone of Sri Lanka', url: 'https://www.fao.org/giahs/giahs-around-the-world/sri-lanka-cascaded-tank-village-system/en' },
+      ],
+    },
+    {
+      practica: 'Kurulu paluwa, parcela de atracción de aves',
+      periodo: 'Fecha de origen no indicada por la fuente; registrada como parte del manejo vigente del sistema',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El arrozal se protege del daño de aves y plagas dejando sin cosechar una porción chica de la parcela —el kurulu paluwa— para que las aves se concentren ahí, y recién si hace falta se agregan plantas o extractos vegetales como biopesticida. La decisión de diseño es al revés de la intuición y es la que vale: se le reserva superficie a la plaga en lugar de gastar en excluirla, y el control queda como segundo paso y no como primero. La fuente no publica qué fracción del lote se deja, así que la superficie hay que ajustarla midiendo el daño y no copiando un número.',
+      fuentes: [
+        { label: 'FAO SIPAM — The Cascaded Tank-Village System in the Dry Zone of Sri Lanka', url: 'https://www.fao.org/giahs/giahs-around-the-world/sri-lanka-cascaded-tank-village-system/en' },
+      ],
+    },
+    {
+      practica: 'Pastoreo de estación seca en el vaso del tanque y el rastrojo del arrozal',
+      periodo: 'Antigüedad no precisada por la fuente; registrado como parte del sistema vigente',
+      tipo: 'ganaderia',
+      vigencia: 'en_uso',
+      detalle:
+        'La fuente registra que el lecho del tanque durante la estación seca, los matorrales y los arrozales fuera de temporada son la tierra de pastoreo del ganado vacuno y del búfalo. O sea que acá la superficie de pastoreo no es una superficie aparte del predio: es la misma que almacena el agua y la misma que produce el arroz, usadas cuando el agua se retiró y cuando el cultivo salió. Para dimensionar un rodeo eso cambia la cuenta de raíz, porque la oferta de pasto aparece cuando el tanque baja y desaparece cuando se llena, y no la fija la superficie del predio sino el ciclo del tanque.',
+      fuentes: [
+        { label: 'FAO SIPAM — The Cascaded Tank-Village System in the Dry Zone of Sri Lanka', url: 'https://www.fao.org/giahs/giahs-around-the-world/sri-lanka-cascaded-tank-village-system/en' },
+      ],
+    },
+  ],
+
+  // ── Cordillera de Luzón ───────────────────────────────────────────────────────
+  // Las terrazas de Ifugao aparecen dos veces, en `luzon_bajo` y en `pinar_luzon`,
+  // y no es un descuido: los cinco conjuntos que inscribió la UNESCO se reparten
+  // entre dos ecorregiones de RESOLVE. Nagacadan (Kiangan) y Batad caen en el
+  // ECO_ID 241, Luzon rain forests; Bangaan, Hungduan y Mayoyao caen en el 303,
+  // Luzon tropical pine forests. El límite parte en dos al propio municipio de
+  // Banaue: el pueblo da 241 y el mirador de arriba da 303. Como acequia resuelve
+  // un punto y no una provincia, montar esto en una sola de las dos fichas dejaría
+  // sin nada a la mitad de los predios que están literalmente sobre las terrazas.
+  //
+  // Donde NO están es en `luzon_montano`, que es donde la entrega las había
+  // puesto. El ECO_ID 240 es la Sierra Madre y los montes de Zambales —RESOLVE lo
+  // confirma en Palanan y en el monte Tapulao—, y no la Cordillera Central. Es el
+  // cuarto error de escala país-contra-ecorregión de esta tanda de encargos, y el
+  // primero que se resuelve adentro de una misma isla.
+  //
+  // Un aviso sobre el 241: el resumen de esa ficha dice "por debajo de unos 1.000
+  // m", que es la prosa de WWF, pero el polígono de RESOLVE sube más que eso y
+  // alcanza bancales que la FAO ubica entre 800 y 1.500 m. La altura va escrita en
+  // el detalle para que el lector no tenga que resolver la contradicción solo.
+  luzon_bajo: [
+    {
+      practica: 'Terrazas de arroz payo',
+      periodo: 'La UNESCO fecha la técnica en 2.000 años y dice que se usó prácticamente sin cambios; en uso',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Bancales de muro de piedra o de barro tallados siguiendo el contorno del cerro, que forman parcelas de arroz con lámina de agua a mayor altura y sobre pendientes más empinadas que la mayoría de las terrazas del mundo. El agua no sale del río del fondo ni se bombea: se cosecha en los bosques de las cumbres y baja por un sistema de riego hasta los bancales, así que el bosque de arriba es parte de la obra hidráulica y no un vecino. La FAO ubica el conjunto entre 800 y 1.500 m y lo describe como cinco componentes que se diseñan juntos: bosque de leña y bosque comunal, parcelas de roza, bancales, caserío, y los cuerpos de agua con su riego. De los cinco conjuntos inscritos, Nagacadan en Kiangan y Batad en Banaue caen dentro de este polígono.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Rice Terraces of the Philippine Cordilleras', url: 'https://whc.unesco.org/en/list/722' },
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+    {
+      practica: 'Muyung y ala, bosque de leña de dueño y bosque comunal',
+      periodo: 'Antigüedad no precisada por la fuente; la UNESCO pone el cambio en el manejo del bosque de cuenca entre los factores que vuelven vulnerable al conjunto',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El muyung es el bosque de leña de dueño conocido y el ala el bosque comunal, y los dos están en el borde de arriba, mirando a los bancales. La FAO le asigna a esa posición una función hidráulica explícita: por estar donde está, el bosque regula el impacto de la lluvia atrapando agua —dice que más que el bosque primario— y nutrientes del agua de lluvia, y los suelta despacio hacia los bancales de abajo. Reúne más de 264 especies de árboles, y la fuente dice que mantener esa diversidad depende de que el dueño regule la extracción y haga trabajo silvícola continuo: no es un bosque que se deja, es uno que se maneja.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+        { label: 'UNESCO World Heritage Centre — Rice Terraces of the Philippine Cordilleras', url: 'https://whc.unesco.org/en/list/722' },
+      ],
+    },
+    {
+      practica: 'Habal, parcelas de roza',
+      periodo: 'Fecha de origen no indicada por la fuente; componente vigente del sistema',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Las parcelas de roza habal son uno de los cinco componentes y llevan los cultivos básicos que no son el arroz. La FAO les asigna dos funciones que se leen como un seguro: aseguran el alimento de la familia en los meses de escasez y cuando la cosecha de los bancales falla, y dan forraje todo el año a los cerdos y las gallinas locales. Para el diseño eso significa que el bancal no es el sistema entero: la parcela de secano es la que sostiene el año malo y la que convierte el excedente en animal.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+    {
+      practica: 'Pinkol, inado y luhok: el bancal después de la cosecha',
+      periodo: 'Antigüedad no precisada por la fuente; registrado como parte del ciclo anual vigente',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'El arroz se cosecha una vez al año y el bancal no queda en descanso. La FAO describe que después de la cosecha se cultivan hortalizas en montículos orgánicos (pinkol) y en camas orgánicas planas (inado), y se crían peces en hoyos (luhok) excavados adentro de la misma terraza. Las tres son obras de suelo dentro del vaso que ya existe: el montículo y la cama levantan el drenaje y concentran materia orgánica sobre un fondo que estuvo inundado, y el hoyo guarda agua y peces cuando la lámina se va. Es la respuesta a la pregunta que se le aparece a cualquiera que diseña un arrozal en ladera: qué hace esa superficie los otros meses del año.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+  ],
+
+  pinar_luzon: [
+    {
+      practica: 'Terrazas de arroz payo',
+      periodo: 'La UNESCO fecha la técnica en 2.000 años y dice que se usó prácticamente sin cambios; en uso',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Bancales de muro de piedra o de barro tallados siguiendo el contorno del cerro, que forman parcelas de arroz con lámina de agua a mayor altura y sobre pendientes más empinadas que la mayoría de las terrazas del mundo. El agua no sale del río del fondo ni se bombea: se cosecha en los bosques de las cumbres y baja por un sistema de riego hasta los bancales, así que el bosque de arriba es parte de la obra hidráulica y no un vecino. La FAO ubica el conjunto entre 800 y 1.500 m y lo describe como cinco componentes que se diseñan juntos: bosque de leña y bosque comunal, parcelas de roza, bancales, caserío, y los cuerpos de agua con su riego. De los cinco conjuntos inscritos, Bangaan en Banaue, Hungduan y Mayoyao caen dentro de este polígono.',
+      fuentes: [
+        { label: 'UNESCO World Heritage Centre — Rice Terraces of the Philippine Cordilleras', url: 'https://whc.unesco.org/en/list/722' },
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+    {
+      practica: 'Muyung y ala, bosque de leña de dueño y bosque comunal',
+      periodo: 'Antigüedad no precisada por la fuente; la UNESCO pone el cambio en el manejo del bosque de cuenca entre los factores que vuelven vulnerable al conjunto',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El muyung es el bosque de leña de dueño conocido y el ala el bosque comunal, y los dos están en el borde de arriba, mirando a los bancales. La FAO le asigna a esa posición una función hidráulica explícita: por estar donde está, el bosque regula el impacto de la lluvia atrapando agua —dice que más que el bosque primario— y nutrientes del agua de lluvia, y los suelta despacio hacia los bancales de abajo. Reúne más de 264 especies de árboles, y la fuente dice que mantener esa diversidad depende de que el dueño regule la extracción y haga trabajo silvícola continuo: no es un bosque que se deja, es uno que se maneja.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+        { label: 'UNESCO World Heritage Centre — Rice Terraces of the Philippine Cordilleras', url: 'https://whc.unesco.org/en/list/722' },
+      ],
+    },
+    {
+      practica: 'Habal, parcelas de roza',
+      periodo: 'Fecha de origen no indicada por la fuente; componente vigente del sistema',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Las parcelas de roza habal son uno de los cinco componentes y llevan los cultivos básicos que no son el arroz. La FAO les asigna dos funciones que se leen como un seguro: aseguran el alimento de la familia en los meses de escasez y cuando la cosecha de los bancales falla, y dan forraje todo el año a los cerdos y las gallinas locales. Para el diseño eso significa que el bancal no es el sistema entero: la parcela de secano es la que sostiene el año malo y la que convierte el excedente en animal.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+    {
+      practica: 'Pinkol, inado y luhok: el bancal después de la cosecha',
+      periodo: 'Antigüedad no precisada por la fuente; registrado como parte del ciclo anual vigente',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'El arroz se cosecha una vez al año y el bancal no queda en descanso. La FAO describe que después de la cosecha se cultivan hortalizas en montículos orgánicos (pinkol) y en camas orgánicas planas (inado), y se crían peces en hoyos (luhok) excavados adentro de la misma terraza. Las tres son obras de suelo dentro del vaso que ya existe: el montículo y la cama levantan el drenaje y concentran materia orgánica sobre un fondo que estuvo inundado, y el hoyo guarda agua y peces cuando la lámina se va. Es la respuesta a la pregunta que se le aparece a cualquiera que diseña un arrozal en ladera: qué hace esa superficie los otros meses del año.',
+      fuentes: [
+        { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+  ],
+
 };
 
 /** Las prácticas de una ficha, o `[]`. Nunca `undefined`: el llamador no debería
