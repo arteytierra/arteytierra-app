@@ -85,8 +85,18 @@ el MANIFIESTO para que el depósito sea internamente honesto:
   arteytierra.org. No son software y no son inéditos; meterlos en un depósito
   de «obra inédita» es contradecir la declaración.
 
-Lo que queda son unos 1.500 archivos, 232.000 líneas de TypeScript, SQL y CSS, y
-las 63 migraciones de la base.
+Lo que queda son 1.570 archivos, 238.600 líneas de TypeScript, SQL y CSS, y las
+63 migraciones de la base.
+
+**Y una cosa de terceros que sí entra, declarada como tal.** Los tres GeoTIFF
+de `apps/terreno/datos/koppen/` —el mapa climático Köppen-Geiger de 1 km, 35 MB—
+están adentro del depósito, porque la app los lee del disco y sin ellos el
+código no se entiende completo. Son de Beck y otros, *Scientific Data* 10, 724
+(2023), bajo **CC BY 4.0**, que autoriza expresamente redistribuirlos y usarlos
+comercialmente con atribución. La declaración los identifica uno por uno, dice
+que no son obra tuya, y el punto 5 reserva la salvedad: jurás ser autor único
+*con excepción* de lo listado en el punto 4. Sin esa aclaración estarías
+declarando como propio un mapa que no lo es.
 
 ### Paso a paso
 
