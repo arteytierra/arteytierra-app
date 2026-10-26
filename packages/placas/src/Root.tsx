@@ -6,7 +6,14 @@ import { BandaBase, Fuente, esquemaFuente } from './composiciones/BandaPie';
 import { LowerThird, esquemaLowerThird } from './composiciones/LowerThird';
 import { PlacaCruce, esquemaCruce } from './composiciones/PlacaCruce';
 import { CUADROS_PORTADA, PortadaAcequia, esquemaPortada } from './composiciones/PortadaAcequia';
+import {
+  CUADROS_CUATRO_LECTURAS, CuatroLecturas, esquemaCuatroLecturas,
+} from './composiciones/CuatroLecturas';
+import { CUADROS_LAZO, LazoPredio, esquemaLazo } from './composiciones/LazoPredio';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
+import {
+  CUADROS_PORTADA_PREDIO, PortadaPredio, esquemaPortadaPredio,
+} from './composiciones/PortadaPredio';
 import { Titular, esquemaTitular } from './composiciones/Titular';
 import {
   COLORES_GEN,
@@ -311,6 +318,55 @@ export const Root: React.FC = () => {
         schema={esquemaPortada}
         defaultProps={{ exageracion: 1.4, atribucion: true }}
       />
+
+      {/*
+        Las tres piezas del encargo 02, todas sobre el mismo predio y el mismo
+        encuadre a sangre. Las tres en 1280×720 por la misma razón que la
+        portada vieja: a este caudal de bits, 1080p bandea antes de lo que gana
+        en detalle, y la regla del contrato es bajar la resolución antes que el
+        bitrate.
+      */}
+      <Composition
+        id="PortadaPredio"
+        component={PortadaPredio}
+        durationInFrames={CUADROS_PORTADA_PREDIO}
+        fps={FPS}
+        width={1280}
+        height={720}
+        schema={esquemaPortadaPredio}
+        defaultProps={{}}
+      />
+
+      <Composition
+        id="CuatroLecturas"
+        component={CuatroLecturas}
+        durationInFrames={CUADROS_CUATRO_LECTURAS}
+        fps={FPS}
+        width={1280}
+        height={720}
+        schema={esquemaCuatroLecturas}
+        defaultProps={{}}
+      />
+
+      {/*
+        Los tres lazos son la misma composición con una propiedad distinta: el
+        mapa, el encuadre y las trampas de MapLibre son los mismos, y tres
+        archivos que comparten doscientas líneas se desincronizan el día que se
+        arregla una.
+      */}
+      {(['perimetro', 'giro', 'agua'] as const).map(lazo => (
+        <Composition
+          key={lazo}
+          id={`Lazo${lazo[0]!.toUpperCase()}${lazo.slice(1)}`}
+          component={LazoPredio}
+          durationInFrames={CUADROS_LAZO}
+          fps={FPS}
+          width={1280}
+          height={720}
+          schema={esquemaLazo}
+          defaultProps={{ lazo }}
+        />
+      ))}
 
       <Composition
         id="GenWordmark"

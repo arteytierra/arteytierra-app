@@ -20,16 +20,25 @@
  * relieve modelado con ruido Perlin en una página que promete trazabilidad es
  * la única mentira que acá hace daño.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { obtenerGrillaDEM } from '../lib/elevacion/grilla';
 import { atribucionDe } from '../lib/elevacion/atribucion';
-import type { BBox } from '../lib/elevacion';
+// El detector vive en la librería desde que se arregló el fallo que lo motivó:
+// la app entera necesita saber cuándo el relieve llegó sin interpolar, no sólo
+// este script. Ver `lib/elevacion/muestreo.ts`.
+import { proporcionDeMesetas, UMBRAL_MESETAS } from '../lib/elevacion/muestreo';
+import type { BBox, FuenteDEM } from '../lib/elevacion';
 import { shaderDesdeGrilla, colorElevacion, PALETA_SHADER_POR_DEFECTO } from '../lib/shaders';
 import { calcularEscorrentias } from '../lib/escorrentias';
 import { calcularCurvas, intervaloAutomatico } from '../lib/curvasNivel';
+import { calcularAptitud, agruparAptitud, COLORES_APTITUD } from '../lib/aptitud';
+import { calcularSwales, diagnosticarSwales } from '../lib/swales';
+import { separacionVerticalZanjas } from '../lib/criterios';
+import { analizarKeyline } from '../lib/keyline';
+import { buscarSitiosRepresa } from '../lib/cuencaHidro';
 import * as turf from '@turf/turf';
 import type { GrillaElevacion } from '../lib/grillaElevacion';
 
@@ -79,12 +88,65 @@ const INTERVALO_M = 20;
 const aqui = path.dirname(fileURLToPath(import.meta.url));
 const SALIDA = path.resolve(aqui, '../../../packages/placas/generado');
 
+
+/**
+ * El relieve, leído una vez y guardado en disco.
+ *
+ * La ventana COG de Copernicus tarda entre veinte segundos y dos minutos por
+ * tile, y el dato no cambia: volver a bajarlo en cada ajuste de la animación es
+ * regalar dos minutos y una chance de caer al respaldo malo. El archivo queda
+ * en `generado/`, que está gitignorado. `--refrescar` lo ignora y vuelve a
+ * bajar.
+ */
+async function relieveConCache(bbox: BBox, cols: number, rows: number) {
+  const cache = path.join(SALIDA, `${PREDIO}-dem-${cols}x${rows}.json`);
+  const refrescar = process.argv.includes('--refrescar');
+
+  if (!refrescar && existsSync(cache)) {
+    const g = JSON.parse(readFileSync(cache, 'utf8')) as {
+      cols: number; rows: number; fuente: string; bbox: BBox; elev: Array<number | null>;
+    };
+    if (g.cols === cols && g.rows === rows && g.bbox.every((v, i) => v === bbox[i])) {
+      console.log(`relieve    de la caché: ${path.basename(cache)}`);
+      return {
+        cols, rows, bbox,
+        fuente: g.fuente as FuenteDEM,
+        elev: Float32Array.from(g.elev, v => (v == null ? NaN : v)),
+      };
+    }
+  }
+
+  const dem = await obtenerGrillaDEM(bbox, cols, rows);
+  if (!dem) throw new Error('obtenerGrillaDEM devolvió null — ¿hay cobertura de GLO-30 en ese bbox?');
+
+  // Sólo se guarda si sirve: una caché con la grilla escalonada adentro es peor
+  // que no tener caché, porque convierte un fallo de red de un día en un dato
+  // malo permanente.
+  if (proporcionDeMesetas(dem) <= UMBRAL_MESETAS) {
+    mkdirSync(SALIDA, { recursive: true });
+    writeFileSync(cache, JSON.stringify({
+      cols: dem.cols, rows: dem.rows, bbox: dem.bbox, fuente: dem.fuente,
+      elev: Array.from(dem.elev, v => (Number.isFinite(v) ? Math.round(v * 100) / 100 : null)),
+    }));
+  }
+  return dem;
+}
+
 function bboxDe(mojones: Array<{ lat: number; lng: number }>, margen: number): BBox {
   const lats = mojones.map(m => m.lat), lngs = mojones.map(m => m.lng);
   const s = Math.min(...lats), n = Math.max(...lats);
   const w = Math.min(...lngs), e = Math.max(...lngs);
   const dy = (n - s) * margen, dx = (e - w) * margen;
   return [w - dx, s - dy, e + dx, n + dy];
+}
+
+/**
+ * Un punto como par `[lng, lat]` redondeado a seis decimales, que es el orden
+ * de los 0,1 m: más decimales son peso de archivo y menos mueven la línea.
+ * El orden lng-lat es el de GeoJSON, así que la composición lo usa tal cual.
+ */
+function red(p: { lat: number; lng: number }): [number, number] {
+  return [Math.round(p.lng * 1e6) / 1e6, Math.round(p.lat * 1e6) / 1e6];
 }
 
 /** Metros entre dos puntos, plano local. Alcanza para un predio. */
@@ -115,10 +177,24 @@ async function main() {
   console.log(`            ${(anchoM / 1000).toFixed(2)} × ${(altoM / 1000).toFixed(2)} km · grilla ${cols}×${rows} · paso ≈ ${(anchoM / cols).toFixed(1)} m`);
 
   const t0 = Date.now();
-  const dem = await obtenerGrillaDEM(bbox, cols, rows);
-  if (!dem) throw new Error('obtenerGrillaDEM devolvió null — ¿hay cobertura de GLO-30 en ese bbox?');
+  const dem = await relieveConCache(bbox, cols, rows);
   const sinDato = Array.from(dem.elev).filter(v => !Number.isFinite(v)).length;
   console.log(`relieve    ${dem.cols}×${dem.rows} · fuente ${dem.fuente} · sin dato ${sinDato} · ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+
+  // El relieve tiene que venir interpolado, y hay que comprobarlo. Ver
+  // `mesetas()`: una grilla escalonada no se estrella, mata la hidrología.
+  const escalones = proporcionDeMesetas(dem);
+  console.log(`           nodos iguales a su vecino del este: ${(escalones * 100).toFixed(1)} %`);
+  if (escalones > UMBRAL_MESETAS) {
+    throw new Error(
+      `El relieve vino ESCALONADO (${(escalones * 100).toFixed(0)} % de nodos repetidos). ` +
+      'Es el respaldo de muestreo por nodo, que devuelve el píxel más cercano en vez de ' +
+      'interpolar: sobre una meseta el D8 no encuentra vecino más bajo y el agua, las ' +
+      'zanjas y el keyline salen vacíos sin un solo error. Volvé a correr para que lea la ' +
+      'ventana COG (tarda ~2 min y queda en caché), y si insiste, es que Copernicus no ' +
+      'responde.',
+    );
+  }
 
   const elev = Float64Array.from(dem.elev, v => (Number.isFinite(v) ? v : NaN));
   const finitos = Array.from(elev).filter(Number.isFinite);
@@ -184,6 +260,97 @@ async function main() {
   const curvas = calcularCurvas(grilla, intervalo);
   const tramos = curvas.reduce((a, c) => a + c.lineas.length, 0);
   console.log(`curvas     ${curvas.length} cotas cada ${intervalo} m · ${tramos} tramos`);
+
+  // ── Las capas del encargo 02 ───────────────────────────────────────────────
+  //
+  // Las tres lecturas que la primera animación no tenía. Ninguna la decide este
+  // script: cada una sale de una función del repo que ya existía, con el predio
+  // y el relieve como única entrada. Donde hubo que elegir un número está
+  // dicho, y donde la app necesita algo que el predio no tiene —un programa
+  // declarado— no hay capa, que es lo que corresponde.
+
+  // Aptitud de uso. OJO CON EL NOMBRE: la app la calcula de pendiente,
+  // orientación, agua acumulada y altura relativa —puro relieve—, no de datos
+  // de suelo. Si la página rotula este estado «Suelo», promete un análisis
+  // edafológico que la pieza no trae. Son cinco clases, no tres, y son las de
+  // la app con sus colores.
+  const apt = calcularAptitud({ ...ds, celdas: adentro }, esc);
+  const clusters = agruparAptitud(apt, 4);
+  const porTipo = Object.entries(apt.resumen)
+    .filter(([, v]) => v.celdas > 0)
+    .map(([t, v]) => `${t} ${v.pct}%`)
+    .join(' · ');
+  console.log(`aptitud    ${clusters.length} manchones · ${porTipo}`);
+
+  // Zanjas de infiltración. El intervalo vertical lo recomienda `criterios`
+  // desde la pendiente medida, que es el mismo número que la app pone por
+  // defecto en el panel.
+  //
+  // `precipMm` y `coef` hay que pasarlos y NO afectan al dibujo: en
+  // `calcularSwales` la lluvia de diseño y el coeficiente sólo entran en
+  // `volumen_m3` y en la sección de la zanja. La planta —por dónde pasa cada
+  // zanja— sale del relieve y del intervalo vertical. El video muestra la
+  // planta y ningún número, así que no hay una tormenta de diseño elegida acá
+  // que se pueda leer en pantalla.
+  const sep = separacionVerticalZanjas({ pendiente_pct: pendienteGeneral });
+  const diag = sep.aplica ? diagnosticarSwales(grilla, sep.valor) : null;
+  const swales = sep.aplica && diag?.puede
+    ? calcularSwales(grilla, MOJONES, {
+        intervaloV: sep.valor,
+        precipMm: 50,
+        coef: 0.3,
+        pendiente_pct: pendienteGeneral,
+      })
+    : null;
+  if (swales) {
+    console.log(`zanjas     ${swales.swales.length} zanjas cada ${sep.valor} m de desnivel`);
+  } else if (!sep.aplica) {
+    console.log(`zanjas     la tabla de separación no cubre ${pendienteGeneral.toFixed(1)} % de pendiente`);
+  } else {
+    // El tope lo pone la herramienta, no esta animación, y esto es lo que hay
+    // que escribir en el documento: no es que las zanjas no se puedan dibujar,
+    // es que la app se niega a proponer ciento veintitrés sobre un solo predio.
+    console.log(
+      `zanjas     LA APP SE NIEGA: ${diag?.motivo} · a ${sep.valor} m de desnivel salen ` +
+      `${diag?.niveles} zanjas y el tope de diseño son ${diag?.max_niveles}` +
+      (diag?.intervalo_sugerido ? ` (entraría cada ${diag.intervalo_sugerido} m, que ya no es lo que pide la tabla)` : ''),
+    );
+  }
+
+  // Keyline. Es la capa de diseño que no necesita que nadie declare nada: el
+  // keypoint y las guías salen del relieve y de nada más.
+  const kl = analizarKeyline(grilla);
+  console.log(kl
+    ? `keyline    keypoint en ${kl.keypoint.lat.toFixed(5)}, ${kl.keypoint.lng.toFixed(5)} · ${kl.guias.length} guías · ${kl.nota.slice(0, 70)}`
+    : 'keyline    el relieve no define un keypoint acá');
+
+  // Retención. `buscarSitiosRepresa` recorre los cauces, prueba muros a varias
+  // alturas y rankea por eficiencia agua/muro. El sitio lo elige el terreno; lo
+  // único que se le pasa es el recorte al predio.
+  const represas = buscarSitiosRepresa(grilla, { clip: MOJONES, max: 3 });
+  console.log(represas.length
+    ? `retención  ${represas.length} sitios · el mejor: muro de ${represas[0]!.ancho_muro_m.toFixed(0)} m, espejo de ${represas[0]!.area_ha.toFixed(2)} ha`
+    : 'retención  el relieve no encuentra un cierre dentro del predio');
+
+  // Los puntos de juntura, leídos de las cadenas que devolvió la app: el primer
+  // punto que dos cadenas comparten es donde se juntan. No se vuelve a aplicar
+  // ningún umbral —el de cauce ya lo aplicó `calcularEscorrentias`— porque
+  // repetir acá una constante privada de la librería es garantizar que un día
+  // dejen de coincidir.
+  const junturas = (() => {
+    const visto = new Map<string, number>();
+    const puntos: Array<{ lat: number; lng: number }> = [];
+    esc.cadenas.forEach((cadena, i) => {
+      for (const p of cadena.puntos) {
+        const k = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
+        const dueño = visto.get(k);
+        if (dueño === undefined) { visto.set(k, i); continue; }
+        if (dueño !== i) { if (adentroDelPredio(p)) puntos.push(p); break; }
+      }
+    });
+    return puntos;
+  })();
+  console.log(`junturas   ${junturas.length} confluencias dentro del predio`);
 
   // ── El JSON ────────────────────────────────────────────────────────────────
   // Las cotas van redondeadas a 0,1 m: el GLO-30 tiene error de varios metros,
@@ -259,6 +426,75 @@ async function main() {
         ]),
       })),
     acum_max: esc.acum_max,
+
+    /** Las confluencias: donde dos cadenas de la app se juntan. */
+    junturas: junturas.map(p => red(p)),
+
+    /**
+     * Aptitud de uso, agrupada en manchones contiguos por `agruparAptitud`.
+     *
+     * Van como polígonos y no como una grilla pintada en un canvas por la
+     * restricción que ordenó toda la primera animación: MapLibre dibuja una
+     * fuente `canvas` como un cuadrilátero de cuatro vértices y NO la drapea
+     * sobre el relieve, así que con la cámara inclinada se corre de su lugar.
+     * Las capas vectoriales sí van drapeadas. Ése era el defecto principal de
+     * la primera entrega —«dos rectángulos superpuestos con otro ángulo»— y
+     * acá no puede volver a pasar porque no hay ráster propio.
+     */
+    aptitud: {
+      colores: COLORES_APTITUD,
+      resumen: apt.resumen,
+      manchones: clusters.map(c => ({
+        tipo: c.tipo,
+        celdas: c.celdas,
+        anillo: c.anillo.map(p => red(p)),
+      })),
+    },
+
+    /** Zanjas de infiltración a nivel, con el intervalo que recomienda la app. */
+    zanjas: swales
+      ? {
+          intervalo_vertical_m: sep.valor,
+          criterio: sep.criterio,
+          fuente: sep.fuente,
+          lineas: swales.swales.map(l => ({
+            cota: l.cota,
+            puntos: l.puntos.map(p => red(p)),
+          })),
+        }
+      : null,
+
+    /** El keypoint y las guías de keyline, derivados del relieve y de nada más. */
+    keyline: kl
+      ? {
+          nota: kl.nota,
+          keypoint: red(kl.keypoint),
+          valle: kl.valle.map(p => red(p)),
+          // Las guías se recortan al predio, por la misma razón que el agua y
+          // las curvas: `analizarKeyline` corre sobre la grilla entera —el
+          // halo del 8 % es andamio que el relieve necesita para calcular— y
+          // sin recortar, la guía sigue de largo sobre el campo del vecino.
+          guias: kl.guias.flatMap(g => {
+            const tramos: Array<[number, number][]> = [];
+            let tramo: [number, number][] = [];
+            for (const p of g.puntos) {
+              if (adentroDelPredio(p)) tramo.push(red(p));
+              else { if (tramo.length >= 2) tramos.push(tramo); tramo = []; }
+            }
+            if (tramo.length >= 2) tramos.push(tramo);
+            return tramos.map(puntos => ({ principal: g.principal, puntos }));
+          }),
+        }
+      : null,
+
+    /** Los cierres que encuentra el terreno, con el espejo de agua de cada uno. */
+    represas: represas.map(r => ({
+      lat: r.lat, lng: r.lng,
+      altura_m: Math.round(r.altura_m * 10) / 10,
+      ancho_muro_m: Math.round(r.ancho_muro_m),
+      area_ha: Math.round(r.area_ha * 100) / 100,
+      espejo: r.espejo.map(p => red(p)),
+    })),
   };
 
   mkdirSync(SALIDA, { recursive: true });
