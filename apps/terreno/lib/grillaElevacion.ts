@@ -5,6 +5,8 @@
  * píxeles son interpolados, adecuados para curvas de nivel orientativas.
  */
 import * as turf from '@turf/turf';
+import { proporcionDeMesetas, type MuestreoDEM } from './elevacion/muestreo';
+export type { MuestreoDEM };
 
 export type FuenteRelieve = 'glo30' | 'srtm30' | 'terrarium' | 'usuario' | 'usgs3dep' | 'ignfr' | 'ignes' | 'hrdemca' | 'ahnnl' | 'swisstopo';
 
@@ -67,6 +69,32 @@ export const PASO_RELIEVE: Record<FuenteRelieve, number> = {
  * de 9 ha muestreado con 120 nodos por lado son ~3 m de paso, aunque swissALTI3D
  * tenga 2—: por debajo de esa distancia lo que se dibuja es la interpolación.
  */
+/**
+ * Cómo llegó muestreado el relieve de esta grilla, para que las herramientas de
+ * agua puedan avisar antes de dar un número vacío.
+ *
+ * Usa la medición que vino de `/api/dem` si está, y si no la calcula. Esa
+ * distinción es la que hace que sirva: la respuesta de la ruta se cachea
+ * treinta días —una hora si salió escalonada—, un DEM propio importado no pasa
+ * por la ruta, y la grilla de teselas Terrarium tampoco. Medir acá cubre los
+ * tres casos; recorrer la grilla cuesta una pasada sobre los nodos.
+ *
+ * El tipo de salida es estructural a propósito: `RelieveMedido` vive en
+ * `hidrologiaPredio`, que ya importa de este módulo, y traerlo de vuelta sólo
+ * para nombrar tres campos cerraría el círculo sin necesidad.
+ */
+export function relieveMedido(
+  g: GrillaElevacion | null | undefined,
+): { muestreo?: MuestreoDEM; mesetas: number; caida_por_nodo_m: number } | null {
+  if (!g) return null;
+  const mesetas = g.mesetas ?? proporcionDeMesetas(g);
+  const lado = Math.max(g.cols, g.rows);
+  const caida = lado > 1 && Number.isFinite(g.elev_min) && Number.isFinite(g.elev_max)
+    ? (g.elev_max - g.elev_min) / lado
+    : 0;
+  return { muestreo: g.muestreo, mesetas, caida_por_nodo_m: caida };
+}
+
 export function pasoEfectivoM(g: GrillaElevacion): number {
   const latC   = (g.latMin + g.latMax) / 2;
   const anchoM = (g.lngMax - g.lngMin) * 111_320 * Math.cos(latC * Math.PI / 180);
@@ -106,6 +134,19 @@ export interface GrillaElevacion {
   elev_max: number;
   /** fuente del relieve efectivamente usada (para atribución) */
   fuente?:  FuenteRelieve;
+  /**
+   * Quién interpoló el relieve. No es lo mismo que la fuente: el mismo GLO-30
+   * sirve o no sirve para calcular flujo según cómo se lo haya leído.
+   */
+  muestreo?: MuestreoDEM;
+  /**
+   * Proporción de nodos iguales a su vecino, de 0 a 1. Es la medición que
+   * delata una grilla escalonada, y está acá —y no sólo del lado del
+   * servidor— porque `/api/dem` cachea su respuesta treinta días y porque un
+   * DEM propio importado puede venir remuestreado por vecino más cercano
+   * desde otro programa. Ver `lib/elevacion/muestreo.ts`.
+   */
+  mesetas?: number;
 }
 
 /**
@@ -223,16 +264,19 @@ export function recortarGrillaA(
  */
 async function grillaDemRemota(
   latMin: number, latMax: number, lngMin: number, lngMax: number, cols: number, rows: number,
-): Promise<{ elev: Float64Array; fuente: FuenteRelieve } | null> {
+): Promise<{ elev: Float64Array; fuente: FuenteRelieve; muestreo?: MuestreoDEM; mesetas?: number } | null> {
   try {
     const u = `/api/dem?w=${lngMin}&s=${latMin}&e=${lngMax}&n=${latMax}&cols=${cols}&rows=${rows}`;
     const res = await fetch(u, { signal: AbortSignal.timeout(45_000) });
     if (!res.ok) return null;
-    const j = await res.json() as { ok: boolean; fuente: FuenteRelieve; cols: number; rows: number; elev: Array<number | null> };
+    const j = await res.json() as {
+      ok: boolean; fuente: FuenteRelieve; cols: number; rows: number;
+      elev: Array<number | null>; muestreo?: MuestreoDEM; mesetas?: number;
+    };
     if (!j.ok || j.cols !== cols || j.rows !== rows || !Array.isArray(j.elev) || j.elev.length !== rows * cols) return null;
     const elev = new Float64Array(rows * cols);
     for (let i = 0; i < elev.length; i++) { const v = j.elev[i]; elev[i] = (v == null) ? NaN : v; }
-    return { elev, fuente: j.fuente };
+    return { elev, fuente: j.fuente, muestreo: j.muestreo, mesetas: j.mesetas };
   } catch { return null; }
 }
 
@@ -348,7 +392,8 @@ export async function obtenerGrillaDensa(
       }
     }
     if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
-      return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min, elev_max, fuente: dem.fuente };
+      return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min, elev_max,
+        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
@@ -484,7 +529,8 @@ export async function obtenerGrillaHidro(
       if (e > elev_max) elev_max = e;
     }
     if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
-      return { rows, cols, latMin, latMax, lngMin, lngMax, elev: dem.elev, elev_min, elev_max, fuente: dem.fuente };
+      return { rows, cols, latMin, latMax, lngMin, lngMax, elev: dem.elev, elev_min, elev_max,
+        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14

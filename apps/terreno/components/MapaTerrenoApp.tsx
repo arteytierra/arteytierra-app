@@ -69,7 +69,7 @@ import { calcularCurvasProgresivo, intervaloAutomatico, intervaloConfiablePara, 
 import { incertidumbreDeCota } from '@/lib/modeloDeclarado';
 import { corrimientoDeTraza } from '@/lib/planilla';
 import type { DEMImportado } from '@/lib/demImport';
-import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
+import { obtenerGrillaDensa, grillaDesdeShader, pasoEfectivoM, relieveMedido, ETIQUETA_RELIEVE, type GrillaElevacion } from '@/lib/grillaElevacion';
 import { obtenerShader } from '@/lib/relieve/obtenerShader';
 import { reducerRelieve, datosDe, RELIEVE_VACIO } from '@/lib/relieve/reducerRelieve';
 import { ProveedorRelieve } from '@/lib/contextoRelieve';
@@ -810,6 +810,8 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     return corrimientoDeTraza(u, pendienteMedia);
   }, [grillaActiva, pendienteMedia]);
 
+  // Una grilla escalonada vacía el D8 sin avisar; se mide una vez y la reciben las cuatro herramientas de agua. El porqué, en `relieveMedido`.
+  const muestreoRelieve = useMemo(() => relieveMedido(grillaActiva), [grillaActiva]);
   const hidroPredio = useMemo<HidrologiaPredio>(() => hidrologiaPredio({
     suelo: datosSuelo?.grupo_hidro
       ? { grupo: datosSuelo.grupo_hidro.grupo, ksat_mm_h: datosSuelo.grupo_hidro.ksat_min, capa_limitante: datosSuelo.grupo_hidro.capa_limitante }
@@ -821,11 +823,11 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     } : null,
     periodoRetorno,
     contexto: {
-      fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null,
+      fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null, relieve: muestreoRelieve,
       area_ha:       metricas?.area_ha ?? null,
       pendiente_pct: pendienteMedia,
     },
-  }), [datosSuelo, datosCobertura, datosExtremos, periodoRetorno, grillaActiva, datosShader, metricas, pendienteMedia]);
+  }), [datosSuelo, datosCobertura, datosExtremos, periodoRetorno, grillaActiva, datosShader, metricas, pendienteMedia, muestreoRelieve]);
 
   // ─── Riesgo de erosión (pendiente × flujo acumulado × cobertura) ─────────
   const datosErosion = useMemo<DatosErosion | null>(
@@ -871,12 +873,12 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
       area_ha:        datosErosion.area_ha,
       usle_c:         datosErosion.usle_c,
       nota_cobertura: datosErosion.nota_cobertura,
-      fuenteDem:      grillaActiva?.fuente ?? datosShader?.fuente ?? null,
+      fuenteDem:      grillaActiva?.fuente ?? datosShader?.fuente ?? null, relieve: muestreoRelieve,
       textura:        datosSuelo?.clase_textura ?? null,
       hayMagnitud:    perdidaErosion !== null,
       precipAnual_mm: datosClima?.precip_anual_mm ?? null,
     }) : null,
-    [datosErosion, grillaActiva, datosShader, datosSuelo, perdidaErosion, datosClima],
+    [datosErosion, grillaActiva, datosShader, datosSuelo, perdidaErosion, datosClima, muestreoRelieve],
   );
 
   // ─── Swales (zanjas de infiltración a nivel) ─────────────────────────────
@@ -3392,7 +3394,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                   seccion={subRepresa === 'sugerencias' ? 'embalse' : subRepresa}
                   mojones={mojones} datosShader={datosShader} poligonos={poligonosCutFill}
                   onDibujarEspejo={handleDibujarEspejo}
-                  datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null}
+                  datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} muestreoRelieve={muestreoRelieve}
                   grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
                   texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}
                   inicial={represaInputs} onInputs={setRepresaInputs}
@@ -3542,7 +3544,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 aviso={cuencaAviso}
                 poligonos={poligonosCutFill}
                 expandida={cuencaExpandida}
-                fuenteDem={grillaActiva?.fuente ?? datosShader?.fuente ?? null}
+                fuenteDem={grillaActiva?.fuente ?? datosShader?.fuente ?? null} relieve={muestreoRelieve}
                 hidro={hidroPredio}
                 onPeriodoRetorno={setPeriodoRetorno}
                 onMarcar={() => setModo(m => m?.k === 'cuenca' ? null : { k: 'cuenca' })}

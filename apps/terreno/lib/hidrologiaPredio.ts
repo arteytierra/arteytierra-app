@@ -24,6 +24,7 @@
  */
 import { COBERTURAS, coefEscorrentiaAnual, escurrimientoSCS, type GrupoHidro } from './cuenca';
 import type { FuenteRelieve } from './grillaElevacion';
+import { UMBRAL_MESETAS, type MuestreoDEM } from './elevacion/muestreo';
 
 // ─── Mapeo ESA WorldCover → coberturas SCS ────────────────────────────────────
 
@@ -148,6 +149,23 @@ export interface ContextoHidro {
   fueraDeGrilla?:  boolean;
   /** qué se está midiendo, para redactar el aviso de DEM ("una cuenca de 30 ha") */
   objeto?:         string;
+  /** cómo llegó muestreado el relieve (ver `elevacion/muestreo.ts`) */
+  relieve?:        RelieveMedido | null;
+}
+
+/**
+ * Lo que hay que saber del relieve para juzgar si se le puede calcular flujo.
+ *
+ * Viaja junto y no como tres campos sueltos porque las cuatro herramientas que
+ * dependen del D8 —cuenca, represa, erosión y swales— lo necesitan entero: el
+ * número que delata (`mesetas`), la salvedad que evita el falso positivo en
+ * terreno llano (`caida_por_nodo_m`) y la causa para poder nombrarla
+ * (`muestreo`).
+ */
+export interface RelieveMedido {
+  muestreo?:         MuestreoDEM | null;
+  mesetas?:          number | null;
+  caida_por_nodo_m?: number | null;
 }
 
 export interface EntradaHidro {
@@ -393,6 +411,34 @@ export function avisosDeContexto(ctx: ContextoHidro | undefined, avisos: AvisoCa
   if (!ctx) return;
 
   const obj  = ctx.objeto ?? 'un predio';
+
+  // El relieve llegó sin interpolar. Va primero y va como alerta porque no
+  // degrada el resultado: lo vacía. Sobre una meseta el D8 no encuentra vecino
+  // más bajo, así que el agua no tiene por dónde bajar y las escorrentías, los
+  // swales, el keyline y los sitios de represa salen en cero sin un solo
+  // error. Medido en un predio de 417 ha: la acumulación máxima pasó de 2.238
+  // a 4 y las cadenas de escurrimiento de 123 a ninguna.
+  //
+  // El umbral lleva la salvedad de la caída por nodo a propósito: un salar o
+  // una planicie de inundación tienen vecinos con la misma cota y ahí el dato
+  // está bien, aunque el D8 sufra igual.
+  const mes = ctx.relieve?.mesetas ?? null;
+  const caida = ctx.relieve?.caida_por_nodo_m ?? null;
+  if (mes !== null && mes > UMBRAL_MESETAS && caida !== null && caida > 0.2) {
+    const porNodo = ctx.relieve?.muestreo === 'por_nodo';
+    avisos.push({
+      id: 'dem_escalonado', nivel: 'alerta',
+      titulo: `El relieve llegó escalonado: ${Math.round(mes * 100)} % de los nodos repite la cota de su vecino`,
+      detalle:
+        (porNodo
+          ? 'El servicio devolvió una cota por nodo en vez del ráster: cada valor es el píxel más cercano, sin interpolar. '
+          : 'La grilla se pidió más fina que la fuente y los valores llegaron repetidos en vez de interpolados. ') +
+        'Sobre esas mesetas el modelo de flujo no encuentra por dónde baja el agua, así que todo lo que ' +
+        'dependa de escorrentías —cuenca, represa, erosión, swales, keyline— puede salir vacío o muy por ' +
+        'debajo de lo real. Volvé a cargar la topografía en unos minutos: el relieve se vuelve a pedir y, ' +
+        'si el servicio responde, llega interpolado.',
+    });
+  }
   const res  = resolucionDem(ctx.fuenteDem ?? undefined);
   const area = ctx.area_ha ?? null;
   if (res !== null && area !== null && area > 0) {

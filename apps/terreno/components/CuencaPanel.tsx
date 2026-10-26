@@ -16,7 +16,7 @@ import {
   yaArchivada, resumenCuenca, type CuencaGuardada, type ParamsCuenca,
 } from '@/lib/cuencasGuardadas';
 import { confianzaCuenca } from '@/lib/saludCalculo';
-import { PERIODOS_RETORNO, type HidrologiaPredio } from '@/lib/hidrologiaPredio';
+import { PERIODOS_RETORNO, type HidrologiaPredio, type RelieveMedido } from '@/lib/hidrologiaPredio';
 import { volumenM3, volumenEnLitros, caudalM3s, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
@@ -43,6 +43,8 @@ interface Props {
   poligonos?:  PoligonoOpcion[];    // polígonos dibujados, para usar como cuenca manual
   expandida?:  boolean;             // la cuenca actual ya está extendida a la divisoria real
   fuenteDem?:  FuenteRelieve | null;// de qué DEM salió el relieve, para la salud del cálculo
+  /** cómo llegó muestreado ese relieve: una grilla escalonada vacía el D8 */
+  relieve?:    RelieveMedido | null;
   /**
    * Motor hidrológico compartido (H0): el mismo CN compuesto, la misma tormenta
    * y el mismo grupo de suelo que usan Swales, Represa y Erosión.
@@ -75,7 +77,7 @@ export interface CuencaInputs {
   auto?:       boolean;
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, hidro, onPeriodoRetorno, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, relieve = null, hidro, onPeriodoRetorno, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
   const [coberturaId, setCoberturaId] = useState(inicial?.coberturaId ?? 'pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(inicial?.grupo ?? grupoHidro ?? 'B');
@@ -133,14 +135,14 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           cn: resultado.cn, precip_mm: resultado.precip_mm,
           escurrimiento_mm: resultado.escurrimiento_mm,
           precipDeClima, grupoDeSuelo,
-          expandida: !!expandida, fuenteDem, cnPredio: hidro.cn,
+          expandida: !!expandida, fuenteDem, relieve, cnPredio: hidro.cn,
           duracion_min: resultado.duracion_min, intensidad_mm_h: resultado.intensidad_mm_h,
           pendiente_m_m: cuenca.pendiente_m_m,
           tc_factor: resultado.tc_factor, tc_kirpich_min: resultado.tc_kirpich_min,
           tc_min: resultado.tc_min,
         })
       : null,
-    [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, hidro.cn],
+    [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, relieve, hidro.cn],
   );
 
   // ── Archivo de cuencas ──
