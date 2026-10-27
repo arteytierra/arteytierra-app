@@ -35,19 +35,52 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { COLORES } from '../../marca';
 import {
   CENTRO, ESTE, NORTE, OESTE, SUR,
-  GEO_AGUA, GEO_APTITUD, GEO_CAUCE, GEO_CURVAS, GEO_ESPEJO, GEO_JUNTURAS,
-  GEO_KEYLINE, GEO_PREDIO, GEO_ZANJAS,
+  GEO_AGUA, GEO_APTITUD, GEO_CURVAS, GEO_ESPEJO, GEO_JUNTURAS,
+  GEO_KEYLINE, GEO_PREDIO, GEO_RELIEVE, GEO_REPRESAS, GEO_ZANJAS,
 } from './datos';
 
 /**
- * El rumbo con que se calcula el encuadre. Son los 15° de la primera animación
- * y NO los 23° que llega a girar el lazo del relieve, a propósito: este número
- * fija la pose a sangre, y moverlo aunque sea un poco la corre respecto del
- * último cuadro que ya está publicado como póster. El lazo no necesita el
- * margen extra porque en la vista a sangre el predio ya llena el cuadro y lo
- * que gira entra y sale por los bordes, que es lo que tiene que pasar.
+ * **El otro lado de la ladera.** 165° es el espejo exacto de los −15° de la
+ * primera entrega, y no es una preferencia: es lo que dice el relieve de este
+ * predio.
+ *
+ * Medido sobre los 536 nodos de cadena y los 28.157 nodos de grilla que caen
+ * dentro del polígono, partiendo el predio por la mitad perpendicular a la
+ * mirada:
+ *
+ *   rumbo   cadena cerca / lejos   cota del fondo − cota del frente
+ *    −15        155 / 381                     −52 m
+ *    165        381 / 155                     +52 m
+ *
+ * O sea que desde −15° se miraba ladera abajo: el agua corría ALEJÁNDOSE de la
+ * cámara y el fondo del cuadro era la planicie, 52 m más baja que el primer
+ * plano, así que no había horizonte que mirar. Desde 165° el predio se ve de
+ * frente, las cadenas bajan HACIA la cámara —dos tercios de la red quedan en la
+ * mitad cercana— y el cordón de 300 a 442 m queda de fondo, recortado contra el
+ * cielo. Es lo que el pedido llama «más cuencas y más paisaje».
+ *
+ * Se probaron 180°, 195° y 225°: suben el fondo hasta 78 m pero pierden cadena
+ * cercana (321 contra 381). 165° es el mejor de los dos criterios a la vez, y
+ * de paso es el espejo exacto de la pose anterior.
+ *
+ * **Consecuencia que hay que decir: el póster publicado de la portada deja de
+ * servir.** La pose ya no es la de la primera animación, así que el `poster` de
+ * la página tiene que cambiar por el nuevo, que esta misma corrida escribe.
  */
-const RUMBO_MAX = 15;
+export const RUMBO = 165;
+
+/**
+ * El rumbo con que se calcula la holgura del encuadre: cuánto ocupa la sombra
+ * girada del rectángulo del predio.
+ *
+ * 15° para las piezas de cámara quieta —el predio entra con su diagonal chica—
+ * y 45° para las que dan la vuelta entera, que es el peor caso posible: a 45°
+ * el rectángulo ocupa lo máximo en los dos ejes. La diferencia entre los dos es
+ * de 0,18 niveles de zoom, así que la pieza que gira no se ve «más lejos»: se
+ * ve igual y no se le cortan las puntas a mitad de vuelta.
+ */
+const SOMBRA_QUIETA = 15;
+export const SOMBRA_GIRO = 45;
 /** Aire proporcional alrededor del predio cuando se lo encuadra entero. */
 const AIRE = 0.0365;
 
@@ -62,6 +95,9 @@ export const EXAGERACION = 1.4;
 /** Reloj de pared que se le da al mapa para terminar de cargar antes del primer
  *  cuadro. Cuatro segundos una vez por render. */
 const CALENTAMIENTO_MS = 4000;
+
+/** Lo mismo, por cuadro: ver el comentario largo en el efecto de abajo. */
+const REPOSO_MS = 250;
 
 export interface Camara {
   center: [number, number];
@@ -84,12 +120,12 @@ export interface Camara {
  * caber no es el rectángulo sino su sombra girada: un rectángulo a 23° ocupa más
  * ancho y más alto que el original, y sin eso el giro le corta las puntas.
  */
-export function zoomQueEncuadra(ancho: number, alto: number): number {
+export function zoomQueEncuadra(ancho: number, alto: number, sombra = SOMBRA_QUIETA): number {
   const latMedia = ((SUR + NORTE) / 2) * Math.PI / 180;
   const anchoDeg = ESTE - OESTE;
   const altoDeg = (NORTE - SUR) / Math.cos(latMedia);
-  const cos = Math.abs(Math.cos(RUMBO_MAX * Math.PI / 180));
-  const sen = Math.abs(Math.sin(RUMBO_MAX * Math.PI / 180));
+  const cos = Math.abs(Math.cos(sombra * Math.PI / 180));
+  const sen = Math.abs(Math.sin(sombra * Math.PI / 180));
   const padding = ancho * AIRE;
   const zx = Math.log2(((ancho - 2 * padding) * 360) / (512 * (anchoDeg * cos + altoDeg * sen)));
   const zy = Math.log2(((alto - 2 * padding) * 360) / (512 * (altoDeg * cos + anchoDeg * sen)));
@@ -99,11 +135,10 @@ export function zoomQueEncuadra(ancho: number, alto: number): number {
 /**
  * **La vista a sangre**, que es la que funciona y de la que la cámara no sale.
  *
- * Es la pose exacta del último cuadro de la primera animación: la única parte
- * que Jonatan aprobó sin reservas —«vista a sangre, la ortofoto llenando el
- * cuadro, el polígono con sus curvas y sus líneas de agua, perspectiva»—. Que
- * el último cuadro de la pieza nueva caiga en esta misma pose no es comodidad:
- * es lo que hace que el póster que ya está publicado siga sirviendo.
+ * Es la pose que Jonatan aprobó sin reservas —«vista a sangre, la ortofoto
+ * llenando el cuadro, el polígono con sus curvas y sus líneas de agua,
+ * perspectiva»— con el rumbo dado vuelta: mismo encuadre, mismo aire, misma
+ * inclinación, del otro lado de la ladera. Ver `RUMBO`.
  *
  * El `+1` de zoom sobre el encuadre con aire es lo que la lleva de «el predio
  * con margen» a «el predio llenando el cuadro». Ahí está el arreglo del segundo
@@ -111,12 +146,44 @@ export function zoomQueEncuadra(ancho: number, alto: number): number {
  * terminaba acá, así que el salto del segundo 8 no era de cámara, era de un
  * bloque a un paisaje.
  */
-export function vistaASangre(ancho: number, alto: number): Camara {
+export interface OpcionesVista {
+  /** Hacia dónde mira la cámara. Por defecto, el otro lado de la ladera. */
+  rumbo?: number;
+  /** Qué holgura se le deja al encuadre: `SOMBRA_GIRO` si la pieza gira. */
+  sombra?: number;
+  /** Niveles de zoom sobre el encuadre con aire. 1,0 es la vista a sangre. */
+  acercar?: number;
+}
+
+/**
+ * Cuánto se corre el blanco de la cámara HACIA la cámara, en metros.
+ *
+ * Con la cámara inclinada 61°, el punto que se le pide a `jumpTo` cae en la
+ * mitad de abajo del cuadro, no en el centro. Los 351 m son los que tenía la
+ * pose aprobada —medidos sobre su desplazamiento, que era de 106 m al este y
+ * 334 m al sur— y suben el predio a la mitad del encuadre.
+ *
+ * Va expresado como «hacia la cámara» y no como un par de grados fijos por una
+ * razón concreta: en las piezas que dan la vuelta entera, un desplazamiento
+ * fijo en grados gira con la vista y el predio cabecea dentro del cuadro. Atado
+ * al rumbo, el encuadre se queda igual toda la vuelta.
+ */
+const BLANCO_HACIA_LA_CAMARA_M = 351;
+
+export function vistaASangre(
+  ancho: number, alto: number,
+  { rumbo = RUMBO, sombra = SOMBRA_QUIETA, acercar = 1.0 }: OpcionesVista = {},
+): Camara {
+  const a = ((rumbo + 180) * Math.PI) / 180;
+  const latMedia = ((SUR + NORTE) / 2) * Math.PI / 180;
   return {
-    center: [CENTRO[0] + 0.0010, CENTRO[1] - 0.0030],
-    zoom: zoomQueEncuadra(ancho, alto) + 1.0,
+    center: [
+      CENTRO[0] + (BLANCO_HACIA_LA_CAMARA_M * Math.sin(a)) / (111_320 * Math.cos(latMedia)),
+      CENTRO[1] + (BLANCO_HACIA_LA_CAMARA_M * Math.cos(a)) / 111_320,
+    ],
+    zoom: zoomQueEncuadra(ancho, alto, sombra) + acercar,
     pitch: 61,
-    bearing: -15,
+    bearing: rumbo,
   };
 }
 
@@ -152,24 +219,76 @@ function cuandoEsteQuieto(
  * nunca. Ese error se lo come la consola y cuesta una tarde.
  */
 export function degradadoDeAvance(avance: number, color: string) {
-  // Terminado: la línea entera, de un color. Hay que devolver esto y no un
-  // degradado con el corte pegado al final, porque los topes tienen que quedar
-  // ESTRICTAMENTE crecientes: con el corte en 0,999 y el borde también en
-  // 0,999, MapLibre rechaza la expresión entera, la capa se queda con el último
-  // degradado válido —el de 0,98— y al perímetro le falta para siempre el
-  // último tramo. El error va a la consola del mapa, que en un render headless
-  // no mira nadie.
-  if (avance >= 0.985) {
-    return ['interpolate', ['linear'], ['line-progress'], 0, color, 1, color];
-  }
+  if (avance >= 0.985) return degradado([[0, color], [1, color]]);
   const p = Math.max(0.001, avance);
-  return [
-    'interpolate', ['linear'], ['line-progress'],
-    0, color,
-    p, color,
-    p + 0.012, 'rgba(0,0,0,0)',
-    1, 'rgba(0,0,0,0)',
+  return degradado([
+    [0, color],
+    [p, color],
+    [p + 0.012, 'rgba(0,0,0,0)'],
+    [1, 'rgba(0,0,0,0)'],
+  ]);
+}
+
+const TRANSPARENTE = 'rgba(0,0,0,0)';
+
+/**
+ * Un degradado de `line-progress` con los topes **forzados a ser estrictamente
+ * crecientes**.
+ *
+ * Esto es el arreglo de raíz de un error que ya costó dos tardes y que aparece
+ * cada vez que se escribe un degradado animado a mano: si dos topes caen en el
+ * mismo valor —y caen, en los extremos de cualquier animación—, MapLibre
+ * rechaza la expresión ENTERA con «input values must be in strictly ascending
+ * order», la capa se queda para siempre con el último degradado válido, y el
+ * error va a la consola del mapa, que en un render headless no mira nadie. El
+ * síntoma es una línea a la que le falta el último tramo, o un efecto que se
+ * congela a mitad de camino.
+ *
+ * Empujar cada tope un diezmilésimo por encima del anterior es invisible —la
+ * línea más larga del predio mide 590 m, así que 1e−4 son 6 cm— y hace que la
+ * condición no se pueda violar.
+ */
+export function degradado(paradas: Array<[number, string]>) {
+  const topes: Array<number | string> = [];
+  let ultimo = -Infinity;
+  for (const [t, color] of paradas) {
+    const v = Math.max(ultimo + 1e-4, t);
+    topes.push(v, color);
+    ultimo = v;
+  }
+  return ['interpolate', ['linear'], ['line-progress'], ...topes];
+}
+
+/**
+ * La corriente: una banda clara que baja por cada cadena.
+ *
+ * `pulso` va de −ancho a 1+ancho, así que la banda **entra por la cabecera y
+ * sale por la desembocadura** en vez de aparecer y desaparecer de golpe; los
+ * topes fuera de [0,1] son legales porque `interpolate` acota en los extremos.
+ * Que esto se vea como agua bajando y no como agua subiendo depende de que las
+ * cadenas estén encadenadas cuesta abajo, que está comprobado sobre el dato
+ * —ver `GEO_AGUA`—.
+ *
+ * `hasta` es el avance del dibujo: después de ese punto la línea todavía no
+ * existe, así que la banda no puede ir más allá.
+ */
+export function corriente(
+  pulso: number, base: string, brillo: string, ancho = 0.14, hasta = 1,
+) {
+  // La banda nunca pasa el frente del dibujo: si lo pasara, el empujón que
+  // fuerza los topes crecientes correría el frente hacia adelante y la línea
+  // se dibujaría sola un 14 % de más.
+  const p = Math.min(pulso, hasta - ancho);
+  const paradas: Array<[number, string]> = [
+    [p - ancho, base],
+    [p - ancho * 0.35, brillo],
+    [p + ancho * 0.35, brillo],
+    [p + ancho, base],
   ];
+  if (hasta < 0.985) {
+    paradas.push([Math.max(0.001, hasta), base], [hasta + 0.012, TRANSPARENTE], [1, TRANSPARENTE]);
+  }
+  return degradado(paradas);
 }
 
 export interface OpcionesMapa {
@@ -238,8 +357,11 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
             maxzoom: 14,
           },
           curvas:   { type: 'geojson', data: GEO_CURVAS },
-          agua:     { type: 'geojson', data: GEO_AGUA },
-          cauce:    { type: 'geojson', data: GEO_CAUCE, lineMetrics: true },
+          // `lineMetrics` es lo que habilita el degradado por avance: sin esto
+          // `line-progress` no existe y la corriente no se puede dibujar.
+          agua:     { type: 'geojson', data: GEO_AGUA, lineMetrics: true },
+          relieve_color: { type: 'geojson', data: GEO_RELIEVE },
+          represas: { type: 'geojson', data: GEO_REPRESAS },
           junturas: { type: 'geojson', data: GEO_JUNTURAS },
           aptitud:  { type: 'geojson', data: GEO_APTITUD },
           espejo:   { type: 'geojson', data: GEO_ESPEJO },
@@ -250,6 +372,19 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
         layers: [
           { id: 'fondo', type: 'background', paint: { 'background-color': COLORES.tinta } },
           { id: 'sat', type: 'raster', source: 'sat', paint: { 'raster-opacity': 1 } },
+          {
+            // El shader de elevaciones va ENTRE la ortofoto y el sombreado, y
+            // ese orden es la mitad del resultado: así la misma luz que le da
+            // volumen al monte le da volumen a la rampa, y el predio no queda
+            // como una calcomanía plana pegada sobre un paisaje con relieve.
+            //
+            // `fill-antialias: false` porque son 21.202 rectángulos que se
+            // tocan: con el antialias prendido, cada borde interno dibuja una
+            // línea semitransparente y el shader entero sale cruzado por una
+            // grilla.
+            id: 'elevacion', type: 'fill', source: 'relieve_color',
+            paint: { 'fill-color': ['get', 'c'], 'fill-opacity': 0, 'fill-antialias': false },
+          },
           {
             // El sombreado SOLO OSCURECE. Centrarlo y dejar que aclarara —que es
             // lo primero que uno escribe— quema el verde del monte: la ortofoto
@@ -300,6 +435,21 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
             },
           },
           {
+            // El halo: la misma geometría, más ancha, muy desenfocada y por
+            // debajo. Es lo que hace que el agua se vea ENCENDIDA sobre el
+            // verde del monte en vez de dibujada encima. Va en una capa aparte
+            // y no como `line-blur` de la de arriba porque una sola línea no
+            // puede estar nítida y difusa a la vez.
+            id: 'agua-halo', type: 'line', source: 'agua',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': '#7CC2E3',
+              'line-opacity': 0,
+              'line-width': ['interpolate', ['linear'], ['get', 'orden'], 0, 9, 1, 22],
+              'line-blur': 9,
+            },
+          },
+          {
             id: 'agua', type: 'line', source: 'agua',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
@@ -316,9 +466,19 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
             },
           },
           {
-            id: 'cauce', type: 'line', source: 'cauce',
-            layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-opacity': 0, 'line-width': 8, 'line-blur': 0.8 },
+            // El pulso del cierre: un anillo que sale del sitio de represa y se
+            // apaga al crecer. Marca DÓNDE está el cierre, que es el dato —el
+            // vaso ya lo dibuja el espejo—, y no inventa ninguna interfaz: es
+            // un anillo sobre el terreno, no un control.
+            id: 'pulso-represa', type: 'circle', source: 'represas',
+            paint: {
+              'circle-radius': 1,
+              'circle-color': 'rgba(0,0,0,0)',
+              'circle-stroke-color': '#D8F1FF',
+              'circle-stroke-width': 2.5,
+              'circle-opacity': 0,
+              'circle-stroke-opacity': 0,
+            },
           },
           {
             id: 'junturas', type: 'circle', source: 'junturas',
@@ -420,7 +580,17 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
       // segundos; en las otras piezas es un tirón al empezar.
       cuandoEsteQuieto(map, () => {
         map.triggerRepaint();
-        cuandoEsteQuieto(map, () => requestAnimationFrame(() => requestAnimationFrame(soltar)));
+        // El cuarto de segundo es el mismo remedio que el calentamiento del
+        // primer cuadro, en chico: `areTilesLoaded()` contesta por lo que el
+        // mapa YA PIDIÓ, y lo que la pasada de dibujo acaba de descubrir que
+        // falta todavía no está pedido. Sin esta pausa la segunda espera
+        // contesta que sí antes de que el pedido exista, y el cuadro sale con
+        // el fondo lejano sin teselas: un recorte oscuro de bordes rectos
+        // arriba del cuadro. Son cuatro minutos sobre una entrega de 1.650
+        // cuadros.
+        setTimeout(() => {
+          cuandoEsteQuieto(map, () => requestAnimationFrame(() => requestAnimationFrame(soltar)));
+        }, REPOSO_MS);
       });
     };
 

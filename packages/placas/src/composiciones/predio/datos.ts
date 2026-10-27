@@ -19,6 +19,11 @@
  * desfasar: el color del cuadro es el de la ortofoto y el volumen lo pone el
  * sombreado que MapLibre calcula de las mismas teselas de relieve que levantan
  * el terreno.
+ *
+ * Y por eso el shader de elevaciones vuelve como VECTOR (`GEO_RELIEVE`): es el
+ * mismo cálculo de la app —la misma rampa, el mismo rango, la misma celda— pero
+ * dibujado con polígonos, que sí se drapean. La regla no era «la rampa no va»:
+ * era «nada que se pueda desfasar».
  */
 import crudo from '../../../generado/cuetiepa.json';
 
@@ -33,6 +38,12 @@ export interface DatosPredio {
   cols: number; rows: number;
   paso_m: number;
   elev_min: number; elev_max: number;
+  /** Elevación por nodo, row-major, **fila 0 = la latitud mínima**. */
+  elev: number[];
+  /** 1 = el nodo cae dentro del polígono del predio. */
+  dentro: number[];
+  /** La rampa del shader, ya muestreada en 256 pasos por la app. */
+  rampa: string[];
   mojones: Array<{ lat: number; lng: number }>;
   intervalo_curvas_m: number;
   curvas: Array<{ cota: number; lineas: Array<{ cerrada: boolean; puntos: Par[] }> }>;
@@ -85,6 +96,13 @@ export const GEO_CURVAS = coleccion(D.curvas.flatMap(c => c.lineas.map(l => line
  * Las cadenas de escurrimiento, con `orden` de 0 a 1 según su acumulación: 0 es
  * el filo y 1 el cauce principal. El acto del agua enciende primero los filos,
  * que es el orden en que ocurre en el campo.
+ *
+ * **Van cuesta abajo, y está comprobado.** Importa porque el efecto de
+ * corriente es una banda clara que recorre cada cadena de `line-progress` 0 a
+ * 1: si el primer punto fuera la desembocadura, el agua se vería subir el
+ * cerro. Comparando la cota del primer nodo con la del último sobre la misma
+ * grilla, **las 37 bajan y ninguna sube**. Sale del D8, que encadena de aguas
+ * arriba hacia abajo por construcción; esto lo confirma sobre el dato.
  */
 export const GEO_AGUA = coleccion(D.cadenas.map(c => linea(c.puntos, {
   acum: c.acum,
@@ -92,39 +110,88 @@ export const GEO_AGUA = coleccion(D.cadenas.map(c => linea(c.puntos, {
 })));
 
 /**
- * El cauce que dibuja el lazo del agua: **el tramo más largo**, no el de más
- * caudal.
+ * El shader de elevaciones de la app, **en vector**.
  *
- * Parece lo mismo y no lo es. Las cadenas se recortan al perímetro, así que la
- * de mayor acumulación —la que junta toda el agua del predio— es justo la que
- * sale por el borde de abajo, y adentro queda un pedazo de doscientos metros.
- * El lazo dura seis segundos y lo único que hace es dibujar una línea: si la
- * línea es un muñón, no hay lazo. El largo se mide en nodos, que sobre una
- * grilla regular es proporcional a los metros.
+ * Es la misma cuenta que hace `shaderDesdeGrilla`: cada nodo de la grilla es el
+ * centro de una celda, y el color sale de `colorElev` —la posición relativa
+ * entre la cota más baja y la más alta DEL PREDIO, no del mundo— sobre la rampa
+ * que el JSON ya trae muestreada en 256 pasos. Lo único que cambia es el
+ * soporte: la app la pinta en un `canvas` y acá son polígonos, porque un
+ * `canvas` no se drapea sobre el relieve y un polígono sí. Ese era el defecto
+ * principal de la primera animación.
+ *
+ * Dos decisiones con número:
+ *
+ * - **128 clases** sobre 369 m de desnivel son 2,9 m por clase. Con 32 el
+ *   escalonado se ve como terrazas falsas en las laderas suaves; con 256 no
+ *   cambia nada a la vista y hay 24.549 rectángulos en vez de 21.202.
+ * - **Se juntan las celdas contiguas de la misma clase en un solo rectángulo
+ *   por fila.** Sin eso son 28.157 polígonos de 12,3 m, uno por nodo, y cada
+ *   borde interno es una costura que el antialias dibuja.
  */
-const CAUCE_MAYOR = D.cadenas.reduce<DatosPredio['cadenas'][number] | null>(
-  (a, c) => {
-    if (!a) return c;
-    if (c.puntos.length !== a.puntos.length) return c.puntos.length > a.puntos.length ? c : a;
-    return c.acum > a.acum ? c : a;
-  }, null);
+const CLASES_RELIEVE = 128;
 
-export const GEO_CAUCE = coleccion(CAUCE_MAYOR ? [linea(CAUCE_MAYOR.puntos)] : []);
+function construirRelieve() {
+  const { cols, rows, elev, dentro, rampa } = D;
+  const dLat = (NORTE - SUR) / (rows - 1);
+  const dLng = (ESTE - OESTE) / (cols - 1);
+  const rango = Math.max(1e-6, D.elev_max - D.elev_min);
+  const color = (k: number) => rampa[Math.min(
+    rampa.length - 1,
+    Math.round(((k + 0.5) / CLASES_RELIEVE) * (rampa.length - 1)),
+  )]!;
+
+  const features: Array<{
+    type: 'Feature'; properties: { c: string };
+    geometry: { type: 'Polygon'; coordinates: Par[][] };
+  }> = [];
+
+  for (let r = 0; r < rows; r++) {
+    const lat = SUR + r * dLat;
+    const y0 = lat - dLat / 2, y1 = lat + dLat / 2;
+    let clase = -1, desde = 0;
+    // El barrido llega hasta `cols` —una columna de más, siempre vacía— para
+    // cerrar el último tramo de la fila sin repetir el código afuera del bucle.
+    for (let c = 0; c <= cols; c++) {
+      const i = r * cols + c;
+      const z = c < cols && dentro[i] === 1 ? elev[i]! : NaN;
+      const k = Number.isFinite(z)
+        ? Math.min(CLASES_RELIEVE - 1, Math.max(0,
+          Math.floor(((z - D.elev_min) / rango) * CLASES_RELIEVE)))
+        : -1;
+      if (k === clase) continue;
+      if (clase >= 0) {
+        const x0 = OESTE + (desde - 0.5) * dLng;
+        const x1 = OESTE + (c - 0.5) * dLng;
+        features.push({
+          type: 'Feature',
+          properties: { c: color(clase) },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]],
+          },
+        });
+      }
+      clase = k; desde = c;
+    }
+  }
+  return { type: 'FeatureCollection' as const, features };
+}
+
+export const GEO_RELIEVE = construirRelieve();
 
 /**
- * El medio del cauce elegido, para que el lazo del agua se pare encima.
- *
- * Hace falta porque el tramo más largo que queda DENTRO del predio mide unos
- * 590 m, y el predio tiene 3,4 km de ancho: a la escala de la vista a sangre
- * esa línea es una rayita de doscientos píxeles y el lazo no se lee. El lazo
- * muestra el lienzo, no el predio entero, así que se acerca.
+ * Los sitios de represa, como punto. Es lo que necesita el pulso que marca el
+ * cierre cuando la capa se enciende; el vaso lo dibuja `GEO_ESPEJO`.
  */
-export const CENTRO_CAUCE: Par = CAUCE_MAYOR
-  ? CAUCE_MAYOR.puntos[Math.floor(CAUCE_MAYOR.puntos.length / 2)]!
-  : CENTRO;
-
-/** Largo aproximado del cauce elegido, en metros. Decide cuánto se acerca el lazo. */
-export const LARGO_CAUCE_M = CAUCE_MAYOR ? CAUCE_MAYOR.puntos.length * D.paso_m : 0;
+export const GEO_REPRESAS = {
+  type: 'FeatureCollection' as const,
+  features: D.represas.map(r => ({
+    type: 'Feature' as const,
+    properties: { area_ha: r.area_ha, altura_m: r.altura_m },
+    geometry: { type: 'Point' as const, coordinates: [r.lng, r.lat] as Par },
+  })),
+};
 
 /** El perímetro, cerrado. Va con `lineMetrics` para poder dibujarlo de a poco. */
 export const GEO_PREDIO = coleccion([

@@ -7,8 +7,8 @@ import { LowerThird, esquemaLowerThird } from './composiciones/LowerThird';
 import { PlacaCruce, esquemaCruce } from './composiciones/PlacaCruce';
 import { CUADROS_PORTADA, PortadaAcequia, esquemaPortada } from './composiciones/PortadaAcequia';
 import {
-  CUADROS_CUATRO_LECTURAS, CuatroLecturas, esquemaCuatroLecturas,
-} from './composiciones/CuatroLecturas';
+  CUADROS_LECTURA, FPS_LECTURA, LecturaPredio, esquemaLectura,
+} from './composiciones/LecturaPredio';
 import { CUADROS_LAZO, LazoPredio, esquemaLazo } from './composiciones/LazoPredio';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
 import {
@@ -337,16 +337,25 @@ export const Root: React.FC = () => {
         defaultProps={{}}
       />
 
-      <Composition
-        id="CuatroLecturas"
-        component={CuatroLecturas}
-        durationInFrames={CUADROS_CUATRO_LECTURAS}
-        fps={FPS}
-        width={1280}
-        height={720}
-        schema={esquemaCuatroLecturas}
-        defaultProps={{}}
-      />
+      {/*
+        Las seis lecturas: dos segundos, una vuelta entera y 60 fps. Los 60 no
+        son un lujo: 360° en dos segundos son 180° por segundo, que a 30 fps
+        dan 6° por cuadro y el giro estroboscopia. Ver la cabecera de la
+        composición.
+      */}
+      {(['relieve', 'curvas', 'agua', 'represas', 'todo', 'secuencia'] as const).map(lectura => (
+        <Composition
+          key={lectura}
+          id={`Lectura${lectura[0]!.toUpperCase()}${lectura.slice(1)}`}
+          component={LecturaPredio}
+          durationInFrames={CUADROS_LECTURA}
+          fps={FPS_LECTURA}
+          width={1280}
+          height={720}
+          schema={esquemaLectura}
+          defaultProps={{ lectura }}
+        />
+      ))}
 
       {/*
         Los tres lazos son la misma composición con una propiedad distinta: el

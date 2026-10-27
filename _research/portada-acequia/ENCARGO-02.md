@@ -11,6 +11,84 @@ en una página pública. Eso lo autoriza el cliente. Hasta entonces el crédito 
 la página dice «Predio real», y por eso el `alt` propuesto en `PORTADA.md`
 cambió: nombraba el predio y la provincia.
 
+## Segunda vuelta · 27/10/2026
+
+Jonatan pidió cuatro cambios sobre la entrega del 26. Están hechos y son los
+que mandan de acá en adelante; lo que sigue más abajo describe la primera
+vuelta, y cada sección dice qué cambió.
+
+1. **Las lecturas pasan a durar 2 s y dan una vuelta entera**, arrancando desde
+   la pose y girando hacia la derecha, con las capas en este orden: shader de
+   elevaciones, curvas de nivel, escorrentías, represas. Más una con todo
+   encendido de una vez, para bucle.
+2. **Todas las demás piezas miran el otro lado de la ladera**, el que tiene más
+   cuencas y más paisaje.
+3. **El lazo del agua se mira desde más lejos**, para ver dibujarse muchas
+   cuencas en vez de un cauce.
+4. **El agua y las represas llevan efecto.**
+
+### El otro lado de la ladera no se eligió a ojo
+
+165° es el espejo exacto de los −15° de la primera entrega. Que además sea el
+mejor rumbo posible lo dice el relieve. Partiendo el predio por la mitad
+perpendicular a la mirada, sobre los 536 nodos de cadena y los 28.157 nodos de
+grilla que caen dentro del polígono:
+
+| rumbo | cadena cerca / lejos | cota del fondo − cota del frente |
+|---|---|---|
+| −15 (antes) | 155 / 381 | **−52 m** |
+| 165 (ahora) | **381 / 155** | **+52 m** |
+| 180 | 373 / 163 | +59 m |
+| 225 | 321 / 215 | +78 m |
+
+Desde −15° se miraba ladera abajo: el agua corría alejándose de la cámara y el
+fondo del cuadro era la planicie, 52 m más baja que el primer plano, así que no
+había horizonte que mirar. Desde 165° el predio se ve de frente, dos tercios de
+la red de escurrimiento quedan en la mitad cercana y el cordón de 300 a 442 m
+queda de fondo. 180° y 225° levantan más el fondo pero pierden cadena cercana.
+
+> **El póster publicado de la portada deja de servir.** La pose ya no es la de
+> la primera animación. El `poster` de la página tiene que cambiar por el nuevo
+> —`portada-poster.jpg`—, que sale de esta misma corrida.
+
+### El shader de elevaciones vuelve, pero en vector
+
+Es el mismo cálculo de la app: cada nodo de la grilla es el centro de una celda
+—igual que en `shaderDesdeGrilla`— y el color sale de `colorElev` sobre la rampa
+**Terreno**, la que usa la app por defecto, con el rango tomado de la cota más
+baja y la más alta *de este predio*. Lo único que cambia es el soporte: la app
+lo pinta en un `canvas` y acá son polígonos.
+
+Eso es lo que permite que vuelva sin reabrir el defecto (a). La regla no era
+«la rampa no va»: era **«nada que se pueda desfasar»**. Un `canvas` no se drapea
+sobre el relieve y un polígono sí.
+
+Dos números del armado: **128 clases** sobre 369 m de desnivel son 2,9 m por
+clase —con 32 aparecen terrazas falsas en las laderas suaves—, y las celdas
+contiguas de la misma clase se juntan en un rectángulo por fila, que baja de
+28.157 polígonos a 21.202 y saca las costuras internas.
+
+Si la rampa Terreno choca mucho con el verde de la ortofoto, la **Clásica**
+—verde abajo, ocres al medio, marrón arriba— es una línea de cambio: las dos
+están en `PALETAS_ELEV`.
+
+### Los efectos
+
+- **La corriente.** Una banda clara recorre cada cadena de su cabecera a su
+  desembocadura, con un halo ancho y desenfocado por debajo que es lo que hace
+  que el agua se lea *encendida* sobre el verde del monte. Que baje y no suba
+  depende del sentido en que están encadenados los puntos: se comprobó sobre el
+  dato, comparando la cota del primer nodo con la del último en las 37 cadenas
+  —**37 bajan, 0 suben**—, y no sobre el supuesto de que el D8 las ordena así.
+- **El pulso del cierre.** Al encenderse las represas sale un anillo del sitio
+  de cada cierre y se apaga al crecer. Marca dónde está el cierre, que es el
+  dato; el vaso lo dibuja el espejo de agua. Es un anillo sobre el terreno, no
+  un control: la regla de no inventar interfaz sigue en pie.
+
+Los dos efectos son **periódicos**: dos ciclos por vuelta en las lecturas, tres
+en los seis segundos del lazo del agua. Si no lo fueran, el bucle saltaría ahí
+aunque la cámara cerrara perfecto.
+
 ## Lo que se arregló, defecto por defecto
 
 Los cuatro defectos de la primera animación tenían una sola causa de fondo, y
@@ -36,14 +114,15 @@ partida y no el destino. No hay salto en el segundo 8 porque no hay dos escalas.
 **(c) «Está blando.»** Lo blando era el canvas de 300 × 277 nodos ampliado a
 1280 px. Las teselas de la ortofoto se piden al zoom en el que se ven.
 
-**(d) «La rampa de color.»** Afuera. El único color agregado es el de las
-líneas.
+**(d) «La rampa de color.»** Afuera de la portada, donde el único color
+agregado sigue siendo el de las líneas. En las lecturas vuelve desde la segunda
+vuelta, pedida, y vuelve **en vector**: ver arriba.
 
 **La atribución ya no va quemada** y **tampoco hay viñeta**: el crédito y el
 velo del hero los pone la página. Dos velos sobre el mismo cuadro eran parte del
 «tiene mucho filtro».
 
-## Las tres entregas
+## Las entregas
 
 ### A · La portada recortada — 13 s
 
@@ -59,42 +138,67 @@ capas encendiéndose:
 
 Los actos se pisan a propósito: marcan qué aparece, no cortes de cámara.
 
-**La deriva termina exactamente en la pose del último cuadro de la versión
-anterior.** No es comodidad: es lo que hace que el póster ya publicado siga
-sirviendo. Se comprobó apilando el cuadro nuevo contra `portada-ultimo.png` de
-la primera entrega — mismo encuadre, mismo predio en el mismo lugar del cuadro.
-Igual va un póster nuevo, porque el viejo tiene el crédito quemado.
+La deriva termina exactamente en la vista a sangre. En la segunda vuelta esa
+vista mira el otro lado de la ladera, así que **el póster publicado hay que
+cambiarlo**: sale uno nuevo con el último cuadro.
 
-### B · Las cuatro lecturas — 8 s
+El agua, además de encenderse de los filos a los cauces, ahora corre: la banda
+clara recorre cada cadena desde que arranca el acto 03 hasta el final de la
+pieza. En los dos segundos y medio del acto 04 es lo único que se mueve, además
+de la deriva.
 
-El mismo predio leído cuatro veces, sobre el mismo encuadre. **La cámara está
-completamente fija.** Dos razones, y las dos importan: si derivara, quien se
-detiene en la marca de «Agua» y en la de «Diseño» estaría comparando dos
-encuadres distintos; y con el fondo quieto los cuadros intermedios pesan casi
-nada, que es justo lo que hace falta cuando hay un fotograma clave cada cinco.
+### B · Las lecturas — 2 s cada una, una vuelta entera
 
-| marca | estado | qué se ve |
-|---|---|---|
-| 0,0 s | Relieve | la vista 3D con el sombreado del terreno |
-| 2,0 s | Agua | las cadenas de acumulación y las confluencias |
-| 4,0 s | **Aptitud** | los manchones de aptitud de uso, en los colores de la app |
-| 6,0 s | Diseño | el keyline y el espejo de la retención, sobre las curvas |
+Reemplazan a la pieza de ocho segundos que se recorría con el scroll. Son seis
+archivos, todos de dos segundos, **a 60 cuadros por segundo**, con la cámara
+dando una vuelta completa hacia la derecha desde la pose:
 
-Cada estado se sostiene quieto ±8 cuadros (0,53 s) alrededor de su marca.
+| archivo | qué enciende |
+|---|---|
+| `lectura-relieve` | el shader de elevaciones |
+| `lectura-curvas` | las curvas de nivel, sobre el shader |
+| `lectura-agua` | las escorrentías, con la corriente bajando |
+| `lectura-represas` | los cierres, con su espejo y el pulso |
+| `lectura-todo` | las cuatro juntas — **la del bucle** |
+| `lectura-secuencia` | las cuatro encendiéndose una tras otra: 0,0 · 0,5 · 1,0 · 1,5 s |
 
-> **El tercer estado se llama Aptitud y no Suelo.** La app lo calcula de
-> pendiente, orientación, agua acumulada y altura relativa —puro relieve—; no
-> toca un dato de suelo. Rotularlo «Suelo» en la página prometería un análisis
-> edafológico que la pieza no trae. Y son **cinco clases, no tres**: en este
-> predio dan 88,6 % forestal, 10 % pasturas y 1,3 % frutales, que es la lectura
-> correcta de 417 ha al 30 % de pendiente. Conviene saber antes de rotular que
-> ese estado va a leerse como un lavado de un solo color, porque eso es lo que
-> dice el dato.
+**El shader va de base en las cuatro, y por eso es el que prende primero.** Una
+represa sola es un charco azul en medio del monte: lo que la explica es la
+hondonada donde está, y eso lo dice la rampa. Es además como se ve en la app —la
+capa de elevación queda puesta y arriba se prenden las otras—.
+
+Tres decisiones con número:
+
+- **60 fps y no 30.** Una vuelta entera en dos segundos son 180° por segundo: a
+  30 fps eso da 6° por cuadro y, sin desenfoque de movimiento, el giro
+  estroboscopia. A 60 son 3° y queda continuo. Cuesta el doble de cuadros de
+  render y nada de peso.
+- **«Hacia la derecha» es rumbo decreciente.** Un rasgo que está al norte se ve
+  arriba con rumbo 0; con rumbo −10 se ve 10° a la derecha de arriba.
+- **El encuadre se calcula con la sombra girada a 45°**, que es el peor caso de
+  una vuelta entera; con los 15° de las piezas quietas, al predio se le van las
+  puntas fuera del cuadro a mitad de giro. La diferencia entre los dos cálculos
+  es de 0,18 niveles de zoom.
+
+`lectura-secuencia` es la **única que no es un bucle** —acumula capas, así que
+el último cuadro no se parece al primero— y por eso es la única que lleva
+fotograma clave corto en el MP4: es la que la página puede recorrer con
+`currentTime`. Las otras cinco se reproducen en bucle y cierran porque son
+periódicas.
+
+> **Quedó afuera el estado «Aptitud»**, que en la entrega anterior era la
+> tercera lectura: el pedido nombra cuatro capas y ésa no está entre ellas. La
+> advertencia sigue valiendo si alguna vez vuelve: **la app la calcula de
+> pendiente, orientación, agua acumulada y altura relativa —puro relieve—**, no
+> toca un dato de suelo, así que rotularla «Suelo» prometería un análisis
+> edafológico que la pieza no trae. Son cinco clases, no tres, y en este predio
+> dan 88,6 % forestal, 10 % pasturas y 1,3 % frutales.
 
 ### C · Tres lazos del lienzo — 6 s cada uno
 
 `perimetro` (el polígono se traza y se cierra), `giro` (el relieve va y vuelve
-despacio bajo las curvas) y `agua` (el cauce principal se dibuja valle abajo).
+despacio bajo las curvas) y `agua` (**las treinta y siete cadenas se dibujan a
+la vez, desde más lejos**).
 
 **El bucle es periódico, no tiene el primer y el último cuadro idénticos.** Eso
 último, cumplido al pie de la letra, mete dos cuadros iguales seguidos y produce
@@ -122,6 +226,7 @@ repo, con el predio y el relieve como única entrada:
 
 | capa | función |
 |---|---|
+| shader de elevaciones | `colorElev` sobre la rampa **Terreno** de `PALETAS_ELEV`, celda por celda, con el rango de este predio |
 | relieve y sombreado | teselas Terrarium de AWS Open Data, las que proxea `/api/terrarium` |
 | ortofoto | Esri World Imagery, las mismas teselas que drapea la vista 3D de la app |
 | curvas de nivel | `calcularCurvas` sobre la grilla de Copernicus GLO-30 |
@@ -185,39 +290,92 @@ herramientas de agua avisan en nivel alerta cuando lo es.
 Todo sale de `node scripts/piezas.mjs`, que mide con `ffprobe` lo que acaba de
 escribir y sale con código 1 si algo no entra.
 
-| archivo | | duración | peso / tope | caudal | color |
-|---|---|---|---|---|---|
-| `portada.webm` | 1280×720 | 13,00 s | 1.708 / 2.560 KB | 1.076 kbps | yuv420p tv bt709 |
-| `portada.mp4` | 1280×720 | 13,00 s | 1.514 / 2.560 KB | 954 kbps | yuv420p tv bt709 |
-| `cuatro-lecturas.webm` | 1280×720 | 8,00 s | 1.364 / 3.072 KB | 1.397 kbps | yuv420p tv bt709 |
-| `cuatro-lecturas.mp4` | 1280×720 | 8,00 s | 2.618 / 3.072 KB | 2.680 kbps | yuv420p tv bt709 |
-| `lazo-perimetro.webm` | 1280×720 | 6,00 s | 451 / 900 KB | 616 kbps | yuv420p tv bt709 |
-| `lazo-perimetro.mp4` | 1280×720 | 6,00 s | 370 / 900 KB | 505 kbps | yuv420p tv bt709 |
-| `lazo-giro.webm` | 1280×720 | 6,00 s | 691 / 900 KB | 943 kbps | yuv420p tv bt709 |
-| `lazo-giro.mp4` | 1280×720 | 6,00 s | 594 / 900 KB | 811 kbps | yuv420p tv bt709 |
-| `lazo-agua.webm` | 1280×720 | 6,00 s | 395 / 900 KB | 539 kbps | yuv420p tv bt709 |
-| `lazo-agua.mp4` | 1280×720 | 6,00 s | 322 / 900 KB | 439 kbps | yuv420p tv bt709 |
-| `portada-poster.jpg` | | | 135 / 150 KB | | el **último** cuadro |
-| `cuatro-lecturas-poster.jpg` | | | 143 / 150 KB | | el **primer** cuadro |
+Todos 1280×720, `yuv420p` rango limitado `bt709`, **sin pista de audio**.
 
-Ninguno tiene pista de audio. El fotograma clave de `cuatro-lecturas.mp4`: 48
-claves, el hueco más largo son 5 cuadros. El cierre de los tres lazos, medido
-sobre el maestro contra lo que vale un paso cualquiera de la misma pieza:
+| archivo | duración | peso / tope | caudal |
+|---|---|---|---|
+| `portada.webm` | 13,00 s | 1.654 / 2.560 KB | 1.042 kbps |
+| `portada.mp4` | 13,00 s | 1.515 / 2.560 KB | 954 kbps |
+| `lectura-relieve.webm` | 2,00 s | 489 / 1.126 KB | 2.002 kbps |
+| `lectura-relieve.mp4` | 2,00 s | 468 / 1.126 KB | 1.918 kbps |
+| `lectura-curvas.webm` | 2,00 s | 490 / 1.126 KB | 2.005 kbps |
+| `lectura-curvas.mp4` | 2,00 s | 473 / 1.126 KB | 1.938 kbps |
+| `lectura-agua.webm` | 2,00 s | 490 / 1.126 KB | 2.005 kbps |
+| `lectura-agua.mp4` | 2,00 s | 468 / 1.126 KB | 1.919 kbps |
+| `lectura-represas.webm` | 2,00 s | 488 / 1.126 KB | 1.999 kbps |
+| `lectura-represas.mp4` | 2,00 s | 467 / 1.126 KB | 1.912 kbps |
+| `lectura-todo.webm` | 2,00 s | 490 / 1.126 KB | 2.007 kbps |
+| `lectura-todo.mp4` | 2,00 s | 472 / 1.126 KB | 1.935 kbps |
+| `lectura-secuencia.webm` | 2,00 s | 484 / 1.126 KB | 1.982 kbps |
+| `lectura-secuencia.mp4` | 2,00 s | 591 / 1.126 KB | 2.422 kbps |
+| `lazo-perimetro.webm` | 6,00 s | 685 / 900 KB | 935 kbps |
+| `lazo-perimetro.mp4` | 6,00 s | 353 / 900 KB | 482 kbps |
+| `lazo-giro.webm` | 6,00 s | 693 / 900 KB | 946 kbps |
+| `lazo-giro.mp4` | 6,00 s | 602 / 900 KB | 822 kbps |
+| `lazo-agua.webm` | 6,00 s | 557 / 900 KB | 761 kbps |
+| `lazo-agua.mp4` | 6,00 s | 397 / 900 KB | 542 kbps |
+| `portada-poster.jpg` | | 144 / 150 KB | el **último** cuadro |
+| `lectura-relieve-poster.jpg` | | 135 / 150 KB | el **primer** cuadro |
+| `lectura-todo-poster.jpg` | | 146 / 150 KB | el **primer** cuadro |
+| `lectura-secuencia-poster.jpg` | | 135 / 150 KB | el **primer** cuadro |
 
-| lazo | la costura vale | un paso cualquiera vale |
+`lectura-secuencia.mp4`: **24 claves, el hueco más largo son 5 cuadros.** Su
+WebM tiene una sola clave, a propósito y por lo mismo de siempre: ver más
+abajo.
+
+El cierre de los bucles, medido sobre el maestro contra lo que vale un paso
+cualquiera de la misma pieza:
+
+| bucle | la costura vale | un paso cualquiera vale |
 |---|---|---|
-| perímetro | 0,06 | 0,00 |
-| giro | 9,15 | 9,08 |
-| agua | 0,08 | 0,00 |
+| `lectura-relieve` | 15,76 | 17,25 |
+| `lectura-curvas` | 17,87 | 19,47 |
+| `lectura-agua` | 16,12 | 17,50 |
+| `lectura-represas` | 15,85 | 17,46 |
+| `lectura-todo` | 18,08 | 19,76 |
+| `lazo-perimetro` | 0,04 | 0,00 |
+| `lazo-giro` | 8,25 | 8,18 |
+| `lazo-agua` | 0,13 | 0,05 |
 
-El del giro es el que lo demuestra: la unión del bucle se nota **exactamente lo
-mismo** que cualquier otro cuadro de la pieza.
+En las cinco lecturas la costura vale **menos** que un paso normal, que es lo
+que tiene que pasar: con 3° por cuadro no hay un solo píxel quieto, así que un
+paso cualquiera mide 17 y la unión mide lo mismo o menos. El número grande no
+es un defecto, es la velocidad del giro; lo que importa es la comparación.
 
 ### Y en un navegador de verdad, que es lo que ffprobe no puede
 
-Los diez archivos abiertos en Chromium, uno por uno: los diez cargan, los diez
-tienen `video.error` nulo y los diez presentan un cuadro. Las cuatro marcas de
-las lecturas se buscan exactas al milisegundo, entre 3 y 16 ms.
+Los **veinte** archivos abiertos en Chromium, uno por uno: los veinte cargan,
+los veinte tienen `video.error` nulo y los veinte presentan cuadro.
+
+Las cuatro marcas de `lectura-secuencia` se buscan exactas, y de paso dejan
+medida la razón de todo este asunto:
+
+| marca | MP4 (clave cada 5) | WebM (una sola clave) |
+|---|---|---|
+| 0,0 s | 18 ms | 18 ms |
+| 0,5 s | **4 ms** | 30 ms |
+| 1,0 s | **5 ms** | 52 ms |
+| 1,5 s | **4 ms** | 95 ms |
+
+Las dos caen en el milisegundo exacto que se les pide; lo que cambia es lo que
+tardan. **La página tiene que listar el MP4 primero.**
+
+### El control también tenía dos verificaciones que mentían
+
+Las dos daban falso NEGATIVO, que para el caso es tan inútil como un falso
+positivo: lo primero que uno hace con un control que marca mal es dejar de
+creerle.
+
+1. **Muestreaba `currentTime` una sola vez**, 2,5 s después de arrancar, y
+   preguntaba si se había movido respecto de una muestra tomada «ahora». Con
+   piezas de dos segundos esa muestra cae después del final, donde el tiempo ya
+   se quedó quieto en 2,0, y los cuatro MP4 de las lecturas daban «NO» teniendo
+   `readyState` 4 y `video.error` nulo. Ahora pregunta cada décima y la
+   pregunta es si se movió **alguna vez**.
+2. **El primero de la lista daba «NO» por ser el primero**, con la página
+   todavía montándose y el panel sin componer. Probado solo, llegaba a 2,99 s
+   de 13. Ahora se reintenta una vez cuando el archivo cargó pero no avanzó:
+   uno que de verdad no decodifica falla las dos veces.
 
 La página de control (`_control.html`) queda en la carpeta de salida, junto a
 los archivos. Necesita un servidor que atienda **peticiones por rango**: con
@@ -272,14 +430,38 @@ medir eso convertiría el criterio en un medidor de bitrate.
 - **Dónde va cada pieza en la landing**, el `<video>`, el
   `prefers-reduced-motion`, el `poster` y el crédito de texto: eso lo hace una
   sesión de web, sobre el repositorio `acequia-landing`. Desde acá salen los
-  archivos.
+  archivos. Tres cosas para esa sesión: **el MP4 va listado primero**, **el
+  póster publicado de la portada hay que cambiarlo** —la pose cambió de lado—,
+  y de las seis lecturas la página elige: `lectura-todo` si va en bucle,
+  `lectura-secuencia` si se recorre con el scroll, o las cuatro sueltas si cada
+  sección muestra una.
+- **Qué hacer con la pieza vieja de ocho segundos.** `cuatro-lecturas.*` sigue
+  en la carpeta de salida y ya no se genera: su composición se borró. Si el
+  scroll la quería así, se recupera del commit `554850c`.
 
 ## Cómo se rehace
 
 ```bash
 pnpm --filter @arteytierra/terreno datos-portada    # el dato, una vez
 pnpm --filter @arteytierra/terreno datos-portada --refrescar   # ignorando la caché del relieve
-pnpm --filter @arteytierra/placas  piezas           # las cinco piezas
-pnpm --filter @arteytierra/placas  piezas --prueba  # los cortes en baja de A y B
+pnpm --filter @arteytierra/placas  piezas           # las diez piezas
+pnpm --filter @arteytierra/placas  piezas lectura-todo  # una sola
+pnpm --filter @arteytierra/placas  piezas --prueba  # cortes en baja de las que cambiaron
 pnpm --filter @arteytierra/placas  piezas --verificar   # medir sin renderizar
+pnpm --filter @arteytierra/placas  piezas --recodificar # rehacer los formatos desde el maestro
+node packages/placas/scripts/vistazo.mjs LecturaTodo 0 30 60 90   # un cuadro suelto, para mirar
 ```
+
+`vistazo.mjs` existe por una cuenta: la entrega son ~1.650 cuadros y cada uno
+espera a que el mapa cargue, así que una corrida completa pasa la hora.
+Equivocarse de encuadre y enterarse al final cuesta esa hora dos veces.
+
+**Ojo con una trampa del cuadro suelto:** salta a su rumbo de una, así que con
+la vuelta entera pide de golpe todo un campo de teselas nuevo y puede salir con
+el fondo lejano sin cargar —un recorte oscuro de bordes rectos arriba—. En la
+película no pasa, porque los cuadros van en orden y se mueven 3°. Se comprobó
+renderizando esos mismos cuadros dentro de un corte de prueba: limpios. Aun
+así, de ahí salió un arreglo que sí hacía falta en la película: un cuarto de
+segundo de reposo entre las dos esperas de cada cuadro, porque
+`areTilesLoaded()` contesta por lo que el mapa YA PIDIÓ y lo que la pasada de
+dibujo acaba de descubrir que falta todavía no está pedido.

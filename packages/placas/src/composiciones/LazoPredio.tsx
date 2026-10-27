@@ -3,7 +3,10 @@
  *
  *   perimetro  el polígono del predio se traza y se cierra
  *   giro       el relieve gira despacio bajo las curvas de nivel
- *   agua       el cauce principal se dibuja a lo largo del valle
+ *   agua       las treinta y siete cadenas se dibujan a la vez, desde más lejos
+ *
+ * Los tres miran **el otro lado de la ladera**, que es el que tiene la red de
+ * escurrimiento y el cordón de fondo. Los números están en `RUMBO`.
  *
  * Se muestra **el lienzo, no la interfaz**: no hay barras, ni botones, ni
  * paneles, ni reales —`/mapa` está detrás de login— ni inventados. El contenido
@@ -31,8 +34,7 @@ import { z } from 'zod';
 import type maplibregl from 'maplibre-gl';
 
 import { COLORES } from '../marca';
-import { CENTRO_CAUCE, LARGO_CAUCE_M } from './predio/datos';
-import { degradadoDeAvance, usarMapaDelPredio, vistaASangre } from './predio/mapa';
+import { corriente, degradadoDeAvance, usarMapaDelPredio, vistaASangre } from './predio/mapa';
 
 export const esquemaLazo = z.object({
   lazo: z.enum(['perimetro', 'giro', 'agua']).default('perimetro'),
@@ -72,27 +74,14 @@ export const LazoPredio: React.FC<z.infer<typeof esquemaLazo>> = ({ lazo }) => {
   const { contRef, width, height } = usarMapaDelPredio({
     nombre: `lazo-${lazo}`,
     camara: (f, ancho, alto) => {
-      const base = vistaASangre(ancho, alto);
+      // El lazo del agua se mira DESDE MÁS LEJOS que los otros dos: lo que
+      // tiene que verse acá no es una línea, son las treinta y siete cadenas
+      // dibujándose a la vez sobre las dos vertientes. Con el acercamiento de
+      // la vista a sangre, media red queda fuera del cuadro.
+      const base = vistaASangre(ancho, alto, lazo === 'agua' ? { acercar: 0.6 } : {});
       const t = f / CUADROS_LAZO;
       if (lazo === 'giro') {
         return { ...base, bearing: base.bearing + VAIVEN_GRADOS * Math.sin(2 * Math.PI * t) };
-      }
-      if (lazo === 'agua') {
-        // El lazo del agua se para encima del cauce. El acercamiento sale de
-        // una cuenta y no del ojo: cada nivel de zoom divide por dos lo que
-        // entra en el cuadro, así que para que un cauce de `LARGO_CAUCE_M`
-        // ocupe la mitad del ancho de un cuadro que hoy abarca el predio
-        // entero, hacen falta `log2(predio / (2 · cauce))` niveles más.
-        const anchoPredioM = 3690;
-        const acercar = Math.log2(anchoPredioM / Math.max(120, 2 * LARGO_CAUCE_M));
-        return {
-          ...base,
-          center: CENTRO_CAUCE,
-          // El tope de 1,3 no es arbitrario: más cerca, la ortofoto de Esri ya
-          // no tiene tesela propia y se ve blanda, y la escalera de ocho rumbos
-          // del D8 se vuelve el rasgo principal de la línea en vez del valle.
-          zoom: base.zoom + Math.max(0, Math.min(1.3, acercar)),
-        };
       }
       return base;
     },
@@ -122,12 +111,23 @@ export const LazoPredio: React.FC<z.infer<typeof esquemaLazo>> = ({ lazo }) => {
         return;
       }
 
-      // agua · el cauce principal se dibuja valle abajo.
+      // agua · las treinta y siete cadenas se dibujan a la vez, cada una de su
+      // cabecera a su desembocadura, y la corriente las recorre mientras se
+      // dibujan. El `line-progress` es por rasgo, así que una sola expresión
+      // dibuja toda la red: cada cadena avanza sobre su propio largo y no sobre
+      // el de la más larga.
       const { avance, opacidad } = trazo(t);
       op('predio', 'line-opacity', 0.45);
       grad('predio', 1, COLORES.crema);
-      op('cauce', 'line-opacity', 0.95 * opacidad);
-      grad('cauce', avance, '#7CC2E3');
+      op('agua', 'line-opacity', 0.95 * opacidad);
+      op('agua-halo', 'line-opacity', 0.45 * opacidad);
+      // Tres ciclos de corriente en los seis segundos del lazo: entero, así que
+      // el bucle cierra. La banda nunca pasa el frente del dibujo.
+      const pulso = ((t * 3) % 1) * 1.3 - 0.15;
+      map.setPaintProperty('agua', 'line-gradient',
+        corriente(pulso, '#7CC2E3', '#EAF8FF', 0.14, avance) as maplibregl.ExpressionSpecification);
+      map.setPaintProperty('agua-halo', 'line-gradient',
+        corriente(pulso, '#7CC2E3', '#FFFFFF', 0.2, avance) as maplibregl.ExpressionSpecification);
     },
   });
 

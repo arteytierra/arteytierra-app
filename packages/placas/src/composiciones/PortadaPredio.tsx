@@ -13,6 +13,11 @@
  *
  * NO ES UN LOOP. El último cuadro es el póster.
  *
+ * Desde la segunda vuelta se mira **el otro lado de la ladera**: el predio de
+ * frente, las cadenas bajando hacia la cámara y el cordón de fondo recortado
+ * contra el cielo. El por qué, con los números, está en `RUMBO`. La rampa de
+ * alturas sigue sin aparecer en esta pieza.
+ *
  * ── Qué se arregló, defecto por defecto ────────────────────────────────────
  * (a) «Dos rectángulos superpuestos con otro ángulo.» Eran el relieve coloreado
  *     —una fuente `canvas`, que MapLibre dibuja como un cuadrilátero plano y no
@@ -38,7 +43,7 @@ import type maplibregl from 'maplibre-gl';
 
 import { COLORES } from '../marca';
 import {
-  degradadoDeAvance, usarMapaDelPredio, vistaASangre, type Camara,
+  corriente, degradadoDeAvance, usarMapaDelPredio, vistaASangre, type Camara,
 } from './predio/mapa';
 
 export const esquemaPortadaPredio = z.object({});
@@ -71,12 +76,12 @@ function camara(f: number, ancho: number, alto: number): Camara {
   });
   return {
     center: [
-      destino.center[0] - 0.00055 * (1 - t),
-      destino.center[1] + 0.00030 * (1 - t),
+      destino.center[0] + 0.00055 * (1 - t),
+      destino.center[1] - 0.00030 * (1 - t),
     ],
     zoom: destino.zoom - 0.06 * (1 - t),
     pitch: destino.pitch - 2.0 * (1 - t),
-    bearing: destino.bearing + 1.5 * (1 - t),
+    bearing: destino.bearing - 1.5 * (1 - t),
   };
 }
 
@@ -127,9 +132,27 @@ export const PortadaPredio: React.FC<z.infer<typeof esquemaPortadaPredio>> = () 
       map.setPaintProperty('curvas', 'line-opacity',
         frenteQueEnciende(frame, ACTO.curvas, 'altura', 0.74));
 
-      // 03 · el agua, de los filos a los cauces.
+      // 03 · el agua, de los filos a los cauces, y bajando.
+      //
+      // El encendido por acumulación es el de siempre: primero los filos,
+      // después los cauces, que es el orden en que ocurre en el campo. Lo nuevo
+      // es la corriente —una banda clara que recorre cada cadena de la cabecera
+      // a la desembocadura— y el halo, que es lo que hace que el agua se lea
+      // encendida sobre el verde del monte y no dibujada encima.
+      //
+      // Arranca cuando el acto arranca y sigue hasta el final de la pieza: el
+      // acto 04 es una deriva de cámara casi quieta, y el agua corriendo es lo
+      // único que se mueve en esos dos segundos y medio.
       map.setPaintProperty('agua', 'line-opacity',
         frenteQueEnciende(frame, ACTO.agua, 'orden', 0.95));
+      map.setPaintProperty('agua-halo', 'line-opacity',
+        frenteQueEnciende(frame, ACTO.agua, 'orden', 0.42));
+      const ciclo = Math.max(0, frame - ACTO.agua.desde) / 110;
+      const pulso = (ciclo % 1) * 1.3 - 0.15;
+      map.setPaintProperty('agua', 'line-gradient',
+        corriente(pulso, '#7CC2E3', '#EAF8FF') as maplibregl.ExpressionSpecification);
+      map.setPaintProperty('agua-halo', 'line-gradient',
+        corriente(pulso, '#7CC2E3', '#FFFFFF', 0.2) as maplibregl.ExpressionSpecification);
     },
   });
 

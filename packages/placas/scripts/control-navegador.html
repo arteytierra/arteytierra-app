@@ -1,6 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Control de los diez archivos</title>
+<title>Control de los veinte archivos</title>
 <!--
   El control que ffprobe no puede hacer.
 
@@ -24,7 +24,12 @@
 <script>
 const ARCHIVOS = [
   'portada.webm', 'portada.mp4',
-  'cuatro-lecturas.webm', 'cuatro-lecturas.mp4',
+  'lectura-relieve.webm', 'lectura-relieve.mp4',
+  'lectura-curvas.webm', 'lectura-curvas.mp4',
+  'lectura-agua.webm', 'lectura-agua.mp4',
+  'lectura-represas.webm', 'lectura-represas.mp4',
+  'lectura-todo.webm', 'lectura-todo.mp4',
+  'lectura-secuencia.webm', 'lectura-secuencia.mp4',
   'lazo-perimetro.webm', 'lazo-perimetro.mp4',
   'lazo-giro.webm', 'lazo-giro.mp4',
   'lazo-agua.webm', 'lazo-agua.mp4',
@@ -67,8 +72,19 @@ async function probar(src) {
       if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(() => r(true));
     });
     await v.play();
-    const t0 = v.currentTime;
-    const porTiempo = new Promise(r => setTimeout(() => r(v.currentTime > t0), 2500));
+    // Se PREGUNTA cada décima en vez de muestrear una sola vez al final de una
+    // ventana fija, y la pregunta es «¿se movió alguna vez?», no «¿se está
+    // moviendo ahora?». Con las lecturas de dos segundos la muestra única cae
+    // después del final —donde `currentTime` ya se quedó quieto en 2,0— y el
+    // control informa que no avanza una pieza que se reprodujo entera. Un
+    // falso negativo es tan inútil como un falso positivo: lo primero que uno
+    // hace con él es desconfiar del control.
+    const porTiempo = new Promise(r => {
+      const reloj = setInterval(() => {
+        if (v.currentTime > 0 || v.ended) { clearInterval(reloj); r(true); }
+      }, 100);
+      setTimeout(() => { clearInterval(reloj); r(v.currentTime > 0 || v.ended); }, 4000);
+    });
     avanza = await Promise.race([presentado, porTiempo]);
     if (!avanza) avanza = await porTiempo;
     v.pause();
@@ -81,7 +97,13 @@ async function probar(src) {
     const peso = await fetch(a + '?v=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
       .then(r => Math.round((+r.headers.get('content-length') || 0) / 1024) + ' KB')
       .catch(() => '?');
-    const r = await probar(a);
+    // Se reintenta una vez cuando el archivo CARGÓ pero no avanzó, y no es
+    // indulgencia con el criterio: el primero de la lista arranca con la
+    // página todavía montándose y con el panel sin componer, y da «NO» aunque
+    // reproducido solo llegue a 2,99 s de 13. Un archivo que de verdad no
+    // decodifica falla las dos veces; la cola del arranque, no.
+    let r = await probar(a);
+    if (r.cargo && !r.avanza) r = await probar(a);
     const bien = r.cargo && r.err === null && r.avanza;
     fila([
       a,

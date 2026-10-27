@@ -1,5 +1,5 @@
 /**
- * Renderiza, codifica y VERIFICA las cinco piezas del encargo 02.
+ * Renderiza, codifica y VERIFICA las diez piezas del encargo 02.
  *
  *   node scripts/piezas.mjs                 # todo
  *   node scripts/piezas.mjs portada         # una sola
@@ -17,12 +17,12 @@
  * la decodificación. Por eso las banderas de color van explícitas en los dos
  * codecs y por eso se verifican después, sobre el archivo escrito.
  *
- * ── Por qué B lleva un fotograma clave cada cinco ──────────────────────────
- * Porque se recorre cambiando `currentTime` desde la página. Al buscar, el
- * decodificador tiene que volver al fotograma clave anterior y reconstruir
- * desde ahí: con claves cada dos segundos eso son sesenta cuadros de trabajo
- * por cada salto y se ve a los tirones. Cada cinco cuesta peso —por eso 720p y
- * ocho segundos— y se mide acá abajo, cuadro por cuadro.
+ * ── Por qué la secuencia lleva un fotograma clave cada cinco ───────────────
+ * Porque es la única que se recorre cambiando `currentTime` desde la página.
+ * Al buscar, el decodificador tiene que volver al fotograma clave anterior y
+ * reconstruir desde ahí: con claves cada dos segundos eso son ciento veinte
+ * cuadros de trabajo por cada salto y se ve a los tirones. Cada cinco cuesta
+ * peso, y se mide acá abajo, cuadro por cuadro.
  */
 import { existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -50,18 +50,36 @@ const MiB = 1024 * 1024;
  * cuatro lecturas arrancan en el estado «Relieve», que es el que el visitante
  * tiene que ver antes de empezar a bajar.
  */
+/**
+ * Las seis lecturas cuestan más bits por segundo que todo lo demás y vale la
+ * pena decir por qué: dan una vuelta entera en dos segundos, así que **no hay
+ * un solo píxel que se repita entre un cuadro y el siguiente**. En una pieza de
+ * cámara quieta el codificador paga el primer cuadro y después casi nada; acá
+ * paga todos. Por eso van a 2.000 kbps contra los 950 de los lazos, y aun así
+ * pesan menos de un cuarto de lo que pesaba la pieza de ocho segundos.
+ */
+const LECTURA = { kbps: 2000, tope: 1.1 * MiB, lazo: true };
+
 const PIEZAS = {
   portada: {
     id: 'PortadaPredio', archivo: 'portada', kbps: 1050, tope: 2.5 * MiB,
-    poster: 'ultimo', cuadroSuelto: true,
+    poster: 'ultimo', cuadroSuelto: true, prueba: true,
   },
-  lecturas: {
-    id: 'CuatroLecturas', archivo: 'cuatro-lecturas', kbps: 2200, tope: 3 * MiB,
-    poster: 'primero', gop: 5,
+  'lectura-relieve':  { id: 'LecturaRelieve',  archivo: 'lectura-relieve',  ...LECTURA, poster: 'primero' },
+  'lectura-curvas':   { id: 'LecturaCurvas',   archivo: 'lectura-curvas',   ...LECTURA },
+  'lectura-agua':     { id: 'LecturaAgua',     archivo: 'lectura-agua',     ...LECTURA },
+  'lectura-represas': { id: 'LecturaRepresas', archivo: 'lectura-represas', ...LECTURA },
+  'lectura-todo':     { id: 'LecturaTodo',     archivo: 'lectura-todo',     ...LECTURA, poster: 'primero', prueba: true },
+  // La única que no es un bucle: acumula las cuatro capas, así que el último
+  // cuadro no se parece al primero. Es la que la página puede recorrer con
+  // `currentTime`, y por eso es la única con fotograma clave corto.
+  'lectura-secuencia': {
+    id: 'LecturaSecuencia', archivo: 'lectura-secuencia', kbps: 2000, tope: 1.1 * MiB,
+    poster: 'primero', gop: 5, prueba: true,
   },
   'lazo-perimetro': { id: 'LazoPerimetro', archivo: 'lazo-perimetro', kbps: 950, tope: 900 * 1024, lazo: true },
   'lazo-giro':      { id: 'LazoGiro',      archivo: 'lazo-giro',      kbps: 950, tope: 900 * 1024, lazo: true },
-  'lazo-agua':      { id: 'LazoAgua',      archivo: 'lazo-agua',      kbps: 950, tope: 900 * 1024, lazo: true },
+  'lazo-agua':      { id: 'LazoAgua',      archivo: 'lazo-agua',      kbps: 950, tope: 900 * 1024, lazo: true, prueba: true },
 };
 
 const PRUEBA = process.argv.includes('--prueba');
@@ -352,7 +370,10 @@ const principal = async () => {
   for (const clave of elegidas) {
     const pieza = PIEZAS[clave];
     if (!pieza) { process.stdout.write(`(no existe la pieza «${clave}»)\n`); continue; }
-    if (PRUEBA && pieza.lazo) continue;   // el ritmo que hay que aprobar es el de A y B
+    // El corte en baja es para aprobar el ritmo, no para ver las diez piezas:
+    // van las que cambiaron de verdad —la portada, el bucle con todo, la
+    // secuencia y el lazo del agua, que es el que se rehízo entero—.
+    if (PRUEBA && !pieza.prueba) continue;
     process.stdout.write(`\n${clave} · ${pieza.id}\n`);
     await renderizar(clave, pieza, servidor);
   }
