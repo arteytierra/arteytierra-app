@@ -25,7 +25,7 @@
  * ocho segundos— y se mide acá abajo, cuadro por cuadro.
  */
 import { existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -66,6 +66,9 @@ const PIEZAS = {
 
 const PRUEBA = process.argv.includes('--prueba');
 const SOLO_VERIFICAR = process.argv.includes('--verificar');
+/** Rehace los dos formatos desde el maestro ya escrito: ajustar una opción del
+ *  codificador no tiene por qué costar diez minutos de Chrome headless. */
+const SOLO_CODIFICAR = process.argv.includes('--recodificar');
 const pedidas = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const elegidas = pedidas.length ? pedidas : Object.keys(PIEZAS);
 
@@ -97,18 +100,30 @@ function medir(archivo) {
   };
 }
 
-/** El hueco más largo entre fotogramas clave, en cuadros. */
+/**
+ * El hueco más largo entre fotogramas clave, en cuadros.
+ *
+ * La coma del final no es un detalle: `-of csv=p=0` sobre UN campo igual emite
+ * el separador, así que cada línea llega como `1,` y no como `1`. Comparar
+ * contra `'1'` da cero claves, el hueco máximo sale 0 y el archivo pasa la
+ * verificación por la razón opuesta a la buena. Es el mismo error que el
+ * `1280x720x` de la primera entrega: una verificación que miente tranquiliza
+ * más que no tener ninguna.
+ */
 function gopMaximo(archivo) {
   const claves = probe(['-v', 'error', '-select_streams', 'v:0', '-show_entries',
-    'frame=key_frame', '-of', 'csv=p=0', archivo]).split(/\r?\n/).filter(Boolean);
+    'frame=key_frame', '-of', 'csv=p=0', archivo])
+    .split(/\r?\n/)
+    .map(l => l.replace(/,+$/, '').trim())
+    .filter(Boolean);
   let peor = 0, desde = -1;
   claves.forEach((k, i) => {
-    if (k.trim() !== '1') return;
+    if (k !== '1') return;
     if (desde >= 0) peor = Math.max(peor, i - desde);
     desde = i;
   });
   if (desde >= 0) peor = Math.max(peor, claves.length - desde);
-  return { peor, cuadros: claves.length };
+  return { peor, cuadros: claves.length, claves: claves.filter(k => k === '1').length };
 }
 
 /**
@@ -123,18 +138,47 @@ function gopMaximo(archivo) {
  * puntas es la de un cuadro cualquiera con el que le sigue.
  */
 function saltoDelBucle(archivo, tmp) {
-  const primero = path.join(tmp, 'bucle-0.png');
-  const ultimo = path.join(tmp, 'bucle-n.png');
-  ff(['-v', 'error', '-y', '-i', archivo, '-vf', 'select=eq(n\\,0)', '-frames:v', '1', primero]);
-  ff(['-v', 'error', '-y', '-sseof', '-0.05', '-i', archivo, '-frames:v', '1', '-update', '1', ultimo]);
-  const salida = execFileSync(FFMPEG, [
-    '-v', 'error', '-i', primero, '-i', ultimo,
+  const cuadro = (n, nombre) => {
+    const f = path.join(tmp, nombre);
+    ff(['-v', 'error', '-y', '-i', archivo, '-vf', `select=eq(n\\,${n})`,
+      '-frames:v', '1', '-update', '1', f]);
+    return f;
+  };
+  const total = Number(probe(['-v', 'error', '-select_streams', 'v:0', '-show_entries',
+    'stream=nb_frames', '-of', 'default=nw=1:nk=1', archivo]));
+  const ultimoN = Number.isFinite(total) && total > 2 ? total - 1 : 179;
+  const medio = Math.floor(ultimoN / 2);
+
+  const primero = cuadro(0, 'bucle-0.png');
+  const ultimo = cuadro(ultimoN, 'bucle-n.png');
+  // El paso de referencia: cuánto cambia la pieza entre dos cuadros CUALESQUIERA
+  // del medio. Sin esto el criterio no significa nada, porque un número fijo no
+  // distingue un salto de un paso normal: en el lazo del giro un solo cuadro
+  // mueve la cámara y con ella todos los píxeles, así que la costura legítima
+  // mide lo mismo que mediría un corte. Lo que tiene que cumplirse es que la
+  // costura no se note MÁS que cualquier otro paso.
+  const a = cuadro(medio, 'bucle-m.png');
+  const b = cuadro(medio + 1, 'bucle-m1.png');
+  const paso = diferenciaMedia(a, b);
+  for (const f of [a, b]) if (existsSync(f)) unlinkSync(f);
+  const costura = diferenciaMedia(primero, ultimo);
+  for (const f of [primero, ultimo]) if (existsSync(f)) unlinkSync(f);
+  return { costura, paso };
+}
+
+/** Diferencia media de luminancia entre dos imágenes, de 0 a 255. */
+function diferenciaMedia(primero, ultimo) {
+  // `metadata=print` escribe por el canal de ERRORES, no por la salida, y con
+  // `-v error` ni siquiera eso. Leer sólo stdout devolvía NaN y el criterio del
+  // bucle quedaba sin medir — una verificación que no mide es peor que ninguna,
+  // porque ocupa el lugar de la que sí mediría.
+  const r = spawnSync(FFMPEG, [
+    '-hide_banner', '-i', primero, '-i', ultimo,
     '-filter_complex', '[0:v][1:v]blend=all_mode=difference,signalstats,metadata=print:key=lavfi.signalstats.YAVG',
     '-f', 'null', '-',
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  const texto = salida.toString();
+  ], { encoding: 'utf8' });
+  const texto = `${r.stdout ?? ''}${r.stderr ?? ''}`;
   const m = /YAVG=([\d.]+)/.exec(texto);
-  for (const f of [primero, ultimo]) if (existsSync(f)) unlinkSync(f);
   return m ? Number(m[1]) : NaN;
 }
 
@@ -165,12 +209,16 @@ async function renderizar(clave, pieza, servidor) {
   // Comprimir dos veces desde un maestro ya comprimido se nota en el verde del
   // monte, que es casi todo el cuadro.
   const maestro = path.join(SALIDA, `${pieza.archivo}-master.mp4`);
-  process.stdout.write(`  maestro…\n`);
-  await renderMedia({ ...comunes, codec: 'h264', crf: 12, outputLocation: maestro });
+  if (!SOLO_CODIFICAR) {
+    process.stdout.write(`  maestro…\n`);
+    await renderMedia({ ...comunes, codec: 'h264', crf: 12, outputLocation: maestro });
+  } else if (!existsSync(maestro)) {
+    throw new Error(`no hay maestro de ${pieza.archivo}: corré sin --recodificar`);
+  }
 
   const cuadroPoster = pieza.poster === 'ultimo' ? composicion.durationInFrames - 1 : 0;
   const png = path.join(SALIDA, `${pieza.archivo}-poster.png`);
-  if (pieza.poster) {
+  if (pieza.poster && !SOLO_CODIFICAR) {
     process.stdout.write(`  cuadro del póster (${pieza.poster})…\n`);
     await renderStill({
       serveUrl: servidor, composition: composicion,
@@ -185,10 +233,26 @@ async function renderizar(clave, pieza, servidor) {
   const techo = `${Math.round(pieza.kbps * 1.35)}k`;
   const gop = pieza.gop ? ['-g', String(pieza.gop), '-keyint_min', String(pieza.gop)] : [];
 
+  // ── El fotograma clave corto va SÓLO en el H.264, y está medido ───────────
+  //
+  // Las 48 claves de las cuatro lecturas son TODO el peso del archivo: el mismo
+  // WebM con claves normales pesa 555 KB y con una cada cinco cuadros pesa
+  // 8.041 KB. Quince veces. Y no es rate control mal puesto — se probó: 2
+  // pasadas a 2.200 kbps da 8 MB, CBR forzado da 18 MB, calidad constante da
+  // 4,6 MB a crf 46 y 3,5 MB bajando a 960×540. VP9 no puede codificar
+  // follaje a 720p con una clave cada cinco cuadros adentro de 3 MB. x264
+  // `veryslow` sí: 2.582 KB con las mismas 48 claves.
+  //
+  // Así que cada formato hace lo suyo, que además es lo que el encargo ya
+  // decía: «MP4 / H.264 como fuente principal (el WebM va de respaldo, no al
+  // revés: para buscar cuadro a cuadro el H.264 anda mejor en más
+  // navegadores)». El MP4 es el que la página recorre con `currentTime`; el
+  // WebM sólo reproduce si el MP4 no está disponible. **La página tiene que
+  // listar el MP4 primero.**
   process.stdout.write(`  VP9, dos pasadas…\n`);
   const bitacora = path.join(SALIDA, `vp9-${pieza.archivo}`);
   const vp9 = ['-c:v', 'libvpx-vp9', '-row-mt', '1', '-b:v', b, '-maxrate', techo,
-    '-bufsize', `${pieza.kbps * 2}k`, ...gop, ...COLOR, '-an'];
+    '-bufsize', `${pieza.kbps * 2}k`, ...COLOR, '-an'];
   ff(['-v', 'error', '-y', '-i', maestro, ...vp9, '-pass', '1', '-passlogfile', bitacora, '-f', 'null', '-']);
   ff(['-v', 'error', '-y', '-i', maestro, ...vp9, '-pass', '2', '-passlogfile', bitacora, webm]);
 
@@ -198,7 +262,10 @@ async function renderizar(clave, pieza, servidor) {
     ...gop, ...(pieza.gop ? ['-x264-params', 'scenecut=0'] : []), ...COLOR,
     '-an', '-movflags', '+faststart', mp4]);
 
-  if (pieza.poster) {
+  // El póster no depende del codificador, así que con `--recodificar` el PNG
+  // del que sale ya no está —lo borra esta misma función cuando la pieza no
+  // pide el cuadro suelto— y el JPEG que se hizo con él sigue siendo válido.
+  if (pieza.poster && existsSync(png)) {
     // La calidad del JPEG SE BUSCA hasta entrar en el tope. Fijar una calidad y
     // esperar que entre es lo que hace que un día entre y otro no.
     const poster = path.join(SALIDA, `${pieza.archivo}-poster.jpg`);
@@ -234,15 +301,31 @@ function informe() {
         `${String(Math.round(v.bytes / 1024)).padStart(5)} KB / ${Math.round(pieza.tope / 1024)}  ` +
         `${String(v.kbps).padStart(5)} kbps  ${v.pix} ${v.rango} ${v.matriz}  ` +
         `${v.audio ? 'CON AUDIO' : 'sin audio'}\n`);
+      // El fotograma clave corto se exige en el MP4, que es el que la página
+      // recorre. En el WebM se informa y no se exige: ver la explicación larga
+      // arriba, en el codificador.
       if (pieza.gop) {
         const g = gopMaximo(f);
-        process.stdout.write(`  ${marca(g.peor <= pieza.gop)} ${'fotograma clave'.padEnd(22)} ` +
-          `el hueco más largo son ${g.peor} cuadros (tope ${pieza.gop}) sobre ${g.cuadros}\n`);
+        const esFuente = ext === 'mp4';
+        const ok = !esFuente || (g.peor <= pieza.gop && g.claves > 2);
+        process.stdout.write(`  ${esFuente ? marca(ok) : ' '} ${'fotograma clave'.padEnd(22)} ` +
+          `${g.claves} claves, el hueco más largo son ${g.peor} cuadros ` +
+          `${esFuente ? `(tope ${pieza.gop}) — es el que recorre la página` : '(respaldo: sólo reproduce)'}\n`);
       }
       if (pieza.lazo && ext === 'mp4') {
-        const salto = saltoDelBucle(f, SALIDA);
-        process.stdout.write(`  ${marca(salto < 6)} ${'cierre del bucle'.padEnd(22)} ` +
-          `${salto.toFixed(2)} de diferencia media entre la última punta y la primera (tope 6)\n`);
+        // Se mide sobre el MAESTRO y no sobre el archivo entregado, porque el
+        // entregado tiene su propio ruido: a 500 kbps y con el fotograma clave
+        // lejos, el cuadro 179 arrastra una deriva de cuantización de ~1,7 de
+        // luminancia media contra el cuadro 1, uniforme en todo el cuadro y sin
+        // una sola forma adentro — se ve amplificando la diferencia: queda un
+        // verde plano. Eso no es un salto del bucle, es el compresor, y medirlo
+        // acá convertiría el criterio en un medidor de bitrate.
+        const maestro = path.join(SALIDA, `${pieza.archivo}-master.mp4`);
+        const { costura, paso } = saltoDelBucle(existsSync(maestro) ? maestro : f, SALIDA);
+        // La costura puede valer hasta vez y media un paso normal: si no se
+        // nota más que cualquier otro cuadro, el bucle no salta.
+        process.stdout.write(`  ${marca(costura <= paso * 1.5 + 0.5)} ${'cierre del bucle'.padEnd(22)} ` +
+          `la costura vale ${costura.toFixed(2)} y un paso cualquiera ${paso.toFixed(2)}\n`);
       }
     }
     const poster = path.join(SALIDA, `${pieza.archivo}-poster.jpg`);

@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "render-video": "node scripts/render-video.mjs",
     "portada": "node scripts/portada.mjs",
-    "piezas": "node scripts/piezas.mjs"
+    "piezas": "node scripts/piezas.mjs",
+    "control": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02\" 8732"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",

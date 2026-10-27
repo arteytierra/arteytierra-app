@@ -59,6 +59,10 @@ const AIRE = 0.0365;
  */
 export const EXAGERACION = 1.4;
 
+/** Reloj de pared que se le da al mapa para terminar de cargar antes del primer
+ *  cuadro. Cuatro segundos una vez por render. */
+const CALENTAMIENTO_MS = 4000;
+
 export interface Camara {
   center: [number, number];
   zoom: number;
@@ -353,8 +357,36 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
     map.on('error', e => console.log(`[${nombre}] maplibre:`, e.error?.message ?? e));
     map.on('load', () => {
       map.setTerrain({ source: 'dem', exaggeration: EXAGERACION });
-      setListo(true);
-      continueRender(handleInicial);
+
+      // ── El calentamiento, que es lo único que arregla el primer cuadro ────
+      //
+      // Remotion renderiza los cuadros en orden en UNA sola pestaña, así que
+      // el cuadro 0 se captura con el mapa recién nacido. Medido en el lazo
+      // del perímetro —cámara fija, mismas capas en las dos puntas, así que
+      // tendrían que ser idénticas—: el cuadro 0 estaba a 18,9 de diferencia
+      // media de luminancia del 179, y del 1 en adelante a 3,3. O sea dos
+      // cosas distintas: el cuadro 0 sale con el terreno casi plano, y los
+      // demás siguen afinándose durante todo el bucle a medida que llegan
+      // teselas de más detalle.
+      //
+      // `areTilesLoaded()` no alcanza para esto: contesta por lo que el mapa
+      // YA pidió, y el terreno no pide nada hasta que hay una pasada de dibujo
+      // con la cámara puesta. Por eso acá se mueve la cámara a su sitio, se
+      // espera, y recién entonces se le dan unos segundos de reloj para que
+      // termine de llegar lo que se pidió en esa pasada. Cuesta cuatro
+      // segundos UNA vez por render; el tirón del principio costaba un salto
+      // cada seis segundos en los lazos.
+      map.resize();
+      map.jumpTo(camara(0, width, height));
+      cuandoEsteQuieto(map, () => {
+        setTimeout(() => {
+          map.triggerRepaint();
+          cuandoEsteQuieto(map, () => {
+            setListo(true);
+            continueRender(handleInicial);
+          });
+        }, CALENTAMIENTO_MS);
+      });
     });
 
     return () => { map.remove(); mapRef.current = null; };
@@ -375,7 +407,21 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
       pintar(map, frame);
       map.resize();
       map.jumpTo(camara(frame, width, height));
-      cuandoEsteQuieto(map, () => requestAnimationFrame(() => requestAnimationFrame(soltar)));
+      // Se espera DOS veces, con un repintado en el medio, y no es por las
+      // dudas.
+      //
+      // `areTilesLoaded()` responde por lo que el mapa ya pidió, y el terreno
+      // no pide sus teselas hasta que hay una pasada de dibujo con la cámara
+      // puesta. En la primera espera contesta que sí teniendo pendiente todo el
+      // relieve, así que el cuadro sale con el terreno plano. Medido en el lazo
+      // del perímetro: el cuadro 0 y el 179 son la misma cámara y las mismas
+      // capas, y daban 18,9 de diferencia media de luminancia —el cuadro 0 se
+      // veía claramente más plano—. En un bucle eso es un salto cada seis
+      // segundos; en las otras piezas es un tirón al empezar.
+      cuandoEsteQuieto(map, () => {
+        map.triggerRepaint();
+        cuandoEsteQuieto(map, () => requestAnimationFrame(() => requestAnimationFrame(soltar)));
+      });
     };
 
     cuandoEsteQuieto(

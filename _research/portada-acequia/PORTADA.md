@@ -34,8 +34,8 @@ En un campo llano el acto 02 no tendría nada que encender. Acá el D8 encuentra
 
 Texto propuesto para el `alt`:
 
-> Vista 3D del relieve de un predio de 417 hectáreas en Cuetiepa, Chiapas, con
-> las curvas de nivel dibujadas sobre la imagen satelital. Relieve Copernicus
+> Vista 3D del relieve de un predio real de 417 hectáreas, con las curvas de
+> nivel dibujadas sobre la imagen satelital. Relieve Copernicus
 > GLO-30 a ~30 m; imagen Esri World Imagery.
 
 ## Los actos
@@ -114,7 +114,7 @@ es un entregable que incumple en producción.
 
 | | cómo se cumple |
 |---|---|
-| **A1** predio declarado | Cuetiepa, Chiapas, con el relieve de Copernicus GLO-30. Va en el `alt` (abajo) y en este documento |
+| **A1** predio declarado | El predio de Cuetiepia, con el relieve de Copernicus GLO-30. Va **en este documento, que es interno**, y NO en el `alt`: el 25/10/2026 Jonatan cerró este criterio nombrando el predio y aclarando que el nombre todavía no se publica, porque poner el proyecto de un cliente —y con él la ubicación de su tierra— en una página pública lo autoriza el cliente. Hasta entonces el crédito de la página dice «Predio real» |
 | **A2** nada modelado | todo sale de `obtenerGrillaDEM` + las funciones del repo, y la vista 3D es MapLibre con el estilo de `Vista3D.tsx` |
 | **A3** acumulación, no fluidos | son 37 polilíneas de `calcularEscorrentias` que suben de opacidad por orden de acumulación. No hay partículas, ni volumen, ni desplazamiento |
 | **A4** ningún número | la atribución quemada dice «Relieve Copernicus GLO-30 · imagen Esri World Imagery» y nada más. El `~30 m` que tenía salió por esto: es una escala numérica, y el paso del DEM vive en el `alt` y acá |
@@ -137,8 +137,8 @@ es un entregable que incumple en producción.
 
 ### El `alt` del video
 
-> Vista 3D del relieve de un predio de 417 hectáreas en Cuetiepa, Chiapas, con
-> las curvas de nivel dibujadas sobre la imagen satelital. Relieve Copernicus
+> Vista 3D del relieve de un predio real de 417 hectáreas, con las curvas de
+> nivel dibujadas sobre la imagen satelital. Relieve Copernicus
 > GLO-30 a ~30 m; imagen Esri World Imagery.
 
 ## Lo que queda abierto
