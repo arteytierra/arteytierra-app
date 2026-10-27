@@ -153,6 +153,13 @@ export interface OpcionesVista {
   sombra?: number;
   /** Niveles de zoom sobre el encuadre con aire. 1,0 es la vista a sangre. */
   acercar?: number;
+  /**
+   * La inclinación de la cámara. 61 es la de la pose aprobada, que es un
+   * paisaje; una pieza que tiene que dejar LEER capas superpuestas quiere menos
+   * —con 61 grados la mitad lejana del predio se comprime contra el horizonte y
+   * una represa de 6,7 ha queda del tamaño de un sello—.
+   */
+  inclinacion?: number;
 }
 
 /**
@@ -172,7 +179,7 @@ const BLANCO_HACIA_LA_CAMARA_M = 351;
 
 export function vistaASangre(
   ancho: number, alto: number,
-  { rumbo = RUMBO, sombra = SOMBRA_QUIETA, acercar = 1.0 }: OpcionesVista = {},
+  { rumbo = RUMBO, sombra = SOMBRA_QUIETA, acercar = 1.0, inclinacion = 61 }: OpcionesVista = {},
 ): Camara {
   const a = ((rumbo + 180) * Math.PI) / 180;
   const latMedia = ((SUR + NORTE) / 2) * Math.PI / 180;
@@ -182,7 +189,7 @@ export function vistaASangre(
       CENTRO[1] + (BLANCO_HACIA_LA_CAMARA_M * Math.cos(a)) / 111_320,
     ],
     zoom: zoomQueEncuadra(ancho, alto, sombra) + acercar,
-    pitch: 61,
+    pitch: inclinacion,
     bearing: rumbo,
   };
 }
@@ -291,6 +298,41 @@ export function corriente(
   return degradado(paradas);
 }
 
+/**
+ * Una capa que una pieza agrega al estilo compartido, con dónde va.
+ *
+ * El orden importa y no es decorativo: el shader de elevaciones vive ENTRE
+ * la ortofoto y el sombreado para que la misma luz que le da volumen al
+ * monte se lo dé a la rampa. Una capa que se agregue al final queda arriba
+ * de todo, que casi nunca es lo que se quiere.
+ */
+export interface CapaExtra {
+  capa: maplibregl.LayerSpecification;
+  /** Id de la capa del estilo base ANTES de la cual se inserta. */
+  antes?: string;
+}
+
+/**
+ * Inserta las capas de la pieza en el estilo base, cada una donde pide.
+ *
+ * Una capa cuyo `antes` no existe se agrega al final en vez de perderse, y
+ * se avisa: una capa que desaparece sin un error es un cuadro negro sin
+ * explicación, que es el defecto más caro de encontrar de toda esta carpeta.
+ */
+function conExtras(
+  base: maplibregl.LayerSpecification[],
+  extras?: CapaExtra[],
+): maplibregl.LayerSpecification[] {
+  if (!extras || extras.length === 0) return base;
+  const salida = [...base];
+  for (const { capa, antes } of extras) {
+    const i = antes ? salida.findIndex(l => l.id === antes) : -1;
+    if (antes && i < 0) console.log(`[mapa] la capa «${capa.id}» pedía ir antes de «${antes}», que no existe: va al final`);
+    if (i >= 0) salida.splice(i, 0, capa); else salida.push(capa);
+  }
+  return salida;
+}
+
 export interface OpcionesMapa {
   /** La cámara de este cuadro. */
   camara: (frame: number, ancho: number, alto: number) => Camara;
@@ -298,13 +340,23 @@ export interface OpcionesMapa {
   pintar: (map: maplibregl.Map, frame: number) => void;
   /** Identificador para los mensajes de `delayRender`. */
   nombre: string;
+  /**
+   * Fuentes y capas que esta pieza agrega al estilo compartido.
+   *
+   * Van por acá y no escritas en el estilo base por una razón concreta: las
+   * diez piezas del encargo 02 están aprobadas, y meterles siete fuentes y
+   * once capas que no usan les cambia el estilo —aunque todas arranquen en
+   * opacidad cero—. Lo que una pieza no necesita, no se le monta.
+   */
+  fuentes?: Record<string, maplibregl.SourceSpecification>;
+  capas?: CapaExtra[];
 }
 
 /**
  * Monta el mapa, lo mueve y lo pinta cuadro por cuadro, y devuelve el `ref` del
  * contenedor para que la composición lo ponga donde quiera.
  */
-export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
+export function usarMapaDelPredio({ camara, pintar, nombre, fuentes, capas }: OpcionesMapa) {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const contRef = useRef<HTMLDivElement>(null);
@@ -356,7 +408,12 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
             encoding: 'terrarium',
             maxzoom: 14,
           },
-          curvas:   { type: 'geojson', data: GEO_CURVAS },
+          // `lineMetrics` habilita `line-progress`, que es lo que permite
+          // DIBUJAR cada curva a lo largo de su propio recorrido en vez de
+          // encenderla entera. Las piezas del encargo 02 no lo usan y su
+          // dibujo no cambia: la bandera sólo agrega el cálculo de la
+          // métrica, no toca la geometría ni la pintura.
+          curvas:   { type: 'geojson', data: GEO_CURVAS, lineMetrics: true },
           // `lineMetrics` es lo que habilita el degradado por avance: sin esto
           // `line-progress` no existe y la corriente no se puede dibujar.
           agua:     { type: 'geojson', data: GEO_AGUA, lineMetrics: true },
@@ -368,8 +425,9 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
           keyline:  { type: 'geojson', data: GEO_KEYLINE },
           zanjas:   { type: 'geojson', data: GEO_ZANJAS },
           predio:   { type: 'geojson', data: GEO_PREDIO, lineMetrics: true },
+          ...(fuentes ?? {}),
         },
-        layers: [
+        layers: conExtras([
           { id: 'fondo', type: 'background', paint: { 'background-color': COLORES.tinta } },
           { id: 'sat', type: 'raster', source: 'sat', paint: { 'raster-opacity': 1 } },
           {
@@ -496,7 +554,7 @@ export function usarMapaDelPredio({ camara, pintar, nombre }: OpcionesMapa) {
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: { 'line-color': COLORES.crema, 'line-opacity': 0, 'line-width': 3.4 },
           },
-        ],
+        ], capas),
         sky: {
           'sky-color': '#0f1418',
           'horizon-color': '#1A1210',

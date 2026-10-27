@@ -10,6 +10,8 @@ import {
   CUADROS_LECTURA, FPS_LECTURA, LecturaPredio, esquemaLectura,
 } from './composiciones/LecturaPredio';
 import { CUADROS_LAZO, LazoPredio, esquemaLazo } from './composiciones/LazoPredio';
+import { CUADROS_MESA, MesaDeTrabajo } from './composiciones/MesaDeTrabajo';
+import { CUADROS_PAR, ParCrudoLeido } from './composiciones/ParCrudoLeido';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
 import {
   CUADROS_PORTADA_PREDIO, PortadaPredio, esquemaPortadaPredio,
@@ -376,6 +378,39 @@ export const Root: React.FC = () => {
           defaultProps={{ lazo }}
         />
       ))}
+
+      {/*
+        El encargo 03: la secuencia de la mesa de trabajo. Dieciséis segundos,
+        cámara quieta, bucle perfecto. Es la única de todas en la que el primer
+        y el último cuadro SÍ son idénticos, y la razón está en la cabecera de
+        la composición: donde nada se mueve, periódico e idéntico son lo mismo.
+      */}
+      <Composition
+        id="MesaDeTrabajo"
+        component={MesaDeTrabajo}
+        durationInFrames={CUADROS_MESA}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        La entrega C: el par crudo contra leído, para la cortina. Son DOS
+        cuadros de la misma composición y no dos imágenes sueltas, porque
+        «alineadas al píxel» no se consigue pidiendo dos veces la misma cámara
+        —dos renders son dos mapas y dos cargas de teselas— sino no moviéndola.
+        1600 × 900, que es lo que pide el encargo.
+      */}
+      <Composition
+        id="ParCrudoLeido"
+        component={ParCrudoLeido}
+        durationInFrames={CUADROS_PAR}
+        fps={FPS}
+        width={1600}
+        height={900}
+        defaultProps={{}}
+      />
 
       <Composition
         id="GenWordmark"

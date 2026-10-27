@@ -12,7 +12,9 @@
     "render-video": "node scripts/render-video.mjs",
     "portada": "node scripts/portada.mjs",
     "piezas": "node scripts/piezas.mjs",
-    "control": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02\" 8732"
+    "control": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02\" 8732",
+    "par": "node scripts/par.mjs",
+    "control-03": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-03\" 8733"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",

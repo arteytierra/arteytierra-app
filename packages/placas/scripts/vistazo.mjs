@@ -22,9 +22,11 @@ import { renderStill, selectComposition } from '@remotion/renderer';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve(AQUI, '..');
-const SALIDA = 'C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02';
+// La carpeta la elige `--en=<ruta>`; por defecto, la del encargo en curso.
+const SALIDA = (process.argv.find(a => a.startsWith('--en=')) ??
+  '--en=C:/Arte y Tierra/Acequia/portada animacion/salida-encargo-03').slice(5);
 
-const [id, ...cuadros] = process.argv.slice(2);
+const [id, ...cuadros] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 if (!id) {
   process.stdout.write('uso: node scripts/vistazo.mjs <Composicion> [cuadro…]\n');
   process.exit(1);

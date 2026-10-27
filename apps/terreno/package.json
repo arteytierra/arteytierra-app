@@ -16,7 +16,8 @@
     "test:aguas": "vitest run tests/unit/aguas",
     "test:topografia": "vitest run tests/unit/topografia",
     "test:clima": "vitest run tests/unit/clima",
-    "test:economia": "vitest run tests/unit/economia"
+    "test:economia": "vitest run tests/unit/economia",
+    "datos-mesa": "tsx scripts/datos-mesa.ts"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",

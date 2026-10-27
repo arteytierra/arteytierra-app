@@ -11,7 +11,10 @@ import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 
-const RAIZ = process.argv[2];
+// `path.resolve` y no el argumento crudo: en Windows `path.join` devuelve
+// barras invertidas, así que una raíz pasada con barras normales no coincide
+// con el archivo armado y TODO devuelve 403. Pasó.
+const RAIZ = path.resolve(process.argv[2]);
 const PUERTO = Number(process.argv[3] ?? 8732);
 
 const TIPOS = {

@@ -1,13 +1,15 @@
 /**
- * Renderiza, codifica y VERIFICA las diez piezas del encargo 02.
+ * Renderiza, codifica y VERIFICA las piezas de los encargos 02 y 03.
  *
- *   node scripts/piezas.mjs                 # todo
- *   node scripts/piezas.mjs portada         # una sola
- *   node scripts/piezas.mjs --prueba        # cortes en baja de A y B, para el ritmo
+ *   node scripts/piezas.mjs                 # las diez del 02 (están aprobadas)
+ *   node scripts/piezas.mjs mesa par        # las dos del 03
+ *   node scripts/piezas.mjs --prueba mesa   # corte en baja, para aprobar el ritmo
  *   node scripts/piezas.mjs --verificar     # sólo medir lo que ya está escrito
  *
- * La salida NO va al repo: cae en
- * `C:\Arte y Tierra\Acequia\portada animacion\salida-encargo-02`.
+ * La salida NO va al repo: cae en `…\portada animacion\salida-encargo-0X`, y
+ * cada pieza sabe a cuál de las dos carpetas pertenece. Las diez del encargo 02
+ * están APROBADAS y no se rehacen: si se las pide, se las rehace igual, pero no
+ * entran en la corrida por defecto del encargo 03.
  *
  * ── El espacio de color, que ya rompió una vez ─────────────────────────────
  * La WebM de la primera entrega salió en rango COMPLETO con matriz bt470bg.
@@ -34,7 +36,11 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve(AQUI, '..');
-const SALIDA = 'C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02';
+const BASE = 'C:\\Arte y Tierra\\Acequia\\portada animacion';
+const SALIDA = `${BASE}\\salida-encargo-02`;
+const SALIDA_03 = `${BASE}\\salida-encargo-03`;
+/** Dónde cae cada pieza. El encargo 03 no se mezcla con el 02, que ya se entregó. */
+const carpeta = pieza => (pieza.encargo === 3 ? SALIDA_03 : SALIDA);
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -80,6 +86,20 @@ const PIEZAS = {
   'lazo-perimetro': { id: 'LazoPerimetro', archivo: 'lazo-perimetro', kbps: 950, tope: 900 * 1024, lazo: true },
   'lazo-giro':      { id: 'LazoGiro',      archivo: 'lazo-giro',      kbps: 950, tope: 900 * 1024, lazo: true },
   'lazo-agua':      { id: 'LazoAgua',      archivo: 'lazo-agua',      kbps: 950, tope: 900 * 1024, lazo: true, prueba: true },
+
+  // ── Encargo 03 ──────────────────────────────────────────────────────────
+  //
+  // Dieciséis segundos con la cámara QUIETA, que es la diferencia que paga
+  // el presupuesto: en las lecturas que giran no hay un solo píxel que se
+  // repita entre un cuadro y el siguiente, y por eso cuestan 2.000 kbps por
+  // dos segundos. Acá el codificador paga el primer cuadro de cada acto y
+  // casi nada en el medio, así que 700 kbps alcanzan para entrar en el tope
+  // de 1,5 MB que pide el encargo con margen. Y no lleva fotograma clave
+  // corto: esta pieza corre sola y en bucle, la página no la recorre.
+  mesa: {
+    id: 'MesaDeTrabajo', archivo: 'mesa-de-trabajo', kbps: 700, tope: 1.5 * MiB,
+    poster: 'primero', posterExtra: 435, lazo: true, prueba: true, encargo: 3,
+  },
 };
 
 const PRUEBA = process.argv.includes('--prueba');
@@ -88,7 +108,12 @@ const SOLO_VERIFICAR = process.argv.includes('--verificar');
  *  codificador no tiene por qué costar diez minutos de Chrome headless. */
 const SOLO_CODIFICAR = process.argv.includes('--recodificar');
 const pedidas = process.argv.slice(2).filter(a => !a.startsWith('--'));
-const elegidas = pedidas.length ? pedidas : Object.keys(PIEZAS);
+// Sin argumentos se corren SÓLO las del encargo en curso. Las diez del 02
+// están aprobadas y volver a renderizarlas es una hora de Chrome headless
+// para escribir los mismos archivos.
+const elegidas = pedidas.length
+  ? pedidas
+  : Object.keys(PIEZAS).filter(k => PIEZAS[k].encargo === 3);
 
 /** Las banderas de color, idénticas en los dos codecs. Ver la cabecera. */
 const COLOR = [
@@ -201,6 +226,7 @@ function diferenciaMedia(primero, ultimo) {
 }
 
 async function renderizar(clave, pieza, servidor) {
+  const SALIDA = carpeta(pieza);
   const composicion = await selectComposition({ serveUrl: servidor, id: pieza.id });
   const comunes = {
     serveUrl: servidor,
@@ -283,10 +309,30 @@ async function renderizar(clave, pieza, servidor) {
   // El póster no depende del codificador, así que con `--recodificar` el PNG
   // del que sale ya no está —lo borra esta misma función cuando la pieza no
   // pide el cuadro suelto— y el JPEG que se hizo con él sigue siendo válido.
+  // El segundo póster, el del estado leído. El encargo pide el cuadro 0, que
+  // en esta pieza es la ortofoto DESNUDA: correcto como primer cuadro del
+  // bucle y flojo como imagen de reposo, porque no se ve que haya una
+  // lectura. Van los dos y la página elige.
+  if (pieza.posterExtra != null && !SOLO_CODIFICAR) {
+    process.stdout.write(`  cuadro del póster leído (${pieza.posterExtra})…\n`);
+    const pngB = path.join(SALIDA, `${pieza.archivo}-poster-leido.png`);
+    await renderStill({
+      serveUrl: servidor, composition: composicion,
+      chromiumOptions: { gl: 'angle' }, timeoutInMilliseconds: 120_000,
+      frame: pieza.posterExtra, imageFormat: 'png', output: pngB,
+    });
+    const jpgB = path.join(SALIDA, `${pieza.archivo}-poster-leido.jpg`);
+    for (let q = 4; q <= 14; q++) {
+      ff(['-v', 'error', '-y', '-i', pngB, '-q:v', String(q), jpgB]);
+      if (statSync(jpgB).size <= 150 * 1024) break;
+    }
+    unlinkSync(pngB);
+  }
+
   if (pieza.poster && existsSync(png)) {
     // La calidad del JPEG SE BUSCA hasta entrar en el tope. Fijar una calidad y
     // esperar que entre es lo que hace que un día entre y otro no.
-    const poster = path.join(SALIDA, `${pieza.archivo}-poster.jpg`);
+    const poster = path.join(carpeta(pieza), `${pieza.archivo}-poster.jpg`);
     for (let q = 4; q <= 14; q++) {
       ff(['-v', 'error', '-y', '-i', png, '-q:v', String(q), poster]);
       if (statSync(poster).size <= 150 * 1024) break;
@@ -309,7 +355,7 @@ function informe() {
     if (!pieza) continue;
     process.stdout.write(`${clave}\n`);
     for (const ext of ['webm', 'mp4']) {
-      const f = path.join(SALIDA, `${pieza.archivo}.${ext}`);
+      const f = path.join(carpeta(pieza), `${pieza.archivo}.${ext}`);
       if (!existsSync(f)) { process.stdout.write(`  ${marca(false)} falta ${path.basename(f)}\n`); continue; }
       const v = medir(f);
       const colorOk = v.pix === 'yuv420p' && v.rango === 'tv' && v.matriz === 'bt709';
@@ -338,8 +384,8 @@ function informe() {
         // una sola forma adentro — se ve amplificando la diferencia: queda un
         // verde plano. Eso no es un salto del bucle, es el compresor, y medirlo
         // acá convertiría el criterio en un medidor de bitrate.
-        const maestro = path.join(SALIDA, `${pieza.archivo}-master.mp4`);
-        const { costura, paso } = saltoDelBucle(existsSync(maestro) ? maestro : f, SALIDA);
+        const maestro = path.join(carpeta(pieza), `${pieza.archivo}-master.mp4`);
+        const { costura, paso } = saltoDelBucle(existsSync(maestro) ? maestro : f, carpeta(pieza));
         // La costura puede valer hasta vez y media un paso normal: si no se
         // nota más que cualquier otro cuadro, el bucle no salta.
         process.stdout.write(`  ${marca(costura <= paso * 1.5 + 0.5)} ${'cierre del bucle'.padEnd(22)} ` +
@@ -358,7 +404,7 @@ function informe() {
 }
 
 const principal = async () => {
-  if (!existsSync(SALIDA)) mkdirSync(SALIDA, { recursive: true });
+  for (const d of [SALIDA, SALIDA_03]) if (!existsSync(d)) mkdirSync(d, { recursive: true });
   if (SOLO_VERIFICAR) { informe(); return; }
 
   process.stdout.write('Empaquetando…\n');

@@ -1,6 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Control de los veinte archivos</title>
+<title>Control de reproducción</title>
 <!--
   El control que ffprobe no puede hacer.
 
@@ -22,18 +22,12 @@
 <h1>Control de reproducción</h1>
 <table id="t"><tr><th>archivo<th>carga<th>error<th>presenta un cuadro<th>duración<th>tamaño</tr></table>
 <script>
-const ARCHIVOS = [
-  'portada.webm', 'portada.mp4',
-  'lectura-relieve.webm', 'lectura-relieve.mp4',
-  'lectura-curvas.webm', 'lectura-curvas.mp4',
-  'lectura-agua.webm', 'lectura-agua.mp4',
-  'lectura-represas.webm', 'lectura-represas.mp4',
-  'lectura-todo.webm', 'lectura-todo.mp4',
-  'lectura-secuencia.webm', 'lectura-secuencia.mp4',
-  'lazo-perimetro.webm', 'lazo-perimetro.mp4',
-  'lazo-giro.webm', 'lazo-giro.mp4',
-  'lazo-agua.webm', 'lazo-agua.mp4',
-];
+// Los archivos que haya en esta carpeta. La lista se pasa por el fragmento de
+// la URL —control-navegador.html#a.webm,a.mp4— y si no se pasa nada van los del
+// encargo 03, que es el que esta hoja acompaña.
+const ARCHIVOS = location.hash.length > 1
+  ? decodeURIComponent(location.hash.slice(1)).split(',')
+  : ['mesa-de-trabajo.webm', 'mesa-de-trabajo.mp4'];
 
 const fila = (c) => {
   const tr = document.getElementById('t').insertRow();

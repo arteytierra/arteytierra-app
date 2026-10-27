@@ -142,7 +142,11 @@ function construirRelieve() {
   )]!;
 
   const features: Array<{
-    type: 'Feature'; properties: { c: string };
+    // `n` es la clase de cota normalizada a [0,1]: 0 la celda más baja del
+    // predio, 1 la más alta. No cambia nada de lo que se dibuja —el color
+    // sigue siendo `c`— y es lo que permite ENCENDER el shader de las cotas
+    // bajas a las altas en vez de que aparezca entero de golpe.
+    type: 'Feature'; properties: { c: string; n: number };
     geometry: { type: 'Polygon'; coordinates: Par[][] };
   }> = [];
 
@@ -165,7 +169,7 @@ function construirRelieve() {
         const x1 = OESTE + (c - 0.5) * dLng;
         features.push({
           type: 'Feature',
-          properties: { c: color(clase) },
+          properties: { c: color(clase), n: Math.round((clase / (CLASES_RELIEVE - 1)) * 1000) / 1000 },
           geometry: {
             type: 'Polygon',
             coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]],
@@ -197,6 +201,26 @@ export const GEO_REPRESAS = {
 export const GEO_PREDIO = coleccion([
   linea([...D.mojones, D.mojones[0]!].map(m => [m.lng, m.lat] as Par)),
 ]);
+
+/**
+ * El predio como POLÍGONO, no como línea.
+ *
+ * Existe para una sola cosa: poder oscurecer el predio entero de una pasada en
+ * el acto del diseño. Lo que el terreno rechaza son 3.242 rectángulos y 941 KB
+ * para pintar de rojo el 95,5 % del cuadro; velar el polígono y encender encima
+ * lo que sí admite dice lo mismo con un rasgo.
+ */
+export const GEO_PREDIO_RELLENO = {
+  type: 'FeatureCollection' as const,
+  features: [{
+    type: 'Feature' as const,
+    properties: {},
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: [[...D.mojones, D.mojones[0]!].map(m => [m.lng, m.lat] as Par)],
+    },
+  }],
+};
 
 export const GEO_JUNTURAS = {
   type: 'FeatureCollection' as const,
