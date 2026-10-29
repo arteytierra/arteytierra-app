@@ -1,0 +1,23 @@
+Copyright (c) 2026 Jonatan Gabriel Palma. Todos los derechos reservados.
+
+Este repositorio contiene las aplicaciones acequia (apps/terreno) y
+arteytierra.org (apps/web), sus paquetes compartidos y el esquema de su base
+de datos. El codigo fuente es obra inedita y de titularidad exclusiva de
+Jonatan Gabriel Palma, protegida por la Ley 11.723 de la Republica Argentina
+y por los tratados internacionales en materia de derecho de autor.
+
+NO se concede autorizacion para usar, copiar, modificar, fusionar, publicar,
+distribuir, sublicenciar, vender ni crear obras derivadas de este codigo, en
+todo ni en parte, sin el consentimiento previo y por escrito del titular.
+
+El acceso a este repositorio, cuando fuera concedido, se otorga al solo
+efecto de colaborar en su desarrollo, no transfiere ningun derecho de
+propiedad intelectual y no habilita ninguno de los usos enumerados arriba.
+La informacion tecnica no divulgada que contiene —constantes de calibracion,
+umbrales, tablas de calculo y la combinacion de fuentes de datos— constituye
+informacion confidencial en los terminos de la Ley 24.766.
+
+Las bibliotecas de terceros declaradas en package.json y pnpm-lock.yaml no
+estan comprendidas en este aviso y conservan sus respectivas licencias.
+
+Contacto: info.arteytierra@gmail.com

@@ -296,4 +296,36 @@ describe('licencias', () => {
     expect(LICENCIAS_ADMITIDAS).not.toContain('');
     expect(LICENCIAS_ADMITIDAS.includes('desconocida')).toBe(false);
   });
+
+  it('ninguna licencia admitida es NC ni ND', () => {
+    // Las dos que descalifican, y descalifican siempre: la app cobra y deriva.
+    for (const l of LICENCIAS_ADMITIDAS) {
+      expect(l, l).not.toMatch(/NC/);
+      expect(l, l).not.toMatch(/ND/);
+    }
+  });
+
+  it('admite la OGL v3.0 del Reino Unido', () => {
+    // Verificada el 22/10/2026 contra el texto de la licencia: autoriza adaptar
+    // y «exploit the Information commercially», con atribución. Es funcionalmente
+    // equivalente a una CC-BY para lo que esta capa hace.
+    expect(LICENCIAS_ADMITIDAS).toContain('OGL-3.0');
+  });
+
+  it('admitir la OGL no activó ningún saber: lo que falta sigue siendo el polígono', () => {
+    // Es la prueba de que esto es una precondición y no un cambio de alcance.
+    // Si algún día una geometría declara OGL-3.0, este test lo va a mostrar.
+    const conOgl = Object.values(GEOMETRIAS_SABERES).filter(g => g.licencia === 'OGL-3.0');
+    expect(conOgl).toHaveLength(0);
+    // Y las dos que hay siguen siendo las mismas, las dos por ODbL.
+    const todas = Object.values(GEOMETRIAS_SABERES);
+    expect(todas).toHaveLength(2);
+    expect(todas.every(g => g.licencia === 'ODbL-1.0')).toBe(true);
+  });
+
+  it('el dominio público ya estaba admitido, que es por donde entraría TIGER/Line', () => {
+    // Los shapefiles del Census Bureau son obra del gobierno federal de EE.UU.
+    // y caen acá, así que no hace falta una entrada nueva para ellos.
+    expect(LICENCIAS_ADMITIDAS).toContain('dominio_publico');
+  });
 });

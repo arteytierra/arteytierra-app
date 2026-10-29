@@ -1,0 +1,117 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Control de reproducción</title>
+<!--
+  El control que ffprobe no puede hacer.
+
+  La WebM de la primera entrega salía en rango completo con matriz bt470bg:
+  ffmpeg la decodificaba entera sin una queja y Chromium moría en el primer
+  cuadro con PIPELINE_ERROR_DECODE. Y la lista de <source> no salva, porque el
+  navegador cambia de archivo cuando uno no CARGA, no cuando falla a mitad de
+  la decodificación. Así que cada archivo se abre de verdad, se reproduce, y se
+  mira `video.error` y `currentTime`.
+
+  No se publica: es una página de trabajo que vive en la carpeta de salida.
+-->
+<style>
+  body { font: 13px/1.5 system-ui, sans-serif; background: #1A1210; color: #F5F0E8; padding: 24px; }
+  table { border-collapse: collapse; }
+  td, th { padding: 4px 12px; text-align: left; border-bottom: 1px solid #ffffff22; }
+  .ok { color: #7CC2E3; } .mal { color: #ff8a80; font-weight: 700; }
+</style>
+<h1>Control de reproducción</h1>
+<table id="t"><tr><th>archivo<th>carga<th>error<th>presenta un cuadro<th>duración<th>tamaño</tr></table>
+<script>
+// Los archivos que haya en esta carpeta. La lista se pasa por el fragmento de
+// la URL —control-navegador.html#a.webm,a.mp4— y si no se pasa nada van los del
+// encargo 03, que es el que esta hoja acompaña.
+const ARCHIVOS = location.hash.length > 1
+  ? decodeURIComponent(location.hash.slice(1)).split(',')
+  : ['mesa-de-trabajo.webm', 'mesa-de-trabajo.mp4'];
+
+const fila = (c) => {
+  const tr = document.getElementById('t').insertRow();
+  c.forEach(v => { const td = tr.insertCell(); td.innerHTML = v; });
+};
+
+async function probar(src) {
+  const v = document.createElement('video');
+  // Rompe-caché: sin esto el navegador sirve el archivo de la corrida anterior
+  // y el control informa un peso que ya no existe.
+  v.src = src + '?v=' + Date.now();
+  v.muted = true; v.playsInline = true;
+  document.body.appendChild(v);
+  v.style.cssText = 'position:absolute;width:2px;height:2px;opacity:0';
+
+  const cargo = await new Promise(r => {
+    v.addEventListener('loadeddata', () => r(true), { once: true });
+    v.addEventListener('error', () => r(false), { once: true });
+    setTimeout(() => r(false), 15000);
+  });
+  if (!cargo) return { cargo: false, err: v.error?.code ?? 'timeout', avanza: false, dur: 0 };
+
+  // Lo que hay que comprobar es que el decodificador NO se cayó en el primer
+  // cuadro, que es exactamente donde moría la WebM de la primera entrega:
+  // PIPELINE_ERROR_DECODE salta al decodificar, no al cargar, y por eso
+  // ffprobe no alcanza y la lista de <source> tampoco salva.
+  //
+  // Vale cualquiera de dos señales, porque ninguna sirve sola acá:
+  // `requestVideoFrameCallback` es la precisa pero no dispara si el panel no
+  // está componiendo en pantalla —y entonces marca en falso los diez
+  // archivos—; `currentTime` avanza aunque no se vea, pero el navegador lo
+  // frena cuando la pestaña está en segundo plano. Las dos responden lo mismo.
+  let avanza = false;
+  try {
+    const presentado = new Promise(r => {
+      if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(() => r(true));
+    });
+    await v.play();
+    // Se PREGUNTA cada décima en vez de muestrear una sola vez al final de una
+    // ventana fija, y la pregunta es «¿se movió alguna vez?», no «¿se está
+    // moviendo ahora?». Con las lecturas de dos segundos la muestra única cae
+    // después del final —donde `currentTime` ya se quedó quieto en 2,0— y el
+    // control informa que no avanza una pieza que se reprodujo entera. Un
+    // falso negativo es tan inútil como un falso positivo: lo primero que uno
+    // hace con él es desconfiar del control.
+    const porTiempo = new Promise(r => {
+      const reloj = setInterval(() => {
+        if (v.currentTime > 0 || v.ended) { clearInterval(reloj); r(true); }
+      }, 100);
+      setTimeout(() => { clearInterval(reloj); r(v.currentTime > 0 || v.ended); }, 4000);
+    });
+    avanza = await Promise.race([presentado, porTiempo]);
+    if (!avanza) avanza = await porTiempo;
+    v.pause();
+  } catch (e) { avanza = false; }
+  return { cargo: true, err: v.error ? v.error.code : null, avanza, dur: v.duration };
+}
+
+(async () => {
+  for (const a of ARCHIVOS) {
+    const peso = await fetch(a + '?v=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
+      .then(r => Math.round((+r.headers.get('content-length') || 0) / 1024) + ' KB')
+      .catch(() => '?');
+    // Se reintenta una vez cuando el archivo CARGÓ pero no avanzó, y no es
+    // indulgencia con el criterio: el primero de la lista arranca con la
+    // página todavía montándose y con el panel sin componer, y da «NO» aunque
+    // reproducido solo llegue a 2,99 s de 13. Un archivo que de verdad no
+    // decodifica falla las dos veces; la cola del arranque, no.
+    let r = await probar(a);
+    if (r.cargo && !r.avanza) r = await probar(a);
+    const bien = r.cargo && r.err === null && r.avanza;
+    fila([
+      a,
+      r.cargo ? '<span class=ok>sí</span>' : '<span class=mal>NO</span>',
+      r.err === null ? '<span class=ok>ninguno</span>' : `<span class=mal>código ${r.err}</span>`,
+      r.avanza ? '<span class=ok>sí</span>' : '<span class=mal>NO</span>',
+      r.dur ? r.dur.toFixed(2) + ' s' : '—',
+      peso,
+    ]);
+    document.title = bien ? document.title : 'HAY UN ARCHIVO QUE FALLA';
+  }
+  const h = document.createElement('p');
+  h.id = 'listo';
+  h.textContent = 'control terminado';
+  document.body.appendChild(h);
+})();
+</script>

@@ -1,7 +1,8 @@
 /**
  * Fichas regionales de ecosistema — Norteamérica, Canadá y Groenlandia,
  * Mesoamérica, Caribe, la Unión Europea y sus asociados, Medio Oriente, el
- * norte de África mediterráneo, Indomalaya y Sudamérica.
+ * norte de África mediterráneo, Indomalaya, Australasia, Sudamérica y el
+ * África tropical y austral.
  *
  * Se activan por ECO_ID de RESOLVE (ver la lista blanca en lib/ecorregiones.ts),
  * nunca por clima: dos regiones pueden compartir clase Köppen y no compartir ni
@@ -18,7 +19,9 @@
  */
 
 import type { BiomaFicha } from './biomaTipos';
+import { BIOMAS_REGIONALES_AFRICA } from './biomasRegionalesAfrica';
 import { BIOMAS_REGIONALES_AMERICA } from './biomasRegionalesAmerica';
+import { BIOMAS_REGIONALES_AUSTRALASIA } from './biomasRegionalesAustralasia';
 import { BIOMAS_REGIONALES_CANADA } from './biomasRegionalesCanada';
 import { BIOMAS_REGIONALES_EUROPA } from './biomasRegionalesEuropa';
 import { BIOMAS_REGIONALES_EUROPA_UE } from './biomasRegionalesEuropaUE';
@@ -707,19 +710,27 @@ const CURADAS_A_MANO: Record<string, BiomaFicha> = {
 
 /**
  * Las 22 escritas a mano, las 53 americanas, las 8 europeas y las 47
- * sudamericanas que vienen de los paquetes de investigación, y cinco bloques
+ * sudamericanas que vienen de los paquetes de investigación, y seis bloques
  * más que también se escribieron a mano pero cuya lista no salió de un
  * paquete: las 10 canadienses, las 28 del resto de la Unión Europea y sus
  * asociados, las 28 de Medio Oriente y las 14 del norte de África
- * mediterráneo —esas cuatro de enumerar contra RESOLVE— y las 32 de
- * Indomalaya, que salieron de otra pregunta: qué ecorregiones estaba
- * describiendo mal el bioma global. Los nueve bloques son disjuntos: el test
- * lo verifica, porque un id repetido acá se resolvería en silencio a favor del
- * último y una ficha quedaría muerta sin que nada falle.
+ * mediterráneo —esas cuatro de enumerar contra RESOLVE—, las 32 de
+ * Indomalaya, que salieron de otra pregunta —qué ecorregiones estaba
+ * describiendo mal el bioma global— y la de Australasia, que salió de esa
+ * misma pregunta y la contestó al revés: ahí el bioma global tenía razón y lo
+ * que faltaba era el motivo. El undécimo bloque es el del África tropical y
+ * austral, que arrancó el 23/10/2026 con el miombo húmedo: ahí el bioma global
+ * se esperaba acertado —la sabana africana es el arquetipo del que salió— y
+ * resultó que en esta formación no, porque el miombo es un bosque y no un
+ * pastizal. Los once bloques son disjuntos: el test lo verifica, porque un id
+ * repetido acá se resolvería en silencio a favor del último y una ficha
+ * quedaría muerta sin que nada falle.
  */
 export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
   ...CURADAS_A_MANO,
+  ...BIOMAS_REGIONALES_AFRICA,
   ...BIOMAS_REGIONALES_AMERICA,
+  ...BIOMAS_REGIONALES_AUSTRALASIA,
   ...BIOMAS_REGIONALES_CANADA,
   ...BIOMAS_REGIONALES_EUROPA,
   ...BIOMAS_REGIONALES_EUROPA_UE,
@@ -729,8 +740,10 @@ export const BIOMAS_REGIONALES: Record<string, BiomaFicha> = {
   ...BIOMAS_REGIONALES_SUDAMERICA,
 };
 
-/** Los nueve bloques por separado, para que el test pueda cruzarlos. */
+/** Los once bloques por separado, para que el test pueda cruzarlos. */
 export { CURADAS_A_MANO as BIOMAS_REGIONALES_CURADAS };
+export { BIOMAS_REGIONALES_AFRICA };
+export { BIOMAS_REGIONALES_AUSTRALASIA };
 export { BIOMAS_REGIONALES_EUROPA_UE };
 export { BIOMAS_REGIONALES_INDOMALAYA };
 export { BIOMAS_REGIONALES_MEDIO_ORIENTE };

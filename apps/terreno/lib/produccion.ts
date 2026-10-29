@@ -330,6 +330,147 @@ export interface PerfilRodeo {
  *
  * **El manejo pesa más que medio siglo de clima en un sitio.** Mientras esta
  * función sea sólo de la lluvia, afinarla es trabajar sobre la variable chica.
+ *
+ * ## Y la carga animal, que es el manejo que el usuario sí decide
+ *
+ * El párrafo de arriba mide el manejo por fertilización y estado del pastizal. El
+ * lote 18 lo midió por **carga animal**, que es lo que acequia le pregunta al
+ * usuario: diecisiete años, cinco intensidades, dos sitios ecológicos del mismo
+ * campo, en `CARGA_CGREC` de `forrajeMedido.ts`. Con 454 mm de normal, esta
+ * función devuelve **1.500**; la producción total medida al final de la temporada:
+ *
+ * | manejo | cosecha | carga | lomada (silty) | bajo (overflow) |
+ * |---|---|---|---|---|
+ * | sin pastoreo | 0 % | 0 | 2.865 | sin media publicada |
+ * | liviano | 35 % | 1,3 AUM/ha | **3.410** | 4.131 |
+ * | moderado | 50 % | 2,7 | 3.156 | 4.360 |
+ * | fuerte | 65 % | 4,4 | 2.637 | **4.362** |
+ * | extremo | 80 % | 6,9 | 2.501 | 3.087 |
+ *
+ * Tres cosas, en orden de lo que más le pega a esta función:
+ *
+ * **1. Acá se queda corta, de 1,7 a 2,9 veces.** Y es el sitio donde esta cadena
+ * creía que la escalera andaba bien: la fila de Dakota del encabezado de
+ * `forrajeMedido.ts` decía «va bien» porque la ficha del NRCS publica un rango de
+ * lluvia —381 a 508 mm— que cruza el escalón de los 500 y entonces la escalera
+ * devolvía «1.500 a 3.000». El CGREC está en la misma MLRA y en el mismo sitio
+ * ecológico, y publica un solo número. Con un número, falla también ahí.
+ *
+ * **2. La pendiente contra la lluvia es una función del manejo.** En los sitios de
+ * lomada, al inicio de la temporada, el no pastoreado sube 46,31 kg/ha por cm de
+ * lluvia del año agrícola y el liviano 32,48, pero **moderado, fuerte y extremo no
+ * se distinguen de cero**. En los bajos pasa lo contrario al final de la
+ * temporada: el no pastoreado no responde a la lluvia y los cuatro pastoreados
+ * suben 46,85 kg/ha por cm. O sea que en el mismo campo y los mismos años la
+ * pregunta «cuánto sube la producción por milímetro» tiene cinco respuestas por
+ * sitio ecológico, dos de ellas cero, y quién responde a la lluvia se da vuelta
+ * entre una lomada y un bajo. **Una función de la lluvia sola no describe un campo
+ * pastoreado: describe uno en descanso**, y ni eso en los bajos.
+ *
+ * **3. El signo del efecto del pastoreo depende de la lluvia del año, y está
+ * publicado.** En los bajos, el pastoreo supera al descanso si la lluvia del año
+ * agrícola pasa de 26,7 cm en el liviano, 24,8 en el moderado, 26,2 en el fuerte y
+ * 53,2 en el extremo; y el extremo produce MENOS que el descanso si no llega a
+ * 31,5 cm. Está en `UMBRAL_P2E_OVERFLOW`.
+ *
+ * Lo que **no** se puede escribir, aunque la tabla lo tiente: un factor por
+ * pastorear liviano. El mismo experimento en el CPER dio el orden inverso
+ * (Milchunas et al. 1994) y el informe anterior de este propio ensayo no veía la
+ * joroba (Biondini et al. 1998). El motivo está en `CONTRASTE_DE_CARGA`.
+ *
+ * ## La ventana: la mejora que parecía más barata, y por qué todavía no se hace
+ *
+ * Esta función suma la lluvia del **año**. Hart y Samuel (1985) ajustaron la misma
+ * producción contra cuatro ventanas y el r² va de 0,03 a 0,95 según qué meses se
+ * sumen (`VENTANAS_HART`). acequia tiene lluvia diaria de tres fuentes, así que
+ * cambiar la ventana no cuesta un dato nuevo: parecía la mejora más barata que le
+ * quedaba a esta escalera.
+ *
+ * **El reajuste de esa tabla dice que el 0,95 es un año.** Marzo-abril de 1983
+ * llovió 250 mm contra 18 a 78 de los otros seis años de la serie, y la
+ * producción de ese año fue 1.430 kg/ha contra 850 a 980. Sacando 1983 el r² cae
+ * de 0,867 a **0,001**; sacando cualquier otro año se queda entre 0,86 y 0,96. La
+ * ventana se mueve, pero el coeficiente que se le pondría viene de una
+ * observación.
+ *
+ * Lo que sí queda, y es lo que esta función tiene que atender primero:
+ *
+ * **1. Que la lluvia prediga o no es una propiedad del SUELO, no del clima.** El
+ * mismo campo, los mismos siete años y las mismas cuatro ventanas: en los suelos
+ * de subsuelo arenoso la correlación llega a 0,86 y 0,95, y en el de subsuelo
+ * limoso **ninguna ventana da significativa** —0,32, 0,01, 0,17 y 0,32—. La
+ * explicación de los autores es el almacenaje: *«plants growing on such soils were
+ * dependent on current rainfall»* en el arenoso, y en el limoso *«a more complex
+ * water-balance model might be needed to predict herbage production»*. acequia
+ * tiene textura de SoilGrids: **puede saber de qué lado del aviso está el
+ * predio**, y hoy aplica la misma función de la lluvia a los dos.
+ *
+ * **2. La posición en el relieve, que es lo único de esta lista que la app ya
+ * calcula.** En el CPER, 36 años separados por posición (`RELIEVE_CPER`): el bajo
+ * con aporte produce **1,75 veces** la loma, y el factor publicado en cuatro
+ * pastizales va de **1,5 a 2,0**. Y el bajo es además 2,6 veces más sensible a la
+ * lluvia de la temporada, así que las posiciones convergen en los años secos y
+ * divergen en los húmedos. La acumulación de flujo sobre el DEM ya dice qué celda
+ * recibe el escurrimiento de las de arriba.
+ *
+ * **3. Y la escala de todo lo anterior.** En ese mismo sitio, la variabilidad
+ * entre años es **cuatro veces más grande** que la variabilidad entre posiciones:
+ * cada posición se mueve 13 a 16 veces entre años y el máximo entre posiciones
+ * dentro de un año fue 4. El año manda más que el lugar, y esta función **no
+ * tiene año**: recibe una normal. Es el mismo diagnóstico que dejó la memoria del
+ * CPER, por otro camino.
+ *
+ * ## El reemplazo ya tiene nombre, y está leído
+ *
+ * Veinte lotes midieron por qué esta escalera está mal. El 22/10/2026 se leyó la
+ * función que la reemplaza, y la nombró la propia fuente del punto 1 de arriba:
+ * **Wight y Hanks (1981), «A Water-Balance, Climate Model for Range Herbage
+ * Production», *Journal of Range Management* 34(4):307-311.** Está montada en
+ * `MODELO_WIGHT_HANKS` de `forrajeMedido.ts`, con sus siete ecuaciones, sus
+ * parámetros y los quince años de su validación.
+ *
+ * Lo que cambia es la pregunta. Esta función pregunta **cuánto llovió**; el
+ * modelo pregunta **qué fracción de la transpiración potencial ocurrió**:
+ *
+ *     Y = Yp · (T / Tp)
+ *
+ * Y eso no es una correlación ajustada a un sitio: es el supuesto físico de la
+ * familia de modelos de De Wit, que es por qué se transfiere. El trabajo lo
+ * demuestra transfiriendo un modelo escrito para trigo a una pradera mixta
+ * nativa sin cambiarle los algoritmos.
+ *
+ * **Verificado acá, y es el caso resuelto más fuerte de este módulo:** la Tabla 1
+ * publica `Tp` y `T` año por año además del rendimiento, así que la ecuación 1 se
+ * reproduce sin correr el balance. Con `Yp = 1.300 kg/ha` los doce años de Sidney
+ * salen con un desvío peor de **0,44 %**.
+ *
+ * **Y lo que falta, que es por qué todavía no se reemplaza:** tres de las
+ * entradas del modelo son **figuras y no tablas** —la curva estacional de LAI
+ * relativo, la actividad radical por temperatura de suelo, y las curvas de
+ * temperatura de suelo por capa— y la cuarta, `Yp`, es el rendimiento potencial
+ * **del sitio**, calibrado con producción medida del lugar. Está enumerado una
+ * por una en `FALTA_PARA_CORRER_WIGHT_HANKS`.
+ *
+ * O sea: el reemplazo pasó de cinco escalones sin fuente a **un parámetro de
+ * sitio y tres curvas**, y las tres curvas tienen fuente nombrada —Hanson (1973)
+ * y de Jong (1974)— que es otro relevamiento y no una invención. Es la primera
+ * vez que esta deuda tiene una lista finita.
+ *
+ * **La advertencia va con el modelo si se monta.** En los dos años en que el
+ * modelo falló más —1973 y 1974 en Sidney— falló **para arriba**, +43,5 % y
+ * +26,5 %, y los dos tienen la misma firma: sequía en abril o mayo seguida de
+ * buena humedad en junio y julio. Los autores explican por qué, y la frase es la
+ * limitación del método: *«In its current form, the model has no mechanism to
+ * account for the effects of drought during various growth periods on subsequent
+ * plant growth.»* Una sequía temprana en una pradera mixta no se recupera —la
+ * *Carex filifolia* semilla y termina, el *Agropyron smithii* entra en dormancia—
+ * y el balance de agua suma la transpiración de julio como si la planta estuviera
+ * entera.
+ *
+ * Para esta app la dirección importa: **sobreestimar el forraje en el año de
+ * sequía temprana es exactamente el año en que alguien decide la carga y el agua
+ * de la represa.** En promedio el modelo acierta (+5,2 % sobre doce años, seis
+ * arriba y seis abajo), y ese promedio esconde el error que cuesta.
  */
 export function prodForrajera(precip_mm: number): number {
   if (precip_mm < 300) return 700;

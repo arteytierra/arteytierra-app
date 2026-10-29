@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Control de las dos imagenes</title>
+<style>body{font:13px/1.5 system-ui;background:#1A1210;color:#F5F0E8;padding:24px}
+img{width:380px;display:block;margin:8px 0}.ok{color:#7CC2E3}.mal{color:#ff8a80;font-weight:700}</style>
+<h1>El par, abierto en un navegador de verdad</h1>
+<div id="r"></div>
+<script>
+const ARCHIVOS = ['crudo.webp','leido.webp','crudo.png','leido.png',
+                  'mesa-de-trabajo-poster.jpg','mesa-de-trabajo-poster-leido.jpg'];
+(async () => {
+  for (const a of ARCHIVOS) {
+    const img = new Image();
+    const ok = await new Promise(r => {
+      img.onload = () => r(true); img.onerror = () => r(false);
+      img.src = a + '?v=' + Date.now();
+      setTimeout(() => r(false), 10000);
+    });
+    const d = document.createElement('p');
+    d.innerHTML = ok
+      ? `<span class=ok>&#10003;</span> ${a} &middot; ${img.naturalWidth}&times;${img.naturalHeight}`
+      : `<span class=mal>&#10007;</span> ${a} NO CARGA`;
+    document.getElementById('r').appendChild(d);
+    if (!ok) document.title = 'HAY UNA IMAGEN QUE FALLA';
+  }
+  const p = document.createElement('p'); p.id = 'listo'; p.textContent = 'control terminado';
+  document.body.appendChild(p);
+})();
+</script>

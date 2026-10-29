@@ -25,7 +25,8 @@
  *
  * | Sitio | Lluvia | Escalera | Medido | |
  * |---|---|---|---|---|
- * | Dakota, pradera de altura | 381–508 mm | 1.500–3.000 | 2.643–3.063 | va bien |
+ * | Dakota, pradera de altura (ficha del NRCS) | 381–508 mm | 1.500–3.000 | 2.643–3.063 | parecía ir bien |
+ * | Dakota, CGREC, el MISMO sitio ecológico, medido 17 años | 454 mm | 1.500 | 2.501–3.410 según el manejo | baja 1,7–2,3× |
  * | Texas, Edwards Plateau | 508–762 mm | 3.000–5.000 | 825–2.578 | alta 2–4× |
  * | Altiplano de Puno, 3.900 m | 410–1.119 mm | 1.500–7.000 | 626–1.958 | alta hasta 11× |
  * | Lesbos, fryganas | 354–797 mm | 1.500–5.000 | 300–5.800 | el rango medido es más ancho que la escalera entera |
@@ -36,6 +37,16 @@
  * kg/ha/año; en el altiplano peruano, con MÁS lluvia, se miden 626. La
  * diferencia la explican el frío, el largo de la estación de crecimiento y la
  * profundidad del suelo, que la escalera no mira.
+ *
+ * **Y desde el lote 18 esta tabla ya no tiene ningún «va bien».** El único que
+ * había era la fila de Dakota, y era un artefacto del rango: 381 a 508 mm cruza
+ * el escalón de los 500 mm, así que la escalera devolvía «1.500 a 3.000» y el
+ * medido caía adentro. El CGREC está en esa misma MLRA y en ese mismo sitio
+ * ecológico —el mapa de suelos del punto lo correlaciona con `R053BY011ND`
+ * «Loamy» de la MLRA `053B`— y publica **una** normal: 454 mm. Con un número en
+ * vez de un rango la escalera devuelve 1.500, y diecisiete años de corte dan 2.501
+ * a 3.410. Un rango de entrada ancho esconde el error de una escalera porque se
+ * lleva dos escalones puestos; el acierto era del ancho y no de la escalera.
  *
  * ## El trabajo de Lesbos midió el experimento que la escalera necesitaba
  *
@@ -51,6 +62,80 @@
  * —terrazas mantenidas, piedras sacadas, chacra en el pasado— produjeron 15,9
  * kg MS/ha/día contra 5,5 de los sin tocar: un factor de **2,9 que no es clima
  * sino historia de uso**. La escalera no puede ver ninguna de las dos cosas.
+ *
+ * ## Lo que pone el manejo, medido con la carga animal
+ *
+ * El lote 16 midió el manejo por fertilización y estado del pastizal, y le salió
+ * un factor 12. Faltaba el manejo que el usuario de acequia realmente decide: la
+ * **carga animal**. El lote 18 lo trajo medido, con diecisiete años y cinco
+ * intensidades en el mismo campo: `CONTRASTE_DE_CARGA`.
+ *
+ * Tres cosas de ahí, y la segunda es la que más vale:
+ *
+ * 1. **El manejo del pastoreo mueve la producción 1,36 veces**, con el mismo
+ *    clima y el mismo suelo. Es mucho menos que el 12 de la fertilización y es la
+ *    cifra relevante, porque es la que está en el rango de lo que un predio
+ *    decide.
+ * 2. **El coeficiente de uso admisible de acequia cae en el máximo medido.** Con
+ *    454 mm `bandaUso` manda cosechar el 40 %, con piso de 35 %; el tratamiento
+ *    que dejó más pasto en pie de los cinco es el de 35 % de cosecha. Es la
+ *    primera vez que la tabla de Holechek se puede contrastar contra producción
+ *    medida en vez de contra otra recomendación.
+ * 3. **La pendiente contra la lluvia es una función del manejo.** En los sitios
+ *    de lomada, el no pastoreado sube 46,31 kg/ha por cm de lluvia y los
+ *    tratamientos moderado, fuerte y extremo **no se distinguen de cero**. Una
+ *    función que sólo mira la lluvia no describe un campo pastoreado: describe
+ *    uno en descanso.
+ *
+ * Y el descanso total produjo menos que el pastoreo liviano, 2.865 contra 3.410.
+ * Eso **no se codifica**, y por qué no está en `CONTRASTE_DE_CARGA`: en el CPER,
+ * el otro sitio de serie larga de este archivo, el mismo experimento dio lo
+ * contrario, y el informe anterior de este mismo ensayo tampoco lo había visto.
+ *
+ * ## La ventana de la lluvia, y por qué el hallazgo del lote 20 es un negativo
+ *
+ * `prodForrajera` suma la lluvia del año. Hart y Samuel (1985) ajustaron la misma
+ * producción contra **cuatro ventanas distintas** y el r² va de 0,03 a 0,95 según
+ * qué meses se sumen: la mejora más barata que le quedaba a esta función parecía
+ * ser cambiar la ventana, porque acequia tiene lluvia diaria y puede sumar
+ * cualquiera.
+ *
+ * **El reajuste dice que ese 0,95 es un año.** Marzo-abril de 1983 llovió 250 mm
+ * y los otros seis años de la serie, entre 18 y 78. Sacando 1983 el r² cae de
+ * 0,867 a 0,001; sacando cualquier otro año no se mueve. El detalle y la tabla
+ * de palanca están en `VENTANAS_HART`.
+ *
+ * Lo que queda de ese trabajo es más chico y más sólido:
+ *
+ * 1. **La dirección de la ventana sí**: la lluvia de marzo-abril pesa 2,49 kg/ha
+ *    por mm y la de mayo-agosto 0,49, y marzo-abril es sólo el 22 % del total de
+ *    la temporada. Rauzi (1964) y Murphy (1970) van en el mismo sentido.
+ * 2. **Que la lluvia prediga o no es una propiedad del SUELO.** El mismo campo,
+ *    los mismos años, las mismas ventanas: en subsuelo arenoso la correlación es
+ *    significativa; en subsuelo limoso, con ninguna ventana. Los autores lo
+ *    atribuyen al almacenaje de agua. **acequia tiene textura de SoilGrids**, así
+ *    que esto es accionable.
+ * 3. **Adentro de un año, dónde llovió más no produjo más.** Trece ubicaciones,
+ *    pluviómetros cada 0,8 km, cinco años: ningún r² pasó de 0,17.
+ *
+ * ## La posición en el relieve, que es lo único que la app ya puede calcular
+ *
+ * Treinta y seis años del CPER separados en loma, ladera y bajo
+ * (`RELIEVE_CPER`). Dos factores distintos y conviene no mezclarlos:
+ *
+ * - **El nivel:** el bajo produce **1,75 veces** la loma. Y el trabajo cita tres
+ *   pastizales más con 1,5, 2,0 y 2,0, así que **el factor publicado va de 1,5 a
+ *   2,0 en cuatro ecosistemas**.
+ * - **La sensibilidad:** el bajo es **2,6 veces más sensible** a la lluvia de la
+ *   temporada y 2,9 veces más sensible a los días secos consecutivos. O sea que
+ *   las tres posiciones convergen en los años malos y divergen en los buenos: en
+ *   2002 dieron 94, 94 y 142 kg/ha; en 2009, 1.229, 1.297 y 2.233.
+ *
+ * Y el dato que pone todo lo anterior en escala: **la variabilidad entre años es
+ * cuatro veces más grande que la variabilidad entre posiciones.** Cada posición se
+ * mueve 13, 14 y 16 veces entre años; entre posiciones, dentro del mismo año, el
+ * máximo fue 4 veces. El año manda más que el lugar, y esta función no tiene año:
+ * tiene una normal.
  *
  * ## La trampa del pastizal perenne, y cómo empeora con el frío
  *
@@ -1091,21 +1176,50 @@ export interface MedicionForraje {
 /**
  * Las mediciones, verificadas una por una abriendo la fuente.
  *
- * Son **veinte sitios en ocho de los quince biomas** de RESOLVE, al 21/10/2026.
- * No son un modelo: son los puntos que hay. Cuatro de los veinte son sotobosque
- * de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
+ * Son **veintisiete sitios en ocho de los quince biomas** de RESOLVE, al
+ * 22/10/2026. No son un modelo: son los puntos que hay. Cuatro de los veintisiete
+ * son sotobosque de bosque cerrado y no pastizal, y eso cambia cómo se leen: ver
  * `ms_sotobosque`. Cada uno declara además su `clase_wc`, su `coordenada` y sus
  * `insumos`, que es de donde `cobertura.ts` saca la banda de cada clase de
  * cobertura.
  *
- * **Doce de los veinte alimentan una banda, y los ocho que no lo hacen son más
- * interesantes que los doce.** Siete están en la clase 30, uno en la 20, cuatro
- * en la 10. Afuera quedan: dos cultivos, porque uno está fertilizado y el otro
- * regado; cuatro con `insumos` en `desconocido` —la sabana de Calabozo, la estepa
- * de pasto corto del CPER y los pastizales de Bloemfontein y Towoomba—; y dos con
- * `clase_wc` en `null`, la estepa de Río Mayo y el pastizal de Ukulinga. Las ocho
- * exclusiones las hace un filtro y no un juicio, que es la única forma de que
- * sigan valiendo cuando nadie se acuerde de por qué están.
+ * **Doce de los veintisiete alimentan una banda, y los quince que no lo hacen son
+ * más interesantes que los doce.** Siete están en la clase 30, uno en la 20,
+ * cuatro en la 10. Afuera quedan: dos cultivos, porque uno está fertilizado y el
+ * otro regado; once con `insumos` en `desconocido` —la sabana de Calabozo, las
+ * cuatro entradas del CPER, los pastizales de Bloemfontein y Towoomba, los dos
+ * sitios ecológicos del CGREC y los dos grupos de suelo de Cheyenne—; y dos con
+ * `clase_wc` en `null` por su coordenada, Río Mayo y Ukulinga. Las exclusiones las
+ * hace un filtro y no un juicio, que es la única forma de que sigan valiendo
+ * cuando nadie se acuerde de por qué están.
+ *
+ * **El CPER aparece cuatro veces y es deliberado**, igual que Manitou aparece dos.
+ * Una entrada es la serie de forraje de cincuenta años de Lauenroth y Sala; las
+ * otras tres son las tres posiciones de la catena medidas treinta y seis años por
+ * Hoover et al., que producen 572, 637 y 1.000 kg/ha. **Y las dos series no
+ * cierran entre sí**: 1,42 veces de diferencia en la media, con el detalle en
+ * `RELIEVE_CPER`. Que un sitio con dos series largas y un autor en común no cierre
+ * contra sí mismo es el mejor recordatorio disponible de cuánto vale un número de
+ * forraje sin método al lado.
+ *
+ * **Y los cinco del lote 20 traen el problema al revés: ninguno publica la
+ * lluvia anual.** Los dos de Cheyenne comparan cuatro ventanas de lluvia y
+ * publican marzo-abril, mayo-septiembre y marzo-septiembre; los tres del CPER
+ * publican abril-junio, abril-agosto y seis métricas de patrón de eventos.
+ * Ninguno de los cinco publica el año, así que los cinco llevan `lluvia_mm` en
+ * `null`. **Es exactamente lo que hay que esperar de los trabajos que se toman en
+ * serio la ventana**, y es la razón por la que `prodForrajera`, que es una función
+ * de la lluvia anual, no se puede alimentar con ellos sin volver a sumar los
+ * datos diarios.
+ *
+ * **Los dos del lote 18 son los que más duele dejar afuera.** Diecisiete años,
+ * cinco intensidades de pastoreo, dos sitios ecológicos, coordenada que cae donde
+ * dice y un píxel de clase 30 estable al 91, 85 y 85 % en las tres ventanas: es
+ * la entrada mejor ubicada del archivo. Quedan afuera porque el trabajo **no
+ * menciona la fertilización ni una vez**, y el silencio no se traduce a `secano`.
+ * Lo que sí se pudo derivar es la mitad de la duda: una parcela regada no puede
+ * responder a la lluvia del año agrícola con una pendiente significativa, y la de
+ * ellas es 28,63 kg/ha por cm. Falta la otra mitad.
  *
  * **Los tres que entraron en el lote 16 están los tres afuera, y por tres motivos
  * distintos.** Son pastizales medidos 29, 27 y 30 años, que es más dato del que
@@ -1116,10 +1230,12 @@ export interface MedicionForraje {
  * píxel es clase 20 pero el ensayo desmontó las leñosas en 1949. **El cuello de
  * botella de este archivo ya no es encontrar mediciones: es poder ubicarlas.**
  *
- * Dos de los veinte traen algo que los otros dieciocho no: **años consecutivos
+ * Dos de los veintidós traen algo que los otros veinte no: **años consecutivos
  * del mismo campo**. `SERIE_CPER` tiene cincuenta y `SERIE_RIO_MAYO` quince, y
  * son lo único de este archivo con lo que se puede evaluar una función de la
- * lluvia sin cambiar de sitio en cada punto.
+ * lluvia sin cambiar de sitio en cada punto. Los dos del CGREC traen otra cosa:
+ * diecisiete años **de cinco manejos a la vez**, que es lo único con lo que se
+ * puede evaluar cuánto del número lo pone el manejo y no el clima.
  *
  * Manitou aparece dos veces y es deliberado: las parcelas bajo dosel y las
  * aberturas del mismo bosque, el mismo día y con el mismo método, difieren 13
@@ -1933,6 +2049,281 @@ export const FORRAJE_MEDIDO: readonly MedicionForraje[] = [
       url: 'https://api.mountainscholar.org/server/api/core/bitstreams/26dfcae9-01ab-497a-ad1d-fde592c064de/content',
     },
   },
+  {
+    // Diecisiete años, cinco intensidades de pastoreo, dos sitios ecológicos y
+    // la carga publicada en AUM/ha. Es el primer par de manejo del archivo donde
+    // la variable es el PASTOREO y no la fertilización, que era el agujero que
+    // dejó el lote 16. El detalle, los tres momentos de la temporada y las
+    // pendientes publicadas están en `CONTRASTE_DE_CARGA`.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Sitios silty del Central Grasslands Research Extension Center, Streeter, Dakota del Norte',
+    // Al minuto de arco, que acá son ±1,85 km en latitud y ±1,26 km en longitud,
+    // sobre una estación de 1,54 km². La ubicación en palabras —«12 km al
+    // noroeste de Streeter»— coincide con el punto, y el SSURGO del punto
+    // devuelve 595 m de altura contra los 587 que publica el trabajo.
+    coordenada: '46°46′ N, 99°28′ W, 587 m (publicada); el punto cae en el mapa de suelos con 595 m',
+    // Clase 30 y ESTABLE en las tres ventanas: 91,0 % de pastizal a 500 m,
+    // 85,3 % a 2 km y 84,9 % a 5 km. El cultivo llega al 12,6 % a 2 km y el agua
+    // al 7,8 % a 5 km —son las lagunas del Coteau du Missouri—, y ninguno de los
+    // dos se le acerca.
+    //
+    // **Pero el píxel no distingue este sitio del de al lado, y los dos están
+    // medidos.** Las parcelas silty y las overflow están intercaladas adentro de
+    // los mismos doce potreros: la misma coordenada, la misma clase 30 y la misma
+    // estabilidad valen para las dos entradas, y producen 2.501–3.410 contra
+    // 3.087–4.362 kg/ha. Un factor 1,3 que un satélite de 10 m no puede ver, y
+    // que además responde al manejo con el signo al revés. Es el límite de buscar
+    // por píxel dicho con dos mediciones del mismo día.
+    clase_wc: 30,
+    // El trabajo no menciona fertilización ni riego **ni una sola vez** en todo
+    // el texto; lo verifiqué buscando los dos términos y sus variantes. Silencio,
+    // entonces `desconocido`, igual que el CPER y Río Mayo.
+    //
+    // Y hay una derivación que vale escribir porque descarta la mitad de la duda:
+    // la producción responde a la lluvia del año agrícola con pendiente
+    // significativa —28,63 kg/ha por cm en el total—, y eso no podría pasar en
+    // parcelas regadas. Lo que queda sin contestar es la fertilización, y por eso
+    // la entrada no entra en la banda de la clase 30.
+    insumos: 'desconocido',
+    tipo: 'ms_herbacea_total',
+    // Producción total al FINAL de la temporada, Tabla 6: 2.865 sin pastoreo,
+    // 3.410 liviano, 3.156 moderado, 2.637 fuerte y 2.501 extremo. El mínimo y el
+    // máximo son manejos del mismo sitio en los mismos diecisiete años, no años
+    // buenos y malos.
+    kg_ms_ha_anio_min: 2501,
+    kg_ms_ha_anio_max: 3410,
+    // No hay valor central publicado: lo que la fuente publica son cinco medias,
+    // una por intensidad, y el promedio de las cinco no significa nada porque las
+    // intensidades no son una muestra de nada.
+    kg_ms_ha_anio_tipico: null,
+    lluvia_mm_min: 454,
+    lluvia_mm_max: 454,
+    // Normal publicada de la estación, con el 72 % de mayo a septiembre.
+    //
+    // **Ojo con esta cifra, que no es la lluvia a la que están ajustadas las
+    // medias.** Las medias son de covarianza y están ajustadas al valor medio de
+    // P2E, que es la lluvia acumulada desde el fin de la temporada de crecimiento
+    // ANTERIOR hasta el fin de la temporada de pastoreo de ese año. P2E termina
+    // antes de que acabe el año calendario, así que es menor que la anual: los
+    // umbrales publicados caen entre 24,8 y 53,2 cm. La normal anual describe el
+    // clima del sitio; P2E es la variable del modelo.
+    lluvia_que_es: 'normal_publicada',
+    // El trabajo publica −16 °C de media en enero y 20 °C en agosto, que son el
+    // mes más frío y el más cálido y NO promedian a la media anual. Es el mismo
+    // caso de las fichas del ORNL.
+    temp_media_c_anual: null,
+    metodo: 'Comparación con jaulas (cage comparison, Cook y Stubbendieck 1986) en diecisiete años: cinco parcelas de 0,25 m² enjauladas al inicio de cada temporada, con dos parcelas sin jaula emparejadas a cada una —quince parcelas por sitio de monitoreo—. La producción de fin de temporada es el pico de adentro de la jaula más el crecimiento del pico al final, que se mide con una segunda jaula puesta en el pico: Pb + Gpe, con Gpe = Hie − Hop. Sólo se guarda el crecimiento del año. Secado en estufa a 66 °C durante 48 h. Medias ajustadas por análisis de covarianza con la lluvia del año agrícola y la temperatura del suelo bajo el tapiz a 100 mm de profundidad como covariables.',
+    que_cuenta: 'Producción total de la temporada: gramíneas más hierbas de hoja ancha. En los sitios silty los arbustos no son un grupo aparte —«with occasional shrubs being placed with forbs»—, así que están adentro de la cifra de hierbas y no se pueden separar. La fuente avisa de algo que hay que respetar al usar la tabla: «Because grass, forb, and total are each adjusted separately for the effects of P2E and/or P2E and T2E, grass, forb, and shrub production does not sum to total production». No descuenta uso admisible, y ésa es la diferencia que importa acá: la cifra es lo que CRECIÓ en la parcela enjaulada, no lo que quedó después de que el animal comiera.',
+    estacionalidad: 'Tres muestreos por temporada: al inicio del pastoreo, en el pico de producción —que se detectaba al empezar a secarse la vegetación, en general a mediados de julio— y al final del pastoreo. El largo de la temporada de pastoreo lo fijaba el manejo y fue de 55 días en 2002 a 181 en 1990. Dominan gramíneas de estación fría, con Poa pratensis que arranca en cuanto la superficie pasa de 0 °C si hay agua y se frena en las secas.',
+    donde_deja_de_valer: 'Dos sitios ecológicos de una estación experimental, no un potrero comercial, y un pastizal que NO es la vegetación original: era pradera mixta, los colonos la araron y volvió a pasto en las sequías de los años 50, así que hoy la dominan Poa pratensis y Bromus inermis, dos invasoras introducidas. El propio trabajo lo aclara. Y el resultado central —que el pastoreo liviano produce más que el descanso— no se puede generalizar: Milchunas, Lauenroth y Burke (1994) corrieron un experimento parecido en el CPER, que es el otro sitio de serie larga de este archivo, y les salió lo contrario —el no pastoreado fue el más productivo—; las revisiones de Belsky (1986) y Painter y Belsky (1993) no encontraron evidencia de que la herbivoría beneficie a la planta; y el informe anterior de ESTE MISMO experimento, Biondini, Patton y Nyren (1998), tampoco había encontrado menos producción en el no pastoreado. Los autores lo dicen con todas las letras: la joroba apareció al estirar la serie, «underscoring the importance of long-term studies in ecological research».',
+    medido_en: '1989 a 2005 la producción; 1991 a 2005 las cargas',
+    fuente: {
+      label: 'Patton, B. D., Dong, X., Nyren, P. E. y Nyren, A. (2007) — «Effects of Grazing Intensity, Precipitation, and Temperature on Forage Production», Rangeland Ecology & Management 60(6):656-665, Tablas 1 a 7, DOI 10.2111/07-008R2.1',
+      url: 'https://repository.arizona.edu/items/170fb626-5783-4753-9770-7f7a26b05b33',
+    },
+  },
+  {
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Sitios overflow del Central Grasslands Research Extension Center, Streeter, Dakota del Norte',
+    // El mismo punto que la entrada anterior: los dos sitios ecológicos están
+    // intercalados adentro de los mismos potreros.
+    coordenada: '46°46′ N, 99°28′ W, 587 m (publicada); el mismo punto que los sitios silty',
+    clase_wc: 30,
+    insumos: 'desconocido',
+    tipo: 'ms_herbacea_total',
+    // Producción total al final de la temporada, Tabla 7: 4.131 liviano, 4.360
+    // moderado, 4.362 fuerte y 3.087 extremo. **El no pastoreado no tiene media
+    // publicada acá**, y no por falta de dato: su producción no responde a la
+    // lluvia y las pastoreadas sí, así que la comparación depende del año y la
+    // fuente publica umbrales en vez de una media. Es la decisión correcta y deja
+    // esta banda sin el extremo de abajo.
+    kg_ms_ha_anio_min: 3087,
+    kg_ms_ha_anio_max: 4362,
+    kg_ms_ha_anio_tipico: null,
+    lluvia_mm_min: 454,
+    lluvia_mm_max: 454,
+    lluvia_que_es: 'normal_publicada',
+    temp_media_c_anual: null,
+    metodo: 'El mismo de los sitios silty: comparación con jaulas, quince parcelas de 0,25 m² por sitio de monitoreo, Pb + Gpe, estufa a 66 °C/48 h y medias ajustadas por covarianza. La diferencia es que acá la hierba se separó en TRES grupos y no en dos: gramíneas, hierbas de hoja ancha y arbustos.',
+    que_cuenta: 'Producción total de la temporada: gramíneas, hierbas y arbustos. El grupo de arbustos no es despreciable y se mueve con el manejo en dirección propia —155 kg/ha en el extremo contra 556 en el fuerte—; lo domina Symphoricarpos occidentalis, que es un subarbusto que el ganado come. Vale la misma advertencia de la fuente: los cuatro grupos se ajustan por separado y no suman al total.',
+    estacionalidad: 'La misma que los silty, con una diferencia de muestreo que la fuente declara: los sitios silty se muestreaban de 0 a 9 días antes que los overflow.',
+    donde_deja_de_valer: 'Tierras bajas que reciben el escurrimiento de las laderas de arriba: son más productivas que los silty por el agua que les llega, no por el clima, y la fuente prohíbe explícitamente juntar los dos —«do not pool silty and overflow» es la lectura de su propia frase: «there was a significant difference in production between the range sites and an interaction between range site and grazing intensity»—. El manejo acá se comporta distinto que en los silty: liviano, moderado y fuerte no se diferencian entre sí y sólo el extremo cae. Y el grupo de hierbas pesa mucho más que en los silty: 902 a 1.283 kg/ha contra 387 a 699.',
+    medido_en: '1989 a 2005 la producción; 1991 a 2005 las cargas',
+    fuente: {
+      label: 'Patton, B. D., Dong, X., Nyren, P. E. y Nyren, A. (2007) — «Effects of Grazing Intensity, Precipitation, and Temperature on Forage Production», Rangeland Ecology & Management 60(6):656-665, Tablas 2, 4 y 7, DOI 10.2111/07-008R2.1',
+      url: 'https://repository.arizona.edu/items/170fb626-5783-4753-9770-7f7a26b05b33',
+    },
+  },
+  {
+    // Las dos entradas de Hart y Samuel son el experimento de la VENTANA de la
+    // lluvia: la misma producción ajustada contra cuatro ventanas distintas, en
+    // dos grupos de suelo del mismo campo. Lo que sale de ahí está en
+    // `VENTANAS_HART` y es el hallazgo del lote 20.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Subsuelo arenoso (Altvan, Cascajo y Larim Variant), High Plains Grasslands Research Station, Cheyenne, Wyoming',
+    // `null`, y es lo que corresponde: **la fuente no publica ninguna
+    // coordenada.** Publica la dirección postal de la estación —8408 Hildreth
+    // Road, Cheyenne, Wyoming 82009— y que el campo está «northwest of
+    // Cheyenne». Una dirección no es una coordenada y geocodificarla sería
+    // inventar el punto.
+    coordenada: null,
+    // Sin coordenada no hay píxel, así que no hay clase. Es la misma situación
+    // de las catorce entradas anteriores al lote 14.
+    clase_wc: null,
+    // Es un ensayo de carga animal con jaulas; el trabajo no menciona
+    // fertilización ni riego. Silencio, entonces `desconocido`.
+    insumos: 'desconocido',
+    tipo: 'ms_herbacea_total',
+    // Los siete años de la Tabla 2 para este grupo: 860, 880, 850, 860, 980,
+    // 950 y 1.430. El techo es 1983, el año de palanca de la regresión.
+    kg_ms_ha_anio_min: 850,
+    kg_ms_ha_anio_max: 1430,
+    // La Tabla 1 publica medias de cinco años **por suelo** —930, 890 y 840— y
+    // no una del grupo. El promedio de las tres sería un número calculado por
+    // mí, y la regla dice que no va.
+    kg_ms_ha_anio_tipico: null,
+    // **`null`, y es el dato más llamativo de este trabajo:** el único del
+    // archivo que compara cuatro ventanas de lluvia **nunca publica la lluvia
+    // anual**. Publica marzo-abril, mayo-septiembre y marzo-septiembre, y ninguna
+    // de las tres es el año. Rellenarla con la normal de Cheyenne de otra fuente
+    // ataría esta medición a un número que su propio trabajo no midió.
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    lluvia_que_es: null,
+    temp_media_c_anual: null,
+    metodo: 'Pico de materia seca bajo jaula. Macroparcelas de 30 × 23 m sobre los tipos de suelo mayoritarios; una jaula piramidal de 1,2 × 1,0 × 0,9 m por macroparcela, ubicada cada año en una esquina distinta pero siempre sobre el mismo suelo, pendiente y comunidad. En agosto, al momento estimado de pico de biomasa en pie, se saca la jaula y se cortan dos marcos de 30 × 60 cm al azar sobre el área que cubría, a nivel del suelo, separando por especie o grupo de especies. Secado a 60 °C y pesado al 0,1 g. La lluvia, en una red de pluviómetros cada 0,8 km leída después de cada lluvia o nevada del 1 de mayo al 30 de septiembre, más el pluviómetro oficial de la sede para el 1 de octubre al 30 de abril.',
+    que_cuenta: 'Toda la producción herbácea del año: pasto llorón del oeste, grama azul, aguja y hebra, ciperáceas, otras gramíneas y hierbas de hoja ancha. Es la producción PROTEGIDA —lo que creció bajo la jaula— y no la del potrero, que tenía tres cargas distintas. No descuenta uso admisible. Son tres suelos agrupados porque sus rendimientos de uno y de cinco años no difieren significativamente entre sí.',
+    estacionalidad: 'Una sola cosecha en agosto, al pico estimado. La composición botánica se midió en junio por frecuencia en cuadrantes anidados.',
+    donde_deja_de_valer: 'Siete años y un campo de 483 ha. Y la advertencia que más le importa a este archivo no es sobre el clima: **la clasificación de sitio por textura superficial agrupa mal**. Ascalon y Altvan están los dos clasificados como sitio «Loamy» y difieren más en producción y composición que Altvan y Cascajo, que son sitios distintos. Textual: «Site classifications based only on surface texture must be interpreted cautiously». Eso es un aviso sobre las dos entradas de este archivo que son fichas de sitio ecológico del NRCS. La otra advertencia es del método: la cifra sale de dos marcos de 0,18 m² por jaula, y el rango entre jaulas del mismo grupo llegó al 72 % de la media en 1978.',
+    medido_en: '1975 a 1979, 1982 y 1983',
+    fuente: {
+      label: 'Hart, R. H. y Samuel, M. J. (1985) — «Precipitation, Soils and Herbage Production on Southeast Wyoming Range Sites», Journal of Range Management 38(6):522-525, Tablas 1, 2 y 3',
+      url: 'https://www.ars.usda.gov/ARSUserFiles/30180000/Hart/6.%20Hart%20and%20Samuel%201985.pdf',
+    },
+  },
+  {
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Ascalon loam, de subsuelo limoso, High Plains Grasslands Research Station, Cheyenne, Wyoming',
+    coordenada: null,
+    clase_wc: null,
+    insumos: 'desconocido',
+    tipo: 'ms_herbacea_total',
+    // 1.120, 1.090, 1.240, 1.080, 1.020, 1.140 y 1.240 en los siete años. Es
+    // **más productivo y más estable** que el grupo arenoso: 1,21 veces entre
+    // extremos contra 1,68.
+    kg_ms_ha_anio_min: 1020,
+    kg_ms_ha_anio_max: 1240,
+    // La Tabla 1 sí publica el valor central de este suelo: 1.100 kg MS/ha.
+    kg_ms_ha_anio_tipico: 1100,
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    lluvia_que_es: null,
+    temp_media_c_anual: null,
+    metodo: 'El mismo de la entrada anterior: pico de materia seca bajo jaula, dos marcos de 30 × 60 cm en agosto, secado a 60 °C. Cinco jaulas sobre este suelo.',
+    que_cuenta: 'Lo mismo: toda la producción herbácea protegida. La composición difiere del grupo arenoso en dos cosas que la fuente mide: aguja y hebra aporta menos y el pasto llorón del oeste aparece con más frecuencia.',
+    estacionalidad: 'Una sola cosecha en agosto, al pico estimado de biomasa en pie, igual que el grupo arenoso; la composición botánica se midió en junio por frecuencia en cuadrantes anidados. El trabajo no publica curva mensual, así que el reparto de la producción dentro de la temporada no se puede leer de acá: lo único que dice del momento es cuánto pesa la lluvia de marzo-abril contra la de mayo-agosto.',
+    donde_deja_de_valer: 'Y acá está el resultado que importa, que es un NEGATIVO: **la producción de este suelo no está correlacionada significativamente con la lluvia de ninguna de las cuatro ventanas probadas** —r² de 0,32, 0,01, 0,17 y 0,32—, mientras que en el grupo de subsuelo arenoso del mismo campo y los mismos años llega a 0,86 y 0,95. La explicación de los autores es el almacenaje de agua: «Correlation of production with precipitation was good on soils with sandy subsoils and therefore little water storage capacity; plants growing on such soils were dependent on current rainfall». En un suelo con más almacenaje, «a more complex water-balance model might be needed to predict herbage production». O sea: **si la lluvia sirve para predecir producción es una propiedad del suelo y no del clima.**',
+    medido_en: '1975 a 1979, 1982 y 1983',
+    fuente: {
+      label: 'Hart, R. H. y Samuel, M. J. (1985) — «Precipitation, Soils and Herbage Production on Southeast Wyoming Range Sites», Journal of Range Management 38(6):522-525, Tablas 1, 2 y 3',
+      url: 'https://www.ars.usda.gov/ARSUserFiles/30180000/Hart/6.%20Hart%20and%20Samuel%201985.pdf',
+    },
+  },
+  {
+    // Las tres posiciones del relieve del CPER. Es el MISMO sitio que la entrada
+    // de Lauenroth y Sala, con otro método, otras cuatro décadas y separado por
+    // posición topográfica. Van las tres porque el reparto es el dato: ver
+    // `RELIEVE_CPER`.
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Central Plains Experimental Range, LOMA de la catena, Colorado',
+    // La fuente publica 40°50′ N, 104°43′ W y 1.645 m. **No es el mismo punto
+    // que la entrada de Lauenroth y Sala**, que da 40°49′ N / 104°46′ W: son 3
+    // minutos de longitud, unos 4 km, adentro de un campo de 6.500 ha. Las dos
+    // son coordenadas de la estación, no de la parcela.
+    coordenada: '40°50′ N, 104°43′ W, 1.645 m (la estación; la otra entrada del CPER publica 40°49′ N / 104°46′ W)',
+    // Clase 30 y estable: 97,4 % de pastizal a 500 m, 98,9 % a 2 km y 99,5 % a
+    // 5 km. El 2,6 % de construido a 500 m son las instalaciones de la estación.
+    clase_wc: 30,
+    // Potrero con carga moderada declarada —0,6 AUM/ha— y ninguna mención de
+    // fertilización ni riego. Silencio sobre insumos, entonces `desconocido`.
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // El peor año (2002) y el mejor (2009) de los 36: 9,4 y 122,9 g/m². El
+    // mínimo es **6,6 veces más bajo que el mínimo de la serie de cincuenta
+    // años** del mismo sitio, que da 620.
+    kg_ms_ha_anio_min: 94,
+    kg_ms_ha_anio_max: 1229,
+    // Media de los 36 años, 57,2 g/m². Es un valor central publicado.
+    kg_ms_ha_anio_tipico: 572,
+    // `null` otra vez, y por el mismo motivo que Hart: **el trabajo publica
+    // ventanas y no el año.** Tiene lluvia de abril-junio (137,7 ± 58,1 mm) y de
+    // abril-agosto (225,0 ± 68,8), más seis métricas de patrón de eventos. La
+    // lluvia anual del CPER está en la otra entrada y viene de otra fuente.
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    lluvia_que_es: null,
+    temp_media_c_anual: null,
+    metodo: 'Pico de biomasa del año, cosechado a nivel de corona en agosto —fecha media, día 221 del año— en quince jaulas temporarias por posición topográfica, movidas cada año una distancia y una dirección al azar antes de la temporada de pastoreo. Marco de 0,25 m² de 1983 a 2008 y de 2014 a 2018, de 0,1 m² de 2009 a 2012, todo escalado a 1 m². Separado por especie salvo 2009-2012, que se separó por tipo funcional. Secado en estufa a 55 °C. El pico de biomasa en pie está validado contra el método de recambio con ¹⁴C (Milchunas y Lauenroth 1992).',
+    que_cuenta: 'ANPP total de cuatro tipos funcionales herbáceos: gramíneas perennes C₄ —que son el 75 % del total—, gramíneas perennes C₃, una gramínea anual y hierbas de hoja ancha. **Los arbustos, los subarbustos y los cactus están presentes en el sitio y quedaron excluidos del estudio.** No descuenta uso admisible.',
+    estacionalidad: 'Una cosecha al pico, en agosto. La lluvia se concentra de abril a agosto, con 225 mm de media en esa ventana y 48 mm en el otoño previo.',
+    donde_deja_de_valer: 'Un solo sitio ecológico —Loamy Plains, `R067BY002CO`— elegido a propósito porque el campo no abarca extremos de textura: la catena es de relieve y no de suelo. Y la comparación con la otra entrada del CPER no cierra: la columna de ANPP de 1939-1990 tiene media de 97 g/m² y la media de este trabajo ponderada por área de cada posición da 68,4, un factor 1,42. Las tres explicaciones posibles están en el doc de `RELIEVE_CPER` y ninguna está descartada; la más probable es que la columna vieja no se midió sino que se derivó del forraje con una ecuación de r² = 0,28.',
+    medido_en: '1983 a 2018, los 36 años',
+    fuente: {
+      label: 'Hoover, D. L., Lauenroth, W. K., Milchunas, D. G., Porensky, L. M., Augustine, D. J. y Derner, J. D. (2021) — «Sensitivity of productivity to precipitation amount and pattern varies by topographic position in a semiarid grassland», Ecosphere 12(2):e03376, Tabla 1 y Figuras 2 y 4, DOI 10.1002/ecs2.3376',
+      url: 'https://www.ars.usda.gov/ARSUserFiles/52550/Hoover%20et%20al%202021%20Ecosphere%20-%20sensitivity%20of%20productivity.pdf',
+    },
+  },
+  {
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Central Plains Experimental Range, LADERA de la catena, Colorado',
+    coordenada: '40°50′ N, 104°43′ W, 1.645 m (la estación)',
+    clase_wc: 30,
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // 9,4 en 2002 y 129,7 en 2009. El mínimo coincide con el de la loma.
+    kg_ms_ha_anio_min: 94,
+    kg_ms_ha_anio_max: 1297,
+    kg_ms_ha_anio_tipico: 637,
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    lluvia_que_es: null,
+    temp_media_c_anual: null,
+    metodo: 'El mismo: quince jaulas temporarias movidas al azar cada año, pico de biomasa a nivel de corona en agosto, estufa a 55 °C.',
+    que_cuenta: 'Lo mismo: ANPP total de los cuatro tipos funcionales herbáceos, sin arbustos ni cactus.',
+    estacionalidad: 'Una cosecha al pico, en agosto, con fecha media en el día 221 del año. La lluvia del sitio se concentra de abril a agosto —225 mm de media en esa ventana— y el otoño previo aporta 48 mm, que la fuente prueba como variable aparte y resulta no significativa para esta capa.',
+    donde_deja_de_valer: 'La ladera queda estadísticamente entre las otras dos en casi todo, y eso es lo que la hace útil: muestra que el gradiente es un gradiente y no dos clases. Produce 1,11 veces la loma y es 1,24 veces más sensible a la lluvia.',
+    medido_en: '1983 a 2018, los 36 años',
+    fuente: {
+      label: 'Hoover, D. L., Lauenroth, W. K., Milchunas, D. G., Porensky, L. M., Augustine, D. J. y Derner, J. D. (2021) — «Sensitivity of productivity to precipitation amount and pattern varies by topographic position in a semiarid grassland», Ecosphere 12(2):e03376, DOI 10.1002/ecs2.3376',
+      url: 'https://www.ars.usda.gov/ARSUserFiles/52550/Hoover%20et%20al%202021%20Ecosphere%20-%20sensitivity%20of%20productivity.pdf',
+    },
+  },
+  {
+    bioma: 'resolve_pastizal_templado',
+    sitio: 'Central Plains Experimental Range, BAJO CON APORTE de la catena, Colorado',
+    coordenada: '40°50′ N, 104°43′ W, 1.645 m (la estación)',
+    clase_wc: 30,
+    insumos: 'desconocido',
+    tipo: 'npp_herbacea',
+    // 14,2 en 2002 y 223,3 en 2009: el mejor año del bajo es 2,4 veces el mejor
+    // año de la loma, y el peor año del bajo es 1,5 veces el peor de la loma.
+    kg_ms_ha_anio_min: 142,
+    kg_ms_ha_anio_max: 2233,
+    kg_ms_ha_anio_tipico: 1000,
+    lluvia_mm_min: null,
+    lluvia_mm_max: null,
+    lluvia_que_es: null,
+    temp_media_c_anual: null,
+    metodo: 'El mismo: quince jaulas temporarias movidas al azar cada año, pico de biomasa a nivel de corona en agosto, estufa a 55 °C.',
+    que_cuenta: 'Lo mismo: ANPP total de los cuatro tipos funcionales herbáceos, sin arbustos ni cactus.',
+    estacionalidad: 'Una cosecha al pico, en agosto. Y la estacionalidad es justamente lo que esta posición amplifica: su ANPP es 2,6 veces más sensible a la lluvia de abril-agosto que la de la loma, y 2,9 veces más sensible al promedio de días secos consecutivos.',
+    donde_deja_de_valer: 'Un bajo **no es un seguro contra la sequía**, y es el error que esta posición invita a cometer. Las tres posiciones convergen en los años malos y divergen en los buenos: en 2002 dieron 94, 94 y 142 kg/ha, y en 2009, 1.229, 1.297 y 2.233. El bajo produce 1,75 veces la loma en el promedio de 36 años, pero ese promedio esconde que la ventaja aparece sólo cuando hay agua para redistribuir. La fuente lo dice: «During wet years, or large precipitation events, the redistribution of water downhill via surface or subsurface flow may provide swales with higher water availability». Y el 22 % del campo es bajo: aplicar el 1,75 al predio entero multiplicaría por 1,75 un 22 % de la superficie.',
+    medido_en: '1983 a 2018, los 36 años',
+    fuente: {
+      label: 'Hoover, D. L., Lauenroth, W. K., Milchunas, D. G., Porensky, L. M., Augustine, D. J. y Derner, J. D. (2021) — «Sensitivity of productivity to precipitation amount and pattern varies by topographic position in a semiarid grassland», Ecosphere 12(2):e03376, Figuras 2 y 4, DOI 10.1002/ecs2.3376',
+      url: 'https://www.ars.usda.gov/ARSUserFiles/52550/Hoover%20et%20al%202021%20Ecosphere%20-%20sensitivity%20of%20productivity.pdf',
+    },
+  },
 ] as const;
 
 /**
@@ -2335,6 +2726,778 @@ export function coberturaBasalContraProduccion(): readonly {
       cobertura_pct: c.cobertura_basal_control_pct as number,
       produccion_g_ms_m2_anio: c.control_g_ms_m2_anio,
     }));
+}
+
+/**
+ * Lo que mueve la CARGA ANIMAL en el mismo campo, con el mismo clima.
+ *
+ * Diecisiete años, cinco intensidades, dos sitios ecológicos y tres momentos de
+ * la temporada, en el Central Grasslands Research Extension Center de Dakota del
+ * Norte. Es el contraste que le faltaba a `CONTRASTE_DE_MANEJO`, donde la
+ * variable eran la fertilización y el estado del pastizal: acá la variable es
+ * **cuántos animales por hectárea**, que es la que el usuario de acequia decide.
+ *
+ * ## Qué define cada tratamiento, que no es la carga
+ *
+ * Esto es lo primero que hay que leer bien, porque es lo que lo hace comparable
+ * con esta app. **Los tratamientos se definieron por el forraje que DEJAN en
+ * pie**, no por una carga fija: liviano deja el 65 % de lo que se produce en un
+ * año medio, moderado el 50 %, fuerte el 35 % y extremo el 20 %. Las fechas de
+ * entrada y salida se ajustaban todos los años para cumplir ese objetivo, así que
+ * la carga es el RESULTADO y no el tratamiento: 1,3 ± 0,7 / 2,7 ± 1,0 / 4,4 ± 1,2
+ * y 6,9 ± 2,1 AUM/ha de media de quince años.
+ *
+ * O sea que las cuatro intensidades son cuatro **usos admisibles**: 35, 50, 65 y
+ * 80 % de cosecha. Y eso las pone en la misma escala que `BANDAS_USO` de
+ * `modulacion.ts`, que es la tabla de Holechek.
+ *
+ * ## El coeficiente de cosecha de acequia cae en el máximo medido
+ *
+ * Con 454 mm, `bandaUso` devuelve la banda árida: cosechar el **40 %** como carga
+ * inicial, con un rango de 35 a 45 %. La producción medida al final de la
+ * temporada en los sitios silty, por intensidad:
+ *
+ * | Manejo | Cosecha | Carga | Total medido |
+ * |---|---|---|---|
+ * | sin pastoreo | 0 % | 0 | 2.865 |
+ * | **liviano** | **35 %** | 1,3 AUM/ha | **3.410** |
+ * | moderado | 50 % | 2,7 | 3.156 |
+ * | fuerte | 65 % | 4,4 | 2.637 |
+ * | extremo | 80 % | 6,9 | 2.501 |
+ *
+ * El 35 % que es el piso de la banda de acequia **es exactamente el tratamiento
+ * liviano, y el liviano es el que más produjo de los cinco.** Es la primera vez
+ * en esta cadena que el coeficiente de uso admisible se puede contrastar contra
+ * producción medida y no contra otra recomendación: Holechek lo derivó de
+ * consideraciones de receptividad, y diecisiete años de corte en un experimento
+ * independiente dicen que ese uso es el que maximiza la oferta. Y es falsable en
+ * las dos direcciones: cosechando el 65 % la producción cae un 23 % y cosechando
+ * el 80 %, un 27 %.
+ *
+ * ## La curva tiene joroba, y acequia no la puede codificar
+ *
+ * El descanso total produjo MENOS que el pastoreo liviano: 2.865 contra 3.410, un
+ * 19 % menos. Los autores lo atribuyen a la acumulación de broza, que inhibe el
+ * crecimiento, y lo presentan como evidencia de la hipótesis de optimización por
+ * pastoreo. **Y aun así no se puede escribir un factor de 1,19 por pastorear
+ * liviano**, por cuatro razones que están en la propia fuente:
+ *
+ * 1. En el CPER —el otro sitio de serie larga de este archivo, ver `SERIE_CPER`—
+ *    el mismo tipo de experimento dio lo contrario: el no pastoreado fue el más
+ *    productivo (Milchunas, Lauenroth y Burke 1994).
+ * 2. Las revisiones de Belsky (1986) y Painter y Belsky (1993) no encontraron
+ *    evidencia de que la herbivoría beneficie a la planta pastoreada.
+ * 3. **El informe anterior de este mismo experimento no vio la joroba**
+ *    (Biondini, Patton y Nyren 1998). Apareció al estirar la serie, y los autores
+ *    lo marcan: «underscoring the importance of long-term studies».
+ * 4. En el otro sitio ecológico del mismo campo —los overflow— no hay joroba
+ *    contra el descanso en la media: liviano, moderado y fuerte no se diferencian
+ *    entre sí, y si superan al descanso depende de cuánto llovió ese año.
+ *
+ * Lo que sí se puede escribir es el rango y la advertencia, y es bastante: **el
+ * manejo del pastoreo mueve la producción 1,36 veces en el mismo sitio con el
+ * mismo clima**, y la dirección no es monótona.
+ *
+ * ## El signo del efecto depende de la lluvia del año, y está publicado en cm
+ *
+ * En los sitios overflow la fuente no publica una media del no pastoreado, y por
+ * un motivo que vale entender: su producción **no responde a la lluvia** y la de
+ * los pastoreados sí, así que la diferencia cambia de signo con el año. En vez de
+ * una media publica el umbral, y están en `UMBRAL_P2E_OVERFLOW`: el pastoreado
+ * supera al descanso si P2E pasa de 26,70 cm (liviano), 24,84 (moderado), 26,24
+ * (fuerte) o 53,15 (extremo); y el extremo produce MENOS que el descanso si P2E
+ * no llega a 31,52 cm.
+ *
+ * Eso es lo más parecido a un modelo de manejo × clima que esta cadena tiene
+ * medido: **con poca lluvia el descanso gana, con mucha gana el pastoreo**, y el
+ * punto de cruce está publicado para cada intensidad.
+ *
+ * ## La pendiente de la lluvia es una función del manejo
+ *
+ * Y es el hallazgo que más le pega a `prodForrajera`, que es una función de la
+ * lluvia y nada más. En los sitios silty, al inicio de la temporada:
+ *
+ * - sin pastoreo: **46,31** kg/ha por cm de P2B (r² 0,58)
+ * - liviano: **32,48** kg/ha por cm (r² 0,29)
+ * - moderado, fuerte y extremo: **no se distinguen de cero**
+ *
+ * En los overflow, al final de la temporada, pasa lo contrario: el no pastoreado
+ * no responde a la lluvia y los pastoreados suben 46,85 kg/ha por cm (r² 0,42,
+ * entre 37,63 y 56,35 según la intensidad).
+ *
+ * O sea que la pregunta «¿cuánto sube la producción por milímetro?» **no tiene
+ * una respuesta en este sitio**: tiene cinco por sitio ecológico y por momento, y
+ * dos de ellas son cero. Y el que responde a la lluvia es el descanso en un sitio
+ * ecológico y el pastoreo en el otro, en el mismo campo y los mismos años.
+ *
+ * ## El total esconde un cambio de composición
+ *
+ * Las gramíneas bajan con la carga y las hierbas de hoja ancha SUBEN. Al inicio
+ * de la temporada en los overflow las hierbas van de 115 kg/ha en el descanso a
+ * 282 en el extremo —se multiplican por 2,5— mientras las gramíneas bajan. Los
+ * autores lo explican: el pastoreo ralea el tapiz y abre huecos para las hierbas
+ * de primavera. **Un número de forraje total no ve eso**, y para una carga animal
+ * importa, porque no todas las hierbas se comen igual.
+ *
+ * ## Y un cruce que vale más que todo lo anterior
+ *
+ * La primera entrada de este archivo es la ficha del NRCS del sitio ecológico
+ * Loamy Upland de la MLRA 53B, con 2.643 a 3.063 kg MS/ha/año. **El CGREC está
+ * adentro de esa MLRA y en ese sitio ecológico**: el mapa de suelos del punto
+ * publicado devuelve el componente Williams al 45 % correlacionado con el sitio
+ * ecológico `R053BY011ND` «Loamy», de la MLRA `053B`. Dos métodos que no se
+ * parecen en nada —una tabla de comunidad de referencia de un relevamiento de
+ * suelos contra diecisiete años de cortar pasto en cinco tratamientos— sobre el
+ * mismo sitio ecológico:
+ *
+ * | | producción | razón entre extremos |
+ * |---|---|---|
+ * | NRCS, ficha de sitio ecológico | 2.643–3.063 | 0,86 |
+ * | CGREC, medido 1989–2005 | 2.501–3.410 | 0,73 |
+ *
+ * Los rangos se superponen casi del todo y los dos tienen el mismo signo: el
+ * extremo de abajo de los dos es un estado de pastoreo intenso y el de arriba, de
+ * pastoreo leve. Es la corroboración independiente más fuerte que tiene este
+ * archivo, y conviene no sobrevenderla: «pastoreo continuo intenso» de la ficha y
+ * «fuerte» del experimento no son la misma definición, y que 2.643 y 2.637 queden
+ * a seis kilos es una coincidencia y no una validación al 0,2 %.
+ *
+ * ## Rango de validez
+ *
+ * Una estación experimental, dos sitios ecológicos, un clima de 454 mm con el
+ * 72 % en la estación de crecimiento, y un pastizal que **no es el original**:
+ * era pradera mixta, se aró, volvió a pasto en las sequías de los años 50 y hoy
+ * lo dominan dos gramíneas introducidas invasoras, Poa pratensis y Bromus
+ * inermis. Un pastizal nativo puede responder distinto al mismo manejo. Y el
+ * ganado es bovino: las tablas de ovino y caprino de `modulacion.ts` no se tocan
+ * con esto.
+ *
+ * **Qué se rompe si cambia:** nada calcula con estas filas todavía. Lo que ya
+ * cambian es lo que `prodForrajera` y `bandaUso` tienen escrito arriba de su
+ * propio código.
+ */
+export type IntensidadDePastoreo =
+  | 'sin_pastoreo'
+  | 'liviano'
+  | 'moderado'
+  | 'fuerte'
+  | 'extremo';
+
+/** En qué momento de la temporada se cortó. */
+export type MomentoDeLaTemporada = 'inicio' | 'pico' | 'fin';
+
+export interface FilaDeCarga {
+  /**
+   * Sitio ecológico. `silty` son lomadas de suelo profundo; `overflow`, bajos que
+   * reciben el escurrimiento de arriba. **No se juntan**: la fuente mide una
+   * interacción significativa entre sitio ecológico e intensidad de pastoreo.
+   */
+  sitio_ecologico: 'silty' | 'overflow';
+  momento: MomentoDeLaTemporada;
+  intensidad: IntensidadDePastoreo;
+  /** Carga media de 1991 a 2005, AUM/ha. Cero en la exclusión. */
+  carga_aum_ha: number;
+  /** Desvío de la carga entre años, AUM/ha. `null` en la exclusión. */
+  carga_sd_aum_ha: number | null;
+  /**
+   * Forraje que el tratamiento DEJA en pie al final de la temporada, en % de lo
+   * producido en un año medio. Es la definición del tratamiento, y su complemento
+   * es el uso admisible: 100 − este número.
+   */
+  remanente_pct: number;
+  /** kg/ha, media ajustada por covarianza. `null` cuando la fuente no publica una. */
+  gramineas: number | null;
+  hierbas: number | null;
+  /**
+   * `null` en los silty, y no por falta de dato: ahí los arbustos no son un grupo
+   * aparte y están contados con las hierbas —«with occasional shrubs being placed
+   * with forbs»—.
+   */
+  arbustos: number | null;
+  total: number | null;
+  /** Tabla de la que sale la fila. */
+  tabla: string;
+}
+
+/**
+ * Las treinta filas, transcritas de las Tablas 2 a 7 abriendo el PDF.
+ *
+ * **Dos de las seis tablas tienen columnas de umbral intercaladas entre las de
+ * producción**, y es la trampa que se comió la entrega del lote 18: en la Tabla 2
+ * el orden real es gramíneas, umbral de T2B, hierbas, arbustos, total, umbral,
+ * umbral. Leer el encabezado resumido —«gramíneas, hierbas, arbustos, total»— y
+ * contar columnas de izquierda a derecha corre todo un lugar, y entonces los
+ * umbrales de temperatura entran como producción de hierbas.
+ *
+ * La segunda evidencia que lo atrapa, y que la regla S del encargo pedía, está en
+ * la última fila de cada tabla: **el error estándar agrupado tiene un valor por
+ * columna de producción y ninguno por columna de umbral.** La Tabla 2 trae cuatro
+ * (47, 16, 12, 46) y la Tabla 3, tres (48, 11, 48). Si la lectura produce cinco
+ * columnas de producción en una tabla con cuatro errores estándar, la lectura
+ * está mal. Es una verificación que no necesita la fuente original: se hace con la
+ * tabla a la vista.
+ */
+export const CARGA_CGREC: readonly FilaDeCarga[] = [
+  // --- silty, inicio de la temporada (Tabla 3). SE agrupado 48 / 11 / 48.
+  { sitio_ecologico: 'silty', momento: 'inicio', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas: 1383, hierbas:  76, arbustos: null, total: 1469, tabla: 'Tabla 3' },
+  { sitio_ecologico: 'silty', momento: 'inicio', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 1478, hierbas:  59, arbustos: null, total: 1546, tabla: 'Tabla 3' },
+  { sitio_ecologico: 'silty', momento: 'inicio', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 1208, hierbas: 140, arbustos: null, total: 1371, tabla: 'Tabla 3' },
+  { sitio_ecologico: 'silty', momento: 'inicio', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas:  868, hierbas: 155, arbustos: null, total: 1048, tabla: 'Tabla 3' },
+  { sitio_ecologico: 'silty', momento: 'inicio', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas:  693, hierbas: 159, arbustos: null, total:  875, tabla: 'Tabla 3' },
+  // --- silty, pico (Tabla 5). SE agrupado 75 / 45 / 85.
+  { sitio_ecologico: 'silty', momento: 'pico', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas: 2340, hierbas: 409, arbustos: null, total: 2765, tabla: 'Tabla 5' },
+  { sitio_ecologico: 'silty', momento: 'pico', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 2565, hierbas: 607, arbustos: null, total: 3186, tabla: 'Tabla 5' },
+  { sitio_ecologico: 'silty', momento: 'pico', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 2177, hierbas: 683, arbustos: null, total: 2888, tabla: 'Tabla 5' },
+  { sitio_ecologico: 'silty', momento: 'pico', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas: 1763, hierbas: 671, arbustos: null, total: 2453, tabla: 'Tabla 5' },
+  { sitio_ecologico: 'silty', momento: 'pico', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas: 1631, hierbas: 495, arbustos: null, total: 2145, tabla: 'Tabla 5' },
+  // --- silty, fin de la temporada (Tabla 6). SE agrupado 90 / 55 / 98.
+  // Es la fila anual: el pico de la jaula más el crecimiento del pico al final.
+  { sitio_ecologico: 'silty', momento: 'fin', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas: 2466, hierbas: 387, arbustos: null, total: 2865, tabla: 'Tabla 6' },
+  { sitio_ecologico: 'silty', momento: 'fin', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 2771, hierbas: 632, arbustos: null, total: 3410, tabla: 'Tabla 6' },
+  { sitio_ecologico: 'silty', momento: 'fin', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 2429, hierbas: 699, arbustos: null, total: 3156, tabla: 'Tabla 6' },
+  { sitio_ecologico: 'silty', momento: 'fin', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas: 1974, hierbas: 651, arbustos: null, total: 2637, tabla: 'Tabla 6' },
+  { sitio_ecologico: 'silty', momento: 'fin', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas: 1982, hierbas: 510, arbustos: null, total: 2501, tabla: 'Tabla 6' },
+  // --- overflow, inicio (Tabla 2). SE agrupado 47 / 16 / 12 / 46.
+  // La referencia de los umbrales de esta tabla es el tratamiento EXTREMO, y por
+  // eso su media de gramíneas y de total no se publica.
+  { sitio_ecologico: 'overflow', momento: 'inicio', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas:  920, hierbas: 115, arbustos: 124, total: 1194, tabla: 'Tabla 2' },
+  { sitio_ecologico: 'overflow', momento: 'inicio', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 1017, hierbas: 136, arbustos:  64, total: 1273, tabla: 'Tabla 2' },
+  { sitio_ecologico: 'overflow', momento: 'inicio', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 1095, hierbas: 180, arbustos:  77, total: 1428, tabla: 'Tabla 2' },
+  { sitio_ecologico: 'overflow', momento: 'inicio', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas:  998, hierbas: 227, arbustos: 106, total: 1402, tabla: 'Tabla 2' },
+  { sitio_ecologico: 'overflow', momento: 'inicio', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas: null, hierbas: 282, arbustos:  41, total: null, tabla: 'Tabla 2' },
+  // --- overflow, pico (Tabla 4). SE agrupado 102 / 76 / 57 / 134.
+  { sitio_ecologico: 'overflow', momento: 'pico', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas: 2351, hierbas:  755, arbustos: 464, total: 3574, tabla: 'Tabla 4' },
+  { sitio_ecologico: 'overflow', momento: 'pico', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 2424, hierbas: 1424, arbustos: 381, total: 4194, tabla: 'Tabla 4' },
+  { sitio_ecologico: 'overflow', momento: 'pico', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 2521, hierbas: 1171, arbustos: 509, total: 4172, tabla: 'Tabla 4' },
+  { sitio_ecologico: 'overflow', momento: 'pico', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas: 2290, hierbas: 1286, arbustos: 667, total: 4191, tabla: 'Tabla 4' },
+  { sitio_ecologico: 'overflow', momento: 'pico', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas: 1719, hierbas:  850, arbustos: 269, total: 2769, tabla: 'Tabla 4' },
+  // --- overflow, fin (Tabla 7). SE agrupado 115 / 80 / 49 / 137.
+  // Acá la referencia de los umbrales es el NO PASTOREADO, y por eso es el que no
+  // tiene media de gramíneas ni de total.
+  { sitio_ecologico: 'overflow', momento: 'fin', intensidad: 'sin_pastoreo', carga_aum_ha: 0,   carga_sd_aum_ha: null, remanente_pct: 100, gramineas: null, hierbas:  575, arbustos: 387, total: null, tabla: 'Tabla 7' },
+  { sitio_ecologico: 'overflow', momento: 'fin', intensidad: 'liviano',      carga_aum_ha: 1.3, carga_sd_aum_ha: 0.7,  remanente_pct:  65, gramineas: 2556, hierbas: 1283, arbustos: 285, total: 4131, tabla: 'Tabla 7' },
+  { sitio_ecologico: 'overflow', momento: 'fin', intensidad: 'moderado',     carga_aum_ha: 2.7, carga_sd_aum_ha: 1.0,  remanente_pct:  50, gramineas: 2861, hierbas: 1152, arbustos: 356, total: 4360, tabla: 'Tabla 7' },
+  { sitio_ecologico: 'overflow', momento: 'fin', intensidad: 'fuerte',       carga_aum_ha: 4.4, carga_sd_aum_ha: 1.2,  remanente_pct:  35, gramineas: 2510, hierbas: 1259, arbustos: 556, total: 4362, tabla: 'Tabla 7' },
+  { sitio_ecologico: 'overflow', momento: 'fin', intensidad: 'extremo',      carga_aum_ha: 6.9, carga_sd_aum_ha: 2.1,  remanente_pct:  20, gramineas: 1982, hierbas:  902, arbustos: 155, total: 3087, tabla: 'Tabla 7' },
+] as const;
+
+/**
+ * Los errores estándar agrupados de cada tabla, en el orden de las columnas de
+ * producción.
+ *
+ * Está acá por lo que dice el comentario de `CARGA_CGREC`: **son el conteo de
+ * columnas de producción de cada tabla**, y por eso sirven para verificar que la
+ * transcripción no se corrió un lugar. Hay un test que los cuenta.
+ */
+export const SE_AGRUPADO_CGREC = {
+  'Tabla 2': { gramineas: 47, hierbas: 16, arbustos: 12, total: 46 },
+  'Tabla 3': { gramineas: 48, hierbas: 11, arbustos: null, total: 48 },
+  'Tabla 4': { gramineas: 102, hierbas: 76, arbustos: 57, total: 134 },
+  'Tabla 5': { gramineas: 75, hierbas: 45, arbustos: null, total: 85 },
+  'Tabla 6': { gramineas: 90, hierbas: 55, arbustos: null, total: 98 },
+  'Tabla 7': { gramineas: 115, hierbas: 80, arbustos: 49, total: 137 },
+} as const;
+
+/**
+ * Las pendientes publicadas al FINAL de la temporada, que es la cifra anual.
+ *
+ * **La lluvia está en cm**, que es como la publica la fuente: para pasar a
+ * kg/ha por mm hay que dividir por diez. Es exactamente la clase de conversión
+ * que `skills/motor-de-calculo` manda escribir en el nombre.
+ *
+ * El dato que importa es `interactua_con_la_carga`: donde es `true`, no existe
+ * una pendiente del sitio, existe una por tratamiento.
+ */
+export const PENDIENTES_CGREC_FIN = {
+  silty: {
+    gramineas_kg_ha_cm: 20.75,
+    gramineas_kg_ha_c: 0.35,
+    hierbas_kg_ha_cm: 7.10,
+    total_kg_ha_cm: 28.63,
+    total_kg_ha_c: 0.29,
+    interactua_con_la_carga: false,
+    nota: 'Ni la lluvia ni la temperatura interactúan con la intensidad de pastoreo al final de la temporada en los silty: una sola pendiente para los cinco tratamientos.',
+  },
+  overflow: {
+    // Sólo los pastoreados. El no pastoreado no responde a ninguna de las dos.
+    gramineas_kg_ha_cm: 31.44,
+    gramineas_kg_ha_c: 0.24,
+    hierbas_kg_ha_cm: 7.75,
+    arbustos_kg_ha_cm: 4.23,
+    arbustos_kg_ha_c: -0.08,
+    total_kg_ha_cm: 46.85,
+    total_r2: 0.42,
+    total_min_kg_ha_cm: 37.63,
+    total_max_kg_ha_cm: 56.35,
+    interactua_con_la_carga: true,
+    nota: 'El no pastoreado no responde ni a la lluvia ni a la temperatura; los cuatro pastoreados suben 46,85 kg/ha por cm de P2E y entre ellos no se diferencian.',
+  },
+} as const;
+
+/**
+ * El umbral de lluvia del año agrícola por encima del cual el pastoreo supera al
+ * descanso, en los sitios overflow y para la producción total. En **cm** de P2E.
+ *
+ * Es el modelo de manejo × clima que la fuente publica como números. Debajo de
+ * `extremo_por_debajo_de`, el pastoreo extremo produce MENOS que el descanso;
+ * entre ese valor y su propio umbral, los dos no se distinguen.
+ */
+export const UMBRAL_P2E_OVERFLOW = {
+  liviano: 26.70,
+  moderado: 24.84,
+  fuerte: 26.24,
+  extremo: 53.15,
+  extremo_por_debajo_de: 31.52,
+} as const;
+
+/** Las filas de un sitio ecológico y un momento, en orden de carga creciente. */
+export function filasDeCarga(
+  sitio_ecologico: 'silty' | 'overflow',
+  momento: MomentoDeLaTemporada,
+): readonly FilaDeCarga[] {
+  return CARGA_CGREC
+    .filter(f => f.sitio_ecologico === sitio_ecologico && f.momento === momento)
+    .slice()
+    .sort((a, b) => a.carga_aum_ha - b.carga_aum_ha);
+}
+
+/**
+ * Cuántas veces produce un tratamiento respecto del DESCANSO del mismo sitio y
+ * momento. `null` si a alguno de los dos le falta la media publicada.
+ */
+export function factorDeCarga(f: FilaDeCarga): number | null {
+  const descanso = CARGA_CGREC.find(
+    x => x.sitio_ecologico === f.sitio_ecologico
+      && x.momento === f.momento
+      && x.intensidad === 'sin_pastoreo',
+  );
+  if (!descanso || descanso.total === null || f.total === null) return null;
+  return f.total / descanso.total;
+}
+
+/**
+ * El uso admisible que define cada tratamiento, como fracción.
+ *
+ * Es el complemento del remanente, y es lo que lo hace comparable con
+ * `BANDAS_USO` de `modulacion.ts`.
+ */
+export function usoDelTratamiento(f: FilaDeCarga): number {
+  return (100 - f.remanente_pct) / 100;
+}
+
+/**
+ * Cuál de los tratamientos medidos produjo más, en un sitio ecológico y momento.
+ *
+ * Devuelve `null` si no hay ninguna fila con total publicado.
+ */
+export function cargaQueMasProduce(
+  sitio_ecologico: 'silty' | 'overflow',
+  momento: MomentoDeLaTemporada,
+): FilaDeCarga | null {
+  const con = filasDeCarga(sitio_ecologico, momento).filter(f => f.total !== null);
+  if (con.length === 0) return null;
+  return con.reduce((a, b) => ((b.total as number) > (a.total as number) ? b : a));
+}
+
+/**
+ * ¿El pastoreo supera al descanso con esta lluvia? Sólo para los overflow y para
+ * la producción total, que es lo único que la fuente publica así.
+ *
+ * `true` si lo supera, `false` si produce menos, `null` si la fuente dice que con
+ * esa lluvia los dos no se distinguen —que es una respuesta y no una falta de
+ * dato—.
+ */
+export function pastoreoSuperaAlDescanso(
+  intensidad: Exclude<IntensidadDePastoreo, 'sin_pastoreo'>,
+  p2e_cm: number,
+): boolean | null {
+  const umbral = UMBRAL_P2E_OVERFLOW[intensidad];
+  if (intensidad === 'extremo') {
+    if (p2e_cm < UMBRAL_P2E_OVERFLOW.extremo_por_debajo_de) return false;
+    if (p2e_cm > umbral) return true;
+    return null;
+  }
+  return p2e_cm > umbral ? true : null;
+}
+
+/**
+ * La VENTANA sobre la que se suma la lluvia, y cuánto cambia el resultado.
+ *
+ * Hart y Samuel (1985) hicieron, sin proponérselo, el experimento que esta
+ * cadena necesitaba: ajustaron **la misma producción contra cuatro ventanas de
+ * lluvia distintas** y publicaron el r² de cada una, en dos grupos de suelo del
+ * mismo campo, los mismos siete años y el mismo método. Es lo único del archivo
+ * que contesta «¿importa la ventana?» con números del mismo sitio.
+ *
+ * Importa porque `prodForrajera` usa **lluvia anual**, y acequia tiene lluvia
+ * diaria de tres fuentes: puede sumar cualquier ventana. Si la ventana correcta
+ * explicara el doble, sería la mejora más barata que queda.
+ *
+ * ## Lo que publica la tabla
+ *
+ * | grupo de suelo | ventana | ecuación | r² |
+ * |---|---|---|---|
+ * | subsuelo arenoso | marzo-abril | 772 + 2,49·P | **0,86** |
+ * | subsuelo arenoso | mayo-agosto | 831 + 0,49·P | 0,03 |
+ * | subsuelo arenoso | marzo-agosto | 273 + 1,89·P | 0,76 |
+ * | subsuelo arenoso | las dos juntas | 497 + 2,61·P₁ + 0,92·P₂ | **0,95** |
+ * | subsuelo limoso | marzo-abril | 1.083 + 0,60·P | 0,32 |
+ * | subsuelo limoso | mayo-agosto | 1.155 − 0,086·P | 0,01 |
+ * | subsuelo limoso | marzo-agosto | 1.001 + 0,35·P | 0,17 |
+ * | subsuelo limoso | las dos juntas | 1.079 + 0,60·P₁ + 0,013·P₂ | 0,32 |
+ *
+ * Leído así, la respuesta parece espectacular: **la misma producción pasa de
+ * r² = 0,03 a r² = 0,95 según qué meses se sumen**, y encima la lluvia del
+ * invierno-primavera pesa cinco veces más por milímetro que la del verano.
+ *
+ * ## Y el reajuste dice que ese 0,86 es UN AÑO
+ *
+ * Esto es el resultado del lote 20 y por poco no aparece. La transcripción
+ * reproduce las tres ecuaciones publicadas casi exactas —773,9 + 2,483 con
+ * r² 0,8673 contra 772 + 2,49 con 0,86; 1.085,2 + 0,595 con 0,3175 contra
+ * 1.083 + 0,60 con 0,32; y la múltiple 502,9 + 2,598 + 0,906 con R² 0,9541
+ * contra 497 + 2,61 + 0,92 con 0,95—, así que la serie está bien leída. Con la
+ * serie en la mano se puede hacer lo que la tabla no muestra: **sacar un año**.
+ *
+ * | qué se saca | pendiente | r² |
+ * |---|---|---|
+ * | nada, los siete años | 2,483 | 0,867 |
+ * | sin 1975 | 2,453 | 0,863 |
+ * | sin 1976 | 2,457 | 0,867 |
+ * | sin 1977 | 2,475 | 0,924 |
+ * | sin 1978 | 2,474 | 0,859 |
+ * | sin 1979 | 2,484 | 0,868 |
+ * | sin 1982 | 2,781 | 0,956 |
+ * | **sin 1983** | **−0,074** | **0,001** |
+ *
+ * **Marzo-abril de 1983 llovió 250 mm y los otros seis años llovieron entre 18 y
+ * 78.** Ese año la producción del grupo arenoso fue 1.430 kg/ha y los otros seis
+ * años estuvieron entre 850 y 980. Sacar 1983 lleva el r² de 0,867 a 0,001 y la
+ * pendiente a ligeramente negativa; sacar cualquier otro año no mueve nada.
+ *
+ * O sea que la ecuación publicada **no es evidencia de que la lluvia de primavera
+ * prediga la producción**: es evidencia de que una primavera extraordinaria dio
+ * un año extraordinario, que es verdad y es otra cosa. Con n = 7 y un punto de
+ * palanca a 250 mm, el r² de 0,86 describe esa palanca.
+ *
+ * Y el propio trabajo tiene el resultado complementario, que apunta en la misma
+ * dirección y es más robusto porque usa trece ubicaciones y cinco años: **adentro
+ * de un año, dónde llovió más no produjo más.** Textual: *«Within years and soil
+ * groups, herbage production was not significantly correlated with May-August
+ * precipitation; no r² exceeded 0.17.»* Con una red de pluviómetros cada 0,8 km
+ * sobre 483 ha, en la que la lluvia de mayo-septiembre varió hasta un 20 % entre
+ * puntos y la producción hasta un 72 %.
+ *
+ * ## Lo que SÍ queda de este trabajo, que es bastante
+ *
+ * 1. **La ventana importa, y la dirección es creíble aunque el r² sea frágil.**
+ *    La lluvia de marzo-abril pesa 2,49 kg/ha por mm y la de mayo-agosto 0,49: un
+ *    factor cinco por milímetro, y marzo-abril es sólo el 22 % del total de la
+ *    temporada. La bibliografía que el propio trabajo cita va en el mismo
+ *    sentido: Rauzi (1964) encontró que mayo-junio explica casi tanto como
+ *    abril-agosto, y Murphy (1970) que en el pastizal anual de California el
+ *    mejor predictor es la lluvia del **1 al 20 de noviembre**.
+ * 2. **Si la lluvia predice o no es una propiedad del SUELO, no del clima.** El
+ *    mismo campo, los mismos años, las mismas ventanas: en subsuelo arenoso la
+ *    correlación es significativa y en subsuelo limoso no lo es con ninguna
+ *    ventana. La explicación de los autores es la capacidad de almacenaje:
+ *    *«Correlation of production with precipitation was good on soils with sandy
+ *    subsoils and therefore little water storage capacity; plants growing on such
+ *    soils were dependent on current rainfall.»* En suelo con más almacenaje,
+ *    *«a more complex water-balance model might be needed»*. **Esto es lo más
+ *    accionable del lote**: acequia tiene textura de SoilGrids, así que puede
+ *    saber de qué lado está el predio.
+ * 3. **La clasificación por textura superficial agrupa mal.** Ascalon y Altvan
+ *    están los dos clasificados como sitio «Loamy» y difieren más en producción y
+ *    composición que Altvan y Cascajo, que son sitios distintos («Loamy» y «Very
+ *    shallow»). Textual: *«Site classifications based only on surface texture
+ *    must be interpreted cautiously.»* **Es un aviso sobre dos entradas de este
+ *    archivo**, que son fichas de sitio ecológico del NRCS.
+ * 4. **El trabajo que compara cuatro ventanas de lluvia nunca publica la lluvia
+ *    anual.** Por eso las dos entradas montadas llevan `lluvia_mm` en `null`:
+ *    tiene marzo-abril, mayo-septiembre y marzo-septiembre, y ninguna es el año.
+ *
+ * ## Rango de validez
+ *
+ * Siete años, un campo de 483 ha al noroeste de Cheyenne, Wyoming, pastizal mixto
+ * de *Bouteloua gracilis*, *Pascopyrum smithii*, *Hesperostipa comata* y
+ * *Carex eleocharis*. La producción es **pico de materia seca bajo jaula**, con
+ * dos marcos de 30 × 60 cm por jaula, cortado a nivel del suelo en agosto y
+ * secado a 60 °C. Las jaulas están adentro de potreros con tres cargas distintas,
+ * así que la cifra es la producción protegida y no la del potrero.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto. Es lo que decide si vale la
+ * pena cambiar la ventana de lluvia que lee `prodForrajera`, y la respuesta
+ * honesta de este lote es «la dirección sí, el coeficiente no todavía».
+ */
+export interface AnioHart {
+  anio: number;
+  /** Lluvia de marzo y abril, pluviómetro de la sede, mm. */
+  mar_abr_mm: number | null;
+  /**
+   * Lluvia de mayo a septiembre, mm. Media de los pluviómetros del campo de 1975
+   * a 1979; de la sede en 1974 y 1981-1983.
+   */
+  may_sep_mm: number | null;
+  /** Lluvia de marzo a septiembre, mm. */
+  mar_sep_mm: number | null;
+  /** Producción del grupo de subsuelo arenoso (Altvan, Cascajo, Larim), kg/ha. */
+  arenosos: number | null;
+  /** Producción de Ascalon, de subsuelo limoso, kg/ha. */
+  ascalon: number | null;
+  /** Rango entre jaulas, en % de la media del grupo arenoso ese año. */
+  rango_arenosos_pct: number | null;
+  rango_ascalon_pct: number | null;
+}
+
+/**
+ * Los nueve años de la Tabla 2, con los siete que entran en las regresiones.
+ *
+ * **Dos celdas de esta tabla no cierran una identidad y se dejan como la publica
+ * la fuente.** Marzo-septiembre tendría que ser marzo-abril más mayo-septiembre,
+ * y lo es en 1976, 1977, 1978, 1979 y 1982; en 1975 falta 30 mm y en 1983
+ * sobran 180. No es un error de transcripción: **el reajuste de las tres
+ * ecuaciones publicadas sólo sale con estos valores**, así que son los que la
+ * tabla tiene. La explicación está en los pies de la propia tabla: las tres
+ * filas no vienen del mismo pluviómetro en los mismos años.
+ */
+export const SERIE_HART: readonly AnioHart[] = [
+  { anio: 1974, mar_abr_mm: null, may_sep_mm: null, mar_sep_mm: 195, arenosos: null, ascalon: null, rango_arenosos_pct: null, rango_ascalon_pct: null },
+  { anio: 1975, mar_abr_mm:   45, may_sep_mm:  210, mar_sep_mm: 225, arenosos:  860, ascalon: 1120, rango_arenosos_pct: 39, rango_ascalon_pct: 57 },
+  { anio: 1976, mar_abr_mm:   56, may_sep_mm:  285, mar_sep_mm: 341, arenosos:  880, ascalon: 1090, rango_arenosos_pct: 31, rango_ascalon_pct: 30 },
+  { anio: 1977, mar_abr_mm:   78, may_sep_mm:  253, mar_sep_mm: 331, arenosos:  850, ascalon: 1240, rango_arenosos_pct: 36, rango_ascalon_pct: 43 },
+  { anio: 1978, mar_abr_mm:   37, may_sep_mm:  254, mar_sep_mm: 291, arenosos:  860, ascalon: 1080, rango_arenosos_pct: 72, rango_ascalon_pct: 48 },
+  { anio: 1979, mar_abr_mm:   77, may_sep_mm:  308, mar_sep_mm: 385, arenosos:  980, ascalon: 1020, rango_arenosos_pct: 48, rango_ascalon_pct: 46 },
+  // 1980 no se midió y 1981 tiene lluvia pero no producción.
+  { anio: 1981, mar_abr_mm: null, may_sep_mm: null, mar_sep_mm: 376, arenosos: null, ascalon: null, rango_arenosos_pct: null, rango_ascalon_pct: null },
+  { anio: 1982, mar_abr_mm:   18, may_sep_mm:  426, mar_sep_mm: 444, arenosos:  950, ascalon: 1140, rango_arenosos_pct: null, rango_ascalon_pct: null },
+  // El año de palanca: 250 mm en marzo-abril contra 18 a 78 de los otros seis.
+  { anio: 1983, mar_abr_mm:  250, may_sep_mm:  286, mar_sep_mm: 356, arenosos: 1430, ascalon: 1240, rango_arenosos_pct: null, rango_ascalon_pct: null },
+] as const;
+
+export interface AjustePorVentana {
+  grupo: 'subsuelo_arenoso' | 'subsuelo_limoso';
+  /** La ventana como la nombra la fuente. */
+  ventana: string;
+  ordenada: number;
+  /** kg/ha por mm de la primera ventana. */
+  pendiente_1: number;
+  /** kg/ha por mm de la segunda, sólo en la regresión múltiple. */
+  pendiente_2: number | null;
+  r2: number;
+  /** Como la marca la fuente con asteriscos: `**` es P < 0,01. */
+  significativa: boolean;
+}
+
+/**
+ * Las ocho regresiones de la Tabla 3: cuatro ventanas × dos grupos de suelo.
+ *
+ * `n` es 7 para todas —1975-1979 y 1982-1983— y la fuente no lo imprime: sale
+ * del texto, que dice «including 1982 and 1983 data», y del número de años con
+ * producción en la Tabla 2. Los grados de libertad tampoco están impresos.
+ */
+export const VENTANAS_HART: readonly AjustePorVentana[] = [
+  { grupo: 'subsuelo_arenoso', ventana: 'marzo-abril',    ordenada:  772, pendiente_1:  2.49,  pendiente_2: null, r2: 0.86, significativa: true },
+  { grupo: 'subsuelo_arenoso', ventana: 'mayo-agosto',    ordenada:  831, pendiente_1:  0.49,  pendiente_2: null, r2: 0.03, significativa: false },
+  { grupo: 'subsuelo_arenoso', ventana: 'marzo-agosto',   ordenada:  273, pendiente_1:  1.89,  pendiente_2: null, r2: 0.76, significativa: true },
+  { grupo: 'subsuelo_arenoso', ventana: 'las dos juntas', ordenada:  497, pendiente_1:  2.61,  pendiente_2: 0.92, r2: 0.95, significativa: true },
+  { grupo: 'subsuelo_limoso',  ventana: 'marzo-abril',    ordenada: 1083, pendiente_1:  0.60,  pendiente_2: null, r2: 0.32, significativa: false },
+  { grupo: 'subsuelo_limoso',  ventana: 'mayo-agosto',    ordenada: 1155, pendiente_1: -0.086, pendiente_2: null, r2: 0.01, significativa: false },
+  { grupo: 'subsuelo_limoso',  ventana: 'marzo-agosto',   ordenada: 1001, pendiente_1:  0.35,  pendiente_2: null, r2: 0.17, significativa: false },
+  { grupo: 'subsuelo_limoso',  ventana: 'las dos juntas', ordenada: 1079, pendiente_1:  0.60,  pendiente_2: 0.013, r2: 0.32, significativa: false },
+] as const;
+
+/** Los siete años que entran en las regresiones de la Tabla 3. */
+export function aniosDeHart(): readonly AnioHart[] {
+  return SERIE_HART.filter(f => f.arenosos !== null && f.mar_abr_mm !== null);
+}
+
+/**
+ * La producción estimada por una de las ocho ecuaciones publicadas, kg/ha.
+ *
+ * Pide las dos lluvias porque la múltiple usa las dos; para las simples, la
+ * segunda se ignora. **La lluvia va en mm**, que es como la publica la fuente.
+ */
+export function produccionHart(a: AjustePorVentana, p1_mm: number, p2_mm = 0): number {
+  return a.ordenada + a.pendiente_1 * p1_mm + (a.pendiente_2 ?? 0) * p2_mm;
+}
+
+/**
+ * Lo que la POSICIÓN EN EL RELIEVE le hace a la producción y a su respuesta a la
+ * lluvia, con 36 años del mismo campo.
+ *
+ * Hoover, Lauenroth, Milchunas, Porensky, Augustine y Derner (2021), *Ecosphere*
+ * 12(2):e03376, en el Central Plains
+ * Experimental Range: loma, ladera y bajo, 1983 a 2018, quince jaulas por
+ * posición movidas al azar cada año. **Es el mismo sitio que `SERIE_CPER`**, con
+ * otro método y otras cuatro décadas.
+ *
+ * Importa porque acequia **ya calcula esto**: la acumulación de flujo sobre el
+ * DEM dice qué celda recibe el escurrimiento de las de arriba. Es el único
+ * modificador del forraje que la app puede aplicar hoy sin un dato nuevo.
+ *
+ * ## Dos factores distintos, y hay que no confundirlos
+ *
+ * **Uno: el nivel.** La producción media de 36 años es 57,2 g/m² en la loma,
+ * 63,7 en la ladera y 100,0 en el bajo. El bajo produce **1,75 veces** la loma, y
+ * el trabajo lo compara con otros tres pastizales: ~1,5 en pradera de arenales
+ * (Stephenson et al. 2019), ~2 en pradera de pasto alto (Nippert et al. 2011) y
+ * ~2 en pastizal boreal (Bork et al. 2001). O sea: **el factor topográfico
+ * publicado va de 1,5 a 2,0 en cuatro ecosistemas distintos.**
+ *
+ * **Dos: la sensibilidad.** El bajo es **más del doble** de sensible a la lluvia
+ * de la temporada que la ladera y la loma: 0,76 ± 0,17 contra 0,36 ± 0,08 y
+ * 0,29 ± 0,07. Y 2,9 veces más sensible a los días secos consecutivos: −0,69
+ * contra −0,24. **Son sensibilidades normalizadas** —la pendiente entre dos
+ * variables estandarizadas— así que son adimensionales y NO se pueden usar como
+ * kg/ha por mm.
+ *
+ * La consecuencia práctica es la que no se ve en el promedio: **las tres
+ * posiciones convergen en los años malos y divergen en los buenos.** En 2002, el
+ * peor año, dieron 9,4 / 9,4 / 14,2 g/m²; en 2009, el mejor, 122,9 / 129,7 /
+ * 223,3. Un bajo no es un seguro contra la sequía: es una palanca sobre el agua
+ * que llega.
+ *
+ * ## Y el dato que ordena todo el archivo
+ *
+ * **La variabilidad entre años es cuatro veces más grande que la variabilidad
+ * entre posiciones.** Entre años, cada posición se mueve 13, 14 y 16 veces;
+ * entre posiciones, dentro del mismo año, el máximo fue **4 veces** (1992: loma
+ * 46,5 contra bajo 177,8). Textual del resumen de resultados: *«temporal
+ * variability in ANPP across years (maximum 16-fold difference) was substantially
+ * greater than spatial variability across the topographic sequence (maximum
+ * 4-fold difference)»*.
+ *
+ * Eso pone en escala todo lo que este archivo viene midiendo: el año manda más
+ * que el lugar, **y `prodForrajera` no tiene año**: tiene una normal.
+ *
+ * ## El choque con la otra serie del mismo sitio, que vale escribir
+ *
+ * `SERIE_CPER` publica, para 1939-1990, una columna de ANPP en estufa-seco con
+ * media de **97 g/m²**. Hoover mide directamente, para 1983-2018, y la media
+ * ponderada por la fracción de área de cada posición —50 % loma, 28 % ladera,
+ * 22 % bajo— da **68,4 g/m²**. El mismo sitio, las dos como ANPP herbácea en
+ * estufa-seco, **1,42 veces de diferencia**.
+ *
+ * Tres explicaciones posibles y ninguna descartada:
+ *
+ * 1. La columna de 1939-1990 **no se midió, se derivó** de la de forraje con
+ *    `ECUACION_FORRAJE_A_ANPP`, ajustada con r² = 0,28 sobre catorce años. Puede
+ *    estar sesgada alta.
+ * 2. Lauenroth y Sala cosechan «biomasa aérea viva y muerta adherida»; Hoover
+ *    corta **a nivel de corona** sólo el crecimiento del año. El material muerto
+ *    adherido empuja la primera hacia arriba.
+ * 3. Las ubicaciones de 1939-1990 cambian cada año y tienen historias de pastoreo
+ *    distintas; Hoover es **un potrero con carga moderada declarada, 0,6 AUM/ha**.
+ *
+ * Y hay una cuarta cosa, que no es explicación sino consecuencia: **Hoover llega
+ * 6,6 veces más abajo que el mínimo de la serie de cincuenta años.** El peor año
+ * de 1939-1990 da 620 kg/ha; la loma en 2002 dio 94. El rango conocido de este
+ * sitio, juntando las dos series, va de 94 a 2.233 kg/ha.
+ *
+ * ## Rango de validez
+ *
+ * Un potrero con carga moderada en un solo sitio ecológico —Loamy Plains,
+ * `R067BY002CO`—, elegido a propósito porque el campo **no abarca extremos de
+ * textura**: la catena es de relieve y no de suelo. Cuatro tipos funcionales
+ * herbáceos, con las C₄ perennes aportando el 75 % del total. **Los arbustos, los
+ * subarbustos y los cactus están presentes y quedaron excluidos del estudio.**
+ * Pico de biomasa del año, validado contra recambio con ¹⁴C.
+ *
+ * **Qué se rompe si cambia:** nada calcula con esto todavía, y es el candidato
+ * más concreto a dejar de ser cierto: el factor 1,5 a 2,0 por posición es lo
+ * primero que `prodForrajera` podría usar de verdad.
+ */
+export interface PosicionDelRelieve {
+  posicion: 'loma' | 'ladera' | 'bajo_con_aporte';
+  /** La palabra de la fuente. */
+  palabra: string;
+  /** Fracción del área del campo, %. De Senft et al. (1985). */
+  area_pct: number;
+  /** ANPP total media de 36 años, g MS/m²/año. */
+  anpp_media: number;
+  anpp_se: number;
+  /** El peor año de la serie, 2002. */
+  anpp_min: number;
+  /** El mejor, 2009. */
+  anpp_max: number;
+  /** Veces entre el mejor y el peor año de esta posición, como lo publica la fuente. */
+  veces_entre_anios: number;
+  /** Sensibilidad normalizada a la lluvia de abril-agosto. Adimensional. */
+  sens_lluvia: number;
+  sens_lluvia_se: number;
+  /** Sensibilidad normalizada al promedio de días secos consecutivos. */
+  sens_dias_secos: number;
+  sens_dias_secos_se: number;
+}
+
+export const RELIEVE_CPER: readonly PosicionDelRelieve[] = [
+  {
+    posicion: 'loma', palabra: 'upland ridge', area_pct: 50,
+    anpp_media: 57.2, anpp_se: 4.0, anpp_min: 9.4, anpp_max: 122.9,
+    veces_entre_anios: 13,
+    sens_lluvia: 0.29, sens_lluvia_se: 0.07,
+    sens_dias_secos: -0.24, sens_dias_secos_se: 0.08,
+  },
+  {
+    posicion: 'ladera', palabra: 'slope', area_pct: 28,
+    anpp_media: 63.7, anpp_se: 4.7, anpp_min: 9.4, anpp_max: 129.7,
+    veces_entre_anios: 14,
+    sens_lluvia: 0.36, sens_lluvia_se: 0.08,
+    sens_dias_secos: -0.30, sens_dias_secos_se: 0.10,
+  },
+  {
+    posicion: 'bajo_con_aporte', palabra: 'lowland swale', area_pct: 22,
+    anpp_media: 100.0, anpp_se: 8.6, anpp_min: 14.2, anpp_max: 223.3,
+    veces_entre_anios: 16,
+    sens_lluvia: 0.76, sens_lluvia_se: 0.17,
+    sens_dias_secos: -0.69, sens_dias_secos_se: 0.16,
+  },
+] as const;
+
+/**
+ * El factor de posición topográfica publicado, en cuatro ecosistemas.
+ *
+ * Es el bajo contra la loma. Los tres de comparación los cita Hoover et al.
+ * (2021) y acá van con su fuente para que se pueda ir a buscarlos: son la única
+ * evidencia de que el 1,75 del CPER no es una rareza de ese campo.
+ */
+export const FACTOR_DEL_RELIEVE = [
+  { ecosistema: 'estepa de pasto corto, CPER, Colorado', factor: 1.75, fuente: 'Hoover et al. (2021), medido acá sobre 36 años' },
+  { ecosistema: 'pradera de arenales', factor: 1.5, fuente: 'Stephenson et al. (2019), citado por Hoover et al. (2021)' },
+  { ecosistema: 'pradera de pasto alto', factor: 2.0, fuente: 'Nippert et al. (2011), citado por Hoover et al. (2021)' },
+  { ecosistema: 'pastizal boreal', factor: 2.0, fuente: 'Bork et al. (2001), citado por Hoover et al. (2021)' },
+] as const;
+
+/** Cuántas veces produce una posición respecto de la loma del mismo campo. */
+export function factorDelRelieve(p: PosicionDelRelieve): number {
+  const loma = RELIEVE_CPER.find(x => x.posicion === 'loma')!;
+  return p.anpp_media / loma.anpp_media;
+}
+
+/**
+ * La media del campo ponderada por la fracción de área de cada posición,
+ * g MS/m²/año.
+ *
+ * Es la cifra que hay que comparar contra una medición que no distinguió
+ * posiciones, y la que choca 1,42 veces contra la columna derivada de
+ * `SERIE_CPER`.
+ */
+export function mediaPonderadaPorRelieve(): number {
+  const area = RELIEVE_CPER.reduce((a, p) => a + p.area_pct, 0);
+  return RELIEVE_CPER.reduce((a, p) => a + p.anpp_media * p.area_pct, 0) / area;
+}
+
+/**
+ * Cuántas veces más sensible a la lluvia es una posición que la loma.
+ *
+ * **Adimensional contra adimensional**: las dos sensibilidades son pendientes
+ * entre variables normalizadas, así que el cociente se puede leer pero NO se
+ * puede convertir a kg/ha por mm.
+ */
+export function factorDeSensibilidad(p: PosicionDelRelieve): number {
+  const loma = RELIEVE_CPER.find(x => x.posicion === 'loma')!;
+  return p.sens_lluvia / loma.sens_lluvia;
 }
 
 /** La fracción aérea de una fila de Montecillo. Vale también para la fila en carbono. */
@@ -2766,6 +3929,53 @@ export interface AnioRioMayo {
  * lluvia— dan los diez publicados a dos decimales. El test lo repite, así que
  * tocar una fila rompe la compuerta.
  *
+ * ## El orden de las columnas, cuestionado y resuelto
+ *
+ * El lote 16 corrigió el reparto gramíneas/arbustos de la entrega, que venía
+ * invertido en trece filas, y el lote 17 volvió con la objeción: **la ficha del
+ * ORNL DAAC lista los campos del archivo anual como `ANPP_shrub` antes que
+ * `ANPP_grass`**, al revés del orden de la Tabla 2 del artículo. La objeción está
+ * bien planteada y el dato de la ficha es correcto. Queda resuelta igual, y por
+ * dos evidencias que no dependen una de la otra:
+ *
+ * **Una: la propia ficha del ORNL nombra las columnas en una tabla de valores.**
+ * Su sección de revisiones publica, año por año, los valores viejos y los nuevos
+ * bajo los encabezados `ANPP_shrub` y `ANPP_grass`, y dice que los corrigió «to
+ * agree with the values reported on page 544 of Jobbagy and Sala (2000)». Para
+ * 1983 esa tabla pone 10,8 en `ANPP_shrub` y 10,6 en `ANPP_grass`; para 1997,
+ * 45,8 y 17,9. Es exactamente lo que tiene este archivo. **El orden de los campos
+ * en el encabezado del archivo de datos no dice cuál número es cuál en una tabla
+ * del artículo**, y la ficha trae las dos cosas.
+ *
+ * **Dos: sólo esta asignación reproduce las tres regresiones publicadas.** Con
+ * las columnas como están acá: gramíneas 24,582 + 0,02405·P con r² 0,0146,
+ * arbustos 10,042 + 0,12484·P con r² 0,7278, total 34,432 + 0,14122·P con r²
+ * 0,3459. Publicado: 24,6 / 0,024 / 0,015, 10,0 / 0,125 / 0,728 y 34,4 / 0,141 /
+ * 0,346. Invirtiendo los diez años pareados sale 11,253 + 0,12016·P con r² 0,454
+ * para la herbácea y 24,361 + 0,0165·P con r² 0,0094 para la leñosa, que no es
+ * ninguna de las tres.
+ *
+ * Y el segundo número delata el mecanismo: 24,361 + 0,0165 es **la regresión de
+ * las gramíneas calculada sobre diez años en vez de quince**. O sea que la
+ * inversión no mezcla dos capas al azar: manda la columna de gramíneas a la
+ * casilla de la leñosa y deja la columna de quince valores siendo una quimera de
+ * cinco años de gramíneas más diez de arbustos. De ahí el r² de 0,454, que no es
+ * ni el 0,015 de una capa ni el 0,728 de la otra.
+ *
+ * **Lo que la objeción sí dejó es un método**, y por eso vale el párrafo: cuando
+ * el orden de dos columnas está en duda, la regresión publicada es el árbitro, y
+ * no hay que ir a buscar otra fuente para usarla.
+ *
+ * ## Tres números distintos para «la lluvia de Río Mayo»
+ *
+ * Y los tres son correctos. La ficha del ORNL publica una normal de **153,0 mm**
+ * con desvío de 52,3, armada con 14 años de dato anual del período 1968-1990. El
+ * trabajo de 1991 publica una media de **136 mm** sobre 37 años, con rango de 47
+ * a 230. Y el promedio de los quince años de esta serie es **155,5 mm**. Son tres
+ * ventanas y tres fuentes para el mismo lugar, separadas por un 14 %. Cuál se usa
+ * depende de contra qué se compare, y ninguna es «la» lluvia media del sitio: ver
+ * la nota de `project_terreno_modelo_declarado`.
+ *
  * ## La escalera contra esta serie
  *
  * Los quince años caen en el primer escalón de `prodForrajera`, el de menos de
@@ -3059,4 +4269,484 @@ export function cruceDeModelos(a: ModeloANPP, b: ModeloANPP): number {
 
 export function medicionesDeBioma(bioma: string): MedicionForraje[] {
   return FORRAJE_MEDIDO.filter(m => m.bioma === bioma);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EL MODELO PUBLICADO: WIGHT Y HANKS (1981)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * El modelo de balance hídrico que debería reemplazar a `prodForrajera`.
+ *
+ * ## De dónde salió este trabajo
+ *
+ * Lo nombró la propia fuente del lote 20. Hart y Samuel, al explicar por qué la
+ * lluvia predice la producción en el subsuelo arenoso y no en el limoso,
+ * escriben que en un suelo con almacenaje hace falta «a more complex
+ * water-balance model (Wight and Hanks 1981)». Veinte lotes de este archivo
+ * midieron **por qué** la escalera por lluvia anual está mal; éste es el primero
+ * que trae la función que la reemplaza.
+ *
+ * **Wight, J. Ross y Hanks, R.J. (1981). «A Water-Balance, Climate Model for
+ * Range Herbage Production». *Journal of Range Management* 34(4):307-311.**
+ * DOI 10.2307/3897857. Wight era *range scientist* del USDA en el Northwest
+ * Watershed Research Center de Boise, antes en el Northern Plains Soil and Water
+ * Research Center de Sidney, Montana; Hanks, profesor de Ciencia del Suelo y
+ * Biometeorología en Utah State. Manuscrito recibido el 12/12/1979.
+ *
+ * El trabajo no es nuevo: es el modelo de cultivo de Hanks (1974) y Rasmussen y
+ * Hanks (1978) —escrito para trigo— **sin los componentes de riego, fenología y
+ * rendimiento de grano**, con la extracción de agua y el crecimiento de raíz
+ * modificados para vegetación perenne. Los autores lo dicen así, y es parte de
+ * su argumento: si un modelo de cultivo se transfiere a un pastizal nativo, eso
+ * «supports the integrity of its basic algorithms».
+ *
+ * ## Cómo se leyó
+ *
+ * El repositorio abierto de la Universidad de Arizona devuelve **403 de Apache
+ * en todos los caminos de descarga de archivo**, incluso navegando directo. El
+ * texto se leyó el 22/10/2026 con un `fetch` **del mismo origen** desde la
+ * página del ítem (`/items/7633e1ec-63d3-4d91-bbfc-1458ab601fa6`), pidiendo el
+ * *bundle* `TEXT` —`05b0db65-8d1f-4cde-af64-b4a3c3ede8b1`, 25.634 caracteres—,
+ * que es el OCR que el repositorio ya tiene hecho. La ruta está en
+ * `reference_leer_pdf`.
+ *
+ * La entrega del lote 21 había declarado el repositorio inaccesible, que es la
+ * **tercera vez de tres** que algo declarado imposible por una entrega sale por
+ * otro camino. Lo que sí trajo, y es la mitad del trabajo, fue la transcripción
+ * de la Tabla 1 y de las siete ecuaciones, que es lo que se verificó acá.
+ *
+ * ## Las ecuaciones, y la que importa
+ *
+ * El supuesto básico es la ecuación 1, y no es de este trabajo sino de la
+ * tradición de De Wit: **el rendimiento relativo iguala a la transpiración
+ * relativa.**
+ *
+ *     Y / Yp = T / Tp                                                  [1]
+ *     Tp = b · Kc · Eo                                                 [2]
+ *     T  = Tp · (SWS/AW) / c    si SWS/AW ≤ c                          [3]
+ *     T  = Tp                   si SWS/AW > c                          [4]
+ *     E  = Ep · t^(−1/2)                                               [6]
+ *     Ep = Kc · Eo − Tp                                               [7]
+ *
+ * Y el balance diario, que el trabajo describe en prosa y no numera: la lluvia
+ * entra por la capa de arriba, lo que pasa capacidad de campo baja a la
+ * siguiente, y lo que pasa la última es drenaje. La extracción también va capa
+ * por capa desde arriba: si la primera no cubre la `Tp` del día se pide a la
+ * segunda, y así, pero la extracción de la capa `i+1` no puede exceder la
+ * diferencia entre `Tp` y lo ya extraído. **Se asume escorrentía cero** —está
+ * dicho con esas palabras—, lo que acota el modelo a terreno plano o a una
+ * cuenca cerrada.
+ *
+ * ## La verificación que vale: la ecuación 1 sale de la propia Tabla 1
+ *
+ * La Tabla 1 publica, año por año, `Kc·Eo`, `Tp`, `T`, ET, drenaje, rendimiento
+ * del modelo, ET medida, lluvia, rendimiento de campo, el `sȳ` del campo y los
+ * días del período de crecimiento. Es decir: **publica las dos transpiraciones
+ * y el rendimiento que el modelo sacó de ellas.** Entonces la ecuación 1 se
+ * puede reproducir sin correr el balance.
+ *
+ * Con `Yp = 1.300 kg/ha`, los doce años de Sidney salen con un **desvío peor de
+ * 0,44 %**, y la mitad por debajo de 0,3 %. Eso prueba tres cosas de una: que la
+ * ecuación 1 es la que generó la columna publicada, que `Yp` es efectivamente
+ * 1.300 y no un número redondeado para el texto, y que la transcripción de la
+ * tabla está bien leída. Es el caso resuelto que el contrato de
+ * `motor-de-calculo` pide, y está en `SERIE_WIGHT_HANKS`.
+ *
+ * ## El hallazgo: el resumen dice 12 de 15 y su propia tabla dice 11
+ *
+ * El *abstract* afirma que las predicciones cayeron «within 10% of field
+ * measured yields for 12 of the 15 test years». Contando sobre la Tabla 1 más
+ * los tres pares de Mandan que el texto da en prosa, **son 11**: quedan afuera
+ * 1973 (+43,5 %), 1974 (+26,5 %), 1977 (+16,0 %) y Mandan 1959 (−19,7 %).
+ *
+ * No es un error de transcripción y se verificó por los dos denominadores: con
+ * el medido como base da 11, y con el predicho también. Y tampoco mejora con el
+ * otro criterio posible: el `sȳ` de la tabla es el intervalo de confianza del
+ * 90 % de la media medida, y por ese criterio Sidney da **9 de 12**.
+ *
+ * Lo más probable es que el doceavo sea 1977: el modelo dio 522 kg/ha y el
+ * intervalo del campo llega a 518, o sea **se pasa por 4 kg/ha**. Es una
+ * hipótesis, no un hallazgo, y queda dicha como hipótesis.
+ *
+ * Esto es de la misma familia que el r² de 0,95 del lote 20 que lo ponía un solo
+ * año: **el número del resumen no sobrevive al recuento de su propia tabla.** Y
+ * es la segunda vez en dos lotes, lo que dice algo sobre con qué cuidado hay que
+ * leer un titular.
+ *
+ * ## El sesgo, que es lo que importa para acequia
+ *
+ * En promedio el modelo no se equivoca: media del modelo 1.065 contra 1.012
+ * kg/ha de campo, **+5,2 %**, y seis años sobreestima y seis subestima. Pero el
+ * promedio esconde la forma del error.
+ *
+ * Los dos años peores son los que el trabajo nombra, 1973 y 1974, y los dos
+ * fallan **para arriba**: +43,5 % y +26,5 %. Los dos tienen la misma firma
+ * climática —demanda evaporativa alta y sequía en abril o mayo, seguidas de
+ * buena humedad en junio y julio— y los autores explican por qué, con una frase
+ * que es la advertencia del modelo:
+ *
+ * > «In its current form, the model has no mechanism to account for the effects
+ * > of drought during various growth periods on subsequent plant growth.»
+ *
+ * En una pradera mixta, una sequía temprana no se recupera: la *Carex filifolia*
+ * semilla y termina su crecimiento anual, mientras el *Agropyron smithii* entra
+ * en dormancia y rebrota cuando vuelve el agua. El balance de agua no sabe eso,
+ * así que suma la transpiración de julio como si la planta estuviera entera.
+ *
+ * **Para acequia la dirección del error es la cara.** Sobreestimar el forraje en
+ * el año de sequía temprana es exactamente el año en que alguien decide la carga
+ * y el agua de la represa. Si este modelo se monta, la advertencia va con él.
+ *
+ * ## Lo que este trabajo NO alcanza para correr, y hay que decirlo
+ *
+ * El modelo no se puede implementar de punta a punta con este paper, y el motivo
+ * no es la matemática: **tres de sus entradas son figuras y no tablas.**
+ *
+ * 1. **`b = 0,5 × LAI relativo`** sale de la Figura 2, una curva estacional de
+ *    abril a septiembre calculada de los datos de Hanson (1973). No hay tabla de
+ *    puntos ni ecuación. Y los autores avisan que **habría que construir una
+ *    curva propia de la región donde se aplique**, así que copiar la de Montana
+ *    sería justamente lo que la fuente pide no hacer.
+ * 2. **La actividad radical `R(Tsoil)`** sale de la Figura 1, aproximada de De
+ *    Jong (1974). Tampoco hay tabla.
+ * 3. **Las curvas estacionales de temperatura de suelo** para las capas de 30-60
+ *    y 60-90 cm salen de la Figura 3, de De Jong para Swift Current,
+ *    Saskatchewan. Tampoco.
+ *
+ * Y una cuarta cosa que no es una figura pero es igual de bloqueante: **`Yp` es
+ * de sitio.** 1.300 kg/ha en Sidney y 2.760 en Mandan, los dos «estimated from
+ * herbage yield data». O sea: el parámetro que fija la escala del resultado se
+ * calibra con la producción medida del lugar, que es justamente el dato que la
+ * app no tiene. El trabajo ofrece una salida —`Yp = Y·Tp/T` calculado para años
+ * representativos— y es circular para nuestro caso: necesita un `Y` medido.
+ *
+ * Verificado acá: ese cálculo sobre los doce años de Sidney da una media de
+ * 1.230 kg/ha y un máximo de 1.372, no 1.300, y **los dos valores más bajos son
+ * los de 1973 y 1974** (908 y 1.032). Es el mismo artefacto visto desde el otro
+ * lado: en los años de sequía temprana el `T/Tp` del modelo queda demasiado alto.
+ *
+ * ## Entonces qué se monta, y qué cambia
+ *
+ * Se monta lo que está completo y es testeable: **las siete ecuaciones, los
+ * parámetros con su origen, la serie de validación de los quince años y el
+ * recuento.** Lo que no se monta es un `prodForrajera` nuevo, porque todavía
+ * faltan tres curvas y un `Yp`.
+ *
+ * Lo que sí cambia, y es el aporte conceptual que la app puede usar ya: **la
+ * pregunta deja de ser cuánto llovió y pasa a ser qué fracción de la
+ * transpiración potencial ocurrió.** Eso acequia lo puede calcular: tiene lluvia
+ * diaria, tiene textura de SoilGrids para el agua útil por capa, y tiene ETP. La
+ * ecuación 1 convierte ese cociente en rendimiento con un solo parámetro de
+ * sitio, y ese parámetro **es el único que falta**, contra los cinco escalones
+ * sin fuente que hay hoy.
+ *
+ * Qué se rompe si cambia: nada todavía. Ninguna de estas constantes la lee
+ * ningún panel ni ningún informe; es el andamio del reemplazo, no el reemplazo.
+ */
+export const MODELO_WIGHT_HANKS = {
+  nombre: 'Modelo de balance hídrico y clima para producción de forraje de pastizal',
+  autores: 'Wight, J. Ross y Hanks, R.J.',
+  anio: 1981,
+  publicacion: 'Journal of Range Management 34(4):307-311',
+  doi: '10.2307/3897857',
+  handle: '10150/646128',
+  deriva_de: 'Hanks (1974), Agron. J. 66:660-665, y Rasmussen y Hanks (1978), Agron. J. 70:940-944',
+  /** Lo que se le quitó al modelo de cultivo original. */
+  sin: ['riego', 'fenología', 'rendimiento de grano'],
+  paso_de_tiempo: 'diario; la Eo admite promedios de hasta 10 días',
+  salida: 'rendimiento total anual de forraje, kg/ha, a la fecha de cosecha',
+  /** Coeficiente de cultivo, constante en toda la temporada. */
+  kc: 0.85,
+  /**
+   * El `Kc` no se calibró a ojo: sale de graficar ET/Eo con la ET de un
+   * lisímetro hidráulico semanal, en los períodos con agua no limitante, contra
+   * la Eo de Jensen-Haise. El cociente iba de 0,7 en primavera y otoño a 0,9 en
+   * plena temporada, y 0,85 es el promedio de temporada — que dio estimaciones
+   * tan buenas como usar la curva estacional completa.
+   */
+  kc_rango_estacional: { primavera_otonio: 0.7, plena_temporada: 0.9 },
+  /** El umbral de la ecuación 3. Con 1,0 la ecuación 4 nunca se activa. */
+  c: 1.0,
+  /** Los valores de `c` que la literatura usó antes, y que el trabajo cita. */
+  c_en_la_literatura: {
+    trigo: 0.5,            // Rasmussen y Hanks (1978)
+    pastizal_nativo: 0.7,  // de Jong y MacDonald (1975)
+  },
+  /** El modelo no es sensible a cambios chicos de `c`; lo dice el trabajo. */
+  c_es_sensible: false,
+  /** Capas del perfil usadas en la prueba, en cm. Se pueden cambiar. */
+  capas_cm: [30, 30, 30],
+  /** Método con el que se calculó la evaporación de superficie libre. */
+  eo_por: 'Jensen-Haise (1963)',
+  escorrentia: 0,
+  escorrentia_dicho_asi: 'In this study, we assumed there was no runoff.',
+} as const;
+
+/** El rendimiento potencial de cada sitio de la prueba, en kg/ha. */
+export const YP_WIGHT_HANKS = {
+  sidney: 1300,
+  mandan: 2760,
+} as const;
+
+/** Un año de la validación de Wight y Hanks. */
+export interface AnioWightHanks {
+  sitio: 'sidney' | 'mandan';
+  anio: number;
+  /** `Kc·Eo` acumulado del período, en mm. `null` en Mandan: no se publicó. */
+  kc_eo_mm: number | null;
+  /** Transpiración potencial acumulada, en mm. */
+  tp_mm: number | null;
+  /** Transpiración real acumulada, en mm. */
+  t_mm: number | null;
+  /** Evapotranspiración del modelo, en mm. */
+  et_modelo_mm: number | null;
+  /** Drenaje del modelo, en mm. */
+  drenaje_mm: number | null;
+  /** Rendimiento que predijo el modelo, en kg/ha. */
+  rend_modelo_kg_ha: number;
+  /** Evapotranspiración medida en el campo, en mm. */
+  et_campo_mm: number | null;
+  /**
+   * Lluvia del **período de crecimiento**, en mm — del 15 de abril a la cosecha,
+   * no del año. La distinción es la regla W y acá importa: con este número no se
+   * puede comparar contra una escalera por lluvia anual.
+   */
+  pptn_periodo_mm: number | null;
+  /** Rendimiento medido en el campo, en kg/ha. */
+  rend_campo_kg_ha: number;
+  /**
+   * El `sȳ` de la tabla: **más o menos este valor es el intervalo de confianza
+   * del 90 %** de la media medida, no un error estándar. Lo aclara el pie de la
+   * tabla.
+   */
+  ic90_campo_kg_ha: number | null;
+  /** Días del período de crecimiento, del 15 de abril al pico de materia en pie. */
+  periodo_dias: number | null;
+}
+
+/**
+ * Los quince años de la validación.
+ *
+ * Los doce de Sidney salen de la Tabla 1. **El título impreso de esa tabla dice
+ * «for 1976-1978» y las filas son 1967-1978**: es una errata del trabajo, no del
+ * OCR, y conviene saberlo porque una búsqueda por el título no encuentra los
+ * doce años.
+ *
+ * Los tres de Mandan **no están en tabla**: el texto los da en prosa, «the model
+ * predicted yields of 1,930, 1,128, and 2,245 kg/ha, respectively, as compared
+ * with field-measured yields of 1,767, 1,405, and 2,105 kg/ha». Por eso van con
+ * todas las columnas intermedias en `null`: de Mandan no se publicó el balance,
+ * sólo el resultado.
+ *
+ * Los años de Mandan salen del estudio de Lorenz (1970), con la capacidad de
+ * campo, el punto de marchitez y el contenido de aire seco estimados de Cole y
+ * Mathews (1939) — o sea, **el sitio de validación externo usó suelo estimado de
+ * una publicación de 1939**, que es parte de por qué su ajuste es peor.
+ */
+export const SERIE_WIGHT_HANKS: readonly AnioWightHanks[] = [
+  { sitio: 'sidney', anio: 1967, kc_eo_mm: 274, tp_mm: 123, t_mm: 110, et_modelo_mm: 190, drenaje_mm:   0, rend_modelo_kg_ha: 1166, et_campo_mm: 218, pptn_periodo_mm: 210, rend_campo_kg_ha: 1200, ic90_campo_kg_ha: 186, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1968, kc_eo_mm: 297, tp_mm: 126, t_mm:  71, et_modelo_mm: 159, drenaje_mm:   0, rend_modelo_kg_ha:  730, et_campo_mm: 177, pptn_periodo_mm: 158, rend_campo_kg_ha:  742, ic90_campo_kg_ha:  34, periodo_dias: 99 },
+  { sitio: 'sidney', anio: 1969, kc_eo_mm: 309, tp_mm: 130, t_mm: 118, et_modelo_mm: 209, drenaje_mm: 117, rend_modelo_kg_ha: 1178, et_campo_mm: 228, pptn_periodo_mm: 338, rend_campo_kg_ha: 1245, ic90_campo_kg_ha: 112, periodo_dias: 98 },
+  { sitio: 'sidney', anio: 1970, kc_eo_mm: 300, tp_mm: 134, t_mm: 124, et_modelo_mm: 209, drenaje_mm:   0, rend_modelo_kg_ha: 1199, et_campo_mm: 183, pptn_periodo_mm: 218, rend_campo_kg_ha: 1205, ic90_campo_kg_ha:  84, periodo_dias: 86 },
+  { sitio: 'sidney', anio: 1971, kc_eo_mm: 311, tp_mm: 137, t_mm:  79, et_modelo_mm: 174, drenaje_mm:   0, rend_modelo_kg_ha:  750, et_campo_mm: 174, pptn_periodo_mm: 141, rend_campo_kg_ha:  720, ic90_campo_kg_ha:  58, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1972, kc_eo_mm: 297, tp_mm: 132, t_mm: 130, et_modelo_mm: 226, drenaje_mm:  42, rend_modelo_kg_ha: 1275, et_campo_mm: 229, pptn_periodo_mm: 206, rend_campo_kg_ha: 1215, ic90_campo_kg_ha:  84, periodo_dias: 90 },
+  { sitio: 'sidney', anio: 1973, kc_eo_mm: 326, tp_mm: 144, t_mm: 121, et_modelo_mm: 209, drenaje_mm:   0, rend_modelo_kg_ha: 1095, et_campo_mm: 258, pptn_periodo_mm: 232, rend_campo_kg_ha:  763, ic90_campo_kg_ha:  73, periodo_dias: 92 },
+  { sitio: 'sidney', anio: 1974, kc_eo_mm: 317, tp_mm: 136, t_mm: 123, et_modelo_mm: 214, drenaje_mm:   0, rend_modelo_kg_ha: 1180, et_campo_mm: 230, pptn_periodo_mm: 179, rend_campo_kg_ha:  933, ic90_campo_kg_ha:  71, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1975, kc_eo_mm: 274, tp_mm: 122, t_mm: 120, et_modelo_mm: 201, drenaje_mm:  50, rend_modelo_kg_ha: 1282, et_campo_mm: 216, pptn_periodo_mm: 208, rend_campo_kg_ha: 1321, ic90_campo_kg_ha:  92, periodo_dias: 91 },
+  { sitio: 'sidney', anio: 1976, kc_eo_mm: 297, tp_mm: 131, t_mm: 118, et_modelo_mm: 207, drenaje_mm:   0, rend_modelo_kg_ha: 1175, et_campo_mm: 223, pptn_periodo_mm: 193, rend_campo_kg_ha: 1100, ic90_campo_kg_ha:  93, periodo_dias: 88 },
+  { sitio: 'sidney', anio: 1977, kc_eo_mm: 243, tp_mm:  97, t_mm:  39, et_modelo_mm:  98, drenaje_mm:   0, rend_modelo_kg_ha:  522, et_campo_mm: 122, pptn_periodo_mm:  91, rend_campo_kg_ha:  450, ic90_campo_kg_ha:  68, periodo_dias: 68 },
+  { sitio: 'sidney', anio: 1978, kc_eo_mm: 249, tp_mm: 109, t_mm: 103, et_modelo_mm: 186, drenaje_mm:   0, rend_modelo_kg_ha: 1223, et_campo_mm: 202, pptn_periodo_mm: 220, rend_campo_kg_ha: 1246, ic90_campo_kg_ha: 176, periodo_dias: 81 },
+  { sitio: 'mandan', anio: 1958, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 1930, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 1767, ic90_campo_kg_ha: null, periodo_dias: null },
+  { sitio: 'mandan', anio: 1959, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 1128, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 1405, ic90_campo_kg_ha: null, periodo_dias: null },
+  { sitio: 'mandan', anio: 1960, kc_eo_mm: null, tp_mm: null, t_mm: null, et_modelo_mm: null, drenaje_mm: null, rend_modelo_kg_ha: 2245, et_campo_mm: null, pptn_periodo_mm: null, rend_campo_kg_ha: 2105, ic90_campo_kg_ha: null, periodo_dias: null },
+] as const;
+
+/**
+ * El ajuste que el trabajo publica, para no recalcularlo de memoria.
+ *
+ * El r² del rendimiento es «calculated from the least squares fit of the data
+ * points to the line of equal value», o sea **contra la recta 1:1 y no contra la
+ * recta de regresión**. Es una medida más exigente y conviene no confundirlas.
+ */
+export const AJUSTE_WIGHT_HANKS = {
+  r2_rendimiento_sidney: 0.74,
+  r2_agua_de_suelo_sidney: 0.91,
+  r2_contra: 'la recta de valor igual (1:1), no la de regresión',
+  /** Lo que dice el resumen. */
+  dentro_del_10_pct_segun_el_resumen: 12,
+  /** Lo que da contar la Tabla 1 más los tres pares de Mandan del texto. */
+  dentro_del_10_pct_contado: 11,
+  anios_de_prueba: 15,
+} as const;
+
+/** Lo que falta para poder correr el modelo, nombrado uno por uno. */
+export const FALTA_PARA_CORRER_WIGHT_HANKS = [
+  {
+    que: 'b = 0,5 × LAI relativo, curva estacional',
+    donde_esta: 'Figura 2, calculada de Hanson (1973)',
+    por_que_no_se_puede: 'Es una figura: no hay tabla de puntos ni ecuación.',
+    y_ademas: 'Los autores piden construir una curva propia de la región de aplicación, así que copiar la de Montana es lo contrario de lo que la fuente indica.',
+  },
+  {
+    que: 'actividad radical relativa en función de la temperatura del suelo',
+    donde_esta: 'Figura 1, aproximada de de Jong (1974)',
+    por_que_no_se_puede: 'Es una figura.',
+    y_ademas: 'Sólo restringe las capas de 30-60 y 60-90 cm; el trabajo asume que la temperatura no limita la capa superficial.',
+  },
+  {
+    que: 'curvas estacionales de temperatura del suelo por capa',
+    donde_esta: 'Figura 3, de de Jong para Swift Current, Saskatchewan',
+    por_que_no_se_puede: 'Es una figura, y es de un sitio canadiense aplicado a dos sitios de los Estados Unidos.',
+    y_ademas: 'El propio trabajo sugiere reemplazarlas por un submodelo de temperatura de suelo, y nombra el de Hanks, Austin y Ondrechen (1971).',
+  },
+  {
+    que: 'Yp, el rendimiento potencial del sitio',
+    donde_esta: 'Estimado de la producción medida de cada sitio: 1.300 kg/ha en Sidney, 2.760 en Mandan',
+    por_que_no_se_puede: 'Es el parámetro que fija la escala del resultado y se calibra con producción medida del lugar, que es justamente el dato que la app no tiene.',
+    y_ademas: 'La salida que ofrece el trabajo —Yp = Y·Tp/T para años representativos— es circular para nuestro caso: necesita un Y medido.',
+  },
+] as const;
+
+/**
+ * Ecuación 1: el rendimiento relativo iguala a la transpiración relativa.
+ *
+ *     Y = Yp · (T / Tp)
+ *
+ * Unidades: `yp_kg_ha` en kg/ha, `t_mm` y `tp_mm` en mm acumulados del período.
+ * Devuelve kg/ha. Con `tp_mm` en cero devuelve `null`: sin demanda no hay
+ * cociente, y un cero ahí es una división por cero disfrazada de sequía total.
+ *
+ * Reproduce los doce rendimientos publicados de Sidney con un desvío peor de
+ * 0,44 % usando `Yp = 1.300`, que es el test de esta función.
+ */
+export function rendimientoWightHanks(
+  yp_kg_ha: number, t_mm: number, tp_mm: number,
+): number | null {
+  if (tp_mm <= 0) return null;
+  return yp_kg_ha * (t_mm / tp_mm);
+}
+
+/**
+ * Ecuación 2: transpiración potencial del día.
+ *
+ *     Tp = b · Kc · Eo
+ *
+ * `b` es 0,5 × el LAI relativo de la fecha —una figura, ver
+ * `FALTA_PARA_CORRER_WIGHT_HANKS`—, `kc` el coeficiente de cultivo (0,85 en la
+ * prueba) y `eo_mm` la evaporación de superficie libre del día en mm.
+ */
+export function transpiracionPotencialWH(b: number, kc: number, eo_mm: number): number {
+  return b * kc * eo_mm;
+}
+
+/**
+ * Ecuaciones 3 y 4: transpiración real del día.
+ *
+ *     T = Tp · (SWS/AW) / c    si SWS/AW ≤ c
+ *     T = Tp                   si SWS/AW > c
+ *
+ * `sws_mm` es el agua útil existente en la capa y `aw_mm` su capacidad de
+ * almacenaje útil. Con `c = 1` —el valor que la prueba usó— la relación es
+ * lineal y la ecuación 4 nunca se activa; el trabajo lo dice así.
+ *
+ * Con `aw_mm` en cero devuelve `null`: una capa sin capacidad de almacenaje no
+ * tiene cociente, y devolver cero diría «no hay agua» cuando lo que no hay es
+ * capa.
+ */
+export function transpiracionRealWH(
+  tp_mm: number, sws_mm: number, aw_mm: number, c: number = MODELO_WIGHT_HANKS.c,
+): number | null {
+  if (aw_mm <= 0) return null;
+  const frac = sws_mm / aw_mm;
+  return frac > c ? tp_mm : tp_mm * (frac / c);
+}
+
+/**
+ * Ecuación 7: evaporación potencial del suelo.
+ *
+ *     Ep = Kc · Eo − Tp
+ *
+ * Es lo que queda de la demanda después de la transpiración. Puede dar negativo
+ * si `Tp` excede a `Kc·Eo`, y en ese caso se devuelve cero: el suelo no
+ * condensa.
+ */
+export function evaporacionPotencialWH(kc: number, eo_mm: number, tp_mm: number): number {
+  return Math.max(0, kc * eo_mm - tp_mm);
+}
+
+/**
+ * Ecuación 6: evaporación real del suelo.
+ *
+ *     E = Ep · t^(−1/2)
+ *
+ * `dias_desde_la_lluvia` es el tiempo en días desde que la superficie se mojó
+ * por última vez. **El trabajo no describe la convención para `t = 0`** —y el
+ * OCR del exponente está roto, así que la forma `t^(−1/2)` se toma del modelo de
+ * Hanks (1974) del que éste deriva—, por eso acá el día de la lluvia devuelve
+ * `Ep` entero: es el valor al que la curva tiende por la izquierda con `t = 1`.
+ * Queda dicho porque es una decisión nuestra y no de la fuente.
+ *
+ * Esta función devuelve la demanda, no lo que el suelo puede entregar: el
+ * trabajo acota la evaporación al agua de la capa superficial que exceda el
+ * contenido de aire seco, y eso lo hace el balance, no esta ecuación.
+ */
+export function evaporacionRealWH(ep_mm: number, dias_desde_la_lluvia: number): number {
+  const t = Math.max(1, dias_desde_la_lluvia);
+  return ep_mm / Math.sqrt(t);
+}
+
+/**
+ * `Yp = Y · Tp / T`, la vía alternativa que el trabajo ofrece para estimar el
+ * rendimiento potencial de un sitio a partir de un año medido.
+ *
+ * Es la ecuación 1 dada vuelta, y para acequia es circular: pide un `Y` medido.
+ * Sirve para dos cosas igual. Una, verificar que `Yp` de un sitio sea estable
+ * entre años. Dos, exactamente lo contrario: **cuando no es estable, el año que
+ * se despega es un año donde el modelo falla.** En Sidney los doce años dan una
+ * media de 1.230 kg/ha y los dos valores más bajos son 1973 y 1974, los mismos
+ * dos años que el trabajo nombra como los de peor predicción.
+ */
+export function ypDesdeUnAnio(
+  rend_campo_kg_ha: number, tp_mm: number, t_mm: number,
+): number | null {
+  if (t_mm <= 0) return null;
+  return rend_campo_kg_ha * (tp_mm / t_mm);
+}
+
+/** Los años de la validación de un sitio, o los quince si no se nombra sitio. */
+export function aniosDeWightHanks(sitio?: 'sidney' | 'mandan'): AnioWightHanks[] {
+  return sitio ? SERIE_WIGHT_HANKS.filter(a => a.sitio === sitio) : [...SERIE_WIGHT_HANKS];
+}
+
+/**
+ * Cuántos años de la validación caen dentro de una tolerancia relativa al
+ * rendimiento **medido**, y cuáles no.
+ *
+ * Con `tol = 0.10` devuelve 11 de 15, que es el recuento que no coincide con el
+ * 12 del resumen. El denominador importa y acá es el medido; con el predicho
+ * como base da lo mismo, y eso también está testeado.
+ */
+export function dentroDeTolerancia(tol = 0.10): {
+  dentro: number; fuera: AnioWightHanks[]; total: number;
+} {
+  const fuera = SERIE_WIGHT_HANKS.filter(a =>
+    Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) / a.rend_campo_kg_ha > tol);
+  return { dentro: SERIE_WIGHT_HANKS.length - fuera.length, fuera, total: SERIE_WIGHT_HANKS.length };
+}
+
+/**
+ * Los años en que el modelo cae dentro del intervalo de confianza del 90 % de la
+ * media medida. Sólo Sidney: Mandan no publica el intervalo.
+ *
+ * Da 9 de 12, o sea **peor** que el criterio del 10 %, y el que se pasa por menos
+ * es 1977, por 4 kg/ha. Es la hipótesis más probable de dónde sale el doceavo
+ * año del resumen.
+ */
+export function dentroDelIc90(): { dentro: number; fuera: AnioWightHanks[]; total: number } {
+  const conIc = SERIE_WIGHT_HANKS.filter(
+    (a): a is AnioWightHanks & { ic90_campo_kg_ha: number } => a.ic90_campo_kg_ha !== null);
+  const fuera = conIc.filter(a =>
+    Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) > a.ic90_campo_kg_ha);
+  return { dentro: conIc.length - fuera.length, fuera, total: conIc.length };
 }

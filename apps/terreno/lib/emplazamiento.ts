@@ -142,6 +142,7 @@
 
 import { dimsCelda } from './cuencaHidro';
 import { PASO_RELIEVE, pasoEfectivoM, type GrillaElevacion } from './grillaElevacion';
+import { claseTexturaUSDA, type ClaseUSDA } from './textura';
 
 // ─── Fuentes citables ─────────────────────────────────────────────────────────
 
@@ -584,44 +585,41 @@ export const GRUPOS_LTAR: readonly DefGrupoLTAR[] = [
   { grupo: 'IV',  nombre: 'Arcillas',        clases: ['arcillo-arenoso', 'arcillo-limoso', 'arcilloso'],                                                 gpd_ft2: [0.4, 0.1] },
 ] as const;
 
-export type ClaseUSDA =
-  | 'arenoso' | 'arenoso-franco' | 'franco-arenoso' | 'franco'
-  | 'franco-limoso' | 'limoso' | 'franco-arcillo-arenoso' | 'franco-arcilloso'
-  | 'franco-arcillo-limoso' | 'arcillo-arenoso' | 'arcillo-limoso' | 'arcilloso';
+export type { ClaseUSDA };
 
 /**
  * Las doce clases del triángulo textural USDA desde los porcentajes.
  *
- * Se decide acá y no leyendo `clase_textura` de `lib/suelos.ts` a propósito: ese
- * clasificador tiene diez salidas, no doce —el franco arcillo arenoso y el
- * franco arcillo limoso no salen nunca—, y las dos clases que le faltan caen
- * justo en el grupo III. Un franco arcillo arenoso etiquetado como arcillo
- * arenoso se va al grupo IV y pierde un tercio de la tasa. Queda anotado como
- * corrección aparte; acá se trabaja con los porcentajes, que son el dato crudo.
+ * Vivía acá, con las doce, porque `clasificarTextura` de `lib/suelos.ts` tenía
+ * diez. El 22/10/2026 se leyó el primario —**Soil Survey Manual**, USDA
+ * Handbook No. 18 (2017), cap. 3, p. 124— y el clasificador pasó a
+ * `lib/textura.ts`, que es el único que queda. Esto es un reexporte para no
+ * romper a quien lo importaba de acá.
+ *
+ * La versión que vivía acá no era igual al texto del manual: se apartaba en
+ * **43 de las 5.151 celdas** del triángulo, todas sobre las líneas de borde, y
+ * siempre para el mismo lado. Usaba `>=` donde el manual dice *more than*, así
+ * que el borde caía en la clase más gruesa, que es más permeable: en el campo
+ * de infiltración eso **sobreestima la tasa de absorción** y el campo sale
+ * chico. Las cuatro líneas afectadas eran el borde arenoso/arenoso-franco, el
+ * arenoso-franco/franco-arenoso y los dos bordes de arena 45 % con las
+ * arcillas. Está corregido en `textura.ts` y hay un test que lo fija.
  */
-export function claseUSDA(arcilla_pct: number, arena_pct: number, limo_pct: number): ClaseUSDA {
-  const a = arcilla_pct;
-  const s = arena_pct;
-  const l = limo_pct;
+export const claseUSDA = claseTexturaUSDA;
 
-  if (a >= 40 && l >= 40) return 'arcillo-limoso';
-  if (a >= 35 && s >= 45) return 'arcillo-arenoso';
-  if (a >= 40) return 'arcilloso';
-  if (a >= 27 && s <= 20) return 'franco-arcillo-limoso';
-  if (a >= 27 && s <= 45) return 'franco-arcilloso';
-  if (a >= 20 && l < 28 && s > 45) return 'franco-arcillo-arenoso';
-  if (l >= 80 && a < 12) return 'limoso';
-  if (l >= 50 && a < 27) return 'franco-limoso';
-  if (l >= 28 && a >= 7 && a < 27 && s <= 52) return 'franco';
-  if (s >= 85 && l + 1.5 * a <= 15) return 'arenoso';
-  if (s >= 70 && l + 2 * a <= 30) return 'arenoso-franco';
-  return 'franco-arenoso';
-}
-
-export function grupoLTAR(arcilla_pct: number, arena_pct: number, limo_pct: number): GrupoLTAR {
+/**
+ * El grupo de tasa de aplicación al que pertenece la textura, o `null` si los
+ * tres porcentajes no describen un suelo.
+ *
+ * Antes caía en el grupo II —el del medio— cuando no reconocía la clase. Un
+ * dato roto que devuelve «francos gruesos» es justamente el número plausible y
+ * equivocado: dimensiona un campo de infiltración con una tasa que nadie midió.
+ */
+export function grupoLTAR(arcilla_pct: number, arena_pct: number, limo_pct: number): GrupoLTAR | null {
   const clase = claseUSDA(arcilla_pct, arena_pct, limo_pct);
+  if (clase == null) return null;
   const def = GRUPOS_LTAR.find(g => g.clases.includes(clase));
-  return def ? def.grupo : 'II';
+  return def ? def.grupo : null;
 }
 
 export function defGrupoLTAR(g: GrupoLTAR): DefGrupoLTAR {
@@ -708,8 +706,13 @@ export function campoDeInfiltracion(
     );
   }
 
+  // Sin clase textural no hay tasa de absorción, y sin tasa no hay campo. Pasa
+  // cuando los tres porcentajes no suman 100 ni de cerca, o sea cuando el dato
+  // de suelo está roto: antes de esto salía por el grupo II, el del medio.
   const clase = claseUSDA(suelo.arcilla_pct, suelo.arena_pct, suelo.limo_pct);
+  if (clase == null) return null;
   const grupo = grupoLTAR(suelo.arcilla_pct, suelo.arena_pct, suelo.limo_pct);
+  if (grupo == null) return null;
   const def = defGrupoLTAR(grupo);
   const ltarAlta = gpdFt2ALDiaM2(def.gpd_ft2[0]);
   const ltarBaja = gpdFt2ALDiaM2(def.gpd_ft2[1]);
@@ -832,6 +835,15 @@ export interface ContextoEmplazamiento {
   camino_largo_m:   Float64Array | null;
   camino_pend_pct:  Float64Array | null;
   camino_limite_pct: number;
+  /**
+   * Si el corredor del camino se recortó al polígono. `null` cuando no se pidió
+   * camino (no hay acceso). Lo informa `evaluarEmplazamiento`: un corredor sin
+   * recortar puede estar usando tierra del vecino y eso no se presenta como un
+   * acceso resuelto.
+   */
+  camino_recortado: boolean | null;
+  /** Ver `CaminoPosible.acceso_movido_m`. `null` cuando no se pidió camino. */
+  camino_acceso_movido_m: number | null;
   lat:            number;
   buffer:         PropositoBuffer;
   ancho_m:        number;
@@ -850,6 +862,8 @@ export interface OpcionesEmplazamiento {
   /** Radio del entorno, en celdas, para el índice de posición topográfica. */
   radio_tpi?: number;
   camino_limite_pct?: number;
+  /** Ver `OpcionesCamino.permitirFuera`. Por defecto el camino no sale del predio. */
+  camino_permite_salir?: boolean;
 }
 
 /**
@@ -905,9 +919,17 @@ export function prepararEmplazamiento(
   const limite = opciones?.camino_limite_pct ?? PENDIENTE_CAMINO_NORMAL_PCT;
   let camino_largo: Float64Array | null = null;
   let camino_pend: Float64Array | null = null;
+  let camino_recortado: boolean | null = null;
+  let camino_acceso_movido_m: number | null = null;
   if (acceso) {
-    const cam = accesibilidad(g, acceso, limite);
-    if (cam) { camino_largo = cam.largo_m; camino_pend = cam.pend_max_pct; }
+    const cam = accesibilidad(g, acceso, limite,
+      opciones?.camino_permite_salir ? { permitirFuera: true } : undefined);
+    if (cam) {
+      camino_largo = cam.largo_m;
+      camino_pend = cam.pend_max_pct;
+      camino_recortado = cam.recortado;
+      camino_acceso_movido_m = cam.acceso_movido_m;
+    }
   }
 
   return {
@@ -926,6 +948,8 @@ export function prepararEmplazamiento(
     camino_largo_m:    camino_largo,
     camino_pend_pct:   camino_pend,
     camino_limite_pct: limite,
+    camino_recortado,
+    camino_acceso_movido_m,
     lat:               (g.latMin + g.latMax) / 2,
     buffer:            opciones?.buffer ?? 'sedimento',
     ancho_m:           opciones?.ancho_m ?? 10,
@@ -1187,6 +1211,34 @@ export interface CaminoPosible {
   pend_max_pct: Float64Array;
   limite_pct:   number;
   alcanzadas:   number;
+  /**
+   * true si el corredor se recortó al polígono del predio. false cuando la
+   * grilla no trae máscara —un DEM propio importado suelto— o cuando se pidió
+   * explícitamente dejarlo salir. Lo que se informa cambia según esto, así que
+   * viaja con el resultado y no se deduce.
+   */
+  recortado:    boolean;
+  /**
+   * Cuánto hubo que mover el acceso para que caiga en un nodo utilizable, en
+   * metros. Casi siempre es menos de media celda —el redondeo al nodo más
+   * cercano— y entonces no significa nada. Importa cuando es grande: ahí la
+   * tranquera marcada no está sobre el predio, y el corredor arranca en otro
+   * lado del que el usuario cree.
+   */
+  acceso_movido_m: number;
+}
+
+export interface OpcionesCamino {
+  /**
+   * Dejar que el corredor use el halo, o sea tierra de afuera del predio.
+   *
+   * Por defecto NO, y la razón no es técnica: **un camino por tierra ajena no es
+   * un camino, es una servidumbre que hay que negociar.** Sirve para estudiar
+   * justamente eso —cuánto mejora el acceso si se consigue el paso del vecino—,
+   * y entonces `evaluarEmplazamiento` lo dice en la advertencia en vez de
+   * presentar el acceso como resuelto.
+   */
+  permitirFuera?: boolean;
 }
 
 /**
@@ -1201,11 +1253,43 @@ export interface CaminoPosible {
  * Por qué importa: `masterplan.ts` puede poner la casa en el mejor lugar del
  * predio y dejarla sin camino. Una casa a la que no se puede llegar con un
  * acoplado no está emplazada, está dibujada.
+ *
+ * DENTRO DEL PREDIO, Y ESO NO ERA GRATIS
+ *
+ * Esta función decía «dentro del predio» y corría sobre la grilla entera, que
+ * llega hasta 1,08–1,15× el polígono porque la pendiente y el D8 necesitan
+ * vecinos afuera. Medido sobre un predio de 428 ha con grilla de 12,3 m: el
+ * corredor a ≤ 10 % tocaba **490 celdas del predio y 3.262 del halo**, y la
+ * mejor celda por costo de plataforma de las 434 que el terreno admitía se
+ * alcanzaba con una traza de 41 celdas de las que **7 caían afuera**. O sea que
+ * la exclusión `sin_camino` podía dar por NO excluido un sitio cuyo único
+ * acceso pasa por el campo del vecino, y el panel lo presentaba como resuelto.
+ *
+ * Así que el paso a una celda del halo no existe. Es la misma decisión que ya
+ * había tomado `resumenEmplazamiento` con las hectáreas —ver el JSDoc de
+ * `GrillaElevacion.dentro`— y por el mismo motivo: calcular puede mirar afuera,
+ * informar no. Un camino es las dos cosas a la vez, porque es **uso de suelo**:
+ * para existir necesita que el suelo sea de quien decide.
+ *
+ * EL ACCESO, QUE ES DONDE ESTO SE ROMPÍA AL ARREGLARLO
+ *
+ * La tranquera está sobre el perímetro por definición, así que el redondeo al
+ * nodo más cercano la tira para cualquiera de los dos lados. Si ese nodo cae en
+ * el halo, un recorte ingenuo deja el corredor en **una sola celda** —la del
+ * acceso, rodeada de halo— y el predio entero queda «sin camino» por un
+ * redondeo. Medido: el mismo predio pasaba de 490 celdas alcanzadas a 1.
+ *
+ * `trazarCaminoRelieve` lo resuelve con `permitido[src] = 1`, que alcanza porque
+ * ahí el destino está fijo. Acá no alcanza, así que el arranque no es el nodo
+ * más cercano sino **el nodo utilizable más cercano**: con dato y, si hay
+ * recorte, adentro del predio. Cuánto se movió viaja en `acceso_movido_m` para
+ * que se pueda avisar si fue más que el redondeo.
  */
 export function accesibilidad(
   g: GrillaElevacion,
   acceso: { lat: number; lng: number },
   limite_pct: number,
+  opciones?: OpcionesCamino,
 ): CaminoPosible | null {
   const { rows, cols, elev } = g;
   const n = rows * cols;
@@ -1214,8 +1298,13 @@ export function accesibilidad(
     [-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1],
   ];
 
-  const inicio = indiceDePunto(g, acceso.lat, acceso.lng);
+  const dentro = opciones?.permitirFuera ? null : (g.dentro ?? null);
+  const recortado = dentro !== null;
+
+  const usable = (i: number) => !Number.isNaN(elev[i]!) && (!dentro || dentro[i] === 1);
+  const inicio = nodoUtilizableMasCercano(g, acceso, usable);
   if (inicio == null) return null;
+  const acceso_movido_m = distanciaANodo(g, acceso, inicio);
 
   const largo = new Float64Array(n).fill(Infinity);
   const pmax = new Float64Array(n).fill(NaN);
@@ -1269,6 +1358,9 @@ export function accesibilidad(
       if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
       const j = nr * cols + nc;
       if (listo[j]) continue;
+      // El halo no es del dueño: no se rutea por ahí. La celda del acceso es la
+      // excepción y ya está sembrada, así que acá alcanza con cortar la entrada.
+      if (dentro && dentro[j] !== 1) continue;
       const zj = elev[j]!;
       if (Number.isNaN(zj)) continue;
       const paso = distN8[k]!;
@@ -1283,7 +1375,60 @@ export function accesibilidad(
     }
   }
 
-  return { largo_m: largo, pend_max_pct: pmax, limite_pct, alcanzadas };
+  return { largo_m: largo, pend_max_pct: pmax, limite_pct, alcanzadas, recortado, acceso_movido_m };
+}
+
+/**
+ * El nodo utilizable más cercano a un punto, buscando por anillos de Chebyshev.
+ *
+ * En el caso normal contesta en el anillo 0 y no cuesta nada. Los anillos
+ * existen para el borde: un acceso sobre el perímetro puede redondear al halo, y
+ * ahí el nodo bueno está a una celda. El tope es la dimensión de la grilla, así
+ * que si existe algún nodo utilizable lo encuentra.
+ */
+function nodoUtilizableMasCercano(
+  g: GrillaElevacion,
+  p: { lat: number; lng: number },
+  usable: (i: number) => boolean,
+): number | null {
+  const { rows, cols } = g;
+  if (rows < 2 || cols < 2) return null;
+  const fr = ((p.lat - g.latMin) / (g.latMax - g.latMin)) * (rows - 1);
+  const fc = ((p.lng - g.lngMin) / (g.lngMax - g.lngMin)) * (cols - 1);
+  const r0 = Math.min(rows - 1, Math.max(0, Math.round(fr)));
+  const c0 = Math.min(cols - 1, Math.max(0, Math.round(fc)));
+
+  const tope = Math.max(rows, cols);
+  for (let anillo = 0; anillo <= tope; anillo++) {
+    let mejor = -1, mejorD = Infinity;
+    for (let dr = -anillo; dr <= anillo; dr++) {
+      for (let dc = -anillo; dc <= anillo; dc++) {
+        // Sólo el perímetro del anillo: lo de adentro ya se revisó.
+        if (anillo > 0 && Math.max(Math.abs(dr), Math.abs(dc)) !== anillo) continue;
+        const r = r0 + dr, c = c0 + dc;
+        if (r < 0 || c < 0 || r >= rows || c >= cols) continue;
+        const i = r * cols + c;
+        if (!usable(i)) continue;
+        // Dentro del anillo gana el más cercano de verdad, no el primero: en un
+        // anillo de Chebyshev la esquina está √2 veces más lejos que el lado.
+        const d = (r - fr) * (r - fr) + (c - fc) * (c - fc);
+        if (d < mejorD) { mejorD = d; mejor = i; }
+      }
+    }
+    if (mejor >= 0) return mejor;
+  }
+  return null;
+}
+
+/** Distancia horizontal en metros de un punto al centro de un nodo de la grilla. */
+function distanciaANodo(g: GrillaElevacion, p: { lat: number; lng: number }, i: number): number {
+  const { rows, cols } = g;
+  const r = (i / cols) | 0, c = i % cols;
+  const lat = g.latMin + (rows > 1 ? (r / (rows - 1)) * (g.latMax - g.latMin) : 0);
+  const lng = g.lngMin + (cols > 1 ? (c / (cols - 1)) * (g.lngMax - g.lngMin) : 0);
+  const mPorLat = 111_320;
+  const mPorLng = 111_320 * Math.cos(((g.latMin + g.latMax) / 2) * Math.PI / 180);
+  return Math.hypot((lat - p.lat) * mPorLat, (lng - p.lng) * mPorLng);
 }
 
 /** Índice de grilla del nodo más cercano a un punto, o null si cae fuera. */
@@ -1417,13 +1562,41 @@ export function evaluarEmplazamiento(
           `${Math.round(camino.largo_m * ANCHO_CAMINO_UNA_MANO_M)} m² de camino.`,
         fuente: FUENTE_CPS560,
       });
+      // Un corredor sin recortar puede estar pasando por tierra del vecino, y
+      // eso no es un camino: es una servidumbre. Si no se puede recortar —no
+      // hay polígono— se dice igual, porque el usuario no tiene otra forma de
+      // saberlo.
+      if (ctx.camino_recortado === false) {
+        advertencias.push(
+          ctx.g.dentro
+            ? 'El recorrido del camino tiene permitido salir del predio, así que estos metros ' +
+              'pueden incluir tierra que no es de quien decide. Eso no es un camino: es una ' +
+              'servidumbre de paso que hay que negociar antes de contarla como acceso.'
+            : 'La grilla de relieve no trae el polígono del predio, así que el recorrido del camino ' +
+              'no se pudo recortar: puede estar pasando por tierra de un vecino sin que se note.',
+        );
+      }
+      // El acceso se corre al nodo utilizable más cercano. Menos de una celda es
+      // el redondeo y no se menciona; más que eso quiere decir que la tranquera
+      // marcada no cae sobre el predio, y entonces estos metros arrancan en otro
+      // lado del que el usuario cree.
+      const movido = ctx.camino_acceso_movido_m ?? 0;
+      if (movido > ctx.paso_m) {
+        advertencias.push(
+          `El punto de acceso marcado no cae sobre una celda utilizable del predio: el recorrido ` +
+          `arranca ${redondear(movido, 0)} m más adentro, en el nodo más cercano que sí lo es. ` +
+          'Conviene volver a marcar la tranquera sobre el perímetro.',
+        );
+      }
     } else {
       exclusiones.push({
         regla:  'sin_camino',
         titulo: 'Sin camino posible',
         motivo:
-          `Ningún recorrido dentro del predio llega hasta acá sin pasar del ` +
-          `${ctx.camino_limite_pct} % de pendiente. Ni zigzagueando.`,
+          (ctx.camino_recortado
+            ? 'Ningún recorrido dentro del predio llega hasta acá'
+            : 'Ningún recorrido llega hasta acá —y la búsqueda ni siquiera se limitó al predio—') +
+          ` sin pasar del ${ctx.camino_limite_pct} % de pendiente. Ni zigzagueando.`,
         fuente: FUENTE_CPS560,
       });
     }

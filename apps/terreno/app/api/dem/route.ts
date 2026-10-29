@@ -4,6 +4,7 @@ import { requiereTopoDe } from '@/lib/auth/apiGuard';
 import { haDeBBox } from '@/lib/coordenadas';
 import { obtenerGrillaDEM } from '@/lib/elevacion/grilla';
 import { atribucionDe } from '@/lib/elevacion/atribucion';
+import { diagnosticarMuestreo } from '@/lib/elevacion/muestreo';
 import type { BBox } from '@/lib/elevacion';
 
 // geotiff (lectura de COG por range request) requiere Node runtime.
@@ -12,6 +13,7 @@ export const maxDuration = 60;
 
 const HDRS      = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 días — el relieve es estático
+const TTL_DEGRADADO = 60 * 60;       // 1 hora — una lectura escalonada se reintenta
 const MAX_NODOS = 90_000;            // tope de tamaño de grilla (cols × rows)
 
 /**
@@ -49,6 +51,7 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ ok: false, error: 'sin datos GLO-30' }), { status: 502, headers: HDRS });
 
   const elev = Array.from(grilla.elev, v => Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
+  const diag = diagnosticarMuestreo(grilla);
   const payload = JSON.stringify({
     ok: true,
     fuente: grilla.fuente,
@@ -56,8 +59,23 @@ export async function GET(req: Request) {
     cols: grilla.cols, rows: grilla.rows,
     bbox,
     elev,
+    // Quién interpoló y cuánto empata. Viaja con la grilla porque el cliente
+    // calcula flujo con ella y necesita saber si puede: una grilla escalonada
+    // dibuja curvas de nivel perfectamente buenas y deja el D8 sin salida.
+    muestreo: grilla.muestreo,
+    mesetas: Math.round(diag.mesetas * 1000) / 1000,
   });
 
-  await cacheSet(dbKey, { raw: payload }, CACHE_TTL);
+  // Una grilla escalonada NO se guarda treinta días.
+  //
+  // El TTL largo está bien porque el relieve es estático, pero lo que se
+  // cachea acá no es el relieve: es el resultado de una lectura que puede
+  // haber salido degradada por un timeout de S3 de hace un minuto. Con 30 días,
+  // un mal minuto de red deja a ese predio sin escorrentías, sin swales y sin
+  // sitios de represa hasta el mes que viene, y nadie lo relaciona con la red.
+  // Con una hora, el pedido siguiente vuelve a intentar la ventana COG.
+  // Es el mismo criterio que ya se aplicó en /api/entorno: un fracaso no se
+  // cachea como un éxito.
+  await cacheSet(dbKey, { raw: payload }, diag.escalonado ? TTL_DEGRADADO : CACHE_TTL);
   return new Response(payload, { status: 200, headers: HDRS });
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
-import { Mountain, Loader2, ArrowDown, ArrowRight } from 'lucide-react';
-import { obtenerTopografia, type DatosTopografia } from '@/lib/topografia';
+import { useCallback, useEffect, useRef } from 'react';
+import { Mountain, Loader2, ArrowDown, ArrowRight, Grid3x3 } from 'lucide-react';
+import { obtenerTopografia, topografiaConGrillaDensa, type DatosTopografia } from '@/lib/topografia';
+import type { DatosShader } from '@/lib/shaders';
 import type { Mojon } from '@/lib/types';
 
 interface Props {
@@ -13,18 +14,32 @@ interface Props {
   onCargando: (v: boolean) => void;
   error:    string | null;
   onError:  (e: string | null) => void;
-  /** Motor único de relieve: computa la grilla densa (shader alt./pend. + hipsométrico)
-   *  y enciende en el plano el shader de altimetría con las curvas en auto. */
+  /** Motor único de relieve: computa la grilla densa y la enciende en el plano. */
   onFetchShader: () => void;
   shaderCargando: boolean;
+  /**
+   * El relieve denso, cuando ya está calculado.
+   *
+   * Las estadísticas del panel tienen que salir de acá y no de la muestra de
+   * puntos. Mientras el panel no lo recibía, la app calculaba el relieve denso
+   * en el mismo clic, dibujaba curvas rotuladas 420 y 440 m, y al lado informaba
+   * un máximo de 391 m sacado de otros diecisiete puntos: en ese predio el
+   * máximo real eran 442 m y la pendiente general pasaba de 20,2 % a 30,4 %.
+   *
+   * Entra como prop y no como valor de retorno del cálculo porque así cubre los
+   * dos órdenes: el relieve puede estar calculado desde antes —el usuario lo
+   * prendió en Capas— y entonces el panel tiene que usarlo sin volver a pedirlo.
+   */
+  shader:   DatosShader | null;
 }
 
-export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando, error, onError, onFetchShader, shaderCargando }: Props) {
+export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando, error, onError, onFetchShader, shaderCargando, shader }: Props) {
   const handleCargar = useCallback(async () => {
     onCargando(true);
     onError(null);
     // Dispara la grilla densa (shader + curvas) en paralelo: es la misma fuente
-    // Terrarium cacheada, y deja el relieve activo en el plano de una.
+    // cacheada, y deja el relieve activo en el plano de una. Cuando llegue, el
+    // efecto de abajo mejora las estadísticas con ella.
     onFetchShader();
     try {
       const data = await obtenerTopografia(mojones);
@@ -35,6 +50,23 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
       onCargando(false);
     }
   }, [mojones, onDatos, onCargando, onError, onFetchShader]);
+
+  /**
+   * Cuando el relieve denso está, las estadísticas se recalculan con él.
+   *
+   * El `ref` no es ceremonia: sin él, mejorar `datos` dispara el efecto de
+   * nuevo. Guardar qué shader se usó corta el lazo y además deja que un shader
+   * NUEVO —otros mojones, otra resolución— vuelva a mejorar un dato que ya
+   * estaba mejorado.
+   */
+  const shaderUsado = useRef<DatosShader | null>(null);
+  useEffect(() => {
+    if (!shader || !datos) return;
+    if (shaderUsado.current === shader && datos.base === 'grilla_densa') return;
+    shaderUsado.current = shader;
+    const mejor = topografiaConGrillaDensa(datos, shader);
+    if (mejor !== datos) onDatos(mejor);
+  }, [shader, datos, onDatos]);
 
   const ocupado = cargando || shaderCargando;
 
@@ -77,12 +109,18 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
 
       {datos && (
         <>
+          {/* De dónde salen estos números. Va ARRIBA de las tarjetas porque
+              cambia cómo se leen: una muestra de ~90 puntos sobre 400 ha puede
+              saltearse el pico, y eso no se puede dejar implícito. */}
+          <BaseDelDato datos={datos} />
+
           {/* Tarjetas de resumen */}
           <div className="grid grid-cols-2 gap-2">
             <TopoCard label="Elevación mín." value={`${datos.elev_min.toFixed(0)} m`}  sub="s.n.m." />
             <TopoCard label="Elevación máx." value={`${datos.elev_max.toFixed(0)} m`}  sub="s.n.m." />
             <TopoCard label="Desnivel"        value={`${datos.desnivel.toFixed(1)} m`} sub="max − min" />
-            <TopoCard label="Elev. media"     value={`${datos.elev_media.toFixed(0)} m`} sub="centroide" />
+            <TopoCard label="Elev. media"     value={`${datos.elev_media.toFixed(0)} m`}
+                      sub={datos.base === 'grilla_densa' ? 'del predio' : 'de la muestra'} />
           </div>
 
           {/* Pendiente y orientación */}
@@ -148,6 +186,49 @@ export function TopografiaPanel({ mojones, datos, onDatos, cargando, onCargando,
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// ─── De dónde salen las estadísticas ─────────────────────────────────────────
+
+/**
+ * Dice si los números de arriba salen del relieve denso o de una muestra.
+ *
+ * Es la regla del silencio aplicada al revés: no se oculta la ausencia, se
+ * nombra el alcance. El caso que lo pide es medido —en un predio de 417,8 ha la
+ * muestra daba 391 m de máximo y el relieve denso 441, con el pico adentro del
+ * perímetro— y lo peor no era el rótulo sino la pendiente general, que sale de
+ * esos mismos dos puntos: 20,2 % contra 30,8 %.
+ */
+function BaseDelDato({ datos }: { datos: DatosTopografia }) {
+  const denso = datos.base === 'grilla_densa';
+  return (
+    <div className={`rounded-lg px-2.5 py-2 text-[11px] leading-relaxed flex items-start gap-1.5 ${
+      denso ? 'bg-moss-700/8 text-ink-700/80' : 'bg-clay-700/8 text-ink-700/80'}`}>
+      {denso
+        ? <Grid3x3 className="w-3 h-3 text-moss-700 shrink-0 mt-0.5" />
+        : <Mountain className="w-3 h-3 text-clay-700 shrink-0 mt-0.5" />}
+      <span>
+        {denso ? (
+          <>
+            Medido sobre{' '}
+            <span className="font-mono font-medium text-ink-900">
+              {(datos.celdas_densas ?? 0).toLocaleString('es-AR')}
+            </span>{' '}
+            celdas del relieve que caen adentro del perímetro. Es el mismo relieve que dibuja las
+            curvas de nivel, así que el máximo de acá y el rótulo de la curva más alta coinciden.
+          </>
+        ) : (
+          <>
+            <span className="font-medium text-ink-900">Es una muestra</span> de{' '}
+            <span className="font-mono font-medium text-ink-900">{datos.muestra_n ?? '—'}</span>{' '}
+            puntos —los mojones, el centro y una grilla interior—, no el relieve completo: un pico o
+            una vaguada entre dos puntos no aparece, y la pendiente general sale de los dos extremos
+            de esa muestra. Calculá el relieve para que estos números salgan de todas las celdas.
+          </>
+        )}
+      </span>
     </div>
   );
 }

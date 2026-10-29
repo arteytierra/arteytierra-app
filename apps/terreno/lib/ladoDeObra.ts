@@ -428,7 +428,12 @@ export function ladoDelVertedero(
 
   // ── El derrame natural, si lo hay ─────────────────────────────────────────
   const vaso = opciones?.vaso ?? null;
-  const derrameNatural = vaso && vaso.tipoTope === 'derrame' && !vaso.derramePorEstribo
+  // `=== false` y no `!`: `derramePorEstribo` puede ser null —el eje es más
+  // corto que lo que la prueba necesita para distinguir una punta del medio del
+  // muro— y ahí no se sabe si esa silla es un vertedero natural o el agua
+  // yéndose por el estribo. Recomendar ir a mirarla como vertedero sería
+  // convertir un «no se sabe» en un «sí».
+  const derrameNatural = vaso && vaso.tipoTope === 'derrame' && vaso.derramePorEstribo === false
     ? vaso.puntoDerrame : null;
 
   // ── La recomendación ──────────────────────────────────────────────────────
@@ -468,10 +473,16 @@ export function ladoDelVertedero(
       'does not require excavation to provide enough capacity to conduct the pond outflow to a safe ' +
       'point of release»—, así que antes de elegir un estribo conviene ir a mirar ese punto.');
   }
-  if (vaso?.derramePorEstribo) {
+  if (vaso?.derramePorEstribo === true) {
     partes.push(
       'Ojo que hoy el vaso derrama por una punta del muro, no por una silla: eso no es un vertedero, ' +
       'es el agua yéndose por el estribo. Se arregla alargando el muro.');
+  } else if (vaso?.derramePorEstribo === null) {
+    partes.push(
+      `El cierre entra en ${vaso.ejeCeldas} celda(s) de ${vaso.paso_m.toFixed(0)} m, así que no se ` +
+      'puede saber si el agua se iría por una silla del vaso o por la punta del muro: a este paso ' +
+      'de relieve las dos cosas caen en la misma celda. La elección del estribo que sigue vale para ' +
+      'el recorrido del vertido; la cota de derrame hay que verificarla con relieve fino o en el campo.');
   }
   if (vivos.length === 0) {
     partes.push(

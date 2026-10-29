@@ -9,6 +9,7 @@
  */
 import { fromUrl } from 'geotiff';
 import type { BBox, FuenteDEM } from './tipos';
+import type { MuestreoDEM } from './muestreo';
 import { tileUrl, validaCota, puntosGlo30 } from './glo30';
 import { fuentesNacionalesGrilla, type FuenteNacional } from './router';
 import { grillaUsgs3dep } from './proveedores/usgs3dep';
@@ -25,6 +26,12 @@ export interface GrillaDEM {
   bbox: BBox;              // [oeste, sur, este, norte]
   elev: Float32Array;      // row-major, fila 0 = sur; NaN = sin dato
   fuente: FuenteDEM;
+  /**
+   * Quién interpoló. Importa tanto como la fuente: el mismo GLO-30 leído por la
+   * ventana del COG sirve para calcular flujo y pedido por nodo no, y hasta el
+   * 25/10/2026 las dos cosas salían de acá indistinguibles. Ver `muestreo.ts`.
+   */
+  muestreo: MuestreoDEM;
 }
 
 interface Ventana {
@@ -77,36 +84,67 @@ function muestrear(v: Ventana, lat: number, lng: number): number {
   return a + (b - a) * fy;
 }
 
-export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promise<GrillaDEM | null> {
-  if (cols < 2 || rows < 2) return null;
+/**
+ * Una pasada por la ventana de píxeles del COG. Devuelve null si no se pudo:
+ * quien llama decide si reintenta o degrada.
+ */
+async function porVentana(bbox: BBox, cols: number, rows: number): Promise<Float32Array | null> {
   const [w, s, e, n] = bbox;
   const elev = new Float32Array(rows * cols).fill(NaN);
 
-  try {
-    const ventanas: Ventana[] = [];
-    for (let la = Math.floor(s); la <= Math.floor(n); la++) {
-      for (let lo = Math.floor(w); lo <= Math.floor(e); lo++) {
-        const v = await abrirVentana(la, lo, bbox);
-        if (v) ventanas.push(v);
+  const ventanas: Ventana[] = [];
+  for (let la = Math.floor(s); la <= Math.floor(n); la++) {
+    for (let lo = Math.floor(w); lo <= Math.floor(e); lo++) {
+      const v = await abrirVentana(la, lo, bbox);
+      if (v) ventanas.push(v);
+    }
+  }
+  if (ventanas.length === 0) return null;
+
+  let ok = 0;
+  for (let r = 0; r < rows; r++) {
+    const lat = s + (r / (rows - 1)) * (n - s);
+    for (let c = 0; c < cols; c++) {
+      const lng = w + (c / (cols - 1)) * (e - w);
+      for (const v of ventanas) {
+        const val = muestrear(v, lat, lng);
+        if (Number.isFinite(val)) { elev[r * cols + c] = val; ok++; break; }
       }
     }
-    if (ventanas.length === 0) throw new Error('sin ventanas COG');
+  }
+  return ok >= rows * cols * 0.2 ? elev : null;
+}
 
-    let ok = 0;
-    for (let r = 0; r < rows; r++) {
-      const lat = s + (r / (rows - 1)) * (n - s);
-      for (let c = 0; c < cols; c++) {
-        const lng = w + (c / (cols - 1)) * (e - w);
-        for (const v of ventanas) {
-          const val = muestrear(v, lat, lng);
-          if (Number.isFinite(val)) { elev[r * cols + c] = val; ok++; break; }
-        }
-      }
-    }
-    if (ok >= rows * cols * 0.2) return { rows, cols, bbox, elev, fuente: 'glo30' };
-  } catch { /* cae a muestreo por nodo */ }
+/**
+ * Cuántas veces se intenta la ventana COG antes de degradar a muestreo por
+ * nodo.
+ *
+ * Dos, y no una, porque el fallo que se midió fue un TIMEOUT y no una
+ * indisponibilidad: ese día `fromUrl` tardó 20 s y `readRasters` 120 s contra
+ * eu-central-1, y el intento siguiente —el de la corrida de al lado— funcionó
+ * en 86 s. Degradar al primer tropiezo cambia un camino lento por uno que
+ * destruye la hidrología, y además NO es más rápido: el respaldo por nodo
+ * tarda 466 s, cinco veces más que reintentar.
+ */
+const INTENTOS_VENTANA = 2;
 
-  // Respaldo: muestreo por nodo (maneja bbox multi-tile grande y fallos de ventana)
+export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promise<GrillaDEM | null> {
+  if (cols < 2 || rows < 2) return null;
+  const [w, s, e, n] = bbox;
+
+  for (let intento = 0; intento < INTENTOS_VENTANA; intento++) {
+    try {
+      const elev = await porVentana(bbox, cols, rows);
+      if (elev) return { rows, cols, bbox, elev, fuente: 'glo30', muestreo: 'bilineal' };
+    } catch { /* se reintenta y, si no, se degrada */ }
+  }
+
+  // Respaldo: muestreo por nodo (maneja bbox multi-tile grande y fallos de
+  // ventana). Devuelve el píxel más cercano, así que a un paso más fino que la
+  // fuente sale escalonado y el D8 no encuentra por dónde baja el agua. Sigue
+  // valiendo la pena —un relieve escalonado dibuja curvas de nivel y una vista
+  // 3D perfectamente buenas— pero viaja ETIQUETADO, que es lo que faltaba.
+  const elev = new Float32Array(rows * cols).fill(NaN);
   const nodes: Array<{ lat: number; lng: number }> = [];
   for (let r = 0; r < rows; r++) {
     const lat = s + (r / (rows - 1)) * (n - s);
@@ -115,7 +153,9 @@ export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promi
   const vals = await puntosGlo30(nodes);
   let ok = 0;
   for (let i = 0; i < vals.length; i++) { const v = vals[i]; if (v != null) { elev[i] = v; ok++; } }
-  return ok >= rows * cols * 0.2 ? { rows, cols, bbox, elev, fuente: 'glo30' } : null;
+  return ok >= rows * cols * 0.2
+    ? { rows, cols, bbox, elev, fuente: 'glo30', muestreo: 'por_nodo' }
+    : null;
 }
 
 /**
@@ -135,7 +175,14 @@ export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): 
   // la primera con dato gana. Si ninguna responde, GLO-30 global.
   for (const fuente of fuentesNacionalesGrilla(bbox)) {
     const elev = await ADAPTER[fuente](bbox, cols, rows);
-    if (elev) return { rows, cols, bbox, elev, fuente };
+    // `'servicio'` y no `'bilineal'`: el remuestreo lo hace el proveedor y el
+    // método no siempre se declara. 3DEP lo pide explícito
+    // (`RSP_BilinearInterpolation`), los WCS de España, Canadá y Países Bajos
+    // usan el de su servidor, y el IGN francés devuelve una cota por punto
+    // igual que el respaldo de GLO-30. Ponerles a todos la etiqueta buena
+    // sería afirmar algo que este repo no verificó; la medición de
+    // `diagnosticarMuestreo` sí los cubre, porque mira el dato.
+    if (elev) return { rows, cols, bbox, elev, fuente, muestreo: 'servicio' };
   }
   return grillaGlo30(bbox, cols, rows);
 }

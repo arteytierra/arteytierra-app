@@ -9,11 +9,17 @@
     "render": "remotion render src/index.ts",
     "componer": "remotion compositions src/index.ts",
     "typecheck": "tsc --noEmit",
-    "render-video": "node scripts/render-video.mjs"
+    "render-video": "node scripts/render-video.mjs",
+    "portada": "node scripts/portada.mjs",
+    "piezas": "node scripts/piezas.mjs",
+    "control": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-02\" 8732",
+    "par": "node scripts/par.mjs",
+    "control-03": "node scripts/servidor-rangos.mjs \"C:\\Arte y Tierra\\Acequia\\portada animacion\\salida-encargo-03\" 8733"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",
     "@remotion/google-fonts": "4.0.524",
+    "maplibre-gl": "^4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "remotion": "4.0.524",

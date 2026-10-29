@@ -1,10 +1,28 @@
 /**
- * Fichas regionales de Indomalaya: 32 fichas para 33 ECO_ID.
+ * Fichas regionales de Indomalaya: 33 fichas para 34 ECO_ID.
  *
  * El alcance y el porqué del recorte están en `ecorregionesIndomalaya.ts`. Acá
  * va lo que hay que saber para tocar los números.
  *
- * ## La regla que produjo los modificadores es nuestra, no de HWSD
+ * ## Treinta y dos salieron de una regla; la última, no
+ *
+ * Las 32 primeras son todas de bioma 1 —tropical húmedo— y salieron de la regla
+ * que se explica abajo. `decan_central_hardwickia` (ECO_ID 290), agregada el
+ * 23/10/2026, es **de bioma 2**, el bosque tropical seco, y por eso no sale de
+ * esa regla ni podría: la regla escala el −25 de huerta del bioma húmedo, y el
+ * bioma seco pone −10 de huerta y +10 de pasturas por motivos que no tienen
+ * nada que ver con la lixiviación.
+ *
+ * Esa ficha rompe a propósito cuatro invariantes que valen para las otras 32, y
+ * están declaradas como excepción en `tests/unit/contexto/aptitudIndomalaya.test.ts`:
+ * toca un uso que no es huerta, propone un número **positivo**, su razón no dice
+ * «regla de acequia» porque no viene de ninguna regla nuestra, y no trae reparto
+ * de HWSD ni de SoilGrids —el relevamiento no lo extrajo para ese polígono y no
+ * se inventó—. Lo que la sostiene es otra cosa: escurrimiento y pérdida de suelo
+ * medidos durante décadas en microcuencas del ICRISAT que están adentro de la
+ * ecorregión. Sus tests propios viven en `aptitudDecan.test.ts`.
+ *
+ * ## La regla que produjo los otros modificadores es nuestra, no de HWSD
  *
  * Cada `aptitud` de huerta sale de escalar el −25 del bioma global por la
  * fracción de suelo con limitante severa dentro del polígono:
@@ -49,7 +67,7 @@
  *
  * ## Lo demás
  *
- * `saberes` va vacío en las 32, como en todo el catálogo regional: sin geometría
+ * `saberes` va vacío en las 33, como en todo el catálogo regional: sin geometría
  * con procedencia, licencia y acuerdo, `lib/saberes.ts` no activa nada. Que un
  * predio caiga en Java no autoriza a atribuirle el subak balinés ni el manejo de
  * los pastizales de Benguet.
@@ -81,6 +99,32 @@ const INDRARATNE = { label: 'Indraratne 2020 — Soil mineralogy of Sri Lanka, e
 const CHAKRABORTY = { label: 'Chakraborty, Mukherjee y Ahmed 2015 — A review of groundwater arsenic in the Bengal Basin, Current Pollution Reports 1:220-247', url: 'https://link.springer.com/article/10.1007/s40726-015-0022-0' };
 const POWO_PIMIENTA = { label: 'Kew POWO — Piper nigrum, área nativa', url: 'https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:682369-1' };
 const POWO_CARDAMOMO = { label: 'Kew POWO — Elettaria cardamomum, área nativa', url: 'https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:796556-1/general-information' };
+
+// ─── Sólo las usa la ficha del Decán central (290) ───────────────────────────
+
+const ONE_EARTH_290 = { label: 'One Earth — ecorregión 290 «Central Deccan Plateau Dry Deciduous Forests»', url: 'https://www.oneearth.org/ecoregions/central-deccan-plateau-dry-deciduous-forests/' };
+const FAO_VERTISOLES = { label: 'FAO — Developing, testing and transferring improved Vertisol technology: the Indian experience', url: 'https://www.fao.org/4/x5493e/x5493e03.htm' };
+const FAO_FORMACIONES = { label: 'FAO — Diversity of woody-vegetation formations (las series de bosque seco de la India)', url: 'https://www.fao.org/4/w4442E/w4442e05.htm' };
+
+/** Aviso de alcance, porque de estos dos se leyó **el resumen y no el trabajo**.
+ *  Los dos son de Elsevier y están detrás de pago; la copia de acceso abierto de
+ *  Pathak en el repositorio del ICRISAT devuelve 403 incluso desde un navegador
+ *  real. Todos los números que esta ficha les atribuye —los coeficientes de
+ *  escorrentía, la reducción por camellón— están textualmente en el resumen
+ *  publicado, y ninguno sale del cuerpo del trabajo. Si alguien consigue los PDF,
+ *  lo que falta es el reparto del suelo perdido en toneladas por hectárea. */
+const PATHAK = { label: 'Pathak, Sudi, Wani y Sahrawat 2013 — Hydrological behavior of Alfisols and Vertisols in the semi-arid zone, Agricultural Water Management 118:12-21, doi:10.1016/j.agwat.2012.11.012 (leído el resumen)', url: 'https://doi.org/10.1016/j.agwat.2012.11.012' };
+const GARG = { label: 'Garg et al. 2021 — Impact of raised beds on surface runoff and soil loss in Alfisols and Vertisols, Catena 211:105972, doi:10.1016/j.catena.2021.105972 (leído el resumen)', url: 'https://doi.org/10.1016/j.catena.2021.105972' };
+
+/** Universidad agraria de Maharashtra, citada **sólo** por el repertorio de
+ *  cultivos del Decán semiárido. Su jurisdicción son los diez distritos de
+ *  Maharashtra occidental —Nashik, Ahmednagar, Pune, Solapur, Satara, Sangli y
+ *  demás—, que están a sotavento de los Ghats y caen en la ecorregión vecina de
+ *  matorral espinoso (IM1301), no en ésta. La entrega de GPT la usó como fuente
+ *  de los cultivos sin notar eso. La lista sobrevive porque el documento de la
+ *  FAO cubre la zona que sí corresponde, de Hyderabad a Gwalior y Maharashtra y
+ *  el norte de Karnataka, y nombra los mismos cultivos. */
+const MPKV = { label: 'Mahatma Phule Krishi Vidyapeeth — zonas agroclimáticas y cultivos de Maharashtra occidental', url: 'https://mpkv.ac.in/Home/MpkvAtaGlance' };
 
 /** Ficha de ecorregión de WWF, que es la descripción publicada del polígono.
  *  Aviso de calidad: esas páginas se autodeclaran «no longer being updated…
@@ -903,5 +947,38 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
       { label: 'Barrientos et al. 2024 — Cagdianao nickel laterite, Dinagat, IOP Conf. Ser. EES 1373:012041', url: 'https://ouci.dntb.gov.ua/en/works/4YEdKGR4/' },
       HWSD, SOILGRIDS, HENGL, FAO_SUELOS, RESOLVE,
     ],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // El Decán central — la única del bloque que no es bioma húmedo
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // IN · ECO_ID 290 · bioma 2 · confianza media
+  decan_central_hardwickia: {
+    id: 'decan_central_hardwickia',
+    nombre: 'Bosques secos del Decán central',
+    emoji: '🐅',
+    color: '#8C7B52',
+    resumen: 'Centro de la meseta del Decán, en India: unos 240.000 km² repartidos entre Madhya Pradesh, Maharashtra, Karnataka y Andhra Pradesh, con el Godavari cruzándola y el extremo occidental de la cordillera de Satpura en el norte. Es la ecorregión de los bosques de Hardwickia, un tipo de vegetación que WWF separó a propósito de los bosques secos de teca y de sal que cubren el resto de la meseta. Se perdió alrededor del 80 % del hábitat natural, pero lo que queda no está pulverizado: hay bloques de más de 5.000 km² sobre los bordes sur y este, y por eso la ecorregión pesa en la estrategia continental del tigre. Dieciséis áreas protegidas cubren cerca del 3 %, y la mayor es la reserva de tigres de Nagarjunasagar, de más de 3.500 km². Estado declarado: crítico o en peligro.',
+    vegetacion: 'La asociación característica es el monte de Hardwickia binata con Albizia amara. Dosel superior de 15 a 25 m sobre un estrato de 10 a 15 m, con lianas en el bosque maduro y sotobosque escaso. El acompañamiento cambia de norte a sur: en el norte teca, incienso de la India, Lannea coromandelica, Anogeissus latifolia, Albizia lebbeck, Lagerstroemia parviflora, Diospyros tomentosa y khair; en el sur sándalo rojo, palo de kino, Chloroxylon swietenia, Terminalia chebula, T. tomentosa y Dalbergia latifolia. Donde no hay teca, Hardwickia domina sola: en los distritos de Chittoor, Cuddapah y Kurnool forma un bosque de dos pisos, un estrato de unos 20 m casi puro que emerge sobre otro de unos 15 m con las especies comunes de la serie seca. La teca, en cambio, se queda en los mejores sitios, porque sólo arraiga en suelo bien drenado. Y conviene saber que el árbol que define a esta ecorregión de bosque seco deciduo es de hoja perenne, de copa liviana, hecho para la seca y para el fuego, con raíz pivotante profunda que alcanza la reserva de agua subterránea; se lo encuentra más seguido en suelos muy superficiales o esqueléticos, rebrota de tocón y los plantines se recuperan después de quemarse. Una flora fósil del Mioceno, con géneros de selva húmeda perennifolia como Dipterocarpus, Hopea y Mesua, dice que el clima de acá fue otro. El matorral espinoso que la rodea no es siempre un estado natural distinto: la fuente advierte que parte de esas formaciones son probablemente series de reemplazo que hoy ocupan superficie de las series más húmedas.',
+    fauna: 'Ochenta y dos especies de mamíferos, ninguna endémica de la ecorregión: tigre (Panthera tigris), búfalo salvaje (Bubalus arnee), cuón (Cuon alpinus), oso bezudo (Melursus ursinus), antílope de cuatro cuernos o chousingha (Tetracerus quadricornis), gaur (Bos gaurus), antílope negro (Antilope cervicapra), chinkara (Gazella bennettii) y la ardilla gigante de la India (Ratufa indica). Las aves son más ricas: casi 300 especies, y una sola casi endémica, la corredora de Jerdon (Rhinoptilus bitorquatus), nocturna, redescubierta en 1986 después de que el último registro fuera de 1900. La única población conocida se reparte entre esta ecorregión y la del matorral espinoso del Decán, y dos santuarios se crearon para protegerla: Sri Lankamaleswara, de 464 km², y Sri Penusila Narasimha, de 1.031 km².',
+    suelos: 'Acá no hay reparto de HWSD ni de SoilGrids: es la única ficha del bloque sin porcentajes, porque el relevamiento no los extrajo para este polígono y no se inventan. Lo que sí hay es algo mejor para diseñar, porque está medido adentro de la ecorregión. En Patancheru, al lado de Hyderabad, el ICRISAT tiene microcuencas de 2 a 5 ha sobre vertisol profundo, vertisol de profundidad media y alfisol, con escurrimiento y pérdida de suelo medidos de 8 a 12 años y una serie hidrológica de 1976 a 2010. El resultado va contra la intuición de cualquier tabla por textura: en años normales, de 600 a 900 mm, el vertisol arcilloso con cultivo escurre del 7 al 11 % de la lluvia y el alfisol arenoso, que tiene conductividad saturada más alta, escurre del 16 al 17 %. El motivo que dan los autores es doble: el alfisol se encostra y se sella, y el vertisol se agrieta al principio de la temporada y además guarda muchísima agua. Esa es la clave del lugar. La infiltración de un vertisol no es un número sino una curva que se derrumba: 76 mm por hora en la primera media hora, 34 en la segunda, 4 mm por hora ya en la segunda hora y 0,21 después de 144 horas. Y la capacidad de agua útil es de unos 230 mm en el vertisol profundo contra unos 120 en el somero, que es lo que decide si hay cosecha después de las lluvias. De ahí sale la práctica tradicional y su costo: más de la mitad de la superficie de vertisol se deja en barbecho durante toda la temporada de lluvia para llenar el perfil, y un vertisol profundo en barbecho escurre 17 %, tanto como la arena, porque le queda menos almacenamiento libre. En Sholapur, sobre pendiente del 1 al 2 %, eso midió 50 cm de suelo perdidos en cien años. Tres cosas para el diseño. La primera: la obra publicada para este suelo es un camellón ancho con surco a pendiente del 0,4 al 0,8 %, o sea un drenaje con desagües y cauces empastados, no una zanja de infiltración a nivel; el limitante del monzón acá es el exceso de agua y el anegamiento, no la falta. La segunda: ese camellón bajó el escurrimiento de 35 a 40 mm en vertisol y de 15 a 20 en alfisol, y la pérdida de suelo del 30 al 60 %, pero no en los eventos de alta intensidad, y entre una y dos tormentas grandes se llevan la mayor parte del total anual en los dos suelos. La tercera, sobre el número que da esta misma app: el grupo hidrológico se deriva de la conductividad saturada, así que un vertisol cae en grupo D, con la leyenda de poca infiltración y alta escorrentía, y el coeficiente anual que sale de ahí queda muy por encima del 7 al 11 % medido con cultivo y del 17 % en barbecho. Si vas a dimensionar una represa en este suelo, el número medido es el que vale.',
+    saberes: [],
+    especies: [
+      'Anjan (Hardwickia binata)',
+      'Albizia amara',
+      'Sándalo rojo (Pterocarpus santalinus)',
+      'Incienso de la India (Boswellia serrata)',
+      'Teca (Tectona grandis)',
+      'Dhaura (Anogeissus latifolia)',
+      'Khair (Senegalia catechu)',
+      'Palo de kino (Pterocarpus marsupium)',
+    ],
+    cultivos: ['sorgo', 'mijo', 'maiz_tropical', 'trigo', 'garbanzo', 'guandul', 'mani', 'girasol', 'algodon', 'soja'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'Se mantiene el número del bioma y se cambia la variable que lo decide. El bioma dice que sin riego ni cosecha de agua la huerta queda parada varios meses del año, y acá lo que manda no es el total de lluvia sino la profundidad del perfil: un vertisol profundo guarda unos 230 mm de agua útil y uno somero unos 120, y con esa diferencia se cosecha o no se cosecha después de las lluvias, sin una gota de riego. Más de la mitad de la superficie de vertisol se maneja así, con barbecho en la temporada de lluvia para llenar el perfil. Así que antes que la lluvia anual, mirá la reserva de agua útil en el panel de suelo: con reserva alta la ventana de la huerta se corre al post-monzón y este castigo sobra, y con reserva baja el ciclo se corta en cuanto paran las lluvias y el límite es más duro que lo que dice este número. Un solo delta no puede decir las dos cosas, y por eso queda el del bioma.' },
+      { uso: 'forestal', delta: 15, razon: 'El bioma no dice nada del uso forestal y acá es lo que la tierra degradada acepta. Se perdió cerca del 80 % del hábitat natural, y la especie que define la ecorregión vuelve igual: Hardwickia binata es de hoja perenne y copa liviana, aguanta la seca y el fuego, rebrota de tocón, los plantines se recuperan después de quemarse, tiene raíz pivotante profunda que alcanza la reserva de agua subterránea y se la encuentra más seguido en suelos muy superficiales o esqueléticos. La fuente agrega lo que cierra el caso: regenera incluso en suelos compactados por el ganado, que es justo la condición de la que habría que partir. El contrapeso está escrito en la misma fuente y hay que decirlo: su madera es la más dura y pesada de la India y resistente a las termitas, y por eso se la extrae en todas partes. Este número vale para rearmar el monte, no para cosechar el que queda en pie.' },
+    ],
+    fuentes: [wwf('im0201', 'Central Deccan Plateau dry deciduous forests'), ONE_EARTH_290, FAO_FORMACIONES, FAO_VERTISOLES, PATHAK, GARG, MPKV, RESOLVE],
   },
 };

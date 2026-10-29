@@ -5,7 +5,20 @@ import { AperturaAcequiaApp, esquemaAperturaApp } from './composiciones/Apertura
 import { BandaBase, Fuente, esquemaFuente } from './composiciones/BandaPie';
 import { LowerThird, esquemaLowerThird } from './composiciones/LowerThird';
 import { PlacaCruce, esquemaCruce } from './composiciones/PlacaCruce';
+import { CUADROS_PORTADA, PortadaAcequia, esquemaPortada } from './composiciones/PortadaAcequia';
+import {
+  CUADROS_LECTURA, FPS_LECTURA, LecturaPredio, esquemaLectura,
+} from './composiciones/LecturaPredio';
+import { CUADROS_LAZO, LazoPredio, esquemaLazo } from './composiciones/LazoPredio';
+import { CUADROS_MESA, MesaDeTrabajo } from './composiciones/MesaDeTrabajo';
+import { CUADROS_PAR, ParCrudoLeido } from './composiciones/ParCrudoLeido';
+import { CUADROS_SOL, SolYViento } from './composiciones/SolYViento';
+import { CUADROS_OBRA, CapaObra } from './composiciones/ObraTayPichin';
+import { CUADROS_INFORME, Informe } from './composiciones/Informe';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
+import {
+  CUADROS_PORTADA_PREDIO, PortadaPredio, esquemaPortadaPredio,
+} from './composiciones/PortadaPredio';
 import { Titular, esquemaTitular } from './composiciones/Titular';
 import {
   COLORES_GEN,
@@ -280,6 +293,176 @@ export const Root: React.FC = () => {
         height={560}
         schema={esquemaGenLockup}
         defaultProps={{ colorIsotipo: COLORES_GEN.agua, colorTexto: COLORES_GEN.crema }}
+      />
+
+      {/*
+        La portada de acequia.app. No es una placa de marca: es la unica
+        composicion que dibuja datos de un predio real, y por eso se renderiza
+        aparte y con cuidado:
+
+          pnpm --filter @arteytierra/placas portada
+
+        El `--gl=angle` es porque MapLibre es WebGL y el Chrome de Remotion
+        arranca sin aceleracion. El `--concurrency=1`, porque varias pestanias
+        peleando por las mismas teselas devuelven cuadros en blanco.
+      */}
+      <Composition
+        id="PortadaAcequia"
+        component={PortadaAcequia}
+        durationInFrames={CUADROS_PORTADA}
+        fps={FPS}
+        /*
+          720p y no 1080p, y es una decisión del contrato, no una comodidad: el
+          techo de peso de la portada son 2,5 MB para catorce segundos, o sea
+          ~1,4 Mbps. A ese caudal, 1080p obliga a un bitrate que bandea los
+          degradados del shader de elevación, que es justo lo que hay que ver.
+          Si el degradado bandea, baja la resolución antes que el bitrate.
+        */
+        width={1280}
+        height={720}
+        schema={esquemaPortada}
+        defaultProps={{ exageracion: 1.4, atribucion: true }}
+      />
+
+      {/*
+        Las tres piezas del encargo 02, todas sobre el mismo predio y el mismo
+        encuadre a sangre. Las tres en 1280×720 por la misma razón que la
+        portada vieja: a este caudal de bits, 1080p bandea antes de lo que gana
+        en detalle, y la regla del contrato es bajar la resolución antes que el
+        bitrate.
+      */}
+      <Composition
+        id="PortadaPredio"
+        component={PortadaPredio}
+        durationInFrames={CUADROS_PORTADA_PREDIO}
+        fps={FPS}
+        width={1280}
+        height={720}
+        schema={esquemaPortadaPredio}
+        defaultProps={{}}
+      />
+
+      {/*
+        Las seis lecturas: dos segundos, una vuelta entera y 60 fps. Los 60 no
+        son un lujo: 360° en dos segundos son 180° por segundo, que a 30 fps
+        dan 6° por cuadro y el giro estroboscopia. Ver la cabecera de la
+        composición.
+      */}
+      {(['relieve', 'curvas', 'agua', 'represas', 'todo', 'secuencia'] as const).map(lectura => (
+        <Composition
+          key={lectura}
+          id={`Lectura${lectura[0]!.toUpperCase()}${lectura.slice(1)}`}
+          component={LecturaPredio}
+          durationInFrames={CUADROS_LECTURA}
+          fps={FPS_LECTURA}
+          width={1280}
+          height={720}
+          schema={esquemaLectura}
+          defaultProps={{ lectura }}
+        />
+      ))}
+
+      {/*
+        Los tres lazos son la misma composición con una propiedad distinta: el
+        mapa, el encuadre y las trampas de MapLibre son los mismos, y tres
+        archivos que comparten doscientas líneas se desincronizan el día que se
+        arregla una.
+      */}
+      {(['perimetro', 'giro', 'agua'] as const).map(lazo => (
+        <Composition
+          key={lazo}
+          id={`Lazo${lazo[0]!.toUpperCase()}${lazo.slice(1)}`}
+          component={LazoPredio}
+          durationInFrames={CUADROS_LAZO}
+          fps={FPS}
+          width={1280}
+          height={720}
+          schema={esquemaLazo}
+          defaultProps={{ lazo }}
+        />
+      ))}
+
+      {/*
+        El encargo 03: la secuencia de la mesa de trabajo. Dieciséis segundos,
+        cámara quieta, bucle perfecto. Es la única de todas en la que el primer
+        y el último cuadro SÍ son idénticos, y la razón está en la cabecera de
+        la composición: donde nada se mueve, periódico e idéntico son lo mismo.
+      */}
+      <Composition
+        id="MesaDeTrabajo"
+        component={MesaDeTrabajo}
+        durationInFrames={CUADROS_MESA}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        La entrega C: el par crudo contra leído, para la cortina. Son DOS
+        cuadros de la misma composición y no dos imágenes sueltas, porque
+        «alineadas al píxel» no se consigue pidiendo dos veces la misma cámara
+        —dos renders son dos mapas y dos cargas de teselas— sino no moviéndola.
+        1600 × 900, que es lo que pide el encargo.
+      */}
+      <Composition
+        id="ParCrudoLeido"
+        component={ParCrudoLeido}
+        durationInFrames={CUADROS_PAR}
+        fps={FPS}
+        width={1600}
+        height={900}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza A: el sol y el viento. Dieciocho segundos, cámara
+        quieta, bucle perfecto, por la misma razón que la mesa —donde nada se
+        mueve, periódico e idéntico son lo mismo—. Va más lejos que las otras:
+        el círculo del horizonte de la proyección solar mide 3.028 m de diámetro
+        y con la vista a sangre se le cortarían el amanecer y el atardecer, que
+        es donde se lee por qué lado del cielo pasa el sol.
+      */}
+      <Composition
+        id="SolYViento"
+        component={SolYViento}
+        durationInFrames={CUADROS_SOL}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza B: SÓLO la capa de líneas, con fondo transparente.
+        La pieza la arma `scripts/obra.mjs` pegando esto encima del metraje ya
+        corregido de color. Se renderiza con `--codec=prores
+        --prores-profile=4444`, que es lo que lleva canal alfa.
+      */}
+      <Composition
+        id="CapaObra"
+        component={CapaObra}
+        durationInFrames={CUADROS_OBRA}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza C: el informe. Es la única del repertorio que no
+        lleva mapa ni metraje —es tipografía sobre papel— así que renderiza
+        rápido y comprime a casi nada: diez segundos de una panorámica vertical
+        sobre un documento quieto.
+      */}
+      <Composition
+        id="Informe"
+        component={Informe}
+        durationInFrames={CUADROS_INFORME}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
       />
 
       <Composition

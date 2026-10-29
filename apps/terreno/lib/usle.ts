@@ -64,6 +64,65 @@ export function erosividadR(precipAnual_mm: number): number {
  * orgánica ~2 %. Son la tabla clásica de Wischmeier convertida a unidades SI
  * (× 0.1317). El limo y el franco-limoso son los más erodables: partícula
  * chica, sin cohesión de arcilla y sin peso de arena.
+ *
+ * ## Faltan dos de las doce, y el primario explica por qué
+ *
+ * Esta tabla tiene **diez** claves porque `clasificarTextura` tenía diez
+ * salidas: el franco arcillo arenoso y el franco arcillo limoso no salían
+ * nunca. El 22/10/2026 el clasificador pasó a ser el de `lib/textura.ts`, que
+ * devuelve las doce del Soil Survey Manual, y entonces esas dos clases empiezan
+ * a llegar acá.
+ *
+ * Caen en `K_POR_DEFECTO`, que son 0,040. Y acá hay que ser preciso, porque la
+ * primera versión de esta nota decía que a esas dos clases la corrección no les
+ * cambiaba el número, y es falso en la mitad de su territorio:
+ *
+ * - En **392 de sus 665 celdas** la escalera vieja las llamaba «Franco» o
+ *   «Franco-arcilloso», que también valen 0,040. Ahí la K no se mueve.
+ * - En las otras **273** las llamaba «Arcillo-arenoso» (K 0,017) o
+ *   «Arcillo-limoso» (K 0,034). Ahí la K **sube**, y en el primer caso sube
+ *   2,35 veces: un franco arcillo arenoso estaba recibiendo la erodabilidad de
+ *   una arcilla arenosa. Eso es erosión **subestimada**, que es el lado del que
+ *   nadie se entera hasta que se va el suelo.
+ *
+ * En el triángulo entero la corrección del clasificador mueve la K de **1.180
+ * de las 5.151 celdas**: sube en 958 y baja en 222. El caso más repetido es el
+ * franco limoso que la escalera llamaba franco-arcilloso, que pasa de 0,040 a
+ * 0,050, un 25 % más de erosión prevista.
+ *
+ * No se inventa un valor para las dos que faltan, y el motivo salió de abrir el
+ * primario: **Wischmeier y Smith (1978), Agriculture Handbook No. 537**,
+ * *Predicting Rainfall Erosion Losses*, no publica ninguna tabla de K por clase
+ * textural. Publica dos cosas distintas:
+ *
+ * 1. El **nomograma de erodabilidad** (figura 3, p. 10), que para suelos con
+ *    menos del 70 % de limo más arena muy fina resuelve, textual:
+ *
+ *    > `100 K = 2.1 M^1.14 (10^-4) (12 - a) + 3.25 (b - 2) + 2.5 (c - 3)`
+ *    >
+ *    > donde `M = (percent si + vfs) (100 - percent c)`, `a` = materia orgánica
+ *    > %, `b` = código de estructura y `c` = clase de permeabilidad del perfil.
+ *
+ *    Arriba del 70 % de limo más arena muy fina la relación cambia y el propio
+ *    manual dice que ese cambio **no está descripto por ninguna ecuación**: lo
+ *    reflejaron con inflexiones dibujadas en las curvas. Y declara su propia
+ *    precisión: contra K medidos de 0,03 a 0,69, el 65 % de las soluciones
+ *    difería en menos de 0,02 y el 95 % en menos de 0,04.
+ *
+ *    Para correrlo faltan **tres entradas que ningún servicio de los que usa
+ *    esta app devuelve**: el porcentaje de arena muy fina (0,10–0,05 mm) por
+ *    separado —SoilGrids da la arena entera—, el código de estructura y la
+ *    clase de permeabilidad del perfil. Las tres se leen en un pozo, no en un
+ *    mapa.
+ * 2. La **tabla 1** (p. 9), con los K medidos de 23 suelos con nombre propio en
+ *    estaciones de erosión. Ahí están un «Cecil sandy clay loam» y un
+ *    «Hagerstown silty clay loam», que serían la tentación. No se usan: son
+ *    suelos, no clases, y el manual escribe en la misma página que la
+ *    erodabilidad «often varies within a standard texture class». Los cuatro
+ *    franco limosos de esa tabla van de 0,05 a 0,69, un factor catorce.
+ *
+ * Así que lo honesto es lo que está: las dos clases nuevas usan el defecto, hay
+ * un test que lo fija, y la ruta para cerrarlo tiene nombre y lista de faltantes.
  */
 const K_POR_TEXTURA: Record<string, number> = {
   'Arenoso':          0.007,
@@ -77,6 +136,37 @@ const K_POR_TEXTURA: Record<string, number> = {
   'Arcillo-limoso':   0.034,
   'Arcilloso':        0.028,
 };
+
+/**
+ * Lo que falta para correr el nomograma de AH-537 en vez de la tabla por clase.
+ * Las tres entradas se leen en un pozo; ningún servicio de los que consulta
+ * esta app las devuelve.
+ */
+export const FALTA_PARA_EL_NOMOGRAMA_K = [
+  {
+    que: 'el porcentaje de arena muy fina (0,10 a 0,05 mm) por separado',
+    donde_esta: 'análisis mecánico del horizonte superficial',
+    por_que_no_se_puede: 'SoilGrids y SSURGO informan la arena entera (2 a 0,05 mm); el nomograma pide pasar la arena muy fina de la fracción arena a la fracción limo antes de calcular M.',
+  },
+  {
+    que: 'el código de estructura del suelo (b)',
+    donde_esta: 'el mismo que usa la clasificación de suelos, definido en el nomograma',
+    por_que_no_se_puede: 'se describe mirando los agregados en un perfil abierto.',
+  },
+  {
+    que: 'la clase de permeabilidad del perfil (c)',
+    donde_esta: 'perfil completo, no la capa superficial',
+    por_que_no_se_puede: 'es del perfil entero; la Ksat que estima Saxton-Rawls por capa no es la misma cosa.',
+  },
+] as const;
+
+/** La precisión que el propio AH-537 declara para el nomograma. */
+export const PRECISION_NOMOGRAMA_K = {
+  rango_de_k_medidos: [0.03, 0.69] as const,
+  dentro_de_0_02_pct: 65,
+  dentro_de_0_04_pct: 95,
+  limite_de_validez: 'menos del 70 % de limo más arena muy fina; arriba de eso el manual no da ecuación',
+} as const;
 
 /** K para una clase textural desconocida: el franco, que es el término medio. */
 const K_POR_DEFECTO = 0.040;

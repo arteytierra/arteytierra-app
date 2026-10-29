@@ -121,6 +121,14 @@ describe('cobertura del catálogo de cultivos', () => {
    * blanca amazónica (campinarana) y el campo rupestre son suelos que no
    * sostienen cultivo aunque llueva encima.
    *
+   * Y el Pilbara es un caso distinto de los anteriores: ahí sí se cultiva y se
+   * cría, pero **este catálogo no tiene con qué decirlo**. Se armó para América,
+   * Europa, Medio Oriente, el norte de África e Indomalaya, y no trae ni una
+   * especie australiana: no hay macadamia, ni buffel, ni canola. La producción
+   * del Pilbara es carne sobre pastura nativa, así que la lista honesta está
+   * vacía hasta que alguien agregue especies al catálogo, que es trabajo de
+   * código y no de ficha.
+   *
    * Sin lista se cae al catálogo por clase Köppen, que avisa que es genérico.
    * Eso es lo que corresponde acá; inventar una lista sería peor.
    */
@@ -134,6 +142,7 @@ describe('cobertura del catálogo de cultivos', () => {
     'revillagigedo_ecosistemas_insulares', 'isla_malpelo_xerica', 'islas_desventuradas',
     'galapagos_matorral_xerico', 'pantepui_guayana_alta',
     'campinaranas_aguas_negras', 'campos_rupestres',
+    'pilbara_matorral',
   ]);
 
   it('toda ficha regional declara cultivos salvo las excluidas a propósito', () => {

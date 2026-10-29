@@ -24,6 +24,16 @@ import {
   SERIE_RIO_MAYO, fraccionHerbaceaRioMayo,
   MODELO_CON_MEMORIA_CPER, anppConMemoria, MODELO_EQUILIBRIO_CPER,
   CONTRASTE_DE_MANEJO, factorDeManejo, coberturaBasalContraProduccion,
+  CARGA_CGREC, SE_AGRUPADO_CGREC, PENDIENTES_CGREC_FIN, UMBRAL_P2E_OVERFLOW,
+  filasDeCarga, factorDeCarga, usoDelTratamiento, cargaQueMasProduce,
+  pastoreoSuperaAlDescanso,
+  SERIE_HART, VENTANAS_HART, aniosDeHart, produccionHart,
+  RELIEVE_CPER, FACTOR_DEL_RELIEVE, factorDelRelieve, mediaPonderadaPorRelieve,
+  factorDeSensibilidad,
+  MODELO_WIGHT_HANKS, YP_WIGHT_HANKS, SERIE_WIGHT_HANKS, AJUSTE_WIGHT_HANKS,
+  FALTA_PARA_CORRER_WIGHT_HANKS, rendimientoWightHanks, transpiracionPotencialWH,
+  transpiracionRealWH, evaporacionPotencialWH, evaporacionRealWH, ypDesdeUnAnio,
+  aniosDeWightHanks, dentroDeTolerancia, dentroDelIc90,
 } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
@@ -517,8 +527,8 @@ describe('el transecto de Oregón: el dosel, medido contra su propio rodal', () 
 });
 
 describe('el inventario, después de los lotes 06, 07 y 08', () => {
-  it('son veinte sitios en ocho de los quince biomas', () => {
-    expect(FORRAJE_MEDIDO).toHaveLength(20);
+  it('son veintisiete sitios en ocho de los quince biomas', () => {
+    expect(FORRAJE_MEDIDO).toHaveLength(27);
     const biomas = new Set(FORRAJE_MEDIDO.map(m => m.bioma));
     expect(biomas.size).toBe(8);
     expect(Object.keys(BIOMAS_RESOLVE)).toHaveLength(15);
@@ -533,7 +543,7 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // eso no las invalida, marca cuáles no se pueden auditar sin volver a la
     // fuente. Lo que no se admite es inventar una.
     const conCoord = FORRAJE_MEDIDO.filter(m => m.coordenada !== null);
-    expect(conCoord).toHaveLength(6);
+    expect(conCoord).toHaveLength(11);
     for (const m of conCoord) {
       // Hemisferio explícito: una coordenada sin N/S/E/W no se puede verificar,
       // y el signo es exactamente lo que se equivoca al consultar un servicio.
@@ -548,7 +558,11 @@ describe('el inventario, después de los lotes 06, 07 y 08', () => {
     // ninguno, y Ukulinga porque la coordenada publicada tiene los dos números
     // permutados. Encontrar la medición ya no es el problema: ubicarla sí.
     expect(conCoord.filter(m => m.clase_wc === null)).toHaveLength(3);
-    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(2);
+    // Los dos del CGREC entraron en 30 y son los dos mejor ubicados del archivo:
+    // el píxel da 91, 85 y 85 % de pastizal en las tres ventanas. Igual no
+    // alimentan la banda, porque sus `insumos` quedaron en `desconocido`. El lote
+    // 20 sumó las tres posiciones del relieve del CPER, con 97, 99 y 99 %.
+    expect(conCoord.filter(m => m.clase_wc === 30)).toHaveLength(7);
   });
 
   it('cuatro de los diecisiete son sotobosque, y hay que poder contarlos', () => {
@@ -1686,4 +1700,949 @@ describe('los tres pastizales sudafricanos', () => {
   function porPar(frag: string) {
     return CONTRASTE_DE_MANEJO.find(c => c.sitio.includes(frag))!;
   }
+});
+
+
+describe('lote 17 — el orden de las columnas de Río Mayo, cuestionado y resuelto', () => {
+  /** Cuadrados mínimos sobre pares (x, y). */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx = pares.reduce((a, p) => a + p[0], 0);
+    const sy = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  /**
+   * La tabla de revisiones de la ficha del ORNL DAAC, que la propia ficha dice
+   * corregida «to agree with the values reported on page 544 of Jobbagy and Sala
+   * (2000)». Año: [ANPP_shrub, ANPP_grass].
+   *
+   * Es la segunda evidencia de la regla S: el orden de los CAMPOS del archivo de
+   * datos pone `ANPP_shrub` antes que `ANPP_grass`, al revés de la tabla del
+   * artículo, y la objeción del lote 17 salió de ahí. Esta tabla las nombra sobre
+   * valores y resuelve la ambigüedad sin tener que confiar en ningún orden.
+   */
+  const ORNL_REVISION: Readonly<Record<number, readonly [number, number]>> = {
+    1983: [10.8, 10.6], 1984: [25.7, 39.0], 1985: [33.6, 41.8],
+    1986: [34.0, 29.5], 1988: [23.9, 36.4], 1993: [26.5, 30.5],
+    1994: [31.3, 23.8], 1995: [33.9, 24.9], 1996: [27.8, 14.7],
+    1997: [45.8, 17.9],
+  };
+
+  it('las diez filas pareadas coinciden con la tabla de revisión del ORNL', () => {
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    expect(pareadas).toHaveLength(10);
+    for (const f of pareadas) {
+      const par = ORNL_REVISION[f.anio];
+      expect(par, `falta el año ${f.anio}`).toBeDefined();
+      expect(f.arbustos).toBe(par![0]);
+      expect(f.gramineas).toBe(par![1]);
+    }
+  });
+
+  it('sólo esta asignación reproduce las tres regresiones publicadas', () => {
+    const g = recta(SERIE_RIO_MAYO.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(g.a).toBeCloseTo(24.6, 1);
+    expect(g.b).toBeCloseTo(0.024, 3);
+    expect(g.r2).toBeCloseTo(0.015, 2);
+
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    const a = recta(pareadas.map(f => [f.lluvia_mm, f.arbustos as number] as const));
+    expect(a.a).toBeCloseTo(10.0, 1);
+    expect(a.b).toBeCloseTo(0.125, 3);
+    expect(a.r2).toBeCloseTo(0.728, 2);
+
+    const t = recta(pareadas.map(f => [f.lluvia_mm, f.total as number] as const));
+    expect(t.a).toBeCloseTo(34.4, 1);
+    expect(t.b).toBeCloseTo(0.141, 3);
+    expect(t.r2).toBeCloseTo(0.346, 2);
+  });
+
+  it('la asignación invertida no reproduce ninguna de las tres, y delata el mecanismo', () => {
+    // Invertir el par deja la columna de quince valores siendo una quimera: cinco
+    // años de gramíneas —los que tienen un solo valor— más diez de arbustos.
+    const herbacea = SERIE_RIO_MAYO.map(f =>
+      [f.lluvia_mm, f.arbustos ?? f.gramineas] as const);
+    const h = recta(herbacea);
+    expect(h.a).toBeCloseTo(11.25, 1);
+    expect(h.b).toBeCloseTo(0.120, 3);
+    expect(h.r2).toBeCloseTo(0.454, 2);
+    // No es ni el 0,015 de una capa ni el 0,728 de la otra.
+    expect(Math.abs(h.r2 - 0.015)).toBeGreaterThan(0.3);
+    expect(Math.abs(h.r2 - 0.728)).toBeGreaterThan(0.2);
+
+    // Y la otra mitad de la inversión es la regresión de las GRAMÍNEAS calculada
+    // sobre diez años en vez de quince. Ése es el mecanismo, y por eso la
+    // pendiente queda chica y el r², casi nulo.
+    const pareadas = SERIE_RIO_MAYO.filter(f => f.arbustos !== null);
+    const l = recta(pareadas.map(f => [f.lluvia_mm, f.gramineas] as const));
+    expect(l.a).toBeCloseTo(24.36, 1);
+    expect(l.b).toBeCloseTo(0.0165, 3);
+    expect(l.r2).toBeCloseTo(0.0094, 3);
+  });
+
+  it('la normal de la ficha y la media de la serie no son el mismo número', () => {
+    // Tres cifras correctas para «la lluvia de Río Mayo»: 153 mm de normal
+    // publicada (ORNL, 1968-1990, 14 años de dato anual), 136 mm de media de 37
+    // años (Fernández et al. 1991) y 155,5 mm de promedio de estas quince filas.
+    const media = SERIE_RIO_MAYO.reduce((a, f) => a + f.lluvia_mm, 0) / SERIE_RIO_MAYO.length;
+    expect(media).toBeCloseTo(155.5, 1);
+    expect(Math.abs(media - 153)).toBeLessThan(3);
+    expect(Math.abs(media - 136) / 136).toBeGreaterThan(0.13);
+  });
+});
+
+describe('lote 18 — la carga animal, medida diecisiete años en el mismo campo', () => {
+  const siltyFin = filasDeCarga('silty', 'fin');
+  const overflowFin = filasDeCarga('overflow', 'fin');
+
+  function fila(sitio: 'silty' | 'overflow', momento: 'inicio' | 'pico' | 'fin',
+                intensidad: string) {
+    return CARGA_CGREC.find(f => f.sitio_ecologico === sitio && f.momento === momento
+      && f.intensidad === intensidad)!;
+  }
+
+  it('son treinta filas: dos sitios ecológicos, tres momentos, cinco intensidades', () => {
+    expect(CARGA_CGREC).toHaveLength(30);
+    for (const sitio of ['silty', 'overflow'] as const) {
+      for (const momento of ['inicio', 'pico', 'fin'] as const) {
+        expect(filasDeCarga(sitio, momento)).toHaveLength(5);
+      }
+    }
+    // La carga de cada intensidad es la misma en los seis bloques: es el
+    // tratamiento, no una medición por tabla.
+    const cargas = new Map<string, number>();
+    for (const f of CARGA_CGREC) {
+      if (cargas.has(f.intensidad)) expect(cargas.get(f.intensidad)).toBe(f.carga_aum_ha);
+      else cargas.set(f.intensidad, f.carga_aum_ha);
+    }
+    expect([...cargas.values()].sort((a, b) => a - b)).toEqual([0, 1.3, 2.7, 4.4, 6.9]);
+  });
+
+  it('el error estándar agrupado cuenta las columnas de producción de cada tabla', () => {
+    // La verificación de la regla S, y la que atrapa el corrimiento de columnas:
+    // la Tabla 2 trae CUATRO errores estándar y la Tabla 3, TRES. Si una lectura
+    // produce más columnas de producción que errores estándar, está corrida.
+    for (const [tabla, se] of Object.entries(SE_AGRUPADO_CGREC)) {
+      const filas = CARGA_CGREC.filter(f => f.tabla === tabla);
+      expect(filas, tabla).toHaveLength(5);
+      const columnas = (['gramineas', 'hierbas', 'arbustos', 'total'] as const)
+        .filter(c => filas.some(f => f[c] !== null)).length;
+      const conSe = (['gramineas', 'hierbas', 'arbustos', 'total'] as const)
+        .filter(c => se[c] !== null).length;
+      expect(columnas, tabla).toBe(conSe);
+    }
+    // Los silty no tienen grupo de arbustos: están contados con las hierbas.
+    expect(SE_AGRUPADO_CGREC['Tabla 3'].arbustos).toBeNull();
+    expect(CARGA_CGREC.filter(f => f.sitio_ecologico === 'silty')
+      .every(f => f.arbustos === null)).toBe(true);
+  });
+
+  it('la aritmética del resumen del artículo cierra contra la Tabla 6', () => {
+    // «the light treatment produced the most herbage (3 410 kg ha−1)... 545 kg
+    // ha−1 less on the ungrazed treatment and 909 kg ha−1 less on the extreme».
+    const liviano = fila('silty', 'fin', 'liviano').total!;
+    expect(liviano).toBe(3410);
+    expect(liviano - fila('silty', 'fin', 'sin_pastoreo').total!).toBe(545);
+    expect(liviano - fila('silty', 'fin', 'extremo').total!).toBe(909);
+  });
+
+  it('la curva tiene joroba: el descanso produce menos que el pastoreo liviano', () => {
+    const mejor = cargaQueMasProduce('silty', 'fin')!;
+    expect(mejor.intensidad).toBe('liviano');
+    expect(factorDeCarga(fila('silty', 'fin', 'liviano'))).toBeCloseTo(1.19, 2);
+    // El rango completo del manejo en el mismo sitio con el mismo clima.
+    const totales = siltyFin.map(f => f.total!).filter(t => t !== null);
+    expect(Math.max(...totales) / Math.min(...totales)).toBeCloseTo(1.36, 2);
+    // Y a partir del moderado baja monótonamente con la carga.
+    const desdeModerado = ['moderado', 'fuerte', 'extremo']
+      .map(i => fila('silty', 'fin', i).total!);
+    expect(desdeModerado[0]!).toBeGreaterThan(desdeModerado[1]!);
+    expect(desdeModerado[1]!).toBeGreaterThan(desdeModerado[2]!);
+  });
+
+  it('el coeficiente de cosecha de acequia es el tratamiento que más produjo', () => {
+    // 454 mm son 17,9 pulgadas: banda árida, cosechar 40 % con piso de 35 %.
+    const banda = bandaUso(454);
+    expect(banda.id).toBe('arido');
+    expect(banda.inicial).toBe(0.40);
+    expect(banda.min).toBe(0.35);
+    // El tratamiento liviano deja el 65 %, o sea cosecha el 35 %: el piso exacto
+    // de la banda. Y es el que más produjo de los cinco.
+    const liviano = fila('silty', 'fin', 'liviano');
+    expect(usoDelTratamiento(liviano)).toBeCloseTo(banda.min, 10);
+    expect(cargaQueMasProduce('silty', 'fin')!.intensidad).toBe('liviano');
+    // Falsable en las dos direcciones: con el 65 % y el 80 % de cosecha cae.
+    expect(usoDelTratamiento(fila('silty', 'fin', 'fuerte'))).toBeCloseTo(0.65, 10);
+    expect(1 - fila('silty', 'fin', 'fuerte').total! / liviano.total!).toBeCloseTo(0.23, 2);
+    expect(1 - fila('silty', 'fin', 'extremo').total! / liviano.total!).toBeCloseTo(0.27, 2);
+  });
+
+  it('en los bajos no hay joroba: liviano, moderado y fuerte caen adentro del error', () => {
+    // La fuente dice que no se diferencian (P > 0,05). Acá se reconstruye con su
+    // propio error estándar agrupado: la dispersión de los tres es menor que dos
+    // errores estándar, y el extremo se va bien afuera.
+    const tres = ['liviano', 'moderado', 'fuerte'].map(i => fila('overflow', 'fin', i).total!);
+    const se = SE_AGRUPADO_CGREC['Tabla 7'].total;
+    expect(Math.max(...tres) - Math.min(...tres)).toBeLessThan(2 * se);
+    const extremo = fila('overflow', 'fin', 'extremo').total!;
+    expect(Math.min(...tres) - extremo).toBeGreaterThan(2 * se);
+    // Y el no pastoreado no tiene media publicada acá, porque su producción no
+    // responde a la lluvia y la de los pastoreados sí.
+    expect(fila('overflow', 'fin', 'sin_pastoreo').total).toBeNull();
+    expect(PENDIENTES_CGREC_FIN.overflow.interactua_con_la_carga).toBe(true);
+    expect(PENDIENTES_CGREC_FIN.silty.interactua_con_la_carga).toBe(false);
+  });
+
+  it('el signo del efecto del pastoreo lo decide la lluvia del año', () => {
+    // Umbrales publicados, en cm de lluvia del año agrícola hasta el fin del
+    // pastoreo. Por debajo del suyo, la fuente dice que no se distinguen: eso es
+    // `null` y no `false`.
+    expect(pastoreoSuperaAlDescanso('moderado', 30)).toBe(true);
+    expect(pastoreoSuperaAlDescanso('moderado', 20)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('liviano', 26.70)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('liviano', 26.71)).toBe(true);
+    // El extremo es el único que puede quedar POR DEBAJO del descanso.
+    expect(pastoreoSuperaAlDescanso('extremo', 30)).toBe(false);
+    expect(pastoreoSuperaAlDescanso('extremo', 40)).toBeNull();
+    expect(pastoreoSuperaAlDescanso('extremo', 60)).toBe(true);
+    expect(UMBRAL_P2E_OVERFLOW.extremo_por_debajo_de).toBeLessThan(UMBRAL_P2E_OVERFLOW.extremo);
+    // El umbral del moderado es el más bajo de los cuatro: es el que menos
+    // lluvia necesita para superar al descanso.
+    const cuatro = [UMBRAL_P2E_OVERFLOW.liviano, UMBRAL_P2E_OVERFLOW.moderado,
+      UMBRAL_P2E_OVERFLOW.fuerte, UMBRAL_P2E_OVERFLOW.extremo];
+    expect(Math.min(...cuatro)).toBe(UMBRAL_P2E_OVERFLOW.moderado);
+  });
+
+  it('las hierbas suben con la carga y las gramíneas no', () => {
+    // Al inicio de la temporada en los bajos: el pastoreo ralea el tapiz y abre
+    // huecos para las hierbas de primavera. El total esconde el cambio.
+    const inicio = filasDeCarga('overflow', 'inicio');
+    const hierbas = inicio.map(f => f.hierbas!);
+    expect(hierbas).toEqual([115, 136, 180, 227, 282]);
+    for (let i = 1; i < hierbas.length; i += 1) {
+      expect(hierbas[i]!).toBeGreaterThan(hierbas[i - 1]!);
+    }
+    expect(hierbas[hierbas.length - 1]! / hierbas[0]!).toBeCloseTo(2.45, 1);
+    // Las gramíneas no: suben hasta el moderado y bajan después.
+    const gram = inicio.map(f => f.gramineas).filter((g): g is number => g !== null);
+    expect(gram.indexOf(Math.max(...gram))).toBe(2);
+  });
+
+  it('la escalera se queda corta en el sitio donde parecía andar bien', () => {
+    // 454 mm caen en el escalón de los 500: 1.500 kg MS/ha/año.
+    const esc = escalera(454)!;
+    expect(esc).toBe(1500);
+    const silty = siltyFin.map(f => f.total!).filter(t => t !== null);
+    expect(Math.min(...silty) / esc).toBeCloseTo(1.67, 2);
+    expect(Math.max(...silty) / esc).toBeCloseTo(2.27, 2);
+    const overflow = overflowFin.map(f => f.total).filter((t): t is number => t !== null);
+    expect(Math.min(...overflow) / esc).toBeCloseTo(2.06, 2);
+    expect(Math.max(...overflow) / esc).toBeCloseTo(2.91, 2);
+    // Y el «va bien» de la fila de Dakota era del ancho del rango de entrada: la
+    // ficha del NRCS publica 381 a 508 mm, que cruza el escalón.
+    const nrcs = FORRAJE_MEDIDO.find(m => m.sitio.includes('Loamy Upland'))!;
+    expect(escalera(nrcs.lluvia_mm_min!)).toBe(1500);
+    expect(escalera(nrcs.lluvia_mm_max!)).toBe(3000);
+  });
+
+  it('dos métodos que no se parecen dan el mismo rango en el mismo sitio ecológico', () => {
+    // La ficha del NRCS del sitio ecológico Loamy Upland de la MLRA 53B contra
+    // diecisiete años de cortar pasto en el CGREC, que está adentro de esa MLRA.
+    const nrcs = FORRAJE_MEDIDO.find(m => m.sitio.includes('Loamy Upland'))!;
+    const silty = FORRAJE_MEDIDO.find(m => m.sitio.includes('silty'))!;
+    // Los rangos se superponen.
+    expect(silty.kg_ms_ha_anio_min).toBeLessThan(nrcs.kg_ms_ha_anio_max);
+    expect(silty.kg_ms_ha_anio_max).toBeGreaterThan(nrcs.kg_ms_ha_anio_min);
+    // Y los dos tienen el mismo signo: abajo el pastoreo intenso, arriba el leve.
+    expect(nrcs.kg_ms_ha_anio_min / nrcs.kg_ms_ha_anio_max).toBeCloseTo(0.86, 2);
+    expect(silty.kg_ms_ha_anio_min / silty.kg_ms_ha_anio_max).toBeCloseTo(0.73, 2);
+  });
+
+  it('los dos sitios ecológicos son el mismo píxel y producen distinto', () => {
+    const silty = FORRAJE_MEDIDO.find(m => m.sitio.includes('silty'))!;
+    const overflow = FORRAJE_MEDIDO.find(m => m.sitio.includes('overflow'))!;
+    // Misma coordenada, misma clase, misma lluvia.
+    expect(silty.clase_wc).toBe(30);
+    expect(overflow.clase_wc).toBe(30);
+    expect(silty.coordenada).toMatch(/46°46′ N, 99°28′ W/);
+    expect(overflow.coordenada).toMatch(/46°46′ N, 99°28′ W/);
+    expect(silty.lluvia_mm_min).toBe(overflow.lluvia_mm_min);
+    // Y 1,3 veces de diferencia que el píxel no puede ver.
+    expect(overflow.kg_ms_ha_anio_max / silty.kg_ms_ha_anio_max).toBeCloseTo(1.28, 2);
+  });
+
+  it('ninguno de los dos alimenta la banda de la clase 30, y por el campo correcto', () => {
+    // `insumos` en `desconocido`: el trabajo no menciona fertilización ni riego.
+    const nuevos = FORRAJE_MEDIDO.filter(m => m.sitio.includes('Research Extension Center'));
+    expect(nuevos).toHaveLength(2);
+    expect(nuevos.every(m => m.insumos === 'desconocido')).toBe(true);
+    const banda = bandaDeClase(30)!;
+    // Siguen siendo siete sitios: los dos del CGREC no entran.
+    expect(banda.sitios).toBe(7);
+    // Y la prueba de que el filtro es el que corresponde: los dos declaran clase
+    // 30, así que si entraran por clase estarían adentro.
+    expect(nuevos.every(m => m.clase_wc === banda.clase_wc)).toBe(true);
+  });
+
+  it('las pendientes publicadas están en cm y una conversión al vuelo se nota', () => {
+    // La fuente publica kg/ha por CENTÍMETRO. 28,63 kg/ha/cm son 2,86 kg/ha/mm, o
+    // 0,286 g/m²/mm: por debajo del 0,60 entre sitios de Lauenroth y Sala y por
+    // encima del 0,13 de un año del CPER.
+    const totalSilty = PENDIENTES_CGREC_FIN.silty.total_kg_ha_cm;
+    expect(totalSilty).toBe(28.63);
+    expect(totalSilty / 10 / 10).toBeCloseTo(0.286, 3);
+    expect(totalSilty / 10 / 10).toBeLessThan(MODELO_REGIONAL_SALA_1988.pendiente);
+    expect(totalSilty / 10 / 10).toBeGreaterThan(MODELO_LARGO_PLAZO_CPER.pendiente);
+    // En los bajos los pastoreados responden más que el total de los silty, y el
+    // no pastoreado no responde: por eso hay rango y no una pendiente.
+    const ov = PENDIENTES_CGREC_FIN.overflow;
+    expect(ov.total_min_kg_ha_cm).toBeLessThan(ov.total_kg_ha_cm);
+    expect(ov.total_max_kg_ha_cm).toBeGreaterThan(ov.total_kg_ha_cm);
+  });
+});
+
+
+describe('lote 20 — la ventana de la lluvia, y el 0,95 que era un año', () => {
+  /** Cuadrados mínimos de una variable. */
+  function recta(pares: ReadonlyArray<readonly [number, number]>) {
+    const n = pares.length;
+    const sx = pares.reduce((a, p) => a + p[0], 0);
+    const sy = pares.reduce((a, p) => a + p[1], 0);
+    const sxy = pares.reduce((a, p) => a + p[0] * p[1], 0);
+    const sxx = pares.reduce((a, p) => a + p[0] * p[0], 0);
+    const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    const sst = pares.reduce((acc, p) => acc + (p[1] - my) ** 2, 0);
+    const sse = pares.reduce((acc, p) => acc + (p[1] - (a + b * p[0])) ** 2, 0);
+    return { a, b, r2: 1 - sse / sst };
+  }
+
+  /** Dos predictores, por ecuaciones normales y Gauss-Jordan. */
+  function plano(filas: ReadonlyArray<readonly [number, number, number]>) {
+    const X = filas.map(f => [1, f[0], f[1]]);
+    const ys = filas.map(f => f[2]);
+    const m = 3;
+    const A = Array.from({ length: m }, (_, r) =>
+      Array.from({ length: m }, (_, c) =>
+        X.reduce((acc, _row, i) => acc + X[i]![r]! * X[i]![c]!, 0)));
+    const b = Array.from({ length: m }, (_, r) =>
+      X.reduce((acc, _row, i) => acc + X[i]![r]! * ys[i]!, 0));
+    for (let i = 0; i < m; i += 1) {
+      let p = i;
+      for (let r = i; r < m; r += 1) if (Math.abs(A[r]![i]!) > Math.abs(A[p]![i]!)) p = r;
+      [A[i], A[p]] = [A[p]!, A[i]!];
+      [b[i], b[p]] = [b[p]!, b[i]!];
+      const d = A[i]![i]!;
+      A[i] = A[i]!.map(v => v / d);
+      b[i] = b[i]! / d;
+      for (let r = 0; r < m; r += 1) {
+        if (r === i) continue;
+        const f = A[r]![i]!;
+        A[r] = A[r]!.map((v, c) => v - f * A[i]![c]!);
+        b[r] = b[r]! - f * b[i]!;
+      }
+    }
+    const my = ys.reduce((a, y) => a + y, 0) / ys.length;
+    const sst = ys.reduce((a, y) => a + (y - my) ** 2, 0);
+    const sse = filas.reduce((a, f, i) =>
+      a + (ys[i]! - (b[0]! + b[1]! * f[0] + b[2]! * f[1])) ** 2, 0);
+    return { coef: b, r2: 1 - sse / sst };
+  }
+
+  const siete = aniosDeHart();
+
+  it('la serie tiene los nueve años de la tabla y los siete de las regresiones', () => {
+    expect(SERIE_HART).toHaveLength(9);
+    expect(siete).toHaveLength(7);
+    expect(siete.map(f => f.anio)).toEqual([1975, 1976, 1977, 1978, 1979, 1982, 1983]);
+    // 1980 no se midió y 1981 tiene lluvia pero no producción.
+    expect(SERIE_HART.find(f => f.anio === 1981)!.arenosos).toBeNull();
+    expect(SERIE_HART.find(f => f.anio === 1981)!.mar_sep_mm).toBe(376);
+  });
+
+  it('las medias de cinco años de la Tabla 1 salen de la Tabla 2', () => {
+    // El caso resuelto: la Tabla 1 publica 1.100 para Ascalon y 930, 890 y 840
+    // para los tres suelos arenosos, cuyo promedio es 887.
+    const cinco = SERIE_HART.filter(f => f.anio >= 1975 && f.anio <= 1979);
+    expect(cinco).toHaveLength(5);
+    const mAsc = cinco.reduce((a, f) => a + (f.ascalon as number), 0) / 5;
+    const mAre = cinco.reduce((a, f) => a + (f.arenosos as number), 0) / 5;
+    expect(mAsc).toBeCloseTo(1110, 0);
+    expect(Math.abs(mAsc - 1100)).toBeLessThan(11);
+    expect(mAre).toBeCloseTo(886, 0);
+    expect(Math.abs(mAre - (930 + 890 + 840) / 3)).toBeLessThan(2);
+    // Y Ascalon le gana a los arenosos todos los años 1975-1978, como dice el texto.
+    for (const f of cinco.filter(x => x.anio <= 1978)) {
+      expect(f.ascalon!).toBeGreaterThan(f.arenosos!);
+    }
+  });
+
+  it('las tres ecuaciones publicadas salen de las siete filas', () => {
+    // Ésta es la verificación que vale: si una celda de la Tabla 2 estuviera mal,
+    // ninguna de las tres cerraría.
+    const are = recta(siete.map(f => [f.mar_abr_mm as number, f.arenosos as number] as const));
+    expect(are.a).toBeCloseTo(772, -1);
+    expect(are.b).toBeCloseTo(2.49, 1);
+    // El reajuste da 0,8673 y la tabla imprime 0,86: dos decimales. Se tolera el
+    // tercer dígito y no se toca ninguna fila para que cierre, igual que con el
+    // 56,25 contra 56,2 de Río Mayo.
+    expect(Math.abs(are.r2 - 0.86)).toBeLessThan(0.01);
+
+    const asc = recta(siete.map(f => [f.mar_abr_mm as number, f.ascalon as number] as const));
+    expect(asc.a).toBeCloseTo(1083, -1);
+    expect(asc.b).toBeCloseTo(0.60, 1);
+    expect(asc.r2).toBeCloseTo(0.32, 2);
+
+    const mult = plano(siete.map(f =>
+      [f.mar_abr_mm as number, f.may_sep_mm as number, f.arenosos as number] as const));
+    expect(mult.coef[0]).toBeCloseTo(497, -2);
+    expect(mult.coef[1]).toBeCloseTo(2.61, 1);
+    expect(mult.coef[2]).toBeCloseTo(0.92, 1);
+    expect(mult.r2).toBeCloseTo(0.95, 2);
+  });
+
+  it('el r² de 0,86 lo pone 1983 entero, y sacar cualquier otro año no lo mueve', () => {
+    // Éste es el hallazgo del lote 20 y es la razón por la que no se codifica
+    // ninguna de las ocho ecuaciones.
+    const sinUno = (anio: number) => recta(
+      siete.filter(f => f.anio !== anio)
+        .map(f => [f.mar_abr_mm as number, f.arenosos as number] as const));
+
+    const sin1983 = sinUno(1983);
+    expect(sin1983.r2).toBeLessThan(0.01);
+    expect(sin1983.b).toBeLessThan(0);
+
+    for (const anio of [1975, 1976, 1977, 1978, 1979, 1982]) {
+      const s = sinUno(anio);
+      expect(s.r2, `sin ${anio}`).toBeGreaterThan(0.85);
+      expect(s.b, `sin ${anio}`).toBeGreaterThan(2.4);
+    }
+
+    // Y la palanca se ve en los datos: 250 mm contra 18 a 78 de los otros seis.
+    const p1983 = SERIE_HART.find(f => f.anio === 1983)!;
+    const otros = siete.filter(f => f.anio !== 1983).map(f => f.mar_abr_mm as number);
+    expect(p1983.mar_abr_mm).toBe(250);
+    expect(Math.max(...otros)).toBe(78);
+    expect(p1983.mar_abr_mm! / Math.max(...otros)).toBeGreaterThan(3);
+    // La producción de ese año también se sale de la banda de los otros seis.
+    const prodOtros = siete.filter(f => f.anio !== 1983).map(f => f.arenosos as number);
+    expect(p1983.arenosos! / Math.max(...prodOtros)).toBeGreaterThan(1.4);
+  });
+
+  it('la identidad de la tabla cierra en cinco de siete, y las dos que no se dejan', () => {
+    // marzo-septiembre debería ser marzo-abril más mayo-septiembre, y no lo es en
+    // 1975 ni en 1983. No se "arregla" ninguna fila: el reajuste de arriba
+    // demuestra que los valores son los que la tabla tiene, y los pies de la
+    // tabla explican por qué —las filas no vienen del mismo pluviómetro—.
+    const cierran = siete.filter(f =>
+      (f.mar_abr_mm as number) + (f.may_sep_mm as number) === f.mar_sep_mm);
+    expect(cierran.map(f => f.anio)).toEqual([1976, 1977, 1978, 1979, 1982]);
+    const no = siete.filter(f => !cierran.includes(f)).map(f => f.anio);
+    expect(no).toEqual([1975, 1983]);
+  });
+
+  it('las ocho ecuaciones de la Tabla 3 están, y el suelo decide si la lluvia sirve', () => {
+    expect(VENTANAS_HART).toHaveLength(8);
+    const are = VENTANAS_HART.filter(v => v.grupo === 'subsuelo_arenoso');
+    const asc = VENTANAS_HART.filter(v => v.grupo === 'subsuelo_limoso');
+    expect(are).toHaveLength(4);
+    expect(asc).toHaveLength(4);
+    // En el arenoso hay significativas; en el limoso, NINGUNA.
+    expect(are.filter(v => v.significativa)).toHaveLength(3);
+    expect(asc.filter(v => v.significativa)).toHaveLength(0);
+    // El máximo r² del arenoso es la múltiple, y le gana a sumar todo junto.
+    const mejor = are.reduce((a, b) => (b.r2 > a.r2 ? b : a));
+    expect(mejor.ventana).toBe('las dos juntas');
+    expect(mejor.r2).toBe(0.95);
+    expect(are.find(v => v.ventana === 'marzo-agosto')!.r2)
+      .toBeLessThan(are.find(v => v.ventana === 'marzo-abril')!.r2);
+    // Y el r² del limoso nunca pasa el del arenoso en la misma ventana.
+    for (const v of asc) {
+      const par = are.find(x => x.ventana === v.ventana)!;
+      expect(v.r2, v.ventana).toBeLessThan(par.r2);
+    }
+  });
+
+  it('la lluvia de primavera pesa cinco veces más por milímetro que la de verano', () => {
+    const primavera = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'marzo-abril')!;
+    const verano = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'mayo-agosto')!;
+    expect(primavera.pendiente_1 / verano.pendiente_1).toBeCloseTo(5.1, 1);
+    // Y marzo-abril es sólo una quinta parte de la lluvia de la temporada.
+    const total = siete.reduce((a, f) => a + (f.mar_abr_mm as number) + (f.may_sep_mm as number), 0);
+    const mar = siete.reduce((a, f) => a + (f.mar_abr_mm as number), 0);
+    expect(mar / total).toBeCloseTo(0.22, 2);
+  });
+
+  it('produccionHart evalúa las ecuaciones publicadas y la múltiple usa las dos', () => {
+    const mult = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'las dos juntas')!;
+    const f = SERIE_HART.find(x => x.anio === 1983)!;
+    // 497 + 2,61 × 250 + 0,92 × 286 = 1.412,62, contra 1.430 medidos.
+    const est = produccionHart(mult, f.mar_abr_mm as number, f.may_sep_mm as number);
+    expect(est).toBeCloseTo(1412.62, 2);
+    expect(Math.abs(est - (f.arenosos as number)) / (f.arenosos as number)).toBeLessThan(0.02);
+    // Una simple ignora la segunda lluvia.
+    const simple = VENTANAS_HART.find(
+      v => v.grupo === 'subsuelo_arenoso' && v.ventana === 'marzo-abril')!;
+    expect(produccionHart(simple, 100, 999)).toBe(produccionHart(simple, 100));
+  });
+
+  it('las cinco entradas nuevas no publican lluvia anual, y es el punto', () => {
+    // La regla W del encargo salió de esto: los trabajos que se toman en serio la
+    // ventana dejan de publicar el año.
+    const nuevas = FORRAJE_MEDIDO.filter(m =>
+      m.sitio.includes('Cheyenne') || m.sitio.includes('de la catena'));
+    expect(nuevas).toHaveLength(5);
+    for (const m of nuevas) {
+      expect(m.lluvia_mm_min, m.sitio).toBeNull();
+      expect(m.lluvia_mm_max, m.sitio).toBeNull();
+      expect(m.lluvia_que_es, m.sitio).toBeNull();
+    }
+    // Y la invariante del tipo: `lluvia_que_es` en null sólo si la lluvia es null.
+    for (const m of FORRAJE_MEDIDO) {
+      if (m.lluvia_que_es === null) expect(m.lluvia_mm_min, m.sitio).toBeNull();
+      else expect(m.lluvia_mm_min, m.sitio).not.toBeNull();
+    }
+  });
+});
+
+describe('lote 20 — la posición en el relieve, que es lo único que el DEM ya sabe', () => {
+  const loma = RELIEVE_CPER.find(p => p.posicion === 'loma')!;
+  const ladera = RELIEVE_CPER.find(p => p.posicion === 'ladera')!;
+  const bajo = RELIEVE_CPER.find(p => p.posicion === 'bajo_con_aporte')!;
+
+  it('son las tres posiciones y el área cierra en cien', () => {
+    expect(RELIEVE_CPER).toHaveLength(3);
+    expect(RELIEVE_CPER.reduce((a, p) => a + p.area_pct, 0)).toBe(100);
+    expect(loma.area_pct).toBe(50);
+    // La producción sube cuesta abajo, que es el resultado central.
+    expect(ladera.anpp_media).toBeGreaterThan(loma.anpp_media);
+    expect(bajo.anpp_media).toBeGreaterThan(ladera.anpp_media);
+  });
+
+  it('el bajo produce 1,75 veces la loma, y el factor publicado va de 1,5 a 2,0', () => {
+    expect(factorDelRelieve(bajo)).toBeCloseTo(1.75, 2);
+    expect(factorDelRelieve(ladera)).toBeCloseTo(1.11, 2);
+    expect(factorDelRelieve(loma)).toBe(1);
+    // Lo que la fuente publica como comparación: 57 % más que la ladera y 75 %
+    // más que la loma.
+    expect(bajo.anpp_media / ladera.anpp_media - 1).toBeCloseTo(0.57, 2);
+    expect(bajo.anpp_media / loma.anpp_media - 1).toBeCloseTo(0.75, 2);
+    // Y los cuatro ecosistemas que le dan rango al factor.
+    expect(FACTOR_DEL_RELIEVE).toHaveLength(4);
+    const fs = FACTOR_DEL_RELIEVE.map(f => f.factor);
+    expect(Math.min(...fs)).toBe(1.5);
+    expect(Math.max(...fs)).toBe(2.0);
+    expect(FACTOR_DEL_RELIEVE[0]!.factor).toBeCloseTo(factorDelRelieve(bajo), 2);
+  });
+
+  it('el bajo es más del doble de sensible a la lluvia, y eso NO es el mismo factor', () => {
+    expect(factorDeSensibilidad(bajo)).toBeCloseTo(2.62, 2);
+    expect(factorDeSensibilidad(ladera)).toBeCloseTo(1.24, 2);
+    // «more than twice as sensitive», textual de la fuente.
+    expect(bajo.sens_lluvia).toBeGreaterThan(2 * ladera.sens_lluvia);
+    expect(bajo.sens_lluvia).toBeGreaterThan(2 * loma.sens_lluvia);
+    // Y el factor de sensibilidad es MÁS grande que el de nivel: 2,62 contra 1,75.
+    expect(factorDeSensibilidad(bajo)).toBeGreaterThan(factorDelRelieve(bajo));
+    // Los días secos pegan al revés y también más fuerte en el bajo.
+    expect(bajo.sens_dias_secos).toBeLessThan(0);
+    expect(bajo.sens_dias_secos / loma.sens_dias_secos).toBeCloseTo(2.88, 2);
+  });
+
+  it('las tres posiciones convergen en el año malo y divergen en el bueno', () => {
+    // Es la consecuencia de que la sensibilidad cambie con la posición, y la
+    // razón por la que un bajo no es un seguro contra la sequía.
+    const peor = bajo.anpp_min / loma.anpp_min;
+    const mejor = bajo.anpp_max / loma.anpp_max;
+    expect(peor).toBeCloseTo(1.51, 2);
+    expect(mejor).toBeCloseTo(1.82, 2);
+    expect(mejor).toBeGreaterThan(peor);
+    // En el peor año la loma y la ladera dieron exactamente lo mismo.
+    expect(loma.anpp_min).toBe(ladera.anpp_min);
+  });
+
+  it('entre años se mueve cuatro veces más que entre posiciones', () => {
+    // El dato que pone en escala todo este archivo.
+    for (const p of RELIEVE_CPER) {
+      expect(Math.round(p.anpp_max / p.anpp_min), p.posicion).toBe(p.veces_entre_anios);
+      expect(p.veces_entre_anios).toBeGreaterThanOrEqual(13);
+    }
+    const maxEntreAnios = Math.max(...RELIEVE_CPER.map(p => p.veces_entre_anios));
+    expect(maxEntreAnios).toBe(16);
+    // El máximo entre posiciones dentro de un año que publica la fuente es 1992:
+    // loma 46,5 contra bajo 177,8, que son 3,8 veces y la fuente llama «4-fold».
+    const espacial = 177.8 / 46.5;
+    expect(Math.round(espacial)).toBe(4);
+    expect(maxEntreAnios / espacial).toBeGreaterThan(4);
+  });
+
+  it('las dos series del CPER no cierran entre sí, y la diferencia es 1,42', () => {
+    // La media ponderada por área de las tres posiciones contra la columna de
+    // ANPP de la serie de cincuenta años. Mismo sitio, las dos en estufa-seco.
+    const ponderada = mediaPonderadaPorRelieve();
+    expect(ponderada).toBeCloseTo(68.4, 1);
+    const cincuenta = sitio('Central Plains Experimental Range, estepa de pasto corto');
+    expect(cincuenta.kg_ms_ha_anio_tipico).toBe(970);
+    expect((cincuenta.kg_ms_ha_anio_tipico as number) / 10 / ponderada).toBeCloseTo(1.42, 2);
+    // Y la serie nueva llega mucho más abajo que la vieja: 94 contra 620 kg/ha.
+    expect(gM2AKgHa(loma.anpp_min)).toBe(94);
+    expect((cincuenta.kg_ms_ha_anio_min) / gM2AKgHa(loma.anpp_min)).toBeCloseTo(6.6, 1);
+  });
+
+  it('las cuatro entradas del CPER son el mismo sitio y ninguna alimenta la banda', () => {
+    const cper = FORRAJE_MEDIDO.filter(m => m.sitio.includes('Central Plains Experimental Range'));
+    expect(cper).toHaveLength(4);
+    expect(cper.every(m => m.insumos === 'desconocido')).toBe(true);
+    expect(cper.every(m => m.clase_wc === 30)).toBe(true);
+    expect(cper.every(m => m.bioma === 'resolve_pastizal_templado')).toBe(true);
+    // Las tres del relieve comparten la coordenada publicada por Hoover et al.,
+    // que no es la misma que publica Lauenroth y Sala: 3 minutos de longitud.
+    const relieve = cper.filter(m => m.sitio.includes('de la catena'));
+    expect(relieve).toHaveLength(3);
+    expect(relieve.every(m => m.coordenada!.includes('40°50′ N, 104°43′ W'))).toBe(true);
+    expect(cper[0]!.coordenada).toContain('40°49′ N, 104°46′ W');
+    // Y la banda de la clase 30 NO se movió al entrar tres entradas más de 30.
+    const banda = bandaDeClase(30)!;
+    expect(banda.sitios).toBe(7);
+  });
+
+  it('las tres entradas montadas llevan los números de la fuente', () => {
+    const porNombre = (frag: string) => sitio(frag);
+    expect(porNombre('LOMA de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(loma.anpp_media));
+    expect(porNombre('LADERA de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(ladera.anpp_media));
+    expect(porNombre('BAJO CON APORTE de la catena').kg_ms_ha_anio_tipico).toBe(gM2AKgHa(bajo.anpp_media));
+    expect(porNombre('LOMA de la catena').kg_ms_ha_anio_min).toBe(gM2AKgHa(loma.anpp_min));
+    expect(porNombre('BAJO CON APORTE de la catena').kg_ms_ha_anio_max).toBe(gM2AKgHa(bajo.anpp_max));
+    // Y las tres son npp_herbacea, que no descuenta uso admisible.
+    for (const frag of ['LOMA de la catena', 'LADERA de la catena', 'BAJO CON APORTE de la catena']) {
+      expect(TIPOS_SIN_DESCONTAR).toContain(porNombre(frag).tipo);
+    }
+  });
+});
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIGHT Y HANKS (1981): EL MODELO, VERIFICADO CONTRA SU PROPIA TABLA 1
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Wight y Hanks (1981), el modelo de balance hídrico', () => {
+  const sidney = aniosDeWightHanks('sidney');
+  const mandan = aniosDeWightHanks('mandan');
+
+  it('la serie son los quince años de prueba, doce en Sidney y tres en Mandan', () => {
+    expect(SERIE_WIGHT_HANKS).toHaveLength(15);
+    expect(sidney).toHaveLength(12);
+    expect(mandan).toHaveLength(3);
+    expect(AJUSTE_WIGHT_HANKS.anios_de_prueba).toBe(15);
+    // Sidney va de 1967 a 1978 sin saltos, aunque el título de la Tabla 1
+    // diga «for 1976-1978», que es una errata del trabajo.
+    expect(sidney.map(a => a.anio)).toEqual(
+      [1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975, 1976, 1977, 1978]);
+    expect(mandan.map(a => a.anio)).toEqual([1958, 1959, 1960]);
+  });
+
+  /**
+   * El caso resuelto de este módulo, y es fuerte: la Tabla 1 publica `Tp` y `T`
+   * además del rendimiento, así que la ecuación 1 se reproduce sin correr el
+   * balance. Si alguien toca `rendimientoWightHanks` o un número de la tabla,
+   * esto no cierra.
+   */
+  it('la ecuación 1 reproduce los doce rendimientos publicados de Sidney con menos de 0,5 % de desvío', () => {
+    let peor = 0;
+    for (const a of sidney) {
+      const y = rendimientoWightHanks(YP_WIGHT_HANKS.sidney, a.t_mm!, a.tp_mm!)!;
+      const desvio = Math.abs(y - a.rend_modelo_kg_ha) / a.rend_modelo_kg_ha;
+      expect(desvio, `${a.anio}`).toBeLessThan(0.005);
+      peor = Math.max(peor, desvio);
+    }
+    // El peor es 1978, con 0,44 %. El resto del desvío es el redondeo de T y Tp
+    // a milímetros enteros en la tabla.
+    expect(peor).toBeGreaterThan(0.004);
+    expect(peor).toBeLessThan(0.005);
+  });
+
+  it('un año concreto a mano, para que el cálculo quede a la vista', () => {
+    // 1977, el año más seco de la serie: Tp 97 mm, T 39 mm, Yp 1.300 kg/ha.
+    // 1300 × 39/97 = 522,68 → la tabla publica 522.
+    const y = rendimientoWightHanks(1300, 39, 97)!;
+    expect(y).toBeCloseTo(522.68, 1);
+    expect(Math.round(y)).toBe(523);
+    expect(sidney.find(a => a.anio === 1977)!.rend_modelo_kg_ha).toBe(522);
+  });
+
+  it('sin demanda no hay cociente: Tp en cero devuelve null y no Infinity', () => {
+    expect(rendimientoWightHanks(1300, 0, 0)).toBeNull();
+    expect(rendimientoWightHanks(1300, 10, 0)).toBeNull();
+    // Y con T en cero el rendimiento es cero, que sí es una respuesta.
+    expect(rendimientoWightHanks(1300, 0, 100)).toBe(0);
+  });
+
+  /**
+   * El hallazgo del lote. El resumen dice 12 de 15 y su propia tabla dice 11.
+   * Verificado por los dos denominadores posibles.
+   */
+  it('el resumen dice 12 de 15 dentro del 10 % y la tabla da 11', () => {
+    const r = dentroDeTolerancia(0.10);
+    expect(r.total).toBe(15);
+    expect(r.dentro).toBe(11);
+    expect(AJUSTE_WIGHT_HANKS.dentro_del_10_pct_segun_el_resumen).toBe(12);
+    expect(AJUSTE_WIGHT_HANKS.dentro_del_10_pct_contado).toBe(11);
+    // Los cuatro que quedan afuera, con nombre y año.
+    expect(r.fuera.map(a => a.anio).sort()).toEqual([1959, 1973, 1974, 1977]);
+    expect(r.fuera.filter(a => a.sitio === 'sidney')).toHaveLength(3);
+    expect(r.fuera.filter(a => a.sitio === 'mandan')).toHaveLength(1);
+  });
+
+  it('el recuento no cambia si el denominador es el predicho en vez del medido', () => {
+    const fueraSobrePredicho = SERIE_WIGHT_HANKS.filter(a =>
+      Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) / a.rend_modelo_kg_ha > 0.10);
+    expect(fueraSobrePredicho).toHaveLength(4);
+    expect(fueraSobrePredicho.map(a => a.anio).sort()).toEqual([1959, 1973, 1974, 1977]);
+  });
+
+  it('el otro criterio posible, el intervalo del 90 %, da todavía menos: 9 de 12', () => {
+    const r = dentroDelIc90();
+    expect(r.total).toBe(12);   // sólo Sidney publica el intervalo
+    expect(r.dentro).toBe(9);
+    expect(r.fuera.map(a => a.anio)).toEqual([1973, 1974, 1977]);
+  });
+
+  it('el año que se pasa por menos es 1977, por 4 kg/ha: la hipótesis del doceavo', () => {
+    const a = sidney.find(x => x.anio === 1977)!;
+    const techo = a.rend_campo_kg_ha + a.ic90_campo_kg_ha!;
+    expect(techo).toBe(518);
+    expect(a.rend_modelo_kg_ha).toBe(522);
+    expect(a.rend_modelo_kg_ha - techo).toBe(4);
+    // Y los otros dos se pasan por dos órdenes de magnitud más.
+    for (const anio of [1973, 1974]) {
+      const o = sidney.find(x => x.anio === anio)!;
+      expect(o.rend_modelo_kg_ha - (o.rend_campo_kg_ha + o.ic90_campo_kg_ha!))
+        .toBeGreaterThan(170);
+    }
+  });
+
+  /**
+   * La forma del error, que es lo que decide si este modelo se puede usar para
+   * dimensionar. En promedio no se equivoca; en los años de sequía temprana
+   * sobreestima, que es la dirección cara.
+   */
+  it('en promedio acierta —+5,2 %— y la tabla publica esa misma media', () => {
+    const mediaModelo = sidney.reduce((s, a) => s + a.rend_modelo_kg_ha, 0) / 12;
+    const mediaCampo = sidney.reduce((s, a) => s + a.rend_campo_kg_ha, 0) / 12;
+    // La fila «Mean» de la Tabla 1 publica 1065 y 1012.
+    expect(Math.round(mediaModelo)).toBe(1065);
+    expect(Math.round(mediaCampo)).toBe(1012);
+    expect((mediaModelo / mediaCampo - 1) * 100).toBeCloseTo(5.2, 1);
+    // Seis y seis: el sesgo promedio no viene de una deriva sistemática.
+    expect(sidney.filter(a => a.rend_modelo_kg_ha > a.rend_campo_kg_ha)).toHaveLength(6);
+    expect(sidney.filter(a => a.rend_modelo_kg_ha < a.rend_campo_kg_ha)).toHaveLength(6);
+  });
+
+  it('los dos años peores fallan los dos para arriba, y son los que el trabajo nombra', () => {
+    const e = (anio: number) => {
+      const a = sidney.find(x => x.anio === anio)!;
+      return (a.rend_modelo_kg_ha / a.rend_campo_kg_ha - 1) * 100;
+    };
+    expect(e(1973)).toBeCloseTo(43.5, 0);
+    expect(e(1974)).toBeCloseTo(26.5, 0);
+    // Y son los dos errores más grandes de los doce, en valor absoluto.
+    const ordenados = sidney
+      .map(a => ({ anio: a.anio, err: Math.abs(a.rend_modelo_kg_ha / a.rend_campo_kg_ha - 1) }))
+      .sort((x, y) => y.err - x.err);
+    expect(ordenados.slice(0, 2).map(x => x.anio).sort()).toEqual([1973, 1974]);
+  });
+
+  /**
+   * `Yp = Y·Tp/T` visto al revés: el año cuyo Yp se despega es el año donde el
+   * modelo falla. Es una prueba de la coherencia interna del trabajo.
+   */
+  it('el Yp despejado año por año delata los mismos dos años malos', () => {
+    const yps = sidney.map(a => ({
+      anio: a.anio,
+      yp: ypDesdeUnAnio(a.rend_campo_kg_ha, a.tp_mm!, a.t_mm!)!,
+    }));
+    const media = yps.reduce((s, x) => s + x.yp, 0) / yps.length;
+    expect(Math.round(media)).toBe(1230);
+    expect(Math.round(Math.max(...yps.map(x => x.yp)))).toBe(1372);
+    // Los dos más bajos son 1973 y 1974, los mismos del test anterior.
+    const dosMasBajos = [...yps].sort((a, b) => a.yp - b.yp).slice(0, 2);
+    expect(dosMasBajos.map(x => x.anio).sort()).toEqual([1973, 1974]);
+    expect(Math.round(dosMasBajos[0]!.yp)).toBe(908);
+    // Y el Yp publicado queda arriba de la media despejada, no en ella.
+    expect(YP_WIGHT_HANKS.sidney).toBeGreaterThan(media);
+  });
+
+  it('despejar Yp con T en cero devuelve null', () => {
+    expect(ypDesdeUnAnio(1000, 100, 0)).toBeNull();
+  });
+
+  it('las ecuaciones 2, 3, 4, 6 y 7 hacen lo que dicen', () => {
+    // Eq. 2: Tp = b · Kc · Eo
+    expect(transpiracionPotencialWH(0.5, 0.85, 8)).toBeCloseTo(3.4, 6);
+    // Eq. 3: con c = 1 la relación es lineal en SWS/AW.
+    expect(transpiracionRealWH(5, 30, 60)).toBeCloseTo(2.5, 6);
+    expect(transpiracionRealWH(5, 60, 60)).toBeCloseTo(5, 6);
+    // Eq. 4: con c = 1 nunca se activa, porque SWS no puede exceder AW.
+    expect(transpiracionRealWH(5, 90, 60)).toBeCloseTo(5, 6);
+    // Con un c menor, la ecuación 4 sí aparece: es el caso del trigo (0,5).
+    expect(transpiracionRealWH(5, 30, 60, 0.5)).toBeCloseTo(5, 6);
+    expect(transpiracionRealWH(5, 15, 60, 0.5)).toBeCloseTo(2.5, 6);
+    // Capa sin capacidad: null, no cero.
+    expect(transpiracionRealWH(5, 0, 0)).toBeNull();
+    // Eq. 7: Ep = Kc·Eo − Tp, y nunca negativo.
+    expect(evaporacionPotencialWH(0.85, 8, 3.4)).toBeCloseTo(3.4, 6);
+    expect(evaporacionPotencialWH(0.85, 8, 10)).toBe(0);
+    // Eq. 6: E = Ep · t^(−1/2), con el día de la lluvia en Ep entero.
+    expect(evaporacionRealWH(4, 1)).toBeCloseTo(4, 6);
+    expect(evaporacionRealWH(4, 0)).toBeCloseTo(4, 6);
+    expect(evaporacionRealWH(4, 4)).toBeCloseTo(2, 6);
+    expect(evaporacionRealWH(4, 9)).toBeCloseTo(4 / 3, 6);
+  });
+
+  it('el Kc de 0,85 es el promedio del rango estacional que el trabajo publica', () => {
+    const { primavera_otonio, plena_temporada } = MODELO_WIGHT_HANKS.kc_rango_estacional;
+    expect(primavera_otonio).toBe(0.7);
+    expect(plena_temporada).toBe(0.9);
+    expect(MODELO_WIGHT_HANKS.kc).toBeGreaterThan(primavera_otonio);
+    expect(MODELO_WIGHT_HANKS.kc).toBeLessThan(plena_temporada);
+    // No es el promedio aritmético de los extremos (0,80): es el promedio
+    // ponderado por la temporada, y el trabajo dice que dio tan bien como usar
+    // la curva completa.
+    expect(MODELO_WIGHT_HANKS.kc).not.toBe((primavera_otonio + plena_temporada) / 2);
+  });
+
+  it('el c de 1,0 es más alto que los dos valores que la literatura usó antes', () => {
+    expect(MODELO_WIGHT_HANKS.c).toBe(1.0);
+    expect(MODELO_WIGHT_HANKS.c_en_la_literatura.trigo).toBe(0.5);
+    expect(MODELO_WIGHT_HANKS.c_en_la_literatura.pastizal_nativo).toBe(0.7);
+    for (const v of Object.values(MODELO_WIGHT_HANKS.c_en_la_literatura)) {
+      expect(MODELO_WIGHT_HANKS.c).toBeGreaterThan(v);
+    }
+    // Y con c = 1 la ecuación 4 no se activa nunca, que es lo que el trabajo dice.
+    expect(MODELO_WIGHT_HANKS.c_es_sensible).toBe(false);
+  });
+
+  it('el perfil son tres capas de 30 cm, que es por qué se pudo comparar con el campo', () => {
+    expect(MODELO_WIGHT_HANKS.capas_cm).toEqual([30, 30, 30]);
+    // El agua de suelo del campo se midió con sonda de neutrones cada 30 cm:
+    // las capas del modelo se eligieron para que las dos series fueran
+    // comparables, no por una razón edafológica.
+    expect(MODELO_WIGHT_HANKS.capas_cm.reduce((s, c) => s + c, 0)).toBe(90);
+  });
+
+  it('la escorrentía es cero por supuesto declarado, y eso acota el modelo', () => {
+    expect(MODELO_WIGHT_HANKS.escorrentia).toBe(0);
+    expect(MODELO_WIGHT_HANKS.escorrentia_dicho_asi).toContain('no runoff');
+    // Es lo que lo vuelve incompatible con la catena de Hoover et al. sin
+    // modificarlo: ahí el bajo produce 1,75× la loma justamente porque recibe
+    // escorrentía de arriba.
+    const bajo = RELIEVE_CPER.find(p => p.posicion === 'bajo_con_aporte')!;
+    expect(factorDelRelieve(bajo)).toBeCloseTo(1.75, 2);
+  });
+
+  it('el r² de 0,74 es contra la recta 1:1, que es más exigente que la de regresión', () => {
+    expect(AJUSTE_WIGHT_HANKS.r2_rendimiento_sidney).toBe(0.74);
+    expect(AJUSTE_WIGHT_HANKS.r2_agua_de_suelo_sidney).toBe(0.91);
+    expect(AJUSTE_WIGHT_HANKS.r2_contra).toContain('1:1');
+    // El agua de suelo la predice mejor que el rendimiento, que es lo esperable:
+    // el rendimiento agrega el paso de T/Tp a Y, con el Yp de sitio adentro.
+    expect(AJUSTE_WIGHT_HANKS.r2_agua_de_suelo_sidney)
+      .toBeGreaterThan(AJUSTE_WIGHT_HANKS.r2_rendimiento_sidney);
+  });
+
+  it('Mandan no publica el balance: sólo el resultado, y todas sus columnas intermedias son null', () => {
+    for (const a of mandan) {
+      expect(a.kc_eo_mm).toBeNull();
+      expect(a.tp_mm).toBeNull();
+      expect(a.t_mm).toBeNull();
+      expect(a.pptn_periodo_mm).toBeNull();
+      expect(a.ic90_campo_kg_ha).toBeNull();
+      // Pero los dos rendimientos sí están: es lo que el texto da en prosa.
+      expect(a.rend_modelo_kg_ha).toBeGreaterThan(0);
+      expect(a.rend_campo_kg_ha).toBeGreaterThan(0);
+    }
+    // Y por eso la ecuación 1 no se puede verificar en Mandan.
+    expect(mandan.every(a => a.tp_mm === null)).toBe(true);
+  });
+
+  it('el Yp de Mandan es 2,1 veces el de Sidney, que es casi todo el rango de los quince años', () => {
+    const r = YP_WIGHT_HANKS.mandan / YP_WIGHT_HANKS.sidney;
+    expect(r).toBeCloseTo(2.12, 2);
+    // Y se ve en los rendimientos: el peor año de Mandan supera al mejor de Sidney.
+    const mejorSidney = Math.max(...sidney.map(a => a.rend_campo_kg_ha));
+    const peorMandan = Math.min(...mandan.map(a => a.rend_campo_kg_ha));
+    expect(peorMandan).toBeGreaterThan(mejorSidney);
+  });
+
+  /**
+   * Lo que falta para correr el modelo, testeado como contrato: si alguien
+   * «completa» una de estas cuatro con un número inventado, acá se nota.
+   */
+  it('las cuatro cosas que faltan están nombradas, y tres son figuras', () => {
+    expect(FALTA_PARA_CORRER_WIGHT_HANKS).toHaveLength(4);
+    const figuras = FALTA_PARA_CORRER_WIGHT_HANKS.filter(
+      f => f.por_que_no_se_puede.toLowerCase().includes('figura'));
+    expect(figuras).toHaveLength(3);
+    // La cuarta no es una figura: es el Yp, que es de sitio.
+    const cuarta = FALTA_PARA_CORRER_WIGHT_HANKS.find(f => f.que.startsWith('Yp'))!;
+    expect(cuarta.por_que_no_se_puede).toContain('escala');
+    expect(cuarta.y_ademas).toContain('circular');
+    // Y las cuatro dicen dónde está y qué más hay que saber.
+    for (const f of FALTA_PARA_CORRER_WIGHT_HANKS) {
+      expect(f.donde_esta.length).toBeGreaterThan(20);
+      expect(f.y_ademas.length).toBeGreaterThan(40);
+    }
+  });
+
+  it('la lluvia de la tabla es del período y no del año: la regla W, sostenida', () => {
+    // El pie de la Tabla 1 dice «Measured from April 15 to peak standing crop».
+    // Con 91 mm en 1977 y 338 en 1969, estos números NO son lluvia anual y no se
+    // pueden meter en una escalera por lluvia anual.
+    const lluvias = sidney.map(a => a.pptn_periodo_mm!);
+    expect(Math.min(...lluvias)).toBe(91);
+    expect(Math.max(...lluvias)).toBe(338);
+    // Los días del período lo confirman: ninguno llega a un año.
+    for (const a of sidney) {
+      expect(a.periodo_dias!).toBeGreaterThan(60);
+      expect(a.periodo_dias!).toBeLessThan(110);
+    }
+    // Y es el mismo patrón que dejaron las cinco entradas del lote 20: los
+    // trabajos que se toman en serio la ventana dejan de publicar el año.
+    expect(SERIE_HART.every(a => a.mar_sep_mm !== null)).toBe(true);
+  });
+
+  it('el drenaje aparece sólo en los tres años húmedos, y el modelo lo cuenta aparte', () => {
+    const conDrenaje = sidney.filter(a => a.drenaje_mm! > 0);
+    expect(conDrenaje.map(a => a.anio)).toEqual([1969, 1972, 1975]);
+    // 1969 es el año de más lluvia del período y el de más drenaje.
+    const h = sidney.find(a => a.anio === 1969)!;
+    expect(h.pptn_periodo_mm).toBe(338);
+    expect(h.drenaje_mm).toBe(117);
+    // Y aun así no es el año de más rendimiento: el agua que drena no produce.
+    const mejor = sidney.reduce((m, a) =>
+      a.rend_campo_kg_ha > m.rend_campo_kg_ha ? a : m, sidney[0]!);
+    expect(mejor.anio).toBe(1975);
+    expect(mejor.drenaje_mm).toBe(50);
+  });
+
+  it('la cita lleva los dos autores completos y en el orden del trabajo', () => {
+    expect(MODELO_WIGHT_HANKS.autores).toBe('Wight, J. Ross y Hanks, R.J.');
+    expect(MODELO_WIGHT_HANKS.anio).toBe(1981);
+    expect(MODELO_WIGHT_HANKS.publicacion).toContain('34(4):307-311');
+    expect(MODELO_WIGHT_HANKS.doi).toBe('10.2307/3897857');
+    // Y de dónde deriva, que es parte del argumento del propio trabajo.
+    expect(MODELO_WIGHT_HANKS.deriva_de).toContain('Hanks (1974)');
+    expect(MODELO_WIGHT_HANKS.sin).toEqual(['riego', 'fenología', 'rendimiento de grano']);
+  });
 });

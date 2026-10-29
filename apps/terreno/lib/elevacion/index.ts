@@ -8,6 +8,8 @@ import { puntosOpenMeteo } from './openmeteo';
 import { puntosSrtm } from './srtm';
 
 export type { BBox, LatLng, FuenteDEM, ResultadoPuntos } from './tipos';
+export type { MuestreoDEM, DiagnosticoMuestreo } from './muestreo';
+export { diagnosticarMuestreo, proporcionDeMesetas, UMBRAL_MESETAS } from './muestreo';
 
 export async function obtenerElevacionPuntos(coords: LatLng[]): Promise<ResultadoPuntos> {
   if (coords.length === 0) return { elevaciones: [], fuente: 'glo30' };

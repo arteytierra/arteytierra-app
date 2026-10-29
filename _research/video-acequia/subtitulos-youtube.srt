@@ -1,0 +1,105 @@
+1
+00:00:00,550 --> 00:00:04,612
+Desde hace quince años me dedico al diseño de
+proyectos ecosistémicos y regenerativos.
+
+2
+00:00:04,843 --> 00:00:08,815
+Empecé por la bioarquitectura, después me
+interesé en entender al agua y el suelo y así
+
+3
+00:00:08,565 --> 00:00:12,125
+terminé especializándome en hidrología,
+agroecología y permacultura.
+
+4
+00:00:12,635 --> 00:00:15,797
+Para iniciar un diseño se me iba más tiempo
+juntando datos que diseñando.
+
+5
+00:00:16,097 --> 00:00:19,605
+La topografía la sacaba de un programa, el
+clima de dos o tres plataformas,
+
+6
+00:00:19,705 --> 00:00:21,111
+el suelo de donde encontrara,
+
+7
+00:00:21,311 --> 00:00:25,290
+la cobertura a ojo en el satélite, el
+ecosistema y el contexto googleando.
+
+8
+00:00:25,493 --> 00:00:26,533
+y así sin parar.
+
+9
+00:00:27,300 --> 00:00:30,410
+Por eso hice acequia que recopila los datos y
+los cruza,
+
+10
+00:00:30,814 --> 00:00:36,045
+lluvia, suelo, pendiente, elevación,
+cobertura, contexto y muchísimo más en un solo
+
+11
+00:00:35,795 --> 00:00:36,423
+lugar.
+
+12
+00:00:37,123 --> 00:00:39,539
+Con toda esa información ya puedo diseñar
+
+13
+00:00:39,639 --> 00:00:40,634
+dónde va el agua, dónde
+
+14
+00:00:43,184 --> 00:00:45,180
+dónde conviene la represa y cuánto junta,
+
+15
+00:00:45,465 --> 00:00:46,933
+por dónde pasan las redes de servicios,
+
+16
+00:00:47,469 --> 00:00:48,828
+por dónde voy a poner los caminos,
+
+17
+00:00:49,122 --> 00:00:51,944
+dónde va la cortina rompevientos, dónde entra
+el animal,
+
+18
+00:00:52,180 --> 00:00:54,935
+entre otras utilidades que me simplifican la
+toma de decisiones.
+
+19
+00:00:55,385 --> 00:00:59,641
+Además me entrega un informe completo del
+proyecto y hasta me avisa cuándo no confiar en
+
+20
+00:00:59,391 --> 00:01:00,077
+la información.
+
+21
+00:01:02,910 --> 00:01:06,058
+Un proyecto entero en una fracción del tiempo
+que me llevaba antes.
+
+22
+00:01:06,612 --> 00:01:09,678
+Mi nombre es Jonatan y te invito a conocer
+acequia.app.
+
+23
+00:01:09,878 --> 00:01:11,230
+Empezar no cuesta nada.
+

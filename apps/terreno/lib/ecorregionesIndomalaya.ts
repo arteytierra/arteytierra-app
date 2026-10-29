@@ -1,7 +1,7 @@
 /**
  * ECO_ID de RESOLVE de Indomalaya: el sur de Asia, Indochina y la Sonda.
  *
- * Son 33 ECO_ID y 32 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
+ * Son 34 ECO_ID y 33 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
  * de enumerar una envolvente como los lotes de la UE o el norte de África. Este
  * lote se recortó al revés: se buscaron las ecorregiones donde el bioma global
  * `resolve_bosque_tropical_humedo` estaba **diciendo un número equivocado**.
@@ -25,9 +25,22 @@
  * El relevamiento completo, con la regla del número y qué se cambió al montar,
  * está en `_research/ecosistemas-saberes-indomalaya/`.
  *
+ * ## Y después entró una que no era de ese lote
+ *
+ * El **23/10/2026** se agregó el ECO_ID 290, el Decán central, que es la primera
+ * de Indomalaya que **no** es bioma húmedo: es bosque tropical seco, bioma 2. No
+ * entró por la regla de arriba —esa regla escala el −25 de huerta del bioma
+ * húmedo y acá el bioma pone −10— sino porque adentro de esa ecorregión hay
+ * décadas de escurrimiento medido que contradicen lo que la app misma calcula.
+ *
+ * El vertisol arcilloso del Decán escurre menos que el alfisol arenoso de al
+ * lado, al revés de lo que dice cualquier tabla por textura, y acequia deriva el
+ * grupo hidrológico de la conductividad saturada. El detalle está en la ficha y
+ * el veredicto del lote en `_research/_encargos/RESPUESTAS_FICHAS_INDOMALAYA_DECAN.md`.
+ *
  * Lo que este lote **no** cubre: el resto de Indomalaya (península malaya,
  * Borneo de tierra firme, Nueva Guinea, el Himalaya, Indochina seca) sigue
- * cayendo al bioma global. No es un olvido: son las 33 que corregían un número,
+ * cayendo al bioma global. No es un olvido: son las que corregían un número,
  * no las de una región cerrada.
  *
  * Los nombres del comentario son los de RESOLVE (`ECO_ID`/`ECO_NAME`).
@@ -44,6 +57,9 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   274: 'sri_lanka_humedo_bajo',      // Sri Lanka lowland rain forests
   275: 'sri_lanka_montano',          // Sri Lanka montane rain forests
   301: 'sri_lanka_zona_seca',        // Sri Lanka dry-zone dry evergreen forests
+
+  // El Decán central — la única de bioma seco (bioma 2) de este bloque
+  290: 'decan_central_hardwickia',      // Central Deccan Plateau dry deciduous forests
 
   // La llanura indogangética y el Brahmaputra
   222: 'valle_brahmaputra',          // Brahmaputra Valley semi-evergreen forests

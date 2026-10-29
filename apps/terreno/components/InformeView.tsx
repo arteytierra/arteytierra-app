@@ -1183,9 +1183,29 @@ export function InformeView({ datos, compartido = false }: Props) {
               <StatBlock label="Pendiente general" value={`${datos.topo.pendiente_pct.toFixed(1)}%`} sub={`${datos.topo.pendiente_grados.toFixed(1)}° · de la punta más alta a la más baja`} />
             </div>
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <StatBlock label="Elev. media" value={`${datos.topo.elev_media.toFixed(0)} m`} sub="centroide del terreno" />
+              <StatBlock label="Elev. media" value={`${datos.topo.elev_media.toFixed(0)} m`}
+                         sub={datos.topo.base === 'grilla_densa' ? 'de las celdas del predio' : 'de los puntos muestreados'} />
               <StatBlock label="Escurrimiento" value={datos.topo.orientacion} sub={`fluye hacia el ${datos.topo.orientacion}`} />
             </div>
+            {/* De qué está hablando la tabla de arriba. Un informe que dice
+                «Elev. máxima 391 m» sin decir que salió de diecisiete puntos es
+                un número plausible y equivocado con sello: el máximo real del
+                mismo predio eran 441 m, y la pendiente general pasaba de 20,2 %
+                a 30,8 %. */}
+            {datos.topo.base === 'grilla_densa' ? (
+              <p className="text-xs text-ink-700/60 mb-4">
+                Medido sobre {(datos.topo.celdas_densas ?? 0).toLocaleString('es-AR')} celdas del
+                modelo de elevación que caen adentro del perímetro —el mismo relieve con el que se
+                trazan las curvas de nivel—.
+              </p>
+            ) : (
+              <p className="text-xs text-ink-700/60 mb-4">
+                <strong>Medido sobre una muestra</strong> de {datos.topo.muestra_n ?? '—'} puntos
+                —los mojones, el centro y una grilla interior—, y no sobre el relieve completo: un
+                pico o una vaguada que caiga entre dos puntos no entra en estas cifras, y la
+                pendiente general se calcula entre los dos extremos de esa muestra.
+              </p>
+            )}
             <Table
               head={['Mojón', 'Elevación (m s.n.m.)']}
               rows={datos.topo.puntos.map(p => [p.etiqueta ?? '', `${p.elevation.toFixed(0)} m`])}

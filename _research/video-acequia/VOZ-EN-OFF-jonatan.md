@@ -1,5 +1,10 @@
 # Voz en off — tres opciones sobre el texto de Jonatan
 
+> **Ya está grabado.** Jonatan grabó un guión propio que toma de acá la
+> presentación y el tramo del relevamiento de la opción 1, y la firma al final
+> de la opción 3. Lo que se grabó, cómo entra en el montaje y qué falta está en
+> [`VOZ-EN-OFF-montaje.md`](VOZ-EN-OFF-montaje.md).
+
 Sólo la versión de 90 s. Las tres entran en los mismos veintitrés huecos del
 montaje que ya está armado (`montaje.sh`), así que elegir una no obliga a
 reeditar: obliga a grabar.

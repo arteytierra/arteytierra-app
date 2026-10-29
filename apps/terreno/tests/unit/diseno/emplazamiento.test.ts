@@ -39,7 +39,9 @@ import {
   claseUSDA,
   clasePosicion,
   distanciaACauce,
+  evaluarEmplazamiento,
   evaluarPunto,
+  exclusionesDe,
   exposicionSolar,
   factorEscaleraBuffer,
   gpdFt2ALDiaM2,
@@ -354,6 +356,175 @@ describe('el camino (CPS 560)', () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
+describe('el camino no sale del predio', () => {
+  /**
+   * El caso está construido para aislar el mecanismo: un lomo infranqueable que
+   * parte el predio en dos y termina justo en el límite, de modo que la única
+   * vuelta con pendiente admisible pasa por el halo.
+   *
+   * Las dos últimas filas son halo —18 % de la grilla, el orden del 1,08–1,15×
+   * que `obtenerGrillaDensa` agrega a propósito—. El terreno es plano en todas
+   * partes salvo el lomo, así que lo único que puede cortar el corredor es la
+   * máscara: si el test pasa, pasa por eso y no por una pendiente.
+   *
+   * Lo que destapó esto no es sintético: sobre un predio real de 428,4 ha con
+   * grilla de 12,3 m, el corredor a ≤ 10 % tocaba 490 celdas del predio y 3.262
+   * del halo, y la mejor celda por costo de plataforma se alcanzaba con una
+   * traza de 41 celdas de las que 7 caían afuera.
+   */
+  const ROWS = 11, COLS = 15, PASO = 10;
+  const FILAS_HALO = 2;                       // las de arriba: no son del predio
+
+  const predioPartido = (conMascara: boolean) => {
+    // Lomo de 5 m en la columna 7 hasta la fila 8: cruzarlo es el 50 %.
+    const g = grilla(ROWS, COLS, PASO, (r, c) => (c === 7 && r <= 8 ? 5 : 0));
+    if (conMascara) {
+      const dentro = new Uint8Array(ROWS * COLS);
+      for (let r = 0; r < ROWS - FILAS_HALO; r++) {
+        for (let c = 0; c < COLS; c++) dentro[r * COLS + c] = 1;
+      }
+      return { ...g, dentro };
+    }
+    return g;
+  };
+
+  const ACCESO = { lat: -34, lng: -58 };      // el nodo (0, 0), esquina del predio
+  const LEJOS = 0 * COLS + 14;                // del otro lado del lomo
+
+  it('sin recortar, el corredor se escapa por el halo y llega al otro lado', () => {
+    const g = predioPartido(true);
+    const cam = accesibilidad(g, ACCESO, 10, { permitirFuera: true })!;
+    expect(cam.recortado).toBe(false);
+    expect(Number.isFinite(cam.largo_m[LEJOS]!)).toBe(true);
+  });
+
+  it('recortado al predio, al otro lado no se llega: era tierra del vecino', () => {
+    const g = predioPartido(true);
+    const cam = accesibilidad(g, ACCESO, 10)!;
+    expect(cam.recortado).toBe(true);
+    expect(Number.isFinite(cam.largo_m[LEJOS]!)).toBe(false);
+  });
+
+  it('y el recorte es el comportamiento por defecto, no una opción que hay que pedir', () => {
+    const g = predioPartido(true);
+    expect(accesibilidad(g, ACCESO, 10)!.recortado).toBe(true);
+    expect(accesibilidad(g, ACCESO, 10, {})!.recortado).toBe(true);
+  });
+
+  it('el corredor recortado alcanza menos celdas, y ninguna del halo', () => {
+    const g = predioPartido(true);
+    const cam = accesibilidad(g, ACCESO, 10)!;
+    const libre = accesibilidad(g, ACCESO, 10, { permitirFuera: true })!;
+    expect(cam.alcanzadas).toBeLessThan(libre.alcanzadas);
+    for (let i = 0; i < ROWS * COLS; i++) {
+      if (g.dentro![i] === 1) continue;
+      expect(Number.isFinite(cam.largo_m[i]!), `celda de halo alcanzada: ${i}`).toBe(false);
+    }
+  });
+
+  it('sin máscara no hay nada que recortar, y eso se declara en vez de suponerse', () => {
+    // Un DEM propio importado suelto no trae polígono. Ahí el corredor no se
+    // puede recortar y el resultado lo dice, que es lo que permite avisar.
+    const g = predioPartido(false);
+    const cam = accesibilidad(g, ACCESO, 10)!;
+    expect(g.dentro).toBeUndefined();
+    expect(cam.recortado).toBe(false);
+    expect(Number.isFinite(cam.largo_m[LEJOS]!)).toBe(true);
+  });
+
+  it('UN ACCESO QUE REDONDEA AL HALO NO DEJA AL PREDIO SIN CAMINO', () => {
+    // Éste es el modo de falla del propio arreglo, y es peor que el defecto que
+    // arregla: la tranquera está sobre el perímetro por definición, así que el
+    // redondeo al nodo más cercano la tira para cualquiera de los dos lados. Con
+    // un recorte ingenuo el corredor queda en UNA celda —la del acceso, rodeada
+    // de halo— y el predio entero se informa «sin camino». Medido sobre el
+    // predio real: 490 celdas alcanzadas pasaban a 1.
+    const g = predioPartido(true);
+    const dLat = (g.latMax - g.latMin) / (ROWS - 1);
+    const enHalo = { lat: g.latMin + dLat * (ROWS - 1), lng: -58 };   // fila 10: halo
+    expect(g.dentro![(ROWS - 1) * COLS]).toBe(0);
+
+    const cam = accesibilidad(g, enHalo, 10)!;
+    expect(cam.alcanzadas).toBeGreaterThan(1);
+    // El arranque se corrió al nodo utilizable más cercano, que está adentro.
+    expect(Number.isFinite(cam.largo_m[(ROWS - 1 - FILAS_HALO) * COLS]!)).toBe(true);
+    // Y el halo sigue sin alcanzarse, incluida la celda del acceso.
+    expect(Number.isFinite(cam.largo_m[(ROWS - 1) * COLS]!)).toBe(false);
+  });
+
+  it('cuánto se movió el acceso se mide, no se supone', () => {
+    const g = predioPartido(true);
+    const dLat = (g.latMax - g.latMin) / (ROWS - 1);
+    // Sobre el nodo (0, 0), que está adentro: no hay que mover nada.
+    expect(accesibilidad(g, ACCESO, 10)!.acceso_movido_m).toBeCloseTo(0, 6);
+    // Dos filas de halo arriba: el nodo bueno está a dos celdas de 10 m.
+    const enHalo = { lat: g.latMin + dLat * (ROWS - 1), lng: -58 };
+    expect(accesibilidad(g, enHalo, 10)!.acceso_movido_m).toBeCloseTo(2 * PASO, 0);
+    // Sin recortar, el nodo del acceso ya es utilizable y no se mueve.
+    expect(accesibilidad(g, enHalo, 10, { permitirFuera: true })!.acceso_movido_m).toBeCloseTo(0, 6);
+  });
+
+  it('y si se movió más de una celda la evaluación lo dice', () => {
+    const g = predioPartido(true);
+    const dLat = (g.latMax - g.latMin) / (ROWS - 1);
+    const enHalo = { lat: g.latMin + dLat * (ROWS - 1), lng: -58 };
+    const ctx = prepararEmplazamiento(g, enHalo, {})!;
+    expect(ctx.camino_acceso_movido_m).toBeGreaterThan(ctx.paso_m);
+    const ev = evaluarEmplazamiento(ctx, (ROWS - 1 - FILAS_HALO) * COLS)!;
+    expect(ev.advertencias.join(' ')).toMatch(/no cae sobre una celda utilizable/);
+  });
+
+  it('la exclusión «sin camino» cambia de respuesta, que es el error que había', () => {
+    // Éste es el defecto completo: el mismo punto, el mismo relieve, y la app
+    // decía que tenía acceso porque el único acceso pasaba por el vecino.
+    const g = predioPartido(true);
+    const reglas = (permite: boolean) => {
+      const ctx = prepararEmplazamiento(g, ACCESO, { camino_permite_salir: permite })!;
+      return exclusionesDe(ctx, LEJOS);
+    };
+    expect(reglas(false)).toContain('sin_camino');
+    expect(reglas(true)).not.toContain('sin_camino');
+  });
+
+  it('si se le deja salir, la evaluación lo dice: es una servidumbre, no un camino', () => {
+    const g = predioPartido(true);
+    const ctx = prepararEmplazamiento(g, ACCESO, { camino_permite_salir: true })!;
+    expect(ctx.camino_recortado).toBe(false);
+    const ev = evaluarEmplazamiento(ctx, 0 * COLS + 3)!;
+    expect(ev.camino).not.toBeNull();
+    expect(ev.advertencias.join(' ')).toMatch(/servidumbre/);
+  });
+
+  it('y recortado no la dice, porque entonces los metros son del predio', () => {
+    const g = predioPartido(true);
+    const ctx = prepararEmplazamiento(g, ACCESO, {})!;
+    expect(ctx.camino_recortado).toBe(true);
+    const ev = evaluarEmplazamiento(ctx, 0 * COLS + 3)!;
+    expect(ev.advertencias.join(' ')).not.toMatch(/servidumbre|no es de quien decide/);
+  });
+
+  it('sin polígono la evaluación avisa que el recorrido no se pudo recortar', () => {
+    const g = predioPartido(false);
+    const ctx = prepararEmplazamiento(g, ACCESO, {})!;
+    expect(ctx.camino_recortado).toBe(false);
+    const ev = evaluarEmplazamiento(ctx, 0 * COLS + 3)!;
+    expect(ev.advertencias.join(' ')).toMatch(/no trae el polígono del predio/);
+  });
+
+  it('las hectáreas libres bajan al recortar: es el arrastre y es correcto', () => {
+    // `resumenEmplazamiento` ya contaba sólo las celdas de adentro; lo que
+    // cambia ahora es que algunas de ésas pasan a estar excluidas por
+    // `sin_camino`. El número que informa el panel se mueve a propósito.
+    const g = predioPartido(true);
+    const libre = resumenEmplazamiento(prepararEmplazamiento(g, ACCESO, { camino_permite_salir: true })!);
+    const recortado = resumenEmplazamiento(prepararEmplazamiento(g, ACCESO, {})!);
+    expect(recortado.superficie_total_ha).toBe(libre.superficie_total_ha);
+    expect(recortado.celdas_libres).toBeLessThan(libre.celdas_libres);
+    expect(recortado.por_regla.find(r => r.regla === 'sin_camino')?.celdas ?? 0).toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 describe('el ruido del relieve', () => {
   it('con los 30 m de la fuente global el ruido es dos tercios del criterio de camino', () => {
     expect(pendienteMinimaResoluble(30)).toBeCloseTo(6.67, 2);
@@ -432,13 +603,22 @@ describe('el campo de infiltración (15A NCAC 18A + EPA)', () => {
     expect(claseUSDA(55, 25, 20)).toBe('arcilloso');
   });
 
-  it('LAS DOS CLASES QUE EL CLASIFICADOR DE suelos.ts NO SABE DEVOLVER CAEN EN EL GRUPO III', () => {
-    // `clasificarTextura` de `lib/suelos.ts` tiene diez salidas, no doce: un
-    // franco arcillo arenoso le sale «Arcillo-arenoso» y se iría al grupo IV,
-    // con un tercio menos de tasa. Por eso este módulo parte de los porcentajes.
+  it('las dos clases que el clasificador viejo no sabía devolver caen en el grupo III', () => {
+    // Hasta el 22/10/2026 `clasificarTextura` de `lib/suelos.ts` tenía diez
+    // salidas, no doce: un franco arcillo arenoso le salía «Arcillo-arenoso» y
+    // se iba al grupo IV, con un tercio menos de tasa. Ya no: los dos módulos
+    // leen el mismo `lib/textura.ts`, que tiene las doce del Soil Survey Manual.
     expect(grupoLTAR(28, 55, 17)).toBe('III');
     expect(grupoLTAR(32, 12, 56)).toBe('III');
     expect(grupoLTAR(42, 50, 8)).toBe('IV');
+  });
+
+  it('y un dato de suelo roto no sale por el grupo del medio: sale sin grupo', () => {
+    // Antes `grupoLTAR` devolvía 'II' cuando no reconocía la clase, que es el
+    // número plausible y equivocado: dimensiona el campo con una tasa que nadie
+    // midió. Ahora el campo entero no se calcula.
+    expect(grupoLTAR(30, 30, 30)).toBeNull();
+    expect(campoDeInfiltracion(3, { arcilla_pct: 30, arena_pct: 30, limo_pct: 30 })).toBeNull();
   });
 
   it('el caudal de diseño son 120 galones por dormitorio, con piso de 240 por vivienda', () => {
