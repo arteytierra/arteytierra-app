@@ -78,7 +78,7 @@
  * `PLAN-embalse-vaso-real.md`.
  */
 import { N8, dimsCelda } from './cuencaHidro';
-import type { GrillaElevacion } from './grillaElevacion';
+import { pasoEfectivoM, type GrillaElevacion } from './grillaElevacion';
 
 export const FUENTE_PRIORITY_FLOOD =
   'Barnes, Lehman y Mulla (2014) — «Priority-Flood: An Optimal Depression-Filling and Watershed-Labeling Algorithm for Digital Elevation Models», Computers & Geosciences 62: 117–127';
@@ -92,6 +92,36 @@ export const CELDAS_MINIMAS_VASO = 30;
 
 /** Un muro de menos de tres celdas de largo no está representado en la grilla. */
 export const CELDAS_MINIMAS_MURO = 3;
+
+/**
+ * A cuántas celdas de la punta del muro se considera que la silla de montar
+ * está **sobre el estribo**.
+ *
+ * Dos, y no es un gusto: sobre una grilla el final del muro no es un punto sino
+ * una celda, y la celda vecina en diagonal está a √2 pasos. Con radio 1 una
+ * silla pegada a la punta en diagonal se leía como silla del vaso; con radio 3
+ * ya se empieza a comer el faldeo, que es otra cosa.
+ */
+export const RADIO_ESTRIBO_CELDAS = 2;
+
+/**
+ * Largo mínimo del eje, en celdas, para que la prueba del estribo **pueda**
+ * contestar algo.
+ *
+ * Es aritmética, no criterio: con radio 2, en un eje de 5 celdas o menos TODAS
+ * las celdas están a 2 o menos de una punta, así que el resultado es «sí» pase
+ * lo que pase con el terreno. Por debajo de este largo la prueba no distingue
+ * una silla del vaso del final del muro y lo que corresponde devolver es `null`.
+ *
+ * Medido sobre un predio real de 428 ha con grilla de 12,3 m derivada del GLO-30:
+ * `buscarSitiosRepresa` rankea por eficiencia agua/muro y la eficiencia premia
+ * siempre al muro más corto, así que los tres sitios cerraban en 2 celdas (25 m)
+ * y las **veintisiete** combinaciones de sitio × altura (3 a 20 m) marcaban
+ * `derramePorEstribo`. O sea que a esa resolución la app era incapaz de aprobar
+ * una represa de chacra, y el motivo que mostraba —«hay que alargar el muro»—
+ * invitaba a la obra equivocada: lo que fallaba era el paso del relieve.
+ */
+export const CELDAS_MINIMAS_PRUEBA_ESTRIBO = 2 * RADIO_ESTRIBO_CELDAS + 2;
 
 /**
  * Una celda del vaso.
@@ -138,8 +168,34 @@ export interface Vaso {
    * true si el derrame cae sobre un estribo del muro, o sea si el agua se va
    * **por la punta del muro**. No se arregla con un vertedero: se arregla
    * alargando el muro, y son dos decisiones de obra distintas.
+   *
+   * `null` cuando la prueba no puede contestar: el eje es más corto que
+   * `CELDAS_MINIMAS_PRUEBA_ESTRIBO` y entonces toda celda del muro es «una
+   * punta». No es false disfrazado y no se puede tratar como tal: false dice
+   * «el agua se va por una silla del vaso, poné el vertedero ahí», y null dice
+   * «a este paso de relieve no se sabe». Ver `advertencias`.
    */
-  derramePorEstribo: boolean;
+  derramePorEstribo: boolean | null;
+  /** Celdas con dato del eje del muro: el largo del cierre tal como lo ve la grilla. */
+  ejeCeldas:     number;
+  /**
+   * Celdas del vaso que caen del lado **seco** del muro. Lo correcto es cero.
+   *
+   * Si hay alguna, el agua le dio la vuelta al muro y lo que el algoritmo llamó
+   * «vaso» incluye el valle de aguas abajo. `null` cuando no hay muro contra el
+   * que medirlo (`vasoDesdePunto`).
+   */
+  celdasLadoSeco: number | null;
+  /**
+   * El muro no cierra el vaso: hay agua del lado seco.
+   *
+   * Es la pregunta que el usuario tiene —¿esta represa para el agua?— y se
+   * contesta **a cualquier resolución**, sin depender del largo del eje ni de
+   * ningún radio. Cuando es true, el volumen y la cota de derrame no describen
+   * un embalse: describen hasta dónde se inunda el valle antes de que el agua
+   * encuentre la vuelta.
+   */
+  noCierra:      boolean;
   /** true si el vaso toca el borde del DEM o una celda sin dato. */
   tocaBorde:     boolean;
   /** Terreno natural más bajo bajo el eje del muro: la base de la sección más honda. */
@@ -383,6 +439,8 @@ function armarVaso(
   ejeCeldas: ReadonlyArray<number>,
   ladoAguasArriba: 'referencia' | 'elevacion',
   advertencias: string[],
+  /** Para saber si el vaso se fue al lado seco. `null` cuando no hay muro. */
+  lado?: Pick<LadoDelMuro, 'ladoDe' | 'signo'> | null,
 ): Vaso {
   const { areaCelda, dx, dy } = dimsCelda(g);
   const paso_m = Math.max(Math.abs(dx), Math.abs(dy));
@@ -402,18 +460,61 @@ function armarVaso(
   const { tipoTope, silla } = clasificarTope(g, s);
   const puntoDerrame = silla ? latLngDeCelda(g, silla.row, silla.col) : null;
 
-  // ¿El agua se va por la punta del muro? Se mide contra los extremos del eje
-  // rasterizado, que es donde el muro se termina y empieza el estribo. Sólo
+  // ¿El agua se va por la punta del muro? Se mide contra los DOS EXTREMOS del
+  // eje rasterizado, que es donde el muro se termina y empieza el estribo. Sólo
   // tiene sentido preguntarlo cuando hay derrame: si el techo es el borde del
   // DEM, que la silla caiga al lado del muro no dice nada del muro.
-  let derramePorEstribo = false;
+  //
+  // Antes el lazo recorría TODAS las celdas del eje, que es otra pregunta y da
+  // otra respuesta: una silla pegada al MEDIO del muro no es el agua yéndose
+  // por el estribo —el muro ahí está, bloqueado como obra— sino el borde bajo
+  // del vaso al lado del muro. Sobre el predio real eso marcaba estribo en un
+  // eje de 22 celdas con la silla en la celda 18, a tres de la punta más
+  // cercana: 271 m de muro y el aviso decía que había que alargarlo.
+  //
+  // Y la prueba se abstiene cuando no puede contestar. Ver
+  // `CELDAS_MINIMAS_PRUEBA_ESTRIBO`: con un eje corto, toda celda del muro está
+  // a radio de una punta y el «sí» no lo decide el terreno sino la aritmética.
+  let derramePorEstribo: boolean | null = false;
   if (tipoTope === 'derrame' && silla && ejeCeldas.length > 0) {
-    const sIdx = silla.row * g.cols + silla.col;
-    const sr = silla.row, sc = silla.col;
-    for (const e of ejeCeldas) {
-      const er = (e / g.cols) | 0, ec = e % g.cols;
-      if (Math.abs(er - sr) <= 2 && Math.abs(ec - sc) <= 2 && sIdx !== e) { derramePorEstribo = true; break; }
+    if (ejeCeldas.length < CELDAS_MINIMAS_PRUEBA_ESTRIBO) {
+      derramePorEstribo = null;
+    } else {
+      const sIdx = silla.row * g.cols + silla.col;
+      const sr = silla.row, sc = silla.col;
+      const puntas = [ejeCeldas[0]!, ejeCeldas[ejeCeldas.length - 1]!];
+      derramePorEstribo = puntas.some((e) => {
+        const er = (e / g.cols) | 0, ec = e % g.cols;
+        return sIdx !== e
+          && Math.abs(er - sr) <= RADIO_ESTRIBO_CELDAS
+          && Math.abs(ec - sc) <= RADIO_ESTRIBO_CELDAS;
+      });
     }
+  }
+
+  // ¿El vaso se fue al lado seco del muro? Si hay una sola celda del otro lado,
+  // el agua le dio la vuelta y esto no es un embalse: es la inundación del valle
+  // hasta la cota en que encontró la vuelta. Se contesta a cualquier resolución
+  // —no depende del largo del eje ni de ningún radio— y por eso manda sobre
+  // `derramePorEstribo`, que puede quedar sin poder contestar.
+  let celdasLadoSeco: number | null = null;
+  if (lado && lado.signo !== 0) {
+    celdasLadoSeco = 0;
+    for (const c of celdas) {
+      const p = latLngDeCelda(g, c.row, c.col);
+      if (lado.ladoDe(p.lat, p.lng) * lado.signo < 0) celdasLadoSeco++;
+    }
+  }
+  const noCierra = (celdasLadoSeco ?? 0) > 0;
+  if (noCierra) {
+    const pct = Math.round((celdasLadoSeco! / Math.max(1, celdas.length)) * 100);
+    advertencias.push(
+      `El muro no cierra el vaso: ${celdasLadoSeco} de las ${celdas.length} celdas inundadas ` +
+      `(${pct} %) caen del lado seco, o sea que el agua le da la vuelta al muro antes de llegar ` +
+      `a los ${s.cota.toFixed(1)} m. El volumen y la cota de derrame de este cálculo no describen ` +
+      'un embalse sino hasta dónde se inunda el valle: para embalsar hay que alargar el muro o ' +
+      'bajar el pelo de agua.',
+    );
   }
 
   const tocaBorde = tipoTope === 'borde_del_dem';
@@ -429,10 +530,30 @@ function armarVaso(
       'Con tan pocas celdas la forma del vaso es la de la grilla y no la del terreno.',
     );
   }
-  if (derramePorEstribo) {
+  // El orden importa: si el vaso ya se fue al lado seco, la vuelta del agua está
+  // establecida y hablar del estribo —para afirmarlo o para decir que no se
+  // sabe— sólo agrega ruido encima de un hecho. Y si se dijeran las dos cosas,
+  // una mandaría a alargar el muro y la otra avisaría que alargarlo no arregla
+  // nada: los dos avisos son correctos por separado y juntos se contradicen.
+  if (noCierra) {
+    /* ya avisado arriba, con el porcentaje */
+  } else if (derramePorEstribo === true) {
     advertencias.push(
       'El agua se derrama por la punta del muro, no por una silla de montar del vaso. ' +
       'Eso no se arregla con un vertedero: hay que alargar el muro.',
+    );
+  } else if (derramePorEstribo === null) {
+    // El aviso dice de QUÉ está hablando, que es lo que faltaba: antes, en este
+    // mismo caso, decía «hay que alargar el muro» y mandaba a una obra que no
+    // arregla nada. Alargar el muro no mejora el paso del relieve.
+    const pasoFuente = pasoEfectivoM(g);
+    advertencias.push(
+      `No se puede decidir si el agua se iría por la punta del muro: el eje ocupa ` +
+      `${ejeCeldas.length} celda(s) de ${paso_m.toFixed(0)} m y la prueba necesita al menos ` +
+      `${CELDAS_MINIMAS_PRUEBA_ESTRIBO} para distinguir una punta del medio del muro. ` +
+      `Con un paso efectivo de ${pasoFuente.toFixed(0)} m, un cierre de este largo no está ` +
+      'representado en el relieve. No es un defecto del muro y no se arregla alargándolo: ' +
+      'la verificación necesita relieve de paso fino sobre el cierre o un relevamiento.',
     );
   }
 
@@ -443,6 +564,9 @@ function armarVaso(
     tipoTope,
     puntoDerrame,
     derramePorEstribo,
+    ejeCeldas: ejeCeldas.length,
+    celdasLadoSeco,
+    noCierra,
     tocaBorde,
     cotaEjeMin_m,
     areaCelda_m2: areaCelda,
@@ -724,7 +848,7 @@ export function vasoDesdeMuro(g: GrillaElevacion, muro: Muro, opciones?: Opcione
   const salida = inundar(g, semillas, obra);
   if (!salida) return null;
 
-  return armarVaso(g, salida, cotaEjeMin, ejeConDato, lado.modo, advertencias);
+  return armarVaso(g, salida, cotaEjeMin, ejeConDato, lado.modo, advertencias, lado);
 }
 
 // ─── Comparación con el cálculo por polígono ─────────────────────────────────

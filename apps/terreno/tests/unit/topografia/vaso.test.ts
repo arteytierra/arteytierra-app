@@ -17,7 +17,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   vasoDesdeMuro, vasoDesdePunto, nivelVaso, compararConPoligono,
-  CELDAS_MINIMAS_VASO,
+  CELDAS_MINIMAS_VASO, CELDAS_MINIMAS_PRUEBA_ESTRIBO, RADIO_ESTRIBO_CELDAS,
 } from '@/lib/vaso';
 import { calcularEmbalse } from '@/lib/cutfill';
 import { grillaMetrica, puntoMetrico } from './_grilla';
@@ -163,6 +163,169 @@ describe('vasoDesdeMuro — un muro que no cierra el valle', () => {
     // paso de valle más (p·1) antes de empezar a bajar.
     expect(v.cotaDerrame_m).toBeLessThan(0.7);
     expect(nivelVaso(v, 2).derrama).toBe(true);
+  });
+
+  it('y además dice lo que más importa: este muro no cierra nada', () => {
+    // El agua le da la vuelta, así que el «vaso» incluye el valle de aguas
+    // abajo. Eso se contesta a cualquier resolución y no depende del largo del
+    // eje, por eso vale más que la prueba del estribo.
+    expect(v.noCierra).toBe(true);
+    expect(v.celdasLadoSeco).toBeGreaterThan(0);
+    expect(v.advertencias.join(' ')).toMatch(/no cierra el vaso/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3 bis · La prueba del estribo se abstiene cuando no puede contestar
+// ─────────────────────────────────────────────────────────────────────────────
+describe('vasoDesdeMuro — el estribo con un cierre más chico que la prueba', () => {
+  /*
+   * El defecto medido: sobre un predio real de 428 ha con grilla de 12,3 m
+   * derivada del GLO-30, `buscarSitiosRepresa` rankea por eficiencia agua/muro y
+   * la eficiencia premia siempre al muro más corto, así que los tres sitios
+   * cerraban en dos celdas (25 m). Barridas las alturas de 3 a 20 m, las
+   * VEINTISIETE combinaciones marcaban `derramePorEstribo`, y el aviso decía
+   * «hay que alargar el muro». Con un eje de 2 a 5 celdas y un radio de prueba
+   * de 2, el resultado no lo decidía el terreno: lo decidía la aritmética.
+   *
+   * A esa resolución la app era incapaz de aprobar una represa de chacra, y el
+   * motivo que mostraba invitaba a la obra equivocada: alargar el muro no
+   * mejora el paso del relieve.
+   */
+  const PASO = 1, P = 0.02, Q = 0.1;
+  const X_MURO = 60, Y_EJE = 50, COLS = 221, ROWS = 101;
+  const g = grillaMetrica(ROWS, COLS, PASO, (x, y) => P * (x - X_MURO) + Q * Math.abs(y - Y_EJE));
+  const aguasArriba = puntoMetrico(g, 160, Y_EJE);
+
+  /** Un muro centrado en el valle, de `largo_m` metros. */
+  const muroDe = (largo_m: number) => ({
+    a: puntoMetrico(g, X_MURO, Y_EJE - largo_m / 2),
+    b: puntoMetrico(g, X_MURO, Y_EJE + largo_m / 2),
+  });
+
+  it('la aritmética del umbral está escrita y es la que corta', () => {
+    // Con radio r, en un eje de 2r+1 celdas toda celda está a r o menos de una
+    // punta: el «sí» es inevitable. El umbral es el primer largo en el que
+    // existe al menos una celda que no es punta para la prueba.
+    expect(RADIO_ESTRIBO_CELDAS).toBe(2);
+    expect(CELDAS_MINIMAS_PRUEBA_ESTRIBO).toBe(2 * RADIO_ESTRIBO_CELDAS + 2);
+    expect(CELDAS_MINIMAS_PRUEBA_ESTRIBO).toBe(6);
+  });
+
+  it('con un cierre de dos celdas NO contesta, y antes contestaba que sí', () => {
+    const v = vasoDesdeMuro(g, muroDe(2), { referenciaAguasArriba: aguasArriba })!;
+    expect(v.ejeCeldas).toBeLessThan(CELDAS_MINIMAS_PRUEBA_ESTRIBO);
+    expect(v.derramePorEstribo).toBeNull();
+  });
+
+  it('null no es false disfrazado: no se puede tratar como «derrama por una silla»', () => {
+    const v = vasoDesdeMuro(g, muroDe(2), { referenciaAguasArriba: aguasArriba })!;
+    expect(v.derramePorEstribo).not.toBe(false);
+    expect(v.derramePorEstribo).not.toBe(true);
+  });
+
+  it('a partir del umbral vuelve a contestar, y contesta que sí', () => {
+    // Un muro de 6 celdas sigue sin cerrar el valle: la punta está a q·3 = 0,3 m
+    // sobre el fondo y el agua se va por ahí. Ahora la prueba PUEDE decirlo.
+    const v = vasoDesdeMuro(g, muroDe(6), { referenciaAguasArriba: aguasArriba })!;
+    expect(v.ejeCeldas).toBeGreaterThanOrEqual(CELDAS_MINIMAS_PRUEBA_ESTRIBO);
+    expect(v.derramePorEstribo).toBe(true);
+  });
+
+  it('cuando el muro cierra, el aviso del cierre chico habla del relieve y no del muro', () => {
+    // Un vaso cerrado de verdad —borde alto todo alrededor, con una silla— y un
+    // cierre de dos celdas. Acá `noCierra` es false, así que lo único que queda
+    // sin decidir es el estribo, y el aviso tiene que nombrar la resolución.
+    const N = 41;
+    const cerrado = grillaMetrica(N, N, 1, (x, y) => {
+      if (Math.abs(y - 20) <= 1 && x >= 36) return 0.4;          // salida, afuera
+      if (Math.abs(y - 20) <= 1 && x >= 34 && x <= 35) return 2.0; // la silla
+      if (x >= 12 && x <= 33 && y >= 6 && y <= 33) return 0;      // el vaso
+      if (Math.abs(x - 11) <= 0 && y >= 19 && y <= 20) return -0.2; // el cierre, 2 celdas
+      return 8;                                                    // el borde alto
+    });
+    const v = vasoDesdeMuro(cerrado, {
+      a: puntoMetrico(cerrado, 11, 19), b: puntoMetrico(cerrado, 11, 20),
+    }, { referenciaAguasArriba: puntoMetrico(cerrado, 22, 20) })!;
+
+    expect(v.noCierra).toBe(false);
+    expect(v.ejeCeldas).toBeLessThan(CELDAS_MINIMAS_PRUEBA_ESTRIBO);
+    expect(v.derramePorEstribo).toBeNull();
+
+    const aviso = v.advertencias.join(' ');
+    expect(aviso).toMatch(/No se puede decidir si el agua se iría por la punta/);
+    expect(aviso).toMatch(/relieve de paso fino|relevamiento/);
+    // Lo que NO puede decir: que se arregla alargando el muro. Alargarlo no
+    // mejora el paso de la fuente, y ésa es la obra equivocada.
+    expect(aviso).not.toMatch(/hay que alargar el muro/);
+  });
+
+  it('y los dos avisos no se pisan: si no cierra, del estribo no se habla', () => {
+    // Juntos se contradecían: uno mandaba a alargar el muro y el otro avisaba
+    // que alargarlo no arregla nada. Si el agua ya le dio la vuelta, la vuelta
+    // es el hecho y el estribo es ruido encima.
+    const v = vasoDesdeMuro(g, muroDe(2), { referenciaAguasArriba: aguasArriba })!;
+    expect(v.noCierra).toBe(true);
+    const aviso = v.advertencias.join(' ');
+    expect(aviso).toMatch(/no cierra el vaso/);
+    expect(aviso).not.toMatch(/No se puede decidir si el agua se iría/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3 ter · La prueba se mide contra las PUNTAS del eje, no contra todo el eje
+// ─────────────────────────────────────────────────────────────────────────────
+describe('vasoDesdeMuro — una silla pegada al medio del muro no es un estribo', () => {
+  /*
+   * El otro error, y era un error de lectura del propio código: el JSDoc decía
+   * que la prueba se mide «contra los extremos del eje rasterizado, que es donde
+   * el muro se termina y empieza el estribo», y el lazo recorría TODAS las
+   * celdas del eje. Son dos preguntas distintas con dos respuestas distintas.
+   *
+   * Medido sobre el predio real: un eje de 22 celdas —271 m de muro— con la
+   * silla en la celda 18, a tres celdas de la punta más cercana, marcaba
+   * estribo. El aviso le decía al usuario que alargara un muro de 271 m.
+   *
+   * Acá el caso está construido: un vaso rectangular cerrado por un muro largo,
+   * con la única salida baja del contorno pegada al MEDIO del muro pero del lado
+   * de adentro, de modo que el agua sale por ahí y no por ninguna punta.
+   */
+  const PASO = 1, N = 61;
+  const BORDE = 10, FONDO = 0;
+  const Y_MURO = 10;
+  const X_A = 10, X_B = 50;                 // muro de 41 celdas, pared a pared
+  const X_SILLA = 30;                        // justo en el medio del muro
+
+  const g = grillaMetrica(N, N, PASO, (x, y) => {
+    // El pasillo de escape: sale del vaso por la fila del muro, dos celdas al
+    // norte, y baja hacia afuera por el oeste. No cruza el muro.
+    if (y >= Y_MURO + 1 && y <= Y_MURO + 2 && x <= 2) return 0.5;
+    if (y >= Y_MURO + 1 && y <= Y_MURO + 2 && x >= 3 && x <= 4) return 3.0;  // la silla
+    if (x >= X_A && x <= X_B && y >= Y_MURO + 1 && y <= N - 11) return FONDO; // el vaso
+    if (y >= Y_MURO + 1 && y <= Y_MURO + 2 && x >= 5 && x < X_A) return FONDO; // pasillo interno
+    return BORDE;
+  });
+
+  const muro = { a: puntoMetrico(g, X_A, Y_MURO), b: puntoMetrico(g, X_B, Y_MURO) };
+  const v = vasoDesdeMuro(g, muro, { referenciaAguasArriba: puntoMetrico(g, X_SILLA, 30) })!;
+
+  it('el muro es largo de sobra para que la prueba pueda contestar', () => {
+    expect(v.ejeCeldas).toBeGreaterThanOrEqual(CELDAS_MINIMAS_PRUEBA_ESTRIBO);
+  });
+
+  it('el techo es la silla del contorno y el muro cierra', () => {
+    expect(v.tipoTope).toBe('derrame');
+    expect(v.cotaDerrame_m).toBeCloseTo(3.0, 6);
+    expect(v.noCierra).toBe(false);
+    expect(v.celdasLadoSeco).toBe(0);
+  });
+
+  it('y NO se marca estribo: la salida no está en ninguna punta del muro', () => {
+    // Antes bastaba con que la silla estuviera a dos celdas de CUALQUIER celda
+    // del eje. Acá la silla está lejos de las dos puntas, que es lo que la
+    // pregunta quiere saber.
+    expect(v.derramePorEstribo).toBe(false);
+    expect(v.advertencias.join(' ')).not.toMatch(/alargar el muro/);
   });
 });
 
