@@ -10,9 +10,13 @@ ve raro en el mapa, el bug estaba antes o es de props, no del movimiento.
 
 ## Quién importa a quién
 
-`components/mapa/` lo consume **sólo `MapLeaflet.tsx`** (más los cross-imports
-internos de esta carpeta). No hay otros importadores en `app/`, `lib/` ni el
-resto de `components/`. MapLeaflet re-exporta algunos tipos (`NavegacionMapa`,
+Las capas de esta carpeta las consume **sólo `MapLeaflet.tsx`** (más los
+cross-imports internos). Las piezas de la **cáscara de `/mapa`** —`riel`,
+`PanelCapas`, `controles` y `OverlaysCaptura`— las consume **sólo
+`MapaTerrenoApp.tsx`**, que es de donde salieron. No hay otros importadores en
+`app/`, `lib/` ni el resto de `components/`.
+
+MapLeaflet re-exporta algunos tipos (`NavegacionMapa`,
 `PuntoSnap`, `SnapSegmento`, `TipoActivo`) para que importadores externos que
 antes los tomaban de MapLeaflet sigan resolviendo.
 
@@ -32,6 +36,7 @@ compilación, no crea dependencia circular en runtime).
 | `cad.tsx` | **CAD interactivo**: clicks con snap/ortho + línea elástica + medidas en vivo. Componente puro (sin handlers de teclado). | `CadInteractivo` (+ tipos `PuntoSnap`, `SnapSegmento`, `TipoActivo`) |
 | `dibujosLayer.tsx` | Superficie de **dibujo libre**: dibujos guardados (línea/curva/polígono/círculo/cota/texto/flecha/punto) + 4 grupos de mangos (arrastre, redimensión círculo, vértices, insertar vértice "+"), y el **preview** del trazo en curso. | `DibujosLayer`, `DibujoPreview` |
 | `aguadasLayer.tsx` | Capa de **aguadas**: represas (marcador) + swales/keylines (polilíneas punteadas). Early-return si `!capas.aguadas`. | `AguadasLayer` |
+| `OverlaysCaptura.tsx` | Los **overlays del modo captura**: título, norte + barra de escala, leyenda editable, rótulo de plano y los botones. Se renderiza **después** de MapLeaflet (orden DOM > z-index) y adentro vive el `@media print` con los cuatro `id` que nombra. | `OverlaysCaptura`, tipos `Rotulo` y `LeyItem` |
 
 ## Convenciones al tocar esta carpeta
 
