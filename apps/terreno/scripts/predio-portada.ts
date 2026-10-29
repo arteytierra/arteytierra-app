@@ -207,5 +207,9 @@ export async function grillaDelPredio(salida: string, lado = LADO, refrescar = f
     fuente,
   };
 
-  return { grilla, dem, bbox, anchoM, altoM, cols, rows, paso_fuente_m: pasos[fuente]! };
+  // `fuente` se devuelve aparte y no sólo dentro de la grilla porque en
+  // `GrillaElevacion` es opcional —hay grillas que vienen sin saber de dónde
+  // salieron— y acá ya quedó comprobada contra `PASO_RELIEVE` unas líneas más
+  // arriba. Quien la reciba de acá no tiene que volver a preguntarse si existe.
+  return { grilla, dem, bbox, anchoM, altoM, cols, rows, fuente, paso_fuente_m: pasos[fuente]! };
 }

@@ -17,7 +17,9 @@
     "test:topografia": "vitest run tests/unit/topografia",
     "test:clima": "vitest run tests/unit/clima",
     "test:economia": "vitest run tests/unit/economia",
-    "datos-mesa": "tsx scripts/datos-mesa.ts"
+    "datos-mesa": "tsx scripts/datos-mesa.ts",
+    "datos-sol-viento": "tsx scripts/datos-sol-viento.ts",
+    "datos-informe": "tsx scripts/datos-informe.ts"
   },
   "dependencies": {
     "@arteytierra/config": "workspace:*",

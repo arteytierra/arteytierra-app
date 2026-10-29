@@ -25,6 +25,13 @@ export interface PuntoArco {
 
 export interface ArcoSolar {
   fecha:      FechaArco;
+  /**
+   * El día del año que dibuja este arco: 355, 80 o 172. Lo fija `fechasMeta` y
+   * se devuelve porque quien recibe el arco no tiene otra forma de saberlo sin
+   * volver a escribir esa tabla, y una tabla escrita dos veces es una tabla que
+   * un día deja de coincidir.
+   */
+  doy:        number;
   label:      string;
   labelCorto: string;
   color:      string;
@@ -169,7 +176,7 @@ export function calcularArcoSolar(lat: number, lng: number, radio_m: number): Da
     const posMedio  = posicionSolar(lat, doy, 12) ?? { elevacion: 60, azimut: 0 };
     const mediodia: PuntoArco = { ...proyectar(centro, posMedio.azimut, posMedio.elevacion, radio_m), hora: 12, ...posMedio };
 
-    return { fecha, label, labelCorto, color, puntos, amanecer, atardecer, mediodia, horas_luz };
+    return { fecha, doy, label, labelCorto, color, puntos, amanecer, atardecer, mediodia, horas_luz };
   });
 
   // Puntos cardinales en la circunferencia del horizonte

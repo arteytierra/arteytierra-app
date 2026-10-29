@@ -222,8 +222,15 @@ function arcoPolar(
   return pts;
 }
 
-/** Cuña centrada en un azimut con amplitud dada. */
-function cuña(
+/**
+ * Cuña centrada en un azimut con amplitud dada.
+ *
+ * Exportada para el generador de la pieza A del encargo 04: el sector del
+ * viento mes a mes tiene que ser la MISMA geometría que dibuja este panel
+ * —misma amplitud, mismo barrido horario— o el video mostraría una cuña que la
+ * app no dibuja.
+ */
+export function cuña(
   centro: { lat: number; lng: number },
   azCentro: number,
   amplitud: number,

@@ -39,8 +39,10 @@ const RAIZ = path.resolve(AQUI, '..');
 const BASE = 'C:\\Arte y Tierra\\Acequia\\portada animacion';
 const SALIDA = `${BASE}\\salida-encargo-02`;
 const SALIDA_03 = `${BASE}\\salida-encargo-03`;
+const SALIDA_04 = `${BASE}\\salida-encargo-04`;
+const CARPETAS = { 3: SALIDA_03, 4: SALIDA_04 };
 /** Dónde cae cada pieza. El encargo 03 no se mezcla con el 02, que ya se entregó. */
-const carpeta = pieza => (pieza.encargo === 3 ? SALIDA_03 : SALIDA);
+const carpeta = pieza => CARPETAS[pieza.encargo] ?? SALIDA;
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -100,7 +102,48 @@ const PIEZAS = {
     id: 'MesaDeTrabajo', archivo: 'mesa-de-trabajo', kbps: 700, tope: 1.5 * MiB,
     poster: 'primero', posterExtra: 435, lazo: true, prueba: true, encargo: 3,
   },
+
+  // ── Encargo 04 ──────────────────────────────────────────────────────────
+  //
+  // Dieciocho segundos con la cámara quieta, igual que la mesa, así que el
+  // presupuesto de bits se parece: 720 kbps por 18 s son 1,62 MB y el tope son
+  // 1,8. El margen es más chico que el de la mesa a propósito —el acto 02
+  // pinta 2.569 y 3.001 rectángulos de color sobre casi medio cuadro, que es
+  // más superficie cambiando que cualquiera de los cuatro actos de la mesa—.
+  // Si no entra, lo que baja es el caudal antes que la resolución, porque acá
+  // no hay un degradado continuo que pueda bandear: son clases de color
+  // planas.
+  //
+  // El póster es el cuadro 0 —la ortofoto desnuda— porque el encargo lo pide
+  // así, y además es el primer cuadro del bucle. El `posterExtra` es el 430,
+  // que cae en el acto del viento con los doce sectores, el mes encendido y la
+  // cortina ya puesta: es el cuadro que más dice de la pieza si la página
+  // necesita una imagen de reposo en vez del primer cuadro.
+  sol: {
+    id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 1.8 * MiB,
+    poster: 'primero', posterExtra: 430, lazo: true, prueba: true, encargo: 4,
+  },
+
+  // La pieza C no hace bucle y es la única sin mapa: es tipografía sobre papel,
+  // bajando. Que TODO el cuadro se mueva en todos los cuadros la pondría del
+  // lado caro —es lo que hace que las lecturas que giran cuesten 2.000 kbps—,
+  // pero el contenido es texto plano sobre un fondo liso: no hay follaje ni
+  // degradado que el codificador tenga que seguir. 850 kbps por diez segundos
+  // son 1,06 MB contra un tope de 1,2. Si no entrara, acá lo que NO se puede
+  // bajar es la resolución: el tema de la pieza es que se lea la columna de
+  // procedencia de cada fila, y a 960 de ancho ese texto desaparece.
+  informe: {
+    id: 'Informe', archivo: 'informe', kbps: 850, tope: 1.2 * MiB,
+    poster: 'primero', prueba: true, encargo: 4,
+  },
 };
+
+/**
+ * Qué encargo corre cuando no se pide ninguna pieza por nombre. Está acá, con
+ * nombre, porque es lo único que hay que mover cuando llega el encargo
+ * siguiente: antes era un `=== 3` perdido en el medio de un filtro.
+ */
+const EN_CURSO = 4;
 
 const PRUEBA = process.argv.includes('--prueba');
 const SOLO_VERIFICAR = process.argv.includes('--verificar');
@@ -113,7 +156,7 @@ const pedidas = process.argv.slice(2).filter(a => !a.startsWith('--'));
 // para escribir los mismos archivos.
 const elegidas = pedidas.length
   ? pedidas
-  : Object.keys(PIEZAS).filter(k => PIEZAS[k].encargo === 3);
+  : Object.keys(PIEZAS).filter(k => PIEZAS[k].encargo === EN_CURSO);
 
 /** Las banderas de color, idénticas en los dos codecs. Ver la cabecera. */
 const COLOR = [
@@ -392,7 +435,11 @@ function informe() {
           `la costura vale ${costura.toFixed(2)} y un paso cualquiera ${paso.toFixed(2)}\n`);
       }
     }
-    const poster = path.join(SALIDA, `${pieza.archivo}-poster.jpg`);
+    // `carpeta(pieza)` y no `SALIDA`: con la constante del encargo 02 el
+    // informe buscaba el póster de las piezas nuevas en la carpeta vieja, no lo
+    // encontraba y no decía nada. Una verificación que mira el lugar equivocado
+    // no falla: se calla, que es peor.
+    const poster = path.join(carpeta(pieza), `${pieza.archivo}-poster.jpg`);
     if (pieza.poster && existsSync(poster)) {
       process.stdout.write(`  ${marca(statSync(poster).size <= 150 * 1024)} ` +
         `${path.basename(poster).padEnd(22)} ${String(kb(poster)).padStart(5)} KB / 150  ` +
@@ -404,7 +451,7 @@ function informe() {
 }
 
 const principal = async () => {
-  for (const d of [SALIDA, SALIDA_03]) if (!existsSync(d)) mkdirSync(d, { recursive: true });
+  for (const d of [SALIDA, SALIDA_03, SALIDA_04]) if (!existsSync(d)) mkdirSync(d, { recursive: true });
   if (SOLO_VERIFICAR) { informe(); return; }
 
   process.stdout.write('Empaquetando…\n');

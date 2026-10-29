@@ -24,7 +24,7 @@ const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve(AQUI, '..');
 // La carpeta la elige `--en=<ruta>`; por defecto, la del encargo en curso.
 const SALIDA = (process.argv.find(a => a.startsWith('--en=')) ??
-  '--en=C:/Arte y Tierra/Acequia/portada animacion/salida-encargo-03').slice(5);
+  '--en=C:/Arte y Tierra/Acequia/portada animacion/salida-encargo-04').slice(5);
 
 const [id, ...cuadros] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 if (!id) {

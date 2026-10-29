@@ -12,6 +12,9 @@ import {
 import { CUADROS_LAZO, LazoPredio, esquemaLazo } from './composiciones/LazoPredio';
 import { CUADROS_MESA, MesaDeTrabajo } from './composiciones/MesaDeTrabajo';
 import { CUADROS_PAR, ParCrudoLeido } from './composiciones/ParCrudoLeido';
+import { CUADROS_SOL, SolYViento } from './composiciones/SolYViento';
+import { CUADROS_OBRA, CapaObra } from './composiciones/ObraTayPichin';
+import { CUADROS_INFORME, Informe } from './composiciones/Informe';
 import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
 import {
   CUADROS_PORTADA_PREDIO, PortadaPredio, esquemaPortadaPredio,
@@ -409,6 +412,56 @@ export const Root: React.FC = () => {
         fps={FPS}
         width={1600}
         height={900}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza A: el sol y el viento. Dieciocho segundos, cámara
+        quieta, bucle perfecto, por la misma razón que la mesa —donde nada se
+        mueve, periódico e idéntico son lo mismo—. Va más lejos que las otras:
+        el círculo del horizonte de la proyección solar mide 3.028 m de diámetro
+        y con la vista a sangre se le cortarían el amanecer y el atardecer, que
+        es donde se lee por qué lado del cielo pasa el sol.
+      */}
+      <Composition
+        id="SolYViento"
+        component={SolYViento}
+        durationInFrames={CUADROS_SOL}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza B: SÓLO la capa de líneas, con fondo transparente.
+        La pieza la arma `scripts/obra.mjs` pegando esto encima del metraje ya
+        corregido de color. Se renderiza con `--codec=prores
+        --prores-profile=4444`, que es lo que lleva canal alfa.
+      */}
+      <Composition
+        id="CapaObra"
+        component={CapaObra}
+        durationInFrames={CUADROS_OBRA}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={{}}
+      />
+
+      {/*
+        El encargo 04, pieza C: el informe. Es la única del repertorio que no
+        lleva mapa ni metraje —es tipografía sobre papel— así que renderiza
+        rápido y comprime a casi nada: diez segundos de una panorámica vertical
+        sobre un documento quieto.
+      */}
+      <Composition
+        id="Informe"
+        component={Informe}
+        durationInFrames={CUADROS_INFORME}
+        fps={FPS}
+        width={1280}
+        height={720}
         defaultProps={{}}
       />
 
