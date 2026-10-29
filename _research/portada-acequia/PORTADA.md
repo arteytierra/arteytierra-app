@@ -176,5 +176,32 @@ encendidas: las etiquetas llegan a 420 y 440 m adentro del perímetro.
 Importa más que un rótulo porque la **pendiente general** sale de ahí, y 20,2 %
 contra 30,4 % es la diferencia entre dos decisiones distintas de terrazas,
 keyline y caminos. Es el caso que describe el CLAUDE.md del repo: no se
-estrella, imprime un número plausible y equivocado. Quedó anotado como tarea
-aparte.
+estrella, imprime un número plausible y equivocado.
+
+### Cerrado el 28/10/2026
+
+Dos mitades, porque el panel tiene que seguir contestando antes de que el relieve
+denso exista:
+
+1. **Cuando el relieve denso está, manda él.** El panel ya lo disparaba en el
+   mismo clic —`onFetchShader()`— pero no podía esperarlo porque la función
+   devolvía `void`. Ahora devuelve el resultado, los dos pedidos salen con un
+   `Promise.all` y `topografiaConGrillaDensa()` reemplaza mínimo, máximo,
+   desnivel, media, pendiente general y escurrimiento con los de **las celdas
+   que caen adentro del polígono** —28.157 en este predio—. El perfil por mojón
+   no se toca: ésos son puntos medidos en un lugar concreto.
+2. **Cuando no está, el panel dice que es una muestra**, con cuántos puntos, y
+   que un pico entre dos puntos no aparece. El informe lo imprime igual, porque
+   un PDF que dice «Elev. máxima 391 m» sin esa frase es el mismo número
+   equivocado con sello.
+
+Y de paso, la muestra chica dejó de ser chica: usaba **9 de los 100 puntos** que
+el pedido admite, porque la grilla estaba clavada en 4 divisiones.
+`divisionesMuestra()` las calcula contra el presupuesto —10 divisiones con 7
+mojones, 81 puntos interiores de los que 54 caen adentro del polígono— y eso no
+cuesta un pedido más. Medido sobre este predio: la muestra vieja daba 381 m y
+19,5 %, la nueva 425 m y 25,4 %, la grilla densa 442 m y 30,4 %. O sea que
+densificar ayuda y no alcanza: lo que cierra el caso es leer el relieve denso.
+
+Tests en `apps/terreno/tests/unit/topografia/topografiaBase.test.ts`, con un
+predio sintético cuyo pico cae entre los nodos de la grilla de 4×4.

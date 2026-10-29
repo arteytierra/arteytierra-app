@@ -89,7 +89,12 @@ async function main() {
         `${String(H).padStart(3)}  ${s.lat.toFixed(5)},${s.lng.toFixed(5)}  ` +
         `${String(s.eficiencia).padStart(6)}  ${String(s.ancho_muro_m).padStart(6)} m  ` +
         `${String(base?.celdas ?? '—').padStart(2)}→${String(e?.celdas ?? '—').padStart(2)} (${(e?.ancho_m ?? 0).toFixed(0)} m, rev ${rev.toFixed(2)})  ` +
-        `${v ? v.cotaDerrame_m.toFixed(1) : '—'}  ${v ? (v.derramePorEstribo ? 'SÍ' : 'no') : '—'}       ` +
+        // Tres estados y no dos: `derramePorEstribo` puede ser null cuando el
+        // eje es más corto que lo que la prueba necesita para distinguir una
+        // punta del medio del muro. Imprimir null como «no» es justamente el
+        // error que este sondeo destapó, al revés.
+        `${v ? v.cotaDerrame_m.toFixed(1) : '—'}  ` +
+        `${v ? (v.derramePorEstribo === null ? '¿?' : v.derramePorEstribo ? 'SÍ' : 'no') : '—'}       ` +
         `${v ? v.celdas.length : '—'}`);
     }
     console.log('');

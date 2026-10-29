@@ -17,10 +17,11 @@ import { join } from 'node:path';
 const RAIZ = join(__dirname, '..', '..', '..');
 
 const TECHOS: Array<[string, number]> = [
-  ['components/MapaTerrenoApp.tsx',    4200],
-  ['components/mapa/PanelCapas.tsx',   1300],
-  ['components/mapa/controles.tsx',     600],
-  ['components/mapa/riel.tsx',          400],
+  ['components/MapaTerrenoApp.tsx',        4200],
+  ['components/mapa/PanelCapas.tsx',       1300],
+  ['components/mapa/controles.tsx',         600],
+  ['components/mapa/riel.tsx',              400],
+  ['components/mapa/OverlaysCaptura.tsx',   400],
 ];
 
 describe('tamaño de los archivos de /mapa', () => {

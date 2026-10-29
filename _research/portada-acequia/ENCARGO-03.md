@@ -406,12 +406,28 @@ aprobado salvo el campo de la fecha.
 
 - **La licencia de Esri para la ortofoto.** Sigue abierta desde el encargo 01.
   Usarla dentro de la app no es lo mismo que en una pieza promocional.
-- **`accesibilidad()` no recorta al predio** aunque su documentación diga que sí
-  (sección 4). Afecta a la app, no sólo al video: la exclusión «Sin camino
-  posible» puede admitir un sitio cuyo acceso cruza el campo del vecino.
-- **`vaso.ts` no puede certificar una represa de chacra sobre un DEM de 30 m**
-  (sección 3). No es un error: es el límite de la resolución, y convendría que
-  el panel lo dijera en vez de devolver un aviso que parece de obra.
+- ~~**`accesibilidad()` no recorta al predio** aunque su documentación diga que
+  sí (sección 4).~~ **Cerrado el 28/10/2026.** El corredor se recorta al
+  polígono salvo que se pida explícitamente lo contrario, y entonces la
+  evaluación lo informa como servidumbre. Sobre este mismo predio las celdas
+  alcanzadas pasan de 490 adentro más 3.262 del halo a **317 adentro y ninguna
+  del halo**: 173 de las 490 que la app contaba como «con camino» sólo se
+  alcanzaban cruzando el campo del vecino. Y apareció el modo de falla del
+  propio arreglo —si el nodo del acceso redondea al halo, el corredor queda en
+  una celda y el predio entero se informa sin camino—, resuelto arrancando en el
+  nodo utilizable más cercano y midiendo cuánto se movió.
+- ~~**`vaso.ts` no puede certificar una represa de chacra sobre un DEM de 30 m**
+  (sección 3).~~ **Cerrado el 28/10/2026, y con más de lo que el encargo pedía.**
+  La prueba del estribo se abstiene (`derramePorEstribo: null`) cuando el eje es
+  más corto de lo que necesita para distinguir una punta del medio del muro, y
+  el aviso habla del paso del relieve en vez de mandar a alargar el muro. Pero
+  además se encontraron dos cosas que la sección 3 no había visto: **la prueba
+  se medía contra todas las celdas del eje y no contra sus dos puntas** —un muro
+  de 271 m con la silla en la celda 18 de 23 marcaba estribo—, y el vaso se iba
+  **al lado seco del muro** en 13 de las 15 combinaciones probadas, hasta el
+  97 % de las celdas inundadas. Eso último se contesta a cualquier resolución,
+  así que ya no es cierto que a 30 m la app no pueda decir nada: puede decir que
+  **ese muro no cierra**, que es la mitad más importante.
 - **El póster.** El encargo pide el cuadro 0, que en esta pieza es la ortofoto
   desnuda: correcto como primer cuadro del bucle y flojo como imagen de reposo,
   porque no se ve que haya una lectura. Van los dos —`-poster.jpg` y
