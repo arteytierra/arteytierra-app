@@ -447,16 +447,25 @@ seis. Todo quedó en castellano: punto de miles y coma decimal.
 
 ### La topografía sale del relieve denso, no del panel
 
-`obtenerTopografia` muestrea unos veinte puntos —los mojones, el centroide y una
-grilla de 4 × 4—, que es lo que el panel necesita para contestar mientras el
-usuario dibuja. Una muestra así se come los picos y los fondos, y ya hubo que
-corregir ese panel por eso.
+`obtenerTopografia` trabaja sobre una **muestra**: mojones, centroide y una
+grilla interior, acotada por los cien puntos que acepta `/api/elevacion`. Es lo
+que el panel necesita para contestar mientras el usuario dibuja, y un pico que
+caiga entre dos puntos no aparece. La sesión de la app lo corrigió el 28/10/2026
+—el panel llegó a mostrar «Elevación máx. 391 m» al lado de curvas rotuladas
+440— y desde entonces el dato viaja con su `origen`, `'muestra'` o
+`'grilla_densa'`.
 
-La pieza usa el **relieve denso** que ya tienen las piezas aprobadas: 28.157
-celdas de 12,3 m dentro del polígono, con la fórmula de la app —desnivel entre
-el punto más alto y el más bajo, sobre la distancia entre esos dos puntos, que
-no es lo mismo que la media de las pendientes celda a celda—. Da 369,1 m de
-desnivel en 1.214 m, o sea 30,4 % hacia el NE.
+La pieza no usa ninguno de los dos: usa el **relieve denso que ya tienen las
+piezas aprobadas**, 28.157 celdas de 12,3 m dentro del polígono, con la fórmula
+de la app —desnivel entre el punto más alto y el más bajo, sobre la distancia
+entre esos dos puntos, que no es la media de las pendientes celda a celda—.
+Da 369,1 m de desnivel en 1.214 m, o sea **30,4 % hacia el NE**.
+
+El panel corregido informa 30,8 % para el mismo predio. La diferencia es de
+máscara y de paso —qué celdas cuentan como «adentro» y cada cuántos metros se
+muestrea—, no de método, y es del orden del 1 %. Si alguna vez las dos cifras
+tienen que coincidir al decimal, lo que hay que compartir es la máscara, no la
+fórmula.
 
 Recortar al polígono importa y se hace: la cota más alta del halo es el cerro
 del vecino.
