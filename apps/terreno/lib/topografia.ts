@@ -8,7 +8,15 @@
  */
 import * as turf from '@turf/turf';
 import { CREDITO_RELIEVE, PASO_RELIEVE, type FuenteRelieve } from './grillaElevacion';
+import type { DatosShader } from './shaders';
 import type { Mojon } from './types';
+
+/**
+ * Cuántos puntos acepta `/api/elevacion` en un pedido. El muestreo se
+ * dimensiona contra esto y no contra un número elegido a dedo: la grilla de
+ * 4×4 usaba 9 de los 100 disponibles.
+ */
+export const PUNTOS_POR_PEDIDO = 100;
 
 export interface PuntoElevacion {
   lat:       number;
@@ -53,6 +61,32 @@ export interface DatosTopografia {
    * declarado dice que no puede declararse en vez de suponer una fuente.
    */
   fuenteRelieve?:   FuenteRelieve;
+  /**
+   * De dónde salen `elev_min`, `elev_max`, `desnivel`, `elev_media`,
+   * `pendiente_pct`, `orientacion` y `escurrimiento`.
+   *
+   * `'muestra'`: de `puntos` + `centroide` + `grilla`, que son como mucho
+   * `PUNTOS_POR_PEDIDO`. Es lo que hay antes de que el relieve denso esté
+   * calculado, y **es una muestra**: un pico que caiga entre dos puntos no
+   * aparece. `'grilla_densa'`: de todas las celdas del relieve que caen adentro
+   * del polígono, que son decenas de miles.
+   *
+   * No es un detalle de implementación y por eso viaja con el dato: la app
+   * mostraba «Elevación máx. 391 m» al lado de curvas de nivel rotuladas 420 y
+   * 440 m **sobre el mismo predio y en la misma pantalla**. El máximo real eran
+   * 441 m —la muestra de ~17 puntos se salteaba el pico— y la pendiente general
+   * salía de ahí: 20,2 % contra 30,8 %, que es la diferencia entre dos
+   * decisiones distintas de terrazas, keyline y caminos.
+   *
+   * Opcional por el mismo motivo que `fuenteRelieve`: un proyecto guardado antes
+   * del 28/10/2026 no lo trae. Ausente se lee como `'muestra'` —era lo único que
+   * había— y así lo muestra el panel, sin suponer que el dato es denso.
+   */
+  base?:            'muestra' | 'grilla_densa';
+  /** Cuántos puntos tuvo la muestra. Sigue valiendo con `grilla_densa`: es lo que se pidió. */
+  muestra_n?:       number;
+  /** Cuántas celdas del predio entraron, cuando `base` es `'grilla_densa'`. */
+  celdas_densas?:   number;
 }
 
 // ─── OpenTopoData API ─────────────────────────────────────────────────────────
@@ -87,11 +121,28 @@ async function fetchElevaciones(
 
 // ─── Grilla interior del polígono ─────────────────────────────────────────────
 
+/**
+ * Cuántas divisiones usar para la muestra interior, dado cuántos mojones hay.
+ *
+ * La muestra entra en un solo pedido de `PUNTOS_POR_PEDIDO` puntos, de los que
+ * los mojones y el centroide ya ocupan su parte; el resto es la grilla interior,
+ * que son (n − 1)² puntos. Antes `n` estaba clavado en 4: **9 puntos interiores
+ * de los 100 disponibles**, o sea un predio de 417 ha descripto con 17 puntos y
+ * un paso de muestreo de más de un kilómetro. Densificar no cuesta un pedido
+ * más: cuesta cero.
+ */
+export function divisionesMuestra(nMojones: number, tope = PUNTOS_POR_PEDIDO): number {
+  const libres = tope - nMojones - 1;          // −1 por el centroide
+  if (libres < 4) return 1;                    // no entra ni una grilla de 2×2
+  return 1 + Math.floor(Math.sqrt(libres));
+}
+
 function generarGrilla(
   mojones: Mojon[],
   n = 4,
 ): Array<{ lat: number; lng: number }> {
   if (mojones.length < 3) return [];
+  if (n < 2) return [];
 
   const coords = mojones.map(m => [m.lng, m.lat] as [number, number]);
   coords.push(coords[0]!);
@@ -165,14 +216,15 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     lat: mojones.reduce((s, m) => s + m.lat, 0) / mojones.length,
     lng: mojones.reduce((s, m) => s + m.lng, 0) / mojones.length,
   };
-  const grillaCruda = generarGrilla(mojones, 4);
+  const grillaCruda = generarGrilla(mojones, divisionesMuestra(mojones.length));
 
-  // Combinar: mojones + centroide + grilla (máx 100 puntos)
+  // Combinar: mojones + centroide + grilla, dentro del tope del pedido. El
+  // `slice` es el cinturón: `divisionesMuestra` ya dimensiona para que entre.
   const todos = [
     ...mojones.map(m => ({ lat: m.lat, lng: m.lng })),
     centroCoords,
     ...grillaCruda,
-  ].slice(0, 100);
+  ].slice(0, PUNTOS_POR_PEDIDO);
 
   const { elevaciones, fuente: fuenteRelieve } = await fetchElevaciones(todos);
 
@@ -216,6 +268,70 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
     resolucion: fuenteRelieve ? `~${PASO_RELIEVE[fuenteRelieve]} m/píxel` : '~30 m/píxel',
     fuente: fuenteRelieve ? CREDITO_RELIEVE[fuenteRelieve] : 'Copernicus GLO-30 / SRTM',
     ...(fuenteRelieve ? { fuenteRelieve } : {}),
+    base: 'muestra',
+    muestra_n: todosConElev.length,
+  };
+}
+
+/**
+ * Las mismas estadísticas, pero medidas sobre el relieve denso.
+ *
+ * Es una función pura y vive acá —y no adentro de `obtenerTopografia`— por un
+ * motivo de orquestación: los dos pedidos de red salen **en paralelo** desde el
+ * panel, así que la muestra no puede esperar al shader. Lo que se hace es
+ * mejorarla cuando el shader llega.
+ *
+ * Qué celdas cuentan: las que caen adentro del polígono (`celda.dentro`). La
+ * grilla llega hasta 1,15× el predio para que la pendiente tenga vecinos, y
+ * `shaderDesdeGrilla` ya marca cada celda; contar el halo informaría la loma del
+ * vecino como el techo del predio. `dentro === undefined` significa que no hubo
+ * polígono con qué decidirlo y entonces cuentan todas, que es lo que
+ * corresponde cuando no hay con qué distinguir.
+ *
+ * Lo que NO cambia: `puntos`, `centroide` y `grilla` siguen siendo la muestra.
+ * Son los que dibuja el perfil de elevación por mojón, y ésos son puntos
+ * medidos en un lugar concreto, no un resumen.
+ */
+export function topografiaConGrillaDensa(
+  topo: DatosTopografia,
+  shader: Pick<DatosShader, 'celdas' | 'fuente'>,
+): DatosTopografia {
+  const dentro = shader.celdas.filter(c => c.dentro !== false);
+  if (dentro.length < 2) return topo;
+
+  let alto = dentro[0]!, bajo = dentro[0]!, suma = 0;
+  for (const c of dentro) {
+    if (c.elevation > alto.elevation) alto = c;
+    if (c.elevation < bajo.elevation) bajo = c;
+    suma += c.elevation;
+  }
+
+  const centro = (c: { latMin: number; latMax: number; lngMin: number; lngMax: number }) => ({
+    lat: (c.latMin + c.latMax) / 2,
+    lng: (c.lngMin + c.lngMax) / 2,
+  });
+  const pAlto: PuntoElevacion = { ...centro(alto), elevation: alto.elevation, etiqueta: 'Más alto' };
+  const pBajo: PuntoElevacion = { ...centro(bajo), elevation: bajo.elevation, etiqueta: 'Más bajo' };
+
+  const { pendiente_pct, pendiente_grados, orientacion, escurrimiento } =
+    pendienteOrientacion([pAlto, pBajo]);
+
+  return {
+    ...topo,
+    elev_min:   bajo.elevation,
+    elev_max:   alto.elevation,
+    elev_media: Math.round((suma / dentro.length) * 10) / 10,
+    desnivel:   Math.round((alto.elevation - bajo.elevation) * 10) / 10,
+    pendiente_pct, pendiente_grados, orientacion, escurrimiento,
+    base: 'grilla_densa',
+    celdas_densas: dentro.length,
+    ...(shader.fuente
+      ? {
+          fuenteRelieve: shader.fuente,
+          resolucion: `~${PASO_RELIEVE[shader.fuente]} m/píxel`,
+          fuente: CREDITO_RELIEVE[shader.fuente],
+        }
+      : {}),
   };
 }
 

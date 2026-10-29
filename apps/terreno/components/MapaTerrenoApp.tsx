@@ -3196,7 +3196,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
             aguaUtil_mm={datosSuelo?.agua_util.total_mm_100 ?? null}
           /></div>}
           {tab === 'contexto' && <div className="px-4 py-4"><ContextoPanel mojones={mojones} datosClima={datosClima} datosTopo={datosTopografia} ubicacion={datosEntorno?.ubicacion ?? null} onIrAClima={() => setTab('clima')} /></div>}
-          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} /></div>}
+          {tab === 'topo'  && <div className="px-4 py-4"><TopografiaPanel mojones={mojones} datos={datosTopografia} onDatos={setDatosTopografia} cargando={topoLoading} onCargando={setTopoLoading} error={topoError ?? shaderError} onError={setTopoError} onFetchShader={handleFetchShader} shaderCargando={shaderLoading} shader={datosShader} /></div>}
           {tab === 'suelo' && <div className="px-4 py-4"><SuelosPanel mojones={mojones} datos={datosSuelo} onDatos={setDatosSuelo} cargando={sueloLoading} onCargando={setSueloLoading} error={sueloError} onError={setSueloError} datosClima={datosClima} onIrAClima={() => setTab('clima')} /></div>}
           {tab === 'cobertura' && <div className="px-4 py-4"><CoberturaPanel mojones={mojones} datos={datosCobertura} onDatos={setDatosCobertura} onResumen={setCoberturaResumen} /></div>}
           {tab === 'entorno' && <div className="px-4 py-4"><EntornoPanel mojones={mojones} datos={datosEntorno} onDatos={setDatosEntorno} onResumen={setEntornoResumen} /></div>}
