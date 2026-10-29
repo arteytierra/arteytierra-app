@@ -184,6 +184,19 @@ const VOLUNTARIADO_RANGO = rangoFechas(VOLUNTARIADO_FECHAS, 'es');
 const VOLUNTARIADO_CUPOS = 5;
 /** Cierre de postulaciones: diez días antes de la entrada, para alcanzar a entrevistar. */
 const VOLUNTARIADO_CIERRE = '5 de noviembre';
+/**
+ * Los cinco lugares se cubrieron el 29/10/2026, antes del cierre.
+ *
+ * Acá se decide una sola vez, y de acá lo leen los tres lados que tienen que
+ * decir lo mismo: los textos de la ficha, el panel que reemplaza al formulario
+ * y la acción de servidor que lo valida. Si esto viviera en el componente, la
+ * página podría seguir invitando a postularse mientras el servidor rechaza —y
+ * quien se postula se enteraría recién al apretar el botón—.
+ *
+ * Tipada `boolean` a propósito: con `as const` el `true` se vuelve literal y
+ * el código de la convocatoria abierta queda inalcanzable para TypeScript.
+ */
+const VOLUNTARIADO_CUPO_LLENO: boolean = true;
 
 /**
  * Las reglas de la convocatoria, para el formulario de postulación.
@@ -198,6 +211,8 @@ export const CONVOCATORIA_VOLUNTARIADO = {
   rango: VOLUNTARIADO_RANGO,
   cupos: VOLUNTARIADO_CUPOS,
   cierre: VOLUNTARIADO_CIERRE,
+  /** Si los lugares ya están cubiertos. Cierra la postulación en los dos lados. */
+  cupoLleno: VOLUNTARIADO_CUPO_LLENO,
   /** Estadía mínima, en días. La ficha dice «2 semanas». */
   diasMinimos: 14,
   edadMinima: 18,
@@ -778,14 +793,14 @@ export const COURSES: Record<string, CourseData> = {
       { id: 'camping', label: 'En zona de camping', precio: '$40.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
       { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000', precioPor: 'semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
-    opcionesNota: `Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp. Del ${VOLUNTARIADO_RANGO} la Inmersión Viva está pausada: en esa ventana la única entrada a la ecoescuela es la convocatoria de voluntariado, que no tiene costo y tiene ${VOLUNTARIADO_CUPOS} cupos.`,
+    opcionesNota: `Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp. Del ${VOLUNTARIADO_RANGO} la Inmersión Viva está pausada: en esa ventana la única entrada era la convocatoria de voluntariado, y sus ${VOLUNTARIADO_CUPOS} cupos ya están cubiertos.`,
     formCurso: 'Inmersión Viva · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20info%20de%20la%20Inmersi%C3%B3n%20Viva',
     opcionesLabel: 'Modalidad de participación',
     pedirFechasEstadia: true,
     ocultarCupos: true,
     becaOficio: true,
-    crossLink: { href: '/cursos/voluntariado', label: 'Nov–dic: voluntariado sin costo →' },
+    crossLink: { href: '/cursos/voluntariado', label: 'Nov–dic: voluntariado (cupo completo) →' },
   },
 
   /*
@@ -799,25 +814,26 @@ export const COURSES: Record<string, CourseData> = {
   'voluntariado': {
     slug: 'voluntariado',
     kind: 'inmersion',
-    badge: `Voluntariado sin costo · ${VOLUNTARIADO_CUPOS} cupos`,
+    badge: 'Cupo completo · postulaciones cerradas',
     name: 'Voluntariado de Bioconstrucción',
     subtitle: 'Cuatro semanas de obra real en Tay Pichín, sin costo de participación. Cinco personas, dos áreas y un curso de bioarquitectura que se sostiene entre todos.',
     heroImg: '/img/cursos/bioarquitectura/3.jpg',
     galeria: ['/img/cursos/bioarquitectura/7.jpg', '/img/taypichin/carousel/7.jpg', '/img/cursos/bioarquitectura/11.jpg', '/img/taypichin/carousel/9.jpg'],
-    tag: `${VOLUNTARIADO_RANGO} · ${VOLUNTARIADO_CUPOS} cupos · Sin costo de participación`,
+    tag: `${VOLUNTARIADO_RANGO} · Cupo completo`,
     fechas: VOLUNTARIADO_FECHAS,
     intro: [
       `Del ${VOLUNTARIADO_RANGO} hay una obra que avanzar en Tay Pichín y el intensivo de Bioarquitectura que sostener. Para eso abrimos ${VOLUNTARIADO_CUPOS} lugares de voluntariado sin costo de participación: vos ponés el tiempo y las manos, nosotros la comida, el lugar donde dormir y el oficio de quienes construyen todos los días.`,
       'Se trabaja de lunes a viernes, siete horas repartidas entre la mañana y la tarde, con la siesta y los fines de semana libres. No hace falta experiencia previa ni haber tocado el barro antes: hace falta ganas de aprender con el cuerpo y de sostener un espacio entre varios.',
+      `Los ${VOLUNTARIADO_CUPOS} lugares de esta convocatoria ya están cubiertos y cerramos las postulaciones. Dejamos la ficha publicada para que se vea de qué se trata, porque la convocatoria se vuelve a abrir. Si querés venir igual, la Inmersión Viva recibe todos los lunes del año fuera de esta ventana.`,
     ],
     datos: [
       { label: 'Cuándo', val: VOLUNTARIADO_RANGO },
       { label: '¿Dónde?', val: 'Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba' },
       { label: 'Intercambio', val: '7 hs por día, de lunes a viernes · siesta y fines de semana libres' },
-      { label: 'Cupos', val: `${VOLUNTARIADO_CUPOS} personas` },
+      { label: 'Cupos', val: `${VOLUNTARIADO_CUPOS} personas · completo` },
       { label: 'Estadía mínima', val: '2 semanas · prioridad para quien cubra el período completo' },
       { label: 'Costo', val: 'Sin costo de participación · tres comidas vegetarianas por día' },
-      { label: 'Postulación', val: `Formulario y entrevista · hasta el ${VOLUNTARIADO_CIERRE}` },
+      { label: 'Postulación', val: 'Cerrada · los lugares están cubiertos' },
     ],
     paraQuien: [
       'Querés aprender bioconstrucción haciéndola en una obra real, no en un taller de muestra',
@@ -916,18 +932,18 @@ export const COURSES: Record<string, CourseData> = {
         ],
       },
     ],
-    opcionesNota: `Son ${VOLUNTARIADO_CUPOS} lugares y se eligen: completá la postulación de acá abajo y seguimos con una entrevista por videollamada. Recibimos postulaciones hasta el ${VOLUNTARIADO_CIERRE}.`,
+    opcionesNota: `Los ${VOLUNTARIADO_CUPOS} lugares ya están asignados. Para esta ventana no quedan vacantes; la Inmersión Viva sigue recibiendo todos los lunes del año fuera del ${VOLUNTARIADO_RANGO}.`,
     inscripcion: {
-      eyebrow: 'Postulación',
-      antes: 'Contanos quién',
-      enfasis: 'sos.',
-      nota: `No es una reserva: son ${VOLUNTARIADO_CUPOS} lugares y se eligen. Leemos todas las postulaciones y seguimos con una entrevista por videollamada. Recibimos hasta el ${VOLUNTARIADO_CIERRE}.`,
+      eyebrow: 'Postulación cerrada',
+      antes: 'El cupo está',
+      enfasis: 'completo.',
+      nota: `Los ${VOLUNTARIADO_CUPOS} lugares del ${VOLUNTARIADO_RANGO} ya están asignados. La próxima convocatoria se anuncia por acá y por Instagram.`,
     },
     // `opcionesLabel` y `pedirFechasEstadia` no van: los lee el formulario
     // genérico, y acá lo reemplaza el de postulación, que pide sus propias cosas.
     formCurso: 'Voluntariado de Bioconstrucción · Tay Pichín',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20al%20voluntariado%20de%20bioconstrucci%C3%B3n',
-    crossLink: { href: '/cursos/inmersion-viva', label: '¿Otras fechas? Inmersión Viva →' },
+    crossLink: { href: '/cursos/inmersion-viva', label: 'Sumate a la Inmersión Viva →' },
   },
 };
 

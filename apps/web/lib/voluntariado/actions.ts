@@ -5,7 +5,14 @@ import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { emitN8nEvent } from '@/lib/integrations/n8n';
 import { sendEmail } from '@/lib/integrations/resend';
 import { CONVOCATORIA_VOLUNTARIADO as C } from '@/lib/courses/data';
-import { cubrePeriodoCompleto, diasEntre, edadAlEmpezar, primerProblema } from './reglas';
+import {
+  MOTIVO_CUPO_LLENO,
+  cubrePeriodoCompleto,
+  diasEntre,
+  edadAlEmpezar,
+  primerProblema,
+  recibePostulaciones,
+} from './reglas';
 
 /**
  * Postulación al voluntariado de bioconstrucción de noviembre–diciembre.
@@ -47,6 +54,11 @@ export interface VoluntariadoApplicationInput {
 }
 
 export async function submitVoluntariadoApplicationAction(input: VoluntariadoApplicationInput) {
+  // La puerta primero. El formulario ya no se dibuja cuando el cupo está
+  // cubierto, pero esto es una acción pública: alguien con el link viejo abierto
+  // en una pestaña, o un POST armado a mano, siguen llegando acá.
+  if (!recibePostulaciones()) throw new Error(MOTIVO_CUPO_LLENO);
+
   const nombre = input.nombre.trim();
   const email = input.email.trim();
   const whatsapp = input.whatsapp.trim();

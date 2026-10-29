@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { submitVoluntariadoApplicationAction } from '@/lib/voluntariado/actions';
 import { CONVOCATORIA_VOLUNTARIADO as C } from '@/lib/courses/data';
-import { diasEntre, nacimientoMaximo } from '@/lib/voluntariado/reglas';
+import {
+  MOTIVO_CUPO_LLENO,
+  diasEntre,
+  nacimientoMaximo,
+  recibePostulaciones,
+} from '@/lib/voluntariado/reglas';
 
 type Status = 'idle' | 'sending' | 'ok' | 'error';
 
@@ -16,6 +22,11 @@ type Status = 'idle' | 'sending' | 'ok' | 'error';
  * las mismas corren en la acción de servidor, que es la que no se puede saltear.
  * Los límites salen de `CONVOCATORIA_VOLUNTARIADO`, el mismo objeto que usa la
  * ficha, así que el calendario nativo ya no deja elegir una fecha de afuera.
+ *
+ * Con el cupo cubierto el formulario no se dibuja: en su lugar va el panel que
+ * lo dice y ofrece la Inmersión Viva, que es la otra puerta de la ecoescuela. Un
+ * formulario que acepta lo que el servidor va a rechazar es peor que no tenerlo,
+ * porque alguien escribe veinte líneas de motivación para que se las devuelvan.
  */
 
 const campo =
@@ -59,6 +70,28 @@ export function VoluntariadoApplyForm() {
       setStatus('error');
       setError(err instanceof Error ? err.message : 'Hubo un error al enviar.');
     }
+  }
+
+  if (!recibePostulaciones()) {
+    return (
+      <div className="p-10 bg-ink-800 border border-ink-700 text-center">
+        <h3 className="font-display text-2xl text-bone-50 mb-3">El cupo está completo</h3>
+        <p className="font-sans text-bone-200 text-base leading-relaxed">
+          {MOTIVO_CUPO_LLENO} Cerramos las postulaciones de esta edición. La próxima convocatoria se
+          anuncia en esta misma página y por Instagram.
+        </p>
+        <p className="mt-4 font-sans text-bone-200 text-base leading-relaxed">
+          Si querés venir igual, la <strong className="text-bone-50">Inmersión Viva</strong> recibe
+          todos los lunes del año fuera del {C.rango}.
+        </p>
+        <Link
+          href="/cursos/inmersion-viva"
+          className="mt-7 inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-6 py-3.5 hover:bg-clay-900 transition-colors"
+        >
+          Sumate a la Inmersión Viva
+        </Link>
+      </div>
+    );
   }
 
   if (status === 'ok') {
