@@ -408,26 +408,30 @@ herramientas de agua avisan en nivel alerta cuando lo es.
 ## La entrega, medida
 
 Todo sale de `node scripts/piezas.mjs`, que mide con `ffprobe` lo que acaba de
-escribir y sale con código 1 si algo no entra.
+escribir y sale con código 1 si algo no entra. Los números de abajo son los de
+la **tercera vuelta** —las seis lecturas a doce segundos y la pieza nueva—;
+los de la entrega de dos segundos quedaron en el historial de git.
 
-Todos 1280×720, `yuv420p` rango limitado `bt709`, **sin pista de audio**.
+Todos 1280×720, `yuv420p` rango limitado `bt709`, **sin pista de audio**, 30 fps.
 
 | archivo | duración | peso / tope | caudal |
 |---|---|---|---|
 | `portada.webm` | 13,00 s | 1.654 / 2.560 KB | 1.042 kbps |
 | `portada.mp4` | 13,00 s | 1.515 / 2.560 KB | 954 kbps |
-| `lectura-relieve.webm` | 2,00 s | 489 / 1.126 KB | 2.002 kbps |
-| `lectura-relieve.mp4` | 2,00 s | 468 / 1.126 KB | 1.918 kbps |
-| `lectura-curvas.webm` | 2,00 s | 490 / 1.126 KB | 2.005 kbps |
-| `lectura-curvas.mp4` | 2,00 s | 473 / 1.126 KB | 1.938 kbps |
-| `lectura-agua.webm` | 2,00 s | 490 / 1.126 KB | 2.005 kbps |
-| `lectura-agua.mp4` | 2,00 s | 468 / 1.126 KB | 1.919 kbps |
-| `lectura-represas.webm` | 2,00 s | 488 / 1.126 KB | 1.999 kbps |
-| `lectura-represas.mp4` | 2,00 s | 467 / 1.126 KB | 1.912 kbps |
-| `lectura-todo.webm` | 2,00 s | 490 / 1.126 KB | 2.007 kbps |
-| `lectura-todo.mp4` | 2,00 s | 472 / 1.126 KB | 1.935 kbps |
-| `lectura-secuencia.webm` | 2,00 s | 484 / 1.126 KB | 1.982 kbps |
-| `lectura-secuencia.mp4` | 2,00 s | 591 / 1.126 KB | 2.422 kbps |
+| `portada-giro.webm` | 27,00 s | 3.278 / 3.584 KB | 995 kbps |
+| `portada-giro.mp4` | 27,00 s | 3.548 / 3.584 KB | 1.077 kbps |
+| `lectura-relieve.webm` | 12,00 s | 2.055 / 2.458 KB | 1.403 kbps |
+| `lectura-relieve.mp4` | 12,00 s | 1.984 / 2.458 KB | 1.355 kbps |
+| `lectura-curvas.webm` | 12,00 s | 2.055 / 2.458 KB | 1.403 kbps |
+| `lectura-curvas.mp4` | 12,00 s | 1.997 / 2.458 KB | 1.363 kbps |
+| `lectura-agua.webm` | 12,00 s | 2.055 / 2.458 KB | 1.403 kbps |
+| `lectura-agua.mp4` | 12,00 s | 1.993 / 2.458 KB | 1.360 kbps |
+| `lectura-represas.webm` | 12,00 s | 2.055 / 2.458 KB | 1.403 kbps |
+| `lectura-represas.mp4` | 12,00 s | 1.993 / 2.458 KB | 1.361 kbps |
+| `lectura-todo.webm` | 12,00 s | 2.055 / 2.458 KB | 1.403 kbps |
+| `lectura-todo.mp4` | 12,00 s | 2.000 / 2.458 KB | 1.365 kbps |
+| `lectura-secuencia.webm` | 12,00 s | 2.055 / 3.072 KB | 1.403 kbps |
+| `lectura-secuencia.mp4` | 12,00 s | 2.296 / 3.072 KB | 1.568 kbps |
 | `lazo-perimetro.webm` | 6,00 s | 685 / 900 KB | 935 kbps |
 | `lazo-perimetro.mp4` | 6,00 s | 353 / 900 KB | 482 kbps |
 | `lazo-giro.webm` | 6,00 s | 693 / 900 KB | 946 kbps |
@@ -435,37 +439,43 @@ Todos 1280×720, `yuv420p` rango limitado `bt709`, **sin pista de audio**.
 | `lazo-agua.webm` | 6,00 s | 557 / 900 KB | 761 kbps |
 | `lazo-agua.mp4` | 6,00 s | 397 / 900 KB | 542 kbps |
 | `portada-poster.jpg` | | 144 / 150 KB | el **último** cuadro |
+| `portada-giro-poster.jpg` | | 147 / 150 KB | el **último** cuadro |
 | `lectura-relieve-poster.jpg` | | 135 / 150 KB | el **primer** cuadro |
 | `lectura-todo-poster.jpg` | | 146 / 150 KB | el **primer** cuadro |
 | `lectura-secuencia-poster.jpg` | | 135 / 150 KB | el **primer** cuadro |
 
-`lectura-secuencia.mp4`: **24 claves, el hueco más largo son 5 cuadros.** Su
-WebM tiene una sola clave, a propósito y por lo mismo de siempre: ver más
-abajo.
+`lectura-secuencia.mp4`: **72 claves, el hueco más largo son 5 cuadros.** Con
+doce segundos son 72 y no 24, y el tope de 3 MB aguanta igual. Su WebM tiene
+tres claves, a propósito y por lo mismo de siempre: ver más abajo.
 
 El cierre de los bucles, medido sobre el maestro contra lo que vale un paso
 cualquiera de la misma pieza:
 
 | bucle | la costura vale | un paso cualquiera vale |
 |---|---|---|
-| `lectura-relieve` | 15,76 | 17,25 |
-| `lectura-curvas` | 17,87 | 19,47 |
-| `lectura-agua` | 16,12 | 17,50 |
-| `lectura-represas` | 15,85 | 17,46 |
-| `lectura-todo` | 18,08 | 19,76 |
+| `lectura-relieve` | 12,02 | 12,67 |
+| `lectura-curvas` | 13,97 | 14,13 |
+| `lectura-agua` | 12,23 | 12,78 |
+| `lectura-represas` | 12,07 | 12,76 |
+| `lectura-todo` | 14,05 | 14,24 |
 | `lazo-perimetro` | 0,04 | 0,00 |
 | `lazo-giro` | 8,25 | 8,18 |
 | `lazo-agua` | 0,13 | 0,05 |
 
 En las cinco lecturas la costura vale **menos** que un paso normal, que es lo
-que tiene que pasar: con 3° por cuadro no hay un solo píxel quieto, así que un
-paso cualquiera mide 17 y la unión mide lo mismo o menos. El número grande no
-es un defecto, es la velocidad del giro; lo que importa es la comparación.
+que tiene que pasar: ni con 1° por cuadro hay un solo píxel quieto, así que un
+paso cualquiera mide 13 y la unión mide lo mismo o menos. El número bajó de 17
+a 13 al pasar de 3° por cuadro a 1 —es la velocidad del giro, no un defecto—, y
+lo que importa sigue siendo la comparación y no el número.
 
 ### Y en un navegador de verdad, que es lo que ffprobe no puede
 
-Los **veinte** archivos abiertos en Chromium, uno por uno: los veinte cargan,
-los veinte tienen `video.error` nulo y los veinte presentan cuadro.
+Los **veintidós** archivos abiertos en Chromium, uno por uno: los veintidós
+cargan, los veintidós tienen `video.error` nulo, los veintidós presentan cuadro
+y los veintidós informan la duración que les corresponde —13 s la portada, 27 la
+que gira, 12 las seis lecturas y 6 los tres lazos—. Esa última columna es nueva
+y hace falta: un archivo viejo carga igual de bien que el que se acaba de
+escribir.
 
 Las cuatro marcas de `lectura-secuencia` se buscan exactas, y de paso dejan
 medida la razón de todo este asunto:
