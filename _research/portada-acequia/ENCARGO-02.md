@@ -11,6 +11,126 @@ en una página pública. Eso lo autoriza el cliente. Hasta entonces el crédito 
 la página dice «Predio real», y por eso el `alt` propuesto en `PORTADA.md`
 cambió: nombraba el predio y la provincia.
 
+## Tercera vuelta · 29/10/2026 — «no se distingue nada»
+
+Jonatan miró la segunda entrega y dijo dos cosas. Las dos están hechas, y lo
+que sigue más abajo describe las vueltas anteriores.
+
+> «casi todos los videos duran 2 segundos y hacen un giro de 360 por lo cual no
+> se distingue nada. quiero que sea con un movimiento más lento pero constante
+> de 12 segundos aprox.»
+>
+> «el archivo portada master me gusta como está pero agregaría otro que al
+> final haga lo siguiente: active el shader de elevaciones y luego haga un giro
+> de 360 grados que dure unos 12 segundos completando el giro.»
+
+**Toda la entrega quedó junta en
+`…\salida-encargo-02\encargo 2 entrega 2\`**, que es lo que pidió. La carpeta de
+arriba se queda sólo con la primera vuelta —incluida `cuatro-lecturas`, la
+pieza de ocho segundos que estas seis jubilaron—, para que no convivan.
+
+### 1 · Las seis lecturas: de 2 s a 12 s
+
+Tenía razón y la pieza lo pedía. Una vuelta entera en dos segundos son **180°
+por segundo**; a 12 s son 30°/s, o sea **un grado de rumbo por cuadro**. Lo que
+estas seis variantes tienen que mostrar es una capa de lectura sobre un
+terreno, y una capa no se lee mientras el terreno vuela.
+
+Seis veces más lento, **los 60 fps dejaron de hacer falta**: estaban ahí porque
+a 30 fps la vuelta de dos segundos daba 6° por cuadro y estroboscopiaba. Con 1°
+por cuadro vuelven a 30, como todo el resto del repertorio, y el render cuesta
+la mitad de los cuadros que costaría a 60.
+
+Tres cosas se movieron con la duración, y ninguna es cosmética:
+
+- **La corriente del agua y el pulso de las represas pasan de 2 a 4 ciclos por
+  vuelta.** Tienen que ser enteros o el bucle no cierra. Dos habrían dado una
+  pasada cada seis segundos —el agua leída como detenida—; mantener la cadencia
+  vieja habrían sido doce, una por segundo, que con la cámara ahora lenta es lo
+  único apurado del cuadro. Cuatro son tres segundos por pasada: alcanza para
+  seguir una banda de la cabecera a la desembocadura.
+- **Las marcas de `secuencia` pasan a 0 · 3 · 6 · 9 s**, con un segundo de
+  entrada cada una en vez de 0,37. Recién ahora cumple lo que el encargo pedía
+  desde el principio: que cada estado se sostenga quieto alrededor de su marca,
+  porque el scroll se detiene ahí y el cuadro congelado tiene que leerse.
+- **La velocidad del giro es exactamente constante, sin rampas.** Son un bucle:
+  una rampa en las puntas deja el cuadro 359 quieto contra un cuadro 0 que va a
+  un grado por cuadro, y ese escalón de velocidad se siente como una trabita en
+  cada vuelta. La pieza que sí lleva rampas es la nueva, que no hace bucle.
+
+### 2 · Un defecto que doce segundos destaparon
+
+La cámara de acequia no apunta al centro del predio: apunta **351 m hacia sí
+misma**, que es lo que sube el predio a la mitad del cuadro con 61° de
+inclinación (`BLANCO_HACIA_LA_CAMARA_M`). La versión de dos segundos pedía esa
+pose **una sola vez** y después le cambiaba sólo el rumbo:
+
+```tsx
+...vistaASangre(ancho, alto, { sombra: SOMBRA_GIRO, acercar: ACERCA_GIRO }),
+bearing: RUMBO - 360 * (f / CUADROS_LECTURA),
+```
+
+Con eso, mientras la cámara da la vuelta el corrimiento se queda apuntando a un
+rumbo geográfico fijo y deja de estar «hacia la cámara»: **el predio sube y baja
+dentro del cuadro a lo largo de la vuelta.** En dos segundos no se alcanzaba a
+ver. En doce, sí. Ahora la pose se pide entera con el rumbo de cada cuadro, que
+es lo que el comentario de `BLANCO_HACIA_LA_CAMARA_M` ya decía que había que
+hacer.
+
+De paso se corrigió un comentario que contradecía a su constante: el de
+`ACERCA_GIRO` explicaba por qué valía 0,62 y el valor era 1,05. El aire de la
+vuelta lo da `SOMBRA_GIRO`, que calcula el zoom sobre la sombra girada del
+rectángulo —la más grande que va a ocupar en toda la vuelta—, no el
+acercamiento.
+
+### 3 · La pieza nueva · `portada-giro`, 27 s
+
+La portada de trece segundos **no se tocó**: la pieza nueva *es* esa, con dos
+actos más pegados al final.
+
+| | | |
+|---|---|---|
+| 01–04 | 0,0 – 13,0 s | la portada entera, cuadro por cuadro la misma |
+| 05 | 13,0 – 15,0 s | se enciende el shader de elevaciones |
+| 06 | 15,0 – 27,0 s | la vuelta entera, 360°, a velocidad constante |
+
+Los actos 01 a 04 no están escritos en la pieza nueva: se **importan** de
+`PortadaPredio` —`camaraPortada` y `pintarPortada`—. Copiarlos habría dado una
+pieza que hoy se ve igual y que el día que se corrija la portada se ve distinta.
+De paso, la corriente del agua no se reinicia al entrar en el giro: se calcula
+desde el cuadro 198 y sigue contando hasta el 810.
+
+Las tres decisiones de la pieza:
+
+- **El retroceso de cámara va con la rampa del shader, no con el giro.** Una
+  vuelta entera necesita más aire que la vista a sangre. Son 0,19 niveles de
+  zoom —`SOMBRA_QUIETA` 15° contra `SOMBRA_GIRO` 45°, más el 0,05 de
+  acercamiento—, o sea un 14 % repartido en dos segundos: no se ve. Lo que no
+  se podía hacer es retroceder mientras gira, porque entonces el giro no es un
+  giro.
+- **La vuelta entra y sale de cero.** 300 de los 360 cuadros van a velocidad
+  exactamente constante —que es lo que se pidió— y los 18 de cada punta son una
+  rampa sinusoidal. Sin eso, el cuadro 449 está quieto y el 450 se mueve un
+  grado, y ese escalón se lee como un corte. No es un rebote: la vuelta nunca se
+  pasa de los 360° ni vuelve atrás.
+- **No hace bucle**, igual que la portada: el último cuadro es el póster, y es
+  la pose aprobada —el otro lado de la ladera— ahora con la rampa de alturas
+  puesta. Se comprobó cuadro por cuadro que el 809 cae exactamente sobre la
+  pose del 450: la vuelta cierra en 360° exactos.
+
+### Lo que esto le cuesta a la página, y hay que decirlo
+
+Doce segundos de giro continuo son doce segundos que el codificador paga
+enteros: **no hay un solo píxel que se repita entre un cuadro y el siguiente.**
+El caudal BAJA —de 2.000 a 1.400 kbps, porque el residuo entre cuadros
+consecutivos es mucho más chico a 1°/cuadro que a 6°— pero el peso sube seis
+veces: de ~480 KB a ~2 MB por lectura. **Seis bucles de 2 MB no se precargan los
+seis**, y eso es una decisión de la sesión de web, no de acá.
+
+La pieza nueva pesa ~3,3 MB por sus 27 s, más que el tope de 2,5 MB de la
+portada corta. Está bien que así sea y **no es un reemplazo del hero**: la
+portada de trece segundos sigue siendo la aprobada y la liviana.
+
 ## Segunda vuelta · 27/10/2026
 
 Jonatan pidió cuatro cambios sobre la entrega del 26. Están hechos y son los
@@ -147,7 +267,7 @@ clara recorre cada cadena desde que arranca el acto 03 hasta el final de la
 pieza. En los dos segundos y medio del acto 04 es lo único que se mueve, además
 de la deriva.
 
-### B · Las lecturas — 2 s cada una, una vuelta entera
+### B · Las lecturas — 2 s cada una, una vuelta entera *(superado: ver la tercera vuelta — hoy son 12 s a 30 fps)*
 
 Reemplazan a la pieza de ocho segundos que se recorría con el scroll. Son seis
 archivos, todos de dos segundos, **a 60 cuadros por segundo**, con la cámara
@@ -383,7 +503,7 @@ los archivos. Necesita un servidor que atienda **peticiones por rango**: con
 `currentTime = 2` vuelve a 0 al instante y el control informa que la pieza no se
 puede recorrer cuando el que no puede es el servidor.
 
-## Tres cosas que costaron encontrar, por si hay que volver
+## Cuatro cosas que costaron encontrar, por si hay que volver
 
 **El cuadro 0 salía con el terreno plano.** Remotion renderiza en orden y en una
 sola pestaña, así que el primer cuadro se captura con el mapa recién nacido.
@@ -419,6 +539,26 @@ la misma pieza, y se mide sobre el maestro: a 500 kbps el cuadro 179 arrastra
 ~1,7 de deriva de cuantización contra el 1, uniforme y sin una forma adentro, y
 medir eso convertiría el criterio en un medidor de bitrate.
 
+**Las once piezas en un solo proceso se caen a la tercera.** La corrida del
+29/10 renderizó `portada-giro` y `lectura-relieve` enteras y murió empezando a
+codificar la tercera, con un FFmpeg que no encontraba su propio archivo
+intermedio: *Error opening output (…)/remotion-stitch-temp-dir/fast-start-intermediate:
+No such file or directory*, código 4294967294. No es un problema de la pieza
+—`lectura-curvas` ya había salido bien dos días antes— ni de la máquina: es el
+temporal que Remotion crea por corrida y limpia al terminar, y en una cadena
+larga dentro del mismo proceso a veces se lo lleva antes de tiempo. Dos cosas
+que hay que saber:
+
+- **El código de salida miente por omisión.** El proceso se muere con 1 y las
+  dos piezas que ya estaban hechas quedan bien en disco. Antes de rehacer nada,
+  medí lo que hay: `piezas --verificar` con los once nombres dice exactamente
+  qué falta.
+- **La corrida larga se hace de una pieza por proceso.** `for p in …; do node
+  scripts/piezas.mjs "$p"; done` cuesta un empaquetado de webpack por pieza
+  —menos de un minuto cada uno sobre doce de render— y a cambio una pieza que
+  se cae no se lleva a las que faltan, que es lo caro. Las sueltas no se pisan:
+  cada una escribe sus propios archivos y el informe final se pide aparte.
+
 ## Lo que queda abierto
 
 - **La licencia de la imagen de Esri.** El relieve es Copernicus y se cita sin
@@ -444,8 +584,17 @@ medir eso convertiría el criterio en un medidor de bitrate.
 ```bash
 pnpm --filter @arteytierra/terreno datos-portada    # el dato, una vez
 pnpm --filter @arteytierra/terreno datos-portada --refrescar   # ignorando la caché del relieve
-pnpm --filter @arteytierra/placas  piezas           # las diez piezas
+pnpm --filter @arteytierra/placas  piezas           # el encargo EN CURSO, que hoy es el 04
 pnpm --filter @arteytierra/placas  piezas lectura-todo  # una sola
+# las once del encargo 02, por nombre: sin argumentos NO se corren, porque la
+# corrida por defecto es la del encargo en curso (`EN_CURSO` en piezas.mjs).
+pnpm --filter @arteytierra/placas  piezas portada portada-giro \
+  lectura-relieve lectura-curvas lectura-agua lectura-represas \
+  lectura-todo lectura-secuencia lazo-perimetro lazo-giro lazo-agua
+# una corrida larga, de a una por proceso: si una se cae no se lleva al resto
+for p in portada-giro lectura-relieve lectura-curvas lectura-agua \
+         lectura-represas lectura-todo lectura-secuencia; do
+  node scripts/piezas.mjs "$p"; done
 pnpm --filter @arteytierra/placas  piezas --prueba  # cortes en baja de las que cambiaron
 pnpm --filter @arteytierra/placas  piezas --verificar   # medir sin renderizar
 pnpm --filter @arteytierra/placas  piezas --recodificar # rehacer los formatos desde el maestro

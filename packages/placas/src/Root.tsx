@@ -19,6 +19,9 @@ import { PlacaDato, esquemaPlacaDato } from './composiciones/PlacaDato';
 import {
   CUADROS_PORTADA_PREDIO, PortadaPredio, esquemaPortadaPredio,
 } from './composiciones/PortadaPredio';
+import {
+  CUADROS_PORTADA_GIRO, PortadaGiro, esquemaPortadaGiro,
+} from './composiciones/PortadaGiro';
 import { Titular, esquemaTitular } from './composiciones/Titular';
 import {
   COLORES_GEN,
@@ -343,10 +346,29 @@ export const Root: React.FC = () => {
       />
 
       {/*
-        Las seis lecturas: dos segundos, una vuelta entera y 60 fps. Los 60 no
-        son un lujo: 360° en dos segundos son 180° por segundo, que a 30 fps
-        dan 6° por cuadro y el giro estroboscopia. Ver la cabecera de la
-        composición.
+        La misma portada, y después la vuelta entera con la rampa de alturas
+        puesta. Veintisiete segundos: los trece de `PortadaPredio` sin tocar un
+        cuadro —se importan su cámara y su pintura—, dos para que aparezca el
+        shader y doce de giro a velocidad constante. No hace bucle: el último
+        cuadro es el póster.
+      */}
+      <Composition
+        id="PortadaGiro"
+        component={PortadaGiro}
+        durationInFrames={CUADROS_PORTADA_GIRO}
+        fps={FPS}
+        width={1280}
+        height={720}
+        schema={esquemaPortadaGiro}
+        defaultProps={{}}
+      />
+
+      {/*
+        Las seis lecturas: doce segundos y una vuelta entera, o sea un grado de
+        rumbo por cuadro. Antes eran dos segundos a 60 fps —180° por segundo— y
+        a esa velocidad no se distingue nada, que es la corrección que pidió
+        Jonatan. Seis veces más lento, los 60 fps ya no hacen falta: vuelven a
+        30, como el resto del repertorio.
       */}
       {(['relieve', 'curvas', 'agua', 'represas', 'todo', 'secuencia'] as const).map(lectura => (
         <Composition
