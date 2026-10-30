@@ -22,9 +22,9 @@
  * ── Por qué la secuencia lleva un fotograma clave cada cinco ───────────────
  * Porque es la única que se recorre cambiando `currentTime` desde la página.
  * Al buscar, el decodificador tiene que volver al fotograma clave anterior y
- * reconstruir desde ahí: con claves cada dos segundos eso son ciento veinte
- * cuadros de trabajo por cada salto y se ve a los tirones. Cada cinco cuesta
- * peso, y se mide acá abajo, cuadro por cuadro.
+ * reconstruir desde ahí: con el intervalo que pone el codificador solo eso son
+ * decenas de cuadros de trabajo por cada salto y se ve a los tirones. Cada
+ * cinco cuesta peso, y se mide acá abajo, cuadro por cuadro.
  */
 import { existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -37,7 +37,16 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve(AQUI, '..');
 const BASE = 'C:\\Arte y Tierra\\Acequia\\portada animacion';
-const SALIDA = `${BASE}\\salida-encargo-02`;
+/**
+ * La SEGUNDA entrega del encargo 02, en su propia carpeta.
+ *
+ * Toda la entrega junta y separada de la primera, que es lo que pidió Jonatan:
+ * la carpeta de arriba —`salida-encargo-02`— se queda con lo de la primera
+ * vuelta, incluida la pieza de ocho segundos que estas seis reemplazan, y acá
+ * abajo está lo que hay que mirar. Si las dos convivieran en la misma carpeta,
+ * `cuatro-lecturas.mp4` quedaría al lado de las seis que la jubilaron.
+ */
+const SALIDA = `${BASE}\\salida-encargo-02\\encargo 2 entrega 2`;
 const SALIDA_03 = `${BASE}\\salida-encargo-03`;
 const SALIDA_04 = `${BASE}\\salida-encargo-04`;
 const CARPETAS = { 3: SALIDA_03, 4: SALIDA_04 };
@@ -60,17 +69,47 @@ const MiB = 1024 * 1024;
  */
 /**
  * Las seis lecturas cuestan más bits por segundo que todo lo demás y vale la
- * pena decir por qué: dan una vuelta entera en dos segundos, así que **no hay
- * un solo píxel que se repita entre un cuadro y el siguiente**. En una pieza de
+ * pena decir por qué: dan una vuelta entera sin detenerse, así que **no hay un
+ * solo píxel que se repita entre un cuadro y el siguiente**. En una pieza de
  * cámara quieta el codificador paga el primer cuadro y después casi nada; acá
- * paga todos. Por eso van a 2.000 kbps contra los 950 de los lazos, y aun así
- * pesan menos de un cuarto de lo que pesaba la pieza de ocho segundos.
+ * paga todos.
+ *
+ * ── Qué cambió al pasar de dos segundos a doce ─────────────────────────────
+ * El caudal BAJA y el peso sube. Baja porque la vuelta ahora es de un grado por
+ * cuadro y no de seis: el residuo entre dos cuadros consecutivos es mucho más
+ * chico, así que donde antes hacían falta 2.000 kbps para que el follaje no se
+ * empastara, ahora 1.400 dan la misma imagen. Y sube el peso porque son seis
+ * veces más segundos: 1.400 kbps por doce segundos son 2,05 MiB contra los
+ * 480 KB de la versión de dos. No hay forma de esquivarlo —doce segundos de
+ * giro continuo son doce segundos que el codificador paga enteros— y **la
+ * página tiene que saberlo**: seis bucles de 2 MB no se precargan los seis.
  */
-const LECTURA = { kbps: 2000, tope: 1.1 * MiB, lazo: true };
+const LECTURA = { kbps: 1400, tope: 2.4 * MiB, lazo: true, segundos: 12 };
 
 const PIEZAS = {
   portada: {
     id: 'PortadaPredio', archivo: 'portada', kbps: 1050, tope: 2.5 * MiB,
+    poster: 'ultimo', cuadroSuelto: true, prueba: true, segundos: 13,
+  },
+
+  /**
+   * La portada, y después la vuelta entera con la rampa de alturas.
+   *
+   * Veintisiete segundos a 1.000 kbps son 3,3 MiB, que es más que el tope de
+   * 2,5 MB de la portada corta — y está bien que lo sea: son trece segundos más
+   * y doce de ellos giran. Lo que esto NO es es un reemplazo del hero: la
+   * portada de trece segundos sigue siendo la aprobada y la liviana. Ésta es
+   * una pieza aparte, y dónde entra lo decide la sesión de web.
+   *
+   * El caudal es más bajo que el de las lecturas aunque la pieza gire igual, y
+   * no es un descuido: las dos pasadas de VP9 reparten los bits donde hacen
+   * falta, y acá la primera mitad es la portada —cámara casi quieta, baratísima
+   * de codificar—, así que de un promedio de 1.000 kbps el giro se queda con
+   * bastante más de 1.400. Un presupuesto plano por segundo le habría regalado
+   * a la mitad quieta bits que no necesita.
+   */
+  'portada-giro': {
+    id: 'PortadaGiro', archivo: 'portada-giro', kbps: 1000, tope: 3.5 * MiB, segundos: 27,
     poster: 'ultimo', cuadroSuelto: true, prueba: true,
   },
   'lectura-relieve':  { id: 'LecturaRelieve',  archivo: 'lectura-relieve',  ...LECTURA, poster: 'primero' },
@@ -81,13 +120,17 @@ const PIEZAS = {
   // La única que no es un bucle: acumula las cuatro capas, así que el último
   // cuadro no se parece al primero. Es la que la página puede recorrer con
   // `currentTime`, y por eso es la única con fotograma clave corto.
+  // Con doce segundos, el fotograma clave cada cinco cuadros son 72 claves y no
+  // 24. El tope es el del encargo —3 MB— y ahí tiene que entrar: es la única de
+  // las seis que la página recorre con `currentTime`, y aflojarle la clave para
+  // que pese menos es cambiar lo único que esta variante tiene de distinto.
   'lectura-secuencia': {
-    id: 'LecturaSecuencia', archivo: 'lectura-secuencia', kbps: 2000, tope: 1.1 * MiB,
-    poster: 'primero', gop: 5, prueba: true,
+    id: 'LecturaSecuencia', archivo: 'lectura-secuencia', kbps: 1400, tope: 3 * MiB,
+    poster: 'primero', gop: 5, prueba: true, segundos: 12,
   },
-  'lazo-perimetro': { id: 'LazoPerimetro', archivo: 'lazo-perimetro', kbps: 950, tope: 900 * 1024, lazo: true },
-  'lazo-giro':      { id: 'LazoGiro',      archivo: 'lazo-giro',      kbps: 950, tope: 900 * 1024, lazo: true },
-  'lazo-agua':      { id: 'LazoAgua',      archivo: 'lazo-agua',      kbps: 950, tope: 900 * 1024, lazo: true, prueba: true },
+  'lazo-perimetro': { id: 'LazoPerimetro', archivo: 'lazo-perimetro', kbps: 950, tope: 900 * 1024, lazo: true, segundos: 6 },
+  'lazo-giro':      { id: 'LazoGiro',      archivo: 'lazo-giro',      kbps: 950, tope: 900 * 1024, lazo: true, segundos: 6 },
+  'lazo-agua':      { id: 'LazoAgua',      archivo: 'lazo-agua',      kbps: 950, tope: 900 * 1024, lazo: true, segundos: 6, prueba: true },
 
   // ── Encargo 03 ──────────────────────────────────────────────────────────
   //
@@ -100,7 +143,7 @@ const PIEZAS = {
   // corto: esta pieza corre sola y en bucle, la página no la recorre.
   mesa: {
     id: 'MesaDeTrabajo', archivo: 'mesa-de-trabajo', kbps: 700, tope: 1.5 * MiB,
-    poster: 'primero', posterExtra: 435, lazo: true, prueba: true, encargo: 3,
+    poster: 'primero', posterExtra: 435, lazo: true, prueba: true, encargo: 3, segundos: 16,
   },
 
   // ── Encargo 04 ──────────────────────────────────────────────────────────
@@ -121,7 +164,7 @@ const PIEZAS = {
   // necesita una imagen de reposo en vez del primer cuadro.
   sol: {
     id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 1.8 * MiB,
-    poster: 'primero', posterExtra: 430, lazo: true, prueba: true, encargo: 4,
+    poster: 'primero', posterExtra: 430, lazo: true, prueba: true, encargo: 4, segundos: 18,
   },
 
   // La pieza C no hace bucle y es la única sin mapa: es tipografía sobre papel,
@@ -133,7 +176,7 @@ const PIEZAS = {
   // bajar es la resolución: el tema de la pieza es que se lea la columna de
   // procedencia de cada fila, y a 960 de ancho ese texto desaparece.
   informe: {
-    id: 'Informe', archivo: 'informe', kbps: 850, tope: 1.2 * MiB,
+    id: 'Informe', archivo: 'informe', kbps: 850, tope: 1.2 * MiB, segundos: 10,
     poster: 'primero', prueba: true, encargo: 4,
   },
 };
@@ -402,9 +445,17 @@ function informe() {
       if (!existsSync(f)) { process.stdout.write(`  ${marca(false)} falta ${path.basename(f)}\n`); continue; }
       const v = medir(f);
       const colorOk = v.pix === 'yuv420p' && v.rango === 'tv' && v.matriz === 'bt709';
-      const ok = v.bytes <= pieza.tope && !v.audio && v.wh === '1280x720' && colorOk;
+      // La duración se COMPARA contra la declarada, y esa comparación existe
+      // por un archivo que pasó. El 29/10/2026 el render de `lectura-todo` se
+      // cayó y el informe midió el archivo de la entrega anterior —2,00 s—, le
+      // puso un tilde y cerró con «entra en todos los topes»: todo lo que el
+      // informe sabía mirar estaba bien, y lo único que estaba mal era lo que
+      // no miraba. Un informe que no sabe cuánto tiene que durar la pieza
+      // aprueba la versión vieja.
+      const duraOk = !pieza.segundos || Math.abs(v.dur - pieza.segundos) <= 0.05;
+      const ok = v.bytes <= pieza.tope && !v.audio && v.wh === '1280x720' && colorOk && duraOk;
       process.stdout.write(
-        `  ${marca(ok)} ${path.basename(f).padEnd(22)} ${v.wh}  ${v.dur.toFixed(2)} s  ` +
+        `  ${marca(ok)} ${path.basename(f).padEnd(22)} ${v.wh}  ${v.dur.toFixed(2)} s${pieza.segundos ? `/${pieza.segundos}` : ''}  ` +
         `${String(Math.round(v.bytes / 1024)).padStart(5)} KB / ${Math.round(pieza.tope / 1024)}  ` +
         `${String(v.kbps).padStart(5)} kbps  ${v.pix} ${v.rango} ${v.matriz}  ` +
         `${v.audio ? 'CON AUDIO' : 'sin audio'}\n`);
