@@ -6,6 +6,7 @@ import {
   edadAlEmpezar,
   nacimientoMaximo,
   primerProblema,
+  recibePostulaciones,
   type DatosPostulacion,
 } from '@/lib/voluntariado/reglas';
 
@@ -121,5 +122,20 @@ describe('el tope del calendario coincide con la validación', () => {
   // después rechaza, y la persona no entiende qué hizo mal.
   it('nacimientoMaximo() es la última fecha que la validación acepta', () => {
     expect(primerProblema({ ...BASE, fechaNacimiento: nacimientoMaximo() })).toBeNull();
+  });
+});
+
+describe('la puerta y las reglas son dos cosas distintas', () => {
+  it('con el cupo cubierto no se reciben postulaciones', () => {
+    expect(recibePostulaciones()).toBe(!C.cupoLleno);
+  });
+
+  it('las reglas siguen validando igual, con la puerta abierta o cerrada', () => {
+    // Esto es lo que el test cuida de verdad. El cupo lleno es una bandera que
+    // se baja; si alguna vez se metiera adentro de `primerProblema`, una
+    // postulación impecable empezaría a dar «cupo lleno» en vez de `null` y el
+    // día que la convocatoria se reabra nadie se acordaría de desarmarlo.
+    expect(primerProblema(BASE)).toBeNull();
+    expect(primerProblema({ ...BASE, equipo: false })).toMatch(/carpa/);
   });
 });

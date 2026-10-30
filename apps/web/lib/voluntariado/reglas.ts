@@ -55,6 +55,28 @@ export function nacimientoMaximo(): string {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * ¿La convocatoria sigue recibiendo postulaciones?
+ *
+ * Es una pregunta aparte de `primerProblema` a propósito. Las reglas de quién
+ * califica no cambiaron —la edad, la ventana, la estadía mínima siguen valiendo
+ * tal cual para la próxima convocatoria—; lo que está cerrado es la puerta. Si
+ * el cupo lleno se metiera adentro de la validación, el día que se abra de nuevo
+ * habría que desarmarla en vez de bajar una bandera, y los tests de las reglas
+ * empezarían a fallar por algo que no tiene nada que ver con ellas.
+ */
+export function recibePostulaciones(): boolean {
+  return !C.cupoLleno;
+}
+
+/**
+ * Lo que se le contesta a quien llega con la puerta cerrada.
+ *
+ * Lo dicen los dos lados: el panel que reemplaza al formulario y la acción de
+ * servidor, que es la que no se puede saltear.
+ */
+export const MOTIVO_CUPO_LLENO = `Los ${C.cupos} lugares de esta convocatoria ya están cubiertos.`;
+
 export interface DatosPostulacion {
   nombre: string;
   email: string;
