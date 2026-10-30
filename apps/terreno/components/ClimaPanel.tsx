@@ -6,6 +6,7 @@ import { obtenerClima, centroide, weatherSparkURL, type DatosClima, type MesDato
 import { textoKoppen } from '@/lib/koppenTexto';
 import { obtenerExtremos, type Extremos } from '@/lib/climaExtremos';
 import { FUENTE_ESCALADO_LINEAL } from '@/lib/climaCalibracionSerie';
+import { CONCENTRACION_MINIMA } from '@/lib/viento';
 import { BalanceHidricoBloque } from './BalanceHidricoBloque';
 import { Cautela } from './Cautela';
 import type { Mojon } from '@/lib/types';
@@ -295,6 +296,22 @@ export function ClimaPanel({ mojones, datos, onDatos, extremos, onExtremos, cali
             )}
             <StatCard icon={<Wind className="w-3.5 h-3.5" />}    label="Viento ppal."   value={datos.viento_dir_ppal}          sub={datos.viento_medio_ms !== undefined ? `${datos.viento_medio_ms} m/s medio` : 'dirección'} color="moss" />
           </div>
+
+          {/* Una dirección predominante sin su concentración engaña: un predio
+              donde el viento entra siempre por el mismo lado y uno donde entra
+              por dos lados opuestos muestran la misma flecha. La concentración
+              es la longitud resultante media de la rosa de los doce meses
+              (ver `lib/viento.ts`), y debajo de 0,66 la flecha deja de
+              describir el año; el umbral es CONCENTRACION_MINIMA. */}
+          {datos.viento_concentracion !== undefined && datos.viento_concentracion < CONCENTRACION_MINIMA && (
+            <p className="mt-2 text-[10px] text-ink-700/70 leading-snug rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5">
+              La rosa del viento está partida (concentración{' '}
+              <b className="tabular-nums">{datos.viento_concentracion}</b> de 1): el viento no entra
+              siempre por el mismo lado, así que «{datos.viento_dir_ppal}» es un promedio de
+              direcciones distintas. Mirá la columna de dirección mes a mes, y para orientar una
+              cortina usá la pestaña Cortinas, que lee el trimestre más frío.
+            </p>
+          )}
 
           {/* Corrección de temperatura por altura.
               Va acá, pegada a los números que modifica, y no en una nota al pie:

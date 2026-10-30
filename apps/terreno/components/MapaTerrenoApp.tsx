@@ -82,7 +82,8 @@ import { claseInfiltracionDeKsat, coberturaDeSatelite } from '@/lib/criterios';
 import { hidrologiaPredio, T_POR_DEFECTO, type HidrologiaPredio, type Confianza } from '@/lib/hidrologiaPredio';
 import { confianzaErosion } from '@/lib/saludCalculo';
 import { calcularCortafuegos, type ResultadoCortafuegos } from '@/lib/cortafuegos';
-import { construirCortina, sugerirCortina, type CortinaResultado } from '@/lib/cortinas';
+import { construirCortina, sugerirCortina, type CortinaResultado, type OpcionesCortina } from '@/lib/cortinas';
+import { azimutDeRumbo, vientoDeLaEstacionFria } from '@/lib/viento';
 import { calcularSilvopastura, type ResultadoSilvo, type OpcionesSilvo } from '@/lib/silvopastura';
 import { celdaEnPunto, type Cuenca, type ResultadoCuenca } from '@/lib/cuenca';
 import { volumenM3, miles } from '@/lib/unidades';
@@ -203,6 +204,10 @@ function errMsgApp(err: unknown): string {
   }
   return String(err);
 }
+/** Lo que se contesta cuando una cortina no tiene contra qué orientarse. */
+const SIN_VIENTO = 'Falta la dirección del viento: calculá el clima (pestaña Clima) '
+  + 'o elegí en el panel el rumbo del que entra.';
+
 /** Predio de ejemplo (~4 ha cerca de San Marcos Sierra, Córdoba) para que el
  *  usuario nuevo vea las herramientas funcionando sin tener que dibujar antes. */
 const EJEMPLO_MOJONES: Array<{ lat: number; lng: number }> = [
@@ -923,21 +928,48 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     setModal({ type: 'alert', message: `Se colocaron ${nuevos.length} cortafuegos en el plano (pestaña Caminos).` });
   }, [cortafuegos]);
 
+  // La ficha del ecosistema del predio. Se pide acá arriba —y no junto a la
+  // aptitud, que es donde se usaba— porque las cortinas también la necesitan:
+  // la flora nativa que el panel muestra sale de ella y de ningún otro lado.
+  const { ficha: fichaBioma } = useFichaBioma(datosClima, datosTopografia?.elev_media);
+
   // ─── Cortinas rompevientos (franja multiestrato: dibujar o sugerir) ──────
+  //
+  // Contra qué viento se orienta lo decide `lib/viento.ts` con la serie medida
+  // del predio, y ya no hay default por latitud: el que había erraba por más de
+  // 130° en dos de los tres predios que la app tiene medidos. Si no hay clima
+  // cargado y nadie eligió un rumbo, no se dibuja nada.
   const [cortina, setCortina] = useState<CortinaResultado | null>(null);
-  const cortinaParamsRef = useRef<{ ancho_m: number; alto_m: number }>({ ancho_m: 8, alto_m: 10 });
+  const [rumboCortina, setRumboCortina] = useState<string | null>(null);
+  const vientoCortina = useMemo(
+    () => (datosClima ? vientoDeLaEstacionFria(datosClima.meses) : null),
+    [datosClima],
+  );
+  /** El azimut con el que se construye: manda el rumbo que eligió el usuario
+   *  —que conoce el predio mejor que una celda de 50 km— y si no, el medido. */
+  const azCortina = useMemo(() => {
+    const elegido = rumboCortina !== null ? azimutDeRumbo(rumboCortina) : null;
+    return elegido ?? vientoCortina?.az_deg ?? null;
+  }, [rumboCortina, vientoCortina]);
+  const cortinaParamsRef = useRef<OpcionesCortina>({ ancho_m: 8, alto_m: 10, vientoFrioAz: 0 });
   const handleSugerirCortina = useCallback((ancho_m: number, alto_m: number) => {
     if (mojones.length < 3) { setModal({ type: 'alert', message: 'Cargá el terreno (al menos 3 mojones) primero.' }); return; }
+    if (azCortina === null) { setModal({ type: 'alert', message: SIN_VIENTO }); return; }
     const casa = zona0 ?? null;
-    const r = sugerirCortina(casa, mojones, { ancho_m, alto_m });
+    const r = sugerirCortina(casa, mojones, {
+      ancho_m, alto_m, vientoFrioAz: azCortina, floraNativa: fichaBioma?.especies,
+    });
     if (!r) { setModal({ type: 'alert', message: 'No se pudo ubicar la cortina en el predio.' }); return; }
     setCortina(r);
     setCapas(prev => ({ ...prev, cortinas: true }));
-  }, [mojones, zona0]);
+  }, [mojones, zona0, azCortina, fichaBioma]);
   const handleDibujarCortina = useCallback((ancho_m: number, alto_m: number) => {
-    cortinaParamsRef.current = { ancho_m, alto_m };
+    if (azCortina === null) { setModal({ type: 'alert', message: SIN_VIENTO }); return; }
+    cortinaParamsRef.current = {
+      ancho_m, alto_m, vientoFrioAz: azCortina, floraNativa: fichaBioma?.especies,
+    };
     setModo({ k: 'camino', vertices: [], proposito: 'cortina' });
-  }, []);
+  }, [azCortina, fichaBioma]);
   const handleColocarCortina = useCallback(() => {
     if (!cortina) return;
     // Se persiste la franja de plantación como dibujo (polígono editable).
@@ -975,8 +1007,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
   // este memo es el que alimenta las zonas que se vuelcan al plano. Si el panel
   // corrigiera los puntajes y esto no, el mapa terminaría pintando un uso
   // distinto del que la pantalla acaba de recomendar.
-  const { ficha: fichaBioma } = useFichaBioma(datosClima, datosTopografia?.elev_media);
-
+  // La ficha se pide más arriba, junto a las cortinas, que la necesitan antes.
   const aptitud = useMemo<ResultadoAptitud | null>(
     () => datosShader ? calcularAptitud(datosShader, datosEscorrentia, fichaBioma?.aptitud) : null,
     [datosShader, datosEscorrentia, fichaBioma],
@@ -3453,6 +3484,10 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 tieneCasa={!!zona0}
                 dibujando={modoCamino?.proposito === 'cortina'}
                 cortina={cortina}
+                viento={vientoCortina}
+                rumboElegido={rumboCortina}
+                onRumbo={setRumboCortina}
+                onIrAClima={() => setTab('clima')}
                 onSugerir={handleSugerirCortina}
                 onDibujar={handleDibujarCortina}
                 onCancelarDibujo={() => setModo(null)}

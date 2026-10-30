@@ -11,6 +11,7 @@
 import { fuentesRegionalesClima } from './climaFuentes';
 import { diagnosticarAltura, type CorreccionAltura } from './climaAltura';
 import { rotuloKoppen } from './koppenTexto';
+import { azimutDeRumbo, rosaDelViento, rumboDeAzimut } from './viento';
 
 export {
   GRADIENTE_TERMICO_C_KM, UMBRAL_IGNORAR_M, UMBRAL_AVISO_M,
@@ -87,6 +88,25 @@ export interface DatosClima {
   etp_anual_mm:    number;
   tmean_anual_c:   number;
   viento_dir_ppal: string;   // dirección predominante del viento (N, NE, E...)
+  /**
+   * El mismo rumbo en grados, sin pasar por la rosa de 16 puntas.
+   *
+   * Existe porque `viento_dir_ppal` redondea a la punta más cercana y pierde
+   * hasta 11,25°, y quien dibuja una cuña o orienta una cortina necesita el
+   * azimut y no la etiqueta. Antes el consumidor lo recuperaba convirtiendo la
+   * etiqueta de vuelta a grados, o sea leyendo el número redondeado.
+   */
+  viento_dir_ppal_deg?: number;
+  /**
+   * Concentración de la rosa anual: la longitud resultante media R̄ de la
+   * estadística circular, de 0 a 1. Ver `lib/viento.ts`.
+   *
+   * Sin ella, una dirección predominante de un predio donde el viento entra
+   * siempre por el mismo lado y la de un predio donde entra por dos lados
+   * opuestos se muestran igual. Córdoba da 0,754 —NE en verano, NO en
+   * invierno—; Ámsterdam, 0,902.
+   */
+  viento_concentracion?: number;
   meses: MesDato[];
   fuente: string;
   weather_spark_url: string;
@@ -322,7 +342,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
       etp_mm:    Math.round(etp_mm    * 10) / 10,
       balance_mm: Math.round((precip_mm - etp_mm) * 10) / 10,
       viento_max_ms:  vientoMx[key] !== undefined ? Math.round(vientoMx[key]! * 10) / 10 : undefined,
-      viento_dir:     dirDeg !== undefined ? gradosADireccion(dirDeg) : undefined,
+      viento_dir:     dirDeg !== undefined ? rumboDeAzimut(dirDeg) : undefined,
       viento_dir_deg: dirDeg !== undefined ? Math.round(dirDeg) : undefined,
       rh_pct:    rh[key]     !== undefined ? Math.round(rh[key]!) : undefined,
       rocio_c:   rocio[key]  !== undefined ? Math.round(rocio[key]!  * 10) / 10 : undefined,
@@ -337,9 +357,11 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     };
   });
 
-  // Dirección predominante del viento (promedio anual de dirección)
-  const wdirAnual = wdir['ANN'] ?? wdir['JAN'] ?? 180;
-  const viento_dir_ppal = gradosADireccion(wdirAnual);
+  // Dirección predominante del viento. El valor anual de POWER queda como
+  // respaldo: la dirección que se publica la calcula `ensamblar` con los doce
+  // meses y media vectorial, para que la etiqueta del panel, la cuña del sector
+  // y la cortina salgan todas del mismo número. Ver `lib/viento.ts`.
+  const wdirAnual = wdir['ANN'] ?? wdir['JAN'];
 
   // La clase Köppen sale del mapa de 1 km, no de las medias. Es global y no
   // depende de la fuente de los números, así que se pide una sola vez.
@@ -358,7 +380,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
     return ensamblar(
       lat, lng,
       fusionarDaymet(lat, meses, d.meses),
-      viento_dir_ppal,
+      wdirAnual,
       `${d.fuente} · viento de NASA POWER`,
       koppenMapa,
       koppenDeriva,
@@ -368,7 +390,7 @@ export async function obtenerClima(lat: number, lng: number): Promise<DatosClima
 
   return {
     ...ensamblar(
-      lat, lng, meses, viento_dir_ppal,
+      lat, lng, meses, wdirAnual,
       'NASA POWER Climatology (promedio 1981–2023)',
       koppenMapa,
       koppenDeriva,
@@ -513,7 +535,10 @@ function ensamblar(
   lat: number,
   lng: number,
   meses: MesDato[],
-  viento_dir_ppal: string,
+  /** El valor anual de WD10M que publica POWER, en grados. Sólo se usa como
+   *  respaldo: la dirección que sale a pantalla la decide la rosa de los doce
+   *  meses, que es la misma que orienta la cortina. */
+  viento_dir_ann_deg: number | undefined,
   fuente: string,
   koppenMapa?: Koppen | null,
   koppenDeriva?: DerivaClima | null,
@@ -536,6 +561,17 @@ function ensamblar(
   const viento_medio_ms = redondear(prom(meses.map(m => m.viento_ms)), 1);
   const viento_max_ms   = redondear(Math.max(...meses.map(m => m.viento_max_ms ?? m.viento_ms)), 1);
 
+  // La dirección predominante sale de los doce meses con media vectorial, que es
+  // la única manera de promediar direcciones —el promedio aritmético de 350° y
+  // 10° es 180°, el norte al revés—. Si la serie no trae ninguna dirección queda
+  // el valor anual de POWER, y si tampoco está, no se publica nada: un rumbo
+  // inventado acá sale dibujado como una cuña en el plano. Ver `lib/viento.ts`.
+  const rosa = rosaDelViento(meses);
+  const viento_dir_ppal_deg = rosa?.az_deg ?? viento_dir_ann_deg;
+  const viento_dir_ppal = viento_dir_ppal_deg !== undefined
+    ? rumboDeAzimut(viento_dir_ppal_deg)
+    : '—';
+
   // El mapa de 1 km manda cuando tiene dato: es un ensamble de fuentes ya
   // clasificado, contra una regla aplicada sobre una celda de ~50 km. Cuando no
   // lo tiene —océano, o el mapa no está disponible— queda el calculado.
@@ -552,7 +588,9 @@ function ensamblar(
 
   return {
     lat, lng,
-    precip_anual_mm, etp_anual_mm, tmean_anual_c, viento_dir_ppal,
+    precip_anual_mm, etp_anual_mm, tmean_anual_c,
+    viento_dir_ppal, viento_dir_ppal_deg,
+    viento_concentracion: rosa?.concentracion,
     meses,
     fuente,
     weather_spark_url: `https://weatherspark.com/y/${encodeURIComponent(`${lat.toFixed(2)},${lng.toFixed(2)}`)}`,
@@ -683,7 +721,7 @@ export function aplicarCorreccionAltura(
   // dependen de la temperatura. El Köppen del mapa de Beck se le devuelve tal
   // como estaba: es de 1 km y ya resuelve la altura, así que no se recalcula.
   const armado = ensamblar(
-    d.lat, d.lng, meses, d.viento_dir_ppal, d.fuente,
+    d.lat, d.lng, meses, d.viento_dir_ppal_deg ?? azimutDeRumbo(d.viento_dir_ppal) ?? undefined, d.fuente,
     d.koppen_fuente === 'mapa' ? d.koppen ?? null : null,
     d.koppen_deriva ?? null,
     d.koppen_mapa_falla,
@@ -898,13 +936,6 @@ function estimarHeladas(meses: MesDato[], lat: number): Heladas {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const RUMBOS_VIENTO = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'] as const;
-
-function gradosADireccion(grados: number): string {
-  const idx = Math.round(((grados % 360) + 360) % 360 / 22.5) % 16;
-  return RUMBOS_VIENTO[idx] ?? 'N';
-}
 
 /** Calcula el centroide geográfico de una lista de puntos. */
 export function centroide(puntos: Array<{ lat: number; lng: number }>): { lat: number; lng: number } {

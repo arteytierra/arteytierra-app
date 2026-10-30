@@ -5,7 +5,7 @@
  */
 import type { DatosClima } from './clima';
 import type { DatosTopografia } from './topografia';
-import { azimutVientoFrio } from './cortinas';
+import { azimutDeRumbo, rosaDelViento, rumboDeAzimut, vientoDeLaEstacionFria } from './viento';
 
 export type TipoSector =
   | 'sol_verano'
@@ -36,7 +36,11 @@ export const TIPOS_SECTOR: Record<TipoSector, {
   sol_verano:     { label: 'Sol de verano',       descripcion: 'Trayectoria alta del sol, verano',       color: '#FFD54F', colorTw: 'bg-yellow-300',  icono: '☀️' },
   sol_invierno:   { label: 'Sol de invierno',     descripcion: 'Trayectoria baja del sol, invierno',     color: '#FFB300', colorTw: 'bg-amber-400',   icono: '🌤️' },
   viento_ppal:    { label: 'Viento predominante', descripcion: 'Dirección del viento principal',         color: '#81D4FA', colorTw: 'bg-sky-200',    icono: '💨' },
-  viento_frio:    { label: 'Viento frío',         descripcion: 'Viento frío de invierno',                color: '#B3E5FC', colorTw: 'bg-sky-100',    icono: '🌬️' },
+  // «De la estación fría» y no «frío»: lo que se mide es el viento
+  // predominante del trimestre más frío, que es el que una cortina tiene que
+  // frenar. De dónde entran las irrupciones de aire frío es otra pregunta y
+  // este sector no la contesta. Ver la cabecera de `lib/viento.ts`.
+  viento_frio:    { label: 'Viento de la estación fría', descripcion: 'Viento predominante del trimestre más frío', color: '#B3E5FC', colorTw: 'bg-sky-100', icono: '🌬️' },
   viento_calido:  { label: 'Brisa cálida',        descripcion: 'Viento cálido / brisa de verano',        color: '#FFCC80', colorTw: 'bg-orange-200', icono: '🍃' },
   fuego:          { label: 'Riesgo de incendio',  descripcion: 'Zona de mayor riesgo de incendio',       color: '#FF7043', colorTw: 'bg-orange-500', icono: '🔥' },
   inundacion:     { label: 'Riesgo de inundación',descripcion: 'Área susceptible a anegamiento',         color: '#29B6F6', colorTw: 'bg-blue-400',   icono: '💧' },
@@ -74,31 +78,40 @@ export function calcularSectoresAuto(
 ): Sector[] {
   const sectores: Sector[] = [];
 
-  // Sector viento desde datos de clima
+  // Sectores de viento desde la serie medida. Los dos salen de `lib/viento.ts`
+  // con media vectorial: una dirección no se promedia sumando grados, y el
+  // viento frío ya no lo decide la latitud. Ver la cabecera de ese archivo.
   if (clima) {
-    sectores.push({
-      id:       'auto-viento',
-      tipo:     'viento_ppal',
-      nombre:   `Viento ${clima.viento_dir_ppal}`,
-      vertices: [],  // no tiene geometría — mostrar como flecha/info
-      notas:    `Dirección predominante del viento: ${clima.viento_dir_ppal}. Promedio anual.`,
-      auto:     true,
-    });
+    const anual = rosaDelViento(clima.meses);
+    if (anual) {
+      sectores.push({
+        id:       'auto-viento',
+        tipo:     'viento_ppal',
+        nombre:   `Viento ${anual.rumbo}`,
+        vertices: [],  // no tiene geometría — mostrar como flecha/info
+        notas:    `Dirección predominante del viento: ${anual.rumbo} (${anual.az_deg}°), media de los ${anual.n} meses medidos. ` + (anual.disperso
+          ? `La rosa está partida (concentración ${anual.concentracion}): en el año el viento entra por más de un lado y una sola flecha no lo describe.`
+          : `Concentración ${anual.concentracion} de 1: el viento entra casi siempre por el mismo lado.`),
+        auto:     true,
+      });
+    }
 
-    // El viento frío llega desde el lado del polo. La nota decía "protegerse del
-    // SO" en cualquier latitud, que es el Pampero del hemisferio sur; en el norte
-    // el frío entra por el NO y la cortina iba al lado equivocado de la casa. El
-    // azimut lo resuelve `azimutVientoFrio`, que ya lo tenía bien para los dos.
-    const mesMasF = clima.meses.reduce((b, m, i) => m.tmean_c < clima.meses[b]!.tmean_c ? i : b, 0);
-    const rumboFrio = rumboDeAzimut(azimutVientoFrio(lat));
-    sectores.push({
-      id:    'auto-viento-frio',
-      tipo:  'viento_frio',
-      nombre: 'Viento frío (invierno)',
-      vertices: [],
-      notas: `Mes más frío: ${clima.meses[mesMasF]?.mes} (${clima.meses[mesMasF]?.tmean_c}°C). Protegerse del ${rumboFrio} con cortinas forestales.`,
-      auto: true,
-    });
+    const fria = vientoDeLaEstacionFria(clima.meses);
+    if (fria) {
+      const meses = fria.periodo === 'trimestre_frio'
+        ? `Trimestre más frío: ${fria.meses.join(', ')}.`
+        : 'Esos meses no traen dirección, así que se usó el año entero.';
+      sectores.push({
+        id:    'auto-viento-frio',
+        tipo:  'viento_frio',
+        nombre: `Viento de la estación fría (${fria.rumbo})`,
+        vertices: [],
+        notas: `${meses} El viento entra del ${fria.rumbo} (${fria.az_deg}°), medido. ` + (fria.disperso
+          ? 'La rosa de esos meses está partida: una sola cortina perpendicular no alcanza, hacen falta dos con orientaciones distintas.'
+          : 'Una cortina forestal perpendicular a ese rumbo es la que más resguardo da.'),
+        auto: true,
+      });
+    }
   }
 
   // Sectores de sol. Estaban detrás de un `if (lat < 0)`: un predio de España,
@@ -164,26 +177,17 @@ export function calcularSectoresAuto(
 const DEG_S = Math.PI / 180;
 const RAD_S = 180 / Math.PI;
 
-/** Convierte dirección cardinal → azimut en grados (0=N, 90=E…) */
-const WIND_AZ: Record<string, number> = {
-  N: 0, NNE: 22.5, NE: 45, ENE: 67.5,
-  E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
-  S: 180, SSO: 202.5, SO: 225, OSO: 247.5,
-  O: 270, ONO: 292.5, NO: 315, NNO: 337.5,
-};
-function dirAzimut(dir: string): number { return WIND_AZ[dir.toUpperCase()] ?? 0; }
+/**
+ * La rosa de los vientos vive en `lib/viento.ts`, que es el único lugar donde se
+ * decide un rumbo. Había tres copias —una de 8 puntas en `cortinas.ts` y dos de
+ * 16 acá y en `clima.ts`—, así que el mismo azimut salía rotulado «NE» en un
+ * panel y «ENE» en otro. Se re-exporta porque medio repo la importa de acá.
+ */
+export { azimutDeRumbo, rumboDeAzimut };
 
-/** Azimut → rumbo de la rosa de 16 puntas. El inverso de `dirAzimut`. */
-export function rumboDeAzimut(az: number): string {
-  const norm = ((az % 360) + 360) % 360;
-  let mejor = 'N';
-  let dist = 360;
-  for (const [rumbo, grados] of Object.entries(WIND_AZ)) {
-    const d = Math.min(Math.abs(norm - grados), 360 - Math.abs(norm - grados));
-    if (d < dist) { dist = d; mejor = rumbo; }
-  }
-  return mejor;
-}
+/** Rumbo → azimut para los sectores que lo reciben como texto (orientación de
+ *  ladera). Un texto que no es un rumbo cae al norte, como antes. */
+function dirAzimut(dir: string): number { return azimutDeRumbo(dir) ?? 0; }
 
 /**
  * Qué día del año es el solsticio de verano y cuál el de invierno.
@@ -331,16 +335,22 @@ export function generarVerticesSector(
       return arcoDelSol(centro, lat, doyDelSolsticio('invierno', lat), radio_m);
     }
     case 'viento_ppal': {
-      const az = clima ? dirAzimut(clima.viento_dir_ppal) : 0;
-      return cuña(centro, az, 70, radio_m);
+      // Sin clima no hay dirección, y una cuña al norte por defecto es una
+      // afirmación sobre el predio que nadie midió.
+      const anual = clima ? rosaDelViento(clima.meses) : null;
+      if (!anual) return [];
+      return cuña(centro, anual.az_deg, 70, radio_m);
     }
     case 'viento_frio': {
-      // Este módulo decía SO en el sur y NO en el norte —el Pampero—, y cortinas.ts
-      // decía S y N. Dos respuestas para la misma pregunta, y la cuña del sector
-      // caía en un lado mientras la cortina sugerida iba en el otro. Manda
-      // `azimutVientoFrio`: el aire frío viene del polo en todas partes, y que en
-      // la Pampa entre del SO es un hecho sobre la Pampa, no sobre el planeta.
-      return cuña(centro, azimutVientoFrio(lat), 55, radio_m);
+      // Este módulo decía SO en el sur y NO en el norte —el Pampero—, y
+      // `cortinas.ts` decía S y N: dos respuestas para la misma pregunta, y la
+      // cuña del sector caía en un lado mientras la cortina sugerida iba en el
+      // otro. Ahora las dos leen el mismo dato medido, y las TRES respuestas
+      // anteriores estaban mal: la serie de POWER da NO en Córdoba, SO en
+      // Ámsterdam y NE en Chiapas para el trimestre más frío de cada uno.
+      const fria = clima ? vientoDeLaEstacionFria(clima.meses) : null;
+      if (!fria) return [];
+      return cuña(centro, fria.az_deg, 55, radio_m);
     }
     case 'fuego': {
       const az = topo ? dirAzimut(topo.orientacion) : (lat < 0 ? 0 : 180);

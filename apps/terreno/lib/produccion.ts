@@ -637,72 +637,16 @@ export function calcularReceptividad(
   };
 }
 
-// ─── 7.5 Cortinas rompevientos ────────────────────────────────────────────────
-// ⚠ FUERA DE PRODUCCIÓN (11/08/2026): `calcularCortinas` ubica las líneas con
-// offsets fijos sobre el centroide, así que siempre caían en el centro del predio
-// sin relación con el terreno. Se desconectó de la UI (ProduccionPanel/MasterPlan).
-// Pendiente de rework antes de reactivar: idealmente como hileras dibujadas por el
-// usuario o auto-trazadas en el borde de barlovento (candidato para Silvopastura).
-
-const AZIMUT_DIR: Record<string, number> = {
-  N: 0, NE: 45, E: 90, SE: 135, S: 180, SO: 225, O: 270, NO: 315,
-};
-
-export const ESPECIES_ROMPEVIENTOS: Record<string, string[]> = {
-  default: [
-    'Algarrobo blanco (Prosopis alba)',
-    'Espinillo (Vachellia caven)',
-    'Sombra de toro (Jodina rhombifolia)',
-    'Molle de beber (Schinus fasciculatus)',
-    'Tala (Celtis ehrenbergiana)',
-  ],
-  Chaco: [
-    'Quebracho blanco (Aspidosperma quebracho-blanco)',
-    'Algarrobo negro (Prosopis nigra)',
-    'Brea (Cercidium praecox)',
-  ],
-};
-
-export interface CortinaSugerida {
-  a:            { lat: number; lng: number };
-  b:            { lat: number; lng: number };
-  longitud_m:   number;
-  azimut_perp:  number;
-  dir_viento:   string;
-  zona_prot_m:  number;   // radio de protección = 10× altura estimada (10 m)
-  especies:     string[];
-}
-
-export function calcularCortinas(
-  viento_dir_ppal: string,
-  mojones: Array<{ lat: number; lng: number }>,
-): CortinaSugerida[] {
-  if (mojones.length < 3) return [];
-
-  const lat  = mojones.reduce((s, m) => s + m.lat, 0) / mojones.length;
-  const lng  = mojones.reduce((s, m) => s + m.lng, 0) / mojones.length;
-  const azViento = AZIMUT_DIR[viento_dir_ppal] ?? 180;
-  const azPerp   = (azViento + 90) % 360;
-  const radPerp  = azPerp  * Math.PI / 180;
-
-  // Generar 2 cortinas paralelas atravesando el predio
-  const resultado: CortinaSugerida[] = [-0.0015, 0.0015].map(offset => {
-    const cx = lat + offset * Math.sin(azViento * Math.PI / 180);
-    const cy = lng + offset * Math.cos(azViento * Math.PI / 180);
-    const d  = 0.0025;
-    return {
-      a:           { lat: cx + d * Math.cos(radPerp), lng: cy + d * Math.sin(radPerp) },
-      b:           { lat: cx - d * Math.cos(radPerp), lng: cy - d * Math.sin(radPerp) },
-      longitud_m:  Math.round(d * 2 * 111000),
-      azimut_perp: azPerp,
-      dir_viento:  viento_dir_ppal,
-      zona_prot_m: 100, // 10 m altura × 10
-      especies:    ESPECIES_ROMPEVIENTOS.default!,
-    };
-  });
-
-  return resultado;
-}
+// ─── 7.5 Cortinas rompevientos: BORRADO ──────────────────────────────────────
+// `calcularCortinas` y `ESPECIES_ROMPEVIENTOS` vivían acá. Estaban fuera de la
+// UI desde el 11/08/2026 —ubicaban las líneas con offsets fijos sobre el
+// centroide— y se borran el 30/10/2026 porque eran una SEGUNDA respuesta a la
+// misma pregunta que `lib/cortinas.ts`, y las dos decían cosas distintas: 100 m
+// de reparo contra 15 veces la altura, una rosa de 8 puntas con default al sur,
+// y otra lista de especies del espinal argentino para cualquier predio del
+// mundo. Un motor muerto que contradice al vivo vuelve a la UI algún día.
+// Las cortinas se diseñan en `lib/cortinas.ts` y la dirección la decide
+// `lib/viento.ts`.
 
 // ─── 7.4 Erosión hídrica USLE simplificado ────────────────────────────────────
 

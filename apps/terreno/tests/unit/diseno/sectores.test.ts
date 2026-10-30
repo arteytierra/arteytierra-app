@@ -19,6 +19,14 @@ import type { DatosClima } from '@/lib/clima';
  *     de verano al revés (NE→NO es, en el sur, el de invierno);
  *   - el arco se barría siempre por el norte, así que en el norte salía
  *     espejado.
+ *
+ * Y una cuarta, arreglada el 30/10/2026: las dos cuñas de viento no miraban la
+ * serie. La del viento frío la decidía la latitud —el polo— y la del
+ * predominante convertía la etiqueta de 16 puntas de vuelta a grados, o sea
+ * leía el número ya redondeado. Ahora las dos salen de `lib/viento.ts` con el
+ * dato medido, y sin dato no hay cuña: el detalle de por qué, y los tres
+ * predios que desmienten al modelo del polo, están en
+ * `tests/unit/clima/viento.test.ts`.
  */
 
 const CORDOBA = { lat: -31.4, lng: -64.2 };
@@ -26,13 +34,31 @@ const AMSTERDAM = { lat: 52.37, lng: 4.9 };
 const QUITO = { lat: -0.18, lng: -78.47 };
 const LONGYEARBYEN = { lat: 78.2, lng: 15.6 };
 
-function clima(mesMasFrio: number): DatosClima {
+/**
+ * Doce meses con un solo mes frío y, si se le pasa, una dirección de viento
+ * para ese mes distinta de la del resto. Así se ve si la cuña del viento frío
+ * lee el trimestre que corresponde o se queda con el promedio del año.
+ */
+function clima(mesMasFrio: number, dirFrio?: number, dirResto = 90): DatosClima {
   const meses = Array.from({ length: 12 }, (_, i) => ({
     mes: String(i + 1),
     tmean_c: i === mesMasFrio ? -2 : 20,
     precip_mm: 50,
+    viento_ms: 4,
+    viento_dir_deg: dirFrio !== undefined && Math.abs(i - mesMasFrio) <= 1 ? dirFrio : dirResto,
   }));
-  return { lat: 0, lng: 0, viento_dir_ppal: 'SO', meses } as unknown as DatosClima;
+  return { lat: 0, lng: 0, viento_dir_ppal: 'E', meses } as unknown as DatosClima;
+}
+
+/** El mismo clima pero sin ninguna dirección medida. */
+function climaSinViento(mesMasFrio: number): DatosClima {
+  const meses = Array.from({ length: 12 }, (_, i) => ({
+    mes: String(i + 1),
+    tmean_c: i === mesMasFrio ? -2 : 20,
+    precip_mm: 50,
+    viento_ms: 4,
+  }));
+  return { lat: 0, lng: 0, viento_dir_ppal: '—', meses } as unknown as DatosClima;
 }
 
 describe('el rumbo de un azimut', () => {
@@ -157,19 +183,43 @@ describe('los sectores automáticos', () => {
     expect(sur?.notas).not.toContain('sale por el NE');
   });
 
-  it('el viento frío viene del polo, y la nota lo dice para cada hemisferio', () => {
-    const sur = calcularSectoresAuto(CORDOBA.lat, clima(6), null)
+  it('el viento frío sale de los meses fríos y no de la latitud', () => {
+    // El mismo rumbo medido en los dos hemisferios: la cuña y la nota dicen lo
+    // que midió la serie, y no el polo que les quedaba más cerca.
+    const sur = calcularSectoresAuto(CORDOBA.lat, clima(6, 225), null)
       .find((s) => s.tipo === 'viento_frio');
-    const norte = calcularSectoresAuto(AMSTERDAM.lat, clima(0), null)
+    const norte = calcularSectoresAuto(AMSTERDAM.lat, clima(0, 225), null)
       .find((s) => s.tipo === 'viento_frio');
-    expect(sur?.notas).toContain('Protegerse del S ');
-    expect(norte?.notas).toContain('Protegerse del N ');
+    expect(sur?.notas).toContain('del SO (225°)');
+    expect(norte?.notas).toContain('del SO (225°)');
+    // Lo que decía antes, cada uno con su polo.
+    expect(sur?.notas).not.toContain('Protegerse del S ');
+    expect(norte?.notas).not.toContain('Protegerse del N ');
   });
 
-  it('la cuña del viento frío apunta al mismo lado que dice la nota', () => {
-    const cuñaSur = generarVerticesSector('viento_frio', CORDOBA.lat, CORDOBA.lng, 1000, null, null);
-    const cuñaNorte = generarVerticesSector('viento_frio', AMSTERDAM.lat, AMSTERDAM.lng, 1000, null, null);
-    expect(cuñaSur.some((p) => p.lat < CORDOBA.lat - 0.005)).toBe(true);
-    expect(cuñaNorte.some((p) => p.lat > AMSTERDAM.lat + 0.005)).toBe(true);
+  it('el trimestre frío manda sobre el promedio del año', () => {
+    // Nueve meses del E y tres del SO, que son los fríos. El predominante del
+    // año es el E; la cortina se orienta contra el SO.
+    const sectores = calcularSectoresAuto(CORDOBA.lat, clima(6, 225, 90), null);
+    expect(sectores.find((s) => s.tipo === 'viento_ppal')?.nombre).toBe('Viento E');
+    expect(sectores.find((s) => s.tipo === 'viento_frio')?.nombre).toContain('(SO)');
+  });
+
+  it('la cuña del viento frío apunta al rumbo medido', () => {
+    // SO en los dos hemisferios: las dos cuñas caen al suroeste del centro.
+    for (const sitio of [CORDOBA, AMSTERDAM]) {
+      const cuña = generarVerticesSector('viento_frio', sitio.lat, sitio.lng, 1000, clima(6, 225), null);
+      expect(cuña.some((p) => p.lat < sitio.lat - 0.005 && p.lng < sitio.lng - 0.005)).toBe(true);
+    }
+  });
+
+  it('sin viento medido no hay cuña ni sector: no se inventa un rumbo', () => {
+    expect(generarVerticesSector('viento_frio', CORDOBA.lat, CORDOBA.lng, 1000, null, null)).toEqual([]);
+    expect(generarVerticesSector('viento_ppal', CORDOBA.lat, CORDOBA.lng, 1000, null, null)).toEqual([]);
+    const sinDir = climaSinViento(6);
+    expect(generarVerticesSector('viento_frio', CORDOBA.lat, CORDOBA.lng, 1000, sinDir, null)).toEqual([]);
+    const sectores = calcularSectoresAuto(CORDOBA.lat, sinDir, null);
+    expect(sectores.some((s) => s.tipo === 'viento_frio')).toBe(false);
+    expect(sectores.some((s) => s.tipo === 'viento_ppal')).toBe(false);
   });
 });

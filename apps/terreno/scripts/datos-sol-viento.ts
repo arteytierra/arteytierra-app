@@ -36,11 +36,13 @@
  *    junio acá. Que el mediodía de junio caiga al NORTE del centro del círculo
  *    es la prueba de que se leyó el lugar, y se comprueba abajo sobre el dato.
  *
- * 2. **El viento va mes a mes.** `viento_dir_ppal` de la app es
- *    `gradosADireccion(WD10M['ANN'])`, o sea el promedio anual de una
- *    dirección: exactamente lo que el encargo prohíbe mostrar como flecha. Acá
- *    se guardan los doce `viento_dir_deg`, y el promedio anual se guarda al
- *    lado SÓLO para poder decir si coincide o no con lo que miden los meses.
+ * 2. **El viento va mes a mes.** `viento_dir_ppal` de la app es una dirección
+ *    anual, o sea una sola flecha para doce meses: exactamente lo que el
+ *    encargo prohíbe mostrar. Acá se guardan los doce `viento_dir_deg`, y el
+ *    anual se guarda al lado SÓLO para poder decir si coincide o no con lo que
+ *    miden los meses. La cortina, en cambio, la orienta la misma función que
+ *    usa la app —`vientoDeLaEstacionFria`, sobre el trimestre más frío—, que es
+ *    lo que permite publicar este acto: ver el comentario del acto 03.
  *
  * 3. **El mapa de insolación no lleva número.** El JSON guarda el mínimo, el
  *    máximo y el promedio porque sin ellos no se puede normalizar el color ni
@@ -66,7 +68,8 @@ import { fileURLToPath } from 'node:url';
 import { calcularArcoSolar, calcularRadioArco } from '../lib/arco_solar';
 import { calcularInsolacion, colorInsolacion } from '../lib/insolacion';
 import { azimutsSolsticio, cuña, doyDelSolsticio, rumboDeAzimut } from '../lib/sectores';
-import { azimutVientoFrio, construirCortina } from '../lib/cortinas';
+import { construirCortina } from '../lib/cortinas';
+import { vientoDeLaEstacionFria } from '../lib/viento';
 import { shaderDesdeGrilla } from '../lib/shaders';
 import { atribucionDe } from '../lib/elevacion/atribucion';
 import { obtenerClima } from '../lib/clima';
@@ -281,38 +284,43 @@ async function main() {
 
   // ── Contra qué viento se pone la cortina, y por qué contra ése ───────────
   //
-  // NO es `viento_dir_ppal` —el promedio anual de una dirección, que es lo que
-  // el encargo prohíbe— ni el default de `azimutVientoFrio`, que en el
-  // hemisferio norte devuelve N (0°) porque el aire frío viene del polo. Acá
-  // POWER mide el viento entrando por el cuadrante NE–E los doce meses: del
-  // norte no sopla nunca, así que una cortina al norte protegería de un viento
-  // que no existe. Se usa el rumbo MODAL de los doce meses, que es la respuesta
-  // que el dato sostiene.
-  const cuenta = new Map<string, number>();
-  for (const m of meses) {
-    const r = rumboDeAzimut(m.dir_deg);
-    cuenta.set(r, (cuenta.get(r) ?? 0) + 1);
-  }
-  const [rumboModal, vecesModal] = [...cuenta.entries()].sort((a, b) => b[1] - a[1])[0]!;
-  const azModal = r1(meses
-    .filter(m => rumboDeAzimut(m.dir_deg) === rumboModal)
-    .reduce((a, m) => a + m.dir_deg, 0) / vecesModal);
+  // Lo decide la app. Esto cambió el 30/10/2026 y es el motivo por el que el
+  // acto del viento se puede publicar.
+  //
+  // Cuando se armó la pieza, `cortinas.ts` orientaba la cortina con
+  // `azimutVientoFrio(lat)`, que en el hemisferio norte devolvía N (0°) porque
+  // el aire frío viene del polo. Acá POWER mide el viento entrando por el
+  // cuadrante NE–E los doce meses: del norte no sopla nunca. Así que este
+  // script calculaba su propio rumbo —el MODAL de los doce meses, 46,2° NE— y
+  // dejaba escrito que la app estaba equivocada. Una pieza correcta que la
+  // aplicación contradecía: no se podía montar en la vidriera.
+  //
+  // Ahora la dirección la da `vientoDeLaEstacionFria`, de `lib/viento.ts`, con
+  // media vectorial sobre el trimestre más frío: **51,1° (NE)** en este predio.
+  // El script ya no tiene estadística propia. La diferencia con el 46,2° del
+  // master ya renderizado son 4,9°, las dos caen en la misma punta de la rosa
+  // —NE—, y la pieza no publica ningún número de azimut: por eso el video
+  // entregado sigue valiendo y no se vuelve a renderizar. Si se rerenderiza,
+  // sale con 51,1° y la banda se mueve esos 4,9°.
+  const rosa = vientoDeLaEstacionFria(clima.meses);
+  if (!rosa) throw new Error('la serie de POWER no trajo direcciones de viento');
+  const azFrio = rosa.az_deg;
   const masFuerte = meses.reduce((a, m) => (m.vel_ms > a.vel_ms ? m : a), meses[0]!);
-  const azDefault = azimutVientoFrio(centro.lat);
   const rango = {
     min: Math.min(...meses.map(m => m.dir_deg)),
     max: Math.max(...meses.map(m => m.dir_deg)),
   };
   const anualDentro = meses.some(m => rumboDeAzimut(m.dir_deg) === clima.viento_dir_ppal);
 
-  console.log(`           modal ${rumboModal} (${vecesModal}/12, ${azModal}°) · ` +
+  console.log(`           estación fría ${rosa.rumbo} (${azFrio}°) · ${rosa.periodo} ` +
+    `(${rosa.meses.join(', ')}) · concentración ${rosa.concentracion} · ` +
     `más fuerte ${masFuerte.nombre} ${masFuerte.vel_ms} m/s desde ${masFuerte.dir_deg}°`);
-  console.log(`           rango ${rango.min}–${rango.max}° · default de la app ${azDefault}° · ` +
+  console.log(`           rango ${rango.min}–${rango.max}° · ` +
     `anual «${clima.viento_dir_ppal}» ${anualDentro ? 'coincide con algún mes' : 'NO coincide con ningún mes'}`);
 
   const cortina = construirCortina(
-    ejePerpendicular(centro, azModal, MOJONES),
-    { ...CORTINA, vientoFrioAz: azModal },
+    ejePerpendicular(centro, azFrio, MOJONES),
+    { ...CORTINA, vientoFrioAz: azFrio },
     MOJONES,
     'sugerida',
   );
@@ -370,18 +378,26 @@ async function main() {
       fuente: clima.fuente,
       meses,
       rango_deg: rango,
-      modal: { rumbo: rumboModal, veces: vecesModal, az: azModal },
+      estacion_fria: {
+        rumbo: rosa.rumbo, az: azFrio, periodo: rosa.periodo,
+        meses: rosa.meses, concentracion: rosa.concentracion,
+        estadistico: rosa.estadistico,
+      },
       mes_mas_fuerte: { nombre: masFuerte.nombre, vel_ms: masFuerte.vel_ms, az: masFuerte.dir_deg },
       anual_de_la_app: clima.viento_dir_ppal,
       anual_coincide_con_algun_mes: anualDentro,
-      default_de_la_app_deg: azDefault,
-      por_que_modal:
-        'La cortina se orienta contra el rumbo MODAL de los doce meses, y no contra el promedio ' +
-        'anual de dirección (que es lo que el encargo prohíbe mostrar) ni contra el default de ' +
-        `azimutVientoFrio, que en el hemisferio norte devuelve ${azDefault}° porque el aire frío ` +
-        `viene del polo: acá POWER mide el viento entrando entre ${rango.min}° y ${rango.max}° los ` +
-        'doce meses, así que del norte no sopla nunca y una cortina al norte protegería de un ' +
-        'viento que no existe.',
+      az_del_master_renderizado: 46.2,
+      por_que_la_estacion_fria:
+        'La cortina se orienta con la MISMA función que usa la aplicación en /mapa: ' +
+        'vientoDeLaEstacionFria, media vectorial pesada por velocidad sobre el trimestre más frío ' +
+        `(${rosa.meses.join(', ')}), que acá da ${azFrio}° (${rosa.rumbo}) con una concentración de ` +
+        `${rosa.concentracion}. No es el promedio anual de dirección —que es lo que el encargo ` +
+        'prohíbe mostrar como flecha— y ya no es el default por hemisferio que la aplicación tenía ' +
+        `hasta el 30/10/2026, que devolvía 0° (N) acá: POWER mide el viento entrando entre ` +
+        `${rango.min}° y ${rango.max}° los doce meses, así que del norte no sopla nunca. El master ` +
+        'que está publicado se renderizó con 46,2°, el rumbo modal que este script calculaba por su ' +
+        'cuenta antes de que la aplicación estuviera arreglada: 4,9° de diferencia, la misma punta ' +
+        'de la rosa, y la pieza no publica ningún azimut.',
       cortina: {
         eje: cortina.eje.map(par),
         banda: cortina.banda.map(par),
@@ -394,16 +410,16 @@ async function main() {
         area_banda_ha: cortina.area_banda_ha,
         area_protegida_ha: cortina.area_protegida_ha,
         dir_viento: cortina.dir_viento_frio,
-        // Cuántos estratos tiene la cortina, NO cuáles. `ESTRATOS_CORTINA`
-        // nombra especies del espinal argentino —algarrobo, quebracho blanco,
-        // jarilla— y este predio está en Chiapas: publicar esa lista sobre una
-        // selva de montaña mexicana sería exactamente la plantilla que la
-        // pieza A existe para desmentir. Lo que la pieza muestra es la
-        // estructura: una banda de tres alturas, no una línea.
+        // Cuántos estratos tiene la cortina, NO cuáles, y desde el 30/10/2026
+        // ya no es un reparo: `ESTRATOS_CORTINA` dejó de nombrar especies.
+        // Nombraba tres ternas del espinal argentino —algarrobo, quebracho
+        // blanco, jarilla— para cualquier predio del mundo, y este predio está
+        // en Chiapas. Ahora son alturas y funciones; las especies las pone la
+        // ficha del ecosistema del predio, que no viaja a esta pieza.
         estratos: cortina.estratos.length,
         aviso_estratos:
-          'ESTRATOS_CORTINA lista especies del espinal argentino y este predio está en Chiapas: ' +
-          'la pieza dibuja la estructura de tres estratos y NO nombra especies.',
+          'La pieza dibuja la estructura de tres estratos —alturas y función— y NO nombra ' +
+          'especies: las nativas de este ecosistema las resuelve la ficha del predio en la app.',
       },
     },
     bitacora_red: BITACORA,
