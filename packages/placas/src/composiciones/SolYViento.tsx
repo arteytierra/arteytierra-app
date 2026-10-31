@@ -1,6 +1,6 @@
 /**
- * ENCARGO 04 · A — «Lo que no se ve»: el sol y el viento. Dieciocho segundos,
- * en bucle.
+ * ENCARGO 04 · A — «Lo que no se ve»: el sol y el viento. Treinta segundos,
+ * en bucle, con los actos rotulados.
  *
  * Un encuadre fijo sobre el mismo predio de siempre, la ortofoto de base, y
  * tres movimientos encima:
@@ -16,14 +16,46 @@
  *                   zona protegida a sotavento
  *   --  VUELVE      todo se apaga junto y queda la ortofoto desnuda
  *
+ * ── Los rótulos, y por qué la pieza cambió de opinión ──────────────────────
+ *
+ * Hasta el 30/10/2026 esta pieza no llevaba una sola palabra quemada, y la
+ * cabecera lo defendía: «qué es cada acto lo dice la página». El argumento
+ * tenía un agujero que se vio recién con la pieza publicada —un mapa de
+ * colores sobre una ladera no se autoexplica, y quien lo mira no sabe si está
+ * viendo horas de sol, pendiente o temperatura—, así que ahora cada acto se
+ * presenta en el cuadro.
+ *
+ * Tres reglas para que un rótulo no se vuelva el defecto que esta pieza venía
+ * esquivando:
+ *
+ * 1. **Ningún rótulo trae un número que la pieza no pueda sostener.** Ni horas
+ *    de sol —`insolacion.ts` avisa que es sin nubes, sin refracción y sobre un
+ *    modelo de ~30 m—, ni azimut del viento, ni superficie. Lo que se nombra
+ *    es QUÉ se está mirando, no cuánto mide.
+ * 2. **Lo que dicen sale del dato, no del redactado.** Los tres arcos son los
+ *    solsticios y el equinoccio porque `sol.arcos` son esos tres; que el
+ *    mediodía de junio pase al norte sale de `porElNorte`, que la app calcula
+ *    como `declinación > latitud`; la escala de color va del azul al amarillo
+ *    porque así está escrita en `rects[].c`.
+ * 3. **El velo sube y baja con el rótulo.** Un degradado permanente al pie
+ *    cambiaría el aspecto de la pieza también en los cuadros donde no hay nada
+ *    escrito —y el cuadro 0, que es el que cierra el bucle, tiene que seguir
+ *    siendo la ortofoto desnuda.
+ *
+ * Y el ritmo se alargó de 18 a 30 segundos por lo mismo: un acto que dura
+ * cinco segundos no da tiempo de leer tres renglones y mirar lo que describen.
+ * Los dos mapas de horas pasaron de 60 a 90 cuadros de dibujado y los doce
+ * meses del viento, de 75 cuadros a 108 —de 6 a 9 cuadros por mes—, que es lo
+ * que permite ver la rotación mes a mes en vez de un parpadeo.
+ *
  * ── Por qué el primer y el último cuadro son idénticos ─────────────────────
  *
  * Por lo mismo que en la secuencia de la mesa: la cámara está QUIETA y las dos
  * puntas son el mismo estado —la ortofoto sin una sola línea—. Donde nada se
  * mueve, periódico e idéntico son la misma cosa. El apagado termina en el
- * cuadro 528 y los once que quedan son el cuadro 0, así que el bucle cierra al
- * pie de la letra sin pagar el tirón de dos cuadros repetidos en una pieza que
- * sí se mueve.
+ * cuadro 870 y los veintinueve que quedan son el cuadro 0, así que el bucle
+ * cierra al pie de la letra sin pagar el tirón de dos cuadros repetidos en una
+ * pieza que sí se mueve.
  *
  * ── Lo que esta pieza NO muestra ───────────────────────────────────────────
  *
@@ -35,9 +67,7 @@
  *   (`viento_dir_deg` de cada mes, que es WD10M). El promedio anual que la app
  *   calcula aparte NO se dibuja: la pieza existe, entre otras cosas, para
  *   mostrar el cuadrante entero por el que el viento entra en el año.
- * · **Ni un rótulo, ni un crédito, ni una interfaz.** Las tres trayectorias se
- *   distinguen por el color que les pone la app. Qué es cada una lo dice la
- *   página.
+ * · **Ni un crédito, ni una interfaz.** Los rótulos nombran el acto y nada más.
  *
  * ── La única pieza del repertorio con el norte arriba, y por qué ──────────
  *
@@ -64,6 +94,7 @@ import { AbsoluteFill, Easing, interpolate } from 'remotion';
 import type maplibregl from 'maplibre-gl';
 
 import { COLORES } from '../marca';
+import { DISPLAY, SANS } from '../tipografia';
 import {
   GEO_ARCOS, GEO_BRUJULA, GEO_CORTINA_BANDA, GEO_CORTINA_EJE, GEO_CORTINA_ZONA,
   GEO_HORAS, GEO_HORIZONTE, GEO_MEDIODIAS, GEO_RUMBOS, GEO_SECTORES, MESES_VIENTO, SV,
@@ -73,19 +104,19 @@ import {
   type CapaExtra, corriente, degradadoDeAvance, usarMapaDelPredio, zoomQueEncuadra,
 } from './predio/mapa';
 
-/** Dieciocho segundos a 30 fps. */
-export const CUADROS_SOL = 540;
+/** Treinta segundos a 30 fps. */
+export const CUADROS_SOL = 900;
 
 /**
  * Los tres actos y el apagado, en cuadros. `apaga.hasta` es el cuadro en que
- * ya no queda nada encendido: de ahí al 539 no se mueve nada, que es lo que
+ * ya no queda nada encendido: de ahí al 899 no se mueve nada, que es lo que
  * hace que el último cuadro sea el 0.
  */
 const ACTO = {
-  arcos:  { desde: 0,   hasta: 150 },
-  horas:  { desde: 150, hasta: 300 },
-  viento: { desde: 300, hasta: 450 },
-  apaga:  { desde: 450, hasta: 528 },
+  arcos:  { desde: 0,   hasta: 240 },
+  horas:  { desde: 240, hasta: 512 },
+  viento: { desde: 512, hasta: 790 },
+  apaga:  { desde: 790, hasta: 870 },
 };
 
 const SUAVE = Easing.bezier(0.33, 0, 0.2, 1);
@@ -123,6 +154,60 @@ const frente = (t: number) => t * (1 + BANDA);
  * naranja y el azul de los propios arcos.
  */
 const LUZ = '#FFF3D6';
+
+/**
+ * El azul de los rótulos. No es `COLORES.agua` y es a propósito: el azul de la
+ * marca está hecho para texto sobre crema y sobre este fondo —ortofoto de monte
+ * en penumbra— queda por debajo del contraste legible. Éste es el mismo
+ * aclarado que usa la landing para el agua sobre oscuro.
+ */
+const AGUA_CLARA = '#7FC0DF';
+
+/**
+ * Qué dice cada acto mientras corre.
+ *
+ * Los tramos están elegidos para que el rótulo aparezca con el acto y se vaya
+ * antes de que entre el siguiente: dos rótulos encimados son peor que ninguno.
+ * Ver la cabecera para las tres reglas de qué puede decir un rótulo acá.
+ */
+const ROTULOS = [
+  {
+    acto: '01',
+    titulo: 'Las trayectorias del sol',
+    bajada: 'Solsticios y equinoccios, del amanecer al atardecer. En junio el mediodía pasa al norte.',
+    desde: 16, hasta: 212,
+  },
+  {
+    acto: '02',
+    titulo: 'Horas de sol sobre el terreno',
+    bajada: 'El día más largo del año. Amarillo, más horas; azul, sombra.',
+    desde: 246, hasta: 352,
+  },
+  {
+    acto: '02',
+    titulo: 'Horas de sol sobre el terreno',
+    bajada: 'El día más corto, con la misma escala de color.',
+    desde: 374, hasta: 500,
+  },
+  {
+    acto: '03',
+    titulo: 'De dónde entra el viento',
+    bajada: 'Los doce meses, medidos uno por uno.',
+    desde: 518, hasta: 642,
+  },
+  {
+    acto: '03',
+    titulo: 'La cortina',
+    bajada: 'Perpendicular al viento de los meses fríos, con la superficie que queda a resguardo.',
+    desde: 648, hasta: 784,
+  },
+] as const;
+
+/** Lo que tarda un rótulo en entrar, y lo mismo en salir. */
+const ENTRA_ROTULO = 16;
+
+const opacidadRotulo = (f: number, r: { desde: number; hasta: number }) =>
+  tramo(f, r.desde, r.desde + ENTRA_ROTULO) * (1 - tramo(f, r.hasta, r.hasta + ENTRA_ROTULO));
 
 /** Las fuentes y las capas que agrega esta pieza. */
 export const CAPAS_SOL: {
@@ -322,7 +407,7 @@ export const RUMBO_SOL = 0;
 const ACERCAR_SOL = 0.55;
 
 export const SolYViento: React.FC = () => {
-  const { contRef, width, height } = usarMapaDelPredio({
+  const { contRef, width, height, frame } = usarMapaDelPredio({
     nombre: 'sol-y-viento',
     // La cámara se arma acá y no con `vistaASangre`, y la diferencia es un
     // número: esa función corre el blanco 351 m HACIA la cámara para subir el
@@ -339,17 +424,17 @@ export const SolYViento: React.FC = () => {
     }),
     fuentes: CAPAS_SOL.fuentes,
     capas: CAPAS_SOL.capas,
-    pintar: (map, frame) => {
+    pintar: (map, f) => {
       const op = (capa: string, prop: string, v: unknown) =>
         map.setPaintProperty(capa, prop, v as unknown as
           maplibregl.DataDrivenPropertyValueSpecification<number>);
 
       // El perímetro entra con el primer acto y se queda hasta el apagado: sin
       // él los tres actos son dibujos sobre un valle cualquiera.
-      const marco = viva(frame, 0, 24);
+      const marco = viva(f, 0, 26);
       op('predio', 'line-opacity', 0.8 * marco);
       map.setPaintProperty('predio', 'line-gradient',
-        degradadoDeAvance(tramo(frame, 0, 40), COLORES.crema) as maplibregl.ExpressionSpecification);
+        degradadoDeAvance(tramo(f, 0, 44), COLORES.crema) as maplibregl.ExpressionSpecification);
 
       // ── 01 · LOS ARCOS ──────────────────────────────────────────────────
       //
@@ -357,16 +442,18 @@ export const SolYViento: React.FC = () => {
       // tercero: los dos hablan del mismo círculo —por dónde entra el sol y por
       // dónde entra el viento— y volver a dibujarlo en el acto 03 sería contar
       // dos veces la misma cosa.
-      const cielo = viva(frame, 6, 22);
+      const cielo = viva(f, 8, 26);
       op('horizonte', 'line-opacity', 0.85 * cielo);
       op('brujula', 'circle-opacity', 0.9 * cielo);
       op('brujula', 'circle-stroke-opacity', 0.7 * cielo);
 
       // Las tres trayectorias se dibujan a la vez, del amanecer al atardecer, y
       // cada una lleva su cabeza encendida: `corriente` es el mismo recurso que
-      // el agua bajando por las cadenas, acá sobre el recorrido del día.
-      const tArco = tramo(frame, 14, 110);
-      const vArco = solo(frame, 14, 20, ACTO.arcos.hasta - 10, 30);
+      // el agua bajando por las cadenas, acá sobre el recorrido del día. El
+      // trazado tarda 148 cuadros —casi cinco segundos— y no 96: es el tiempo
+      // que lleva leer el rótulo y seguir la cabeza del arco a la vez.
+      const tArco = tramo(f, 22, 170);
+      const vArco = solo(f, 22, 24, ACTO.arcos.hasta - 34, 34);
       SV.sol.arcos.forEach((a, i) => {
         op(`arco-${i}`, 'line-opacity', 0.95 * vArco);
         map.setPaintProperty(`arco-${i}`, 'line-gradient',
@@ -376,9 +463,9 @@ export const SolYViento: React.FC = () => {
 
       // El mediodía de cada arco late una vez cuando el trazo ya llegó: es el
       // punto donde se ve que el de junio cae al NORTE del centro y los otros
-      // dos al sur. Un pulso lo señala sin escribir nada.
-      const vMedio = solo(frame, 104, 16, ACTO.arcos.hasta - 10, 30);
-      const uM = Math.max(0, Math.min(1, (frame - 104) / 34));
+      // dos al sur. El rótulo lo dice con palabras y el pulso lo señala.
+      const vMedio = solo(f, 158, 18, ACTO.arcos.hasta - 34, 34);
+      const uM = Math.max(0, Math.min(1, (f - 158) / 48));
       op('mediodias', 'circle-radius', 3 + 26 * uM);
       op('mediodias', 'circle-stroke-opacity', vMedio * (1 - uM) * (1 - uM));
 
@@ -389,18 +476,18 @@ export const SolYViento: React.FC = () => {
       // enciende de las celdas de sombra a las de sol recorriendo `n`, que es
       // la clase de horas normalizada.
       const porHoras = (base: number, t: number) => {
-        const f = frente(t);
+        const u = frente(t);
         return ['*', base,
-          ['interpolate', ['linear'], ['get', 'n'], Math.max(-1, f - BANDA), 1, f, 0]];
+          ['interpolate', ['linear'], ['get', 'n'], Math.max(-1, u - BANDA), 1, u, 0]];
       };
-      const tLargo = tramo(frame, ACTO.horas.desde + 4, ACTO.horas.desde + 64);
+      const tLargo = tramo(f, 246, 336);
       // El día largo se va cuando entra el corto: los dos mapas pintan las
       // mismas celdas, así que superponerlos no compara nada, mezcla.
-      const vLargo = solo(frame, ACTO.horas.desde + 4, 1, ACTO.horas.desde + 84, 26);
+      const vLargo = solo(f, 246, 1, 352, 26);
       op('horas-verano', 'fill-opacity', porHoras(0.92 * vLargo, tLargo));
 
-      const tCorto = tramo(frame, ACTO.horas.desde + 92, ACTO.horas.desde + 136);
-      const vCorto = solo(frame, ACTO.horas.desde + 92, 1, ACTO.horas.hasta - 6, 26);
+      const tCorto = tramo(f, 378, 468);
+      const vCorto = solo(f, 378, 1, ACTO.horas.hasta - 14, 26);
       op('horas-invierno', 'fill-opacity', porHoras(0.92 * vCorto, tCorto));
 
       // ── 03 · EL VIENTO ──────────────────────────────────────────────────
@@ -409,29 +496,36 @@ export const SolYViento: React.FC = () => {
       // cuadrante por el que el viento entra en el año— y después el mes en
       // curso recorriéndolos de enero a diciembre. Los doce están medidos: el
       // promedio anual no se dibuja.
-      const vTodos = viva(frame, ACTO.viento.desde + 2, 22);
+      const vTodos = viva(f, ACTO.viento.desde + 4, 26);
       op('sectores-todos', 'fill-opacity', 0.12 * vTodos);
       op('rumbos-todos', 'line-opacity', 0.38 * vTodos);
 
-      const tMes = tramo(frame, ACTO.viento.desde + 14, ACTO.viento.desde + 89, Easing.linear);
+      // 108 cuadros para doce meses son nueve cuadros por mes, tres décimas de
+      // segundo cada uno. Con los 75 de antes eran seis cuadros, y a esa
+      // velocidad los doce rumbos se leían como un parpadeo y no como una
+      // rotación.
+      const tMes = tramo(f, 532, 640, Easing.linear);
       const mes = Math.min(MESES_VIENTO.length - 1, Math.floor(tMes * MESES_VIENTO.length));
       map.setFilter('sector-mes', ['==', ['get', 'i'], mes]);
       map.setFilter('rumbo-mes', ['==', ['get', 'i'], mes]);
       // El mes brillante se apaga cuando entra la cortina: lo que la cortina
       // tiene que dejar leer es su banda y su resguardo, no competir con una
       // cuña encendida del mismo color.
-      const vMes = solo(frame, ACTO.viento.desde + 14, 14, ACTO.viento.desde + 96, 24);
+      const vMes = solo(f, 532, 16, 646, 28);
       op('sector-mes', 'fill-opacity', 0.3 * vMes);
       op('rumbo-mes', 'line-opacity', 0.95 * vMes);
 
       // Y la cortina: primero el resguardo —≈15 veces la altura, que acá son
       // 150 m y 36,26 ha—, después la banda de 8 m trazándose sobre su eje. La
-      // banda es lo último que aparece y queda arriba: es la obra.
-      const vZona = viva(frame, ACTO.viento.desde + 100, 26);
+      // banda es lo último que aparece y queda arriba: es la obra. Termina de
+      // dibujarse en el cuadro 736 y se queda dos segundos quieta antes del
+      // apagado, que es el tiempo que pedía la única cosa que esta pieza
+      // propone construir.
+      const vZona = viva(f, 650, 30);
       op('cortina-zona', 'fill-opacity', 0.22 * vZona);
 
-      const vBanda = viva(frame, ACTO.viento.desde + 112, 20);
-      const aBanda = tramo(frame, ACTO.viento.desde + 112, ACTO.viento.desde + 146);
+      const vBanda = viva(f, 666, 24);
+      const aBanda = tramo(f, 666, 736);
       op('cortina-banda', 'fill-opacity', 0.85 * vBanda);
       op('cortina-banda-borde', 'line-opacity', 0.9 * vBanda);
       op('cortina-eje-base', 'line-opacity', 0.8 * vBanda);
@@ -443,9 +537,66 @@ export const SolYViento: React.FC = () => {
     },
   });
 
+  const visibles = ROTULOS.map((r) => opacidadRotulo(frame, r));
+  const velo = Math.max(...visibles);
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORES.tinta }}>
       <div ref={contRef} style={{ width, height }} />
+      {/* El velo y los rótulos no capturan el puntero: en el estudio de
+          Remotion el mapa se arrastra para encuadrar, y una capa encima lo
+          dejaría muerto. */}
+      <AbsoluteFill style={{ pointerEvents: 'none' }}>
+        <div
+          style={{
+            position: 'absolute', left: 0, right: 0, bottom: 0, height: 300,
+            background:
+              'linear-gradient(to top, rgba(10,9,8,0.86) 0%, rgba(10,9,8,0.58) 34%, rgba(10,9,8,0) 100%)',
+            opacity: velo,
+          }}
+        />
+        {ROTULOS.map((r, i) => {
+          const o = visibles[i] ?? 0;
+          if (o <= 0.002) return null;
+          return (
+            <div
+              key={`${r.acto}-${r.desde}`}
+              style={{
+                position: 'absolute', left: 58, bottom: 54, maxWidth: 740,
+                opacity: o,
+                // Doce píxeles de entrada: lo justo para que el rótulo se lea
+                // como que llega y no como que se prende.
+                transform: `translateY(${(1 - o) * 12}px)`,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: SANS, fontSize: 13, fontWeight: 600,
+                  letterSpacing: '0.24em', color: AGUA_CLARA, marginBottom: 11,
+                }}
+              >
+                {r.acto}
+              </div>
+              <div
+                style={{
+                  fontFamily: DISPLAY, fontSize: 36, lineHeight: 1.04,
+                  letterSpacing: '-0.02em', color: COLORES.crema, marginBottom: 11,
+                }}
+              >
+                {r.titulo}
+              </div>
+              <div
+                style={{
+                  fontFamily: SANS, fontSize: 17, lineHeight: 1.46, fontWeight: 400,
+                  color: 'rgba(245,240,232,0.80)',
+                }}
+              >
+                {r.bajada}
+              </div>
+            </div>
+          );
+        })}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

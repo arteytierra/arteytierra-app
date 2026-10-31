@@ -148,23 +148,25 @@ const PIEZAS = {
 
   // ── Encargo 04 ──────────────────────────────────────────────────────────
   //
-  // Dieciocho segundos con la cámara quieta, igual que la mesa, así que el
-  // presupuesto de bits se parece: 720 kbps por 18 s son 1,62 MB y el tope son
-  // 1,8. El margen es más chico que el de la mesa a propósito —el acto 02
-  // pinta 2.569 y 3.001 rectángulos de color sobre casi medio cuadro, que es
-  // más superficie cambiando que cualquiera de los cuatro actos de la mesa—.
-  // Si no entra, lo que baja es el caudal antes que la resolución, porque acá
-  // no hay un degradado continuo que pueda bandear: son clases de color
-  // planas.
+  // TREINTA segundos con la cámara quieta, y eran dieciocho hasta el
+  // 30/10/2026: los actos se alargaron para que entren los rótulos y se pueda
+  // leer lo que describen mientras se dibuja. El caudal no cambió —720 kbps,
+  // que es lo que pide el acto 02, donde 2.569 y 3.001 rectángulos de color
+  // cubren casi medio cuadro—, así que lo que cambió es el tope, y cambió por
+  // la misma proporción: 720 kbps por 30 s son 2,7 MB y el tope son 3. Bajar
+  // el caudal para sostener el tope viejo sería pagar los rótulos con el
+  // bandeado del monte. Si alguna vez no entra, lo que baja es el caudal antes
+  // que la resolución: acá no hay un degradado continuo que pueda bandear, son
+  // clases de color planas.
   //
   // El póster es el cuadro 0 —la ortofoto desnuda— porque el encargo lo pide
-  // así, y además es el primer cuadro del bucle. El `posterExtra` es el 430,
-  // que cae en el acto del viento con los doce sectores, el mes encendido y la
-  // cortina ya puesta: es el cuadro que más dice de la pieza si la página
-  // necesita una imagen de reposo en vez del primer cuadro.
+  // así, y además es el primer cuadro del bucle. El `posterExtra` es el 700,
+  // que cae en el acto del viento con la cortina ya trazada y su rótulo
+  // puesto: es el cuadro que más dice de la pieza si la página necesita una
+  // imagen de reposo en vez del primer cuadro.
   sol: {
-    id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 1.8 * MiB,
-    poster: 'primero', posterExtra: 430, lazo: true, prueba: true, encargo: 4, segundos: 18,
+    id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 3 * MiB,
+    poster: 'primero', posterExtra: 700, lazo: true, prueba: true, encargo: 4, segundos: 30,
   },
 
   // La pieza C no hace bucle y es la única sin mapa: es tipografía sobre papel,
