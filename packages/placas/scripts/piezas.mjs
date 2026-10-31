@@ -107,10 +107,27 @@ const PIEZAS = {
    * de codificar—, así que de un promedio de 1.000 kbps el giro se queda con
    * bastante más de 1.400. Un presupuesto plano por segundo le habría regalado
    * a la mitad quieta bits que no necesita.
+   *
+   * ── Y por qué lleva una curva ────────────────────────────────────────────
+   *
+   * Porque la pieza se veía oscura en la portada publicada, y lo estaba: la
+   * ortofoto es selva cerrada y el maestro sale con una luminancia media de 65
+   * de 255. `curva` es un filtro de ffmpeg que se aplica al codificar los dos
+   * formatos y el póster —nunca al maestro, que se queda como salió del
+   * render— y lo que hace es ABRIR LA SOMBRA: sube los tramos bajos y deja
+   * intacto el extremo alto, que es donde viven las curvas de nivel blancas y
+   * el tope de la rampa del shader. Un `gamma` plano habría levantado también
+   * esos dos y el shader se habría lavado.
+   *
+   * Medido sobre el archivo escrito: la media pasa de 67-73 a 93-98 y el MP4
+   * engorda 28 KB, porque una sombra abierta tiene textura que el codificador
+   * tiene que llevar. Por esos 28 KB el tope sube de 3,5 a 3,8 MiB: con el
+   * viejo pasaba por 8 KB, que es pasar por nada.
    */
   'portada-giro': {
-    id: 'PortadaGiro', archivo: 'portada-giro', kbps: 1000, tope: 3.5 * MiB, segundos: 27,
+    id: 'PortadaGiro', archivo: 'portada-giro', kbps: 1000, tope: 3.8 * MiB, segundos: 27,
     poster: 'ultimo', cuadroSuelto: true, prueba: true,
+    curva: "curves=all='0/0 0.18/0.30 0.45/0.58 0.75/0.82 1/1'",
   },
   'lectura-relieve':  { id: 'LecturaRelieve',  archivo: 'lectura-relieve',  ...LECTURA, poster: 'primero' },
   'lectura-curvas':   { id: 'LecturaCurvas',   archivo: 'lectura-curvas',   ...LECTURA },
@@ -165,8 +182,8 @@ const PIEZAS = {
   // puesto: es el cuadro que más dice de la pieza si la página necesita una
   // imagen de reposo en vez del primer cuadro.
   sol: {
-    id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 3 * MiB,
-    poster: 'primero', posterExtra: 700, lazo: true, prueba: true, encargo: 4, segundos: 30,
+    id: 'SolYViento', archivo: 'sol-y-viento', kbps: 720, tope: 4 * MiB,
+    poster: 'primero', posterExtra: 1040, lazo: true, prueba: true, encargo: 4, segundos: 40,
   },
 
   // La pieza C no hace bucle y es la única sin mapa: es tipografía sobre papel,
@@ -361,6 +378,9 @@ async function renderizar(clave, pieza, servidor) {
 
   const webm = path.join(SALIDA, `${pieza.archivo}.webm`);
   const mp4 = path.join(SALIDA, `${pieza.archivo}.mp4`);
+  // El grado va en los DOS formatos y en el póster, y nunca en el maestro: el
+  // maestro es lo que salió del render y es contra él que se vuelve atrás.
+  const grado = pieza.curva ? ['-vf', pieza.curva] : [];
   const b = `${pieza.kbps}k`;
   const techo = `${Math.round(pieza.kbps * 1.35)}k`;
   const gop = pieza.gop ? ['-g', String(pieza.gop), '-keyint_min', String(pieza.gop)] : [];
@@ -383,13 +403,13 @@ async function renderizar(clave, pieza, servidor) {
   // listar el MP4 primero.**
   process.stdout.write(`  VP9, dos pasadas…\n`);
   const bitacora = path.join(SALIDA, `vp9-${pieza.archivo}`);
-  const vp9 = ['-c:v', 'libvpx-vp9', '-row-mt', '1', '-b:v', b, '-maxrate', techo,
+  const vp9 = [...grado, '-c:v', 'libvpx-vp9', '-row-mt', '1', '-b:v', b, '-maxrate', techo,
     '-bufsize', `${pieza.kbps * 2}k`, ...COLOR, '-an'];
   ff(['-v', 'error', '-y', '-i', maestro, ...vp9, '-pass', '1', '-passlogfile', bitacora, '-f', 'null', '-']);
   ff(['-v', 'error', '-y', '-i', maestro, ...vp9, '-pass', '2', '-passlogfile', bitacora, webm]);
 
   process.stdout.write(`  H.264…\n`);
-  ff(['-v', 'error', '-y', '-i', maestro, '-c:v', 'libx264', '-preset', 'veryslow',
+  ff(['-v', 'error', '-y', '-i', maestro, ...grado, '-c:v', 'libx264', '-preset', 'veryslow',
     '-b:v', b, '-maxrate', techo, '-bufsize', `${pieza.kbps * 2}k`, '-profile:v', 'high',
     ...gop, ...(pieza.gop ? ['-x264-params', 'scenecut=0'] : []), ...COLOR,
     '-an', '-movflags', '+faststart', mp4]);
@@ -411,7 +431,7 @@ async function renderizar(clave, pieza, servidor) {
     });
     const jpgB = path.join(SALIDA, `${pieza.archivo}-poster-leido.jpg`);
     for (let q = 4; q <= 14; q++) {
-      ff(['-v', 'error', '-y', '-i', pngB, '-q:v', String(q), jpgB]);
+      ff(['-v', 'error', '-y', '-i', pngB, ...grado, '-q:v', String(q), jpgB]);
       if (statSync(jpgB).size <= 150 * 1024) break;
     }
     unlinkSync(pngB);
@@ -422,7 +442,7 @@ async function renderizar(clave, pieza, servidor) {
     // esperar que entre es lo que hace que un día entre y otro no.
     const poster = path.join(carpeta(pieza), `${pieza.archivo}-poster.jpg`);
     for (let q = 4; q <= 14; q++) {
-      ff(['-v', 'error', '-y', '-i', png, '-q:v', String(q), poster]);
+      ff(['-v', 'error', '-y', '-i', png, ...grado, '-q:v', String(q), poster]);
       if (statSync(poster).size <= 150 * 1024) break;
     }
   }

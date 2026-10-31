@@ -1,11 +1,20 @@
 /**
- * El dato de la pieza A del encargo 04 —el sol y el viento— y las capas que lo
+ * El dato de la pieza A del encargo 04 —lo que no se ve— y las capas que lo
  * dibujan.
  *
  * Todo sale de `generado/cuetiepa-sol-viento.json`, que escribe
  * `apps/terreno/scripts/datos-sol-viento.ts` llamando a `calcularArcoSolar`,
- * `calcularInsolacion`, `obtenerClima` y `construirCortina` sobre los mismos
- * siete mojones que las piezas ya aprobadas. Acá no se calcula nada: se lee.
+ * `calcularInsolacion`, `shaderDesdeGrilla`, `obtenerClima`,
+ * `construirCortina` y `calcularCortafuegos` sobre los mismos siete mojones
+ * que las piezas ya aprobadas. Acá no se calcula nada: se lee.
+ *
+ * Eran tres motores hasta el 31/10/2026 y ahora son cinco. El motivo no es
+ * técnico: la sección publicada mostraba el sol y el viento, y el viento solo
+ * —doce meses y una cortina— deja a la aplicación pareciendo más chica de lo
+ * que es. Entraron la pendiente y los cortafuegos porque son dos lecturas que
+ * la aplicación ya hace sobre este mismo predio y que no cuestan una sola
+ * palabra de explicación: una ladera roja es empinada y una faja sobre un filo
+ * es un cortafuego.
  *
  * ── Lo que este archivo NO dibuja, y es parte del encargo ──────────────────
  *
@@ -18,9 +27,18 @@
  *   está en Chiapas. Lo que se dibuja es la estructura —una banda de ancho
  *   medido con su zona de resguardo— y no una lista de plantas que no viven
  *   ahí. El aviso viaja en el propio JSON.
- * · **Ningún rótulo.** Las tres trayectorias se distinguen por el color que les
- *   pone la app (`#FF5722`, `#43A047`, `#1E88E5`) y el resto se lee de la
- *   geometría. Qué es cada cosa lo dice la página, igual que el crédito.
+ * · **Ningún porcentaje de pendiente.** El JSON guarda el máximo y la media
+ *   porque sin el máximo no se puede normalizar el color —es contra él que la
+ *   app arma su propia leyenda— y de acá no sale ninguno a la pantalla. La
+ *   pendiente está derivada de un modelo de 30 m remuestreado a 12: el paso
+ *   fino no agrega información y un número lo haría parecer que sí.
+ * · **Ningún metro ni hectárea de cortafuego.** Son 33 fajas y 5.893 m de
+ *   cresta en este predio, y los dos números viven en el JSON para poder
+ *   verificar. Lo que se dibuja es DÓNDE caen las divisorias.
+ *
+ * Los rótulos, en cambio, sí existen desde el 30/10/2026, y qué puede decir
+ * cada uno está escrito en la cabecera de `SolYViento.tsx`. La regla de arriba
+ * no cambió: se nombra qué se está mirando, nunca cuánto mide.
  */
 import crudo from '../../../generado/cuetiepa-sol-viento.json';
 
@@ -30,14 +48,18 @@ type Par = [number, number];
 type PuntoArco = [number, number, number, number];
 
 /**
- * Los rectángulos de un mapa de horas, ya juntados por fila.
+ * Los rectángulos de un mapa de clases, ya juntados por fila.
+ *
+ * Lo usan los tres mapas de la pieza —las dos horas de sol y la pendiente—,
+ * porque los tres son lo mismo: una clase por celda, un color por clase y las
+ * celdas contiguas de la misma clase juntadas en un rectángulo por fila.
  *
  * Va escrito con la geometría concreta y no como `unknown[]`: MapLibre pide un
  * `FeatureCollection` de verdad para una fuente `geojson`, y un `unknown[]`
  * obliga a un `as` en el lugar donde se monta la fuente —que es exactamente
  * donde no se quiere apagar el chequeo—.
  */
-interface RectsDeHoras {
+interface RectsClasificados {
   type: 'FeatureCollection';
   features: Array<{
     type: 'Feature';
@@ -69,6 +91,24 @@ export interface DatosSolViento {
     proyeccion: string;
     nota_hemisferio: string;
   };
+  pendiente: {
+    paleta: string; clases: number;
+    grilla: { cols: number; rows: number; paso_m: number };
+    resolucion_fuente_m: number;
+    celdas_dentro: number;
+    max_pct: number; media_pct: number;
+    rectangulos: number;
+    rects: RectsClasificados;
+    limites: string;
+  };
+  cortafuegos: {
+    ancho_m: number;
+    total_long_m: number;
+    total_area_ha: number;
+    /** `o` es el orden de encendido, 0 la faja más larga y 1 la más corta. */
+    lineas: Array<{ o: number; largo_m: number; area_ha: number; puntos: Par[] }>;
+    limites: string;
+  };
   insolacion: {
     paso_min: number; clases: number;
     grilla: { cols: number; rows: number; paso_m: number };
@@ -81,7 +121,7 @@ export interface DatosSolViento {
       horas_luz: number; salida: number; puesta: number;
       min: number; max: number; promedio: number;
       rectangulos: number;
-      rects: RectsDeHoras;
+      rects: RectsClasificados;
     }>;
     limites: string;
   };
@@ -213,12 +253,12 @@ export const GEO_BRUJULA = coleccion(
  */
 export const GEO_HORAS = Object.fromEntries(
   SV.insolacion.dias.map(d => [d.cual, d.rects]),
-) as Record<'verano' | 'invierno', RectsDeHoras>;
+) as Record<'verano' | 'invierno', RectsClasificados>;
 
 /** Los dos días, en el orden en que se muestran: primero el largo. */
 export const DIAS_HORAS = SV.insolacion.dias;
 
-// ─── 03 · El viento ─────────────────────────────────────────────────────────
+// ─── 04 · El viento ─────────────────────────────────────────────────────────
 
 /**
  * Los doce sectores del viento, cada uno con su mes.
@@ -271,3 +311,43 @@ export const GEO_CORTINA_ZONA = coleccion([poligono(SV.viento.cortina.zona)]);
 
 /** El eje, con `lineMetrics` para poder trazarlo de punta a punta. */
 export const GEO_CORTINA_EJE = coleccion([linea(SV.viento.cortina.eje)]);
+
+// ─── 03 · La pendiente ──────────────────────────────────────────────────────
+
+/**
+ * El shader de pendientes de la app, en rectángulos.
+ *
+ * Mismo soporte y misma técnica que los dos mapas de horas —una clase por
+ * celda, celdas contiguas juntadas por fila— pero sobre la grilla FINA, que es
+ * la de las piezas aprobadas: 300 × 277 nodos de ~12 m. Son 21.477 rectángulos
+ * contra los 2.572 y 3.001 de las horas, y la razón es el dato y no la
+ * resolución: la cota sube y baja despacio a lo largo de una fila, así que el
+ * juntado rinde; la pendiente cambia de clase en cada hondonada.
+ *
+ * El color sale de `colorPendiente` con la paleta por defecto de la aplicación
+ * —semáforo— normalizado contra el máximo de ADENTRO del predio, que es
+ * exactamente lo que la leyenda de /mapa escribe como «Pendiente (0–N %)». Acá
+ * ese N no se escribe.
+ */
+export const GEO_PENDIENTE = SV.pendiente.rects;
+
+// ─── 05 · Los cortafuegos ───────────────────────────────────────────────────
+
+/**
+ * Las fajas cortafuego, una por línea de cresta.
+ *
+ * `o` es el orden de encendido y no un dato del terreno: 0 es la divisoria más
+ * larga y 1 la más corta. Sirve para trazarlas en sucesión en vez de que
+ * aparezcan las treinta y tres de golpe, que es la diferencia entre ver una
+ * red de filos y ver una maraña naranja.
+ *
+ * Va una sola fuente para las treinta y tres: acá no hace falta `line-gradient`,
+ * que es lo que obligó a los arcos del sol a tener una fuente cada uno. El
+ * trazado progresivo se resuelve con la opacidad, que SÍ acepta expresión por
+ * rasgo.
+ */
+export const GEO_CORTAFUEGOS = coleccion(SV.cortafuegos.lineas.map(l =>
+  linea(l.puntos, { o: l.o, largo: l.largo_m })));
+
+/** Cuántas fajas son y cuánto suman. Para verificar; no se dibuja ninguno. */
+export const CORTAFUEGOS = SV.cortafuegos;

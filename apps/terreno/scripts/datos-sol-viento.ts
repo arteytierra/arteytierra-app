@@ -10,7 +10,10 @@
  * exactamente sobre las viejas y las dos secciones de la página miran el mismo
  * paisaje.
  *
- * Tres motores, tres actos:
+ * Cinco motores, cinco actos. Los tres primeros son del 29/10/2026; los dos
+ * últimos entraron el 31/10 porque la sección publicada mostraba el viento y
+ * nada más, y el viento solo deja a la aplicación pareciendo más chica de lo
+ * que es.
  *
  *   01  LOS ARCOS   `calcularArcoSolar` — las tres trayectorias del sol en
  *                   proyección azimutal equidistante (centro = cénit, borde =
@@ -18,8 +21,17 @@
  *   02  LAS HORAS   `calcularInsolacion` — horas de sol acumuladas, los dos
  *                   solsticios sobre el mismo terreno, con el relieve haciendo
  *                   su propia sombra.
- *   03  EL VIENTO   `obtenerClima` — los doce meses de WD10M, y
+ *   03  LA PENDIENTE  `shaderDesdeGrilla` + `colorPendiente` — el shader de
+ *                   pendientes de /mapa, con la paleta por defecto y
+ *                   normalizado contra el máximo de adentro del predio.
+ *   04  EL VIENTO   `obtenerClima` — los doce meses de WD10M, y
  *                   `construirCortina` para la banda con su zona protegida.
+ *   05  EL FUEGO    `calcularCortafuegos` — las fajas sobre las divisorias,
+ *                   que son los cauces del relieve invertido.
+ *
+ * El orden del archivo no es el orden de los actos: acá el viento se calcula
+ * antes que la pendiente porque es el único que sale a la red y conviene que
+ * falle temprano. Quién va primero en la pieza lo decide `SolYViento.tsx`.
  *
  * ── Las tres cosas que esta pieza no puede equivocar ───────────────────────
  *
@@ -44,11 +56,14 @@
  *    usa la app —`vientoDeLaEstacionFria`, sobre el trimestre más frío—, que es
  *    lo que permite publicar este acto: ver el comentario del acto 03.
  *
- * 3. **El mapa de insolación no lleva número.** El JSON guarda el mínimo, el
- *    máximo y el promedio porque sin ellos no se puede normalizar el color ni
- *    verificar nada, pero la composición NO los dibuja: `insolacion.ts` avisa
- *    en su cabecera que es sin nubes, sin refracción y sobre un modelo de
- *    ~30 m.
+ * 3. **Ningún mapa lleva número, y son tres.** El JSON guarda el mínimo, el
+ *    máximo y el promedio de cada uno porque sin ellos no se puede normalizar
+ *    el color ni verificar nada, pero la composición NO los dibuja.
+ *    `insolacion.ts` avisa en su cabecera que es sin nubes, sin refracción y
+ *    sobre un modelo de ~30 m; la pendiente sale derivada de ese mismo modelo
+ *    remuestreado, que no agrega información; y `cortafuegos.ts` dice que
+ *    estima trazado y superficie y que no reemplaza un plan de manejo del
+ *    fuego. Lo que se ve es DÓNDE, nunca CUÁNTO.
  *
  * ── Por qué la insolación corre en una grilla más gruesa que todo lo demás ──
  *
@@ -67,10 +82,11 @@ import { fileURLToPath } from 'node:url';
 
 import { calcularArcoSolar, calcularRadioArco } from '../lib/arco_solar';
 import { calcularInsolacion, colorInsolacion } from '../lib/insolacion';
+import { calcularCortafuegos } from '../lib/cortafuegos';
 import { azimutsSolsticio, cuña, doyDelSolsticio, rumboDeAzimut } from '../lib/sectores';
 import { construirCortina } from '../lib/cortinas';
 import { vientoDeLaEstacionFria } from '../lib/viento';
-import { shaderDesdeGrilla } from '../lib/shaders';
+import { colorPendiente, PALETA_PEND_POR_DEFECTO, shaderDesdeGrilla } from '../lib/shaders';
 import { atribucionDe } from '../lib/elevacion/atribucion';
 import { obtenerClima } from '../lib/clima';
 import { BITACORA, instalarApisDeNode } from './apis-node';
@@ -98,6 +114,26 @@ const PASO_MIN = 20;
 const CLASES_HORAS = 24;
 
 /**
+ * Las clases de color del mapa de pendientes.
+ *
+ * Treinta y dos sobre una rampa de seis paradas son algo más de cinco pasos
+ * por tramo: alcanza para que el degradado no se vea escalonado y deja un
+ * cuarto de los rectángulos que darían las 128 del shader de cota del encargo
+ * 02. La pendiente, a diferencia de la cota, no es monótona sobre la ladera:
+ * cada hondonada cambia de clase, así que juntar por fila rinde mucho menos y
+ * el conteo de polígonos importa más.
+ */
+const CLASES_PEND = 32;
+
+/**
+ * El ancho de faja del cortafuego, en metros: el que trae el panel de la app
+ * por defecto (`CortafuegosPanel`, `anchoM` inicial 8). La superficie
+ * despejada es largo x ancho y de acá no sale ningún número a la pantalla; se
+ * guarda para poder verificar.
+ */
+const CORTAFUEGO_ANCHO_M = 8;
+
+/**
  * Ancho y alto de diseño de la cortina: los que la app trae por defecto
  * (`cortinaParamsRef` en `MapaTerrenoApp`). 10 m × 15 = 150 m de resguardo.
  */
@@ -113,10 +149,13 @@ const par = (p: Punto): Par => red(p);
 async function main() {
   // ── El relieve, dos veces: el fino aprobado y el de la insolación ────────
   //
-  // El fino no dibuja nada nuevo —esta pieza no trae curvas ni shader de cota—
-  // pero sí informa el bbox y el centro EXACTOS que usan las piezas ya
-  // aprobadas. Si la pieza A encuadrara otro rectángulo, la página mostraría
-  // dos predios distintos.
+  // El fino informa el bbox y el centro EXACTOS que usan las piezas ya
+  // aprobadas —si la pieza A encuadrara otro rectángulo, la página mostraría
+  // dos predios distintos— y desde el 31/10/2026 además DIBUJA: de él salen el
+  // shader de pendientes y las crestas de los cortafuegos, así que esos dos
+  // actos caen sobre los mismos píxeles que el shader de cota del encargo 02.
+  //
+  // El grueso es sólo para la insolación, por la razón de más arriba.
   const fino = await grillaDelPredio(GENERADO);
   const [w, s, e, n] = fino.bbox;
   const centro: Punto = { lat: (s + n) / 2, lng: (w + e) / 2 };
@@ -330,6 +369,87 @@ async function main() {
     `${cortina.proteccion_m} m (${cortina.area_protegida_ha} ha) · ` +
     `${cortina.estratos.length} estratos · viento de ${cortina.dir_viento_frio}`);
 
+  // ── 04 · LA PENDIENTE ────────────────────────────────────────────────────
+  //
+  // El shader de pendientes de la app, sobre la grilla FINA: la misma que ya
+  // dibujan las piezas aprobadas del encargo 02, así que las clases caen
+  // exactamente sobre los mismos píxeles que el shader de cota y las curvas de
+  // nivel. Acá no se calcula nada nuevo: `shaderDesdeGrilla` deriva la
+  // pendiente de cada celda por diferencias centradas —la misma cuenta que
+  // corre en /mapa— y el color sale de `colorPendiente` contra `pend_max`,
+  // que es el máximo DE ADENTRO del predio. Es lo que la leyenda de la app
+  // escribe como «Pendiente (0–N %)».
+  //
+  // Un reparo que viaja con el dato: el paso de la grilla fina es de ~12 m y
+  // la fuente son 30 m, así que la pendiente está derivada de un relieve
+  // remuestreado. No agrega información —entre dos nodos del GLO-30 la
+  // interpolación es una recta— y por eso de acá tampoco sale ningún número a
+  // la pantalla: se ve dónde el terreno cae y dónde es llano.
+  const dsFino = shaderDesdeGrilla(fino.grilla, MOJONES);
+  if (!dsFino) throw new Error('shaderDesdeGrilla devolvió null sobre la grilla fina');
+
+  const pendMax = dsFino.pend_max;
+  const pend = new Float64Array(fino.cols * fino.rows).fill(NaN);
+  const dentroFino = new Uint8Array(fino.cols * fino.rows);
+  for (const c of dsFino.celdas) {
+    const i = c.row * fino.cols + c.col;
+    pend[i] = c.pendiente_pct;
+    if (c.dentro) dentroFino[i] = 1;
+  }
+  const clasePend = (pct: number) =>
+    Math.min(CLASES_PEND - 1, Math.max(0, Math.floor((pct / pendMax) * CLASES_PEND)));
+
+  const rectsPend = porFilas(fino.grilla, i => {
+    if (!dentroFino[i]) return null;
+    const v = pend[i]!;
+    return Number.isFinite(v) ? clasePend(v) : null;
+  }, k => ({
+    c: colorPendiente(((k + 0.5) / CLASES_PEND) * pendMax, pendMax, PALETA_PEND_POR_DEFECTO),
+    // La clase normalizada, para encender el mapa de lo LLANO a lo empinado:
+    // es el orden en que se mira una ladera cuando se busca dónde se puede
+    // trabajar.
+    n: Math.round((k / (CLASES_PEND - 1)) * 1000) / 1000,
+  }));
+
+  const pendDentro = dsFino.celdas.filter(c => c.dentro).map(c => c.pendiente_pct);
+  const pendMedia = pendDentro.reduce((a, b) => a + b, 0) / Math.max(1, pendDentro.length);
+  console.log(`pendiente  grilla ${fino.cols}x${fino.rows} · dentro ${pendDentro.length} celdas · ` +
+    `0–${r1(pendMax)} % (media ${r1(pendMedia)}) · ${rectsPend.features.length} rectángulos · ` +
+    `paleta ${PALETA_PEND_POR_DEFECTO}`);
+
+  // ── 05 · LOS CORTAFUEGOS ─────────────────────────────────────────────────
+  //
+  // `calcularCortafuegos` da vuelta las cotas y vuelve a pasar el extractor de
+  // escorrentías: los cauces del relieve invertido son las líneas de cresta.
+  // Sobre una divisoria la faja corta la ladera arriba, se llega por el filo y
+  // el fuego pierde impulso al coronar. La app lo dice y la pieza no dice otra
+  // cosa: es un trazado orientativo y no un plan de manejo del fuego.
+  const cf = calcularCortafuegos(dsFino, MOJONES, CORTAFUEGO_ANCHO_M);
+  if (!cf) throw new Error('calcularCortafuegos devolvió null: sin crestas adentro del predio');
+
+  // Ordenadas de la más larga a la más corta, que es el orden en que se
+  // encienden: primero la divisoria que estructura el predio y después las
+  // secundarias. `o` es ese orden normalizado a [0,1] y es lo único que la
+  // composición necesita para trazarlas en sucesión.
+  const lineas = [...cf.lineas].sort((a, b) => b.longitud_m - a.longitud_m);
+  const cortafuegos = {
+    ancho_m: cf.anchoM,
+    total_long_m: cf.total_long_m,
+    total_area_ha: cf.total_area_ha,
+    lineas: lineas.map((l, i) => ({
+      o: lineas.length > 1 ? Math.round((i / (lineas.length - 1)) * 1000) / 1000 : 0,
+      largo_m: l.longitud_m,
+      area_ha: l.area_ha,
+      puntos: l.puntos.map(par),
+    })),
+    limites:
+      'Orientativo: ubica las fajas sobre las divisorias de agua y estima trazado y superficie. ' +
+      'El ancho real lo deciden el combustible, la pendiente y el viento, y el mantenimiento es ' +
+      'parte del plan. No reemplaza un plan de manejo del fuego.',
+  };
+  console.log(`cortafuegos ${lineas.length} fajas · ${cf.total_long_m} m de cresta · ` +
+    `ancho ${cf.anchoM} m → ${cf.total_area_ha} ha · más larga ${lineas[0]!.longitud_m} m`);
+
   // ── El archivo ───────────────────────────────────────────────────────────
   const datos = {
     predio: PREDIO,
@@ -422,6 +542,25 @@ async function main() {
           'especies: las nativas de este ecosistema las resuelve la ficha del predio en la app.',
       },
     },
+    pendiente: {
+      paleta: PALETA_PEND_POR_DEFECTO,
+      clases: CLASES_PEND,
+      grilla: { cols: fino.cols, rows: fino.rows, paso_m: r1(fino.anchoM / fino.cols) },
+      resolucion_fuente_m: fino.paso_fuente_m,
+      celdas_dentro: pendDentro.length,
+      max_pct: r1(pendMax),
+      media_pct: r1(pendMedia),
+      rectangulos: rectsPend.features.length,
+      rects: rectsPend,
+      // Va al JSON para poder verificar. NO se dibuja.
+      limites:
+        'Orientativo. La pendiente se deriva por diferencias centradas de un modelo de ' +
+        `elevación de ${fino.paso_fuente_m} m remuestreado a ${r1(fino.anchoM / fino.cols)} m: ` +
+        'entre dos nodos de la fuente la interpolación es una recta, así que el paso fino no ' +
+        'agrega información. Se muestra dónde cae el terreno y dónde es llano; el porcentaje ' +
+        'NO se publica como número.',
+    },
+    cortafuegos,
     bitacora_red: BITACORA,
   };
 
