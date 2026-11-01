@@ -1,11 +1,11 @@
 # Anexo — los ids de ficha
 
-_Generado desde los catálogos el 2026-09-17. **222 fichas** en total._
+_Generado desde los catálogos el 2026-11-01. **257 fichas** en total._
 
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 200 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 203 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -47,6 +47,8 @@ _`lib/contexto.ts`_
 - `bosque_andino_patagonico` — Bosque andino-patagónico ✓ *(ya tiene práctica cargada)*
 - `mediterraneo` — Matorral mediterráneo ✓ *(ya tiene práctica cargada)*
 - `desierto_costero` — Desierto costero ✓ *(ya tiene práctica cargada)*
+
+---
 
 ## B. Sudamérica — resto del continente — 47 fichas
 
@@ -100,6 +102,8 @@ _`lib/biomasRegionalesSudamerica.ts`_
 - `valles_secos_interandinos` — Valles secos interandinos ✓ *(ya tiene práctica cargada)*
 - `varzeas_igapos_amazonicos` — Várzeas e igapós amazónicos ✓ *(ya tiene práctica cargada)*
 
+---
+
 ## C. Norteamérica, Mesoamérica, Caribe y Europa — catálogo base — 22 fichas
 
 _`lib/biomasRegionales.ts`_
@@ -126,6 +130,8 @@ _`lib/biomasRegionales.ts`_
 - `boreal_nordico_turberas` — Bosque boreal nórdico y turberas ✓ *(ya tiene práctica cargada)*
 - `alpino_montano_europeo` — Alpino y montano europeo ✓ *(ya tiene práctica cargada)*
 - `macaronesia` — Macaronesia ✓ *(ya tiene práctica cargada)*
+
+---
 
 ## D. México, Centroamérica y Estados Unidos — 53 fichas
 
@@ -185,6 +191,8 @@ _`lib/biomasRegionalesAmerica.ts`_
 - `trinidad_tobago_bosques` — Bosques de Trinidad y Tobago ✓ *(ya tiene práctica cargada)*
 - `veracruz_tabasco_selvas_humedales` — Selvas, montañas y humedales de Veracruz–Tabasco ✓ *(ya tiene práctica cargada)*
 
+---
+
 ## E. Canadá, Alaska y Groenlandia — 10 fichas
 
 _`lib/biomasRegionalesCanada.ts`_
@@ -200,6 +208,8 @@ _`lib/biomasRegionalesCanada.ts`_
 - `montana_artica_baffin_torngat` — Montaña ártica: Baffin oriental y Torngat ✓ *(ya tiene práctica cargada)*
 - `groenlandia_kalaallit_nunaat` — Kalaallit Nunaat: la franja libre de hielo de Groenlandia ✓ *(ya tiene práctica cargada)*
 
+---
+
 ## F. Europa no comunitaria y asociados — 8 fichas
 
 _`lib/biomasRegionalesEuropa.ts`_
@@ -212,6 +222,8 @@ _`lib/biomasRegionalesEuropa.ts`_
 - `pinar_caledonio` — Pinar caledonio y paramo escoces ✓ *(ya tiene práctica cargada)*
 - `montano_iberico` — Montana iberica ✓ *(ya tiene práctica cargada)*
 - `semiarido_sureste_iberico` — Semiarido del sureste iberico ✓ *(ya tiene práctica cargada)*
+
+---
 
 ## G. Unión Europea — 28 fichas
 
@@ -246,6 +258,8 @@ _`lib/biomasRegionalesEuropaUE.ts`_
 - `anatolia_oriental_montana` — Montaña y estepa de Anatolia oriental ✓ *(ya tiene práctica cargada)*
 - `zagros_estepa_forestal` — Estepa forestal del Zagros ✓ *(ya tiene práctica cargada)*
 
+---
+
 ## H. Medio Oriente — 28 fichas
 
 _`lib/biomasRegionalesMedioOriente.ts`_
@@ -279,6 +293,8 @@ _`lib/biomasRegionalesMedioOriente.ts`_
 - `kuh_rud_montano` — Sierras de Kuh Rud y el este iraní ✓ *(ya tiene práctica cargada)*
 - `sistan_registan` — Arenales de Sistán y Registán ✓ *(ya tiene práctica cargada)*
 
+---
+
 ## I. Norte de África — 14 fichas
 
 _`lib/biomasRegionalesNorteAfrica.ts`_
@@ -297,3 +313,59 @@ _`lib/biomasRegionalesNorteAfrica.ts`_
 - `ahaggar_tassili` — Macizos del Ahaggar y el Tassili ✓ *(ya tiene práctica cargada)*
 - `uweinat_tibesti` — Macizos de Uweinat y Tibesti
 - `mar_rojo_costa_desierto` — Desierto costero del mar Rojo ✓ *(ya tiene práctica cargada)*
+
+---
+
+## J. Indomalaya — 33 fichas
+
+_`lib/biomasRegionalesIndomalaya.ts`_
+
+- `ghats_norte_deciduo` — Bosques húmedos deciduos de los Ghats del norte
+- `ghats_norte_montano` — Selvas montanas de los Ghats del norte
+- `ghats_sur_deciduo` — Bosques húmedos deciduos de los Ghats del sur
+- `ghats_sur_montano` — Selvas montanas y sholas de los Ghats del sur
+- `sri_lanka_humedo_bajo` — Selvas bajas de la zona húmeda de Sri Lanka
+- `sri_lanka_montano` — Selvas montanas de Sri Lanka
+- `sri_lanka_zona_seca` — Bosques secos siempreverdes de la zona seca de Sri Lanka ✓ *(ya tiene práctica cargada)*
+- `valle_brahmaputra` — Bosques semisiempreverdes del valle del Brahmaputra
+- `gangetica_inferior` — Llanura gangética inferior
+- `gangetica_superior` — Llanura gangética superior
+- `pantanos_sundarbans` — Pantanos salobres de los Sundarbans
+- `pantanos_irrawaddy` — Pantanos del delta del Irrawaddy
+- `irrawaddy_deciduo` — Bosques húmedos deciduos del Irrawaddy
+- `pantanos_chao_phraya` — Pantanos del Chao Phraya
+- `chao_phraya_deciduo` — Bosques deciduos de la llanura del Chao Phraya
+- `pantanos_tonle_sap` — Bosques inundables del Tonlé Sap
+- `pantanos_rio_rojo` — Pantanos del río Rojo
+- `sumatra_bajo` — Selvas bajas de Sumatra
+- `sumatra_montano` — Selvas montanas de Barisan
+- `pantanos_sumatra` — Pantanos de agua dulce de Sumatra
+- `pinar_toba` — Pinares tropicales de Toba
+- `java_occidental_bajo` — Selvas bajas de Java occidental
+- `java_oriental_bali_bajo` — Bosques bajos estacionales de Java oriental y Bali
+- `java_bali_montano` — Selvas montanas volcánicas de Java y Bali
+- `pantanos_borneo_suroeste` — Pantanos del suroeste de Borneo
+- `luzon_bajo` — Selvas bajas de Luzón ✓ *(ya tiene práctica cargada)*
+- `luzon_montano` — Selvas montanas de Luzón
+- `pinar_luzon` — Pinares de la Cordillera Central de Luzón ✓ *(ya tiene práctica cargada)*
+- `mindoro` — Selvas de Mindoro
+- `negros_panay` — Selvas de Negros, Panay y Cebú
+- `mindanao_montano` — Selvas montanas de Mindanao
+- `mindanao_visayas_oriental` — Selvas bajas de Mindanao y las Visayas orientales
+- `decan_central_hardwickia` — Bosques secos del Decán central
+
+---
+
+## K. Australasia — 1 fichas
+
+_`lib/biomasRegionalesAustralasia.ts`_
+
+- `pilbara_matorral` — Matorrales y espinifex del Pilbara
+
+---
+
+## L. África subsahariana — 1 fichas
+
+_`lib/biomasRegionalesAfrica.ts`_
+
+- `miombo_humedo_zambeziano` — Miombo húmedo zambeziano
