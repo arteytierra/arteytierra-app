@@ -99,6 +99,12 @@ Entonces, las tres condiciones de una fuente, y son las tres juntas:
    encontrar dónde lo publicó la revista, el organismo o la editorial.
 3. **Es un trabajo publicado y no una nota periodística.** Artículo revisado,
    informe de organismo, tesis, monografía, ficha de patrimonio, plan de manejo.
+4. **Es la obra y no el contenedor.** Un índice de revista, una página de volumen
+   o un listado de artículos no son la fuente, ni cuando nombran el trabajo. En
+   los lotes 02-04 una entrada sobre el pastoreo Toda del Nilgiri citaba
+   `plateauculture.org/asian-highlands-perspectives`: la página existe, lista la
+   monografía de Walker con volumen y páginas, y no enlaza su texto. La URL abría
+   y la afirmación seguía sin poder desmentirse, que es para lo que la URL está.
 
 Y una regla de cantidad que manda sobre la de cobertura: **mejor dos prácticas
 que aguantan que tres con una floja.** La que no aguanta contamina la confianza
@@ -160,20 +166,40 @@ tres, porque acá la agricultura tradicional está documentada desde hace siglos
 hay patrimonio agrícola reconocido en casi todos estos países.
 
 **Tres por ficha, directo al piso.** Los ids son los que la app usa y hay que
-devolverlos tal cual. **Quedan 30**, porque el lote 1 cerró tres —la zona seca de
-Sri Lanka, `luzon_bajo` y `pinar_luzon`— y porque apareció una que la lista
-original no tenía:
+devolverlos tal cual. **Quedan 21**: el lote 1 cerró tres —la zona seca de Sri
+Lanka, `luzon_bajo` y `pinar_luzon`— y los lotes 02-04 cerraron nueve más:
 
 `ghats_norte_deciduo`, `ghats_norte_montano`, `ghats_sur_deciduo`,
-`ghats_sur_montano`, `sri_lanka_humedo_bajo`, `sri_lanka_montano`,
-`valle_brahmaputra`, `gangetica_inferior`, `gangetica_superior`,
-`pantanos_sundarbans`, `pantanos_irrawaddy`, `irrawaddy_deciduo`,
-`pantanos_chao_phraya`, `chao_phraya_deciduo`, `pantanos_tonle_sap`,
-`pantanos_rio_rojo`, `sumatra_bajo`, `sumatra_montano`, `pantanos_sumatra`,
-`pinar_toba`, `java_occidental_bajo`, `java_oriental_bali_bajo`,
-`java_bali_montano`, `pantanos_borneo_suroeste`, `luzon_montano`, `mindoro`,
-`negros_panay`, `mindanao_montano`, `mindanao_visayas_oriental`,
-`decan_central_hardwickia`.
+`ghats_sur_montano`, `sri_lanka_montano`, `gangetica_superior`,
+`irrawaddy_deciduo`, `chao_phraya_deciduo`, `pantanos_tonle_sap`,
+`pantanos_sumatra`, `pinar_toba`, `java_occidental_bajo`,
+`java_oriental_bali_bajo`, `java_bali_montano`, `pantanos_borneo_suroeste`,
+`luzon_montano`, `mindoro`, `negros_panay`, `mindanao_montano`,
+`mindanao_visayas_oriental`, `decan_central_hardwickia`.
+
+**Cuatro de esos 21 ya tienen la práctica identificada y lo que falta es una
+fuente que abra.** No hay que buscar otra práctica: hay que buscar otra URL.
+
+- `ghats_norte_montano` → el *soppinabetta* de Sringeri, Karnataka: el bosque
+  comunal de usufructo donde se junta hojarasca y follaje verde para compostar
+  con estiércol y orina. El PDF estaba en el host del IISc, que tiene el
+  certificado roto.
+- `ghats_sur_montano` → el pastoreo Toda del Nilgiri (búfalos, traslado estacional
+  y quema de pasturas) o el arroz tradicional de Wayanad, que también cae en esta
+  ficha y no en `ghats_sur_deciduo`. Las dos fuentes citadas no abrieron.
+- `pantanos_tonle_sap` → el arroz de recesión del lago. La guía del gobierno de
+  Camboya da 403; hay que encontrar otra.
+- `ghats_norte_deciduo` → los *devrai* de Mulshi. Acá además hace falta **la aldea
+  o la coordenada de los bosques sagrados**: el taluka de Mulshi cruza la cresta
+  de los Ghats y está medido de los dos lados —Mulshi pueblo da el 254, montano;
+  Paud y Pirangut, diez kilómetros al este, dan el 253, deciduo—, así que sin el
+  sitio preciso la entrada no se puede montar en ninguna de las dos.
+
+**Dos prácticas más quedaron sin lugar donde vivir, y no es culpa del encargo:**
+el arroz tolerante a la sal de las islas habitadas de South 24 Parganas cae en el
+ECO_ID 323 (manglar de Sundarbans) y el cultivo mixto de la zona seca de Myanmar
+cae en el 294 (Irrawaddy dry forests). Ninguno de los dos tiene ficha todavía. No
+hay que volver a mandarlas hasta que las fichas existan.
 
 **`decan_central_hardwickia`** es el Decán central —ECO_ID 290, bosque seco de
 *Hardwickia binata* sobre la traza basáltica, en Maharashtra, Telangana y
@@ -364,3 +390,12 @@ del catálogo están vacías justamente así y están bien.**
     la fuente y con la coordenada si la hay. La ficha es una propuesta y la
     verifico yo contra el polígono de RESOLVE. Si no podés decir el lugar, la
     entrada no entra.
+12. **La URL apunta a la obra, no al contenedor**, y se abre antes de escribir la
+    entrada, no después. En los lotes 02-04, cuatro de dieciocho entradas se
+    cayeron por la fuente: un host con el certificado TLS mal emitido, un
+    repositorio que no responde, un PDF de gobierno con 403, y un índice de
+    revista en lugar del trabajo. La práctica estaba bien en las cuatro.
+13. **Aldea y distrito, no región.** Donde el `lugar` trajo aldea y distrito
+    —Air Terjun, Pantanaw, Gosaba— resolver la ficha tardó un minuto. Donde trajo
+    una región —«Región de Mulshi», «once distritos del estado»— hubo que sondear
+    el límite a mano, y en un caso no alcanzó y la entrada quedó afuera.
