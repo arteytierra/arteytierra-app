@@ -83,14 +83,21 @@ puede auditar.
   **Ojo con la ruta, probada el 23/10/2026:** `nbsslup.in` es un dominio
   estacionado en venta, `nbsslup.icar.gov.in` no resuelve y
   `soilhealth.dac.gov.in` devuelve 403. Lo que sí abre son los espejos:
-  **EUDASM**, el archivo digital de suelos del JRC europeo, que tiene los mapas
-  del NBSS&LUP escaneados y descargables
-  (`https://esdac.jrc.ec.europa.eu/public_path/shared_folder/eudasm/asia/lists/cin.htm`,
-  con «Soils of India. (Suborder Associations)», NBSS&LUP Nagpur 1985, escala
-  1:7.000.000, y «India. Agro-Ecological Subregions»), y **Krishikosh**
-  (`krishikosh.egranth.ac.in`), que tiene boletines del NBSS digitalizados. En
-  EUDASM hay hojas estatales de Bengala Occidental, Gujarat, Haryana, Tamil Nadu
-  y Punjab, y **no** de Odisha ni de Chhattisgarh.
+  **Krishikosh** (`krishikosh.egranth.ac.in`), que tiene boletines del NBSS
+  digitalizados.
+
+  **Y una corrección, medida el 02/11/2026: EUDASM ya no sirve como ruta.** Este
+  encargo recomendaba el archivo digital de suelos del JRC europeo
+  (`esdac.jrc.ec.europa.eu/public_path/shared_folder/eudasm/asia/lists/cin.htm`,
+  con las hojas estatales de Bengala Occidental, Gujarat, Haryana, Tamil Nadu y
+  Punjab escaneadas) porque el 23/10/2026 devolvía 200. **Devuelve 200 y el
+  cuerpo dice «Request Rejected».** Son 244 bytes: un cortafuegos del JRC que
+  rechaza con código de éxito. Pasa en las cuatro rutas probadas —India,
+  Bangladesh, Myanmar y el Atlas de África— y es intermitente: el dominio
+  `esdac.jrc.ec.europa.eu` a secas sí contesta HTML de verdad. Si te toca
+  abierto, usalo y decilo; si te toca rechazado, va a `vacias` y la ficha se
+  escribe con HWSD v2 y SoilGrids. **Lo que no se puede hacer es citarlo por el
+  código 200.**
 - Indonesia: **BBSDLP** / Balai Besar Litbang Sumberdaya Lahan Pertanian.
 - Malasia: el *Soil Map of Peninsular Malaysia* del Departamento de Agricultura.
 - Tailandia: **LDD**, Land Development Department.
@@ -307,6 +314,14 @@ y el lote 1 de África— que la entrega devolvió el ejemplo completado en vez 
 investigado. **Y los ids de cultivo del ejemplo no son válidos por ser del
 ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
 
+**El ejemplo de abajo es una forma, no una respuesta.** Lo que esta entre
+`<`angulos`>` se reemplaza; nada de ahi es la contestacion de ningun lote. Esta
+advertencia esta escrita porque ya costo dos veces: el ejemplo de la fase 5 traia
+el modificador resuelto —`pasturas`, `delta 20`, «confirmado», confianza alta— y
+la entrega devolvio eso con las descripciones investigadas alrededor. **El
+ejemplo es la instruccion mas fuerte del documento**, mas que las reglas
+numeradas.
+
 ```json
 {
   "encargo": "fichas-indomalaya",
@@ -315,35 +330,35 @@ ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
   "continua": false,
   "entradas": [
     {
-      "id": "decan_vertisoles_secos",
-      "nombre": "Bosques secos deciduos de la meseta del Decán",
-      "emoji": "🌾",
-      "color": "#8D6E63",
+      "id": "<id_en_minúsculas_con_guion_bajo>",
+      "nombre": "<el nombre en castellano>",
+      "emoji": "<uno>",
+      "color": "#RRGGBB",
       "resumen": "…",
       "vegetacion": "…",
       "fauna": "…",
       "suelos": "…",
       "saberes": [],
       "especies": [
-        { "nombre": "Teca", "cientifico": "Tectona grandis", "tipo": "nativa", "nota": "…" }
+        { "nombre": "<nombre común>", "cientifico": "<Binomial>", "tipo": "nativa", "nota": "…" }
       ],
       "cultivos": ["<ids del anexo, 8 a 15>"],
       "fuentes": [{ "label": "Título tal como lo muestra la página", "url": "https://…" }],
       "verificacion": "Qué dicen esas páginas, con sus palabras, sobre este lugar.",
       "_meta": {
-        "ecorregiones_resolve": [290, 297, 298],
-        "nombre_resolve": "Central Deccan Plateau dry deciduous forests; …",
-        "paises": ["India"],
-        "confianza": "alta",
-        "base_de_suelos_usada": "NBSS&LUP + HWSD v2 + SoilGrids",
+        "ecorregiones_resolve": [<ECO_ID>],
+        "nombre_resolve": "<el nombre de RESOLVE, en inglés>",
+        "paises": ["<país>"],
+        "confianza": "<alta | media | baja>",
+        "base_de_suelos_usada": "<las bases que de verdad abrieron, y cuál no>",
         "notas": "…",
         "modificadores_propuestos": [
           {
-            "uso": "huerta",
-            "delta": 0,
-            "pisa_global": -10,
+            "uso": "<huerta | pasturas | frutales | forestal | reserva>",
+            "delta": <entero entre -35 y 25>,
+            "pisa_global": <el delta global de ese uso, tal como lo hereda hoy>,
             "razon": "El mecanismo, no la conclusión.",
-            "confianza": "media",
+            "confianza": "<alta | media | baja>",
             "fuente": "https://…"
           }
         ]

@@ -339,6 +339,14 @@ y el lote 1 de África— que la entrega devolvió el ejemplo completado en vez 
 investigado. **Y los ids de cultivo del ejemplo no son válidos por ser del
 ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
 
+**El ejemplo de abajo es una forma, no una respuesta.** Lo que esta entre
+`<`angulos`>` se reemplaza; nada de ahi es la contestacion de ningun lote. Esta
+advertencia esta escrita porque ya costo dos veces: el ejemplo de la fase 5 traia
+el modificador resuelto —`pasturas`, `delta 20`, «confirmado», confianza alta— y
+la entrega devolvio eso con las descripciones investigadas alrededor. **El
+ejemplo es la instruccion mas fuerte del documento**, mas que las reglas
+numeradas.
+
 ```json
 {
   "encargo": "fichas-africa",
@@ -366,16 +374,16 @@ ejemplo: los válidos son los de `ANEXO_IDS_CULTIVOS.md` y nada más.**
         "ecorregiones_resolve": [<ECO_ID>],
         "nombre_resolve": "<el nombre de RESOLVE, en inglés>",
         "paises": ["<país>"],
-        "confianza": "alta",
-        "base_de_suelos_usada": "Soil Atlas of Africa (JRC) + HWSD v2 + SoilGrids",
+        "confianza": "<alta | media | baja>",
+        "base_de_suelos_usada": "<las bases que de verdad abrieron, y cuál no>",
         "notas": "…",
         "modificadores_propuestos": [
           {
-            "uso": "pasturas",
-            "delta": 20,
-            "pisa_global": 20,
-            "razon": "Confirmado, con el mecanismo y la carga publicada que lo sostiene.",
-            "confianza": "alta",
+            "uso": "<huerta | pasturas | frutales | forestal | reserva>",
+            "delta": <entero entre -35 y 25>,
+            "pisa_global": <el delta global de ese uso, tal como lo hereda hoy>,
+            "razon": "El mecanismo, no la conclusión.",
+            "confianza": "<alta | media | baja>",
             "fuente": "https://…"
           }
         ]
