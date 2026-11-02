@@ -57,7 +57,10 @@ describe('las mudanzas del lote: el ECO_ID manda sobre el nombre', () => {
     // 279. Dos kilómetros cambian la ficha, así que vale la aldea.
     expect(fichaDeEcorregion(279)).toBe('sumatra_montano');
     expect(fichaDeEcorregion(305)).toBe('pinar_toba');
-    expect(practicasDeFicha('sumatra_montano')).toHaveLength(1);
+    expect(practicasDeFicha('sumatra_montano').some((p) => /HKm/.test(p.practica))).toBe(true);
+    // El lote 3 volvió a proponer `pinar_toba`, esta vez para el café de la aldea
+    // de Horsik, sobre la orilla del lago. Horsik da 279 en siete puntos, así que
+    // la ficha que se llama como el lago sigue sin una sola práctica.
     expect(PRACTICAS_POR_FICHA['pinar_toba']).toBeUndefined();
   });
 
@@ -162,9 +165,9 @@ describe('las fuentes de este lote', () => {
   ];
   const DEL_LOTE = FICHAS.flatMap((id) => practicasDeFicha(id).flatMap((p) => p.fuentes));
 
-  it('son once entradas sobre nueve fichas', () => {
+  it('son once entradas sobre nueve fichas, más la que le sumó el lote 3', () => {
     const total = FICHAS.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(total).toBe(11);
+    expect(total).toBe(12);
   });
 
   it('ninguna cuelga de un repositorio que sólo aloja, ni de un host de pruebas', () => {
@@ -198,7 +201,7 @@ describe('la capa llega a la ficha', () => {
     const esperado: Record<string, number> = {
       gangetica_inferior: 1, sri_lanka_humedo_bajo: 2, valle_brahmaputra: 1,
       pantanos_sundarbans: 1, pantanos_irrawaddy: 1, pantanos_chao_phraya: 2,
-      pantanos_rio_rojo: 1, sumatra_bajo: 1, sumatra_montano: 1,
+      pantanos_rio_rojo: 1, sumatra_bajo: 1, sumatra_montano: 2,
     };
     for (const [id, n] of Object.entries(esperado)) {
       expect(fichaPorId(id)?.practicas, id).toHaveLength(n);

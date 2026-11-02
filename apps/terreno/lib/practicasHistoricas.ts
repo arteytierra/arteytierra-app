@@ -37,22 +37,40 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 01/11/2026
+ * ESTADO, al 02/11/2026
  *
- * 431 entradas sobre 212 fichas, de un catálogo de 257. El reparto importa más
- * que el total: 67 fichas tienen una sola entrada, 74 tienen dos, 68 llegaron a
- * tres —que es el piso que se busca— y 3 tienen cuatro. Indomalaya baja de 30
- * fichas sin prácticas a 21: el segundo lote abrió nueve.
+ * 446 entradas sobre 218 fichas, de un catálogo de 257. El reparto importa más
+ * que el total: 69 fichas tienen una sola entrada, 75 tienen dos, 70 llegaron a
+ * tres —que es el piso que se busca—, 3 tienen cuatro y una tiene cinco.
+ * Indomalaya baja de 21 fichas sin prácticas a 15.
  *
- * De ese lote conviene recordar una cifra y no el total: de las 18 entradas que
- * llegaron entraron 11, y de esas 11 sólo una cayó en la ficha que la entrega
- * había propuesto. Las otras diez se movieron después de preguntarle a RESOLVE
- * por la coordenada del lugar declarado. Las 7 que no entraron no entraron por
- * tres motivos distintos: dos porque el polígono que les corresponde todavía no
- * tiene ficha —el manglar de Sundarbans y la zona seca del Irrawaddy—, una
- * porque el lugar queda partido entre dos fichas y no se pudo decidir, y cuatro
- * porque la fuente citada no abre. El id que viene en la entrega es una
- * propuesta; lo que se verifica es el lugar.
+ * El tercer lote llegó con 18 entradas, entraron 14 y quedaron montadas como 15,
+ * porque el subak balinés cruza el límite entre el 229 y el 230 y se escribió
+ * una vez en cada ficha. Nueve de las 14 cayeron en la ficha que la entrega
+ * propuso, contra una de once en el lote anterior, y la diferencia no es suerte:
+ * este lote nombró aldea y distrito en lugar de región, y así el polígono se
+ * resuelve de una. Las cinco que se movieron lo hicieron por nombres de ficha
+ * que invitan al error, y `pinar_toba` volvió a ser el peor: el café de la aldea
+ * de Horsik, sobre la caldera del lago Toba, cae en `sumatra_montano`, porque el
+ * 305 es el pinar de Kerinci y no la orilla del lago que lo nombra. Es el segundo
+ * lote consecutivo en que esa ficha se propone y no corresponde.
+ *
+ * De las 4 que no entraron, dos son contrato y no fuente, y conviene recordarlo
+ * antes de volver a pedirlas: una cita un artículo que *recomienda* un esquema de
+ * manejo en vez de documentar lo que se hizo, y la otra un estudio de ingresos y
+ * viabilidad, que mide rentabilidad y no práctica. Un número de rentabilidad no
+ * es una práctica; si sirve, sirve en la capa de aptitud de cultivos, no acá.
+ *
+ * ESTADO anterior, al 01/11/2026
+ *
+ * 431 entradas sobre 212 fichas. De las 18 entradas del segundo lote entraron 11,
+ * y de esas 11 sólo una cayó en la ficha que la entrega había propuesto; las otras
+ * diez se movieron preguntándole a RESOLVE por la coordenada del lugar declarado.
+ * Las 7 que no entraron fue por tres motivos: dos porque el polígono que les
+ * corresponde todavía no tiene ficha —el manglar de Sundarbans y la zona seca del
+ * Irrawaddy—, una porque el lugar queda partido entre dos fichas y no se pudo
+ * decidir, y cuatro porque la fuente citada no abre. El id que viene en la entrega
+ * es una propuesta; lo que se verifica es el lugar.
  *
  * ESTADO anterior, al 24/10/2026
  *
@@ -1636,6 +1654,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO Fisheries — Mangrove cockle fisheries and tenure in Ecuador', url: 'https://www.fao.org/fishery/static/tenure-user-rights/root/volume1/C13.pdf' },
       ],
     },
+    {
+      practica: 'Custodia: cierres rotativos de 6 a 30 días sobre los bancos de concha',
+      periodo: 'Concesión otorgada a Isla Costa Rica en 2000; pesquería medida entre 2009 y 2010',
+      tipo: 'recoleccion',
+      vigencia: 'en_uso',
+      detalle:
+        'La asociación maneja cinco sitios de recolección que se cierran por períodos de 6 a 30 días al mes y se rotan, con un guardia apostado al frente para impedir la entrada de ajenos; el turno de guardia es obligatorio y quien no lo cumple pierde el acceso a las áreas cerradas en los períodos de cosecha, con sanción creciente si reincide. Las dos reglas que los socios se dieron son la talla mínima de 45 mm y el cierre mensual de ciertas áreas, para que ahí ocurran la dispersión larvaria, el asentamiento y el crecimiento. La medición compara tres regímenes de propiedad y la diferencia es clara: en las áreas manejadas de la concesión la captura fue de 34 conchas por hora contra 26 en las áreas abiertas, con tallas medias de 46,96 mm en Anadara tuberculosa y 47,96 mm en A. similis, sobre 6.565 conchas medidas. La salvedad la pone la propia fuente y conviene leerla antes de copiar el modelo: todas las conchas serían más grandes si no fuera por los corrales de engorde, porque las trece familias que tienen corral juntan conchas chicas como semilla, y el autor advierte que si muchas más familias instalaran corral eso podría socavar la pesquería entera.',
+      fuentes: [
+        { label: 'International Journal of the Commons 5(2), de Christine M. Beitl — Cockles in custody: the role of common property arrangements in the ecological sustainability of mangrove fisheries on the Ecuadorian coast', url: 'https://thecommonsjournal.org/articles/285/files/submission/proof/285-1-2072-1-10-20110914.pdf' },
+      ],
+    },
+    {
+      practica: 'Reforestar y vigilar como condición de la tenencia del manglar',
+      periodo: 'Concesiones de diez años renovables, otorgadas desde 2000 a 34 comunidades de la costa ecuatoriana',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'La custodia es una concesión de manglar por diez años, renovable: el Estado no entrega el bosque, entrega la custodia a cambio de dos obligaciones concretas. Cada socio tiene que denunciar ante la autoridad el avance de las camaroneras sobre el manglar y tiene que participar de las jornadas periódicas de reforestación; los conflictos se resuelven en la asamblea mensual y al intruso se lo reporta a las autoridades de Hualtaco. El tamaño del problema que esto enfrenta está medido: entre 1969 y 2006 la cobertura original de manglar del Ecuador bajó un 26,5 %, en correlación con el crecimiento de la camaronera, que empezó en los años setenta sobre salitrales y tierras altas. La fuente sostiene que el arreglo dio vuelta la tendencia local —de deforestación a reforestación— y es explícita en lo que no afirma: los beneficios no se reparten parejo y la propiedad común no alcanza por sí sola.',
+      fuentes: [
+        { label: 'International Journal of the Commons 5(2), de Christine M. Beitl — Cockles in custody: the role of common property arrangements in the ecological sustainability of mangrove fisheries on the Ecuadorian coast', url: 'https://thecommonsjournal.org/articles/285/files/submission/proof/285-1-2072-1-10-20110914.pdf' },
+      ],
+    },
   ],
   bosque_humedo_occidente_ecuador: [
     {
@@ -1682,6 +1722,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Colonos de Galápagos extrajeron sal de James Bay, en Santiago, en tres períodos documentados y la usaron para curar pescado. La actividad también abastecía una demanda ocasional del continente cuando lluvias intensas inundaban sus salinas costeras. Es una adaptación económica histórica de colonos en una isla árida, no un saber ancestral ni una práctica recomendada para un ecosistema protegido.',
       fuentes: [
         { label: 'Oxford y Watkins (2009) — Galápagos: Both Sides of the Coin, texto reproducido por Galápagos Conservancy en History of Galápagos', url: 'https://www.galapagos.org/about_galapagos/history/' },
+      ],
+    },
+    {
+      practica: 'Plantar nativas en los sitios más arruinados de la isla, no en los mejores',
+      periodo: 'Proyecto piloto desde 2013 y fases sucesivas hasta 2019, en la isla Baltra',
+      tipo: 'suelo',
+      vigencia: 'en_uso',
+      detalle:
+        'Los tres sitios de Baltra se eligieron por un criterio al revés del habitual: alta degradación. Son la Casa de Piedra, el antiguo botadero de basura y el parque eólico, unas tres hectáreas en total, y el objetivo declarado es que la vegetación sucesiva los una en una red de corredores de especies nativas y endémicas. Van más de 4.000 plantas de doce especies nativas y endémicas, y en el aeropuerto se armó un corredor ecológico para que las iguanas terrestres no cruzaran la pista, más jardines que hoy tienen más de 200 plantas endémicas de Baltra: desde entonces se observan visiblemente menos iguanas sobre la pista. Vale la pena ver por qué se ensaya el método en una isla árida: en Santa Cruz la zona húmeda está degradada en un 88 % y la de transición en un 25 %, mientras la árida está en el 0,4 %, así que acá se aprende con poca agua y poco daño previo lo que después hay que aplicar donde el daño ya está hecho.',
+      fuentes: [
+        { label: 'Fundación Charles Darwin — The Galapagos Verde 2050 Project, informe 2013-2019', url: 'https://www.darwinfoundation.org/en/documents/675/GalapagosVerde2050_en_6BZjBDz.pdf' },
+      ],
+    },
+    {
+      practica: 'Caja de captación de agua para establecer el plantín en zona árida',
+      periodo: 'Probada en el piloto de 2013 y en las fases siguientes del proyecto, hasta 2019',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'La caja Groasis Waterboxx junta y retiene agua de lluvia o agua que se le agrega a mano y la lleva por capilaridad a la zona de raíces; la tapa reduce la exposición al sol y el recipiente protege al plantín de los herbívoros y de la competencia mientras se establece. En Baltra el resultado medido es grande: los plantines de Opuntia echios var. echios plantados con la caja crecieron más rápido que los testigos sin tecnología, y como la especie crece alrededor de dos centímetros por año en condiciones naturales, la caja más que duplicó esa tasa, y eso con las cajas llenas a la mitad de su capacidad a propósito, para ver si la tecnología se sostiene en condiciones áridas de verdad. La misma fuente da el contraejemplo, que es lo que vuelve útil el dato: la tecnología Cocoon, que funciona de manera parecida y guarda entre 20 y 25 litros, bajó la supervivencia de las plantas en Baltra en todas las especies salvo Acacia macracantha. La conclusión no es que las cajas de agua funcionen, sino que funcionan algunas, con algunas especies, y que la fase siguiente del proyecto se replanteó según esa medición.',
+      fuentes: [
+        { label: 'Fundación Charles Darwin — The Galapagos Verde 2050 Project, informe 2013-2019', url: 'https://www.darwinfoundation.org/en/documents/675/GalapagosVerde2050_en_6BZjBDz.pdf' },
       ],
     },
   ],
@@ -2261,6 +2323,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Atlas et al. (2021) documentaron el uso de weirs —estructuras ribereñas de madera que canalizaban el salmon hacia trampas— en el bajo rio Klamath por los Yurok. Las reglas de gobernanza incluian la apertura nocturna obligatoria del weir para permitir que parte del cardumen alcanzara los frezaderos rio arriba, sosteniendo la reproduccion. Los autores argumentan que este sistema produjo rendimientos resilientes durante milenios y proponen retomarlo como base de la gestion contemporanea del salmon del Pacifico (Oncorhynchus spp.) en el norte de California.',
       fuentes: [
         { label: 'Atlas et al. (2021) — Indigenous Systems of Management for Culturally and Ecologically Resilient Pacific Salmon, BioScience 71(2)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7882363/' },
+      ],
+    },
+    {
+      practica: 'La quema de otoño que dejaba afuera los manchones que daban fruto',
+      periodo: 'Testimonios pomo recogidos por Omer Stewart en 1935; el capítulo ubica el régimen muchos siglos antes del contacto',
+      tipo: 'fuego',
+      vigencia: 'historica',
+      detalle:
+        'El testimonio que Stewart anotó describe un régimen con una decisión adentro: cada otoño se quemaba el campo entero, el fuego corría por el pasto y por el matorral que no servía, y los manchones de arbusto productivo quedaban protegidos de esa quema anual; los fuegos de pasto no molestaban a los árboles grandes. Las notas de 1935 recogen a varios consultantes pomo que prendían fuego deliberadamente en las Coast Ranges y en los valles para favorecer tréboles, para fomentar flores silvestres de bulbo y semilla comestibles, para eliminar matorral, para mejorar el pasto y para arrear la caza y los saltamontes. El efecto que el capítulo documenta es doble y los dos lados sirven para diseñar: el raleo sube la producción de fruto porque saca biomasa muerta y baja la competencia por el agua del suelo, y el mosaico de edades reducía la vulnerabilidad de los caseríos al incendio de verano disparado por rayo. Donde hoy se ve un mar uniforme de chamiso o una ladera de puro Ceanothus, lo que falta es justamente esa quema por parches.',
+      fuentes: [
+        { label: 'Springer, Valuing Chaparral, cap. 4 (Anderson y Keeley, 2018), copia del Santa Barbara County Fire Safe Council — Native Peoples’ Relationship to the California Chaparral', url: 'https://sbfiresafecouncil.org/wp-content/uploads/2020/05/Native-Relationship-to-Chap_andersonkeeley2018.pdf' },
+      ],
+    },
+    {
+      practica: 'Sidra de manzanita machacada en mortero de roca',
+      periodo: 'Registro etnográfico de comienzos del siglo XX; la fotografía es de Tasineu Village, North Fork',
+      tipo: 'recoleccion',
+      vigencia: 'historica',
+      detalle:
+        'Los frutos de Arctostaphylos se machacaban en un mortero cavado en la roca, que es el paso principal para preparar una bebida tipo sidra; la figura del capítulo identifica a Mollie Cheepo, North Fork Mono, haciendo ese machacado en Tasineu Village, North Fork. El detalle que importa para pensar el recurso es la variación: en el chaparral de California hay más de diez especies de manzanita y cada grupo hacía su sidra con la que tenía a mano, así que la receta sigue a la especie del lugar y no al revés. La bebida servía además para humedecer comidas secas —semillas molidas de Salvia columbariae, larvas de avispa, semillas de flores silvestres prensadas en bollos— y Merriam la describió en 1902 como la mejor sidra de manzana, fresca y deliciosa. La madera de manzanita, aparte, quema muy caliente y deja buenas brasas, y con eso se tostaban semillas y otras comidas.',
+      fuentes: [
+        { label: 'Springer, Valuing Chaparral, cap. 4 (Anderson y Keeley, 2018), copia del Santa Barbara County Fire Safe Council — Native Peoples’ Relationship to the California Chaparral', url: 'https://sbfiresafecouncil.org/wp-content/uploads/2020/05/Native-Relationship-to-Chap_andersonkeeley2018.pdf' },
       ],
     },
   ],
@@ -5187,6 +5271,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
       ],
     },
+    {
+      practica: 'La estación manda: el mar cuando está calmo, el bosque cuando no',
+      periodo: 'Etnografía de 2002 a 2009 en el Parque Natural de la Sierra Madre del Norte, con campañas anuales de seguimiento hasta 2013',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Alrededor de 1.800 personas agta viven adentro del parque o en su borde, repartidas en unos 80 asentamientos, y la economía que el estudio describe se ordena por estación. Los grupos de la costa pescan con lanza en la seca, cuando el mar está quieto —las mujeres en las pozas sobre la plataforma de arrecife, los hombres en el agua honda de atrás—, y cuando el mar se pone bravo en la húmeda pasan a la caza de cerdo y venado y a vender ratán y nidos de salangana. Los grupos de río dependen del bosque todo el año y viven en el borde o adentro, casi siempre por debajo de los 500 metros: el río rinde mucho menos que el mar, así que lo que sostiene es la miel, la fruta, los ñames, el ratán y los nidos, y en las zonas altas todos mantienen parcelas chicas de roza con arroz de secano, raíces, maíz y verdura sobre tierra marginal, que rinden poco y funcionan como comida de escasez. La fuente registra la contracción —tala ilegal, expansión agrícola, caza y pesca insostenibles— y a la vez que el parque, en la práctica, no alteró el uso de los recursos.',
+      fuentes: [
+        { label: 'Human Ecology 42(5):769-778 (2014), vía PubMed Central — Limits to Indigenous Participation: The Agta and the Northern Sierra Madre Natural Park, the Philippines', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4194021/' },
+      ],
+    },
   ],
 
   pinar_luzon: [
@@ -5422,8 +5517,134 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'ULIN: Jurnal Hutan Tropis 8(1) — Kelayakan usaha tani Hutan Kemasyarakatan (HKm) pola monokultur dan agroforestri di Desa Air Terjun Kabupaten Kerinci', url: 'https://e-journals.unmul.ac.id/index.php/UJHT/article/view/14535' },
       ],
     },
+    {
+      practica: 'Café arábica con semilla del propio cafetal, sobre la caldera del Toba',
+      periodo: 'Relevamiento de la cadena de valor en la aldea Horsik, distrito de Ajibata, con datos de producción de 2018',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'La aldea tiene setenta familias y el café pesa más que el cacao: en 2018 salieron 23 toneladas de pergamino. La semilla no se compra, sale del cafetal que ya está —el trabajo dice que nunca se usa material certificado—, la plantación va a dos metros por dos, la primera cosecha llega entre el tercero y el cuarto año y después hay una ventana de cuatro o cinco meses con siete a catorce días de recolección cada mes. El cuello de botella que el estudio marca no está en el lote sino después: la fermentación convendría hacerla en agua corriente y se hace remojando en baldes, en la aldea no hay despulpadora —la máquina se compra en Parapat—, el secado al sol dura dos horas y lo que llega al acopiador es café seco. La selección de la cereza se aprende mirando, sin capacitación, y la fuente aclara que se dejó de lado para apurar la cosecha.',
+      fuentes: [
+        { label: 'SciTePress, ICOSOP 3 (2019) — The Coffee Value Chain Analysis to Support Farmers Livelihood in Horsik Village, Ajibata Sub-district, Toba Samosir District, North Sumatra', url: 'https://www.scitepress.org/Papers/2019/101227/101227.pdf' },
+      ],
+    },
   ],
 
+
+  // Dos entradas de un mismo polígono lumpeado: la ficha cubre el 229 —montano de
+  // Java oriental y Bali— y el 288 —montano de Java occidental—, así que acá
+  // conviven el talún de bambú de Soreang y el subak de Batukaru, a mil kilómetros
+  // uno del otro. Soreang llegó propuesto como `java_occidental_bajo` y da 288; el
+  // 289, que es el Java occidental bajo de verdad, sigue en cero.
+  java_bali_montano: [
+    {
+      practica: 'Talun-kebun: el barbecho de bambú que devuelve la fertilidad',
+      periodo: 'Estudio de caso en la aldea de Sadu, Soreang, Bandung, publicado en 2013; el ciclo que describe barbecha cuatro o cinco años',
+      tipo: 'suelo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El ciclo abre un talún de bambú de cuatro o cinco años, lo cultiva unos tres y lo deja volver a bambú, y el momento de abrir no lo marca el calendario sino el campo: la estación seca se reconoce porque se secan y caen las hojas del bambú apus, maduran los frutos del randu y suena la cigarra turaes, y la de lluvia porque brotan los tubérculos en el suelo, el gadung entre ellos. La apertura ocupa 30 a 50 tumbak —420 a 720 m²— y tiene pasos con nombre propio: desramar las cañas (nyacar), juntar los restos en pilas (ngeduk), carpir (mencug), talar la caña entera (nuar), quemar el resto (ngaduruk) y acarrear la ceniza a un cobertizo donde se guarda (ngangkut lebu); esa ceniza guardada es el primer abono y tapa los hoyos de siembra del poroto roay, y la segunda fertilización recién ahí agrega NPK. El bambú del corte tampoco se descarta: hace el cerco, los tutores del roay y las guías del paria, y además se vende, y durante el barbecho rebrota de los tocones hasta que a los cuatro o cinco años la hojarasca acumulada devolvió la fertilidad y la caña volvió a tener edad de corte. Sobre cuatro parcelas de 500 m² con barbechos de 16, 24, 36 y 72 meses el trabajo contó 67 especies —siete bambúes, 40 maderables y 20 frutales— y advierte que el sistema se pierde entre los más jóvenes, con el albasia y el maíz dulce desplazando al bambú y al roay.',
+      fuentes: [
+        { label: 'ICRAF, Prosiding Seminar Nasional Agroforestri 2013 — Sistem agroforestri tradisional berbasis tanaman bambu di Desa Sadu, Soreang, Jawa Barat', url: 'https://apps.worldagroforestry.org/sea/Publications/files/proceeding/PR0043-15/PR0043-15-6.pdf' },
+      ],
+    },
+    {
+      practica: 'Subak: el riego cooperativo que arranca en el lago del cráter',
+      periodo: 'Red documentada desde el siglo IX; las redes de templos manejan la cuenca desde el siglo XI y los paisajes siguen en producción',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'El subak reparte el agua de manantiales y ríos por canales, túneles y compuertas que se manejan en común, y lo que ordena el reparto entre subaks vecinos es la red de templos: cada templo marca el nacimiento del agua o el punto por donde pasa camino abajo, así que el calendario ritual y el calendario de riego son el mismo. El bosque de cabecera que protege la fuente es parte del sistema y no un área aparte, y por eso la red puede regular el agua a escala de cuenca en una isla volcánica de laderas cortas y empinadas. Bali tiene alrededor de 1.200 colectivos de agua y entre 50 y 400 agricultores manejan el suministro de una sola fuente; casi todos los subaks tienen su código escrito, el awig-awig, que fija los derechos y las obligaciones del socio. De los cinco sitios que UNESCO inscribió sobre 19.500 hectáreas, dos caen en este polígono: el templo supremo de Pura Ulun Danu Batur, al borde del lago del cráter que se considera el origen de todo manantial y todo río, y las terrazas de Catur Angga Batukaru.',
+      fuentes: [
+        { label: 'UNESCO, Lista del Patrimonio Mundial 1194 — Cultural Landscape of Bali Province: the Subak System as a Manifestation of the Tri Hita Karana Philosophy', url: 'https://whc.unesco.org/en/list/1194/' },
+      ],
+    },
+  ],
+
+  // El paisaje de subak cruza el límite: Jatiluwih y Wongaya Gede (Batukaru) y el
+  // lago Batur dan 229, y Mengwi y Pejeng dan 230. Por eso la práctica entra en las
+  // dos fichas, cada una con los componentes que le tocan.
+  java_oriental_bali_bajo: [
+    {
+      practica: 'Subak: el templo de paso en el tramo bajo del riego',
+      periodo: 'Red documentada desde el siglo IX; el templo real de agua de Mengwi es del siglo XVIII',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Acá abajo termina la cadena que el subak organiza arriba: el agua baja por canales, túneles y compuertas de manejo común y atraviesa templos que marcan su paso, de modo que la obra hidráulica y el calendario ritual son la misma cosa. Dos de los cinco sitios que UNESCO inscribió sobre 19.500 hectáreas caen en este polígono: el tramo bajo del paisaje de subak de la cuenca del Pakerisan, el sistema de riego más antiguo que se conoce en Bali, y el templo real de agua de Pura Taman Ayun, del siglo XVIII, en Mengwi. Bali tiene alrededor de 1.200 colectivos de agua, entre 50 y 400 agricultores manejan el suministro de una misma fuente, y casi todos los subaks tienen su código escrito —el awig-awig— con los derechos y las obligaciones del socio. La ficha de UNESCO no da por segura la continuidad: ningún componente está amenazado hoy, pero señala que el paisaje de terrazas es muy vulnerable al cambio de prácticas agrícolas y a la presión del turismo.',
+      fuentes: [
+        { label: 'UNESCO, Lista del Patrimonio Mundial 1194 — Cultural Landscape of Bali Province: the Subak System as a Manifestation of the Tri Hita Karana Philosophy', url: 'https://whc.unesco.org/en/list/1194/' },
+      ],
+    },
+  ],
+
+  // Punggur Kecil y Punggur Besar dan 273, la ficha que la entrega propuso. El PDF
+  // del artículo es un escaneo sin capa de texto; el resumen se leyó en la página
+  // del artículo, que es la URL que queda citada.
+  pantanos_borneo_suroeste: [
+    {
+      practica: 'Arroz de variedad local en el pantano de marea, contra el paquete de intensificación',
+      periodo: 'Experiencia de proyecto de 2008-2009 en Punggur Kecil y Punggur Besar, Kubu Raya, publicada en 2020',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El Estado indonesio viene gastando desde los años setenta en obras para intensificar el arroz de los pantanos de marea, y el trabajo arranca constatando que los casos de éxito son muy pocos. Los agricultores rechazan ese paquete y eligen variedades locales por dos razones que son de diseño antes que de gusto: bajan el costo de la campaña y liberan tiempo para atender el resto de la chacra. Sobre esa base prefieren además una mezcla de perennes elegida según lo que necesita cada familia, y los tres casos del estudio están tomados en parcelas de desborde tipo B, C y D —la clasificación local según hasta dónde llega la marea—, porque la decisión cambia con el tipo de desborde. La conclusión es que una agricultura de base agroecológica es la forma más adaptativa de optimizar ese arroz local, no de reemplazarlo.',
+      fuentes: [
+        { label: 'Indonesian Journal of Geography 52(2), Universitas Gadjah Mada — Tidal Swamps Development in West Kalimantan: Farmers Prefer A Rational-Moderately Strategy', url: 'https://journal.ugm.ac.id/ijg/article/view/46148' },
+      ],
+    },
+  ],
+
+  // Mansalay, Bulalacao y Bongabong —las tierras altas hanunóo del sur de Mindoro—
+  // dan 248, la ficha que la entrega propuso.
+  mindoro: [
+    {
+      practica: 'Roza anual de media hectárea con los tubérculos plantados antes del fuego',
+      periodo: 'Fotografiada en 1953; la fuente la describe como una rotación de campos sostenida por generaciones',
+      tipo: 'fuego',
+      vigencia: 'historica',
+      detalle:
+        'Cada familia abría al año una parcela de media hectárea, preferentemente sobre bosque secundario maduro, con cuchillo, hacha y fuego, y siempre a distancia caminable de un caserío de cinco o seis hogares. El orden del año es lo que vale: tala a principios de primavera; en marzo se plantan las raíces con palo cavador en el campo ya cortado pero todavía sin quemar, porque esos tubérculos sobreviven a la quema; en abril se quema avanzando por un cortafuego y el claro entero arde en menos de una hora; en mayo se cerca —hace falta por el ganado y por los animales silvestres— y los palos que quedaron parados sirven de tutores de ñame y después de leña; en junio se siembra el arroz dejando caer un puñado mezclado con semillas de otras plantas de comer en el hoyo que abre el palo. Sobre el arroz, el maíz, el banano, los ñames y la batata se intercalan más de ochenta cultivos, y la parcela se carpe y se cuida durante los primeros seis meses. La fuente atribuye la continuidad a dos cosas y no a una: condiciones de clima favorables y un conocimiento fino de la flora local.',
+      fuentes: [
+        { label: 'FAO, Unasylva 11(4) — Hanunóo agriculture: an example of shifting cultivation in the Philippines, de Harold C. Conklin', url: 'https://www.fao.org/4/x5385e/x5385e05.htm' },
+      ],
+    },
+  ],
+
+  // San Fernando, Bukidnon da 246. El municipio importa: Malaybalay, a 40 km, da
+  // 247, que es la ficha vecina. La entrega nombró el municipio y por eso se pudo
+  // resolver de una.
+  mindanao_montano: [
+    {
+      practica: 'Guardar la diversidad del arroz de secano como semilla propia',
+      periodo: 'Relevamiento de noviembre de 2010 a mayo de 2011 en 24 barangays de diez municipios y dos ciudades de Bukidnon',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El relevamiento juntó 140 variedades y líneas locales de arroz de secano, y 82 de esas 140 —el 59 %— salieron de un solo municipio, San Fernando, cuya población es en su mayoría matigsalug. Sobre trece caracteres de semilla medidos la diversidad resultó alta, con índices de Shannon-Weaver entre 0,76 y 0,88: no es un puñado de variedades repetidas, es un acervo ancho. De las 45 entrevistas salen razones de uso que no son agronómicas —consumo de la casa, ofrenda y ocasiones especiales— y una que sí lo es: con estas variedades se baja el insumo químico. Para los matigsalug, dice la fuente, esas variedades sostienen sus creencias y son una marca propia del grupo, y el trabajo cierra pidiendo seguir colectando en el resto de Bukidnon antes de perder lo que queda.',
+      fuentes: [
+        { label: 'Philippine E-Journals — Seed Diversity and Utilization of the Upland Rice Landraces and Traditional Varieties from Selected Areas in Bukidnon, Philippines', url: 'https://ejournals.ph/article.php?id=2942' },
+      ],
+    },
+  ],
+
+  // Caridad y Mailhi, los dos sitios del estudio cerca de Baybay, dan 247. La
+  // entrega citaba la caracterización de 2011, que está en una revista de pago; se
+  // reemplazó por el trabajo de 2016 del mismo grupo, abierto, que además mide la
+  // luz que pasa.
+  mindanao_visayas_oriental: [
+    {
+      practica: 'Abacá a la sombra: bajo cocal viejo o bajo plantación de nativas',
+      periodo: 'Dos sitios cerca de Baybay, Leyte —Caridad a 122 m y Mailhi a 351 m—, con seguimiento mensual de septiembre de 2003 a abril de 2004',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'El abacá es un cultivo de sombra, y el trabajo compara los dos arreglos que lo sostienen en la cordillera de Leyte: bajo cocotero y bajo rainforestation, que es la plantación de árboles nativos para rehabilitar tierra degradada. Lo que decide es cuánta luz pasa: bajo el cocal llega el 33 % de la radiación arriba del abacá y el 11 % debajo de su propio dosel, bajo la plantación de nativas el 36 % y el 9 %, y la fracción que transmite un cocotero depende de la edad de la palma —alrededor del 20 % entre los 8 y los 25 años y cerca del 50 % a los 40—, así que un cocal viejo deja luz suficiente y uno joven no. El mejor arreglo medido fue el de árboles nativos con abacá, porque la plantación de nativas además mejora la calidad del suelo del agroecosistema; en los dos casos la densidad es alta, así que la fuente recomienda fertilizar y usar material de plantación sano, y pide mirar topografía y exposición al viento antes de elegir el sitio. Hay una advertencia de establecimiento que conviene no perder: el hijuelo trasplantado adelgaza en lugar de engrosar los dos primeros meses —de 6,7 a 4,0 cm de diámetro basal— y la actividad fisiológica recién se recupera entre el quinto y el séptimo mes, cuando rebrota la raíz, de modo que una seca corta justo después de plantar agrava la caída.',
+      fuentes: [
+        { label: 'Annals of Tropical Research 38(1):19-35, Visayas State University — Growth Performance of Abaca (Musa textilis Née) Integrated in Multi-strata Agroecosystems', url: 'https://atr.vsu.edu.ph/index.php/ATR/article/view/207' },
+      ],
+    },
+  ],
 };
 
 /** Las prácticas de una ficha, o `[]`. Nunca `undefined`: el llamador no debería
