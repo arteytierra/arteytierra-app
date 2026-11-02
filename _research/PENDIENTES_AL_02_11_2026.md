@@ -158,6 +158,34 @@ de Swift Current, Saskatchewan. Usarlas en el Chaco o en el miombo es extrapolar
   implica mandarle coordenadas de predio a un tercero.
 - **Saberes territoriales: 2 activos de 85.** Depende de la fase 1.
 
+### La vidriera, que vive en otro repositorio
+
+`acequia.app` es `arteytierra/acequia-landing`, afuera de este repo, y es el
+sexto consumidor de los planes que este monorepo no puede vigilar. El
+**02/11/2026** se arreglaron dos cosas ahí y queda una que no decide el código.
+
+- **Hecho.** El plazo de la prueba estaba tipeado a mano en cinco lugares —el
+  botón del hero, el cartel de abajo, el cierre de la portada, el encabezado de
+  las quince páginas y la vista de confirmación— mientras la sección de planes
+  sí leía `diasPrueba` del endpoint. Coincidían porque hoy son 3. Y no hacía
+  falta que cambiara el número: `ESTADO_POR_DEFECTO` degrada a `prueba: false`
+  cuando `arteytierra.org` no contesta en cinco segundos, así que la misma
+  pantalla decía «Empezar 3 días» arriba y «acceso completo desde el primer
+  día» abajo. Ahora sale de `leerEstadoPagos()`, el encabezado quedó neutro
+  —«Crear cuenta»— salvo donde la página sí preguntó, y lo cuida
+  `tests/plazo-de-prueba.test.ts`, que no mira la red sino el código.
+- **Hecho.** La página de **arrepentimiento y baja** —la del pie de todas las
+  páginas, la del sitemap, la que alguien abre justo cuando quiere dejar de
+  pagar— afirmaba que «la contratación comercial todavía no está habilitada»
+  mientras el sistema cobraba. Ahora se lo pregunta a quien cobra. El mismo
+  cartel en `/gracias` ahora sólo aparece si los pagos están apagados de verdad.
+- **Abierto, y es de Jonatan.** Los **términos y condiciones publicados** dicen
+  que «los cobros permanecerán desactivados hasta completar las pruebas de
+  sandbox y la revisión legal», y `/terminos` y `/privacidad` se publican
+  rotulados como borrador de preproducción que **requiere revisión legal antes
+  de cobrar**. El cobro ya está abierto. Eso es texto legal: no se toca desde
+  una sesión.
+
 ---
 
 ## 3. De Jonatan, y no se hace sin él
@@ -169,6 +197,7 @@ de Swift Current, Saskatchewan. Usarlas en el Chaco o en el miombo es extrapolar
 | **Una transacción real controlada**: alta, primer cobro, cancelación en prueba, cambio de plan | Es el único bloque donde equivocarse cuesta plata |
 | **Decidir si el cobro sigue abierto al público** o se restringe con `ACEQUIA_PAYMENTS_TEST_EMAILS` | Decisión comercial |
 | **Cloudflare bloquea a ClaudeBot** por su cuenta | Se arregla en el dashboard; afecta al posicionamiento que ya está en producción |
+| **La revisión legal de `/terminos` y `/privacidad`** | Se publican como borrador que «requiere revisión legal antes de cobrar», y el cobro ya está abierto |
 | **Validar `/mapa` e `/informe/*`** | Están detrás de login y no se verifican desde el navegador del agente |
 | **Pasos 6 a 9 del runbook de mudanza a acequia.app** | La web nueva está fuera del repo y no compila para Vercel |
 | **`PLAN-embalse-vaso-real.md`, pasos 3 a 5** | Bloqueados en una decisión suya |
