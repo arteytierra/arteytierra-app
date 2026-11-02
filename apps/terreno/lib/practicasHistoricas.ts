@@ -37,15 +37,31 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 24/10/2026
+ * ESTADO, al 01/11/2026
  *
- * 420 entradas sobre 203 fichas. El reparto importa más que el total: 60 fichas
- * tienen una sola entrada, 72 tienen dos, 68 llegaron a tres —que es el piso que
- * se busca— y 3 tienen cuatro. Indomalaya, que es el único hueco real de
- * cobertura, baja de las 32 fichas que el encargo listó a 29: abren la zona seca
- * de Sri Lanka y las dos ecorregiones entre las que se reparten las terrazas de
- * Ifugao. Son 30 en realidad, porque `decan_central_hardwickia` se montó después
- * de escribirse esa lista y nació sin prácticas.
+ * 431 entradas sobre 212 fichas, de un catálogo de 257. El reparto importa más
+ * que el total: 67 fichas tienen una sola entrada, 74 tienen dos, 68 llegaron a
+ * tres —que es el piso que se busca— y 3 tienen cuatro. Indomalaya baja de 30
+ * fichas sin prácticas a 21: el segundo lote abrió nueve.
+ *
+ * De ese lote conviene recordar una cifra y no el total: de las 18 entradas que
+ * llegaron entraron 11, y de esas 11 sólo una cayó en la ficha que la entrega
+ * había propuesto. Las otras diez se movieron después de preguntarle a RESOLVE
+ * por la coordenada del lugar declarado. Las 7 que no entraron no entraron por
+ * tres motivos distintos: dos porque el polígono que les corresponde todavía no
+ * tiene ficha —el manglar de Sundarbans y la zona seca del Irrawaddy—, una
+ * porque el lugar queda partido entre dos fichas y no se pudo decidir, y cuatro
+ * porque la fuente citada no abre. El id que viene en la entrega es una
+ * propuesta; lo que se verifica es el lugar.
+ *
+ * ESTADO anterior, al 24/10/2026
+ *
+ * 420 entradas sobre 203 fichas. 60 fichas tenían una sola entrada, 72 dos, 68
+ * tres y 3 cuatro. Indomalaya, el único hueco real de cobertura, bajaba de las
+ * 32 fichas que el encargo listó a 29: abren la zona seca de Sri Lanka y las dos
+ * ecorregiones entre las que se reparten las terrazas de Ifugao. Son 30 en
+ * realidad, porque `decan_central_hardwickia` se montó después de escribirse esa
+ * lista y nació sin prácticas.
  *
  * ESTADO anterior, al 10/10/2026
  *
@@ -5218,6 +5234,192 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El arroz se cosecha una vez al año y el bancal no queda en descanso. La FAO describe que después de la cosecha se cultivan hortalizas en montículos orgánicos (pinkol) y en camas orgánicas planas (inado), y se crían peces en hoyos (luhok) excavados adentro de la misma terraza. Las tres son obras de suelo dentro del vaso que ya existe: el montículo y la cama levantan el drenaje y concentran materia orgánica sobre un fondo que estuvo inundado, y el hoyo guarda agua y peces cuando la lámina se va. Es la respuesta a la pregunta que se le aparece a cualquiera que diseña un arrozal en ladera: qué hace esa superficie los otros meses del año.',
       fuentes: [
         { label: 'FAO SIPAM — Ifugao Rice Terraces, Philippines', url: 'https://www.fao.org/giahs/giahs-around-the-world/philippines-ifugao-rice-terraces-system/en' },
+      ],
+    },
+  ],
+
+  // ── Bihar: la llanura gangética inferior ────────────────────────────────────
+  // La entrega propuso `gangetica_superior` y el lugar dice Gaya y Nawada, que
+  // es el sur de Bihar. RESOLVE devuelve 238 —Lower Gangetic Plains moist
+  // deciduous forests— en los dos puntos, y el 238 es esta ficha. El 287, que es
+  // la gangética superior, queda río arriba y sigue sin prácticas.
+  gangetica_inferior: [
+    {
+      practica: 'Ahar y pyne, cosecha de escorrentía en serie',
+      periodo: 'El Departamento de Recursos Hídricos de Bihar registra su existencia desde el período Maurya (327-297 a.C.) y su expansión entre 1100 y 1800; hoy deteriorado y con proyectos de restauración',
+      tipo: 'agua',
+      vigencia: 'en_retroceso',
+      detalle:
+        'El pyne es el canal y el ahar el vaso: el pyne arranca de un río, de un arroyo o del ahar de arriba, riega la superficie de la cabecera y drena por la cola al ahar siguiente, así que el sistema entero va en serie desde las cuencas altas hacia las bajas. La fuente lo define por lo que NO es: a diferencia de un azud, una presa o un canal, no retiene el río sino que le saca la escorrentía y riega en la vecindad inmediata de la estructura, y de paso recarga el agua subterránea de los alrededores y reparte el pico de crecida por los pynes en vez de concentrarlo. El detalle de diseño que vale copiar es el bund de tierra: donde el pyne sale directo del arroyo en pendiente suave, se construye un terraplén de tierra atravesado en el cauce aguas abajo de la toma para desviar el agua al canal, y cuando la crecida sube el terraplén se rompe y el pyne de abajo recibe más caudal. El bund está hecho para fallar, y es fallando como pasa el agua al eslabón siguiente. La fuente también publica la medida de lo que se perdió: el viejo distrito de Gaya, donde el sistema llegó más lejos, no necesitó prácticamente auxilio en la hambruna de 1866 ni en la de 1896-97, y hoy hay partes de Gaya clasificadas como propensas a la sequía. El potencial utilizable de estos sistemas es del orden del 40 % del potencial total de riego menor de superficie, y restaurarlos cuesta alrededor de un tercio de crear ese potencial con obra media o mayor.',
+      fuentes: [
+        { label: 'Departamento de Recursos Hídricos de Bihar — Traditional Irrigation Systems of Ahars-Pynes & Tanks in South-Central Bihar', url: 'https://betastate.bihar.gov.in/mwrd/DyPageView?PageTitleID=10120' },
+      ],
+    },
+  ],
+
+  // ── Sri Lanka: la zona húmeda baja ──────────────────────────────────────────
+  // Las dos entradas vienen propuestas en fichas distintas y caen en la misma.
+  // El huerto kandyano llegó como `sri_lanka_montano`, pero la fuente ubica el
+  // sistema entre 400 y 650 m y RESOLVE da 274 —Sri Lanka lowland rain forests—
+  // en Kandy, en Peradeniya y en Gampola. El 275, que es el montano de verdad,
+  // arranca arriba de los mil metros y sigue sin prácticas.
+  sri_lanka_humedo_bajo: [
+    {
+      practica: 'Huerto agroforestal doméstico del distrito de Matara',
+      periodo: 'La fuente los trata como prácticas de larga data y publica el relevamiento en 2022',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Asociación deliberada de árboles y arbustos multipropósito con cultivos anuales y perennes alrededor de la vivienda, que es la forma dominante de uso del suelo en el distrito. Lo que el estudio midió no es la estructura sino la base técnica de las decisiones de quien lo maneja, y ahí está el dato útil: la elección de especies y el cuidado sanitario de las plantas salieron moderados, pero la planificación y el emplazamiento, la preparación del terreno y las labores culturales salieron bajos. O sea que el huerto funciona por la especie elegida y no por el diseño del sitio, y que es justo en el diseño donde un relevamiento previo tiene algo que agregar. El tamaño del huerto, la escolaridad y la ocupación del hogar no correlacionaron con esa base técnica.',
+      fuentes: [
+        { label: 'Open Journal of Forestry 12(1) — Scientific Basis of Agroforestry Homegardens in Matara District, Sri Lanka: Present Status and Improvement Needs', url: 'https://www.scirp.org/journal/paperinformation?paperid=114469' },
+      ],
+    },
+    {
+      practica: 'Huerto-bosque kandyano (Kandyan homegarden)',
+      periodo: 'La fuente lo describe como un sistema indígena de siglos, hoy la forma de uso del suelo dominante del distrito de Kandy',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Sistema agroforestal de varios estratos sobre ladera y valle, con árboles y arbustos multipropósito en asociación estrecha con perennes, anuales y a veces animales en la misma parcela, al lado de la casa y por lo general cerca de una fuente de agua a cuya calidad el propio huerto aporta. La fuente lo ubica en la franja media del país —sobre todo el distrito de Kandy, y también Matale, Kegalle, Kurunegala y Ratnapura—, entre 400 y 650 m, con 2.000 a 2.500 mm de lluvia al año, 24 a 26 °C de día y humedad relativa de 65 a 80 % de día y 75 a 90 % de noche. Dos datos del contexto explican por qué el huerto importa tanto acá: el bosque natural del distrito quedó en menos del 17 % de la superficie y la densidad de población es de 704 habitantes por kilómetro cuadrado, con el té y el caucho ocupando las tierras altas y el arroz los valles. En ese mosaico la fuente le asigna al huerto el papel de categoría que une: produce alimento, frutas, verduras, especias, leña, forraje, madera y plantas medicinales todo el año con mano de obra familiar, y a la vez es el tejido por donde el paisaje cultivado conecta con el natural.',
+      fuentes: [
+        { label: 'CBD Technical Series 52 — Kandyan homegardens: A promising land management system in Sri Lanka', url: 'https://www.cbd.int/doc/publications/cbd-ts-52-en.pdf' },
+      ],
+    },
+  ],
+
+  // ── El valle del Brahmaputra ────────────────────────────────────────────────
+  // Único id de los dieciocho que RESOLVE confirmó donde la entrega lo puso: el
+  // valle da 222 y el 222 es esta ficha.
+  valle_brahmaputra: [
+    {
+      practica: 'Arroz con peces en la parcela inundable',
+      periodo: 'Piloto del Departamento de Pesca de Assam sobre 431 ha y 867 beneficiarios en los ciclos 2018-19, 2019-20 y 2020-21',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Arroz y peces en la misma parcela anegada, con zanja o estanque adentro del lote para que el pez tenga refugio y circulación mientras el arroz cumple su ciclo. El mecanismo que la fuente le atribuye es de ida y vuelta: las excretas del pez le dan nutrientes al arroz, y el pez controla plagas comiendo huevos y larvas —nombra al barrenador del tallo— y algas y malezas que le competirían luz y nutrientes. Suma el amasado del fondo por los peces de hábito bentónico, que airea y mineraliza, y un macollaje mejor por la actividad del pez. Lo que el piloto reporta es 10 a 25 % más de rendimiento de arroz, un promedio de 7 toneladas por hectárea y año de arroz y cerca de 2 toneladas de pescado por hectárea y cosecha, con menos jornales de desmalezado. El tamaño del hueco también está publicado: Assam tiene unos 2,3 millones de hectáreas de arrozal estacionalmente inundado con potencial para esto, y el sistema aporta apenas el 5,43 % de la producción pesquera del estado. La fuente nombra el estado y los once distritos del piloto pero no los lista, así que la práctica queda fechada en Assam y no en un municipio.',
+      fuentes: [
+        { label: 'NITI Aayog — Best Practices: Climate Resilient Rice-Fish Farming in Assam', url: 'https://www.niti.gov.in/sites/default/files/2023-05/Best-Practices.pdf' },
+      ],
+    },
+  ],
+
+  // ── El delta del Ganges: los huertos flotantes ──────────────────────────────
+  // La entrega los puso en `gangetica_inferior`. La propuesta SIPAM nombra tres
+  // distritos y RESOLVE los parte: Gopalganj y Kotalipara dan 282 —Sundarbans
+  // freshwater swamp forests, que es esta ficha— mientras Pirojpur, Nazirpur y
+  // Barisal dan 323, Sundarbans mangroves, que todavía no tiene ficha. La
+  // entrada entra por la parte de Gopalganj y lo dice.
+  pantanos_sundarbans: [
+    {
+      practica: 'Dhap, el huerto flotante de jacinto de agua',
+      periodo: 'La fuente le atribuye trescientos a cuatrocientos años de práctica; inscripto como sitio SIPAM de la FAO en 2011 y vigente',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Donde el agua se queda meses y el suelo no se puede trabajar, la cama de cultivo se construye flotando: jacinto de agua y otros restos vegetales armados en una balsa sobre la que se siembran hortalizas y especias, sin suelo. La FAO lo ubica en los distritos centro-meridionales de Gopalganj, Pirojpur y Barisal, y lo describe como una respuesta que no pelea contra la inundación sino que la acompaña: en el monzón, de junio a agosto, van okra, pepino y calabazas trepadoras; pasado el monzón, espinaca, taro y especias. El cierre del ciclo es lo que lo vuelve interesante para cualquier predio con una zona que se inunda: en invierno la balsa se lleva a terreno alto, se desarma y se mezcla con la tierra como abono, y sobre esa cama desarmada se cultiva el invierno. La fuente dice que el nitrógeno, el fósforo y el potasio del jacinto son comparables a los del estiércol de vaca, y que el sistema no lleva riego ni casi fertilizante ni plaguicida. Las cifras que publica son estimaciones suyas y conviene leerlas como tales: diez veces la productividad de una superficie equivalente en tierra, un costo de producción 30 a 50 % menor, y entre el 60 y el 90 % de la gente de esas comunidades viviendo de esto. El antecedente histórico que anota es que antes del jacinto las balsas se hacían con otras acuáticas, que nombra como Tapapana, Dulalilata y Khudipana.',
+      fuentes: [
+        { label: 'FAO SIPAM — Floating Garden Agricultural Practices, Bangladesh', url: 'https://www.fao.org/giahs/around-the-world/detail/bangladesh-floating-gardens-system/' },
+        { label: 'FAO — Floating Garden Agricultural Practices in Bangladesh, propuesta SIPAM 2011', url: 'https://openknowledge.fao.org/server/api/core/bitstreams/f50e9acd-5878-4594-a745-e7702add568f/content' },
+      ],
+    },
+  ],
+
+  // ── El delta del Irrawaddy ──────────────────────────────────────────────────
+  pantanos_irrawaddy: [
+    {
+      practica: 'Arroz de aguas profundas sembrado al voleo en seco',
+      periodo: 'Sistema de cultivo relevado en el municipio de Pantanaw en 2016-17, con entrevistas de julio de 2017',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En la parte del delta donde el agua acumulada pasa de un metro, el agua no baja a tiempo para trasplantar, así que el arroz se siembra al voleo sobre seco: la preparación del lote se hace antes del monzón y la semilla queda puesta cuando llega la crecida. Las variedades de aguas profundas alargan el tallo para quedar por encima del agua que sube —la fuente las llama también arroz flotante— y rinden poco, que es el precio de seguir produciendo ahí; nombra tres, Taunghti, Sitpwar y Thaiyenet. No es un rincón del municipio: el campo de aguas profundas es la categoría más extensa de arrozal de monzón de Pantanaw, con el 57,92 % de la superficie sembrada. El riesgo también está medido: la inundación va de unos días a dos o tres meses, los terraplenes del río se rompen seguido, y en 2016-17 se perdieron más de 1.500 hectáreas de arroz ya logrado. El arroz de verano, de noviembre a marzo, va con riego o sobre la crecida que se retira.',
+      fuentes: [
+        { label: 'J. Myanmar Acad. Arts Sci. XVI(5) — Constraints and Opportunities of Rice-Based Farming System in the Ayeyarwady Delta: A Case of Pantanaw Township', url: 'https://www.maas.edu.mm/Research/Admin/pdf/21.%20Yi%20Yi%20Cho%20%20%28393-410%29.pdf' },
+      ],
+    },
+  ],
+
+  // ── La planicie inundable del Chao Phraya ───────────────────────────────────
+  // Las dos entradas salen del mismo trabajo. La entrega traía una de ellas en
+  // `chao_phraya_deciduo` citando un informe del IRD que hoy no abre —el sitio
+  // está en mantenimiento—, y el proyecto que nombraba, entre Chai Nat y Sing
+  // Buri, da 224 en RESOLVE y no 225: es planicie inundable, no bosque
+  // deciduo. Molle y sus coautores cubren lo mismo en acceso libre.
+  pantanos_chao_phraya: [
+    {
+      practica: 'Arroz de aguas profundas y arroz flotante de la planicie',
+      periodo: 'Variedades tradicionales que la fuente describe reemplazadas gradualmente en los últimos cincuenta años; hasta hace poco quedaban 300.000 ha de planicie cultivadas con ellas',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'La planicie inundable del delta se cultivaba con variedades de aguas profundas y flotantes, que es la respuesta clásica a una lámina que sube sola y se queda meses: el arroz acompaña el nivel en vez de pelearlo. Los autores reconstruyen cómo las reemplazaron las variedades de alto rendimiento en uno o dos cultivos por año, usando la cuenca de drenaje de Bang Kum como caso, y hasta hace poco todavía quedaban unas 300.000 hectáreas de planicie con las tradicionales. El cambio subió el ingreso rural, y la fuente no lo discute; lo que señala es que vino con un régimen de agua nuevo cuyas consecuencias entre escalas no se habían considerado. Para quien diseña en una planicie que se inunda, el antecedente completo es ese y no sólo la variedad: la planta vieja toleraba el agua y la nueva necesita que el agua se controle, y el control se paga en otra parte del sistema.',
+      fuentes: [
+        { label: 'Southeast Asian Studies 10(1) — Intensification of Rice Cultivation in the Floodplain of the Chao Phraya Delta', url: 'https://www.jstage.jst.go.jp/article/seas/10/1/10_141/_article' },
+      ],
+    },
+    {
+      practica: 'El régimen de agua de la planicie y la cuenca de retardo',
+      periodo: 'Régimen establecido con el reemplazo de variedades en los últimos cincuenta años; el plan oficial de "cachete de mono" se discute en el trabajo de 2021',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Al cambiar la variedad hubo que cambiar el agua, y la planicie pasó a manejarse con un régimen nuevo de drenaje y retención que permite uno o dos cultivos de alto rendimiento por año. Los autores muestran que ese manejo trajo consecuencias negativas entre escalas que no se habían tenido en cuenta, y critican el plan del gobierno de volver a alterar el régimen de la zona como parte de la política de cuencas de retardo —el "cachete de mono"—: en vez de dar más flexibilidad de manejo y más capacidad de amortiguación a la planicie, como la política afirma, el trabajo concluye que socava las dos. Es la advertencia que acequia necesita tener escrita antes de proponer retención en una planicie inundable: la capacidad de amortiguar de una llanura no es una obra que se agrega, es un comportamiento que ya está ahí y que una obra puede desarmar.',
+      fuentes: [
+        { label: 'Southeast Asian Studies 10(1) — Intensification of Rice Cultivation in the Floodplain of the Chao Phraya Delta', url: 'https://www.jstage.jst.go.jp/article/seas/10/1/10_141/_article' },
+      ],
+    },
+  ],
+
+  // ── El delta del Río Rojo ───────────────────────────────────────────────────
+  // El lugar de la entrega nombra tres: Khoái Châu y Hồng Châu dan 266, que es
+  // esta ficha, y Bắc Ninh da 268, que no tiene ficha. El terraplén de Bắc Ninh
+  // queda afuera de este polígono y va dicho en el detalle.
+  pantanos_rio_rojo: [
+    {
+      practica: 'Terraplenes sobre los lomos naturales del cauce',
+      periodo: 'Registrados en el Việt Sử Lược para la dinastía Lý, entre 1010 y 1225',
+      tipo: 'agua',
+      vigencia: 'historica',
+      detalle:
+        'Las crónicas registran terraplenes de mano de obra humana en dos lugares del delta: uno en la provincia de Bắc Ninh —que cae fuera de esta ficha— y otro en Khoái Châu y Hồng Châu, sobre los lomos naturales del cauce, el delta superior y la parte alta del delta inferior. El análisis de dónde están lleva a la conclusión que vale copiar: no eran obras de contención del río sino refuerzos de esos lomos naturales contra el agua de crecida en la margen externa de las curvas, y por eso alcanzaba con el trabajo de unos pocos pueblos en vez de una movilización de todo el delta. En Hồng Châu aparece además un terraplén chico en herradura. Y el punto que ordena todo lo demás: esos terraplenes servían al arroz de décimo mes, mientras que la mayor parte del delta ya se había ganado al agua con el arroz de quinto mes, que se cosecha antes de la temporada de crecida y no necesita terraplén —en esa zona las crónicas no registran ninguno—. O sea que la primera respuesta a la inundación no fue una obra: fue elegir un ciclo que termina antes de que llegue el agua, y la obra apareció sólo donde se quiso cultivar después.',
+      fuentes: [
+        { label: 'Japanese Journal of Southeast Asian Studies 18(2) — The Red River Delta during Lý Dynasty (1010-1225)', url: 'https://www.jstage.jst.go.jp/article/tak/18/2/18_KJ00000133587/_article/-char/en' },
+      ],
+    },
+  ],
+
+  // ── Sumatra ─────────────────────────────────────────────────────────────────
+  // El montano se verificó dos veces porque el límite pasa por el medio: el
+  // centroide del distrito de Siulak da 305 —el pinar, cuya ficha se llama
+  // `pinar_toba`— y la aldea de Air Terjun, que es donde la fuente trabajó, da
+  // 279. Un punto a dos kilómetros cambia la ficha, así que acá vale la aldea y
+  // no el distrito.
+  sumatra_bajo: [
+    {
+      practica: 'Jungle rubber, el caucho adentro de una agroforesta',
+      periodo: 'Sistema caracterizado con datos nuevos y existentes de las tierras bajas de Sumatra, publicado en 2007',
+      tipo: 'cultivo',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Agroforesta de caucho de bajos insumos cuya estructura se parece a la de un bosque secundario y en la que quien maneja la parcela tolera las especies silvestres que se instalan. La comparación que hace el estudio es contra bosque primario y contra plantación de caucho, y el resultado no es parejo: en helechos terrestres la riqueza del jungle rubber salió algo mayor que en el bosque primario, en aves similar, y en helechos epífitos, árboles y plantas vasculares en conjunto menor; para el subconjunto de especies de interior de bosque, menor. Contra la plantación de caucho, en cambio, fue mayor en todos los grupos. El límite va escrito porque es parte del dato: la conservación en este sistema está acotada por el manejo y por un ciclo de tumba y quema para replantar de unos cuarenta años. La fuente sitúa esto en las tierras bajas de la peneplanicie de Sumatra, donde el bosque primario prácticamente desapareció, y ahí está el argumento de diseño: en un paisaje empobrecido y cada vez más dominado por el monocultivo, un uso del suelo con forma de bosque sostiene diversidad que la plantación no sostiene.',
+      fuentes: [
+        { label: 'Agroforestry Systems 70 — Plant and bird diversity in rubber agroforests in the lowlands of Sumatra, Indonesia', url: 'https://link.springer.com/article/10.1007/s10457-007-9037-x' },
+      ],
+    },
+  ],
+
+  sumatra_montano: [
+    {
+      practica: 'Canela, café y papa en bosque comunitario (HKm)',
+      periodo: 'Relevamiento de campo en la aldea Air Terjun, distrito de Siulak, regencia de Kerinci, publicado en 2024',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Adentro del área de bosque comunitario —la figura indonesia de Hutan Kemasyarakatan, que habilita a las familias de alrededor a producir en el bosque— el estudio compara dos arreglos sobre el mismo terreno: canela en monocultivo y una agroforestería de canela, café y papa. Los dos dieron resultados rentables, y la conclusión es sobre el tiempo y no sobre el total: la ganancia y el retorno del capital llegan más rápido en el arreglo agroforestal, y la razón que da la fuente es simplemente que descansa en tres especies y el monocultivo en una. Es el argumento económico de la diversificación medido con análisis de costos, ingresos, tasa interna de retorno y período de repago, en una regencia de montaña donde la canela es el cultivo de renta establecido.',
+      fuentes: [
+        { label: 'ULIN: Jurnal Hutan Tropis 8(1) — Kelayakan usaha tani Hutan Kemasyarakatan (HKm) pola monokultur dan agroforestri di Desa Air Terjun Kabupaten Kerinci', url: 'https://e-journals.unmul.ac.id/index.php/UJHT/article/view/14535' },
       ],
     },
   ],
