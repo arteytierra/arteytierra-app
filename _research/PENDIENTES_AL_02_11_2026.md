@@ -81,17 +81,33 @@ En orden de cuánto cambia el resultado que ve un usuario.
 
 ### La deuda número uno de toda la cadena ganadera
 
-**Wight y Hanks (1981)**, handle `10150/646128` del repositorio de la Universidad
-de Arizona. Es el modelo de balance hídrico que reemplaza a `prodForrajera`, que
-hoy es una escalera de cinco escalones sin fuente que multiplica la oferta, el
-balance, la carga, el rodeo y el agua de la represa, y que veinte lotes de
-relevamiento midieron equivocada entre **1,7 y 2,9 veces**.
+**Wight y Hanks (1981) ya está abierto.** El 02/11/2026 se extrajo completo por
+el `fetch` del mismo origen desde la página del ítem —los cuatro pasos dieron
+200 a la primera— y quedó en `_research/WIGHT_HANKS_1981.md` con las siete
+ecuaciones, la calibración y la Tabla 1 entera: doce años resueltos en Sidney,
+Montana. El caso para el test está listo: la ecuación [1] con `Yp` = 1.300 kg/ha
+reproduce la columna publicada dentro de un 0,4 %.
 
-El repositorio devuelve 403 a todos los caminos de descarga directa. La vía que
-funciona está medida: abrir la página del ítem en el navegador, rechazar el
-cartel de cookies y hacer un `fetch` **del mismo origen** desde esa página,
-prefiriendo el *bundle* `TEXT` sobre el PDF. Los uuid salen de
-`/server/api/core/items/<uuid>/bundles` y de `/bundles/<uuid>/bitstreams`.
+**Y el modelo dice que esto se hace en dos pasos, no en uno.** `Yp`, el
+rendimiento potencial del sitio, no sale del modelo: incluye composición de
+especies y fertilidad, se estima del dato de campo del sitio, y entre los dos
+sitios del estudio difiere 2,1 veces. Entonces:
+
+1. **Escribir `T/Tp`**, el índice de suficiencia hídrica, con balance diario y el
+   test contra la Tabla 1. Acequia tiene las cuatro entradas que hacen falta:
+   lluvia diaria, ETP, `AW` por capa y temperatura del suelo.
+2. **Conseguir una fuente para `Yp`.** Ahí entra lo que ya está medido en
+   `forrajeMedido.ts`: el Miami Model de Lieth con su forma de mínimo entre lluvia
+   y temperatura, y la banda de fracción herbácea según el dosel.
+3. **Recién entonces** se desconecta `prodForrajera`, que hoy es una escalera de
+   cinco escalones sin fuente que multiplica la oferta, el balance, la carga, el
+   rodeo y el agua de la represa, y que veinte lotes midieron equivocada entre
+   **1,7 y 2,9 veces**.
+
+Lo que falta además, y el artículo lo dice de sí mismo: su curva de LAI relativo
+es de la pradera mixta del norte de las Grandes Planicies y **conviene desarrollar
+una por región**, y sus curvas de actividad radicular por temperatura de suelo son
+de Swift Current, Saskatchewan. Usarlas en el Chaco o en el miombo es extrapolar.
 
 ### Lo que el catálogo pide y nadie pidió
 
