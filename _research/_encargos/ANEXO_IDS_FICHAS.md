@@ -1,11 +1,11 @@
 # Anexo — los ids de ficha
 
-_Generado desde los catálogos el 2026-11-01. **257 fichas** en total._
+_Generado desde los catálogos el 2026-11-02. **257 fichas** en total._
 
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
 
-Las 203 marcadas con ✓ ya tienen al menos una práctica cargada.
+Las 218 marcadas con ✓ ya tienen al menos una práctica cargada.
 
 ---
 
@@ -324,34 +324,34 @@ _`lib/biomasRegionalesIndomalaya.ts`_
 - `ghats_norte_montano` — Selvas montanas de los Ghats del norte
 - `ghats_sur_deciduo` — Bosques húmedos deciduos de los Ghats del sur
 - `ghats_sur_montano` — Selvas montanas y sholas de los Ghats del sur
-- `sri_lanka_humedo_bajo` — Selvas bajas de la zona húmeda de Sri Lanka
+- `sri_lanka_humedo_bajo` — Selvas bajas de la zona húmeda de Sri Lanka ✓ *(ya tiene práctica cargada)*
 - `sri_lanka_montano` — Selvas montanas de Sri Lanka
 - `sri_lanka_zona_seca` — Bosques secos siempreverdes de la zona seca de Sri Lanka ✓ *(ya tiene práctica cargada)*
-- `valle_brahmaputra` — Bosques semisiempreverdes del valle del Brahmaputra
-- `gangetica_inferior` — Llanura gangética inferior
+- `valle_brahmaputra` — Bosques semisiempreverdes del valle del Brahmaputra ✓ *(ya tiene práctica cargada)*
+- `gangetica_inferior` — Llanura gangética inferior ✓ *(ya tiene práctica cargada)*
 - `gangetica_superior` — Llanura gangética superior
-- `pantanos_sundarbans` — Pantanos salobres de los Sundarbans
-- `pantanos_irrawaddy` — Pantanos del delta del Irrawaddy
+- `pantanos_sundarbans` — Pantanos salobres de los Sundarbans ✓ *(ya tiene práctica cargada)*
+- `pantanos_irrawaddy` — Pantanos del delta del Irrawaddy ✓ *(ya tiene práctica cargada)*
 - `irrawaddy_deciduo` — Bosques húmedos deciduos del Irrawaddy
-- `pantanos_chao_phraya` — Pantanos del Chao Phraya
+- `pantanos_chao_phraya` — Pantanos del Chao Phraya ✓ *(ya tiene práctica cargada)*
 - `chao_phraya_deciduo` — Bosques deciduos de la llanura del Chao Phraya
 - `pantanos_tonle_sap` — Bosques inundables del Tonlé Sap
-- `pantanos_rio_rojo` — Pantanos del río Rojo
-- `sumatra_bajo` — Selvas bajas de Sumatra
-- `sumatra_montano` — Selvas montanas de Barisan
+- `pantanos_rio_rojo` — Pantanos del río Rojo ✓ *(ya tiene práctica cargada)*
+- `sumatra_bajo` — Selvas bajas de Sumatra ✓ *(ya tiene práctica cargada)*
+- `sumatra_montano` — Selvas montanas de Barisan ✓ *(ya tiene práctica cargada)*
 - `pantanos_sumatra` — Pantanos de agua dulce de Sumatra
 - `pinar_toba` — Pinares tropicales de Toba
 - `java_occidental_bajo` — Selvas bajas de Java occidental
-- `java_oriental_bali_bajo` — Bosques bajos estacionales de Java oriental y Bali
-- `java_bali_montano` — Selvas montanas volcánicas de Java y Bali
-- `pantanos_borneo_suroeste` — Pantanos del suroeste de Borneo
+- `java_oriental_bali_bajo` — Bosques bajos estacionales de Java oriental y Bali ✓ *(ya tiene práctica cargada)*
+- `java_bali_montano` — Selvas montanas volcánicas de Java y Bali ✓ *(ya tiene práctica cargada)*
+- `pantanos_borneo_suroeste` — Pantanos del suroeste de Borneo ✓ *(ya tiene práctica cargada)*
 - `luzon_bajo` — Selvas bajas de Luzón ✓ *(ya tiene práctica cargada)*
 - `luzon_montano` — Selvas montanas de Luzón
 - `pinar_luzon` — Pinares de la Cordillera Central de Luzón ✓ *(ya tiene práctica cargada)*
-- `mindoro` — Selvas de Mindoro
+- `mindoro` — Selvas de Mindoro ✓ *(ya tiene práctica cargada)*
 - `negros_panay` — Selvas de Negros, Panay y Cebú
-- `mindanao_montano` — Selvas montanas de Mindanao
-- `mindanao_visayas_oriental` — Selvas bajas de Mindanao y las Visayas orientales
+- `mindanao_montano` — Selvas montanas de Mindanao ✓ *(ya tiene práctica cargada)*
+- `mindanao_visayas_oriental` — Selvas bajas de Mindanao y las Visayas orientales ✓ *(ya tiene práctica cargada)*
 - `decan_central_hardwickia` — Bosques secos del Decán central
 
 ---

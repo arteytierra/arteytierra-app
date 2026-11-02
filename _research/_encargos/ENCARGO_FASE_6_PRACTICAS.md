@@ -105,6 +105,14 @@ Entonces, las tres condiciones de una fuente, y son las tres juntas:
    `plateauculture.org/asian-highlands-perspectives`: la página existe, lista la
    monografía de Walker con volumen y páginas, y no enlaza su texto. La URL abría
    y la afirmación seguía sin poder desmentirse, que es para lo que la URL está.
+5. **Muestra los hallazgos, no sólo el título.** Es la misma falla con otra cara y
+   apareció en el lote 06: la entrada de los Ati y Suludnon de Iloilo citaba la
+   ficha del repositorio de UPLB, que abre y **corta el resumen justo antes de los
+   resultados** —«…documented through key informant interviews, focus group
+   discussions and farm visits the indigenous knowledge for climate change
+   adaptation of»—. Todo lo que la entrada afirmaba estaba después de ese corte.
+   Si el resumen está truncado y el texto completo no se puede leer, hay que
+   buscar otra URL o cambiar de práctica.
 
 Y una regla de cantidad que manda sobre la de cobertura: **mejor dos prácticas
 que aguantan que tres con una floja.** La que no aguanta contamina la confianza
@@ -166,18 +174,36 @@ tres, porque acá la agricultura tradicional está documentada desde hace siglos
 hay patrimonio agrícola reconocido en casi todos estos países.
 
 **Tres por ficha, directo al piso.** Los ids son los que la app usa y hay que
-devolverlos tal cual. **Quedan 21**: el lote 1 cerró tres —la zona seca de Sri
-Lanka, `luzon_bajo` y `pinar_luzon`— y los lotes 02-04 cerraron nueve más:
+devolverlos tal cual. **Quedan 15**: el lote 1 cerró tres —la zona seca de Sri
+Lanka, `luzon_bajo` y `pinar_luzon`—, los lotes 02-04 cerraron nueve y los lotes
+05-07 cerraron seis más —`java_bali_montano`, `java_oriental_bali_bajo`,
+`pantanos_borneo_suroeste`, `mindoro`, `mindanao_montano` y
+`mindanao_visayas_oriental`—:
 
 `ghats_norte_deciduo`, `ghats_norte_montano`, `ghats_sur_deciduo`,
 `ghats_sur_montano`, `sri_lanka_montano`, `gangetica_superior`,
 `irrawaddy_deciduo`, `chao_phraya_deciduo`, `pantanos_tonle_sap`,
-`pantanos_sumatra`, `pinar_toba`, `java_occidental_bajo`,
-`java_oriental_bali_bajo`, `java_bali_montano`, `pantanos_borneo_suroeste`,
-`luzon_montano`, `mindoro`, `negros_panay`, `mindanao_montano`,
-`mindanao_visayas_oriental`, `decan_central_hardwickia`.
+`pantanos_sumatra`, `pinar_toba`, `java_occidental_bajo`, `luzon_montano`,
+`negros_panay`, `decan_central_hardwickia`.
 
-**Cuatro de esos 21 ya tienen la práctica identificada y lo que falta es una
+**Tres de esos 15 tienen el nombre contra la geometría, y hay que pedirlos por el
+polígono y no por el nombre.** Está medido:
+
+- `pinar_toba` **no es el lago Toba.** El ECO_ID 305 es el pinar de **Kerinci**,
+  400 km al sur. La orilla del lago —Horsik, Parapat, Balige— da 279, que es
+  `sumatra_montano`. Ya vinieron dos entradas del Toba propuestas acá y las dos se
+  mudaron. Lo que falta es una práctica del **valle de Kerinci o del pinar de
+  Bukit Barisan**.
+- `java_occidental_bajo` **no incluye Soreang ni Bandung.** Es el ECO_ID 289:
+  Bogor, Sukabumi, la costa norte, la tierra baja de verdad. Soreang, Sadu,
+  Pasirjambu y Banjaran dan 288, que es montano y pertenece a
+  `java_bali_montano`.
+- `luzon_montano` **no son los asentamientos de la Sierra Madre.** San Mariano,
+  Palanan, Divilacan y Maconacon dan 241, selva baja. El 240 es el **interior de
+  altura** de la Sierra Madre y de Zambales. Y no es Ifugao, que ya está montado
+  en `luzon_bajo` y `pinar_luzon`.
+
+**Cinco de esos 15 ya tienen la práctica identificada y lo que falta es una
 fuente que abra.** No hay que buscar otra práctica: hay que buscar otra URL.
 
 - `ghats_norte_montano` → el *soppinabetta* de Sringeri, Karnataka: el bosque
@@ -194,12 +220,20 @@ fuente que abra.** No hay que buscar otra práctica: hay que buscar otra URL.
   de los Ghats y está medido de los dos lados —Mulshi pueblo da el 254, montano;
   Paud y Pirangut, diez kilómetros al este, dan el 253, deciduo—, así que sin el
   sitio preciso la entrada no se puede montar en ninguna de las dos.
+- `negros_panay` → las prácticas de los agricultores Ati y Suludnon de Iloilo.
+  Calinog, Lambunao e Iloilo dan 231, así que la ficha estaba bien. El trabajo es
+  Nelson et al., *Journal of Environmental Science and Management* 22(1):87-98
+  (2019), y la copia abierta está en un host con verificación anti-bot que no se
+  levanta. Hace falta otra URL donde se lean los resultados.
 
-**Dos prácticas más quedaron sin lugar donde vivir, y no es culpa del encargo:**
+**Tres prácticas más quedaron sin lugar donde vivir, y no es culpa del encargo:**
 el arroz tolerante a la sal de las islas habitadas de South 24 Parganas cae en el
-ECO_ID 323 (manglar de Sundarbans) y el cultivo mixto de la zona seca de Myanmar
-cae en el 294 (Irrawaddy dry forests). Ninguno de los dos tiene ficha todavía. No
-hay que volver a mandarlas hasta que las fichas existan.
+ECO_ID 323 (manglar de Sundarbans), el cultivo mixto de la zona seca de Myanmar
+cae en el 294 (Irrawaddy dry forests) y el riego *phad* del noroeste de
+Maharashtra cae en el 315 (Deccan thorn scrub forests) —Dhule, Sakri, Malegaon y
+Jalgaon dan todos 315, y `decan_central_hardwickia` es el 290—. Ninguno de los
+tres tiene ficha todavía. No hay que volver a mandarlas hasta que las fichas
+existan.
 
 **`decan_central_hardwickia`** es el Decán central —ECO_ID 290, bosque seco de
 *Hardwickia binata* sobre la traza basáltica, en Maharashtra, Telangana y
@@ -398,4 +432,19 @@ del catálogo están vacías justamente así y están bien.**
 13. **Aldea y distrito, no región.** Donde el `lugar` trajo aldea y distrito
     —Air Terjun, Pantanaw, Gosaba— resolver la ficha tardó un minuto. Donde trajo
     una región —«Región de Mulshi», «once distritos del estado»— hubo que sondear
-    el límite a mano, y en un caso no alcanzó y la entrada quedó afuera.
+    el límite a mano, y en un caso no alcanzó y la entrada quedó afuera. En los
+    lotes 05-07, que nombraron aldea y distrito, nueve de catorce entradas cayeron
+    en la ficha propuesta; en los lotes 02-04, una de once. Es la regla que más
+    rinde de todas.
+14. **Un estudio de ingresos no es una práctica.** Rentabilidad, relación
+    beneficio-costo, punto de equilibrio y rango altitudinal son datos de aptitud
+    de cultivo, no de manejo. El café de Kintamani se cayó por esto: la ficha
+    propuesta era la correcta y la fuente abría, pero el trabajo medía ingreso por
+    hectárea y viabilidad, y de práctica decía una sola cosa —que el café crece
+    arriba de los 900 m—. Si la fuente no dice **qué se hace y cómo**, la entrada
+    no entra por más que el id esté bien.
+15. **Una recomendación de los autores tampoco.** «Se sugiere», «convendría»,
+    «puede manejarse de esta manera» describen lo que el autor propone, no lo que
+    se hizo. El artículo del pantano lebak de Pampangan describe bien la tipología
+    del pantano y después **recomienda** reservar pozas de pesca y acompasar la
+    siembra: eso no se puede fechar, y el ancla de esta capa es el período.
