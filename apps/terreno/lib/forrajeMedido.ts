@@ -4603,8 +4603,8 @@ export const FALTA_PARA_CORRER_WIGHT_HANKS = [
   {
     que: 'Yp, el rendimiento potencial del sitio',
     donde_esta: 'Estimado de la producción medida de cada sitio: 1.300 kg/ha en Sidney, 2.760 en Mandan',
-    por_que_no_se_puede: 'Es el parámetro que fija la escala del resultado y se calibra con producción medida del lugar, que es justamente el dato que la app no tiene.',
-    y_ademas: 'La salida que ofrece el trabajo —Yp = Y·Tp/T para años representativos— es circular para nuestro caso: necesita un Y medido.',
+    por_que_no_se_puede: 'No sale de la literatura: fija la escala del resultado y se calibra con producción medida del lugar. El relevamiento de valores publicados cerró en falso — la columna High de producción anual de las fichas ecológicas del NRCS, que era el mejor candidato porque trae el suelo y la composición juntos, es otra magnitud: producción anual de todos los grupos vegetales, seca al aire, contra pico de materia en pie herbácea. Lee 1,6 a 2,0 veces alto contra el único Yp con el que se puede comparar.',
+    y_ademas: 'Pero la salida que ofrece el trabajo ya no es un callejón: Yp = Y·Tp/T está verificada contra la Tabla 1 a 0,02 % y no arrastra la sequía de la temporada medida, así que alcanza un corte en el predio del usuario. Ver despejarYp y YP_DESPEJADO_SIDNEY.',
   },
 ] as const;
 
@@ -4700,12 +4700,17 @@ export function evaporacionRealWH(ep_mm: number, dias_desde_la_lluvia: number): 
  * `Yp = Y · Tp / T`, la vía alternativa que el trabajo ofrece para estimar el
  * rendimiento potencial de un sitio a partir de un año medido.
  *
- * Es la ecuación 1 dada vuelta, y para acequia es circular: pide un `Y` medido.
- * Sirve para dos cosas igual. Una, verificar que `Yp` de un sitio sea estable
- * entre años. Dos, exactamente lo contrario: **cuando no es estable, el año que
- * se despega es un año donde el modelo falla.** En Sidney los doce años dan una
- * media de 1.230 kg/ha y los dos valores más bajos son 1973 y 1974, los mismos
- * dos años que el trabajo nombra como los de peor predicción.
+ * Es la ecuación 1 dada vuelta, y pide un `Y` medido. Durante un tiempo eso se
+ * leyó como circular para acequia; no lo es, y la diferencia está en
+ * `despejarYp` más abajo: el `Y` medido puede ser un corte en el predio del
+ * usuario, y el despeje **no arrastra la sequía de la temporada en que se
+ * cortó**. Esta función es la aritmética sola; `despejarYp` es la que se usa.
+ *
+ * Sirve además para lo contrario de estimar: **cuando el `Yp` de un sitio no es
+ * estable entre años, el año que se despega es un año donde el modelo falla.**
+ * En Sidney los doce años dan una media de 1.230 kg/ha y los dos valores más
+ * bajos son 1973 y 1974, los mismos dos que el trabajo nombra como los de peor
+ * predicción.
  */
 export function ypDesdeUnAnio(
   rend_campo_kg_ha: number, tp_mm: number, t_mm: number,
@@ -4749,4 +4754,298 @@ export function dentroDelIc90(): { dentro: number; fuera: AnioWightHanks[]; tota
   const fuera = conIc.filter(a =>
     Math.abs(a.rend_modelo_kg_ha - a.rend_campo_kg_ha) > a.ic90_campo_kg_ha);
   return { dentro: conIc.length - fuera.length, fuera, total: conIc.length };
+}
+
+/**
+ * Por qué la columna de las fichas ecológicas del NRCS **no** es `Yp`, con el
+ * número que lo muestra.
+ *
+ * Queda escrito acá y no sólo en `_research/` porque es la propuesta que va a
+ * volver: las fichas del NRCS son la única fuente que trae el suelo y la
+ * composición de especies juntos, que son las dos cosas que la definición de
+ * `Yp` nombra, y son abiertas y están por todo Estados Unidos. La tentación de
+ * tomar su columna alta como rendimiento potencial es grande y es un error
+ * medible.
+ *
+ * Se eligió `R058AE003MT — Sandy (Sy)` porque es el análogo más cercano al
+ * sitio de Sidney del propio trabajo: arenoso, misma banda de lluvia de 10 a 14
+ * pulgadas, misma pradera mixta de gramíneas altas y medias. No es el mismo
+ * sitio —Sidney está en la planicie glaciada, MLRA 52 / RRU 52N, y la ficha es
+ * de la 058A, una unidad vecina—, pero es lo más parecido que publica una ficha.
+ *
+ * Tres diferencias, y las tres empujan para el mismo lado:
+ *
+ * 1. La ficha cuenta **todos los grupos vegetales**. De sus 2.300 lb/acre altas,
+ *    345 son hierbas y 115 arbustos. Wight y Hanks cortaron materia en pie
+ *    herbácea.
+ * 2. **Producción anual no es pico de materia en pie:** cuenta también lo que
+ *    creció y murió antes del pico.
+ * 3. La columna no dice ser de un año favorable. La ficha publica `Low`,
+ *    `Representative value` y `High` **y no las define**; el único ejemplo de
+ *    «favorable / normal / desfavorable» que trae la página aclara que no usa
+ *    las estimaciones de ese sitio, y sus números no coinciden con la tabla. O
+ *    sea que la lectura «High = año favorable = `Yp`» no tiene respaldo
+ *    publicado: es un supuesto.
+ *
+ * Hay una cuarta, menor y peor documentada: la definición genérica de columnas
+ * del NRCS dice que la producción anual de una ficha es **peso seco al aire**,
+ * no seco en estufa. Eso está en el documento genérico y **no en la ficha**, que
+ * no declara base de peso. Va como nota, no como corrección.
+ */
+export const ESD_NO_ES_YP = {
+  ficha: 'R058AE003MT — Sandy (Sy), MLRA 058A, Montana, RRU 58A-E, zona de 10 a 14 pulgadas',
+  leida: '2026-11-02',
+  url: 'https://edit.sc.egov.usda.gov/catalogs/esd/058A/R058AE003MT',
+  suelo: 'franco arenoso a franco arenoso fino, 20 a 60 in de profundidad, agua útil 5 a 8 in en 0-40 in, bien drenado',
+  /** Tabla 5 de la ficha, textual, en lb/acre. */
+  produccion_anual_lb_acre: {
+    pasto: { bajo: 800, representativo: 1280, alto: 1840 },
+    hierbas: { bajo: 150, representativo: 240, alto: 345 },
+    arbustos: { bajo: 50, representativo: 80, alto: 115 },
+    total: { bajo: 1000, representativo: 1600, alto: 2300 },
+  },
+  /** Cuántas veces el `Yp` de Sidney da la columna alta de esta ficha. */
+  contra_el_yp_de_sidney: { total: 1.98, solo_pasto: 1.59 },
+  la_columna_no_esta_definida:
+    'la ficha publica Low, Representative value y High sin definirlos, y el ejemplo de año favorable que trae aclara que no usa las estimaciones de ese sitio',
+  base_de_peso:
+    'la definición genérica de columnas del NRCS dice seco al aire; la ficha no declara base de peso',
+  conclusion:
+    'la columna responde otra pregunta, y usarla como Yp infla el forraje del lado optimista, que para dimensionar una carga animal es el caro',
+} as const;
+
+/**
+ * El despeje de `Yp`, que es la única vía que cierra — y la prueba de que cierra.
+ *
+ * ## Por qué no una tabla de valores publicados
+ *
+ * La salida obvia era buscar `Yp` publicado y guardarlo por sitio o por bioma.
+ * Se relevó y **no sirve**, por una razón concreta: el candidato más prometedor
+ * —la columna `High` de producción anual de las fichas ecológicas del NRCS, que
+ * es la única fuente que trae el suelo y la composición de especies juntos, las
+ * dos cosas que la definición de `Yp` nombra— **no es la misma magnitud**. Tres
+ * diferencias, las tres en la misma dirección:
+ *
+ * 1. La ficha informa **producción anual de todos los grupos vegetales**, pastos
+ *    más hierbas más arbustos. Wight y Hanks midieron materia en pie herbácea
+ *    cortada a nivel del suelo una vez, al llegar las gramíneas principales a
+ *    madurez.
+ * 2. **Producción anual no es pico de materia en pie:** cuenta también lo que
+ *    creció y murió antes del pico.
+ * 3. La definición oficial del NRCS para esa columna es **peso seco al aire**,
+ *    no seco en estufa. Conviene decir de dónde sale ese dato: está en el
+ *    documento genérico de descripción de columnas del NRCS, **no en la ficha**,
+ *    que no declara la base de peso.
+ *
+ * Y se puede medir cuánto. La ficha `R058AE003MT — Sandy (Sy)`, zona de 10 a 14
+ * pulgadas, es el análogo más cercano al sitio de Sidney —arenoso, misma banda
+ * de lluvia, misma pradera mixta—: su `High` es 2.300 lb/acre = **2.578 kg/ha**
+ * de total y **2.062 sólo de pasto**, contra el `Yp` = 1.300 kg/ha que el
+ * trabajo publica para Sidney. O sea **1,98 veces, y 1,59 veces contando sólo el
+ * pasto**. La comparación es cercana pero no exacta: Sidney está en la planicie
+ * glaciada —MLRA 52, RRU 52N— y la ficha es de la 058A, una unidad vecina de la
+ * misma zona de precipitación.
+ *
+ * Nada de esto dice que las fichas estén mal. Dice que su columna responde otra
+ * pregunta, y que usarla como `Yp` infla el forraje — del lado optimista, que
+ * para dimensionar una carga animal es el caro.
+ *
+ * ## El caso resuelto: `Yp` sale de la Tabla 1
+ *
+ * El trabajo dice que `Yp` se estima «from the relationship `Yp = Y · Tp/T`
+ * calculated for representative years», y las tres columnas están publicadas.
+ * Aplicado año por año a Sidney da:
+ *
+ * ```
+ * 1967 1.342   1970 1.302   1973   908   1976 1.221
+ * 1968 1.317   1971 1.249   1974 1.032   1977 1.119
+ * 1969 1.372   1972 1.234   1975 1.343   1978 1.319
+ * ```
+ *
+ * Los doce juntos dan 1.230 con un desvío de 136. Pero «años
+ * representativos» tiene una definición objetiva y publicada en la propia
+ * tabla: los años donde el rendimiento predicho **cae dentro del intervalo de
+ * confianza del 90 % de la media medida** (`rend_campo ± ic90_campo`). Los tres
+ * que se caen son 1973, 1974 y 1977 — los mismos tres donde el artículo
+ * sobrepredice, y los mismos que `dentroDelIc90()` ya devolvía en `fuera`. Con
+ * los nueve que quedan:
+ *
+ * **media 1.299,7 kg/ha, desvío 50,1 — contra el 1.300 publicado, 0,02 %.**
+ *
+ * No es un ajuste: es el mismo número, recuperado de la aritmética de las
+ * columnas. Y el criterio que separa los nueve no lo elegimos nosotros, lo
+ * publica la tabla.
+ *
+ * ## Y corrige la sequía, que es lo que lo vuelve usable
+ *
+ * Importa porque un productor corta pasto el año que puede, no el año bueno. Si
+ * el despeje arrastrara la sequía de la temporada medida, serviría de poco. Se
+ * mide: los dos años secos de la serie (`T/Tp` 0,56 y 0,58) devuelven 1.283 de
+ * media y los siete húmedos (0,89 a 0,99) devuelven 1.305. **Diferencia 1,7 %.**
+ * El cociente `Tp/T` saca la sequía del número.
+ *
+ * Una sola temporada acierta el `Yp` publicado con un error **mediano del 3,3 %
+ * y peor del 6,1 %** entre los nueve años buenos. Eso es la precisión real de
+ * pedirle al usuario un corte, y es mucho mejor que cualquier valor por bioma.
+ *
+ * ## Dónde deja de valer
+ *
+ * Donde el índice es muy bajo. El único año de la serie con `T/Tp` abajo de 0,5
+ * es 1977, con 0,402 — y es el peor despeje de los doce, 13,9 % abajo. Tiene
+ * sentido: dividir por un número chico amplifica el error de la medición y el
+ * del balance. De ahí sale `indice_minimo_confiable`, y abajo de eso el despeje
+ * avisa.
+ *
+ * Y donde la cosecha no es lo que el trabajo midió. Ése es el modo de falla que
+ * importa, porque es exactamente cómo entraría la columna de una ficha NRCS sin
+ * que nadie se diera cuenta. Por eso `base` es una unión de un solo valor: una
+ * medición que no sea pico de materia en pie herbácea **no compila**.
+ */
+export const YP_DESPEJADO_SIDNEY = {
+  /** El `Yp` que devuelve el despeje con los nueve años representativos. */
+  valor_kg_ha: 1299.7,
+  /** El que publica el trabajo. */
+  publicado_kg_ha: 1300,
+  desvio_kg_ha: 50.1,
+  anios: 9,
+  criterio:
+    'los años donde el rendimiento predicho cae dentro del intervalo de confianza del 90 % de la media medida — es lo que devuelve dentroDelIc90(), que ya estaba en este archivo',
+  anios_descartados: [1973, 1974, 1977],
+  /** Error de un solo año contra el publicado, entre los nueve. */
+  error_de_una_temporada: { mediano: 0.033, peor: 0.061 },
+  /** El despeje no arrastra la sequía de la temporada medida. */
+  sin_sesgo_por_sequia: {
+    secas_kg_ha: 1282.7,
+    humedas_kg_ha: 1304.6,
+    diferencia: 0.017,
+    corte_indice: 0.75,
+  },
+  /**
+   * Abajo de este índice el despeje amplifica demasiado. Sale de 1977, el único
+   * año de la serie por debajo y el peor despeje de los doce.
+   */
+  indice_minimo_confiable: 0.5,
+} as const;
+
+/** Lo que avisa el despeje. Cada texto dice para qué lado se equivoca. */
+export const ADVERTENCIAS_YP = {
+  una_sola_temporada:
+    'Yp despejado de una sola temporada: el error mediano contra el valor publicado fue del 3,3 % y el peor del 6,1 %. Con varias temporadas promediadas baja mucho.',
+  indice_bajo:
+    'La temporada medida tuvo T/Tp abajo de 0,5. Dividir por un índice chico amplifica el error de la cosecha y del balance: el único año así de la serie de prueba despejó 13,9 % abajo del Yp publicado. El Yp que sale de acá puede estar bajo.',
+  indice_sobre_uno:
+    'El balance devolvió T/Tp arriba de 1, que no puede pasar: T no puede superar a Tp. El Yp despejado sale bajo. Revisar las entradas del balance antes de usarlo.',
+} as const;
+
+/** Una temporada cosechada, que es lo que hace falta para despejar `Yp`. */
+export interface CosechaDeTemporada {
+  /** El rendimiento medido, en kg/ha. */
+  rendimiento_kg_ha: number;
+  /**
+   * Qué es ese rendimiento, y hay un solo valor admitido a propósito.
+   *
+   * Wight y Hanks cortaron **materia en pie herbácea, a nivel del suelo, una
+   * vez, al llegar las gramíneas principales a madurez**. Producción anual de
+   * una ficha ecológica, biomasa en pie de una fecha cualquiera, el corte de
+   * una parcela pastoreada o un rendimiento de pastura sembrada son otras
+   * magnitudes, y el despeje devolvería un `Yp` que no es el de este modelo.
+   * La unión de un solo miembro está acá para que esa confusión no compile.
+   */
+  base: 'pico_de_materia_en_pie_herbacea';
+  /** Transpiración potencial acumulada de la temporada, en mm. Sale del balance. */
+  tp_mm: number;
+  /** Transpiración real acumulada de la temporada, en mm. Sale del balance. */
+  t_mm: number;
+}
+
+export interface YpDespejado {
+  /** El rendimiento potencial del sitio, en kg/ha. */
+  yp_kg_ha: number;
+  /** El `T/Tp` de la temporada medida, por el que se dividió. */
+  indice: number;
+  advertencias: string[];
+}
+
+/**
+ * Despeja `Yp` de una temporada cosechada, invirtiendo la ecuación 1.
+ *
+ *     Yp = Y · Tp / T
+ *
+ * Unidades: `rendimiento_kg_ha` en kg/ha, `tp_mm` y `t_mm` en mm acumulados de
+ * la temporada — los dos salen de `correrBalanceForraje` en `forrajeBalance.ts`.
+ * Devuelve kg/ha.
+ *
+ * Devuelve `null` con `tp_mm` o `t_mm` en cero o negativos, y con rendimiento
+ * negativo. Un `T` en cero no es «el sitio no produce»: es una temporada sin
+ * transpiración, donde el cociente no existe y cualquier número que devolviera
+ * sería inventado.
+ *
+ * Reproduce el `Yp` = 1.300 kg/ha publicado para Sidney con los nueve años
+ * representativos de la Tabla 1, a 0,02 % — ver `YP_DESPEJADO_SIDNEY`, que es
+ * el test de esta función.
+ */
+export function despejarYp(c: CosechaDeTemporada): YpDespejado | null {
+  if (!Number.isFinite(c.tp_mm) || !Number.isFinite(c.t_mm)) return null;
+  if (!Number.isFinite(c.rendimiento_kg_ha) || c.rendimiento_kg_ha < 0) return null;
+  if (c.tp_mm <= 0 || c.t_mm <= 0) return null;
+
+  // La aritmética es `ypDesdeUnAnio`, que ya está en este archivo: es la
+  // ecuación 1 dada vuelta. Acá sólo se le agrega el cerco de tipo, el índice y
+  // las advertencias.
+  const yp_kg_ha = ypDesdeUnAnio(c.rendimiento_kg_ha, c.tp_mm, c.t_mm);
+  if (yp_kg_ha === null) return null;
+  const indice = c.t_mm / c.tp_mm;
+
+  // Siempre va, no es una excepción: la función recibe una temporada, así que la
+  // imprecisión de una sola temporada aplica a todo lo que devuelve.
+  const advertencias: string[] = [ADVERTENCIAS_YP.una_sola_temporada];
+  if (indice < YP_DESPEJADO_SIDNEY.indice_minimo_confiable) {
+    advertencias.push(ADVERTENCIAS_YP.indice_bajo);
+  }
+  if (indice > 1) advertencias.push(ADVERTENCIAS_YP.indice_sobre_uno);
+  // No hay un aviso por «cosecha implausiblemente chica», y vale decir por qué:
+  // cualquier umbral relativo al propio Yp despejado se reduce algebraicamente a
+  // un umbral sobre el índice —que ya avisa—, y un piso absoluto de materia en
+  // pie plausible no lo publica ninguna de las fuentes que tenemos.
+
+  return { yp_kg_ha, indice, advertencias };
+}
+
+/**
+ * El mismo despeje con varias temporadas, que es la vía recomendada.
+ *
+ * Promedia los `Yp` de cada temporada, no las cosechas: cada temporada tuvo su
+ * propio índice y promediar los kilos primero volvería a meter la sequía que el
+ * cociente saca. Devuelve también el desvío, que es lo que le dice al usuario
+ * cuánto confiar — con las nueve temporadas de Sidney da 1.299,7 ± 50,1 contra
+ * 1.300 publicado.
+ *
+ * Devuelve `null` si ninguna temporada despeja. Las que no despejan se cuentan
+ * en `descartadas` en vez de desaparecer.
+ */
+export function despejarYpDeVariasTemporadas(
+  cosechas: readonly CosechaDeTemporada[],
+): (YpDespejado & { temporadas: number; descartadas: number; desvio_kg_ha: number }) | null {
+  const sueltos = cosechas.map(despejarYp);
+  const buenos = sueltos.filter((r): r is YpDespejado => r !== null);
+  if (buenos.length === 0) return null;
+
+  const media = buenos.reduce((a, r) => a + r.yp_kg_ha, 0) / buenos.length;
+  const varianza = buenos.reduce((a, r) => a + (r.yp_kg_ha - media) ** 2, 0) / buenos.length;
+  const advertencias = [...new Set(buenos.flatMap((r) => r.advertencias))];
+
+  // Con más de una temporada, el aviso de temporada única deja de aplicar.
+  if (buenos.length > 1) {
+    const i = advertencias.indexOf(ADVERTENCIAS_YP.una_sola_temporada);
+    if (i >= 0) advertencias.splice(i, 1);
+  }
+
+  return {
+    yp_kg_ha: media,
+    desvio_kg_ha: Math.sqrt(varianza),
+    indice: buenos.reduce((a, r) => a + r.indice, 0) / buenos.length,
+    temporadas: buenos.length,
+    descartadas: sueltos.length - buenos.length,
+    advertencias,
+  };
 }
