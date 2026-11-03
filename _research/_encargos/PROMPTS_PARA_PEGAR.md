@@ -19,7 +19,7 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 | # | Segunda pegada | Qué destraba | Dónde cae |
 |---|---|---|---|
-| **1** | `ENCARGO_FORRAJE_YP.md` | **Lo más importante que hay.** El balance de Wight y Hanks ya corre y devuelve una fracción; `Yp` es el único parámetro que falta para que esa fracción sean kilos de pasto. Son tres lotes y el primero es mecánico. | `entregas\yp\01.json` … `03.json` |
+| **1** | `ENCARGO_FORRAJE_YP.md` | **Reescrito el 02/11/2026: es otro pedido.** La primera vuelta cerró el barrido bibliográfico —la columna de las fichas del NRCS no es `Yp`, y el `Yp` se despeja de la Tabla 1 con 0,02 % de error—. Ahora son **tres blancos con nombre**: Wight y Black (1979), la ficha del sitio real de Sidney (MLRA 52 / RRU 52N) y la relación entre rendimiento potencial y suelo, que es la que vale. | `entregas\yp\04.json` … `06.json` |
 | **2** | `ENCARGO_FASE_6_LOTES_08_10.md` | Prácticas fechadas del territorio. Siete lotes entregados, van los tres últimos. | `entregas\practicas\08.json` … `10.json` |
 | **3** | `ENCARGO_FASE_4_LOTES_04_06.md` | Fichas de Indomalaya. | `entregas\fichas-indomalaya\04.json` … `06.json` |
 | **4** | `ENCARGO_FASE_4_LOTE_02.md` | Indomalaya lote 2. **Nunca volvió**: es un reintento, no un pedido nuevo. | `entregas\fichas-indomalaya\02.json` |
@@ -33,21 +33,27 @@ archivos de encargo seguidos. Los demás, uno por chat.
 
 ---
 
-## El de `Yp`, que es el nuevo, en una frase
+## El de `Yp`, que cambió de pedido, en una frase
 
-Por si hace falta explicarlo sin abrir el archivo: **`Y = Yp · T/Tp`**. La
-fracción `T/Tp` ya la calcula acequia con balance diario de agua. `Yp` es cuánto
-produce el sitio cuando el agua no es lo que limita, incluye composición de
-especies y fertilidad del suelo, y entre los dos únicos sitios que el trabajo
-original publica difiere **2,1 veces** — 1.300 kg/ha en Sidney, Montana, y 2.760
-en Mandan, North Dakota, a 400 km uno del otro, los dos pradera mixta. Por eso no
-se puede poner por defecto ni promediar por bioma.
+**`Y = Yp · T/Tp`**. La fracción `T/Tp` ya la calcula acequia con balance diario,
+y `Yp` es cuánto produce el sitio cuando el agua no es lo que limita.
 
-Y lo que más vale del pedido no es un sitio: es **cualquier relación publicada
-entre rendimiento potencial y una propiedad de suelo** —profundidad, agua útil,
-textura, nitrógeno—, porque es lo único que permitiría estimar `Yp` en un predio
-donde nadie cortó pasto nunca. Si no existe, que lo diga: eso también cierra una
-pregunta.
+La primera vuelta de este encargo **ya se hizo y cerró dos cosas**. Una: la
+columna alta de las fichas de sitio ecológico del NRCS, que era la mejor
+candidata, **no es `Yp`** —lee 1,6 a 2,0 veces alto contra el único `Yp` con el
+que se puede comparar, porque cuenta hierbas y arbustos, mide producción anual y
+no pico de materia en pie, y encima la ficha nunca dice que esa columna sea de un
+año favorable—. Dos, y mejor: **`Yp` se despeja**, con `Yp = Y·Tp/T`, y eso quedó
+verificado contra la propia tabla del trabajo con un error del 0,02 %. Como el
+despeje no arrastra la sequía de la temporada medida, alcanza **un corte de pasto
+en el predio del usuario**.
+
+Así que lo que se le pide ahora a GPT son **tres blancos con nombre**, no un
+barrido: el trabajo de Wight y Black (1979) de donde salió el 1.300, la ficha del
+sitio real de Sidney —que está en la MLRA 52, no en la que se relevó—, y la
+relación entre rendimiento potencial y una propiedad de suelo, que sigue siendo
+lo que más vale y ahora tiene con qué validarse. Si alguno no existe, que lo
+diga: eso también cierra una pregunta.
 
 ---
 

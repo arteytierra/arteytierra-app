@@ -301,17 +301,124 @@ fuente, rango de validez y dirección del error conocida.
   misma dirección. Para dimensionar una carga animal la dirección del error es lo
   único que importa, y acá es siempre la optimista.
 
-### Y `Yp` sigue siendo lo que falta
+## Lo que se cerró el 02/11/2026: `Yp` también estaba en la Tabla 1
 
-Queda un solo parámetro, y es el que fija la escala. El encargo para relevarlo
-está escrito en `_research/_encargos/ENCARGO_FORRAJE_YP.md`: pide producción de
-pastizal natural **en condición de agua no limitante**, con el suelo y la
-composición que la explican, por cuatro vías —riego medido, la columna de año
-favorable de las fichas de sitio ecológico del NRCS, el año húmedo sólo si la
-fuente dice que el agua no limitó, y un `Yp` despejado declarado como tal— y,
-sobre todo, **cualquier relación publicada entre rendimiento potencial y una
-propiedad de suelo**, que es lo único que permitiría estimarlo en un predio donde
-nadie cortó pasto nunca.
+El encargo de `Yp` volvió con tres lotes, y el resultado útil no fue ninguno de
+los valores que trajo: fue descubrir que **el parámetro sale de la misma tabla
+que el `b`**, y que el candidato que parecía bueno no servía.
+
+### El relevamiento cerró en falso, y conviene decir por qué
+
+Se pedían valores publicados de producción con agua no limitante. De las cuatro
+clases admisibles, la que más prometía era la **B**: la columna alta de
+producción anual de las fichas de sitio ecológico del NRCS, única fuente abierta
+que trae el suelo y la composición de especies juntos, que son las dos cosas que
+la definición de `Yp` nombra. Volvieron seis fichas de las MLRA 058A y 058D, con
+los números bien convertidos y verificados contra la fuente.
+
+**No son `Yp`.** Se leyeron dos fichas completas —`R058AE014MT` Dense Clay y
+`R058AE003MT` Sandy— y hay tres diferencias, las tres para el mismo lado:
+
+1. La ficha cuenta **todos los grupos vegetales**. De las 2.300 lb/acre altas de
+   la ficha Sandy, 345 son hierbas y 115 arbustos. Wight y Hanks cortaron
+   materia en pie herbácea.
+2. **Producción anual no es pico de materia en pie**, que es lo que mide el
+   trabajo: la producción anual cuenta también lo que creció y murió antes del
+   pico.
+3. **La columna no dice ser de un año favorable.** Era el supuesto del encargo
+   —«la columna de año favorable»— y ninguna de las dos fichas define sus tres
+   columnas. La página trae un ejemplo de «favorable / normal / desfavorable»
+   que aclara expresamente que *no* usa las estimaciones de ese sitio, y sus
+   números no coinciden con la tabla. O sea que «High = año favorable = `Yp`» no
+   tiene respaldo publicado: es un supuesto que pusimos nosotros en el encargo.
+
+Y se puede medir cuánto. La ficha `R058AE003MT — Sandy (Sy)`, zona de 10 a 14
+pulgadas, es el análogo más cercano al sitio de Sidney —arenoso, misma banda de
+lluvia, misma pradera mixta de gramíneas altas y medias—: su columna alta da
+**2.578 kg/ha** de total y **2.062 sólo de pasto**, contra el `Yp` = 1.300 que el
+trabajo publica para Sidney. **1,98 veces, y 1,59 veces contando sólo el pasto.**
+La comparación es cercana y no exacta: Sidney está en la planicie glaciada —MLRA
+52, RRU 52N— y la ficha es de la 058A, una unidad vecina de la misma zona de
+precipitación. Queda montado en `ESD_NO_ES_YP` con su test, porque es la
+propuesta que va a volver.
+
+Hay una cuarta diferencia, menor y peor documentada: la definición genérica de
+columnas del NRCS dice que la producción anual de una ficha es **peso seco al
+aire**, no seco en estufa. Está en el documento genérico y **no en la ficha**,
+que no declara base de peso. Va como nota, no como corrección.
+
+Los otros dos lotes: el ensayo de riego de Dirab (Arabia Saudita) quedó
+**rechazado** —cinco arbustos nativos trasplantados en hileras en una estación
+experimental, hojas y ramillas cortadas cada tres meses, y el rendimiento *baja*
+con más riego en tres de las cinco especies, así que no establece ningún techo— y
+el lote de relaciones volvió **vacío**, con el motivo escrito: no se encontró una
+ecuación publicada que prediga `Yp` desde una propiedad de suelo. Sala y otros
+(1988) relacionan ANPP con lluvia y capacidad de retención, pero ANPP no es `Yp`
+y el resumen no publica los coeficientes de la interacción. La pregunta queda
+abierta, no contestada: lo que se leyó fue el resumen, no el trabajo.
+
+### Y entonces: `Yp` sale de la aritmética de la Tabla 1
+
+El trabajo dice que `Yp` se estima «from the relationship `Yp = Y · Tp/T`
+calculated for representative years», y las tres columnas están publicadas. Es
+el mismo movimiento que con `b`. Año por año, en kg/ha:
+
+| Año | `Yp` | Año | `Yp` | Año | `Yp` | Año | `Yp` |
+|---|---|---|---|---|---|---|---|
+| 1967 | 1.342 | 1970 | 1.302 | 1973 | **908** | 1976 | 1.221 |
+| 1968 | 1.317 | 1971 | 1.249 | 1974 | **1.032** | 1977 | **1.119** |
+| 1969 | 1.372 | 1972 | 1.234 | 1975 | 1.343 | 1978 | 1.319 |
+
+Los doce juntos dan 1.230 con desvío 136 — 5,4 % abajo. Pero «años
+representativos» tiene una definición **objetiva y publicada en la propia
+tabla**: los años donde el rendimiento predicho cae dentro del intervalo de
+confianza del 90 % de la media medida. Los tres que se caen son 1973, 1974 y
+1977, los tres en negrita, los mismos tres donde el artículo sobrepredice. Es
+exactamente lo que `dentroDelIc90()` ya devolvía en `fuera` desde antes. Con los
+nueve que quedan:
+
+**media 1.299,7 kg/ha, desvío 50,1 — contra el 1.300 publicado, 0,02 %.**
+
+No es un ajuste: es el mismo número, recuperado de las columnas. Y el criterio
+que separa los nueve no lo elegimos nosotros.
+
+### Lo que lo vuelve usable: el despeje no arrastra la sequía
+
+Si el despeje heredara la sequía de la temporada medida, serviría de poco: un
+productor corta pasto el año que puede, no el año bueno. Se mide. Los dos años
+secos de la serie (`T/Tp` 0,56 y 0,58, con rendimientos medidos de 742 y 720
+kg/ha) devuelven **1.283** de media, y los siete húmedos (`T/Tp` 0,89 a 0,99, con
+rendimientos de 1.100 a 1.321) devuelven **1.305**. Diferencia **1,7 %**, con
+rendimientos medidos que difieren por más del 60 %. El cociente `Tp/T` saca la
+sequía del número.
+
+Una sola temporada acierta el `Yp` publicado con un error **mediano del 3,3 % y
+peor del 6,1 %** entre los nueve años buenos — contra el 112 % que separa a los
+dos sitios del trabajo, que es lo que habría que tragarse usando un `Yp` por
+bioma.
+
+Dónde deja de valer: donde el índice es muy bajo. El único año de la serie con
+`T/Tp` abajo de 0,5 es 1977, con 0,402, y es el peor despeje de los doce —13,9 %
+abajo—. Dividir por un número chico amplifica el error de la cosecha y del
+balance. De ahí sale el umbral de aviso.
+
+Y donde la cosecha no es lo que el trabajo midió, que es el modo de falla que de
+verdad importa porque es exactamente cómo entraría la columna de una ficha NRCS
+sin que nadie se diera cuenta. Por eso el tipo de entrada tiene un campo `base`
+que es una unión de **un solo valor**: una medición que no sea pico de materia en
+pie herbácea no compila.
+
+### Qué cambia esto para acequia
+
+El pedido deja de ser bibliográfico y pasa a ser de interfaz. `Yp` no va a venir
+de una tabla por bioma —no existe, y la mejor candidata lee hasta dos veces
+alto—: **viene de un corte de pasto en el predio del usuario**, uno solo, con el
+balance diario para el mismo período. Eso acequia lo puede pedir.
+
+Lo que sigue haciendo falta de afuera es la relación `Yp` contra propiedad de
+suelo, para el predio donde nadie cortó nunca. Sigue valiendo más que cualquier
+sitio, y ahora además se sabe contra qué validarla: tiene que devolver 1.300 en
+el sitio arenoso de Sidney y 2.760 en Mandan.
 
 ---
 

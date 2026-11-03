@@ -104,18 +104,51 @@ sitios del estudio difiere 2,1 veces. Entonces:
    que es exactamente donde un promedio de temporada tiene que fallar. La columna
    `T` no se puede reproducir: pediría la lluvia diaria de Sidney de 1967 a 1978,
    que el artículo no publica, y eso quedó escrito en el módulo.
-2. **Conseguir una fuente para `Yp`.** Es lo único que falta, y es lo que fija la
-   escala. El encargo está escrito:
-   `_research/_encargos/ENCARGO_FORRAJE_YP.md`, con cuatro clases de dato
-   admisible, las MLRA concretas de las fichas del NRCS y las dos rutas de EDIT
-   verificadas. Lo que más vale del pedido no es un sitio: es **cualquier
-   relación publicada entre rendimiento potencial y una propiedad de suelo**, que
-   es lo único que permitiría estimar `Yp` en un predio donde nadie cortó pasto.
-3. **Recién entonces** se desconecta `prodForrajera`, que hoy es una escalera de
+2. ~~**Conseguir una fuente para `Yp`**~~ — **cambió de forma el 02/11/2026, y
+   el relevamiento bibliográfico está cerrado.** El encargo volvió con tres
+   lotes y lo que sirvió no fue ninguno de los valores:
+   - **La columna alta de las fichas del NRCS no es `Yp`**, y quedó medido. En
+     la ficha más comparable al sitio del trabajo —`R058AE003MT — Sandy`, zona
+     de 10 a 14 pulgadas, pradera mixta arenosa— da 2.578 kg/ha de total y 2.062
+     sólo de pasto contra el `Yp` = 1.300 publicado para Sidney: **1,98 y 1,59
+     veces**. Cuenta todos los grupos vegetales, producción anual no es pico de
+     materia en pie, y —esto fue culpa del encargo— **la ficha no define su
+     columna alta como «año favorable»**: se leyeron dos fichas completas y
+     ninguna define sus tres columnas. Montado en `ESD_NO_ES_YP` con test,
+     porque es la propuesta que va a volver.
+   - **`Yp` sale de la aritmética de la Tabla 1**, igual que el `b`. El trabajo
+     lo estima con `Yp = Y·Tp/T` para años representativos, y «representativos»
+     tiene definición publicada en la tabla: los años donde el predicho cae
+     dentro del intervalo de confianza del 90 % de la media medida, que es lo
+     que `dentroDelIc90()` ya devolvía. Los nueve que quedan dan **1.299,7 kg/ha
+     con desvío 50,1 contra el 1.300 publicado: 0,02 %**.
+   - **Y el despeje no arrastra la sequía**, que es lo que lo vuelve usable: las
+     dos temporadas secas devuelven 1.283 y las siete húmedas 1.305 —1,7 %— con
+     rendimientos medidos que difieren más del 60 %. Una sola temporada acierta
+     con error mediano del 3,3 % y peor del 6,1 %.
+
+   Entonces **`Yp` no viene de una tabla por bioma: viene de un corte de pasto
+   en el predio del usuario**, uno solo, el año que se pueda cortar, con el
+   balance diario del mismo período. Está en `despejarYp` y
+   `YP_DESPEJADO_SIDNEY`. **Lo que falta ahora es de interfaz, no de
+   bibliografía:** pedirle esa medición al usuario y decirle qué tiene que
+   cortar —materia en pie herbácea, a nivel del suelo, una vez, al llegar las
+   gramíneas principales a madurez—, porque una medición de otra cosa devuelve
+   un `Yp` que no es el de este modelo.
+3. **Sigue abierto, y vale más que cualquier sitio:** una **relación publicada
+   entre rendimiento potencial y una propiedad de suelo**, para el predio donde
+   nadie cortó pasto nunca. El lote que la buscaba volvió vacío con el motivo
+   bien escrito —no se encontró, y no se transformó ANPP en `Yp` para llenar el
+   hueco—. Ahora además se sabe contra qué validarla: tiene que devolver ≈1.300
+   kg/ha en el sitio arenoso de Sidney y ≈2.760 en Mandan. El encargo reescrito
+   pide eso y dos blancos más con nombre:
+   `_research/_encargos/ENCARGO_FORRAJE_YP.md`.
+4. **Recién entonces** se desconecta `prodForrajera`, que hoy es una escalera de
    cinco escalones sin fuente que multiplica la oferta, el balance, la carga, el
    rodeo y el agua de la represa, y que veinte lotes midieron equivocada entre
-   **1,7 y 2,9 veces**. Hasta que exista `Yp`, desconectarla dejaría a la cadena
-   ganadera sin kilos, así que sigue conectada a propósito.
+   **1,7 y 2,9 veces**. Hasta que `Yp` llegue por alguna de las dos vías,
+   desconectarla dejaría a la cadena ganadera sin kilos, así que sigue conectada
+   a propósito.
 
 Lo que falta además, y el artículo lo dice de sí mismo: su curva de LAI relativo
 es de la pradera mixta del norte de las Grandes Planicies y **conviene desarrollar
