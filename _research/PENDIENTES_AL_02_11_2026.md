@@ -93,16 +93,29 @@ rendimiento potencial del sitio, no sale del modelo: incluye composición de
 especies y fertilidad, se estima del dato de campo del sitio, y entre los dos
 sitios del estudio difiere 2,1 veces. Entonces:
 
-1. **Escribir `T/Tp`**, el índice de suficiencia hídrica, con balance diario y el
-   test contra la Tabla 1. Acequia tiene las cuatro entradas que hacen falta:
-   lluvia diaria, ETP, `AW` por capa y temperatura del suelo.
-2. **Conseguir una fuente para `Yp`.** Ahí entra lo que ya está medido en
-   `forrajeMedido.ts`: el Miami Model de Lieth con su forma de mínimo entre lluvia
-   y temperatura, y la banda de fracción herbácea según el dosel.
+1. ~~**Escribir `T/Tp`**~~ — **hecho el 02/11/2026.**
+   `apps/terreno/lib/forrajeBalance.ts`, con `correrBalanceForraje` corriendo el
+   balance diario sobre tres capas y 44 tests. Y de paso se destrabó el parámetro
+   que el trabajo publica sólo como figura: `Tp/(Kc·Eo)` *es*, por la ecuación 2,
+   el `b` de la temporada ponderado por `Eo`, así que **la Figura 2 se despejó de
+   la Tabla 1**: media 0,435, desvío 0,014, once de los doce años entre 0,42 y
+   0,45. Con ese `b` constante el balance reproduce la columna `Tp` dentro del
+   5 % en once de doce, y el que falla es 1977 —la temporada más corta, 68 días—,
+   que es exactamente donde un promedio de temporada tiene que fallar. La columna
+   `T` no se puede reproducir: pediría la lluvia diaria de Sidney de 1967 a 1978,
+   que el artículo no publica, y eso quedó escrito en el módulo.
+2. **Conseguir una fuente para `Yp`.** Es lo único que falta, y es lo que fija la
+   escala. El encargo está escrito:
+   `_research/_encargos/ENCARGO_FORRAJE_YP.md`, con cuatro clases de dato
+   admisible, las MLRA concretas de las fichas del NRCS y las dos rutas de EDIT
+   verificadas. Lo que más vale del pedido no es un sitio: es **cualquier
+   relación publicada entre rendimiento potencial y una propiedad de suelo**, que
+   es lo único que permitiría estimar `Yp` en un predio donde nadie cortó pasto.
 3. **Recién entonces** se desconecta `prodForrajera`, que hoy es una escalera de
    cinco escalones sin fuente que multiplica la oferta, el balance, la carga, el
    rodeo y el agua de la represa, y que veinte lotes midieron equivocada entre
-   **1,7 y 2,9 veces**.
+   **1,7 y 2,9 veces**. Hasta que exista `Yp`, desconectarla dejaría a la cadena
+   ganadera sin kilos, así que sigue conectada a propósito.
 
 Lo que falta además, y el artículo lo dice de sí mismo: su curva de LAI relativo
 es de la pradera mixta del norte de las Grandes Planicies y **conviene desarrollar
