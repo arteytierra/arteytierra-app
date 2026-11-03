@@ -242,6 +242,79 @@ razón por la que este documento existe antes que la función.
 3. **Las curvas de actividad radicular por temperatura de suelo**, aproximadas de
    Swift Current, Saskatchewan. Mismo problema.
 
+---
+
+## Lo que se escribió el 02/11/2026, y el parámetro que la tabla devolvió
+
+El balance diario quedó escrito en `apps/terreno/lib/forrajeBalance.ts`, con
+`correrBalanceForraje` devolviendo `T/Tp` y las tres capas corriendo día por
+día. Cuarenta y cuatro tests en
+`apps/terreno/tests/unit/economia/forrajeBalance.test.ts`.
+
+### El `b` que era una figura, despejado de la Tabla 1
+
+El obstáculo que `FALTA_PARA_CORRER_WIGHT_HANKS` nombraba primero —que
+`b = 0,5 × LAI relativo` es la Figura 2 y no hay tabla de puntos— **se resolvió
+sin la figura**. Por la ecuación 2, `Tp = b · Kc · Eo`, el cociente
+`Tp/(Kc·Eo)` de cada año *es* el `b` de la temporada promediado y ponderado por
+`Eo`, y las dos columnas están impresas:
+
+| año | `b` | año | `b` | año | `b` | año | `b` |
+|---|---|---|---|---|---|---|---|
+| 1967 | 0,449 | 1970 | 0,447 | 1973 | 0,442 | 1976 | 0,441 |
+| 1968 | 0,424 | 1971 | 0,441 | 1974 | 0,429 | 1977 | **0,399** |
+| 1969 | 0,421 | 1972 | 0,444 | 1975 | 0,445 | 1978 | 0,438 |
+
+**Media 0,435, desvío 0,014, y once de los doce entre 0,42 y 0,45.** Como
+`b = 0,5 × LAI relativo`, el LAI relativo medio de la temporada en Sidney fue
+de 0,87.
+
+El año que se despega es **1977, y no es ruido: es la temporada más corta de la
+serie, 68 días contra 81 a 99 de las otras**, y queda trece días abajo de la
+siguiente, así que no es la cola de un continuo. Un promedio de temporada falla
+justo donde la temporada se cortó antes de que el dosel llegara a su máximo, que
+es precisamente la limitación de usar una constante en vez de la curva. Con
+`b = 0,435` constante el balance reproduce la columna `Tp` **dentro del 5 % en
+once de los doce años**, y el que se pasa es 1977, por 8,97 % para arriba.
+
+Esto no reemplaza el pedido de los autores de construir una curva propia por
+región: el número es de pradera mixta del norte de las Grandes Planicies y usarlo
+en el Chaco es extrapolar. Pero convierte un hueco en un valor por defecto con
+fuente, rango de validez y dirección del error conocida.
+
+### Lo demás que la tabla permitió probar, y lo que no
+
+- **La tabla cierra su propio balance.** `P − ET − drenaje` es el cambio de
+  almacenaje de la temporada, y en los doce años va de **−62 a +34 mm**: cabe en
+  un perfil arenoso de 90 cm y no lo desborda. Si hubiera dado 200 mm, alguna
+  columna estaría mal leída.
+- **`E/Ep` da 0,52 de media** —despejando `E = ET − T` y `Ep = Kc·Eo − Tp`— con
+  los doce años entre 0,40 y 0,60, y el más bajo es otra vez 1977.
+- **La columna `T` no se puede reproducir** y hay que decirlo fuerte: haría falta
+  la lluvia diaria de Sidney de 1967 a 1978, que el artículo no publica. De `T`
+  se verifica la conservación al milímetro, que `T ≤ Tp` todos los días, y que el
+  índice queda en [0, 1].
+- **Cada degradación empuja el índice para arriba**, y eso está testeado como
+  dirección, no como valor: sin el agua bajo el límite inferior el índice sale
+  0,214 donde con ella sale 0,190; sin el factor de actividad radicular sale
+  0,587 donde con 0,5 sale 0,524. El supuesto de escurrimiento nulo va en la
+  misma dirección. Para dimensionar una carga animal la dirección del error es lo
+  único que importa, y acá es siempre la optimista.
+
+### Y `Yp` sigue siendo lo que falta
+
+Queda un solo parámetro, y es el que fija la escala. El encargo para relevarlo
+está escrito en `_research/_encargos/ENCARGO_FORRAJE_YP.md`: pide producción de
+pastizal natural **en condición de agua no limitante**, con el suelo y la
+composición que la explican, por cuatro vías —riego medido, la columna de año
+favorable de las fichas de sitio ecológico del NRCS, el año húmedo sólo si la
+fuente dice que el agua no limitó, y un `Yp` despejado declarado como tal— y,
+sobre todo, **cualquier relación publicada entre rendimiento potencial y una
+propiedad de suelo**, que es lo único que permitiría estimarlo en un predio donde
+nadie cortó pasto nunca.
+
+---
+
 **Entonces lo que corresponde escribir es la fracción, no el kilo.** El aporte
 real y transferible de Wight y Hanks es `T/Tp`: un **índice de suficiencia hídrica
 del forraje**, calculado con balance diario, que acequia sí puede computar con
