@@ -26,7 +26,9 @@ describe('las mudanzas del lote: el ECO_ID manda sobre el nombre', () => {
     expect(fichaDeEcorregion(238)).toBe('gangetica_inferior');
     expect(fichaDeEcorregion(287)).toBe('gangetica_superior');
     expect(practicasDeFicha('gangetica_inferior').some((p) => /Ahar y pyne/.test(p.practica))).toBe(true);
-    expect(PRACTICAS_POR_FICHA['gangetica_superior']).toBeUndefined();
+    // El 287 estuvo en cero hasta el lote 4, que le trajo una parcela de alamo de
+    // Muzaffarnagar. No es el ahar-pyne y no tiene nada que ver con el.
+    expect(practicasDeFicha('gangetica_superior').some((p) => /Ahar y pyne/.test(p.practica))).toBe(false);
   });
 
   it('Kandy es zona húmeda BAJA, y la altura de la fuente lo dice', () => {
@@ -165,9 +167,11 @@ describe('las fuentes de este lote', () => {
   ];
   const DEL_LOTE = FICHAS.flatMap((id) => practicasDeFicha(id).flatMap((p) => p.fuentes));
 
-  it('son once entradas sobre nueve fichas, más la que le sumó el lote 3', () => {
+  it('son once entradas sobre nueve fichas; hoy esas nueve llevan catorce', () => {
+    // 11 del lote 2, 1 que le sumó el lote 3 —el café de Horsik— y 2 que le sumó
+    // el lote 4, los dos pelak de Kerinci, todas en `sumatra_montano`.
     const total = FICHAS.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(total).toBe(12);
+    expect(total).toBe(14);
   });
 
   it('ninguna cuelga de un repositorio que sólo aloja, ni de un host de pruebas', () => {
@@ -184,15 +188,18 @@ describe('las fuentes de este lote', () => {
     }
   });
 
-  it('las cuatro entradas cuya fuente no abría quedaron afuera', () => {
+  it('de las cuatro que se cayeron por la fuente, tres siguen vacías', () => {
     // El soppinabetta de Sringeri (certificado roto en el host del IISc), el
-    // arroz de Wayanad (NOPR no responde), el arroz de recesión del Tonle Sap
-    // (403 en el PDF del gobierno de Camboya) y el pastoreo Toda (la URL es el
-    // índice de la revista, no el trabajo). Ninguna de las cuatro fichas
-    // estrena bloque.
-    for (const id of ['ghats_norte_montano', 'ghats_sur_montano', 'pantanos_tonle_sap', 'ghats_norte_deciduo']) {
+    // arroz de recesión del Tonle Sap (403 en el PDF del gobierno de Camboya) y
+    // el pastoreo Toda (la URL era el índice de la revista, no el trabajo).
+    for (const id of ['ghats_norte_montano', 'pantanos_tonle_sap', 'ghats_norte_deciduo']) {
       expect(PRACTICAS_POR_FICHA[id], id).toBeUndefined();
     }
+    // La cuarta volvió en el lote 4 con otra práctica del mismo pueblo y una
+    // fuente que abre: los vayal kurichiya, en vez del arroz de Wayanad que NOPR
+    // no servía.
+    expect(practicasDeFicha('ghats_sur_montano')).toHaveLength(1);
+    expect(practicasDeFicha('ghats_sur_montano')[0]!.practica).toMatch(/vayal/);
   });
 });
 
@@ -201,7 +208,7 @@ describe('la capa llega a la ficha', () => {
     const esperado: Record<string, number> = {
       gangetica_inferior: 1, sri_lanka_humedo_bajo: 2, valle_brahmaputra: 1,
       pantanos_sundarbans: 1, pantanos_irrawaddy: 1, pantanos_chao_phraya: 2,
-      pantanos_rio_rojo: 1, sumatra_bajo: 1, sumatra_montano: 2,
+      pantanos_rio_rojo: 1, sumatra_bajo: 1, sumatra_montano: 4,
     };
     for (const [id, n] of Object.entries(esperado)) {
       expect(fichaPorId(id)?.practicas, id).toHaveLength(n);

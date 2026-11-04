@@ -30,14 +30,17 @@ describe('las mudanzas del tercer lote', () => {
     expect(toba).toBeTruthy();
   });
 
-  it('Soreang es montano de Java occidental, y el Java occidental bajo sigue en cero', () => {
+  it('Soreang es montano de Java occidental, y el talún-kebun se quedó ahí', () => {
     // Sadu, Soreang, Pasirjambu y Banjaran dan todos 288, que esta ficha cubre
-    // junto con el 229. El 289 —`java_occidental_bajo`— es otro polígono.
+    // junto con el 229. El 289 —`java_occidental_bajo`— es otro polígono, y en el
+    // lote 4 estrenó sus propias dos entradas, de Cisolok y de Sagaranten;
+    // ninguna es el talún-kebun, que sigue donde lo puso el ECO_ID.
     expect(fichaDeEcorregion(288)).toBe('java_bali_montano');
     expect(fichaDeEcorregion(229)).toBe('java_bali_montano');
     expect(fichaDeEcorregion(289)).toBe('java_occidental_bajo');
-    expect(PRACTICAS_POR_FICHA['java_occidental_bajo']).toBeUndefined();
     expect(practicasDeFicha('java_bali_montano').some((p) => /Talun-kebun/.test(p.practica))).toBe(true);
+    expect(practicasDeFicha('java_occidental_bajo')).toHaveLength(2);
+    expect(practicasDeFicha('java_occidental_bajo').some((p) => /[Tt]alun-kebun/.test(p.practica))).toBe(false);
   });
 
   it('el subak ocupa las dos fichas, y cada entrada nombra los componentes que le tocan', () => {
@@ -65,7 +68,9 @@ describe('las mudanzas del tercer lote', () => {
     expect(fichaDeEcorregion(241)).toBe('luzon_bajo');
     expect(fichaDeEcorregion(240)).toBe('luzon_montano');
     expect(PRACTICAS_POR_FICHA['luzon_montano']).toBeUndefined();
-    expect(practicasDeFicha('luzon_bajo')).toHaveLength(5);
+    // Cinco cuando se montó este lote; seis desde el lote 4, que le sumó el
+    // kaingin de Daraitan —también propuesto en `luzon_montano` y también 241—.
+    expect(practicasDeFicha('luzon_bajo')).toHaveLength(6);
   });
 
   it('el chaparral del interior de California no es la ficha que se llama chaparral', () => {
@@ -238,11 +243,13 @@ describe('las fuentes de este lote', () => {
     }
   });
 
-  it('son quince entradas nuevas sobre once fichas', () => {
-    // 14 entradas entregadas, 15 montadas: el subak va en dos fichas.
+  it('son quince entradas nuevas sobre once fichas, hoy dieciocho', () => {
+    // 14 entradas entregadas, 15 montadas: el subak va en dos fichas. El lote 4
+    // le sumó dos a `sumatra_montano` y una a `luzon_bajo`, y los totales de acá
+    // son el estado de hoy, no el del lote.
     const esperado: Record<string, number> = {
-      sumatra_montano: 2, java_bali_montano: 2, java_oriental_bali_bajo: 1,
-      pantanos_borneo_suroeste: 1, luzon_bajo: 5, mindoro: 1, mindanao_montano: 1,
+      sumatra_montano: 4, java_bali_montano: 2, java_oriental_bali_bajo: 1,
+      pantanos_borneo_suroeste: 1, luzon_bajo: 6, mindoro: 1, mindanao_montano: 1,
       mindanao_visayas_oriental: 1, california_klamath_sierra_valle: 4,
       manglares_pacifico_suramericano: 3, galapagos_matorral_xerico: 3,
     };

@@ -37,7 +37,70 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 02/11/2026
+ * ESTADO, al 04/11/2026
+ *
+ * 453 entradas sobre 221 fichas, de un catálogo de 259. El reparto: 71 fichas
+ * tienen una sola entrada, 75 tienen dos, 70 llegaron a tres —que es el piso que
+ * se busca—, 4 tienen cuatro y una tiene seis. Indomalaya queda con 14 fichas sin
+ * ninguna práctica, de 35.
+ *
+ * El cuarto lote cerró el bloque 1 y fue el peor de los cuatro: de 18 entradas
+ * entraron 7. Lo que cambió no es la calidad de la lectura —las once fuentes que
+ * abrieron decían lo que la entrega decía— sino que el motivo del rechazo se
+ * movió de lugar. Antes se caían por la fuente; ahora se caen por el polígono:
+ *
+ * - **Tres cayeron en un ECO_ID que no tiene ficha.** El arroz de recesión del
+ *   Tonle Sap, que trae las coordenadas publicadas de las doce fincas y las doce
+ *   dan 286 y no 285. El sonor de la aldea de Perigi, que da 280 —el mismo
+ *   polígono por el que el encargo había rechazado el lebak de Pampangan, veinte
+ *   kilómetros al sur—. Y el cultivo mixto de la zona seca de Myanmar, que da 294
+ *   y que el encargo había listado explícitamente entre las que no hay que volver
+ *   a mandar porque ya está entregado y espera ficha.
+ * - **Dos eran una práctica que ya está escrita en este archivo.** El huerto
+ *   kandyano llegó propuesto en `sri_lanka_montano` citando el mismo capítulo del
+ *   CBD que ya sostiene la entrada de `sri_lanka_humedo_bajo`, y el arroz de
+ *   aguas profundas de Bang Kum llegó en `chao_phraya_deciduo` citando el mismo
+ *   trabajo de Molle que ya sostiene las dos entradas de `pantanos_chao_phraya`.
+ *   El encargo pidió esas dos fichas como "sin relevar", que es verdad del id y
+ *   falso de la práctica: el id está vacío porque la práctica de esa zona ya se
+ *   montó al lado. Para el próximo lote eso hay que decirlo en el encargo.
+ * - **Dos estaban a cuatrocientos kilómetros.** Los dos ensayos de Hardwickia
+ *   binata llegaron propuestos en `decan_central_hardwickia` y están en Jhansi,
+ *   en Bundelkhand, que el propio trabajo ubica entre los 23°20' y los 26° de
+ *   latitud; el 290 no pasa de 21,7°. Se buscó la ficha por el nombre de la
+ *   especie que la nombra en vez de por el polígono. Y hay un segundo motivo que
+ *   vale aparte: un ensayo en los campos de un centro de investigación no es una
+ *   práctica del territorio. Está fechado y ubicado, pero nadie del lugar lo
+ *   decidió, y lo que mide es una respuesta. El número que deja igual —a 200
+ *   árboles por hectárea la mostaza pierde menos del 5 % hasta el quinto año,
+ *   15 % al sexto y 65 % al séptimo— es de calibración y no de esta capa.
+ * - **Dos no entraron por la fuente, y las dos son del mismo polígono.** El
+ *   soppinabetta de Sringeri y los devrai de Mulshi caían los dos en el 254 y
+ *   `ghats_norte_montano` sigue en cero por eso. El soppinabetta tiene su copia
+ *   abierta en un servidor del IISc cuyo certificado es de otro dominio, y el
+ *   artículo original es de Land Use Policy, de pago; los devrai están en Wiley y
+ *   en el espejo CC-BY de Hindawi, y los dos contestan con una verificación
+ *   anti-bot. Son fuentes cerradas por el camino y no por la licencia, que es la
+ *   categoría más irritante de todas.
+ * - **Y una más por lo mismo:** las prácticas de los agricultores suludnon de
+ *   Iloilo, tercer intento, con la ficha bien —Jayubo da 231— y las tres rutas
+ *   cerradas: ResearchGate, el sitio de la revista y la copia abierta de la UPLB,
+ *   las tres detrás de la misma verificación.
+ *
+ * Lo que sí entró vale la pena mirarlo junto, porque las siete tienen la misma
+ * forma: la entrega nombró aldea y distrito. Los vayal kurichiya de Wayanad, los
+ * dos pelak de Kerinci, el arroz de una cosecha de los caseríos de Ciptagelar, el
+ * pekarangan de Cigaluga, el kaingin de Daraitan y el álamo de Rasulpur-Jattan.
+ * Tres de ellas cayeron en la ficha que la entrega propuso.
+ *
+ * Y una corrección a lo que decía el estado anterior: `pinar_toba` volvió a
+ * fallar por tercer lote seguido, pero esta vez el encargo no tuvo la culpa. El
+ * 305 es el pinar de Kerinci, y está medido: Siulak, en el extremo noroeste del
+ * valle, da 305. Semerap y Jujun, que es donde fue la entrega, están en el
+ * extremo sureste, sobre el lago, y dan 279. No es otro valle: es la otra punta
+ * del mismo valle.
+ *
+ * ESTADO anterior, al 02/11/2026
  *
  * 446 entradas sobre 218 fichas, de un catálogo de 257. El reparto importa más
  * que el total: 69 fichas tienen una sola entrada, 75 tienen dos, 70 llegaron a
@@ -5282,6 +5345,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Human Ecology 42(5):769-778 (2014), vía PubMed Central — Limits to Indigenous Participation: The Agta and the Northern Sierra Madre Natural Park, the Philippines', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4194021/' },
       ],
     },
+    {
+      practica: 'Kaingin y pagbabakal: la roza que se hace entre varios',
+      periodo: 'Barangay Daraitan, Tanay, Rizal; entrevistas a mayores remontado-dumagat publicadas en diciembre de 2018',
+      tipo: 'fuego',
+      vigencia: 'en_uso',
+      detalle:
+        'La roza es la de siempre —se corta la vegetación, se quema y la ceniza se incorpora al suelo antes de sembrar—, y lo que el trabajo agrega es quién la hace: la apertura se resuelve con trabajo intercambiado entre hogares, el pagbabakal, que los participantes también llaman bayanihan. El hogar que recibe ayuda devuelve jornadas cuando otro la necesita, y así las tareas pesadas se completan sin contratar a nadie; los mayores lo describen como una actividad que vale además por el encuentro. Van dos cosas más que no se pueden separar de la práctica. La primera es que la fuente dice que el kaingin es ilegal en Filipinas, que los dumagat de Daraitan lo saben y que siguen igual porque no tienen otra tierra de cultivo adentro de su dominio ancestral. La segunda es el costo que la propia fuente le cuenta —erosión y pérdida de fertilidad— y el reemplazo que propone, que es cultivo en callejones con las hojas de las plantas del callejón como abono: si alguien va a copiar algo de acá, eso es lo que conviene mirar antes que la quema.',
+      fuentes: [
+        { label: 'Journal of Education, Psychology and Humanities 1(2), Adventist University of the Philippines — Why the Remontado Dumagats of Daraitan, Tanay, Rizal Persist to Practice Kaingin', url: 'https://www.aup.edu.ph/urc/wp-content/uploads/2024/08/2-JEPH-December-2018_compressed.pdf' },
+      ],
+    },
   ],
 
   pinar_luzon: [
@@ -5528,6 +5602,28 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'SciTePress, ICOSOP 3 (2019) — The Coffee Value Chain Analysis to Support Farmers Livelihood in Horsik Village, Ajibata Sub-district, Toba Samosir District, North Sumatra', url: 'https://www.scitepress.org/Papers/2019/101227/101227.pdf' },
       ],
     },
+    {
+      practica: 'Pelak de frutales en la ladera, donde ya no alcanza el barbecho',
+      periodo: 'Aldea de Semerap, al oeste del lago Kerinci; los mayores lo datan antes de la colonia holandesa y el relevamiento es del programa de campo de los primeros noventa, publicado en 2000',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Huerto de varios estratos sobre la ladera, con durian y petai haciendo el dosel principal, frutales medianos como langsat y manggis en el medio y mucho clavo de olor abajo. Lo que hay que mirar es la renovación, porque ahí está el mecanismo: cuando el jardín se renueva se talan los árboles menos productivos y en el claro que queda se plantan especies que piden sol —jengkol, café, banano— y maderables como melaku y surian, que son justamente las que se instalan solas en los claros del bosque natural de al lado; los plantines de durian que quedan abajo son el dosel de la próxima vuelta. O sea que la renovación imita el claro del bosque en vez de abrir el jardín entero. Por qué funciona acá: el valle está a 780 m, llueve 2.500 mm al año con una seca de julio a agosto por debajo de los 100 mm y la media anual es de 23 °C, pero la franja de arrozal entre el lago y las laderas es angosta y no tiene riego suficiente para dos cosechas, la densidad es de 332 habitantes por kilómetro cuadrado y la parcela promedio es de 1,3 hectáreas. Los suelos de las lomas son inceptisoles y ultisoles poco fértiles, con una capa fina de tierra buena que en lo empinado se va con el agua. Los mayores de la aldea dicen que plantar árboles en lo que antes era barbecho es lo que enseñaron los antepasados para resolver dos problemas al mismo tiempo: la falta de tierra y una ladera que se desmorona. La producción es comercial —fruta, petai, clavo y café se venden— y de la misma parcela sale la madera de la casa, la leña de las ramas secas y la hoja de café para el kawa.',
+      fuentes: [
+        { label: 'ICRAF, IRD y Fundación Ford (2000) — Ketika kebun berupa hutan: Agroforest khas Indonesia, sección 2.4 «Pelak di Kerinci, Jambi»', url: 'https://publikasi.agroforestri.id/sites/all/modules/publication/data/softcopy/BK0055-04.pdf' },
+      ],
+    },
+    {
+      practica: 'Los tres caminos del cafetal de canela, en Jujun',
+      periodo: 'Aldea de Jujun, regencia de Kerinci, mismo programa de campo; el libro es de 2000',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Las dos primeras etapas son iguales para todos: durante dos años se siembran cultivos anuales junto con el café y la canela, y el café empieza a producir a los dos años y medio y sigue hasta cerca del octavo, cuando la sombra de la canela lo apaga. Ahí aparece la decisión, y la decisión es la práctica. Camino uno: se talan y cosechan las canelas en el año ocho o nueve, se poda el café a ras para que rebrote y se vuelve a los anuales, o sea a la etapa uno. Camino dos: se deja crecer la canela hasta los veinticinco años, se cosecha y entonces se vuelve a la etapa uno. Camino tres: se conservan los árboles útiles que se plantaron o que crecieron solos durante las dos primeras etapas, junto con la canela, y la parcela se vuelve un jardín mixto permanente, el pelak; la canela pasa a ser el estrato bajo y se poda en ciclo corto, y el jardín queda dominado por jengkol, canela, surian y kemiri, con el café debajo y el jengkol como el plantín más numeroso de los que se crían para el futuro. La parcela promedio es de 1,9 hectáreas. Lo que esto le dice a alguien que diseña no es qué especie poner: es que la misma parcela puede ser una rotación de ocho años, una de veinticinco o un jardín con forma de bosque que no se reinicia nunca, y lo que cambia entre las tres es cuánto se saca de una vez.',
+      fuentes: [
+        { label: 'ICRAF, IRD y Fundación Ford (2000) — Ketika kebun berupa hutan: Agroforest khas Indonesia, sección 2.4 «Pelak di Kerinci, Jambi»', url: 'https://publikasi.agroforestri.id/sites/all/modules/publication/data/softcopy/BK0055-04.pdf' },
+      ],
+    },
   ],
 
 
@@ -5642,6 +5738,88 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'El abacá es un cultivo de sombra, y el trabajo compara los dos arreglos que lo sostienen en la cordillera de Leyte: bajo cocotero y bajo rainforestation, que es la plantación de árboles nativos para rehabilitar tierra degradada. Lo que decide es cuánta luz pasa: bajo el cocal llega el 33 % de la radiación arriba del abacá y el 11 % debajo de su propio dosel, bajo la plantación de nativas el 36 % y el 9 %, y la fracción que transmite un cocotero depende de la edad de la palma —alrededor del 20 % entre los 8 y los 25 años y cerca del 50 % a los 40—, así que un cocal viejo deja luz suficiente y uno joven no. El mejor arreglo medido fue el de árboles nativos con abacá, porque la plantación de nativas además mejora la calidad del suelo del agroecosistema; en los dos casos la densidad es alta, así que la fuente recomienda fertilizar y usar material de plantación sano, y pide mirar topografía y exposición al viento antes de elegir el sitio. Hay una advertencia de establecimiento que conviene no perder: el hijuelo trasplantado adelgaza en lugar de engrosar los dos primeros meses —de 6,7 a 4,0 cm de diámetro basal— y la actividad fisiológica recién se recupera entre el quinto y el séptimo mes, cuando rebrota la raíz, de modo que una seca corta justo después de plantar agrava la caída.',
       fuentes: [
         { label: 'Annals of Tropical Research 38(1):19-35, Visayas State University — Growth Performance of Abaca (Musa textilis Née) Integrated in Multi-strata Agroecosystems', url: 'https://atr.vsu.edu.ph/index.php/ATR/article/view/207' },
+      ],
+    },
+  ],
+
+  // ══ Fase 6, lotes 8 a 10 (04/11/2026) ══════════════════════════════════════
+  //
+  // De 18 entradas entraron 7, y el motivo dominante no fue la fuente: seis
+  // cayeron en un polígono que todavía no tiene ficha o que ya tiene esa misma
+  // práctica escrita. Las tres fichas nuevas de acá abajo —y las dos entradas
+  // que se sumaron a `sumatra_montano` y la que se sumó a `luzon_bajo`— son lo
+  // que aguantó. El veredicto completo, con las nueve que no entraron, está en
+  // `_research/_encargos/RESPUESTAS_PRACTICAS_FASE_6_LOTES_08_09_10.md`.
+
+  // ── Los Ghats del sur, el montano ───────────────────────────────────────────
+  // La ficha es la que propuso la entrega y se queda, pero por el núcleo
+  // documentado de la comunidad y no por una coordenada resuelta: las cuatro
+  // aldeas kurichiya que la fuente agradece no resuelven en el geocodificador, y
+  // Wayanad está partido en dos. Mananthavady, Kammana, Thirunelly y Kalpetta dan
+  // 271, que es esta ficha; Pulpally y Sulthan Bathery, al este del mismo
+  // distrito, dan 270, que es `ghats_sur_deciduo` —la que volvió vacía en este
+  // mismo lote—. La entrega dijo que la página no muestra fecha: la muestra en sus
+  // propios metadatos, 12 de julio de 2004.
+  ghats_sur_montano: [
+    {
+      practica: 'Los tres vayal: el arrozal clasificado por dónde está en el valle',
+      periodo: 'Conocimiento kurichiya de Wayanad relevado por la Fundación M.S. Swaminathan con apoyo de la cooperación suiza; artículo publicado en julio de 2004',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Los kurichiya no tienen un arrozal, tienen tres, y los distinguen por cuatro cosas: agua disponible, composición del suelo, fertilidad y posición del lote. El kuni vayal es la media loma suave al pie del cerro, donde la pendiente se encuentra con el plano: más tierra y menos barro, poca capacidad de retención, casi nunca se encharca, se cultiva a secano con una sola cosecha en la temporada nancha —de mayo o junio a noviembre o diciembre—, lleva variedades cortas y tolerantes a la seca, y es el único que se abona, con ceniza y bosta, porque es el menos fértil. El kundu vayal es el plano del fondo del valle, con agua parada toda la temporada de lluvia, suelo arcilloso con poca arena que retiene mucho y drena mal, lo que lo deja mojado más tiempo y le sube el riesgo de plagas; va con variedades de ciclo medio. El koravu vayal, también llamado aathi, es la variante pantanosa y rara del anterior: el perfil es como un almohadón, prácticamente sin tierra ni arena, no se puede caminar encima sin hundirse —por eso todas las labores las hacen los hombres y no se puede arar con animales—, es naturalmente fértil así que no se abona o casi, y lleva variedades largas y tolerantes a la inundación. Para qué sirve la clasificación: para elegir la variedad y el insumo de cada lote, y para repartir el trabajo, porque el transplante necesita mucha gente junta y tener variedades de distinta duración permite correr las fechas en vez de amontonarlas. Dos cosas que la fuente agrega y conviene no perder: los kurichiya son matrilineales, la tierra es de propiedad colectiva y no la pasan a cultivos de renta; y cuentan que cuando un arrozal se convierte, las verduras silvestres que juntaban en él se vuelven raras y las que crecen en el bananal o el arecanal ya no se juntan por el agroquímico.',
+      fuentes: [
+        { label: 'LEISA India, AME Foundation — Vayals: a traditional classification of agricultural landscapes in Kerala', url: 'https://www.leisaindia.org/vayals-a-traditional-classification-of-agricultural-landscapes-in-kerala/' },
+      ],
+    },
+  ],
+
+  // ── La tierra baja de Java occidental ───────────────────────────────────────
+  // Las dos entradas llegaron con la ficha bien, que en este lote fue la
+  // excepción: Cisolok da 289 y Sagaranten da 289. Vale anotar el contraste de la
+  // primera, porque es fino y es el que importa: la sede de la kasepuhan
+  // Ciptagelar, río arriba, da 288 —montano, donde ya está el talún-kebun— y los
+  // arrozales de Sukarame de los que habla la fuente dan 289. La tradición cruza
+  // el límite; los lotes medidos, no.
+  java_occidental_bajo: [
+    {
+      practica: 'Una sola cosecha al año con arroz local, en los caseríos de Ciptagelar',
+      periodo: 'Caseríos de Lebak Lengsir y Pamokoan, aldea de Sukarame, Cisolok, Sukabumi; imagen satelital de 2018 y trabajo de campo publicado en 2020',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Los hogares conservan variedades locales y cosechan una vez al año, que es la regla de la comunidad kasepuhan Ciptagelar, de Banten Kidul. El hallazgo del estudio no es la descripción sino el límite: cruzando imagen satelital de alta resolución de 2018 con entrevistas y observación, los arrozales con ese régimen aparecen únicamente en los dos caseríos cuyas familias siguen la tradición, y no en el resto de la aldea. O sea que la regla se ve desde arriba como un cambio de uso del suelo, y eso es lo que un relevamiento de territorio puede leer sin preguntarle a nadie: donde la regla termina, la parcela cambia de forma. Para quien diseña, la cosecha única con semilla propia no es un déficit de productividad que haya que corregir, es una decisión que ordena el calendario entero y que tiene un borde cartografiable.',
+      fuentes: [
+        { label: 'Jurnal Pendidikan Geografi 25(1), Universitas Negeri Malang — The local wisdom and land use of paddy field in Sukarame Village, Cisolok Sub-district, Sukabumi Regency', url: 'https://doi.org/10.17977/um017v25i12020p017' },
+      ],
+    },
+    {
+      practica: 'Pekarangan: cinco capas alrededor de la casa',
+      periodo: 'Kampung Cigaluga, aldea de Pasanggrahan, Sagaranten, Sukabumi; medición de campo del 24 de junio al 8 de agosto de 1989',
+      tipo: 'cultivo',
+      vigencia: 'historica',
+      detalle:
+        'El huerto de la casa está ordenado en cinco capas medidas, cada una con su altura y su dominante: hasta 1 m y de 1 a 2 m manda el grupo ornamental, de 2 a 5 m los alimenticios, de 5 a 10 m los frutales y arriba de 10 m los industriales. El número que hace útil a este trabajo es la comparación con el talún-kebun de la misma aldea, porque los dos se midieron juntos: en 89 pekarangan que suman 13.738 m² se registraron 186 especies, con un índice de Shannon de 5,82, y en el talún-kebun, sobre 14.550 m², 75 especies y 4,61. A igual superficie el huerto de la casa llevaba dos veces y media las especies del monte frutal de al lado, y esa es la razón por la que la capa chica pegada a la vivienda no es un detalle del diseño sino la pieza más diversa del predio. Lo que está fechado es el inventario y no el huerto: la medición es de 1989 y la fuente no dice qué quedó después.',
+      fuentes: [
+        { label: 'Repositorio IPB University, trabajo final de grado (1990) — Komposisi dan Struktur Sistem Agroforestri Tradisional di Desa Pasanggrahan, Sukabumi Jawa Barat', url: 'https://repository.ipb.ac.id/handle/123456789/138808' },
+      ],
+    },
+  ],
+
+  // ── La llanura del Ganges, arriba ───────────────────────────────────────────
+  // Muzaffarnagar da 287 y 287 es esta ficha: la segunda de las tres que llegaron
+  // con el id correcto. La parcela está nombrada y fotografiada en un manual, y el
+  // mecanismo sale del texto que la rodea, no de la foto.
+  gangetica_superior: [
+    {
+      practica: 'Álamo en hileras pareadas, con el cultivo en el callejón',
+      periodo: 'Parcela de Rasulpur-Jattan, Muzaffarnagar, de un año y medio, publicada en un manual de 2017; el álamo llegó a los productores de la región en los años setenta',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'La geometría es el arreglo: 18 m entre pares de hileras, 2 m entre las dos hileras del par y 1 m entre plantas, con el clon G 48, de modo que queda un callejón ancho para el cultivo agrícola. El mecanismo por el que se prefiere va en los dos sentidos y la fuente lo dice así: el cultivo paga la rotación del árbol, y el riego y la carpida que el cultivo necesita hacen crecer más rápido al álamo. Lo que cambia con los años no es el árbol sino el cultivo, y el manual lo separa por posición: con el álamo en los bordes del lote se pueden hacer los cultivos de kharif y de rabi durante toda la rotación, mientras que en plantación en macizo los kharif de siempre aguantan sólo dos años y después hay que pasar a cultivos que toleran sombra —jengibre, cúrcuma—, con los de rabi siguiendo normalmente. La rotación para madera laminada es de 6 a 8 años, y las combinaciones más comunes de la región son álamo con trigo y álamo con mostaza. Un dato de origen que conviene leer junto con el resto: el álamo no es una práctica heredada, llegó a las chacras de Punjab, Haryana y el oeste de Uttar Pradesh en los años setenta con un programa de extensión de una industria de fósforos financiado por el banco agrícola nacional, así que lo que sostiene al sistema es que haya quien compre la madera.',
+      fuentes: [
+        { label: 'CIFOR-ICRAF — Promising Agroforestry Tree Species in India', url: 'https://www.cifor-icraf.org/publications/downloads/Publications/PDFS/B17969.pdf' },
       ],
     },
   ],
