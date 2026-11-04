@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import { Layers, MapPin, Droplets, Waves, AlertTriangle, Cloud, Sprout, Bug, TreePine, Mountain } from 'lucide-react';
 import { obtenerSuelo, type DatosSuelo, type InterpItem, type CapaSuelo } from '@/lib/suelos';
+import { PASO_SUELO_HABITUAL } from '@/lib/sueloFuentes';
 import {
   porQueEsteSuelo, ROTULO_HUMEDAD, ROTULO_TERMICO, ROTULO_INTENSIDAD, FUENTES_POR_QUE,
   type PorQueEsteSuelo, type LecturaSuelo,
@@ -74,9 +75,16 @@ export function SuelosPanel({
             <p className="font-mono text-xs text-ink-900">
               {centro.lat.toFixed(5)}, {centro.lng.toFixed(5)}
             </p>
+            {/*
+              Antes de consultar no se sabe qué fuente le toca al punto —donde
+              hay relevamiento nacional manda ése— ni por cuál de los dos
+              caminos va a contestar SoilGrids. Así que acá va lo único cierto,
+              y la fuente exacta la imprime el resultado más abajo.
+            */}
             <p className="text-[10px] text-ink-700/50 leading-relaxed">
-              Fuente: ISRIC SoilGrids v2.0 · 0–5 cm · ~250 m resolución.
-              Valores orientativos — no reemplazan análisis de laboratorio.
+              Piso global: ISRIC SoilGrids v2.0, grilla de {PASO_SUELO_HABITUAL}; donde hay
+              relevamiento nacional de campo se usa ése. Valores orientativos — no reemplazan
+              análisis de laboratorio.
             </p>
             <button
               onClick={handleAnalizar}

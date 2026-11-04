@@ -51,11 +51,19 @@
  */
 import { fromUrl, type GeoTIFFImage } from 'geotiff';
 import { aHomolosine } from './homolosine';
+import { PASO_SUELO_M } from './sueloFuentes';
 
-const BASE = 'https://files.isric.org/soilgrids/latest/data_aggregated/1000m';
+/**
+ * Paso de la grilla del producto agregado que leemos, en metros.
+ *
+ * Sale de `sueloFuentes.ts` y no de acá porque lo tiene que decir la pantalla,
+ * que no puede importar este módulo sin llevarse `geotiff`. Y de ese mismo
+ * número salen la carpeta y el nombre de archivo que se piden, así que cambiar
+ * de producto es cambiar una línea y no tres que pueden quedar desfasadas.
+ */
+export const RESOLUCION_M = PASO_SUELO_M.cog;
 
-/** Paso de la grilla del producto agregado que leemos, en metros. */
-export const RESOLUCION_M = 1000;
+const BASE = `https://files.isric.org/soilgrids/latest/data_aggregated/${RESOLUCION_M}m`;
 
 /** NoData declarado por los propios GeoTIFF (tag GDAL_NODATA). */
 const NO_DATA = -32768;
@@ -142,7 +150,7 @@ function imagen(prop: Propiedad, prof: string): Promise<GeoTIFFImage> {
   const clave = `${prop}/${prof}`;
   let p = abiertas.get(clave);
   if (!p) {
-    const url = `${BASE}/${prop}/${prop}_${prof}_mean_1000.tif`;
+    const url = `${BASE}/${prop}/${prop}_${prof}_mean_${RESOLUCION_M}.tif`;
     p = fromUrl(url).then(t => t.getImage(0));
     // Si falla, que el próximo pedido lo reintente en vez de quedar pegado a la
     // promesa rechazada para siempre.

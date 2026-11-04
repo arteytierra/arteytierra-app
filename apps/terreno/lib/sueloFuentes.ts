@@ -4,8 +4,8 @@
  * licencia comercial clara y mejor resolución que la fuente global, se usa ése;
  * si no responde o no tiene dato en el punto, se cae a SoilGrids.
  *
- * Por qué importa. SoilGrids es un modelo global de ~250 m: interpola a partir
- * de perfiles dispersos y devuelve una estimación razonable en cualquier parte
+ * Por qué importa. SoilGrids es un modelo global: interpola a partir de
+ * perfiles dispersos y devuelve una estimación razonable en cualquier parte
  * del mundo, que es exactamente lo que necesitamos como piso. Pero donde existe
  * un relevamiento de campo —polígonos mapeados, perfiles descriptos por un
  * edafólogo, agua útil y conductividad medidas en laboratorio— la diferencia no
@@ -21,6 +21,37 @@
  * Antes de agregar una: la licencia tiene que permitir uso comercial. LUCAS
  * Topsoil (Europa), por ejemplo, quedó afuera por eso mismo.
  */
+
+/**
+ * Paso de la grilla de cada camino de SoilGrids, en metros.
+ *
+ * Son dos y no uno. El principal desde el 26/09/2026 es el producto agregado a
+ * 1 km que se lee de los rásters; los 250 m de la API de consulta quedaron de
+ * respaldo porque el cupo por IP lo comparten todos los usuarios (ver
+ * `lib/soilgridsCog.ts` y `app/api/suelo/route.ts`).
+ *
+ * Vive acá, y no en `soilgridsCog.ts`, porque quien tiene que decirlo es la
+ * pantalla y ese módulo arrastra `geotiff`: importarlo desde la interfaz o
+ * desde la guía se llevaría el lector de GeoTIFF entero adentro del bundle.
+ *
+ * Que estén acá los dos no es decorativo: la app decía «~250 m» para todo y
+ * desde el cambio eso es falso en casi cualquier punto. Es la misma falla que
+ * ya tuvimos con el relieve, que anunciaba «SRTM 30 m» mientras usaba un DEM
+ * nacional.
+ */
+export const PASO_SUELO_M = { cog: 1000, rest: 250 } as const;
+
+/** El paso dicho como lo lee una persona: «~1 km», «~250 m». */
+export function pasoSueloTexto(m: number): string {
+  return m >= 1000 ? `~${m / 1000} km` : `~${m} m`;
+}
+
+/**
+ * Lo único que la pantalla puede afirmar ANTES de consultar, porque cuál de los
+ * dos caminos contesta se sabe recién con la respuesta. Una vez que el dato
+ * llegó manda `DatosSuelo.fuente`, que sí lo sabe.
+ */
+export const PASO_SUELO_HABITUAL = pasoSueloTexto(PASO_SUELO_M.cog);
 
 export type FuenteNacionalSuelo = 'ssurgo';
 

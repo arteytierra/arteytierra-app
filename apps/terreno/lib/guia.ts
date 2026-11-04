@@ -24,6 +24,7 @@
 import type { Tab } from '@/components/mapa/riel';
 import type { FuenteRelieve } from './grillaElevacion';
 import type { AcequiaFeature } from '@arteytierra/config/acequia';
+import { PASO_SUELO_HABITUAL } from './sueloFuentes';
 
 /* ─── 01 · Para quién es ──────────────────────────────────────────────────── */
 
@@ -97,7 +98,7 @@ export const PERFILES: PerfilLector[] = [
       'Balance hídrico, lámina y turno de riego, receptividad, carbono del suelo. Números para dimensionar, con el método a la vista.',
     recorrido:
       'Clima → Suelo → Riego → Producción → Carbono → Cuenca. Cada panel dice con qué método calculó y en qué rango vale.',
-    ojo: 'El suelo es una estimación satelital de ~250 m: sirve para dimensionar, no reemplaza el análisis de laboratorio. Cuando tengas el tuyo, el panel te dice si coincide con lo que el clima predice — y cuando no coincide, a quién culpar.',
+    ojo: `El suelo es una estimación satelital de ${PASO_SUELO_HABITUAL}: sirve para dimensionar, no reemplaza el análisis de laboratorio. Cuando tengas el tuyo, el panel te dice si coincide con lo que el clima predice — y cuando no coincide, a quién culpar.`,
   },
   {
     id: 'desarrollador',
@@ -593,7 +594,7 @@ export const SINTOMAS: Sintoma[] = [
   },
   {
     sintoma: 'El suelo no coincide con mi análisis de laboratorio',
-    porque: 'La estimación satelital promedia unos 250 metros y no conoce tu lote en particular.',
+    porque: `La estimación satelital promedia una celda de ${PASO_SUELO_HABITUAL} de lado y no conoce tu lote en particular.`,
     hacer:
       'Creele al laboratorio. Usá el panel para lo que sirve: entender por qué el suelo salió así, y qué esperarías si el clima mandara solo.',
   },

@@ -1,11 +1,14 @@
 /**
  * Análisis de suelo, multi-fuente.
  *
- * El piso global es SoilGrids (ISRIC): API pública sin clave, ~250 m, cualquier
- * punto del planeta. Es un modelo que interpola perfiles dispersos, así que el
- * agua útil y el grupo hidrológico salen de pedotransferencia Saxton & Rawls
- * (2006) a partir de la textura.
- * https://www.isric.org/explore/soilgrids
+ * El piso global es SoilGrids (ISRIC), para cualquier punto del planeta. Es un
+ * modelo que interpola perfiles dispersos, así que el agua útil y el grupo
+ * hidrológico salen de pedotransferencia Saxton & Rawls (2006) a partir de la
+ * textura. https://www.isric.org/explore/soilgrids
+ *
+ * Llega por dos caminos con distinto paso de grilla —1 km leyendo los rásters,
+ * 250 m por la API de consulta— y cuál contestó lo dice `fuente`. La pantalla
+ * no lo adivina: lo lee de ahí. Los dos números viven en `sueloFuentes.ts`.
  *
  * Donde existe un relevamiento nacional de campo se usa ése. Hoy: SSURGO
  * (USDA-NRCS) en Estados Unidos, con perfiles descriptos horizonte por horizonte
@@ -14,7 +17,7 @@
  *
  * Todo esto es orientativo y no reemplaza un análisis de laboratorio.
  */
-import { fuentesNacionalesSuelo } from './sueloFuentes';
+import { fuentesNacionalesSuelo, pasoSueloTexto, PASO_SUELO_M } from './sueloFuentes';
 import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
 import { obtenerRocaMadre, type RocaMadre } from './rocaMadre';
 import { claseTexturaUSDA, nombreTextura } from './textura';
@@ -145,7 +148,7 @@ interface SoilGridsResponse {
  * dice 1 km.
  */
 function fuenteSoilGrids(meta: SoilGridsResponse['_acequia']): string {
-  const paso = meta ? `~${meta.resolucion_m >= 1000 ? `${meta.resolucion_m / 1000} km` : `${meta.resolucion_m} m`}` : '~250 m';
+  const paso = pasoSueloTexto(meta ? meta.resolucion_m : PASO_SUELO_M.rest);
   const corrido = meta?.desplazamiento_km
     ? ` · el píxel del punto no tiene dato: el valor es del más cercano con dato, a ${meta.desplazamiento_km} km`
     : '';

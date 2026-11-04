@@ -1561,9 +1561,16 @@ export function InformeView({ datos, compartido = false }: Props) {
                 ))}
               </div>
             )}
+            {/*
+              La fuente la trae el dato, no este renglón: dice si contestó
+              SoilGrids o un relevamiento nacional, y con qué paso de grilla.
+              Acá estuvo tipeado «~250 m» hasta el 04/11/2026, cuando el camino
+              principal ya era el de 1 km. Un informe guardado antes de que
+              `fuente` existiera no la trae, y ahí vale el texto de entonces.
+            */}
             <p className="text-xs text-ink-700/50 mt-2 italic">
-              Fuente: SoilGrids (ISRIC) — resolución ~250 m. Agua útil, Ksat y grupo hidrológico
-              estimados por pedotransferencia Saxton-Rawls (2006). Orientativo, no reemplaza análisis de laboratorio.
+              Fuente: {datos.suelo.fuente ?? 'SoilGrids (ISRIC) · agua útil, Ksat y grupo hidrológico '
+                + 'por pedotransferencia Saxton-Rawls (2006)'}. No reemplaza un análisis de laboratorio.
             </p>
           </Section>
         )}
