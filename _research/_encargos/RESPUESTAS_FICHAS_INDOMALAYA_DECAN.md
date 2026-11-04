@@ -400,3 +400,191 @@ Tres cosas que cambian para ese lote:
    escrita y los tres casos de este lote como ejemplo.
 3. **Pedirle NBSS&LUP explícitamente**, que el encargo ya nombra y este lote no
    usó.
+
+---
+
+# Fase 4, lotes 2 y 3 — el Decán norte (297) y el Decán sur (298)
+
+Entregados el **03/11/2026**, montados el **04/11/2026**. Las dos entregas están
+archivadas en `C:\Arte y Tierra\encargos-gpt\entregas\fichas-indomalaya\` como
+`02.json` y `03.json`, cada una con su bloque `_claude`.
+
+**Una oración:** las dos entregas tienen los primarios bien leídos —se verificó
+cifra por cifra y no hay una sola inventada— y las dos cometen el mismo error en
+los modificadores, que es argumentar la **aptitud** del sitio con la **presión de
+uso** que la fuente documenta.
+
+---
+
+## Lo que se verificó, y con qué
+
+| Fuente | Cómo abrió | Veredicto |
+|---|---|---|
+| WWF IM0208 y IM0209 | **navegador**; curl y web-fetch dan 403 | todas las cifras textuales |
+| One Earth 297 y 298 | curl, 200 | todas textuales |
+| Bandyopadhyay y otros 2025, JISSS 73(2):129-147 | navegador | resumen completo, hallazgo reproducido con precisión |
+| Kalam y otros 2025, Ecological Applications 35(5):e70054 | curl del PDF en `edepot.wur.nl`, 6,4 MB | los dos pares de números salen exactos |
+| `agritech.tnau.ac.in` (suelos de Tamil Nadu, plan de Tiruchirappalli) | **no resuelve**, ni curl ni navegador | no se cita |
+| `agri.odisha.gov.in` (proyecto FOLUR, los cultivos del 297) | **no resuelve** | no se cita |
+
+Nada de lo que las entregas atribuyen a una fuente que abre está mal. Eso vale
+decirlo entero, porque el resto de esta nota son correcciones: el problema de
+estos dos lotes no es la lectura, es el paso de la lectura al número.
+
+---
+
+## El error compartido: degradación observada no es aptitud
+
+Cuatro de los siete modificadores propuestos se apoyan en lo mismo:
+
+- 297, `pasturas` de +10 a **0**: «el fuego se prende regularmente para abrir
+  terreno para el pastoreo».
+- 298, `pasturas` de +10 a **0**: «el sobrepastoreo es una presión sobre los
+  bosques secos y la fauna».
+- 297, `forestal` **−10**: «extracción no sostenible de productos forestales».
+- 298, `forestal` **−15**: «el sándalo fue extraído selectivamente de casi todos
+  los bosques».
+
+Las cuatro citas son reales. Pero las cuatro miden **lo que la gente hace**, no
+lo que el sitio aguanta, y el modificador de aptitud es lo segundo. Que se
+prenda fuego para abrir pastoreo es, si algo, evidencia de que el pastoreo
+funciona ahí. Y hay dos agravantes concretos:
+
+1. **Cancelar el +10 del bioma borra su advertencia.** `componerAptitud` hace que
+   el delta regional *reemplace* al global, así que un 0 no es neutro: se lleva
+   puesto el texto «sólo con descanso: al final de la seca el suelo queda
+   expuesto justo cuando llegan las primeras lluvias fuertes», que es
+   exactamente lo que había que decir. Es la lección de la zona seca de Sri
+   Lanka, montada en `aptitudIndomalaya.test.ts` hace dos meses.
+2. **El `forestal` negativo contradice al vecino.** Con la misma clase de
+   evidencia —80 % del hábitat perdido, madera de alto valor extraída en todas
+   partes— el Decán central se montó en **+15** el 23/10/2026, porque lo que la
+   tierra degradada acepta es monte. Dos fichas del mismo bioma con el signo
+   opuesto a partir del mismo mecanismo es la huella de una conclusión escrita
+   antes del motivo.
+
+La entrega del 297 además lo dice sola, en la razón del `pasturas`: «La fuente no
+identifica una variable de suelo que mida la app para separar usos de pastoreo
+sostenibles de los que dependen del desmonte». Por la regla del gradiente que el
+encargo tiene reescrita desde el lote 1, eso significa **abstenerse**, que es
+heredar.
+
+Los datos no se perdieron: las dos transiciones quedaron escritas en el texto de
+`vegetacion`, que es donde el usuario las lee sin que muevan un número. La del
+298 es la mejor de las dos, porque es una transición medida en el paisaje y no
+una presión declarada: donde la presión de pastoreo es alta aparecen las
+espinosas, y la mayor parte de estos bosques secos ya está degradada a matorral
+espinoso.
+
+---
+
+## El 297: el hallazgo del lote era el suelo, y la entrega lo trajo
+
+La pregunta del lote era cuál es el orden dominante, con el encargo avisando que
+no se heredara el vertisol negro del encabezado. La respuesta, de un trabajo
+publicado en septiembre de 2025 y leído completo en su resumen:
+
+- En piedemontes y tierras altas de granito-gneis, cuarcita y khondalita,
+  **alfisoles rojos ferruginosos** —Typic Rhodustalfs— y Rhodic Paleustalfs en
+  las tierras altas de charnockita, maduros y relictuales.
+- En valles entre cerros, valles y planicies, pedogénesis estancada y
+  **gleyización**: Aquic Rhodustalfs, Aquic Haplustalfs, Oxyaquic Haplustalfs,
+  Typic Endoaqualfs.
+- Y el índice de calidad de suelo les sale **inverso** al de pedogénesis, de
+  donde los autores sacan la recomendación que hace el modificador: valles y
+  planicies para diversificación de cultivos, tierras altas y piedemontes para
+  agrihorticultura, agroforestería y horti-silvicultura.
+
+Dos cosas que agrega el montaje y que la entrega no había mirado. La primera: el
+trabajo midió en **Sambalpur y Koraput**, y Sambalpur es el distrito de
+**Debrigarh**, una de las cuatro áreas protegidas de la ecorregión. No es
+evidencia «de Odisha»: es evidencia de adentro del polígono. La segunda: de ahí
+sale la variable que reescribe la razón de `huerta` —la posición en la ladera,
+que acequia mide— y el `forestal` en **+10**, con el mecanismo del propio
+trabajo en vez del signo invertido.
+
+La licencia del trabajo es de la Sociedad India de Ciencia del Suelo y autoriza
+uso académico y **no comercial** del material. Por eso de ahí sale el hallazgo
+citado con atribución y nunca el texto ni la tabla; está anotado al lado de la
+constante en el código.
+
+## Y faltaba un estado
+
+Las dos fuentes describen la ecorregión con los nombres de **antes del año
+2000**: Bihar, Orissa y Madhya Pradesh. La entrega hizo media conversión —puso
+Odisha y Chhattisgarh— y perdió el ex Bihar. Son **tres**, y el tercero es
+**Jharkhand**:
+
+- Las cuatro áreas protegidas de la tabla del WCMC están en Odisha (Sunabeda,
+  Debrigarh) y en Chhattisgarh (Kanger Ghati, Gomarda).
+- Y la justificación de delineación de WWF dice que la ecorregión cae en las
+  provincias bióticas **Eastern Highlands (6C) y Chhota-Nagpur (6D)**. Chhota
+  Nagpur es la meseta de Jharkhand.
+
+**El encargo también lo decía mal**, y conviene anotarlo porque es el tercer lote
+seguido donde el encargo le pasa un error a la entrega: afirmaba «el 297 está en
+el oeste de Odisha y en Chhattisgarh», verificado antes de mandarlo. Estaba
+incompleto. Alguien que cae con el predio en Jharkhand tiene que leer Jharkhand.
+
+---
+
+## El 298: la segunda medición es el mejor aporte de los dos lotes
+
+Kalam y otros (2025) reconstruyeron el monte seco de la India desde 1880 con un
+ensamble de mapas satelitales empalmado con mapas históricos, y publican por
+ecorregión. Para el South Deccan Plateau: **1,7 Mha o 62 % entre 1880 y 2020**, y
+**0,5 Mha o 34,6 % entre 1995 y 2020**. Exacto, acceso abierto CC-BY, y la
+entrega hizo lo correcto —marcar que no es intercambiable con el «más del 80 %
+del bosque natural talado» de WWF, porque son otra ventana y otra definición— en
+vez de elegir la cifra más alta.
+
+**Y el mismo trabajo trae gratis dos números que este repo todavía no tiene:**
+
+- **Central Deccan Plateau** (ECO_ID 290, ficha ya montada): 4,7 Mha y **66,2 %**
+  en el período histórico, 1,03 Mha y 30 % desde 1995. Hoy esa ficha dice «se
+  perdió alrededor del 80 % del hábitat natural», que es la evaluación de WWF de
+  2002. Las dos pueden ir, como van en el 298.
+- Y **Chota Nagpur** (3,7 Mha, 67,3 %), que es otra ecorregión y no el 297: la
+  lista de ocho del trabajo **no incluye** al Decán norte, así que para el 297 no
+  hay figura equivalente. La entrega no inventó ninguna, que es lo correcto.
+
+Del lado del suelo el 298 quedó más flaco que el 297 a propósito: no hay trabajo
+medido adentro de la ecorregión, y lo único que hay es una frase del primario que
+sin embargo decide el diseño —las laderas onduladas tienen suelos muy someros—.
+Esa frase es la segunda variable de la razón de `huerta`, y la entrega la tenía
+en su propia fuente sin usarla.
+
+---
+
+## Lo que falta, y de qué lado
+
+**De este lado, no de GPT.** El reparto de trabajo que el encargo fijó en el lote
+1 sigue valiendo: las descripciones y los binomiales son de GPT, los números de
+suelo los bajo yo. Entonces las cuatro entradas de `vacias` de estos dos lotes
+**no son deudas de la entrega**:
+
+1. El resumen zonal de **HWSD v2 y SoilGrids contra los polígonos 297 y 298**.
+   Son las dos únicas fichas del bloque, además del 290, sin reparto de suelos.
+2. La serie de lluvia por polígono, que es lo que las dos declararon en `vacias`
+   como clima. Para el 298 el rango de 900 a 1.500 mm sale de los primarios y
+   alcanza; para el 297 no hay rango publicado en las fuentes abiertas.
+3. Los **cultivos**, que es lo único que empeoró al montar: los ids que trajeron
+   las dos entregas eran válidos, pero sus fuentes no resuelven desde esta
+   máquina. Sin fuente no se monta la lista, y la ficha cae al catálogo por clase
+   Köppen. Hace falta una fuente de cultivos **abierta y citable** para cada
+   polígono, y eso sí se le puede pedir a GPT con la ruta probada.
+
+**De GPT**, en cambio, lo que sigue es el orden que ya está escrito: la fase 6
+—lotes 08 a 10, prácticas fechadas— y después los lotes 4, 5 y 6 de esta fase,
+que son las tres fichas que tienen una práctica terminada esperando atrás. Esos
+dos encargos no cambian por nada de lo que pasó acá.
+
+Una cosa sí cambia en el encargo grande, y es la cuarta vez que aparece el mismo
+problema: **el encargo le pasa su propio error a la entrega.** Pasó con la regla
+del gradiente en el lote 1, con los estados del 297 en el lote 2, y con la
+columna de «año favorable» del NRCS en el encargo de forraje. La regla a escribir
+para los lotes que faltan es corta: cuando el encargo afirma un hecho del
+territorio —qué estados, qué suelo, qué dice una columna— tiene que decir **de
+dónde lo saca**, y si no puede, tiene que decir que es una suposición y pedir que
+se verifique. Un hecho afirmado por el encargo sin fuente es una instrucción
+disfrazada de dato.

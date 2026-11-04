@@ -1,6 +1,6 @@
 # Los prompts para GPT, listos para pegar
 
-*Al 02/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
+*Al 04/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
 sin conectores, sin el de GitHub, y con «mejorar el modelo para todos» apagado.
 Cada encargo se cierra al terminar — arrastrar veinte lotes en un mismo hilo
 significa pagar los veinte en cada respuesta nueva.*
@@ -22,14 +22,16 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 | **1** | `ENCARGO_FORRAJE_YP.md` | **Reescrito el 02/11/2026: es otro pedido.** La primera vuelta cerró el barrido bibliográfico —la columna de las fichas del NRCS no es `Yp`, y el `Yp` se despeja de la Tabla 1 con 0,02 % de error—. Ahora son **tres blancos con nombre**: Wight y Black (1979), la ficha del sitio real de Sidney (MLRA 52 / RRU 52N) y la relación entre rendimiento potencial y suelo, que es la que vale. | `entregas\yp\04.json` … `06.json` |
 | **2** | `ENCARGO_FASE_6_LOTES_08_10.md` | Prácticas fechadas del territorio. Siete lotes entregados, van los tres últimos. | `entregas\practicas\08.json` … `10.json` |
 | **3** | `ENCARGO_FASE_4_LOTES_04_06.md` | Fichas de Indomalaya. | `entregas\fichas-indomalaya\04.json` … `06.json` |
-| **4** | `ENCARGO_FASE_4_LOTE_02.md` | Indomalaya lote 2. **Nunca volvió**: es un reintento, no un pedido nuevo. | `entregas\fichas-indomalaya\02.json` |
-| **5** | `ENCARGO_FASE_4_LOTE_03.md` | Indomalaya lote 3. También nunca volvió. | `entregas\fichas-indomalaya\03.json` |
-| **6** | `ENCARGO_FASE_3_LOTE_02.md` | Fichas de Australasia. | `entregas\fichas-australasia\02.json` |
-| **7** | `ENCARGO_FASE_5_LOTE_02.md` | Fichas de África. | `entregas\fichas-africa\02.json` |
+| **4** | `ENCARGO_FASE_3_LOTE_02.md` | Fichas de Australasia. | `entregas\fichas-australasia\02.json` |
+| **5** | `ENCARGO_FASE_5_LOTE_02.md` | Fichas de África. | `entregas\fichas-africa\02.json` |
 
-Los cuatro y cinco pueden ir en el mismo chat que el tres, porque son el mismo
-encargo y la misma carpeta: se pegan las reglas una vez, y después los tres
-archivos de encargo seguidos. Los demás, uno por chat.
+Uno por chat.
+
+~~Los lotes 2 y 3 de Indomalaya~~ **volvieron el 03/11/2026 y están montados**:
+son los ECO_ID 297 y 298, el Decán norte y el Decán sur. Las dos entregas tenían
+los primarios bien leídos y las dos argumentaron la aptitud con la presión de
+uso, así que cuatro de los siete modificadores no se montaron. El veredicto
+entero está en `_research/_encargos/RESPUESTAS_FICHAS_INDOMALAYA_DECAN.md`.
 
 ---
 

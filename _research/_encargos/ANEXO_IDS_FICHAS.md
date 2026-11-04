@@ -1,6 +1,6 @@
 # Anexo — los ids de ficha
 
-_Generado desde los catálogos el 2026-11-02. **257 fichas** en total._
+_Generado desde los catálogos el 2026-11-04. **259 fichas** en total._
 
 Un `fichaId` que no esté en esta lista, o que esté mal tipeado, hace que la
 entrada no se muestre nunca. Copiarlo, no escribirlo de memoria.
@@ -316,7 +316,7 @@ _`lib/biomasRegionalesNorteAfrica.ts`_
 
 ---
 
-## J. Indomalaya — 33 fichas
+## J. Indomalaya — 35 fichas
 
 _`lib/biomasRegionalesIndomalaya.ts`_
 
@@ -353,6 +353,8 @@ _`lib/biomasRegionalesIndomalaya.ts`_
 - `mindanao_montano` — Selvas montanas de Mindanao ✓ *(ya tiene práctica cargada)*
 - `mindanao_visayas_oriental` — Selvas bajas de Mindanao y las Visayas orientales ✓ *(ya tiene práctica cargada)*
 - `decan_central_hardwickia` — Bosques secos del Decán central
+- `decan_norte_sal` — Bosques secos del Decán norte
+- `decan_sur_elefantes` — Bosques secos del Decán sur
 
 ---
 
