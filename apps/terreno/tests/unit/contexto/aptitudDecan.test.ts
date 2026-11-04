@@ -203,6 +203,18 @@ describe('el aviso sobre el número que calcula la app', () => {
 });
 
 describe('lo que no se afirma', () => {
+  it('la pérdida de hábitat va con las dos mediciones y con sus fechas', () => {
+    // El 04/11/2026 entró la segunda, del trabajo que llegó con el lote 3 y que
+    // publica por ecorregión. La regla es la del encargo: si hay dos
+    // evaluaciones con cifras distintas van las dos, no la más alta.
+    const r = ficha().resumen;
+    expect(r).toMatch(/80 % del hábitat natural según la evaluación de WWF de 2002/);
+    expect(r).toMatch(/66,2 %/);
+    expect(r).toMatch(/1880 y 2020/);
+    expect(r).toMatch(/No son la misma cuenta/);
+    expect(ficha().fuentes.some((f) => f.url.includes('edepot.wur.nl'))).toBe(true);
+  });
+
   it('no da porcentajes de HWSD ni de SoilGrids, porque no se extrajeron', () => {
     // Las otras 32 fichas del bloque traen el reparto de las dos bases. Esta no,
     // y lo dice. Si alguien agrega porcentajes, tiene que agregar también la
