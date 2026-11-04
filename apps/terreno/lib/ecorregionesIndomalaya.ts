@@ -25,7 +25,7 @@
  * El relevamiento completo, con la regla del número y qué se cambió al montar,
  * está en `_research/ecosistemas-saberes-indomalaya/`.
  *
- * ## Y después entró una que no era de ese lote
+ * ## Y después entraron tres que no eran de ese lote: el Decán seco
  *
  * El **23/10/2026** se agregó el ECO_ID 290, el Decán central, que es la primera
  * de Indomalaya que **no** es bioma húmedo: es bosque tropical seco, bioma 2. No
@@ -37,6 +37,19 @@
  * lado, al revés de lo que dice cualquier tabla por textura, y acequia deriva el
  * grupo hidrológico de la conductividad saturada. El detalle está en la ficha y
  * el veredicto del lote en `_research/_encargos/RESPUESTAS_FICHAS_INDOMALAYA_DECAN.md`.
+ *
+ * El **04/11/2026** entraron las otras dos mitades de la misma meseta seca, el
+ * ECO_ID 297 al norte y el 298 al sur, y cada una trae su propio hallazgo. El
+ * 297 está **afuera de la traza basáltica**: lo que hay no es el vertisol negro
+ * que el encabezado del encargo daba por hecho sino alfisol rojo maduro en las
+ * tierras altas y perfiles gleyizados en los valles, y el trabajo que lo mide lo
+ * mide en catenas de Sambalpur, el distrito de Debrigarh. Y su reparto por
+ * estados estaba corrido: las dos fuentes lo describen con los nombres de antes
+ * del año 2000 —Bihar, Orissa, Madhya Pradesh— y hoy son **Odisha, Chhattisgarh
+ * y Jharkhand**, los tres, que es lo que confirman sus cuatro áreas protegidas y
+ * la provincia biótica de Chhota-Nagpur que WWF nombra al delinearla. El 298 es
+ * el corredor del elefante asiático: 12.000 km² y unos 6.300 animales, la
+ * población más grande del mundo, con el 1 % de la ecorregión protegido.
  *
  * Lo que este lote **no** cubre: el resto de Indomalaya (península malaya,
  * Borneo de tierra firme, Nueva Guinea, el Himalaya, Indochina seca) sigue
@@ -58,8 +71,10 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   275: 'sri_lanka_montano',          // Sri Lanka montane rain forests
   301: 'sri_lanka_zona_seca',        // Sri Lanka dry-zone dry evergreen forests
 
-  // El Decán central — la única de bioma seco (bioma 2) de este bloque
-  290: 'decan_central_hardwickia',      // Central Deccan Plateau dry deciduous forests
+  // Las tres del Decán — las únicas de bioma seco (bioma 2) de este bloque
+  290: 'decan_central_hardwickia',   // Central Deccan Plateau dry deciduous forests
+  297: 'decan_norte_sal',            // North Deccan dry deciduous forests
+  298: 'decan_sur_elefantes',        // South Deccan Plateau dry deciduous forests
 
   // La llanura indogangética y el Brahmaputra
   222: 'valle_brahmaputra',          // Brahmaputra Valley semi-evergreen forests
