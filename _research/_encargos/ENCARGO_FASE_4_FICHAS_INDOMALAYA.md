@@ -125,6 +125,44 @@ Lo que una propuesta necesita para montarse:
 4. La **confianza**: `alta`, `media` o `baja`. Una propuesta con confianza baja,
    declarada, es mejor que ninguna.
 
+### La presión de uso que documenta la fuente no es aptitud del sitio
+
+**Agregado el 04/11/2026, después de los lotes 2 y 3.** Es el error que los dos
+cometieron, y el único de los dos: cuatro de los siete modificadores que
+propusieron salían de citas verdaderas sobre lo que la gente hace.
+
+- «El fuego se prende regularmente para abrir terreno para el pastoreo», y de ahí
+  `pasturas` de +10 a 0.
+- «El sobrepastoreo es una presión sobre los bosques secos», y lo mismo.
+- «Extracción no sostenible de productos forestales» y «el sándalo fue extraído
+  selectivamente de casi todos los bosques», y de ahí `forestal` en −10 y −15.
+
+**Las cuatro citas son reales y ninguno de los cuatro números se montó.** El
+modificador mide **qué aguanta el sitio**, no qué le están haciendo. Que se
+prenda fuego para abrir pastoreo es, si algo, evidencia de que el pastoreo
+funciona ahí. Y bajar el puntaje por eso tiene dos costos concretos:
+
+1. **Un `delta: 0` no es neutro: borra.** El delta de la ficha *reemplaza* al del
+   bioma, así que cancelar el +10 de pasturas se lleva puesto el texto que venía
+   con él —«sólo con descanso: al final de la seca el suelo queda expuesto justo
+   cuando llegan las primeras lluvias fuertes»—, que era exactamente la
+   advertencia que correspondía. Se pierde información, no se gana.
+2. **Deja dos fichas del mismo bioma con el signo opuesto.** Con la misma clase
+   de evidencia —80 % del hábitat perdido y madera de alto valor extraída en
+   todas partes— el lote 1 montó `forestal` en **+15**, porque lo que la tierra
+   degradada acepta es monte. Si tu propuesta y la de la ficha vecina salen al
+   revés del mismo mecanismo, el signo se escribió antes del motivo.
+
+Lo que hay que hacer con ese dato, que es bueno: **ponerlo en el texto.** Una
+transición medida en el paisaje —«donde la presión de pastoreo es alta aparecen
+las espinosas, y la mayor parte de estos bosques ya está degradada a matorral
+espinoso»— le dice al usuario cuánto cuesta pastorear sin descanso, y lo lee en
+`vegetacion` sin que mueva ningún número.
+
+Y si al escribir la razón te sale la frase «la fuente no identifica una variable
+que mida la app» —una de las dos entregas la escribió textual— eso **ya es la
+respuesta**: abstenerse, que es heredar.
+
 ### Si parece un gradiente, primero decí cuál es la variable
 
 **Corregido el 23/10/2026, después del lote 1.** La versión anterior de esta
@@ -376,16 +414,44 @@ numeradas.
 ## Las reglas, en corto
 
 1. **Ninguna URL entra sin abrirse.** Si no abre, va a `vacias`.
-2. **El `label` se copia del título que muestra la página**, no se redacta.
+2. **El `label` se copia del título que muestra la página**, no se redacta. Si lo
+   que muestra es el título interno del archivo —«DjVu Document» pasó— poné el
+   título real del documento: la etiqueta la lee un usuario.
 3. **Nada de DOI de memoria.**
 4. **`saberes` siempre vacío.**
 5. **Nativa y cultivo son dos cosas distintas** — y en este reino la mitad de los
    cultivos del mundo son nativos.
-6. **Siete especies con binomial.**
+6. **Siete especies con binomial, y las siete son plantas.** `especies` es flora
+   nativa por contrato del código. El tigre, el elefante y el gaur van en
+   `fauna`, donde además ya estaban: en los lotes 2 y 3 aparecieron en las dos
+   listas y hubo que sacarlos de una.
 7. **El modificador lleva el mecanismo, la fuente y la confianza.**
 8. **Si parece un gradiente, nombrá la variable y fijate si la app la mide.**
    Abstenerse sólo si no la mide. (Esta regla decía lo contrario hasta el
    23/10/2026 y así quedó escrita arriba, en su propia sección.)
 9. **Confirmar el modificador global vale igual que corregirlo.**
-10. **Mejor una ficha que aguanta que tres con una floja.**
-11. Una ficha por lote. Un bloque JSON. Sin prosa antes ni después.
+10. **La presión de uso no es aptitud.** Si el argumento del delta es lo que la
+    gente le hace al lugar y no lo que el lugar aguanta, el dato va al texto y el
+    modificador no se propone. Ver su sección arriba.
+11. **En `fuentes` va sólo lo que se usó.** Si declarás que no procesaste HWSD ni
+    SoilGrids, sus páginas no van en la lista. Una fuente que no sostiene ninguna
+    frase de la ficha se saca, y un 200 cuyo cuerpo dice «Request Rejected» no es
+    una fuente abierta.
+12. **La fuente de los cultivos tiene que abrir con acceso automático común.**
+    Los lotes 2 y 3 trajeron ids válidos —eso ya salió bien— pero sus dos fuentes
+    de cultivos, un PDF de `agri.odisha.gov.in` y un plan distrital de
+    `agritech.tnau.ac.in`, **no resuelven desde la máquina donde se monta**, así
+    que las dos fichas entraron sin lista de cultivos y caen al catálogo por
+    clase Köppen, que es más grueso. Si la única fuente de cultivos que
+    encontrás no abre pelada, decilo en `notas` y dejá `cultivos` afuera: es la
+    misma regla 1, aplicada al campo donde más duele.
+13. **Si este encargo afirma un hecho del territorio sin citar de dónde sale,
+    verificalo.** Ya pasó cuatro veces y las cuatro te hizo trabajar en falso: la
+    regla del gradiente del lote 1, los estados del 297 en el lote 2 —el encargo
+    decía «oeste de Odisha y Chhattisgarh» y son tres, con Jharkhand—, EUDASM
+    como ruta viva, y en otro encargo una «columna de año favorable» del NRCS que
+    las fichas no publican con ese nombre. **Un hecho afirmado por el encargo sin
+    fuente es una instrucción disfrazada de dato.** Si lo verificás y no coincide,
+    eso es el hallazgo del lote y se escribe en `verificacion`.
+14. **Mejor una ficha que aguanta que tres con una floja.**
+15. Una ficha por lote. Un bloque JSON. Sin prosa antes ni después.
