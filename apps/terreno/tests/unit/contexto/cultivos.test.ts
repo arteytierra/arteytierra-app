@@ -143,6 +143,13 @@ describe('cobertura del catálogo de cultivos', () => {
     'galapagos_matorral_xerico', 'pantepui_guayana_alta',
     'campinaranas_aguas_negras', 'campos_rupestres',
     'pilbara_matorral',
+    // Las dos del Decán seco que entraron el 04/11/2026. Acá el motivo no es
+    // que no se cultive —se cultiva muchísimo— sino que las dos fuentes de
+    // cultivos que trajo la entrega, el proyecto FOLUR de Odisha y el plan
+    // distrital de Tiruchirappalli, no resuelven desde esta máquina ni con
+    // curl ni con navegador. No se cita lo que no se pudo leer, y sin lista la
+    // ficha cae al catálogo por clase Köppen, que sí tiene fuente.
+    'decan_norte_sal', 'decan_sur_elefantes',
   ]);
 
   it('toda ficha regional declara cultivos salvo las excluidas a propósito', () => {

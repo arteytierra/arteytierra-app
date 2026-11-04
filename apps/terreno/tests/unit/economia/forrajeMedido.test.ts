@@ -34,7 +34,10 @@ import {
   FALTA_PARA_CORRER_WIGHT_HANKS, rendimientoWightHanks, transpiracionPotencialWH,
   transpiracionRealWH, evaporacionPotencialWH, evaporacionRealWH, ypDesdeUnAnio,
   aniosDeWightHanks, dentroDeTolerancia, dentroDelIc90,
+  YP_DESPEJADO_SIDNEY, ADVERTENCIAS_YP, ESD_NO_ES_YP,
+  despejarYp, despejarYpDeVariasTemporadas,
 } from '@/lib/forrajeMedido';
+import type { AnioWightHanks, CosechaDeTemporada } from '@/lib/forrajeMedido';
 import { bandaDeClase } from '@/lib/cobertura';
 import { bandaUso } from '@/lib/modulacion';
 import { calcularReceptividad } from '@/lib/produccion';
@@ -2597,7 +2600,10 @@ describe('Wight y Hanks (1981), el modelo de balance hídrico', () => {
     // La cuarta no es una figura: es el Yp, que es de sitio.
     const cuarta = FALTA_PARA_CORRER_WIGHT_HANKS.find(f => f.que.startsWith('Yp'))!;
     expect(cuarta.por_que_no_se_puede).toContain('escala');
-    expect(cuarta.y_ademas).toContain('circular');
+    // Cambió de estado el 02/11/2026. Sigue sin salir de la literatura, pero la
+    // salida que el trabajo ofrece dejó de ser un callejón: está verificada.
+    expect(cuarta.y_ademas).toContain('despejarYp');
+    expect(cuarta.y_ademas).not.toContain('circular');
     // Y las cuatro dicen dónde está y qué más hay que saber.
     for (const f of FALTA_PARA_CORRER_WIGHT_HANKS) {
       expect(f.donde_esta.length).toBeGreaterThan(20);
@@ -2646,3 +2652,315 @@ describe('Wight y Hanks (1981), el modelo de balance hídrico', () => {
     expect(MODELO_WIGHT_HANKS.sin).toEqual(['riego', 'fenología', 'rendimiento de grano']);
   });
 });
+
+/**
+ * El despeje de `Yp`, que es el parámetro que faltaba.
+ *
+ * Es el mismo movimiento que se hizo con `b`: el trabajo dice que `Yp` se
+ * estima «from the relationship Yp = Y·Tp/T calculated for representative
+ * years», y las tres columnas están publicadas en la Tabla 1. Así que el
+ * parámetro sale de la aritmética, y acá se verifica que salga.
+ *
+ * Lo que hace al resultado usable y no una curiosidad: el despeje **no arrastra
+ * la sequía de la temporada medida**, así que alcanza un corte en el predio del
+ * usuario, el año que se pueda cortar.
+ */
+describe('el Yp despejado de la Tabla 1', () => {
+  /** Los años representativos, con el criterio que la tabla misma publica. */
+  const representativos = () => {
+    const fuera = new Set(dentroDelIc90().fuera.map(a => a.anio));
+    return aniosDeWightHanks('sidney').filter(a => !fuera.has(a.anio));
+  };
+
+  const ypDe = (a: AnioWightHanks) =>
+    ypDesdeUnAnio(a.rend_campo_kg_ha, a.tp_mm!, a.t_mm!)!;
+
+  const media = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
+  const desvio = (xs: number[]) => {
+    const m = media(xs);
+    return Math.sqrt(media(xs.map(x => (x - m) ** 2)));
+  };
+
+  it('el criterio no lo elegimos nosotros: son los tres años fuera del intervalo de 90 %', () => {
+    const fuera = dentroDelIc90().fuera.map(a => a.anio).sort();
+    expect(fuera).toEqual([1973, 1974, 1977]);
+    expect(representativos()).toHaveLength(9);
+    // Y los tres son años donde el modelo sobrepredice, no donde subpredice:
+    // por eso su Yp despejado sale bajo y hay que sacarlos.
+    for (const a of dentroDelIc90().fuera) {
+      expect(a.rend_modelo_kg_ha).toBeGreaterThan(a.rend_campo_kg_ha);
+    }
+    expect(YP_DESPEJADO_SIDNEY.anios_descartados).toEqual(fuera);
+  });
+
+  it('EL CASO RESUELTO: los nueve años representativos devuelven el Yp publicado a 0,02 %', () => {
+    const yps = representativos().map(ypDe);
+    expect(yps).toHaveLength(9);
+    const m = media(yps);
+
+    expect(m).toBeCloseTo(1299.7, 1);
+    expect(m).toBeCloseTo(YP_WIGHT_HANKS.sidney, 0);
+    expect(Math.abs(m / YP_WIGHT_HANKS.sidney - 1)).toBeLessThan(0.001);
+
+    expect(desvio(yps)).toBeCloseTo(50.1, 1);
+    expect(YP_DESPEJADO_SIDNEY.valor_kg_ha).toBeCloseTo(m, 1);
+    expect(YP_DESPEJADO_SIDNEY.desvio_kg_ha).toBeCloseTo(desvio(yps), 1);
+    expect(YP_DESPEJADO_SIDNEY.publicado_kg_ha).toBe(YP_WIGHT_HANKS.sidney);
+  });
+
+  it('con los doce años sale peor, y por eso el criterio hace falta', () => {
+    const todos = aniosDeWightHanks('sidney').map(ypDe);
+    expect(todos).toHaveLength(12);
+    expect(media(todos)).toBeCloseTo(1229.7, 1);
+    // 5,4 % abajo, y con un desvío casi tres veces más grande.
+    expect(media(todos) / YP_WIGHT_HANKS.sidney - 1).toBeLessThan(-0.05);
+    expect(desvio(todos)).toBeGreaterThan(2.5 * desvio(representativos().map(ypDe)));
+  });
+
+  /**
+   * El test que decide si esto sirve para algo. Un productor corta pasto el año
+   * que puede, no el año bueno: si el despeje arrastrara la sequía de esa
+   * temporada, el `Yp` saldría bajo justo cuando más se lo necesita.
+   */
+  it('el despeje no arrastra la sequía: 1,7 % entre temporadas secas y húmedas', () => {
+    const reps = representativos();
+    const secas = reps.filter(a => a.t_mm! / a.tp_mm! < YP_DESPEJADO_SIDNEY.sin_sesgo_por_sequia.corte_indice);
+    const humedas = reps.filter(a => a.t_mm! / a.tp_mm! >= YP_DESPEJADO_SIDNEY.sin_sesgo_por_sequia.corte_indice);
+
+    expect(secas).toHaveLength(2);
+    expect(humedas).toHaveLength(7);
+    // Las secas transpiraron poco más de la mitad de lo potencial.
+    for (const a of secas) expect(a.t_mm! / a.tp_mm!).toBeLessThan(0.6);
+    for (const a of humedas) expect(a.t_mm! / a.tp_mm!).toBeGreaterThan(0.85);
+    // Y sus rendimientos medidos difieren muchísimo: el despeje tiene algo que corregir.
+    expect(media(humedas.map(a => a.rend_campo_kg_ha)))
+      .toBeGreaterThan(1.5 * media(secas.map(a => a.rend_campo_kg_ha)));
+
+    // Pero el Yp que sale de unas y de otras es el mismo.
+    const mSecas = media(secas.map(ypDe));
+    const mHumedas = media(humedas.map(ypDe));
+    expect(mSecas).toBeCloseTo(1282.7, 1);
+    expect(mHumedas).toBeCloseTo(1304.6, 1);
+    expect(Math.abs(mHumedas / mSecas - 1)).toBeLessThan(0.02);
+    expect(YP_DESPEJADO_SIDNEY.sin_sesgo_por_sequia.diferencia).toBeCloseTo(mHumedas / mSecas - 1, 3);
+  });
+
+  it('una sola temporada acierta con un error mediano del 3,3 % y peor del 6,1 %', () => {
+    const errs = representativos()
+      .map(a => Math.abs(ypDe(a) / YP_WIGHT_HANKS.sidney - 1))
+      .sort((x, y) => x - y);
+    const mediano = errs[Math.floor(errs.length / 2)]!;
+
+    expect(mediano).toBeCloseTo(0.033, 3);
+    expect(Math.max(...errs)).toBeCloseTo(0.061, 3);
+    expect(YP_DESPEJADO_SIDNEY.error_de_una_temporada.mediano).toBeCloseTo(mediano, 3);
+    expect(YP_DESPEJADO_SIDNEY.error_de_una_temporada.peor).toBeCloseTo(Math.max(...errs), 3);
+    // Y eso es muy mejor que el salto entre los dos sitios del trabajo, que es
+    // lo que habría que tragarse usando un Yp por bioma.
+    expect(Math.max(...errs)).toBeLessThan(
+      YP_WIGHT_HANKS.mandan / YP_WIGHT_HANKS.sidney - 1);
+  });
+
+  it('despejarYp compone ypDesdeUnAnio y da lo mismo, año por año', () => {
+    for (const a of aniosDeWightHanks('sidney')) {
+      const r = despejarYp({
+        rendimiento_kg_ha: a.rend_campo_kg_ha,
+        base: 'pico_de_materia_en_pie_herbacea',
+        tp_mm: a.tp_mm!,
+        t_mm: a.t_mm!,
+      })!;
+      expect(r.yp_kg_ha).toBeCloseTo(ypDe(a), 6);
+      expect(r.indice).toBeCloseTo(a.t_mm! / a.tp_mm!, 6);
+    }
+  });
+
+  it('el aviso de una sola temporada va siempre: la función recibe una', () => {
+    const r = despejarYp({
+      rendimiento_kg_ha: 1205, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 134, t_mm: 124,
+    })!;
+    expect(r.advertencias).toContain(ADVERTENCIAS_YP.una_sola_temporada);
+    expect(r.advertencias).toHaveLength(1);
+  });
+
+  it('abajo de T/Tp 0,5 avisa, y 1977 es el único año de la serie que lo dispara', () => {
+    const disparan = aniosDeWightHanks('sidney').filter(a => {
+      const r = despejarYp({
+        rendimiento_kg_ha: a.rend_campo_kg_ha,
+        base: 'pico_de_materia_en_pie_herbacea',
+        tp_mm: a.tp_mm!, t_mm: a.t_mm!,
+      })!;
+      return r.advertencias.includes(ADVERTENCIAS_YP.indice_bajo);
+    });
+    expect(disparan.map(a => a.anio)).toEqual([1977]);
+    // Y es el peor despeje de los doce, que es de dónde salió el umbral.
+    const errores = aniosDeWightHanks('sidney')
+      .map(a => ({ anio: a.anio, err: ypDe(a) / YP_WIGHT_HANKS.sidney - 1 }));
+    const peorBajo = errores.reduce((p, x) => (x.err < p.err ? x : p));
+    expect([1973, 1974, 1977]).toContain(peorBajo.anio);
+    expect(errores.find(e => e.anio === 1977)!.err).toBeCloseTo(-0.139, 3);
+  });
+
+  it('el índice arriba de 1 avisa que el Yp sale bajo, porque T no puede superar a Tp', () => {
+    const r = despejarYp({
+      rendimiento_kg_ha: 1200, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 100, t_mm: 120,
+    })!;
+    expect(r.indice).toBeCloseTo(1.2, 6);
+    expect(r.advertencias).toContain(ADVERTENCIAS_YP.indice_sobre_uno);
+    // Y el Yp que devuelve es MENOR que la cosecha, que es el absurdo que avisa.
+    expect(r.yp_kg_ha).toBeLessThan(1200);
+  });
+
+  it('no hay aviso por cosecha chica, y hay una razón: sería el mismo chequeo del índice', () => {
+    // Cualquier umbral de la cosecha relativo al Yp despejado se reduce a un
+    // umbral sobre el índice, porque Yp = Y/indice. Queda escrito como test para
+    // que no se agregue de nuevo creyendo que mide otra cosa.
+    expect(Object.keys(ADVERTENCIAS_YP)).toEqual([
+      'una_sola_temporada', 'indice_bajo', 'indice_sobre_uno',
+    ]);
+    const chica = despejarYp({
+      rendimiento_kg_ha: 5, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 130, t_mm: 13,
+    })!;
+    // Con índice 0,1 el aviso que sí corresponde es el del índice bajo.
+    expect(chica.indice).toBeCloseTo(0.1, 6);
+    expect(chica.advertencias).toContain(ADVERTENCIAS_YP.indice_bajo);
+  });
+
+  it('devuelve null donde el cociente no existe, en vez de un número inventado', () => {
+    const base = { base: 'pico_de_materia_en_pie_herbacea' as const, rendimiento_kg_ha: 1200 };
+    expect(despejarYp({ ...base, tp_mm: 0, t_mm: 0 })).toBeNull();
+    expect(despejarYp({ ...base, tp_mm: 130, t_mm: 0 })).toBeNull();
+    expect(despejarYp({ ...base, tp_mm: 0, t_mm: 100 })).toBeNull();
+    expect(despejarYp({ ...base, tp_mm: 130, t_mm: -1 })).toBeNull();
+    expect(despejarYp({ ...base, rendimiento_kg_ha: -1, tp_mm: 130, t_mm: 100 })).toBeNull();
+    expect(despejarYp({ ...base, tp_mm: NaN, t_mm: 100 })).toBeNull();
+    // Un T en cero no es «el sitio no produce»: es una temporada sin
+    // transpiración, y ahí Yp no está definido.
+    expect(despejarYp({ ...base, rendimiento_kg_ha: 0, tp_mm: 130, t_mm: 100 })!.yp_kg_ha).toBe(0);
+  });
+
+  it('con varias temporadas promedia los Yp y no las cosechas, y devuelve el desvío', () => {
+    const cosechas = representativos().map(a => ({
+      rendimiento_kg_ha: a.rend_campo_kg_ha,
+      base: 'pico_de_materia_en_pie_herbacea' as const,
+      tp_mm: a.tp_mm!, t_mm: a.t_mm!,
+    }));
+    const r = despejarYpDeVariasTemporadas(cosechas)!;
+
+    expect(r.temporadas).toBe(9);
+    expect(r.descartadas).toBe(0);
+    expect(r.yp_kg_ha).toBeCloseTo(1299.7, 1);
+    expect(r.desvio_kg_ha).toBeCloseTo(50.1, 1);
+    // Con más de una temporada, el aviso de temporada única ya no corresponde.
+    expect(r.advertencias).not.toContain(ADVERTENCIAS_YP.una_sola_temporada);
+
+    // En estos nueve años promediar las cosechas primero da casi lo mismo —5,9
+    // kg/ha, 0,45 %— y conviene saberlo para no exagerar la diferencia: `Tp`
+    // apenas varía en Sidney, entre 109 y 144 mm.
+    const porCosechas = ypDesdeUnAnio(
+      media(cosechas.map(c => c.rendimiento_kg_ha)),
+      media(cosechas.map(c => c.tp_mm)),
+      media(cosechas.map(c => c.t_mm)),
+    )!;
+    expect(Math.abs(porCosechas - r.yp_kg_ha)).toBeCloseTo(5.9, 1);
+    expect(Math.abs(porCosechas / r.yp_kg_ha - 1)).toBeLessThan(0.005);
+  });
+
+  /**
+   * Pero el orden sí importa, y mucho, cuando las temporadas tienen demanda
+   * distinta. Es el caso de un predio con una temporada corta y seca y otra
+   * larga y húmeda, que es lo normal fuera de una serie experimental.
+   */
+  it('promediar las cosechas en vez de los Yp infla el resultado un 24 % cuando Tp varía', () => {
+    // Dos temporadas armadas para que el Yp verdadero sea exactamente 1.300 en
+    // las dos, con Tp del doble en una que en la otra.
+    const dos = [
+      { rendimiento_kg_ha: 325, base: 'pico_de_materia_en_pie_herbacea' as const, tp_mm: 200, t_mm: 50 },
+      { rendimiento_kg_ha: 1235, base: 'pico_de_materia_en_pie_herbacea' as const, tp_mm: 100, t_mm: 95 },
+    ];
+    for (const c of dos) {
+      expect(ypDesdeUnAnio(c.rendimiento_kg_ha, c.tp_mm, c.t_mm)!).toBeCloseTo(1300, 6);
+    }
+
+    const bien = despejarYpDeVariasTemporadas(dos)!;
+    expect(bien.yp_kg_ha).toBeCloseTo(1300, 6);
+    expect(bien.desvio_kg_ha).toBeCloseTo(0, 6);
+
+    const mal = ypDesdeUnAnio(
+      media(dos.map(c => c.rendimiento_kg_ha)),
+      media(dos.map(c => c.tp_mm)),
+      media(dos.map(c => c.t_mm)),
+    )!;
+    expect(mal).toBeCloseTo(1613.8, 1);
+    // Y se equivoca para arriba, que es el lado caro.
+    expect(mal / bien.yp_kg_ha - 1).toBeCloseTo(0.241, 3);
+  });
+
+  it('las temporadas que no despejan se cuentan, no desaparecen', () => {
+    const r = despejarYpDeVariasTemporadas([
+      { rendimiento_kg_ha: 1205, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 134, t_mm: 124 },
+      { rendimiento_kg_ha: 1200, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 0, t_mm: 0 },
+    ])!;
+    expect(r.temporadas).toBe(1);
+    expect(r.descartadas).toBe(1);
+    expect(despejarYpDeVariasTemporadas([])).toBeNull();
+    expect(despejarYpDeVariasTemporadas([
+      { rendimiento_kg_ha: 1200, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 0, t_mm: 0 },
+    ])).toBeNull();
+  });
+
+  it('la entrada declara qué se midió, y es un solo valor admitido a propósito', () => {
+    // El cerco está en el tipo: una producción anual de ficha ecológica, una
+    // biomasa en pie de cualquier fecha o un corte de pastura sembrada no
+    // compilan. Acá se sostiene que el campo existe y cuál es el único valor.
+    const c: CosechaDeTemporada = {
+      rendimiento_kg_ha: 1205, base: 'pico_de_materia_en_pie_herbacea', tp_mm: 134, t_mm: 124,
+    };
+    expect(c.base).toBe('pico_de_materia_en_pie_herbacea');
+    // Y el trabajo midió exactamente eso: ver el pie de la Tabla 1.
+    expect(MODELO_WIGHT_HANKS.sin).not.toContain('pastizal');
+  });
+  /**
+   * El candidato que no era. Si alguien vuelve a proponer la columna de una
+   * ficha ecológica como `Yp` —y va a volver, porque es la única fuente abierta
+   * que trae suelo y composición juntos—, esto dice con números por qué no.
+   */
+  it('la columna alta de la ficha NRCS no es Yp: lee 1,6 a 2,0 veces alto', () => {
+    const p = ESD_NO_ES_YP.produccion_anual_lb_acre;
+
+    // La tabla de la ficha, textual: las filas suman el total en las tres columnas.
+    for (const col of ['bajo', 'representativo', 'alto'] as const) {
+      expect(p.pasto[col] + p.hierbas[col] + p.arbustos[col]).toBe(p.total[col]);
+    }
+
+    // Y la comparación, con la conversión que ya vive en este archivo.
+    const total = lbAcreAKgHa(p.total.alto);
+    const soloPasto = lbAcreAKgHa(p.pasto.alto);
+    expect(total).toBeCloseTo(2578, 0);
+    expect(soloPasto).toBeCloseTo(2062, 0);
+
+    expect(total / YP_WIGHT_HANKS.sidney)
+      .toBeCloseTo(ESD_NO_ES_YP.contra_el_yp_de_sidney.total, 2);
+    expect(soloPasto / YP_WIGHT_HANKS.sidney)
+      .toBeCloseTo(ESD_NO_ES_YP.contra_el_yp_de_sidney.solo_pasto, 2);
+
+    // Incluso descontando hierbas y arbustos sigue leyendo más de 1,5 veces
+    // alto: el problema no es sólo qué grupos cuenta.
+    expect(soloPasto / YP_WIGHT_HANKS.sidney).toBeGreaterThan(1.5);
+
+    // Y el Yp despejado SÍ da el publicado, con la misma pradera mixta: la
+    // diferencia no es del bioma, es de qué mide cada número.
+    expect(YP_DESPEJADO_SIDNEY.valor_kg_ha / YP_WIGHT_HANKS.sidney).toBeCloseTo(1, 3);
+  });
+
+  it('la ficha no define su columna alta como año favorable, y eso es el punto', () => {
+    // Era el supuesto del encargo: «la columna de año favorable de la ficha».
+    // Se leyeron dos fichas y ninguna de las dos define las tres columnas.
+    expect(ESD_NO_ES_YP.la_columna_no_esta_definida).toContain('sin definirlos');
+    expect(ESD_NO_ES_YP.base_de_peso).toContain('la ficha no declara');
+    expect(ESD_NO_ES_YP.conclusion).toContain('optimista');
+    // Con fecha de lectura y URL, porque una ruta nombrada rinde si la ruta abre.
+    expect(ESD_NO_ES_YP.url).toMatch(/^https:\/\/edit\.sc\.egov\.usda\.gov\//);
+    expect(ESD_NO_ES_YP.leida).toBe('2026-11-02');
+  });
+});
+

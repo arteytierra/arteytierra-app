@@ -83,6 +83,22 @@ describe('la zona seca de Sri Lanka', () => {
   });
 });
 
+/*
+ * Este lote dejó cuatro entradas en cada una de sus tres fichas, y después otros
+ * lotes siguieron escribiendo sobre las mismas fichas: el lote 3 le sumó a
+ * `luzon_bajo` la economía estacional agta de la Sierra Madre, que cae en el
+ * mismo ECO_ID 241. Por eso el test no puede mirar la ficha entera —si lo hace,
+ * cualquier entrada futura lo rompe sin que nada esté mal—: mira las entradas de
+ * ESTE lote, nombradas una por una.
+ */
+const DE_ESTE_LOTE: Record<string, RegExp> = {
+  sri_lanka_zona_seca: /./,
+  pinar_luzon: /./,
+  luzon_bajo: /payo|Muyung|Habal|Pinkol/,
+};
+const esDeEsteLote = (fichaId: string) => (p: { practica: string }) =>
+  (DE_ESTE_LOTE[fichaId] ?? /./).test(p.practica);
+
 describe('las terrazas de Ifugao, que están en dos ecorregiones', () => {
   it('los ECO_ID que las contienen son el 241 y el 303', () => {
     expect(fichaDeEcorregion(241)).toBe('luzon_bajo');
@@ -96,7 +112,7 @@ describe('las terrazas de Ifugao, que están en dos ecorregiones', () => {
     // predios que están sobre las terrazas.
     for (const fichaId of ['luzon_bajo', 'pinar_luzon']) {
       const lista = practicasDeFicha(fichaId);
-      expect(lista, fichaId).toHaveLength(4);
+      expect(lista.filter(esDeEsteLote(fichaId)), fichaId).toHaveLength(4);
       expect(lista.some((p) => p.practica === IFUGAO), fichaId).toBe(true);
     }
   });
@@ -154,7 +170,7 @@ describe('las terrazas de Ifugao, que están en dos ecorregiones', () => {
 
   it('las cuatro de cada ficha reparten cuatro tipos distintos', () => {
     for (const fichaId of ['luzon_bajo', 'pinar_luzon']) {
-      const tipos = practicasDeFicha(fichaId).map((p) => p.tipo);
+      const tipos = practicasDeFicha(fichaId).filter(esDeEsteLote(fichaId)).map((p) => p.tipo);
       expect(new Set(tipos).size, fichaId).toBe(4);
     }
   });
@@ -162,7 +178,7 @@ describe('las terrazas de Ifugao, que están en dos ecorregiones', () => {
 
 describe('las fuentes de este lote', () => {
   const DEL_LOTE = ['sri_lanka_zona_seca', 'luzon_bajo', 'pinar_luzon'].flatMap((id) =>
-    practicasDeFicha(id).flatMap((p) => p.fuentes),
+    practicasDeFicha(id).filter(esDeEsteLote(id)).flatMap((p) => p.fuentes),
   );
 
   it('son todas de la FAO o de la UNESCO, que es lo que se pudo abrir', () => {
@@ -191,7 +207,8 @@ describe('las fuentes de este lote', () => {
 describe('la capa llega a la ficha', () => {
   it('fichaPorId se las inyecta a las tres', () => {
     for (const id of ['sri_lanka_zona_seca', 'luzon_bajo', 'pinar_luzon']) {
-      expect(fichaPorId(id)?.practicas, id).toHaveLength(4);
+      expect(practicasDeFicha(id).filter(esDeEsteLote(id)), id).toHaveLength(4);
+      expect(fichaPorId(id)?.practicas, id).toHaveLength(practicasDeFicha(id).length);
     }
   });
 

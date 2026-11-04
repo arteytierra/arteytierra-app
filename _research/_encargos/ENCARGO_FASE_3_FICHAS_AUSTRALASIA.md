@@ -169,6 +169,14 @@ mismo sistema: así se montaron las 33 de Indomalaya —`java_bali_montano` cubr
 dos ECO_ID—. Agrupar es bueno cuando el sistema es el mismo y malo cuando
 esconde un contraste. Los ids agrupados van en `_meta.ecorregiones_resolve`.
 
+**El ejemplo de abajo es una forma, no una respuesta.** Lo que esta entre
+`<`angulos`>` se reemplaza; nada de ahi es la contestacion de ningun lote. Esta
+advertencia esta escrita porque ya costo dos veces: el ejemplo de la fase 5 traia
+el modificador resuelto —`pasturas`, `delta 20`, «confirmado», confianza alta— y
+la entrega devolvio eso con las descripciones investigadas alrededor. **El
+ejemplo es la instruccion mas fuerte del documento**, mas que las reglas
+numeradas.
+
 ```json
 {
   "encargo": "fichas-australasia",
@@ -177,35 +185,35 @@ esconde un contraste. Los ids agrupados van en `_meta.ecorregiones_resolve`.
   "continua": false,
   "entradas": [
     {
-      "id": "pilbara_mulga",
-      "nombre": "Matorrales de mulga del Pilbara",
-      "emoji": "🏜️",
-      "color": "#A1887F",
+      "id": "<id_en_minúsculas_con_guion_bajo>",
+      "nombre": "<el nombre en castellano>",
+      "emoji": "<uno>",
+      "color": "#RRGGBB",
       "resumen": "…",
       "vegetacion": "…",
       "fauna": "…",
       "suelos": "…",
       "saberes": [],
       "especies": [
-        { "nombre": "Mulga", "cientifico": "Acacia aneura", "tipo": "nativa", "nota": "…" }
+        { "nombre": "<nombre común>", "cientifico": "<Binomial>", "tipo": "nativa", "nota": "…" }
       ],
       "cultivos": ["<ids del anexo, 8 a 15>"],
       "fuentes": [{ "label": "Título tal como lo muestra la página", "url": "https://…" }],
       "verificacion": "Qué dicen esas páginas, con sus palabras, sobre este lugar.",
       "_meta": {
-        "ecorregiones_resolve": [213, 216],
-        "nombre_resolve": "Pilbara shrublands; Western Australian Mulga shrublands",
-        "paises": ["Australia"],
-        "confianza": "alta",
-        "base_de_suelos_usada": "Soil and Landscape Grid of Australia + HWSD v2",
+        "ecorregiones_resolve": [<ECO_ID>],
+        "nombre_resolve": "<el nombre de RESOLVE, en inglés>",
+        "paises": ["<país>"],
+        "confianza": "<alta | media | baja>",
+        "base_de_suelos_usada": "<las bases que de verdad abrieron, y cuál no>",
         "notas": "…",
         "modificadores_propuestos": [
           {
-            "uso": "pasturas",
-            "delta": 0,
-            "pisa_global": -15,
+            "uso": "<huerta | pasturas | frutales | forestal | reserva>",
+            "delta": <entero entre -35 y 25>,
+            "pisa_global": <el delta global de ese uso, tal como lo hereda hoy>,
             "razon": "El mecanismo, no la conclusión.",
-            "confianza": "media",
+            "confianza": "<alta | media | baja>",
             "fuente": "https://…"
           }
         ]

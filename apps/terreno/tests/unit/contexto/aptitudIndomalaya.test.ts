@@ -8,9 +8,9 @@ import type { ModificadorAptitud } from '../../../lib/biomaTipos';
 /**
  * Las 32 fichas húmedas de Indomalaya existen para corregir **un número**: el
  * −25 de huerta que el bioma global `resolve_bosque_tropical_humedo` imponía a
- * 216 ecorregiones con una razón que en media Indomalaya es falsa. La 33.ª del
- * bloque, el Decán central, es de otro bioma y de otra historia: ver
- * `FUERA_DE_LA_REGLA` más abajo y `aptitudDecan.test.ts`.
+ * 216 ecorregiones con una razón que en media Indomalaya es falsa. Las tres del
+ * Decán son de otro bioma y de otra historia: ver `FUERA_DE_LA_REGLA` más abajo
+ * y `aptitudDecan.test.ts`.
  *
  * Por eso lo que estos tests cuidan no es que las fichas tengan texto —eso ya
  * lo verifica `ecorregiones.test.ts`— sino las tres formas en que este lote
@@ -49,21 +49,21 @@ const SIN_MODIFICADOR = [
 ];
 
 /**
- * La ficha del bloque que **no** salió de la regla del −25, y por eso queda
- * afuera de sus cuatro invariantes.
+ * Las fichas del bloque que **no** salieron de la regla del −25, y por eso
+ * quedan afuera de sus cuatro invariantes.
  *
- * `decan_central_hardwickia` (ECO_ID 290) es de bioma 2 —bosque tropical seco—
- * y no de bioma 1. La regla escala el −25 de huerta del bioma húmedo por una
- * fracción de suelo lixiviado; ese −25 no existe en su bioma, y tampoco se
- * extrajo reparto de HWSD ni de SoilGrids para su polígono. Así que rompe los
- * cuatro invariantes a propósito: toca un uso que no es huerta, propone un
- * positivo, su razón no dice «regla de acequia» porque no viene de una regla
- * nuestra, y no cita las bases de suelo.
+ * Son las tres del Decán —290 central, 297 norte, 298 sur—, de bioma 2 —bosque
+ * tropical seco— y no de bioma 1. La regla escala el −25 de huerta del bioma
+ * húmedo por una fracción de suelo lixiviado; ese −25 no existe en su bioma, y
+ * tampoco se extrajo reparto de HWSD ni de SoilGrids para sus polígonos. Así
+ * que rompen los cuatro invariantes a propósito: tocan usos que no son huerta,
+ * proponen positivos, sus razones no dicen «regla de acequia» porque no vienen
+ * de una regla nuestra, y no citan las bases de suelo.
  *
  * Esta constante existe para que el día que alguien agregue otra ficha seca al
  * bloque tenga que ponerla acá a mano y leer este comentario antes.
  */
-const FUERA_DE_LA_REGLA = ['decan_central_hardwickia'];
+const FUERA_DE_LA_REGLA = ['decan_central_hardwickia', 'decan_norte_sal', 'decan_sur_elefantes'];
 
 /** Las fichas que sí salieron de la regla: el cohorte sobre el que valen los
  *  invariantes de abajo. */
@@ -72,9 +72,9 @@ const DE_LA_REGLA = () =>
     .filter(([id]) => !FUERA_DE_LA_REGLA.includes(id));
 
 describe('el lote entero', () => {
-  it('son 33 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
+  it('son 35 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
     const ids = Object.keys(BIOMAS_REGIONALES_INDOMALAYA);
-    expect(ids).toHaveLength(33);
+    expect(ids).toHaveLength(35);
 
     const deLaRegla = DE_LA_REGLA().map(([id]) => id);
     expect(deLaRegla).toHaveLength(32);
@@ -83,8 +83,8 @@ describe('el lote entero', () => {
     expect(conAptitud).toHaveLength(22);
     expect(deLaRegla.length - conAptitud.length).toBe(SIN_MODIFICADOR.length);
 
-    // Y la que está afuera existe y trae modificador: si no, no haría falta
-    // excluirla de nada.
+    // Y las que están afuera existen y traen modificador: si no, no haría falta
+    // excluirlas de nada.
     for (const id of FUERA_DE_LA_REGLA) {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
       expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.aptitud?.length, id).toBeGreaterThan(0);

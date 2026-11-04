@@ -65,6 +65,13 @@ revista: el identificador existía y el trabajo era otro.
 Por eso:
 
 - **Ninguna URL entra sin abrirse primero.** Si no se puede abrir, no entra.
+- **Y abrir no es recibir un 200.** El 02/11/2026 el archivo de suelos del JRC
+  europeo —EUDASM, que un encargo de este circuito recomendaba como la ruta que
+  sí funcionaba— contestó **código 200 con un cuerpo de 244 bytes que dice
+  «Request Rejected»**. Un cortafuegos que rechaza con código de éxito es el peor
+  caso posible: una verificación por código de estado lo aprueba. La fuente se
+  confirma leyendo el contenido, y la frase de `verificacion` es justamente la
+  prueba de que se leyó.
 - El `label` se copia del título que muestra la página, no se redacta.
 - Nada de DOI de memoria. Nada de "según la bibliografía". Nada de
   `et al. (2019)` sin el trabajo concreto.

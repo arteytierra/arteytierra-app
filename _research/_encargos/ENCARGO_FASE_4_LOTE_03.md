@@ -66,7 +66,7 @@ es el que el encabezado daba por hecho, eso es el hallazgo y se escribe así en
 | `https://www.oneearth.org/ecoregions/south-deccan-plateau-dry-deciduous-forests/` | la ficha de One Earth de esta ecorregión | 200 |
 | `https://en.wikipedia.org/wiki/South_Deccan_Plateau_dry_deciduous_forests` | la entrada de Wikipedia | 200 |
 | `https://www.fao.org/4/w4442E/w4442e05.htm` | las series de bosque seco de la India, FAO | 200 |
-| `https://esdac.jrc.ec.europa.eu/public_path/shared_folder/eudasm/asia/lists/cin.htm` | **EUDASM**, el archivo del JRC con los mapas del NBSS&LUP escaneados | 200 |
+| ~~`esdac.jrc.ec.europa.eu/public_path/shared_folder/eudasm/asia/lists/cin.htm`~~ | **EUDASM**, el archivo del JRC con los mapas del NBSS&LUP escaneados | **200 con «Request Rejected» adentro.** Ver abajo |
 | `https://krishikosh.egranth.ac.in/` | boletines del NBSS digitalizados | 200 |
 
 **La que no abre sola:**
@@ -76,13 +76,17 @@ navegador real abre. Si no podés abrirla, no la cites: va a `vacias` con lo que
 intentaste.
 
 **Y el sitio del NBSS&LUP sigue muerto:** `nbsslup.in` es un dominio estacionado
-en venta y `nbsslup.icar.gov.in` no resuelve. **Pero para esta ecorregión EUDASM
-sirve mucho más que para la del lote 2**, y eso es lo mejor que trae este pedido:
-en el listado de la India hay «TAMIL NADU. Soils. Sheet 3», «A preliminary soil
-map of the Madras presidency» y «National Atlas of India. Southern India. Plate
-203. Soil Regions», además del nacional «Soils of India. (Suborder
-Associations)», NBSS&LUP Nagpur 1985, a 1:7.000.000. De Odisha no había nada; de
-acá hay hoja estatal.
+en venta y `nbsslup.icar.gov.in` no resuelve.
+
+**EUDASM tampoco sirve, y esto es una corrección del 02/11/2026 a lo que este
+pedido decía.** Acá estaba escrito que para esta ecorregión EUDASM «sirve mucho
+más que para la del lote 2», con el listado de la India —«TAMIL NADU. Soils.
+Sheet 3», «A preliminary soil map of the Madras presidency», «National Atlas of
+India. Southern India. Plate 203. Soil Regions»— como lo mejor del pedido. Ese
+200 era falso: el cuerpo de la respuesta son 244 bytes que dicen «Request
+Rejected». Es el cortafuegos del JRC, contesta así en las cuatro rutas probadas y
+es intermitente. La ficha se escribe con HWSD v2 y SoilGrids, y si EUDASM abre
+algún día se agrega; **lo que no se hace es citarlo porque el código fue 200.**
 
 ---
 
