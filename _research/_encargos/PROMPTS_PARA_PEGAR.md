@@ -1,6 +1,6 @@
 # Los prompts para GPT, listos para pegar
 
-*Al 04/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
+*Al 06/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
 sin conectores, sin el de GitHub, y con «mejorar el modelo para todos» apagado.
 Cada encargo se cierra al terminar — arrastrar veinte lotes en un mismo hilo
 significa pagar los veinte en cada respuesta nueva.*
@@ -19,13 +19,47 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 | # | Segunda pegada | Qué destraba | Dónde cae |
 |---|---|---|---|
-| **1** | `ENCARGO_FORRAJE_YP.md` | **Reescrito el 02/11/2026: es otro pedido.** La primera vuelta cerró el barrido bibliográfico —la columna de las fichas del NRCS no es `Yp`, y el `Yp` se despeja de la Tabla 1 con 0,02 % de error—. Ahora son **tres blancos con nombre**: Wight y Black (1979), la ficha del sitio real de Sidney (MLRA 52 / RRU 52N) y la relación entre rendimiento potencial y suelo, que es la que vale. | `entregas\yp\04.json` … `06.json` |
-| **2** | `ENCARGO_FASE_6_LOTES_08_10.md` | Prácticas fechadas del territorio. Siete lotes entregados, van los tres últimos. | `entregas\practicas\08.json` … `10.json` |
-| **3** | `ENCARGO_FASE_4_LOTES_04_06.md` | Fichas de Indomalaya. | `entregas\fichas-indomalaya\04.json` … `06.json` |
-| **4** | `ENCARGO_FASE_3_LOTE_02.md` | Fichas de Australasia. | `entregas\fichas-australasia\02.json` |
-| **5** | `ENCARGO_FASE_5_LOTE_02.md` | Fichas de África. | `entregas\fichas-africa\02.json` |
+| **1** | `ENCARGO_FASE_3_LOTE_02.md` | Fichas de Australasia. | `entregas\fichas-australasia\02.json` |
+| **2** | `ENCARGO_FASE_5_LOTE_02.md` | Fichas de África. | `entregas\fichas-africa\02.json` |
 
-Uno por chat.
+Uno por chat. **Son los dos únicos que quedan escritos**; los tres que estaban
+arriba de ellos volvieron y están cerrados, cada uno de una manera distinta.
+
+### Lo que cerró el 05 y el 06/11/2026
+
+~~`ENCARGO_FASE_4_LOTES_04_06.md`~~ **entró entero**, que es la primera vez en
+esta fase. Las tres fichas están montadas —manglar de Sundarbans (323), bosques
+secos del Irrawaddy (294) y matorral espinoso del Decán (315)— y con ellas
+entraron las cuatro prácticas fechadas que estaban detenidas esperándolas. Ninguna
+de las tres se montó como vino: la cifra que contestaba la pregunta central del
+lote llegó citada por una URL que devuelve la página de error de su propio sitio
+con código 200. El veredicto está en
+`_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_04_05_06.md`.
+
+~~`ENCARGO_FASE_6_LOTES_08_10.md`~~ **entraron 7 de 18**, y el motivo del rechazo
+se movió: seis se cayeron por el polígono y no por la fuente.
+
+~~`ENCARGO_FORRAJE_YP.md`~~ **cerrado, y en contra.** No hay relación publicada
+que prediga `Yp` desde una propiedad del suelo; `Yp` se despeja de un corte de
+pasto del predio. Un aviso que vale para el método: el lote 4 trajo cuatro
+números atribuidos a un documento que abre y que **no los contiene**. Es la
+primera falla del circuito que no se detecta abriendo la fuente sino leyéndola.
+El veredicto está al final de `_research/_encargos/RESPUESTAS_FORRAJE.md`.
+
+### Los dos que hay que escribir, y que son los que más rinden
+
+No están escritos todavía, así que no hay nada que pegar:
+
+- **Fase 4, lotes 7 y 8: fichas para el ECO_ID 286 y el 280.** Mismo patrón que
+  los tres que acaban de entrar: cada uno tiene una práctica verificada detenida
+  por falta de ficha. El 286 es el pantano del Tonle Sap —el arroz de recesión,
+  con las coordenadas publicadas de las doce fincas— y el 280 es el pantano de
+  Sumatra del sur, con el sonor de Perigi.
+- **Fase 6, la repesca.** No es más relevamiento: son cinco blancos con nombre ya
+  verificados. Tres piden una URL que abra —soppinabetta de Sringeri, devrai de
+  Kolavade con su coordenada, prácticas suludnon de Jayubo— y dos piden una
+  práctica del extremo correcto de un polígono: **Siulak / Gunung Kerinci** para
+  el 305 y el **este de Wayanad** (Pulpally, Sulthan Bathery) para el 270.
 
 ~~Los lotes 2 y 3 de Indomalaya~~ **volvieron el 03/11/2026 y están montados**:
 son los ECO_ID 297 y 298, el Decán norte y el Decán sur. Las dos entregas tenían
@@ -35,7 +69,7 @@ entero está en `_research/_encargos/RESPUESTAS_FICHAS_INDOMALAYA_DECAN.md`.
 
 ---
 
-## El de `Yp`, que cambió de pedido, en una frase
+## El de `Yp`, que ya cerró, en una frase
 
 **`Y = Yp · T/Tp`**. La fracción `T/Tp` ya la calcula acequia con balance diario,
 y `Yp` es cuánto produce el sitio cuando el agua no es lo que limita.

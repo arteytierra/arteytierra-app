@@ -2829,3 +2829,91 @@ Mayo, que separa gramínea de arbustiva, ya estaba montada y sigue siendo la ún
 abierta con esas dos columnas. **La capa herbácea medida aparte queda pedida
 cuatro veces y sin responder**, y después de este inventario conviene aceptarlo:
 no es un problema de cómo se pide.
+
+
+---
+
+## Los lotes 4, 5 y 6 del encargo de `Yp` — el encargo se cierra, y en contra
+
+*Entregados el 05/11/2026, leídos el 06/11/2026. Tres blancos con nombre, tres
+resultados negativos. Dos de los tres negativos son correctos y valen; el
+tercero trae números inventados y hay que decirlo fuerte.*
+
+### Lo que cierra
+
+El encargo preguntaba si `Yp` —el rendimiento del sitio cuando el agua no es lo
+que limita— se puede leer de alguna propiedad del suelo. **La respuesta es que
+no, y ahora está argumentada desde tres lados.**
+
+El lote 6 lo dice bien: ni Hanks (1974) ni Wight y Hanks (1981) dan `Yp` a partir
+del suelo. Wight y Hanks lo definen como el máximo del sitio con agua no
+limitante, aclarando que eso **incluye composición de especies y fertilidad**, y
+los dos valores que usan —Sidney ≈1.300 kg/ha y Mandan ≈2.760— los estiman de
+rendimientos observados. La ecuación del modelo predice rendimiento realizado a
+partir de la razón de transpiración; no predice `Yp`.
+
+Y la entrega hace algo que conviene anotar como buena práctica: **se niega a
+reutilizar el r² de 0,74 de la validación de Sidney** como si fuera el r² de una
+relación suelo→`Yp`. Es el tipo de préstamo de cifra que produce un número
+plausible y equivocado, y lo rechazó por su cuenta.
+
+Así que la deuda queda cerrada en la dirección que ya había quedado abierta en la
+primera vuelta: **`Yp` se despeja de un corte de pasto del predio del usuario**,
+con `Yp = Y·Tp/T`, que se verificó contra la tabla del propio trabajo con un
+error del 0,02 %. No hay tabla que consultar. Eso define la próxima tarea de este
+lado, que es de interfaz y no de bibliografía: pedirle al usuario un corte de una
+temporada.
+
+### Lo que hay que descartar: el lote 4
+
+El lote 4 dice haber verificado, en una reseña abierta, que el ensayo decenal de
+pradera mixta del este de Montana de Wight y Black (1979) da una producción sin
+fertilizar de **1.047 kg/ha** de promedio (rango 720–1.321), un aumento medio del
+**114 %** al remover deficiencias de N y P, y un máximo cercano a **1.250 kg/ha
+con 265 mm** de uso de agua. Atribuye todo eso a Ries y Hofmann, *Grazing
+Research and Water-Use-Efficiency on Reclaimed Pastures in North Dakota*.
+
+Ese documento abre —2,7 MB, 13 páginas, USDA-ARS Mandan— y **no contiene ninguno
+de esos números**. Ni 1.047, ni 720, ni 1.321, ni 1.250, ni 265. Es un trabajo
+sobre pasturas de estación fría en tierra de mina recuperada en el condado de
+Oliver, Dakota del Norte, y la única vez que menciona a Wight y Black es como
+referencia 7 de una oración de introducción: «Management practices, such as
+fertilization of native range communities have also been found to improve WUE
+(6) (7)». No resume el ensayo: lo cita de pasada.
+
+Lo que sí da, y es lo único que se puede tomar de ahí, es la cita bibliográfica
+completa y correcta: **J. Range Manage. 32(5):345-349**. Tampoco trae el DOI que
+la entrega dice que trae; `10.2307` no aparece en el documento.
+
+Es la primera vez en este circuito que vuelve un número con una fuente que abre y
+que no lo dice. Las fallas anteriores eran de acceso —una URL que no responde, un
+200 que es una página de error, un anti-bot— y ésas se detectan abriendo. Ésta
+sólo se detecta leyendo. **Nada del lote 4 entra**, y la regla que deja es para el
+encargo: cuando el hallazgo son números, la `verificacion` tiene que citar la
+frase del documento donde están, no describir lo que el documento haría.
+
+### Lo que queda a mitad de camino: el lote 5
+
+El lote 5 encontró lo que se le pidió: el sitio real de Sidney existe y se llama
+**R052XN163MT — Sandy (Sy), 10-14 inch p.z.**, en la unidad 52XN, MLRA 052X Brown
+Glaciated Plains. Eso está verificado: la página del grupo de sitio ecológico
+052XESG13 «Sandy Uplands» abre y lo lista como subclase, junto con
+R052XC211MT-Sands.
+
+Lo que no consiguió es lo que importaba: la tabla de producción anual con sus
+tres columnas y el perfil de suelo. La página individual del sitio no devolvió
+contenido. Y la entrega hizo lo correcto al no sustituirlo por un Sandy de otra
+unidad ni por un sitio vecino, que es exactamente el error que la primera vuelta
+de este encargo había cometido.
+
+Como el lote 6 cierra la pregunta en contra, esa tabla ya no es urgente: aunque
+apareciera, la columna alta de las fichas del NRCS **no es `Yp`** —lee de 1,6 a
+2,0 veces alto— y eso quedó establecido en la primera vuelta. Serviría para
+confirmar el sesgo con el sitio correcto, no para sacar un número.
+
+### Estado del encargo
+
+**Cerrado.** No hay un lote 7 que pedir. Lo que sigue es de este lado:
+`correrBalanceForraje` ya devuelve `T/Tp`, `despejarYp` espera un corte, y falta
+cablear `T/Tp × Yp` y desconectar `prodForrajera`. Eso cambia lo que `/mapa` le
+pide al usuario, así que se consulta antes de empezar.
