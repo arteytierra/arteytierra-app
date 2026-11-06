@@ -29,6 +29,7 @@ import { useMemo, useState } from 'react';
 import { Scissors, TriangleAlert, Loader2, ArrowDownToLine } from 'lucide-react';
 import {
   evaluarCorte, aguaUtilEnTresCapas, ventanaDeBalance, ypDelCorte, kgHaDeAro,
+  EL_PICO_NO_ES_LA_PRODUCCION_ANUAL,
   type CorteDeclarado, type CuandoSeCorto, type QueSeCorto, type BaseDePeso,
   type QueHabia, type DiaDeSerie, type YpDelCorte,
 } from '@/lib/forrajeCorte';
@@ -388,6 +389,16 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
               Se ofrece el corte y no el techo: el Yp es lo que el campo daría con el agua sin
               limitar, y cargarlo como forraje del año dimensionaría el rodeo para un año que puede
               no llegar. Y un corte es una temporada: con la de otro año el número cambia.
+            </p>
+            <p className="text-[9px] text-ink-700/50 leading-relaxed">
+              <b>El campo dice «por año» y esto es materia en pie</b>, que no es lo mismo: un pico
+              de materia en pie es el{' '}
+              {Math.round(EL_PICO_NO_ES_LA_PRODUCCION_ANUAL.fraccion.minima * 100)} a{' '}
+              {Math.round(EL_PICO_NO_ES_LA_PRODUCCION_ANUAL.fraccion.maxima * 100)} % de lo que el
+              pastizal produjo en la temporada, porque el resto murió o se cayó antes del corte.
+              <b> Igual no hay que multiplicarlo</b>: el uso admisible que viene después está
+              calibrado contra ensayos definidos por el forraje que dejan en pie, y corregir hacia
+              arriba sumaría a la carga el pasto que se descompuso antes de que llegara el animal.
             </p>
 
             {res.avisos.length > 0 && (

@@ -36,6 +36,11 @@
  * | **la suma de todos los cortes** | 1,33 a 1,42 veces el pico de materia en pie | `LA_SUMA_NO_ES_EL_PICO` |
  * | **sólo las especies forrajeras** | el total herbáceo es 1,56 veces eso | `TOTAL_CONTRA_FORRAJERA` |
  *
+ * Y una cuarta que **no es un error y hay que decirla igual**: el corte es pico
+ * de materia en pie y eso es el 25 a 35 % de la producción anual. No se corrige
+ * —la cadena de abajo pide materia en pie— pero el campo del panel se llama «por
+ * año», así que la pantalla lo aclara. Ver `EL_PICO_NO_ES_LA_PRODUCCION_ANUAL`.
+ *
  * Y el peor de todos no tiene factor porque no es una magnitud comparable:
  * **peso verde**. Un pasto con 70 % de humedad pesa 3,3 veces su materia seca, y
  * la humedad del corte depende del día y de la hora. Se rechaza, y el rechazo
@@ -204,6 +209,55 @@ export const TOTAL_CONTRA_FORRAJERA = {
   herbacea_total_kg_ha: 10533,
   forrajera_kg_ha: 6733,
   cociente: 1.564,
+} as const;
+
+/**
+ * El pico de materia en pie **no** es la producción anual — y por qué igual no se
+ * corrige.
+ *
+ * Es la confusión más fácil de cometer y la que más cuesta, porque el campo del
+ * panel donde este número termina se llama «Forraje (kg MS/ha·año)» y el corte
+ * es **un momento de una temporada**. La diferencia está publicada:
+ *
+ * > «peak yields amount to only 25-35 % of annual aboveground production
+ * > measured throughout the growing season»
+ *
+ * O sea que la materia en pie en el pico es alrededor de un tercio de lo que la
+ * planta produjo en la temporada: el resto ya murió, se cayó o se lo comieron
+ * antes de que nadie pudiera cortarlo.
+ *
+ * ## Y sin embargo el número no se multiplica por tres
+ *
+ * Porque la cadena que viene después **pide materia en pie, no producción**. El
+ * coeficiente de uso admisible de `bandaUso` está calibrado contra `CARGA_CGREC`,
+ * un ensayo de diecisiete años cuyos tratamientos están definidos por **el
+ * forraje que dejan en pie** y cuya columna de producción es materia en pie al
+ * final de la temporada. Corregir el corte hacia arriba metería en la cuenta de
+ * la carga animal el pasto que se descompuso antes de que el animal llegara:
+ * forraje que nunca existió para la vaca.
+ *
+ * Lo mismo del otro lado: `Y` en la ecuación 1 de Wight y Hanks es el
+ * rendimiento **medido** del ensayo, que es pico de materia en pie herbácea. El
+ * despeje se validó contra esa magnitud a 0,02 %. Meterle producción anual
+ * devolvería un `Yp` tres veces grande.
+ *
+ * **Lo único que hay que hacer, entonces, es decirlo.** El usuario no tiene por
+ * qué saber que «por año» en una etiqueta y «materia en pie» en una definición no
+ * son lo mismo, y es la clase de diferencia que nadie descubre después.
+ */
+export const EL_PICO_NO_ES_LA_PRODUCCION_ANUAL = {
+  cita: 'peak yields amount to only 25-35 % of annual aboveground production measured throughout the growing season',
+  fraccion: { minima: 0.25, maxima: 0.35 },
+  fuente: 'Campbell, B. (ed.) — «The Miombo in Transition: Woodlands and Welfare in Africa», CIFOR (1996), capítulo 2',
+  por_que_no_se_corrige:
+    'La cadena de abajo pide materia en pie: el coeficiente de uso admisible de bandaUso está '
+    + 'calibrado contra un ensayo cuyos tratamientos se definen por el forraje que dejan en pie. '
+    + 'Multiplicar por tres sumaría a la carga animal el pasto que se descompuso antes de que el '
+    + 'animal llegara.',
+  y_del_otro_lado:
+    'La Y de la ecuación 1 también es pico de materia en pie herbácea, y el despeje se validó '
+    + 'contra esa magnitud a 0,02 %. Pasarle producción anual devolvería un Yp tres veces grande.',
+  que_hay_que_hacer: 'decirlo en pantalla, porque la etiqueta del campo dice «por año»',
 } as const;
 
 /**

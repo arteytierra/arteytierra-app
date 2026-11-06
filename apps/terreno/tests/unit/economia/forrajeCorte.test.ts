@@ -17,6 +17,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   UN_CORTE_NO_ES_LA_TEMPORADA, LA_SUMA_NO_ES_EL_PICO, TOTAL_CONTRA_FORRAJERA,
+  EL_PICO_NO_ES_LA_PRODUCCION_ANUAL,
   ETO_NO_ES_EO, EL_AGUA_INICIAL_NO_SE_OLVIDA, LA_SERIE_DEKADAL_NO_ALCANZA,
   kgHaDeAro, kgHaDeVariosAros, evaluarCorte, sesgoNeto,
   aguaUtilEnTresCapas, capasDe90, ventanaDeBalance, sembrarPerfil,
@@ -132,6 +133,32 @@ describe('la suma no es el pico', () => {
       expect(metodo_1_pico[i]!).toBeLessThan(metodo_2_suma_de_incrementos[i]!);
       expect(metodo_2_suma_de_incrementos[i]!).toBeLessThan(metodo_6_el_mas_alto[i]!);
     }
+  });
+});
+
+describe('el pico no es la produccion anual', () => {
+  it('la fraccion publicada es la que dice la cita, y la cita no se tocó', () => {
+    const { cita, fraccion } = EL_PICO_NO_ES_LA_PRODUCCION_ANUAL;
+    expect(cita).toContain('25-35');
+    expect(fraccion.minima).toBeCloseTo(0.25, 6);
+    expect(fraccion.maxima).toBeCloseTo(0.35, 6);
+    expect(fraccion.minima).toBeLessThan(fraccion.maxima);
+  });
+
+  it('dice por qué no se corrige, y nombra la cadena que pide materia en pie', () => {
+    const m = EL_PICO_NO_ES_LA_PRODUCCION_ANUAL;
+    expect(m.por_que_no_se_corrige).toMatch(/bandaUso/);
+    expect(m.y_del_otro_lado).toMatch(/Yp/);
+    expect(m.fuente).toMatch(/CIFOR/);
+  });
+
+  it('la compuerta sigue aceptando el pico y no la producción anual', () => {
+    // El cerco es de tipo: `base` tiene un solo valor admitido. Esta prueba fija
+    // que ese valor sea el pico, que es lo que el despeje espera.
+    const r = evaluarCorte(CORTE_LIMPIO);
+    expect(r.sirve).toBe(true);
+    if (!r.sirve) return;
+    expect(r.base).toBe('pico_de_materia_en_pie_herbacea');
   });
 });
 
