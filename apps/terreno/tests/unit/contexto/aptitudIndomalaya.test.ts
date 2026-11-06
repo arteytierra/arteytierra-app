@@ -63,7 +63,13 @@ const SIN_MODIFICADOR = [
  * Esta constante existe para que el día que alguien agregue otra ficha seca al
  * bloque tenga que ponerla acá a mano y leer este comentario antes.
  */
-const FUERA_DE_LA_REGLA = ['decan_central_hardwickia', 'decan_norte_sal', 'decan_sur_elefantes'];
+const FUERA_DE_LA_REGLA = [
+  'decan_central_hardwickia', 'decan_norte_sal', 'decan_sur_elefantes',
+  // Las tres del 05/11/2026, que entraron para destrabar prácticas ya escritas y
+  // no para corregir el −25. Son de bioma 14, 2 y 13, confirman los deltas que
+  // heredan en vez de corregirlos, y tampoco traen reparto de HWSD ni SoilGrids.
+  'manglares_sundarbans', 'bosques_secos_irrawaddy', 'matorral_espinoso_decan',
+];
 
 /** Las fichas que sí salieron de la regla: el cohorte sobre el que valen los
  *  invariantes de abajo. */
@@ -72,9 +78,9 @@ const DE_LA_REGLA = () =>
     .filter(([id]) => !FUERA_DE_LA_REGLA.includes(id));
 
 describe('el lote entero', () => {
-  it('son 35 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
+  it('son 38 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
     const ids = Object.keys(BIOMAS_REGIONALES_INDOMALAYA);
-    expect(ids).toHaveLength(35);
+    expect(ids).toHaveLength(38);
 
     const deLaRegla = DE_LA_REGLA().map(([id]) => id);
     expect(deLaRegla).toHaveLength(32);

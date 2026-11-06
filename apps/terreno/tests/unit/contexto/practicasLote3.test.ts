@@ -111,13 +111,19 @@ describe('las cuatro que no entraron, y por qué', () => {
     expect(PRACTICAS_POR_FICHA['pantanos_sumatra']).toBeUndefined();
   });
 
-  it('el phad del noroeste de Maharashtra cae en el matorral espinoso, que no tiene ficha', () => {
-    // Dhule, Sakri, Malegaon y Jalgaon dan 315, Deccan thorn scrub forests.
-    // `decan_central_hardwickia` es el 290. Y el host de la fuente (eacpm.gov.in)
-    // no responde: ni la raíz, ni por http, ni con www.
-    expect(fichaDeEcorregion(315)).toBeNull();
+  it('el phad cae en el matorral espinoso, que ya tiene ficha, y entró con otra fuente', () => {
+    // Dhule, Sakri, Malegaon y Jalgaon dan 315, Deccan thorn scrub forests, que
+    // tiene ficha desde el 05/11/2026. `decan_central_hardwickia` es el 290 y
+    // sigue sin prácticas. El phad esperaba ficha y además esperaba fuente: el
+    // host que traía la entrega (eacpm.gov.in) no responde por ningún camino, así
+    // que entró por la ficha hidrogeológica del distrito de Dhule, que abre y
+    // cuenta 36 bandharas.
+    expect(fichaDeEcorregion(315)).toBe('matorral_espinoso_decan');
     expect(fichaDeEcorregion(290)).toBe('decan_central_hardwickia');
     expect(PRACTICAS_POR_FICHA['decan_central_hardwickia']).toBeUndefined();
+    const phad = practicasDeFicha('matorral_espinoso_decan')[0]!;
+    expect(phad.practica).toMatch(/phad/i);
+    expect(phad.fuentes.every((f) => !/eacpm\.gov\.in/.test(f.url))).toBe(true);
   });
 
   it('el café de Kintamani no entra aunque la ficha sea la correcta', () => {

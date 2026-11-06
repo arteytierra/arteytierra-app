@@ -104,13 +104,14 @@ describe('las que no entraron por falta de ficha', () => {
     expect(PRACTICAS_POR_FICHA['pantanos_sumatra']).toBeUndefined();
   });
 
-  it('el cultivo mixto de la zona seca de Myanmar ya estaba entregado y el encargo lo había excluido', () => {
-    // Kyaukpadaung da 294 y el 294 no tiene ficha. La entrada equivalente está
-    // entregada y verificada desde el lote 2; el encargo de este lote la listaba
-    // entre las que no hay que volver a mandar.
+  it('el cultivo mixto de la zona seca de Myanmar ya estaba entregado, y en el 294 que ahora tiene ficha', () => {
+    // Kyaukpadaung da 294, que no tenía ficha cuando se montó este lote y la
+    // tiene desde el 05/11/2026. La entrada equivalente estaba entregada y
+    // verificada desde el lote 2; el encargo de este lote la listaba entre las
+    // que no hay que volver a mandar, y por eso la de acá no entró igual.
     expect(fichaDeEcorregion(235)).toBe('irrawaddy_deciduo');
-    expect(fichaDeEcorregion(294)).toBeNull();
-    expect(PRACTICAS_POR_FICHA['irrawaddy_deciduo']).toBeUndefined();
+    expect(fichaDeEcorregion(294)).toBe('bosques_secos_irrawaddy');
+    expect(practicasDeFicha('bosques_secos_irrawaddy')).toHaveLength(1);
   });
 });
 
@@ -225,11 +226,14 @@ describe('las fuentes y los totales del lote', () => {
     }
   });
 
-  it('el catálogo queda en 453 entradas sobre 221 fichas', () => {
+  it('el catálogo quedó en 453 entradas sobre 221 fichas, y hoy va en 457 sobre 225', () => {
+    // Las cuatro de más son del 06/11/2026 y no son de un lote de prácticas:
+    // salieron de montar las tres fichas de fase 4 que destrabaron entradas ya
+    // verificadas, más la mitad de la de Myanmar que cae en el 235.
     const fichas = Object.keys(PRACTICAS_POR_FICHA);
     const total = fichas.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(fichas).toHaveLength(221);
-    expect(total).toBe(453);
+    expect(fichas).toHaveLength(225);
+    expect(total).toBe(457);
   });
 
   it('ninguna fuente cuelga de un repositorio que sólo aloja', () => {
@@ -249,13 +253,18 @@ describe('las fuentes y los totales del lote', () => {
     }
   });
 
-  it('Indomalaya queda con 14 fichas sin ninguna práctica', () => {
+  it('Indomalaya quedó con 14 fichas sin ninguna práctica, y hoy son 13 de 38', () => {
+    // `irrawaddy_deciduo` salió de la lista el 06/11/2026: le entró la rotación
+    // de poroto negro de Pyinmana, que es la mitad de la entrada de Myanmar que
+    // el polígono partió. Las tres fichas nuevas de fase 4 nacieron con práctica,
+    // así que no entran acá.
     const ids = [
       'chao_phraya_deciduo', 'decan_central_hardwickia', 'decan_norte_sal',
       'decan_sur_elefantes', 'ghats_norte_deciduo', 'ghats_norte_montano',
-      'ghats_sur_deciduo', 'irrawaddy_deciduo', 'luzon_montano', 'negros_panay',
+      'ghats_sur_deciduo', 'luzon_montano', 'negros_panay',
       'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_toba', 'sri_lanka_montano',
     ];
+    expect(ids).toHaveLength(13);
     for (const id of ids) {
       expect(PRACTICAS_POR_FICHA[id], id).toBeUndefined();
     }

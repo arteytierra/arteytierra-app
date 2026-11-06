@@ -70,9 +70,11 @@ describe('la ficha del Decán central', () => {
 
   it('es una de las tres secas del bloque, y las tres están declaradas', () => {
     // Si alguna vez entra otra ecorregión seca a Indomalaya, hay que pasar por
-    // FUERA_DE_LA_REGLA en aptitudIndomalaya.test.ts antes de que esto pase.
+    // FUERA_DE_LA_REGLA en aptitudIndomalaya.test.ts antes de que esto pase. Ya
+    // pasó: el 05/11/2026 entraron tres más que tampoco salen de la regla, y una
+    // de ellas —el Irrawaddy seco— es de este mismo bioma 2.
     expect(ficha().id).toBe(DECAN);
-    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(35);
+    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(38);
     for (const id of [DECAN, NORTE, SUR]) {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
     }
@@ -144,14 +146,21 @@ describe('lo forestal: el uso que el bioma no nombraba', () => {
     expect(BIOMAS_GLOBALES[SECO]!.aptitud!.some((m) => m.uso === 'forestal')).toBe(false);
     expect(buscar(efectiva(), 'forestal')?.delta).toBe(15);
 
-    // Tres positivos en 35 fichas: el forestal de acá y las dos reservas del
-    // norte y del sur. La regla del −25 no puede dar ninguno, así que cualquier
-    // positivo nuevo tiene que entrar por este test y traer su propia fuente.
+    // Ocho positivos en 38 fichas. Cuatro son del Decán deciduo —el forestal de
+    // acá, el del norte y las dos reservas— y cuatro llegaron el 05/11/2026 con
+    // las tres fichas que destrabaron prácticas: las tres reservas, que en los
+    // tres casos confirman el número del bioma con el mecanismo del lugar, y el
+    // +10 de pasturas del Irrawaddy seco, que es el del bioma 2. La regla del
+    // −25 no puede dar ninguno, así que cualquier positivo nuevo tiene que
+    // entrar por este test y traer su propia fuente.
     const positivos = Object.entries(BIOMAS_REGIONALES_INDOMALAYA)
       .flatMap(([id, f]) => (f.aptitud ?? []).map((m) => [id, m] as const))
       .filter(([, m]) => m.delta > 0);
     expect(positivos.map(([id, m]) => `${id}/${m.uso}`)).toEqual([
       `${DECAN}/forestal`, `${NORTE}/forestal`, `${NORTE}/reserva`, `${SUR}/reserva`,
+      'manglares_sundarbans/reserva',
+      'bosques_secos_irrawaddy/pasturas', 'bosques_secos_irrawaddy/reserva',
+      'matorral_espinoso_decan/reserva',
     ]);
   });
 

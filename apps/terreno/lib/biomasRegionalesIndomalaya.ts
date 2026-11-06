@@ -1,5 +1,5 @@
 /**
- * Fichas regionales de Indomalaya: 35 fichas para 36 ECO_ID.
+ * Fichas regionales de Indomalaya: 38 fichas para 39 ECO_ID.
  *
  * El alcance y el porqué del recorte están en `ecorregionesIndomalaya.ts`. Acá
  * va lo que hay que saber para tocar los números.
@@ -34,6 +34,48 @@
  * lo que no se pudo leer. Sin esa lista, la ficha cae al catálogo por clase
  * Köppen, que es más grueso y sí tiene fuente. El Decán central sí los trae,
  * con el MPKV al lado.
+ *
+ * ## Y las tres del 05/11/2026 son de tres biomas distintos
+ *
+ * `manglares_sundarbans` (ECO_ID 323), `bosques_secos_irrawaddy` (294) y
+ * `matorral_espinoso_decan` (315) entraron porque cada una tenía una práctica
+ * fechada del territorio ya verificada que no se podía montar sin ficha. Son
+ * **bioma 14, bioma 2 y bioma 13**, y las dos puntas son biomas nuevos para este
+ * bloque. Igual que las tres del Decán, están declaradas como excepción en
+ * `tests/unit/contexto/aptitudIndomalaya.test.ts`: no salen de la regla del −25
+ * y no traen reparto de HWSD ni de SoilGrids.
+ *
+ * Las tres **confirman** todos los deltas que heredan en vez de corregirlos, y
+ * eso no es una abstención: confirmar convierte un delta heredado en un delta
+ * respaldado, y en los tres casos lo que cambia es *la variable que hay que
+ * mirar en el predio*, que es lo que el usuario necesita. En el manglar, si la
+ * parcela está detrás de un terraplén. En Myanmar, si está adentro de un área de
+ * riego. En el matorral espinoso, si cae en el área de mando de un phad.
+ *
+ * Tres advertencias sobre lo que estas fichas no dicen, que importan porque la
+ * entrega sí lo decía:
+ *
+ * 1. **El informe del Banco Mundial sobre el Sundarbans se cita por su
+ *    documento real.** La entrega lo citaba por un PDF alojado en
+ *    `sundarbanaffairswb.in`, que devuelve **200 con la página de error** del
+ *    propio departamento. Las cifras eran correctas; la URL no servía el
+ *    documento. Es el mismo 200 engañoso que el encargo ya había encontrado en
+ *    EUDASM, y confirma que la forma de verificar es leer el contenido.
+ * 2. **El «nivel de protección» de One Earth no es el porcentaje protegido.** Es
+ *    el porcentaje de la meta de la Red de Seguridad Global en una escala de 0 a
+ *    10, y la propia página lo aclara arriba de la tabla. El 294 tiene nivel 1 y
+ *    la entrega lo leyó como «menos del 1 % está protegido». Para el 315, en
+ *    cambio, el 1 % sí está escrito en el texto de la página: son dos cosas
+ *    distintas que se parecen.
+ * 3. **El matorral espinoso entra con seis especies y no con siete.** Las siete
+ *    con binomial que traía la entrega salen de `era-india.org`, que contesta con
+ *    una verificación anti-bot, así que no se citan; las seis que quedan son las
+ *    que nombran One Earth y la clasificación de formaciones leñosas de la FAO.
+ *    De esa última sale algo que la entrega no tenía: las dos series que le
+ *    corresponden al polígono —Albizia amara en el sur de la India, Acacia
+ *    catechu y Acacia arabica en la llanura del Decán— y la advertencia de que
+ *    parte de estos matorrales son series de reemplazo de las series más
+ *    húmedas, o sea que encontrar matorral no prueba que el sitio no dé más.
  *
  * ## La regla que produjo los otros modificadores es nuestra, no de HWSD
  *
@@ -140,6 +182,43 @@ const GARG = { label: 'Garg et al. 2021 — Impact of raised beds on surface run
 const MPKV = { label: 'Mahatma Phule Krishi Vidyapeeth — zonas agroclimáticas y cultivos de Maharashtra occidental', url: 'https://mpkv.ac.in/Home/MpkvAtaGlance' };
 const ONE_EARTH_297 = { label: 'One Earth — ecorregión 297 «North Deccan Dry Deciduous Forests»', url: 'https://www.oneearth.org/ecoregions/north-deccan-dry-deciduous-forests/' };
 const ONE_EARTH_298 = { label: 'One Earth — ecorregión 298 «South Deccan Plateau Dry Deciduous Forests»', url: 'https://www.oneearth.org/ecoregions/south-deccan-plateau-dry-deciduous-forests/' };
+
+// ─── Las tres del 05/11/2026: manglar de Sundarbans, Irrawaddy y matorral del Decán ──
+
+const ONE_EARTH_323 = { label: 'One Earth — ecorregión 323 «Sundarbans Mangroves»', url: 'https://www.oneearth.org/ecoregions/sundarbans-mangroves/' };
+const ONE_EARTH_294 = { label: 'One Earth — ecorregión 294 «Irrawaddy Dry Forests»', url: 'https://www.oneearth.org/ecoregions/irrawaddy-dry-forests/' };
+const ONE_EARTH_315 = { label: 'One Earth — ecorregión 315 «Deccan Thorn Scrub Forests»', url: 'https://www.oneearth.org/ecoregions/deccan-thorn-scrub-forests/' };
+
+/** El informe que contesta cuánto del polígono 323 es manglar y cuánto es isla
+ *  habitada con terraplén. **La entrega lo citó por una URL que no lo sirve**:
+ *  `sundarbanaffairswb.in` devuelve 200 con la página de error del propio
+ *  Departamento de Asuntos del Sundarban. Las cifras que la entrega le
+ *  atribuía son correctas y están textualmente acá, en el documento real del
+ *  repositorio del Banco Mundial, que es el que se cita. */
+const BANCO_MUNDIAL_SUNDARBANS = { label: 'Banco Mundial 2014 — Building Resilience for Sustainable Development of the Sundarbans: Strategy Report (informe 88061-IN)', url: 'https://documents.worldbank.org/curated/en/879351468259748207/pdf/880610REVISED00ns000Strategy0Report.pdf' };
+const UNESCO_SUNDARBANS = { label: 'UNESCO MAB — reserva de biosfera Sunderban (lado indio)', url: 'https://www.unesco.org/en/mab/sunderban' };
+/** Programa de Humedales de la UICN, volumen del lado de Bangladesh, que es el
+ *  60 % del bosque de la ecorregión. De acá sale el presupuesto de
+ *  precipitación menos evapotranspiración, que es el dato que decide el diseño.
+ *  Aviso: la entrega lo citaba como respaldo del modificador de pasturas y el
+ *  volumen **no habla de pastoreo de ganado**; su única mención de pastoreo es
+ *  a los ciervos. */
+const UICN_SUNDARBANS = { label: 'Hussain y Acharya (eds.) — Mangroves of the Sundarbans, vol. 2: Bangladesh, Programa de Humedales de la UICN', url: 'https://portals.iucn.org/library/sites/library/files/documents/WTL-013-v2.pdf' };
+
+/** Perfil hídrico nacional de la FAO para Myanmar: de acá sale el rango de
+ *  lluvia de la zona seca —que el encargo pedía y la entrega declaró no
+ *  encontrado, estando en este mismo PDF que la entrega citó dos veces— y la
+ *  historia del riego desde el siglo XI. */
+const FAO_MYANMAR_AGUA = { label: 'FAO 2012 — Irrigation in Southern and Eastern Asia in figures, AQUASTAT Water Report 37, capítulo de Myanmar', url: 'https://www.fao.org/fileadmin/user_upload/faowater/docs/WR_37_web.pdf' };
+const FAO_MYANMAR_SUELOS = { label: 'FAO — Improving plant nutrient management for better farmer livelihoods (tabla nacional de tipos de suelo de Myanmar y cultivos adecuados)', url: 'https://www.fao.org/4/ag120e/ag120e15.htm' };
+
+/** Agencia de aguas subterráneas de Maharashtra, ficha del distrito de Dhule,
+ *  que está adentro del polígono 315: de acá salen el reparto de basalto, los
+ *  niveles de agua por división geológica y los 36 phad bandharas. */
+const GSDA_DHULE = { label: 'GSDA Maharashtra — ficha hidrogeológica del distrito de Dhule', url: 'https://gsda.maharashtra.gov.in/en-dhule-district/' };
+/** Comisionado divisional de Nashik, mismo distrito: da 674 mm donde el GSDA da
+ *  512, y es la que trae el gradiente interno y los cultivos. */
+const DIVCOM_NASHIK = { label: 'Comisionado Divisional de Nashik, Gobierno de Maharashtra — perfil del distrito de Dhule', url: 'https://divcomnashik.maharashtra.gov.in/en/dhule-district-2/' };
 /** Catenas de Sambalpur y Koraput, Odisha: adentro del polígono 297. Licencia
  *  de la Sociedad India de Ciencia del Suelo: uso académico y no comercial del
  *  material, así que de acá sale el hallazgo citado y nunca el texto ni la tabla. */
@@ -1061,5 +1140,97 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
       { uso: 'reserva', delta: 20, razon: 'Las acciones prioritarias que publica la ficha de esta ecorregión son tres y dos están dirigidas a la tierra de afuera de las reservas: planificar el uso del suelo para evitar el desmonte no regulado y recuperar conectividad, e integrar al sistema de áreas protegidas los bosques y las áreas de conservación no tradicionales. Siete áreas protegidas sobre poco más del 1 % de la ecorregión, ninguna de más de 500 km², con la propia evaluación llamando a eso lamentablemente inadecuado, y todo adentro de un rango de 12.000 km² que sostiene la población de elefante asiático más grande del mundo. Un predio ahí comparte terreno con ese corredor, se lo planifique o no, y dejar en reserva lo que queda de monte es la pieza que el sistema público no tiene. Lo que este número no dice es dónde pasa el corredor: la ecorregión entera lo contiene, el trazado fino no está en estas fuentes y se verifica en el terreno.' },
     ],
     fuentes: [wwf('im0209', 'South Deccan Plateau dry deciduous forests'), ONE_EARTH_298, KALAM, RESOLVE],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Las tres del 05/11/2026 — cada una destraba una práctica ya escrita
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // IN/BD · ECO_ID 323 · bioma 14 · confianza media
+  manglares_sundarbans: {
+    id: 'manglares_sundarbans',
+    nombre: 'Manglares del Sundarbans',
+    emoji: '🌊',
+    color: '#2F6B57',
+    resumen: 'El manglar más grande del mundo, en el delta que forman juntos el Ganges, el Hooghly, el Padma, el Brahmaputra y el Meghna: 2.048.000 ha repartidas entre Bangladesh y la India, sobre un delta de más de 10.000 km². El nombre es el del árbol que lo domina, Heritiera fomes, que en bengalí se llama sundri. Y hay algo que el nombre de la ficha esconde y que decide todo lo demás: el polígono no es sólo manglar. El Banco Mundial cuenta, del lado indio, unos 4.200 km² de bosque de reserva y unos 5.400 km² de área no forestada sobre el borde norte y noroeste, que es la parte habitada: 54 islas con más de 4,4 millones de personas, repartidas en 19 bloques administrativos de North y South 24 Parganas. Eso no está afuera de la ecorregión: Gosaba, Basanti, Sagar e Hingalganj —cuatro de esos bloques— dan los cuatro 323 contra RESOLVE. Del bosque total, unos 10.200 km², cerca del 40 % cae en Bengala Occidental y el resto en Bangladesh. El 40 % del bosque de reserva indio está declarado área protegida, y la reserva de tigres del Sundarbans suma 2.585 km², de los cuales 1.600 son tierra y 985 son agua. One Earth le pone meta de conservación del 35 % y nivel de protección 9 sobre 10, el más alto de las fichas de este bloque. La mitad del manglar, en cambio, ya se cortó para leña.',
+    vegetacion: 'Comunidad dominada por Heritiera fomes, con Avicennia, Xylocarpus, Sonneratia, Bruguiera, Ceriops, Aegiceras y Rhizophora, y nipa —una palma adaptada a estuarios— bordeando los canales. El bosque sin disturbar tiene dosel denso y un sotobosque de plantines y renovales de las mismas especies del dosel. UNESCO cuenta 81 especies de plantas de manglar, la mayor diversidad de manglar del planeta. Y acá hay que detenerse en la lluvia, porque las tres fuentes no dicen lo mismo y la diferencia es grande: One Earth da más de 3.500 mm anuales para la ecorregión; UNESCO da 1.920 mm de media anual para la reserva de biosfera india; y el volumen de la UICN para el lado de Bangladesh mide, adentro del bosque, de 1.600 mm en el oeste a 2.000 mm en el este, con el 80 a 85 % cayendo entre mayo y septiembre. Dos mediciones independientes caen entre 1.600 y 2.000 y la cifra de escala de ecorregión casi la duplica. No se elige una: acequia lee la lluvia en el punto y el panel de clima es el que manda. Lo que sí hay que leer de esas fuentes es el balance, que es el dato que diseña: el presupuesto de precipitación de la UICN da una estación seca severa de seis meses en la que la lluvia queda por debajo de la demanda de evapotranspiración por unos 500 mm, con el peor momento entre febrero y abril, cuando la humedad del suelo está en su mínimo anual y el único agua disponible para transpirar es la superficial de los ríos y los caños. En el invierno seco las mareas se quedan bajas y áreas grandes del manglar pasan un período expuesto, sin inundación mareal. Los ciclones violentos aparecen de mediados de mayo a mediados de junio y otra vez en octubre y principios de noviembre; los de otoño duran más, traen lluvia y vienen con marea de tormenta.',
+    fauna: 'Es el único manglar que sostiene una población viable de tigre (Panthera tigris), que vive y nada entre las islas y caza chital, jabalí y hasta macacos; la gente que entra a juntar miel, pescar y hacer carbón también cae de vez en cuando. Más de 170 especies de aves, con 12 rapaces coexistiendo. Entre los mamíferos amenazados, el gato pescador (Prionailurus viverrinus), que se mete al agua a cazar peces y cangrejos sobre el borde de los canales, el gato selvático, pangolines y zorros voladores. En el agua, el cocodrilo de pantano y el marino (Crocodylus porosus), el varano acuático —el segundo lagarto más grande del mundo—, tiburones y delfines del Ganges (Platanista gangetica). Y los saltarines del fango, peces que respiran aire, salen del agua a los bancos de barro y trepan a los árboles. UNESCO cuenta para la reserva india 1.586 especies animales: más de 40 mamíferos, 163 aves, 56 reptiles, 165 peces, 23 moluscos, 15 langostinos y 67 cangrejos.',
+    suelos: 'Aluvión deltaico reciente, fino, bajo mareas. Acá no hay reparto de HWSD ni de SoilGrids —no se extrajo para este polígono y no se inventa—, y el trabajo sobre suelos sulfatados ácidos del delta del Ganges, que es de licencia CC-BY, no se cita porque su editorial contesta con una verificación anti-bot y no se pudo leer. Lo que sí hay es el mecanismo completo, medido y publicado, y es más útil que cualquier porcentaje. El terraplén que protege también hunde. Los terraplenes del Sundarbans —3.500 km en total, de los cuales 800 km son vulnerables a romperse, y construidos desde mediados del siglo XIX— se levantaron para dejar afuera la marea, y al hacerlo cortaron por completo la deposición de sedimento adentro de las áreas protegidas: la tierra ya no tiene cómo subir sola. El resultado es tierra baja, típicamente por debajo de la línea de marea alta, que se inunda con lluvia fuerte y pasa períodos largos de agua estancada durante el kharif, y eso condiciona qué se puede sembrar, con qué variedad y cuánto se cosecha. De ahí el predominio del arroz aman de monzón: el informe lo dice sin vueltas, para el agricultor no hay elección efectiva. La sal entra por dos caminos distintos, y conviene saber cuál es cuál porque se corrigen distinto: por inundación mareal cuando el terraplén se rompe, y por ascenso capilar desde las capas de abajo durante el rabi, el invierno. Para cultivar hay que lavar esas sales hacia abajo con agua dulce, y agua dulce casi no hay: los acuíferos dulces están, en promedio, entre 160 y 400 m de profundidad. Un análisis de más de 10.000 muestras de suelo de ocho bloques encontró el 32,4 % con salinidad alta —conductividad eléctrica por encima de 3 mmho/cm— y cerca del 40 % del área bruta cultivada de los bloques de North 24 Parganas está afectada por sal. Después de un ciclón la sal se suele lavar con unas pocas lluvias fuertes y la tierra vuelve a servir; después del Aila el suelo tardó más de un año de lluvias, y el mecanismo de la casa fue migrar a Calcuta y volver cuando el suelo se recuperó. Dos números de escala, para no diseñar sobre una finca imaginaria: la tenencia media entre quienes cultivan es de 0,36 ha, el 55,5 % de los que tienen tierra propia tienen entre 0,01 y 0,20 ha, y sólo el 16,3 % hace policultivo. El arroz es la producción principal; el informe nombra además frutas, verduras, sésamo, algodón, legumbres y hoja de betel, y el girasol, el algodón y el poroto mungo entran por programas de fomento. La hoja de betel y el mungo no tienen id en el catálogo de cultivos y van nombrados acá.',
+    saberes: [],
+    especies: [
+      'Sundri (Heritiera fomes)',
+      'Mangle gris (Avicennia marina)',
+      'Mangle rojo (Rhizophora apiculata)',
+      'Keora (Sonneratia apetala)',
+      'Mangle de flores grandes (Bruguiera gymnorhiza)',
+      'Goran (Ceriops decandra)',
+      'Nipa (Nypa fruticans)',
+    ],
+    cultivos: ['arroz', 'sesamo', 'algodon', 'girasol'],
+    aptitud: [
+      { uso: 'huerta', delta: -35, razon: 'Se confirma el número del bioma y se cambia la variable que lo decide. El bioma castiga por suelo salino y anegado, y para el manglar intermareal eso basta; pero el polígono incluye 54 islas con 4,4 millones de personas que cultivan, así que la pregunta no se puede contestar con la lluvia anual. La variable es si la parcela está detrás de un terraplén y cuánta sal sube en el rabi. Y la respuesta medida no es buena para la huerta: adentro del terraplén la deposición de sedimento se cortó, la tierra no sube, queda por debajo de la marea alta y se anega largo en el kharif, y el informe del Banco Mundial dice que la tierra intermareal ganada sólo sirve para un solo cultivo de arroz, porque el riego de invierno es imposible por la salinidad de la marea. La restricción principal que declaran los propios productores es la falta de riego: el 42 % depende de la lluvia y sólo el 6 % tiene pozo o estanque. Así que antes que el total de lluvia, mirá el agua dulce disponible y la época: si hay forma de lavar sal con agua dulce en el rabi, este castigo es más duro que el sitio; si no la hay, es exactamente el sitio.' },
+      { uso: 'frutales', delta: -35, razon: 'Se confirma, y por un motivo que es propio de lo perenne y no aparece en el número de la huerta. El bioma ya dice que ningún frutal tolera la salinidad y la falta de oxígeno del suelo intermareal, y que plantar exige drenar. Lo que agrega el lugar es el riesgo que corre una inversión de varios años: la sal entra cuando el terraplén se rompe, y hay 800 km de terraplén vulnerable sobre 3.500. Un cultivo anual pierde una temporada y vuelve a sembrar cuando unas lluvias fuertes lavaron la sal; después del ciclón Aila el suelo tardó más de un año de lluvias en recuperarse, y eso es lo que mata un monte frutal recién plantado. Si igual se planta, el criterio no es la especie sino la cota y la distancia al terraplén.' },
+      { uso: 'pasturas', delta: -30, razon: 'Se confirma. Sobre el manglar intermareal el número es del bioma y no hace falta discutirlo. Detrás del terraplén el límite es otro y conviene nombrarlo: no hay base forrajera que sostener, porque la tierra baja y anegada va al único cultivo posible, el arroz de monzón, y la tenencia media entre quienes cultivan es de 0,36 ha. Lo que se mide después del ciclón dice cuánto cuesta ignorarlo —el 80 % de los hogares encuestados tenía menos animales que el año anterior, el 40 % por inundación, el 30 % por enfermedad y el 15 % por falta de forraje—, pero eso mide lo que pasó y no la aptitud del sitio: el delta queda por lo primero.' },
+      { uso: 'reserva', delta: 30, razon: 'Se confirma el número del bioma con el mecanismo del lugar, que es defensa de costa y es cuantificable. Los bosques del Sundarbans forman la barrera natural que protege de los ciclones y de la marea a los cerca de 14 millones de habitantes de la región metropolitana de Calcuta y a los asentamientos del delta. Y hay una lectura más chica y más directa para quien tiene un predio acá: el manglar que queda por delante del terraplén es lo que sostiene al terraplén, de cuyos 3.500 km ya hay 800 vulnerables. Dejar el manglar en pie no es una concesión al paisaje, es la obra de protección más barata que hay en el predio. One Earth le pone meta de conservación del 35 % con nivel de protección 9 sobre 10, y el 40 % del bosque de reserva indio ya está declarado área protegida.' },
+    ],
+    fuentes: [ONE_EARTH_323, BANCO_MUNDIAL_SUNDARBANS, UNESCO_SUNDARBANS, UICN_SUNDARBANS, RESOLVE],
+  },
+
+  // MM · ECO_ID 294 · bioma 2 · confianza media
+  bosques_secos_irrawaddy: {
+    id: 'bosques_secos_irrawaddy',
+    nombre: 'Bosques secos del Irrawaddy',
+    emoji: '🐢',
+    color: '#A8753F',
+    resumen: 'Varios manchones de bosque seco en las cuencas del Irrawaddy, el Sittaung y el Salween, en el centro de Myanmar: 3.516.000 ha —unos 35.160 km²— en el único país que la ecorregión toca. Es la zona seca del país, a sombra de lluvia, y es además una de las regiones más pobladas y más cultivadas de Myanmar: casi todo el bosque ya fue convertido y lo que queda está degradado. Tiene uno de los tres refugios importantes de la tortuga estrellada birmana, en peligro crítico, y el santuario de vida silvestre de Minzontaung —22,6 km², chico— sostiene una población globalmente importante de esa especie, protegida por la creencia local de que matarla o juntarla trae mala suerte. Una corrección de lectura, porque es fácil de repetir: One Earth le pone meta de conservación del 9 % y nivel de protección 1, y ese nivel no es la fracción protegida sino el porcentaje de la meta de la Red de Seguridad Global en una escala de 0 a 10; la página no publica qué porcentaje de la ecorregión está protegido. La mayoría de los mamíferos grandes que vivían acá fue extirpada.',
+    vegetacion: 'Árboles espinosos, achaparrados y de poca altura —Terminalia oliveri, Tectona hamiltoniana, Senegalia catechu y Bauhinia racemosa— y los bosques de dipterocarpáceas que localmente se llaman Indaing, que se clasifican en Indaing alto y bajo por la estructura: el alto tiene dipterocarpáceas grandes y altas, y el bajo son los mismos bosques achaparrados, en buena medida por corte y quema repetidos del alto. Los dos tipos están extendidos y se caracterizan por Dipterocarpus tuberculatus, Shorea oblongifolia, Shorea siamensis y teca (Tectona grandis), la madera por la que Birmania fue famosa. También son comunes los bambúes altos: Dendrocalamus strictus, Bambusa polymorpha y B. tulda. La lluvia es el dato que ordena todo lo demás, y hay que leerlo entero: son unos 650 mm anuales, que empiezan alrededor de mediados de julio y caen de forma esporádica y torrencial hasta octubre, y la frase que explica el diseño es que rara vez hay más de quince días de lluvia en el año. La FAO encuadra la zona seca central entre 500 y 1.000 mm en su perfil hídrico y entre 728 y 849 mm en su documento de suelos, contra una media nacional de 2.341 mm; el extremo húmedo del país, en la costa de Rakhine y Tanintharyi, llega a 4.000 o 6.000 mm. Dos cosas más que esta ecorregión tiene y que no son la lluvia: los vientos del sur del verano erosionan los sustratos blandos de arenisca y arcilla, y el rango térmico amplio meteoriza esas rocas blandas; y la recarga subterránea es casi nula, por lo que la escasez de agua es extrema.',
+    fauna: 'Más de 300 especies de aves, con dos casi endémicas que lo son de los bosques secos de Myanmar: la urraca arbórea encapuchada de cola de raqueta (Crypsirina cucullata) y el charlatán de garganta blanca (Turdoides gularis). La urraca está restringida a la zona seca del centro del país, en especial a las planicies de inundación del Irrawaddy y el Sittaung, y sus poblaciones cayeron fuerte en los últimos años. La ecorregión se pisa con el Área de Aves Endémicas de las Planicies del Irrawaddy justamente por esas dos especies de rango restringido, y contiene varias Áreas Clave de Biodiversidad, sobre todo en tramos del río. La fauna que queda en las áreas protegidas es mayormente de talla media y chica: muntíaco, ciervo de Eld, sambar, leopardo común, gato selvático y chacal dorado. La especie emblema es la tortuga estrellada birmana.',
+    suelos: 'No hay reparto de HWSD ni de SoilGrids para este polígono: no se extrajo y no se inventa. Y hay una advertencia que vale más que una presunción, porque el encabezado de este bloque habla del Decán: el vertisol negro de la traza basáltica no se hereda acá. Es otro país y otro basamento, y lo que el primario describe son sustratos blandos de arenisca y arcilla, erosionados por el viento del verano y meteorizados por el rango térmico, que no es basalto. Lo que sí se puede citar es la tabla nacional de tipos de suelo de la FAO, con el aviso de que es nacional y no una estadística del polígono: la catena de luvisoles ocupa 1,78 millones de ha —el 2,6 % del país— y la FAO le asigna como cultivos adecuados arroz, chile, maní, sésamo, algodón, legumbres, caña de azúcar, forraje, girasol, sorgo y hortalizas; el vertisol ocupa 0,48 millones de ha —el 0,7 %— con una lista parecida. Los luvisoles pueden tener un horizonte arcilloso compacto y poca reserva útil arriba; el vertisol guarda humedad pero se fisura y se anega por temporada. Cuál de los dos le toca al predio no lo contesta esta ficha: lo contesta el panel de suelo.',
+    saberes: [],
+    especies: [
+      'Teca de hojas chicas (Tectona hamiltoniana)',
+      'Terminalia oliveri',
+      'Khair (Senegalia catechu)',
+      'Bauhinia racemosa',
+      'Dipterocarpo del Indaing (Dipterocarpus tuberculatus)',
+      'Shorea siamensis',
+      'Teca (Tectona grandis)',
+      'Bambú macizo (Dendrocalamus strictus)',
+    ],
+    cultivos: ['arroz', 'mani', 'sesamo', 'chile_seco', 'algodon', 'sorgo', 'cana_azucar', 'girasol', 'maiz_tropical'],
+    aptitud: [
+      { uso: 'huerta', delta: -10, razon: 'Se confirma el número del bioma y se afila el motivo, que es más duro de lo que el bioma supone. El bioma dice que sin riego ni cosecha de agua la huerta queda parada varios meses del año. Acá la FAO dice algo peor: en Mandalay, Sagaing y Magway, que son la zona seca central, hace falta riego suplementario para el arroz de la temporada de lluvia, porque la lluvia no alcanza a cubrir la demanda del cultivo. No es que falte agua en la seca: falta también cuando llueve. Y el agua que hay es traída, con una historia larga: las primeras obras se hicieron cerca de Bagan en los siglos XI y XII, eran desvíos sobre tributarios del Irrawaddy medio y se construyeron justamente para darle seguridad al cultivo de la temporada principal. Hoy, de 1.841.000 ha regadas en el país en 2000, el 46 % se riega con bomba, el 31 % por canal, el 11 % por tanque y el 4 % por pozo entubado; todo el riego de Myanmar es por superficie y la expansión del bombeo eléctrico está limitada por el suministro de electricidad. Así que la variable es si el predio está adentro de un área de riego o tiene un pozo cavado a mano, y no cuánto llueve. Y una consecuencia de diseño que sale de los quince días de lluvia al año: con esa distribución el que decide es el almacenamiento, no repartir la infiltración a lo largo de la temporada.' },
+      { uso: 'pasturas', delta: 10, razon: 'Se confirma el número del bioma con su advertencia, que acá tiene una razón extra y visible. El bioma dice que el pulso estacional favorece el pastoreo pero sólo con descanso, porque al final de la seca el suelo queda expuesto justo cuando llegan las primeras lluvias fuertes. En esta ecorregión las primeras lluvias son torrenciales y esporádicas desde mediados de julio, y el suelo descubierto tiene además dos agentes que el bioma no nombra: los vientos del sur del verano, que erosionan los sustratos blandos de arenisca y arcilla, y el rango térmico, que los meteoriza. La cobertura al final de la seca no es un detalle estético acá, es lo que impide que el perfil se vaya con la primera tormenta.' },
+      { uso: 'reserva', delta: 15, razon: 'El bioma seco no nombra el uso de reserva y acá hay con qué nombrarlo, porque la tercera acción prioritaria que publica la ficha de la ecorregión está dirigida a la tierra de afuera de las áreas protegidas: traer los bosques que quedan, en especial los de las Áreas Clave de Biodiversidad que no están protegidas, bajo un paraguas de protección. La escala dice por qué: el único área protegida que la ficha nombra son 22,6 km² sobre 35.160, casi todo el bosque ya fue convertido y lo que queda está degradado. Dos aves de rango restringido dependen de eso —la urraca encapuchada está confinada a la zona seca y a las planicies de inundación del Irrawaddy y el Sittaung, y viene cayendo— y las Áreas Clave de Biodiversidad están sobre tramos del río. Si una parte del predio es monte en pie y linda con el río, dejarla es la pieza que el sistema público no tiene.' },
+    ],
+    fuentes: [ONE_EARTH_294, FAO_MYANMAR_AGUA, FAO_MYANMAR_SUELOS, RESOLVE],
+  },
+
+  // IN/LK · ECO_ID 315 · bioma 13 · confianza media
+  matorral_espinoso_decan: {
+    id: 'matorral_espinoso_decan',
+    nombre: 'Matorral espinoso del Decán',
+    emoji: '🌵',
+    color: '#9B754A',
+    resumen: 'El matorral espinoso bajo y ralo de las partes áridas de la meseta del Decán: 34.100.000 ha —341.000 km²— que se extienden por varios estados de la India y llegan hasta la península de Jaffna, en el norte de Sri Lanka. Lo primero, porque ya costó una entrada de otro lote: el 315 no es el 290. Dhule, Sakri, Shindkheda, Malegaon y Jalgaon dan los cinco 315, y Jaffna también; el Decán central de Hardwickia es otro polígono. Llueve menos de 750 mm, con casi todo entre mayo y octubre, y el verano pasa de 40 °C. Esas condiciones más siglos de influencia humana dieron el matorral de dosel bajo con árboles espinosos cortos y ralos que la ecorregión representa; hay manchones de bosque seco deciduo repartidos que bien pueden haber sido la vegetación original, antes de que la actividad humana empujara la transición al matorral. Once áreas protegidas apenas cubren el 1 % de la superficie. Acá vive la única población conocida de la corredora de Jerdon, un ave nocturna y terrestre descripta en 1848, redescubierta en 1986 después de que el último registro fuera de 1900. Y los manchones de bosque seco de las sierras de Tirupathi, que siguen bien forestadas, son conocidos por su flora medicinal y por una cícada endémica y amenazada, Cycas beddomei, restringida a esas sierras.',
+    vegetacion: 'Dominan las acacias espinosas, que pasan a matorral de Euphorbia donde la lluvia es más baja y el sustrato queda expuesto y rocoso. La FAO ubica a esta formación dentro de las de matorral espinoso seco de la India, que van de bosque bajo a estepa desértica y aparecen desde el extremo sureste de la península por la faja semiárida del Decán a sotavento de los Ghats hasta Rajastán: vegetación xerófila, predominantemente espinosa, sobre suelos generalmente erosionados, pobres en nutrientes o fisiológicamente secos, con flora pobre y muy marcada por factores de degradación biótica. De esa clasificación salen las dos series que le corresponden a este polígono, Albizia amara en el sur de la India y Acacia catechu con Acacia arabica —hoy Vachellia nilotica— en la llanura del Decán y Gujarat. La misma fuente agrega una advertencia que conviene no saltear: parte de estos matorrales espinosos son probablemente series de reemplazo que hoy ocupan superficie de las series más húmedas, así que encontrar matorral no prueba que el sitio no dé más. La falta de un dosel cerrado deja pasar el sol y permite que crezcan pastos abajo, y esos pastos con las acacias sostienen varios mamíferos pastadores y ramoneadores y aves especialistas de pastizal: la avutarda india, el florican menor y la corredora de Jerdon. Prosopis juliflora, exótica y espinosa, está invadiendo las áreas degradadas junto con otras exóticas y empuja al ganado hacia las reservas forestales a buscar pastoreo. Y una distinción que decide un número: la fuente dice que el pastoralismo es un motor principal de la degradación, del pastoreo intenso con vacunos a la extracción de recursos del monte. Eso mide lo que hace la gente, no lo que el sitio aguanta, así que el −15 de pasturas del bioma queda con su propio argumento y no se mueve con ése.',
+    fauna: 'Los herbívoros van del chousingha o antílope de cuatro cuernos, que es chico, al antílope negro y el ciervo manchado, y de ahí al sambar, el nilgai y el gaur. Entre los carnívoros grandes, tigre, leopardo común, chacal dorado, hiena rayada y jaurías de cuón; entre los chicos, gato selvático y zorro indio. Puede que queden poblaciones chicas de lobo indio en las áreas más remotas, pero se cree que la mayoría fue eliminada por una combinación de envenenamiento en represalia por la depredación de ganado y de falta de presas. El oso bezudo está pero no es común. La especie emblema es la corredora de Jerdon (Rhinoptilus bitorquatus), y la ecorregión comparte su única población con la del Decán central.',
+    suelos: 'Acá no hay reparto de HWSD ni de SoilGrids —no se extrajo para este polígono— pero sí hay algo medido adentro, y es lo mejor que tiene esta ficha. La agencia de aguas subterráneas de Maharashtra, en su ficha del distrito de Dhule, que da 315, reporta el 93 % del distrito sobre basalto de la traza del Decán y el 7 % sobre aluvión del Tapi, y nombra los basaltos presentes: masivo, porfídico, amigdaloidal y zeolítico. Y da el dato que hay que mirar antes de contar con un pozo: el nivel del agua por división geológica. En las sierras del norte, sobre basalto amigdaloidal negro, está entre 2 y 5 m en la temporada de lluvia y entre 8 y 12 m en verano; en la sierra de Satmala, sobre basalto vesicular fracturado y zeolítico, entre 5 y 8 m contra 10 y 12 m. Esa distancia entre las dos columnas es la advertencia: el nivel que hay cuando llueve no es el nivel que hay cuando el cultivo lo necesita. Tres de los cuatro tahsils del distrito están declarados propensos a sequía. Y la lluvia anual no tiene un solo valor ni adentro de un mismo distrito: el GSDA da 512 mm para Dhule y el comisionado divisional de Nashik da 674 mm para el mismo Dhule, un 32 % de diferencia entre dos oficinas del mismo estado. La segunda agrega el gradiente interno, que es lo que de verdad sirve: el 88 % de la lluvia cae en el monzón del suroeste, julio es el mes más lluvioso, y Navapur, sobre el borde occidental contra los Ghats y el Satpuda, llega a 1.097,1 mm. Así que no se toma un anual de tabla: acequia lo lee en el punto. Lo que no se hace acá, y es una decisión: no se transfiere el escurrimiento medido del Decán central. En las microcuencas del ICRISAT, que están adentro del 290, el vertisol arcilloso con cultivo escurre del 7 al 11 % de la lluvia y el alfisol arenoso del 16 al 17 %, al revés de lo que dice cualquier tabla por textura. Es la misma provincia basáltica, pero es otro polígono, otra lluvia y otras pendientes, y no se encontró una medición comparable para el 315. Si aparece una, el número sale de ahí y no de acá.',
+    saberes: [],
+    especies: [
+      'Albizia amara',
+      'Khair (Senegalia catechu)',
+      'Babul (Vachellia nilotica)',
+      'Acacias espinosas (Acacia spp.)',
+      'Euphorbias arborescentes (Euphorbia spp.)',
+      'Cícada de Beddome (Cycas beddomei)',
+    ],
+    cultivos: ['trigo', 'mijo', 'sorgo', 'cebolla', 'algodon'],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Se confirma el número del bioma y se le corrige el ejemplo, que acá está mal elegido. El bioma dice que sin agua traída de otro lado no hay huerta y que el sistema histórico es el oasis; es cierto lo primero y no lo segundo. El sistema histórico del noroeste de Maharashtra es el phad: un desvío comunitario que saca agua del río con un bandhara, la pasa por canal a través de bloques de parcelas y la devuelve al río. No es un oasis, que concentra agua propia en un punto, sino un reparto en tránsito, con turnos. El GSDA cuenta 36 phad bandharas en el solo distrito de Dhule, muchos en buen estado y funcionando, y el registro le atribuye más de mil años. Que exista y sea viejo no levanta el castigo, y esto es lo que decide: la misma administración dice que la mayor parte del distrito no está bajo riego y que el cultivo depende fuertemente del monzón. Así que la variable es si el predio cae en el área de mando de un phad o abajo de un bandhara. Si cae, este número es más duro que el sitio; si no cae, es el sitio, y lo que define la ventana de la huerta es la profundidad del nivel de agua en verano, que acá se va a 8 o 12 m sobre basalto.' },
+      { uso: 'pasturas', delta: -15, razon: 'Se confirma, y como límite de carga y de recuperación, que es lo que el bioma quiso decir: la carga que aguanta es baja y el error se paga con desertificación. Lo que agrega el lugar son las dos condiciones físicas que lo explican: lluvia por debajo de 750 mm concentrada entre mayo y octubre, con el resto del año seco, y sectores con el sustrato expuesto y rocoso, donde el matorral de acacias ya pasó a matorral de Euphorbia. Que acá el pastoralismo sea un motor principal de la degradación, con pastoreo intenso de vacunos, no se usa para este número: mide lo que está pasando y no lo que el sitio puede. Hay una consecuencia de manejo que sí sale de eso y vale decirla: Prosopis juliflora está invadiendo lo degradado y empuja al ganado hacia las reservas, así que el costo de sobrecargar no se paga sólo en kilos sino en una invasora que ocupa el lugar del pasto.' },
+      { uso: 'reserva', delta: 15, razon: 'Se confirma el número del bioma, y acá el argumento es de superficie y no de costra biológica. Once áreas protegidas apenas cubren el 1 % de la ecorregión, y la propia evaluación dice que todavía quedan manchones dispersos del hábitat original que pueden y deberían conservarse. Lo que depende de esos manchones tiene nombre: la única población conocida de la corredora de Jerdon, la avutarda india, el florican menor y la cícada endémica Cycas beddomei. Y la primera acción recomendada está dirigida a la tierra de afuera de las reservas: evitar más conversión y degradación de los manchones que quedan, incluido el control de las invasoras. Si una parte del predio es matorral o bosque seco en pie, dejarla y controlar Prosopis es exactamente lo que la evaluación pide, y es también lo que evita que el pastoreo se corra a la reserva de al lado.' },
+    ],
+    fuentes: [ONE_EARTH_315, GSDA_DHULE, DIVCOM_NASHIK, FAO_FORMACIONES, RESOLVE],
   },
 };

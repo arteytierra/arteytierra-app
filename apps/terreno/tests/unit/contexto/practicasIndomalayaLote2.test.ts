@@ -83,24 +83,29 @@ describe('las mudanzas del lote: el ECO_ID manda sobre el nombre', () => {
   });
 });
 
-describe('las dos entradas que no entraron por falta de ficha', () => {
-  it('el manglar de Sundarbans no tiene ficha curada, así que el arroz salino espera', () => {
+describe('las dos que esperaban ficha, y la ficha llegó', () => {
+  it('el manglar de Sundarbans ya tiene ficha, y el arroz salino entró ahí', () => {
     // Gosaba, Kakdwip y Patharpratima —las islas habitadas de South 24
-    // Parganas— dan 323, y el 323 es manglar sin ficha. La entrada sobre
-    // variedades locales tolerantes a la sal no tiene dónde montarse: el 282,
-    // que sí tiene ficha, es el pantano de agua dulce del lado de Bangladesh.
-    expect(fichaDeEcorregion(323)).toBeNull();
+    // Parganas— dan 323, y el 323 estuvo sin ficha hasta el 05/11/2026. La
+    // entrada sobre variedades locales tolerantes a la sal no tenía dónde
+    // montarse; ahora la tiene, y sigue sin estar en el 282, que es el pantano
+    // de agua dulce y es otra ficha con otra práctica.
+    expect(fichaDeEcorregion(323)).toBe('manglares_sundarbans');
+    expect(practicasDeFicha('manglares_sundarbans').some((p) => /sal\b/i.test(p.practica))).toBe(true);
     expect(practicasDeFicha('pantanos_sundarbans').some((p) => /salin/i.test(p.practica))).toBe(false);
   });
 
-  it('la zona seca del Irrawaddy tampoco, y no es el deciduo húmedo', () => {
-    // Nyaung-U, Kyaukpadaung y Magway dan 294, Irrawaddy dry forests, sin
-    // ficha. La entrega los había puesto en `irrawaddy_deciduo`, que es el 235
-    // —moist deciduous— y es otra cosa: el cultivo mixto de la zona seca es una
-    // respuesta a la sequía, no a la humedad.
-    expect(fichaDeEcorregion(294)).toBeNull();
+  it('la zona seca del Irrawaddy también, y el trabajo se partió en dos fichas', () => {
+    // Nyaung-U, Kyaukpadaung y Magway dan 294, Irrawaddy dry forests, que desde
+    // el 05/11/2026 tiene ficha. La entrega había puesto la entrada entera en
+    // `irrawaddy_deciduo`, que es el 235 —moist deciduous—, y tenía razón por la
+    // mitad: el trabajo de Khin fotografía el intercalado de maní y sésamo en
+    // Nyaung-U (294) y la rotación de poroto negro después del arroz en Pyinmana
+    // (235). Las dos entraron, cada una donde cae el polígono.
+    expect(fichaDeEcorregion(294)).toBe('bosques_secos_irrawaddy');
     expect(fichaDeEcorregion(235)).toBe('irrawaddy_deciduo');
-    expect(PRACTICAS_POR_FICHA['irrawaddy_deciduo']).toBeUndefined();
+    expect(practicasDeFicha('bosques_secos_irrawaddy')[0]!.practica).toMatch(/Maní y sésamo/);
+    expect(practicasDeFicha('irrawaddy_deciduo')[0]!.practica).toMatch(/Poroto negro/);
   });
 });
 

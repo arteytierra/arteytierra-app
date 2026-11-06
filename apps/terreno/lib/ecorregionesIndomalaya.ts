@@ -1,7 +1,7 @@
 /**
  * ECO_ID de RESOLVE de Indomalaya: el sur de Asia, Indochina y la Sonda.
  *
- * Son 34 ECO_ID y 33 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
+ * Son 39 ECO_ID y 38 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
  * de enumerar una envolvente como los lotes de la UE o el norte de África. Este
  * lote se recortó al revés: se buscaron las ecorregiones donde el bioma global
  * `resolve_bosque_tropical_humedo` estaba **diciendo un número equivocado**.
@@ -51,6 +51,40 @@
  * el corredor del elefante asiático: 12.000 km² y unos 6.300 animales, la
  * población más grande del mundo, con el 1 % de la ecorregión protegido.
  *
+ * ## Y el 05/11/2026 entraron tres que no corrigen ningún número
+ *
+ * El ECO_ID 323 —manglar de Sundarbans—, el 294 —bosques secos del Irrawaddy— y
+ * el 315 —matorral espinoso del Decán— entraron por otro motivo: cada uno tenía
+ * una práctica fechada del territorio **ya verificada y sin poder montarse**,
+ * porque la ficha donde vive no existía. Son además los dos primeros biomas
+ * nuevos del bloque: el 323 es bioma 14, manglar, y el 315 es bioma 13, desierto
+ * y matorral xerófilo; hasta acá el bloque era todo bioma 1 y 2.
+ *
+ * Lo que trajo cada uno:
+ *
+ * - **El 323 no es sólo manglar, y eso es el hallazgo.** El polígono contiene
+ *   las islas habitadas del borde norte y noroeste: 54 islas, más de 4,4
+ *   millones de personas, 19 bloques administrativos. Está medido —Gosaba,
+ *   Basanti, Sagar e Hingalganj dan los cuatro 323— y está contado: unos
+ *   4.200 km² de bosque de reserva contra unos 5.400 km² de área no forestada
+ *   habitada, del lado indio. Los cinco modificadores del bioma se confirman,
+ *   pero el de huerta cambia de variable: lo que decide no es la lluvia anual
+ *   sino si la parcela está detrás de un terraplén, y el terraplén, al cortar la
+ *   deposición de sedimento, deja tierra que no puede subir y se anega.
+ * - **El 294 es la zona seca de Myanmar y su límite no es la seca.** La FAO dice
+ *   que en Mandalay, Sagaing y Magway hace falta riego suplementario para el
+ *   arroz *de la temporada de lluvia*, porque la lluvia no cubre la demanda del
+ *   cultivo. Rara vez hay más de quince días de lluvia en el año.
+ * - **El 315 no es el 290, y su sistema histórico no es el oasis.** Dhule,
+ *   Sakri, Shindkheda, Malegaon y Jalgaon dan los cinco 315, y Jaffna también.
+ *   El sistema de la región es el *phad*, un desvío comunitario que saca agua del
+ *   río, la pasa por bloques de parcelas y la devuelve: 36 bandharas en el solo
+ *   distrito de Dhule. El castigo de huerta igual se confirma, porque la misma
+ *   administración dice que la mayor parte del distrito no está bajo riego.
+ *
+ * El veredicto del lote está en
+ * `_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_04_05_06.md`.
+ *
  * Lo que este lote **no** cubre: el resto de Indomalaya (península malaya,
  * Borneo de tierra firme, Nueva Guinea, el Himalaya, Indochina seca) sigue
  * cayendo al bioma global. No es un olvido: son las que corregían un número,
@@ -71,20 +105,23 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   275: 'sri_lanka_montano',          // Sri Lanka montane rain forests
   301: 'sri_lanka_zona_seca',        // Sri Lanka dry-zone dry evergreen forests
 
-  // Las tres del Decán — las únicas de bioma seco (bioma 2) de este bloque
+  // El Decán seco: tres de bioma 2 y el matorral espinoso, que es bioma 13
   290: 'decan_central_hardwickia',   // Central Deccan Plateau dry deciduous forests
   297: 'decan_norte_sal',            // North Deccan dry deciduous forests
   298: 'decan_sur_elefantes',        // South Deccan Plateau dry deciduous forests
+  315: 'matorral_espinoso_decan',    // Deccan thorn scrub forests — bioma 13, llega a Jaffna
 
   // La llanura indogangética y el Brahmaputra
   222: 'valle_brahmaputra',          // Brahmaputra Valley semi-evergreen forests
   238: 'gangetica_inferior',         // Lower Gangetic Plains moist deciduous forests
   287: 'gangetica_superior',         // Upper Gangetic Plains moist deciduous forests
   282: 'pantanos_sundarbans',        // Sundarbans freshwater swamp forests
+  323: 'manglares_sundarbans',       // Sundarbans mangroves — bioma 14, el único del bloque
 
   // Indochina — Irrawaddy, Chao Phraya, Mekong y río Rojo
   234: 'pantanos_irrawaddy',         // Irrawaddy freshwater swamp forests
   235: 'irrawaddy_deciduo',          // Irrawaddy moist deciduous forests
+  294: 'bosques_secos_irrawaddy',    // Irrawaddy dry forests — bioma 2
   224: 'pantanos_chao_phraya',       // Chao Phraya freshwater swamp forests
   225: 'chao_phraya_deciduo',        // Chao Phraya lowland moist deciduous forests
   285: 'pantanos_tonle_sap',         // Tonle Sap freshwater swamp forests

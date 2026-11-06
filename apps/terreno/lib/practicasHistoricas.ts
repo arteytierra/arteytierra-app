@@ -37,7 +37,42 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 04/11/2026
+ * ESTADO, al 06/11/2026
+ *
+ * 457 entradas sobre 225 fichas, de un catálogo de 259. Indomalaya baja a 13
+ * fichas sin ninguna práctica, de 38.
+ *
+ * Las cuatro que se sumaron no vinieron de un lote de prácticas: vinieron de
+ * montar tres fichas de ecorregión. Tres entradas estaban verificadas y sin
+ * poder entrar desde los lotes 2, 3 y 6 de fase 6 porque la ficha donde viven
+ * no existía —el manglar habitado de Sundarbans (323), la zona seca de Myanmar
+ * (294) y el phad del noroeste de Maharashtra (315)—, y las tres fichas se
+ * montaron el 05/11/2026. Esto es lo que apareció al desatarlas:
+ *
+ * - **El phad esperaba ficha y también fuente.** La que traía la entrega,
+ *   alojada en `eacpm.gov.in`, no responde por ningún camino. Entró con otra que
+ *   sí abre y que además es mejor: la ficha hidrogeológica del distrito de Dhule
+ *   de la propia agencia de aguas de Maharashtra, que cuenta 36 bandharas en el
+ *   distrito, dice que muchos funcionan y le atribuye, según el registro, más de
+ *   mil años. La entrega decía 300 a 400 años citando el documento que no abre.
+ * - **La entrada de Myanmar eran dos prácticas en dos ecorregiones.** El trabajo
+ *   de Khin fotografía el intercalado de maní y sésamo en Nyaung-U, que da 294,
+ *   y la rotación de poroto negro después del arroz en Pyinmana, que da 235. La
+ *   entrega las había puesto juntas en `irrawaddy_deciduo`, que es el 235: tenía
+ *   razón para la mitad. Las dos entraron, cada una en su ficha, y el 235 pasó
+ *   de cero prácticas a una. Thazi y Yamethin, los otros dos municipios que el
+ *   trabajo nombra, también dan 235.
+ * - **El informe del arroz salino cubre seis bloques y el polígono los parte.**
+ *   Gosaba, Kakdwip, Patharpratima, Sagar e Hingalganj dan 323; Sandeshkhali da
+ *   282, que es el pantano de agua dulce y ya tiene su propia entrada. La entrada
+ *   entra por los cinco primeros y lo dice.
+ *
+ * Y una nota de método que vale para los próximos lotes: el PDF de Khin es un
+ * escaneo sin texto, así que `pypdf` devuelve cuatro páginas vacías. Se leyó
+ * extrayendo las imágenes embebidas del PDF y mirándolas. Un PDF que no deja
+ * extraer texto no es un PDF cerrado.
+ *
+ * ESTADO anterior, al 04/11/2026
  *
  * 453 entradas sobre 221 fichas, de un catálogo de 259. El reparto: 71 fichas
  * tienen una sola entrada, 75 tienen dos, 70 llegaron a tres —que es el piso que
@@ -5820,6 +5855,86 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'La geometría es el arreglo: 18 m entre pares de hileras, 2 m entre las dos hileras del par y 1 m entre plantas, con el clon G 48, de modo que queda un callejón ancho para el cultivo agrícola. El mecanismo por el que se prefiere va en los dos sentidos y la fuente lo dice así: el cultivo paga la rotación del árbol, y el riego y la carpida que el cultivo necesita hacen crecer más rápido al álamo. Lo que cambia con los años no es el árbol sino el cultivo, y el manual lo separa por posición: con el álamo en los bordes del lote se pueden hacer los cultivos de kharif y de rabi durante toda la rotación, mientras que en plantación en macizo los kharif de siempre aguantan sólo dos años y después hay que pasar a cultivos que toleran sombra —jengibre, cúrcuma—, con los de rabi siguiendo normalmente. La rotación para madera laminada es de 6 a 8 años, y las combinaciones más comunes de la región son álamo con trigo y álamo con mostaza. Un dato de origen que conviene leer junto con el resto: el álamo no es una práctica heredada, llegó a las chacras de Punjab, Haryana y el oeste de Uttar Pradesh en los años setenta con un programa de extensión de una industria de fósforos financiado por el banco agrícola nacional, así que lo que sostiene al sistema es que haya quien compre la madera.',
       fuentes: [
         { label: 'CIFOR-ICRAF — Promising Agroforestry Tree Species in India', url: 'https://www.cifor-icraf.org/publications/downloads/Publications/PDFS/B17969.pdf' },
+      ],
+    },
+  ],
+
+  // ══ Las cuatro que destrabaron las fichas de fase 4 (06/11/2026) ═══════════
+  // Tres esperaban ficha desde los lotes 2, 3 y 6 de fase 6, y la cuarta salió
+  // de partir una entrada por el polígono: el trabajo de Khin fotografía dos
+  // prácticas distintas en dos ecorregiones distintas.
+
+  // ── El manglar habitado del Sundarbans ─────────────────────────────────────
+  // Esperaba ficha desde el lote 3 de fase 6. El informe cubre seis bloques y
+  // RESOLVE los parte: Gosaba, Kakdwip, Patharpratima, Sagar e Hingalganj dan
+  // 323 —esta ficha— y Sandeshkhali da 282, el pantano de agua dulce.
+  manglares_sundarbans: [
+    {
+      practica: 'Las variedades de arroz que aguantan sal, que volvieron después del Aila',
+      periodo: 'Variedades de la época del poblamiento de las islas, entre fines del siglo XIX y principios del XX; desplazadas después de la Revolución Verde y en recuperación desde el ciclón Aila de 2009; relevamiento de 157 hogares en 2016-17',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Las islas se poblaron desmontando manglar, y el arroz con el que se las sembró era de variedades locales tolerantes a la sal, elegidas para ese suelo y ese clima. La Revolución Verde las reemplazó por variedades de alto rendimiento, y lo que mostró el ciclón Aila de 2009 fue el precio de ese cambio: la marea de tormenta inundó con agua salada casi toda la superficie de esas islas, la pérdida de la cosecha fue total y empujó una migración grande de adultos en edad de trabajar. De ahí sale la práctica que el informe documenta: volver a las variedades locales, no para rendir más sino como seguro contra la pérdida total. Lo hacen productores por su cuenta y algunas ONG locales, y pudieron hacerlo porque muchas de esas variedades habían sobrevivido en cantidades chicas en rincones de las islas más remotas. El informe trae el ranking que los propios productores hacen por tolerancia a la sal, y ahí está el mecanismo económico que decide cuál se difunde y cuál no: la que está en todo el delta es Dudhersar, que es de tolerancia media, y se difunde porque a pesar de rendir poco el precio que consigue la sobrecompensa; las de tolerancia alta que la ciencia identificó y que se cultivan en el Sundarbans —Darsal, Nona Bokra, Talmugur— no consiguen ese premio de precio y quedan en bolsones, confinadas a hogares vecinos entre sí. O sea que lo que limita la difusión de la variedad más tolerante no es agronómico sino de mercado. El relevamiento cubrió 157 hogares en 15 panchayats de seis bloques de North y South 24 Parganas.',
+      fuentes: [
+        { label: 'Ministerio de Agricultura de la India (desagri) — A Study on Indigenous Rice Varieties in Sundarban Delta and Their Role in Ensuring Local Food Security in the Face of Climate Change Threats (2016-17)', url: 'https://desagri.gov.in/wp-content/uploads/2024/03/2016-17-Indigenous-rice-varieties-in-Sundarban-delta-and-role-in-local-food-security-in-the-face-of-climate-threa.pdf' },
+      ],
+    },
+  ],
+
+  // ── La zona seca de Myanmar ────────────────────────────────────────────────
+  // Esperaba ficha desde el lote 2 de fase 6. La entrega la había puesto entera
+  // en `irrawaddy_deciduo`, y el polígono la parte en dos: el intercalado de
+  // Nyaung-U es 294 —esta ficha— y la rotación de Pyinmana es 235, que es
+  // justamente la ficha que la entrega proponía. Las dos entran, cada una donde
+  // cae. Kyaukpadaung y Meiktila también dan 294; Thazi y Yamethin dan 235.
+  bosques_secos_irrawaddy: [
+    {
+      practica: 'Maní y sésamo en la misma parcela de secano, en Nyaung-U',
+      periodo: 'Registrado en el municipio de Nyaung-U en noviembre de 2009, en un relevamiento de estrategias frente a la sequía de la zona seca',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'En el secano de la zona seca el maní y el sésamo se intercalan en la misma parcela. El trabajo lo documenta con fotografía de campo en el municipio de Nyaung-U, en noviembre de 2009, y lo ubica dentro de las respuestas de la región a la sequía, junto con la diversificación de cultivos y las variedades resistentes. El contexto que le da sentido lo describe la misma fuente y conviene leerlo entero antes de copiar el arreglo: la zona seca tiene suelo de muy baja fertilidad, lluvia errática y degradación alta de la tierra, y la producción agrícola depende desde hace siglos del agua de las represas grandes y chicas y del riego por tanque. En 2009 el área bajo riego llegaba a cerca del 30 % de la superficie sembrada del país, y la misma década había traído un monzón que entraba más tarde que lo habitual y un patrón de precipitación cambiado. En esas condiciones el intercalado no es una técnica de intensificación: es un reparto de riesgo entre dos cultivos de distinta duración en el mismo suelo, para que algo de la parcela coseche cuando la lluvia falla. La otra foto del mismo relevamiento, del municipio vecino de Kyaukpantaung, es de plantas de maní sufriendo sequía: el arreglo reparte el riesgo, no lo cancela.',
+      fuentes: [
+        { label: 'Khin Lay Swe 2011 — Coping strategies with drought and agricultural development in dry zone, Myanmar, Center for Southeast Asian Studies, Universidad de Kioto', url: 'https://pas.cseas.kyoto-u.ac.jp/member_gyoseki/khin/khin2011-1.pdf' },
+      ],
+    },
+  ],
+
+  // ── El bosque deciduo húmedo del Irrawaddy ─────────────────────────────────
+  // La otra mitad del mismo trabajo: Pyinmana da 235, y Thazi —donde están las
+  // bombas de pedal y los pozos someros— también. Esta ficha estaba sin ninguna
+  // práctica.
+  irrawaddy_deciduo: [
+    {
+      practica: 'Poroto negro después del arroz, y el arroz secándose sobre el camellón',
+      periodo: 'Registrado en el municipio de Pyinmana en noviembre de 2009',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Después de cosechar el arroz, la misma parcela va a poroto negro. El trabajo lo documenta con fotografía de campo en el municipio de Pyinmana, en noviembre de 2009, y el pie de foto agrega el detalle que explica cómo se encadena una cosa con la otra: el arroz cosechado se seca al sol sobre el camellón de la parcela, de modo que la era y el lote son el mismo lugar y la rotación no espera a que se libere otro espacio. La fuente ubica la rotación entre las respuestas a la sequía de la región, junto con el intercalado de maní y sésamo que registra más al oeste, ya en la zona seca propiamente dicha. Dos cosas del entorno, de la misma fuente, que cambian cómo se lee esto: el riego de la región se apoya desde hace siglos en represas y tanques, y en las dos décadas previas al relevamiento se habían instalado 228 represas, 322 estaciones de bombeo desde ríos, 7.974 estaciones de captación de agua subterránea y 658 represas rurales chicas; y en el mismo municipio vecino de Thazi el trabajo fotografía bombas de pedal y pozos someros para bombear agua subterránea. La rotación de secano y el pozo conviven.',
+      fuentes: [
+        { label: 'Khin Lay Swe 2011 — Coping strategies with drought and agricultural development in dry zone, Myanmar, Center for Southeast Asian Studies, Universidad de Kioto', url: 'https://pas.cseas.kyoto-u.ac.jp/member_gyoseki/khin/khin2011-1.pdf' },
+      ],
+    },
+  ],
+
+  // ── El matorral espinoso del Decán ─────────────────────────────────────────
+  // Esperaba ficha desde el lote 6 de fase 6, y además esperaba fuente: la que
+  // traía la entrega, en `eacpm.gov.in`, no responde por ningún camino. Esta
+  // entra por la ficha hidrogeológica del distrito de Dhule, que abre, es de la
+  // propia agencia de aguas de Maharashtra y da el conteo.
+  matorral_espinoso_decan: [
+    {
+      practica: 'El phad: sacar agua del río, pasarla por los campos y devolverla',
+      periodo: 'La administración de aguas de Maharashtra le atribuye, según el registro, un origen de más de mil años; 36 bandharas contados en el distrito de Dhule, muchos en buen estado y funcionando',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'El phad bandhara es un azud de derivación: no embalsa el río, lo desvía. El agua sale del cauce, se conduce por un sistema de canales a través de los campos y vuelve a soltarse al río aguas abajo. Lo que lo distingue de una represa es eso último, que el agua está de paso y no almacenada, y lo que lo distingue de un pozo es que el recurso es compartido y el reparto entre parcelas es una decisión del conjunto. La agencia de aguas subterráneas del estado lo presenta como aquello por lo que el distrito de Dhule es conocido, cuenta 36 en el distrito y dice que muchos están en buen estado y funcionando. Para leer qué resuelve, los números del mismo distrito: la lluvia media anual que esa agencia publica son 512 mm, tres de los cuatro tahsils están declarados propensos a sequía, y el nivel del agua subterránea sobre basalto baja de 2 a 5 m en la temporada de lluvia a 8 a 12 m en verano. En ese cuadro, un sistema que toma agua del río cuando corre y la reparte por turnos entre bloques de parcelas es la diferencia entre una cosecha y ninguna. La misma fuente marca el límite de la práctica sin decirlo: la mayor parte del distrito no está bajo riego y el cultivo depende del monzón, así que el phad define un área de mando y no una condición general de la región.',
+      fuentes: [
+        { label: 'GSDA Maharashtra — ficha hidrogeológica del distrito de Dhule (phad bandharas, geología y niveles de agua)', url: 'https://gsda.maharashtra.gov.in/en-dhule-district/' },
       ],
     },
   ],
