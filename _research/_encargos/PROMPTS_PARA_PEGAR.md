@@ -17,9 +17,18 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 ## Por orden de lo que destraba
 
-**No queda ningún encargo escrito sin usar.** Los cinco que había volvieron
-entre el 05 y el 06/11/2026 y están todos cerrados y montados. Lo que sigue es
-escribir los dos que faltan, que están descriptos más abajo.
+| # | Qué pegar | Qué destraba | Dónde cae |
+|---|---|---|---|
+| **1** | `ENCARGO_FASE_4_LOTES_07_08.md` | Las dos turberas: ECO_ID 286 y 280. Cada una tiene una práctica entregada y verificada que no se puede montar sin la ficha. | `entregas\fichas-indomalaya\07.json` y `08.json` |
+| **2** | `ENCARGO_FASE_6_REPESCA.md` | Seis blancos con nombre. Si entran, Indomalaya baja de 13 fichas sin práctica a 8. | `entregas\practicas-indomalaya\11.json` |
+
+Uno por chat, y **el orden importa**: el de las turberas primero, porque dos de
+las entradas que la repesca no tiene que mandar son justamente las que esas dos
+fichas destraban.
+
+Son los dos últimos encargos del patrón que viene funcionando —ficha que
+destraba trabajo ya hecho, y repesca de blancos ya verificados—. Lo que queda
+después es relevamiento nuevo, que rinde menos por token.
 
 ### Lo que cerró el 06/11/2026, por la tarde
 
@@ -83,20 +92,46 @@ números atribuidos a un documento que abre y que **no los contiene**. Es la
 primera falla del circuito que no se detecta abriendo la fuente sino leyéndola.
 El veredicto está al final de `_research/_encargos/RESPUESTAS_FORRAJE.md`.
 
-### Los dos que hay que escribir, y que ahora son los únicos que quedan
+### Los dos que están arriba, con lo que traen adentro
 
-No están escritos, así que no hay nada que pegar. Son los dos que más rinden:
+Se escribieron el 06/11/2026 y son las dos filas de la tabla.
 
-- **Fase 4, lotes 7 y 8: fichas para el ECO_ID 286 y el 280.** Mismo patrón que
-  los tres que acaban de entrar: cada uno tiene una práctica verificada detenida
-  por falta de ficha. El 286 es el pantano del Tonle Sap —el arroz de recesión,
-  con las coordenadas publicadas de las doce fincas— y el 280 es el pantano de
-  Sumatra del sur, con el sonor de Perigi.
-- **Fase 6, la repesca.** No es más relevamiento: son cinco blancos con nombre ya
-  verificados. Tres piden una URL que abra —soppinabetta de Sringeri, devrai de
-  Kolavade con su coordenada, prácticas suludnon de Jayubo— y dos piden una
-  práctica del extremo correcto de un polígono: **Siulak / Gunung Kerinci** para
-  el 305 y el **este de Wayanad** (Pulpally, Sulthan Bathery) para el 270.
+**`ENCARGO_FASE_4_LOTES_07_08.md` — las dos turberas.** El 286 es el pantano de
+turba del Tonle Sap y el Mekong, con el arroz de recesión de las doce fincas que
+publican su coordenada; el 280 es el de la costa sureste de Sumatra, con el sonor
+de Perigi. Al escribirlo apareció un motivo mejor que el de destrabar las dos
+prácticas: **en RESOLVE hay cuatro ecorregiones cuyo nombre dice «peat swamp
+forests», las cuatro en Indomalaya, y acequia no tiene ficha de ninguna** —las
+otras dos son el 221 de Borneo y el 264 de Malaca—. Y acequia **ya tiene módulo
+de turba**, que detecta suelo orgánico en el punto y avisa que drenar no se
+deshace; ese módulo se calibró contra las cuatro ecorregiones donde la turba
+aparece de refilón, entre el 7 % y el 41 % del polígono, y no contra las dos que
+son turba. Las preguntas del encargo salen de ahí: dónde hay turba y cuánta, qué
+espesor —porque con el espesor y los 5 cm por año de hundimiento la cuenta de
+cuántos años quedan se hace y acequia la puede imprimir—, y **si el `forestal
++20` del bioma sobrevive sobre una turbera**, que es la más filosa: ese +20 dice
+que la vocación del predio es plantar árboles, en el único suelo del catálogo
+donde plantar del modo habitual exige drenar. Más la tensión que hay que escribir
+sin esquivarla: la única práctica fechada que tenemos adentro del 280 es quemar
+turba, que es justo lo que la ficha va a advertir.
+
+**`ENCARGO_FASE_6_REPESCA.md` — seis blancos con nombre.** Tres sólo necesitan
+otra URL, con el artículo nombrado y las rutas muertas ya probadas: el
+*soppinabetta* de Sringeri (la única copia cuelga del host cerrado del IISc), los
+*devrai* de Kolavade (CC-BY, y Wiley, Hindawi y el espejo contestan anti-bot o
+403 por las cuatro rutas probadas) y los suludnon de Jayobo (van tres intentos;
+`ovcre.uplb.edu.ph` anti-bot, `journals.uplb.edu.ph` 403, y el tercero llegó con
+ResearchGate). Dos piden el extremo correcto de un polígono: **Siulak y las
+laderas del Gunung Kerinci** para el 305 —van tres lotes consecutivos proponiendo
+el lago Toba o el extremo sureste del valle, que dan 279— y el **este de Wayanad**
+—Pulpally, Sulthan Bathery— para el 270.
+
+Y el sexto es nuevo, y sale de corregir el anterior: cuando la coordenada de
+Kolavade mudó esa entrada del 253 al 254, **`ghats_norte_deciduo` se quedó sin
+ninguna candidata**, así que el encargo pide una práctica del lado seco de la
+cresta, al este de Paud. Si entran los seis, Indomalaya baja de **13 fichas sin
+ninguna práctica a 8**, y una de las que cierra tiene dos candidatas distintas
+apuntándole, así que con una que abra alcanza.
 
 ~~Los lotes 2 y 3 de Indomalaya~~ **volvieron el 03/11/2026 y están montados**:
 son los ECO_ID 297 y 298, el Decán norte y el Decán sur. Las dos entregas tenían
