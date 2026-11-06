@@ -355,3 +355,281 @@ pedido:
 2. **Nyimba ya está verificado y es de esa ecorregión**: va como ruta nombrada.
 3. **El ejemplo del encargo ya no trae respuesta**, así que el lote 2 es la
    primera prueba de si eso cambia lo que vuelve.
+
+
+---
+
+## El lote 2: el miombo seco (ECO_ID 42)
+
+*Entregado el 05/11/2026, leído y montado el 06/11/2026. **Entra, con cuatro
+correcciones.** Una de ellas es un error aritmético —el primero del circuito que
+se detecta recalculando y no leyendo— y otra es a una premisa falsa que puse yo
+en el encargo.*
+
+### El hallazgo del lote no lo trajo la entrega: lo trajo abrir su fuente
+
+La entrega citó *The Miombo in Transition* (Campbell, ed., CIFOR, 1996) y lo usó
+para la distribución de suelos y para la tasa de rebrote. El libro abre —5,9 MB,
+273 páginas— y en el capítulo 2, de Peter Frost, está la tabla que resuelve el
+problema que la ficha del miombo húmedo sólo pudo citar de segunda mano a través
+del informe de Gorongosa:
+
+| variable dependiente | contra | regresión | r | p |
+|---|---|---|---|---|
+| biomasa leñosa (Mg/ha) | lluvia anual (mm) | Y = 0,14·X − 56,21 | 0,833 | <0,05 |
+| área basal leñosa (m²/ha) | lluvia anual (mm) | Y = 0,01·X + 4,14 | 0,605 | <0,01 |
+| **rinde herbáceo** | lluvia anual (mm) | **Y = 2,43 − 0,001·X** | **0,147** | **NS** |
+
+**A escala regional la lluvia anual no predice el estrato herbáceo del miombo, y
+la pendiente ajustada es negativa.** Lo que sí predice es la leñosa. Y el rinde
+herbáceo cae con el área basal leñosa, exponencialmente, por la figura 2.7
+(Robertson 1984, Malaui): `Y = 1878,4·A^(−0,45)`, F₁,₁₀ = 6,570, p = 0,028. El
+dosel se cierra alrededor de 10 m²/ha de área basal, y ése es el punto por debajo
+del cual el rinde de pasto empieza a subir con fuerza: la sombra es el factor
+principal que lo suprime.
+
+**La unidad del epígrafe está mal.** Dice Mg/ha, y con esa lectura un área basal
+de 10 m²/ha daría 666 Mg/ha de pasto. Son kg/ha, y la prueba es que sólo esa
+lectura cae dentro del rango de biomasa herbácea que publica el propio libro: 0,1
+a 4,0 Mg/ha. Es el tipo de error de unidad que la skill del motor de cálculo pide
+buscar, y acá estaba en el primario.
+
+Compuestas las dos regresiones sobre el rango de lluvia de esta ecorregión
+—composición mía, no un resultado publicado, y la ficha lo dice—:
+
+| lluvia | área basal | rinde herbáceo |
+|---|---|---|
+| 600 mm | 10,1 m²/ha | ~660 kg/ha |
+| 900 mm | 13,1 m²/ha | ~589 kg/ha |
+| 1.000 mm | 14,1 m²/ha | ~570 kg/ha |
+
+Más lluvia hace más madera y la madera le hace sombra al pasto. Y todo el rango
+de esta ecorregión está en o arriba del cierre del dosel, así que el pasto está
+en la rama suprimida de la curva de punta a punta.
+
+Contra eso, `prodForrajera` da 7.000 kg MS/ha/año desde 900 mm: **doce veces**. Y
+si se corrige el rinde de fin de temporada a producción anual con el factor que
+publica la misma fuente —el pico de rinde es sólo el 25 a 35 % de la producción
+aérea anual medida a lo largo de la temporada—, quedan unos 1.960 kg/ha y la app
+sigue leyendo unas 3,6 veces alto. El motor no se toca, por el mismo motivo que
+con el vertisol del Decán.
+
+**Ese factor del 25 a 35 % es, además, un aviso para el trabajo de `Yp` que quedó
+abierto de este lado: un corte de fin de temporada no es la producción anual.**
+
+### Las cuatro correcciones
+
+**1. El error aritmético: la curva de rebrote tabulada con las edades corridas.**
+La entrega reprodujo la figura 2.9 verbatim —`B = 84,20/(1+28,76·0,82^t)`, r² =
+0,886— y después la tabuló mal:
+
+| edad | la entrega dice | la ecuación da |
+|---|---|---|
+| 10 | 17,0 | 17,0 ✅ |
+| 20 | 54,5 | 54,6 ✅ |
+| 30 | 70,1 | **78,3** |
+| 40 | 78,4 | **83,3** |
+| 50 | 82,0 | **84,1** |
+
+Sus filas de 30, 40 y 50 traen los valores de 25, 30 y 35. Tres de cinco mal, y
+para el lado que hace ver el rebrote más lento de lo que el modelo publicado dice:
+un diseño que la usara pediría una rotación más larga que la necesaria. Las
+fracciones de asíntota que la entrega calculó son internamente consistentes con
+sus propios valores de biomasa, así que el error es de las edades y no de la
+cuenta — lo que lo hace más difícil de ver. **Es exactamente la falla que este
+repositorio vigila —un número plausible y equivocado— y sólo se detecta
+recalculando.** El test nuevo recalcula la ecuación.
+
+Y hay una discrepancia que encontré en el mismo movimiento y que es del primario:
+el texto dice que la producción hace pico «at about 18-20 years», leído de su
+figura 2.10, que la figura declara estimada de esta misma regresión; pero el
+incremento anual de una logística se maximiza donde el término exponencial vale
+uno, que para esta ecuación es a los **16,9 años**. La ficha dice las dos cosas en
+vez de elegir una.
+
+**2. La meseta de Makonde no es esta ecorregión.** La entrega construyó todo su
+párrafo de suelos sobre una exposición de Soilscapes del altiplano de Makonde
+—Ferralsoles y Acrisoles arenosos, los camellones para retener lluvia, los
+cultivos tras el desmonte— y de ahí sacó dos de sus ids de cultivo. Medido:
+
+| punto | ECO_ID | bioma |
+|---|---|---|
+| Newala (−10,94 / 39,29) | **28** | 1 |
+| −10,80 / 39,45 | **28** | 1 |
+| −11,05 / 38,95 | **28** | 1 |
+| Masasi (−10,72 / 38,80), más al oeste | 42 | 7 |
+
+Southern Swahili coastal forests and woodlands: bosque húmedo tropical, no
+sabana. **Nada de Makonde entró.** El arroz de secano se cayó de `cultivos`; el
+sésamo se sostiene porque el informe de Niassa, que sí está adentro, lo propone.
+
+**3. El encargo decía que el bioma 7 hereda «huerta −10». No la hereda.** El
+bioma de sabana tropical tiene `pasturas +20` y `forestal −10`, y no nombra la
+huerta — como la cabecera de este mismo archivo ya decía dos secciones más
+arriba, porque el miombo húmedo la **agregó**. La entrega contestó con honestidad
+a una premisa falsa y propuso «conservar el −10» de un modificador que no
+existía. El error es mío. Queda en −20, igual que el miombo húmedo pero por un
+mecanismo propio, y declarado como lo que es: un agregado.
+
+**4. Nyimba está en el 66 y eso lo dije mal yo, acá al lado.** El comentario de
+la constante `NYIMBA` en `biomasRegionalesAfrica.ts` afirmaba que el distrito
+«está en el miombo SECO, que es el ECO_ID 42». Medido, Nyimba da **ECO_ID 66,
+Zambezian-Limpopo mixed woodlands**. La conclusión del comentario —no atribuirle
+nada al 39 ni al 36— seguía siendo correcta; la ecorregión nombrada no.
+Corregido en el mismo commit.
+
+Y un aviso de lectura: One Earth dice que la ecorregión se extiende «over central
+Zimbabwe», y Gweru, en el centro de Zimbabue, da 66. Harare, en el noreste, sí da
+42. La prosa de la ficha pisa más que su propio polígono.
+
+### El polígono, medido
+
+| punto | ECO_ID |
+|---|---|
+| Morogoro, Tanzania | 42 ✅ |
+| Tabora, Tanzania | 42 ✅ |
+| Masasi, Tanzania | 42 ✅ |
+| Mariri y Mbamba, Niassa, Mozambique | 42 ✅ |
+| Zomba, Malaui | 42 ✅ |
+| Choma, sur de Zambia | 42 ✅ |
+| Harare, noreste de Zimbabue | 42 ✅ |
+| Menongue, suroeste de Angola | 42 ✅ |
+| Gweru, centro de Zimbabue | 66 ✗ |
+| Nyimba, Zambia | 66 ✗ |
+| meseta de Makonde, Tanzania | 28 ✗ |
+| Lusaka, Zambia | 76 ✗ |
+| Kariba, Zimbabue | 65 ✗ |
+
+### La fuente que no se pudo verificar, y con qué se reemplazó
+
+La entrega sostuvo su mecanismo de pasturas en «67–162 g/m² de biomasa herbácea
+aérea en miombo seco», citando `pub.epsilon.slu.se/23427/1/ruvuga_p_210506.pdf`.
+**Ese host devuelve 200 con 66.742 bytes de la portada del portal de
+investigación de la SLU para cualquier ruta**, incluida la del artículo real
+—que es Ruvuga et al. 2021, *Evaluation of rangeland condition in miombo
+woodlands in eastern Tanzania*, DOI `10.1016/j.jenvman.2021.112635`, cuya copia
+de Epsilon está en `/23426/1/ruvuga_pr_et_al_210506.pdf`—. OpenAlex lo marca como
+acceso abierto híbrido en ScienceDirect, que da **403 a curl y también al
+navegador propio**. No se pudo verificar y no entró.
+
+Lo reemplazó el rango que publica el libro de CIFOR, que es más ancho, abierto y
+citable: biomasa herbácea aérea de 0,1 a 4,0 Mg/ha en rodales mixtos poco
+disturbados, el 2 a 5 % de la biomasa aérea total, con la mayoría de los
+registros por debajo de 2,0 y las hierbas de hoja ancha en cerca del 30 %. Los
+67–162 g/m² de la entrega caen dentro de ese rango, así que probablemente el dato
+fuera bueno; eso no lo vuelve citable.
+
+Y una corrección a mi propio aviso del encargo: decía que
+`cifor-icraf.org/publications/` devuelve 403 y que hay que entrar por
+`/knowledge/publication/`. Eso vale para el buscador. **El PDF del libro se sirve
+directo desde `/publications/` y abre con curl pelado.**
+
+### Lo que el montaje agregó
+
+**El único suelo medido adentro del polígono**, y dice algo que contradice a la
+ficha de arriba. El análisis de Mbamba, Nkuti y Mariri, en la Reserva Nacional de
+Niassa: catorce muestras a dos profundidades en siete sitios más cinco perfiles
+descriptos. ECEC muy baja y cayendo con la profundidad —3,84 / 1,53 / 1,52
+meq/100 g en los primeros 20 cm de chacra activa, chacra abandonada y monte, y
+1,96 / 0,67 / 0,86 entre 40 y 60—, con materia orgánica, nitrógeno total, fósforo
+disponible y potasio intercambiable como lo deficitario en todo el perfil. Pero
+la condición física es **buena** —estructura, drenaje interno, permeabilidad,
+porosidad— y **el pH va de 6,5 a 7,3**: acá el suelo no es ácido. El miombo
+húmedo se describe lixiviado, ácido y con aluminio que castiga al maní y a la
+soja; en el miombo seco medido eso no está, y por eso el maní y la soja entran en
+la lista de cultivos.
+
+**La Striga**, que ninguna otra fuente del circuito trajo. *S. asiatica* y *S.
+hermonthica* se vuelven severas después de dos o tres años seguidos de cereal
+—maíz, sorgo, mijo— y son, junto con la caída de fertilidad, lo que hace abandonar
+la chacra. En Mbamba la superficie de chacras activas y abandonadas pasó de 1.084
+ha en 2006 a más de 2.215 acumuladas en 2016, y lo abandonado nunca se reusó. La
+salida que propone la propia fuente es una capa arable armada con fijadores
+—soja, guandul, lablab, girasol— más sésamo, y reforestación con *Faidherbia
+albida*, que tira la hoja en la estación de lluvias en vez de en la seca.
+
+**La estacionalidad de la proteína, que decide el año ganadero.** La proteína
+bruta de las gramíneas baja de alrededor del 10 % en la temporada de crecimiento
+a cerca del 3 % en la seca, con la fibra subiendo: el animal engorda en la húmeda
+y pierde peso en la seca. El ramoneo de las especies del miombo mantiene más del
+10 % todo el año, aunque algunas traen taninos condensados que reducen la
+disponibilidad de nitrógeno al rumiante.
+
+**El canje entre árbol y pasto, cuantificado y con su trampa.** Descepar o
+anillar da un aumento medio del 260 % en el rinde herbáceo, con desvío estándar
+de 419 % sobre n = 22: el desvío es más grande que la media, así que es una
+dirección y no un coeficiente. El desmonte de arbustos llega a 400 %. Se midieron
+3 a 5 Mg/ha en parcelas descepadas de miombo seco en Zimbabue, según el régimen de
+fuego y de pastoreo. **Pero** el desmonte en un sitio de miombo seco del centro de
+Zimbabue reemplazó *Panicum maximum*, palatable, por especies no palatables; y en
+miombo seco sacar los árboles puede reducir el forraje disponible en los años de
+sequía, porque el árbol tolera la seca mejor que la hierba. El mismo capítulo
+aclara que en miombo **húmedo** ese perjuicio no se espera: es la diferencia entre
+las dos fichas, medida.
+
+**La tsetsé, y lo que separa al seco del húmedo.** *Glossina morsitans* es el
+vector principal en el miombo, con *G. palpalis* y *G. pallidipes* más locales en
+ambientes ribereños y de monte cerrado; *Trypanosoma rhodesiense* da la enfermedad
+del sueño en las personas y *T. brucei* da nagana en el ganado; es benigna en la
+fauna trypanotolerante, que funciona como reservorio; y algunas razas bovinas
+indígenas son trypanotolerantes pero **fueron reemplazadas en gran medida por
+razas exóticas susceptibles**. Y el dato que separa esta ficha de la de arriba: el
+desmonte puede erradicar la tsetsé localmente, y donde eso funcionó fue en **las
+zonas más secas y de suelos relativamente someros**, donde el rebrote leñoso es
+subóptimo y la tierra desmontada resultó fácil de mantener abierta; en las zonas
+más húmedas, sobre suelos profundos y bien drenados, el bosque vuelve y la mosca
+persiste.
+
+**El forestal, movido de −10 a +5.** La razón del global es forestar un pastizal
+y acá no hay pastizal: la cobertura nativa es el bosque y el monte bajo de sus
+propias especies es el sistema indígena. Pero paga poco, y la tabla 2.7 dice
+cuánto: 1,2 a 2,0 Mg/ha/año de incremento medio anual de biomasa en rebrote de
+miombo seco contra 2,2 a 3,4 en húmedo. La existencia en pie de madera aserrable
+es baja y dominada por fustes chicos, con alto potencial de regeneración bajo
+manejo.
+
+### La tasa de rebrote, que era el encargo extra y entró
+
+Tabla 2.7, verificada entrada por entrada contra el PDF:
+
+| conjunto | <10 años | 11-20 | 21-50 |
+|---|---|---|---|
+| calculado del incremento volumétrico | 1,52 (0,61) n=4 | 1,45 (0,44) n=8 | 1,56 (0,67) n=5 |
+| Chidumayo 1991a | 1,41 (–) n=1 | 1,95 (0,47) n=5 | |
+| Chidumayo 1993a | 1,17 (0,94) n=4 | 1,48 (0,48) n=4 | |
+
+Y dos cosas que la entrega hizo bien y conviene reconocer: declaró que la primera
+serie **no es biomasa medida** —el libro aclara que la calculó del incremento de
+volumen suponiendo una densidad de madera de 0,778 Mg/m³— y distinguió el
+incremento anual de la biomasa en pie acumulada, que son métricas distintas. Lo
+que no trajo: que la regresión de la figura 2.9 **excluye sus dos puntos más
+altos**, lo que cambia cómo se lee la asíntota de 84,2 Mg/ha.
+
+### El estado del acceso
+
+| ruta | estado |
+|---|---|
+| `oneearth.org/ecoregions/dry-miombo-woodlands/` | 200, 66.602 bytes |
+| `cifor-icraf.org/publications/pdf_files/Books/Miombo.pdf` | 200, PDF, 273 pág. — **abre pese al aviso de mi encargo** |
+| `biblioteca.biofund.org.mz/.../2017_Mariri Soil Analysis.pdf` | 200, PDF, 81 pág. |
+| `ees.kuleuven.be/.../Frame-11_Sahel-and-Savannah_EA.pdf` | 200, PDF — pero es el ECO_ID 28 |
+| `pub.epsilon.slu.se/<cualquier ruta>` | **200 con la portada del portal de la SLU**: host cerrado |
+| `sciencedirect.com/.../S0301479721006976` | 403 a curl y al navegador |
+| `onlinelibrary.wiley.com/doi/pdfdirect/10.1002/ldr.4149` | 403 |
+| `esdac.jrc.ec.europa.eu/content/soil-map-soil-atlas-africa` | ya era constante del archivo |
+
+### Lo que queda abierto
+
+- **Lulandala et al. 2021**, *Excessive livestock grazing overrides the positive
+  effects of trees on infiltration capacity and modifies preferential flow in dry
+  miombo woodlands*, DOI `10.1002/ldr.4149`. Es miombo **seco** y es sobre
+  capacidad de infiltración, que es exactamente lo que acequia calcula. Wiley da
+  403 y las dos copias de Epsilon están en el host cerrado. Si aparece una copia
+  abierta, es material de primera para el coeficiente de escorrentía de esta
+  ecorregión.
+- La densidad de árboles que optimiza el forraje. El propio libro la declara como
+  hueco: «There is a need to establish the tree density that leads to optimum
+  production of forage and other products derived from miombo woodland». Mientras
+  no exista, no hay fracción de superficie pastoreable que declarar.
+- El lablab y el poroto bambara, que el informe de Niassa nombra y
+  `lib/especies.ts` no tiene.

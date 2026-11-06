@@ -218,3 +218,183 @@ australiana** —no hay macadamia, ni buffel, ni canola— así que las fichas d
 suroeste mediterráneo y de las sabanas del norte van a poder llenar `cultivos`
 con lo que ya existe (trigo, cebada, colza, alfalfa, sorgo, algodón, maní), y las
 de los rangelands áridos y los atolones del Pacífico probablemente no.
+
+
+---
+
+## El lote 2: la mulga de Australia Occidental (ECO_ID 216)
+
+*Entregado el 05/11/2026, leído y montado el 06/11/2026. **Entra entera.** Es la
+segunda entrega del circuito que llega completa, y la primera a la que hubo que
+corregirle una cosa que yo mismo había puesto en el encargo.*
+
+### Lo que la entrega hizo bien, y es casi todo
+
+Las siete URLs que declaró abren. Los números del boletín están donde dice que
+están, verificados uno por uno contra el PDF de 406 páginas:
+
+| dato | dónde | estado |
+|---|---|---|
+| 88.360 km², campaña de 1985 a 1988 | pág. 6 | ✅ |
+| 19 tipos de tierra, 74 sistemas | pág. 6 | ✅ |
+| ~830 especies vasculares | pág. 6 | ✅ (y 97 % nativas, 4,5 % endémicas) |
+| 23 tipos mayores de vegetación | pág. 6 | ✅ (y «all but three are shrublands or low woodlands») |
+| 1.256 sitios de condición | pág. 6 | ✅ (sobre 14 de los 23 tipos) |
+| 42 / 37 / 21 por superficie | pág. 6 | ✅ |
+| 13.441 evaluaciones de traverse, 1.560 km², 1,8 % | tabla A4 de la auditoría nacional | ✅ |
+| 190–240 mm; invierno 55–80 %, verano <20 % | pág. 6 | ✅ |
+| granito-greenstone de Yilgarn, hardpan silíceo | pág. 6 | ✅ |
+| grupo 523, Duric Red Kandosol | informe 380, pág. 126 | ✅ |
+| Bunny y Cole 12 ha/dse, Beringarra 7 | págs. de cada sistema | ✅ |
+| «noviembre–abril, suponiendo invierno efectivo previo» | pág. 48 | ✅ |
+| el boletín no trata bancos de contención ni difusión de agua | 406 páginas | ✅ |
+
+Las capacidades por sistema se publican como «Estimated carrying capacity, good
+condition: N ha/dse» y la entrega las leyó bien, con su unidad y su condición.
+Y contestó la pregunta específica del encargo —si el boletín trata bancos de
+contención, difusión de agua o encauzamiento del escurrimiento laminar— con un
+no fundado: el texto describe el flujo laminar natural, los mulga groves que lo
+interceptan y los bancos de wanderrie, y no propone ninguna obra. Verificado con
+`grep` sobre el texto extraído: ni *contour bank*, ni *water spreading*, ni
+*ponding bank*, ni *diversion bank* aparecen.
+
+### Las tres correcciones, y dos son al encargo
+
+**1. El relevamiento del bajo Murchison no es esta ecorregión, y yo invité a
+usarlo.** El encargo decía: «La cuenca baja del Murchison se publicó aparte como
+Technical Bulletin 96; si lo encontrás, vale». La entrega lo encontró —es el
+Technical Bulletin 9 de DPIRD, campaña de 2002 a 2003, unos 13.000 km², 78 %
+bueno / 9 % regular / 13 % pobre— y lo presentó con todo el cuidado del mundo,
+aclarando que es un subárea y no un segundo muestreo del 216. No es un subárea:
+
+| punto | ECO_ID | bioma |
+|---|---|---|
+| Kalbarri | 205 | 12 |
+| acantilados de Zuytdorp | 205 | 12 |
+| −27,80 / 114,90 | 205 | 12 |
+| −27,50 / 115,30 | 205 | 12 |
+| sur de Shark Bay | 205 | 12 |
+| norte de Geraldton | 205 | 12 |
+
+Seis de seis en **Southwest Australia savanna**, bioma 12 mediterráneo. El propio
+resumen del informe lo decía sin que yo lo leyera: su límite oeste son los
+acantilados de Zuytdorp sobre el Índico y su límite sur linda con tierra agrícola
+al norte de Geraldton. El contraste entre su 78 % y el 21 % de acá no mide una
+recuperación ni una diferencia de escala: mide dos ecorregiones distintas en dos
+biomas distintos. **Ninguna cifra de ese informe entró en la ficha.**
+
+**2. El relevamiento del Murchison se sale del polígono por el suroeste.**
+Yalgoo y Mullewa, que están dentro del área relevada, dan 205. El boletín ya lo
+avisaba en su propio resumen: describe el clima como árido «with the exception of
+the moister far south-western corner». Ese rincón es el que cae afuera. El
+88.360 km² del relevamiento es, además, un quinto del polígono: la ecorregión son
+463.820 km².
+
+**3. One Earth se equivoca de clima en su propia página.** Dice que el 216
+«remains one of the largest landscapes of relatively intact temperate
+Mediterranean-climate woodland left in the world», sobre un matorral árido de 190
+a 240 mm. Es la segunda errata que esta fase le encuentra a One Earth en
+Australasia, después del snappy gum presentado como acacia en la página del
+Pilbara.
+
+Y dos cosas menores: tres de las siete «especies» eran animales —la serpiente de
+mulga moteada, el eslizón del Gran Desierto y el perico de Alexandra—, que por el
+contrato de `biomaTipos.ts` pasan al campo `fauna`; y el 1.560 km² de degradación
+severa lo atribuyó a la auditoría nacional cuando también está, como 1.561, en el
+boletín mismo.
+
+### Lo que el montaje agregó
+
+**La escalera de capacidades, contada.** El encargo pedía «qué parte de la
+superficie es realmente pastoreable» y la entrega contestó, con razón, que el
+boletín no publica un porcentaje único. No lo publica; pero publica la capacidad
+sistema por sistema y la superficie de cada sistema, así que el reparto se cuenta.
+Sobre los 66 sistemas cuyo encabezado se puede parsear, que son el 90,1 % del área
+relevada:
+
+| capacidad | superficie | sistemas |
+|---|---|---|
+| 5 ha/dse | 0,09 % | 1 |
+| 7 ha/dse | 8,87 % | 14 |
+| 12 ha/dse | 39,10 % | 20 |
+| 20 ha/dse | 39,80 % | 22 |
+| 30 ha/dse | 1,99 % | 8 |
+
+Eso es estrictamente mejor que un número único, y dice algo que un promedio
+escondería: **la mejor tierra del relevamiento entero son 76 km²**. El sistema
+Merbla, el único con «Pastoral potential: very high», son planicies aluviales con
+gilgai bajo cerros de gabro «found very locally in far south-east», y el boletín
+aclara que su extensión restringida obliga a un control estricto y responsivo del
+pastoreo. El 79 % de la superficie está en 12 o 20 ha/dse.
+
+Y el mecanismo resulta **distinto del Pilbara**, que era lo que había que
+averiguar. En el Pilbara el forraje vive en un octavo de la superficie y el resto
+no se come. Acá los 74 sistemas tienen capacidad asignada: lo que pasa es que la
+escalera entera es flaca, y encima las capacidades valen para condición buena,
+que es el 21 % del área.
+
+**El Murchison es el peor de los diez relevamientos del estado.** La tabla A4 de
+la auditoría nacional lo pone en fila con los otros nueve: 42 % de las
+evaluaciones en estado pobre contra 24 % de los diez juntos, y 21 % bueno contra
+46 %. Sólo el Nullarbor oriental se le acerca. Y el polígono está cubierto en
+parte por tres de esos diez relevamientos —el Murchison, el de Sandstone–Yalgoo–
+Paynes Find (45/32/23) y el de los Goldfields del noreste (39/32/29)—, todos
+verificados por punto, así que el 216 tiene un gradiente de condición y el
+Murchison es su extremo degradado.
+
+**La mitad de la presión de pastoreo no es del ganado.** El censo aéreo de
+canguros, cabras y otros animales grandes hecho durante la campaña indica que la
+presión del ganado doméstico era menos del 50 % de la presión total. Para
+cualquiera que dimensione un rodeo acá, eso cambia la aritmética: bajar el rodeo
+a la mitad no baja la presión a la mitad.
+
+**El suelo dominante, con sus atributos medidos.** La entrega citó el grupo 523
+y dijo bien que tiene baja reserva de agua y profundidad radicular limitada. La
+tabla del informe 380 da más y da lo que importa para una obra de agua:
+permeabilidad de 0 a 50 cm **muy lenta**, fertilidad inherente **moderada** —no
+baja, al revés de la generalidad regional—, declive de la estructura superficial
+**alto**, y como calificador más restrictivo el subsuelo salino. Un franco rojo
+de permeabilidad muy lenta sobre cemento, con poca reserva: ahí está la razón de
+que la lámina exista.
+
+**El agua subterránea, que invierte una intuición de diseño.** Hay acuíferos
+somero extensos debajo del hardpan, y son el agua con la que se desarrollaron la
+ganadería y la minería; el consumo pastoril es chico frente al almacenamiento
+estimado. Pero el agua es de tipo cloruro de sodio y **la salinidad crece hacia
+las líneas de drenaje**: la menos salina está en las divisorias, donde la roca
+está más cerca de la superficie, la napa es profunda y el tiempo de residencia es
+corto. En el drenaje interno del lago Austin pasa los 50.000 mg/L. Y el nitrato
+supera el estándar de la OMS para consumo humano en toda el área, por fijación de
+la vegetación o de las termitas y no por contaminación. O sea: el castigo de
+huerta se confirma, pero no por falta de agua, y el lugar donde la app pondría la
+obra es el que la tiene peor.
+
+**La erosión, con sus dos métodos.** 15 a 17 % del área con erosión acelerada al
+menos leve, por dos métodos independientes; escaldado y laminado superficial
+sobre 10 a 50 % de la superficie como formas más comunes; sin cárcavas
+espectaculares porque el suelo tiene menos de 50 cm sobre hardpan o roca; y las
+planicies duplex erosionadas «will remain irreversibly deflated and degraded
+until practical solutions are more fully researched and developed».
+
+### El estado del acceso
+
+| ruta | estado |
+|---|---|
+| `library.dbca.wa.gov.au/static/Journals/082156/082156-84.pdf` | 200, PDF, 406 pág. |
+| `library.dbca.wa.gov.au/Journals/082156/082156-84.pdf` | 200, PDF, mismo documento, otro tamaño |
+| `library.dpird.wa.gov.au/tech_bull/4/` | 200, HTML |
+| `library.dpird.wa.gov.au/tech_bull/9/` | 200, HTML — **pero es el ECO_ID 205** |
+| `oneearth.org/ecoregions/western-australian-mulga-shrublands/` | 200, con errata de clima |
+| `library.dbca.wa.gov.au/Journals/080316/080316-380.pdf` | 200, PDF, 177 pág. |
+| `library.dbca.wa.gov.au/static/FullTextFiles/621427.pdf` | 200, PDF, 193 pág., **67 MB**: hay que bajarlo en dos tramos con `curl -C -` |
+| `parliament.wa.gov.au/.../tp-2364.pdf` | no se abrió: la entrega lo declaró como fuente y no lo usó para nada |
+
+### Lo que queda abierto
+
+- El Technical Bulletin 96 de la cuenca media, si existe aparte del 84 y del 9.
+  El 9 resultó ser otra ecorregión; el 96 no se buscó.
+- El informe complementario de carga animal del Murchison, si lo hay, al estilo
+  del Miscellaneous Publication 21/2004 del Pilbara que pesa 108 MB.
+- Los relevamientos de Sandstone–Yalgoo–Paynes Find y de los Goldfields del
+  noreste, que cubren el resto del 216 y de los que acá sólo entró la fila de la
+  tabla A4.

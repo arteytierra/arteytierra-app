@@ -17,15 +17,52 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 ## Por orden de lo que destraba
 
-| # | Segunda pegada | Qué destraba | Dónde cae |
-|---|---|---|---|
-| **1** | `ENCARGO_FASE_3_LOTE_02.md` | Fichas de Australasia. | `entregas\fichas-australasia\02.json` |
-| **2** | `ENCARGO_FASE_5_LOTE_02.md` | Fichas de África. | `entregas\fichas-africa\02.json` |
+**No queda ningún encargo escrito sin usar.** Los cinco que había volvieron
+entre el 05 y el 06/11/2026 y están todos cerrados y montados. Lo que sigue es
+escribir los dos que faltan, que están descriptos más abajo.
 
-Uno por chat. **Son los dos únicos que quedan escritos**; los tres que estaban
-arriba de ellos volvieron y están cerrados, cada uno de una manera distinta.
+### Lo que cerró el 06/11/2026, por la tarde
 
-### Lo que cerró el 05 y el 06/11/2026
+~~`ENCARGO_FASE_3_LOTE_02.md`~~ y ~~`ENCARGO_FASE_5_LOTE_02.md`~~ **entraron las
+dos**. Están montadas la mulga de Australia Occidental (ECO_ID 216) y el miombo
+seco (ECO_ID 42), con lo que Australasia y el África tropical pasan de una ficha
+a dos cada uno y el catálogo regional queda en 252.
+
+Las dos entregas estuvieron bien hechas y a las dos hubo que corregirles cosas
+que no se ven leyendo:
+
+- **Tres decisiones de polígono, y dos de las correcciones son a los encargos que
+  escribí yo.** El relevamiento del bajo Murchison, que mi encargo invitaba a
+  usar, cae en el ECO_ID 205 y en el bioma mediterráneo: su 78 % de vegetación en
+  buen estado no es una recuperación del 21 % del Murchison, es otro lugar. La
+  meseta de Makonde, sobre la que la entrega de África construyó todo su párrafo
+  de suelos, cae en el ECO_ID 28. Y el encargo de África afirmaba que el bioma de
+  sabana hereda «huerta −10» cuando hereda «forestal −10».
+- **Un error aritmético, y es el primero del circuito que sólo se detecta
+  recalculando.** La entrega de África reprodujo bien la curva logística de
+  biomasa del rodal y después la tabuló con las edades corridas: sus filas de 30,
+  40 y 50 años traen los valores de 25, 30 y 35. Tres de cinco mal, y para el
+  lado que hace ver el rebrote más lento de lo que el modelo publicado dice. Las
+  fracciones que calculó son internamente consistentes con sus propios valores,
+  así que el error está en las edades y no en la cuenta, lo que lo hace más
+  difícil de ver.
+- **Un cuarto tipo de 200 engañoso.** `pub.epsilon.slu.se` devuelve 200 con la
+  portada del portal de investigación de la SLU para **cualquier** ruta. No es un
+  404, no es un anti-bot, no es una página de error: es la home. Van cuatro
+  variedades contando EUDASM, `thaiscience.info` y `sundarbanaffairswb.in`.
+
+Y lo que salió de abrir las fuentes fue mejor que lo que las entregas trajeron: la
+escalera completa de capacidades de carga del Murchison sistema por sistema —la
+mejor tierra del relevamiento entero son 76 km²—, el dato de que el ganado
+doméstico ejercía menos del 50 % de la presión de pastoreo total, y, para el
+miombo, la regresión publicada que dice que **a escala regional la lluvia anual no
+predice el estrato herbáceo y la pendiente ajustada es negativa**, que es
+exactamente lo que la ficha del miombo húmedo sólo había podido citar de segunda
+mano. Los veredictos están en
+`_research/_encargos/RESPUESTAS_FICHAS_AUSTRALASIA.md` y
+`_research/_encargos/RESPUESTAS_FICHAS_AFRICA_MIOMBO.md`.
+
+### Lo que cerró el 05 y el 06/11/2026, antes
 
 ~~`ENCARGO_FASE_4_LOTES_04_06.md`~~ **entró entero**, que es la primera vez en
 esta fase. Las tres fichas están montadas —manglar de Sundarbans (323), bosques
@@ -46,9 +83,9 @@ números atribuidos a un documento que abre y que **no los contiene**. Es la
 primera falla del circuito que no se detecta abriendo la fuente sino leyéndola.
 El veredicto está al final de `_research/_encargos/RESPUESTAS_FORRAJE.md`.
 
-### Los dos que hay que escribir, y que son los que más rinden
+### Los dos que hay que escribir, y que ahora son los únicos que quedan
 
-No están escritos todavía, así que no hay nada que pegar:
+No están escritos, así que no hay nada que pegar. Son los dos que más rinden:
 
 - **Fase 4, lotes 7 y 8: fichas para el ECO_ID 286 y el 280.** Mismo patrón que
   los tres que acaban de entrar: cada uno tiene una práctica verificada detenida
