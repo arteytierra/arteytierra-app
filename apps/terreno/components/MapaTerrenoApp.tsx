@@ -3450,7 +3450,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
           )}
           {tab === 'pastoreo' && (
             <div className="px-4 py-4">
-              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} parcelas={poligonosCutFill} onCaminosAcceso={handleCaminosAccesoPotreros} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} inicial={pastoreoInputs} onInputs={setPastoreoInputs} />
+              <PastoreoPanel areaHa={metricas?.area_ha ?? 0} datosClima={datosClima} mojones={mojones} tieneDibujo={!!potrerosLayer} onDibujar={setPotrerosLayer} onIrAClima={() => setTab('clima')} parcelas={poligonosCutFill} onCaminosAcceso={handleCaminosAccesoPotreros} cobertura={datosCobertura?.items.map(it => ({ valor: it.clase.valor, nombre: it.clase.nombre, pct: it.pct })) ?? null} inicial={pastoreoInputs} onInputs={setPastoreoInputs} datosSuelo={datosSuelo} onIrASuelo={() => setTab('suelo')} />
             </div>
           )}
           {tab === 'riego' && (

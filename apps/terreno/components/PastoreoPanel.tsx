@@ -25,8 +25,10 @@ import {
 import { bandaUso, noPastoreable } from '@/lib/modulacion';
 import { subdividirPotreros, type PotrerosLayout } from '@/lib/potreros';
 import type { DatosClima } from '@/lib/clima';
+import type { DatosSuelo } from '@/lib/suelos';
 import type { Mojon } from '@/lib/types';
 import { ElectrificadorBloque } from './ElectrificadorBloque';
+import { CorteDeForrajeBloque } from './CorteDeForrajeBloque';
 
 interface AreaSubdividible { id: string; nombre: string; vertices: Array<{ lat: number; lng: number }> }
 
@@ -37,6 +39,9 @@ interface Props {
   tieneDibujo?: boolean;
   onDibujar?: (layout: PotrerosLayout | null) => void;
   onIrAClima: () => void;
+  /** Para el bloque de corte: el agua útil del perfil y la coordenada del punto. */
+  datosSuelo?: DatosSuelo | null;
+  onIrASuelo?: () => void;
   /** Polígonos ya dibujados (parcelas/zonas/sectores) para subdividir en vez de todo el predio. */
   parcelas?:  AreaSubdividible[];
   /** Traza caminos de acceso/servicio a los bebederos por lomas. Devuelve un aviso. */
@@ -52,6 +57,7 @@ interface Props {
 export function PastoreoPanel({
   areaHa, datosClima, mojones = [], tieneDibujo = false, onDibujar, onIrAClima,
   parcelas = [], onCaminosAcceso, cobertura = null, inicial, onInputs,
+  datosSuelo = null, onIrASuelo,
 }: Props) {
   const forrajeSugerido = datosClima ? forrajePorLluvia(datosClima.precip_anual_mm) : 3000;
   // El uso admisible sale de la banda de lluvia del predio (etapa A), no del
@@ -212,6 +218,14 @@ export function PastoreoPanel({
         <Campo label="Ocupación (días)"><Num v={ocup} set={setOcup} step={1} /></Campo>
         <Campo label="Rodeos en la secuencia"><Num v={grupos} set={setGrupos} step={1} /></Campo>
       </div>
+
+      {/* El forraje medido del propio campo, que es lo que reemplaza a la escalera */}
+      <CorteDeForrajeBloque
+        datosSuelo={datosSuelo}
+        forrajeActual={forraje}
+        onForraje={n => { autoLlenar.current = false; setForraje(n); }}
+        onIrASuelo={() => onIrASuelo?.()}
+      />
 
       {noPast.exclusiones.length > 0 && (
         <p className="text-[9px] text-ink-700/55 leading-relaxed">
