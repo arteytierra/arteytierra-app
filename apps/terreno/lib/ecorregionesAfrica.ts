@@ -37,9 +37,37 @@
  * El veredicto completo, con el problema que esto le abre al motor de forraje de
  * la app, está en `_research/_encargos/RESPUESTAS_FICHAS_AFRICA_MIOMBO.md`.
  *
- * ## Lo que este lote no cubre
+ * ## El miombo seco, que llegó con el primario que le faltaba al húmedo
  *
- * Las otras 107 ecorregiones del reino siguen cayendo al bioma global. El orden
+ * El ECO_ID 42 son 119,26 millones de hectáreas en seis países y el lote 2 lo
+ * cubre con su propia ficha. El `pasturas +20` vuelve a quedar en **0**, pero no
+ * por copiar el cero de arriba: acá está abierto *The Miombo in Transition*
+ * (CIFOR, 1996), que publica la regresión entre lluvia anual y rinde herbáceo
+ * para todo el miombo y da **r de 0,147, no significativa y de pendiente
+ * negativa**, mientras la biomasa y el área basal leñosas sí suben con la lluvia
+ * y el rinde herbáceo cae exponencialmente contra el área basal. Más lluvia hace
+ * más madera y la madera le hace sombra al pasto, que es exactamente lo que la
+ * ficha del miombo húmedo sólo podía insinuar a través del informe de Gorongosa.
+ *
+ * Se **agrega** `huerta −20` —el bioma de sabana no la nombra— y se **mueve**
+ * `forestal` de −10 a +5, porque la razón del global es forestar un pastizal y
+ * acá no hay pastizal: la cobertura nativa es el bosque y el monte bajo de sus
+ * propias especies es el sistema indígena. Paga poco: 1,2 a 2,0 Mg/ha/año de
+ * incremento de biomasa en rebrote, con pico de producción a los 18 a 20 años.
+ *
+ * **Y dos puntos medidos corrigieron el lote, uno de ellos contra lo que yo
+ * había escrito acá al lado.** La meseta de Makonde, sobre la que la entrega
+ * construyó su párrafo de suelos y dos de sus cultivos, da **ECO_ID 28**, bioma
+ * 1: bosque húmedo costero y no sabana. Y Nyimba, que el comentario de la
+ * constante del archivo de fichas afirmaba que estaba en el 42, da **ECO_ID
+ * 66**. Lo que sí está adentro, y es lo mejor del lote, es el análisis de suelos
+ * de Niassa: capacidad de intercambio catiónico efectiva de 3,84 a 0,67 meq/100
+ * g y **pH de 6,5 a 7,3**, o sea un suelo que no es ácido, al contrario del
+ * perfil lixiviado con aluminio del miombo húmedo.
+ *
+ * ## Lo que estos lotes no cubren
+ *
+ * Las otras 106 ecorregiones del reino siguen cayendo al bioma global. El orden
  * que viene está en el encargo de la fase 5: el resto de las sabanas y el mopane,
  * después el Congo y los bosques húmedos de África occidental, después el Karoo
  * y los desiertos del suroeste, después los pastizales de montaña y los
@@ -53,4 +81,10 @@ export const ECO_ID_AFRICA: Record<number, string> = {
   // de la bioregión AT11 y las dos del centro de endemismo zambeziano.
   39: 'miombo_humedo_zambeziano', // Central Zambezian wet miombo woodlands
   36: 'miombo_humedo_zambeziano', // Angolan wet miombo woodlands
+
+  // El miombo seco, que es otro sistema y no una versión pobre del de arriba:
+  // menos lluvia, el estrato herbáceo en la rama suprimida de la curva de dosel
+  // de punta a punta, y el único tramo del miombo donde el desmonte contra la
+  // tsetsé queda abierto.
+  42: 'miombo_seco',              // Dry miombo woodlands
 };

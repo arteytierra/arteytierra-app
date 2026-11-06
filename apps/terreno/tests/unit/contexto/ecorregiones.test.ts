@@ -89,9 +89,9 @@ describe('catálogos de fichas', () => {
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
-    // África mediterráneo + 38 de Indomalaya + 1 de Australasia
-    // + 47 sudamericanas + 1 del África tropical y austral.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(250);
+    // África mediterráneo + 38 de Indomalaya + 2 de Australasia
+    // + 47 sudamericanas + 2 del África tropical y austral.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(252);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería
@@ -144,9 +144,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 329 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 331 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(329);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(331);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -381,16 +381,20 @@ describe('lista blanca de ecorregiones', () => {
     }
   });
 
-  it('África arranca por el miombo húmedo: dos ECO_ID y una sola ficha', () => {
+  it('África arranca por el miombo: tres ECO_ID y dos fichas', () => {
     // El reino afrotropical tiene 116 ecorregiones y tenía ficha en siete,
     // las siete de Arabia y por el paquete de Medio Oriente. África al sur del
     // Sahara estaba entera en cero. Las 39 y 36 son una sola formación y van a
-    // una sola ficha; las otras 107 siguen cayendo al bioma global a propósito.
+    // una sola ficha; la 42 es otro sistema y tiene la suya; las otras 106
+    // siguen cayendo al bioma global a propósito.
     expect(fichaDeEcorregion(39)).toBe('miombo_humedo_zambeziano');
     expect(fichaDeEcorregion(36)).toBe('miombo_humedo_zambeziano');
-    // Las vecinas del mismo bloque del encargo, todavía sin ficha: el miombo
-    // seco, el mopane zambeziano y el bushveld central.
-    for (const eco of [42, 65, 38]) {
+    expect(fichaDeEcorregion(42)).toBe('miombo_seco');
+    // Las vecinas del mismo bloque del encargo, todavía sin ficha: el mopane
+    // zambeziano y el bushveld central. Y el 66, Zambezian-Limpopo mixed
+    // woodlands, que es donde cae Nyimba: dos fuentes del bloque lo citan y
+    // ninguna ficha lo cubre.
+    for (const eco of [65, 38, 66]) {
       expect(fichaDeEcorregion(eco), String(eco)).toBeNull();
     }
   });

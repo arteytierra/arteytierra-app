@@ -142,7 +142,11 @@ describe('cobertura del catálogo de cultivos', () => {
     'revillagigedo_ecosistemas_insulares', 'isla_malpelo_xerica', 'islas_desventuradas',
     'galapagos_matorral_xerico', 'pantepui_guayana_alta',
     'campinaranas_aguas_negras', 'campos_rupestres',
-    'pilbara_matorral',
+    // Las dos de Australia Occidental: el catalogo de lib/especies.ts no tiene
+    // ninguna especie que estos rangelands produzcan y la produccion es carne y
+    // lana sobre pastura nativa. Sin el campo, la seccion cae al catalogo por
+    // clase Koppen en vez de mostrar una lista inventada.
+    'pilbara_matorral', 'mulga_australia_occidental',
     // Las dos del Decán seco que entraron el 04/11/2026. Acá el motivo no es
     // que no se cultive —se cultiva muchísimo— sino que las dos fuentes de
     // cultivos que trajo la entrega, el proyecto FOLUR de Odisha y el plan

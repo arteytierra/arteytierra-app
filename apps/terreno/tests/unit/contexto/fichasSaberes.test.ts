@@ -67,7 +67,7 @@ describe('los saberes de las fichas', () => {
     // BIOMAS_REGIONALES ya es la unión de los once bloques: las 22 a mano más
     // las 228 que no atribuyen saberes a nadie.
     const todas = Object.values(BIOMAS_REGIONALES);
-    expect(todas.length).toBe(250);
+    expect(todas.length).toBe(252);
     expect(todas.filter((f) => f.saberes.length > 0).length).toBe(22);
   });
 });

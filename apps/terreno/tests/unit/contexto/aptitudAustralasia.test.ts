@@ -44,8 +44,13 @@ const buscar = (aptitud: ModificadorAptitud[], uso: ModificadorAptitud['uso']) =
   aptitud.find((m) => m.uso === uso);
 
 describe('el lote de Australasia', () => {
-  it('arranca con una sola ficha, y es la que corrige el reino que estaba en cero', () => {
-    expect(Object.keys(BIOMAS_REGIONALES_AUSTRALASIA)).toEqual([PILBARA]);
+  it('el Pilbara es la primera ficha del reino que estaba en cero', () => {
+    // El lote 2 agregó la mulga de Australia Occidental (ECO_ID 216), que
+    // confirma el mismo −15 por un mecanismo distinto y tiene sus propios tests
+    // en fichasLote2AustralasiaAfrica.test.ts. Lo que este archivo cuida es el
+    // Pilbara.
+    expect(Object.keys(BIOMAS_REGIONALES_AUSTRALASIA)).toContain(PILBARA);
+    expect(Object.keys(BIOMAS_REGIONALES_AUSTRALASIA)[0]).toBe(PILBARA);
   });
 
   it('el ECO_ID 213 deja de caer al bioma global', () => {

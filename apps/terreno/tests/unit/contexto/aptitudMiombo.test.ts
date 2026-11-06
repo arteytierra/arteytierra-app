@@ -53,8 +53,13 @@ describe('la ficha del miombo húmedo', () => {
     expect(fichaDeEcorregion(36)).toBe(MIOMBO);
   });
 
-  it('es la única del bloque, y el bloque arranca en una', () => {
-    expect(Object.keys(BIOMAS_REGIONALES_AFRICA)).toHaveLength(1);
+  it('es la primera del bloque, y el bloque ya tiene dos', () => {
+    // El lote 2 agregó el miombo seco (ECO_ID 42), que llegó con el primario
+    // que a esta ficha le faltaba: la regresión entre lluvia anual y rinde
+    // herbáceo del miombo, que no es significativa y tiene pendiente negativa.
+    // Sus tests están en fichasLote2AustralasiaAfrica.test.ts.
+    expect(Object.keys(BIOMAS_REGIONALES_AFRICA)).toHaveLength(2);
+    expect(Object.keys(BIOMAS_REGIONALES_AFRICA)[0]).toBe(MIOMBO);
   });
 
   it('no atribuye saberes, aunque la literatura pastoril del miombo sea enorme', () => {
@@ -225,8 +230,10 @@ describe('lo que la ficha declara que no tiene', () => {
   });
 
   it('las dos fuentes de otra ecorregión están, y su alcance está escrito al lado', () => {
-    // Gorongosa está en Mozambique y Nyimba es miombo seco: las dos se citan por
-    // la formación y no por esta ecorregión, y el comentario del código lo dice.
+    // Gorongosa está en Mozambique y Nyimba, medido contra RESOLVE el
+    // 06/11/2026, está en el ECO_ID 66 —Zambezian-Limpopo mixed woodlands— y no
+    // en el 42, como decía antes el comentario del código. Las dos se citan por
+    // la formación y no por esta ecorregión, y el comentario corregido lo dice.
     const urls = ficha().fuentes.map((f) => f.url).join(' ');
     expect(urls).toMatch(/gorongosa\.org/);
     expect(urls).toMatch(/pmc\.ncbi\.nlm\.nih\.gov/);
