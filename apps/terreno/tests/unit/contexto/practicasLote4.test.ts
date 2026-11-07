@@ -10,7 +10,10 @@ import { fichaPorId } from '@/lib/contexto';
  * dónde se cae una entrada. En los lotes anteriores se caían por la fuente; en
  * éste, seis se cayeron por el polígono:
  *
- *   - tres en un ECO_ID que no tiene ficha (286, 280 y 294);
+ *   - tres en un ECO_ID que no tenía ficha cuando se montó el lote (286, 280 y
+ *     294). Los tres la tienen ahora —el 294 desde el 05/11/2026 y las dos
+ *     turberas desde el 06/11—, así que lo que falta de las dos primeras no es
+ *     el polígono sino el texto de la entrada, que vuelve por la repesca;
  *   - dos porque esa práctica ya está escrita en este archivo, con la misma
  *     fuente, en la ficha que el polígono le había asignado antes;
  *   - dos a cuatrocientos kilómetros de la ficha propuesta, buscadas por el
@@ -85,23 +88,30 @@ describe('los polígonos que decidieron el lote', () => {
   });
 });
 
-describe('las que no entraron por falta de ficha', () => {
-  it('las doce fincas del Tonle Sap publican su coordenada, y las doce dan 286', () => {
+describe('las que no entraron por falta de ficha, y qué pasó con el polígono después', () => {
+  it('las doce fincas del Tonle Sap dan 286, que tiene ficha desde el 06/11/2026', () => {
     // 12°39' a 12°41' N, 104°47' E. El 285 —`pantanos_tonle_sap`— empieza más
-    // cerca del lago. La entrada queda verificada y esperando polígono, como el
-    // manglar de Sundarbans antes de tener ficha.
+    // cerca del lago; el 286 forma un anillo por afuera. La entrada estaba
+    // verificada y esperando polígono, como el manglar de Sundarbans antes de
+    // tener ficha, y el polígono llegó: ahora lo que falta es el texto de la
+    // entrada, que no quedó guardado y vuelve por la repesca.
     expect(fichaDeEcorregion(285)).toBe('pantanos_tonle_sap');
-    expect(fichaDeEcorregion(286)).toBeNull();
+    expect(fichaDeEcorregion(286)).toBe('pantanos_tonle_sap_mekong_turba');
     expect(PRACTICAS_POR_FICHA['pantanos_tonle_sap']).toBeUndefined();
+    expect(PRACTICAS_POR_FICHA['pantanos_tonle_sap_mekong_turba']).toBeUndefined();
   });
 
-  it('el sonor de Perigi cae en el mismo polígono por el que se rechazó el lebak de Pampangan', () => {
+  it('el sonor de Perigi cae en el 280, que también tiene ficha desde el 06/11/2026', () => {
     // 280, pantano de turba de Sumatra, veinte kilómetros al norte del sitio que
-    // el encargo ya había descartado por eso mismo. La ficha `pantanos_sumatra`
-    // es el 277, que es pantano de agua dulce.
+    // el encargo ya había descartado por lo mismo. `pantanos_sumatra` es el 277,
+    // que es pantano de agua dulce. La fuente del sonor se volvió a abrir y
+    // aguanta: Cahya et al. 2022 dan 1-2 t/ha para el sonor tradicional y 3,7
+    // para el ensayo de Jajar Legowo, que es un ensayo y no un rendimiento
+    // tradicional. Falta el texto de la entrada.
     expect(fichaDeEcorregion(277)).toBe('pantanos_sumatra');
-    expect(fichaDeEcorregion(280)).toBeNull();
+    expect(fichaDeEcorregion(280)).toBe('pantanos_turba_sumatra');
     expect(PRACTICAS_POR_FICHA['pantanos_sumatra']).toBeUndefined();
+    expect(PRACTICAS_POR_FICHA['pantanos_turba_sumatra']).toBeUndefined();
   });
 
   it('el cultivo mixto de la zona seca de Myanmar ya estaba entregado, y en el 294 que ahora tiene ficha', () => {

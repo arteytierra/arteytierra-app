@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BIOMAS_GLOBALES } from '../../../lib/biomasGlobales';
 import { BIOMAS_REGIONALES_INDOMALAYA } from '../../../lib/biomasRegionales';
 import { componerAptitud } from '../../../lib/contexto';
+import { ECO_ID_INDOMALAYA } from '../../../lib/ecorregionesIndomalaya';
 import type { ModificadorAptitud } from '../../../lib/biomaTipos';
 
 /**
@@ -69,6 +70,13 @@ const FUERA_DE_LA_REGLA = [
   // no para corregir el −25. Son de bioma 14, 2 y 13, confirman los deltas que
   // heredan en vez de corregirlos, y tampoco traen reparto de HWSD ni SoilGrids.
   'manglares_sundarbans', 'bosques_secos_irrawaddy', 'matorral_espinoso_decan',
+  // Las dos turberas del 06/11/2026. Son de bioma 1, el mismo de la regla, pero
+  // no salieron de ella: confirman el −25 de huerta por un mecanismo distinto
+  // —airear turba la oxida, no es lixiviación— y además cancelan el +20 de
+  // forestal, que es un uso que la regla nunca tocó. Tampoco traen reparto de
+  // HWSD ni de SoilGrids: no se pudo resumir ninguna de las dos bases sobre sus
+  // polígonos, y se declara en vez de heredar el del vecino.
+  'pantanos_turba_sumatra', 'pantanos_tonle_sap_mekong_turba',
 ];
 
 /** Las fichas que sí salieron de la regla: el cohorte sobre el que valen los
@@ -78,9 +86,9 @@ const DE_LA_REGLA = () =>
     .filter(([id]) => !FUERA_DE_LA_REGLA.includes(id));
 
 describe('el lote entero', () => {
-  it('son 38 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
+  it('son 40 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
     const ids = Object.keys(BIOMAS_REGIONALES_INDOMALAYA);
-    expect(ids).toHaveLength(38);
+    expect(ids).toHaveLength(40);
 
     const deLaRegla = DE_LA_REGLA().map(([id]) => id);
     expect(deLaRegla).toHaveLength(32);
@@ -282,6 +290,78 @@ describe('las nueve abstenciones heredan el bioma sin tocarlo', () => {
     const humedas = SIN_MODIFICADOR.filter((id) => id !== 'sri_lanka_zona_seca');
     for (const id of humedas) {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.suelos, id).toMatch(/no corrige el modificador del bioma/);
+    }
+  });
+});
+
+describe('las dos turberas: donde el +20 de forestal no se puede regalar', () => {
+  const TURBERAS = ['pantanos_turba_sumatra', 'pantanos_tonle_sap_mekong_turba'];
+
+  it('confirman el −25 de huerta del bioma, pero no por lixiviación', () => {
+    // El bioma pone −25 porque «la fertilidad está en la biomasa viva». Acá el
+    // valor es el mismo y el motivo es otro: airear turba la oxida. Confirmar un
+    // número con el argumento equivocado es lo mismo que cambiarlo mal.
+    for (const id of TURBERAS) {
+      expect(delta(efectiva(id, HUMEDO), 'huerta'), id).toBe(-25);
+      expect(razon(efectiva(id, HUMEDO), 'huerta'), id).not.toMatch(/lixiviad/);
+      expect(razon(efectiva(id, HUMEDO), 'huerta'), id).toMatch(/napa|oxida/);
+    }
+  });
+
+  it('cancelan el +20 de forestal que el bioma les da', () => {
+    expect(delta(BIOMAS_GLOBALES[HUMEDO]!.aptitud!, 'forestal')).toBe(20);
+    for (const id of TURBERAS) {
+      expect(delta(efectiva(id, HUMEDO), 'forestal'), id).toBe(0);
+    }
+  });
+
+  it('y la razón de la cancelación discute lo que el bioma de verdad dice', () => {
+    // El +20 del bioma habla de un sistema agroforestal de varios estratos, no
+    // de una plantación. Cancelarlo diciendo que «no describe una plantación
+    // segura» sería cancelar otra cosa: lo que se cancela es la lectura de que
+    // el puntaje habilita el camino habitual para llegar ahí, que es drenar.
+    for (const id of TURBERAS) {
+      const r = razon(efectiva(id, HUMEDO), 'forestal');
+      expect(r, id).toMatch(/varios estratos/);
+      expect(r, id).toMatch(/napa/);
+      expect(r, id).toMatch(/drenar/);
+    }
+  });
+
+  it('las dos declaran que no heredan el reparto de suelos del polígono vecino', () => {
+    for (const id of TURBERAS) {
+      expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.suelos, id).toMatch(/no se (hereda|sustituye)/);
+    }
+  });
+
+  it('no se confunden con las dos de agua dulce que ya estaban', () => {
+    // 277 es «Sumatran freshwater swamp» y 280 «Sumatran peat swamp»; 285 es
+    // «Tonle Sap freshwater swamp» y 286 «Tonle Sap-Mekong peat swamp». Nombres
+    // casi iguales, polígonos distintos, y el agua en otro lugar.
+    expect(ECO_ID_INDOMALAYA[277]).toBe('pantanos_sumatra');
+    expect(ECO_ID_INDOMALAYA[280]).toBe('pantanos_turba_sumatra');
+    expect(ECO_ID_INDOMALAYA[285]).toBe('pantanos_tonle_sap');
+    expect(ECO_ID_INDOMALAYA[286]).toBe('pantanos_tonle_sap_mekong_turba');
+  });
+
+  it('la de Sumatra trae el límite de napa que se puede medir en el predio', () => {
+    // Es el único número accionable del lote: 40 cm por reglamento indonesio, y
+    // la medición de campo ya estaba en 45-47.
+    const s = BIOMAS_REGIONALES_INDOMALAYA['pantanos_turba_sumatra']!.suelos;
+    expect(s).toMatch(/40 cm/);
+    expect(s).toMatch(/PP 57\/2016/);
+    expect(s).toMatch(/45-47/);
+  });
+
+  it('la del Tonlé Sap dice que es un mosaico, así que el cero es una abstención', () => {
+    const f = BIOMAS_REGIONALES_INDOMALAYA['pantanos_tonle_sap_mekong_turba']!;
+    expect(f.suelos).toMatch(/mosaico/);
+    expect(razon(efectiva(f.id, HUMEDO), 'forestal')).toMatch(/abstenci\u00f3n/);
+  });
+
+  it('ninguna de las dos propone cultivos que la turba no banca sin drenar', () => {
+    for (const id of TURBERAS) {
+      expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.cultivos, id).toEqual(['arroz']);
     }
   });
 });

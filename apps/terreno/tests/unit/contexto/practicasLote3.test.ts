@@ -101,13 +101,16 @@ describe('las mudanzas del tercer lote', () => {
 });
 
 describe('las cuatro que no entraron, y por qué', () => {
-  it('el pantano de turba de Pampangan no tiene ficha, y la fuente además recomienda en vez de documentar', () => {
-    // Pampangan y Ulak Depati dan 280, Sumatran peat swamp forests, sin ficha.
-    // `pantanos_sumatra` es el 277, el pantano de agua dulce. Y el artículo
-    // *propone* un esquema de manejo —reservar lebung y acompasar la siembra—, no
-    // registra lo que se hizo, así que no alcanza el contrato ni con ficha.
-    expect(fichaDeEcorregion(280)).toBeNull();
+  it('el pantano de turba de Pampangan ya tiene ficha, y el otro motivo igual lo deja afuera', () => {
+    // Pampangan y Ulak Depati dan 280, Sumatran peat swamp forests, que **no**
+    // es `pantanos_sumatra` —ése es el 277, el pantano de agua dulce— y que tiene
+    // ficha desde el 06/11/2026. Así que de los dos motivos del rechazo queda
+    // uno, y alcanza: el artículo *propone* un esquema de manejo —reservar lebung
+    // y acompasar la siembra—, no registra lo que se hizo. El contrato de
+    // prácticas pide un hecho fechado, no una recomendación.
+    expect(fichaDeEcorregion(280)).toBe('pantanos_turba_sumatra');
     expect(fichaDeEcorregion(277)).toBe('pantanos_sumatra');
+    expect(PRACTICAS_POR_FICHA['pantanos_turba_sumatra']).toBeUndefined();
     expect(PRACTICAS_POR_FICHA['pantanos_sumatra']).toBeUndefined();
   });
 

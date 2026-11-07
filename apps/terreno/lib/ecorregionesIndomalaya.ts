@@ -1,7 +1,7 @@
 /**
  * ECO_ID de RESOLVE de Indomalaya: el sur de Asia, Indochina y la Sonda.
  *
- * Son 39 ECO_ID y 38 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
+ * Son 41 ECO_ID y 40 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
  * de enumerar una envolvente como los lotes de la UE o el norte de África. Este
  * lote se recortó al revés: se buscaron las ecorregiones donde el bioma global
  * `resolve_bosque_tropical_humedo` estaba **diciendo un número equivocado**.
@@ -85,6 +85,29 @@
  * El veredicto del lote está en
  * `_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_04_05_06.md`.
  *
+ * ## Y el 06/11/2026, las dos turberas: 280 y 286
+ *
+ * Son las dos ecorregiones de **pantano de turba** que estaban al lado de las de
+ * pantano de agua dulce que ya tenían ficha, y eso es la mitad del motivo de que
+ * entren: `277` es «Sumatran freshwater swamp forests» y `280` es «Sumatran peat
+ * swamp forests»; `285` es «Tonle Sap freshwater swamp» y `286` es «Tonle
+ * Sap-Mekong peat swamp». Son polígonos distintos con nombre casi igual, y el
+ * agua del primero viene del río mientras la del segundo está en el suelo.
+ *
+ * La otra mitad del motivo es que el bioma húmedo les regala **+20 de forestal**
+ * con el argumento de que «el sistema productivo que sostiene este bioma es
+ * agroforestal de varios estratos». En turba eso sólo vale si no se baja la napa,
+ * y lo que está medido es que bajarla hunde el terreno 142 cm en cinco años y
+ * después 5 cm por año, con el 92 % del hundimiento por oxidación a los dieciocho
+ * años (Hooijer et al. 2012). Las dos fichas cancelan ese +20, y la de Sumatra
+ * trae además el número que hace falta para decidir: el límite crítico de napa en
+ * turba de Indonesia es **40 cm por reglamento (PP 57/2016)**, y el estudio de
+ * campo de Perigi la midió a 45-47 cm en agosto-septiembre, ya pasada, sin
+ * bloqueo de canales.
+ *
+ * El veredicto, con las dos correcciones que se les hicieron al montar, está en
+ * `_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_07_08.md`.
+ *
  * Lo que este lote **no** cubre: el resto de Indomalaya (península malaya,
  * Borneo de tierra firme, Nueva Guinea, el Himalaya, Indochina seca) sigue
  * cayendo al bioma global. No es un olvido: son las que corregían un número,
@@ -125,12 +148,14 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   224: 'pantanos_chao_phraya',       // Chao Phraya freshwater swamp forests
   225: 'chao_phraya_deciduo',        // Chao Phraya lowland moist deciduous forests
   285: 'pantanos_tonle_sap',         // Tonle Sap freshwater swamp forests
+  286: 'pantanos_tonle_sap_mekong_turba', // Tonle Sap-Mekong peat swamp forests — la turba, no el agua dulce
   266: 'pantanos_rio_rojo',          // Red River freshwater swamp forests
 
   // La Sonda — Sumatra, Java, Bali y el suroeste de Borneo
   278: 'sumatra_bajo',               // Sumatran lowland rain forests
   279: 'sumatra_montano',            // Sumatran montane rain forests
   277: 'pantanos_sumatra',           // Sumatran freshwater swamp forests
+  280: 'pantanos_turba_sumatra',    // Sumatran peat swamp forests — la turba, no el agua dulce
   305: 'pinar_toba',                 // Sumatran tropical pine forests
   289: 'java_occidental_bajo',       // Western Java rain forests
   230: 'java_oriental_bali_bajo',    // Eastern Java-Bali rain forests

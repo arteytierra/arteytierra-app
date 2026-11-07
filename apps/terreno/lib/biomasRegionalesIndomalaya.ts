@@ -187,6 +187,12 @@ const ONE_EARTH_298 = { label: 'One Earth — ecorregión 298 «South Deccan Pla
 
 const ONE_EARTH_323 = { label: 'One Earth — ecorregión 323 «Sundarbans Mangroves»', url: 'https://www.oneearth.org/ecoregions/sundarbans-mangroves/' };
 const ONE_EARTH_294 = { label: 'One Earth — ecorregión 294 «Irrawaddy Dry Forests»', url: 'https://www.oneearth.org/ecoregions/irrawaddy-dry-forests/' };
+const ONE_EARTH_280 = { label: 'One Earth — ecorregión 280 «Sumatran Peat Swamp Forests»', url: 'https://www.oneearth.org/ecoregions/sumatran-peat-swamp-forests/' };
+const ONE_EARTH_286 = { label: 'One Earth — ecorregión 286 «Tonle Sap-Mekong Peat Swamp Forests»', url: 'https://www.oneearth.org/ecoregions/tonle-sap-mekong-peat-swamp-forests/' };
+const IMANUDIN = { label: 'Imanudin et al. 2024 — Variability of hydro-physical properties in drained peat soil (Perigi, Ogan Komering Ilir, Sumatra del Sur): napa a 45-47 cm en agosto-septiembre, pasado el límite crítico de 40 cm del reglamento indonesio PP 57/2016', url: 'https://repository.unsri.ac.id/161155/' };
+const CAHYA = { label: 'Cahya, Suwignyo et al. 2022 — Increasing rice productivity in degraded peatlands, BIOVALENTIA 8(1):69: el sonor tradicional promedia 1-2 t/ha y el ensayo de Jajar Legowo llegó a 3,7', url: 'https://www.cifor-icraf.org/publications/pdf_files/articles/ABaral2206.pdf' };
+const KEW_MELALEUCA = { label: 'Plants of the World Online (Kew) — Melaleuca cajuputi Maton & Sm. ex R.Powell, nativa de Camboya y Vietnam', url: 'https://powo.science.kew.org/taxon/115161-3' };
+const TONLE_SAP_ARROZ = { label: 'Rice production in Tonle Sap floodplains in response to anthropogenic changes (Univ. of Washington): el arroz de recesión se siembra tras la bajante', url: 'https://digital.lib.washington.edu/bitstreams/bd67d9e6-9d59-485d-959b-93a2718c389f/download' };
 const ONE_EARTH_315 = { label: 'One Earth — ecorregión 315 «Deccan Thorn Scrub Forests»', url: 'https://www.oneearth.org/ecoregions/deccan-thorn-scrub-forests/' };
 
 /** El informe que contesta cuánto del polígono 323 es manglar y cuánto es isla
@@ -741,6 +747,76 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
   },
 
   // ID · ECO_ID 277 · bioma 1 · confianza baja
+  /**
+   * El 280 es la turbera de Sumatra, y no es el 277.
+   *
+   * Dos polígonos vecinos con nombre casi igual —«Sumatran freshwater swamp» y
+   * «Sumatran peat swamp»— y el agua en lugares distintos: en el 277 viene del
+   * río y de la lluvia, en el 280 está en el suelo. Lo que decide el uso acá no es
+   * la fertilidad: es la napa.
+   */
+  pantanos_turba_sumatra: {
+    id: 'pantanos_turba_sumatra',
+    nombre: 'Turberas de Sumatra',
+    emoji: '\u{1F33F}',
+    color: '#47765A',
+    resumen: '87.710 km² sobre la costa sudoriental de Sumatra. Bosque pantanoso mixto y bosque de bintangur sobre turba de varios metros, localmente de más de 30.000 años, con el dosel más bajo y los árboles más finos hacia el interior de las cúpulas. El drenaje, la tala y la quema para palma aceitera transformaron grandes áreas y alimentaron los incendios de turba que en 2015 cerraron escuelas y aeropuertos de toda la región.',
+    vegetacion: 'El bosque permanece anegado gran parte del año sobre arcillas ácidas y turba de hojarasca que se descompone lentamente. En el bosque mixto, Koompassia malaccensis, Durio lowianus, Gonystylus bancanus, Shorea teysmanniana, Tetramerista glabra y Swintonia glauca; los bosques de bintangur, dominados por Calophyllum lowii, ocupan la turba más profunda y alejada de los ríos. Koompassia y Durio arman el dosel ribereño, y Shorea, Palaquium y Swintonia el del interior. One Earth no publica un rango de lluvia ni un calendario de meses secos para la ecorregión.',
+    fauna: 'Más de 220 especies de aves, entre ellas la cigüeña de Storm, el pato de alas blancas y la cigüeña lechosa. Gibón de manos blancas, siamang, tigre de Sumatra en baja densidad, oso malayo y varias nutrias; las arborícolas, los carnívoros grandes y las nutrias dependen de que el bosque siga inundado.',
+    suelos: 'Orgánicos y ácidos, saturados la mayor parte del año, con turba de varios metros. La fuente distingue turba ribereña de turba interior más profunda pero no dice qué proporción del polígono es cada una, y no se pudo resumir HWSD v2, SoilGrids ni PEATMAP sobre el 280: no se hereda el reparto del 277, que es muy distinto. Lo que sí hay es el número que decide: el límite crítico de napa en turba es de 40 cm por reglamento indonesio (PP 57/2016), y el estudio de campo de Perigi midió 45-47 cm en agosto-septiembre —ya pasado el límite— sin bloqueo de canales, con la napa bajando más cuanto más lejos del canal. Esa medición es de un lote piloto de unas 10 ha y no representa la ecorregión.',
+    saberes: [],
+    especies: [
+      'Tualang (Koompassia malaccensis)',
+      'Durio de Low (Durio lowianus)',
+      'Ramin (Gonystylus bancanus)',
+      'Bintangur (Calophyllum lowii)',
+      'Meranti de turbera (Shorea teysmanniana)',
+      'Tetramerista (Tetramerista glabra)',
+      'Swintonia (Swintonia glauca)',
+    ],
+    cultivos: ['arroz'],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Se confirma el −25 del bioma húmedo pero por otro mecanismo: acá la limitante no es la pérdida de bases por lixiviación sino que una huerta convencional pide bajar la napa, y airear turba la oxida. Medido en plantaciones drenadas del Sudeste Asiático: 142 cm de hundimiento en los primeros cinco años y unos 5 cm por año después, con el 92 % del acumulado por oxidación a los dieciocho años. El número no se extrapola a un predio sin suelo orgánico ni a cultivos paludícolas sin drenaje.' },
+      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo. Ese +20 dice que el sistema que sostiene el bioma es agroforestal de varios estratos, y en turba eso sigue siendo cierto sólo si la napa no baja: el límite crítico son 40 cm y el reglamento indonesio lo fija. Lo que se cancela es la lectura de que el puntaje habilita el camino habitual para llegar ahí, que es drenar: Hooijer et al. miden que el hundimiento y la pérdida de carbono siguen siendo considerables incluso con la napa más alta que una plantación puede sostener. La versión que funciona es paludícola —sagú y jelutong, que todavía no tienen id en el catálogo— y la app no tiene cómo saber si el predio va a drenar, así que no regala el positivo.' },
+    ],
+    fuentes: [ONE_EARTH_280, IMANUDIN, CAHYA, HOOIJER, RESOLVE],
+  },
+
+  /**
+   * El 286 es la turbera del Tonlé Sap, y tampoco es el 285.
+   *
+   * Y acá hay una vuelta más: la propia fuente dice que el polígono es un
+   * **mosaico** y no una turbera continua —hay humedales de gramíneas sobre
+   * arcillas aluviales fértiles—, así que ninguno de los dos números se puede
+   * leer como si todo el polígono fuera Histosol.
+   */
+  pantanos_tonle_sap_mekong_turba: {
+    id: 'pantanos_tonle_sap_mekong_turba',
+    nombre: 'Turberas del Tonlé Sap y el Mekong',
+    emoji: '\u{1F33F}',
+    color: '#47765A',
+    resumen: '29.450 km² en Camboya y Vietnam, alrededor del Tonlé Sap y a lo largo de sus conexiones con el Mekong, con extensiones hacia Haut Chhlong y Blao. Mezcla bosque pantanoso de agua dulce somera, humedales de gramíneas sobre arcillas aluviales y sectores de bosque de turbera. One Earth la describe como un remanente muy transformado: grandes áreas fueron drenadas y convertidas.',
+    vegetacion: 'En el anillo exterior, con drenaje deficiente y agua somera estancada, la anoxia acumula materia orgánica; la formación boscosa más extendida la dominan Livistona cochinchinensis y árboles de Eugenia, Elaeocarpus y Calophyllum. En el mosaico hay áreas extensas de ciperáceas y gramíneas altas —Phragmites karka, Saccharum arundinaceum, Coix gigantea— sobre arcillas aluviales fértiles. Detrás de los manglares del delta, los bosques de Melaleuca retienen agua y frenan la acidificación. One Earth los cita como Melaleuca leucadendron, pero esa identificación para Indochina es dudosa: Kew acepta Melaleuca cajuputi como nativa de Camboya y Vietnam. El régimen sigue el pulso monzónico del sistema Tonlé Sap-Mekong y la fuente no da serie local de lluvia ni calendario de meses secos.',
+    fauna: 'One Earth no da un total de mamíferos ni de aves. Señala desaparecidos localmente el búfalo de agua silvestre, el ciervo de Eld, el ciervo porcino indochino y el banteng, y que la nutria de nariz peluda persiste; los carrizales son hábitat de grulla sarus oriental, ibis gigante, ibis de hombros blancos e ibis cabecinegro.',
+    suelos: 'Es un mosaico y no una turbera continua, y eso cambia cómo se lee todo lo demás: la fuente vincula la turba al anegamiento somero, al drenaje pobre y a la descomposición lenta, pero identifica también humedales de gramíneas asentados sobre arcillas aluviales fértiles. No se pudo verificar un porcentaje de Histosols en HWSD v2 ni en SoilGrids, ni de turba en PEATMAP, para el polígono 286: no se sustituye por el del vecino 285 ni por dato nacional, y tampoco hay cuantificación de suelos tiónicos ni del cambio de pH que provocan las zanjas. La evidencia de arroz de recesión es de campos del área de Krong Stueng Saen, no una prueba de que todo el 286 se cultive sin drenar.',
+    saberes: [],
+    especies: [
+      'Palma de abanico indochina (Livistona cochinchinensis)',
+      'Carrizo gigante (Phragmites karka)',
+      'Caña silvestre (Saccharum arundinaceum)',
+      'Coix gigante (Coix gigantea)',
+      'Melaleuca de hoja estrecha (Melaleuca cajuputi)',
+      'Elaeocarpus de Griffith (Elaeocarpus griffithii)',
+      'Barringtonia de frutos agudos (Barringtonia acutangula)',
+    ],
+    cultivos: ['arroz'],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Se confirma el −25 del bioma húmedo pero por el mosaico hidrológico y no por lixiviación: el arroz de recesión se puede sembrar tras la bajante en las llanuras aluviales, mientras que habilitar huerta en el sector de turba con zanjas airea el perfil orgánico y arranca una subsidencia que no se revierte —142 cm en cinco años y unos 5 cm por año después en plantaciones drenadas de la región—. El puntaje no convierte el polígono entero en Histosol: el predio se evalúa por su suelo y su napa medidos.' },
+      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo, con la misma razón que en la turbera de Sumatra y una salvedad propia. El +20 dice que el sistema del bioma es agroforestal de varios estratos, y sobre turba eso vale sólo sin bajar la napa; lo que no se puede regalar es el positivo, porque la app no sabe si el predio cae en el sector de turba o en las arcillas aluviales, y en el primero el camino habitual para plantar es drenar. En las arcillas del mosaico el +20 sería correcto, así que acá el cero es una abstención por no poder distinguir dónde cae el predio, no un veredicto sobre todo el polígono.' },
+    ],
+    fuentes: [ONE_EARTH_286, TONLE_SAP_ARROZ, KEW_MELALEUCA, HOOIJER, RESOLVE],
+  },
+
   pantanos_sumatra: {
     id: 'pantanos_sumatra',
     nombre: 'Pantanos de agua dulce de Sumatra',

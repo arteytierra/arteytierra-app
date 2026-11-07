@@ -74,7 +74,7 @@ describe('la ficha del Decán central', () => {
     // pasó: el 05/11/2026 entraron tres más que tampoco salen de la regla, y una
     // de ellas —el Irrawaddy seco— es de este mismo bioma 2.
     expect(ficha().id).toBe(DECAN);
-    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(38);
+    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(40);
     for (const id of [DECAN, NORTE, SUR]) {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
     }

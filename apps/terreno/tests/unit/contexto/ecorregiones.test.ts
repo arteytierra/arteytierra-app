@@ -91,7 +91,7 @@ describe('catálogos de fichas', () => {
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
     // África mediterráneo + 38 de Indomalaya + 2 de Australasia
     // + 47 sudamericanas + 2 del África tropical y austral.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(252);
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(254);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería
@@ -146,7 +146,7 @@ describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
     // 109 sudamericanas + 331 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(331);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(333);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
