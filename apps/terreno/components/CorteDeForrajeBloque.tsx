@@ -26,7 +26,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Scissors, TriangleAlert, Loader2, ArrowDownToLine } from 'lucide-react';
+import {
+  type Distribucion,
+  type ForrajeDeUnAnio,
+  type IndiceDeUnAnio,
+  anioDelPercentil,
+  forrajePorAnio,
+  AVISO_DEL_ANIO_SECO,
+  EL_PROMEDIO_SOBREESTOCA,
+} from '@/lib/forrajeAnios';
+import { Scissors, TriangleAlert, Loader2, ArrowDownToLine, CalendarRange } from 'lucide-react';
 import {
   evaluarCorte, aguaUtilEnTresCapas, ventanaDeBalance, ypDelCorte, kgHaDeAro,
   EL_PICO_NO_ES_LA_PRODUCCION_ANUAL,
@@ -85,6 +94,16 @@ function sumarDias(iso: string, dias: number): string {
   return new Date(t + dias * 86_400_000).toISOString().slice(0, 10);
 }
 
+/** Lo que devuelve `/api/clima-diario/indices`. */
+interface RespuestaDeAnios {
+  anios: IndiceDeUnAnio[];
+  distribucion: Distribucion | null;
+  anios_descartados: number;
+  anios_sin_serie: number[];
+  advertencias: string[];
+  serie: { desde: string; hasta: string };
+}
+
 interface Props {
   datosSuelo: DatosSuelo | null;
   /** Lo que hoy dice el campo de forraje, para poder contrastar. */
@@ -116,6 +135,12 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   const [cargando, setCargando] = useState(false);
   const [errorSerie, setErrorSerie] = useState<string | null>(null);
   const [res, setRes] = useState<(YpDelCorte & { lluvia_mm: number; dias: number }) | null>(null);
+
+  // El segundo pedido: la serie entera, para repartir el techo del sitio en los
+  // años que de verdad pasaron.
+  const [cargandoAnios, setCargandoAnios] = useState(false);
+  const [errorAnios, setErrorAnios] = useState<string | null>(null);
+  const [anios, setAnios] = useState<RespuestaDeAnios | null>(null);
 
   const rendimiento = modo === 'aro' ? (kgHaDeAro(gramos, areaAro) ?? 0) : kgHa;
 
@@ -194,8 +219,66 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     }
   }
 
+  /**
+   * Pide la serie entera y devuelve el índice de cada temporada.
+   *
+   * La ventana de temporada es **la misma que el usuario declaró para su corte**:
+   * el mes y el día del rebrote, y la cantidad de días. Repetirla en los otros
+   * años es una declaración y no un dato —el pastizal no rebrota el mismo día
+   * siempre— y el aviso que vuelve lo dice.
+   */
+  async function pedirAnios() {
+    if (!datosSuelo || agua === null || !fechasListas) return;
+    setCargandoAnios(true);
+    setErrorAnios(null);
+    setAnios(null);
+    try {
+      const arranque = desde.slice(5);
+      const dias = Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / 86_400_000) + 1;
+      const url = `/api/clima-diario/indices?lat=${datosSuelo.lat}&lng=${datosSuelo.lng}`
+        + `&arranque=${arranque}&dias=${dias}&aw=${agua.map(x => x.toFixed(1)).join(',')}`;
+      const r = await fetch(url);
+      const j = await r.json() as RespuestaDeAnios & { error?: string };
+      if (!r.ok || !j.anios) {
+        setErrorAnios(j.error ?? 'No se pudo traer la serie completa de este punto.');
+        return;
+      }
+      setAnios(j);
+    } catch {
+      setErrorAnios('Falló el pedido de la serie completa. Reintentá en unos segundos.');
+    } finally {
+      setCargandoAnios(false);
+    }
+  }
+
   const banda = res?.banda_kg_ha ?? null;
   const anchoBanda = banda && banda.perfil_lleno > 0 ? banda.perfil_seco / banda.perfil_lleno : null;
+
+  /**
+   * El `Yp` que se usa para repartir, y de dónde salió.
+   *
+   * Acá pasa lo mejor de pedir la serie: **la cadena mide el agua que el perfil
+   * tenía el año del corte** en vez de suponerla, así que si ese año está en la
+   * serie y convergió, la banda del `Yp` se cierra en un punto. Si el corte es de
+   * un año que la serie no alcanza, se usa la punta conservadora de la banda y se
+   * dice.
+   */
+  const ypParaRepartir = useMemo(() => {
+    if (anios === null || banda === null) return null;
+    const anioDelCorte = Number(desde.slice(0, 4));
+    const suyo = anios.anios.find(a => a.anio === anioDelCorte);
+    if (suyo && !suyo.el_arranque_todavia_pesa && suyo.indice !== null && suyo.indice > 0) {
+      return { yp: rendimiento / suyo.indice, de: 'la cadena' as const, indice: suyo.indice };
+    }
+    return { yp: banda.perfil_lleno, de: 'la punta conservadora de la banda' as const, indice: null };
+  }, [anios, banda, desde, rendimiento]);
+
+  const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
+    () => (anios !== null && ypParaRepartir !== null
+      ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
+      : null),
+    [anios, ypParaRepartir],
+  );
 
   return (
     <details className="bg-white rounded-xl border border-bone-200 overflow-hidden">
@@ -400,6 +483,117 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
               calibrado contra ensayos definidos por el forraje que dejan en pie, y corregir hacia
               arriba sumaría a la carga el pasto que se descompuso antes de que llegara el animal.
             </p>
+
+            {/* ── El tercer paso: el forraje año por año ── */}
+            <div className="rounded-lg border border-bone-200 bg-white p-2.5 space-y-2">
+              <p className="text-[10px] text-ink-700/70 leading-relaxed">
+                <b>Ese corte es de un año.</b> El techo del sitio repartido en las temporadas que de
+                verdad pasaron dice cuánto forraje hubo en cada una, y con eso se puede elegir para
+                qué año dimensionar el rodeo. En el sitio donde este modelo está validado, un año
+                bueno dio <b>{EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.ancho.toFixed(1)} veces</b>{' '}
+                el forraje de uno malo.
+              </p>
+
+              {anios === null ? (
+                <button onClick={pedirAnios} disabled={cargandoAnios}
+                  className="w-full text-[11px] rounded-lg border border-moss-200 bg-moss-50 text-moss-700 px-3 py-1.5 disabled:opacity-40 flex items-center justify-center gap-1.5">
+                  {cargandoAnios
+                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                    : <CalendarRange className="w-3 h-3" />}
+                  {cargandoAnios
+                    ? 'Corriendo el balance de sesenta temporadas…'
+                    : 'Repartir el techo en los años que pasaron'}
+                </button>
+              ) : (
+                <>
+                  {anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      Ninguna temporada de la serie sirve: en este punto el perfil nunca se llena,
+                      así que el agua con la que arranca cada año no se puede saber y la
+                      distribución no existe. Lo que la daría es medir el agua del suelo.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-[10px] text-ink-700/70 leading-relaxed">
+                        {anios.distribucion.n} temporadas de {anios.serie.desde.slice(0, 4)} a{' '}
+                        {anios.serie.hasta.slice(0, 4)}
+                        {anios.anios_descartados > 0 && (
+                          <> ({anios.anios_descartados} quedaron afuera porque todavía arrastraban
+                          el agua con la que arrancó la cadena)</>
+                        )}
+                        . El techo que se reparte son{' '}
+                        <b>{Math.round(ypParaRepartir!.yp).toLocaleString('es-AR')} kg/ha</b>, y sale
+                        de {ypParaRepartir!.de}
+                        {ypParaRepartir!.indice !== null && (
+                          <>: el balance continuo midió el agua que el perfil tenía cuando arrancó{' '}
+                          <b>tu</b> temporada, así que la banda se cierra en un punto</>
+                        )}.
+                      </p>
+
+                      <div className="space-y-1">
+                        {([
+                          { q: 0.1, t: 'Un año malo (p10)', d: 'uno de cada diez años da esto o menos' },
+                          { q: 0.5, t: 'La mediana', d: 'la mitad de los años queda por debajo' },
+                          { q: 0.9, t: 'Un año bueno (p90)', d: 'sólo uno de cada diez lo supera' },
+                        ] as const).map(({ q, t, d }) => {
+                          const a = anioDelPercentil(forrajes, q);
+                          if (a === null) return null;
+                          return (
+                            <button key={q} onClick={() => onForraje(Math.round(a.forraje_kg_ha))}
+                              className="w-full text-left rounded-lg border border-bone-200 hover:border-moss-200 hover:bg-moss-50/40 px-2.5 py-1.5 flex items-baseline justify-between gap-2">
+                              <span className="min-w-0">
+                                <span className="text-[10px] text-ink-700/70">{t}</span>
+                                <span className="block text-[9px] text-ink-700/50 leading-tight">
+                                  {d} — fue {a.anio}, índice {a.indice.toFixed(2)}
+                                </span>
+                              </span>
+                              <span className="font-mono text-xs font-bold text-ink-900 shrink-0">
+                                {Math.round(a.forraje_kg_ha).toLocaleString('es-AR')}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <p className="text-[9px] text-ink-700/55 leading-relaxed">
+                        <b>Cuál de los tres cargar es una decisión tuya y no hay un percentil
+                        publicado para tomarla.</b> Lo que sí está publicado es que la carga
+                        calculada con el año promedio «{EL_PROMEDIO_SOBREESTOCA.cita}» —
+                        {EL_PROMEDIO_SOBREESTOCA.fuente}—, y acá medido: en el sitio de validación{' '}
+                        {EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.anios_bajo_el_promedio} de{' '}
+                        {EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.anios} temporadas quedaron por
+                        debajo del año promedio.
+                      </p>
+                      <p className="text-[9px] text-clay-700/90 leading-relaxed flex gap-1">
+                        <span className="shrink-0">·</span><span>{AVISO_DEL_ANIO_SECO.aviso}</span>
+                      </p>
+
+                      {anios.advertencias.length > 0 && (
+                        <details className="text-[9px]">
+                          <summary className="text-ink-700/55 cursor-pointer select-none">
+                            Los {anios.advertencias.length} supuestos de la serie completa
+                          </summary>
+                          <div className="pt-1 space-y-1">
+                            {anios.advertencias.map((a, i) => (
+                              <p key={i} className="text-ink-700/60 leading-relaxed flex gap-1">
+                                <span className="shrink-0">·</span><span>{a}</span>
+                              </p>
+                            ))}
+                          </div>
+                        </details>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              {errorAnios && (
+                <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                  <TriangleAlert className="w-3.5 h-3.5 shrink-0" />{errorAnios}
+                </p>
+              )}
+            </div>
 
             {res.avisos.length > 0 && (
               <div className="space-y-1">
