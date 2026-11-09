@@ -103,6 +103,10 @@ import {
   AVISO_EO_JENSEN_HAISE,
   type CoeficientesEo,
 } from './eoJensenHaise';
+import {
+  actividadDeLasCapas,
+  AVISO_ACTIVIDAD_RADICULAR,
+} from './actividadRadicular';
 
 // ─── Lo que está medido, y que es el argumento de cada rechazo ───────────────
 
@@ -871,6 +875,16 @@ export interface DiaDeSerie {
   rs_mj_m2?: number | null;
   t_max_c?: number | null;
   t_min_c?: number | null;
+  /**
+   * La temperatura media del suelo en el tramo de **30 a 90 cm**, en °C, que es
+   * donde están las dos capas que el modelo restringe por temperatura.
+   *
+   * De ERA5-Land sale su capa de **28 a 100 cm**, que las contiene a las dos:
+   * `soil_temperature_28_to_100cm_mean`. Si viene, el balance aplica el factor
+   * de actividad radicular de la Figura 1 del trabajo; si no, no lo aplica y lo
+   * advierte. Ver `actividadRadicular.ts`.
+   */
+  t_suelo_30_90_c?: number | null;
 }
 
 /**
@@ -898,6 +912,13 @@ export interface VentanaDeBalance {
   desde: string;
   hasta: string;
   avisos: AvisoDeCorte[];
+  /**
+   * Si la ventana corrió con el factor de actividad radicular por temperatura
+   * de suelo. Quien multiplique este resultado por el de otra corrida tiene que
+   * comparar este campo: con factor y sin factor el índice no es el mismo, y el
+   * producto saldría mal sin que nada se rompa.
+   */
+  actividad_radicular: boolean;
 }
 
 /**
@@ -928,6 +949,14 @@ export function ventanaDeBalance(
   const eo = dentro.map(d => eoDelDia(d, coeficientes_eo));
   if (eo.some(v => v === null)) return null;
 
+  // El factor de actividad radicular de cada día, si la serie trae temperatura
+  // de suelo. O lo tienen todos los días o no lo tiene ninguno: media ventana
+  // con las capas profundas cerradas y media con ellas abiertas no es ninguno
+  // de los dos modelos, es un tercero que nadie validó.
+  const actividad = dentro.map(d => actividadDeLasCapas(d.t_suelo_30_90_c, 3));
+  const conActividad = actividad.every(a => a !== null);
+  if (!conActividad && actividad.some(a => a !== null)) return null;
+
   // Que no falte ningún día de la ventana: la cuenta de días entre las dos
   // fechas tiene que dar exactamente los que vinieron.
   const unDia = 86_400_000;
@@ -940,12 +969,21 @@ export function ventanaDeBalance(
   const dias: DiaDeBalance[] = dentro.map((d, i) => ({
     pptn_mm: d.precip_mm as number,
     eo_mm: eo[i] as number,
+    ...(conActividad ? { actividad_radicular: actividad[i] as number[] } : {}),
   }));
 
-  const aviso: AvisoDeCorte = coeficientes_eo
-    ? { aviso: AVISO_EO_JENSEN_HAISE.aviso, sesgo: AVISO_EO_JENSEN_HAISE.sesgo_del_yp }
-    : { ...AVISO_ETO };
-  return { dias, desde, hasta, avisos: [aviso] };
+  const avisos: AvisoDeCorte[] = [
+    coeficientes_eo
+      ? { aviso: AVISO_EO_JENSEN_HAISE.aviso, sesgo: AVISO_EO_JENSEN_HAISE.sesgo_del_yp }
+      : { ...AVISO_ETO },
+  ];
+  if (conActividad) {
+    avisos.push({
+      aviso: AVISO_ACTIVIDAD_RADICULAR.aviso,
+      sesgo: AVISO_ACTIVIDAD_RADICULAR.sesgo_del_yp,
+    });
+  }
+  return { dias, desde, hasta, avisos, actividad_radicular: conActividad };
 }
 
 /**

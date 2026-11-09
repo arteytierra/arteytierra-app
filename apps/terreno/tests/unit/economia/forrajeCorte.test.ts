@@ -28,6 +28,7 @@ import {
   coeficientesEo, eoJensenHaiseMm, AVISO_EO_JENSEN_HAISE,
 } from '@/lib/eoJensenHaise';
 import { correrBalanceForraje, type DiaDeBalance } from '@/lib/forrajeBalance';
+import { actividadRadicular, AVISO_ACTIVIDAD_RADICULAR } from '@/lib/actividadRadicular';
 import { FORRAJE_MEDIDO } from '@/lib/forrajeMedido';
 
 // ─── Lo que hace falta para medir ────────────────────────────────────────────
@@ -756,5 +757,43 @@ describe('la serie dekadal no reemplaza a la diaria', () => {
     expect(indice(dias)).toBeCloseTo(1, 4);
     expect(indice(dekadal(dias, 'golpe'))).toBeCloseTo(1, 4);
     expect(indice(dekadal(dias, 'parejo'))).toBeCloseTo(1, 4);
+  });
+});
+
+describe('la ventana aplica el factor de actividad radicular si tiene temperatura de suelo', () => {
+  const dia = (n: number, suelo?: number | null): DiaDeSerie => ({
+    fecha: `2026-04-${String(n).padStart(2, '0')}`,
+    precip_mm: 2, et0_mm: 5, rs_mj_m2: 22, t_max_c: 20, t_min_c: 6,
+    ...(suelo === undefined ? {} : { t_suelo_30_90_c: suelo }),
+  });
+  const sinSuelo = Array.from({ length: 10 }, (_, i) => dia(i + 1));
+  const conSuelo = Array.from({ length: 10 }, (_, i) => dia(i + 1, 8));
+
+  it('con temperatura de suelo lo aplica, y lo dice', () => {
+    const v = ventanaDeBalance(conSuelo, '2026-04-01', '2026-04-10')!;
+    expect(v.actividad_radicular).toBe(true);
+    expect(v.dias[0]!.actividad_radicular).toHaveLength(3);
+    // La primera capa no lleva factor; las de abajo sí.
+    expect(v.dias[0]!.actividad_radicular![0]).toBe(1);
+    expect(v.dias[0]!.actividad_radicular![1]).toBeCloseTo(actividadRadicular(8) as number, 9);
+  });
+
+  it('sin temperatura de suelo no lo aplica, y también lo dice', () => {
+    const v = ventanaDeBalance(sinSuelo, '2026-04-01', '2026-04-10')!;
+    expect(v.actividad_radicular).toBe(false);
+    expect(v.dias[0]!.actividad_radicular).toBeUndefined();
+  });
+
+  it('medio y medio rechaza la ventana, como con la Eo', () => {
+    const mezcla = conSuelo.map((d, i) => (i === 3 ? { ...d, t_suelo_30_90_c: null } : d));
+    expect(ventanaDeBalance(mezcla, '2026-04-01', '2026-04-10')).toBeNull();
+  });
+
+  it('el aviso del factor sale con la dirección del Yp, no la del índice', () => {
+    const v = ventanaDeBalance(conSuelo, '2026-04-01', '2026-04-10')!;
+    const aviso = v.avisos.find(a => /temperatura de suelo/.test(a.aviso));
+    expect(aviso).toBeDefined();
+    expect(aviso!.sesgo).toBe(AVISO_ACTIVIDAD_RADICULAR.sesgo_del_yp);
+    expect(aviso!.sesgo).not.toBe(AVISO_ACTIVIDAD_RADICULAR.sesgo_del_indice);
   });
 });

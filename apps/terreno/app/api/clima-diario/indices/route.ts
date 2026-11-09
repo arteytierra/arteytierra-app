@@ -118,7 +118,7 @@ export async function GET(req: Request) {
 
   // Todo lo que cambia el resultado entra en la clave. Si falta un parámetro acá,
   // dos corridas distintas se sirven la misma respuesta.
-  const dbKey = `clima-indices-v2:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
+  const dbKey = `clima-indices-v3:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
     + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
@@ -127,7 +127,7 @@ export async function GET(req: Request) {
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${START}&end_date=${END}`
     + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
-    + 'temperature_2m_max,temperature_2m_min&timezone=auto';
+    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean&timezone=auto';
 
   let res: Response;
   try {
@@ -146,6 +146,7 @@ export async function GET(req: Request) {
       shortwave_radiation_sum?: Array<number | null>;
       temperature_2m_max?: Array<number | null>;
       temperature_2m_min?: Array<number | null>;
+      soil_temperature_28_to_100cm_mean?: Array<number | null>;
     };
   };
   try {
@@ -162,6 +163,13 @@ export async function GET(req: Request) {
   const rs = d.shortwave_radiation_sum ?? [];
   const tmax = d.temperature_2m_max ?? [];
   const tmin = d.temperature_2m_min ?? [];
+  // La capa de 28 a 100 cm de ERA5-Land, que es la que contiene a las dos capas
+  // del modelo que llevan factor de actividad radicular. Si la serie no la trae
+  // completa, la cadena corre sin el factor y lo advierte: ver
+  // `actividadRadicular.ts`. Media serie con factor y media sin él se rechaza.
+  const tsuelo = d.soil_temperature_28_to_100cm_mean ?? [];
+  const sueloCompleto = tsuelo.length === d.time.length
+    && tsuelo.every(v => v !== null && v !== undefined && Number.isFinite(v));
   const serie = d.time.map((fecha, i) => ({
     fecha,
     precip_mm: precip[i] ?? null,
@@ -169,6 +177,7 @@ export async function GET(req: Request) {
     rs_mj_m2: rs[i] ?? null,
     t_max_c: tmax[i] ?? null,
     t_min_c: tmin[i] ?? null,
+    ...(sueloCompleto ? { t_suelo_30_90_c: tsuelo[i] as number } : {}),
   }));
   const nulos = serie.filter(x => x.precip_mm === null || x.et0_mm === null).length;
   if (nulos > 0) {
@@ -228,10 +237,21 @@ export async function GET(req: Request) {
      * todo, para que el corte del que sale el `Yp` use **los mismos**.
      */
     coeficientes_eo: coeficientes,
+    /**
+     * Si la cadena restringió la extracción de las capas profundas por
+     * temperatura de suelo. El corte del que sale el `Yp` tiene que haber
+     * corrido igual: con factor y sin factor los índices no son comparables.
+     */
+    actividad_radicular: r.actividad_radicular,
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calculó por Jensen-Haise '
         + 'modificada —el método con el que Wight y Hanks ajustaron su Kc y su b— con las '
-        + 'normales del mes más cálido de esta serie: ver lib/eoJensenHaise.ts.'
+        + 'normales del mes más cálido de esta serie: ver lib/eoJensenHaise.ts. '
+        + (r.actividad_radicular
+          ? 'La extracción de las capas de 30-60 y 60-90 cm se restringió por temperatura de '
+            + 'suelo de ERA5-Land, capa de 28 a 100 cm: ver lib/actividadRadicular.ts.'
+          : 'No llegó la temperatura del suelo, así que las capas profundas corrieron sin el '
+            + 'factor de actividad radicular y el índice sale alto.')
       : 'Open-Meteo / ERA5 (reanálisis, ~10 km). No se pudieron calcular los coeficientes de la '
         + 'Eo de Jensen-Haise, así que el balance usó la ETo de referencia de FAO-56: ver '
         + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',

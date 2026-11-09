@@ -52,18 +52,25 @@
  * con el agua muy limitada el índice no responde en proporción. Leer Jensen-Haise
  * (1963) pasó de deuda a deuda cara. Ver `EL_ANIO_SECO_LO_DECIDE_LA_EO`.
  *
- * **Un año bueno da 5,1 veces el forraje de uno malo** en el mismo potrero, y 29
- * de 62 temporadas quedaron por debajo del año promedio. Que el año promedio
- * sobreestoque está publicado; acá está por cuánto, y por qué el número medido da
- * 46,8 % y no 50. Ver `EL_PROMEDIO_SOBREESTOCA`.
+ * **Un año bueno da 1,47 veces el forraje de uno malo** entre el p90 y el p10 del
+ * mismo potrero, y 18 de 63 temporadas quedaron por debajo del año promedio. Que
+ * el año promedio sobreestoque está publicado; acá está por cuánto, y por qué el
+ * número medido da 28,6 % y no 50. Ver `EL_PROMEDIO_SOBREESTOCA`.
  *
- * **La lluvia anual explica el 21 % de la varianza del índice** en el sitio donde
+ * **La lluvia anual explica el 26 % de la varianza del índice** en el sitio donde
  * el modelo está validado. Es la única variable que mira `prodForrajera`. Ver
  * `LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO`.
  *
- * **Y el peor año de los 62 es el que fue**: 1988, el año que la estación del
+ * **Y el peor año de los 63 es el que fue**: 1988, el año que la estación del
  * propio sitio midió a 45,7 % de lo normal. Es un chequeo de una sola dirección y
  * es el único que hay. Ver `EL_ANIO_MAS_SECO_ES_EL_QUE_FUE`.
+ *
+ * **Y la tercera degradación declarada del balance se pagó el 09/11/2026**: la
+ * extracción de las capas de 30-60 y 60-90 cm ya se restringe por temperatura de
+ * suelo, como en el trabajo original. Destapa el techo del índice —de 10 de 12
+ * temporadas saturadas a 4— pero **deja en pie las tres cuartas partes del
+ * sesgo**. Ver `EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO` y
+ * `lib/actividadRadicular.ts`. Todas las mediciones de abajo son de esa corrida.
  *
  * De paso, la corrida de 65 años delató **dos avisos mal puestos** del balance: el
  * de la `Eo` fuera de rango se evaluaba con los inviernos adentro y salía siempre,
@@ -109,6 +116,10 @@ import {
   AVISO_EO_JENSEN_HAISE,
   type CoeficientesEo,
 } from './eoJensenHaise';
+import {
+  actividadDeLasCapas,
+  AVISO_ACTIVIDAD_RADICULAR,
+} from './actividadRadicular';
 
 // ─── El sitio donde se midió todo lo de este archivo ─────────────────────────
 
@@ -188,8 +199,15 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   del_trabajo: { arranque: '04-15', dias_minimo: 68, dias_maximo: 99, dias_mediana: 84 },
   /** Cociente contra la ventana del trabajo, en la mediana del índice y en el p10. */
   cocientes: {
+    arranque_menos_15: { mediana: 1.0003, p10: 1.104 },
+    arranque_mas_15: { mediana: 0.962, p10: 0.759 },
+    largo_68: { mediana: 1.006, p10: 1.101 },
+    largo_99: { mediana: 0.968, p10: 0.760 },
+  },
+  /** Sin el factor de actividad radicular el p10 se movía casi el doble. */
+  sin_el_factor_daba: {
     arranque_menos_15: { mediana: 1.001, p10: 1.204 },
-    arranque_mas_15: { mediana: 0.924, p10: 0.699 },
+    arranque_mas_15: { mediana: 0.923, p10: 0.699 },
     largo_68: { mediana: 1.001, p10: 1.223 },
     largo_99: { mediana: 0.928, p10: 0.705 },
   },
@@ -200,9 +218,10 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   no_desplaza_la_distribucion: true,
   /** El patrón real, asimétrico, de las cuatro filas medidas. */
   el_p10_se_mueve_mas:
-    'en las cuatro variantes, y mucho: de 20 a 30 % contra 0,1 a 7,6 % de la mediana. Con la Eo '
-    + 'del modelo la mediana queda clavada contra el techo del índice, así que la ventana se ve '
-    + 'casi entera en la cola seca, que es justo la que decide una carga animal.',
+    'en las cuatro variantes: de 10 a 24 % contra 0 a 3,8 % de la mediana. La ventana se ve casi '
+    + 'entera en la cola seca, que es justo la que decide una carga animal. Con el factor de '
+    + 'actividad radicular la mediana se despegó del techo y el p10 se mueve menos, pero el '
+    + 'patrón —el p10 se lleva casi todo— no cambió.',
   /**
    * Medido antes con la ETo de FAO-56, el patrón era asimétrico: el p10 se movía
    * más sólo cuando la ventana le daba más agua. Con la `Eo` de Jensen-Haise se
@@ -250,8 +269,10 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
  */
 export const LA_CADENA_OLVIDA_EL_ARRANQUE = {
   /** Diferencia relativa del índice entre arrancar la cadena vacía y llena, en %. */
-  en_sidney_pct: { t1: 65.477, t2: 31.882, t3: 1.158, t4_en_adelante_maximo: 0 },
-  temporadas_en_sidney: 3,
+  en_sidney_pct: { t1: 60.679, t2: 38.622, t3: 0.308, t4_en_adelante_maximo: 0.308 },
+  temporadas_en_sidney: 2,
+  /** Sin el factor de actividad radicular hacían falta tres: 65,5 / 31,9 / 1,2 %. */
+  sin_el_factor_daba: { t1: 65.477, t2: 31.882, t3: 1.158, temporadas: 3 },
   /** La serie sintética del test, más árida: ahí tres temporadas no alcanzan. */
   en_una_serie_arida_pct: { t4_en_adelante_maximo: 9.5 },
   /** Debajo de esto se considera que las dos cadenas son la misma. */
@@ -326,7 +347,9 @@ export const LA_NIEVE_NO_SE_ACUMULA = {
    * acá era, en buena medida, la sustitución de la `Eo`.
    */
   medido_con_deshielo_diferido: {
-    con_jensen_haise: { p10_pct: 0.8, mediana_pct: -0.03 },
+    con_jensen_haise: { p10_pct: -0.8, mediana_pct: -0.45 },
+    /** Antes de montar el factor de actividad radicular daba +0,8 % en el p10. */
+    sin_el_factor_de_actividad_radicular: { p10_pct: 0.8, mediana_pct: -0.03 },
     con_la_eto_de_fao_56: { p10_pct: 11.0, agua_inicial_pct: 16.1 },
     eo_de_los_dias_bajo_cero_mm_dia: { jensen_haise: 0.122, eto_fao_56: 0.719, dias: 6992 },
   },
@@ -371,23 +394,30 @@ export const EL_PROMEDIO_SOBREESTOCA = {
   tambien_publicado:
     'el mismo trabajo dice que en uno de cada dos años la lluvia queda por debajo de la media',
   medido_en_sidney: {
-    anios: 62,
+    anios: 63,
     anios_bajo_el_promedio: 18,
-    fraccion_bajo_el_promedio_pct: 29,
+    fraccion_bajo_el_promedio_pct: 28.6,
     indice: {
-      minimo: 0.157, p10: 0.741, p25: 0.896, mediana: 0.999,
-      p75: 1, p90: 1, maximo: 1, promedio: 0.908,
+      minimo: 0.161, p10: 0.672, p25: 0.852, mediana: 0.935,
+      p75: 0.975, p90: 0.990, maximo: 1, promedio: 0.869,
     },
     /** `p90/p10`: cuántas veces más forraje da un año bueno que uno malo. */
-    ancho: 1.35,
+    ancho: 1.473,
     /**
-     * Y el cuarto de arriba queda **clavado contra el techo**: `p75`, `p90` y el
-     * máximo son 1,000, o sea que en más de una temporada de cada cuatro el
-     * pastizal transpiró todo lo que podía y el índice no distingue entre ellas.
-     * El `ancho` de 1,35 no dice que los años se parezcan: dice que la mitad
-     * buena de la distribución está contra el tope.
+     * El cuarto de arriba **se despegó del techo** al montar el factor de
+     * actividad radicular: antes `p75`, `p90` y el máximo eran los tres 1,000 y
+     * el índice no distinguía entre una temporada de cada cuatro. Ahora el p75
+     * da 0,975 y el p90 0,990, y hay cinco mejores años que se pueden nombrar.
+     * Lo que no cambió es el signo: la distribución sigue pegada al tope y el
+     * `ancho` sigue sin medir lo que parece medir.
      */
-    el_cuarto_de_arriba_esta_en_el_techo: true,
+    el_cuarto_de_arriba_esta_en_el_techo: false,
+    sin_el_factor_daba: {
+      indice: { minimo: 0.157, p10: 0.741, p25: 0.896, mediana: 0.999, p75: 1, p90: 1, promedio: 0.908 },
+      ancho: 1.35,
+      anios: 62,
+      el_cuarto_de_arriba_en_el_techo: true,
+    },
   },
   /**
    * Medido antes con la ETo de FAO-56, esta misma distribución daba mediana
@@ -399,8 +429,9 @@ export const EL_PROMEDIO_SOBREESTOCA = {
   con_la_eto_daba: { mediana: 0.675, p10: 0.194, ancho: 5.08, bajo_el_promedio_pct: 46.8 },
   por_que_no_da_50:
     'El índice no puede pasar de 1, así que la distribución queda sesgada a la izquierda y el '
-    + 'promedio (0,908) cae por debajo de la mediana (0,999). Contra la mediana la mitad de los '
-    + 'años queda corta por definición, y acá la mitad de arriba está empatada en el techo.',
+    + 'promedio (0,869) cae por debajo de la mediana (0,935). Contra la mediana la mitad de los '
+    + 'años queda corta por definición. Con el factor de actividad radicular el techo dejó de '
+    + 'estar poblado —el p75 bajó de 1,000 a 0,975— pero la asimetría sigue.',
   que_se_hace:
     'se muestra la distribución y el año del registro que le corresponde a cada percentil, y la '
     + 'elección del año que se planifica queda del usuario: no hay un percentil publicado para '
@@ -434,10 +465,12 @@ export const EL_PROMEDIO_SOBREESTOCA = {
  * balance diario calcula y una escalera por totales no puede.
  */
 export const LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO = {
-  r2_contra_lluvia_del_anio: 0.219,
-  r2_contra_lluvia_de_la_temporada: 0.357,
+  r2_contra_lluvia_del_anio: 0.256,
+  r2_contra_lluvia_de_la_temporada: 0.428,
   /** El agua con la que la cadena arrancó cada temporada, en mm, sobre 150 de tope. */
-  agua_inicial_medida_mm: { minimo: 28.1, maximo: 150, promedio: 119.2 },
+  agua_inicial_medida_mm: { minimo: 32.3, maximo: 150, promedio: 121.1 },
+  /** Sin el factor de actividad radicular daban 0,219 y 0,357. */
+  sin_el_factor_daba: { r2_anual: 0.219, r2_temporada: 0.357 },
   /** Con la ETo de FAO-56 daban 0,207 y 0,522, y el agua inicial 0,1 a 147,6. */
   con_la_eto_daba: {
     r2_anual: 0.207, r2_temporada: 0.522,
@@ -565,8 +598,13 @@ export const EL_ANIO_SECO_LO_DECIDE_LA_EO = {
 export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
   anios: 12,
   publicado: { minimo: 0.402, mediana: 0.904, maximo: 0.985 },
-  /** Error absoluto medio y sesgo del índice contra los doce publicados. */
-  con_la_eo_del_modelo: { eam: 0.156, sesgo: 0.156, en_el_techo: 10 },
+  /**
+   * Error absoluto medio, sesgo, temporadas en el techo y correlación contra los
+   * doce publicados, con el factor de actividad radicular montado.
+   */
+  con_el_factor: { eam: 0.133, sesgo: 0.132, en_el_techo: 4, r: 0.704 },
+  /** Lo mismo, antes de montarlo. El techo era lo que más molestaba. */
+  sin_el_factor: { eam: 0.156, sesgo: 0.156, en_el_techo: 10, r: 0.539 },
   con_la_eto_de_fao_56: { eam: 0.148, sesgo: -0.063, en_el_techo: 2 },
   /** La lluvia de ERA5 menos la publicada, en mm, en esas doce temporadas. */
   lluvia_era5_menos_publicada_mm: { media: 24.6, minimo: -76.3, maximo: 102.5 },
@@ -574,10 +612,109 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
     'La entrada no es la misma: la lluvia sale de ERA5 y el trabajo midió con pluviómetro, con '
     + 'hasta 100 mm de diferencia en una temporada. Es una cota de parecido, no una validación.',
   por_que_lee_alto:
-    'Las tres degradaciones declaradas del balance empujan para el mismo lado: sin factor de '
-    + 'actividad radicular, con escurrimiento nulo y sin agua bajo el límite inferior, el perfil '
-    + 'entrega más agua de la que entregaría. Es la primera medición de cuánto suman.',
+    'Las tres degradaciones declaradas del balance empujaban para el mismo lado. Una ya se pagó '
+    + '—el factor de actividad radicular, el 09/11/2026— y se llevó la sexta parte del sesgo y '
+    + 'seis de las diez temporadas que estaban en el techo. Quedan el escurrimiento nulo, el '
+    + 'agua bajo el límite inferior, el agua con la que arranca cada temporada y la lluvia de '
+    + 'ERA5, que difiere hasta 100 mm de la medida con pluviómetro.',
+  /**
+   * Y dónde quedó el resto, que es lo que señala a dónde ir: **las tres peores
+   * temporadas publicadas son las tres que más lejos quedan**. 1977 publica 0,40
+   * y la cadena da 0,88; 1971 publica 0,58 y da 0,96; 1968 publica 0,56 y da
+   * 0,72. Son las tres que el trabajo arrancó con el perfil seco y la cadena
+   * arranca con 132, 137 y 88 mm de los 150.
+   */
+  el_resto_esta_en_los_anios_secos: [1977, 1971, 1968],
   que_aguanta: 'el orden de los años y la mediana; no el valor de la cola seca',
+} as const;
+
+/**
+ * El factor de actividad radicular destapa el techo, y deja en pie el sesgo.
+ *
+ * Es la respuesta a la pregunta que `LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE` dejó
+ * abierta el 08/11/2026: de las tres degradaciones declaradas que empujan el
+ * índice para arriba, la que tenía una curva publicada esperando era el factor
+ * de actividad radicular por temperatura de suelo. Se montó
+ * —`lib/actividadRadicular.ts`— y se midió contra los mismos doce índices.
+ *
+ * ```
+ *                        sin el factor   con el factor
+ *   EAM                      0,156           0,133
+ *   sesgo                   +0,156          +0,132
+ *   temporadas en el techo   10 de 12        4 de 12
+ *   correlación r             0,539           0,704
+ * ```
+ *
+ * ## Lo que sí arregló
+ *
+ * **El techo.** Diez de las doce temporadas daban índice ≥ 0,99 contra valores
+ * publicados que van de 0,40 a 0,98: el modelo no distinguía entre un año bueno
+ * y uno excelente, y tampoco entre uno bueno y uno malo-pero-no-pésimo. Con el
+ * factor quedan cuatro, la correlación con los publicados pasa de 0,54 a 0,70, y
+ * en la serie de 63 años el `p75` se despega de 1,000 por primera vez.
+ *
+ * Eso es más importante que el sesgo para lo que la app hace, porque el `Yp` se
+ * despeja dividiendo por el índice del año del corte: un índice clavado en 1
+ * convierte cualquier corte en el techo del sitio.
+ *
+ * ## Lo que no arregló
+ *
+ * **Las tres cuartas partes del sesgo.** De +0,156 a +0,132. Y lo que queda está
+ * concentrado donde más duele: las tres temporadas peores de las doce —1977 con
+ * 0,40 publicado, 1968 con 0,56, 1971 con 0,58— siguen leyendo 0,88, 0,72 y
+ * 0,96. Son las tres que el trabajo arrancó con el perfil seco.
+ *
+ * Así que la hipótesis queda medida y es sólo parte de la respuesta. Lo que
+ * sigue en la lista, en orden de lo que probablemente pese:
+ *
+ * 1. **El agua con la que arranca cada temporada**, que en los años secos sale
+ *    alta y es la decisión de `EL_INVIERNO_DECIDE_LA_COLA_SECA`.
+ * 2. **El escurrimiento nulo**, que el trabajo asumió en una planicie glaciada
+ *    arenosa y acequia hereda en cualquier pendiente.
+ * 3. **El agua bajo el límite inferior** de la capa superficial, que nadie
+ *    declara y que hace que el suelo se seque menos de lo que se seca.
+ * 4. **La lluvia de ERA5**, que difiere del pluviómetro hasta 103 mm en una
+ *    temporada y no se arregla desde acá.
+ */
+export const EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO = {
+  sin_el_factor: { eam: 0.156, sesgo: 0.156, en_el_techo: 10, r: 0.539 },
+  con_el_factor: { eam: 0.133, sesgo: 0.132, en_el_techo: 4, r: 0.704 },
+  /** Lo que se llevó, en fracción del sesgo que había. */
+  fraccion_del_sesgo_que_se_fue: 0.15,
+  /** Las tres temporadas donde queda casi todo lo que no se explicó. */
+  las_tres_que_siguen_lejos: [
+    { anio: 1977, publicado: 0.402, con_el_factor: 0.879, sws_inicial_mm: 132 },
+    { anio: 1968, publicado: 0.564, con_el_factor: 0.719, sws_inicial_mm: 88 },
+    { anio: 1971, publicado: 0.577, con_el_factor: 0.957, sws_inicial_mm: 137 },
+  ],
+  /** Lo que cambia en la serie larga de Sidney, que es lo que ve el usuario. */
+  en_la_serie_de_63_anios: {
+    p10: { antes: 0.741, ahora: 0.672 },
+    mediana: { antes: 0.999, ahora: 0.935 },
+    p75: { antes: 1, ahora: 0.975 },
+    ancho: { antes: 1.35, ahora: 1.473 },
+    r2_contra_la_lluvia_de_temporada: { antes: 0.357, ahora: 0.428 },
+  },
+  /**
+   * Y en los kilos: el `Yp` despejado del corte casi no se mueve —el año del
+   * corte está cerca del techo en las dos corridas— pero el forraje de un año
+   * cualquiera sí.
+   */
+  lo_que_mueve_en_los_kilos_pct: { yp: -0.8, mediana_del_anio: 3.2, p90: 11.9, maximo: 17.3 },
+  lo_que_queda:
+    'el agua inicial de las temporadas secas, el escurrimiento nulo, el agua bajo el límite '
+    + 'inferior y la lluvia de ERA5',
+  /**
+   * Y una cosa que no era obvia y la encontró el test: **el factor no baja el
+   * índice temporada por temporada**. En una ventana suelta sólo puede bajarlo,
+   * pero la cadena es continua y el agua que las capas frías no entregaron se
+   * queda en el perfil. Una temporada posterior arranca más húmeda y puede
+   * salir más alta: el peor año de la serie de Sidney sube de 0,157 a 0,161.
+   */
+  el_arrastre: {
+    por_que: 'el agua que las capas frías no transpiran queda en el perfil para la temporada que sigue',
+    el_peor_anio_sube: { anio: 1988, antes: 0.157, ahora: 0.161 },
+  },
 } as const;
 
 /**
@@ -598,15 +735,27 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
  *
  * ```
  *                                       p10      mediana   ancho   EAM contra los 12
- * Jensen-Haise todo el año              0,741    0,999     1,35    0,156  (+0,156)
- * Jensen-Haise en temporada, ETo afuera 0,303    0,819     3,30    0,142  (+0,057)
- * ETo de FAO-56 todo el año             0,195    0,669     5,03    0,148  (−0,063)
+ * Jensen-Haise todo el año              0,672    0,935     1,47    0,133  (+0,132)
+ * Jensen-Haise en temporada, ETo afuera 0,311    0,753     3,13    0,114  (+0,024)
+ * ETo de FAO-56 todo el año             0,201    0,611     4,57    0,150  (−0,094)
  * ```
  *
- * **El p10 se mueve 3,8 veces** entre el primero y el último, y los tres
- * tratamientos son indistinguibles por el error contra los doce índices
- * publicados: 0,142 a 0,156. La distribución de la cola seca no la decide el
- * dato, la decide esta elección.
+ * **El p10 se mueve 3,3 veces** entre el primero y el último. La distribución de
+ * la cola seca no la decide el dato, la decide esta elección.
+ *
+ * ## Lo que cambió el 09/11/2026, y hay que decirlo aunque incomode
+ *
+ * Con el factor de actividad radicular montado, los tres tratamientos **ya no
+ * son indistinguibles por el error**: el híbrido da 0,114 contra 0,133 del que
+ * está elegido, un 14 % mejor. Antes iban 0,142 a 0,156 y ésa era una de las
+ * razones para no elegir por ahí.
+ *
+ * La elección no cambia igual, y el motivo es que la ventaja del híbrido se
+ * entiende: arranca las temporadas con **67 mm** de perfil contra 121 del
+ * tratamiento elegido, o sea que compensa el sesgo que al balance le queda con
+ * un invierno que evapora de más. Dos errores que se tapan no son un acierto, y
+ * elegir por el EAM contra los doce sería ajustar contra el resultado con una
+ * entrada —la lluvia de ERA5— que ni siquiera es la del trabajo.
  *
  * ## Lo que sí dice el trabajo, y acota un poco
  *
@@ -630,14 +779,28 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
  */
 export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
   tratamientos: {
-    jensen_haise_todo_el_anio: { p10: 0.741, mediana: 0.999, ancho: 1.35, eam: 0.156, sesgo: 0.156 },
-    jensen_haise_en_temporada: { p10: 0.303, mediana: 0.819, ancho: 3.3, eam: 0.142, sesgo: 0.057 },
-    eto_todo_el_anio: { p10: 0.195, mediana: 0.669, ancho: 5.03, eam: 0.148, sesgo: -0.063 },
+    jensen_haise_todo_el_anio: {
+      p10: 0.672, mediana: 0.935, ancho: 1.47, eam: 0.133, sesgo: 0.132, sws_mm: 121,
+    },
+    jensen_haise_en_temporada: {
+      p10: 0.311, mediana: 0.753, ancho: 3.13, eam: 0.114, sesgo: 0.024, sws_mm: 67,
+    },
+    eto_todo_el_anio: {
+      p10: 0.201, mediana: 0.611, ancho: 4.57, eam: 0.150, sesgo: -0.094, sws_mm: 61,
+    },
   },
   /** Cuántas veces se mueve el p10 entre el tratamiento más seco y el más húmedo. */
-  el_p10_se_mueve_veces: 3.8,
-  /** Y los tres son indistinguibles por el error contra los doce publicados. */
-  no_se_puede_elegir_por_el_error: true,
+  el_p10_se_mueve_veces: 3.3,
+  /**
+   * Con el factor de actividad radicular los tres **dejaron de ser
+   * indistinguibles**: el híbrido mide 0,114 de error contra 0,133 del elegido.
+   * No se elige por ahí igual, y el motivo está arriba: el híbrido acierta
+   * compensando un sesgo con otro, arrancando las temporadas 54 mm más secas.
+   */
+  no_se_puede_elegir_por_el_error: false,
+  el_mejor_por_el_error_es_el_hibrido: true,
+  /** Antes de montar el factor los tres iban de 0,142 a 0,156 y no se separaban. */
+  sin_el_factor_daban: { eam: { minimo: 0.142, maximo: 0.156 }, el_p10_se_movia_veces: 3.8 },
   /** `P − ET − drenaje` de las doce temporadas publicadas, en mm. */
   lo_que_perdio_el_perfil_mm: { minimo: -65, maximo: 35, temporadas_que_se_descargaron: 10 },
   el_trabajo_no_corrio_inviernos:
@@ -653,11 +816,11 @@ export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
 } as const;
 
 /**
- * El año más seco de los 62 es el que fue, y lo dice la estación del lugar.
+ * El año más seco de los 63 es el que fue, y lo dice la estación del lugar.
  *
  * Es un chequeo de una sola dirección —si fallaba, algo estaba roto; que pase no
  * valida el modelo— pero es el único disponible y es barato. El modelo pone a
- * **1988 último de 62**, con índice 0,051. Y 1988 es la sequía que en el este de
+ * **1988 último de 63**, con índice 0,161. Y 1988 es la sequía que en el este de
  * Montana todavía se usa como vara de comparación.
  *
  * Contra lo que midió la estación del propio sitio: el Eastern Agricultural
@@ -666,20 +829,22 @@ export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
  * 45,7 % de lo normal. Y en los tres meses que caen dentro de la ventana del
  * modelo, abril a junio, **2,23 pulgadas contra 5,90**: el 37,8 %.
  *
- * ERA5, en la ventana del modelo, dio **77,5 mm contra 177,8 de media**: el
- * 43,6 %. Dos fuentes independientes y una diferencia de seis puntos. Y la cadena
- * además le entregó a esa temporada un perfil con **1,3 mm de agua de los 150
- * posibles**, contra 52 de promedio, que es lo que explica un índice de 0,05 y no
- * de 0,4: el otoño y el invierno previos también habían sido secos.
+ * ERA5, en la ventana del modelo, dio **77,5 mm contra 178,8 de media**: el
+ * 43,4 %. Dos fuentes independientes y una diferencia de seis puntos. Y la cadena
+ * además le entregó a esa temporada un perfil con **32,3 mm de agua de los 150
+ * posibles**, contra 121 de promedio, que es lo que lo pone último y no sólo
+ * bajo: el otoño y el invierno previos también habían sido secos.
  *
- * Los cinco peores salieron 1988, 1990, 2017, 1985 y 1980; los cinco mejores
- * 2011, 1975, 1972, 1963 y 1965.
+ * Los cinco peores salieron 1988, 1980, 1984, 1990 y 2021; los cinco mejores
+ * 2011, 1978, 1976, 1972 y 1970. Los mejores recién se pueden nombrar desde que
+ * el factor de actividad radicular despegó la mitad de arriba del techo: antes
+ * estaban empatados en 1,000.
  */
 export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
   anio: 1988,
   puesto: 1,
-  de: 62,
-  indice: 0.157,
+  de: 63,
+  indice: 0.161,
   estacion: {
     fuente:
       'Eastern Agricultural Research Center, Sidney, Montana (Montana State University) — '
@@ -687,15 +852,17 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
     anio_agricola_pulgadas: { medido: 6.18, promedio: 13.53, fraccion_pct: 45.7 },
     abril_a_junio_pulgadas: { medido: 2.23, promedio: 5.9, fraccion_pct: 37.8 },
   },
-  era5_en_la_ventana: { medido_mm: 77.5, media_mm: 177.8, fraccion_pct: 43.6 },
-  agua_inicial_del_perfil_mm: { ese_anio: 30.9, promedio: 119.2, tope: 150 },
-  los_cinco_peores: [1988, 1980, 2021, 1984, 1990],
+  era5_en_la_ventana: { medido_mm: 77.5, media_mm: 178.8, fraccion_pct: 43.4 },
+  agua_inicial_del_perfil_mm: { ese_anio: 32.3, promedio: 121.1, tope: 150 },
+  los_cinco_peores: [1988, 1980, 1984, 1990, 2021],
   /**
-   * No hay cinco mejores que nombrar: con la `Eo` del modelo, más de una
-   * temporada de cada cuatro llega al techo del índice y quedan empatadas en
-   * 1,000. Ordenarlas sería inventar un orden que el cálculo no tiene.
+   * Y ahora sí hay cinco mejores que nombrar. Sin el factor de actividad
+   * radicular una temporada de cada cuatro llegaba al techo del índice y
+   * quedaban empatadas en 1,000, así que ordenarlas habría sido inventar un
+   * orden que el cálculo no tenía. Con el factor el p75 baja a 0,975.
    */
-  los_mejores_estan_empatados_en_el_techo: true,
+  los_cinco_mejores: [2011, 1978, 1976, 1972, 1970],
+  sin_el_factor_estaban_empatados_en_el_techo: true,
   /**
    * Con la ETo de FAO-56 este mismo año daba 0,051 y el perfil arrancaba con
    * 1,3 mm, y los cinco peores eran otros tres: 2017 y 1985 entraban, 2021 y
@@ -740,12 +907,18 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
  * un pronóstico, y la tendencia no está removida.
  */
 export const LA_DISTRIBUCION_ES_DEL_PASADO = {
-  pendiente_del_indice_por_decada: -0.005,
-  r2_de_la_tendencia: 0.002,
+  pendiente_del_indice_por_decada: -0.009,
+  r2_de_la_tendencia: 0.010,
   mitades: {
-    primera: { anios: '1963-1993', mediana: 0.999, p10: 0.495, tp_mm_dia: 1.473 },
-    segunda: { anios: '1994-2024', mediana: 0.998, p10: 0.807, tp_mm_dia: 1.444 },
+    primera: { anios: '1962-1992', mediana: 0.940, p10: 0.444, tp_mm_dia: 1.477 },
+    segunda: { anios: '1993-2024', mediana: 0.918, p10: 0.755, tp_mm_dia: 1.440 },
   },
+  /**
+   * Con el factor de actividad radicular la pendiente pasa de −0,005 a −0,009 por
+   * década y el R² de 0,002 a 0,010. Sigue siendo nada —un 1 % de la varianza— y
+   * el `p10` sigue apuntando al otro lado.
+   */
+  sin_el_factor_daba: { pendiente_por_decada: -0.005, r2: 0.002 },
   /**
    * Con la ETo de FAO-56 esta tendencia daba −0,042 por década con R² 0,065, y
    * las dos mitades 0,708 contra 0,568 de mediana. **Con la `Eo` del modelo
@@ -763,7 +936,7 @@ export const LA_DISTRIBUCION_ES_DEL_PASADO = {
     mitades: { primera_mediana: 0.708, segunda_mediana: 0.568 },
   },
   por_que_no_se_recorta_la_ventana:
-    'La tendencia explica el 0,2 % de la varianza del índice, o sea nada, y en la cola seca '
+    'La tendencia explica el 1 % de la varianza del índice, o sea nada, y en la cola seca '
     + 'apunta al revés: el p10 de la segunda mitad es MÁS alto. Recortar a veinte años dejaría '
     + 'el p10 decidido por dos temporadas.',
   que_hay_que_decir: 'es la distribución de lo que pasó, no un pronóstico, y la tendencia no está removida',
@@ -778,7 +951,7 @@ export const AVISO_DE_LA_CADENA = {
     + 'sea de lo que dejó la temporada anterior, y por eso las primeras temporadas de la serie no '
     + 'entran. La cadena no acumula nieve, pero con la Eo del modelo eso mueve el p10 menos del '
     + '1 %. Lo que sí pesa es la demanda atmosférica de fuera de temporada, que el trabajo '
-    + 'original nunca corrió: según cómo se la trate, el p10 se mueve hasta 3,8 veces.',
+    + 'original nunca corrió: según cómo se la trate, el p10 se mueve hasta 3,3 veces.',
 } as const;
 
 /** El aviso de la ventana fija, que también sale siempre. */
@@ -812,11 +985,10 @@ export const AVISO_DEL_INVIERNO: AvisoDeCorte = {
     'Con cuánta agua arranca cada temporada sale de correr el balance fuera de temporada, que es '
     + 'la única forma de no inventar ese dato y es también lo que el trabajo original nunca hizo: '
     + 'ellos lo medían con sonda de neutrones el 15 de abril. Medido, según cómo se trate la '
-    + 'demanda atmosférica de fuera de temporada el p10 de la distribución se mueve hasta 3,8 '
-    + 'veces, y las tres variantes probadas son indistinguibles por el error contra los doce '
-    + 'índices que el trabajo publica. La mediana y el orden de los años aguantan; el valor de la '
-    + 'cola seca no es una cifra. Contra esos doce índices la cadena lee ALTO, con un sesgo '
-    + 'medido de +0,16.',
+    + 'demanda atmosférica de fuera de temporada el p10 de la distribución se mueve hasta 3,3 '
+    + 'veces. La mediana y el orden de los años aguantan; el valor de la cola seca no es una '
+    + 'cifra. Contra los doce índices que el trabajo publica la cadena lee ALTO, con un sesgo '
+    + 'medido de +0,13.',
   sesgo: 'alto',
 };
 
@@ -954,6 +1126,12 @@ export interface IndicesPorAnio {
   dias_corridos: number;
   /** Las ventanas que la serie no cubría completas y quedaron afuera. */
   anios_sin_serie: number[];
+  /**
+   * Si la cadena corrió con el factor de actividad radicular por temperatura de
+   * suelo. Tiene que coincidir con el de la corrida del corte de la que salió
+   * el `Yp`: con factor y sin factor los índices no son comparables.
+   */
+  actividad_radicular: boolean;
   advertencias: string[];
   avisos: AvisoDeCorte[];
 }
@@ -1019,6 +1197,17 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     for (let i = d.i0; i <= d.i1; i++) enTemporada[i] = 1;
   }
 
+  // El factor de actividad radicular de cada día, si la serie trae temperatura
+  // de suelo. O lo traen todos los días de la cadena o no lo trae ninguno: la
+  // cadena es continua, y media corrida con las capas profundas cerradas y
+  // media con ellas abiertas no es ninguno de los dos modelos.
+  const actividadDeLaSerie: Array<number[] | null> = [];
+  for (let i = 0; i <= hastaDia; i++) {
+    actividadDeLaSerie.push(actividadDeLasCapas(e.serie[i]!.t_suelo_30_90_c, e.aw_por_capa_mm.length));
+  }
+  const conActividad = actividadDeLaSerie.every(a => a !== null);
+  if (!conActividad && actividadDeLaSerie.some(a => a !== null)) return null;
+
   const dias: DiaDeBalance[] = [];
   for (let i = 0; i <= hastaDia; i++) {
     const d = e.serie[i]!;
@@ -1028,6 +1217,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
       b: enTemporada[i] === 1
         ? bConstante
         : EL_AGUA_INICIAL_NO_SE_OLVIDA.b_del_calentamiento,
+      ...(conActividad ? { actividad_radicular: actividadDeLaSerie[i] as number[] } : {}),
     });
   }
 
@@ -1157,6 +1347,12 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     avisoDeLaEo,
     { ...AVISO_DE_LA_VENTANA },
     ...(e.coeficientes_eo ? [{ ...AVISO_DEL_INVIERNO }] : []),
+    ...(conActividad
+      ? [{
+        aviso: AVISO_ACTIVIDAD_RADICULAR.aviso,
+        sesgo: AVISO_ACTIVIDAD_RADICULAR.sesgo_del_indice as Direccion,
+      }]
+      : []),
   ];
 
   return {
@@ -1164,6 +1360,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     anios_descartados: descartados,
     dias_corridos: hastaDia + 1,
     anios_sin_serie,
+    actividad_radicular: conActividad,
     advertencias,
     avisos,
   };

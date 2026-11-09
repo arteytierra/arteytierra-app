@@ -27,6 +27,7 @@ import {
   EL_ANIO_MAS_SECO_ES_EL_QUE_FUE,
   LA_DISTRIBUCION_ES_DEL_PASADO,
   LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE,
+  EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO,
   EL_INVIERNO_DECIDE_LA_COLA_SECA,
   AVISO_DE_LA_VENTANA,
   AVISO_DEL_ANIO_SECO,
@@ -154,7 +155,9 @@ describe('la cadena olvida el arranque', () => {
     expect(d.t1).toBeGreaterThan(d.t2);
     expect(d.t2).toBeGreaterThan(d.t3);
     expect(d.t4_en_adelante_maximo).toBeLessThan(LA_CADENA_OLVIDA_EL_ARRANQUE.umbral_por_defecto_pct);
-    expect(LA_CADENA_OLVIDA_EL_ARRANQUE.temporadas_en_sidney).toBe(3);
+    expect(LA_CADENA_OLVIDA_EL_ARRANQUE.temporadas_en_sidney).toBe(2);
+    // Y antes del factor de actividad radicular hacían falta tres.
+    expect(LA_CADENA_OLVIDA_EL_ARRANQUE.sin_el_factor_daba.temporadas).toBe(3);
   });
 
   it('y dice lo que la convergencia NO cubre, que es el invierno', () => {
@@ -190,10 +193,14 @@ describe('la nieve no se acumula', () => {
   it('con la Eo del modelo la degradación casi desaparece, y eso está medido', () => {
     // Diferir la lluvia de los días bajo cero hasta el deshielo mueve el p10 un
     // 0,8 % con Jensen-Haise y un 11 % con la ETo de FAO-56. La razón es la Eo
-    // de los días helados: 0,12 mm/día contra 0,72.
+    // de los días helados: 0,12 mm/día contra 0,72. El signo cambió al montar el
+    // factor de actividad radicular, pero la magnitud —que es lo que dice la
+    // prosa— sigue abajo del 1 %.
     const m = LA_NIEVE_NO_SE_ACUMULA.medido_con_deshielo_diferido;
-    expect(m.con_jensen_haise.p10_pct).toBeLessThan(1);
-    expect(m.con_la_eto_de_fao_56.p10_pct).toBeGreaterThan(10 * m.con_jensen_haise.p10_pct);
+    expect(Math.abs(m.con_jensen_haise.p10_pct)).toBeLessThan(1);
+    expect(Math.abs(m.sin_el_factor_de_actividad_radicular.p10_pct)).toBeLessThan(1);
+    expect(m.con_la_eto_de_fao_56.p10_pct)
+      .toBeGreaterThan(10 * Math.abs(m.con_jensen_haise.p10_pct));
     expect(m.eo_de_los_dias_bajo_cero_mm_dia.eto_fao_56)
       .toBeGreaterThan(5 * m.eo_de_los_dias_bajo_cero_mm_dia.jensen_haise);
   });
@@ -209,12 +216,23 @@ describe('el promedio sobreestoca', () => {
   it('el ancho es p90 sobre p10, y la cuenta cierra', () => {
     const m = EL_PROMEDIO_SOBREESTOCA.medido_en_sidney;
     expect(m.indice.p90 / m.indice.p10).toBeCloseTo(m.ancho, 1);
-    // Con la Eo del modelo el ancho es 1,35 y con la ETo era 5,08: el ancho no
-    // mide cuánto se parecen los años, mide cuánto de la distribución quedó
-    // contra el techo.
-    expect(m.el_cuarto_de_arriba_esta_en_el_techo).toBe(true);
-    expect(m.indice.p75).toBe(1);
+    // El ancho no mide cuánto se parecen los años: mide cuánto de la
+    // distribución quedó contra el techo. Va de 5,08 con la ETo a 1,35 con la Eo
+    // del modelo y a 1,47 con el factor de actividad radicular, y el que más se
+    // parece a la realidad es el último, no el más ancho.
     expect(EL_PROMEDIO_SOBREESTOCA.con_la_eto_daba.ancho).toBeGreaterThan(m.ancho);
+    expect(m.ancho).toBeGreaterThan(m.sin_el_factor_daba.ancho);
+  });
+
+  it('el cuarto de arriba se despegó del techo al montar el factor', () => {
+    const m = EL_PROMEDIO_SOBREESTOCA.medido_en_sidney;
+    expect(m.el_cuarto_de_arriba_esta_en_el_techo).toBe(false);
+    expect(m.indice.p75).toBeLessThan(1);
+    expect(m.sin_el_factor_daba.el_cuarto_de_arriba_en_el_techo).toBe(true);
+    expect(m.sin_el_factor_daba.indice.p75).toBe(1);
+    // Y por eso ahora hay cinco mejores años que se pueden nombrar.
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.los_cinco_mejores).toHaveLength(5);
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.sin_el_factor_estaban_empatados_en_el_techo).toBe(true);
   });
 
   it('los percentiles están ordenados y ninguno pasa de 1', () => {
@@ -318,13 +336,30 @@ describe('el año seco lo decide la Eo', () => {
 });
 
 describe('la cadena lee alto contra los doce índices publicados', () => {
-  it('el sesgo es positivo y la cadena llega al techo en la mayoría', () => {
+  it('el sesgo sigue siendo positivo, y el techo dejó de ser la mayoría', () => {
     const c = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
     expect(c.anios).toBe(12);
-    expect(c.con_la_eo_del_modelo.sesgo).toBeGreaterThan(0);
-    expect(c.con_la_eo_del_modelo.en_el_techo).toBeGreaterThan(c.anios / 2);
+    expect(c.con_el_factor.sesgo).toBeGreaterThan(0);
+    // Antes del factor de actividad radicular, diez de doce temporadas daban
+    // índice ≥ 0,99; ahora cuatro.
+    expect(c.sin_el_factor.en_el_techo).toBeGreaterThan(c.anios / 2);
+    expect(c.con_el_factor.en_el_techo).toBeLessThan(c.anios / 2);
+    expect(c.con_el_factor.r).toBeGreaterThan(c.sin_el_factor.r);
     // Los doce publicados sí tienen cola seca: el mínimo es 0,40.
     expect(c.publicado.minimo).toBeLessThan(0.5);
+  });
+
+  it('lo que queda sin explicar está en las temporadas secas', () => {
+    const c = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
+    expect(c.el_resto_esta_en_los_anios_secos).toHaveLength(3);
+    for (const anio of c.el_resto_esta_en_los_anios_secos) {
+      const f = EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO.las_tres_que_siguen_lejos
+        .find(x => x.anio === anio);
+      expect(f).toBeDefined();
+      // Las tres publican bien abajo de la mediana y la cadena las lee altas.
+      expect(f!.publicado).toBeLessThan(c.publicado.mediana);
+      expect(f!.con_el_factor).toBeGreaterThan(f!.publicado);
+    }
   });
 
   it('no se presenta como una validación, porque la lluvia no es la misma', () => {
@@ -343,15 +378,24 @@ describe('la cadena lee alto contra los doce índices publicados', () => {
 });
 
 describe('el invierno decide la cola seca', () => {
-  it('los tres tratamientos dan distribuciones distintas y errores iguales', () => {
+  it('los tres tratamientos dan distribuciones muy distintas en la cola seca', () => {
     const t = EL_INVIERNO_DECIDE_LA_COLA_SECA.tratamientos;
-    const eams = [t.jensen_haise_todo_el_anio.eam, t.jensen_haise_en_temporada.eam, t.eto_todo_el_anio.eam];
-    // Indistinguibles por el error: menos de dos centésimas entre el mejor y el peor.
-    expect(Math.max(...eams) - Math.min(...eams)).toBeLessThan(0.02);
-    // Y muy distintos en la cola seca.
     expect(t.jensen_haise_todo_el_anio.p10 / t.eto_todo_el_anio.p10)
       .toBeCloseTo(EL_INVIERNO_DECIDE_LA_COLA_SECA.el_p10_se_mueve_veces, 0);
-    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.no_se_puede_elegir_por_el_error).toBe(true);
+  });
+
+  it('con el factor ya NO son indistinguibles por el error, y eso está dicho', () => {
+    // Antes los tres iban de 0,142 a 0,156 y ésa era una de las razones para no
+    // elegir por ahí. Con el factor de actividad radicular el híbrido se separa.
+    const t = EL_INVIERNO_DECIDE_LA_COLA_SECA.tratamientos;
+    const eams = [t.jensen_haise_todo_el_anio.eam, t.jensen_haise_en_temporada.eam, t.eto_todo_el_anio.eam];
+    expect(Math.max(...eams) - Math.min(...eams)).toBeGreaterThan(0.02);
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.no_se_puede_elegir_por_el_error).toBe(false);
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.el_mejor_por_el_error_es_el_hibrido).toBe(true);
+    const viejo = EL_INVIERNO_DECIDE_LA_COLA_SECA.sin_el_factor_daban.eam;
+    expect(viejo.maximo - viejo.minimo).toBeLessThan(0.02);
+    // Y la ventaja del híbrido se explica: arranca las temporadas mucho más secas.
+    expect(t.jensen_haise_en_temporada.sws_mm).toBeLessThan(t.jensen_haise_todo_el_anio.sws_mm);
   });
 
   it('el trabajo nunca corrió un invierno, y eso está dicho', () => {
@@ -372,13 +416,13 @@ describe('el invierno decide la cola seca', () => {
 
   it('el aviso del invierno sale con la cadena y dice la dirección', () => {
     expect(AVISO_DEL_INVIERNO.sesgo).toBe('alto');
-    expect(AVISO_DEL_INVIERNO.aviso).toMatch(/3,8/);
+    expect(AVISO_DEL_INVIERNO.aviso).toMatch(/3,3/);
     expect(AVISO_DEL_INVIERNO.aviso).toMatch(/no es una cifra/);
   });
 });
 
 describe('el año más seco es el que fue', () => {
-  it('es el primero de los 62 y el primero de los cinco peores', () => {
+  it('es el primero de los 63 y el primero de los cinco peores', () => {
     const e = EL_ANIO_MAS_SECO_ES_EL_QUE_FUE;
     expect(e.puesto).toBe(1);
     expect(e.los_cinco_peores[0]).toBe(e.anio);
@@ -710,5 +754,73 @@ describe('el forraje de cada año', () => {
     const p90 = anioDelPercentil(f, 0.9)!;
     expect(p90.forraje_kg_ha / p10.forraje_kg_ha).toBeGreaterThan(2);
     expect(p90.forraje_kg_ha).toBeLessThanOrEqual(1300);
+  });
+});
+
+describe('la cadena y el factor de actividad radicular', () => {
+  it('con temperatura de suelo en toda la serie lo aplica y lo informa', () => {
+    const conSuelo = SERIE.map(d => ({ ...d, t_suelo_30_90_c: 9 }));
+    const r = indicesPorAnio({ serie: conSuelo, ventanas: VENTANAS, aw_por_capa_mm: AW })!;
+    expect(r.actividad_radicular).toBe(true);
+    expect(r.avisos.some(a => /temperatura de suelo/.test(a.aviso))).toBe(true);
+    expect(r.advertencias).not.toContain(ADVERTENCIAS.sin_actividad_radicular);
+  });
+
+  it('sin temperatura de suelo corre igual, y la degradación sale declarada', () => {
+    const r = cadena();
+    expect(r.actividad_radicular).toBe(false);
+    expect(r.advertencias).toContain(ADVERTENCIAS.sin_actividad_radicular);
+  });
+
+  it('medio y medio rechaza la corrida: la cadena es continua', () => {
+    const mezcla = SERIE.map((d, i) => (i % 2 === 0 ? { ...d, t_suelo_30_90_c: 9 } : d));
+    expect(indicesPorAnio({ serie: mezcla, ventanas: VENTANAS, aw_por_capa_mm: AW })).toBeNull();
+  });
+
+  it('el suelo frío baja el índice en promedio, pero NO temporada por temporada', () => {
+    // Esto es lo que el test encontró y conviene que quede escrito: en una
+    // ventana suelta el factor sólo puede bajar la transpiración, pero la
+    // cadena es continua, y **el agua que las capas frías no entregaron sigue
+    // en el perfil**. Una temporada posterior puede arrancar más húmeda y salir
+    // con un índice MÁS alto. Pasa también en Sidney: el peor año de la serie
+    // sube de 0,157 a 0,161 al montar el factor.
+    const frio = indicesPorAnio({
+      serie: SERIE.map(d => ({ ...d, t_suelo_30_90_c: 2 })), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    const tibio = indicesPorAnio({
+      serie: SERIE.map(d => ({ ...d, t_suelo_30_90_c: 18 })), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    const pares = frio.anios
+      .map((a, i) => [a.indice, tibio.anios[i]!.indice] as const)
+      .filter((p): p is readonly [number, number] => p[0] !== null && p[1] !== null);
+    expect(pares.length).toBeGreaterThan(2);
+    const media = (xs: number[]) => xs.reduce((x, y) => x + y, 0) / xs.length;
+    expect(media(pares.map(p => p[0]))).toBeLessThan(media(pares.map(p => p[1])));
+    // Y al menos una temporada va para el otro lado, que es el arrastre.
+    expect(pares.some(([a, b]) => a > b)).toBe(true);
+  });
+
+  it('el factor destapó el techo y dejó en pie las tres cuartas partes del sesgo', () => {
+    const f = EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO;
+    // Lo que arregló: el techo y el orden.
+    expect(f.con_el_factor.en_el_techo).toBeLessThan(f.sin_el_factor.en_el_techo / 2);
+    expect(f.con_el_factor.r).toBeGreaterThan(f.sin_el_factor.r);
+    // Lo que no: el sesgo bajó una sexta parte y sigue siendo el problema.
+    expect(f.con_el_factor.sesgo).toBeGreaterThan(0.1);
+    const seFue = (f.sin_el_factor.sesgo - f.con_el_factor.sesgo) / f.sin_el_factor.sesgo;
+    expect(seFue).toBeCloseTo(f.fraccion_del_sesgo_que_se_fue, 2);
+    // Y queda nombrado dónde está el resto, en vez de dejarlo en «falta algo».
+    expect(f.lo_que_queda).toMatch(/escurrimiento nulo/);
+    expect(f.las_tres_que_siguen_lejos).toHaveLength(3);
+  });
+
+  it('en los kilos mueve poco el Yp y bastante el año', () => {
+    // El Yp sale del año del corte, que está cerca del techo en las dos
+    // corridas; el forraje de un año cualquiera no.
+    const k = EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO.lo_que_mueve_en_los_kilos_pct;
+    expect(Math.abs(k.yp)).toBeLessThan(2);
+    expect(k.maximo).toBeGreaterThan(10 * Math.abs(k.yp));
+    expect(k.maximo).toBeGreaterThan(k.p90);
+    expect(k.p90).toBeGreaterThan(k.mediana_del_anio);
   });
 });

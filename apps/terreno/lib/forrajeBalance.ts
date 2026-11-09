@@ -218,6 +218,21 @@ export interface DiaDeBalance {
   eo_mm: number;
   /** `b` del día, si se tiene la curva de la región. Si falta, se usa el constante. */
   b?: number;
+  /**
+   * El factor de actividad radicular **de cada capa, ese día**, 0 a 1. Un
+   * elemento por capa, de la superficie hacia abajo.
+   *
+   * Es la Figura 1 del trabajo evaluada con la temperatura del suelo del día:
+   * ver `apps/terreno/lib/actividadRadicular.ts`. Los autores la aplican a la
+   * segunda y la tercera capa y asumen que la temperatura no restringe la
+   * superficial, así que lo normal es que el primer elemento sea 1.
+   *
+   * Si el día no lo trae se usa el de la capa (`CapaDeSuelo.actividad_radicular`),
+   * y si tampoco está, 1 y una advertencia. **Un factor constante no es lo
+   * mismo**: la temperatura del suelo de abril a septiembre recorre casi toda la
+   * curva, que entre 5 y 17 °C va de 0,11 a 1.
+   */
+  actividad_radicular?: readonly number[];
 }
 
 export interface EntradasBalanceForraje {
@@ -316,9 +331,13 @@ export function correrBalanceForraje(
   const umbralMojado = e.umbral_mojado_mm ?? 0;
 
   const advertencias: string[] = [];
-  if (e.capas.length > 1 && e.capas.slice(1).some(cp => cp.actividad_radicular === undefined)) {
-    advertencias.push(ADVERTENCIAS.sin_actividad_radicular);
-  }
+  // El factor puede venir por capa (constante) o día por día. Falta sólo si no
+  // llegó por ninguna de las dos vías en alguna capa por debajo de la primera.
+  const faltaActividad = e.capas.length > 1 && e.capas.some(
+    (cp, j) => j > 0 && cp.actividad_radicular === undefined
+      && e.dias.some(d => d.actividad_radicular?.[j] === undefined),
+  );
+  if (faltaActividad) advertencias.push(ADVERTENCIAS.sin_actividad_radicular);
   if (e.capas[0]!.agua_bajo_el_limite_mm === undefined) {
     advertencias.push(ADVERTENCIAS.sin_agua_bajo_el_limite);
   }
@@ -378,7 +397,8 @@ export function correrBalanceForraje(
       const cp = e.capas[j]!;
       const disponible = Math.max(0, sws[j]!);
       const frac = Math.min(disponible / cp.aw_mm, c) / c;    // [3] y [4]
-      const pedido = tpDia * frac * (cp.actividad_radicular ?? 1);
+      const actividad = d.actividad_radicular?.[j] ?? cp.actividad_radicular ?? 1;
+      const pedido = tpDia * frac * actividad;
       const sale = Math.min(pedido, restante, disponible);
       sws[j] = sws[j]! - sale;
       tDia += sale;

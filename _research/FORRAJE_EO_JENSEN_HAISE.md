@@ -6,6 +6,13 @@ código y no se monta**: está para que cualquiera pueda repetir las mediciones.
 
 Fecha: 08/11/2026.
 
+> **Las mediciones de las secciones 5 y 6 se rehicieron el 09/11/2026**, al
+> montar el factor de actividad radicular por temperatura de suelo: ver
+> `FORRAJE_ACTIVIDAD_RADICULAR.md`. El sesgo contra los doce indices publicados
+> baja de +0,156 a +0,132, las temporadas en el techo de 10 a 4, la mediana de
+> la serie de 0,999 a 0,935 y el p10 de 0,741 a 0,672. Los numeros de abajo que
+> no digan lo contrario son los de la corrida sin ese factor.
+
 ## La deuda que se venía a pagar
 
 El balance de Wight y Hanks (1981) pide `Eo` y acequia le daba la **ETo de

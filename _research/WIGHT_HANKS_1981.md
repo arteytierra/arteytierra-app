@@ -107,7 +107,8 @@ diferencia entre `Tp` y la `T` ya obtenida de las capas anteriores.
 
 Encima de eso hay un **factor de actividad radicular función de la temperatura del
 suelo**, aplicado a la segunda y la tercera capa. Se asumió que la temperatura no
-restringe la transpiración de la capa superficial.
+restringe la transpiración de la capa superficial. *(Montado el 09/11/2026: la
+Figura 1 trae su propia ecuación impresa. Ver `FORRAJE_ACTIVIDAD_RADICULAR.md`.)*
 
 En este estudio **se asumió escurrimiento nulo**.
 
@@ -139,8 +140,13 @@ hubo que ajustar los factores que relacionan `Tp` con `Eo` y `T` con `SWS`:
 - La **curva de LAI relativo** salió de datos de Hanson (1973), y el artículo dice
   que funcionó bien **pero que conviene desarrollar una curva representativa de la
   región donde se use el modelo**.
-- Las **curvas de temperatura de suelo** se aproximaron de de Jong (1974) para
-  **Swift Current, Saskatchewan**.
+- Las **curvas de temperatura de suelo** se aproximaron de **de Jong, R. (1978)**
+  para **Swift Current, Saskatchewan**. *(Corregido el 09/11/2026: acá decía
+  1974. Son dos personas distintas y aportan cosas distintas — **E. de Jong
+  (1974)**, Tech. Rep. 61 del Matador Project, es la relación
+  actividad-temperatura de la Figura 1; **R. de Jong (1978)**, «Energy and the
+  Forage Crop», Agriculture Canada Swift Current, son las curvas estacionales de
+  temperatura de suelo que pasadas por la Figura 1 dan la Figura 3.)*
 - Fecha de arranque: se usó el último día en que la temperatura mínima del aire
   bajó a −7 °C, y también corridas con 1 y 15 de abril y 1 de mayo. El 15 de
   abril y el arranque dependiente de temperatura fueron igual de efectivos.
@@ -239,8 +245,13 @@ razón por la que este documento existe antes que la función.
    Hanson (1973) para pradera mixta del norte de las Grandes Planicies y que
    **conviene desarrollar una propia por región**. Usarla en el Chaco o en el
    miombo es extrapolar fuera del rango.
-3. **Las curvas de actividad radicular por temperatura de suelo**, aproximadas de
-   Swift Current, Saskatchewan. Mismo problema.
+3. ~~**Las curvas de actividad radicular por temperatura de suelo**, aproximadas
+   de Swift Current, Saskatchewan. Mismo problema.~~ **Resuelto el 09/11/2026**:
+   la Figura 1 trae la ecuación impresa adentro del recuadro
+   —`Y = 0,0408·e^(0,19·T)`, saturada en 1 a 16,84 °C— y la temperatura del
+   suelo sale de ERA5-Land. Ver `FORRAJE_ACTIVIDAD_RADICULAR.md` y
+   `apps/terreno/lib/actividadRadicular.ts`. Sigue en pie la advertencia de
+   región: la curva se aproximó de datos de Saskatchewan.
 
 ---
 

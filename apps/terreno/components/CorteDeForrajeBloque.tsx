@@ -110,6 +110,12 @@ interface RespuestaDeAnios {
    * corte: **si no son los mismos, los kilos no se muestran.**
    */
   coeficientes_eo: { ct: number; tx_f: number } | null;
+  /**
+   * Si la cadena restringió la extracción de las capas profundas por
+   * temperatura de suelo. Se compara igual que los coeficientes: con factor y
+   * sin factor los dos índices tampoco son comparables.
+   */
+  actividad_radicular: boolean;
 }
 
 interface Props {
@@ -145,6 +151,8 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   const [res, setRes] = useState<(YpDelCorte & { lluvia_mm: number; dias: number }) | null>(null);
   /** Los coeficientes de la `Eo` con los que se corrió el corte. */
   const [coefDelCorte, setCoefDelCorte] = useState<CoeficientesEo | null>(null);
+  /** Si la ventana del corte corrió con el factor de actividad radicular. */
+  const [factorDelCorte, setFactorDelCorte] = useState<boolean | null>(null);
 
   // El segundo pedido: la serie entera, para repartir el techo del sitio en los
   // años que de verdad pasaron.
@@ -194,6 +202,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
         error?: string;
         nulos?: number;
         coeficientes_eo?: CoeficientesEo | null;
+        actividad_radicular?: boolean;
       };
       if (!r.ok || !j.dias) {
         setErrorSerie(j.error ?? 'No se pudo traer la serie diaria de este punto.');
@@ -215,6 +224,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       const coefEo = j.coeficientes_eo ?? null;
       setCoefDelCorte(coefEo);
       const temporada = ventanaDeBalance(j.dias, desde, hasta, coefEo);
+      setFactorDelCorte(temporada?.actividad_radicular ?? null);
       const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1), coefEo);
       if (temporada === null) {
         setErrorSerie('La serie no cubre completa la temporada que declaraste.');
@@ -303,6 +313,20 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     return Math.abs(a.ct - b.ct) < 1e-9 && Math.abs(a.tx_f - b.tx_f) < 1e-9;
   }, [anios, coefDelCorte]);
 
+  /**
+   * Y lo mismo con el factor de actividad radicular, por el mismo motivo.
+   *
+   * Si una de las dos corridas restringió la extracción de las capas de 30-60 y
+   * 60-90 cm por temperatura de suelo y la otra no, los índices no son
+   * comparables: en Sidney la mediana se mueve de 0,999 a 0,935 y el forraje de
+   * un año hasta un 17 %. Pasa si Open-Meteo entrega la temperatura de suelo en
+   * un pedido y no en el otro.
+   */
+  const mismoFactor = useMemo(() => {
+    if (anios === null || factorDelCorte === null) return true;
+    return anios.actividad_radicular === factorDelCorte;
+  }, [anios, factorDelCorte]);
+
   const ypParaRepartir = useMemo(() => {
     if (anios === null || banda === null) return null;
     const anioDelCorte = Number(desde.slice(0, 4));
@@ -314,10 +338,10 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   }, [anios, banda, desde, rendimiento]);
 
   const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
-    () => (anios !== null && ypParaRepartir !== null && mismaEo
+    () => (anios !== null && ypParaRepartir !== null && mismaEo && mismoFactor
       ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
       : null),
-    [anios, ypParaRepartir, mismaEo],
+    [anios, ypParaRepartir, mismaEo, mismoFactor],
   );
 
   return (
@@ -553,6 +577,13 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                       —una con la Eo de Jensen-Haise y la otra con la ETo de FAO-56— y los dos
                       índices no son comparables: multiplicarlos daría kilos con un 16 % de error
                       que no se ve. Volvé a pedir las dos cosas en un rato.
+                    </p>
+                  ) : !mismoFactor ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      Una de las dos corridas restringió la extracción de las capas profundas por
+                      temperatura de suelo y la otra no, así que los dos índices no son
+                      comparables. Volvé a pedir las dos cosas en un rato.
                     </p>
                   ) : anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
                     <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">

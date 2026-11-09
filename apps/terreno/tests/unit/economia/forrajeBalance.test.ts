@@ -514,3 +514,48 @@ describe('lo que este módulo NO hace, dicho en un test', () => {
     expect(sidney).toHaveLength(12);
   });
 });
+
+describe('el factor de actividad radicular, día por día', () => {
+  /** Tres capas de 50 mm, llenas, y días secos con demanda alta. */
+  const capas = (): CapaDeSuelo[] => tresCapasDe30(150, 1, 0);
+
+  it('el del día manda sobre el de la capa', () => {
+    const dias: DiaDeBalance[] = secos(10, 6).map(d => ({ ...d, actividad_radicular: [1, 0, 0] }));
+    const conCapa = capas().map(c => ({ ...c, actividad_radicular: 1 }));
+    const r = correrBalanceForraje({ dias, capas: conCapa })!;
+    // Con el factor del día en cero, las capas de abajo no entregan nada: todo
+    // lo que transpira sale de la primera.
+    const ultimo = r.serie[r.serie.length - 1]!;
+    expect(ultimo.sws_mm[1]).toBeCloseTo(50, 6);
+    expect(ultimo.sws_mm[2]).toBeCloseTo(50, 6);
+  });
+
+  it('con el factor del día en todas las capas la advertencia no sale', () => {
+    const dias: DiaDeBalance[] = secos(80, 4).map(d => ({ ...d, actividad_radicular: [1, 0.3, 0.3] }));
+    const r = correrBalanceForraje({ dias, capas: capas() })!;
+    expect(r.advertencias).not.toContain(ADVERTENCIAS.sin_actividad_radicular);
+  });
+
+  it('si a un solo día le falta, la advertencia vuelve a salir', () => {
+    // Media corrida con las capas profundas restringidas y media sin restringir
+    // no es ninguno de los dos modelos: si falta, se dice.
+    const dias: DiaDeBalance[] = secos(80, 4).map((d, i) => (
+      i === 40 ? d : { ...d, actividad_radicular: [1, 0.3, 0.3] }
+    ));
+    const r = correrBalanceForraje({ dias, capas: capas() })!;
+    expect(r.advertencias).toContain(ADVERTENCIAS.sin_actividad_radicular);
+  });
+
+  it('el suelo frío baja el índice, que es la dirección que la advertencia promete', () => {
+    const base = secos(80, 5);
+    const sinFactor = correrBalanceForraje({ dias: base, capas: capas() })!;
+    const conFrio = correrBalanceForraje({
+      dias: base.map(d => ({ ...d, actividad_radicular: [1, 0.07, 0.07] })),
+      capas: capas(),
+    })!;
+    expect(conFrio.indice!).toBeLessThan(sinFactor.indice!);
+    // Y el agua que no se transpiró sigue en el perfil: el balance cierra igual.
+    expect(Math.abs(conFrio.cierre_mm)).toBeLessThan(1e-6);
+    expect(conFrio.almacenaje_final_mm).toBeGreaterThan(sinFactor.almacenaje_final_mm);
+  });
+});

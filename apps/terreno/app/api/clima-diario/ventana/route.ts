@@ -116,7 +116,7 @@ export async function GET(req: Request) {
     return error('lat/lng no son números.', 400);
   }
 
-  const dbKey = `clima-ventana-v1:${latR},${lngR},${desde},${hasta}`;
+  const dbKey = `clima-ventana-v2:${latR},${lngR},${desde},${hasta}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
 
@@ -124,7 +124,7 @@ export async function GET(req: Request) {
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${desde}&end_date=${hasta}`
     + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
-    + 'temperature_2m_max,temperature_2m_min&timezone=auto';
+    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean&timezone=auto';
 
   let res: Response;
   try {
@@ -143,6 +143,7 @@ export async function GET(req: Request) {
       shortwave_radiation_sum?: Array<number | null>;
       temperature_2m_max?: Array<number | null>;
       temperature_2m_min?: Array<number | null>;
+      soil_temperature_28_to_100cm_mean?: Array<number | null>;
     };
   };
   try {
@@ -159,6 +160,12 @@ export async function GET(req: Request) {
   const rs = d.shortwave_radiation_sum ?? [];
   const tmax = d.temperature_2m_max ?? [];
   const tmin = d.temperature_2m_min ?? [];
+  // La capa de 28 a 100 cm de ERA5-Land, que contiene a las dos capas del
+  // modelo que llevan factor de actividad radicular. O la trae toda la ventana
+  // o no la trae ninguno: `ventanaDeBalance` rechaza una mezcla.
+  const tsuelo = d.soil_temperature_28_to_100cm_mean ?? [];
+  const sueloCompleto = tsuelo.length === d.time.length
+    && tsuelo.every(v => v !== null && v !== undefined && Number.isFinite(v));
   const dias = d.time.map((fecha, i) => ({
     fecha,
     // Sin rellenar: un hueco del reanálisis no es un día sin lluvia.
@@ -167,6 +174,7 @@ export async function GET(req: Request) {
     rs_mj_m2: rs[i] ?? null,
     t_max_c: tmax[i] ?? null,
     t_min_c: tmin[i] ?? null,
+    ...(sueloCompleto ? { t_suelo_30_90_c: tsuelo[i] as number } : {}),
   }));
   const nulos = dias.filter(
     x => x.precip_mm === null || x.et0_mm === null || x.rs_mj_m2 === null
@@ -193,10 +201,21 @@ export async function GET(req: Request) {
      * distintas.
      */
     coeficientes_eo: coeficientes,
+    /**
+     * Si la ventana trae la temperatura del suelo que hace falta para aplicar el
+     * factor de actividad radicular. La ruta de índices devuelve lo mismo y el
+     * componente compara las dos antes de multiplicar.
+     */
+    actividad_radicular: sueloCompleto,
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calcula por Jensen-Haise '
         + 'modificada, que es el método con el que Wight y Hanks ajustaron su Kc y su b: ver '
         + 'lib/eoJensenHaise.ts.'
+        + (sueloCompleto
+          ? ' La extracción de las capas profundas se restringe por temperatura de suelo: ver '
+            + 'lib/actividadRadicular.ts.'
+          : ' Sin temperatura de suelo, las capas profundas corren sin el factor de actividad '
+            + 'radicular y el índice sale alto.')
       : 'Open-Meteo / ERA5 (reanálisis, ~10 km). Sin coeficientes de Jensen-Haise, el balance usa '
         + 'et0_mm, que es la ETo de referencia de FAO-56 y no la Eo de Wight y Hanks: ver '
         + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',
