@@ -104,6 +104,12 @@ interface RespuestaDeAnios {
   anios_sin_serie: number[];
   advertencias: string[];
   serie: { desde: string; hasta: string };
+  /**
+   * Los coeficientes de la `Eo` con los que corrió la cadena, o `null` si la ruta
+   * no los pudo calcular y cayó a la ETo de FAO-56. Se comparan contra los del
+   * corte: **si no son los mismos, los kilos no se muestran.**
+   */
+  coeficientes_eo: { ct: number; tx_f: number } | null;
 }
 
 interface Props {
@@ -137,6 +143,8 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   const [cargando, setCargando] = useState(false);
   const [errorSerie, setErrorSerie] = useState<string | null>(null);
   const [res, setRes] = useState<(YpDelCorte & { lluvia_mm: number; dias: number }) | null>(null);
+  /** Los coeficientes de la `Eo` con los que se corrió el corte. */
+  const [coefDelCorte, setCoefDelCorte] = useState<CoeficientesEo | null>(null);
 
   // El segundo pedido: la serie entera, para repartir el techo del sitio en los
   // años que de verdad pasaron.
@@ -205,6 +213,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       // índices de los otros años no salgan de dos `Eo` distintas. Si vienen en
       // `null`, `ventanaDeBalance` cae a la ETo de FAO-56 y el aviso lo dice.
       const coefEo = j.coeficientes_eo ?? null;
+      setCoefDelCorte(coefEo);
       const temporada = ventanaDeBalance(j.dias, desde, hasta, coefEo);
       const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1), coefEo);
       if (temporada === null) {
@@ -275,6 +284,25 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
    * un año que la serie no alcanza, se usa la punta conservadora de la banda y se
    * dice.
    */
+  /**
+   * Que las dos rutas hayan usado la misma `Eo`.
+   *
+   * El forraje de un año es `Yp · índice`, con el `Yp` despejado de **otro**
+   * índice. Si el corte corrió con la `Eo` de Jensen-Haise y la serie con la ETo
+   * de FAO-56, o al revés, los dos índices no son comparables y el producto sale
+   * mal por un 16 % que nadie ve. Pasa si una de las dos rutas no pudo calcular
+   * los coeficientes —Open-Meteo caído a mitad de camino, por ejemplo—, así que
+   * se compara en vez de suponerlo.
+   */
+  const mismaEo = useMemo(() => {
+    if (anios === null) return true;
+    const a = anios.coeficientes_eo;
+    const b = coefDelCorte;
+    if (a === null && b === null) return true;
+    if (a === null || b === null) return false;
+    return Math.abs(a.ct - b.ct) < 1e-9 && Math.abs(a.tx_f - b.tx_f) < 1e-9;
+  }, [anios, coefDelCorte]);
+
   const ypParaRepartir = useMemo(() => {
     if (anios === null || banda === null) return null;
     const anioDelCorte = Number(desde.slice(0, 4));
@@ -286,10 +314,10 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   }, [anios, banda, desde, rendimiento]);
 
   const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
-    () => (anios !== null && ypParaRepartir !== null
+    () => (anios !== null && ypParaRepartir !== null && mismaEo
       ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
       : null),
-    [anios, ypParaRepartir],
+    [anios, ypParaRepartir, mismaEo],
   );
 
   return (
@@ -518,7 +546,15 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                 </button>
               ) : (
                 <>
-                  {anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
+                  {!mismaEo ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      El corte y la serie se corrieron con dos demandas atmosféricas distintas
+                      —una con la Eo de Jensen-Haise y la otra con la ETo de FAO-56— y los dos
+                      índices no son comparables: multiplicarlos daría kilos con un 16 % de error
+                      que no se ve. Volvé a pedir las dos cosas en un rato.
+                    </p>
+                  ) : anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
                     <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
                       <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
                       Ninguna temporada de la serie sirve: en este punto el perfil nunca se llena,
