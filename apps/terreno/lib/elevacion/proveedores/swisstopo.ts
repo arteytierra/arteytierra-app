@@ -4,7 +4,8 @@
  * LV95 (EPSG:2056, Mercator oblicuo suizo) y el height/profile REST solo acepta
  * LV95/LV03. Así que:
  *   1) se listan los tiles que cubren el bbox vía el catálogo STAC (query en
- *      WGS84) y se toman los COG de 2 m;
+ *      WGS84), se toman los COG de 2 m y, de cada km², el año más nuevo
+ *      (ver `elegirTilesPorAnio`);
  *   2) se leen enteros (tiles de 1 km² = 500×500 px, ~1 MB) una sola vez;
  *   3) cada nodo de la grilla se reproyecta WGS84→LV95 con la fórmula aproximada
  *      oficial de swisstopo (~1 m de error, sobra para muestrear el DEM) y se
@@ -31,6 +32,34 @@ function wgs84ToLv95(lat: number, lon: number): [number, number] {
   return [E, N];
 }
 
+/**
+ * swissALTI3D se releva por ciclos, así que el catálogo devuelve el MISMO km²
+ * medido en años distintos: para `2600-1198` conviven `swissalti3d_2019_...` y
+ * `swissalti3d_2025_...`. Hasta el 08/11/2026 se tomaban los dos, y como el
+ * muestreo corta en el primer tile que contiene al nodo, el relieve salía del
+ * relevamiento de 2019 —el orden en que los devuelve el STAC— con el de 2025
+ * descargado al lado y tirado. Sobre terreno estable da lo mismo; sobre una
+ * cantera, un desmonte o una obra, el predio de hace siete años es otro predio.
+ * Y además duplicaba la descarga, con lo que `MAX_TILES` valía la mitad.
+ *
+ * Se agrupa por km² y queda el año más nuevo de cada uno. No se filtra por un
+ * año global porque el ciclo es rodante: hay km² cuyo último vuelo es 2019 y
+ * descartarlos dejaría agujeros donde sí hay dato.
+ */
+const RE_TILE = /swissalti3d_(\d{4})_(\d{4}-\d{4})_2_2056_.*\.tif$/;
+
+export function elegirTilesPorAnio(hrefs: string[]): string[] {
+  const mejor = new Map<string, { anio: number; href: string }>();
+  for (const href of hrefs) {
+    const m = RE_TILE.exec(href);
+    if (!m) continue;
+    const anio = Number(m[1]), km2 = m[2]!;
+    const previo = mejor.get(km2);
+    if (!previo || anio > previo.anio) mejor.set(km2, { anio, href });
+  }
+  return [...mejor.values()].map(v => v.href);
+}
+
 interface Tile { bb: [number, number, number, number]; W: number; H: number; band: ArrayLike<number> }
 
 export async function grillaSwisstopo(bbox: BBox, cols: number, rows: number): Promise<Float32Array | null> {
@@ -41,9 +70,9 @@ export async function grillaSwisstopo(bbox: BBox, cols: number, rows: number): P
     if (!res.ok) return null;
     const j = await res.json() as { features?: Array<{ assets?: Record<string, { href: string }> }> };
     const feats = j.features ?? [];
-    const urls = feats
-      .map(f => Object.values(f.assets ?? {}).find(a => /_2_2056_.*\.tif$/.test(a.href))?.href)
-      .filter((u): u is string => !!u);
+    const urls = elegirTilesPorAnio(
+      feats.flatMap(f => Object.values(f.assets ?? {}).map(a => a.href)),
+    );
     if (urls.length === 0 || urls.length > MAX_TILES) return null;   // fuera de Suiza, o predio enorme → GLO-30
 
     const tiles: Tile[] = [];
