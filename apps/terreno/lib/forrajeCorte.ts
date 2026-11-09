@@ -98,6 +98,11 @@ import {
   correrBalanceForraje,
   type CapaDeSuelo, type DiaDeBalance, type EntradasBalanceForraje,
 } from './forrajeBalance';
+import {
+  eoJensenHaiseMm,
+  AVISO_EO_JENSEN_HAISE,
+  type CoeficientesEo,
+} from './eoJensenHaise';
 
 // ─── Lo que está medido, y que es el argumento de cada rechazo ───────────────
 
@@ -721,12 +726,27 @@ export function capasDe90(
 /**
  * Lo que hay que declarar al usar la ETo de referencia como la `Eo` del modelo.
  *
+ * **Esto ya no es el camino principal, y queda como respaldo declarado.** Desde
+ * que se leyó Jensen-Haise (1963), la `Eo` se calcula con el método del trabajo
+ * en `lib/eoJensenHaise.ts`, y esta sustitución corre solamente cuando la serie
+ * no trae radiación y temperaturas o cuando no se pudieron sacar los
+ * coeficientes del punto. Lo de abajo es por qué no alcanza.
+ *
  * El modelo pide `Eo`, que Wight y Hanks calcularon por Jensen-Haise (1963). La
  * serie diaria de acequia trae `et0_fao_evapotranspiration` de Open-Meteo, que
  * es la **ETo de referencia de FAO-56**: pasto de 0,12 m, albedo 0,23,
  * resistencia 70 s/m. No son la misma magnitud ni el mismo método, y acequia
- * **no aplica ningún factor** porque cuantificar la diferencia exige leer
- * Jensen-Haise (1963), que no se leyó.
+ * **no aplica ningún factor**: no porque no se pueda medir —se midió, da 1,166
+ * en Sidney— sino porque un factor de un sitio no viaja. Lo que viaja es el
+ * método.
+ *
+ * ## Cuánto cuesta, medido contra la Tabla 1
+ *
+ * El `b = 0,435` se despejó de `Tp/(Kc·Eo)` con la `Eo` **del trabajo**, así que
+ * aplicarlo con otra `Eo` rompe la derivación. Con la ETo de FAO-56 de ERA5, el
+ * `b` publicado **infla la `Tp` publicada un 16,5 % de media y hasta un 35,6 %**;
+ * con la `Eo` de Jensen-Haise de la misma serie, un 1,3 %. Está en
+ * `LAS_DOS_MITADES_DEL_ERROR_DE_LA_EO`.
  *
  * ## Y la sustitución no se cancela, que es lo contrario de lo que parecía
  *
@@ -748,9 +768,8 @@ export function capasDe90(
  * falta**, y pasa derecho en los años secos, que son los que deciden una carga
  * animal. La prueba está en `forrajeCorte.test.ts`.
  *
- * Por eso leer Jensen-Haise (1963) y medir la diferencia entre las dos
- * superficies de referencia pasa de ser prolijidad a ser deuda: lo que se juega
- * es proporcional.
+ * Por eso esto dejó de ser prolijidad y se arregló: lo que se juega es
+ * proporcional, y el arreglo no es un factor sino el método.
  *
  * ## La única prueba de sensatez que sí hay
  *
@@ -766,9 +785,14 @@ export const ETO_NO_ES_EO = {
     + 'pasto de 0,12 m, albedo 0,23, resistencia 70 s/m',
   factor_aplicado: null,
   por_que_no:
-    'Cuantificar la diferencia entre las dos superficies de referencia exige leer '
-    + 'Jensen-Haise (1963), que no se leyó. Un factor estimado a ojo sería un número '
-    + 'inventado adentro de un motor de cálculo.',
+    'Se midió: en Sidney la ETo de FAO-56 lee 1,166 veces la Eo de Jensen-Haise. Pero ese '
+    + 'cociente es de un sitio y de una ventana, y el que viaja es el método, no el factor. Así '
+    + 'que en vez de corregir se calcula la Eo como la calcularon los autores: ver '
+    + 'lib/eoJensenHaise.ts.',
+  /** Ya no es el camino principal: corre cuando la serie no trae radiación. */
+  es_el_respaldo: true,
+  /** El error con el que el `b` publicado reproduce la `Tp` publicada, en %. */
+  tp_reproducida_pct: { con_la_eto: 16.5, con_la_eo_del_modelo: 1.3 },
   /**
    * Cuánto del error de la sustitución pasa al `Yp`, medido con el agua
    * limitando (90 días, 120 mm, 150 mm de agua útil, perfil a media carga).
@@ -781,13 +805,14 @@ export const ETO_NO_ES_EO = {
 /** El aviso que acompaña a toda serie construida con la ETo de referencia. */
 export const AVISO_ETO = {
   aviso:
-    'La Eo del balance se llenó con la ETo de referencia de FAO-56 de la serie diaria, que no '
-    + 'es la Eo que usaron Wight y Hanks: son dos superficies de referencia y dos métodos '
-    + 'distintos, y acequia no aplica ningún factor de conversión. Medido, el error de la '
-    + 'sustitución pasa al Yp casi uno a uno cuando el agua limita —que es cuando el modelo '
-    + 'hace falta— y se cancela sólo en los años húmedos. La dirección depende de para qué '
-    + 'lado esté la diferencia entre las dos superficies, que no se midió.',
-  sesgo: 'desconocido' as Direccion,
+    'La Eo del balance se llenó con la ETo de referencia de FAO-56 de la serie diaria, que no es '
+    + 'la Eo que usaron Wight y Hanks: son dos superficies de referencia y dos métodos distintos. '
+    + 'Esto es el respaldo para cuando la serie no trae radiación y temperaturas; con ellas la Eo '
+    + 'se calcula por Jensen-Haise, que es el método del trabajo. Medido en su sitio de '
+    + 'validación, la ETo lee 1,166 veces la Eo del método y con el b publicado infla la Tp un '
+    + '16,5 %, así que la Tp sale ALTA y el índice T/Tp sale BAJO, o sea que el Yp despejado de un '
+    + 'corte sale ALTO.',
+  sesgo: 'alto' as Direccion,
 };
 
 /**
@@ -828,12 +853,43 @@ export const LA_SERIE_DEKADAL_NO_ALCANZA = {
   en_anios_humedos: 'los tres dan 1,000: la degradación aparece sólo cuando el agua limita',
 } as const;
 
-/** Un día de la serie diaria, como la devuelve `/api/clima-diario`. */
+/**
+ * Un día de la serie diaria, como la devuelven `/api/clima-diario/ventana` y
+ * `/api/clima-diario/indices`.
+ *
+ * `et0_mm` es la ETo de referencia de FAO-56 y **no es la `Eo` del modelo**: con
+ * ella el `b` publicado infla la `Tp` de la Tabla 1 un 16,5 %. Los tres campos
+ * de abajo son los que permiten calcular la `Eo` como la calcularon Wight y
+ * Hanks; si vienen, `eoDelDia` los usa y la ETo queda sólo de respaldo.
+ */
 export interface DiaDeSerie {
   /** Fecha ISO `YYYY-MM-DD`. */
   fecha: string;
   precip_mm: number | null;
   et0_mm: number | null;
+  /** Radiación global del día, MJ/m². */
+  rs_mj_m2?: number | null;
+  t_max_c?: number | null;
+  t_min_c?: number | null;
+}
+
+/**
+ * La `Eo` de un día: por Jensen-Haise si hay coeficientes y el día trae con qué,
+ * y por la ETo de FAO-56 si no.
+ *
+ * Devuelve `null` cuando hay coeficientes y al día le falta algo, **sin caer a
+ * la ETo**. Mezclar las dos `Eo` adentro de una misma ventana sería peor que no
+ * tener el día: la escala cambia un 16 % entre una y otra, así que un día de
+ * ETo metido entre días de Jensen-Haise se leería como un día de demanda
+ * atmosférica altísima. Quien llama rechaza la ventana, que es lo que ya hace
+ * con un `null` de la serie.
+ */
+export function eoDelDia(d: DiaDeSerie, c?: CoeficientesEo | null): number | null {
+  if (!c) return d.et0_mm;
+  if (d.t_max_c === null || d.t_max_c === undefined) return null;
+  if (d.t_min_c === null || d.t_min_c === undefined) return null;
+  if (d.rs_mj_m2 === null || d.rs_mj_m2 === undefined) return null;
+  return eoJensenHaiseMm((d.t_max_c + d.t_min_c) / 2, d.rs_mj_m2, c);
 }
 
 export interface VentanaDeBalance {
@@ -851,8 +907,10 @@ export interface VentanaDeBalance {
  * a crecer y el día del corte, que son las dos cosas que el usuario sabe. El
  * trabajo usó del 15 de abril al pico, 68 a 99 días.
  *
- * Devuelve `null` si falta un día adentro de la ventana o si alguno viene con
- * `null` en lluvia o en ETo. **Un `null` de la serie no es un día sin lluvia**:
+ * Devuelve `null` si falta un día adentro de la ventana o si a alguno le falta
+ * la lluvia o lo que haga falta para la `Eo` —radiación y temperaturas con
+ * `coeficientes_eo`, la ETo de FAO-56 sin ellos—. **Un `null` de la serie no es
+ * un día sin lluvia**:
  * es un día que no llegó, y rellenarlo con cero haría que una laguna del
  * reanálisis se vea como una seca. Es el mismo error que ya corrigió el panel de
  * contexto, y acá costaría una carga animal.
@@ -861,11 +919,14 @@ export function ventanaDeBalance(
   serie: readonly DiaDeSerie[],
   desde: string,
   hasta: string,
+  coeficientes_eo?: CoeficientesEo | null,
 ): VentanaDeBalance | null {
   if (desde > hasta) return null;
   const dentro = serie.filter(d => d.fecha >= desde && d.fecha <= hasta);
   if (dentro.length === 0) return null;
-  if (dentro.some(d => d.precip_mm === null || d.et0_mm === null)) return null;
+  if (dentro.some(d => d.precip_mm === null)) return null;
+  const eo = dentro.map(d => eoDelDia(d, coeficientes_eo));
+  if (eo.some(v => v === null)) return null;
 
   // Que no falte ningún día de la ventana: la cuenta de días entre las dos
   // fechas tiene que dar exactamente los que vinieron.
@@ -876,12 +937,15 @@ export function ventanaDeBalance(
   const esperados = Math.round((t1 - t0) / unDia) + 1;
   if (dentro.length !== esperados) return null;
 
-  const dias: DiaDeBalance[] = dentro.map(d => ({
+  const dias: DiaDeBalance[] = dentro.map((d, i) => ({
     pptn_mm: d.precip_mm as number,
-    eo_mm: d.et0_mm as number,
+    eo_mm: eo[i] as number,
   }));
 
-  return { dias, desde, hasta, avisos: [{ ...AVISO_ETO }] };
+  const aviso: AvisoDeCorte = coeficientes_eo
+    ? { aviso: AVISO_EO_JENSEN_HAISE.aviso, sesgo: AVISO_EO_JENSEN_HAISE.sesgo_del_yp }
+    : { ...AVISO_ETO };
+  return { dias, desde, hasta, avisos: [aviso] };
 }
 
 /**

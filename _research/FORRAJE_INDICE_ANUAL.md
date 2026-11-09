@@ -7,6 +7,15 @@ módulo no sean afirmaciones sueltas.
 
 Fecha: 06/11/2026.
 
+> **Leérselo con `FORRAJE_EO_JENSEN_HAISE.md` al lado.** El 08/11/2026 se leyó
+> Jensen-Haise (1963), la `Eo` del balance dejó de ser la ETo de referencia de
+> FAO-56 y **las nueve mediciones de acá se rehicieron**. Los números de este
+> acta son los de la corrida con la ETo: quedan porque son el otro extremo de
+> una banda que sigue abierta —la demanda de fuera de temporada— y porque la
+> comparación entre las dos corridas es lo que mide esa banda. La tabla
+> completa de qué dio cada medición con cada `Eo` está en la sección 6 del acta
+> nueva.
+
 ## El sitio y la serie
 
 **Sidney, Montana (EE.UU.)**, `47,72 N · −104,16 O`. Es el sitio de validación
@@ -117,7 +126,11 @@ Misma ventana, mismo sitio.
 | cociente sobre 1968-1979 | **1,142** |
 
 Mezcla la diferencia de superficie de referencia con el sesgo propio de ERA5 en
-ese píxel. Separarlas necesita leer Jensen-Haise (1963).
+ese píxel. **Separadas el 08/11/2026**: el sesgo de ERA5 es chico —temperatura
+sin sesgo contra la estación del lugar, radiación 2,2 % alta contra NASA
+POWER— y la superficie de referencia es casi todo el resto. Con la `Eo`
+calculada por el método del trabajo el cociente baja de 1,162 a **1,015**. Ver
+`FORRAJE_EO_JENSEN_HAISE.md`.
 
 ## 7. El error de la `Eo` NO se cancela a lo largo de la cadena
 
@@ -140,7 +153,10 @@ limitada, subir la demanda un 14 % baja el índice mucho más, porque la
 evaporación del suelo también se lleva agua que habría transpirado.
 
 **Consecuencia:** leer Jensen-Haise (1963) pasó de prolijidad a la deuda más
-cara del motor de forraje.
+cara del motor de forraje. **Pagada el 08/11/2026**: la `Eo` se calcula por el
+método del trabajo, así que el error de escala que se mide acá ya no existe por
+construcción. La medición queda porque es la razón por la que no se podía dejar
+así.
 
 ## 8. Deriva de la serie
 

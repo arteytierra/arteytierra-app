@@ -34,6 +34,10 @@
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
 import { requierePlan } from '@/lib/auth/apiGuard';
+import {
+  coeficientesEo, normalesDelMesMasCalido,
+  type CoeficientesEo, type DiaConRadiacion,
+} from '@/lib/eoJensenHaise';
 
 const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 
@@ -52,6 +56,15 @@ const MAX_DIAS = 420;
 
 /** Lo más viejo que publica el archivo de Open-Meteo con ERA5. */
 const PRIMER_DIA = '1940-01-01';
+
+/**
+ * El tramo del que salen las normales del mes más cálido para la `Eo`.
+ *
+ * Es **el mismo** que corre `/api/clima-diario/indices`, para que las dos rutas
+ * calculen los mismos coeficientes.
+ */
+const NORMALES_DESDE = '1960-01-01';
+const NORMALES_HASTA = '2025-12-31';
 
 export const maxDuration = 60;
 
@@ -110,7 +123,8 @@ export async function GET(req: Request) {
   const url = 'https://archive-api.open-meteo.com/v1/archive'
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${desde}&end_date=${hasta}`
-    + '&daily=precipitation_sum,et0_fao_evapotranspiration&timezone=auto';
+    + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
+    + 'temperature_2m_max,temperature_2m_min&timezone=auto';
 
   let res: Response;
   try {
@@ -121,10 +135,14 @@ export async function GET(req: Request) {
   if (!res.ok) return error(`Open-Meteo respondió con error ${res.status}.`, res.status);
 
   let raw: {
+    elevation?: number;
     daily?: {
       time?: string[];
       precipitation_sum?: Array<number | null>;
       et0_fao_evapotranspiration?: Array<number | null>;
+      shortwave_radiation_sum?: Array<number | null>;
+      temperature_2m_max?: Array<number | null>;
+      temperature_2m_min?: Array<number | null>;
     };
   };
   try {
@@ -138,13 +156,25 @@ export async function GET(req: Request) {
 
   const precip = d.precipitation_sum ?? [];
   const et0 = d.et0_fao_evapotranspiration ?? [];
+  const rs = d.shortwave_radiation_sum ?? [];
+  const tmax = d.temperature_2m_max ?? [];
+  const tmin = d.temperature_2m_min ?? [];
   const dias = d.time.map((fecha, i) => ({
     fecha,
     // Sin rellenar: un hueco del reanálisis no es un día sin lluvia.
     precip_mm: precip[i] ?? null,
     et0_mm: et0[i] ?? null,
+    rs_mj_m2: rs[i] ?? null,
+    t_max_c: tmax[i] ?? null,
+    t_min_c: tmin[i] ?? null,
   }));
-  const nulos = dias.filter(x => x.precip_mm === null || x.et0_mm === null).length;
+  const nulos = dias.filter(
+    x => x.precip_mm === null || x.et0_mm === null || x.rs_mj_m2 === null
+      || x.t_max_c === null || x.t_min_c === null,
+  ).length;
+
+  // Los coeficientes de la `Eo`, que son del punto y no de la ventana.
+  const coeficientes = await coeficientesDelPunto(latR, lngR, raw.elevation);
 
   const payload = JSON.stringify({
     dias,
@@ -155,10 +185,100 @@ export async function GET(req: Request) {
      */
     nulos,
     dias_pedidos: n,
-    fuente: 'Open-Meteo / ERA5 (reanálisis, ~10 km). et0_mm es la ETo de referencia de FAO-56, '
-      + 'no la Eo de Wight y Hanks: ver ETO_NO_ES_EO en lib/forrajeCorte.ts.',
+    /**
+     * Los coeficientes de la `Eo` de Jensen-Haise de este punto, o `null` si no
+     * se pudieron calcular. El cliente se los pasa a `ventanaDeBalance` y la
+     * ruta de índices calcula **los mismos** sobre la misma definición, para que
+     * el `Yp` del corte y los índices de los otros años no salgan de dos `Eo`
+     * distintas.
+     */
+    coeficientes_eo: coeficientes,
+    fuente: coeficientes
+      ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calcula por Jensen-Haise '
+        + 'modificada, que es el método con el que Wight y Hanks ajustaron su Kc y su b: ver '
+        + 'lib/eoJensenHaise.ts.'
+      : 'Open-Meteo / ERA5 (reanálisis, ~10 km). Sin coeficientes de Jensen-Haise, el balance usa '
+        + 'et0_mm, que es la ETo de referencia de FAO-56 y no la Eo de Wight y Hanks: ver '
+        + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',
   });
 
   await cacheSet(dbKey, { raw: payload }, CACHE_TTL);
   return new Response(payload, { status: 200, headers: HDRS });
+}
+
+/**
+ * Los coeficientes `CT` y `Tx` de la `Eo` de Jensen-Haise de un punto.
+ *
+ * Las normales del mes más cálido no se pueden sacar de una ventana de una
+ * temporada, así que van en un pedido aparte y con su propia caché: son del
+ * punto y no de la ventana, y las usa cualquier corte de cualquier año.
+ *
+ * **El tramo es el mismo que el de `/api/clima-diario/indices`**, 1960 a 2025, a
+ * propósito: si las dos rutas sacaran las normales de períodos distintos, el
+ * `Yp` del corte y los índices de los otros años saldrían de dos `Eo` que no son
+ * la misma y el error se cancelaría mal. Ver `EntradasIndicesPorAnio`.
+ *
+ * Devuelve `null` si Open-Meteo no responde, si no hay altitud del píxel o si la
+ * serie no alcanza: ahí el balance cae a la ETo de FAO-56 con su aviso, que es
+ * la degradación declarada y no un silencio.
+ */
+async function coeficientesDelPunto(
+  latR: string,
+  lngR: string,
+  elevacion?: number,
+): Promise<CoeficientesEo | null> {
+  if (elevacion === undefined || !Number.isFinite(elevacion)) return null;
+
+  const key = `clima-eo-coef-v1:${latR},${lngR},${elevacion}`;
+  const hit = await cacheGet<{ coef: CoeficientesEo | null }>(key);
+  if (hit !== null && hit !== undefined && 'coef' in hit) return hit.coef;
+
+  const url = 'https://archive-api.open-meteo.com/v1/archive'
+    + `?latitude=${latR}&longitude=${lngR}`
+    + `&start_date=${NORMALES_DESDE}&end_date=${NORMALES_HASTA}`
+    + '&daily=temperature_2m_max,temperature_2m_min&timezone=auto';
+
+  let res: Response;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+  } catch {
+    return null;
+  }
+  if (!res.ok) return null;
+
+  let raw: {
+    daily?: {
+      time?: string[];
+      temperature_2m_max?: Array<number | null>;
+      temperature_2m_min?: Array<number | null>;
+    };
+  };
+  try {
+    raw = await res.json();
+  } catch {
+    return null;
+  }
+  const d = raw.daily;
+  if (!d?.time?.length) return null;
+  const tmax = d.temperature_2m_max ?? [];
+  const tmin = d.temperature_2m_min ?? [];
+  const serie: DiaConRadiacion[] = d.time.map((fecha, i) => ({
+    fecha,
+    t_max_c: tmax[i] ?? null,
+    t_min_c: tmin[i] ?? null,
+    rs_mj_m2: null,
+  }));
+
+  const normales = normalesDelMesMasCalido(serie);
+  const coef = normales === null ? null : coeficientesEo({
+    elevacion_m: elevacion,
+    tmax_normal_c: normales.tmax_c,
+    tmin_normal_c: normales.tmin_c,
+    mes_mas_calido: normales.mes,
+    anios_de_las_normales: normales.anios,
+    normales_de_reanalisis: true,
+  });
+
+  await cacheSet(key, { coef }, CACHE_TTL);
+  return coef;
 }

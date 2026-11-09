@@ -103,7 +103,12 @@ import {
   AVISO_ETO,
   EL_AGUA_INICIAL_NO_SE_OLVIDA,
   capasDe90,
+  eoDelDia,
 } from './forrajeCorte';
+import {
+  AVISO_EO_JENSEN_HAISE,
+  type CoeficientesEo,
+} from './eoJensenHaise';
 
 // ─── El sitio donde se midió todo lo de este archivo ─────────────────────────
 
@@ -128,7 +133,10 @@ export const SITIO_DE_LA_MEDICION = {
   nombre: 'Sidney, Montana (EE.UU.)',
   lat: 47.72,
   lng: -104.16,
-  serie: 'Open-Meteo / ERA5 diaria, 1960-01-01 a 2024-12-31, 23.742 días, sin nulos',
+  serie:
+    'Open-Meteo / ERA5 diaria, 1960-01-01 a 2024-12-31, 23.742 días, sin nulos. Lluvia, '
+    + 'radiación global y temperaturas máxima y mínima: la Eo se calcula por Jensen-Haise '
+    + 'modificada con las normales del mes más cálido de la propia serie.',
   ventana: { arranque: '04-15', dias: 84 },
   aw_por_capa_mm: [50, 50, 50],
   lluvia_anual_mm: 425.5,
@@ -180,10 +188,10 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   del_trabajo: { arranque: '04-15', dias_minimo: 68, dias_maximo: 99, dias_mediana: 84 },
   /** Cociente contra la ventana del trabajo, en la mediana del índice y en el p10. */
   cocientes: {
-    arranque_menos_15: { mediana: 1.065, p10: 1.239 },
-    arranque_mas_15: { mediana: 0.758, p10: 0.871 },
-    largo_68: { mediana: 1.1, p10: 1.278 },
-    largo_99: { mediana: 0.717, p10: 0.769 },
+    arranque_menos_15: { mediana: 1.001, p10: 1.204 },
+    arranque_mas_15: { mediana: 0.924, p10: 0.699 },
+    largo_68: { mediana: 1.001, p10: 1.223 },
+    largo_99: { mediana: 0.928, p10: 0.705 },
   },
   /**
    * La mediana y el `p10` no se mueven en la misma proporción, así que una
@@ -192,8 +200,15 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   no_desplaza_la_distribucion: true,
   /** El patrón real, asimétrico, de las cuatro filas medidas. */
   el_p10_se_mueve_mas:
-    'sólo cuando la ventana le da más agua al pastizal; cuando se la quita, se mueve menos '
-    + 'que la mediana',
+    'en las cuatro variantes, y mucho: de 20 a 30 % contra 0,1 a 7,6 % de la mediana. Con la Eo '
+    + 'del modelo la mediana queda clavada contra el techo del índice, así que la ventana se ve '
+    + 'casi entera en la cola seca, que es justo la que decide una carga animal.',
+  /**
+   * Medido antes con la ETo de FAO-56, el patrón era asimétrico: el p10 se movía
+   * más sólo cuando la ventana le daba más agua. Con la `Eo` de Jensen-Haise se
+   * mueve más en las cuatro, porque la mediana ya no tiene a dónde subir.
+   */
+  con_la_eto_era_asimetrico: true,
   que_se_hace: 'las dos fechas las declara el usuario para su propio año y se repiten en los demás; el aviso sale siempre',
   por_que_no_se_corrige:
     'No hay forma de saber qué día rebrotó un pastizal en 1987, y estimarlo con la '
@@ -235,7 +250,7 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
  */
 export const LA_CADENA_OLVIDA_EL_ARRANQUE = {
   /** Diferencia relativa del índice entre arrancar la cadena vacía y llena, en %. */
-  en_sidney_pct: { t1: 73.398, t2: 21.423, t3: 0.385, t4_en_adelante_maximo: 0.042 },
+  en_sidney_pct: { t1: 65.477, t2: 31.882, t3: 1.158, t4_en_adelante_maximo: 0 },
   temporadas_en_sidney: 3,
   /** La serie sintética del test, más árida: ahí tres temporadas no alcanzan. */
   en_una_serie_arida_pct: { t4_en_adelante_maximo: 9.5 },
@@ -252,6 +267,18 @@ export const LA_CADENA_OLVIDA_EL_ARRANQUE = {
   por_que_alcanza_cuando_alcanza:
     'Basta una temporada húmeda para llenar el perfil y borrar con qué se arrancó. En una serie '
     + 'de décadas eso suele pasar temprano; en un clima árido puede no pasar nunca.',
+  /**
+   * Y lo que esta prueba **no** cubre, que se descubrió al cambiar la `Eo`.
+   *
+   * La convergencia mide si se olvida **el estado inicial**, que ocurre una sola
+   * vez. No dice nada de la demanda atmosférica de **fuera de temporada**, que
+   * se repite todos los inviernos y decide con cuánta agua arranca cada
+   * temporada: ahí las dos cadenas convergen igual de rápido y aterrizan en
+   * distribuciones distintas. Ver `EL_INVIERNO_DECIDE_LA_COLA_SECA`.
+   */
+  no_cubre_el_invierno:
+    'La convergencia dice que se olvida el estado inicial, no que la demanda de fuera de '
+    + 'temporada esté bien. Esa se repite cada año y no se cancela nunca.',
 } as const;
 
 /**
@@ -283,6 +310,26 @@ export const LA_NIEVE_NO_SE_ACUMULA = {
     'El agua del deshielo entra al perfil el día que nevó, meses antes de cuando llega, '
     + 'y en el medio la capa superficial la evapora. La temporada arranca más seca.',
   donde_no_importa: 'donde la temperatura media no baja de cero, o sea el trópico y el subtrópico',
+  /**
+   * Y cuánto es, que se pudo medir al cambiar la `Eo`: **casi nada**.
+   *
+   * Se corrió la cadena con la lluvia de los días bajo cero acumulada hasta el
+   * primer día sobre cero, que es un deshielo grosero pero acota. Con la `Eo` de
+   * Jensen-Haise mueve el p10 un **0,8 %** y la mediana un 0,03 %. Con la ETo de
+   * FAO-56 movía el p10 un 11 % y el agua inicial del perfil un 16 %.
+   *
+   * El motivo es la `Eo` de los días helados: Jensen-Haise devuelve **0,12
+   * mm/día** promediados sobre los 6.992 días bajo cero de la serie, porque su
+   * intercepto de temperatura está en −6,5 °C. La ETo de referencia de FAO-56
+   * devuelve 0,72, seis veces más, que sobre 6.992 días son cinco metros de
+   * demanda que el pastizal helado no tiene. La degradación que estaba anotada
+   * acá era, en buena medida, la sustitución de la `Eo`.
+   */
+  medido_con_deshielo_diferido: {
+    con_jensen_haise: { p10_pct: 0.8, mediana_pct: -0.03 },
+    con_la_eto_de_fao_56: { p10_pct: 11.0, agua_inicial_pct: 16.1 },
+    eo_de_los_dias_bajo_cero_mm_dia: { jensen_haise: 0.122, eto_fao_56: 0.719, dias: 6992 },
+  },
 } as const;
 
 // ─── Lo que apareció al medir ────────────────────────────────────────────────
@@ -325,19 +372,35 @@ export const EL_PROMEDIO_SOBREESTOCA = {
     'el mismo trabajo dice que en uno de cada dos años la lluvia queda por debajo de la media',
   medido_en_sidney: {
     anios: 62,
-    anios_bajo_el_promedio: 29,
-    fraccion_bajo_el_promedio_pct: 46.8,
+    anios_bajo_el_promedio: 18,
+    fraccion_bajo_el_promedio_pct: 29,
     indice: {
-      minimo: 0.051, p10: 0.194, p25: 0.344, mediana: 0.675,
-      p75: 0.882, p90: 0.985, maximo: 1, promedio: 0.603,
+      minimo: 0.157, p10: 0.741, p25: 0.896, mediana: 0.999,
+      p75: 1, p90: 1, maximo: 1, promedio: 0.908,
     },
     /** `p90/p10`: cuántas veces más forraje da un año bueno que uno malo. */
-    ancho: 5.08,
+    ancho: 1.35,
+    /**
+     * Y el cuarto de arriba queda **clavado contra el techo**: `p75`, `p90` y el
+     * máximo son 1,000, o sea que en más de una temporada de cada cuatro el
+     * pastizal transpiró todo lo que podía y el índice no distingue entre ellas.
+     * El `ancho` de 1,35 no dice que los años se parezcan: dice que la mitad
+     * buena de la distribución está contra el tope.
+     */
+    el_cuarto_de_arriba_esta_en_el_techo: true,
   },
+  /**
+   * Medido antes con la ETo de FAO-56, esta misma distribución daba mediana
+   * 0,675, p10 0,194 y ancho 5,08, con 29 de 62 bajo el promedio. La `Eo` del
+   * modelo la mueve entera para arriba. Las dos están en
+   * `EL_INVIERNO_DECIDE_LA_COLA_SECA`, que es donde se explica cuánto de esa
+   * diferencia queda sin resolver.
+   */
+  con_la_eto_daba: { mediana: 0.675, p10: 0.194, ancho: 5.08, bajo_el_promedio_pct: 46.8 },
   por_que_no_da_50:
     'El índice no puede pasar de 1, así que la distribución queda sesgada a la izquierda y el '
-    + 'promedio (0,603) cae por debajo de la mediana (0,675). Contra la mediana la mitad de los '
-    + 'años queda corta por definición.',
+    + 'promedio (0,908) cae por debajo de la mediana (0,999). Contra la mediana la mitad de los '
+    + 'años queda corta por definición, y acá la mitad de arriba está empatada en el techo.',
   que_se_hace:
     'se muestra la distribución y el año del registro que le corresponde a cada percentil, y la '
     + 'elección del año que se planifica queda del usuario: no hay un percentil publicado para '
@@ -371,10 +434,15 @@ export const EL_PROMEDIO_SOBREESTOCA = {
  * balance diario calcula y una escalera por totales no puede.
  */
 export const LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO = {
-  r2_contra_lluvia_del_anio: 0.207,
-  r2_contra_lluvia_de_la_temporada: 0.522,
+  r2_contra_lluvia_del_anio: 0.219,
+  r2_contra_lluvia_de_la_temporada: 0.357,
   /** El agua con la que la cadena arrancó cada temporada, en mm, sobre 150 de tope. */
-  agua_inicial_medida_mm: { minimo: 0.1, maximo: 147.6, promedio: 52.2 },
+  agua_inicial_medida_mm: { minimo: 28.1, maximo: 150, promedio: 119.2 },
+  /** Con la ETo de FAO-56 daban 0,207 y 0,522, y el agua inicial 0,1 a 147,6. */
+  con_la_eto_daba: {
+    r2_anual: 0.207, r2_temporada: 0.522,
+    agua_inicial_mm: { minimo: 0.1, maximo: 147.6, promedio: 51.4 },
+  },
   que_se_lleva_el_resto: 'cuándo llovió, con qué agua arrancó el perfil y cuánta demanda atmosférica hubo',
   por_que_importa:
     'prodForrajera decide el forraje con la lluvia anual y nada más. Esto mide el techo de lo '
@@ -382,66 +450,62 @@ export const LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO = {
 } as const;
 
 /**
- * El error de la `Eo` no se cancela a lo largo de la cadena: **crece**, y crece
- * justo en el año seco.
+ * Las dos mitades del error de la `Eo`, separadas, y la `Eo` reemplazada.
  *
- * El lote anterior dejó anotada una deuda: el balance usa la ETo de referencia de
- * FAO-56 y el trabajo usó la `Eo` de Jensen-Haise (1963), que no son la misma
- * superficie. `ETO_NO_ES_EO` midió la elasticidad del `Yp` solo —0,78 a 1,22— y
- * quedó pendiente leer Jensen-Haise. Acá se midieron las dos mitades que
- * faltaban, y las dos salieron peor de lo esperado.
+ * El lote anterior dejó esta deuda: el balance usaba la ETo de referencia de
+ * FAO-56 y el trabajo usó la `Eo` de Jensen-Haise (1963), el cociente medido era
+ * de 1,14 a 1,20, y separar las dos causas —superficie de referencia contra
+ * sesgo de ERA5— necesitaba leer el trabajo de 1963. Se leyó. Las dos mitades
+ * están medidas en `LAS_DOS_MITADES_DEL_ERROR_DE_LA_EO`, en
+ * `lib/eoJensenHaise.ts`, y el resultado corto es:
  *
- * ## Primero, cuánto es la diferencia
+ * - **el sesgo de ERA5 en ese píxel es chico**: la temperatura media diaria no
+ *   tiene sesgo contra la estación del lugar (−0,02 °C en 1.066 días) y la
+ *   radiación lee 2,2 % alta contra NASA POWER, que es satelital;
+ * - **la superficie de referencia es casi todo el resto**: con la `Eo` calculada
+ *   por el método del trabajo sobre la misma serie, el cociente contra la Tabla 1
+ *   baja de 1,162 a 1,015.
  *
- * Mismo sitio, misma ventana: la ETo de FAO-56 de ERA5 en la temporada de Sidney
- * promedia **4,62 mm/día** sobre los 62 años y **4,41** sobre 1968-1979, que
- * solapa el período de la prueba. La `Eo` que se deduce de la Tabla 1 del trabajo
- * va de 3,53 a 4,20, con media 3,87. O sea un cociente de **1,14 a 1,20**.
+ * Así que la cadena **ya no usa la ETo**: calcula la `Eo` por Jensen-Haise
+ * modificada cuando la serie trae radiación y temperaturas. Con eso, el `b`
+ * publicado reproduce la columna `Tp` de la Tabla 1 con **+1,3 %** de error
+ * medio, donde con la ETo daba **+16,5 %** y hasta +35,6 %.
  *
- * Eso mezcla dos cosas y no se pueden separar acá: la diferencia de superficie de
- * referencia, y el sesgo propio de ERA5 en ese píxel contra el instrumento que
- * midieron Wight y Hanks. Separarlas sigue necesitando leer Jensen-Haise.
+ * ## La amplificación que estaba medida acá sigue siendo cierta, y ya no aplica
  *
- * ## Y después, lo que se esperaba que lo salvara
+ * Lo que este bloque decía —que un error de escala en la `Eo` no se cancela en
+ * el cociente de dos índices sino que crece, del 11,6 % en el `Yp` solo al
+ * 54,7 % en el forraje del peor año— **se midió y está bien**. Lo que cambió es
+ * que ese error de escala ya no existe por construcción: era la sustitución, y
+ * la sustitución se fue. Queda como la razón por la que no se podía dejar así.
  *
- * El forraje de un año es `Yp · índice_j`, y `Yp = Y_corte / índice_corte`. O sea
- * que el número final es **el cociente de dos índices** calculados con la misma
- * serie, y lo razonable es esperar que un error de escala en la `Eo` se cancele.
+ * ## Y lo que apareció debajo
  *
- * Medido escalando la `Eo` por 1,142 sobre la cadena entera, con el año de índice
- * mediano como año del corte:
- *
- * ```
- *  el Yp solo                              +11,6 %
- *  el forraje de un año, mediana            15,6 %
- *  el forraje de un año, p90                41,3 %
- *  el forraje del peor año (2017)           54,7 %
- * ```
- *
- * **No cancela: amplifica.** El motivo es que el índice no responde linealmente:
- * en una temporada con el agua muy limitada, subir la demanda un 14 % no baja el
- * índice un 14 % sino mucho más, porque la evaporación del suelo también se lleva
- * agua que habría transpirado. El año del corte está a media agua y se mueve poco;
- * el año seco se mueve tres veces más, y el cociente se lleva la diferencia.
- *
- * ## Qué significa
- *
- * Que leer Jensen-Haise (1963) y cerrar la diferencia de superficie **dejó de ser
- * prolijidad y es la deuda más cara del motor de forraje**: un 14 % en la `Eo`
- * son 55 % en el forraje del año que decide la carga animal. Y que en la
- * interfaz, el número del año seco no puede mostrarse con la misma confianza que
- * el de la mediana: es el más útil y el más frágil a la vez.
+ * La `Eo` de la temporada quedó anclada contra un valor publicado, pero la de
+ * **fuera de temporada** no, y es la que decide con cuánta agua arranca cada
+ * temporada. Eso es lo que ahora domina la cola seca de la distribución, y está
+ * medido aparte en `EL_INVIERNO_DECIDE_LA_COLA_SECA`.
  */
 export const EL_ANIO_SECO_LO_DECIDE_LA_EO = {
-  /** La ETo de FAO-56 de ERA5 en la temporada de Sidney, mm/día. */
-  eto_era5_mm_dia: { media_62_anios: 4.62, media_1968_1979: 4.41, minimo: 3.7, maximo: 6.65 },
+  /** La `Eo` de Jensen-Haise en la temporada de Sidney, mm/día. */
+  eo_del_modelo_mm_dia: { media_62_anios: 3.945, media_1968_1979: 3.816, minimo: 3.267, maximo: 5.443 },
+  /** La ETo de FAO-56 de ERA5 en la misma ventana, que es lo que se usaba antes. */
+  eto_era5_mm_dia: { media_62_anios: 4.611, media_1968_1979: 4.415, minimo: 3.705, maximo: 6.647 },
   /** La `Eo` deducida de la Tabla 1 del trabajo, mm/día. */
   eo_de_la_tabla_1_mm_dia: { minimo: 3.53, maximo: 4.2, media: 3.87 },
   cociente: { sobre_62_anios: 1.196, sobre_1968_1979: 1.142 },
-  no_se_pueden_separar:
-    'El cociente mezcla la diferencia de superficie de referencia con el sesgo de ERA5 en ese '
-    + 'píxel contra el instrumento del trabajo. Separarlas necesita leer Jensen-Haise (1963).',
-  /** Lo que mueve escalar la `Eo` por 1,142 en la cadena entera, en %. */
+  /** Ahora sí se pudieron separar, y acá está cuál era cuál. */
+  ya_se_separaron: {
+    sesgo_de_era5: 'chico: temperatura sin sesgo contra la estación, radiación 2,2 % alta contra POWER',
+    superficie_de_referencia: 'casi todo el resto: con la Eo del método el cociente baja de 1,162 a 1,015',
+    donde_esta_medido: 'LAS_DOS_MITADES_DEL_ERROR_DE_LA_EO, en lib/eoJensenHaise.ts',
+  },
+  /** El error con el que el `b` publicado reproduce la `Tp` publicada, en %. */
+  tp_reproducida_pct: { con_la_eo_del_modelo: 1.3, con_la_eto: 16.5 },
+  /**
+   * Lo que movía escalar la `Eo` por 1,142 en la cadena entera, en %. Medido con
+   * la ETo, que era la sustitución que ya no está.
+   */
   con_la_eo_14_pct_alta: {
     el_yp_solo_pct: 11.6,
     el_forraje_del_anio_pct: { mediana: 15.6, p90: 41.3, maximo: 54.7, peor_anio: 2017 },
@@ -453,8 +517,139 @@ export const EL_ANIO_SECO_LO_DECIDE_LA_EO = {
     + 'transpirado. El año del corte está a media agua y se mueve poco; el seco se mueve tres '
     + 'veces más, y el cociente de los dos se lleva la diferencia.',
   la_deuda:
-    'Leer Jensen-Haise (1963) y cerrar la diferencia de superficie dejó de ser prolijidad: un '
-    + '14 % en la Eo son 55 % en el forraje del año que decide la carga animal.',
+    'Pagada: la Eo se calcula por Jensen-Haise modificada y el b publicado reproduce la Tp '
+    + 'publicada con +1,3 %. Lo que queda abierto es la demanda de fuera de temporada, que es '
+    + 'otra cosa y está en EL_INVIERNO_DECIDE_LA_COLA_SECA.',
+} as const;
+
+/**
+ * La cadena lee **alto** contra los doce índices publicados, y cuánto.
+ *
+ * `forrajeBalance.ts` dice que la columna `T` de la Tabla 1 no se puede
+ * reproducir porque haría falta la lluvia diaria de Sidney de 1967 a 1978, que
+ * el artículo no publica. Es cierto para *reproducir*; para **comparar** alcanza
+ * con la lluvia de ERA5 del mismo píxel, declarando la diferencia. Se hizo, y la
+ * diferencia no es chica: la lluvia de ERA5 en las doce temporadas da **+24,6 mm**
+ * de media contra la publicada, y va de −76 a +103 mm. Así que esto no es una
+ * validación del índice: es una cota de cuánto se parece, con una entrada que no
+ * es la misma.
+ *
+ * Los doce valores publicados —`T/Tp` de la Tabla 1— van de **0,40 a 0,98**, con
+ * mediana 0,90. La cadena con la `Eo` del modelo da un sesgo de **+0,16** y
+ * llega al techo en **10 de las 12**, o sea que se queda sin resolución justo
+ * donde el trabajo medía 0,56, 0,58 y 0,40.
+ *
+ * ## Las tres causas declaradas, y todas empujan para el mismo lado
+ *
+ * Están las tres en `ADVERTENCIAS` de `forrajeBalance.ts` desde el principio, y
+ * esto es la primera medición de cuánto suman juntas:
+ *
+ * - **no se aplica el factor de actividad radicular por temperatura de suelo**,
+ *   que el trabajo usa en las capas de 30-60 y 60-90: sin él esas capas entregan
+ *   agua que en suelo frío no entregarían;
+ * - **el escurrimiento se asume nulo**, como en la prueba original, y en el
+ *   campo algo escurre;
+ * - **no se declara el agua bajo el límite inferior** de la capa superficial, así
+ *   que el suelo se seca menos de lo que podría.
+ *
+ * Y una cuarta que no es del modelo: la lluvia de ERA5 contra el pluviómetro.
+ *
+ * ## Qué se hace con esto
+ *
+ * Se dice. El orden de los años aguanta —1988 queda último en los tres
+ * tratamientos de `EL_INVIERNO_DECIDE_LA_COLA_SECA`— y la mediana sirve para
+ * decir «un año normal»; el número de la cola seca no se puede presentar como
+ * una cifra. Es lo mismo que ya decía `AVISO_DEL_ANIO_SECO`, ahora con el sesgo
+ * medido contra valores publicados en vez de razonado.
+ */
+export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
+  anios: 12,
+  publicado: { minimo: 0.402, mediana: 0.904, maximo: 0.985 },
+  /** Error absoluto medio y sesgo del índice contra los doce publicados. */
+  con_la_eo_del_modelo: { eam: 0.156, sesgo: 0.156, en_el_techo: 10 },
+  con_la_eto_de_fao_56: { eam: 0.148, sesgo: -0.063, en_el_techo: 2 },
+  /** La lluvia de ERA5 menos la publicada, en mm, en esas doce temporadas. */
+  lluvia_era5_menos_publicada_mm: { media: 24.6, minimo: -76.3, maximo: 102.5 },
+  no_es_una_validacion:
+    'La entrada no es la misma: la lluvia sale de ERA5 y el trabajo midió con pluviómetro, con '
+    + 'hasta 100 mm de diferencia en una temporada. Es una cota de parecido, no una validación.',
+  por_que_lee_alto:
+    'Las tres degradaciones declaradas del balance empujan para el mismo lado: sin factor de '
+    + 'actividad radicular, con escurrimiento nulo y sin agua bajo el límite inferior, el perfil '
+    + 'entrega más agua de la que entregaría. Es la primera medición de cuánto suman.',
+  que_aguanta: 'el orden de los años y la mediana; no el valor de la cola seca',
+} as const;
+
+/**
+ * El invierno decide la cola seca, y el invierno no está validado.
+ *
+ * Esto es lo que apareció al poner la `Eo` del modelo, y es incómodo porque
+ * reabre lo que el lote anterior había dado por cerrado.
+ *
+ * Wight y Hanks arrancaban el balance el 15 de abril **con el agua del perfil
+ * medida con sonda de neutrones**. Nunca corrieron un invierno. La cadena
+ * continua de acequia sí, y es su única forma de no inventar el agua inicial:
+ * fuera de temporada `b` se fuerza a cero y la capa superficial evapora contra
+ * `Kc·Eo` entero. O sea que **toda la demanda de fuera de temporada entra como
+ * evaporación de suelo**, y nadie publicó si eso está bien.
+ *
+ * Cuánto se juega, medido con tres tratamientos de la misma serie, mismos 84
+ * días de ventana y misma lluvia:
+ *
+ * ```
+ *                                       p10      mediana   ancho   EAM contra los 12
+ * Jensen-Haise todo el año              0,741    0,999     1,35    0,156  (+0,156)
+ * Jensen-Haise en temporada, ETo afuera 0,303    0,819     3,30    0,142  (+0,057)
+ * ETo de FAO-56 todo el año             0,195    0,669     5,03    0,148  (−0,063)
+ * ```
+ *
+ * **El p10 se mueve 3,8 veces** entre el primero y el último, y los tres
+ * tratamientos son indistinguibles por el error contra los doce índices
+ * publicados: 0,142 a 0,156. La distribución de la cola seca no la decide el
+ * dato, la decide esta elección.
+ *
+ * ## Lo que sí dice el trabajo, y acota un poco
+ *
+ * De las columnas publicadas se puede despejar cuánto perdió el perfil en cada
+ * temporada, `P − ET − drenaje`: da **−65 a +35 mm**, o sea que en diez de las
+ * doce el perfil **se descargó** durante la temporada. En las tres temporadas de
+ * índice bajo —1968 con 0,56, 1971 con 0,58, 1977 con 0,40— eso obliga a que
+ * hayan arrancado con poca agua, y la cadena con Jensen-Haise las arranca con 88,
+ * 137 y 132 mm de los 150. Ahí lee claramente húmedo de más.
+ *
+ * ## Por qué igual se elige Jensen-Haise para todo el año
+ *
+ * Porque es **una** regla y no dos pegadas, porque es el método con el que se
+ * ajustaron el `Kc` y el `b` que la cadena usa, y porque su `Eo` de los días
+ * helados —0,12 mm/día contra 0,72 de la ETo de referencia— es la física del
+ * problema: un suelo congelado bajo nieve no evapora tres cuartos de milímetro
+ * por día. Partir la regla en dos tratamientos para acercar la cola sería
+ * ajustar contra el resultado, que es exactamente lo que este archivo no hace.
+ *
+ * Lo que corresponde es decirlo, y está dicho en `AVISO_DEL_INVIERNO`.
+ */
+export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
+  tratamientos: {
+    jensen_haise_todo_el_anio: { p10: 0.741, mediana: 0.999, ancho: 1.35, eam: 0.156, sesgo: 0.156 },
+    jensen_haise_en_temporada: { p10: 0.303, mediana: 0.819, ancho: 3.3, eam: 0.142, sesgo: 0.057 },
+    eto_todo_el_anio: { p10: 0.195, mediana: 0.669, ancho: 5.03, eam: 0.148, sesgo: -0.063 },
+  },
+  /** Cuántas veces se mueve el p10 entre el tratamiento más seco y el más húmedo. */
+  el_p10_se_mueve_veces: 3.8,
+  /** Y los tres son indistinguibles por el error contra los doce publicados. */
+  no_se_puede_elegir_por_el_error: true,
+  /** `P − ET − drenaje` de las doce temporadas publicadas, en mm. */
+  lo_que_perdio_el_perfil_mm: { minimo: -65, maximo: 35, temporadas_que_se_descargaron: 10 },
+  el_trabajo_no_corrio_inviernos:
+    'Wight y Hanks arrancaban el 15 de abril con el agua del perfil medida con sonda de '
+    + 'neutrones. La cadena continua es la forma de acequia de no inventar ese dato, y el precio '
+    + 'es que la demanda de fuera de temporada queda sin validar.',
+  por_que_jensen_haise_igual:
+    'Es una sola regla, es el método con el que se ajustaron el Kc y el b que la cadena usa, y su '
+    + 'Eo de los días helados —0,12 mm/día contra 0,72 de la ETo de referencia— es la física del '
+    + 'problema. Partirla en dos tratamientos para acercar la cola sería ajustar contra el '
+    + 'resultado.',
+  que_se_hace: 'se declara en AVISO_DEL_INVIERNO y la cola seca no se presenta como una cifra',
 } as const;
 
 /**
@@ -484,7 +679,7 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
   anio: 1988,
   puesto: 1,
   de: 62,
-  indice: 0.051,
+  indice: 0.157,
   estacion: {
     fuente:
       'Eastern Agricultural Research Center, Sidney, Montana (Montana State University) — '
@@ -493,9 +688,25 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
     abril_a_junio_pulgadas: { medido: 2.23, promedio: 5.9, fraccion_pct: 37.8 },
   },
   era5_en_la_ventana: { medido_mm: 77.5, media_mm: 177.8, fraccion_pct: 43.6 },
-  agua_inicial_del_perfil_mm: { ese_anio: 1.3, promedio: 52.2, tope: 150 },
-  los_cinco_peores: [1988, 1990, 2017, 1985, 1980],
-  los_cinco_mejores: [2011, 1975, 1972, 1963, 1965],
+  agua_inicial_del_perfil_mm: { ese_anio: 30.9, promedio: 119.2, tope: 150 },
+  los_cinco_peores: [1988, 1980, 2021, 1984, 1990],
+  /**
+   * No hay cinco mejores que nombrar: con la `Eo` del modelo, más de una
+   * temporada de cada cuatro llega al techo del índice y quedan empatadas en
+   * 1,000. Ordenarlas sería inventar un orden que el cálculo no tiene.
+   */
+  los_mejores_estan_empatados_en_el_techo: true,
+  /**
+   * Con la ETo de FAO-56 este mismo año daba 0,051 y el perfil arrancaba con
+   * 1,3 mm, y los cinco peores eran otros tres: 2017 y 1985 entraban, 2021 y
+   * 1984 no. 1988 queda primero en los dos, que es lo único que este chequeo
+   * de una dirección puede pedir.
+   */
+  con_la_eto_daba: {
+    indice: 0.051,
+    agua_inicial_mm: 1.3,
+    los_cinco_peores: [1988, 1990, 2017, 1985, 1980],
+  },
   que_prueba:
     'Es un chequeo de una sola dirección: si el peor año del modelo no hubiera sido una sequía '
     + 'conocida, algo estaría roto. Que lo sea no valida el modelo.',
@@ -529,15 +740,32 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
  * un pronóstico, y la tendencia no está removida.
  */
 export const LA_DISTRIBUCION_ES_DEL_PASADO = {
-  pendiente_del_indice_por_decada: -0.042,
-  r2_de_la_tendencia: 0.065,
+  pendiente_del_indice_por_decada: -0.005,
+  r2_de_la_tendencia: 0.002,
   mitades: {
-    primera: { anios: '1963-1993', mediana: 0.708, p10: 0.152, tp_mm_dia: 1.731 },
-    segunda: { anios: '1994-2024', mediana: 0.568, p10: 0.25, tp_mm_dia: 1.682 },
+    primera: { anios: '1963-1993', mediana: 0.999, p10: 0.495, tp_mm_dia: 1.473 },
+    segunda: { anios: '1994-2024', mediana: 0.998, p10: 0.807, tp_mm_dia: 1.444 },
+  },
+  /**
+   * Con la ETo de FAO-56 esta tendencia daba −0,042 por década con R² 0,065, y
+   * las dos mitades 0,708 contra 0,568 de mediana. **Con la `Eo` del modelo
+   * desaparece**: −0,005 por década y R² 0,002, o sea dos milésimas de la
+   * varianza. La diferencia está en la respuesta de cada método a la
+   * temperatura: la ETo de FAO-56 de un reanálisis que se calienta sube, y la
+   * `Eo` de Jensen-Haise sube bastante menos, porque entra por radiación y por
+   * un coeficiente de temperatura calibrado contra el mes más cálido del sitio.
+   *
+   * O sea que lo que parecía una señal climática en el forraje era, en buena
+   * parte, la deriva de la variable que se había puesto en lugar de la `Eo`.
+   */
+  con_la_eto_daba: {
+    pendiente_por_decada: -0.042, r2: 0.065,
+    mitades: { primera_mediana: 0.708, segunda_mediana: 0.568 },
   },
   por_que_no_se_recorta_la_ventana:
-    'La tendencia explica el 6,5 % de la varianza y en la cola seca apunta al revés. '
-    + 'Recortar a veinte años dejaría el p10 decidido por dos temporadas.',
+    'La tendencia explica el 0,2 % de la varianza del índice, o sea nada, y en la cola seca '
+    + 'apunta al revés: el p10 de la segunda mitad es MÁS alto. Recortar a veinte años dejaría '
+    + 'el p10 decidido por dos temporadas.',
   que_hay_que_decir: 'es la distribución de lo que pasó, no un pronóstico, y la tendencia no está removida',
 } as const;
 
@@ -547,9 +775,10 @@ export const LA_DISTRIBUCION_ES_DEL_PASADO = {
 export const AVISO_DE_LA_CADENA = {
   advertencia:
     'El agua del perfil al arranque de cada temporada no se midió: sale del balance continuo, o '
-    + 'sea de lo que dejó la temporada anterior, y por eso las tres primeras temporadas de la '
-    + 'serie no entran. La cadena no acumula nieve: donde el invierno baja de cero, el agua del '
-    + 'deshielo entra al perfil el día que nevó y el índice sale BAJO.',
+    + 'sea de lo que dejó la temporada anterior, y por eso las primeras temporadas de la serie no '
+    + 'entran. La cadena no acumula nieve, pero con la Eo del modelo eso mueve el p10 menos del '
+    + '1 %. Lo que sí pesa es la demanda atmosférica de fuera de temporada, que el trabajo '
+    + 'original nunca corrió: según cómo se la trate, el p10 se mueve hasta 3,8 veces.',
 } as const;
 
 /** El aviso de la ventana fija, que también sale siempre. */
@@ -570,6 +799,25 @@ export const AVISO_DEL_ANIO_SECO: AvisoDeCorte = {
     + 'un 16 % y el del peor año hasta un 55 %, porque con el agua muy limitada el índice no '
     + 'responde en proporción. Tomalo como un orden de magnitud del año malo, no como una cifra.',
   sesgo: 'desconocido',
+};
+
+/**
+ * El aviso del invierno, que es el que queda abierto después de arreglar la `Eo`.
+ *
+ * Sale siempre, porque la cadena continua siempre corre un invierno y el trabajo
+ * original nunca corrió ninguno.
+ */
+export const AVISO_DEL_INVIERNO: AvisoDeCorte = {
+  aviso:
+    'Con cuánta agua arranca cada temporada sale de correr el balance fuera de temporada, que es '
+    + 'la única forma de no inventar ese dato y es también lo que el trabajo original nunca hizo: '
+    + 'ellos lo medían con sonda de neutrones el 15 de abril. Medido, según cómo se trate la '
+    + 'demanda atmosférica de fuera de temporada el p10 de la distribución se mueve hasta 3,8 '
+    + 'veces, y las tres variantes probadas son indistinguibles por el error contra los doce '
+    + 'índices que el trabajo publica. La mediana y el orden de los años aguantan; el valor de la '
+    + 'cola seca no es una cifra. Contra esos doce índices la cadena lee ALTO, con un sesgo '
+    + 'medido de +0,16.',
+  sesgo: 'alto',
 };
 
 const UN_DIA_MS = 86_400_000;
@@ -666,6 +914,20 @@ export interface EntradasIndicesPorAnio {
   /** La serie diaria continua, en orden, sin huecos ni `null`. */
   serie: readonly DiaDeSerie[];
   ventanas: readonly VentanaDelAnio[];
+  /**
+   * Los coeficientes para calcular la `Eo` por Jensen-Haise, que es el método
+   * con el que se ajustaron el `Kc` y el `b` del modelo.
+   *
+   * Si vienen, cada día necesita radiación y las dos temperaturas, y un día al
+   * que le falte algo **rechaza la corrida entera** igual que un `null`: ver
+   * `eoDelDia`. Si no vienen se usa la ETo de FAO-56 de la serie, que es la
+   * degradación que `ETO_NO_ES_EO` declara y que infla la `Tp` un 16,5 %.
+   *
+   * Tiene que ser **la misma** que usó el corte del que salió el `Yp`: el
+   * forraje de un año es `Yp · índice`, con el `Yp` despejado de otro índice, y
+   * dos `Eo` distintas en los dos extremos se cancelarían mal.
+   */
+  coeficientes_eo?: CoeficientesEo | null;
   /** Agua útil de cada capa de 30 cm, en mm, de la superficie hacia abajo. */
   aw_por_capa_mm: readonly number[];
   /**
@@ -714,7 +976,12 @@ export interface IndicesPorAnio {
  */
 export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null {
   if (e.serie.length === 0 || e.ventanas.length === 0) return null;
-  if (e.serie.some(d => d.precip_mm === null || d.et0_mm === null)) return null;
+  if (e.serie.some(d => d.precip_mm === null)) return null;
+  // La `Eo` de cada día, por el método del trabajo si hay coeficientes y por la
+  // ETo de FAO-56 si no. Un día sin con qué calcularla rechaza la corrida: la
+  // cadena es continua, así que un hueco de 1974 contamina 1975.
+  const eoDeLaSerie = e.serie.map(d => eoDelDia(d, e.coeficientes_eo));
+  if (eoDeLaSerie.some(v => v === null)) return null;
 
   // Serie continua, en orden y sin huecos.
   const t0 = tiempoDe(e.serie[0]!.fecha);
@@ -757,7 +1024,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     const d = e.serie[i]!;
     dias.push({
       pptn_mm: d.precip_mm as number,
-      eo_mm: d.et0_mm as number,
+      eo_mm: eoDeLaSerie[i] as number,
       b: enTemporada[i] === 1
         ? bConstante
         : EL_AGUA_INICIAL_NO_SE_OLVIDA.b_del_calentamiento,
@@ -883,7 +1150,14 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     );
   }
 
-  const avisos: AvisoDeCorte[] = [{ ...AVISO_ETO }, { ...AVISO_DE_LA_VENTANA }];
+  const avisoDeLaEo: AvisoDeCorte = e.coeficientes_eo
+    ? { aviso: AVISO_EO_JENSEN_HAISE.aviso, sesgo: AVISO_EO_JENSEN_HAISE.sesgo_del_indice }
+    : { ...AVISO_ETO };
+  const avisos: AvisoDeCorte[] = [
+    avisoDeLaEo,
+    { ...AVISO_DE_LA_VENTANA },
+    ...(e.coeficientes_eo ? [{ ...AVISO_DEL_INVIERNO }] : []),
+  ];
 
   return {
     anios,

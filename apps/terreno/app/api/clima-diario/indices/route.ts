@@ -37,6 +37,7 @@
  */
 import { SITE_ORIGIN } from '@/lib/http';
 import { cacheGet, cacheSet } from '@/lib/db/cache';
+import { coeficientesDeLaSerie } from '@/lib/eoJensenHaise';
 import { requierePlan } from '@/lib/auth/apiGuard';
 import {
   distribucion,
@@ -117,7 +118,7 @@ export async function GET(req: Request) {
 
   // Todo lo que cambia el resultado entra en la clave. Si falta un parámetro acá,
   // dos corridas distintas se sirven la misma respuesta.
-  const dbKey = `clima-indices-v1:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
+  const dbKey = `clima-indices-v2:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
     + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
@@ -125,7 +126,8 @@ export async function GET(req: Request) {
   const url = 'https://archive-api.open-meteo.com/v1/archive'
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${START}&end_date=${END}`
-    + '&daily=precipitation_sum,et0_fao_evapotranspiration&timezone=auto';
+    + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
+    + 'temperature_2m_max,temperature_2m_min&timezone=auto';
 
   let res: Response;
   try {
@@ -136,10 +138,14 @@ export async function GET(req: Request) {
   if (!res.ok) return error(`Open-Meteo respondió con error ${res.status}.`, res.status);
 
   let raw: {
+    elevation?: number;
     daily?: {
       time?: string[];
       precipitation_sum?: Array<number | null>;
       et0_fao_evapotranspiration?: Array<number | null>;
+      shortwave_radiation_sum?: Array<number | null>;
+      temperature_2m_max?: Array<number | null>;
+      temperature_2m_min?: Array<number | null>;
     };
   };
   try {
@@ -153,10 +159,16 @@ export async function GET(req: Request) {
 
   const precip = d.precipitation_sum ?? [];
   const et0 = d.et0_fao_evapotranspiration ?? [];
+  const rs = d.shortwave_radiation_sum ?? [];
+  const tmax = d.temperature_2m_max ?? [];
+  const tmin = d.temperature_2m_min ?? [];
   const serie = d.time.map((fecha, i) => ({
     fecha,
     precip_mm: precip[i] ?? null,
     et0_mm: et0[i] ?? null,
+    rs_mj_m2: rs[i] ?? null,
+    t_max_c: tmax[i] ?? null,
+    t_min_c: tmin[i] ?? null,
   }));
   const nulos = serie.filter(x => x.precip_mm === null || x.et0_mm === null).length;
   if (nulos > 0) {
@@ -172,10 +184,25 @@ export async function GET(req: Request) {
   const ventanas = ventanasDeCadaAnio(PRIMER_ANIO, ULTIMO_ANIO, arranque, dias);
   if (ventanas === null) return error('La ventana de temporada pedida no es válida.', 400);
 
+  /**
+   * La `Eo` del modelo, calculada con las normales del mes más cálido de esta
+   * misma serie y la altitud que devuelve Open-Meteo para el píxel.
+   *
+   * Si no sale —serie corta, o un mes más cálido al que le faltan días— la
+   * cadena cae a la ETo de FAO-56 y el aviso lo dice, que es la degradación
+   * declarada en `ETO_NO_ES_EO`. No se inventa una altitud ni se estiran las
+   * normales: con menos de diez años, `coeficientesDeLaSerie` devuelve `null`.
+   */
+  const elevacion = raw.elevation;
+  const coeficientes = elevacion !== undefined && Number.isFinite(elevacion)
+    ? coeficientesDeLaSerie(serie, elevacion)
+    : null;
+
   const r = indicesPorAnio({
     serie,
     ventanas,
     aw_por_capa_mm: awCrudo,
+    coeficientes_eo: coeficientes,
     agua_bajo_el_limite_mm: aguaBajo,
     opciones: {
       ...(kc !== undefined ? { kc } : {}),
@@ -196,8 +223,18 @@ export async function GET(req: Request) {
     advertencias: r.advertencias,
     avisos: r.avisos,
     serie: { desde: START, hasta: END },
-    fuente: 'Open-Meteo / ERA5 (reanálisis, ~10 km). et0_mm es la ETo de referencia de FAO-56, '
-      + 'no la Eo de Wight y Hanks: ver ETO_NO_ES_EO y EL_ANIO_SECO_LO_DECIDE_LA_EO en lib/.',
+    /**
+     * Los coeficientes de la `Eo`, para que el cliente pueda mostrarlos y, sobre
+     * todo, para que el corte del que sale el `Yp` use **los mismos**.
+     */
+    coeficientes_eo: coeficientes,
+    fuente: coeficientes
+      ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calculó por Jensen-Haise '
+        + 'modificada —el método con el que Wight y Hanks ajustaron su Kc y su b— con las '
+        + 'normales del mes más cálido de esta serie: ver lib/eoJensenHaise.ts.'
+      : 'Open-Meteo / ERA5 (reanálisis, ~10 km). No se pudieron calcular los coeficientes de la '
+        + 'Eo de Jensen-Haise, así que el balance usó la ETo de referencia de FAO-56: ver '
+        + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',
   });
 
   await cacheSet(dbKey, { raw: payload }, CACHE_TTL);

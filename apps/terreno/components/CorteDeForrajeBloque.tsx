@@ -33,8 +33,10 @@ import {
   anioDelPercentil,
   forrajePorAnio,
   AVISO_DEL_ANIO_SECO,
+  AVISO_DEL_INVIERNO,
   EL_PROMEDIO_SOBREESTOCA,
 } from '@/lib/forrajeAnios';
+import type { CoeficientesEo } from '@/lib/eoJensenHaise';
 import { Scissors, TriangleAlert, Loader2, ArrowDownToLine, CalendarRange } from 'lucide-react';
 import {
   evaluarCorte, aguaUtilEnTresCapas, ventanaDeBalance, ypDelCorte, kgHaDeAro,
@@ -179,7 +181,12 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       const url = `/api/clima-diario/ventana?lat=${datosSuelo.lat}&lng=${datosSuelo.lng}`
         + `&desde=${arranque}&hasta=${hasta}`;
       const r = await fetch(url);
-      const j = await r.json() as { dias?: DiaDeSerie[]; error?: string; nulos?: number };
+      const j = await r.json() as {
+        dias?: DiaDeSerie[];
+        error?: string;
+        nulos?: number;
+        coeficientes_eo?: CoeficientesEo | null;
+      };
       if (!r.ok || !j.dias) {
         setErrorSerie(j.error ?? 'No se pudo traer la serie diaria de este punto.');
         return;
@@ -193,8 +200,13 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
         return;
       }
 
-      const temporada = ventanaDeBalance(j.dias, desde, hasta);
-      const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1));
+      // Los coeficientes de la `Eo` de Jensen-Haise, que la ruta calcula sobre el
+      // mismo tramo que la ruta de índices para que el `Yp` del corte y los
+      // índices de los otros años no salgan de dos `Eo` distintas. Si vienen en
+      // `null`, `ventanaDeBalance` cae a la ETo de FAO-56 y el aviso lo dice.
+      const coefEo = j.coeficientes_eo ?? null;
+      const temporada = ventanaDeBalance(j.dias, desde, hasta, coefEo);
+      const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1), coefEo);
       if (temporada === null) {
         setErrorSerie('La serie no cubre completa la temporada que declaraste.');
         return;
@@ -567,6 +579,9 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                       </p>
                       <p className="text-[9px] text-clay-700/90 leading-relaxed flex gap-1">
                         <span className="shrink-0">·</span><span>{AVISO_DEL_ANIO_SECO.aviso}</span>
+                      </p>
+                      <p className="text-[9px] text-clay-700/90 leading-relaxed flex gap-1">
+                        <span className="shrink-0">·</span><span>{AVISO_DEL_INVIERNO.aviso}</span>
                       </p>
 
                       {anios.advertencias.length > 0 && (

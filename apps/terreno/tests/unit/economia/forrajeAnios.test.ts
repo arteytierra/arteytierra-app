@@ -26,8 +26,11 @@ import {
   EL_ANIO_SECO_LO_DECIDE_LA_EO,
   EL_ANIO_MAS_SECO_ES_EL_QUE_FUE,
   LA_DISTRIBUCION_ES_DEL_PASADO,
+  LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE,
+  EL_INVIERNO_DECIDE_LA_COLA_SECA,
   AVISO_DE_LA_VENTANA,
   AVISO_DEL_ANIO_SECO,
+  AVISO_DEL_INVIERNO,
   ventanasDeCadaAnio,
   indicesPorAnio,
   distribucion,
@@ -123,19 +126,17 @@ describe('la ventana no se mueve con el año', () => {
   });
 
   it('la mediana y el p10 no se mueven igual: la ventana cambia la forma, no desplaza', () => {
-    // Esto es lo que dicen los cuatro casos medidos, y NO lo que yo había escrito
-    // antes de mirarlos: el p10 se mueve más cuando la ventana le da más agua
-    // (−15 días de arranque, temporada más corta) y menos cuando se la quita.
+    // Con la Eo del modelo el p10 se mueve mucho más que la mediana en las
+    // cuatro variantes, porque la mediana queda clavada contra el techo del
+    // índice. Medido con la ETo de FAO-56 el patrón era asimétrico —el p10 se
+    // movía más sólo cuando la ventana le daba más agua— y la constante guarda
+    // esa historia para que no se vuelva a escribir de memoria.
     const c = LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.cocientes;
-    for (const caso of [c.arranque_menos_15, c.largo_68]) {
-      expect(caso.mediana).toBeGreaterThan(1);
+    for (const caso of [c.arranque_menos_15, c.largo_68, c.arranque_mas_15, c.largo_99]) {
       expect(Math.abs(caso.p10 - 1)).toBeGreaterThan(Math.abs(caso.mediana - 1));
     }
-    for (const caso of [c.arranque_mas_15, c.largo_99]) {
-      expect(caso.mediana).toBeLessThan(1);
-      expect(Math.abs(caso.p10 - 1)).toBeLessThan(Math.abs(caso.mediana - 1));
-    }
     expect(LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.no_desplaza_la_distribucion).toBe(true);
+    expect(LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.con_la_eto_era_asimetrico).toBe(true);
   });
 
   it('adelantar el arranque y acortar la temporada suben el índice; atrasarlo y alargarla lo bajan', () => {
@@ -154,6 +155,14 @@ describe('la cadena olvida el arranque', () => {
     expect(d.t2).toBeGreaterThan(d.t3);
     expect(d.t4_en_adelante_maximo).toBeLessThan(LA_CADENA_OLVIDA_EL_ARRANQUE.umbral_por_defecto_pct);
     expect(LA_CADENA_OLVIDA_EL_ARRANQUE.temporadas_en_sidney).toBe(3);
+  });
+
+  it('y dice lo que la convergencia NO cubre, que es el invierno', () => {
+    // La convergencia mide si se olvida el estado inicial, que pasa una vez. La
+    // demanda de fuera de temporada se repite todos los años y no se cancela:
+    // eso lo destapó el cambio de Eo y está medido aparte.
+    expect(LA_CADENA_OLVIDA_EL_ARRANQUE.no_cubre_el_invierno).toMatch(/no se cancela/);
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.el_p10_se_mueve_veces).toBeGreaterThan(3);
   });
 
   it('el tres de Sidney NO es del método: en un clima árido no alcanza', () => {
@@ -177,6 +186,17 @@ describe('la nieve no se acumula', () => {
     expect(en_dias_bajo_cero_mm / total_mm * 100)
       .toBeCloseTo(LA_NIEVE_NO_SE_ACUMULA.fraccion_bajo_cero_pct, 0);
   });
+
+  it('con la Eo del modelo la degradación casi desaparece, y eso está medido', () => {
+    // Diferir la lluvia de los días bajo cero hasta el deshielo mueve el p10 un
+    // 0,8 % con Jensen-Haise y un 11 % con la ETo de FAO-56. La razón es la Eo
+    // de los días helados: 0,12 mm/día contra 0,72.
+    const m = LA_NIEVE_NO_SE_ACUMULA.medido_con_deshielo_diferido;
+    expect(m.con_jensen_haise.p10_pct).toBeLessThan(1);
+    expect(m.con_la_eto_de_fao_56.p10_pct).toBeGreaterThan(10 * m.con_jensen_haise.p10_pct);
+    expect(m.eo_de_los_dias_bajo_cero_mm_dia.eto_fao_56)
+      .toBeGreaterThan(5 * m.eo_de_los_dias_bajo_cero_mm_dia.jensen_haise);
+  });
 });
 
 describe('el promedio sobreestoca', () => {
@@ -189,7 +209,12 @@ describe('el promedio sobreestoca', () => {
   it('el ancho es p90 sobre p10, y la cuenta cierra', () => {
     const m = EL_PROMEDIO_SOBREESTOCA.medido_en_sidney;
     expect(m.indice.p90 / m.indice.p10).toBeCloseTo(m.ancho, 1);
-    expect(m.ancho).toBeGreaterThan(4);
+    // Con la Eo del modelo el ancho es 1,35 y con la ETo era 5,08: el ancho no
+    // mide cuánto se parecen los años, mide cuánto de la distribución quedó
+    // contra el techo.
+    expect(m.el_cuarto_de_arriba_esta_en_el_techo).toBe(true);
+    expect(m.indice.p75).toBe(1);
+    expect(EL_PROMEDIO_SOBREESTOCA.con_la_eto_daba.ancho).toBeGreaterThan(m.ancho);
   });
 
   it('los percentiles están ordenados y ninguno pasa de 1', () => {
@@ -201,7 +226,7 @@ describe('el promedio sobreestoca', () => {
     expect(i.maximo).toBeLessThanOrEqual(1);
   });
 
-  it('el promedio queda por debajo de la mediana, que es por qué da 46,8 y no 50', () => {
+  it('el promedio queda por debajo de la mediana, que es por qué no da 50', () => {
     const m = EL_PROMEDIO_SOBREESTOCA.medido_en_sidney;
     expect(m.indice.promedio).toBeLessThan(m.indice.mediana);
     expect(m.fraccion_bajo_el_promedio_pct).toBeLessThan(50);
@@ -222,10 +247,14 @@ describe('la lluvia anual no predice el año', () => {
     expect(l.r2_contra_lluvia_de_la_temporada).toBeLessThan(0.7);
   });
 
-  it('el agua inicial medida recorre casi todo el perfil, que es lo que se lleva el resto', () => {
+  it('el agua inicial medida recorre buena parte del perfil, que es lo que se lleva el resto', () => {
     const a = LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO.agua_inicial_medida_mm;
-    expect(a.minimo).toBeLessThan(5);
+    expect(a.maximo - a.minimo).toBeGreaterThan(100);
     expect(a.maximo).toBeGreaterThan(140);
+    // Con la ETo de FAO-56 el perfil arrancaba casi vacío en el año más seco, y
+    // con la Eo del modelo arranca con 28 mm: el invierno es la diferencia.
+    expect(LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO.con_la_eto_daba.agua_inicial_mm.minimo)
+      .toBeLessThan(a.minimo);
   });
 });
 
@@ -239,6 +268,22 @@ describe('el año seco lo decide la Eo', () => {
     expect(e.cociente.sobre_1968_1979).toBeGreaterThan(1);
   });
 
+  it('la Eo del modelo cae adentro del envolvente de la Tabla 1 y la ETo no', () => {
+    const e = EL_ANIO_SECO_LO_DECIDE_LA_EO;
+    // La Eo de Jensen-Haise promedia 3,95 mm/día contra 3,87 de la tabla; la ETo
+    // de FAO-56 promedia 4,61, que se va del envolvente publicado.
+    expect(e.eo_del_modelo_mm_dia.media_62_anios / e.eo_de_la_tabla_1_mm_dia.media)
+      .toBeLessThan(1.05);
+    expect(e.eto_era5_mm_dia.media_62_anios).toBeGreaterThan(EO_DIARIA_DE_LA_PRUEBA.maximo_mm);
+    expect(e.eo_del_modelo_mm_dia.media_62_anios).toBeLessThan(EO_DIARIA_DE_LA_PRUEBA.maximo_mm);
+  });
+
+  it('con la Eo del modelo el b publicado reproduce la Tp publicada, y con la ETo no', () => {
+    const t = EL_ANIO_SECO_LO_DECIDE_LA_EO.tp_reproducida_pct;
+    expect(t.con_la_eo_del_modelo).toBeLessThan(5);
+    expect(t.con_la_eto / t.con_la_eo_del_modelo).toBeGreaterThan(9);
+  });
+
   it('NO cancela: el forraje del año seco se mueve más que el Yp solo', () => {
     // Éste es el hallazgo del lote y la razón de ser de la constante. Si alguien
     // vuelve a escribir que el cociente de dos índices cancela el error, falla.
@@ -249,14 +294,86 @@ describe('el año seco lo decide la Eo', () => {
     expect(EL_ANIO_SECO_LO_DECIDE_LA_EO.no_cancela).toBe(true);
   });
 
-  it('el peor año de la amplificación es uno de los años secos del registro', () => {
-    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.los_cinco_peores)
+  it('el peor año de la amplificación es uno de los años secos de la corrida que la midió', () => {
+    // La amplificación se midió con la cadena de la ETo, así que su peor año es de
+    // esa corrida: 2017. Con la Eo del modelo los cinco peores son otros tres.
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.con_la_eto_daba.los_cinco_peores)
       .toContain(EL_ANIO_SECO_LO_DECIDE_LA_EO.con_la_eo_14_pct_alta.el_forraje_del_anio_pct.peor_anio);
+    // Y 1988 queda primero en las dos corridas.
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.con_la_eto_daba.los_cinco_peores[0])
+      .toBe(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.anio);
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.los_cinco_peores[0])
+      .toBe(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.anio);
   });
 
-  it('dice que las dos causas no se pueden separar sin leer Jensen-Haise', () => {
-    expect(EL_ANIO_SECO_LO_DECIDE_LA_EO.no_se_pueden_separar).toMatch(/Jensen-Haise/);
-    expect(EL_ANIO_SECO_LO_DECIDE_LA_EO.la_deuda).toMatch(/Jensen-Haise/);
+  it('las dos causas ya están separadas, y la deuda quedó pagada', () => {
+    const y = EL_ANIO_SECO_LO_DECIDE_LA_EO.ya_se_separaron;
+    expect(y.sesgo_de_era5).toMatch(/chico/);
+    expect(y.superficie_de_referencia).toMatch(/1,015/);
+    expect(y.donde_esta_medido).toMatch(/eoJensenHaise/);
+    expect(EL_ANIO_SECO_LO_DECIDE_LA_EO.la_deuda).toMatch(/Pagada/);
+    // Y nombra la que quedó abierta en su lugar, que es otra.
+    expect(EL_ANIO_SECO_LO_DECIDE_LA_EO.la_deuda).toMatch(/fuera de temporada/);
+  });
+});
+
+describe('la cadena lee alto contra los doce índices publicados', () => {
+  it('el sesgo es positivo y la cadena llega al techo en la mayoría', () => {
+    const c = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
+    expect(c.anios).toBe(12);
+    expect(c.con_la_eo_del_modelo.sesgo).toBeGreaterThan(0);
+    expect(c.con_la_eo_del_modelo.en_el_techo).toBeGreaterThan(c.anios / 2);
+    // Los doce publicados sí tienen cola seca: el mínimo es 0,40.
+    expect(c.publicado.minimo).toBeLessThan(0.5);
+  });
+
+  it('no se presenta como una validación, porque la lluvia no es la misma', () => {
+    const c = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
+    expect(c.no_es_una_validacion).toMatch(/no es una validación|cota de parecido/);
+    expect(Math.abs(c.lluvia_era5_menos_publicada_mm.maximo)).toBeGreaterThan(100);
+  });
+
+  it('las causas que nombra son degradaciones ya declaradas del balance', () => {
+    const c = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
+    expect(c.por_que_lee_alto).toMatch(/actividad radicular/);
+    expect(c.por_que_lee_alto).toMatch(/escurrimiento nulo/);
+    expect(ADVERTENCIAS.sin_actividad_radicular).toMatch(/ALTO/);
+    expect(ADVERTENCIAS.escorrentia_nula).toMatch(/ALTO/);
+  });
+});
+
+describe('el invierno decide la cola seca', () => {
+  it('los tres tratamientos dan distribuciones distintas y errores iguales', () => {
+    const t = EL_INVIERNO_DECIDE_LA_COLA_SECA.tratamientos;
+    const eams = [t.jensen_haise_todo_el_anio.eam, t.jensen_haise_en_temporada.eam, t.eto_todo_el_anio.eam];
+    // Indistinguibles por el error: menos de dos centésimas entre el mejor y el peor.
+    expect(Math.max(...eams) - Math.min(...eams)).toBeLessThan(0.02);
+    // Y muy distintos en la cola seca.
+    expect(t.jensen_haise_todo_el_anio.p10 / t.eto_todo_el_anio.p10)
+      .toBeCloseTo(EL_INVIERNO_DECIDE_LA_COLA_SECA.el_p10_se_mueve_veces, 0);
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.no_se_puede_elegir_por_el_error).toBe(true);
+  });
+
+  it('el trabajo nunca corrió un invierno, y eso está dicho', () => {
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.el_trabajo_no_corrio_inviernos).toMatch(/sonda de neutrones/);
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.por_que_jensen_haise_igual).toMatch(/una sola regla/);
+    // Y la razón NO puede ser que se parezca más a los doce: ése sería ajustar
+    // contra el resultado, y encima el que más se les parece es otro.
+    expect(EL_INVIERNO_DECIDE_LA_COLA_SECA.por_que_jensen_haise_igual).toMatch(/ajustar contra el/);
+    const t = EL_INVIERNO_DECIDE_LA_COLA_SECA.tratamientos;
+    expect(t.jensen_haise_en_temporada.eam).toBeLessThan(t.jensen_haise_todo_el_anio.eam);
+  });
+
+  it('las columnas publicadas dicen que el perfil se descargaba en la temporada', () => {
+    const p = EL_INVIERNO_DECIDE_LA_COLA_SECA.lo_que_perdio_el_perfil_mm;
+    expect(p.minimo).toBeLessThan(-50);
+    expect(p.temporadas_que_se_descargaron).toBeGreaterThan(8);
+  });
+
+  it('el aviso del invierno sale con la cadena y dice la dirección', () => {
+    expect(AVISO_DEL_INVIERNO.sesgo).toBe('alto');
+    expect(AVISO_DEL_INVIERNO.aviso).toMatch(/3,8/);
+    expect(AVISO_DEL_INVIERNO.aviso).toMatch(/no es una cifra/);
   });
 });
 
@@ -266,7 +383,7 @@ describe('el año más seco es el que fue', () => {
     expect(e.puesto).toBe(1);
     expect(e.los_cinco_peores[0]).toBe(e.anio);
     expect(e.de).toBe(EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.anios);
-    expect(e.indice).toBeCloseTo(EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.indice.minimo, 3);
+    expect(e.indice).toBeCloseTo(EL_PROMEDIO_SOBREESTOCA.medido_en_sidney.indice.minimo, 2);
   });
 
   it('ERA5 y la estación del sitio dicen lo mismo dentro de diez puntos', () => {
@@ -278,10 +395,13 @@ describe('el año más seco es el que fue', () => {
     expect(Math.abs(e.era5_en_la_ventana.fraccion_pct - estacion.fraccion_pct)).toBeLessThan(10);
   });
 
-  it('el perfil llegó casi vacío a esa temporada, que es lo que explica un índice de 0,05', () => {
+  it('el perfil llegó a esa temporada con un cuarto del agua del año promedio', () => {
     const a = EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.agua_inicial_del_perfil_mm;
-    expect(a.ese_anio).toBeLessThan(a.promedio / 10);
+    expect(a.ese_anio).toBeLessThan(a.promedio / 3);
     expect(a.tope).toBe(150);
+    // Con la ETo de FAO-56 llegaba casi vacío, con 1,3 mm: la diferencia entre
+    // las dos corridas es cuánta agua le saca el invierno al perfil.
+    expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.con_la_eto_daba.agua_inicial_mm).toBeLessThan(a.ese_anio);
   });
 
   it('no se presenta como validación: es un chequeo de una sola dirección', () => {

@@ -20,10 +20,13 @@ import {
   EL_PICO_NO_ES_LA_PRODUCCION_ANUAL,
   ETO_NO_ES_EO, EL_AGUA_INICIAL_NO_SE_OLVIDA, LA_SERIE_DEKADAL_NO_ALCANZA,
   kgHaDeAro, kgHaDeVariosAros, evaluarCorte, sesgoNeto,
-  aguaUtilEnTresCapas, capasDe90, ventanaDeBalance, sembrarPerfil,
+  aguaUtilEnTresCapas, capasDe90, ventanaDeBalance, eoDelDia, sembrarPerfil,
   ypDelCorte, forrajeDelAnio,
   type CorteDeclarado, type DiaDeSerie,
 } from '@/lib/forrajeCorte';
+import {
+  coeficientesEo, eoJensenHaiseMm, AVISO_EO_JENSEN_HAISE,
+} from '@/lib/eoJensenHaise';
 import { correrBalanceForraje, type DiaDeBalance } from '@/lib/forrajeBalance';
 import { FORRAJE_MEDIDO } from '@/lib/forrajeMedido';
 
@@ -484,6 +487,71 @@ describe('la ventana de la serie diaria', () => {
   it('una ventana dada vuelta o vacía devuelve null', () => {
     expect(ventanaDeBalance(serie, '2026-04-07', '2026-04-03')).toBeNull();
     expect(ventanaDeBalance(serie, '2026-05-01', '2026-05-10')).toBeNull();
+  });
+});
+
+describe('la Eo de la ventana: el método del trabajo si se puede, la ETo si no', () => {
+  const COEF = coeficientesEo({
+    elevacion_m: 589, tmax_normal_c: 28.7, tmin_normal_c: 16.3, anios_de_las_normales: 30,
+  })!;
+  const dia = (n: number): DiaDeSerie => ({
+    fecha: `2026-04-${String(n).padStart(2, '0')}`,
+    precip_mm: 2, et0_mm: 5, rs_mj_m2: 22, t_max_c: 20, t_min_c: 6,
+  });
+  const serie = Array.from({ length: 10 }, (_, i) => dia(i + 1));
+
+  it('con coeficientes usa Jensen-Haise, y el número no es el de la ETo', () => {
+    const v = ventanaDeBalance(serie, '2026-04-01', '2026-04-10', COEF)!;
+    const esperado = eoJensenHaiseMm(13, 22, COEF) as number;
+    expect(v.dias[0]!.eo_mm).toBeCloseTo(esperado, 6);
+    expect(v.dias[0]!.eo_mm).not.toBeCloseTo(5, 2);
+  });
+
+  it('sin coeficientes usa la ETo de la serie, como antes', () => {
+    const v = ventanaDeBalance(serie, '2026-04-01', '2026-04-10')!;
+    expect(v.dias[0]!.eo_mm).toBe(5);
+  });
+
+  it('el aviso cambia con el método, y el sesgo del Yp también', () => {
+    const conEo = ventanaDeBalance(serie, '2026-04-01', '2026-04-10', COEF)!;
+    expect(conEo.avisos[0]!.aviso).toMatch(/Jensen-Haise/);
+    expect(conEo.avisos[0]!.sesgo).toBe(AVISO_EO_JENSEN_HAISE.sesgo_del_yp);
+    const conEto = ventanaDeBalance(serie, '2026-04-01', '2026-04-10')!;
+    expect(conEto.avisos[0]!.aviso).toMatch(/FAO-56/);
+  });
+
+  it('con coeficientes, un día sin radiación rechaza la ventana en vez de mezclar', () => {
+    // Mezclar las dos Eo adentro de una ventana sería peor que no tener el día:
+    // la escala cambia un 16 % entre una y otra.
+    const conHueco = serie.map((d, i) => (i === 4 ? { ...d, rs_mj_m2: null } : d));
+    expect(ventanaDeBalance(conHueco, '2026-04-01', '2026-04-10', COEF)).toBeNull();
+    // Y sin coeficientes ese mismo día no molesta, porque la ETo está.
+    expect(ventanaDeBalance(conHueco, '2026-04-01', '2026-04-10')).not.toBeNull();
+  });
+
+  it('lo mismo si falta una temperatura', () => {
+    for (const campo of ['t_max_c', 't_min_c'] as const) {
+      const roto = serie.map((d, i) => (i === 2 ? { ...d, [campo]: null } : d));
+      expect(ventanaDeBalance(roto, '2026-04-01', '2026-04-10', COEF)).toBeNull();
+    }
+  });
+
+  it('eoDelDia es la que decide, y devuelve la ETo cuando no hay coeficientes', () => {
+    const d = dia(1);
+    expect(eoDelDia(d)).toBe(5);
+    expect(eoDelDia(d, null)).toBe(5);
+    expect(eoDelDia(d, COEF)).toBeCloseTo(eoJensenHaiseMm(13, 22, COEF) as number, 6);
+    expect(eoDelDia({ ...d, rs_mj_m2: null }, COEF)).toBeNull();
+    // Sin coeficientes y sin ETo, null: no hay con qué.
+    expect(eoDelDia({ ...d, et0_mm: null })).toBeNull();
+  });
+
+  it('la ETo quedó como respaldo declarado, con su costo medido', () => {
+    expect(ETO_NO_ES_EO.es_el_respaldo).toBe(true);
+    expect(ETO_NO_ES_EO.factor_aplicado).toBeNull();
+    expect(ETO_NO_ES_EO.tp_reproducida_pct.con_la_eto)
+      .toBeGreaterThan(9 * ETO_NO_ES_EO.tp_reproducida_pct.con_la_eo_del_modelo);
+    expect(ETO_NO_ES_EO.por_que_no).toMatch(/el que viaja es el método/);
   });
 });
 
