@@ -44,6 +44,7 @@ import {
   type IndiceDeUnAnio,
 } from '@/lib/forrajeAnios';
 import { ADVERTENCIAS, EO_DIARIA_DE_LA_PRUEBA } from '@/lib/forrajeBalance';
+import { AVISO_ESCURRIMIENTO, cnDePastizal } from '@/lib/escurrimientoForraje';
 import { type DiaDeSerie } from '@/lib/forrajeCorte';
 
 // ─── La serie sintética con la que se vuelve a medir ─────────────────────────
@@ -887,10 +888,10 @@ describe('la distribución', () => {
 
 describe('el forraje de cada año', () => {
   const anios: IndiceDeUnAnio[] = [
-    { anio: 1990, desde: '1990-04-15', hasta: '1990-07-07', indice: 0.5, tp_mm: 100, t_mm: 50, pptn_mm: 90, sws_inicial_mm: 80, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: true },
-    { anio: 1991, desde: '1991-04-15', hasta: '1991-07-07', indice: 0.25, tp_mm: 100, t_mm: 25, pptn_mm: 60, sws_inicial_mm: 40, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
-    { anio: 1992, desde: '1992-04-15', hasta: '1992-07-07', indice: 1, tp_mm: 100, t_mm: 100, pptn_mm: 200, sws_inicial_mm: 150, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
-    { anio: 1993, desde: '1993-04-15', hasta: '1993-07-07', indice: null, tp_mm: 0, t_mm: 0, pptn_mm: 10, sws_inicial_mm: 10, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
+    { anio: 1990, desde: '1990-04-15', hasta: '1990-07-07', indice: 0.5, tp_mm: 100, t_mm: 50, pptn_mm: 90, escurrimiento_mm: 0, sws_inicial_mm: 80, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: true },
+    { anio: 1991, desde: '1991-04-15', hasta: '1991-07-07', indice: 0.25, tp_mm: 100, t_mm: 25, pptn_mm: 60, escurrimiento_mm: 0, sws_inicial_mm: 40, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
+    { anio: 1992, desde: '1992-04-15', hasta: '1992-07-07', indice: 1, tp_mm: 100, t_mm: 100, pptn_mm: 200, escurrimiento_mm: 0, sws_inicial_mm: 150, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
+    { anio: 1993, desde: '1993-04-15', hasta: '1993-07-07', indice: null, tp_mm: 0, t_mm: 0, pptn_mm: 10, escurrimiento_mm: 0, sws_inicial_mm: 10, dias: 84, diferencia_de_arranque_pct: 0, el_arranque_todavia_pesa: false },
   ];
 
   it('es la ecuación 1 año por año, y deja afuera los que no sirven', () => {
@@ -1000,5 +1001,56 @@ describe('la cadena y el factor de actividad radicular', () => {
     expect(k.maximo).toBeGreaterThan(10 * Math.abs(k.yp));
     expect(k.maximo).toBeGreaterThan(k.p90);
     expect(k.p90).toBeGreaterThan(k.mediana_del_anio);
+  });
+});
+
+describe('la cadena y el escurrimiento', () => {
+  const CN = cnDePastizal('C')!;
+
+  it('sin CN no escurre, lo informa y la advertencia es la del trabajo original', () => {
+    const r = cadena();
+    expect(r.escurrimiento).toBe(false);
+    expect(r.anios.every(a => a.escurrimiento_mm === 0)).toBe(true);
+    expect(r.advertencias).toContain(ADVERTENCIAS.escorrentia_nula);
+    expect(r.avisos.some(a => a.aviso === AVISO_ESCURRIMIENTO.aviso)).toBe(false);
+  });
+
+  it('con CN escurre, lo informa, y el aviso sale con la dirección del índice', () => {
+    const r = indicesPorAnio({
+      serie: SERIE, ventanas: VENTANAS, aw_por_capa_mm: AW, opciones: { cn_arc_ii: CN },
+    })!;
+    expect(r.escurrimiento).toBe(true);
+    expect(r.anios.some(a => a.escurrimiento_mm > 0)).toBe(true);
+    expect(r.advertencias).toContain(ADVERTENCIAS.escorrentia_por_curva_numero);
+    const aviso = r.avisos.find(a => a.aviso === AVISO_ESCURRIMIENTO.aviso);
+    expect(aviso).toBeDefined();
+    expect(aviso!.sesgo).toBe(AVISO_ESCURRIMIENTO.sesgo_del_indice);
+    expect(aviso!.sesgo).toBe('bajo');
+  });
+
+  it('el escurrimiento de una temporada nunca pasa la lluvia de esa temporada', () => {
+    const r = indicesPorAnio({
+      serie: SERIE, ventanas: VENTANAS, aw_por_capa_mm: AW, opciones: { cn_arc_ii: 94 },
+    })!;
+    for (const a of r.anios) expect(a.escurrimiento_mm).toBeLessThanOrEqual(a.pptn_mm + 1e-9);
+  });
+
+  it('en promedio baja el índice, y la cola seca es la que menos se mueve', () => {
+    const sin = cadena();
+    const con = indicesPorAnio({
+      serie: SERIE, ventanas: VENTANAS, aw_por_capa_mm: AW, opciones: { cn_arc_ii: CN },
+    })!;
+    const pares = sin.anios
+      .map((a, i) => [a.indice, con.anios[i]!.indice] as const)
+      .filter((p): p is readonly [number, number] => p[0] !== null && p[1] !== null);
+    const media = (xs: number[]) => xs.reduce((x, y) => x + y, 0) / xs.length;
+    expect(media(pares.map(p => p[1]))).toBeLessThan(media(pares.map(p => p[0])));
+    // Las temporadas que arrancan con menos agua escurren menos: la retención
+    // de la ecuación 11 es máxima con el perfil vacío.
+    const ordenadas = [...con.anios].sort((a, b) => a.sws_inicial_mm - b.sws_inicial_mm);
+    const secas = ordenadas.slice(0, 5);
+    const humedas = ordenadas.slice(-5);
+    expect(media(secas.map(a => a.escurrimiento_mm)))
+      .toBeLessThan(media(humedas.map(a => a.escurrimiento_mm)));
   });
 });

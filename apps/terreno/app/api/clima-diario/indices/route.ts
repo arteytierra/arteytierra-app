@@ -29,6 +29,11 @@
  *
  * ## Lo que hay que saber antes de usar el número
  *
+ * El escurrimiento es cero salvo que se pase `cn` —el número de curva del predio
+ * en condición de humedad antecedente media—, y entonces el índice sale **bajo**
+ * en vez de alto, porque el método escurre de más: ver `escurrimientoForraje.ts`.
+ * El corte del que sale el `Yp` tiene que correr con el mismo `cn`.
+ *
  * La ventana de temporada es la misma para todos los años —el pastizal no rebrota
  * el mismo día siempre, y moverla quince días mueve el índice del año seco hasta
  * un 24 %—, la cadena no acumula nieve, y la distribución es la de lo que pasó y
@@ -109,6 +114,19 @@ export async function GET(req: Request) {
   const c = numeroOpcional('c');
   const b = numeroOpcional('b');
   const aguaBajo = numeroOpcional('agua_bajo_el_limite');
+  /**
+   * El número de curva del predio en condición de humedad antecedente media.
+   *
+   * Sin él la cadena corre con escurrimiento nulo, que es el supuesto del trabajo
+   * original. Con él resta el escurrimiento de cada día y el índice sale bajo.
+   * Fuera de (0, 100) no deja retención definida y el balance lo advierte, así que
+   * se rechaza acá, donde se puede explicar.
+   */
+  const cn = numeroOpcional('cn');
+  if (cn !== undefined && (cn <= 0 || cn >= 100)) {
+    return error('cn tiene que estar entre 0 y 100 sin incluirlos: en 0 la retención es '
+      + 'infinita y en 100 escurre toda la lluvia.', 400);
+  }
 
   // Mismo redondeo que las rutas hermanas: ~1 km, estable para la clave de caché.
   const latR = parseFloat(lat).toFixed(2);
@@ -119,8 +137,8 @@ export async function GET(req: Request) {
 
   // Todo lo que cambia el resultado entra en la clave. Si falta un parámetro acá,
   // dos corridas distintas se sirven la misma respuesta.
-  const dbKey = `clima-indices-v4:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
-    + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''}`;
+  const dbKey = `clima-indices-v5:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
+    + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''},${cn ?? ''}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
 
@@ -238,6 +256,7 @@ export async function GET(req: Request) {
       ...(kc !== undefined ? { kc } : {}),
       ...(c !== undefined ? { c } : {}),
       ...(b !== undefined ? { b_constante: b } : {}),
+      ...(cn !== undefined ? { cn_arc_ii: cn } : {}),
     },
   });
   if (r === null) {
@@ -271,6 +290,14 @@ export async function GET(req: Request) {
      * una cosa y la otra.
      */
     agua_inicial_medida: r.agua_inicial_medida,
+    /**
+     * Si la cadena le restó a cada día el escurrimiento de la curva número. El
+     * corte del que sale el `Yp` tiene que haber corrido igual, y con más razón
+     * que el resto: es la única degradación que mueve el índice para abajo, así
+     * que una ruta con escurrimiento y la otra sin él se multiplican mal en los
+     * dos sentidos.
+     */
+    escurrimiento: r.escurrimiento,
     /** La clase de textura de H-TESSEL que se identificó para el píxel. */
     textura_del_pixel: humedad === null ? null : {
       clase: humedad.textura.textura.clase,
@@ -292,6 +319,13 @@ export async function GET(req: Request) {
           : ' No llegó la humedad del suelo, así que el agua con la que arranca cada temporada '
             + 'sale de correr el balance fuera de temporada, que en Sidney entrega unos 40 mm de '
             + 'mas sobre 150 y deja el indice alto.')
+        + (r.escurrimiento
+          ? ' El escurrimiento de cada dia salio de la curva numero con la retencion ligada al '
+            + 'agua del perfil, como en ERHYM-II. El metodo escurre de mas -dos a tres veces en '
+            + 'pastizal semiarido-, asi que el indice es una cota inferior: ver '
+            + 'lib/escurrimientoForraje.ts.'
+          : ' El escurrimiento se asumio nulo, como en el trabajo original, asi que toda la '
+            + 'lluvia entro al perfil y el indice sale alto.')
       : 'Open-Meteo / ERA5 (reanálisis, ~10 km). No se pudieron calcular los coeficientes de la '
         + 'Eo de Jensen-Haise, así que el balance usó la ETo de referencia de FAO-56: ver '
         + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',

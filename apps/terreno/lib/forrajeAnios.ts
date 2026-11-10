@@ -122,6 +122,7 @@ import {
   AVISO_ACTIVIDAD_RADICULAR,
 } from './actividadRadicular';
 import { avisoDelAguaInicial } from './aguaDelPerfil';
+import { avisoDelEscurrimiento } from './escurrimientoForraje';
 
 // ─── El sitio donde se midió todo lo de este archivo ─────────────────────────
 
@@ -688,8 +689,12 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
     'Las degradaciones declaradas del balance empujaban todas para el mismo lado, y en dos lotes '
     + 'del 09/11/2026 se pagaron las dos que tenían fuente: el factor de actividad radicular, que '
     + 'se llevó la sexta parte del sesgo y seis de las diez temporadas que estaban en el techo, y '
-    + 'el agua inicial medida, que se llevó la mitad de lo que quedaba. Quedan el escurrimiento '
-    + 'nulo, el agua bajo el límite inferior y la lluvia de ERA5, que difiere hasta 103 mm de la '
+    + 'el agua inicial medida, que se llevó la mitad de lo que quedaba. El 10/11/2026 se pagó la '
+    + 'tercera, el escurrimiento, que ahora sale de la curva número con la retención ligada al '
+    + 'agua del perfil cuando el predio declara un CN; sin CN sigue corriendo con escurrimiento '
+    + 'nulo. Y es la primera que empuja para el otro lado, así que no se suma a las anteriores: '
+    + 'en Sidney, que es plano y arenoso, no mueve nada con el grupo hidrológico que le toca. '
+    + 'Quedan el agua bajo el límite inferior y la lluvia de ERA5, que difiere hasta 103 mm de la '
     + 'medida con pluviómetro.',
   /**
    * Dónde quedaba el resto cuando el invierno lo simulaba la cadena: **las tres
@@ -703,6 +708,26 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
    */
   el_resto_esta_en_los_anios_secos: [1977, 1971, 1968],
   con_el_agua_medida_queda: [1971],
+  /**
+   * Y con el escurrimiento de la curva número encima, que es lo último que se
+   * montó. Mueve poco **y en Sidney no mueve nada con el grupo hidrológico que el
+   * sitio tiene de verdad**, que es el A: hay que llegar al D para que el sesgo
+   * baje de +0,070 a +0,059. La tabla entera, con la fracción de lluvia que
+   * escurre y lo que mueve en los kilos, está en
+   * `EN_SIDNEY_NO_TOCA_LA_COLA_SECA` de `escurrimientoForraje.ts`.
+   *
+   * Ojo con comparar estos números con los de `con_el_agua_medida`: la corrida
+   * del 10/11/2026 da +0,070 donde el acta anotó +0,061, y la diferencia no se
+   * pudo cerrar —la serie de humedad de suelo que Open-Meteo entrega cambió—.
+   * Los de acá son todos de la misma corrida, así que entre ellos se comparan.
+   */
+  con_el_escurrimiento: {
+    grupo_de_sidney: 'A',
+    sin_escurrir: { eam: 0.072, sesgo: 0.070 },
+    grupo_a: { eam: 0.072, sesgo: 0.070 },
+    grupo_d: { eam: 0.067, sesgo: 0.059 },
+    el_p10_no_se_mueve: true,
+  },
   que_aguanta: 'el orden de los años y la mediana; no el valor de la cola seca',
 } as const;
 
@@ -1190,6 +1215,12 @@ export interface IndiceDeUnAnio {
   t_mm: number;
   /** Lo que llovió en la ventana, en mm. */
   pptn_mm: number;
+  /**
+   * Lo que escurrió en la ventana antes de entrar al perfil, en mm. **Cero**
+   * cuando no se declaró un `cn_arc_ii`, que es el supuesto del trabajo
+   * original. Ver `escurrimientoForraje.ts`.
+   */
+  escurrimiento_mm: number;
   /** El agua que la cadena dejó en el perfil el día antes del rebrote, en mm. */
   sws_inicial_mm: number;
   dias: number;
@@ -1238,7 +1269,14 @@ export interface EntradasIndicesPorAnio {
   umbral_de_convergencia_pct?: number;
   /** Cuánta agua puede sacar la evaporación por debajo del límite, capa 1, en mm. */
   agua_bajo_el_limite_mm?: number;
-  /** El resto de las opciones del balance: `kc`, `c`, `b_constante`, el umbral. */
+  /**
+   * El resto de las opciones del balance: `kc`, `c`, `b_constante`, el umbral y
+   * el `cn_arc_ii` del escurrimiento.
+   *
+   * `cn_arc_ii` tiene que ser **el mismo** que usó el corte del que salió el
+   * `Yp`: con escurrimiento el índice baja y el `Yp` sube, así que una ruta con
+   * escurrimiento y la otra sin él no se cancelan.
+   */
   opciones?: Omit<EntradasBalanceForraje, 'dias' | 'capas'>;
 }
 
@@ -1264,6 +1302,13 @@ export interface IndicesPorAnio {
    * comparables, y en la mediana de Sidney difieren 0,10.
    */
   agua_inicial_medida: boolean;
+  /**
+   * Si la corrida le restó a cada día el escurrimiento de la curva número. Se
+   * compara igual que lo demás, y con más razón: es la única degradación del
+   * balance que mueve el índice **para abajo**, así que una ruta con
+   * escurrimiento y la otra sin él se multiplican mal en los dos sentidos.
+   */
+  escurrimiento: boolean;
   advertencias: string[];
   avisos: AvisoDeCorte[];
 }
@@ -1409,6 +1454,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
         tp_mm: r.tp_mm,
         t_mm: r.t_mm,
         pptn_mm: r.pptn_mm,
+        escurrimiento_mm: r.escurrimiento_mm,
         sws_inicial_mm: r.almacenaje_inicial_mm,
         dias: i1 - i0 + 1,
         // Con el arranque medido no hay dos puntas que comparar: la diferencia
@@ -1436,14 +1482,16 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
       let tp = 0;
       let t = 0;
       let pptn = 0;
+      let esc = 0;
       for (let i = i0; i <= i1; i++) {
         const dc = res.serie[i];
         if (dc === undefined) continue;
         tp += dc.tp_mm;
         t += dc.t_mm;
         pptn += dc.pptn_mm;
+        esc += dc.escurrimiento_mm;
       }
-      return { tp, t, pptn, indice: tp > 0 ? t / tp : null };
+      return { tp, t, pptn, esc, indice: tp > 0 ? t / tp : null };
     };
 
     anios = dentro.map(({ v, i0, i1 }) => {
@@ -1467,6 +1515,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
         tp_mm: a.tp,
         t_mm: a.t,
         pptn_mm: a.pptn,
+        escurrimiento_mm: a.esc,
         sws_inicial_mm: sws,
         dias: i1 - i0 + 1,
         diferencia_de_arranque_pct: dif,
@@ -1541,6 +1590,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     { ...AVISO_DE_LA_VENTANA },
     ...(!sembrada && e.coeficientes_eo ? [{ ...AVISO_DEL_INVIERNO }] : []),
     ...(sembrada ? [avisoDelAguaInicial('indice')] : []),
+    ...(e.opciones?.cn_arc_ii !== undefined ? [avisoDelEscurrimiento('indice')] : []),
     ...(conActividad
       ? [{
         aviso: AVISO_ACTIVIDAD_RADICULAR.aviso,
@@ -1556,6 +1606,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     anios_sin_serie,
     actividad_radicular: conActividad,
     agua_inicial_medida: sembrada,
+    escurrimiento: e.opciones?.cn_arc_ii !== undefined,
     advertencias,
     avisos,
   };

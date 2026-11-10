@@ -45,6 +45,7 @@ import {
   type QueHabia, type DiaDeSerie, type YpDelCorte,
 } from '@/lib/forrajeCorte';
 import { aguaInicialPorCapaMm } from '@/lib/aguaDelPerfil';
+import { cnDePastizal } from '@/lib/escurrimientoForraje';
 import type { Insumos } from '@/lib/forrajeMedido';
 import type { DatosSuelo } from '@/lib/suelos';
 
@@ -124,6 +125,13 @@ interface RespuestaDeAnios {
    * cosa y la otra, y el forraje del año seco hasta un 39 %.
    */
   agua_inicial_medida: boolean;
+  /**
+   * Si la cadena le restó a cada día el escurrimiento de la curva número. Se
+   * compara contra lo que corrió el corte: es la única de las cuatro
+   * degradaciones que mueve el índice para abajo, así que mezclarlas se paga en
+   * los dos sentidos.
+   */
+  escurrimiento: boolean;
 }
 
 interface Props {
@@ -195,6 +203,20 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     [datosSuelo],
   );
 
+  /**
+   * El número de curva del predio, que es lo que hace que el balance deje de
+   * asumir escurrimiento nulo.
+   *
+   * Sale del grupo hidrológico del suelo con la cobertura **pastizal en condición
+   * regular**, que es la misma decisión neutra que toma el motor hidrológico del
+   * predio: es un predio y un CN. Se le pasa a las dos rutas, y después se compara
+   * que las dos lo hayan usado. Ver `escurrimientoForraje.ts`.
+   */
+  const cnDelPredio = useMemo(
+    () => (datosSuelo ? cnDePastizal(datosSuelo.grupo_hidro.grupo) : null),
+    [datosSuelo],
+  );
+
   const fechasListas = desde !== '' && hasta !== '' && desde < hasta;
 
   async function calcular() {
@@ -258,6 +280,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
           ? { agua_inicial_por_capa_mm: aguaInicial }
           : previos !== null ? { dias_previos: previos.dias } : {}),
         avisos_previos: temporada.avisos,
+        ...(cnDelPredio !== null ? { opciones: { cn_arc_ii: cnDelPredio } } : {}),
       });
       setRes({
         ...salida,
@@ -288,7 +311,8 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       const arranque = desde.slice(5);
       const dias = Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / 86_400_000) + 1;
       const url = `/api/clima-diario/indices?lat=${datosSuelo.lat}&lng=${datosSuelo.lng}`
-        + `&arranque=${arranque}&dias=${dias}&aw=${agua.map(x => x.toFixed(1)).join(',')}`;
+        + `&arranque=${arranque}&dias=${dias}&aw=${agua.map(x => x.toFixed(1)).join(',')}`
+        + (cnDelPredio !== null ? `&cn=${cnDelPredio}` : '');
       const r = await fetch(url);
       const j = await r.json() as RespuestaDeAnios & { error?: string };
       if (!r.ok || !j.anios) {
@@ -360,6 +384,20 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     return anios.agua_inicial_medida === aguaDelCorte;
   }, [anios, aguaDelCorte]);
 
+  /**
+   * Y el cuarto: que las dos corridas hayan escurrido igual.
+   *
+   * Es el que se paga en los dos sentidos. El escurrimiento baja el índice, y el
+   * `Yp` se despeja **dividiendo** por el índice del año del corte: si el corte
+   * escurrió y la serie no, el `Yp` viene inflado y se reparte sobre índices sin
+   * escurrir, así que todos los años salen con más pasto del que corresponde. Al
+   * revés, con menos.
+   */
+  const mismoEscurrimiento = useMemo(() => {
+    if (anios === null) return true;
+    return anios.escurrimiento === (cnDelPredio !== null);
+  }, [anios, cnDelPredio]);
+
   const ypParaRepartir = useMemo(() => {
     if (anios === null || banda === null) return null;
     const anioDelCorte = Number(desde.slice(0, 4));
@@ -371,10 +409,11 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   }, [anios, banda, desde, rendimiento]);
 
   const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
-    () => (anios !== null && ypParaRepartir !== null && mismaEo && mismoFactor && mismaAgua
+    () => (anios !== null && ypParaRepartir !== null
+      && mismaEo && mismoFactor && mismaAgua && mismoEscurrimiento
       ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
       : null),
-    [anios, ypParaRepartir, mismaEo, mismoFactor, mismaAgua],
+    [anios, ypParaRepartir, mismaEo, mismoFactor, mismaAgua, mismoEscurrimiento],
   );
 
   return (
@@ -624,6 +663,14 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                       Una de las dos corridas arrancó la temporada con el agua del perfil medida y
                       la otra con la que deja el balance de invierno, y entre las dos los kilos del
                       año seco cambian hasta un 39 %. Volvé a pedir las dos cosas en un rato.
+                    </p>
+                  ) : !mismoEscurrimiento ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      Una de las dos corridas le restó el escurrimiento a la lluvia de cada día
+                      y la otra no. El escurrimiento baja el índice y sube el Yp que se despeja
+                      dividiendo por él, así que mezclarlos se paga dos veces. Volvé a pedir las
+                      dos cosas en un rato.
                     </p>
                   ) : anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
                     <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">

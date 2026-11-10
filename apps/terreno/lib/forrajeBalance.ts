@@ -49,16 +49,33 @@
  * Calibrado en **pradera mixta del norte de las Grandes Planicies**: Sidney,
  * Montana —sitio arenoso de planicie glaciada— y Mandan, North Dakota.
  * Estación de crecimiento del 15 de abril al pico de materia en pie, de 68 a 99
- * días en los doce años de la prueba. **Escurrimiento asumido nulo** («In this
- * study, we assumed there was no runoff»). Perfil de 90 cm en tres capas de 30,
- * que el artículo dice que se pueden repartir por horizonte o por raíces cuando
- * hay dato.
+ * días en los doce años de la prueba. El artículo asume **escurrimiento nulo**
+ * («In this study, we assumed there was no runoff»), que es lo que este balance
+ * hace también mientras no se le declare un `cn_arc_ii`: ver abajo. Perfil de
+ * 90 cm en tres capas de 30, que el artículo dice que se pueden repartir por
+ * horizonte o por raíces cuando hay dato.
  *
  * Afuera de eso el modelo corre igual, y por eso cada supuesto que no se pudo
- * traer sale como una advertencia en el resultado. **Todas las degradaciones de
- * este archivo empujan el índice para arriba**, o sea hacia la respuesta
- * optimista, que para dimensionar una carga animal es la cara. Están nombradas
- * una por una en `ADVERTENCIAS`.
+ * traer sale como una advertencia en el resultado. Están nombradas una por una
+ * en `ADVERTENCIAS`.
+ *
+ * **Y una de ellas puede empujar para el otro lado**, así que no alcanza con
+ * leer la lista: hasta el 10/11/2026 todas las degradaciones de este archivo
+ * empujaban el índice **para arriba**, o sea hacia la respuesta optimista, que
+ * para dimensionar una carga animal es la cara. El escurrimiento no: cuando
+ * corre, el índice sale **bajo**, porque el método escurre de más. Cada
+ * advertencia dice su dirección con la palabra en mayúsculas.
+ *
+ * ## El escurrimiento, que es opcional y por qué
+ *
+ * Si se declara `cn_arc_ii` —el número de curva del predio en condición de
+ * humedad antecedente media—, cada día se le resta a la lluvia el escurrimiento
+ * de la curva número con la retención ligada al agua que el perfil tiene ese
+ * día. No es una idea nuestra: es lo que hizo el propio Wight en `ERHYM-II`
+ * (USDA-ARS ARS-59, 1987), que es este mismo balance convertido en modelo de
+ * pastizal. Las ecuaciones, las fuentes y la cota medida del error están en
+ * `escurrimientoForraje.ts`. Sin `cn_arc_ii` el escurrimiento es cero, como en
+ * el trabajo original, y el resultado lo advierte.
  *
  * ## El caso resuelto
  *
@@ -91,6 +108,12 @@
  * `_research/WIGHT_HANKS_1981.md`: primero esta fracción, después `Yp`, y
  * recién entonces la escalera.
  */
+import {
+  escurrimientoDelDiaMm,
+  retencionDelDiaMm,
+  retencionMaximaMm,
+  cnSeco,
+} from './escurrimientoForraje';
 
 /**
  * El `b` medio de la temporada en pradera mixta, derivado de la Tabla 1.
@@ -156,6 +179,14 @@ export const ADVERTENCIAS = {
   escorrentia_nula:
     'El modelo asume escurrimiento nulo, como la prueba original. En pendiente, con suelo '
     + 'sellado o con lluvias intensas parte de esa lluvia no entra al perfil: el índice sale ALTO.',
+  escorrentia_por_curva_numero:
+    'El escurrimiento salió de la curva número con la retención ligada al agua del perfil, '
+    + 'como en ERHYM-II. El manual de la NRCS dice que ese no es el uso previsto del método y '
+    + 'la única evaluación independiente midió que escurre dos a tres veces de más en pastizal '
+    + 'semiárido, así que esta vez el índice sale BAJO. Ver escurrimientoForraje.ts.',
+  cn_sin_retencion:
+    'El CN declarado no deja una retención definida —en 0 es infinita y en 100 es cero—, así '
+    + 'que el escurrimiento quedó en cero y el índice sale ALTO.',
   temporada_fuera_de_rango:
     'La temporada queda fuera de los 68 a 99 días de la validación.',
   sws_inicial_recortado:
@@ -255,6 +286,21 @@ export interface EntradasBalanceForraje {
    * por última vez» y la que más evaporación produce.
    */
   umbral_mojado_mm?: number;
+  /**
+   * El número de curva del predio en condición de humedad antecedente **media**
+   * (ARC II), que es lo que publican las tablas de cobertura y lo que tiene
+   * `COBERTURAS` en `cuenca.ts`.
+   *
+   * Si viene, el balance resta el escurrimiento de cada día por las ecuaciones de
+   * `escurrimientoForraje.ts`. Si no viene, el escurrimiento es **cero**, como en
+   * el trabajo original, y el resultado lo advierte.
+   *
+   * **Las dos rutas que después se multiplican tienen que correr con el mismo
+   * valor.** El `Yp` se despeja dividiendo por el índice, así que con
+   * escurrimiento el índice sale bajo y el `Yp` alto; si una ruta escurre y la
+   * otra no, el producto sale mal sin que nada se rompa.
+   */
+  cn_arc_ii?: number;
 }
 
 /** Un día del balance, ya corrido. Todo en mm. */
@@ -265,6 +311,10 @@ export interface DiaCorrido {
   t_mm: number;
   e_suelo_mm: number;
   drenaje_mm: number;
+  /** Lo que escurrió antes de entrar al perfil, en mm. Cero sin `cn_arc_ii`. */
+  escurrimiento_mm: number;
+  /** La retención potencial `S` de ese día, en mm, o `null` si no hubo CN. */
+  retencion_mm: number | null;
   /** Días desde el último mojado, el `t` de la ecuación 6. */
   dias_secos: number;
   /** `SWS` de cada capa al cierre del día. */
@@ -287,11 +337,17 @@ export interface ResultadoBalanceForraje {
   /** `T + E`, la columna `ET` de la Tabla 1. */
   et_mm: number;
   drenaje_mm: number;
+  /**
+   * Escurrimiento acumulado, mm. Cero cuando no se declaró `cn_arc_ii`, que es
+   * el supuesto del trabajo original.
+   */
+  escurrimiento_mm: number;
   pptn_mm: number;
   almacenaje_inicial_mm: number;
   almacenaje_final_mm: number;
   /**
-   * El residuo de la conservación: `P + S₀ − (ET + drenaje + S₁)`. Tiene que
+   * El residuo de la conservación: `P + S₀ − (ET + drenaje + escurrimiento + S₁)`.
+   * Tiene que
    * ser cero salvo el error de punto flotante. Si no lo es, el balance pierde
    * agua y el índice no vale nada.
    */
@@ -342,7 +398,14 @@ export function correrBalanceForraje(
     advertencias.push(ADVERTENCIAS.sin_agua_bajo_el_limite);
   }
   if (e.dias.some(d => d.b === undefined)) advertencias.push(ADVERTENCIAS.b_por_defecto);
-  advertencias.push(ADVERTENCIAS.escorrentia_nula);
+  // El escurrimiento del día, si el llamador declaró un CN. `Smx` se calcula una
+  // sola vez —es del sitio, no del día— y lo que cambia día a día es la fracción
+  // de llenado del perfil, por la ecuación 11.
+  const cnI = e.cn_arc_ii === undefined ? null : cnSeco(e.cn_arc_ii);
+  const smx = cnI === null ? null : retencionMaximaMm(cnI);
+  if (e.cn_arc_ii === undefined) advertencias.push(ADVERTENCIAS.escorrentia_nula);
+  else if (smx === null) advertencias.push(ADVERTENCIAS.cn_sin_retencion);
+  else advertencias.push(ADVERTENCIAS.escorrentia_por_curva_numero);
   if (e.dias.length < TEMPORADA_DE_LA_PRUEBA.minimo_dias
     || e.dias.length > TEMPORADA_DE_LA_PRUEBA.maximo_dias) {
     advertencias.push(ADVERTENCIAS.temporada_fuera_de_rango);
@@ -359,12 +422,15 @@ export function correrBalanceForraje(
     advertencias.push(ADVERTENCIAS.sws_inicial_recortado);
   }
   const almacenajeInicial = sws.reduce((s, x) => s + x, 0);
+  // `UL` de la ecuación 11: la capacidad de agua útil del perfil entero.
+  const ulTotal = e.capas.reduce((s, cp) => s + cp.aw_mm, 0);
   const pisoSuperficial = -(e.capas[0]!.agua_bajo_el_limite_mm ?? 0);
 
   let tpTotal = 0;
   let tTotal = 0;
   let eTotal = 0;
   let drenajeTotal = 0;
+  let escurrimientoTotal = 0;
   let pptnTotal = 0;
   // El reloj de la ecuación 6. Arranca en 0 para que el primer día de la
   // temporada cuente como t = 1 y evapore la Ep entera: el trabajo no dice con
@@ -378,8 +444,17 @@ export function correrBalanceForraje(
     const kcEo = kc * d.eo_mm;
     const tpDia = b * kcEo;                                   // [2]
 
-    // La lluvia entra por arriba y cae en cascada.
-    let sobrante = d.pptn_mm;
+    // Lo que escurre no entra al perfil. La retención se evalúa con el agua que
+    // el perfil tiene **antes** de la lluvia del día, que es lo que hace un
+    // modelo de paso diario, y el agua de la capa superficial se recorta en cero
+    // porque puede estar por debajo del límite inferior.
+    const retencion = smx === null
+      ? null
+      : retencionDelDiaMm(smx, sws.reduce((x, y) => x + Math.max(0, y), 0), ulTotal);
+    const escDia = retencion === null ? 0 : escurrimientoDelDiaMm(d.pptn_mm, retencion);
+
+    // La lluvia que quedó entra por arriba y cae en cascada.
+    let sobrante = d.pptn_mm - escDia;
     for (let j = 0; j < sws.length && sobrante > 0; j += 1) {
       const hueco = e.capas[j]!.aw_mm - sws[j]!;
       const entra = Math.min(hueco, sobrante);
@@ -387,6 +462,8 @@ export function correrBalanceForraje(
       sobrante -= entra;
     }
     const drenajeDia = sobrante;
+    // El reloj de la ecuación 6 mira **la lluvia**, no la que infiltró: la
+    // superficie se moja igual aunque después el agua escurra.
     diasSecos = d.pptn_mm > umbralMojado ? 1 : diasSecos + 1;
 
     // La transpiración sale capa por capa desde arriba.
@@ -415,6 +492,7 @@ export function correrBalanceForraje(
     tTotal += tDia;
     eTotal += eDia;
     drenajeTotal += drenajeDia;
+    escurrimientoTotal += escDia;
     pptnTotal += d.pptn_mm;
     serie.push({
       dia: i + 1,
@@ -423,6 +501,8 @@ export function correrBalanceForraje(
       t_mm: tDia,
       e_suelo_mm: eDia,
       drenaje_mm: drenajeDia,
+      escurrimiento_mm: escDia,
+      retencion_mm: retencion,
       dias_secos: diasSecos,
       sws_mm: [...sws],
     });
@@ -438,10 +518,12 @@ export function correrBalanceForraje(
     e_suelo_mm: eTotal,
     et_mm: etTotal,
     drenaje_mm: drenajeTotal,
+    escurrimiento_mm: escurrimientoTotal,
     pptn_mm: pptnTotal,
     almacenaje_inicial_mm: almacenajeInicial,
     almacenaje_final_mm: almacenajeFinal,
-    cierre_mm: pptnTotal + almacenajeInicial - (etTotal + drenajeTotal + almacenajeFinal),
+    cierre_mm: pptnTotal + almacenajeInicial
+      - (etTotal + drenajeTotal + escurrimientoTotal + almacenajeFinal),
     dias: e.dias.length,
     advertencias,
     serie,

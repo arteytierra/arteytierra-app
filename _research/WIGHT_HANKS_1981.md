@@ -110,7 +110,11 @@ suelo**, aplicado a la segunda y la tercera capa. Se asumió que la temperatura 
 restringe la transpiración de la capa superficial. *(Montado el 09/11/2026: la
 Figura 1 trae su propia ecuación impresa. Ver `FORRAJE_ACTIVIDAD_RADICULAR.md`.)*
 
-En este estudio **se asumió escurrimiento nulo**.
+En este estudio **se asumió escurrimiento nulo**. *(Montado el 10/11/2026, y no
+con una fuente ajena: seis años después de este artículo, Wight publicó `ERHYM-II`
+—USDA-ARS ARS-59, 1987—, que es este mismo balance con escurrimiento diario por
+curva número modificada, con la retención ligada al agua del perfil. Ver
+`FORRAJE_ESCURRIMIENTO.md`.)*
 
 ### Entradas
 

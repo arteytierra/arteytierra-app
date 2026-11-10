@@ -108,6 +108,7 @@ import {
   AVISO_ACTIVIDAD_RADICULAR,
 } from './actividadRadicular';
 import { avisoDelAguaInicial } from './aguaDelPerfil';
+import { avisoDelEscurrimiento } from './escurrimientoForraje';
 
 // ─── Lo que está medido, y que es el argumento de cada rechazo ───────────────
 
@@ -1158,7 +1159,15 @@ export interface EntradasYpDelCorte {
    * con las dos direcciones.
    */
   agua_inicial_por_capa_mm?: readonly number[];
-  /** El resto de las opciones del balance: `kc`, `c`, `b_constante`, el umbral. */
+  /**
+   * El resto de las opciones del balance: `kc`, `c`, `b_constante`, el umbral y
+   * el `cn_arc_ii` del escurrimiento.
+   *
+   * Si `cn_arc_ii` viene, el balance resta el escurrimiento de cada día y el
+   * `Yp` sale **alto**, porque el método escurre de más: ver
+   * `escurrimientoForraje.ts`. **Tiene que ser el mismo que usó la corrida de
+   * los años**, o los kilos salen mal sin que nada se rompa.
+   */
   opciones?: Omit<EntradasBalanceForraje, 'dias' | 'capas'>;
   /** Avisos que trae el armado de la serie, por ejemplo el de la ETo. */
   avisos_previos?: readonly AvisoDeCorte[];
@@ -1216,6 +1225,10 @@ export function ypDelCorte(e: EntradasYpDelCorte): YpDelCorte {
   const compuerta = evaluarCorte(e.corte);
   if (!compuerta.sirve) return vacio(compuerta.rechazos);
   avisos.push(...compuerta.avisos);
+  // El escurrimiento va para el otro lado que las otras tres degradaciones: le
+  // saca agua al perfil, así que el índice baja y el `Yp` que se despeja
+  // dividiendo por él sube.
+  if (e.opciones?.cn_arc_ii !== undefined) avisos.push(avisoDelEscurrimiento('yp'));
 
   // Si el agua del perfil al arranque viene medida, manda sobre todo lo demás:
   // no hay nada que calentar ni banda que abrir.

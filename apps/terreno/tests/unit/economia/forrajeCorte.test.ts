@@ -30,6 +30,7 @@ import {
 import { correrBalanceForraje, type DiaDeBalance } from '@/lib/forrajeBalance';
 import { actividadRadicular, AVISO_ACTIVIDAD_RADICULAR } from '@/lib/actividadRadicular';
 import { FORRAJE_MEDIDO } from '@/lib/forrajeMedido';
+import { AVISO_ESCURRIMIENTO, cnDePastizal } from '@/lib/escurrimientoForraje';
 
 // ─── Lo que hace falta para medir ────────────────────────────────────────────
 
@@ -880,5 +881,57 @@ describe('la ventana aplica el factor de actividad radicular si tiene temperatur
     expect(aviso).toBeDefined();
     expect(aviso!.sesgo).toBe(AVISO_ACTIVIDAD_RADICULAR.sesgo_del_yp);
     expect(aviso!.sesgo).not.toBe(AVISO_ACTIVIDAD_RADICULAR.sesgo_del_indice);
+  });
+});
+
+describe('el Yp y el escurrimiento', () => {
+  const CN = cnDePastizal('D')!;
+
+  it('sin CN no sale el aviso del escurrimiento', () => {
+    const r = ypDelCorte({
+      corte: CORTE_LIMPIO, dias: temporada(300), aw_por_capa_mm: AW, fraccion_inicial: 0.5,
+    });
+    expect(r.avisos.some(a => a.aviso === AVISO_ESCURRIMIENTO.aviso)).toBe(false);
+  });
+
+  it('con CN el aviso sale con la dirección del Yp, que es la contraria a la del índice', () => {
+    const r = ypDelCorte({
+      corte: CORTE_LIMPIO, dias: temporada(300), aw_por_capa_mm: AW, fraccion_inicial: 0.5,
+      opciones: { cn_arc_ii: CN },
+    });
+    const aviso = r.avisos.find(a => a.aviso === AVISO_ESCURRIMIENTO.aviso);
+    expect(aviso).toBeDefined();
+    expect(aviso!.sesgo).toBe(AVISO_ESCURRIMIENTO.sesgo_del_yp);
+    expect(aviso!.sesgo).toBe('alto');
+  });
+
+  it('el escurrimiento sube el Yp, porque el despeje divide por el índice', () => {
+    const base = { corte: CORTE_LIMPIO, dias: temporada(200), aw_por_capa_mm: AW, fraccion_inicial: 0.9 };
+    const sin = ypDelCorte(base);
+    const con = ypDelCorte({ ...base, opciones: { cn_arc_ii: CN } });
+    expect(sin.indice).not.toBeNull();
+    expect(con.indice).not.toBeNull();
+    expect(con.indice!).toBeLessThan(sin.indice!);
+    expect(con.yp_kg_ha!).toBeGreaterThan(sin.yp_kg_ha!);
+  });
+
+  it('también escurre cuando el agua inicial viene medida', () => {
+    const base = {
+      corte: CORTE_LIMPIO, dias: temporada(200), aw_por_capa_mm: AW,
+      agua_inicial_por_capa_mm: [45, 45, 45],
+    };
+    const sin = ypDelCorte(base);
+    const con = ypDelCorte({ ...base, opciones: { cn_arc_ii: CN } });
+    expect(con.yp_kg_ha!).toBeGreaterThan(sin.yp_kg_ha!);
+    expect(con.avisos.some(a => a.aviso === AVISO_ESCURRIMIENTO.aviso)).toBe(true);
+  });
+
+  it('el sesgo neto queda en ambos cuando se junta con una degradación que empuja al revés', () => {
+    const r = ypDelCorte({
+      corte: CORTE_LIMPIO, dias: temporada(300), aw_por_capa_mm: AW,
+      agua_inicial_por_capa_mm: [40, 40, 40], opciones: { cn_arc_ii: CN },
+    });
+    // El agua medida empuja el Yp para abajo y el escurrimiento para arriba.
+    expect(r.sesgo).toBe('ambos');
   });
 });
